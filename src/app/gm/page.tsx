@@ -1402,28 +1402,27 @@ function GmDashboard() {
                 background: 'var(--sand)', border: '2px solid var(--gold)',
                 boxShadow: '0 0 60px var(--gold-glow-s), 0 8px 48px rgba(0,0,0,.3)',
                 padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px',
-                overflowY: 'auto',
+                overflowY: 'auto', fontSize: '16px',
               }}
             >
               {/* Header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ ...S.sectionTitle, margin: 0 }}>LOOT GENERATOR</div>
-                <button onClick={() => setLootOpen(false)} style={{ ...S.btnSmall, fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)', fontWeight: 700, letterSpacing: '0.1rem' }}>CLOSE</button>
+                <button onClick={() => setLootOpen(false)} style={{ ...S.btnSmall, fontFamily: 'var(--font-orbitron)', fontSize: '12px', fontWeight: 700, letterSpacing: '0.1rem' }}>CLOSE</button>
               </div>
 
               {/* Row 1: Source toggle */}
               <div>
-                <div style={S.label}>SOURCE</div>
+                <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: '11px', fontWeight: 600, letterSpacing: '0.15em', color: 'var(--txt3)', textTransform: 'uppercase' as const, marginBottom: '6px' }}>SOURCE</div>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   {(['Vendor', 'Searching', 'Looted'] as const).map(s => (
                     <button key={s} onClick={() => setLootSource(s)} style={{
-                      ...S.btnSmall,
                       background: lootSource === s ? 'var(--gold)' : 'rgba(255,255,255,.5)',
                       color: lootSource === s ? 'var(--white)' : 'var(--ink)',
-                      fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)',
-                      fontWeight: 700, letterSpacing: '0.08rem',
+                      fontFamily: 'var(--font-orbitron)', fontSize: '13px',
+                      fontWeight: 700, letterSpacing: '0.08em',
                       border: lootSource === s ? '1px solid var(--gold-d)' : '1px solid var(--bdr-l)',
-                      padding: 'var(--sp-sm) var(--sp-md)',
+                      padding: '8px 16px', cursor: 'pointer', transition: '.2s',
                     }}>
                       {s.toUpperCase()}
                     </button>
@@ -1433,17 +1432,16 @@ function GmDashboard() {
 
               {/* Row 2: Type filter */}
               <div>
-                <div style={S.label}>TYPE</div>
+                <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: '11px', fontWeight: 600, letterSpacing: '0.15em', color: 'var(--txt3)', textTransform: 'uppercase' as const, marginBottom: '6px' }}>TYPE</div>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   {([['all', 'All'], ['weapon', 'Weapons'], ['armor', 'Armor'], ['gear', 'Gear']] as const).map(([val, label]) => (
                     <button key={val} onClick={() => setLootType(val as typeof lootType)} style={{
-                      ...S.btnSmall,
                       background: lootType === val ? 'var(--gold)' : 'rgba(255,255,255,.5)',
                       color: lootType === val ? 'var(--white)' : 'var(--ink)',
-                      fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)',
-                      fontWeight: 700, letterSpacing: '0.08rem',
+                      fontFamily: 'var(--font-orbitron)', fontSize: '13px',
+                      fontWeight: 700, letterSpacing: '0.08em',
                       border: lootType === val ? '1px solid var(--gold-d)' : '1px solid var(--bdr-l)',
-                      padding: 'var(--sp-sm) var(--sp-md)',
+                      padding: '8px 16px', cursor: 'pointer', transition: '.2s',
                     }}>
                       {label}
                     </button>
@@ -1454,31 +1452,31 @@ function GmDashboard() {
               {/* Row 3: Rarity + Name search */}
               <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
                 <div>
-                  <div style={S.label}>RARITY MIN</div>
-                  <input type="number" min={0} max={10} value={lootRarityMin} onChange={e => setLootRarityMin(Number(e.target.value))} style={{ ...S.inputNarrow, width: '4rem' }} />
+                  <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: '11px', fontWeight: 600, letterSpacing: '0.15em', color: 'var(--txt3)', textTransform: 'uppercase' as const, marginBottom: '6px' }}>RARITY MIN</div>
+                  <input type="number" min={0} max={10} value={lootRarityMin} onChange={e => setLootRarityMin(Number(e.target.value))} style={{ padding: '8px 10px', border: '1px solid var(--bdr-l)', background: 'var(--white)', fontFamily: 'var(--font-mono)', fontSize: '14px', fontWeight: 500, color: 'var(--ink)', width: '70px', textAlign: 'center' as const }} />
                 </div>
                 <div>
-                  <div style={S.label}>RARITY MAX</div>
-                  <input type="number" min={0} max={10} value={lootRarityMax} onChange={e => setLootRarityMax(Number(e.target.value))} style={{ ...S.inputNarrow, width: '4rem' }} />
+                  <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: '11px', fontWeight: 600, letterSpacing: '0.15em', color: 'var(--txt3)', textTransform: 'uppercase' as const, marginBottom: '6px' }}>RARITY MAX</div>
+                  <input type="number" min={0} max={10} value={lootRarityMax} onChange={e => setLootRarityMax(Number(e.target.value))} style={{ padding: '8px 10px', border: '1px solid var(--bdr-l)', background: 'var(--white)', fontFamily: 'var(--font-mono)', fontSize: '14px', fontWeight: 500, color: 'var(--ink)', width: '70px', textAlign: 'center' as const }} />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={S.label}>NAME SEARCH</div>
+                  <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: '11px', fontWeight: 600, letterSpacing: '0.15em', color: 'var(--txt3)', textTransform: 'uppercase' as const, marginBottom: '6px' }}>NAME SEARCH</div>
                   <input
                     placeholder="Filter by name..."
                     value={lootSearchText}
                     onChange={e => setLootSearchText(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleLootBrowse()}
-                    style={S.input}
+                    style={{ padding: '8px 12px', border: '1px solid var(--bdr-l)', background: 'var(--white)', fontFamily: 'var(--font-mono)', fontSize: '14px', fontWeight: 500, color: 'var(--ink)', width: '100%' }}
                   />
                 </div>
               </div>
 
               {/* Row 4: Action buttons */}
               <div style={{ display: 'flex', gap: '12px' }}>
-                <button onClick={handleLootBrowse} disabled={lootBusy} style={{ ...S.btnPrimary, flex: 1, textAlign: 'center', opacity: lootBusy ? 0.5 : 1 }}>
+                <button onClick={handleLootBrowse} disabled={lootBusy} style={{ background: 'var(--gold)', border: 'none', padding: '10px 20px', fontFamily: 'var(--font-orbitron)', fontSize: '14px', fontWeight: 700, letterSpacing: '0.12em', color: 'var(--white)', cursor: 'pointer', flex: 1, textAlign: 'center' as const, opacity: lootBusy ? 0.5 : 1, transition: '.2s' }}>
                   BROWSE
                 </button>
-                <button onClick={handleLootRoll} disabled={lootBusy} style={{ ...S.btnSecondary, flex: 1, textAlign: 'center', fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)', fontWeight: 700, letterSpacing: '0.15rem', padding: 'var(--sp-sm) var(--sp-lg)', opacity: lootBusy ? 0.5 : 1 }}>
+                <button onClick={handleLootRoll} disabled={lootBusy} style={{ background: 'var(--blue)', border: 'none', padding: '10px 20px', fontFamily: 'var(--font-orbitron)', fontSize: '14px', fontWeight: 700, letterSpacing: '0.12em', color: 'var(--white)', cursor: 'pointer', flex: 1, textAlign: 'center' as const, opacity: lootBusy ? 0.5 : 1, transition: '.2s' }}>
                   RANDOM ROLL
                 </button>
               </div>
@@ -1501,21 +1499,21 @@ function GmDashboard() {
                       >
                         <EquipmentImage itemKey={item.key} itemType={item.type} categories={item.categories} size="md" />
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)', fontWeight: 700, color: 'var(--ink)', letterSpacing: '0.04rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: '12px', fontWeight: 700, color: 'var(--ink)', letterSpacing: '0.04em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {item.name}
                           </div>
-                          <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginTop: '2px' }}>
-                            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-2xs)', color: rarityColor(item.rarity), fontWeight: 700 }}>
+                          <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginTop: '3px' }}>
+                            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: rarityColor(item.rarity), fontWeight: 700 }}>
                               R{item.rarity}
                             </span>
-                            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-2xs)', color: 'var(--txt3)' }}>
+                            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--txt3)' }}>
                               {item.price}cr
                             </span>
                           </div>
                           <div style={{
-                            fontFamily: 'var(--font-mono)', fontSize: 'var(--font-2xs)',
+                            fontFamily: 'var(--font-mono)', fontSize: '11px',
                             color: item.type === 'weapon' ? 'var(--red)' : item.type === 'armor' ? 'var(--blue)' : 'var(--txt3)',
-                            fontWeight: 600, textTransform: 'uppercase', marginTop: '1px',
+                            fontWeight: 600, textTransform: 'uppercase' as const, marginTop: '2px',
                           }}>
                             {item.type}
                           </div>
@@ -1526,7 +1524,7 @@ function GmDashboard() {
                 </div>
               )}
               {lootItems.length === 0 && !lootBusy && (
-                <div style={{ ...S.meta, textAlign: 'center', padding: 'var(--sp-md)' }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--txt3)', textAlign: 'center' as const, padding: '16px' }}>
                   Use BROWSE or RANDOM ROLL to generate items.
                 </div>
               )}
@@ -1539,29 +1537,29 @@ function GmDashboard() {
                 }}>
                   <EquipmentImage itemKey={lootSelected.key} itemType={lootSelected.type} categories={lootSelected.categories} size="lg" />
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)', fontWeight: 700, color: 'var(--ink)', letterSpacing: '0.05rem' }}>
+                    <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: '16px', fontWeight: 700, color: 'var(--ink)', letterSpacing: '0.05em' }}>
                       {lootSelected.name}
                     </div>
                     <div style={{ display: 'flex', gap: '12px', marginTop: '4px', flexWrap: 'wrap' }}>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', color: rarityColor(lootSelected.rarity), fontWeight: 700 }}>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: rarityColor(lootSelected.rarity), fontWeight: 700 }}>
                         Rarity {lootSelected.rarity} ({rarityLabel(lootSelected.rarity)})
                       </span>
-                      <span style={{ ...S.meta }}>{lootSelected.price} credits</span>
-                      <span style={{ ...S.meta }}>Enc {lootSelected.encumbrance}</span>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--txt3)' }}>{lootSelected.price} credits</span>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--txt3)' }}>Enc {lootSelected.encumbrance}</span>
                       <span style={{
-                        fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', fontWeight: 600, textTransform: 'uppercase',
+                        fontFamily: 'var(--font-mono)', fontSize: '13px', fontWeight: 600, textTransform: 'uppercase' as const,
                         color: lootSelected.type === 'weapon' ? 'var(--red)' : lootSelected.type === 'armor' ? 'var(--blue)' : 'var(--txt3)',
                       }}>{lootSelected.type}</span>
                     </div>
                     {lootSelected.description && (
                       <div
-                        style={{ fontFamily: 'var(--font-chakra)', fontSize: 'var(--font-sm)', color: 'var(--txt2)', marginTop: '6px', lineHeight: 1.4 }}
+                        style={{ fontFamily: 'var(--font-chakra)', fontSize: '14px', color: 'var(--txt2)', marginTop: '6px', lineHeight: 1.5 }}
                         dangerouslySetInnerHTML={{ __html: parseOggDudeMarkup(lootSelected.description) }}
                       />
                     )}
                     <button
                       onClick={() => handleRevealToPlayers(lootSelected)}
-                      style={{ ...S.btnPrimary, marginTop: '10px', fontSize: 'var(--font-xs)' }}
+                      style={{ background: 'var(--gold)', border: 'none', padding: '10px 24px', fontFamily: 'var(--font-orbitron)', fontSize: '13px', fontWeight: 700, letterSpacing: '0.12em', color: 'var(--white)', cursor: 'pointer', marginTop: '10px', transition: '.2s' }}
                     >
                       REVEAL TO PLAYERS
                     </button>
@@ -1575,13 +1573,13 @@ function GmDashboard() {
                   background: 'var(--gold-glow)', border: '2px solid var(--gold)',
                   padding: '14px', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap',
                 }}>
-                  <div style={{ ...S.label, margin: 0, color: 'var(--gold-d)' }}>
+                  <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em', color: 'var(--gold-d)' }}>
                     REVEALING: <span style={{ color: 'var(--ink)' }}>{revealItem.name}</span>
                   </div>
                   <select
                     value={assignTarget}
                     onChange={e => setAssignTarget(e.target.value)}
-                    style={{ padding: '0.3rem 0.5rem', border: '1px solid var(--bdr-l)', fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', fontWeight: 500 }}
+                    style={{ padding: '6px 10px', border: '1px solid var(--bdr-l)', fontFamily: 'var(--font-mono)', fontSize: '14px', fontWeight: 500 }}
                   >
                     <option value="">Assign to...</option>
                     {characters.map(c => (
@@ -1591,13 +1589,13 @@ function GmDashboard() {
                   <button
                     onClick={handleAssignLoot}
                     disabled={!assignTarget || lootBusy}
-                    style={{ ...S.btnPrimary, fontSize: 'var(--font-xs)', opacity: assignTarget ? 1 : 0.4 }}
+                    style={{ background: 'var(--gold)', border: 'none', padding: '8px 20px', fontFamily: 'var(--font-orbitron)', fontSize: '13px', fontWeight: 700, letterSpacing: '0.1em', color: 'var(--white)', cursor: 'pointer', opacity: assignTarget ? 1 : 0.4, transition: '.2s' }}
                   >
                     ASSIGN
                   </button>
                   <button
                     onClick={handleDismissReveal}
-                    style={{ ...S.btnDanger, fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)', fontWeight: 700, letterSpacing: '0.08rem', padding: 'var(--sp-xs) var(--sp-sm)' }}
+                    style={{ background: 'var(--red)', border: 'none', padding: '8px 16px', fontFamily: 'var(--font-orbitron)', fontSize: '12px', fontWeight: 700, letterSpacing: '0.08em', color: 'var(--white)', cursor: 'pointer', transition: '.2s' }}
                   >
                     DISMISS
                   </button>
