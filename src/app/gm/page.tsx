@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useEffect, useState, useCallback } from 'react'
+import { Suspense, useEffect, useState, useCallback, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { HudCard } from '@/components/ui/HudCard'
@@ -303,14 +303,39 @@ function GmDashboard() {
     setTimeout(() => setStatusMsg(null), 3000)
   }, [])
 
+  // ── Subscribed broadcast channels for each character ──
+  const gmChannelsRef = useRef<Map<string, ReturnType<typeof supabase.channel>>>(new Map())
+
+  useEffect(() => {
+    const map = gmChannelsRef.current
+    // Subscribe to channels for all characters
+    for (const c of characters) {
+      if (!map.has(c.id)) {
+        const ch = supabase.channel(`gm-notify-${c.id}`)
+        ch.subscribe()
+        map.set(c.id, ch)
+      }
+    }
+    // Cleanup channels for removed characters
+    for (const [id, ch] of map) {
+      if (!characters.find(c => c.id === id)) {
+        supabase.removeChannel(ch)
+        map.delete(id)
+      }
+    }
+    return () => {
+      for (const [, ch] of map) supabase.removeChannel(ch)
+      map.clear()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [characters])
+
   // ── Broadcast notification to character page ──
   const notify = useCallback((charId: string, type: 'toast' | 'dialog', message: string) => {
-    supabase.channel(`gm-notify-${charId}`).send({
-      type: 'broadcast',
-      event: 'gm-action',
-      payload: { type, message },
-    })
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    const ch = gmChannelsRef.current.get(charId)
+    if (ch) {
+      ch.send({ type: 'broadcast', event: 'gm-action', payload: { type, message } })
+    }
   }, [])
 
   // ── Loot: query builder ──
@@ -362,28 +387,34 @@ function GmDashboard() {
   // ── Loot: reveal to all players ──
   const handleRevealToPlayers = useCallback((item: LootItem) => {
     setRevealItem(item)
-    // Broadcast to ALL characters
+    // Broadcast to ALL characters via subscribed channels
     for (const c of characters) {
-      supabase.channel(`gm-notify-${c.id}`).send({
-        type: 'broadcast', event: 'gm-action',
-        payload: {
-          type: 'loot-reveal',
-          item: { name: item.name, key: item.key, itemType: item.type, rarity: item.rarity, source: lootSource, description: item.description, categories: item.categories },
-        },
-      })
+      const ch = gmChannelsRef.current.get(c.id)
+      if (ch) {
+        ch.send({
+          type: 'broadcast', event: 'gm-action',
+          payload: {
+            type: 'loot-reveal',
+            item: { name: item.name, key: item.key, itemType: item.type, rarity: item.rarity, source: lootSource, description: item.description, categories: item.categories },
+          },
+        })
+      }
     }
-  }, [characters, supabase, lootSource])
+  }, [characters, lootSource])
 
   // ── Loot: dismiss reveal ──
   const handleDismissReveal = useCallback(() => {
     setRevealItem(null)
     for (const c of characters) {
-      supabase.channel(`gm-notify-${c.id}`).send({
-        type: 'broadcast', event: 'gm-action',
-        payload: { type: 'loot-dismiss' },
-      })
+      const ch = gmChannelsRef.current.get(c.id)
+      if (ch) {
+        ch.send({
+          type: 'broadcast', event: 'gm-action',
+          payload: { type: 'loot-dismiss' },
+        })
+      }
     }
-  }, [characters, supabase])
+  }, [characters])
 
   // ── Loot: assign to character ──
   const handleAssignLoot = useCallback(async () => {
@@ -405,7 +436,8 @@ function GmDashboard() {
     setRevealItem(null)
     setAssignTarget('')
     setLootBusy(false)
-  }, [revealItem, assignTarget, lootSource, characters, supabase, notify, flash, handleDismissReveal])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [revealItem, assignTarget, lootSource, characters, notify, flash, handleDismissReveal])
 
   // ── Load campaign data ──
   const loadData = useCallback(async () => {
