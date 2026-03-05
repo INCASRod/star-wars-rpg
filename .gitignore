@@ -36,6 +36,12 @@ yarn-error.log*
 # vercel
 .vercel
 
+# OggDude dataset (large, cloned separately)
+/oggdude/
+
+# Parsed OggDude JSON (regenerated from XML)
+/oggdude/parsed/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

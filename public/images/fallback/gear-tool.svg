@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Hydrospanner/wrench -->
+  <path d="M10 38 L30 18"/>
+  <!-- Handle -->
+  <rect x="6" y="34" width="10" height="10" rx="2" transform="rotate(-45 11 39)"/>
+  <!-- Wrench head -->
+  <path d="M30 18 L34 14 Q38 10 42 10 Q44 10 44 12 L44 16 Q44 20 40 20 L36 20 L30 18"/>
+  <!-- Jaw opening -->
+  <path d="M34 14 L38 16"/>
+  <!-- Grip lines -->
+  <line x1="10" y1="36" x2="14" y2="32"/>
+  <line x1="12" y1="38" x2="16" y2="34"/>
+</svg>

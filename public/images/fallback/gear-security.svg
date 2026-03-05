@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Scanner body -->
+  <rect x="12" y="8" width="24" height="32" rx="3"/>
+  <!-- Screen -->
+  <rect x="15" y="12" width="18" height="16" rx="2"/>
+  <!-- Scan lines on screen -->
+  <line x1="17" y1="16" x2="31" y2="16" stroke-width="1"/>
+  <line x1="17" y1="20" x2="31" y2="20" stroke-width="1"/>
+  <line x1="17" y1="24" x2="31" y2="24" stroke-width="1"/>
+  <!-- Blip on screen -->
+  <circle cx="24" cy="20" r="2" fill="currentColor"/>
+  <!-- Buttons -->
+  <circle cx="18" cy="34" r="1.5"/>
+  <circle cx="24" cy="34" r="1.5"/>
+  <circle cx="30" cy="34" r="1.5"/>
+  <!-- Antenna -->
+  <line x1="32" y1="8" x2="36" y2="4"/>
+</svg>

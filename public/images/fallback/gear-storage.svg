@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Backpack body -->
+  <rect x="12" y="10" width="24" height="30" rx="3"/>
+  <!-- Flap -->
+  <path d="M12 18 L36 18"/>
+  <path d="M16 10 Q16 6 24 6 Q32 6 32 10"/>
+  <!-- Straps -->
+  <path d="M12 14 L8 14 L8 36 L12 38"/>
+  <path d="M36 14 L40 14 L40 36 L36 38"/>
+  <!-- Front pocket -->
+  <rect x="16" y="24" width="16" height="10" rx="2"/>
+  <!-- Buckle -->
+  <rect x="22" y="22" width="4" height="3" rx="1"/>
+</svg>

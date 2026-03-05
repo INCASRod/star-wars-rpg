@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Holocron cube - 3/4 view -->
+  <!-- Front face -->
+  <path d="M10 18 L24 12 L38 18 L38 34 L24 40 L10 34 Z"/>
+  <!-- Top face -->
+  <path d="M10 18 L24 12 L38 18 L24 24 Z"/>
+  <!-- Right face divide -->
+  <line x1="24" y1="24" x2="24" y2="40"/>
+  <!-- Left face divide -->
+  <line x1="10" y1="18" x2="24" y2="24"/>
+  <!-- Glowing inner diamond -->
+  <path d="M20 26 L24 22 L28 26 L24 30 Z" stroke-width="1.5"/>
+  <!-- Edge glow lines -->
+  <line x1="14" y1="20" x2="14" y2="32" stroke-width="1" opacity="0.6"/>
+  <line x1="34" y1="20" x2="34" y2="32" stroke-width="1" opacity="0.6"/>
+</svg>

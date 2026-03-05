@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Handle -->
+  <rect x="6" y="32" width="10" height="6" rx="2"/>
+  <!-- Whip body - flowing curve -->
+  <path d="M16 35 Q22 30 26 22 Q30 14 36 10 Q40 8 42 6" stroke-width="2.5"/>
+  <!-- Energy crackle at tip -->
+  <path d="M42 6 L44 4" stroke-width="1.5"/>
+  <path d="M42 6 L44 8" stroke-width="1.5"/>
+  <path d="M42 6 L46 6" stroke-width="1.5"/>
+  <!-- Grip detail -->
+  <line x1="8" y1="34" x2="14" y2="34"/>
+  <line x1="8" y1="36" x2="14" y2="36"/>
+</svg>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Chest plate -->
+  <path d="M12 14 L8 18 L8 36 Q8 40 12 42 L24 44 L36 42 Q40 40 40 36 L40 18 L36 14"/>
+  <!-- Shoulder pauldrons -->
+  <path d="M12 14 Q12 10 8 8 L4 12 L8 18"/>
+  <path d="M36 14 Q36 10 40 8 L44 12 L40 18"/>
+  <!-- Neck opening -->
+  <path d="M12 14 Q18 10 24 10 Q30 10 36 14"/>
+  <!-- Center line -->
+  <line x1="24" y1="14" x2="24" y2="40"/>
+  <!-- Plate detail -->
+  <path d="M16 22 L24 20 L32 22"/>
+  <path d="M16 30 L24 28 L32 30"/>
+</svg>

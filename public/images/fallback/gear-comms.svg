@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Comlink body -->
+  <rect x="16" y="8" width="16" height="32" rx="4"/>
+  <!-- Speaker grille -->
+  <line x1="20" y1="14" x2="28" y2="14"/>
+  <line x1="20" y1="17" x2="28" y2="17"/>
+  <line x1="20" y1="20" x2="28" y2="20"/>
+  <!-- Display -->
+  <rect x="19" y="24" width="10" height="6" rx="1"/>
+  <!-- Button -->
+  <circle cx="24" cy="34" r="2"/>
+  <!-- Antenna -->
+  <line x1="30" y1="8" x2="34" y2="4"/>
+  <circle cx="35" cy="3" r="1.5"/>
+  <!-- Signal waves -->
+  <path d="M36 6 Q40 4 38 2" fill="none" stroke-width="1.5"/>
+</svg>

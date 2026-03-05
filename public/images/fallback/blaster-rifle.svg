@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Barrel -->
+  <line x1="4" y1="20" x2="44" y2="20"/>
+  <!-- Body -->
+  <rect x="10" y="17" width="28" height="6" rx="1"/>
+  <!-- Scope -->
+  <rect x="18" y="13" width="10" height="4" rx="1"/>
+  <!-- Stock -->
+  <path d="M10 17 L4 17 L4 23 L10 23"/>
+  <!-- Grip -->
+  <path d="M28 23 L26 34 Q26 36 28 36 L30 36 Q32 36 32 34 L34 23"/>
+  <!-- Trigger -->
+  <line x1="30" y1="25" x2="30" y2="30"/>
+  <!-- Magazine -->
+  <rect x="20" y="23" width="4" height="6" rx="1"/>
+</svg>

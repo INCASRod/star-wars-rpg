@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Canteen/flask body -->
+  <path d="M16 16 Q12 20 12 28 Q12 40 24 42 Q36 40 36 28 Q36 20 32 16"/>
+  <!-- Neck -->
+  <rect x="20" y="10" width="8" height="6" rx="1"/>
+  <!-- Cap -->
+  <rect x="19" y="6" width="10" height="5" rx="2"/>
+  <!-- Chain/strap ring -->
+  <circle cx="30" cy="8" r="2"/>
+  <!-- Water line detail -->
+  <path d="M16 28 Q20 26 24 28 Q28 30 32 28" stroke-width="1.5"/>
+  <!-- Label -->
+  <rect x="19" y="24" width="10" height="6" rx="1" stroke-width="1"/>
+</svg>

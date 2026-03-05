@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Emitter box -->
+  <rect x="6" y="16" width="14" height="16" rx="2"/>
+  <!-- Lens -->
+  <circle cx="20" cy="24" r="4"/>
+  <!-- Beam cone -->
+  <path d="M24 22 L42 16 L42 32 L24 26 Z" stroke-width="1.5"/>
+  <!-- Beam lines -->
+  <line x1="26" y1="24" x2="40" y2="20"/>
+  <line x1="26" y1="24" x2="40" y2="24"/>
+  <line x1="26" y1="24" x2="40" y2="28"/>
+  <!-- Control panel -->
+  <rect x="8" y="18" width="4" height="4" rx="1"/>
+  <circle cx="10" cy="28" r="1.5"/>
+</svg>

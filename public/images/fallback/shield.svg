@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Shield shape -->
+  <path d="M8 8 L8 28 Q8 40 24 44 Q40 40 40 28 L40 8 Z"/>
+  <!-- Inner border -->
+  <path d="M12 12 L12 27 Q12 37 24 40 Q36 37 36 27 L36 12 Z"/>
+  <!-- Center emblem -->
+  <circle cx="24" cy="24" r="4"/>
+  <!-- Grip on back -->
+  <line x1="20" y1="18" x2="20" y2="32"/>
+</svg>
