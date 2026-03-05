@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import { CharacterHud, CharacterHudData } from '@/components/character/CharacterHud'
 import { EquipmentItem } from '@/components/character/EquipmentCard'
 import { EquipmentImage } from '@/components/ui/EquipmentImage'
+import { parseOggDudeMarkup } from '@/lib/oggdude-markup'
 import { InventoryContent } from '@/components/character/InventoryContent'
 import { TalentTree, TalentTreeNode, TalentTreeConnection } from '@/components/character/TalentTree'
 import { createClient } from '@/lib/supabase/client'
@@ -720,17 +721,18 @@ export default function CharacterPage() {
 
               {/* Description */}
               {lootReveal.description && (
-                <div style={{
-                  fontFamily: 'var(--font-chakra)',
-                  fontSize: 'var(--font-sm)',
-                  color: 'var(--txt2)',
-                  lineHeight: 1.5,
-                  marginTop: '8px',
-                  borderTop: '1px solid var(--bdr-l)',
-                  paddingTop: '10px',
-                }}>
-                  {lootReveal.description}
-                </div>
+                <div
+                  style={{
+                    fontFamily: 'var(--font-chakra)',
+                    fontSize: 'var(--font-sm)',
+                    color: 'var(--txt2)',
+                    lineHeight: 1.5,
+                    marginTop: '8px',
+                    borderTop: '1px solid var(--bdr-l)',
+                    paddingTop: '10px',
+                  }}
+                  dangerouslySetInnerHTML={{ __html: parseOggDudeMarkup(lootReveal.description) }}
+                />
               )}
             </div>
           </div>

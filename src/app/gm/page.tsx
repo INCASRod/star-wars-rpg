@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { HudCard } from '@/components/ui/HudCard'
 import { EquipmentImage } from '@/components/ui/EquipmentImage'
+import { parseOggDudeMarkup } from '@/lib/oggdude-markup'
 import type { Character, Campaign, Player } from '@/lib/types'
 
 /* ═══════════════════════════════════════
@@ -1553,9 +1554,10 @@ function GmDashboard() {
                       }}>{lootSelected.type}</span>
                     </div>
                     {lootSelected.description && (
-                      <div style={{ fontFamily: 'var(--font-chakra)', fontSize: 'var(--font-sm)', color: 'var(--txt2)', marginTop: '6px', lineHeight: 1.4 }}>
-                        {lootSelected.description}
-                      </div>
+                      <div
+                        style={{ fontFamily: 'var(--font-chakra)', fontSize: 'var(--font-sm)', color: 'var(--txt2)', marginTop: '6px', lineHeight: 1.4 }}
+                        dangerouslySetInnerHTML={{ __html: parseOggDudeMarkup(lootSelected.description) }}
+                      />
                     )}
                     <button
                       onClick={() => handleRevealToPlayers(lootSelected)}
