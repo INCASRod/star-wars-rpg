@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { CombatEncounter } from '@/lib/combat'
 import type { Character } from '@/lib/types'
+import { resolveWeapon, type WeaponRef } from '@/lib/resolve-weapon'
 import { FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4, FS_H3 } from '@/components/player-hud/design-tokens'
 
 // ── Design Tokens ──
@@ -54,7 +55,7 @@ interface Props {
 
 export function CombatTracker({ character, campaignId, talents = [] }: Props) {
   const [encounter, setEncounter] = useState<CombatEncounter | null>(null)
-  const [weaponRef, setWeaponRef] = useState<Record<string, { damage: number; damage_add: number | null; range_value: string | null }>>({})
+  const [weaponRef, setWeaponRef] = useState<Record<string, WeaponRef>>({})
   const supabase = createClient()
 
   // Load weapon reference for stat lookup (weapons in adversaries.json are name-only strings)
@@ -64,7 +65,7 @@ export function CombatTracker({ character, campaignId, talents = [] }: Props) {
       .select('name, damage, damage_add, range_value')
       .then(({ data }) => {
         if (!data) return
-        const map: Record<string, { damage: number; damage_add: number | null; range_value: string | null }> = {}
+        const map: Record<string, WeaponRef> = {}
         data.forEach((w: { name: string; damage: number; damage_add: number | null; range_value: string | null }) => {
           map[w.name.toLowerCase()] = w
         })
@@ -396,24 +397,11 @@ export function CombatTracker({ character, campaignId, talents = [] }: Props) {
                     {adv.weapons && adv.weapons.length > 0 && (
                       <div>
                         {adv.weapons.map((w, i) => {
-                          const ref = weaponRef[w.name.toLowerCase()]
-                          // Resolve damage: brawn-based string → actual number, numeric → use directly, 0 → ref fallback
-                          let dmg: number | string = w.damage
-                          if (typeof dmg === 'string') {
-                            const m = dmg.match(/^Brawn([+-]\d+)$/i)
-                            if (m) dmg = adv.characteristics.brawn + parseInt(m[1])
-                          } else if (dmg === 0 || dmg === undefined) {
-                            if (ref?.damage_add) dmg = adv.characteristics.brawn + ref.damage_add
-                            else if (ref?.damage) dmg = ref.damage
-                            else dmg = '—'
-                          }
-                          const rng = (w.range && w.range !== 'Engaged')
-                            ? w.range
-                            : (ref?.range_value ?? 'Engaged')
+                          const { dmg, range } = resolveWeapon(w, adv.characteristics.brawn, weaponRef)
                           const quals = w.qualities?.length ? ` — ${w.qualities.join(', ')}` : ''
                           return (
                             <div key={i} style={{ fontFamily: FM, fontSize: FS_LABEL, color: TEXTGR }}>
-                              {w.name} — DMG {dmg} — {rng}{quals}
+                              {w.name} — DMG {dmg} — {range}{quals}
                             </div>
                           )
                         })}

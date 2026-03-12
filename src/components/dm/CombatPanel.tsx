@@ -11,6 +11,7 @@ import { InitiativeSetupModal } from './InitiativeSetupModal'
 import type { Character } from '@/lib/types'
 import { FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4, FS_H3 } from '@/components/player-hud/design-tokens'
 import { MarkupText } from '@/components/ui/MarkupText'
+import { resolveWeapon, type WeaponRef } from '@/lib/resolve-weapon'
 
 // ── Design Tokens ──
 const BG = '#060D09'
@@ -117,7 +118,7 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
   const [logDmOnly, setLogDmOnly] = useState(false)
 
   // Weapon reference lookup: name (lowercase) → stats
-  const [weaponRef, setWeaponRef] = useState<Record<string, { damage: number; damage_add: number | null; range_value: string | null }>>({})
+  const [weaponRef, setWeaponRef] = useState<Record<string, WeaponRef>>({})
 
   const supabase = createClient()
 
@@ -135,7 +136,7 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
       .select('name, damage, damage_add, range_value')
       .then(({ data }) => {
         if (!data) return
-        const map: Record<string, { damage: number; damage_add: number | null; range_value: string | null }> = {}
+        const map: Record<string, WeaponRef> = {}
         data.forEach((w: { name: string; damage: number; damage_add: number | null; range_value: string | null }) => {
           map[w.name.toLowerCase()] = w
         })
@@ -1150,23 +1151,15 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                   {adv.weapons && adv.weapons.length > 0 && (
                     <div style={{ marginBottom: 8 }}>
                       <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, letterSpacing: '0.15em', textTransform: 'uppercase', color: `${GOLD}90`, marginBottom: 5 }}>Weapons</div>
-                      {adv.weapons.map((w, i) => (
-                        <div key={i} style={{ fontFamily: FM, fontSize: FS_LABEL, fontWeight: 500, color: TEXTGR, marginBottom: 2 }}>
-                          {(() => {
-                            const ref = weaponRef[w.name.toLowerCase()]
-                            const dmg = (w.damage !== 0 && w.damage !== undefined)
-                              ? w.damage
-                              : ref?.damage_add
-                                ? `Br+${ref.damage_add}`
-                                : (ref?.damage ?? 0)
-                            const rng = (w.range && w.range !== 'Engaged')
-                              ? w.range
-                              : (ref?.range_value ?? 'Engaged')
-                            const quals = w.qualities && w.qualities.length > 0 ? ` — ${w.qualities.join(', ')}` : ''
-                            return `${w.name} — DMG ${dmg} — ${rng}${quals}`
-                          })()}
-                        </div>
-                      ))}
+                      {adv.weapons.map((w, i) => {
+                        const { dmg, range } = resolveWeapon(w, adv.characteristics.brawn, weaponRef)
+                        const quals = w.qualities && w.qualities.length > 0 ? ` — ${w.qualities.join(', ')}` : ''
+                        return (
+                          <div key={i} style={{ fontFamily: FM, fontSize: FS_LABEL, fontWeight: 500, color: TEXTGR, marginBottom: 2 }}>
+                            {w.name} — DMG {dmg} — {range}{quals}
+                          </div>
+                        )
+                      })}
                     </div>
                   )}
 
