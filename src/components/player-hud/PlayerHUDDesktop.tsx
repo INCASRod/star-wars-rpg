@@ -452,6 +452,21 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   const effectiveCampaignId = campaignId ?? character?.campaign_id ?? null
   const effectiveCampaignIdRef = useRef(effectiveCampaignId)
   useEffect(() => { effectiveCampaignIdRef.current = effectiveCampaignId }, [effectiveCampaignId])
+
+  // ── Auto-release session on tab/browser close ──────────────────────────────
+  useEffect(() => {
+    const handlePageHide = () => {
+      const key = typeof window !== 'undefined' ? localStorage.getItem('holocron_session_key') : null
+      const cid = effectiveCampaignIdRef.current
+      if (!key || !cid) return
+      navigator.sendBeacon('/api/release-session', new Blob(
+        [JSON.stringify({ session_key: key, campaign_id: cid })],
+        { type: 'application/json' },
+      ))
+    }
+    window.addEventListener('pagehide', handlePageHide)
+    return () => window.removeEventListener('pagehide', handlePageHide)
+  }, [])
   const { mode: dbMode, round: dbRound, transitionPending: dbTransitionPending, prevMode: dbPrevMode } = useSessionMode(effectiveCampaignId)
   // Broadcast override — GM pushes combat state directly for instant delivery
   const [broadcastSession, setBroadcastSession] = useState<{ mode: 'combat' | 'exploration'; round: number } | null>(null)
