@@ -1389,6 +1389,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
           skills={skills}
           initiativeType={initRoll.type}
           campaignId={initRoll.campaignId}
+          forceRating={forceRating}
           onClose={() => setInitRoll(null)}
         />
       )}
