@@ -954,6 +954,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
             characterName={character.name}
             career={careerName}
             spec={specNames}
+            onUpload={handlePortraitUpload}
+            onDelete={handlePortraitDelete}
           />
 
           {/* Characteristics */}
