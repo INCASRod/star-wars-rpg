@@ -167,11 +167,20 @@ function SectionLabel({ text }: { text: string }) {
 
 export function DiceRoller({ trainedSkills, equippedWeapons, onRoll }: DiceRollerProps) {
   const [pool, setPool] = useState<Record<DiceType, number>>({ ...EMPTY_POOL })
+  const [selectedWeaponId, setSelectedWeaponId] = useState<string | null>(null)
 
   const addDie = (type: DiceType) => setPool(p => ({ ...p, [type]: p[type] + 1 }))
   const removeDie = (type: DiceType) => setPool(p => ({ ...p, [type]: Math.max(0, p[type] - 1) }))
-  const clearPool = () => setPool({ ...EMPTY_POOL })
+  const clearPool = () => { setPool({ ...EMPTY_POOL }); setSelectedWeaponId(null) }
   const isEmpty = poolSize(pool) === 0
+
+  const selectedWeapon = selectedWeaponId ? equippedWeapons.find(w => w.id === selectedWeaponId) ?? null : null
+
+  const loadWeapon = (wpn: QuickWeapon) => {
+    const { proficiency, ability } = getSkillPool(wpn.charVal, wpn.rank)
+    setSelectedWeaponId(wpn.id)
+    setPool(p => ({ ...p, proficiency, ability }))
+  }
 
   const setDifficulty = (count: number) => {
     setPool(p => ({ ...p, difficulty: count }))
@@ -180,31 +189,13 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll }: DiceRolle
   const handleRoll = () => {
     if (isEmpty) return
     const result = rollPool(pool)
-    onRoll(result, `${poolSize(pool)} dice`)
+    const label = selectedWeapon ? selectedWeapon.name : `${poolSize(pool)} dice`
+    onRoll(result, label)
   }
 
   const handleQuickRoll = (skill: QuickRollSkill, name: string) => {
     const { proficiency, ability } = getSkillPool(skill.charVal, skill.rank)
-    const quickPool: Record<DiceType, number> = {
-      ...EMPTY_POOL,
-      proficiency,
-      ability,
-      difficulty: 2, // default Average
-    }
-    const result = rollPool(quickPool)
-    onRoll(result, name)
-  }
-
-  const handleWeaponRoll = (wpn: QuickWeapon) => {
-    const { proficiency, ability } = getSkillPool(wpn.charVal, wpn.rank)
-    const wpnPool: Record<DiceType, number> = {
-      ...EMPTY_POOL,
-      proficiency,
-      ability,
-      difficulty: 2,
-    }
-    const result = rollPool(wpnPool)
-    onRoll(result, wpn.name)
+    onRoll(rollPool({ ...EMPTY_POOL, proficiency, ability, difficulty: 2 }), name)
   }
 
   return (
@@ -213,6 +204,59 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll }: DiceRolle
       <div style={{ ...panelBase, padding: '12px 12px 10px' }}>
         <CornerBrackets />
         <SectionLabel text="Dice Pool" />
+
+        {/* Weapon selector — shown when weapons are equipped */}
+        {equippedWeapons.length > 0 && (
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textDim, marginBottom: 6 }}>
+              Load Weapon
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {equippedWeapons.map(wpn => {
+                const isSelected = selectedWeaponId === wpn.id
+                return (
+                  <button
+                    key={wpn.id}
+                    onClick={() => isSelected ? (setSelectedWeaponId(null), setPool(p => ({ ...p, proficiency: 0, ability: 0 }))) : loadWeapon(wpn)}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '6px 10px', borderRadius: 4, cursor: 'pointer', textAlign: 'left',
+                      background: isSelected ? 'rgba(224,120,85,0.15)' : 'rgba(200,170,80,0.05)',
+                      border: `1px solid ${isSelected ? 'rgba(224,120,85,0.55)' : C.border}`,
+                      transition: '.12s', width: '100%',
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontFamily: FONT_CINZEL, fontSize: 12, fontWeight: 700, color: isSelected ? '#E07855' : C.text }}>
+                        {wpn.name}
+                      </div>
+                      <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 11, color: C.textDim, marginTop: 2 }}>
+                        {wpn.skillName && <span style={{ color: C.textDim }}>{wpn.skillName} · </span>}
+                        <span style={{ color: '#E07855' }}>DMG {wpn.damage}</span>
+                        {wpn.crit > 0 && <span style={{ color: '#E05050' }}> · CRIT {wpn.crit}</span>}
+                        {wpn.range && <span> · {wpn.range}</span>}
+                      </div>
+                    </div>
+                    {/* Pool preview */}
+                    <div style={{ display: 'flex', gap: 2, alignItems: 'center', flexShrink: 0 }}>
+                      {(() => {
+                        const { proficiency, ability } = getSkillPool(wpn.charVal, wpn.rank)
+                        return <>
+                          {Array.from({ length: proficiency }).map((_, i) => (
+                            <div key={`p${i}`} style={{ width: 8, height: 8, background: '#D4B840', transform: 'rotate(45deg)', flexShrink: 0 }} />
+                          ))}
+                          {Array.from({ length: ability }).map((_, i) => (
+                            <div key={`a${i}`} style={{ width: 8, height: 8, borderRadius: '50%', background: '#4EC87A', flexShrink: 0 }} />
+                          ))}
+                        </>
+                      })()}
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Positive dice */}
         <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: 12 }}>
@@ -269,15 +313,17 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll }: DiceRolle
             width: '100%', padding: '10px 0',
             background: isEmpty
               ? C.textFaint
-              : 'linear-gradient(135deg, #C8AA50, #8E6E2A)',
+              : selectedWeapon
+                ? 'linear-gradient(135deg, #E07855, #A04030)'
+                : 'linear-gradient(135deg, #C8AA50, #8E6E2A)',
             border: 'none', borderRadius: 4, cursor: isEmpty ? 'not-allowed' : 'pointer',
             fontFamily: FONT_CINZEL, fontSize: 13, fontWeight: 700,
             letterSpacing: '0.12em', color: isEmpty ? C.textDim : C.bg,
             transition: '.2s',
-            boxShadow: isEmpty ? 'none' : `0 2px 12px ${C.gold}40`,
+            boxShadow: isEmpty ? 'none' : `0 2px 12px ${selectedWeapon ? '#E0785540' : `${C.gold}40`}`,
           }}
         >
-          {isEmpty ? 'ADD DICE TO ROLL' : `ROLL ${poolSize(pool)} DICE`}
+          {isEmpty ? 'ADD DICE TO ROLL' : selectedWeapon ? `ATTACK — ${selectedWeapon.name}` : `ROLL ${poolSize(pool)} DICE`}
         </button>
 
         {!isEmpty && (
@@ -337,50 +383,6 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll }: DiceRolle
         </div>
       )}
 
-      {/* Weapons Quick-Ref — equipped only */}
-      {equippedWeapons.length > 0 && (
-        <div style={{ ...panelBase, padding: '12px 12px 10px' }}>
-          <CornerBrackets />
-          <SectionLabel text="Weapons" />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {equippedWeapons.map(wpn => (
-              <div key={wpn.id} style={{
-                ...panelBase,
-                padding: '8px 10px',
-                border: `1px solid ${C.border}`,
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
-                  <div style={{ fontFamily: FONT_CINZEL, fontSize: 12, fontWeight: 600, color: C.text }}>{wpn.name}</div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                  <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 13, fontWeight: 600, color: '#E07855' }}>
-                    DMG {wpn.damage}
-                  </span>
-                  <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 13, fontWeight: 600, color: '#E05050' }}>
-                    CRIT {wpn.crit || '—'}
-                  </span>
-                  <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 13, fontWeight: 600, color: C.textDim }}>
-                    {wpn.range}
-                  </span>
-                  <button
-                    onClick={() => handleWeaponRoll(wpn)}
-                    style={{
-                      marginLeft: 'auto',
-                      background: 'rgba(224,120,85,0.15)', border: `1px solid rgba(224,120,85,0.4)`,
-                      borderRadius: 3, padding: '2px 10px',
-                      fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700,
-                      letterSpacing: '0.1em', textTransform: 'uppercase',
-                      color: '#E07855', cursor: 'pointer', transition: '.15s',
-                    }}
-                  >
-                    Roll Attack
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Symbol Legend */}
       <div style={{ ...panelBase, padding: '12px 12px 10px' }}>
