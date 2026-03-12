@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useEffect, useState, useCallback, useRef } from 'react'
+import { Suspense, useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { EquipmentImage } from '@/components/ui/EquipmentImage'
@@ -347,7 +347,8 @@ function GmDashboard() {
   const [gmDifficulty, setGmDifficulty] = useState(0)
   const [gmSetback, setGmSetback] = useState(0)
 
-  const supabase = createClient()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const supabase = useMemo(() => createClient(), [])
 
   // ── Roll Feed ──
   const rolls = useRollFeed(campaignId)
@@ -359,6 +360,8 @@ function GmDashboard() {
   // ── GM broadcast channels ──
   const gmChannelsRef = useRef<Map<string, ReturnType<typeof supabase.channel>>>(new Map())
 
+  // Add channels for new characters only — never destroy on re-render to avoid
+  // the race where channels are unsubscribed when a broadcast is sent.
   useEffect(() => {
     const map = gmChannelsRef.current
     for (const c of characters) {
@@ -368,18 +371,17 @@ function GmDashboard() {
         map.set(c.id, ch)
       }
     }
-    for (const [id, ch] of map) {
-      if (!characters.find(c => c.id === id)) {
-        supabase.removeChannel(ch)
-        map.delete(id)
-      }
-    }
+  }, [characters, supabase])
+
+  // Destroy channels only on unmount
+  useEffect(() => {
+    const map = gmChannelsRef.current
     return () => {
       for (const [, ch] of map) supabase.removeChannel(ch)
       map.clear()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [characters])
+  }, [])
 
   // ── Broadcast notification ──
   const notify = useCallback((charId: string, type: 'toast' | 'dialog', message: string) => {
@@ -764,6 +766,14 @@ function GmDashboard() {
   }
 
   // ── Session Mode ──
+  // Push combat state to all player screens via broadcast (more reliable than postgres_changes)
+  const broadcastCombatState = useCallback((mode: 'combat' | 'exploration', round: number) => {
+    for (const c of characters) {
+      const ch = gmChannelsRef.current.get(c.id)
+      if (ch) ch.send({ type: 'broadcast', event: 'gm-action', payload: { type: 'combat-state', mode, round } })
+    }
+  }, [characters])
+
   const beginCombat = async () => {
     if (!campaignId) return
     setSessionBusy(true)
@@ -771,6 +781,7 @@ function GmDashboard() {
     await supabase.from('campaigns').update({ session_mode: 'combat', combat_round: round, mode_changed_at: new Date().toISOString() }).eq('id', campaignId)
     setSessionMode('combat')
     setCombatRound(round)
+    broadcastCombatState('combat', round)
     setSessionBusy(false)
     toast('Combat initiated — players notified.')
   }
@@ -781,6 +792,7 @@ function GmDashboard() {
     await supabase.from('campaigns').update({ session_mode: 'exploration', combat_round: 0, mode_changed_at: new Date().toISOString() }).eq('id', campaignId)
     setSessionMode('exploration')
     setCombatRound(1)
+    broadcastCombatState('exploration', 0)
     setSessionBusy(false)
     toast('Encounter ended — exploration mode.')
   }
@@ -790,6 +802,7 @@ function GmDashboard() {
     const next = Math.max(1, combatRound + delta)
     await supabase.from('campaigns').update({ combat_round: next }).eq('id', campaignId)
     setCombatRound(next)
+    broadcastCombatState('combat', next)
   }
 
   // ── Wound/Strain Helpers ──

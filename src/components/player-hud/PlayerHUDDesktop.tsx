@@ -449,7 +449,11 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
 
   // ── Session / roll feed ──
   const effectiveCampaignId = campaignId ?? character?.campaign_id ?? null
-  const { mode: sessionMode, round: combatRound, transitionPending, prevMode } = useSessionMode(effectiveCampaignId)
+  const { mode: dbMode, round: dbRound, transitionPending, prevMode } = useSessionMode(effectiveCampaignId)
+  // Broadcast override — GM pushes combat state directly for instant delivery
+  const [broadcastSession, setBroadcastSession] = useState<{ mode: 'combat' | 'exploration'; round: number } | null>(null)
+  const sessionMode = broadcastSession?.mode ?? dbMode
+  const combatRound = broadcastSession?.round ?? dbRound
   const rolls = useRollFeed(effectiveCampaignId)
   const isCombat = sessionMode === 'combat'
 
@@ -479,6 +483,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         if (payload.type === 'toast') {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           import('sonner').then(m => m.toast(payload.message as any))
+        } else if (payload.type === 'combat-state') {
+          setBroadcastSession({ mode: payload.mode as 'combat' | 'exploration', round: payload.round as number })
         } else if (payload.type === 'loot-reveal') {
           setLootReveal(payload.item as Record<string, unknown>)
         } else if (payload.type === 'loot-dismiss') {
