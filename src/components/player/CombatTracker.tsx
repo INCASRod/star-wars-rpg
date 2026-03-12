@@ -347,7 +347,6 @@ export function CombatTracker({ character, campaignId, talents = [] }: Props) {
                       <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexShrink: 0 }}>
                         {[
                           { label: 'SOAK', value: adv.soak, color: CHAR_WIL },
-                          { label: 'WT', value: adv.woundThreshold, color: CHAR_BR },
                           { label: 'M.DEF', value: adv.defense.melee, color: CHAR_CUN },
                           { label: 'R.DEF', value: adv.defense.ranged, color: CHAR_INT },
                         ].map(s => (
@@ -356,6 +355,26 @@ export function CombatTracker({ character, campaignId, talents = [] }: Props) {
                             <div style={{ fontFamily: FM, fontSize: FS_LABEL, color: TEXT_MUTED }}>{s.label}</div>
                           </div>
                         ))}
+                        {/* Wounds — current/threshold for rival/nemesis */}
+                        {adv.type !== 'minion' && (() => {
+                          const cur = adv.woundsCurrent ?? 0
+                          const max = adv.woundThreshold
+                          const dead = cur >= max
+                          const crit = cur > 0 && cur >= max * 0.75
+                          const woundColor = dead ? CHAR_BR : crit ? CHAR_CUN : CHAR_BR
+                          return (
+                            <div style={{ textAlign: 'center' }}>
+                              <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, lineHeight: 1, color: dead ? CHAR_BR : TEXT }}>
+                                <span style={{ color: dead ? CHAR_BR : crit ? CHAR_CUN : TEXT }}>{cur}</span>
+                                <span style={{ color: TEXT_MUTED, fontSize: FS_LABEL }}>/</span>
+                                <span style={{ color: woundColor }}>{max}</span>
+                              </div>
+                              <div style={{ fontFamily: FM, fontSize: FS_LABEL, color: dead ? CHAR_BR : TEXT_MUTED }}>
+                                {dead ? '☠ KILLED' : 'WOUNDS'}
+                              </div>
+                            </div>
+                          )
+                        })()}
                       </div>
                     </div>
 
@@ -378,11 +397,16 @@ export function CombatTracker({ character, campaignId, talents = [] }: Props) {
                       <div>
                         {adv.weapons.map((w, i) => {
                           const ref = weaponRef[w.name.toLowerCase()]
-                          const dmg = (w.damage !== 0 && w.damage !== undefined)
-                            ? w.damage
-                            : ref?.damage_add
-                              ? `Br+${ref.damage_add}`
-                              : (ref?.damage ?? 0)
+                          // Resolve damage: brawn-based string → actual number, numeric → use directly, 0 → ref fallback
+                          let dmg: number | string = w.damage
+                          if (typeof dmg === 'string') {
+                            const m = dmg.match(/^Brawn([+-]\d+)$/i)
+                            if (m) dmg = adv.characteristics.brawn + parseInt(m[1])
+                          } else if (dmg === 0 || dmg === undefined) {
+                            if (ref?.damage_add) dmg = adv.characteristics.brawn + ref.damage_add
+                            else if (ref?.damage) dmg = ref.damage
+                            else dmg = '—'
+                          }
                           const rng = (w.range && w.range !== 'Engaged')
                             ? w.range
                             : (ref?.range_value ?? 'Engaged')
