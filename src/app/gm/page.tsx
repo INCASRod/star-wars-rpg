@@ -12,7 +12,6 @@ import { useRollFeed } from '@/hooks/useRollFeed'
 import { RollFeedPanel } from '@/components/player-hud/RollFeedPanel'
 import { rollPool } from '@/components/player-hud/dice-engine'
 import { logRoll } from '@/lib/logRoll'
-import { CombatPanel } from '@/components/dm/CombatPanel'
 import { HolocronLoader } from '@/components/ui/HolocronLoader'
 
 /* ═══════════════════════════════════════
@@ -289,7 +288,6 @@ function GmDashboard() {
     const valid: GmTab[] = ['xp', 'credits', 'duty', 'loot', 'combat', 'crit']
     return valid.includes(saved as GmTab) ? (saved as GmTab) : 'xp'
   })
-  const [showCombatPanel, setShowCombatPanel] = useState(false)
 
   // ── XP ──
   const [xpAmount, setXpAmount] = useState('')
@@ -871,7 +869,7 @@ function GmDashboard() {
     const result = rollPool(pool)
     logRoll({
       campaignId,
-      characterId: 'gm',
+      characterId: null,
       characterName: 'GM',
       label: gmRollLabel || undefined,
       pool,
@@ -1445,9 +1443,9 @@ function GmDashboard() {
                 {/* ── COMBAT TAB ── */}
                 {activeTab === 'combat' && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                    {/* Full Combat Panel button */}
+                    {/* Full Combat Panel button — opens in new tab */}
                     <button
-                      onClick={() => setShowCombatPanel(true)}
+                      onClick={() => campaignId && window.open(`/gm/combat?campaign=${campaignId}`, '_blank')}
                       disabled={!campaignId}
                       style={{
                         width: '100%', padding: '10px 0',
@@ -1459,7 +1457,7 @@ function GmDashboard() {
                         textTransform: 'uppercase', transition: '.15s',
                       }}
                     >
-                      ⚔ Open Full Combat Panel
+                      ⚔ Open Full Combat Panel ↗
                     </button>
                     {/* Session control summary */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
@@ -1836,36 +1834,6 @@ function GmDashboard() {
         </div>
       )}
 
-      {/* ── Full Combat Panel Overlay ── */}
-      {showCombatPanel && campaignId && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 150, display: 'flex', flexDirection: 'column' }}>
-          {/* Close bar */}
-          <div style={{
-            flexShrink: 0, height: 52, background: 'rgba(6,13,9,0.97)', borderBottom: '1px solid rgba(224,82,82,0.5)',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px',
-          }}>
-            <span style={{ fontFamily: FC, fontSize: FS_LABEL, letterSpacing: '0.2em', textTransform: 'uppercase', color: RED, fontWeight: 700 }}>
-              ⚔ Full Combat Panel
-            </span>
-            <button
-              onClick={() => setShowCombatPanel(false)}
-              style={{
-                background: 'rgba(224,82,82,0.15)', border: `2px solid rgba(224,82,82,0.7)`,
-                borderRadius: 4, padding: '7px 20px', cursor: 'pointer',
-                fontFamily: FC, fontSize: FS_SM, fontWeight: 700, letterSpacing: '0.12em',
-                color: RED, textTransform: 'uppercase', transition: '.15s',
-              }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(224,82,82,0.35)' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(224,82,82,0.15)' }}
-            >
-              ✕ CLOSE
-            </button>
-          </div>
-          <div style={{ flex: 1, overflow: 'hidden' }}>
-            <CombatPanel campaignId={campaignId} characters={characters} isDm={true} sendToChar={sendToChar} />
-          </div>
-        </div>
-      )}
 
     </div>
   )

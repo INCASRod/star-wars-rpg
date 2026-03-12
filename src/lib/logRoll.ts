@@ -4,7 +4,7 @@ import type { DiceType } from '@/components/player-hud/design-tokens'
 
 export interface RollLogEntry {
   campaignId:    string
-  characterId:   string
+  characterId:   string | null   // null for GM rolls (character_id is UUID, 'gm' is invalid)
   characterName: string
   label:         string | undefined
   pool:          Record<DiceType, number>
