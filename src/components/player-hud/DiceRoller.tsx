@@ -365,7 +365,6 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll }: DiceRolle
                   }}
                 >
                   <span style={{ fontSize: 12, color: isActive ? '#9060D0' : C.text }}>{preset.label}</span>
-                  <span style={{ fontSize: 10, color: isActive ? '#9060D080' : C.textFaint }}>{preset.count}P</span>
                 </button>
               )
             })}
