@@ -39,11 +39,9 @@ yarn-error.log*
 # OggDude dataset (large, cloned separately)
 /oggdude/
 
-# Parsed OggDude JSON (regenerated from XML)
-/oggdude/parsed/
-
 # typescript
 *.tsbuildinfo
 next-env.d.ts
 
-.vercel
+# Claude Code agent worktrees + session data (large build artifacts)
+.claude/

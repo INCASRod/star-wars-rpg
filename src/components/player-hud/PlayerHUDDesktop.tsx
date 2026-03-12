@@ -19,6 +19,8 @@ import { SkillsPanel, type HudSkill } from './SkillsPanel'
 import { TalentsPanel, type HudTalent } from './TalentsPanel'
 import { InventoryPanel, type WpnDisplay, type ArmDisplay, type GearRow } from './InventoryPanel'
 import { ForcePanel, type ForcePowerSummary } from './ForcePanel'
+import { ForceRollModal } from './ForceRollModal'
+import { rollForceDice, type ForceRollResult } from './dice-engine'
 import { DiceRoller, type QuickRollSkill, type QuickWeapon } from './DiceRoller'
 import { CombatTransition } from './CombatTransition'
 import { RollFeedPanel, RollFeedMini } from './RollFeedPanel'
@@ -449,6 +451,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
 
   // ── Session / roll feed ──
   const effectiveCampaignId = campaignId ?? character?.campaign_id ?? null
+  const effectiveCampaignIdRef = useRef(effectiveCampaignId)
+  useEffect(() => { effectiveCampaignIdRef.current = effectiveCampaignId }, [effectiveCampaignId])
   const { mode: dbMode, round: dbRound, transitionPending: dbTransitionPending, prevMode: dbPrevMode } = useSessionMode(effectiveCampaignId)
   // Broadcast override — GM pushes combat state directly for instant delivery
   const [broadcastSession, setBroadcastSession] = useState<{ mode: 'combat' | 'exploration'; round: number } | null>(null)
@@ -479,6 +483,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   const [gmDialog, setGmDialog]                 = useState<string | null>(null)
   const [lootReveal, setLootReveal]             = useState<Record<string, unknown> | null>(null)
   const [initRoll, setInitRoll]                 = useState<{ type: 'cool' | 'vigilance'; campaignId: string } | null>(null)
+  const [forceRollResult, setForceRollResult]   = useState<ForceRollResult | null>(null)
 
   // ── GM Broadcast listener ──
   useEffect(() => {
@@ -506,7 +511,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         } else if (payload.type === 'loot-dismiss') {
           setLootReveal(null)
         } else if (payload.type === 'initiative-request') {
-          const cid = campaignId ?? character?.campaign_id ?? null
+          const cid = effectiveCampaignIdRef.current
           if (cid) setInitRoll({ type: payload.initiativeType as 'cool' | 'vigilance', campaignId: cid })
         } else {
           setGmDialog(payload.message as string)
@@ -1179,6 +1184,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
                 forcePowers={allForcePowers.filter(fp => fp.purchasedCount > 0)}
                 onViewPower={pk => { setActivePowerKey(pk); setShowForceTree(true) }}
                 onAdd={() => { setActivePowerKey(allForcePowers[0]?.powerKey ?? null); setShowForceTree(true) }}
+                onRollForce={() => setForceRollResult(rollForceDice(forceRating))}
               />
             )}
             {activeTab === 'Lore' && (
@@ -1365,6 +1371,15 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
             <button onClick={() => setGmDialog(null)} style={{ background: 'var(--gold)', border: 'none', padding: '12px 40px', fontFamily: 'var(--font-orbitron)', fontSize: 'var(--text-label)', fontWeight: 700, letterSpacing: '0.15em', color: 'var(--white)', cursor: 'pointer' }}>DISMISS</button>
           </div>
         </div>
+      )}
+
+      {/* ── Force Roll Modal ──────────────────────────────── */}
+      {forceRollResult && (
+        <ForceRollModal
+          result={forceRollResult}
+          forceRating={forceRating}
+          onDismiss={() => setForceRollResult(null)}
+        />
       )}
 
       {/* ── Initiative Roll Modal ─────────────────────────── */}

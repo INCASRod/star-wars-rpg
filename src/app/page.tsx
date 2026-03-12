@@ -506,7 +506,7 @@ export default function Home() {
       return
     }
 
-    router.push(`/character/${characterId}`)
+    router.push(`/character/${characterId}${campaignId ? `?campaign=${campaignId}` : ''}`)
   }
 
   // ── deleteCharacter ────────────────────────────────────────────────────────

@@ -84,3 +84,33 @@ export function getSkillPool(charVal: number, rank: number): { proficiency: numb
 export function poolSize(pool: Record<DiceType, number>): number {
   return Object.values(pool).reduce((a, b) => a + b, 0)
 }
+
+// ── Force Dice ──────────────────────────────────────────────────
+// Official FFG Force Die (d12): L = light side ○, K = dark side ●
+// Blank: 1 face | 1-dark: 6 faces | 2-dark: 2 faces | 1-light: 2 faces | 2-light: 1 face
+const FORCE_FACES = ['', 'K', 'K', 'K', 'K', 'K', 'K', 'KK', 'KK', 'L', 'L', 'LL']
+
+export interface ForceDie {
+  light: number
+  dark:  number
+}
+
+export interface ForceRollResult {
+  dice:       ForceDie[]
+  totalLight: number
+  totalDark:  number
+}
+
+export function rollForceDice(count: number): ForceRollResult {
+  const dice: ForceDie[] = []
+  let totalLight = 0, totalDark = 0
+  for (let i = 0; i < count; i++) {
+    const face = FORCE_FACES[Math.floor(Math.random() * FORCE_FACES.length)]
+    const light = (face.match(/L/g) ?? []).length
+    const dark  = (face.match(/K/g) ?? []).length
+    dice.push({ light, dark })
+    totalLight += light
+    totalDark  += dark
+  }
+  return { dice, totalLight, totalDark }
+}

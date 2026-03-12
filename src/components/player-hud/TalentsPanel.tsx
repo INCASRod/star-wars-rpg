@@ -2,6 +2,7 @@
 
 import { C, FONT_CINZEL, FONT_RAJDHANI, panelBase } from './design-tokens'
 import { Tooltip, TipLabel, TipBody } from '@/components/ui/Tooltip'
+import { MarkupText } from '@/components/ui/MarkupText'
 
 export interface HudTalent {
   key: string
@@ -26,6 +27,44 @@ const ACTIVATION_COLORS: Record<string, string> = {
 
 const ACTIVATION_ORDER = ['Passive', 'Incidental', 'Incidental (OOT)', 'Maneuver', 'Action']
 
+// Parse description for dice effect hints
+// Detects OggDude bracket tags ([BO], [SE]) first; falls back to plain-text regex
+interface DiceHints { boosts: number; removeSetbacks: number; upgrades: number; addSetbacks: number }
+function parseDiceHints(desc = ''): DiceHints {
+  const boostTags    = (desc.match(/\[BO\]/g) ?? []).length
+  const setbackTags  = (desc.match(/\[SE\]/g) ?? []).length
+  const d = desc.toLowerCase()
+  const boostsText   = (d.match(/add\w* (?:a |one |two |an? )?boost|boost die|boost dice/g) ?? []).length
+  const setbackText  = (d.match(/(?:add|impose)\w* (?:a |one |two |an? )?setback/g) ?? []).length
+  const remSetbText  = (d.match(/remov\w* (?:a |one |two |an? )?setback|cancel\w* (?:a |one |two )?setback/g) ?? []).length
+  return {
+    boosts:         boostTags   > 0 ? boostTags   : boostsText,
+    removeSetbacks: remSetbText,
+    upgrades:       (d.match(/upgrad\w* (?:the |a |an? )?(?:abilit|skill|check|roll)/g) ?? []).length,
+    addSetbacks:    setbackTags > 0 ? setbackTags : setbackText,
+  }
+}
+
+function DiceHintChips({ hints }: { hints: DiceHints }) {
+  const chips: { label: string; color: string; title: string }[] = []
+  if (hints.boosts > 0)         chips.push({ label: `+${hints.boosts > 1 ? hints.boosts : ''}□`, color: '#70C8E8', title: 'Adds Boost die (blue)' })
+  if (hints.removeSetbacks > 0) chips.push({ label: `−${hints.removeSetbacks > 1 ? hints.removeSetbacks : ''}■`, color: '#4EC87A', title: 'Removes Setback die' })
+  if (hints.upgrades > 0)       chips.push({ label: '↑', color: '#FFD700', title: 'Upgrades ability die to proficiency' })
+  if (hints.addSetbacks > 0)    chips.push({ label: `+${hints.addSetbacks > 1 ? hints.addSetbacks : ''}■`, color: '#909090', title: 'Adds Setback die (black)' })
+  if (chips.length === 0) return null
+  return (
+    <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap', marginTop: 4 }}>
+      {chips.map((c, i) => (
+        <span key={i} title={c.title} style={{
+          fontFamily: FONT_RAJDHANI, fontSize: 10, fontWeight: 700,
+          color: c.color, background: `${c.color}18`, border: `1px solid ${c.color}50`,
+          borderRadius: 3, padding: '1px 5px', letterSpacing: '0.05em',
+        }}>{c.label}</span>
+      ))}
+    </div>
+  )
+}
+
 function CornerBrackets() {
   const s = { position: 'absolute' as const, width: 6, height: 6 }
   return (
@@ -40,11 +79,12 @@ function CornerBrackets() {
 
 function TalentCard({ talent }: { talent: HudTalent }) {
   const color = ACTIVATION_COLORS[talent.activation] ?? C.textDim
+  const hints = parseDiceHints(talent.description)
 
   const tooltipContent = talent.description ? (
     <>
       <TipLabel>{talent.name}</TipLabel>
-      <TipBody>{talent.description}</TipBody>
+      <TipBody><MarkupText text={talent.description} /></TipBody>
     </>
   ) : null
 
@@ -87,10 +127,12 @@ function TalentCard({ talent }: { talent: HudTalent }) {
         <div style={{
           fontFamily: FONT_RAJDHANI, fontSize: 11, color: C.textDim,
           lineHeight: 1.5, marginTop: 4,
+          maxHeight: '6em', overflow: 'hidden',
         }}>
-          {talent.description.length > 180 ? talent.description.slice(0, 180) + '…' : talent.description}
+          <MarkupText text={talent.description} />
         </div>
       )}
+      <DiceHintChips hints={hints} />
     </div>
   )
 

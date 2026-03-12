@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { FS_OVERLINE, FS_LABEL, FS_SM } from '@/components/player-hud/design-tokens'
+import { MarkupText } from '@/components/ui/MarkupText'
 
 /* ═══════════════════════════════════════════════════════ */
 /*  DESIGN TOKENS                                         */
@@ -109,12 +110,14 @@ function NodeCard({
   isGmMode,
   onClickAvailable,
   onClickRemove,
+  onClickLocked,
 }: {
   node: TalentTreeNode
   xpAvailable?: number
   isGmMode?: boolean
   onClickAvailable: (n: TalentTreeNode) => void
   onClickRemove: (n: TalentTreeNode) => void
+  onClickLocked: (n: TalentTreeNode) => void
 }) {
   const [hovered, setHovered] = useState(false)
 
@@ -225,7 +228,7 @@ function NodeCard({
               minHeight: 0,
             }}
           >
-            {node.description}
+            <MarkupText text={node.description} />
           </div>
         )}
 
@@ -359,16 +362,19 @@ function NodeCard({
               minHeight: 0,
             }}
           >
-            {node.description}
+            <MarkupText text={node.description} />
           </div>
         )}
       </div>
     )
   }
 
-  /* ── LOCKED ── */
+  /* ── LOCKED ── hoverable for preview, not purchasable */
   return (
     <div
+      onClick={() => onClickLocked(node)}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
         borderRadius: 4,
         padding: '8px 10px',
@@ -379,38 +385,57 @@ function NodeCard({
         flexDirection: 'column',
         gap: 4,
         overflow: 'hidden',
-        background: 'rgba(255,255,255,0.015)',
-        border: '1px dashed rgba(255,255,255,0.08)',
-        opacity: 0.5,
+        background: hovered ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.015)',
+        border: hovered ? '1px dashed rgba(200,170,80,0.22)' : '1px dashed rgba(255,255,255,0.08)',
+        opacity: hovered ? 0.82 : 0.42,
+        cursor: 'pointer',
+        transition: 'all 0.15s',
       }}
     >
-      {/* Name only */}
-      <div
-        style={{
-          fontFamily: FR,
-          fontSize: FS_LABEL,
-          color: FAINT,
-          lineHeight: 1.25,
-        }}
-      >
+      {/* Locked badge */}
+      <div style={{
+        position: 'absolute', top: 5, right: 5,
+        fontFamily: FR, fontSize: FS_OVERLINE, color: FAINT,
+        letterSpacing: '0.06em',
+      }}>
+        🔒 {ROW_COSTS[node.row]} XP
+      </div>
+
+      {/* Name */}
+      <div style={{
+        fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700,
+        color: hovered ? TEXT : FAINT,
+        lineHeight: 1.25, paddingRight: 52,
+        transition: 'color 0.15s',
+      }}>
         {node.name}
       </div>
 
-      {/* Activation dim */}
+      {/* Activation */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-        <ActivationDot activation={node.activation} dim />
-        <span
-          style={{
-            fontFamily: FR,
-            fontSize: FS_LABEL,
-            color: FAINT,
-            textTransform: 'uppercase',
-            letterSpacing: '0.04em',
-          }}
-        >
+        <ActivationDot activation={node.activation} dim={!hovered} />
+        <span style={{
+          fontFamily: FR, fontSize: FS_LABEL,
+          color: hovered ? (ACTIVATION_COLORS[node.activation] ?? DIM) : FAINT,
+          textTransform: 'uppercase', letterSpacing: '0.04em',
+          transition: 'color 0.15s',
+        }}>
           {node.activation}
         </span>
       </div>
+
+      {/* Description — always present, opacity transitions on hover */}
+      {node.description && (
+        <div style={{
+          fontFamily: FR, fontSize: FS_LABEL,
+          color: DIM, lineHeight: 1.5,
+          overflowY: 'auto', flex: 1, minHeight: 0,
+          opacity: hovered ? 0.9 : 0.5,
+          transition: 'opacity 0.15s',
+        }}>
+          <MarkupText text={node.description} />
+        </div>
+      )}
     </div>
   )
 }
@@ -517,7 +542,7 @@ function PurchasePopover({
               marginBottom: 10,
             }}
           >
-            {node.description}
+            <MarkupText text={node.description} />
           </div>
         )}
 
@@ -560,6 +585,104 @@ function PurchasePopover({
             Spend {cost} XP
           </button>
         </div>
+      </div>
+    </>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/*  LOCKED PREVIEW POPOVER                                */
+/* ═══════════════════════════════════════════════════════ */
+
+function LockedInfoPopover({
+  node,
+  onClose,
+}: {
+  node: TalentTreeNode
+  onClose: () => void
+}) {
+  const cost = ROW_COSTS[node.row]
+  const actColor = ACTIVATION_COLORS[node.activation] ?? DIM
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        onClick={onClose}
+        style={{ position: 'fixed', inset: 0, zIndex: 499, background: 'rgba(0,0,0,0.4)', cursor: 'pointer' }}
+      />
+      {/* Popover */}
+      <div style={{
+        position: 'fixed', top: '50%', left: '50%',
+        transform: 'translate(-50%,-50%)',
+        zIndex: 500,
+        background: 'rgba(8,16,10,0.98)',
+        border: '1px solid rgba(255,255,255,0.12)',
+        borderRadius: 6,
+        padding: '14px 16px',
+        minWidth: 280, maxWidth: 320,
+        boxShadow: '0 8px 32px rgba(0,0,0,0.7)',
+      }}>
+        {/* Locked banner */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          background: 'rgba(255,255,255,0.04)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: 4, padding: '5px 10px',
+          marginBottom: 10,
+        }}>
+          <span style={{ fontSize: 13 }}>🔒</span>
+          <span style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700, color: FAINT, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+            Locked — purchase adjacent talents first
+          </span>
+        </div>
+
+        {/* Name */}
+        <div style={{ fontFamily: FC, fontSize: FS_SM, color: TEXT, marginBottom: 4 }}>
+          {node.name}
+          {node.isRanked && (
+            <span style={{ fontFamily: FR, fontSize: FS_LABEL, color: DIM, marginLeft: 6 }}>· Ranked</span>
+          )}
+        </div>
+
+        {/* Activation + cost */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <ActivationDot activation={node.activation} />
+            <span style={{ fontFamily: FR, fontSize: FS_LABEL, color: actColor, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              {node.activation}
+            </span>
+          </div>
+          <span style={{ fontFamily: FR, fontSize: FS_LABEL, color: GOLD_DIM, marginLeft: 'auto' }}>{cost} XP when unlocked</span>
+        </div>
+
+        <div style={{ height: 1, background: 'rgba(200,170,80,0.15)', marginBottom: 10 }} />
+
+        {/* Description */}
+        {node.description ? (
+          <div style={{
+            fontFamily: FR, fontSize: FS_LABEL, color: DIM,
+            lineHeight: 1.5, maxHeight: 140, overflowY: 'auto', marginBottom: 12,
+          }}>
+            <MarkupText text={node.description} />
+          </div>
+        ) : (
+          <div style={{ fontFamily: FR, fontSize: FS_LABEL, color: FAINT, fontStyle: 'italic', marginBottom: 12 }}>
+            No description available.
+          </div>
+        )}
+
+        <button
+          onClick={onClose}
+          style={{
+            width: '100%', background: 'transparent',
+            border: `1px solid ${BORDER}`, borderRadius: 3,
+            fontFamily: FR, fontSize: FS_LABEL, color: DIM,
+            padding: '6px 16px', cursor: 'pointer',
+          }}
+        >
+          Close
+        </button>
       </div>
     </>
   )
@@ -661,7 +784,8 @@ export function TalentTree({
   isGmMode,
   xpAvailable,
 }: TalentTreeProps) {
-  const [pendingNode, setPendingNode] = useState<TalentTreeNode | null>(null)
+  const [pendingNode, setPendingNode]       = useState<TalentTreeNode | null>(null)
+  const [lockedPreview, setLockedPreview]   = useState<TalentTreeNode | null>(null)
 
   const nodeMap = new Map<string, TalentTreeNode>()
   for (const node of nodes) {
@@ -772,7 +896,7 @@ export function TalentTree({
               opacity: 0.5,
             }}
           />
-          <span style={{ fontFamily: FR, fontSize: FS_LABEL, color: DIM }}>Locked</span>
+          <span style={{ fontFamily: FR, fontSize: FS_LABEL, color: DIM }}>Locked (click to preview)</span>
         </div>
 
         {/* Type legend */}
@@ -835,6 +959,7 @@ export function TalentTree({
                     xpAvailable={xpAvailable}
                     isGmMode={isGmMode}
                     onClickAvailable={n => setPendingNode(n)}
+                    onClickLocked={n => setLockedPreview(n)}
                     onClickRemove={n => {
                       if (onRemoveTalent) {
                         onRemoveTalent(n.talentKey, ROW_COSTS[n.row])
@@ -860,16 +985,22 @@ export function TalentTree({
       </div>
 
       {/* ── PURCHASE POPOVER ── */}
-      {
-        pendingNode && (
-          <PurchasePopover
-            node={pendingNode}
-            xpAvailable={xpAvailable}
-            onConfirm={handleConfirm}
-            onCancel={() => setPendingNode(null)}
-          />
-        )
-      }
+      {pendingNode && (
+        <PurchasePopover
+          node={pendingNode}
+          xpAvailable={xpAvailable}
+          onConfirm={handleConfirm}
+          onCancel={() => setPendingNode(null)}
+        />
+      )}
+
+      {/* ── LOCKED PREVIEW POPOVER ── */}
+      {lockedPreview && (
+        <LockedInfoPopover
+          node={lockedPreview}
+          onClose={() => setLockedPreview(null)}
+        />
+      )}
     </div >
   )
 }

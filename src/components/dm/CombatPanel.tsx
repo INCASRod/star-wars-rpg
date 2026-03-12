@@ -10,6 +10,7 @@ import type { InitiativeSlot, LogEntry, CombatEncounter } from '@/lib/combat'
 import { InitiativeSetupModal } from './InitiativeSetupModal'
 import type { Character } from '@/lib/types'
 import { FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4, FS_H3 } from '@/components/player-hud/design-tokens'
+import { MarkupText } from '@/components/ui/MarkupText'
 
 // ── Design Tokens ──
 const BG = '#060D09'
@@ -72,6 +73,18 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
       textTransform: 'uppercase', color: `${GOLD}b3`, marginBottom: 10,
     }}>
       {children}
+    </div>
+  )
+}
+
+function StatBox({ label, value, color = GOLD }: { label: string; value: string | number; color?: string }) {
+  return (
+    <div style={{
+      background: `${color}15`, border: `1px solid ${color}40`,
+      borderRadius: 3, padding: '3px 8px', textAlign: 'center', minWidth: 32,
+    }}>
+      <div style={{ fontFamily: FM, fontSize: FS_SM, fontWeight: 700, color, lineHeight: 1 }}>{value}</div>
+      <div style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED, marginTop: 2 }}>{label}</div>
     </div>
   )
 }
@@ -430,8 +443,11 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                 <TypeBadge type={adv.type} />
               </div>
               {/* Stats row */}
-              <div style={{ fontFamily: FM, fontSize: FS_LABEL, color: TEXT_SEC, marginBottom: 6 }}>
-                Soak {adv.soak} · WT {adv.wound} · Def {Array.isArray(adv.defense) ? adv.defense.join('/') : '0/0'}
+              <div style={{ display: 'flex', gap: 4, marginBottom: 6, flexWrap: 'wrap' }}>
+                <StatBox label="SOAK" value={adv.soak} color={CHAR_WIL} />
+                <StatBox label="WT" value={adv.wound} color={CHAR_BR} />
+                <StatBox label="M.DEF" value={Array.isArray(adv.defense) ? (adv.defense[0] ?? 0) : 0} color={CHAR_CUN} />
+                <StatBox label="R.DEF" value={Array.isArray(adv.defense) ? (adv.defense[1] ?? 0) : 0} color={CHAR_INT} />
               </div>
               {/* Group size for minion */}
               {adv.type === 'minion' && (
@@ -685,14 +701,20 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                   </div>
 
                   {/* Row 2: stat line */}
-                  {!isNPC && (
-                    <div style={{ fontFamily: FM, fontSize: FS_LABEL, color: TEXTGR, marginTop: 2 }}>
-                      {encounter.initiative_type === 'vigilance' ? 'VIG' : 'COOL'} · {slot.successes}s {slot.advantages}a
+                  {!isNPC && pcChar && (
+                    <div style={{ display: 'flex', gap: 4, marginTop: 4, flexWrap: 'wrap' }}>
+                      <StatBox label="SOAK" value={pcChar.soak ?? 0} color={CHAR_WIL} />
+                      <StatBox label="WOUNDS" value={`${pcWounds}/${pcWT}`} color={CHAR_BR} />
+                      <StatBox label="M.DEF" value={pcChar.defense_melee ?? 0} color={CHAR_CUN} />
+                      <StatBox label="R.DEF" value={pcChar.defense_ranged ?? 0} color={CHAR_INT} />
                     </div>
                   )}
                   {isNPC && assignedAdv && (
-                    <div style={{ fontFamily: FM, fontSize: FS_LABEL, color: TEXTGR, marginTop: 2 }}>
-                      Soak {assignedAdv.soak} · WT {assignedAdv.woundThreshold} · Def {assignedAdv.defense.melee}/{assignedAdv.defense.ranged}
+                    <div style={{ display: 'flex', gap: 4, marginTop: 4, flexWrap: 'wrap' }}>
+                      <StatBox label="SOAK" value={assignedAdv.soak} color={CHAR_WIL} />
+                      <StatBox label="WT" value={assignedAdv.woundThreshold} color={CHAR_BR} />
+                      <StatBox label="M.DEF" value={assignedAdv.defense.melee} color={CHAR_CUN} />
+                      <StatBox label="R.DEF" value={assignedAdv.defense.ranged} color={CHAR_INT} />
                     </div>
                   )}
 
@@ -877,7 +899,7 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
 
       {/* ══════════ RIGHT: ADVERSARY DETAIL CARDS ══════════ */}
       <div style={{
-        width: 350, flexShrink: 0, borderLeft: `1px solid ${BORDER}`,
+        width: 490, flexShrink: 0, borderLeft: `1px solid ${BORDER}`,
         overflowY: 'auto', padding: '14px 12px', minHeight: 0,
         display: 'flex', flexDirection: 'column', gap: 10, position: 'relative', zIndex: 1,
       }}>
@@ -900,6 +922,45 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
 
           const TALENT_ACT_COLORS: Record<string, string> = {
             passive: TEXT_MUTED, incidental: GOLD, maneuver: CHAR_AG, action: CHAR_BR, 'out of turn': CHAR_WIL,
+          }
+
+          // Parse talent description for dice hint chips
+          const parseTalentDice = (desc = '') => {
+            const d = desc.toLowerCase()
+            const chips: { label: string; color: string; title: string }[] = []
+            if ((d.match(/add\w* (?:a |one |two |an? )?boost|boost die|boost dice/g) ?? []).length > 0)
+              chips.push({ label: '+□', color: '#70C8E8', title: 'Adds Boost die' })
+            if ((d.match(/remov\w* (?:a |one |two |an? )?setback|cancel\w* (?:a |)?setback/g) ?? []).length > 0)
+              chips.push({ label: '−■', color: '#4EC87A', title: 'Removes Setback die' })
+            if ((d.match(/upgrad\w* (?:the |a |an? )?(?:abilit|skill|check|roll)/g) ?? []).length > 0)
+              chips.push({ label: '↑', color: '#FFD700', title: 'Upgrades ability to proficiency' })
+            if ((d.match(/add\w* (?:a |one |two |an? )?setback|impose\w* (?:a |one |two |an? )?setback/g) ?? []).length > 0)
+              chips.push({ label: '+■', color: '#909090', title: 'Adds Setback die' })
+            return chips
+          }
+
+          // Skill → governing characteristic key
+          const SKILL_CHAR: Record<string, keyof typeof adv.characteristics> = {
+            'Athletics': 'brawn', 'Brawl': 'brawn', 'Lightsaber': 'brawn', 'Melee': 'brawn', 'Resilience': 'brawn',
+            'Coordination': 'agility', 'Gunnery': 'agility', 'Piloting: Planetary': 'agility', 'Piloting: Space': 'agility',
+            'Piloting (Planetary)': 'agility', 'Piloting (Space)': 'agility',
+            'Ranged: Heavy': 'agility', 'Ranged: Light': 'agility', 'Ranged (Heavy)': 'agility', 'Ranged (Light)': 'agility',
+            'Stealth': 'agility',
+            'Astrogation': 'intellect', 'Computers': 'intellect', 'Mechanics': 'intellect', 'Medicine': 'intellect',
+            'Knowledge: Core Worlds': 'intellect', 'Knowledge: Education': 'intellect', 'Knowledge: Lore': 'intellect',
+            'Knowledge: Outer Rim': 'intellect', 'Knowledge: Underworld': 'intellect',
+            'Knowledge: Warfare': 'intellect', 'Knowledge: Xenology': 'intellect',
+            'Deception': 'cunning', 'Perception': 'cunning', 'Skulduggery': 'cunning',
+            'Streetwise': 'cunning', 'Survival': 'cunning',
+            'Coercion': 'willpower', 'Discipline': 'willpower', 'Vigilance': 'willpower',
+            'Charm': 'presence', 'Cool': 'presence', 'Leadership': 'presence', 'Negotiation': 'presence',
+          }
+          const CHAR_ABBR_MAP: Record<string, string> = {
+            brawn: 'Br', agility: 'Ag', intellect: 'Int', cunning: 'Cun', willpower: 'Wil', presence: 'Pr',
+          }
+          const CHAR_COLOR_MAP: Record<string, string> = {
+            brawn: CHAR_BR, agility: CHAR_AG, intellect: CHAR_INT,
+            cunning: CHAR_CUN, willpower: CHAR_WIL, presence: CHAR_PR,
           }
 
           return (
@@ -978,6 +1039,51 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                     </div>
                   )}
 
+                  {/* Skills table */}
+                  {Object.keys(adv.skillRanks ?? {}).length > 0 && (
+                    <div style={{ marginBottom: 10 }}>
+                      <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, letterSpacing: '0.15em', textTransform: 'uppercase', color: `${GOLD}90`, marginBottom: 6 }}>Skills</div>
+                      {/* Header */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 32px 24px auto', gap: '2px 6px', marginBottom: 3 }}>
+                        {['Skill', 'Char', 'Rnk', 'Roll'].map(h => (
+                          <div key={h} style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{h}</div>
+                        ))}
+                      </div>
+                      {/* Rows */}
+                      {Object.entries(adv.skillRanks).map(([skill, rank]) => {
+                        const charKey = SKILL_CHAR[skill]
+                        const charVal = charKey ? adv.characteristics[charKey] : 0
+                        const prof = Math.min(charVal, rank)
+                        const abil = Math.max(charVal, rank) - prof
+                        const charColor = charKey ? CHAR_COLOR_MAP[charKey] : TEXT_MUTED
+                        return (
+                          <div key={skill} style={{
+                            display: 'grid', gridTemplateColumns: '1fr 32px 24px auto',
+                            gap: '2px 6px', alignItems: 'center',
+                            padding: '3px 0', borderBottom: `1px solid ${BORDER}`,
+                          }}>
+                            <span style={{ fontFamily: FM, fontSize: FS_LABEL, color: TEXT_SEC }}>{skill}</span>
+                            <span style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: charColor, textAlign: 'center' }}>
+                              {charKey ? CHAR_ABBR_MAP[charKey] : '—'}
+                            </span>
+                            <span style={{ fontFamily: FM, fontSize: FS_LABEL, fontWeight: 700, color: TEXTGR, textAlign: 'center' }}>{rank}</span>
+                            <div style={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+                              {Array.from({ length: prof }).map((_, i) => (
+                                <div key={`p${i}`} style={{ width: 11, height: 11, borderRadius: '50%', background: '#FFE066', border: '1px solid #C8AA50', flexShrink: 0 }} title="Proficiency" />
+                              ))}
+                              {Array.from({ length: abil }).map((_, i) => (
+                                <div key={`a${i}`} style={{ width: 11, height: 11, borderRadius: '50%', background: '#4EC87A', border: '1px solid #2fa85a', flexShrink: 0 }} title="Ability" />
+                              ))}
+                              {prof === 0 && abil === 0 && (
+                                <span style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED }}>—</span>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+
                   {/* Talents */}
                   {adv.talents && adv.talents.length > 0 && (
                     <div style={{ marginBottom: 8 }}>
@@ -986,14 +1092,23 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                         {adv.talents.map((t, i) => {
                           const actKey = (t.activation ?? 'passive').toLowerCase()
                           const color = TALENT_ACT_COLORS[actKey] ?? TEXT_MUTED
+                          const diceChips = parseTalentDice(t.description)
                           return (
-                            <span key={i} style={{
-                              fontFamily: FM, fontSize: FS_OVERLINE, color,
+                            <div key={i} style={{
                               background: `${color}15`, border: `1px solid ${color}40`,
-                              borderRadius: 3, padding: '2px 6px',
+                              borderRadius: 3, padding: '3px 7px',
+                              display: 'flex', alignItems: 'center', gap: 5,
                             }} title={t.description}>
-                              {t.name}
-                            </span>
+                              <span style={{ fontFamily: FM, fontSize: FS_OVERLINE, color }}>{t.name}</span>
+                              {diceChips.map((chip, ci) => (
+                                <span key={ci} title={chip.title} style={{
+                                  fontFamily: FM, fontSize: FS_OVERLINE, fontWeight: 700,
+                                  color: chip.color, background: `${chip.color}18`,
+                                  border: `1px solid ${chip.color}50`,
+                                  borderRadius: 2, padding: '0 3px',
+                                }}>{chip.label}</span>
+                              ))}
+                            </div>
                           )
                         })}
                       </div>
@@ -1007,7 +1122,7 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                       {adv.abilities && adv.abilities.length > 0 ? adv.abilities.map((ab, i) => (
                         <div key={i}>
                           <span style={{ fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 700, color: CHAR_INT }}>{ab.name}{ab.description ? ': ' : ''}</span>
-                          {ab.description && <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: TEXT_SEC }}>{ab.description}</span>}
+                          {ab.description && <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: TEXT_SEC }}><MarkupText text={ab.description} /></span>}
                         </div>
                       )) : (
                         <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: TEXT_MUTED, fontStyle: 'italic' }}>
@@ -1016,6 +1131,20 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                       )}
                     </div>
                   </div>
+
+                  {/* Gear */}
+                  {adv.gear && adv.gear.length > 0 && (
+                    <div style={{ marginBottom: 8 }}>
+                      <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, letterSpacing: '0.15em', textTransform: 'uppercase', color: `${GOLD}90`, marginBottom: 5 }}>Gear</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        {adv.gear.map((item, i) => (
+                          <div key={i} style={{ fontFamily: FM, fontSize: FS_LABEL, color: TEXT_SEC }}>
+                            · {item}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Weapons */}
                   {adv.weapons && adv.weapons.length > 0 && (

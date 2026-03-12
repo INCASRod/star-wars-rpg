@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { toast } from 'sonner'
 import { FONT_RAJDHANI, FS_OVERLINE, FS_LABEL, FS_SM } from '@/components/player-hud/design-tokens'
+import { MarkupText } from '@/components/ui/MarkupText'
 
 /* ═══════════════════════════════════════ */
 /*  THEME CONSTANTS                       */
@@ -96,7 +97,7 @@ function PurchasePopover({ node, xpAvailable, onConfirm, onCancel }: {
         <div style={{ height: 1, background: 'rgba(200,170,80,0.15)', marginBottom: 10 }} />
         {node.description && (
           <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: DIM, lineHeight: 1.5, maxHeight: 100, overflowY: 'auto', marginBottom: 10 }}>
-            {node.description}
+            <MarkupText text={node.description} />
           </div>
         )}
         <div style={{ height: 1, background: 'rgba(200,170,80,0.15)', marginBottom: 10 }} />
@@ -146,10 +147,8 @@ function ForceTooltip({ node, style }: { node: ForceTreeNode; style: React.CSSPr
         </span>
       </div>
       {node.description && (
-        <div style={{
-          color: DIM, lineHeight: '1.6',
-        }}>
-          {node.description}
+        <div style={{ color: DIM, lineHeight: '1.6' }}>
+          <MarkupText text={node.description} />
         </div>
       )}
       <div style={{

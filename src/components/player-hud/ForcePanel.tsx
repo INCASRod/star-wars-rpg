@@ -17,6 +17,7 @@ interface ForcePanelProps {
   forcePowers:      ForcePowerSummary[]
   onViewPower:      (powerKey: string) => void
   onAdd:            () => void
+  onRollForce:      () => void
 }
 
 function CornerBrackets() {
@@ -72,7 +73,7 @@ function MoralitySlider({ value, strength, weakness }: { value: number; strength
 }
 
 export function ForcePanel({
-  forceRating, moralityValue, moralityStrength, moralityWeakness, forcePowers, onViewPower, onAdd,
+  forceRating, moralityValue, moralityStrength, moralityWeakness, forcePowers, onViewPower, onAdd, onRollForce,
 }: ForcePanelProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -94,7 +95,7 @@ export function ForcePanel({
           {forceRating}
         </div>
         {/* Force pips */}
-        <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginTop: 8 }}>
+        <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginTop: 8, marginBottom: 12 }}>
           {Array.from({ length: Math.max(forceRating, 1) }).map((_, i) => (
             <div key={i} style={{
               width: 12, height: 12, borderRadius: '50%',
@@ -103,6 +104,35 @@ export function ForcePanel({
               boxShadow: i < forceRating ? '0 0 6px rgba(90,170,224,0.5)' : 'none',
             }} />
           ))}
+        </div>
+        {/* Roll Force Dice button */}
+        <button
+          onClick={onRollForce}
+          disabled={forceRating === 0}
+          style={{
+            width: '100%', padding: '8px 0',
+            background: forceRating > 0 ? 'rgba(90,170,224,0.12)' : 'transparent',
+            border: `1px solid ${forceRating > 0 ? 'rgba(90,170,224,0.5)' : C.border}`,
+            borderRadius: 4, cursor: forceRating > 0 ? 'pointer' : 'not-allowed',
+            fontFamily: FONT_CINZEL, fontSize: FS_LABEL, fontWeight: 700,
+            letterSpacing: '0.1em', color: forceRating > 0 ? '#5AAAE0' : C.textDim,
+            transition: '.15s',
+          }}
+          onMouseEnter={e => { if (forceRating > 0) (e.currentTarget as HTMLElement).style.background = 'rgba(90,170,224,0.22)' }}
+          onMouseLeave={e => { if (forceRating > 0) (e.currentTarget as HTMLElement).style.background = 'rgba(90,170,224,0.12)' }}
+        >
+          ◈ Roll {forceRating} Force {forceRating === 1 ? 'Die' : 'Dice'}
+        </button>
+        {/* Legend: light / dark */}
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#E8E8FF', boxShadow: '0 0 4px #E8E8FF' }} />
+            <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, color: 'rgba(232,232,255,0.7)' }}>Light ○</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#1a1a2e', border: '1px solid #6060A0' }} />
+            <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, color: 'rgba(96,96,160,0.9)' }}>Dark ●</span>
+          </div>
         </div>
       </div>
 

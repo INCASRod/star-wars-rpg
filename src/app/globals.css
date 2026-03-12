@@ -536,6 +536,38 @@ label, caption, .text-secondary {
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* ═══════════════════════════════════════════════════════════════ */
+/*  OGGDUDE MARKUP — Inline Dice / Symbol Chips                    */
+/*  Used in talent & force-power description text                  */
+/* ═══════════════════════════════════════════════════════════════ */
+.die {
+  display:        inline-block;
+  padding:        0px 5px;
+  border-radius:  3px;
+  font-size:      0.8em;
+  font-weight:    700;
+  line-height:    1.5;
+  letter-spacing: 0.05em;
+  vertical-align: middle;
+  white-space:    nowrap;
+  margin:         0 2px;
+  font-family:    var(--font-rajdhani), 'Rajdhani', sans-serif;
+}
+/* Dice-pool additions */
+.die.boost      { color: #70C8E8; background: rgba(112,200,232,.12); border: 1px solid rgba(112,200,232,.35); }
+.die.setback    { color: #A0A0A0; background: rgba(120,120,120,.12); border: 1px solid rgba(140,140,140,.35); }
+.die.difficulty { color: #B070D8; background: rgba(176,112,216,.12); border: 1px solid rgba(176,112,216,.35); }
+.die.challenge  { color: #E05050; background: rgba(224, 80, 80,.12); border: 1px solid rgba(224, 80, 80,.35); }
+.die.force      { color: #5AAAE0; background: rgba( 90,170,224,.12); border: 1px solid rgba( 90,170,224,.35); }
+/* Result symbols */
+.die.success    { color: #4EC87A; background: rgba( 78,200,122,.12); border: 1px solid rgba( 78,200,122,.35); }
+.die.advantage  { color: #4EC8C8; background: rgba( 78,200,200,.12); border: 1px solid rgba( 78,200,200,.35); }
+.die.threat     { color: #E07855; background: rgba(224,120, 85,.12); border: 1px solid rgba(224,120, 85,.35); }
+.die.triumph    { color: #FFD700; background: rgba(255,215,  0,.12); border: 1px solid rgba(255,215,  0,.35); }
+.die.despair    { color: #C04040; background: rgba(192, 64, 64,.12); border: 1px solid rgba(192, 64, 64,.35); }
+/* Force pip */
+.die.forcepip   { color: #E8E8FF; background: rgba( 90,170,224,.10); border: 1px solid rgba(232,232,255,.30); }
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

@@ -32,6 +32,7 @@ export interface Adversary {
   talents?: AdversaryTalent[]
   abilities?: { name: string; description: string }[]
   weapons?: AdversaryWeapon[]
+  gear?: string[]
   // raw fields from API differ — normalize on fetch
   [key: string]: unknown
 }
@@ -57,6 +58,7 @@ export interface AdversaryInstance {
   talents: AdversaryTalent[]
   abilities: { name: string; description: string }[]
   weapons: AdversaryWeapon[]
+  gear: string[]
   woundsCurrent?: number
   minionWounds?: number[]
 }
@@ -140,11 +142,14 @@ function normalize(raw: Record<string, unknown>): Adversary {
     defense,
     skills:     Array.isArray(raw.skills) ? raw.skills as string[] : Object.keys(skillRanks),
     skillRanks,
-    talents:   Array.isArray(raw.talents) ? raw.talents as AdversaryTalent[] : [],
+    talents: Array.isArray(raw.talents)
+      ? raw.talents.map(t => typeof t === 'string' ? { name: t, description: '', activation: 'passive' } : t as AdversaryTalent)
+      : [],
     abilities: Array.isArray(raw.abilities)
       ? raw.abilities.map(ab => typeof ab === 'string' ? { name: ab, description: '' } : ab as { name: string; description: string })
       : [],
     weapons,
+    gear: Array.isArray(raw.gear) ? raw.gear as string[] : [],
   }
 }
 
@@ -184,5 +189,6 @@ export function adversaryToInstance(adv: Adversary, groupSize = 4): AdversaryIns
     talents: adv.talents ?? [],
     abilities: adv.abilities ?? [],
     weapons: adv.weapons ?? [],
+    gear: adv.gear ?? [],
   }
 }
