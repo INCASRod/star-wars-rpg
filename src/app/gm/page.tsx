@@ -867,6 +867,15 @@ function GmDashboard() {
     flash('Player kicked')
   }, [activeSessions, campaignId, sendToChar, supabase, flash])
 
+  const releaseAllSessions = useCallback(async () => {
+    if (!campaignId) return
+    // Broadcast force-logout to every online character
+    characters.forEach(c => sendToChar(c.id, { type: 'force-logout' }))
+    await supabase.from('character_sessions').delete().eq('campaign_id', campaignId)
+    setActiveSessions({})
+    flash('All sessions released')
+  }, [campaignId, characters, sendToChar, supabase, flash])
+
   // ── Crit Roller ──
   const rollCrit = () => {
     const bonus = parseInt(critBonus, 10) || 0
@@ -1087,7 +1096,17 @@ function GmDashboard() {
 
           {/* ── PARTY OVERVIEW ── */}
           <div>
-            <SectionLabel>Party Overview</SectionLabel>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <div style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: DIM }}>Party Overview</div>
+              {Object.keys(activeSessions).length > 0 && (
+                <button
+                  onClick={releaseAllSessions}
+                  style={{ background: 'transparent', border: `1px solid rgba(224,80,80,0.4)`, borderRadius: 3, padding: '3px 10px', cursor: 'pointer', fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.08em', color: RED, textTransform: 'uppercase', whiteSpace: 'nowrap' }}
+                >
+                  ⏻ Release All Sessions
+                </button>
+              )}
+            </div>
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(5, 1fr)',
@@ -1196,15 +1215,6 @@ function GmDashboard() {
                       >S −1</button>
                     </div>
 
-                    {/* Force logout — only shown when player has an active session */}
-                    {activeSessions[c.id] && (
-                      <button
-                        onClick={() => forceLogout(c.id)}
-                        style={{ marginTop: 6, width: '100%', background: 'transparent', border: `1px solid rgba(224,80,80,0.35)`, borderRadius: 3, padding: '3px 0', cursor: 'pointer', fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.08em', color: RED, textTransform: 'uppercase' }}
-                      >
-                        ⏻ Kick
-                      </button>
-                    )}
 
                     {/* Obligation / Duty / Morality */}
                     {(c.obligation_type || c.duty_type || c.morality_value !== undefined) && (
