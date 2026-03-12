@@ -485,6 +485,92 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   const [initRoll, setInitRoll]                 = useState<{ type: 'cool' | 'vigilance'; campaignId: string } | null>(null)
   const [forceRollResult, setForceRollResult]   = useState<ForceRollResult | null>(null)
 
+  // ── Destiny Pool ──
+  const [destinyPool, setDestinyPool]           = useState<Array<'light' | 'dark'>>([])
+  const [pendingSpend, setPendingSpend]         = useState<number | null>(null)
+  const pendingTimer                            = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const destinyChannelRef                       = useRef<ReturnType<typeof supabase.channel> | null>(null)
+
+  // Load pool on mount
+  useEffect(() => {
+    if (!effectiveCampaignId) return
+    supabase.from('campaigns').select('settings').eq('id', effectiveCampaignId).single()
+      .then(({ data }) => {
+        const pool = (data?.settings as Record<string, unknown> | null)?.destiny_pool
+        if (Array.isArray(pool)) setDestinyPool(pool as Array<'light' | 'dark'>)
+      })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveCampaignId])
+
+  // postgres_changes — pool syncs when GM or another player updates it
+  useEffect(() => {
+    if (!effectiveCampaignId) return
+    const ch = supabase
+      .channel(`destiny-db-${effectiveCampaignId}`)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'campaigns', filter: `id=eq.${effectiveCampaignId}` },
+        (payload) => {
+          const pool = (payload.new.settings as Record<string, unknown> | null)?.destiny_pool
+          if (Array.isArray(pool)) setDestinyPool(pool as Array<'light' | 'dark'>)
+        })
+      .subscribe()
+    return () => { supabase.removeChannel(ch) }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveCampaignId])
+
+  // Campaign events — spend notifications from other players
+  useEffect(() => {
+    if (!effectiveCampaignId) return
+    const ch = supabase
+      .channel(`campaign-events-${effectiveCampaignId}`)
+      .on('broadcast', { event: 'destiny-spent' }, ({ payload }: { payload: Record<string, unknown> }) => {
+        if (payload.characterId === characterId) return // own spend, skip
+        const who   = payload.characterName as string
+        const side  = payload.tokenType === 'light' ? '○ Light' : '● Dark'
+        import('sonner').then(m => m.toast.info(`${who} spent a ${side} Side destiny point`))
+      })
+      .subscribe()
+    destinyChannelRef.current = ch
+    return () => { supabase.removeChannel(ch); destinyChannelRef.current = null }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveCampaignId, characterId])
+
+  const handleSpendDestiny = useCallback(async (idx: number) => {
+    const cid = effectiveCampaignIdRef.current
+    if (!cid || !character) return
+
+    // Two-tap confirm: first tap highlights, second tap within 2s confirms
+    if (pendingSpend !== idx) {
+      setPendingSpend(idx)
+      if (pendingTimer.current) clearTimeout(pendingTimer.current)
+      pendingTimer.current = setTimeout(() => setPendingSpend(null), 2000)
+      return
+    }
+    // Confirmed
+    if (pendingTimer.current) clearTimeout(pendingTimer.current)
+    setPendingSpend(null)
+
+    const token   = destinyPool[idx]
+    const newPool = destinyPool.map((t, i) =>
+      i === idx ? (t === 'light' ? 'dark' : 'light') : t
+    ) as Array<'light' | 'dark'>
+
+    setDestinyPool(newPool)
+
+    // Persist
+    const { data: camp } = await supabase.from('campaigns').select('settings').eq('id', cid).single()
+    const settings = ((camp?.settings as Record<string, unknown>) ?? {})
+    await supabase.from('campaigns').update({ settings: { ...settings, destiny_pool: newPool } }).eq('id', cid)
+
+    // Notify other players
+    destinyChannelRef.current?.send({
+      type: 'broadcast', event: 'destiny-spent',
+      payload: { characterId: character.id, characterName: character.name, tokenType: token },
+    })
+
+    const side = token === 'light' ? '○ Light' : '● Dark'
+    import('sonner').then(m => m.toast.success(`Spent a ${side} Side destiny point`))
+  }, [destinyPool, character, supabase, pendingSpend])
+
   // ── GM Broadcast listener ──
   useEffect(() => {
     const channel = supabase
@@ -877,6 +963,47 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
               {[careerName, specNames, speciesName].filter(Boolean).join(' · ')}
             </div>
           </div>
+          <div style={{ width: 1, height: 28, background: C.border }} />
+          {/* Destiny Pool */}
+          {destinyPool.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.textDim, whiteSpace: 'nowrap' }}>
+                Destiny
+              </span>
+              <div style={{ display: 'flex', gap: 4 }}>
+                {destinyPool.map((token, idx) => {
+                  const isPending = pendingSpend === idx
+                  const isLight   = token === 'light'
+                  return (
+                    <button
+                      key={idx}
+                      title={isPending ? 'Click again to confirm' : `Spend ${isLight ? 'Light' : 'Dark'} Side destiny`}
+                      onClick={() => handleSpendDestiny(idx)}
+                      style={{
+                        width: 20, height: 20, borderRadius: '50%',
+                        border: `2px solid ${isPending ? (isLight ? '#FFFFFF' : '#8060C0') : (isLight ? 'rgba(255,255,255,0.5)' : 'rgba(120,80,200,0.5)')}`,
+                        background: isLight
+                          ? (isPending ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.12)')
+                          : (isPending ? 'rgba(80,40,160,0.7)'   : 'rgba(40,20,80,0.5)'),
+                        cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        transition: '.15s',
+                        boxShadow: isPending
+                          ? (isLight ? '0 0 8px rgba(255,255,255,0.6)' : '0 0 8px rgba(120,80,200,0.7)')
+                          : 'none',
+                        padding: 0,
+                        flexShrink: 0,
+                      }}
+                    >
+                      <span style={{ fontSize: 9, color: isLight ? 'rgba(255,255,255,0.9)' : 'rgba(160,120,255,0.9)', lineHeight: 1 }}>
+                        {isLight ? '○' : '●'}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
           <div style={{ width: 1, height: 28, background: C.border }} />
           {/* Resources */}
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
