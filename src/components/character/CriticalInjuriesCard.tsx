@@ -36,7 +36,7 @@ export function CriticalInjuriesCard({ injuries, animClass = 'ar d5', onRollCrit
       ) : (
         injuries.map((inj) => (
           <div key={inj.id} style={{
-            padding: '0.35rem 0',
+            padding: '0.5rem 0',
             borderBottom: '1px solid var(--bdr-l)',
             opacity: inj.isHealed ? 0.4 : 1,
           }}>
@@ -75,7 +75,7 @@ export function CriticalInjuriesCard({ injuries, animClass = 'ar d5', onRollCrit
             {expanded === inj.id && inj.description && (
               <div style={{
                 fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)',
-                color: 'var(--txt2)', padding: '0.3rem 0 0.1rem 0.92rem',
+                color: 'var(--txt2)', padding: '0.25rem 0 0.25rem 1rem',
                 lineHeight: 1.4,
               }}>
                 {inj.description}
@@ -88,10 +88,10 @@ export function CriticalInjuriesCard({ injuries, animClass = 'ar d5', onRollCrit
         <button
           onClick={onRollCrit}
           style={{
-            width: '100%', marginTop: '0.4rem',
+            width: '100%', marginTop: '0.5rem',
             background: 'rgba(191,64,64,.08)',
             border: '1px solid var(--red)',
-            padding: '0.3rem',
+            padding: '0.25rem',
             cursor: 'pointer',
             fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)',
             fontWeight: 700, letterSpacing: '0.1rem',

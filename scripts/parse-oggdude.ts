@@ -25,6 +25,7 @@ const parser = new XMLParser({
       'Source', 'Option', 'OptionChoice', 'SkillTraining',
       'Mod', 'ItemChange',
       'Morality', 'Obligation', 'Duty', 'ItemDescriptor',
+      'AbilityRow', 'ForceAbility',
     ].includes(name)
   },
 })
@@ -104,8 +105,8 @@ function parseSpecializations() {
   return files.map(f => {
     const data = readXML(path.join(specDir, f)) as { Specialization: any }
     const s = data.Specialization
-    const talentRows = ensureArray(s.TalentRows?.TalentRow).map((row: any) => ({
-      index: parseInt(row.Index),
+    const talentRows = ensureArray(s.TalentRows?.TalentRow).map((row: any, rowIdx: number) => ({
+      index: row.Index !== undefined ? parseInt(row.Index) : rowIdx,
       cost: parseInt(row.Cost),
       talents: ensureArray(row.Talents?.Key),
       directions: ensureArray(row.Directions?.Direction).map((d: any) => ({
@@ -131,14 +132,25 @@ function parseSpecializations() {
 // ── Talents ──
 function parseTalents() {
   const data = readXML(path.join(DATA_DIR, 'Talents.xml')) as { Talents: { Talent: unknown[] } }
-  return ensureArray(data.Talents.Talent).map((t: any) => ({
-    key: t.Key,
-    name: t.Name,
-    description: t.Description || null,
-    activation: t.ActivationValue || 'taPassive',
-    is_force_talent: t.ForceTalent === 'true' || t.ForceTalent === true || false,
-    is_ranked: t.Ranked === 'true' || t.Ranked === true || false,
-  }))
+  return ensureArray(data.Talents.Talent).map((t: any) => {
+    const attrs = t.Attributes || {}
+    const modifiers: Record<string, number> = {}
+    if (attrs.WoundThreshold) modifiers.wound_threshold = parseInt(attrs.WoundThreshold)
+    if (attrs.StrainThreshold) modifiers.strain_threshold = parseInt(attrs.StrainThreshold)
+    if (attrs.SoakValue) modifiers.soak = parseInt(attrs.SoakValue)
+    if (attrs.DefenseRanged) modifiers.defense_ranged = parseInt(attrs.DefenseRanged)
+    if (attrs.DefenseMelee) modifiers.defense_melee = parseInt(attrs.DefenseMelee)
+    if (attrs.ForceRating) modifiers.force_rating = parseInt(attrs.ForceRating)
+    return {
+      key: t.Key,
+      name: t.Name,
+      description: t.Description || null,
+      activation: t.ActivationValue || 'taPassive',
+      is_force_talent: t.ForceTalent === 'true' || t.ForceTalent === true || false,
+      is_ranked: t.Ranked === 'true' || t.Ranked === true || false,
+      modifiers: Object.keys(modifiers).length > 0 ? modifiers : null,
+    }
+  })
 }
 
 // ── Weapons ──
@@ -149,8 +161,8 @@ function parseWeapons() {
     name: w.Name,
     description: w.Description || null,
     skill_key: w.SkillKey || null,
-    damage: parseInt(w.Damage) || 0,
-    damage_add: parseInt(w.DamageAdd) || 0,
+    damage: w.Damage != null ? parseInt(w.Damage) || 0 : 0,
+    damage_add: w.DamageAdd != null ? parseInt(w.DamageAdd) || 0 : null,
     crit: parseInt(w.Crit) || 0,
     range_value: w.RangeValue || null,
     encumbrance: parseInt(w.Encumbrance) || 0,
@@ -185,14 +197,25 @@ function parseArmor() {
 // ── Gear ──
 function parseGear() {
   const data = readXML(path.join(DATA_DIR, 'Gear.xml')) as { Gears: { Gear: unknown[] } }
-  return ensureArray(data.Gears.Gear).map((g: any) => ({
-    key: g.Key,
-    name: g.Name,
-    description: g.Description || null,
-    encumbrance: parseInt(g.Encumbrance) || 0,
-    price: parseInt(g.Price) || 0,
-    rarity: parseInt(g.Rarity) || 0,
-  }))
+  return ensureArray(data.Gears.Gear).map((g: any) => {
+    // Check BaseMods for ENCTADD (encumbrance threshold add, e.g. backpacks)
+    let encumbrance_bonus = 0
+    if (g.BaseMods?.Mod) {
+      const mods = ensureArray(g.BaseMods.Mod)
+      for (const m of mods) {
+        if (m.Key === 'ENCTADD') encumbrance_bonus += parseInt(m.Count) || 0
+      }
+    }
+    return {
+      key: g.Key,
+      name: g.Name,
+      description: g.Description || null,
+      encumbrance: parseInt(g.Encumbrance) || 0,
+      price: parseInt(g.Price) || 0,
+      rarity: parseInt(g.Rarity) || 0,
+      encumbrance_bonus: encumbrance_bonus || null,
+    }
+  })
 }
 
 // ── Moralities ──
@@ -236,6 +259,74 @@ function parseItemDescriptors() {
     description: d.Description || null,
     is_passive: d.IsPassive === 'true' || d.IsPassive === true || false,
   }))
+}
+
+// ── Force Powers ──
+function parseForcePowers() {
+  const fpDir = path.join(DATA_DIR, 'Force Powers')
+  if (!fs.existsSync(fpDir)) return []
+  const files = fs.readdirSync(fpDir).filter(f => f.endsWith('.xml'))
+  return files.map(f => {
+    const data = readXML(path.join(fpDir, f)) as { ForcePower: any }
+    const fp = data.ForcePower
+    const sources = ensureArray(fp.Sources?.Source ?? fp.Source).map((s: any) => ({
+      book: typeof s === 'string' ? s : s['#text'] || '',
+      page: typeof s === 'string' ? null : parseInt(s['@_Page']) || null,
+    }))
+
+    const abilityRows = ensureArray(fp.AbilityRows?.AbilityRow).map((row: any, rowIdx: number) => {
+      const abilities = ensureArray(row.Abilities?.Key)
+      const directions = ensureArray(row.Directions?.Direction).map((d: any) => ({
+        up: d.Up === 'true' || d.Up === true,
+        down: d.Down === 'true' || d.Down === true,
+        left: d.Left === 'true' || d.Left === true,
+        right: d.Right === 'true' || d.Right === true,
+      }))
+      const spans = ensureArray(row.AbilitySpan?.Span).map((s: any) => parseInt(s) || 0)
+      const costs = ensureArray(row.Costs?.Cost).map((c: any) => parseInt(c) || 0)
+      return {
+        index: rowIdx,
+        abilities,
+        directions,
+        spans,
+        costs,
+      }
+    })
+
+    return {
+      key: fp.Key,
+      name: fp.Name,
+      description: fp.Description || null,
+      min_force_rating: parseInt(fp.MinForceRating) || 1,
+      sources: sources.length ? sources : null,
+      ability_tree: { rows: abilityRows },
+    }
+  })
+}
+
+// ── Force Abilities ──
+function parseForceAbilities(forcePowers: { key: string; name: string }[]) {
+  const filePath = path.join(DATA_DIR, 'Force Abilities.xml')
+  if (!fs.existsSync(filePath)) return []
+  // Build name→key map from force powers
+  const nameToKey: Record<string, string> = {}
+  for (const fp of forcePowers) nameToKey[fp.name] = fp.key
+  const data = readXML(filePath) as { ForceAbilities: { ForceAbility: unknown[] } }
+  return ensureArray(data.ForceAbilities.ForceAbility).map((a: any) => {
+    const sources = ensureArray(a.Sources?.Source ?? a.Source).map((s: any) => ({
+      book: typeof s === 'string' ? s : s['#text'] || '',
+      page: typeof s === 'string' ? null : parseInt(s['@_Page']) || null,
+    }))
+    const rawPower = a.Power || null
+    const powerKey = rawPower ? (nameToKey[rawPower] || rawPower) : null
+    return {
+      key: a.Key,
+      name: a.Name,
+      description: a.Description || null,
+      power_key: powerKey,
+      sources: sources.length ? sources : null,
+    }
+  })
 }
 
 // ── Main ──
@@ -287,6 +378,12 @@ function main() {
   const itemDescriptors = parseItemDescriptors()
   console.log(`  Item Descriptors: ${itemDescriptors.length}`)
 
+  const forcePowers = parseForcePowers()
+  console.log(`  Force Powers: ${forcePowers.length}`)
+
+  const forceAbilities = parseForceAbilities(forcePowers)
+  console.log(`  Force Abilities: ${forceAbilities.length}`)
+
   // Write JSON files
   const outputs = {
     'ref_skills.json': skills,
@@ -301,6 +398,8 @@ function main() {
     'ref_obligations.json': obligations,
     'ref_duties.json': duties,
     'ref_item_descriptors.json': itemDescriptors,
+    'ref_force_powers.json': forcePowers,
+    'ref_force_abilities.json': forceAbilities,
   }
 
   for (const [filename, data] of Object.entries(outputs)) {

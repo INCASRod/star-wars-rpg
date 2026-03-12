@@ -37,6 +37,7 @@ export interface RefCareer {
   description?: string
   career_skill_keys: string[]
   specialization_keys: string[]
+  force_rating: number
 }
 
 export interface RefSpecialization {
@@ -66,6 +67,15 @@ export interface TalentTreeDirection {
   right?: boolean
 }
 
+export interface TalentModifiers {
+  wound_threshold?: number
+  strain_threshold?: number
+  soak?: number
+  defense_ranged?: number
+  defense_melee?: number
+  force_rating?: number
+}
+
 export interface RefTalent {
   key: string
   name: string
@@ -73,6 +83,7 @@ export interface RefTalent {
   activation: string // 'taPassive', 'taAction', 'taManeuver', 'taIncidental'
   is_force_talent: boolean
   is_ranked: boolean
+  modifiers?: TalentModifiers | null
 }
 
 export interface RefWeapon {
@@ -117,6 +128,7 @@ export interface RefGear {
   encumbrance: number
   price: number
   rarity: number
+  encumbrance_bonus?: number | null
 }
 
 export interface RefMorality {
@@ -153,6 +165,45 @@ export interface RefCriticalInjury {
   severity: string
   name: string
   description?: string
+}
+
+export interface RefForcePower {
+  key: string
+  name: string
+  description?: string
+  min_force_rating: number
+  sources?: unknown
+  ability_tree: ForceAbilityTree
+}
+
+export interface ForceAbilityTree {
+  rows: ForceAbilityRow[]
+}
+
+export interface ForceAbilityRow {
+  index: number
+  abilities: string[]
+  directions: TalentTreeDirection[]
+  spans: number[]
+  costs: number[]
+}
+
+export interface RefForceAbility {
+  key: string
+  name: string
+  description?: string
+  power_key: string
+  sources?: unknown
+}
+
+export interface CharacterForceAbility {
+  id: string
+  character_id: string
+  force_power_key: string
+  force_ability_key: string
+  tree_row: number
+  tree_col: number
+  xp_cost: number
 }
 
 // ── Campaign & Character Types ──
@@ -243,12 +294,15 @@ export interface CharacterTalent {
   xp_cost?: number
 }
 
+export type EquipState = 'equipped' | 'carrying' | 'stowed'
+
 export interface CharacterWeapon {
   id: string
   character_id: string
   weapon_key: string
   custom_name?: string
-  is_equipped: boolean
+  is_equipped: boolean      // legacy — use equip_state
+  equip_state: EquipState
   attachments: unknown[]
   notes?: string
 }
@@ -258,7 +312,8 @@ export interface CharacterArmor {
   character_id: string
   armor_key: string
   custom_name?: string
-  is_equipped: boolean
+  is_equipped: boolean      // legacy — use equip_state
+  equip_state: EquipState
   attachments: unknown[]
   notes?: string
 }
@@ -269,7 +324,8 @@ export interface CharacterGear {
   gear_key: string
   custom_name?: string
   quantity: number
-  is_equipped: boolean
+  is_equipped: boolean      // legacy — use equip_state
+  equip_state: EquipState
   notes?: string
 }
 
@@ -282,15 +338,6 @@ export interface CharacterCriticalInjury {
   description?: string
   is_healed: boolean
   received_at: string
-}
-
-export interface XPTransaction {
-  id: string
-  character_id: string
-  amount: number
-  reason?: string
-  created_by?: string
-  created_at: string
 }
 
 // ── Composite Types (for HUD rendering) ──
@@ -322,13 +369,3 @@ export const ACTIVATION_LABELS: Record<string, string> = {
   taIncidentalOOT: 'Incidental (OOT)',
 }
 
-export interface FullCharacterData {
-  character: Character
-  specializations: CharacterSpecialization[]
-  skills: CharacterSkill[]
-  talents: CharacterTalent[]
-  weapons: CharacterWeapon[]
-  armor: CharacterArmor[]
-  gear: CharacterGear[]
-  criticalInjuries: CharacterCriticalInjury[]
-}

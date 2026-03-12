@@ -1,7 +1,9 @@
 'use client'
 
 import { HudCard } from '../ui/HudCard'
+import { Badge } from '../ui/Badge'
 import { EquipmentImage } from '../ui/EquipmentImage'
+import { removeBtnStyle } from '@/lib/styles'
 
 export interface EquipmentItem {
   id: string
@@ -9,6 +11,7 @@ export interface EquipmentItem {
   subtitle: string
   equipped: boolean
   encumbrance: number
+  encumbranceBonus?: number
   type: 'armor' | 'gear'
   itemKey?: string
 }
@@ -19,35 +22,20 @@ interface EquipmentCardProps {
   encumbranceThreshold: number
   animClass?: string
   onToggleEquipped?: (item: EquipmentItem) => void
+  isGmMode?: boolean
+  onRemoveEquipment?: (id: string, type: 'armor' | 'gear') => void
 }
 
-function Badge({ color, bg, children }: { color: string; bg: string; children: React.ReactNode }) {
-  return (
-    <span style={{
-      fontFamily: 'var(--font-mono)',
-      fontSize: 'var(--font-2xs)',
-      fontWeight: 600,
-      letterSpacing: '0.06rem',
-      textTransform: 'uppercase',
-      color,
-      background: bg,
-      border: `1px solid ${color}`,
-      padding: '0.08rem 0.3rem',
-      whiteSpace: 'nowrap',
-    }}>
-      {children}
-    </span>
-  )
-}
-
-function EquipmentRow({ item, isLast, onToggle }: { item: EquipmentItem; isLast: boolean; onToggle?: (item: EquipmentItem) => void }) {
-  // Parse subtitle into badge-able parts
+function EquipmentRow({ item, isLast, onToggle, isGmMode, onRemove }: {
+  item: EquipmentItem; isLast: boolean; onToggle?: (item: EquipmentItem) => void
+  isGmMode?: boolean; onRemove?: (id: string, type: 'armor' | 'gear') => void
+}) {
   const parts = item.subtitle.split(/\s*\/\s*/).filter(Boolean)
 
   return (
     <div style={{
-      display: 'flex', alignItems: 'center', gap: '0.55rem',
-      padding: '0.35rem 0',
+      display: 'flex', alignItems: 'center', gap: '0.5rem',
+      padding: '0.5rem 0',
       borderBottom: isLast ? 'none' : '1px solid var(--bdr-l)',
     }}>
       <button
@@ -85,7 +73,7 @@ function EquipmentRow({ item, isLast, onToggle }: { item: EquipmentItem; isLast:
       </button>
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--txt)' }}>{item.name}</div>
-        <div style={{ marginTop: '0.15rem', display: 'flex', flexWrap: 'wrap', gap: '0.2rem' }}>
+        <div style={{ marginTop: '0.25rem', display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
           {item.equipped && (
             <Badge color="var(--green)" bg="rgba(45,143,78,.1)">EQUIPPED</Badge>
           )}
@@ -95,6 +83,9 @@ function EquipmentRow({ item, isLast, onToggle }: { item: EquipmentItem; isLast:
           {item.type === 'gear' && parts.map((p, i) => (
             <Badge key={i} color="var(--amber)" bg="rgba(196,127,23,.1)">{p.trim()}</Badge>
           ))}
+          {item.encumbranceBonus && item.encumbranceBonus > 0 && (
+            <Badge color="var(--green)" bg="rgba(45,143,78,.08)">+{item.encumbranceBonus} ENC</Badge>
+          )}
         </div>
       </div>
       <span style={{
@@ -103,11 +94,20 @@ function EquipmentRow({ item, isLast, onToggle }: { item: EquipmentItem; isLast:
       }}>
         {item.encumbrance}
       </span>
+      {isGmMode && onRemove && (
+        <button
+          style={removeBtnStyle}
+          title={`Remove ${item.name}`}
+          onClick={() => {
+            if (window.confirm(`Remove ${item.name}?`)) onRemove(item.id, item.type)
+          }}
+        >✕</button>
+      )}
     </div>
   )
 }
 
-export function EquipmentCard({ items, encumbranceCurrent, encumbranceThreshold, animClass = 'al d4', onToggleEquipped }: EquipmentCardProps) {
+export function EquipmentCard({ items, encumbranceCurrent, encumbranceThreshold, animClass = 'al d4', onToggleEquipped, isGmMode, onRemoveEquipment }: EquipmentCardProps) {
   const overEncumbered = encumbranceCurrent > encumbranceThreshold
   const armorItems = items.filter(i => i.type === 'armor')
   const gearItems = items.filter(i => i.type === 'gear')
@@ -130,12 +130,12 @@ export function EquipmentCard({ items, encumbranceCurrent, encumbranceThreshold,
           <div style={{
             fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)', fontWeight: 700,
             letterSpacing: '0.12rem', color: 'var(--txt3)',
-            padding: '0.25rem 0 0.15rem', marginTop: items.indexOf(armorItems[0]) > 0 ? '0.2rem' : 0,
+            padding: '0.25rem 0 0.25rem', marginTop: items.indexOf(armorItems[0]) > 0 ? '0.25rem' : 0,
           }}>
             ARMOR
           </div>
           {armorItems.map((item, i) => (
-            <EquipmentRow key={item.id} item={item} isLast={i === armorItems.length - 1 && gearItems.length === 0} onToggle={onToggleEquipped} />
+            <EquipmentRow key={item.id} item={item} isLast={i === armorItems.length - 1 && gearItems.length === 0} onToggle={onToggleEquipped} isGmMode={isGmMode} onRemove={onRemoveEquipment} />
           ))}
         </>
       )}
@@ -146,13 +146,13 @@ export function EquipmentCard({ items, encumbranceCurrent, encumbranceThreshold,
           <div style={{
             fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)', fontWeight: 700,
             letterSpacing: '0.12rem', color: 'var(--txt3)',
-            padding: '0.25rem 0 0.15rem', marginTop: armorItems.length > 0 ? '0.3rem' : 0,
+            padding: '0.25rem 0 0.25rem', marginTop: armorItems.length > 0 ? '0.25rem' : 0,
             borderTop: armorItems.length > 0 ? '1px solid var(--bdr-l)' : 'none',
           }}>
             GEAR
           </div>
           {gearItems.map((item, i) => (
-            <EquipmentRow key={item.id} item={item} isLast={i === gearItems.length - 1} onToggle={onToggleEquipped} />
+            <EquipmentRow key={item.id} item={item} isLast={i === gearItems.length - 1} onToggle={onToggleEquipped} isGmMode={isGmMode} onRemove={onRemoveEquipment} />
           ))}
         </>
       )}
@@ -160,7 +160,7 @@ export function EquipmentCard({ items, encumbranceCurrent, encumbranceThreshold,
       {/* Encumbrance row */}
       <div style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        marginTop: '0.4rem', paddingTop: '0.4rem', borderTop: '1px solid var(--bdr-l)',
+        marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--bdr-l)',
       }}>
         <span style={{
           fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)', fontWeight: 600,

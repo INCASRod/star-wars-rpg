@@ -1,11 +1,14 @@
 'use client'
 
 import { HudCard } from '../ui/HudCard'
+import { removeBtnStyle as baseRemoveBtnStyle } from '@/lib/styles'
 
 export interface TalentDisplay {
   name: string
   rank: number
   activation: string // 'Passive', 'Maneuver', etc.
+  id?: string
+  xpCost?: number
 }
 
 const ACTIVATION_COLORS: Record<string, string> = {
@@ -16,23 +19,27 @@ const ACTIVATION_COLORS: Record<string, string> = {
   'Incidental (OOT)': 'var(--green)',
 }
 
+const removeBtnStyle: React.CSSProperties = { ...baseRemoveBtnStyle, marginLeft: 4 }
+
 interface TalentsCardProps {
   talents: TalentDisplay[]
   animClass?: string
   onOpenTree?: () => void
   collapsible?: boolean
   defaultCollapsed?: boolean
+  isGmMode?: boolean
+  onRemoveTalent?: (id: string, xpCost: number) => void
 }
 
-export function TalentsCard({ talents, animClass = 'ar d4', onOpenTree, collapsible, defaultCollapsed }: TalentsCardProps) {
+export function TalentsCard({ talents, animClass = 'ar d4', onOpenTree, collapsible, defaultCollapsed, isGmMode, onRemoveTalent }: TalentsCardProps) {
   return (
     <HudCard title="Talents" animClass={animClass} collapsible={collapsible} defaultCollapsed={defaultCollapsed}>
       <div style={{ display: 'flex', flexWrap: 'wrap' }}>
         {talents.map((tal, i) => (
           <div key={i} style={{
-            display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
+            display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
             background: 'var(--parch)', border: '1px solid var(--bdr-l)',
-            padding: '0.35rem 0.7rem', margin: '0 0.25rem 0.25rem 0',
+            padding: '0.5rem 0.75rem', margin: '0 0.25rem 0.25rem 0',
             fontSize: 'var(--font-sm)', transition: '.2s', cursor: 'default',
           }}>
             <div style={{
@@ -52,6 +59,17 @@ export function TalentsCard({ talents, animClass = 'ar d4', onOpenTree, collapsi
                 {tal.activation}
               </div>
             </div>
+            {isGmMode && onRemoveTalent && tal.id && (
+              <button
+                style={removeBtnStyle}
+                title={`Remove talent (refund ${tal.xpCost || 0} XP)`}
+                onClick={() => {
+                  if (window.confirm(`Remove ${tal.name}? (Refund ${tal.xpCost || 0} XP)`)) {
+                    onRemoveTalent(tal.id!, tal.xpCost || 0)
+                  }
+                }}
+              >✕</button>
+            )}
           </div>
         ))}
       </div>
@@ -59,10 +77,10 @@ export function TalentsCard({ talents, animClass = 'ar d4', onOpenTree, collapsi
         <button
           onClick={onOpenTree}
           style={{
-            width: '100%', marginTop: '0.4rem',
+            width: '100%', marginTop: '0.5rem',
             background: 'rgba(200,162,78,.08)',
             border: '1px solid var(--gold)',
-            padding: '0.3rem',
+            padding: '0.5rem',
             cursor: 'pointer',
             fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)',
             fontWeight: 700, letterSpacing: '0.1rem',

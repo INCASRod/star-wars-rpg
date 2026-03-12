@@ -1,26 +1,9 @@
 'use client'
 
 import { HudCard } from '../ui/HudCard'
+import { Badge } from '../ui/Badge'
 import { EquipmentImage } from '../ui/EquipmentImage'
-
-function Badge({ color, bg, children }: { color: string; bg: string; children: React.ReactNode }) {
-  return (
-    <span style={{
-      fontFamily: 'var(--font-mono)',
-      fontSize: 'var(--font-2xs)',
-      fontWeight: 600,
-      letterSpacing: '0.06rem',
-      textTransform: 'uppercase',
-      color,
-      background: bg,
-      border: `1px solid ${color}`,
-      padding: '0.08rem 0.3rem',
-      whiteSpace: 'nowrap',
-    }}>
-      {children}
-    </span>
-  )
-}
+import { removeBtnStyle } from '@/lib/styles'
 
 export interface WeaponDisplay {
   id?: string
@@ -42,15 +25,17 @@ interface WeaponsCardProps {
   weapons: WeaponDisplay[]
   animClass?: string
   onToggleEquipped?: (id: string) => void
+  isGmMode?: boolean
+  onRemoveWeapon?: (id: string) => void
 }
 
-export function WeaponsCard({ weapons, animClass = 'al d5', onToggleEquipped }: WeaponsCardProps) {
+export function WeaponsCard({ weapons, animClass = 'al d5', onToggleEquipped, isGmMode, onRemoveWeapon }: WeaponsCardProps) {
   return (
     <HudCard title="Weapons" animClass={animClass}>
       {weapons.map((wpn, i) => (
         <div key={wpn.id || i} style={{
           display: 'flex', alignItems: 'center', gap: 'var(--sp-sm)',
-          padding: '0.55rem 0',
+          padding: '0.5rem 0',
           borderBottom: i < weapons.length - 1 ? '1px solid var(--bdr-l)' : 'none',
         }}>
           {/* Equip toggle */}
@@ -98,7 +83,7 @@ export function WeaponsCard({ weapons, animClass = 'al d5', onToggleEquipped }: 
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--txt)' }}>{wpn.name}</div>
             <div style={{
-              marginTop: '0.2rem', display: 'flex', flexWrap: 'wrap', gap: '0.2rem',
+              marginTop: '0.25rem', display: 'flex', flexWrap: 'wrap', gap: '0.25rem',
             }}>
               {wpn.equipped && (
                 <Badge color="var(--green)" bg="rgba(45,143,78,.1)">EQUIPPED</Badge>
@@ -114,7 +99,7 @@ export function WeaponsCard({ weapons, animClass = 'al d5', onToggleEquipped }: 
               ))}
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '0.7rem' }}>
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-lg)', fontWeight: 800, color: 'var(--red)' }}>{wpn.damage}</div>
               <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.06rem', color: 'var(--txt3)' }}>DAM</div>
@@ -123,6 +108,15 @@ export function WeaponsCard({ weapons, animClass = 'al d5', onToggleEquipped }: 
               <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-lg)', fontWeight: 800, color: 'var(--amber)' }}>{wpn.crit}</div>
               <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.06rem', color: 'var(--txt3)' }}>CRIT</div>
             </div>
+            {isGmMode && onRemoveWeapon && wpn.id && (
+              <button
+                style={removeBtnStyle}
+                title="Remove weapon"
+                onClick={() => {
+                  if (window.confirm(`Remove ${wpn.name}?`)) onRemoveWeapon(wpn.id!)
+                }}
+              >✕</button>
+            )}
           </div>
         </div>
       ))}

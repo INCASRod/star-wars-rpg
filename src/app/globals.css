@@ -4,66 +4,191 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ═══════════════════════════════════════ */
-/*  VIEWPORT-SCALED ROOT                  */
-/*  Base: 1080p = 1rem≈17px               */
-/*  Scales proportionally to 4K           */
-/* ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════ */
+/*  ROOT SCALING — 16px@1280 → 20px@1920 → 24px@2560 → 32px@4K  */
+/*  rem values in clamp() here are relative to browser default    */
+/*  (16px), not self-referential. Non-circular.                   */
+/* ═══════════════════════════════════════════════════════════════ */
 html {
-  font-size: clamp(14px, 0.9vw, 28px);
+  font-size: clamp(14px, 1vw + 0.5rem, 18px);
+  -webkit-text-size-adjust: 100%;
 }
 
+/* ═══════════════════════════════════════════════════════════════ */
+/*  DESIGN TOKENS                                                  */
+/* ═══════════════════════════════════════════════════════════════ */
 :root {
-  --sand: #F2EDE4;
-  --sand-warm: #E8E0D2;
-  --parch: #FAF7F2;
-  --white: #fff;
+  /* ── Breakpoints reference ──────────────────────────────────── */
+  /*  xs: 320–479px   sm: 480–767px   md: 768–1023px              */
+  /*  lg: 1024–1279px xl: 1280–1535px 2xl: 1536px+                */
 
-  --gold: #C8A24E;
-  --gold-l: #DCBE6E;
-  --gold-d: #8E6E2A;
+  /* ── Project Colors ─────────────────────────────────────────── */
+  --sand:      #F2EDE4;
+  --sand-warm: #E8E0D2;
+  --parch:     #FAF7F2;
+  --white:     #fff;
+
+  --gold:      #C8A24E;
+  --gold-l:    #DCBE6E;
+  --gold-d:    #8E6E2A;
   --gold-glow: rgba(200,162,78,.22);
   --gold-glow-s: rgba(200,162,78,.45);
 
-  --blue: #2B5DAE;
-  --blue-l: #5B8FE0;
+  --blue:      #2B5DAE;
+  --blue-l:    #5B8FE0;
   --blue-pale: #DCE8F8;
 
-  --red: #B83A2A;
-  --red-l: #E05842;
-  --red-pale: #F8DAD4;
+  --red:       #B83A2A;
+  --red-l:     #E05842;
+  --red-pale:  #F8DAD4;
 
-  --amber: #C47F17;
+  --amber:     #C47F17;
   --amber-pale: #F5E6C8;
 
-  --green: #2D8F4E;
+  --green:     #2D8F4E;
   --green-pale: #D0F0DB;
 
-  --ink: #1A1A1C;
-  --txt: #2C2C2E;
+  --ink:  #1A1A1C;
+  --txt:  #2C2C2E;
   --txt2: #6B6B6B;
   --txt3: #A0A0A0;
 
-  --bdr: #D8D0C4;
+  --bdr:   #D8D0C4;
   --bdr-l: #E8E2D8;
 
-  /* Font scale */
-  --font-2xs:  0.38rem;
-  --font-xs:   0.45rem;
-  --font-sm:   0.55rem;
-  --font-base: 0.78rem;
-  --font-md:   0.85rem;
-  --font-lg:   1.1rem;
-  --font-xl:   1.3rem;
-  --font-2xl:  2rem;
-  --font-hero: clamp(16px, 1.6rem, 42px);
+  /* ── Fluid Type Scale (design-rules.md) ─────────────────────── */
+  --text-display:  clamp(2.25rem, 5vw + 1rem, 5rem);            /* 36→80px */
+  --text-hero:     clamp(1.375rem, 2vw + 0.5rem, 2rem);         /* dashboard feature values */
+  --text-h1:       clamp(1.75rem, 3.5vw + 0.75rem, 3.5rem);     /* 28→56px */
+  --text-h2:       clamp(1.375rem, 2.5vw + 0.5rem, 2.5rem);     /* 22→40px */
+  --text-h3:       clamp(1.125rem, 1.5vw + 0.5rem, 1.75rem);    /* 18→28px */
+  --text-h4:       clamp(1rem, 1vw + 0.5rem, 1.375rem);         /* 16→22px */
+  --text-body:     clamp(0.9375rem, 0.5vw + 0.75rem, 1.125rem); /* 15→18px */
+  --text-body-lg:  clamp(1rem, 0.75vw + 0.75rem, 1.25rem);      /* 16→20px */
+  --text-body-sm:  clamp(0.75rem, 0.25vw + 0.6rem, 0.875rem);   /* 12→14px */
+  --text-label:    clamp(0.6875rem, 0.3vw + 0.55rem, 0.8125rem);/* 11→13px */
+  --text-caption:  clamp(0.625rem, 0.2vw + 0.5rem, 0.75rem);    /* 10→12px */
+  --text-overline: clamp(0.5625rem, 0.15vw + 0.45rem, 0.6875rem);/* 9→11px */
 
-  /* Scaled spacing tokens */
-  --sp-xs: 0.25rem;
-  --sp-sm: 0.5rem;
-  --sp-md: 0.85rem;
-  --sp-lg: 1.15rem;
-  --sp-xl: 1.7rem;
+  /* design-rules.md short aliases */
+  --text-sm: var(--text-body-sm);
+  --text-xs: var(--text-caption);
+
+  /* ── Typography Roles (design-rules.md) ─────────────────────── */
+  /*  display  : lh 1.05  ls -0.04em                              */
+  /*  h1       : lh 1.1   ls -0.03em                              */
+  /*  h2       : lh 1.2   ls -0.02em                              */
+  /*  h3       : lh 1.3   ls -0.01em                              */
+  /*  h4       : lh 1.4   ls  0em                                 */
+  /*  body     : lh 1.6   ls  0em                                 */
+  /*  body-lg  : lh 1.65  ls  0.005em                             */
+  /*  sm/label : lh 1.5   ls  0.01em                              */
+  /*  label    : lh 1.2   ls  0.1em                               */
+
+  /* ── Line Heights ───────────────────────────────────────────── */
+  --leading-none:    1;
+  --leading-tight:   1.15;
+  --leading-snug:    1.35;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.65;
+  --leading-loose:   1.8;
+
+  /* ── Letter Spacing ─────────────────────────────────────────── */
+  --tracking-tighter: -0.05em;
+  --tracking-tight:   -0.025em;
+  --tracking-snug:    -0.015em;
+  --tracking-normal:   0em;
+  --tracking-wide:     0.05em;
+  --tracking-wider:    0.1em;
+  --tracking-widest:   0.2em;
+
+  /* ── Measure (line length) ──────────────────────────────────── */
+  --measure-narrow: 45ch;
+  --measure-body:   68ch;
+  --measure-wide:   80ch;
+  --measure-prose:  72ch;
+
+  /* ── Fluid Spacing Scale (design-rules.md) ──────────────────── */
+  --space-1:  clamp(0.25rem,  0.5vw,  0.5rem);    /*  4→8px   */
+  --space-2:  clamp(0.5rem,   1vw,    1rem);       /*  8→16px  */
+  --space-3:  clamp(0.75rem,  1.5vw,  1.5rem);     /* 12→24px  */
+  --space-4:  clamp(1rem,     2vw,    2rem);        /* 16→32px  */
+  --space-5:  1.25rem;                              /* fixed    */
+  --space-6:  clamp(1.5rem,   3vw,    3rem);        /* 24→48px  */
+  --space-8:  clamp(2rem,     4vw,    4rem);        /* 32→64px  */
+  --space-10: 2.5rem;                               /* fixed    */
+  --space-12: clamp(3rem,     6vw,    6rem);        /* 48→96px  */
+  --space-16: clamp(4rem,     8vw,    10rem);       /* 64→160px */
+  --space-20: 5rem;                                 /* fixed    */
+  --space-24: clamp(6rem,     10vw,   14rem);       /* 96→224px */
+  --space-32: 8rem;                                 /* fixed    */
+  --space-48: 12rem;                                /* fixed    */
+  --space-64: 16rem;                                /* fixed    */
+
+  /* ── Font Weights ───────────────────────────────────────────── */
+  --weight-regular: 400;
+  --weight-medium:  500;
+  --weight-bold:    600;
+
+  /* ── Shadows ────────────────────────────────────────────────── */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.10);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+
+  /* ── Transitions ────────────────────────────────────────────── */
+  --ease-default: 200ms ease;
+  --ease-spring:  300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ── Container Widths ───────────────────────────────────────── */
+  --container-sm:   40rem;
+  --container-md:   56rem;
+  --container-lg:   75rem;
+  --container-xl:   90rem;
+  --container-full: 100%;
+
+  /* ── Legacy Font Aliases (backwards compat) ─────────────────── */
+  --font-2xs:  var(--text-overline);
+  --font-xs:   var(--text-caption);
+  --font-sm:   var(--text-label);
+  --font-base: var(--text-body-sm);
+  --font-md:   var(--text-body);
+  --font-lg:   var(--text-h4);
+  --font-xl:   var(--text-h3);
+  --font-2xl:  var(--text-h1);
+  --font-hero: var(--text-hero);
+
+  /* ── Legacy Spacing Aliases ─────────────────────────────────── */
+  --sp-xs: var(--space-1);
+  --sp-sm: var(--space-2);
+  --sp-md: var(--space-4);
+  --sp-lg: var(--space-5);
+  --sp-xl: var(--space-6);
+
+  /* ── Cinzel → Rajdhani redirect ───────────────────────────────  */
+  /*    var(--font-cinzel) resolves to Rajdhani everywhere          */
+  --font-cinzel: var(--font-rajdhani), 'Rajdhani', sans-serif;
+
+  /* ── HUD Dark Terminal Theme ──────────────────────────────────  */
+  /*    Used by PlayerHUD, CombatPanel, CombatTracker, wireframe    */
+  --hud-bg:         #060D09;
+  --hud-panel:      rgba(8,16,10,0.82);
+  --hud-border:     rgba(200,170,80,0.14);
+  --hud-border-hi:  rgba(200,170,80,0.32);
+  --hud-text:       #C8D8C0;
+  --hud-text-dim:   #6A8070;
+  --hud-text-faint: #2A3A2E;
+  --hud-gold:       #C8AA50;
+
+  /* ── HUD Font Size Aliases (map to fluid type scale) ──────────  */
+  /*    Use these instead of hardcoded px in HUD inline styles       */
+  --hud-sz-overline: var(--text-overline);  /*  9→11px: tiny labels   */
+  --hud-sz-caption:  var(--text-caption);   /* 10→12px: captions       */
+  --hud-sz-label:    var(--text-label);     /* 11→13px: labels         */
+  --hud-sz-sm:       var(--text-body-sm);   /* 12→14px: small body     */
+  --hud-sz-h4:       var(--text-h4);        /* 16→22px: section heads  */
+  --hud-sz-h3:       var(--text-h3);        /* 18→28px: panel titles   */
+
+  /* ── shadcn/Radix required tokens ──────────────────────────── */
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -99,88 +224,181 @@ html {
 }
 
 @theme inline {
-  --color-sand: var(--sand);
-  --color-sand-warm: var(--sand-warm);
-  --color-parch: var(--parch);
-  --color-gold: var(--gold);
-  --color-gold-l: var(--gold-l);
-  --color-gold-d: var(--gold-d);
-  --color-gold-glow: var(--gold-glow);
+  --color-sand:       var(--sand);
+  --color-sand-warm:  var(--sand-warm);
+  --color-parch:      var(--parch);
+  --color-gold:       var(--gold);
+  --color-gold-l:     var(--gold-l);
+  --color-gold-d:     var(--gold-d);
+  --color-gold-glow:  var(--gold-glow);
   --color-gold-glow-s: var(--gold-glow-s);
-  --color-blue: var(--blue);
-  --color-blue-l: var(--blue-l);
-  --color-blue-pale: var(--blue-pale);
-  --color-red: var(--red);
-  --color-red-l: var(--red-l);
-  --color-red-pale: var(--red-pale);
-  --color-amber: var(--amber);
+  --color-blue:       var(--blue);
+  --color-blue-l:     var(--blue-l);
+  --color-blue-pale:  var(--blue-pale);
+  --color-red:        var(--red);
+  --color-red-l:      var(--red-l);
+  --color-red-pale:   var(--red-pale);
+  --color-amber:      var(--amber);
   --color-amber-pale: var(--amber-pale);
-  --color-green: var(--green);
+  --color-green:      var(--green);
   --color-green-pale: var(--green-pale);
-  --color-ink: var(--ink);
-  --color-txt: var(--txt);
-  --color-txt2: var(--txt2);
-  --color-txt3: var(--txt3);
-  --color-bdr: var(--bdr);
-  --color-bdr-l: var(--bdr-l);
+  --color-ink:        var(--ink);
+  --color-txt:        var(--txt);
+  --color-txt2:       var(--txt2);
+  --color-txt3:       var(--txt3);
+  --color-bdr:        var(--bdr);
+  --color-bdr-l:      var(--bdr-l);
 
+  /* Font vars — Rajdhani for all roles (no Cinzel) */
   --font-orbitron: var(--font-rajdhani), 'Rajdhani', sans-serif;
-  --font-chakra: var(--font-rajdhani), 'Rajdhani', sans-serif;
-  --font-mono: var(--font-rajdhani), 'Rajdhani', sans-serif;
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
+  --font-chakra:   var(--font-rajdhani), 'Rajdhani', sans-serif;
+  --font-mono:     var(--font-rajdhani), 'Rajdhani', sans-serif;
+
+  --color-sidebar-ring:                var(--sidebar-ring);
+  --color-sidebar-border:              var(--sidebar-border);
+  --color-sidebar-accent-foreground:   var(--sidebar-accent-foreground);
+  --color-sidebar-accent:              var(--sidebar-accent);
+  --color-sidebar-primary-foreground:  var(--sidebar-primary-foreground);
+  --color-sidebar-primary:             var(--sidebar-primary);
+  --color-sidebar-foreground:          var(--sidebar-foreground);
+  --color-sidebar:                     var(--sidebar);
+  --color-chart-5:          var(--chart-5);
+  --color-chart-4:          var(--chart-4);
+  --color-chart-3:          var(--chart-3);
+  --color-chart-2:          var(--chart-2);
+  --color-chart-1:          var(--chart-1);
+  --color-ring:             var(--ring);
+  --color-input:            var(--input);
+  --color-border:           var(--border);
+  --color-destructive:      var(--destructive);
   --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
+  --color-accent:           var(--accent);
   --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
+  --color-muted:            var(--muted);
   --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
+  --color-secondary:        var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
+  --color-primary:          var(--primary);
   --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --color-foreground: var(--foreground);
-  --color-background: var(--background);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
+  --color-popover:          var(--popover);
+  --color-card-foreground:  var(--card-foreground);
+  --color-card:             var(--card);
+  --color-foreground:       var(--foreground);
+  --color-background:       var(--background);
+  --radius-sm:   calc(var(--radius) - 4px);
+  --radius-md:   calc(var(--radius) - 2px);
+  --radius-lg:   var(--radius);
+  --radius-xl:   calc(var(--radius) + 4px);
+  --radius-2xl:  calc(var(--radius) + 8px);
+  --radius-3xl:  calc(var(--radius) + 12px);
+  --radius-4xl:  calc(var(--radius) + 16px);
+  --radius-full: 9999px;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/*  GLOBAL RESET                                                   */
+/* ═══════════════════════════════════════════════════════════════ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 html, body {
-  height: 100%;
-  overflow: hidden;
+  min-height: 100%;
 }
 
 body {
   font-family: var(--font-rajdhani), 'Rajdhani', sans-serif;
+  font-size:   var(--text-body);
+  line-height: var(--leading-normal);
+  -webkit-font-smoothing: antialiased;
+  overflow-y: auto;
+  overflow-x: hidden;
   background: var(--sand);
   color: var(--txt);
 }
 
-/* ═══════════════════════════════════════ */
-/*  ANIMATIONS                            */
-/* ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════ */
+/*  TYPOGRAPHY APPLICATION (design-rules.md)                      */
+/* ═══════════════════════════════════════════════════════════════ */
+h1 {
+  font-size:      var(--text-h1);
+  line-height:    1.1;
+  letter-spacing: -0.03em;
+  font-weight:    var(--weight-bold);
+}
+h2 {
+  font-size:      var(--text-h2);
+  line-height:    1.2;
+  letter-spacing: -0.02em;
+  font-weight:    var(--weight-bold);
+}
+h3 {
+  font-size:      var(--text-h3);
+  line-height:    1.3;
+  letter-spacing: -0.01em;
+  font-weight:    var(--weight-bold);
+}
+h4 {
+  font-size:   var(--text-h4);
+  line-height: 1.4;
+  font-weight: var(--weight-medium);
+}
+
+p {
+  font-size:   var(--text-body);
+  line-height: var(--leading-relaxed);
+  max-width:   72ch;
+}
+
+label, caption, .text-secondary {
+  font-size:   var(--text-label);
+  line-height: var(--leading-snug);
+}
+
+.eyebrow {
+  font-size:      var(--text-label);
+  line-height:    var(--leading-tight);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  font-weight:    600;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/*  LAYOUT UTILITIES (design-rules.md)                            */
+/* ═══════════════════════════════════════════════════════════════ */
+.container {
+  width: min(100% - 2rem, 1280px);
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+}
+
+.container-wide {
+  width: min(100% - 2rem, 1536px);
+  margin-inline: auto;
+}
+
+.container-prose {
+  width: min(100% - 2rem, 720px);
+  margin-inline: auto;
+}
+
+.grid-auto {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  gap: var(--space-4);
+}
+
+.grid-12 {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--space-4);
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/*  ANIMATIONS                                                     */
+/* ═══════════════════════════════════════════════════════════════ */
 @keyframes slideL {
   from { opacity: 0; transform: translateX(-1.4rem); }
   to   { opacity: 1; transform: translateX(0); }
@@ -195,11 +413,31 @@ body {
 }
 @keyframes heroIn {
   from { opacity: 0; transform: scale(.96); filter: brightness(1.3) contrast(1); }
-  to   { opacity: 1; transform: scale(1); filter: brightness(1.02) contrast(1.04); }
+  to   { opacity: 1; transform: scale(1);   filter: brightness(1.02) contrast(1.04); }
 }
 @keyframes glowPulse {
   0%, 100% { opacity: .5; }
-  50%      { opacity: .9; }
+  50%       { opacity: .9; }
+}
+@keyframes hudTabIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes tooltipIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes combatWipe {
+  0%   { clip-path: inset(0 0 100% 0); opacity: 1; }
+  40%  { clip-path: inset(0 0 0 0);    opacity: 1; }
+  70%  { clip-path: inset(0 0 0 0);    opacity: 1; }
+  100% { clip-path: inset(100% 0 0 0); opacity: 0; }
+}
+@keyframes combatFlash {
+  0%   { opacity: 0; }
+  30%  { opacity: 1; }
+  70%  { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 .al { animation: slideL .5s ease forwards; }
@@ -214,52 +452,56 @@ body {
 .d6 { animation-delay: .6s; opacity: 0; }
 .d7 { animation-delay: .7s; opacity: 0; }
 
-/* ═══════════════════════════════════════ */
-/*  HUD CARD                              */
-/* ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════ */
+/*  HUD CARD                                                       */
+/* ═══════════════════════════════════════════════════════════════ */
 .hud-card {
-  background: rgba(255,255,255,.72);
+  background:     rgba(255,255,255,.72);
   backdrop-filter: blur(8px);
-  border: 1px solid var(--bdr-l);
-  padding: var(--sp-md);
-  position: relative;
-  transition: .25s;
-  box-shadow: 0 1px 4px rgba(0,0,0,.04);
+  border:         1px solid var(--bdr-l);
+  padding:        var(--space-4);
+  position:       relative;
+  transition:     .25s;
+  box-shadow:     0 1px 4px rgba(0,0,0,.04);
 }
 .hud-card:hover {
   border-color: var(--gold-l);
-  box-shadow: 0 2px 16px var(--gold-glow);
+  box-shadow:   0 2px 16px var(--gold-glow);
 }
 .hud-card::before {
-  content: '';
+  content:  '';
   position: absolute;
   top: 0; left: 0;
-  width: 0.2rem; height: 100%;
+  width:   0.2rem;
+  height:  100%;
   background: var(--gold);
-  opacity: 0;
+  opacity:    0;
   transition: .25s;
 }
 .hud-card:hover::before { opacity: 1; }
 
 .card-hdr {
-  font-family: var(--font-orbitron);
-  font-size: var(--font-xs);
-  font-weight: 700;
-  letter-spacing: 0.2rem;
-  color: var(--txt3);
+  font-family:    var(--font-orbitron);
+  font-size:      var(--text-caption);
+  font-weight:    700;
+  letter-spacing: var(--tracking-widest);
+  color:          var(--txt3);
   text-transform: uppercase;
-  margin-bottom: var(--sp-sm);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  margin-bottom:  var(--space-2);
+  display:        flex;
+  align-items:    center;
+  gap:            var(--space-2);
 }
 .card-hdr::after {
-  content: '';
-  flex: 1;
-  height: 1px;
+  content:    '';
+  flex:       1;
+  height:     1px;
   background: var(--bdr-l);
 }
 
+/* ═══════════════════════════════════════════════════════════════ */
+/*  DARK THEME (shadcn)                                            */
+/* ═══════════════════════════════════════════════════════════════ */
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);

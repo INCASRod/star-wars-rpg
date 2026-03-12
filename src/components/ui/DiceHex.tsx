@@ -5,7 +5,7 @@ interface DiceHexProps {
 }
 
 export function DiceHex({ type }: DiceHexProps) {
-  const color = type === 'proficiency' ? '#d64d8a' : 'var(--green)'
+  const color = type === 'proficiency' ? '#C8A22C' : 'var(--green)'
   return (
     <div
       style={{
@@ -26,7 +26,7 @@ interface DicePoolDisplayProps {
 
 export function DicePoolDisplay({ proficiency, ability }: DicePoolDisplayProps) {
   return (
-    <div className="dice" style={{ display: 'flex', gap: '0.1rem', minWidth: '3.5rem', justifyContent: 'flex-end' }}>
+    <div className="dice" style={{ display: 'flex', gap: '0.25rem', minWidth: '3.5rem', justifyContent: 'flex-end' }}>
       {Array.from({ length: proficiency }).map((_, i) => (
         <DiceHex key={`y-${i}`} type="proficiency" />
       ))}

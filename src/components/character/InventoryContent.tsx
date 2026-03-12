@@ -2,25 +2,14 @@
 
 import { useState } from 'react'
 import { HudCard } from '../ui/HudCard'
+import { Badge } from '../ui/Badge'
 import { EquipmentImage } from '../ui/EquipmentImage'
+import { rarityColor } from '@/lib/styles'
+import { RANGE_LABELS } from '@/lib/types'
 import type {
   CharacterWeapon, CharacterArmor, CharacterGear,
   RefWeapon, RefArmor, RefGear, RefSkill, RefItemDescriptor,
 } from '@/lib/types'
-
-const RANGE_LABELS: Record<string, string> = {
-  wrEngaged: 'Engaged', wrShort: 'Short', wrMedium: 'Medium', wrLong: 'Long', wrExtreme: 'Extreme',
-}
-
-function rarityColor(rarity: number): string {
-  if (rarity <= 1) return '#9d9d9d'   // grey — common
-  if (rarity <= 2) return '#1eff00'   // green — uncommon
-  if (rarity <= 3) return '#0070dd'   // blue — rare
-  if (rarity <= 4) return '#a335ee'   // purple — epic
-  if (rarity <= 5) return '#ff8000'   // orange — legendary
-  if (rarity <= 7) return '#e6cc80'   // gold — artifact
-  return '#e6cc80'                     // gold — artifact+
-}
 
 const numStyle: React.CSSProperties = {
   justifyContent: 'center', fontFamily: 'var(--font-orbitron)', fontWeight: 800, fontSize: 'var(--font-md)',
@@ -37,18 +26,6 @@ interface InventoryContentProps {
   refDescriptorMap: Record<string, RefItemDescriptor>
   encumbranceThreshold: number
   onToggleEquipped: (id: string, type: 'weapon' | 'armor' | 'gear') => void
-}
-
-function Badge({ color, bg, children }: { color: string; bg: string; children: React.ReactNode }) {
-  return (
-    <span style={{
-      fontFamily: 'var(--font-mono)', fontSize: 'var(--font-2xs)', fontWeight: 600,
-      letterSpacing: '0.06rem', textTransform: 'uppercase', color, background: bg,
-      border: `1px solid ${color}`, padding: '0.08rem 0.3rem', whiteSpace: 'nowrap',
-    }}>
-      {children}
-    </span>
-  )
 }
 
 function EquippedBadge() {
@@ -150,7 +127,7 @@ export function InventoryContent({
           <div style={{
             fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)', fontWeight: 700,
             color: 'var(--red)', letterSpacing: '0.12rem',
-            border: '1px solid var(--red)', padding: '0.2rem 0.5rem',
+            border: '1px solid var(--red)', padding: '0.25rem 0.5rem',
             background: 'rgba(229,62,62,.06)',
           }}>
             OVER-ENCUMBERED
@@ -164,7 +141,7 @@ export function InventoryContent({
           <div style={{ textAlign: 'center', padding: '1rem 0', fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', color: 'var(--txt3)', letterSpacing: '0.15rem' }}>NO WEAPONS</div>
         ) : (
           <>
-            <div style={{ display: 'grid', gridTemplateColumns: '48px 1fr 80px 50px 50px 70px 40px 40px 1fr', gap: '0.3rem', padding: '0.3rem 0', borderBottom: '1px solid var(--bdr-l)', alignItems: 'center' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '48px 1fr 80px 50px 50px 70px 40px 40px 1fr', gap: '0.25rem', padding: '0.25rem 0', borderBottom: '1px solid var(--bdr-l)', alignItems: 'center' }}>
               <div /><div style={headerStyle}>NAME</div><div style={headerStyle}>SKILL</div>
               <div style={{ ...headerStyle, textAlign: 'center' }}>DAM</div><div style={{ ...headerStyle, textAlign: 'center' }}>CRIT</div>
               <div style={headerStyle}>RANGE</div><div style={{ ...headerStyle, textAlign: 'center' }}>ENC</div>
@@ -179,7 +156,7 @@ export function InventoryContent({
               return (
                 <div key={w.id} onClick={() => onToggleEquipped(w.id, 'weapon')} style={{
                   display: 'grid', gridTemplateColumns: '48px 1fr 80px 50px 50px 70px 40px 40px 1fr',
-                  gap: '0.3rem', padding: '0.4rem 0', borderBottom: '1px solid var(--bdr-l)',
+                  gap: '0.25rem', padding: '0.5rem 0', borderBottom: '1px solid var(--bdr-l)',
                   alignItems: 'center', cursor: 'pointer', transition: 'background .15s',
                 }}
                   onMouseEnter={e => (e.currentTarget.style.background = 'rgba(200,162,78,.04)')}
@@ -188,7 +165,7 @@ export function InventoryContent({
                   <div style={{ display: 'flex', justifyContent: 'center' }}>
                     <EquipmentImage itemKey={w.weapon_key || ''} itemType="weapon" categories={ref?.categories} size="md" />
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
                     <span style={nameStyle}>{name}</span>{w.is_equipped && <EquippedBadge />}
                   </div>
                   <div style={cellStyle}>{skill}</div>
@@ -197,7 +174,7 @@ export function InventoryContent({
                   <div style={cellStyle}>{range}</div>
                   <div style={{ ...cellStyle, ...numStyle, color: 'var(--txt3)' }}>{ref?.encumbrance ?? '—'}</div>
                   <div style={{ ...cellStyle, ...numStyle, color: 'var(--red)' }}>{ref?.hard_points ?? '—'}</div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.2rem', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', alignItems: 'center' }}>
                     {quals.map((q, qi) => (
                       <Badge key={qi} color="#9B6DD7" bg="rgba(155,109,215,.1)">{q}</Badge>
                     ))}
@@ -215,7 +192,7 @@ export function InventoryContent({
           <div style={{ textAlign: 'center', padding: '1rem 0', fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', color: 'var(--txt3)', letterSpacing: '0.15rem' }}>NO ARMOR</div>
         ) : (
           <>
-            <div style={{ display: 'grid', gridTemplateColumns: '48px 1fr 50px 50px 40px 40px 50px', gap: '0.3rem', padding: '0.3rem 0', borderBottom: '1px solid var(--bdr-l)', alignItems: 'center' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '48px 1fr 50px 50px 40px 40px 50px', gap: '0.25rem', padding: '0.25rem 0', borderBottom: '1px solid var(--bdr-l)', alignItems: 'center' }}>
               <div /><div style={headerStyle}>NAME</div>
               <div style={{ ...headerStyle, textAlign: 'center' }}>SOAK</div><div style={{ ...headerStyle, textAlign: 'center' }}>DEF</div>
               <div style={{ ...headerStyle, textAlign: 'center' }}>ENC</div><div style={{ ...headerStyle, textAlign: 'center' }}>HP</div>
@@ -229,7 +206,7 @@ export function InventoryContent({
               return (
                 <div key={a.id} onClick={() => onToggleEquipped(a.id, 'armor')} style={{
                   display: 'grid', gridTemplateColumns: '48px 1fr 50px 50px 40px 40px 50px',
-                  gap: '0.3rem', padding: '0.4rem 0', borderBottom: '1px solid var(--bdr-l)',
+                  gap: '0.25rem', padding: '0.5rem 0', borderBottom: '1px solid var(--bdr-l)',
                   alignItems: 'center', cursor: 'pointer', transition: 'background .15s',
                 }}
                   onMouseEnter={e => (e.currentTarget.style.background = 'rgba(200,162,78,.04)')}
@@ -238,14 +215,14 @@ export function InventoryContent({
                   <div style={{ display: 'flex', justifyContent: 'center' }}>
                     <EquipmentImage itemKey={a.armor_key || ''} itemType="armor" size="md" />
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
                     <span style={nameStyle}>{name}</span>{a.is_equipped && <EquippedBadge />}
                   </div>
                   <div style={{ ...cellStyle, ...numStyle, color: 'var(--blue)' }}>{ref?.soak ?? '—'}</div>
                   <div style={{ ...cellStyle, ...numStyle, color: 'var(--green)' }}>{ref?.defense ?? '—'}</div>
                   <div style={{ ...cellStyle, ...numStyle, color: 'var(--txt3)' }}>
                     {displayEnc}
-                    {a.is_equipped && enc > 3 && <span style={{ fontSize: 'var(--font-2xs)', color: 'var(--green)', marginLeft: '0.15rem' }}>-3</span>}
+                    {a.is_equipped && enc > 3 && <span style={{ fontSize: 'var(--font-2xs)', color: 'var(--green)', marginLeft: '0.25rem' }}>-3</span>}
                   </div>
                   <div style={{ ...cellStyle, ...numStyle, color: 'var(--red)' }}>{ref?.hard_points ?? '—'}</div>
                   <div style={{ ...cellStyle, ...numStyle, color: ref?.rarity != null ? rarityColor(ref.rarity) : 'var(--txt3)' }}>{ref?.rarity ?? '—'}</div>
@@ -262,7 +239,7 @@ export function InventoryContent({
           <div style={{ textAlign: 'center', padding: '1rem 0', fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', color: 'var(--txt3)', letterSpacing: '0.15rem' }}>NO GEAR</div>
         ) : (
           <>
-            <div style={{ display: 'grid', gridTemplateColumns: '48px 1fr 50px 40px 50px', gap: '0.3rem', padding: '0.3rem 0', borderBottom: '1px solid var(--bdr-l)', alignItems: 'center' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '48px 1fr 50px 40px 50px', gap: '0.25rem', padding: '0.25rem 0', borderBottom: '1px solid var(--bdr-l)', alignItems: 'center' }}>
               <div /><div style={headerStyle}>NAME</div>
               <div style={{ ...headerStyle, textAlign: 'center' }}>QTY</div><div style={{ ...headerStyle, textAlign: 'center' }}>ENC</div>
               <div style={{ ...headerStyle, textAlign: 'center' }}>RAR</div>
@@ -273,7 +250,7 @@ export function InventoryContent({
               return (
                 <div key={g.id} onClick={() => onToggleEquipped(g.id, 'gear')} style={{
                   display: 'grid', gridTemplateColumns: '48px 1fr 50px 40px 50px',
-                  gap: '0.3rem', padding: '0.4rem 0', borderBottom: '1px solid var(--bdr-l)',
+                  gap: '0.25rem', padding: '0.5rem 0', borderBottom: '1px solid var(--bdr-l)',
                   alignItems: 'center', cursor: 'pointer', transition: 'background .15s',
                 }}
                   onMouseEnter={e => (e.currentTarget.style.background = 'rgba(200,162,78,.04)')}
@@ -282,7 +259,7 @@ export function InventoryContent({
                   <div style={{ display: 'flex', justifyContent: 'center' }}>
                     <EquipmentImage itemKey={g.gear_key || ''} itemType="gear" size="md" />
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
                     <span style={nameStyle}>{name}</span>{g.is_equipped && <EquippedBadge />}
                   </div>
                   <div style={{ ...cellStyle, ...numStyle, color: 'var(--txt2)' }}>{g.quantity || 1}</div>

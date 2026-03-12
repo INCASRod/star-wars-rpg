@@ -40,7 +40,7 @@ export function VitalBar({ label, current, max, icon, variant, onIncrement, onDe
   const showBar = variant !== 'soak'
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-sm)', padding: '0.4rem 0' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-sm)', padding: '0.5rem 0' }}>
       <div style={{
         width: '2.1rem', height: '2.1rem', borderRadius: '50%',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -57,7 +57,7 @@ export function VitalBar({ label, current, max, icon, variant, onIncrement, onDe
           }}>
             {label}
           </span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
             {onDecrement && (
               <button onClick={onDecrement} style={{ cursor: 'pointer', background: 'none', border: '1px solid var(--bdr-l)', width: '1.3rem', height: '1.3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--font-base)', color: 'var(--txt2)' }}>-</button>
             )}
@@ -74,7 +74,7 @@ export function VitalBar({ label, current, max, icon, variant, onIncrement, onDe
           </div>
         </div>
         {showBar && (
-          <div style={{ height: '0.2rem', background: 'var(--bdr-l)', marginTop: '0.3rem', overflow: 'hidden', borderRadius: '0.1rem' }}>
+          <div style={{ height: '0.2rem', background: 'var(--bdr-l)', marginTop: '0.25rem', overflow: 'hidden', borderRadius: '0.1rem' }}>
             <div style={{ height: '100%', borderRadius: '0.1rem', transition: 'width .4s', width: `${pct}%`, background: s.fillGradient }} />
           </div>
         )}

@@ -1,21 +1,33 @@
 'use client'
 
-import { useState, useRef, useCallback, useEffect } from 'react'
-import { toast } from 'sonner'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
+import { useState, useRef } from 'react'
+import { FS_OVERLINE, FS_LABEL, FS_SM } from '@/components/player-hud/design-tokens'
 
-/* ═══════════════════════════════════════ */
-/*  TYPES                                 */
-/* ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════ */
+/*  DESIGN TOKENS                                         */
+/* ═══════════════════════════════════════════════════════ */
+
+const FC = "var(--font-rajdhani), 'Rajdhani', sans-serif"
+const FR = "var(--font-rajdhani), 'Rajdhani', sans-serif"
+
+const BG = '#060D09'
+const GOLD = '#C8AA50'
+const GOLD_DIM = '#7A6830'
+const GOLD_BR = '#E0C060'
+const TEXT = '#C8D8C0'
+const DIM = '#6A8070'
+const FAINT = '#2A3A2E'
+const BORDER = 'rgba(200,170,80,0.14)'
+const BORDER_HI = 'rgba(200,170,80,0.36)'
+const BLUE = '#5AAAE0'
+const GREEN = '#4EC87A'
+const RED = '#E05050'
+const ORANGE = '#E07855'
+const PANEL_BG = 'rgba(8,16,10,0.88)'
+
+/* ═══════════════════════════════════════════════════════ */
+/*  EXPORTED TYPES                                        */
+/* ═══════════════════════════════════════════════════════ */
 
 export interface TalentTreeNode {
   talentKey: string
@@ -24,7 +36,7 @@ export interface TalentTreeNode {
   row: number
   col: number
   purchased: boolean
-  activation: string
+  activation: string   // 'Passive' | 'Action' | 'Maneuver' | 'Incidental' | 'Incidental (OOT)'
   isRanked: boolean
   canPurchase: boolean
 }
@@ -41,353 +53,594 @@ export interface TalentTreeProps {
   nodes: TalentTreeNode[]
   connections: TalentTreeConnection[]
   onPurchase?: (talentKey: string, row: number, col: number) => void
+  onRemoveTalent?: (talentKey: string, xpCost: number) => void
+  isGmMode?: boolean
   xpAvailable?: number
 }
 
-/* ═══════════════════════════════════════ */
-/*  CONSTANTS                             */
-/* ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════ */
+/*  CONSTANTS                                             */
+/* ═══════════════════════════════════════════════════════ */
 
-const ROWS = 5
-const COLS = 4
 const ROW_COSTS = [5, 10, 15, 20, 25]
 
-const ACTIVATION_ICONS: Record<string, string> = {
-  Passive: '\u25C6',
-  Action: '\u25B6',
-  Maneuver: '\u2B9E',
-  Incidental: '\u26A1',
-}
-
 const ACTIVATION_COLORS: Record<string, string> = {
-  Passive: 'var(--blue)',
-  Action: 'var(--red)',
-  Maneuver: 'var(--amber)',
-  Incidental: 'var(--green)',
+  'Passive': BLUE,
+  'Action': RED,
+  'Maneuver': ORANGE,
+  'Incidental': GREEN,
+  'Incidental (OOT)': GREEN,
 }
 
-/* ═══════════════════════════════════════ */
-/*  TOOLTIP COMPONENT                     */
-/* ═══════════════════════════════════════ */
+// viewBox geometry (5 rows × 160px = 800px tall)
+const COL_CENTERS = [100, 300, 500, 700]
+const ROW_CENTERS = [80, 240, 400, 560, 720]
+const NODE_HALF_W = 92
+const NODE_HALF_H = 68
 
-function TalentTooltip({ node, style }: { node: TalentTreeNode; style: React.CSSProperties }) {
-  const cost = ROW_COSTS[node.row]
+/* ═══════════════════════════════════════════════════════ */
+/*  ACTIVATION DOT                                        */
+/* ═══════════════════════════════════════════════════════ */
+
+function ActivationDot({ activation, dim }: { activation: string; dim?: boolean }) {
+  const color = ACTIVATION_COLORS[activation] ?? DIM
   return (
-    <div style={{
-      position: 'absolute',
-      zIndex: 200,
-      background: '#1A1A1C',
-      border: '2px solid var(--gold)',
-      padding: '12px 16px',
-      minWidth: '220px',
-      maxWidth: '300px',
-      boxShadow: '0 8px 32px rgba(0,0,0,.5)',
-      pointerEvents: 'none',
-      isolation: 'isolate',
-      ...style,
-    }}>
-      <div style={{
-        fontFamily: 'var(--font-orbitron)',
-        fontSize: '13px',
-        fontWeight: 700,
-        letterSpacing: '0.08em',
-        color: node.purchased ? 'var(--gold-l)' : '#F2EDE4',
-        marginBottom: '6px',
-      }}>
-        {node.name}
-        {node.isRanked && (
-          <span style={{ color: '#A0A0A0', fontSize: '10px', marginLeft: '6px' }}>RANKED</span>
-        )}
-      </div>
-
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: '8px',
-        marginBottom: '8px', paddingBottom: '8px',
-        borderBottom: '1px solid rgba(200,162,78,.3)',
-      }}>
-        <span style={{
-          fontFamily: 'var(--font-mono)', fontSize: '12px',
-          color: ACTIVATION_COLORS[node.activation] || '#A0A0A0',
-        }}>
-          {ACTIVATION_ICONS[node.activation] || ''} {node.activation}
-        </span>
-        <span style={{
-          fontFamily: 'var(--font-orbitron)', fontSize: '11px',
-          fontWeight: 700, color: 'var(--gold)', marginLeft: 'auto',
-        }}>
-          {cost} XP
-        </span>
-      </div>
-
-      {node.description && (
-        <div style={{
-          fontFamily: 'var(--font-mono)', fontSize: '12px',
-          color: '#D8D0C4', lineHeight: '1.6',
-        }}>
-          {node.description}
-        </div>
-      )}
-
-      <div style={{
-        marginTop: '8px',
-        fontFamily: 'var(--font-orbitron)', fontSize: '10px',
-        fontWeight: 700, letterSpacing: '0.1em',
-        color: node.purchased ? 'var(--green)' : node.canPurchase ? 'var(--gold-l)' : '#A0A0A0',
-      }}>
-        {node.purchased ? 'PURCHASED' : node.canPurchase ? 'CLICK TO PURCHASE' : 'LOCKED'}
-      </div>
-    </div>
+    <span
+      style={{
+        display: 'inline-block',
+        width: 6,
+        height: 6,
+        borderRadius: '50%',
+        background: color,
+        opacity: dim ? 0.4 : 1,
+        flexShrink: 0,
+      }}
+    />
   )
 }
 
-/* ═══════════════════════════════════════ */
-/*  NODE COMPONENT                        */
-/* ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════ */
+/*  NODE CARD                                             */
+/* ═══════════════════════════════════════════════════════ */
 
-function TalentNode({
+function NodeCard({
   node,
-  onClickPurchase,
   xpAvailable,
-  onHoverChange,
+  isGmMode,
+  onClickAvailable,
+  onClickRemove,
 }: {
   node: TalentTreeNode
-  onClickPurchase?: (node: TalentTreeNode) => void
   xpAvailable?: number
-  onHoverChange?: (hovered: boolean) => void
+  isGmMode?: boolean
+  onClickAvailable: (n: TalentTreeNode) => void
+  onClickRemove: (n: TalentTreeNode) => void
 }) {
   const [hovered, setHovered] = useState(false)
-  const [tooltipSide, setTooltipSide] = useState<'bottom' | 'top'>('bottom')
-  const nodeRef = useRef<HTMLDivElement>(null)
 
   const cost = ROW_COSTS[node.row]
-  const canAfford = xpAvailable !== undefined ? xpAvailable >= cost : true
-  const isClickable = node.canPurchase && !node.purchased
+  const actColor = ACTIVATION_COLORS[node.activation] ?? DIM
 
-  const handleMouseEnter = useCallback(() => {
-    setHovered(true)
-    onHoverChange?.(true)
-    if (nodeRef.current) {
-      const rect = nodeRef.current.getBoundingClientRect()
-      setTooltipSide(window.innerHeight - rect.bottom < 200 ? 'top' : 'bottom')
-    }
-  }, [onHoverChange])
+  if (node.purchased) {
+    /* ── PURCHASED ── */
+    return (
+      <div
+        style={{
+          borderRadius: 4,
+          padding: '8px 10px',
+          position: 'relative',
+          height: '100%',
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 4,
+          overflow: 'hidden',
+          background: 'rgba(200,170,80,0.10)',
+          border: '1.5px solid rgba(200,170,80,0.55)',
+          boxShadow: '0 0 14px rgba(200,170,80,0.12), inset 0 1px 0 rgba(200,170,80,0.18)',
+        }}
+      >
+        {/* Top-right owned badge */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 5,
+            right: 5,
+            background: 'rgba(78,200,122,0.15)',
+            border: '1px solid rgba(78,200,122,0.4)',
+            borderRadius: 3,
+            padding: '1px 5px',
+            fontFamily: FR,
+            fontSize: FS_OVERLINE,
+            fontWeight: 700,
+            color: GREEN,
+            lineHeight: 1.4,
+          }}
+        >
+          ✓ Owned
+        </div>
 
-  const handleClick = useCallback(() => {
-    if (!node.canPurchase || node.purchased) return
-    if (!canAfford) {
-      toast.error(`Not enough XP — need ${cost}, have ${xpAvailable ?? 0}`)
-      return
-    }
-    if (onClickPurchase) {
-      onClickPurchase(node)
-    }
-  }, [node, canAfford, cost, xpAvailable, onClickPurchase])
+        {/* Name */}
+        <div
+          style={{
+            fontFamily: FR,
+            fontSize: FS_SM,
+            fontWeight: 700,
+            color: GOLD_BR,
+            lineHeight: 1.25,
+            paddingRight: 44,
+          }}
+        >
+          {node.name}
+        </div>
 
-  const isPurchased = node.purchased
-  const isAvailable = node.canPurchase && !node.purchased
-  const isLocked = !node.purchased && !node.canPurchase
+        {/* Activation */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <ActivationDot activation={node.activation} />
+          <span
+            style={{
+              fontFamily: FR,
+              fontSize: FS_LABEL,
+              fontWeight: 700,
+              color: actColor,
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+            }}
+          >
+            {node.activation}
+          </span>
+        </div>
 
-  const borderColor = isPurchased ? 'var(--gold)' : isAvailable ? 'var(--gold-d)' : 'var(--bdr-l)'
-  const borderStyle = isAvailable ? 'dashed' : 'solid'
-  const bgColor = isPurchased
-    ? 'rgba(200, 162, 78, 0.15)'
-    : isAvailable ? 'rgba(200, 162, 78, 0.06)' : 'rgba(255, 255, 255, 0.4)'
-  const boxShadow = isPurchased
-    ? '0 0 12px var(--gold-glow-s), inset 0 0 8px var(--gold-glow)'
-    : isAvailable
-      ? hovered ? '0 0 14px var(--gold-glow-s)' : '0 0 6px var(--gold-glow)'
-      : 'none'
+        {/* Ranked dots */}
+        {node.isRanked && (
+          <div style={{ display: 'flex', gap: 4 }}>
+            {[0, 1, 2].map(i => (
+              <span
+                key={i}
+                style={{
+                  display: 'inline-block',
+                  width: 6,
+                  height: 6,
+                  borderRadius: '50%',
+                  background: i === 0 ? GOLD : 'rgba(200,170,80,0.2)',
+                  border: `1px solid ${GOLD}`,
+                  boxShadow: i === 0 ? `0 0 4px ${GOLD}` : 'none',
+                }}
+              />
+            ))}
+          </div>
+        )}
 
+        {/* Description */}
+        {node.description && (
+          <div
+            style={{
+              fontFamily: FR,
+              fontSize: FS_LABEL,
+              color: DIM,
+              lineHeight: 1.5,
+              overflowY: 'auto',
+              fontWeight: 600,
+              flex: 1,
+              minHeight: 0,
+            }}
+          >
+            {node.description}
+          </div>
+        )}
+
+        {/* Row cost bottom-right */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 5,
+            right: 6,
+            fontFamily: FR,
+            fontSize: FS_OVERLINE,
+            color: FAINT,
+          }}
+        >
+          {cost} XP
+        </div>
+
+        {/* GM remove button */}
+        {isGmMode && (
+          <button
+            onClick={e => { e.stopPropagation(); onClickRemove(node) }}
+            style={{
+              position: 'absolute',
+              bottom: 4,
+              left: 4,
+              width: 16,
+              height: 16,
+              borderRadius: 2,
+              border: '1px solid rgba(224,80,80,0.5)',
+              background: 'rgba(224,80,80,0.12)',
+              color: RED,
+              fontSize: 10,
+              lineHeight: 1,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 0,
+            }}
+          >
+            ×
+          </button>
+        )}
+      </div>
+    )
+  }
+
+  if (node.canPurchase) {
+    /* ── AVAILABLE ── */
+    return (
+      <div
+        onClick={() => onClickAvailable(node)}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          borderRadius: 4,
+          padding: '8px 10px',
+          position: 'relative',
+          height: '100%',
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          fontWeight: 600,
+          gap: 4,
+          overflow: 'hidden',
+          background: hovered ? 'rgba(200,170,80,0.07)' : 'rgba(255,255,255,0.03)',
+          border: `1.5px solid ${hovered ? 'rgba(200,170,80,0.5)' : 'rgba(200,170,80,0.22)'}`,
+          cursor: 'pointer',
+          transition: 'all 0.15s',
+        }}
+      >
+        {/* Cost badge */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 5,
+            right: 5,
+            background: 'rgba(200,170,80,0.08)',
+            border: '1px solid rgba(200,170,80,0.3)',
+            borderRadius: 3,
+            padding: '1px 5px',
+            fontFamily: FR,
+            fontSize: FS_OVERLINE,
+            color: GOLD_DIM,
+            lineHeight: 1.4,
+          }}
+        >
+          {cost} XP
+        </div>
+
+        {/* Name */}
+        <div
+          style={{
+            fontFamily: FR,
+            fontSize: FS_SM,
+            fontWeight: 700,
+            color: TEXT,
+            lineHeight: 1.25,
+            paddingRight: 44,
+          }}
+        >
+          {node.name}
+        </div>
+
+        {/* Activation */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <ActivationDot activation={node.activation} />
+          <span
+            style={{
+              fontFamily: FR,
+              fontSize: FS_LABEL,
+              color: actColor,
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+            }}
+          >
+            {node.activation}
+          </span>
+        </div>
+
+        {/* Description */}
+        {node.description && (
+          <div
+            style={{
+              fontFamily: FR,
+              fontSize: FS_LABEL,
+              color: DIM,
+              lineHeight: 1.5,
+              overflowY: 'auto',
+              flex: 1,
+              minHeight: 0,
+            }}
+          >
+            {node.description}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  /* ── LOCKED ── */
   return (
     <div
-      ref={nodeRef}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={() => { setHovered(false); onHoverChange?.(false) }}
-      onClick={handleClick}
       style={{
+        borderRadius: 4,
+        padding: '8px 10px',
         position: 'relative',
-        width: '100%', height: '100%',
-        display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        background: bgColor,
-        border: `2px ${borderStyle} ${borderColor}`,
-        padding: '8px 6px',
-        cursor: isClickable ? 'pointer' : 'default',
-        opacity: isLocked ? 0.45 : 1,
-        boxShadow,
-        transition: 'all .25s ease',
-        transform: hovered && !isLocked ? 'scale(1.05)' : 'scale(1)',
-        zIndex: hovered ? 20 : 1,
-        overflow: 'visible',
+        height: '100%',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 4,
+        overflow: 'hidden',
+        background: 'rgba(255,255,255,0.015)',
+        border: '1px dashed rgba(255,255,255,0.08)',
+        opacity: 0.5,
       }}
     >
-      {isPurchased && (
-        <div style={{
-          position: 'absolute', top: '-1px', right: '-1px',
-          width: '12px', height: '12px',
-          background: 'var(--gold)',
-          clipPath: 'polygon(0 0, 100% 0, 100% 100%)',
-        }} />
-      )}
-
-      {/* Activation */}
-      <div style={{
-        fontFamily: 'var(--font-mono)', fontSize: '12px', fontWeight: 600,
-        color: ACTIVATION_COLORS[node.activation] || '#A0A0A0',
-        marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '3px',
-      }}>
-        <span style={{ fontSize: '11px' }}>{ACTIVATION_ICONS[node.activation] || ''}</span>
-        {node.activation}
-      </div>
-
-      {/* Talent name */}
-      <div style={{
-        fontFamily: 'var(--font-orbitron)', fontSize: '13px',
-        fontWeight: 700, letterSpacing: '0.03em',
-        color: isPurchased ? 'var(--gold)' : isAvailable ? 'var(--ink)' : '#A0A0A0',
-        textAlign: 'center', lineHeight: 1.3,
-        maxWidth: '100%', overflow: 'hidden',
-        textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-      }}>
+      {/* Name only */}
+      <div
+        style={{
+          fontFamily: FR,
+          fontSize: FS_LABEL,
+          color: FAINT,
+          lineHeight: 1.25,
+        }}
+      >
         {node.name}
       </div>
 
-      {node.isRanked && (
-        <div style={{
-          fontFamily: 'var(--font-mono)', fontSize: '10px',
-          letterSpacing: '0.06em',
-          color: isPurchased ? 'var(--gold-d)' : '#A0A0A0',
-          marginTop: '1px',
-        }}>
-          RANKED
-        </div>
-      )}
-
-      {/* Cost */}
-      <div style={{
-        fontFamily: 'var(--font-orbitron)', fontSize: '12px',
-        fontWeight: 700, marginTop: '4px',
-        color: isPurchased ? 'var(--green)' : (isAvailable && !canAfford) ? 'var(--red)' : '#6B6B6B',
-      }}>
-        {isPurchased ? '\u2713' : `${cost} XP`}
+      {/* Activation dim */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        <ActivationDot activation={node.activation} dim />
+        <span
+          style={{
+            fontFamily: FR,
+            fontSize: FS_LABEL,
+            color: FAINT,
+            textTransform: 'uppercase',
+            letterSpacing: '0.04em',
+          }}
+        >
+          {node.activation}
+        </span>
       </div>
-
-      {isAvailable && canAfford && (
-        <div style={{
-          position: 'absolute', inset: '-3px',
-          border: '1px solid var(--gold-d)',
-          opacity: hovered ? 0.9 : 0.3,
-          animation: 'talentPulse 2s ease-in-out infinite',
-          pointerEvents: 'none',
-        }} />
-      )}
-
-      {hovered && (
-        <TalentTooltip
-          node={node}
-          style={tooltipSide === 'bottom'
-            ? { top: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)' }
-            : { bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)' }
-          }
-        />
-      )}
     </div>
   )
 }
 
-/* ═══════════════════════════════════════ */
-/*  SVG CONNECTIONS                       */
-/* ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════ */
+/*  PURCHASE POPOVER                                      */
+/* ═══════════════════════════════════════════════════════ */
+
+function PurchasePopover({
+  node,
+  xpAvailable,
+  onConfirm,
+  onCancel,
+}: {
+  node: TalentTreeNode
+  xpAvailable?: number
+  onConfirm: () => void
+  onCancel: () => void
+}) {
+  const cost = ROW_COSTS[node.row]
+  const remaining = (xpAvailable ?? 0) - cost
+  const canAfford = xpAvailable === undefined || xpAvailable >= cost
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        onClick={onCancel}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 499,
+          background: 'rgba(0,0,0,0.4)',
+          cursor: 'pointer',
+        }}
+      />
+
+      {/* Popover */}
+      <div
+        style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%,-50%)',
+          zIndex: 500,
+          background: 'rgba(8,16,10,0.98)',
+          border: '1px solid rgba(200,170,80,0.5)',
+          borderRadius: 6,
+          padding: '14px 16px',
+          minWidth: 280,
+          maxWidth: 320,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.7), 0 0 0 1px rgba(200,170,80,0.1)',
+        }}
+      >
+        {/* Title */}
+        <div
+          style={{
+            fontFamily: FC,
+            fontSize: FS_SM,
+            color: GOLD,
+            marginBottom: 4,
+          }}
+        >
+          {node.name}
+          {node.isRanked && (
+            <span style={{ fontFamily: FR, fontSize: FS_LABEL, color: DIM, marginLeft: 6 }}>
+              · Rank 1
+            </span>
+          )}
+        </div>
+
+        {/* Cost line */}
+        <div style={{ fontFamily: FR, fontSize: FS_LABEL, color: DIM, marginBottom: 2 }}>
+          Spend {cost} XP
+        </div>
+
+        {/* Remaining */}
+        {xpAvailable !== undefined && (
+          <div
+            style={{
+              fontFamily: FR,
+              fontSize: FS_LABEL,
+              color: remaining >= 0 ? GREEN : RED,
+              marginBottom: 10,
+            }}
+          >
+            Remaining after: {remaining} XP
+          </div>
+        )}
+
+        {/* Divider */}
+        <div style={{ height: 1, background: 'rgba(200,170,80,0.15)', marginBottom: 10 }} />
+
+        {/* Description */}
+        {node.description && (
+          <div
+            style={{
+              fontFamily: FR,
+              fontSize: FS_LABEL,
+              color: DIM,
+              lineHeight: 1.5,
+              maxHeight: 100,
+              overflowY: 'auto',
+              marginBottom: 10,
+            }}
+          >
+            {node.description}
+          </div>
+        )}
+
+        {/* Divider */}
+        <div style={{ height: 1, background: 'rgba(200,170,80,0.15)', marginBottom: 10 }} />
+
+        {/* Buttons */}
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <button
+            onClick={onCancel}
+            style={{
+              background: 'transparent',
+              border: `1px solid ${BORDER}`,
+              borderRadius: 3,
+              fontFamily: FR,
+              fontSize: FS_LABEL,
+              color: DIM,
+              padding: '6px 16px',
+              cursor: 'pointer',
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={canAfford ? onConfirm : undefined}
+            disabled={!canAfford}
+            style={{
+              background: 'rgba(200,170,80,0.15)',
+              border: '1px solid rgba(200,170,80,0.5)',
+              borderRadius: 3,
+              fontFamily: FR,
+              fontSize: FS_LABEL,
+              fontWeight: 700,
+              color: canAfford ? GOLD : GOLD_DIM,
+              padding: '6px 16px',
+              cursor: canAfford ? 'pointer' : 'not-allowed',
+              opacity: canAfford ? 1 : 0.5,
+            }}
+          >
+            Spend {cost} XP
+          </button>
+        </div>
+      </div>
+    </>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/*  SVG CONNECTION LINES                                  */
+/* ═══════════════════════════════════════════════════════ */
 
 function ConnectionLines({
   connections,
   nodeMap,
-  gridRef,
 }: {
   connections: TalentTreeConnection[]
   nodeMap: Map<string, TalentTreeNode>
-  gridRef: React.RefObject<HTMLDivElement | null>
 }) {
-  // Draw lines between box edges, not centers
-  // We measure the actual grid to compute where each cell's edge is
-  const [lines, setLines] = useState<{x1:number,y1:number,x2:number,y2:number,from:string,to:string}[]>([])
-
-  const computeLines = useCallback(() => {
-    const grid = gridRef.current
-    if (!grid) return
-    const gridRect = grid.getBoundingClientRect()
-    const newLines: typeof lines = []
-
-    for (const conn of connections) {
-      const fromEl = grid.querySelector(`[data-cell="${conn.fromRow}-${conn.fromCol}"]`) as HTMLElement
-      const toEl = grid.querySelector(`[data-cell="${conn.toRow}-${conn.toCol}"]`) as HTMLElement
-      if (!fromEl || !toEl) continue
-
-      const fromRect = fromEl.getBoundingClientRect()
-      const toRect = toEl.getBoundingClientRect()
-
-      let x1: number, y1: number, x2: number, y2: number
-      const isVertical = conn.fromCol === conn.toCol
-
-      if (isVertical) {
-        // vertical: bottom edge of from → top edge of to
-        x1 = fromRect.left + fromRect.width / 2 - gridRect.left
-        y1 = fromRect.bottom - gridRect.top
-        x2 = toRect.left + toRect.width / 2 - gridRect.left
-        y2 = toRect.top - gridRect.top
-      } else {
-        // horizontal: right edge of from → left edge of to (or vice versa)
-        const goingRight = conn.toCol > conn.fromCol
-        x1 = (goingRight ? fromRect.right : fromRect.left) - gridRect.left
-        y1 = fromRect.top + fromRect.height / 2 - gridRect.top
-        x2 = (goingRight ? toRect.left : toRect.right) - gridRect.left
-        y2 = toRect.top + toRect.height / 2 - gridRect.top
-      }
-
-      newLines.push({
-        x1, y1, x2, y2,
-        from: `${conn.fromRow}-${conn.fromCol}`,
-        to: `${conn.toRow}-${conn.toCol}`,
-      })
-    }
-    setLines(newLines)
-  }, [connections, gridRef])
-
-  useEffect(() => {
-    computeLines()
-    window.addEventListener('resize', computeLines)
-    return () => window.removeEventListener('resize', computeLines)
-  }, [computeLines])
-
   return (
     <svg
+      viewBox="0 0 800 800"
+      preserveAspectRatio="none"
       style={{
-        position: 'absolute', top: 0, left: 0,
-        width: '100%', height: '100%',
-        pointerEvents: 'none', zIndex: 0, overflow: 'visible',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        pointerEvents: 'none',
+        zIndex: 0,
       }}
     >
       <defs>
-        <filter id="conn-glow" x="-20%" y="-20%" width="140%" height="140%">
+        <filter id="glow-line" x="-20%" y="-20%" width="140%" height="140%">
           <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur" />
           <feComposite in="SourceGraphic" in2="blur" operator="over" />
         </filter>
       </defs>
-      {lines.map((ln, i) => {
-        const fromNode = nodeMap.get(ln.from)
-        const toNode = nodeMap.get(ln.to)
-        const bothPurchased = fromNode?.purchased && toNode?.purchased
-        const eitherPurchased = fromNode?.purchased || toNode?.purchased
+
+      {connections.map((conn, i) => {
+        const fromNode = nodeMap.get(`${conn.fromRow}-${conn.fromCol}`)
+        const toNode = nodeMap.get(`${conn.toRow}-${conn.toCol}`)
+        const bothPurchased = !!(fromNode?.purchased && toNode?.purchased)
+        const onePurchased = !!(fromNode?.purchased || toNode?.purchased)
+
+        const stroke = bothPurchased ? 'rgba(200,170,80,0.7)' : onePurchased ? 'rgba(200,170,80,0.35)' : 'rgba(200,170,80,0.15)'
+        const strokeWidth = bothPurchased ? 2 : 1.5
+        const filter = bothPurchased ? 'url(#glow-line)' : undefined
+
+        const isHorizontal = conn.fromRow === conn.toRow
+        const isVertical = conn.fromCol === conn.toCol
+
+        let x1: number, y1: number, x2: number, y2: number
+
+        if (isHorizontal) {
+          const rowCenter = ROW_CENTERS[conn.fromRow]
+          x1 = COL_CENTERS[conn.fromCol] + NODE_HALF_W
+          x2 = COL_CENTERS[conn.toCol] - NODE_HALF_W
+          y1 = rowCenter
+          y2 = rowCenter
+        } else if (isVertical) {
+          const colCenter = COL_CENTERS[conn.fromCol]
+          x1 = colCenter
+          x2 = colCenter
+          y1 = ROW_CENTERS[conn.fromRow] + NODE_HALF_H
+          y2 = ROW_CENTERS[conn.toRow] - NODE_HALF_H
+        } else {
+          // diagonal — connect edge midpoints
+          x1 = COL_CENTERS[conn.fromCol]
+          y1 = ROW_CENTERS[conn.fromRow] + NODE_HALF_H
+          x2 = COL_CENTERS[conn.toCol]
+          y2 = ROW_CENTERS[conn.toRow] - NODE_HALF_H
+        }
 
         return (
           <line
             key={i}
-            x1={ln.x1} y1={ln.y1} x2={ln.x2} y2={ln.y2}
-            stroke={bothPurchased ? 'var(--gold)' : eitherPurchased ? 'var(--gold-d)' : 'var(--bdr)'}
-            strokeWidth={bothPurchased ? 4 : 3}
-            strokeOpacity={bothPurchased ? 0.9 : eitherPurchased ? 0.5 : 0.25}
+            x1={x1} y1={y1}
+            x2={x2} y2={y2}
+            stroke={stroke}
+            strokeWidth={strokeWidth}
             strokeLinecap="round"
-            filter={bothPurchased ? 'url(#conn-glow)' : undefined}
+            filter={filter}
           />
         )
       })}
@@ -395,247 +648,228 @@ function ConnectionLines({
   )
 }
 
-/* ═══════════════════════════════════════ */
-/*  MAIN TALENT TREE COMPONENT            */
-/* ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════ */
+/*  MAIN TALENT TREE COMPONENT                            */
+/* ═══════════════════════════════════════════════════════ */
 
-export function TalentTree({ specName, nodes, connections, onPurchase, xpAvailable }: TalentTreeProps) {
-  const [confirmNode, setConfirmNode] = useState<TalentTreeNode | null>(null)
-  const [hoveredCell, setHoveredCell] = useState<string | null>(null)
-  const gridRef = useRef<HTMLDivElement>(null)
+export function TalentTree({
+  specName,
+  nodes,
+  connections,
+  onPurchase,
+  onRemoveTalent,
+  isGmMode,
+  xpAvailable,
+}: TalentTreeProps) {
+  const [pendingNode, setPendingNode] = useState<TalentTreeNode | null>(null)
 
   const nodeMap = new Map<string, TalentTreeNode>()
   for (const node of nodes) {
     nodeMap.set(`${node.row}-${node.col}`, node)
   }
 
-  const purchased = nodes.filter(n => n.purchased).length
-  const total = nodes.length
-
-  const handleConfirmPurchase = () => {
-    if (confirmNode && onPurchase) {
-      onPurchase(confirmNode.talentKey, confirmNode.row, confirmNode.col)
+  const handleConfirm = () => {
+    if (pendingNode && onPurchase) {
+      onPurchase(pendingNode.talentKey, pendingNode.row, pendingNode.col)
     }
-    setConfirmNode(null)
+    setPendingNode(null)
   }
 
   return (
-    <div style={{
-      background: 'var(--parch)',
-      border: '1px solid var(--bdr-l)',
-      padding: '24px',
-    }}>
-      <style>{`
-        @keyframes talentPulse {
-          0%, 100% { opacity: 0.25; box-shadow: 0 0 4px var(--gold-glow); }
-          50%      { opacity: 0.65; box-shadow: 0 0 10px var(--gold-glow-s); }
-        }
-        [data-slot="alert-dialog-overlay"] { z-index: 200 !important; }
-        [data-slot="alert-dialog-content"] { z-index: 200 !important; }
-      `}</style>
-
-      {/* Header */}
-      <div style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        marginBottom: '16px', paddingBottom: '12px',
-        borderBottom: '2px solid var(--bdr)',
-      }}>
+    <div
+      style={{
+        background: BG,
+        border: `1px solid ${BORDER}`,
+        borderRadius: 6,
+        overflow: 'hidden',
+        fontFamily: FR,
+      }}
+    >
+      {/* ── HEADER ── */}
+      <div
+        style={{
+          background: PANEL_BG,
+          borderBottom: `1px solid ${BORDER}`,
+          padding: '12px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          fontWeight: 700,
+          justifyContent: 'space-between',
+        }}
+      >
         <div>
-          <div style={{
-            fontFamily: 'var(--font-orbitron)', fontSize: '18px',
-            fontWeight: 800, letterSpacing: '0.15em',
-            color: 'var(--ink)',
-          }}>
+          <div style={{ fontFamily: FC, fontSize: FS_SM, color: GOLD, lineHeight: 1.3 }}>
             {specName}
           </div>
-          <div style={{
-            fontFamily: 'var(--font-mono)', fontSize: '13px',
-            color: 'var(--txt2)', marginTop: '4px',
-          }}>
-            {purchased}/{total} TALENTS PURCHASED
+          <div style={{ fontFamily: FR, fontSize: FS_LABEL, color: DIM, marginTop: 2 }}>
+            Specialization Tree · {nodes.length} Talents
           </div>
         </div>
+
         {xpAvailable !== undefined && (
-          <div style={{ textAlign: 'right' }}>
-            <div style={{
-              fontFamily: 'var(--font-orbitron)', fontSize: '22px',
-              fontWeight: 800, color: 'var(--blue)',
-            }}>
-              {xpAvailable}
-            </div>
-            <div style={{
-              fontFamily: 'var(--font-orbitron)', fontSize: '10px',
-              fontWeight: 600, letterSpacing: '0.15em', color: 'var(--txt3)',
-            }}>
-              XP AVAILABLE
-            </div>
+          <div
+            style={{
+              background: 'rgba(200,170,80,0.1)',
+              border: '1px solid rgba(200,170,80,0.3)',
+              borderRadius: 3,
+              padding: '2px 10px',
+              fontFamily: FC,
+              fontSize: FS_LABEL,
+              color: GOLD,
+            }}
+          >
+            {xpAvailable} XP
           </div>
         )}
       </div>
 
-      {/* Grid */}
-      <div style={{
-        display: 'grid', gridTemplateColumns: 'auto 1fr',
-        gap: 0, position: 'relative',
-      }}>
-        {/* Row cost labels */}
-        <div style={{
-          display: 'grid',
-          gridTemplateRows: `repeat(${ROWS}, 1fr)`,
-          alignItems: 'stretch', paddingRight: '12px',
-        }}>
-          {ROW_COSTS.map((cost, row) => (
-            <div key={row} style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              minWidth: '48px',
-            }}>
-              <div style={{
-                fontFamily: 'var(--font-orbitron)', fontSize: '13px',
-                fontWeight: 700, color: 'var(--txt2)',
-                background: 'rgba(255,255,255,.6)',
-                border: '1px solid var(--bdr-l)',
-                padding: '4px 8px', textAlign: 'center',
-              }}>
-                {cost}<span style={{ fontSize: '10px', color: 'var(--txt3)' }}> XP</span>
-              </div>
+      {/* ── LEGEND ── */}
+      <div
+        style={{
+          background: 'rgba(0,0,0,0.2)',
+          padding: '8px 16px',
+          display: 'flex',
+          fontWeight: 600,
+          gap: 16,
+          alignItems: 'center',
+          flexWrap: 'wrap',
+        }}
+      >
+        {/* State legend */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span
+            style={{
+              display: 'inline-block',
+              width: 8,
+              height: 8,
+              background: GOLD,
+            }}
+          />
+          <span style={{ fontFamily: FR, fontSize: FS_LABEL, color: DIM }}>Purchased</span>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span
+            style={{
+              display: 'inline-block',
+              width: 8,
+              height: 8,
+              background: 'transparent',
+              border: `1px solid ${GOLD}`,
+            }}
+          />
+          <span style={{ fontFamily: FR, fontSize: FS_LABEL, color: DIM }}>Available</span>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span
+            style={{
+              display: 'inline-block',
+              width: 8,
+              height: 8,
+              background: 'rgba(200,170,80,0.15)',
+              border: '1px dashed rgba(200,170,80,0.3)',
+              opacity: 0.5,
+            }}
+          />
+          <span style={{ fontFamily: FR, fontSize: FS_LABEL, color: DIM }}>Locked</span>
+        </div>
+
+        {/* Type legend */}
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+          {[
+            { label: 'Passive', color: BLUE },
+            { label: 'Action', color: RED },
+            { label: 'Maneuver', color: ORANGE },
+            { label: 'Incidental', color: GREEN },
+          ].map(({ label, color }) => (
+            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span
+                style={{
+                  display: 'inline-block',
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  background: color,
+                }}
+              />
+              <span style={{ fontFamily: FR, fontSize: FS_LABEL, color: DIM }}>{label}</span>
             </div>
           ))}
         </div>
-
-        {/* Talent grid */}
-        <div
-          ref={gridRef}
-          style={{
-            position: 'relative',
-            display: 'grid',
-            gridTemplateColumns: `repeat(${COLS}, 1fr)`,
-            gridTemplateRows: `repeat(${ROWS}, 1fr)`,
-            gap: '8px',
-          }}
-        >
-          <div style={{
-            position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',
-          }}>
-            <ConnectionLines connections={connections} nodeMap={nodeMap} gridRef={gridRef} />
-          </div>
-
-          {Array.from({ length: ROWS }, (_, row) =>
-            Array.from({ length: COLS }, (_, col) => {
-              const node = nodeMap.get(`${row}-${col}`)
-              return (
-                <div
-                  key={`${row}-${col}`}
-                  data-cell={`${row}-${col}`}
-                  style={{
-                    gridColumn: col + 1, gridRow: row + 1,
-                    zIndex: hoveredCell === `${row}-${col}` ? 50 : 1,
-                    minHeight: '80px',
-                    position: 'relative',
-                  }}
-                >
-                  {node && (
-                    <TalentNode
-                      node={node}
-                      onClickPurchase={(n) => setConfirmNode(n)}
-                      xpAvailable={xpAvailable}
-                      onHoverChange={(h) => setHoveredCell(h ? `${row}-${col}` : null)}
-                    />
-                  )}
-                </div>
-              )
-            })
-          )}
-        </div>
       </div>
 
-      {/* Legend */}
-      <div style={{
-        display: 'flex', justifyContent: 'center', gap: '24px',
-        marginTop: '16px', paddingTop: '12px',
-        borderTop: '1px solid var(--bdr-l)',
-      }}>
-        {[
-          { color: 'var(--gold)', label: 'Purchased', style: 'solid' as const },
-          { color: 'var(--gold-d)', label: 'Available', style: 'dashed' as const },
-          { color: 'var(--bdr-l)', label: 'Locked', style: 'solid' as const },
-        ].map(item => (
-          <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <div style={{
-              width: '14px', height: '14px',
-              border: `2px ${item.style} ${item.color}`,
-              opacity: item.label === 'Locked' ? 0.45 : 1,
-            }} />
-            <span style={{
-              fontFamily: 'var(--font-mono)', fontSize: '12px',
-              color: 'var(--txt2)',
-            }}>
-              {item.label}
-            </span>
-          </div>
-        ))}
-      </div>
+      {/* ── GRID + SVG ── */}
+      <div
+        style={{
+          position: 'relative',
+          overflow: 'visible',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gridTemplateRows: 'repeat(5, 160px)',
+          gap: 0,
+        }}
+      >
+        {/* SVG overlay */}
+        <ConnectionLines connections={connections} nodeMap={nodeMap} />
 
-      {/* Confirmation Dialog */}
-      <AlertDialog open={!!confirmNode} onOpenChange={(open) => !open && setConfirmNode(null)}>
-        <AlertDialogContent style={{ fontFamily: 'var(--font-chakra)' }}>
-          <AlertDialogHeader>
-            <AlertDialogTitle style={{
-              fontFamily: 'var(--font-orbitron)', fontSize: '16px',
-              fontWeight: 700, letterSpacing: '0.08em',
-            }}>
-              Purchase {confirmNode?.name}?
-            </AlertDialogTitle>
-            <AlertDialogDescription asChild>
-              <div style={{ fontSize: '14px', lineHeight: 1.6, color: 'var(--txt2)' }}>
-                <div style={{ marginBottom: '8px' }}>
-                  <span style={{
-                    fontFamily: 'var(--font-orbitron)', fontWeight: 700,
-                    color: 'var(--gold-d)',
-                  }}>
-                    {confirmNode ? ROW_COSTS[confirmNode.row] : 0} XP
-                  </span>
-                  {' '}will be spent. You have{' '}
-                  <span style={{
-                    fontFamily: 'var(--font-orbitron)', fontWeight: 700,
-                    color: 'var(--blue)',
-                  }}>
-                    {xpAvailable} XP
-                  </span>
-                  {' '}available.
-                </div>
-                {confirmNode?.description && (
-                  <div style={{
-                    fontFamily: 'var(--font-mono)', fontSize: '13px',
-                    color: 'var(--txt)', background: 'var(--parch)',
-                    border: '1px solid var(--bdr-l)', padding: '10px',
-                    lineHeight: 1.5, marginTop: '4px',
-                  }}>
-                    {confirmNode.description}
-                  </div>
+        {/* Nodes */}
+        {Array.from({ length: 5 }, (_, row) =>
+          Array.from({ length: 4 }, (_, col) => {
+            const node = nodeMap.get(`${row}-${col}`)
+            return (
+              <div
+                key={`${row}-${col}`}
+                style={{
+                  position: 'relative',
+                  padding: 10,
+                  zIndex: 1,
+                  display: 'flex',
+                  alignItems: 'stretch',
+                  justifyContent: 'stretch',
+                }}
+              >
+                {node ? (
+                  <NodeCard
+                    node={node}
+                    xpAvailable={xpAvailable}
+                    isGmMode={isGmMode}
+                    onClickAvailable={n => setPendingNode(n)}
+                    onClickRemove={n => {
+                      if (onRemoveTalent) {
+                        onRemoveTalent(n.talentKey, ROW_COSTS[n.row])
+                      }
+                    }}
+                  />
+                ) : (
+                  /* Empty cell */
+                  <div
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      borderRadius: 4,
+                      border: `1px dashed ${FAINT}`,
+                      opacity: 0.3,
+                    }}
+                  />
                 )}
               </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel style={{
-              fontFamily: 'var(--font-orbitron)', fontSize: '12px',
-              fontWeight: 600, letterSpacing: '0.1em',
-            }}>
-              CANCEL
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmPurchase}
-              style={{
-                fontFamily: 'var(--font-orbitron)', fontSize: '12px',
-                fontWeight: 700, letterSpacing: '0.1em',
-                background: 'var(--gold)', color: '#fff',
-              }}
-            >
-              CONFIRM PURCHASE
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
+            )
+          })
+        )}
+      </div>
+
+      {/* ── PURCHASE POPOVER ── */}
+      {
+        pendingNode && (
+          <PurchasePopover
+            node={pendingNode}
+            xpAvailable={xpAvailable}
+            onConfirm={handleConfirm}
+            onCancel={() => setPendingNode(null)}
+          />
+        )
+      }
+    </div >
   )
 }

@@ -25,6 +25,7 @@ const parser = new XMLParser({
     'CharWeapon', 'CharArmor', 'CharGear', 'CharObligation', 'CharDuty',
     'MoralityPair', 'CharMotivation', 'CharItemAttachment', 'Mod',
     'ItemDescInfo', 'TwoWeaponSet', 'CharOption',
+    'CharForcePower', 'CharForceAbility',
   ].includes(name),
 })
 
@@ -93,20 +94,17 @@ async function main() {
 
   // Specializations
   const specializations = ensureArray(char.Specializations?.CharSpecialization)
-  const careerKey = specializations[0]?.isCareerSpec
-    ? specializations[0]?.Key?.replace(/[^A-Z]/g, '') || 'BOUNT'
-    : 'BOUNT'
 
-  // Actually get career from career spec or first spec
-  // OggDude doesn't store career key directly — derive from specialization
-  // Let's check the ref_specializations table
-  let derivedCareerKey = 'BOUNT'
-  if (specializations.length > 0) {
+  // Career key — OggDude stores this directly in <Career><CareerKey>
+  // Fall back to deriving from the starting spec's career if missing
+  let derivedCareerKey: string = char.Career?.CareerKey || null
+  if (!derivedCareerKey && specializations.length > 0) {
     const startingSpec = specializations.find((s: Record<string, unknown>) => s.isStartingSpec) || specializations[0]
     const specKey = startingSpec.Key
     const [refSpec] = await sql`SELECT career_key FROM ref_specializations WHERE key = ${specKey}`
-    if (refSpec) derivedCareerKey = refSpec.career_key
+    if (refSpec?.career_key) derivedCareerKey = refSpec.career_key
   }
+  if (!derivedCareerKey) derivedCareerKey = 'BOUNT'
 
   // Morality
   const moralityPairs = ensureArray(char.Morality?.MoralityPairs?.MoralityPair)
@@ -159,46 +157,62 @@ async function main() {
 
   // ── Check if character already exists ──
   const existingChar = await sql`
-    SELECT id FROM characters WHERE campaign_id = ${campaignId} AND name = ${charName} LIMIT 1
+    SELECT id, portrait_url, notes FROM characters WHERE campaign_id = ${campaignId} AND name = ${charName} LIMIT 1
   `
+  let charId: string
   if (existingChar.length > 0) {
-    console.log(`\nCharacter "${charName}" already exists (${existingChar[0].id}). Deleting and re-importing...`)
-    const oldId = existingChar[0].id
-    await sql`DELETE FROM xp_transactions WHERE character_id = ${oldId}`
-    await sql`DELETE FROM character_critical_injuries WHERE character_id = ${oldId}`
-    await sql`DELETE FROM character_gear WHERE character_id = ${oldId}`
-    await sql`DELETE FROM character_armor WHERE character_id = ${oldId}`
-    await sql`DELETE FROM character_weapons WHERE character_id = ${oldId}`
-    await sql`DELETE FROM character_talents WHERE character_id = ${oldId}`
-    await sql`DELETE FROM character_skills WHERE character_id = ${oldId}`
-    await sql`DELETE FROM character_specializations WHERE character_id = ${oldId}`
-    await sql`DELETE FROM characters WHERE id = ${oldId}`
+    // Re-import: preserve ID, portrait, and user-edited notes — clear child tables
+    charId = existingChar[0].id
+    const preservedPortrait = existingChar[0].portrait_url
+    const preservedNotes = existingChar[0].notes || ''
+    console.log(`\nCharacter "${charName}" already exists (${charId}). Re-importing (preserving ID + portrait)...`)
+    await sql`DELETE FROM xp_transactions WHERE character_id = ${charId}`
+    await sql`DELETE FROM character_critical_injuries WHERE character_id = ${charId}`
+    await sql`DELETE FROM character_gear WHERE character_id = ${charId}`
+    await sql`DELETE FROM character_armor WHERE character_id = ${charId}`
+    await sql`DELETE FROM character_weapons WHERE character_id = ${charId}`
+    await sql`DELETE FROM character_force_abilities WHERE character_id = ${charId}`
+    await sql`DELETE FROM character_talents WHERE character_id = ${charId}`
+    await sql`DELETE FROM character_skills WHERE character_id = ${charId}`
+    await sql`DELETE FROM character_specializations WHERE character_id = ${charId}`
+    await sql`
+      UPDATE characters SET
+        player_id = ${playerId}, species_key = ${speciesKey}, career_key = ${derivedCareerKey}, gender = ${gender},
+        brawn = ${brawn}, agility = ${agility}, intellect = ${intellect}, cunning = ${cunning}, willpower = ${willpower}, presence = ${presence},
+        wound_threshold = ${woundThreshold}, wound_current = 0, strain_threshold = ${strainThreshold}, strain_current = 0,
+        soak = ${soak}, defense_ranged = ${defenseRanged}, defense_melee = ${defenseMelee},
+        xp_total = ${xpTotal}, xp_available = ${xpAvailable}, credits = ${credits}, encumbrance_threshold = ${5 + brawn},
+        morality_value = ${moralityValue}, morality_strength_key = ${moralityStrengthKey}, morality_weakness_key = ${moralityWeaknessKey},
+        obligation_type = ${obligationType}, obligation_value = ${obligationValue}, duty_type = ${dutyType}, duty_value = ${dutyValue},
+        backstory = ${backstory}, portrait_url = ${preservedPortrait}, notes = ${preservedNotes}
+      WHERE id = ${charId}
+    `
+  } else {
+    // New character
+    const [newChar] = await sql`
+      INSERT INTO characters (
+        campaign_id, player_id, name, species_key, career_key, gender,
+        brawn, agility, intellect, cunning, willpower, presence,
+        wound_threshold, wound_current, strain_threshold, strain_current,
+        soak, defense_ranged, defense_melee,
+        xp_total, xp_available, credits, encumbrance_threshold,
+        morality_value, morality_strength_key, morality_weakness_key,
+        obligation_type, obligation_value, duty_type, duty_value,
+        backstory, notes
+      ) VALUES (
+        ${campaignId}, ${playerId}, ${charName}, ${speciesKey}, ${derivedCareerKey}, ${gender},
+        ${brawn}, ${agility}, ${intellect}, ${cunning}, ${willpower}, ${presence},
+        ${woundThreshold}, 0, ${strainThreshold}, 0,
+        ${soak}, ${defenseRanged}, ${defenseMelee},
+        ${xpTotal}, ${xpAvailable}, ${credits}, ${5 + brawn},
+        ${moralityValue}, ${moralityStrengthKey}, ${moralityWeaknessKey},
+        ${obligationType}, ${obligationValue}, ${dutyType}, ${dutyValue},
+        ${backstory}, ''
+      )
+      RETURNING id
+    `
+    charId = newChar.id
   }
-
-  // ── Insert Character ──
-  const [newChar] = await sql`
-    INSERT INTO characters (
-      campaign_id, player_id, name, species_key, career_key, gender,
-      brawn, agility, intellect, cunning, willpower, presence,
-      wound_threshold, wound_current, strain_threshold, strain_current,
-      soak, defense_ranged, defense_melee,
-      xp_total, xp_available, credits, encumbrance_threshold,
-      morality_value, morality_strength_key, morality_weakness_key,
-      obligation_type, obligation_value, duty_type, duty_value,
-      backstory, notes
-    ) VALUES (
-      ${campaignId}, ${playerId}, ${charName}, ${speciesKey}, ${derivedCareerKey}, ${gender},
-      ${brawn}, ${agility}, ${intellect}, ${cunning}, ${willpower}, ${presence},
-      ${woundThreshold}, 0, ${strainThreshold}, 0,
-      ${soak}, ${defenseRanged}, ${defenseMelee},
-      ${xpTotal}, ${xpAvailable}, ${credits}, ${5 + brawn},
-      ${moralityValue}, ${moralityStrengthKey}, ${moralityWeaknessKey},
-      ${obligationType}, ${obligationValue}, ${dutyType}, ${dutyValue},
-      ${backstory}, ''
-    )
-    RETURNING id
-  `
-  const charId = newChar.id
   console.log(`\nCharacter: ${charName} (${charId})`)
   console.log(`  Species: ${speciesKey}, Career: ${derivedCareerKey}`)
   console.log(`  BR ${brawn} AG ${agility} INT ${intellect} CUN ${cunning} WIL ${willpower} PR ${presence}`)
@@ -324,6 +338,29 @@ async function main() {
       VALUES (${charId}, ${gearKey}, ${customName}, ${quantity}, ${isEquipped}, ${''})
     `
     console.log(`  Gear: ${customName || itemKey || 'Unknown'} x${quantity}${isEquipped ? ' [equipped]' : ''}`)
+  }
+
+  // ── Force Powers ──
+  const xmlForcePowers = ensureArray(char.ForcePowers?.CharForcePower)
+  let forceAbilityCount = 0
+  for (const fp of xmlForcePowers) {
+    const powerKey = fp.Key
+    const abilities = ensureArray(fp.ForceAbilities?.CharForceAbility)
+    for (const a of abilities) {
+      const cost = typeof a.Cost === 'number' ? a.Cost : parseInt(a.Cost) || 0
+      const purchased = a.Purchased === true || a.Purchased === 'true'
+      if (purchased && cost > 0) {
+        await sql`
+          INSERT INTO character_force_abilities (character_id, force_power_key, force_ability_key, tree_row, tree_col, xp_cost)
+          VALUES (${charId}, ${powerKey}, ${a.Key}, ${a.Row ?? 0}, ${a.Col ?? 0}, ${cost})
+          ON CONFLICT (character_id, force_power_key, tree_row, tree_col) DO NOTHING
+        `
+        forceAbilityCount++
+      }
+    }
+  }
+  if (xmlForcePowers.length > 0) {
+    console.log(`  Force Powers: ${xmlForcePowers.map((fp: Record<string, unknown>) => fp.Key).join(', ')} (${forceAbilityCount} abilities purchased)`)
   }
 
   // ── Store all talent tree data for the specialization (purchased + unpurchased) ──

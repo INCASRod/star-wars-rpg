@@ -10,6 +10,8 @@ interface CharacteristicsCardProps {
   willpower: number
   presence: number
   animClass?: string
+  isGmMode?: boolean
+  onCharacteristicChange?: (field: string, delta: number) => void
 }
 
 const CHARS: { key: string; label: string }[] = [
@@ -21,8 +23,16 @@ const CHARS: { key: string; label: string }[] = [
   { key: 'presence', label: 'Presence' },
 ]
 
+const gmBtnStyle: React.CSSProperties = {
+  width: 20, height: 20, fontSize: 'var(--text-caption)', fontWeight: 700,
+  background: 'var(--gold-glow)', border: '1px solid var(--gold)',
+  color: 'var(--gold-d)', cursor: 'pointer', display: 'flex',
+  alignItems: 'center', justifyContent: 'center', padding: 0,
+  lineHeight: 1, flexShrink: 0,
+}
+
 export function CharacteristicsCard(props: CharacteristicsCardProps) {
-  const { animClass = 'al d1' } = props
+  const { animClass = 'al d1', isGmMode, onCharacteristicChange } = props
   const values: Record<string, number> = {
     brawn: props.brawn,
     agility: props.agility,
@@ -49,15 +59,32 @@ export function CharacteristicsCard(props: CharacteristicsCardProps) {
             position: 'relative',
             overflow: 'hidden',
           }}>
-            <div style={{
-              fontFamily: 'var(--font-orbitron)',
-              fontSize: 'var(--font-2xl)',
-              fontWeight: 900,
-              color: 'var(--ink)',
-              lineHeight: 1,
-            }}>
-              {values[ch.key]}
-            </div>
+            {isGmMode && onCharacteristicChange ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+                <button style={gmBtnStyle} onClick={() => onCharacteristicChange(ch.key, -1)}>−</button>
+                <div style={{
+                  fontFamily: 'var(--font-orbitron)',
+                  fontSize: 'var(--font-2xl)',
+                  fontWeight: 900,
+                  color: 'var(--ink)',
+                  lineHeight: 1,
+                  minWidth: 20,
+                }}>
+                  {values[ch.key]}
+                </div>
+                <button style={gmBtnStyle} onClick={() => onCharacteristicChange(ch.key, 1)}>+</button>
+              </div>
+            ) : (
+              <div style={{
+                fontFamily: 'var(--font-orbitron)',
+                fontSize: 'var(--font-2xl)',
+                fontWeight: 900,
+                color: 'var(--ink)',
+                lineHeight: 1,
+              }}>
+                {values[ch.key]}
+              </div>
+            )}
             <div style={{
               fontFamily: 'var(--font-orbitron)',
               fontSize: 'var(--font-xs)',

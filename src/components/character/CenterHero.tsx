@@ -237,7 +237,7 @@ function MetaItem({ value, label, color }: { value: number; label: string; color
         fontWeight: 600,
         letterSpacing: '0.15rem',
         color: 'var(--txt3)',
-        marginTop: '0.1rem',
+        marginTop: '0.25rem',
       }}>
         {label}
       </div>

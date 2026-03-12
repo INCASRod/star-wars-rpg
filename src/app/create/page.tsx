@@ -303,7 +303,7 @@ function CreateWizard() {
 
   // ── Shared styles ──
   const pageStyle: React.CSSProperties = {
-    width: '100vw', height: '100vh', overflow: 'auto',
+    width: '100vw', minHeight: '100vh', overflow: 'auto',
     background: 'var(--sand)',
     display: 'flex', flexDirection: 'column', alignItems: 'center',
     padding: 'var(--sp-xl) var(--sp-lg) calc(var(--sp-xl) * 3)',
@@ -354,7 +354,7 @@ function CreateWizard() {
                 color: i === step ? 'var(--gold-d)' : i < step ? 'var(--txt2)' : 'var(--txt3)',
                 background: 'none', border: 'none',
                 borderBottom: i === step ? '2px solid var(--gold)' : '2px solid transparent',
-                padding: '0.2rem 0.4rem',
+                padding: '0.25rem 0.5rem',
                 cursor: i < step ? 'pointer' : 'default',
                 transition: '.2s',
               }}
@@ -429,7 +429,7 @@ function CreateWizard() {
           <HudCard title="Character Details" animClass="au d1">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-md)' }}>
               <div>
-                <label style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)', fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--txt3)', display: 'block', marginBottom: '0.2rem' }}>
+                <label style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)', fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--txt3)', display: 'block', marginBottom: '0.25rem' }}>
                   CHARACTER NAME
                 </label>
                 <input
@@ -441,7 +441,7 @@ function CreateWizard() {
                 />
               </div>
               <div>
-                <label style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)', fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--txt3)', display: 'block', marginBottom: '0.2rem' }}>
+                <label style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)', fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--txt3)', display: 'block', marginBottom: '0.25rem' }}>
                   PLAYER NAME
                 </label>
                 <input
@@ -452,7 +452,7 @@ function CreateWizard() {
                 />
               </div>
               <div>
-                <label style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)', fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--txt3)', display: 'block', marginBottom: '0.2rem' }}>
+                <label style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)', fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--txt3)', display: 'block', marginBottom: '0.25rem' }}>
                   GENDER
                 </label>
                 <select
@@ -481,7 +481,7 @@ function CreateWizard() {
                     return (
                       <div key={key} style={{
                         display: 'flex', alignItems: 'center', gap: 'var(--sp-sm)',
-                        padding: '0.3rem 0.5rem',
+                        padding: '0.25rem 0.5rem',
                         background: 'rgba(255,255,255,.5)',
                         border: '1px solid var(--bdr-l)',
                       }}>
@@ -556,7 +556,7 @@ function CreateWizard() {
         {step === 5 && (
           <HudCard title="Confirm Character" animClass="au d1">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-sm)' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '6rem 1fr', gap: '0.3rem 0.8rem', fontSize: 'var(--font-md)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '6rem 1fr', gap: '0.25rem 0.75rem', fontSize: 'var(--font-md)' }}>
                 <span style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--txt3)', letterSpacing: '0.1rem' }}>NAME</span>
                 <span style={{ fontWeight: 600, color: 'var(--ink)' }}>{draft.name}</span>
 
@@ -597,13 +597,13 @@ function CreateWizard() {
                   <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)', fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--txt3)', marginBottom: 'var(--sp-xs)' }}>
                     FREE SKILL RANKS
                   </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.2rem' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
                     {[...draft.freeCareerPicks, ...draft.freeSpecPicks].map((sk, i) => (
                       <span key={`${sk}-${i}`} style={{
                         fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', fontWeight: 600,
                         color: '#d64d8a', background: 'rgba(214,77,138,.08)',
                         border: '1px solid rgba(214,77,138,.3)',
-                        padding: '0.08rem 0.35rem',
+                        padding: '0.08rem 0.5rem',
                       }}>
                         {skillMap[sk]?.name || sk}
                       </span>
@@ -618,13 +618,13 @@ function CreateWizard() {
                   <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)', fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--txt3)', marginBottom: 'var(--sp-xs)' }}>
                     XP SKILL PURCHASES ({xpSpentOnSkills} XP)
                   </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.2rem' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
                     {Object.entries(draft.skillRanks).filter(([, r]) => r > 0).map(([sk, r]) => (
                       <span key={sk} style={{
                         fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', fontWeight: 600,
                         color: 'var(--gold-d)', background: 'rgba(200,162,78,.08)',
                         border: '1px solid rgba(200,162,78,.3)',
-                        padding: '0.08rem 0.35rem',
+                        padding: '0.08rem 0.5rem',
                       }}>
                         {skillMap[sk]?.name || sk} +{r}
                       </span>
@@ -639,13 +639,13 @@ function CreateWizard() {
                   <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)', fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--txt3)', marginBottom: 'var(--sp-xs)' }}>
                     TALENTS ({xpSpentOnTalents} XP)
                   </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.2rem' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
                     {draft.talentPicks.map(t => (
                       <span key={`${t.key}-${t.row}-${t.col}`} style={{
                         fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', fontWeight: 600,
                         color: 'var(--blue)', background: 'rgba(43,93,174,.08)',
                         border: '1px solid rgba(43,93,174,.3)',
-                        padding: '0.08rem 0.35rem',
+                        padding: '0.08rem 0.5rem',
                       }}>
                         {talentMap[t.key]?.name || t.key} ({t.cost} XP)
                       </span>
@@ -656,7 +656,7 @@ function CreateWizard() {
 
               {/* XP breakdown boxes */}
               <div style={{ borderTop: '1px solid var(--bdr-l)', paddingTop: 'var(--sp-sm)', marginTop: 'var(--sp-xs)' }}>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
                   <div style={{
                     background: 'rgba(200,162,78,.1)', border: '1px solid rgba(200,162,78,.4)',
                     padding: '0.25rem 0.5rem', textAlign: 'center',
@@ -705,7 +705,7 @@ function CreateWizard() {
                 <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)', fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--txt3)', marginBottom: 'var(--sp-xs)' }}>
                   CAREER SKILLS ({careerSkillKeys.size})
                 </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.2rem' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
                   {[...careerSkillKeys].map(k => {
                     const isFromCareer = draft.career?.career_skill_keys?.includes(k)
                     return (
@@ -714,7 +714,7 @@ function CreateWizard() {
                         color: isFromCareer ? '#d64d8a' : 'var(--txt3)',
                         background: isFromCareer ? 'rgba(214,77,138,.08)' : 'rgba(0,0,0,.04)',
                         border: `1px solid ${isFromCareer ? 'rgba(214,77,138,.3)' : 'var(--bdr-l)'}`,
-                        padding: '0.08rem 0.35rem', whiteSpace: 'nowrap',
+                        padding: '0.08rem 0.5rem', whiteSpace: 'nowrap',
                       }}>
                         {skillMap[k]?.name || k}
                       </span>
@@ -805,7 +805,7 @@ function SpeciesSelector({
           style={{
             display: 'flex', alignItems: 'center',
             background: 'var(--white)', border: `1px solid ${open ? 'var(--gold)' : 'var(--bdr-l)'}`,
-            padding: '0.45rem 0.7rem', cursor: 'text',
+            padding: '0.45rem 0.75rem', cursor: 'text',
             transition: 'border-color .2s',
           }}
         >
@@ -825,7 +825,7 @@ function SpeciesSelector({
             onClick={e => { e.stopPropagation(); setOpen(o => !o) }}
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
-              fontSize: 'var(--font-sm)', color: 'var(--txt3)', padding: '0 0.2rem',
+              fontSize: 'var(--font-sm)', color: 'var(--txt3)', padding: '0 0.25rem',
               transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
               transition: 'transform .2s',
             }}
@@ -845,7 +845,7 @@ function SpeciesSelector({
           }}>
             {filtered.length === 0 ? (
               <div style={{
-                padding: '0.8rem', textAlign: 'center',
+                padding: '0.75rem', textAlign: 'center',
                 fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', color: 'var(--txt3)',
               }}>
                 No species found
@@ -858,7 +858,7 @@ function SpeciesSelector({
                   onClick={() => { onSelect(sp); setQuery(''); setOpen(false) }}
                   style={{
                     display: 'block', width: '100%', textAlign: 'left',
-                    padding: '0.5rem 0.7rem',
+                    padding: '0.5rem 0.75rem',
                     background: isSelected ? 'var(--gold-glow)' : 'transparent',
                     border: 'none', borderBottom: '1px solid var(--bdr-l)',
                     cursor: 'pointer', transition: 'background .12s',
@@ -873,7 +873,7 @@ function SpeciesSelector({
                     {sp.name}
                   </div>
                   <div style={{
-                    display: 'flex', flexWrap: 'wrap', gap: '0.15rem', marginTop: '0.15rem',
+                    display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginTop: '0.25rem',
                   }}>
                     {[
                       { label: 'Br', value: sp.brawn },
@@ -1054,7 +1054,7 @@ function CareerSelector({
           style={{
             display: 'flex', alignItems: 'center',
             background: 'var(--white)', border: `1px solid ${open ? 'var(--gold)' : 'var(--bdr-l)'}`,
-            padding: '0.45rem 0.7rem', cursor: 'text',
+            padding: '0.45rem 0.75rem', cursor: 'text',
             transition: 'border-color .2s',
           }}
         >
@@ -1090,7 +1090,7 @@ function CareerSelector({
           }}>
             {filtered.length === 0 ? (
               <div style={{
-                padding: '0.8rem', textAlign: 'center',
+                padding: '0.75rem', textAlign: 'center',
                 fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', color: 'var(--txt3)',
               }}>
                 No careers found
@@ -1103,7 +1103,7 @@ function CareerSelector({
                   onClick={() => { onSelect(car); setQuery(''); setOpen(false) }}
                   style={{
                     display: 'block', width: '100%', textAlign: 'left',
-                    padding: '0.5rem 0.7rem',
+                    padding: '0.5rem 0.75rem',
                     background: isSelected ? 'var(--gold-glow)' : 'transparent',
                     border: 'none', borderBottom: '1px solid var(--bdr-l)',
                     cursor: 'pointer', transition: 'background .12s',
@@ -1118,7 +1118,7 @@ function CareerSelector({
                     {car.name}
                   </div>
                   <div style={{
-                    display: 'flex', flexWrap: 'wrap', gap: '0.15rem', marginTop: '0.15rem',
+                    display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginTop: '0.25rem',
                   }}>
                     {car.career_skill_keys?.map(k => (
                       <span key={k} style={{
@@ -1156,18 +1156,18 @@ function CareerSelector({
           <div style={{
             fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)',
             fontWeight: 700, letterSpacing: '0.1rem', color: 'var(--txt3)',
-            marginBottom: '0.3rem',
+            marginBottom: '0.25rem',
           }}>
             CAREER SKILLS
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.2rem', marginBottom: 'var(--sp-sm)' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginBottom: 'var(--sp-sm)' }}>
             {selected.career_skill_keys?.map(k => (
               <span key={k} style={{
                 fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', fontWeight: 600,
                 letterSpacing: '0.04rem', color: '#d64d8a',
                 background: 'rgba(214,77,138,.08)',
                 border: '1px solid rgba(214,77,138,.3)',
-                padding: '0.08rem 0.35rem', whiteSpace: 'nowrap',
+                padding: '0.08rem 0.5rem', whiteSpace: 'nowrap',
               }}>
                 {skillMap[k] || k}
               </span>
@@ -1269,7 +1269,7 @@ function SpecializationSelector({
         onClick={() => { onSelect(spec); setQuery(''); setOpen(false) }}
         style={{
           display: 'block', width: '100%', textAlign: 'left',
-          padding: '0.5rem 0.7rem',
+          padding: '0.5rem 0.75rem',
           background: isSelected ? 'var(--gold-glow)' : 'transparent',
           border: 'none', borderBottom: '1px solid var(--bdr-l)',
           cursor: 'pointer', transition: 'background .12s',
@@ -1284,12 +1284,12 @@ function SpecializationSelector({
         }}>
           {spec.name}
           {!isCareer && (
-            <span style={{ fontSize: 'var(--font-2xs)', color: 'var(--txt3)', marginLeft: '0.4rem', fontWeight: 500 }}>
+            <span style={{ fontSize: 'var(--font-2xs)', color: 'var(--txt3)', marginLeft: '0.5rem', fontWeight: 500 }}>
               ({spec.career_key})
             </span>
           )}
         </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.15rem', marginTop: '0.15rem' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginTop: '0.25rem' }}>
           {spec.career_skill_keys?.map(k => (
             <span key={k} style={{
               fontFamily: 'var(--font-mono)', fontSize: 'var(--font-2xs)', fontWeight: 600,
@@ -1315,7 +1315,7 @@ function SpecializationSelector({
           style={{
             display: 'flex', alignItems: 'center',
             background: 'var(--white)', border: `1px solid ${open ? 'var(--gold)' : 'var(--bdr-l)'}`,
-            padding: '0.45rem 0.7rem', cursor: 'text',
+            padding: '0.45rem 0.75rem', cursor: 'text',
             transition: 'border-color .2s',
           }}
         >
@@ -1351,7 +1351,7 @@ function SpecializationSelector({
           }}>
             {filtered.career.length === 0 && filtered.other.length === 0 ? (
               <div style={{
-                padding: '0.8rem', textAlign: 'center',
+                padding: '0.75rem', textAlign: 'center',
                 fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', color: 'var(--txt3)',
               }}>
                 No specializations found
@@ -1361,7 +1361,7 @@ function SpecializationSelector({
                 {filtered.career.map(s => renderItem(s, true))}
                 {filtered.other.length > 0 && filtered.career.length > 0 && (
                   <div style={{
-                    padding: '0.3rem 0.7rem',
+                    padding: '0.25rem 0.75rem',
                     fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)',
                     fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--txt3)',
                     background: 'rgba(0,0,0,.03)', borderBottom: '1px solid var(--bdr-l)',
@@ -1393,18 +1393,18 @@ function SpecializationSelector({
           <div style={{
             fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)',
             fontWeight: 700, letterSpacing: '0.1rem', color: 'var(--txt3)',
-            marginBottom: '0.3rem',
+            marginBottom: '0.25rem',
           }}>
             BONUS SKILLS
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.2rem', marginBottom: 'var(--sp-sm)' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginBottom: 'var(--sp-sm)' }}>
             {selected.career_skill_keys?.map(k => (
               <span key={k} style={{
                 fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', fontWeight: 600,
                 letterSpacing: '0.04rem', color: '#d64d8a',
                 background: 'rgba(214,77,138,.08)',
                 border: '1px solid rgba(214,77,138,.3)',
-                padding: '0.08rem 0.35rem', whiteSpace: 'nowrap',
+                padding: '0.08rem 0.5rem', whiteSpace: 'nowrap',
               }}>
                 {skillMap[k] || k}
               </span>
@@ -1588,7 +1588,7 @@ function SkillsTalentsStep({
     color: active ? '#d64d8a' : 'var(--txt3)',
     background: active ? 'rgba(214,77,138,.12)' : 'rgba(0,0,0,.04)',
     border: `1px solid ${active ? 'rgba(214,77,138,.4)' : 'var(--bdr-l)'}`,
-    padding: '0.15rem 0.45rem',
+    padding: '0.25rem 0.45rem',
     cursor: 'pointer', transition: '.15s', whiteSpace: 'nowrap',
   })
 
@@ -1697,7 +1697,7 @@ function SkillsTalentsStep({
                 {hasCareerPick && (
                   <span style={{
                     fontSize: 'var(--font-2xs)', color: 'var(--gold-d)',
-                    marginLeft: '0.2rem',
+                    marginLeft: '0.25rem',
                   }}>
                     (+1)
                   </span>
@@ -1713,7 +1713,7 @@ function SkillsTalentsStep({
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', color: 'var(--txt3)', marginBottom: 'var(--sp-sm)' }}>
           Career skills cost rank × 5 XP. Non-career: (rank × 5) + 5 XP.
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', maxHeight: '18rem', overflowY: 'auto' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', maxHeight: '18rem', overflowY: 'auto' }}>
           {refSkills.map(sk => {
             const isCareer = careerSkillKeys.has(sk.key)
             const freeRanks = (draft.freeCareerPicks.includes(sk.key) ? 1 : 0) +
@@ -1729,7 +1729,7 @@ function SkillsTalentsStep({
             return (
               <div key={sk.key} style={{
                 display: 'flex', alignItems: 'center', gap: 'var(--sp-sm)',
-                padding: '0.2rem 0.4rem',
+                padding: '0.25rem 0.5rem',
                 background: isCareer ? 'rgba(214,77,138,.03)' : 'rgba(0,0,0,.02)',
                 border: '1px solid var(--bdr-l)',
               }}>
@@ -1740,7 +1740,7 @@ function SkillsTalentsStep({
                 }}>
                   {sk.name}
                   {freeRanks > 0 && (
-                    <span style={{ fontSize: 'var(--font-2xs)', color: '#d64d8a', marginLeft: '0.3rem' }}>
+                    <span style={{ fontSize: 'var(--font-2xs)', color: '#d64d8a', marginLeft: '0.25rem' }}>
                       {freeRanks} free
                     </span>
                   )}
@@ -1850,7 +1850,7 @@ function SkillsTalentsStep({
       {/* D) XP Purchases — Talents (Row 0) */}
       {row0Talents.length > 0 && (
         <HudCard title="Starting Talents (Row 1 — 5 XP each)" animClass="au d4">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
             {row0Talents.map(t => {
               const purchased = draft.talentPicks.some(p => p.key === t.key && p.col === t.col)
               return (
@@ -1877,7 +1877,7 @@ function SkillsTalentsStep({
                     </div>
                     <div style={{
                       fontFamily: 'var(--font-mono)', fontSize: 'var(--font-2xs)',
-                      color: 'var(--txt3)', marginTop: '0.1rem',
+                      color: 'var(--txt3)', marginTop: '0.25rem',
                     }}>
                       {t.talent.activation === 'taPassive' ? 'Passive' :
                        t.talent.activation === 'taAction' ? 'Action' :
@@ -1887,7 +1887,7 @@ function SkillsTalentsStep({
                     {t.talent.description && (
                       <div style={{
                         fontFamily: 'var(--font-mono)', fontSize: 'var(--font-2xs)',
-                        color: 'var(--txt2)', marginTop: '0.15rem', lineHeight: 1.4,
+                        color: 'var(--txt2)', marginTop: '0.25rem', lineHeight: 1.4,
                       }}
                         dangerouslySetInnerHTML={{
                           __html: (t.talent.description.length > 150
@@ -1963,7 +1963,7 @@ function NonCareerSkillExpander({
         onClick={() => setExpanded(!expanded)}
         style={{
           background: 'none', border: '1px solid var(--bdr-l)',
-          padding: '0.3rem 0.6rem', cursor: 'pointer',
+          padding: '0.25rem 0.6rem', cursor: 'pointer',
           fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)',
           fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--txt3)',
           transition: '.2s', width: '100%',
@@ -1972,7 +1972,7 @@ function NonCareerSkillExpander({
         {expanded ? '▲ HIDE' : '▼ SHOW'} NON-CAREER SKILLS ({nonCareerSkills.length})
       </button>
       {expanded && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', marginTop: '0.3rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginTop: '0.25rem' }}>
           {nonCareerSkills.map(sk => {
             const purchased = draft.skillRanks[sk.key] || 0
             const totalRank = purchased
@@ -1982,7 +1982,7 @@ function NonCareerSkillExpander({
             return (
               <div key={sk.key} style={{
                 display: 'flex', alignItems: 'center', gap: 'var(--sp-sm)',
-                padding: '0.2rem 0.4rem',
+                padding: '0.25rem 0.5rem',
                 background: 'rgba(0,0,0,.02)',
                 border: '1px solid var(--bdr-l)',
               }}>

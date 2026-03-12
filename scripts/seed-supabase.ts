@@ -13,13 +13,7 @@ import * as dotenv from 'dotenv'
 
 dotenv.config({ path: path.join(__dirname, '..', '.env.local') })
 
-const sql = postgres({
-  host: 'aws-1-ap-southeast-1.pooler.supabase.com',
-  port: 6543,
-  database: 'postgres',
-  username: 'postgres.peodenvcchftqqtikdhx',
-  password: process.env.DB_PASSWORD!,
-})
+const sql = postgres(process.env.DATABASE_URL!)
 
 const PARSED_DIR = path.join(__dirname, '..', 'oggdude', 'parsed')
 
@@ -28,7 +22,11 @@ function loadJSON(filename: string): Record<string, unknown>[] {
 }
 
 async function seedTable(tableName: string, jsonFile: string, primaryKey = 'key') {
-  const data = loadJSON(jsonFile)
+  const rawData = loadJSON(jsonFile)
+  // Deduplicate by primary key (keep last occurrence)
+  const seen = new Map<string, Record<string, unknown>>()
+  for (const row of rawData) seen.set(String(row[primaryKey]), row)
+  const data = Array.from(seen.values())
   console.log(`Seeding ${tableName}: ${data.length} rows...`)
 
   // Build column list from first row
@@ -62,7 +60,7 @@ async function seedTable(tableName: string, jsonFile: string, primaryKey = 'key'
       await sql.unsafe(`
         INSERT INTO ${tableName} (${columns.join(', ')})
         VALUES ${values}
-        ON CONFLICT (${primaryKey}) DO NOTHING
+        ON CONFLICT (${primaryKey}) DO UPDATE SET ${columns.filter(c => c !== primaryKey).map(c => `${c} = EXCLUDED.${c}`).join(', ')}
       `)
       inserted += batch.length
     } catch (err: any) {
@@ -87,6 +85,8 @@ async function main() {
   await seedTable('ref_obligations', 'ref_obligations.json')
   await seedTable('ref_duties', 'ref_duties.json')
   await seedTable('ref_item_descriptors', 'ref_item_descriptors.json')
+  await seedTable('ref_force_powers', 'ref_force_powers.json')
+  await seedTable('ref_force_abilities', 'ref_force_abilities.json')
 
   // Verify counts
   console.log('\nVerifying...')
@@ -103,7 +103,9 @@ async function main() {
     SELECT 'ref_obligations', count(*) FROM ref_obligations UNION ALL
     SELECT 'ref_duties', count(*) FROM ref_duties UNION ALL
     SELECT 'ref_item_descriptors', count(*) FROM ref_item_descriptors UNION ALL
-    SELECT 'ref_critical_injuries', count(*) FROM ref_critical_injuries
+    SELECT 'ref_critical_injuries', count(*) FROM ref_critical_injuries UNION ALL
+    SELECT 'ref_force_powers', count(*) FROM ref_force_powers UNION ALL
+    SELECT 'ref_force_abilities', count(*) FROM ref_force_abilities
     ORDER BY t
   `
   for (const row of counts) {

@@ -11,6 +11,8 @@ const TABS = [
   { key: 'Character', icon: '\u2726', label: 'Character' },
   { key: 'Talents', icon: '\u2605', label: 'Talents' },
   { key: 'Inventory', icon: '\u2692', label: 'Inventory' },
+  { key: 'Lore', icon: '\u270E', label: 'Lore' },
+  { key: 'Force', icon: '\u25C6', label: 'Force' },
 ]
 
 export function Sidebar({ activeTab = 'Character', onTabChange }: SidebarProps) {
@@ -77,7 +79,7 @@ export function Sidebar({ activeTab = 'Character', onTabChange }: SidebarProps) 
               transition: '.2s',
             }}
           >
-            <span style={{ marginRight: '0.3rem' }}>{tab.icon}</span>
+            <span style={{ marginRight: '0.25rem' }}>{tab.icon}</span>
             {tab.label}
           </button>
         )
