@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCharacterData } from '@/hooks/useCharacterData'
 import { LoreContent } from '@/components/character/LoreContent'
@@ -449,11 +449,16 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
 
   // ── Session / roll feed ──
   const effectiveCampaignId = campaignId ?? character?.campaign_id ?? null
-  const { mode: dbMode, round: dbRound, transitionPending, prevMode } = useSessionMode(effectiveCampaignId)
+  const { mode: dbMode, round: dbRound, transitionPending: dbTransitionPending, prevMode: dbPrevMode } = useSessionMode(effectiveCampaignId)
   // Broadcast override — GM pushes combat state directly for instant delivery
   const [broadcastSession, setBroadcastSession] = useState<{ mode: 'combat' | 'exploration'; round: number } | null>(null)
+  const [broadcastTransition, setBroadcastTransition] = useState<{ pending: boolean; prevMode: 'combat' | 'exploration' | null }>({ pending: false, prevMode: null })
   const sessionMode = broadcastSession?.mode ?? dbMode
   const combatRound = broadcastSession?.round ?? dbRound
+  const transitionPending = broadcastTransition.pending || dbTransitionPending
+  const prevMode = broadcastTransition.prevMode ?? dbPrevMode
+  const sessionModeRef = useRef<'combat' | 'exploration'>('exploration')
+  sessionModeRef.current = sessionMode
   const rolls = useRollFeed(effectiveCampaignId)
   const isCombat = sessionMode === 'combat'
 
@@ -484,7 +489,18 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           import('sonner').then(m => m.toast(payload.message as any))
         } else if (payload.type === 'combat-state') {
-          setBroadcastSession({ mode: payload.mode as 'combat' | 'exploration', round: payload.round as number })
+          const newMode = payload.mode as 'combat' | 'exploration'
+          const newRound = payload.round as number
+          const curMode = sessionModeRef.current
+          if (newMode !== curMode) {
+            setBroadcastTransition({ pending: true, prevMode: curMode })
+            setTimeout(() => {
+              setBroadcastSession({ mode: newMode, round: newRound })
+              setBroadcastTransition({ pending: false, prevMode: null })
+            }, 1200)
+          } else {
+            setBroadcastSession({ mode: newMode, round: newRound })
+          }
         } else if (payload.type === 'loot-reveal') {
           setLootReveal(payload.item as Record<string, unknown>)
         } else if (payload.type === 'loot-dismiss') {
