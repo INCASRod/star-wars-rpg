@@ -34,12 +34,13 @@ interface DiceRollerProps {
   onRoll: (result: RollResult, skillName?: string) => void
 }
 
-const DIFF_PRESETS: { label: string; count: number }[] = [
-  { label: 'Easy', count: 1 },
-  { label: 'Average', count: 2 },
-  { label: 'Hard', count: 3 },
-  { label: 'Daunting', count: 4 },
-  { label: 'Formidable', count: 5 },
+// Range band → difficulty count (for ranged attacks)
+const RANGE_BANDS: { label: string; sub: string; count: number }[] = [
+  { label: 'Engaged', sub: 'Easy',     count: 1 },
+  { label: 'Short',   sub: 'Easy',     count: 1 },
+  { label: 'Medium',  sub: 'Average',  count: 2 },
+  { label: 'Long',    sub: 'Hard',     count: 3 },
+  { label: 'Extreme', sub: 'Daunting', count: 4 },
 ]
 
 const POSITIVE: DiceType[] = ['proficiency', 'ability', 'boost']
@@ -166,12 +167,19 @@ function SectionLabel({ text }: { text: string }) {
 }
 
 export function DiceRoller({ trainedSkills, equippedWeapons, onRoll }: DiceRollerProps) {
-  const [pool, setPool] = useState<Record<DiceType, number>>({ ...EMPTY_POOL })
+  const [pool, setPool]               = useState<Record<DiceType, number>>({ ...EMPTY_POOL })
   const [selectedWeaponId, setSelectedWeaponId] = useState<string | null>(null)
+  const [selectedSkillKey, setSelectedSkillKey] = useState<string | null>(null)
+  const [selectedRangeBand, setSelectedRangeBand] = useState<string | null>(null)
 
-  const addDie = (type: DiceType) => setPool(p => ({ ...p, [type]: p[type] + 1 }))
+  const addDie    = (type: DiceType) => setPool(p => ({ ...p, [type]: p[type] + 1 }))
   const removeDie = (type: DiceType) => setPool(p => ({ ...p, [type]: Math.max(0, p[type] - 1) }))
-  const clearPool = () => { setPool({ ...EMPTY_POOL }); setSelectedWeaponId(null) }
+  const clearPool = () => {
+    setPool({ ...EMPTY_POOL })
+    setSelectedWeaponId(null)
+    setSelectedSkillKey(null)
+    setSelectedRangeBand(null)
+  }
   const isEmpty = poolSize(pool) === 0
 
   const selectedWeapon = selectedWeaponId ? equippedWeapons.find(w => w.id === selectedWeaponId) ?? null : null
@@ -179,23 +187,26 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll }: DiceRolle
   const loadWeapon = (wpn: QuickWeapon) => {
     const { proficiency, ability } = getSkillPool(wpn.charVal, wpn.rank)
     setSelectedWeaponId(wpn.id)
+    setSelectedSkillKey(wpn.skillName)
     setPool(p => ({ ...p, proficiency, ability }))
   }
 
-  const setDifficulty = (count: number) => {
-    setPool(p => ({ ...p, difficulty: count }))
+  const loadSkill = (skill: QuickRollSkill) => {
+    const { proficiency, ability } = getSkillPool(skill.charVal, skill.rank)
+    setSelectedSkillKey(skill.name)
+    setSelectedWeaponId(null)
+    setPool(p => ({ ...p, proficiency, ability }))
+  }
+
+  const setRangeBand = (band: typeof RANGE_BANDS[number]) => {
+    setSelectedRangeBand(band.label)
+    setPool(p => ({ ...p, difficulty: band.count }))
   }
 
   const handleRoll = () => {
     if (isEmpty) return
-    const result = rollPool(pool)
-    const label = selectedWeapon ? selectedWeapon.name : `${poolSize(pool)} dice`
-    onRoll(result, label)
-  }
-
-  const handleQuickRoll = (skill: QuickRollSkill, name: string) => {
-    const { proficiency, ability } = getSkillPool(skill.charVal, skill.rank)
-    onRoll(rollPool({ ...EMPTY_POOL, proficiency, ability, difficulty: 2 }), name)
+    const label = selectedWeapon ? selectedWeapon.name : selectedSkillKey ?? `${poolSize(pool)} dice`
+    onRoll(rollPool(pool), label)
   }
 
   return (
@@ -205,11 +216,11 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll }: DiceRolle
         <CornerBrackets />
         <SectionLabel text="Dice Pool" />
 
-        {/* Weapon selector — shown when weapons are equipped */}
+        {/* Weapon selector */}
         {equippedWeapons.length > 0 && (
           <div style={{ marginBottom: 12 }}>
             <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textDim, marginBottom: 6 }}>
-              Load Weapon
+              Weapon
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {equippedWeapons.map(wpn => {
@@ -217,7 +228,7 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll }: DiceRolle
                 return (
                   <button
                     key={wpn.id}
-                    onClick={() => isSelected ? (setSelectedWeaponId(null), setPool(p => ({ ...p, proficiency: 0, ability: 0 }))) : loadWeapon(wpn)}
+                    onClick={() => isSelected ? (setSelectedWeaponId(null), setSelectedSkillKey(null), setPool(p => ({ ...p, proficiency: 0, ability: 0 }))) : loadWeapon(wpn)}
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                       padding: '6px 10px', borderRadius: 4, cursor: 'pointer', textAlign: 'left',
@@ -231,13 +242,12 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll }: DiceRolle
                         {wpn.name}
                       </div>
                       <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 11, color: C.textDim, marginTop: 2 }}>
-                        {wpn.skillName && <span style={{ color: C.textDim }}>{wpn.skillName} · </span>}
+                        {wpn.skillName && <span>{wpn.skillName} · </span>}
                         <span style={{ color: '#E07855' }}>DMG {wpn.damage}</span>
                         {wpn.crit > 0 && <span style={{ color: '#E05050' }}> · CRIT {wpn.crit}</span>}
                         {wpn.range && <span> · {wpn.range}</span>}
                       </div>
                     </div>
-                    {/* Pool preview */}
                     <div style={{ display: 'flex', gap: 2, alignItems: 'center', flexShrink: 0 }}>
                       {(() => {
                         const { proficiency, ability } = getSkillPool(wpn.charVal, wpn.rank)
@@ -258,13 +268,82 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll }: DiceRolle
           </div>
         )}
 
+        {/* Check Type — trained skills */}
+        {trainedSkills.length > 0 && (
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textDim, marginBottom: 6 }}>
+              Check Type
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              {trainedSkills.map(skill => {
+                const isSelected = selectedSkillKey === skill.name
+                const color = CHAR_COLOR[skill.charKey]
+                const { proficiency, ability } = getSkillPool(skill.charVal, skill.rank)
+                return (
+                  <button
+                    key={skill.key}
+                    onClick={() => isSelected ? (setSelectedSkillKey(null), setPool(p => ({ ...p, proficiency: 0, ability: 0 }))) : loadSkill(skill)}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '5px 8px', borderRadius: 3, cursor: 'pointer', textAlign: 'left',
+                      borderLeft: `2px solid ${isSelected ? color : `${color}60`}`,
+                      background: isSelected ? `${color}18` : 'transparent',
+                      border: `1px solid ${isSelected ? `${color}50` : 'transparent'}`,
+                      borderLeftColor: isSelected ? color : `${color}60`,
+                      transition: '.12s', width: '100%',
+                    }}
+                  >
+                    <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 13, fontWeight: 600, color: isSelected ? color : C.text }}>
+                      {skill.name}
+                    </div>
+                    <div style={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                      {Array.from({ length: proficiency }).map((_, i) => (
+                        <div key={`p${i}`} style={{ width: 7, height: 7, background: '#D4B840', transform: 'rotate(45deg)', flexShrink: 0 }} />
+                      ))}
+                      {Array.from({ length: ability }).map((_, i) => (
+                        <div key={`a${i}`} style={{ width: 7, height: 7, borderRadius: '50%', background: '#4EC87A', flexShrink: 0 }} />
+                      ))}
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Range Band */}
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textDim, marginBottom: 6 }}>
+            Range Band
+          </div>
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+            {RANGE_BANDS.map(band => {
+              const isActive = selectedRangeBand === band.label
+              return (
+                <button
+                  key={band.label}
+                  onClick={() => setRangeBand(band)}
+                  style={{
+                    background: isActive ? 'rgba(144,96,208,0.22)' : 'transparent',
+                    border: `1px solid ${isActive ? '#9060D0' : C.border}`,
+                    borderRadius: 3, padding: '3px 8px', cursor: 'pointer',
+                    fontFamily: FONT_RAJDHANI, fontWeight: 700, letterSpacing: '0.06em',
+                    transition: '.12s', whiteSpace: 'nowrap', textAlign: 'center',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
+                  }}
+                >
+                  <span style={{ fontSize: 12, color: isActive ? '#9060D0' : C.text }}>{band.label}</span>
+                  <span style={{ fontSize: 10, color: isActive ? '#9060D080' : C.textFaint }}>{band.sub}</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
         {/* Positive dice */}
         <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: 12 }}>
           {POSITIVE.map(type => (
-            <DiceBtn
-              key={type} type={type} count={pool[type]}
-              onAdd={() => addDie(type)} onRemove={() => removeDie(type)}
-            />
+            <DiceBtn key={type} type={type} count={pool[type]} onAdd={() => addDie(type)} onRemove={() => removeDie(type)} />
           ))}
         </div>
 
@@ -273,36 +352,8 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll }: DiceRolle
         {/* Negative dice */}
         <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: 12 }}>
           {NEGATIVE.map(type => (
-            <DiceBtn
-              key={type} type={type} count={pool[type]}
-              onAdd={() => addDie(type)} onRemove={() => removeDie(type)}
-            />
+            <DiceBtn key={type} type={type} count={pool[type]} onAdd={() => addDie(type)} onRemove={() => removeDie(type)} />
           ))}
-        </div>
-
-        {/* Difficulty presets */}
-        <div style={{ marginBottom: 12 }}>
-          <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textDim, marginBottom: 6 }}>
-            Difficulty Preset
-          </div>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {DIFF_PRESETS.map(p => (
-              <button
-                key={p.label}
-                onClick={() => setDifficulty(p.count)}
-                style={{
-                  background: pool.difficulty === p.count ? 'rgba(144,96,208,0.22)' : 'transparent',
-                  border: `1px solid ${pool.difficulty === p.count ? '#9060D0' : C.border}`,
-                  borderRadius: 3, padding: '2px 7px',
-                  fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700,
-                  letterSpacing: '0.06em', color: pool.difficulty === p.count ? '#9060D0' : C.textDim,
-                  cursor: 'pointer', transition: '.12s', whiteSpace: 'nowrap',
-                }}
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Roll button */}
@@ -311,11 +362,7 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll }: DiceRolle
           disabled={isEmpty}
           style={{
             width: '100%', padding: '10px 0',
-            background: isEmpty
-              ? C.textFaint
-              : selectedWeapon
-                ? 'linear-gradient(135deg, #E07855, #A04030)'
-                : 'linear-gradient(135deg, #C8AA50, #8E6E2A)',
+            background: isEmpty ? C.textFaint : selectedWeapon ? 'linear-gradient(135deg, #E07855, #A04030)' : 'linear-gradient(135deg, #C8AA50, #8E6E2A)',
             border: 'none', borderRadius: 4, cursor: isEmpty ? 'not-allowed' : 'pointer',
             fontFamily: FONT_CINZEL, fontSize: 13, fontWeight: 700,
             letterSpacing: '0.12em', color: isEmpty ? C.textDim : C.bg,
@@ -327,62 +374,17 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll }: DiceRolle
         </button>
 
         {!isEmpty && (
-          <button
-            onClick={clearPool}
-            style={{
-              width: '100%', marginTop: 6, padding: '5px 0',
-              background: 'transparent', border: `1px solid ${C.border}`,
-              borderRadius: 4, cursor: 'pointer',
-              fontFamily: FONT_RAJDHANI, fontSize: 10, fontWeight: 600,
-              letterSpacing: '0.08em', color: C.textDim, transition: '.15s',
-            }}
-          >
+          <button onClick={clearPool} style={{
+            width: '100%', marginTop: 6, padding: '5px 0',
+            background: 'transparent', border: `1px solid ${C.border}`,
+            borderRadius: 4, cursor: 'pointer',
+            fontFamily: FONT_RAJDHANI, fontSize: 10, fontWeight: 600,
+            letterSpacing: '0.08em', color: C.textDim, transition: '.15s',
+          }}>
             Clear Pool
           </button>
         )}
       </div>
-
-      {/* Quick Roll — trained skills only */}
-      {trainedSkills.length > 0 && (
-        <div style={{ ...panelBase, padding: '12px 12px 10px' }}>
-          <CornerBrackets />
-          <SectionLabel text="Quick Roll" />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            {trainedSkills.map(skill => {
-              const { proficiency, ability } = getSkillPool(skill.charVal, skill.rank)
-              const color = CHAR_COLOR[skill.charKey]
-              return (
-                <div
-                  key={skill.key}
-                  onClick={() => handleQuickRoll(skill, skill.name)}
-                  style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '5px 8px', borderRadius: 3, cursor: 'pointer',
-                    borderLeft: `2px solid ${color}`,
-                    background: 'transparent', transition: '.12s',
-                  }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = `${color}0D` }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
-                >
-                  <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 13, fontWeight: 600, color: C.text }}>
-                    {skill.name}
-                  </div>
-                  {/* Pip preview */}
-                  <div style={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                    {Array.from({ length: proficiency }).map((_, i) => (
-                      <div key={`p${i}`} style={{ width: 7, height: 7, background: '#D4B840', transform: 'rotate(45deg)' }} />
-                    ))}
-                    {Array.from({ length: ability }).map((_, i) => (
-                      <div key={`a${i}`} style={{ width: 7, height: 7, borderRadius: '50%', background: '#4EC87A' }} />
-                    ))}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
-
 
       {/* Symbol Legend */}
       <div style={{ ...panelBase, padding: '12px 12px 10px' }}>
