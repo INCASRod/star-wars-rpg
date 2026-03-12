@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import type { RealtimeChannel } from '@supabase/supabase-js'
 import { rollPool } from './dice-engine'
 import type { Character, CharacterSkill } from '@/lib/types'
 import { C, FONT_CINZEL, FONT_RAJDHANI, DICE_META, panelBase, FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4, FS_H3 } from './design-tokens'
@@ -51,7 +52,17 @@ export function InitiativeRollModal({ character, skills, initiativeType, campaig
   const [submitted,  setSubmitted]  = useState(false)
   const [busy,       setBusy]       = useState(false)
 
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
+  const channelRef = useRef<RealtimeChannel | null>(null)
+
+  // Subscribe to the initiative channel at mount so it's ready when Submit is clicked
+  useEffect(() => {
+    const ch = supabase.channel(`initiative-${campaignId}`)
+    ch.subscribe()
+    channelRef.current = ch
+    return () => { supabase.removeChannel(ch); channelRef.current = null }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [campaignId])
 
   const skillName  = initiativeType === 'cool' ? 'Cool' : 'Vigilance'
   const charLabel  = initiativeType === 'cool' ? 'Presence' : 'Willpower'
@@ -66,15 +77,16 @@ export function InitiativeRollModal({ character, skills, initiativeType, campaig
 
   const handleSubmit = async () => {
     setBusy(true)
-    const ch = supabase.channel(`initiative-${campaignId}`)
-    await ch.subscribe()
-    await ch.send({
-      type: 'broadcast',
-      event: 'initiative-result',
-      payload: { characterId: character.id, characterName: character.name, successes, advantages },
-    })
-    supabase.removeChannel(ch)
+    const ch = channelRef.current
+    if (ch) {
+      await ch.send({
+        type: 'broadcast',
+        event: 'initiative-result',
+        payload: { characterId: character.id, characterName: character.name, successes, advantages },
+      })
+    }
     setSubmitted(true)
+    setBusy(false)
     setTimeout(onClose, 1200)
   }
 

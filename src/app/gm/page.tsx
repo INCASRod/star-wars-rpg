@@ -391,6 +391,12 @@ function GmDashboard() {
     }
   }, [])
 
+  // Send arbitrary gm-action payload to a single character via already-subscribed channel
+  const sendToChar = useCallback((charId: string, payload: Record<string, unknown>) => {
+    const ch = gmChannelsRef.current.get(charId)
+    if (ch) ch.send({ type: 'broadcast', event: 'gm-action', payload })
+  }, [])
+
   // ── Loot query ──
   const buildLootQuery = useCallback(async (limit: number) => {
     const queries: Promise<{ data: LootItem[] }>[] = []
@@ -1856,7 +1862,7 @@ function GmDashboard() {
             </button>
           </div>
           <div style={{ flex: 1, overflow: 'hidden' }}>
-            <CombatPanel campaignId={campaignId} characters={characters} isDm={true} />
+            <CombatPanel campaignId={campaignId} characters={characters} isDm={true} sendToChar={sendToChar} />
           </div>
         </div>
       )}

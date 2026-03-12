@@ -28,6 +28,7 @@ export interface Adversary {
   strain?: number       // nemesis only
   defense: number[]     // [melee, ranged]
   skills?: string[]
+  skillRanks: Record<string, number>   // { Cool: 4, Vigilance: 2 } — normalized from object or array
   talents?: AdversaryTalent[]
   abilities?: { name: string; description: string }[]
   weapons?: AdversaryWeapon[]
@@ -52,6 +53,7 @@ export interface AdversaryInstance {
   strainThreshold?: number
   defense: { melee: number; ranged: number }
   skills: unknown[]
+  skillRanks: Record<string, number>   // normalized skill ranks for dice pool building
   talents: AdversaryTalent[]
   abilities: { name: string; description: string }[]
   weapons: AdversaryWeapon[]
@@ -111,6 +113,16 @@ function normalize(raw: Record<string, unknown>): Adversary {
     ? raw.weapons.map(w => typeof w === 'string' ? parseWeaponString(w) : w as AdversaryWeapon)
     : []
 
+  // Skills: rivals/nemeses use object { Cool: 4, Vigilance: 2 }, minions use string[] (rank=1 each)
+  const skillRanks: Record<string, number> = {}
+  if (raw.skills && !Array.isArray(raw.skills) && typeof raw.skills === 'object') {
+    for (const [k, v] of Object.entries(raw.skills as Record<string, unknown>)) {
+      skillRanks[k] = Number(v)
+    }
+  } else if (Array.isArray(raw.skills)) {
+    for (const s of raw.skills as string[]) { skillRanks[String(s)] = 1 }
+  }
+
   return {
     ...raw,
     id: String(raw.id ?? raw.name ?? Math.random()),
@@ -126,7 +138,8 @@ function normalize(raw: Record<string, unknown>): Adversary {
     wound:     Number(derived.wounds ?? derived.wound ?? raw.wound ?? raw.wounds ?? raw.woundThreshold ?? 10),
     strain:    derived.strain !== undefined ? Number(derived.strain) : raw.strain !== undefined ? Number(raw.strain) : undefined,
     defense,
-    skills:    Array.isArray(raw.skills) ? raw.skills as string[] : [],
+    skills:     Array.isArray(raw.skills) ? raw.skills as string[] : Object.keys(skillRanks),
+    skillRanks,
     talents:   Array.isArray(raw.talents) ? raw.talents as AdversaryTalent[] : [],
     abilities: Array.isArray(raw.abilities)
       ? raw.abilities.map(ab => typeof ab === 'string' ? { name: ab, description: '' } : ab as { name: string; description: string })
@@ -167,6 +180,7 @@ export function adversaryToInstance(adv: Adversary, groupSize = 4): AdversaryIns
       ranged: Array.isArray(adv.defense) ? (adv.defense[1] ?? 0) : 0,
     },
     skills: adv.skills ?? [],
+    skillRanks: adv.skillRanks ?? {},
     talents: adv.talents ?? [],
     abilities: adv.abilities ?? [],
     weapons: adv.weapons ?? [],

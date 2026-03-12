@@ -81,9 +81,10 @@ interface CombatPanelProps {
   campaignId: string
   characters: Character[]  // loaded by parent
   isDm: boolean
+  sendToChar?: (charId: string, payload: Record<string, unknown>) => void
 }
 
-export function CombatPanel({ campaignId, characters, isDm }: CombatPanelProps) {
+export function CombatPanel({ campaignId, characters, isDm, sendToChar }: CombatPanelProps) {
   // Adversary library state
   const [library, setLibrary] = useState<Adversary[]>([])
   const [libSearch, setLibSearch] = useState('')
@@ -1073,6 +1074,7 @@ export function CombatPanel({ campaignId, characters, isDm }: CombatPanelProps) 
           campaignId={campaignId}
           characters={characters}
           roster={roster}
+          sendToChar={sendToChar}
           onClose={() => setShowInitModal(false)}
           onStart={async (encounterData) => {
             // Upsert encounter to Supabase
