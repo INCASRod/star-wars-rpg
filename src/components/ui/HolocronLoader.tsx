@@ -98,7 +98,7 @@ export function HolocronLoader() {
       </div>
 
       {/* Status message — one at a time, React-driven */}
-      <div style={{
+      <div key={stepIdx} style={{
         fontFamily: "var(--font-rajdhani), 'Rajdhani', sans-serif",
         fontSize: 13, letterSpacing: '0.2em',
         color: `${GOLD}88`,
@@ -106,7 +106,6 @@ export function HolocronLoader() {
         height: 20,
         textAlign: 'center',
         animation: 'holo-fade 0.3s ease forwards',
-        key: stepIdx,  // force re-mount for fade-in on each step change
       }}>
         {STEPS[stepIdx]}
       </div>

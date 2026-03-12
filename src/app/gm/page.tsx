@@ -13,6 +13,7 @@ import { RollFeedPanel } from '@/components/player-hud/RollFeedPanel'
 import { rollPool } from '@/components/player-hud/dice-engine'
 import { logRoll } from '@/lib/logRoll'
 import { CombatPanel } from '@/components/dm/CombatPanel'
+import { HolocronLoader } from '@/components/ui/HolocronLoader'
 
 /* ═══════════════════════════════════════
    DESIGN TOKENS (Dark HUD)
@@ -865,17 +866,7 @@ function GmDashboard() {
   const charById = (id: string) => characters.find(c => c.id === id)
 
   // ── Loading / Error ──
-  if (loading) {
-    return (
-      <div style={{
-        width: '100vw', height: '100vh', display: 'flex',
-        alignItems: 'center', justifyContent: 'center',
-        background: BG, fontFamily: FC, color: GOLD, fontSize: FS_H3, letterSpacing: '0.3em',
-      }}>
-        LOADING GM DASHBOARD...
-      </div>
-    )
-  }
+  if (loading) return <HolocronLoader />
 
   if (error || !campaign) {
     return (
@@ -1125,7 +1116,7 @@ function GmDashboard() {
                     <div style={{ marginBottom: 5 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
                         <span style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 600, color: DIM, letterSpacing: '0.1em', textTransform: 'uppercase' }}>WOUNDS</span>
-                        <span style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 600, color: c.wound_current >= c.wound_threshold ? RED : DIM, fontWeight: 700 }}>
+                        <span style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700, color: c.wound_current >= c.wound_threshold ? RED : DIM }}>
                           {c.wound_current}/{c.wound_threshold}
                         </span>
                       </div>
@@ -1138,7 +1129,7 @@ function GmDashboard() {
                     <div style={{ marginBottom: 8 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
                         <span style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 600, color: DIM, letterSpacing: '0.1em', textTransform: 'uppercase' }}>STRAIN</span>
-                        <span style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 600, color: c.strain_current >= c.strain_threshold ? RED : DIM, fontWeight: 700 }}>
+                        <span style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700, color: c.strain_current >= c.strain_threshold ? RED : DIM }}>
                           {c.strain_current}/{c.strain_threshold}
                         </span>
                       </div>
