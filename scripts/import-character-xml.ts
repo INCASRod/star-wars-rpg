@@ -39,6 +39,13 @@ function sumRanks(rank: Record<string, number> | undefined | string): number {
   return Object.values(rank).reduce((sum, v) => sum + (typeof v === 'number' ? v : 0), 0)
 }
 
+// Skills use CareerRanks + NonCareerRanks (PurchasedRanks is their sum, not additive)
+function sumSkillRanks(rank: Record<string, number> | undefined | string): number {
+  if (!rank || typeof rank === 'string') return 0
+  const r = rank as Record<string, number>
+  return (r.CareerRanks ?? 0) + (r.NonCareerRanks ?? 0)
+}
+
 async function main() {
   const xmlPath = process.argv[2]
   if (!xmlPath) {
@@ -233,7 +240,7 @@ async function main() {
   const xmlSkills = ensureArray(char.Skills?.CharSkill)
   let skillCount = 0
   for (const sk of xmlSkills) {
-    const rank = sumRanks(sk.Rank)
+    const rank = sumSkillRanks(sk.Rank)
     const isCareer = sk.isCareer === true || sk.isCareer === 'true'
     await sql`
       INSERT INTO character_skills (character_id, skill_key, rank, is_career)
@@ -242,7 +249,7 @@ async function main() {
     `
     skillCount++
   }
-  console.log(`  Skills: ${skillCount} (${xmlSkills.filter((s: Record<string, unknown>) => sumRanks(s.Rank as Record<string, number>) > 0).length} trained)`)
+  console.log(`  Skills: ${skillCount} (${xmlSkills.filter((s: Record<string, unknown>) => sumSkillRanks(s.Rank as Record<string, number>) > 0).length} trained)`)
 
   // ── Talents (from specialization trees) ──
   let talentCount = 0
