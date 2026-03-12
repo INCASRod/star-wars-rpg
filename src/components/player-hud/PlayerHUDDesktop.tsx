@@ -33,7 +33,6 @@ import { useRollFeed } from '@/hooks/useRollFeed'
 import { logRoll } from '@/lib/logRoll'
 import { DerivedStatsPanel } from '@/components/wireframe/DerivedStatsPanel'
 import { TalentsPanel as WfTalentsPanel } from '@/components/wireframe/TalentsPanel'
-import { DicePoolBuilder as WfDicePoolBuilder } from '@/components/wireframe/DicePoolBuilder'
 import { DiceFeed as WfDiceFeed } from '@/components/wireframe/DiceFeed'
 import { CombatTracker } from '@/components/player/CombatTracker'
 import { InitiativeRollModal } from './InitiativeRollModal'
@@ -1364,9 +1363,6 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
             equippedWeapons={equippedWeaponQuick}
             onRoll={handleRoll}
           />
-          <div style={{ marginTop: 'var(--space-2)' }}>
-            <WfDicePoolBuilder onRoll={handleRoll} />
-          </div>
           {rolls.length > 0 && (
             <div style={{ marginTop: 'var(--space-2)' }}>
               <RollFeedMini

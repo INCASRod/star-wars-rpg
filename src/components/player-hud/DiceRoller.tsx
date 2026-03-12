@@ -7,7 +7,6 @@ import {
 } from './design-tokens'
 import { rollPool, getSkillPool, poolSize, type RollResult } from './dice-engine'
 import type { CharKey } from './design-tokens'
-import { CHAR_COLOR } from './design-tokens'
 
 export interface QuickRollSkill {
   key: string
@@ -29,18 +28,27 @@ export interface QuickWeapon {
 }
 
 interface DiceRollerProps {
-  trainedSkills: QuickRollSkill[]
+  trainedSkills?: QuickRollSkill[]
   equippedWeapons: QuickWeapon[]
   onRoll: (result: RollResult, skillName?: string) => void
 }
 
-// Range band → difficulty count (for ranged attacks)
+type CheckType = 'Ranged' | 'Melee' | 'Skill'
+
 const RANGE_BANDS: { label: string; sub: string; count: number }[] = [
   { label: 'Engaged', sub: 'Easy',     count: 1 },
   { label: 'Short',   sub: 'Easy',     count: 1 },
   { label: 'Medium',  sub: 'Average',  count: 2 },
   { label: 'Long',    sub: 'Hard',     count: 3 },
   { label: 'Extreme', sub: 'Daunting', count: 4 },
+]
+
+const DIFF_PRESETS: { label: string; count: number }[] = [
+  { label: 'Easy',       count: 1 },
+  { label: 'Average',    count: 2 },
+  { label: 'Hard',       count: 3 },
+  { label: 'Daunting',   count: 4 },
+  { label: 'Formidable', count: 5 },
 ]
 
 const POSITIVE: DiceType[] = ['proficiency', 'ability', 'boost']
@@ -169,16 +177,18 @@ function SectionLabel({ text }: { text: string }) {
 export function DiceRoller({ trainedSkills, equippedWeapons, onRoll }: DiceRollerProps) {
   const [pool, setPool]               = useState<Record<DiceType, number>>({ ...EMPTY_POOL })
   const [selectedWeaponId, setSelectedWeaponId] = useState<string | null>(null)
-  const [selectedSkillKey, setSelectedSkillKey] = useState<string | null>(null)
-  const [selectedRangeBand, setSelectedRangeBand] = useState<string | null>(null)
+  const [checkType, setCheckType]     = useState<CheckType>('Ranged')
+  const [rangeBandLabel, setRangeBandLabel] = useState('Medium')
+  const [diffPreset, setDiffPreset]   = useState(2)
 
   const addDie    = (type: DiceType) => setPool(p => ({ ...p, [type]: p[type] + 1 }))
   const removeDie = (type: DiceType) => setPool(p => ({ ...p, [type]: Math.max(0, p[type] - 1) }))
   const clearPool = () => {
     setPool({ ...EMPTY_POOL })
     setSelectedWeaponId(null)
-    setSelectedSkillKey(null)
-    setSelectedRangeBand(null)
+    setCheckType('Ranged')
+    setRangeBandLabel('Medium')
+    setDiffPreset(2)
   }
   const isEmpty = poolSize(pool) === 0
 
@@ -187,25 +197,32 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll }: DiceRolle
   const loadWeapon = (wpn: QuickWeapon) => {
     const { proficiency, ability } = getSkillPool(wpn.charVal, wpn.rank)
     setSelectedWeaponId(wpn.id)
-    setSelectedSkillKey(wpn.skillName)
     setPool(p => ({ ...p, proficiency, ability }))
   }
 
-  const loadSkill = (skill: QuickRollSkill) => {
-    const { proficiency, ability } = getSkillPool(skill.charVal, skill.rank)
-    setSelectedSkillKey(skill.name)
-    setSelectedWeaponId(null)
-    setPool(p => ({ ...p, proficiency, ability }))
+  const handleCheckType = (type: CheckType) => {
+    setCheckType(type)
+    if (type === 'Ranged') {
+      const band = RANGE_BANDS.find(b => b.label === rangeBandLabel) ?? RANGE_BANDS[2]
+      setPool(p => ({ ...p, difficulty: band.count }))
+    } else {
+      setPool(p => ({ ...p, difficulty: diffPreset }))
+    }
   }
 
-  const setRangeBand = (band: typeof RANGE_BANDS[number]) => {
-    setSelectedRangeBand(band.label)
-    setPool(p => ({ ...p, difficulty: band.count }))
+  const handleRangeBand = (band: typeof RANGE_BANDS[number]) => {
+    setRangeBandLabel(band.label)
+    if (checkType === 'Ranged') setPool(p => ({ ...p, difficulty: band.count }))
+  }
+
+  const handleDiffPreset = (count: number) => {
+    setDiffPreset(count)
+    if (checkType !== 'Ranged') setPool(p => ({ ...p, difficulty: count }))
   }
 
   const handleRoll = () => {
     if (isEmpty) return
-    const label = selectedWeapon ? selectedWeapon.name : selectedSkillKey ?? `${poolSize(pool)} dice`
+    const label = selectedWeapon ? selectedWeapon.name : `${poolSize(pool)} dice`
     onRoll(rollPool(pool), label)
   }
 
@@ -228,7 +245,7 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll }: DiceRolle
                 return (
                   <button
                     key={wpn.id}
-                    onClick={() => isSelected ? (setSelectedWeaponId(null), setSelectedSkillKey(null), setPool(p => ({ ...p, proficiency: 0, ability: 0 }))) : loadWeapon(wpn)}
+                    onClick={() => isSelected ? (setSelectedWeaponId(null), setPool(p => ({ ...p, proficiency: 0, ability: 0 }))) : loadWeapon(wpn)}
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                       padding: '6px 10px', borderRadius: 4, cursor: 'pointer', textAlign: 'left',
@@ -268,61 +285,48 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll }: DiceRolle
           </div>
         )}
 
-        {/* Check Type — trained skills */}
-        {trainedSkills.length > 0 && (
-          <div style={{ marginBottom: 12 }}>
-            <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textDim, marginBottom: 6 }}>
-              Check Type
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              {trainedSkills.map(skill => {
-                const isSelected = selectedSkillKey === skill.name
-                const color = CHAR_COLOR[skill.charKey]
-                const { proficiency, ability } = getSkillPool(skill.charVal, skill.rank)
-                return (
-                  <button
-                    key={skill.key}
-                    onClick={() => isSelected ? (setSelectedSkillKey(null), setPool(p => ({ ...p, proficiency: 0, ability: 0 }))) : loadSkill(skill)}
-                    style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '5px 8px', borderRadius: 3, cursor: 'pointer', textAlign: 'left',
-                      borderLeft: `2px solid ${isSelected ? color : `${color}60`}`,
-                      background: isSelected ? `${color}18` : 'transparent',
-                      border: `1px solid ${isSelected ? `${color}50` : 'transparent'}`,
-                      borderLeftColor: isSelected ? color : `${color}60`,
-                      transition: '.12s', width: '100%',
-                    }}
-                  >
-                    <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 13, fontWeight: 600, color: isSelected ? color : C.text }}>
-                      {skill.name}
-                    </div>
-                    <div style={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                      {Array.from({ length: proficiency }).map((_, i) => (
-                        <div key={`p${i}`} style={{ width: 7, height: 7, background: '#D4B840', transform: 'rotate(45deg)', flexShrink: 0 }} />
-                      ))}
-                      {Array.from({ length: ability }).map((_, i) => (
-                        <div key={`a${i}`} style={{ width: 7, height: 7, borderRadius: '50%', background: '#4EC87A', flexShrink: 0 }} />
-                      ))}
-                    </div>
-                  </button>
-                )
-              })}
-            </div>
+        {/* Check Type */}
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textDim, marginBottom: 6 }}>
+            Check Type
           </div>
-        )}
+          <div style={{ display: 'flex', gap: 4 }}>
+            {(['Ranged', 'Melee', 'Skill'] as CheckType[]).map(type => {
+              const isActive = checkType === type
+              return (
+                <button
+                  key={type}
+                  onClick={() => handleCheckType(type)}
+                  style={{
+                    flex: 1, padding: '5px 0',
+                    background: isActive ? `${C.gold}20` : 'transparent',
+                    border: `1px solid ${isActive ? C.gold : C.border}`,
+                    borderRadius: 3, cursor: 'pointer',
+                    fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700,
+                    letterSpacing: '0.08em', textTransform: 'uppercase',
+                    color: isActive ? C.gold : C.textDim,
+                    transition: '.12s',
+                  }}
+                >
+                  {type}
+                </button>
+              )
+            })}
+          </div>
+        </div>
 
         {/* Range Band */}
-        <div style={{ marginBottom: 12 }}>
+        <div style={{ marginBottom: 12, opacity: checkType === 'Ranged' ? 1 : 0.4, transition: '.15s' }}>
           <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textDim, marginBottom: 6 }}>
             Range Band
           </div>
           <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
             {RANGE_BANDS.map(band => {
-              const isActive = selectedRangeBand === band.label
+              const isActive = rangeBandLabel === band.label
               return (
                 <button
                   key={band.label}
-                  onClick={() => setRangeBand(band)}
+                  onClick={() => handleRangeBand(band)}
                   style={{
                     background: isActive ? 'rgba(144,96,208,0.22)' : 'transparent',
                     border: `1px solid ${isActive ? '#9060D0' : C.border}`,
@@ -334,6 +338,35 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll }: DiceRolle
                 >
                   <span style={{ fontSize: 12, color: isActive ? '#9060D0' : C.text }}>{band.label}</span>
                   <span style={{ fontSize: 10, color: isActive ? '#9060D080' : C.textFaint }}>{band.sub}</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Difficulty Preset */}
+        <div style={{ marginBottom: 12, opacity: checkType !== 'Ranged' ? 1 : 0.4, transition: '.15s' }}>
+          <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textDim, marginBottom: 6 }}>
+            Difficulty Preset
+          </div>
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+            {DIFF_PRESETS.map(preset => {
+              const isActive = diffPreset === preset.count
+              return (
+                <button
+                  key={preset.label}
+                  onClick={() => handleDiffPreset(preset.count)}
+                  style={{
+                    background: isActive ? 'rgba(144,96,208,0.22)' : 'transparent',
+                    border: `1px solid ${isActive ? '#9060D0' : C.border}`,
+                    borderRadius: 3, padding: '3px 8px', cursor: 'pointer',
+                    fontFamily: FONT_RAJDHANI, fontWeight: 700, letterSpacing: '0.06em',
+                    transition: '.12s', whiteSpace: 'nowrap', textAlign: 'center',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
+                  }}
+                >
+                  <span style={{ fontSize: 12, color: isActive ? '#9060D0' : C.text }}>{preset.label}</span>
+                  <span style={{ fontSize: 10, color: isActive ? '#9060D080' : C.textFaint }}>{preset.count}P</span>
                 </button>
               )
             })}

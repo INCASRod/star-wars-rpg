@@ -1,16 +1,6 @@
-import { DicePoolBuilder }  from '@/components/wireframe/DicePoolBuilder'
 import { TalentsPanel }     from '@/components/wireframe/TalentsPanel'
 import { DerivedStatsPanel } from '@/components/wireframe/DerivedStatsPanel'
 import { DiceFeed }         from '@/components/wireframe/DiceFeed'
-
-const MELEE_CONFIG = {
-  characteristicName: 'Brawn',
-  characteristicVal:  3,
-  skillName:          'Melee',
-  skillRank:          1,
-  weaponMode:         'Melee' as const,
-  weaponName:         'Vibro-Knife',
-}
 
 export default function WireframePage() {
   return (
@@ -46,15 +36,9 @@ export default function WireframePage() {
           <DerivedStatsPanel />
         </Section>
 
-        {/* ── 2+4 · Dice pools + feed ── */}
+        {/* ── 2 · Dice feed ── */}
         <div className="grid grid-cols-1 lg:grid-cols-3" style={{ gap: 'var(--space-4)' }}>
-          <Section label="2a · Dice Pool Builder — Ranged Weapon">
-            <DicePoolBuilder />
-          </Section>
-          <Section label="2b · Dice Pool Builder — Melee Weapon">
-            <DicePoolBuilder config={MELEE_CONFIG} />
-          </Section>
-          <Section label="4 · Shared Dice Feed">
+          <Section label="2 · Shared Dice Feed">
             <DiceFeed />
           </Section>
         </div>
