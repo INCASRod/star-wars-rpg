@@ -613,6 +613,16 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         } else if (payload.type === 'initiative-request') {
           const cid = effectiveCampaignIdRef.current
           if (cid) setInitRoll({ type: payload.initiativeType as 'cool' | 'vigilance', campaignId: cid })
+        } else if (payload.type === 'force-logout') {
+          const key = typeof window !== 'undefined' ? localStorage.getItem('holocron_session_key') : null
+          const cid = effectiveCampaignIdRef.current
+          const doLogout = async () => {
+            if (key && cid) {
+              await supabase.from('character_sessions').delete().eq('session_key', key).eq('campaign_id', cid)
+            }
+            router.push('/')
+          }
+          void doLogout()
         } else {
           setGmDialog(payload.message as string)
         }

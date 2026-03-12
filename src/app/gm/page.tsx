@@ -335,6 +335,9 @@ function GmDashboard() {
   // ── Destiny Pool ──
   const [destinyPool, setDestinyPool] = useState<Array<'light' | 'dark'>>(['light', 'light', 'dark', 'dark', 'dark'])
 
+  // ── Active sessions (charId → session_key) ──
+  const [activeSessions, setActiveSessions] = useState<Record<string, string>>({})
+
   // ── GM Roll panel ──
   const [gmRollLabel, setGmRollLabel] = useState('')
   const [gmRollHidden, setGmRollHidden] = useState(false)
@@ -507,10 +510,11 @@ function GmDashboard() {
     }
     if (!silent) setLoading(true)
     try {
-      const [campRes, charRes, playerRes] = await Promise.all([
+      const [campRes, charRes, playerRes, sessRes] = await Promise.all([
         supabase.from('campaigns').select('*').eq('id', campaignId).single(),
         supabase.from('characters').select('*').eq('campaign_id', campaignId),
         supabase.from('players').select('id, display_name').eq('campaign_id', campaignId),
+        supabase.from('character_sessions').select('character_id, session_key').eq('campaign_id', campaignId).eq('is_active', true),
       ])
 
       if (campRes.error) throw new Error(campRes.error.message)
@@ -529,6 +533,9 @@ function GmDashboard() {
       setCharacters(chars)
       setPlayers(
         Object.fromEntries((playerRes.data || []).map((p: { id: string; display_name: string }) => [p.id, p.display_name]))
+      )
+      setActiveSessions(
+        Object.fromEntries((sessRes.data || []).map((s: { character_id: string; session_key: string }) => [s.character_id, s.session_key]))
       )
 
       if (chars.length > 0) {
@@ -571,6 +578,10 @@ function GmDashboard() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'character_specializations' }, () => loadData(true))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'character_force_abilities' }, () => loadData(true))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'character_critical_injuries' }, () => loadData(true))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'character_sessions', filter: `campaign_id=eq.${campaignId}` }, async () => {
+        const { data } = await supabase.from('character_sessions').select('character_id, session_key').eq('campaign_id', campaignId).eq('is_active', true)
+        setActiveSessions(Object.fromEntries((data || []).map((s: { character_id: string; session_key: string }) => [s.character_id, s.session_key])))
+      })
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
@@ -845,6 +856,16 @@ function GmDashboard() {
     setCharacters(prev => prev.map(c => c.id === charId ? { ...c, strain_current: newVal } : c))
     notify(charId, 'toast', `You recovered ${amount} strain!`)
   }
+
+  // ── Force logout ──
+  const forceLogout = useCallback(async (charId: string) => {
+    sendToChar(charId, { type: 'force-logout' })
+    const sessionKey = activeSessions[charId]
+    if (sessionKey && campaignId) {
+      await supabase.from('character_sessions').delete().eq('session_key', sessionKey).eq('campaign_id', campaignId)
+    }
+    flash('Player kicked')
+  }, [activeSessions, campaignId, sendToChar, supabase, flash])
 
   // ── Crit Roller ──
   const rollCrit = () => {
@@ -1174,6 +1195,16 @@ function GmDashboard() {
                         style={{ background: 'rgba(200,170,80,0.10)', border: '1px solid rgba(200,170,80,0.3)', borderRadius: 3, padding: '3px 0', cursor: 'pointer', fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.06em', color: GOLD }}
                       >S −1</button>
                     </div>
+
+                    {/* Force logout — only shown when player has an active session */}
+                    {activeSessions[c.id] && (
+                      <button
+                        onClick={() => forceLogout(c.id)}
+                        style={{ marginTop: 6, width: '100%', background: 'transparent', border: `1px solid rgba(224,80,80,0.35)`, borderRadius: 3, padding: '3px 0', cursor: 'pointer', fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.08em', color: RED, textTransform: 'uppercase' }}
+                      >
+                        ⏻ Kick
+                      </button>
+                    )}
 
                     {/* Obligation / Duty / Morality */}
                     {(c.obligation_type || c.duty_type || c.morality_value !== undefined) && (
