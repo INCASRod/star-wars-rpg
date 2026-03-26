@@ -63,17 +63,15 @@ function getStoredName(): string { return localStorage.getItem('holocron_player_
 interface CharacterCardProps {
   char: Character
   state: CardState
-  session: CharacterSession | undefined
   online: boolean
   playerDisplayName: string | undefined
-  sessionKey: string
   animDelay: number
   onClaim: () => void
   onDelete: () => void
 }
 
 function CharacterCard({
-  char, state, session, online, playerDisplayName,
+  char, state, online, playerDisplayName,
   animDelay, onClaim, onDelete,
 }: CharacterCardProps) {
   const [hovered, setHovered] = useState(false)
@@ -677,7 +675,6 @@ export default function Home() {
         }}>
           {characters.map((char, index) => {
             const cardState = getCardState(char.id)
-            const sess = getSession(char.id)
             const online = isPlayerOnline(char.id)
             const displayName = playerNames[char.player_id]
             return (
@@ -685,10 +682,8 @@ export default function Home() {
                 key={char.id}
                 char={char}
                 state={cardState}
-                session={sess}
                 online={online}
                 playerDisplayName={displayName}
-                sessionKey={sessionKey}
                 animDelay={0.15 + index * 0.08}
                 onClaim={() => {
                   if (!playerName) {
