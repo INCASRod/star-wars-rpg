@@ -49,7 +49,7 @@ interface CharacterSession {
   claimed_at: string
 }
 
-type CardState = 'available' | 'taken' | 'self'
+type CardState = 'available' | 'self'
 
 // ─── Player Identity Helpers ──────────────────────────────────────────────────
 function getSessionKey(): string {
@@ -80,23 +80,21 @@ function CharacterCard({
 
   const cardBorder = state === 'self'
     ? BORDER_HI
-    : hovered && state === 'available'
+    : hovered
       ? BORDER_MD
       : BORDER
 
   const cardBg = PANEL
   const cardShadow = state === 'self'
     ? `0 0 20px rgba(200,170,80,0.15)`
-    : hovered && state === 'available'
+    : hovered
       ? `0 8px 24px rgba(200,170,80,0.12)`
       : 'none'
 
-  const cardOpacity = state === 'taken' ? 0.55 : 1
-  const cardFilter = state === 'taken' ? 'grayscale(0.3)' : 'none'
-  const cardCursor = state === 'available' ? 'pointer' : state === 'taken' ? 'not-allowed' : 'default'
-  const cardTransform = hovered && state === 'available' ? 'translateY(-2px)' : 'none'
+  const cardCursor = state === 'self' ? 'default' : 'pointer'
+  const cardTransform = hovered && state !== 'self' ? 'translateY(-2px)' : 'none'
 
-  const avatarBorderColor = state === 'available' ? BORDER_MD : state === 'taken' ? DANGER : GOLD
+  const avatarBorderColor = state === 'self' ? GOLD : BORDER_MD
   const avatarShadow = state === 'self' ? `0 0 12px rgba(200,170,80,0.4)` : 'none'
 
   const dotColor = state === 'self'
@@ -104,6 +102,7 @@ function CharacterCard({
     : online
       ? SUCCESS
       : TEXT_MUT
+
 
   const dotPulse = state === 'self' || online ? 'pulse-dot 1.8s ease-in-out infinite' : 'none'
 
@@ -128,7 +127,7 @@ function CharacterCard({
   ]
 
   function handleClick() {
-    if (state === 'available') onClaim()
+    onClaim()
   }
 
   return (
@@ -154,14 +153,12 @@ function CharacterCard({
       onMouseLeave={() => setHovered(false)}
     >
       {/* Top gradient line */}
-      {state !== 'taken' && (
-        <div style={{
-          position: 'absolute', top: 0, left: 0, right: 0, height: 2,
-          background: `linear-gradient(90deg, transparent, ${GOLD}, transparent)`,
-          opacity: state === 'self' ? 1 : hovered ? 0.6 : 0,
-          transition: 'opacity 0.2s',
-        }} />
-      )}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0, height: 2,
+        background: `linear-gradient(90deg, transparent, ${GOLD}, transparent)`,
+        opacity: state === 'self' ? 1 : hovered ? 0.6 : 0,
+        transition: 'opacity 0.2s',
+      }} />
 
       {/* Delete button */}
       {hovered && (
@@ -205,7 +202,7 @@ function CharacterCard({
           ) : (
             <span style={{
               fontFamily: FC, fontSize: 22,
-              color: state === 'taken' ? DANGER : state === 'self' ? GOLD : TEXT_SEC,
+              color: state === 'self' ? GOLD : TEXT_SEC,
             }}>
               {char.name.charAt(0)}
             </span>
@@ -233,27 +230,15 @@ function CharacterCard({
           <div style={{
             marginTop: 6,
             display: 'inline-flex', alignItems: 'center', gap: 5,
-            border: `1px solid ${state === 'available' ? TEXT_MUT : state === 'taken' ? DANGER : GOLD}`,
+            border: `1px solid ${state === 'self' ? GOLD : TEXT_MUT}`,
             borderRadius: 3,
             padding: '3px 8px',
-            background: state === 'available'
-              ? 'transparent'
-              : state === 'taken'
-                ? 'rgba(224,82,82,0.1)'
-                : 'rgba(200,170,80,0.1)',
+            background: state === 'self' ? 'rgba(200,170,80,0.1)' : 'transparent',
           }}>
             {state === 'available' && (
               <span style={{ fontFamily: FM, fontSize: 10, color: TEXT_MUT, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                 Unselected
               </span>
-            )}
-            {state === 'taken' && (
-              <>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: DANGER, animation: 'pulse-dot 1.8s ease-in-out infinite' }} />
-                <span style={{ fontFamily: FM, fontSize: 9, color: DANGER, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                  In Session · {session?.player_name}
-                </span>
-              </>
             )}
             {state === 'self' && (
               <>
@@ -353,28 +338,6 @@ function CharacterCard({
         </div>
       </div>
 
-      {/* Taken overlay */}
-      {state === 'taken' && (
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: 'rgba(6,13,9,0.55)',
-          backdropFilter: 'blur(1px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <div style={{
-            border: `1px solid rgba(224,82,82,0.6)`,
-            background: 'rgba(224,82,82,0.12)',
-            borderRadius: 4,
-            padding: '8px 16px',
-            display: 'flex', alignItems: 'center', gap: 8,
-          }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: DANGER, animation: 'pulse-dot 1.8s ease-in-out infinite' }} />
-            <span style={{ fontFamily: FC, fontSize: 10, color: DANGER, letterSpacing: '0.2em', textTransform: 'uppercase' }}>
-              Selected by {session?.player_name}
-            </span>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
@@ -492,19 +455,18 @@ export default function Home() {
     await supabase.from('character_sessions')
       .delete().eq('session_key', sessionKey).eq('campaign_id', campaignId)
 
-    // Claim new character
-    const { error } = await supabase.from('character_sessions').insert({
+    // Release any existing session for this character (so anyone can take it)
+    await supabase.from('character_sessions')
+      .delete().eq('character_id', characterId).eq('campaign_id', campaignId)
+
+    // Claim the character
+    await supabase.from('character_sessions').insert({
       campaign_id: campaignId,
       character_id: characterId,
       session_key: sessionKey,
       player_name: playerName,
       is_active: true,
     })
-
-    if (error) {
-      alert('This character was just claimed by another player.')
-      return
-    }
 
     router.push(`/character/${characterId}${campaignId ? `?campaign=${campaignId}` : ''}`)
   }
@@ -555,9 +517,8 @@ export default function Home() {
   // ── Derived state ──────────────────────────────────────────────────────────
   function getCardState(charId: string): CardState {
     const session = sessions.find(s => s.character_id === charId && s.is_active)
-    if (!session) return 'available'
-    if (session.session_key === sessionKey) return 'self'
-    return 'taken'
+    if (session?.session_key === sessionKey) return 'self'
+    return 'available'
   }
 
   function getSession(charId: string): CharacterSession | undefined {
