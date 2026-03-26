@@ -142,8 +142,7 @@ function CharacterCard({
         animation: `fadeUp 0.5s ${animDelay}s ease both`,
         border: `1px solid ${cardBorder}`,
         background: cardBg,
-        opacity: cardOpacity,
-        filter: cardFilter,
+
         cursor: cardCursor,
         transform: cardTransform,
         boxShadow: cardShadow,
