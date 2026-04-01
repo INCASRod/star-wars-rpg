@@ -16,6 +16,7 @@ import { rollPool, getSkillPool, type RollResult } from './dice-engine'
 import { CharacterAvatar } from './CharacterAvatar'
 import { DiceModal } from './DiceModal'
 import { SkillsPanel, type HudSkill } from './SkillsPanel'
+import { SkillRollPopover } from '@/components/character/SkillRollPopover'
 import { TalentsPanel, type HudTalent } from './TalentsPanel'
 import { InventoryPanel, type WpnDisplay, type ArmDisplay, type GearRow } from './InventoryPanel'
 import { ForcePanel, type ForcePowerSummary } from './ForcePanel'
@@ -36,6 +37,8 @@ import { TalentsPanel as WfTalentsPanel } from '@/components/wireframe/TalentsPa
 import { DiceFeed as WfDiceFeed } from '@/components/wireframe/DiceFeed'
 import { CombatTracker } from '@/components/player/CombatTracker'
 import { InitiativeRollModal } from './InitiativeRollModal'
+import { useSessionRollState, getWoundThresholdBonus } from '@/hooks/useSessionRollState'
+import { SessionStatusBanner } from '@/components/player/SessionStatusBanner'
 
 const CHAR_TO_FIELD: Record<string, keyof Character> = {
   BR: 'brawn', AG: 'agility', INT: 'intellect', CUN: 'cunning', WIL: 'willpower', PR: 'presence',
@@ -76,13 +79,17 @@ function BackgroundEffects() {
 }
 
 // ── Compact vital bar for top bar ───────────────────────────
-function CompactVital({ label, current, threshold, color }: { label: string; current: number; threshold: number; color: string }) {
-  const pct = threshold > 0 ? Math.min((current / threshold) * 100, 100) : 0
+function CompactVital({ label, current, threshold, bonus = 0, color }: { label: string; current: number; threshold: number; bonus?: number; color: string }) {
+  const effective = threshold + bonus
+  const pct = effective > 0 ? Math.min((current / effective) * 100, 100) : 0
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 2, width: 100 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, fontWeight: 700, color: C.textDim, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{label}</span>
-        <span style={{ fontFamily: FONT_CINZEL, fontSize: FS_OVERLINE, color }}>{current}/{threshold}</span>
+        <span style={{ display: 'flex', alignItems: 'baseline', gap: 2 }}>
+          <span style={{ fontFamily: FONT_CINZEL, fontSize: FS_OVERLINE, color }}>{current}/{threshold}</span>
+          {bonus > 0 && <span style={{ fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: 'clamp(0.65rem, 1vw, 0.75rem)', color: C.gold }}>+{bonus}</span>}
+        </span>
       </div>
       <div style={{ height: 5, background: C.textFaint, borderRadius: 3, overflow: 'hidden' }}>
         <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: 3, transition: 'width .3s' }} />
@@ -92,12 +99,13 @@ function CompactVital({ label, current, threshold, color }: { label: string; cur
 }
 
 // ── Full vital bar for left column ──────────────────────────
-function VitalBar({ label, current, threshold, color, onInc, onDec }: {
-  label: string; current: number; threshold: number; color: string
+function VitalBar({ label, current, threshold, bonus = 0, color, onInc, onDec }: {
+  label: string; current: number; threshold: number; bonus?: number; color: string
   onInc?: () => void; onDec?: () => void
 }) {
-  const pct = threshold > 0 ? Math.min((current / threshold) * 100, 100) : 0
-  const overLimit = current >= threshold
+  const effective = threshold + bonus
+  const pct = effective > 0 ? Math.min((current / effective) * 100, 100) : 0
+  const overLimit = current >= effective
   return (
     <div style={{ marginBottom: 10 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
@@ -105,19 +113,28 @@ function VitalBar({ label, current, threshold, color, onInc, onDec }: {
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           {onDec && <button onClick={onDec} style={{ background: 'transparent', border: `1px solid ${C.border}`, borderRadius: 3, width: 16, height: 16, cursor: 'pointer', color: C.textDim, fontSize: FS_SM, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>−</button>}
           <span style={{ fontFamily: FONT_CINZEL, fontSize: FS_SM, color: overLimit ? '#E05050' : color, fontWeight: 700 }}>{current}/{threshold}</span>
+          {bonus > 0 && <span style={{ fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: 'clamp(0.65rem, 1vw, 0.75rem)', color: C.gold }}>+{bonus}</span>}
           {onInc && <button onClick={onInc} style={{ background: 'transparent', border: `1px solid ${C.border}`, borderRadius: 3, width: 16, height: 16, cursor: 'pointer', color: C.textDim, fontSize: FS_SM, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>+</button>}
         </div>
       </div>
       <div style={{ height: 6, background: C.textFaint, borderRadius: 3, overflow: 'hidden', marginBottom: 6 }}>
         <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg, ${color}88, ${color})`, borderRadius: 3, transition: 'width .3s' }} />
       </div>
-      {/* Pip row — max 10 per row */}
+      {/* Pip row — base pips + bonus pips in gold */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
         {Array.from({ length: threshold }).map((_, i) => (
           <div key={i} style={{
             width: 8, height: 8, borderRadius: 2,
             background: i < current ? color : 'transparent',
             border: `1px solid ${i < current ? color : C.textFaint}`,
+            transition: '.15s',
+          }} />
+        ))}
+        {bonus > 0 && Array.from({ length: bonus }).map((_, i) => (
+          <div key={`bonus-${i}`} style={{
+            width: 8, height: 8, borderRadius: 2,
+            background: (threshold + i) < current ? C.gold : 'transparent',
+            border: `1px solid ${C.gold}60`,
             transition: '.15s',
           }} />
         ))}
@@ -437,7 +454,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     charForceAbilities, playerName, loading, error,
     refSkills, refCareers, refSpeciesAll, refForcePowers, refForceAbilities,
     refSkillMap, refTalentMap, refWeaponMap, refArmorMap, refGearMap,
-    refSpecMap, refDescriptorMap, refForcePowerMap, refForceAbilityMap,
+    refSpecMap, refDescriptorMap, refForcePowerMap, refForceAbilityMap, refWeaponQualityMap,
     forceRating, supabase, refSpecs,
     handleVitalChange, handleToggleWeaponEquipped, handleToggleEquippedById,
     handleRollCrit, handleHealCrit, handlePortraitUpload, handlePortraitDelete,
@@ -450,6 +467,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
 
   // ── Session / roll feed ──
   const effectiveCampaignId = campaignId ?? character?.campaign_id ?? null
+  const sessionRollState = useSessionRollState(effectiveCampaignId)
+  const woundBonus = character ? getWoundThresholdBonus(character.id, sessionRollState) : 0
   const effectiveCampaignIdRef = useRef(effectiveCampaignId)
   useEffect(() => { effectiveCampaignIdRef.current = effectiveCampaignId }, [effectiveCampaignId])
 
@@ -498,6 +517,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   const [lootReveal, setLootReveal]             = useState<Record<string, unknown> | null>(null)
   const [initRoll, setInitRoll]                 = useState<{ type: 'cool' | 'vigilance'; campaignId: string } | null>(null)
   const [forceRollResult, setForceRollResult]   = useState<ForceRollResult | null>(null)
+  const [skillPopover, setSkillPopover]         = useState<{ skill: HudSkill; anchor: DOMRect } | null>(null)
 
   // ── Destiny Pool ──
   const [destinyPool, setDestinyPool]           = useState<Array<'light' | 'dark'>>([])
@@ -678,21 +698,17 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   // ── Weapons for HUD ──
   const hudWeapons = useMemo((): WpnDisplay[] =>
     weapons.map(w => {
-      const ref = w.weapon_key ? refWeaponMap[w.weapon_key] : null
-      const isMelee = ['MELEE', 'BRAWL', 'LTSABER'].includes(ref?.skill_key || '')
-      const dmg = isMelee
-        ? `+${ref?.damage_add || 0}`
-        : String(ref?.damage || 0)
-      const quals = Array.isArray(ref?.qualities)
-        ? ref.qualities.map((q: { key: string; count?: number }) => {
-            const d = refDescriptorMap[q.key]
-            return q.count ? `${d?.name || q.key} ${q.count}` : (d?.name || q.key)
-          })
+      const ref           = w.weapon_key ? refWeaponMap[w.weapon_key] : null
+      const isMeleeSkill  = ['MELEE', 'BRAWL', 'LTSABER'].includes(ref?.skill_key || '')
+      const hasBrawnScale = isMeleeSkill && ref?.damage_add != null
+      const baseDamage    = hasBrawnScale ? (ref.damage_add ?? 0) : (ref?.damage || 0)
+      const quals         = Array.isArray(ref?.qualities)
+        ? ref.qualities.map((q: { key: string; count?: number }) => ({ key: q.key, count: q.count }))
         : []
       return {
         id:         w.id,
         name:       w.custom_name || ref?.name || w.weapon_key || 'Unknown',
-        damage:     dmg,
+        damage:     { baseDamage, isMelee: hasBrawnScale, brawn: hasBrawnScale ? (character?.brawn ?? 0) : 0 },
         crit:       ref?.crit || 0,
         range:      ref?.range_value ? RANGE_LABELS[ref.range_value] || '' : '',
         enc:        ref?.encumbrance || 0,
@@ -702,7 +718,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         skillName:  ref?.skill_key ? refSkillMap[ref.skill_key]?.name || '' : '',
       }
     })
-  , [weapons, refWeaponMap, refSkillMap, refDescriptorMap])
+  , [weapons, refWeaponMap, refSkillMap, character?.brawn])
 
   // ── Armor for HUD ──
   const hudArmor = useMemo((): ArmDisplay[] =>
@@ -1125,7 +1141,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
             <CornerBrackets />
             <SectionLabel text="Vitals" />
             <VitalBar
-              label="Wounds" current={character.wound_current} threshold={character.wound_threshold} color="#E05050"
+              label="Wounds" current={character.wound_current} threshold={character.wound_threshold} bonus={woundBonus} color="#E05050"
               onInc={() => handleVitalChange('wound_current', 1)}
               onDec={() => handleVitalChange('wound_current', -1)}
             />
@@ -1234,6 +1250,15 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         }}>
           <TabBar active={activeTab} onChange={t => { setActiveTab(t); localStorage.setItem(TAB_KEY, t) }} hasCombat={isCombat} />
 
+          {/* Session Status Banner — shown when GM has revealed a D100 result */}
+          <SessionStatusBanner
+            sessionRollState={sessionRollState}
+            characterId={character.id}
+            characterNames={{ [character.id]: character.name }}
+            triggeredObligationType={character.obligation_type}
+            ownObligationValue={character.obligation_value}
+          />
+
           <div key={activeTab} style={{
             flex: 1, overflowY: 'auto', padding: 'var(--space-2) var(--space-3)',
             animation: 'hudTabIn 0.2s ease forwards',
@@ -1252,6 +1277,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
                   onUpgrade={handleSkillUpgrade}
                   isCombat={isCombat}
                   xpAvailable={character.xp_available}
+                  onOpenPopover={(skill, anchor) => setSkillPopover({ skill, anchor })}
+                  characterId={characterId}
                 />
               </div>
             )}
@@ -1297,7 +1324,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
                   </div>
                 )}
                 {/* ── Quick-Reference panel by activation type ── */}
-                <WfTalentsPanel liveTalents={hudTalents} characterName={character.name} />
+                <WfTalentsPanel liveTalents={hudTalents} characterName={character.name} characterId={characterId} />
                 {/* Inline talent tree */}
                 {talentTreeData ? (
                   <TalentTree
@@ -1323,6 +1350,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
                 gearItems={hudGear}
                 encumbranceCurrent={encumbranceCurrent}
                 encumbranceThreshold={encThreshold}
+                refWeaponQualityMap={refWeaponQualityMap}
                 onToggleWeapon={handleToggleWeaponEquipped}
                 onToggleArmor={id => handleToggleEquippedById(id, 'armor')}
                 onToggleGear={id => handleToggleEquippedById(id, 'gear')}
@@ -1351,6 +1379,15 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
                 speciesRef={refSpeciesAll.find(s => s.key === character.species_key)}
                 motivationType={character.obligation_type || character.duty_type}
                 motivationDesc={character.obligation_notes || character.duty_notes}
+                dutyType={character.duty_type}
+                dutyValue={character.duty_value}
+                dutyLore={character.duty_lore}
+                dutyCustomName={character.duty_custom_name}
+                obligationType={character.obligation_type}
+                obligationValue={character.obligation_value}
+                obligationLore={character.obligation_lore}
+                obligationCustomName={character.obligation_custom_name}
+                dutyObligationConfigured={character.duty_obligation_configured}
                 onBackstoryChange={handleBackstoryChange}
                 onNotesChange={handleNotesChange}
               />
@@ -1541,6 +1578,19 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
           campaignId={initRoll.campaignId}
           forceRating={forceRating}
           onClose={() => setInitRoll(null)}
+        />
+      )}
+
+      {/* ── Skill Roll Popover ────────────────────────────── */}
+      {skillPopover && (
+        <SkillRollPopover
+          skill={skillPopover.skill}
+          anchor={skillPopover.anchor}
+          onRoll={(result, label, pool) => {
+            handleRoll(result, label, pool as Record<string, number>)
+            setSkillPopover(null)
+          }}
+          onClose={() => setSkillPopover(null)}
         />
       )}
 

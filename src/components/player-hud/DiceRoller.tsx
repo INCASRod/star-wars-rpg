@@ -5,6 +5,7 @@ import {
   C, DICE_META, SYM, FONT_CINZEL, FONT_RAJDHANI, panelBase,
   EMPTY_POOL, type DiceType,
 } from './design-tokens'
+import { DiceFace } from '@/components/dice/DiceFace'
 import { rollPool, getSkillPool, poolSize, type RollResult } from './dice-engine'
 import type { CharKey } from './design-tokens'
 
@@ -61,68 +62,20 @@ function DiceBtn({
   const meta = DICE_META[type]
   const size = 40
 
-  const shapeStyle: React.CSSProperties = {
-    width: size, height: size,
-    background: count > 0 ? `${meta.color}28` : `${meta.color}0E`,
-    border: `1.5px solid ${count > 0 ? meta.color : `${meta.color}50`}`,
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    cursor: 'pointer', position: 'relative',
-    transition: '.15s', flexShrink: 0,
-  }
-
-  if (meta.shape === 'diamond') {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-        <div style={{ position: 'relative', width: size, height: size }}>
-          <div
-            style={{ ...shapeStyle, position: 'absolute', inset: 0, transform: 'rotate(45deg)', borderRadius: 4 }}
-            onClick={onAdd}
-          />
-          {/* Label */}
-          <div style={{
-            position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700, color: meta.color,
-            letterSpacing: '0.06em', pointerEvents: 'none',
-          }}>
-            {meta.label}
-          </div>
-          {/* Count badge */}
-          {count > 0 && (
-            <div style={{
-              position: 'absolute', top: -5, right: -5, width: 16, height: 16,
-              background: meta.color, borderRadius: '50%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: FONT_RAJDHANI, fontSize: 13, fontWeight: 700, color: C.bg,
-              zIndex: 1, pointerEvents: 'none',
-            }}>
-              {count}
-            </div>
-          )}
-        </div>
-        {count > 0 && (
-          <button onClick={onRemove} style={{
-            background: 'transparent', border: `1px solid ${C.border}`,
-            borderRadius: 3, padding: '1px 10px', cursor: 'pointer',
-            fontFamily: FONT_RAJDHANI, fontSize: 12, color: C.textDim,
-          }}>−</button>
-        )}
-        <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 12, color: C.textDim, letterSpacing: '0.06em' }}>
-          {meta.label}
-        </div>
-      </div>
-    )
-  }
-
-  const borderRadius = meta.shape === 'circle' ? '50%' : 4
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-      <div style={{ position: 'relative' }}>
-        <div style={{ ...shapeStyle, borderRadius }} onClick={onAdd}>
-          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700, color: meta.color, letterSpacing: '0.06em' }}>
-            {meta.label}
-          </span>
+      <div style={{ position: 'relative', cursor: 'pointer' }} onClick={onAdd}>
+        <DiceFace type={type} size={size} active={count > 0} />
+        {/* Label overlay */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700, color: meta.color,
+          letterSpacing: '0.06em', pointerEvents: 'none',
+        }}>
+          {meta.label}
         </div>
+        {/* Count badge */}
         {count > 0 && (
           <div style={{
             position: 'absolute', top: -5, right: -5, width: 16, height: 16,
@@ -139,10 +92,10 @@ function DiceBtn({
         <button onClick={onRemove} style={{
           background: 'transparent', border: `1px solid ${C.border}`,
           borderRadius: 3, padding: '1px 10px', cursor: 'pointer',
-          fontFamily: FONT_RAJDHANI, fontSize: 13, color: C.textDim,
+          fontFamily: FONT_RAJDHANI, fontSize: 12, color: C.textDim,
         }}>−</button>
       )}
-      <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 13, color: C.textDim, letterSpacing: '0.06em' }}>
+      <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 12, color: C.textDim, letterSpacing: '0.06em' }}>
         {meta.label}
       </div>
     </div>
@@ -270,10 +223,10 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll }: DiceRolle
                         const { proficiency, ability } = getSkillPool(wpn.charVal, wpn.rank)
                         return <>
                           {Array.from({ length: proficiency }).map((_, i) => (
-                            <div key={`p${i}`} style={{ width: 8, height: 8, background: '#D4B840', transform: 'rotate(45deg)', flexShrink: 0 }} />
+                            <DiceFace key={`p${i}`} type="proficiency" size={9} />
                           ))}
                           {Array.from({ length: ability }).map((_, i) => (
-                            <div key={`a${i}`} style={{ width: 8, height: 8, borderRadius: '50%', background: '#4EC87A', flexShrink: 0 }} />
+                            <DiceFace key={`a${i}`} type="ability" size={9} />
                           ))}
                         </>
                       })()}

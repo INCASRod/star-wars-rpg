@@ -1,8 +1,11 @@
 export type InitiativeType = 'cool' | 'vigilance'
 
+export type SlotAlignment = 'player' | 'allied_npc' | 'enemy'
+
 export interface InitiativeSlot {
   id: string
   type: 'pc' | 'npc'
+  alignment?: SlotAlignment
   order: number
   characterId?: string
   adversaryInstanceId?: string

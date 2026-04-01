@@ -10,6 +10,7 @@ import type {
   RefSkill, RefTalent, RefWeapon, RefArmor, RefGear, RefCriticalInjury, RefSpecialization,
   RefItemDescriptor, RefCareer, RefSpecies,
   RefForcePower, RefForceAbility, CharacterForceAbility,
+  RefWeaponQuality,
 } from '@/lib/types'
 
 export function useCharacterData(characterId: string) {
@@ -38,6 +39,7 @@ export function useCharacterData(characterId: string) {
   const [charForceAbilities, setCharForceAbilities] = useState<CharacterForceAbility[]>([])
   const [refForcePowers, setRefForcePowers] = useState<RefForcePower[]>([])
   const [refForceAbilities, setRefForceAbilities] = useState<RefForceAbility[]>([])
+  const [refWeaponQualities, setRefWeaponQualities] = useState<RefWeaponQuality[]>([])
   const [playerName, setPlayerName] = useState('Player')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -49,7 +51,7 @@ export function useCharacterData(characterId: string) {
     try {
       const [charRes, skillsRes, talentsRes, weaponsRes, armorRes, gearRes, critsRes, specsRes,
         refSkRes, refTalRes, refWpnRes, refArmRes, refGearRes, refCritRes, refSpecRes, refDescRes,
-        refCareerRes, refSpeciesRes, forceAbilRes, refFpRes, refFaRes] = await Promise.all([
+        refCareerRes, refSpeciesRes, forceAbilRes, refFpRes, refFaRes, refWqRes] = await Promise.all([
         supabase.from('characters').select('*').eq('id', characterId).single(),
         supabase.from('character_skills').select('*').eq('character_id', characterId),
         supabase.from('character_talents').select('*').eq('character_id', characterId),
@@ -71,6 +73,7 @@ export function useCharacterData(characterId: string) {
         supabase.from('character_force_abilities').select('*').eq('character_id', characterId),
         supabase.from('ref_force_powers').select('*'),
         supabase.from('ref_force_abilities').select('*'),
+        supabase.from('ref_weapon_qualities').select('*'),
       ])
 
       if (charRes.error) throw new Error(charRes.error.message)
@@ -96,6 +99,7 @@ export function useCharacterData(characterId: string) {
       setCharForceAbilities((forceAbilRes.data as CharacterForceAbility[]) || [])
       setRefForcePowers((refFpRes.data as RefForcePower[]) || [])
       setRefForceAbilities((refFaRes.data as RefForceAbility[]) || [])
+      setRefWeaponQualities((refWqRes.data as RefWeaponQuality[]) || [])
 
       if (charRes.data?.player_id) {
         const { data: p } = await supabase.from('players').select('display_name').eq('id', charRes.data.player_id).single()
@@ -138,6 +142,7 @@ export function useCharacterData(characterId: string) {
   const refDescriptorMap = useMemo(() => Object.fromEntries(refDescriptors.map(d => [d.key, d])), [refDescriptors])
   const refForcePowerMap = useMemo(() => Object.fromEntries(refForcePowers.map(fp => [fp.key, fp])), [refForcePowers])
   const refForceAbilityMap = useMemo(() => Object.fromEntries(refForceAbilities.map(fa => [fa.key, fa])), [refForceAbilities])
+  const refWeaponQualityMap = useMemo(() => Object.fromEntries(refWeaponQualities.map(q => [q.key, q])), [refWeaponQualities])
 
   // ── Derive force rating from FORCERAT talents ──
   const forceRating = useMemo(() => {
@@ -507,10 +512,10 @@ export function useCharacterData(characterId: string) {
     charForceAbilities, playerName, loading, error,
     // Ref data
     refSkills, refTalents, refWeapons, refArmor, refGear, refCrits, refSpecs,
-    refDescriptors, refCareers, refSpeciesAll, refForcePowers, refForceAbilities,
+    refDescriptors, refCareers, refSpeciesAll, refForcePowers, refForceAbilities, refWeaponQualities,
     // Ref maps
     refSkillMap, refTalentMap, refWeaponMap, refArmorMap, refGearMap,
-    refSpecMap, refDescriptorMap, refForcePowerMap, refForceAbilityMap,
+    refSpecMap, refDescriptorMap, refForcePowerMap, refForceAbilityMap, refWeaponQualityMap,
     // Derived
     forceRating,
     // Supabase client (for broadcast listener in page)

@@ -1,6 +1,7 @@
 'use client'
 
-import { C, SYM, DICE_META, FONT_CINZEL, FONT_RAJDHANI, panelBase, type DiceType } from './design-tokens'
+import { C, SYM, FONT_CINZEL, FONT_RAJDHANI, panelBase, type DiceType } from './design-tokens'
+import { DiceFace } from '@/components/dice/DiceFace'
 import type { RollEntry } from '@/hooks/useRollFeed'
 
 interface RollFeedPanelProps {
@@ -28,35 +29,7 @@ function CornerBrackets() {
 }
 
 function DiePip({ type }: { type: DiceType }) {
-  const meta = DICE_META[type]
-  const size = 14
-
-  if (meta.shape === 'diamond') {
-    return (
-      <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
-        <div style={{
-          position: 'absolute', inset: 2,
-          background: `${meta.color}30`,
-          border: `1px solid ${meta.color}`,
-          transform: 'rotate(45deg)', borderRadius: 1,
-        }} />
-      </div>
-    )
-  }
-  if (meta.shape === 'circle') {
-    return (
-      <div style={{
-        width: size, height: size, borderRadius: '50%', flexShrink: 0,
-        background: `${meta.color}30`, border: `1px solid ${meta.color}`,
-      }} />
-    )
-  }
-  return (
-    <div style={{
-      width: size, height: size, borderRadius: 2, flexShrink: 0,
-      background: `${meta.color}30`, border: `1px solid ${meta.color}`,
-    }} />
-  )
+  return <DiceFace type={type} size={14} />
 }
 
 function RollCard({ roll, isOwn }: { roll: RollEntry; isOwn: boolean }) {

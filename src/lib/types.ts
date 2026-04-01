@@ -158,6 +158,13 @@ export interface RefItemDescriptor {
   is_passive: boolean
 }
 
+export interface RefWeaponQuality {
+  key:         string
+  name:        string
+  description: string
+  is_ranked:   boolean
+}
+
 export interface RefCriticalInjury {
   id: number
   roll_min: number
@@ -265,6 +272,25 @@ export interface Character {
   notes: string
   created_at: string
   updated_at: string
+  is_archived?: boolean
+  archived_at?: string
+  duty_lore?: string
+  obligation_lore?: string
+  duty_obligation_configured?: boolean
+  duty_custom_name?: string | null
+  obligation_custom_name?: string | null
+}
+
+export interface RefDutyType {
+  key: string
+  name: string
+  description?: string
+}
+
+export interface RefObligationType {
+  key: string
+  name: string
+  description?: string
 }
 
 export interface CharacterSpecialization {

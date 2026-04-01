@@ -3,6 +3,8 @@
 import { useState, useRef } from 'react'
 import { RefSpecies } from '@/lib/types'
 import { parseOggDudeMarkup } from '@/lib/oggdude-markup'
+import { DutyCard } from '@/components/character/DutyCard'
+import { ObligationCard } from '@/components/character/ObligationCard'
 
 // ─── Design Tokens ───────────────────────────────────────────────────────────
 const FC = "var(--font-rajdhani), 'Rajdhani', sans-serif"
@@ -29,6 +31,15 @@ interface LoreContentProps {
   speciesRef?: RefSpecies
   motivationType?: string
   motivationDesc?: string
+  dutyType?: string
+  dutyValue?: number
+  dutyLore?: string
+  dutyCustomName?: string | null
+  obligationType?: string
+  obligationValue?: number
+  obligationLore?: string
+  obligationCustomName?: string | null
+  dutyObligationConfigured?: boolean
   onBackstoryChange: (v: string) => void
   onNotesChange: (v: string) => void
 }
@@ -198,6 +209,15 @@ export function LoreContent({
   speciesRef,
   motivationType,
   motivationDesc,
+  dutyType,
+  dutyValue,
+  dutyLore,
+  dutyCustomName,
+  obligationType,
+  obligationValue,
+  obligationLore,
+  obligationCustomName,
+  dutyObligationConfigured,
   onBackstoryChange,
   onNotesChange,
 }: LoreContentProps) {
@@ -468,8 +488,26 @@ export function LoreContent({
           </div>
         )}
 
-        {/* 3. Motivation panel — only if motivationType provided */}
-        {motivationType && (
+        {/* 3. Duty & Obligation cards — shown when configured */}
+        {dutyObligationConfigured && dutyType && dutyValue !== undefined && (
+          <DutyCard
+            dutyType={dutyType}
+            dutyValue={dutyValue}
+            dutyLore={dutyLore}
+            dutyCustomName={dutyCustomName}
+          />
+        )}
+        {dutyObligationConfigured && obligationType && obligationValue !== undefined && (
+          <ObligationCard
+            obligationType={obligationType}
+            obligationValue={obligationValue}
+            obligationLore={obligationLore}
+            obligationCustomName={obligationCustomName}
+          />
+        )}
+
+        {/* 3b. Fallback: legacy Motivation panel when D&O not yet configured */}
+        {!dutyObligationConfigured && motivationType && (
           <div style={{ ...panelStyle, padding: '14px 16px' }}>
             <CornerBrackets />
             <SectionLabel label="Motivation" />

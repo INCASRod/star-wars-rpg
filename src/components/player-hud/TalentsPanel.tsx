@@ -1,8 +1,10 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { C, FONT_CINZEL, FONT_RAJDHANI, panelBase } from './design-tokens'
 import { Tooltip, TipLabel, TipBody } from '@/components/ui/Tooltip'
-import { MarkupText } from '@/components/ui/MarkupText'
+import { DiceText } from '@/components/dice/DiceText'
+import { PanelSearchInput } from '@/components/character/PanelSearchInput'
 
 export interface HudTalent {
   key: string
@@ -15,6 +17,7 @@ export interface HudTalent {
 interface TalentsPanelProps {
   talents: HudTalent[]
   onViewTree?: () => void
+  characterId?: string
 }
 
 const ACTIVATION_COLORS: Record<string, string> = {
@@ -84,7 +87,7 @@ function TalentCard({ talent }: { talent: HudTalent }) {
   const tooltipContent = talent.description ? (
     <>
       <TipLabel>{talent.name}</TipLabel>
-      <TipBody><MarkupText text={talent.description} /></TipBody>
+      <TipBody><DiceText text={talent.description} /></TipBody>
     </>
   ) : null
 
@@ -129,7 +132,7 @@ function TalentCard({ talent }: { talent: HudTalent }) {
           lineHeight: 1.5, marginTop: 4,
           maxHeight: '6em', overflow: 'hidden',
         }}>
-          <MarkupText text={talent.description} />
+          <DiceText text={talent.description} />
         </div>
       )}
       <DiceHintChips hints={hints} />
@@ -144,7 +147,12 @@ function TalentCard({ talent }: { talent: HudTalent }) {
   )
 }
 
-export function TalentsPanel({ talents, onViewTree }: TalentsPanelProps) {
+export function TalentsPanel({ talents, onViewTree, characterId }: TalentsPanelProps) {
+  const [talentSearch, setTalentSearch] = useState('')
+
+  // Reset search when character changes
+  useEffect(() => { setTalentSearch('') }, [characterId])
+
   if (talents.length === 0) {
     return (
       <div style={{
@@ -171,15 +179,24 @@ export function TalentsPanel({ talents, onViewTree }: TalentsPanelProps) {
     )
   }
 
+  const searchQuery = talentSearch.toLowerCase().trim()
+  const visibleTalents = searchQuery
+    ? talents.filter(t =>
+        t.name.toLowerCase().includes(searchQuery) ||
+        (t.description ?? '').toLowerCase().includes(searchQuery) ||
+        t.activation.toLowerCase().includes(searchQuery)
+      )
+    : talents
+
   // Group by activation type in defined order
   const grouped = ACTIVATION_ORDER.map(act => ({
     activation: act,
-    items: talents.filter(t => t.activation === act),
+    items: visibleTalents.filter(t => t.activation === act),
   })).filter(g => g.items.length > 0)
 
   // Any unlisted activation types
   const listed = new Set(ACTIVATION_ORDER)
-  const extra = talents.filter(t => !listed.has(t.activation))
+  const extra = visibleTalents.filter(t => !listed.has(t.activation))
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -200,6 +217,28 @@ export function TalentsPanel({ talents, onViewTree }: TalentsPanelProps) {
           </button>
         </div>
       )}
+
+      {/* Search */}
+      <PanelSearchInput
+        value={talentSearch}
+        onChange={setTalentSearch}
+        placeholder="Search talents..."
+      />
+
+      {/* No-results message */}
+      {grouped.length === 0 && extra.length === 0 && searchQuery && (
+        <div style={{
+          textAlign: 'center',
+          fontFamily: FONT_RAJDHANI,
+          fontSize: 'clamp(0.8rem, 1.3vw, 0.9rem)',
+          color: 'rgba(200,170,80,0.35)',
+          fontStyle: 'italic',
+          padding: '16px 0',
+        }}>
+          No talents matching &ldquo;{talentSearch}&rdquo;
+        </div>
+      )}
+
       {grouped.map(({ activation, items }) => (
         <div key={activation}>
           <div style={{

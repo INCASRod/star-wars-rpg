@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { C, SYM, DICE_META, FONT_CINZEL, FONT_RAJDHANI, type DiceType, type SymbolKey } from './design-tokens'
+import { DiceFace } from '@/components/dice/DiceFace'
 import type { RollResult, DieResult } from './dice-engine'
 
 const ADVANTAGE_HINTS = [
@@ -19,49 +20,29 @@ const THREAT_HINTS = [
   'The situation deteriorates — GM decides how',
 ]
 
-// Render a dice shape (diamond, circle, or rounded rect)
-function DieShape({ meta, size, children }: {
-  meta: typeof DICE_META[DiceType]
+// Render a dice shape using SVG DiceFace with optional content overlay
+function DieShape({ type, size, children }: {
+  type: DiceType
   size: number
   children?: React.ReactNode
 }) {
-  const base: React.CSSProperties = {
-    width: size, height: size,
-    background: `${meta.color}22`,
-    border: `1.5px solid ${meta.color}`,
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    flexShrink: 0,
-    fontSize: size * 0.28,
-    color: meta.color,
-    fontFamily: FONT_RAJDHANI,
-    fontWeight: 700,
-  }
-
-  if (meta.shape === 'diamond') {
-    return (
-      <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
-        <div style={{
-          ...base,
-          position: 'absolute',
-          transform: 'rotate(45deg)',
-          borderRadius: 3,
-          inset: 0,
-        }} />
+  const color = DICE_META[type].color
+  return (
+    <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
+      <DiceFace type={type} size={size} />
+      {children && (
         <div style={{
           position: 'absolute', inset: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: size * 0.28, color: meta.color,
+          fontSize: size * 0.28, color,
           fontFamily: FONT_RAJDHANI, fontWeight: 700,
+          pointerEvents: 'none',
         }}>
           {children}
         </div>
-      </div>
-    )
-  }
-  if (meta.shape === 'circle') {
-    return <div style={{ ...base, borderRadius: '50%' }}>{children}</div>
-  }
-  return <div style={{ ...base, borderRadius: 4 }}>{children}</div>
+      )}
+    </div>
+  )
 }
 
 function DieChip({ die }: { die: DieResult }) {
@@ -70,7 +51,7 @@ function DieChip({ die }: { die: DieResult }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-      <DieShape meta={meta} size={44}>
+      <DieShape type={die.type} size={44}>
         <span style={{ fontSize: 14 }}>{label}</span>
       </DieShape>
       <div style={{ fontSize: 12, color: C.textDim, fontFamily: FONT_RAJDHANI, textTransform: 'uppercase' }}>

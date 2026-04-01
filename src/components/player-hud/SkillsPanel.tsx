@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { C, CHAR_COLOR, CHAR_ABBR3, FONT_CINZEL, FONT_RAJDHANI, panelBase, type CharKey } from './design-tokens'
+import { DiceFace } from '@/components/dice/DiceFace'
 import { Tooltip, TipLabel, TipBody, TipDivider } from '@/components/ui/Tooltip'
 import { getSkillTip } from '@/lib/tooltips/skillDescriptions'
+import { PanelSearchInput } from '@/components/character/PanelSearchInput'
 
 export interface HudSkill {
   key: string
@@ -20,28 +22,57 @@ interface SkillsPanelProps {
   onUpgrade: (skill: HudSkill) => void
   isCombat: boolean
   xpAvailable: number
+  onOpenPopover?: (skill: HudSkill, anchor: DOMRect) => void
+  characterId?: string
 }
 
 type Filter = 'All' | 'Trained' | 'Career'
 
 const CHAR_ORDER: CharKey[] = ['brawn', 'agility', 'intellect', 'cunning', 'willpower', 'presence']
 
+const CHAR_ABBR2: Record<string, string> = {
+  brawn: 'br', agility: 'ag', intellect: 'int',
+  cunning: 'cun', willpower: 'will', presence: 'pr',
+}
+
+const POOL_CAP = 6
+const POOL_OVERFLOW_FONT = "'Share Tech Mono', 'Courier New', monospace"
+
 function PoolPreview({ charVal, rank }: { charVal: number; rank: number }) {
   const proficiency = Math.min(charVal, rank)
-  const ability = Math.abs(charVal - rank)
+  const ability     = Math.abs(charVal - rank)
+  const total       = proficiency + ability
+
+  if (total === 0) {
+    return (
+      <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
+        <DiceFace type="ability" size={18} dimmed />
+      </div>
+    )
+  }
+
+  const shown    = Math.min(total, POOL_CAP)
+  const overflow = total - shown
+  const proShown = Math.min(proficiency, shown)
+  const ablShown = shown - proShown
+
   return (
-    <div style={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-      {Array.from({ length: proficiency }).map((_, i) => (
-        <div key={`p${i}`} style={{
-          width: 8, height: 8, background: '#D4B840',
-          transform: 'rotate(45deg)', borderRadius: 1,
-        }} />
+    <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
+      {Array.from({ length: proShown }).map((_, i) => (
+        <DiceFace key={`p${i}`} type="proficiency" size={18} />
       ))}
-      {Array.from({ length: ability }).map((_, i) => (
-        <div key={`a${i}`} style={{
-          width: 8, height: 8, borderRadius: '50%', background: '#4EC87A',
-        }} />
+      {Array.from({ length: ablShown }).map((_, i) => (
+        <DiceFace key={`a${i}`} type="ability" size={18} />
       ))}
+      {overflow > 0 && (
+        <span style={{
+          fontFamily: POOL_OVERFLOW_FONT,
+          fontSize: 'clamp(0.58rem, 0.85vw, 0.68rem)',
+          color: 'rgba(232,223,200,0.4)',
+        }}>
+          +{overflow}
+        </span>
+      )}
     </div>
   )
 }
@@ -240,15 +271,29 @@ function SkillUpgradeDialog({ skill, xpAvailable, onConfirm, onCancel }: {
   )
 }
 
-export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable }: SkillsPanelProps) {
+export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, onOpenPopover, characterId }: SkillsPanelProps) {
   const [filter, setFilter] = useState<Filter>('All')
   const [pendingSkill, setPendingSkill] = useState<HudSkill | null>(null)
+  const [skillSearch, setSkillSearch] = useState('')
 
-  const filtered = skills.filter(s => {
+  // Reset search when character changes
+  useEffect(() => { setSkillSearch('') }, [characterId])
+
+  const filterByTab = skills.filter(s => {
     if (filter === 'Trained') return s.rank > 0
     if (filter === 'Career') return s.isCareer
     return true
   })
+
+  const searchQuery = skillSearch.toLowerCase().trim()
+  const filtered = searchQuery
+    ? filterByTab.filter(s =>
+        s.name.toLowerCase().includes(searchQuery) ||
+        s.charKey.toLowerCase().includes(searchQuery) ||
+        (CHAR_ABBR2[s.charKey] ?? '').includes(searchQuery) ||
+        (CHAR_ABBR3[s.charKey] ?? '').toLowerCase().includes(searchQuery)
+      )
+    : filterByTab
 
   // Group by characteristic, preserving order
   const grouped = CHAR_ORDER.map(charKey => ({
@@ -257,9 +302,13 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable }
     skills: filtered.filter(s => s.charKey === charKey).sort((a, b) => a.name.localeCompare(b.name)),
   })).filter(g => g.skills.length > 0)
 
-  const handleSkillClick = (skill: HudSkill) => {
+  const handleSkillClick = (skill: HudSkill, e?: React.MouseEvent<HTMLElement>) => {
     if (isCombat) {
-      onRoll(skill)
+      if (onOpenPopover && e) {
+        onOpenPopover(skill, e.currentTarget.getBoundingClientRect())
+      } else {
+        onRoll(skill)
+      }
     } else {
       if (skill.rank < 5) setPendingSkill(skill)
     }
@@ -335,6 +384,27 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable }
           </div>
         </div>
 
+        {/* Search */}
+        <PanelSearchInput
+          value={skillSearch}
+          onChange={setSkillSearch}
+          placeholder="Search skills..."
+        />
+
+        {/* No-results message */}
+        {grouped.length === 0 && searchQuery && (
+          <div style={{
+            textAlign: 'center',
+            fontFamily: FONT_RAJDHANI,
+            fontSize: 'clamp(0.8rem, 1.3vw, 0.9rem)',
+            color: 'rgba(200,170,80,0.35)',
+            fontStyle: 'italic',
+            padding: '16px 0',
+          }}>
+            No skills matching &ldquo;{skillSearch}&rdquo;
+          </div>
+        )}
+
         {/* 2-column grid of characteristic groups */}
         <div style={{
           display: 'grid',
@@ -388,7 +458,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable }
                   return (
                     <Tooltip key={skill.key} content={tooltipContent} placement="right" maxWidth={280}>
                       <div
-                        onClick={() => handleSkillClick(skill)}
+                        onClick={(e) => handleSkillClick(skill, e)}
                         style={{
                           display: 'flex', alignItems: 'center', gap: 6,
                           padding: '5px 6px', borderRadius: 3, marginBottom: 2,

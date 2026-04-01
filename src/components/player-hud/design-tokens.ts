@@ -55,18 +55,18 @@ export type DiceType = 'proficiency' | 'ability' | 'boost' | 'challenge' | 'diff
 
 export interface DiceMeta {
   color: string
-  shape: 'diamond' | 'circle' | 'rounded'
+  shape: 'octagon' | 'diamond' | 'rounded'
   label: string
   positive: boolean
 }
 
 export const DICE_META: Record<DiceType, DiceMeta> = {
-  proficiency: { color: '#D4B840', shape: 'diamond', label: 'PRO', positive: true },
-  ability: { color: '#4EC87A', shape: 'circle', label: 'ABL', positive: true },
-  boost: { color: '#70C8E8', shape: 'rounded', label: 'BST', positive: true },
-  challenge: { color: '#E05050', shape: 'diamond', label: 'CHL', positive: false },
-  difficulty: { color: '#9060D0', shape: 'circle', label: 'DIF', positive: false },
-  setback: { color: '#707070', shape: 'rounded', label: 'SET', positive: false },
+  proficiency: { color: '#F5C518', shape: 'octagon',  label: 'PRO', positive: true },
+  ability:     { color: '#4CAF50', shape: 'diamond',  label: 'ABL', positive: true },
+  boost:       { color: '#29B6F6', shape: 'rounded',  label: 'BST', positive: true },
+  challenge:   { color: '#C62828', shape: 'octagon',  label: 'CHL', positive: false },
+  difficulty:  { color: '#7B1FA2', shape: 'diamond',  label: 'DIF', positive: false },
+  setback:     { color: '#455A64', shape: 'rounded',  label: 'SET', positive: false },
 }
 
 export type SymbolKey = 'S' | 'F' | 'A' | 'H' | 'T' | 'D'

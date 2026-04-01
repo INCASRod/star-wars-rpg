@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { FS_OVERLINE, FS_LABEL, FS_SM } from '@/components/player-hud/design-tokens'
-import { MarkupText } from '@/components/ui/MarkupText'
+import { DiceText } from '@/components/dice/DiceText'
 
 /* ═══════════════════════════════════════════════════════ */
 /*  DESIGN TOKENS                                         */
@@ -228,7 +228,7 @@ function NodeCard({
               minHeight: 0,
             }}
           >
-            <MarkupText text={node.description} />
+            <DiceText text={node.description} />
           </div>
         )}
 
@@ -362,7 +362,7 @@ function NodeCard({
               minHeight: 0,
             }}
           >
-            <MarkupText text={node.description} />
+            <DiceText text={node.description} />
           </div>
         )}
       </div>
@@ -433,7 +433,7 @@ function NodeCard({
           opacity: hovered ? 0.9 : 0.5,
           transition: 'opacity 0.15s',
         }}>
-          <MarkupText text={node.description} />
+          <DiceText text={node.description} />
         </div>
       )}
     </div>
@@ -542,7 +542,7 @@ function PurchasePopover({
               marginBottom: 10,
             }}
           >
-            <MarkupText text={node.description} />
+            <DiceText text={node.description} />
           </div>
         )}
 
@@ -664,7 +664,7 @@ function LockedInfoPopover({
             fontFamily: FR, fontSize: FS_LABEL, color: DIM,
             lineHeight: 1.5, maxHeight: 140, overflowY: 'auto', marginBottom: 12,
           }}>
-            <MarkupText text={node.description} />
+            <DiceText text={node.description} />
           </div>
         ) : (
           <div style={{ fontFamily: FR, fontSize: FS_LABEL, color: FAINT, fontStyle: 'italic', marginBottom: 12 }}>

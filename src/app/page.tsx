@@ -379,6 +379,7 @@ export default function Home() {
         .from('characters')
         .select('*')
         .eq('campaign_id', camp.id)
+        .eq('is_archived', false)
       if (chars) setCharacters(chars as Character[])
 
       // 3. Fetch players → playerNames map (player_id → display_name)

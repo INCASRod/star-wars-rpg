@@ -58,6 +58,7 @@ function CombatPageInner() {
       .from('characters')
       .select('*')
       .eq('campaign_id', campaignId)
+      .eq('is_archived', false)
       .then(({ data }) => {
         if (data) setCharacters(data as Character[])
         setLoading(false)

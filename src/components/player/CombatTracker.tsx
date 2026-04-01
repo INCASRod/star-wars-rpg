@@ -56,6 +56,8 @@ interface Props {
 export function CombatTracker({ character, campaignId, talents = [] }: Props) {
   const [encounter, setEncounter] = useState<CombatEncounter | null>(null)
   const [weaponRef, setWeaponRef] = useState<Record<string, WeaponRef>>({})
+  // Active character assignments keyed by default character_id
+  const [slotAssignments, setSlotAssignments] = useState<Record<string, string | null>>({})
   const supabase = createClient()
 
   // Load weapon reference for stat lookup (weapons in adversaries.json are name-only strings)
@@ -101,6 +103,39 @@ export function CombatTracker({ character, campaignId, talents = [] }: Props) {
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
+  }, [campaignId]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Subscribe to combat_participants for real-time slot assignment updates
+  useEffect(() => {
+    if (!campaignId) return
+    supabase
+      .from('combat_participants')
+      .select('character_id, active_character_name')
+      .eq('campaign_id', campaignId)
+      .eq('slot_type', 'pc')
+      .then(({ data }) => {
+        if (!data) return
+        const map: Record<string, string | null> = {}
+        for (const r of data as { character_id: string; active_character_name: string | null }[]) {
+          map[r.character_id] = r.active_character_name
+        }
+        setSlotAssignments(map)
+      })
+    const ch = supabase
+      .channel(`ct-participants-${campaignId}`)
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'combat_participants',
+        filter: `campaign_id=eq.${campaignId}`,
+      }, (payload) => {
+        if (payload.new) {
+          const r = payload.new as { character_id: string; active_character_name: string | null; slot_type: string }
+          if (r.slot_type === 'pc') {
+            setSlotAssignments(prev => ({ ...prev, [r.character_id]: r.active_character_name }))
+          }
+        }
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(ch) }
   }, [campaignId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!encounter || !encounter.is_active) {
@@ -217,12 +252,19 @@ export function CombatTracker({ character, campaignId, talents = [] }: Props) {
           const isPC = slot.type === 'pc'
           const isCurrent = slot.current
           const isActed = slot.acted
-          const isMe = slot.characterId === character.id
+          // Resolve active character for PC slots (may be reassigned by GM)
+          const activeName = isPC && slot.characterId
+            ? (slotAssignments[slot.characterId] ?? slot.name)
+            : slot.name
+          const isMe = isPC && (
+            slot.characterId === character.id ||
+            activeName === character.name
+          )
           const adv = slot.adversaryInstanceId
             ? encounter.adversaries.find(a => a.instanceId === slot.adversaryInstanceId)
             : null
           const isRevealed = adv?.revealed ?? true
-          const displayName = !isPC && !isRevealed ? '???' : slot.name
+          const displayName = !isPC && !isRevealed ? '???' : activeName
           const ringColor = isCurrent ? (isPC ? CHAR_AG : CHAR_BR) : 'transparent'
 
           return (

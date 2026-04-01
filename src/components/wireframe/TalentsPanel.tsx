@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { C, FONT_CINZEL, FONT_RAJDHANI, panelBase, FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4, FS_H3 } from '@/components/player-hud/design-tokens'
+import { PanelSearchInput } from '@/components/character/PanelSearchInput'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -142,10 +143,15 @@ function TalentCard({ t }: { t: Talent }) {
 interface TalentsPanelProps {
   liveTalents?: LiveTalent[]
   characterName?: string
+  characterId?: string
 }
 
-export function TalentsPanel({ liveTalents, characterName }: TalentsPanelProps) {
+export function TalentsPanel({ liveTalents, characterName, characterId }: TalentsPanelProps) {
   const [tab, setTab] = useState<Activation>('Passive')
+  const [talentSearch, setTalentSearch] = useState('')
+
+  // Reset search when character changes
+  useEffect(() => { setTalentSearch('') }, [characterId])
 
   const TALENTS: Talent[] = liveTalents ? liveTalents.map(toWfTalent) : STATIC_TALENTS
 
@@ -153,9 +159,19 @@ export function TalentsPanel({ liveTalents, characterName }: TalentsPanelProps) 
     .filter(t => t.activation === 'Passive' && t.statBonus)
     .map(t => `+${t.statBonus!.value} ${t.statBonus!.stat} (${t.name})`)
 
-  const filtered = TALENTS.filter(t => t.activation === tab)
+  const searchQuery = talentSearch.toLowerCase().trim()
+
+  // When searching: show all matching talents flat (bypass tab filter)
+  // When not searching: apply tab filter as before
+  const filtered = searchQuery
+    ? TALENTS.filter(t =>
+        t.name.toLowerCase().includes(searchQuery) ||
+        t.description.toLowerCase().includes(searchQuery) ||
+        t.activation.toLowerCase().includes(searchQuery)
+      )
+    : TALENTS.filter(t => t.activation === tab)
+
   const counts = Object.fromEntries(TABS.map(t => [t.key, TALENTS.filter(x => x.activation === t.key).length])) as Record<Activation, number>
-  const tabColor = ACTIVATION_COLOR[tab]
 
   return (
     <div style={{ ...panelBase, overflow: 'hidden' }}>
@@ -173,39 +189,48 @@ export function TalentsPanel({ liveTalents, characterName }: TalentsPanelProps) 
         </div>
       </div>
 
-      {/* ── Tabs ── */}
-      <div style={{ display: 'flex', borderBottom: `1px solid ${C.border}`, overflowX: 'auto' }}>
-        {TABS.map(({ key, label, special }) => {
-          const active = tab === key
-          const color = ACTIVATION_COLOR[key]
-          return (
-            <button
-              key={key}
-              onClick={() => setTab(key)}
-              style={{
-                flex: 1, minWidth: 'fit-content', whiteSpace: 'nowrap',
-                padding: '7px 10px',
-                background: active ? `${color}18` : 'transparent',
-                borderRight: `1px solid ${C.border}`,
-                borderBottom: active ? `2px solid ${color}` : '2px solid transparent',
-                cursor: 'pointer', transition: '.15s',
-                fontFamily: FONT_RAJDHANI, fontWeight: 700, fontSize: FS_OVERLINE,
-                letterSpacing: '0.1em', textTransform: 'uppercase',
-                color: active ? color : C.textDim,
-                ...(special && !active ? { borderBottom: `2px dashed ${color}50` } : {}),
-              }}
-            >
-              {label}
-              <span style={{ marginLeft: 4, opacity: 0.6 }}>({counts[key]})</span>
-            </button>
-          )
-        })}
-      </div>
+      {/* ── Tabs (hidden during active search) ── */}
+      {!searchQuery && (
+        <div style={{ display: 'flex', borderBottom: `1px solid ${C.border}`, overflowX: 'auto' }}>
+          {TABS.map(({ key, label, special }) => {
+            const active = tab === key
+            const color = ACTIVATION_COLOR[key]
+            return (
+              <button
+                key={key}
+                onClick={() => setTab(key)}
+                style={{
+                  flex: 1, minWidth: 'fit-content', whiteSpace: 'nowrap',
+                  padding: '7px 10px',
+                  background: active ? `${color}18` : 'transparent',
+                  borderRight: `1px solid ${C.border}`,
+                  borderBottom: active ? `2px solid ${color}` : '2px solid transparent',
+                  cursor: 'pointer', transition: '.15s',
+                  fontFamily: FONT_RAJDHANI, fontWeight: 700, fontSize: FS_OVERLINE,
+                  letterSpacing: '0.1em', textTransform: 'uppercase',
+                  color: active ? color : C.textDim,
+                  ...(special && !active ? { borderBottom: `2px dashed ${color}50` } : {}),
+                }}
+              >
+                {label}
+                <span style={{ marginLeft: 4, opacity: 0.6 }}>({counts[key]})</span>
+              </button>
+            )
+          })}
+        </div>
+      )}
 
       <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
 
-        {/* ── Passive summary banner ── */}
-        {tab === 'Passive' && passiveBonuses.length > 0 && (
+        {/* ── Search ── */}
+        <PanelSearchInput
+          value={talentSearch}
+          onChange={setTalentSearch}
+          placeholder="Search talents..."
+        />
+
+        {/* ── Passive summary banner (only when not searching) ── */}
+        {!searchQuery && tab === 'Passive' && passiveBonuses.length > 0 && (
           <div style={{ background: `${C.gold}08`, border: `1px solid ${C.gold}30`, borderRadius: 4, padding: '7px 10px' }}>
             <div style={{ fontFamily: FONT_RAJDHANI, fontWeight: 700, fontSize: FS_OVERLINE, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.gold, marginBottom: 4 }}>
               ■ Passive Bonuses Applied
@@ -216,8 +241,8 @@ export function TalentsPanel({ liveTalents, characterName }: TalentsPanelProps) 
           </div>
         )}
 
-        {/* ── OOT alert banner ── */}
-        {tab === 'Out of Turn' && (
+        {/* ── OOT alert banner (only when not searching) ── */}
+        {!searchQuery && tab === 'Out of Turn' && (
           <div style={{ background: 'rgba(216,112,96,0.08)', border: '1px dashed rgba(216,112,96,0.4)', borderRadius: 4, padding: '7px 10px' }}>
             <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.12em', color: '#D87060', marginBottom: 4 }}>
               ⚡ REACTION WINDOW
@@ -232,7 +257,7 @@ export function TalentsPanel({ liveTalents, characterName }: TalentsPanelProps) 
         {filtered.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '28px 16px' }}>
             <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: C.textFaint, fontStyle: 'italic' }}>
-              No talents in this category
+              {searchQuery ? `No talents matching \u201c${talentSearch}\u201d` : 'No talents in this category'}
             </div>
           </div>
         ) : (
@@ -241,8 +266,8 @@ export function TalentsPanel({ liveTalents, characterName }: TalentsPanelProps) 
           </div>
         )}
 
-        {/* ── Tab color rule reference ── */}
-        {filtered.length > 0 && (
+        {/* ── Tab color rule reference (hidden during search) ── */}
+        {!searchQuery && filtered.length > 0 && (
           <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 8, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             {TABS.map(({ key, label }) => (
               <span key={key} style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, color: ACTIVATION_COLOR[key], letterSpacing: '0.06em' }}>

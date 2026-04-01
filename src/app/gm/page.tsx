@@ -5,7 +5,8 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { EquipmentImage } from '@/components/ui/EquipmentImage'
 import { parseOggDudeMarkup } from '@/lib/oggdude-markup'
-import type { Character, Campaign, Player } from '@/lib/types'
+import type { Character, Campaign, Player, RefDutyType, RefObligationType } from '@/lib/types'
+import { DutyObligationTab } from '@/components/gm/DutyObligationTab'
 import { toast } from 'sonner'
 import { rarityColor, rarityLabel } from '@/lib/styles'
 import { useRollFeed } from '@/hooks/useRollFeed'
@@ -13,6 +14,7 @@ import { RollFeedPanel } from '@/components/player-hud/RollFeedPanel'
 import { rollPool } from '@/components/player-hud/dice-engine'
 import { logRoll } from '@/lib/logRoll'
 import { HolocronLoader } from '@/components/ui/HolocronLoader'
+import { archiveCharacter, restoreCharacter } from '@/lib/characters'
 
 /* ═══════════════════════════════════════
    DESIGN TOKENS (Dark HUD)
@@ -143,7 +145,10 @@ function LootBadges({ item, size = 'sm' }: { item: LootItem; size?: 'sm' | 'md' 
 
   if (item.type === 'weapon') {
     const isMelee = ['MELEE', 'BRAWL', 'LTSABER'].includes(item.skill_key || '')
-    const dmg = isMelee ? `+${item.damage_add || 0}` : item.damage != null ? String(item.damage) : null
+    const isBrawnBased = isMelee && item.damage_add != null
+    const dmg = isBrawnBased
+      ? `Brawn+${item.damage_add ?? 0}`
+      : item.damage != null ? String(item.damage) : null
     if (dmg != null) badges.push(<span key="dmg" style={b('rgba(224,80,80,0.15)', RED)}>DMG {dmg}</span>)
     if (item.crit != null && item.crit > 0) badges.push(<span key="crit" style={b('rgba(224,80,80,0.10)', '#B44')}>CRIT {item.crit}</span>)
     if (item.range_value) badges.push(<span key="rng" style={b('rgba(200,170,80,0.08)', DIM)}>{item.range_value}</span>)
@@ -280,14 +285,18 @@ function GmDashboard() {
   const [error, setError] = useState<string | null>(null)
 
   // ── Tabs ──
-  type GmTab = 'xp' | 'credits' | 'duty' | 'loot' | 'combat' | 'crit'
+  type GmTab = 'xp' | 'credits' | 'duty' | 'do' | 'loot' | 'combat' | 'crit'
   const GM_TAB_KEY = 'holocron:gm-tab'
   const [activeTab, setActiveTab] = useState<GmTab>(() => {
     if (typeof window === 'undefined') return 'xp'
     const saved = window.localStorage.getItem(GM_TAB_KEY)
-    const valid: GmTab[] = ['xp', 'credits', 'duty', 'loot', 'combat', 'crit']
+    const valid: GmTab[] = ['xp', 'credits', 'duty', 'do', 'loot', 'combat', 'crit']
     return valid.includes(saved as GmTab) ? (saved as GmTab) : 'xp'
   })
+
+  // ── D&O ref data ──
+  const [dutyTypes, setDutyTypes]           = useState<RefDutyType[]>([])
+  const [obligationTypes, setObligationTypes] = useState<RefObligationType[]>([])
 
   // ── XP ──
   const [xpAmount, setXpAmount] = useState('')
@@ -338,6 +347,11 @@ function GmDashboard() {
   // ── Active sessions (charId → session_key) ──
   const [activeSessions, setActiveSessions] = useState<Record<string, string>>({})
 
+  // ── Archive ──
+  const [archiveConfirm, setArchiveConfirm] = useState<{ id: string; name: string } | null>(null)
+  const [archiveBusy, setArchiveBusy] = useState(false)
+  const [archiveOpen, setArchiveOpen] = useState(false)
+
   // ── GM Roll panel ──
   const [gmRollLabel, setGmRollLabel] = useState('')
   const [gmRollHidden, setGmRollHidden] = useState(false)
@@ -350,6 +364,15 @@ function GmDashboard() {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const supabase = useMemo(() => createClient(), [])
+
+  // ── Derived character lists ──
+  const activeChars   = useMemo(() => characters.filter(c => !c.is_archived), [characters])
+  const archivedChars = useMemo(() => characters.filter(c =>  c.is_archived), [characters])
+
+  // ── Optimistic character patch (used by D&O tab inline edits & setup modal) ──
+  const handleCharacterUpdated = useCallback((id: string, updates: Partial<Character>) => {
+    setCharacters(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c))
+  }, [])
 
   // ── Roll Feed ──
   const rolls = useRollFeed(campaignId)
@@ -510,11 +533,17 @@ function GmDashboard() {
     }
     if (!silent) setLoading(true)
     try {
-      const [campRes, charRes, playerRes, sessRes] = await Promise.all([
+      // Ensure the Supabase client has hydrated its session from the cookie
+      // before any queries run, so requests carry the JWT and RLS resolves correctly.
+      await supabase.auth.getSession()
+
+      const [campRes, charRes, playerRes, sessRes, dutyTypesRes, oblTypesRes] = await Promise.all([
         supabase.from('campaigns').select('*').eq('id', campaignId).single(),
         supabase.from('characters').select('*').eq('campaign_id', campaignId),
         supabase.from('players').select('id, display_name').eq('campaign_id', campaignId),
         supabase.from('character_sessions').select('character_id, session_key').eq('campaign_id', campaignId).eq('is_active', true),
+        supabase.from('ref_duty_types').select('key, name, description').order('name'),
+        supabase.from('ref_obligation_types').select('key, name, description').order('name'),
       ])
 
       if (campRes.error) throw new Error(campRes.error.message)
@@ -528,6 +557,16 @@ function GmDashboard() {
       if (Array.isArray(settings.destiny_pool)) {
         setDestinyPool(settings.destiny_pool as Array<'light' | 'dark'>)
       }
+
+      if (dutyTypesRes.error) throw new Error(
+        `Failed to load Duty types: ${dutyTypesRes.error.message}`
+      )
+      if (dutyTypesRes.data) setDutyTypes(dutyTypesRes.data as RefDutyType[])
+
+      if (oblTypesRes.error) throw new Error(
+        `Failed to load Obligation types: ${oblTypesRes.error.message}`
+      )
+      if (oblTypesRes.data) setObligationTypes(oblTypesRes.data as RefObligationType[])
 
       const chars = (charRes.data as Character[]) || []
       setCharacters(chars)
@@ -617,7 +656,7 @@ function GmDashboard() {
   // ── XP ──
   const requestXpConfirm = () => {
     const amount = parseInt(xpAmount, 10)
-    if (!amount || characters.length === 0) return
+    if (!amount || activeChars.length === 0) return
     if (xpMode === 'individual') {
       if (!xpTarget) return
       const char = characters.find(c => c.id === xpTarget)
@@ -635,17 +674,17 @@ function GmDashboard() {
     setXpConfirm(null)
     setXpBusy(true)
     try {
-      const updates = characters.map(c =>
+      const updates = activeChars.map(c =>
         supabase.from('characters').update({ xp_total: c.xp_total + amount, xp_available: c.xp_available + amount }).eq('id', c.id)
       )
-      const transactions = characters.map(c =>
+      const transactions = activeChars.map(c =>
         supabase.from('xp_transactions').insert({ character_id: c.id, amount, reason, created_by: 'gm' })
       )
       await Promise.all([...updates, ...transactions])
-      setCharacters(prev => prev.map(c => ({ ...c, xp_total: c.xp_total + amount, xp_available: c.xp_available + amount })))
-      for (const c of characters) notify(c.id, 'dialog', `You received ${amount} XP!${reason ? ` Reason: ${reason}` : ''}`)
+      setCharacters(prev => prev.map(c => c.is_archived ? c : { ...c, xp_total: c.xp_total + amount, xp_available: c.xp_available + amount }))
+      for (const c of activeChars) notify(c.id, 'dialog', `You received ${amount} XP!${reason ? ` Reason: ${reason}` : ''}`)
       setXpAmount(''); setXpReason('')
-      flash(`Granted ${amount} XP to ${characters.length} characters`)
+      flash(`Granted ${amount} XP to ${activeChars.length} characters`)
     } catch (err: unknown) {
       flashError('Error granting XP: ' + (err instanceof Error ? err.message : String(err)))
     }
@@ -675,14 +714,14 @@ function GmDashboard() {
   // ── Credits ──
   const handleBulkCredits = async () => {
     const amount = parseInt(creditsAmount, 10)
-    if (!amount || amount <= 0 || characters.length === 0) return
+    if (!amount || amount <= 0 || activeChars.length === 0) return
     setCreditsBusy(true)
     try {
-      await Promise.all(characters.map(c => supabase.from('characters').update({ credits: c.credits + amount }).eq('id', c.id)))
-      setCharacters(prev => prev.map(c => ({ ...c, credits: c.credits + amount })))
-      for (const c of characters) notify(c.id, 'dialog', `You received ${amount} credits!`)
+      await Promise.all(activeChars.map(c => supabase.from('characters').update({ credits: c.credits + amount }).eq('id', c.id)))
+      setCharacters(prev => prev.map(c => c.is_archived ? c : { ...c, credits: c.credits + amount }))
+      for (const c of activeChars) notify(c.id, 'dialog', `You received ${amount} credits!`)
       setCreditsAmount('')
-      flash(`Distributed ${amount} credits to ${characters.length} characters`)
+      flash(`Distributed ${amount} credits to ${activeChars.length} characters`)
     } catch (err: unknown) {
       flashError('Error distributing credits: ' + (err instanceof Error ? err.message : String(err)))
     }
@@ -740,19 +779,19 @@ function GmDashboard() {
 
   const handleBulkOD = async () => {
     const amount = parseInt(odAmount, 10)
-    if (!amount || characters.length === 0) return
+    if (!amount || activeChars.length === 0) return
     setOdBusy(true)
     const field = odType === 'obligation' ? 'obligation_value' : 'duty_value'
     const label = odType === 'obligation' ? 'Obligation' : 'Duty'
     try {
-      await Promise.all(characters.map(c => {
+      await Promise.all(activeChars.map(c => {
         const current = getODValue(c, odType)
         return supabase.from('characters').update({ [field]: Math.max(0, current + amount) }).eq('id', c.id)
       }))
-      setCharacters(prev => prev.map(c => ({ ...c, [field]: Math.max(0, getODValue(c, odType) + amount) })))
-      for (const c of characters) notify(c.id, 'toast', `${label} ${amount > 0 ? 'increased' : 'decreased'} by ${Math.abs(amount)}`)
+      setCharacters(prev => prev.map(c => c.is_archived ? c : { ...c, [field]: Math.max(0, getODValue(c, odType) + amount) }))
+      for (const c of activeChars) notify(c.id, 'toast', `${label} ${amount > 0 ? 'increased' : 'decreased'} by ${Math.abs(amount)}`)
       setOdAmount('')
-      flash(`${amount > 0 ? 'Added' : 'Reduced'} ${Math.abs(amount)} ${label} for ${characters.length} characters`)
+      flash(`${amount > 0 ? 'Added' : 'Reduced'} ${Math.abs(amount)} ${label} for ${activeChars.length} characters`)
     } catch (err: unknown) {
       flashError(err instanceof Error ? err.message : String(err))
     }
@@ -870,11 +909,41 @@ function GmDashboard() {
   const releaseAllSessions = useCallback(async () => {
     if (!campaignId) return
     // Broadcast force-logout to every online character
-    characters.forEach(c => sendToChar(c.id, { type: 'force-logout' }))
+    activeChars.forEach(c => sendToChar(c.id, { type: 'force-logout' }))
     await supabase.from('character_sessions').delete().eq('campaign_id', campaignId)
     setActiveSessions({})
     flash('All sessions released')
   }, [campaignId, characters, sendToChar, supabase, flash])
+
+  // ── Archive / Restore ──
+  const handleArchive = useCallback(async () => {
+    if (!archiveConfirm) return
+    setArchiveBusy(true)
+    try {
+      sendToChar(archiveConfirm.id, { type: 'force-logout' })
+      await archiveCharacter(archiveConfirm.id)
+      setCharacters(prev => prev.map(c =>
+        c.id === archiveConfirm.id ? { ...c, is_archived: true, archived_at: new Date().toISOString() } : c
+      ))
+      flash(`${archiveConfirm.name} archived`)
+    } catch (err: unknown) {
+      flashError('Archive failed: ' + (err instanceof Error ? err.message : String(err)))
+    }
+    setArchiveConfirm(null)
+    setArchiveBusy(false)
+  }, [archiveConfirm, sendToChar, flash, flashError])
+
+  const handleRestore = useCallback(async (charId: string, charName: string) => {
+    try {
+      await restoreCharacter(charId)
+      setCharacters(prev => prev.map(c =>
+        c.id === charId ? { ...c, is_archived: false, archived_at: undefined } : c
+      ))
+      flash(`${charName} restored`)
+    } catch (err: unknown) {
+      flashError('Restore failed: ' + (err instanceof Error ? err.message : String(err)))
+    }
+  }, [flash, flashError])
 
   // ── Crit Roller ──
   const rollCrit = () => {
@@ -1112,7 +1181,7 @@ function GmDashboard() {
               gridTemplateColumns: 'repeat(5, 1fr)',
               gap: 10,
             }}>
-              {characters.map(c => {
+              {activeChars.map(c => {
                 const isIncap = c.wound_current >= c.wound_threshold
                 const isStrainHigh = c.strain_current > c.strain_threshold * 0.75
                 const leftBorderColor = isIncap ? RED : isStrainHigh ? CYAN : 'transparent'
@@ -1277,11 +1346,105 @@ function GmDashboard() {
                     <div style={{ marginTop: 6, fontFamily: FR, fontSize: FS_LABEL, fontWeight: 600, textTransform: 'uppercase', color: GOLD_DIM, textAlign: 'center' }}>
                       {c.xp_available} XP · {c.credits} cr
                     </div>
+
+                    {/* Archive button */}
+                    <div style={{ marginTop: 8, borderTop: `1px solid ${BORDER}`, paddingTop: 6 }}>
+                      <button
+                        onClick={() => setArchiveConfirm({ id: c.id, name: c.name })}
+                        style={{
+                          width: '100%', background: 'transparent',
+                          border: `1px solid rgba(100,100,100,0.25)`,
+                          borderRadius: 3, padding: '3px 0',
+                          cursor: 'pointer', fontFamily: FR, fontSize: FS_OVERLINE,
+                          fontWeight: 700, letterSpacing: '0.06em',
+                          color: 'rgba(150,150,150,0.55)',
+                          textTransform: 'uppercase',
+                        }}
+                      >
+                        Archive
+                      </button>
+                    </div>
                   </div>
                 )
               })}
             </div>
           </div>
+
+          {/* ── ARCHIVED CHARACTERS ── */}
+          {archivedChars.length > 0 && (
+            <div>
+              <button
+                onClick={() => setArchiveOpen(o => !o)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8, background: 'transparent',
+                  border: 'none', cursor: 'pointer', padding: '4px 0', marginBottom: 6,
+                }}
+              >
+                <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(200,170,80,0.3)' }}>
+                  Archived Characters ({archivedChars.length})
+                </span>
+                <span style={{ color: 'rgba(200,170,80,0.3)', fontSize: 11 }}>{archiveOpen ? '▲' : '▼'}</span>
+              </button>
+              {archiveOpen && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {archivedChars.map(c => (
+                    <div
+                      key={c.id}
+                      style={{
+                        ...panelBase,
+                        padding: '10px 14px',
+                        display: 'flex', alignItems: 'center', gap: 10,
+                        opacity: 0.65,
+                      }}
+                    >
+                      {c.portrait_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={c.portrait_url}
+                          alt={c.name}
+                          style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', border: '1px solid rgba(200,170,80,0.2)', flexShrink: 0 }}
+                        />
+                      ) : (
+                        <div style={{
+                          width: 28, height: 28, borderRadius: '50%',
+                          background: 'rgba(200,170,80,0.05)', border: '1px solid rgba(200,170,80,0.2)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontFamily: FC, fontSize: FS_LABEL, color: DIM, flexShrink: 0,
+                        }}>
+                          {c.name.charAt(0)}
+                        </div>
+                      )}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontFamily: FR, fontSize: FS_SM, fontWeight: 700, color: DIM, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {c.name}
+                        </div>
+                        <div style={{ fontFamily: FR, fontSize: FS_LABEL, color: 'rgba(106,128,112,0.6)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          {c.species_key} · {c.career_key}
+                        </div>
+                      </div>
+                      {c.archived_at && (
+                        <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: 'rgba(106,128,112,0.5)', flexShrink: 0 }}>
+                          {new Date(c.archived_at).toLocaleDateString()}
+                        </div>
+                      )}
+                      <button
+                        onClick={() => handleRestore(c.id, c.name)}
+                        style={{
+                          background: 'rgba(78,200,122,0.08)', border: `1px solid rgba(78,200,122,0.25)`,
+                          borderRadius: 3, padding: '3px 10px', cursor: 'pointer',
+                          fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700,
+                          letterSpacing: '0.06em', color: GREEN, textTransform: 'uppercase',
+                          flexShrink: 0,
+                        }}
+                      >
+                        Restore
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* ── TOOLS (tabbed) ── */}
           <div>
@@ -1295,6 +1458,7 @@ function GmDashboard() {
                   ['xp', 'XP'],
                   ['credits', 'Credits'],
                   ['duty', 'Duty/Obl'],
+                  ['do', 'D&O'],
                   ['loot', 'Loot'],
                   ['combat', 'Combat'],
                   ['crit', 'Crit Roller'],
@@ -1337,7 +1501,7 @@ function GmDashboard() {
                           <div style={fieldLabel}>Character</div>
                           <select value={xpTarget} onChange={e => setXpTarget(e.target.value)} style={{ ...darkInput, minWidth: 160 }}>
                             <option value="">Select character...</option>
-                            {characters.map(c => <option key={c.id} value={c.id}>{c.name} ({c.xp_available} avail)</option>)}
+                            {activeChars.map(c => <option key={c.id} value={c.id}>{c.name} ({c.xp_available} avail)</option>)}
                           </select>
                         </div>
                       )}
@@ -1354,7 +1518,7 @@ function GmDashboard() {
                         disabled={xpBusy || !xpAmount || (xpMode === 'individual' && !xpTarget)}
                         style={{ ...btnPrimary, opacity: (xpBusy || !xpAmount || (xpMode === 'individual' && !xpTarget)) ? 0.4 : 1 }}
                       >
-                        {xpBusy ? 'Processing...' : xpMode === 'group' ? `Grant to All (${characters.length})` : parseInt(xpAmount, 10) < 0 ? 'Take XP' : 'Grant XP'}
+                        {xpBusy ? 'Processing...' : xpMode === 'group' ? `Grant to All (${activeChars.length})` : parseInt(xpAmount, 10) < 0 ? 'Take XP' : 'Grant XP'}
                       </button>
                     </div>
                   </div>
@@ -1376,7 +1540,7 @@ function GmDashboard() {
                           <div style={fieldLabel}>Character</div>
                           <select value={creditsTarget} onChange={e => setCreditsTarget(e.target.value)} style={{ ...darkInput, minWidth: 160 }}>
                             <option value="">Select character...</option>
-                            {characters.map(c => <option key={c.id} value={c.id}>{c.name} ({c.credits} cr)</option>)}
+                            {activeChars.map(c => <option key={c.id} value={c.id}>{c.name} ({c.credits} cr)</option>)}
                           </select>
                         </div>
                       )}
@@ -1389,7 +1553,7 @@ function GmDashboard() {
                         disabled={creditsBusy || !creditsAmount || (creditsMode === 'individual' && !creditsTarget)}
                         style={{ ...btnPrimary, opacity: (creditsBusy || !creditsAmount || (creditsMode === 'individual' && !creditsTarget)) ? 0.4 : 1 }}
                       >
-                        {creditsBusy ? 'Processing...' : creditsMode === 'group' ? `Distribute to All (${characters.length})` : parseInt(creditsAmount, 10) < 0 ? 'Take Credits' : 'Give Credits'}
+                        {creditsBusy ? 'Processing...' : creditsMode === 'group' ? `Distribute to All (${activeChars.length})` : parseInt(creditsAmount, 10) < 0 ? 'Take Credits' : 'Give Credits'}
                       </button>
                     </div>
                   </div>
@@ -1415,7 +1579,7 @@ function GmDashboard() {
 
                     {/* Overview */}
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
-                      {characters.map(c => {
+                      {activeChars.map(c => {
                         const val = odType === 'obligation' ? (c.obligation_value || 0) : (c.duty_value || 0)
                         const typeStr = odType === 'obligation' ? (c.obligation_type || '—') : (c.duty_type || '—')
                         return (
@@ -1435,7 +1599,7 @@ function GmDashboard() {
                           <div style={fieldLabel}>Character</div>
                           <select value={odTarget} onChange={e => setOdTarget(e.target.value)} style={{ ...darkInput, minWidth: 160 }}>
                             <option value="">Select character...</option>
-                            {characters.map(c => {
+                            {activeChars.map(c => {
                               const val = odType === 'obligation' ? (c.obligation_value || 0) : (c.duty_value || 0)
                               return <option key={c.id} value={c.id}>{c.name} ({val})</option>
                             })}
@@ -1452,12 +1616,23 @@ function GmDashboard() {
                         style={{ ...(parseInt(odAmount, 10) < 0 ? btnDanger : btnPrimary), opacity: (odBusy || !odAmount || (odMode === 'individual' && !odTarget)) ? 0.4 : 1 }}
                       >
                         {odBusy ? 'Processing...' : parseInt(odAmount, 10) < 0
-                          ? `Reduce ${odMode === 'group' ? `All (${characters.length})` : odType === 'obligation' ? 'Obligation' : 'Duty'}`
-                          : `Add to ${odMode === 'group' ? `All (${characters.length})` : odType === 'obligation' ? 'Obligation' : 'Duty'}`
+                          ? `Reduce ${odMode === 'group' ? `All (${activeChars.length})` : odType === 'obligation' ? 'Obligation' : 'Duty'}`
+                          : `Add to ${odMode === 'group' ? `All (${activeChars.length})` : odType === 'obligation' ? 'Obligation' : 'Duty'}`
                         }
                       </button>
                     </div>
                   </div>
+                )}
+
+                {/* ── D&O DASHBOARD TAB ── */}
+                {activeTab === 'do' && (
+                  <DutyObligationTab
+                    characters={activeChars}
+                    dutyTypes={dutyTypes}
+                    obligationTypes={obligationTypes}
+                    onCharacterUpdated={handleCharacterUpdated}
+                    campaignId={campaignId}
+                  />
                 )}
 
                 {/* ── LOOT TAB ── */}
@@ -1830,12 +2005,42 @@ function GmDashboard() {
                 </div>
                 <select value={assignTarget} onChange={e => setAssignTarget(e.target.value)} style={{ ...darkInput, minWidth: 140 }}>
                   <option value="">Assign to...</option>
-                  {characters.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  {activeChars.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
                 <button onClick={handleAssignLoot} disabled={!assignTarget || lootBusy} style={{ ...btnPrimary, opacity: assignTarget ? 1 : 0.4 }}>ASSIGN</button>
                 <button onClick={handleDismissReveal} style={btnDanger}>DISMISS</button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── ARCHIVE CONFIRMATION DIALOG ── */}
+      {archiveConfirm && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 200,
+          background: 'rgba(0,0,0,0.6)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div style={{ ...panelBase, padding: 24, maxWidth: '26rem', width: '90%', boxShadow: '0 8px 40px rgba(0,0,0,0.5)' }}>
+            <CornerBrackets />
+            <div style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: 'rgba(200,170,80,0.55)', letterSpacing: '0.15em', marginBottom: 12 }}>
+              Archive Character
+            </div>
+            <div style={{ fontFamily: FR, fontSize: FS_SM, color: TEXT, lineHeight: 1.7, marginBottom: 20 }}>
+              <strong style={{ color: GOLD }}>{archiveConfirm.name}</strong> will be hidden from all player views.
+              Their data is preserved and can be restored at any time.
+            </div>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <button onClick={() => setArchiveConfirm(null)} style={btnSmall} disabled={archiveBusy}>CANCEL</button>
+              <button
+                onClick={handleArchive}
+                disabled={archiveBusy}
+                style={{ ...btnDanger, opacity: archiveBusy ? 0.5 : 1 }}
+              >
+                {archiveBusy ? 'ARCHIVING…' : 'ARCHIVE'}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -1853,7 +2058,7 @@ function GmDashboard() {
               Confirm XP {xpConfirm.amount > 0 ? 'Grant' : 'Adjustment'}
             </div>
             <div style={{ fontFamily: FR, fontSize: FS_SM, color: TEXT, lineHeight: 1.7, marginBottom: 20 }}>
-              <div><span style={{ color: DIM }}>Target:</span> {xpConfirm.targetName || `All characters (${characters.length})`}</div>
+              <div><span style={{ color: DIM }}>Target:</span> {xpConfirm.targetName || `All characters (${activeChars.length})`}</div>
               <div>
                 <span style={{ color: DIM }}>Amount:</span>{' '}
                 <span style={{ color: xpConfirm.amount > 0 ? GREEN : RED, fontWeight: 700 }}>

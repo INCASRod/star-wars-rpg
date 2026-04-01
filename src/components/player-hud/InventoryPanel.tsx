@@ -1,19 +1,20 @@
 'use client'
 
+import React from 'react'
 import { C, FONT_CINZEL, FONT_RAJDHANI, panelBase, FS_OVERLINE, FS_LABEL, FS_SM } from './design-tokens'
-import { Tooltip, TipLabel, TipBody } from '@/components/ui/Tooltip'
-import { getQualityTip } from '@/lib/tooltips/weaponQualities'
-import type { EquipState } from '@/lib/types'
+import { WeaponDamageDisplay } from '@/components/character/WeaponDamageDisplay'
+import { QualityBadge } from '@/components/character/QualityBadge'
+import type { EquipState, RefWeaponQuality } from '@/lib/types'
 
 export interface WpnDisplay {
   id:          string
   name:        string
-  damage:      string
+  damage:      { baseDamage: number; isMelee: boolean; brawn: number }
   crit:        number
   range:       string
   enc:         number
   hardPoints:  number
-  qualities:   string[]
+  qualities:   { key: string; count?: number | null }[]
   equipState:  EquipState
   skillName:   string
 }
@@ -43,6 +44,7 @@ interface InventoryPanelProps {
   gearItems:            GearRow[]
   encumbranceCurrent:   number
   encumbranceThreshold: number
+  refWeaponQualityMap:  Record<string, RefWeaponQuality>
   onToggleWeapon:       (id: string) => void
   onToggleArmor:        (id: string) => void
   onToggleGear:         (id: string) => void
@@ -96,7 +98,7 @@ const RANGE_COLOR: Record<string, string> = {
   Extreme: '#A855E8',   // purple — heavy
 }
 
-function StatBadge({ label, value, color = C.textDim }: { label: string; value: string | number; color?: string }) {
+function StatBadge({ label, value, color = C.textDim }: { label: string; value: React.ReactNode; color?: string }) {
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -151,6 +153,7 @@ function CornerBrackets() {
 export function InventoryPanel({
   weapons, armorItems, gearItems,
   encumbranceCurrent, encumbranceThreshold,
+  refWeaponQualityMap,
   onToggleWeapon, onToggleArmor, onToggleGear,
 }: InventoryPanelProps) {
   return (
@@ -175,7 +178,7 @@ export function InventoryPanel({
                   <EquipBadge equipState={w.equipState} onClick={() => onToggleWeapon(w.id)} />
                 </div>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                  <StatBadge label="DMG"  value={w.damage}         color="#E07855" />
+                  <StatBadge label="DMG"  value={<WeaponDamageDisplay {...w.damage} />} color="#E07855" />
                   <StatBadge label="CRIT" value={w.crit || '—'}    color="#E05050" />
                   <StatBadge label="RNG"  value={w.range}          color={RANGE_COLOR[w.range] ?? C.textDim} />
                   <StatBadge label="ENC"  value={w.enc} />
@@ -183,22 +186,9 @@ export function InventoryPanel({
                 </div>
                 {w.qualities.length > 0 && (
                   <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 6 }}>
-                    {w.qualities.map((q, i) => {
-                      const tip  = getQualityTip(q)
-                      const chip = (
-                        <span key={i} style={{
-                          background: `${C.gold}12`, border: `1px solid ${C.border}`,
-                          borderRadius: 10, padding: '1px 7px', cursor: tip ? 'help' : 'default',
-                          fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: C.gold,
-                        }}>{q}</span>
-                      )
-                      if (!tip) return chip
-                      return (
-                        <Tooltip key={i} placement="top" maxWidth={260} content={<><TipLabel>{tip.name}</TipLabel><TipBody>{tip.effect}</TipBody></>}>
-                          {chip}
-                        </Tooltip>
-                      )
-                    })}
+                    {w.qualities.map((q, i) => (
+                      <QualityBadge key={i} quality={q} refQualityMap={refWeaponQualityMap} variant="desktop" />
+                    ))}
                   </div>
                 )}
               </div>

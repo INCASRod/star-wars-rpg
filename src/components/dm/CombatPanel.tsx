@@ -6,9 +6,12 @@ import { fetchAdversaries, adversaryToInstance } from '@/lib/adversaries'
 import type { Adversary, AdversaryInstance } from '@/lib/adversaries'
 import { sortInitiative, advanceInitiative } from '@/lib/combat'
 import { randomUUID } from '@/lib/utils'
-import type { InitiativeSlot, LogEntry, CombatEncounter } from '@/lib/combat'
+import type { InitiativeSlot, CombatEncounter } from '@/lib/combat'
 import { InitiativeSetupModal } from './InitiativeSetupModal'
+import { AddParticipantModal } from '@/components/combat/AddParticipantModal'
+import { CombatLog } from '@/components/combat/CombatLog'
 import type { Character } from '@/lib/types'
+import type { SlotAlignment } from '@/lib/combat'
 import { FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4, FS_H3 } from '@/components/player-hud/design-tokens'
 import { MarkupText } from '@/components/ui/MarkupText'
 import { resolveWeapon, type WeaponRef } from '@/lib/resolve-weapon'
@@ -21,8 +24,9 @@ const INPUT_BG = 'rgba(6,13,9,0.7)'
 const GOLD = '#C8AA50'
 const BORDER = 'rgba(200,170,80,0.18)'
 const BORDER_MD = 'rgba(200,170,80,0.32)'
-const CHAR_BR = '#e05252'
-const CHAR_AG = '#52a8e0'
+const CHAR_BR     = '#e05252'
+const CHAR_AG     = '#52a8e0'
+const ALLIED_GREEN = '#52e08a'
 const CHAR_INT = '#a852e0'
 const CHAR_CUN = '#e0a852'
 const CHAR_WIL = '#52e0a8'
@@ -90,6 +94,19 @@ function StatBox({ label, value, color = GOLD }: { label: string; value: string 
   )
 }
 
+// ── Combat participant row (from DB) ──────────────────────────────────────────
+interface CombatParticipantRow {
+  id: string
+  character_id: string
+  slot_type: 'pc' | 'npc'
+  active_weapon_key: string | null
+  active_weapon_name: string | null
+  default_character_id: string | null
+  active_character_id: string | null
+  active_character_name: string | null
+  has_acted_this_round: boolean
+}
+
 // Props
 interface CombatPanelProps {
   campaignId: string
@@ -112,10 +129,13 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
   const [groupSizes, setGroupSizes] = useState<Record<string, number>>({})
 
   // UI state
-  const [showInitModal, setShowInitModal] = useState(false)
-  const [openCards, setOpenCards] = useState<Set<string>>(new Set())
-  const [logInput, setLogInput] = useState('')
-  const [logDmOnly, setLogDmOnly] = useState(false)
+  const [showInitModal, setShowInitModal]       = useState(false)
+  const [showAddModal, setShowAddModal]         = useState(false)
+  const [openCards, setOpenCards]               = useState<Set<string>>(new Set())
+  const [reassignOpenSlotId, setReassignOpenSlotId] = useState<string | null>(null)
+
+  // combat_participants rows keyed by character_id
+  const [combatParticipants, setCombatParticipants] = useState<Record<string, CombatParticipantRow>>({})
 
   // Weapon reference lookup: name (lowercase) → stats
   const [weaponRef, setWeaponRef] = useState<Record<string, WeaponRef>>({})
@@ -182,6 +202,36 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
     return () => { supabase.removeChannel(channel) }
   }, [campaignId]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // combat_participants subscription — tracks weapon selection, active character, acted state
+  useEffect(() => {
+    if (!campaignId) return
+    supabase
+      .from('combat_participants')
+      .select('id, character_id, slot_type, active_weapon_key, active_weapon_name, default_character_id, active_character_id, active_character_name, has_acted_this_round')
+      .eq('campaign_id', campaignId)
+      .then(({ data }) => {
+        if (!data) return
+        const map: Record<string, CombatParticipantRow> = {}
+        for (const r of data as CombatParticipantRow[]) {
+          map[r.character_id] = r
+        }
+        setCombatParticipants(map)
+      })
+    const ch = supabase
+      .channel(`combat-participants-${campaignId}`)
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'combat_participants',
+        filter: `campaign_id=eq.${campaignId}`,
+      }, (payload) => {
+        if (payload.new) {
+          const r = payload.new as CombatParticipantRow
+          setCombatParticipants(prev => ({ ...prev, [r.character_id]: r }))
+        }
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(ch) }
+  }, [campaignId]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // Filtered library
   const filteredLib = library.filter(a => {
     const matchType = libTypeFilter === 'all' || a.type === libTypeFilter
@@ -190,7 +240,7 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
   })
 
   // Add adversary to live encounter (combat already running)
-  const addToActiveCombat = async (adv: Adversary) => {
+  const addToActiveCombat = async (adv: Adversary, alignment: 'enemy' | 'allied_npc' = 'enemy', successes = 0, advantages = 0) => {
     if (!encounter) return
     const size = groupSizes[adv.id] ?? (adv.type === 'minion' ? 4 : 1)
     const instance = adversaryToInstance(adv, size)
@@ -198,12 +248,13 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
     const newSlot: InitiativeSlot = {
       id: randomUUID(),
       type: 'npc',
+      alignment,
       order: nextOrder,
       name: adv.name,
       acted: false,
       current: false,
-      successes: 0,
-      advantages: 0,
+      successes,
+      advantages,
       adversaryInstanceId: instance.instanceId,
     }
     await saveEncounter({
@@ -213,9 +264,9 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
   }
 
   // Add adversary to roster (pre-combat) or directly to live encounter
-  const addToRoster = (adv: Adversary) => {
+  const addToRoster = (adv: Adversary, alignment: 'enemy' | 'allied_npc' = 'enemy') => {
     if (encounter) {
-      void addToActiveCombat(adv)
+      void addToActiveCombat(adv, alignment)
       return
     }
     const size = groupSizes[adv.id] ?? (adv.type === 'minion' ? 4 : 1)
@@ -235,34 +286,54 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
       .eq('id', encounter.id)
   }, [encounter?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Mark current slot acted
+  // Mark current slot acted — also updates has_acted_this_round and handles round reset
   const handleMarkActed = async () => {
     if (!encounter) return
+    const currentSlot = encounter.initiative_slots[encounter.current_slot_index]
+
+    // For PC slots: mark the active character as having acted this round
+    if (currentSlot?.type === 'pc' && currentSlot.characterId) {
+      const participant = combatParticipants[currentSlot.characterId]
+      const activeCharId = participant?.active_character_id ?? currentSlot.characterId
+      await supabase.from('combat_participants')
+        .update({ has_acted_this_round: true })
+        .eq('campaign_id', campaignId)
+        .eq('character_id', activeCharId)
+    }
+
     const result = advanceInitiative(
       encounter.initiative_slots, encounter.current_slot_index, encounter.round
     )
+
+    // New round: reset all PC slot assignments, weapon selections, and acted flags
+    if (result.round > encounter.round) {
+      await supabase.from('combat_participants')
+        .update({
+          active_character_id: null,
+          active_character_name: null,
+          has_acted_this_round: false,
+          active_weapon_key: null,
+          active_weapon_name: null,
+          active_weapon_updated_at: null,
+        })
+        .eq('campaign_id', campaignId)
+        .eq('slot_type', 'pc')
+      await supabase.from('combat_log').insert({
+        campaign_id: campaignId,
+        encounter_id: encounter.id,
+        participant_name: 'System',
+        alignment: 'system',
+        roll_type: 'system',
+        result_summary: `Round ${result.round} begins — initiative reset to default order`,
+        is_visible_to_players: true,
+      })
+    }
+
     await saveEncounter({
       initiative_slots: result.slots,
       current_slot_index: result.currentIndex,
       round: result.round,
     })
-  }
-
-  // Add log entry
-  const handleAddLog = async () => {
-    if (!logInput.trim() || !encounter) return
-    const currentSlot = encounter.initiative_slots[encounter.current_slot_index]
-    const entry: LogEntry = {
-      id: randomUUID(),
-      round: encounter.round,
-      slot: encounter.current_slot_index + 1,
-      actor: currentSlot?.name ?? 'Unknown',
-      text: logInput.trim(),
-      dmOnly: logDmOnly,
-      timestamp: new Date().toISOString(),
-    }
-    await saveEncounter({ log_entries: [entry, ...(encounter.log_entries ?? [])] })
-    setLogInput('')
   }
 
   // End combat
@@ -335,6 +406,33 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
     await saveEncounter({ adversaries: updated })
   }
 
+  // Toggle NPC slot alignment (enemy ↔ allied_npc)
+  const toggleAlignment = async (slotId: string) => {
+    if (!encounter) return
+    const updated: InitiativeSlot[] = encounter.initiative_slots.map((s: InitiativeSlot) => {
+      if (s.id !== slotId) return s
+      const current: SlotAlignment = s.alignment ?? 'enemy'
+      const next: SlotAlignment = current === 'enemy' ? 'allied_npc' : 'enemy'
+      return { ...s, alignment: next }
+    })
+    await saveEncounter({ initiative_slots: updated })
+  }
+
+  // Reassign a PC slot to a different character
+  const handleReassign = async (defaultCharId: string, newCharId: string, newCharName: string) => {
+    const isRestoringDefault = newCharId === (combatParticipants[defaultCharId]?.default_character_id ?? defaultCharId)
+    await supabase.from('combat_participants')
+      .update({
+        active_character_id:   isRestoringDefault ? null : newCharId,
+        active_character_name: isRestoringDefault ? null : newCharName,
+        active_weapon_key:   null,
+        active_weapon_name:  null,
+        active_weapon_updated_at: null,
+      })
+      .eq('campaign_id', campaignId)
+      .eq('character_id', defaultCharId)
+  }
+
   // NPC slot adversary assignment
   const assignAdversaryToSlot = async (slotId: string, instanceId: string) => {
     if (!encounter) return
@@ -348,6 +446,7 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
   const currentSlot = encounter
     ? encounter.initiative_slots[encounter.current_slot_index]
     : null
+
 
   // Type badge component
   const TypeBadge = ({ type }: { type: 'minion' | 'rival' | 'nemesis' | 'pc' | 'npc' }) => {
@@ -499,7 +598,21 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
 
         {/* Divider */}
         <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: 10 }}>
-          <SectionLabel>Current Encounter</SectionLabel>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <SectionLabel>Current Encounter</SectionLabel>
+            <button
+              onClick={() => setShowAddModal(true)}
+              style={{
+                background: 'transparent', border: `1px solid ${ALLIED_GREEN}60`,
+                borderRadius: 3, padding: '3px 8px', cursor: 'pointer',
+                fontFamily: FM, fontSize: FS_OVERLINE, letterSpacing: '0.08em',
+                color: ALLIED_GREEN, textTransform: 'uppercase', transition: '.15s',
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = `${ALLIED_GREEN}15` }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+              title="Add Enemy or Allied NPC with alignment choice"
+            >＋ Add Participant</button>
+          </div>
           {/* Roster */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 10 }}>
             {roster.length === 0 && (
@@ -572,25 +685,31 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
           </div>
 
           {/* Acting Now banner */}
-          {currentSlot && (
-            <div style={{
-              flex: 1, background: `${CHAR_AG}15`, border: `1px solid ${CHAR_AG}50`,
-              borderRadius: 4, padding: '6px 12px',
-              display: 'flex', alignItems: 'center', gap: 8,
-            }}>
+          {currentSlot && (() => {
+            const curAlign: SlotAlignment = currentSlot.alignment ?? (currentSlot.type === 'npc' ? 'enemy' : 'player')
+            const bannerColor = curAlign === 'allied_npc' ? ALLIED_GREEN : curAlign === 'player' ? CHAR_AG : CHAR_BR
+            const slotLabel = currentSlot.type === 'pc' ? 'PC SLOT'
+              : curAlign === 'allied_npc' ? 'ALLIED NPC' : 'ENEMY SLOT'
+            return (
               <div style={{
-                width: 8, height: 8, borderRadius: '50%', background: CHAR_AG,
-                boxShadow: `0 0 8px ${CHAR_AG}`, flexShrink: 0,
-                animation: 'pulse-dot 1.4s ease-in-out infinite',
-              }} />
-              <span style={{ fontFamily: FC, fontSize: FS_LABEL, color: CHAR_AG, fontWeight: 600 }}>
-                Acting Now: {currentSlot.name}
-              </span>
-              <span style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED, marginLeft: 4 }}>
-                {currentSlot.type === 'pc' ? 'PC SLOT' : 'NPC SLOT'}
-              </span>
-            </div>
-          )}
+                flex: 1, background: `${bannerColor}15`, border: `1px solid ${bannerColor}50`,
+                borderRadius: 4, padding: '6px 12px',
+                display: 'flex', alignItems: 'center', gap: 8,
+              }}>
+                <div style={{
+                  width: 8, height: 8, borderRadius: '50%', background: bannerColor,
+                  boxShadow: `0 0 8px ${bannerColor}`, flexShrink: 0,
+                  animation: 'pulse-dot 1.4s ease-in-out infinite',
+                }} />
+                <span style={{ fontFamily: FC, fontSize: FS_LABEL, color: bannerColor, fontWeight: 600 }}>
+                  Acting Now: {currentSlot.name}
+                </span>
+                <span style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED, marginLeft: 4 }}>
+                  {slotLabel}
+                </span>
+              </div>
+            )
+          })()}
           {!encounter && (
             <div style={{ flex: 1, fontFamily: FR, fontSize: FS_LABEL, color: TEXT_MUTED, fontStyle: 'italic' }}>
               No active combat — click Begin Combat to start
@@ -636,6 +755,17 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
             const isCurrent = slot.current
             const isActed = slot.acted
             const isNPC = slot.type === 'npc'
+
+            // PC slot: resolve active vs default character
+            const participant = !isNPC && slot.characterId ? combatParticipants[slot.characterId] : null
+            const activeCharId = participant?.active_character_id ?? slot.characterId
+            const defaultCharId = participant?.default_character_id ?? slot.characterId
+            const activeChar = !isNPC ? characters.find(ch => ch.id === activeCharId) : null
+            const defaultChar = !isNPC && activeCharId !== defaultCharId
+              ? characters.find(ch => ch.id === defaultCharId)
+              : null
+            const isReassigned = activeCharId !== defaultCharId
+
             const assignedAdv = slot.adversaryInstanceId
               ? encounter.adversaries.find(a => a.instanceId === slot.adversaryInstanceId)
               : null
@@ -643,28 +773,32 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
             const isKilledNPC = !isMinion && assignedAdv
               ? (assignedAdv.woundsCurrent ?? 0) >= (assignedAdv.woundThreshold ?? 99)
               : false
-            const pcChar = !isNPC ? characters.find(ch => ch.id === slot.characterId) : null
+            const pcChar = activeChar ?? (!isNPC ? characters.find(ch => ch.id === slot.characterId) : null)
             const pcWT = pcChar?.wound_threshold ?? 0
             const pcWounds = slot.woundsCurrent ?? pcChar?.wound_current ?? 0
             const pcCrit = !isNPC && pcWT > 0 && pcWounds >= pcWT
-            const accentColor = isKilledNPC ? CHAR_BR : isNPC ? CHAR_BR : CHAR_AG
+            const effectiveAlignment: SlotAlignment = slot.alignment ?? (isNPC ? 'enemy' : 'player')
+            const accentColor = isKilledNPC ? CHAR_BR
+              : effectiveAlignment === 'allied_npc' ? ALLIED_GREEN
+              : effectiveAlignment === 'player'     ? CHAR_AG
+              : CHAR_BR
 
             return (
               <div
                 key={slot.id}
                 style={{
-                  background: isKilledNPC ? `${CHAR_BR}08` : isCurrent ? `${CHAR_AG}0a` : PANEL_BG,
+                  background: isKilledNPC ? `${CHAR_BR}08` : isCurrent ? `${accentColor}0a` : PANEL_BG,
                   backdropFilter: 'blur(12px)',
                   WebkitBackdropFilter: 'blur(12px)',
                   borderRadius: 6,
                   position: 'relative',
-                  border: `1px solid ${isKilledNPC ? `${CHAR_BR}40` : isCurrent ? `${CHAR_AG}80` : BORDER}`,
+                  border: `1px solid ${isKilledNPC ? `${CHAR_BR}40` : isCurrent ? `${accentColor}80` : BORDER}`,
                   borderLeft: `3px solid ${accentColor}`,
                   opacity: isKilledNPC ? 0.55 : isActed ? 0.45 : 1,
                   padding: '8px 12px',
                   display: 'flex', alignItems: 'center', gap: 10,
                   transition: '.2s',
-                  boxShadow: isCurrent ? `0 0 12px ${CHAR_AG}30` : 'none',
+                  boxShadow: isCurrent ? `0 0 12px ${accentColor}30` : 'none',
                 }}
               >
                 {/* ── Col 1: Init number ── */}
@@ -678,12 +812,35 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                 {/* ── Col 2: Info ── */}
                 <div style={{ flex: 1, minWidth: 0 }}>
 
-                  {/* Row 1: name + badge + NPC selector */}
+                  {/* Row 1: name + alignment badge + NPC selector */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                    <span style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: isCurrent ? TEXT : TEXT_SEC }}>
-                      {slot.name}
+                    <span style={{
+                      fontFamily: FC, fontSize: FS_SM, fontWeight: 700,
+                      color: isCurrent ? TEXT : TEXT_SEC,
+                      textDecoration: !isNPC && (participant?.has_acted_this_round) ? 'line-through' : 'none',
+                      opacity: !isNPC && (participant?.has_acted_this_round) ? 0.5 : 1,
+                    }}>
+                      {!isNPC ? (activeChar?.name ?? slot.name) : slot.name}
                     </span>
-                    <TypeBadge type={slot.type} />
+                    {/* Alignment badge — clickable for NPC slots to toggle enemy ↔ allied */}
+                    {isNPC ? (
+                      <button
+                        onClick={() => void toggleAlignment(slot.id)}
+                        title="Click to toggle Enemy / Allied NPC"
+                        style={{
+                          fontFamily: FM, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.1em',
+                          color: accentColor, border: `1px solid ${accentColor}50`,
+                          borderRadius: 3, padding: '1px 5px', background: `${accentColor}15`,
+                          cursor: 'pointer', transition: '.12s',
+                        }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = `${accentColor}30` }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = `${accentColor}15` }}
+                      >
+                        {effectiveAlignment === 'allied_npc' ? 'ALLIED' : 'ENEMY'}
+                      </button>
+                    ) : (
+                      <TypeBadge type={slot.type} />
+                    )}
                     {isNPC && encounter.adversaries.length > 0 && (
                       <select
                         value={slot.adversaryInstanceId ?? ''}
@@ -701,13 +858,140 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                     )}
                   </div>
 
-                  {/* Row 2: stat line */}
+                  {/* ↳ Default indicator (only when reassigned) */}
+                  {!isNPC && isReassigned && defaultChar && (
+                    <div style={{
+                      fontFamily: "'Share Tech Mono','Courier New',monospace",
+                      fontSize: 'clamp(0.58rem, 0.85vw, 0.68rem)',
+                      color: 'rgba(232,223,200,0.3)', fontStyle: 'italic',
+                      marginTop: 1,
+                    }}>
+                      ↳ Default: {defaultChar.name}
+                    </div>
+                  )}
+
+                  {/* Row 2: stat line + weapon + reassign button */}
                   {!isNPC && pcChar && (
-                    <div style={{ display: 'flex', gap: 4, marginTop: 4, flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: 4, marginTop: 4, flexWrap: 'wrap', alignItems: 'center' }}>
                       <StatBox label="SOAK" value={pcChar.soak ?? 0} color={CHAR_WIL} />
                       <StatBox label="WOUNDS" value={`${pcWounds}/${pcWT}`} color={CHAR_BR} />
                       <StatBox label="M.DEF" value={pcChar.defense_melee ?? 0} color={CHAR_CUN} />
                       <StatBox label="R.DEF" value={pcChar.defense_ranged ?? 0} color={CHAR_INT} />
+                      {participant?.active_weapon_name && (
+                        <span style={{
+                          fontFamily: FM, fontSize: FS_OVERLINE, color: CHAR_AG,
+                          background: `${CHAR_AG}12`, border: `1px solid ${CHAR_AG}40`,
+                          borderRadius: 3, padding: '2px 6px', whiteSpace: 'nowrap',
+                        }}>
+                          ⚔ {participant.active_weapon_name}
+                        </span>
+                      )}
+                      {/* Reassign button */}
+                      <div style={{ marginLeft: 'auto', position: 'relative' }}>
+                        <button
+                          onClick={() => setReassignOpenSlotId(prev => prev === slot.id ? null : slot.id)}
+                          style={{
+                            fontFamily: FC, fontSize: 'clamp(0.65rem, 1vw, 0.75rem)',
+                            color: 'rgba(200,170,80,0.5)', border: '1px solid rgba(200,170,80,0.2)',
+                            borderRadius: 5, padding: '2px 8px', background: 'transparent',
+                            cursor: 'pointer', transition: '.12s', whiteSpace: 'nowrap',
+                          }}
+                          onMouseEnter={e => {
+                            const el = e.currentTarget as HTMLElement
+                            el.style.color = GOLD; el.style.borderColor = `${GOLD}70`
+                          }}
+                          onMouseLeave={e => {
+                            const el = e.currentTarget as HTMLElement
+                            el.style.color = 'rgba(200,170,80,0.5)'; el.style.borderColor = 'rgba(200,170,80,0.2)'
+                          }}
+                        >⇄ Reassign</button>
+
+                        {/* Inline reassign dropdown */}
+                        {reassignOpenSlotId === slot.id && (
+                          <>
+                          {/* Click-outside backdrop */}
+                          <div
+                            style={{ position: 'fixed', inset: 0, zIndex: 199 }}
+                            onClick={() => setReassignOpenSlotId(null)}
+                          />
+                          <div style={{
+                            position: 'absolute', top: 'calc(100% + 4px)', right: 0, zIndex: 200,
+                            background: 'rgba(6,13,9,0.97)',
+                            border: '1px solid rgba(200,170,80,0.25)',
+                            borderRadius: 8, backdropFilter: 'blur(12px)',
+                            WebkitBackdropFilter: 'blur(12px)',
+                            minWidth: 200, padding: '6px 0',
+                            boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+                          }}>
+                            <div style={{
+                              padding: '2px 12px 6px',
+                              fontFamily: FM, fontSize: FS_OVERLINE,
+                              color: 'rgba(232,223,200,0.35)',
+                              borderBottom: '1px solid rgba(200,170,80,0.1)',
+                              marginBottom: 4,
+                            }}>
+                              Assign this slot to:
+                            </div>
+                            {characters.map(c => {
+                              const isCurrentlyActive = c.id === activeCharId
+                              const isDefault = c.id === defaultCharId
+                              const hasActed = combatParticipants[c.id]?.has_acted_this_round ?? false
+                              return (
+                                <button
+                                  key={c.id}
+                                  disabled={hasActed}
+                                  onClick={() => {
+                                    if (!slot.characterId) return
+                                    void handleReassign(slot.characterId, c.id, c.name)
+                                    setReassignOpenSlotId(null)
+                                  }}
+                                  style={{
+                                    width: '100%', padding: '6px 12px',
+                                    background: isCurrentlyActive ? `${CHAR_AG}10` : 'transparent',
+                                    border: 'none', cursor: hasActed ? 'default' : 'pointer',
+                                    display: 'flex', alignItems: 'center', gap: 8,
+                                    opacity: hasActed ? 0.38 : 1,
+                                    transition: '.1s',
+                                  }}
+                                  onMouseEnter={e => { if (!hasActed) (e.currentTarget as HTMLElement).style.background = `${CHAR_AG}18` }}
+                                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = isCurrentlyActive ? `${CHAR_AG}10` : 'transparent' }}
+                                >
+                                  <span style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: CHAR_AG, width: 12, flexShrink: 0 }}>
+                                    {isCurrentlyActive ? '●' : '○'}
+                                  </span>
+                                  <span style={{
+                                    fontFamily: FC, fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)',
+                                    color: hasActed ? TEXT_MUTED : TEXT, flex: 1, textAlign: 'left',
+                                  }}>
+                                    {c.name}
+                                  </span>
+                                  {isDefault && (
+                                    <span style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED, fontStyle: 'italic', flexShrink: 0 }}>
+                                      (default)
+                                    </span>
+                                  )}
+                                  {hasActed && (
+                                    <span style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED, fontStyle: 'italic', flexShrink: 0 }}>
+                                      (acted)
+                                    </span>
+                                  )}
+                                </button>
+                              )
+                            })}
+                            <div style={{ padding: '6px 12px 2px', borderTop: '1px solid rgba(200,170,80,0.1)', marginTop: 4 }}>
+                              <button
+                                onClick={() => setReassignOpenSlotId(null)}
+                                style={{
+                                  background: 'transparent', border: '1px solid rgba(200,170,80,0.2)',
+                                  borderRadius: 4, padding: '3px 10px', cursor: 'pointer',
+                                  fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED,
+                                }}
+                              >Cancel</button>
+                            </div>
+                          </div>
+                          </>
+                        )}
+                      </div>
                     </div>
                   )}
                   {isNPC && assignedAdv && (
@@ -848,54 +1132,12 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
           })}
         </div>
 
-        {/* ── Combat Log strip ── */}
-        <div style={{
-          flexShrink: 0, borderTop: `1px solid ${BORDER}`,
-          background: RAISED_BG, maxHeight: 150, overflow: 'hidden',
-          display: 'flex', flexDirection: 'column',
-        }}>
-          <div style={{ padding: '6px 14px 0', flexShrink: 0 }}>
-            <SectionLabel>Combat Log</SectionLabel>
-          </div>
-          <div style={{ flex: 1, overflowY: 'auto', padding: '0 14px 6px', display: 'flex', flexDirection: 'column', gap: 3 }}>
-            {(!encounter?.log_entries || encounter.log_entries.length === 0) && (
-              <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: TEXT_MUTED, fontStyle: 'italic' }}>No log entries yet</div>
-            )}
-            {encounter?.log_entries?.map(entry => (
-              <div key={entry.id} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                <span style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED, flexShrink: 0 }}>
-                  R{entry.round}·S{entry.slot}
-                </span>
-                <span style={{ fontFamily: FC, fontSize: FS_CAPTION, color: GOLD, flexShrink: 0, minWidth: 80 }}>{entry.actor}</span>
-                <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: TEXT_SEC, flex: 1 }}>{entry.text}</span>
-                {entry.dmOnly && (
-                  <span style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: CHAR_BR, border: `1px solid ${CHAR_BR}40`, borderRadius: 2, padding: '0 4px', flexShrink: 0 }}>DM</span>
-                )}
-              </div>
-            ))}
-          </div>
-          {/* Log input */}
-          {isDm && (
-            <div style={{ padding: '6px 14px', borderTop: `1px solid ${BORDER}`, display: 'flex', gap: 6, flexShrink: 0 }}>
-              <input
-                value={logInput}
-                onChange={e => setLogInput(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter') handleAddLog() }}
-                placeholder="Log an action…"
-                style={{
-                  flex: 1, background: INPUT_BG, border: `1px solid ${BORDER}`,
-                  borderRadius: 3, padding: '4px 8px', color: TEXT,
-                  fontFamily: FR, fontSize: FS_CAPTION, outline: 'none',
-                }}
-              />
-              <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED, cursor: 'pointer' }}>
-                <input type="checkbox" checked={logDmOnly} onChange={e => setLogDmOnly(e.target.checked)} style={{ accentColor: CHAR_BR }} />
-                DM
-              </label>
-              <button onClick={handleAddLog} style={{ ...ghostBtn, fontSize: FS_OVERLINE, padding: '4px 10px' }}>Log</button>
-            </div>
-          )}
-        </div>
+        {/* ── Combat Log ── */}
+        <CombatLog
+          campaignId={campaignId}
+          encounterId={encounter?.id ?? null}
+          isDm={isDm}
+        />
       </div>
 
       {/* ══════════ RIGHT: ADVERSARY DETAIL CARDS ══════════ */}
@@ -1199,15 +1441,63 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
           sendToChar={sendToChar}
           onClose={() => setShowInitModal(false)}
           onStart={async (encounterData) => {
-            // Upsert encounter to Supabase
             const { data } = await supabase
               .from('combat_encounters')
               .upsert({ ...encounterData, campaign_id: campaignId })
               .select()
               .single()
-            if (data) setEncounter(data as CombatEncounter)
+            if (data) {
+              setEncounter(data as CombatEncounter)
+              // Upsert PC participant rows (slot_type, default/active character)
+              const pcSlots = encounterData.initiative_slots.filter(s => s.type === 'pc' && s.characterId)
+              if (pcSlots.length > 0) {
+                const pcRows = pcSlots.map(s => {
+                  const char = characters.find(c => c.id === s.characterId)
+                  return {
+                    campaign_id:           campaignId,
+                    character_id:          s.characterId!,
+                    slot_type:             'pc' as const,
+                    default_character_id:  s.characterId!,
+                    active_character_id:   s.characterId!,
+                    active_character_name: char?.name ?? s.name,
+                    has_acted_this_round:  false,
+                    active_weapon_key:     null,
+                    active_weapon_name:    null,
+                  }
+                })
+                await supabase.from('combat_participants')
+                  .upsert(pcRows, { onConflict: 'campaign_id,character_id' })
+              }
+              // Write system message to persistent combat log
+              await supabase.from('combat_log').insert({
+                campaign_id: campaignId,
+                encounter_id: data.id,
+                participant_name: 'System',
+                alignment: 'system',
+                roll_type: 'system',
+                result_summary: `Combat started — Round 1 · ${encounterData.initiative_type === 'cool' ? 'Cool' : 'Vigilance'} initiative`,
+                is_visible_to_players: true,
+              })
+            }
             setShowInitModal(false)
           }}
+        />
+      )}
+
+      {/* ── Add Participant Modal ── */}
+      {showAddModal && (
+        <AddParticipantModal
+          library={library}
+          encounter={encounter}
+          groupSizes={groupSizes}
+          onAdd={(adv, alignment, successes, advantages) => {
+            if (encounter) {
+              void addToActiveCombat(adv, alignment, successes, advantages)
+            } else {
+              addToRoster(adv, alignment)
+            }
+          }}
+          onClose={() => setShowAddModal(false)}
         />
       )}
 
