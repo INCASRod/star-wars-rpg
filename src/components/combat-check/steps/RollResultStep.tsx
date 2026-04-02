@@ -190,10 +190,10 @@ export function RollResultStep({
             lineHeight: 1.4,
           }}>
             {critEligibility.triggeredByTriumph && critEligibility.triggeredByAdvantage
-              ? `Triumph + ${critEligibility.netAdvantages} Advantages (≥ Crit ${critEligibility.critRating})`
+              ? `Triumph + ${result.net.advantage} Advantages (≥ Crit ${critEligibility.critRating})`
               : critEligibility.triggeredByTriumph
               ? 'Triggered by Triumph — no advantage cost'
-              : `${critEligibility.netAdvantages} Advantages vs Crit Rating ${critEligibility.critRating}`
+              : `${result.net.advantage} Advantages vs Crit Rating ${critEligibility.critRating}`
             }
             {critEligibility.totalCritModifier > 0 && (
               <span style={{ marginLeft: 8, color: '#FF9800', fontWeight: 600 }}>

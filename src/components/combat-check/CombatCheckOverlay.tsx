@@ -39,28 +39,26 @@ const STEP_LABELS: Record<number, string> = {
 
 // ── State ─────────────────────────────────────────────────────────────────────
 interface CombatCheckState {
-  currentStep:      number
-  attackType:       'ranged' | 'melee' | null
-  selectedWeapon:   CharacterWeapon | null
-  selectedTargets:  AdversaryInstance[]
-  selectedBand:     RangeBand | null
-  adjustments:      ManualAdjustments
-  rollResult:       RollResult | null
-  encounterId:      string | null
-  critEligibility:  CriticalEligibility | null
+  currentStep:     number
+  attackType:      'ranged' | 'melee' | null
+  selectedWeapon:  CharacterWeapon | null
+  selectedTargets: AdversaryInstance[]
+  selectedBand:    RangeBand | null
+  adjustments:     ManualAdjustments
+  rollResult:      RollResult | null
+  encounterId:     string | null
 }
 
 function makeInitialState(initialAttackType: 'ranged' | 'melee' | null): CombatCheckState {
   return {
-    currentStep:      initialAttackType ? 2 : 1,
-    attackType:       initialAttackType,
-    selectedWeapon:   null,
-    selectedTargets:  [],
-    selectedBand:     null,
-    adjustments:      EMPTY_ADJUSTMENTS,
-    rollResult:       null,
-    encounterId:      null,
-    critEligibility:  null,
+    currentStep:     initialAttackType ? 2 : 1,
+    attackType:      initialAttackType,
+    selectedWeapon:  null,
+    selectedTargets: [],
+    selectedBand:    null,
+    adjustments:     EMPTY_ADJUSTMENTS,
+    rollResult:      null,
+    encounterId:     null,
   }
 }
 
@@ -133,6 +131,17 @@ export function CombatCheckOverlay({
     : null
   const refSkill: RefSkill | null = refWeapon?.skill_key ? (refSkillMap[refWeapon.skill_key] ?? null) : null
 
+  // ── Derived crit eligibility (not state — pure function of existing state) ──
+  const critEligibility = (() => {
+    if (!state.rollResult) return null
+    const isMelee  = state.attackType === 'melee' || MELEE_SKILL_KEYS.includes(refWeapon?.skill_key ?? '')
+    const rawDmg   = (refWeapon?.damage ?? 0) + (isMelee ? character.brawn : 0) + Math.max(0, state.rollResult.net.success)
+    const minSoak  = state.selectedTargets.length > 0
+      ? Math.min(...state.selectedTargets.map(t => t.soak ?? 0))
+      : 0
+    return checkCriticalEligibility(state.rollResult, refWeapon, Math.max(0, rawDmg - minSoak))
+  })()
+
   // ── Navigation ────────────────────────────────────────────────────────────
   const goBack = () => {
     if (state.currentStep <= initialStep) return
@@ -169,18 +178,14 @@ export function CombatCheckOverlay({
     const result = rollPool(pool as Parameters<typeof rollPool>[0])
     setState(s => ({ ...s, rollResult: result }))
 
-    // ── Critical hit eligibility ─────────────────────────────────────────────
+    // ── Critical hit eligibility (for roll feed meta) ────────────────────────
     const isMeleeCheck = state.attackType === 'melee' || MELEE_SKILL_KEYS.includes(refWeapon?.skill_key ?? '')
-    const baseDmgCheck = refWeapon?.damage ?? 0
-    const brawnCheck   = isMeleeCheck ? character.brawn : 0
-    const rawDmgCheck  = baseDmgCheck + brawnCheck + Math.max(0, result.net.success)
-    // Use min soak across targets to determine if any target takes damage
-    const minSoak = state.selectedTargets.length > 0
+    const rawDmgCheck  = (refWeapon?.damage ?? 0) + (isMeleeCheck ? character.brawn : 0) + Math.max(0, result.net.success)
+    const minSoak      = state.selectedTargets.length > 0
       ? Math.min(...state.selectedTargets.map(t => t.soak ?? 0))
       : 0
-    const netDmgCheck = Math.max(0, rawDmgCheck - minSoak)
+    const netDmgCheck    = Math.max(0, rawDmgCheck - minSoak)
     const critEligibility = checkCriticalEligibility(result, refWeapon, netDmgCheck)
-    setState(s => ({ ...s, critEligibility }))
 
     const weaponName = state.selectedWeapon?.id === '__unarmed__'
       ? 'Unarmed (Brawl)'
@@ -233,16 +238,11 @@ export function CombatCheckOverlay({
         weapon_name:           weaponName,
         dice_pool:             pool,
         result: {
-          netSuccess:             result.net.success,
-          netAdvantage:           result.net.advantage,
-          triumph:                result.net.triumph,
-          despair:                result.net.despair,
-          succeeded:              result.net.success > 0,
-          critEligible:           critEligibility.isEligible,
-          critTriggeredByTriumph: critEligibility.triggeredByTriumph,
-          critRating:             critEligibility.critRating,
-          critModifier:           critEligibility.totalCritModifier,
-          netDamage:              netDmgCheck,
+          netSuccess:   result.net.success,
+          netAdvantage: result.net.advantage,
+          triumph:      result.net.triumph,
+          despair:      result.net.despair,
+          succeeded:    result.net.success > 0,
         },
         result_summary:        summary,
         is_visible_to_players: true,
@@ -414,7 +414,7 @@ export function CombatCheckOverlay({
             targets={state.selectedTargets}
             rangeBand={state.selectedBand}
             characterBrawn={character.brawn}
-            critEligibility={state.critEligibility}
+            critEligibility={critEligibility}
             onRollAgain={handleRollAgain}
             onNewAttack={handleNewAttack}
           />

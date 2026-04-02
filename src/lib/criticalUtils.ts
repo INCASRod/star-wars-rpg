@@ -13,10 +13,8 @@ export interface CriticalEligibility {
   isEligible:           boolean
   triggeredByTriumph:   boolean
   triggeredByAdvantage: boolean
-  netAdvantages:        number
   critRating:           number
   viciousRating:        number
-  lethalBlowsRank:      number
   totalCritModifier:    number
 }
 
@@ -29,50 +27,29 @@ export interface CriticalEligibility {
  * - netAdvantages ≥ critRating → advantage-triggered
  * - Both can be true simultaneously
  * - Vicious N quality adds +10N to the crit roll
- * - Lethal Blows rank N adds +10N to the crit roll
  */
 export function checkCriticalEligibility(
-  rollResult:       RollResult,
-  refWeapon:        RefWeapon | null,
-  netDamage:        number,
-  lethalBlowsRank:  number = 0,
+  rollResult: RollResult,
+  refWeapon:  RefWeapon | null,
+  netDamage:  number,
 ): CriticalEligibility {
   const critRating    = refWeapon?.crit ?? 4
   const netAdvantages = rollResult.net.advantage
   const triumph       = rollResult.net.triumph
 
-  // Vicious quality: key is 'VICIOUS' (XML-derived) or fallback to 'vicious'
-  const viciousRating = refWeapon?.qualities
+  // Vicious quality: key is 'VICIOUS' (XML-derived)
+  const viciousRating     = refWeapon?.qualities
     ?.find(q => q.key.toUpperCase() === 'VICIOUS')?.count ?? 0
-
-  const totalCritModifier = (viciousRating * 10) + (lethalBlowsRank * 10)
+  const totalCritModifier = viciousRating * 10
 
   // Must deal at least 1 wound after soak
   if (netDamage <= 0) {
-    return {
-      isEligible: false,
-      triggeredByTriumph: false,
-      triggeredByAdvantage: false,
-      netAdvantages,
-      critRating,
-      viciousRating,
-      lethalBlowsRank,
-      totalCritModifier,
-    }
+    return { isEligible: false, triggeredByTriumph: false, triggeredByAdvantage: false, critRating, viciousRating, totalCritModifier }
   }
 
   const triggeredByTriumph   = triumph > 0
   const triggeredByAdvantage = netAdvantages >= critRating
   const isEligible           = triggeredByTriumph || triggeredByAdvantage
 
-  return {
-    isEligible,
-    triggeredByTriumph,
-    triggeredByAdvantage,
-    netAdvantages,
-    critRating,
-    viciousRating,
-    lethalBlowsRank,
-    totalCritModifier,
-  }
+  return { isEligible, triggeredByTriumph, triggeredByAdvantage, critRating, viciousRating, totalCritModifier }
 }
