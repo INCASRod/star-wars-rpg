@@ -205,20 +205,24 @@ function AdversaryWoundTracker({
 
 // ── Pending damage row (from DB) ─────────────────────────────────────────────
 interface PendingDamage {
-  id:                  string
-  campaign_id:         string
-  encounter_id:        string | null
-  target_instance_id:  string | null
-  target_name:         string
-  attacker_name:       string
-  raw_damage:          number
-  soak_value:          number
-  net_damage:          number
-  status:              'pending' | 'applied' | 'modified' | 'dismissed'
-  weapon_name:         string | null
-  attack_type:         string | null
-  range_band:          string | null
-  created_at:          string
+  id:                       string
+  campaign_id:              string
+  encounter_id:             string | null
+  target_instance_id:       string | null
+  target_name:              string
+  attacker_name:            string
+  raw_damage:               number
+  soak_value:               number
+  net_damage:               number
+  status:                   'pending' | 'applied' | 'modified' | 'dismissed'
+  weapon_name:              string | null
+  attack_type:              string | null
+  range_band:               string | null
+  created_at:               string
+  crit_eligible:            boolean
+  crit_rating:              number | null
+  crit_modifier:            number
+  crit_triggered_by_triumph: boolean
 }
 
 // ── Combat participant row (from DB) ──────────────────────────────────────────
@@ -1101,6 +1105,32 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                       <span style={{ color: '#C8AA50' }}>{pd.net_damage}</span>
                     </div>
                   </div>
+                  {/* Critical hit notification */}
+                  {pd.crit_eligible && (
+                    <div style={{
+                      marginBottom: 10,
+                      padding: '7px 10px',
+                      background: 'rgba(255,152,0,0.08)',
+                      border: '1px solid rgba(255,152,0,0.4)',
+                      borderRadius: 6,
+                    }}>
+                      <div style={{
+                        fontFamily: "'Cinzel','serif'", fontSize: 'clamp(0.68rem,1.05vw,0.78rem)',
+                        fontWeight: 700, color: '#FF9800', letterSpacing: '0.08em',
+                        textTransform: 'uppercase', marginBottom: 2,
+                      }}>
+                        ⚠ Critical Hit Available
+                      </div>
+                      <div style={{
+                        fontFamily: "'Rajdhani',sans-serif", fontSize: 'clamp(0.68rem,1.05vw,0.78rem)',
+                        color: 'rgba(255,152,0,0.8)', lineHeight: 1.35,
+                      }}>
+                        {pd.crit_triggered_by_triumph ? 'Triumph' : `Crit ${pd.crit_rating ?? 4}`}
+                        {pd.crit_modifier > 0 && ` · Roll +${pd.crit_modifier}`}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Editable apply value */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                     <span style={{

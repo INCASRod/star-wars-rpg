@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { rollPool, type RollResult } from '@/components/player-hud/dice-engine'
 import { type RollMeta } from '@/lib/logRoll'
 import { formatResultSummary, type RangeBand, RANGE_VALUE_MAP, MELEE_SKILL_KEYS } from '@/lib/combatCheckUtils'
+import { checkCriticalEligibility, type CriticalEligibility } from '@/lib/criticalUtils'
 import type { Character, CharacterWeapon, CharacterSkill, RefWeapon, RefSkill, RefWeaponQuality } from '@/lib/types'
 import type { SkillDiceModifier } from '@/lib/derivedStats'
 import type { AdversaryInstance } from '@/lib/adversaries'
@@ -38,26 +39,28 @@ const STEP_LABELS: Record<number, string> = {
 
 // ── State ─────────────────────────────────────────────────────────────────────
 interface CombatCheckState {
-  currentStep:     number
-  attackType:      'ranged' | 'melee' | null
-  selectedWeapon:  CharacterWeapon | null
-  selectedTargets: AdversaryInstance[]
-  selectedBand:    RangeBand | null
-  adjustments:     ManualAdjustments
-  rollResult:      RollResult | null
-  encounterId:     string | null
+  currentStep:      number
+  attackType:       'ranged' | 'melee' | null
+  selectedWeapon:   CharacterWeapon | null
+  selectedTargets:  AdversaryInstance[]
+  selectedBand:     RangeBand | null
+  adjustments:      ManualAdjustments
+  rollResult:       RollResult | null
+  encounterId:      string | null
+  critEligibility:  CriticalEligibility | null
 }
 
 function makeInitialState(initialAttackType: 'ranged' | 'melee' | null): CombatCheckState {
   return {
-    currentStep:     initialAttackType ? 2 : 1,
-    attackType:      initialAttackType,
-    selectedWeapon:  null,
-    selectedTargets: [],
-    selectedBand:    null,
-    adjustments:     EMPTY_ADJUSTMENTS,
-    rollResult:      null,
-    encounterId:     null,
+    currentStep:      initialAttackType ? 2 : 1,
+    attackType:       initialAttackType,
+    selectedWeapon:   null,
+    selectedTargets:  [],
+    selectedBand:     null,
+    adjustments:      EMPTY_ADJUSTMENTS,
+    rollResult:       null,
+    encounterId:      null,
+    critEligibility:  null,
   }
 }
 
@@ -166,6 +169,19 @@ export function CombatCheckOverlay({
     const result = rollPool(pool as Parameters<typeof rollPool>[0])
     setState(s => ({ ...s, rollResult: result }))
 
+    // ── Critical hit eligibility ─────────────────────────────────────────────
+    const isMeleeCheck = state.attackType === 'melee' || MELEE_SKILL_KEYS.includes(refWeapon?.skill_key ?? '')
+    const baseDmgCheck = refWeapon?.damage ?? 0
+    const brawnCheck   = isMeleeCheck ? character.brawn : 0
+    const rawDmgCheck  = baseDmgCheck + brawnCheck + Math.max(0, result.net.success)
+    // Use min soak across targets to determine if any target takes damage
+    const minSoak = state.selectedTargets.length > 0
+      ? Math.min(...state.selectedTargets.map(t => t.soak ?? 0))
+      : 0
+    const netDmgCheck = Math.max(0, rawDmgCheck - minSoak)
+    const critEligibility = checkCriticalEligibility(result, refWeapon, netDmgCheck)
+    setState(s => ({ ...s, critEligibility }))
+
     const weaponName = state.selectedWeapon?.id === '__unarmed__'
       ? 'Unarmed (Brawl)'
       : (state.selectedWeapon?.custom_name || refWeapon?.name || 'Attack')
@@ -185,6 +201,9 @@ export function CombatCheckOverlay({
       weaponDamage:   refWeapon?.damage ?? undefined,
       characterBrawn: character.brawn,
       attackType:     state.attackType ?? 'ranged',
+      critEligible:   critEligibility.isEligible,
+      critRating:     critEligibility.critRating,
+      critModifier:   critEligibility.totalCritModifier,
     })
 
     // Write to combat_log if in an encounter
@@ -214,11 +233,16 @@ export function CombatCheckOverlay({
         weapon_name:           weaponName,
         dice_pool:             pool,
         result: {
-          netSuccess:   result.net.success,
-          netAdvantage: result.net.advantage,
-          triumph:      result.net.triumph,
-          despair:      result.net.despair,
-          succeeded:    result.net.success > 0,
+          netSuccess:             result.net.success,
+          netAdvantage:           result.net.advantage,
+          triumph:                result.net.triumph,
+          despair:                result.net.despair,
+          succeeded:              result.net.success > 0,
+          critEligible:           critEligibility.isEligible,
+          critTriggeredByTriumph: critEligibility.triggeredByTriumph,
+          critRating:             critEligibility.critRating,
+          critModifier:           critEligibility.totalCritModifier,
+          netDamage:              netDmgCheck,
         },
         result_summary:        summary,
         is_visible_to_players: true,
@@ -235,19 +259,24 @@ export function CombatCheckOverlay({
           const rawDamage = baseDamage + brawnBonus + netSuccesses
           const soakValue = target.soak ?? 0
           const netDamage = Math.max(0, rawDamage - soakValue)
+          const critPerTarget = checkCriticalEligibility(result, refWeapon, netDamage)
           return {
-            campaign_id:         campaignId,
-            encounter_id:        encounterId,
-            target_instance_id:  target.instanceId,
-            attacker_name:       character.name,
-            target_name:         target.name,
-            raw_damage:          rawDamage,
-            soak_value:          soakValue,
-            net_damage:          netDamage,
-            status:              'pending',
-            weapon_name:         weaponName,
-            attack_type:         state.attackType ?? 'ranged',
-            range_band:          state.selectedBand ?? null,
+            campaign_id:               campaignId,
+            encounter_id:              encounterId,
+            target_instance_id:        target.instanceId,
+            attacker_name:             character.name,
+            target_name:               target.name,
+            raw_damage:                rawDamage,
+            soak_value:                soakValue,
+            net_damage:                netDamage,
+            status:                    'pending',
+            weapon_name:               weaponName,
+            attack_type:               state.attackType ?? 'ranged',
+            range_band:                state.selectedBand ?? null,
+            crit_eligible:             critPerTarget.isEligible,
+            crit_rating:               critPerTarget.critRating,
+            crit_modifier:             critPerTarget.totalCritModifier,
+            crit_triggered_by_triumph: critPerTarget.triggeredByTriumph,
           }
         })
         await supabase.from('pending_damage').insert(pendingRows)
@@ -385,6 +414,7 @@ export function CombatCheckOverlay({
             targets={state.selectedTargets}
             rangeBand={state.selectedBand}
             characterBrawn={character.brawn}
+            critEligibility={state.critEligibility}
             onRollAgain={handleRollAgain}
             onNewAttack={handleNewAttack}
           />

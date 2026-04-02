@@ -12,6 +12,10 @@ export interface RollMeta {
   characterBrawn?: number   // attacker brawn (melee damage modifier)
   attackType?:     'melee' | 'ranged'
   alignment?:      string   // 'player' | 'allied' | 'enemy'
+  // Critical hit eligibility (populated by CombatCheckOverlay)
+  critEligible?:   boolean
+  critRating?:     number
+  critModifier?:   number
 }
 
 export interface RollLogEntry {
@@ -58,11 +62,17 @@ export function logRoll({
   if (meta?.rangeBand)  payload.range_band  = meta.rangeBand
   if (meta?.alignment)  payload.alignment   = meta.alignment
 
-  if (meta?.weaponDamage != null || meta?.characterBrawn != null || meta?.attackType) {
+  if (
+    meta?.weaponDamage != null || meta?.characterBrawn != null || meta?.attackType ||
+    meta?.critEligible != null || meta?.critRating != null || meta?.critModifier != null
+  ) {
     payload.roll_meta = {
-      ...(meta.weaponDamage  != null ? { weaponDamage:   meta.weaponDamage }   : {}),
+      ...(meta.weaponDamage   != null ? { weaponDamage:   meta.weaponDamage }   : {}),
       ...(meta.characterBrawn != null ? { characterBrawn: meta.characterBrawn } : {}),
       ...(meta.attackType             ? { attackType:     meta.attackType }     : {}),
+      ...(meta.critEligible   != null ? { critEligible:   meta.critEligible }   : {}),
+      ...(meta.critRating     != null ? { critRating:     meta.critRating }     : {}),
+      ...(meta.critModifier   != null ? { critModifier:   meta.critModifier }   : {}),
     }
   }
 

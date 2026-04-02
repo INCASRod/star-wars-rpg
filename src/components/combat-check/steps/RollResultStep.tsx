@@ -7,6 +7,7 @@ import type { CharacterWeapon, RefWeapon } from '@/lib/types'
 import type { AdversaryInstance } from '@/lib/adversaries'
 import type { RangeBand } from '@/lib/combatCheckUtils'
 import { RANGE_BAND_LABELS, isRangedSkill } from '@/lib/combatCheckUtils'
+import type { CriticalEligibility } from '@/lib/criticalUtils'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const GOLD     = '#C8AA50'
@@ -25,6 +26,7 @@ interface RollResultStepProps {
   targets:     AdversaryInstance[]
   rangeBand:   RangeBand | null
   characterBrawn: number
+  critEligibility?: CriticalEligibility | null
   onRollAgain: () => void
   onNewAttack: () => void
 }
@@ -67,7 +69,7 @@ function NetPill({ count, symKey }: { count: number; symKey: SymbolKey }) {
 
 export function RollResultStep({
   result, attackType, weapon, refWeapon, targets, rangeBand,
-  characterBrawn, onRollAgain, onNewAttack,
+  characterBrawn, critEligibility, onRollAgain, onNewAttack,
 }: RollResultStepProps) {
   const net = result.net
   const succeeded = net.success > 0
@@ -160,6 +162,48 @@ export function RollResultStep({
           <DieChip key={i} die={die} />
         ))}
       </div>
+
+      {/* Critical hit notification */}
+      {critEligibility?.isEligible && (
+        <div style={{
+          marginBottom: 16,
+          padding: '10px 14px',
+          background: 'rgba(255,152,0,0.08)',
+          border: '1px solid rgba(255,152,0,0.45)',
+          borderRadius: 8,
+        }}>
+          <div style={{
+            fontFamily: FONT_C,
+            fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)',
+            fontWeight: 700,
+            color: '#FF9800',
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            marginBottom: 4,
+          }}>
+            ⚠ Critical Hit Available
+          </div>
+          <div style={{
+            fontFamily: FONT_R,
+            fontSize: 'clamp(0.7rem, 1.1vw, 0.82rem)',
+            color: 'rgba(255,152,0,0.85)',
+            lineHeight: 1.4,
+          }}>
+            {critEligibility.triggeredByTriumph && critEligibility.triggeredByAdvantage
+              ? `Triumph + ${critEligibility.netAdvantages} Advantages (≥ Crit ${critEligibility.critRating})`
+              : critEligibility.triggeredByTriumph
+              ? 'Triggered by Triumph — no advantage cost'
+              : `${critEligibility.netAdvantages} Advantages vs Crit Rating ${critEligibility.critRating}`
+            }
+            {critEligibility.totalCritModifier > 0 && (
+              <span style={{ marginLeft: 8, color: '#FF9800', fontWeight: 600 }}>
+                · Roll +{critEligibility.totalCritModifier}
+                {critEligibility.viciousRating > 0 && ` (Vicious ${critEligibility.viciousRating})`}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Action buttons */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

@@ -230,7 +230,14 @@ function SkillCard({ roll, isOwn, isGm }: { roll: RollEntry; isOwn: boolean; isG
 // ═══════════════════════════════════════════════════════════════════
 // COMBAT CARD
 // ═══════════════════════════════════════════════════════════════════
-type RollMetaShape = { weaponDamage?: number; characterBrawn?: number; attackType?: string }
+type RollMetaShape = {
+  weaponDamage?:  number
+  characterBrawn?: number
+  attackType?:    string
+  critEligible?:  boolean
+  critRating?:    number
+  critModifier?:  number
+}
 
 function CombatCard({ roll, isOwn, isGm }: { roll: RollEntry; isOwn: boolean; isGm: boolean }) {
   const ac       = alignColor(roll, isOwn)
@@ -278,6 +285,20 @@ function CombatCard({ roll, isOwn, isGm }: { roll: RollEntry; isOwn: boolean; is
           {dmgLine && (
             <div style={{ fontFamily: FONT_MONO, fontSize: 'clamp(0.68rem, 1.05vw, 0.8rem)', color: C.gold, marginBottom: 4 }}>
               Dmg: {dmgLine}
+            </div>
+          )}
+          {meta?.critEligible && (
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              padding: '2px 7px', borderRadius: 3, marginBottom: 4,
+              background: 'rgba(255,152,0,0.12)', border: '1px solid rgba(255,152,0,0.4)',
+              fontFamily: FONT_MONO, fontSize: 'clamp(0.58rem, 0.88vw, 0.68rem)',
+              color: '#FF9800', fontWeight: 700, letterSpacing: '0.05em',
+            }}>
+              ⚠ CRITICAL ELIGIBLE
+              {(meta.critModifier ?? 0) > 0 && (
+                <span style={{ opacity: 0.75 }}> +{meta.critModifier}</span>
+              )}
             </div>
           )}
           <DicePoolRow pool={roll.pool} />
