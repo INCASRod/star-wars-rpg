@@ -24,7 +24,7 @@ interface AddParticipantModalProps {
   library: Adversary[]
   encounter: CombatEncounter | null
   groupSizes: Record<string, number>
-  onAdd: (adv: Adversary, alignment: 'enemy' | 'allied_npc', successes: number, advantages: number) => void
+  onAdd: (adv: Adversary, alignment: 'enemy' | 'allied_npc', successes: number, advantages: number, groupSize?: number) => void
   onClose: () => void
 }
 
@@ -33,6 +33,7 @@ export function AddParticipantModal({ library, encounter, groupSizes, onAdd, onC
   const [search, setSearch]         = useState('')
   const [typeFilter, setTypeFilter] = useState<'all' | 'minion' | 'rival' | 'nemesis'>('all')
   const [initValues, setInitValues] = useState<Record<string, { successes: number; advantages: number }>>({})
+  const [localGroupSizes, setLocalGroupSizes] = useState<Record<string, number>>({})
 
   const isMidCombat = !!encounter
   const accentColor = alignment === 'enemy' ? ENEMY_RED : ALLIED_GREEN
@@ -160,7 +161,12 @@ export function AddParticipantModal({ library, encounter, groupSizes, onAdd, onC
           )}
           {filtered.map(adv => {
             const init = getInit(adv.id)
-            const size = groupSizes[adv.id] ?? (adv.type === 'minion' ? 4 : 1)
+            const defaultSize = groupSizes[adv.id] ?? (adv.type === 'minion' ? 4 : 1)
+            const size = localGroupSizes[adv.id] ?? defaultSize
+            const setSize = (v: number) => setLocalGroupSizes(prev => ({ ...prev, [adv.id]: Math.max(1, Math.min(20, v)) }))
+            const groupThreshold = adv.type === 'minion' ? (adv.wound ?? 5) * size : null
+            const skillRank = adv.type === 'minion' ? size - 1 : null
+
             return (
               <div key={adv.id} style={{
                 background: RAISED_BG,
@@ -213,7 +219,7 @@ export function AddParticipantModal({ library, encounter, groupSizes, onAdd, onC
                   )}
 
                   <button
-                    onClick={() => { onAdd(adv, alignment, init.successes, init.advantages); onClose() }}
+                    onClick={() => { onAdd(adv, alignment, init.successes, init.advantages, adv.type === 'minion' ? size : undefined); onClose() }}
                     style={{
                       background: `${accentColor}15`, border: `1px solid ${accentColor}50`,
                       borderRadius: 4, padding: '6px 12px', cursor: 'pointer',
@@ -226,6 +232,54 @@ export function AddParticipantModal({ library, encounter, groupSizes, onAdd, onC
                     {isMidCombat ? '⚡ Add' : '＋ Add'}
                   </button>
                 </div>
+
+                {/* Group size stepper (minion only) */}
+                {adv.type === 'minion' && (
+                  <div style={{
+                    marginTop: 8, paddingTop: 8, borderTop: `1px solid ${BORDER}`,
+                    display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
+                  }}>
+                    {/* Stepper */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                        Group size
+                      </span>
+                      <button
+                        onClick={() => setSize(size - 1)}
+                        disabled={size <= 1}
+                        style={{
+                          width: 20, height: 20, borderRadius: 3, cursor: size <= 1 ? 'not-allowed' : 'pointer',
+                          background: 'transparent', border: `1px solid ${BORDER_MD}`,
+                          fontFamily: FM, fontSize: FS_SM, color: size <= 1 ? TEXT_MUTED : TEXT,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}
+                      >−</button>
+                      <span style={{
+                        fontFamily: FM, fontSize: FS_LABEL, fontWeight: 700, color: GOLD,
+                        minWidth: 22, textAlign: 'center',
+                      }}>{size}</span>
+                      <button
+                        onClick={() => setSize(size + 1)}
+                        disabled={size >= 20}
+                        style={{
+                          width: 20, height: 20, borderRadius: 3, cursor: size >= 20 ? 'not-allowed' : 'pointer',
+                          background: `${GOLD}18`, border: `1px solid ${BORDER_MD}`,
+                          fontFamily: FM, fontSize: FS_SM, color: GOLD,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}
+                      >+</button>
+                    </div>
+                    {/* Live preview */}
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <span style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED }}>
+                        WT <span style={{ color: TEXT, fontWeight: 600 }}>{groupThreshold}</span>
+                      </span>
+                      <span style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED }}>
+                        Skill rank <span style={{ color: TEXT, fontWeight: 600 }}>{skillRank}</span>
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             )
           })}

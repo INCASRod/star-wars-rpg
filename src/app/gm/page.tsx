@@ -7,6 +7,7 @@ import { EquipmentImage } from '@/components/ui/EquipmentImage'
 import { parseOggDudeMarkup } from '@/lib/oggdude-markup'
 import type { Character, Campaign, Player, RefDutyType, RefObligationType } from '@/lib/types'
 import { DutyObligationTab } from '@/components/gm/DutyObligationTab'
+import { ForceNotificationCard, type ForceNotification } from '@/components/gm/ForceNotificationCard'
 import { toast } from 'sonner'
 import { rarityColor, rarityLabel } from '@/lib/styles'
 import { useRollFeed } from '@/hooks/useRollFeed'
@@ -285,18 +286,36 @@ function GmDashboard() {
   const [error, setError] = useState<string | null>(null)
 
   // ── Tabs ──
-  type GmTab = 'xp' | 'credits' | 'duty' | 'do' | 'loot' | 'combat' | 'crit'
+  type GmTab = 'xp' | 'credits' | 'duty' | 'do' | 'loot' | 'combat' | 'crit' | 'force'
   const GM_TAB_KEY = 'holocron:gm-tab'
   const [activeTab, setActiveTab] = useState<GmTab>(() => {
     if (typeof window === 'undefined') return 'xp'
     const saved = window.localStorage.getItem(GM_TAB_KEY)
-    const valid: GmTab[] = ['xp', 'credits', 'duty', 'do', 'loot', 'combat', 'crit']
+    const valid: GmTab[] = ['xp', 'credits', 'duty', 'do', 'loot', 'combat', 'crit', 'force']
     return valid.includes(saved as GmTab) ? (saved as GmTab) : 'xp'
   })
+
+  // ── Force notifications ──
+  const [forceNotifications, setForceNotifications] = useState<ForceNotification[]>([])
 
   // ── D&O ref data ──
   const [dutyTypes, setDutyTypes]           = useState<RefDutyType[]>([])
   const [obligationTypes, setObligationTypes] = useState<RefObligationType[]>([])
+
+  // ── Morality ref data ──
+  interface RefMorality { key: string; name: string; description?: string; type: 'Strength' | 'Weakness' }
+  const [moralityStrengths, setMoralityStrengths] = useState<RefMorality[]>([])
+  const [moralityWeaknesses, setMoralityWeaknesses] = useState<RefMorality[]>([])
+
+  // ── Morality setup modal ──
+  interface MoralitySetupState {
+    id: string; name: string
+    score: number
+    strengthKey: string; weaknessKey: string
+    strengthDesc: string; weaknessDesc: string
+  }
+  const [moralitySetup, setMoralitySetup] = useState<MoralitySetupState | null>(null)
+  const [moralityBusy, setMoralityBusy] = useState(false)
 
   // ── XP ──
   const [xpAmount, setXpAmount] = useState('')
@@ -351,6 +370,10 @@ function GmDashboard() {
   const [archiveConfirm, setArchiveConfirm] = useState<{ id: string; name: string } | null>(null)
   const [archiveBusy, setArchiveBusy] = useState(false)
   const [archiveOpen, setArchiveOpen] = useState(false)
+
+  // ── Dark Side Fall / Redemption ──
+  const [fallenConfirm, setFallenConfirm] = useState<{ id: string; name: string; isFallen: boolean; morality?: number } | null>(null)
+  const [fallenBusy, setFallenBusy] = useState(false)
 
   // ── GM Roll panel ──
   const [gmRollLabel, setGmRollLabel] = useState('')
@@ -537,13 +560,14 @@ function GmDashboard() {
       // before any queries run, so requests carry the JWT and RLS resolves correctly.
       await supabase.auth.getSession()
 
-      const [campRes, charRes, playerRes, sessRes, dutyTypesRes, oblTypesRes] = await Promise.all([
+      const [campRes, charRes, playerRes, sessRes, dutyTypesRes, oblTypesRes, moralityRes] = await Promise.all([
         supabase.from('campaigns').select('*').eq('id', campaignId).single(),
         supabase.from('characters').select('*').eq('campaign_id', campaignId),
         supabase.from('players').select('id, display_name').eq('campaign_id', campaignId),
         supabase.from('character_sessions').select('character_id, session_key').eq('campaign_id', campaignId).eq('is_active', true),
         supabase.from('ref_duty_types').select('key, name, description').order('name'),
         supabase.from('ref_obligation_types').select('key, name, description').order('name'),
+        supabase.from('ref_moralities').select('key, name, description, type').order('name'),
       ])
 
       if (campRes.error) throw new Error(campRes.error.message)
@@ -567,6 +591,13 @@ function GmDashboard() {
         `Failed to load Obligation types: ${oblTypesRes.error.message}`
       )
       if (oblTypesRes.data) setObligationTypes(oblTypesRes.data as RefObligationType[])
+
+      if (moralityRes.data) {
+        type RawMorality = { key: string; name: string; description?: string; type: string }
+        const all = moralityRes.data as RawMorality[]
+        setMoralityStrengths(all.filter(m => m.type === 'Strength') as RefMorality[])
+        setMoralityWeaknesses(all.filter(m => m.type === 'Weakness') as RefMorality[])
+      }
 
       const chars = (charRes.data as Character[]) || []
       setCharacters(chars)
@@ -600,6 +631,19 @@ function GmDashboard() {
 
   useEffect(() => { loadData() }, [loadData])
 
+  // ── Load pending force notifications ──
+  useEffect(() => {
+    if (!campaignId) return
+    supabase
+      .from('force_notifications')
+      .select('*')
+      .eq('campaign_id', campaignId)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+      .then(({ data }) => { if (data) setForceNotifications(data as ForceNotification[]) })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [campaignId])
+
   // ── Realtime ──
   useEffect(() => {
     if (!campaignId) return
@@ -617,6 +661,9 @@ function GmDashboard() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'character_specializations' }, () => loadData(true))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'character_force_abilities' }, () => loadData(true))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'character_critical_injuries' }, () => loadData(true))
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'force_notifications', filter: `campaign_id=eq.${campaignId}` }, (payload) => {
+        setForceNotifications(prev => [payload.new as ForceNotification, ...prev])
+      })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'character_sessions', filter: `campaign_id=eq.${campaignId}` }, async () => {
         const { data } = await supabase.from('character_sessions').select('character_id, session_key').eq('campaign_id', campaignId).eq('is_active', true)
         setActiveSessions(Object.fromEntries((data || []).map((s: { character_id: string; session_key: string }) => [s.character_id, s.session_key])))
@@ -777,6 +824,35 @@ function GmDashboard() {
     notify(charId, 'toast', `Morality ${delta > 0 ? 'increased' : 'decreased'} by ${Math.abs(delta)}`)
   }
 
+  const openMoralitySetup = useCallback((c: Character) => {
+    setMoralitySetup({
+      id:          c.id,
+      name:        c.name,
+      score:       c.morality_value ?? 50,
+      strengthKey: c.morality_strength_key ?? '',
+      weaknessKey: c.morality_weakness_key ?? '',
+      strengthDesc: '',
+      weaknessDesc: '',
+    })
+  }, [])
+
+  const handleMoralitySave = useCallback(async () => {
+    if (!moralitySetup) return
+    setMoralityBusy(true)
+    const { id, name, score, strengthKey, weaknessKey } = moralitySetup
+    const update: Partial<Character> = {
+      morality_value:        Math.min(100, Math.max(1, score)),
+      morality_strength_key: strengthKey || undefined,
+      morality_weakness_key: weaknessKey || undefined,
+      morality_configured:   true,
+    }
+    await supabase.from('characters').update(update).eq('id', id)
+    setCharacters(prev => prev.map(c => c.id === id ? { ...c, ...update } : c))
+    flash(`Morality configured for ${name}.`)
+    setMoralitySetup(null)
+    setMoralityBusy(false)
+  }, [moralitySetup, supabase, flash])
+
   const handleBulkOD = async () => {
     const amount = parseInt(odAmount, 10)
     if (!amount || activeChars.length === 0) return
@@ -933,6 +1009,24 @@ function GmDashboard() {
     setArchiveBusy(false)
   }, [archiveConfirm, sendToChar, flash, flashError])
 
+  const handleFallenToggle = useCallback(async () => {
+    if (!fallenConfirm) return
+    setFallenBusy(true)
+    const { id, name, isFallen } = fallenConfirm
+    try {
+      const update = isFallen
+        ? { is_dark_side_fallen: false, redeemed_at: new Date().toISOString() }
+        : { is_dark_side_fallen: true,  dark_side_fallen_at: new Date().toISOString() }
+      await supabase.from('characters').update(update).eq('id', id)
+      setCharacters(prev => prev.map(c => c.id === id ? { ...c, ...update } : c))
+      flash(isFallen ? `${name} has been redeemed.` : `${name} has fallen to the Dark Side.`)
+    } catch (err: unknown) {
+      flashError('Update failed: ' + (err instanceof Error ? err.message : String(err)))
+    }
+    setFallenConfirm(null)
+    setFallenBusy(false)
+  }, [fallenConfirm, supabase, flash, flashError])
+
   const handleRestore = useCallback(async (charId: string, charName: string) => {
     try {
       await restoreCharacter(charId)
@@ -964,6 +1058,7 @@ function GmDashboard() {
       challenge: gmChallenge,
       difficulty: gmDifficulty,
       setback: gmSetback,
+      force: 0,
     }
     const result = rollPool(pool)
     logRoll({
@@ -1238,6 +1333,26 @@ function GmDashboard() {
                       </div>
                     </div>
 
+                    {/* Dark Side badge */}
+                    {c.is_dark_side_fallen && (
+                      <div style={{ marginBottom: 6 }}>
+                        <span style={{
+                          display: 'inline-flex', alignItems: 'center',
+                          padding: '2px 7px',
+                          background: 'rgba(139,43,226,0.12)',
+                          border: '1px solid rgba(139,43,226,0.4)',
+                          borderRadius: 4,
+                          fontFamily: "'Share Tech Mono','Courier New',monospace",
+                          fontSize: 'clamp(0.55rem, 0.85vw, 0.65rem)',
+                          textTransform: 'uppercase' as const,
+                          letterSpacing: '0.12em',
+                          color: 'rgba(139,43,226,0.8)',
+                        }}>
+                          ☠ DARK SIDE
+                        </span>
+                      </div>
+                    )}
+
                     {/* Wound bar */}
                     <div style={{ marginBottom: 5 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
@@ -1321,7 +1436,17 @@ function GmDashboard() {
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
                             <div style={{ minWidth: 0, flex: 1 }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-                                <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, color: DIM, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Morality</span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                  <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, color: DIM, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Morality</span>
+                                  {(c.force_rating ?? 0) >= 1 && c.morality_configured && (
+                                    <button
+                                      onClick={() => openMoralitySetup(c)}
+                                      style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: FR, fontSize: FS_OVERLINE, color: BLUE, padding: 0, opacity: 0.7 }}
+                                    >
+                                      Edit
+                                    </button>
+                                  )}
+                                </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
                                   <button onClick={() => adjustMorality(c.id, -1)} style={{ background: 'rgba(224,80,80,0.10)', border: '1px solid rgba(224,80,80,0.25)', borderRadius: 2, width: 18, height: 18, cursor: 'pointer', fontFamily: FR, fontSize: FS_OVERLINE, color: RED, lineHeight: 1, padding: 0 }}>−</button>
                                   <span style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700, color: (c.morality_value ?? 50) >= 50 ? BLUE : RED, minWidth: 24, textAlign: 'center' }}>{c.morality_value ?? 50}</span>
@@ -1346,6 +1471,70 @@ function GmDashboard() {
                     <div style={{ marginTop: 6, fontFamily: FR, fontSize: FS_LABEL, fontWeight: 600, textTransform: 'uppercase', color: GOLD_DIM, textAlign: 'center' }}>
                       {c.xp_available} XP · {c.credits} cr
                     </div>
+
+                    {/* Morality config banner — Force-sensitive, not yet configured */}
+                    {(c.force_rating ?? 0) >= 1 && !c.morality_configured && (
+                      <div style={{
+                        marginTop: 6, padding: '6px 10px',
+                        background: 'rgba(90,170,224,0.06)',
+                        border: '1px solid rgba(90,170,224,0.25)',
+                        borderRadius: 6,
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+                      }}>
+                        <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: 'rgba(90,170,224,0.7)', lineHeight: 1.4 }}>
+                          ⚠ Morality not yet configured
+                        </span>
+                        <button
+                          onClick={() => openMoralitySetup(c)}
+                          style={{
+                            background: 'rgba(90,170,224,0.12)',
+                            border: '1px solid rgba(90,170,224,0.35)',
+                            borderRadius: 4, padding: '2px 10px', cursor: 'pointer',
+                            fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700,
+                            color: BLUE, whiteSpace: 'nowrap', flexShrink: 0,
+                          }}
+                        >
+                          Configure Now
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Dark Side Fall / Redemption — Force-sensitive only */}
+                    {(c.force_rating ?? 0) >= 1 && (
+                      <div style={{ marginTop: 6 }}>
+                        {!c.is_dark_side_fallen ? (
+                          <button
+                            onClick={() => setFallenConfirm({ id: c.id, name: c.name, isFallen: false, morality: c.morality_value })}
+                            style={{
+                              width: '100%',
+                              background: 'rgba(139,43,226,0.06)',
+                              border: '1px solid rgba(139,43,226,0.4)',
+                              borderRadius: 8, padding: '4px 0', cursor: 'pointer',
+                              fontFamily: FR, fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)',
+                              fontWeight: 700, letterSpacing: '0.05em',
+                              color: 'rgba(139,43,226,0.8)', transition: '.15s',
+                            }}
+                          >
+                            ☠ Declare: Fallen to the Dark Side
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => setFallenConfirm({ id: c.id, name: c.name, isFallen: true })}
+                            style={{
+                              width: '100%',
+                              background: 'rgba(126,200,227,0.06)',
+                              border: '1px solid rgba(126,200,227,0.4)',
+                              borderRadius: 8, padding: '4px 0', cursor: 'pointer',
+                              fontFamily: FR, fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)',
+                              fontWeight: 700, letterSpacing: '0.05em',
+                              color: '#7EC8E3', transition: '.15s',
+                            }}
+                          >
+                            ✦ Grant Redemption
+                          </button>
+                        )}
+                      </div>
+                    )}
 
                     {/* Archive button */}
                     <div style={{ marginTop: 8, borderTop: `1px solid ${BORDER}`, paddingTop: 6 }}>
@@ -1480,6 +1669,23 @@ function GmDashboard() {
                     {label}
                   </button>
                 ))}
+                {/* Force tab — separate to allow dynamic badge */}
+                <button
+                  onClick={() => { setActiveTab('force'); localStorage.setItem(GM_TAB_KEY, 'force') }}
+                  style={{
+                    fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 700,
+                    letterSpacing: '0.1em', textTransform: 'uppercase',
+                    padding: '10px 16px', border: 'none',
+                    borderBottom: activeTab === 'force' ? `2px solid #9060D0` : '2px solid transparent',
+                    background: activeTab === 'force' ? 'rgba(144,96,208,0.08)' : 'transparent',
+                    color: activeTab === 'force' ? '#9060D0' : DIM,
+                    cursor: 'pointer', transition: '.15s', marginBottom: -1,
+                  }}
+                >
+                  Force{forceNotifications.filter(n => n.status === 'pending').length > 0
+                    ? ` (${forceNotifications.filter(n => n.status === 'pending').length})`
+                    : ''}
+                </button>
               </div>
 
               {/* Tab content */}
@@ -1738,6 +1944,29 @@ function GmDashboard() {
                   </div>
                 )}
 
+                {/* ── FORCE TAB ── */}
+                {activeTab === 'force' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {forceNotifications.filter(n => n.status === 'pending').length === 0 ? (
+                      <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                        <div style={{ fontFamily: FR, fontSize: FS_SM, color: DIM }}>No pending Force notifications.</div>
+                        <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: PURPLE, marginTop: 4, opacity: 0.6 }}>Dark side use will appear here in real time.</div>
+                      </div>
+                    ) : (
+                      forceNotifications
+                        .filter(n => n.status === 'pending')
+                        .map(n => (
+                          <ForceNotificationCard
+                            key={n.id}
+                            notification={n}
+                            isFallen={characters.find(c => c.id === n.character_id)?.is_dark_side_fallen === true}
+                            onAcknowledged={id => setForceNotifications(prev => prev.filter(x => x.id !== id))}
+                          />
+                        ))
+                    )}
+                  </div>
+                )}
+
               </div>
             </div>
           </div>
@@ -1765,7 +1994,7 @@ function GmDashboard() {
 
           {/* Roll feed content */}
           <div style={{ flex: 1, overflowY: 'auto', padding: 12 }}>
-            <RollFeedPanel rolls={rolls} ownCharacterId="gm" />
+            <RollFeedPanel rolls={rolls} ownCharacterId="gm" isGm={true} />
           </div>
 
           {/* GM Roll panel */}
@@ -2011,6 +2240,161 @@ function GmDashboard() {
                 <button onClick={handleDismissReveal} style={btnDanger}>DISMISS</button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── MORALITY SETUP / EDIT MODAL ── */}
+      {moralitySetup && (() => {
+        const mv = moralitySetup.score
+        const scoreColor = mv >= 70 ? BLUE : mv >= 40 ? GOLD : RED
+        const selStr = moralityStrengths.find(m => m.key === moralitySetup.strengthKey)
+        const selWk  = moralityWeaknesses.find(m => m.key === moralitySetup.weaknessKey)
+        return (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ ...panelBase, padding: 24, maxWidth: '30rem', width: '92%', border: '1px solid rgba(90,170,224,0.3)', boxShadow: '0 8px 40px rgba(90,170,224,0.12)' }}>
+              <CornerBrackets />
+              <div style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: BLUE, letterSpacing: '0.15em', marginBottom: 14 }}>
+                ✦ Configure Morality — {moralitySetup.name}
+              </div>
+
+              {/* Score */}
+              <div style={{ marginBottom: 14 }}>
+                <div style={fieldLabel}>Morality Score</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <input
+                    type="number" min={1} max={100}
+                    value={moralitySetup.score}
+                    onChange={e => setMoralitySetup(s => s && ({ ...s, score: parseInt(e.target.value) || 50 }))}
+                    style={{ ...darkInput, width: 70 }}
+                  />
+                  <span style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: scoreColor }}>{mv}</span>
+                  <span style={{ fontFamily: FR, fontSize: FS_LABEL, color: scoreColor, opacity: 0.8 }}>
+                    {mv >= 70 ? 'Strong — Light side' : mv >= 40 ? 'Balanced' : 'Weak — Dark side temptation'}
+                  </span>
+                </div>
+                <div style={{ marginTop: 6, height: 6, background: FAINT, borderRadius: 3, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${Math.min(100, Math.max(1, mv))}%`, background: `linear-gradient(90deg, ${RED}, #4EC87A 60%, ${BLUE})`, borderRadius: 3, transition: '.2s' }} />
+                </div>
+              </div>
+
+              {/* Strength */}
+              <div style={{ marginBottom: 10 }}>
+                <div style={fieldLabel}>Strength</div>
+                <select
+                  value={moralitySetup.strengthKey}
+                  onChange={e => setMoralitySetup(s => s && ({ ...s, strengthKey: e.target.value }))}
+                  style={{ ...darkInput, width: '100%' }}
+                >
+                  <option value="">— Select a Strength —</option>
+                  {moralityStrengths.map(m => <option key={m.key} value={m.key}>{m.name}</option>)}
+                </select>
+                {selStr?.description && (
+                  <div style={{ marginTop: 5, fontFamily: FR, fontSize: FS_OVERLINE, color: DIM, lineHeight: 1.5, maxHeight: 60, overflow: 'hidden' }}>
+                    {selStr.description.replace(/\[.*?\]/g, '').slice(0, 160)}…
+                  </div>
+                )}
+              </div>
+
+              {/* Weakness */}
+              <div style={{ marginBottom: 18 }}>
+                <div style={fieldLabel}>Weakness</div>
+                <select
+                  value={moralitySetup.weaknessKey}
+                  onChange={e => setMoralitySetup(s => s && ({ ...s, weaknessKey: e.target.value }))}
+                  style={{ ...darkInput, width: '100%' }}
+                >
+                  <option value="">— Select a Weakness —</option>
+                  {moralityWeaknesses.map(m => <option key={m.key} value={m.key}>{m.name}</option>)}
+                </select>
+                {selWk?.description && (
+                  <div style={{ marginTop: 5, fontFamily: FR, fontSize: FS_OVERLINE, color: DIM, lineHeight: 1.5, maxHeight: 60, overflow: 'hidden' }}>
+                    {selWk.description.replace(/\[.*?\]/g, '').slice(0, 160)}…
+                  </div>
+                )}
+              </div>
+
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+                <button onClick={() => setMoralitySetup(null)} style={btnSmall} disabled={moralityBusy}>Cancel</button>
+                <button
+                  onClick={handleMoralitySave}
+                  disabled={moralityBusy}
+                  style={{ ...btnSmall, background: 'rgba(90,170,224,0.15)', border: '1px solid rgba(90,170,224,0.5)', color: BLUE, opacity: moralityBusy ? 0.5 : 1 }}
+                >
+                  {moralityBusy ? '…' : 'Save Morality'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* ── DARK SIDE FALL / REDEMPTION DIALOG ── */}
+      {fallenConfirm && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 200,
+          background: 'rgba(0,0,0,0.65)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div style={{
+            ...panelBase, padding: 24, maxWidth: '28rem', width: '90%',
+            boxShadow: fallenConfirm.isFallen
+              ? '0 8px 40px rgba(126,200,227,0.15)'
+              : '0 8px 40px rgba(139,43,226,0.2)',
+            border: `1px solid ${fallenConfirm.isFallen ? 'rgba(126,200,227,0.3)' : 'rgba(139,43,226,0.35)'}`,
+          }}>
+            <CornerBrackets />
+            <div style={{
+              fontFamily: FC, fontSize: FS_SM, fontWeight: 700,
+              color: fallenConfirm.isFallen ? '#7EC8E3' : '#8B2BE2',
+              letterSpacing: '0.15em', marginBottom: 12,
+            }}>
+              {fallenConfirm.isFallen ? '✦ Grant Redemption' : '☠ Dark Side Fall'}
+            </div>
+            <div style={{ fontFamily: FR, fontSize: FS_SM, color: TEXT, lineHeight: 1.7, marginBottom: 8 }}>
+              {fallenConfirm.isFallen ? (
+                <>
+                  Grant Redemption to <strong style={{ color: '#7EC8E3' }}>{fallenConfirm.name}</strong>?
+                  This restores standard light side Force mechanics.
+                </>
+              ) : (
+                <>
+                  Declare <strong style={{ color: '#8B2BE2' }}>{fallenConfirm.name}</strong> fallen to the Dark Side?
+                  This inverts their Force pip mechanics permanently until Redemption is granted.
+                </>
+              )}
+            </div>
+            {!fallenConfirm.isFallen && fallenConfirm.morality !== undefined && (
+              <div style={{ fontFamily: FR, fontSize: FS_LABEL, color: DIM, marginBottom: 16 }}>
+                Current Morality: <span style={{ color: fallenConfirm.morality >= 50 ? BLUE : RED, fontWeight: 700 }}>{fallenConfirm.morality}</span>
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 16 }}>
+              <button
+                onClick={() => setFallenConfirm(null)}
+                style={btnSmall}
+                disabled={fallenBusy}
+              >
+                CANCEL
+              </button>
+              <button
+                onClick={handleFallenToggle}
+                disabled={fallenBusy}
+                style={{
+                  ...btnSmall,
+                  background: fallenConfirm.isFallen ? 'rgba(126,200,227,0.15)' : 'rgba(139,43,226,0.2)',
+                  border: `1px solid ${fallenConfirm.isFallen ? 'rgba(126,200,227,0.5)' : 'rgba(139,43,226,0.6)'}`,
+                  color: fallenConfirm.isFallen ? '#7EC8E3' : '#8B2BE2',
+                  opacity: fallenBusy ? 0.5 : 1,
+                }}
+              >
+                {fallenBusy
+                  ? '…'
+                  : fallenConfirm.isFallen
+                  ? 'Confirm — Grant Redemption'
+                  : 'Confirm — Fall to Dark Side'}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -47,6 +47,7 @@ export interface RefSpecialization {
   career_key: string
   career_skill_keys: string[]
   talent_tree: TalentTreeData
+  is_force_sensitive?: boolean
 }
 
 export interface TalentTreeData {
@@ -76,6 +77,27 @@ export interface TalentModifiers {
   force_rating?: number
 }
 
+// Structured modifier fields added by migration 017 — populated from OggDude Talents.xml
+export interface TalentAttributes {
+  soakValue?: number
+  woundThreshold?: number
+  strainThreshold?: number
+  defenseMelee?: number
+  defenseRanged?: number
+  forceRating?: number
+}
+
+export interface TalentDieModifier {
+  skillKey: string
+  boostCount?: number
+  setbackCount?: number
+}
+
+export interface TalentRequirements {
+  wearingArmor?: boolean
+  soakAtLeast?: number
+}
+
 export interface RefTalent {
   key: string
   name: string
@@ -84,6 +106,10 @@ export interface RefTalent {
   is_force_talent: boolean
   is_ranked: boolean
   modifiers?: TalentModifiers | null
+  // Structured fields from migration 017
+  attributes?: TalentAttributes | null
+  die_modifiers?: TalentDieModifier[] | null
+  requirements?: TalentRequirements | null
 }
 
 export interface RefWeapon {
@@ -119,6 +145,27 @@ export interface RefArmor {
   hard_points: number
   price: number
   rarity: number
+  // Structured fields from migration 018 — seeded from Armor.xml
+  soak_bonus?: number
+  defense_melee?: number
+  defense_ranged?: number
+}
+
+// Modifier payload stored in ref_item_attachments.base_mods / added_mods
+export interface RefItemAttachmentMods {
+  soakAdd?: number
+  defenseMeleeAdd?: number
+  defenseRangedAdd?: number
+  woundThresholdAdd?: number
+  strainThresholdAdd?: number
+}
+
+export interface RefItemAttachment {
+  key: string
+  name: string
+  description?: string
+  base_mods?: RefItemAttachmentMods | null
+  added_mods?: RefItemAttachmentMods | null
 }
 
 export interface RefGear {
@@ -159,10 +206,11 @@ export interface RefItemDescriptor {
 }
 
 export interface RefWeaponQuality {
-  key:         string
-  name:        string
-  description: string
-  is_ranked:   boolean
+  key:          string
+  name:         string
+  description:  string
+  is_ranked:    boolean
+  stat_modifier?: { defenseMelee?: number; defenseRanged?: number } | null
 }
 
 export interface RefCriticalInjury {
@@ -279,6 +327,12 @@ export interface Character {
   duty_obligation_configured?: boolean
   duty_custom_name?: string | null
   obligation_custom_name?: string | null
+  force_rating?: number
+  force_rating_committed?: number
+  morality_configured?: boolean
+  is_dark_side_fallen?: boolean
+  dark_side_fallen_at?: string
+  redeemed_at?: string
 }
 
 export interface RefDutyType {

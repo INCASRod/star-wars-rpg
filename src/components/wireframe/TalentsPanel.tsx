@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { C, FONT_CINZEL, FONT_RAJDHANI, panelBase, FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4, FS_H3 } from '@/components/player-hud/design-tokens'
 import { PanelSearchInput } from '@/components/character/PanelSearchInput'
+import { DiceText } from '@/components/dice/DiceText'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -125,7 +126,7 @@ function TalentCard({ t }: { t: Talent }) {
 
       {/* Description */}
       <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: C.textDim, lineHeight: 1.45 }}>
-        {t.description}
+        <DiceText text={t.description} />
       </div>
 
       {/* Stat bonus */}

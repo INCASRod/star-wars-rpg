@@ -130,6 +130,7 @@ export function SkillRollPopover({ skill, anchor, onRoll, onClose }: SkillRollPo
     const pool: Record<DiceType, number> = {
       proficiency, ability,
       difficulty, challenge, boost, setback,
+      force: 0,
     }
     onRoll(rollPool(pool), skill.name, pool)
   }

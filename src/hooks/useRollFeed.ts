@@ -21,6 +21,14 @@ export interface RollEntry {
   rolled_at:      string
   is_dm:          boolean
   hidden:         boolean
+  // Classification fields (migration-024, null on legacy rows)
+  roll_type?:             string | null
+  weapon_name?:           string | null
+  target_name?:           string | null
+  range_band?:            string | null
+  alignment?:             string | null
+  is_visible_to_players?: boolean | null
+  roll_meta?:             Record<string, unknown> | null
 }
 
 export function useRollFeed(campaignId: string | null | undefined) {

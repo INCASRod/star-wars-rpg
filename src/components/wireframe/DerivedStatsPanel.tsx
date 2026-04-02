@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import { C, FONT_CINZEL, FONT_RAJDHANI, panelBase, FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4, FS_H3 } from '@/components/player-hud/design-tokens'
 import type { Character } from '@/lib/types'
 import type { LiveTalent } from './TalentsPanel'
+import type { EffectiveStats, StatSource } from '@/lib/derivedStats'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -340,15 +341,66 @@ function StatPill({
 
 // ── Main component ────────────────────────────────────────────────────────────
 
+interface EngineBreakdown {
+  soak: StatSource[]
+  defenseMelee: StatSource[]
+  defenseRanged: StatSource[]
+  woundThreshold: StatSource[]
+  strainThreshold: StatSource[]
+  forceRating: StatSource[]
+}
+
 interface DerivedStatsPanelProps {
   character?: Character
   liveTalents?: LiveTalent[]
   onVitalChange?: (field: 'wound_current' | 'strain_current', delta: number) => void
   characterName?: string
+  /** When provided, totals and tooltips come from the derived stats engine */
+  effectiveStats?: EffectiveStats
+  /** Breakdown sources per stat — required when effectiveStats is provided */
+  engineBreakdown?: EngineBreakdown
 }
 
-export function DerivedStatsPanel({ character, liveTalents = [], onVitalChange, characterName }: DerivedStatsPanelProps) {
-  const STATS = character ? buildLiveStats(character, liveTalents) : STATIC_STATS
+function buildStatsFromEngine(char: Character, es: EffectiveStats, bd: EngineBreakdown): DerivedStat[] {
+  const makeSources = (arr: StatSource[]) =>
+    arr.map(s => ({ label: s.label, value: s.value }))
+
+  return [
+    {
+      key: 'soak', label: 'Soak', abbrev: 'SOAK', color: STAT_COLOR.soak,
+      total: es.soak,
+      sources: makeSources(bd.soak),
+    },
+    {
+      key: 'wounds', label: 'Wound Threshold', abbrev: 'WOUNDS', color: STAT_COLOR.wounds,
+      total: es.woundThreshold, tracked: true,
+      sources: makeSources(bd.woundThreshold),
+    },
+    {
+      key: 'strain', label: 'Strain Threshold', abbrev: 'STRAIN', color: STAT_COLOR.strain,
+      total: es.strainThreshold, tracked: true,
+      sources: makeSources(bd.strainThreshold),
+    },
+    {
+      key: 'mdef', label: 'Melee Defense', abbrev: 'M.DEF', color: STAT_COLOR.mdef,
+      total: es.defenseMelee,
+      sources: bd.defenseMelee.length > 0 ? makeSources(bd.defenseMelee) : [{ label: 'Base', value: 0 }],
+    },
+    {
+      key: 'rdef', label: 'Ranged Defense', abbrev: 'R.DEF', color: STAT_COLOR.rdef,
+      total: es.defenseRanged,
+      sources: bd.defenseRanged.length > 0 ? makeSources(bd.defenseRanged) : [{ label: 'Base', value: 0 }],
+    },
+  ]
+  void char
+}
+
+export function DerivedStatsPanel({ character, liveTalents = [], onVitalChange, characterName, effectiveStats, engineBreakdown }: DerivedStatsPanelProps) {
+  const STATS = effectiveStats && engineBreakdown && character
+    ? buildStatsFromEngine(character, effectiveStats, engineBreakdown)
+    : character
+      ? buildLiveStats(character, liveTalents)
+      : STATIC_STATS
 
   const initTrackers = () => character
     ? { wounds: character.wound_current, strain: character.strain_current }

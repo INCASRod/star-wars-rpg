@@ -106,7 +106,7 @@ export function InitiativeRollModal({ character, skills, initiativeType, campaig
   const charLabel = initiativeType === 'cool' ? 'Presence' : 'Willpower'
 
   const handleRoll = () => {
-    const result = rollPool({ proficiency, ability, boost: 0, challenge: 0, difficulty: 0, setback: 0 })
+    const result = rollPool({ proficiency, ability, boost: 0, challenge: 0, difficulty: 0, setback: 0, force: 0 })
     setSuccesses(Math.max(0, result.net.success + result.net.triumph))
     setBaseAdv(result.net.advantage)
     if (forceRating > 0) {
@@ -136,6 +136,30 @@ export function InitiativeRollModal({ character, skills, initiativeType, campaig
         },
       })
     }
+
+    // Write to roll_log for feed visibility (fire-and-forget)
+    supabase.from('roll_log').insert({
+      campaign_id:    campaignId,
+      character_id:   character.id,
+      character_name: character.name,
+      roll_label:     `${skillName} (Initiative)`,
+      pool: { proficiency, ability, boost: 0, challenge: 0, difficulty: 0, setback: 0, force: 0 },
+      result: {
+        netSuccess:   successes,
+        netAdvantage: totalAdvantages,
+        triumph:      0,
+        despair:      0,
+        succeeded:    successes > 0,
+      },
+      is_dm:                false,
+      hidden:               false,
+      roll_type:            'initiative',
+      alignment:            'player',
+      is_visible_to_players: true,
+    }).then(({ error }) => {
+      if (error) console.warn('[initiative roll_log]:', error.message)
+    })
+
     setSubmitted(true)
     setBusy(false)
     setTimeout(onClose, 1400)

@@ -14,6 +14,7 @@ const RAW_FACES: Record<DiceType, string[]> = {
   challenge:   ['', 'F', 'F', 'FF', 'FF', 'H', 'H', 'FH', 'FH', 'HH', 'HH', 'D'],
   difficulty:  ['', 'F', 'FF', 'H', 'H', 'H', 'HH', 'FH'],
   setback:     ['', '', 'F', 'F', 'H', 'H'],
+  force:       [],  // Force dice are handled separately via rollForceDice()
 }
 
 export interface DieResult {

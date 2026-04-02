@@ -2,6 +2,8 @@ export interface AdversaryWeapon {
   name: string
   damage: number | string
   range: string
+  /** Skill category string extracted from the weapon's parenthetical, e.g. "Ranged [Light]" or "Melee [Engaged]" */
+  skillCategory?: string
   qualities?: string[]
   special?: string
 }
@@ -74,6 +76,7 @@ function parseWeaponString(raw: string): AdversaryWeapon {
   let range = 'Engaged'
   const qualities: string[] = []
 
+  let skillCategory: string | undefined
   const parenMatch = raw.match(/\(([^)]+)\)/)
   if (parenMatch) {
     for (const part of parenMatch[1].split(/;\s*/)) {
@@ -84,12 +87,14 @@ function parseWeaponString(raw: string): AdversaryWeapon {
       if (brawnMatch) { damage = `Brawn${brawnMatch[1]}`; continue }
       const rangeMatch = p.match(/^Range\s+\[([^\]]+)\]$/i)
       if (rangeMatch) { range = rangeMatch[1]; continue }
-      if (!p.match(/^Critical\s+\d+/i) && !p.match(/^(Ranged|Melee)\s+\[/i)) {
+      const skillCatMatch = p.match(/^(Ranged|Melee)\s+\[([^\]]+)\]$/i)
+      if (skillCatMatch) { skillCategory = p; continue }
+      if (!p.match(/^Critical\s+\d+/i)) {
         qualities.push(p)
       }
     }
   }
-  return { name, damage, range, qualities: qualities.length > 0 ? qualities : undefined }
+  return { name, damage, range, skillCategory, qualities: qualities.length > 0 ? qualities : undefined }
 }
 
 // Normalize raw API data to our Adversary type

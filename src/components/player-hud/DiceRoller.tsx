@@ -32,9 +32,12 @@ interface DiceRollerProps {
   trainedSkills?: QuickRollSkill[]
   equippedWeapons: QuickWeapon[]
   onRoll: (result: RollResult, skillName?: string) => void
+  onCombatCheck?: (type: 'ranged' | 'melee') => void
+  combatCheckOpen?: boolean
+  onCombatCheckClose?: () => void
 }
 
-type CheckType = 'Ranged' | 'Melee' | 'Skill'
+type CheckType = 'Ranged' | 'Melee' | 'Force'
 
 const RANGE_BANDS: { label: string; sub: string; count: number }[] = [
   { label: 'Engaged', sub: 'Easy',     count: 1 },
@@ -127,7 +130,7 @@ function SectionLabel({ text }: { text: string }) {
   )
 }
 
-export function DiceRoller({ trainedSkills, equippedWeapons, onRoll }: DiceRollerProps) {
+export function DiceRoller({ trainedSkills, equippedWeapons, onRoll, onCombatCheck, combatCheckOpen, onCombatCheckClose }: DiceRollerProps) {
   const [pool, setPool]               = useState<Record<DiceType, number>>({ ...EMPTY_POOL })
   const [selectedWeaponId, setSelectedWeaponId] = useState<string | null>(null)
   const [checkType, setCheckType]     = useState<CheckType>('Ranged')
@@ -158,6 +161,8 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll }: DiceRolle
     if (type === 'Ranged') {
       const band = RANGE_BANDS.find(b => b.label === rangeBandLabel) ?? RANGE_BANDS[2]
       setPool(p => ({ ...p, difficulty: band.count }))
+    } else if (type === 'Force') {
+      setPool(p => ({ ...p, difficulty: 0 }))
     } else {
       setPool(p => ({ ...p, difficulty: diffPreset }))
     }
@@ -187,7 +192,7 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll }: DiceRolle
         <SectionLabel text="Dice Pool" />
 
         {/* Weapon selector */}
-        {equippedWeapons.length > 0 && (
+        {!combatCheckOpen && equippedWeapons.length > 0 && (
           <div style={{ marginBottom: 12 }}>
             <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textDim, marginBottom: 6 }}>
               Weapon
@@ -244,12 +249,20 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll }: DiceRolle
             Check Type
           </div>
           <div style={{ display: 'flex', gap: 4 }}>
-            {(['Ranged', 'Melee', 'Skill'] as CheckType[]).map(type => {
+            {(['Ranged', 'Melee', 'Force'] as CheckType[]).map(type => {
               const isActive = checkType === type
+              const isCombat = type === 'Ranged' || type === 'Melee'
               return (
                 <button
                   key={type}
-                  onClick={() => handleCheckType(type)}
+                  onClick={() => {
+                    if (isCombat && onCombatCheck) {
+                      setCheckType(type)
+                      onCombatCheck(type.toLowerCase() as 'ranged' | 'melee')
+                    } else {
+                      handleCheckType(type)
+                    }
+                  }}
                   style={{
                     flex: 1, padding: '5px 0',
                     background: isActive ? `${C.gold}20` : 'transparent',
@@ -266,108 +279,171 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll }: DiceRolle
               )
             })}
           </div>
-        </div>
-
-        {/* Range Band */}
-        <div style={{ marginBottom: 12, opacity: checkType === 'Ranged' ? 1 : 0.4, transition: '.15s' }}>
-          <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textDim, marginBottom: 6 }}>
-            Range Band
-          </div>
-          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-            {RANGE_BANDS.map(band => {
-              const isActive = rangeBandLabel === band.label
-              return (
+          {/* Combat check active placeholder */}
+          {combatCheckOpen && checkType !== 'Force' && (
+            <div style={{
+              marginTop: 12,
+              padding: '16px 12px',
+              background: 'rgba(200,170,80,0.05)',
+              border: `1px solid rgba(200,170,80,0.25)`,
+              borderRadius: 6,
+              textAlign: 'center',
+            }}>
+              <div style={{
+                fontFamily: FONT_CINZEL, fontSize: 12, fontWeight: 700,
+                letterSpacing: '0.12em', textTransform: 'uppercase',
+                color: C.gold, marginBottom: 6,
+              }}>
+                {checkType} Attack
+              </div>
+              <div style={{
+                fontFamily: FONT_RAJDHANI, fontSize: 12, color: C.textDim, lineHeight: 1.5, marginBottom: 12,
+              }}>
+                Guided combat check is open.
+                <br />
+                Follow the steps in the panel →
+              </div>
+              {onCombatCheckClose && (
                 <button
-                  key={band.label}
-                  onClick={() => handleRangeBand(band)}
+                  onClick={onCombatCheckClose}
                   style={{
-                    background: isActive ? 'rgba(144,96,208,0.22)' : 'transparent',
-                    border: `1px solid ${isActive ? '#9060D0' : C.border}`,
-                    borderRadius: 3, padding: '3px 8px', cursor: 'pointer',
-                    fontFamily: FONT_RAJDHANI, fontWeight: 700, letterSpacing: '0.06em',
-                    transition: '.12s', whiteSpace: 'nowrap', textAlign: 'center',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
+                    padding: '4px 14px', borderRadius: 4, cursor: 'pointer',
+                    background: 'transparent', border: `1px solid ${C.border}`,
+                    fontFamily: FONT_RAJDHANI, fontSize: 11, color: C.textDim,
                   }}
                 >
-                  <span style={{ fontSize: 12, color: isActive ? '#9060D0' : C.text }}>{band.label}</span>
+                  Cancel
                 </button>
-              )
-            })}
+              )}
+            </div>
+          )}
+
+          {/* Force placeholder */}
+          {checkType === 'Force' && (
+            <div style={{
+              marginTop: 12,
+              padding: '14px 12px',
+              background: 'rgba(255,255,255,0.02)',
+              border: `1px solid ${C.border}`,
+              borderRadius: 6,
+              textAlign: 'center',
+              fontFamily: FONT_RAJDHANI,
+              fontSize: 'clamp(0.85rem, 1.3vw, 1rem)',
+              color: C.textDim,
+              lineHeight: 1.5,
+            }}>
+              FORCE POWERS
+              <br />
+              <span style={{ fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)' }}>
+                Coming soon — Force power checks will be available here.
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Pool builder — hidden when combat check overlay is active */}
+        {!combatCheckOpen && (<>
+          {/* Range Band */}
+          <div style={{ marginBottom: 12, opacity: checkType === 'Ranged' ? 1 : 0.4, transition: '.15s' }}>
+            <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textDim, marginBottom: 6 }}>
+              Range Band
+            </div>
+            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+              {RANGE_BANDS.map(band => {
+                const isActive = rangeBandLabel === band.label
+                return (
+                  <button
+                    key={band.label}
+                    onClick={() => handleRangeBand(band)}
+                    style={{
+                      background: isActive ? 'rgba(144,96,208,0.22)' : 'transparent',
+                      border: `1px solid ${isActive ? '#9060D0' : C.border}`,
+                      borderRadius: 3, padding: '3px 8px', cursor: 'pointer',
+                      fontFamily: FONT_RAJDHANI, fontWeight: 700, letterSpacing: '0.06em',
+                      transition: '.12s', whiteSpace: 'nowrap', textAlign: 'center',
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
+                    }}
+                  >
+                    <span style={{ fontSize: 12, color: isActive ? '#9060D0' : C.text }}>{band.label}</span>
+                  </button>
+                )
+              })}
+            </div>
           </div>
-        </div>
 
-        {/* Difficulty Preset */}
-        <div style={{ marginBottom: 12, opacity: checkType !== 'Ranged' ? 1 : 0.4, transition: '.15s' }}>
-          <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textDim, marginBottom: 6 }}>
-            Difficulty Preset
+          {/* Difficulty Preset */}
+          <div style={{ marginBottom: 12, opacity: checkType !== 'Ranged' ? 1 : 0.4, transition: '.15s' }}>
+            <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textDim, marginBottom: 6 }}>
+              Difficulty Preset
+            </div>
+            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+              {DIFF_PRESETS.map(preset => {
+                const isActive = diffPreset === preset.count
+                return (
+                  <button
+                    key={preset.label}
+                    onClick={() => handleDiffPreset(preset.count)}
+                    style={{
+                      background: isActive ? 'rgba(144,96,208,0.22)' : 'transparent',
+                      border: `1px solid ${isActive ? '#9060D0' : C.border}`,
+                      borderRadius: 3, padding: '3px 8px', cursor: 'pointer',
+                      fontFamily: FONT_RAJDHANI, fontWeight: 700, letterSpacing: '0.06em',
+                      transition: '.12s', whiteSpace: 'nowrap', textAlign: 'center',
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
+                    }}
+                  >
+                    <span style={{ fontSize: 12, color: isActive ? '#9060D0' : C.text }}>{preset.label}</span>
+                  </button>
+                )
+              })}
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-            {DIFF_PRESETS.map(preset => {
-              const isActive = diffPreset === preset.count
-              return (
-                <button
-                  key={preset.label}
-                  onClick={() => handleDiffPreset(preset.count)}
-                  style={{
-                    background: isActive ? 'rgba(144,96,208,0.22)' : 'transparent',
-                    border: `1px solid ${isActive ? '#9060D0' : C.border}`,
-                    borderRadius: 3, padding: '3px 8px', cursor: 'pointer',
-                    fontFamily: FONT_RAJDHANI, fontWeight: 700, letterSpacing: '0.06em',
-                    transition: '.12s', whiteSpace: 'nowrap', textAlign: 'center',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
-                  }}
-                >
-                  <span style={{ fontSize: 12, color: isActive ? '#9060D0' : C.text }}>{preset.label}</span>
-                </button>
-              )
-            })}
+
+          {/* Positive dice */}
+          <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: 12 }}>
+            {POSITIVE.map(type => (
+              <DiceBtn key={type} type={type} count={pool[type]} onAdd={() => addDie(type)} onRemove={() => removeDie(type)} />
+            ))}
           </div>
-        </div>
 
-        {/* Positive dice */}
-        <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: 12 }}>
-          {POSITIVE.map(type => (
-            <DiceBtn key={type} type={type} count={pool[type]} onAdd={() => addDie(type)} onRemove={() => removeDie(type)} />
-          ))}
-        </div>
+          <div style={{ height: 1, background: C.border, margin: '0 0 12px' }} />
 
-        <div style={{ height: 1, background: C.border, margin: '0 0 12px' }} />
+          {/* Negative dice */}
+          <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: 12 }}>
+            {NEGATIVE.map(type => (
+              <DiceBtn key={type} type={type} count={pool[type]} onAdd={() => addDie(type)} onRemove={() => removeDie(type)} />
+            ))}
+          </div>
 
-        {/* Negative dice */}
-        <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: 12 }}>
-          {NEGATIVE.map(type => (
-            <DiceBtn key={type} type={type} count={pool[type]} onAdd={() => addDie(type)} onRemove={() => removeDie(type)} />
-          ))}
-        </div>
-
-        {/* Roll button */}
-        <button
-          onClick={handleRoll}
-          disabled={isEmpty}
-          style={{
-            width: '100%', padding: '10px 0',
-            background: isEmpty ? C.textFaint : selectedWeapon ? 'linear-gradient(135deg, #E07855, #A04030)' : 'linear-gradient(135deg, #C8AA50, #8E6E2A)',
-            border: 'none', borderRadius: 4, cursor: isEmpty ? 'not-allowed' : 'pointer',
-            fontFamily: FONT_CINZEL, fontSize: 13, fontWeight: 700,
-            letterSpacing: '0.12em', color: isEmpty ? C.textDim : C.bg,
-            transition: '.2s',
-            boxShadow: isEmpty ? 'none' : `0 2px 12px ${selectedWeapon ? '#E0785540' : `${C.gold}40`}`,
-          }}
-        >
-          {isEmpty ? 'ADD DICE TO ROLL' : selectedWeapon ? `ATTACK — ${selectedWeapon.name}` : `ROLL ${poolSize(pool)} DICE`}
-        </button>
-
-        {!isEmpty && (
-          <button onClick={clearPool} style={{
-            width: '100%', marginTop: 6, padding: '5px 0',
-            background: 'transparent', border: `1px solid ${C.border}`,
-            borderRadius: 4, cursor: 'pointer',
-            fontFamily: FONT_RAJDHANI, fontSize: 10, fontWeight: 600,
-            letterSpacing: '0.08em', color: C.textDim, transition: '.15s',
-          }}>
-            Clear Pool
+          {/* Roll button */}
+          <button
+            onClick={handleRoll}
+            disabled={isEmpty}
+            style={{
+              width: '100%', padding: '10px 0',
+              background: isEmpty ? C.textFaint : selectedWeapon ? 'linear-gradient(135deg, #E07855, #A04030)' : 'linear-gradient(135deg, #C8AA50, #8E6E2A)',
+              border: 'none', borderRadius: 4, cursor: isEmpty ? 'not-allowed' : 'pointer',
+              fontFamily: FONT_CINZEL, fontSize: 13, fontWeight: 700,
+              letterSpacing: '0.12em', color: isEmpty ? C.textDim : C.bg,
+              transition: '.2s',
+              boxShadow: isEmpty ? 'none' : `0 2px 12px ${selectedWeapon ? '#E0785540' : `${C.gold}40`}`,
+            }}
+          >
+            {isEmpty ? 'ADD DICE TO ROLL' : selectedWeapon ? `ATTACK — ${selectedWeapon.name}` : `ROLL ${poolSize(pool)} DICE`}
           </button>
-        )}
+
+          {!isEmpty && (
+            <button onClick={clearPool} style={{
+              width: '100%', marginTop: 6, padding: '5px 0',
+              background: 'transparent', border: `1px solid ${C.border}`,
+              borderRadius: 4, cursor: 'pointer',
+              fontFamily: FONT_RAJDHANI, fontSize: 10, fontWeight: 600,
+              letterSpacing: '0.08em', color: C.textDim, transition: '.15s',
+            }}>
+              Clear Pool
+            </button>
+          )}
+        </>)}
       </div>
 
       {/* Symbol Legend */}

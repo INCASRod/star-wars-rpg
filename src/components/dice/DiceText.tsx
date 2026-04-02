@@ -9,10 +9,13 @@ interface DiceTextProps {
   style?: React.CSSProperties
 }
 
+const SYMBOL_FONT = "'Share Tech Mono', 'Courier New', monospace"
+
 /**
- * Renders OggDude markup text as inline React, replacing known dice tags
- * ([BO], [SE], [DI], [CH], etc.) with shape-only DiceFace components.
- * All other [TAG] patterns (formatting, result symbols, unknown) are stripped.
+ * Renders OggDude markup text as inline React:
+ * - Dice tags ([BO], [SE], [DI], [FO], etc.) → DiceFace SVG shapes
+ * - Result symbols ([SU], [AD], [TH], [FA], [TR], [DE]) → coloured Unicode chars
+ * - All other [TAG] patterns (formatting, unknown) are stripped silently
  */
 export function DiceText({ text, className, style }: DiceTextProps) {
   if (!text) return null
@@ -20,10 +23,27 @@ export function DiceText({ text, className, style }: DiceTextProps) {
 
   return (
     <span className={className} style={{ display: 'inline', lineHeight: 'inherit', ...style }}>
-      {segments.map((seg, i) =>
-        seg.type === 'text' ? (
-          <span key={i}>{seg.content}</span>
-        ) : (
+      {segments.map((seg, i) => {
+        if (seg.type === 'text') {
+          return <span key={i}>{seg.content}</span>
+        }
+        if (seg.type === 'symbol') {
+          return (
+            <span key={i} style={{
+              fontFamily: SYMBOL_FONT,
+              color: seg.color,
+              display: 'inline-block',
+              verticalAlign: 'middle',
+              margin: '0 1px',
+              position: 'relative',
+              top: '-1px',
+              fontSize: '0.9em',
+            }}>
+              {seg.content}
+            </span>
+          )
+        }
+        return (
           <DiceFace
             key={i}
             type={seg.diceType}
@@ -38,7 +58,7 @@ export function DiceText({ text, className, style }: DiceTextProps) {
             }}
           />
         )
-      )}
+      })}
     </span>
   )
 }

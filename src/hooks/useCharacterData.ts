@@ -10,7 +10,7 @@ import type {
   RefSkill, RefTalent, RefWeapon, RefArmor, RefGear, RefCriticalInjury, RefSpecialization,
   RefItemDescriptor, RefCareer, RefSpecies,
   RefForcePower, RefForceAbility, CharacterForceAbility,
-  RefWeaponQuality,
+  RefWeaponQuality, RefItemAttachment,
 } from '@/lib/types'
 
 export function useCharacterData(characterId: string) {
@@ -40,6 +40,7 @@ export function useCharacterData(characterId: string) {
   const [refForcePowers, setRefForcePowers] = useState<RefForcePower[]>([])
   const [refForceAbilities, setRefForceAbilities] = useState<RefForceAbility[]>([])
   const [refWeaponQualities, setRefWeaponQualities] = useState<RefWeaponQuality[]>([])
+  const [refItemAttachments, setRefItemAttachments] = useState<RefItemAttachment[]>([])
   const [playerName, setPlayerName] = useState('Player')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -51,7 +52,7 @@ export function useCharacterData(characterId: string) {
     try {
       const [charRes, skillsRes, talentsRes, weaponsRes, armorRes, gearRes, critsRes, specsRes,
         refSkRes, refTalRes, refWpnRes, refArmRes, refGearRes, refCritRes, refSpecRes, refDescRes,
-        refCareerRes, refSpeciesRes, forceAbilRes, refFpRes, refFaRes, refWqRes] = await Promise.all([
+        refCareerRes, refSpeciesRes, forceAbilRes, refFpRes, refFaRes, refWqRes, refAttRes] = await Promise.all([
         supabase.from('characters').select('*').eq('id', characterId).single(),
         supabase.from('character_skills').select('*').eq('character_id', characterId),
         supabase.from('character_talents').select('*').eq('character_id', characterId),
@@ -74,6 +75,7 @@ export function useCharacterData(characterId: string) {
         supabase.from('ref_force_powers').select('*'),
         supabase.from('ref_force_abilities').select('*'),
         supabase.from('ref_weapon_qualities').select('*'),
+        supabase.from('ref_item_attachments').select('*'),
       ])
 
       if (charRes.error) throw new Error(charRes.error.message)
@@ -100,6 +102,7 @@ export function useCharacterData(characterId: string) {
       setRefForcePowers((refFpRes.data as RefForcePower[]) || [])
       setRefForceAbilities((refFaRes.data as RefForceAbility[]) || [])
       setRefWeaponQualities((refWqRes.data as RefWeaponQuality[]) || [])
+      setRefItemAttachments((refAttRes.data as RefItemAttachment[]) || [])
 
       if (charRes.data?.player_id) {
         const { data: p } = await supabase.from('players').select('display_name').eq('id', charRes.data.player_id).single()
@@ -143,13 +146,17 @@ export function useCharacterData(characterId: string) {
   const refForcePowerMap = useMemo(() => Object.fromEntries(refForcePowers.map(fp => [fp.key, fp])), [refForcePowers])
   const refForceAbilityMap = useMemo(() => Object.fromEntries(refForceAbilities.map(fa => [fa.key, fa])), [refForceAbilities])
   const refWeaponQualityMap = useMemo(() => Object.fromEntries(refWeaponQualities.map(q => [q.key, q])), [refWeaponQualities])
+  const refAttachmentMap = useMemo(() => Object.fromEntries(refItemAttachments.map(a => [a.key, a])), [refItemAttachments])
 
-  // ── Derive force rating from FORCERAT talents ──
+  // ── Derive force rating from career, FORCERAT talents, and Force-sensitive specs ──
   const forceRating = useMemo(() => {
-    const careerBase = refCareers.find(c => c.key === character?.career_key)?.force_rating ?? 0
+    const careerBase  = refCareers.find(c => c.key === character?.career_key)?.force_rating ?? 0
     const talentBonus = talents.filter(t => t.talent_key === 'FORCERAT').reduce((sum, t) => sum + (t.ranks || 1), 0)
-    return careerBase + talentBonus
-  }, [talents, refCareers, character?.career_key])
+    // Any Force-sensitive specialisation (e.g. FORCESENSITIVEEMERGENT) grants FR 1 at minimum
+    const hasForceSpec = charSpecs.some(cs => refSpecMap[cs.specialization_key]?.is_force_sensitive)
+    const base = careerBase + talentBonus
+    return hasForceSpec ? Math.max(base, 1) : base
+  }, [talents, refCareers, character?.career_key, charSpecs, refSpecMap])
 
   // ── Apply talent stat modifiers to character (positive or negative delta) ──
   const applyTalentModifiers = (talentKey: string, direction: 1 | -1) => {
@@ -516,6 +523,7 @@ export function useCharacterData(characterId: string) {
     // Ref maps
     refSkillMap, refTalentMap, refWeaponMap, refArmorMap, refGearMap,
     refSpecMap, refDescriptorMap, refForcePowerMap, refForceAbilityMap, refWeaponQualityMap,
+    refAttachmentMap,
     // Derived
     forceRating,
     // Supabase client (for broadcast listener in page)

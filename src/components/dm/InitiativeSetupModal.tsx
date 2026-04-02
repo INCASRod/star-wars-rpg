@@ -148,7 +148,7 @@ export function InitiativeSetupModal({ campaignId, characters, roster, sendToCha
     const ranks     = (a.skillRanks ?? {}) as Record<string, number>
     const skillRank = ranks[skillName] ?? 0
     const { yellow: proficiency, green: ability } = buildDicePool(charVal, skillRank)
-    const result = rollPool({ proficiency, ability, boost: 0, challenge: 0, difficulty: 0, setback: 0 })
+    const result = rollPool({ proficiency, ability, boost: 0, challenge: 0, difficulty: 0, setback: 0, force: 0 })
     const suc = Math.max(0, result.net.success)
     const adv = result.net.advantage
     setNpcResults(prev => ({ ...prev, [a.instanceId]: { successes: suc, advantages: adv } }))

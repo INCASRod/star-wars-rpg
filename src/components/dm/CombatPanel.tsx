@@ -15,6 +15,11 @@ import type { SlotAlignment } from '@/lib/combat'
 import { FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4, FS_H3 } from '@/components/player-hud/design-tokens'
 import { MarkupText } from '@/components/ui/MarkupText'
 import { resolveWeapon, type WeaponRef } from '@/lib/resolve-weapon'
+import { CombatCheckOverlay } from '@/components/combat-check/CombatCheckOverlay'
+import { adaptAdversaryForCombatCheck, charactersToAdversaryStubs } from '@/lib/adversaryAdapter'
+import { logRoll, type RollMeta } from '@/lib/logRoll'
+import type { RollResult } from '@/components/player-hud/dice-engine'
+import { applyDamageToAdversary } from '@/lib/damageEngine'
 
 // ── Design Tokens ──
 const BG = '#060D09'
@@ -94,6 +99,128 @@ function StatBox({ label, value, color = GOLD }: { label: string; value: string 
   )
 }
 
+// ── Unified wound tracker used on every adversary/NPC slot ───────────────────
+function AdversaryWoundTracker({
+  adv, accentColor, onAdjust,
+}: {
+  adv: import('@/lib/adversaries').AdversaryInstance
+  accentColor: string
+  onAdjust: (delta: number) => void
+}) {
+  const wounds    = adv.woundsCurrent ?? 0
+  const isMinion  = adv.type === 'minion'
+  const maxWounds = isMinion ? adv.woundThreshold * adv.groupSize : adv.woundThreshold
+  const pct       = maxWounds > 0 ? Math.min(1, wounds / maxWounds) : 0
+
+  const barColor  = pct >= 1   ? '#9C27B0'
+                  : pct >= 0.8 ? '#f44336'
+                  : pct >= 0.5 ? '#FF9800'
+                  : accentColor
+
+  const groupAlive = isMinion
+    ? Math.min(adv.groupSize, Math.max(0, adv.groupSize - Math.floor(wounds / adv.woundThreshold)))
+    : null
+  const skillRank = groupAlive !== null ? Math.max(0, groupAlive - 1) : null
+
+  return (
+    <div>
+      {/* Bar */}
+      <div style={{ height: 8, background: 'rgba(255,255,255,0.06)', borderRadius: 4, overflow: 'hidden' }}>
+        <div style={{
+          width: `${pct * 100}%`, height: '100%', background: barColor,
+          borderRadius: 4, transition: 'width 300ms ease',
+          animation: pct >= 1 ? 'pulse-dot 1.4s ease-in-out infinite' : 'none',
+        }} />
+      </div>
+      {/* x / y label */}
+      <div style={{
+        fontFamily: "'Share Tech Mono','Courier New',monospace",
+        fontSize: 'clamp(0.65rem,1vw,0.78rem)', color: 'rgba(232,223,200,0.5)',
+        textAlign: 'right', marginTop: 2,
+      }}>
+        {wounds} / {maxWounds}
+      </div>
+      {/* Controls */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+        <button
+          onClick={() => onAdjust(-1)}
+          disabled={wounds === 0}
+          style={{
+            width: 40, height: 32, borderRadius: 6,
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            cursor: wounds === 0 ? 'not-allowed' : 'pointer',
+            fontFamily: "'Share Tech Mono',monospace", fontSize: 18, lineHeight: 1,
+            color: wounds === 0 ? 'rgba(232,223,200,0.2)' : 'rgba(232,223,200,0.8)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'border-color .12s',
+          }}
+          onMouseEnter={e => { if (wounds > 0) (e.currentTarget as HTMLElement).style.borderColor = `${accentColor}66` }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.12)' }}
+        >−</button>
+        <span style={{
+          flex: 1, textAlign: 'center',
+          fontFamily: "'Share Tech Mono','Courier New',monospace",
+          fontSize: 'clamp(0.75rem,1.2vw,0.88rem)', color: 'rgba(232,223,200,0.8)',
+        }}>
+          {wounds} wound{wounds !== 1 ? 's' : ''}
+        </span>
+        <button
+          onClick={() => onAdjust(1)}
+          style={{
+            width: 40, height: 32, borderRadius: 6,
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            cursor: 'pointer',
+            fontFamily: "'Share Tech Mono',monospace", fontSize: 18, lineHeight: 1,
+            color: 'rgba(232,223,200,0.8)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'border-color .12s',
+          }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${accentColor}66` }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.12)' }}
+        >+</button>
+      </div>
+      {/* Minion count — only for minion groups */}
+      {isMinion && groupAlive !== null && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginTop: 5 }}>
+          {Array.from({ length: adv.groupSize }).map((_, i) => (
+            <span key={i} style={{
+              fontSize: 'clamp(0.6rem,0.9vw,0.7rem)',
+              color: i < groupAlive ? barColor : 'rgba(255,255,255,0.15)',
+            }}>
+              {i < groupAlive ? '■' : '□'}
+            </span>
+          ))}
+          <span style={{
+            fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED, marginLeft: 4,
+          }}>
+            {groupAlive}/{adv.groupSize} · rank {skillRank}
+          </span>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Pending damage row (from DB) ─────────────────────────────────────────────
+interface PendingDamage {
+  id:                  string
+  campaign_id:         string
+  encounter_id:        string | null
+  target_instance_id:  string | null
+  target_name:         string
+  attacker_name:       string
+  raw_damage:          number
+  soak_value:          number
+  net_damage:          number
+  status:              'pending' | 'applied' | 'modified' | 'dismissed'
+  weapon_name:         string | null
+  attack_type:         string | null
+  range_band:          string | null
+  created_at:          string
+}
+
 // ── Combat participant row (from DB) ──────────────────────────────────────────
 interface CombatParticipantRow {
   id: string
@@ -136,6 +263,18 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
 
   // combat_participants rows keyed by character_id
   const [combatParticipants, setCombatParticipants] = useState<Record<string, CombatParticipantRow>>({})
+
+  // Pending damage + defeat notification
+  const [pendingDamages, setPendingDamages] = useState<PendingDamage[]>([])
+  const [editedDamages, setEditedDamages]   = useState<Record<string, number>>({})
+  const [defeatNotif, setDefeatNotif]       = useState<{ message: string; persistent: boolean } | null>(null)
+
+  // GM adversary combat check overlay
+  const [advCombatCheck, setAdvCombatCheck] = useState<{
+    adv:        AdversaryInstance
+    attackType: 'ranged' | 'melee' | null
+    alignment:  string
+  } | null>(null)
 
   // Weapon reference lookup: name (lowercase) → stats
   const [weaponRef, setWeaponRef] = useState<Record<string, WeaponRef>>({})
@@ -226,6 +365,37 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
         if (payload.new) {
           const r = payload.new as CombatParticipantRow
           setCombatParticipants(prev => ({ ...prev, [r.character_id]: r }))
+        }
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(ch) }
+  }, [campaignId]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Pending damage: initial load + realtime subscription
+  useEffect(() => {
+    if (!campaignId) return
+    supabase
+      .from('pending_damage')
+      .select('*')
+      .eq('campaign_id', campaignId)
+      .eq('status', 'pending')
+      .order('created_at')
+      .then(({ data }) => { if (data) setPendingDamages(data as PendingDamage[]) })
+
+    const ch = supabase
+      .channel(`pending-damage-${campaignId}`)
+      .on('postgres_changes', {
+        event: 'INSERT', schema: 'public', table: 'pending_damage',
+        filter: `campaign_id=eq.${campaignId}`,
+      }, payload => {
+        setPendingDamages(prev => [...prev, payload.new as PendingDamage])
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE', schema: 'public', table: 'pending_damage',
+        filter: `campaign_id=eq.${campaignId}`,
+      }, payload => {
+        if (payload.new.status !== 'pending') {
+          setPendingDamages(prev => prev.filter(d => d.id !== payload.new.id))
         }
       })
       .subscribe()
@@ -392,6 +562,44 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
     await saveEncounter({ adversaries: updated })
   }
 
+  // Manual wound adjustment from +/− controls — handles both minion groups and rivals/nemeses
+  const adjustAdversaryWounds = async (adv: AdversaryInstance, delta: number) => {
+    if (!encounter) return
+    const currentWounds = adv.woundsCurrent ?? 0
+    // Clamp heal so wounds never go below zero
+    const clampedDelta = delta < 0 ? Math.max(delta, -currentWounds) : delta
+    if (clampedDelta === 0 && delta < 0) return
+
+    const wasDefeated = adv.type === 'minion'
+      ? adv.groupRemaining === 0
+      : currentWounds >= adv.woundThreshold
+
+    const result = applyDamageToAdversary({
+      type:           adv.type,
+      name:           adv.name,
+      woundThreshold: adv.woundThreshold,
+      groupSize:      adv.groupSize,
+      groupRemaining: adv.groupRemaining,
+      woundsCurrent:  currentWounds,
+    }, clampedDelta)
+
+    const updatedAdversaries = encounter.adversaries.map(a =>
+      a.instanceId !== adv.instanceId ? a
+        : { ...a, woundsCurrent: Math.max(0, result.woundsCurrent), groupRemaining: result.groupRemaining }
+    )
+    await saveEncounter({ adversaries: updatedAdversaries })
+
+    if (!wasDefeated && result.isDefeated && encounter.id) {
+      const msg = result.defeatMessage ?? `${adv.name} — DEFEATED`
+      setDefeatNotif({ message: msg, persistent: true })
+      await supabase.from('combat_log').insert({
+        campaign_id: campaignId, encounter_id: encounter.id,
+        participant_name: 'SYSTEM', alignment: 'system', roll_type: 'system',
+        result_summary: msg, is_visible_to_players: true,
+      })
+    }
+  }
+
   // Update individual minion wound within a group
   const updateMinionWound = async (instanceId: string, minionIdx: number, delta: number) => {
     if (!encounter) return
@@ -404,6 +612,62 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
       return { ...a, minionWounds: wounds, groupRemaining: alive }
     })
     await saveEncounter({ adversaries: updated })
+  }
+
+  // Apply pending damage to target adversary
+  const applyPendingDamage = async (pd: PendingDamage, damageAmount: number) => {
+    if (!encounter) return
+    const targetAdv = pd.target_instance_id
+      ? encounter.adversaries.find((a: AdversaryInstance) => a.instanceId === pd.target_instance_id)
+      : null
+
+    if (targetAdv) {
+      const result = applyDamageToAdversary({
+        type:           targetAdv.type,
+        name:           targetAdv.name,
+        woundThreshold: targetAdv.woundThreshold,
+        groupSize:      targetAdv.groupSize,
+        groupRemaining: targetAdv.groupRemaining,
+        woundsCurrent:  targetAdv.woundsCurrent ?? 0,
+      }, damageAmount)
+
+      const updatedAdversaries = encounter.adversaries.map((a: AdversaryInstance) =>
+        a.instanceId === pd.target_instance_id
+          ? { ...a, woundsCurrent: result.woundsCurrent, groupRemaining: result.groupRemaining }
+          : a
+      )
+      await saveEncounter({ adversaries: updatedAdversaries })
+
+      if (result.defeatMessage) {
+        setDefeatNotif({ message: result.defeatMessage, persistent: result.isDefeated })
+        if (!result.isDefeated) {
+          setTimeout(() => setDefeatNotif(null), 4000)
+        }
+        if (encounter.id) {
+          await supabase.from('combat_log').insert({
+            campaign_id: campaignId, encounter_id: encounter.id,
+            participant_name: 'SYSTEM', alignment: 'system', roll_type: 'system',
+            result_summary: result.defeatMessage, is_visible_to_players: true,
+          })
+        }
+      }
+    }
+
+    const isModified = damageAmount !== pd.net_damage
+    await supabase.from('pending_damage').update({
+      status:         isModified ? 'modified' : 'applied',
+      applied_damage: damageAmount,
+      resolved_at:    new Date().toISOString(),
+    }).eq('id', pd.id)
+    setEditedDamages(prev => { const next = { ...prev }; delete next[pd.id]; return next })
+  }
+
+  // Dismiss pending damage (no effect applied)
+  const dismissPendingDamage = async (id: string) => {
+    await supabase.from('pending_damage').update({
+      status: 'dismissed', resolved_at: new Date().toISOString(),
+    }).eq('id', id)
+    setEditedDamages(prev => { const next = { ...prev }; delete next[id]; return next })
   }
 
   // Toggle NPC slot alignment (enemy ↔ allied_npc)
@@ -671,6 +935,33 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
       {/* ══════════ CENTER: INITIATIVE TRACKER ══════════ */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative', zIndex: 1 }}>
 
+        {/* Defeat notification banner */}
+        {defeatNotif && (
+          <div style={{
+            position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)',
+            zIndex: 300, minWidth: 260, maxWidth: 420,
+            background: 'rgba(224,82,82,0.12)', border: '1px solid rgba(224,82,82,0.4)',
+            borderRadius: 8, padding: '10px 16px',
+            display: 'flex', alignItems: 'center', gap: 10,
+            animation: 'fadeSlideIn 200ms ease-out',
+          }}>
+            <span style={{ fontSize: 'clamp(0.9rem,1.4vw,1.1rem)' }}>☠</span>
+            <span style={{
+              fontFamily: "'Cinzel','serif'", fontSize: 'clamp(0.82rem,1.3vw,0.95rem)',
+              fontWeight: 700, color: '#e05252', flex: 1,
+            }}>{defeatNotif.message}</span>
+            {defeatNotif.persistent && (
+              <button
+                onClick={() => setDefeatNotif(null)}
+                style={{
+                  background: 'transparent', border: 'none', cursor: 'pointer',
+                  color: 'rgba(224,82,82,0.6)', fontSize: 'clamp(0.8rem,1.2vw,0.9rem)', padding: '0 2px',
+                }}
+              >✕</button>
+            )}
+          </div>
+        )}
+
         {/* Round bar */}
         <div style={{
           flexShrink: 0, background: RAISED_BG, borderBottom: `1px solid ${BORDER}`,
@@ -742,6 +1033,137 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
             </div>
           )}
         </div>
+
+        {/* ── Pending Damage Panel ── */}
+        {isDm && pendingDamages.length > 0 && (
+          <div style={{
+            flexShrink: 0, padding: '10px 14px',
+            borderBottom: `1px solid rgba(224,82,82,0.25)`,
+            display: 'flex', flexDirection: 'column', gap: 8,
+            background: 'rgba(224,82,82,0.04)',
+          }}>
+            <div style={{
+              fontFamily: "'Cinzel','serif'", fontSize: 'clamp(0.72rem,1.1vw,0.82rem)',
+              fontWeight: 700, color: '#e05252', textTransform: 'uppercase',
+              letterSpacing: '0.15em', display: 'flex', alignItems: 'center', gap: 6,
+            }}>
+              ⚔ Pending Damage
+              <span style={{
+                fontFamily: "'Share Tech Mono','monospace'", fontSize: 'clamp(0.6rem,0.9vw,0.7rem)',
+                background: 'rgba(224,82,82,0.15)', border: '1px solid rgba(224,82,82,0.3)',
+                borderRadius: 3, padding: '1px 5px', color: '#e05252',
+              }}>{pendingDamages.length}</span>
+            </div>
+
+            {pendingDamages.map(pd => {
+              const editedVal = editedDamages[pd.id] ?? pd.net_damage
+              const setEdited = (v: number) => setEditedDamages(prev => ({ ...prev, [pd.id]: Math.max(0, v) }))
+
+              return (
+                <div key={pd.id} style={{
+                  background: 'rgba(224,82,82,0.06)', border: '1px solid rgba(224,82,82,0.3)',
+                  borderRadius: 10, padding: '10px 12px',
+                }}>
+                  {/* Attacker → Target */}
+                  <div style={{
+                    fontFamily: "'Cinzel','serif'", fontSize: 'clamp(0.85rem,1.3vw,1rem)',
+                    color: '#C8AA50', marginBottom: 2,
+                  }}>
+                    {pd.attacker_name} → {pd.target_name}
+                  </div>
+                  {/* Weapon/attack line */}
+                  {pd.weapon_name && (
+                    <div style={{
+                      fontFamily: "'Rajdhani',sans-serif", fontSize: 'clamp(0.75rem,1.2vw,0.88rem)',
+                      color: 'rgba(232,223,200,0.6)', fontStyle: 'italic', marginBottom: 8,
+                    }}>
+                      {pd.weapon_name}
+                      {pd.attack_type && ` (${pd.attack_type.charAt(0).toUpperCase() + pd.attack_type.slice(1)})`}
+                      {pd.range_band && ` · ${pd.range_band.charAt(0).toUpperCase() + pd.range_band.slice(1)}`}
+                    </div>
+                  )}
+                  {/* Damage breakdown */}
+                  <div style={{ fontFamily: "'Share Tech Mono','monospace'", marginBottom: 10 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'clamp(0.78rem,1.2vw,0.92rem)', marginBottom: 2 }}>
+                      <span style={{ color: 'rgba(232,223,200,0.8)' }}>Raw damage</span>
+                      <span style={{ color: 'rgba(232,223,200,0.8)' }}>{pd.raw_damage}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'clamp(0.78rem,1.2vw,0.92rem)', marginBottom: 4 }}>
+                      <span style={{ color: 'rgba(126,200,227,0.7)' }}>Soak</span>
+                      <span style={{ color: 'rgba(126,200,227,0.7)' }}>− {pd.soak_value}</span>
+                    </div>
+                    <div style={{
+                      display: 'flex', justifyContent: 'space-between',
+                      fontSize: 'clamp(0.9rem,1.35vw,1.05rem)', fontWeight: 700,
+                      borderTop: '1px solid rgba(200,170,80,0.15)', paddingTop: 3,
+                    }}>
+                      <span style={{ color: '#C8AA50' }}>Net damage</span>
+                      <span style={{ color: '#C8AA50' }}>{pd.net_damage}</span>
+                    </div>
+                  </div>
+                  {/* Editable apply value */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <span style={{
+                      fontFamily: "'Rajdhani',sans-serif", fontSize: 'clamp(0.72rem,1.1vw,0.82rem)',
+                      color: 'rgba(232,223,200,0.6)',
+                    }}>Apply:</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <button
+                        onClick={() => setEdited(editedVal - 1)}
+                        disabled={editedVal <= 0}
+                        style={{
+                          width: 22, height: 22, borderRadius: 4,
+                          cursor: editedVal <= 0 ? 'not-allowed' : 'pointer',
+                          background: 'transparent', border: '1px solid rgba(200,170,80,0.3)',
+                          fontFamily: "'Share Tech Mono',monospace", fontSize: 14,
+                          color: editedVal <= 0 ? 'rgba(200,170,80,0.2)' : 'rgba(200,170,80,0.7)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}
+                      >−</button>
+                      <span style={{
+                        fontFamily: "'Share Tech Mono',monospace",
+                        fontSize: 'clamp(0.9rem,1.35vw,1.05rem)', fontWeight: 700,
+                        color: '#C8AA50', minWidth: 28, textAlign: 'center',
+                      }}>{editedVal}</span>
+                      <button
+                        onClick={() => setEdited(editedVal + 1)}
+                        style={{
+                          width: 22, height: 22, borderRadius: 4, cursor: 'pointer',
+                          background: 'rgba(200,170,80,0.1)', border: '1px solid rgba(200,170,80,0.3)',
+                          fontFamily: "'Share Tech Mono',monospace", fontSize: 14, color: '#C8AA50',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}
+                      >+</button>
+                    </div>
+                  </div>
+                  {/* Action buttons */}
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <button
+                      onClick={() => void dismissPendingDamage(pd.id)}
+                      style={{
+                        flex: 1, padding: '7px 0',
+                        background: 'transparent', border: '1px solid rgba(232,223,200,0.15)',
+                        borderRadius: 6, cursor: 'pointer',
+                        fontFamily: "'Cinzel','serif'", fontSize: 'clamp(0.72rem,1.1vw,0.82rem)',
+                        color: 'rgba(232,223,200,0.5)',
+                      }}
+                    >✗ Dismiss</button>
+                    <button
+                      onClick={() => void applyPendingDamage(pd, editedVal)}
+                      style={{
+                        flex: 2, padding: '7px 0',
+                        background: 'rgba(224,82,82,0.15)', border: '1px solid rgba(224,82,82,0.5)',
+                        borderRadius: 6, cursor: 'pointer',
+                        fontFamily: "'Cinzel','serif'", fontSize: 'clamp(0.72rem,1.1vw,0.82rem)',
+                        fontWeight: 700, color: '#e05252',
+                      }}
+                    >✓ Apply Damage</button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
 
         {/* Slot list */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -1003,99 +1425,44 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                     </div>
                   )}
 
-                  {/* Row 3: minion wound chips (only for minions — inline per-unit trackers) */}
-                  {isNPC && assignedAdv && isMinion && (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, marginTop: 5 }}>
-                      {Array.from({ length: assignedAdv.groupSize }).map((_, mi) => {
-                        const mw = (assignedAdv.minionWounds ?? [])[mi] ?? 0
-                        const isDead = mw >= assignedAdv.woundThreshold
-                        return (
-                          <div key={mi} style={{
-                            background: isDead ? `${CHAR_BR}20` : RAISED_BG,
-                            border: `1px solid ${isDead ? `${CHAR_BR}50` : BORDER}`,
-                            borderRadius: 3, padding: '2px 5px',
-                            display: 'flex', alignItems: 'center', gap: 2,
-                            opacity: isDead ? 0.65 : 1,
-                          }}>
-                            <span style={{ fontFamily: FM, fontSize: FS_LABEL, color: isDead ? CHAR_BR : TEXT_MUTED }}>#{mi + 1}</span>
-                            {isDead ? (
-                              <span style={{ fontFamily: FC, fontSize: FS_LABEL, color: CHAR_BR }}>☠</span>
-                            ) : (
-                              <>
-                                <button onClick={() => updateMinionWound(assignedAdv.instanceId, mi, -1)} style={{ ...smallCtrlBtn, width: 13, height: 13, fontSize: 8 }}>−</button>
-                                <span style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, color: mw > 0 ? CHAR_BR : TEXT_SEC, minWidth: 22, textAlign: 'center' }}>
-                                  {mw}/{assignedAdv.woundThreshold}
-                                </span>
-                                <button onClick={() => updateMinionWound(assignedAdv.instanceId, mi, 1)} style={{ ...smallCtrlBtn, width: 13, height: 13, fontSize: 8 }}>+</button>
-                              </>
-                            )}
-                          </div>
-                        )
-                      })}
+                  {/* Row 3: unified wound tracker for all NPC types */}
+                  {isNPC && assignedAdv && (
+                    <div style={{ marginTop: 6 }}>
+                      <AdversaryWoundTracker
+                        adv={assignedAdv}
+                        accentColor={accentColor}
+                        onAdjust={delta => { void adjustAdversaryWounds(assignedAdv, delta) }}
+                      />
                     </div>
                   )}
                 </div>
 
-                {/* ── Col 3: Wound block (non-minions only) ── */}
-                {!isMinion && (
+                {/* ── Col 3: PC wound block only (NPCs use AdversaryWoundTracker in Col 2) ── */}
+                {!isNPC && pcWT > 0 && (
                   <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
-                    {/* PC: crit state or tracker */}
-                    {!isNPC && pcWT > 0 && (
-                      pcCrit ? (
-                        <div style={{
-                          display: 'flex', alignItems: 'center', gap: 4,
-                          background: `${CHAR_BR}20`, border: `1px solid ${CHAR_BR}70`,
-                          borderRadius: 4, padding: '3px 7px',
+                    {pcCrit ? (
+                      <div style={{
+                        display: 'flex', alignItems: 'center', gap: 4,
+                        background: `${CHAR_BR}20`, border: `1px solid ${CHAR_BR}70`,
+                        borderRadius: 4, padding: '3px 7px',
+                      }}>
+                        <span style={{ fontSize: 12 }}>⚡</span>
+                        <span style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, color: CHAR_BR, letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>CRIT — D100</span>
+                      </div>
+                    ) : (
+                      <>
+                        <button onClick={() => updatePCWound(slot.id, -1)} style={smallCtrlBtn}>−</button>
+                        <span style={{
+                          fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700,
+                          color: pcWounds > 0 ? CHAR_BR : TEXT_MUTED,
+                          minWidth: 34, textAlign: 'center',
+                          background: `${CHAR_BR}10`, border: `1px solid ${CHAR_BR}30`,
+                          borderRadius: 3, padding: '2px 4px',
                         }}>
-                          <span style={{ fontSize: 12 }}>⚡</span>
-                          <span style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, color: CHAR_BR, letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>CRIT — D100</span>
-                        </div>
-                      ) : (
-                        <>
-                          <button onClick={() => updatePCWound(slot.id, -1)} style={smallCtrlBtn}>−</button>
-                          <span style={{
-                            fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700,
-                            color: pcWounds > 0 ? CHAR_BR : TEXT_MUTED,
-                            minWidth: 34, textAlign: 'center',
-                            background: `${CHAR_BR}10`, border: `1px solid ${CHAR_BR}30`,
-                            borderRadius: 3, padding: '2px 4px',
-                          }}>
-                            {pcWounds}/{pcWT}
-                          </span>
-                          <button onClick={() => updatePCWound(slot.id, 1)} style={smallCtrlBtn}>+</button>
-                        </>
-                      )
-                    )}
-                    {/* NPC rival/nemesis: killed state or tracker */}
-                    {isNPC && assignedAdv && (
-                      isKilledNPC ? (
-                        <div style={{
-                          display: 'flex', alignItems: 'center', gap: 4,
-                          background: `${CHAR_BR}20`, border: `1px solid ${CHAR_BR}70`,
-                          borderRadius: 4, padding: '3px 7px',
-                        }}>
-                          <span style={{ fontSize: 11 }}>☠</span>
-                          <span style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, color: CHAR_BR, letterSpacing: '0.06em' }}>KILLED</span>
-                          <button
-                            onClick={() => updateNPCWound(assignedAdv.instanceId, -(assignedAdv.woundsCurrent ?? 0))}
-                            style={{ ...smallCtrlBtn, fontSize: 9 }} title="Reset"
-                          >↺</button>
-                        </div>
-                      ) : (
-                        <>
-                          <button onClick={() => updateNPCWound(assignedAdv.instanceId, -1)} style={smallCtrlBtn}>−</button>
-                          <span style={{
-                            fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 700,
-                            color: (assignedAdv.woundsCurrent ?? 0) > 0 ? CHAR_BR : TEXT_MUTED,
-                            minWidth: 34, textAlign: 'center',
-                            background: `${CHAR_BR}10`, border: `1px solid ${CHAR_BR}30`,
-                            borderRadius: 3, padding: '2px 4px',
-                          }}>
-                            {assignedAdv.woundsCurrent ?? 0}/{assignedAdv.woundThreshold}
-                          </span>
-                          <button onClick={() => updateNPCWound(assignedAdv.instanceId, 1)} style={smallCtrlBtn}>+</button>
-                        </>
-                      )
+                          {pcWounds}/{pcWT}
+                        </span>
+                        <button onClick={() => updatePCWound(slot.id, 1)} style={smallCtrlBtn}>+</button>
+                      </>
                     )}
                   </div>
                 )}
@@ -1206,35 +1573,72 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
             cunning: CHAR_CUN, willpower: CHAR_WIL, presence: CHAR_PR,
           }
 
+          const advSlot = encounter?.initiative_slots?.find((s: import('@/lib/combat').InitiativeSlot) => s.adversaryInstanceId === adv.instanceId)
+          const advAlignment = advSlot?.alignment ?? 'enemy'
+          const advAccent = advAlignment === 'allied_npc' ? ALLIED_GREEN : CHAR_BR
+
+          // Wound / defeat state for the card
+          const groupTotal   = adv.type === 'minion' ? adv.woundThreshold * adv.groupSize : adv.woundThreshold
+          const groupWounds  = adv.woundsCurrent ?? 0
+          const woundPct     = groupTotal > 0 ? Math.min(1, groupWounds / groupTotal) : 0
+          const isDefeatedAdv = groupWounds >= groupTotal && groupTotal > 0
+          const groupAliveAdv = adv.type === 'minion'
+            ? Math.max(0, adv.groupSize - Math.floor(groupWounds / adv.woundThreshold))
+            : null
+
           return (
             <div key={adv.instanceId} style={{
-              background: PANEL_BG,
+              background: isDefeatedAdv ? 'rgba(232,223,200,0.02)' : PANEL_BG,
               backdropFilter: 'blur(12px)',
               WebkitBackdropFilter: 'blur(12px)',
               borderRadius: 6,
               position: 'relative',
-              borderTop: `2px solid ${CHAR_BR}80`,
+              borderTop: `2px solid ${isDefeatedAdv ? 'rgba(232,223,200,0.1)' : `${advAccent}80`}`,
               borderRight: `1px solid ${BORDER}`,
               borderBottom: `1px solid ${BORDER}`,
               borderLeft: `1px solid ${BORDER}`,
+              opacity: isDefeatedAdv ? 0.45 : 1,
+              transition: 'opacity 400ms',
             }}>
-              {/* Header */}
+              {/* Header — click to expand/collapse */}
               <div
-                style={{ padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}
+                style={{ padding: '10px 12px 8px', display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}
                 onClick={toggleOpen}
               >
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                    <span style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: TEXT }}>{adv.name}</span>
-                    <TypeBadge type={adv.type} />
-                    {adv.type === 'minion' && (
-                      <span style={{ fontFamily: FM, fontSize: FS_CAPTION, color: CHAR_BR }}>
-                        {adv.groupRemaining}/{adv.groupSize}
-                      </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{
+                      fontFamily: FC, fontSize: FS_SM, fontWeight: 700,
+                      color: TEXT, textDecoration: isDefeatedAdv ? 'line-through' : 'none',
+                    }}>{adv.name}</span>
+                    {isDefeatedAdv ? (
+                      <span style={{
+                        fontFamily: FM, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.1em',
+                        color: 'rgba(232,223,200,0.25)', border: '1px solid rgba(232,223,200,0.15)',
+                        borderRadius: 3, padding: '1px 5px', background: 'rgba(232,223,200,0.05)',
+                      }}>DEFEATED</span>
+                    ) : (
+                      <TypeBadge type={adv.type} />
+                    )}
+                    {adv.type === 'minion' && !isDefeatedAdv && (
+                      <span style={{
+                        fontFamily: FM, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.1em',
+                        color: advAccent, border: `1px solid ${advAccent}50`,
+                        borderRadius: 3, padding: '1px 5px', background: `${advAccent}10`,
+                      }}>MINION GROUP</span>
                     )}
                   </div>
                 </div>
                 <span style={{ color: TEXT_MUTED, fontSize: FS_SM }}>{isOpen ? '▲' : '▼'}</span>
+              </div>
+
+              {/* Wound tracker — always visible, outside click area */}
+              <div style={{ padding: '0 12px 10px' }}>
+                <AdversaryWoundTracker
+                  adv={adv}
+                  accentColor={advAccent}
+                  onAdjust={delta => { void adjustAdversaryWounds(adv, delta) }}
+                />
               </div>
 
               {/* Body */}
@@ -1271,16 +1675,6 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                       </div>
                     ))}
                   </div>
-
-                  {/* Minion group counter */}
-                  {adv.type === 'minion' && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                      <span style={{ fontFamily: FM, fontSize: FS_LABEL, color: TEXT_MUTED }}>Group remaining:</span>
-                      <button onClick={() => updateGroupRemaining(adv.instanceId, -1)} style={smallCtrlBtn}>−</button>
-                      <span style={{ fontFamily: FC, fontSize: FS_SM, color: CHAR_BR, fontWeight: 700, minWidth: 20, textAlign: 'center' }}>{adv.groupRemaining}</span>
-                      <button onClick={() => updateGroupRemaining(adv.instanceId, 1)} style={smallCtrlBtn}>+</button>
-                    </div>
-                  )}
 
                   {/* Skills table */}
                   {Object.keys(adv.skillRanks ?? {}).length > 0 && (
@@ -1427,6 +1821,46 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                   </label>
                 </div>
               )}
+
+              {/* Combat check buttons — always visible when card is open */}
+              {isOpen && adv.weapons && adv.weapons.length > 0 && (() => {
+                const slot = encounter?.initiative_slots?.find((s: import('@/lib/combat').InitiativeSlot) => s.adversaryInstanceId === adv.instanceId)
+                const alignment = slot?.alignment ?? 'enemy'
+                const accentColor = alignment === 'allied_npc' ? ALLIED_GREEN : CHAR_BR
+                return (
+                  <div style={{
+                    borderTop: `1px solid ${BORDER}`, padding: '7px 12px',
+                    display: 'flex', gap: 6,
+                  }}>
+                    <button
+                      onClick={() => setAdvCombatCheck({ adv, attackType: 'melee', alignment })}
+                      style={{
+                        flex: 1, padding: '5px 0',
+                        background: `${accentColor}15`,
+                        border: `1px solid ${accentColor}50`,
+                        borderRadius: 4, cursor: 'pointer',
+                        fontFamily: FM, fontSize: FS_LABEL, fontWeight: 600,
+                        color: accentColor, letterSpacing: '0.05em',
+                      }}
+                    >
+                      ⚔ Melee
+                    </button>
+                    <button
+                      onClick={() => setAdvCombatCheck({ adv, attackType: 'ranged', alignment })}
+                      style={{
+                        flex: 1, padding: '5px 0',
+                        background: `${accentColor}15`,
+                        border: `1px solid ${accentColor}50`,
+                        borderRadius: 4, cursor: 'pointer',
+                        fontFamily: FM, fontSize: FS_LABEL, fontWeight: 600,
+                        color: accentColor, letterSpacing: '0.05em',
+                      }}
+                    >
+                      ⊕ Ranged
+                    </button>
+                  </div>
+                )
+              })()}
             </div>
           )
         })}
@@ -1490,7 +1924,8 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
           library={library}
           encounter={encounter}
           groupSizes={groupSizes}
-          onAdd={(adv, alignment, successes, advantages) => {
+          onAdd={(adv, alignment, successes, advantages, groupSize) => {
+            if (groupSize !== undefined) setGroupSizes(prev => ({ ...prev, [adv.id]: groupSize }))
             if (encounter) {
               void addToActiveCombat(adv, alignment, successes, advantages)
             } else {
@@ -1501,11 +1936,64 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
         />
       )}
 
+      {/* GM Adversary Combat Check Overlay */}
+      {advCombatCheck && (() => {
+        const { adv, attackType, alignment } = advCombatCheck
+        const adapted = adaptAdversaryForCombatCheck(adv, campaignId)
+        // Build targets: PCs + allied NPCs (excluding this adversary)
+        const pcStubs = charactersToAdversaryStubs(characters)
+        const alliedStubs = (encounter?.adversaries ?? [])
+          .filter((a: AdversaryInstance) => {
+            const s = encounter?.initiative_slots?.find((sl: import('@/lib/combat').InitiativeSlot) => sl.adversaryInstanceId === a.instanceId)
+            return s?.alignment === 'allied_npc' && a.instanceId !== adv.instanceId
+          })
+        const gmTargets: AdversaryInstance[] = [...pcStubs, ...alliedStubs]
+
+        function handleAdvRoll(result: RollResult, label?: string, pool?: Record<string, number>, meta?: RollMeta) {
+          logRoll({
+            campaignId,
+            characterId: null,
+            characterName: adv.name,
+            label,
+            pool: (pool ?? {}) as Parameters<typeof logRoll>[0]['pool'],
+            result,
+            isDM: true,
+            hidden: false,
+            meta: { ...meta, alignment },
+          })
+        }
+
+        return (
+          <CombatCheckOverlay
+            open={true}
+            initialAttackType={attackType}
+            onClose={() => setAdvCombatCheck(null)}
+            character={adapted.character}
+            weapons={adapted.charWeapons}
+            charSkills={adapted.charSkills}
+            refWeaponMap={adapted.refWeaponMap}
+            refSkillMap={adapted.refSkillMap}
+            refWeaponQualityMap={{}}
+            skillModifiers={{}}
+            campaignId={campaignId}
+            characterId={adv.instanceId}
+            onRoll={handleAdvRoll}
+            isGmMode={true}
+            gmTargets={gmTargets}
+            gmAlignment={alignment}
+          />
+        )
+      })()}
+
       {/* CSS Animations */}
       <style>{`
         @keyframes pulse-dot {
           0%, 100% { opacity: 1; transform: scale(1); }
           50% { opacity: 0.5; transform: scale(0.85); }
+        }
+        @keyframes fadeSlideIn {
+          from { opacity: 0; transform: translate(-50%, -8px); }
+          to   { opacity: 1; transform: translate(-50%, 0); }
         }
       `}</style>
     </div>

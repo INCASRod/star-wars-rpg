@@ -9,6 +9,7 @@ export const DICE_COLORS: Record<DiceType, string> = {
   challenge:   '#C62828',
   difficulty:  '#7B1FA2',
   setback:     '#455A64',
+  force:       '#FFFFFF',
 }
 
 // Rounded octagon for Proficiency / Challenge (physical d12 shape)
@@ -38,7 +39,7 @@ export function DiceFace({ type, size = 32, active = true, dimmed = false, style
 
   let shape: React.ReactNode
 
-  if (type === 'proficiency' || type === 'challenge') {
+  if (type === 'proficiency' || type === 'challenge' || type === 'force') {
     shape = <path d={OCTAGON_PATH} fill={fill} stroke={stroke} strokeWidth={sw} />
   } else if (type === 'ability' || type === 'difficulty') {
     shape = (

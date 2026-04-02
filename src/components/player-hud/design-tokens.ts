@@ -51,7 +51,7 @@ export const CHAR_REF_MAP: Record<string, CharKey> = {
   PR: 'presence',
 }
 
-export type DiceType = 'proficiency' | 'ability' | 'boost' | 'challenge' | 'difficulty' | 'setback'
+export type DiceType = 'proficiency' | 'ability' | 'boost' | 'challenge' | 'difficulty' | 'setback' | 'force'
 
 export interface DiceMeta {
   color: string
@@ -67,6 +67,7 @@ export const DICE_META: Record<DiceType, DiceMeta> = {
   challenge:   { color: '#C62828', shape: 'octagon',  label: 'CHL', positive: false },
   difficulty:  { color: '#7B1FA2', shape: 'diamond',  label: 'DIF', positive: false },
   setback:     { color: '#455A64', shape: 'rounded',  label: 'SET', positive: false },
+  force:       { color: '#FFFFFF', shape: 'octagon',  label: 'FOR', positive: true },
 }
 
 export type SymbolKey = 'S' | 'F' | 'A' | 'H' | 'T' | 'D'
@@ -107,6 +108,7 @@ export const EMPTY_POOL: Record<DiceType, number> = {
   challenge: 0,
   difficulty: 0,
   setback: 0,
+  force: 0,
 }
 
 // Shared panel style (object spread into inline style)

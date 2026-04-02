@@ -6,6 +6,7 @@ import { DiceFace } from '@/components/dice/DiceFace'
 import { getSkillPool } from '@/components/player-hud/dice-engine'
 import type { Character, CharacterSkill, RefSkill } from '@/lib/types'
 import type { MobilePrePopSkill } from '@/components/mobile/overlays/DiceRollerSheet'
+import type { SkillDiceModifier } from '@/lib/derivedStats'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 const GOLD       = '#C8AA50'
@@ -82,14 +83,57 @@ function PoolPips({ proficiency, ability }: { proficiency: number; ability: numb
   )
 }
 
+// ── Skill dice modifier indicators (mobile) ───────────────────────────────
+
+function SetbackRemovalBadge({ count }: { count: number }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+      {Array.from({ length: Math.min(count, 3) }).map((_, i) => (
+        <div key={i} style={{ position: 'relative', display: 'inline-block', width: 16, height: 16 }}>
+          <DiceFace type="setback" size={16} active={false} dimmed />
+          <svg style={{ position: 'absolute', inset: 0 }} viewBox="0 0 16 16" width={16} height={16}>
+            <line x1="3" y1="3" x2="13" y2="13" stroke="#e05252" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        </div>
+      ))}
+      {count > 3 && (
+        <span style={{
+          fontFamily: POOL_OVERFLOW_FONT,
+          fontSize: 'clamp(0.55rem, 0.8vw, 0.65rem)',
+          color: '#e05252',
+        }}>×{count}</span>
+      )}
+    </div>
+  )
+}
+
+function BoostAddBadge({ count }: { count: number }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+      {Array.from({ length: Math.min(count, 3) }).map((_, i) => (
+        <DiceFace key={i} type="boost" size={16} active={false} />
+      ))}
+      {count > 3 && (
+        <span style={{
+          fontFamily: POOL_OVERFLOW_FONT,
+          fontSize: 'clamp(0.55rem, 0.8vw, 0.65rem)',
+          color: 'rgba(232,223,200,0.4)',
+        }}>×{count}</span>
+      )}
+    </div>
+  )
+}
+
 interface SkillsTabProps {
   character: Character
   charSkills: CharacterSkill[]
   refSkills: RefSkill[]
   onSkillTap: (skill: MobilePrePopSkill) => void
+  /** Dice modifiers from the derived stats engine, keyed by skill key */
+  skillModifiers?: Record<string, SkillDiceModifier>
 }
 
-export function SkillsTab({ character, charSkills, refSkills, onSkillTap }: SkillsTabProps) {
+export function SkillsTab({ character, charSkills, refSkills, onSkillTap, skillModifiers = {} }: SkillsTabProps) {
   const [query, setQuery] = useState('')
   const [collapsed, setCollapsed] = useState<Partial<Record<SkillGroup, boolean>>>({})
 
@@ -267,6 +311,23 @@ export function SkillsTab({ character, charSkills, refSkills, onSkillTap }: Skil
                   <div style={{ flexShrink: 0, minWidth: 48 }}>
                     <PoolPips proficiency={proficiency} ability={ability} />
                   </div>
+
+                  {/* Dice modifier badges */}
+                  {skillModifiers[rs.key] && (skillModifiers[rs.key].boostAdd > 0 || skillModifiers[rs.key].setbackRemove > 0) && (
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 3,
+                      borderLeft: `1px solid rgba(200,170,80,0.2)`,
+                      paddingLeft: 4,
+                      flexShrink: 0,
+                    }}>
+                      {skillModifiers[rs.key].boostAdd > 0 && (
+                        <BoostAddBadge count={skillModifiers[rs.key].boostAdd} />
+                      )}
+                      {skillModifiers[rs.key].setbackRemove > 0 && (
+                        <SetbackRemovalBadge count={skillModifiers[rs.key].setbackRemove} />
+                      )}
+                    </div>
+                  )}
                 </button>
               )
             })}

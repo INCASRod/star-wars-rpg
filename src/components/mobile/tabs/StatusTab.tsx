@@ -3,6 +3,7 @@
 import { RANGE_LABELS } from '@/lib/types'
 import type { Character, CharacterWeapon, CharacterCriticalInjury, RefWeapon, RefSkill } from '@/lib/types'
 import { WeaponDamageDisplay, isMeleeSkill } from '@/components/character/WeaponDamageDisplay'
+import type { EffectiveStats } from '@/lib/derivedStats'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 const GOLD     = '#C8AA50'
@@ -38,6 +39,8 @@ interface StatusTabProps {
   crits: CharacterCriticalInjury[]
   refWeaponMap: Record<string, RefWeapon>
   refSkillMap: Record<string, RefSkill>
+  /** Computed effective stats from the derived stats engine */
+  effectiveStats?: EffectiveStats
 }
 
 function SectionHeader({ label }: { label: string }) {
@@ -58,7 +61,7 @@ function SectionHeader({ label }: { label: string }) {
   )
 }
 
-export function StatusTab({ character, weapons, crits, refWeaponMap, refSkillMap }: StatusTabProps) {
+export function StatusTab({ character, weapons, crits, refWeaponMap, refSkillMap, effectiveStats }: StatusTabProps) {
   const equippedWeapons = (Array.isArray(weapons) ? weapons : []).filter(w => w.equip_state === 'equipped' || w.is_equipped)
 
   return (
@@ -105,9 +108,9 @@ export function StatusTab({ character, weapons, crits, refWeaponMap, refSkillMap
       <SectionHeader label="Derived" />
       <div style={{ display: 'flex', gap: 8, padding: '0 16px 12px', flexWrap: 'wrap' }}>
         {[
-          { label: 'Soak',    value: character.soak },
-          { label: 'Def (M)', value: character.defense_melee },
-          { label: 'Def (R)', value: character.defense_ranged },
+          { label: 'Soak',    value: effectiveStats?.soak           ?? character.soak },
+          { label: 'Def (M)', value: effectiveStats?.defenseMelee   ?? character.defense_melee },
+          { label: 'Def (R)', value: effectiveStats?.defenseRanged  ?? character.defense_ranged },
         ].map(({ label, value }) => (
           <div key={label} style={{
             background: 'rgba(200,170,80,0.08)',

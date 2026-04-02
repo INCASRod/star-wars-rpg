@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { randomUUID } from '@/lib/utils'
 import type { Character } from '@/lib/types'
+import { VersionWatermark } from '@/components/ui/VersionWatermark'
 
 // ─── Design Tokens ───────────────────────────────────────────────────────────
 const BG = '#060D09'
@@ -901,6 +902,7 @@ export default function Home() {
           50% { opacity: 0.5; transform: scale(0.8); }
         }
       `}</style>
+      <VersionWatermark />
     </div>
   )
 }

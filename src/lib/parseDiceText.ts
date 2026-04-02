@@ -1,8 +1,9 @@
 import type { DiceType } from '@/components/player-hud/design-tokens'
 
 export type TextSegment =
-  | { type: 'text'; content: string }
-  | { type: 'dice'; diceType: DiceType }
+  | { type: 'text';   content: string }
+  | { type: 'dice';   diceType: DiceType }
+  | { type: 'symbol'; content: string; color: string }
 
 // Actual OggDude bracket codes that map to our DiceType system
 const DICE_TAG_MAP: Record<string, DiceType> = {
@@ -19,13 +20,26 @@ const DICE_TAG_MAP: Record<string, DiceType> = {
   PRO: 'proficiency',
   AB:  'ability',
   ABL: 'ability',
+  FO:  'force',
+  FP:  'force',   // Force Point / Force pip
+}
+
+// OggDude result-symbol tags → Unicode character + colour
+const SYMBOL_TAG_MAP: Record<string, { content: string; color: string }> = {
+  SU: { content: '✦', color: '#4CAF50' }, // Success
+  AD: { content: '◇', color: '#4CAF50' }, // Advantage
+  TH: { content: '◆', color: '#f44336' }, // Threat
+  FA: { content: '✗', color: '#f44336' }, // Failure
+  TR: { content: '★', color: '#F5C518' }, // Triumph
+  DE: { content: '⚠', color: '#C62828' }, // Despair
+  // DA (Damage), LI (Light side pip) — strip silently
 }
 
 /**
- * Parses OggDude markup text into an array of text and dice segments.
- * Known dice tags ([BO], [SE], [DI], [CH], etc.) become dice segments.
- * All other [TAG] patterns (formatting, result symbols, unknown) are silently
- * dropped — the surrounding text is preserved.
+ * Parses OggDude markup text into an array of text, dice, and symbol segments.
+ * - Known dice tags ([BO], [SE], [DI], [CH], [FO] etc.) become dice segments.
+ * - Result symbol tags ([SU], [AD], [TH], [FA], [TR], [DE]) become symbol segments.
+ * - All other [TAG] patterns (formatting, unknown) are silently dropped.
  */
 export function parseDiceText(raw: string): TextSegment[] {
   const segments: TextSegment[] = []
@@ -42,8 +56,13 @@ export function parseDiceText(raw: string): TextSegment[] {
     const diceType = DICE_TAG_MAP[tag]
     if (diceType) {
       segments.push({ type: 'dice', diceType })
+    } else {
+      const sym = SYMBOL_TAG_MAP[tag]
+      if (sym) {
+        segments.push({ type: 'symbol', content: sym.content, color: sym.color })
+      }
+      // Unknown / formatting tags dropped silently
     }
-    // Unknown / formatting tags dropped silently
 
     lastIndex = match.index + match[0].length
   }

@@ -6,6 +6,7 @@ import type { CombatEncounter } from '@/lib/combat'
 import type { Character } from '@/lib/types'
 import { resolveWeapon, type WeaponRef } from '@/lib/resolve-weapon'
 import { FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4, FS_H3 } from '@/components/player-hud/design-tokens'
+import { DiceText } from '@/components/dice/DiceText'
 
 // ── Design Tokens ──
 const BG = '#060D09'
@@ -421,6 +422,71 @@ export function CombatTracker({ character, campaignId, talents = [] }: Props) {
                       </div>
                     </div>
 
+                    {/* Wound bar — rival/nemesis */}
+                    {adv.type !== 'minion' && (() => {
+                      const cur = adv.woundsCurrent ?? 0
+                      const max = adv.woundThreshold
+                      const pct = max > 0 ? Math.min(1, cur / max) : 0
+                      const barColor = pct >= 1 ? '#9C27B0' : pct >= 0.8 ? '#f44336' : pct >= 0.5 ? '#FF9800' : CHAR_BR
+                      return (
+                        <div style={{ marginBottom: 10 }}>
+                          <div style={{ height: 5, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden' }}>
+                            <div style={{
+                              width: `${pct * 100}%`, height: '100%', background: barColor,
+                              borderRadius: 3, transition: 'width 300ms ease',
+                              animation: pct >= 1 ? 'pulse-dot 1.4s ease-in-out infinite' : 'none',
+                            }} />
+                          </div>
+                          <div style={{
+                            fontFamily: "'Share Tech Mono','Courier New',monospace",
+                            fontSize: 'clamp(0.62rem,0.9vw,0.72rem)', color: 'rgba(232,223,200,0.4)',
+                            textAlign: 'right', marginTop: 2,
+                          }}>
+                            {cur} / {max} wounds
+                          </div>
+                        </div>
+                      )
+                    })()}
+
+                    {/* Wound bar — minion group */}
+                    {adv.type === 'minion' && (() => {
+                      const cur          = adv.woundsCurrent ?? 0
+                      const groupAlive   = adv.groupRemaining
+                      const groupInitial = adv.groupSize
+                      const minionWoundTotal = adv.woundThreshold * groupAlive
+                      const pct = groupAlive === 0 ? 1 : (minionWoundTotal > 0 ? Math.min(1, cur / minionWoundTotal) : 0)
+                      const barColor = pct >= 1 ? '#9C27B0' : pct >= 0.8 ? '#f44336' : pct >= 0.5 ? '#FF9800' : CHAR_BR
+                      const skillRank = Math.max(0, groupAlive - 1)
+                      return (
+                        <div style={{ marginBottom: 10 }}>
+                          <div style={{ height: 5, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden' }}>
+                            <div style={{
+                              width: `${pct * 100}%`, height: '100%', background: barColor,
+                              borderRadius: 3, transition: 'width 300ms ease',
+                              animation: pct >= 1 ? 'pulse-dot 1.4s ease-in-out infinite' : 'none',
+                            }} />
+                          </div>
+                          <div style={{
+                            fontFamily: "'Share Tech Mono','Courier New',monospace",
+                            fontSize: 'clamp(0.62rem,0.9vw,0.72rem)', color: 'rgba(232,223,200,0.4)',
+                            textAlign: 'right', marginTop: 2,
+                          }}>
+                            {cur} / {minionWoundTotal} wounds
+                          </div>
+                          <div style={{
+                            fontFamily: FM, fontSize: FS_LABEL, color: TEXT_MUTED,
+                            marginTop: 3, display: 'flex', gap: 10,
+                          }}>
+                            <span>
+                              <span style={{ color: groupAlive === 0 ? CHAR_BR : TEXT_SEC }}>{groupAlive}</span>
+                              {' remaining (of '}{groupInitial}{')'}
+                            </span>
+                            <span style={{ color: TEXT_MUTED }}>· Skill rank: {skillRank}</span>
+                          </div>
+                        </div>
+                      )
+                    })()}
+
                     {/* Talent chips */}
                     {adv.talents && adv.talents.length > 0 && (
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
@@ -529,7 +595,7 @@ export function CombatTracker({ character, campaignId, talents = [] }: Props) {
                   }}>
                     <div style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, color: TEXT, marginBottom: 2 }}>{t.name}</div>
                     {t.description && (
-                      <div style={{ fontFamily: FM, fontSize: FS_LABEL, color: TEXT_MUTED, lineHeight: 1.4 }}>{t.description}</div>
+                      <div style={{ fontFamily: FM, fontSize: FS_LABEL, color: TEXT_MUTED, lineHeight: 1.4 }}><DiceText text={t.description} /></div>
                     )}
                     <span style={{
                       display: 'inline-block', marginTop: 4,

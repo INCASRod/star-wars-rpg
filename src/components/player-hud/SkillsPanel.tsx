@@ -6,6 +6,7 @@ import { DiceFace } from '@/components/dice/DiceFace'
 import { Tooltip, TipLabel, TipBody, TipDivider } from '@/components/ui/Tooltip'
 import { getSkillTip } from '@/lib/tooltips/skillDescriptions'
 import { PanelSearchInput } from '@/components/character/PanelSearchInput'
+import type { SkillDiceModifier } from '@/lib/derivedStats'
 
 export interface HudSkill {
   key: string
@@ -24,6 +25,77 @@ interface SkillsPanelProps {
   xpAvailable: number
   onOpenPopover?: (skill: HudSkill, anchor: DOMRect) => void
   characterId?: string
+  /** Dice modifiers from the derived stats engine, keyed by skill key */
+  skillModifiers?: Record<string, SkillDiceModifier>
+}
+
+// ── Skill dice modifier indicator ──────────────────────────────────────────
+
+function SetbackRemovalIndicator({ count, sources }: { count: number; sources: string[] }) {
+  const tipContent = (
+    <>
+      <TipLabel>Removes {count} Setback {count === 1 ? 'die' : 'dice'}</TipLabel>
+      <TipDivider />
+      {sources.map((s, i) => <TipBody key={i}>{s}</TipBody>)}
+    </>
+  )
+  return (
+    <Tooltip content={tipContent} placement="top" maxWidth={220}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 2, cursor: 'default' }}>
+        {Array.from({ length: count }).map((_, i) => (
+          <div key={i} style={{ position: 'relative', display: 'inline-block', width: 16, height: 16 }}>
+            <DiceFace type="setback" size={16} active={false} dimmed />
+            <svg
+              style={{ position: 'absolute', inset: 0 }}
+              viewBox="0 0 16 16"
+              width={16}
+              height={16}
+            >
+              <line x1="3" y1="3" x2="13" y2="13" stroke="#e05252" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </div>
+        ))}
+      </div>
+    </Tooltip>
+  )
+}
+
+function BoostAddIndicator({ count, sources }: { count: number; sources: string[] }) {
+  const tipContent = (
+    <>
+      <TipLabel>+{count} Boost {count === 1 ? 'die' : 'dice'}</TipLabel>
+      <TipDivider />
+      {sources.map((s, i) => <TipBody key={i}>{s}</TipBody>)}
+    </>
+  )
+  return (
+    <Tooltip content={tipContent} placement="top" maxWidth={220}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 2, cursor: 'default' }}>
+        {Array.from({ length: count }).map((_, i) => (
+          <DiceFace key={i} type="boost" size={16} active={false} />
+        ))}
+      </div>
+    </Tooltip>
+  )
+}
+
+function SkillModifierBadges({ mod }: { mod: SkillDiceModifier }) {
+  if (mod.boostAdd <= 0 && mod.setbackRemove <= 0) return null
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 3,
+      borderLeft: `1px solid rgba(200,170,80,0.2)`,
+      paddingLeft: 4,
+      marginLeft: 2,
+    }}>
+      {mod.boostAdd > 0 && (
+        <BoostAddIndicator count={mod.boostAdd} sources={mod.sources} />
+      )}
+      {mod.setbackRemove > 0 && (
+        <SetbackRemovalIndicator count={mod.setbackRemove} sources={mod.sources} />
+      )}
+    </div>
+  )
 }
 
 type Filter = 'All' | 'Trained' | 'Career'
@@ -271,7 +343,7 @@ function SkillUpgradeDialog({ skill, xpAvailable, onConfirm, onCancel }: {
   )
 }
 
-export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, onOpenPopover, characterId }: SkillsPanelProps) {
+export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, onOpenPopover, characterId, skillModifiers = {} }: SkillsPanelProps) {
   const [filter, setFilter] = useState<Filter>('All')
   const [pendingSkill, setPendingSkill] = useState<HudSkill | null>(null)
   const [skillSearch, setSkillSearch] = useState('')
@@ -484,6 +556,9 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
                         </div>
                         <RankPips rank={skill.rank} />
                         <PoolPreview charVal={skill.charVal} rank={skill.rank} />
+                        {skillModifiers[skill.key] && (
+                          <SkillModifierBadges mod={skillModifiers[skill.key]} />
+                        )}
                       </div>
                     </Tooltip>
                   )

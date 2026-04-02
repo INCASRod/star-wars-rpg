@@ -19,10 +19,15 @@ import { SkillsPanel, type HudSkill } from './SkillsPanel'
 import { SkillRollPopover } from '@/components/character/SkillRollPopover'
 import { TalentsPanel, type HudTalent } from './TalentsPanel'
 import { InventoryPanel, type WpnDisplay, type ArmDisplay, type GearRow } from './InventoryPanel'
-import { ForcePanel, type ForcePowerSummary } from './ForcePanel'
+import { ForcePanel, type ForcePowerDisplay, type ConflictEntry } from './ForcePanel'
+import { isForceUserSensitive } from '@/lib/forceUtils'
 import { ForceRollModal } from './ForceRollModal'
 import { rollForceDice, type ForceRollResult } from './dice-engine'
-import { DiceRoller, type QuickRollSkill, type QuickWeapon } from './DiceRoller'
+import { CombatCheckOverlay } from '@/components/combat-check/CombatCheckOverlay'
+import { CombatCheckButton } from '@/components/character/CombatCheckButton'
+import { ForceCheckOverlay } from '@/components/force-check/ForceCheckOverlay'
+import { ForceCheckButton } from '@/components/character/ForceCheckButton'
+import { isDathomiri } from '@/lib/dathomiriUtils'
 import { CombatTransition } from './CombatTransition'
 import { RollFeedPanel, RollFeedMini } from './RollFeedPanel'
 import { RANGE_LABELS, ACTIVATION_LABELS, type Character, type CharacterSpecialization, type RefSpecialization } from '@/lib/types'
@@ -31,7 +36,7 @@ import { EquipmentImage } from '@/components/ui/EquipmentImage'
 import { HolocronLoader } from '@/components/ui/HolocronLoader'
 import { useSessionMode } from '@/hooks/useSessionMode'
 import { useRollFeed } from '@/hooks/useRollFeed'
-import { logRoll } from '@/lib/logRoll'
+import { logRoll, type RollMeta } from '@/lib/logRoll'
 import { DerivedStatsPanel } from '@/components/wireframe/DerivedStatsPanel'
 import { TalentsPanel as WfTalentsPanel } from '@/components/wireframe/TalentsPanel'
 import { DiceFeed as WfDiceFeed } from '@/components/wireframe/DiceFeed'
@@ -39,6 +44,7 @@ import { CombatTracker } from '@/components/player/CombatTracker'
 import { InitiativeRollModal } from './InitiativeRollModal'
 import { useSessionRollState, getWoundThresholdBonus } from '@/hooks/useSessionRollState'
 import { SessionStatusBanner } from '@/components/player/SessionStatusBanner'
+import { useDerivedStats } from '@/hooks/useDerivedStats'
 
 const CHAR_TO_FIELD: Record<string, keyof Character> = {
   BR: 'brawn', AG: 'agility', INT: 'intellect', CUN: 'cunning', WIL: 'willpower', PR: 'presence',
@@ -175,8 +181,12 @@ function SectionLabel({ text }: { text: string }) {
 // ── Tab component ────────────────────────────────────────────
 type TabName = 'Skills' | 'Talents' | 'Inventory' | 'Force' | 'Lore' | 'Feed' | 'Combat'
 
-function TabBar({ active, onChange, hasCombat }: { active: TabName; onChange: (t: TabName) => void; hasCombat?: boolean }) {
-  const tabs: TabName[] = ['Skills', 'Talents', 'Inventory', 'Force', 'Lore', 'Feed', 'Combat']
+const FORCE_TAB_BLUE   = '#7EC8E3'
+const FORCE_TAB_PURPLE = '#8B2BE2'
+
+function TabBar({ active, onChange, hasCombat, isForceUser, isForceUserFallen }: { active: TabName; onChange: (t: TabName) => void; hasCombat?: boolean; isForceUser?: boolean; isForceUserFallen?: boolean }) {
+  const allTabs: TabName[] = ['Skills', 'Talents', 'Inventory', 'Force', 'Lore', 'Feed', 'Combat']
+  const tabs = allTabs.filter(t => t !== 'Force' || isForceUser)
   return (
     <div style={{
       display: 'flex', borderBottom: `1px solid ${C.border}`,
@@ -185,18 +195,28 @@ function TabBar({ active, onChange, hasCombat }: { active: TabName; onChange: (t
       {tabs.map(tab => {
         const isCombatTab = tab === 'Combat'
         const isFeed      = tab === 'Feed'
-        const tabColor    = (isCombatTab || (isFeed && hasCombat)) ? '#E05050' : C.gold
-        const dimColor    = isCombatTab && hasCombat ? '#E0505088' : isFeed && hasCombat ? '#E0505088' : C.textDim
+        const isForceTab  = tab === 'Force'
+        const forceColor  = isForceUserFallen ? FORCE_TAB_PURPLE : FORCE_TAB_BLUE
+        const tabColor    = isForceTab
+          ? forceColor
+          : (isCombatTab || (isFeed && hasCombat)) ? '#E05050' : C.gold
+        const dimColor    = isForceTab
+          ? (isForceUserFallen ? 'rgba(139,43,226,0.45)' : 'rgba(126,200,227,0.45)')
+          : isCombatTab && hasCombat ? '#E0505088' : isFeed && hasCombat ? '#E0505088' : C.textDim
         return (
           <button
             key={tab}
             onClick={() => onChange(tab)}
             style={{
-              background: 'transparent', border: 'none', borderBottom: `2px solid ${active === tab ? tabColor : 'transparent'}`,
+              background: 'transparent', border: 'none',
+              borderBottom: `2px solid ${active === tab ? tabColor : 'transparent'}`,
               padding: '10px 14px', cursor: 'pointer',
               fontFamily: FONT_CINZEL, fontSize: FS_LABEL, fontWeight: 600, letterSpacing: '0.08em',
               color: active === tab ? tabColor : dimColor,
               transition: '.15s', marginBottom: -1,
+              textShadow: isForceTab && active === tab
+                ? (isForceUserFallen ? '0 0 8px rgba(139,43,226,0.6)' : '0 0 10px rgba(126,200,227,0.4)')
+                : 'none',
             }}
           >
             {tab}
@@ -383,12 +403,24 @@ function BuySpecButton({
                   }}>
                     {spec.name}
                   </div>
-                  <div style={{
-                    fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE,
-                    color: isCareer ? C.gold : C.textFaint,
-                    textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 2,
-                  }}>
-                    {isCareer ? '★ Career' : spec.career_key}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
+                    <span style={{
+                      fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE,
+                      color: isCareer ? C.gold : C.textFaint,
+                      textTransform: 'uppercase', letterSpacing: '0.1em',
+                    }}>
+                      {isCareer ? '★ Career' : spec.career_key}
+                    </span>
+                    {spec.is_force_sensitive && (
+                      <span style={{
+                        fontFamily: "'Share Tech Mono', 'Courier New', monospace",
+                        fontSize: FS_OVERLINE,
+                        color: '#7EC8E3',
+                        textTransform: 'uppercase', letterSpacing: '0.1em',
+                      }}>
+                        ◈ Force
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div style={{
@@ -455,6 +487,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     refSkills, refCareers, refSpeciesAll, refForcePowers, refForceAbilities,
     refSkillMap, refTalentMap, refWeaponMap, refArmorMap, refGearMap,
     refSpecMap, refDescriptorMap, refForcePowerMap, refForceAbilityMap, refWeaponQualityMap,
+    refAttachmentMap,
     forceRating, supabase, refSpecs,
     handleVitalChange, handleToggleWeaponEquipped, handleToggleEquippedById,
     handleRollCrit, handleHealCrit, handlePortraitUpload, handlePortraitDelete,
@@ -464,6 +497,40 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     handlePurchaseTalent, handleBackstoryChange, handleNotesChange,
     handlePurchaseForceAbility, handleBuySpecialization, handleBuySkill,
   } = useCharacterData(characterId)
+
+  // ── Derived stats engine ──
+  const derivedStats = useDerivedStats({
+    character: character ?? null,
+    forceRatingBase: forceRating,
+    talents,
+    refTalentMap,
+    armor,
+    refArmorMap,
+    refAttachmentMap,
+    weapons,
+    refWeaponMap,
+    refWeaponQualityMap,
+  })
+  const effectiveStats = derivedStats?.effectiveStats
+  const skillModifiers = derivedStats?.modifiers.skillModifiers ?? {}
+  const engineBreakdown = derivedStats?.breakdown
+
+  // ── Write-back force_rating to DB when the engine computes a different value ──
+  // This fires when talents like WITCHCRAFT grant force_rating via the legacy
+  // `modifiers` shape that doesn't update the characters table directly.
+  useEffect(() => {
+    if (!character || !effectiveStats) return
+    const computed = effectiveStats.forceRating
+    if (computed === character.force_rating) return
+    console.log(`[force_rating write-back] ${character.name}: DB=${character.force_rating} → computed=${computed}`)
+    supabase
+      .from('characters')
+      .update({ force_rating: computed })
+      .eq('id', character.id)
+      .then(({ error }) => {
+        if (error) console.warn('[force_rating write-back] failed:', error.message)
+      })
+  }, [effectiveStats?.forceRating, character?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Session / roll feed ──
   const effectiveCampaignId = campaignId ?? character?.campaign_id ?? null
@@ -518,6 +585,21 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   const [initRoll, setInitRoll]                 = useState<{ type: 'cool' | 'vigilance'; campaignId: string } | null>(null)
   const [forceRollResult, setForceRollResult]   = useState<ForceRollResult | null>(null)
   const [skillPopover, setSkillPopover]         = useState<{ skill: HudSkill; anchor: DOMRect } | null>(null)
+  const [combatCheckOpen, setCombatCheckOpen]   = useState(false)
+  const [forceCheckOpen,  setForceCheckOpen]    = useState(false)
+  const [conflicts, setConflicts]               = useState<ConflictEntry[]>([])
+
+  // ── Load conflicts ──
+  useEffect(() => {
+    if (!character?.id) return
+    supabase
+      .from('character_conflicts')
+      .select('id, description, session_label, is_resolved, created_at')
+      .eq('character_id', character.id)
+      .order('created_at', { ascending: false })
+      .then(({ data }) => { if (data) setConflicts(data as ConflictEntry[]) })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [character?.id])
 
   // ── Destiny Pool ──
   const [destinyPool, setDestinyPool]           = useState<Array<'light' | 'dark'>>([])
@@ -682,18 +764,27 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   }, [character, skills, refSkills])
 
   // ── Talents for HUD ──
-  const hudTalents = useMemo((): HudTalent[] =>
-    talents.map(t => {
+  // Aggregate by talent_key so ranked talents purchased at multiple tree
+  // positions are shown as a single entry with the correct total rank.
+  const hudTalents = useMemo((): HudTalent[] => {
+    const map = new Map<string, HudTalent>()
+    for (const t of talents) {
       const ref = refTalentMap[t.talent_key]
-      return {
-        key:         t.talent_key,
-        name:        ref?.name || t.talent_key,
-        rank:        t.ranks,
-        activation:  ref ? ACTIVATION_LABELS[ref.activation] || ref.activation : 'Passive',
-        description: ref?.description,
+      const existing = map.get(t.talent_key)
+      if (existing) {
+        existing.rank = (existing.rank ?? 0) + (t.ranks ?? 1)
+      } else {
+        map.set(t.talent_key, {
+          key:         t.talent_key,
+          name:        ref?.name || t.talent_key,
+          rank:        t.ranks ?? 1,
+          activation:  ref ? ACTIVATION_LABELS[ref.activation] || ref.activation : 'Passive',
+          description: ref?.description,
+        })
       }
-    })
-  , [talents, refTalentMap])
+    }
+    return Array.from(map.values())
+  }, [talents, refTalentMap])
 
   // ── Weapons for HUD ──
   const hudWeapons = useMemo((): WpnDisplay[] =>
@@ -785,52 +876,55 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     }, 0)
   , [gear, refGearMap])
 
-  // ── Force powers summary ──
-  const allForcePowers = useMemo((): ForcePowerSummary[] => {
-    const byPower: Record<string, number> = {}
-    for (const a of charForceAbilities) { byPower[a.force_power_key] = (byPower[a.force_power_key] || 0) + 1 }
+  // ── Force powers (rich display) ──
+  const allForcePowers = useMemo((): ForcePowerDisplay[] => {
+    // Count how many times each (power, ability) is purchased — handles ranked upgrades
+    const purchaseCount = new Map<string, number>()
+    for (const a of charForceAbilities) {
+      const k = `${a.force_power_key}:${a.force_ability_key}`
+      purchaseCount.set(k, (purchaseCount.get(k) ?? 0) + 1)
+    }
+
     return refForcePowers
       .filter(fp => fp.ability_tree?.rows?.length)
       .map(fp => {
-        const purchasedCount = byPower[fp.key] || 0
-        const totalCount = fp.ability_tree?.rows?.reduce((s: number, r: { costs: number[] }) =>
-          s + (r.costs?.filter((c: number) => c > 0).length || 0), 0) || 0
-        return { powerKey: fp.key, powerName: fp.name, purchasedCount, totalCount }
+        // Use a Map to deduplicate ranked abilities (same key can appear N times in tree)
+        const abilityMap = new Map<string, ForcePowerDisplay['abilities'][number]>()
+        for (const row of (fp.ability_tree?.rows ?? [])) {
+          for (let col = 0; col < (row.abilities || []).length; col++) {
+            const aKey = row.abilities[col]
+            const cost = (row.costs || [])[col] ?? 0
+            if (!aKey || cost === 0) continue
+            const ref = refForceAbilityMap[aKey]
+            if (!ref) continue
+            const existing = abilityMap.get(aKey)
+            if (existing) {
+              existing.totalRanks++
+            } else {
+              const purchased = purchaseCount.get(`${fp.key}:${aKey}`) ?? 0
+              abilityMap.set(aKey, { key: aKey, name: ref.name, description: ref.description, purchasedRanks: purchased, totalRanks: 1, cost })
+            }
+          }
+        }
+        const abilities = Array.from(abilityMap.values())
+        const purchasedCount = abilities.reduce((s, a) => s + Math.min(a.purchasedRanks, a.totalRanks), 0)
+        const totalCount     = abilities.reduce((s, a) => s + a.totalRanks, 0)
+        const treeData = buildForcePowerTree(fp.key)
+        return {
+          powerKey: fp.key, powerName: fp.name, description: fp.description,
+          purchasedCount, totalCount, abilities,
+          treeNodes: treeData?.nodes ?? [],
+          treeConnections: treeData?.connections ?? [],
+        }
       })
       .sort((a, b) => {
         if (a.purchasedCount > 0 && b.purchasedCount === 0) return -1
         if (a.purchasedCount === 0 && b.purchasedCount > 0) return 1
         return a.powerName.localeCompare(b.powerName)
       })
-  }, [charForceAbilities, refForcePowers])
+  }, [charForceAbilities, refForcePowers, refForceAbilityMap, refForcePowerMap])
 
   // ── Quick Roll skills (rank > 0) ──
-  const quickSkills = useMemo((): QuickRollSkill[] =>
-    hudSkills.filter(s => s.rank > 0)
-  , [hudSkills])
-
-  // ── Equipped weapon quick-refs ──
-  const equippedWeaponQuick = useMemo((): QuickWeapon[] => {
-    if (!character) return []
-    return weapons.filter(w => w.is_equipped).map(w => {
-      const ref   = w.weapon_key ? refWeaponMap[w.weapon_key] : null
-      const skill = ref?.skill_key ? refSkillMap[ref.skill_key] : null
-      const charKey = skill?.characteristic_key
-      const charVal = charKey ? (character[CHAR_TO_FIELD[charKey] as keyof Character] as number) || 0 : 0
-      const skillData = charKey ? hudSkills.find(s => s.key === ref?.skill_key) : undefined
-      const isMelee = ['MELEE', 'BRAWL', 'LTSABER'].includes(ref?.skill_key || '')
-      return {
-        id:        w.id,
-        name:      w.custom_name || ref?.name || 'Weapon',
-        damage:    isMelee ? `+${ref?.damage_add || 0}` : String(ref?.damage || 0),
-        crit:      ref?.crit || 0,
-        range:     ref?.range_value ? RANGE_LABELS[ref.range_value] || '' : '',
-        skillName: skill?.name || '',
-        charVal,
-        rank:      skillData?.rank || 0,
-      }
-    })
-  }, [weapons, refWeaponMap, refSkillMap, hudSkills, character])
 
   // ── Talent tree building ──
   function buildTalentTree(specKey: string) {
@@ -908,9 +1002,12 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   const forcePowerTreeData = useMemo(() => activePowerKey ? buildForcePowerTree(activePowerKey) : null, [activePowerKey, charForceAbilities, refForcePowers, refForcePowerMap, refForceAbilityMap])
 
   // ── Roll handler ──
-  const handleRoll = (result: RollResult, label?: string, pool?: Record<string, number>) => {
-    setRollResult(result)
-    setRollLabel(label)
+  const handleRoll = (result: RollResult, label?: string, pool?: Record<string, number>, meta?: RollMeta) => {
+    // Don't pop the DiceModal when the combat check overlay handles the result inline
+    if (!combatCheckOpen) {
+      setRollResult(result)
+      setRollLabel(label)
+    }
     if (character && effectiveCampaignId) {
       logRoll({
         campaignId:    effectiveCampaignId,
@@ -919,13 +1016,14 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         label,
         pool:          (pool || {}) as Parameters<typeof logRoll>[0]['pool'],
         result,
+        meta,
       })
     }
   }
 
   const handleSkillRoll = (skill: HudSkill) => {
     const { proficiency, ability } = getSkillPool(skill.charVal, skill.rank)
-    const pool = { proficiency, ability, boost: 0, challenge: 0, difficulty: 2, setback: 0 }
+    const pool = { proficiency, ability, boost: 0, challenge: 0, difficulty: 2, setback: 0, force: 0 }
     const result = rollPool(pool)
     handleRoll(result, skill.name, pool as Record<string, number>)
   }
@@ -961,6 +1059,37 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', background: C.bg }}>
       <BackgroundEffects />
       <CombatTransition pending={transitionPending} prevMode={prevMode} />
+
+      {/* Combat Check Overlay */}
+      <CombatCheckOverlay
+        open={combatCheckOpen}
+        initialAttackType={null}
+        onClose={() => setCombatCheckOpen(false)}
+        character={character}
+        weapons={weapons}
+        charSkills={skills}
+        refWeaponMap={refWeaponMap}
+        refSkillMap={refSkillMap}
+        refWeaponQualityMap={refWeaponQualityMap}
+        skillModifiers={skillModifiers}
+        campaignId={effectiveCampaignId}
+        characterId={character.id}
+        onRoll={handleRoll}
+      />
+
+      {/* Force Check Overlay */}
+      <ForceCheckOverlay
+        open={forceCheckOpen}
+        onClose={() => setForceCheckOpen(false)}
+        character={character}
+        forceRating={effectiveStats?.forceRating ?? forceRating}
+        committedForce={character.force_rating_committed ?? 0}
+        forcePowers={allForcePowers}
+        isDathomiri={isDathomiri(character)}
+        isCombat={isCombat}
+        campaignId={effectiveCampaignId}
+        characterId={character.id}
+      />
 
       {/* GM mode overlays */}
       {isGmMode && (
@@ -1141,12 +1270,12 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
             <CornerBrackets />
             <SectionLabel text="Vitals" />
             <VitalBar
-              label="Wounds" current={character.wound_current} threshold={character.wound_threshold} bonus={woundBonus} color="#E05050"
+              label="Wounds" current={character.wound_current} threshold={effectiveStats?.woundThreshold ?? character.wound_threshold} bonus={woundBonus} color="#E05050"
               onInc={() => handleVitalChange('wound_current', 1)}
               onDec={() => handleVitalChange('wound_current', -1)}
             />
             <VitalBar
-              label="Strain" current={character.strain_current} threshold={character.strain_threshold} color="#60C8E0"
+              label="Strain" current={character.strain_current} threshold={effectiveStats?.strainThreshold ?? character.strain_threshold} color="#60C8E0"
               onInc={() => handleVitalChange('strain_current', 1)}
               onDec={() => handleVitalChange('strain_current', -1)}
             />
@@ -1158,10 +1287,10 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
             <SectionLabel text="Combat" />
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
               {[
-                { label: 'Soak',        value: character.soak,           color: '#4EC87A' },
-                { label: 'Rng Def',     value: character.defense_ranged,  color: '#5AAAE0' },
-                { label: 'Mel Def',     value: character.defense_melee,   color: '#E07855' },
-                { label: 'Force',       value: forceRating,               color: '#B070D8' },
+                { label: 'Soak',    value: effectiveStats?.soak           ?? character.soak,          color: '#4EC87A' },
+                { label: 'Rng Def', value: effectiveStats?.defenseRanged  ?? character.defense_ranged, color: '#5AAAE0' },
+                { label: 'Mel Def', value: effectiveStats?.defenseMelee   ?? character.defense_melee,  color: '#E07855' },
+                { label: 'Force',   value: effectiveStats?.forceRating    ?? forceRating,              color: '#B070D8' },
               ].map(stat => (
                 <div key={stat.label} style={{
                   background: `${stat.color}10`, border: `1px solid ${stat.color}30`,
@@ -1248,7 +1377,13 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
           borderRight: `1px solid ${C.border}`,
           overflow: 'hidden',
         }}>
-          <TabBar active={activeTab} onChange={t => { setActiveTab(t); localStorage.setItem(TAB_KEY, t) }} hasCombat={isCombat} />
+          <TabBar
+            active={activeTab}
+            onChange={t => { setActiveTab(t); localStorage.setItem(TAB_KEY, t) }}
+            hasCombat={isCombat}
+            isForceUser={isForceUserSensitive(character, effectiveStats?.forceRating ?? forceRating)}
+            isForceUserFallen={character.is_dark_side_fallen === true}
+          />
 
           {/* Session Status Banner — shown when GM has revealed a D100 result */}
           <SessionStatusBanner
@@ -1270,6 +1405,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
                   liveTalents={hudTalents}
                   onVitalChange={handleVitalChange}
                   characterName={character.name}
+                  effectiveStats={effectiveStats}
+                  engineBreakdown={engineBreakdown}
                 />
                 <SkillsPanel
                   skills={hudSkills}
@@ -1279,6 +1416,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
                   xpAvailable={character.xp_available}
                   onOpenPopover={(skill, anchor) => setSkillPopover({ skill, anchor })}
                   characterId={characterId}
+                  skillModifiers={skillModifiers}
                 />
               </div>
             )}
@@ -1358,14 +1496,21 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
             )}
             {activeTab === 'Force' && (
               <ForcePanel
-                forceRating={forceRating}
+                forceRating={effectiveStats?.forceRating ?? forceRating}
+                committedForce={character.force_rating_committed ?? 0}
                 moralityValue={character.morality_value ?? 50}
                 moralityStrength={character.morality_strength_key || ''}
                 moralityWeakness={character.morality_weakness_key || ''}
+                moralityConfigured={character.morality_configured}
                 forcePowers={allForcePowers.filter(fp => fp.purchasedCount > 0)}
+                conflicts={conflicts}
+                xpAvailable={character.xp_available}
+                onPurchasePower={(abilityKey, row, col, cost, powerKey) =>
+                  handlePurchaseForceAbility(abilityKey, row, col, cost, powerKey)
+                }
                 onViewPower={pk => { setActivePowerKey(pk); setShowForceTree(true) }}
                 onAdd={() => { setActivePowerKey(allForcePowers[0]?.powerKey ?? null); setShowForceTree(true) }}
-                onRollForce={() => setForceRollResult(rollForceDice(forceRating))}
+                isFallen={character.is_dark_side_fallen === true}
               />
             )}
             {activeTab === 'Lore' && (
@@ -1419,20 +1564,23 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
           background: 'rgba(4,9,6,0.7)',
           overflowY: 'auto', overflowX: 'hidden',
           padding: 'var(--space-2)',
+          display: 'flex', flexDirection: 'column', gap: 'var(--space-2)',
         }}>
-          <DiceRoller
-            trainedSkills={quickSkills}
-            equippedWeapons={equippedWeaponQuick}
-            onRoll={handleRoll}
+          <CombatCheckButton
+            onOpen={() => setCombatCheckOpen(true)}
+            isInCombat={isCombat}
           />
-          {rolls.length > 0 && (
-            <div style={{ marginTop: 'var(--space-2)' }}>
-              <RollFeedMini
-                rolls={rolls}
-                ownCharacterId={character.id}
-                onExpand={() => setActiveTab('Feed')}
-              />
+          {isForceUserSensitive(character, effectiveStats?.forceRating ?? forceRating) && (
+            <div style={{ marginTop: 8 }}>
+              <ForceCheckButton onOpen={() => setForceCheckOpen(true)} />
             </div>
+          )}
+          {rolls.length > 0 && (
+            <RollFeedMini
+              rolls={rolls}
+              ownCharacterId={character.id}
+              onExpand={() => setActiveTab('Feed')}
+            />
           )}
         </div>
       </div>

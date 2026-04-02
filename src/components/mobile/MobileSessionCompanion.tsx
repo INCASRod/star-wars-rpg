@@ -16,6 +16,7 @@ import { WoundsStrainFab, WoundsStrainOverlay } from './overlays/WoundsStrainOve
 import { DiceRollerSheet, type MobilePrePopSkill } from './overlays/DiceRollerSheet'
 import { useSessionRollState, getWoundThresholdBonus } from '@/hooks/useSessionRollState'
 import { SessionStatusBanner } from '@/components/player/SessionStatusBanner'
+import { useDerivedStats } from '@/hooks/useDerivedStats'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 const BG   = '#060D09'
@@ -34,9 +35,27 @@ export function MobileSessionCompanion({ characterId, campaignId }: MobileSessio
     character, skills, talents, weapons, armor, gear, crits,
     refSkills, refTalents,
     refSkillMap, refTalentMap, refWeaponMap, refArmorMap, refGearMap, refDescriptorMap, refWeaponQualityMap,
+    refAttachmentMap,
+    forceRating,
     handleVitalChange,
     loading, error,
   } = useCharacterData(characterId)
+
+  // ── Derived stats engine (called unconditionally before early returns) ──
+  const derivedStats = useDerivedStats({
+    character: character ?? null,
+    forceRatingBase: forceRating,
+    talents,
+    refTalentMap,
+    armor,
+    refArmorMap,
+    refAttachmentMap,
+    weapons,
+    refWeaponMap,
+    refWeaponQualityMap,
+  })
+  const effectiveStats = derivedStats?.effectiveStats
+  const skillModifiers = derivedStats?.modifiers.skillModifiers ?? {}
 
   const [activeTab, setActiveTab]       = useState<TabId>('status')
   const [woundsOpen, setWoundsOpen]     = useState(false)
@@ -136,6 +155,7 @@ export function MobileSessionCompanion({ characterId, campaignId }: MobileSessio
             crits={crits}
             refWeaponMap={refWeaponMap}
             refSkillMap={refSkillMap}
+            effectiveStats={effectiveStats}
           />
         )}
         {activeTab === 'skills' && (
@@ -144,6 +164,7 @@ export function MobileSessionCompanion({ characterId, campaignId }: MobileSessio
             charSkills={skills}
             refSkills={refSkills}
             onSkillTap={openSkillDice}
+            skillModifiers={skillModifiers}
           />
         )}
         {activeTab === 'talents' && (
