@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { C, FONT_CINZEL, FONT_RAJDHANI, panelBase, FS_OVERLINE, FS_LABEL, FS_SM, FS_H3 } from './design-tokens'
 import { ForcePowerTree, type ForceTreeNode, type ForceTreeConnection } from '@/components/character/ForcePowerTree'
-import { stripBBCode } from '@/lib/utils'
+import { DiceText } from '@/components/dice/DiceText'
 
 // ── Force colour ──────────────────────────────────────────────────────────────
 const FORCE_BLUE      = '#7EC8E3'
@@ -358,7 +358,7 @@ function ForcePowerCard({
   const [expanded, setExpanded] = useState(false)
   const [headerHovered, setHeaderHovered] = useState(false)
   const pct = fp.totalCount > 0 ? (fp.purchasedCount / fp.totalCount) * 100 : 0
-  const description = fp.description ? stripBBCode(fp.description) : undefined
+  const description = fp.description ?? undefined
 
   return (
     <div
@@ -423,7 +423,7 @@ function ForcePowerCard({
               color: C.textDim, marginBottom: 8, lineHeight: 1.45,
               padding: '0 12px',
             }}>
-              {description}
+              <DiceText text={description} />
             </div>
           )}
 

@@ -20,8 +20,6 @@ const DICE_TAG_MAP: Record<string, DiceType> = {
   PRO: 'proficiency',
   AB:  'ability',
   ABL: 'ability',
-  FO:  'force',
-  FP:  'force',   // Force Point / Force pip
 }
 
 // OggDude result-symbol tags → sw-rpg-icons class + colour
@@ -32,6 +30,8 @@ const SYMBOL_TAG_MAP: Record<string, { cls: string; color: string }> = {
   FA: { cls: 'ffi-swrpg-failure',   color: '#f44336' }, // Failure
   TR: { cls: 'ffi-swrpg-triumph',   color: '#F5C518' }, // Triumph
   DE: { cls: 'ffi-swrpg-despair',   color: '#C62828' }, // Despair
+  FP: { cls: 'ffi-swrpg-force',     color: '#FFFFFF' }, // Force pip / Force point
+  FO: { cls: 'ffi-swrpg-force',     color: '#FFFFFF' }, // Force die symbol in descriptions
   // DA (Damage), LI (Light side pip) — strip silently
 }
 
