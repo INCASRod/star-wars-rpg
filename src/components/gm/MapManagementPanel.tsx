@@ -421,8 +421,9 @@ export function MapManagementPanel({ campaignId, characters, allMaps, activeMap 
   const [busy,        setBusy]        = useState(false)
   const [participants, setParticipants] = useState<CombatParticipant[]>([])
   const [advTokens,   setAdvTokens]   = useState<AdversaryTokenImage[]>([])
-  const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
-  const [previewMap,  setPreviewMap]  = useState<ActiveMap | null>(null)
+  const [contextMenu,   setContextMenu]   = useState<ContextMenuState | null>(null)
+  const [previewMap,    setPreviewMap]    = useState<ActiveMap | null>(null)
+  const [addTokenOpen,  setAddTokenOpen]  = useState(false)
 
   // Token management from the active map
   const activeMapId = activeMap?.id ?? null
@@ -568,9 +569,69 @@ export function MapManagementPanel({ campaignId, characters, allMaps, activeMap 
     })
   }, [adversaryParticipants])
 
+  // Computed: participants not yet on the active map
+  const onMapParticipantIds = useMemo(() => new Set(tokens.map(t => t.participant_id).filter(Boolean)), [tokens])
+  const onMapCharIds        = useMemo(() => new Set(tokens.map(t => t.character_id).filter(Boolean)),   [tokens])
+  const availablePcs = useMemo(
+    () => participants.filter(p => p.slot_type !== 'adversary' && p.character_id && !onMapParticipantIds.has(p.id) && !onMapCharIds.has(p.character_id)),
+    [participants, onMapParticipantIds, onMapCharIds]
+  )
+  const availableAdvs = useMemo(
+    () => participants.filter(p => p.slot_type === 'adversary' && !onMapParticipantIds.has(p.id)),
+    [participants, onMapParticipantIds]
+  )
+
+  // ── Add Token helpers ────────────────────────────────────────
+  async function addSingleToken(participant: CombatParticipant, x = 0.5, y = 0.5) {
+    if (!activeMap || !campaignId) return
+    const isPc   = participant.slot_type !== 'adversary'
+    const char   = isPc ? characters.find(c => c.id === participant.character_id) : null
+    const advKey = participant.adversary_type ?? participant.active_character_name ?? 'adversary'
+    const advImg = !isPc ? (advTokens.find(a => a.adversary_key === advKey)?.token_image_url ?? null) : null
+    const alignment = isPc
+      ? 'pc'
+      : participant.is_minion_group
+        ? 'minion'
+        : participant.adversary_type === 'nemesis' ? 'nemesis' : 'rival'
+    await addToken({
+      map_id:           activeMap.id,
+      campaign_id:      campaignId,
+      participant_type: isPc ? 'pc' : 'adversary',
+      character_id:     participant.character_id,
+      participant_id:   participant.id,
+      label:            char?.name ?? participant.active_character_name ?? (isPc ? 'PC' : 'Enemy'),
+      alignment,
+      x,
+      y,
+      is_visible:       true,
+      token_size:       1.0,
+      wound_pct:        null,
+      token_image_url:  isPc ? (char?.portrait_url ?? null) : advImg,
+    })
+  }
+
+  async function addAllPlayers() {
+    if (!activeMap || !campaignId) return
+    const count = availablePcs.length
+    if (count === 0) return
+    for (let i = 0; i < count; i++) {
+      const offsetX = (i - count / 2) * 0.05
+      await addSingleToken(availablePcs[i], 0.5 + offsetX, 0.5)
+    }
+    setAddTokenOpen(false)
+  }
+
+  // Close Add Token dropdown on Escape
+  useEffect(() => {
+    if (!addTokenOpen) return
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setAddTokenOpen(false) }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [addTokenOpen])
+
   // ── Render ────────────────────────────────────────────────────
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} onClick={() => setContextMenu(null)}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} onClick={() => { setContextMenu(null); setAddTokenOpen(false) }}>
 
       {/* ── Map library ── */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -653,11 +714,126 @@ export function MapManagementPanel({ campaignId, characters, allMaps, activeMap 
               <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(200,170,80,0.45)' }}>
                 ◉ Active Map Canvas
               </div>
-              {participants.length > 0 && (
-                <button onClick={placeTokensFromEncounter} disabled={busy} style={btnPrimary}>
-                  ◉ Place Tokens from Encounter
-                </button>
-              )}
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                {participants.length > 0 && (
+                  <button onClick={placeTokensFromEncounter} disabled={busy} style={btnPrimary}>
+                    ◉ Place Tokens from Encounter
+                  </button>
+                )}
+
+                {/* ── Add Token dropdown ── */}
+                <div style={{ position: 'relative' }} onClick={e => e.stopPropagation()}>
+                  <button
+                    onClick={() => setAddTokenOpen(o => !o)}
+                    style={btnPrimary}
+                  >
+                    + Add Token
+                  </button>
+
+                  {addTokenOpen && (
+                    <div style={{
+                      position: 'absolute', top: 'calc(100% + 4px)', right: 0,
+                      background: 'rgba(6,13,9,0.97)',
+                      border: '1px solid rgba(200,170,80,0.3)',
+                      borderRadius: 8,
+                      zIndex: 100,
+                      minWidth: 220,
+                      maxHeight: 240,
+                      overflowY: 'auto',
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.8)',
+                    }}>
+                      {/* Add All Players */}
+                      {availablePcs.length > 0 && (
+                        <button
+                          onClick={addAllPlayers}
+                          style={{
+                            display: 'block', width: '100%', textAlign: 'left',
+                            background: 'rgba(200,170,80,0.08)',
+                            border: 'none', borderBottom: '1px solid rgba(200,170,80,0.2)',
+                            cursor: 'pointer', padding: '8px 12px',
+                            fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700,
+                            color: GOLD, letterSpacing: '0.06em',
+                          }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(200,170,80,0.15)' }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(200,170,80,0.08)' }}
+                        >
+                          ◉ Add All Players
+                        </button>
+                      )}
+
+                      {/* Players section */}
+                      {availablePcs.length > 0 && (
+                        <>
+                          <div style={{ padding: '5px 12px 3px', fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(200,170,80,0.4)' }}>
+                            Players
+                          </div>
+                          {availablePcs.map(p => {
+                            const char  = characters.find(c => c.id === p.character_id)
+                            const label = char?.name ?? p.active_character_name ?? 'PC'
+                            return (
+                              <button
+                                key={p.id}
+                                onClick={async () => { await addSingleToken(p); setAddTokenOpen(false) }}
+                                style={{
+                                  display: 'block', width: '100%', textAlign: 'left',
+                                  background: 'transparent', border: 'none',
+                                  cursor: 'pointer', padding: '7px 12px',
+                                  fontFamily: FR, fontSize: FS_LABEL, color: TEXT,
+                                }}
+                                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(200,170,80,0.08)' }}
+                                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+                              >
+                                ◈ {label}
+                              </button>
+                            )
+                          })}
+                        </>
+                      )}
+
+                      {/* Adversaries section */}
+                      {availableAdvs.length > 0 && (
+                        <>
+                          <div style={{
+                            padding: '5px 12px 3px',
+                            borderTop: availablePcs.length > 0 ? '1px solid rgba(200,170,80,0.15)' : 'none',
+                            fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700,
+                            letterSpacing: '0.18em', textTransform: 'uppercase',
+                            color: 'rgba(200,170,80,0.4)',
+                          }}>
+                            Adversaries
+                          </div>
+                          {availableAdvs.map(p => {
+                            const label = p.active_character_name ?? p.adversary_type ?? 'Enemy'
+                            return (
+                              <button
+                                key={p.id}
+                                onClick={async () => { await addSingleToken(p); setAddTokenOpen(false) }}
+                                style={{
+                                  display: 'block', width: '100%', textAlign: 'left',
+                                  background: 'transparent', border: 'none',
+                                  cursor: 'pointer', padding: '7px 12px',
+                                  fontFamily: FR, fontSize: FS_LABEL, color: TEXT,
+                                }}
+                                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(200,170,80,0.08)' }}
+                                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+                              >
+                                ✕ {label}
+                              </button>
+                            )
+                          })}
+                        </>
+                      )}
+
+                      {/* Empty state */}
+                      {availablePcs.length === 0 && availableAdvs.length === 0 && (
+                        <div style={{ padding: '12px', fontFamily: FR, fontSize: FS_CAPTION, color: DIM, textAlign: 'center' }}>
+                          All participants are on the map
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Canvas */}

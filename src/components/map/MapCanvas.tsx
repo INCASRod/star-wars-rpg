@@ -32,8 +32,12 @@ export function MapCanvas({
   const containerRef = useRef<HTMLDivElement>(null)
   const appRef       = useRef<InstanceType<typeof import('pixi.js').Application> | null>(null)
   const tokensRef    = useRef<Map<string, InstanceType<typeof import('pixi.js').Container>>>(new Map())
-  const mapWRef      = useRef(800)
-  const mapHRef      = useRef(600)
+
+  // Map image bounds within the canvas (updated by rebuildMap)
+  const mapWRef       = useRef(800)
+  const mapHRef       = useRef(600)
+  const mapOffsetXRef = useRef(0)
+  const mapOffsetYRef = useRef(0)
 
   // Always-current props ref — the async init closure reads this after it resolves
   const propsRef = useRef({ mapImageUrl, gridEnabled, gridSize })
@@ -58,20 +62,16 @@ export function MapCanvas({
 
       containerRef.current.appendChild(app.view as HTMLCanvasElement)
       appRef.current = app
-
-      mapWRef.current = app.screen.width
-      mapHRef.current = app.screen.height
+      app.stage.sortableChildren = true
 
       setupPan(app)
       setupZoom(app, containerRef.current)
-      app.stage.sortableChildren = true
 
-      // ── KEY FIX: Pixi just became ready — build the map with
-      //    whatever URL is current (the earlier effect already
-      //    returned early because appRef was still null).
+      // KEY: call rebuildMap NOW — the earlier effect already returned
+      // because appRef was null when mapImageUrl first arrived.
       const { mapImageUrl: url, gridEnabled: ge, gridSize: gs } = propsRef.current
       if (url) {
-        rebuildMap(app, px, url, ge, gs, mapWRef, mapHRef)
+        rebuildMap(app, px, url, ge, gs, mapWRef, mapHRef, mapOffsetXRef, mapOffsetYRef)
       }
     })
 
@@ -90,7 +90,7 @@ export function MapCanvas({
   useEffect(() => {
     const app = appRef.current
     if (!app || !PIXI || !mapImageUrl) return
-    rebuildMap(app, PIXI, mapImageUrl, gridEnabled, gridSize, mapWRef, mapHRef)
+    rebuildMap(app, PIXI, mapImageUrl, gridEnabled, gridSize, mapWRef, mapHRef, mapOffsetXRef, mapOffsetYRef)
   }, [mapImageUrl, gridEnabled, gridSize])
 
   // ── Sync tokens ─────────────────────────────────────────────
@@ -104,7 +104,8 @@ export function MapCanvas({
     if (!app || !PIXI) return
     syncTokens(
       app, PIXI, tokens, isGM, currentCharacterId,
-      onTokenMoveRef, onContextRef, tokensRef, mapWRef, mapHRef,
+      onTokenMoveRef, onContextRef, tokensRef,
+      mapWRef, mapHRef, mapOffsetXRef, mapOffsetYRef,
     )
   }, [tokens, isGM, currentCharacterId])
 
@@ -157,7 +158,6 @@ function setupZoom(
     const factor   = e.deltaY > 0 ? 0.9 : 1.1
     const newScale = Math.min(4, Math.max(0.25, app.stage.scale.x * factor))
 
-    // Zoom toward cursor
     const rect   = (app.view as HTMLCanvasElement).getBoundingClientRect()
     const mouseX = e.clientX - rect.left
     const mouseY = e.clientY - rect.top
@@ -170,16 +170,20 @@ function setupZoom(
 }
 
 // ── Rebuild map background + grid ────────────────────────────
-// Async: uses PIXI.Assets.load() so the texture is fully fetched
-// before the sprite is added to the stage (fixes black-screen on first render).
+// Scales the image with Math.min (contain) so aspect ratio is preserved,
+// then centres it. mapWRef/mapHRef track the rendered image dimensions;
+// mapOffsetXRef/mapOffsetYRef track the top-left corner position within
+// the canvas. Token normalised coords (0-1) are relative to the image bounds.
 async function rebuildMap(
-  app:         InstanceType<typeof import('pixi.js').Application>,
-  px:          typeof import('pixi.js'),
-  imageUrl:    string,
-  gridEnabled: boolean,
-  gridSize:    number,
-  mapWRef:     React.MutableRefObject<number>,
-  mapHRef:     React.MutableRefObject<number>,
+  app:           InstanceType<typeof import('pixi.js').Application>,
+  px:            typeof import('pixi.js'),
+  imageUrl:      string,
+  gridEnabled:   boolean,
+  gridSize:      number,
+  mapWRef:       React.MutableRefObject<number>,
+  mapHRef:       React.MutableRefObject<number>,
+  mapOffsetXRef: React.MutableRefObject<number>,
+  mapOffsetYRef: React.MutableRefObject<number>,
 ) {
   // Remove old bg/grid layers
   const toRemove = app.stage.children.filter(
@@ -188,39 +192,54 @@ async function rebuildMap(
   )
   toRemove.forEach(c => app.stage.removeChild(c))
 
-  const w = app.screen.width
-  const h = app.screen.height
-  mapWRef.current = w
-  mapHRef.current = h
+  const cw = app.screen.width
+  const ch = app.screen.height
 
-  // Load the texture fully before adding the sprite — PIXI.Sprite.from() is
-  // lazy and silently stays blank when the image hasn't loaded yet.
   try {
     const texture = await px.Assets.load(imageUrl)
+
+    // Uniform scale — contain within canvas, preserve aspect ratio
+    const scaleX = cw / texture.width
+    const scaleY = ch / texture.height
+    const scale  = Math.min(scaleX, scaleY)
+
+    const mapW    = Math.round(texture.width  * scale)
+    const mapH    = Math.round(texture.height * scale)
+    const offsetX = Math.round((cw - mapW) / 2)
+    const offsetY = Math.round((ch - mapH) / 2)
+
+    // Update refs so token positioning uses the correct bounds
+    mapWRef.current       = mapW
+    mapHRef.current       = mapH
+    mapOffsetXRef.current = offsetX
+    mapOffsetYRef.current = offsetY
+
     const bg = new px.Sprite(texture)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(bg as any).name = 'mapBg'
-    bg.width  = w
-    bg.height = h
+    bg.x      = offsetX
+    bg.y      = offsetY
+    bg.width  = mapW
+    bg.height = mapH
     bg.zIndex = 0
     app.stage.addChild(bg)
+
+    if (gridEnabled && gridSize > 0) {
+      const g = new px.Graphics()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(g as any).name = 'grid'
+      g.zIndex = 1
+      g.lineStyle(1, 0xffffff, 0.12)
+      for (let x = offsetX; x <= offsetX + mapW; x += gridSize) {
+        g.moveTo(x, offsetY); g.lineTo(x, offsetY + mapH)
+      }
+      for (let y = offsetY; y <= offsetY + mapH; y += gridSize) {
+        g.moveTo(offsetX, y); g.lineTo(offsetX + mapW, y)
+      }
+      app.stage.addChild(g)
+    }
   } catch (err) {
     console.error('[MapCanvas] Failed to load map texture:', err)
-  }
-
-  if (gridEnabled && gridSize > 0) {
-    const g = new px.Graphics()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(g as any).name = 'grid'
-    g.zIndex = 1
-    g.lineStyle(1, 0xffffff, 0.12)
-    for (let x = 0; x <= w; x += gridSize) {
-      g.moveTo(x, 0); g.lineTo(x, h)
-    }
-    for (let y = 0; y <= h; y += gridSize) {
-      g.moveTo(0, y); g.lineTo(w, y)
-    }
-    app.stage.addChild(g)
   }
 }
 
@@ -236,17 +255,21 @@ function syncTokens(
   tokensRef:           React.MutableRefObject<Map<string, InstanceType<typeof import('pixi.js').Container>>>,
   mapWRef:             React.MutableRefObject<number>,
   mapHRef:             React.MutableRefObject<number>,
+  mapOffsetXRef:       React.MutableRefObject<number>,
+  mapOffsetYRef:       React.MutableRefObject<number>,
 ) {
   const existing = new Set(tokensRef.current.keys())
 
   for (const token of tokens) {
-    const mapW = mapWRef.current
-    const mapH = mapHRef.current
+    const mapW    = mapWRef.current
+    const mapH    = mapHRef.current
+    const offsetX = mapOffsetXRef.current
+    const offsetY = mapOffsetYRef.current
 
     if (tokensRef.current.has(token.id)) {
       const c = tokensRef.current.get(token.id)!
-      c.x = token.x * mapW
-      c.y = token.y * mapH
+      c.x = offsetX + token.x * mapW
+      c.y = offsetY + token.y * mapH
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ;(c as any).alpha = (!isGM && !token.is_visible) ? 0 : (isGM && !token.is_visible ? 0.4 : 1)
       existing.delete(token.id)
@@ -254,7 +277,11 @@ function syncTokens(
     }
 
     const canDrag = isGM || (token.participant_type === 'pc' && token.character_id === currentCharId)
-    const sprite  = buildTokenSprite(px, token, canDrag, mapW, mapH, onMoveRef, onContextRef)
+    const sprite  = buildTokenSprite(
+      px, token, canDrag,
+      mapW, mapH, offsetX, offsetY,
+      onMoveRef, onContextRef,
+    )
     app.stage.addChild(sprite)
     tokensRef.current.set(token.id, sprite)
     existing.delete(token.id)
@@ -274,6 +301,8 @@ function buildTokenSprite(
   canDrag:      boolean,
   mapW:         number,
   mapH:         number,
+  offsetX:      number,
+  offsetY:      number,
   onMoveRef:    React.MutableRefObject<(id: string, x: number, y: number) => void>,
   onContextRef: React.MutableRefObject<((id: string, e: MouseEvent) => void) | undefined>,
 ): InstanceType<typeof import('pixi.js').Container> {
@@ -345,8 +374,9 @@ function buildTokenSprite(
   lbl.zIndex = 4
   c.addChild(lbl)
 
-  c.x = token.x * mapW
-  c.y = token.y * mapH
+  // Position using map image bounds (not canvas bounds)
+  c.x = offsetX + token.x * mapW
+  c.y = offsetY + token.y * mapH
   c.alpha = 1
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -377,13 +407,14 @@ function buildTokenSprite(
     c.x = e.globalX - offX
     c.y = e.globalY - offY
   })
+  // Normalise position relative to map image (not canvas) on drop
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(c as any).on('pointerup', () => {
     if (!dragging) return
     dragging = false
     c.zIndex = 10
-    const nx = Math.max(0, Math.min(1, c.x / mapW))
-    const ny = Math.max(0, Math.min(1, c.y / mapH))
+    const nx = Math.max(0, Math.min(1, (c.x - offsetX) / mapW))
+    const ny = Math.max(0, Math.min(1, (c.y - offsetY) / mapH))
     onMoveRef.current(token.id, nx, ny)
   })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -391,8 +422,8 @@ function buildTokenSprite(
     if (!dragging) return
     dragging = false
     c.zIndex = 10
-    const nx = Math.max(0, Math.min(1, c.x / mapW))
-    const ny = Math.max(0, Math.min(1, c.y / mapH))
+    const nx = Math.max(0, Math.min(1, (c.x - offsetX) / mapW))
+    const ny = Math.max(0, Math.min(1, (c.y - offsetY) / mapH))
     onMoveRef.current(token.id, nx, ny)
   })
 
