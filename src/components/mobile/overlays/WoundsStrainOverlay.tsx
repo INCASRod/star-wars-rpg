@@ -1,6 +1,7 @@
 'use client'
 
 import { BottomSheet } from '@/components/mobile/shared/BottomSheet'
+import { EncumbranceBar } from '@/components/character/EncumbranceBar'
 import type { Character } from '@/lib/types'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
@@ -19,6 +20,8 @@ interface WoundsStrainOverlayProps {
   character: Character
   onVitalChange: (field: 'wound_current' | 'strain_current', delta: number) => void
   woundBonus?: number
+  encumbranceCurrent?: number
+  encumbranceThreshold?: number
 }
 
 function VitalBtn({ label, disabled, onClick }: { label: string; disabled: boolean; onClick: () => void }) {
@@ -132,10 +135,11 @@ export function WoundsStrainFab({ character, woundBonus = 0 }: { character: Char
   )
 }
 
-export function WoundsStrainOverlay({ character, onVitalChange, woundBonus = 0 }: WoundsStrainOverlayProps) {
+export function WoundsStrainOverlay({ character, onVitalChange, woundBonus = 0, encumbranceCurrent, encumbranceThreshold }: WoundsStrainOverlayProps) {
   // FAB and Sheet are split — the parent controls open state
   // This component is the sheet content only; use WoundsStrainFab for the trigger
   const effectiveWoundThreshold = character.wound_threshold + woundBonus
+  const showEnc = encumbranceCurrent !== undefined && encumbranceThreshold !== undefined
   return (
     <div style={{ padding: '8px 16px 32px' }}>
       <h2 style={{
@@ -178,6 +182,16 @@ export function WoundsStrainOverlay({ character, onVitalChange, woundBonus = 0 }
           dangerColor={STRAIN_WARN}
         />
       </div>
+
+      {showEnc && (
+        <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid rgba(200,170,80,0.12)' }}>
+          <EncumbranceBar
+            current={encumbranceCurrent!}
+            threshold={encumbranceThreshold!}
+            labelFontSize="clamp(0.65rem, 2.6vw, 0.8rem)"
+          />
+        </div>
+      )}
     </div>
   )
 }

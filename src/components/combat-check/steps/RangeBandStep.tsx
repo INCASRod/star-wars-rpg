@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { DiceFace } from '@/components/dice/DiceFace'
 import type { RefWeapon } from '@/lib/types'
 import {
@@ -48,17 +49,22 @@ function DifficultyDice({ count, challenge = 0 }: { count: number; challenge?: n
 }
 
 export function RangeBandStep({ attackType, weapon, selectedBand, onSelect }: RangeBandStepProps) {
-  // For melee, simplified view
-  if (attackType === 'melee') {
-    const refW = weapon?.refWeapon
-    const maxRange = refW?.range_value ? (RANGE_VALUE_MAP[refW.range_value] ?? 'engaged') : 'engaged'
-    const canReachShort = bandIndex(maxRange) >= bandIndex('short')
+  // Derive melee range capability at top level (before any conditional returns)
+  const meleeRefW      = weapon?.refWeapon
+  const meleeMaxRange  = meleeRefW?.range_value ? (RANGE_VALUE_MAP[meleeRefW.range_value] ?? 'engaged') : 'engaged'
+  const canReachShort  = bandIndex(meleeMaxRange) >= bandIndex('short')
 
-    // If melee weapon can only reach engaged — auto-select and show static
-    if (!canReachShort && selectedBand !== 'engaged') {
+  // Auto-select 'engaged' for melee weapons that can only reach engaged range.
+  // Must be in useEffect — calling onSelect during render causes
+  // "Cannot update a component while rendering a different component".
+  useEffect(() => {
+    if (attackType === 'melee' && !canReachShort && selectedBand !== 'engaged') {
       onSelect('engaged')
     }
+  }, [attackType, canReachShort, selectedBand, onSelect])
 
+  // For melee, simplified view
+  if (attackType === 'melee') {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <BandCard

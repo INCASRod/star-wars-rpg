@@ -161,7 +161,10 @@ function ResultSymbols({ result }: { result: RollEntry['result'] }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: FONT_MONO, fontSize: FS_RESULT }}>
       {items.map(({ icon, color, n }, idx) => (
-        <span key={idx} style={{ color }}>{icon}{n > 1 ? n : ''}</span>
+        <span key={idx} style={{ color }}>
+          <i className={`ffi ffi-${icon}`} />
+          {n > 1 ? n : ''}
+        </span>
       ))}
     </div>
   )
@@ -231,12 +234,13 @@ function SkillCard({ roll, isOwn, isGm }: { roll: RollEntry; isOwn: boolean; isG
 // COMBAT CARD
 // ═══════════════════════════════════════════════════════════════════
 type RollMetaShape = {
-  weaponDamage?:  number
-  characterBrawn?: number
-  attackType?:    string
-  critEligible?:  boolean
-  critRating?:    number
-  critModifier?:  number
+  weaponDamage?:    number
+  weaponDamageAdd?: number
+  characterBrawn?:  number
+  attackType?:      string
+  critEligible?:    boolean
+  critRating?:      number
+  critModifier?:    number
 }
 
 function CombatCard({ roll, isOwn, isGm }: { roll: RollEntry; isOwn: boolean; isGm: boolean }) {
@@ -249,11 +253,17 @@ function CombatCard({ roll, isOwn, isGm }: { roll: RollEntry; isOwn: boolean; is
 
   const meta      = roll.roll_meta as RollMetaShape | null | undefined
   const isRanged  = meta?.attackType !== 'melee'
-  const weaponDmg = meta?.weaponDamage
+  const base      = meta?.weaponDamage ?? 0
+  const damageAdd = isRanged ? 0 : (meta?.weaponDamageAdd ?? 0)
   const brawnMod  = isRanged ? 0 : (meta?.characterBrawn ?? 0)
   const netSuc    = Math.max(0, roll.result.netSuccess)
-  const dmgLine   = (weaponDmg != null && roll.result.netSuccess > 0)
-    ? `${weaponDmg}${brawnMod > 0 ? `+${brawnMod}` : ''}+${netSuc} = ${weaponDmg + brawnMod + netSuc}`
+  const total     = base + brawnMod + damageAdd + netSuc
+  const dmgLine   = (meta?.weaponDamage != null && roll.result.netSuccess > 0)
+    ? isRanged
+      ? `${base}+${netSuc} = ${total}`
+      : damageAdd > 0
+        ? `${base}+${brawnMod}+${damageAdd}(Brawn)+${netSuc} = ${total}`
+        : `${base}+${brawnMod}+${netSuc} = ${total}`
     : null
 
   return (
@@ -547,16 +557,16 @@ export function RollFeedMini({ rolls, ownCharacterId, onExpand }: {
                   {/* Net symbols */}
                   {roll.result.netSuccess !== 0 && (
                     <span style={{ fontFamily: FONT_MONO, fontSize: FS_COMPACT, color: roll.result.netSuccess > 0 ? SYM.S.color : SYM.F.color }}>
-                      {roll.result.netSuccess > 0 ? SYM.S.icon : SYM.F.icon}{Math.abs(roll.result.netSuccess)}
+                      <i className={`ffi ffi-${roll.result.netSuccess > 0 ? SYM.S.icon : SYM.F.icon}`} />{Math.abs(roll.result.netSuccess)}
                     </span>
                   )}
                   {roll.result.netAdvantage !== 0 && (
                     <span style={{ fontFamily: FONT_MONO, fontSize: FS_COMPACT, color: roll.result.netAdvantage > 0 ? SYM.A.color : SYM.H.color }}>
-                      {roll.result.netAdvantage > 0 ? SYM.A.icon : SYM.H.icon}{Math.abs(roll.result.netAdvantage)}
+                      <i className={`ffi ffi-${roll.result.netAdvantage > 0 ? SYM.A.icon : SYM.H.icon}`} />{Math.abs(roll.result.netAdvantage)}
                     </span>
                   )}
-                  {roll.result.triumph > 0 && <span style={{ fontFamily: FONT_MONO, fontSize: FS_COMPACT, color: SYM.T.color }}>{SYM.T.icon}</span>}
-                  {roll.result.despair  > 0 && <span style={{ fontFamily: FONT_MONO, fontSize: FS_COMPACT, color: SYM.D.color }}>{SYM.D.icon}</span>}
+                  {roll.result.triumph > 0 && <i className={`ffi ffi-${SYM.T.icon}`} style={{ fontSize: FS_COMPACT, color: SYM.T.color }} />}
+                  {roll.result.despair  > 0 && <i className={`ffi ffi-${SYM.D.icon}`} style={{ fontSize: FS_COMPACT, color: SYM.D.color }} />}
                 </div>
               )}
             </div>

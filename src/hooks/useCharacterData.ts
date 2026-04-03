@@ -10,7 +10,7 @@ import type {
   RefSkill, RefTalent, RefWeapon, RefArmor, RefGear, RefCriticalInjury, RefSpecialization,
   RefItemDescriptor, RefCareer, RefSpecies,
   RefForcePower, RefForceAbility, CharacterForceAbility,
-  RefWeaponQuality, RefItemAttachment,
+  RefWeaponQuality, RefItemAttachment, EquipState,
 } from '@/lib/types'
 
 export function useCharacterData(characterId: string) {
@@ -56,9 +56,9 @@ export function useCharacterData(characterId: string) {
         supabase.from('characters').select('*').eq('id', characterId).single(),
         supabase.from('character_skills').select('*').eq('character_id', characterId),
         supabase.from('character_talents').select('*').eq('character_id', characterId),
-        supabase.from('character_weapons').select('*').eq('character_id', characterId),
-        supabase.from('character_armor').select('*').eq('character_id', characterId),
-        supabase.from('character_gear').select('*').eq('character_id', characterId),
+        supabase.from('character_weapons').select('*').eq('character_id', characterId).eq('is_dropped', false),
+        supabase.from('character_armor').select('*').eq('character_id', characterId).eq('is_dropped', false),
+        supabase.from('character_gear').select('*').eq('character_id', characterId).eq('is_dropped', false),
         supabase.from('character_critical_injuries').select('*').eq('character_id', characterId).eq('is_healed', false),
         supabase.from('character_specializations').select('*').eq('character_id', characterId),
         supabase.from('ref_skills').select('*'),
@@ -185,6 +185,15 @@ export function useCharacterData(characterId: string) {
     await supabase.from('characters').update({ [field]: newValue }).eq('id', character.id)
   }
 
+  /** Like handleVitalChange but with no upper cap — wounds/strain can exceed threshold. */
+  const handleVitalAdjust = async (field: 'wound_current' | 'strain_current', delta: number) => {
+    if (!character) return
+    markSelf()
+    const newValue = Math.max(0, character[field] + delta)
+    setCharacter({ ...character, [field]: newValue })
+    await supabase.from('characters').update({ [field]: newValue }).eq('id', character.id)
+  }
+
   const handleBuySkill = async (skillKey: string, currentRank: number, isCareer: boolean) => {
     if (!character) return
     markSelf()
@@ -217,6 +226,20 @@ export function useCharacterData(characterId: string) {
     const next = cycleEquipState(w.equip_state ?? (w.is_equipped ? 'equipped' : 'carrying'))
     setWeapons(prev => prev.map(x => x.id === id ? { ...x, equip_state: next, is_equipped: next === 'equipped' } : x))
     await supabase.from('character_weapons').update({ equip_state: next, is_equipped: next === 'equipped' }).eq('id', id)
+  }
+
+  const handleSetEquipState = async (id: string, type: 'weapon' | 'armor' | 'gear', state: EquipState) => {
+    markSelf()
+    if (type === 'weapon') {
+      setWeapons(prev => prev.map(x => x.id === id ? { ...x, equip_state: state, is_equipped: state === 'equipped' } : x))
+      await supabase.from('character_weapons').update({ equip_state: state, is_equipped: state === 'equipped' }).eq('id', id)
+    } else if (type === 'armor') {
+      setArmor(prev => prev.map(x => x.id === id ? { ...x, equip_state: state, is_equipped: state === 'equipped' } : x))
+      await supabase.from('character_armor').update({ equip_state: state, is_equipped: state === 'equipped' }).eq('id', id)
+    } else {
+      setGear(prev => prev.map(x => x.id === id ? { ...x, equip_state: state, is_equipped: state === 'equipped' } : x))
+      await supabase.from('character_gear').update({ equip_state: state, is_equipped: state === 'equipped' }).eq('id', id)
+    }
   }
 
   const handleToggleEquippedById = async (id: string, type: 'weapon' | 'armor' | 'gear') => {
@@ -373,20 +396,35 @@ export function useCharacterData(characterId: string) {
     await supabase.from('characters').update({ [dbField]: val }).eq('id', character.id)
   }
 
-  const handleRemoveWeapon = async (id: string) => {
+  const handleRemoveWeapon = async (id: string, droppedBy: 'player' | 'gm' = 'player', droppedNote?: string) => {
     markSelf()
     setWeapons(prev => prev.filter(w => w.id !== id))
-    await supabase.from('character_weapons').delete().eq('id', id)
+    await supabase.from('character_weapons').update({
+      is_dropped: true,
+      dropped_at: new Date().toISOString(),
+      dropped_by: droppedBy,
+      ...(droppedNote ? { dropped_note: droppedNote } : {}),
+    }).eq('id', id)
   }
 
-  const handleRemoveEquipment = async (id: string, type: 'armor' | 'gear') => {
+  const handleRemoveEquipment = async (id: string, type: 'armor' | 'gear', droppedBy: 'player' | 'gm' = 'player', droppedNote?: string) => {
     markSelf()
     if (type === 'armor') {
       setArmor(prev => prev.filter(a => a.id !== id))
-      await supabase.from('character_armor').delete().eq('id', id)
+      await supabase.from('character_armor').update({
+        is_dropped: true,
+        dropped_at: new Date().toISOString(),
+        dropped_by: droppedBy,
+        ...(droppedNote ? { dropped_note: droppedNote } : {}),
+      }).eq('id', id)
     } else {
       setGear(prev => prev.filter(g => g.id !== id))
-      await supabase.from('character_gear').delete().eq('id', id)
+      await supabase.from('character_gear').update({
+        is_dropped: true,
+        dropped_at: new Date().toISOString(),
+        dropped_by: droppedBy,
+        ...(droppedNote ? { dropped_note: droppedNote } : {}),
+      }).eq('id', id)
     }
   }
 
@@ -530,9 +568,11 @@ export function useCharacterData(characterId: string) {
     supabase,
     // Mutations
     handleVitalChange,
+    handleVitalAdjust,
     handleBuySkill,
     handleToggleWeaponEquipped,
     handleToggleEquippedById,
+    handleSetEquipState,
     handleRollCrit,
     handleHealCrit,
     handlePortraitUpload,

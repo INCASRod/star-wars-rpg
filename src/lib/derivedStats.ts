@@ -11,13 +11,95 @@ import type {
   Character,
   CharacterTalent,
   CharacterArmor,
+  CharacterGear,
   CharacterWeapon,
   RefTalent,
   RefArmor,
+  RefGear,
   RefWeapon,
   RefWeaponQuality,
   RefItemAttachment,
+  AttachmentModEntry,
+  WeaponQuality,
 } from './types'
+
+// ── Weapon attachment helpers ─────────────────────────────────────────────────
+
+function isAttModArray(v: unknown): v is AttachmentModEntry[] {
+  return Array.isArray(v)
+}
+
+export interface EffectiveWeaponStats {
+  /** Flat damage value (after attachment DAMADD/DAMSUB; not brawn-based) */
+  damage: number
+  /** damage_add for brawn-based weapons (Melee/Brawl/Lightsaber) */
+  damage_add: number | null
+  /** Crit rating after attachment CRITADD/CRITSUB */
+  crit: number
+  /** Merged quality array: base weapon + attachment quality mods */
+  qualities: WeaponQuality[]
+}
+
+/**
+ * Compute effective weapon stats by merging attachment base_mods
+ * (and any installed added_mods) into the weapon's base values.
+ *
+ * @param refWeapon        - Base weapon ref row
+ * @param attachments      - Attachment refs to apply (in order)
+ * @param installedAddedModIndicesByKey - Map of attKey → array of added-mod indices installed
+ */
+export function computeEffectiveWeaponStats(
+  refWeapon: RefWeapon,
+  attachments: RefItemAttachment[],
+  installedAddedModIndicesByKey: Record<string, number[]> = {},
+): EffectiveWeaponStats {
+  let damage     = refWeapon.damage ?? 0
+  let damage_add = refWeapon.damage_add ?? null
+  let crit       = refWeapon.crit ?? 4
+
+  // Build a mutable quality map keyed by quality key
+  const qualMap: Record<string, number> = {}
+  if (Array.isArray(refWeapon.qualities)) {
+    for (const q of refWeapon.qualities) {
+      qualMap[q.key] = (qualMap[q.key] ?? 0) + (q.count ?? 1)
+    }
+  }
+
+  const applyMod = (entry: AttachmentModEntry) => {
+    if (!entry.key) return
+    const n = entry.count ?? 1
+    switch (entry.key) {
+      case 'DAMADD':   damage += n;              break
+      case 'DAMSUB':   damage -= n;              break
+      case 'DAMSET':   damage = n;               break
+      case 'CRITADD':  crit   += n;              break
+      case 'CRITSUB':  crit   = Math.max(1, crit - n); break
+      case 'CRITSET':  crit   = n;               break
+      default:
+        // Assume any other non-null key with count > 0 is a quality mod
+        if (n > 0) qualMap[entry.key] = (qualMap[entry.key] ?? 0) + n
+    }
+  }
+
+  for (const att of attachments) {
+    if (isAttModArray(att.base_mods)) {
+      for (const entry of att.base_mods) applyMod(entry)
+    }
+    const installedIndices = installedAddedModIndicesByKey[att.key] ?? []
+    if (isAttModArray(att.added_mods)) {
+      for (const idx of installedIndices) {
+        const entry = att.added_mods[idx]
+        if (entry) applyMod(entry)
+      }
+    }
+  }
+
+  const qualities: WeaponQuality[] = Object.entries(qualMap)
+    .filter(([, count]) => count > 0)
+    .map(([key, count]) => ({ key, count }))
+
+  return { damage, damage_add, crit, qualities }
+}
 
 // ── Public types ─────────────────────────────────────────────────────────────
 
@@ -74,6 +156,64 @@ export interface DerivedStatsResult {
     strainThreshold: StatSource[]
     forceRating: StatSource[]
   }
+}
+
+// ── Encumbrance ──────────────────────────────────────────────────────────────
+
+export interface EncumbranceStats {
+  /** Total encumbrance from all carried/equipped items */
+  current: number
+  /** 5 + brawn base + storage container bonuses */
+  threshold: number
+}
+
+/**
+ * Compute encumbrance current + threshold for a character.
+ * Rules:
+ *   - Stowed items contribute 0 enc
+ *   - Equipped armor reduces its enc by 3 (min 0) — wearing bonus
+ *   - Storage containers (ref_gear.encumbrance_bonus) increase threshold
+ */
+export function computeEncumbranceStats(
+  character: Pick<Character, 'encumbrance_threshold'>,
+  armor:   CharacterArmor[],
+  refArmorMap:  Record<string, Pick<RefArmor, 'encumbrance'>>,
+  gear:    CharacterGear[],
+  refGearMap:   Record<string, Pick<RefGear, 'encumbrance' | 'encumbrance_bonus'>>,
+  weapons: CharacterWeapon[],
+  refWeaponMap: Record<string, Pick<RefWeapon, 'encumbrance'>>,
+): EncumbranceStats {
+  let current = 0
+  for (const a of armor) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((a as any).is_dropped) continue
+    const state = a.equip_state ?? (a.is_equipped ? 'equipped' : 'carrying')
+    if (state === 'stowed') continue
+    const enc = refArmorMap[a.armor_key]?.encumbrance || 0
+    current += state === 'equipped' ? Math.max(0, enc - 3) : enc
+  }
+  for (const g of gear) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((g as any).is_dropped) continue
+    const state = g.equip_state ?? (g.is_equipped ? 'equipped' : 'carrying')
+    if (state === 'stowed') continue
+    current += (refGearMap[g.gear_key]?.encumbrance || 0) * (g.quantity || 1)
+  }
+  for (const w of weapons) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((w as any).is_dropped) continue
+    const state = w.equip_state ?? (w.is_equipped ? 'equipped' : 'carrying')
+    if (state === 'stowed') continue
+    current += refWeaponMap[w.weapon_key]?.encumbrance || 0
+  }
+  const bonus = gear.reduce((s, g) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((g as any).is_dropped) return s
+    const state = g.equip_state ?? (g.is_equipped ? 'equipped' : 'carrying')
+    const ref = refGearMap[g.gear_key]
+    return s + (state !== 'stowed' && ref?.encumbrance_bonus ? ref.encumbrance_bonus : 0)
+  }, 0)
+  return { current, threshold: character.encumbrance_threshold + bonus }
 }
 
 // ── Engine ───────────────────────────────────────────────────────────────────
@@ -162,12 +302,26 @@ export function computeDerivedStats(
       if (!attKey) continue
       const ref = refAttachmentMap[attKey]
       if (!ref?.base_mods) continue
-      const m = ref.base_mods
-      if (m.soakAdd)            { mods.soakBonus           += m.soakAdd;            soakSources.push({ label: ref.name, value: m.soakAdd }) }
-      if (m.defenseMeleeAdd)    { mods.defenseMelee         += m.defenseMeleeAdd;    defMSources.push({ label: ref.name, value: m.defenseMeleeAdd }) }
-      if (m.defenseRangedAdd)   { mods.defenseRanged        += m.defenseRangedAdd;   defRSources.push({ label: ref.name, value: m.defenseRangedAdd }) }
-      if (m.woundThresholdAdd)  { mods.woundThresholdBonus  += m.woundThresholdAdd;  woundSources.push({ label: ref.name, value: m.woundThresholdAdd }) }
-      if (m.strainThresholdAdd) { mods.strainThresholdBonus += m.strainThresholdAdd; strainSources.push({ label: ref.name, value: m.strainThresholdAdd }) }
+      // Handle both legacy flat-object format and new array format
+      if (isAttModArray(ref.base_mods)) {
+        // New array format: derive armor stats from known keys
+        for (const entry of ref.base_mods) {
+          if (!entry.key || !entry.count) continue
+          const n = entry.count
+          if (entry.key === 'SOAKADD')    { mods.soakBonus           += n; soakSources.push({ label: ref.name, value: n }) }
+          if (entry.key === 'DEFADD')     { mods.defenseMelee += n; mods.defenseRanged += n; defMSources.push({ label: ref.name, value: n }); defRSources.push({ label: ref.name, value: n }) }
+          if (entry.key === 'STRAINADD')  { mods.strainThresholdBonus += n; strainSources.push({ label: ref.name, value: n }) }
+          if (entry.key === 'WOUNDADD')   { mods.woundThresholdBonus  += n; woundSources.push({ label: ref.name, value: n }) }
+        }
+      } else {
+        // Legacy flat-object format
+        const m = ref.base_mods
+        if (m.soakAdd)            { mods.soakBonus           += m.soakAdd;            soakSources.push({ label: ref.name, value: m.soakAdd }) }
+        if (m.defenseMeleeAdd)    { mods.defenseMelee         += m.defenseMeleeAdd;    defMSources.push({ label: ref.name, value: m.defenseMeleeAdd }) }
+        if (m.defenseRangedAdd)   { mods.defenseRanged        += m.defenseRangedAdd;   defRSources.push({ label: ref.name, value: m.defenseRangedAdd }) }
+        if (m.woundThresholdAdd)  { mods.woundThresholdBonus  += m.woundThresholdAdd;  woundSources.push({ label: ref.name, value: m.woundThresholdAdd }) }
+        if (m.strainThresholdAdd) { mods.strainThresholdBonus += m.strainThresholdAdd; strainSources.push({ label: ref.name, value: m.strainThresholdAdd }) }
+      }
     }
   }
 

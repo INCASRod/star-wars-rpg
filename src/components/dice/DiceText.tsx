@@ -9,7 +9,6 @@ interface DiceTextProps {
   style?: React.CSSProperties
 }
 
-const SYMBOL_FONT = "'Share Tech Mono', 'Courier New', monospace"
 
 /**
  * Renders OggDude markup text as inline React:
@@ -29,8 +28,7 @@ export function DiceText({ text, className, style }: DiceTextProps) {
         }
         if (seg.type === 'symbol') {
           return (
-            <span key={i} style={{
-              fontFamily: SYMBOL_FONT,
+            <i key={i} className={`ffi ${seg.cls}`} style={{
               color: seg.color,
               display: 'inline-block',
               verticalAlign: 'middle',
@@ -38,9 +36,7 @@ export function DiceText({ text, className, style }: DiceTextProps) {
               position: 'relative',
               top: '-1px',
               fontSize: '0.9em',
-            }}>
-              {seg.content}
-            </span>
+            }} />
           )
         }
         return (

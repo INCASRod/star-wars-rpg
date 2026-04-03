@@ -101,11 +101,12 @@ function StatBox({ label, value, color = GOLD }: { label: string; value: string 
 
 // ── Unified wound tracker used on every adversary/NPC slot ───────────────────
 function AdversaryWoundTracker({
-  adv, accentColor, onAdjust,
+  adv, accentColor, onAdjust, onAdjustStrain,
 }: {
   adv: import('@/lib/adversaries').AdversaryInstance
   accentColor: string
   onAdjust: (delta: number) => void
+  onAdjustStrain?: (delta: number) => void
 }) {
   const wounds    = adv.woundsCurrent ?? 0
   const isMinion  = adv.type === 'minion'
@@ -199,6 +200,75 @@ function AdversaryWoundTracker({
           </span>
         </div>
       )}
+
+      {/* Strain tracker — nemesis only */}
+      {adv.type === 'nemesis' && adv.strainThreshold && adv.strainThreshold > 0 && onAdjustStrain && (() => {
+        const strain    = adv.strainCurrent ?? 0
+        const strainMax = adv.strainThreshold
+        const sPct      = strainMax > 0 ? Math.min(1, strain / strainMax) : 0
+        const AMBER     = '#FF9800'
+        const PURPLE    = '#9C27B0'
+        const sBarColor = sPct >= 1 ? PURPLE : sPct >= 0.8 ? AMBER : '#FF9800'
+        return (
+          <div style={{ marginTop: 10 }}>
+            <div style={{
+              fontFamily: FM, fontSize: FS_OVERLINE, color: AMBER,
+              letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 4,
+            }}>Strain</div>
+            <div style={{ height: 8, background: 'rgba(255,255,255,0.06)', borderRadius: 4, overflow: 'hidden' }}>
+              <div style={{
+                width: `${sPct * 100}%`, height: '100%', background: sBarColor,
+                borderRadius: 4, transition: 'width 300ms ease',
+              }} />
+            </div>
+            <div style={{
+              fontFamily: "'Share Tech Mono','Courier New',monospace",
+              fontSize: 'clamp(0.65rem,1vw,0.78rem)', color: 'rgba(232,223,200,0.5)',
+              textAlign: 'right', marginTop: 2,
+            }}>
+              {strain} / {strainMax}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+              <button
+                onClick={() => onAdjustStrain(-1)}
+                disabled={strain === 0}
+                style={{
+                  width: 40, height: 32, borderRadius: 6,
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  cursor: strain === 0 ? 'not-allowed' : 'pointer',
+                  fontFamily: "'Share Tech Mono',monospace", fontSize: 18, lineHeight: 1,
+                  color: strain === 0 ? 'rgba(232,223,200,0.2)' : 'rgba(232,223,200,0.8)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+                onMouseEnter={e => { if (strain > 0) (e.currentTarget as HTMLElement).style.borderColor = `${AMBER}66` }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.12)' }}
+              >−</button>
+              <span style={{
+                flex: 1, textAlign: 'center',
+                fontFamily: "'Share Tech Mono','Courier New',monospace",
+                fontSize: 'clamp(0.75rem,1.2vw,0.88rem)', color: 'rgba(232,223,200,0.8)',
+              }}>
+                {strain} strain
+              </span>
+              <button
+                onClick={() => onAdjustStrain(1)}
+                style={{
+                  width: 40, height: 32, borderRadius: 6,
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  cursor: 'pointer',
+                  fontFamily: "'Share Tech Mono',monospace", fontSize: 18, lineHeight: 1,
+                  color: 'rgba(232,223,200,0.8)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${AMBER}66` }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.12)' }}
+              >+</button>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }
@@ -214,7 +284,7 @@ interface PendingDamage {
   raw_damage:               number
   soak_value:               number
   net_damage:               number
-  status:                   'pending' | 'applied' | 'modified' | 'dismissed'
+  status:                   'pending' | 'pending_secondary' | 'applied' | 'modified' | 'dismissed'
   weapon_name:              string | null
   attack_type:              string | null
   range_band:               string | null
@@ -382,7 +452,7 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
       .from('pending_damage')
       .select('*')
       .eq('campaign_id', campaignId)
-      .eq('status', 'pending')
+      .in('status', ['pending', 'pending_secondary'])
       .order('created_at')
       .then(({ data }) => { if (data) setPendingDamages(data as PendingDamage[]) })
 
@@ -602,6 +672,18 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
         result_summary: msg, is_visible_to_players: true,
       })
     }
+  }
+
+  // Adjust strain for a nemesis adversary (stored on adversary instance in JSONB)
+  const adjustAdversaryStrain = async (adv: AdversaryInstance, delta: number) => {
+    if (!encounter || adv.type !== 'nemesis') return
+    const strainMax = adv.strainThreshold ?? 0
+    const current   = adv.strainCurrent ?? 0
+    const next      = Math.max(0, Math.min(strainMax > 0 ? strainMax : 999, current + delta))
+    const updatedAdversaries = encounter.adversaries.map(a =>
+      a.instanceId !== adv.instanceId ? a : { ...a, strainCurrent: next }
+    )
+    await saveEncounter({ adversaries: updatedAdversaries })
   }
 
   // Update individual minion wound within a group
@@ -1062,12 +1144,25 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
             {pendingDamages.map(pd => {
               const editedVal = editedDamages[pd.id] ?? pd.net_damage
               const setEdited = (v: number) => setEditedDamages(prev => ({ ...prev, [pd.id]: Math.max(0, v) }))
+              const isSecondary = pd.status === 'pending_secondary'
 
               return (
                 <div key={pd.id} style={{
-                  background: 'rgba(224,82,82,0.06)', border: '1px solid rgba(224,82,82,0.3)',
+                  background: isSecondary ? 'rgba(200,170,80,0.04)' : 'rgba(224,82,82,0.06)',
+                  border: isSecondary ? '1px solid rgba(200,170,80,0.25)' : '1px solid rgba(224,82,82,0.3)',
                   borderRadius: 10, padding: '10px 12px',
                 }}>
+                  {/* Secondary hit header */}
+                  {isSecondary && (
+                    <div style={{
+                      fontFamily: "'Cinzel','serif'", fontSize: 'clamp(0.65rem,1vw,0.75rem)',
+                      fontWeight: 700, color: '#C8AA50', letterSpacing: '0.12em',
+                      textTransform: 'uppercase', marginBottom: 6,
+                    }}>
+                      ⚔ Secondary Hit Available
+                    </div>
+                  )}
+
                   {/* Attacker → Target */}
                   <div style={{
                     fontFamily: "'Cinzel','serif'", fontSize: 'clamp(0.85rem,1.3vw,1rem)',
@@ -1086,6 +1181,16 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                       {pd.range_band && ` · ${pd.range_band.charAt(0).toUpperCase() + pd.range_band.slice(1)}`}
                     </div>
                   )}
+
+                  {isSecondary && (
+                    <div style={{
+                      fontFamily: "'Rajdhani',sans-serif", fontSize: 'clamp(0.68rem,1.05vw,0.78rem)',
+                      color: 'rgba(232,223,200,0.5)', fontStyle: 'italic', marginBottom: 8,
+                    }}>
+                      Requires ◇◇ or ★ to hit. Confirm with player before applying.
+                    </div>
+                  )}
+
                   {/* Damage breakdown */}
                   <div style={{ fontFamily: "'Share Tech Mono','monospace'", marginBottom: 10 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'clamp(0.78rem,1.2vw,0.92rem)', marginBottom: 2 }}>
@@ -1119,7 +1224,7 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                         fontWeight: 700, color: '#FF9800', letterSpacing: '0.08em',
                         textTransform: 'uppercase', marginBottom: 2,
                       }}>
-                        ⚠ Critical Hit Available
+                        ⚠ Critical Hit Available{isSecondary ? ' (if secondary hits)' : ''}
                       </div>
                       <div style={{
                         fontFamily: "'Rajdhani',sans-serif", fontSize: 'clamp(0.68rem,1.05vw,0.78rem)',
@@ -1136,7 +1241,9 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                     <span style={{
                       fontFamily: "'Rajdhani',sans-serif", fontSize: 'clamp(0.72rem,1.1vw,0.82rem)',
                       color: 'rgba(232,223,200,0.6)',
-                    }}>Apply:</span>
+                    }}>
+                      {isSecondary ? 'Secondary damage:' : 'Apply:'}
+                    </span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <button
                         onClick={() => setEdited(editedVal - 1)}
@@ -1177,17 +1284,19 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                         fontFamily: "'Cinzel','serif'", fontSize: 'clamp(0.72rem,1.1vw,0.82rem)',
                         color: 'rgba(232,223,200,0.5)',
                       }}
-                    >✗ Dismiss</button>
+                    >{isSecondary ? '✗ No Secondary Hit' : '✗ Dismiss'}</button>
                     <button
                       onClick={() => void applyPendingDamage(pd, editedVal)}
                       style={{
                         flex: 2, padding: '7px 0',
-                        background: 'rgba(224,82,82,0.15)', border: '1px solid rgba(224,82,82,0.5)',
+                        background: isSecondary ? 'rgba(200,170,80,0.1)' : 'rgba(224,82,82,0.15)',
+                        border: isSecondary ? '1px solid rgba(200,170,80,0.4)' : '1px solid rgba(224,82,82,0.5)',
                         borderRadius: 6, cursor: 'pointer',
                         fontFamily: "'Cinzel','serif'", fontSize: 'clamp(0.72rem,1.1vw,0.82rem)',
-                        fontWeight: 700, color: '#e05252',
+                        fontWeight: 700,
+                        color: isSecondary ? '#C8AA50' : '#e05252',
                       }}
-                    >✓ Apply Damage</button>
+                    >{isSecondary ? '✓ Apply Secondary Damage' : '✓ Apply Damage'}</button>
                   </div>
                 </div>
               )
@@ -1462,6 +1571,7 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                         adv={assignedAdv}
                         accentColor={accentColor}
                         onAdjust={delta => { void adjustAdversaryWounds(assignedAdv, delta) }}
+                        onAdjustStrain={delta => { void adjustAdversaryStrain(assignedAdv, delta) }}
                       />
                     </div>
                   )}
@@ -1668,6 +1778,7 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                   adv={adv}
                   accentColor={advAccent}
                   onAdjust={delta => { void adjustAdversaryWounds(adv, delta) }}
+                  onAdjustStrain={delta => { void adjustAdversaryStrain(adv, delta) }}
                 />
               </div>
 

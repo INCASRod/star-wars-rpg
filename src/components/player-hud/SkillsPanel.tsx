@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { C, CHAR_COLOR, CHAR_ABBR3, FONT_CINZEL, FONT_RAJDHANI, panelBase, type CharKey } from './design-tokens'
 import { DiceFace } from '@/components/dice/DiceFace'
 import { Tooltip, TipLabel, TipBody, TipDivider } from '@/components/ui/Tooltip'
@@ -175,181 +175,179 @@ function CornerBrackets({ color = C.gold }: { color?: string }) {
   )
 }
 
-// ── Upgrade confirmation dialog ──────────────────────────────
-function SkillUpgradeDialog({ skill, xpAvailable, onConfirm, onCancel }: {
+// ── Upgrade helpers ────────────────────────────────────────────────────────
+
+function getSkillUpgradeCost(currentRank: number, isCareer: boolean): number {
+  const newRank = currentRank + 1
+  return isCareer ? 5 * newRank : (5 * newRank) + 5
+}
+
+const FONT_MONO = "'Share Tech Mono','Courier New',monospace"
+const FONT_CINZEL_REAL = "var(--font-cinzel),'Cinzel',serif"
+const RED = 'rgba(244,67,54,0.8)'
+
+// ── Upgrade button (left of rank pips) ────────────────────────────────────
+
+function UpgradeButton({ skill, xpAvailable, onClick }: {
+  skill: HudSkill
+  xpAvailable: number
+  onClick: () => void
+}) {
+  const [showTip, setShowTip] = useState(false)
+  const cost = getSkillUpgradeCost(skill.rank, skill.isCareer)
+  const canAfford = xpAvailable >= cost
+
+  return (
+    <div style={{ position: 'relative', flexShrink: 0 }}>
+      <button
+        onClick={(e) => { e.stopPropagation(); if (canAfford) onClick() }}
+        onMouseEnter={(e) => {
+          setShowTip(true)
+          if (canAfford) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(200,170,80,0.2)'
+        }}
+        onMouseLeave={(e) => {
+          setShowTip(false)
+          ;(e.currentTarget as HTMLButtonElement).style.background = canAfford ? 'rgba(200,170,80,0.1)' : 'rgba(255,255,255,0.02)'
+        }}
+        style={{
+          width: 28, height: 28, borderRadius: 6,
+          background: canAfford ? 'rgba(200,170,80,0.1)' : 'rgba(255,255,255,0.02)',
+          border: `1px solid ${canAfford ? 'rgba(200,170,80,0.35)' : 'rgba(255,255,255,0.1)'}`,
+          color: canAfford ? C.gold : 'rgba(232,223,200,0.2)',
+          fontFamily: FONT_CINZEL_REAL,
+          fontSize: 'clamp(0.75rem, 1.1vw, 0.85rem)',
+          cursor: canAfford ? 'pointer' : 'not-allowed',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexShrink: 0, transition: '.15s', padding: 0, lineHeight: 1,
+        }}
+      >
+        +
+      </button>
+      {showTip && (
+        <div style={{
+          position: 'absolute',
+          bottom: 'calc(100% + 8px)',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 9000,
+          background: 'rgba(4,10,6,0.97)',
+          border: '1px solid rgba(200,170,80,0.32)',
+          borderRadius: 8,
+          padding: '10px 12px',
+          minWidth: 150,
+          pointerEvents: 'none',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.7)',
+          whiteSpace: 'nowrap',
+        }}>
+          <div style={{ fontFamily: FONT_CINZEL_REAL, fontSize: 'clamp(0.55rem, 0.85vw, 0.65rem)', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.gold, marginBottom: 5 }}>
+            Upgrade to Rank {skill.rank + 1}
+          </div>
+          <div style={{ fontFamily: FONT_MONO, fontSize: 'clamp(0.6rem, 0.9vw, 0.72rem)', color: canAfford ? C.gold : RED, marginBottom: 2 }}>
+            Cost: {cost} XP
+          </div>
+          <div style={{ fontFamily: FONT_MONO, fontSize: 'clamp(0.6rem, 0.9vw, 0.72rem)', color: canAfford ? 'rgba(232,223,200,0.7)' : RED }}>
+            Available: {xpAvailable} XP
+          </div>
+          {!canAfford && (
+            <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.6rem, 0.9vw, 0.72rem)', color: RED, fontWeight: 700, marginTop: 5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Not enough XP
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Inline row confirmation ────────────────────────────────────────────────
+
+function InlineConfirmation({ skill, xpAvailable, onConfirm, onCancel }: {
   skill: HudSkill
   xpAvailable: number
   onConfirm: () => void
   onCancel: () => void
 }) {
-  const newRank = skill.rank + 1
-  const cost = newRank * 5 + (skill.isCareer ? 0 : 5)
-  const canAfford = xpAvailable >= cost
-  const color = CHAR_COLOR[skill.charKey]
-
-  const pipRow = (rank: number, highlight: boolean) => (
-    <div style={{ display: 'flex', gap: 3 }}>
-      {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} style={{
-          width: 10, height: 10, borderRadius: 2,
-          background: i < rank ? (highlight ? C.gold : `${C.gold}55`) : 'transparent',
-          border: `1px solid ${i < rank ? C.gold : C.border}`,
-          transition: '.15s',
-        }} />
-      ))}
-    </div>
-  )
-
+  const cost = getSkillUpgradeCost(skill.rank, skill.isCareer)
   return (
-    <div
-      style={{
-        position: 'fixed', inset: 0, zIndex: 9999,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)',
-      }}
-      onClick={onCancel}
-    >
-      <div
-        style={{
-          background: '#0B1511', border: `1px solid ${C.gold}55`,
-          borderRadius: 6, padding: '24px 28px', minWidth: 300, maxWidth: 360,
-          position: 'relative',
-        }}
-        onClick={e => e.stopPropagation()}
-      >
-        <CornerBrackets color={C.gold} />
-
-        {/* Header */}
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
-          fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700,
-          letterSpacing: '0.2em', textTransform: 'uppercase',
-          color: C.textDim, marginBottom: 14,
+          fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)',
+          fontWeight: 600, color: 'rgba(232,223,200,0.85)',
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         }}>
-          SKILL UPGRADE
+          {skill.name} → Rank {skill.rank + 1}
         </div>
-
-        {/* Skill name + career badge */}
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 4 }}>
-          <div style={{
-            fontFamily: FONT_CINZEL, fontSize: 17, fontWeight: 700, color: C.gold,
-          }}>
-            {skill.name}
-          </div>
-          {skill.isCareer && (
-            <div style={{
-              fontFamily: FONT_RAJDHANI, fontSize: 9, fontWeight: 700,
-              letterSpacing: '0.12em', textTransform: 'uppercase',
-              color: color, border: `1px solid ${color}55`,
-              borderRadius: 3, padding: '1px 5px',
-            }}>
-              Career
-            </div>
-          )}
+        <div style={{ fontFamily: FONT_MONO, fontSize: 'clamp(0.62rem, 0.95vw, 0.75rem)', color: C.gold }}>
+          {cost} XP · {xpAvailable} available
         </div>
-
-        {/* Characteristic */}
-        <div style={{
-          fontFamily: FONT_RAJDHANI, fontSize: 13, fontWeight: 600,
-          letterSpacing: '0.08em', color: `${color}CC`,
-          textTransform: 'uppercase', marginBottom: 20,
-        }}>
-          {CHAR_ABBR3[skill.charKey]} {skill.charVal}
-        </div>
-
-        {/* Rank progress */}
-        <div style={{
-          background: `${C.gold}08`, border: `1px solid ${C.border}`,
-          borderRadius: 4, padding: '12px 14px', marginBottom: 16,
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div>
-              <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 9, color: C.textDim, letterSpacing: '0.1em', marginBottom: 5, textTransform: 'uppercase' }}>
-                Current
-              </div>
-              {pipRow(skill.rank, false)}
-            </div>
-            <div style={{ fontFamily: FONT_CINZEL, fontSize: 14, color: C.gold, flexShrink: 0 }}>→</div>
-            <div>
-              <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 9, color: C.gold, letterSpacing: '0.1em', marginBottom: 5, textTransform: 'uppercase' }}>
-                Rank {newRank}
-              </div>
-              {pipRow(newRank, true)}
-            </div>
-          </div>
-        </div>
-
-        {/* XP cost */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-          <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 13, color: C.textDim, letterSpacing: '0.06em' }}>
-            Cost
-          </div>
-          <div style={{ fontFamily: FONT_CINZEL, fontSize: 14, fontWeight: 700, color: canAfford ? C.gold : '#E05050' }}>
-            {cost} XP
-          </div>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 22 }}>
-          <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 13, color: C.textDim, letterSpacing: '0.06em' }}>
-            Available
-          </div>
-          <div style={{ fontFamily: FONT_CINZEL, fontSize: 14, fontWeight: 700, color: canAfford ? '#4EC87A' : '#E05050' }}>
-            {xpAvailable} XP
-          </div>
-        </div>
-
-        {!canAfford && (
-          <div style={{
-            fontFamily: FONT_RAJDHANI, fontSize: 11, fontWeight: 700,
-            color: '#E05050', letterSpacing: '0.08em', textAlign: 'center',
-            marginBottom: 14, textTransform: 'uppercase',
-          }}>
-            Insufficient XP
-          </div>
-        )}
-
-        {/* Buttons */}
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button
-            onClick={onCancel}
-            style={{
-              flex: 1, padding: '8px 0',
-              background: 'transparent', border: `1px solid ${C.border}`,
-              borderRadius: 4, cursor: 'pointer',
-              fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700,
-              letterSpacing: '0.1em', textTransform: 'uppercase',
-              color: C.textDim, transition: '.15s',
-            }}
-          >
-            Cancel
-          </button>
-          <button
-            onClick={canAfford ? onConfirm : undefined}
-            disabled={!canAfford}
-            style={{
-              flex: 2, padding: '8px 0',
-              background: canAfford ? `${C.gold}22` : 'transparent',
-              border: `1px solid ${canAfford ? C.gold : C.border}`,
-              borderRadius: 4, cursor: canAfford ? 'pointer' : 'not-allowed',
-              fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700,
-              letterSpacing: '0.1em', textTransform: 'uppercase',
-              color: canAfford ? C.gold : C.textFaint, transition: '.15s',
-              opacity: canAfford ? 1 : 0.5,
-            }}
-          >
-            Confirm Upgrade
-          </button>
-        </div>
+      </div>
+      <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+        <button
+          onClick={(e) => { e.stopPropagation(); onCancel() }}
+          style={{
+            width: 26, height: 26, borderRadius: 4,
+            background: 'rgba(244,67,54,0.08)',
+            border: '1px solid rgba(244,67,54,0.35)',
+            color: RED, cursor: 'pointer',
+            fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.78rem, 1.1vw, 0.88rem)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 0, transition: '.15s',
+          }}
+        >
+          ✗
+        </button>
+        <button
+          onClick={(e) => { e.stopPropagation(); onConfirm() }}
+          style={{
+            width: 26, height: 26, borderRadius: 4,
+            background: 'linear-gradient(135deg, rgba(200,170,80,0.25), rgba(200,170,80,0.15))',
+            border: `1px solid ${C.gold}`,
+            color: C.gold, cursor: 'pointer',
+            fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.78rem, 1.1vw, 0.88rem)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 0, transition: '.15s',
+          }}
+        >
+          ✓
+        </button>
       </div>
     </div>
   )
 }
 
+// ── Main panel ─────────────────────────────────────────────────────────────
+
 export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, onOpenPopover, characterId, skillModifiers = {} }: SkillsPanelProps) {
   const [filter, setFilter] = useState<Filter>('All')
-  const [pendingSkill, setPendingSkill] = useState<HudSkill | null>(null)
+  const [confirmingKey, setConfirmingKey] = useState<string | null>(null)
   const [skillSearch, setSkillSearch] = useState('')
+  const confirmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Reset search when character changes
   useEffect(() => { setSkillSearch('') }, [characterId])
+
+  // Cancel any pending confirmation when character changes
+  useEffect(() => {
+    if (confirmTimerRef.current) clearTimeout(confirmTimerRef.current)
+    setConfirmingKey(null)
+  }, [characterId])
+
+  const startConfirm = (skillKey: string) => {
+    if (confirmTimerRef.current) clearTimeout(confirmTimerRef.current)
+    setConfirmingKey(skillKey)
+    confirmTimerRef.current = setTimeout(() => setConfirmingKey(null), 5000)
+  }
+
+  const cancelConfirm = () => {
+    if (confirmTimerRef.current) clearTimeout(confirmTimerRef.current)
+    setConfirmingKey(null)
+  }
+
+  const executeUpgrade = (skill: HudSkill) => {
+    if (confirmTimerRef.current) clearTimeout(confirmTimerRef.current)
+    setConfirmingKey(null)
+    onUpgrade(skill)
+  }
 
   const filterByTab = skills.filter(s => {
     if (filter === 'Trained') return s.rank > 0
@@ -367,7 +365,6 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
       )
     : filterByTab
 
-  // Group by characteristic, preserving order
   const grouped = CHAR_ORDER.map(charKey => ({
     charKey,
     charVal: filtered.find(s => s.charKey === charKey)?.charVal ?? 0,
@@ -381,51 +378,48 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
       } else {
         onRoll(skill)
       }
-    } else {
-      if (skill.rank < 5) setPendingSkill(skill)
     }
+    // exploration mode: upgrade via [+] button only
   }
 
-  const handleConfirmUpgrade = () => {
-    if (pendingSkill) {
-      onUpgrade(pendingSkill)
-      setPendingSkill(null)
-    }
-  }
+  const xpColor = xpAvailable > 20
+    ? 'rgba(200,170,80,0.6)'
+    : xpAvailable > 0
+    ? '#FF9800'
+    : 'rgba(244,67,54,0.7)'
 
   return (
-    <>
-      {/* Upgrade dialog (exploration mode only) */}
-      {pendingSkill && (
-        <SkillUpgradeDialog
-          skill={pendingSkill}
-          xpAvailable={xpAvailable}
-          onConfirm={handleConfirmUpgrade}
-          onCancel={() => setPendingSkill(null)}
-        />
-      )}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
+      {/* Filter + XP + mode bar */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {(['All', 'Trained', 'Career'] as Filter[]).map(f => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              style={{
+                background: filter === f ? `${C.gold}22` : 'transparent',
+                border: `1px solid ${filter === f ? C.gold : C.border}`,
+                borderRadius: 4, padding: '3px 10px',
+                fontFamily: FONT_RAJDHANI, fontSize: 11, fontWeight: 700,
+                letterSpacing: '0.08em', textTransform: 'uppercase',
+                color: filter === f ? C.gold : C.textDim,
+                cursor: 'pointer', transition: '.15s',
+              }}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
-        {/* Filter + legend bar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-          <div style={{ display: 'flex', gap: 4 }}>
-            {(['All', 'Trained', 'Career'] as Filter[]).map(f => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                style={{
-                  background: filter === f ? `${C.gold}22` : 'transparent',
-                  border: `1px solid ${filter === f ? C.gold : C.border}`,
-                  borderRadius: 4, padding: '3px 10px',
-                  fontFamily: FONT_RAJDHANI, fontSize: 11, fontWeight: 700,
-                  letterSpacing: '0.08em', textTransform: 'uppercase',
-                  color: filter === f ? C.gold : C.textDim,
-                  cursor: 'pointer', transition: '.15s',
-                }}
-              >
-                {f}
-              </button>
-            ))}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {/* Available XP indicator */}
+          <div style={{
+            fontFamily: FONT_MONO,
+            fontSize: 'clamp(0.65rem, 1vw, 0.78rem)',
+            color: xpColor,
+          }}>
+            {xpAvailable} XP
           </div>
 
           {/* Mode badge */}
@@ -439,135 +433,170 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
             {isCombat ? 'Roll to Act' : 'Click to Upgrade'}
           </div>
         </div>
+      </div>
 
-        {/* Legend */}
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <div style={{ width: 9, height: 9, background: '#D4B840', transform: 'rotate(45deg)' }} />
-            <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700, color: C.textDim }}>Profession</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <div style={{ width: 9, height: 9, borderRadius: '50%', background: '#4EC87A' }} />
-            <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700, color: C.textDim }}>Ability</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <div style={{ width: 9, height: 9, borderRadius: 1, background: `${C.gold}44`, border: `1px solid ${C.gold}` }} />
-            <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700, color: C.textDim }}>Career</span>
-          </div>
+      {/* Legend */}
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <div style={{ width: 9, height: 9, background: '#D4B840', transform: 'rotate(45deg)' }} />
+          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700, color: C.textDim }}>Profession</span>
         </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <div style={{ width: 9, height: 9, borderRadius: '50%', background: '#4EC87A' }} />
+          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700, color: C.textDim }}>Ability</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <div style={{ width: 9, height: 9, borderRadius: 1, background: `${C.gold}44`, border: `1px solid ${C.gold}` }} />
+          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700, color: C.textDim }}>Career</span>
+        </div>
+      </div>
 
-        {/* Search */}
-        <PanelSearchInput
-          value={skillSearch}
-          onChange={setSkillSearch}
-          placeholder="Search skills..."
-        />
+      {/* Search */}
+      <PanelSearchInput
+        value={skillSearch}
+        onChange={setSkillSearch}
+        placeholder="Search skills..."
+      />
 
-        {/* No-results message */}
-        {grouped.length === 0 && searchQuery && (
-          <div style={{
-            textAlign: 'center',
-            fontFamily: FONT_RAJDHANI,
-            fontSize: 'clamp(0.8rem, 1.3vw, 0.9rem)',
-            color: 'rgba(200,170,80,0.35)',
-            fontStyle: 'italic',
-            padding: '16px 0',
-          }}>
-            No skills matching &ldquo;{skillSearch}&rdquo;
-          </div>
-        )}
-
-        {/* 2-column grid of characteristic groups */}
+      {/* No-results message */}
+      {grouped.length === 0 && searchQuery && (
         <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: 10,
+          textAlign: 'center',
+          fontFamily: FONT_RAJDHANI,
+          fontSize: 'clamp(0.8rem, 1.3vw, 0.9rem)',
+          color: 'rgba(200,170,80,0.35)',
+          fontStyle: 'italic',
+          padding: '16px 0',
         }}>
-          {grouped.map(({ charKey, charVal, skills: groupSkills }) => {
-            const color = CHAR_COLOR[charKey]
-            return (
-              <div key={charKey} style={{ ...panelBase, padding: '10px 10px 6px' }}>
-                <CornerBrackets />
-                {/* Group header */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                  <div style={{
-                    width: 28, height: 28, borderRadius: 4, flexShrink: 0,
-                    background: `${color}22`, border: `1px solid ${color}55`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: FONT_RAJDHANI, fontSize: 18, fontWeight: 700, color,
-                  }}>
-                    {charVal}
-                  </div>
-                  <div style={{
-                    fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700,
-                    letterSpacing: '0.1em', textTransform: 'uppercase',
-                    color: `${color}CC`,
-                  }}>
-                    {CHAR_ABBR3[charKey]}
-                  </div>
+          No skills matching &ldquo;{skillSearch}&rdquo;
+        </div>
+      )}
+
+      {/* 2-column grid of characteristic groups */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, 1fr)',
+        gap: 10,
+      }}>
+        {grouped.map(({ charKey, charVal, skills: groupSkills }) => {
+          const color = CHAR_COLOR[charKey]
+          return (
+            <div key={charKey} style={{ ...panelBase, padding: '10px 10px 6px' }}>
+              <CornerBrackets />
+              {/* Group header */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <div style={{
+                  width: 28, height: 28, borderRadius: 4, flexShrink: 0,
+                  background: `${color}22`, border: `1px solid ${color}55`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontFamily: FONT_RAJDHANI, fontSize: 18, fontWeight: 700, color,
+                }}>
+                  {charVal}
                 </div>
+                <div style={{
+                  fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700,
+                  letterSpacing: '0.1em', textTransform: 'uppercase',
+                  color: `${color}CC`,
+                }}>
+                  {CHAR_ABBR3[charKey]}
+                </div>
+              </div>
 
-                {/* Skill rows */}
-                {groupSkills.map(skill => {
-                  const tip = getSkillTip(skill.name)
-                  const isMaxRank = skill.rank >= 5
-                  const hoverColor = isCombat ? '#4EC87A' : C.gold
-                  const tooltipContent = tip ? (
-                    <>
-                      <TipLabel>{skill.name}</TipLabel>
-                      <TipBody>{tip.description}</TipBody>
-                      {tip.examples.length > 0 && (
-                        <>
-                          <TipDivider />
-                          {tip.examples.map((ex, i) => (
-                            <TipBody key={i}>· {ex}</TipBody>
-                          ))}
-                        </>
-                      )}
-                    </>
-                  ) : <TipLabel>{skill.name}</TipLabel>
+              {/* Skill rows */}
+              {groupSkills.map(skill => {
+                const tip = getSkillTip(skill.name)
+                const isMaxRank = skill.rank >= 5
+                const hoverColor = isCombat ? '#4EC87A' : C.gold
+                const isConfirming = confirmingKey === skill.key
 
-                  return (
-                    <Tooltip key={skill.key} content={tooltipContent} placement="right" maxWidth={280}>
-                      <div
-                        onClick={(e) => handleSkillClick(skill, e)}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: 6,
-                          padding: '5px 6px', borderRadius: 3, marginBottom: 2,
-                          borderLeft: skill.isCareer ? `2px solid ${color}88` : '2px solid transparent',
-                          cursor: (!isCombat && isMaxRank) ? 'default' : 'pointer',
-                          transition: '.15s',
-                          background: 'transparent',
-                          opacity: (!isCombat && isMaxRank) ? 0.5 : 1,
-                        }}
-                        onMouseEnter={e => {
-                          if (isCombat || !isMaxRank) {
-                            (e.currentTarget as HTMLElement).style.background = `${hoverColor}0D`
-                          }
-                        }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
-                      >
-                        <div style={{
-                          flex: 1, fontFamily: FONT_RAJDHANI, fontSize: 14, fontWeight: 600,
-                          color: skill.rank > 0 ? C.text : C.textDim,
-                          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                        }}>
-                          {skill.name}
-                        </div>
+                const tooltipContent = tip ? (
+                  <>
+                    <TipLabel>{skill.name}</TipLabel>
+                    <TipBody>{tip.description}</TipBody>
+                    {tip.examples.length > 0 && (
+                      <>
+                        <TipDivider />
+                        {tip.examples.map((ex, i) => (
+                          <TipBody key={i}>· {ex}</TipBody>
+                        ))}
+                      </>
+                    )}
+                  </>
+                ) : <TipLabel>{skill.name}</TipLabel>
+
+                return (
+                  <div
+                    key={skill.key}
+                    onClick={isCombat && !isConfirming ? (e) => handleSkillClick(skill, e) : undefined}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      padding: '5px 6px', marginBottom: 2,
+                      borderRadius: isConfirming ? 6 : 3,
+                      ...(isConfirming ? {
+                        border: '1px solid rgba(200,170,80,0.3)',
+                        background: 'rgba(200,170,80,0.08)',
+                      } : {
+                        borderLeft: skill.isCareer ? `2px solid ${color}88` : '2px solid transparent',
+                        background: 'transparent',
+                      }),
+                      cursor: isCombat && !isConfirming ? 'pointer' : 'default',
+                      transition: '.15s',
+                      opacity: !isConfirming && !isCombat && isMaxRank ? 0.5 : 1,
+                    }}
+                    onMouseEnter={e => {
+                      if (!isConfirming && (isCombat || !isMaxRank)) {
+                        (e.currentTarget as HTMLElement).style.background = `${hoverColor}0D`
+                      }
+                    }}
+                    onMouseLeave={e => {
+                      if (!isConfirming) {
+                        (e.currentTarget as HTMLElement).style.background = 'transparent'
+                      }
+                    }}
+                  >
+                    {isConfirming ? (
+                      <InlineConfirmation
+                        skill={skill}
+                        xpAvailable={xpAvailable}
+                        onConfirm={() => executeUpgrade(skill)}
+                        onCancel={cancelConfirm}
+                      />
+                    ) : (
+                      <>
+                        {/* Skill name — Tooltip wraps only this for description */}
+                        <Tooltip content={tooltipContent} placement="right" maxWidth={280}>
+                          <div style={{
+                            flex: 1, fontFamily: FONT_RAJDHANI, fontSize: 14, fontWeight: 600,
+                            color: skill.rank > 0 ? C.text : C.textDim,
+                            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                          }}>
+                            {skill.name}
+                          </div>
+                        </Tooltip>
+
+                        {/* [+] upgrade button — immediately left of rank pips */}
+                        {!isMaxRank && (
+                          <UpgradeButton
+                            skill={skill}
+                            xpAvailable={xpAvailable}
+                            onClick={() => startConfirm(skill.key)}
+                          />
+                        )}
+
                         <RankPips rank={skill.rank} />
                         <PoolPreview charVal={skill.charVal} rank={skill.rank} />
                         {skillModifiers[skill.key] && (
                           <SkillModifierBadges mod={skillModifiers[skill.key]} />
                         )}
-                      </div>
-                    </Tooltip>
-                  )
-                })}
-              </div>
-            )
-          })}
-        </div>
+                      </>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )
+        })}
       </div>
-    </>
+    </div>
   )
 }

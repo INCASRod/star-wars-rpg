@@ -62,6 +62,7 @@ export interface AdversaryInstance {
   weapons: AdversaryWeapon[]
   gear: string[]
   woundsCurrent?: number
+  strainCurrent?: number
   minionWounds?: number[]
 }
 

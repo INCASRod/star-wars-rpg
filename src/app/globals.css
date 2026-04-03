@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+
 @custom-variant dark (&:is(.dark *));
 
 /* ═══════════════════════════════════════════════════════════════ */
@@ -535,6 +536,27 @@ label, caption, .text-secondary {
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 }
+
+/* ═══════════════════════════════════════════════════════════════ */
+/*  SW-RPG-ICONS — Star Wars RPG symbol icon font                  */
+/* ═══════════════════════════════════════════════════════════════ */
+i.ffi {
+  font-family: var(--font-sw-rpg-icons) !important;
+  font-style:  normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.ffi-swrpg-success:before   { content: "\e90b"; }
+.ffi-swrpg-failure:before   { content: "\e905"; }
+.ffi-swrpg-advantage:before { content: "\e900"; }
+.ffi-swrpg-threat:before    { content: "\e90d"; }
+.ffi-swrpg-triumph:before   { content: "\e90f"; }
+.ffi-swrpg-despair:before   { content: "\e904"; }
+.ffi-swrpg-force:before     { content: "\e908"; }
 
 /* ═══════════════════════════════════════════════════════════════ */
 /*  OGGDUDE MARKUP — Inline Dice / Symbol Chips                    */

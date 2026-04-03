@@ -151,7 +151,15 @@ export interface RefArmor {
   defense_ranged?: number
 }
 
-// Modifier payload stored in ref_item_attachments.base_mods / added_mods
+// One element in a ref_item_attachments.base_mods / added_mods array
+// (XML-derived format: [{key, count, misc_desc}])
+export interface AttachmentModEntry {
+  key: string | null
+  count: number | null
+  misc_desc: string | null
+}
+
+// Legacy flat-object shape (migration 018 placeholder rows — kept for compat)
 export interface RefItemAttachmentMods {
   soakAdd?: number
   defenseMeleeAdd?: number
@@ -164,8 +172,23 @@ export interface RefItemAttachment {
   key: string
   name: string
   description?: string
-  base_mods?: RefItemAttachmentMods | null
-  added_mods?: RefItemAttachmentMods | null
+  type?: string           // 'Weapon' | 'Armor'
+  hp_required?: number
+  price?: number | null
+  rarity?: number | null
+  category_limits?: string[] | null
+  source?: string | null
+  /** Array of mod entries (new format) or legacy flat object */
+  base_mods?: AttachmentModEntry[] | RefItemAttachmentMods | null
+  added_mods?: AttachmentModEntry[] | RefItemAttachmentMods | null
+}
+
+/** An attachment installed on a custom item in the editor */
+export interface InstalledAttachment {
+  /** ref_item_attachments.key */
+  key: string
+  /** Keys from added_mods that have been toggled on by the GM */
+  installedAddedModIndices: number[]
 }
 
 export interface RefGear {
@@ -385,6 +408,10 @@ export interface CharacterWeapon {
   equip_state: EquipState
   attachments: unknown[]
   notes?: string
+  /** GM override: treat as one-handed regardless of skill type */
+  is_one_handed_override?: boolean | null
+  /** GM override: treat as two-handed regardless of skill type */
+  is_two_handed_override?: boolean | null
 }
 
 export interface CharacterArmor {
@@ -418,6 +445,29 @@ export interface CharacterCriticalInjury {
   description?: string
   is_healed: boolean
   received_at: string
+  roll_result?: number | null
+  total_roll?: number | null
+  session_label?: string | null
+  vicious_mod?: number | null
+  lethal_mod?: number | null
+  gm_modifier?: number | null
+}
+
+export interface CriticalInjuryRequest {
+  id: string
+  campaign_id: string
+  character_id: string
+  total_modifier: number
+  vicious_mod: number
+  lethal_mod: number
+  gm_modifier: number
+  existing_mod: number
+  status: 'pending' | 'rolled' | 'dismissed'
+  roll_result?: number | null
+  final_result?: number | null
+  injury_key?: number | null
+  created_at: string
+  resolved_at?: string | null
 }
 
 // ── Composite Types (for HUD rendering) ──

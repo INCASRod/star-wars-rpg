@@ -20,12 +20,19 @@ const DICE_TAGS_RE = /\[(BO|BST|SE|SET|BL|DI|DIF|CH|CHL|PR|PRO|AB|ABL)\]/gi
 export function stripBBCode(text: string): string {
   // Stash dice tags behind NUL placeholders so the catch-all strip misses them
   const stash: string[] = []
-  const held = text.replace(DICE_TAGS_RE, (match) => {
+  let held = text.replace(DICE_TAGS_RE, (match) => {
     stash.push(match.toUpperCase())
     return `\x00${stash.length - 1}\x00`
   })
-  const stripped = held.replace(/\[[^\]]*\]/g, '').replace(/\s+/g, ' ').trim()
-  return stripped.replace(/\x00(\d+)\x00/g, (_, i) => stash[parseInt(i, 10)])
+  // Strip [H3]/[H4] headings entirely including their content (item name shown in card header)
+  held = held.replace(/\[H[34]\][^\[]*\[[Hh][34]\]/gi, '')
+  // Convert [P] paragraph markers to double newline for spacing
+  held = held.replace(/\[P\]/gi, '\n\n')
+  // Strip all remaining BBCode tags
+  const stripped = held.replace(/\[[^\]]*\]/g, '')
+  // Collapse horizontal whitespace only (preserve newlines), cap at 2 consecutive newlines
+  const normalized = stripped.replace(/[^\S\n]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim()
+  return normalized.replace(/\x00(\d+)\x00/g, (_, i) => stash[parseInt(i, 10)])
 }
 
 /**

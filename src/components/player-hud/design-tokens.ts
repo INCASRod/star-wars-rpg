@@ -79,12 +79,12 @@ export interface SymbolMeta {
 }
 
 export const SYM: Record<SymbolKey, SymbolMeta> = {
-  S: { icon: '✦', color: '#4EC87A', label: 'Success' },
-  F: { icon: '✗', color: '#E05050', label: 'Failure' },
-  A: { icon: '◇', color: '#70C8E8', label: 'Advantage' },
-  H: { icon: '◆', color: '#B060D0', label: 'Threat' },
-  T: { icon: '★', color: '#D4B840', label: 'Triumph' },
-  D: { icon: '☠', color: '#FF6060', label: 'Despair' },
+  S: { icon: 'swrpg-success',   color: '#4EC87A', label: 'Success' },
+  F: { icon: 'swrpg-failure',   color: '#E05050', label: 'Failure' },
+  A: { icon: 'swrpg-advantage', color: '#70C8E8', label: 'Advantage' },
+  H: { icon: 'swrpg-threat',    color: '#B060D0', label: 'Threat' },
+  T: { icon: 'swrpg-triumph',   color: '#D4B840', label: 'Triumph' },
+  D: { icon: 'swrpg-despair',   color: '#FF6060', label: 'Despair' },
 }
 
 // Font strings for inline styles — Rajdhani for all roles

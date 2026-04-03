@@ -3,7 +3,7 @@ import type { DiceType } from '@/components/player-hud/design-tokens'
 export type TextSegment =
   | { type: 'text';   content: string }
   | { type: 'dice';   diceType: DiceType }
-  | { type: 'symbol'; content: string; color: string }
+  | { type: 'symbol'; cls: string; color: string }
 
 // Actual OggDude bracket codes that map to our DiceType system
 const DICE_TAG_MAP: Record<string, DiceType> = {
@@ -24,14 +24,14 @@ const DICE_TAG_MAP: Record<string, DiceType> = {
   FP:  'force',   // Force Point / Force pip
 }
 
-// OggDude result-symbol tags → Unicode character + colour
-const SYMBOL_TAG_MAP: Record<string, { content: string; color: string }> = {
-  SU: { content: '✦', color: '#4CAF50' }, // Success
-  AD: { content: '◇', color: '#4CAF50' }, // Advantage
-  TH: { content: '◆', color: '#f44336' }, // Threat
-  FA: { content: '✗', color: '#f44336' }, // Failure
-  TR: { content: '★', color: '#F5C518' }, // Triumph
-  DE: { content: '⚠', color: '#C62828' }, // Despair
+// OggDude result-symbol tags → sw-rpg-icons class + colour
+const SYMBOL_TAG_MAP: Record<string, { cls: string; color: string }> = {
+  SU: { cls: 'ffi-swrpg-success',   color: '#4CAF50' }, // Success
+  AD: { cls: 'ffi-swrpg-advantage', color: '#4CAF50' }, // Advantage
+  TH: { cls: 'ffi-swrpg-threat',    color: '#f44336' }, // Threat
+  FA: { cls: 'ffi-swrpg-failure',   color: '#f44336' }, // Failure
+  TR: { cls: 'ffi-swrpg-triumph',   color: '#F5C518' }, // Triumph
+  DE: { cls: 'ffi-swrpg-despair',   color: '#C62828' }, // Despair
   // DA (Damage), LI (Light side pip) — strip silently
 }
 
@@ -59,7 +59,7 @@ export function parseDiceText(raw: string): TextSegment[] {
     } else {
       const sym = SYMBOL_TAG_MAP[tag]
       if (sym) {
-        segments.push({ type: 'symbol', content: sym.content, color: sym.color })
+        segments.push({ type: 'symbol', cls: sym.cls, color: sym.color })
       }
       // Unknown / formatting tags dropped silently
     }

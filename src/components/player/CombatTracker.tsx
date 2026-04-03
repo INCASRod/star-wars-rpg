@@ -59,6 +59,8 @@ export function CombatTracker({ character, campaignId, talents = [] }: Props) {
   const [weaponRef, setWeaponRef] = useState<Record<string, WeaponRef>>({})
   // Active character assignments keyed by default character_id
   const [slotAssignments, setSlotAssignments] = useState<Record<string, string | null>>({})
+  // Collapsed state for adversary cards (true = collapsed; active-turn card overrides)
+  const [cardCollapsed, setCardCollapsed] = useState<Record<string, boolean>>({})
   const supabase = createClient()
 
   // Load weapon reference for stat lookup (weapons in adversaries.json are name-only strings)
@@ -325,8 +327,46 @@ export function CombatTracker({ character, campaignId, talents = [] }: Props) {
 
           {/* Adversary Reveal Panel */}
           <div style={{ flex: 1, overflowY: 'auto', padding: '14px 16px' }}>
-            <div style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${GOLD}b3`, marginBottom: 10 }}>
-              Adversaries
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
+              <div style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${GOLD}b3`, flex: 1 }}>
+                Adversaries
+              </div>
+              {revealedAdversaries.length > 0 && (() => {
+                const anyExpanded = revealedAdversaries.some(a =>
+                  currentSlot?.adversaryInstanceId !== a.instanceId && !cardCollapsed[a.instanceId]
+                )
+                return (
+                  <button
+                    onClick={() => setCardCollapsed(
+                      anyExpanded
+                        ? Object.fromEntries(revealedAdversaries.map(a => [a.instanceId, true]))
+                        : {}
+                    )}
+                    style={{
+                      height: 28, borderRadius: 5, padding: '0 10px',
+                      fontFamily: "'Share Tech Mono', 'Courier New', monospace",
+                      fontSize: 'clamp(0.6rem, 0.92vw, 0.72rem)',
+                      textTransform: 'uppercase',
+                      background: 'transparent',
+                      border: '1px solid rgba(200,170,80,0.25)',
+                      color: 'rgba(200,170,80,0.5)',
+                      cursor: 'pointer',
+                    }}
+                    onMouseEnter={e => {
+                      const el = e.currentTarget as HTMLElement
+                      el.style.borderColor = 'rgba(200,170,80,0.6)'
+                      el.style.color = 'rgba(200,170,80,0.6)'
+                    }}
+                    onMouseLeave={e => {
+                      const el = e.currentTarget as HTMLElement
+                      el.style.borderColor = 'rgba(200,170,80,0.25)'
+                      el.style.color = 'rgba(200,170,80,0.5)'
+                    }}
+                  >
+                    {anyExpanded ? 'Collapse All' : 'Expand All'}
+                  </button>
+                )
+              })()}
             </div>
 
             {revealedAdversaries.length === 0 && (
@@ -344,6 +384,20 @@ export function CombatTracker({ character, campaignId, talents = [] }: Props) {
                   passive: TEXT_MUTED, incidental: GOLD, maneuver: CHAR_AG,
                   action: CHAR_BR, 'out of turn': CHAR_WIL,
                 }
+                const isActiveTurn = currentSlot?.adversaryInstanceId === adv.instanceId
+                const isExpanded   = isActiveTurn || !cardCollapsed[adv.instanceId]
+                const advSlot      = encounter.initiative_slots.find(s => s.adversaryInstanceId === adv.instanceId)
+                const alignment    = advSlot?.alignment ?? 'enemy'
+                const advColor     = alignment === 'allied_npc' ? '#4CAF50' : CHAR_BR
+
+                // Inline wound display for collapsed header
+                const woundsCur = adv.woundsCurrent ?? 0
+                const woundsMax = adv.type === 'minion'
+                  ? adv.woundThreshold * adv.groupSize
+                  : adv.woundThreshold
+                const strainCur = adv.strainCurrent ?? 0
+                const strainMax = adv.strainThreshold ?? 0
+
                 return (
                   <div key={adv.instanceId} style={{
                     background: PANEL_BG,
@@ -351,11 +405,55 @@ export function CombatTracker({ character, campaignId, talents = [] }: Props) {
                     WebkitBackdropFilter: 'blur(12px)',
                     borderRadius: 6,
                     position: 'relative',
-                    borderTop: `2px solid ${CHAR_BR}80`,
-                    borderRight: `1px solid ${BORDER}`,
-                    borderBottom: `1px solid ${BORDER}`,
-                    borderLeft: `1px solid ${BORDER}`,
-                    padding: '12px 14px',
+                    borderTop: `2px solid ${advColor}80`,
+                    borderRight: `1px solid ${isActiveTurn ? 'rgba(200,170,80,0.3)' : BORDER}`,
+                    borderBottom: `1px solid ${isActiveTurn ? 'rgba(200,170,80,0.3)' : BORDER}`,
+                    borderLeft: `3px solid ${advColor}`,
+                    overflow: 'hidden',
+                    animation: isActiveTurn ? 'activeTurnPulse 2s ease-in-out infinite' : 'none',
+                    minHeight: 44,
+                  }}>
+                  {/* Collapsed header — always visible, click to expand/collapse */}
+                  <div
+                    onClick={() => { if (!isActiveTurn) setCardCollapsed(prev => ({ ...prev, [adv.instanceId]: !prev[adv.instanceId] })) }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 8,
+                      padding: '10px 14px',
+                      cursor: isActiveTurn ? 'default' : 'pointer',
+                      minHeight: 44,
+                    }}
+                  >
+                    <span style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: advColor, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {adv.name}
+                    </span>
+                    {/* Wound inline */}
+                    <span style={{ fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: FS_LABEL, color: 'rgba(232,223,200,0.8)', flexShrink: 0 }}>
+                      ❤ {woundsCur}/{woundsMax}
+                    </span>
+                    {/* Strain inline — nemesis only */}
+                    {adv.type === 'nemesis' && strainMax > 0 && (
+                      <span style={{ fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: FS_LABEL, color: 'rgba(232,223,200,0.6)', flexShrink: 0 }}>
+                        🧠 {strainCur}/{strainMax}
+                      </span>
+                    )}
+                    {/* Minion count inline */}
+                    {adv.type === 'minion' && (
+                      <span style={{ fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: FS_LABEL, color: CHAR_BR, flexShrink: 0 }}>
+                        👤 {adv.groupRemaining}
+                      </span>
+                    )}
+                    <span style={{ color: 'rgba(232,223,200,0.35)', fontSize: FS_LABEL, flexShrink: 0, transition: 'transform 200ms' }}>
+                      {isExpanded ? '▼' : '▶'}
+                    </span>
+                  </div>
+
+                  {/* Expanded content */}
+                  <div style={{
+                    maxHeight: isExpanded ? '2000px' : 0,
+                    overflow: 'hidden',
+                    transition: 'max-height 250ms ease-out',
+                    padding: isExpanded ? '0 14px 12px' : '0 14px',
+                    borderTop: isExpanded ? `1px solid ${BORDER}` : 'none',
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
                       <span style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: TEXT }}>{adv.name}</span>
@@ -516,6 +614,7 @@ export function CombatTracker({ character, campaignId, talents = [] }: Props) {
                       </div>
                     )}
                   </div>
+                  </div>
                 )
               })}
             </div>
@@ -642,6 +741,10 @@ export function CombatTracker({ character, campaignId, talents = [] }: Props) {
         @keyframes pulse-border {
           0%, 100% { box-shadow: 0 0 0 0 rgba(224,82,82,0); }
           50% { box-shadow: 0 0 8px 2px rgba(224,82,82,0.25); }
+        }
+        @keyframes activeTurnPulse {
+          0%, 100% { border-color: rgba(200,170,80,0.3); }
+          50%       { border-color: rgba(200,170,80,0.7); }
         }
       `}</style>
     </div>

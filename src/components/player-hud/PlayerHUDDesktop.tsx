@@ -39,12 +39,19 @@ import { useRollFeed } from '@/hooks/useRollFeed'
 import { logRoll, type RollMeta } from '@/lib/logRoll'
 import { DerivedStatsPanel } from '@/components/wireframe/DerivedStatsPanel'
 import { TalentsPanel as WfTalentsPanel } from '@/components/wireframe/TalentsPanel'
-import { DiceFeed as WfDiceFeed } from '@/components/wireframe/DiceFeed'
 import { CombatTracker } from '@/components/player/CombatTracker'
 import { InitiativeRollModal } from './InitiativeRollModal'
 import { useSessionRollState, getWoundThresholdBonus } from '@/hooks/useSessionRollState'
 import { SessionStatusBanner } from '@/components/player/SessionStatusBanner'
 import { useDerivedStats } from '@/hooks/useDerivedStats'
+import { CriticalInjuryPips, type CritPip } from '@/components/character/CriticalInjuryPip'
+import { CriticalInjuryModal } from '@/components/character/CriticalInjuryModal'
+import { DestinyPoolDisplay, type DestinyPoolRecord } from '@/components/destiny/DestinyPoolDisplay'
+import { DestinyRollModal } from '@/components/destiny/DestinyRollModal'
+import { DestinySpendConfirmModal } from '@/components/destiny/DestinySpendConfirmModal'
+import { DestinyGMFlash, DestinyConsideringBanner } from '@/components/destiny/DestinyGMFlash'
+import { EncumbranceBar } from '@/components/character/EncumbranceBar'
+import type { CriticalInjuryRequest } from '@/lib/types'
 
 const CHAR_TO_FIELD: Record<string, keyof Character> = {
   BR: 'brawn', AG: 'agility', INT: 'intellect', CUN: 'cunning', WIL: 'willpower', PR: 'presence',
@@ -484,12 +491,12 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   const {
     character, skills, talents, weapons, armor, gear, crits, charSpecs,
     charForceAbilities, playerName, loading, error,
-    refSkills, refCareers, refSpeciesAll, refForcePowers, refForceAbilities,
+    refSkills, refCrits, refCareers, refSpeciesAll, refForcePowers, refForceAbilities,
     refSkillMap, refTalentMap, refWeaponMap, refArmorMap, refGearMap,
     refSpecMap, refDescriptorMap, refForcePowerMap, refForceAbilityMap, refWeaponQualityMap,
     refAttachmentMap,
     forceRating, supabase, refSpecs,
-    handleVitalChange, handleToggleWeaponEquipped, handleToggleEquippedById,
+    handleVitalChange, handleVitalAdjust, handleToggleWeaponEquipped, handleToggleEquippedById, handleSetEquipState,
     handleRollCrit, handleHealCrit, handlePortraitUpload, handlePortraitDelete,
     handleCharacteristicChange, handleSoakChange, handleDefenseChange,
     handleMoralityChange, handleMoralityKeyChange, handleObligationChange, handleDutyChange,
@@ -585,9 +592,10 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   const [initRoll, setInitRoll]                 = useState<{ type: 'cool' | 'vigilance'; campaignId: string } | null>(null)
   const [forceRollResult, setForceRollResult]   = useState<ForceRollResult | null>(null)
   const [skillPopover, setSkillPopover]         = useState<{ skill: HudSkill; anchor: DOMRect } | null>(null)
-  const [combatCheckOpen, setCombatCheckOpen]   = useState(false)
-  const [forceCheckOpen,  setForceCheckOpen]    = useState(false)
-  const [conflicts, setConflicts]               = useState<ConflictEntry[]>([])
+  const [combatCheckOpen, setCombatCheckOpen]         = useState(false)
+  const [forceCheckOpen,  setForceCheckOpen]          = useState(false)
+  const [conflicts, setConflicts]                     = useState<ConflictEntry[]>([])
+  const [pendingCritRequest, setPendingCritRequest]   = useState<CriticalInjuryRequest | null>(null)
 
   // ── Load conflicts ──
   useEffect(() => {
@@ -601,11 +609,49 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [character?.id])
 
+  // ── Critical injury request — load pending on mount + subscribe ──
+  useEffect(() => {
+    if (!character?.id) return
+    // Load any pre-existing pending request
+    supabase
+      .from('critical_injury_requests')
+      .select('*')
+      .eq('character_id', character.id)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .then(({ data }) => { if (data?.[0]) setPendingCritRequest(data[0] as CriticalInjuryRequest) })
+    // Subscribe to future changes
+    const ch = supabase
+      .channel(`crit-req-${character.id}`)
+      .on('postgres_changes', {
+        event: '*', schema: 'public',
+        table: 'critical_injury_requests',
+        filter: `character_id=eq.${character.id}`,
+      }, (payload) => {
+        const row = payload.new as CriticalInjuryRequest | undefined
+        if (row?.status === 'pending') {
+          setPendingCritRequest(row)
+        } else {
+          setPendingCritRequest(prev => (prev?.id === row?.id ? null : prev))
+        }
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(ch) }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [character?.id])
+
   // ── Destiny Pool ──
   const [destinyPool, setDestinyPool]           = useState<Array<'light' | 'dark'>>([])
   const [pendingSpend, setPendingSpend]         = useState<number | null>(null)
   const pendingTimer                            = useRef<ReturnType<typeof setTimeout> | null>(null)
   const destinyChannelRef                       = useRef<ReturnType<typeof supabase.channel> | null>(null)
+  // ── Destiny Pool DB record ──
+  const [destinyPoolRecord,     setDestinyPoolRecord]     = useState<DestinyPoolRecord | null>(null)
+  const [destinyRollRequest,    setDestinyRollRequest]    = useState<{ poolId: string } | null>(null)
+  const [destinySpendOpen,      setDestinySpendOpen]      = useState(false)
+  const [destinyGmFlash,        setDestinyGmFlash]        = useState<{ prevLight: number; prevDark: number; newLight: number; newDark: number } | null>(null)
+  const [destinyConsidering,    setDestinyConsidering]    = useState<string | null>(null)
 
   // Load pool on mount
   useEffect(() => {
@@ -649,6 +695,44 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     return () => { supabase.removeChannel(ch); destinyChannelRef.current = null }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [effectiveCampaignId, characterId])
+
+  // ── Destiny pool DB record + broadcast channel ──
+  useEffect(() => {
+    if (!effectiveCampaignId) return
+    // Load active pool
+    supabase.from('destiny_pool').select('*').eq('campaign_id', effectiveCampaignId).eq('is_active', true).maybeSingle()
+      .then(({ data }) => { if (data) setDestinyPoolRecord(data as DestinyPoolRecord) })
+    // Subscribe to pool table changes
+    const poolCh = supabase
+      .channel(`destiny-pool-player-${effectiveCampaignId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'destiny_pool', filter: `campaign_id=eq.${effectiveCampaignId}` },
+        (payload) => {
+          const row = payload.new as DestinyPoolRecord
+          if (row.is_active) setDestinyPoolRecord(row)
+          else setDestinyPoolRecord(prev => prev?.id === row.id ? null : prev)
+        }
+      )
+      .subscribe()
+    // Subscribe to destiny broadcast channel (considering / gm-spent)
+    const destCh = supabase
+      .channel(`destiny-${effectiveCampaignId}`)
+      .on('broadcast', { event: 'destiny_considering' }, ({ payload }: { payload: Record<string, unknown> }) => {
+        if ((payload.characterName as string) === character?.name) return
+        setDestinyConsidering(payload.characterName as string)
+      })
+      .on('broadcast', { event: 'destiny_cancelled' }, ({ payload }: { payload: Record<string, unknown> }) => {
+        setDestinyConsidering(prev => prev === (payload.characterName as string) ? null : prev)
+      })
+      .on('broadcast', { event: 'destiny_spent' }, ({ payload }: { payload: Record<string, unknown> }) => {
+        setDestinyConsidering(null)
+        const who  = payload.characterName as string
+        const side = payload.side === 'light' ? '○ Light' : '● Dark'
+        import('sonner').then(m => m.toast.info(`${who} spent a ${side} Side destiny point`))
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(poolCh); supabase.removeChannel(destCh) }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveCampaignId])
 
   const handleSpendDestiny = useCallback(async (idx: number) => {
     const cid = effectiveCampaignIdRef.current
@@ -715,6 +799,20 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         } else if (payload.type === 'initiative-request') {
           const cid = effectiveCampaignIdRef.current
           if (cid) setInitRoll({ type: payload.initiativeType as 'cool' | 'vigilance', campaignId: cid })
+        } else if (payload.type === 'destiny-roll-request') {
+          setDestinyRollRequest({ poolId: payload.poolId as string })
+        } else if (payload.type === 'destiny-gm-spent') {
+          try {
+            const audio = new Audio('/sounds/laughing.mp3')
+            audio.volume = 0.7
+            audio.play().catch(() => {})
+          } catch (_) {}
+          setDestinyGmFlash({
+            prevLight: payload.prevLightCount as number,
+            prevDark:  payload.prevDarkCount  as number,
+            newLight:  payload.newLightCount  as number,
+            newDark:   payload.newDarkCount   as number,
+          })
         } else if (payload.type === 'force-logout') {
           const key = typeof window !== 'undefined' ? localStorage.getItem('holocron_session_key') : null
           const cid = effectiveCampaignIdRef.current
@@ -797,16 +895,17 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         ? ref.qualities.map((q: { key: string; count?: number }) => ({ key: q.key, count: q.count }))
         : []
       return {
-        id:         w.id,
-        name:       w.custom_name || ref?.name || w.weapon_key || 'Unknown',
-        damage:     { baseDamage, isMelee: hasBrawnScale, brawn: hasBrawnScale ? (character?.brawn ?? 0) : 0 },
-        crit:       ref?.crit || 0,
-        range:      ref?.range_value ? RANGE_LABELS[ref.range_value] || '' : '',
-        enc:        ref?.encumbrance || 0,
-        hardPoints: ref?.hard_points || 0,
-        qualities:  quals,
-        equipState: w.equip_state ?? (w.is_equipped ? 'equipped' : 'carrying'),
-        skillName:  ref?.skill_key ? refSkillMap[ref.skill_key]?.name || '' : '',
+        id:          w.id,
+        name:        w.custom_name || ref?.name || w.weapon_key || 'Unknown',
+        damage:      { baseDamage, isMelee: hasBrawnScale, brawn: hasBrawnScale ? (character?.brawn ?? 0) : 0 },
+        crit:        ref?.crit || 0,
+        range:       ref?.range_value ? RANGE_LABELS[ref.range_value] || '' : '',
+        enc:         ref?.encumbrance || 0,
+        hardPoints:  ref?.hard_points || 0,
+        qualities:   quals,
+        equipState:  w.equip_state ?? (w.is_equipped ? 'equipped' : 'carrying'),
+        skillName:   ref?.skill_key ? refSkillMap[ref.skill_key]?.name || '' : '',
+        description: ref?.description ?? null,
       }
     })
   , [weapons, refWeaponMap, refSkillMap, character?.brawn])
@@ -816,14 +915,15 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     armor.map(a => {
       const ref = a.armor_key ? refArmorMap[a.armor_key] : null
       return {
-        id:         a.id,
-        name:       a.custom_name || ref?.name || a.armor_key || 'Armor',
-        soak:       ref?.soak || 0,
-        defense:    ref?.defense || 0,
-        enc:        ref?.encumbrance || 0,
-        hardPoints: ref?.hard_points || 0,
-        rarity:     ref?.rarity || 0,
-        equipState: a.equip_state ?? (a.is_equipped ? 'equipped' : 'carrying'),
+        id:          a.id,
+        name:        a.custom_name || ref?.name || a.armor_key || 'Armor',
+        soak:        ref?.soak || 0,
+        defense:     ref?.defense || 0,
+        enc:         ref?.encumbrance || 0,
+        hardPoints:  ref?.hard_points || 0,
+        rarity:      ref?.rarity || 0,
+        equipState:  a.equip_state ?? (a.is_equipped ? 'equipped' : 'carrying'),
+        description: ref?.description ?? null,
       }
     })
   , [armor, refArmorMap])
@@ -833,11 +933,12 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     gear.map(g => {
       const ref = g.gear_key ? refGearMap[g.gear_key] : null
       return {
-        id:      g.id,
-        name:    g.custom_name || ref?.name || g.gear_key || 'Gear',
-        qty:        g.quantity,
-        enc:        ref?.encumbrance || 0,
-        equipState: g.equip_state ?? (g.is_equipped ? 'equipped' : 'carrying'),
+        id:          g.id,
+        name:        g.custom_name || ref?.name || g.gear_key || 'Gear',
+        qty:         g.quantity,
+        enc:         ref?.encumbrance || 0,
+        equipState:  g.equip_state ?? (g.is_equipped ? 'equipped' : 'carrying'),
+        description: ref?.description ?? null,
       }
     })
   , [gear, refGearMap])
@@ -1060,6 +1161,20 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
       <BackgroundEffects />
       <CombatTransition pending={transitionPending} prevMode={prevMode} />
 
+      {/* Critical Injury Roll Modal — shown when GM sends a crit request */}
+      {pendingCritRequest && (
+        <CriticalInjuryModal
+          request={pendingCritRequest}
+          characterId={character.id}
+          characterName={character.name}
+          campaignId={effectiveCampaignId}
+          refCrits={refCrits}
+          currentCrits={crits}
+          sessionLabel={null}
+          onDismiss={() => setPendingCritRequest(null)}
+        />
+      )}
+
       {/* Combat Check Overlay */}
       <CombatCheckOverlay
         open={combatCheckOpen}
@@ -1134,45 +1249,17 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
           </div>
           <div style={{ width: 1, height: 28, background: C.border }} />
           {/* Destiny Pool */}
-          {destinyPool.length > 0 && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.textDim, whiteSpace: 'nowrap' }}>
-                Destiny
-              </span>
-              <div style={{ display: 'flex', gap: 4 }}>
-                {destinyPool.map((token, idx) => {
-                  const isPending = pendingSpend === idx
-                  const isLight   = token === 'light'
-                  return (
-                    <button
-                      key={idx}
-                      title={isPending ? 'Click again to confirm' : `Spend ${isLight ? 'Light' : 'Dark'} Side destiny`}
-                      onClick={() => handleSpendDestiny(idx)}
-                      style={{
-                        width: 20, height: 20, borderRadius: '50%',
-                        border: `2px solid ${isPending ? (isLight ? '#FFFFFF' : '#8060C0') : (isLight ? 'rgba(255,255,255,0.5)' : 'rgba(120,80,200,0.5)')}`,
-                        background: isLight
-                          ? (isPending ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.12)')
-                          : (isPending ? 'rgba(80,40,160,0.7)'   : 'rgba(40,20,80,0.5)'),
-                        cursor: 'pointer',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        transition: '.15s',
-                        boxShadow: isPending
-                          ? (isLight ? '0 0 8px rgba(255,255,255,0.6)' : '0 0 8px rgba(120,80,200,0.7)')
-                          : 'none',
-                        padding: 0,
-                        flexShrink: 0,
-                      }}
-                    >
-                      <span style={{ fontSize: 9, color: isLight ? 'rgba(255,255,255,0.9)' : 'rgba(160,120,255,0.9)', lineHeight: 1 }}>
-                        {isLight ? '○' : '●'}
-                      </span>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.textDim, whiteSpace: 'nowrap' }}>
+              Destiny
+            </span>
+            <DestinyPoolDisplay
+              poolRecord={destinyPoolRecord}
+              isGm={false}
+              onClickLight={() => setDestinySpendOpen(true)}
+              compact
+            />
+          </div>
           <div style={{ width: 1, height: 28, background: C.border }} />
           {/* Resources */}
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -1254,121 +1341,116 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
             onDelete={handlePortraitDelete}
           />
 
-          {/* Characteristics */}
-          <div style={{ ...panelBase, padding: 'var(--space-2)' }}>
-            <CornerBrackets />
-            <SectionLabel text="Characteristics" />
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center' }}>
-              {(Object.entries(charVals) as [CharKey, number][]).map(([key, val]) => (
-                <CharStat key={key} value={val} label={CHAR_ABBR3[key]} color={CHAR_COLOR[key]} />
-              ))}
-            </div>
-          </div>
+          {/* ── Vitals Panel (wounds + strain + crit pips) ── */}
+          {(() => {
+            const wThreshold = effectiveStats?.woundThreshold ?? character.wound_threshold
+            const sThreshold = effectiveStats?.strainThreshold ?? character.strain_threshold
+            const wCurrent = character.wound_current
+            const sCurrent = character.strain_current
+            const wPct = wThreshold > 0 ? Math.min((wCurrent / (wThreshold + woundBonus)) * 100, 100) : 0
+            const sPct = sThreshold > 0 ? Math.min((sCurrent / sThreshold) * 100, 100) : 0
+            const wOver = wCurrent >= wThreshold + woundBonus
+            const sOver = sCurrent >= sThreshold
+            const wFill = wOver ? '#9C27B0' : '#e05252'
+            const sFill = sOver ? '#9C27B0' : '#FF9800'
 
-          {/* Vitals */}
-          <div style={{ ...panelBase, padding: 'var(--space-2) var(--space-2)' }}>
-            <CornerBrackets />
-            <SectionLabel text="Vitals" />
-            <VitalBar
-              label="Wounds" current={character.wound_current} threshold={effectiveStats?.woundThreshold ?? character.wound_threshold} bonus={woundBonus} color="#E05050"
-              onInc={() => handleVitalChange('wound_current', 1)}
-              onDec={() => handleVitalChange('wound_current', -1)}
-            />
-            <VitalBar
-              label="Strain" current={character.strain_current} threshold={effectiveStats?.strainThreshold ?? character.strain_threshold} color="#60C8E0"
-              onInc={() => handleVitalChange('strain_current', 1)}
-              onDec={() => handleVitalChange('strain_current', -1)}
-            />
-          </div>
+            const LABEL_STYLE: React.CSSProperties = {
+              fontFamily: FONT_CINZEL,
+              fontSize: 'clamp(0.58rem, 0.9vw, 0.68rem)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.15em',
+              color: 'rgba(200,170,80,0.5)',
+              marginBottom: 5,
+            }
+            const CTRL_BTN: React.CSSProperties = {
+              background: 'transparent',
+              border: `1px solid ${C.border}`,
+              borderRadius: 4,
+              width: 22, height: 22,
+              cursor: 'pointer',
+              color: C.textDim,
+              fontFamily: "'Share Tech Mono','Courier New',monospace",
+              fontSize: 'clamp(0.7rem, 1.1vw, 0.82rem)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
+            }
+            const NUM_STYLE: React.CSSProperties = {
+              fontFamily: "'Share Tech Mono','Courier New',monospace",
+              fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)',
+              color: 'rgba(232,223,200,0.7)',
+              userSelect: 'none',
+            }
 
-          {/* Combat Stats */}
-          <div style={{ ...panelBase, padding: 'var(--space-2) var(--space-2)' }}>
-            <CornerBrackets />
-            <SectionLabel text="Combat" />
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-              {[
-                { label: 'Soak',    value: effectiveStats?.soak           ?? character.soak,          color: '#4EC87A' },
-                { label: 'Rng Def', value: effectiveStats?.defenseRanged  ?? character.defense_ranged, color: '#5AAAE0' },
-                { label: 'Mel Def', value: effectiveStats?.defenseMelee   ?? character.defense_melee,  color: '#E07855' },
-                { label: 'Force',   value: effectiveStats?.forceRating    ?? forceRating,              color: '#B070D8' },
-              ].map(stat => (
-                <div key={stat.label} style={{
-                  background: `${stat.color}10`, border: `1px solid ${stat.color}30`,
-                  borderRadius: 4, padding: '6px 8px', textAlign: 'center',
-                }}>
-                  <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_H3, fontWeight: 700, color: stat.color, lineHeight: 1 }}>{stat.value}</div>
-                  <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, color: C.textDim, letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 3 }}>{stat.label}</div>
+            const critPips: CritPip[] = crits.map(c => ({
+              id:          c.id,
+              severity:    c.severity,
+              name:        c.custom_name || 'Injury',
+              description: c.description,
+              rollResult:  c.roll_result,
+              sessionLabel:c.session_label,
+            }))
+
+            return (
+              <div style={{
+                border: '1px solid rgba(200,170,80,0.2)',
+                borderRadius: 10,
+                background: 'rgba(8,16,10,0.6)',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+                padding: 14,
+              }}>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  {/* WOUNDS */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={LABEL_STYLE}>WOUNDS</div>
+                    <div style={{ height: 10, background: 'rgba(255,255,255,0.06)', borderRadius: 5, overflow: 'hidden', marginBottom: 6 }}>
+                      <div style={{
+                        height: '100%', width: `${wPct}%`,
+                        background: wFill, borderRadius: 5,
+                        transition: 'width 300ms ease, background 300ms ease',
+                      }} />
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, justifyContent: 'center' }}>
+                      <button style={CTRL_BTN} onClick={() => handleVitalAdjust('wound_current', -1)}>−</button>
+                      <span style={NUM_STYLE}>
+                        {wCurrent}/{wThreshold}
+                        {woundBonus > 0 && <span style={{ color: C.gold, marginLeft: 2 }}>+{woundBonus}</span>}
+                      </span>
+                      <button style={CTRL_BTN} onClick={() => handleVitalAdjust('wound_current', 1)}>+</button>
+                    </div>
+                  </div>
+
+                  {/* Divider */}
+                  <div style={{ width: 1, background: 'rgba(200,170,80,0.12)', alignSelf: 'stretch', flexShrink: 0 }} />
+
+                  {/* STRAIN */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={LABEL_STYLE}>STRAIN</div>
+                    <div style={{ height: 10, background: 'rgba(255,255,255,0.06)', borderRadius: 5, overflow: 'hidden', marginBottom: 6 }}>
+                      <div style={{
+                        height: '100%', width: `${sPct}%`,
+                        background: sFill, borderRadius: 5,
+                        transition: 'width 300ms ease, background 300ms ease',
+                      }} />
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, justifyContent: 'center' }}>
+                      <button style={CTRL_BTN} onClick={() => handleVitalAdjust('strain_current', -1)}>−</button>
+                      <span style={NUM_STYLE}>{sCurrent}/{sThreshold}</span>
+                      <button style={CTRL_BTN} onClick={() => handleVitalAdjust('strain_current', 1)}>+</button>
+                    </div>
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
 
-          {/* Morality */}
-          {hasMorality && (
-            <div style={{ ...panelBase, padding: 'var(--space-2) var(--space-2)' }}>
-              <CornerBrackets />
-              <SectionLabel text="Morality" />
-              <div style={{ textAlign: 'center', marginBottom: 6 }}>
-                <span style={{ fontFamily: FONT_CINZEL, fontSize: FS_H3, fontWeight: 700, color: C.gold }}>{character.morality_value}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-                <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, fontWeight: 700, color: '#E05050', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{character.morality_weakness_key || 'Weakness'}</span>
-                <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, fontWeight: 700, color: '#5AAAE0', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{character.morality_strength_key || 'Strength'}</span>
-              </div>
-              <div style={{ position: 'relative', height: 8, background: C.textFaint, borderRadius: 4 }}>
-                <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${character.morality_value || 50}%`, borderRadius: 4, background: 'linear-gradient(90deg, #E05050, #4EC87A 60%, #5AAAE0)' }} />
-                <div style={{ position: 'absolute', top: '50%', left: `${character.morality_value || 50}%`, transform: 'translate(-50%, -50%)', width: 12, height: 12, borderRadius: '50%', background: C.gold, border: `2px solid ${C.bg}`, boxShadow: `0 0 6px ${C.gold}` }} />
-              </div>
-            </div>
-          )}
-
-          {/* Duty / Obligation */}
-          {(character.duty_type || character.obligation_type) && (
-            <div style={{ ...panelBase, padding: 'var(--space-2) var(--space-2)' }}>
-              <CornerBrackets />
-              <SectionLabel text="Commitment" />
-              <div style={{ display: 'flex', gap: 8 }}>
-                {character.duty_type && (
-                  <div style={{ flex: 1, background: `${C.gold}10`, border: `1px solid ${C.borderHi}`, borderRadius: 4, padding: '6px 8px', textAlign: 'center' }}>
-                    <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_H4, fontWeight: 700, color: C.gold }}>{character.duty_value}</div>
-                    <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, color: C.textDim, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>{character.duty_type}</div>
-                  </div>
-                )}
-                {character.obligation_type && (
-                  <div style={{ flex: 1, background: 'rgba(224,120,85,0.10)', border: '1px solid rgba(224,120,85,0.3)', borderRadius: 4, padding: '6px 8px', textAlign: 'center' }}>
-                    <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_H4, fontWeight: 700, color: '#E07855' }}>{character.obligation_value}</div>
-                    <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, color: C.textDim, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>{character.obligation_type}</div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Critical Injuries */}
-          <div style={{ ...panelBase, padding: 'var(--space-2) var(--space-2)' }}>
-            <CornerBrackets />
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <SectionLabel text="Critical Injuries" />
-              <button onClick={handleRollCrit} style={{ background: 'rgba(224,80,80,0.15)', border: '1px solid rgba(224,80,80,0.4)', borderRadius: 3, padding: '2px 8px', fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.08em', color: '#E05050', cursor: 'pointer' }}>
-                Roll Crit
-              </button>
-            </div>
-            {crits.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '12px 0', fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: C.textFaint }}>
-                No Active Injuries
-              </div>
-            ) : (
-              crits.map(c => (
-                <div key={c.id} style={{ background: 'rgba(224,80,80,0.08)', border: '1px solid rgba(224,80,80,0.25)', borderRadius: 4, padding: '6px 8px', marginBottom: 6 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_LABEL, fontWeight: 600, color: '#E05050' }}>{c.custom_name || 'Injury'}</div>
-                    <button onClick={() => handleHealCrit(c.id)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, color: '#4EC87A' }}>Heal</button>
-                  </div>
-                  {c.description && <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: C.textDim, marginTop: 3, lineHeight: 1.4 }}>{c.description}</div>}
+                {/* Encumbrance bar */}
+                <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(200,170,80,0.08)' }}>
+                  <EncumbranceBar current={encumbranceCurrent} threshold={encThreshold} />
                 </div>
-              ))
-            )}
-          </div>
+
+                {/* Critical injury pips */}
+                <CriticalInjuryPips crits={critPips} onHeal={handleHealCrit} />
+              </div>
+            )
+          })()}
         </div>
 
         {/* ══ CENTER COLUMN ════════════════════════════════════ */}
@@ -1489,9 +1571,35 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
                 encumbranceCurrent={encumbranceCurrent}
                 encumbranceThreshold={encThreshold}
                 refWeaponQualityMap={refWeaponQualityMap}
-                onToggleWeapon={handleToggleWeaponEquipped}
-                onToggleArmor={id => handleToggleEquippedById(id, 'armor')}
-                onToggleGear={id => handleToggleEquippedById(id, 'gear')}
+                onSetWeaponState={(id, s) => handleSetEquipState(id, 'weapon', s)}
+                onSetArmorState={(id, s) => handleSetEquipState(id, 'armor', s)}
+                onSetGearState={(id, s) => handleSetEquipState(id, 'gear', s)}
+                onDiscardWeapon={(id, note) => {
+                  const name = hudWeapons.find(w => w.id === id)?.name ?? 'weapon'
+                  handleRemoveWeapon(id, isGmMode ? 'gm' : 'player', note)
+                  if (effectiveCampaignId && character) {
+                    const label = isGmMode ? `GM removed "${name}" from ${character.name}` : `${character.name} dropped "${name}"`
+                    supabase.from('roll_log').insert({ campaign_id: effectiveCampaignId, character_id: character.id, character_name: character.name, roll_label: label, roll_type: 'system', pool: { proficiency:0,ability:0,boost:0,challenge:0,difficulty:0,setback:0,force:0 }, result: { netSuccess:0,netAdvantage:0,triumph:0,despair:0,succeeded:false }, is_dm: !!isGmMode, hidden: false }).then(({ error }) => { if (error) console.warn('[discard] log failed:', error.message) })
+                  }
+                }}
+                onDiscardArmor={(id, note) => {
+                  const name = hudArmor.find(a => a.id === id)?.name ?? 'armor'
+                  handleRemoveEquipment(id, 'armor', isGmMode ? 'gm' : 'player', note)
+                  if (effectiveCampaignId && character) {
+                    const label = isGmMode ? `GM removed "${name}" from ${character.name}` : `${character.name} dropped "${name}"`
+                    supabase.from('roll_log').insert({ campaign_id: effectiveCampaignId, character_id: character.id, character_name: character.name, roll_label: label, roll_type: 'system', pool: { proficiency:0,ability:0,boost:0,challenge:0,difficulty:0,setback:0,force:0 }, result: { netSuccess:0,netAdvantage:0,triumph:0,despair:0,succeeded:false }, is_dm: !!isGmMode, hidden: false }).then(({ error }) => { if (error) console.warn('[discard] log failed:', error.message) })
+                  }
+                }}
+                onDiscardGear={(id, note) => {
+                  const name = hudGear.find(g => g.id === id)?.name ?? 'gear'
+                  handleRemoveEquipment(id, 'gear', isGmMode ? 'gm' : 'player', note)
+                  if (effectiveCampaignId && character) {
+                    const label = isGmMode ? `GM removed "${name}" from ${character.name}` : `${character.name} dropped "${name}"`
+                    supabase.from('roll_log').insert({ campaign_id: effectiveCampaignId, character_id: character.id, character_name: character.name, roll_label: label, roll_type: 'system', pool: { proficiency:0,ability:0,boost:0,challenge:0,difficulty:0,setback:0,force:0 }, result: { netSuccess:0,netAdvantage:0,triumph:0,despair:0,succeeded:false }, is_dm: !!isGmMode, hidden: false }).then(({ error }) => { if (error) console.warn('[discard] log failed:', error.message) })
+                  }
+                }}
+                isGmMode={isGmMode}
+                characterName={character.name}
               />
             )}
             {activeTab === 'Force' && (
@@ -1538,9 +1646,10 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
               />
             )}
             {activeTab === 'Feed' && (
-              <WfDiceFeed
-                liveRolls={rolls}
+              <RollFeedPanel
+                rolls={rolls}
                 ownCharacterId={character.id}
+                isGm={false}
               />
             )}
             {activeTab === 'Combat' && effectiveCampaignId && (
@@ -1739,6 +1848,50 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
             setSkillPopover(null)
           }}
           onClose={() => setSkillPopover(null)}
+        />
+      )}
+
+      {/* ── Destiny Roll Modal (mandatory) ───────────────── */}
+      {destinyRollRequest && effectiveCampaignId && character && (
+        <DestinyRollModal
+          poolId={destinyRollRequest.poolId}
+          campaignId={effectiveCampaignId}
+          characterId={character.id}
+          characterName={character.name}
+          supabase={supabase}
+          onSubmitted={() => setDestinyRollRequest(null)}
+        />
+      )}
+
+      {/* ── Destiny Spend Confirmation ────────────────────── */}
+      {destinySpendOpen && destinyPoolRecord && effectiveCampaignId && character && (
+        <DestinySpendConfirmModal
+          pool={destinyPoolRecord}
+          characterName={character.name}
+          campaignId={effectiveCampaignId}
+          characterId={character.id}
+          supabase={supabase}
+          onClose={() => setDestinySpendOpen(false)}
+          onConfirmed={() => setDestinySpendOpen(false)}
+        />
+      )}
+
+      {/* ── GM Destiny Flash ──────────────────────────────── */}
+      {destinyGmFlash && (
+        <DestinyGMFlash
+          prevLightCount={destinyGmFlash.prevLight}
+          prevDarkCount={destinyGmFlash.prevDark}
+          newLightCount={destinyGmFlash.newLight}
+          newDarkCount={destinyGmFlash.newDark}
+          onDismiss={() => setDestinyGmFlash(null)}
+        />
+      )}
+
+      {/* ── Destiny Considering Banner ────────────────────── */}
+      {destinyConsidering && (
+        <DestinyConsideringBanner
+          characterName={destinyConsidering}
+          onDismiss={() => setDestinyConsidering(null)}
         />
       )}
 

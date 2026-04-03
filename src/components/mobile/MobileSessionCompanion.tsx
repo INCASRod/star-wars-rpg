@@ -17,6 +17,7 @@ import { DiceRollerSheet, type MobilePrePopSkill } from './overlays/DiceRollerSh
 import { useSessionRollState, getWoundThresholdBonus } from '@/hooks/useSessionRollState'
 import { SessionStatusBanner } from '@/components/player/SessionStatusBanner'
 import { useDerivedStats } from '@/hooks/useDerivedStats'
+import { computeEncumbranceStats } from '@/lib/derivedStats'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 const BG   = '#060D09'
@@ -37,7 +38,8 @@ export function MobileSessionCompanion({ characterId, campaignId }: MobileSessio
     refSkillMap, refTalentMap, refWeaponMap, refArmorMap, refGearMap, refDescriptorMap, refWeaponQualityMap,
     refAttachmentMap,
     forceRating,
-    handleVitalChange,
+    handleVitalChange, handleSetEquipState, handleBuySkill,
+    handleRemoveWeapon, handleRemoveEquipment,
     loading, error,
   } = useCharacterData(characterId)
 
@@ -56,6 +58,10 @@ export function MobileSessionCompanion({ characterId, campaignId }: MobileSessio
   })
   const effectiveStats = derivedStats?.effectiveStats
   const skillModifiers = derivedStats?.modifiers.skillModifiers ?? {}
+
+  const encStats = character
+    ? computeEncumbranceStats(character, armor, refArmorMap, gear, refGearMap, weapons, refWeaponMap)
+    : null
 
   const [activeTab, setActiveTab]       = useState<TabId>('status')
   const [woundsOpen, setWoundsOpen]     = useState(false)
@@ -165,6 +171,8 @@ export function MobileSessionCompanion({ characterId, campaignId }: MobileSessio
             refSkills={refSkills}
             onSkillTap={openSkillDice}
             skillModifiers={skillModifiers}
+            xpAvailable={character.xp_available}
+            onUpgradeSkill={handleBuySkill}
           />
         )}
         {activeTab === 'talents' && (
@@ -185,6 +193,12 @@ export function MobileSessionCompanion({ characterId, campaignId }: MobileSessio
             refSkillMap={refSkillMap}
             refDescriptorMap={refDescriptorMap}
             refWeaponQualityMap={refWeaponQualityMap}
+            onSetWeaponState={(id, s) => handleSetEquipState(id, 'weapon', s)}
+            onSetArmorState={(id, s) => handleSetEquipState(id, 'armor', s)}
+            onSetGearState={(id, s) => handleSetEquipState(id, 'gear', s)}
+            onDiscardWeapon={id => handleRemoveWeapon(id, 'player')}
+            onDiscardArmor={id => handleRemoveEquipment(id, 'armor', 'player')}
+            onDiscardGear={id => handleRemoveEquipment(id, 'gear', 'player')}
           />
         )}
         {activeTab === 'notes' && (
@@ -228,6 +242,8 @@ export function MobileSessionCompanion({ characterId, campaignId }: MobileSessio
           character={character}
           onVitalChange={handleVitalChange}
           woundBonus={woundBonus}
+          encumbranceCurrent={encStats?.current}
+          encumbranceThreshold={encStats?.threshold}
         />
       </BottomSheet>
 

@@ -77,6 +77,7 @@ const FALLBACK: Record<string, { dmg?: number; brawn?: number; range?: string }>
   'sniper rifle':            { dmg: 10, range: 'Extreme' },
   'disruptor pistol':        { dmg: 10, range: 'Short' },
   'disruptor rifle':         { dmg: 10, range: 'Long' },
+  'arc welder':              { dmg: 3, range: 'Engaged' },
   'stun blaster':            { dmg: 8, range: 'Short' },
   'stun pistol':             { dmg: 6, range: 'Short' },
   'ion blaster':             { dmg: 5, range: 'Short' },

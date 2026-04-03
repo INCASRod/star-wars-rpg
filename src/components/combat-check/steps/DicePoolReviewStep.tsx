@@ -10,6 +10,7 @@ import {
   getRangedDifficulty, getMeleeDifficulty, RANGE_BAND_LABELS,
   RANGE_VALUE_MAP, CHAR_FIELD_MAP, isRangedSkill,
 } from '@/lib/combatCheckUtils'
+import { useState } from 'react'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const GOLD      = '#C8AA50'
@@ -34,6 +35,12 @@ export const EMPTY_ADJUSTMENTS: ManualAdjustments = {
   abilityUpgrades: 0, difficultyUpgrades: 0,
 }
 
+export interface DualWieldState {
+  enabled:         boolean
+  primaryWeapon:   CharacterWeapon
+  secondaryWeapon: CharacterWeapon
+}
+
 interface DicePoolReviewStepProps {
   attackType:      'ranged' | 'melee'
   character:       Character
@@ -47,6 +54,10 @@ interface DicePoolReviewStepProps {
   adjustments:     ManualAdjustments
   onAdjustChange:  (adj: ManualAdjustments) => void
   onRoll:          (pool: Record<string, number>) => void
+  /** When set, overrides standard pool calculation with dual wield rules */
+  dualWield?:      DualWieldState | null
+  refWeaponMap?:   Record<string, RefWeapon>
+  refSkillMap?:    Record<string, RefSkill>
 }
 
 function SectionLabel({ text }: { text: string }) {
@@ -139,78 +150,173 @@ function AdjustControl({
 export function DicePoolReviewStep({
   attackType, character, weapon, refWeapon, refSkill, charSkills,
   targets, rangeBand, skillModifiers, adjustments, onAdjustChange, onRoll,
+  dualWield, refWeaponMap, refSkillMap,
 }: DicePoolReviewStepProps) {
+  const [breakdownOpen, setBreakdownOpen] = useState(false)
+
   const isUnarmed = weapon?.id === '__unarmed__'
   const skillKey  = isUnarmed ? 'BRAWL' : (refWeapon?.skill_key ?? '')
 
-  // ── Attacker pool ──────────────────────────────────────────────────────────
+  // ── Determine if dual wield mode is active ────────────────────────────────
+  const isDualWield = dualWield?.enabled === true && refWeaponMap && refSkillMap
+
+  // ── Standard pool (used when not dual wield) ──────────────────────────────
   const charKey  = refSkill?.characteristic_key
   const charVal  = charKey ? ((character[CHAR_FIELD_MAP[charKey] as keyof Character] as number) ?? 0) : (isUnarmed ? character.brawn : 0)
   const skillData = charSkills.find(s => s.skill_key === skillKey)
   const rank = skillData?.rank ?? 0
+  let { proficiency: stdPro, ability: stdAbl } = getSkillPool(charVal, rank)
 
-  let { proficiency, ability } = getSkillPool(charVal, rank)
+  // ── Dual wield pool calculation ───────────────────────────────────────────
+  let dwPrimarySkillKey   = ''
+  let dwSecondarySkillKey = ''
+  let dwUsedSkillRank     = 0
+  let dwUsedChar          = 0
+  let dwBaseDifficulty    = 0
+  let dwPenaltyLabel      = ''
+  let dwPrimarySkillLabel = ''
+  let dwSecondarySkillLabel = ''
+  let dwPrimarySkillRank  = 0
+  let dwSecondarySkillRank = 0
+  let dwPrimaryCharVal    = 0
+  let dwSecondaryCharVal  = 0
 
-  // Apply ability upgrades (convert green → yellow)
-  const upgrades = Math.min(adjustments.abilityUpgrades, ability)
-  const finalPro = proficiency + upgrades
-  const finalAbl = ability - upgrades
+  if (isDualWield && dualWield && refWeaponMap && refSkillMap) {
+    const primaryRef   = refWeaponMap[dualWield.primaryWeapon.weapon_key]
+    const secondaryRef = refWeaponMap[dualWield.secondaryWeapon.weapon_key]
 
-  // ── Talent bonuses ─────────────────────────────────────────────────────────
-  const talentMod: SkillDiceModifier | undefined = skillModifiers[skillKey]
+    dwPrimarySkillKey   = primaryRef?.skill_key ?? ''
+    dwSecondarySkillKey = secondaryRef?.skill_key ?? ''
+
+    const primarySkillRef   = refSkillMap[dwPrimarySkillKey]
+    const secondarySkillRef = refSkillMap[dwSecondarySkillKey]
+
+    const primaryCharKey   = primarySkillRef?.characteristic_key ?? ''
+    const secondaryCharKey = secondarySkillRef?.characteristic_key ?? ''
+
+    dwPrimaryCharVal   = primaryCharKey   ? ((character[CHAR_FIELD_MAP[primaryCharKey]   as keyof Character] as number) ?? 0) : 0
+    dwSecondaryCharVal = secondaryCharKey ? ((character[CHAR_FIELD_MAP[secondaryCharKey] as keyof Character] as number) ?? 0) : 0
+
+    dwPrimarySkillRank   = charSkills.find(s => s.skill_key === dwPrimarySkillKey)?.rank   ?? 0
+    dwSecondarySkillRank = charSkills.find(s => s.skill_key === dwSecondarySkillKey)?.rank ?? 0
+
+    dwUsedSkillRank = Math.min(dwPrimarySkillRank, dwSecondarySkillRank)
+    dwUsedChar      = Math.min(dwPrimaryCharVal,   dwSecondaryCharVal)
+
+    // Base difficulty: higher of two attacks
+    const primaryWeaponMaxRange   = primaryRef?.range_value   ? (RANGE_VALUE_MAP[primaryRef.range_value]   ?? 'extreme') : 'extreme'
+    const secondaryWeaponMaxRange = secondaryRef?.range_value ? (RANGE_VALUE_MAP[secondaryRef.range_value] ?? 'extreme') : 'extreme'
+
+    const primaryDiff   = rangeBand ? getRangedDifficulty(rangeBand, dwPrimarySkillKey,   primaryWeaponMaxRange)   : { difficultyDice: 0 }
+    const secondaryDiff = rangeBand ? getRangedDifficulty(rangeBand, dwSecondarySkillKey, secondaryWeaponMaxRange) : { difficultyDice: 0 }
+    dwBaseDifficulty = Math.max(primaryDiff.difficultyDice, secondaryDiff.difficultyDice)
+
+    // Penalty
+    const sameSkill = dwPrimarySkillKey === dwSecondarySkillKey
+    dwPenaltyLabel  = sameSkill
+      ? `+1 difficulty (same skill: ${primarySkillRef?.name ?? dwPrimarySkillKey})`
+      : '+2 difficulty (different skills)'
+
+    dwPrimarySkillLabel   = primarySkillRef?.name   ?? dwPrimarySkillKey
+    dwSecondarySkillLabel = secondarySkillRef?.name ?? dwSecondarySkillKey
+  }
+
+  // ── Final pool values ─────────────────────────────────────────────────────
+  let baseProf: number, baseAbl: number, baseDiff: number, baseChal: number
+
+  if (isDualWield) {
+    const { proficiency, ability } = getSkillPool(dwUsedChar, dwUsedSkillRank)
+    const sameSkill = dwPrimarySkillKey === dwSecondarySkillKey
+    baseDiff = dwBaseDifficulty + (sameSkill ? 1 : 2) + adjustments.difficultyAdd
+    baseChal = 0
+    baseProf = proficiency
+    baseAbl  = ability
+  } else {
+    baseProf = stdPro
+    baseAbl  = stdAbl
+
+    let difficultyDice = 0
+    let challengeDice  = 0
+
+    if (attackType === 'ranged' && rangeBand) {
+      const result = getRangedDifficulty(rangeBand, skillKey, refWeapon?.range_value ? (RANGE_VALUE_MAP[refWeapon.range_value] ?? 'extreme') : 'extreme')
+      difficultyDice = result.difficultyDice
+      challengeDice  = result.challengeDice
+    } else if (attackType === 'melee') {
+      const primaryTarget = targets[0] ?? null
+      if (primaryTarget) {
+        const result = getMeleeDifficulty(primaryTarget)
+        difficultyDice = result.difficultyDice
+        challengeDice  = result.challengeDice
+      } else {
+        difficultyDice = 2
+      }
+    }
+    baseDiff = difficultyDice
+    baseChal = challengeDice
+  }
+
+  // Apply ability upgrades
+  const upgrades  = Math.min(adjustments.abilityUpgrades, baseAbl)
+  const finalPro  = baseProf + upgrades
+  const finalAbl  = baseAbl - upgrades
+
+  // Talent bonuses (use primary skill key for dual wield)
+  const activeSk     = isDualWield ? dwPrimarySkillKey : skillKey
+  const talentMod: SkillDiceModifier | undefined = skillModifiers[activeSk]
   const talentBoost    = talentMod?.boostAdd ?? 0
   const talentSbRemove = talentMod?.setbackRemove ?? 0
 
-  // ── Difficulty ────────────────────────────────────────────────────────────
-  let difficultyDice   = 0
-  let challengeDice    = 0
-  let meleeDifficultyNote: string | undefined
-  let meleeDiffDefault: string | undefined
-
-  if (attackType === 'ranged' && rangeBand) {
-    const result = getRangedDifficulty(rangeBand, skillKey, refWeapon?.range_value ? (RANGE_VALUE_MAP[refWeapon.range_value] ?? 'extreme') : 'extreme')
-    difficultyDice = result.difficultyDice
-    challengeDice  = result.challengeDice
-  } else if (attackType === 'melee') {
-    const primaryTarget = targets[0] ?? null
-    if (primaryTarget) {
-      const result = getMeleeDifficulty(primaryTarget)
-      difficultyDice = result.difficultyDice
-      challengeDice  = result.challengeDice
-      meleeDifficultyNote = `Opposed check vs ${primaryTarget.name}'s Melee`
-      if (result.isDefault) meleeDiffDefault = result.defaultNote
-    } else {
-      // No target — use average difficulty as fallback
-      difficultyDice = 2
-      meleeDifficultyNote = 'No target selected — using Average difficulty (2 difficulty dice)'
-    }
+  // Apply difficulty upgrades (for standard non-dual mode)
+  let finalDiff: number, finalChal: number
+  if (isDualWield) {
+    const diffUpgrades = Math.min(adjustments.difficultyUpgrades, baseDiff)
+    finalDiff = baseDiff - diffUpgrades
+    finalChal = diffUpgrades
+  } else {
+    const diffUpgrades = Math.min(adjustments.difficultyUpgrades, baseDiff)
+    finalDiff = baseDiff - diffUpgrades + adjustments.difficultyAdd
+    finalChal = baseChal + diffUpgrades
   }
 
-  // Apply manual difficulty additions and upgrades
-  const diffUpgrades = Math.min(adjustments.difficultyUpgrades, difficultyDice)
-  const finalDiff = difficultyDice - diffUpgrades + adjustments.difficultyAdd
-  const finalChal = challengeDice + diffUpgrades
-
-  // Apply talent setback removal
   const netSetback = Math.max(0, adjustments.setbackAdd - talentSbRemove)
 
-  // Final pool for rolling
   const finalPool = {
     proficiency: finalPro,
-    ability: finalAbl,
-    boost: talentBoost + adjustments.boostAdd,
-    difficulty: finalDiff,
-    challenge: finalChal,
-    setback: netSetback,
-    force: 0,
+    ability:     finalAbl,
+    boost:       talentBoost + adjustments.boostAdd,
+    difficulty:  finalDiff,
+    challenge:   finalChal,
+    setback:     netSetback,
+    force:       0,
   }
 
   function adj(key: keyof ManualAdjustments, delta: number) {
     onAdjustChange({ ...adjustments, [key]: Math.max(0, adjustments[key] + delta) })
   }
 
-  const weaponName = isUnarmed ? 'Unarmed (Brawl)' : (weapon?.custom_name || refWeapon?.name || 'Weapon')
+  const weaponName = isDualWield && dualWield
+    ? `${dualWield.primaryWeapon.custom_name || (refWeaponMap?.[dualWield.primaryWeapon.weapon_key]?.name) || 'Primary'} + ${dualWield.secondaryWeapon.custom_name || (refWeaponMap?.[dualWield.secondaryWeapon.weapon_key]?.name) || 'Secondary'}`
+    : isUnarmed ? 'Unarmed (Brawl)' : (weapon?.custom_name || refWeapon?.name || 'Weapon')
   const targetName = targets.length === 1 ? targets[0].name : targets.length > 1 ? `${targets.length} targets` : undefined
+
+  // ── Melee difficulty labels (standard mode only) ──────────────────────────
+  let meleeDifficultyNote: string | undefined
+  let meleeDiffDefault: string | undefined
+  let meleeRankDefaulted = false
+  if (!isDualWield && attackType === 'melee') {
+    const primaryTarget = targets[0] ?? null
+    if (primaryTarget) {
+      const result = getMeleeDifficulty(primaryTarget)
+      meleeDifficultyNote = `Opposed check vs ${primaryTarget.name}'s Melee`
+      if (result.isDefault) {
+        meleeDiffDefault = result.defaultNote
+        meleeRankDefaulted = true
+      }
+    } else {
+      meleeDifficultyNote = 'No target selected — using Average difficulty (2 difficulty dice)'
+    }
+  }
 
   return (
     <div>
@@ -226,6 +332,25 @@ export function DicePoolReviewStep({
         {targetName && <><span style={{ color: 'rgba(200,170,80,0.25)' }}>→</span><span>{targetName}</span></>}
         {rangeBand && <><span style={{ color: 'rgba(200,170,80,0.25)' }}>→</span><span>{RANGE_BAND_LABELS[rangeBand]}</span></>}
       </div>
+
+      {/* Dual wield header */}
+      {isDualWield && dualWield && (
+        <div style={{
+          marginBottom: 10,
+          padding: '8px 12px',
+          background: 'rgba(200,170,80,0.04)',
+          border: '1px solid rgba(200,170,80,0.15)',
+          borderRadius: 8,
+          fontFamily: FONT_R,
+          fontSize: 'clamp(0.68rem, 1.05vw, 0.8rem)',
+          color: 'rgba(200,170,80,0.6)',
+        }}>
+          <span style={{ color: '#C8AA50', fontWeight: 700 }}>DUAL WIELD ATTACK</span>
+          {'  '}Primary: {dualWield.primaryWeapon.custom_name || (refWeaponMap?.[dualWield.primaryWeapon.weapon_key]?.name) || 'Primary'} ({dwPrimarySkillLabel})
+          {'  '}·{'  '}
+          Secondary: {dualWield.secondaryWeapon.custom_name || (refWeaponMap?.[dualWield.secondaryWeapon.weapon_key]?.name) || 'Secondary'} ({dwSecondarySkillLabel})
+        </div>
+      )}
 
       {/* Attack pool */}
       <SectionLabel text="Your Dice" />
@@ -263,6 +388,16 @@ export function DicePoolReviewStep({
         { type: 'difficulty', count: finalDiff },
         { type: 'challenge', count: finalChal },
       ]} />
+      {isDualWield && (
+        <div style={{
+          fontFamily: FONT_R,
+          fontSize: 'clamp(0.65rem, 1vw, 0.75rem)',
+          color: 'rgba(255,152,0,0.7)',
+          marginBottom: 6,
+        }}>
+          {dwPenaltyLabel}
+        </div>
+      )}
       {netSetback > 0 && (
         <DiceRow label="Setback" types={[{ type: 'setback', count: netSetback }]} />
       )}
@@ -286,6 +421,61 @@ export function DicePoolReviewStep({
           marginBottom: 6,
         }}>
           {meleeDiffDefault}
+        </div>
+      )}
+      {meleeRankDefaulted && (
+        <div style={{
+          fontFamily: 'Rajdhani, sans-serif',
+          fontSize: 'clamp(0.68rem, 1vw, 0.78rem)',
+          color: 'rgba(232,223,200,0.4)',
+          fontStyle: 'italic',
+          marginBottom: 6,
+        }}>
+          Melee: rank 0 (not listed — defaulting to Brawn)
+        </div>
+      )}
+
+      {/* Dual wield collapsible breakdown */}
+      {isDualWield && dualWield && (
+        <div style={{ marginBottom: 8 }}>
+          <button
+            onClick={() => setBreakdownOpen(v => !v)}
+            style={{
+              background: 'transparent', border: 'none', cursor: 'pointer', padding: 0,
+              fontFamily: FONT_R,
+              fontSize: 'clamp(0.68rem, 1.05vw, 0.78rem)',
+              color: 'rgba(200,170,80,0.55)',
+              textDecoration: 'underline',
+              marginBottom: breakdownOpen ? 8 : 0,
+            }}
+          >
+            {breakdownOpen ? '▼' : '▶'} Combined Check Breakdown
+          </button>
+
+          {breakdownOpen && (
+            <div style={{
+              fontFamily: FONT_M,
+              fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)',
+              color: TEXT_DIM,
+              lineHeight: 1.8,
+              padding: '8px 10px',
+              background: 'rgba(255,255,255,0.02)',
+              border: '1px solid rgba(200,170,80,0.1)',
+              borderRadius: 6,
+            }}>
+              <div>Skill rank used: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{dwUsedSkillRank} (lower of {dwPrimarySkillRank} / {dwSecondarySkillRank})</div>
+              <div>Characteristic used: &nbsp;&nbsp;&nbsp;{dwUsedChar} (lower of {dwPrimarySkillLabel} {dwPrimaryCharVal} / {dwSecondarySkillLabel} {dwSecondaryCharVal})</div>
+              <div>Base difficulty: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{dwBaseDifficulty} ({rangeBand ? RANGE_BAND_LABELS[rangeBand] : '—'} range)</div>
+              <div>
+                {dwPrimarySkillKey === dwSecondarySkillKey
+                  ? `Same-skill penalty: &nbsp;&nbsp;&nbsp;+1`
+                  : `Diff-skill penalty: &nbsp;&nbsp;&nbsp;&nbsp;+2`}
+              </div>
+              <div style={{ borderTop: '1px solid rgba(200,170,80,0.15)', marginTop: 4, paddingTop: 4 }}>
+                Final difficulty: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{finalDiff + finalChal}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -338,7 +528,7 @@ export function DicePoolReviewStep({
           boxShadow: '0 2px 16px rgba(200,170,80,0.3)',
         }}
       >
-        Roll Attack
+        {isDualWield ? 'Roll Dual Wield Attack' : 'Roll Attack'}
       </button>
     </div>
   )

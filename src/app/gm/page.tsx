@@ -1,13 +1,18 @@
 'use client'
 
 import { Suspense, useEffect, useState, useCallback, useRef, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { EquipmentImage } from '@/components/ui/EquipmentImage'
 import { parseOggDudeMarkup } from '@/lib/oggdude-markup'
-import type { Character, Campaign, Player, RefDutyType, RefObligationType } from '@/lib/types'
+import type { Character, Campaign, Player, RefDutyType, RefObligationType, CriticalInjuryRequest, RefCriticalInjury } from '@/lib/types'
 import { DutyObligationTab } from '@/components/gm/DutyObligationTab'
 import { ForceNotificationCard, type ForceNotification } from '@/components/gm/ForceNotificationCard'
+import { ItemDatabaseTab } from '@/components/gm/ItemDatabaseTab'
+import { LootAwardModal, type AwardableItem } from '@/components/gm/LootAwardModal'
+import { DestinyGeneratePanel } from '@/components/gm/DestinyGeneratePanel'
+import { DestinyPoolDisplay, type DestinyPoolRecord } from '@/components/destiny/DestinyPoolDisplay'
 import { toast } from 'sonner'
 import { rarityColor, rarityLabel } from '@/lib/styles'
 import { useRollFeed } from '@/hooks/useRollFeed'
@@ -126,6 +131,64 @@ const CRIT_TABLE: { min: number; max: number; severity: string; name: string }[]
 function lookupCrit(roll: number): { severity: string; name: string } {
   const entry = CRIT_TABLE.find(c => roll >= c.min && roll <= c.max)
   return entry || { severity: 'Deadly', name: 'Dead' }
+}
+
+function OverrideCritSelect({ refCrits, onOverride }: { refCrits: RefCriticalInjury[]; onOverride: (id: number) => void }) {
+  const [open, setOpen] = useState(false)
+  const FR = "var(--font-rajdhani), 'Rajdhani', sans-serif"
+  const FS_CAPTION = 'var(--text-caption)'
+  const DIM = '#6A8070'
+  const RED = '#E05050'
+  const PANEL_BG = 'rgba(8,16,10,0.95)'
+  const BORDER = 'rgba(200,170,80,0.14)'
+
+  return (
+    <div style={{ position: 'relative', flex: 1 }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width: '100%',
+          background: 'rgba(224,120,85,0.08)',
+          border: `1px solid rgba(224,120,85,0.3)`,
+          borderRadius: 3, padding: '4px 0',
+          cursor: 'pointer', fontFamily: FR, fontSize: FS_CAPTION,
+          color: '#E07855',
+        }}
+      >
+        ✎ Override
+      </button>
+      {open && (
+        <>
+          <div style={{ position: 'fixed', inset: 0, zIndex: 400 }} onClick={() => setOpen(false)} />
+          <div style={{
+            position: 'absolute', bottom: 'calc(100% + 4px)', left: 0, right: 0,
+            zIndex: 410,
+            background: PANEL_BG, border: `1px solid ${BORDER}`,
+            borderRadius: 4,
+            maxHeight: 200, overflowY: 'auto',
+          }}>
+            {refCrits.map(r => (
+              <button
+                key={r.id}
+                onClick={() => { onOverride(r.id); setOpen(false) }}
+                style={{
+                  display: 'block', width: '100%', textAlign: 'left',
+                  background: 'transparent', border: 'none',
+                  padding: '5px 8px', cursor: 'pointer',
+                  fontFamily: FR, fontSize: FS_CAPTION, color: DIM,
+                  borderBottom: `1px solid rgba(200,170,80,0.06)`,
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = RED; (e.currentTarget as HTMLElement).style.background = 'rgba(224,80,80,0.06)' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = DIM; (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+              >
+                [{r.roll_min}–{r.roll_max}] {r.name}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
 }
 
 /* ═══════════════════════════════════════
@@ -286,12 +349,12 @@ function GmDashboard() {
   const [error, setError] = useState<string | null>(null)
 
   // ── Tabs ──
-  type GmTab = 'xp' | 'credits' | 'duty' | 'do' | 'loot' | 'combat' | 'crit' | 'force'
+  type GmTab = 'xp' | 'credits' | 'duty' | 'do' | 'loot' | 'items' | 'combat' | 'crit' | 'force'
   const GM_TAB_KEY = 'holocron:gm-tab'
   const [activeTab, setActiveTab] = useState<GmTab>(() => {
     if (typeof window === 'undefined') return 'xp'
     const saved = window.localStorage.getItem(GM_TAB_KEY)
-    const valid: GmTab[] = ['xp', 'credits', 'duty', 'do', 'loot', 'combat', 'crit', 'force']
+    const valid: GmTab[] = ['xp', 'credits', 'duty', 'do', 'loot', 'items', 'combat', 'crit', 'force']
     return valid.includes(saved as GmTab) ? (saved as GmTab) : 'xp'
   })
 
@@ -347,6 +410,16 @@ function GmDashboard() {
   const [critResult, setCritResult] = useState<{ roll: number; name: string; severity: string } | null>(null)
   const [critBonus, setCritBonus] = useState('')
 
+  // ── Critical Injury Request flow ──
+  const [refCritsDb, setRefCritsDb] = useState<RefCriticalInjury[]>([])
+  const [charActiveCritCounts, setCharActiveCritCounts] = useState<Record<string, number>>({})
+  const [critReqOpenFor, setCritReqOpenFor] = useState<string | null>(null)
+  const [critReqVicious, setCritReqVicious] = useState(0)
+  const [critReqLethal, setCritReqLethal] = useState(0)
+  const [critReqGm, setCritReqGm] = useState(0)
+  const [critReqBusy, setCritReqBusy] = useState(false)
+  const [rolledCritRequests, setRolledCritRequests] = useState<CriticalInjuryRequest[]>([])
+
   // ── Loot ──
   const [lootOpen, setLootOpen] = useState(false)
   const [lootType, setLootType] = useState<'all' | 'weapon' | 'armor' | 'gear'>('all')
@@ -359,9 +432,17 @@ function GmDashboard() {
   const [revealItem, setRevealItem] = useState<LootItem | null>(null)
   const [assignTarget, setAssignTarget] = useState<string>('')
   const [lootBusy, setLootBusy] = useState(false)
+  const [lootAwardItem, setLootAwardItem] = useState<AwardableItem | null>(null)
 
   // ── Destiny Pool ──
   const [destinyPool, setDestinyPool] = useState<Array<'light' | 'dark'>>(['light', 'light', 'dark', 'dark', 'dark'])
+  const [destinyPoolRecord,   setDestinyPoolRecord]   = useState<DestinyPoolRecord | null>(null)
+  const [destinyGenerateOpen, setDestinyGenerateOpen] = useState(false)
+  const [manualAdjustOpen,    setManualAdjustOpen]    = useState(false)
+  const [gmSpendConfirm,      setGmSpendConfirm]      = useState(false)
+  const [manualLight,         setManualLight]         = useState(0)
+  const [manualDark,          setManualDark]          = useState(0)
+  const [manualBusy,          setManualBusy]          = useState(false)
 
   // ── Active sessions (charId → session_key) ──
   const [activeSessions, setActiveSessions] = useState<Record<string, string>>({})
@@ -609,11 +690,11 @@ function GmDashboard() {
       )
 
       if (chars.length > 0) {
-        const specRes = await supabase
-          .from('character_specializations')
-          .select('character_id, specialization_key')
-          .in('character_id', chars.map(c => c.id))
-          .order('purchase_order')
+        const [specRes, critsRes, refCritsRes] = await Promise.all([
+          supabase.from('character_specializations').select('character_id, specialization_key').in('character_id', chars.map(c => c.id)).order('purchase_order'),
+          supabase.from('character_critical_injuries').select('character_id').in('character_id', chars.map(c => c.id)).eq('is_healed', false),
+          supabase.from('ref_critical_injuries').select('*').order('roll_min'),
+        ])
         const specMap: Record<string, string[]> = {}
         for (const row of specRes.data || []) {
           const r = row as { character_id: string; specialization_key: string }
@@ -621,6 +702,13 @@ function GmDashboard() {
           specMap[r.character_id].push(r.specialization_key)
         }
         setCharSpecs(specMap)
+        const critCounts: Record<string, number> = {}
+        for (const row of critsRes.data || []) {
+          const r = row as { character_id: string }
+          critCounts[r.character_id] = (critCounts[r.character_id] ?? 0) + 1
+        }
+        setCharActiveCritCounts(critCounts)
+        if (refCritsRes.data) setRefCritsDb(refCritsRes.data as RefCriticalInjury[])
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : String(err))
@@ -644,6 +732,19 @@ function GmDashboard() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [campaignId])
 
+  // ── Load rolled crit requests on mount ──
+  useEffect(() => {
+    if (!campaignId) return
+    supabase
+      .from('critical_injury_requests')
+      .select('*')
+      .eq('campaign_id', campaignId)
+      .eq('status', 'rolled')
+      .order('created_at', { ascending: false })
+      .then(({ data }) => { if (data) setRolledCritRequests(data as CriticalInjuryRequest[]) })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [campaignId])
+
   // ── Realtime ──
   useEffect(() => {
     if (!campaignId) return
@@ -661,6 +762,15 @@ function GmDashboard() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'character_specializations' }, () => loadData(true))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'character_force_abilities' }, () => loadData(true))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'character_critical_injuries' }, () => loadData(true))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'critical_injury_requests', filter: `campaign_id=eq.${campaignId}` }, (payload) => {
+        const row = payload.new as CriticalInjuryRequest | undefined
+        if (!row) return
+        if (row.status === 'rolled') {
+          setRolledCritRequests(prev => prev.some(r => r.id === row.id) ? prev.map(r => r.id === row.id ? row : r) : [row, ...prev])
+        } else if (row.status === 'dismissed') {
+          setRolledCritRequests(prev => prev.filter(r => r.id !== row.id))
+        }
+      })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'force_notifications', filter: `campaign_id=eq.${campaignId}` }, (payload) => {
         setForceNotifications(prev => [payload.new as ForceNotification, ...prev])
       })
@@ -673,6 +783,85 @@ function GmDashboard() {
     return () => { supabase.removeChannel(channel) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [campaignId])
+
+  // ── Destiny Pool DB subscription ──
+  useEffect(() => {
+    if (!campaignId) return
+    // Load active pool on mount
+    supabase.from('destiny_pool').select('*').eq('campaign_id', campaignId).eq('is_active', true).maybeSingle()
+      .then(({ data }) => { if (data) setDestinyPoolRecord(data as DestinyPoolRecord) })
+    // Subscribe to changes
+    const ch = supabase
+      .channel(`destiny-pool-gm-${campaignId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'destiny_pool', filter: `campaign_id=eq.${campaignId}` },
+        (payload) => {
+          const row = payload.new as DestinyPoolRecord
+          if (row.is_active) {
+            setDestinyPoolRecord(row)
+          } else if (destinyPoolRecord?.id === row.id) {
+            setDestinyPoolRecord(null)
+          }
+        }
+      )
+      .subscribe()
+    return () => { supabase.removeChannel(ch) }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [campaignId])
+
+  // ── GM spend dark destiny ──
+  const handleGmSpendDark = useCallback(async () => {
+    if (!destinyPoolRecord || destinyPoolRecord.dark_count < 1) return
+    if (!gmSpendConfirm) { setGmSpendConfirm(true); return }
+    setGmSpendConfirm(false)
+    const prev = { light: destinyPoolRecord.light_count, dark: destinyPoolRecord.dark_count }
+    const newLight = prev.light + 1
+    const newDark  = prev.dark  - 1
+    await supabase.from('destiny_pool').update({ light_count: newLight, dark_count: newDark }).eq('id', destinyPoolRecord.id)
+    await supabase.from('destiny_spend_log').insert({
+      campaign_id: campaignId, pool_id: destinyPoolRecord.id,
+      spent_by: 'GM', side_spent: 'dark',
+    })
+    // Broadcast flash to all players
+    for (const c of characters) {
+      sendToChar(c.id, {
+        type:           'destiny-gm-spent',
+        prevLightCount: prev.light,
+        prevDarkCount:  prev.dark,
+        newLightCount:  newLight,
+        newDarkCount:   newDark,
+      })
+    }
+  }, [destinyPoolRecord, gmSpendConfirm, campaignId, characters, sendToChar, supabase])
+
+  // Sync manual counters when active pool changes
+  useEffect(() => {
+    setManualLight(destinyPoolRecord?.light_count ?? 0)
+    setManualDark(destinyPoolRecord?.dark_count  ?? 0)
+  }, [destinyPoolRecord])
+
+  const handleApplyManual = useCallback(async () => {
+    if (!campaignId) return
+    setManualBusy(true)
+    try {
+      const { data: existing } = await supabase
+        .from('destiny_pool')
+        .select('id')
+        .eq('campaign_id', campaignId)
+        .eq('is_active', true)
+        .single()
+      if (existing) {
+        await supabase.from('destiny_pool')
+          .update({ light_count: manualLight, dark_count: manualDark })
+          .eq('id', existing.id)
+      } else {
+        await supabase.from('destiny_pool')
+          .insert({ campaign_id: campaignId, light_count: manualLight, dark_count: manualDark, session_label: 'Manual', is_active: true })
+      }
+      setManualAdjustOpen(false)
+    } finally {
+      setManualBusy(false)
+    }
+  }, [manualLight, manualDark, campaignId, supabase])
 
   // ── Destiny Pool ──
   const flipDestinyToken = useCallback(async (idx: number) => {
@@ -934,6 +1123,69 @@ function GmDashboard() {
     setCombatRound(next)
     broadcastCombatState('combat', next)
   }
+
+  // ── Critical Injury Request Helpers ──
+  const sendCritRequest = useCallback(async (charId: string) => {
+    if (!campaignId) return
+    setCritReqBusy(true)
+    const existingCount = charActiveCritCounts[charId] ?? 0
+    const existingMod = existingCount * 10
+    const total = existingMod + critReqVicious * 10 + critReqLethal * 10 + critReqGm
+    await supabase.from('critical_injury_requests').insert({
+      campaign_id:   campaignId,
+      character_id:  charId,
+      total_modifier:total,
+      vicious_mod:   critReqVicious * 10,
+      lethal_mod:    critReqLethal * 10,
+      gm_modifier:   critReqGm,
+      existing_mod:  existingMod,
+      status:       'pending',
+    })
+    flash(`Critical injury roll requested!`)
+    setCritReqOpenFor(null)
+    setCritReqVicious(0)
+    setCritReqLethal(0)
+    setCritReqGm(0)
+    setCritReqBusy(false)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [campaignId, charActiveCritCounts, critReqVicious, critReqLethal, critReqGm])
+
+  const confirmCritResult = useCallback(async (req: CriticalInjuryRequest) => {
+    await supabase.from('critical_injury_requests').update({ status: 'dismissed', resolved_at: new Date().toISOString() }).eq('id', req.id)
+    setRolledCritRequests(prev => prev.filter(r => r.id !== req.id))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const overrideCritResult = useCallback(async (req: CriticalInjuryRequest, injuryId: number) => {
+    const injury = refCritsDb.find(r => r.id === injuryId)
+    if (!injury) return
+    // Update the character_critical_injuries row that was just inserted
+    // Find it by character_id + total_roll match (best proxy we have)
+    const { data } = await supabase.from('character_critical_injuries')
+      .select('id')
+      .eq('character_id', req.character_id)
+      .eq('total_roll', req.final_result)
+      .order('received_at', { ascending: false })
+      .limit(1)
+    if (data?.[0]) {
+      await supabase.from('character_critical_injuries').update({
+        injury_id:   injury.id,
+        custom_name: injury.name,
+        severity:    injury.severity,
+        description: injury.description,
+      }).eq('id', (data[0] as { id: string }).id)
+    }
+    await supabase.from('critical_injury_requests').update({ injury_key: injuryId, status: 'dismissed', resolved_at: new Date().toISOString() }).eq('id', req.id)
+    setRolledCritRequests(prev => prev.filter(r => r.id !== req.id))
+    flash('Critical injury result overridden.')
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refCritsDb])
+
+  const healCrit = useCallback(async (critId: string, charId: string) => {
+    await supabase.from('character_critical_injuries').update({ is_healed: true }).eq('id', critId)
+    setCharActiveCritCounts(prev => ({ ...prev, [charId]: Math.max(0, (prev[charId] ?? 1) - 1) }))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // ── Wound/Strain Helpers ──
   const addWound = async (charId: string, amount: number) => {
@@ -1223,31 +1475,49 @@ function GmDashboard() {
           </div>
         )}
 
-        {/* Destiny Pool */}
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: BLUE, letterSpacing: '0.15em', textTransform: 'uppercase' }}>Destiny Pool</span>
-          <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-            {destinyPool.map((token, idx) => (
-              <button
-                key={idx}
-                onClick={() => flipDestinyToken(idx)}
-                title={`Click to flip to ${token === 'light' ? 'dark' : 'light'}`}
-                style={{
-                  width: 24, height: 24, borderRadius: '50%', cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  border: 'none', padding: 0,
-                  background: token === 'light' ? 'rgba(200,170,80,0.1)' : 'rgba(144,96,208,0.15)',
-                  outline: token === 'light' ? '2px solid rgba(200,170,80,0.5)' : '2px solid rgba(144,96,208,0.5)',
-                  transition: '.15s',
-                }}
-              >
-                <span style={{ fontSize: FS_CAPTION, color: token === 'light' ? GOLD : PURPLE, lineHeight: 1 }}>
-                  {token === 'light' ? '☀' : '◆'}
-                </span>
-              </button>
-            ))}
-            <button onClick={addDestinyToken} style={{ ...btnSmall, padding: '2px 6px', fontSize: FS_CAPTION }}>+</button>
-            <button onClick={removeDestinyToken} disabled={destinyPool.length === 0} style={{ ...btnSmall, padding: '2px 6px', fontSize: FS_CAPTION, opacity: destinyPool.length === 0 ? 0.3 : 1 }}>−</button>
+        {/* Destiny Pool — single horizontal bar */}
+        <div style={{ marginLeft: 'auto', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12, flexWrap: 'wrap', maxHeight: 48, overflow: 'hidden' }}>
+
+          {/* Label */}
+          <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: BLUE, letterSpacing: '0.15em', textTransform: 'uppercase', whiteSpace: 'nowrap', flexShrink: 0 }}>Destiny</span>
+
+          {/* Token display — flex: 1, collapses to muted text when no pool */}
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+            {destinyPoolRecord ? (
+              <>
+                <DestinyPoolDisplay
+                  poolRecord={destinyPoolRecord}
+                  isGm={true}
+                  onClickDark={handleGmSpendDark}
+                  compact
+                />
+                {gmSpendConfirm && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '2px 8px', background: 'rgba(139,43,226,0.12)', border: '1px solid rgba(139,43,226,0.35)', borderRadius: 4, flexShrink: 0 }}>
+                    <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: '#B070D8' }}>Spend dark?</span>
+                    <button onClick={handleGmSpendDark} style={{ ...btnSmall, padding: '1px 6px', fontSize: FS_CAPTION, color: '#B070D8', border: '1px solid rgba(139,43,226,0.4)' }}>Spend</button>
+                    <button onClick={() => setGmSpendConfirm(false)} style={{ ...btnSmall, padding: '1px 5px', fontSize: FS_CAPTION }}>✕</button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, whiteSpace: 'nowrap' }}>No active pool</span>
+            )}
+          </div>
+
+          {/* Actions — always inline, never stack */}
+          <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+            <button
+              onClick={() => setDestinyGenerateOpen(true)}
+              style={{ ...btnSmall, height: 32, padding: '0 10px', fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)', color: GOLD, border: `1px solid rgba(200,170,80,0.35)`, whiteSpace: 'nowrap' }}
+            >
+              ◈ Generate
+            </button>
+            <button
+              onClick={() => setManualAdjustOpen(true)}
+              style={{ ...btnSmall, height: 32, padding: '0 10px', fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)', color: 'rgba(200,170,80,0.5)', border: '1px solid rgba(200,170,80,0.25)', whiteSpace: 'nowrap' }}
+            >
+              ✎ Adjust
+            </button>
           </div>
         </div>
       </div>
@@ -1257,6 +1527,56 @@ function GmDashboard() {
 
         {/* ── LEFT / CENTER CONTENT ── */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+          {/* ── CRITICAL INJURY RESULTS ── */}
+          {rolledCritRequests.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {rolledCritRequests.map(req => {
+                const charName = characters.find(c => c.id === req.character_id)?.name ?? 'Unknown'
+                const injury = req.injury_key != null ? refCritsDb.find(r => r.id === req.injury_key) : null
+                return (
+                  <div key={req.id} style={{
+                    ...panelBase,
+                    padding: 12,
+                    borderLeft: '3px solid rgba(220,20,60,0.6)',
+                  }}>
+                    <CornerBrackets />
+                    <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: RED, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6 }}>
+                      ⚡ Crit Injury Result — {charName}
+                    </div>
+                    <div style={{ fontFamily: FR, fontSize: FS_SM, color: TEXT, marginBottom: 6 }}>
+                      Roll: <span style={{ color: GOLD, fontFamily: "'Share Tech Mono',monospace" }}>{req.roll_result}</span>
+                      {(req.total_modifier ?? 0) > 0 && <> + <span style={{ color: RED }}>{req.total_modifier}</span></>}
+                      {' = '}
+                      <span style={{ color: GOLD, fontFamily: "'Share Tech Mono',monospace", fontWeight: 700 }}>{req.final_result}</span>
+                    </div>
+                    {injury && (
+                      <div style={{ marginBottom: 8 }}>
+                        <span style={{ fontFamily: FC, fontSize: FS_SM, color: RED, fontWeight: 700 }}>{injury.name}</span>
+                        {' '}
+                        <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>({injury.severity})</span>
+                        {injury.description && (
+                          <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, marginTop: 3, lineHeight: 1.4 }}>{injury.description}</div>
+                        )}
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button
+                        onClick={() => confirmCritResult(req)}
+                        style={{ ...btnSmall, flex: 1, color: GREEN, borderColor: 'rgba(78,200,122,0.3)' }}
+                      >
+                        ✓ Confirm
+                      </button>
+                      <OverrideCritSelect
+                        refCrits={refCritsDb}
+                        onOverride={(injId) => overrideCritResult(req, injId)}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
 
           {/* ── PARTY OVERVIEW ── */}
           <div>
@@ -1536,6 +1856,86 @@ function GmDashboard() {
                       </div>
                     )}
 
+                    {/* ── Critical Injury Request ── */}
+                    <div style={{ marginTop: 8, borderTop: `1px solid ${BORDER}`, paddingTop: 8 }}>
+                      {critReqOpenFor === c.id ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          {/* Config panel */}
+                          <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: RED, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 2 }}>
+                            ⚡ Crit Injury Roll
+                          </div>
+                          {/* Auto modifier */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>
+                            <span>Existing injuries</span>
+                            <span style={{ color: RED, fontWeight: 700 }}>+{(charActiveCritCounts[c.id] ?? 0) * 10}</span>
+                          </div>
+                          {/* Vicious */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>
+                            <span>Vicious (ranks)</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                              <button onClick={() => setCritReqVicious(v => Math.max(0, v - 1))} style={{ background: 'rgba(100,100,100,0.15)', border: '1px solid rgba(100,100,100,0.2)', borderRadius: 2, width: 18, height: 18, cursor: 'pointer', color: DIM, fontSize: FS_OVERLINE, padding: 0 }}>−</button>
+                              <span style={{ fontFamily: "'Share Tech Mono',monospace", color: critReqVicious > 0 ? RED : DIM, minWidth: 16, textAlign: 'center' }}>{critReqVicious}</span>
+                              <button onClick={() => setCritReqVicious(v => v + 1)} style={{ background: 'rgba(100,100,100,0.15)', border: '1px solid rgba(100,100,100,0.2)', borderRadius: 2, width: 18, height: 18, cursor: 'pointer', color: DIM, fontSize: FS_OVERLINE, padding: 0 }}>+</button>
+                            </div>
+                          </div>
+                          {/* Lethal Blows */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>
+                            <span>Lethal Blows (ranks)</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                              <button onClick={() => setCritReqLethal(v => Math.max(0, v - 1))} style={{ background: 'rgba(100,100,100,0.15)', border: '1px solid rgba(100,100,100,0.2)', borderRadius: 2, width: 18, height: 18, cursor: 'pointer', color: DIM, fontSize: FS_OVERLINE, padding: 0 }}>−</button>
+                              <span style={{ fontFamily: "'Share Tech Mono',monospace", color: critReqLethal > 0 ? RED : DIM, minWidth: 16, textAlign: 'center' }}>{critReqLethal}</span>
+                              <button onClick={() => setCritReqLethal(v => v + 1)} style={{ background: 'rgba(100,100,100,0.15)', border: '1px solid rgba(100,100,100,0.2)', borderRadius: 2, width: 18, height: 18, cursor: 'pointer', color: DIM, fontSize: FS_OVERLINE, padding: 0 }}>+</button>
+                            </div>
+                          </div>
+                          {/* Additional */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>
+                            <span>Additional mod</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                              <button onClick={() => setCritReqGm(v => Math.max(0, v - 10))} style={{ background: 'rgba(100,100,100,0.15)', border: '1px solid rgba(100,100,100,0.2)', borderRadius: 2, width: 18, height: 18, cursor: 'pointer', color: DIM, fontSize: FS_OVERLINE, padding: 0 }}>−</button>
+                              <span style={{ fontFamily: "'Share Tech Mono',monospace", color: critReqGm > 0 ? RED : DIM, minWidth: 24, textAlign: 'center' }}>{critReqGm}</span>
+                              <button onClick={() => setCritReqGm(v => v + 10)} style={{ background: 'rgba(100,100,100,0.15)', border: '1px solid rgba(100,100,100,0.2)', borderRadius: 2, width: 18, height: 18, cursor: 'pointer', color: DIM, fontSize: FS_OVERLINE, padding: 0 }}>+</button>
+                            </div>
+                          </div>
+                          {/* Total */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: "'Share Tech Mono',monospace", fontSize: FS_CAPTION, color: RED, fontWeight: 700, borderTop: `1px solid rgba(220,20,60,0.15)`, paddingTop: 4 }}>
+                            <span>Total modifier</span>
+                            <span>+{(charActiveCritCounts[c.id] ?? 0) * 10 + critReqVicious * 10 + critReqLethal * 10 + critReqGm}</span>
+                          </div>
+                          {/* Actions */}
+                          <div style={{ display: 'flex', gap: 4, marginTop: 2 }}>
+                            <button
+                              onClick={() => { setCritReqOpenFor(null); setCritReqVicious(0); setCritReqLethal(0); setCritReqGm(0) }}
+                              style={{ flex: 1, background: 'transparent', border: `1px solid rgba(100,100,100,0.25)`, borderRadius: 4, padding: '4px 0', cursor: 'pointer', fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={() => sendCritRequest(c.id)}
+                              disabled={critReqBusy}
+                              style={{ flex: 2, background: 'rgba(220,20,60,0.12)', border: `1px solid rgba(220,20,60,0.4)`, borderRadius: 4, padding: '4px 0', cursor: 'pointer', fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.06em', color: RED }}
+                            >
+                              {critReqBusy ? '…' : 'Send Roll Request'}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setCritReqOpenFor(c.id)}
+                          style={{
+                            width: '100%',
+                            background: 'rgba(220,20,60,0.06)',
+                            border: `1px solid rgba(220,20,60,0.4)`,
+                            borderRadius: 8, padding: '5px 0', cursor: 'pointer',
+                            fontFamily: FR, fontSize: FS_CAPTION,
+                            fontWeight: 700, letterSpacing: '0.06em',
+                            color: RED,
+                          }}
+                        >
+                          ⚡ Request Crit Injury Roll
+                        </button>
+                      )}
+                    </div>
+
                     {/* Archive button */}
                     <div style={{ marginTop: 8, borderTop: `1px solid ${BORDER}`, paddingTop: 6 }}>
                       <button
@@ -1649,6 +2049,7 @@ function GmDashboard() {
                   ['duty', 'Duty/Obl'],
                   ['do', 'D&O'],
                   ['loot', 'Loot'],
+                  ['items', 'Items'],
                   ['combat', 'Combat'],
                   ['crit', 'Crit Roller'],
                 ] as const).map(([key, label]) => (
@@ -1860,6 +2261,11 @@ function GmDashboard() {
                       </div>
                     )}
                   </div>
+                )}
+
+                {/* ── ITEMS TAB ── */}
+                {activeTab === 'items' && (
+                  <ItemDatabaseTab campaignId={campaignId} supabase={supabase} characters={activeChars} sendToChar={sendToChar} />
                 )}
 
                 {/* ── COMBAT TAB ── */}
@@ -2191,6 +2597,20 @@ function GmDashboard() {
             {lootSelected && (
               <div style={{ ...panelBase, padding: 16, display: 'flex', gap: 16, alignItems: 'flex-start' }}>
                 <CornerBrackets />
+                <button
+                  onClick={() => setLootSelected(null)}
+                  aria-label="Close item detail"
+                  style={{
+                    position: 'absolute', top: 8, right: 8, zIndex: 1,
+                    background: 'transparent', border: 'none',
+                    color: DIM, cursor: 'pointer',
+                    fontFamily: FR, fontSize: FS_SM, padding: '2px 6px', borderRadius: 3,
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = GOLD }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = DIM }}
+                >
+                  ✕
+                </button>
                 <EquipmentImage itemKey={lootSelected.key} itemType={lootSelected.type} categories={lootSelected.categories} size="lg" />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: TEXT, letterSpacing: '0.05em' }}>{lootSelected.name}</div>
@@ -2216,12 +2636,20 @@ function GmDashboard() {
                       dangerouslySetInnerHTML={{ __html: parseOggDudeMarkup(lootSelected.description) }}
                     />
                   )}
-                  <button
-                    onClick={() => handleRevealToPlayers(lootSelected)}
-                    style={{ ...btnPrimary, marginTop: 12, padding: '10px 20px' }}
-                  >
-                    REVEAL TO PLAYERS
-                  </button>
+                  <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                    <button
+                      onClick={() => handleRevealToPlayers(lootSelected)}
+                      style={{ ...btnPrimary, padding: '8px 16px' }}
+                    >
+                      REVEAL TO PLAYERS
+                    </button>
+                    <button
+                      onClick={() => setLootAwardItem({ key: lootSelected.key, name: lootSelected.name, type: lootSelected.type, encumbrance: lootSelected.encumbrance })}
+                      style={{ ...btnSecondary, padding: '8px 16px' }}
+                    >
+                      AWARD DIRECTLY
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -2464,6 +2892,112 @@ function GmDashboard() {
         </div>
       )}
 
+      {/* ── LOOT AWARD MODAL ── */}
+      {lootAwardItem && (
+        <LootAwardModal
+          item={lootAwardItem}
+          characters={activeChars}
+          campaignId={campaignId}
+          supabase={supabase}
+          onClose={() => setLootAwardItem(null)}
+          onAwardComplete={(charNames) => {
+            flash(`${lootAwardItem!.name} awarded to ${charNames.join(', ')}`)
+            setLootAwardItem(null)
+          }}
+          sendToChar={sendToChar}
+        />
+      )}
+
+      {/* ── DESTINY MANUAL ADJUST MODAL ── */}
+      {manualAdjustOpen && typeof window !== 'undefined' && createPortal(
+        <>
+          {/* Scrim */}
+          <div
+            onClick={() => setManualAdjustOpen(false)}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 199 }}
+          />
+          {/* Modal */}
+          <div style={{
+            position: 'fixed', top: '50%', left: '50%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 200,
+            width: 'clamp(320px, 40vw, 440px)',
+            background: 'rgba(6,13,9,0.98)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(200,170,80,0.3)',
+            borderRadius: 14,
+            padding: '24px 28px',
+          }}>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+              <span style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: GOLD, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                ✎ Adjust Destiny Pool
+              </span>
+              <button onClick={() => setManualAdjustOpen(false)} style={{ ...btnSmall, padding: '2px 8px', fontSize: FS_CAPTION }}>✕</button>
+            </div>
+
+            {/* Light Side */}
+            <div style={{ marginBottom: 18 }}>
+              <div style={{ fontFamily: FR, fontSize: FS_LABEL, color: '#7EC8E3', marginBottom: 8 }}>Light Side Destiny</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <button onClick={() => setManualLight(l => Math.max(0, l - 1))} style={{ ...btnSmall, padding: '3px 12px', fontSize: FS_SM }}>−</button>
+                <span style={{ fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: FS_H4, color: '#7EC8E3', minWidth: 32, textAlign: 'center' }}>{manualLight}</span>
+                <button onClick={() => setManualLight(l => l + 1)} style={{ ...btnSmall, padding: '3px 12px', fontSize: FS_SM }}>+</button>
+              </div>
+            </div>
+
+            {/* Dark Side */}
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontFamily: FR, fontSize: FS_LABEL, color: '#B070D8', marginBottom: 8 }}>Dark Side Destiny</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <button onClick={() => setManualDark(d => Math.max(0, d - 1))} style={{ ...btnSmall, padding: '3px 12px', fontSize: FS_SM }}>−</button>
+                <span style={{ fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: FS_H4, color: '#B070D8', minWidth: 32, textAlign: 'center' }}>{manualDark}</span>
+                <button onClick={() => setManualDark(d => d + 1)} style={{ ...btnSmall, padding: '3px 12px', fontSize: FS_SM }}>+</button>
+              </div>
+            </div>
+
+            {/* Note */}
+            <div style={{ fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)', color: 'rgba(232,223,200,0.3)', fontStyle: 'italic', marginBottom: 20 }}>
+              Changes apply immediately to all screens.
+            </div>
+
+            {/* Actions */}
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <button onClick={() => setManualAdjustOpen(false)} style={{ ...btnSmall, padding: '4px 16px', fontSize: FS_SM }}>
+                Cancel
+              </button>
+              <button
+                onClick={handleApplyManual}
+                disabled={manualBusy || (manualLight === (destinyPoolRecord?.light_count ?? -1) && manualDark === (destinyPoolRecord?.dark_count ?? -1))}
+                style={{
+                  ...btnSmall, padding: '4px 16px', fontSize: FS_SM, color: GOLD,
+                  border: `1px solid rgba(200,170,80,0.35)`,
+                  opacity: manualBusy || (manualLight === (destinyPoolRecord?.light_count ?? -1) && manualDark === (destinyPoolRecord?.dark_count ?? -1)) ? 0.35 : 1,
+                }}
+              >
+                {manualBusy ? '…' : 'Apply Changes'}
+              </button>
+            </div>
+          </div>
+        </>,
+        document.body
+      )}
+
+      {/* ── DESTINY GENERATE PANEL ── */}
+      {destinyGenerateOpen && campaignId && (
+        <DestinyGeneratePanel
+          campaignId={campaignId}
+          characters={activeChars}
+          supabase={supabase}
+          activePool={destinyPoolRecord}
+          sendToChar={sendToChar}
+          onClose={() => setDestinyGenerateOpen(false)}
+          onGenerated={(pool) => {
+            setDestinyPoolRecord(pool)
+            setDestinyGenerateOpen(false)
+          }}
+        />
+      )}
 
     </div>
   )

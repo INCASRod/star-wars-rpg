@@ -8,8 +8,9 @@ export interface RollMeta {
   weaponName?:     string   // weapon or power name (combat / force)
   targetName?:     string   // target(s) for combat
   rangeBand?:      string   // range band for combat
-  weaponDamage?:   number   // base weapon damage (for combat damage display)
-  characterBrawn?: number   // attacker brawn (melee damage modifier)
+  weaponDamage?:    number   // base weapon damage (weapon.damage)
+  weaponDamageAdd?: number   // brawn modifier (weapon.damage_add, melee only)
+  characterBrawn?:  number   // attacker brawn (melee damage modifier)
   attackType?:     'melee' | 'ranged'
   alignment?:      string   // 'player' | 'allied' | 'enemy'
   // Critical hit eligibility (populated by CombatCheckOverlay)
@@ -63,16 +64,17 @@ export function logRoll({
   if (meta?.alignment)  payload.alignment   = meta.alignment
 
   if (
-    meta?.weaponDamage != null || meta?.characterBrawn != null || meta?.attackType ||
-    meta?.critEligible != null || meta?.critRating != null || meta?.critModifier != null
+    meta?.weaponDamage != null || meta?.weaponDamageAdd != null || meta?.characterBrawn != null ||
+    meta?.attackType || meta?.critEligible != null || meta?.critRating != null || meta?.critModifier != null
   ) {
     payload.roll_meta = {
-      ...(meta.weaponDamage   != null ? { weaponDamage:   meta.weaponDamage }   : {}),
-      ...(meta.characterBrawn != null ? { characterBrawn: meta.characterBrawn } : {}),
-      ...(meta.attackType             ? { attackType:     meta.attackType }     : {}),
-      ...(meta.critEligible   != null ? { critEligible:   meta.critEligible }   : {}),
-      ...(meta.critRating     != null ? { critRating:     meta.critRating }     : {}),
-      ...(meta.critModifier   != null ? { critModifier:   meta.critModifier }   : {}),
+      ...(meta.weaponDamage    != null ? { weaponDamage:    meta.weaponDamage }    : {}),
+      ...(meta.weaponDamageAdd != null ? { weaponDamageAdd: meta.weaponDamageAdd } : {}),
+      ...(meta.characterBrawn  != null ? { characterBrawn:  meta.characterBrawn }  : {}),
+      ...(meta.attackType              ? { attackType:      meta.attackType }      : {}),
+      ...(meta.critEligible    != null ? { critEligible:    meta.critEligible }    : {}),
+      ...(meta.critRating      != null ? { critRating:      meta.critRating }      : {}),
+      ...(meta.critModifier    != null ? { critModifier:    meta.critModifier }    : {}),
     }
   }
 

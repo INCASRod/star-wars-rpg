@@ -13,7 +13,8 @@ import { AttackTypeStep } from './steps/AttackTypeStep'
 import { WeaponSelectStep } from './steps/WeaponSelectStep'
 import { TargetSelectStep } from './steps/TargetSelectStep'
 import { RangeBandStep } from './steps/RangeBandStep'
-import { DicePoolReviewStep, type ManualAdjustments, EMPTY_ADJUSTMENTS } from './steps/DicePoolReviewStep'
+import { DicePoolReviewStep, type ManualAdjustments, EMPTY_ADJUSTMENTS, type DualWieldState } from './steps/DicePoolReviewStep'
+import { DualWieldReviewStep } from './steps/DualWieldReviewStep'
 import { RollResultStep } from './steps/RollResultStep'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
@@ -39,14 +40,17 @@ const STEP_LABELS: Record<number, string> = {
 
 // ── State ─────────────────────────────────────────────────────────────────────
 interface CombatCheckState {
-  currentStep:     number
-  attackType:      'ranged' | 'melee' | null
-  selectedWeapon:  CharacterWeapon | null
-  selectedTargets: AdversaryInstance[]
-  selectedBand:    RangeBand | null
-  adjustments:     ManualAdjustments
-  rollResult:      RollResult | null
-  encounterId:     string | null
+  currentStep:      number
+  attackType:       'ranged' | 'melee' | null
+  selectedWeapon:   CharacterWeapon | null
+  selectedTargets:  AdversaryInstance[]
+  selectedBand:     RangeBand | null
+  adjustments:      ManualAdjustments
+  rollResult:       RollResult | null
+  encounterId:      string | null
+  // Dual wield
+  dualWield:        DualWieldState | null
+  dualWieldReview:  boolean  // when true: show Step 2b instead of advancing to 3
 }
 
 function makeInitialState(initialAttackType: 'ranged' | 'melee' | null): CombatCheckState {
@@ -59,6 +63,8 @@ function makeInitialState(initialAttackType: 'ranged' | 'melee' | null): CombatC
     adjustments:     EMPTY_ADJUSTMENTS,
     rollResult:      null,
     encounterId:     null,
+    dualWield:       null,
+    dualWieldReview: false,
   }
 }
 
@@ -144,11 +150,21 @@ export function CombatCheckOverlay({
 
   // ── Navigation ────────────────────────────────────────────────────────────
   const goBack = () => {
+    if (state.dualWieldReview) {
+      // Back from Step 2b → return to weapon select, clear dual wield
+      setState(s => ({ ...s, dualWieldReview: false, dualWield: null }))
+      return
+    }
     if (state.currentStep <= initialStep) return
     setState(s => ({ ...s, currentStep: s.currentStep - 1, rollResult: null }))
   }
 
   const goNext = () => {
+    if (state.dualWieldReview) {
+      // Leaving Step 2b → advance to Target
+      setState(s => ({ ...s, dualWieldReview: false, currentStep: 3 }))
+      return
+    }
     setState(s => ({ ...s, currentStep: Math.min(s.currentStep + 1, totalSteps) }))
   }
 
@@ -158,7 +174,33 @@ export function CombatCheckOverlay({
   }
 
   const handleWeaponSelect = (w: CharacterWeapon | null) => {
-    setState(s => ({ ...s, selectedWeapon: w, selectedBand: null }))
+    // When weapon changes, clear dual wield selection
+    setState(s => ({ ...s, selectedWeapon: w, selectedBand: null, dualWield: null, dualWieldReview: false }))
+  }
+
+  // ── Dual wield handlers ───────────────────────────────────────────────────
+  const handleDualWieldSelect = (primary: CharacterWeapon, secondary: CharacterWeapon) => {
+    setState(s => ({
+      ...s,
+      dualWield: { enabled: true, primaryWeapon: primary, secondaryWeapon: secondary },
+      dualWieldReview: true,
+    }))
+  }
+
+  const handleDualWieldSwap = () => {
+    setState(s => {
+      if (!s.dualWield) return s
+      return {
+        ...s,
+        dualWield: {
+          ...s.dualWield,
+          primaryWeapon:   s.dualWield.secondaryWeapon,
+          secondaryWeapon: s.dualWield.primaryWeapon,
+        },
+        // Also update selectedWeapon to reflect new primary
+        selectedWeapon: s.dualWield.secondaryWeapon,
+      }
+    })
   }
 
   const handleTargetSelect = (targets: AdversaryInstance[]) => {
@@ -203,9 +245,10 @@ export function CombatCheckOverlay({
       weaponName,
       targetName:     targetName ?? undefined,
       rangeBand:      state.selectedBand ?? undefined,
-      weaponDamage:   refWeapon?.damage ?? undefined,
-      characterBrawn: character.brawn,
-      attackType:     state.attackType ?? 'ranged',
+      weaponDamage:    refWeapon?.damage ?? undefined,
+      weaponDamageAdd: refWeapon?.damage_add ?? undefined,
+      characterBrawn:  character.brawn,
+      attackType:      state.attackType ?? 'ranged',
       critEligible:   critEligibility.isEligible,
       critRating:     critEligibility.critRating,
       critModifier:   critEligibility.totalCritModifier,
@@ -248,19 +291,35 @@ export function CombatCheckOverlay({
         is_visible_to_players: true,
       })
 
-      // ── Pending damage: create one row per target on a successful hit ────────
+      // ── Pending damage: create row(s) per target on a successful hit ─────────
       const netSuccesses = result.net.success
       if (netSuccesses > 0 && state.selectedTargets.length > 0 && encounterId) {
         const isMelee = state.attackType === 'melee' || MELEE_SKILL_KEYS.includes(refWeapon?.skill_key ?? '')
         const baseDamage = refWeapon?.damage ?? 0
+        const damageAdd  = isMelee ? (refWeapon?.damage_add ?? 0) : 0
         const brawnBonus = isMelee ? character.brawn : 0
 
-        const pendingRows = state.selectedTargets.map(target => {
-          const rawDamage = baseDamage + brawnBonus + netSuccesses
+        const pendingRows: Record<string, unknown>[] = []
+
+        // Secondary weapon ref for dual wield
+        const secRef = state.dualWield?.enabled && state.dualWield.secondaryWeapon.weapon_key !== '__unarmed__'
+          ? (refWeaponMap[state.dualWield.secondaryWeapon.weapon_key] ?? null)
+          : null
+        const secIsMelee = secRef ? MELEE_SKILL_KEYS.includes(secRef.skill_key ?? '') : false
+        const secBase    = secRef ? (secIsMelee ? (secRef.damage_add ?? 0) : (secRef.damage ?? 0)) : 0
+        const secBrawn   = secIsMelee ? character.brawn : 0
+        const secWeaponName = state.dualWield?.secondaryWeapon
+          ? (state.dualWield.secondaryWeapon.custom_name || secRef?.name || 'Secondary Weapon')
+          : null
+
+        for (const target of state.selectedTargets) {
+          const rawDamage = baseDamage + brawnBonus + damageAdd + netSuccesses
           const soakValue = target.soak ?? 0
           const netDamage = Math.max(0, rawDamage - soakValue)
           const critPerTarget = checkCriticalEligibility(result, refWeapon, netDamage)
-          return {
+
+          // Primary hit
+          pendingRows.push({
             campaign_id:               campaignId,
             encounter_id:              encounterId,
             target_instance_id:        target.instanceId,
@@ -277,20 +336,47 @@ export function CombatCheckOverlay({
             crit_rating:               critPerTarget.critRating,
             crit_modifier:             critPerTarget.totalCritModifier,
             crit_triggered_by_triumph: critPerTarget.triggeredByTriumph,
+          })
+
+          // Secondary hit (dual wield only)
+          if (state.dualWield?.enabled && secRef) {
+            const secRaw    = secBase + secBrawn + netSuccesses
+            const secNet    = Math.max(0, secRaw - soakValue)
+            const secCrit   = checkCriticalEligibility(result, secRef, secNet)
+            pendingRows.push({
+              campaign_id:               campaignId,
+              encounter_id:              encounterId,
+              target_instance_id:        target.instanceId,
+              attacker_name:             character.name,
+              target_name:               target.name,
+              raw_damage:                secRaw,
+              soak_value:                soakValue,
+              net_damage:                secNet,
+              status:                    'pending_secondary',
+              weapon_name:               secWeaponName,
+              attack_type:               state.attackType ?? 'ranged',
+              range_band:                state.selectedBand ?? null,
+              crit_eligible:             secCrit.isEligible,
+              crit_rating:               secCrit.critRating,
+              crit_modifier:             secCrit.totalCritModifier,
+              crit_triggered_by_triumph: secCrit.triggeredByTriumph,
+            })
           }
-        })
+        }
+
         await supabase.from('pending_damage').insert(pendingRows)
       }
     }
-  }, [state, refWeapon, campaignId, character.name, character.brawn, onRoll])
+  }, [state, refWeapon, refWeaponMap, campaignId, character.name, character.brawn, onRoll])
 
-  // ── Roll Again: reset to step 4, keep weapon/target ───────────────────────
+  // ── Roll Again: reset to step 4, keep weapon/target/dual wield ───────────
   const handleRollAgain = () => {
     setState(s => ({
       ...s,
-      currentStep: 4,
-      adjustments: EMPTY_ADJUSTMENTS,
-      rollResult: null,
+      currentStep:     4,
+      adjustments:     EMPTY_ADJUSTMENTS,
+      rollResult:      null,
+      dualWieldReview: false,
     }))
   }
 
@@ -301,6 +387,7 @@ export function CombatCheckOverlay({
 
   // ── Can advance? ──────────────────────────────────────────────────────────
   function canAdvance(): boolean {
+    if (state.dualWieldReview) return true  // always can Continue from Step 2b
     switch (state.currentStep) {
       case 1: return state.attackType !== null
       case 2: return state.selectedWeapon !== null
@@ -309,6 +396,17 @@ export function CombatCheckOverlay({
       default: return false
     }
   }
+
+  // ── Derived: secondary refWeapon (for dual wield result display) ──────────
+  const secondaryRefWeapon: RefWeapon | null = (state.dualWield?.secondaryWeapon &&
+    state.dualWield.secondaryWeapon.weapon_key !== '__unarmed__')
+    ? (refWeaponMap[state.dualWield.secondaryWeapon.weapon_key] ?? null)
+    : null
+
+  // ── Step label (with Step 2b support) ─────────────────────────────────────
+  const currentStepLabel = state.dualWieldReview
+    ? 'Dual Wield Review'
+    : (STEP_LABELS[state.currentStep] ?? '')
 
   if (!mounted) return null
 
@@ -362,6 +460,8 @@ export function CombatCheckOverlay({
             }}>
               {isResult
                 ? 'Attack Result'
+                : state.dualWield?.enabled
+                ? 'Dual Wield Attack'
                 : state.attackType === 'ranged' ? 'Ranged Attack'
                 : state.attackType === 'melee'  ? 'Melee Attack'
                 : 'Combat Check'}
@@ -373,7 +473,9 @@ export function CombatCheckOverlay({
                 color: GOLD_DIM,
                 marginTop: 2,
               }}>
-                Step {state.currentStep} of {totalSteps} — {STEP_LABELS[state.currentStep]}
+                {state.dualWieldReview
+                  ? `Step 2b of ${totalSteps} — ${currentStepLabel}`
+                  : `Step ${state.currentStep} of ${totalSteps} — ${currentStepLabel}`}
               </div>
             )}
           </div>
@@ -417,6 +519,8 @@ export function CombatCheckOverlay({
             critEligibility={critEligibility}
             onRollAgain={handleRollAgain}
             onNewAttack={handleNewAttack}
+            dualWield={state.dualWield}
+            dualWieldSecondaryRef={secondaryRefWeapon}
           />
         )}
 
@@ -424,7 +528,7 @@ export function CombatCheckOverlay({
           <AttackTypeStep onSelect={handleAttackType} />
         )}
 
-        {!isResult && state.currentStep === 2 && (
+        {!isResult && state.currentStep === 2 && !state.dualWieldReview && (
           <WeaponSelectStep
             attackType={state.attackType ?? 'ranged'}
             character={character}
@@ -437,6 +541,17 @@ export function CombatCheckOverlay({
             onSelect={handleWeaponSelect}
             onNext={goNext}
             isGmMode={isGmMode}
+            onDualWieldSelect={handleDualWieldSelect}
+          />
+        )}
+
+        {!isResult && state.currentStep === 2 && state.dualWieldReview && state.dualWield && (
+          <DualWieldReviewStep
+            primaryWeapon={state.dualWield.primaryWeapon}
+            secondaryWeapon={state.dualWield.secondaryWeapon}
+            primaryRef={refWeapon}
+            secondaryRef={secondaryRefWeapon}
+            onSwap={handleDualWieldSwap}
           />
         )}
 
@@ -473,12 +588,15 @@ export function CombatCheckOverlay({
             adjustments={state.adjustments}
             onAdjustChange={handleAdjustChange}
             onRoll={handleRoll}
+            dualWield={state.dualWield}
+            refWeaponMap={refWeaponMap}
+            refSkillMap={refSkillMap}
           />
         )}
       </div>
 
-      {/* ── Footer (Next button, steps 2-4 only) ── */}
-      {!isResult && state.currentStep >= 2 && state.currentStep <= 4 && (
+      {/* ── Footer (Next button, steps 2-4 and Step 2b) ── */}
+      {!isResult && (state.dualWieldReview || (state.currentStep >= 2 && state.currentStep <= 4)) && (
         <div style={{ padding: '12px 16px', borderTop: `1px solid ${GOLD_BD}`, flexShrink: 0 }}>
           <button
             onClick={goNext}
@@ -498,7 +616,11 @@ export function CombatCheckOverlay({
               transition: 'background 150ms',
             }}
           >
-            {state.currentStep === 3 && state.selectedTargets.length === 0 ? 'Skip / Next' : 'Next'}
+            {state.dualWieldReview
+              ? 'Continue →'
+              : state.currentStep === 3 && state.selectedTargets.length === 0
+              ? 'Skip / Next'
+              : 'Next'}
           </button>
         </div>
       )}

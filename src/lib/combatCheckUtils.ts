@@ -106,16 +106,8 @@ export function getMeleeDifficulty(
 
   if (meleeRank < 0) {
     isDefault = true
-    if (target.type === 'minion') {
-      meleeRank = 0
-      defaultNote = `Melee skill not specified — using default for Minion (rank 0)`
-    } else if (target.type === 'rival') {
-      meleeRank = 1
-      defaultNote = `Melee skill not specified — using default for Rival (rank 1)`
-    } else {
-      meleeRank = 2
-      defaultNote = `Melee skill not specified — using default for Nemesis (rank 2)`
-    }
+    meleeRank = 0
+    defaultNote = `Melee not listed — defaulting to rank 0`
   }
 
   const brawn = target.characteristics?.brawn ?? 2

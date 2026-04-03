@@ -8,6 +8,7 @@ import type { CharacterWeapon, RefWeapon, RefSkill, RefWeaponQuality, Character 
 import { getSkillPool } from '@/components/player-hud/dice-engine'
 import { CHAR_FIELD_MAP, isRangedSkill, isMeleeSkill as isMeleeSkillKey } from '@/lib/combatCheckUtils'
 import { RANGE_LABELS } from '@/lib/types'
+import { canDualWield } from '@/lib/weaponHandedness'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const GOLD      = '#C8AA50'
@@ -35,6 +36,36 @@ interface WeaponSelectStepProps {
   onNext:             () => void
   /** Skip DB equip writes — weapons are already marked equipped */
   isGmMode?:          boolean
+  /** Called when player chooses Dual Wield Attack */
+  onDualWieldSelect?: (primary: CharacterWeapon, secondary: CharacterWeapon) => void
+}
+
+// ── Dual wield detection ──────────────────────────────────────────────────────
+function findDualWieldPartner(
+  selectedWeapon: CharacterWeapon,
+  allEquippedWeapons: CharacterWeapon[],
+  refWeaponMap: Record<string, RefWeapon>,
+): CharacterWeapon | null {
+  const selectedRef = refWeaponMap[selectedWeapon.weapon_key]
+  if (!selectedRef) return null
+  if (!canDualWield({ skill_key: selectedRef.skill_key, weapon_key: selectedWeapon.weapon_key, is_one_handed_override: selectedWeapon.is_one_handed_override, is_two_handed_override: selectedWeapon.is_two_handed_override })) return null
+
+  // Find one-handed partners that are the same attack type (both ranged or both melee).
+  // Weapons of the opposite type (e.g. a blaster when looking for a melee partner)
+  // are ignored so they don't block dual-wield detection.
+  const selectedIsRanged = isRangedSkill(selectedRef.skill_key)
+  const candidates = allEquippedWeapons
+    .filter(w => w.id !== selectedWeapon.id)
+    .filter(w => {
+      const ref = refWeaponMap[w.weapon_key]
+      if (!ref) return false
+      if (isRangedSkill(ref.skill_key) !== selectedIsRanged) return false
+      return canDualWield({ skill_key: ref.skill_key, weapon_key: w.weapon_key, is_one_handed_override: w.is_one_handed_override, is_two_handed_override: w.is_two_handed_override })
+    })
+
+  // Exactly one same-type one-handed partner = valid dual-wield loadout
+  if (candidates.length !== 1) return null
+  return candidates[0]
 }
 
 function SectionLabel({ text }: { text: string }) {
@@ -78,6 +109,7 @@ export function WeaponSelectStep({
   onSelect,
   onNext,
   isGmMode,
+  onDualWieldSelect,
 }: WeaponSelectStepProps) {
   const [maneuverWarningFor, setManeuverWarningFor] = useState<string | null>(null)
   const [equipping, setEquipping] = useState(false)
@@ -366,6 +398,83 @@ export function WeaponSelectStep({
           Add weapons to your inventory to make combat checks.
         </div>
       )}
+
+      {/* ── Dual Wield offer card ── */}
+      {(() => {
+        if (!selectedWeapon || !onDualWieldSelect) return null
+        const allEquipped = weapons.filter(w => w.equip_state === 'equipped' || w.is_equipped)
+        const partner = findDualWieldPartner(selectedWeapon, allEquipped, refWeaponMap)
+        if (!partner) return null
+        const partnerRef = refWeaponMap[partner.weapon_key]
+        const partnerSkillName = partnerRef?.skill_key
+          ? (refSkillMap[partnerRef.skill_key]?.name ?? partnerRef.skill_key)
+          : 'Unknown'
+        const partnerName = partner.custom_name || partnerRef?.name || 'Weapon'
+        return (
+          <div style={{
+            marginTop: 16,
+            background: 'rgba(200,170,80,0.06)',
+            border: '1px solid rgba(200,170,80,0.3)',
+            borderRadius: 10,
+            padding: '14px 16px',
+          }}>
+            <div style={{
+              fontFamily: "var(--font-cinzel), 'Cinzel', serif",
+              fontSize: 'clamp(0.85rem, 1.3vw, 1rem)',
+              fontWeight: 700,
+              color: GOLD,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              marginBottom: 8,
+            }}>
+              ⚔⚔  Dual Wield Available
+            </div>
+            <div style={{
+              fontFamily: FONT_R,
+              fontSize: 'clamp(0.8rem, 1.2vw, 0.92rem)',
+              color: 'rgba(232,223,200,0.75)',
+              lineHeight: 1.4,
+              marginBottom: 14,
+            }}>
+              You also have <strong style={{ color: 'rgba(232,223,200,0.9)' }}>{partnerName}</strong> equipped ({partnerSkillName}).
+              <br />
+              Would you like to attack with both weapons?
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                onClick={onNext}
+                style={{
+                  flex: 1, padding: '9px 0',
+                  background: 'transparent',
+                  border: '1px solid rgba(200,170,80,0.2)',
+                  borderRadius: 8, cursor: 'pointer',
+                  fontFamily: FONT_R,
+                  fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)',
+                  color: TEXT_DIM,
+                }}
+              >
+                Single Weapon Attack
+              </button>
+              <button
+                onClick={() => onDualWieldSelect(selectedWeapon, partner)}
+                style={{
+                  flex: 2, padding: '9px 0',
+                  background: 'linear-gradient(135deg, #C8AA50, #8B7430)',
+                  border: 'none',
+                  borderRadius: 8, cursor: 'pointer',
+                  fontFamily: "var(--font-cinzel), 'Cinzel', serif",
+                  fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)',
+                  fontWeight: 700,
+                  color: '#060D09',
+                  letterSpacing: '0.08em',
+                }}
+              >
+                Dual Wield Attack
+              </button>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }

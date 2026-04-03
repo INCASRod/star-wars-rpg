@@ -38,8 +38,9 @@ export function checkCriticalEligibility(
   const triumph       = rollResult.net.triumph
 
   // Vicious quality: key is 'VICIOUS' (XML-derived)
-  const viciousRating     = refWeapon?.qualities
-    ?.find(q => q.key.toUpperCase() === 'VICIOUS')?.count ?? 0
+  const viciousRating     = Array.isArray(refWeapon?.qualities)
+    ? refWeapon!.qualities!.find(q => q.key?.toUpperCase() === 'VICIOUS')?.count ?? 0
+    : 0
   const totalCritModifier = viciousRating * 10
 
   // Must deal at least 1 wound after soak

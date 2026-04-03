@@ -175,12 +175,12 @@ function ResultDisplay({ result }: { result: RollResult }) {
         <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
           {triumph > 0 && (
             <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.65rem, 2.6vw, 0.8rem)', color: '#D4B840' }}>
-              ★ TRIUMPH ×{triumph}
+              <i className="ffi ffi-swrpg-triumph" />{' TRIUMPH ×'}{triumph}
             </span>
           )}
           {despair > 0 && (
             <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.65rem, 2.6vw, 0.8rem)', color: '#FF6060' }}>
-              ☠ DESPAIR ×{despair}
+              <i className="ffi ffi-swrpg-despair" />{' DESPAIR ×'}{despair}
             </span>
           )}
         </div>
@@ -210,9 +210,9 @@ function ResultDisplay({ result }: { result: RollResult }) {
                 <span style={{ fontFamily: FONT_M, fontSize: 10, color: TEXT_DIM }}>—</span>
               ) : (
                 die.symbols.map((sym, j) => (
-                  <span key={j} style={{ fontSize: 12, color: SYM[sym]?.color ?? TEXT, filter: `drop-shadow(0 0 3px ${SYM[sym]?.color ?? 'transparent'}60)` }}>
-                    {SYM[sym]?.icon ?? sym}
-                  </span>
+                  SYM[sym]?.icon
+                    ? <i key={j} className={`ffi ffi-${SYM[sym]!.icon}`} style={{ fontSize: 12, color: SYM[sym]!.color, filter: `drop-shadow(0 0 3px ${SYM[sym]!.color}60)` }} />
+                    : <span key={j} style={{ fontSize: 12, color: TEXT }}>{sym}</span>
                 ))
               )}
             </div>

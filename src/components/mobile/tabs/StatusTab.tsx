@@ -4,6 +4,7 @@ import { RANGE_LABELS } from '@/lib/types'
 import type { Character, CharacterWeapon, CharacterCriticalInjury, RefWeapon, RefSkill } from '@/lib/types'
 import { WeaponDamageDisplay, isMeleeSkill } from '@/components/character/WeaponDamageDisplay'
 import type { EffectiveStats } from '@/lib/derivedStats'
+import { canDualWield, validateLoadout, type WeaponForLoadout } from '@/lib/weaponHandedness'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 const GOLD     = '#C8AA50'
@@ -172,6 +173,57 @@ export function StatusTab({ character, weapons, crits, refWeaponMap, refSkillMap
                 </div>
               )
             })}
+
+            {/* Loadout status indicator */}
+            {(() => {
+              if (equippedWeapons.length < 2) return null
+              const entries: WeaponForLoadout[] = equippedWeapons
+                .map(cw => {
+                  const ref = refWeaponMap[cw.weapon_key]
+                  if (!ref) return null
+                  return {
+                    id: cw.id,
+                    name: cw.custom_name || ref.name,
+                    skill_key: ref.skill_key,
+                    is_one_handed_override: cw.is_one_handed_override,
+                    is_two_handed_override: cw.is_two_handed_override,
+                  }
+                })
+                .filter(Boolean) as WeaponForLoadout[]
+              const validation = validateLoadout(entries)
+              const isDualWield = entries.length === 2 && entries.every(e => canDualWield(e))
+              if (validation.valid && isDualWield) {
+                return (
+                  <div style={{
+                    marginTop: 8, paddingTop: 6,
+                    borderTop: `1px solid ${BORDER}`,
+                    fontFamily: FONT_M,
+                    fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)',
+                    color: '#4CAF50',
+                    display: 'flex', alignItems: 'center', gap: 6,
+                  }}>
+                    <span>✓</span>
+                    <span>Dual Wield loadout · Two one-handed weapons equipped</span>
+                  </div>
+                )
+              }
+              if (!validation.valid) {
+                return (
+                  <div style={{
+                    marginTop: 8, paddingTop: 6,
+                    borderTop: `1px solid ${BORDER}`,
+                    fontFamily: FONT_M,
+                    fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)',
+                    color: '#FF9800',
+                    display: 'flex', alignItems: 'center', gap: 6,
+                  }}>
+                    <span>⚠</span>
+                    <span>Invalid loadout — review your equipped weapons</span>
+                  </div>
+                )
+              }
+              return null
+            })()}
           </div>
         </>
       )}
