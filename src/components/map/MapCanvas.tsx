@@ -35,6 +35,10 @@ export function MapCanvas({
   const mapWRef      = useRef(800)
   const mapHRef      = useRef(600)
 
+  // Always-current props ref — the async init closure reads this after it resolves
+  const propsRef = useRef({ mapImageUrl, gridEnabled, gridSize })
+  propsRef.current = { mapImageUrl, gridEnabled, gridSize }
+
   // ── Pixi bootstrap ──────────────────────────────────────────
   useEffect(() => {
     if (!containerRef.current) return
@@ -60,8 +64,15 @@ export function MapCanvas({
 
       setupPan(app)
       setupZoom(app, containerRef.current)
-
       app.stage.sortableChildren = true
+
+      // ── KEY FIX: Pixi just became ready — build the map with
+      //    whatever URL is current (the earlier effect already
+      //    returned early because appRef was still null).
+      const { mapImageUrl: url, gridEnabled: ge, gridSize: gs } = propsRef.current
+      if (url) {
+        rebuildMap(app, px, url, ge, gs, mapWRef, mapHRef)
+      }
     })
 
     return () => {
@@ -75,7 +86,7 @@ export function MapCanvas({
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Rebuild map bg + grid when map or grid settings change ──
+  // ── Rebuild when props change (Pixi already initialised) ────
   useEffect(() => {
     const app = appRef.current
     if (!app || !PIXI || !mapImageUrl) return
@@ -109,8 +120,8 @@ export function MapCanvas({
 
 // ── Pan ──────────────────────────────────────────────────────
 function setupPan(app: InstanceType<typeof import('pixi.js').Application>) {
-  let panning  = false
-  let panStart = { x: 0, y: 0 }
+  let panning    = false
+  let panStart   = { x: 0, y: 0 }
   let stageStart = { x: 0, y: 0 }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -159,7 +170,9 @@ function setupZoom(
 }
 
 // ── Rebuild map background + grid ────────────────────────────
-function rebuildMap(
+// Async: uses PIXI.Assets.load() so the texture is fully fetched
+// before the sprite is added to the stage (fixes black-screen on first render).
+async function rebuildMap(
   app:         InstanceType<typeof import('pixi.js').Application>,
   px:          typeof import('pixi.js'),
   imageUrl:    string,
@@ -180,16 +193,23 @@ function rebuildMap(
   mapWRef.current = w
   mapHRef.current = h
 
-  const bg = px.Sprite.from(imageUrl)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(bg as any).name   = 'mapBg'
-  bg.width  = w
-  bg.height = h
-  bg.zIndex = 0
-  app.stage.addChild(bg)
+  // Load the texture fully before adding the sprite — PIXI.Sprite.from() is
+  // lazy and silently stays blank when the image hasn't loaded yet.
+  try {
+    const texture = await px.Assets.load(imageUrl)
+    const bg = new px.Sprite(texture)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(bg as any).name = 'mapBg'
+    bg.width  = w
+    bg.height = h
+    bg.zIndex = 0
+    app.stage.addChild(bg)
+  } catch (err) {
+    console.error('[MapCanvas] Failed to load map texture:', err)
+  }
 
   if (gridEnabled && gridSize > 0) {
-    const g  = new px.Graphics()
+    const g = new px.Graphics()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(g as any).name = 'grid'
     g.zIndex = 1
@@ -224,7 +244,6 @@ function syncTokens(
     const mapH = mapHRef.current
 
     if (tokensRef.current.has(token.id)) {
-      // Update position only (avoids full rebuild on every move)
       const c = tokensRef.current.get(token.id)!
       c.x = token.x * mapW
       c.y = token.y * mapH
@@ -241,7 +260,6 @@ function syncTokens(
     existing.delete(token.id)
   }
 
-  // Remove stale sprites
   for (const staleId of existing) {
     const c = tokensRef.current.get(staleId)
     if (c) { app.stage.removeChild(c); c.destroy({ children: true }) }
@@ -265,18 +283,16 @@ function buildTokenSprite(
 
   const c = new px.Container()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(c as any).name   = `token-${token.id}`
+  ;(c as any).name = `token-${token.id}`
   c.zIndex = 10
   c.sortableChildren = true
 
-  // Border ring
   const ring = new px.Graphics()
   ring.lineStyle(3, colour, 1)
   ring.drawCircle(0, 0, RADIUS + 2)
   ring.zIndex = 2
   c.addChild(ring)
 
-  // Image or letter fallback
   if (token.token_image_url) {
     const mask = new px.Graphics()
     mask.beginFill(0xffffff)
@@ -307,7 +323,6 @@ function buildTokenSprite(
     c.addChild(bg, initial)
   }
 
-  // Wound arc
   if (token.wound_pct && token.wound_pct > 0) {
     const arc = new px.Graphics()
     arc.lineStyle(4, 0xe05252, 0.85)
@@ -316,33 +331,28 @@ function buildTokenSprite(
     c.addChild(arc)
   }
 
-  // Name label
   const lbl = new px.Text(token.label ?? '', {
-    fontFamily:          'Rajdhani, sans-serif',
-    fontSize:            11,
-    fill:                0xE8DFC8,
-    align:               'center',
-    dropShadow:          true,
-    dropShadowDistance:  1,
-    dropShadowColor:     0x000000,
+    fontFamily:         'Rajdhani, sans-serif',
+    fontSize:           11,
+    fill:               0xE8DFC8,
+    align:              'center',
+    dropShadow:         true,
+    dropShadowDistance: 1,
+    dropShadowColor:    0x000000,
   })
   lbl.anchor.set(0.5, 0)
   lbl.y      = RADIUS + 4
   lbl.zIndex = 4
   c.addChild(lbl)
 
-  // Position
   c.x = token.x * mapW
   c.y = token.y * mapH
-
-  // Visibility (GM sees hidden tokens at 40%; players don't see them)
   c.alpha = 1
 
-  // Right-click context menu
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(c as any).eventMode = 'static'
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(c as any).cursor    = canDrag ? 'pointer' : 'default'
+  ;(c as any).cursor = canDrag ? 'pointer' : 'default'
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(c as any).on('rightclick', (e: { nativeEvent: MouseEvent }) => {
     onContextRef.current?.(token.id, e.nativeEvent)
