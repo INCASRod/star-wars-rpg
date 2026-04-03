@@ -12,7 +12,7 @@ import { ForceNotificationCard, type ForceNotification } from '@/components/gm/F
 import { ItemDatabaseTab } from '@/components/gm/ItemDatabaseTab'
 import { LootAwardModal, type AwardableItem } from '@/components/gm/LootAwardModal'
 import { DestinyGeneratePanel } from '@/components/gm/DestinyGeneratePanel'
-import { MapManagementPanel } from '@/components/gm/MapManagementPanel'
+import { GmMapView } from '@/components/gm/GmMapView'
 import { useActiveMap } from '@/hooks/useActiveMap'
 import { DestinyPoolDisplay, type DestinyPoolRecord } from '@/components/destiny/DestinyPoolDisplay'
 import { toast } from 'sonner'
@@ -1480,6 +1480,21 @@ function GmDashboard() {
           </div>
         )}
 
+        {/* ◉ Map tab shortcut */}
+        <button
+          onClick={() => { setActiveTab('maps'); localStorage.setItem(GM_TAB_KEY, 'maps') }}
+          style={{
+            fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.12em',
+            textTransform: 'uppercase', padding: '5px 14px', border: 'none', cursor: 'pointer',
+            borderRadius: 4, transition: '.15s',
+            background: activeTab === 'maps' ? 'rgba(82,200,160,0.15)' : 'transparent',
+            color: activeTab === 'maps' ? '#52C8A0' : DIM,
+            outline: activeTab === 'maps' ? '1px solid rgba(82,200,160,0.4)' : 'none',
+          }}
+        >
+          ◉ Map
+        </button>
+
         {/* Destiny Pool — single horizontal bar */}
         <div style={{ marginLeft: 'auto', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12, flexWrap: 'wrap', maxHeight: 48, overflow: 'hidden' }}>
 
@@ -1530,7 +1545,18 @@ function GmDashboard() {
       {/* ── MAIN AREA ── */}
       <div style={{ flex: 1, overflow: 'hidden', display: 'flex', position: 'relative', zIndex: 1 }}>
 
-        {/* ── LEFT / CENTER CONTENT ── */}
+        {/* ── FULL-SCREEN MAP VIEW ── */}
+        {activeTab === 'maps' && (
+          <GmMapView
+            campaignId={campaignId}
+            characters={activeChars}
+            allMaps={allMaps}
+            activeMap={activeMap}
+          />
+        )}
+
+        {/* ── LEFT / CENTER CONTENT + RIGHT SIDEBAR ── */}
+        {activeTab !== 'maps' && (<>
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
           {/* ── CRITICAL INJURY RESULTS ── */}
@@ -2092,21 +2118,6 @@ function GmDashboard() {
                     ? ` (${forceNotifications.filter(n => n.status === 'pending').length})`
                     : ''}
                 </button>
-                {/* Maps tab */}
-                <button
-                  onClick={() => { setActiveTab('maps'); localStorage.setItem(GM_TAB_KEY, 'maps') }}
-                  style={{
-                    fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 700,
-                    letterSpacing: '0.1em', textTransform: 'uppercase',
-                    padding: '10px 16px', border: 'none',
-                    borderBottom: activeTab === 'maps' ? `2px solid #52C8A0` : '2px solid transparent',
-                    background: activeTab === 'maps' ? 'rgba(82,200,160,0.07)' : 'transparent',
-                    color: activeTab === 'maps' ? '#52C8A0' : DIM,
-                    cursor: 'pointer', transition: '.15s', marginBottom: -1,
-                  }}
-                >
-                  ◉ Maps
-                </button>
               </div>
 
               {/* Tab content */}
@@ -2393,15 +2404,6 @@ function GmDashboard() {
                   </div>
                 )}
 
-                {/* ── MAPS TAB ── */}
-                {activeTab === 'maps' && (
-                  <MapManagementPanel
-                    campaignId={campaignId}
-                    characters={activeChars}
-                    allMaps={allMaps}
-                    activeMap={activeMap}
-                  />
-                )}
 
               </div>
             </div>
@@ -2495,6 +2497,7 @@ function GmDashboard() {
             </button>
           </div>
         </div>
+        </>)} {/* end activeTab !== 'maps' */}
       </div>
 
       {/* ── LOOT POPUP ── */}
