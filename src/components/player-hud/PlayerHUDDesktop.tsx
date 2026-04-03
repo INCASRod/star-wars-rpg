@@ -52,6 +52,9 @@ import { DestinySpendConfirmModal } from '@/components/destiny/DestinySpendConfi
 import { DestinyGMFlash, DestinyConsideringBanner } from '@/components/destiny/DestinyGMFlash'
 import { EncumbranceBar } from '@/components/character/EncumbranceBar'
 import type { CriticalInjuryRequest } from '@/lib/types'
+import { useActiveMap } from '@/hooks/useActiveMap'
+import { useMapTokens } from '@/hooks/useMapTokens'
+import { MapCanvas } from '@/components/map/MapCanvas'
 
 const CHAR_TO_FIELD: Record<string, keyof Character> = {
   BR: 'brawn', AG: 'agility', INT: 'intellect', CUN: 'cunning', WIL: 'willpower', PR: 'presence',
@@ -186,14 +189,18 @@ function SectionLabel({ text }: { text: string }) {
 }
 
 // ── Tab component ────────────────────────────────────────────
-type TabName = 'Skills' | 'Talents' | 'Inventory' | 'Force' | 'Lore' | 'Feed' | 'Combat'
+type TabName = 'Skills' | 'Talents' | 'Inventory' | 'Force' | 'Lore' | 'Feed' | 'Combat' | 'Map'
 
 const FORCE_TAB_BLUE   = '#7EC8E3'
 const FORCE_TAB_PURPLE = '#8B2BE2'
 
-function TabBar({ active, onChange, hasCombat, isForceUser, isForceUserFallen }: { active: TabName; onChange: (t: TabName) => void; hasCombat?: boolean; isForceUser?: boolean; isForceUserFallen?: boolean }) {
-  const allTabs: TabName[] = ['Skills', 'Talents', 'Inventory', 'Force', 'Lore', 'Feed', 'Combat']
-  const tabs = allTabs.filter(t => t !== 'Force' || isForceUser)
+function TabBar({ active, onChange, hasCombat, isForceUser, isForceUserFallen, hasMap }: { active: TabName; onChange: (t: TabName) => void; hasCombat?: boolean; isForceUser?: boolean; isForceUserFallen?: boolean; hasMap?: boolean }) {
+  const allTabs: TabName[] = ['Skills', 'Talents', 'Inventory', 'Force', 'Lore', 'Feed', 'Combat', 'Map']
+  const tabs = allTabs.filter(t => {
+    if (t === 'Force') return !!isForceUser
+    if (t === 'Map')   return !!hasMap
+    return true
+  })
   return (
     <div style={{
       display: 'flex', borderBottom: `1px solid ${C.border}`,
@@ -203,12 +210,15 @@ function TabBar({ active, onChange, hasCombat, isForceUser, isForceUserFallen }:
         const isCombatTab = tab === 'Combat'
         const isFeed      = tab === 'Feed'
         const isForceTab  = tab === 'Force'
+        const isMapTab    = tab === 'Map'
         const forceColor  = isForceUserFallen ? FORCE_TAB_PURPLE : FORCE_TAB_BLUE
         const tabColor    = isForceTab
           ? forceColor
+          : isMapTab ? '#52C8A0'
           : (isCombatTab || (isFeed && hasCombat)) ? '#E05050' : C.gold
         const dimColor    = isForceTab
           ? (isForceUserFallen ? 'rgba(139,43,226,0.45)' : 'rgba(126,200,227,0.45)')
+          : isMapTab ? 'rgba(82,200,160,0.45)'
           : isCombatTab && hasCombat ? '#E0505088' : isFeed && hasCombat ? '#E0505088' : C.textDim
         return (
           <button
@@ -223,10 +233,11 @@ function TabBar({ active, onChange, hasCombat, isForceUser, isForceUserFallen }:
               transition: '.15s', marginBottom: -1,
               textShadow: isForceTab && active === tab
                 ? (isForceUserFallen ? '0 0 8px rgba(139,43,226,0.6)' : '0 0 10px rgba(126,200,227,0.4)')
+                : isMapTab && active === tab ? '0 0 10px rgba(82,200,160,0.4)'
                 : 'none',
             }}
           >
-            {tab}
+            {isMapTab ? '◉ MAP' : tab}
           </button>
         )
       })}
@@ -578,9 +589,24 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   const [activeTab, setActiveTab] = useState<TabName>(() => {
     if (typeof window === 'undefined') return 'Skills'
     const saved = window.localStorage.getItem(TAB_KEY)
-    const valid: TabName[] = ['Skills', 'Talents', 'Inventory', 'Force', 'Lore', 'Feed', 'Combat']
+    const valid: TabName[] = ['Skills', 'Talents', 'Inventory', 'Force', 'Lore', 'Feed', 'Combat', 'Map']
     return valid.includes(saved as TabName) ? (saved as TabName) : 'Skills'
   })
+
+  // ── Map tab — subscribe to active map visibility ──
+  const { visibleMap } = useActiveMap(effectiveCampaignId)
+  const hasMapTab = !!visibleMap
+
+  // When the GM hides the map while a player is viewing it, redirect to Skills
+  useEffect(() => {
+    if (!hasMapTab && activeTab === 'Map') {
+      setActiveTab('Skills')
+      localStorage.setItem(TAB_KEY, 'Skills')
+    }
+  }, [hasMapTab, activeTab, TAB_KEY])
+
+  const mapTokens = useMapTokens(visibleMap?.id ?? null)
+  const visibleMapTokens = mapTokens.tokens.filter(t => t.is_visible)
   const [rollResult, setRollResult]             = useState<RollResult | null>(null)
   const [rollLabel, setRollLabel]               = useState<string | undefined>()
   const [showTalentTree, setShowTalentTree]     = useState(false)
@@ -1465,6 +1491,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
             hasCombat={isCombat}
             isForceUser={isForceUserSensitive(character, effectiveStats?.forceRating ?? forceRating)}
             isForceUserFallen={character.is_dark_side_fallen === true}
+            hasMap={hasMapTab}
           />
 
           {/* Session Status Banner — shown when GM has revealed a D100 result */}
@@ -1663,6 +1690,19 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, flexDirection: 'column', gap: 12, padding: 40 }}>
                 <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_H4, color: C.textFaint }}>NO CAMPAIGN</div>
                 <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.textFaint }}>Join a campaign to see combat tracking</div>
+              </div>
+            )}
+            {activeTab === 'Map' && visibleMap && (
+              <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 480, margin: '-12px -16px' }}>
+                <MapCanvas
+                  mapImageUrl={visibleMap.image_url}
+                  tokens={visibleMapTokens}
+                  isGM={false}
+                  currentCharacterId={character.id}
+                  onTokenMove={mapTokens.moveToken}
+                  gridEnabled={visibleMap.grid_enabled}
+                  gridSize={visibleMap.grid_size ?? 50}
+                />
               </div>
             )}
           </div>

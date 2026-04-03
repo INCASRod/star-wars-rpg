@@ -12,6 +12,8 @@ import { ForceNotificationCard, type ForceNotification } from '@/components/gm/F
 import { ItemDatabaseTab } from '@/components/gm/ItemDatabaseTab'
 import { LootAwardModal, type AwardableItem } from '@/components/gm/LootAwardModal'
 import { DestinyGeneratePanel } from '@/components/gm/DestinyGeneratePanel'
+import { MapManagementPanel } from '@/components/gm/MapManagementPanel'
+import { useActiveMap } from '@/hooks/useActiveMap'
 import { DestinyPoolDisplay, type DestinyPoolRecord } from '@/components/destiny/DestinyPoolDisplay'
 import { toast } from 'sonner'
 import { rarityColor, rarityLabel } from '@/lib/styles'
@@ -349,12 +351,12 @@ function GmDashboard() {
   const [error, setError] = useState<string | null>(null)
 
   // ── Tabs ──
-  type GmTab = 'xp' | 'credits' | 'duty' | 'do' | 'loot' | 'items' | 'combat' | 'crit' | 'force'
+  type GmTab = 'xp' | 'credits' | 'duty' | 'do' | 'loot' | 'items' | 'combat' | 'crit' | 'force' | 'maps'
   const GM_TAB_KEY = 'holocron:gm-tab'
   const [activeTab, setActiveTab] = useState<GmTab>(() => {
     if (typeof window === 'undefined') return 'xp'
     const saved = window.localStorage.getItem(GM_TAB_KEY)
-    const valid: GmTab[] = ['xp', 'credits', 'duty', 'do', 'loot', 'items', 'combat', 'crit', 'force']
+    const valid: GmTab[] = ['xp', 'credits', 'duty', 'do', 'loot', 'items', 'combat', 'crit', 'force', 'maps']
     return valid.includes(saved as GmTab) ? (saved as GmTab) : 'xp'
   })
 
@@ -468,6 +470,9 @@ function GmDashboard() {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const supabase = useMemo(() => createClient(), [])
+
+  // ── Map state ──
+  const { activeMap, allMaps } = useActiveMap(campaignId)
 
   // ── Derived character lists ──
   const activeChars   = useMemo(() => characters.filter(c => !c.is_archived), [characters])
@@ -2087,6 +2092,21 @@ function GmDashboard() {
                     ? ` (${forceNotifications.filter(n => n.status === 'pending').length})`
                     : ''}
                 </button>
+                {/* Maps tab */}
+                <button
+                  onClick={() => { setActiveTab('maps'); localStorage.setItem(GM_TAB_KEY, 'maps') }}
+                  style={{
+                    fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 700,
+                    letterSpacing: '0.1em', textTransform: 'uppercase',
+                    padding: '10px 16px', border: 'none',
+                    borderBottom: activeTab === 'maps' ? `2px solid #52C8A0` : '2px solid transparent',
+                    background: activeTab === 'maps' ? 'rgba(82,200,160,0.07)' : 'transparent',
+                    color: activeTab === 'maps' ? '#52C8A0' : DIM,
+                    cursor: 'pointer', transition: '.15s', marginBottom: -1,
+                  }}
+                >
+                  ◉ Maps
+                </button>
               </div>
 
               {/* Tab content */}
@@ -2371,6 +2391,16 @@ function GmDashboard() {
                         ))
                     )}
                   </div>
+                )}
+
+                {/* ── MAPS TAB ── */}
+                {activeTab === 'maps' && (
+                  <MapManagementPanel
+                    campaignId={campaignId}
+                    characters={activeChars}
+                    allMaps={allMaps}
+                    activeMap={activeMap}
+                  />
                 )}
 
               </div>
