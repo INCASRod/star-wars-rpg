@@ -104,10 +104,6 @@ export function useCharacterData(characterId: string) {
       setRefWeaponQualities((refWqRes.data as RefWeaponQuality[]) || [])
       setRefItemAttachments((refAttRes.data as RefItemAttachment[]) || [])
 
-      if (charRes.data?.player_id) {
-        const { data: p } = await supabase.from('players').select('display_name').eq('id', charRes.data.player_id).single()
-        if (p) setPlayerName(p.display_name)
-      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : String(err))
     }

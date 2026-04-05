@@ -190,6 +190,24 @@ export function LootAwardModal({
       charNames.push(char.name)
     }
 
+    // Single combined feed entry for the award
+    if (campaignId && charNames.length > 0) {
+      const itemLabel = quantity > 1 ? `${item.name} ×${quantity}` : item.name
+      supabase.from('roll_log').insert({
+        campaign_id:           campaignId,
+        character_id:          null,
+        character_name:        'GM',
+        roll_label:            `${itemLabel} awarded to ${charNames.join(', ')}`,
+        roll_type:             'Item Award',
+        alignment:             'system',
+        pool:                  { proficiency: 0, ability: 0, boost: 0, challenge: 0, difficulty: 0, setback: 0, force: 0 },
+        result:                { netSuccess: 0, netAdvantage: 0, triumph: 0, despair: 0, succeeded: false },
+        is_dm:                 false,
+        hidden:                false,
+        is_visible_to_players: true,
+      }).then(({ error }) => { if (error) console.warn('[item award log]', error.message) })
+    }
+
     setBusy(false)
     onAwardComplete(charNames, charIds)
   }

@@ -10,6 +10,7 @@ export interface MapToken {
   participant_type: 'pc' | 'adversary'
   character_id: string | null
   participant_id: string | null
+  slot_key: string | null
   label: string | null
   alignment: string | null
   x: number

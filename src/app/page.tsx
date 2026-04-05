@@ -58,21 +58,19 @@ function getSessionKey(): string {
   if (!k) { k = randomUUID(); localStorage.setItem('holocron_session_key', k) }
   return k
 }
-function getStoredName(): string { return localStorage.getItem('holocron_player_name') ?? '' }
 
 // ─── CharacterCard ────────────────────────────────────────────────────────────
 interface CharacterCardProps {
   char: Character
   state: CardState
   online: boolean
-  playerDisplayName: string | undefined
   animDelay: number
   onClaim: () => void
   onDelete: () => void
 }
 
 function CharacterCard({
-  char, state, online, playerDisplayName,
+  char, state, online,
   animDelay, onClaim, onDelete,
 }: CharacterCardProps) {
   const [hovered, setHovered] = useState(false)
@@ -222,7 +220,7 @@ function CharacterCard({
             {char.name}
           </div>
           <div style={{ fontFamily: FM, fontSize: 12, color: TEXT_MUT, textTransform: 'uppercase', marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {char.career_key} // {char.species_key}{playerDisplayName ? ` // ${playerDisplayName}` : ''}
+            {char.career_key} // {char.species_key}
           </div>
           {/* Status badge */}
           <div style={{
@@ -346,18 +344,13 @@ export default function Home() {
 
   const [characters, setCharacters] = useState<Character[]>([])
   const [sessions, setSessions] = useState<CharacterSession[]>([])
-  const [playerNames, setPlayerNames] = useState<Record<string, string>>({})
   const [campaignId, setCampaignId] = useState<string | null>(null)
   const [campaignName, setCampaignName] = useState('Legacy of Rebellion')
   const [sessionKey] = useState<string>(() => typeof window !== 'undefined' ? getSessionKey() : '')
-  const [playerName, setPlayerName] = useState<string>(() => typeof window !== 'undefined' ? getStoredName() : '')
   const [onlineKeys, setOnlineKeys] = useState<string[]>([])
-  const [showNameModal, setShowNameModal] = useState(false)
-  const [nameInput, setNameInput] = useState('')
   const [showGmInput, setShowGmInput] = useState(false)
   const [gmPin, setGmPin] = useState('')
   const [sessionMode, setSessionMode] = useState<string>('exploration')
-  const [pendingCharId, setPendingCharId] = useState<string | null>(null)
 
   const campaignIdRef = useRef<string | null>(null)
 
@@ -383,23 +376,12 @@ export default function Home() {
         .eq('is_archived', false)
       if (chars) setCharacters(chars as Character[])
 
-      // 3. Fetch players → playerNames map (player_id → display_name)
-      const { data: players } = await supabase.from('players').select('id, display_name')
-      if (players) {
-        const map: Record<string, string> = {}
-        for (const p of players) map[p.id] = p.display_name
-        setPlayerNames(map)
-      }
-
-      // 4. Fetch character_sessions
+      // 3. Fetch character_sessions
       const { data: sessData } = await supabase
         .from('character_sessions')
         .select('*')
         .eq('campaign_id', camp.id)
       if (sessData) setSessions(sessData as CharacterSession[])
-
-      // 5. Show name modal if no name
-      if (!getStoredName()) setShowNameModal(true)
     }
     load()
   }, [])
@@ -438,16 +420,16 @@ export default function Home() {
     })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
-          await ch.track({ sessionKey, playerName })
+          await ch.track({ sessionKey })
         }
       })
 
     return () => { void supabase.removeChannel(ch) }
-  }, [campaignId, sessionKey, playerName])
+  }, [campaignId, sessionKey])
 
   // ── claimCharacter ─────────────────────────────────────────────────────────
   async function claimCharacter(characterId: string) {
-    if (!campaignId || !playerName) return
+    if (!campaignId) return
     const supabase = createClient()
 
     // Release any previous claim by this session_key
@@ -460,11 +442,10 @@ export default function Home() {
 
     // Claim the character
     await supabase.from('character_sessions').insert({
-      campaign_id: campaignId,
+      campaign_id:  campaignId,
       character_id: characterId,
-      session_key: sessionKey,
-      player_name: playerName,
-      is_active: true,
+      session_key:  sessionKey,
+      is_active:    true,
     })
 
     router.push(`/character/${characterId}${campaignId ? `?campaign=${campaignId}` : ''}`)
@@ -496,20 +477,6 @@ export default function Home() {
       router.push(`/gm?campaign=${campaignId}`)
     } else {
       alert('Invalid PIN')
-    }
-  }
-
-  // ── Confirm name ───────────────────────────────────────────────────────────
-  function confirmName() {
-    const trimmed = nameInput.trim()
-    if (!trimmed) return
-    localStorage.setItem('holocron_player_name', trimmed)
-    setPlayerName(trimmed)
-    setShowNameModal(false)
-    // If there's a pending claim, execute it now
-    if (pendingCharId) {
-      void claimCharacter(pendingCharId)
-      setPendingCharId(null)
     }
   }
 
@@ -678,23 +645,14 @@ export default function Home() {
           {characters.map((char, index) => {
             const cardState = getCardState(char.id)
             const online = isPlayerOnline(char.id)
-            const displayName = playerNames[char.player_id]
             return (
               <CharacterCard
                 key={char.id}
                 char={char}
                 state={cardState}
                 online={online}
-                playerDisplayName={displayName}
                 animDelay={0.15 + index * 0.08}
-                onClaim={() => {
-                  if (!playerName) {
-                    setPendingCharId(char.id)
-                    setShowNameModal(true)
-                  } else {
-                    void claimCharacter(char.id)
-                  }
-                }}
+                onClaim={() => void claimCharacter(char.id)}
                 onDelete={() => void deleteCharacter(char.id, char.name)}
               />
             )
@@ -817,75 +775,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-
-      {/* Name Entry Modal */}
-      {showNameModal && (
-        <div style={{
-          position: 'fixed', inset: 0,
-          background: 'rgba(0,0,0,0.7)',
-          backdropFilter: 'blur(8px)',
-          zIndex: 200,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <div style={{
-            background: PANEL,
-            border: `1px solid ${BORDER_HI}`,
-            borderRadius: 8,
-            padding: 28,
-            maxWidth: 380,
-            width: '90%',
-            display: 'flex', flexDirection: 'column', gap: 12,
-          }}>
-            <div style={{ fontFamily: FC, fontSize: 11, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${GOLD}a5` }}>
-              Identify Yourself
-            </div>
-            <div style={{ fontFamily: FC, fontSize: 18, fontWeight: 700, color: GOLD }}>
-              Enter Your Name
-            </div>
-            <div style={{ fontFamily: FR, fontSize: 12, color: TEXT_SEC, marginTop: 8 }}>
-              Your name will be visible to other players
-            </div>
-            <input
-              type="text"
-              placeholder="Your name…"
-              value={nameInput}
-              onChange={e => setNameInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && confirmName()}
-              autoFocus
-              style={{
-                width: '100%',
-                background: INPUT_BG,
-                border: `1px solid ${BORDER_MD}`,
-                borderRadius: 4,
-                padding: '10px 14px',
-                fontFamily: FC,
-                fontSize: 14,
-                color: TEXT,
-                outline: 'none',
-                boxSizing: 'border-box',
-              }}
-            />
-            <button
-              onClick={confirmName}
-              style={{
-                width: '100%',
-                background: 'rgba(200,170,80,0.18)',
-                border: `1px solid ${BORDER_HI}`,
-                borderRadius: 4,
-                padding: 10,
-                fontFamily: FC,
-                fontSize: 13,
-                color: GOLD,
-                cursor: 'pointer',
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-              }}
-            >
-              Confirm
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* CSS Animations */}
       <style>{`

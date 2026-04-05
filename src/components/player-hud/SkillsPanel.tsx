@@ -430,24 +430,28 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
             border: `1px solid ${isCombat ? 'rgba(224,80,80,0.4)' : `${C.gold}44`}`,
             borderRadius: 3, padding: '2px 7px',
           }}>
-            {isCombat ? 'Roll to Act' : 'Click to Upgrade'}
+            {isCombat ? 'Click to make a check' : 'Click to Upgrade'}
           </div>
         </div>
       </div>
 
       {/* Legend */}
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <div style={{ width: 9, height: 9, background: '#D4B840', transform: 'rotate(45deg)' }} />
-          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700, color: C.textDim }}>Profession</span>
+          <DiceFace type="proficiency" size={14} />
+          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.68rem, 1vw, 0.78rem)', fontWeight: 600, color: 'rgba(232,223,200,0.55)' }}>Proficiency dice</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <div style={{ width: 9, height: 9, borderRadius: '50%', background: '#4EC87A' }} />
-          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700, color: C.textDim }}>Ability</span>
+          <DiceFace type="ability" size={14} />
+          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.68rem, 1vw, 0.78rem)', fontWeight: 600, color: 'rgba(232,223,200,0.55)' }}>Ability dice</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <div style={{ width: 9, height: 9, borderRadius: 1, background: `${C.gold}44`, border: `1px solid ${C.gold}` }} />
-          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700, color: C.textDim }}>Career</span>
+          <div style={{ width: 9, height: 9, borderRadius: 2, background: C.gold, border: `1px solid ${C.gold}` }} />
+          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.68rem, 1vw, 0.78rem)', fontWeight: 600, color: 'rgba(232,223,200,0.55)' }}>Skill level</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <div style={{ width: 2, height: 14, background: `${C.gold}88`, borderRadius: 1 }} />
+          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.68rem, 1vw, 0.78rem)', fontWeight: 600, color: 'rgba(232,223,200,0.55)' }}>Career</span>
         </div>
       </div>
 

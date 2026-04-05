@@ -23,7 +23,7 @@ type RollCategory = 'skill' | 'combat' | 'force' | 'initiative' | 'system'
 function classifyRoll(entry: RollEntry): RollCategory {
   if (entry.roll_type === 'force')      return 'force'
   if (entry.roll_type === 'initiative') return 'initiative'
-  if (entry.roll_type === 'system' || entry.alignment === 'system') return 'system'
+  if (entry.roll_type === 'system' || entry.roll_type === 'Item Award' || entry.alignment === 'system') return 'system'
   if (entry.roll_type === 'combat')     return 'combat'
   // Legacy: detect force rolls by pool.force > 0 (pre-migration-024 entries)
   if ((entry.pool?.force ?? 0) > 0) return 'force'
@@ -407,6 +407,27 @@ function InitiativeGroupCard({ rolls }: { rolls: RollEntry[] }) {
 // SYSTEM CARD
 // ═══════════════════════════════════════════════════════════════════
 function SystemCard({ roll }: { roll: RollEntry }) {
+  if (roll.roll_type === 'Item Award') {
+    const label       = roll.roll_label ?? ''
+    const splitIdx    = label.indexOf(' awarded to ')
+    const itemPart    = splitIdx >= 0 ? label.slice(0, splitIdx) : label
+    const recipients  = splitIdx >= 0 ? label.slice(splitIdx + ' awarded to '.length) : ''
+    return (
+      <div style={{ padding: '6px 12px', borderLeft: '3px solid rgba(200,170,80,0.25)', borderRadius: 6, background: 'rgba(200,170,80,0.03)' }}>
+        <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_TYPE }}>
+          <span style={{ marginRight: 4 }}>🎁</span>
+          <span style={{ color: '#C8AA50', fontWeight: 700 }}>{itemPart}</span>
+          {recipients && (
+            <>
+              <span style={{ color: 'rgba(232,223,200,0.4)' }}> awarded to </span>
+              <span style={{ color: 'rgba(232,223,200,0.8)' }}>{recipients}</span>
+            </>
+          )}
+        </span>
+      </div>
+    )
+  }
+
   return (
     <div style={{ padding: '6px 12px', borderLeft: '3px solid rgba(232,223,200,0.15)', borderRadius: 6, background: 'rgba(255,255,255,0.02)' }}>
       <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_TYPE, color: 'rgba(232,223,200,0.35)' }}>

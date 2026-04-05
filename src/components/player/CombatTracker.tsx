@@ -130,7 +130,14 @@ export function CombatTracker({ character, campaignId, talents = [] }: Props) {
         event: '*', schema: 'public', table: 'combat_participants',
         filter: `campaign_id=eq.${campaignId}`,
       }, (payload) => {
-        if (payload.new) {
+        if (payload.eventType === 'DELETE') {
+          const old = payload.old as { character_id: string }
+          setSlotAssignments(prev => {
+            const next = { ...prev }
+            delete next[old.character_id]
+            return next
+          })
+        } else if (payload.new) {
           const r = payload.new as { character_id: string; active_character_name: string | null; slot_type: string }
           if (r.slot_type === 'pc') {
             setSlotAssignments(prev => ({ ...prev, [r.character_id]: r.active_character_name }))

@@ -334,6 +334,8 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
   const [showAddModal, setShowAddModal]         = useState(false)
   const [openCards, setOpenCards]               = useState<Set<string>>(new Set())
   const [reassignOpenSlotId, setReassignOpenSlotId] = useState<string | null>(null)
+  const [hoveredSlotId, setHoveredSlotId]       = useState<string | null>(null)
+  const [removePCConfirm, setRemovePCConfirm]   = useState<{ slotId: string; charName: string; characterId: string } | null>(null)
 
   // combat_participants rows keyed by character_id
   const [combatParticipants, setCombatParticipants] = useState<Record<string, CombatParticipantRow>>({})
@@ -436,7 +438,14 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
         event: '*', schema: 'public', table: 'combat_participants',
         filter: `campaign_id=eq.${campaignId}`,
       }, (payload) => {
-        if (payload.new) {
+        if (payload.eventType === 'DELETE') {
+          const old = payload.old as { character_id: string }
+          setCombatParticipants(prev => {
+            const next = { ...prev }
+            delete next[old.character_id]
+            return next
+          })
+        } else if (payload.new) {
           const r = payload.new as CombatParticipantRow
           setCombatParticipants(prev => ({ ...prev, [r.character_id]: r }))
         }
@@ -766,6 +775,27 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
       return { ...s, alignment: next }
     })
     await saveEncounter({ initiative_slots: updated })
+  }
+
+  // Remove a PC from the active encounter (GM action)
+  const removePCFromCombat = async (slotId: string, characterId: string, charName: string) => {
+    if (!encounter) return
+    const updatedSlots = encounter.initiative_slots.filter((s: InitiativeSlot) => s.id !== slotId)
+    await saveEncounter({ initiative_slots: updatedSlots })
+    await supabase.from('combat_participants').delete()
+      .eq('character_id', characterId).eq('campaign_id', campaignId)
+    if (encounter.id) {
+      await supabase.from('combat_log').insert({
+        campaign_id: campaignId,
+        encounter_id: encounter.id,
+        participant_name: 'System',
+        alignment: 'system',
+        roll_type: 'system',
+        result_summary: `${charName} left the encounter`,
+        is_visible_to_players: true,
+      })
+    }
+    setRemovePCConfirm(null)
   }
 
   // Reassign a PC slot to a different character
@@ -1312,7 +1342,11 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
               Start combat to see the initiative order
             </div>
           )}
-          {encounter?.initiative_slots.map((slot: InitiativeSlot, idx: number) => {
+          {encounter?.initiative_slots
+            .filter((slot: InitiativeSlot) =>
+              slot.type === 'npc' || !characters.find(ch => ch.id === slot.characterId)?.is_archived
+            )
+            .map((slot: InitiativeSlot, idx: number) => {
             const isCurrent = slot.current
             const isActed = slot.acted
             const isNPC = slot.type === 'npc'
@@ -1347,6 +1381,8 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
             return (
               <div
                 key={slot.id}
+                onMouseEnter={() => setHoveredSlotId(slot.id)}
+                onMouseLeave={() => setHoveredSlotId(null)}
                 style={{
                   background: isKilledNPC ? `${CHAR_BR}08` : isCurrent ? `${accentColor}0a` : PANEL_BG,
                   backdropFilter: 'blur(12px)',
@@ -1362,6 +1398,46 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                   boxShadow: isCurrent ? `0 0 12px ${accentColor}30` : 'none',
                 }}
               >
+                {/* ── × Remove button (PC slots only, GM hover-reveal) ── */}
+                {!isNPC && (
+                  removePCConfirm?.slotId === slot.id ? (
+                    <div style={{
+                      position: 'absolute', top: 5, right: 8, zIndex: 10,
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      background: 'rgba(6,13,9,0.97)', border: '1px solid rgba(224,80,80,0.4)',
+                      borderRadius: 4, padding: '3px 8px',
+                    }}>
+                      <span style={{ fontFamily: FM, fontSize: FS_CAPTION, color: 'rgba(224,80,80,0.85)', whiteSpace: 'nowrap' }}>
+                        Remove {removePCConfirm.charName}?
+                      </span>
+                      <button
+                        onClick={() => setRemovePCConfirm(null)}
+                        style={{ ...smallCtrlBtn, width: 'auto', padding: '0 6px' }}
+                      >Cancel</button>
+                      <button
+                        onClick={() => { void removePCFromCombat(removePCConfirm.slotId, removePCConfirm.characterId, removePCConfirm.charName) }}
+                        style={{ ...smallCtrlBtn, width: 'auto', padding: '0 6px', color: CHAR_BR, borderColor: `${CHAR_BR}50` }}
+                      >Remove</button>
+                    </div>
+                  ) : hoveredSlotId === slot.id && (
+                    <button
+                      onClick={() => {
+                        const charName = activeChar?.name ?? slot.name
+                        setRemovePCConfirm({ slotId: slot.id, characterId: slot.characterId ?? '', charName })
+                        setTimeout(() => setRemovePCConfirm(prev => prev?.slotId === slot.id ? null : prev), 5000)
+                      }}
+                      title={`Remove ${activeChar?.name ?? slot.name} from combat`}
+                      style={{
+                        position: 'absolute', top: 5, right: 8,
+                        background: 'none', border: 'none', cursor: 'pointer',
+                        color: 'rgba(244,67,54,0.45)', fontSize: 15, lineHeight: 1,
+                        padding: '2px 5px', borderRadius: 3, transition: 'color .15s',
+                      }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(244,67,54,0.85)' }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(244,67,54,0.45)' }}
+                    >×</button>
+                  )
+                )}
                 {/* ── Col 1: Init number ── */}
                 <span style={{
                   fontFamily: FC, fontSize: FS_H4, fontWeight: 700, minWidth: 20, textAlign: 'center',

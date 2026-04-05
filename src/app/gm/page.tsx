@@ -13,6 +13,7 @@ import { ItemDatabaseTab } from '@/components/gm/ItemDatabaseTab'
 import { LootAwardModal, type AwardableItem } from '@/components/gm/LootAwardModal'
 import { DestinyGeneratePanel } from '@/components/gm/DestinyGeneratePanel'
 import { GmMapView } from '@/components/gm/GmMapView'
+import { AdversaryLibrary } from '@/components/gm/AdversaryLibrary'
 import { useActiveMap } from '@/hooks/useActiveMap'
 import { DestinyPoolDisplay, type DestinyPoolRecord } from '@/components/destiny/DestinyPoolDisplay'
 import { toast } from 'sonner'
@@ -95,45 +96,6 @@ type LootItem = {
   defense?: number; soak?: number
 }
 
-/* ═══════════════════════════════════════
-   CRITICAL INJURY TABLE (d100)
-   ═══════════════════════════════════════ */
-const CRIT_TABLE: { min: number; max: number; severity: string; name: string }[] = [
-  { min: 1, max: 5, severity: 'Easy', name: 'Minor Nick' },
-  { min: 6, max: 10, severity: 'Easy', name: 'Slowed Down' },
-  { min: 11, max: 15, severity: 'Easy', name: 'Sudden Jolt' },
-  { min: 16, max: 20, severity: 'Easy', name: 'Distracted' },
-  { min: 21, max: 25, severity: 'Easy', name: 'Off-Balance' },
-  { min: 26, max: 30, severity: 'Easy', name: 'Discouraging Wound' },
-  { min: 31, max: 35, severity: 'Easy', name: 'Stunned' },
-  { min: 36, max: 40, severity: 'Easy', name: 'Stinger' },
-  { min: 41, max: 45, severity: 'Average', name: 'Bowled Over' },
-  { min: 46, max: 50, severity: 'Average', name: 'Head Ringer' },
-  { min: 51, max: 55, severity: 'Average', name: 'Fearsome Wound' },
-  { min: 56, max: 60, severity: 'Average', name: 'Agonizing Wound' },
-  { min: 61, max: 65, severity: 'Average', name: 'Slightly Dazed' },
-  { min: 66, max: 70, severity: 'Average', name: 'Scattered Senses' },
-  { min: 71, max: 75, severity: 'Average', name: 'Hamstrung' },
-  { min: 76, max: 80, severity: 'Average', name: 'Overpowered' },
-  { min: 81, max: 85, severity: 'Hard', name: 'Winded' },
-  { min: 86, max: 90, severity: 'Hard', name: 'Compromised' },
-  { min: 91, max: 95, severity: 'Hard', name: 'At the Brink' },
-  { min: 96, max: 100, severity: 'Hard', name: 'Crippled' },
-  { min: 101, max: 105, severity: 'Hard', name: 'Maimed' },
-  { min: 106, max: 110, severity: 'Daunting', name: 'Horrific Injury' },
-  { min: 111, max: 115, severity: 'Daunting', name: 'Temporarily Lame' },
-  { min: 116, max: 120, severity: 'Daunting', name: 'Blinded' },
-  { min: 121, max: 125, severity: 'Daunting', name: 'Knocked Senseless' },
-  { min: 126, max: 130, severity: 'Daunting', name: 'Gruesome Injury' },
-  { min: 131, max: 140, severity: 'Daunting', name: 'Bleeding Out' },
-  { min: 141, max: 150, severity: 'Daunting', name: 'The End is Nigh' },
-  { min: 151, max: 999, severity: 'Deadly', name: 'Dead' },
-]
-
-function lookupCrit(roll: number): { severity: string; name: string } {
-  const entry = CRIT_TABLE.find(c => roll >= c.min && roll <= c.max)
-  return entry || { severity: 'Deadly', name: 'Dead' }
-}
 
 function OverrideCritSelect({ refCrits, onOverride }: { refCrits: RefCriticalInjury[]; onOverride: (id: number) => void }) {
   const [open, setOpen] = useState(false)
@@ -351,14 +313,17 @@ function GmDashboard() {
   const [error, setError] = useState<string | null>(null)
 
   // ── Tabs ──
-  type GmTab = 'xp' | 'credits' | 'duty' | 'do' | 'loot' | 'items' | 'combat' | 'crit' | 'force' | 'maps'
+  type GmTab = 'xp' | 'credits' | 'duty' | 'do' | 'loot' | 'items' | 'combat' | 'adversaries' | 'force' | 'maps'
   const GM_TAB_KEY = 'holocron:gm-tab'
+  // 'maps' is intentionally excluded — the map tab must be explicitly clicked each session
+  const GM_TAB_VALID: GmTab[] = ['xp', 'credits', 'duty', 'do', 'loot', 'items', 'combat', 'adversaries', 'force']
   const [activeTab, setActiveTab] = useState<GmTab>(() => {
     if (typeof window === 'undefined') return 'xp'
     const saved = window.localStorage.getItem(GM_TAB_KEY)
-    const valid: GmTab[] = ['xp', 'credits', 'duty', 'do', 'loot', 'items', 'combat', 'crit', 'force', 'maps']
-    return valid.includes(saved as GmTab) ? (saved as GmTab) : 'xp'
+    return GM_TAB_VALID.includes(saved as GmTab) ? (saved as GmTab) : 'xp'
   })
+  // tracks which tools tab was active before entering the map view, so the Map button can toggle back
+  const prevToolsTab = useRef<GmTab>(activeTab === 'maps' ? 'xp' : activeTab)
 
   // ── Force notifications ──
   const [forceNotifications, setForceNotifications] = useState<ForceNotification[]>([])
@@ -407,10 +372,6 @@ function GmDashboard() {
   const [sessionMode, setSessionMode] = useState<'exploration' | 'combat'>('exploration')
   const [combatRound, setCombatRound] = useState(1)
   const [sessionBusy, setSessionBusy] = useState(false)
-
-  // ── Crit Roller ──
-  const [critResult, setCritResult] = useState<{ roll: number; name: string; severity: string } | null>(null)
-  const [critBonus, setCritBonus] = useState('')
 
   // ── Critical Injury Request flow ──
   const [refCritsDb, setRefCritsDb] = useState<RefCriticalInjury[]>([])
@@ -1255,6 +1216,13 @@ function GmDashboard() {
     try {
       sendToChar(archiveConfirm.id, { type: 'force-logout' })
       await archiveCharacter(archiveConfirm.id)
+      // Remove from combat tracker so archived character doesn't linger in active encounters
+      if (campaignId) {
+        await supabase.from('combat_participants')
+          .delete()
+          .eq('character_id', archiveConfirm.id)
+          .eq('campaign_id', campaignId)
+      }
       setCharacters(prev => prev.map(c =>
         c.id === archiveConfirm.id ? { ...c, is_archived: true, archived_at: new Date().toISOString() } : c
       ))
@@ -1264,7 +1232,7 @@ function GmDashboard() {
     }
     setArchiveConfirm(null)
     setArchiveBusy(false)
-  }, [archiveConfirm, sendToChar, flash, flashError])
+  }, [archiveConfirm, campaignId, supabase, sendToChar, flash, flashError])
 
   const handleFallenToggle = useCallback(async () => {
     if (!fallenConfirm) return
@@ -1295,15 +1263,6 @@ function GmDashboard() {
       flashError('Restore failed: ' + (err instanceof Error ? err.message : String(err)))
     }
   }, [flash, flashError])
-
-  // ── Crit Roller ──
-  const rollCrit = () => {
-    const bonus = parseInt(critBonus, 10) || 0
-    const raw = Math.floor(Math.random() * 100) + 1
-    const total = raw + bonus
-    const result = lookupCrit(total)
-    setCritResult({ roll: total, ...result })
-  }
 
   // ── GM Roll ──
   const handleGmRoll = () => {
@@ -1480,9 +1439,19 @@ function GmDashboard() {
           </div>
         )}
 
-        {/* ◉ Map tab shortcut */}
+        {/* ◉ Map tab shortcut — toggles map view on/off */}
         <button
-          onClick={() => { setActiveTab('maps'); localStorage.setItem(GM_TAB_KEY, 'maps') }}
+          onClick={() => {
+            if (activeTab === 'maps') {
+              // return to the last tools tab; persist it so the dashboard remembers
+              setActiveTab(prevToolsTab.current)
+              localStorage.setItem(GM_TAB_KEY, prevToolsTab.current)
+            } else {
+              // remember current tools tab before entering map; do NOT persist 'maps' to storage
+              prevToolsTab.current = activeTab
+              setActiveTab('maps')
+            }
+          }}
           style={{
             fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.12em',
             textTransform: 'uppercase', padding: '5px 14px', border: 'none', cursor: 'pointer',
@@ -2082,7 +2051,7 @@ function GmDashboard() {
                   ['loot', 'Loot'],
                   ['items', 'Items'],
                   ['combat', 'Combat'],
-                  ['crit', 'Crit Roller'],
+                  ['adversaries', '👾 Adversaries'],
                 ] as const).map(([key, label]) => (
                   <button
                     key={key}
@@ -2352,33 +2321,12 @@ function GmDashboard() {
                   </div>
                 )}
 
-                {/* ── CRIT ROLLER TAB ── */}
-                {activeTab === 'crit' && (
-                  <div>
-                    <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
-                      <div>
-                        <div style={fieldLabel}>Bonus (existing crits, vicious…)</div>
-                        <input type="number" min="0" placeholder="+0" value={critBonus} onChange={e => setCritBonus(e.target.value)} style={darkInputNarrow} />
-                      </div>
-                      <button onClick={rollCrit} style={{ ...btnPrimary, padding: '8px 20px' }}>Roll d100</button>
-                    </div>
-
-                    {critResult && (
-                      <div style={{
-                        ...panelBase,
-                        marginTop: 16, padding: '14px 18px',
-                        borderLeft: `3px solid ${critResult.severity === 'Deadly' ? RED : critResult.severity === 'Daunting' ? ORANGE : critResult.severity === 'Hard' ? ORANGE : GREEN}`,
-                      }}>
-                        <CornerBrackets />
-                        <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: critResult.severity === 'Deadly' ? RED : TEXT, letterSpacing: '0.08em', marginBottom: 4 }}>
-                          [{critResult.roll}] {critResult.name}
-                        </div>
-                        <div style={{ fontFamily: FR, fontSize: FS_LABEL, color: DIM, letterSpacing: '0.1em' }}>
-                          Severity: <span style={{ color: critResult.severity === 'Deadly' ? RED : critResult.severity === 'Daunting' ? ORANGE : TEXT, fontWeight: 700 }}>{critResult.severity}</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                {/* ── ADVERSARY LIBRARY TAB ── */}
+                {activeTab === 'adversaries' && campaignId && (
+                  <AdversaryLibrary
+                    campaignId={campaignId}
+                    sessionMode={sessionMode}
+                  />
                 )}
 
                 {/* ── FORCE TAB ── */}

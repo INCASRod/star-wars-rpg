@@ -12,6 +12,7 @@ export interface ActiveMap {
   grid_size: number
   is_active: boolean
   is_visible_to_players: boolean
+  token_scale: number
   created_at: string
 }
 

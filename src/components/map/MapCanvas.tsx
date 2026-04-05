@@ -23,15 +23,18 @@ export interface MapCanvasProps {
   gridEnabled:         boolean
   gridSize:            number
   onTokenContextMenu?: (tokenId: string, e: MouseEvent) => void
+  tokenScale?:         number   // GM-only visual scale multiplier; players always see 1.0
 }
 
 export function MapCanvas({
   mapImageUrl, tokens, isGM, currentCharacterId,
   onTokenMove, gridEnabled, gridSize, onTokenContextMenu,
+  tokenScale = 1,
 }: MapCanvasProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const appRef       = useRef<InstanceType<typeof import('pixi.js').Application> | null>(null)
-  const tokensRef    = useRef<Map<string, InstanceType<typeof import('pixi.js').Container>>>(new Map())
+  const containerRef       = useRef<HTMLDivElement>(null)
+  const appRef             = useRef<InstanceType<typeof import('pixi.js').Application> | null>(null)
+  const tokensRef          = useRef<Map<string, InstanceType<typeof import('pixi.js').Container>>>(new Map())
+  const draggingTokenIdRef = useRef<string | null>(null)
 
   // Map image bounds within the canvas (updated by rebuildMap)
   const mapWRef       = useRef(800)
@@ -106,8 +109,9 @@ export function MapCanvas({
       app, PIXI, tokens, isGM, currentCharacterId,
       onTokenMoveRef, onContextRef, tokensRef,
       mapWRef, mapHRef, mapOffsetXRef, mapOffsetYRef,
+      draggingTokenIdRef, tokenScale,
     )
-  }, [tokens, isGM, currentCharacterId])
+  }, [tokens, isGM, currentCharacterId, tokenScale])
 
   useEffect(() => { syncTokensCb() }, [syncTokensCb])
 
@@ -257,6 +261,8 @@ function syncTokens(
   mapHRef:             React.MutableRefObject<number>,
   mapOffsetXRef:       React.MutableRefObject<number>,
   mapOffsetYRef:       React.MutableRefObject<number>,
+  draggingTokenIdRef:  React.MutableRefObject<string | null>,
+  tokenScale:          number,
 ) {
   const existing = new Set(tokensRef.current.keys())
 
@@ -268,8 +274,13 @@ function syncTokens(
 
     if (tokensRef.current.has(token.id)) {
       const c = tokensRef.current.get(token.id)!
-      c.x = offsetX + token.x * mapW
-      c.y = offsetY + token.y * mapH
+      // Skip position update for the token currently being dragged — remote
+      // realtime events would otherwise snap it back to the last persisted position.
+      if (draggingTokenIdRef.current !== token.id) {
+        c.x = offsetX + token.x * mapW
+        c.y = offsetY + token.y * mapH
+      }
+      c.scale.set(tokenScale)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ;(c as any).alpha = (!isGM && !token.is_visible) ? 0 : (isGM && !token.is_visible ? 0.4 : 1)
       existing.delete(token.id)
@@ -280,8 +291,9 @@ function syncTokens(
     const sprite  = buildTokenSprite(
       px, token, canDrag,
       mapW, mapH, offsetX, offsetY,
-      onMoveRef, onContextRef,
+      onMoveRef, onContextRef, draggingTokenIdRef,
     )
+    sprite.scale.set(tokenScale)
     app.stage.addChild(sprite)
     tokensRef.current.set(token.id, sprite)
     existing.delete(token.id)
@@ -296,17 +308,18 @@ function syncTokens(
 
 // ── Build a single token container ───────────────────────────
 function buildTokenSprite(
-  px:           typeof import('pixi.js'),
-  token:        MapToken,
-  canDrag:      boolean,
-  mapW:         number,
-  mapH:         number,
-  offsetX:      number,
-  offsetY:      number,
-  onMoveRef:    React.MutableRefObject<(id: string, x: number, y: number) => void>,
-  onContextRef: React.MutableRefObject<((id: string, e: MouseEvent) => void) | undefined>,
+  px:                  typeof import('pixi.js'),
+  token:               MapToken,
+  canDrag:             boolean,
+  mapW:                number,
+  mapH:                number,
+  offsetX:             number,
+  offsetY:             number,
+  onMoveRef:           React.MutableRefObject<(id: string, x: number, y: number) => void>,
+  onContextRef:        React.MutableRefObject<((id: string, e: MouseEvent) => void) | undefined>,
+  draggingTokenIdRef:  React.MutableRefObject<string | null>,
 ): InstanceType<typeof import('pixi.js').Container> {
-  const SIZE   = 48 * (token.token_size ?? 1)
+  const SIZE   = 24 * (token.token_size ?? 1)
   const RADIUS = SIZE / 2
   const colour = BORDER_COLOURS[token.alignment ?? 'pc'] ?? 0xffffff
 
@@ -317,8 +330,8 @@ function buildTokenSprite(
   c.sortableChildren = true
 
   const ring = new px.Graphics()
-  ring.lineStyle(3, colour, 1)
-  ring.drawCircle(0, 0, RADIUS + 2)
+  ring.lineStyle(2, colour, 1)
+  ring.drawCircle(0, 0, RADIUS + 1)
   ring.zIndex = 2
   c.addChild(ring)
 
@@ -354,15 +367,15 @@ function buildTokenSprite(
 
   if (token.wound_pct && token.wound_pct > 0) {
     const arc = new px.Graphics()
-    arc.lineStyle(4, 0xe05252, 0.85)
-    arc.arc(0, 0, RADIUS + 6, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * token.wound_pct)
+    arc.lineStyle(2, 0xe05252, 0.85)
+    arc.arc(0, 0, RADIUS + 3, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * token.wound_pct)
     arc.zIndex = 3
     c.addChild(arc)
   }
 
   const lbl = new px.Text(token.label ?? '', {
     fontFamily:         'Rajdhani, sans-serif',
-    fontSize:           11,
+    fontSize:           6,
     fill:               0xE8DFC8,
     align:              'center',
     dropShadow:         true,
@@ -370,7 +383,7 @@ function buildTokenSprite(
     dropShadowColor:    0x000000,
   })
   lbl.anchor.set(0.5, 0)
-  lbl.y      = RADIUS + 4
+  lbl.y      = RADIUS + 2
   lbl.zIndex = 4
   c.addChild(lbl)
 
@@ -397,6 +410,7 @@ function buildTokenSprite(
   ;(c as any).on('pointerdown', (e: { stopPropagation: () => void; globalX: number; globalY: number }) => {
     e.stopPropagation()
     dragging = true
+    draggingTokenIdRef.current = token.id
     offX = e.globalX - c.x
     offY = e.globalY - c.y
     c.zIndex = 999
@@ -412,6 +426,7 @@ function buildTokenSprite(
   ;(c as any).on('pointerup', () => {
     if (!dragging) return
     dragging = false
+    draggingTokenIdRef.current = null
     c.zIndex = 10
     const nx = Math.max(0, Math.min(1, (c.x - offsetX) / mapW))
     const ny = Math.max(0, Math.min(1, (c.y - offsetY) / mapH))
@@ -421,6 +436,7 @@ function buildTokenSprite(
   ;(c as any).on('pointerupoutside', () => {
     if (!dragging) return
     dragging = false
+    draggingTokenIdRef.current = null
     c.zIndex = 10
     const nx = Math.max(0, Math.min(1, (c.x - offsetX) / mapW))
     const ny = Math.max(0, Math.min(1, (c.y - offsetY) / mapH))

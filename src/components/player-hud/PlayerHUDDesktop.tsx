@@ -55,6 +55,7 @@ import type { CriticalInjuryRequest } from '@/lib/types'
 import { useActiveMap } from '@/hooks/useActiveMap'
 import { useMapTokens } from '@/hooks/useMapTokens'
 import { MapCanvas } from '@/components/map/MapCanvas'
+import { generateCharacterSheetPDF, type CharacterSheetInput } from '@/lib/characterSheetPDF'
 
 const CHAR_TO_FIELD: Record<string, keyof Character> = {
   BR: 'brawn', AG: 'agility', INT: 'intellect', CUN: 'cunning', WIL: 'willpower', PR: 'presence',
@@ -622,6 +623,42 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   const [forceCheckOpen,  setForceCheckOpen]          = useState(false)
   const [conflicts, setConflicts]                     = useState<ConflictEntry[]>([])
   const [pendingCritRequest, setPendingCritRequest]   = useState<CriticalInjuryRequest | null>(null)
+  const [pdfGenerating,     setPdfGenerating]         = useState(false)
+
+  // ── PDF download ──
+  async function handleDownloadPDF() {
+    if (!character) return
+    setPdfGenerating(true)
+    try {
+      const input: CharacterSheetInput = {
+        character,
+        playerName,
+        careerName,
+        speciesName,
+        specNames,
+        skills,
+        refSkills,
+        refSkillMap,
+        talents,
+        refTalentMap,
+        weapons,
+        refWeaponMap,
+        refWeaponQualityMap,
+        armor,
+        refArmorMap,
+        gear,
+        refGearMap,
+        crits,
+        refSpecMap,
+        effectiveStats: effectiveStats ?? null,
+      }
+      await generateCharacterSheetPDF(input)
+    } catch (err) {
+      console.error('[PDF generation failed]', err)
+    } finally {
+      setPdfGenerating(false)
+    }
+  }
 
   // ── Load conflicts ──
   useEffect(() => {
@@ -1309,9 +1346,41 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
             </div>
           </div>
           <div style={{ width: 1, height: 28, background: C.border }} />
-          <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: C.textDim, letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>
-            {playerName}
-          </div>
+          {/* Print Sheet */}
+          <button
+            onClick={handleDownloadPDF}
+            disabled={pdfGenerating}
+            title="Download printable character sheet PDF"
+            style={{
+              fontFamily: "'Share Tech Mono', 'Courier New', monospace",
+              fontSize: 'clamp(0.55rem, 0.8vw, 0.65rem)',
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: pdfGenerating ? C.textFaint : 'rgba(200,170,80,0.6)',
+              background: 'transparent',
+              border: '1px solid rgba(200,170,80,0.25)',
+              borderRadius: 4,
+              padding: '3px 9px',
+              cursor: pdfGenerating ? 'wait' : 'pointer',
+              whiteSpace: 'nowrap',
+              transition: 'color .15s, border-color .15s',
+              flexShrink: 0,
+            }}
+            onMouseEnter={e => {
+              if (!pdfGenerating) {
+                const el = e.currentTarget as HTMLElement
+                el.style.color = C.gold
+                el.style.borderColor = 'rgba(200,170,80,0.5)'
+              }
+            }}
+            onMouseLeave={e => {
+              const el = e.currentTarget as HTMLElement
+              el.style.color = 'rgba(200,170,80,0.6)'
+              el.style.borderColor = 'rgba(200,170,80,0.25)'
+            }}
+          >
+            {pdfGenerating ? 'Generating…' : '⬇ Print Sheet'}
+          </button>
           <button
             onClick={async () => {
               const sessionKey = typeof window !== 'undefined' ? localStorage.getItem('holocron_session_key') : null
@@ -1702,6 +1771,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
                   onTokenMove={mapTokens.moveToken}
                   gridEnabled={visibleMap.grid_enabled}
                   gridSize={visibleMap.grid_size ?? 50}
+                  tokenScale={visibleMap.token_scale ?? 1}
                 />
               </div>
             )}
