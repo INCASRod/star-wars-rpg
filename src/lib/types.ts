@@ -4,6 +4,17 @@
 
 // ── Reference Data Types ──
 
+export interface SpeciesAbility {
+  key: string
+  name: string
+  description: string
+  is_conditional: boolean
+  condition_note?: string
+  mechanical_type?: string
+  setback_remove?: number
+  affected_skills: string[]
+}
+
 export interface RefSpecies {
   key: string
   name: string
@@ -18,6 +29,7 @@ export interface RefSpecies {
   strain_threshold: number
   starting_xp: number
   abilities?: unknown
+  special_abilities?: SpeciesAbility[]
   option_choices?: unknown
   source_book?: string
   source_page?: number
@@ -38,6 +50,24 @@ export interface RefCareer {
   career_skill_keys: string[]
   specialization_keys: string[]
   force_rating: number
+  source?: string
+  is_force_career?: boolean
+}
+
+export interface RefMotivation {
+  key: string
+  name: string
+  description?: string
+  source?: string
+  specific_motivation_keys: string[]
+}
+
+export interface RefSpecificMotivation {
+  key: string
+  name: string
+  description?: string
+  source?: string
+  motivation_key: string | null
 }
 
 export interface RefSpecialization {
@@ -48,6 +78,7 @@ export interface RefSpecialization {
   career_skill_keys: string[]
   talent_tree: TalentTreeData
   is_force_sensitive?: boolean
+  source?: string
 }
 
 export interface TalentTreeData {
@@ -356,6 +387,14 @@ export interface Character {
   is_dark_side_fallen?: boolean
   dark_side_fallen_at?: string
   redeemed_at?: string
+  // Character Creator v2 fields
+  obligation_configured?: boolean
+  extra_xp_from_obligation?: number
+  extra_credits_from_obligation?: number
+  motivation_type?: string
+  motivation_specific?: string
+  motivation_description?: string
+  motivation_configured?: boolean
 }
 
 export interface RefDutyType {

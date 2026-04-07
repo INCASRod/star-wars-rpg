@@ -56,6 +56,8 @@ import { useActiveMap } from '@/hooks/useActiveMap'
 import { useMapTokens } from '@/hooks/useMapTokens'
 import { MapCanvas } from '@/components/map/MapCanvas'
 import { generateCharacterSheetPDF, type CharacterSheetInput } from '@/lib/characterSheetPDF'
+import { SpecSelectorList } from '@/components/shared/SpecSelectorList'
+import { buildTalentTree as _buildTalentTree } from '@/lib/buildTalentTree'
 
 const CHAR_TO_FIELD: Record<string, keyof Character> = {
   BR: 'brawn', AG: 'agility', INT: 'intellect', CUN: 'cunning', WIL: 'willpower', PR: 'presence',
@@ -257,18 +259,7 @@ function BuySpecButton({
   onBuy: (specKey: string) => void
 }) {
   const [open, setOpen] = useState(false)
-  const [search, setSearch] = useState('')
   const ownedKeys = new Set(charSpecs.map(s => s.specialization_key))
-  const available = refSpecs
-    .filter(s => !ownedKeys.has(s.key) && s.talent_tree?.rows?.length)
-    .sort((a, b) => {
-      const ac = a.career_key === character.career_key ? 0 : 1
-      const bc = b.career_key === character.career_key ? 0 : 1
-      return ac !== bc ? ac - bc : a.name.localeCompare(b.name)
-    })
-  const filtered = search
-    ? available.filter(s => s.name.toLowerCase().includes(search.toLowerCase()))
-    : available
 
   if (!open) {
     return (
@@ -360,106 +351,26 @@ function BuySpecButton({
           <span style={{ color: '#4EC87A', fontWeight: 700 }}>{character.xp_available} XP</span>
         </div>
 
-        {/* Search */}
-        <input
-          type="text"
-          placeholder="Search specializations…"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          autoFocus
-          style={{
-            width: '100%', boxSizing: 'border-box',
-            padding: '7px 10px',
-            background: 'rgba(255,255,255,0.04)',
-            border: `1px solid ${C.border}`,
-            borderRadius: 4,
-            fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL,
-            color: C.text,
-            outline: 'none',
-          }}
-        />
-
-        {/* List */}
-        <div style={{ overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {filtered.map(spec => {
-            const isCareer = spec.career_key === character.career_key
-            const cost = isCareer ? charSpecs.length * 10 : (charSpecs.length + 1) * 10
-            const canAfford = character.xp_available >= cost
-            return (
-              <button
-                key={spec.key}
-                onClick={() => { onBuy(spec.key); setOpen(false) }}
-                disabled={!canAfford}
-                style={{
-                  width: '100%', textAlign: 'left',
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '10px 12px',
-                  background: isCareer ? 'rgba(200,170,80,0.06)' : 'rgba(255,255,255,0.02)',
-                  border: `1px solid ${isCareer ? `${C.gold}30` : C.border}`,
-                  borderRadius: 4,
-                  cursor: canAfford ? 'pointer' : 'not-allowed',
-                  opacity: canAfford ? 1 : 0.4,
-                  transition: 'border-color 0.15s, background 0.15s',
-                }}
-                onMouseEnter={e => {
-                  if (!canAfford) return
-                  const el = e.currentTarget as HTMLElement
-                  el.style.background = isCareer ? 'rgba(200,170,80,0.12)' : 'rgba(255,255,255,0.05)'
-                  el.style.borderColor = isCareer ? `${C.gold}55` : `${C.gold}25`
-                }}
-                onMouseLeave={e => {
-                  const el = e.currentTarget as HTMLElement
-                  el.style.background = isCareer ? 'rgba(200,170,80,0.06)' : 'rgba(255,255,255,0.02)'
-                  el.style.borderColor = isCareer ? `${C.gold}30` : C.border
-                }}
-              >
-                <div style={{ minWidth: 0 }}>
-                  <div style={{
-                    fontFamily: FONT_RAJDHANI, fontSize: FS_SM, fontWeight: 700,
-                    color: canAfford ? C.text : C.textDim,
-                    letterSpacing: '0.04em',
-                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                  }}>
-                    {spec.name}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
-                    <span style={{
-                      fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE,
-                      color: isCareer ? C.gold : C.textFaint,
-                      textTransform: 'uppercase', letterSpacing: '0.1em',
-                    }}>
-                      {isCareer ? '★ Career' : spec.career_key}
-                    </span>
-                    {spec.is_force_sensitive && (
-                      <span style={{
-                        fontFamily: "'Share Tech Mono', 'Courier New', monospace",
-                        fontSize: FS_OVERLINE,
-                        color: '#7EC8E3',
-                        textTransform: 'uppercase', letterSpacing: '0.1em',
-                      }}>
-                        ◈ Force
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div style={{
-                  fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, fontWeight: 700,
-                  color: canAfford ? C.gold : '#E05050',
-                  whiteSpace: 'nowrap', marginLeft: 12, flexShrink: 0,
-                }}>
-                  {cost} XP
-                </div>
-              </button>
-            )
-          })}
-          {filtered.length === 0 && (
-            <div style={{
-              textAlign: 'center', padding: '24px 0',
-              fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: C.textFaint,
-            }}>
-              No specializations found.
-            </div>
-          )}
+        {/* Spec search + list (shared component) */}
+        <div style={{ overflowY: 'auto', flex: 1 }}>
+          <SpecSelectorList
+            refSpecs={refSpecs}
+            ownedKeys={ownedKeys}
+            careerKey={character.career_key}
+            getSpecCost={spec =>
+              spec.career_key === character.career_key
+                ? charSpecs.length * 10
+                : (charSpecs.length + 1) * 10
+            }
+            canAfford={spec => {
+              const cost = spec.career_key === character.career_key
+                ? charSpecs.length * 10
+                : (charSpecs.length + 1) * 10
+              return character.xp_available >= cost
+            }}
+            onSelect={spec => { onBuy(spec.key); setOpen(false) }}
+            autoFocus
+          />
         </div>
 
         {/* Cancel */}
@@ -908,6 +819,11 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     refSpeciesAll.find(s => s.key === character?.species_key)?.name || character?.species_key || ''
   , [refSpeciesAll, character])
 
+  const speciesAbilities = useMemo(() => {
+    const sp = refSpeciesAll.find(s => s.key === character?.species_key)
+    return sp?.special_abilities ?? []
+  }, [refSpeciesAll, character])
+
   // ── Skills for HUD ──
   const hudSkills = useMemo((): HudSkill[] => {
     if (!character) return []
@@ -1093,32 +1009,11 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   // ── Talent tree building ──
   function buildTalentTree(specKey: string) {
     const refSpec = refSpecMap[specKey]
-    if (!refSpec?.talent_tree?.rows) return null
-    const purchasedSet = new Set(talents.filter(t => t.specialization_key === specKey).map(t => `${t.tree_row}-${t.tree_col}`))
-    const nodes: TalentTreeNode[] = []
-    const connections: TalentTreeConnection[] = []
-    for (const row of refSpec.talent_tree.rows) {
-      for (let col = 0; col < (row.talents || []).length; col++) {
-        const tKey = row.talents[col]
-        const ref  = refTalentMap[tKey]
-        const isPurchased = purchasedSet.has(`${row.index}-${col}`)
-        const dir  = (row.directions || [])[col] || {}
-        let canPurchase = false
-        if (!isPurchased) {
-          if (row.index === 0) canPurchase = true
-          else {
-            if (dir.up) canPurchase = canPurchase || purchasedSet.has(`${row.index - 1}-${col}`)
-            if (dir.left && col > 0) canPurchase = canPurchase || purchasedSet.has(`${row.index}-${col - 1}`)
-            if (dir.right && col < 3) canPurchase = canPurchase || purchasedSet.has(`${row.index}-${col + 1}`)
-            if (dir.down) canPurchase = canPurchase || purchasedSet.has(`${row.index + 1}-${col}`)
-          }
-        }
-        nodes.push({ talentKey: tKey, name: ref?.name || tKey, description: ref?.description, row: row.index, col, purchased: isPurchased, activation: ref ? ACTIVATION_LABELS[ref.activation] || ref.activation : 'Passive', isRanked: ref?.is_ranked || false, canPurchase })
-        if (dir.right && col < 3) connections.push({ fromRow: row.index, fromCol: col, toRow: row.index, toCol: col + 1 })
-        if (dir.down) connections.push({ fromRow: row.index, fromCol: col, toRow: row.index + 1, toCol: col })
-      }
-    }
-    return { specName: refSpec.name, nodes, connections }
+    if (!refSpec) return null
+    const purchasedSet = new Set(
+      talents.filter(t => t.specialization_key === specKey).map(t => `${t.tree_row}-${t.tree_col}`)
+    )
+    return _buildTalentTree(refSpec, refTalentMap, purchasedSet)
   }
 
   // ── Force power tree building ──
@@ -1253,6 +1148,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         campaignId={effectiveCampaignId}
         characterId={character.id}
         onRoll={handleRoll}
+        speciesAbilities={speciesAbilities}
+        speciesName={speciesName}
       />
 
       {/* Force Check Overlay */}
@@ -1595,6 +1492,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
                   onOpenPopover={(skill, anchor) => setSkillPopover({ skill, anchor })}
                   characterId={characterId}
                   skillModifiers={skillModifiers}
+                  speciesAbilities={speciesAbilities}
                 />
               </div>
             )}
@@ -1726,8 +1624,10 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
                 backstory={character.backstory || ''}
                 notes={character.notes || ''}
                 speciesRef={refSpeciesAll.find(s => s.key === character.species_key)}
-                motivationType={character.obligation_type || character.duty_type}
-                motivationDesc={character.obligation_notes || character.duty_notes}
+                motivationType={character.motivation_type || character.obligation_type || character.duty_type}
+                motivationSpecific={character.motivation_specific}
+                motivationDesc={character.motivation_description || character.obligation_notes || character.duty_notes}
+                motivationConfigured={character.motivation_configured}
                 dutyType={character.duty_type}
                 dutyValue={character.duty_value}
                 dutyLore={character.duty_lore}

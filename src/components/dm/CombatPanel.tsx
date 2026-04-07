@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
 import { fetchAdversaries, adversaryToInstance } from '@/lib/adversaries'
 import type { Adversary, AdversaryInstance } from '@/lib/adversaries'
@@ -334,6 +335,7 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
   const [showAddModal, setShowAddModal]         = useState(false)
   const [openCards, setOpenCards]               = useState<Set<string>>(new Set())
   const [reassignOpenSlotId, setReassignOpenSlotId] = useState<string | null>(null)
+  const [reassignAnchorRect, setReassignAnchorRect] = useState<DOMRect | null>(null)
   const [hoveredSlotId, setHoveredSlotId]       = useState<string | null>(null)
   const [removePCConfirm, setRemovePCConfirm]   = useState<{ slotId: string; charName: string; characterId: string } | null>(null)
 
@@ -1524,9 +1526,17 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                         </span>
                       )}
                       {/* Reassign button */}
-                      <div style={{ marginLeft: 'auto', position: 'relative' }}>
+                      <div style={{ marginLeft: 'auto', position: 'relative', flexShrink: 0 }}>
                         <button
-                          onClick={() => setReassignOpenSlotId(prev => prev === slot.id ? null : slot.id)}
+                          onClick={e => {
+                            if (reassignOpenSlotId === slot.id) {
+                              setReassignOpenSlotId(null)
+                              setReassignAnchorRect(null)
+                            } else {
+                              setReassignOpenSlotId(slot.id)
+                              setReassignAnchorRect(e.currentTarget.getBoundingClientRect())
+                            }
+                          }}
                           style={{
                             fontFamily: FC, fontSize: 'clamp(0.65rem, 1vw, 0.75rem)',
                             color: 'rgba(200,170,80,0.5)', border: '1px solid rgba(200,170,80,0.2)',
@@ -1542,92 +1552,6 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                             el.style.color = 'rgba(200,170,80,0.5)'; el.style.borderColor = 'rgba(200,170,80,0.2)'
                           }}
                         >⇄ Reassign</button>
-
-                        {/* Inline reassign dropdown */}
-                        {reassignOpenSlotId === slot.id && (
-                          <>
-                          {/* Click-outside backdrop */}
-                          <div
-                            style={{ position: 'fixed', inset: 0, zIndex: 199 }}
-                            onClick={() => setReassignOpenSlotId(null)}
-                          />
-                          <div style={{
-                            position: 'absolute', top: 'calc(100% + 4px)', right: 0, zIndex: 200,
-                            background: 'rgba(6,13,9,0.97)',
-                            border: '1px solid rgba(200,170,80,0.25)',
-                            borderRadius: 8, backdropFilter: 'blur(12px)',
-                            WebkitBackdropFilter: 'blur(12px)',
-                            minWidth: 200, padding: '6px 0',
-                            boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
-                          }}>
-                            <div style={{
-                              padding: '2px 12px 6px',
-                              fontFamily: FM, fontSize: FS_OVERLINE,
-                              color: 'rgba(232,223,200,0.35)',
-                              borderBottom: '1px solid rgba(200,170,80,0.1)',
-                              marginBottom: 4,
-                            }}>
-                              Assign this slot to:
-                            </div>
-                            {characters.map(c => {
-                              const isCurrentlyActive = c.id === activeCharId
-                              const isDefault = c.id === defaultCharId
-                              const hasActed = combatParticipants[c.id]?.has_acted_this_round ?? false
-                              return (
-                                <button
-                                  key={c.id}
-                                  disabled={hasActed}
-                                  onClick={() => {
-                                    if (!slot.characterId) return
-                                    void handleReassign(slot.characterId, c.id, c.name)
-                                    setReassignOpenSlotId(null)
-                                  }}
-                                  style={{
-                                    width: '100%', padding: '6px 12px',
-                                    background: isCurrentlyActive ? `${CHAR_AG}10` : 'transparent',
-                                    border: 'none', cursor: hasActed ? 'default' : 'pointer',
-                                    display: 'flex', alignItems: 'center', gap: 8,
-                                    opacity: hasActed ? 0.38 : 1,
-                                    transition: '.1s',
-                                  }}
-                                  onMouseEnter={e => { if (!hasActed) (e.currentTarget as HTMLElement).style.background = `${CHAR_AG}18` }}
-                                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = isCurrentlyActive ? `${CHAR_AG}10` : 'transparent' }}
-                                >
-                                  <span style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: CHAR_AG, width: 12, flexShrink: 0 }}>
-                                    {isCurrentlyActive ? '●' : '○'}
-                                  </span>
-                                  <span style={{
-                                    fontFamily: FC, fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)',
-                                    color: hasActed ? TEXT_MUTED : TEXT, flex: 1, textAlign: 'left',
-                                  }}>
-                                    {c.name}
-                                  </span>
-                                  {isDefault && (
-                                    <span style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED, fontStyle: 'italic', flexShrink: 0 }}>
-                                      (default)
-                                    </span>
-                                  )}
-                                  {hasActed && (
-                                    <span style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED, fontStyle: 'italic', flexShrink: 0 }}>
-                                      (acted)
-                                    </span>
-                                  )}
-                                </button>
-                              )
-                            })}
-                            <div style={{ padding: '6px 12px 2px', borderTop: '1px solid rgba(200,170,80,0.1)', marginTop: 4 }}>
-                              <button
-                                onClick={() => setReassignOpenSlotId(null)}
-                                style={{
-                                  background: 'transparent', border: '1px solid rgba(200,170,80,0.2)',
-                                  borderRadius: 4, padding: '3px 10px', cursor: 'pointer',
-                                  fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED,
-                                }}
-                              >Cancel</button>
-                            </div>
-                          </div>
-                          </>
-                        )}
                       </div>
                     </div>
                   )}
@@ -2199,6 +2123,111 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
             gmTargets={gmTargets}
             gmAlignment={alignment}
           />
+        )
+      })()}
+
+      {/* Reassign dropdown — rendered via Portal to escape overflow:auto scroll containers */}
+      {reassignOpenSlotId && reassignAnchorRect && typeof document !== 'undefined' && (() => {
+        const slot = encounter?.initiative_slots.find(s => s.id === reassignOpenSlotId)
+        if (!slot || slot.type === 'npc') return null
+        const participant = slot.characterId ? combatParticipants[slot.characterId] : null
+        const activeCharId = participant?.active_character_id ?? slot.characterId
+        const defaultCharId = participant?.default_character_id ?? slot.characterId
+
+        // Position just below the button
+        const top = reassignAnchorRect.bottom + 4
+        const right = window.innerWidth - reassignAnchorRect.right
+
+        return createPortal(
+          <>
+            {/* Click-outside backdrop */}
+            <div
+              style={{ position: 'fixed', inset: 0, zIndex: 1999 }}
+              onClick={() => { setReassignOpenSlotId(null); setReassignAnchorRect(null) }}
+            />
+            <div style={{
+              position: 'fixed',
+              top,
+              right,
+              zIndex: 2000,
+              background: 'rgba(6,13,9,0.98)',
+              border: '1px solid rgba(200,170,80,0.25)',
+              borderRadius: 8,
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              minWidth: 200,
+              padding: '6px 0',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.7)',
+            }}>
+              <div style={{
+                padding: '2px 12px 6px',
+                fontFamily: FM, fontSize: FS_OVERLINE,
+                color: 'rgba(232,223,200,0.35)',
+                borderBottom: '1px solid rgba(200,170,80,0.1)',
+                marginBottom: 4,
+              }}>
+                Assign this slot to:
+              </div>
+              {characters.map(c => {
+                const isCurrentlyActive = c.id === activeCharId
+                const isDefault = c.id === defaultCharId
+                const hasActed = combatParticipants[c.id]?.has_acted_this_round ?? false
+                return (
+                  <button
+                    key={c.id}
+                    disabled={hasActed}
+                    onClick={() => {
+                      if (!slot.characterId) return
+                      void handleReassign(slot.characterId, c.id, c.name)
+                      setReassignOpenSlotId(null)
+                      setReassignAnchorRect(null)
+                    }}
+                    style={{
+                      width: '100%', padding: '6px 12px',
+                      background: isCurrentlyActive ? `${CHAR_AG}10` : 'transparent',
+                      border: 'none', cursor: hasActed ? 'default' : 'pointer',
+                      display: 'flex', alignItems: 'center', gap: 8,
+                      opacity: hasActed ? 0.38 : 1,
+                      transition: '.1s',
+                    }}
+                    onMouseEnter={e => { if (!hasActed) (e.currentTarget as HTMLElement).style.background = `${CHAR_AG}18` }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = isCurrentlyActive ? `${CHAR_AG}10` : 'transparent' }}
+                  >
+                    <span style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: CHAR_AG, width: 12, flexShrink: 0 }}>
+                      {isCurrentlyActive ? '●' : '○'}
+                    </span>
+                    <span style={{
+                      fontFamily: FC, fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)',
+                      color: hasActed ? TEXT_MUTED : TEXT, flex: 1, textAlign: 'left',
+                    }}>
+                      {c.name}
+                    </span>
+                    {isDefault && (
+                      <span style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED, fontStyle: 'italic', flexShrink: 0 }}>
+                        (default)
+                      </span>
+                    )}
+                    {hasActed && (
+                      <span style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED, fontStyle: 'italic', flexShrink: 0 }}>
+                        (acted)
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
+              <div style={{ padding: '6px 12px 2px', borderTop: '1px solid rgba(200,170,80,0.1)', marginTop: 4 }}>
+                <button
+                  onClick={() => { setReassignOpenSlotId(null); setReassignAnchorRect(null) }}
+                  style={{
+                    background: 'transparent', border: '1px solid rgba(200,170,80,0.2)',
+                    borderRadius: 4, padding: '3px 10px', cursor: 'pointer',
+                    fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED,
+                  }}
+                >Cancel</button>
+              </div>
+            </div>
+          </>,
+          document.body
         )
       })()}
 

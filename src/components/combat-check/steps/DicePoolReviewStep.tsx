@@ -2,7 +2,7 @@
 
 import { DiceFace } from '@/components/dice/DiceFace'
 import { getSkillPool } from '@/components/player-hud/dice-engine'
-import type { Character, CharacterWeapon, CharacterSkill, RefWeapon, RefSkill } from '@/lib/types'
+import type { Character, CharacterWeapon, CharacterSkill, RefWeapon, RefSkill, SpeciesAbility } from '@/lib/types'
 import type { AdversaryInstance } from '@/lib/adversaries'
 import type { SkillDiceModifier } from '@/lib/derivedStats'
 import type { RangeBand } from '@/lib/combatCheckUtils'
@@ -58,6 +58,8 @@ interface DicePoolReviewStepProps {
   dualWield?:      DualWieldState | null
   refWeaponMap?:   Record<string, RefWeapon>
   refSkillMap?:    Record<string, RefSkill>
+  speciesAbilities?: SpeciesAbility[]
+  speciesName?:    string
 }
 
 function SectionLabel({ text }: { text: string }) {
@@ -150,7 +152,7 @@ function AdjustControl({
 export function DicePoolReviewStep({
   attackType, character, weapon, refWeapon, refSkill, charSkills,
   targets, rangeBand, skillModifiers, adjustments, onAdjustChange, onRoll,
-  dualWield, refWeaponMap, refSkillMap,
+  dualWield, refWeaponMap, refSkillMap, speciesAbilities = [], speciesName,
 }: DicePoolReviewStepProps) {
   const [breakdownOpen, setBreakdownOpen] = useState(false)
 
@@ -478,6 +480,30 @@ export function DicePoolReviewStep({
           )}
         </div>
       )}
+
+      {/* Species conditional ability note for this skill */}
+      {speciesAbilities
+        .filter(a => a.is_conditional && Array.isArray(a.affected_skills) && a.affected_skills.includes(activeSk))
+        .map((a, i) => (
+          <div key={i} style={{
+            fontFamily: FONT_R,
+            fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)',
+            color: 'rgba(255,152,0,0.7)',
+            fontStyle: 'italic',
+            lineHeight: 1.5,
+            marginBottom: 8,
+            padding: '6px 10px',
+            background: 'rgba(255,152,0,0.04)',
+            border: '1px solid rgba(255,152,0,0.18)',
+            borderRadius: 6,
+          }}>
+            ⚠ {speciesName ? `${speciesName} — ` : ''}{a.name}: {a.description}
+            <div style={{ marginTop: 4, fontStyle: 'normal', fontSize: 'clamp(0.65rem, 1vw, 0.75rem)', color: 'rgba(255,152,0,0.5)' }}>
+              Use manual adjustments above if this applies.
+            </div>
+          </div>
+        ))
+      }
 
       {/* Manual adjustments */}
       <SectionLabel text="Manual Adjustments (GM Discretion)" />

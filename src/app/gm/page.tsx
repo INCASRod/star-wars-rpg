@@ -609,8 +609,8 @@ function GmDashboard() {
 
       const [campRes, charRes, playerRes, sessRes, dutyTypesRes, oblTypesRes, moralityRes] = await Promise.all([
         supabase.from('campaigns').select('*').eq('id', campaignId).single(),
-        supabase.from('characters').select('*').eq('campaign_id', campaignId),
-        supabase.from('players').select('id, display_name').eq('campaign_id', campaignId),
+        supabase.from('characters').select('*').eq('campaign_id', campaignId).eq('is_archived', false),
+        supabase.from('players').select('id, display_name').eq('campaign_id', campaignId).eq('is_gm', false),
         supabase.from('character_sessions').select('character_id, session_key').eq('campaign_id', campaignId).eq('is_active', true),
         supabase.from('ref_duty_types').select('key, name, description').order('name'),
         supabase.from('ref_obligation_types').select('key, name, description').order('name'),
@@ -1365,7 +1365,7 @@ function GmDashboard() {
         <div style={{ flex: 1 }} />
         {/* Online count */}
         <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.1em' }}>
-          {Object.keys(players).length} PLAYERS
+          {characters.length} PLAYERS
         </span>
         {/* Back button */}
         <button

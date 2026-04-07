@@ -1,39 +1,167 @@
 'use client'
 
-import { Suspense, useEffect, useState, useMemo, useRef } from 'react'
+import { Suspense, useEffect, useState, useMemo, useRef, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { HudCard } from '@/components/ui/HudCard'
-import type { RefSpecies, RefCareer, RefSpecialization, RefSkill, RefTalent } from '@/lib/types'
+import { stripBBCode } from '@/lib/utils'
+import { SpecSelectorList } from '@/components/shared/SpecSelectorList'
+import { TalentTree } from '@/components/character/TalentTree'
+import { buildTalentTree } from '@/lib/buildTalentTree'
+import type {
+  RefSpecies, RefCareer, RefSpecialization, RefSkill, RefTalent,
+  RefMotivation, RefSpecificMotivation,
+} from '@/lib/types'
 
-const STEPS = ['Species', 'Career', 'Specialization', 'Skills & Talents', 'Details', 'Confirm']
+// ── Step definitions ─────────────────────────────────────────────────────────
+const STEPS = [
+  'Background', 'Obligation', 'Duty', 'Species',
+  'Career', 'Specialisation', 'XP Investment', 'Motivation', 'Review',
+]
 const ROW_COSTS = [5, 10, 15, 20, 25]
+const CHAR_KEYS = ['brawn', 'agility', 'intellect', 'cunning', 'willpower', 'presence'] as const
+const CHAR_SHORT: Record<typeof CHAR_KEYS[number], string> = {
+  brawn: 'Br', agility: 'Ag', intellect: 'Int', cunning: 'Cun', willpower: 'Wil', presence: 'Pr',
+}
+
+// Obligation starting value by player count
+function startingObligationByCount(count: number): number {
+  if (count <= 2) return 20
+  if (count === 3) return 15
+  return 10
+}
+
+// Source → filter tab label
+const SOURCE_TAB_MAP: Record<string, string> = {
+  'Age of Rebellion Core Rulebook': 'AoR',
+  'Edge of the Empire Core Rulebook': 'EotE',
+  'Force and Destiny Core Rulebook': 'F&D',
+}
+function sourceToTab(source: string | null | undefined): string {
+  if (!source) return 'Other'
+  for (const [k, v] of Object.entries(SOURCE_TAB_MAP)) {
+    if (source.includes(k.split(' ')[0]) && source.includes(k.split(' ')[source.split(' ').length - 1])) {
+      // rough match
+    }
+  }
+  if (source.includes('Age of Rebellion')) return 'AoR'
+  if (source.includes('Edge of the Empire')) return 'EotE'
+  if (source.includes('Force and Destiny')) return 'F&D'
+  return 'Other'
+}
+
+// BBCode stripping for display
+function parseBB(html: string): string {
+  return html
+    .replace(/\[H4\]([\s\S]*?)\[h4\]/g, '<strong style="display:block;margin-top:0.5rem;font-weight:700;color:var(--ink)">$1</strong>')
+    .replace(/\[B\]([\s\S]*?)\[b\]/g, '<strong>$1</strong>')
+    .replace(/\[P\]/g, '<br/><br/>')
+    .replace(/\[I\]([\s\S]*?)\[i\]/g, '<em>$1</em>')
+    .replace(/\[BR\]/gi, '<br/>')
+}
+
+// ── Draft types ───────────────────────────────────────────────────────────────
+interface TalentPick { key: string; specKey: string; row: number; col: number; cost: number }
 
 interface CharacterDraft {
+  // Step 0: Background
   name: string
   playerName: string
-  species: RefSpecies | null
-  career: RefCareer | null
-  specialization: RefSpecialization | null
   gender: string
-  // Characteristics after species bonus
+  backstory: string
+  // Step 1: Obligation
+  obligationType: string
+  obligationDesc: string
+  oblXp5: boolean
+  oblXp10: boolean
+  oblCred1k: boolean
+  oblCred2k5: boolean
+  // Step 2: Duty
+  dutyType: string
+  dutyDesc: string
+  // Step 3: Species
+  species: RefSpecies | null
+  speciesOptionKey: string
+  // Step 4: Career
+  career: RefCareer | null
+  freeCareerPicks: string[]   // 4 picks from career skills
+  // Step 5: Specialisation
+  specialization: RefSpecialization | null
+  freeSpecPicks: string[]     // 2 picks from spec bonus skills
+  additionalSpecs: RefSpecialization[]
+  // Step 6: XP Investment (characteristics from species base, modified here)
   brawn: number
   agility: number
   intellect: number
   cunning: number
   willpower: number
   presence: number
-  // Free skill ranks
-  freeCareerPicks: string[]
-  freeSpecPicks: string[]
-  // XP-purchased extra skill ranks (beyond free)
-  skillRanks: Record<string, number>
-  // XP-purchased talents
-  talentPicks: { key: string; specKey: string; row: number; col: number; cost: number }[]
+  skillRanks: Record<string, number>  // XP-purchased ranks (beyond free)
+  talentPicks: TalentPick[]
+  // Step 7: Motivation
+  motivationType: string
+  motivationSpecific: string
+  motivationDesc: string
 }
 
-const CHAR_KEYS = ['brawn', 'agility', 'intellect', 'cunning', 'willpower', 'presence'] as const
+const DEFAULT_DRAFT: CharacterDraft = {
+  name: '', playerName: '', gender: '', backstory: '',
+  obligationType: '', obligationDesc: '', oblXp5: false, oblXp10: false, oblCred1k: false, oblCred2k5: false,
+  dutyType: '', dutyDesc: '',
+  species: null, speciesOptionKey: '',
+  career: null, freeCareerPicks: [],
+  specialization: null, freeSpecPicks: [], additionalSpecs: [],
+  brawn: 2, agility: 2, intellect: 2, cunning: 2, willpower: 2, presence: 2,
+  skillRanks: {}, talentPicks: [],
+  motivationType: '', motivationSpecific: '', motivationDesc: '',
+}
 
+// ── Shared style helpers ──────────────────────────────────────────────────────
+const S = {
+  labelXs: {
+    fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)',
+    fontWeight: 700, letterSpacing: '0.12rem', color: 'var(--txt3)',
+    display: 'block', marginBottom: '0.3rem',
+  } as React.CSSProperties,
+  input: {
+    width: '100%', padding: 'var(--sp-sm) var(--sp-md)',
+    border: '1px solid var(--bdr-l)', background: 'var(--white)',
+    fontFamily: 'var(--font-mono)', fontSize: 'var(--font-base)',
+    letterSpacing: '0.05rem', outline: 'none',
+  } as React.CSSProperties,
+  select: {
+    width: '100%', padding: 'var(--sp-sm) var(--sp-md)',
+    border: '1px solid var(--bdr-l)', background: 'var(--white)',
+    fontFamily: 'var(--font-mono)', fontSize: 'var(--font-base)',
+    cursor: 'pointer',
+  } as React.CSSProperties,
+  goldBtn: {
+    background: 'var(--gold)', border: 'none',
+    padding: 'var(--sp-sm) var(--sp-lg)',
+    fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)',
+    fontWeight: 700, color: 'var(--white)', cursor: 'pointer',
+    letterSpacing: '0.15rem', transition: '.2s', width: '100%',
+  } as React.CSSProperties,
+  ghostBtn: {
+    background: 'rgba(255,255,255,.5)', border: '1px solid var(--bdr-l)',
+    padding: 'var(--sp-sm) var(--sp-lg)',
+    fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)',
+    fontWeight: 600, color: 'var(--txt2)', cursor: 'pointer',
+    letterSpacing: '0.1rem',
+  } as React.CSSProperties,
+  skillPill: (isCareer: boolean) => ({
+    fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', fontWeight: 600,
+    letterSpacing: '0.04rem',
+    color: isCareer ? '#d64d8a' : 'var(--txt2)',
+    background: isCareer ? 'rgba(214,77,138,.08)' : 'rgba(0,0,0,.04)',
+    border: `1px solid ${isCareer ? 'rgba(214,77,138,.3)' : 'var(--bdr-l)'}`,
+    padding: '0.06rem 0.4rem', whiteSpace: 'nowrap' as const,
+  }),
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  ROOT — Suspense wrapper
+// ══════════════════════════════════════════════════════════════════════════════
 export default function CreateCharacterPage() {
   return (
     <Suspense fallback={
@@ -46,6 +174,9 @@ export default function CreateCharacterPage() {
   )
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+//  WIZARD — main state + orchestration
+// ══════════════════════════════════════════════════════════════════════════════
 function CreateWizard() {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -55,7 +186,8 @@ function CreateWizard() {
   const [step, setStep] = useState(0)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [search, setSearch] = useState('')
+  const [playerCount, setPlayerCount] = useState(4)
+  const [draft, setDraft] = useState<CharacterDraft>(DEFAULT_DRAFT)
 
   // Ref data
   const [species, setSpecies] = useState<RefSpecies[]>([])
@@ -63,110 +195,140 @@ function CreateWizard() {
   const [specializations, setSpecializations] = useState<RefSpecialization[]>([])
   const [refSkills, setRefSkills] = useState<RefSkill[]>([])
   const [refTalents, setRefTalents] = useState<RefTalent[]>([])
-
-  // Draft
-  const [draft, setDraft] = useState<CharacterDraft>({
-    name: '', playerName: '', species: null, career: null, specialization: null, gender: '',
-    brawn: 2, agility: 2, intellect: 2, cunning: 2, willpower: 2, presence: 2,
-    freeCareerPicks: [], freeSpecPicks: [], skillRanks: {}, talentPicks: [],
-  })
+  const [obligationTypes, setObligationTypes] = useState<{ key: string; name: string; description?: string }[]>([])
+  const [dutyTypes, setDutyTypes] = useState<{ key: string; name: string; description?: string }[]>([])
+  const [motivations, setMotivations] = useState<RefMotivation[]>([])
+  const [specificMotivations, setSpecificMotivations] = useState<RefSpecificMotivation[]>([])
 
   useEffect(() => {
+    if (!campaignId) return
     async function load() {
-      const [spRes, carRes, specRes, skRes, talRes] = await Promise.all([
+      const [spRes, carRes, specRes, skRes, talRes, oblRes, dutRes, motRes, smRes, pcRes] = await Promise.all([
         supabase.from('ref_species').select('*').order('name'),
         supabase.from('ref_careers').select('*').order('name'),
         supabase.from('ref_specializations').select('*').order('name'),
         supabase.from('ref_skills').select('*').order('name'),
         supabase.from('ref_talents').select('*').order('name'),
+        supabase.from('ref_obligation_types').select('key,name,description').order('name'),
+        supabase.from('ref_duty_types').select('key,name,description').order('name'),
+        supabase.from('ref_motivations').select('*').order('name'),
+        supabase.from('ref_specific_motivations').select('*').order('name'),
+        supabase.from('characters').select('id', { count: 'exact' }).eq('campaign_id', campaignId).eq('is_archived', false),
       ])
       setSpecies((spRes.data as RefSpecies[]) || [])
       setCareers((carRes.data as RefCareer[]) || [])
       setSpecializations((specRes.data as RefSpecialization[]) || [])
       setRefSkills((skRes.data as RefSkill[]) || [])
       setRefTalents((talRes.data as RefTalent[]) || [])
+      setObligationTypes(oblRes.data || [])
+      setDutyTypes(dutRes.data || [])
+      setMotivations((motRes.data as RefMotivation[]) || [])
+      setSpecificMotivations((smRes.data as RefSpecificMotivation[]) || [])
+      const pc = pcRes.count || 4
+      setPlayerCount(pc)
       setLoading(false)
     }
     load()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [campaignId])
 
-  // Skill + talent maps
+  // ── Computed maps ─────────────────────────────────────────────────────────
   const skillMap = useMemo(() => Object.fromEntries(refSkills.map(s => [s.key, s])), [refSkills])
   const talentMap = useMemo(() => Object.fromEntries(refTalents.map(t => [t.key, t])), [refTalents])
+  const specMap = useMemo(() => Object.fromEntries(specializations.map(s => [s.key, s])), [specializations])
 
-  // XP tracking — characteristics
-  const startingXp = draft.species?.starting_xp || 0
+  // ── All specs (first + additional) ───────────────────────────────────────
+  const allSpecs = useMemo(() => {
+    const list: RefSpecialization[] = []
+    if (draft.specialization) list.push(draft.specialization)
+    list.push(...draft.additionalSpecs)
+    return list
+  }, [draft.specialization, draft.additionalSpecs])
+
+  // ── Career skill keys (career + all specs) ────────────────────────────────
+  const careerSkillKeys = useMemo(() => {
+    const keys = new Set<string>()
+    draft.career?.career_skill_keys?.forEach(k => keys.add(k))
+    allSpecs.forEach(s => s.career_skill_keys?.forEach(k => keys.add(k)))
+    return keys
+  }, [draft.career, allSpecs])
+
+  // ── XP calculations ───────────────────────────────────────────────────────
+  const baseXp = draft.species?.starting_xp || 0
+  const oblXpBonus = (draft.oblXp5 ? 5 : 0) + (draft.oblXp10 ? 10 : 0)
+  const xpTotal = baseXp + oblXpBonus
+
   const xpSpentOnChars = CHAR_KEYS.reduce((sum, key) => {
-    const base = draft.species ? draft.species[key] : 2
-    const current = draft[key]
+    const base = draft.species?.[key] ?? 2
     let cost = 0
-    for (let i = base + 1; i <= current; i++) cost += i * 10
+    for (let i = base + 1; i <= draft[key]; i++) cost += i * 10
     return sum + cost
   }, 0)
 
-  // XP tracking — skills
   const xpSpentOnSkills = useMemo(() => {
     let total = 0
-    const careerKeys = new Set<string>()
-    if (draft.career) draft.career.career_skill_keys?.forEach(k => careerKeys.add(k))
-    if (draft.specialization) draft.specialization.career_skill_keys?.forEach(k => careerKeys.add(k))
-
-    for (const [skillKey, purchasedRanks] of Object.entries(draft.skillRanks)) {
-      if (purchasedRanks <= 0) continue
+    for (const [skillKey, purchased] of Object.entries(draft.skillRanks)) {
+      if (!purchased || purchased <= 0) continue
       const freeRanks = (draft.freeCareerPicks.includes(skillKey) ? 1 : 0) +
-                         (draft.freeSpecPicks.includes(skillKey) ? 1 : 0)
-      const isCareer = careerKeys.has(skillKey)
-      for (let r = freeRanks + 1; r <= freeRanks + purchasedRanks; r++) {
+                        (draft.freeSpecPicks.includes(skillKey) ? 1 : 0)
+      const isCareer = careerSkillKeys.has(skillKey)
+      for (let r = freeRanks + 1; r <= freeRanks + purchased; r++) {
         total += isCareer ? r * 5 : (r * 5) + 5
       }
     }
     return total
-  }, [draft.skillRanks, draft.freeCareerPicks, draft.freeSpecPicks, draft.career, draft.specialization])
+  }, [draft.skillRanks, draft.freeCareerPicks, draft.freeSpecPicks, careerSkillKeys])
 
-  // XP tracking — talents
   const xpSpentOnTalents = useMemo(() =>
-    draft.talentPicks.reduce((sum, t) => sum + t.cost, 0),
-    [draft.talentPicks]
-  )
+    draft.talentPicks.reduce((s, t) => s + t.cost, 0), [draft.talentPicks])
 
-  const xpSpent = xpSpentOnChars + xpSpentOnSkills + xpSpentOnTalents
-  const xpRemaining = startingXp - xpSpent
-
-  // Career skills (union of career + specialization skills)
-  const careerSkillKeys = useMemo(() => {
-    const keys = new Set<string>()
-    if (draft.career) draft.career.career_skill_keys?.forEach(k => keys.add(k))
-    if (draft.specialization) draft.specialization.career_skill_keys?.forEach(k => keys.add(k))
-    return keys
-  }, [draft.career, draft.specialization])
-
-  const handleSelectSpecies = (sp: RefSpecies) => {
-    setDraft(prev => ({
-      ...prev,
-      species: sp,
-      brawn: sp.brawn, agility: sp.agility, intellect: sp.intellect,
-      cunning: sp.cunning, willpower: sp.willpower, presence: sp.presence,
-    }))
-    setSearch('')
-  }
-
-  const handleCharChange = (key: typeof CHAR_KEYS[number], delta: number) => {
-    const base = draft.species ? draft.species[key] : 2
-    setDraft(prev => {
-      const newVal = prev[key] + delta
-      if (newVal < base || newVal > 6) return prev
-      return { ...prev, [key]: newVal }
+  const xpSpentOnAdditionalSpecs = useMemo(() => {
+    let total = 0
+    draft.additionalSpecs.forEach((spec, idx) => {
+      const totalSpecsAfter = idx + 2 // first spec (free) + this one
+      const isCareerSpec = spec.career_key === draft.career?.key
+      total += isCareerSpec ? 10 * totalSpecsAfter : 10 * totalSpecsAfter + 10
     })
-  }
+    return total
+  }, [draft.additionalSpecs, draft.career])
 
-  const handleCreate = async () => {
+  const xpSpent = xpSpentOnChars + xpSpentOnSkills + xpSpentOnTalents + xpSpentOnAdditionalSpecs
+  const xpRemaining = xpTotal - xpSpent
+
+  // ── Starting obligation magnitude ─────────────────────────────────────────
+  const startingObligation = startingObligationByCount(playerCount)
+  const oblBonus = (draft.oblXp5 ? 5 : 0) + (draft.oblXp10 ? 10 : 0) +
+                   (draft.oblCred1k ? 5 : 0) + (draft.oblCred2k5 ? 10 : 0)
+  const totalObligation = startingObligation + oblBonus
+  const extraCredits = (draft.oblCred1k ? 1000 : 0) + (draft.oblCred2k5 ? 2500 : 0)
+
+  // ── Species option choice skill (if any) ──────────────────────────────────
+  const speciesOptionSkills = useMemo(() => {
+    if (!draft.species?.option_choices || !draft.speciesOptionKey) return []
+    const choices = draft.species.option_choices as {
+      options?: { key: string; skill_modifiers?: { key: string }[] }[]
+    }[]
+    if (!Array.isArray(choices)) return []
+    for (const choice of choices) {
+      const opt = choice.options?.find(o => o.key === draft.speciesOptionKey)
+      if (opt?.skill_modifiers) return opt.skill_modifiers.map(m => m.key)
+    }
+    return []
+  }, [draft.species, draft.speciesOptionKey])
+
+  // ── Species built-in skill modifiers ─────────────────────────────────────
+  const speciesSkillMods = useMemo(() => {
+    // Species skill mods derived from option choices (handled separately)
+    // Special abilities currently don't grant automatic skill ranks beyond option choices
+    return [] as { key: string; rank: number }[]
+  }, [])
+
+  // ── Character creation handler ────────────────────────────────────────────
+  const handleCreate = useCallback(async () => {
     if (!campaignId || !draft.species || !draft.career || !draft.specialization || !draft.name) return
     setSaving(true)
-
     try {
-      // Create or find player
-      let playerId: string
+      // Create/find player
       const { data: existingPlayer } = await supabase
         .from('players')
         .select('id')
@@ -174,29 +336,29 @@ function CreateWizard() {
         .eq('display_name', draft.playerName || 'Player')
         .single()
 
+      let playerId: string
       if (existingPlayer) {
         playerId = existingPlayer.id
       } else {
         const { data: newPlayer, error: plErr } = await supabase
           .from('players')
           .insert({ campaign_id: campaignId, display_name: draft.playerName || 'Player', is_gm: false })
-          .select('id')
-          .single()
+          .select('id').single()
         if (plErr) throw plErr
         playerId = newPlayer.id
       }
 
-      // Compute final skill ranks (free + purchased)
+      // Final skill ranks: free career + free spec + species option + XP-purchased
       const finalSkillRanks: Record<string, number> = {}
-      for (const sk of draft.freeCareerPicks) {
-        finalSkillRanks[sk] = (finalSkillRanks[sk] || 0) + 1
-      }
-      for (const sk of draft.freeSpecPicks) {
-        finalSkillRanks[sk] = (finalSkillRanks[sk] || 0) + 1
-      }
+      for (const sk of draft.freeCareerPicks) finalSkillRanks[sk] = (finalSkillRanks[sk] || 0) + 1
+      for (const sk of draft.freeSpecPicks) finalSkillRanks[sk] = (finalSkillRanks[sk] || 0) + 1
+      for (const sk of speciesOptionSkills) finalSkillRanks[sk] = (finalSkillRanks[sk] || 0) + 1
+      for (const mod of speciesSkillMods) finalSkillRanks[mod.key] = (finalSkillRanks[mod.key] || 0) + mod.rank
       for (const [sk, ranks] of Object.entries(draft.skillRanks)) {
         if (ranks > 0) finalSkillRanks[sk] = (finalSkillRanks[sk] || 0) + ranks
       }
+
+      const startingCredits = 500 + extraCredits
 
       // Create character
       const { data: char, error: charErr } = await supabase
@@ -208,73 +370,84 @@ function CreateWizard() {
           species_key: draft.species.key,
           career_key: draft.career.key,
           gender: draft.gender || null,
-          brawn: draft.brawn,
-          agility: draft.agility,
-          intellect: draft.intellect,
-          cunning: draft.cunning,
-          willpower: draft.willpower,
-          presence: draft.presence,
+          brawn: draft.brawn, agility: draft.agility, intellect: draft.intellect,
+          cunning: draft.cunning, willpower: draft.willpower, presence: draft.presence,
           wound_threshold: draft.species.wound_threshold + draft.brawn,
           wound_current: 0,
           strain_threshold: draft.species.strain_threshold + draft.willpower,
           strain_current: 0,
           soak: draft.brawn,
-          defense_ranged: 0,
-          defense_melee: 0,
-          xp_total: startingXp,
+          defense_ranged: 0, defense_melee: 0,
+          xp_total: xpTotal,
           xp_available: xpRemaining,
-          credits: 500,
+          credits: startingCredits,
           encumbrance_threshold: 5 + draft.brawn,
           morality_value: 50,
-          backstory: '',
+          backstory: draft.backstory || '',
           notes: '',
+          // Obligation
+          obligation_type: draft.obligationType || null,
+          obligation_value: totalObligation,
+          obligation_notes: draft.obligationDesc || null,
+          obligation_configured: true,
+          extra_xp_from_obligation: oblXpBonus,
+          extra_credits_from_obligation: extraCredits,
+          // Duty
+          duty_type: draft.dutyType || null,
+          duty_value: 10,
+          duty_notes: draft.dutyDesc || null,
+          duty_obligation_configured: !!(draft.obligationType || draft.dutyType),
+          // Motivation
+          motivation_type: draft.motivationType || null,
+          motivation_specific: draft.motivationSpecific || null,
+          motivation_description: draft.motivationDesc || null,
+          motivation_configured: !!draft.motivationType,
         })
-        .select('id')
-        .single()
-
+        .select('id').single()
       if (charErr) throw charErr
 
-      // Create specialization entry
-      await supabase.from('character_specializations').insert({
+      // All specs
+      const specInserts = allSpecs.map((spec, idx) => ({
         character_id: char.id,
-        specialization_key: draft.specialization.key,
-        is_starting: true,
-        purchase_order: 0,
-      })
+        specialization_key: spec.key,
+        is_starting: idx === 0,
+        purchase_order: idx,
+      }))
+      await supabase.from('character_specializations').insert(specInserts)
 
-      // Create skill entries with actual ranks
+      // Skills
+      const allCareerSkillKeys = new Set<string>()
+      draft.career?.career_skill_keys?.forEach(k => allCareerSkillKeys.add(k))
+      allSpecs.forEach(s => s.career_skill_keys?.forEach(k => allCareerSkillKeys.add(k)))
       const skillInserts = refSkills.map(sk => ({
         character_id: char.id,
         skill_key: sk.key,
         rank: finalSkillRanks[sk.key] || 0,
-        is_career: careerSkillKeys.has(sk.key),
+        is_career: allCareerSkillKeys.has(sk.key),
       }))
       await supabase.from('character_skills').insert(skillInserts)
 
-      // Insert purchased talents
+      // Talents
       if (draft.talentPicks.length > 0) {
-        const talentInserts = draft.talentPicks.map(t => ({
-          character_id: char.id,
-          talent_key: t.key,
-          specialization_key: t.specKey,
-          tree_row: t.row,
-          tree_col: t.col,
-          ranks: 1,
-          xp_cost: t.cost,
-        }))
-        await supabase.from('character_talents').insert(talentInserts)
+        await supabase.from('character_talents').insert(
+          draft.talentPicks.map(t => ({
+            character_id: char.id, talent_key: t.key,
+            specialization_key: t.specKey, tree_row: t.row,
+            tree_col: t.col, ranks: 1, xp_cost: t.cost,
+          }))
+        )
       }
 
-      // Log XP transactions
-      const xpReasons: string[] = []
-      if (xpSpentOnChars > 0) xpReasons.push(`Characteristics: ${xpSpentOnChars} XP`)
-      if (xpSpentOnSkills > 0) xpReasons.push(`Skills: ${xpSpentOnSkills} XP`)
-      if (xpSpentOnTalents > 0) xpReasons.push(`Talents: ${xpSpentOnTalents} XP`)
-      if (xpReasons.length > 0) {
+      // XP transaction log
+      const reasons: string[] = []
+      if (xpSpentOnChars > 0) reasons.push(`Characteristics: ${xpSpentOnChars}`)
+      if (xpSpentOnSkills > 0) reasons.push(`Skills: ${xpSpentOnSkills}`)
+      if (xpSpentOnTalents > 0) reasons.push(`Talents: ${xpSpentOnTalents}`)
+      if (xpSpentOnAdditionalSpecs > 0) reasons.push(`Extra Specs: ${xpSpentOnAdditionalSpecs}`)
+      if (reasons.length > 0) {
         await supabase.from('xp_transactions').insert({
-          character_id: char.id,
-          amount: -xpSpent,
-          reason: `Character creation: ${xpReasons.join(', ')}`,
+          character_id: char.id, amount: -xpSpent,
+          reason: `Character creation — ${reasons.join(', ')} XP`,
         })
       }
 
@@ -283,16 +456,26 @@ function CreateWizard() {
       alert(`Error: ${err instanceof Error ? err.message : String(err)}`)
       setSaving(false)
     }
-  }
+  }, [
+    campaignId, draft, allSpecs, xpTotal, xpRemaining, xpSpent,
+    xpSpentOnChars, xpSpentOnSkills, xpSpentOnTalents, xpSpentOnAdditionalSpecs,
+    oblXpBonus, extraCredits, totalObligation,
+    speciesOptionSkills, speciesSkillMods, refSkills,
+    supabase, router,
+  ])
 
+  // ── Shared step nav helpers ───────────────────────────────────────────────
+  const goNext = () => setStep(s => Math.min(s + 1, STEPS.length - 1))
+  const goPrev = () => setStep(s => Math.max(s - 1, 0))
+
+  // ── Guards ────────────────────────────────────────────────────────────────
   if (!campaignId) {
     return (
       <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--sand)', fontFamily: 'var(--font-mono)', color: 'var(--red)', fontSize: 'var(--font-md)' }}>
-        Missing campaign ID. Go back to the lobby.
+        Missing campaign ID.
       </div>
     )
   }
-
   if (loading) {
     return (
       <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--sand)', fontFamily: 'var(--font-orbitron)', color: 'var(--gold-d)', fontSize: 'var(--font-xl)', letterSpacing: '0.3rem' }}>
@@ -301,33 +484,21 @@ function CreateWizard() {
     )
   }
 
-  // ── Shared styles ──
-  const pageStyle: React.CSSProperties = {
-    width: '100vw', minHeight: '100vh', overflow: 'auto',
-    background: 'var(--sand)',
-    display: 'flex', flexDirection: 'column', alignItems: 'center',
-    padding: 'var(--sp-xl) var(--sp-lg) calc(var(--sp-xl) * 3)',
-    gap: 'var(--sp-lg)',
-  }
-
-  const searchStyle: React.CSSProperties = {
-    width: '100%', maxWidth: '28rem', padding: 'var(--sp-sm) var(--sp-md)',
-    border: '1px solid var(--bdr-l)', background: 'var(--white)',
-    fontFamily: 'var(--font-mono)', fontSize: 'var(--font-base)',
-    letterSpacing: '0.05rem',
-  }
-
   return (
-    <div style={pageStyle}>
-      {/* Radial bg */}
+    <div style={{
+      width: '100vw', minHeight: '100vh', overflow: 'auto',
+      background: 'var(--sand)', display: 'flex', flexDirection: 'column',
+      alignItems: 'center', padding: 'var(--sp-xl) var(--sp-lg) calc(var(--sp-xl) * 3)',
+      gap: 'var(--sp-lg)',
+    }}>
+      {/* Ambient bg */}
       <div style={{
-        position: 'fixed', inset: 0,
+        position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
         backgroundImage: `radial-gradient(circle at 30% 40%, rgba(200,162,78,.06) 0%, transparent 50%),
           radial-gradient(circle at 70% 60%, rgba(43,93,174,.04) 0%, transparent 50%)`,
-        pointerEvents: 'none', zIndex: 0,
       }} />
 
-      {/* Header */}
+      {/* Header + step bar */}
       <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
         <div style={{
           fontFamily: 'var(--font-orbitron)', fontWeight: 900,
@@ -336,443 +507,431 @@ function CreateWizard() {
         }}>
           NEW CHARACTER
         </div>
-        {/* Step indicator */}
-        <div style={{
-          display: 'flex', gap: 'var(--sp-sm)', justifyContent: 'center',
-          marginTop: 'var(--sp-md)', flexWrap: 'wrap',
-        }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-xs)', justifyContent: 'center', marginTop: 'var(--sp-md)', flexWrap: 'wrap' }}>
           {STEPS.map((s, i) => (
             <button
               key={s}
-              onClick={() => {
-                if (i < step) { setStep(i); setSearch('') }
-              }}
+              onClick={() => { if (i < step) setStep(i) }}
               style={{
                 fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)',
-                fontWeight: i === step ? 700 : 500,
-                letterSpacing: '0.1rem',
+                fontWeight: i === step ? 700 : 500, letterSpacing: '0.1rem',
                 color: i === step ? 'var(--gold-d)' : i < step ? 'var(--txt2)' : 'var(--txt3)',
                 background: 'none', border: 'none',
                 borderBottom: i === step ? '2px solid var(--gold)' : '2px solid transparent',
                 padding: '0.25rem 0.5rem',
-                cursor: i < step ? 'pointer' : 'default',
-                transition: '.2s',
+                cursor: i < step ? 'pointer' : 'default', transition: '.2s',
               }}
             >
-              {s}
+              {i < step ? '✓ ' : ''}{s}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Step Content */}
-      <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: '36rem' }}>
+      {/* Step content */}
+      <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: '38rem' }}>
 
-        {/* STEP 0: Species */}
+        {/* ═══ STEP 0: Background ═══════════════════════════════════════════ */}
         {step === 0 && (
-          <SpeciesSelector
-            species={species}
-            selected={draft.species}
-            onSelect={handleSelectSpecies}
-            onConfirm={() => { if (draft.species) { setStep(1); setSearch('') } }}
-          />
-        )}
-
-        {/* STEP 1: Career */}
-        {step === 1 && (
-          <CareerSelector
-            careers={careers}
-            refSkills={refSkills}
-            selected={draft.career}
-            onSelect={(car) => setDraft(prev => ({ ...prev, career: car, specialization: null }))}
-            onConfirm={() => { if (draft.career) { setStep(2); setSearch('') } }}
-          />
-        )}
-
-        {/* STEP 2: Specialization */}
-        {step === 2 && (
-          <SpecializationSelector
-            specializations={specializations}
-            refSkills={refSkills}
-            careerKey={draft.career?.key || ''}
-            selected={draft.specialization}
-            onSelect={(spec) => setDraft(prev => ({
-              ...prev,
-              specialization: spec,
-              freeSpecPicks: [],
-              skillRanks: {},
-              talentPicks: [],
-            }))}
-            onConfirm={() => {
-              if (draft.specialization) { setStep(3); setSearch('') }
-            }}
-          />
-        )}
-
-        {/* STEP 3: Skills & Talents */}
-        {step === 3 && draft.career && draft.specialization && (
-          <SkillsTalentsStep
-            draft={draft}
-            setDraft={setDraft}
-            refSkills={refSkills}
-            talentMap={talentMap}
-            careerSkillKeys={careerSkillKeys}
-            xpRemaining={xpRemaining}
-            xpSpentOnSkills={xpSpentOnSkills}
-            xpSpentOnTalents={xpSpentOnTalents}
-            onContinue={() => setStep(4)}
-          />
-        )}
-
-        {/* STEP 4: Details — Name, Gender, Spend XP on Characteristics */}
-        {step === 4 && (
-          <HudCard title="Character Details" animClass="au d1">
+          <HudCard title="Background & Concept" animClass="au d1">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-md)' }}>
+              <p style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', color: 'var(--txt2)', margin: 0, lineHeight: 1.6 }}>
+                Who is your character? What drew them to this life? Give them a name, then optionally sketch a brief concept — you can expand the backstory on the character sheet later.
+              </p>
               <div>
-                <label style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)', fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--txt3)', display: 'block', marginBottom: '0.25rem' }}>
-                  CHARACTER NAME
-                </label>
+                <label style={S.labelXs}>CHARACTER NAME *</label>
                 <input
-                  value={draft.name}
-                  onChange={e => setDraft(prev => ({ ...prev, name: e.target.value }))}
+                  autoFocus value={draft.name}
+                  onChange={e => setDraft(p => ({ ...p, name: e.target.value }))}
                   placeholder="Enter name..."
-                  style={{ ...searchStyle, maxWidth: '100%' }}
-                  autoFocus
+                  style={S.input}
                 />
               </div>
               <div>
-                <label style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)', fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--txt3)', display: 'block', marginBottom: '0.25rem' }}>
-                  PLAYER NAME
-                </label>
+                <label style={S.labelXs}>PLAYER NAME</label>
                 <input
                   value={draft.playerName}
-                  onChange={e => setDraft(prev => ({ ...prev, playerName: e.target.value }))}
+                  onChange={e => setDraft(p => ({ ...p, playerName: e.target.value }))}
                   placeholder="Your name..."
-                  style={{ ...searchStyle, maxWidth: '100%' }}
+                  style={S.input}
                 />
               </div>
               <div>
-                <label style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)', fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--txt3)', display: 'block', marginBottom: '0.25rem' }}>
-                  GENDER
-                </label>
+                <label style={S.labelXs}>GENDER</label>
                 <select
                   value={draft.gender}
-                  onChange={e => setDraft(prev => ({ ...prev, gender: e.target.value }))}
-                  style={{ ...searchStyle, maxWidth: '100%', cursor: 'pointer' }}
+                  onChange={e => setDraft(p => ({ ...p, gender: e.target.value }))}
+                  style={S.select}
                 >
                   <option value="">— Select —</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Non-Binary">Non-Binary</option>
-                  <option value="Other">Other</option>
+                  <option>Male</option><option>Female</option>
+                  <option>Non-Binary</option><option>Other</option>
                 </select>
               </div>
-
-              {/* Characteristics */}
               <div>
-                <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)', fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--txt3)', marginBottom: 'var(--sp-sm)' }}>
-                  CHARACTERISTICS — {xpRemaining} XP remaining
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--sp-sm)' }}>
-                  {CHAR_KEYS.map(key => {
-                    const base = draft.species ? draft.species[key] : 2
-                    const val = draft[key]
-                    const nextCost = (val + 1) * 10
-                    return (
-                      <div key={key} style={{
-                        display: 'flex', alignItems: 'center', gap: 'var(--sp-sm)',
-                        padding: '0.25rem 0.5rem',
-                        background: 'rgba(255,255,255,.5)',
-                        border: '1px solid var(--bdr-l)',
-                      }}>
-                        <span style={{
-                          fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)',
-                          fontWeight: 600, color: 'var(--txt2)', width: '4.5rem',
-                          textTransform: 'uppercase', letterSpacing: '0.05rem',
-                        }}>
-                          {key}
-                        </span>
-                        <button
-                          onClick={() => handleCharChange(key, -1)}
-                          disabled={val <= base}
-                          style={{
-                            width: '1.3rem', height: '1.3rem', border: '1px solid var(--bdr-l)',
-                            background: 'none', cursor: val > base ? 'pointer' : 'default',
-                            fontSize: 'var(--font-base)', fontWeight: 700, color: 'var(--txt3)',
-                            opacity: val > base ? 1 : 0.3,
-                          }}
-                        >
-                          -
-                        </button>
-                        <span style={{
-                          fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-lg)',
-                          fontWeight: 800, color: 'var(--ink)', width: '1.5rem', textAlign: 'center',
-                        }}>
-                          {val}
-                        </span>
-                        <button
-                          onClick={() => handleCharChange(key, 1)}
-                          disabled={val >= 6 || xpRemaining < nextCost}
-                          style={{
-                            width: '1.3rem', height: '1.3rem', border: '1px solid var(--bdr-l)',
-                            background: 'none', cursor: (val < 6 && xpRemaining >= nextCost) ? 'pointer' : 'default',
-                            fontSize: 'var(--font-base)', fontWeight: 700, color: 'var(--gold-d)',
-                            opacity: (val < 6 && xpRemaining >= nextCost) ? 1 : 0.3,
-                          }}
-                        >
-                          +
-                        </button>
-                        <span style={{
-                          fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)',
-                          color: 'var(--txt3)', marginLeft: 'auto',
-                        }}>
-                          {val < 6 ? `next: ${nextCost}` : 'MAX'}
-                        </span>
-                      </div>
-                    )
-                  })}
-                </div>
+                <label style={S.labelXs}>CONCEPT / BACKSTORY (optional)</label>
+                <textarea
+                  value={draft.backstory}
+                  onChange={e => setDraft(p => ({ ...p, backstory: e.target.value }))}
+                  placeholder="Brief character concept..."
+                  rows={3}
+                  style={{ ...S.input, resize: 'vertical', fontFamily: 'var(--font-mono)' }}
+                />
               </div>
-
               <button
-                onClick={() => setStep(5)}
-                disabled={!draft.name}
-                style={{
-                  background: draft.name ? 'var(--gold)' : 'var(--txt3)',
-                  border: 'none', padding: 'var(--sp-sm) var(--sp-lg)',
-                  fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)',
-                  fontWeight: 700, color: 'var(--white)', cursor: draft.name ? 'pointer' : 'default',
-                  letterSpacing: '0.15rem', transition: '.2s',
-                  marginTop: 'var(--sp-sm)',
-                }}
+                onClick={goNext} disabled={!draft.name}
+                style={{ ...S.goldBtn, opacity: draft.name ? 1 : 0.4, cursor: draft.name ? 'pointer' : 'default' }}
               >
-                CONTINUE TO SUMMARY
+                CONTINUE → OBLIGATION
               </button>
             </div>
           </HudCard>
         )}
 
-        {/* STEP 5: Confirm */}
-        {step === 5 && (
-          <HudCard title="Confirm Character" animClass="au d1">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-sm)' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '6rem 1fr', gap: '0.25rem 0.75rem', fontSize: 'var(--font-md)' }}>
-                <span style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--txt3)', letterSpacing: '0.1rem' }}>NAME</span>
-                <span style={{ fontWeight: 600, color: 'var(--ink)' }}>{draft.name}</span>
+        {/* ═══ STEP 1: Obligation ═══════════════════════════════════════════ */}
+        {step === 1 && (
+          <HudCard title="Obligation" animClass="au d1">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-md)' }}>
+              <p style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', color: 'var(--txt2)', margin: 0, lineHeight: 1.6 }}>
+                Every character on the fringe carries some form of debt, secret, or entanglement from their past. This Obligation can be triggered each session, imposing strain penalties on the group.
+              </p>
 
-                <span style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--txt3)', letterSpacing: '0.1rem' }}>PLAYER</span>
-                <span style={{ color: 'var(--txt2)' }}>{draft.playerName || 'Player'}</span>
-
-                <span style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--txt3)', letterSpacing: '0.1rem' }}>SPECIES</span>
-                <span style={{ color: 'var(--txt2)' }}>{draft.species?.name}</span>
-
-                <span style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--txt3)', letterSpacing: '0.1rem' }}>CAREER</span>
-                <span style={{ color: 'var(--txt2)' }}>{draft.career?.name}</span>
-
-                <span style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--txt3)', letterSpacing: '0.1rem' }}>SPEC</span>
-                <span style={{ color: 'var(--txt2)' }}>{draft.specialization?.name}</span>
+              {/* Starting value callout */}
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 'var(--sp-md)',
+                background: 'rgba(200,162,78,.08)', border: '1px solid rgba(200,162,78,.3)',
+                padding: 'var(--sp-sm) var(--sp-md)',
+              }}>
+                <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-hero)', fontWeight: 900, color: 'var(--gold-d)', lineHeight: 1 }}>
+                  {startingObligation}
+                </div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', color: 'var(--txt2)' }}>
+                  Starting Obligation<br />
+                  <span style={{ color: 'var(--txt3)', fontSize: 'var(--font-xs)' }}>({playerCount} player{playerCount !== 1 ? 's' : ''} in campaign)</span>
+                </div>
               </div>
 
-              <div style={{ borderTop: '1px solid var(--bdr-l)', paddingTop: 'var(--sp-sm)', marginTop: 'var(--sp-xs)' }}>
-                <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)', fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--txt3)', marginBottom: 'var(--sp-xs)' }}>
-                  CHARACTERISTICS
-                </div>
-                <div style={{ display: 'flex', gap: 'var(--sp-md)', flexWrap: 'wrap' }}>
-                  {CHAR_KEYS.map(key => (
-                    <div key={key} style={{ textAlign: 'center' }}>
-                      <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-lg)', fontWeight: 800, color: 'var(--ink)' }}>
-                        {draft[key]}
-                      </div>
-                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', color: 'var(--txt3)', textTransform: 'uppercase' }}>
-                        {key.slice(0, 3)}
-                      </div>
-                    </div>
+              <div>
+                <label style={S.labelXs}>OBLIGATION TYPE</label>
+                <select
+                  value={draft.obligationType}
+                  onChange={e => setDraft(p => ({ ...p, obligationType: e.target.value }))}
+                  style={S.select}
+                >
+                  <option value="">— Select type —</option>
+                  {obligationTypes.map(o => (
+                    <option key={o.key} value={o.key}>{o.name}</option>
                   ))}
-                </div>
-              </div>
-
-              {/* Free ranks summary */}
-              {(draft.freeCareerPicks.length > 0 || draft.freeSpecPicks.length > 0) && (
-                <div style={{ borderTop: '1px solid var(--bdr-l)', paddingTop: 'var(--sp-sm)' }}>
-                  <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)', fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--txt3)', marginBottom: 'var(--sp-xs)' }}>
-                    FREE SKILL RANKS
-                  </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
-                    {[...draft.freeCareerPicks, ...draft.freeSpecPicks].map((sk, i) => (
-                      <span key={`${sk}-${i}`} style={{
-                        fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', fontWeight: 600,
-                        color: '#d64d8a', background: 'rgba(214,77,138,.08)',
-                        border: '1px solid rgba(214,77,138,.3)',
-                        padding: '0.08rem 0.5rem',
-                      }}>
-                        {skillMap[sk]?.name || sk}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* XP skill purchases summary */}
-              {Object.entries(draft.skillRanks).some(([, r]) => r > 0) && (
-                <div style={{ borderTop: '1px solid var(--bdr-l)', paddingTop: 'var(--sp-sm)' }}>
-                  <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)', fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--txt3)', marginBottom: 'var(--sp-xs)' }}>
-                    XP SKILL PURCHASES ({xpSpentOnSkills} XP)
-                  </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
-                    {Object.entries(draft.skillRanks).filter(([, r]) => r > 0).map(([sk, r]) => (
-                      <span key={sk} style={{
-                        fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', fontWeight: 600,
-                        color: 'var(--gold-d)', background: 'rgba(200,162,78,.08)',
-                        border: '1px solid rgba(200,162,78,.3)',
-                        padding: '0.08rem 0.5rem',
-                      }}>
-                        {skillMap[sk]?.name || sk} +{r}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Talent purchases summary */}
-              {draft.talentPicks.length > 0 && (
-                <div style={{ borderTop: '1px solid var(--bdr-l)', paddingTop: 'var(--sp-sm)' }}>
-                  <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)', fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--txt3)', marginBottom: 'var(--sp-xs)' }}>
-                    TALENTS ({xpSpentOnTalents} XP)
-                  </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
-                    {draft.talentPicks.map(t => (
-                      <span key={`${t.key}-${t.row}-${t.col}`} style={{
-                        fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', fontWeight: 600,
-                        color: 'var(--blue)', background: 'rgba(43,93,174,.08)',
-                        border: '1px solid rgba(43,93,174,.3)',
-                        padding: '0.08rem 0.5rem',
-                      }}>
-                        {talentMap[t.key]?.name || t.key} ({t.cost} XP)
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* XP breakdown boxes */}
-              <div style={{ borderTop: '1px solid var(--bdr-l)', paddingTop: 'var(--sp-sm)', marginTop: 'var(--sp-xs)' }}>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
-                  <div style={{
-                    background: 'rgba(200,162,78,.1)', border: '1px solid rgba(200,162,78,.4)',
-                    padding: '0.25rem 0.5rem', textAlign: 'center',
-                  }}>
-                    <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-lg)', fontWeight: 800, color: 'var(--gold-d)' }}>
-                      {startingXp}
-                    </div>
-                    <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.08rem', color: 'var(--txt3)' }}>
-                      TOTAL XP
-                    </div>
-                  </div>
-                  {[
-                    { val: xpSpentOnChars, label: 'CHARS', color: 'var(--ink)' },
-                    { val: xpSpentOnSkills, label: 'SKILLS', color: '#d64d8a' },
-                    { val: xpSpentOnTalents, label: 'TALENTS', color: 'var(--blue)' },
-                  ].map(item => (
-                    <div key={item.label} style={{
-                      background: 'rgba(0,0,0,.03)', border: '1px solid var(--bdr-l)',
-                      padding: '0.25rem 0.5rem', textAlign: 'center',
+                </select>
+                {draft.obligationType && (() => {
+                  const obl = obligationTypes.find(o => o.key === draft.obligationType)
+                  return obl?.description ? (
+                    <div style={{
+                      marginTop: '0.5rem',
+                      background: 'rgba(200,170,80,0.04)',
+                      border: '1px solid rgba(200,170,80,0.15)',
+                      borderRadius: 8,
+                      padding: 12,
+                      maxHeight: 120,
+                      overflowY: 'auto',
+                      fontFamily: "var(--font-rajdhani), 'Rajdhani', sans-serif",
+                      fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)',
+                      color: 'var(--txt2)',
+                      lineHeight: 1.5,
                     }}>
-                      <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-lg)', fontWeight: 800, color: item.color }}>
-                        {item.val}
-                      </div>
-                      <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.08rem', color: 'var(--txt3)' }}>
-                        {item.label}
-                      </div>
+                      {stripBBCode(obl.description)}
                     </div>
-                  ))}
-                  <div style={{
-                    background: xpRemaining > 0 ? 'rgba(43,93,174,.08)' : 'rgba(0,0,0,.03)',
-                    border: `1px solid ${xpRemaining > 0 ? 'rgba(43,93,174,.3)' : 'var(--bdr-l)'}`,
-                    padding: '0.25rem 0.5rem', textAlign: 'center',
-                  }}>
-                    <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-lg)', fontWeight: 800, color: xpRemaining > 0 ? 'var(--blue)' : 'var(--txt3)' }}>
-                      {xpRemaining}
-                    </div>
-                    <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.08rem', color: 'var(--txt3)' }}>
-                      REMAINING
-                    </div>
-                  </div>
-                </div>
+                  ) : null
+                })()}
               </div>
 
-              {/* Career skills badges */}
-              <div style={{ borderTop: '1px solid var(--bdr-l)', paddingTop: 'var(--sp-sm)' }}>
-                <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)', fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--txt3)', marginBottom: 'var(--sp-xs)' }}>
-                  CAREER SKILLS ({careerSkillKeys.size})
+              <div>
+                <label style={S.labelXs}>YOUR DESCRIPTION (optional)</label>
+                <textarea
+                  value={draft.obligationDesc}
+                  onChange={e => setDraft(p => ({ ...p, obligationDesc: e.target.value }))}
+                  placeholder="What is this obligation? Who do you owe? What happened?"
+                  rows={2}
+                  style={{ ...S.input, resize: 'vertical' }}
+                />
+              </div>
+
+              {/* Optional extras */}
+              <div style={{ borderTop: '1px solid var(--bdr-l)', paddingTop: 'var(--sp-md)' }}>
+                <div style={{ ...S.labelXs, marginBottom: 'var(--sp-sm)' }}>
+                  OPTIONAL — INCREASE OBLIGATION FOR RESOURCES
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 400, letterSpacing: 0, color: 'var(--txt3)', marginLeft: '0.5rem' }}>
+                    (each option once only; cannot exceed starting value)
+                  </span>
                 </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
-                  {[...careerSkillKeys].map(k => {
-                    const isFromCareer = draft.career?.career_skill_keys?.includes(k)
-                    return (
-                      <span key={k} style={{
-                        fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', fontWeight: 600,
-                        color: isFromCareer ? '#d64d8a' : 'var(--txt3)',
-                        background: isFromCareer ? 'rgba(214,77,138,.08)' : 'rgba(0,0,0,.04)',
-                        border: `1px solid ${isFromCareer ? 'rgba(214,77,138,.3)' : 'var(--bdr-l)'}`,
-                        padding: '0.08rem 0.5rem', whiteSpace: 'nowrap',
-                      }}>
-                        {skillMap[k]?.name || k}
+                {[
+                  { key: 'oblXp5' as const, label: '+5 Obligation → +5 starting XP', mag: 5, limit: startingObligation },
+                  { key: 'oblXp10' as const, label: '+10 Obligation → +10 starting XP', mag: 10, limit: startingObligation },
+                  { key: 'oblCred1k' as const, label: '+5 Obligation → +1,000 starting credits', mag: 5, limit: startingObligation },
+                  { key: 'oblCred2k5' as const, label: '+10 Obligation → +2,500 starting credits', mag: 10, limit: startingObligation },
+                ].map(opt => {
+                  const checked = draft[opt.key]
+                  // cannot take if combined bonus would exceed starting value
+                  const otherBonus = oblBonus - (checked ? opt.mag : 0)
+                  const wouldExceed = !checked && (otherBonus + opt.mag > startingObligation)
+                  return (
+                    <label key={opt.key} style={{
+                      display: 'flex', alignItems: 'center', gap: 'var(--sp-sm)',
+                      padding: 'var(--sp-sm) var(--sp-md)',
+                      background: checked ? 'rgba(200,162,78,.08)' : 'rgba(0,0,0,.02)',
+                      border: `1px solid ${checked ? 'rgba(200,162,78,.4)' : 'var(--bdr-l)'}`,
+                      marginBottom: '0.25rem',
+                      cursor: wouldExceed ? 'not-allowed' : 'pointer',
+                      opacity: wouldExceed ? 0.4 : 1,
+                    }}>
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        disabled={wouldExceed}
+                        onChange={() => setDraft(p => ({ ...p, [opt.key]: !p[opt.key] }))}
+                      />
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', color: 'var(--txt2)' }}>
+                        {opt.label}
                       </span>
-                    )
-                  })}
-                </div>
+                    </label>
+                  )
+                })}
               </div>
 
-              <div style={{ display: 'flex', gap: 'var(--sp-sm)', marginTop: 'var(--sp-md)' }}>
-                <button
-                  onClick={() => setStep(4)}
-                  style={{
-                    flex: 1, background: 'rgba(255,255,255,.5)',
-                    border: '1px solid var(--bdr-l)', padding: 'var(--sp-sm)',
-                    fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)',
-                    fontWeight: 600, color: 'var(--txt2)', cursor: 'pointer',
-                    letterSpacing: '0.1rem',
-                  }}
-                >
-                  BACK
-                </button>
-                <button
-                  onClick={handleCreate}
-                  disabled={saving}
-                  style={{
-                    flex: 2, background: 'var(--gold)',
-                    border: 'none', padding: 'var(--sp-sm)',
-                    fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)',
-                    fontWeight: 700, color: 'var(--white)', cursor: saving ? 'wait' : 'pointer',
-                    letterSpacing: '0.15rem', transition: '.2s',
-                    opacity: saving ? 0.6 : 1,
-                  }}
-                >
-                  {saving ? 'CREATING...' : 'CREATE CHARACTER'}
-                </button>
+              {/* Running totals */}
+              <div style={{
+                display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--sp-sm)',
+                background: 'rgba(0,0,0,.03)', border: '1px solid var(--bdr-l)', padding: 'var(--sp-sm)',
+              }}>
+                {[
+                  { label: 'TOTAL OBLIGATION', val: totalObligation, color: 'var(--ink)' },
+                  { label: 'EXTRA XP', val: `+${oblXpBonus}`, color: 'var(--gold-d)' },
+                  { label: 'EXTRA CREDITS', val: `+${extraCredits.toLocaleString()}`, color: '#4EC87A' },
+                ].map(item => (
+                  <div key={item.label} style={{ textAlign: 'center' }}>
+                    <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-lg)', fontWeight: 800, color: item.color }}>{item.val}</div>
+                    <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.08rem', color: 'var(--txt3)' }}>{item.label}</div>
+                  </div>
+                ))}
               </div>
+
+              <div style={{ display: 'flex', gap: 'var(--sp-sm)' }}>
+                <button onClick={goPrev} style={{ ...S.ghostBtn, flex: 1 }}>← BACK</button>
+                <button onClick={goNext} style={{ ...S.goldBtn, flex: 2 }}>CONTINUE → DUTY</button>
+              </div>
+              <button onClick={goNext} style={{ ...S.ghostBtn, width: '100%', fontSize: 'var(--font-xs)', color: 'var(--txt3)' }}>
+                Skip — No Obligation
+              </button>
             </div>
           </HudCard>
+        )}
+
+        {/* ═══ STEP 2: Duty ════════════════════════════════════════════════ */}
+        {step === 2 && (
+          <HudCard title="Duty" animClass="au d1">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-md)' }}>
+              <p style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', color: 'var(--txt2)', margin: 0, lineHeight: 1.6 }}>
+                As a Rebel, your Duty tracks your contribution and commitment to the Alliance cause. It activates periodically during play, granting benefits when fulfilled.
+              </p>
+              <div>
+                <label style={S.labelXs}>DUTY TYPE</label>
+                <select
+                  value={draft.dutyType}
+                  onChange={e => setDraft(p => ({ ...p, dutyType: e.target.value }))}
+                  style={S.select}
+                >
+                  <option value="">— Select type —</option>
+                  {dutyTypes.map(d => (
+                    <option key={d.key} value={d.key}>{d.name}</option>
+                  ))}
+                </select>
+                {draft.dutyType && (() => {
+                  const duty = dutyTypes.find(d => d.key === draft.dutyType)
+                  return duty?.description ? (
+                    <div style={{
+                      marginTop: '0.5rem',
+                      background: 'rgba(200,170,80,0.04)',
+                      border: '1px solid rgba(200,170,80,0.15)',
+                      borderRadius: 8,
+                      padding: 12,
+                      maxHeight: 120,
+                      overflowY: 'auto',
+                      fontFamily: "var(--font-rajdhani), 'Rajdhani', sans-serif",
+                      fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)',
+                      color: 'var(--txt2)',
+                      lineHeight: 1.5,
+                    }}>
+                      {stripBBCode(duty.description)}
+                    </div>
+                  ) : null
+                })()}
+              </div>
+              <div>
+                <label style={S.labelXs}>YOUR DESCRIPTION (optional)</label>
+                <textarea
+                  value={draft.dutyDesc}
+                  onChange={e => setDraft(p => ({ ...p, dutyDesc: e.target.value }))}
+                  placeholder="How does your character fulfill this duty? What motivates them?"
+                  rows={2}
+                  style={{ ...S.input, resize: 'vertical' }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: 'var(--sp-sm)' }}>
+                <button onClick={goPrev} style={{ ...S.ghostBtn, flex: 1 }}>← BACK</button>
+                <button onClick={goNext} style={{ ...S.goldBtn, flex: 2 }}>CONTINUE → SPECIES</button>
+              </div>
+              <button onClick={goNext} style={{ ...S.ghostBtn, width: '100%', fontSize: 'var(--font-xs)', color: 'var(--txt3)' }}>
+                Skip — No Duty
+              </button>
+            </div>
+          </HudCard>
+        )}
+
+        {/* ═══ STEP 3: Species ═════════════════════════════════════════════ */}
+        {step === 3 && (
+          <SpeciesStep
+            species={species}
+            selected={draft.species}
+            optionKey={draft.speciesOptionKey}
+            oblXpBonus={oblXpBonus}
+            skillMap={skillMap}
+            onSelect={sp => setDraft(p => ({
+              ...p, species: sp, speciesOptionKey: '',
+              brawn: sp.brawn, agility: sp.agility, intellect: sp.intellect,
+              cunning: sp.cunning, willpower: sp.willpower, presence: sp.presence,
+            }))}
+            onOptionSelect={key => setDraft(p => ({ ...p, speciesOptionKey: key }))}
+            onConfirm={goNext}
+            onBack={goPrev}
+          />
+        )}
+
+        {/* ═══ STEP 4: Career ══════════════════════════════════════════════ */}
+        {step === 4 && (
+          <CareerStep
+            careers={careers}
+            skillMap={skillMap}
+            selected={draft.career}
+            freeCareerPicks={draft.freeCareerPicks}
+            onSelect={car => setDraft(p => ({ ...p, career: car, freeCareerPicks: [], specialization: null, freeSpecPicks: [], additionalSpecs: [] }))}
+            onPickToggle={(skillKey) => setDraft(p => {
+              const picks = [...p.freeCareerPicks]
+              const idx = picks.indexOf(skillKey)
+              if (idx >= 0) { picks.splice(idx, 1) }
+              else if (picks.length < 4) picks.push(skillKey)
+              return { ...p, freeCareerPicks: picks }
+            })}
+            onConfirm={goNext}
+            onBack={goPrev}
+          />
+        )}
+
+        {/* ═══ STEP 5: Specialisation ══════════════════════════════════════ */}
+        {step === 5 && (
+          <SpecStep
+            specializations={specializations}
+            skillMap={skillMap}
+            careerKey={draft.career?.key || ''}
+            selected={draft.specialization}
+            freeSpecPicks={draft.freeSpecPicks}
+            onSelect={spec => setDraft(p => ({ ...p, specialization: spec, freeSpecPicks: [], talentPicks: [] }))}
+            onSpecPickToggle={(skillKey) => setDraft(p => {
+              const picks = [...p.freeSpecPicks]
+              const idx = picks.indexOf(skillKey)
+              if (idx >= 0) { picks.splice(idx, 1) }
+              else if (picks.length < 2) picks.push(skillKey)
+              return { ...p, freeSpecPicks: picks }
+            })}
+            onConfirm={goNext}
+            onBack={goPrev}
+          />
+        )}
+
+        {/* ═══ STEP 6: XP Investment ═══════════════════════════════════════ */}
+        {step === 6 && draft.career && draft.specialization && (
+          <XpInvestmentStep
+            draft={draft}
+            setDraft={setDraft}
+            refSkills={refSkills}
+            talentMap={talentMap}
+            careerSkillKeys={careerSkillKeys}
+            allSpecs={allSpecs}
+            specializations={specializations}
+            skillMap={skillMap}
+            xpTotal={xpTotal}
+            baseXp={baseXp}
+            oblXpBonus={oblXpBonus}
+            xpSpent={xpSpent}
+            xpRemaining={xpRemaining}
+            xpSpentOnChars={xpSpentOnChars}
+            xpSpentOnSkills={xpSpentOnSkills}
+            xpSpentOnTalents={xpSpentOnTalents}
+            xpSpentOnAdditionalSpecs={xpSpentOnAdditionalSpecs}
+            onContinue={goNext}
+            onBack={goPrev}
+          />
+        )}
+
+        {/* ═══ STEP 7: Motivation ══════════════════════════════════════════ */}
+        {step === 7 && (
+          <MotivationStep
+            motivations={motivations}
+            specificMotivations={specificMotivations}
+            selectedType={draft.motivationType}
+            selectedSpecific={draft.motivationSpecific}
+            motivationDesc={draft.motivationDesc}
+            onTypeChange={t => setDraft(p => ({ ...p, motivationType: t, motivationSpecific: '', motivationDesc: '' }))}
+            onSpecificChange={(key, desc) => setDraft(p => ({ ...p, motivationSpecific: key, motivationDesc: desc }))}
+            onContinue={goNext}
+            onBack={goPrev}
+          />
+        )}
+
+        {/* ═══ STEP 8: Review / Confirm ════════════════════════════════════ */}
+        {step === 8 && (
+          <ReviewStep
+            draft={draft}
+            skillMap={skillMap}
+            talentMap={talentMap}
+            allSpecs={allSpecs}
+            careerSkillKeys={careerSkillKeys}
+            xpTotal={xpTotal}
+            xpSpent={xpSpent}
+            xpRemaining={xpRemaining}
+            xpSpentOnChars={xpSpentOnChars}
+            xpSpentOnSkills={xpSpentOnSkills}
+            xpSpentOnTalents={xpSpentOnTalents}
+            xpSpentOnAdditionalSpecs={xpSpentOnAdditionalSpecs}
+            startingObligation={startingObligation}
+            totalObligation={totalObligation}
+            oblXpBonus={oblXpBonus}
+            extraCredits={extraCredits}
+            saving={saving}
+            onBack={goPrev}
+            onCreate={handleCreate}
+          />
         )}
       </div>
     </div>
   )
 }
 
-/* ═══════════════════════════════════════ */
-/*  SPECIES SELECTOR — searchable dropdown */
-/* ═══════════════════════════════════════ */
-
-function SpeciesSelector({
-  species,
-  selected,
-  onSelect,
-  onConfirm,
+// ══════════════════════════════════════════════════════════════════════════════
+//  STEP 3: Species
+// ══════════════════════════════════════════════════════════════════════════════
+function SpeciesStep({
+  species, selected, optionKey, oblXpBonus, skillMap,
+  onSelect, onOptionSelect, onConfirm, onBack,
 }: {
   species: RefSpecies[]
   selected: RefSpecies | null
+  optionKey: string
+  oblXpBonus: number
+  skillMap: Record<string, RefSkill>
   onSelect: (sp: RefSpecies) => void
+  onOptionSelect: (key: string) => void
   onConfirm: () => void
+  onBack: () => void
 }) {
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState(!selected)
@@ -785,112 +944,71 @@ function SpeciesSelector({
     return species.filter(s => s.name.toLowerCase().includes(q))
   }, [species, query])
 
-  // Close dropdown on outside click
   useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false)
-      }
+    const fn = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false)
     }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
+    document.addEventListener('mousedown', fn)
+    return () => document.removeEventListener('mousedown', fn)
   }, [])
+
+  // Parse option_choices
+  const parsedChoices = useMemo(() => {
+    if (!selected?.option_choices) return []
+    try {
+      const oc = selected.option_choices as {
+        key?: string
+        options?: { key: string; name?: string; skill_modifiers?: { key: string; rank_start?: number }[] }[]
+      }[]
+      return Array.isArray(oc) ? oc : []
+    } catch { return [] }
+  }, [selected])
+
+  const hasRequiredChoice = parsedChoices.length > 0 && !optionKey
+  const canContinue = !!selected && !hasRequiredChoice
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-md)' }}>
-      {/* Dropdown combobox */}
+      {/* Search combobox */}
       <div ref={containerRef} style={{ position: 'relative' }}>
         <div
           onClick={() => { setOpen(true); setTimeout(() => inputRef.current?.focus(), 0) }}
           style={{
             display: 'flex', alignItems: 'center',
             background: 'var(--white)', border: `1px solid ${open ? 'var(--gold)' : 'var(--bdr-l)'}`,
-            padding: '0.45rem 0.75rem', cursor: 'text',
-            transition: 'border-color .2s',
+            padding: '0.45rem 0.75rem', cursor: 'text', transition: 'border-color .2s',
           }}
         >
           <input
             ref={inputRef}
             value={open ? query : (selected?.name || '')}
-            onChange={e => { setQuery(e.target.value); if (!open) setOpen(true) }}
+            onChange={e => { setQuery(e.target.value); setOpen(true) }}
             onFocus={() => setOpen(true)}
             placeholder={selected ? selected.name : 'Search species...'}
-            style={{
-              flex: 1, border: 'none', outline: 'none', background: 'none',
-              fontFamily: 'var(--font-mono)', fontSize: 'var(--font-base)',
-              letterSpacing: '0.05rem', color: 'var(--ink)',
-            }}
+            style={{ flex: 1, border: 'none', outline: 'none', background: 'none', fontFamily: 'var(--font-mono)', fontSize: 'var(--font-base)' }}
           />
-          <button
-            onClick={e => { e.stopPropagation(); setOpen(o => !o) }}
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              fontSize: 'var(--font-sm)', color: 'var(--txt3)', padding: '0 0.25rem',
-              transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
-              transition: 'transform .2s',
-            }}
-          >
+          <button onClick={e => { e.stopPropagation(); setOpen(o => !o) }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 'var(--font-sm)', color: 'var(--txt3)', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }}>
             ▼
           </button>
         </div>
-
-        {/* Dropdown list */}
         {open && (
-          <div style={{
-            position: 'absolute', top: '100%', left: 0, right: 0,
-            zIndex: 20, maxHeight: '22rem', overflowY: 'auto',
-            background: 'var(--white)', border: '1px solid var(--bdr-l)',
-            borderTop: 'none',
-            boxShadow: '0 6px 24px rgba(0,0,0,.1)',
-          }}>
+          <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 20, maxHeight: '22rem', overflowY: 'auto', background: 'var(--white)', border: '1px solid var(--bdr-l)', borderTop: 'none', boxShadow: '0 6px 24px rgba(0,0,0,.1)' }}>
             {filtered.length === 0 ? (
-              <div style={{
-                padding: '0.75rem', textAlign: 'center',
-                fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', color: 'var(--txt3)',
-              }}>
-                No species found
-              </div>
+              <div style={{ padding: '0.75rem', textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', color: 'var(--txt3)' }}>No species found</div>
             ) : filtered.map(sp => {
-              const isSelected = selected?.key === sp.key
+              const isSel = selected?.key === sp.key
               return (
-                <button
-                  key={sp.key}
-                  onClick={() => { onSelect(sp); setQuery(''); setOpen(false) }}
-                  style={{
-                    display: 'block', width: '100%', textAlign: 'left',
-                    padding: '0.5rem 0.75rem',
-                    background: isSelected ? 'var(--gold-glow)' : 'transparent',
-                    border: 'none', borderBottom: '1px solid var(--bdr-l)',
-                    cursor: 'pointer', transition: 'background .12s',
-                  }}
-                  onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'rgba(200,162,78,.06)' }}
-                  onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent' }}
+                <button key={sp.key} onClick={() => { onSelect(sp); setQuery(''); setOpen(false) }}
+                  style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 0.75rem', background: isSel ? 'var(--gold-glow)' : 'transparent', border: 'none', borderBottom: '1px solid var(--bdr-l)', cursor: 'pointer' }}
+                  onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = 'rgba(200,162,78,.06)' }}
+                  onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = 'transparent' }}
                 >
-                  <div style={{
-                    fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-base)',
-                    fontWeight: 700, color: 'var(--ink)', letterSpacing: '0.06rem',
-                  }}>
-                    {sp.name}
-                  </div>
-                  <div style={{
-                    display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginTop: '0.25rem',
-                  }}>
-                    {[
-                      { label: 'Br', value: sp.brawn },
-                      { label: 'Ag', value: sp.agility },
-                      { label: 'Int', value: sp.intellect },
-                      { label: 'Cun', value: sp.cunning },
-                      { label: 'Wil', value: sp.willpower },
-                      { label: 'Pr', value: sp.presence },
-                    ].map(s => (
-                      <span key={s.label} style={{
-                        fontFamily: 'var(--font-mono)', fontSize: 'var(--font-2xs)', fontWeight: 600,
-                        letterSpacing: '0.04rem', color: s.value >= 3 ? '#d64d8a' : 'var(--txt2)',
-                        background: s.value >= 3 ? 'rgba(214,77,138,.08)' : 'rgba(0,0,0,.04)',
-                        border: `1px solid ${s.value >= 3 ? 'rgba(214,77,138,.3)' : 'var(--bdr-l)'}`,
-                        padding: '0.04rem 0.25rem', whiteSpace: 'nowrap',
-                      }}>
-                        {s.label} {s.value}
+                  <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-base)', fontWeight: 700, color: 'var(--ink)', letterSpacing: '0.06rem' }}>{sp.name}</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.2rem', marginTop: '0.2rem' }}>
+                    {CHAR_KEYS.map(k => (
+                      <span key={k} style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-2xs)', fontWeight: 600, color: sp[k] >= 3 ? '#d64d8a' : 'var(--txt2)', background: sp[k] >= 3 ? 'rgba(214,77,138,.08)' : 'rgba(0,0,0,.04)', border: `1px solid ${sp[k] >= 3 ? 'rgba(214,77,138,.3)' : 'var(--bdr-l)'}`, padding: '0.04rem 0.2rem' }}>
+                        {CHAR_SHORT[k]} {sp[k]}
                       </span>
                     ))}
                   </div>
@@ -901,235 +1019,216 @@ function SpeciesSelector({
         )}
       </div>
 
-      {/* Selected species card */}
+      {/* Selected species detail card */}
       {selected && (
-        <div style={{
-          background: 'rgba(255,255,255,.72)', backdropFilter: 'blur(8px)',
-          border: '2px solid var(--gold)', padding: 'var(--sp-md) var(--sp-lg)',
-        }}>
-          <div style={{
-            fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-md)',
-            fontWeight: 800, color: 'var(--ink)', letterSpacing: '0.1rem',
-            marginBottom: 'var(--sp-sm)',
-          }}>
+        <div style={{ background: 'rgba(255,255,255,.72)', backdropFilter: 'blur(8px)', border: '2px solid var(--gold)', padding: 'var(--sp-md) var(--sp-lg)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-sm)' }}>
+          <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-md)', fontWeight: 800, color: 'var(--ink)', letterSpacing: '0.1rem' }}>
             {selected.name}
+            {selected.source_book && (
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', fontWeight: 400, color: 'var(--txt3)', marginLeft: '0.75rem' }}>
+                {selected.source_book}
+              </span>
+            )}
           </div>
 
-          {/* Stat hexes */}
-          <div style={{
-            display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)',
-            gap: 'var(--sp-xs)', marginBottom: 'var(--sp-sm)',
-          }}>
-            {CHAR_KEYS.map(key => (
-              <div key={key} style={{ textAlign: 'center' }}>
-                <div style={{
-                  fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-lg)',
-                  fontWeight: 800, color: 'var(--ink)',
-                }}>
-                  {selected[key]}
-                </div>
-                <div style={{
-                  fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)',
-                  fontWeight: 600, letterSpacing: '0.06rem', color: 'var(--txt3)',
-                  textTransform: 'uppercase',
-                }}>
-                  {key.slice(0, 3)}
-                </div>
+          {/* Stat grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: 'var(--sp-xs)' }}>
+            {CHAR_KEYS.map(k => (
+              <div key={k} style={{ textAlign: 'center' }}>
+                <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-lg)', fontWeight: 800, color: 'var(--ink)' }}>{selected[k]}</div>
+                <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.06rem', color: 'var(--txt3)', textTransform: 'uppercase' }}>{k.slice(0, 3)}</div>
               </div>
             ))}
           </div>
 
-          {/* Thresholds + XP */}
-          <div style={{
-            display: 'flex', gap: 'var(--sp-lg)',
-            borderTop: '1px solid var(--bdr-l)', paddingTop: 'var(--sp-sm)',
-          }}>
+          {/* Thresholds + XP row */}
+          <div style={{ display: 'flex', gap: 'var(--sp-lg)', borderTop: '1px solid var(--bdr-l)', paddingTop: 'var(--sp-sm)', flexWrap: 'wrap' }}>
             <StatPill label="WOUND TH" value={`${selected.wound_threshold} + Br`} />
             <StatPill label="STRAIN TH" value={`${selected.strain_threshold} + Wil`} />
             <StatPill label="START XP" value={String(selected.starting_xp)} highlight />
+            {oblXpBonus > 0 && (
+              <StatPill label="OBL BONUS" value={`+${oblXpBonus} XP`} highlight />
+            )}
           </div>
 
-          {selected.description && (
-            <div style={{
-              fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)',
-              fontWeight: 400, color: 'var(--txt2)', marginTop: 'var(--sp-sm)',
-              lineHeight: 1.6,
-            }}
-              dangerouslySetInnerHTML={{
-                __html: selected.description
-                  .replace(/\[H4\]([\s\S]*?)\[h4\]/g, '<strong style="display:block;margin-top:0.5rem;font-weight:700;color:var(--ink)">$1</strong>')
-                  .replace(/\[B\]([\s\S]*?)\[b\]/g, '<strong>$1</strong>')
-                  .replace(/\[P\]/g, '<br/><br/>')
-                  .replace(/\[I\]([\s\S]*?)\[i\]/g, '<em>$1</em>')
-                  .replace(/\[BR\]/gi, '<br/>')
-              }}
-            />
+          {/* Special abilities pills */}
+          {selected.special_abilities && selected.special_abilities.length > 0 && (
+            <div>
+              <div style={{ ...S.labelXs, marginBottom: '0.4rem' }}>SPECIAL ABILITIES</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
+                {selected.special_abilities.map((ab, i) => (
+                  <span key={i} style={{
+                    fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', fontWeight: 600,
+                    color: 'var(--gold-d)', background: 'rgba(200,162,78,.1)',
+                    border: '1px solid rgba(200,162,78,.4)', padding: '0.12rem 0.5rem',
+                    cursor: 'default',
+                  }}
+                    title={ab.description || ab.name}
+                  >
+                    {ab.name}
+                  </span>
+                ))}
+              </div>
+            </div>
           )}
 
-          <button
-            onClick={onConfirm}
-            style={{
-              marginTop: 'var(--sp-md)', width: '100%',
-              background: 'var(--gold)', border: 'none',
-              padding: 'var(--sp-sm) var(--sp-lg)',
-              fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)',
-              fontWeight: 700, color: 'var(--white)', cursor: 'pointer',
-              letterSpacing: '0.15rem', transition: '.2s',
-            }}
-          >
-            CONFIRM SPECIES
-          </button>
+          {/* Option choices (radio buttons) */}
+          {parsedChoices.length > 0 && (
+            <div style={{ borderTop: '1px solid var(--bdr-l)', paddingTop: 'var(--sp-sm)' }}>
+              <div style={{ ...S.labelXs, color: 'var(--red)', marginBottom: '0.4rem' }}>
+                REQUIRED CHOICE — select one starting skill:
+              </div>
+              {parsedChoices.map((choice, ci) => (
+                <div key={ci} style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
+                  {choice.options?.map(opt => (
+                    <label key={opt.key} style={{
+                      display: 'flex', alignItems: 'center', gap: '0.4rem',
+                      padding: 'var(--sp-xs) var(--sp-sm)',
+                      background: optionKey === opt.key ? 'rgba(200,162,78,.12)' : 'rgba(0,0,0,.03)',
+                      border: `1px solid ${optionKey === opt.key ? 'var(--gold)' : 'var(--bdr-l)'}`,
+                      cursor: 'pointer',
+                    }}>
+                      <input type="radio" name={`choice-${ci}`} value={opt.key}
+                        checked={optionKey === opt.key}
+                        onChange={() => onOptionSelect(opt.key)} />
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', color: 'var(--txt2)' }}>
+                        {opt.name || (opt.skill_modifiers?.[0] ? skillMap[opt.skill_modifiers[0].key]?.name || opt.key : opt.key)}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Description */}
+          {selected.description && (
+            <CollapsibleDesc html={parseBB(selected.description)} />
+          )}
+
+          <div style={{ display: 'flex', gap: 'var(--sp-sm)', marginTop: 'var(--sp-sm)' }}>
+            <button onClick={onBack} style={{ ...S.ghostBtn, flex: 1 }}>← BACK</button>
+            <button
+              onClick={onConfirm}
+              disabled={!canContinue}
+              style={{ ...S.goldBtn, flex: 2, opacity: canContinue ? 1 : 0.4, cursor: canContinue ? 'pointer' : 'default' }}
+            >
+              {hasRequiredChoice ? 'SELECT AN OPTION ABOVE' : 'CONFIRM SPECIES →'}
+            </button>
+          </div>
         </div>
+      )}
+
+      {!selected && (
+        <button onClick={onBack} style={S.ghostBtn}>← BACK</button>
       )}
     </div>
   )
 }
 
-function StatPill({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
-  return (
-    <div>
-      <div style={{
-        fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)',
-        fontWeight: 600, letterSpacing: '0.08rem',
-        color: 'var(--txt3)',
-      }}>
-        {label}
-      </div>
-      <div style={{
-        fontFamily: 'var(--font-mono)', fontSize: 'var(--font-base)',
-        fontWeight: 700, color: highlight ? 'var(--gold-d)' : 'var(--ink)',
-      }}>
-        {value}
-      </div>
-    </div>
-  )
-}
-
-/* ═══════════════════════════════════════ */
-/*  CAREER SELECTOR — searchable dropdown  */
-/* ═══════════════════════════════════════ */
-
-function CareerSelector({
-  careers,
-  refSkills,
-  selected,
-  onSelect,
-  onConfirm,
+// ══════════════════════════════════════════════════════════════════════════════
+//  STEP 4: Career
+// ══════════════════════════════════════════════════════════════════════════════
+function CareerStep({
+  careers, skillMap, selected, freeCareerPicks,
+  onSelect, onPickToggle, onConfirm, onBack,
 }: {
   careers: RefCareer[]
-  refSkills: RefSkill[]
+  skillMap: Record<string, RefSkill>
   selected: RefCareer | null
-  onSelect: (car: RefCareer) => void
+  freeCareerPicks: string[]
+  onSelect: (c: RefCareer) => void
+  onPickToggle: (k: string) => void
   onConfirm: () => void
+  onBack: () => void
 }) {
   const [query, setQuery] = useState('')
+  const [sourceTab, setSourceTab] = useState<string>('All')
   const [open, setOpen] = useState(!selected)
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const skillMap = useMemo(() => Object.fromEntries(refSkills.map(s => [s.key, s.name])), [refSkills])
+  const sourceTabs = useMemo(() => {
+    const tabs = new Set<string>(['All'])
+    careers.forEach(c => tabs.add(sourceToTab(c.source)))
+    return Array.from(tabs)
+  }, [careers])
 
   const filtered = useMemo(() => {
-    if (!query) return careers
-    const q = query.toLowerCase()
-    return careers.filter(c => c.name.toLowerCase().includes(q))
-  }, [careers, query])
+    let list = careers
+    if (query) { const q = query.toLowerCase(); list = list.filter(c => c.name.toLowerCase().includes(q)) }
+    if (sourceTab !== 'All') list = list.filter(c => sourceToTab(c.source) === sourceTab)
+    return list
+  }, [careers, query, sourceTab])
 
   useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false)
-      }
+    const fn = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false)
     }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
+    document.addEventListener('mousedown', fn)
+    return () => document.removeEventListener('mousedown', fn)
   }, [])
+
+  const canContinue = !!selected && freeCareerPicks.length === 4
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-md)' }}>
-      {/* Dropdown combobox */}
+      {/* Source filter tabs */}
+      <div style={{ display: 'flex', gap: 'var(--sp-xs)', flexWrap: 'wrap' }}>
+        {sourceTabs.map(tab => (
+          <button key={tab}
+            onClick={() => setSourceTab(tab)}
+            style={{
+              background: sourceTab === tab ? 'var(--gold)' : 'rgba(0,0,0,.04)',
+              border: `1px solid ${sourceTab === tab ? 'var(--gold)' : 'var(--bdr-l)'}`,
+              padding: '0.2rem 0.6rem',
+              fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)',
+              fontWeight: 600, letterSpacing: '0.1rem',
+              color: sourceTab === tab ? 'var(--white)' : 'var(--txt3)',
+              cursor: 'pointer',
+            }}
+          >{tab}</button>
+        ))}
+      </div>
+
+      {/* Search + dropdown */}
       <div ref={containerRef} style={{ position: 'relative' }}>
         <div
           onClick={() => { setOpen(true); setTimeout(() => inputRef.current?.focus(), 0) }}
           style={{
             display: 'flex', alignItems: 'center',
             background: 'var(--white)', border: `1px solid ${open ? 'var(--gold)' : 'var(--bdr-l)'}`,
-            padding: '0.45rem 0.75rem', cursor: 'text',
-            transition: 'border-color .2s',
+            padding: '0.45rem 0.75rem', cursor: 'text', transition: 'border-color .2s',
           }}
         >
-          <input
-            ref={inputRef}
-            placeholder={selected ? selected.name : 'Search careers...'}
-            value={query}
-            onChange={e => { setQuery(e.target.value); setOpen(true) }}
-            onFocus={() => setOpen(true)}
-            style={{
-              flex: 1, border: 'none', outline: 'none', background: 'transparent',
-              fontFamily: 'var(--font-mono)', fontSize: 'var(--font-base)',
-              letterSpacing: '0.05rem', color: 'var(--ink)',
-            }}
-          />
-          <span style={{
-            fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)',
-            color: 'var(--txt3)', cursor: 'pointer', userSelect: 'none',
-          }}
-            onClick={e => { e.stopPropagation(); setOpen(!open) }}
-          >
-            {open ? '\u25B2' : '\u25BC'}
-          </span>
+          <input ref={inputRef} placeholder={selected ? selected.name : 'Search careers...'}
+            value={query} onChange={e => { setQuery(e.target.value); setOpen(true) }} onFocus={() => setOpen(true)}
+            style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontFamily: 'var(--font-mono)', fontSize: 'var(--font-base)' }} />
+          <span onClick={e => { e.stopPropagation(); setOpen(o => !o) }}
+            style={{ cursor: 'pointer', color: 'var(--txt3)', userSelect: 'none' }}>{open ? '▲' : '▼'}</span>
         </div>
-
         {open && (
-          <div style={{
-            position: 'absolute', top: '100%', left: 0, right: 0,
-            zIndex: 20, maxHeight: '22rem', overflowY: 'auto',
-            background: 'var(--white)', border: '1px solid var(--bdr-l)',
-            borderTop: 'none',
-            boxShadow: '0 6px 24px rgba(0,0,0,.1)',
-          }}>
+          <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 20, maxHeight: '22rem', overflowY: 'auto', background: 'var(--white)', border: '1px solid var(--bdr-l)', borderTop: 'none', boxShadow: '0 6px 24px rgba(0,0,0,.1)' }}>
             {filtered.length === 0 ? (
-              <div style={{
-                padding: '0.75rem', textAlign: 'center',
-                fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', color: 'var(--txt3)',
-              }}>
-                No careers found
-              </div>
+              <div style={{ padding: '0.75rem', textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', color: 'var(--txt3)' }}>No careers found</div>
             ) : filtered.map(car => {
-              const isSelected = selected?.key === car.key
+              const isSel = selected?.key === car.key
               return (
-                <button
-                  key={car.key}
-                  onClick={() => { onSelect(car); setQuery(''); setOpen(false) }}
-                  style={{
-                    display: 'block', width: '100%', textAlign: 'left',
-                    padding: '0.5rem 0.75rem',
-                    background: isSelected ? 'var(--gold-glow)' : 'transparent',
-                    border: 'none', borderBottom: '1px solid var(--bdr-l)',
-                    cursor: 'pointer', transition: 'background .12s',
-                  }}
-                  onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'rgba(200,162,78,.06)' }}
-                  onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent' }}
+                <button key={car.key} onClick={() => { onSelect(car); setQuery(''); setOpen(false) }}
+                  style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 0.75rem', background: isSel ? 'var(--gold-glow)' : 'transparent', border: 'none', borderBottom: '1px solid var(--bdr-l)', cursor: 'pointer' }}
+                  onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = 'rgba(200,162,78,.06)' }}
+                  onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = 'transparent' }}
                 >
-                  <div style={{
-                    fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-base)',
-                    fontWeight: 700, color: 'var(--ink)', letterSpacing: '0.06rem',
-                  }}>
-                    {car.name}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-base)', fontWeight: 700, color: 'var(--ink)', letterSpacing: '0.06rem' }}>{car.name}</span>
+                    {car.source && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-2xs)', color: 'var(--txt3)' }}>{sourceToTab(car.source)}</span>}
                   </div>
-                  <div style={{
-                    display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginTop: '0.25rem',
-                  }}>
+                  {car.is_force_career && (
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-2xs)', fontWeight: 700, color: '#5AAAE0', background: 'rgba(90,170,224,.08)', border: '1px solid rgba(90,170,224,.3)', padding: '0.04rem 0.4rem', marginRight: '0.25rem' }}>FORCE</span>
+                  )}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.2rem', marginTop: '0.2rem' }}>
                     {car.career_skill_keys?.map(k => (
-                      <span key={k} style={{
-                        fontFamily: 'var(--font-mono)', fontSize: 'var(--font-2xs)', fontWeight: 600,
-                        letterSpacing: '0.04rem', color: '#d64d8a',
-                        background: 'rgba(214,77,138,.08)',
-                        border: '1px solid rgba(214,77,138,.3)',
-                        padding: '0.04rem 0.25rem', whiteSpace: 'nowrap',
-                      }}>
-                        {skillMap[k] || k}
-                      </span>
+                      <span key={k} style={S.skillPill(true)}>{skillMap[k]?.name || k}</span>
                     ))}
                   </div>
                 </button>
@@ -1139,167 +1238,124 @@ function CareerSelector({
         )}
       </div>
 
-      {/* Selected career card */}
+      {/* Selected career + skill picker */}
       {selected && (
-        <div style={{
-          background: 'rgba(255,255,255,.72)', backdropFilter: 'blur(8px)',
-          border: '2px solid var(--gold)', padding: 'var(--sp-md) var(--sp-lg)',
-        }}>
-          <div style={{
-            fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-md)',
-            fontWeight: 800, color: 'var(--ink)', letterSpacing: '0.1rem',
-            marginBottom: 'var(--sp-sm)',
-          }}>
-            {selected.name}
+        <div style={{ background: 'rgba(255,255,255,.72)', backdropFilter: 'blur(8px)', border: '2px solid var(--gold)', padding: 'var(--sp-md) var(--sp-lg)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-sm)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-md)', fontWeight: 800, color: 'var(--ink)', letterSpacing: '0.1rem' }}>
+              {selected.name}
+            </div>
+            {selected.source && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', color: 'var(--txt3)' }}>{selected.source}</span>}
           </div>
 
-          <div style={{
-            fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)',
-            fontWeight: 700, letterSpacing: '0.1rem', color: 'var(--txt3)',
-            marginBottom: '0.25rem',
-          }}>
-            CAREER SKILLS
+          <div style={{ ...S.labelXs, color: freeCareerPicks.length === 4 ? '#4EC87A' : 'var(--txt3)' }}>
+            SELECT 4 FREE CAREER SKILLS — {freeCareerPicks.length}/4 chosen
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginBottom: 'var(--sp-sm)' }}>
-            {selected.career_skill_keys?.map(k => (
-              <span key={k} style={{
-                fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', fontWeight: 600,
-                letterSpacing: '0.04rem', color: '#d64d8a',
-                background: 'rgba(214,77,138,.08)',
-                border: '1px solid rgba(214,77,138,.3)',
-                padding: '0.08rem 0.5rem', whiteSpace: 'nowrap',
-              }}>
-                {skillMap[k] || k}
-              </span>
-            ))}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '0.3rem' }}>
+            {selected.career_skill_keys?.map(k => {
+              const picked = freeCareerPicks.includes(k)
+              const full = !picked && freeCareerPicks.length >= 4
+              return (
+                <label key={k} style={{
+                  display: 'flex', alignItems: 'center', gap: '0.4rem',
+                  padding: 'var(--sp-xs) var(--sp-sm)',
+                  background: picked ? 'rgba(214,77,138,.1)' : 'rgba(0,0,0,.03)',
+                  border: `1px solid ${picked ? 'rgba(214,77,138,.4)' : 'var(--bdr-l)'}`,
+                  cursor: full ? 'not-allowed' : 'pointer',
+                  opacity: full ? 0.4 : 1,
+                }}>
+                  <input type="checkbox" checked={picked} disabled={full}
+                    onChange={() => onPickToggle(k)} />
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', color: 'var(--txt2)' }}>
+                    {skillMap[k]?.name || k}
+                  </span>
+                </label>
+              )
+            })}
           </div>
 
           {selected.description && (
-            <div style={{
-              fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)',
-              fontWeight: 400, color: 'var(--txt2)', lineHeight: 1.6,
-            }}
-              dangerouslySetInnerHTML={{
-                __html: selected.description
-                  .replace(/\[H4\]([\s\S]*?)\[h4\]/g, '<strong style="display:block;margin-top:0.5rem;font-weight:700;color:var(--ink)">$1</strong>')
-                  .replace(/\[B\]([\s\S]*?)\[b\]/g, '<strong>$1</strong>')
-                  .replace(/\[P\]/g, '<br/><br/>')
-                  .replace(/\[I\]([\s\S]*?)\[i\]/g, '<em>$1</em>')
-                  .replace(/\[BR\]/gi, '<br/>')
-              }}
-            />
+            <CollapsibleDesc html={parseBB(selected.description)} />
           )}
 
-          <button
-            onClick={onConfirm}
-            style={{
-              marginTop: 'var(--sp-md)', width: '100%',
-              background: 'var(--gold)', border: 'none',
-              padding: 'var(--sp-sm) var(--sp-lg)',
-              fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)',
-              fontWeight: 700, color: 'var(--white)', cursor: 'pointer',
-              letterSpacing: '0.15rem', transition: '.2s',
-            }}
-          >
-            CONFIRM CAREER
-          </button>
+          <div style={{ display: 'flex', gap: 'var(--sp-sm)', marginTop: 'var(--sp-sm)' }}>
+            <button onClick={onBack} style={{ ...S.ghostBtn, flex: 1 }}>← BACK</button>
+            <button onClick={onConfirm} disabled={!canContinue}
+              style={{ ...S.goldBtn, flex: 2, opacity: canContinue ? 1 : 0.4, cursor: canContinue ? 'pointer' : 'default' }}>
+              {freeCareerPicks.length < 4 ? `PICK ${4 - freeCareerPicks.length} MORE SKILL${4 - freeCareerPicks.length !== 1 ? 'S' : ''}` : 'CONFIRM CAREER →'}
+            </button>
+          </div>
         </div>
       )}
+      {!selected && <button onClick={onBack} style={S.ghostBtn}>← BACK</button>}
     </div>
   )
 }
 
-/* ═══════════════════════════════════════════════ */
-/*  SPECIALIZATION SELECTOR — searchable dropdown  */
-/* ═══════════════════════════════════════════════ */
-
-function SpecializationSelector({
-  specializations,
-  refSkills,
-  careerKey,
-  selected,
-  onSelect,
-  onConfirm,
+// ══════════════════════════════════════════════════════════════════════════════
+//  STEP 5: Specialisation
+// ══════════════════════════════════════════════════════════════════════════════
+function SpecStep({
+  specializations, skillMap, careerKey, selected, freeSpecPicks,
+  onSelect, onSpecPickToggle, onConfirm, onBack,
 }: {
   specializations: RefSpecialization[]
-  refSkills: RefSkill[]
+  skillMap: Record<string, RefSkill>
   careerKey: string
   selected: RefSpecialization | null
-  onSelect: (spec: RefSpecialization) => void
+  freeSpecPicks: string[]
+  onSelect: (s: RefSpecialization) => void
+  onSpecPickToggle: (k: string) => void
   onConfirm: () => void
+  onBack: () => void
 }) {
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState(!selected)
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const skillMap = useMemo(() => Object.fromEntries(refSkills.map(s => [s.key, s.name])), [refSkills])
-
-  // Career specs first, non-career after
-  const sorted = useMemo(() => {
-    const career = specializations.filter(s => s.career_key === careerKey)
-    const other = specializations.filter(s => s.career_key !== careerKey)
-    return { career, other }
-  }, [specializations, careerKey])
+  const careerSpecs = useMemo(() => specializations.filter(s => s.career_key === careerKey), [specializations, careerKey])
+  const otherSpecs = useMemo(() => specializations.filter(s => s.career_key !== careerKey), [specializations, careerKey])
 
   const filtered = useMemo(() => {
-    if (!query) return { career: sorted.career, other: sorted.other }
+    if (!query) return { career: careerSpecs, other: otherSpecs }
     const q = query.toLowerCase()
     return {
-      career: sorted.career.filter(s => s.name.toLowerCase().includes(q)),
-      other: sorted.other.filter(s => s.name.toLowerCase().includes(q)),
+      career: careerSpecs.filter(s => s.name.toLowerCase().includes(q)),
+      other: otherSpecs.filter(s => s.name.toLowerCase().includes(q)),
     }
-  }, [sorted, query])
+  }, [careerSpecs, otherSpecs, query])
 
   useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false)
-      }
+    const fn = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false)
     }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
+    document.addEventListener('mousedown', fn)
+    return () => document.removeEventListener('mousedown', fn)
   }, [])
 
-  const renderItem = (spec: RefSpecialization, isCareer: boolean) => {
-    const isSelected = selected?.key === spec.key
+  const canContinue = !!selected && freeSpecPicks.length === 2
+
+  const renderSpecItem = (spec: RefSpecialization, isCareer: boolean) => {
+    const isSel = selected?.key === spec.key
     return (
-      <button
-        key={spec.key}
-        onClick={() => { onSelect(spec); setQuery(''); setOpen(false) }}
-        style={{
-          display: 'block', width: '100%', textAlign: 'left',
-          padding: '0.5rem 0.75rem',
-          background: isSelected ? 'var(--gold-glow)' : 'transparent',
-          border: 'none', borderBottom: '1px solid var(--bdr-l)',
-          cursor: 'pointer', transition: 'background .12s',
-          opacity: isCareer ? 1 : 0.6,
-        }}
-        onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'rgba(200,162,78,.06)' }}
-        onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent' }}
+      <button key={spec.key} onClick={() => { onSelect(spec); setQuery(''); setOpen(false) }}
+        style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 0.75rem', background: isSel ? 'var(--gold-glow)' : 'transparent', border: 'none', borderBottom: '1px solid var(--bdr-l)', cursor: 'pointer', opacity: isCareer ? 1 : 0.7 }}
+        onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = 'rgba(200,162,78,.06)' }}
+        onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = 'transparent' }}
       >
-        <div style={{
-          fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-base)',
-          fontWeight: 700, color: 'var(--ink)', letterSpacing: '0.06rem',
-        }}>
-          {spec.name}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <span style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-base)', fontWeight: 700, color: 'var(--ink)', letterSpacing: '0.06rem' }}>{spec.name}</span>
+          {spec.is_force_sensitive && (
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-2xs)', fontWeight: 700, color: '#5AAAE0', background: 'rgba(90,170,224,.08)', border: '1px solid rgba(90,170,224,.3)', padding: '0.04rem 0.35rem' }}>FORCE</span>
+          )}
           {!isCareer && (
-            <span style={{ fontSize: 'var(--font-2xs)', color: 'var(--txt3)', marginLeft: '0.5rem', fontWeight: 500 }}>
-              ({spec.career_key})
-            </span>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-2xs)', color: 'var(--txt3)' }}>({sourceToTab(spec.source)})</span>
           )}
         </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginTop: '0.25rem' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.2rem', marginTop: '0.2rem' }}>
           {spec.career_skill_keys?.map(k => (
-            <span key={k} style={{
-              fontFamily: 'var(--font-mono)', fontSize: 'var(--font-2xs)', fontWeight: 600,
-              letterSpacing: '0.04rem', color: '#d64d8a',
-              background: 'rgba(214,77,138,.08)',
-              border: '1px solid rgba(214,77,138,.3)',
-              padding: '0.04rem 0.25rem', whiteSpace: 'nowrap',
-            }}>
-              {skillMap[k] || k}
-            </span>
+            <span key={k} style={S.skillPill(true)}>{skillMap[k]?.name || k}</span>
           ))}
         </div>
       </button>
@@ -1308,733 +1364,680 @@ function SpecializationSelector({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-md)' }}>
-      {/* Dropdown combobox */}
+      <p style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', color: 'var(--txt2)', margin: 0, lineHeight: 1.6 }}>
+        Your <strong>first specialisation</strong> is free (must be from your career). It grants 4 bonus career skills — pick 2 for a free rank.
+      </p>
+
+      {/* First spec dropdown */}
       <div ref={containerRef} style={{ position: 'relative' }}>
         <div
           onClick={() => { setOpen(true); setTimeout(() => inputRef.current?.focus(), 0) }}
-          style={{
-            display: 'flex', alignItems: 'center',
-            background: 'var(--white)', border: `1px solid ${open ? 'var(--gold)' : 'var(--bdr-l)'}`,
-            padding: '0.45rem 0.75rem', cursor: 'text',
-            transition: 'border-color .2s',
-          }}
+          style={{ display: 'flex', alignItems: 'center', background: 'var(--white)', border: `1px solid ${open ? 'var(--gold)' : 'var(--bdr-l)'}`, padding: '0.45rem 0.75rem', cursor: 'text', transition: 'border-color .2s' }}
         >
-          <input
-            ref={inputRef}
-            placeholder={selected ? selected.name : 'Search specializations...'}
-            value={query}
-            onChange={e => { setQuery(e.target.value); setOpen(true) }}
-            onFocus={() => setOpen(true)}
-            style={{
-              flex: 1, border: 'none', outline: 'none', background: 'transparent',
-              fontFamily: 'var(--font-mono)', fontSize: 'var(--font-base)',
-              letterSpacing: '0.05rem', color: 'var(--ink)',
-            }}
-          />
-          <span style={{
-            fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)',
-            color: 'var(--txt3)', cursor: 'pointer', userSelect: 'none',
-          }}
-            onClick={e => { e.stopPropagation(); setOpen(!open) }}
-          >
-            {open ? '\u25B2' : '\u25BC'}
-          </span>
+          <input ref={inputRef} placeholder={selected ? selected.name : 'Search career specialisations...'}
+            value={query} onChange={e => { setQuery(e.target.value); setOpen(true) }} onFocus={() => setOpen(true)}
+            style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontFamily: 'var(--font-mono)', fontSize: 'var(--font-base)' }} />
+          <span onClick={e => { e.stopPropagation(); setOpen(o => !o) }}
+            style={{ cursor: 'pointer', color: 'var(--txt3)', userSelect: 'none' }}>{open ? '▲' : '▼'}</span>
         </div>
-
         {open && (
-          <div style={{
-            position: 'absolute', top: '100%', left: 0, right: 0,
-            zIndex: 20, maxHeight: '22rem', overflowY: 'auto',
-            background: 'var(--white)', border: '1px solid var(--bdr-l)',
-            borderTop: 'none',
-            boxShadow: '0 6px 24px rgba(0,0,0,.1)',
-          }}>
+          <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 20, maxHeight: '22rem', overflowY: 'auto', background: 'var(--white)', border: '1px solid var(--bdr-l)', borderTop: 'none', boxShadow: '0 6px 24px rgba(0,0,0,.1)' }}>
             {filtered.career.length === 0 && filtered.other.length === 0 ? (
-              <div style={{
-                padding: '0.75rem', textAlign: 'center',
-                fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', color: 'var(--txt3)',
-              }}>
-                No specializations found
-              </div>
+              <div style={{ padding: '0.75rem', textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', color: 'var(--txt3)' }}>No specialisations found</div>
             ) : (
               <>
-                {filtered.career.map(s => renderItem(s, true))}
+                {filtered.career.map(s => renderSpecItem(s, true))}
                 {filtered.other.length > 0 && filtered.career.length > 0 && (
-                  <div style={{
-                    padding: '0.25rem 0.75rem',
-                    fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)',
-                    fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--txt3)',
-                    background: 'rgba(0,0,0,.03)', borderBottom: '1px solid var(--bdr-l)',
-                  }}>
+                  <div style={{ padding: '0.2rem 0.75rem', fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--txt3)', background: 'rgba(0,0,0,.03)', borderBottom: '1px solid var(--bdr-l)' }}>
                     OTHER CAREERS
                   </div>
                 )}
-                {filtered.other.map(s => renderItem(s, false))}
+                {filtered.other.map(s => renderSpecItem(s, false))}
               </>
             )}
           </div>
         )}
       </div>
 
-      {/* Selected spec card */}
+      {/* Selected first spec card */}
       {selected && (
-        <div style={{
-          background: 'rgba(255,255,255,.72)', backdropFilter: 'blur(8px)',
-          border: '2px solid var(--gold)', padding: 'var(--sp-md) var(--sp-lg)',
-        }}>
-          <div style={{
-            fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-md)',
-            fontWeight: 800, color: 'var(--ink)', letterSpacing: '0.1rem',
-            marginBottom: 'var(--sp-sm)',
-          }}>
-            {selected.name}
+        <div style={{ background: 'rgba(255,255,255,.72)', backdropFilter: 'blur(8px)', border: '2px solid var(--gold)', padding: 'var(--sp-md) var(--sp-lg)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-sm)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-md)', fontWeight: 800, color: 'var(--ink)', letterSpacing: '0.1rem' }}>{selected.name}</span>
+            {selected.is_force_sensitive && (
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', fontWeight: 700, color: '#5AAAE0', background: 'rgba(90,170,224,.08)', border: '1px solid rgba(90,170,224,.3)', padding: '0.04rem 0.4rem' }}>FORCE</span>
+            )}
           </div>
 
-          <div style={{
-            fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)',
-            fontWeight: 700, letterSpacing: '0.1rem', color: 'var(--txt3)',
-            marginBottom: '0.25rem',
-          }}>
-            BONUS SKILLS
-          </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginBottom: 'var(--sp-sm)' }}>
-            {selected.career_skill_keys?.map(k => (
-              <span key={k} style={{
-                fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', fontWeight: 600,
-                letterSpacing: '0.04rem', color: '#d64d8a',
-                background: 'rgba(214,77,138,.08)',
-                border: '1px solid rgba(214,77,138,.3)',
-                padding: '0.08rem 0.5rem', whiteSpace: 'nowrap',
-              }}>
-                {skillMap[k] || k}
-              </span>
-            ))}
+          <div>
+            <div style={{ ...S.labelXs, color: freeSpecPicks.length === 2 ? '#4EC87A' : 'var(--txt3)', marginBottom: '0.4rem' }}>
+              BONUS CAREER SKILLS — pick 2 for free rank: {freeSpecPicks.length}/2
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
+              {selected.career_skill_keys?.map(k => {
+                const picked = freeSpecPicks.includes(k)
+                const full = !picked && freeSpecPicks.length >= 2
+                return (
+                  <label key={k} style={{
+                    display: 'flex', alignItems: 'center', gap: '0.35rem',
+                    padding: '0.2rem 0.6rem',
+                    background: picked ? 'rgba(214,77,138,.12)' : 'rgba(0,0,0,.04)',
+                    border: `1px solid ${picked ? 'rgba(214,77,138,.4)' : 'var(--bdr-l)'}`,
+                    cursor: full ? 'not-allowed' : 'pointer', opacity: full ? 0.4 : 1,
+                  }}>
+                    <input type="checkbox" checked={picked} disabled={full}
+                      onChange={() => onSpecPickToggle(k)} />
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', color: 'var(--txt2)' }}>
+                      {skillMap[k]?.name || k}
+                    </span>
+                  </label>
+                )
+              })}
+            </div>
           </div>
 
-          {selected.description && (
-            <div style={{
-              fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)',
-              fontWeight: 400, color: 'var(--txt2)', lineHeight: 1.6,
-            }}
-              dangerouslySetInnerHTML={{
-                __html: selected.description
-                  .replace(/\[H4\]([\s\S]*?)\[h4\]/g, '<strong style="display:block;margin-top:0.5rem;font-weight:700;color:var(--ink)">$1</strong>')
-                  .replace(/\[B\]([\s\S]*?)\[b\]/g, '<strong>$1</strong>')
-                  .replace(/\[P\]/g, '<br/><br/>')
-                  .replace(/\[I\]([\s\S]*?)\[i\]/g, '<em>$1</em>')
-                  .replace(/\[BR\]/gi, '<br/>')
-              }}
-            />
-          )}
-
-          <button
-            onClick={onConfirm}
-            style={{
-              marginTop: 'var(--sp-md)', width: '100%',
-              background: 'var(--gold)', border: 'none',
-              padding: 'var(--sp-sm) var(--sp-lg)',
-              fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)',
-              fontWeight: 700, color: 'var(--white)', cursor: 'pointer',
-              letterSpacing: '0.15rem', transition: '.2s',
-            }}
-          >
-            CONFIRM SPECIALIZATION
-          </button>
+          {selected.description && <CollapsibleDesc html={parseBB(selected.description)} />}
         </div>
       )}
+
+      <div style={{ display: 'flex', gap: 'var(--sp-sm)', marginTop: 'var(--sp-sm)' }}>
+        <button onClick={onBack} style={{ ...S.ghostBtn, flex: 1 }}>← BACK</button>
+        <button onClick={onConfirm} disabled={!canContinue}
+          style={{ ...S.goldBtn, flex: 2, opacity: canContinue ? 1 : 0.4, cursor: canContinue ? 'pointer' : 'default' }}>
+          {!selected ? 'SELECT A SPECIALISATION' : freeSpecPicks.length < 2 ? `PICK ${2 - freeSpecPicks.length} MORE BONUS SKILL${freeSpecPicks.length === 1 ? '' : 'S'}` : 'CONTINUE → XP INVESTMENT'}
+        </button>
+      </div>
     </div>
   )
 }
 
-/* ═══════════════════════════════════════════════════ */
-/*  SKILLS & TALENTS STEP — free ranks + XP purchases  */
-/* ═══════════════════════════════════════════════════ */
-
-function SkillsTalentsStep({
-  draft,
-  setDraft,
-  refSkills,
-  talentMap,
-  careerSkillKeys,
-  xpRemaining,
-  xpSpentOnSkills,
-  xpSpentOnTalents,
-  onContinue,
+// ══════════════════════════════════════════════════════════════════════════════
+//  STEP 6: XP Investment
+// ══════════════════════════════════════════════════════════════════════════════
+function XpInvestmentStep({
+  draft, setDraft, refSkills, talentMap, careerSkillKeys, allSpecs,
+  specializations, skillMap,
+  xpTotal, baseXp, oblXpBonus, xpSpent, xpRemaining,
+  xpSpentOnChars, xpSpentOnSkills, xpSpentOnTalents, xpSpentOnAdditionalSpecs,
+  onContinue, onBack,
 }: {
   draft: CharacterDraft
   setDraft: React.Dispatch<React.SetStateAction<CharacterDraft>>
   refSkills: RefSkill[]
   talentMap: Record<string, RefTalent>
   careerSkillKeys: Set<string>
+  allSpecs: RefSpecialization[]
+  specializations: RefSpecialization[]
+  skillMap: Record<string, RefSkill>
+  xpTotal: number
+  baseXp: number
+  oblXpBonus: number
+  xpSpent: number
   xpRemaining: number
+  xpSpentOnChars: number
   xpSpentOnSkills: number
   xpSpentOnTalents: number
+  xpSpentOnAdditionalSpecs: number
   onContinue: () => void
+  onBack: () => void
 }) {
-  const careerSkills = draft.career?.career_skill_keys || []
-  const specSkills = draft.specialization?.career_skill_keys || []
+  const [section, setSection] = useState<'chars' | 'skills' | 'specs' | 'talents'>('chars')
+  const [activeTalentSpecKey, setActiveTalentSpecKey] = useState<string | null>(null)
 
-  // Row 0 talents from the spec's talent tree
-  const row0Talents = useMemo(() => {
-    const tree = draft.specialization?.talent_tree
-    if (!tree?.rows?.length) return []
-    const row0 = tree.rows.find(r => r.index === 0)
-    if (!row0) return []
-    return row0.talents.map((tKey, col) => ({
-      key: tKey,
-      col,
-      cost: row0.cost || ROW_COSTS[0],
-      talent: talentMap[tKey],
-    })).filter(t => t.talent)
-  }, [draft.specialization, talentMap])
+  // Derived active talent spec (falls back to first if none selected or spec was removed)
+  const activeTalentSpec = allSpecs.find(s => s.key === activeTalentSpecKey) ?? allSpecs[0] ?? null
 
-  const [careerPickWarning, setCareerPickWarning] = useState(false)
+  // Additional specs (for section D)
+  const existingKeys = useMemo(() => {
+    const s = new Set<string>()
+    if (draft.specialization) s.add(draft.specialization.key)
+    draft.additionalSpecs.forEach(a => s.add(a.key))
+    return s
+  }, [draft.specialization, draft.additionalSpecs])
 
-  const toggleFreeCareer = (skillKey: string) => {
-    setDraft(prev => {
-      const picks = [...prev.freeCareerPicks]
-      const idx = picks.indexOf(skillKey)
-      if (idx >= 0) {
-        picks.splice(idx, 1)
-        return { ...prev, freeCareerPicks: picks }
-      } else {
-        if (picks.length >= 2) {
-          setCareerPickWarning(true)
-          return prev
-        }
-        picks.push(skillKey)
-        return { ...prev, freeCareerPicks: picks }
-      }
-    })
-  }
-
-  const toggleFreeSpec = (skillKey: string) => {
-    setDraft(prev => {
-      const picks = [...prev.freeSpecPicks]
-      const idx = picks.indexOf(skillKey)
-      if (idx >= 0) {
-        picks.splice(idx, 1)
-      } else {
-        if (picks.length >= 2) return prev
-        picks.push(skillKey)
-      }
-      return { ...prev, freeSpecPicks: picks }
-    })
-  }
-
-  const [skillRankWarning, setSkillRankWarning] = useState(false)
-
-  const changeSkillRank = (skillKey: string, delta: number) => {
-    setDraft(prev => {
-      const current = prev.skillRanks[skillKey] || 0
-      const newRank = current + delta
-      if (newRank < 0) return prev
-
-      // Max 2 purchased ranks per skill during creation
-      if (newRank > 2) {
-        setSkillRankWarning(true)
-        return prev
-      }
-
-      const freeRanks = (prev.freeCareerPicks.includes(skillKey) ? 1 : 0) +
-                         (prev.freeSpecPicks.includes(skillKey) ? 1 : 0)
-
-      // Check XP cost for this increment
-      if (delta > 0) {
-        const isCareer = careerSkillKeys.has(skillKey)
-        const rankBeingBought = freeRanks + current + 1
-        const cost = isCareer ? rankBeingBought * 5 : (rankBeingBought * 5) + 5
-        if (cost > xpRemaining) return prev
-      }
-
-      const newRanks = { ...prev.skillRanks }
-      if (newRank === 0) delete newRanks[skillKey]
-      else newRanks[skillKey] = newRank
-      return { ...prev, skillRanks: newRanks }
-    })
-  }
-
-  const toggleTalent = (tKey: string, col: number, cost: number) => {
-    setDraft(prev => {
-      const existing = prev.talentPicks.findIndex(t => t.key === tKey && t.col === col)
-      if (existing >= 0) {
-        const newPicks = [...prev.talentPicks]
-        newPicks.splice(existing, 1)
-        return { ...prev, talentPicks: newPicks }
-      }
-      // Check XP
-      if (cost > xpRemaining) return prev
-      return {
-        ...prev,
-        talentPicks: [...prev.talentPicks, {
-          key: tKey,
-          specKey: draft.specialization?.key || '',
-          row: 0,
-          col,
-          cost,
-        }],
-      }
-    })
-  }
-
-  const skillName = (key: string) => {
-    const sk = refSkills.find(s => s.key === key)
-    return sk?.name || key
-  }
-
-  const badgeStyle = (active: boolean): React.CSSProperties => ({
-    fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', fontWeight: 600,
-    letterSpacing: '0.04rem',
-    color: active ? '#d64d8a' : 'var(--txt3)',
-    background: active ? 'rgba(214,77,138,.12)' : 'rgba(0,0,0,.04)',
-    border: `1px solid ${active ? 'rgba(214,77,138,.4)' : 'var(--bdr-l)'}`,
-    padding: '0.25rem 0.45rem',
-    cursor: 'pointer', transition: '.15s', whiteSpace: 'nowrap',
-  })
-
-  const sectionHeader = (text: string): React.CSSProperties => ({
-    fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)',
-    fontWeight: 700, letterSpacing: '0.12rem', color: 'var(--txt3)',
-    marginBottom: 'var(--sp-xs)',
-  })
+  const xpColor = xpRemaining < 0 ? '#E05050' : xpRemaining < 20 ? '#E09050' : '#4EC87A'
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-lg)' }}>
-      {/* XP bar */}
-      <div style={{
-        background: 'rgba(255,255,255,.72)', backdropFilter: 'blur(8px)',
-        border: '1px solid var(--bdr-l)', padding: 'var(--sp-sm) var(--sp-md)',
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-      }}>
-        <span style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)', fontWeight: 700, color: 'var(--gold-d)', letterSpacing: '0.1rem' }}>
-          {xpRemaining} XP REMAINING
-        </span>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', color: 'var(--txt3)' }}>
-          Skills: {xpSpentOnSkills} / Talents: {xpSpentOnTalents}
-        </span>
-      </div>
+    <HudCard title="XP Investment" animClass="au d1">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-md)' }}>
 
-      {/* A) Free Career Skills */}
-      <HudCard title="Free Career Skill Ranks" animClass="au d1">
-        <div style={sectionHeader(`${draft.freeCareerPicks.length}/2 CAREER RANKS ALLOCATED`)}>
-          {draft.freeCareerPicks.length}/2 CAREER RANKS ALLOCATED
+        {/* Persistent XP header */}
+        <div style={{
+          position: 'sticky', top: 'var(--sp-sm)', zIndex: 10,
+          background: 'rgba(255,255,255,.95)', backdropFilter: 'blur(8px)',
+          border: '1px solid var(--bdr-l)', padding: 'var(--sp-sm) var(--sp-md)',
+          display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 'var(--sp-xs)',
+        }}>
+          {[
+            { label: 'TOTAL', val: xpTotal, hint: oblXpBonus > 0 ? `${baseXp}+${oblXpBonus}` : undefined, color: 'var(--gold-d)' },
+            { label: 'CHARS', val: xpSpentOnChars, color: 'var(--ink)' },
+            { label: 'SKILLS', val: xpSpentOnSkills, color: '#d64d8a' },
+            { label: 'REMAINING', val: xpRemaining, color: xpColor },
+          ].map(item => (
+            <div key={item.label} style={{ textAlign: 'center' }}>
+              <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-lg)', fontWeight: 800, color: item.color, lineHeight: 1 }}>
+                {item.val}
+                {item.hint && <span style={{ fontSize: 'var(--font-2xs)', color: 'var(--txt3)', display: 'block', fontWeight: 400 }}>{item.hint}</span>}
+              </div>
+              <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.08rem', color: 'var(--txt3)' }}>{item.label}</div>
+            </div>
+          ))}
         </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
-          {careerSkills.map(sk => {
-            const active = draft.freeCareerPicks.includes(sk)
-            return (
-              <button key={sk} onClick={() => toggleFreeCareer(sk)} style={badgeStyle(active)}>
-                {skillName(sk)} {active ? '✓' : ''}
-              </button>
-            )
-          })}
-        </div>
-      </HudCard>
 
-      {/* Career pick limit warning dialog */}
-      {careerPickWarning && (
-        <div
-          onClick={() => setCareerPickWarning(false)}
-          style={{
-            position: 'fixed', inset: 0, zIndex: 100,
-            background: 'rgba(0,0,0,.45)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}
-        >
-          <div
-            onClick={e => e.stopPropagation()}
-            style={{
-              background: 'var(--white)', border: '2px solid var(--gold)',
-              padding: 'var(--sp-lg) var(--sp-xl)',
-              maxWidth: '24rem', textAlign: 'center',
-              boxShadow: '0 12px 40px rgba(0,0,0,.2)',
-            }}
-          >
-            <div style={{
-              fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-md)',
-              fontWeight: 800, color: 'var(--gold-d)', letterSpacing: '0.12rem',
-              marginBottom: 'var(--sp-sm)',
-            }}>
-              LIMIT REACHED
-            </div>
-            <div style={{
-              fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)',
-              color: 'var(--txt2)', lineHeight: 1.6, marginBottom: 'var(--sp-md)',
-            }}>
-              During character creation, you may only select up to 2 free career skill ranks. Deselect an existing pick to choose a different skill.
-            </div>
-            <button
-              onClick={() => setCareerPickWarning(false)}
+        {/* Section tabs */}
+        <div style={{ display: 'flex', borderBottom: '1px solid var(--bdr-l)', gap: 0 }}>
+          {(['chars', 'skills', 'specs', 'talents'] as const).map(s => (
+            <button key={s} onClick={() => setSection(s)}
               style={{
-                background: 'var(--gold)', border: 'none',
-                padding: 'var(--sp-sm) var(--sp-lg)',
-                fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)',
-                fontWeight: 700, color: 'var(--white)', cursor: 'pointer',
-                letterSpacing: '0.12rem',
+                flex: 1, background: 'none', border: 'none',
+                borderBottom: section === s ? '2px solid var(--gold)' : '2px solid transparent',
+                padding: '0.4rem', cursor: 'pointer',
+                fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)',
+                fontWeight: section === s ? 700 : 500, letterSpacing: '0.08rem',
+                color: section === s ? 'var(--gold-d)' : 'var(--txt3)',
+                marginBottom: '-1px', transition: 'color .15s',
               }}
             >
-              UNDERSTOOD
+              {s === 'chars' ? 'CHARS' : s === 'skills' ? 'SKILLS' : s === 'specs' ? 'MORE SPECS' : 'TALENTS'}
             </button>
-          </div>
+          ))}
         </div>
-      )}
 
-      {/* B) Free Spec Skills */}
-      <HudCard title="Free Spec Bonus Skill Ranks" animClass="au d2">
-        <div style={sectionHeader(`${draft.freeSpecPicks.length}/2 SPEC RANKS ALLOCATED`)}>
-          {draft.freeSpecPicks.length}/2 SPEC RANKS ALLOCATED
-        </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
-          {specSkills.map(sk => {
-            const active = draft.freeSpecPicks.includes(sk)
-            const hasCareerPick = draft.freeCareerPicks.includes(sk)
-            return (
-              <button key={sk} onClick={() => toggleFreeSpec(sk)} style={{
-                ...badgeStyle(active),
-                position: 'relative',
-              }}>
-                {skillName(sk)} {active ? '✓' : ''}
-                {hasCareerPick && (
-                  <span style={{
-                    fontSize: 'var(--font-2xs)', color: 'var(--gold-d)',
-                    marginLeft: '0.25rem',
-                  }}>
-                    (+1)
-                  </span>
-                )}
-              </button>
-            )
-          })}
-        </div>
-      </HudCard>
-
-      {/* C) XP Purchases — Skills */}
-      <HudCard title="XP Skill Purchases" animClass="au d3">
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', color: 'var(--txt3)', marginBottom: 'var(--sp-sm)' }}>
-          Career skills cost rank × 5 XP. Non-career: (rank × 5) + 5 XP.
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', maxHeight: '18rem', overflowY: 'auto' }}>
-          {refSkills.map(sk => {
-            const isCareer = careerSkillKeys.has(sk.key)
-            const freeRanks = (draft.freeCareerPicks.includes(sk.key) ? 1 : 0) +
-                               (draft.freeSpecPicks.includes(sk.key) ? 1 : 0)
-            const purchased = draft.skillRanks[sk.key] || 0
-            const totalRank = freeRanks + purchased
-            const nextRank = totalRank + 1
-            const nextCost = isCareer ? nextRank * 5 : (nextRank * 5) + 5
-
-            // Only show skills that have ranks or are career skills
-            if (!isCareer && totalRank === 0) return null
-
-            return (
-              <div key={sk.key} style={{
-                display: 'flex', alignItems: 'center', gap: 'var(--sp-sm)',
-                padding: '0.25rem 0.5rem',
-                background: isCareer ? 'rgba(214,77,138,.03)' : 'rgba(0,0,0,.02)',
-                border: '1px solid var(--bdr-l)',
-              }}>
-                <span style={{
-                  fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)',
-                  fontWeight: 600, color: isCareer ? 'var(--ink)' : 'var(--txt2)',
-                  flex: 1, minWidth: '8rem',
-                }}>
-                  {sk.name}
-                  {freeRanks > 0 && (
-                    <span style={{ fontSize: 'var(--font-2xs)', color: '#d64d8a', marginLeft: '0.25rem' }}>
-                      {freeRanks} free
+        {/* SECTION A: Characteristics */}
+        {section === 'chars' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-sm)' }}>
+            <div style={{
+              background: 'rgba(224,80,80,.06)', border: '1px solid rgba(224,80,80,.25)',
+              padding: 'var(--sp-sm) var(--sp-md)', display: 'flex', gap: 'var(--sp-sm)', alignItems: 'flex-start',
+            }}>
+              <span style={{ fontSize: 'var(--font-lg)' }}>⚠</span>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', color: '#E05050', lineHeight: 1.5 }}>
+                <strong>CREATION ONLY</strong> — Characteristics cannot be raised with XP after character creation ends. They can only increase later via the Dedication talent.
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--sp-sm)' }}>
+              {CHAR_KEYS.map(key => {
+                const base = draft.species?.[key] ?? 2
+                const val = draft[key]
+                const nextCost = (val + 1) * 10
+                const canUp = val < 5 && xpRemaining >= nextCost
+                const canDown = val > base
+                return (
+                  <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-sm)', padding: '0.3rem 0.6rem', background: 'rgba(255,255,255,.5)', border: '1px solid var(--bdr-l)' }}>
+                    <span style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--txt2)', width: '5rem', letterSpacing: '0.05rem', textTransform: 'uppercase' }}>{key}</span>
+                    <button onClick={() => {
+                      if (canDown) setDraft(p => ({ ...p, [key]: p[key] - 1 }))
+                    }} disabled={!canDown}
+                      style={{ width: '1.4rem', height: '1.4rem', border: '1px solid var(--bdr-l)', background: 'none', cursor: canDown ? 'pointer' : 'default', fontWeight: 700, color: 'var(--txt3)', opacity: canDown ? 1 : 0.3 }}>-</button>
+                    <span style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-lg)', fontWeight: 800, color: 'var(--ink)', width: '1.5rem', textAlign: 'center' }}>{val}</span>
+                    <button onClick={() => {
+                      if (canUp) setDraft(p => ({ ...p, [key]: p[key] + 1 }))
+                    }} disabled={!canUp}
+                      style={{ width: '1.4rem', height: '1.4rem', border: '1px solid var(--bdr-l)', background: 'none', cursor: canUp ? 'pointer' : 'default', fontWeight: 700, color: 'var(--gold-d)', opacity: canUp ? 1 : 0.3 }}>+</button>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', color: 'var(--txt3)', marginLeft: 'auto' }}>
+                      {val < 5 ? `next: ${nextCost}` : 'MAX'}
                     </span>
-                  )}
-                </span>
-                <button
-                  onClick={() => changeSkillRank(sk.key, -1)}
-                  disabled={purchased <= 0}
-                  style={{
-                    width: '1.2rem', height: '1.2rem', border: '1px solid var(--bdr-l)',
-                    background: 'none', cursor: purchased > 0 ? 'pointer' : 'default',
-                    fontSize: 'var(--font-sm)', fontWeight: 700, color: 'var(--txt3)',
-                    opacity: purchased > 0 ? 1 : 0.3, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}
-                >
-                  -
-                </button>
-                <span style={{
-                  fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-base)',
-                  fontWeight: 800, color: totalRank > 0 ? 'var(--ink)' : 'var(--txt3)',
-                  width: '1.2rem', textAlign: 'center',
-                }}>
-                  {totalRank}
-                </span>
-                <button
-                  onClick={() => changeSkillRank(sk.key, 1)}
-                  disabled={purchased >= 2 || nextCost > xpRemaining}
-                  style={{
-                    width: '1.2rem', height: '1.2rem', border: '1px solid var(--bdr-l)',
-                    background: 'none',
-                    cursor: (purchased < 2 && nextCost <= xpRemaining) ? 'pointer' : 'default',
-                    fontSize: 'var(--font-sm)', fontWeight: 700, color: 'var(--gold-d)',
-                    opacity: (purchased < 2 && nextCost <= xpRemaining) ? 1 : 0.3,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}
-                >
-                  +
-                </button>
-                <span style={{
-                  fontFamily: 'var(--font-mono)', fontSize: 'var(--font-2xs)',
-                  color: 'var(--txt3)', width: '3.5rem', textAlign: 'right',
-                }}>
-                  {purchased >= 2 ? 'MAX' : `${nextCost} XP`}
-                </span>
-              </div>
-            )
-          })}
-        </div>
-
-        {/* Skill rank limit warning dialog */}
-        {skillRankWarning && (
-          <div
-            onClick={() => setSkillRankWarning(false)}
-            style={{
-              position: 'fixed', inset: 0, zIndex: 100,
-              background: 'rgba(0,0,0,.45)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}
-          >
-            <div
-              onClick={e => e.stopPropagation()}
-              style={{
-                background: 'var(--white)', border: '2px solid var(--gold)',
-                padding: 'var(--sp-lg) var(--sp-xl)',
-                maxWidth: '24rem', textAlign: 'center',
-                boxShadow: '0 12px 40px rgba(0,0,0,.2)',
-              }}
-            >
-              <div style={{
-                fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-md)',
-                fontWeight: 800, color: 'var(--gold-d)', letterSpacing: '0.12rem',
-                marginBottom: 'var(--sp-sm)',
-              }}>
-                LIMIT REACHED
-              </div>
-              <div style={{
-                fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)',
-                color: 'var(--txt2)', lineHeight: 1.6, marginBottom: 'var(--sp-md)',
-              }}>
-                During character creation, you may only purchase up to 2 ranks per skill with XP. Additional ranks can be acquired after creation through gameplay advancement.
-              </div>
-              <button
-                onClick={() => setSkillRankWarning(false)}
-                style={{
-                  background: 'var(--gold)', border: 'none',
-                  padding: 'var(--sp-sm) var(--sp-lg)',
-                  fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)',
-                  fontWeight: 700, color: 'var(--white)', cursor: 'pointer',
-                  letterSpacing: '0.12rem',
-                }}
-              >
-                UNDERSTOOD
-              </button>
+                  </div>
+                )
+              })}
             </div>
           </div>
         )}
 
-        {/* Show non-career skills button */}
-        <NonCareerSkillExpander
-          refSkills={refSkills}
-          careerSkillKeys={careerSkillKeys}
-          draft={draft}
-          xpRemaining={xpRemaining}
-          changeSkillRank={changeSkillRank}
-        />
-      </HudCard>
+        {/* SECTION B: Skills */}
+        {section === 'skills' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', maxHeight: '28rem', overflowY: 'auto' }}>
+            {refSkills.map(sk => {
+              const isCareer = careerSkillKeys.has(sk.key)
+              const freeRanks = (draft.freeCareerPicks.includes(sk.key) ? 1 : 0) +
+                               (draft.freeSpecPicks.includes(sk.key) ? 1 : 0)
+              const xpRanks = draft.skillRanks[sk.key] || 0
+              const totalRanks = freeRanks + xpRanks
+              const maxAllowed = 2 // max total rank 2 at creation
+              const canUp = totalRanks < maxAllowed && (() => {
+                const rankBeingBought = totalRanks + 1
+                const cost = isCareer ? rankBeingBought * 5 : (rankBeingBought * 5) + 5
+                return xpRemaining >= cost
+              })()
+              const canDown = xpRanks > 0
 
-      {/* D) XP Purchases — Talents (Row 0) */}
-      {row0Talents.length > 0 && (
-        <HudCard title="Starting Talents (Row 1 — 5 XP each)" animClass="au d4">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-            {row0Talents.map(t => {
-              const purchased = draft.talentPicks.some(p => p.key === t.key && p.col === t.col)
+              const rankBeingBought = totalRanks + 1
+              const nextCost = isCareer ? rankBeingBought * 5 : (rankBeingBought * 5) + 5
+
               return (
-                <button
-                  key={`${t.key}-${t.col}`}
-                  onClick={() => toggleTalent(t.key, t.col, t.cost)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 'var(--sp-sm)',
-                    padding: 'var(--sp-sm) var(--sp-md)',
-                    background: purchased ? 'rgba(43,93,174,.08)' : 'rgba(255,255,255,.5)',
-                    border: `1px solid ${purchased ? 'rgba(43,93,174,.4)' : 'var(--bdr-l)'}`,
-                    cursor: (!purchased && t.cost > xpRemaining) ? 'default' : 'pointer',
-                    textAlign: 'left', transition: '.15s', width: '100%',
-                    opacity: (!purchased && t.cost > xpRemaining) ? 0.4 : 1,
-                  }}
-                >
-                  <div style={{ flex: 1 }}>
-                    <div style={{
-                      fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)',
-                      fontWeight: 700, color: purchased ? 'var(--blue)' : 'var(--ink)',
-                      letterSpacing: '0.06rem',
-                    }}>
-                      {t.talent.name} {purchased ? '✓' : ''}
-                    </div>
-                    <div style={{
-                      fontFamily: 'var(--font-mono)', fontSize: 'var(--font-2xs)',
-                      color: 'var(--txt3)', marginTop: '0.25rem',
-                    }}>
-                      {t.talent.activation === 'taPassive' ? 'Passive' :
-                       t.talent.activation === 'taAction' ? 'Action' :
-                       t.talent.activation === 'taManeuver' ? 'Maneuver' : 'Incidental'}
-                      {t.talent.is_ranked ? ' • Ranked' : ''}
-                    </div>
-                    {t.talent.description && (
-                      <div style={{
-                        fontFamily: 'var(--font-mono)', fontSize: 'var(--font-2xs)',
-                        color: 'var(--txt2)', marginTop: '0.25rem', lineHeight: 1.4,
-                      }}
-                        dangerouslySetInnerHTML={{
-                          __html: (t.talent.description.length > 150
-                            ? t.talent.description.slice(0, 150) + '...'
-                            : t.talent.description)
-                            .replace(/\[B\]([\s\S]*?)\[b\]/g, '<strong>$1</strong>')
-                            .replace(/\[I\]([\s\S]*?)\[i\]/g, '<em>$1</em>')
-                        }}
-                      />
-                    )}
-                  </div>
-                  <span style={{
-                    fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)',
-                    fontWeight: 700, color: 'var(--gold-d)', whiteSpace: 'nowrap',
-                  }}>
-                    {t.cost} XP
+                <div key={sk.key} style={{
+                  display: 'flex', alignItems: 'center', gap: 'var(--sp-sm)',
+                  padding: '0.3rem 0.5rem',
+                  background: isCareer ? 'rgba(214,77,138,.04)' : 'rgba(0,0,0,.02)',
+                  border: `1px solid ${isCareer ? 'rgba(214,77,138,.15)' : 'var(--bdr-l)'}`,
+                }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', fontWeight: 600, color: isCareer ? '#d64d8a' : 'var(--txt2)', flex: 1 }}>
+                    {sk.name}
                   </span>
-                </button>
+                  {/* Free rank pips */}
+                  <div style={{ display: 'flex', gap: '0.15rem' }}>
+                    {[0, 1].map(pip => (
+                      <div key={pip} style={{
+                        width: '0.6rem', height: '0.6rem', borderRadius: '50%',
+                        background: pip < freeRanks ? '#d64d8a' : pip < totalRanks ? 'var(--gold-d)' : 'rgba(0,0,0,.15)',
+                        border: `1px solid ${pip < freeRanks ? '#d64d8a' : pip < totalRanks ? 'var(--gold)' : 'var(--bdr-l)'}`,
+                      }} />
+                    ))}
+                  </div>
+                  <button onClick={() => {
+                    if (canDown) setDraft(p => ({ ...p, skillRanks: { ...p.skillRanks, [sk.key]: (p.skillRanks[sk.key] || 0) - 1 } }))
+                  }} disabled={!canDown}
+                    style={{ width: '1.2rem', height: '1.2rem', border: '1px solid var(--bdr-l)', background: 'none', cursor: canDown ? 'pointer' : 'default', fontSize: 'var(--font-xs)', color: 'var(--txt3)', opacity: canDown ? 1 : 0.3 }}>-</button>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', fontWeight: 700, color: 'var(--ink)', width: '0.8rem', textAlign: 'center' }}>{totalRanks}</span>
+                  <button onClick={() => {
+                    if (canUp) {
+                      const cost = isCareer ? rankBeingBought * 5 : (rankBeingBought * 5) + 5
+                      if (xpRemaining >= cost) setDraft(p => ({ ...p, skillRanks: { ...p.skillRanks, [sk.key]: (p.skillRanks[sk.key] || 0) + 1 } }))
+                    }
+                  }} disabled={!canUp}
+                    style={{ width: '1.2rem', height: '1.2rem', border: '1px solid var(--bdr-l)', background: 'none', cursor: canUp ? 'pointer' : 'default', fontSize: 'var(--font-xs)', color: 'var(--gold-d)', opacity: canUp ? 1 : 0.3 }}>+</button>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', color: 'var(--txt3)', width: '3.5rem', textAlign: 'right' }}>
+                    {totalRanks < 2 ? `${nextCost} XP` : 'MAX'}
+                  </span>
+                </div>
               )
             })}
           </div>
-        </HudCard>
-      )}
+        )}
 
-      {/* Continue */}
-      <button
-        onClick={onContinue}
-        style={{
-          background: 'var(--gold)', border: 'none',
-          padding: 'var(--sp-sm) var(--sp-lg)',
-          fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)',
-          fontWeight: 700, color: 'var(--white)', cursor: 'pointer',
-          letterSpacing: '0.15rem', transition: '.2s',
-        }}
-      >
-        CONTINUE TO DETAILS
-      </button>
+        {/* SECTION C: Additional Specs */}
+        {section === 'specs' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-sm)' }}>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', color: 'var(--txt2)', margin: 0, lineHeight: 1.6 }}>
+              Purchase additional specialisations with starting XP. Only your first specialisation grants 2 free bonus skill ranks — additional specs add skills to your career list only.
+            </p>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', color: 'var(--txt3)' }}>
+              Next cost: {(draft.additionalSpecs.length + 2) * 10} XP (career) / {(draft.additionalSpecs.length + 2) * 10 + 10} XP (non-career)
+            </div>
+
+            {draft.additionalSpecs.map((spec, idx) => {
+              const isCareerSpec = spec.career_key === draft.career?.key
+              const cost = (idx + 2) * 10 + (isCareerSpec ? 0 : 10)
+              return (
+                <div key={spec.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--sp-xs) var(--sp-sm)', background: 'rgba(0,0,0,.04)', border: '1px solid var(--bdr-l)' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--txt2)' }}>
+                    {spec.name} <span style={{ color: 'var(--txt3)', fontWeight: 400 }}>({cost} XP)</span>
+                  </span>
+                  <button onClick={() => setDraft(p => ({ ...p, additionalSpecs: p.additionalSpecs.filter(s => s.key !== spec.key), talentPicks: p.talentPicks.filter(t => t.specKey !== spec.key) }))}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', color: 'var(--red)' }}>
+                    Remove
+                  </button>
+                </div>
+              )
+            })}
+
+            <div style={{ maxHeight: '18rem', display: 'flex', flexDirection: 'column', background: 'rgba(6,13,9,0.96)', border: '1px solid rgba(200,170,80,0.18)', borderRadius: 4, padding: '8px', overflow: 'hidden' }}>
+              <SpecSelectorList
+                refSpecs={specializations}
+                ownedKeys={existingKeys}
+                careerKey={draft.career?.key ?? ''}
+                getSpecCost={spec => {
+                  const isCareer = spec.career_key === draft.career?.key
+                  return (draft.additionalSpecs.length + 2) * 10 + (isCareer ? 0 : 10)
+                }}
+                canAfford={spec => {
+                  const isCareer = spec.career_key === draft.career?.key
+                  const cost = (draft.additionalSpecs.length + 2) * 10 + (isCareer ? 0 : 10)
+                  return xpRemaining >= cost
+                }}
+                onSelect={spec => setDraft(p => {
+                  if (p.additionalSpecs.some(s => s.key === spec.key)) return p
+                  return { ...p, additionalSpecs: [...p.additionalSpecs, spec] }
+                })}
+                searchPlaceholder="Search to add a specialisation…"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* SECTION D: Talents */}
+        {section === 'talents' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-md)' }}>
+            {/* Spec selector — only shown when there are multiple specs to choose from */}
+            {allSpecs.length > 1 && (
+              <div style={{ display: 'flex', gap: 'var(--sp-xs)', flexWrap: 'wrap' }}>
+                {allSpecs.map(spec => (
+                  <button
+                    key={spec.key}
+                    onClick={() => setActiveTalentSpecKey(spec.key)}
+                    style={{
+                      padding: '0.3rem 0.75rem',
+                      background: activeTalentSpec?.key === spec.key ? 'rgba(200,162,78,.15)' : 'rgba(0,0,0,.04)',
+                      border: `1px solid ${activeTalentSpec?.key === spec.key ? 'var(--gold)' : 'var(--bdr-l)'}`,
+                      fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', fontWeight: 600,
+                      color: activeTalentSpec?.key === spec.key ? 'var(--gold-d)' : 'var(--txt2)',
+                      cursor: 'pointer', transition: 'border-color .15s, color .15s',
+                    }}
+                  >
+                    {spec.name}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Full talent tree */}
+            {activeTalentSpec ? (() => {
+              const specKey = activeTalentSpec.key
+              const purchasedSet = new Set(
+                draft.talentPicks.filter(p => p.specKey === specKey).map(p => `${p.row}-${p.col}`)
+              )
+              const treeData = buildTalentTree(activeTalentSpec, talentMap, purchasedSet)
+              if (!treeData) return null
+              return (
+                <TalentTree
+                  specName={treeData.specName}
+                  nodes={treeData.nodes}
+                  connections={treeData.connections}
+                  xpAvailable={xpRemaining}
+                  isGmMode
+                  onPurchase={(talentKey, row, col) => {
+                    const cost = ROW_COSTS[row]
+                    setDraft(p => {
+                      if (p.talentPicks.some(t => t.specKey === specKey && t.row === row && t.col === col)) return p
+                      if (xpRemaining < cost) return p
+                      return { ...p, talentPicks: [...p.talentPicks, { key: talentKey, specKey, row, col, cost }] }
+                    })
+                  }}
+                  onRemoveTalent={(talentKey) => {
+                    setDraft(p => ({
+                      ...p,
+                      talentPicks: p.talentPicks.filter(t => !(t.key === talentKey && t.specKey === specKey)),
+                    }))
+                  }}
+                />
+              )
+            })() : (
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', color: 'var(--txt3)', textAlign: 'center', padding: 'var(--sp-lg)' }}>
+                No specialisations selected.
+              </div>
+            )}
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: 'var(--sp-sm)', borderTop: '1px solid var(--bdr-l)', paddingTop: 'var(--sp-md)' }}>
+          <button onClick={onBack} style={{ ...S.ghostBtn, flex: 1 }}>← BACK</button>
+          <button onClick={onContinue}
+            style={{ ...S.goldBtn, flex: 2, opacity: xpRemaining >= 0 ? 1 : 0.4, cursor: xpRemaining >= 0 ? 'pointer' : 'default' }}>
+            {xpRemaining < 0 ? `OVER BY ${Math.abs(xpRemaining)} XP` : 'CONTINUE → MOTIVATION'}
+          </button>
+        </div>
+      </div>
+    </HudCard>
+  )
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  STEP 7: Motivation
+// ══════════════════════════════════════════════════════════════════════════════
+function MotivationStep({
+  motivations, specificMotivations, selectedType, selectedSpecific, motivationDesc,
+  onTypeChange, onSpecificChange, onContinue, onBack,
+}: {
+  motivations: RefMotivation[]
+  specificMotivations: RefSpecificMotivation[]
+  selectedType: string
+  selectedSpecific: string
+  motivationDesc: string
+  onTypeChange: (t: string) => void
+  onSpecificChange: (key: string, desc: string) => void
+  onContinue: () => void
+  onBack: () => void
+}) {
+  const [chooseMode, setChooseMode] = useState(false)
+
+  const currentMotivation = motivations.find(m => m.key === selectedType)
+  const eligibleSpecifics = useMemo(() => {
+    if (!selectedType) return specificMotivations
+    return specificMotivations.filter(sm => sm.motivation_key === selectedType)
+  }, [selectedType, specificMotivations])
+
+  const handleRoll = () => {
+    if (eligibleSpecifics.length === 0) return
+    const picked = eligibleSpecifics[Math.floor(Math.random() * eligibleSpecifics.length)]
+    onSpecificChange(picked.key, picked.description || '')
+    setChooseMode(false)
+  }
+
+  const currentSpecific = specificMotivations.find(sm => sm.key === selectedSpecific)
+
+  return (
+    <HudCard title="Motivation" animClass="au d1">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-md)' }}>
+        <p style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', color: 'var(--txt2)', margin: 0, lineHeight: 1.6 }}>
+          Every character is driven by something. Your Motivation provides story hooks and earns you bonus XP each session when you roleplay it authentically.
+        </p>
+
+        <div>
+          <label style={S.labelXs}>PRIMARY TYPE</label>
+          <select value={selectedType} onChange={e => { onTypeChange(e.target.value); setChooseMode(false) }} style={S.select}>
+            <option value="">— Select type —</option>
+            {motivations.map(m => (
+              <option key={m.key} value={m.key}>{m.name}</option>
+            ))}
+          </select>
+          {currentMotivation?.description && (
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', color: 'var(--txt3)', margin: '0.3rem 0 0', lineHeight: 1.5 }}>
+              {currentMotivation.description.slice(0, 180)}...
+            </p>
+          )}
+        </div>
+
+        {selectedType && (
+          <div>
+            <label style={S.labelXs}>SPECIFIC MOTIVATION</label>
+            <div style={{ display: 'flex', gap: 'var(--sp-sm)', marginBottom: 'var(--sp-sm)' }}>
+              <button onClick={handleRoll}
+                style={{ ...S.goldBtn, width: 'auto', padding: 'var(--sp-sm) var(--sp-md)', flex: 1 }}>
+                🎲 ROLL d100
+              </button>
+              <button onClick={() => setChooseMode(c => !c)}
+                style={{ ...S.ghostBtn, flex: 1 }}>
+                {chooseMode ? 'CANCEL' : 'CHOOSE...'}
+              </button>
+            </div>
+            {chooseMode && (
+              <div style={{ maxHeight: '16rem', overflowY: 'auto', border: '1px solid var(--bdr-l)', background: 'var(--white)', marginBottom: 'var(--sp-sm)' }}>
+                <div style={{ padding: '0.3rem 0.75rem', fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', color: 'var(--txt3)', background: 'rgba(0,0,0,.03)', borderBottom: '1px solid var(--bdr-l)' }}>
+                  Requires GM permission to choose directly
+                </div>
+                {eligibleSpecifics.map(sm => (
+                  <button key={sm.key}
+                    onClick={() => { onSpecificChange(sm.key, sm.description || ''); setChooseMode(false) }}
+                    style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.4rem 0.75rem', background: selectedSpecific === sm.key ? 'var(--gold-glow)' : 'transparent', border: 'none', borderBottom: '1px solid var(--bdr-l)', cursor: 'pointer' }}
+                    onMouseEnter={e => { if (selectedSpecific !== sm.key) e.currentTarget.style.background = 'rgba(200,162,78,.06)' }}
+                    onMouseLeave={e => { if (selectedSpecific !== sm.key) e.currentTarget.style.background = 'transparent' }}
+                  >
+                    <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)', fontWeight: 700, color: 'var(--ink)' }}>{sm.name}</div>
+                    {sm.description && <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', color: 'var(--txt3)', marginTop: '0.1rem' }}>{sm.description.slice(0, 80)}...</div>}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {currentSpecific && (
+          <div style={{ background: 'rgba(200,162,78,.08)', border: '1px solid rgba(200,162,78,.3)', padding: 'var(--sp-sm) var(--sp-md)' }}>
+            <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)', fontWeight: 700, color: 'var(--gold-d)', letterSpacing: '0.08rem', marginBottom: '0.3rem' }}>
+              {currentMotivation?.name} — {currentSpecific.name}
+            </div>
+            {currentSpecific.description && (
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', color: 'var(--txt2)', lineHeight: 1.6 }}>
+                {currentSpecific.description}
+              </div>
+            )}
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: 'var(--sp-sm)' }}>
+          <button onClick={onBack} style={{ ...S.ghostBtn, flex: 1 }}>← BACK</button>
+          <button onClick={onContinue} style={{ ...S.goldBtn, flex: 2 }}>CONTINUE → REVIEW</button>
+        </div>
+        <button onClick={onContinue} style={{ ...S.ghostBtn, width: '100%', fontSize: 'var(--font-xs)', color: 'var(--txt3)' }}>
+          Skip — Set Motivation Later
+        </button>
+      </div>
+    </HudCard>
+  )
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  STEP 8: Review / Confirm
+// ══════════════════════════════════════════════════════════════════════════════
+function ReviewStep({
+  draft, skillMap, talentMap, allSpecs, careerSkillKeys,
+  xpTotal, xpSpent, xpRemaining, xpSpentOnChars, xpSpentOnSkills, xpSpentOnTalents, xpSpentOnAdditionalSpecs,
+  startingObligation, totalObligation, oblXpBonus, extraCredits,
+  saving, onBack, onCreate,
+}: {
+  draft: CharacterDraft
+  skillMap: Record<string, RefSkill>
+  talentMap: Record<string, RefTalent>
+  allSpecs: RefSpecialization[]
+  careerSkillKeys: Set<string>
+  xpTotal: number
+  xpSpent: number
+  xpRemaining: number
+  xpSpentOnChars: number
+  xpSpentOnSkills: number
+  xpSpentOnTalents: number
+  xpSpentOnAdditionalSpecs: number
+  startingObligation: number
+  totalObligation: number
+  oblXpBonus: number
+  extraCredits: number
+  saving: boolean
+  onBack: () => void
+  onCreate: () => void
+}) {
+  const Row = ({ label, val }: { label: string; val: string }) => (
+    <>
+      <span style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)', fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--txt3)' }}>{label}</span>
+      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', color: 'var(--ink)', fontWeight: 600 }}>{val}</span>
+    </>
+  )
+
+  return (
+    <HudCard title="Review Character" animClass="au d1">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-md)' }}>
+
+        {/* Identity */}
+        <div style={{ display: 'grid', gridTemplateColumns: '7rem 1fr', gap: '0.25rem 0.75rem' }}>
+          <Row label="NAME" val={draft.name} />
+          <Row label="PLAYER" val={draft.playerName || 'Player'} />
+          {draft.gender && <Row label="GENDER" val={draft.gender} />}
+          <Row label="SPECIES" val={draft.species?.name || '—'} />
+          <Row label="CAREER" val={draft.career?.name || '—'} />
+          <Row label="SPEC" val={allSpecs.map(s => s.name).join(', ')} />
+        </div>
+
+        {/* Characteristics */}
+        <div>
+          <div style={{ ...S.labelXs, marginBottom: '0.4rem' }}>CHARACTERISTICS</div>
+          <div style={{ display: 'flex', gap: 'var(--sp-md)', flexWrap: 'wrap' }}>
+            {CHAR_KEYS.map(k => (
+              <div key={k} style={{ textAlign: 'center' }}>
+                <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-lg)', fontWeight: 800, color: 'var(--ink)' }}>{draft[k]}</div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)', color: 'var(--txt3)', textTransform: 'uppercase' }}>{CHAR_SHORT[k]}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Derived stats */}
+        <div style={{ display: 'flex', gap: 'var(--sp-md)', flexWrap: 'wrap', borderTop: '1px solid var(--bdr-l)', paddingTop: 'var(--sp-sm)' }}>
+          {draft.species && (
+            <>
+              <StatPill label="WOUNDS" value={String(draft.species.wound_threshold + draft.brawn)} />
+              <StatPill label="STRAIN" value={String(draft.species.strain_threshold + draft.willpower)} />
+              <StatPill label="SOAK" value={String(draft.brawn)} />
+              <StatPill label="ENC TH" value={String(5 + draft.brawn)} />
+            </>
+          )}
+        </div>
+
+        {/* Free ranks */}
+        {(draft.freeCareerPicks.length > 0 || draft.freeSpecPicks.length > 0) && (
+          <div>
+            <div style={{ ...S.labelXs, marginBottom: '0.4rem' }}>FREE SKILL RANKS</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
+              {[...draft.freeCareerPicks, ...draft.freeSpecPicks].map((sk, i) => (
+                <span key={`${sk}-${i}`} style={S.skillPill(true)}>{skillMap[sk]?.name || sk}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* XP breakdown */}
+        <div style={{ borderTop: '1px solid var(--bdr-l)', paddingTop: 'var(--sp-sm)' }}>
+          <div style={{ ...S.labelXs, marginBottom: '0.4rem' }}>XP BREAKDOWN</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
+            {[
+              { label: 'TOTAL', val: xpTotal, color: 'var(--gold-d)', bg: 'rgba(200,162,78,.1)', bdr: 'rgba(200,162,78,.4)' },
+              { label: 'CHARS', val: xpSpentOnChars, color: 'var(--ink)', bg: 'rgba(0,0,0,.04)', bdr: 'var(--bdr-l)' },
+              { label: 'SKILLS', val: xpSpentOnSkills, color: '#d64d8a', bg: 'rgba(214,77,138,.08)', bdr: 'rgba(214,77,138,.3)' },
+              { label: 'TALENTS', val: xpSpentOnTalents, color: 'var(--blue)', bg: 'rgba(43,93,174,.08)', bdr: 'rgba(43,93,174,.3)' },
+              { label: 'ADD SPECS', val: xpSpentOnAdditionalSpecs, color: 'var(--txt2)', bg: 'rgba(0,0,0,.04)', bdr: 'var(--bdr-l)' },
+              { label: 'REMAINING', val: xpRemaining, color: xpRemaining >= 0 ? 'var(--blue)' : '#E05050', bg: 'rgba(43,93,174,.06)', bdr: 'rgba(43,93,174,.3)' },
+            ].map(item => (
+              <div key={item.label} style={{ background: item.bg, border: `1px solid ${item.bdr}`, padding: '0.25rem 0.5rem', textAlign: 'center', minWidth: '4rem' }}>
+                <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-lg)', fontWeight: 800, color: item.color }}>{item.val}</div>
+                <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.08rem', color: 'var(--txt3)' }}>{item.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Obligation / Duty summary */}
+        <div style={{ borderTop: '1px solid var(--bdr-l)', paddingTop: 'var(--sp-sm)', display: 'grid', gridTemplateColumns: '7rem 1fr', gap: '0.25rem 0.75rem' }}>
+          {draft.obligationType && <Row label="OBLIGATION" val={`${draft.obligationType} (${totalObligation})`} />}
+          {draft.dutyType && <Row label="DUTY" val={draft.dutyType} />}
+          {draft.motivationType && <Row label="MOTIVATION" val={`${draft.motivationType}${draft.motivationSpecific ? ` — ${draft.motivationSpecific}` : ''}`} />}
+          {extraCredits > 0 && <Row label="STARTING CR" val={`500 + ${extraCredits.toLocaleString()} = ${(500 + extraCredits).toLocaleString()}`} />}
+        </div>
+
+        <div style={{ display: 'flex', gap: 'var(--sp-sm)', marginTop: 'var(--sp-sm)' }}>
+          <button onClick={onBack} style={{ ...S.ghostBtn, flex: 1 }}>← BACK</button>
+          <button
+            onClick={onCreate} disabled={saving || xpRemaining < 0}
+            style={{ ...S.goldBtn, flex: 2, opacity: (saving || xpRemaining < 0) ? 0.5 : 1, cursor: (saving || xpRemaining < 0) ? 'default' : 'pointer' }}
+          >
+            {saving ? 'CREATING...' : xpRemaining < 0 ? `OVER BY ${Math.abs(xpRemaining)} XP` : 'CREATE CHARACTER'}
+          </button>
+        </div>
+      </div>
+    </HudCard>
+  )
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  Shared sub-components
+// ══════════════════════════════════════════════════════════════════════════════
+function StatPill({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+  return (
+    <div>
+      <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.08rem', color: 'var(--txt3)' }}>{label}</div>
+      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-base)', fontWeight: 700, color: highlight ? 'var(--gold-d)' : 'var(--ink)' }}>{value}</div>
     </div>
   )
 }
 
-/* Non-career skills expandable section */
-function NonCareerSkillExpander({
-  refSkills,
-  careerSkillKeys,
-  draft,
-  xpRemaining,
-  changeSkillRank,
-}: {
-  refSkills: RefSkill[]
-  careerSkillKeys: Set<string>
-  draft: CharacterDraft
-  xpRemaining: number
-  changeSkillRank: (key: string, delta: number) => void
-}) {
-  const [expanded, setExpanded] = useState(false)
-
-  const nonCareerSkills = refSkills.filter(sk => {
-    if (careerSkillKeys.has(sk.key)) return false
-    // Already shown above if it has ranks
-    const purchased = draft.skillRanks[sk.key] || 0
-    const freeRanks = (draft.freeCareerPicks.includes(sk.key) ? 1 : 0) +
-                       (draft.freeSpecPicks.includes(sk.key) ? 1 : 0)
-    if (purchased > 0 || freeRanks > 0) return false
-    return true
-  })
-
-  if (nonCareerSkills.length === 0) return null
-
+function CollapsibleDesc({ html }: { html: string }) {
+  const [open, setOpen] = useState(false)
   return (
-    <div style={{ marginTop: 'var(--sp-sm)' }}>
-      <button
-        onClick={() => setExpanded(!expanded)}
-        style={{
-          background: 'none', border: '1px solid var(--bdr-l)',
-          padding: '0.25rem 0.6rem', cursor: 'pointer',
-          fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)',
-          fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--txt3)',
-          transition: '.2s', width: '100%',
-        }}
-      >
-        {expanded ? '▲ HIDE' : '▼ SHOW'} NON-CAREER SKILLS ({nonCareerSkills.length})
+    <div style={{ borderTop: '1px solid var(--bdr-l)', paddingTop: 'var(--sp-xs)' }}>
+      <button onClick={() => setOpen(o => !o)}
+        style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)', fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--txt3)', padding: 0 }}>
+        {open ? '▲ HIDE' : '▼ SHOW DESCRIPTION'}
       </button>
-      {expanded && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginTop: '0.25rem' }}>
-          {nonCareerSkills.map(sk => {
-            const purchased = draft.skillRanks[sk.key] || 0
-            const totalRank = purchased
-            const nextRank = totalRank + 1
-            const nextCost = (nextRank * 5) + 5
-
-            return (
-              <div key={sk.key} style={{
-                display: 'flex', alignItems: 'center', gap: 'var(--sp-sm)',
-                padding: '0.25rem 0.5rem',
-                background: 'rgba(0,0,0,.02)',
-                border: '1px solid var(--bdr-l)',
-              }}>
-                <span style={{
-                  fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)',
-                  fontWeight: 600, color: 'var(--txt2)', flex: 1, minWidth: '8rem',
-                }}>
-                  {sk.name}
-                </span>
-                <button
-                  onClick={() => changeSkillRank(sk.key, -1)}
-                  disabled={purchased <= 0}
-                  style={{
-                    width: '1.2rem', height: '1.2rem', border: '1px solid var(--bdr-l)',
-                    background: 'none', cursor: purchased > 0 ? 'pointer' : 'default',
-                    fontSize: 'var(--font-sm)', fontWeight: 700, color: 'var(--txt3)',
-                    opacity: purchased > 0 ? 1 : 0.3, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}
-                >
-                  -
-                </button>
-                <span style={{
-                  fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-base)',
-                  fontWeight: 800, color: totalRank > 0 ? 'var(--ink)' : 'var(--txt3)',
-                  width: '1.2rem', textAlign: 'center',
-                }}>
-                  {totalRank}
-                </span>
-                <button
-                  onClick={() => changeSkillRank(sk.key, 1)}
-                  disabled={purchased >= 2 || nextCost > xpRemaining}
-                  style={{
-                    width: '1.2rem', height: '1.2rem', border: '1px solid var(--bdr-l)',
-                    background: 'none',
-                    cursor: (purchased < 2 && nextCost <= xpRemaining) ? 'pointer' : 'default',
-                    fontSize: 'var(--font-sm)', fontWeight: 700, color: 'var(--gold-d)',
-                    opacity: (purchased < 2 && nextCost <= xpRemaining) ? 1 : 0.3,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}
-                >
-                  +
-                </button>
-                <span style={{
-                  fontFamily: 'var(--font-mono)', fontSize: 'var(--font-2xs)',
-                  color: 'var(--txt3)', width: '3.5rem', textAlign: 'right',
-                }}>
-                  {purchased >= 2 ? 'MAX' : `${nextCost} XP`}
-                </span>
-              </div>
-            )
-          })}
-        </div>
+      {open && (
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)', color: 'var(--txt2)', lineHeight: 1.6, marginTop: 'var(--sp-xs)' }}
+          dangerouslySetInnerHTML={{ __html: html }} />
       )}
     </div>
   )

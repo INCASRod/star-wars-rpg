@@ -7,6 +7,7 @@ import { Tooltip, TipLabel, TipBody, TipDivider } from '@/components/ui/Tooltip'
 import { getSkillTip } from '@/lib/tooltips/skillDescriptions'
 import { PanelSearchInput } from '@/components/character/PanelSearchInput'
 import type { SkillDiceModifier } from '@/lib/derivedStats'
+import type { SpeciesAbility } from '@/lib/types'
 
 export interface HudSkill {
   key: string
@@ -27,6 +28,8 @@ interface SkillsPanelProps {
   characterId?: string
   /** Dice modifiers from the derived stats engine, keyed by skill key */
   skillModifiers?: Record<string, SkillDiceModifier>
+  /** Species special abilities for conditional skill indicators */
+  speciesAbilities?: SpeciesAbility[]
 }
 
 // ── Skill dice modifier indicator ──────────────────────────────────────────
@@ -316,9 +319,44 @@ function InlineConfirmation({ skill, xpAvailable, onConfirm, onCancel }: {
   )
 }
 
+// ── Species conditional ability badge ─────────────────────────────────────
+
+function SpeciesConditionalBadge({ ability }: { ability: SpeciesAbility }) {
+  const setbackRemove = ability.setback_remove ?? 0
+  const badgeText = setbackRemove > 0
+    ? `−${setbackRemove}⬡`
+    : '⚠'
+
+  const tipContent = (
+    <>
+      <TipLabel>{ability.name}</TipLabel>
+      <TipBody>{ability.description}</TipBody>
+    </>
+  )
+
+  return (
+    <Tooltip content={tipContent} placement="top" maxWidth={260}>
+      <span style={{
+        fontFamily: "'Share Tech Mono','Courier New',monospace",
+        fontSize: 'clamp(0.55rem, 0.85vw, 0.65rem)',
+        background: 'rgba(255,152,0,0.08)',
+        border: '1px solid rgba(255,152,0,0.3)',
+        borderRadius: 4,
+        padding: '1px 5px',
+        color: '#FF9800',
+        flexShrink: 0,
+        cursor: 'help',
+        whiteSpace: 'nowrap' as const,
+      }}>
+        {badgeText}
+      </span>
+    </Tooltip>
+  )
+}
+
 // ── Main panel ─────────────────────────────────────────────────────────────
 
-export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, onOpenPopover, characterId, skillModifiers = {} }: SkillsPanelProps) {
+export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, onOpenPopover, characterId, skillModifiers = {}, speciesAbilities = [] }: SkillsPanelProps) {
   const [filter, setFilter] = useState<Filter>('All')
   const [confirmingKey, setConfirmingKey] = useState<string | null>(null)
   const [skillSearch, setSkillSearch] = useState('')
@@ -577,6 +615,12 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
                             {skill.name}
                           </div>
                         </Tooltip>
+
+                        {/* Species conditional ability badges */}
+                        {speciesAbilities
+                          .filter(a => a.is_conditional && Array.isArray(a.affected_skills) && a.affected_skills.includes(skill.key))
+                          .map((a, i) => <SpeciesConditionalBadge key={i} ability={a} />)
+                        }
 
                         {/* [+] upgrade button — immediately left of rank pips */}
                         {!isMaxRank && (

@@ -6,7 +6,7 @@ import { rollPool, type RollResult } from '@/components/player-hud/dice-engine'
 import { type RollMeta } from '@/lib/logRoll'
 import { formatResultSummary, type RangeBand, RANGE_VALUE_MAP, MELEE_SKILL_KEYS } from '@/lib/combatCheckUtils'
 import { checkCriticalEligibility, type CriticalEligibility } from '@/lib/criticalUtils'
-import type { Character, CharacterWeapon, CharacterSkill, RefWeapon, RefSkill, RefWeaponQuality } from '@/lib/types'
+import type { Character, CharacterWeapon, CharacterSkill, RefWeapon, RefSkill, RefWeaponQuality, SpeciesAbility } from '@/lib/types'
 import type { SkillDiceModifier } from '@/lib/derivedStats'
 import type { AdversaryInstance } from '@/lib/adversaries'
 import { AttackTypeStep } from './steps/AttackTypeStep'
@@ -92,6 +92,8 @@ export interface CombatCheckOverlayProps {
   gmTargets?:  AdversaryInstance[]
   /** Alignment override for combat_log writes (default: 'player') */
   gmAlignment?: string
+  speciesAbilities?: SpeciesAbility[]
+  speciesName?: string
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -101,6 +103,7 @@ export function CombatCheckOverlay({
   refWeaponMap, refSkillMap, refWeaponQualityMap,
   skillModifiers, campaignId, characterId, onRoll,
   isGmMode, gmTargets, gmAlignment,
+  speciesAbilities = [], speciesName,
 }: CombatCheckOverlayProps) {
   const [state, setState] = useState<CombatCheckState>(() => makeInitialState(initialAttackType))
   const [mounted, setMounted] = useState(false)
@@ -591,6 +594,8 @@ export function CombatCheckOverlay({
             dualWield={state.dualWield}
             refWeaponMap={refWeaponMap}
             refSkillMap={refSkillMap}
+            speciesAbilities={speciesAbilities}
+            speciesName={speciesName}
           />
         )}
       </div>

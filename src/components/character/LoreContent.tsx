@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { RefSpecies } from '@/lib/types'
+import { RefSpecies, SpeciesAbility } from '@/lib/types'
 import { parseOggDudeMarkup } from '@/lib/oggdude-markup'
+import { Tooltip, TipLabel, TipBody, TipDivider } from '@/components/ui/Tooltip'
 import { DutyCard } from '@/components/character/DutyCard'
 import { ObligationCard } from '@/components/character/ObligationCard'
 
@@ -30,7 +31,9 @@ interface LoreContentProps {
   notes: string
   speciesRef?: RefSpecies
   motivationType?: string
+  motivationSpecific?: string
   motivationDesc?: string
+  motivationConfigured?: boolean
   dutyType?: string
   dutyValue?: number
   dutyLore?: string
@@ -208,7 +211,9 @@ export function LoreContent({
   notes,
   speciesRef,
   motivationType,
+  motivationSpecific,
   motivationDesc,
+  motivationConfigured,
   dutyType,
   dutyValue,
   dutyLore,
@@ -225,9 +230,8 @@ export function LoreContent({
   const [localBackstory, handleBackstoryChange] = useDebounced(backstory, onBackstoryChange)
   const [localNotes, handleNotesChange] = useDebounced(notes, onNotesChange)
 
-  const abilities = speciesRef?.abilities
-    ? (speciesRef.abilities as { name: string; description: string }[])
-    : null
+  const specialAbilities: SpeciesAbility[] =
+    Array.isArray(speciesRef?.special_abilities) ? (speciesRef.special_abilities as SpeciesAbility[]) : []
 
   return (
     <div style={{ display: 'flex', flexDirection: 'row', gap: 20, width: '100%', minHeight: 0 }}>
@@ -460,29 +464,68 @@ export function LoreContent({
               ))}
             </div>
 
-            {/* Racial Abilities */}
-            {abilities && abilities.length > 0 && (
+            {/* Special Abilities */}
+            {specialAbilities.length > 0 && (
               <div>
-                <SectionLabel label="Racial Abilities" />
-                {abilities.map((ability, idx) => (
-                  <div
-                    key={idx}
-                    style={{
-                      borderLeft: '2px solid rgba(200,170,80,0.4)',
-                      background: 'rgba(200,170,80,0.04)',
-                      borderRadius: '0 4px 4px 0',
-                      padding: '7px 10px',
-                      marginBottom: 6,
-                    }}
-                  >
-                    <div style={{ fontFamily: FR, fontSize: 11, fontWeight: 700, color: GOLD }}>
-                      {ability.name}
-                    </div>
-                    <div style={{ fontFamily: FR, fontSize: 10, color: DIM, lineHeight: 1.6, marginTop: 2 }}>
-                      {ability.description}
-                    </div>
-                  </div>
-                ))}
+                <SectionLabel label="Special Abilities" />
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                  {specialAbilities.map((ability, idx) => {
+                    const isCond = ability.is_conditional
+                    const pillStyle: React.CSSProperties = {
+                      fontFamily: "'Share Tech Mono','Courier New',monospace",
+                      fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)',
+                      textTransform: 'uppercase' as const,
+                      borderRadius: 20,
+                      padding: '3px 10px',
+                      cursor: 'help',
+                      whiteSpace: 'nowrap' as const,
+                      ...(isCond
+                        ? {
+                            border: '1px solid rgba(255,152,0,0.4)',
+                            background: 'rgba(255,152,0,0.08)',
+                            color: '#FF9800',
+                          }
+                        : {
+                            border: '1px solid rgba(200,170,80,0.4)',
+                            background: 'rgba(200,170,80,0.08)',
+                            color: 'rgba(200,170,80,0.8)',
+                          }),
+                    }
+                    const tipContent = (
+                      <>
+                        <TipLabel>{ability.name}</TipLabel>
+                        <TipBody>{ability.description}</TipBody>
+                        {Array.isArray(ability.affected_skills) && ability.affected_skills.length > 0 && (
+                          <>
+                            <TipDivider />
+                            <TipBody>Affects: {ability.affected_skills.join(', ')}</TipBody>
+                          </>
+                        )}
+                        {isCond && (ability.condition_note ?? '') !== '' && (
+                          <>
+                            <TipDivider />
+                            <div style={{
+                              fontFamily: FR,
+                              fontSize: 11,
+                              color: '#FF9800',
+                              fontStyle: 'italic',
+                              lineHeight: 1.5,
+                            }}>
+                              ⚠ Conditional: {ability.condition_note ?? ''}
+                            </div>
+                          </>
+                        )}
+                      </>
+                    )
+                    return (
+                      <Tooltip key={idx} content={tipContent} placement="top" maxWidth={300}>
+                        <span style={pillStyle}>
+                          {isCond ? `⚠ ${ability.name}` : ability.name}
+                        </span>
+                      </Tooltip>
+                    )
+                  })}
+                </div>
               </div>
             )}
           </div>
@@ -506,8 +549,33 @@ export function LoreContent({
           />
         )}
 
-        {/* 3b. Fallback: legacy Motivation panel when D&O not yet configured */}
-        {!dutyObligationConfigured && motivationType && (
+        {/* 3b. Motivation card — shown when configured, or as legacy fallback */}
+        {(motivationConfigured && motivationType) ? (
+          <div style={{ ...panelStyle, padding: '14px 16px' }}>
+            <CornerBrackets />
+            <SectionLabel label="Motivation" />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+              <div>
+                <div style={{ fontFamily: FC, fontSize: 10, fontWeight: 700, color: BLUE, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 2 }}>
+                  {motivationType}
+                </div>
+                {motivationSpecific && (
+                  <div style={{ fontFamily: FC, fontSize: 14, fontWeight: 700, color: TEXT }}>
+                    {motivationSpecific}
+                  </div>
+                )}
+              </div>
+              <span style={{ fontFamily: FC, fontSize: 10, color: BLUE, background: 'rgba(90,170,224,0.1)', border: '1px solid rgba(90,170,224,0.3)', borderRadius: 3, padding: '2px 8px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                Motivation
+              </span>
+            </div>
+            {motivationDesc && (
+              <div style={{ fontFamily: FR, fontSize: 12, color: DIM, lineHeight: 1.6, borderTop: '1px solid rgba(90,170,224,0.1)', paddingTop: 8 }}>
+                {motivationDesc}
+              </div>
+            )}
+          </div>
+        ) : (!dutyObligationConfigured && motivationType) ? (
           <div style={{ ...panelStyle, padding: '14px 16px' }}>
             <CornerBrackets />
             <SectionLabel label="Motivation" />
@@ -520,7 +588,15 @@ export function LoreContent({
               </div>
             )}
           </div>
-        )}
+        ) : motivationConfigured === false ? (
+          <div style={{ ...panelStyle, padding: '12px 16px' }}>
+            <CornerBrackets />
+            <SectionLabel label="Motivation" />
+            <div style={{ fontFamily: FR, fontSize: 12, color: DIM, fontStyle: 'italic' }}>
+              Motivation not yet set.
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   )
