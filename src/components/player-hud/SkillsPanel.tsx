@@ -410,14 +410,11 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
   })).filter(g => g.skills.length > 0)
 
   const handleSkillClick = (skill: HudSkill, e?: React.MouseEvent<HTMLElement>) => {
-    if (isCombat) {
-      if (onOpenPopover && e) {
-        onOpenPopover(skill, e.currentTarget.getBoundingClientRect())
-      } else {
-        onRoll(skill)
-      }
+    if (onOpenPopover && e) {
+      onOpenPopover(skill, e.currentTarget.getBoundingClientRect())
+    } else {
+      onRoll(skill)
     }
-    // exploration mode: upgrade via [+] button only
   }
 
   const xpColor = xpAvailable > 20
@@ -569,7 +566,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
                 return (
                   <div
                     key={skill.key}
-                    onClick={isCombat && !isConfirming ? (e) => handleSkillClick(skill, e) : undefined}
+                    onClick={!isConfirming ? (e) => handleSkillClick(skill, e) : undefined}
                     style={{
                       display: 'flex', alignItems: 'center', gap: 6,
                       padding: '5px 6px', marginBottom: 2,
@@ -581,12 +578,12 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
                         borderLeft: skill.isCareer ? `2px solid ${color}88` : '2px solid transparent',
                         background: 'transparent',
                       }),
-                      cursor: isCombat && !isConfirming ? 'pointer' : 'default',
+                      cursor: !isConfirming ? 'pointer' : 'default',
                       transition: '.15s',
                       opacity: !isConfirming && !isCombat && isMaxRank ? 0.5 : 1,
                     }}
                     onMouseEnter={e => {
-                      if (!isConfirming && (isCombat || !isMaxRank)) {
+                      if (!isConfirming) {
                         (e.currentTarget as HTMLElement).style.background = `${hoverColor}0D`
                       }
                     }}

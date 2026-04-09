@@ -211,7 +211,7 @@ export function computeEncumbranceStats(
     if ((g as any).is_dropped) return s
     const state = g.equip_state ?? (g.is_equipped ? 'equipped' : 'carrying')
     const ref = refGearMap[g.gear_key]
-    return s + (state !== 'stowed' && ref?.encumbrance_bonus ? ref.encumbrance_bonus : 0)
+    return s + (state === 'equipped' && ref?.encumbrance_bonus ? ref.encumbrance_bonus : 0)
   }, 0)
   return { current, threshold: character.encumbrance_threshold + bonus }
 }

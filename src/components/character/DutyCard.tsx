@@ -31,10 +31,11 @@ interface DutyCardProps {
   dutyValue: number
   dutyLore?: string
   dutyCustomName?: string | null
+  resolvedTypeName?: string
 }
 
-export function DutyCard({ dutyType, dutyValue, dutyLore, dutyCustomName }: DutyCardProps) {
-  const displayName = dutyCustomName || dutyType
+export function DutyCard({ dutyType, dutyValue, dutyLore, dutyCustomName, resolvedTypeName }: DutyCardProps) {
+  const displayName = dutyCustomName || resolvedTypeName || dutyType
   const progress = Math.min(100, Math.max(0, dutyValue))
   const { rank, label } = contributionRank(progress)
 

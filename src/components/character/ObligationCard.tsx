@@ -50,10 +50,11 @@ interface ObligationCardProps {
   obligationValue: number
   obligationLore?: string
   obligationCustomName?: string | null
+  resolvedTypeName?: string
 }
 
-export function ObligationCard({ obligationType, obligationValue, obligationLore, obligationCustomName }: ObligationCardProps) {
-  const displayName = obligationCustomName || obligationType
+export function ObligationCard({ obligationType, obligationValue, obligationLore, obligationCustomName, resolvedTypeName }: ObligationCardProps) {
+  const displayName = obligationCustomName || resolvedTypeName || obligationType
   const value = Math.min(100, Math.max(0, obligationValue))
   const tier = getThreatTier(value)
   const [pulse, setPulse] = useState(false)

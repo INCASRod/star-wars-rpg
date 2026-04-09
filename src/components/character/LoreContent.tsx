@@ -38,10 +38,12 @@ interface LoreContentProps {
   dutyValue?: number
   dutyLore?: string
   dutyCustomName?: string | null
+  dutyResolvedType?: string
   obligationType?: string
   obligationValue?: number
   obligationLore?: string
   obligationCustomName?: string | null
+  obligationResolvedType?: string
   dutyObligationConfigured?: boolean
   onBackstoryChange: (v: string) => void
   onNotesChange: (v: string) => void
@@ -218,10 +220,12 @@ export function LoreContent({
   dutyValue,
   dutyLore,
   dutyCustomName,
+  dutyResolvedType,
   obligationType,
   obligationValue,
   obligationLore,
   obligationCustomName,
+  obligationResolvedType,
   dutyObligationConfigured,
   onBackstoryChange,
   onNotesChange,
@@ -538,6 +542,7 @@ export function LoreContent({
             dutyValue={dutyValue}
             dutyLore={dutyLore}
             dutyCustomName={dutyCustomName}
+            resolvedTypeName={dutyResolvedType}
           />
         )}
         {dutyObligationConfigured && obligationType && obligationValue !== undefined && (
@@ -546,6 +551,7 @@ export function LoreContent({
             obligationValue={obligationValue}
             obligationLore={obligationLore}
             obligationCustomName={obligationCustomName}
+            resolvedTypeName={obligationResolvedType}
           />
         )}
 

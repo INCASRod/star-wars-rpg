@@ -415,6 +415,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     character, skills, talents, weapons, armor, gear, crits, charSpecs,
     charForceAbilities, playerName, loading, error,
     refSkills, refCrits, refCareers, refSpeciesAll, refForcePowers, refForceAbilities,
+    refObligationTypes, refDutyTypes,
     refSkillMap, refTalentMap, refWeaponMap, refArmorMap, refGearMap,
     refSpecMap, refDescriptorMap, refForcePowerMap, refForceAbilityMap, refWeaponQualityMap,
     refAttachmentMap,
@@ -947,12 +948,12 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     return sum
   }, [armor, gear, weapons, refArmorMap, refGearMap, refWeaponMap])
 
-  // Storage containers (backpacks, modular storage) increase enc threshold when carried/equipped
+  // Storage containers (backpacks, modular storage) increase enc threshold only when equipped
   const encumbranceBonus = useMemo(() =>
     gear.reduce((s, g) => {
       const state = g.equip_state ?? (g.is_equipped ? 'equipped' : 'carrying')
       const ref = refGearMap[g.gear_key]
-      return s + (state !== 'stowed' && ref?.encumbrance_bonus ? ref.encumbrance_bonus : 0)
+      return s + (state === 'equipped' && ref?.encumbrance_bonus ? ref.encumbrance_bonus : 0)
     }, 0)
   , [gear, refGearMap])
 
@@ -1443,6 +1444,51 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
               </div>
             )
           })()}
+
+          {/* ── Characteristics strip ── */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: 4,
+          }}>
+            {([
+              { label: 'Brawn',     value: charVals.brawn },
+              { label: 'Agility',   value: charVals.agility },
+              { label: 'Intellect', value: charVals.intellect },
+              { label: 'Cunning',   value: charVals.cunning },
+              { label: 'Willpower', value: charVals.willpower },
+              { label: 'Presence',  value: charVals.presence },
+            ] as const).map(ch => (
+              <div key={ch.label} style={{
+                textAlign: 'center',
+                padding: '6px 4px',
+                background: 'rgba(8,16,10,0.6)',
+                border: '1px solid rgba(200,170,80,0.2)',
+                borderRadius: 6,
+              }}>
+                <div style={{
+                  fontFamily: "'Share Tech Mono','Courier New',monospace",
+                  fontSize: 'clamp(1rem, 1.6vw, 1.2rem)',
+                  fontWeight: 700,
+                  color: C.gold,
+                  lineHeight: 1,
+                }}>
+                  {ch.value}
+                </div>
+                <div style={{
+                  fontFamily: FONT_CINZEL,
+                  fontSize: 'clamp(0.48rem, 0.72vw, 0.58rem)',
+                  fontWeight: 700,
+                  letterSpacing: '0.08em',
+                  color: 'rgba(200,170,80,0.5)',
+                  marginTop: 3,
+                  textTransform: 'uppercase',
+                }}>
+                  {ch.label}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* ══ CENTER COLUMN ════════════════════════════════════ */}
@@ -1632,10 +1678,12 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
                 dutyValue={character.duty_value}
                 dutyLore={character.duty_lore}
                 dutyCustomName={character.duty_custom_name}
+                dutyResolvedType={refDutyTypes.find(d => d.key === character.duty_type)?.name}
                 obligationType={character.obligation_type}
                 obligationValue={character.obligation_value}
                 obligationLore={character.obligation_lore}
                 obligationCustomName={character.obligation_custom_name}
+                obligationResolvedType={refObligationTypes.find(o => o.key === character.obligation_type)?.name}
                 dutyObligationConfigured={character.duty_obligation_configured}
                 onBackstoryChange={handleBackstoryChange}
                 onNotesChange={handleNotesChange}

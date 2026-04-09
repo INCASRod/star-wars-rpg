@@ -13,17 +13,14 @@ interface AttackTypeStepProps {
 }
 
 interface TypeCard {
-  type:     'ranged' | 'melee' | 'force'
+  type:     'ranged' | 'melee'
   label:    string
   icon:     string
-  disabled: boolean
-  tooltip?: string
 }
 
 const CARDS: TypeCard[] = [
-  { type: 'ranged', label: 'Ranged',  icon: '⊙', disabled: false },
-  { type: 'melee',  label: 'Melee',   icon: '⚔', disabled: false },
-  { type: 'force',  label: 'Force',   icon: '✦', disabled: true, tooltip: 'Force powers coming soon.' },
+  { type: 'ranged', label: 'Ranged',  icon: '⊙' },
+  { type: 'melee',  label: 'Melee',   icon: '⚔' },
 ]
 
 export function AttackTypeStep({ onSelect }: AttackTypeStepProps) {
@@ -42,9 +39,7 @@ export function AttackTypeStep({ onSelect }: AttackTypeStepProps) {
       {CARDS.map(card => (
         <button
           key={card.type}
-          disabled={card.disabled}
-          title={card.tooltip}
-          onClick={() => !card.disabled && card.type !== 'force' && onSelect(card.type as 'ranged' | 'melee')}
+          onClick={() => onSelect(card.type)}
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -53,25 +48,20 @@ export function AttackTypeStep({ onSelect }: AttackTypeStepProps) {
             background: CARD_BG,
             border: `1px solid ${GOLD_BD}`,
             borderRadius: 12,
-            cursor: card.disabled ? 'not-allowed' : 'pointer',
+            cursor: 'pointer',
             textAlign: 'left',
-            opacity: card.disabled ? 0.4 : 1,
             transition: 'border-color 120ms, background 120ms, transform 120ms',
             width: '100%',
           }}
           onMouseEnter={e => {
-            if (!card.disabled) {
-              ;(e.currentTarget as HTMLButtonElement).style.borderColor = GOLD
-              ;(e.currentTarget as HTMLButtonElement).style.background = 'rgba(200,170,80,0.06)'
-              ;(e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-2px)'
-            }
+            ;(e.currentTarget as HTMLButtonElement).style.borderColor = GOLD
+            ;(e.currentTarget as HTMLButtonElement).style.background = 'rgba(200,170,80,0.06)'
+            ;(e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-2px)'
           }}
           onMouseLeave={e => {
-            if (!card.disabled) {
-              ;(e.currentTarget as HTMLButtonElement).style.borderColor = GOLD_BD
-              ;(e.currentTarget as HTMLButtonElement).style.background = CARD_BG
-              ;(e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)'
-            }
+            ;(e.currentTarget as HTMLButtonElement).style.borderColor = GOLD_BD
+            ;(e.currentTarget as HTMLButtonElement).style.background = CARD_BG
+            ;(e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)'
           }}
         >
           <span style={{
@@ -101,9 +91,8 @@ export function AttackTypeStep({ onSelect }: AttackTypeStepProps) {
               color: GOLD_DIM,
               marginTop: 3,
             }}>
-              {card.type === 'ranged'  && 'Ranged Light · Ranged Heavy · Gunnery'}
-              {card.type === 'melee'   && 'Melee · Brawl · Lightsaber'}
-              {card.type === 'force'   && 'Force powers coming soon.'}
+              {card.type === 'ranged' && 'Ranged Light · Ranged Heavy · Gunnery'}
+              {card.type === 'melee'  && 'Melee · Brawl · Lightsaber'}
             </div>
           </div>
         </button>

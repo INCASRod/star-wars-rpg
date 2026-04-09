@@ -11,6 +11,7 @@ import type {
   RefItemDescriptor, RefCareer, RefSpecies,
   RefForcePower, RefForceAbility, CharacterForceAbility,
   RefWeaponQuality, RefItemAttachment, EquipState,
+  RefObligationType, RefDutyType,
 } from '@/lib/types'
 
 export function useCharacterData(characterId: string) {
@@ -41,6 +42,8 @@ export function useCharacterData(characterId: string) {
   const [refForceAbilities, setRefForceAbilities] = useState<RefForceAbility[]>([])
   const [refWeaponQualities, setRefWeaponQualities] = useState<RefWeaponQuality[]>([])
   const [refItemAttachments, setRefItemAttachments] = useState<RefItemAttachment[]>([])
+  const [refObligationTypes, setRefObligationTypes] = useState<RefObligationType[]>([])
+  const [refDutyTypes, setRefDutyTypes] = useState<RefDutyType[]>([])
   const [playerName, setPlayerName] = useState('Player')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -52,7 +55,8 @@ export function useCharacterData(characterId: string) {
     try {
       const [charRes, skillsRes, talentsRes, weaponsRes, armorRes, gearRes, critsRes, specsRes,
         refSkRes, refTalRes, refWpnRes, refArmRes, refGearRes, refCritRes, refSpecRes, refDescRes,
-        refCareerRes, refSpeciesRes, forceAbilRes, refFpRes, refFaRes, refWqRes, refAttRes] = await Promise.all([
+        refCareerRes, refSpeciesRes, forceAbilRes, refFpRes, refFaRes, refWqRes, refAttRes,
+        refOblTypesRes, refDutyTypesRes] = await Promise.all([
         supabase.from('characters').select('*').eq('id', characterId).single(),
         supabase.from('character_skills').select('*').eq('character_id', characterId),
         supabase.from('character_talents').select('*').eq('character_id', characterId),
@@ -76,6 +80,8 @@ export function useCharacterData(characterId: string) {
         supabase.from('ref_force_abilities').select('*'),
         supabase.from('ref_weapon_qualities').select('*'),
         supabase.from('ref_item_attachments').select('*'),
+        supabase.from('ref_obligation_types').select('key, name'),
+        supabase.from('ref_duty_types').select('key, name'),
       ])
 
       if (charRes.error) throw new Error(charRes.error.message)
@@ -103,6 +109,8 @@ export function useCharacterData(characterId: string) {
       setRefForceAbilities((refFaRes.data as RefForceAbility[]) || [])
       setRefWeaponQualities((refWqRes.data as RefWeaponQuality[]) || [])
       setRefItemAttachments((refAttRes.data as RefItemAttachment[]) || [])
+      setRefObligationTypes((refOblTypesRes.data as RefObligationType[]) || [])
+      setRefDutyTypes((refDutyTypesRes.data as RefDutyType[]) || [])
 
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : String(err))
@@ -554,6 +562,7 @@ export function useCharacterData(characterId: string) {
     // Ref data
     refSkills, refTalents, refWeapons, refArmor, refGear, refCrits, refSpecs,
     refDescriptors, refCareers, refSpeciesAll, refForcePowers, refForceAbilities, refWeaponQualities,
+    refObligationTypes, refDutyTypes,
     // Ref maps
     refSkillMap, refTalentMap, refWeaponMap, refArmorMap, refGearMap,
     refSpecMap, refDescriptorMap, refForcePowerMap, refForceAbilityMap, refWeaponQualityMap,

@@ -386,7 +386,7 @@ function GmDashboard() {
   // ── Loot ──
   const [lootOpen, setLootOpen] = useState(false)
   const [lootType, setLootType] = useState<'all' | 'weapon' | 'armor' | 'gear'>('all')
-  const [lootRarityMin, setLootRarityMin] = useState(1)
+  const [lootRarityMin, setLootRarityMin] = useState(0)
   const [lootRarityMax, setLootRarityMax] = useState(10)
   const [lootSource, setLootSource] = useState<'Vendor' | 'Searching' | 'Looted'>('Looted')
   const [lootSearchText, setLootSearchText] = useState('')
@@ -1728,7 +1728,7 @@ function GmDashboard() {
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
                             <div style={{ minWidth: 0 }}>
                               <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, color: DIM, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Obl </span>
-                              <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM }}>{c.obligation_type}</span>
+                              <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM }}>{c.obligation_custom_name || obligationTypes.find(o => o.key === c.obligation_type)?.name || c.obligation_type}</span>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
                               <button onClick={() => adjustObligation(c.id, -1)} style={{ background: 'rgba(224,80,80,0.10)', border: '1px solid rgba(224,80,80,0.25)', borderRadius: 2, width: 18, height: 18, cursor: 'pointer', fontFamily: FR, fontSize: FS_OVERLINE, color: RED, lineHeight: 1, padding: 0 }}>−</button>
@@ -1742,7 +1742,7 @@ function GmDashboard() {
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
                             <div style={{ minWidth: 0 }}>
                               <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, color: DIM, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Duty </span>
-                              <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM }}>{c.duty_type}</span>
+                              <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM }}>{c.duty_custom_name || dutyTypes.find(d => d.key === c.duty_type)?.name || c.duty_type}</span>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
                               <button onClick={() => adjustDuty(c.id, -1)} style={{ background: 'rgba(78,200,122,0.08)', border: '1px solid rgba(78,200,122,0.2)', borderRadius: 2, width: 18, height: 18, cursor: 'pointer', fontFamily: FR, fontSize: FS_OVERLINE, color: GREEN, lineHeight: 1, padding: 0 }}>−</button>
@@ -2188,7 +2188,9 @@ function GmDashboard() {
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
                       {activeChars.map(c => {
                         const val = odType === 'obligation' ? (c.obligation_value || 0) : (c.duty_value || 0)
-                        const typeStr = odType === 'obligation' ? (c.obligation_type || '—') : (c.duty_type || '—')
+                        const typeStr = odType === 'obligation'
+                          ? (c.obligation_custom_name || obligationTypes.find(o => o.key === c.obligation_type)?.name || c.obligation_type || '—')
+                          : (c.duty_custom_name || dutyTypes.find(d => d.key === c.duty_type)?.name || c.duty_type || '—')
                         return (
                           <div key={c.id} style={{ padding: '6px 10px', background: 'rgba(200,170,80,0.05)', border: `1px solid ${BORDER}`, borderRadius: 3 }}>
                             <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: TEXT }}>{c.name}</div>
