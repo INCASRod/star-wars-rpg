@@ -259,8 +259,10 @@ export function computeDerivedStats(
   const soakSources: StatSource[]    = [{ label: 'Brawn', value: character.brawn }]
   const defMSources: StatSource[]    = []
   const defRSources: StatSource[]    = []
-  const woundSources: StatSource[]   = [{ label: 'Base', value: character.wound_threshold }]
-  const strainSources: StatSource[]  = [{ label: 'Base', value: character.strain_threshold }]
+  // Base entries are deferred — talent loop adds to woundThresholdBonus / strainThresholdBonus,
+  // so we prepend the true species/class base AFTER the loop to avoid an inflated Base value.
+  const woundSources: StatSource[]   = []
+  const strainSources: StatSource[]  = []
   const forceSources: StatSource[]   = forceRatingBase > 0
     ? [{ label: 'Career / Force talents', value: forceRatingBase }]
     : []
@@ -413,13 +415,23 @@ export function computeDerivedStats(
     }
   }
 
+  // ── Prepend true Base entries now that talent bonuses are fully accumulated ─
+  // character.wound_threshold stores the effective value (species base + GRIT/TOUGH bonuses).
+  // Subtract accumulated bonuses to recover the original species/career base for the tooltip.
+  const trueWoundBase  = character.wound_threshold  - mods.woundThresholdBonus
+  const trueStrainBase = character.strain_threshold - mods.strainThresholdBonus
+  woundSources.unshift({ label: 'Base', value: trueWoundBase })
+  strainSources.unshift({ label: 'Base', value: trueStrainBase })
+
   // ── Step 5: Assemble effective stats ─────────────────────────────────────
   const effectiveStats: EffectiveStats = {
     soak:            character.brawn + mods.soakBonus,
     defenseMelee:    mods.defenseMelee,
     defenseRanged:   mods.defenseRanged,
-    woundThreshold:  character.wound_threshold  + mods.woundThresholdBonus,
-    strainThreshold: character.strain_threshold + mods.strainThresholdBonus,
+    // wound/strain talent bonuses (GRIT, TOUGH) are stored directly on the character row
+    // via applyTalentModifiers — do NOT add them again here to avoid double-counting.
+    woundThreshold:  character.wound_threshold,
+    strainThreshold: character.strain_threshold,
     forceRating:     forceRatingBase            + mods.forceRatingBonus,
   }
 

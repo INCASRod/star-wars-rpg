@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { useCharacterData } from '@/hooks/useCharacterData'
 import { LoreContent } from '@/components/character/LoreContent'
@@ -425,7 +426,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     handleCharacteristicChange, handleSoakChange, handleDefenseChange,
     handleMoralityChange, handleMoralityKeyChange, handleObligationChange, handleDutyChange,
     handleRemoveWeapon, handleRemoveEquipment, handleRemoveTalent, handleReduceSkill,
-    handlePurchaseTalent, handleBackstoryChange, handleNotesChange,
+    handlePurchaseTalent, handleResolveDedication, handleCreditSpend, handleBackstoryChange, handleNotesChange,
     handlePurchaseForceAbility, handleBuySpecialization, handleBuySkill,
   } = useCharacterData(characterId)
 
@@ -536,6 +537,27 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   const [conflicts, setConflicts]                     = useState<ConflictEntry[]>([])
   const [pendingCritRequest, setPendingCritRequest]   = useState<CriticalInjuryRequest | null>(null)
   const [pdfGenerating,     setPdfGenerating]         = useState(false)
+  const [pendingDedication, setPendingDedication]     = useState<{ talentId: string; row: number; col: number; specKey: string } | null>(null)
+  const [spendCreditsOpen,  setSpendCreditsOpen]      = useState(false)
+  const [spendAmount,       setSpendAmount]           = useState('')
+  const [woundTipPos,       setWoundTipPos]           = useState<{ top: number; left: number } | null>(null)
+  const [strainTipPos,      setStrainTipPos]          = useState<{ top: number; left: number } | null>(null)
+
+  // ── Prompt for unresolved Dedication purchases on load ──
+  useEffect(() => {
+    if (!talents.length || pendingDedication) return
+    const unresolved = talents.find(t => t.talent_key === 'DEDI' && !t.dedication_characteristic)
+    if (unresolved) {
+      setPendingDedication({
+        talentId: unresolved.id,
+        row: unresolved.tree_row ?? 4,
+        col: unresolved.tree_col ?? 0,
+        specKey: unresolved.specialization_key ?? '',
+      })
+    }
+  // Only run when talents array reference changes (i.e. on initial load)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [talents])
 
   // ── PDF download ──
   async function handleDownloadPDF() {
@@ -570,6 +592,16 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     } finally {
       setPdfGenerating(false)
     }
+  }
+
+  // ── Spend credits ──
+  async function handleSpendCredits() {
+    if (!character || !effectiveCampaignId) return
+    const amount = parseInt(spendAmount, 10)
+    if (!amount || amount <= 0 || amount > character.credits) return
+    setSpendCreditsOpen(false)
+    setSpendAmount('')
+    await handleCreditSpend(amount, effectiveCampaignId)
   }
 
   // ── Load conflicts ──
@@ -1233,15 +1265,22 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
               <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.gold }}>XP</span>
               <span style={{ fontFamily: FONT_CINZEL, fontSize: FS_SM, fontWeight: 700, color: '#FFFFFF' }}>{character.xp_available}</span>
             </div>
-            {/* Credits pill */}
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              background: 'rgba(78,200,122,0.1)', border: '1px solid rgba(78,200,122,0.3)',
-              borderRadius: 4, padding: '3px 10px',
-            }}>
+            {/* Credits pill — click to spend */}
+            <button
+              onClick={() => { setSpendAmount(''); setSpendCreditsOpen(true) }}
+              title="Click to spend credits"
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                background: 'rgba(78,200,122,0.1)', border: '1px solid rgba(78,200,122,0.3)',
+                borderRadius: 4, padding: '3px 10px',
+                cursor: 'pointer', transition: 'background 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(78,200,122,0.22)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(78,200,122,0.1)' }}
+            >
               <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#4EC87A' }}>Credits</span>
               <span style={{ fontFamily: FONT_CINZEL, fontSize: FS_SM, fontWeight: 700, color: '#FFFFFF' }}>{character.credits.toLocaleString()}</span>
-            </div>
+            </button>
           </div>
           <div style={{ width: 1, height: 28, background: C.border }} />
           {/* Print Sheet */}
@@ -1383,6 +1422,45 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
               sessionLabel:c.session_label,
             }))
 
+            // Group breakdown sources by label and sum values (e.g. two Grit entries → "Grit: +2")
+            const groupSources = (sources: { label: string; value: number }[]) => {
+              const map = new Map<string, number>()
+              for (const s of sources) {
+                map.set(s.label, (map.get(s.label) ?? 0) + s.value)
+              }
+              return Array.from(map.entries()).map(([label, value]) => ({ label, value }))
+            }
+
+            const woundBreakdown  = groupSources(engineBreakdown?.woundThreshold  ?? [])
+            const strainBreakdown = groupSources(engineBreakdown?.strainThreshold ?? [])
+
+            const VitalTooltip = ({ breakdown, top, left }: { breakdown: { label: string; value: number }[]; top: number; left: number }) => createPortal(
+              <div style={{
+                position: 'fixed',
+                top, left,
+                zIndex: 9999,
+                background: 'rgba(8,16,10,0.97)',
+                border: '1px solid rgba(200,170,80,0.35)',
+                borderRadius: 8,
+                padding: '8px 12px',
+                minWidth: 140,
+                pointerEvents: 'none',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.7)',
+              }}>
+                {breakdown.map(({ label, value }, i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 16,
+                    fontFamily: "'Share Tech Mono','Courier New',monospace",
+                    fontSize: '0.72rem', color: i === 0 ? 'rgba(232,223,200,0.55)' : 'rgba(232,223,200,0.85)',
+                    marginBottom: i < breakdown.length - 1 ? 3 : 0,
+                  }}>
+                    <span>{label}</span>
+                    <span style={{ color: i === 0 ? 'rgba(200,170,80,0.6)' : C.gold }}>{i === 0 ? value : `+${value}`}</span>
+                  </div>
+                ))}
+              </div>,
+              document.body,
+            )
+
             return (
               <div style={{
                 border: '1px solid rgba(200,170,80,0.2)',
@@ -1394,7 +1472,16 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
               }}>
                 <div style={{ display: 'flex', gap: 10 }}>
                   {/* WOUNDS */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ flex: 1, minWidth: 0, position: 'relative' }}
+                    onMouseEnter={e => {
+                      const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
+                      setWoundTipPos({ top: r.bottom + 6, left: r.left })
+                    }}
+                    onMouseLeave={() => setWoundTipPos(null)}
+                  >
+                    {woundTipPos && woundBreakdown.length > 0 && (
+                      <VitalTooltip breakdown={woundBreakdown} top={woundTipPos.top} left={woundTipPos.left} />
+                    )}
                     <div style={LABEL_STYLE}>WOUNDS</div>
                     <div style={{ height: 10, background: 'rgba(255,255,255,0.06)', borderRadius: 5, overflow: 'hidden', marginBottom: 6 }}>
                       <div style={{
@@ -1417,7 +1504,16 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
                   <div style={{ width: 1, background: 'rgba(200,170,80,0.12)', alignSelf: 'stretch', flexShrink: 0 }} />
 
                   {/* STRAIN */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ flex: 1, minWidth: 0, position: 'relative' }}
+                    onMouseEnter={e => {
+                      const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
+                      setStrainTipPos({ top: r.bottom + 6, left: r.left })
+                    }}
+                    onMouseLeave={() => setStrainTipPos(null)}
+                  >
+                    {strainTipPos && strainBreakdown.length > 0 && (
+                      <VitalTooltip breakdown={strainBreakdown} top={strainTipPos.top} left={strainTipPos.left} />
+                    )}
                     <div style={LABEL_STYLE}>STRAIN</div>
                     <div style={{ height: 10, background: 'rgba(255,255,255,0.06)', borderRadius: 5, overflow: 'hidden', marginBottom: 6 }}>
                       <div style={{
@@ -1591,7 +1687,15 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
                     specName={talentTreeData.specName}
                     nodes={talentTreeData.nodes}
                     connections={talentTreeData.connections}
-                    onPurchase={(talentKey, row, col) => handlePurchaseTalent(talentKey, row, col, (activeSpecKey || charSpecs[0]?.specialization_key)!)}
+                    onPurchase={async (talentKey, row, col) => {
+                      const specKey = (activeSpecKey || charSpecs[0]?.specialization_key)!
+                      if (talentKey === 'DEDI') {
+                        const newId = await handlePurchaseTalent(talentKey, row, col, specKey)
+                        if (newId) setPendingDedication({ talentId: newId, row, col, specKey })
+                        return
+                      }
+                      handlePurchaseTalent(talentKey, row, col, specKey)
+                    }}
                     onRemoveTalent={isGmMode ? handleRemoveTalent : undefined}
                     isGmMode={isGmMode}
                     xpAvailable={character.xp_available}
@@ -1785,7 +1889,14 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
                 specName={talentTreeData.specName}
                 nodes={talentTreeData.nodes}
                 connections={talentTreeData.connections}
-                onPurchase={(talentKey, row, col) => handlePurchaseTalent(talentKey, row, col, activeSpecKey!)}
+                onPurchase={async (talentKey, row, col) => {
+                  if (talentKey === 'DEDI') {
+                    const newId = await handlePurchaseTalent(talentKey, row, col, activeSpecKey!)
+                    if (newId) setPendingDedication({ talentId: newId, row, col, specKey: activeSpecKey! })
+                    return
+                  }
+                  handlePurchaseTalent(talentKey, row, col, activeSpecKey!)
+                }}
                 onRemoveTalent={isGmMode ? handleRemoveTalent : undefined}
                 isGmMode={isGmMode}
                 xpAvailable={character.xp_available}
@@ -1973,6 +2084,159 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
           </div>
         )
       })()}
+
+      {/* ── Spend Credits modal ───────────────────────────── */}
+      {spendCreditsOpen && character && createPortal(
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 900, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+          onClick={() => setSpendCreditsOpen(false)}
+        >
+          <div
+            style={{ background: C.panelBg, border: `1px solid ${C.borderHi}`, borderTop: `3px solid #4EC87A`, padding: '24px 24px 20px', maxWidth: 340, width: '100%', backdropFilter: 'blur(12px)', boxShadow: '0 20px 60px rgba(0,0,0,0.8)' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_H4, fontWeight: 700, color: '#4EC87A', letterSpacing: '0.15em', marginBottom: 4 }}>SPEND CREDITS</div>
+            <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.textDim, marginBottom: 18 }}>
+              Available: <span style={{ color: '#FFFFFF', fontWeight: 600 }}>{character.credits.toLocaleString()}</span>
+            </div>
+            <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: C.textDim, letterSpacing: '0.08em', marginBottom: 6 }}>HOW MUCH DO YOU WANT TO SPEND?</div>
+            <input
+              type="number"
+              min={1}
+              max={character.credits}
+              value={spendAmount}
+              onChange={e => setSpendAmount(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') handleSpendCredits(); if (e.key === 'Escape') setSpendCreditsOpen(false) }}
+              autoFocus
+              placeholder="0"
+              style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: `1px solid ${C.borderHi}`, color: '#FFFFFF', fontFamily: FONT_CINZEL, fontSize: FS_H3, fontWeight: 700, padding: '10px 14px', outline: 'none', boxSizing: 'border-box', marginBottom: 18 }}
+            />
+            {(() => {
+              const amt = parseInt(spendAmount, 10)
+              const valid = amt > 0 && amt <= character.credits
+              return (
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button onClick={() => setSpendCreditsOpen(false)} style={{ flex: 1, padding: '10px 0', background: 'transparent', border: `1px solid ${C.border}`, fontFamily: FONT_RAJDHANI, fontSize: FS_SM, fontWeight: 600, letterSpacing: '0.1em', color: C.textDim, cursor: 'pointer' }}>
+                    CANCEL
+                  </button>
+                  <button
+                    onClick={handleSpendCredits}
+                    disabled={!valid}
+                    style={{ flex: 2, padding: '10px 0', background: valid ? '#4EC87A' : 'rgba(78,200,122,0.15)', border: `1px solid ${valid ? '#4EC87A' : C.border}`, fontFamily: FONT_CINZEL, fontSize: FS_SM, fontWeight: 700, letterSpacing: '0.12em', color: valid ? C.bg : C.textDim, cursor: valid ? 'pointer' : 'default', transition: 'background 0.15s' }}
+                  >
+                    {valid ? `SPEND ${amt.toLocaleString()} cr` : 'SPEND'}
+                  </button>
+                </div>
+              )
+            })()}
+          </div>
+        </div>,
+        document.body,
+      )}
+
+      {/* ── Dedication characteristic picker ──────────────── */}
+      {pendingDedication && character && createPortal(
+        <DedicationModal
+          character={character}
+          onConfirm={async (charKey) => {
+            const { talentId } = pendingDedication
+            setPendingDedication(null)
+            await handleResolveDedication(talentId, charKey)
+          }}
+          onCancel={() => setPendingDedication(null)}
+        />,
+        document.body,
+      )}
+    </div>
+  )
+}
+
+// ── Dedication Modal ──────────────────────────────────────────────────────────
+const CHAR_KEYS_ORDERED: CharKey[] = ['brawn', 'agility', 'intellect', 'cunning', 'willpower', 'presence']
+
+const DEDICATION_CHAR_LABEL: Record<CharKey, string> = {
+  brawn:     'Brawn',
+  agility:   'Agility',
+  intellect: 'Intellect',
+  cunning:   'Cunning',
+  willpower: 'Willpower',
+  presence:  'Presence',
+}
+
+function DedicationModal({
+  character, onConfirm, onCancel,
+}: {
+  character: Character
+  onConfirm: (key: CharKey) => void
+  onCancel:  () => void
+}) {
+  const [selected, setSelected] = useState<CharKey | null>(null)
+
+  return (
+    <div
+      style={{ position: 'fixed', inset: 0, zIndex: 900, background: 'rgba(0,0,0,0.82)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+      onClick={onCancel}
+    >
+      <div
+        style={{ background: C.panelBg, border: `1px solid ${C.borderHi}`, borderTop: `3px solid ${C.gold}`, padding: '28px 28px 24px', maxWidth: 400, width: '100%', backdropFilter: 'blur(12px)', boxShadow: '0 20px 60px rgba(0,0,0,0.8)' }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_H4, fontWeight: 700, color: C.gold, letterSpacing: '0.15em', marginBottom: 4 }}>
+          DEDICATION
+        </div>
+        <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.textDim, letterSpacing: '0.05em', marginBottom: 20 }}>
+          Choose a characteristic to permanently increase by 1.
+        </div>
+
+        {/* Characteristic grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
+          {CHAR_KEYS_ORDERED.map(key => {
+            const val = (character[key] as number) ?? 2
+            const maxed = val >= 6
+            const isSel = selected === key
+            const color = CHAR_COLOR[key]
+            return (
+              <button
+                key={key}
+                disabled={maxed}
+                onClick={() => !maxed && setSelected(key)}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '10px 14px',
+                  background: isSel ? `${color}22` : 'rgba(255,255,255,0.03)',
+                  border: `1px solid ${isSel ? color : C.border}`,
+                  outline: isSel ? `1px solid ${color}` : 'none',
+                  cursor: maxed ? 'not-allowed' : 'pointer',
+                  opacity: maxed ? 0.35 : 1,
+                  transition: 'background 0.15s, border-color 0.15s',
+                }}
+              >
+                <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, fontWeight: 600, color: isSel ? color : C.text, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                  {DEDICATION_CHAR_LABEL[key]}
+                </span>
+                <span style={{ fontFamily: FONT_CINZEL, fontSize: FS_H3, fontWeight: 700, color: isSel ? color : C.textDim, lineHeight: 1 }}>
+                  {val} <span style={{ fontSize: FS_CAPTION, color: isSel ? color : '#3A5A45', fontFamily: FONT_RAJDHANI }}>→ {val + 1}</span>
+                </span>
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Actions */}
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button onClick={onCancel} style={{ flex: 1, padding: '10px 0', background: 'transparent', border: `1px solid ${C.border}`, fontFamily: FONT_RAJDHANI, fontSize: FS_SM, fontWeight: 600, letterSpacing: '0.1em', color: C.textDim, cursor: 'pointer' }}>
+            CANCEL
+          </button>
+          <button
+            onClick={() => selected && onConfirm(selected)}
+            disabled={!selected}
+            style={{ flex: 2, padding: '10px 0', background: selected ? C.gold : 'rgba(200,170,80,0.15)', border: `1px solid ${selected ? C.gold : C.border}`, fontFamily: FONT_CINZEL, fontSize: FS_SM, fontWeight: 700, letterSpacing: '0.12em', color: selected ? C.bg : C.textDim, cursor: selected ? 'pointer' : 'default', transition: 'background 0.15s' }}
+          >
+            CONFIRM
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
