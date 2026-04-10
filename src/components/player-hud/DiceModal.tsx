@@ -47,12 +47,17 @@ function DieShape({ type, size, children }: {
 
 function DieChip({ die }: { die: DieResult }) {
   const meta = DICE_META[die.type]
-  const label = die.symbols.length === 0 ? '—' : die.symbols.map(s => SYM[s]?.icon ?? s).join('')
+  const symbolKeys = die.symbols.filter(s => s in SYM) as SymbolKey[]
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
       <DieShape type={die.type} size={44}>
-        <span style={{ fontSize: 14 }}>{label}</span>
+        {symbolKeys.length === 0
+          ? <span style={{ fontSize: 14 }}>—</span>
+          : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+              {symbolKeys.map((s, i) => <i key={i} className={`ffi ffi-${SYM[s].icon}`} style={{ fontSize: 13 }} />)}
+            </span>
+        }
       </DieShape>
       <div style={{ fontSize: 12, color: C.textDim, fontFamily: FONT_RAJDHANI, textTransform: 'uppercase' }}>
         {meta.label}
@@ -71,7 +76,7 @@ function NetPill({ count, symKey, label }: { count: number; symKey: SymbolKey; l
       background: `${color}18`, border: `1px solid ${color}50`,
       fontFamily: FONT_RAJDHANI, fontSize: 14, fontWeight: 700, color,
     }}>
-      <span style={{ fontSize: 16 }}>{icon}</span>
+      <i className={`ffi ffi-${icon}`} style={{ fontSize: 16 }} />
       {Math.abs(count)} {label}
     </div>
   )

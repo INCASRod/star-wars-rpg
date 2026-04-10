@@ -203,8 +203,9 @@ function SymLegend() {
   return (
     <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
       {(Object.entries(SYM) as [string, typeof SYM[keyof typeof SYM]][]).map(([key, s]) => (
-        <span key={key} style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, color: s.color }}>
-          {s.icon} {s.label}
+        <span key={key} style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, color: s.color, display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+          <i className={`ffi ffi-${s.icon}`} />
+          {s.label}
         </span>
       ))}
     </div>
