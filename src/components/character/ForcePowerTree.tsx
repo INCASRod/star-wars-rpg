@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
 import { FONT_RAJDHANI, FS_OVERLINE, FS_LABEL, FS_SM } from '@/components/player-hud/design-tokens'
 import { MarkupText } from '@/components/ui/MarkupText'
@@ -300,8 +301,9 @@ function ForceNode({
         {isPurchased ? '\u2713' : `${node.cost} XP`}
       </div>
 
-      {hovered && (
-        <ForceTooltip node={node} pos={tooltipPos} />
+      {hovered && createPortal(
+        <ForceTooltip node={node} pos={tooltipPos} />,
+        document.body,
       )}
     </div>
   )
