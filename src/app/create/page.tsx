@@ -1,6 +1,7 @@
 'use client'
 
 import { Suspense, useEffect, useState, useMemo, useRef, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { HudCard } from '@/components/ui/HudCard'
@@ -22,6 +23,15 @@ const ROW_COSTS = [5, 10, 15, 20, 25]
 const CHAR_KEYS = ['brawn', 'agility', 'intellect', 'cunning', 'willpower', 'presence'] as const
 const CHAR_SHORT: Record<typeof CHAR_KEYS[number], string> = {
   brawn: 'Br', agility: 'Ag', intellect: 'Int', cunning: 'Cun', willpower: 'Wil', presence: 'Pr',
+}
+
+const CHAR_DESC: Record<typeof CHAR_KEYS[number], string> = {
+  brawn:     'Raw physical power, toughness, and resilience. Determines your Soak Value and contributes to melee weapon damage. High Brawn makes you harder to injure and hit harder in close quarters.',
+  agility:   'Coordination, reflexes, and fine motor control. Governs ranged combat and acrobatic feats. A high Agility makes you a deadly shot and difficult to pin down.',
+  intellect: 'Intelligence, memory, and reasoning ability. Covers technical, medical, and knowledge-based skills. High Intellect characters excel at analysis, repair, and scholarly pursuits.',
+  cunning:   'Practical cleverness, instinct, and resourcefulness. Governs deception, streetwise, and survival. Cunning characters think on their feet and exploit every advantage.',
+  willpower: 'Mental discipline, grit, and inner resolve. Sets your Strain Threshold and governs Force-sensitive abilities. High Willpower lets you push through stress and resist coercion.',
+  presence:  'Charisma, confidence, and force of personality. Covers social skills like Charm, Leadership, and Negotiation. A high Presence commands attention and inspires allies.',
 }
 
 // Obligation starting value by player count
@@ -136,7 +146,7 @@ const S = {
     cursor: 'pointer',
   } as React.CSSProperties,
   goldBtn: {
-    background: 'var(--gold)', border: 'none',
+    background: 'var(--creator-primary, var(--gold))', border: 'none',
     padding: 'var(--sp-sm) var(--sp-lg)',
     fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)',
     fontWeight: 700, color: 'var(--white)', cursor: 'pointer',
@@ -187,6 +197,14 @@ function CreateWizard() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [playerCount, setPlayerCount] = useState(4)
+
+  // ── Nemesis mode ────────────────────────────────────────────────────────────
+  const [isNemesisMode,          setIsNemesisMode]          = useState(false)
+  const [showNemesisPinModal,    setShowNemesisPinModal]    = useState(false)
+  const [nemesisPinInput,        setNemesisPinInput]        = useState('')
+  const [nemesisPinError,        setNemesisPinError]        = useState(false)
+  const [nemesisPinShake,        setNemesisPinShake]        = useState(false)
+  const [showNemesisCancelConfirm, setShowNemesisCancelConfirm] = useState(false)
   const [draft, setDraft] = useState<CharacterDraft>(DEFAULT_DRAFT)
 
   // Ref data
@@ -231,6 +249,41 @@ function CreateWizard() {
     load()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [campaignId])
+
+  // ── Auto-trigger nemesis mode from ?nemesis=1 param ──────────────────────
+  const autoNemesis = searchParams.get('nemesis') === '1'
+  useEffect(() => {
+    if (autoNemesis) setShowNemesisPinModal(true)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoNemesis])
+
+  // ── Nemesis pin verification ──────────────────────────────────────────────
+  const verifyNemesisPin = useCallback(async (pin: string): Promise<boolean> => {
+    if (!campaignId) return false
+    const { data } = await supabase.from('campaigns').select('gm_pin').eq('id', campaignId).single()
+    return data?.gm_pin === pin
+  }, [campaignId, supabase])
+
+  const handleNemesisPinSubmit = useCallback(async () => {
+    const ok = await verifyNemesisPin(nemesisPinInput)
+    if (ok) {
+      setShowNemesisPinModal(false)
+      setNemesisPinInput('')
+      setNemesisPinError(false)
+      setIsNemesisMode(true)
+    } else {
+      setNemesisPinError(true)
+      setNemesisPinShake(true)
+      setTimeout(() => setNemesisPinShake(false), 450)
+    }
+  }, [verifyNemesisPin, nemesisPinInput])
+
+  const resetCreator = useCallback(() => {
+    setIsNemesisMode(false)
+    setStep(0)
+    setDraft(DEFAULT_DRAFT)
+    setShowNemesisCancelConfirm(false)
+  }, [])
 
   // ── Computed maps ─────────────────────────────────────────────────────────
   const skillMap = useMemo(() => Object.fromEntries(refSkills.map(s => [s.key, s])), [refSkills])
@@ -402,6 +455,9 @@ function CreateWizard() {
           motivation_specific: draft.motivationSpecific || null,
           motivation_description: draft.motivationDesc || null,
           motivation_configured: !!draft.motivationType,
+          // Nemesis classification
+          is_pc: !isNemesisMode,
+          adversary_type: isNemesisMode ? 'nemesis' : null,
         })
         .select('id').single()
       if (charErr) throw charErr
@@ -451,7 +507,11 @@ function CreateWizard() {
         })
       }
 
-      router.push(`/character/${char.id}`)
+      if (isNemesisMode) {
+        router.push(`/gm?campaign=${campaignId}&view=nemeses`)
+      } else {
+        router.push(`/character/${char.id}`)
+      }
     } catch (err) {
       alert(`Error: ${err instanceof Error ? err.message : String(err)}`)
       setSaving(false)
@@ -461,7 +521,7 @@ function CreateWizard() {
     xpSpentOnChars, xpSpentOnSkills, xpSpentOnTalents, xpSpentOnAdditionalSpecs,
     oblXpBonus, extraCredits, totalObligation,
     speciesOptionSkills, speciesSkillMods, refSkills,
-    supabase, router,
+    supabase, router, isNemesisMode,
   ])
 
   // ── Shared step nav helpers ───────────────────────────────────────────────
@@ -487,10 +547,13 @@ function CreateWizard() {
   return (
     <div style={{
       width: '100vw', minHeight: '100vh', overflow: 'auto',
-      background: 'var(--sand)', display: 'flex', flexDirection: 'column',
+      background: isNemesisMode ? '#040A07' : 'var(--sand)',
+      display: 'flex', flexDirection: 'column',
       alignItems: 'center', padding: 'var(--sp-xl) var(--sp-lg) calc(var(--sp-xl) * 3)',
       gap: 'var(--sp-lg)',
-    }}>
+      transition: 'background 0.4s ease',
+      ['--creator-primary' as string]: isNemesisMode ? '#e05252' : 'var(--gold)',
+    } as React.CSSProperties}>
       {/* Ambient bg */}
       <div style={{
         position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
@@ -499,14 +562,119 @@ function CreateWizard() {
       }} />
 
       {/* Header + step bar */}
-      <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
+      <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: '52rem', textAlign: 'center' }}>
+
+        {/* ── Nemesis mode button (top-right) ── */}
+        <div style={{ position: 'absolute', top: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+          {!isNemesisMode ? (
+            <button
+              onClick={() => setShowNemesisPinModal(true)}
+              style={{
+                fontFamily: 'var(--font-orbitron)',
+                fontSize: 'clamp(0.6rem, 0.85vw, 0.78rem)',
+                fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
+                padding: '5px 12px', borderRadius: 4, cursor: 'pointer',
+                border: '1px solid rgba(224,82,82,0.5)',
+                color: 'rgba(224,82,82,0.65)',
+                background: 'rgba(224,82,82,0.07)',
+                transition: 'color 150ms, background 150ms, border-color 150ms',
+              }}
+              onMouseEnter={e => {
+                const el = e.currentTarget as HTMLButtonElement
+                el.style.color = '#e05252'
+                el.style.background = 'rgba(224,82,82,0.12)'
+                el.style.borderColor = 'rgba(224,82,82,0.7)'
+              }}
+              onMouseLeave={e => {
+                const el = e.currentTarget as HTMLButtonElement
+                el.style.color = 'rgba(224,82,82,0.65)'
+                el.style.background = 'rgba(224,82,82,0.07)'
+                el.style.borderColor = 'rgba(224,82,82,0.5)'
+              }}
+            >
+              ⚡ CONVERT TO NEMESIS
+            </button>
+          ) : (
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => setShowNemesisCancelConfirm(v => !v)}
+                style={{
+                  fontFamily: 'var(--font-orbitron)',
+                  fontSize: 'clamp(0.6rem, 0.85vw, 0.78rem)',
+                  fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
+                  padding: '5px 12px', borderRadius: 4, cursor: 'pointer',
+                  border: '1px solid rgba(200,170,80,0.5)',
+                  color: 'rgba(200,170,80,0.65)',
+                  background: 'rgba(200,170,80,0.07)',
+                  transition: 'color 150ms, background 150ms, border-color 150ms',
+                }}
+                onMouseEnter={e => {
+                  const el = e.currentTarget as HTMLButtonElement
+                  el.style.color = '#C8AA50'
+                  el.style.background = 'rgba(200,170,80,0.12)'
+                  el.style.borderColor = 'rgba(200,170,80,0.7)'
+                }}
+                onMouseLeave={e => {
+                  const el = e.currentTarget as HTMLButtonElement
+                  el.style.color = 'rgba(200,170,80,0.65)'
+                  el.style.background = 'rgba(200,170,80,0.07)'
+                  el.style.borderColor = 'rgba(200,170,80,0.5)'
+                }}
+              >
+                ☠ CANCEL NEMESIS MODE
+              </button>
+              {showNemesisCancelConfirm && (
+                <div style={{
+                  position: 'absolute', top: 'calc(100% + 6px)', right: 0,
+                  background: 'rgba(4,10,7,0.97)', border: '1px solid rgba(200,170,80,0.3)',
+                  borderRadius: 6, padding: '12px 14px', minWidth: 220, zIndex: 200,
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+                }}>
+                  <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'clamp(0.62rem, 0.88vw, 0.72rem)', color: 'rgba(232,223,200,0.7)', lineHeight: 1.5, marginBottom: 10 }}>
+                    Reset the creator and exit Nemesis Mode?
+                  </div>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <button
+                      onClick={() => setShowNemesisCancelConfirm(false)}
+                      style={{
+                        flex: 1, padding: '5px 0', borderRadius: 3, cursor: 'pointer',
+                        fontFamily: 'var(--font-orbitron)', fontSize: 'clamp(0.58rem, 0.82vw, 0.68rem)',
+                        fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
+                        background: 'transparent', border: '1px solid rgba(200,170,80,0.3)', color: 'rgba(200,170,80,0.6)',
+                      }}
+                    >
+                      Keep
+                    </button>
+                    <button
+                      onClick={resetCreator}
+                      style={{
+                        flex: 1, padding: '5px 0', borderRadius: 3, cursor: 'pointer',
+                        fontFamily: 'var(--font-orbitron)', fontSize: 'clamp(0.58rem, 0.82vw, 0.68rem)',
+                        fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
+                        background: 'rgba(224,82,82,0.12)', border: '1px solid rgba(224,82,82,0.4)', color: '#e05252',
+                      }}
+                    >
+                      Yes, Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* ── Title ── */}
         <div style={{
           fontFamily: 'var(--font-orbitron)', fontWeight: 900,
           fontSize: 'var(--font-hero)', letterSpacing: '0.4rem',
-          color: 'var(--gold-d)', textShadow: '0 0 60px var(--gold-glow-s)',
+          color: isNemesisMode ? '#e05252' : 'var(--gold-d)',
+          textShadow: isNemesisMode ? '0 0 60px rgba(224,82,82,0.45)' : '0 0 60px var(--gold-glow-s)',
+          transition: 'color 0.3s ease, text-shadow 0.3s ease',
         }}>
-          NEW CHARACTER
+          {isNemesisMode ? 'NEMESIS CREATOR' : 'NEW CHARACTER'}
         </div>
+
+        {/* ── Step tabs ── */}
         <div style={{ display: 'flex', gap: 'var(--sp-xs)', justifyContent: 'center', marginTop: 'var(--sp-md)', flexWrap: 'wrap' }}>
           {STEPS.map((s, i) => (
             <button
@@ -515,9 +683,13 @@ function CreateWizard() {
               style={{
                 fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)',
                 fontWeight: i === step ? 700 : 500, letterSpacing: '0.1rem',
-                color: i === step ? 'var(--gold-d)' : i < step ? 'var(--txt2)' : 'var(--txt3)',
+                color: i === step
+                  ? (isNemesisMode ? '#e05252' : 'var(--gold-d)')
+                  : i < step ? 'var(--txt2)' : 'var(--txt3)',
                 background: 'none', border: 'none',
-                borderBottom: i === step ? '2px solid var(--gold)' : '2px solid transparent',
+                borderBottom: i === step
+                  ? `2px solid ${isNemesisMode ? '#e05252' : 'var(--gold)'}`
+                  : '2px solid transparent',
                 padding: '0.25rem 0.5rem',
                 cursor: i < step ? 'pointer' : 'default', transition: '.2s',
               }}
@@ -912,6 +1084,105 @@ function CreateWizard() {
           />
         )}
       </div>
+
+      {/* ── Nemesis Protocol PIN Modal ── */}
+      {showNemesisPinModal && typeof window !== 'undefined' && createPortal(
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,0.75)' }}
+          onClick={() => { setShowNemesisPinModal(false); setNemesisPinInput(''); setNemesisPinError(false) }}
+        >
+          <style>{`
+            @keyframes nemesis-shake {
+              0%, 100% { transform: translateX(0); }
+              20%       { transform: translateX(-8px); }
+              40%       { transform: translateX(8px); }
+              60%       { transform: translateX(-6px); }
+              80%       { transform: translateX(4px); }
+            }
+            .nemesis-pin-shake { animation: nemesis-shake 0.42s ease; }
+          `}</style>
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: 'rgba(4,10,7,0.98)',
+              border: '1px solid rgba(224,82,82,0.28)',
+              borderRadius: 8, padding: '28px 28px 24px',
+              maxWidth: 360, width: '100%',
+              boxShadow: '0 0 60px rgba(224,82,82,0.12), 0 20px 60px rgba(0,0,0,0.8)',
+              position: 'relative',
+            }}
+          >
+            {/* Red tint overlay */}
+            <div style={{ position: 'absolute', inset: 0, borderRadius: 8, background: 'rgba(224,82,82,0.035)', pointerEvents: 'none' }} />
+
+            {/* Title */}
+            <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'clamp(1rem, 1.4vw, 1.25rem)', fontWeight: 900, color: '#e05252', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 6, textAlign: 'center' }}>
+              NEMESIS PROTOCOL
+            </div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'clamp(0.8rem, 1vw, 0.95rem)', color: 'rgba(232,223,200,0.45)', textAlign: 'center', marginBottom: 22, letterSpacing: '0.04em' }}>
+              GM authorisation required.
+            </div>
+
+            {/* PIN input */}
+            <div className={nemesisPinShake ? 'nemesis-pin-shake' : ''}>
+              <input
+                autoFocus
+                type="password"
+                value={nemesisPinInput}
+                onChange={e => { setNemesisPinInput(e.target.value); setNemesisPinError(false) }}
+                onKeyDown={e => { if (e.key === 'Enter') handleNemesisPinSubmit() }}
+                placeholder="Enter GM PIN"
+                style={{
+                  width: '100%', boxSizing: 'border-box',
+                  padding: 'var(--sp-sm) var(--sp-md)',
+                  border: `1px solid ${nemesisPinError ? '#e05252' : 'rgba(224,82,82,0.35)'}`,
+                  background: 'rgba(0,0,0,0.5)',
+                  fontFamily: 'var(--font-mono)', fontSize: 'var(--font-base)',
+                  color: 'var(--txt1)', letterSpacing: '0.2em',
+                  outline: 'none', borderRadius: 4,
+                  transition: 'border-color 150ms',
+                  textAlign: 'center',
+                }}
+              />
+              {nemesisPinError && (
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'clamp(0.7rem, 0.9vw, 0.82rem)', color: '#e05252', textAlign: 'center', marginTop: 6 }}>
+                  Incorrect code
+                </div>
+              )}
+            </div>
+
+            {/* Buttons */}
+            <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
+              <button
+                onClick={() => { setShowNemesisPinModal(false); setNemesisPinInput(''); setNemesisPinError(false) }}
+                style={{
+                  flex: 1, padding: 'var(--sp-sm) 0', borderRadius: 4, cursor: 'pointer',
+                  fontFamily: 'var(--font-orbitron)', fontSize: 'clamp(0.62rem, 0.88vw, 0.72rem)',
+                  fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
+                  background: 'transparent', border: '1px solid rgba(232,223,200,0.2)', color: 'rgba(232,223,200,0.45)',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleNemesisPinSubmit}
+                disabled={!nemesisPinInput}
+                style={{
+                  flex: 2, padding: 'var(--sp-sm) 0', borderRadius: 4, cursor: nemesisPinInput ? 'pointer' : 'default',
+                  fontFamily: 'var(--font-orbitron)', fontSize: 'clamp(0.62rem, 0.88vw, 0.72rem)',
+                  fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
+                  background: 'rgba(224,82,82,0.1)', border: '1px solid rgba(224,82,82,0.45)',
+                  color: nemesisPinInput ? '#e05252' : 'rgba(224,82,82,0.35)',
+                  transition: 'color 150ms, background 150ms',
+                }}
+              >
+                Authorise
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body,
+      )}
     </div>
   )
 }
@@ -1147,6 +1418,8 @@ function CareerStep({
   const [open, setOpen] = useState(!selected)
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const [hoveredCareer, setHoveredCareer] = useState<CreatorTipItem | null>(null)
+  const [tipPos, setTipPos] = useState<CreatorTipPos>({ x: 0, y: 0 })
 
   const sourceTabs = useMemo(() => {
     const tabs = new Set<string>(['All'])
@@ -1214,10 +1487,14 @@ function CareerStep({
             ) : filtered.map(car => {
               const isSel = selected?.key === car.key
               return (
-                <button key={car.key} onClick={() => { onSelect(car); setQuery(''); setOpen(false) }}
+                <button key={car.key} onClick={() => { onSelect(car); setQuery(''); setOpen(false); setHoveredCareer(null) }}
                   style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 0.75rem', background: isSel ? 'var(--gold-glow)' : 'transparent', border: 'none', borderBottom: '1px solid var(--bdr-l)', cursor: 'pointer' }}
-                  onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = 'rgba(200,162,78,.06)' }}
-                  onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = 'transparent' }}
+                  onMouseEnter={e => {
+                    if (!isSel) e.currentTarget.style.background = 'rgba(200,162,78,.06)'
+                    setHoveredCareer({ name: car.name, description: car.description, skillKeys: car.career_skill_keys ?? [], source: car.source, isForce: car.is_force_career })
+                    setTipPos(calcCreatorTipPos(e.currentTarget.getBoundingClientRect()))
+                  }}
+                  onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = 'transparent'; setHoveredCareer(null) }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-base)', fontWeight: 700, color: 'var(--ink)', letterSpacing: '0.06rem' }}>{car.name}</span>
@@ -1288,6 +1565,8 @@ function CareerStep({
         </div>
       )}
       {!selected && <button onClick={onBack} style={S.ghostBtn}>← BACK</button>}
+
+      {hoveredCareer && <CreatorItemTooltip item={hoveredCareer} pos={tipPos} skillMap={skillMap} />}
     </div>
   )
 }
@@ -1313,6 +1592,8 @@ function SpecStep({
   const [open, setOpen] = useState(!selected)
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const [hoveredSpec, setHoveredSpec] = useState<CreatorTipItem | null>(null)
+  const [tipPos, setTipPos] = useState<CreatorTipPos>({ x: 0, y: 0 })
 
   const careerSpecs = useMemo(() => specializations.filter(s => s.career_key === careerKey), [specializations, careerKey])
   const otherSpecs = useMemo(() => specializations.filter(s => s.career_key !== careerKey), [specializations, careerKey])
@@ -1339,10 +1620,14 @@ function SpecStep({
   const renderSpecItem = (spec: RefSpecialization, isCareer: boolean) => {
     const isSel = selected?.key === spec.key
     return (
-      <button key={spec.key} onClick={() => { onSelect(spec); setQuery(''); setOpen(false) }}
+      <button key={spec.key} onClick={() => { onSelect(spec); setQuery(''); setOpen(false); setHoveredSpec(null) }}
         style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 0.75rem', background: isSel ? 'var(--gold-glow)' : 'transparent', border: 'none', borderBottom: '1px solid var(--bdr-l)', cursor: 'pointer', opacity: isCareer ? 1 : 0.7 }}
-        onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = 'rgba(200,162,78,.06)' }}
-        onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = 'transparent' }}
+        onMouseEnter={e => {
+          if (!isSel) e.currentTarget.style.background = 'rgba(200,162,78,.06)'
+          setHoveredSpec({ name: spec.name, description: spec.description, skillKeys: spec.career_skill_keys ?? [], source: spec.source, isForce: spec.is_force_sensitive })
+          setTipPos(calcCreatorTipPos(e.currentTarget.getBoundingClientRect()))
+        }}
+        onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = 'transparent'; setHoveredSpec(null) }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
           <span style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-base)', fontWeight: 700, color: 'var(--ink)', letterSpacing: '0.06rem' }}>{spec.name}</span>
@@ -1447,6 +1732,8 @@ function SpecStep({
           {!selected ? 'SELECT A SPECIALISATION' : freeSpecPicks.length < 2 ? `PICK ${2 - freeSpecPicks.length} MORE BONUS SKILL${freeSpecPicks.length === 1 ? '' : 'S'}` : 'CONTINUE → XP INVESTMENT'}
         </button>
       </div>
+
+      {hoveredSpec && <CreatorItemTooltip item={hoveredSpec} pos={tipPos} skillMap={skillMap} />}
     </div>
   )
 }
@@ -1483,6 +1770,7 @@ function XpInvestmentStep({
 }) {
   const [section, setSection] = useState<'chars' | 'skills' | 'specs' | 'talents'>('chars')
   const [activeTalentSpecKey, setActiveTalentSpecKey] = useState<string | null>(null)
+  const [hoveredChar, setHoveredChar] = useState<{ key: typeof CHAR_KEYS[number]; pos: CreatorTipPos } | null>(null)
 
   // Derived active talent spec (falls back to first if none selected or spec was removed)
   const activeTalentSpec = allSpecs.find(s => s.key === activeTalentSpecKey) ?? allSpecs[0] ?? null
@@ -1563,7 +1851,11 @@ function XpInvestmentStep({
                 const canUp = val < 5 && xpRemaining >= nextCost
                 const canDown = val > base
                 return (
-                  <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-sm)', padding: '0.3rem 0.6rem', background: 'rgba(255,255,255,.5)', border: '1px solid var(--bdr-l)' }}>
+                  <div key={key}
+                    style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-sm)', padding: '0.3rem 0.6rem', background: 'rgba(255,255,255,.5)', border: '1px solid var(--bdr-l)', cursor: 'default' }}
+                    onMouseEnter={e => setHoveredChar({ key, pos: calcCreatorTipPos(e.currentTarget.getBoundingClientRect()) })}
+                    onMouseLeave={() => setHoveredChar(null)}
+                  >
                     <span style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--txt2)', width: '5rem', letterSpacing: '0.05rem', textTransform: 'uppercase' }}>{key}</span>
                     <button onClick={() => {
                       if (canDown) setDraft(p => ({ ...p, [key]: p[key] - 1 }))
@@ -1582,6 +1874,25 @@ function XpInvestmentStep({
               })}
             </div>
           </div>
+        )}
+
+        {hoveredChar && createPortal(
+          <div style={{
+            position: 'fixed', left: hoveredChar.pos.x, top: hoveredChar.pos.y,
+            zIndex: 9999, width: 280, pointerEvents: 'none',
+            background: 'rgba(252,248,236,0.98)',
+            border: '1px solid rgba(200,162,78,0.55)', borderLeft: '3px solid var(--gold)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.1)',
+            padding: '10px 13px 12px',
+          }}>
+            <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'clamp(0.72rem,1vw,0.84rem)', fontWeight: 800, letterSpacing: '0.07rem', color: 'var(--ink)', marginBottom: 7, textTransform: 'capitalize' }}>
+              {hoveredChar.key}
+            </div>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: 'clamp(0.65rem,0.88vw,0.74rem)', color: 'var(--txt2)', margin: 0, lineHeight: 1.6 }}>
+              {CHAR_DESC[hoveredChar.key]}
+            </p>
+          </div>,
+          document.body,
         )}
 
         {/* SECTION B: Skills */}
@@ -2041,4 +2352,89 @@ function CollapsibleDesc({ html }: { html: string }) {
       )}
     </div>
   )
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  CREATOR ITEM TOOLTIP — shared hover tooltip for careers & specialisations
+// ══════════════════════════════════════════════════════════════════════════════
+const CREATOR_TIP_W = 320
+
+interface CreatorTipItem {
+  name:        string
+  description?: string
+  skillKeys:   string[]
+  source?:     string | null
+  isForce?:    boolean
+}
+
+interface CreatorTipPos {
+  x:   number   // fixed left position
+  y:   number   // fixed top position
+}
+
+function CreatorItemTooltip({
+  item, pos,
+}: {
+  item:     CreatorTipItem
+  pos:      CreatorTipPos
+  skillMap: Record<string, RefSkill>
+}) {
+  const rawDesc = item.description ? stripBBCode(item.description) : ''
+  // Take first paragraph only, then cut before the skills-list sentence
+  const firstPara = rawDesc.split(/\n\s*\n/)[0]?.trim() ?? ''
+  const skillsCutIdx = firstPara.search(/ starts? (off )?with /i)
+  const desc = skillsCutIdx > 0 ? firstPara.slice(0, skillsCutIdx).trim() : firstPara
+  if (!desc) return null
+
+  return createPortal(
+    <div
+      style={{
+        position:    'fixed',
+        left:        pos.x,
+        top:         pos.y,
+        zIndex:      9999,
+        width:       CREATOR_TIP_W,
+        maxHeight:   'min(80vh, 600px)',
+        overflowY:   'auto',
+        pointerEvents: 'none',
+        background:  'rgba(252,248,236,0.98)',
+        border:      '1px solid rgba(200,162,78,0.55)',
+        borderLeft:  '3px solid var(--gold)',
+        boxShadow:   '0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.1)',
+        padding:     '10px 13px 12px',
+      }}
+    >
+      <div style={{
+        fontFamily: 'var(--font-orbitron)',
+        fontSize:   'clamp(0.72rem, 1vw, 0.84rem)',
+        fontWeight: 800, letterSpacing: '0.07rem',
+        color:      'var(--ink)',
+        marginBottom: 7,
+      }}>
+        {item.name}
+      </div>
+      <p style={{
+        fontFamily: 'var(--font-mono)',
+        fontSize:   'clamp(0.65rem, 0.88vw, 0.74rem)',
+        color:      'var(--txt2)',
+        margin:     0, lineHeight: 1.6,
+      }}>
+        {desc}
+      </p>
+    </div>,
+    document.body,
+  )
+}
+
+/** Compute fixed-position coords for the creator tooltip, favouring right-side placement. */
+function calcCreatorTipPos(rect: DOMRect): CreatorTipPos {
+  const vw = window.innerWidth
+  const vh = window.innerHeight
+  const spaceRight = vw - rect.right - 12
+  const x = spaceRight >= CREATOR_TIP_W
+    ? rect.right + 12
+    : Math.max(8, rect.left - CREATOR_TIP_W - 12)
+  // Keep tooltip from starting too close to the bottom — max 80vh cap is handled by CSS
+  const y = Math.min(rect.top, vh * 0.85)
+  return { x, y }
 }

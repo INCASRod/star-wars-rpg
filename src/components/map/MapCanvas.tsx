@@ -292,6 +292,7 @@ function syncTokens(
       px, token, canDrag,
       mapW, mapH, offsetX, offsetY,
       onMoveRef, onContextRef, draggingTokenIdRef,
+      mapWRef, mapHRef, mapOffsetXRef, mapOffsetYRef,
     )
     sprite.scale.set(tokenScale)
     app.stage.addChild(sprite)
@@ -318,6 +319,10 @@ function buildTokenSprite(
   onMoveRef:           React.MutableRefObject<(id: string, x: number, y: number) => void>,
   onContextRef:        React.MutableRefObject<((id: string, e: MouseEvent) => void) | undefined>,
   draggingTokenIdRef:  React.MutableRefObject<string | null>,
+  mapWRef:             React.MutableRefObject<number>,
+  mapHRef:             React.MutableRefObject<number>,
+  mapOffsetXRef:       React.MutableRefObject<number>,
+  mapOffsetYRef:       React.MutableRefObject<number>,
 ): InstanceType<typeof import('pixi.js').Container> {
   const SIZE   = 24 * (token.token_size ?? 1)
   const RADIUS = SIZE / 2
@@ -406,41 +411,60 @@ function buildTokenSprite(
   let dragging = false
   let offX = 0, offY = 0
 
+  // ── Stage-level handlers attached/detached per drag ──────────
+  // Using the stage (c.parent) for pointermove/pointerup means the token
+  // follows the cursor even when it moves faster than the token's hit area,
+  // and coordinate conversion via toLocal() accounts for stage pan/zoom so
+  // there is no speed mismatch between pointer and token.
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const onStageMove = (e: { globalX: number; globalY: number }) => {
+    if (!dragging) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const local = (c.parent as any).toLocal({ x: e.globalX, y: e.globalY })
+    c.x = local.x - offX
+    c.y = local.y - offY
+  }
+
+  const onStageUp = () => {
+    if (!dragging) return
+    dragging = false
+    draggingTokenIdRef.current = null
+    c.zIndex = 10
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const stage = c.parent as any
+    stage.off('pointermove',    onStageMove)
+    stage.off('pointerup',      onStageUp)
+    stage.off('pointerupoutside', onStageUp)
+    // Use live ref values — captures current map bounds even if canvas resized since build
+    const mW = mapWRef.current
+    const mH = mapHRef.current
+    const ox = mapOffsetXRef.current
+    const oy = mapOffsetYRef.current
+    const nx = Math.max(0, Math.min(1, (c.x - ox) / mW))
+    const ny = Math.max(0, Math.min(1, (c.y - oy) / mH))
+    onMoveRef.current(token.id, nx, ny)
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(c as any).on('pointerdown', (e: { stopPropagation: () => void; globalX: number; globalY: number }) => {
     e.stopPropagation()
     dragging = true
     draggingTokenIdRef.current = token.id
-    offX = e.globalX - c.x
-    offY = e.globalY - c.y
+    // Convert the pointer's canvas-pixel position into stage-local space so
+    // offX/offY are in the same coordinate system as c.x/c.y.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const local = (c.parent as any).toLocal({ x: e.globalX, y: e.globalY })
+    offX = local.x - c.x
+    offY = local.y - c.y
     c.zIndex = 999
-  })
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(c as any).on('pointermove', (e: { globalX: number; globalY: number }) => {
-    if (!dragging) return
-    c.x = e.globalX - offX
-    c.y = e.globalY - offY
-  })
-  // Normalise position relative to map image (not canvas) on drop
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(c as any).on('pointerup', () => {
-    if (!dragging) return
-    dragging = false
-    draggingTokenIdRef.current = null
-    c.zIndex = 10
-    const nx = Math.max(0, Math.min(1, (c.x - offsetX) / mapW))
-    const ny = Math.max(0, Math.min(1, (c.y - offsetY) / mapH))
-    onMoveRef.current(token.id, nx, ny)
-  })
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(c as any).on('pointerupoutside', () => {
-    if (!dragging) return
-    dragging = false
-    draggingTokenIdRef.current = null
-    c.zIndex = 10
-    const nx = Math.max(0, Math.min(1, (c.x - offsetX) / mapW))
-    const ny = Math.max(0, Math.min(1, (c.y - offsetY) / mapH))
-    onMoveRef.current(token.id, nx, ny)
+    // Attach move/up to the stage so events keep firing even when the
+    // cursor leaves the token's hit area during a fast drag.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const stage = c.parent as any
+    stage.on('pointermove',    onStageMove)
+    stage.on('pointerup',      onStageUp)
+    stage.on('pointerupoutside', onStageUp)
   })
 
   return c

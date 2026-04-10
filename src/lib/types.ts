@@ -395,6 +395,9 @@ export interface Character {
   motivation_specific?: string
   motivation_description?: string
   motivation_configured?: boolean
+  // Nemesis system
+  is_pc?: boolean
+  adversary_type?: 'minion' | 'rival' | 'nemesis' | null
 }
 
 export interface RefDutyType {

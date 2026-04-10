@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import type { Character, CharacterWeapon, CharacterArmor, CharacterGear } from '@/lib/types'
 import type { RefWeapon, RefArmor, RefGear } from '@/lib/types'
 import { computeEncumbranceStats } from '@/lib/derivedStats'
@@ -55,6 +56,8 @@ interface LootAwardModalProps {
   fixedQuantity?: boolean
   /** When provided, overrides the default DB-insert award flow */
   onCustomAward?: (charIds: string[], charNames: string[], equipChoices: Record<string, EquipChoice>, quantity: number) => Promise<void>
+  /** When true, shows a NEMESIS MODE banner at the top of the modal */
+  nemesisContext?: boolean
 }
 
 type EquipChoice = 'carrying' | 'stowed'
@@ -62,7 +65,7 @@ type EquipChoice = 'carrying' | 'stowed'
 export function LootAwardModal({
   item, characters, campaignId,
   supabase, onClose, onAwardComplete, sendToChar,
-  preSelectedCharId, fixedQuantity, onCustomAward,
+  preSelectedCharId, fixedQuantity, onCustomAward, nemesisContext,
 }: LootAwardModalProps) {
   const [selected,     setSelected]     = useState<Set<string>>(preSelectedCharId ? new Set([preSelectedCharId]) : new Set())
   const [equipChoices, setEquipChoices] = useState<Record<string, EquipChoice>>({})
@@ -214,7 +217,7 @@ export function LootAwardModal({
 
   const itemTypeColor = item.type === 'weapon' ? RED : item.type === 'armor' ? BLUE : DIM
 
-  return (
+  return createPortal(
     <div
       style={{ position: 'fixed', inset: 0, zIndex: 550, background: BG, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
       onClick={onClose}
@@ -232,6 +235,20 @@ export function LootAwardModal({
         }}
         onClick={e => e.stopPropagation()}
       >
+        {/* Nemesis mode banner */}
+        {nemesisContext && (
+          <div style={{
+            fontFamily: FONT_M, fontSize: 'clamp(0.65rem, 0.85vw, 0.75rem)',
+            color: '#e05252', textTransform: 'uppercase', letterSpacing: '0.12em',
+            marginBottom: 14, padding: '5px 10px',
+            background: 'rgba(224,82,82,0.07)',
+            border: '1px solid rgba(224,82,82,0.22)',
+            borderRadius: 4,
+          }}>
+            ⚡ NEMESIS MODE — targeting nemesis characters only
+          </div>
+        )}
+
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 }}>
           <div>
@@ -343,7 +360,8 @@ export function LootAwardModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 

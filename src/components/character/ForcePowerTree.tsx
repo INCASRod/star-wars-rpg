@@ -118,16 +118,28 @@ function PurchasePopover({ node, xpAvailable, onConfirm, onCancel }: {
 /*  TOOLTIP                               */
 /* ═══════════════════════════════════════ */
 
-function ForceTooltip({ node, style }: { node: ForceTreeNode; style: React.CSSProperties }) {
+const TOOLTIP_W = 300
+
+interface FixedPos {
+  left:    number
+  top?:    number
+  bottom?: number
+}
+
+function ForceTooltip({ node, pos }: { node: ForceTreeNode; pos: FixedPos }) {
   return (
     <div style={{
-      position: 'absolute', zIndex: 200,
+      position: 'fixed',
+      left: pos.left,
+      ...(pos.top    !== undefined ? { top:    pos.top    } : {}),
+      ...(pos.bottom !== undefined ? { bottom: pos.bottom } : {}),
+      zIndex: 9999,
+      width: TOOLTIP_W,
       background: 'rgba(4,9,6,0.97)',
       border: `1px solid ${GOLD}40`,
-      padding: '12px 16px', minWidth: '220px', maxWidth: '300px',
+      padding: '12px 16px',
       boxShadow: '0 8px 32px rgba(0,0,0,.5)', pointerEvents: 'none',
       fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL,
-      ...style,
     }}>
       <div style={{
         fontSize: FS_SM,
@@ -175,7 +187,7 @@ function ForceNode({
   onHoverChange?: (hovered: boolean) => void
 }) {
   const [hovered, setHovered] = useState(false)
-  const [tooltipSide, setTooltipSide] = useState<'bottom' | 'top'>('bottom')
+  const [tooltipPos, setTooltipPos] = useState<FixedPos>({ left: 0, top: 0 })
   const nodeRef = useRef<HTMLDivElement>(null)
   const canAfford = xpAvailable !== undefined ? xpAvailable >= node.cost : true
   const isClickable = node.canPurchase && !node.purchased
@@ -184,8 +196,15 @@ function ForceNode({
     setHovered(true)
     onHoverChange?.(true)
     if (nodeRef.current) {
-      const rect = nodeRef.current.getBoundingClientRect()
-      setTooltipSide(window.innerHeight - rect.bottom < 200 ? 'top' : 'bottom')
+      const r  = nodeRef.current.getBoundingClientRect()
+      const vw = window.innerWidth
+      const vh = window.innerHeight
+      const left = Math.max(8, Math.min(r.left + r.width / 2 - TOOLTIP_W / 2, vw - TOOLTIP_W - 8))
+      if (vh - r.bottom >= 200) {
+        setTooltipPos({ left, top: r.bottom + 8 })
+      } else {
+        setTooltipPos({ left, bottom: vh - r.top + 8 })
+      }
     }
   }, [onHoverChange])
 
@@ -282,13 +301,7 @@ function ForceNode({
       </div>
 
       {hovered && (
-        <ForceTooltip
-          node={node}
-          style={tooltipSide === 'bottom'
-            ? { top: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)' }
-            : { bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)' }
-          }
-        />
+        <ForceTooltip node={node} pos={tooltipPos} />
       )}
     </div>
   )

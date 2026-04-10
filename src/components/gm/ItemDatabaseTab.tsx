@@ -92,6 +92,7 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
   const [droppedItems,    setDroppedItems]    = useState<DroppedItem[]>([])
   const [droppedLoading,  setDroppedLoading]  = useState(false)
   const [awardingDropped, setAwardingDropped] = useState<DroppedItem | null>(null)
+  const [awardingItem,    setAwardingItem]    = useState<DbItem | null>(null)
   const [destroyConfirm,  setDestroyConfirm]  = useState<string | null>(null) // rowId
 
   const toggleExpanded = () =>
@@ -496,6 +497,9 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
                     </span>
                     <span style={{ fontFamily: FONT_C, fontSize: FS_CAP, color: DIM, flex: 1 }}>R{item.rarity}</span>
                     <div style={{ display: 'flex', gap: 4 }}>
+                      {characters.length > 0 && (
+                        <button onClick={() => setAwardingItem(item)} style={actionBtn(GOLD)}>Award</button>
+                      )}
                       <button onClick={() => openEdit(item)} style={actionBtn(item.is_custom ? GOLD : DIM)}>
                         {item.is_custom ? '✎' : '⊕'}
                       </button>
@@ -561,6 +565,9 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
 
                   {/* Actions */}
                   <div style={{ display: 'flex', gap: 6 }}>
+                    {characters.length > 0 && (
+                      <button onClick={() => setAwardingItem(item)} style={actionBtn(GOLD)}>Award</button>
+                    )}
                     <button onClick={() => openEdit(item)} style={actionBtn(item.is_custom ? GOLD : DIM)}>
                       {item.is_custom ? '✎ Edit' : '⊕ Copy'}
                     </button>
@@ -664,6 +671,24 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
           supabase={supabase}
           onClose={() => setEditorOpen(false)}
           onSaved={() => { setEditorOpen(false); loadItems() }}
+        />
+      )}
+
+      {/* ── Award item directly modal ── */}
+      {awardingItem && characters.length > 0 && (
+        <LootAwardModal
+          item={{
+            key: awardingItem.key,
+            name: awardingItem.name,
+            type: awardingItem.type,
+            encumbrance: awardingItem.encumbrance ?? 0,
+          } as AwardableItem}
+          characters={characters}
+          campaignId={campaignId}
+          supabase={supabase}
+          onClose={() => setAwardingItem(null)}
+          onAwardComplete={() => setAwardingItem(null)}
+          sendToChar={sendToChar ?? (() => {})}
         />
       )}
 

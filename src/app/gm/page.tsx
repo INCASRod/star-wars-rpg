@@ -14,6 +14,7 @@ import { LootAwardModal, type AwardableItem } from '@/components/gm/LootAwardMod
 import { DestinyGeneratePanel } from '@/components/gm/DestinyGeneratePanel'
 import { GmMapView } from '@/components/gm/GmMapView'
 import { AdversaryLibrary } from '@/components/gm/AdversaryLibrary'
+import { VehicleLibrary } from '@/components/gm/VehicleLibrary'
 import { useActiveMap } from '@/hooks/useActiveMap'
 import { DestinyPoolDisplay, type DestinyPoolRecord } from '@/components/destiny/DestinyPoolDisplay'
 import { toast } from 'sonner'
@@ -303,6 +304,7 @@ function GmDashboard() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const campaignId = searchParams.get('campaign')
+  const initialView = searchParams.get('view')
 
   // ── Core state ──
   const [campaign, setCampaign] = useState<Campaign | null>(null)
@@ -312,11 +314,19 @@ function GmDashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // ── Nemesis view ──
+  const [gmNemesisViewActive, setGmNemesisViewActive] = useState(() => initialView === 'nemeses')
+  // Auto-sync when URL param changes on first render
+  useEffect(() => {
+    if (initialView === 'nemeses') setGmNemesisViewActive(true)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // ── Tabs ──
-  type GmTab = 'xp' | 'credits' | 'duty' | 'do' | 'loot' | 'items' | 'combat' | 'adversaries' | 'force' | 'maps'
+  type GmTab = 'xp' | 'credits' | 'duty' | 'do' | 'loot' | 'items' | 'combat' | 'adversaries' | 'vehicles' | 'force' | 'maps'
   const GM_TAB_KEY = 'holocron:gm-tab'
   // 'maps' is intentionally excluded — the map tab must be explicitly clicked each session
-  const GM_TAB_VALID: GmTab[] = ['xp', 'credits', 'duty', 'do', 'loot', 'items', 'combat', 'adversaries', 'force']
+  const GM_TAB_VALID: GmTab[] = ['xp', 'credits', 'duty', 'do', 'loot', 'items', 'combat', 'adversaries', 'vehicles', 'force']
   const [activeTab, setActiveTab] = useState<GmTab>(() => {
     if (typeof window === 'undefined') return 'xp'
     const saved = window.localStorage.getItem(GM_TAB_KEY)
@@ -382,6 +392,7 @@ function GmDashboard() {
   const [critReqGm, setCritReqGm] = useState(0)
   const [critReqBusy, setCritReqBusy] = useState(false)
   const [rolledCritRequests, setRolledCritRequests] = useState<CriticalInjuryRequest[]>([])
+  const [critCustomNames, setCritCustomNames] = useState<Record<string, string>>({})
 
   // ── Loot ──
   const [lootOpen, setLootOpen] = useState(false)
@@ -436,8 +447,12 @@ function GmDashboard() {
   const { activeMap, allMaps } = useActiveMap(campaignId)
 
   // ── Derived character lists ──
-  const activeChars   = useMemo(() => characters.filter(c => !c.is_archived), [characters])
+  // activeChars = live PC characters only (is_pc true or unset = legacy rows)
+  const activeChars   = useMemo(() => characters.filter(c => !c.is_archived && c.is_pc !== false), [characters])
+  const nemesisChars  = useMemo(() => characters.filter(c => !c.is_archived && c.adversary_type === 'nemesis'), [characters])
   const archivedChars = useMemo(() => characters.filter(c =>  c.is_archived), [characters])
+  // targetChars = context-aware: nemeses when GM is in nemesis view, PCs otherwise
+  const targetChars   = useMemo(() => gmNemesisViewActive ? nemesisChars : activeChars, [gmNemesisViewActive, nemesisChars, activeChars])
 
   // ── Optimistic character patch (used by D&O tab inline edits & setup modal) ──
   const handleCharacterUpdated = useCallback((id: string, updates: Partial<Character>) => {
@@ -876,10 +891,10 @@ function GmDashboard() {
     setXpConfirm(null)
     setXpBusy(true)
     try {
-      const updates = activeChars.map(c =>
+      const updates = targetChars.map(c =>
         supabase.from('characters').update({ xp_total: c.xp_total + amount, xp_available: c.xp_available + amount }).eq('id', c.id)
       )
-      const transactions = activeChars.map(c =>
+      const transactions = targetChars.map(c =>
         supabase.from('xp_transactions').insert({ character_id: c.id, amount, reason, created_by: 'gm' })
       )
       await Promise.all([...updates, ...transactions])
@@ -916,14 +931,14 @@ function GmDashboard() {
   // ── Credits ──
   const handleBulkCredits = async () => {
     const amount = parseInt(creditsAmount, 10)
-    if (!amount || amount <= 0 || activeChars.length === 0) return
+    if (!amount || amount <= 0 || targetChars.length === 0) return
     setCreditsBusy(true)
     try {
-      await Promise.all(activeChars.map(c => supabase.from('characters').update({ credits: c.credits + amount }).eq('id', c.id)))
+      await Promise.all(targetChars.map(c => supabase.from('characters').update({ credits: c.credits + amount }).eq('id', c.id)))
       setCharacters(prev => prev.map(c => c.is_archived ? c : { ...c, credits: c.credits + amount }))
-      for (const c of activeChars) notify(c.id, 'dialog', `You received ${amount} credits!`)
+      for (const c of targetChars) notify(c.id, 'dialog', `You received ${amount} credits!`)
       setCreditsAmount('')
-      flash(`Distributed ${amount} credits to ${activeChars.length} characters`)
+      flash(`Distributed ${amount} credits to ${targetChars.length} characters`)
     } catch (err: unknown) {
       flashError('Error distributing credits: ' + (err instanceof Error ? err.message : String(err)))
     }
@@ -1015,14 +1030,14 @@ function GmDashboard() {
     const field = odType === 'obligation' ? 'obligation_value' : 'duty_value'
     const label = odType === 'obligation' ? 'Obligation' : 'Duty'
     try {
-      await Promise.all(activeChars.map(c => {
+      await Promise.all(targetChars.map(c => {
         const current = getODValue(c, odType)
         return supabase.from('characters').update({ [field]: Math.max(0, current + amount) }).eq('id', c.id)
       }))
       setCharacters(prev => prev.map(c => c.is_archived ? c : { ...c, [field]: Math.max(0, getODValue(c, odType) + amount) }))
-      for (const c of activeChars) notify(c.id, 'toast', `${label} ${amount > 0 ? 'increased' : 'decreased'} by ${Math.abs(amount)}`)
+      for (const c of targetChars) notify(c.id, 'toast', `${label} ${amount > 0 ? 'increased' : 'decreased'} by ${Math.abs(amount)}`)
       setOdAmount('')
-      flash(`${amount > 0 ? 'Added' : 'Reduced'} ${Math.abs(amount)} ${label} for ${activeChars.length} characters`)
+      flash(`${amount > 0 ? 'Added' : 'Reduced'} ${Math.abs(amount)} ${label} for ${targetChars.length} characters`)
     } catch (err: unknown) {
       flashError(err instanceof Error ? err.message : String(err))
     }
@@ -1117,8 +1132,39 @@ function GmDashboard() {
   }, [campaignId, charActiveCritCounts, critReqVicious, critReqLethal, critReqGm])
 
   const confirmCritResult = useCallback(async (req: CriticalInjuryRequest) => {
+    const customName = critCustomNames[req.id]?.trim()
+    if (customName) {
+      const { data } = await supabase.from('character_critical_injuries')
+        .select('id')
+        .eq('character_id', req.character_id)
+        .eq('total_roll', req.final_result)
+        .order('received_at', { ascending: false })
+        .limit(1)
+      if (data?.[0]) {
+        await supabase.from('character_critical_injuries').update({ custom_name: customName }).eq('id', (data[0] as { id: string }).id)
+      }
+    }
     await supabase.from('critical_injury_requests').update({ status: 'dismissed', resolved_at: new Date().toISOString() }).eq('id', req.id)
     setRolledCritRequests(prev => prev.filter(r => r.id !== req.id))
+    setCritCustomNames(prev => { const n = { ...prev }; delete n[req.id]; return n })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [critCustomNames])
+
+  const cancelCritResult = useCallback(async (req: CriticalInjuryRequest) => {
+    const { data } = await supabase.from('character_critical_injuries')
+      .select('id')
+      .eq('character_id', req.character_id)
+      .eq('total_roll', req.final_result)
+      .order('received_at', { ascending: false })
+      .limit(1)
+    if (data?.[0]) {
+      await supabase.from('character_critical_injuries').delete().eq('id', (data[0] as { id: string }).id)
+      setCharActiveCritCounts(prev => ({ ...prev, [req.character_id]: Math.max(0, (prev[req.character_id] ?? 1) - 1) }))
+    }
+    await supabase.from('critical_injury_requests').update({ status: 'dismissed', resolved_at: new Date().toISOString() }).eq('id', req.id)
+    setRolledCritRequests(prev => prev.filter(r => r.id !== req.id))
+    setCritCustomNames(prev => { const n = { ...prev }; delete n[req.id]; return n })
+    flash('Critical injury cancelled.')
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -1134,18 +1180,20 @@ function GmDashboard() {
       .order('received_at', { ascending: false })
       .limit(1)
     if (data?.[0]) {
+      const customName = critCustomNames[req.id]?.trim()
       await supabase.from('character_critical_injuries').update({
         injury_id:   injury.id,
-        custom_name: injury.name,
+        custom_name: customName || injury.name,
         severity:    injury.severity,
         description: injury.description,
       }).eq('id', (data[0] as { id: string }).id)
     }
     await supabase.from('critical_injury_requests').update({ injury_key: injuryId, status: 'dismissed', resolved_at: new Date().toISOString() }).eq('id', req.id)
     setRolledCritRequests(prev => prev.filter(r => r.id !== req.id))
+    setCritCustomNames(prev => { const n = { ...prev }; delete n[req.id]; return n })
     flash('Critical injury result overridden.')
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refCritsDb])
+  }, [refCritsDb, critCustomNames])
 
   const healCrit = useCallback(async (critId: string, charId: string) => {
     await supabase.from('character_critical_injuries').update({ is_healed: true }).eq('id', critId)
@@ -1560,7 +1608,28 @@ function GmDashboard() {
                         )}
                       </div>
                     )}
+                    <div style={{ marginBottom: 8 }}>
+                      <input
+                        type="text"
+                        placeholder="Custom injury name (optional)"
+                        value={critCustomNames[req.id] ?? ''}
+                        onChange={e => setCritCustomNames(prev => ({ ...prev, [req.id]: e.target.value }))}
+                        style={{
+                          width: '100%', boxSizing: 'border-box',
+                          background: 'rgba(8,16,10,0.6)', border: `1px solid rgba(200,170,80,0.2)`,
+                          borderRadius: 3, padding: '4px 8px',
+                          fontFamily: FR, fontSize: FS_CAPTION, color: TEXT,
+                          outline: 'none',
+                        }}
+                      />
+                    </div>
                     <div style={{ display: 'flex', gap: 6 }}>
+                      <button
+                        onClick={() => cancelCritResult(req)}
+                        style={{ ...btnSmall, flex: 1, color: RED, borderColor: 'rgba(220,20,60,0.3)' }}
+                      >
+                        ✕ Cancel
+                      </button>
                       <button
                         onClick={() => confirmCritResult(req)}
                         style={{ ...btnSmall, flex: 1, color: GREEN, borderColor: 'rgba(78,200,122,0.3)' }}
@@ -1581,25 +1650,108 @@ function GmDashboard() {
           {/* ── PARTY OVERVIEW ── */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <div style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: DIM }}>Party Overview</div>
-              {Object.keys(activeSessions).length > 0 && (
+              {/* View toggle: PLAYER CHARACTERS / NEMESES */}
+              <div style={{ display: 'flex', gap: 0, border: `1px solid ${gmNemesisViewActive ? 'rgba(224,82,82,0.3)' : BORDER_HI}`, borderRadius: 4, overflow: 'hidden' }}>
                 <button
-                  onClick={releaseAllSessions}
-                  style={{ background: 'transparent', border: `1px solid rgba(224,80,80,0.4)`, borderRadius: 3, padding: '3px 10px', cursor: 'pointer', fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.08em', color: RED, textTransform: 'uppercase', whiteSpace: 'nowrap' }}
+                  onClick={() => setGmNemesisViewActive(false)}
+                  style={{
+                    fontFamily: "'Cinzel','Rajdhani',sans-serif",
+                    fontSize: 'clamp(0.7rem, 0.95vw, 0.85rem)',
+                    fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
+                    padding: '4px 14px', border: 'none', cursor: 'pointer',
+                    background: !gmNemesisViewActive ? 'rgba(200,170,80,0.15)' : 'transparent',
+                    color: !gmNemesisViewActive ? GOLD : DIM,
+                    transition: 'background 150ms, color 150ms',
+                  }}
                 >
-                  ⏻ Release All Sessions
+                  Player Characters
                 </button>
-              )}
+                <button
+                  onClick={() => setGmNemesisViewActive(true)}
+                  style={{
+                    fontFamily: "'Cinzel','Rajdhani',sans-serif",
+                    fontSize: 'clamp(0.7rem, 0.95vw, 0.85rem)',
+                    fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
+                    padding: '4px 14px', border: 'none', cursor: 'pointer',
+                    background: gmNemesisViewActive ? 'rgba(224,82,82,0.12)' : 'transparent',
+                    color: gmNemesisViewActive ? '#e05252' : DIM,
+                    transition: 'background 150ms, color 150ms',
+                  }}
+                >
+                  Nemeses
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {/* Create Nemesis button (shown when nemesis view active) */}
+                {gmNemesisViewActive && (
+                  <button
+                    onClick={() => router.push(`/create?campaign=${campaignId}&nemesis=1`)}
+                    style={{
+                      fontFamily: "'Cinzel','Rajdhani',sans-serif",
+                      fontSize: 'clamp(0.7rem, 0.95vw, 0.85rem)',
+                      fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+                      padding: '4px 12px', borderRadius: 3, cursor: 'pointer',
+                      border: '1px solid rgba(224,82,82,0.4)', color: 'rgba(224,82,82,0.75)',
+                      background: 'rgba(224,82,82,0.07)',
+                      transition: 'color 150ms, background 150ms',
+                    }}
+                    onMouseEnter={e => { const el = e.currentTarget as HTMLButtonElement; el.style.color = '#e05252'; el.style.background = 'rgba(224,82,82,0.12)' }}
+                    onMouseLeave={e => { const el = e.currentTarget as HTMLButtonElement; el.style.color = 'rgba(224,82,82,0.75)'; el.style.background = 'rgba(224,82,82,0.07)' }}
+                  >
+                    ⚡ + Create Nemesis
+                  </button>
+                )}
+                {Object.keys(activeSessions).length > 0 && !gmNemesisViewActive && (
+                  <button
+                    onClick={releaseAllSessions}
+                    style={{ background: 'transparent', border: `1px solid rgba(224,80,80,0.4)`, borderRadius: 3, padding: '3px 10px', cursor: 'pointer', fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.08em', color: RED, textTransform: 'uppercase', whiteSpace: 'nowrap' }}
+                  >
+                    ⏻ Release All Sessions
+                  </button>
+                )}
+              </div>
             </div>
+
+            {/* Nemesis empty state */}
+            {gmNemesisViewActive && nemesisChars.length === 0 && (
+              <div style={{
+                padding: '32px 24px', textAlign: 'center',
+                background: 'rgba(224,82,82,0.03)', border: '1px solid rgba(224,82,82,0.15)',
+                borderRadius: 6, marginBottom: 10,
+              }}>
+                <div style={{ fontFamily: FR, fontSize: FS_SM, color: 'rgba(224,82,82,0.6)', marginBottom: 12 }}>
+                  No nemeses created yet.
+                </div>
+                <div style={{ fontFamily: FR, fontSize: FS_LABEL, color: DIM, marginBottom: 16 }}>
+                  Use the Character Creator to build one.
+                </div>
+                <button
+                  onClick={() => router.push(`/create?campaign=${campaignId}&nemesis=1`)}
+                  style={{
+                    fontFamily: "'Cinzel','Rajdhani',sans-serif",
+                    fontSize: 'clamp(0.7rem, 0.95vw, 0.85rem)',
+                    fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+                    padding: '7px 18px', borderRadius: 4, cursor: 'pointer',
+                    border: '1px solid rgba(224,82,82,0.4)', color: '#e05252',
+                    background: 'rgba(224,82,82,0.08)',
+                  }}
+                >
+                  ⚡ + Create Nemesis
+                </button>
+              </div>
+            )}
+
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(5, 1fr)',
               gap: 10,
             }}>
-              {activeChars.map(c => {
+              {targetChars.map(c => {
+                const cardAccent = gmNemesisViewActive ? '#e05252' : GOLD
                 const isIncap = c.wound_current >= c.wound_threshold
                 const isStrainHigh = c.strain_current > c.strain_threshold * 0.75
-                const leftBorderColor = isIncap ? RED : isStrainHigh ? CYAN : 'transparent'
+                const leftBorderColor = isIncap ? RED : isStrainHigh ? CYAN : (gmNemesisViewActive ? 'rgba(224,82,82,0.4)' : 'transparent')
                 const wPct = Math.min(100, (c.wound_current / c.wound_threshold) * 100)
                 const sPct = Math.min(100, (c.strain_current / c.strain_threshold) * 100)
                 const wColor = wPct >= 100 ? RED : wPct >= 75 ? ORANGE : GREEN
@@ -1633,15 +1785,15 @@ function GmDashboard() {
                       ) : (
                         <div style={{
                           width: 36, height: 36, borderRadius: '50%',
-                          background: 'rgba(200,170,80,0.08)', border: '1.5px solid rgba(200,170,80,0.35)',
+                          background: `${cardAccent}14`, border: `1.5px solid ${cardAccent}55`,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontFamily: FC, fontSize: FS_SM, color: GOLD, flexShrink: 0,
+                          fontFamily: FC, fontSize: FS_SM, color: cardAccent, flexShrink: 0,
                         }}>
                           {c.name.charAt(0)}
                         </div>
                       )}
                       <div style={{ minWidth: 0 }}>
-                        <div style={{ fontFamily: FR, fontSize: FS_SM, fontWeight: 700, color: TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        <div style={{ fontFamily: FR, fontSize: FS_SM, fontWeight: 700, color: gmNemesisViewActive ? '#e07070' : TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {c.name}
                         </div>
                         <div style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 600, color: DIM, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 1 }}>
@@ -2052,6 +2204,7 @@ function GmDashboard() {
                   ['items', 'Items'],
                   ['combat', 'Combat'],
                   ['adversaries', '👾 Adversaries'],
+                  ['vehicles',   '🚀 Vehicles'],
                 ] as const).map(([key, label]) => (
                   <button
                     key={key}
@@ -2108,7 +2261,7 @@ function GmDashboard() {
                           <div style={fieldLabel}>Character</div>
                           <select value={xpTarget} onChange={e => setXpTarget(e.target.value)} style={{ ...darkInput, minWidth: 160 }}>
                             <option value="">Select character...</option>
-                            {activeChars.map(c => <option key={c.id} value={c.id}>{c.name} ({c.xp_available} avail)</option>)}
+                            {targetChars.map(c => <option key={c.id} value={c.id}>{c.name} ({c.xp_available} avail)</option>)}
                           </select>
                         </div>
                       )}
@@ -2125,7 +2278,7 @@ function GmDashboard() {
                         disabled={xpBusy || !xpAmount || (xpMode === 'individual' && !xpTarget)}
                         style={{ ...btnPrimary, opacity: (xpBusy || !xpAmount || (xpMode === 'individual' && !xpTarget)) ? 0.4 : 1 }}
                       >
-                        {xpBusy ? 'Processing...' : xpMode === 'group' ? `Grant to All (${activeChars.length})` : parseInt(xpAmount, 10) < 0 ? 'Take XP' : 'Grant XP'}
+                        {xpBusy ? 'Processing...' : xpMode === 'group' ? `Grant to All (${targetChars.length})` : parseInt(xpAmount, 10) < 0 ? 'Take XP' : 'Grant XP'}
                       </button>
                     </div>
                   </div>
@@ -2147,7 +2300,7 @@ function GmDashboard() {
                           <div style={fieldLabel}>Character</div>
                           <select value={creditsTarget} onChange={e => setCreditsTarget(e.target.value)} style={{ ...darkInput, minWidth: 160 }}>
                             <option value="">Select character...</option>
-                            {activeChars.map(c => <option key={c.id} value={c.id}>{c.name} ({c.credits} cr)</option>)}
+                            {targetChars.map(c => <option key={c.id} value={c.id}>{c.name} ({c.credits} cr)</option>)}
                           </select>
                         </div>
                       )}
@@ -2160,7 +2313,7 @@ function GmDashboard() {
                         disabled={creditsBusy || !creditsAmount || (creditsMode === 'individual' && !creditsTarget)}
                         style={{ ...btnPrimary, opacity: (creditsBusy || !creditsAmount || (creditsMode === 'individual' && !creditsTarget)) ? 0.4 : 1 }}
                       >
-                        {creditsBusy ? 'Processing...' : creditsMode === 'group' ? `Distribute to All (${activeChars.length})` : parseInt(creditsAmount, 10) < 0 ? 'Take Credits' : 'Give Credits'}
+                        {creditsBusy ? 'Processing...' : creditsMode === 'group' ? `Distribute to All (${targetChars.length})` : parseInt(creditsAmount, 10) < 0 ? 'Take Credits' : 'Give Credits'}
                       </button>
                     </div>
                   </div>
@@ -2186,7 +2339,7 @@ function GmDashboard() {
 
                     {/* Overview */}
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
-                      {activeChars.map(c => {
+                      {targetChars.map(c => {
                         const val = odType === 'obligation' ? (c.obligation_value || 0) : (c.duty_value || 0)
                         const typeStr = odType === 'obligation'
                           ? (c.obligation_custom_name || obligationTypes.find(o => o.key === c.obligation_type)?.name || c.obligation_type || '—')
@@ -2208,7 +2361,7 @@ function GmDashboard() {
                           <div style={fieldLabel}>Character</div>
                           <select value={odTarget} onChange={e => setOdTarget(e.target.value)} style={{ ...darkInput, minWidth: 160 }}>
                             <option value="">Select character...</option>
-                            {activeChars.map(c => {
+                            {targetChars.map(c => {
                               const val = odType === 'obligation' ? (c.obligation_value || 0) : (c.duty_value || 0)
                               return <option key={c.id} value={c.id}>{c.name} ({val})</option>
                             })}
@@ -2225,8 +2378,8 @@ function GmDashboard() {
                         style={{ ...(parseInt(odAmount, 10) < 0 ? btnDanger : btnPrimary), opacity: (odBusy || !odAmount || (odMode === 'individual' && !odTarget)) ? 0.4 : 1 }}
                       >
                         {odBusy ? 'Processing...' : parseInt(odAmount, 10) < 0
-                          ? `Reduce ${odMode === 'group' ? `All (${activeChars.length})` : odType === 'obligation' ? 'Obligation' : 'Duty'}`
-                          : `Add to ${odMode === 'group' ? `All (${activeChars.length})` : odType === 'obligation' ? 'Obligation' : 'Duty'}`
+                          ? `Reduce ${odMode === 'group' ? `All (${targetChars.length})` : odType === 'obligation' ? 'Obligation' : 'Duty'}`
+                          : `Add to ${odMode === 'group' ? `All (${targetChars.length})` : odType === 'obligation' ? 'Obligation' : 'Duty'}`
                         }
                       </button>
                     </div>
@@ -2267,7 +2420,7 @@ function GmDashboard() {
 
                 {/* ── ITEMS TAB ── */}
                 {activeTab === 'items' && (
-                  <ItemDatabaseTab campaignId={campaignId} supabase={supabase} characters={activeChars} sendToChar={sendToChar} />
+                  <ItemDatabaseTab campaignId={campaignId} supabase={supabase} characters={targetChars} sendToChar={sendToChar} />
                 )}
 
                 {/* ── COMBAT TAB ── */}
@@ -2326,6 +2479,14 @@ function GmDashboard() {
                 {/* ── ADVERSARY LIBRARY TAB ── */}
                 {activeTab === 'adversaries' && campaignId && (
                   <AdversaryLibrary
+                    campaignId={campaignId}
+                    sessionMode={sessionMode}
+                  />
+                )}
+
+                {/* ── VEHICLE LIBRARY TAB ── */}
+                {activeTab === 'vehicles' && campaignId && (
+                  <VehicleLibrary
                     campaignId={campaignId}
                     sessionMode={sessionMode}
                   />
@@ -2645,7 +2806,7 @@ function GmDashboard() {
                 </div>
                 <select value={assignTarget} onChange={e => setAssignTarget(e.target.value)} style={{ ...darkInput, minWidth: 140 }}>
                   <option value="">Assign to...</option>
-                  {activeChars.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  {targetChars.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
                 <button onClick={handleAssignLoot} disabled={!assignTarget || lootBusy} style={{ ...btnPrimary, opacity: assignTarget ? 1 : 0.4 }}>ASSIGN</button>
                 <button onClick={handleDismissReveal} style={btnDanger}>DISMISS</button>
@@ -2879,9 +3040,10 @@ function GmDashboard() {
       {lootAwardItem && (
         <LootAwardModal
           item={lootAwardItem}
-          characters={activeChars}
+          characters={targetChars}
           campaignId={campaignId}
           supabase={supabase}
+          nemesisContext={gmNemesisViewActive}
           onClose={() => setLootAwardItem(null)}
           onAwardComplete={(charNames) => {
             flash(`${lootAwardItem!.name} awarded to ${charNames.join(', ')}`)

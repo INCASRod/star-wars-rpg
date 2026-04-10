@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 export type CritSeverity = 'minor' | 'moderate' | 'serious' | 'grievous'
@@ -43,6 +43,15 @@ export interface CritPip {
   sessionLabel?:string | null
 }
 
+const TOOLTIP_W = 260
+
+interface TooltipPos {
+  left:    number
+  openUp:  boolean
+  anchorY: number  // rect.top when openUp, rect.bottom otherwise
+  vh:      number  // snapshot of innerHeight for bottom calculation
+}
+
 // ── Single pip ────────────────────────────────────────────────────────────────
 interface CriticalInjuryPipProps {
   pip:      CritPip
@@ -51,15 +60,33 @@ interface CriticalInjuryPipProps {
 
 export function CriticalInjuryPip({ pip, onHeal }: CriticalInjuryPipProps) {
   const [tooltipOpen, setTooltipOpen] = useState(false)
+  const [tipPos, setTipPos] = useState<TooltipPos>({ left: 0, openUp: true, anchorY: 0, vh: 0 })
+  const btnRef = useRef<HTMLButtonElement>(null)
   const sev   = normalizeSeverity(pip.severity)
   const color = SEV_COLOR[sev]
   const isGrievous = sev === 'grievous'
+
+  const handleToggle = () => {
+    if (tooltipOpen) { setTooltipOpen(false); return }
+    if (btnRef.current) {
+      const r  = btnRef.current.getBoundingClientRect()
+      const vw = window.innerWidth
+      const vh = window.innerHeight
+      // Centre tooltip on pip, clamped so it never bleeds past viewport edges
+      const left = Math.max(8, Math.min(r.left + r.width / 2 - TOOLTIP_W / 2, vw - TOOLTIP_W - 8))
+      // Open upward if there's room (≥220 px above), otherwise downward
+      const openUp = r.top >= 220
+      setTipPos({ left, openUp, anchorY: openUp ? r.top : r.bottom, vh })
+    }
+    setTooltipOpen(true)
+  }
 
   return (
     <div style={{ position: 'relative', display: 'inline-block' }}>
       {/* Blood-drop pip button */}
       <button
-        onClick={() => setTooltipOpen(o => !o)}
+        ref={btnRef}
+        onClick={handleToggle}
         aria-label={`${pip.name} (${SEV_LABEL[sev]})`}
         style={{
           background: 'none', border: 'none', padding: 0, cursor: 'pointer',
@@ -73,7 +100,7 @@ export function CriticalInjuryPip({ pip, onHeal }: CriticalInjuryPipProps) {
         </svg>
       </button>
 
-      {/* Tooltip */}
+      {/* Tooltip — position: fixed so it's always relative to the viewport */}
       {tooltipOpen && (
         <>
           {/* Click-away backdrop */}
@@ -82,21 +109,36 @@ export function CriticalInjuryPip({ pip, onHeal }: CriticalInjuryPipProps) {
             onClick={() => setTooltipOpen(false)}
           />
           <div style={{
-            position: 'absolute',
-            bottom: 'calc(100% + 10px)',
-            left: '50%',
-            transform: 'translateX(-50%)',
+            position: 'fixed',
+            left: tipPos.left,
+            // When opening upward, anchor bottom edge above the pip; downward, anchor top below it
+            ...(tipPos.openUp
+              ? { bottom: tipPos.vh - tipPos.anchorY + 10 }
+              : { top: tipPos.anchorY + 10 }),
             zIndex: 210,
+            width: TOOLTIP_W,
             background: 'rgba(6,13,9,0.97)',
             backdropFilter: 'blur(14px)',
             WebkitBackdropFilter: 'blur(14px)',
             border: `1px solid rgba(220,20,60,0.35)`,
             borderRadius: 8,
             padding: '10px 12px',
-            minWidth: 200,
-            maxWidth: 260,
             boxShadow: '0 8px 24px rgba(0,0,0,0.8)',
           }}>
+            {/* Close button */}
+            <button
+              onClick={(e) => { e.stopPropagation(); setTooltipOpen(false) }}
+              style={{
+                position: 'absolute', top: 6, right: 6,
+                background: 'none', border: 'none', padding: '2px 4px',
+                cursor: 'pointer', lineHeight: 1,
+                fontFamily: FONT_M, fontSize: '0.7rem',
+                color: 'rgba(220,20,60,0.5)',
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#DC143C' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(220,20,60,0.5)' }}
+              aria-label="Close"
+            >✕</button>
             {/* Severity label */}
             <div style={{
               fontFamily: FONT_M,
