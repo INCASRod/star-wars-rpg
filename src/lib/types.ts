@@ -106,6 +106,8 @@ export interface TalentModifiers {
   defense_ranged?: number
   defense_melee?: number
   force_rating?: number
+  /** When true, the force_rating bonus only applies if the character's base FR (career + specs) is 0 */
+  force_rating_conditional?: boolean
 }
 
 // Structured modifier fields added by migration 017 — populated from OggDude Talents.xml
@@ -437,6 +439,8 @@ export interface CharacterTalent {
   tree_col?: number
   ranks: number
   xp_cost?: number
+  /** For DEDI talent rows: which characteristic the player chose to raise. Null = not yet resolved. */
+  dedication_characteristic?: 'brawn' | 'agility' | 'intellect' | 'cunning' | 'willpower' | 'presence' | null
 }
 
 export type EquipState = 'equipped' | 'carrying' | 'stowed'

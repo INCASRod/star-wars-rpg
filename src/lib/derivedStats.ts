@@ -392,7 +392,9 @@ export function computeDerivedStats(
       const defRVal   = (m.defense_ranged   ?? 0) * rank
       const woundVal  = (m.wound_threshold  ?? 0) * rank
       const strainVal = (m.strain_threshold ?? 0) * rank
-      const forceVal  = (m.force_rating     ?? 0) * rank
+      // Conditional FR talent (e.g. Witchcraft): only applies if career/spec base is 0
+      const rawForceVal = (m.force_rating ?? 0) * rank
+      const forceVal = m.force_rating_conditional && forceRatingBase > 0 ? 0 : rawForceVal
 
       if (soakVal)   { mods.soakBonus           += soakVal;   soakSources.push({ label: ref.name + rankLabel, value: soakVal }) }
       if (defMVal)   { mods.defenseMelee         += defMVal;   defMSources.push({ label: ref.name + rankLabel, value: defMVal }) }
