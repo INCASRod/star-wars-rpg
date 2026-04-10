@@ -358,7 +358,7 @@ export function computeDerivedStats(
   // ── Step 4: Talent modifiers ──────────────────────────────────────────────
   for (const talent of characterTalents) {
     const ref = refTalentMap[talent.talent_key]
-    if (!ref?.attributes && !ref?.die_modifiers) continue
+    if (!ref?.attributes && !ref?.die_modifiers && !ref?.modifiers) continue
 
     const rank = talent.ranks ?? 1
 
