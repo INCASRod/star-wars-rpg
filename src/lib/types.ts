@@ -13,6 +13,12 @@ export interface SpeciesAbility {
   mechanical_type?: string
   setback_remove?: number
   affected_skills: string[]
+  // talent_rank ability fields
+  talent_key?: string
+  rank_add?: number
+  // skill_rank ability fields
+  rank_start?: number
+  rank_limit?: number
 }
 
 export interface RefSpecies {
@@ -108,6 +114,8 @@ export interface TalentModifiers {
   force_rating?: number
   /** When true, the force_rating bonus only applies if the character's base FR (career + specs) is 0 */
   force_rating_conditional?: boolean
+  /** Skill keys this talent is relevant to — used to surface hints in the skill check popover */
+  relevant_skills?: string[]
 }
 
 // Structured modifier fields added by migration 017 — populated from OggDude Talents.xml

@@ -30,6 +30,8 @@ interface SkillsPanelProps {
   skillModifiers?: Record<string, SkillDiceModifier>
   /** Species special abilities for conditional skill indicators */
   speciesAbilities?: SpeciesAbility[]
+  /** Skill keys that have at least one talent providing a bonus — used for "Has Bonus" filter */
+  bonusSkillKeys?: Set<string>
 }
 
 // ── Skill dice modifier indicator ──────────────────────────────────────────
@@ -101,7 +103,7 @@ function SkillModifierBadges({ mod }: { mod: SkillDiceModifier }) {
   )
 }
 
-type Filter = 'All' | 'Trained' | 'Career'
+type Filter = 'All' | 'Trained' | 'Career' | 'Has Bonus'
 
 const CHAR_ORDER: CharKey[] = ['brawn', 'agility', 'intellect', 'cunning', 'willpower', 'presence']
 
@@ -356,7 +358,7 @@ function SpeciesConditionalBadge({ ability }: { ability: SpeciesAbility }) {
 
 // ── Main panel ─────────────────────────────────────────────────────────────
 
-export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, onOpenPopover, characterId, skillModifiers = {}, speciesAbilities = [] }: SkillsPanelProps) {
+export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, onOpenPopover, characterId, skillModifiers = {}, speciesAbilities = [], bonusSkillKeys }: SkillsPanelProps) {
   const [filter, setFilter] = useState<Filter>('All')
   const [confirmingKey, setConfirmingKey] = useState<string | null>(null)
   const [skillSearch, setSkillSearch] = useState('')
@@ -390,6 +392,11 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
   const filterByTab = skills.filter(s => {
     if (filter === 'Trained') return s.rank > 0
     if (filter === 'Career') return s.isCareer
+    if (filter === 'Has Bonus') {
+      const hasDiceMod = !!skillModifiers[s.key] && (skillModifiers[s.key].boostAdd > 0 || skillModifiers[s.key].setbackRemove > 0)
+      const hasTalentBonus = bonusSkillKeys?.has(s.key) ?? false
+      return hasDiceMod || hasTalentBonus
+    }
     return true
   })
 
@@ -427,24 +434,34 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
     <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
       {/* Filter + XP + mode bar */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-        <div style={{ display: 'flex', gap: 4 }}>
-          {(['All', 'Trained', 'Career'] as Filter[]).map(f => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              style={{
-                background: filter === f ? `${C.gold}22` : 'transparent',
-                border: `1px solid ${filter === f ? C.gold : C.border}`,
-                borderRadius: 4, padding: '3px 10px',
-                fontFamily: FONT_RAJDHANI, fontSize: 11, fontWeight: 700,
-                letterSpacing: '0.08em', textTransform: 'uppercase',
-                color: filter === f ? C.gold : C.textDim,
-                cursor: 'pointer', transition: '.15s',
-              }}
-            >
-              {f}
-            </button>
-          ))}
+        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+          {(['All', 'Trained', 'Career', 'Has Bonus'] as Filter[]).map(f => {
+            const isBonus = f === 'Has Bonus'
+            const active  = filter === f
+            return (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                style={{
+                  background: active
+                    ? isBonus ? 'rgba(78,200,122,0.15)' : `${C.gold}22`
+                    : 'transparent',
+                  border: `1px solid ${active
+                    ? isBonus ? 'rgba(78,200,122,0.7)' : C.gold
+                    : isBonus ? 'rgba(78,200,122,0.3)' : C.border}`,
+                  borderRadius: 4, padding: '3px 10px',
+                  fontFamily: FONT_RAJDHANI, fontSize: 11, fontWeight: 700,
+                  letterSpacing: '0.08em', textTransform: 'uppercase',
+                  color: active
+                    ? isBonus ? '#4EC87A' : C.gold
+                    : isBonus ? 'rgba(78,200,122,0.6)' : C.textDim,
+                  cursor: 'pointer', transition: '.15s',
+                }}
+              >
+                {f}
+              </button>
+            )
+          })}
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

@@ -12,6 +12,8 @@ export interface HudTalent {
   rank: number
   activation: string
   description?: string
+  /** True when this talent is granted by a species ability, not purchased with XP */
+  isSpeciesGranted?: boolean
 }
 
 interface TalentsPanelProps {
@@ -80,6 +82,8 @@ function CornerBrackets() {
   )
 }
 
+const SPECIES_COLOR = '#38BDF8'
+
 function TalentCard({ talent }: { talent: HudTalent }) {
   const color = ACTIVATION_COLORS[talent.activation] ?? C.textDim
   const hints = parseDiceHints(talent.description)
@@ -95,7 +99,7 @@ function TalentCard({ talent }: { talent: HudTalent }) {
     <div style={{
       ...panelBase,
       padding: '10px 12px',
-      borderLeft: `2px solid ${color}`,
+      borderLeft: `2px solid ${talent.isSpeciesGranted ? SPECIES_COLOR : color}`,
     }}>
       <CornerBrackets />
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: talent.description ? 4 : 0 }}>
@@ -114,6 +118,17 @@ function TalentCard({ talent }: { talent: HudTalent }) {
             color, letterSpacing: '0.08em',
           }}>
             ×{talent.rank}
+          </div>
+        )}
+        {talent.isSpeciesGranted && (
+          <div style={{
+            background: `${SPECIES_COLOR}15`, border: `1px solid ${SPECIES_COLOR}50`,
+            borderRadius: 3, padding: '1px 6px',
+            fontFamily: FONT_RAJDHANI, fontSize: 9, fontWeight: 700,
+            color: SPECIES_COLOR, letterSpacing: '0.1em', textTransform: 'uppercase',
+            whiteSpace: 'nowrap',
+          }}>
+            Species
           </div>
         )}
         <div style={{

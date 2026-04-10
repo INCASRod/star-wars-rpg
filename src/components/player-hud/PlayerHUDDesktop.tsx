@@ -16,6 +16,7 @@ import {
 import { rollPool, getSkillPool, type RollResult } from './dice-engine'
 import { CharacterAvatar } from './CharacterAvatar'
 import { DiceModal } from './DiceModal'
+import { FloatingDiceRollerFAB } from './FloatingDiceRollerFAB'
 import { SkillsPanel, type HudSkill } from './SkillsPanel'
 import { SkillRollPopover } from '@/components/character/SkillRollPopover'
 import { TalentsPanel, type HudTalent } from './TalentsPanel'
@@ -31,7 +32,7 @@ import { ForceCheckButton } from '@/components/character/ForceCheckButton'
 import { isDathomiri } from '@/lib/dathomiriUtils'
 import { CombatTransition } from './CombatTransition'
 import { RollFeedPanel, RollFeedMini } from './RollFeedPanel'
-import { RANGE_LABELS, ACTIVATION_LABELS, type Character, type CharacterSpecialization, type RefSpecialization } from '@/lib/types'
+import { RANGE_LABELS, ACTIVATION_LABELS, type Character, type CharacterSpecialization, type RefSpecialization, type SpeciesAbility } from '@/lib/types'
 import { parseOggDudeMarkup } from '@/lib/oggdude-markup'
 import { EquipmentImage } from '@/components/ui/EquipmentImage'
 import { HolocronLoader } from '@/components/ui/HolocronLoader'
@@ -430,6 +431,12 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     handlePurchaseForceAbility, handleBuySpecialization, handleBuySkill,
   } = useCharacterData(characterId)
 
+  // ── Species abilities (needed by derived stats engine) ──
+  const speciesAbilities = useMemo(() => {
+    const sp = refSpeciesAll.find(s => s.key === character?.species_key)
+    return (sp?.special_abilities ?? []) as SpeciesAbility[]
+  }, [refSpeciesAll, character])
+
   // ── Derived stats engine ──
   const derivedStats = useDerivedStats({
     character: character ?? null,
@@ -442,10 +449,42 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     weapons,
     refWeaponMap,
     refWeaponQualityMap,
+    speciesAbilities,
   })
   const effectiveStats = derivedStats?.effectiveStats
   const skillModifiers = derivedStats?.modifiers.skillModifiers ?? {}
   const engineBreakdown = derivedStats?.breakdown
+
+  // Skill keys that have at least one talent/species ability providing a bonus (for "Has Bonus" filter)
+  const bonusSkillKeys = useMemo(() => {
+    const keys = new Set<string>()
+    // Dice-modifier bonuses from the engine
+    for (const [key, mod] of Object.entries(skillModifiers)) {
+      if (mod.boostAdd > 0 || mod.setbackRemove > 0) keys.add(key)
+    }
+    // Purchased talents with relevant_skills mappings
+    for (const t of talents) {
+      const ref = refTalentMap[t.talent_key]
+      const relevant = ref?.modifiers?.relevant_skills
+      if (Array.isArray(relevant)) {
+        for (const sk of relevant) keys.add(sk)
+      }
+    }
+    // Species abilities
+    for (const sa of speciesAbilities) {
+      if (sa.mechanical_type === 'talent_rank' && sa.talent_key) {
+        // Species-granted talent relevant_skills
+        const relevant = refTalentMap[sa.talent_key]?.modifiers?.relevant_skills
+        if (Array.isArray(relevant)) {
+          for (const sk of relevant) keys.add(sk)
+        }
+      }
+      if (sa.mechanical_type === 'die_modifier' && Array.isArray(sa.affected_skills)) {
+        for (const sk of sa.affected_skills) { if (sk) keys.add(sk) }
+      }
+    }
+    return keys
+  }, [skillModifiers, talents, refTalentMap, speciesAbilities])
 
   // ── Write-back force_rating to DB when the engine computes a different value ──
   // This fires when talents like WITCHCRAFT grant force_rating via the legacy
@@ -852,11 +891,6 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     refSpeciesAll.find(s => s.key === character?.species_key)?.name || character?.species_key || ''
   , [refSpeciesAll, character])
 
-  const speciesAbilities = useMemo(() => {
-    const sp = refSpeciesAll.find(s => s.key === character?.species_key)
-    return sp?.special_abilities ?? []
-  }, [refSpeciesAll, character])
-
   // ── Skills for HUD ──
   const hudSkills = useMemo((): HudSkill[] => {
     if (!character) return []
@@ -893,8 +927,45 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         })
       }
     }
+    // Append species-granted talents not already in the purchased map
+    for (const sa of speciesAbilities) {
+      if (sa.mechanical_type !== 'talent_rank' || !sa.talent_key) continue
+      const ref = refTalentMap[sa.talent_key]
+      if (!ref) continue
+      const existing = map.get(sa.talent_key)
+      if (existing) {
+        // Character also purchased this talent — just add species rank on top
+        existing.rank = (existing.rank ?? 0) + (sa.rank_add ?? 1)
+      } else {
+        map.set(sa.talent_key, {
+          key:              `species_${sa.talent_key}`,
+          name:             ref.name,
+          rank:             sa.rank_add ?? 1,
+          activation:       ACTIVATION_LABELS[ref.activation] || ref.activation,
+          description:      ref.description,
+          isSpeciesGranted: true,
+        })
+      }
+    }
+    // Append die_modifier species abilities as Passive talent cards
+    for (const sa of speciesAbilities) {
+      if (sa.mechanical_type !== 'die_modifier') continue
+      if (!Array.isArray(sa.affected_skills) || sa.affected_skills.length === 0) continue
+      // Avoid collision with purchased talent keys
+      const cardKey = `species_die_${sa.key}`
+      if (!map.has(cardKey)) {
+        map.set(cardKey, {
+          key:              cardKey,
+          name:             sa.name,
+          rank:             1,
+          activation:       'Passive',
+          description:      sa.description,
+          isSpeciesGranted: true,
+        })
+      }
+    }
     return Array.from(map.values())
-  }, [talents, refTalentMap])
+  }, [talents, refTalentMap, speciesAbilities])
 
   // ── Weapons for HUD ──
   const hudWeapons = useMemo((): WpnDisplay[] =>
@@ -1635,6 +1706,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
                   characterId={characterId}
                   skillModifiers={skillModifiers}
                   speciesAbilities={speciesAbilities}
+                  bonusSkillKeys={bonusSkillKeys}
                 />
               </div>
             )}
@@ -2012,6 +2084,43 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         <SkillRollPopover
           skill={skillPopover.skill}
           anchor={skillPopover.anchor}
+          talentHints={(() => {
+            const rankMap = new Map<string, number>()
+            // Purchased talents
+            for (const t of talents) {
+              const ref = refTalentMap[t.talent_key]
+              if (!ref?.modifiers?.relevant_skills?.includes(skillPopover.skill.key)) continue
+              rankMap.set(t.talent_key, (rankMap.get(t.talent_key) ?? 0) + (t.ranks ?? 1))
+            }
+            // Species-granted talents
+            for (const sa of speciesAbilities) {
+              if (sa.mechanical_type !== 'talent_rank' || !sa.talent_key) continue
+              const ref = refTalentMap[sa.talent_key]
+              if (!ref?.modifiers?.relevant_skills?.includes(skillPopover.skill.key)) continue
+              rankMap.set(sa.talent_key, (rankMap.get(sa.talent_key) ?? 0) + (sa.rank_add ?? 1))
+            }
+            const hints = Array.from(rankMap.entries()).map(([key, ranks]) => {
+              const ref = refTalentMap[key]!
+              return {
+                name: ref.name,
+                activation: ref.activation,
+                description: ref.description ?? '',
+                ranks,
+              }
+            })
+            // Species die_modifier abilities affecting this skill
+            for (const sa of speciesAbilities) {
+              if (sa.mechanical_type !== 'die_modifier') continue
+              if (!Array.isArray(sa.affected_skills) || !sa.affected_skills.includes(skillPopover.skill.key)) continue
+              hints.push({
+                name: sa.name,
+                activation: 'taPassive',
+                description: sa.description ?? '',
+                ranks: 1,
+              })
+            }
+            return hints
+          })()}
           onRoll={(result, label, pool) => {
             handleRoll(result, label, pool as Record<string, number>)
             setSkillPopover(null)
@@ -2146,6 +2255,15 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
           onCancel={() => setPendingDedication(null)}
         />,
         document.body,
+      )}
+
+      {/* ── Floating Dice Roller FAB ──────────────────────── */}
+      {character && (
+        <FloatingDiceRollerFAB
+          characterId={character.id}
+          characterName={character.name}
+          campaignId={effectiveCampaignId}
+        />
       )}
     </div>
   )

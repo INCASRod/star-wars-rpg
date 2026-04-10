@@ -471,19 +471,61 @@ export function useCharacterData(characterId: string) {
 
     const statUpdates = applyTalentModifiers(talentKey, 1)
     const newXp = character.xp_available - cost
+    const newId = randomUUID()
     setCharacter({ ...character, xp_available: newXp, ...statUpdates })
     setTalents(prev => [...prev, {
-      id: randomUUID(), character_id: character.id, talent_key: talentKey,
+      id: newId, character_id: character.id, talent_key: talentKey,
       specialization_key: activeSpecKey, tree_row: row, tree_col: col, ranks: 1, xp_cost: cost,
     }])
 
     await Promise.all([
       supabase.from('character_talents').insert({
+        id: newId,
         character_id: character.id, talent_key: talentKey,
         specialization_key: activeSpecKey, tree_row: row, tree_col: col, ranks: 1, xp_cost: cost,
       }),
       supabase.from('characters').update({ xp_available: newXp, ...statUpdates }).eq('id', character.id),
       supabase.from('xp_transactions').insert({ character_id: character.id, amount: -cost, reason: `Bought talent: ${talentKey} (row ${row})` }),
+    ])
+
+    return newId
+  }
+
+  /** Deduct credits and log the spend to the roll feed. */
+  const handleCreditSpend = async (amount: number, campaignId: string) => {
+    if (!character) return
+    markSelf()
+    const newCredits = character.credits - amount
+    setCharacter({ ...character, credits: newCredits })
+    await Promise.all([
+      supabase.from('characters').update({ credits: newCredits }).eq('id', character.id),
+      supabase.from('roll_log').insert({
+        campaign_id:           campaignId,
+        character_id:          character.id,
+        character_name:        character.name,
+        roll_label:            `Spent ${amount.toLocaleString()} credits`,
+        roll_type:             'Credit Spend',
+        alignment:             'player',
+        pool:                  { proficiency: 0, ability: 0, boost: 0, challenge: 0, difficulty: 0, setback: 0, force: 0 },
+        result:                { netSuccess: 0, netAdvantage: 0, triumph: 0, despair: 0, succeeded: false },
+        is_dm:                 false,
+        hidden:                false,
+        is_visible_to_players: true,
+      }),
+    ])
+  }
+
+  /** Save the characteristic chosen for a Dedication purchase and apply the +1. */
+  const handleResolveDedication = async (talentId: string, charKey: string) => {
+    if (!character) return
+    markSelf()
+    const current = (character[charKey as keyof typeof character] as number) ?? 2
+    const newVal = Math.min(current + 1, 6)
+    setCharacter({ ...character, [charKey]: newVal })
+    setTalents(prev => prev.map(t => t.id === talentId ? { ...t, dedication_characteristic: charKey as CharacterTalent['dedication_characteristic'] } : t))
+    await Promise.all([
+      supabase.from('character_talents').update({ dedication_characteristic: charKey }).eq('id', talentId),
+      supabase.from('characters').update({ [charKey]: newVal }).eq('id', character.id),
     ])
   }
 
@@ -594,6 +636,8 @@ export function useCharacterData(characterId: string) {
     handleRemoveTalent,
     handleReduceSkill,
     handlePurchaseTalent,
+    handleResolveDedication,
+    handleCreditSpend,
     handleBackstoryChange,
     handleNotesChange,
     handlePurchaseForceAbility,

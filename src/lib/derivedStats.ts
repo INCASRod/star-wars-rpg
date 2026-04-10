@@ -21,6 +21,7 @@ import type {
   RefItemAttachment,
   AttachmentModEntry,
   WeaponQuality,
+  SpeciesAbility,
 } from './types'
 
 // ── Weapon attachment helpers ─────────────────────────────────────────────────
@@ -243,6 +244,7 @@ export function computeDerivedStats(
   characterWeapons: CharacterWeapon[] = [],
   refWeaponMap: Record<string, RefWeapon> = {},
   refWeaponQualityMap: Record<string, RefWeaponQuality> = {},
+  speciesAbilities: SpeciesAbility[] = [],
 ): DerivedStatsResult {
 
   const mods: CharacterModifiers = {
@@ -414,6 +416,47 @@ export function computeDerivedStats(
         existing.sources.push(ref.name + rankLabel)
         mods.skillModifiers[dm.skillKey] = existing
       }
+    }
+  }
+
+  // ── Step 4b: Species talent_rank ability stat modifiers ──────────────────────
+  // Species abilities that grant a free talent rank (e.g. Dathomirian → Outdoorsman,
+  // Hutt → Enduring) apply that talent's stat modifiers as if it were purchased.
+  for (const sa of speciesAbilities) {
+    if (sa.mechanical_type !== 'talent_rank' || !sa.talent_key) continue
+    const ref = refTalentMap[sa.talent_key]
+    if (!ref?.modifiers && !ref?.attributes) continue
+    const rank = sa.rank_add ?? 1
+    const rankLabel = ` (Species)`
+    if (ref.attributes) {
+      const a = ref.attributes
+      const soakVal   = (a.soakValue       ?? 0) * rank
+      const defMVal   = (a.defenseMelee    ?? 0) * rank
+      const defRVal   = (a.defenseRanged   ?? 0) * rank
+      const woundVal  = (a.woundThreshold  ?? 0) * rank
+      const strainVal = (a.strainThreshold ?? 0) * rank
+      const forceVal  = (a.forceRating     ?? 0) * rank
+      if (soakVal)   { mods.soakBonus           += soakVal;   soakSources.push({ label: ref.name + rankLabel, value: soakVal }) }
+      if (defMVal)   { mods.defenseMelee         += defMVal;   defMSources.push({ label: ref.name + rankLabel, value: defMVal }) }
+      if (defRVal)   { mods.defenseRanged        += defRVal;   defRSources.push({ label: ref.name + rankLabel, value: defRVal }) }
+      if (woundVal)  { mods.woundThresholdBonus  += woundVal;  woundSources.push({ label: ref.name + rankLabel, value: woundVal }) }
+      if (strainVal) { mods.strainThresholdBonus += strainVal; strainSources.push({ label: ref.name + rankLabel, value: strainVal }) }
+      if (forceVal)  { mods.forceRatingBonus     += forceVal;  forceSources.push({ label: ref.name + rankLabel, value: forceVal }) }
+    } else if (ref.modifiers) {
+      const m = ref.modifiers
+      const soakVal   = (m.soak             ?? 0) * rank
+      const defMVal   = (m.defense_melee    ?? 0) * rank
+      const defRVal   = (m.defense_ranged   ?? 0) * rank
+      const woundVal  = (m.wound_threshold  ?? 0) * rank
+      const strainVal = (m.strain_threshold ?? 0) * rank
+      const rawForceVal = (m.force_rating ?? 0) * rank
+      const forceVal = m.force_rating_conditional && forceRatingBase > 0 ? 0 : rawForceVal
+      if (soakVal)   { mods.soakBonus           += soakVal;   soakSources.push({ label: ref.name + rankLabel, value: soakVal }) }
+      if (defMVal)   { mods.defenseMelee         += defMVal;   defMSources.push({ label: ref.name + rankLabel, value: defMVal }) }
+      if (defRVal)   { mods.defenseRanged        += defRVal;   defRSources.push({ label: ref.name + rankLabel, value: defRVal }) }
+      if (woundVal)  { mods.woundThresholdBonus  += woundVal;  woundSources.push({ label: ref.name + rankLabel, value: woundVal }) }
+      if (strainVal) { mods.strainThresholdBonus += strainVal; strainSources.push({ label: ref.name + rankLabel, value: strainVal }) }
+      if (forceVal)  { mods.forceRatingBonus     += forceVal;  forceSources.push({ label: ref.name + rankLabel, value: forceVal }) }
     }
   }
 

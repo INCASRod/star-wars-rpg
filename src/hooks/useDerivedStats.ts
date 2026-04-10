@@ -12,6 +12,7 @@ import type {
   RefWeapon,
   RefWeaponQuality,
   RefItemAttachment,
+  SpeciesAbility,
 } from '@/lib/types'
 
 interface DerivedStatsInput {
@@ -25,6 +26,7 @@ interface DerivedStatsInput {
   weapons?: CharacterWeapon[]
   refWeaponMap?: Record<string, RefWeapon>
   refWeaponQualityMap?: Record<string, RefWeaponQuality>
+  speciesAbilities?: SpeciesAbility[]
 }
 
 /**
@@ -42,6 +44,7 @@ export function useDerivedStats({
   weapons = [],
   refWeaponMap = {},
   refWeaponQualityMap = {},
+  speciesAbilities = [],
 }: DerivedStatsInput): DerivedStatsResult | null {
   return useMemo(() => {
     if (!character) return null
@@ -56,6 +59,7 @@ export function useDerivedStats({
       weapons,
       refWeaponMap,
       refWeaponQualityMap,
+      speciesAbilities,
     )
   }, [
     character,
@@ -68,5 +72,6 @@ export function useDerivedStats({
     weapons,
     refWeaponMap,
     refWeaponQualityMap,
+    speciesAbilities,
   ])
 }

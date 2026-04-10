@@ -7,6 +7,7 @@ import {
   type DiceType,
 } from '@/components/player-hud/design-tokens'
 import { DiceFace } from '@/components/dice/DiceFace'
+import { DiceText } from '@/components/dice/DiceText'
 import { getSkillPool, rollPool, type RollResult } from '@/components/player-hud/dice-engine'
 import type { HudSkill } from '@/components/player-hud/SkillsPanel'
 
@@ -29,11 +30,11 @@ const DIFF_PRESETS = [
 ]
 
 // ─── Adjustable dice (display order: 2×2 grid) ────────────────────────────────
-const ADJ_DICE: { key: DiceType; label: string; color: string }[] = [
-  { key: 'difficulty', label: 'DIF', color: '#7B1FA2' },
-  { key: 'challenge',  label: 'CHL', color: '#C62828' },
-  { key: 'boost',      label: 'BST', color: '#29B6F6' },
-  { key: 'setback',    label: 'SET', color: '#455A64' },
+const ADJ_DICE: { key: DiceType }[] = [
+  { key: 'difficulty' },
+  { key: 'challenge'  },
+  { key: 'boost'      },
+  { key: 'setback'    },
 ]
 
 // ─── ± button ─────────────────────────────────────────────────────────────────
@@ -65,16 +66,33 @@ function AdjBtn({ label, disabled, onClick }: { label: string; disabled: boolean
   )
 }
 
+// ─── Talent hint ──────────────────────────────────────────────────────────────
+export interface TalentHint {
+  name: string
+  activation: string
+  description: string
+  ranks: number
+}
+
+const ACTIVATION_SHORT: Record<string, string> = {
+  taPassive:        'Passive',
+  taAction:         'Action',
+  taManeuver:       'Maneuver',
+  taIncidental:     'Incidental',
+  taIncidentalOOT:  'OOT Incidental',
+}
+
 // ─── Props ────────────────────────────────────────────────────────────────────
 export interface SkillRollPopoverProps {
   skill: HudSkill
   anchor: DOMRect
+  talentHints?: TalentHint[]
   onRoll: (result: RollResult, label: string, pool: Record<DiceType, number>) => void
   onClose: () => void
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
-export function SkillRollPopover({ skill, anchor, onRoll, onClose }: SkillRollPopoverProps) {
+export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }: SkillRollPopoverProps) {
   const [difficulty, setDifficulty] = useState(0)
   const [challenge,  setChallenge]  = useState(0)
   const [boost,      setBoost]      = useState(0)
@@ -263,21 +281,11 @@ export function SkillRollPopover({ skill, anchor, onRoll, onClose }: SkillRollPo
       {/* ── Add Dice ─────────────────────────────────────────── */}
       <SectionLabel text="Add Dice" />
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 20px', marginBottom: 14 }}>
-        {ADJ_DICE.map(({ key, label, color }) => {
+        {ADJ_DICE.map(({ key }) => {
           const [count, setCount] = getAdj(key)
           return (
             <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <span style={{
-                fontFamily: FONT_RAJDHANI,
-                fontSize: 'clamp(0.6rem, 1vw, 0.7rem)',
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: '0.04em',
-                color,
-                minWidth: 28,
-              }}>
-                {label}
-              </span>
+              <DiceFace type={key} size={20} />
               <AdjBtn label="−" disabled={count <= 0} onClick={() => setCount(Math.max(0, count - 1))} />
               <span style={{
                 fontFamily: FONT_MONO,
@@ -293,6 +301,72 @@ export function SkillRollPopover({ skill, anchor, onRoll, onClose }: SkillRollPo
           )
         })}
       </div>
+
+      {/* ── Relevant Talents ─────────────────────────────────── */}
+      {talentHints && talentHints.length > 0 && (
+        <>
+          <div style={{ height: 1, background: 'rgba(200,170,80,0.15)', marginBottom: 10 }} />
+          <SectionLabel text="Relevant Talents" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
+            {talentHints.map((hint, i) => (
+              <div key={i} style={{
+                background: 'rgba(200,170,80,0.06)',
+                border: '1px solid rgba(200,170,80,0.18)',
+                borderRadius: 6,
+                padding: '6px 8px',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+                  <span style={{
+                    fontFamily: FONT_RAJDHANI,
+                    fontSize: 'clamp(0.65rem, 1.1vw, 0.75rem)',
+                    fontWeight: 700,
+                    color: GOLD,
+                  }}>
+                    {hint.name}
+                  </span>
+                  <span style={{
+                    fontFamily: FONT_RAJDHANI,
+                    fontSize: 'clamp(0.55rem, 0.9vw, 0.62rem)',
+                    fontWeight: 600,
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    color: 'rgba(200,170,80,0.45)',
+                    border: '1px solid rgba(200,170,80,0.25)',
+                    borderRadius: 3,
+                    padding: '0 4px',
+                  }}>
+                    {ACTIVATION_SHORT[hint.activation] ?? hint.activation}
+                  </span>
+                  {hint.ranks > 1 && (
+                    <span style={{
+                      fontFamily: FONT_RAJDHANI,
+                      fontSize: 'clamp(0.55rem, 0.9vw, 0.62rem)',
+                      fontWeight: 700,
+                      letterSpacing: '0.06em',
+                      textTransform: 'uppercase',
+                      color: 'rgba(255,255,255,0.7)',
+                      background: 'rgba(255,255,255,0.1)',
+                      border: '1px solid rgba(255,255,255,0.2)',
+                      borderRadius: 3,
+                      padding: '0 5px',
+                    }}>
+                      Rank {hint.ranks}
+                    </span>
+                  )}
+                </div>
+                <div style={{
+                  fontFamily: FONT_MONO,
+                  fontSize: 'clamp(0.55rem, 0.95vw, 0.65rem)',
+                  color: 'rgba(255,255,255,0.5)',
+                  lineHeight: 1.45,
+                }}>
+                  <DiceText text={hint.description} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       {/* ── Divider ──────────────────────────────────────────── */}
       <div style={{ height: 1, background: 'rgba(200,170,80,0.15)', marginBottom: 12 }} />
