@@ -185,16 +185,18 @@ export function LootAwardModal({
         })
       }
 
-      sendToChar(charId, {
-        type: 'dialog',
-        message: `You received ${quantity > 1 ? `${quantity}× ` : ''}${item.name}!`,
-      })
+      if (!nemesisContext) {
+        sendToChar(charId, {
+          type: 'dialog',
+          message: `You received ${quantity > 1 ? `${quantity}× ` : ''}${item.name}!`,
+        })
+      }
       charIds.push(charId)
       charNames.push(char.name)
     }
 
-    // Single combined feed entry for the award
-    if (campaignId && charNames.length > 0) {
+    // Single combined feed entry for the award — skipped for nemesis targets
+    if (campaignId && charNames.length > 0 && !nemesisContext) {
       const itemLabel = quantity > 1 ? `${item.name} ×${quantity}` : item.name
       supabase.from('roll_log').insert({
         campaign_id:           campaignId,
