@@ -368,13 +368,12 @@ export default function Home() {
       setCampaignName(camp.name ?? 'Legacy of Rebellion')
       if (camp.settings?.session_mode) setSessionMode(String(camp.settings.session_mode))
 
-      // 2. Fetch characters — exclude nemeses; players must never see them
+      // 2. Fetch characters
       const { data: chars } = await supabase
         .from('characters')
         .select('*')
         .eq('campaign_id', camp.id)
         .eq('is_archived', false)
-        .or('is_pc.is.null,is_pc.eq.true')
       if (chars) setCharacters(chars as Character[])
 
       // 3. Fetch character_sessions

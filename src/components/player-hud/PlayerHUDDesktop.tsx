@@ -60,6 +60,7 @@ import { MapCanvas } from '@/components/map/MapCanvas'
 import { generateCharacterSheetPDF, type CharacterSheetInput } from '@/lib/characterSheetPDF'
 import { SpecSelectorList } from '@/components/shared/SpecSelectorList'
 import { buildTalentTree as _buildTalentTree } from '@/lib/buildTalentTree'
+import { GroupSheet } from '@/components/group/GroupSheet'
 
 const CHAR_TO_FIELD: Record<string, keyof Character> = {
   BR: 'brawn', AG: 'agility', INT: 'intellect', CUN: 'cunning', WIL: 'willpower', PR: 'presence',
@@ -194,13 +195,14 @@ function SectionLabel({ text }: { text: string }) {
 }
 
 // ── Tab component ────────────────────────────────────────────
-type TabName = 'Skills' | 'Talents' | 'Inventory' | 'Force' | 'Lore' | 'Feed' | 'Combat' | 'Map'
+type TabName = 'Skills' | 'Talents' | 'Inventory' | 'Force' | 'Lore' | 'Feed' | 'Combat' | 'Map' | 'Group'
 
 const FORCE_TAB_BLUE   = '#7EC8E3'
 const FORCE_TAB_PURPLE = '#8B2BE2'
+const GROUP_TAB_COLOR  = '#8EC8F0'
 
 function TabBar({ active, onChange, hasCombat, isForceUser, isForceUserFallen, hasMap }: { active: TabName; onChange: (t: TabName) => void; hasCombat?: boolean; isForceUser?: boolean; isForceUserFallen?: boolean; hasMap?: boolean }) {
-  const allTabs: TabName[] = ['Skills', 'Talents', 'Inventory', 'Force', 'Lore', 'Feed', 'Combat', 'Map']
+  const allTabs: TabName[] = ['Skills', 'Talents', 'Inventory', 'Force', 'Lore', 'Feed', 'Combat', 'Map', 'Group']
   const tabs = allTabs.filter(t => {
     if (t === 'Force') return !!isForceUser
     if (t === 'Map')   return !!hasMap
@@ -216,14 +218,17 @@ function TabBar({ active, onChange, hasCombat, isForceUser, isForceUserFallen, h
         const isFeed      = tab === 'Feed'
         const isForceTab  = tab === 'Force'
         const isMapTab    = tab === 'Map'
+        const isGroupTab  = tab === 'Group'
         const forceColor  = isForceUserFallen ? FORCE_TAB_PURPLE : FORCE_TAB_BLUE
         const tabColor    = isForceTab
           ? forceColor
-          : isMapTab ? '#52C8A0'
+          : isMapTab   ? '#52C8A0'
+          : isGroupTab ? GROUP_TAB_COLOR
           : (isCombatTab || (isFeed && hasCombat)) ? '#E05050' : C.gold
         const dimColor    = isForceTab
           ? (isForceUserFallen ? 'rgba(139,43,226,0.45)' : 'rgba(126,200,227,0.45)')
-          : isMapTab ? 'rgba(82,200,160,0.45)'
+          : isMapTab   ? 'rgba(82,200,160,0.45)'
+          : isGroupTab ? 'rgba(142,200,240,0.45)'
           : isCombatTab && hasCombat ? '#E0505088' : isFeed && hasCombat ? '#E0505088' : C.textDim
         return (
           <button
@@ -242,7 +247,7 @@ function TabBar({ active, onChange, hasCombat, isForceUser, isForceUserFallen, h
                 : 'none',
             }}
           >
-            {isMapTab ? '◉ MAP' : tab}
+            {isMapTab ? '◉ MAP' : isGroupTab ? '◈ GROUP' : tab}
           </button>
         )
       })}
@@ -542,7 +547,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   const [activeTab, setActiveTab] = useState<TabName>(() => {
     if (typeof window === 'undefined') return 'Skills'
     const saved = window.localStorage.getItem(TAB_KEY)
-    const valid: TabName[] = ['Skills', 'Talents', 'Inventory', 'Force', 'Lore', 'Feed', 'Combat', 'Map']
+    const valid: TabName[] = ['Skills', 'Talents', 'Inventory', 'Force', 'Lore', 'Feed', 'Combat', 'Map', 'Group']
     return valid.includes(saved as TabName) ? (saved as TabName) : 'Skills'
   })
 
@@ -903,6 +908,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         key: rs.key, name: rs.name,
         charKey, charVal,
         rank: cs?.rank || 0, isCareer: cs?.is_career || false,
+        type: rs.type,
       }
     }).sort((a, b) => a.name.localeCompare(b.name))
   }, [character, skills, refSkills])
@@ -1897,6 +1903,18 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
                   gridSize={visibleMap.grid_size ?? 50}
                   tokenScale={visibleMap.token_scale ?? 1}
                 />
+              </div>
+            )}
+            {activeTab === 'Group' && effectiveCampaignId && (
+              <GroupSheet
+                campaignId={effectiveCampaignId}
+                characterName={character.name}
+              />
+            )}
+            {activeTab === 'Group' && !effectiveCampaignId && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, flexDirection: 'column', gap: 12, padding: 40 }}>
+                <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_H4, color: C.textFaint }}>NO CAMPAIGN</div>
+                <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.textFaint }}>Join a campaign to see the group sheet</div>
               </div>
             )}
           </div>

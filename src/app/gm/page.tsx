@@ -31,6 +31,12 @@ import { archiveCharacter, restoreCharacter } from '@/lib/characters'
    ═══════════════════════════════════════ */
 const FC = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FR = "var(--font-rajdhani), 'Rajdhani', sans-serif"
+type AwardLogEntry = {
+  id: string; type: 'xp' | 'credits'; amount: number
+  mode: 'group' | 'individual'; target_name: string | null
+  reason: string | null; recipient_count: number | null; created_at: string
+}
+
 const BG = '#060D09'
 const PANEL_BG = 'rgba(8,16,10,0.88)'
 const GOLD = '#C8AA50'
@@ -304,7 +310,6 @@ function GmDashboard() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const campaignId = searchParams.get('campaign')
-  const initialView = searchParams.get('view')
 
   // ── Core state ──
   const [campaign, setCampaign] = useState<Campaign | null>(null)
@@ -313,14 +318,6 @@ function GmDashboard() {
   const [charSpecs, setCharSpecs] = useState<Record<string, string[]>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
-  // ── Nemesis view ──
-  const [gmNemesisViewActive, setGmNemesisViewActive] = useState(() => initialView === 'nemeses')
-  // Auto-sync when URL param changes on first render
-  useEffect(() => {
-    if (initialView === 'nemeses') setGmNemesisViewActive(true)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   // ── Tabs ──
   type GmTab = 'xp' | 'credits' | 'duty' | 'do' | 'loot' | 'items' | 'combat' | 'adversaries' | 'vehicles' | 'force' | 'maps'
@@ -370,6 +367,12 @@ function GmDashboard() {
   const [creditsBusy, setCreditsBusy] = useState(false)
   const [creditsMode, setCreditsMode] = useState<'group' | 'individual'>('group')
   const [creditsTarget, setCreditsTarget] = useState('')
+
+  // ── Award history ──
+  const [xpHistory,            setXpHistory]            = useState<AwardLogEntry[]>([])
+  const [xpHistoryExpanded,    setXpHistoryExpanded]    = useState(false)
+  const [creditsHistory,       setCreditsHistory]       = useState<AwardLogEntry[]>([])
+  const [creditsHistoryExpanded, setCreditsHistoryExpanded] = useState(false)
 
   // ── Duty & Obligation ──
   const [odMode, setOdMode] = useState<'group' | 'individual'>('group')
@@ -444,15 +447,12 @@ function GmDashboard() {
   const supabase = useMemo(() => createClient(), [])
 
   // ── Map state ──
-  const { activeMap, allMaps } = useActiveMap(campaignId)
+  const { activeMap, allMaps, removeMap } = useActiveMap(campaignId)
 
   // ── Derived character lists ──
-  // activeChars = live PC characters only (is_pc true or unset = legacy rows)
-  const activeChars   = useMemo(() => characters.filter(c => !c.is_archived && c.is_pc !== false), [characters])
-  const nemesisChars  = useMemo(() => characters.filter(c => !c.is_archived && c.adversary_type === 'nemesis'), [characters])
+  const activeChars   = useMemo(() => characters.filter(c => !c.is_archived), [characters])
   const archivedChars = useMemo(() => characters.filter(c =>  c.is_archived), [characters])
-  // targetChars = context-aware: nemeses when GM is in nemesis view, PCs otherwise
-  const targetChars   = useMemo(() => gmNemesisViewActive ? nemesisChars : activeChars, [gmNemesisViewActive, nemesisChars, activeChars])
+  const targetChars   = activeChars
 
   // ── Optimistic character patch (used by D&O tab inline edits & setup modal) ──
   const handleCharacterUpdated = useCallback((id: string, updates: Partial<Character>) => {
@@ -700,6 +700,24 @@ function GmDashboard() {
 
   useEffect(() => { loadData() }, [loadData])
 
+  // ── Load award history ──
+  const loadAwardHistory = useCallback(async () => {
+    if (!campaignId) return
+    const { data } = await supabase
+      .from('gm_award_log')
+      .select('*')
+      .eq('campaign_id', campaignId)
+      .order('created_at', { ascending: false })
+      .limit(50)
+    if (!data) return
+    const entries = data as AwardLogEntry[]
+    setXpHistory(entries.filter(e => e.type === 'xp'))
+    setCreditsHistory(entries.filter(e => e.type === 'credits'))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [campaignId])
+
+  useEffect(() => { loadAwardHistory() }, [loadAwardHistory])
+
   // ── Load pending force notifications ──
   useEffect(() => {
     if (!campaignId) return
@@ -900,6 +918,8 @@ function GmDashboard() {
       await Promise.all([...updates, ...transactions])
       setCharacters(prev => prev.map(c => c.is_archived ? c : { ...c, xp_total: c.xp_total + amount, xp_available: c.xp_available + amount }))
       for (const c of activeChars) notify(c.id, 'dialog', `You received ${amount} XP!${reason ? ` Reason: ${reason}` : ''}`)
+      const { data: logRow } = await supabase.from('gm_award_log').insert({ campaign_id: campaignId, type: 'xp', amount, mode: 'group', reason, recipient_count: activeChars.length }).select().single()
+      if (logRow) setXpHistory(prev => [logRow as AwardLogEntry, ...prev])
       setXpAmount(''); setXpReason('')
       flash(`Granted ${amount} XP to ${activeChars.length} characters`)
     } catch (err: unknown) {
@@ -920,6 +940,8 @@ function GmDashboard() {
       await supabase.from('xp_transactions').insert({ character_id: target, amount, reason, created_by: 'gm' })
       setCharacters(prev => prev.map(c => c.id === target ? { ...c, xp_total: c.xp_total + amount, xp_available: c.xp_available + amount } : c))
       notify(target, 'dialog', `You ${amount > 0 ? 'received' : 'lost'} ${Math.abs(amount)} XP!${reason ? ` Reason: ${reason}` : ''}`)
+      const { data: logRow } = await supabase.from('gm_award_log').insert({ campaign_id: campaignId, type: 'xp', amount, mode: 'individual', target_name: char.name, reason, recipient_count: 1 }).select().single()
+      if (logRow) setXpHistory(prev => [logRow as AwardLogEntry, ...prev])
       setXpAmount(''); setXpReason(''); setXpTarget('')
       flash(`${amount > 0 ? 'Granted' : 'Took'} ${Math.abs(amount)} XP ${amount > 0 ? 'to' : 'from'} ${char.name}`)
     } catch (err: unknown) {
@@ -937,6 +959,8 @@ function GmDashboard() {
       await Promise.all(targetChars.map(c => supabase.from('characters').update({ credits: c.credits + amount }).eq('id', c.id)))
       setCharacters(prev => prev.map(c => c.is_archived ? c : { ...c, credits: c.credits + amount }))
       for (const c of targetChars) notify(c.id, 'dialog', `You received ${amount} credits!`)
+      const { data: logRow } = await supabase.from('gm_award_log').insert({ campaign_id: campaignId, type: 'credits', amount, mode: 'group', recipient_count: targetChars.length }).select().single()
+      if (logRow) setCreditsHistory(prev => [logRow as AwardLogEntry, ...prev])
       setCreditsAmount('')
       flash(`Distributed ${amount} credits to ${targetChars.length} characters`)
     } catch (err: unknown) {
@@ -955,6 +979,8 @@ function GmDashboard() {
       await supabase.from('characters').update({ credits: char.credits + amount }).eq('id', creditsTarget)
       setCharacters(prev => prev.map(c => c.id === creditsTarget ? { ...c, credits: c.credits + amount } : c))
       notify(creditsTarget, 'dialog', `You ${amount > 0 ? 'received' : 'lost'} ${Math.abs(amount)} credits!`)
+      const { data: logRow } = await supabase.from('gm_award_log').insert({ campaign_id: campaignId, type: 'credits', amount, mode: 'individual', target_name: char.name, recipient_count: 1 }).select().single()
+      if (logRow) setCreditsHistory(prev => [logRow as AwardLogEntry, ...prev])
       setCreditsAmount(''); setCreditsTarget('')
       flash(`${amount > 0 ? 'Gave' : 'Took'} ${Math.abs(amount)} credits ${amount > 0 ? 'to' : 'from'} ${char.name}`)
     } catch (err: unknown) {
@@ -1569,6 +1595,7 @@ function GmDashboard() {
             characters={activeChars}
             allMaps={allMaps}
             activeMap={activeMap}
+            onDeleteMap={removeMap}
           />
         )}
 
@@ -1650,59 +1677,17 @@ function GmDashboard() {
           {/* ── PARTY OVERVIEW ── */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              {/* View toggle: PLAYER CHARACTERS / NEMESES */}
-              <div style={{ display: 'flex', gap: 0, border: `1px solid ${gmNemesisViewActive ? 'rgba(224,82,82,0.3)' : BORDER_HI}`, borderRadius: 4, overflow: 'hidden' }}>
-                <button
-                  onClick={() => setGmNemesisViewActive(false)}
-                  style={{
-                    fontFamily: "'Cinzel','Rajdhani',sans-serif",
-                    fontSize: 'clamp(0.7rem, 0.95vw, 0.85rem)',
-                    fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
-                    padding: '4px 14px', border: 'none', cursor: 'pointer',
-                    background: !gmNemesisViewActive ? 'rgba(200,170,80,0.15)' : 'transparent',
-                    color: !gmNemesisViewActive ? GOLD : DIM,
-                    transition: 'background 150ms, color 150ms',
-                  }}
-                >
-                  Player Characters
-                </button>
-                <button
-                  onClick={() => setGmNemesisViewActive(true)}
-                  style={{
-                    fontFamily: "'Cinzel','Rajdhani',sans-serif",
-                    fontSize: 'clamp(0.7rem, 0.95vw, 0.85rem)',
-                    fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
-                    padding: '4px 14px', border: 'none', cursor: 'pointer',
-                    background: gmNemesisViewActive ? 'rgba(224,82,82,0.12)' : 'transparent',
-                    color: gmNemesisViewActive ? '#e05252' : DIM,
-                    transition: 'background 150ms, color 150ms',
-                  }}
-                >
-                  Nemeses
-                </button>
+              <div style={{
+                fontFamily: "'Cinzel','Rajdhani',sans-serif",
+                fontSize: 'clamp(0.7rem, 0.95vw, 0.85rem)',
+                fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
+                color: GOLD,
+              }}>
+                Player Characters
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                {/* Create Nemesis button (shown when nemesis view active) */}
-                {gmNemesisViewActive && (
-                  <button
-                    onClick={() => router.push(`/create?campaign=${campaignId}&nemesis=1`)}
-                    style={{
-                      fontFamily: "'Cinzel','Rajdhani',sans-serif",
-                      fontSize: 'clamp(0.7rem, 0.95vw, 0.85rem)',
-                      fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
-                      padding: '4px 12px', borderRadius: 3, cursor: 'pointer',
-                      border: '1px solid rgba(224,82,82,0.4)', color: 'rgba(224,82,82,0.75)',
-                      background: 'rgba(224,82,82,0.07)',
-                      transition: 'color 150ms, background 150ms',
-                    }}
-                    onMouseEnter={e => { const el = e.currentTarget as HTMLButtonElement; el.style.color = '#e05252'; el.style.background = 'rgba(224,82,82,0.12)' }}
-                    onMouseLeave={e => { const el = e.currentTarget as HTMLButtonElement; el.style.color = 'rgba(224,82,82,0.75)'; el.style.background = 'rgba(224,82,82,0.07)' }}
-                  >
-                    ⚡ + Create Nemesis
-                  </button>
-                )}
-                {Object.keys(activeSessions).length > 0 && !gmNemesisViewActive && (
+                {Object.keys(activeSessions).length > 0 && (
                   <button
                     onClick={releaseAllSessions}
                     style={{ background: 'transparent', border: `1px solid rgba(224,80,80,0.4)`, borderRadius: 3, padding: '3px 10px', cursor: 'pointer', fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.08em', color: RED, textTransform: 'uppercase', whiteSpace: 'nowrap' }}
@@ -1713,45 +1698,16 @@ function GmDashboard() {
               </div>
             </div>
 
-            {/* Nemesis empty state */}
-            {gmNemesisViewActive && nemesisChars.length === 0 && (
-              <div style={{
-                padding: '32px 24px', textAlign: 'center',
-                background: 'rgba(224,82,82,0.03)', border: '1px solid rgba(224,82,82,0.15)',
-                borderRadius: 6, marginBottom: 10,
-              }}>
-                <div style={{ fontFamily: FR, fontSize: FS_SM, color: 'rgba(224,82,82,0.6)', marginBottom: 12 }}>
-                  No nemeses created yet.
-                </div>
-                <div style={{ fontFamily: FR, fontSize: FS_LABEL, color: DIM, marginBottom: 16 }}>
-                  Use the Character Creator to build one.
-                </div>
-                <button
-                  onClick={() => router.push(`/create?campaign=${campaignId}&nemesis=1`)}
-                  style={{
-                    fontFamily: "'Cinzel','Rajdhani',sans-serif",
-                    fontSize: 'clamp(0.7rem, 0.95vw, 0.85rem)',
-                    fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
-                    padding: '7px 18px', borderRadius: 4, cursor: 'pointer',
-                    border: '1px solid rgba(224,82,82,0.4)', color: '#e05252',
-                    background: 'rgba(224,82,82,0.08)',
-                  }}
-                >
-                  ⚡ + Create Nemesis
-                </button>
-              </div>
-            )}
-
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(5, 1fr)',
               gap: 10,
             }}>
               {targetChars.map(c => {
-                const cardAccent = gmNemesisViewActive ? '#e05252' : GOLD
+                const cardAccent = GOLD
                 const isIncap = c.wound_current >= c.wound_threshold
                 const isStrainHigh = c.strain_current > c.strain_threshold * 0.75
-                const leftBorderColor = isIncap ? RED : isStrainHigh ? CYAN : (gmNemesisViewActive ? 'rgba(224,82,82,0.4)' : 'transparent')
+                const leftBorderColor = isIncap ? RED : isStrainHigh ? CYAN : 'transparent'
                 const wPct = Math.min(100, (c.wound_current / c.wound_threshold) * 100)
                 const sPct = Math.min(100, (c.strain_current / c.strain_threshold) * 100)
                 const wColor = wPct >= 100 ? RED : wPct >= 75 ? ORANGE : GREEN
@@ -1793,7 +1749,7 @@ function GmDashboard() {
                         </div>
                       )}
                       <div style={{ minWidth: 0 }}>
-                        <div style={{ fontFamily: FR, fontSize: FS_SM, fontWeight: 700, color: gmNemesisViewActive ? '#e07070' : TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        <div style={{ fontFamily: FR, fontSize: FS_SM, fontWeight: 700, color: TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {c.name}
                         </div>
                         <div style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 600, color: DIM, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 1 }}>
@@ -2281,6 +2237,40 @@ function GmDashboard() {
                         {xpBusy ? 'Processing...' : xpMode === 'group' ? `Grant to All (${targetChars.length})` : parseInt(xpAmount, 10) < 0 ? 'Take XP' : 'Grant XP'}
                       </button>
                     </div>
+                    {/* XP History */}
+                    {xpHistory.length > 0 && (
+                      <div style={{ marginTop: 20, borderTop: `1px solid ${BORDER}`, paddingTop: 14 }}>
+                        <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, letterSpacing: '0.15em', textTransform: 'uppercase', color: GOLD_DIM, marginBottom: 8 }}>
+                          Award History
+                        </div>
+                        {(xpHistoryExpanded ? xpHistory : xpHistory.slice(0, 5)).map(e => (
+                          <div key={e.id} style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '5px 0', borderBottom: `1px solid ${FAINT}` }}>
+                            <span style={{ fontFamily: FR, fontSize: FS_SM, fontWeight: 700, color: e.amount >= 0 ? GOLD : '#E05050', flexShrink: 0 }}>
+                              {e.amount >= 0 ? '+' : ''}{e.amount} XP
+                            </span>
+                            <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, flexShrink: 0 }}>
+                              {e.mode === 'group' ? `→ All (${e.recipient_count})` : `→ ${e.target_name}`}
+                            </span>
+                            {e.reason && (
+                              <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: TEXT, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {e.reason}
+                              </span>
+                            )}
+                            <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM, flexShrink: 0 }}>
+                              {new Date(e.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                        ))}
+                        {xpHistory.length > 5 && (
+                          <button
+                            onClick={() => setXpHistoryExpanded(v => !v)}
+                            style={{ marginTop: 8, background: 'transparent', border: 'none', color: GOLD_DIM, fontFamily: FR, fontSize: FS_CAPTION, cursor: 'pointer', padding: 0 }}
+                          >
+                            {xpHistoryExpanded ? '▲ Show less' : `▼ Show all ${xpHistory.length} entries`}
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -2316,6 +2306,35 @@ function GmDashboard() {
                         {creditsBusy ? 'Processing...' : creditsMode === 'group' ? `Distribute to All (${targetChars.length})` : parseInt(creditsAmount, 10) < 0 ? 'Take Credits' : 'Give Credits'}
                       </button>
                     </div>
+                    {/* Credits History */}
+                    {creditsHistory.length > 0 && (
+                      <div style={{ marginTop: 20, borderTop: `1px solid ${BORDER}`, paddingTop: 14 }}>
+                        <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, letterSpacing: '0.15em', textTransform: 'uppercase', color: GOLD_DIM, marginBottom: 8 }}>
+                          Award History
+                        </div>
+                        {(creditsHistoryExpanded ? creditsHistory : creditsHistory.slice(0, 5)).map(e => (
+                          <div key={e.id} style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '5px 0', borderBottom: `1px solid ${FAINT}` }}>
+                            <span style={{ fontFamily: FR, fontSize: FS_SM, fontWeight: 700, color: e.amount >= 0 ? '#4EC87A' : '#E05050', flexShrink: 0 }}>
+                              {e.amount >= 0 ? '+' : ''}{e.amount.toLocaleString()} cr
+                            </span>
+                            <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, flexShrink: 0 }}>
+                              {e.mode === 'group' ? `→ All (${e.recipient_count})` : `→ ${e.target_name}`}
+                            </span>
+                            <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM, flexShrink: 0, marginLeft: 'auto' }}>
+                              {new Date(e.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                        ))}
+                        {creditsHistory.length > 5 && (
+                          <button
+                            onClick={() => setCreditsHistoryExpanded(v => !v)}
+                            style={{ marginTop: 8, background: 'transparent', border: 'none', color: GOLD_DIM, fontFamily: FR, fontSize: FS_CAPTION, cursor: 'pointer', padding: 0 }}
+                          >
+                            {creditsHistoryExpanded ? '▲ Show less' : `▼ Show all ${creditsHistory.length} entries`}
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -3043,7 +3062,6 @@ function GmDashboard() {
           characters={targetChars}
           campaignId={campaignId}
           supabase={supabase}
-          nemesisContext={gmNemesisViewActive}
           onClose={() => setLootAwardItem(null)}
           onAwardComplete={(charNames) => {
             flash(`${lootAwardItem!.name} awarded to ${charNames.join(', ')}`)

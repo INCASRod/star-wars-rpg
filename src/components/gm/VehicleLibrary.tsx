@@ -262,37 +262,43 @@ export function VehicleLibrary({ campaignId, sessionMode }: VehicleLibraryProps)
         ))}
       </div>
 
-      {/* Count */}
-      {!loading && (
-        <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>
-          Showing {filtered.length} vehicle{filtered.length !== 1 ? 's' : ''}
-          {search && ` matching "${search}"`}
+      {/* Count + List */}
+      {!search.trim() && sourceFilter !== 'custom' ? (
+        <div style={{ textAlign: 'center', padding: '24px 0', fontFamily: FR, fontSize: FS_SM, color: DIM }}>
+          Search for a vehicle above, or select &ldquo;Custom&rdquo; to browse your vehicles.
         </div>
-      )}
-
-      {/* List */}
-      {loading ? (
+      ) : loading ? (
         <div style={{ textAlign: 'center', padding: '24px 0', fontFamily: FR, fontSize: FS_SM, color: DIM }}>
           Loading vehicles…
         </div>
-      ) : filtered.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '24px 0', fontFamily: FR, fontSize: FS_SM, color: DIM }}>
-          No vehicles found.
-        </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 0, border: `1px solid ${BORDER}`, borderRadius: 6, overflow: 'hidden' }}>
-          {filtered.map((v, idx) => (
-            <VehicleRow
-              key={v.key}
-              vehicle={v}
-              tokenUrl={tokenImages[v.key]}
-              isLast={idx === filtered.length - 1}
-              onView={() => setSelected(v)}
-              onEdit={() => openEdit(v)}
-              onAddToCombat={() => requestAddToCombat(v)}
-            />
-          ))}
-        </div>
+        <>
+          <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>
+            {search.trim()
+              ? <>Showing {filtered.length} vehicle{filtered.length !== 1 ? 's' : ''} matching &ldquo;{search}&rdquo;</>
+              : <>Showing {filtered.length} custom vehicle{filtered.length !== 1 ? 's' : ''}</>
+            }
+          </div>
+          {filtered.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '24px 0', fontFamily: FR, fontSize: FS_SM, color: DIM }}>
+              No vehicles found.
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 0, border: `1px solid ${BORDER}`, borderRadius: 6, overflow: 'hidden' }}>
+              {filtered.map((v, idx) => (
+                <VehicleRow
+                  key={v.key}
+                  vehicle={v}
+                  tokenUrl={tokenImages[v.key]}
+                  isLast={idx === filtered.length - 1}
+                  onView={() => setSelected(v)}
+                  onEdit={() => openEdit(v)}
+                  onAddToCombat={() => requestAddToCombat(v)}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {/* Detail panel */}

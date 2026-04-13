@@ -73,7 +73,7 @@ function dbRowToAdversary(row: Record<string, unknown>): Adversary & { _isCustom
     talents:     (row.talents as Adversary['talents']) ?? [],
     abilities:   (row.abilities as Adversary['abilities']) ?? [],
     weapons:     (row.weapons as Adversary['weapons']) ?? [],
-    gear:        (row.gear as string[]) ?? [],
+    gear:        (row.gear as Adversary['gear']) ?? [],
     description: row.description ? String(row.description) : undefined,
     _isCustom:   true,
     _dbId:       String(row.id),
@@ -390,44 +390,50 @@ export function AdversaryLibrary({ campaignId, sessionMode }: AdversaryLibraryPr
         ))}
       </div>
 
-      {/* Count */}
-      {!loading && (
-        <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>
-          Showing {filtered.length} adversar{filtered.length === 1 ? 'y' : 'ies'}
-          {search && ` matching "${search}"`}
+      {/* Count + List */}
+      {!search.trim() && sourceFilter !== 'custom' ? (
+        <div style={{ textAlign: 'center', padding: '24px 0', fontFamily: FR, fontSize: FS_SM, color: DIM }}>
+          Search for an adversary above, or select &ldquo;Custom&rdquo; to browse your adversaries.
         </div>
-      )}
-
-      {/* List */}
-      {loading ? (
+      ) : loading ? (
         <div style={{ textAlign: 'center', padding: '24px 0', fontFamily: FR, fontSize: FS_SM, color: DIM }}>
           Loading adversaries…
         </div>
-      ) : filtered.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '24px 0', fontFamily: FR, fontSize: FS_SM, color: DIM }}>
-          No adversaries found.
-        </div>
       ) : (
-        <div style={{
-          display: 'flex', flexDirection: 'column', gap: 0,
-          border: `1px solid ${BORDER}`, borderRadius: 6, overflow: 'hidden',
-        }}>
-          {filtered.map((adv, idx) => {
-            const tokenUrl = tokenImages[adv.name]
-            const isLast = idx === filtered.length - 1
-            return (
-              <AdversaryRow
-                key={adv.id}
-                adversary={adv}
-                tokenUrl={tokenUrl}
-                isLast={isLast}
-                onView={() => setSelectedAdversary(adv)}
-                onEdit={() => openEdit(adv)}
-                onAddToCombat={() => requestAddToCombat(adv)}
-              />
-            )
-          })}
-        </div>
+        <>
+          <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>
+            {search.trim()
+              ? <>Showing {filtered.length} adversar{filtered.length === 1 ? 'y' : 'ies'} matching &ldquo;{search}&rdquo;</>
+              : <>Showing {filtered.length} custom adversar{filtered.length === 1 ? 'y' : 'ies'}</>
+            }
+          </div>
+          {filtered.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '24px 0', fontFamily: FR, fontSize: FS_SM, color: DIM }}>
+              No adversaries found.
+            </div>
+          ) : (
+            <div style={{
+              display: 'flex', flexDirection: 'column', gap: 0,
+              border: `1px solid ${BORDER}`, borderRadius: 6, overflow: 'hidden',
+            }}>
+              {filtered.map((adv, idx) => {
+                const tokenUrl = tokenImages[adv.name]
+                const isLast = idx === filtered.length - 1
+                return (
+                  <AdversaryRow
+                    key={adv.id}
+                    adversary={adv}
+                    tokenUrl={tokenUrl}
+                    isLast={isLast}
+                    onView={() => setSelectedAdversary(adv)}
+                    onEdit={() => openEdit(adv)}
+                    onAddToCombat={() => requestAddToCombat(adv)}
+                  />
+                )
+              })}
+            </div>
+          )}
+        </>
       )}
 
       {/* Detail panel */}

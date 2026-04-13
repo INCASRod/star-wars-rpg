@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Adversary, AdversaryWeapon, AdversaryTalent } from '@/lib/adversaries'
+import type { Adversary, AdversaryWeapon, AdversaryTalent, AdversaryGear } from '@/lib/adversaries'
+import { toast } from 'sonner'
 
 /* ── Design tokens ─────────────────────────────────────── */
 const FC       = "var(--font-cinzel), 'Cinzel', serif"
@@ -70,15 +71,15 @@ const sectionHead: React.CSSProperties = {
   paddingBottom: 4, marginBottom: 12,
 }
 
-/* ── All SWRPG skill names ─────────────────────────────── */
+/* ── All SWRPG skill names (AoE Core Rulebook Table 3-1) ── */
 const ALL_SKILLS = [
   'Astrogation','Athletics','Brawl','Charm','Coercion','Computers',
-  'Cool','Coordination','Deception','Discipline','Driving','Education',
+  'Cool','Coordination','Core Worlds','Deception','Discipline','Education',
   'Gunnery','Leadership','Lightsaber','Lore','Mechanics','Medicine',
-  'Melee','Negotiation','Operating','Perception','Piloting (Planetary)',
+  'Melee','Negotiation','Outer Rim','Perception','Piloting (Planetary)',
   'Piloting (Space)','Ranged (Heavy)','Ranged (Light)','Resilience',
-  'Riding','Skulduggery','Stealth','Streetwise','Survival','Underworld',
-  'Vigilance','Xenology',
+  'Skulduggery','Stealth','Streetwise','Survival','Underworld',
+  'Vigilance','Warfare','Xenology',
 ]
 
 /* ── DB row type ───────────────────────────────────────── */
@@ -96,7 +97,7 @@ interface CustomAdversaryRow {
   weapons: AdversaryWeapon[]
   talents: AdversaryTalent[]
   abilities: { name: string; description: string }[]
-  gear: string[]
+  gear: AdversaryGear[]
   description: string | null
   is_custom: true
   campaign_id: string | null
@@ -119,6 +120,7 @@ export interface AdversaryEditorProps {
 /* ── Skill entry ───────────────────────────────────────── */
 interface SkillEntry { skill: string; rank: number }
 interface WeaponEntry { name: string; skillCategory: string; damage: string; range: string; qualities: string }
+interface GearEntry { name: string; encumbrance: string; description: string }
 interface TalentEntry { name: string; description: string }
 interface AbilityEntry { name: string; description: string }
 
@@ -128,7 +130,7 @@ function fromTemplate(t: Adversary): Partial<{
   cunning: number; willpower: number; presence: number
   soak: number; wt: number; st: number | null
   defMelee: number; defRanged: number
-  skills: SkillEntry[]; weapons: WeaponEntry[]
+  skills: SkillEntry[]; weapons: WeaponEntry[]; gear: GearEntry[]
   talents: TalentEntry[]; abilities: AbilityEntry[]
   description: string
 }> {
@@ -149,6 +151,9 @@ function fromTemplate(t: Adversary): Partial<{
       damage: String(w.damage), range: w.range,
       qualities: (w.qualities ?? []).join(', '),
     })),
+    gear:        (t.gear ?? []).map(g => typeof g === 'string'
+      ? { name: g, encumbrance: '', description: '' }
+      : { name: g.name, encumbrance: g.encumbrance, description: g.description }),
     talents:     (t.talents ?? []).map(ta => ({ name: ta.name, description: ta.description ?? '' })),
     abilities:   (t.abilities ?? []).map(a => ({ name: a.name, description: a.description })),
     description: t.description ?? '',
@@ -190,6 +195,7 @@ export function AdversaryEditor({
   const [defRanged,  setDefRanged]  = useState(init.defRanged  ?? 0)
   const [skills,     setSkills]     = useState<SkillEntry[]>(init.skills  ?? [])
   const [weapons,    setWeapons]    = useState<WeaponEntry[]>(init.weapons ?? [])
+  const [gear,       setGear]       = useState<GearEntry[]>(init.gear ?? [])
   const [talents,    setTalents]    = useState<TalentEntry[]>(init.talents ?? [])
   const [abilities,  setAbilities]  = useState<AbilityEntry[]>(init.abilities ?? [])
   const [description, setDescription] = useState(init.description ?? '')
@@ -213,6 +219,7 @@ export function AdversaryEditor({
     setDefMelee(d.defMelee ?? 0); setDefRanged(d.defRanged ?? 0)
     setSkills(d.skills ?? [])
     setWeapons(d.weapons ?? [])
+    setGear(d.gear ?? [])
     setTalents(d.talents ?? [])
     setAbilities(d.abilities ?? [])
     setDescription(d.description ?? '')
@@ -233,6 +240,12 @@ export function AdversaryEditor({
   const removeWeapon = (i: number) => setWeapons(prev => prev.filter((_, j) => j !== i))
   const updateWeapon = (i: number, patch: Partial<WeaponEntry>) =>
     setWeapons(prev => prev.map((w, j) => j === i ? { ...w, ...patch } : w))
+
+  /* ── Gear helpers ────────────────────────────────────── */
+  const addGear = () => setGear(prev => [...prev, { name: '', encumbrance: '', description: '' }])
+  const removeGear = (i: number) => setGear(prev => prev.filter((_, j) => j !== i))
+  const updateGear = (i: number, patch: Partial<GearEntry>) =>
+    setGear(prev => prev.map((g, j) => j === i ? { ...g, ...patch } : g))
 
   /* ── Talent helpers ──────────────────────────────────── */
   const addTalent = () => setTalents(prev => [...prev, { name: '', description: '' }])
@@ -278,6 +291,10 @@ export function AdversaryEditor({
         .filter(a => a.name.trim())
         .map(a => ({ name: a.name.trim(), description: a.description }))
 
+      const gearData: AdversaryGear[] = gear
+        .filter(g => g.name.trim())
+        .map(g => ({ name: g.name.trim(), encumbrance: g.encumbrance, description: g.description }))
+
       const row: Omit<CustomAdversaryRow, 'id'> = {
         name: name.trim(), type,
         brawn, agility, intellect, cunning, willpower, presence,
@@ -289,7 +306,7 @@ export function AdversaryEditor({
         weapons: weaponsData,
         talents: talentsData,
         abilities: abilitiesData,
-        gear: [],
+        gear: gearData,
         description: description.trim() || null,
         is_custom: true,
         campaign_id: campaignId || null,
@@ -322,7 +339,7 @@ export function AdversaryEditor({
         talents:    talentsData,
         abilities:  abilitiesData,
         weapons:    weaponsData,
-        gear:       [],
+        gear:       gearData,
         description: description.trim() || undefined,
         _isCustom:  true,
         _dbId:      savedId,
@@ -330,7 +347,9 @@ export function AdversaryEditor({
 
       onSaved(saved)
     } catch (err) {
-      console.error('Save adversary failed', err)
+      const msg = (err as { message?: string })?.message ?? 'Unknown error'
+      console.error('Save adversary failed', msg, err)
+      toast.error(`Failed to save adversary: ${msg}`)
     } finally {
       setSaving(false)
     }
@@ -654,6 +673,56 @@ export function AdversaryEditor({
                         type="text" placeholder="e.g. Stun Setting, Pierce 1"
                         value={w.qualities}
                         onChange={e => updateWeapon(i, { qualities: e.target.value })}
+                        style={inputStyle}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Gear */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+              <span style={sectionHead}>Gear</span>
+              <button onClick={addGear} style={btnSmall}>+ Add Gear</button>
+            </div>
+            <div style={{ borderBottom: `1px solid ${BORDER}`, marginBottom: 12 }} />
+            {gear.length === 0 ? (
+              <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, padding: '4px 0' }}>No gear added.</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {gear.map((g, i) => (
+                  <div key={i} style={{
+                    background: RAISED, border: `1px solid ${BORDER}`,
+                    borderRadius: 4, padding: '10px 12px',
+                    display: 'flex', flexDirection: 'column', gap: 6,
+                  }}>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <input
+                        type="text" placeholder="Gear name…"
+                        value={g.name}
+                        onChange={e => updateGear(i, { name: e.target.value })}
+                        style={{ ...inputStyle, flex: 1 }}
+                      />
+                      <div style={{ width: 72 }}>
+                        <div style={fieldLabel}>Encumbrance</div>
+                        <input
+                          type="text" placeholder="0"
+                          value={g.encumbrance}
+                          onChange={e => updateGear(i, { encumbrance: e.target.value })}
+                          style={inputStyle}
+                        />
+                      </div>
+                      <button onClick={() => removeGear(i)} style={btnDanger}>×</button>
+                    </div>
+                    <div>
+                      <div style={fieldLabel}>Notes / Special Rules</div>
+                      <input
+                        type="text" placeholder="e.g. +1 soak, requires both hands…"
+                        value={g.description}
+                        onChange={e => updateGear(i, { description: e.target.value })}
                         style={inputStyle}
                       />
                     </div>

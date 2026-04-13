@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Adversary } from '@/lib/adversaries'
 import { TokenImageLinks } from './TokenImageLinks'
+import { RichText } from '@/components/ui/RichText'
 
 /* ── Design tokens ─────────────────────────────────────── */
 const FC       = "var(--font-cinzel), 'Cinzel', serif"
@@ -306,7 +307,7 @@ export function AdversaryDetailPanel({
                       )}
                       {w.qualities && w.qualities.length > 0 && (
                         <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>
-                          {w.qualities.join(', ')}
+                          <RichText text={w.qualities.join(', ')} />
                         </span>
                       )}
                     </div>
@@ -325,7 +326,7 @@ export function AdversaryDetailPanel({
                   <div key={i}>
                     <span style={{ fontFamily: FR, fontSize: FS_SM, fontWeight: 700, color: GOLD }}>{t.name}</span>
                     {t.description && (
-                      <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}> — {t.description}</span>
+                      <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}> — <RichText text={t.description} /></span>
                     )}
                   </div>
                 ))}
@@ -333,7 +334,7 @@ export function AdversaryDetailPanel({
                   <div key={i}>
                     <span style={{ fontFamily: FR, fontSize: FS_SM, fontWeight: 700, color: GREEN }}>{a.name}</span>
                     {a.description && (
-                      <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}> — {a.description}</span>
+                      <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}> — <RichText text={a.description} /></span>
                     )}
                   </div>
                 ))}
@@ -420,7 +421,7 @@ export function AdversaryDetailPanel({
                   marginTop: 8, fontFamily: FR, fontSize: FS_SM, color: DIM,
                   lineHeight: 1.6, borderLeft: `2px solid ${BORDER}`, paddingLeft: 12,
                 }}>
-                  {adv.description}
+                  <RichText text={adv.description} />
                 </div>
               )}
             </div>

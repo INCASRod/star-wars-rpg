@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
 import { fetchAdversaries, adversaryToInstance } from '@/lib/adversaries'
-import type { Adversary, AdversaryInstance } from '@/lib/adversaries'
+import type { Adversary, AdversaryInstance, AdversaryGear } from '@/lib/adversaries'
 import { sortInitiative, advanceInitiative } from '@/lib/combat'
 import { randomUUID } from '@/lib/utils'
 import type { InitiativeSlot, CombatEncounter } from '@/lib/combat'
@@ -14,7 +14,7 @@ import { CombatLog } from '@/components/combat/CombatLog'
 import type { Character } from '@/lib/types'
 import type { SlotAlignment } from '@/lib/combat'
 import { FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4, FS_H3 } from '@/components/player-hud/design-tokens'
-import { MarkupText } from '@/components/ui/MarkupText'
+import { RichText } from '@/components/ui/RichText'
 import { resolveWeapon, type WeaponRef } from '@/lib/resolve-weapon'
 import { CombatCheckOverlay } from '@/components/combat-check/CombatCheckOverlay'
 import { adaptAdversaryForCombatCheck, charactersToAdversaryStubs } from '@/lib/adversaryAdapter'
@@ -319,9 +319,10 @@ interface CombatPanelProps {
 
 export function CombatPanel({ campaignId, characters, isDm, sendToChar }: CombatPanelProps) {
   // Adversary library state
-  const [library, setLibrary] = useState<Adversary[]>([])
+  const [library, setLibrary] = useState<(Adversary & { _isCustom?: boolean })[]>([])
   const [libSearch, setLibSearch] = useState('')
   const [libTypeFilter, setLibTypeFilter] = useState<'all' | 'minion' | 'rival' | 'nemesis'>('all')
+  const [libSourceFilter, setLibSourceFilter] = useState<'all' | 'custom'>('all')
   const [libLoading, setLibLoading] = useState(true)
   const [libError, setLibError] = useState<string | null>(null)
 
@@ -359,12 +360,50 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
 
   const supabase = createClient()
 
-  // Load adversary library
+  // Load adversary library (OggDude JSON + custom DB entries)
   useEffect(() => {
-    fetchAdversaries()
-      .then(data => { setLibrary(data); setLibLoading(false) })
-      .catch(err => { setLibError(String(err?.message ?? err)); setLibLoading(false) })
-  }, [])
+    const load = async () => {
+      try {
+        const [oggdude, customResult] = await Promise.all([
+          fetchAdversaries(),
+          supabase.from('ref_adversaries').select('*').order('name'),
+        ])
+        const custom: (Adversary & { _isCustom: true })[] = (customResult.data ?? []).map((row) => {
+          const r = row as Record<string, unknown>
+          const skillRanks = (r.skill_ranks as Record<string, number>) ?? {}
+          return {
+            id:          String(r.id),
+            name:        String(r.name),
+            type:        r.type as 'minion' | 'rival' | 'nemesis',
+            brawn:       Number(r.brawn ?? 2),
+            agility:     Number(r.agility ?? 2),
+            intellect:   Number(r.intellect ?? 2),
+            cunning:     Number(r.cunning ?? 2),
+            willpower:   Number(r.willpower ?? 2),
+            presence:    Number(r.presence ?? 2),
+            soak:        Number(r.soak ?? 2),
+            wound:       Number(r.wound_threshold ?? 10),
+            strain:      r.strain_threshold != null ? Number(r.strain_threshold) : undefined,
+            defense:     [Number(r.defense_melee ?? 0), Number(r.defense_ranged ?? 0)],
+            skills:      Object.keys(skillRanks),
+            skillRanks,
+            talents:     (r.talents as Adversary['talents']) ?? [],
+            abilities:   (r.abilities as Adversary['abilities']) ?? [],
+            weapons:     (r.weapons as Adversary['weapons']) ?? [],
+            gear:        (r.gear as AdversaryGear[]) ?? [],
+            description: r.description ? String(r.description) : undefined,
+            _isCustom:   true,
+          }
+        })
+        setLibrary([...oggdude, ...custom])
+      } catch (err) {
+        setLibError(String((err as { message?: string })?.message ?? err))
+      } finally {
+        setLibLoading(false)
+      }
+    }
+    void load()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load weapon reference for stat lookup (weapons in adversaries.json are name-only strings)
   useEffect(() => {
@@ -489,9 +528,12 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
 
   // Filtered library
   const filteredLib = library.filter(a => {
-    const matchType = libTypeFilter === 'all' || a.type === libTypeFilter
-    const matchSearch = a.name.toLowerCase().includes(libSearch.toLowerCase())
-    return matchType && matchSearch
+    const matchType   = libTypeFilter === 'all' || a.type === libTypeFilter
+    const matchSource = libSourceFilter === 'all' || (libSourceFilter === 'custom' && a._isCustom)
+    const matchSearch = !libSearch.trim() || a.name.toLowerCase().includes(libSearch.toLowerCase())
+    // When no search and not filtering to custom, hide results to avoid listing all ~500 OggDude entries
+    if (!libSearch.trim() && libSourceFilter !== 'custom') return false
+    return matchType && matchSource && matchSearch
   })
 
   // Add adversary to live encounter (combat already running)
@@ -905,6 +947,27 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
           ))}
         </div>
 
+        {/* Source filter */}
+        <div style={{ display: 'flex', gap: 4 }}>
+          {(['all', 'custom'] as const).map(s => (
+            <button
+              key={s}
+              onClick={() => setLibSourceFilter(s)}
+              style={{
+                flex: 1, padding: '4px 0',
+                background: libSourceFilter === s ? `${GOLD}20` : 'transparent',
+                border: `1px solid ${libSourceFilter === s ? BORDER_MD : BORDER}`,
+                borderRadius: 3, cursor: 'pointer',
+                fontFamily: FM, fontSize: FS_OVERLINE, letterSpacing: '0.08em',
+                color: libSourceFilter === s ? GOLD : TEXT_MUTED,
+                textTransform: 'uppercase',
+              }}
+            >
+              {s === 'all' ? 'All Sources' : '★ Custom'}
+            </button>
+          ))}
+        </div>
+
         {/* Results list */}
         <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
           {libLoading && (
@@ -921,7 +984,9 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
             <div key={adv.id} style={{ ...raisedPanel, padding: '8px 10px' }}>
               {/* Name + badge */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                <span style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 600, color: TEXT }}>{adv.name}</span>
+                <span style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 600, color: TEXT }}>
+                  {adv._isCustom && <span style={{ color: GOLD }}>★ </span>}{adv.name}
+                </span>
                 <TypeBadge type={adv.type} />
               </div>
               {/* Stats row */}
@@ -973,7 +1038,9 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
           ))}
           {!libLoading && filteredLib.length === 0 && !libError && (
             <div style={{ fontFamily: FR, fontSize: FS_LABEL, color: TEXT_MUTED, textAlign: 'center', padding: '20px 0' }}>
-              No adversaries found
+              {!libSearch.trim() && libSourceFilter !== 'custom'
+                ? 'Search above, or select ★ Custom to browse your adversaries.'
+                : 'No adversaries found.'}
             </div>
           )}
         </div>
@@ -1900,7 +1967,7 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                       {adv.abilities && adv.abilities.length > 0 ? adv.abilities.map((ab, i) => (
                         <div key={i}>
                           <span style={{ fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 700, color: CHAR_INT }}>{ab.name}{ab.description ? ': ' : ''}</span>
-                          {ab.description && <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: TEXT_SEC }}><MarkupText text={ab.description} /></span>}
+                          {ab.description && <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: TEXT_SEC }}><RichText text={ab.description} /></span>}
                         </div>
                       )) : (
                         <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: TEXT_MUTED, fontStyle: 'italic' }}>
@@ -1915,11 +1982,16 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                     <div style={{ marginBottom: 8 }}>
                       <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, letterSpacing: '0.15em', textTransform: 'uppercase', color: `${GOLD}90`, marginBottom: 5 }}>Gear</div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        {adv.gear.map((item, i) => (
-                          <div key={i} style={{ fontFamily: FM, fontSize: FS_LABEL, color: TEXT_SEC }}>
-                            · {item}
-                          </div>
-                        ))}
+                        {adv.gear.map((item, i) => {
+                          const label = typeof item === 'string' ? item
+                            : [item.name, item.encumbrance ? `Enc ${item.encumbrance}` : ''].filter(Boolean).join(' — ')
+                          const notes = typeof item === 'string' ? '' : item.description
+                          return (
+                            <div key={i} style={{ fontFamily: FM, fontSize: FS_LABEL, color: TEXT_SEC }}>
+                              · {label}{notes ? <span> — <RichText text={notes} /></span> : null}
+                            </div>
+                          )
+                        })}
                       </div>
                     </div>
                   )}
@@ -1930,10 +2002,10 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                       <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, letterSpacing: '0.15em', textTransform: 'uppercase', color: `${GOLD}90`, marginBottom: 5 }}>Weapons</div>
                       {adv.weapons.map((w, i) => {
                         const { dmg, range } = resolveWeapon(w, adv.characteristics.brawn, weaponRef)
-                        const quals = w.qualities && w.qualities.length > 0 ? ` — ${w.qualities.join(', ')}` : ''
+                        const quals = w.qualities && w.qualities.length > 0 ? w.qualities.join(', ') : ''
                         return (
                           <div key={i} style={{ fontFamily: FM, fontSize: FS_LABEL, fontWeight: 500, color: TEXTGR, marginBottom: 2 }}>
-                            {w.name} — DMG {dmg} — {range}{quals}
+                            {w.name} — DMG {dmg} — {range}{quals ? <span> — <RichText text={quals} /></span> : null}
                           </div>
                         )
                       })}
