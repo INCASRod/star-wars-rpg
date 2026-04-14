@@ -322,6 +322,7 @@ export function VehicleLibrary({ campaignId, sessionMode }: VehicleLibraryProps)
           template={editorTemplate}
           campaignId={campaignId}
           supabase={supabase}
+          allVehicles={allVehicles}
           onClose={() => setShowEditor(false)}
           onSaved={handleSaved}
         />

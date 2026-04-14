@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Vehicle, VehicleAbility } from '@/lib/vehicles'
@@ -9,6 +9,7 @@ import type { Vehicle, VehicleAbility } from '@/lib/vehicles'
 const FC       = "var(--font-cinzel), 'Cinzel', serif"
 const FR       = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const PANEL_BG = 'rgba(8,16,10,0.97)'
+const RAISED   = 'rgba(14,26,18,0.92)'
 const INPUT_BG = 'rgba(0,0,0,0.35)'
 const GOLD     = '#C8AA50'
 const GOLD_DIM = 'rgba(200,170,80,0.5)'
@@ -95,22 +96,34 @@ function fromVehicle(v: Vehicle) {
 
 /* ── Props ─────────────────────────────────────────────── */
 export interface VehicleEditorProps {
-  editId?:    string
-  template?:  Vehicle & { _isCustom?: boolean }
-  campaignId: string
-  supabase:   SupabaseClient
-  onClose:    () => void
-  onSaved:    (saved: Vehicle & { _isCustom: true; _dbId: string }) => void
+  editId?:      string
+  template?:    Vehicle & { _isCustom?: boolean }
+  campaignId:   string
+  supabase:     SupabaseClient
+  allVehicles?: (Vehicle & { _isCustom?: boolean })[]
+  onClose:      () => void
+  onSaved:      (saved: Vehicle & { _isCustom: true; _dbId: string }) => void
 }
 
 /* ════════════════════════════════════════════════════════
    COMPONENT
    ════════════════════════════════════════════════════════ */
 export function VehicleEditor({
-  editId, template, campaignId, supabase, onClose, onSaved,
+  editId, template, campaignId, supabase, allVehicles = [], onClose, onSaved,
 }: VehicleEditorProps) {
   const [mounted, setMounted] = useState(false)
   useEffect(() => { setMounted(true) }, [])
+
+  const isEdit = !!editId
+
+  /* ── Template search ─────────────────────────────────── */
+  const [tmplSearch,   setTmplSearch]   = useState('')
+  const [tmplSelected, setTmplSelected] = useState<(Vehicle & { _isCustom?: boolean }) | null>(template ?? null)
+  const tmplResults = useMemo(() => {
+    if (!tmplSearch.trim()) return []
+    const q = tmplSearch.toLowerCase()
+    return allVehicles.filter(v => v.name.toLowerCase().includes(q)).slice(0, 8)
+  }, [allVehicles, tmplSearch])
 
   const init: Partial<ReturnType<typeof fromVehicle>> = template ? fromVehicle(template) : {}
 
@@ -138,6 +151,33 @@ export function VehicleEditor({
 
   const [saving, setSaving] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  /* ── Apply template ──────────────────────────────────── */
+  const applyTemplate = (v: Vehicle & { _isCustom?: boolean }) => {
+    const d = fromVehicle(v)
+    setName(d.name ?? '')
+    setType(d.type ?? 'Landspeeder')
+    setIsStarship(d.isStarship ?? false)
+    setSilhouette(d.silhouette ?? 3)
+    setSpeed(d.speed ?? 2)
+    setHandling(d.handling ?? 0)
+    setDefFore(d.defFore ?? 0)
+    setDefAft(d.defAft ?? 0)
+    setDefPort(d.defPort ?? 0)
+    setDefStarboard(d.defStarboard ?? 0)
+    setArmor(d.armor ?? 2)
+    setHullTrauma(d.hullTrauma ?? 10)
+    setSystemStrain(d.systemStrain ?? 8)
+    setCrew(d.crew ?? '')
+    setPassengers(d.passengers ?? 0)
+    setEncCap(d.encumbranceCapacity ?? 0)
+    setConsumables(d.consumables ?? '')
+    setAbilities(d.abilities ?? [])
+    setWeapons(d.weapons ?? [])
+    setDescription(d.description ?? '')
+    setTmplSelected(v)
+    setTmplSearch('')
+  }
 
   const ni = (v: string, setter: (n: number) => void) =>
     setter(v === '' || v === '-' ? 0 : parseInt(v) || 0)
@@ -246,6 +286,75 @@ export function VehicleEditor({
 
         {/* Body */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+          {/* Template search (only for new vehicles) */}
+          {!isEdit && (
+            <div>
+              <div style={sectionHead}>Start from Existing (Optional)</div>
+              {tmplSelected ? (
+                <div style={{
+                  background: RAISED, border: `1px solid ${BORDER}`, borderRadius: 4,
+                  padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                }}>
+                  <span style={{ fontFamily: FR, fontSize: FS_SM, color: TEXT }}>
+                    Based on <strong style={{ color: GOLD }}>{tmplSelected.name}</strong>
+                  </span>
+                  <button
+                    onClick={() => { setTmplSelected(null); setTmplSearch('') }}
+                    style={btnSmall}
+                  >
+                    Clear
+                  </button>
+                </div>
+              ) : (
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type="text"
+                    placeholder="🔍 Search vehicles…"
+                    value={tmplSearch}
+                    onChange={e => setTmplSearch(e.target.value)}
+                    style={inputStyle}
+                  />
+                  {tmplResults.length > 0 && (
+                    <div style={{
+                      position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10,
+                      background: PANEL_BG, border: `1px solid ${BORDER_HI}`,
+                      borderRadius: 4, maxHeight: 200, overflowY: 'auto',
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+                    }}>
+                      {tmplResults.map(v => (
+                        <button
+                          key={v.key}
+                          onClick={() => applyTemplate(v)}
+                          style={{
+                            display: 'block', width: '100%', textAlign: 'left',
+                            background: 'transparent', border: 'none',
+                            padding: '8px 12px', cursor: 'pointer',
+                            fontFamily: FR, fontSize: FS_SM, color: TEXT,
+                            borderBottom: `1px solid ${BORDER}`,
+                          }}
+                          onMouseEnter={e => (e.currentTarget.style.background = RAISED)}
+                          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                        >
+                          {v.name}
+                          <span style={{ marginLeft: 8, fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>
+                            [{v.type}]
+                          </span>
+                        </button>
+                      ))}
+                      <div style={{
+                        padding: '6px 12px', borderTop: `1px solid ${BORDER}`,
+                        fontFamily: FR, fontSize: FS_CAPTION, color: DIM,
+                        fontStyle: 'italic',
+                      }}>
+                        — or start from scratch —
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Identity */}
           <div>
