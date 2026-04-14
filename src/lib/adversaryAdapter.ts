@@ -9,6 +9,9 @@
 import type { AdversaryInstance, AdversaryWeapon } from './adversaries'
 import type { Character, CharacterWeapon, CharacterSkill, RefWeapon, RefSkill } from './types'
 
+// Melee skill key used for opposed check lookup
+const MELEE_DISPLAY_NAMES = ['Melee', 'Brawl', 'Lightsaber']
+
 // ── Skill display-name → SWRPG skill key ─────────────────────────────────────
 const SKILL_NAME_TO_KEY: Record<string, string> = {
   'Athletics':              'ATHL',
@@ -42,6 +45,7 @@ const SKILL_NAME_TO_KEY: Record<string, string> = {
   'Streetwise':             'STRT',
   'Survival':               'SURV',
   'Vigilance':              'VIGIL',
+  'Astrogation':            'ASTRO',
   'Knowledge: Core Worlds': 'KNOW_CW',
   'Knowledge: Education':   'KNOW_ED',
   'Knowledge: Lore':        'KNOW_LORE',
@@ -50,6 +54,11 @@ const SKILL_NAME_TO_KEY: Record<string, string> = {
   'Knowledge: Warfare':     'KNOW_WAR',
   'Knowledge: Xenology':    'KNOW_XEN',
 }
+
+// Reverse map: skill_key → display name (for building skillRanks from CharacterSkill[])
+const SKILL_NAME_TO_KEY_REVERSE: Record<string, string> = Object.fromEntries(
+  Object.entries(SKILL_NAME_TO_KEY).map(([name, key]) => [key, name])
+)
 
 // ── Skill key → governing characteristic 2-letter key ────────────────────────
 const SKILL_KEY_TO_CHAR: Record<string, string> = {
@@ -294,34 +303,52 @@ export function adaptAdversaryForCombatCheck(
 /**
  * Convert player Characters into AdversaryInstance stubs for use as combat
  * targets when the GM is attacking on behalf of an adversary.
+ *
+ * @param skillsByChar - optional map of characterId → CharacterSkill[]; when
+ *   provided, populates skillRanks so melee opposed checks use the real ranks.
  */
-export function charactersToAdversaryStubs(characters: Character[]): AdversaryInstance[] {
-  return characters.map(char => ({
-    instanceId:      char.id,
-    sourceId:        char.id,
-    name:            char.name,
-    type:            'rival' as const,
-    groupSize:       1,
-    groupRemaining:  1,
-    revealed:        true,
-    characteristics: {
-      brawn:     char.brawn,
-      agility:   char.agility,
-      intellect: char.intellect,
-      cunning:   char.cunning,
-      willpower: char.willpower,
-      presence:  char.presence,
-    },
-    soak:            char.soak ?? char.brawn,
-    woundThreshold:  char.wound_threshold,
-    strainThreshold: char.strain_threshold,
-    defense:         { melee: char.defense_melee ?? 0, ranged: char.defense_ranged ?? 0 },
-    skills:          [],
-    skillRanks:      {},
-    talents:         [],
-    abilities:       [],
-    weapons:         [],
-    gear:            [],
-    woundsCurrent:   char.wound_current,
-  }))
+export function charactersToAdversaryStubs(
+  characters: Character[],
+  skillsByChar?: Record<string, CharacterSkill[]>,
+): AdversaryInstance[] {
+  return characters.map(char => {
+    const skillRanks: Record<string, number> = {}
+
+    if (skillsByChar?.[char.id]) {
+      for (const cs of skillsByChar[char.id]) {
+        // Map skill_key → display name so getMeleeDifficulty can find it by name
+        const displayName = SKILL_NAME_TO_KEY_REVERSE[cs.skill_key]
+        if (displayName) skillRanks[displayName] = cs.rank
+      }
+    }
+
+    return {
+      instanceId:      char.id,
+      sourceId:        char.id,
+      name:            char.name,
+      type:            'rival' as const,
+      groupSize:       1,
+      groupRemaining:  1,
+      revealed:        true,
+      characteristics: {
+        brawn:     char.brawn,
+        agility:   char.agility,
+        intellect: char.intellect,
+        cunning:   char.cunning,
+        willpower: char.willpower,
+        presence:  char.presence,
+      },
+      soak:            char.soak ?? char.brawn,
+      woundThreshold:  char.wound_threshold,
+      strainThreshold: char.strain_threshold,
+      defense:         { melee: char.defense_melee ?? 0, ranged: char.defense_ranged ?? 0 },
+      skills:          MELEE_DISPLAY_NAMES,
+      skillRanks,
+      talents:         [],
+      abilities:       [],
+      weapons:         [],
+      gear:            [],
+      woundsCurrent:   char.wound_current,
+    }
+  })
 }

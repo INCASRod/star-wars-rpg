@@ -61,6 +61,8 @@ export function CombatTracker({ character, campaignId, talents = [] }: Props) {
   const [slotAssignments, setSlotAssignments] = useState<Record<string, string | null>>({})
   // Collapsed state for adversary cards (true = collapsed; active-turn card overrides)
   const [cardCollapsed, setCardCollapsed] = useState<Record<string, boolean>>({})
+  // Portrait URLs keyed by characterId
+  const [portraits, setPortraits] = useState<Record<string, string>>({})
   const supabase = createClient()
 
   // Load weapon reference for stat lookup (weapons in adversaries.json are name-only strings)
@@ -147,6 +149,27 @@ export function CombatTracker({ character, campaignId, talents = [] }: Props) {
       .subscribe()
     return () => { supabase.removeChannel(ch) }
   }, [campaignId]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch portrait URLs for all PC slots in the encounter
+  useEffect(() => {
+    if (!encounter) return
+    const ids = encounter.initiative_slots
+      .filter(s => s.type === 'pc' && s.characterId)
+      .map(s => s.characterId as string)
+    if (ids.length === 0) return
+    supabase
+      .from('characters')
+      .select('id, portrait_url')
+      .in('id', ids)
+      .then(({ data }) => {
+        if (!data) return
+        const map: Record<string, string> = {}
+        for (const row of data as { id: string; portrait_url: string | null }[]) {
+          if (row.portrait_url) map[row.id] = row.portrait_url
+        }
+        setPortraits(map)
+      })
+  }, [encounter?.initiative_slots]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!encounter || !encounter.is_active) {
     return (
@@ -289,12 +312,21 @@ export function CombatTracker({ character, campaignId, talents = [] }: Props) {
                     : `2px solid ${isPC ? `${CHAR_AG}40` : `${CHAR_BR}40`}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontFamily: FC, fontSize: FS_H4, color: isActed ? '#555' : isPC ? CHAR_AG : CHAR_BR,
-                  position: 'relative',
+                  position: 'relative', overflow: 'hidden',
                   filter: isActed ? 'grayscale(100%)' : 'none',
                   boxShadow: isCurrent ? `0 0 16px ${ringColor}60` : 'none',
                   transition: '.3s',
                 }}>
-                  {displayName.charAt(0).toUpperCase()}
+                  {isPC && slot.characterId && portraits[slot.characterId] ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={portraits[slot.characterId]}
+                      alt={displayName}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    />
+                  ) : (
+                    displayName.charAt(0).toUpperCase()
+                  )}
                   {/* Acted checkmark */}
                   {isActed && (
                     <div style={{

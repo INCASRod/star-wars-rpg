@@ -56,8 +56,6 @@ interface LootAwardModalProps {
   fixedQuantity?: boolean
   /** When provided, overrides the default DB-insert award flow */
   onCustomAward?: (charIds: string[], charNames: string[], equipChoices: Record<string, EquipChoice>, quantity: number) => Promise<void>
-  /** When true, shows a NEMESIS MODE banner at the top of the modal */
-  nemesisContext?: boolean
 }
 
 type EquipChoice = 'carrying' | 'stowed'
@@ -65,7 +63,7 @@ type EquipChoice = 'carrying' | 'stowed'
 export function LootAwardModal({
   item, characters, campaignId,
   supabase, onClose, onAwardComplete, sendToChar,
-  preSelectedCharId, fixedQuantity, onCustomAward, nemesisContext,
+  preSelectedCharId, fixedQuantity, onCustomAward,
 }: LootAwardModalProps) {
   const [selected,     setSelected]     = useState<Set<string>>(preSelectedCharId ? new Set([preSelectedCharId]) : new Set())
   const [equipChoices, setEquipChoices] = useState<Record<string, EquipChoice>>({})
@@ -185,18 +183,16 @@ export function LootAwardModal({
         })
       }
 
-      if (!nemesisContext) {
-        sendToChar(charId, {
-          type: 'dialog',
-          message: `You received ${quantity > 1 ? `${quantity}× ` : ''}${item.name}!`,
-        })
-      }
+      sendToChar(charId, {
+        type: 'dialog',
+        message: `You received ${quantity > 1 ? `${quantity}× ` : ''}${item.name}!`,
+      })
       charIds.push(charId)
       charNames.push(char.name)
     }
 
-    // Single combined feed entry for the award — skipped for nemesis targets
-    if (campaignId && charNames.length > 0 && !nemesisContext) {
+    // Single combined feed entry for the award
+    if (campaignId && charNames.length > 0) {
       const itemLabel = quantity > 1 ? `${item.name} ×${quantity}` : item.name
       supabase.from('roll_log').insert({
         campaign_id:           campaignId,
@@ -237,20 +233,6 @@ export function LootAwardModal({
         }}
         onClick={e => e.stopPropagation()}
       >
-        {/* Nemesis mode banner */}
-        {nemesisContext && (
-          <div style={{
-            fontFamily: FONT_M, fontSize: 'clamp(0.65rem, 0.85vw, 0.75rem)',
-            color: '#e05252', textTransform: 'uppercase', letterSpacing: '0.12em',
-            marginBottom: 14, padding: '5px 10px',
-            background: 'rgba(224,82,82,0.07)',
-            border: '1px solid rgba(224,82,82,0.22)',
-            borderRadius: 4,
-          }}>
-            ⚡ NEMESIS MODE — targeting nemesis characters only
-          </div>
-        )}
-
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 }}>
           <div>

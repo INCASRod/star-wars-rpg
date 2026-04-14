@@ -32,7 +32,10 @@ interface RangeBandStepProps {
   onSelect:         (band: RangeBand) => void
 }
 
-function DifficultyDice({ count, challenge = 0 }: { count: number; challenge?: number }) {
+function DifficultyDice({ count, challenge = 0, opposedLabel }: { count: number; challenge?: number; opposedLabel?: string }) {
+  if (opposedLabel) {
+    return <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)', color: GOLD_DIM }}>{opposedLabel}</span>
+  }
   if (count === 0 && challenge === 0) {
     return <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)', color: TEXT_DIM }}>Simple (—)</span>
   }
@@ -72,12 +75,13 @@ export function RangeBandStep({ attackType, weapon, selectedBand, onSelect }: Ra
           label="Engaged"
           difficultyDice={0}
           challengeDice={0}
-          notes={['Melee attacks require Engaged range']}
+          notes={['Opposed check — difficulty set by target\'s Melee skill']}
           blocked={false}
           selected={selectedBand === 'engaged' || !canReachShort}
           dimmed={false}
           onSelect={onSelect}
           isOnly={!canReachShort}
+          opposedLabel="vs. Melee Skill"
         />
         {canReachShort && (
           <BandCard
@@ -90,6 +94,7 @@ export function RangeBandStep({ attackType, weapon, selectedBand, onSelect }: Ra
             selected={selectedBand === 'short'}
             dimmed={false}
             onSelect={onSelect}
+            opposedLabel="vs. Melee Skill"
           />
         )}
       </div>
@@ -147,7 +152,7 @@ export function RangeBandStep({ attackType, weapon, selectedBand, onSelect }: Ra
 }
 
 function BandCard({
-  band, label, difficultyDice, challengeDice, notes, blocked, selected, dimmed, onSelect, diffLabel, isOnly,
+  band, label, difficultyDice, challengeDice, notes, blocked, selected, dimmed, onSelect, diffLabel, isOnly, opposedLabel,
 }: {
   band: RangeBand
   label: string
@@ -160,6 +165,7 @@ function BandCard({
   onSelect: (b: RangeBand) => void
   diffLabel?: string
   isOnly?: boolean
+  opposedLabel?: string
 }) {
   return (
     <button
@@ -204,7 +210,7 @@ function BandCard({
         )}
       </div>
       <div style={{ flexShrink: 0, textAlign: 'right' }}>
-        {!blocked && <DifficultyDice count={difficultyDice} challenge={challengeDice} />}
+        {!blocked && <DifficultyDice count={difficultyDice} challenge={challengeDice} opposedLabel={opposedLabel} />}
         {blocked && (
           <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.58rem, 0.88vw, 0.68rem)', color: '#e05252' }}>
             {diffLabel ?? 'Blocked'}

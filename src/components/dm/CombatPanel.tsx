@@ -11,7 +11,8 @@ import type { InitiativeSlot, CombatEncounter } from '@/lib/combat'
 import { InitiativeSetupModal } from './InitiativeSetupModal'
 import { AddParticipantModal } from '@/components/combat/AddParticipantModal'
 import { CombatLog } from '@/components/combat/CombatLog'
-import type { Character } from '@/lib/types'
+import type { Character, CharacterWeapon, CharacterSkill, RefWeapon, RefWeaponQuality } from '@/lib/types'
+import { RANGE_LABELS } from '@/lib/types'
 import type { SlotAlignment } from '@/lib/combat'
 import { FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4, FS_H3 } from '@/components/player-hud/design-tokens'
 import { RichText } from '@/components/ui/RichText'
@@ -20,7 +21,9 @@ import { CombatCheckOverlay } from '@/components/combat-check/CombatCheckOverlay
 import { adaptAdversaryForCombatCheck, charactersToAdversaryStubs } from '@/lib/adversaryAdapter'
 import { logRoll, type RollMeta } from '@/lib/logRoll'
 import type { RollResult } from '@/components/player-hud/dice-engine'
+import { getSkillPool, rollPool } from '@/components/player-hud/dice-engine'
 import { applyDamageToAdversary } from '@/lib/damageEngine'
+import { EMPTY_POOL } from '@/components/player-hud/design-tokens'
 
 // ── Design Tokens ──
 const BG = '#060D09'
@@ -303,6 +306,8 @@ interface CombatParticipantRow {
   slot_type: 'pc' | 'npc'
   active_weapon_key: string | null
   active_weapon_name: string | null
+  secondary_weapon_name: string | null
+  secondary_weapon_key: string | null
   default_character_id: string | null
   active_character_id: string | null
   active_character_name: string | null
@@ -339,6 +344,21 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
   const [reassignAnchorRect, setReassignAnchorRect] = useState<DOMRect | null>(null)
   const [hoveredSlotId, setHoveredSlotId]       = useState<string | null>(null)
   const [removePCConfirm, setRemovePCConfirm]   = useState<{ slotId: string; charName: string; characterId: string } | null>(null)
+  const [removeAdvConfirm, setRemoveAdvConfirm] = useState<string | null>(null) // adversaryInstanceId pending removal
+  const [talentTooltip, setTalentTooltip] = useState<{
+    name: string; description: string; activation?: string; rect: DOMRect
+  } | null>(null)
+  const [weaponTooltip, setWeaponTooltip] = useState<{
+    weapon: RefWeapon; qualityMap: Record<string, RefWeaponQuality>; rect: DOMRect
+  } | null>(null)
+
+  // Weapon + quality data cache (keyed by weapon_key)
+  const [weaponCache, setWeaponCache] = useState<Record<string, RefWeapon>>({})
+  const [qualityCache, setQualityCache] = useState<Record<string, RefWeaponQuality>>({})
+  // Equipped weapons per PC character (character_id → weapons with equip_state='equipped')
+  const [equippedByChar, setEquippedByChar] = useState<Record<string, CharacterWeapon[]>>({})
+  // Skills per PC character (character_id → CharacterSkill[]) — used for melee opposed check difficulty
+  const [charSkillsByChar, setCharSkillsByChar] = useState<Record<string, CharacterSkill[]>>({})
 
   // combat_participants rows keyed by character_id
   const [combatParticipants, setCombatParticipants] = useState<Record<string, CombatParticipantRow>>({})
@@ -357,6 +377,10 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
 
   // Weapon reference lookup: name (lowercase) → stats
   const [weaponRef, setWeaponRef] = useState<Record<string, WeaponRef>>({})
+
+  // Squad formation state
+  const [squadFormingFor, setSquadFormingFor] = useState<string | null>(null)   // instanceId of leader being set up
+  const [squadSelections, setSquadSelections] = useState<Set<string>>(new Set()) // instanceIds of selected minion groups
 
   const supabase = createClient()
 
@@ -463,7 +487,7 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
     if (!campaignId) return
     supabase
       .from('combat_participants')
-      .select('id, character_id, slot_type, active_weapon_key, active_weapon_name, default_character_id, active_character_id, active_character_name, has_acted_this_round')
+      .select('id, character_id, slot_type, active_weapon_key, active_weapon_name, secondary_weapon_name, secondary_weapon_key, default_character_id, active_character_id, active_character_name, has_acted_this_round')
       .eq('campaign_id', campaignId)
       .then(({ data }) => {
         if (!data) return
@@ -494,6 +518,118 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
       .subscribe()
     return () => { supabase.removeChannel(ch) }
   }, [campaignId]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch weapon + quality data for any weapon keys seen in combatParticipants
+  useEffect(() => {
+    const keys = new Set<string>()
+    for (const p of Object.values(combatParticipants)) {
+      if (p.active_weapon_key)   keys.add(p.active_weapon_key)
+      if (p.secondary_weapon_key) keys.add(p.secondary_weapon_key)
+    }
+    const uncached = [...keys].filter(k => !weaponCache[k])
+    if (uncached.length === 0) return
+
+    // Fetch ref_weapons for uncached keys
+    supabase
+      .from('ref_weapons')
+      .select('key, name, skill_key, damage, damage_add, crit, range_value, qualities')
+      .in('key', uncached)
+      .then(({ data }) => {
+        if (!data) return
+        const newWeapons: Record<string, RefWeapon> = {}
+        const qualityKeys = new Set<string>()
+        for (const w of data as RefWeapon[]) {
+          newWeapons[w.key] = w
+          if (Array.isArray(w.qualities)) for (const q of w.qualities) qualityKeys.add(q.key)
+        }
+        setWeaponCache(prev => ({ ...prev, ...newWeapons }))
+
+        // Fetch quality descriptions for any unseen quality keys
+        const uncachedQKeys = [...qualityKeys].filter(k => !qualityCache[k])
+        if (uncachedQKeys.length === 0) return
+        supabase
+          .from('ref_weapon_qualities')
+          .select('key, name, description, is_ranked')
+          .in('key', uncachedQKeys)
+          .then(({ data: qdata }) => {
+            if (!qdata) return
+            const newQualities: Record<string, RefWeaponQuality> = {}
+            for (const q of qdata as RefWeaponQuality[]) newQualities[q.key] = q
+            setQualityCache(prev => ({ ...prev, ...newQualities }))
+          })
+      })
+  }, [combatParticipants]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch equipped weapons for all PC characters
+  useEffect(() => {
+    const charIds = characters.map(c => c.id)
+    if (charIds.length === 0) return
+    supabase
+      .from('character_weapons')
+      .select('id, character_id, weapon_key, custom_name, is_equipped, equip_state')
+      .in('character_id', charIds)
+      .then(({ data }) => {
+        if (!data) return
+        const all = data as CharacterWeapon[]
+        const equipped = all.filter(w => w.equip_state === 'equipped' || w.is_equipped)
+        // Group by character_id
+        const byChar: Record<string, CharacterWeapon[]> = {}
+        for (const w of equipped) {
+          if (!byChar[w.character_id]) byChar[w.character_id] = []
+          byChar[w.character_id].push(w)
+        }
+        setEquippedByChar(byChar)
+        // Pre-cache ref weapon data for equipped weapon keys
+        const equipKeys = [...new Set(equipped.map(w => w.weapon_key))]
+        const uncached = equipKeys.filter(k => !weaponCache[k])
+        if (uncached.length === 0) return
+        supabase
+          .from('ref_weapons')
+          .select('key, name, skill_key, damage, damage_add, crit, range_value, qualities')
+          .in('key', uncached)
+          .then(({ data: wdata }) => {
+            if (!wdata) return
+            const newWeapons: Record<string, RefWeapon> = {}
+            const qualityKeys = new Set<string>()
+            for (const w of wdata as RefWeapon[]) {
+              newWeapons[w.key] = w
+              if (Array.isArray(w.qualities)) for (const q of w.qualities) qualityKeys.add(q.key)
+            }
+            setWeaponCache(prev => ({ ...prev, ...newWeapons }))
+            const uncachedQ = [...qualityKeys].filter(k => !qualityCache[k])
+            if (uncachedQ.length === 0) return
+            supabase
+              .from('ref_weapon_qualities')
+              .select('key, name, description, is_ranked')
+              .in('key', uncachedQ)
+              .then(({ data: qdata }) => {
+                if (!qdata) return
+                const newQ: Record<string, RefWeaponQuality> = {}
+                for (const q of qdata as RefWeaponQuality[]) newQ[q.key] = q
+                setQualityCache(prev => ({ ...prev, ...newQ }))
+              })
+          })
+      })
+  }, [characters]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch skills for all PC characters (needed for melee opposed check difficulty)
+  useEffect(() => {
+    const charIds = characters.map(c => c.id)
+    if (charIds.length === 0) return
+    supabase
+      .from('character_skills')
+      .select('id, character_id, skill_key, rank')
+      .in('character_id', charIds)
+      .then(({ data }) => {
+        if (!data) return
+        const byChar: Record<string, CharacterSkill[]> = {}
+        for (const row of data as CharacterSkill[]) {
+          if (!byChar[row.character_id]) byChar[row.character_id] = []
+          byChar[row.character_id].push(row)
+        }
+        setCharSkillsByChar(byChar)
+      })
+  }, [characters]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Pending damage: initial load + realtime subscription
   useEffect(() => {
@@ -570,7 +706,33 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
     setRoster(prev => [...prev, adversaryToInstance(adv, size)])
   }
 
+  const removeAdversaryFromCombat = async (instanceId: string) => {
+    if (!encounter) return
+    const adv = encounter.adversaries.find(a => a.instanceId === instanceId)
+    const updatedAdversaries = encounter.adversaries.filter(a => a.instanceId !== instanceId)
+    const updatedSlots = encounter.initiative_slots.filter(
+      (s: InitiativeSlot) => s.adversaryInstanceId !== instanceId
+    )
+    await saveEncounter({ adversaries: updatedAdversaries, initiative_slots: updatedSlots })
+    if (encounter.id && adv) {
+      await supabase.from('combat_log').insert({
+        campaign_id: campaignId,
+        encounter_id: encounter.id,
+        participant_name: 'System',
+        alignment: 'system',
+        roll_type: 'system',
+        result_summary: `${adv.name} removed from encounter`,
+        is_visible_to_players: true,
+      })
+    }
+    setRemoveAdvConfirm(null)
+  }
+
   const removeFromRoster = (instanceId: string) => {
+    if (encounter) {
+      void removeAdversaryFromCombat(instanceId)
+      return
+    }
     setRoster(prev => prev.filter(a => a.instanceId !== instanceId))
   }
 
@@ -611,6 +773,8 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
           has_acted_this_round: false,
           active_weapon_key: null,
           active_weapon_name: null,
+          secondary_weapon_name: null,
+          secondary_weapon_key: null,
           active_weapon_updated_at: null,
         })
         .eq('campaign_id', campaignId)
@@ -724,6 +888,10 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
         participant_name: 'SYSTEM', alignment: 'system', roll_type: 'system',
         result_summary: msg, is_visible_to_players: true,
       })
+      // Auto-disband if this is a squad leader
+      if (adv.squad_active) {
+        await handleDisbandSquad(adv.instanceId)
+      }
     }
   }
 
@@ -737,6 +905,137 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
       a.instanceId !== adv.instanceId ? a : { ...a, strainCurrent: next }
     )
     await saveEncounter({ adversaries: updatedAdversaries })
+  }
+
+  // ── Soak helpers ──
+
+  /** Parse total armor soak bonus from gear array (e.g. "Blast vest (+1 Soak)" → 1) */
+  function parseSoakFromGear(gear: AdversaryGear[]): { total: number; sources: string[] } {
+    let total = 0
+    const sources: string[] = []
+    for (const item of gear) {
+      // Search name and description — gear strings like "Blast vest (+1 Soak)" end up in item.name after normalization
+      const text = `${item.name} ${item.description ?? ''}`
+      const m = text.match(/\(\+(\d+)\s*soak\)/i)
+      if (m) {
+        const bonus = parseInt(m[1])
+        total += bonus
+        // Strip the "(+N Soak)" annotation from the label
+        const label = item.name.replace(/\s*\(\+\d+\s*soak\)/i, '').trim()
+        sources.push(`${label} +${bonus}`)
+      }
+    }
+    return { total, sources }
+  }
+
+  /** Override soak on an adversary instance and persist to encounter JSONB */
+  const updateAdversarySoak = async (instanceId: string, newSoak: number) => {
+    if (!encounter) return
+    const clamped = Math.max(0, newSoak)
+    const updated = encounter.adversaries.map(a =>
+      a.instanceId !== instanceId ? a : { ...a, soak: clamped }
+    )
+    await saveEncounter({ adversaries: updated })
+  }
+
+  // ── Squad Formation handlers ──
+
+  // Step 3: Roll Leadership check for squad formation; proceed to selection UI on success
+  const handleFormSquad = async (adv: AdversaryInstance) => {
+    if (!encounter) return
+    const presence  = adv.characteristics.presence
+    const leaderRank = adv.skillRanks['Leadership'] ?? 0
+    const base  = getSkillPool(presence, leaderRank)
+    const pool  = { ...EMPTY_POOL, ...base, difficulty: 1 }
+    const result: RollResult = rollPool(pool)
+    const net   = result.net
+    const successes = net.success ?? 0
+    const label = `${adv.name} — Leadership (Form Squad)`
+
+    void logRoll({
+      campaignId,
+      characterId: null,
+      characterName: adv.name,
+      label,
+      pool,
+      result,
+      isDM: true,
+      hidden: !adv.revealed,
+      meta: { type: 'squad_formation' } as RollMeta,
+    })
+
+    if (encounter.id) {
+      const summary = successes > 0
+        ? `${adv.name} rallies nearby minions into a squad! (${successes} success${successes !== 1 ? 'es' : ''})`
+        : `${adv.name} fails to organize a squad. (0 net successes)`
+      await supabase.from('combat_log').insert({
+        campaign_id: campaignId, encounter_id: encounter.id,
+        participant_name: adv.name, alignment: 'enemy', roll_type: 'Leadership',
+        result_summary: summary, is_visible_to_players: false,
+      })
+    }
+
+    if (successes > 0) {
+      setSquadFormingFor(adv.instanceId)
+      setSquadSelections(new Set())
+    }
+  }
+
+  // Step 5: Confirm squad — link selected minion groups under leader, suppress their slots
+  const handleConfirmSquad = async (leaderInstanceId: string) => {
+    if (!encounter) return
+    const selections = [...squadSelections]
+    if (selections.length === 0) return
+
+    // Build refs and total minion count
+    const refs = selections.map(iid => {
+      const minionAdv = encounter.adversaries.find(a => a.instanceId === iid)
+      return { instanceId: iid, count: minionAdv?.groupRemaining ?? 1 }
+    })
+    const totalMinions = refs.reduce((s, r) => s + r.count, 0)
+
+    const updatedAdversaries = encounter.adversaries.map(a => {
+      if (a.instanceId === leaderInstanceId) {
+        return { ...a, squad_active: true, squad_minion_refs: refs, squad_total_minions: totalMinions }
+      }
+      return a
+    })
+
+    // Suppress initiative slots for selected minion groups
+    const updatedSlots = encounter.initiative_slots.map((s: InitiativeSlot) => {
+      if (selections.includes(s.adversaryInstanceId ?? '')) {
+        return { ...s, squad_suppressed: true, suppressed_by: leaderInstanceId }
+      }
+      return s
+    })
+
+    await saveEncounter({ adversaries: updatedAdversaries, initiative_slots: updatedSlots })
+    setSquadFormingFor(null)
+    setSquadSelections(new Set())
+  }
+
+  // Step 6: Disband squad — clear leader fields, restore suppressed slots
+  const handleDisbandSquad = async (leaderInstanceId: string) => {
+    if (!encounter) return
+    const updatedAdversaries = encounter.adversaries.map(a => {
+      if (a.instanceId !== leaderInstanceId) return a
+      return { ...a, squad_active: false, squad_minion_refs: [], squad_total_minions: 0 }
+    })
+    const updatedSlots = encounter.initiative_slots.map((s: InitiativeSlot) =>
+      s.suppressed_by === leaderInstanceId
+        ? { ...s, squad_suppressed: false, suppressed_by: undefined }
+        : s
+    )
+    const leaderAdv = encounter.adversaries.find(a => a.instanceId === leaderInstanceId)
+    if (leaderAdv && encounter.id) {
+      await supabase.from('combat_log').insert({
+        campaign_id: campaignId, encounter_id: encounter.id,
+        participant_name: leaderAdv.name, alignment: 'enemy', roll_type: 'system',
+        result_summary: `${leaderAdv.name}'s squad disbanded — minions act independently again.`,
+        is_visible_to_players: false,
+      })
+    }
+    await saveEncounter({ adversaries: updatedAdversaries, initiative_slots: updatedSlots })
   }
 
   // Update individual minion wound within a group
@@ -849,8 +1148,10 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
       .update({
         active_character_id:   isRestoringDefault ? null : newCharId,
         active_character_name: isRestoringDefault ? null : newCharName,
-        active_weapon_key:   null,
-        active_weapon_name:  null,
+        active_weapon_key:     null,
+        active_weapon_name:    null,
+        secondary_weapon_name: null,
+        secondary_weapon_key:  null,
         active_weapon_updated_at: null,
       })
       .eq('campaign_id', campaignId)
@@ -1413,7 +1714,8 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
           )}
           {encounter?.initiative_slots
             .filter((slot: InitiativeSlot) =>
-              slot.type === 'npc' || !characters.find(ch => ch.id === slot.characterId)?.is_archived
+              !slot.squad_suppressed &&
+              (slot.type === 'npc' || !characters.find(ch => ch.id === slot.characterId)?.is_archived)
             )
             .map((slot: InitiativeSlot, idx: number) => {
             const isCurrent = slot.current
@@ -1467,8 +1769,8 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                   boxShadow: isCurrent ? `0 0 12px ${accentColor}30` : 'none',
                 }}
               >
-                {/* ── × Remove button (PC slots only, GM hover-reveal) ── */}
-                {!isNPC && (
+                {/* ── × Remove button (hover-reveal for all slots) ── */}
+                {!isNPC ? (
                   removePCConfirm?.slotId === slot.id ? (
                     <div style={{
                       position: 'absolute', top: 5, right: 8, zIndex: 10,
@@ -1496,6 +1798,43 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                         setTimeout(() => setRemovePCConfirm(prev => prev?.slotId === slot.id ? null : prev), 5000)
                       }}
                       title={`Remove ${activeChar?.name ?? slot.name} from combat`}
+                      style={{
+                        position: 'absolute', top: 5, right: 8,
+                        background: 'none', border: 'none', cursor: 'pointer',
+                        color: 'rgba(244,67,54,0.45)', fontSize: 15, lineHeight: 1,
+                        padding: '2px 5px', borderRadius: 3, transition: 'color .15s',
+                      }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(244,67,54,0.85)' }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(244,67,54,0.45)' }}
+                    >×</button>
+                  )
+                ) : (
+                  removeAdvConfirm === slot.adversaryInstanceId ? (
+                    <div style={{
+                      position: 'absolute', top: 5, right: 8, zIndex: 10,
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      background: 'rgba(6,13,9,0.97)', border: '1px solid rgba(224,80,80,0.4)',
+                      borderRadius: 4, padding: '3px 8px',
+                    }}>
+                      <span style={{ fontFamily: FM, fontSize: FS_CAPTION, color: 'rgba(224,80,80,0.85)', whiteSpace: 'nowrap' }}>
+                        Remove {slot.name}?
+                      </span>
+                      <button
+                        onClick={() => setRemoveAdvConfirm(null)}
+                        style={{ ...smallCtrlBtn, width: 'auto', padding: '0 6px' }}
+                      >Cancel</button>
+                      <button
+                        onClick={() => { void removeAdversaryFromCombat(slot.adversaryInstanceId ?? '') }}
+                        style={{ ...smallCtrlBtn, width: 'auto', padding: '0 6px', color: CHAR_BR, borderColor: `${CHAR_BR}50` }}
+                      >Remove</button>
+                    </div>
+                  ) : hoveredSlotId === slot.id && (
+                    <button
+                      onClick={() => {
+                        setRemoveAdvConfirm(slot.adversaryInstanceId ?? null)
+                        setTimeout(() => setRemoveAdvConfirm(prev => prev === slot.adversaryInstanceId ? null : prev), 5000)
+                      }}
+                      title={`Remove ${slot.name} from combat`}
                       style={{
                         position: 'absolute', top: 5, right: 8,
                         background: 'none', border: 'none', cursor: 'pointer',
@@ -1583,15 +1922,102 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                       <StatBox label="WOUNDS" value={`${pcWounds}/${pcWT}`} color={CHAR_BR} />
                       <StatBox label="M.DEF" value={pcChar.defense_melee ?? 0} color={CHAR_CUN} />
                       <StatBox label="R.DEF" value={pcChar.defense_ranged ?? 0} color={CHAR_INT} />
-                      {participant?.active_weapon_name && (
-                        <span style={{
-                          fontFamily: FM, fontSize: FS_OVERLINE, color: CHAR_AG,
-                          background: `${CHAR_AG}12`, border: `1px solid ${CHAR_AG}40`,
-                          borderRadius: 3, padding: '2px 6px', whiteSpace: 'nowrap',
-                        }}>
-                          ⚔ {participant.active_weapon_name}
-                        </span>
-                      )}
+                      {/* Weapon display */}
+                      {(() => {
+                        const charId = pcChar?.id ?? slot.characterId
+                        const hasSelected = !!(participant?.active_weapon_name)
+                        const isDualSelected = hasSelected && !!(participant?.secondary_weapon_name)
+                        const equipped = equippedByChar[charId] ?? []
+
+                        // ── SELECTED: dual wield ──────────────────────────────
+                        if (isDualSelected) {
+                          const makeWeaponSpan = (role: 'primary' | 'secondary', name: string, weapKey: string | null, dimmed?: boolean) => {
+                            const refW = weapKey ? weaponCache[weapKey] : null
+                            return (
+                              <span
+                                key={role}
+                                style={{
+                                  fontFamily: FM, fontSize: FS_OVERLINE,
+                                  color: dimmed ? `${CHAR_AG}bb` : CHAR_AG,
+                                  cursor: refW ? 'help' : 'default',
+                                }}
+                                onMouseEnter={e => { if (refW) setWeaponTooltip({ weapon: refW, qualityMap: qualityCache, rect: e.currentTarget.getBoundingClientRect() }) }}
+                                onMouseLeave={() => setWeaponTooltip(null)}
+                              >
+                                ▸ {name}
+                              </span>
+                            )
+                          }
+                          return (
+                            <div style={{
+                              display: 'flex', flexDirection: 'column', gap: 1,
+                              background: `${CHAR_AG}0e`, border: `1px solid ${CHAR_AG}40`,
+                              borderRadius: 3, padding: '2px 6px',
+                            }}>
+                              <span style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: CHAR_CUN, letterSpacing: '0.06em' }}>
+                                ⚔⚔ SELECTED
+                              </span>
+                              {makeWeaponSpan('primary',   participant!.active_weapon_name!,    participant!.active_weapon_key)}
+                              {makeWeaponSpan('secondary', participant!.secondary_weapon_name!, participant!.secondary_weapon_key, true)}
+                            </div>
+                          )
+                        }
+
+                        // ── SELECTED: single weapon ───────────────────────────
+                        if (hasSelected) {
+                          const refW = participant!.active_weapon_key ? weaponCache[participant!.active_weapon_key] : null
+                          return (
+                            <span
+                              style={{
+                                fontFamily: FM, fontSize: FS_OVERLINE, color: CHAR_AG,
+                                background: `${CHAR_AG}12`, border: `1px solid ${CHAR_AG}40`,
+                                borderRadius: 3, padding: '2px 6px', whiteSpace: 'nowrap',
+                                cursor: refW ? 'help' : 'default',
+                              }}
+                              onMouseEnter={e => { if (refW) setWeaponTooltip({ weapon: refW, qualityMap: qualityCache, rect: e.currentTarget.getBoundingClientRect() }) }}
+                              onMouseLeave={() => setWeaponTooltip(null)}
+                            >
+                              ⚔ SELECTED: {participant!.active_weapon_name}
+                            </span>
+                          )
+                        }
+
+                        // ── EQUIPPED: one or more weapons ─────────────────────
+                        if (equipped.length > 0) {
+                          return (
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                              {equipped.map(ew => {
+                                const refW = weaponCache[ew.weapon_key]
+                                const name = ew.custom_name || refW?.name || ew.weapon_key
+                                return (
+                                  <span
+                                    key={ew.id}
+                                    style={{
+                                      fontFamily: FM, fontSize: FS_OVERLINE,
+                                      color: TEXT_SEC,
+                                      background: 'rgba(232,223,200,0.06)',
+                                      border: '1px solid rgba(232,223,200,0.15)',
+                                      borderRadius: 3, padding: '2px 6px', whiteSpace: 'nowrap',
+                                      cursor: refW ? 'help' : 'default',
+                                    }}
+                                    onMouseEnter={e => { if (refW) setWeaponTooltip({ weapon: refW, qualityMap: qualityCache, rect: e.currentTarget.getBoundingClientRect() }) }}
+                                    onMouseLeave={() => setWeaponTooltip(null)}
+                                  >
+                                    ⚔ {name}
+                                  </span>
+                                )
+                              })}
+                            </div>
+                          )
+                        }
+
+                        // ── Nothing equipped ──────────────────────────────────
+                        return (
+                          <span style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED, fontStyle: 'italic' }}>
+                            no weapon equipped
+                          </span>
+                        )
+                      })()}
                       {/* Reassign button */}
                       <div style={{ marginLeft: 'auto', position: 'relative', flexShrink: 0 }}>
                         <button
@@ -1837,6 +2263,43 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                   </div>
                 </div>
                 <span style={{ color: TEXT_MUTED, fontSize: FS_SM }}>{isOpen ? '▲' : '▼'}</span>
+                {/* Remove button — stops propagation so it doesn't toggle expand */}
+                {removeAdvConfirm === adv.instanceId ? (
+                  <div
+                    onClick={e => e.stopPropagation()}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      background: 'rgba(6,13,9,0.97)', border: '1px solid rgba(224,80,80,0.4)',
+                      borderRadius: 4, padding: '3px 8px', flexShrink: 0,
+                    }}
+                  >
+                    <span style={{ fontFamily: FM, fontSize: FS_CAPTION, color: 'rgba(224,80,80,0.85)', whiteSpace: 'nowrap' }}>Remove?</span>
+                    <button
+                      onClick={() => setRemoveAdvConfirm(null)}
+                      style={{ ...smallCtrlBtn, width: 'auto', padding: '0 6px' }}
+                    >Cancel</button>
+                    <button
+                      onClick={() => { void removeAdversaryFromCombat(adv.instanceId) }}
+                      style={{ ...smallCtrlBtn, width: 'auto', padding: '0 6px', color: CHAR_BR, borderColor: `${CHAR_BR}50` }}
+                    >Remove</button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={e => {
+                      e.stopPropagation()
+                      setRemoveAdvConfirm(adv.instanceId)
+                      setTimeout(() => setRemoveAdvConfirm(prev => prev === adv.instanceId ? null : prev), 5000)
+                    }}
+                    title={`Remove ${adv.name} from encounter`}
+                    style={{
+                      background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0,
+                      color: 'rgba(244,67,54,0.35)', fontSize: 15, lineHeight: 1,
+                      padding: '2px 5px', borderRadius: 3, transition: 'color .15s',
+                    }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(244,67,54,0.85)' }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(244,67,54,0.35)' }}
+                  >×</button>
+                )}
               </div>
 
               {/* Wound tracker — always visible, outside click area */}
@@ -1866,23 +2329,85 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                   </div>
 
                   {/* Derived stats pills */}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 10 }}>
-                    {[
-                      { label: 'Soak', value: adv.soak, color: CHAR_WIL },
-                      { label: 'WT', value: adv.woundThreshold, color: CHAR_BR },
-                      ...(adv.strainThreshold !== undefined ? [{ label: 'ST', value: adv.strainThreshold, color: CHAR_AG }] : []),
-                      { label: 'M.Def', value: adv.defense.melee, color: CHAR_CUN },
-                      { label: 'R.Def', value: adv.defense.ranged, color: CHAR_INT },
-                    ].map(stat => (
-                      <div key={stat.label} style={{
-                        background: `${stat.color}15`, border: `1px solid ${stat.color}40`,
-                        borderRadius: 3, padding: '3px 7px', textAlign: 'center',
-                      }}>
-                        <div style={{ fontFamily: FM, fontSize: FS_H4, fontWeight: 700, color: stat.color, lineHeight: 1 }}>{stat.value}</div>
-                        <div style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED }}>{stat.label}</div>
+                  {(() => {
+                    const gearSoak = parseSoakFromGear(adv.gear ?? [])
+                    const baseSoak = adv.characteristics.brawn
+                    const expectedSoak = baseSoak + gearSoak.total
+                    const soakMismatch = gearSoak.total > 0 && adv.soak !== expectedSoak
+                    return (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: gearSoak.total > 0 ? 4 : 10, alignItems: 'flex-start' }}>
+                        {/* Soak — editable */}
+                        <div style={{
+                          background: `${CHAR_WIL}15`, border: `1px solid ${CHAR_WIL}40`,
+                          borderRadius: 3, padding: '3px 5px', textAlign: 'center', minWidth: 52,
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'center' }}>
+                            <button
+                              onClick={e => { e.stopPropagation(); void updateAdversarySoak(adv.instanceId, adv.soak - 1) }}
+                              style={{
+                                background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px',
+                                fontFamily: FM, fontSize: FS_LABEL, color: `${CHAR_WIL}80`, lineHeight: 1,
+                              }}
+                            >−</button>
+                            <span style={{ fontFamily: FM, fontSize: FS_H4, fontWeight: 700, color: CHAR_WIL, lineHeight: 1 }}>
+                              {adv.soak}
+                            </span>
+                            <button
+                              onClick={e => { e.stopPropagation(); void updateAdversarySoak(adv.instanceId, adv.soak + 1) }}
+                              style={{
+                                background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px',
+                                fontFamily: FM, fontSize: FS_LABEL, color: `${CHAR_WIL}80`, lineHeight: 1,
+                              }}
+                            >+</button>
+                          </div>
+                          <div style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED }}>Soak</div>
+                        </div>
+                        {/* Remaining stats — static pills */}
+                        {[
+                          { label: 'WT',    value: adv.woundThreshold,  color: CHAR_BR },
+                          ...(adv.strainThreshold !== undefined ? [{ label: 'ST', value: adv.strainThreshold, color: CHAR_AG }] : []),
+                          { label: 'M.Def', value: adv.defense.melee,   color: CHAR_CUN },
+                          { label: 'R.Def', value: adv.defense.ranged,  color: CHAR_INT },
+                        ].map(stat => (
+                          <div key={stat.label} style={{
+                            background: `${stat.color}15`, border: `1px solid ${stat.color}40`,
+                            borderRadius: 3, padding: '3px 7px', textAlign: 'center',
+                          }}>
+                            <div style={{ fontFamily: FM, fontSize: FS_H4, fontWeight: 700, color: stat.color, lineHeight: 1 }}>{stat.value}</div>
+                            <div style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED }}>{stat.label}</div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    )
+                  })()}
+                  {/* Soak breakdown — only shown when gear contributes */}
+                  {(() => {
+                    const gearSoak = parseSoakFromGear(adv.gear ?? [])
+                    if (gearSoak.total === 0) return null
+                    const baseSoak = adv.characteristics.brawn
+                    const expectedSoak = baseSoak + gearSoak.total
+                    const mismatch = adv.soak !== expectedSoak
+                    return (
+                      <div style={{ marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                        <span style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED }}>
+                          Soak: Br {baseSoak} + {gearSoak.sources.join(' + ')} = {expectedSoak}
+                        </span>
+                        {mismatch && (
+                          <button
+                            onClick={e => { e.stopPropagation(); void updateAdversarySoak(adv.instanceId, expectedSoak) }}
+                            style={{
+                              background: `${GOLD}15`, border: `1px solid ${GOLD}50`,
+                              borderRadius: 3, padding: '1px 6px', cursor: 'pointer',
+                              fontFamily: FM, fontSize: FS_OVERLINE, color: GOLD,
+                            }}
+                            title={`Set soak to ${expectedSoak} (Brawn ${baseSoak} + armor ${gearSoak.total})`}
+                          >
+                            Apply
+                          </button>
+                        )}
+                      </div>
+                    )
+                  })()}
 
                   {/* Skills table */}
                   {Object.keys(adv.skillRanks ?? {}).length > 0 && (
@@ -1896,18 +2421,36 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                       </div>
                       {/* Rows */}
                       {Object.entries(adv.skillRanks).map(([skill, rank]) => {
-                        const charKey = SKILL_CHAR[skill]
+                        // For Lightsaber: respect characteristicOverride (e.g. INT for Soresu users)
+                        let charKey = SKILL_CHAR[skill]
+                        if (skill === 'Lightsaber') {
+                          const overrideKey = adv.characteristicOverrides?.['Lightsaber']
+                          const CHAR_KEY_TO_FIELD: Record<string, keyof typeof adv.characteristics> = {
+                            'BR': 'brawn', 'AGI': 'agility', 'INT': 'intellect',
+                            'CUN': 'cunning', 'WIL': 'willpower', 'PR': 'presence',
+                          }
+                          charKey = overrideKey ? CHAR_KEY_TO_FIELD[overrideKey] : 'brawn'
+                        }
                         const charVal = charKey ? adv.characteristics[charKey] : 0
                         const prof = Math.min(charVal, rank)
                         const abil = Math.max(charVal, rank) - prof
                         const charColor = charKey ? CHAR_COLOR_MAP[charKey] : TEXT_MUTED
+                        // Display Lightsaber with its effective characteristic in parentheses
+                        const CHAR_ABBR_FULL: Record<string, string> = {
+                          'BR': 'Brawn', 'AGI': 'Agility', 'INT': 'Intellect',
+                          'CUN': 'Cunning', 'WIL': 'Willpower', 'PR': 'Presence',
+                        }
+                        const overrideKey = skill === 'Lightsaber' ? adv.characteristicOverrides?.['Lightsaber'] : undefined
+                        const displaySkillName = skill === 'Lightsaber'
+                          ? `Lightsaber (${CHAR_ABBR_FULL[overrideKey ?? 'BR'] ?? 'Brawn'})`
+                          : skill
                         return (
                           <div key={skill} style={{
                             display: 'grid', gridTemplateColumns: '1fr 32px 24px auto',
                             gap: '2px 6px', alignItems: 'center',
                             padding: '3px 0', borderBottom: `1px solid ${BORDER}`,
                           }}>
-                            <span style={{ fontFamily: FM, fontSize: FS_LABEL, color: TEXT_SEC }}>{skill}</span>
+                            <span style={{ fontFamily: FM, fontSize: FS_LABEL, color: TEXT_SEC }}>{displaySkillName}</span>
                             <span style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: charColor, textAlign: 'center' }}>
                               {charKey ? CHAR_ABBR_MAP[charKey] : '—'}
                             </span>
@@ -1939,11 +2482,26 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                           const color = TALENT_ACT_COLORS[actKey] ?? TEXT_MUTED
                           const diceChips = parseTalentDice(t.description)
                           return (
-                            <div key={i} style={{
-                              background: `${color}15`, border: `1px solid ${color}40`,
-                              borderRadius: 3, padding: '3px 7px',
-                              display: 'flex', alignItems: 'center', gap: 5,
-                            }} title={t.description}>
+                            <div
+                              key={i}
+                              style={{
+                                background: `${color}15`, border: `1px solid ${color}40`,
+                                borderRadius: 3, padding: '3px 7px',
+                                display: 'flex', alignItems: 'center', gap: 5,
+                                cursor: t.description ? 'help' : 'default',
+                              }}
+                              onMouseEnter={e => {
+                                if (t.description) {
+                                  setTalentTooltip({
+                                    name: t.name,
+                                    description: t.description,
+                                    activation: t.activation,
+                                    rect: (e.currentTarget as HTMLElement).getBoundingClientRect(),
+                                  })
+                                }
+                              }}
+                              onMouseLeave={() => setTalentTooltip(null)}
+                            >
                               <span style={{ fontFamily: FM, fontSize: FS_OVERLINE, color }}>{t.name}</span>
                               {diceChips.map((chip, ci) => (
                                 <span key={ci} title={chip.title} style={{
@@ -2074,6 +2632,192 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                   </div>
                 )
               })()}
+
+              {/* ── Squad Formation (rival/nemesis only) ── */}
+              {isOpen && adv.type !== 'minion' && (() => {
+                const availableMinions = encounter?.adversaries.filter(a =>
+                  a.type === 'minion' && a.groupRemaining > 0 && !a.squad_active
+                ) ?? []
+
+                // Squad Status — active squad display
+                if (adv.squad_active) {
+                  const squadTotal = adv.squad_total_minions ?? 0
+                  // Recalculate live count from refs
+                  const liveCount = (adv.squad_minion_refs ?? []).reduce((sum, ref) => {
+                    const minionAdv = encounter?.adversaries.find(a => a.instanceId === ref.instanceId)
+                    return sum + (minionAdv?.groupRemaining ?? 0)
+                  }, 0)
+                  return (
+                    <div style={{
+                      borderTop: `1px solid ${GOLD}40`,
+                      padding: '8px 12px',
+                      background: `${GOLD}09`,
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <span style={{
+                          fontFamily: "'Cinzel', serif",
+                          fontSize: `clamp(9px, 1vw, 11px)`,
+                          fontWeight: 700, letterSpacing: '0.18em',
+                          color: GOLD, textTransform: 'uppercase',
+                        }}>
+                          Squad Active
+                        </span>
+                        <span style={{
+                          fontFamily: FM, fontSize: FS_CAPTION, color: TEXT_SEC,
+                        }}>
+                          {liveCount}/{squadTotal} minions
+                        </span>
+                        <button
+                          onClick={() => void handleDisbandSquad(adv.instanceId)}
+                          style={{
+                            marginLeft: 'auto',
+                            background: `${CHAR_BR}15`, border: `1px solid ${CHAR_BR}50`,
+                            borderRadius: 3, padding: '2px 8px', cursor: 'pointer',
+                            fontFamily: FM, fontSize: FS_CAPTION, fontWeight: 600,
+                            color: CHAR_BR, letterSpacing: '0.05em',
+                          }}
+                        >
+                          Disband
+                        </button>
+                      </div>
+                      {(adv.squad_minion_refs ?? []).map(ref => {
+                        const minionAdv = encounter?.adversaries.find(a => a.instanceId === ref.instanceId)
+                        if (!minionAdv) return null
+                        return (
+                          <div key={ref.instanceId} style={{
+                            fontFamily: FM, fontSize: FS_CAPTION, color: TEXT_MUTED,
+                            display: 'flex', gap: 6,
+                          }}>
+                            <span>{minionAdv.name}</span>
+                            <span style={{ color: minionAdv.groupRemaining > 0 ? TEXT_SEC : CHAR_BR }}>
+                              {minionAdv.groupRemaining}/{ref.count}
+                            </span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )
+                }
+
+                // Formation in progress — inline minion selector
+                if (squadFormingFor === adv.instanceId) {
+                  const CAP = 11
+                  const selectedMinions = [...squadSelections]
+                  const selectedTotal = selectedMinions.reduce((sum, iid) => {
+                    const m = encounter?.adversaries.find(a => a.instanceId === iid)
+                    return sum + (m?.groupRemaining ?? 0)
+                  }, 0)
+                  return (
+                    <div style={{
+                      borderTop: `1px solid ${GOLD}40`,
+                      padding: '8px 12px',
+                      background: `${GOLD}07`,
+                    }}>
+                      <div style={{
+                        fontFamily: FM, fontSize: FS_CAPTION, fontWeight: 600,
+                        color: GOLD, marginBottom: 6, letterSpacing: '0.06em',
+                      }}>
+                        Select minion groups for squad (max {CAP} total):
+                      </div>
+                      {availableMinions.length === 0 && (
+                        <div style={{ fontFamily: FM, fontSize: FS_CAPTION, color: TEXT_MUTED, marginBottom: 6 }}>
+                          No available minion groups
+                        </div>
+                      )}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 8 }}>
+                        {availableMinions.map(m => {
+                          const isSelected = squadSelections.has(m.instanceId)
+                          const wouldExceed = !isSelected && selectedTotal + m.groupRemaining > CAP
+                          return (
+                            <label key={m.instanceId} style={{
+                              display: 'flex', alignItems: 'center', gap: 6,
+                              cursor: wouldExceed ? 'not-allowed' : 'pointer',
+                              opacity: wouldExceed ? 0.45 : 1,
+                            }}>
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                disabled={wouldExceed}
+                                onChange={e => {
+                                  setSquadSelections(prev => {
+                                    const next = new Set(prev)
+                                    if (e.target.checked) next.add(m.instanceId)
+                                    else next.delete(m.instanceId)
+                                    return next
+                                  })
+                                }}
+                                style={{ accentColor: GOLD, width: 13, height: 13 }}
+                              />
+                              <span style={{ fontFamily: FM, fontSize: FS_CAPTION, color: TEXT }}>
+                                {m.name}
+                              </span>
+                              <span style={{ fontFamily: FM, fontSize: FS_CAPTION, color: TEXT_MUTED }}>
+                                ({m.groupRemaining} minions)
+                              </span>
+                            </label>
+                          )
+                        })}
+                      </div>
+                      {selectedTotal > 0 && (
+                        <div style={{ fontFamily: FM, fontSize: FS_CAPTION, color: TEXT_SEC, marginBottom: 6 }}>
+                          {selectedTotal} minions selected
+                          {selectedTotal > CAP && (
+                            <span style={{ color: CHAR_BR }}> — exceeds cap of {CAP}</span>
+                          )}
+                        </div>
+                      )}
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button
+                          onClick={() => void handleConfirmSquad(adv.instanceId)}
+                          disabled={selectedTotal === 0 || selectedTotal > CAP}
+                          style={{
+                            flex: 1, padding: '4px 0',
+                            background: selectedTotal > 0 && selectedTotal <= CAP ? `${GOLD}20` : 'transparent',
+                            border: `1px solid ${selectedTotal > 0 && selectedTotal <= CAP ? GOLD : BORDER}`,
+                            borderRadius: 3, cursor: selectedTotal > 0 && selectedTotal <= CAP ? 'pointer' : 'not-allowed',
+                            fontFamily: FM, fontSize: FS_CAPTION, fontWeight: 600,
+                            color: selectedTotal > 0 && selectedTotal <= CAP ? GOLD : TEXT_MUTED,
+                          }}
+                        >
+                          Confirm Squad
+                        </button>
+                        <button
+                          onClick={() => { setSquadFormingFor(null); setSquadSelections(new Set()) }}
+                          style={{
+                            padding: '4px 10px',
+                            background: 'transparent', border: `1px solid ${BORDER}`,
+                            borderRadius: 3, cursor: 'pointer',
+                            fontFamily: FM, fontSize: FS_CAPTION, color: TEXT_MUTED,
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )
+                }
+
+                // Default: Form Squad button (only when minions exist)
+                if (availableMinions.length === 0) return null
+                return (
+                  <div style={{
+                    borderTop: `1px solid ${BORDER}`, padding: '7px 12px',
+                  }}>
+                    <button
+                      onClick={() => void handleFormSquad(adv)}
+                      style={{
+                        width: '100%', padding: '5px 0',
+                        background: `${GOLD}10`, border: `1px solid ${GOLD}40`,
+                        borderRadius: 4, cursor: 'pointer',
+                        fontFamily: FM, fontSize: FS_LABEL, fontWeight: 600,
+                        color: GOLD, letterSpacing: '0.05em',
+                      }}
+                    >
+                      Form Squad
+                    </button>
+                  </div>
+                )
+              })()}
             </div>
           )
         })}
@@ -2110,6 +2854,8 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                     has_acted_this_round:  false,
                     active_weapon_key:     null,
                     active_weapon_name:    null,
+                    secondary_weapon_name: null,
+                    secondary_weapon_key:  null,
                   }
                 })
                 await supabase.from('combat_participants')
@@ -2154,7 +2900,7 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
         const { adv, attackType, alignment } = advCombatCheck
         const adapted = adaptAdversaryForCombatCheck(adv, campaignId)
         // Build targets: PCs + allied NPCs (excluding this adversary)
-        const pcStubs = charactersToAdversaryStubs(characters)
+        const pcStubs = charactersToAdversaryStubs(characters, charSkillsByChar)
         const alliedStubs = (encounter?.adversaries ?? [])
           .filter((a: AdversaryInstance) => {
             const s = encounter?.initiative_slots?.find((sl: import('@/lib/combat').InitiativeSlot) => sl.adversaryInstanceId === a.instanceId)
@@ -2171,7 +2917,7 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
             pool: (pool ?? {}) as Parameters<typeof logRoll>[0]['pool'],
             result,
             isDM: true,
-            hidden: false,
+            hidden: !adv.revealed,
             meta: { ...meta, alignment },
           })
         }
@@ -2194,6 +2940,7 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
             isGmMode={true}
             gmTargets={gmTargets}
             gmAlignment={alignment}
+            gmHiddenFromPlayers={!adv.revealed}
           />
         )
       })()}
@@ -2299,6 +3046,151 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
               </div>
             </div>
           </>,
+          document.body
+        )
+      })()}
+
+      {/* Talent description tooltip */}
+      {talentTooltip && typeof document !== 'undefined' && (() => {
+        const { name, description, activation, rect } = talentTooltip
+        const actKey = (activation ?? 'passive').toLowerCase()
+        const TALENT_ACT_COLORS: Record<string, string> = {
+          passive: TEXT_MUTED, incidental: GOLD, maneuver: CHAR_AG, action: CHAR_BR, 'out of turn': CHAR_WIL,
+        }
+        const color = TALENT_ACT_COLORS[actKey] ?? TEXT_MUTED
+        const ACTIVATION_LABELS: Record<string, string> = {
+          passive: 'Passive', incidental: 'Incidental', maneuver: 'Maneuver',
+          action: 'Action', 'out of turn': 'Incidental (Out of Turn)',
+        }
+        const actLabel = ACTIVATION_LABELS[actKey] ?? activation
+
+        // Position above the chip; flip below if not enough room
+        const tooltipWidth = 280
+        const gap = 8
+        let left = rect.left + rect.width / 2 - tooltipWidth / 2
+        left = Math.max(8, Math.min(left, window.innerWidth - tooltipWidth - 8))
+        const spaceAbove = rect.top - gap
+        const fitsAbove = spaceAbove >= 80
+        const top = fitsAbove ? rect.top - gap : rect.bottom + gap
+
+        return createPortal(
+          <div
+            style={{
+              position: 'fixed',
+              left,
+              top,
+              transform: fitsAbove ? 'translateY(-100%)' : 'none',
+              width: tooltipWidth,
+              zIndex: 3000,
+              background: 'rgba(6,13,9,0.97)',
+              border: `1px solid ${color}50`,
+              borderRadius: 6,
+              padding: '10px 12px',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              boxShadow: `0 4px 24px rgba(0,0,0,0.6), 0 0 0 1px ${color}20`,
+              pointerEvents: 'none',
+              animation: 'fadeSlideIn 0.12s ease',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+              <span style={{ fontFamily: FM, fontSize: FS_SM, fontWeight: 700, color }}>{name}</span>
+              {actLabel && (
+                <span style={{
+                  fontFamily: FM, fontSize: FS_OVERLINE, color,
+                  background: `${color}18`, border: `1px solid ${color}40`,
+                  borderRadius: 3, padding: '1px 5px', letterSpacing: '0.06em',
+                }}>{actLabel}</span>
+              )}
+            </div>
+            <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: TEXT_SEC, lineHeight: 1.55 }}>
+              <RichText text={description} />
+            </div>
+          </div>,
+          document.body
+        )
+      })()}
+
+      {/* ── Weapon stat tooltip ── */}
+      {weaponTooltip && typeof document !== 'undefined' && (() => {
+        const { weapon, qualityMap, rect } = weaponTooltip
+        const tooltipWidth = 260
+        const gap = 8
+        let left = rect.left + rect.width / 2 - tooltipWidth / 2
+        left = Math.max(8, Math.min(left, window.innerWidth - tooltipWidth - 8))
+        const fitsAbove = rect.top - gap >= 120
+        const top = fitsAbove ? rect.top - gap : rect.bottom + gap
+
+        const dmg = weapon.damage_add != null
+          ? `Br+${weapon.damage_add}`
+          : String(weapon.damage)
+        const range = RANGE_LABELS[weapon.range_value] ?? weapon.range_value.replace(/^wr/, '')
+        const qualities = Array.isArray(weapon.qualities) ? weapon.qualities : []
+
+        return createPortal(
+          <div
+            style={{
+              position: 'fixed', left, top,
+              transform: fitsAbove ? 'translateY(-100%)' : 'none',
+              width: tooltipWidth,
+              zIndex: 9500,
+              background: 'rgba(6,13,9,0.97)',
+              border: `1px solid ${CHAR_AG}50`,
+              borderRadius: 6, padding: '10px 12px',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              boxShadow: `0 4px 24px rgba(0,0,0,0.6), 0 0 0 1px ${CHAR_AG}20`,
+              pointerEvents: 'none',
+              animation: 'fadeSlideIn 0.12s ease',
+            }}
+          >
+            {/* Name */}
+            <div style={{ fontFamily: FM, fontSize: FS_SM, fontWeight: 700, color: CHAR_AG, marginBottom: 8 }}>
+              {weapon.name}
+            </div>
+
+            {/* Stat grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px 8px', marginBottom: qualities.length > 0 ? 8 : 0 }}>
+              {[
+                { label: 'DAMAGE', value: dmg, color: CHAR_BR },
+                { label: 'CRIT',   value: String(weapon.crit), color: CHAR_CUN },
+                { label: 'RANGE',  value: range, color: CHAR_INT },
+              ].map(({ label, value, color }) => (
+                <div key={label} style={{
+                  background: `${color}10`, border: `1px solid ${color}30`,
+                  borderRadius: 3, padding: '3px 6px', textAlign: 'center',
+                }}>
+                  <div style={{ fontFamily: FM, fontSize: 'clamp(0.52rem, 0.7vw, 0.58rem)', letterSpacing: '0.14em', color: `${color}99`, fontWeight: 700 }}>
+                    {label}
+                  </div>
+                  <div style={{ fontFamily: FM, fontSize: FS_SM, fontWeight: 700, color }}>
+                    {value}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Qualities */}
+            {qualities.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                {qualities.map(q => {
+                  const ref = qualityMap[q.key]
+                  const baseName = ref?.name ?? q.key
+                  const displayName = q.count != null ? `${baseName} ${q.count}` : baseName
+                  return (
+                    <span key={q.key} style={{
+                      fontFamily: FM, fontSize: FS_OVERLINE,
+                      color: GOLD, background: 'rgba(200,170,80,0.1)',
+                      border: '1px solid rgba(200,170,80,0.28)',
+                      borderRadius: 3, padding: '1px 6px',
+                    }}>
+                      {displayName}
+                    </span>
+                  )
+                })}
+              </div>
+            )}
+          </div>,
           document.body
         )
       })()}

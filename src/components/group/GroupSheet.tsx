@@ -558,7 +558,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
               {groupName}
             </span>
           )}
-          {campaign.group_name_editable && !editingGroupName && (
+          {(gmUnlocked || campaign.group_name_editable) && !editingGroupName && (
             <button
               onClick={() => { setGroupNameDraft(groupName); setEditingGroupName(true) }}
               title="Edit group name"
@@ -960,17 +960,19 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
       <div style={{ ...panelBase, borderRadius: 8, padding: 'var(--space-3)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <SectionHeader label="GROUP ASSETS" />
-          <button
-            onClick={() => setShowAddAsset(true)}
-            style={{ ...btnStyle(true), fontSize: FS_CAPTION }}
-          >
-            + ADD ASSET
-          </button>
+          {gmUnlocked && (
+            <button
+              onClick={() => setShowAddAsset(true)}
+              style={{ ...btnStyle(true), fontSize: FS_CAPTION }}
+            >
+              + ADD ASSET
+            </button>
+          )}
         </div>
 
         {assets.length === 0 ? (
           <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.textDim, fontStyle: 'italic' }}>
-            No assets recorded yet. Add the group's accumulated resources here.
+            No assets recorded yet.
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -978,7 +980,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
               <AssetCard
                 key={asset.id}
                 asset={asset}
-                canArchive={gmUnlocked || asset.added_by === characterName}
+                canArchive={gmUnlocked}
                 onArchive={() => archiveAsset(asset.id)}
               />
             ))}

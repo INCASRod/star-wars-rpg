@@ -54,6 +54,7 @@ interface AddCombatState {
 /* ── DB row → Adversary ────────────────────────────────── */
 function dbRowToAdversary(row: Record<string, unknown>): Adversary & { _isCustom: true; _dbId: string } {
   const skillRanks = (row.skill_ranks as Record<string, number>) ?? {}
+  const characteristicOverrides = (row.characteristic_overrides as Record<string, string> | undefined) ?? undefined
   return {
     id:          String(row.id),
     name:        String(row.name),
@@ -70,6 +71,9 @@ function dbRowToAdversary(row: Record<string, unknown>): Adversary & { _isCustom
     defense:     [Number(row.defense_melee ?? 0), Number(row.defense_ranged ?? 0)],
     skills:      Object.keys(skillRanks),
     skillRanks,
+    characteristicOverrides: characteristicOverrides && Object.keys(characteristicOverrides).length > 0
+      ? characteristicOverrides
+      : undefined,
     talents:     (row.talents as Adversary['talents']) ?? [],
     abilities:   (row.abilities as Adversary['abilities']) ?? [],
     weapons:     (row.weapons as Adversary['weapons']) ?? [],

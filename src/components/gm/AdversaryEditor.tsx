@@ -74,12 +74,14 @@ const sectionHead: React.CSSProperties = {
 /* ── All SWRPG skill names (AoE Core Rulebook Table 3-1) ── */
 const ALL_SKILLS = [
   'Astrogation','Athletics','Brawl','Charm','Coercion','Computers',
-  'Cool','Coordination','Core Worlds','Deception','Discipline','Education',
-  'Gunnery','Leadership','Lightsaber','Lore','Mechanics','Medicine',
-  'Melee','Negotiation','Outer Rim','Perception','Piloting (Planetary)',
+  'Cool','Coordination','Deception','Discipline',
+  'Gunnery','Knowledge: Core Worlds','Knowledge: Education','Knowledge: Lore',
+  'Knowledge: Outer Rim','Knowledge: Underworld','Knowledge: Warfare','Knowledge: Xenology',
+  'Leadership','Lightsaber','Mechanics','Medicine',
+  'Melee','Negotiation','Perception','Piloting (Planetary)',
   'Piloting (Space)','Ranged (Heavy)','Ranged (Light)','Resilience',
-  'Skulduggery','Stealth','Streetwise','Survival','Underworld',
-  'Vigilance','Warfare','Xenology',
+  'Skulduggery','Stealth','Streetwise','Survival',
+  'Vigilance',
 ]
 
 /* ── DB row type ───────────────────────────────────────── */
@@ -94,6 +96,7 @@ interface CustomAdversaryRow {
   strain_threshold: number | null
   defense_melee: number; defense_ranged: number
   skill_ranks: Record<string, number>
+  characteristic_overrides: Record<string, string>
   weapons: AdversaryWeapon[]
   talents: AdversaryTalent[]
   abilities: { name: string; description: string }[]
@@ -117,8 +120,18 @@ export interface AdversaryEditorProps {
   onSaved:      (saved: Adversary & { _isCustom: true; _dbId: string }) => void
 }
 
+/* ── Characteristic options for Lightsaber override ─────── */
+const LIGHTSABER_CHAR_OPTIONS: { key: string; label: string }[] = [
+  { key: '',    label: 'Brawn (default)' },
+  { key: 'AGI', label: 'Agility' },
+  { key: 'INT', label: 'Intellect' },
+  { key: 'CUN', label: 'Cunning' },
+  { key: 'WIL', label: 'Willpower' },
+  { key: 'PR',  label: 'Presence' },
+]
+
 /* ── Skill entry ───────────────────────────────────────── */
-interface SkillEntry { skill: string; rank: number }
+interface SkillEntry { skill: string; rank: number; characteristicOverride?: string }
 interface WeaponEntry { name: string; skillCategory: string; damage: string; range: string; qualities: string }
 interface GearEntry { name: string; encumbrance: string; description: string }
 interface TalentEntry { name: string; description: string }
@@ -145,7 +158,13 @@ function fromTemplate(t: Adversary): Partial<{
     st:          t.strain ?? null,
     defMelee:    Array.isArray(t.defense) ? (t.defense[0] ?? 0) : 0,
     defRanged:   Array.isArray(t.defense) ? (t.defense[1] ?? 0) : 0,
-    skills:      Object.entries(t.skillRanks ?? {}).map(([skill, rank]) => ({ skill, rank })),
+    skills:      Object.entries(t.skillRanks ?? {}).map(([skill, rank]) => ({
+      skill,
+      rank,
+      characteristicOverride: skill === 'Lightsaber'
+        ? (t.characteristicOverrides?.['Lightsaber'] ?? '')
+        : undefined,
+    })),
     weapons:     (t.weapons ?? []).map(w => ({
       name: w.name, skillCategory: w.skillCategory ?? '',
       damage: String(w.damage), range: w.range,
@@ -269,8 +288,14 @@ export function AdversaryEditor({
     setSaving(true)
     try {
       const skillRanks: Record<string, number> = {}
+      const characteristicOverridesOut: Record<string, string> = {}
       for (const s of skills) {
-        if (s.skill && s.rank > 0) skillRanks[s.skill] = s.rank
+        if (s.skill && s.rank > 0) {
+          skillRanks[s.skill] = s.rank
+          if (s.skill === 'Lightsaber' && s.characteristicOverride) {
+            characteristicOverridesOut['Lightsaber'] = s.characteristicOverride
+          }
+        }
       }
 
       const weaponsData: AdversaryWeapon[] = weapons
@@ -303,6 +328,7 @@ export function AdversaryEditor({
         strain_threshold: type === 'nemesis' && st !== '' ? Number(st) : null,
         defense_melee: defMelee, defense_ranged: defRanged,
         skill_ranks: skillRanks,
+        characteristic_overrides: characteristicOverridesOut,
         weapons: weaponsData,
         talents: talentsData,
         abilities: abilitiesData,
@@ -336,6 +362,9 @@ export function AdversaryEditor({
         defense:    [row.defense_melee, row.defense_ranged],
         skills:     Object.keys(skillRanks),
         skillRanks,
+        characteristicOverrides: Object.keys(characteristicOverridesOut).length > 0
+          ? characteristicOverridesOut
+          : undefined,
         talents:    talentsData,
         abilities:  abilitiesData,
         weapons:    weaponsData,
@@ -587,22 +616,52 @@ export function AdversaryEditor({
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {skills.map((s, i) => (
-                  <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <select
-                      value={s.skill}
-                      onChange={e => updateSkill(i, { skill: e.target.value })}
-                      style={{ ...inputStyle, flex: 1, appearance: 'none' }}
-                    >
-                      {ALL_SKILLS.map(sk => <option key={sk} value={sk}>{sk}</option>)}
-                    </select>
-                    <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, whiteSpace: 'nowrap' }}>Rank</div>
-                    <input
-                      type="number" min={1} max={5}
-                      value={s.rank}
-                      onChange={e => updateSkill(i, { rank: Math.min(5, Math.max(1, Number(e.target.value))) })}
-                      style={{ ...numInput, width: 56 }}
-                    />
-                    <button onClick={() => removeSkill(i)} style={btnDanger}>×</button>
+                  <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <select
+                        value={s.skill}
+                        onChange={e => updateSkill(i, { skill: e.target.value, characteristicOverride: e.target.value === 'Lightsaber' ? (s.characteristicOverride ?? '') : undefined })}
+                        style={{ ...inputStyle, flex: 1, appearance: 'none' }}
+                      >
+                        {ALL_SKILLS.map(sk => <option key={sk} value={sk}>{sk}</option>)}
+                      </select>
+                      <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, whiteSpace: 'nowrap' }}>Rank</div>
+                      <input
+                        type="number" min={1} max={5}
+                        value={s.rank}
+                        onChange={e => updateSkill(i, { rank: Math.min(5, Math.max(1, Number(e.target.value))) })}
+                        style={{ ...numInput, width: 56 }}
+                      />
+                      <button onClick={() => removeSkill(i)} style={btnDanger}>×</button>
+                    </div>
+                    {/* Characteristic override selector — only for Lightsaber */}
+                    {s.skill === 'Lightsaber' && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 4 }}>
+                        <span style={{ fontFamily: FR, fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)', color: GOLD_DIM, whiteSpace: 'nowrap' }}>
+                          Characteristic:
+                        </span>
+                        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                          {LIGHTSABER_CHAR_OPTIONS.map(opt => (
+                            <button
+                              key={opt.key}
+                              onClick={() => updateSkill(i, { characteristicOverride: opt.key })}
+                              style={{
+                                fontFamily: FR,
+                                fontSize: 'clamp(0.58rem, 0.88vw, 0.68rem)',
+                                padding: '2px 8px',
+                                borderRadius: 3,
+                                border: `1px solid ${(s.characteristicOverride ?? '') === opt.key ? GOLD : BORDER}`,
+                                background: (s.characteristicOverride ?? '') === opt.key ? 'rgba(200,170,80,0.12)' : 'transparent',
+                                color: (s.characteristicOverride ?? '') === opt.key ? GOLD : DIM,
+                                cursor: 'pointer',
+                              }}
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

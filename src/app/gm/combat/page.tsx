@@ -5,9 +5,11 @@ import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { CombatPanel } from '@/components/dm/CombatPanel'
 import { HolocronLoader } from '@/components/ui/HolocronLoader'
+import { GmReferenceDrawer } from '@/components/gm/GmReferenceDrawer'
 import type { Character } from '@/lib/types'
 
 const FC = "var(--font-rajdhani), 'Rajdhani', sans-serif"
+const FST = "var(--font-share-tech-mono), 'Share Tech Mono', monospace"
 const RED = '#E05050'
 const GOLD = '#C8AA50'
 const DIM = '#6A8070'
@@ -19,6 +21,7 @@ function CombatPageInner() {
 
   const [characters, setCharacters] = useState<Character[]>([])
   const [loading, setLoading] = useState(true)
+  const [gmScreenOpen, setGmScreenOpen] = useState(false)
 
   const supabase = useMemo(() => createClient(), [])
 
@@ -131,6 +134,31 @@ function CombatPageInner() {
           sendToChar={sendToChar}
         />
       </div>
+
+      {/* Floating GM Screen button */}
+      <button
+        onClick={() => setGmScreenOpen(o => !o)}
+        title="GM Reference Screen"
+        style={{
+          position: 'fixed', bottom: 24, right: 24, zIndex: 8998,
+          background: gmScreenOpen ? 'rgba(200,170,80,0.2)' : 'rgba(6,13,9,0.92)',
+          border: `2px solid ${gmScreenOpen ? GOLD : 'rgba(200,170,80,0.3)'}`,
+          borderRadius: 8, padding: '10px 16px',
+          cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
+          fontFamily: FST, fontSize: 'var(--text-caption)',
+          letterSpacing: '0.14em', textTransform: 'uppercase',
+          color: gmScreenOpen ? GOLD : DIM,
+          boxShadow: gmScreenOpen ? '0 0 16px rgba(200,170,80,0.2)' : '0 2px 12px rgba(0,0,0,0.5)',
+          transition: 'all 0.2s',
+        }}
+        onMouseEnter={e => { if (!gmScreenOpen) { (e.currentTarget as HTMLElement).style.color = GOLD; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(200,170,80,0.6)' } }}
+        onMouseLeave={e => { if (!gmScreenOpen) { (e.currentTarget as HTMLElement).style.color = DIM; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(200,170,80,0.3)' } }}
+      >
+        <span style={{ fontSize: 16, lineHeight: 1 }}>⬛</span>
+        GM Screen
+      </button>
+
+      <GmReferenceDrawer open={gmScreenOpen} onClose={() => setGmScreenOpen(false)} />
     </div>
   )
 }

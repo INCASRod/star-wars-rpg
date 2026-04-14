@@ -60,5 +60,9 @@ export function useActiveMap(campaignId: string | null) {
   const activeMap  = allMaps.find(m => m.is_active) ?? null
   const visibleMap = allMaps.find(m => m.is_active && m.is_visible_to_players) ?? null
 
-  return { activeMap, visibleMap, allMaps, supabase }
+  function removeMap(mapId: string) {
+    setAllMaps(prev => prev.filter(m => m.id !== mapId))
+  }
+
+  return { activeMap, visibleMap, allMaps, supabase, removeMap }
 }

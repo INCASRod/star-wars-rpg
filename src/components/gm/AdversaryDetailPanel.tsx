@@ -267,11 +267,22 @@ export function AdversaryDetailPanel({
             <SectionHead>Skills</SectionHead>
             {skillEntries.length > 0 ? (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 12px' }}>
-                {skillEntries.map(([skill, rank]) => (
+                {skillEntries.map(([skill, rank]) => {
+                  const charOverrideKey = skill === 'Lightsaber'
+                    ? adv.characteristicOverrides?.['Lightsaber']
+                    : undefined
+                  const charOverrideName = charOverrideKey
+                    ? { 'BR': 'Brawn', 'AGI': 'Agility', 'INT': 'Intellect', 'CUN': 'Cunning', 'WIL': 'Willpower', 'PR': 'Presence' }[charOverrideKey]
+                    : undefined
+                  const displayName = skill === 'Lightsaber'
+                    ? `Lightsaber (${charOverrideName ?? 'Brawn'})`
+                    : skill
+                  return (
                   <span key={skill} style={{ fontFamily: FR, fontSize: FS_SM, color: TEXT }}>
-                    {skill} <span style={{ color: GOLD, fontWeight: 700 }}>{rank}</span>
+                    {displayName} <span style={{ color: GOLD, fontWeight: 700 }}>{rank}</span>
                   </span>
-                ))}
+                  )
+                })}
               </div>
             ) : (
               <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>None listed</div>

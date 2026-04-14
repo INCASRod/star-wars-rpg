@@ -214,13 +214,14 @@ function UploadModal({ campaignId, onClose, onSaved }: { campaignId: string; onC
 
 /* ── Main view ─────────────────────────────────────────── */
 export interface GmMapViewProps {
-  campaignId: string | null
-  characters: Character[]
-  allMaps:    ActiveMap[]
-  activeMap:  ActiveMap | null
+  campaignId:  string | null
+  characters:  Character[]
+  allMaps:     ActiveMap[]
+  activeMap:   ActiveMap | null
+  onDeleteMap: (mapId: string) => void
 }
 
-export function GmMapView({ campaignId, characters, allMaps, activeMap }: GmMapViewProps) {
+export function GmMapView({ campaignId, characters, allMaps, activeMap, onDeleteMap }: GmMapViewProps) {
   const supabase = useMemo(() => createClient(), [])
 
   const [uploadOpen,       setUploadOpen]       = useState(false)
@@ -325,7 +326,8 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap }: GmMapV
   }
 
   async function deleteMap(mapId: string) {
-    await supabase.from('maps').delete().eq('id', mapId)
+    const { error } = await supabase.from('maps').delete().eq('id', mapId)
+    if (!error) onDeleteMap(mapId)
   }
 
   // ── Token helpers ──────────────────────────────────────

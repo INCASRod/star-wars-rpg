@@ -92,6 +92,8 @@ export interface CombatCheckOverlayProps {
   gmTargets?:  AdversaryInstance[]
   /** Alignment override for combat_log writes (default: 'player') */
   gmAlignment?: string
+  /** When true, combat_log entries are written with is_visible_to_players=false (unrevealed adversary) */
+  gmHiddenFromPlayers?: boolean
   speciesAbilities?: SpeciesAbility[]
   speciesName?: string
 }
@@ -102,7 +104,7 @@ export function CombatCheckOverlay({
   character, weapons, charSkills,
   refWeaponMap, refSkillMap, refWeaponQualityMap,
   skillModifiers, campaignId, characterId, onRoll,
-  isGmMode, gmTargets, gmAlignment,
+  isGmMode, gmTargets, gmAlignment, gmHiddenFromPlayers,
   speciesAbilities = [], speciesName,
 }: CombatCheckOverlayProps) {
   const [state, setState] = useState<CombatCheckState>(() => makeInitialState(initialAttackType))
@@ -164,9 +166,21 @@ export function CombatCheckOverlay({
 
   const goNext = () => {
     if (state.dualWieldReview) {
-      // Leaving Step 2b → advance to Target
+      // Leaving Step 2b (dual wield confirmed) → write to DB then advance to Target
+      const dw = state.dualWield
+      if (dw) {
+        const primaryName   = dw.primaryWeapon.custom_name   || refWeaponMap[dw.primaryWeapon.weapon_key]?.name   || null
+        const secondaryName = dw.secondaryWeapon.custom_name || refWeaponMap[dw.secondaryWeapon.weapon_key]?.name || null
+        void writeWeaponToParticipant(primaryName, secondaryName, dw.primaryWeapon.weapon_key, dw.secondaryWeapon.weapon_key)
+      }
       setState(s => ({ ...s, dualWieldReview: false, currentStep: 3 }))
       return
+    }
+    // Advancing past the weapon-select step → write to DB
+    if (state.currentStep === 2 && state.selectedWeapon) {
+      const w = state.selectedWeapon
+      const name = w.custom_name || refWeaponMap[w.weapon_key]?.name || null
+      void writeWeaponToParticipant(name, null, w.weapon_key, null)
     }
     setState(s => ({ ...s, currentStep: Math.min(s.currentStep + 1, totalSteps) }))
   }
@@ -176,13 +190,41 @@ export function CombatCheckOverlay({
     setState(s => ({ ...s, attackType: type, currentStep: 2 }))
   }
 
+  // ── Write active weapon to combat_participants (GM view picks this up in real-time) ──
+  const writeWeaponToParticipant = useCallback(async (
+    primaryName: string | null,
+    secondaryName: string | null = null,
+    primaryKey: string | null = null,
+    secondaryKey: string | null = null,
+  ) => {
+    if (isGmMode || !campaignId) return
+    const supabase = createClient()
+    await supabase
+      .from('combat_participants')
+      .update({
+        active_weapon_name:    primaryName,
+        active_weapon_key:     primaryKey,
+        secondary_weapon_name: secondaryName,
+        secondary_weapon_key:  secondaryKey,
+      })
+      .eq('campaign_id', campaignId)
+      .eq('character_id', characterId)
+  }, [isGmMode, campaignId, characterId])
+
+  // Clear selected weapon on close so the GM sees equipped baseline again
+  const handleClose = () => {
+    void writeWeaponToParticipant(null, null, null, null)
+    onClose()
+  }
+
   const handleWeaponSelect = (w: CharacterWeapon | null) => {
-    // When weapon changes, clear dual wield selection
+    // Only update local state — DB write happens when the player advances past this step
     setState(s => ({ ...s, selectedWeapon: w, selectedBand: null, dualWield: null, dualWieldReview: false }))
   }
 
   // ── Dual wield handlers ───────────────────────────────────────────────────
   const handleDualWieldSelect = (primary: CharacterWeapon, secondary: CharacterWeapon) => {
+    // Only update local state — DB write happens when the player confirms in DualWieldReviewStep
     setState(s => ({
       ...s,
       dualWield: { enabled: true, primaryWeapon: primary, secondaryWeapon: secondary },
@@ -191,6 +233,7 @@ export function CombatCheckOverlay({
   }
 
   const handleDualWieldSwap = () => {
+    // Only update local state — DB write happens when the player confirms in DualWieldReviewStep
     setState(s => {
       if (!s.dualWield) return s
       return {
@@ -200,7 +243,6 @@ export function CombatCheckOverlay({
           primaryWeapon:   s.dualWield.secondaryWeapon,
           secondaryWeapon: s.dualWield.primaryWeapon,
         },
-        // Also update selectedWeapon to reflect new primary
         selectedWeapon: s.dualWield.secondaryWeapon,
       }
     })
@@ -291,7 +333,7 @@ export function CombatCheckOverlay({
           succeeded:    result.net.success > 0,
         },
         result_summary:        summary,
-        is_visible_to_players: true,
+        is_visible_to_players: isGmMode ? !gmHiddenFromPlayers : true,
       })
 
       // ── Pending damage: create row(s) per target on a successful hit ─────────
@@ -383,8 +425,9 @@ export function CombatCheckOverlay({
     }))
   }
 
-  // ── New Attack: reset everything ──────────────────────────────────────────
+  // ── New Attack: reset everything and clear selected weapon from GM view ──────
   const handleNewAttack = () => {
+    void writeWeaponToParticipant(null, null, null, null)
     setState(makeInitialState(initialAttackType))
   }
 
@@ -485,7 +528,7 @@ export function CombatCheckOverlay({
 
           {/* Close button */}
           <button
-            onClick={onClose}
+            onClick={handleClose}
             style={{
               background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px 6px',
               fontFamily: FONT_M, fontSize: 'clamp(0.9rem, 1.4vw, 1rem)', color: TEXT_DIM,

@@ -15,6 +15,8 @@ export interface InitiativeSlot {
   successes: number
   advantages: number
   woundsCurrent?: number
+  squad_suppressed?: boolean
+  suppressed_by?: string          // instanceId of the squad leader
 }
 
 export interface LogEntry {

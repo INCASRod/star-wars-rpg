@@ -1,3 +1,23 @@
+import { ABILITY_DESCRIPTIONS } from './adversary-abilities'
+import { TALENT_DESCRIPTIONS, TALENT_ACTIVATION } from './adversary-talents'
+
+// ── Lightsaber characteristic helpers ────────────────────────────────────────
+/** Maps display name → short key (as used in ref_skills / DB) */
+export const CHAR_NAME_TO_KEY: Record<string, string> = {
+  'Brawn': 'BR', 'Agility': 'AGI', 'Intellect': 'INT',
+  'Cunning': 'CUN', 'Willpower': 'WIL', 'Presence': 'PR',
+}
+/** Maps short key → display name */
+export const CHAR_KEY_TO_NAME: Record<string, string> = {
+  'BR': 'Brawn', 'AGI': 'Agility', 'INT': 'Intellect',
+  'CUN': 'Cunning', 'WIL': 'Willpower', 'PR': 'Presence',
+}
+/** Maps short key → AdversaryInstance.characteristics field name */
+export const CHAR_KEY_TO_FIELD: Record<string, string> = {
+  'BR': 'brawn', 'AGI': 'agility', 'INT': 'intellect',
+  'CUN': 'cunning', 'WIL': 'willpower', 'PR': 'presence',
+}
+
 export interface AdversaryWeapon {
   name: string
   damage: number | string
@@ -37,6 +57,8 @@ export interface Adversary {
   defense: number[]     // [melee, ranged]
   skills?: string[]
   skillRanks: Record<string, number>   // { Cool: 4, Vigilance: 2 } — normalized from object or array
+  /** Per-skill characteristic override. Only meaningful for 'Lightsaber'. Key = display skill name, value = short char key. */
+  characteristicOverrides?: Record<string, string>
   talents?: AdversaryTalent[]
   abilities?: { name: string; description: string }[]
   weapons?: AdversaryWeapon[]
@@ -63,6 +85,8 @@ export interface AdversaryInstance {
   defense: { melee: number; ranged: number }
   skills: unknown[]
   skillRanks: Record<string, number>   // normalized skill ranks for dice pool building
+  /** Per-skill characteristic override. Only meaningful for 'Lightsaber'. Key = display skill name, value = short char key. */
+  characteristicOverrides?: Record<string, string>
   talents: AdversaryTalent[]
   abilities: { name: string; description: string }[]
   weapons: AdversaryWeapon[]
@@ -70,6 +94,10 @@ export interface AdversaryInstance {
   woundsCurrent?: number
   strainCurrent?: number
   minionWounds?: number[]
+  // Squad formation fields (rival/nemesis leaders only)
+  squad_active?: boolean
+  squad_minion_refs?: Array<{ instanceId: string; count: number }>
+  squad_total_minions?: number
 }
 
 const ADVERSARY_URL = '/adversaries.json'
@@ -127,11 +155,23 @@ function normalize(raw: Record<string, unknown>): Adversary {
     ? raw.weapons.map(w => typeof w === 'string' ? parseWeaponString(w) : w as AdversaryWeapon)
     : []
 
-  // Skills: rivals/nemeses use object { Cool: 4, Vigilance: 2 }, minions use string[] (rank=1 each)
+  // Skills: rivals/nemeses use object { Cool: 4, Lightsaber (Intellect): 5 }, minions use string[]
+  // For Lightsaber (X) entries: strip the parenthetical, normalise key to 'Lightsaber', record override.
   const skillRanks: Record<string, number> = {}
+  const characteristicOverrides: Record<string, string> = {}
   if (raw.skills && !Array.isArray(raw.skills) && typeof raw.skills === 'object') {
     for (const [k, v] of Object.entries(raw.skills as Record<string, unknown>)) {
-      skillRanks[k] = Number(v)
+      const lsMatch = k.match(/^Lightsaber\s*\((\w+)\)$/i)
+      if (lsMatch) {
+        const charName = lsMatch[1]
+        const charKey = CHAR_NAME_TO_KEY[charName as keyof typeof CHAR_NAME_TO_KEY]
+        if (charKey && charKey !== 'BR') {
+          characteristicOverrides['Lightsaber'] = charKey
+        }
+        skillRanks['Lightsaber'] = Number(v)
+      } else {
+        skillRanks[k] = Number(v)
+      }
     }
   } else if (Array.isArray(raw.skills)) {
     for (const s of raw.skills as string[]) { skillRanks[String(s)] = 1 }
@@ -154,11 +194,33 @@ function normalize(raw: Record<string, unknown>): Adversary {
     defense,
     skills:     Array.isArray(raw.skills) ? raw.skills as string[] : Object.keys(skillRanks),
     skillRanks,
+    characteristicOverrides: Object.keys(characteristicOverrides).length > 0 ? characteristicOverrides : undefined,
     talents: Array.isArray(raw.talents)
-      ? raw.talents.map(t => typeof t === 'string' ? { name: t, description: '', activation: 'passive' } : t as AdversaryTalent)
+      ? raw.talents.map(t => {
+          if (typeof t === 'string') {
+            const base = t.replace(/\s+\d+$/, '').trim()
+            const desc = TALENT_DESCRIPTIONS[t] ?? TALENT_DESCRIPTIONS[base] ?? ''
+            const activation = TALENT_ACTIVATION[t] ?? TALENT_ACTIVATION[base] ?? 'passive'
+            return { name: t, description: desc, activation }
+          }
+          const obj = t as AdversaryTalent
+          const base = obj.name.replace(/\s+\d+$/, '').trim()
+          return {
+            ...obj,
+            description: obj.description || TALENT_DESCRIPTIONS[obj.name] || TALENT_DESCRIPTIONS[base] || '',
+            activation: obj.activation || TALENT_ACTIVATION[obj.name] || TALENT_ACTIVATION[base] || 'passive',
+          }
+        })
       : [],
     abilities: Array.isArray(raw.abilities)
-      ? raw.abilities.map(ab => typeof ab === 'string' ? { name: ab, description: '' } : ab as { name: string; description: string })
+      ? raw.abilities.map(ab => {
+          if (typeof ab === 'string') {
+            return { name: ab, description: ABILITY_DESCRIPTIONS[ab] ?? '' }
+          }
+          const obj = ab as { name: string; description: string }
+          // Fill in description from lookup if the embedded one is empty
+          return { name: obj.name, description: obj.description || ABILITY_DESCRIPTIONS[obj.name] || '' }
+        })
       : [],
     weapons,
     gear: Array.isArray(raw.gear)
@@ -202,6 +264,7 @@ export function adversaryToInstance(adv: Adversary, groupSize = 4): AdversaryIns
     },
     skills: adv.skills ?? [],
     skillRanks: adv.skillRanks ?? {},
+    characteristicOverrides: adv.characteristicOverrides,
     talents: adv.talents ?? [],
     abilities: adv.abilities ?? [],
     weapons: adv.weapons ?? [],

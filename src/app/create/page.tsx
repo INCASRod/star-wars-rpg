@@ -198,13 +198,6 @@ function CreateWizard() {
   const [saving, setSaving] = useState(false)
   const [playerCount, setPlayerCount] = useState(4)
 
-  // ── Nemesis mode ────────────────────────────────────────────────────────────
-  const [isNemesisMode,          setIsNemesisMode]          = useState(false)
-  const [showNemesisPinModal,    setShowNemesisPinModal]    = useState(false)
-  const [nemesisPinInput,        setNemesisPinInput]        = useState('')
-  const [nemesisPinError,        setNemesisPinError]        = useState(false)
-  const [nemesisPinShake,        setNemesisPinShake]        = useState(false)
-  const [showNemesisCancelConfirm, setShowNemesisCancelConfirm] = useState(false)
   const [draft, setDraft] = useState<CharacterDraft>(DEFAULT_DRAFT)
 
   // Ref data
@@ -249,41 +242,6 @@ function CreateWizard() {
     load()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [campaignId])
-
-  // ── Auto-trigger nemesis mode from ?nemesis=1 param ──────────────────────
-  const autoNemesis = searchParams.get('nemesis') === '1'
-  useEffect(() => {
-    if (autoNemesis) setShowNemesisPinModal(true)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoNemesis])
-
-  // ── Nemesis pin verification ──────────────────────────────────────────────
-  const verifyNemesisPin = useCallback(async (pin: string): Promise<boolean> => {
-    if (!campaignId) return false
-    const { data } = await supabase.from('campaigns').select('gm_pin').eq('id', campaignId).single()
-    return data?.gm_pin === pin
-  }, [campaignId, supabase])
-
-  const handleNemesisPinSubmit = useCallback(async () => {
-    const ok = await verifyNemesisPin(nemesisPinInput)
-    if (ok) {
-      setShowNemesisPinModal(false)
-      setNemesisPinInput('')
-      setNemesisPinError(false)
-      setIsNemesisMode(true)
-    } else {
-      setNemesisPinError(true)
-      setNemesisPinShake(true)
-      setTimeout(() => setNemesisPinShake(false), 450)
-    }
-  }, [verifyNemesisPin, nemesisPinInput])
-
-  const resetCreator = useCallback(() => {
-    setIsNemesisMode(false)
-    setStep(0)
-    setDraft(DEFAULT_DRAFT)
-    setShowNemesisCancelConfirm(false)
-  }, [])
 
   // ── Computed maps ─────────────────────────────────────────────────────────
   const skillMap = useMemo(() => Object.fromEntries(refSkills.map(s => [s.key, s])), [refSkills])
@@ -455,9 +413,6 @@ function CreateWizard() {
           motivation_specific: draft.motivationSpecific || null,
           motivation_description: draft.motivationDesc || null,
           motivation_configured: !!draft.motivationType,
-          // Nemesis classification
-          is_pc: !isNemesisMode,
-          adversary_type: isNemesisMode ? 'nemesis' : null,
         })
         .select('id').single()
       if (charErr) throw charErr
@@ -507,11 +462,7 @@ function CreateWizard() {
         })
       }
 
-      if (isNemesisMode) {
-        router.push(`/gm?campaign=${campaignId}&view=nemeses`)
-      } else {
-        router.push(`/character/${char.id}`)
-      }
+      router.push(`/character/${char.id}`)
     } catch (err) {
       alert(`Error: ${err instanceof Error ? err.message : String(err)}`)
       setSaving(false)
@@ -521,7 +472,7 @@ function CreateWizard() {
     xpSpentOnChars, xpSpentOnSkills, xpSpentOnTalents, xpSpentOnAdditionalSpecs,
     oblXpBonus, extraCredits, totalObligation,
     speciesOptionSkills, speciesSkillMods, refSkills,
-    supabase, router, isNemesisMode,
+    supabase, router,
   ])
 
   // ── Shared step nav helpers ───────────────────────────────────────────────
@@ -547,12 +498,12 @@ function CreateWizard() {
   return (
     <div style={{
       width: '100vw', minHeight: '100vh', overflow: 'auto',
-      background: isNemesisMode ? '#040A07' : 'var(--sand)',
+      background: 'var(--sand)',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', padding: 'var(--sp-xl) var(--sp-lg) calc(var(--sp-xl) * 3)',
       gap: 'var(--sp-lg)',
       transition: 'background 0.4s ease',
-      ['--creator-primary' as string]: isNemesisMode ? '#e05252' : 'var(--gold)',
+      ['--creator-primary' as string]: 'var(--gold)',
     } as React.CSSProperties}>
       {/* Ambient bg */}
       <div style={{
@@ -564,114 +515,14 @@ function CreateWizard() {
       {/* Header + step bar */}
       <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: '52rem', textAlign: 'center' }}>
 
-        {/* ── Nemesis mode button (top-right) ── */}
-        <div style={{ position: 'absolute', top: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-          {!isNemesisMode ? (
-            <button
-              onClick={() => setShowNemesisPinModal(true)}
-              style={{
-                fontFamily: 'var(--font-orbitron)',
-                fontSize: 'clamp(0.6rem, 0.85vw, 0.78rem)',
-                fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
-                padding: '5px 12px', borderRadius: 4, cursor: 'pointer',
-                border: '1px solid rgba(224,82,82,0.5)',
-                color: 'rgba(224,82,82,0.65)',
-                background: 'rgba(224,82,82,0.07)',
-                transition: 'color 150ms, background 150ms, border-color 150ms',
-              }}
-              onMouseEnter={e => {
-                const el = e.currentTarget as HTMLButtonElement
-                el.style.color = '#e05252'
-                el.style.background = 'rgba(224,82,82,0.12)'
-                el.style.borderColor = 'rgba(224,82,82,0.7)'
-              }}
-              onMouseLeave={e => {
-                const el = e.currentTarget as HTMLButtonElement
-                el.style.color = 'rgba(224,82,82,0.65)'
-                el.style.background = 'rgba(224,82,82,0.07)'
-                el.style.borderColor = 'rgba(224,82,82,0.5)'
-              }}
-            >
-              ⚡ CONVERT TO NEMESIS
-            </button>
-          ) : (
-            <div style={{ position: 'relative' }}>
-              <button
-                onClick={() => setShowNemesisCancelConfirm(v => !v)}
-                style={{
-                  fontFamily: 'var(--font-orbitron)',
-                  fontSize: 'clamp(0.6rem, 0.85vw, 0.78rem)',
-                  fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
-                  padding: '5px 12px', borderRadius: 4, cursor: 'pointer',
-                  border: '1px solid rgba(200,170,80,0.5)',
-                  color: 'rgba(200,170,80,0.65)',
-                  background: 'rgba(200,170,80,0.07)',
-                  transition: 'color 150ms, background 150ms, border-color 150ms',
-                }}
-                onMouseEnter={e => {
-                  const el = e.currentTarget as HTMLButtonElement
-                  el.style.color = '#C8AA50'
-                  el.style.background = 'rgba(200,170,80,0.12)'
-                  el.style.borderColor = 'rgba(200,170,80,0.7)'
-                }}
-                onMouseLeave={e => {
-                  const el = e.currentTarget as HTMLButtonElement
-                  el.style.color = 'rgba(200,170,80,0.65)'
-                  el.style.background = 'rgba(200,170,80,0.07)'
-                  el.style.borderColor = 'rgba(200,170,80,0.5)'
-                }}
-              >
-                ☠ CANCEL NEMESIS MODE
-              </button>
-              {showNemesisCancelConfirm && (
-                <div style={{
-                  position: 'absolute', top: 'calc(100% + 6px)', right: 0,
-                  background: 'rgba(4,10,7,0.97)', border: '1px solid rgba(200,170,80,0.3)',
-                  borderRadius: 6, padding: '12px 14px', minWidth: 220, zIndex: 200,
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
-                }}>
-                  <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'clamp(0.62rem, 0.88vw, 0.72rem)', color: 'rgba(232,223,200,0.7)', lineHeight: 1.5, marginBottom: 10 }}>
-                    Reset the creator and exit Nemesis Mode?
-                  </div>
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <button
-                      onClick={() => setShowNemesisCancelConfirm(false)}
-                      style={{
-                        flex: 1, padding: '5px 0', borderRadius: 3, cursor: 'pointer',
-                        fontFamily: 'var(--font-orbitron)', fontSize: 'clamp(0.58rem, 0.82vw, 0.68rem)',
-                        fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
-                        background: 'transparent', border: '1px solid rgba(200,170,80,0.3)', color: 'rgba(200,170,80,0.6)',
-                      }}
-                    >
-                      Keep
-                    </button>
-                    <button
-                      onClick={resetCreator}
-                      style={{
-                        flex: 1, padding: '5px 0', borderRadius: 3, cursor: 'pointer',
-                        fontFamily: 'var(--font-orbitron)', fontSize: 'clamp(0.58rem, 0.82vw, 0.68rem)',
-                        fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
-                        background: 'rgba(224,82,82,0.12)', border: '1px solid rgba(224,82,82,0.4)', color: '#e05252',
-                      }}
-                    >
-                      Yes, Cancel
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
         {/* ── Title ── */}
         <div style={{
           fontFamily: 'var(--font-orbitron)', fontWeight: 900,
           fontSize: 'var(--font-hero)', letterSpacing: '0.4rem',
-          color: isNemesisMode ? '#e05252' : 'var(--gold-d)',
-          textShadow: isNemesisMode ? '0 0 60px rgba(224,82,82,0.45)' : '0 0 60px var(--gold-glow-s)',
-          transition: 'color 0.3s ease, text-shadow 0.3s ease',
+          color: 'var(--gold-d)',
+          textShadow: '0 0 60px var(--gold-glow-s)',
         }}>
-          {isNemesisMode ? 'NEMESIS CREATOR' : 'NEW CHARACTER'}
+          NEW CHARACTER
         </div>
 
         {/* ── Step tabs ── */}
@@ -684,11 +535,11 @@ function CreateWizard() {
                 fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)',
                 fontWeight: i === step ? 700 : 500, letterSpacing: '0.1rem',
                 color: i === step
-                  ? (isNemesisMode ? '#e05252' : 'var(--gold-d)')
+                  ? 'var(--gold-d)'
                   : i < step ? 'var(--txt2)' : 'var(--txt3)',
                 background: 'none', border: 'none',
                 borderBottom: i === step
-                  ? `2px solid ${isNemesisMode ? '#e05252' : 'var(--gold)'}`
+                  ? '2px solid var(--gold)'
                   : '2px solid transparent',
                 padding: '0.25rem 0.5rem',
                 cursor: i < step ? 'pointer' : 'default', transition: '.2s',
@@ -1085,104 +936,6 @@ function CreateWizard() {
         )}
       </div>
 
-      {/* ── Nemesis Protocol PIN Modal ── */}
-      {showNemesisPinModal && typeof window !== 'undefined' && createPortal(
-        <div
-          style={{ position: 'fixed', inset: 0, zIndex: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,0.75)' }}
-          onClick={() => { setShowNemesisPinModal(false); setNemesisPinInput(''); setNemesisPinError(false) }}
-        >
-          <style>{`
-            @keyframes nemesis-shake {
-              0%, 100% { transform: translateX(0); }
-              20%       { transform: translateX(-8px); }
-              40%       { transform: translateX(8px); }
-              60%       { transform: translateX(-6px); }
-              80%       { transform: translateX(4px); }
-            }
-            .nemesis-pin-shake { animation: nemesis-shake 0.42s ease; }
-          `}</style>
-          <div
-            onClick={e => e.stopPropagation()}
-            style={{
-              background: 'rgba(4,10,7,0.98)',
-              border: '1px solid rgba(224,82,82,0.28)',
-              borderRadius: 8, padding: '28px 28px 24px',
-              maxWidth: 360, width: '100%',
-              boxShadow: '0 0 60px rgba(224,82,82,0.12), 0 20px 60px rgba(0,0,0,0.8)',
-              position: 'relative',
-            }}
-          >
-            {/* Red tint overlay */}
-            <div style={{ position: 'absolute', inset: 0, borderRadius: 8, background: 'rgba(224,82,82,0.035)', pointerEvents: 'none' }} />
-
-            {/* Title */}
-            <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'clamp(1rem, 1.4vw, 1.25rem)', fontWeight: 900, color: '#e05252', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 6, textAlign: 'center' }}>
-              NEMESIS PROTOCOL
-            </div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'clamp(0.8rem, 1vw, 0.95rem)', color: 'rgba(232,223,200,0.45)', textAlign: 'center', marginBottom: 22, letterSpacing: '0.04em' }}>
-              GM authorisation required.
-            </div>
-
-            {/* PIN input */}
-            <div className={nemesisPinShake ? 'nemesis-pin-shake' : ''}>
-              <input
-                autoFocus
-                type="password"
-                value={nemesisPinInput}
-                onChange={e => { setNemesisPinInput(e.target.value); setNemesisPinError(false) }}
-                onKeyDown={e => { if (e.key === 'Enter') handleNemesisPinSubmit() }}
-                placeholder="Enter GM PIN"
-                style={{
-                  width: '100%', boxSizing: 'border-box',
-                  padding: 'var(--sp-sm) var(--sp-md)',
-                  border: `1px solid ${nemesisPinError ? '#e05252' : 'rgba(224,82,82,0.35)'}`,
-                  background: 'rgba(0,0,0,0.5)',
-                  fontFamily: 'var(--font-mono)', fontSize: 'var(--font-base)',
-                  color: 'var(--txt1)', letterSpacing: '0.2em',
-                  outline: 'none', borderRadius: 4,
-                  transition: 'border-color 150ms',
-                  textAlign: 'center',
-                }}
-              />
-              {nemesisPinError && (
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'clamp(0.7rem, 0.9vw, 0.82rem)', color: '#e05252', textAlign: 'center', marginTop: 6 }}>
-                  Incorrect code
-                </div>
-              )}
-            </div>
-
-            {/* Buttons */}
-            <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
-              <button
-                onClick={() => { setShowNemesisPinModal(false); setNemesisPinInput(''); setNemesisPinError(false) }}
-                style={{
-                  flex: 1, padding: 'var(--sp-sm) 0', borderRadius: 4, cursor: 'pointer',
-                  fontFamily: 'var(--font-orbitron)', fontSize: 'clamp(0.62rem, 0.88vw, 0.72rem)',
-                  fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
-                  background: 'transparent', border: '1px solid rgba(232,223,200,0.2)', color: 'rgba(232,223,200,0.45)',
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleNemesisPinSubmit}
-                disabled={!nemesisPinInput}
-                style={{
-                  flex: 2, padding: 'var(--sp-sm) 0', borderRadius: 4, cursor: nemesisPinInput ? 'pointer' : 'default',
-                  fontFamily: 'var(--font-orbitron)', fontSize: 'clamp(0.62rem, 0.88vw, 0.72rem)',
-                  fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
-                  background: 'rgba(224,82,82,0.1)', border: '1px solid rgba(224,82,82,0.45)',
-                  color: nemesisPinInput ? '#e05252' : 'rgba(224,82,82,0.35)',
-                  transition: 'color 150ms, background 150ms',
-                }}
-              >
-                Authorise
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body,
-      )}
     </div>
   )
 }

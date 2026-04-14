@@ -179,20 +179,41 @@ export function CombatLog({ campaignId, encounterId, isDm }: CombatLogProps) {
         {displayEntries.map(entry => {
           const color = ALIGNMENT_COLOR[entry.alignment] ?? GOLD
           const isGmOnly = !entry.is_visible_to_players
+          const isPcAttack = isDm && entry.alignment === 'player' && !!entry.weapon_name
           return (
-            <div key={entry.id} style={{ display: 'flex', gap: 7, alignItems: 'flex-start', opacity: isGmOnly ? 0.72 : 1 }}>
+            <div
+              key={entry.id}
+              style={{
+                display: 'flex', gap: 7, alignItems: 'flex-start',
+                opacity: isGmOnly ? 0.72 : 1,
+                ...(isPcAttack ? {
+                  background: 'rgba(82,168,224,0.08)',
+                  borderLeft: `2px solid rgba(82,168,224,0.55)`,
+                  borderRadius: 3,
+                  paddingLeft: 6,
+                  marginLeft: -8,
+                  paddingTop: 2,
+                  paddingBottom: 2,
+                } : {}),
+              }}
+            >
               <span style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED, flexShrink: 0, minWidth: 36 }}>
                 {formatTime(entry.created_at)}
               </span>
-              <span style={{ fontFamily: FC, fontSize: FS_CAPTION, color, flexShrink: 0, minWidth: 64, fontWeight: 600 }}>
+              <span style={{
+                fontFamily: FC, fontSize: isPcAttack ? FS_LABEL : FS_CAPTION,
+                color, flexShrink: 0, minWidth: 64, fontWeight: 700,
+              }}>
                 {entry.participant_name}
               </span>
-              <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: TEXT_SEC, flex: 1 }}>
+              <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: isPcAttack ? TEXT : TEXT_SEC, flex: 1, lineHeight: 1.4 }}>
                 {entry.roll_type && entry.roll_type !== 'manual' && entry.roll_type !== 'system' && (
                   <span style={{ color: TEXT_MUTED, marginRight: 4 }}>[{entry.roll_type}]</span>
                 )}
                 {entry.weapon_name && (
-                  <span style={{ color: `${GOLD}90`, marginRight: 4 }}>{entry.weapon_name}:</span>
+                  <span style={{ color: isPcAttack ? GOLD : `${GOLD}90`, fontWeight: isPcAttack ? 700 : 400, marginRight: 4 }}>
+                    {entry.weapon_name}:
+                  </span>
                 )}
                 {entry.result_summary}
               </span>

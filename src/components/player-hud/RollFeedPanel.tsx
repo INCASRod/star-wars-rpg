@@ -176,7 +176,7 @@ function CardHeader({ roll, isOwn, ac }: { roll: RollEntry; isOwn: boolean; ac: 
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
       <div style={{ width: 7, height: 7, borderRadius: '50%', flexShrink: 0, background: ac, boxShadow: `0 0 6px ${ac}60` }} />
       <span style={{ fontFamily: FONT_CINZEL, fontSize: FS_NAME, fontWeight: 600, color: ac, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-        {roll.is_dm ? 'GM' : roll.character_name}
+        {roll.character_name}
       </span>
       <span style={{ fontFamily: FONT_MONO, fontSize: FS_TIME, color: 'rgba(232,223,200,0.3)', whiteSpace: 'nowrap' }}>
         {relativeTime(roll.rolled_at)}
@@ -463,7 +463,9 @@ export function RollFeedPanel({ rolls, ownCharacterId, isGm = false }: {
     )
   }
 
-  const grouped = groupRolls([...rolls].reverse())
+  // Players never see hidden rolls — GMs see everything
+  const visible  = isGm ? [...rolls].reverse() : [...rolls].reverse().filter(r => !r.hidden)
+  const grouped  = groupRolls(visible)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -495,10 +497,11 @@ export function RollFeedMini({ rolls, ownCharacterId, onExpand }: {
   ownCharacterId:  string
   onExpand:        () => void
 }) {
-  // Initiative and system are too low-signal for the compact view
+  // Initiative and system are too low-signal for the compact view.
+  // Hidden rolls are never shown in the player mini feed.
   const filtered = [...rolls]
     .reverse()
-    .filter(r => { const c = classifyRoll(r); return c !== 'initiative' && c !== 'system' })
+    .filter(r => !r.hidden && classifyRoll(r) !== 'initiative' && classifyRoll(r) !== 'system')
     .slice(0, 3)
 
   if (filtered.length === 0) return null
@@ -536,7 +539,7 @@ export function RollFeedMini({ rolls, ownCharacterId, onExpand }: {
               {/* Row 1: name + time */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontFamily: FONT_CINZEL, fontSize: FS_COMPACT, color: ac }}>
-                  {roll.is_dm ? 'GM' : roll.character_name}
+                  {roll.character_name}
                 </span>
                 <span style={{ fontFamily: FONT_MONO, fontSize: 'clamp(0.55rem, 0.85vw, 0.65rem)', color: 'rgba(232,223,200,0.25)' }}>
                   {relativeTime(roll.rolled_at)}

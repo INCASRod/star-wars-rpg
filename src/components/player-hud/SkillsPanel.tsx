@@ -16,6 +16,7 @@ export interface HudSkill {
   charVal: number
   rank: number
   isCareer: boolean
+  type?: 'stGeneral' | 'stCombat' | 'stKnowledge'
 }
 
 interface SkillsPanelProps {
@@ -103,9 +104,22 @@ function SkillModifierBadges({ mod }: { mod: SkillDiceModifier }) {
   )
 }
 
-type Filter = 'All' | 'Trained' | 'Career' | 'Has Bonus'
+type Filter    = 'All' | 'Trained' | 'Career' | 'Has Bonus'
+type GroupView = 'characteristic' | 'type'
 
 const CHAR_ORDER: CharKey[] = ['brawn', 'agility', 'intellect', 'cunning', 'willpower', 'presence']
+
+const TYPE_ORDER  = ['stGeneral', 'stCombat', 'stKnowledge'] as const
+const TYPE_LABELS: Record<string, string> = {
+  stGeneral:   'General',
+  stCombat:    'Combat',
+  stKnowledge: 'Knowledge',
+}
+const TYPE_COLORS: Record<string, string> = {
+  stGeneral:   '#C8AA50',
+  stCombat:    '#E05050',
+  stKnowledge: '#5AAAE0',
+}
 
 const CHAR_ABBR2: Record<string, string> = {
   brawn: 'br', agility: 'ag', intellect: 'int',
@@ -360,6 +374,10 @@ function SpeciesConditionalBadge({ ability }: { ability: SpeciesAbility }) {
 
 export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, onOpenPopover, characterId, skillModifiers = {}, speciesAbilities = [], bonusSkillKeys }: SkillsPanelProps) {
   const [filter, setFilter] = useState<Filter>('All')
+  const [groupView, setGroupView] = useState<GroupView>('characteristic')
+  const [collapsedTypes, setCollapsedTypes] = useState<Set<string>>(
+    () => new Set(TYPE_ORDER)
+  )
   const [confirmingKey, setConfirmingKey] = useState<string | null>(null)
   const [skillSearch, setSkillSearch] = useState('')
   const confirmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -416,12 +434,111 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
     skills: filtered.filter(s => s.charKey === charKey).sort((a, b) => a.name.localeCompare(b.name)),
   })).filter(g => g.skills.length > 0)
 
+  const groupedByType = TYPE_ORDER.map(typeKey => ({
+    typeKey,
+    skills: filtered.filter(s => (s.type ?? 'stGeneral') === typeKey).sort((a, b) => a.name.localeCompare(b.name)),
+  })).filter(g => g.skills.length > 0)
+
   const handleSkillClick = (skill: HudSkill, e?: React.MouseEvent<HTMLElement>) => {
     if (onOpenPopover && e) {
       onOpenPopover(skill, e.currentTarget.getBoundingClientRect())
     } else {
       onRoll(skill)
     }
+  }
+
+  const renderSkillRow = (skill: HudSkill, careerBorderColor: string) => {
+    const tip = getSkillTip(skill.name)
+    const isMaxRank = skill.rank >= 5
+    const hoverColor = isCombat ? '#4EC87A' : C.gold
+    const isConfirming = confirmingKey === skill.key
+
+    const tooltipContent = tip ? (
+      <>
+        <TipLabel>{skill.name}</TipLabel>
+        <TipBody>{tip.description}</TipBody>
+        {tip.examples.length > 0 && (
+          <>
+            <TipDivider />
+            {tip.examples.map((ex, i) => (
+              <TipBody key={i}>· {ex}</TipBody>
+            ))}
+          </>
+        )}
+      </>
+    ) : <TipLabel>{skill.name}</TipLabel>
+
+    return (
+      <div
+        key={skill.key}
+        onClick={!isConfirming ? (e) => handleSkillClick(skill, e) : undefined}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '5px 6px', marginBottom: 2,
+          borderRadius: isConfirming ? 6 : 3,
+          ...(isConfirming ? {
+            border: '1px solid rgba(200,170,80,0.3)',
+            background: 'rgba(200,170,80,0.08)',
+          } : {
+            borderLeft: skill.isCareer ? `2px solid ${careerBorderColor}88` : '2px solid transparent',
+            background: 'transparent',
+          }),
+          cursor: !isConfirming ? 'pointer' : 'default',
+          transition: '.15s',
+          opacity: !isConfirming && !isCombat && isMaxRank ? 0.5 : 1,
+        }}
+        onMouseEnter={e => {
+          if (!isConfirming) {
+            (e.currentTarget as HTMLElement).style.background = `${hoverColor}0D`
+          }
+        }}
+        onMouseLeave={e => {
+          if (!isConfirming) {
+            (e.currentTarget as HTMLElement).style.background = 'transparent'
+          }
+        }}
+      >
+        {isConfirming ? (
+          <InlineConfirmation
+            skill={skill}
+            xpAvailable={xpAvailable}
+            onConfirm={() => executeUpgrade(skill)}
+            onCancel={cancelConfirm}
+          />
+        ) : (
+          <>
+            <Tooltip content={tooltipContent} placement="right" maxWidth={280}>
+              <div style={{
+                flex: 1, fontFamily: FONT_RAJDHANI, fontSize: 14, fontWeight: 600,
+                color: skill.rank > 0 ? C.text : C.textDim,
+                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+              }}>
+                {skill.name}
+              </div>
+            </Tooltip>
+
+            {speciesAbilities
+              .filter(a => a.is_conditional && Array.isArray(a.affected_skills) && a.affected_skills.includes(skill.key))
+              .map((a, i) => <SpeciesConditionalBadge key={i} ability={a} />)
+            }
+
+            {!isMaxRank && (
+              <UpgradeButton
+                skill={skill}
+                xpAvailable={xpAvailable}
+                onClick={() => startConfirm(skill.key)}
+              />
+            )}
+
+            <RankPips rank={skill.rank} />
+            <PoolPreview charVal={skill.charVal} rank={skill.rank} />
+            {skillModifiers[skill.key] && (
+              <SkillModifierBadges mod={skillModifiers[skill.key]} />
+            )}
+          </>
+        )}
+      </div>
+    )
   }
 
   const xpColor = xpAvailable > 20
@@ -487,6 +604,37 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
         </div>
       </div>
 
+      {/* Group view toggle */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span style={{
+          fontFamily: FONT_RAJDHANI, fontSize: 10, fontWeight: 700,
+          letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textDim,
+        }}>
+          View:
+        </span>
+        {(['characteristic', 'type'] as GroupView[]).map(v => {
+          const active = groupView === v
+          const label  = v === 'characteristic' ? 'By Characteristic' : 'By Type'
+          return (
+            <button
+              key={v}
+              onClick={() => setGroupView(v)}
+              style={{
+                background: active ? `${C.gold}22` : 'transparent',
+                border: `1px solid ${active ? C.gold : C.border}`,
+                borderRadius: 4, padding: '3px 10px',
+                fontFamily: FONT_RAJDHANI, fontSize: 11, fontWeight: 700,
+                letterSpacing: '0.08em', textTransform: 'uppercase',
+                color: active ? C.gold : C.textDim,
+                cursor: 'pointer', transition: '.15s',
+              }}
+            >
+              {label}
+            </button>
+          )
+        })}
+      </div>
+
       {/* Legend */}
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -515,7 +663,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
       />
 
       {/* No-results message */}
-      {grouped.length === 0 && searchQuery && (
+      {(groupView === 'characteristic' ? grouped : groupedByType).length === 0 && searchQuery && (
         <div style={{
           textAlign: 'center',
           fontFamily: FONT_RAJDHANI,
@@ -528,137 +676,106 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
         </div>
       )}
 
-      {/* 2-column grid of characteristic groups */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, 1fr)',
-        gap: 10,
-      }}>
-        {grouped.map(({ charKey, charVal, skills: groupSkills }) => {
-          const color = CHAR_COLOR[charKey]
-          return (
-            <div key={charKey} style={{ ...panelBase, padding: '10px 10px 6px' }}>
-              <CornerBrackets />
-              {/* Group header */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                <div style={{
-                  width: 28, height: 28, borderRadius: 4, flexShrink: 0,
-                  background: `${color}22`, border: `1px solid ${color}55`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontFamily: FONT_RAJDHANI, fontSize: 18, fontWeight: 700, color,
-                }}>
-                  {charVal}
+      {/* ── By Characteristic view ── */}
+      {groupView === 'characteristic' && (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: 10,
+        }}>
+          {grouped.map(({ charKey, charVal, skills: groupSkills }) => {
+            const color = CHAR_COLOR[charKey]
+            return (
+              <div key={charKey} style={{ ...panelBase, padding: '10px 10px 6px' }}>
+                <CornerBrackets />
+                {/* Group header */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <div style={{
+                    width: 28, height: 28, borderRadius: 4, flexShrink: 0,
+                    background: `${color}22`, border: `1px solid ${color}55`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: FONT_RAJDHANI, fontSize: 18, fontWeight: 700, color,
+                  }}>
+                    {charVal}
+                  </div>
+                  <div style={{
+                    fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700,
+                    letterSpacing: '0.1em', textTransform: 'uppercase',
+                    color: `${color}CC`,
+                  }}>
+                    {CHAR_ABBR3[charKey]}
+                  </div>
                 </div>
-                <div style={{
-                  fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700,
-                  letterSpacing: '0.1em', textTransform: 'uppercase',
-                  color: `${color}CC`,
-                }}>
-                  {CHAR_ABBR3[charKey]}
-                </div>
+                {groupSkills.map(skill => renderSkillRow(skill, color))}
               </div>
+            )
+          })}
+        </div>
+      )}
 
-              {/* Skill rows */}
-              {groupSkills.map(skill => {
-                const tip = getSkillTip(skill.name)
-                const isMaxRank = skill.rank >= 5
-                const hoverColor = isCombat ? '#4EC87A' : C.gold
-                const isConfirming = confirmingKey === skill.key
-
-                const tooltipContent = tip ? (
-                  <>
-                    <TipLabel>{skill.name}</TipLabel>
-                    <TipBody>{tip.description}</TipBody>
-                    {tip.examples.length > 0 && (
-                      <>
-                        <TipDivider />
-                        {tip.examples.map((ex, i) => (
-                          <TipBody key={i}>· {ex}</TipBody>
-                        ))}
-                      </>
-                    )}
-                  </>
-                ) : <TipLabel>{skill.name}</TipLabel>
-
-                return (
-                  <div
-                    key={skill.key}
-                    onClick={!isConfirming ? (e) => handleSkillClick(skill, e) : undefined}
+      {/* ── By Type view ── */}
+      {groupView === 'type' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {groupedByType.map(({ typeKey, skills: groupSkills }) => {
+            const color     = TYPE_COLORS[typeKey]
+            const collapsed = collapsedTypes.has(typeKey)
+            const toggle    = () => setCollapsedTypes(prev => {
+              const next = new Set(prev)
+              collapsed ? next.delete(typeKey) : next.add(typeKey)
+              return next
+            })
+            return (
+              <div key={typeKey} style={{ ...panelBase, padding: 0, overflow: 'hidden' }}>
+                <CornerBrackets color={color} />
+                {/* Group header — clickable */}
+                <button
+                  onClick={toggle}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center', gap: 8,
+                    padding: '8px 10px',
+                    background: 'transparent', border: 'none', cursor: 'pointer',
+                    textAlign: 'left',
+                  }}
+                >
+                  {/* Chevron */}
+                  <svg
+                    width={10} height={10} viewBox="0 0 10 10"
                     style={{
-                      display: 'flex', alignItems: 'center', gap: 6,
-                      padding: '5px 6px', marginBottom: 2,
-                      borderRadius: isConfirming ? 6 : 3,
-                      ...(isConfirming ? {
-                        border: '1px solid rgba(200,170,80,0.3)',
-                        background: 'rgba(200,170,80,0.08)',
-                      } : {
-                        borderLeft: skill.isCareer ? `2px solid ${color}88` : '2px solid transparent',
-                        background: 'transparent',
-                      }),
-                      cursor: !isConfirming ? 'pointer' : 'default',
-                      transition: '.15s',
-                      opacity: !isConfirming && !isCombat && isMaxRank ? 0.5 : 1,
-                    }}
-                    onMouseEnter={e => {
-                      if (!isConfirming) {
-                        (e.currentTarget as HTMLElement).style.background = `${hoverColor}0D`
-                      }
-                    }}
-                    onMouseLeave={e => {
-                      if (!isConfirming) {
-                        (e.currentTarget as HTMLElement).style.background = 'transparent'
-                      }
+                      flexShrink: 0,
+                      transition: 'transform .18s',
+                      transform: collapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
                     }}
                   >
-                    {isConfirming ? (
-                      <InlineConfirmation
-                        skill={skill}
-                        xpAvailable={xpAvailable}
-                        onConfirm={() => executeUpgrade(skill)}
-                        onCancel={cancelConfirm}
-                      />
-                    ) : (
-                      <>
-                        {/* Skill name — Tooltip wraps only this for description */}
-                        <Tooltip content={tooltipContent} placement="right" maxWidth={280}>
-                          <div style={{
-                            flex: 1, fontFamily: FONT_RAJDHANI, fontSize: 14, fontWeight: 600,
-                            color: skill.rank > 0 ? C.text : C.textDim,
-                            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                          }}>
-                            {skill.name}
-                          </div>
-                        </Tooltip>
-
-                        {/* Species conditional ability badges */}
-                        {speciesAbilities
-                          .filter(a => a.is_conditional && Array.isArray(a.affected_skills) && a.affected_skills.includes(skill.key))
-                          .map((a, i) => <SpeciesConditionalBadge key={i} ability={a} />)
-                        }
-
-                        {/* [+] upgrade button — immediately left of rank pips */}
-                        {!isMaxRank && (
-                          <UpgradeButton
-                            skill={skill}
-                            xpAvailable={xpAvailable}
-                            onClick={() => startConfirm(skill.key)}
-                          />
-                        )}
-
-                        <RankPips rank={skill.rank} />
-                        <PoolPreview charVal={skill.charVal} rank={skill.rank} />
-                        {skillModifiers[skill.key] && (
-                          <SkillModifierBadges mod={skillModifiers[skill.key]} />
-                        )}
-                      </>
-                    )}
+                    <polyline
+                      points="1,3 5,7 9,3"
+                      fill="none" stroke={`${color}88`} strokeWidth="1.8"
+                      strokeLinecap="round" strokeLinejoin="round"
+                    />
+                  </svg>
+                  <div style={{
+                    fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700,
+                    letterSpacing: '0.12em', textTransform: 'uppercase',
+                    color: `${color}CC`,
+                    borderLeft: `2px solid ${color}66`,
+                    paddingLeft: 8,
+                  }}>
+                    {TYPE_LABELS[typeKey]}
                   </div>
-                )
-              })}
-            </div>
-          )
-        })}
-      </div>
+                  <div style={{ fontFamily: FONT_MONO, fontSize: 10, color: `${color}66` }}>
+                    {groupSkills.length} skill{groupSkills.length !== 1 ? 's' : ''}
+                  </div>
+                </button>
+                {/* Skill rows */}
+                {!collapsed && (
+                  <div style={{ padding: '0 10px 6px' }}>
+                    {groupSkills.map(skill => renderSkillRow(skill, CHAR_COLOR[skill.charKey]))}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
