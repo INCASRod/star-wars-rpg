@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Vehicle, VehicleAbility } from '@/lib/vehicles'
+import { vehicleWeaponStats, ALL_VEHICLE_WEAPONS } from '@/lib/vehicles'
+import { toast } from 'sonner'
 
 /* ── Design tokens ─────────────────────────────────────── */
 const FC       = "var(--font-cinzel), 'Cinzel', serif"
@@ -61,7 +63,37 @@ const VEHICLE_TYPES = [
 ]
 
 interface AbilityEntry { name: string; description: string }
-interface WeaponEntry  { weaponKey: string; count: number; turret: boolean; location: string; qualitiesText: string }
+interface WeaponEntry  {
+  weaponKey:    string
+  count:        number
+  turret:       boolean
+  location:     string
+  qualitiesText: string
+  arcFore?:      boolean
+  arcAft?:       boolean
+  arcPort?:      boolean
+  arcStarboard?: boolean
+  arcDorsal?:    boolean
+  arcVentral?:   boolean
+}
+
+// Arc field descriptors with their per-field defaults
+const ARC_FIELDS: { label: string; field: keyof WeaponEntry; defaultVal: boolean }[] = [
+  { label: 'Fore',    field: 'arcFore',      defaultVal: true  },
+  { label: 'Aft',     field: 'arcAft',       defaultVal: false },
+  { label: 'Port',    field: 'arcPort',      defaultVal: false },
+  { label: 'Stbd',    field: 'arcStarboard', defaultVal: false },
+  { label: 'Dorsal',  field: 'arcDorsal',    defaultVal: false },
+  { label: 'Ventral', field: 'arcVentral',   defaultVal: false },
+]
+
+// Resolve a boolean arc value, falling back to the field's default
+function arcVal(w: WeaponEntry, field: keyof WeaponEntry, defaultVal: boolean): boolean {
+  const v = w[field]
+  return v === undefined ? defaultVal : Boolean(v)
+}
+
+const SENSOR_RANGES = ['Close', 'Short', 'Medium', 'Long', 'Extreme']
 
 function fromVehicle(v: Vehicle) {
   return {
@@ -82,13 +114,26 @@ function fromVehicle(v: Vehicle) {
     passengers:  v.passengers ?? 0,
     encumbranceCapacity: v.encumbranceCapacity ?? 0,
     consumables: v.consumables ?? '',
+    hyperdrivePrimary: v.hyperdrivePrimary ?? null as number | null,
+    hyperdriveBackup:  v.hyperdriveBackup  ?? null as number | null,
+    naviComputer:      v.naviComputer      ?? false,
+    sensorRange:       v.sensorRange       ?? '',
+    maxAltitude:       v.maxAltitude       ?? '',
+    massiveValue:      v.massiveValue      ?? null as number | null,
+    hardPoints:        v.hardPoints        ?? null as number | null,
     abilities:   (v.abilities ?? []).map(a => ({ name: a.name, description: a.description })),
     weapons:     v.weapons.map(w => ({
-      weaponKey:    w.weaponKey,
-      count:        w.count,
-      turret:       w.turret,
-      location:     w.location,
+      weaponKey:     w.weaponKey,
+      count:         w.count,
+      turret:        w.turret,
+      location:      w.location,
       qualitiesText: w.qualities.map(q => `${q.key}${q.count > 1 ? ' ' + q.count : ''}`).join(', '),
+      arcFore:       w.firingArcs?.fore      ?? true,
+      arcAft:        w.firingArcs?.aft       ?? false,
+      arcPort:       w.firingArcs?.port      ?? false,
+      arcStarboard:  w.firingArcs?.starboard ?? false,
+      arcDorsal:     w.firingArcs?.dorsal    ?? false,
+      arcVentral:    w.firingArcs?.ventral   ?? false,
     })),
     description: v.description ?? '',
   }
@@ -145,12 +190,20 @@ export function VehicleEditor({
   const [passengers,   setPassengers]   = useState(init.passengers  ?? 0)
   const [encCap,       setEncCap]       = useState(init.encumbranceCapacity ?? 0)
   const [consumables,  setConsumables]  = useState(init.consumables ?? '')
+  const [hyperdrivePrimary, setHyperdrivePrimary] = useState<number | null>(init.hyperdrivePrimary ?? null)
+  const [hyperdriveBackup,  setHyperdriveBackup]  = useState<number | null>(init.hyperdriveBackup  ?? null)
+  const [naviComputer,      setNaviComputer]      = useState(init.naviComputer ?? false)
+  const [sensorRange,       setSensorRange]       = useState(init.sensorRange  ?? '')
+  const [maxAltitude,       setMaxAltitude]       = useState(init.maxAltitude  ?? '')
+  const [massiveValue,      setMassiveValue]      = useState<number | null>(init.massiveValue ?? null)
+  const [hardPoints,        setHardPoints]        = useState<number | null>(init.hardPoints   ?? null)
   const [abilities,    setAbilities]    = useState<AbilityEntry[]>(init.abilities ?? [])
   const [weapons,      setWeapons]      = useState<WeaponEntry[]>(init.weapons ?? [])
   const [description,  setDescription]  = useState(init.description ?? '')
 
-  const [saving, setSaving] = useState(false)
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [saving,    setSaving]    = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [errors,    setErrors]    = useState<Record<string, string>>({})
 
   /* ── Apply template ──────────────────────────────────── */
   const applyTemplate = (v: Vehicle & { _isCustom?: boolean }) => {
@@ -172,6 +225,13 @@ export function VehicleEditor({
     setPassengers(d.passengers ?? 0)
     setEncCap(d.encumbranceCapacity ?? 0)
     setConsumables(d.consumables ?? '')
+    setHyperdrivePrimary(d.hyperdrivePrimary ?? null)
+    setHyperdriveBackup(d.hyperdriveBackup   ?? null)
+    setNaviComputer(d.naviComputer ?? false)
+    setSensorRange(d.sensorRange   ?? '')
+    setMaxAltitude(d.maxAltitude   ?? '')
+    setMassiveValue(d.massiveValue ?? null)
+    setHardPoints(d.hardPoints     ?? null)
     setAbilities(d.abilities ?? [])
     setWeapons(d.weapons ?? [])
     setDescription(d.description ?? '')
@@ -189,13 +249,21 @@ export function VehicleEditor({
     if (Object.keys(errs).length) { setErrors(errs); return }
 
     setSaving(true)
+    setSaveError(null)
     try {
       const parsedWeapons = weapons.map(w => ({
         weaponKey:  w.weaponKey,
         count:      w.count,
         turret:     w.turret,
         location:   w.location,
-        firingArcs: { fore: true, aft: false, port: false, starboard: false, dorsal: false, ventral: false },
+        firingArcs: {
+          fore:      arcVal(w, 'arcFore',      true),
+          aft:       arcVal(w, 'arcAft',       false),
+          port:      arcVal(w, 'arcPort',      false),
+          starboard: arcVal(w, 'arcStarboard', false),
+          dorsal:    arcVal(w, 'arcDorsal',    false),
+          ventral:   arcVal(w, 'arcVentral',   false),
+        },
         qualities:  w.qualitiesText
           .split(',').map(s => s.trim()).filter(Boolean)
           .map(s => { const [key, ...rest] = s.split(' '); return { key, count: parseInt(rest[0] ?? '1') || 1 } }),
@@ -209,6 +277,13 @@ export function VehicleEditor({
         armor, hull_trauma: hullTrauma, system_strain: systemStrain,
         crew: crew || null, passengers, encumbrance_capacity: encCap,
         consumables: consumables || null,
+        hyperdrive_primary: hyperdrivePrimary,
+        hyperdrive_backup:  hyperdriveBackup,
+        navi_computer:      isStarship ? naviComputer : null,
+        sensor_range:       sensorRange  || null,
+        max_altitude:       maxAltitude  || null,
+        massive_value:      massiveValue,
+        hard_points:        hardPoints,
         weapons:     parsedWeapons,
         abilities,
         description: description || null,
@@ -236,6 +311,13 @@ export function VehicleEditor({
         passengers: passengers || undefined,
         encumbranceCapacity: encCap || undefined,
         consumables: consumables || undefined,
+        hyperdrivePrimary: hyperdrivePrimary ?? undefined,
+        hyperdriveBackup:  hyperdriveBackup  ?? undefined,
+        naviComputer:      isStarship ? naviComputer : undefined,
+        sensorRange:       sensorRange  || undefined,
+        maxAltitude:       maxAltitude  || undefined,
+        massiveValue:      massiveValue ?? undefined,
+        hardPoints:        hardPoints   ?? undefined,
         weapons:    parsedWeapons,
         abilities,
         description: description || undefined,
@@ -244,14 +326,22 @@ export function VehicleEditor({
       }
       onSaved(saved)
     } catch (err) {
-      console.error('Save failed', err)
+      // Supabase PostgrestError has non-enumerable props — extract them explicitly
+      const e = err as { message?: string; code?: string; details?: string; hint?: string } | null
+      const msg = e?.message ?? String(err)
+      console.error('Save failed:', msg, { code: e?.code, details: e?.details, hint: e?.hint })
+      setSaveError(msg)
+      toast.error(`Save failed: ${msg}`)
     } finally {
       setSaving(false)
     }
   }
 
   /* ── Weapons helpers ─────────────────────────────────── */
-  const addWeapon = () => setWeapons(prev => [...prev, { weaponKey: '', count: 1, turret: false, location: '', qualitiesText: '' }])
+  const addWeapon = () => setWeapons(prev => [...prev, {
+    weaponKey: '', count: 1, turret: false, location: '', qualitiesText: '',
+    arcFore: true, arcAft: false, arcPort: false, arcStarboard: false, arcDorsal: false, arcVentral: false,
+  }])
   const removeWeapon = (i: number) => setWeapons(prev => prev.filter((_, idx) => idx !== i))
   const updateWeapon = (i: number, field: keyof WeaponEntry, val: unknown) =>
     setWeapons(prev => prev.map((w, idx) => idx === i ? { ...w, [field]: val } : w))
@@ -265,12 +355,12 @@ export function VehicleEditor({
   /* ── Modal portal ───────────────────────────────────── */
   const modal = (
     <>
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 800, background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)' }} />
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 9050, background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)' }} />
       <div
         onClick={e => e.stopPropagation()}
         style={{
           position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-          zIndex: 810, width: 'min(640px, 96vw)', maxHeight: '90vh',
+          zIndex: 9060, width: 'min(640px, 96vw)', maxHeight: '90vh',
           background: PANEL_BG, border: `1px solid ${BORDER_HI}`, borderRadius: 8,
           display: 'flex', flexDirection: 'column',
           boxShadow: '0 20px 60px rgba(0,0,0,0.8)',
@@ -449,37 +539,203 @@ export function VehicleEditor({
             </div>
           </div>
 
+          {/* Hyperdrive & Sensors — starship only */}
+          {isStarship && (
+            <div>
+              <div style={sectionHead}>Hyperdrive &amp; Sensors</div>
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+                <div>
+                  <div style={fieldLabel}>Primary Class</div>
+                  <input
+                    type="number"
+                    value={hyperdrivePrimary ?? ''}
+                    onChange={e => setHyperdrivePrimary(e.target.value === '' ? null : parseInt(e.target.value) || 1)}
+                    style={numInput}
+                    min={1} max={20}
+                    placeholder="—"
+                  />
+                </div>
+                <div>
+                  <div style={fieldLabel}>Backup Class</div>
+                  <input
+                    type="number"
+                    value={hyperdriveBackup ?? ''}
+                    onChange={e => setHyperdriveBackup(e.target.value === '' ? null : parseInt(e.target.value) || 1)}
+                    style={numInput}
+                    min={1} max={20}
+                    placeholder="—"
+                  />
+                </div>
+                <label style={{ fontFamily: FR, fontSize: FS_SM, color: naviComputer ? TEXT : DIM, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, paddingBottom: 2 }}>
+                  <input
+                    type="checkbox"
+                    checked={naviComputer}
+                    onChange={e => setNaviComputer(e.target.checked)}
+                    style={{ accentColor: GOLD }}
+                  />
+                  Navicomputer
+                </label>
+                <div>
+                  <div style={fieldLabel}>Sensor Range</div>
+                  <select
+                    value={sensorRange}
+                    onChange={e => setSensorRange(e.target.value)}
+                    style={{ ...inputStyle, width: 120, cursor: 'pointer' }}
+                  >
+                    <option value="">—</option>
+                    {SENSOR_RANGES.map(r => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Misc Stats */}
+          <div>
+            <div style={sectionHead}>Miscellaneous</div>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              <div>
+                <div style={fieldLabel}>Hard Points</div>
+                <input
+                  type="number"
+                  value={hardPoints ?? ''}
+                  onChange={e => setHardPoints(e.target.value === '' ? null : parseInt(e.target.value) || 0)}
+                  style={numInput}
+                  min={0}
+                  placeholder="—"
+                />
+              </div>
+              <div>
+                <div style={fieldLabel}>Massive</div>
+                <input
+                  type="number"
+                  value={massiveValue ?? ''}
+                  onChange={e => setMassiveValue(e.target.value === '' ? null : parseInt(e.target.value) || 0)}
+                  style={numInput}
+                  min={0}
+                  placeholder="—"
+                />
+              </div>
+              {!isStarship && (
+                <div>
+                  <div style={fieldLabel}>Max Altitude</div>
+                  <input
+                    value={maxAltitude}
+                    onChange={e => setMaxAltitude(e.target.value)}
+                    style={{ ...inputStyle, width: 160 }}
+                    placeholder="e.g. Low orbit"
+                  />
+                </div>
+              )}
+              {!isStarship && (
+                <div>
+                  <div style={fieldLabel}>Sensor Range</div>
+                  <select
+                    value={sensorRange}
+                    onChange={e => setSensorRange(e.target.value)}
+                    style={{ ...inputStyle, width: 120, cursor: 'pointer' }}
+                  >
+                    <option value="">—</option>
+                    {SENSOR_RANGES.map(r => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Weapons */}
           <div>
             <div style={sectionHead}>Weapons</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {weapons.map((w, i) => (
-                <div key={i} style={{ background: 'rgba(14,26,18,0.6)', border: `1px solid ${BORDER}`, borderRadius: 4, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 60px 80px', gap: 8 }}>
-                    <div>
-                      <div style={fieldLabel}>Weapon Key</div>
-                      <input value={w.weaponKey} onChange={e => updateWeapon(i, 'weaponKey', e.target.value)} style={inputStyle} placeholder="e.g. BLASTCANLT" />
-                    </div>
-                    <div>
-                      <div style={fieldLabel}>Count</div>
-                      <input type="number" value={w.count} onChange={e => updateWeapon(i, 'count', parseInt(e.target.value) || 1)} style={numInput} min={1} />
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-                      <label style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                        <input type="checkbox" checked={w.turret} onChange={e => updateWeapon(i, 'turret', e.target.checked)} />
+              {weapons.map((w, i) => {
+                const stats = vehicleWeaponStats(w.weaponKey)
+                return (
+                  <div key={i} style={{ background: 'rgba(14,26,18,0.6)', border: `1px solid ${BORDER}`, borderRadius: 4, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+
+                    {/* Row 1: weapon select + count + turret */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 64px auto', gap: 8, alignItems: 'end' }}>
+                      <div>
+                        <div style={fieldLabel}>Weapon</div>
+                        <select
+                          value={w.weaponKey}
+                          onChange={e => updateWeapon(i, 'weaponKey', e.target.value)}
+                          style={{ ...inputStyle, cursor: 'pointer' }}
+                        >
+                          <option value="">— select weapon —</option>
+                          {ALL_VEHICLE_WEAPONS.map(v => (
+                            <option key={v.key} value={v.key}>
+                              {v.key} — {v.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <div style={fieldLabel}>Count</div>
+                        <input type="number" value={w.count} onChange={e => updateWeapon(i, 'count', parseInt(e.target.value) || 1)} style={numInput} min={1} />
+                      </div>
+                      <label style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, paddingBottom: 2, whiteSpace: 'nowrap' }}>
+                        <input type="checkbox" checked={w.turret} onChange={e => updateWeapon(i, 'turret', e.target.checked)} style={{ accentColor: GOLD }} />
                         Turret
                       </label>
                     </div>
+
+                    {/* Stats preview — shown when key resolves */}
+                    {stats ? (
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                        <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, letterSpacing: '0.06em' }}>
+                          {stats.name}
+                        </span>
+                        <span style={{ fontFamily: "'Share Tech Mono',monospace", fontSize: FS_CAPTION, color: RED }}>
+                          Dmg {stats.damage}
+                        </span>
+                        {stats.crit !== undefined && (
+                          <span style={{ fontFamily: "'Share Tech Mono',monospace", fontSize: FS_CAPTION, color: RED }}>
+                            Crit {stats.crit}
+                          </span>
+                        )}
+                        <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>
+                          {stats.range}
+                        </span>
+                      </div>
+                    ) : w.weaponKey ? (
+                      <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: 'rgba(224,80,80,0.6)', fontStyle: 'italic' }}>
+                        Unknown key — stats not available
+                      </div>
+                    ) : null}
+
+                    {/* Firing arcs */}
+                    <div>
+                      <div style={fieldLabel}>Firing Arcs</div>
+                      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                        {ARC_FIELDS.map(({ label, field, defaultVal }) => {
+                          const checked = arcVal(w, field, defaultVal)
+                          return (
+                            <label key={field} style={{ fontFamily: FR, fontSize: FS_CAPTION, color: checked ? TEXT : DIM, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={e => updateWeapon(i, field, e.target.checked)}
+                                style={{ accentColor: GOLD }}
+                              />
+                              {label}
+                            </label>
+                          )
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Qualities */}
+                    <div>
+                      <div style={fieldLabel}>Qualities (comma-separated, e.g. "LINKED 2, BREACH 1")</div>
+                      <input value={w.qualitiesText} onChange={e => updateWeapon(i, 'qualitiesText', e.target.value)} style={inputStyle} placeholder="LINKED 2, LIMITEDAMMO 4" />
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <button onClick={() => removeWeapon(i)} style={btnDanger}>✕ Remove</button>
+                    </div>
                   </div>
-                  <div>
-                    <div style={fieldLabel}>Qualities (comma-separated, e.g. "LINKED 2, CUMBERSOME 3")</div>
-                    <input value={w.qualitiesText} onChange={e => updateWeapon(i, 'qualitiesText', e.target.value)} style={inputStyle} placeholder="LINKED 2, LIMITEDAMMO 4" />
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <button onClick={() => removeWeapon(i)} style={btnDanger}>✕ Remove</button>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
               <button onClick={addWeapon} style={btnSmall}>+ Add Weapon</button>
             </div>
           </div>
@@ -521,17 +777,24 @@ export function VehicleEditor({
         </div>
 
         {/* Footer */}
-        <div style={{ flexShrink: 0, padding: '14px 24px', borderTop: `1px solid ${BORDER}`, display: 'flex', gap: 10 }}>
-          <button onClick={onClose} style={{ flex: 1, background: 'transparent', border: `1px solid ${BORDER}`, color: DIM, fontFamily: FR, fontSize: FS_SM, fontWeight: 700, padding: '9px 0', borderRadius: 3, cursor: 'pointer' }}>
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            style={{ flex: 2, background: 'rgba(200,170,80,0.12)', border: `1px solid ${GOLD_DIM}`, color: GOLD, fontFamily: FR, fontSize: FS_SM, fontWeight: 700, letterSpacing: '0.1em', padding: '9px 0', borderRadius: 3, cursor: saving ? 'wait' : 'pointer', opacity: saving ? 0.6 : 1 }}
-          >
-            {saving ? 'Saving…' : editId ? '✓ Save Changes' : '✓ Create Vehicle'}
-          </button>
+        <div style={{ flexShrink: 0, padding: '14px 24px', borderTop: `1px solid ${BORDER}`, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {saveError && (
+            <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: RED, background: 'rgba(224,80,80,0.08)', border: '1px solid rgba(224,80,80,0.25)', borderRadius: 3, padding: '6px 10px' }}>
+              {saveError}
+            </div>
+          )}
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button onClick={onClose} style={{ flex: 1, background: 'transparent', border: `1px solid ${BORDER}`, color: DIM, fontFamily: FR, fontSize: FS_SM, fontWeight: 700, padding: '9px 0', borderRadius: 3, cursor: 'pointer' }}>
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              style={{ flex: 2, background: 'rgba(200,170,80,0.12)', border: `1px solid ${GOLD_DIM}`, color: GOLD, fontFamily: FR, fontSize: FS_SM, fontWeight: 700, letterSpacing: '0.1em', padding: '9px 0', borderRadius: 3, cursor: saving ? 'wait' : 'pointer', opacity: saving ? 0.6 : 1 }}
+            >
+              {saving ? 'Saving…' : editId ? '✓ Save Changes' : '✓ Create Vehicle'}
+            </button>
+          </div>
         </div>
       </div>
     </>

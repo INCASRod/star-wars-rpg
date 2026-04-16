@@ -3,7 +3,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { toast } from 'sonner'
 import type { Adversary } from '@/lib/adversaries'
+import { resolveWeapon } from '@/lib/resolve-weapon'
 import { TokenImageLinks } from './TokenImageLinks'
 import { RichText } from '@/components/ui/RichText'
 
@@ -93,12 +95,17 @@ export interface AdversaryDetailPanelProps {
   onEdit:           () => void
   onAddToCombat:    () => void
   onTokenUploaded:  (adversaryName: string, url: string) => void
+  /** When provided, patches existing map_tokens rows with the new image URL after upload. */
+  mapId?:           string | null
+  /** Overrides the footer button label. Defaults to '⚔ Add to Combat'. */
+  addButtonLabel?:  string
 }
 
 /* ── Component ─────────────────────────────────────────── */
 export function AdversaryDetailPanel({
   adversary, campaignId, supabase, tokenUrl,
   onClose, onEdit, onAddToCombat, onTokenUploaded,
+  mapId, addButtonLabel,
 }: AdversaryDetailPanelProps) {
   const [mounted,      setMounted]      = useState(false)
   const [visible,      setVisible]      = useState(false)
@@ -129,16 +136,32 @@ export function AdversaryDetailPanel({
       const { error: upErr } = await supabase.storage
         .from('tokens')
         .upload(path, file, { upsert: true })
-      if (upErr) throw upErr
+      if (upErr) throw new Error(upErr.message ?? String(upErr))
 
       const { data } = supabase.storage.from('tokens').getPublicUrl(path)
-      await supabase
-        .from('adversary_token_images')
-        .upsert({ adversary_key: adversary.name, token_image_url: data.publicUrl })
+      // Append cache-buster so browsers always show the freshly uploaded image
+      const urlWithBust = `${data.publicUrl}?t=${Date.now()}`
 
-      onTokenUploaded(adversary.name, data.publicUrl)
+      const { error: dbErr } = await supabase
+        .from('adversary_token_images')
+        .upsert({ adversary_key: adversary.name, token_image_url: urlWithBust })
+      if (dbErr) throw new Error(dbErr.message ?? String(dbErr))
+
+      // Patch any existing map tokens for this adversary so the canvas updates live
+      if (mapId) {
+        await supabase
+          .from('map_tokens')
+          .update({ token_image_url: urlWithBust })
+          .eq('map_id', mapId)
+          .eq('label', adversary.name)
+      }
+
+      onTokenUploaded(adversary.name, urlWithBust)
+      toast.success(`Token image updated for ${adversary.name}`)
     } catch (err) {
-      console.error('Token upload failed', err)
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error('Token upload failed:', msg)
+      toast.error(`Token upload failed: ${msg}`)
     } finally {
       setUploading(false)
       if (fileRef.current) fileRef.current.value = ''
@@ -158,7 +181,7 @@ export function AdversaryDetailPanel({
       <div
         onClick={handleClose}
         style={{
-          position: 'fixed', inset: 0, zIndex: 700,
+          position: 'fixed', inset: 0, zIndex: 9050,
           background: 'rgba(0,0,0,0.5)',
           transition: 'opacity 0.26s',
           opacity: visible ? 1 : 0,
@@ -167,7 +190,7 @@ export function AdversaryDetailPanel({
 
       {/* Panel */}
       <div style={{
-        position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 710,
+        position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 9060,
         width: 'clamp(340px, 42vw, 560px)',
         background: PANEL_BG,
         backdropFilter: 'blur(18px)',
@@ -298,7 +321,7 @@ export function AdversaryDetailPanel({
               <SectionHead>Weapons</SectionHead>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {adv.weapons.map((w, i) => {
-                  const dmg = typeof w.damage === 'number' ? w.damage : w.damage
+                  const { dmg, range, crit } = resolveWeapon(w, adv.brawn, {})
                   return (
                     <div key={i} style={{
                       display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap',
@@ -313,8 +336,11 @@ export function AdversaryDetailPanel({
                         <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>{w.skillCategory}</span>
                       )}
                       <span style={{ fontFamily: FM, fontSize: FS_CAPTION, color: RED }}>Dmg {dmg}</span>
-                      {w.range && (
-                        <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>{w.range}</span>
+                      {crit !== undefined && (
+                        <span style={{ fontFamily: FM, fontSize: FS_CAPTION, color: RED }}>Crit {crit}</span>
+                      )}
+                      {range && (
+                        <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>{range}</span>
                       )}
                       {w.qualities && w.qualities.length > 0 && (
                         <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>
@@ -469,7 +495,7 @@ export function AdversaryDetailPanel({
               borderRadius: 3, cursor: 'pointer',
             }}
           >
-            ⚔ Add to Combat
+            {addButtonLabel ?? '⚔ Add to Combat'}
           </button>
         </div>
       </div>

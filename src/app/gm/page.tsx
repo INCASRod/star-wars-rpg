@@ -15,6 +15,8 @@ import { DestinyGeneratePanel } from '@/components/gm/DestinyGeneratePanel'
 import { GmMapView } from '@/components/gm/GmMapView'
 import { AdversaryLibrary } from '@/components/gm/AdversaryLibrary'
 import { VehicleLibrary } from '@/components/gm/VehicleLibrary'
+import { StagingTopBar } from '@/components/staging/StagingTopBar'
+import { StagingFloatingToolbar } from '@/components/staging/StagingFloatingToolbar'
 import { useActiveMap } from '@/hooks/useActiveMap'
 import { DestinyPoolDisplay, type DestinyPoolRecord } from '@/components/destiny/DestinyPoolDisplay'
 import { toast } from 'sonner'
@@ -322,17 +324,17 @@ function GmDashboard() {
   const [gmScreenOpen, setGmScreenOpen] = useState(false)
 
   // ── Tabs ──
-  type GmTab = 'xp' | 'credits' | 'duty' | 'do' | 'loot' | 'items' | 'combat' | 'adversaries' | 'vehicles' | 'force' | 'maps'
+  type GmTab = 'xp' | 'credits' | 'duty' | 'do' | 'loot' | 'items' | 'combat' | 'adversaries' | 'vehicles' | 'force' | 'staging'
   const GM_TAB_KEY = 'holocron:gm-tab'
-  // 'maps' is intentionally excluded — the map tab must be explicitly clicked each session
+  // 'staging' is intentionally excluded — the staging tab must be explicitly clicked each session
   const GM_TAB_VALID: GmTab[] = ['xp', 'credits', 'duty', 'do', 'loot', 'items', 'combat', 'adversaries', 'vehicles', 'force']
   const [activeTab, setActiveTab] = useState<GmTab>(() => {
     if (typeof window === 'undefined') return 'xp'
     const saved = window.localStorage.getItem(GM_TAB_KEY)
     return GM_TAB_VALID.includes(saved as GmTab) ? (saved as GmTab) : 'xp'
   })
-  // tracks which tools tab was active before entering the map view, so the Map button can toggle back
-  const prevToolsTab = useRef<GmTab>(activeTab === 'maps' ? 'xp' : activeTab)
+  // tracks which tools tab was active before entering the staging view, so the Staging button can toggle back
+  const prevToolsTab = useRef<GmTab>(activeTab === 'staging' ? 'xp' : activeTab)
 
   // ── Force notifications ──
   const [forceNotifications, setForceNotifications] = useState<ForceNotification[]>([])
@@ -387,6 +389,7 @@ function GmDashboard() {
   const [sessionMode, setSessionMode] = useState<'exploration' | 'combat'>('exploration')
   const [combatRound, setCombatRound] = useState(1)
   const [sessionBusy, setSessionBusy] = useState(false)
+  const [mapLibraryOpen, setMapLibraryOpen] = useState(false)
 
   // ── Critical Injury Request flow ──
   const [refCritsDb, setRefCritsDb] = useState<RefCriticalInjury[]>([])
@@ -1515,29 +1518,29 @@ function GmDashboard() {
           </div>
         )}
 
-        {/* ◉ Map tab shortcut — toggles map view on/off */}
+        {/* ◉ Staging tab shortcut — toggles staging view on/off */}
         <button
           onClick={() => {
-            if (activeTab === 'maps') {
+            if (activeTab === 'staging') {
               // return to the last tools tab; persist it so the dashboard remembers
               setActiveTab(prevToolsTab.current)
               localStorage.setItem(GM_TAB_KEY, prevToolsTab.current)
             } else {
-              // remember current tools tab before entering map; do NOT persist 'maps' to storage
+              // remember current tools tab before entering staging; do NOT persist 'staging' to storage
               prevToolsTab.current = activeTab
-              setActiveTab('maps')
+              setActiveTab('staging')
             }
           }}
           style={{
             fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.12em',
             textTransform: 'uppercase', padding: '5px 14px', border: 'none', cursor: 'pointer',
             borderRadius: 4, transition: '.15s',
-            background: activeTab === 'maps' ? 'rgba(82,200,160,0.15)' : 'transparent',
-            color: activeTab === 'maps' ? '#52C8A0' : DIM,
-            outline: activeTab === 'maps' ? '1px solid rgba(82,200,160,0.4)' : 'none',
+            background: activeTab === 'staging' ? 'rgba(82,200,160,0.15)' : 'transparent',
+            color: activeTab === 'staging' ? '#52C8A0' : DIM,
+            outline: activeTab === 'staging' ? '1px solid rgba(82,200,160,0.4)' : 'none',
           }}
         >
-          ◉ Map
+          ◉ Staging
         </button>
 
         {/* Destiny Pool — single horizontal bar */}
@@ -1590,19 +1593,39 @@ function GmDashboard() {
       {/* ── MAIN AREA ── */}
       <div style={{ flex: 1, overflow: 'hidden', display: 'flex', position: 'relative', zIndex: 1 }}>
 
-        {/* ── FULL-SCREEN MAP VIEW ── */}
-        {activeTab === 'maps' && (
-          <GmMapView
-            campaignId={campaignId}
-            characters={activeChars}
-            allMaps={allMaps}
-            activeMap={activeMap}
-            onDeleteMap={removeMap}
-          />
+        {/* ── FULL-SCREEN STAGING VIEW ── */}
+        {activeTab === 'staging' && (
+          <>
+            <GmMapView
+              campaignId={campaignId}
+              characters={activeChars}
+              allMaps={allMaps}
+              activeMap={activeMap}
+              onDeleteMap={removeMap}
+              isStagingTab={true}
+              stagingLibraryOpen={mapLibraryOpen}
+              onStagingLibraryClose={() => setMapLibraryOpen(false)}
+            />
+            <StagingTopBar
+              sessionMode={sessionMode}
+              sessionBusy={sessionBusy}
+              combatRound={combatRound}
+              onBeginCombat={beginCombat}
+              onEndCombat={endEncounter}
+            />
+            <StagingFloatingToolbar
+              campaignId={campaignId ?? ''}
+              sessionMode={sessionMode}
+              mapId={activeMap?.id ?? null}
+              characters={activeChars}
+              mapsLibraryOpen={mapLibraryOpen}
+              onMapsClick={() => setMapLibraryOpen(o => !o)}
+            />
+          </>
         )}
 
         {/* ── LEFT / CENTER CONTENT + RIGHT SIDEBAR ── */}
-        {activeTab !== 'maps' && (<>
+        {activeTab !== 'staging' && (<>
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
           {/* ── CRITICAL INJURY RESULTS ── */}
@@ -2629,7 +2652,7 @@ function GmDashboard() {
             </button>
           </div>
         </div>
-        </>)} {/* end activeTab !== 'maps' */}
+        </>)} {/* end activeTab !== 'staging' */}
       </div>
 
       {/* ── LOOT POPUP ── */}

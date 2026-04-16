@@ -24,12 +24,14 @@ export interface MapCanvasProps {
   gridSize:            number
   onTokenContextMenu?: (tokenId: string, e: MouseEvent) => void
   tokenScale?:         number   // GM-only visual scale multiplier; players always see 1.0
+  onTokenHover?:       (tokenId: string, screenX: number, screenY: number) => void
+  onTokenHoverEnd?:    () => void
 }
 
 export function MapCanvas({
   mapImageUrl, tokens, isGM, currentCharacterId,
   onTokenMove, gridEnabled, gridSize, onTokenContextMenu,
-  tokenScale = 1,
+  tokenScale = 1, onTokenHover, onTokenHoverEnd,
 }: MapCanvasProps) {
   const containerRef       = useRef<HTMLDivElement>(null)
   const appRef             = useRef<InstanceType<typeof import('pixi.js').Application> | null>(null)
@@ -45,6 +47,11 @@ export function MapCanvas({
   // Always-current props ref — the async init closure reads this after it resolves
   const propsRef = useRef({ mapImageUrl, gridEnabled, gridSize })
   propsRef.current = { mapImageUrl, gridEnabled, gridSize }
+
+  const onTokenHoverRef    = useRef(onTokenHover)
+  onTokenHoverRef.current  = onTokenHover
+  const onTokenHoverEndRef = useRef(onTokenHoverEnd)
+  onTokenHoverEndRef.current = onTokenHoverEnd
 
   // ── Pixi bootstrap ──────────────────────────────────────────
   useEffect(() => {
@@ -107,7 +114,7 @@ export function MapCanvas({
     if (!app || !PIXI) return
     syncTokens(
       app, PIXI, tokens, isGM, currentCharacterId,
-      onTokenMoveRef, onContextRef, tokensRef,
+      onTokenMoveRef, onContextRef, onTokenHoverRef, onTokenHoverEndRef, containerRef, tokensRef,
       mapWRef, mapHRef, mapOffsetXRef, mapOffsetYRef,
       draggingTokenIdRef, tokenScale,
     )
@@ -249,20 +256,23 @@ async function rebuildMap(
 
 // ── Sync token sprites ────────────────────────────────────────
 function syncTokens(
-  app:                 InstanceType<typeof import('pixi.js').Application>,
-  px:                  typeof import('pixi.js'),
-  tokens:              MapToken[],
-  isGM:                boolean,
-  currentCharId:       string | null,
-  onMoveRef:           React.MutableRefObject<(id: string, x: number, y: number) => void>,
-  onContextRef:        React.MutableRefObject<((id: string, e: MouseEvent) => void) | undefined>,
-  tokensRef:           React.MutableRefObject<Map<string, InstanceType<typeof import('pixi.js').Container>>>,
-  mapWRef:             React.MutableRefObject<number>,
-  mapHRef:             React.MutableRefObject<number>,
-  mapOffsetXRef:       React.MutableRefObject<number>,
-  mapOffsetYRef:       React.MutableRefObject<number>,
-  draggingTokenIdRef:  React.MutableRefObject<string | null>,
-  tokenScale:          number,
+  app:                  InstanceType<typeof import('pixi.js').Application>,
+  px:                   typeof import('pixi.js'),
+  tokens:               MapToken[],
+  isGM:                 boolean,
+  currentCharId:        string | null,
+  onMoveRef:            React.MutableRefObject<(id: string, x: number, y: number) => void>,
+  onContextRef:         React.MutableRefObject<((id: string, e: MouseEvent) => void) | undefined>,
+  onHoverRef:           React.MutableRefObject<((id: string, x: number, y: number) => void) | undefined>,
+  onHoverEndRef:        React.MutableRefObject<(() => void) | undefined>,
+  containerRef:         React.RefObject<HTMLDivElement | null>,
+  tokensRef:            React.MutableRefObject<Map<string, InstanceType<typeof import('pixi.js').Container>>>,
+  mapWRef:              React.MutableRefObject<number>,
+  mapHRef:              React.MutableRefObject<number>,
+  mapOffsetXRef:        React.MutableRefObject<number>,
+  mapOffsetYRef:        React.MutableRefObject<number>,
+  draggingTokenIdRef:   React.MutableRefObject<string | null>,
+  tokenScale:           number,
 ) {
   const existing = new Set(tokensRef.current.keys())
 
@@ -274,26 +284,38 @@ function syncTokens(
 
     if (tokensRef.current.has(token.id)) {
       const c = tokensRef.current.get(token.id)!
-      // Skip position update for the token currently being dragged — remote
-      // realtime events would otherwise snap it back to the last persisted position.
-      if (draggingTokenIdRef.current !== token.id) {
-        c.x = offsetX + token.x * mapW
-        c.y = offsetY + token.y * mapH
-      }
-      c.scale.set(tokenScale)
+      // If token_image_url changed, destroy and rebuild the sprite so the new
+      // image is displayed (e.g. after uploading a token image for an existing token).
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(c as any).alpha = (!isGM && !token.is_visible) ? 0 : (isGM && !token.is_visible ? 0.4 : 1)
-      existing.delete(token.id)
-      continue
+      if ((c as any).__imageUrl !== (token.token_image_url ?? null)) {
+        app.stage.removeChild(c)
+        c.destroy({ children: true })
+        tokensRef.current.delete(token.id)
+        // Fall through to the build-new-sprite path below
+      } else {
+        // Skip position update for the token currently being dragged — remote
+        // realtime events would otherwise snap it back to the last persisted position.
+        if (draggingTokenIdRef.current !== token.id) {
+          c.x = offsetX + token.x * mapW
+          c.y = offsetY + token.y * mapH
+        }
+        c.scale.set(tokenScale)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(c as any).alpha = (!isGM && !token.is_visible) ? 0 : (isGM && !token.is_visible ? 0.4 : 1)
+        existing.delete(token.id)
+        continue
+      }
     }
 
     const canDrag = isGM || (token.participant_type === 'pc' && token.character_id === currentCharId)
     const sprite  = buildTokenSprite(
       px, token, canDrag,
       mapW, mapH, offsetX, offsetY,
-      onMoveRef, onContextRef, draggingTokenIdRef,
+      onMoveRef, onContextRef, onHoverRef, onHoverEndRef, containerRef, draggingTokenIdRef,
       mapWRef, mapHRef, mapOffsetXRef, mapOffsetYRef,
     )
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(sprite as any).__imageUrl = token.token_image_url ?? null
     sprite.scale.set(tokenScale)
     app.stage.addChild(sprite)
     tokensRef.current.set(token.id, sprite)
@@ -318,6 +340,9 @@ function buildTokenSprite(
   offsetY:             number,
   onMoveRef:           React.MutableRefObject<(id: string, x: number, y: number) => void>,
   onContextRef:        React.MutableRefObject<((id: string, e: MouseEvent) => void) | undefined>,
+  onHoverRef:          React.MutableRefObject<((id: string, x: number, y: number) => void) | undefined>,
+  onHoverEndRef:       React.MutableRefObject<(() => void) | undefined>,
+  containerRef:        React.RefObject<HTMLDivElement | null>,
   draggingTokenIdRef:  React.MutableRefObject<string | null>,
   mapWRef:             React.MutableRefObject<number>,
   mapHRef:             React.MutableRefObject<number>,
@@ -327,6 +352,7 @@ function buildTokenSprite(
   const SIZE   = 24 * (token.token_size ?? 1)
   const RADIUS = SIZE / 2
   const colour = BORDER_COLOURS[token.alignment ?? 'pc'] ?? 0xffffff
+  const isRect = token.token_shape === 'rectangle'
 
   const c = new px.Container()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -336,14 +362,22 @@ function buildTokenSprite(
 
   const ring = new px.Graphics()
   ring.lineStyle(2, colour, 1)
-  ring.drawCircle(0, 0, RADIUS + 1)
+  if (isRect) {
+    ring.drawRoundedRect(-SIZE / 2 - 1, -SIZE / 2 - 1, SIZE + 2, SIZE + 2, 4)
+  } else {
+    ring.drawCircle(0, 0, RADIUS + 1)
+  }
   ring.zIndex = 2
   c.addChild(ring)
 
   if (token.token_image_url) {
     const mask = new px.Graphics()
     mask.beginFill(0xffffff)
-    mask.drawCircle(0, 0, RADIUS)
+    if (isRect) {
+      mask.drawRect(-SIZE / 2, -SIZE / 2, SIZE, SIZE)
+    } else {
+      mask.drawCircle(0, 0, RADIUS)
+    }
     mask.endFill()
 
     const sprite   = px.Sprite.from(token.token_image_url)
@@ -357,7 +391,11 @@ function buildTokenSprite(
   } else {
     const bg = new px.Graphics()
     bg.beginFill(colour, 0.2)
-    bg.drawCircle(0, 0, RADIUS)
+    if (isRect) {
+      bg.drawRect(-SIZE / 2, -SIZE / 2, SIZE, SIZE)
+    } else {
+      bg.drawCircle(0, 0, RADIUS)
+    }
     bg.endFill()
     bg.zIndex = 1
 
@@ -405,6 +443,17 @@ function buildTokenSprite(
   ;(c as any).on('rightclick', (e: { nativeEvent: MouseEvent }) => {
     onContextRef.current?.(token.id, e.nativeEvent)
   })
+
+  // Hover — fire callback with screen coordinates derived from canvas rect
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(c as any).on('pointerover', (e: { globalX: number; globalY: number }) => {
+    if (!onHoverRef.current) return
+    const rect = containerRef.current?.getBoundingClientRect()
+    if (!rect) return
+    onHoverRef.current(token.id, rect.left + e.globalX, rect.top + e.globalY)
+  })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(c as any).on('pointerout', () => { onHoverEndRef.current?.() })
 
   if (!canDrag) return c
 

@@ -3,8 +3,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { toast } from 'sonner'
 import type { Vehicle } from '@/lib/vehicles'
+import { vehicleWeaponDisplayName, vehicleWeaponStats } from '@/lib/vehicles'
 import { TokenImageLinks } from './TokenImageLinks'
+import { RichText } from '@/components/ui/RichText'
 
 /* ── Design tokens ─────────────────────────────────────── */
 const FC       = "var(--font-cinzel), 'Cinzel', serif"
@@ -69,12 +72,17 @@ export interface VehicleDetailPanelProps {
   onEdit:          () => void
   onAddToCombat:   () => void
   onTokenUploaded: (vehicleKey: string, url: string) => void
+  /** When provided, patches existing map_tokens rows with the new image URL after upload. */
+  mapId?:          string | null
+  /** Overrides the footer button label. Defaults to '⚔ Add to Combat'. */
+  addButtonLabel?: string
 }
 
 /* ── Component ─────────────────────────────────────────── */
 export function VehicleDetailPanel({
   vehicle, campaignId, supabase, tokenUrl,
   onClose, onEdit, onAddToCombat, onTokenUploaded,
+  mapId, addButtonLabel,
 }: VehicleDetailPanelProps) {
   const [mounted,      setMounted]      = useState(false)
   const [visible,      setVisible]      = useState(false)
@@ -99,20 +107,38 @@ export function VehicleDetailPanel({
     setUploading(true)
     try {
       const ext  = file.name.split('.').pop() ?? 'png'
-      const path = `vehicles/${vehicle.key.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${ext}`
+      // Flat path (no subdirectory) — matches the adversary token pattern and
+      // avoids storage policy issues with sub-path writes.
+      const path = `vehicle-${vehicle.key.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${ext}`
       const { error: upErr } = await supabase.storage
         .from('tokens')
         .upload(path, file, { upsert: true })
-      if (upErr) throw upErr
+      if (upErr) throw new Error(upErr.message ?? String(upErr))
 
       const { data } = supabase.storage.from('tokens').getPublicUrl(path)
-      await supabase
-        .from('vehicle_token_images')
-        .upsert({ vehicle_key: vehicle.key, token_image_url: data.publicUrl })
+      // Append cache-buster so browsers always show the freshly uploaded image
+      const urlWithBust = `${data.publicUrl}?t=${Date.now()}`
 
-      onTokenUploaded(vehicle.key, data.publicUrl)
+      const { error: dbErr } = await supabase
+        .from('vehicle_token_images')
+        .upsert({ vehicle_key: vehicle.key, token_image_url: urlWithBust })
+      if (dbErr) throw new Error(dbErr.message ?? String(dbErr))
+
+      // Patch any existing map tokens for this vehicle so the canvas updates live
+      if (mapId) {
+        await supabase
+          .from('map_tokens')
+          .update({ token_image_url: urlWithBust })
+          .eq('map_id', mapId)
+          .eq('label', vehicle.name)
+      }
+
+      onTokenUploaded(vehicle.key, urlWithBust)
+      toast.success(`Token image updated for ${vehicle.name}`)
     } catch (err) {
-      console.error('Token upload failed', err)
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error('Token upload failed:', msg)
+      toast.error(`Token upload failed: ${msg}`)
     } finally {
       setUploading(false)
       if (fileRef.current) fileRef.current.value = ''
@@ -135,7 +161,7 @@ export function VehicleDetailPanel({
       <div
         onClick={handleClose}
         style={{
-          position: 'fixed', inset: 0, zIndex: 700,
+          position: 'fixed', inset: 0, zIndex: 9050,
           background: 'rgba(0,0,0,0.5)',
           transition: 'opacity 0.26s',
           opacity: visible ? 1 : 0,
@@ -144,7 +170,7 @@ export function VehicleDetailPanel({
 
       {/* Panel */}
       <div style={{
-        position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 710,
+        position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 9060,
         width: 'clamp(340px, 44vw, 580px)',
         background: PANEL_BG,
         backdropFilter: 'blur(18px)',
@@ -288,6 +314,8 @@ export function VehicleDetailPanel({
               <SectionHead>Weapons</SectionHead>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {v.weapons.map((w, i) => {
+                  const stats = vehicleWeaponStats(w.weaponKey)
+                  const displayName = vehicleWeaponDisplayName(w.weaponKey)
                   const arcParts = [
                     w.firingArcs.fore      && 'Fore',
                     w.firingArcs.aft       && 'Aft',
@@ -302,11 +330,17 @@ export function VehicleDetailPanel({
                       borderRadius: 4, border: `1px solid ${BORDER}`,
                     }}>
                       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                        <span style={{ fontFamily: FR, fontSize: FS_SM, fontWeight: 700, color: TEXT }}>
-                          {w.count > 1 ? `${w.count}× ` : ''}{w.weaponKey}
+                        <span style={{ fontFamily: FR, fontSize: FS_SM, fontWeight: 700, color: TEXT, minWidth: 160 }}>
+                          {w.count > 1 ? `${w.count}× ` : ''}{displayName}{w.turret ? ' (Turret)' : ''}
                         </span>
-                        {w.turret && (
-                          <span style={{ fontFamily: FM, fontSize: FS_CAPTION, color: GOLD }}>Turret</span>
+                        {stats && stats.damage > 0 && (
+                          <span style={{ fontFamily: FM, fontSize: FS_CAPTION, color: RED }}>Dmg {stats.damage}</span>
+                        )}
+                        {stats?.crit !== undefined && (
+                          <span style={{ fontFamily: FM, fontSize: FS_CAPTION, color: RED }}>Crit {stats.crit}</span>
+                        )}
+                        {stats && (
+                          <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>{stats.range}</span>
                         )}
                         {arcParts && (
                           <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>[{arcParts}]</span>
@@ -414,7 +448,7 @@ export function VehicleDetailPanel({
                   marginTop: 8, fontFamily: FR, fontSize: FS_SM, color: DIM,
                   lineHeight: 1.6, borderLeft: `2px solid ${BORDER}`, paddingLeft: 12,
                 }}>
-                  {v.description}
+                  <RichText text={v.description} />
                 </div>
               )}
             </div>
@@ -445,7 +479,7 @@ export function VehicleDetailPanel({
               letterSpacing: '0.1em', padding: '9px 0', borderRadius: 3, cursor: 'pointer',
             }}
           >
-            ⚔ Add to Combat
+            {addButtonLabel ?? '⚔ Add to Combat'}
           </button>
         </div>
       </div>

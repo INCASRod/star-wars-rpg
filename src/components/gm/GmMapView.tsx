@@ -102,6 +102,14 @@ interface NpcDrawerSlot {
   adversaryType: 'minion' | 'rival' | 'nemesis'
 }
 
+interface VehicleDrawerSlot {
+  slotId:            string
+  vehicleInstanceId: string
+  name:              string
+  alignment:         'enemy' | 'allied_npc'
+  token_image_url:   string | null
+}
+
 interface EncounterRow {
   id: string
   is_active: boolean
@@ -110,10 +118,17 @@ interface EncounterRow {
     type: 'pc' | 'npc'
     name: string
     adversaryInstanceId?: string
+    vehicleInstanceId?: string
   }>
   adversaries: Array<{
     instanceId: string
     type: 'minion' | 'rival' | 'nemesis'
+  }>
+  vehicles: Array<{
+    instanceId: string
+    name: string
+    alignment: 'enemy' | 'allied_npc'
+    token_image_url?: string | null
   }>
 }
 
@@ -214,14 +229,21 @@ function UploadModal({ campaignId, onClose, onSaved }: { campaignId: string; onC
 
 /* ── Main view ─────────────────────────────────────────── */
 export interface GmMapViewProps {
-  campaignId:  string | null
-  characters:  Character[]
-  allMaps:     ActiveMap[]
-  activeMap:   ActiveMap | null
-  onDeleteMap: (mapId: string) => void
+  campaignId:          string | null
+  characters:          Character[]
+  allMaps:             ActiveMap[]
+  activeMap:           ActiveMap | null
+  onDeleteMap:         (mapId: string) => void
+  /** When true, hides the internal floating toolbar (Maps/Upload/Tokens buttons).
+   *  The staging tab provides its own pill toolbar instead. */
+  isStagingTab?:            boolean
+  /** When isStagingTab is true, controls the map library drawer from outside. */
+  stagingLibraryOpen?:      boolean
+  /** Called when the close button inside the library drawer is clicked (staging only). */
+  onStagingLibraryClose?:   () => void
 }
 
-export function GmMapView({ campaignId, characters, allMaps, activeMap, onDeleteMap }: GmMapViewProps) {
+export function GmMapView({ campaignId, characters, allMaps, activeMap, onDeleteMap, isStagingTab, stagingLibraryOpen, onStagingLibraryClose }: GmMapViewProps) {
   const supabase = useMemo(() => createClient(), [])
 
   const [uploadOpen,       setUploadOpen]       = useState(false)
@@ -250,7 +272,7 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
 
     supabase
       .from('combat_encounters')
-      .select('id, is_active, initiative_slots, adversaries')
+      .select('id, is_active, initiative_slots, adversaries, vehicles')
       .eq('campaign_id', campaignId)
       .eq('is_active', true)
       .maybeSingle()
@@ -311,6 +333,23 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
       })
   }, [encounter])
 
+  // Vehicle slots from active encounter
+  const vehicleSlots = useMemo<VehicleDrawerSlot[]>(() => {
+    if (!encounter) return []
+    return encounter.initiative_slots
+      .filter(s => s.type === 'npc' && s.vehicleInstanceId)
+      .map(s => {
+        const veh = encounter.vehicles.find(v => v.instanceId === s.vehicleInstanceId)
+        return {
+          slotId:            s.id,
+          vehicleInstanceId: s.vehicleInstanceId!,
+          name:              s.name,
+          alignment:         veh?.alignment ?? 'enemy',
+          token_image_url:   veh?.token_image_url ?? null,
+        }
+      })
+  }, [encounter])
+
   // ── Map actions ────────────────────────────────────────
   async function setActive(mapId: string) {
     if (!campaignId || busy) return
@@ -344,10 +383,11 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
       label:            character.name,
       alignment:        'pc',
       x, y,
-      is_visible:       false,
+      is_visible:       true,
       token_size:       1.0,
       wound_pct:        null,
       token_image_url:  character.portrait_url ?? null,
+      token_shape:      'circle',
     })
   }
 
@@ -368,6 +408,27 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
       token_size:       1.0,
       wound_pct:        null,
       token_image_url:  advImg,
+      token_shape:      'circle',
+    })
+  }
+
+  async function addVehicleToken(slot: VehicleDrawerSlot, x = 0.5, y = 0.5) {
+    if (!activeMap || !campaignId) return
+    await addToken({
+      map_id:           activeMap.id,
+      campaign_id:      campaignId,
+      participant_type: 'adversary',
+      character_id:     null,
+      participant_id:   null,
+      slot_key:         slot.slotId,
+      label:            slot.name,
+      alignment:        slot.alignment,
+      x, y,
+      is_visible:       false,
+      token_size:       1.0,
+      wound_pct:        null,
+      token_image_url:  slot.token_image_url,
+      token_shape:      'rectangle',
     })
   }
 
@@ -449,8 +510,8 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
           </div>
         )}
 
-        {/* ── Floating toolbar ── */}
-        <div
+        {/* ── Floating toolbar (hidden on staging tab — pills toolbar takes over) ── */}
+        {!isStagingTab && <div
           style={{ position: 'absolute', top: 12, left: 12, right: 12, display: 'flex', alignItems: 'center', gap: 8, zIndex: 50, pointerEvents: 'none' }}
           onClick={e => e.stopPropagation()}
         >
@@ -523,10 +584,10 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
               </button>
             </div>
           )}
-        </div>
+        </div>}
 
         {/* ── Map library drawer (left side, absolute) ── */}
-        {libraryOpen && (
+        {(isStagingTab ? (stagingLibraryOpen ?? false) : libraryOpen) && (
           <div
             onClick={e => e.stopPropagation()}
             style={{
@@ -542,7 +603,7 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
                 Map Library
               </div>
               <button
-                onClick={() => setLibraryOpen(false)}
+                onClick={() => isStagingTab ? onStagingLibraryClose?.() : setLibraryOpen(false)}
                 style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: DIM, fontSize: '1.1rem', lineHeight: 1 }}
               >
                 ×
@@ -771,8 +832,79 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
               </>
             )}
 
-            {/* ── Section B: Players ── */}
-            <div style={{ padding: '10px 14px 6px', fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(200,170,80,0.4)', borderBottom: `1px solid ${BORDER}`, borderTop: npcSlots.length > 0 ? `1px solid ${BORDER}` : 'none' }}>
+            {/* ── Section B: Vehicles ── */}
+            {vehicleSlots.length > 0 && (
+              <>
+                <div style={{ padding: '10px 14px 6px', fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(200,170,80,0.4)', borderBottom: `1px solid ${BORDER}`, borderTop: `1px solid ${BORDER}` }}>
+                  Vehicles
+                </div>
+
+                {vehicleSlots.map(p => {
+                  const isOnMap  = onMapSlotKeys.has(p.slotId)
+                  const mapToken = tokens.find(t => t.slot_key === p.slotId) ?? null
+                  const tokenColor = p.alignment === 'allied_npc' ? '#4EC87A' : '#e05252'
+
+                  return (
+                    <div key={p.slotId} style={{ padding: '10px 12px', borderBottom: `1px solid ${BORDER}` }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+
+                        {/* Token preview (40×28 rectangle) */}
+                        {p.token_image_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={p.token_image_url} alt="" style={{ width: 40, height: 28, borderRadius: 3, objectFit: 'cover', flexShrink: 0, border: `2px solid ${tokenColor}60` }} />
+                        ) : (
+                          <div style={{ width: 40, height: 28, borderRadius: 3, flexShrink: 0, background: `${tokenColor}20`, border: `2px solid ${tokenColor}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FC, fontSize: 13, fontWeight: 700, color: tokenColor }}>
+                            {p.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+
+                        {/* Name + badge */}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {p.name}
+                          </div>
+                          <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.1em', color: tokenColor }}>
+                            {p.alignment === 'allied_npc' ? 'ALLIED' : 'ENEMY'} · VEHICLE
+                          </div>
+                        </div>
+
+                        {/* Add / On map */}
+                        {activeMap && (
+                          isOnMap ? (
+                            <span style={{ fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, color: GREEN, flexShrink: 0 }}>On map ✓</span>
+                          ) : (
+                            <button onClick={() => void addVehicleToken(p)} style={btnSmall}>+ Add</button>
+                          )
+                        )}
+                      </div>
+
+                      {/* On-map controls: visibility toggle + remove from map */}
+                      {isOnMap && mapToken && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
+                          <button
+                            onClick={() => void toggleVisibility(mapToken.id, !mapToken.is_visible)}
+                            style={{
+                              flex: 1, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
+                              letterSpacing: '0.06em', cursor: 'pointer', borderRadius: 3,
+                              padding: '4px 8px', border: 'none',
+                              background: mapToken.is_visible ? 'rgba(78,200,122,0.12)' : 'rgba(255,255,255,0.04)',
+                              color: mapToken.is_visible ? GREEN : DIM,
+                              transition: '.15s',
+                            }}
+                          >
+                            {mapToken.is_visible ? '◉ Visible to players' : '◯ Hidden from players'}
+                          </button>
+                          <button onClick={() => void removeToken(mapToken.id)} style={btnDanger} title="Remove from map">✕</button>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </>
+            )}
+
+            {/* ── Section C: Players ── */}
+            <div style={{ padding: '10px 14px 6px', fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(200,170,80,0.4)', borderBottom: `1px solid ${BORDER}`, borderTop: (npcSlots.length > 0 || vehicleSlots.length > 0) ? `1px solid ${BORDER}` : 'none' }}>
               Players
             </div>
 

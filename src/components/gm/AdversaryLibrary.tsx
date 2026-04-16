@@ -86,8 +86,12 @@ function dbRowToAdversary(row: Record<string, unknown>): Adversary & { _isCustom
 
 /* ── Props ─────────────────────────────────────────────── */
 export interface AdversaryLibraryProps {
-  campaignId:  string
-  sessionMode: 'exploration' | 'combat'
+  campaignId:   string
+  sessionMode:  'exploration' | 'combat'
+  /** When provided, switches "Add to Combat" to "Add Token" mode with a simplified alignment picker. */
+  onAddToken?:  (adv: Adversary & { _isCustom?: boolean }, alignment: 'enemy' | 'allied_npc') => void
+  /** When provided, passed to AdversaryDetailPanel so token uploads also patch existing map_tokens rows. */
+  mapId?:       string | null
 }
 
 /* ── Helpers ───────────────────────────────────────────── */
@@ -152,7 +156,7 @@ function TokenCircle({
 /* ════════════════════════════════════════════════════════
    MAIN COMPONENT
    ════════════════════════════════════════════════════════ */
-export function AdversaryLibrary({ campaignId, sessionMode }: AdversaryLibraryProps) {
+export function AdversaryLibrary({ campaignId, sessionMode, onAddToken, mapId }: AdversaryLibraryProps) {
   const supabase = createClient()
 
   /* ── Data state ──────────────────────────────────────── */
@@ -173,6 +177,7 @@ export function AdversaryLibrary({ campaignId, sessionMode }: AdversaryLibraryPr
   const [editorEditId,      setEditorEditId]       = useState<string | undefined>(undefined)
   const [addConfirm,        setAddConfirm]         = useState<AddCombatState | null>(null)
   const [addBusy,           setAddBusy]            = useState(false)
+  const [addTokenPending,   setAddTokenPending]    = useState<(Adversary & { _isCustom?: boolean }) | null>(null)
 
   /* ── Load data ───────────────────────────────────────── */
   useEffect(() => {
@@ -266,6 +271,18 @@ export function AdversaryLibrary({ campaignId, sessionMode }: AdversaryLibraryPr
     })
     setShowEditor(false)
     toast.success(`Adversary "${saved.name}" saved.`)
+  }
+
+  /* ── Add Token flow (staging / token mode) ──────────── */
+  const requestAddToken = (adv: Adversary & { _isCustom?: boolean }) => {
+    setAddTokenPending(adv)
+    setSelectedAdversary(null)
+  }
+
+  const confirmAddToken = (alignment: 'enemy' | 'allied_npc') => {
+    if (!addTokenPending || !onAddToken) return
+    onAddToken(addTokenPending, alignment)
+    setAddTokenPending(null)
   }
 
   /* ── Add to Combat flow ──────────────────────────────── */
@@ -431,7 +448,8 @@ export function AdversaryLibrary({ campaignId, sessionMode }: AdversaryLibraryPr
                     isLast={isLast}
                     onView={() => setSelectedAdversary(adv)}
                     onEdit={() => openEdit(adv)}
-                    onAddToCombat={() => requestAddToCombat(adv)}
+                    onAddToCombat={onAddToken ? () => requestAddToken(adv) : () => requestAddToCombat(adv)}
+                    addLabel={onAddToken ? '◈ Token' : undefined}
                   />
                 )
               })}
@@ -449,8 +467,13 @@ export function AdversaryLibrary({ campaignId, sessionMode }: AdversaryLibraryPr
           tokenUrl={tokenImages[selectedAdversary.name] ?? null}
           onClose={() => setSelectedAdversary(null)}
           onEdit={() => openEdit(selectedAdversary)}
-          onAddToCombat={() => requestAddToCombat(selectedAdversary)}
+          onAddToCombat={onAddToken
+            ? () => requestAddToken(selectedAdversary)
+            : () => requestAddToCombat(selectedAdversary)
+          }
           onTokenUploaded={handleTokenUploaded}
+          mapId={mapId}
+          addButtonLabel={onAddToken ? '◈ Add Token' : undefined}
         />
       )}
 
@@ -477,13 +500,22 @@ export function AdversaryLibrary({ campaignId, sessionMode }: AdversaryLibraryPr
           onCancel={() => setAddConfirm(null)}
         />
       )}
+
+      {/* Add Token confirmation overlay (staging / token mode) */}
+      {addTokenPending && (
+        <AddTokenOverlay
+          entityName={addTokenPending.name}
+          onAdd={confirmAddToken}
+          onCancel={() => setAddTokenPending(null)}
+        />
+      )}
     </div>
   )
 }
 
 /* ── Adversary list row ────────────────────────────────── */
 function AdversaryRow({
-  adversary, tokenUrl, isLast, onView, onEdit, onAddToCombat,
+  adversary, tokenUrl, isLast, onView, onEdit, onAddToCombat, addLabel,
 }: {
   adversary: Adversary & { _isCustom?: boolean }
   tokenUrl?: string
@@ -491,6 +523,8 @@ function AdversaryRow({
   onView: () => void
   onEdit: () => void
   onAddToCombat: () => void
+  /** When provided, overrides the row action button label (default '⚔ Combat'). */
+  addLabel?: string
 }) {
   const color = TYPE_COLORS[adversary.type] ?? DIM
 
@@ -569,7 +603,7 @@ function AdversaryRow({
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(224,80,80,0.08)' }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
         >
-          ⚔ Combat
+          {addLabel ?? '⚔ Combat'}
         </button>
       </div>
     </div>
@@ -593,7 +627,7 @@ function AddToCombatOverlay({
     <div
       onClick={onCancel}
       style={{
-        position: 'fixed', inset: 0, zIndex: 750,
+        position: 'fixed', inset: 0, zIndex: 9050,
         background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: 24,
@@ -724,6 +758,86 @@ function AddToCombatOverlay({
             {busy ? 'Adding…' : '⚔ Add to Combat'}
           </button>
         </div>
+      </div>
+    </div>
+  )
+}
+
+/* ── Add Token overlay (staging / token mode) ──────────── */
+function AddTokenOverlay({
+  entityName, onAdd, onCancel,
+}: {
+  entityName: string
+  onAdd:      (alignment: 'enemy' | 'allied_npc') => void
+  onCancel:   () => void
+}) {
+  return (
+    <div
+      onClick={onCancel}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 9100,
+        background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 24,
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          width: '100%', maxWidth: 360,
+          background: 'rgba(8,16,10,0.97)',
+          border: `1px solid ${BORDER_HI}`,
+          borderRadius: 8,
+          padding: '20px 24px',
+          boxShadow: '0 16px 48px rgba(0,0,0,0.8)',
+        }}
+      >
+        <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: GOLD, letterSpacing: '0.1em', marginBottom: 4 }}>
+          Add Token
+        </div>
+        <div style={{ fontFamily: FR, fontSize: FS_SM, color: TEXT, marginBottom: 20 }}>
+          <span style={{ fontWeight: 700 }}>{entityName}</span>
+          {' '}&mdash; choose alignment:
+        </div>
+        <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
+          <button
+            onClick={() => onAdd('enemy')}
+            style={{
+              flex: 1, padding: '12px 0', borderRadius: 4,
+              fontFamily: FR, fontSize: FS_SM, fontWeight: 700,
+              letterSpacing: '0.08em', cursor: 'pointer',
+              background: 'rgba(224,80,80,0.12)',
+              border: '1px solid rgba(224,80,80,0.5)',
+              color: RED, transition: '.12s',
+            }}
+          >
+            ⚔ Enemy
+          </button>
+          <button
+            onClick={() => onAdd('allied_npc')}
+            style={{
+              flex: 1, padding: '12px 0', borderRadius: 4,
+              fontFamily: FR, fontSize: FS_SM, fontWeight: 700,
+              letterSpacing: '0.08em', cursor: 'pointer',
+              background: 'rgba(78,200,122,0.12)',
+              border: '1px solid rgba(78,200,122,0.5)',
+              color: GREEN, transition: '.12s',
+            }}
+          >
+            🤝 Friendly NPC
+          </button>
+        </div>
+        <button
+          onClick={onCancel}
+          style={{
+            width: '100%', padding: '7px 0', borderRadius: 4,
+            background: 'transparent', border: `1px solid ${BORDER}`,
+            color: DIM, fontFamily: FR, fontSize: FS_SM, fontWeight: 700,
+            cursor: 'pointer',
+          }}
+        >
+          Cancel
+        </button>
       </div>
     </div>
   )

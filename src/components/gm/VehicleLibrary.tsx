@@ -63,11 +63,15 @@ function PillBtn({ active, onClick, children, color }: { active: boolean; onClic
    MAIN COMPONENT
    ════════════════════════════════════════════════════════ */
 export interface VehicleLibraryProps {
-  campaignId:  string
-  sessionMode: 'exploration' | 'combat'
+  campaignId:   string
+  sessionMode:  'exploration' | 'combat'
+  /** When provided, switches "Add to Combat" to "Add Token" mode with a simplified alignment picker. */
+  onAddToken?:  (vehicle: Vehicle & { _isCustom?: boolean }, alignment: 'enemy' | 'allied_npc') => void
+  /** When provided, passed to VehicleDetailPanel so token uploads also patch existing map_tokens rows. */
+  mapId?:       string | null
 }
 
-export function VehicleLibrary({ campaignId, sessionMode }: VehicleLibraryProps) {
+export function VehicleLibrary({ campaignId, sessionMode, onAddToken, mapId }: VehicleLibraryProps) {
   const supabase = createClient()
 
   /* ── Data ────────────────────────────────────────────── */
@@ -86,8 +90,9 @@ export function VehicleLibrary({ campaignId, sessionMode }: VehicleLibraryProps)
   const [showEditor,    setShowEditor]    = useState(false)
   const [editorTemplate, setEditorTemplate] = useState<(Vehicle & { _isCustom?: boolean }) | undefined>()
   const [editorEditId,  setEditorEditId]  = useState<string | undefined>()
-  const [addConfirm,    setAddConfirm]    = useState<AddCombatState | null>(null)
-  const [addBusy,       setAddBusy]       = useState(false)
+  const [addConfirm,      setAddConfirm]      = useState<AddCombatState | null>(null)
+  const [addBusy,         setAddBusy]         = useState(false)
+  const [addTokenPending, setAddTokenPending] = useState<(Vehicle & { _isCustom?: boolean }) | null>(null)
 
   /* ── Load ────────────────────────────────────────────── */
   useEffect(() => {
@@ -159,6 +164,18 @@ export function VehicleLibrary({ campaignId, sessionMode }: VehicleLibraryProps)
     })
     setShowEditor(false)
     toast.success(`Vehicle "${saved.name}" saved.`)
+  }
+
+  /* ── Add Token flow (staging / token mode) ──────────── */
+  const requestAddToken = (v: Vehicle & { _isCustom?: boolean }) => {
+    setAddTokenPending(v)
+    setSelected(null)
+  }
+
+  const confirmAddToken = (alignment: 'enemy' | 'allied_npc') => {
+    if (!addTokenPending || !onAddToken) return
+    onAddToken(addTokenPending, alignment)
+    setAddTokenPending(null)
   }
 
   /* ── Add to Combat ───────────────────────────────────── */
@@ -293,7 +310,8 @@ export function VehicleLibrary({ campaignId, sessionMode }: VehicleLibraryProps)
                   isLast={idx === filtered.length - 1}
                   onView={() => setSelected(v)}
                   onEdit={() => openEdit(v)}
-                  onAddToCombat={() => requestAddToCombat(v)}
+                  onAddToCombat={onAddToken ? () => requestAddToken(v) : () => requestAddToCombat(v)}
+                  addLabel={onAddToken ? '◈ Token' : undefined}
                 />
               ))}
             </div>
@@ -310,8 +328,13 @@ export function VehicleLibrary({ campaignId, sessionMode }: VehicleLibraryProps)
           tokenUrl={tokenImages[selected.key] ?? null}
           onClose={() => setSelected(null)}
           onEdit={() => openEdit(selected)}
-          onAddToCombat={() => requestAddToCombat(selected)}
+          onAddToCombat={onAddToken
+            ? () => requestAddToken(selected)
+            : () => requestAddToCombat(selected)
+          }
           onTokenUploaded={handleTokenUploaded}
+          mapId={mapId}
+          addButtonLabel={onAddToken ? '◈ Add Token' : undefined}
         />
       )}
 
@@ -338,18 +361,29 @@ export function VehicleLibrary({ campaignId, sessionMode }: VehicleLibraryProps)
           onCancel={() => setAddConfirm(null)}
         />
       )}
+
+      {/* Add Token overlay (staging / token mode) */}
+      {addTokenPending && (
+        <AddTokenOverlay
+          entityName={addTokenPending.name}
+          onAdd={confirmAddToken}
+          onCancel={() => setAddTokenPending(null)}
+        />
+      )}
     </div>
   )
 }
 
 /* ── Vehicle list row ──────────────────────────────────── */
-function VehicleRow({ vehicle, tokenUrl, isLast, onView, onEdit, onAddToCombat }: {
+function VehicleRow({ vehicle, tokenUrl, isLast, onView, onEdit, onAddToCombat, addLabel }: {
   vehicle: Vehicle & { _isCustom?: boolean }
   tokenUrl?: string
   isLast: boolean
   onView: () => void
   onEdit: () => void
   onAddToCombat: () => void
+  /** When provided, overrides the row action button label (default '⚔ Combat'). */
+  addLabel?: string
 }) {
   const accentColor = vehicle.isStarship ? BLUE : GOLD
   const btnRowStyle: React.CSSProperties = {
@@ -411,7 +445,7 @@ function VehicleRow({ vehicle, tokenUrl, isLast, onView, onEdit, onAddToCombat }
         <button onClick={onAddToCombat} style={{ ...btnRowStyle, borderColor: 'rgba(224,80,80,0.3)', color: RED }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(224,80,80,0.08)' }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
-        >⚔ Combat</button>
+        >{addLabel ?? '⚔ Combat'}</button>
       </div>
     </div>
   )
@@ -428,7 +462,7 @@ function AddToCombatOverlay({ state, busy, onChange, onConfirm, onCancel }: {
   const { vehicle, alignment } = state
   return (
     <div onClick={onCancel} style={{
-      position: 'fixed', inset: 0, zIndex: 750,
+      position: 'fixed', inset: 0, zIndex: 9050,
       background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)',
       display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
     }}>
@@ -477,6 +511,86 @@ function AddToCombatOverlay({ state, busy, onChange, onConfirm, onCancel }: {
             {busy ? 'Adding…' : '⚔ Add to Combat'}
           </button>
         </div>
+      </div>
+    </div>
+  )
+}
+
+/* ── Add Token overlay (staging / token mode) ──────────── */
+function AddTokenOverlay({
+  entityName, onAdd, onCancel,
+}: {
+  entityName: string
+  onAdd:      (alignment: 'enemy' | 'allied_npc') => void
+  onCancel:   () => void
+}) {
+  return (
+    <div
+      onClick={onCancel}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 9100,
+        background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 24,
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          width: '100%', maxWidth: 360,
+          background: 'rgba(8,16,10,0.97)',
+          border: `1px solid ${BORDER_HI}`,
+          borderRadius: 8,
+          padding: '20px 24px',
+          boxShadow: '0 16px 48px rgba(0,0,0,0.8)',
+        }}
+      >
+        <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: GOLD, letterSpacing: '0.1em', marginBottom: 4 }}>
+          Add Token
+        </div>
+        <div style={{ fontFamily: FR, fontSize: FS_SM, color: TEXT, marginBottom: 20 }}>
+          <span style={{ fontWeight: 700 }}>{entityName}</span>
+          {' '}&mdash; choose alignment:
+        </div>
+        <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
+          <button
+            onClick={() => onAdd('enemy')}
+            style={{
+              flex: 1, padding: '12px 0', borderRadius: 4,
+              fontFamily: FR, fontSize: FS_SM, fontWeight: 700,
+              letterSpacing: '0.08em', cursor: 'pointer',
+              background: 'rgba(224,80,80,0.12)',
+              border: '1px solid rgba(224,80,80,0.5)',
+              color: RED, transition: '.12s',
+            }}
+          >
+            ⚔ Enemy
+          </button>
+          <button
+            onClick={() => onAdd('allied_npc')}
+            style={{
+              flex: 1, padding: '12px 0', borderRadius: 4,
+              fontFamily: FR, fontSize: FS_SM, fontWeight: 700,
+              letterSpacing: '0.08em', cursor: 'pointer',
+              background: 'rgba(78,200,122,0.12)',
+              border: '1px solid rgba(78,200,122,0.5)',
+              color: GREEN, transition: '.12s',
+            }}
+          >
+            🤝 Friendly NPC
+          </button>
+        </div>
+        <button
+          onClick={onCancel}
+          style={{
+            width: '100%', padding: '7px 0', borderRadius: 4,
+            background: 'transparent', border: `1px solid ${BORDER}`,
+            color: DIM, fontFamily: FR, fontSize: FS_SM, fontWeight: 700,
+            cursor: 'pointer',
+          }}
+        >
+          Cancel
+        </button>
       </div>
     </div>
   )
