@@ -1,17 +1,19 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
 import { fetchAdversaries, adversaryToInstance } from '@/lib/adversaries'
 import type { Adversary, AdversaryInstance, AdversaryGear } from '@/lib/adversaries'
+import { vehicleToVehicleInstance, fetchVehicles, dbRowToVehicle } from '@/lib/vehicles'
+import type { Vehicle, VehicleInstance } from '@/lib/vehicles'
 import { sortInitiative, advanceInitiative } from '@/lib/combat'
 import { randomUUID } from '@/lib/utils'
 import type { InitiativeSlot, CombatEncounter } from '@/lib/combat'
 import { InitiativeSetupModal } from './InitiativeSetupModal'
 import { AddParticipantModal } from '@/components/combat/AddParticipantModal'
 import { CombatLog } from '@/components/combat/CombatLog'
-import type { Character, CharacterWeapon, CharacterSkill, RefWeapon, RefWeaponQuality } from '@/lib/types'
+import type { Character, CharacterWeapon, CharacterSkill, RefWeapon, RefWeaponQuality, WeaponQuality } from '@/lib/types'
 import { RANGE_LABELS } from '@/lib/types'
 import type { SlotAlignment } from '@/lib/combat'
 import { FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4, FS_H3 } from '@/components/player-hud/design-tokens'
@@ -277,6 +279,121 @@ function AdversaryWoundTracker({
   )
 }
 
+// ── Vehicle wound/strain tracker (inline component) ─────────────────────────
+function VehicleWoundTracker({
+  vehicle, onAdjustHullTrauma, onAdjustSystemStrain,
+}: {
+  vehicle: VehicleInstance
+  onAdjustHullTrauma:   (delta: number) => void
+  onAdjustSystemStrain: (delta: number) => void
+}) {
+  const htCur  = vehicle.hullTraumaCurrent
+  const htMax  = vehicle.hullTraumaThreshold
+  const ssCur  = vehicle.systemStrainCurrent
+  const ssMax  = vehicle.systemStrainThreshold
+
+  const htPct     = htMax > 0 ? Math.min(1, htCur / htMax) : 0
+  const htColor   = htPct >= 1   ? '#9C27B0'
+                  : htPct >= 0.8 ? '#f44336'
+                  : htPct >= 0.5 ? '#FF9800'
+                  : '#e05252'   // CHAR_BR
+
+  const AMBER     = '#FF9800'
+  const PURPLE    = '#9C27B0'
+  const ssPct     = ssMax > 0 ? Math.min(1, ssCur / ssMax) : 0
+  const ssColor   = ssPct >= 1   ? PURPLE
+                  : ssPct >= 0.8 ? AMBER
+                  : AMBER
+
+  const btnBase: React.CSSProperties = {
+    width: 40, height: 32, borderRadius: 6,
+    background: 'rgba(255,255,255,0.04)',
+    border: '1px solid rgba(255,255,255,0.12)',
+    cursor: 'pointer',
+    fontFamily: "'Share Tech Mono',monospace", fontSize: 18, lineHeight: 1,
+    color: 'rgba(232,223,200,0.8)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    transition: 'border-color .12s',
+  }
+
+  return (
+    <div>
+      {/* Hull Trauma */}
+      <div style={{ marginBottom: 8 }}>
+        <div style={{
+          fontFamily: "'Rajdhani',sans-serif", fontSize: 'clamp(0.62rem,0.95vw,0.72rem)',
+          color: '#e05252', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 3,
+        }}>Hull Trauma</div>
+        <div style={{ height: 8, background: 'rgba(255,255,255,0.06)', borderRadius: 4, overflow: 'hidden', marginBottom: 2 }}>
+          <div style={{
+            width: `${htPct * 100}%`, height: '100%', background: htColor,
+            borderRadius: 4, transition: 'width 300ms ease',
+            animation: htPct >= 1 ? 'pulse-dot 1.4s ease-in-out infinite' : 'none',
+          }} />
+        </div>
+        <div style={{ fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: 'clamp(0.65rem,1vw,0.78rem)', color: 'rgba(232,223,200,0.5)', textAlign: 'right', marginBottom: 4 }}>
+          {htCur} / {htMax}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <button
+            onClick={() => onAdjustHullTrauma(-1)}
+            disabled={htCur === 0}
+            style={{ ...btnBase, cursor: htCur === 0 ? 'not-allowed' : 'pointer', color: htCur === 0 ? 'rgba(232,223,200,0.2)' : 'rgba(232,223,200,0.8)' }}
+            onMouseEnter={e => { if (htCur > 0) (e.currentTarget as HTMLElement).style.borderColor = '#e0525266' }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.12)' }}
+          >−</button>
+          <span style={{ flex: 1, textAlign: 'center', fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: 'clamp(0.75rem,1.2vw,0.88rem)', color: 'rgba(232,223,200,0.8)' }}>
+            {htCur} trauma
+          </span>
+          <button
+            onClick={() => onAdjustHullTrauma(1)}
+            style={btnBase}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = '#e0525266' }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.12)' }}
+          >+</button>
+        </div>
+      </div>
+
+      {/* System Strain */}
+      {ssMax > 0 && (
+        <div>
+          <div style={{
+            fontFamily: "'Rajdhani',sans-serif", fontSize: 'clamp(0.62rem,0.95vw,0.72rem)',
+            color: AMBER, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 3,
+          }}>System Strain</div>
+          <div style={{ height: 8, background: 'rgba(255,255,255,0.06)', borderRadius: 4, overflow: 'hidden', marginBottom: 2 }}>
+            <div style={{
+              width: `${ssPct * 100}%`, height: '100%', background: ssColor,
+              borderRadius: 4, transition: 'width 300ms ease',
+            }} />
+          </div>
+          <div style={{ fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: 'clamp(0.65rem,1vw,0.78rem)', color: 'rgba(232,223,200,0.5)', textAlign: 'right', marginBottom: 4 }}>
+            {ssCur} / {ssMax}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <button
+              onClick={() => onAdjustSystemStrain(-1)}
+              disabled={ssCur === 0}
+              style={{ ...btnBase, cursor: ssCur === 0 ? 'not-allowed' : 'pointer', color: ssCur === 0 ? 'rgba(232,223,200,0.2)' : 'rgba(232,223,200,0.8)' }}
+              onMouseEnter={e => { if (ssCur > 0) (e.currentTarget as HTMLElement).style.borderColor = `${AMBER}66` }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.12)' }}
+            >−</button>
+            <span style={{ flex: 1, textAlign: 'center', fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: 'clamp(0.75rem,1.2vw,0.88rem)', color: 'rgba(232,223,200,0.8)' }}>
+              {ssCur} strain
+            </span>
+            <button
+              onClick={() => onAdjustSystemStrain(1)}
+              style={btnBase}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${AMBER}66` }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.12)' }}
+            >+</button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Pending damage row (from DB) ─────────────────────────────────────────────
 interface PendingDamage {
   id:                       string
@@ -331,6 +448,13 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
   const [libLoading, setLibLoading] = useState(true)
   const [libError, setLibError] = useState<string | null>(null)
 
+  // Vehicle library state
+  const [libraryTab, setLibraryTab] = useState<'adversaries' | 'vehicles'>('adversaries')
+  const [vehicleLibrary, setVehicleLibrary] = useState<Vehicle[]>([])
+  const [vehicleLibLoaded, setVehicleLibLoaded] = useState(false)
+  const [vehicleSearch, setVehicleSearch] = useState('')
+  const [silhouetteFilter, setSilhouetteFilter] = useState<'all' | '1' | '2' | '3' | '4' | '5+'>('all')
+
   // Encounter state
   const [encounter, setEncounter] = useState<CombatEncounter | null>(null)
   const [roster, setRoster] = useState<AdversaryInstance[]>([])
@@ -355,6 +479,33 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
   // Weapon + quality data cache (keyed by weapon_key)
   const [weaponCache, setWeaponCache] = useState<Record<string, RefWeapon>>({})
   const [qualityCache, setQualityCache] = useState<Record<string, RefWeaponQuality>>({})
+
+  // Synthetic weapon refs built from adversary/vehicle instances in the encounter.
+  // Used as a tooltip fallback for weapons not in ref_weapons (synthetic keys like adv-xxx-w0).
+  const syntheticWeaponRef = useMemo<Record<string, RefWeapon>>(() => {
+    if (!encounter?.adversaries) return {}
+    const map: Record<string, RefWeapon> = {}
+    for (const adv of encounter.adversaries) {
+      adv.weapons.forEach((w, i) => {
+        const key = `adv-${adv.instanceId}-w${i}`
+        const { dmg, range, crit } = resolveWeapon(w, adv.characteristics.brawn, {})
+        const qualities: WeaponQuality[] = (w.qualities ?? []).map(q => {
+          const m = q.match(/^(.+?)\s+(\d+)$/)
+          return m ? { key: m[1], count: Number(m[2]) } : { key: q }
+        })
+        map[key] = {
+          key, name: w.name, skill_key: '',
+          damage: parseInt(dmg) || 0,
+          damage_add: undefined,
+          crit: crit ?? 4,
+          range_value: `wr${range}`,
+          encumbrance: 0, hard_points: 0, price: 0, rarity: 0, restricted: false,
+          qualities,
+        }
+      })
+    }
+    return map
+  }, [encounter?.adversaries])
   // Equipped weapons per PC character (character_id → weapons with equip_state='equipped')
   const [equippedByChar, setEquippedByChar] = useState<Record<string, CharacterWeapon[]>>({})
   // Skills per PC character (character_id → CharacterSkill[]) — used for melee opposed check difficulty
@@ -428,6 +579,21 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
     }
     void load()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Lazy-load vehicle library (OggDude JSON + custom DB) when Vehicles tab is first opened
+  useEffect(() => {
+    if (libraryTab !== 'vehicles' || vehicleLibLoaded) return
+    const load = async () => {
+      const [oggdude, customResult] = await Promise.all([
+        fetchVehicles(),
+        supabase.from('ref_vehicles').select('*').order('name'),
+      ])
+      const custom = (customResult.data ?? []).map(r => dbRowToVehicle(r as Record<string, unknown>))
+      setVehicleLibrary([...oggdude, ...custom])
+      setVehicleLibLoaded(true)
+    }
+    void load()
+  }, [libraryTab, vehicleLibLoaded]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load weapon reference for stat lookup (weapons in adversaries.json are name-only strings)
   useEffect(() => {
@@ -672,6 +838,14 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
     return matchType && matchSource && matchSearch
   })
 
+  // Filtered vehicle library
+  const filteredVehicleLib = vehicleLibrary.filter(v => {
+    const matchSearch = !vehicleSearch.trim() || v.name.toLowerCase().includes(vehicleSearch.toLowerCase())
+    const matchSil = silhouetteFilter === 'all'
+      || (silhouetteFilter === '5+' ? v.silhouette >= 5 : v.silhouette === Number(silhouetteFilter))
+    return matchSearch && matchSil
+  })
+
   // Add adversary to live encounter (combat already running)
   const addToActiveCombat = async (adv: Adversary, alignment: 'enemy' | 'allied_npc' = 'enemy', successes = 0, advantages = 0) => {
     if (!encounter) return
@@ -692,6 +866,29 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
     }
     await saveEncounter({
       adversaries: [...encounter.adversaries, instance],
+      initiative_slots: [...encounter.initiative_slots, newSlot],
+    })
+  }
+
+  // Add vehicle to live encounter (combat already running)
+  const addVehicleToActiveCombat = async (vehicle: Vehicle, alignment: 'enemy' | 'allied_npc' = 'enemy', successes = 0, advantages = 0) => {
+    if (!encounter) return
+    const instance = vehicleToVehicleInstance(vehicle, alignment)
+    const nextOrder = (encounter.initiative_slots.length ?? 0) + 1
+    const newSlot: InitiativeSlot = {
+      id: randomUUID(),
+      type: 'npc',
+      alignment,
+      order: nextOrder,
+      name: vehicle.name,
+      acted: false,
+      current: false,
+      successes,
+      advantages,
+      vehicleInstanceId: instance.instanceId,
+    }
+    await saveEncounter({
+      vehicles: [...(encounter.vehicles ?? []), instance],
       initiative_slots: [...encounter.initiative_slots, newSlot],
     })
   }
@@ -880,6 +1077,15 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
     )
     await saveEncounter({ adversaries: updatedAdversaries })
 
+    // Sync wound_pct on map token
+    const advSlot = encounter.initiative_slots.find((s: InitiativeSlot) => s.adversaryInstanceId === adv.instanceId)
+    if (advSlot) {
+      const pct = adv.type === 'minion'
+        ? (result.groupRemaining / Math.max(1, adv.groupSize))
+        : Math.min(1, result.woundsCurrent / Math.max(1, adv.woundThreshold))
+      await supabase.from('map_tokens').update({ wound_pct: pct }).eq('slot_key', advSlot.id).eq('campaign_id', campaignId)
+    }
+
     if (!wasDefeated && result.isDefeated && encounter.id) {
       const msg = result.defeatMessage ?? `${adv.name} — DEFEATED`
       setDefeatNotif({ message: msg, persistent: true })
@@ -905,6 +1111,42 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
       a.instanceId !== adv.instanceId ? a : { ...a, strainCurrent: next }
     )
     await saveEncounter({ adversaries: updatedAdversaries })
+  }
+
+  // Adjust hull trauma for a vehicle (stored in encounter.vehicles[] JSONB)
+  const adjustVehicleHullTrauma = async (vehicle: VehicleInstance, delta: number) => {
+    if (!encounter) return
+    const next = Math.max(0, Math.min(vehicle.hullTraumaThreshold, vehicle.hullTraumaCurrent + delta))
+    const updated = (encounter.vehicles ?? []).map(v =>
+      v.instanceId !== vehicle.instanceId ? v : { ...v, hullTraumaCurrent: next }
+    )
+    await saveEncounter({ vehicles: updated })
+    // Sync wound_pct on map token
+    const vSlot = encounter.initiative_slots.find((s: InitiativeSlot) => s.vehicleInstanceId === vehicle.instanceId)
+    if (vSlot) {
+      const pct = Math.min(1, next / Math.max(1, vehicle.hullTraumaThreshold))
+      await supabase.from('map_tokens').update({ wound_pct: pct }).eq('slot_key', vSlot.id).eq('campaign_id', campaignId)
+    }
+    // Log disable event
+    const wasDisabled = vehicle.hullTraumaCurrent >= vehicle.hullTraumaThreshold
+    if (!wasDisabled && next >= vehicle.hullTraumaThreshold && encounter.id) {
+      await supabase.from('combat_log').insert({
+        campaign_id: campaignId, encounter_id: encounter.id,
+        participant_name: 'SYSTEM', alignment: 'system', roll_type: 'system',
+        result_summary: `${vehicle.name} — DISABLED (Hull Trauma ${next}/${vehicle.hullTraumaThreshold})`,
+        is_visible_to_players: true,
+      })
+    }
+  }
+
+  // Adjust system strain for a vehicle (stored in encounter.vehicles[] JSONB)
+  const adjustVehicleSystemStrain = async (vehicle: VehicleInstance, delta: number) => {
+    if (!encounter) return
+    const next = Math.max(0, Math.min(vehicle.systemStrainThreshold, vehicle.systemStrainCurrent + delta))
+    const updated = (encounter.vehicles ?? []).map(v =>
+      v.instanceId !== vehicle.instanceId ? v : { ...v, systemStrainCurrent: next }
+    )
+    await saveEncounter({ vehicles: updated })
   }
 
   // ── Soak helpers ──
@@ -1206,14 +1448,37 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
         backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h20v20H0z' fill='none'/%3E%3Cpath d='M0 0l20 20M20 0L0 20' stroke='%23C8AA50' stroke-width='0.5'/%3E%3C/svg%3E")`,
       }} />
 
-      {/* ══════════ LEFT: ADVERSARY LIBRARY ══════════ */}
+      {/* ══════════ LEFT: COMBAT LIBRARY ══════════ */}
       <div style={{
         width: 270, flexShrink: 0, borderRight: `1px solid ${BORDER}`,
         display: 'flex', flexDirection: 'column', overflowY: 'auto',
         padding: '14px 12px', gap: 10, position: 'relative', zIndex: 1,
       }}>
-        <SectionLabel>Adversary Library</SectionLabel>
+        <SectionLabel>Combat Library</SectionLabel>
 
+        {/* Library tab switcher */}
+        <div style={{ display: 'flex', gap: 4 }}>
+          {(['adversaries', 'vehicles'] as const).map(tab => (
+            <button
+              key={tab}
+              onClick={() => setLibraryTab(tab)}
+              style={{
+                flex: 1, padding: '4px 0',
+                background: libraryTab === tab ? `${GOLD}20` : 'transparent',
+                border: `1px solid ${libraryTab === tab ? BORDER_MD : BORDER}`,
+                borderRadius: 3, cursor: 'pointer',
+                fontFamily: FM, fontSize: FS_OVERLINE, letterSpacing: '0.08em',
+                color: libraryTab === tab ? GOLD : TEXT_MUTED,
+                textTransform: 'uppercase',
+              }}
+            >
+              {tab === 'adversaries' ? 'Adversaries' : 'Vehicles'}
+            </button>
+          ))}
+        </div>
+
+        {/* ── Adversaries tab ── */}
+        {libraryTab === 'adversaries' && <>
         {/* Search */}
         <input
           value={libSearch}
@@ -1345,6 +1610,106 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
             </div>
           )}
         </div>
+        </>}
+
+        {/* ── Vehicles tab ── */}
+        {libraryTab === 'vehicles' && <>
+        {/* Vehicle search */}
+        <input
+          value={vehicleSearch}
+          onChange={e => setVehicleSearch(e.target.value)}
+          placeholder="Search vehicles…"
+          style={{
+            background: INPUT_BG, border: `1px solid ${BORDER}`,
+            borderRadius: 4, padding: '6px 10px', color: TEXT,
+            fontFamily: FR, fontSize: FS_LABEL, outline: 'none', width: '100%',
+            boxSizing: 'border-box',
+          }}
+        />
+        {/* Silhouette filter */}
+        <div style={{ display: 'flex', gap: 4 }}>
+          {(['all', '1', '2', '3', '4', '5+'] as const).map(s => (
+            <button
+              key={s}
+              onClick={() => setSilhouetteFilter(s)}
+              style={{
+                flex: 1, padding: '4px 0',
+                background: silhouetteFilter === s ? `${CHAR_AG}20` : 'transparent',
+                border: `1px solid ${silhouetteFilter === s ? CHAR_AG : BORDER}`,
+                borderRadius: 3, cursor: 'pointer',
+                fontFamily: FM, fontSize: FS_OVERLINE, letterSpacing: '0.06em',
+                color: silhouetteFilter === s ? CHAR_AG : TEXT_MUTED,
+                textTransform: 'uppercase',
+              }}
+            >
+              {s === 'all' ? 'ALL' : `${s}`}
+            </button>
+          ))}
+        </div>
+        {/* Vehicle results list */}
+        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {!vehicleLibLoaded && (
+            <div style={{ fontFamily: FR, fontSize: FS_LABEL, color: TEXT_MUTED, textAlign: 'center', padding: '20px 0' }}>
+              Loading vehicles…
+            </div>
+          )}
+          {vehicleLibLoaded && filteredVehicleLib.length === 0 && (
+            <div style={{ fontFamily: FR, fontSize: FS_LABEL, color: TEXT_MUTED, textAlign: 'center', padding: '20px 0' }}>
+              No vehicles found.
+            </div>
+          )}
+          {vehicleLibLoaded && filteredVehicleLib.map(v => {
+            const inCombat = !!encounter
+            const btnColor = inCombat ? CHAR_AG : GOLD
+            return (
+              <div key={v.key} style={{ ...raisedPanel, padding: '8px 10px' }}>
+                {/* Name + silhouette badge */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <span style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 600, color: TEXT, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {v._isCustom && <span style={{ color: GOLD }}>★ </span>}{v.name}
+                  </span>
+                  <span style={{
+                    fontFamily: FM, fontSize: FS_OVERLINE, color: CHAR_AG, flexShrink: 0,
+                    border: `1px solid ${CHAR_AG}50`, borderRadius: 2,
+                    padding: '1px 5px', background: `${CHAR_AG}15`, marginLeft: 4,
+                  }}>SIL {v.silhouette}</span>
+                </div>
+                {/* Stats row */}
+                <div style={{ display: 'flex', gap: 4, marginBottom: 6, flexWrap: 'wrap' }}>
+                  <StatBox label="SPD"   value={v.speed}    color={CHAR_AG}  />
+                  <StatBox label="HDL"   value={v.handling >= 0 ? `+${v.handling}` : `${v.handling}`} color={CHAR_WIL} />
+                  <StatBox label="ARMOR" value={v.armor}    color={CHAR_WIL} />
+                  <StatBox label="HT"    value={v.hullTrauma}   color={CHAR_BR}  />
+                </div>
+                {/* Add button */}
+                <button
+                  onClick={() => {
+                    if (encounter) {
+                      void addVehicleToActiveCombat(v, 'enemy', 0, 0)
+                    }
+                  }}
+                  disabled={!inCombat}
+                  title={!inCombat ? 'Start combat first to add vehicles' : undefined}
+                  style={{
+                    width: '100%', padding: '5px 0',
+                    background: 'transparent',
+                    border: `1px solid ${inCombat ? `${btnColor}60` : BORDER}`,
+                    borderRadius: 3, cursor: inCombat ? 'pointer' : 'not-allowed',
+                    fontFamily: FM, fontSize: FS_OVERLINE, letterSpacing: '0.1em',
+                    color: inCombat ? btnColor : TEXT_MUTED, textTransform: 'uppercase',
+                    transition: '.15s',
+                    opacity: inCombat ? 1 : 0.5,
+                  }}
+                  onMouseEnter={e => { if (inCombat) (e.currentTarget as HTMLElement).style.background = `${btnColor}15` }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+                >
+                  {inCombat ? '⚡ Add to Combat' : '— Start Combat First'}
+                </button>
+              </div>
+            )
+          })}
+        </div>
+        </>}
 
         {/* Divider */}
         <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: 10 }}>
@@ -1932,7 +2297,7 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                         // ── SELECTED: dual wield ──────────────────────────────
                         if (isDualSelected) {
                           const makeWeaponSpan = (role: 'primary' | 'secondary', name: string, weapKey: string | null, dimmed?: boolean) => {
-                            const refW = weapKey ? weaponCache[weapKey] : null
+                            const refW = weapKey ? (weaponCache[weapKey] ?? syntheticWeaponRef[weapKey] ?? null) : null
                             return (
                               <span
                                 key={role}
@@ -1965,7 +2330,7 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
 
                         // ── SELECTED: single weapon ───────────────────────────
                         if (hasSelected) {
-                          const refW = participant!.active_weapon_key ? weaponCache[participant!.active_weapon_key] : null
+                          const refW = participant!.active_weapon_key ? (weaponCache[participant!.active_weapon_key] ?? syntheticWeaponRef[participant!.active_weapon_key] ?? null) : null
                           return (
                             <span
                               style={{
@@ -1987,7 +2352,7 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                           return (
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
                               {equipped.map(ew => {
-                                const refW = weaponCache[ew.weapon_key]
+                                const refW = weaponCache[ew.weapon_key] ?? syntheticWeaponRef[ew.weapon_key] ?? null
                                 const name = ew.custom_name || refW?.name || ew.weapon_key
                                 return (
                                   <span
@@ -2068,6 +2433,20 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                       />
                     </div>
                   )}
+                  {/* Row 3 (vehicle): hull trauma + system strain tracker */}
+                  {isNPC && slot.vehicleInstanceId && (() => {
+                    const veh = (encounter.vehicles ?? []).find(v => v.instanceId === slot.vehicleInstanceId)
+                    if (!veh) return null
+                    return (
+                      <div style={{ marginTop: 6 }}>
+                        <VehicleWoundTracker
+                          vehicle={veh}
+                          onAdjustHullTrauma={delta => { void adjustVehicleHullTrauma(veh, delta) }}
+                          onAdjustSystemStrain={delta => { void adjustVehicleSystemStrain(veh, delta) }}
+                        />
+                      </div>
+                    )
+                  })()}
                 </div>
 
                 {/* ── Col 3: PC wound block only (NPCs use AdversaryWoundTracker in Col 2) ── */}
@@ -2559,11 +2938,11 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
                     <div style={{ marginBottom: 8 }}>
                       <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, letterSpacing: '0.15em', textTransform: 'uppercase', color: `${GOLD}90`, marginBottom: 5 }}>Weapons</div>
                       {adv.weapons.map((w, i) => {
-                        const { dmg, range } = resolveWeapon(w, adv.characteristics.brawn, weaponRef)
+                        const { dmg, range, crit } = resolveWeapon(w, adv.characteristics.brawn, weaponRef)
                         const quals = w.qualities && w.qualities.length > 0 ? w.qualities.join(', ') : ''
                         return (
                           <div key={i} style={{ fontFamily: FM, fontSize: FS_LABEL, fontWeight: 500, color: TEXTGR, marginBottom: 2 }}>
-                            {w.name} — DMG {dmg} — {range}{quals ? <span> — <RichText text={quals} /></span> : null}
+                            {w.name} — DMG {dmg}{crit !== undefined ? ` — Crit ${crit}` : ''} — {range}{quals ? <span> — <RichText text={quals} /></span> : null}
                           </div>
                         )
                       })}
@@ -2823,6 +3202,47 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
         })}
       </div>
 
+      {/* ── Encounter Vehicles ── */}
+      {encounter?.vehicles && encounter.vehicles.length > 0 && (
+        <div style={{ marginTop: 16 }}>
+          <SectionLabel>Encounter Vehicles</SectionLabel>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {encounter.vehicles.map(vehicle => {
+              const vSlot = encounter.initiative_slots.find((s: InitiativeSlot) => s.vehicleInstanceId === vehicle.instanceId)
+              const alignment = vSlot?.alignment ?? vehicle.alignment ?? 'enemy'
+              const vAccent = alignment === 'allied_npc' ? ALLIED_GREEN : CHAR_AG
+              return (
+                <div key={vehicle.instanceId} style={{
+                  background: PANEL_BG, backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                  borderRadius: 6,
+                  borderTop: `2px solid ${vAccent}80`,
+                  borderRight: `1px solid ${BORDER}`,
+                  borderBottom: `1px solid ${BORDER}`,
+                  borderLeft: `3px solid ${vAccent}`,
+                }}>
+                  <div style={{ padding: '10px 12px 4px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: TEXT, flex: 1 }}>{vehicle.name}</span>
+                    <span style={{
+                      fontFamily: "'Rajdhani',sans-serif", fontSize: FS_OVERLINE, color: CHAR_AG,
+                      border: `1px solid ${CHAR_AG}50`, borderRadius: 2,
+                      padding: '1px 5px', background: `${CHAR_AG}15`,
+                    }}>VEHICLE</span>
+                  </div>
+                  <div style={{ padding: '0 12px 10px' }}>
+                    <VehicleWoundTracker
+                      vehicle={vehicle}
+                      onAdjustHullTrauma={delta => { void adjustVehicleHullTrauma(vehicle, delta) }}
+                      onAdjustSystemStrain={delta => { void adjustVehicleSystemStrain(vehicle, delta) }}
+                    />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       {/* ── Initiative Setup Modal ── */}
       {showInitModal && (
         <InitiativeSetupModal
@@ -2889,6 +3309,11 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
               void addToActiveCombat(adv, alignment, successes, advantages)
             } else {
               addToRoster(adv, alignment)
+            }
+          }}
+          onAddVehicle={(vehicle, alignment, successes, advantages) => {
+            if (encounter) {
+              void addVehicleToActiveCombat(vehicle, alignment, successes, advantages)
             }
           }}
           onClose={() => setShowAddModal(false)}
