@@ -60,6 +60,7 @@ const INLINE: React.CSSProperties = {
 interface RichTextProps {
   text: string
   className?: string
+  style?: React.CSSProperties
 }
 
 /**
@@ -71,11 +72,11 @@ interface RichTextProps {
  * The root element is a <span> so the component never breaks surrounding text flow.
  * Unknown shortcodes (e.g. [banana]) are preserved as literal text.
  */
-export function RichText({ text, className }: RichTextProps) {
+export function RichText({ text, className, style }: RichTextProps) {
   const segments = parseSymbols(text)
 
   return (
-    <span className={className}>
+    <span className={className} style={style}>
       {segments.map((seg, segIdx) => {
         if (seg.type === 'text') {
           return seg.value
