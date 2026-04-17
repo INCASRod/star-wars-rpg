@@ -110,7 +110,7 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
     const scopeFilter = filterScope === 'custom' ? { is_custom: true } : { is_custom: false }
 
     const queries = [
-      supabase.from('ref_weapons').select('key,name,price,rarity,encumbrance,skill_key,damage,damage_add,crit,range_value,hard_points,description,is_custom,custom_notes,campaign_id')
+      supabase.from('ref_weapons').select('key,name,price,rarity,encumbrance,skill_key,damage,damage_add,crit,range_value,hard_points,qualities,description,is_custom,custom_notes,campaign_id')
         .match(scopeFilter)
         .then(r => (r.data || []).map((d: Record<string, unknown>) => ({ ...d, type: 'weapon', _table: 'ref_weapons' as const }))),
       supabase.from('ref_armor').select('key,name,price,rarity,encumbrance,defense,soak,soak_bonus,description,is_custom,custom_notes,campaign_id')
@@ -682,6 +682,7 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
             name: awardingItem.name,
             type: awardingItem.type,
             encumbrance: awardingItem.encumbrance ?? 0,
+            qualities: awardingItem.qualities,
           } as AwardableItem}
           characters={characters}
           campaignId={campaignId}

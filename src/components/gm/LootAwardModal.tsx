@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
-import type { Character, CharacterWeapon, CharacterArmor, CharacterGear } from '@/lib/types'
+import type { Character, CharacterWeapon, CharacterArmor, CharacterGear, RefWeaponQuality } from '@/lib/types'
 import type { RefWeapon, RefArmor, RefGear } from '@/lib/types'
 import { computeEncumbranceStats } from '@/lib/derivedStats'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { QualityBadge } from '@/components/character/QualityBadge'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 const BG        = 'rgba(0,0,0,0.7)'
@@ -32,6 +33,7 @@ export interface AwardableItem {
   name:        string
   type:        'weapon' | 'armor' | 'gear'
   encumbrance: number
+  qualities?:  { key: string; count?: number | null }[]
 }
 
 interface CharInventory {
@@ -71,10 +73,11 @@ export function LootAwardModal({
   const [busy,         setBusy]         = useState(false)
   const [loadingInv,   setLoadingInv]   = useState(true)
 
-  const [inventories,  setInventories]  = useState<Record<string, CharInventory>>({})
-  const [refWeaponMap, setRefWeaponMap] = useState<Record<string, RefWeapon>>({})
-  const [refArmorMap,  setRefArmorMap]  = useState<Record<string, RefArmor>>({})
-  const [refGearMap,   setRefGearMap]   = useState<Record<string, RefGear>>({})
+  const [inventories,    setInventories]    = useState<Record<string, CharInventory>>({})
+  const [refWeaponMap,   setRefWeaponMap]   = useState<Record<string, RefWeapon>>({})
+  const [refArmorMap,    setRefArmorMap]    = useState<Record<string, RefArmor>>({})
+  const [refGearMap,     setRefGearMap]     = useState<Record<string, RefGear>>({})
+  const [refQualityMap,  setRefQualityMap]  = useState<Record<string, RefWeaponQuality>>({})
 
   // Load inventories + ref maps on open
   useEffect(() => {
@@ -99,16 +102,18 @@ export function LootAwardModal({
     }
 
     const loadRefs = async () => {
-      const [rw, ra, rg] = await Promise.all([
+      const [rw, ra, rg, rq] = await Promise.all([
         supabase.from('ref_weapons').select('key,encumbrance'),
         supabase.from('ref_armor').select('key,encumbrance'),
         supabase.from('ref_gear').select('key,encumbrance,encumbrance_bonus'),
+        supabase.from('ref_weapon_qualities').select('key,name,description,is_ranked,stat_modifier'),
       ])
       const toMap = <T extends { key: string }>(rows: T[] | null): Record<string, T> =>
         Object.fromEntries((rows || []).map(r => [r.key, r]))
       setRefWeaponMap(toMap(rw.data as RefWeapon[] | null))
       setRefArmorMap(toMap(ra.data as RefArmor[] | null))
       setRefGearMap(toMap(rg.data as RefGear[] | null))
+      setRefQualityMap(toMap(rq.data as RefWeaponQuality[] | null))
     }
 
     Promise.all([loadInventory(), loadRefs()]).finally(() => setLoadingInv(false))
@@ -242,6 +247,13 @@ export function LootAwardModal({
             <div style={{ fontFamily: FONT_C, fontSize: FS_CAP, color: itemTypeColor, textTransform: 'uppercase', letterSpacing: '0.15em', marginTop: 2 }}>
               Award {item.type} · ENC {item.encumbrance}
             </div>
+            {item.qualities && item.qualities.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
+                {item.qualities.map(q => (
+                  <QualityBadge key={q.key} quality={q} refQualityMap={refQualityMap} variant="desktop" />
+                ))}
+              </div>
+            )}
           </div>
           <button
             onClick={onClose}

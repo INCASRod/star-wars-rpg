@@ -10,6 +10,7 @@ import type {
   RefWeaponQuality,
   WeaponQuality,
 } from '@/lib/types'
+import { QualityBadge } from '@/components/character/QualityBadge'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 const PANEL_BG  = 'rgba(6,13,9,0.97)'
@@ -1141,19 +1142,24 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
                   )}
                 </div>
                 {/* Qualities */}
-                {preview.qualities.length > 0 && (
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap' }}>
-                    <span style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: DIM, textTransform: 'uppercase', letterSpacing: '0.1em', width: 80 }}>Qualities</span>
-                    <span style={{ fontFamily: FONT_C, fontSize: FS_CAP, color: TEXT }}>
-                      {preview.qualities.map(q => {
-                        const refQ = allQualities.find(r => r.key === q.key)
-                        const name = refQ?.name ?? q.key
-                        const att = q.sources.filter(s => s !== 'base')
-                        return `${name} ${q.count}${att.length ? ` (${att.join(', ')})` : ''}`
-                      }).join(', ')}
-                    </span>
-                  </div>
-                )}
+                {preview.qualities.length > 0 && (() => {
+                  const refQualityMap = Object.fromEntries(allQualities.map(q => [q.key, q]))
+                  return (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                      <span style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: DIM, textTransform: 'uppercase', letterSpacing: '0.1em', width: 80, flexShrink: 0 }}>Qualities</span>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                        {preview.qualities.map(q => (
+                          <QualityBadge
+                            key={q.key}
+                            quality={{ key: q.key, count: q.count }}
+                            refQualityMap={refQualityMap}
+                            variant="desktop"
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })()}
               </div>
             </div>
           )}

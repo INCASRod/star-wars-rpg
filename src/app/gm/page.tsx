@@ -15,6 +15,7 @@ import { DestinyGeneratePanel } from '@/components/gm/DestinyGeneratePanel'
 import { GmMapView } from '@/components/gm/GmMapView'
 import { AdversaryLibrary } from '@/components/gm/AdversaryLibrary'
 import { VehicleLibrary } from '@/components/gm/VehicleLibrary'
+import { TalentDatabaseTab } from '@/components/gm/TalentDatabaseTab'
 import { StagingTopBar } from '@/components/staging/StagingTopBar'
 import { StagingFloatingToolbar } from '@/components/staging/StagingFloatingToolbar'
 import { useActiveMap } from '@/hooks/useActiveMap'
@@ -324,10 +325,10 @@ function GmDashboard() {
   const [gmScreenOpen, setGmScreenOpen] = useState(false)
 
   // ── Tabs ──
-  type GmTab = 'xp' | 'credits' | 'duty' | 'do' | 'loot' | 'items' | 'combat' | 'adversaries' | 'vehicles' | 'force' | 'staging'
+  type GmTab = 'xp' | 'credits' | 'duty' | 'do' | 'loot' | 'items' | 'talents' | 'combat' | 'adversaries' | 'vehicles' | 'force' | 'staging'
   const GM_TAB_KEY = 'holocron:gm-tab'
   // 'staging' is intentionally excluded — the staging tab must be explicitly clicked each session
-  const GM_TAB_VALID: GmTab[] = ['xp', 'credits', 'duty', 'do', 'loot', 'items', 'combat', 'adversaries', 'vehicles', 'force']
+  const GM_TAB_VALID: GmTab[] = ['xp', 'credits', 'duty', 'do', 'loot', 'items', 'talents', 'combat', 'adversaries', 'vehicles', 'force']
   const [activeTab, setActiveTab] = useState<GmTab>(() => {
     if (typeof window === 'undefined') return 'xp'
     const saved = window.localStorage.getItem(GM_TAB_KEY)
@@ -2183,6 +2184,7 @@ function GmDashboard() {
                   ['do', 'D&O'],
                   ['loot', 'Loot'],
                   ['items', 'Items'],
+                  ['talents', '✦ Talents'],
                   ['combat', 'Combat'],
                   ['adversaries', '👾 Adversaries'],
                   ['vehicles',   '🚀 Vehicles'],
@@ -2465,6 +2467,11 @@ function GmDashboard() {
                 {/* ── ITEMS TAB ── */}
                 {activeTab === 'items' && (
                   <ItemDatabaseTab campaignId={campaignId} supabase={supabase} characters={targetChars} sendToChar={sendToChar} />
+                )}
+
+                {/* ── TALENTS TAB ── */}
+                {activeTab === 'talents' && (
+                  <TalentDatabaseTab campaignId={campaignId} supabase={supabase} characters={targetChars} sendToChar={sendToChar} />
                 )}
 
                 {/* ── COMBAT TAB ── */}
