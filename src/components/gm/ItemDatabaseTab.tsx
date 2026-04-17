@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { ItemEditor, type EditableItem, type ItemType } from './ItemEditor'
 import { LootAwardModal, type AwardableItem } from './LootAwardModal'
+import { VendorSellModal, type VendorItem } from './VendorSellModal'
 import type { Character } from '@/lib/types'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
@@ -34,7 +35,7 @@ interface ItemDatabaseTabProps {
 }
 
 type FilterType = 'all' | ItemType
-type FilterScope = 'global' | 'custom'
+type FilterScope = 'global' | 'custom' | 'vendor'
 type ActiveView = 'items' | 'dropped'
 
 interface DbItem extends EditableItem {
@@ -93,6 +94,7 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
   const [droppedLoading,  setDroppedLoading]  = useState(false)
   const [awardingDropped, setAwardingDropped] = useState<DroppedItem | null>(null)
   const [awardingItem,    setAwardingItem]    = useState<DbItem | null>(null)
+  const [vendingItem,     setVendingItem]     = useState<DbItem | null>(null)
   const [destroyConfirm,  setDestroyConfirm]  = useState<string | null>(null) // rowId
 
   const toggleExpanded = () =>
@@ -107,18 +109,20 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
     if (!campaignId) return
     setLoading(true)
 
-    const scopeFilter = filterScope === 'custom' ? { is_custom: true } : { is_custom: false }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const applyScope = (q: any) => {
+      if (filterScope === 'custom') return q.eq('is_custom', true)
+      if (filterScope === 'global') return q.eq('is_custom', false)
+      return q  // vendor: all items
+    }
 
     const queries = [
-      supabase.from('ref_weapons').select('key,name,price,rarity,encumbrance,skill_key,damage,damage_add,crit,range_value,hard_points,qualities,description,is_custom,custom_notes,campaign_id')
-        .match(scopeFilter)
-        .then(r => (r.data || []).map((d: Record<string, unknown>) => ({ ...d, type: 'weapon', _table: 'ref_weapons' as const }))),
-      supabase.from('ref_armor').select('key,name,price,rarity,encumbrance,defense,soak,soak_bonus,description,is_custom,custom_notes,campaign_id')
-        .match(scopeFilter)
-        .then(r => (r.data || []).map((d: Record<string, unknown>) => ({ ...d, type: 'armor', _table: 'ref_armor' as const }))),
-      supabase.from('ref_gear').select('key,name,price,rarity,encumbrance,encumbrance_bonus,description,is_custom,custom_notes,campaign_id')
-        .match(scopeFilter)
-        .then(r => (r.data || []).map((d: Record<string, unknown>) => ({ ...d, type: 'gear', _table: 'ref_gear' as const }))),
+      applyScope(supabase.from('ref_weapons').select('key,name,price,rarity,encumbrance,skill_key,damage,damage_add,crit,range_value,hard_points,qualities,description,is_custom,custom_notes,campaign_id'))
+        .then((r: { data: unknown[] | null }) => (r.data || []).map((d) => ({ ...(d as Record<string, unknown>), type: 'weapon', _table: 'ref_weapons' as const }))),
+      applyScope(supabase.from('ref_armor').select('key,name,price,rarity,encumbrance,defense,soak,soak_bonus,description,is_custom,custom_notes,campaign_id'))
+        .then((r: { data: unknown[] | null }) => (r.data || []).map((d) => ({ ...(d as Record<string, unknown>), type: 'armor', _table: 'ref_armor' as const }))),
+      applyScope(supabase.from('ref_gear').select('key,name,price,rarity,encumbrance,encumbrance_bonus,description,is_custom,custom_notes,campaign_id'))
+        .then((r: { data: unknown[] | null }) => (r.data || []).map((d) => ({ ...(d as Record<string, unknown>), type: 'gear', _table: 'ref_gear' as const }))),
     ]
 
     const results = await Promise.all(queries)
@@ -363,18 +367,22 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
 
             {/* Scope toggle */}
             <div style={{ display: 'flex', gap: 0, border: `1px solid ${BORDER_HI}`, borderRadius: 3, overflow: 'hidden' }}>
-              {(['custom', 'global'] as FilterScope[]).map(s => (
+              {([['custom', 'Campaign'], ['global', 'System'], ['vendor', '🛒 Vendor']] as [FilterScope, string][]).map(([s, label]) => (
                 <button
                   key={s}
                   onClick={() => setFilterScope(s)}
                   style={{
                     fontFamily: FONT_C, fontSize: FS_CAP, fontWeight: 700, textTransform: 'uppercase',
                     letterSpacing: '0.08em', padding: '4px 12px', border: 'none', cursor: 'pointer',
-                    background: filterScope === s ? 'rgba(200,170,80,0.15)' : 'transparent',
-                    color: filterScope === s ? GOLD : DIM,
+                    background: filterScope === s
+                      ? s === 'vendor' ? 'rgba(78,200,122,0.15)' : 'rgba(200,170,80,0.15)'
+                      : 'transparent',
+                    color: filterScope === s
+                      ? s === 'vendor' ? '#4EC87A' : GOLD
+                      : DIM,
                   }}
                 >
-                  {s === 'custom' ? 'Campaign' : 'System'}
+                  {label}
                 </button>
               ))}
             </div>
@@ -466,6 +474,8 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
             <div style={{ fontFamily: FONT_C, fontSize: FS_SM, color: DIM, textAlign: 'center', padding: 24 }}>
               {filterScope === 'custom'
                 ? 'No custom items for this campaign yet. Use the + buttons above to create one.'
+                : filterScope === 'vendor'
+                ? 'No items match your filters.'
                 : 'No system items match your filters.'}
             </div>
           ) : expanded ? (
@@ -497,7 +507,10 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
                     </span>
                     <span style={{ fontFamily: FONT_C, fontSize: FS_CAP, color: DIM, flex: 1 }}>R{item.rarity}</span>
                     <div style={{ display: 'flex', gap: 4 }}>
-                      {characters.length > 0 && (
+                      {characters.length > 0 && filterScope === 'vendor' && (
+                        <button onClick={() => setVendingItem(item)} style={actionBtn('#4EC87A')}>🛒 Sell</button>
+                      )}
+                      {characters.length > 0 && filterScope !== 'vendor' && (
                         <button onClick={() => setAwardingItem(item)} style={actionBtn(GOLD)}>Award</button>
                       )}
                       <button onClick={() => openEdit(item)} style={actionBtn(item.is_custom ? GOLD : DIM)}>
@@ -565,7 +578,10 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
 
                   {/* Actions */}
                   <div style={{ display: 'flex', gap: 6 }}>
-                    {characters.length > 0 && (
+                    {characters.length > 0 && filterScope === 'vendor' && (
+                      <button onClick={() => setVendingItem(item)} style={actionBtn('#4EC87A')}>🛒 Sell</button>
+                    )}
+                    {characters.length > 0 && filterScope !== 'vendor' && (
                       <button onClick={() => setAwardingItem(item)} style={actionBtn(GOLD)}>Award</button>
                     )}
                     <button onClick={() => openEdit(item)} style={actionBtn(item.is_custom ? GOLD : DIM)}>
@@ -671,6 +687,43 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
           supabase={supabase}
           onClose={() => setEditorOpen(false)}
           onSaved={() => { setEditorOpen(false); loadItems() }}
+        />
+      )}
+
+      {/* ── Vendor sell modal ── */}
+      {vendingItem && characters.length > 0 && campaignId && sendToChar && (
+        <VendorSellModal
+          item={vendingItem as VendorItem}
+          characters={characters}
+          campaignId={campaignId}
+          onClose={() => setVendingItem(null)}
+          onSend={(charId, price, quantity) => {
+            sendToChar(charId, {
+              type:       'vendor-purchase-offer',
+              campaignId,
+              price,
+              quantity,
+              item: {
+                key:               vendingItem.key,
+                name:              vendingItem.name,
+                type:              vendingItem.type,
+                rarity:            vendingItem.rarity,
+                encumbrance:       vendingItem.encumbrance,
+                skill_key:         vendingItem.skill_key,
+                damage:            vendingItem.damage,
+                damage_add:        vendingItem.damage_add,
+                crit:              vendingItem.crit,
+                range_value:       vendingItem.range_value,
+                qualities:         vendingItem.qualities,
+                soak:              vendingItem.soak,
+                soak_bonus:        vendingItem.soak_bonus,
+                defense:           vendingItem.defense,
+                encumbrance_bonus: vendingItem.encumbrance_bonus,
+                description:       vendingItem.description,
+              },
+            })
+            setVendingItem(null)
+          }}
         />
       )}
 

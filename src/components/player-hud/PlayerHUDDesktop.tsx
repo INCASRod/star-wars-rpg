@@ -41,7 +41,6 @@ import { useRollFeed } from '@/hooks/useRollFeed'
 import { logRoll, type RollMeta } from '@/lib/logRoll'
 import { DerivedStatsPanel } from '@/components/wireframe/DerivedStatsPanel'
 import { TalentsPanel as WfTalentsPanel } from '@/components/wireframe/TalentsPanel'
-import { CombatTracker } from '@/components/player/CombatTracker'
 import { InitiativeRollModal } from './InitiativeRollModal'
 import { useSessionRollState, getWoundThresholdBonus } from '@/hooks/useSessionRollState'
 import { SessionStatusBanner } from '@/components/player/SessionStatusBanner'
@@ -57,6 +56,12 @@ import type { CriticalInjuryRequest } from '@/lib/types'
 import { useActiveMap } from '@/hooks/useActiveMap'
 import { useMapTokens } from '@/hooks/useMapTokens'
 import { MapCanvas } from '@/components/map/MapCanvas'
+import { useEncounterState } from '@/hooks/useEncounterState'
+import { VendorPurchaseDialog, type VendorOffer } from './VendorPurchaseDialog'
+import { TalentQuickReference } from '@/components/player/TalentQuickReference'
+import { AdversaryCardList } from '@/components/player/AdversaryCardList'
+import { VehicleCardList } from '@/components/player/VehicleCardList'
+import { InitiativeStrip } from '@/components/player/InitiativeStrip'
 import { generateCharacterSheetPDF, type CharacterSheetInput } from '@/lib/characterSheetPDF'
 import { SpecSelectorList } from '@/components/shared/SpecSelectorList'
 import { buildTalentTree as _buildTalentTree } from '@/lib/buildTalentTree'
@@ -195,17 +200,16 @@ function SectionLabel({ text }: { text: string }) {
 }
 
 // ── Tab component ────────────────────────────────────────────
-type TabName = 'Skills' | 'Talents' | 'Inventory' | 'Force' | 'Lore' | 'Feed' | 'Combat' | 'Map' | 'Group'
+type TabName = 'Skills' | 'Talents' | 'Inventory' | 'Force' | 'Lore' | 'Feed' | 'Session' | 'Group'
 
 const FORCE_TAB_BLUE   = '#7EC8E3'
 const FORCE_TAB_PURPLE = '#8B2BE2'
 const GROUP_TAB_COLOR  = '#8EC8F0'
 
-function TabBar({ active, onChange, hasCombat, isForceUser, isForceUserFallen, hasMap }: { active: TabName; onChange: (t: TabName) => void; hasCombat?: boolean; isForceUser?: boolean; isForceUserFallen?: boolean; hasMap?: boolean }) {
-  const allTabs: TabName[] = ['Skills', 'Talents', 'Inventory', 'Force', 'Lore', 'Feed', 'Combat', 'Map', 'Group']
+function TabBar({ active, onChange, hasCombat, isForceUser, isForceUserFallen, isCombatActive }: { active: TabName; onChange: (t: TabName) => void; hasCombat?: boolean; isForceUser?: boolean; isForceUserFallen?: boolean; isCombatActive?: boolean }) {
+  const allTabs: TabName[] = ['Skills', 'Talents', 'Inventory', 'Force', 'Lore', 'Feed', 'Session', 'Group']
   const tabs = allTabs.filter(t => {
     if (t === 'Force') return !!isForceUser
-    if (t === 'Map')   return !!hasMap
     return true
   })
   return (
@@ -214,22 +218,23 @@ function TabBar({ active, onChange, hasCombat, isForceUser, isForceUserFallen, h
       paddingLeft: 16, gap: 2, flexShrink: 0,
     }}>
       {tabs.map(tab => {
-        const isCombatTab = tab === 'Combat'
-        const isFeed      = tab === 'Feed'
-        const isForceTab  = tab === 'Force'
-        const isMapTab    = tab === 'Map'
-        const isGroupTab  = tab === 'Group'
-        const forceColor  = isForceUserFallen ? FORCE_TAB_PURPLE : FORCE_TAB_BLUE
-        const tabColor    = isForceTab
+        const isFeed       = tab === 'Feed'
+        const isForceTab   = tab === 'Force'
+        const isSessionTab = tab === 'Session'
+        const isGroupTab   = tab === 'Group'
+        const forceColor   = isForceUserFallen ? FORCE_TAB_PURPLE : FORCE_TAB_BLUE
+        const sessionColor = isCombatActive ? '#E53E3E' : '#52C8A0'
+        const tabColor     = isForceTab
           ? forceColor
-          : isMapTab   ? '#52C8A0'
-          : isGroupTab ? GROUP_TAB_COLOR
-          : (isCombatTab || (isFeed && hasCombat)) ? '#E05050' : C.gold
-        const dimColor    = isForceTab
+          : isSessionTab ? sessionColor
+          : isGroupTab   ? GROUP_TAB_COLOR
+          : (isFeed && hasCombat) ? '#E05050' : C.gold
+        const dimColor     = isForceTab
           ? (isForceUserFallen ? 'rgba(139,43,226,0.45)' : 'rgba(126,200,227,0.45)')
-          : isMapTab   ? 'rgba(82,200,160,0.45)'
-          : isGroupTab ? 'rgba(142,200,240,0.45)'
-          : isCombatTab && hasCombat ? '#E0505088' : isFeed && hasCombat ? '#E0505088' : C.textDim
+          : isSessionTab ? (isCombatActive ? 'rgba(229,62,62,0.45)' : 'rgba(82,200,160,0.45)')
+          : isGroupTab   ? 'rgba(142,200,240,0.45)'
+          : isFeed && hasCombat ? '#E0505088' : C.textDim
+        const sessionIcon  = isCombatActive ? '⚔' : '◉'
         return (
           <button
             key={tab}
@@ -241,13 +246,27 @@ function TabBar({ active, onChange, hasCombat, isForceUser, isForceUserFallen, h
               fontFamily: FONT_CINZEL, fontSize: FS_LABEL, fontWeight: 600, letterSpacing: '0.08em',
               color: active === tab ? tabColor : dimColor,
               transition: '.15s', marginBottom: -1,
+              display: 'flex', alignItems: 'center', gap: 5,
               textShadow: isForceTab && active === tab
                 ? (isForceUserFallen ? '0 0 8px rgba(139,43,226,0.6)' : '0 0 10px rgba(126,200,227,0.4)')
-                : isMapTab && active === tab ? '0 0 10px rgba(82,200,160,0.4)'
+                : isSessionTab && active === tab && !isCombatActive ? '0 0 10px rgba(82,200,160,0.4)'
+                : isSessionTab && active === tab && isCombatActive ? '0 0 10px rgba(229,62,62,0.4)'
                 : 'none',
             }}
           >
-            {isMapTab ? '◉ MAP' : isGroupTab ? '◈ GROUP' : tab}
+            {isGroupTab && (
+              <img
+                src="/images/factions/rebel.png"
+                alt=""
+                style={{
+                  width: 14, height: 14,
+                  filter: `invert(1) hue-rotate(20deg) opacity(${active === tab ? 1 : 0.45})`,
+                  mixBlendMode: 'screen',
+                  transition: 'filter .15s',
+                }}
+              />
+            )}
+            {isSessionTab ? `${sessionIcon} SESSION` : isGroupTab ? 'GROUP' : tab}
           </button>
         )
       })}
@@ -545,23 +564,16 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   // ── UI State ──
   const TAB_KEY = `holocron:char-tab:${characterId}`
   const [activeTab, setActiveTab] = useState<TabName>(() => {
-    if (typeof window === 'undefined') return 'Skills'
+    if (typeof window === 'undefined') return 'Session'
     const saved = window.localStorage.getItem(TAB_KEY)
-    const valid: TabName[] = ['Skills', 'Talents', 'Inventory', 'Force', 'Lore', 'Feed', 'Combat', 'Map', 'Group']
-    return valid.includes(saved as TabName) ? (saved as TabName) : 'Skills'
+    const valid: TabName[] = ['Skills', 'Talents', 'Inventory', 'Force', 'Lore', 'Feed', 'Session', 'Group']
+    return valid.includes(saved as TabName) ? (saved as TabName) : 'Session'
   })
 
-  // ── Map tab — subscribe to active map visibility ──
+  // ── Session tab — subscribe to active map visibility ──
   const { visibleMap } = useActiveMap(effectiveCampaignId)
-  const hasMapTab = !!visibleMap
-
-  // When the GM hides the map while a player is viewing it, redirect to Skills
-  useEffect(() => {
-    if (!hasMapTab && activeTab === 'Map') {
-      setActiveTab('Skills')
-      localStorage.setItem(TAB_KEY, 'Skills')
-    }
-  }, [hasMapTab, activeTab, TAB_KEY])
+  const { encounter }  = useEncounterState(effectiveCampaignId)
+  const isCombatActive = encounter !== null && encounter.is_active
 
   const mapTokens = useMapTokens(visibleMap?.id ?? null)
   const visibleMapTokens = mapTokens.tokens.filter(t => t.is_visible)
@@ -573,6 +585,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   const [activePowerKey, setActivePowerKey]     = useState<string | null>(null)
   const [gmDialog, setGmDialog]                 = useState<string | null>(null)
   const [lootReveal, setLootReveal]             = useState<Record<string, unknown> | null>(null)
+  const [vendorOffer, setVendorOffer]           = useState<VendorOffer | null>(null)
   const [initRoll, setInitRoll]                 = useState<{ type: 'cool' | 'vigilance'; campaignId: string } | null>(null)
   const [forceRollResult, setForceRollResult]   = useState<ForceRollResult | null>(null)
   const [skillPopover, setSkillPopover]         = useState<{ skill: HudSkill; anchor: DOMRect } | null>(null)
@@ -586,6 +599,10 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   const [spendAmount,       setSpendAmount]           = useState('')
   const [woundTipPos,       setWoundTipPos]           = useState<{ top: number; left: number } | null>(null)
   const [strainTipPos,      setStrainTipPos]          = useState<{ top: number; left: number } | null>(null)
+  const [talentDrawerOpen,     setTalentDrawerOpen]     = useState(false)
+  const [adversaryDrawerOpen,  setAdversaryDrawerOpen]  = useState(false)
+  const [sessionCardCollapsed, setSessionCardCollapsed] = useState<Record<string, boolean>>({})
+  const [tokenHoverInfo,       setTokenHoverInfo]       = useState<{ tokenId: string; x: number; y: number } | null>(null)
 
   // ── Prompt for unresolved Dedication purchases on load ──
   useEffect(() => {
@@ -864,6 +881,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
             newLight:  payload.newLightCount  as number,
             newDark:   payload.newDarkCount   as number,
           })
+        } else if (payload.type === 'vendor-purchase-offer') {
+          setVendorOffer(payload as unknown as VendorOffer)
         } else if (payload.type === 'force-logout') {
           const key = typeof window !== 'undefined' ? localStorage.getItem('holocron_session_key') : null
           const cid = effectiveCampaignIdRef.current
@@ -1609,7 +1628,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
 
                 {/* Encumbrance bar */}
                 <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(200,170,80,0.08)' }}>
-                  <EncumbranceBar current={encumbranceCurrent} threshold={encThreshold} />
+                  <EncumbranceBar current={encumbranceCurrent} threshold={encThreshold} brawn={character.brawn} />
                 </div>
 
                 {/* Critical injury pips */}
@@ -1676,7 +1695,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
             hasCombat={isCombat}
             isForceUser={isForceUserSensitive(character, effectiveStats?.forceRating ?? forceRating)}
             isForceUserFallen={character.is_dark_side_fallen === true}
-            hasMap={hasMapTab}
+            isCombatActive={isCombatActive}
           />
 
           {/* Session Status Banner — shown when GM has revealed a D100 result */}
@@ -1688,10 +1707,11 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
             ownObligationValue={character.obligation_value}
           />
 
-          <div key={activeTab} style={{
-            flex: 1, overflowY: 'auto', padding: 'var(--space-2) var(--space-3)',
-            animation: 'hudTabIn 0.2s ease forwards',
-          }}>
+          <div key={activeTab} style={
+            activeTab === 'Session'
+              ? { flex: 1, overflow: 'hidden', position: 'relative' }
+              : { flex: 1, overflowY: 'auto', padding: 'var(--space-2) var(--space-3)', animation: 'hudTabIn 0.2s ease forwards' }
+          }>
             {activeTab === 'Skills' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
                 <DerivedStatsPanel
@@ -1878,31 +1898,243 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
                 isGm={false}
               />
             )}
-            {activeTab === 'Combat' && effectiveCampaignId && (
-              <CombatTracker
-                character={character}
-                campaignId={effectiveCampaignId}
-                talents={hudTalents}
-              />
-            )}
-            {activeTab === 'Combat' && !effectiveCampaignId && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, flexDirection: 'column', gap: 12, padding: 40 }}>
-                <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_H4, color: C.textFaint }}>NO CAMPAIGN</div>
-                <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.textFaint }}>Join a campaign to see combat tracking</div>
-              </div>
-            )}
-            {activeTab === 'Map' && visibleMap && (
-              <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 480, margin: '-12px -16px' }}>
-                <MapCanvas
-                  mapImageUrl={visibleMap.image_url}
-                  tokens={visibleMapTokens}
-                  isGM={false}
-                  currentCharacterId={character.id}
-                  onTokenMove={mapTokens.moveToken}
-                  gridEnabled={visibleMap.grid_enabled}
-                  gridSize={visibleMap.grid_size ?? 50}
-                  tokenScale={visibleMap.token_scale ?? 1}
-                />
+            {activeTab === 'Session' && (
+              <div style={{ position: 'relative', height: '100%', overflow: 'hidden' }}>
+                {/* Map or placeholder */}
+                {visibleMap
+                  ? (
+                    <MapCanvas
+                      mapImageUrl={visibleMap.image_url}
+                      tokens={visibleMapTokens}
+                      isGM={false}
+                      currentCharacterId={character.id}
+                      onTokenMove={mapTokens.moveToken}
+                      gridEnabled={visibleMap.grid_enabled}
+                      gridSize={visibleMap.grid_size ?? 50}
+                      tokenScale={visibleMap.token_scale ?? 1}
+                      onTokenHover={(id, x, y) => setTokenHoverInfo({ tokenId: id, x, y })}
+                      onTokenHoverEnd={() => setTokenHoverInfo(null)}
+                    />
+                  )
+                  : (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', flexDirection: 'column', gap: 12, background: '#060D09' }}>
+                      <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.textFaint }}>Waiting for GM to set a map</div>
+                    </div>
+                  )
+                }
+
+                {/* ── Combat overlays — only when an active encounter exists ── */}
+                {isCombatActive && encounter && (
+                  <>
+                    {/* Initiative strip — full-height glassmorphic wrapper, z:30 sits above panels */}
+                    <div style={{
+                      position: 'absolute', top: 0, left: 0, right: 0,
+                      background: 'rgba(6,13,9,0.85)', backdropFilter: 'blur(8px)',
+                      WebkitBackdropFilter: 'blur(8px)',
+                      zIndex: 30,
+                    }}>
+                      <InitiativeStrip encounter={encounter} character={character} />
+                    </div>
+                  </>
+                )}
+
+                {/* ── Session drawer trigger buttons — bottom-left, overlaid on map ── */}
+                <div style={{
+                  position: 'absolute', bottom: 12, left: 12,
+                  display: 'flex', gap: 6,
+                  zIndex: 31,
+                }}>
+                  <button
+                    onClick={() => setTalentDrawerOpen(o => !o)}
+                    style={{
+                      fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, fontWeight: 700,
+                      letterSpacing: '0.14em', textTransform: 'uppercase',
+                      color: talentDrawerOpen ? '#060D09' : C.gold,
+                      background: talentDrawerOpen ? C.gold : 'rgba(6,13,9,0.88)',
+                      border: `1px solid rgba(200,170,80,0.5)`,
+                      borderRadius: 4, padding: '4px 10px',
+                      cursor: 'pointer',
+                    }}
+                  >Talents</button>
+                  {isCombatActive && encounter && (
+                    <button
+                      onClick={() => setAdversaryDrawerOpen(o => !o)}
+                      style={{
+                        fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, fontWeight: 700,
+                        letterSpacing: '0.14em', textTransform: 'uppercase',
+                        color: adversaryDrawerOpen ? '#060D09' : C.gold,
+                        background: adversaryDrawerOpen ? C.gold : 'rgba(6,13,9,0.88)',
+                        border: `1px solid rgba(200,170,80,0.5)`,
+                        borderRadius: 4, padding: '4px 10px',
+                        cursor: 'pointer',
+                      }}
+                    >{encounter && (encounter.vehicles ?? []).length > 0 ? 'Adversaries & Vehicles' : 'Adversaries'}</button>
+                  )}
+                </div>
+
+                {/* ── Talents drawer — portal, slides in from left ── */}
+                {createPortal(
+                  <>
+                    <div
+                      onClick={() => setTalentDrawerOpen(false)}
+                      style={{
+                        position: 'fixed', inset: 0,
+                        background: 'rgba(0,0,0,0.25)',
+                        zIndex: 8999,
+                        opacity: talentDrawerOpen ? 1 : 0,
+                        pointerEvents: talentDrawerOpen ? 'auto' : 'none',
+                        transition: 'opacity 0.26s',
+                      }}
+                    />
+                    <div style={{
+                      position: 'fixed', top: 0, left: 0, bottom: 0, width: 320,
+                      zIndex: 9000,
+                      display: 'flex', flexDirection: 'column',
+                      background: 'rgba(6,10,8,0.97)',
+                      borderRight: `1px solid ${talentDrawerOpen ? 'rgba(200,170,80,0.36)' : 'transparent'}`,
+                      boxShadow: talentDrawerOpen ? '8px 0 40px rgba(0,0,0,0.6)' : 'none',
+                      transform: talentDrawerOpen ? 'translateX(0)' : 'translateX(-100%)',
+                      transition: 'transform 0.26s cubic-bezier(0.22,1,0.36,1), border-color 0.2s',
+                      pointerEvents: talentDrawerOpen ? 'auto' : 'none',
+                    }}>
+                      <div style={{
+                        flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        padding: '0 16px', height: 50,
+                        borderBottom: 'rgba(200,170,80,0.14)',
+                        background: 'rgba(10,18,12,0.92)',
+                      }}>
+                        <span style={{
+                          fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, letterSpacing: '0.2em',
+                          textTransform: 'uppercase', color: C.gold, fontWeight: 700,
+                        }}>Talents</span>
+                        <button
+                          onClick={() => setTalentDrawerOpen(false)}
+                          style={{
+                            background: 'none', border: 'none', cursor: 'pointer',
+                            color: 'rgba(106,128,112,1)', fontSize: 18, lineHeight: 1,
+                            padding: '4px 6px', borderRadius: 4,
+                          }}
+                          aria-label="Close talents drawer"
+                        >✕</button>
+                      </div>
+                      <div style={{ flex: 1, overflowY: 'auto' }}>
+                        <TalentQuickReference talents={hudTalents} />
+                      </div>
+                    </div>
+                  </>,
+                  document.body,
+                )}
+
+                {/* ── Adversaries drawer — portal, slides in from left ── */}
+                {isCombatActive && encounter && createPortal(
+                  <>
+                    <div
+                      onClick={() => setAdversaryDrawerOpen(false)}
+                      style={{
+                        position: 'fixed', inset: 0,
+                        background: 'rgba(0,0,0,0.25)',
+                        zIndex: 8999,
+                        opacity: adversaryDrawerOpen ? 1 : 0,
+                        pointerEvents: adversaryDrawerOpen ? 'auto' : 'none',
+                        transition: 'opacity 0.26s',
+                      }}
+                    />
+                    <div style={{
+                      position: 'fixed', top: 0, left: 0, bottom: 0, width: 320,
+                      zIndex: 9000,
+                      display: 'flex', flexDirection: 'column',
+                      background: 'rgba(6,10,8,0.97)',
+                      borderRight: `1px solid ${adversaryDrawerOpen ? 'rgba(200,170,80,0.36)' : 'transparent'}`,
+                      boxShadow: adversaryDrawerOpen ? '8px 0 40px rgba(0,0,0,0.6)' : 'none',
+                      transform: adversaryDrawerOpen ? 'translateX(0)' : 'translateX(-100%)',
+                      transition: 'transform 0.26s cubic-bezier(0.22,1,0.36,1), border-color 0.2s',
+                      pointerEvents: adversaryDrawerOpen ? 'auto' : 'none',
+                    }}>
+                      <div style={{
+                        flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        padding: '0 16px', height: 50,
+                        borderBottom: 'rgba(200,170,80,0.14)',
+                        background: 'rgba(10,18,12,0.92)',
+                      }}>
+                        <span style={{
+                          fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, letterSpacing: '0.2em',
+                          textTransform: 'uppercase', color: C.gold, fontWeight: 700,
+                        }}>{(encounter.vehicles ?? []).length > 0 ? 'Adversaries & Vehicles' : 'Adversaries'}</span>
+                        <button
+                          onClick={() => setAdversaryDrawerOpen(false)}
+                          style={{
+                            background: 'none', border: 'none', cursor: 'pointer',
+                            color: 'rgba(106,128,112,1)', fontSize: 18, lineHeight: 1,
+                            padding: '4px 6px', borderRadius: 4,
+                          }}
+                          aria-label="Close adversaries drawer"
+                        >✕</button>
+                      </div>
+                      <div style={{ flex: 1, overflowY: 'auto' }}>
+                        <AdversaryCardList
+                          revealedAdversaries={encounter.adversaries.filter(a => a.revealed)}
+                          currentSlot={encounter.initiative_slots.find(s => s.current)}
+                          initiativeSlots={encounter.initiative_slots}
+                          cardCollapsed={sessionCardCollapsed}
+                          setCardCollapsed={setSessionCardCollapsed}
+                          weaponRef={{}}
+                        />
+                        {(encounter.vehicles ?? []).length > 0 && (
+                          <VehicleCardList
+                            vehicles={(encounter.vehicles ?? []).filter(v => v.revealed)}
+                            currentSlot={encounter.initiative_slots.find(s => s.current)}
+                            initiativeSlots={encounter.initiative_slots}
+                            cardCollapsed={sessionCardCollapsed}
+                            setCardCollapsed={setSessionCardCollapsed}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </>,
+                  document.body,
+                )}
+
+                {/* Token hover tooltip — portal to body */}
+                {tokenHoverInfo && encounter && isCombatActive && (() => {
+                  const hovToken = visibleMapTokens.find(t => t.id === tokenHoverInfo.tokenId)
+                  if (!hovToken || hovToken.is_visible === false) return null
+                  const slot = hovToken.slot_key
+                    ? encounter.initiative_slots.find(s => s.id === hovToken.slot_key)
+                    : null
+                  const adv = slot?.adversaryInstanceId
+                    ? encounter.adversaries.find(a => a.instanceId === slot.adversaryInstanceId)
+                    : null
+                  if (!adv || !adv.revealed) return null
+                  const wMax = adv.type === 'minion' ? adv.woundThreshold * adv.groupSize : adv.woundThreshold
+                  return createPortal(
+                    <div style={{
+                      position: 'fixed',
+                      left: tokenHoverInfo.x + 14,
+                      top: tokenHoverInfo.y - 40,
+                      zIndex: 9999,
+                      background: 'rgba(6,13,9,0.96)',
+                      border: '1px solid rgba(200,170,80,0.45)',
+                      borderRadius: 6, padding: '8px 12px',
+                      fontFamily: FONT_RAJDHANI,
+                      minWidth: 150, pointerEvents: 'none',
+                      boxShadow: '0 4px 16px rgba(0,0,0,0.6)',
+                    }}>
+                      <div style={{ color: C.gold, fontWeight: 700, fontSize: FS_SM, marginBottom: 4 }}>{adv.name}</div>
+                      <div style={{ color: 'rgba(232,223,200,0.7)', fontSize: FS_CAPTION, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        {adv.type === 'minion' && (
+                          <div>Group: {adv.groupSize} · W: {adv.woundsCurrent ?? 0}/{wMax}</div>
+                        )}
+                        {adv.type !== 'minion' && (
+                          <div>Wounds: {adv.woundsCurrent ?? 0}/{wMax}</div>
+                        )}
+                        {adv.strainThreshold != null && adv.type !== 'minion' && (
+                          <div>Strain: {adv.strainCurrent ?? 0}/{adv.strainThreshold}</div>
+                        )}
+                      </div>
+                    </div>,
+                    document.body,
+                  )
+                })()}
               </div>
             )}
             {activeTab === 'Group' && effectiveCampaignId && (
@@ -2211,6 +2443,18 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
           </div>
         )
       })()}
+
+      {/* ── Vendor Purchase Dialog ───────────────────────── */}
+      {vendorOffer && character && (
+        <VendorPurchaseDialog
+          offer={vendorOffer}
+          character={character}
+          refWeaponQualityMap={refWeaponQualityMap}
+          supabase={supabase}
+          onCreditSpend={(amount, cid) => handleCreditSpend(amount, cid)}
+          onClose={() => setVendorOffer(null)}
+        />
+      )}
 
       {/* ── Spend Credits modal ───────────────────────────── */}
       {spendCreditsOpen && character && createPortal(
