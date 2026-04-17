@@ -85,25 +85,30 @@ export function VendorPurchaseDialog({
     if (!canAfford || busy) return
     setBusy(true)
 
-    // Add item to inventory
+    // Add item(s) to inventory
     if (item.type === 'weapon') {
-      await supabase.from('character_weapons').insert({
-        character_id: character.id,
-        weapon_key:   item.key,
-        is_equipped:  false,
-        equip_state:  'carrying',
-        attachments:  [],
-        notes:        'Purchased from vendor',
-      })
+      // Each weapon is its own row — insert one per quantity
+      await supabase.from('character_weapons').insert(
+        Array.from({ length: quantity }, () => ({
+          character_id: character.id,
+          weapon_key:   item.key,
+          is_equipped:  false,
+          equip_state:  'carrying',
+          attachments:  [],
+          notes:        'Purchased from vendor',
+        }))
+      )
     } else if (item.type === 'armor') {
-      await supabase.from('character_armor').insert({
-        character_id: character.id,
-        armor_key:    item.key,
-        is_equipped:  false,
-        equip_state:  'carrying',
-        attachments:  [],
-        notes:        'Purchased from vendor',
-      })
+      await supabase.from('character_armor').insert(
+        Array.from({ length: quantity }, () => ({
+          character_id: character.id,
+          armor_key:    item.key,
+          is_equipped:  false,
+          equip_state:  'carrying',
+          attachments:  [],
+          notes:        'Purchased from vendor',
+        }))
+      )
     } else {
       await supabase.from('character_gear').insert({
         character_id: character.id,

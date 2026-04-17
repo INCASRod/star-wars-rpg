@@ -95,33 +95,48 @@ export function VendorSellModal({ item, characters, campaignId: _cid, onSend, on
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: DIM, cursor: 'pointer', fontSize: FS_SM, fontFamily: FONT_C }}>✕</button>
         </div>
 
-        {/* Price */}
-        <div style={{ marginBottom: 14 }}>
-          <div style={fieldLabel}>Sale Price (credits)</div>
-          <input
-            type="number" min={0}
-            value={price}
-            onChange={e => setPrice(e.target.value)}
-            style={{ ...darkInput, width: '100%' }}
-            autoFocus
-          />
-          {item.price != null && item.price > 0 && (
-            <div style={{ fontFamily: FONT_M, fontSize: FS_CAP, color: DIM, marginTop: 4 }}>
-              List price: {item.price.toLocaleString()} cr
-            </div>
-          )}
-        </div>
-
-        {/* Quantity (gear only) */}
-        {item.type === 'gear' && (
-          <div style={{ marginBottom: 14 }}>
-            <div style={fieldLabel}>Quantity</div>
+        {/* Price + Quantity row */}
+        <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: 14 }}>
+          <div style={{ flex: 1 }}>
+            <div style={fieldLabel}>Price per item (cr)</div>
+            <input
+              type="number" min={0}
+              value={price}
+              onChange={e => setPrice(e.target.value)}
+              style={{ ...darkInput, width: '100%' }}
+              autoFocus
+            />
+            {item.price != null && item.price > 0 && (
+              <div style={{ fontFamily: FONT_M, fontSize: FS_CAP, color: DIM, marginTop: 4 }}>
+                List: {item.price.toLocaleString()} cr
+              </div>
+            )}
+          </div>
+          <div style={{ width: 72 }}>
+            <div style={fieldLabel}>Qty</div>
             <input
               type="number" min={1} max={99}
               value={quantity}
               onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-              style={{ ...darkInput, width: 80 }}
+              style={{ ...darkInput, width: '100%' }}
             />
+          </div>
+        </div>
+
+        {/* Total */}
+        {quantity > 1 && (
+          <div style={{
+            fontFamily: FONT_M, fontSize: FS_LABEL,
+            color: GOLD, marginBottom: 14,
+            padding: '6px 10px',
+            background: 'rgba(200,170,80,0.06)',
+            border: `1px solid rgba(200,170,80,0.2)`,
+            borderRadius: 3,
+          }}>
+            Total: {(parsedPrice * quantity).toLocaleString()} cr
+            <span style={{ color: DIM, marginLeft: 6, fontSize: FS_CAP }}>
+              ({parsedPrice.toLocaleString()} × {quantity})
+            </span>
           </div>
         )}
 
