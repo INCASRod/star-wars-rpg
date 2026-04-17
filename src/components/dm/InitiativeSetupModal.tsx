@@ -211,6 +211,7 @@ export function InitiativeSetupModal({ campaignId, characters, roster, sendToCha
       initiative_type: initType,
       initiative_slots: finalSlots,
       adversaries: roster,
+      vehicles: [],
       log_entries: [{
         id: randomUUID(),
         round: 1, slot: 1,

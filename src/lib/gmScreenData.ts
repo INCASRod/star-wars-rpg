@@ -610,7 +610,11 @@ export const SQUAD_OVERVIEW: SquadRule[] = [
   },
   {
     title: 'Forming a Squad',
-    description: 'The leader makes an Average (◆◆) Leadership check using Presence + Leadership ranks. On a success, the leader may select up to 11 total minions from available groups in the encounter. Their initiative slots are absorbed — the squad acts on the leader\'s turn.',
+    description: 'The leader makes an Easy (◆) Leadership check using Presence + Leadership ranks. On a success, the leader may select up to 11 total minions from available groups in the encounter. Their initiative slots are absorbed — the squad acts on the leader\'s turn.',
+  },
+  {
+    title: 'Changing Formation',
+    description: 'Once a squad is formed, the leader may change the squad\'s formation as an action by making an Average (◆◆) Leadership check. On a success, the squad immediately adopts the new formation.',
   },
   {
     title: 'Squad Cap',
@@ -646,7 +650,11 @@ export const SQUAD_DISBAND_RULES: SquadRule[] = [
 
 export const SQUAD_LEADERSHIP_CHECK: SquadRule[] = [
   {
-    title: 'Check',
+    title: 'Check (Form Squad)',
+    description: 'Easy (◆) Leadership — Presence + Leadership skill ranks.',
+  },
+  {
+    title: 'Check (Change Formation)',
     description: 'Average (◆◆) Leadership — Presence + Leadership skill ranks.',
   },
   {
@@ -664,5 +672,63 @@ export const SQUAD_LEADERSHIP_CHECK: SquadRule[] = [
   {
     title: 'Despair',
     description: 'Formation fails and the leader suffers 2 strain from the failed coordination attempt.',
+  },
+]
+
+// ── Squad Formations ──────────────────────────────────────────
+
+export const SQUAD_FORMATIONS: SquadRule[] = [
+  {
+    title: 'Dug In',
+    description: 'Add [setback] to any attack targeting the squad or its leader. Stacks with cover.',
+  },
+  {
+    title: 'Skirmish',
+    description: 'Add [boost] to Vigilance (initiative) and Perception checks to detect enemies. Enemies must spend 1 additional [advantage] to activate Auto-fire or Blast against this squad.',
+  },
+  {
+    title: 'Close',
+    description: 'Add [boost] to any attack made by the squad.',
+  },
+  {
+    title: 'Mission Specialist',
+    description: 'The leader may substitute Leadership for a single Computers, Mechanics, Medicine, Skulduggery, Survival, or Knowledge check. The squad must hold this formation for the duration. Usable a number of times per session equal to the leader\'s ranks in Leadership.',
+  },
+  {
+    title: 'Comm Silence',
+    description: 'Add [boost] to all Stealth checks made by the unit.',
+  },
+  {
+    title: 'Search Party',
+    description: 'Add [boost] to Survival checks to track a target and to all Perception checks (GM\'s discretion).',
+  },
+]
+
+// ── Squadron Formations ───────────────────────────────────────
+
+export const SQUADRON_FORMATIONS: SquadRule[] = [
+  {
+    title: 'Attack Formation',
+    description: 'Add [boost] to any attack made by the squadron.',
+  },
+  {
+    title: 'Evasive Maneuvers',
+    description: 'Add [boost] to all attempts to gain the advantage. Add [setback] to enemy attempts to gain the advantage on this squadron. Enemies must spend 1 additional [advantage] to activate Auto-fire or Blast against this squadron.',
+  },
+  {
+    title: 'Running Dark',
+    description: 'Downgrade the difficulty of Stealth checks one step. Upgrade the difficulty of all Leadership checks while in this formation.',
+  },
+  {
+    title: 'Sensor Sweep',
+    description: 'Add [boost] to Vigilance checks (initiative) and to Computers and Perception checks to detect targets.',
+  },
+  {
+    title: 'Skilled Navigator',
+    description: 'The leader may substitute Leadership for a single Astrogation, Computers, Mechanics, or Knowledge check. The squadron must hold this formation for the duration. Usable a number of times per session equal to the leader\'s ranks in Leadership.',
+  },
+  {
+    title: 'Screen Formation',
+    description: 'Add +1 to ship defense in all zones. If the squadron has no shields (or has lost them), upgrade the difficulty of this check one step.',
   },
 ]

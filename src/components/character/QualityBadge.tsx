@@ -1,7 +1,7 @@
 'use client'
 
 import { Tooltip, TipLabel, TipBody } from '@/components/ui/Tooltip'
-import { DiceText } from '@/components/dice/DiceText'
+import { RichText } from '@/components/ui/RichText'
 import type { RefWeaponQuality } from '@/lib/types'
 
 interface QualityBadgeProps {
@@ -52,7 +52,7 @@ export function QualityBadge({ quality, refQualityMap, variant = 'desktop' }: Qu
       content={
         <>
           <TipLabel>{displayName}</TipLabel>
-          <TipBody><DiceText text={description} /></TipBody>
+          <TipBody><RichText text={description} /></TipBody>
         </>
       }
     >

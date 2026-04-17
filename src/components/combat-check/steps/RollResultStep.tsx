@@ -120,16 +120,20 @@ export function RollResultStep({
   const isMelee = !isRangedSkill(skillKey)
 
   // ── Primary damage ────────────────────────────────────────────────────────
-  const primaryRef   = isDualWield ? refWeapon : refWeapon
-  const baseDmg      = isUnarmed ? 0 : (isMelee ? (primaryRef?.damage_add ?? 0) : (primaryRef?.damage ?? 0))
-  const brawnBonus   = isMelee ? characterBrawn : 0
-  const totalDmg     = baseDmg + brawnBonus + (succeeded ? net.success : 0)
+  // hasBrawnScale: only true when damage_add is explicitly set (brawn-scaled melee).
+  // Fixed-damage melee weapons (lightsabers etc.) have damage_add == null → use damage directly.
+  const primaryRef      = isDualWield ? refWeapon : refWeapon
+  const hasBrawnScale   = !isUnarmed && isMelee && primaryRef?.damage_add != null
+  const baseDmg         = isUnarmed ? 0 : hasBrawnScale ? (primaryRef?.damage_add ?? 0) : (primaryRef?.damage ?? 0)
+  const brawnBonus      = hasBrawnScale ? characterBrawn : 0
+  const totalDmg        = baseDmg + brawnBonus + (succeeded ? net.success : 0)
 
   // ── Secondary damage (dual wield) ─────────────────────────────────────────
-  const secRef       = dualWieldSecondaryRef ?? null
-  const secIsMelee   = secRef ? !isRangedSkill(secRef.skill_key ?? '') : false
-  const secBase      = secRef ? (secIsMelee ? (secRef.damage_add ?? 0) : (secRef.damage ?? 0)) : 0
-  const secBrawn     = secIsMelee ? characterBrawn : 0
+  const secRef          = dualWieldSecondaryRef ?? null
+  const secIsMelee      = secRef ? !isRangedSkill(secRef.skill_key ?? '') : false
+  const secHasBrawnScale = secRef != null && secIsMelee && secRef.damage_add != null
+  const secBase         = secRef ? (secHasBrawnScale ? (secRef.damage_add ?? 0) : (secRef.damage ?? 0)) : 0
+  const secBrawn        = secHasBrawnScale ? characterBrawn : 0
   const secTotalDmg  = secBase + secBrawn + (succeeded ? net.success : 0)
 
   // Secondary crit eligibility
@@ -174,7 +178,7 @@ export function RollResultStep({
           <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.9rem, 1.4vw, 1.1rem)', color: TEXT }}>
             Damage: <strong style={{ color: '#E07855' }}>{totalDmg}</strong>
             <span style={{ fontFamily: FONT_R, fontSize: 'clamp(0.65rem, 1vw, 0.75rem)', color: TEXT_DIM, marginLeft: 6 }}>
-              ({isMelee ? `${baseDmg >= 0 ? '+' : ''}${baseDmg}+${characterBrawn} Brawn` : String(baseDmg)} + {net.success} success)
+              ({hasBrawnScale ? `${baseDmg >= 0 ? '+' : ''}${baseDmg}+${characterBrawn} Brawn` : String(baseDmg)} + {net.success} success)
             </span>
           </div>
         )}
@@ -203,7 +207,7 @@ export function RollResultStep({
           <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)', color: TEXT, marginBottom: 4 }}>
             Secondary damage if hit: <strong style={{ color: '#E07855' }}>{secTotalDmg}</strong>
             <span style={{ fontFamily: FONT_R, fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: TEXT_DIM, marginLeft: 6 }}>
-              ({secBase >= 0 ? '' : ''}{secIsMelee ? `+${secBase}+${characterBrawn} Brawn` : String(secBase)} + {net.success} success)
+              ({secBase >= 0 ? '' : ''}{secHasBrawnScale ? `+${secBase}+${characterBrawn} Brawn` : String(secBase)} + {net.success} success)
             </span>
           </div>
           <div style={{ fontFamily: FONT_R, fontStyle: 'italic', fontSize: 'clamp(0.65rem, 1vw, 0.75rem)', color: 'rgba(232,223,200,0.5)' }}>

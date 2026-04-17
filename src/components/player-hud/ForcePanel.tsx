@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { C, FONT_CINZEL, FONT_RAJDHANI, panelBase, FS_OVERLINE, FS_LABEL, FS_SM, FS_H3 } from './design-tokens'
 import { ForcePowerTree, type ForceTreeNode, type ForceTreeConnection } from '@/components/character/ForcePowerTree'
-import { DiceText } from '@/components/dice/DiceText'
+import { RichText } from '@/components/ui/RichText'
 
 // ── Force colour ──────────────────────────────────────────────────────────────
 const FORCE_BLUE      = '#7EC8E3'
@@ -423,7 +423,7 @@ function ForcePowerCard({
               color: C.textDim, marginBottom: 8, lineHeight: 1.45,
               padding: '0 12px',
             }}>
-              <DiceText text={description} />
+              <RichText text={description} />
             </div>
           )}
 

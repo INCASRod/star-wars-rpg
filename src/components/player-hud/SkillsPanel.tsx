@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { C, CHAR_COLOR, CHAR_ABBR3, FONT_CINZEL, FONT_RAJDHANI, panelBase, type CharKey } from './design-tokens'
 import { DiceFace } from '@/components/dice/DiceFace'
 import { Tooltip, TipLabel, TipBody, TipDivider } from '@/components/ui/Tooltip'
+import { RichText } from '@/components/ui/RichText'
 import { getSkillTip } from '@/lib/tooltips/skillDescriptions'
 import { PanelSearchInput } from '@/components/character/PanelSearchInput'
 import type { SkillDiceModifier } from '@/lib/derivedStats'
@@ -346,7 +347,7 @@ function SpeciesConditionalBadge({ ability }: { ability: SpeciesAbility }) {
   const tipContent = (
     <>
       <TipLabel>{ability.name}</TipLabel>
-      <TipBody>{ability.description}</TipBody>
+      <TipBody><RichText text={ability.description} /></TipBody>
     </>
   )
 

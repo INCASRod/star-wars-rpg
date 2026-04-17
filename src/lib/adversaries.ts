@@ -22,6 +22,7 @@ export interface AdversaryWeapon {
   name: string
   damage: number | string
   range: string
+  crit?: number
   /** Skill category string extracted from the weapon's parenthetical, e.g. "Ranged [Light]" or "Melee [Engaged]" */
   skillCategory?: string
   qualities?: string[]
@@ -109,6 +110,7 @@ function parseWeaponString(raw: string): AdversaryWeapon {
   const name = raw.replace(/\s*\(.*/, '').trim() || raw
   let damage: number | string = 0
   let range = 'Engaged'
+  let crit: number | undefined
   const qualities: string[] = []
 
   let skillCategory: string | undefined
@@ -120,16 +122,16 @@ function parseWeaponString(raw: string): AdversaryWeapon {
       if (dmgMatch) { damage = parseInt(dmgMatch[1]); continue }
       const brawnMatch = p.match(/^Brawn([+-]\d+)$/i)
       if (brawnMatch) { damage = `Brawn${brawnMatch[1]}`; continue }
+      const critMatch = p.match(/^Critical\s+(\d+)$/i)
+      if (critMatch) { crit = parseInt(critMatch[1]); continue }
       const rangeMatch = p.match(/^Range\s+\[([^\]]+)\]$/i)
       if (rangeMatch) { range = rangeMatch[1]; continue }
       const skillCatMatch = p.match(/^(Ranged|Melee)\s+\[([^\]]+)\]$/i)
       if (skillCatMatch) { skillCategory = p; continue }
-      if (!p.match(/^Critical\s+\d+/i)) {
-        qualities.push(p)
-      }
+      qualities.push(p)
     }
   }
-  return { name, damage, range, skillCategory, qualities: qualities.length > 0 ? qualities : undefined }
+  return { name, damage, range, ...(crit !== undefined ? { crit } : {}), skillCategory, qualities: qualities.length > 0 ? qualities : undefined }
 }
 
 // Normalize raw API data to our Adversary type
@@ -151,8 +153,19 @@ function normalize(raw: Record<string, unknown>): Adversary {
   const type = (['minion', 'rival', 'nemesis'].includes(typeRaw) ? typeRaw : 'rival') as Adversary['type']
 
   // Weapons: new format is string[], old format is AdversaryWeapon[]
+  // Object-format weapons may carry a `plus-damage` field (Brawn modifier) instead of
+  // a flat `damage` number — normalise it to the "Brawn+N" string that resolveWeapon understands.
   const weapons = Array.isArray(raw.weapons)
-    ? raw.weapons.map(w => typeof w === 'string' ? parseWeaponString(w) : w as AdversaryWeapon)
+    ? raw.weapons.map(w => {
+        if (typeof w === 'string') return parseWeaponString(w)
+        const wo = w as Record<string, unknown>
+        const critVal = wo['critical'] !== undefined ? { crit: Number(wo['critical']) } : {}
+        if (wo['plus-damage'] !== undefined) {
+          const bonus = Number(wo['plus-damage'])
+          return { ...wo, ...critVal, damage: `Brawn${bonus >= 0 ? '+' : ''}${bonus}` } as unknown as AdversaryWeapon
+        }
+        return { ...wo, ...critVal } as unknown as AdversaryWeapon
+      })
     : []
 
   // Skills: rivals/nemeses use object { Cool: 4, Lightsaber (Intellect): 5 }, minions use string[]

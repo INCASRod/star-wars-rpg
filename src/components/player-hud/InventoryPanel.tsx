@@ -4,7 +4,7 @@ import React, { useState, useRef } from 'react'
 import { C, FONT_CINZEL, FONT_RAJDHANI, panelBase, FS_OVERLINE, FS_LABEL, FS_SM } from './design-tokens'
 import { WeaponDamageDisplay } from '@/components/character/WeaponDamageDisplay'
 import { QualityBadge } from '@/components/character/QualityBadge'
-import { DiceText } from '@/components/dice/DiceText'
+import { RichText } from '@/components/ui/RichText'
 import { stripBBCode } from '@/lib/utils'
 import type { EquipState, RefWeaponQuality } from '@/lib/types'
 
@@ -348,7 +348,7 @@ export function InventoryPanel({
                   {hasContent && isExpanded && (
                     <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px solid ${C.border}` }}>
                       {descText && (
-                        <DiceText
+                        <RichText
                           text={descText}
                           style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.textDim, lineHeight: 1.55, whiteSpace: 'pre-wrap' }}
                         />
@@ -358,7 +358,7 @@ export function InventoryPanel({
                           <span style={{ fontFamily: FONT_CINZEL, fontSize: FS_OVERLINE, color: C.gold, fontWeight: 600 }}>
                             {ref.name}{ref.is_ranked && q.count && q.count > 1 ? ` ${q.count}` : ''}:{' '}
                           </span>
-                          <DiceText
+                          <RichText
                             text={stripBBCode(ref.description)}
                             style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.textDim, lineHeight: 1.55 }}
                           />
@@ -423,7 +423,7 @@ export function InventoryPanel({
                   </div>
                   {descText && isExpanded && (
                     <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px solid ${C.border}` }}>
-                      <DiceText
+                      <RichText
                         text={descText}
                         style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.textDim, lineHeight: 1.55, whiteSpace: 'pre-wrap' }}
                       />
@@ -502,7 +502,7 @@ export function InventoryPanel({
                   </div>
                   {descText && isExpanded && (
                     <div style={{ padding: '6px 10px 8px', borderTop: `1px solid ${C.border}` }}>
-                      <DiceText
+                      <RichText
                         text={descText}
                         style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.textDim, lineHeight: 1.55, whiteSpace: 'pre-wrap' }}
                       />

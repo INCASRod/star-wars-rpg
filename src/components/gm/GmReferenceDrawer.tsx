@@ -29,7 +29,10 @@ import {
   SQUAD_COMBAT_RULES,
   SQUAD_DISBAND_RULES,
   SQUAD_LEADERSHIP_CHECK,
+  SQUAD_FORMATIONS,
+  SQUADRON_FORMATIONS,
 } from '@/lib/gmScreenData'
+import { RichText } from '@/components/ui/RichText'
 
 // ── Design tokens ─────────────────────────────────────────────
 const FC  = "var(--font-rajdhani), 'Rajdhani', sans-serif"
@@ -811,6 +814,54 @@ function SquadsTab() {
               </div>
               <div style={{ fontFamily: FC, fontSize: `clamp(9px, 1vw, 11px)`, color: DIM, lineHeight: 1.5 }}>
                 {r.description}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Squad Formations */}
+      <section>
+        <div style={{
+          fontFamily: FC, fontSize: `clamp(10px, 1.2vw, 13px)`,
+          fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase',
+          color: GOLD, marginBottom: 10, paddingBottom: 5,
+          borderBottom: `1px solid ${BORDER_HI}`,
+        }}>
+          Squad Formations
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {SQUAD_FORMATIONS.map(r => (
+            <div key={r.title} style={{ padding: '8px 10px', background: PANEL, borderRadius: 4, border: `1px solid ${BORDER}` }}>
+              <div style={{ fontFamily: FC, fontSize: `clamp(10px, 1.1vw, 12px)`, fontWeight: 700, color: TEXT, marginBottom: 3 }}>
+                {r.title}
+              </div>
+              <div style={{ fontFamily: FC, fontSize: `clamp(9px, 1vw, 11px)`, color: DIM, lineHeight: 1.5 }}>
+                <RichText text={r.description} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Squadron Formations */}
+      <section>
+        <div style={{
+          fontFamily: FC, fontSize: `clamp(10px, 1.2vw, 13px)`,
+          fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase',
+          color: GOLD, marginBottom: 10, paddingBottom: 5,
+          borderBottom: `1px solid ${BORDER_HI}`,
+        }}>
+          Squadron Formations
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {SQUADRON_FORMATIONS.map(r => (
+            <div key={r.title} style={{ padding: '8px 10px', background: PANEL, borderRadius: 4, border: `1px solid ${BORDER}` }}>
+              <div style={{ fontFamily: FC, fontSize: `clamp(10px, 1.1vw, 12px)`, fontWeight: 700, color: TEXT, marginBottom: 3 }}>
+                {r.title}
+              </div>
+              <div style={{ fontFamily: FC, fontSize: `clamp(9px, 1vw, 11px)`, color: DIM, lineHeight: 1.5 }}>
+                <RichText text={r.description} />
               </div>
             </div>
           ))}

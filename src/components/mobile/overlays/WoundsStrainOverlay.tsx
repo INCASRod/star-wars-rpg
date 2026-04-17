@@ -188,6 +188,7 @@ export function WoundsStrainOverlay({ character, onVitalChange, woundBonus = 0, 
           <EncumbranceBar
             current={encumbranceCurrent!}
             threshold={encumbranceThreshold!}
+            brawn={character.brawn}
             labelFontSize="clamp(0.65rem, 2.6vw, 0.8rem)"
           />
         </div>

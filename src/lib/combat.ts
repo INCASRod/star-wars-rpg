@@ -9,6 +9,7 @@ export interface InitiativeSlot {
   order: number
   characterId?: string
   adversaryInstanceId?: string
+  vehicleInstanceId?: string      // set for vehicle slots; mutually exclusive with adversaryInstanceId
   name: string
   acted: boolean
   current: boolean
@@ -38,6 +39,7 @@ export interface CombatEncounter {
   initiative_type: InitiativeType
   initiative_slots: InitiativeSlot[]
   adversaries: import('./adversaries').AdversaryInstance[]
+  vehicles: import('./vehicles').VehicleInstance[]
   log_entries: LogEntry[]
   created_at: string
   updated_at: string

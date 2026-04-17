@@ -4,6 +4,7 @@ import { useState, useRef } from 'react'
 import { RefSpecies, SpeciesAbility } from '@/lib/types'
 import { parseOggDudeMarkup } from '@/lib/oggdude-markup'
 import { Tooltip, TipLabel, TipBody, TipDivider } from '@/components/ui/Tooltip'
+import { RichText } from '@/components/ui/RichText'
 import { DutyCard } from '@/components/character/DutyCard'
 import { ObligationCard } from '@/components/character/ObligationCard'
 
@@ -498,7 +499,7 @@ export function LoreContent({
                     const tipContent = (
                       <>
                         <TipLabel>{ability.name}</TipLabel>
-                        <TipBody>{ability.description}</TipBody>
+                        <TipBody><RichText text={ability.description} /></TipBody>
                         {Array.isArray(ability.affected_skills) && ability.affected_skills.length > 0 && (
                           <>
                             <TipDivider />

@@ -8,6 +8,7 @@
 
 import type { AdversaryInstance, AdversaryWeapon } from './adversaries'
 import type { Character, CharacterWeapon, CharacterSkill, RefWeapon, RefSkill } from './types'
+import { resolveWeapon } from './resolve-weapon'
 
 // Melee skill key used for opposed check lookup
 const MELEE_DISPLAY_NAMES = ['Melee', 'Brawl', 'Lightsaber']
@@ -158,15 +159,20 @@ function rangeToRangeValue(range: string): string {
   }
 }
 
-function resolveWeaponDamage(w: AdversaryWeapon, brawn: number): number {
-  if (typeof w.damage === 'number' && w.damage !== 0) return w.damage
+function resolveWeaponDamage(w: AdversaryWeapon, _brawn: number): { damage: number; damage_add?: number } {
+  // Fixed numeric damage (non-zero): flat value, not brawn-scaled
+  if (typeof w.damage === 'number' && w.damage !== 0) {
+    return { damage: w.damage }
+  }
+  // Brawn-scaled string "Brawn+N": separate out the bonus from brawn
   if (typeof w.damage === 'string') {
     const m = w.damage.match(/^Brawn([+-]\d+)$/i)
-    if (m) return brawn + parseInt(m[1])
+    if (m) return { damage: 0, damage_add: parseInt(m[1]) }
     const plain = parseInt(w.damage)
-    if (!isNaN(plain)) return plain
+    if (!isNaN(plain)) return { damage: plain }
   }
-  return brawn // fallback: treat as Brawn+0
+  // Fallback: treat as Brawn+0 (name-only or unrecognised weapon)
+  return { damage: 0, damage_add: 0 }
 }
 
 // ── Public output type ────────────────────────────────────────────────────────
@@ -229,7 +235,9 @@ export function adaptAdversaryForCombatCheck(
     const weaponKey = `adv-${adv.instanceId}-w${i}`
     const skillKey  = weaponSkillKey(w)
     const charKey   = SKILL_KEY_TO_CHAR[skillKey] ?? 'BR'
-    const damage    = resolveWeaponDamage(w, brawn)
+    const { damage, damage_add } = resolveWeaponDamage(w, brawn)
+
+    const { crit: resolvedCrit } = resolveWeapon(w, brawn, {})
 
     charWeapons.push({
       id:           weaponKey,
@@ -246,7 +254,8 @@ export function adaptAdversaryForCombatCheck(
       name:         w.name,
       skill_key:    skillKey,
       damage,
-      crit:         4,
+      damage_add,
+      crit:         resolvedCrit ?? 4,
       range_value:  rangeToRangeValue(w.range ?? 'Engaged'),
       encumbrance:  0,
       hard_points:  0,

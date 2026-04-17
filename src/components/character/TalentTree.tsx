@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { FS_OVERLINE, FS_LABEL, FS_SM } from '@/components/player-hud/design-tokens'
-import { DiceText } from '@/components/dice/DiceText'
+import { RichText } from '@/components/ui/RichText'
 
 /* ═══════════════════════════════════════════════════════ */
 /*  DESIGN TOKENS                                         */
@@ -228,7 +228,7 @@ function NodeCard({
               minHeight: 0,
             }}
           >
-            <DiceText text={node.description} />
+            <RichText text={node.description} />
           </div>
         )}
 
@@ -362,7 +362,7 @@ function NodeCard({
               minHeight: 0,
             }}
           >
-            <DiceText text={node.description} />
+            <RichText text={node.description} />
           </div>
         )}
       </div>
@@ -433,7 +433,7 @@ function NodeCard({
           opacity: hovered ? 0.9 : 0.5,
           transition: 'opacity 0.15s',
         }}>
-          <DiceText text={node.description} />
+          <RichText text={node.description} />
         </div>
       )}
     </div>
@@ -542,7 +542,7 @@ function PurchasePopover({
               marginBottom: 10,
             }}
           >
-            <DiceText text={node.description} />
+            <RichText text={node.description} />
           </div>
         )}
 
@@ -664,7 +664,7 @@ function LockedInfoPopover({
             fontFamily: FR, fontSize: FS_LABEL, color: DIM,
             lineHeight: 1.5, maxHeight: 140, overflowY: 'auto', marginBottom: 12,
           }}>
-            <DiceText text={node.description} />
+            <RichText text={node.description} />
           </div>
         ) : (
           <div style={{ fontFamily: FR, fontSize: FS_LABEL, color: FAINT, fontStyle: 'italic', marginBottom: 12 }}>

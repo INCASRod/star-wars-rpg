@@ -176,8 +176,11 @@ export function WeaponSelectStep({
     const { proficiency, ability } = getPool(w)
 
     const isRangedType = ref?.skill_key ? isRangedSkill(ref.skill_key) : false
-    const baseDmg = isRangedType ? (ref?.damage ?? 0) : (ref?.damage_add ?? 0)
-    const isMelee = ref ? isMeleeSkill(ref.skill_key ?? '') : (!isRangedType)
+    // A melee weapon is only brawn-scaled when damage_add is explicitly set;
+    // fixed-damage melee weapons (e.g. lightsabers) have damage_add == null.
+    const hasBrawnScale = !isRangedType && ref?.damage_add != null
+    const baseDmg = hasBrawnScale ? (ref?.damage_add ?? 0) : (ref?.damage ?? 0)
+    const isMelee = hasBrawnScale
 
     return (
       <div key={w.id}>

@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react'
 import { RANGE_LABELS } from '@/lib/types'
-import { DiceText } from '@/components/dice/DiceText'
+import { RichText } from '@/components/ui/RichText'
 import { stripBBCode } from '@/lib/utils'
 import type {
   CharacterWeapon, CharacterArmor, CharacterGear,
@@ -219,7 +219,7 @@ export function GearTab({
               {hasContent && isExpanded && (
                 <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px solid ${BORDER}` }}>
                   {descText && (
-                    <DiceText
+                    <RichText
                       text={descText}
                       style={{ fontFamily: FONT_R, fontSize: 'clamp(0.75rem, 2.8vw, 0.85rem)', color: TEXT_DIM, lineHeight: 1.55, whiteSpace: 'pre-wrap' }}
                     />
@@ -229,7 +229,7 @@ export function GearTab({
                       <span style={{ fontFamily: FONT_C, fontSize: 'clamp(0.6rem, 2.4vw, 0.72rem)', color: GOLD, fontWeight: 600 }}>
                         {qref.name}{qref.is_ranked && q.count && q.count > 1 ? ` ${q.count}` : ''}:{' '}
                       </span>
-                      <DiceText
+                      <RichText
                         text={stripBBCode(qref.description)}
                         style={{ fontFamily: FONT_R, fontSize: 'clamp(0.75rem, 2.8vw, 0.85rem)', color: TEXT_DIM, lineHeight: 1.55 }}
                       />
@@ -308,7 +308,7 @@ export function GearTab({
               </div>
               {descText && isExpanded && (
                 <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px solid ${BORDER}` }}>
-                  <DiceText
+                  <RichText
                     text={descText}
                     style={{ fontFamily: FONT_R, fontSize: 'clamp(0.75rem, 2.8vw, 0.85rem)', color: TEXT_DIM, lineHeight: 1.55, whiteSpace: 'pre-wrap' }}
                   />
@@ -394,7 +394,7 @@ export function GearTab({
               </div>
               {descText && isExpanded && (
                 <div style={{ padding: '0 0 8px' }}>
-                  <DiceText
+                  <RichText
                     text={descText}
                     style={{ fontFamily: FONT_R, fontSize: 'clamp(0.75rem, 2.8vw, 0.85rem)', color: TEXT_DIM, lineHeight: 1.55, whiteSpace: 'pre-wrap' }}
                   />

@@ -7,7 +7,7 @@ import {
   type DiceType,
 } from '@/components/player-hud/design-tokens'
 import { DiceFace } from '@/components/dice/DiceFace'
-import { DiceText } from '@/components/dice/DiceText'
+import { RichText } from '@/components/ui/RichText'
 import { getSkillPool, rollPool, type RollResult } from '@/components/player-hud/dice-engine'
 import type { HudSkill } from '@/components/player-hud/SkillsPanel'
 
@@ -360,7 +360,7 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
                   color: 'rgba(255,255,255,0.5)',
                   lineHeight: 1.45,
                 }}>
-                  <DiceText text={hint.description} />
+                  <RichText text={hint.description} />
                 </div>
               </div>
             ))}

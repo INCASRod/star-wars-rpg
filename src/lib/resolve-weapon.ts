@@ -12,89 +12,103 @@
 import type { AdversaryWeapon } from './adversaries'
 
 // Static fallback for common generic names not in ref_weapons
-// Format: { dmg: fixed damage } or { brawn: bonus added to brawn stat }
-const FALLBACK: Record<string, { dmg?: number; brawn?: number; range?: string }> = {
-  'brawl':                   { brawn: 0, range: 'Engaged' },
-  'fists':                   { brawn: 0, range: 'Engaged' },
-  'enhanced fists':          { brawn: 1, range: 'Engaged' },
-  'iron-hard fists':         { brawn: 1, range: 'Engaged' },
-  'meaty fists':             { brawn: 1, range: 'Engaged' },
-  'mechanical fists':        { brawn: 1, range: 'Engaged' },
-  'metal fists':             { brawn: 1, range: 'Engaged' },
-  'stone fists':             { brawn: 1, range: 'Engaged' },
-  'pummeling fists':         { brawn: 1, range: 'Engaged' },
-  'unarmed combat':          { brawn: 0, range: 'Engaged' },
-  'unarmed martial attack':  { brawn: 0, range: 'Engaged' },
-  'claws':                   { brawn: 1, range: 'Engaged' },
-  'claws and teeth':         { brawn: 1, range: 'Engaged' },
-  'claws and fangs':         { brawn: 1, range: 'Engaged' },
-  'teeth and claws':         { brawn: 1, range: 'Engaged' },
-  'teeth':                   { brawn: 0, range: 'Engaged' },
-  'bite':                    { brawn: 0, range: 'Engaged' },
-  'vicious bite':            { brawn: 1, range: 'Engaged' },
-  'massive bite':            { brawn: 2, range: 'Engaged' },
-  'fangs':                   { brawn: 1, range: 'Engaged' },
-  'knife':                   { brawn: 1, range: 'Engaged' },
-  'combat knife':            { brawn: 1, range: 'Engaged' },
-  'hunting knife':           { brawn: 1, range: 'Engaged' },
-  'makeshift knife':         { brawn: 1, range: 'Engaged' },
-  'vibroblade':              { brawn: 1, range: 'Engaged' },
-  'combat vibroblade':       { brawn: 1, range: 'Engaged' },
-  'two vibroblades':         { brawn: 1, range: 'Engaged' },
-  'vibrorapier':             { brawn: 1, range: 'Engaged' },
-  'vibrosaw':                { brawn: 2, range: 'Engaged' },
-  'vibroknucklers':          { brawn: 1, range: 'Engaged' },
-  'vibroknuckles':           { brawn: 1, range: 'Engaged' },
-  'gaffi stick':             { brawn: 2, range: 'Engaged' },
-  'staff':                   { brawn: 1, range: 'Engaged' },
-  'security staff':          { brawn: 1, range: 'Engaged' },
-  'truncheon':               { brawn: 1, range: 'Engaged' },
-  'shock truncheon':         { brawn: 1, range: 'Engaged' },
-  'electrostaff':            { brawn: 2, range: 'Engaged' },
-  'force pike':              { brawn: 2, range: 'Engaged' },
-  'spear':                   { brawn: 1, range: 'Engaged' },
-  'lightsaber':              { dmg: 10, range: 'Engaged' },
-  'double-bladed lightsaber':{ dmg: 10, range: 'Engaged' },
-  'double bladed lightsaber':{ dmg: 10, range: 'Engaged' },
-  'training lightsaber':     { dmg: 7, range: 'Engaged' },
-  'frag grenade':            { dmg: 8, range: 'Short' },
-  'stun grenade':            { dmg: 8, range: 'Short' },
-  'ion grenade':             { dmg: 7, range: 'Short' },
-  'thermal detonator':       { dmg: 20, range: 'Short' },
-  'smoke grenade':           { dmg: 0, range: 'Short' },
-  'bowcaster':               { dmg: 10, range: 'Medium' },
-  'blaster pistol':          { dmg: 6, range: 'Medium' },
-  'heavy blaster pistol':    { dmg: 7, range: 'Medium' },
-  'light blaster pistol':    { dmg: 5, range: 'Medium' },
-  'holdout blaster':         { dmg: 5, range: 'Short' },
-  'blaster carbine':         { dmg: 9, range: 'Medium' },
-  'blaster rifle':           { dmg: 9, range: 'Long' },
-  'heavy blaster rifle':     { dmg: 10, range: 'Long' },
-  'repeating blaster':       { dmg: 11, range: 'Long' },
-  'light repeating blaster': { dmg: 9, range: 'Medium' },
-  'slugthrower pistol':      { dmg: 4, range: 'Short' },
-  'slugthrower rifle':       { dmg: 7, range: 'Medium' },
-  'sniper rifle':            { dmg: 10, range: 'Extreme' },
-  'disruptor pistol':        { dmg: 10, range: 'Short' },
-  'disruptor rifle':         { dmg: 10, range: 'Long' },
-  'arc welder':              { dmg: 3, range: 'Engaged' },
-  'stun blaster':            { dmg: 8, range: 'Short' },
-  'stun pistol':             { dmg: 6, range: 'Short' },
-  'ion blaster':             { dmg: 5, range: 'Short' },
-  'flamethrower':            { dmg: 8, range: 'Short' },
-  'flame projector':         { dmg: 7, range: 'Short' },
-  'missile launcher':        { dmg: 20, range: 'Long' },
-  'rocket launcher':         { dmg: 20, range: 'Long' },
+// Format: { dmg: fixed damage } or { brawn: bonus added to brawn stat }, optional crit
+const FALLBACK: Record<string, { dmg?: number; brawn?: number; range?: string; crit?: number }> = {
+  'brawl':                   { brawn: 0, range: 'Engaged', crit: 5 },
+  'fists':                   { brawn: 0, range: 'Engaged', crit: 5 },
+  'enhanced fists':          { brawn: 1, range: 'Engaged', crit: 5 },
+  'iron-hard fists':         { brawn: 1, range: 'Engaged', crit: 5 },
+  'meaty fists':             { brawn: 1, range: 'Engaged', crit: 5 },
+  'mechanical fists':        { brawn: 1, range: 'Engaged', crit: 5 },
+  'metal fists':             { brawn: 1, range: 'Engaged', crit: 5 },
+  'stone fists':             { brawn: 1, range: 'Engaged', crit: 5 },
+  'pummeling fists':         { brawn: 1, range: 'Engaged', crit: 5 },
+  'unarmed combat':          { brawn: 0, range: 'Engaged', crit: 5 },
+  'unarmed martial attack':  { brawn: 0, range: 'Engaged', crit: 5 },
+  'claws':                   { brawn: 1, range: 'Engaged', crit: 3 },
+  'claws and teeth':         { brawn: 1, range: 'Engaged', crit: 3 },
+  'claws and fangs':         { brawn: 1, range: 'Engaged', crit: 3 },
+  'teeth and claws':         { brawn: 1, range: 'Engaged', crit: 3 },
+  'teeth':                   { brawn: 0, range: 'Engaged', crit: 4 },
+  'bite':                    { brawn: 0, range: 'Engaged', crit: 4 },
+  'vicious bite':            { brawn: 1, range: 'Engaged', crit: 3 },
+  'massive bite':            { brawn: 2, range: 'Engaged', crit: 3 },
+  'fangs':                   { brawn: 1, range: 'Engaged', crit: 3 },
+  'knife':                   { brawn: 1, range: 'Engaged', crit: 3 },
+  'combat knife':            { brawn: 1, range: 'Engaged', crit: 3 },
+  'hunting knife':           { brawn: 1, range: 'Engaged', crit: 3 },
+  'makeshift knife':         { brawn: 1, range: 'Engaged', crit: 4 },
+  'vibroblade':              { brawn: 1, range: 'Engaged', crit: 2 },
+  'combat vibroblade':       { brawn: 1, range: 'Engaged', crit: 2 },
+  'two vibroblades':         { brawn: 1, range: 'Engaged', crit: 2 },
+  'vibrorapier':             { brawn: 1, range: 'Engaged', crit: 2 },
+  'vibrosaw':                { brawn: 2, range: 'Engaged', crit: 2 },
+  'vibroknucklers':          { brawn: 1, range: 'Engaged', crit: 3 },
+  'vibroknuckles':           { brawn: 1, range: 'Engaged', crit: 3 },
+  'gaffi stick':             { brawn: 2, range: 'Engaged', crit: 4 },
+  'staff':                   { brawn: 1, range: 'Engaged', crit: 4 },
+  'security staff':          { brawn: 1, range: 'Engaged', crit: 4 },
+  'truncheon':               { brawn: 1, range: 'Engaged', crit: 4 },
+  'shock truncheon':         { brawn: 1, range: 'Engaged', crit: 4 },
+  'electrostaff':            { brawn: 2, range: 'Engaged', crit: 2 },
+  'force pike':              { brawn: 2, range: 'Engaged', crit: 3 },
+  'spear':                   { brawn: 1, range: 'Engaged', crit: 3 },
+  'lightsaber':              { dmg: 10, range: 'Engaged', crit: 1 },
+  'double-bladed lightsaber':{ dmg: 10, range: 'Engaged', crit: 1 },
+  'double bladed lightsaber':{ dmg: 10, range: 'Engaged', crit: 1 },
+  'training lightsaber':     { dmg: 7,  range: 'Engaged', crit: 2 },
+  'frag grenade':            { dmg: 8,  range: 'Short',   crit: 4 },
+  'stun grenade':            { dmg: 8,  range: 'Short' },
+  'ion grenade':             { dmg: 7,  range: 'Short' },
+  'thermal detonator':       { dmg: 20, range: 'Short',   crit: 2 },
+  'smoke grenade':           { dmg: 0,  range: 'Short' },
+  'bowcaster':               { dmg: 10, range: 'Medium',  crit: 3 },
+  'blaster pistol':          { dmg: 6,  range: 'Medium',  crit: 3 },
+  'heavy blaster pistol':    { dmg: 7,  range: 'Medium',  crit: 3 },
+  'light blaster pistol':    { dmg: 5,  range: 'Medium',  crit: 4 },
+  'holdout blaster':         { dmg: 5,  range: 'Short',   crit: 4 },
+  'blaster carbine':         { dmg: 9,  range: 'Medium',  crit: 3 },
+  'blaster rifle':           { dmg: 9,  range: 'Long',    crit: 3 },
+  'heavy blaster rifle':     { dmg: 10, range: 'Long',    crit: 3 },
+  'repeating blaster':       { dmg: 11, range: 'Long',    crit: 2 },
+  'light repeating blaster': { dmg: 9,  range: 'Medium',  crit: 3 },
+  'slugthrower pistol':      { dmg: 4,  range: 'Short',   crit: 5 },
+  'slugthrower rifle':       { dmg: 7,  range: 'Medium',  crit: 5 },
+  'sniper rifle':            { dmg: 10, range: 'Extreme', crit: 1 },
+  'disruptor pistol':        { dmg: 10, range: 'Short',   crit: 2 },
+  'disruptor rifle':         { dmg: 10, range: 'Long',    crit: 2 },
+  'arc welder':              { dmg: 3,  range: 'Engaged' },
+  'stun blaster':            { dmg: 8,  range: 'Short' },
+  'stun pistol':             { dmg: 6,  range: 'Short' },
+  'ion blaster':             { dmg: 10, range: 'Short',   crit: 5 },
+  'flamethrower':            { dmg: 8,  range: 'Short' },
+  'flame projector':         { dmg: 7,  range: 'Short' },
+  'missile launcher':        { dmg: 20, range: 'Long',    crit: 2 },
+  'rocket launcher':         { dmg: 20, range: 'Long',    crit: 2 },
   'throw':                   { brawn: 0, range: 'Short' },
-  'tail':                    { brawn: 0, range: 'Engaged' },
-  'tail whip':               { brawn: 1, range: 'Engaged' },
-  'stomp':                   { brawn: 2, range: 'Engaged' },
-  'trample':                 { brawn: 2, range: 'Engaged' },
-  'headbutt':                { brawn: 0, range: 'Engaged' },
-  'horns':                   { brawn: 1, range: 'Engaged' },
-  'tusks':                   { brawn: 2, range: 'Engaged' },
-  'stinger':                 { brawn: 0, range: 'Engaged' },
-  'spine':                   { brawn: 0, range: 'Engaged' },
+  'tail':                    { brawn: 0, range: 'Engaged', crit: 5 },
+  'tail whip':               { brawn: 1, range: 'Engaged', crit: 4 },
+  'stomp':                   { brawn: 2, range: 'Engaged', crit: 4 },
+  'trample':                 { brawn: 2, range: 'Engaged', crit: 4 },
+  'headbutt':                { brawn: 0, range: 'Engaged', crit: 5 },
+  'horns':                   { brawn: 1, range: 'Engaged', crit: 4 },
+  'tusks':                   { brawn: 2, range: 'Engaged', crit: 3 },
+  'stinger':                 { brawn: 0, range: 'Engaged', crit: 4 },
+  'spine':                   { brawn: 0, range: 'Engaged', crit: 4 },
+  // Adversary utility / exotic weapons
+  'grs-1 snare rifle':             { dmg: 4, range: 'Long'    },
+  'snare launcher':                { dmg: 0, range: 'Short'   },
+  'built-in cleaning spray hose':  { dmg: 0, range: 'Short'   },
+  'net gun':                       { dmg: 0, range: 'Short'   },
+  'optical flare':                 { dmg: 0, range: 'Engaged' },
+  'bag of sleeping powder':        { dmg: 0, range: 'Short'   },
+  // Vehicle utility weapons (0 damage — tractor beams, tracers)
+  // Keyed as lowercase OggDude weaponKey, matched after turret-suffix stripping below
+  'tractlt':                       { dmg: 0, range: 'Close'   },
+  'tractmed':                      { dmg: 0, range: 'Short'   },
+  'tracthvy':                      { dmg: 0, range: 'Medium'  },
+  'lttractcouple':                 { dmg: 0, range: 'Close'   },
+  'xx23tracer':                    { dmg: 0, range: 'Medium'  },
 }
 
 // Strip OggDude "wr" prefix from range_value (e.g. "wrMedium" → "Medium")
@@ -107,21 +121,34 @@ export interface WeaponRef {
   damage: number
   damage_add: number | null
   range_value: string | null
+  crit?: number | null
 }
 
 export function resolveWeapon(
   w: AdversaryWeapon,
   brawn: number,
   weaponRef: Record<string, WeaponRef>,
-): { dmg: string; range: string } {
+): { dmg: string; range: string; crit?: number } {
+  // Normalise lookup key:
+  //  • lowercase
+  //  • strip vehicle count prefix   e.g. "2× LASERMED"  → "lasermed"
+  //  • strip turret suffix           e.g. "TRACTLT (Turret)" → "tractlt"
   const key = w.name.toLowerCase()
+    .replace(/^\d+×\s*/i, '')
+    .replace(/\s*\(turret\)$/i, '')
+
+  // Crit resolution: parsed value > ref_weapons > FALLBACK > undefined
+  const resolvedCrit: number | undefined =
+    w.crit !== undefined         ? w.crit
+    : weaponRef[key]?.crit != null ? (weaponRef[key].crit as number)
+    : FALLBACK[key]?.crit
 
   // 1. If weapon already has explicit non-zero numeric damage, use it
   if (typeof w.damage === 'number' && w.damage !== 0) {
     const range = (w.range && w.range !== 'Engaged')
       ? w.range
       : cleanRange((weaponRef[key] ?? FALLBACK[key] as never)?.range_value ?? FALLBACK[key]?.range ?? w.range)
-    return { dmg: String(w.damage), range }
+    return { dmg: String(w.damage), range, ...(resolvedCrit !== undefined ? { crit: resolvedCrit } : {}) }
   }
 
   // 2. If weapon has a Brawn-based string (e.g. "Brawn+2"), resolve to number
@@ -131,7 +158,7 @@ export function resolveWeapon(
       const range = (w.range && w.range !== 'Engaged')
         ? w.range
         : cleanRange(weaponRef[key]?.range_value ?? FALLBACK[key]?.range ?? w.range)
-      return { dmg: String(brawn + parseInt(m[1])), range }
+      return { dmg: String(brawn + parseInt(m[1])), range, ...(resolvedCrit !== undefined ? { crit: resolvedCrit } : {}) }
     }
   }
 
@@ -142,7 +169,7 @@ export function resolveWeapon(
       ? String(brawn + ref.damage_add)
       : String(ref.damage)
     const range = cleanRange(ref.range_value) || (w.range !== 'Engaged' ? w.range : 'Engaged')
-    return { dmg, range }
+    return { dmg, range, ...(resolvedCrit !== undefined ? { crit: resolvedCrit } : {}) }
   }
 
   // 4. Static fallback for common generic names
@@ -150,9 +177,12 @@ export function resolveWeapon(
   if (fb) {
     const dmg = fb.dmg !== undefined ? String(fb.dmg) : String(brawn + (fb.brawn ?? 0))
     const range = fb.range ?? w.range ?? 'Engaged'
-    return { dmg, range }
+    return { dmg, range, ...(resolvedCrit !== undefined ? { crit: resolvedCrit } : {}) }
   }
 
-  // 5. Truly unknown
+  // 5. Truly unknown — null/undefined damage means a utility weapon with no hull damage
+  if (w.damage == null) {
+    return { dmg: '—', range: w.range ?? 'Engaged' }
+  }
   return { dmg: '?', range: w.range ?? 'Engaged' }
 }

@@ -1,8 +1,15 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
 import { C, FONT_CINZEL, FONT_RAJDHANI, panelBase, FS_H3, FS_H4, FS_SM, FS_LABEL, FS_CAPTION, FS_OVERLINE } from '@/components/player-hud/design-tokens'
+import type { Adversary, AdversaryGear } from '@/lib/adversaries'
+import { fetchAdversaries } from '@/lib/adversaries'
+import type { Vehicle } from '@/lib/vehicles'
+import { fetchVehicles, dbRowToVehicle, vehicleWeaponDisplayName, vehicleWeaponStats } from '@/lib/vehicles'
+import { resolveWeapon } from '@/lib/resolve-weapon'
+import { RichText } from '@/components/ui/RichText'
 
 const FONT_MONO = "'Share Tech Mono','Courier New',monospace"
 
@@ -55,30 +62,34 @@ interface LastAllianceReward {
   awarded_at: string
 }
 
-// ── Table 9-3 Hardcoded Data ────────────────────────────────────────────────────
+// ── Table 9-3 Contribution Rank data (Core Rulebook) ────────────────────────
+
+const _R01 = {
+  alliance: 'New recruit or untested collaborator, still under suspicion. Access to basic equipment and vehicles. Recruit to corporal rank.',
+  empire:   'Faceless Rebel scum. Little intelligence value if captured. Re-education possible, otherwise imprisonment. Not worth the effort to hunt down individuals.',
+}
+const _R23 = {
+  alliance: 'Veteran soldier or important collaborator. Very respected by the Alliance. Access to corvette/gunship-level starships and minor strategic intelligence. Lieutenant to captain rank.',
+  empire:   'Moderate notoriety. Possible strategic intelligence value. Re-education not possible. Imprisonment and lifelong interrogation standard practice. Use of bounty hunters to capture is an option.',
+}
+const _R46 = {
+  alliance: 'Top brass or vital collaborator. Highly respected by the Alliance. Minor but notable political power. Access to corvette/gunship-level starships and sensitive info. Major to colonel rank.',
+  empire:   'Major notoriety. Extremely high intelligence value if captured. Use of bounty hunters and Imperial assassins authorized for capture/elimination. No chance of re-education. Failure to report whereabouts considered a severe crime.',
+}
+const _R7P = {
+  alliance: 'Member of the Alliance High Command. Immense political power. Extremely revered and respected by allies. Access to capital-grade starships. Commander, general, or admiral ranking.',
+  empire:   "The Empire's Most Wanted. Entire fleets used to locate and eliminate. Capture or death key to destruction of the Rebellion. Immense intelligence value. Failure to report whereabouts is considered treason.",
+}
 
 const CONTRIBUTION_RANK_TABLE: Record<number, { alliance: string; empire: string }> = {
-  0: {
-    alliance: 'New recruit or untested collaborator, still under suspicion. Access to basic equipment and vehicles.',
-    empire: 'Faceless Rebel scum. Little intelligence value if captured. Not worth the effort to hunt down.',
-  },
-  1: {
-    alliance: 'Tested soldier or trusted collaborator. Respected by Alliance. Access to better tactical equipment. Sergeant to warrant officer rank.',
-    empire: 'Minor notoriety. Limited tactical intelligence value. Execution after interrogation. Bounty hunters rare but possible.',
-  },
-  2: {
-    alliance: 'Veteran soldier or important collaborator. Very respected. Access to corvette/gunship-level starships and minor strategic intelligence. Lieutenant to captain rank.',
-    empire: 'Moderate notoriety. Possible strategic intelligence value. Bounty hunters an option.',
-  },
-  3: {
-    alliance: 'Top brass or vital collaborator. Highly respected, minor political power. Access to corvette/gunship-level starships and sensitive info. Major to colonel rank.',
-    empire: 'Major notoriety. High intelligence value. Imperial assassins authorised. Imprisonment standard.',
-  },
-  4: {
-    alliance: 'Member of the Alliance High Command. Immense political power. Extremely revered. Access to capital-grade starships. Commander, general, or admiral rank.',
-    empire: "The Empire's Most Wanted. Entire fleets deployed to locate and eliminate. Failure to report whereabouts considered treason.",
-  },
+  0: _R01, 1: _R01,
+  2: _R23, 3: _R23,
+  4: _R46, 5: _R46, 6: _R46,
+  7: _R7P, 8: _R7P, 9: _R7P, 10: _R7P,
 }
+
+/** Ranks 7+ are the maximum tier — no further progression text exists. */
+const MAX_CONTRIBUTION_RANK_TIER = 7
 
 // ── Asset badge colours ─────────────────────────────────────────────────────
 
@@ -216,19 +227,84 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
   const [dutyEditDraft, setDutyEditDraft]       = useState('')
   const [hoveredDutyChar, setHoveredDutyChar]   = useState<string | null>(null)
 
-  // ── Rank tooltip hover ─────────────────────────────────────────────────────
-  const [rankTooltip, setRankTooltip] = useState<'alliance' | 'empire' | null>(null)
+  // (rank tooltip hover removed — cards are always expanded)
 
   // ── Add Asset modal ────────────────────────────────────────────────────────
   const [showAddAsset, setShowAddAsset]     = useState(false)
   const [assetTypeDraft, setAssetTypeDraft] = useState<AssetType>('other')
   const [assetNameDraft, setAssetNameDraft] = useState('')
   const [assetDescDraft, setAssetDescDraft] = useState('')
+  const [assetSearch, setAssetSearch]       = useState('')
+  const [adversaryLib, setAdversaryLib]     = useState<(Adversary & { _isCustom?: boolean })[]>([])
+  const [vehicleLib, setVehicleLib]         = useState<Vehicle[]>([])
+  const [libLoading, setLibLoading]         = useState(false)
+  const [viewingAsset, setViewingAsset]     = useState<GroupAsset | null>(null)
 
   // ── Last Alliance Reward edit modal ───────────────────────────────────────
   const [showRewardModal, setShowRewardModal]     = useState(false)
   const [rewardTypeDraft, setRewardTypeDraft]     = useState<'equipment' | 'vehicle' | 'strategic_asset'>('equipment')
   const [rewardDescModalDraft, setRewardDescModalDraft] = useState('')
+
+  // ── Shared library loader ─────────────────────────────────────────────────
+  const loadAdversaries = useCallback(() => {
+    if (adversaryLib.length > 0) return
+    setLibLoading(true)
+    Promise.all([
+      fetchAdversaries(),
+      supabase.from('ref_adversaries').select('*').order('name'),
+    ]).then(([oggdude, customResult]) => {
+      const custom: (Adversary & { _isCustom: true })[] = (customResult.data ?? []).map((row) => {
+        const r = row as Record<string, unknown>
+        const skillRanks = (r.skill_ranks as Record<string, number>) ?? {}
+        return {
+          id:          String(r.id),
+          name:        String(r.name),
+          type:        r.type as 'minion' | 'rival' | 'nemesis',
+          brawn:       Number(r.brawn ?? 2),
+          agility:     Number(r.agility ?? 2),
+          intellect:   Number(r.intellect ?? 2),
+          cunning:     Number(r.cunning ?? 2),
+          willpower:   Number(r.willpower ?? 2),
+          presence:    Number(r.presence ?? 2),
+          soak:        Number(r.soak ?? 2),
+          wound:       Number(r.wound_threshold ?? 10),
+          strain:      r.strain_threshold != null ? Number(r.strain_threshold) : undefined,
+          defense:     [Number(r.defense_melee ?? 0), Number(r.defense_ranged ?? 0)],
+          skills:      Object.keys(skillRanks),
+          skillRanks,
+          talents:     (r.talents as Adversary['talents']) ?? [],
+          abilities:   (r.abilities as Adversary['abilities']) ?? [],
+          weapons:     (r.weapons as Adversary['weapons']) ?? [],
+          gear:        (r.gear as AdversaryGear[]) ?? [],
+          description: r.description ? String(r.description) : undefined,
+          _isCustom:   true,
+        }
+      })
+      setAdversaryLib([...oggdude, ...custom])
+      setLibLoading(false)
+    })
+  }, [adversaryLib.length, supabase]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const loadVehicles = useCallback(() => {
+    if (vehicleLib.length > 0) return
+    setLibLoading(true)
+    Promise.all([
+      fetchVehicles(),
+      supabase.from('ref_vehicles').select('*').order('name'),
+    ]).then(([oggdude, customResult]) => {
+      const custom = (customResult.data ?? []).map(r => dbRowToVehicle(r as Record<string, unknown>))
+      setVehicleLib([...oggdude, ...custom])
+      setLibLoading(false)
+    })
+  }, [vehicleLib.length, supabase]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Trigger library load when Add Asset modal or View modal needs it ──────
+  useEffect(() => {
+    const t = showAddAsset ? assetTypeDraft : viewingAsset?.asset_type
+    if (!t) return
+    if (t === 'npc') loadAdversaries()
+    else if (t === 'vehicle' || t === 'starship') loadVehicles()
+  }, [showAddAsset, assetTypeDraft, viewingAsset, loadAdversaries, loadVehicles])
 
   // ── Load data ──────────────────────────────────────────────────────────────
   const load = useCallback(async () => {
@@ -373,13 +449,12 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
       asset_type: assetTypeDraft,
       name: assetNameDraft.trim(),
       description: assetDescDraft.trim() || null,
-      added_by: characterName ?? 'GM',
     }).select().single()
-    if (data) setAssets(prev => [data as GroupAsset, ...prev])
     setShowAddAsset(false)
     setAssetNameDraft('')
     setAssetDescDraft('')
     setAssetTypeDraft('other')
+    setAssetSearch('')
   }
 
   async function archiveAsset(id: string) {
@@ -396,8 +471,41 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
   const dutyPct     = Math.min(100, dutyTotal)
   const milestone   = dutyTotal >= 100
   const rank        = campaign?.contribution_rank ?? 0
-  const rankData    = CONTRIBUTION_RANK_TABLE[rank] ?? CONTRIBUTION_RANK_TABLE[4]
+  const rankData    = CONTRIBUTION_RANK_TABLE[rank] ?? CONTRIBUTION_RANK_TABLE[7]
+  // Find the next tier boundary — skip ranks that share the same tier object
+  const nextRankEntry = (() => {
+    if (rank >= MAX_CONTRIBUTION_RANK_TIER) return null
+    for (let r = rank + 1; r <= MAX_CONTRIBUTION_RANK_TIER; r++) {
+      const candidate = CONTRIBUTION_RANK_TABLE[r]
+      if (candidate && candidate !== rankData) return candidate
+    }
+    return null
+  })()
   const rankDesc    = (campaign?.contribution_rank_descriptions as Record<string, string>)?.[String(rank)] ?? null
+
+  const filteredAdversaries = useMemo(() => {
+    const q = assetSearch.toLowerCase()
+    return adversaryLib.filter(a => a.name.toLowerCase().includes(q))
+  }, [adversaryLib, assetSearch])
+
+  const filteredVehicles = useMemo(() => {
+    const q = assetSearch.toLowerCase()
+    return vehicleLib
+      .filter(v => assetTypeDraft === 'starship' ? v.isStarship : !v.isStarship)
+      .filter(v => v.name.toLowerCase().includes(q))
+  }, [vehicleLib, assetSearch, assetTypeDraft])
+
+  const viewAdversary = useMemo(() => {
+    if (!viewingAsset || viewingAsset.asset_type !== 'npc') return null
+    const n = viewingAsset.name.toLowerCase()
+    return adversaryLib.find(a => a.name.toLowerCase() === n) ?? null
+  }, [viewingAsset, adversaryLib])
+
+  const viewVehicle = useMemo(() => {
+    if (!viewingAsset || (viewingAsset.asset_type !== 'vehicle' && viewingAsset.asset_type !== 'starship')) return null
+    const n = viewingAsset.name.toLowerCase()
+    return vehicleLib.find(v => v.name.toLowerCase() === n) ?? null
+  }, [viewingAsset, vehicleLib])
 
   if (loading) {
     return (
@@ -440,64 +548,166 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
       )}
 
       {/* ── Add Asset Modal (at root to escape backdropFilter stacking context) ── */}
-      {showAddAsset && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 200,
-          background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
+      {showAddAsset && (() => {
+        const useLibrary = assetTypeDraft === 'npc' || assetTypeDraft === 'vehicle' || assetTypeDraft === 'starship'
+        const libraryItems = assetTypeDraft === 'npc' ? filteredAdversaries : filteredVehicles
+        const closeModal = () => { setShowAddAsset(false); setAssetSearch(''); setAssetNameDraft(''); setAssetDescDraft(''); setAssetTypeDraft('other') }
+        return (
           <div style={{
-            background: '#0A1410',
-            border: `1px solid ${C.borderHi}`,
-            borderRadius: 8, padding: '24px 32px',
-            display: 'flex', flexDirection: 'column', gap: 14,
-            minWidth: 340, maxWidth: 480, width: '90vw',
-            boxShadow: '0 8px 40px rgba(0,0,0,0.8)',
+            position: 'fixed', inset: 0, zIndex: 200,
+            background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_H4, color: C.gold, letterSpacing: '0.08em' }}>
-              ADD GROUP ASSET
-            </div>
-            <div>
-              <label style={labelStyle()}>Asset Type</label>
-              <select
-                value={assetTypeDraft}
-                onChange={e => setAssetTypeDraft(e.target.value as AssetType)}
-                style={inlineInputStyle()}
-              >
-                {(Object.keys(ASSET_LABELS) as AssetType[]).map(t => (
-                  <option key={t} value={t}>{ASSET_LABELS[t]}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label style={labelStyle()}>Name</label>
-              <input
-                autoFocus
-                value={assetNameDraft}
-                onChange={e => setAssetNameDraft(e.target.value)}
-                placeholder="Asset name"
-                style={inlineInputStyle()}
-              />
-            </div>
-            <div>
-              <label style={labelStyle()}>Description (optional)</label>
-              <textarea
-                value={assetDescDraft}
-                onChange={e => setAssetDescDraft(e.target.value)}
-                placeholder="Notes or description…"
-                rows={3}
-                style={{ ...inlineInputStyle(), resize: 'vertical' }}
-              />
-            </div>
-            <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: C.textDim }}>
-              Added by: <span style={{ color: C.text }}>{characterName ?? 'GM'}</span>
-            </div>
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-              <button style={btnStyle(false)} onClick={() => setShowAddAsset(false)}>Cancel</button>
-              <button style={btnStyle(true)} onClick={addAsset} disabled={!assetNameDraft.trim()}>Add Asset</button>
+            <div style={{
+              background: '#0A1410',
+              border: `1px solid ${C.borderHi}`,
+              borderRadius: 8,
+              display: 'flex', flexDirection: 'column',
+              width: '90vw', maxWidth: useLibrary ? 520 : 480,
+              maxHeight: '88vh',
+              boxShadow: '0 8px 40px rgba(0,0,0,0.8)',
+            }}>
+              {/* Header */}
+              <div style={{ padding: '18px 24px 14px', borderBottom: `1px solid ${C.border}`, flexShrink: 0 }}>
+                <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_H4, color: C.gold, letterSpacing: '0.08em' }}>
+                  ADD GROUP ASSET
+                </div>
+              </div>
+
+              {/* Scrollable body */}
+              <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {/* Asset type */}
+                <div>
+                  <label style={labelStyle()}>Asset Type</label>
+                  <select
+                    value={assetTypeDraft}
+                    onChange={e => { setAssetTypeDraft(e.target.value as AssetType); setAssetNameDraft(''); setAssetSearch('') }}
+                    style={inlineInputStyle()}
+                  >
+                    {(Object.keys(ASSET_LABELS) as AssetType[]).map(t => (
+                      <option key={t} value={t}>{ASSET_LABELS[t]}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Library search + list for NPC / Vehicle / Starship */}
+                {useLibrary && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <label style={labelStyle()}>
+                      {assetTypeDraft === 'npc' ? 'Select from Adversary Library' : 'Select from Vehicle Library'}
+                    </label>
+                    <input
+                      autoFocus
+                      value={assetSearch}
+                      onChange={e => setAssetSearch(e.target.value)}
+                      placeholder={assetTypeDraft === 'npc' ? 'Search adversaries…' : 'Search vehicles…'}
+                      style={inlineInputStyle()}
+                    />
+                    <div style={{
+                      maxHeight: 220, overflowY: 'auto',
+                      border: `1px solid ${C.border}`, borderRadius: 6,
+                      background: 'rgba(0,0,0,0.25)',
+                    }}>
+                      {libLoading && (
+                        <div style={{ padding: '16px', fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: C.textDim, textAlign: 'center' }}>
+                          Loading…
+                        </div>
+                      )}
+                      {!libLoading && libraryItems.length === 0 && (
+                        <div style={{ padding: '16px', fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: C.textDim, textAlign: 'center' }}>
+                          No results found
+                        </div>
+                      )}
+                      {!libLoading && libraryItems.map((item, i) => {
+                        const itemName = item.name
+                        const isCustom = !!(item as { _isCustom?: boolean })._isCustom
+                        const subtitle = assetTypeDraft === 'npc'
+                          ? (item as Adversary).type
+                          : `${(item as Vehicle).type} · Sil ${(item as Vehicle).silhouette}`
+                        const isSelected = assetNameDraft === itemName
+                        return (
+                          <button
+                            key={'id' in item ? item.id : (item as Vehicle).key}
+                            onClick={() => setAssetNameDraft(itemName)}
+                            style={{
+                              width: '100%', textAlign: 'left',
+                              background: isSelected ? `${C.gold}18` : 'transparent',
+                              border: 'none',
+                              borderBottom: i < libraryItems.length - 1 ? `1px solid ${C.border}` : 'none',
+                              padding: '8px 12px', cursor: 'pointer',
+                              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+                            }}
+                          >
+                            <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: isSelected ? C.gold : C.text, fontWeight: isSelected ? 600 : 400 }}>
+                              {isCustom && <span style={{ color: C.gold, marginRight: 5, fontSize: '0.85em' }}>★</span>}
+                              {itemName}
+                            </span>
+                            <span style={{ fontFamily: FONT_MONO, fontSize: FS_CAPTION, color: C.textDim, textTransform: 'uppercase', flexShrink: 0 }}>
+                              {subtitle}
+                            </span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                    {/* Editable name field showing selected/custom name */}
+                    <div>
+                      <label style={labelStyle()}>Name</label>
+                      <input
+                        value={assetNameDraft}
+                        onChange={e => setAssetNameDraft(e.target.value)}
+                        placeholder="Select above or type a custom name"
+                        style={inlineInputStyle()}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Plain name field for non-library types */}
+                {!useLibrary && (
+                  <div>
+                    <label style={labelStyle()}>Name</label>
+                    <input
+                      autoFocus
+                      value={assetNameDraft}
+                      onChange={e => setAssetNameDraft(e.target.value)}
+                      placeholder="Asset name"
+                      style={inlineInputStyle()}
+                    />
+                  </div>
+                )}
+
+                {/* Description */}
+                <div>
+                  <label style={labelStyle()}>Description (optional)</label>
+                  <textarea
+                    value={assetDescDraft}
+                    onChange={e => setAssetDescDraft(e.target.value)}
+                    placeholder="Notes or description…"
+                    rows={3}
+                    style={{ ...inlineInputStyle(), resize: 'vertical' }}
+                  />
+                </div>
+              </div>
+
+              {/* Footer actions */}
+              <div style={{ padding: '12px 24px 16px', borderTop: `1px solid ${C.border}`, display: 'flex', gap: 8, justifyContent: 'flex-end', flexShrink: 0 }}>
+                <button style={btnStyle(false)} onClick={closeModal}>Cancel</button>
+                <button style={btnStyle(true)} onClick={addAsset} disabled={!assetNameDraft.trim()}>Add Asset</button>
+              </div>
             </div>
           </div>
-        </div>
+        )
+      })()}
+
+      {/* ── Asset View Modal ──────────────────────────────────────────────────── */}
+      {viewingAsset && (
+        <AssetViewModal
+          asset={viewingAsset}
+          adversary={viewAdversary}
+          vehicle={viewVehicle}
+          loading={libLoading && (viewingAsset.asset_type === 'npc' || viewingAsset.asset_type === 'vehicle' || viewingAsset.asset_type === 'starship')}
+          onClose={() => setViewingAsset(null)}
+        />
       )}
 
       {/* ══ SECTION 1 — GROUP IDENTITY ════════════════════════════════════════ */}
@@ -892,23 +1102,24 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
             </div>
           )}
 
-          {/* Alliance / Empire tooltips */}
+          {/* Alliance / Empire cards — always expanded */}
           <div style={{ display: 'flex', gap: 12, width: '100%', maxWidth: 560 }}>
             <TooltipCard
               label="ALLIANCE STANDING"
               color="#4EC87A"
               text={rankData.alliance}
-              hovered={rankTooltip === 'alliance'}
-              onHover={() => setRankTooltip('alliance')}
-              onLeave={() => setRankTooltip(null)}
+              nextText={nextRankEntry ? nextRankEntry.alliance : null}
+              symbolSrc="/images/factions/rebel.png"
+              symbolCorner="right"
             />
             <TooltipCard
               label="IMPERIAL THREAT"
               color="#E05050"
               text={rankData.empire}
-              hovered={rankTooltip === 'empire'}
-              onHover={() => setRankTooltip('empire')}
-              onLeave={() => setRankTooltip(null)}
+              nextText={nextRankEntry ? nextRankEntry.empire : null}
+              symbolSrc="/images/factions/empire.png"
+              symbolCorner="left"
+              symbolFilter="invert(1) opacity(0.15)"
             />
           </div>
 
@@ -981,6 +1192,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
                 key={asset.id}
                 asset={asset}
                 canArchive={gmUnlocked}
+                onView={() => setViewingAsset(asset)}
                 onArchive={() => archiveAsset(asset.id)}
               />
             ))}
@@ -1109,43 +1321,460 @@ function SectionHeader({ label }: { label: string }) {
   )
 }
 
-function TooltipCard({ label, color, text, hovered, onHover, onLeave }: {
+function TooltipCard({ label, color, text, nextText, symbolSrc, symbolCorner, symbolFilter }: {
   label: string; color: string; text: string
-  hovered: boolean; onHover: () => void; onLeave: () => void
+  nextText?: string | null
+  symbolSrc?: string; symbolCorner?: 'left' | 'right'; symbolFilter?: string
 }) {
   return (
-    <div
-      style={{
-        flex: 1, borderRadius: 6, padding: '10px 12px', cursor: 'default',
-        background: hovered ? 'rgba(8,16,10,0.95)' : 'rgba(8,16,10,0.6)',
-        border: `1px solid ${hovered ? color + '66' : C.border}`,
-        transition: 'all 0.2s',
-      }}
-      onMouseEnter={onHover}
-      onMouseLeave={onLeave}
-    >
-      <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_CAPTION, color, letterSpacing: '0.08em', marginBottom: 4 }}>
+    <div style={{
+      flex: 1, borderRadius: 6, padding: '10px 12px',
+      background: 'rgba(8,16,10,0.95)',
+      border: `1px solid ${color}66`,
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      {/* Faction symbol watermark */}
+      {symbolSrc && (
+        <img
+          src={symbolSrc}
+          alt=""
+          style={{
+            position: 'absolute',
+            top: 6,
+            ...(symbolCorner === 'right' ? { right: 8 } : { left: 8 }),
+            width: 56,
+            height: 56,
+            objectFit: 'contain',
+            opacity: symbolFilter ? 1 : 0.18,
+            filter: symbolFilter,
+            pointerEvents: 'none',
+            userSelect: 'none',
+          }}
+        />
+      )}
+      {/* Current rank */}
+      <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_CAPTION, color, letterSpacing: '0.08em', marginBottom: 4, fontWeight: 700 }}>
         {label}
       </div>
-      <div style={{
-        fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: C.textDim, lineHeight: 1.5,
-        maxHeight: hovered ? 200 : 40,
-        overflow: 'hidden',
-        transition: 'max-height 0.3s ease',
-      }}>
+      <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: '#ffffff', lineHeight: 1.5, marginBottom: nextText !== undefined ? 8 : 0 }}>
         {text}
       </div>
-      {!hovered && (
-        <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: color + '88', marginTop: 2 }}>
-          Hover to expand ›
-        </div>
+      {/* Next rank */}
+      {nextText !== undefined && (
+        <>
+          <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_CAPTION, color: color + '88', letterSpacing: '0.08em', marginBottom: 3, fontWeight: 600 }}>
+            NEXT RANK
+          </div>
+          <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: 'rgba(255,255,255,0.6)', lineHeight: 1.5 }}>
+            {nextText ?? 'Maximum rank achieved.'}
+          </div>
+        </>
       )}
     </div>
   )
 }
 
-function AssetCard({ asset, canArchive, onArchive }: {
-  asset: GroupAsset; canArchive: boolean; onArchive: () => void
+// ── Asset View Modal ─────────────────────────────────────────────────────────
+
+const _VM_RAISED  = 'rgba(14,26,18,0.9)'
+const _VM_BORDER  = 'rgba(200,170,80,0.14)'
+const _VM_DIM     = '#6A8070'
+const _VM_TEXT    = '#C8D8C0'
+const _VM_RED     = '#E05050'
+const _VM_GREEN   = '#4EC87A'
+const _VM_BLUE    = '#5AAAE0'
+
+function _VmSection({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{
+      fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, fontWeight: 700,
+      letterSpacing: '0.2em', textTransform: 'uppercase',
+      color: 'rgba(200,170,80,0.5)', borderBottom: `1px solid ${_VM_BORDER}`,
+      paddingBottom: 4, marginBottom: 8,
+    }}>{children}</div>
+  )
+}
+
+function _VmStat({ label, value, color }: { label: string; value: string | number; color?: string }) {
+  return (
+    <div style={{
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      background: _VM_RAISED, border: `1px solid ${_VM_BORDER}`, borderRadius: 4,
+      padding: '6px 10px', minWidth: 48,
+    }}>
+      <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, color: _VM_DIM, letterSpacing: '0.1em', marginBottom: 3 }}>{label}</div>
+      <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_H4, fontWeight: 700, color: color ?? _VM_TEXT }}>{value}</div>
+    </div>
+  )
+}
+
+function AssetViewModal({ asset, adversary, vehicle, loading, onClose }: {
+  asset: GroupAsset
+  adversary: (Adversary & { _isCustom?: boolean }) | null
+  vehicle: (Vehicle & { _isCustom?: boolean }) | null
+  loading: boolean
+  onClose: () => void
+}) {
+  const [mounted, setMounted]   = useState(false)
+  const [visible, setVisible]   = useState(false)
+  useEffect(() => {
+    setMounted(true)
+    requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)))
+  }, [])
+
+  const handleClose = () => {
+    setVisible(false)
+    setTimeout(onClose, 260)
+  }
+
+  const useLibrary = asset.asset_type === 'npc' || asset.asset_type === 'vehicle' || asset.asset_type === 'starship'
+  const accentColor = ASSET_COLORS[asset.asset_type]
+
+  if (!mounted) return null
+  return createPortal(
+    <>
+      {/* Backdrop */}
+      <div
+        onClick={handleClose}
+        style={{
+          position: 'fixed', inset: 0, zIndex: 10050,
+          background: 'rgba(0,0,0,0.5)',
+          opacity: visible ? 1 : 0,
+          transition: 'opacity 0.26s',
+        }}
+      />
+
+      {/* Slide-in panel */}
+      <div style={{
+        position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 10060,
+        width: 'clamp(340px, 42vw, 560px)',
+        background: '#0A1410',
+        backdropFilter: 'blur(18px)',
+        WebkitBackdropFilter: 'blur(18px)',
+        borderLeft: `1px solid ${C.borderHi}`,
+        boxShadow: '-8px 0 40px rgba(0,0,0,0.6)',
+        display: 'flex', flexDirection: 'column',
+        transform: visible ? 'translateX(0)' : 'translateX(100%)',
+        transition: 'transform 0.26s cubic-bezier(0.22,1,0.36,1)',
+      }}>
+        {/* Header */}
+        <div style={{
+          padding: '16px 20px', borderBottom: `1px solid ${C.border}`, flexShrink: 0,
+          display: 'flex', alignItems: 'center', gap: 10,
+        }}>
+          <span style={{
+            padding: '2px 8px', borderRadius: 10, whiteSpace: 'nowrap', flexShrink: 0,
+            fontFamily: FONT_CINZEL, fontSize: FS_CAPTION, letterSpacing: '0.06em',
+            background: accentColor + '22', border: `1px solid ${accentColor}66`, color: accentColor,
+          }}>
+            {ASSET_LABELS[asset.asset_type]}
+          </span>
+          <div style={{ flex: 1, fontFamily: FONT_CINZEL, fontSize: FS_H4, fontWeight: 700, color: C.gold, letterSpacing: '0.05em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {(adversary?._isCustom || vehicle?._isCustom) && <span style={{ color: C.gold }}>★ </span>}
+            {asset.name}
+          </div>
+          <button onClick={handleClose} style={{ background: 'transparent', border: 'none', color: _VM_DIM, cursor: 'pointer', fontFamily: FONT_CINZEL, fontSize: FS_H4, lineHeight: 1, padding: '0 4px', flexShrink: 0 }}>×</button>
+        </div>
+
+        {/* Body */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 18 }}>
+
+          {/* Loading */}
+          {loading && (
+            <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.textDim, textAlign: 'center', padding: '24px 0' }}>
+              Loading stat block…
+            </div>
+          )}
+
+          {/* ── Adversary stat block ── */}
+          {!loading && adversary && (() => {
+            const adv = adversary
+            const defense = Array.isArray(adv.defense) ? adv.defense : [0, 0]
+            const skillEntries = Object.entries(adv.skillRanks ?? {}).filter(([, r]) => r > 0)
+            return (
+              <>
+                {/* Type badge */}
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <span style={{
+                    fontFamily: FONT_MONO, fontSize: FS_CAPTION, fontWeight: 700,
+                    color: adv.type === 'nemesis' ? C.gold : adv.type === 'rival' ? _VM_BLUE : _VM_DIM,
+                    border: `1px solid currentColor`, borderRadius: 3, padding: '1px 7px', letterSpacing: '0.1em',
+                    background: adv.type === 'nemesis' ? `${C.gold}18` : adv.type === 'rival' ? `${_VM_BLUE}18` : `${_VM_DIM}18`,
+                  }}>
+                    {adv.type.toUpperCase()}
+                  </span>
+                </div>
+
+                {/* Characteristics */}
+                <div>
+                  <_VmSection>Characteristics</_VmSection>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    <_VmStat label="BR"  value={adv.brawn}    />
+                    <_VmStat label="AG"  value={adv.agility}  />
+                    <_VmStat label="INT" value={adv.intellect} />
+                    <_VmStat label="CUN" value={adv.cunning}  />
+                    <_VmStat label="WIL" value={adv.willpower} />
+                    <_VmStat label="PR"  value={adv.presence} />
+                  </div>
+                </div>
+
+                {/* Derived */}
+                <div>
+                  <_VmSection>Derived Stats</_VmSection>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    <_VmStat label="Soak" value={adv.soak} />
+                    <_VmStat label="WT"   value={adv.wound} />
+                    {adv.strain != null && <_VmStat label="ST" value={adv.strain} />}
+                    {defense[0] > 0 && <_VmStat label="Def M" value={defense[0]} />}
+                    {defense[1] > 0 && <_VmStat label="Def R" value={defense[1]} />}
+                  </div>
+                </div>
+
+                {/* Skills */}
+                {skillEntries.length > 0 && (
+                  <div>
+                    <_VmSection>Skills</_VmSection>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 14px' }}>
+                      {skillEntries.map(([skill, rank]) => (
+                        <span key={skill} style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: _VM_TEXT }}>
+                          {skill} <span style={{ color: C.gold, fontWeight: 700 }}>{rank}</span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Weapons */}
+                {adv.weapons && adv.weapons.length > 0 && (
+                  <div>
+                    <_VmSection>Weapons</_VmSection>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {adv.weapons.map((w, i) => {
+                        const { dmg, range, crit } = resolveWeapon(w, adv.brawn, {})
+                        return (
+                          <div key={i} style={{ padding: '6px 10px', background: _VM_RAISED, borderRadius: 4, border: `1px solid ${_VM_BORDER}`, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                            <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, fontWeight: 700, color: _VM_TEXT, minWidth: 100 }}>{w.name}</span>
+                            {w.skillCategory && <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: _VM_DIM }}>{w.skillCategory}</span>}
+                            <span style={{ fontFamily: FONT_MONO, fontSize: FS_CAPTION, color: _VM_RED }}>Dmg {dmg}</span>
+                            {crit !== undefined && <span style={{ fontFamily: FONT_MONO, fontSize: FS_CAPTION, color: _VM_RED }}>Crit {crit}</span>}
+                            {range && <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: _VM_DIM }}>{range}</span>}
+                            {w.qualities && w.qualities.length > 0 && (
+                              <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: _VM_DIM }}>
+                                <RichText text={w.qualities.join(', ')} />
+                              </span>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Talents & Abilities */}
+                {((adv.talents && adv.talents.length > 0) || (adv.abilities && adv.abilities.length > 0)) && (
+                  <div>
+                    <_VmSection>Talents &amp; Abilities</_VmSection>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {adv.talents?.map((t, i) => (
+                        <div key={i}>
+                          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, fontWeight: 700, color: C.gold }}>{t.name}</span>
+                          {t.description && <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: _VM_DIM }}> — <RichText text={t.description} /></span>}
+                        </div>
+                      ))}
+                      {adv.abilities?.map((a, i) => (
+                        <div key={i}>
+                          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, fontWeight: 700, color: _VM_GREEN }}>{a.name}</span>
+                          {a.description && <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: _VM_DIM }}> — <RichText text={a.description} /></span>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Description */}
+                {adv.description && (
+                  <div>
+                    <_VmSection>Description</_VmSection>
+                    <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: _VM_DIM, lineHeight: 1.6 }}>
+                      <RichText text={adv.description} />
+                    </div>
+                  </div>
+                )}
+              </>
+            )
+          })()}
+
+          {/* ── Vehicle stat block ── */}
+          {!loading && vehicle && (() => {
+            const v = vehicle
+            const handlingStr = v.handling >= 0 ? `+${v.handling}` : `${v.handling}`
+            const handlingColor = v.handling < 0 ? _VM_RED : v.handling > 0 ? _VM_GREEN : _VM_TEXT
+            return (
+              <>
+                {/* Type badge */}
+                <div>
+                  <span style={{
+                    fontFamily: FONT_MONO, fontSize: FS_CAPTION, fontWeight: 700,
+                    color: v.isStarship ? _VM_BLUE : C.gold,
+                    border: `1px solid currentColor`, borderRadius: 3, padding: '1px 7px', letterSpacing: '0.1em',
+                    background: v.isStarship ? `${_VM_BLUE}18` : `${C.gold}18`,
+                  }}>
+                    {v.isStarship ? 'STARSHIP' : 'GROUND VEHICLE'}
+                  </span>
+                  {v.type && <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: _VM_DIM, marginLeft: 10 }}>{v.type}</span>}
+                </div>
+
+                {/* Performance */}
+                <div>
+                  <_VmSection>Performance</_VmSection>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    <_VmStat label="Sil"   value={v.silhouette} />
+                    <_VmStat label="Speed" value={v.speed}      />
+                    <_VmStat label="Hdl"   value={handlingStr} color={handlingColor} />
+                  </div>
+                </div>
+
+                {/* Combat */}
+                <div>
+                  <_VmSection>Combat Stats</_VmSection>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    <_VmStat label="Armor" value={v.armor}       />
+                    <_VmStat label="Hull"  value={v.hullTrauma}  />
+                    <_VmStat label="Sys"   value={v.systemStrain} />
+                    {v.defFore      > 0 && <_VmStat label="Def F" value={v.defFore}      />}
+                    {v.defAft       > 0 && <_VmStat label="Def A" value={v.defAft}       />}
+                    {v.defPort      > 0 && <_VmStat label="Def P" value={v.defPort}      />}
+                    {v.defStarboard > 0 && <_VmStat label="Def S" value={v.defStarboard} />}
+                  </div>
+                </div>
+
+                {/* Crew & Cargo */}
+                {(v.crew || v.passengers != null || v.encumbranceCapacity != null || v.consumables) && (
+                  <div>
+                    <_VmSection>Crew &amp; Cargo</_VmSection>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontFamily: FONT_RAJDHANI, fontSize: FS_SM }}>
+                      {v.crew               && <div><span style={{ color: _VM_DIM }}>Crew: </span><span style={{ color: _VM_TEXT }}>{v.crew}</span></div>}
+                      {v.passengers != null  && <div><span style={{ color: _VM_DIM }}>Passengers: </span><span style={{ color: _VM_TEXT }}>{v.passengers}</span></div>}
+                      {v.encumbranceCapacity != null && <div><span style={{ color: _VM_DIM }}>Cargo: </span><span style={{ color: _VM_TEXT }}>{v.encumbranceCapacity} enc.</span></div>}
+                      {v.consumables         && <div><span style={{ color: _VM_DIM }}>Consumables: </span><span style={{ color: _VM_TEXT }}>{v.consumables}</span></div>}
+                    </div>
+                  </div>
+                )}
+
+                {/* Hyperdrive */}
+                {v.isStarship && (v.hyperdrivePrimary != null || v.naviComputer != null) && (
+                  <div>
+                    <_VmSection>Hyperdrive</_VmSection>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontFamily: FONT_RAJDHANI, fontSize: FS_SM }}>
+                      {v.hyperdrivePrimary != null && v.hyperdrivePrimary > 0 && <div><span style={{ color: _VM_DIM }}>Primary: </span><span style={{ color: _VM_TEXT }}>Class {v.hyperdrivePrimary}</span></div>}
+                      {v.hyperdriveBackup  != null && v.hyperdriveBackup  > 0 && <div><span style={{ color: _VM_DIM }}>Backup: </span><span style={{ color: _VM_TEXT }}>Class {v.hyperdriveBackup}</span></div>}
+                      {v.naviComputer != null && <div><span style={{ color: _VM_DIM }}>Navicomputer: </span><span style={{ color: _VM_TEXT }}>{v.naviComputer ? 'Yes' : 'No'}</span></div>}
+                      {v.sensorRange && <div><span style={{ color: _VM_DIM }}>Sensors: </span><span style={{ color: _VM_TEXT }}>{v.sensorRange.replace('sr', '')}</span></div>}
+                    </div>
+                  </div>
+                )}
+
+                {/* Weapons */}
+                {v.weapons && v.weapons.length > 0 && (
+                  <div>
+                    <_VmSection>Weapons</_VmSection>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {v.weapons.map((w, i) => {
+                        const stats = vehicleWeaponStats(w.weaponKey)
+                        const displayName = vehicleWeaponDisplayName(w.weaponKey)
+                        const arcParts = [
+                          w.firingArcs.fore      && 'Fore',
+                          w.firingArcs.aft       && 'Aft',
+                          w.firingArcs.port      && 'Port',
+                          w.firingArcs.starboard && 'Stbd',
+                          w.firingArcs.dorsal    && 'Dorsal',
+                          w.firingArcs.ventral   && 'Ventral',
+                        ].filter(Boolean).join('/')
+                        return (
+                          <div key={i} style={{ padding: '6px 10px', background: _VM_RAISED, borderRadius: 4, border: `1px solid ${_VM_BORDER}` }}>
+                            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                              <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, fontWeight: 700, color: _VM_TEXT, minWidth: 140 }}>
+                                {w.count > 1 ? `${w.count}× ` : ''}{displayName}{w.turret ? ' (Turret)' : ''}
+                              </span>
+                              {stats && stats.damage > 0 && <span style={{ fontFamily: FONT_MONO, fontSize: FS_CAPTION, color: _VM_RED }}>Dmg {stats.damage}</span>}
+                              {stats?.crit !== undefined && <span style={{ fontFamily: FONT_MONO, fontSize: FS_CAPTION, color: _VM_RED }}>Crit {stats.crit}</span>}
+                              {stats && <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: _VM_DIM }}>{stats.range}</span>}
+                              {arcParts && <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: _VM_DIM }}>[{arcParts}]</span>}
+                            </div>
+                            {w.qualities.length > 0 && (
+                              <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: _VM_DIM, marginTop: 3 }}>
+                                {w.qualities.map(q => `${q.key}${q.count > 1 ? ` ${q.count}` : ''}`).join(', ')}
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Special Features */}
+                {v.abilities && v.abilities.length > 0 && (
+                  <div>
+                    <_VmSection>Special Features</_VmSection>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {v.abilities.map((a, i) => (
+                        <div key={i}>
+                          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, fontWeight: 700, color: _VM_GREEN }}>{a.name}</span>
+                          {a.description && <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: _VM_DIM }}> — {a.description}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Description */}
+                {v.description && (
+                  <div>
+                    <_VmSection>Description</_VmSection>
+                    <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: _VM_DIM, lineHeight: 1.6 }}>
+                      <RichText text={v.description} />
+                    </div>
+                  </div>
+                )}
+              </>
+            )
+          })()}
+
+          {/* ── Library type but not found ── */}
+          {!loading && useLibrary && !adversary && !vehicle && (
+            <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.textDim, textAlign: 'center', padding: '16px 0' }}>
+              No stat block found in library for &ldquo;{asset.name}&rdquo;.
+              {asset.description && (
+                <div style={{ marginTop: 12, textAlign: 'left', color: _VM_TEXT, lineHeight: 1.6 }}>
+                  {asset.description}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── Non-library types: just show description ── */}
+          {!useLibrary && (
+            asset.description ? (
+              <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: _VM_TEXT, lineHeight: 1.7 }}>
+                {asset.description}
+              </div>
+            ) : (
+              <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.textDim, textAlign: 'center', padding: '16px 0' }}>
+                No description added.
+              </div>
+            )
+          )}
+        </div>
+      </div>
+    </>,
+    document.body
+  )
+}
+
+function AssetCard({ asset, canArchive, onArchive, onView }: {
+  asset: GroupAsset; canArchive: boolean; onArchive: () => void; onView: () => void
 }) {
   const color = ASSET_COLORS[asset.asset_type]
   return (
@@ -1170,25 +1799,32 @@ function AssetCard({ asset, canArchive, onArchive }: {
             {asset.description}
           </div>
         )}
-        {asset.added_by && (
-          <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: C.textDim, marginTop: 2, opacity: 0.7, textAlign: 'right' }}>
-            Added by {asset.added_by}
-          </div>
-        )}
       </div>
-      {canArchive && (
+      <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
         <button
-          onClick={onArchive}
-          title="Remove asset"
+          onClick={onView}
+          title="View stat block"
           style={{
-            background: 'none', border: `1px solid ${C.border}`, borderRadius: 4,
-            cursor: 'pointer', color: C.textDim, fontSize: FS_CAPTION, padding: '2px 6px',
-            flexShrink: 0,
+            background: `${color}10`, border: `1px solid ${color}50`, borderRadius: 4,
+            cursor: 'pointer', color, fontSize: FS_CAPTION,
+            fontFamily: FONT_RAJDHANI, fontWeight: 600, padding: '2px 8px',
           }}
         >
-          ✕
+          View
         </button>
-      )}
+        {canArchive && (
+          <button
+            onClick={onArchive}
+            title="Remove asset"
+            style={{
+              background: 'none', border: `1px solid ${C.border}`, borderRadius: 4,
+              cursor: 'pointer', color: C.textDim, fontSize: FS_CAPTION, padding: '2px 6px',
+            }}
+          >
+            ✕
+          </button>
+        )}
+      </div>
     </div>
   )
 }

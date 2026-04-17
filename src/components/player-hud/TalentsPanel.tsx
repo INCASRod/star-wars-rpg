@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { C, FONT_CINZEL, FONT_RAJDHANI, panelBase } from './design-tokens'
 import { Tooltip, TipLabel, TipBody } from '@/components/ui/Tooltip'
-import { DiceText } from '@/components/dice/DiceText'
+import { RichText } from '@/components/ui/RichText'
 import { PanelSearchInput } from '@/components/character/PanelSearchInput'
 
 export interface HudTalent {
@@ -32,13 +32,17 @@ const ACTIVATION_COLORS: Record<string, string> = {
 
 const ACTIVATION_ORDER = ['Passive', 'Incidental', 'Incidental (OOT)', 'Maneuver', 'Action']
 
-// Parse description for dice effect hints
-// Detects OggDude bracket tags ([BO], [SE]) first; falls back to plain-text regex
+// Parse description for dice effect hints.
+// Detects all supported tag formats:
+//   [boost] / [BO]  — new canonical shortcode and OggDude legacy
+//   [setback] / [SE]
+//   :boost: / :setback: — colon-code format used in adversary abilities
+// Falls back to plain-text regex when no tags are present.
 interface DiceHints { boosts: number; removeSetbacks: number; upgrades: number; addSetbacks: number }
 function parseDiceHints(desc = ''): DiceHints {
-  const boostTags    = (desc.match(/\[BO\]/g) ?? []).length
-  const setbackTags  = (desc.match(/\[SE\]/g) ?? []).length
   const d = desc.toLowerCase()
+  const boostTags    = (d.match(/\[boost\]|\[bo\]|:boost:/g) ?? []).length
+  const setbackTags  = (d.match(/\[setback\]|\[se\]|:setback:/g) ?? []).length
   const boostsText   = (d.match(/add\w* (?:a |one |two |an? )?boost|boost die|boost dice/g) ?? []).length
   const setbackText  = (d.match(/(?:add|impose)\w* (?:a |one |two |an? )?setback/g) ?? []).length
   const remSetbText  = (d.match(/remov\w* (?:a |one |two |an? )?setback|cancel\w* (?:a |one |two )?setback/g) ?? []).length
@@ -91,7 +95,7 @@ function TalentCard({ talent }: { talent: HudTalent }) {
   const tooltipContent = talent.description ? (
     <>
       <TipLabel>{talent.name}</TipLabel>
-      <TipBody><DiceText text={talent.description} /></TipBody>
+      <TipBody><RichText text={talent.description} /></TipBody>
     </>
   ) : null
 
@@ -147,7 +151,7 @@ function TalentCard({ talent }: { talent: HudTalent }) {
           lineHeight: 1.5, marginTop: 4,
           maxHeight: '6em', overflow: 'hidden',
         }}>
-          <DiceText text={talent.description} />
+          <RichText text={talent.description} />
         </div>
       )}
       <DiceHintChips hints={hints} />

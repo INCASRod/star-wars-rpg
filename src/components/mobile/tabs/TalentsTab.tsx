@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import { ACTIVATION_LABELS } from '@/lib/types'
 import type { CharacterTalent, RefTalent } from '@/lib/types'
-import { DiceText } from '@/components/dice/DiceText'
+import { RichText } from '@/components/ui/RichText'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 const GOLD     = '#C8AA50'
@@ -182,7 +182,7 @@ export function TalentsTab({ charTalents, refTalentMap }: TalentsTabProps) {
                   margin: 0,
                   lineHeight: 1.5,
                 }}>
-                  <DiceText text={ref.description} />
+                  <RichText text={ref.description} />
                 </p>
               )}
             </button>
