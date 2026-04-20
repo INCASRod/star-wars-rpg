@@ -24,10 +24,9 @@ import { toast } from 'sonner'
 import { rarityColor, rarityLabel } from '@/lib/styles'
 import { useRollFeed } from '@/hooks/useRollFeed'
 import { RollFeedPanel } from '@/components/player-hud/RollFeedPanel'
-import { rollPool } from '@/components/player-hud/dice-engine'
-import { logRoll } from '@/lib/logRoll'
 import { HolocronLoader } from '@/components/ui/HolocronLoader'
 import { GmReferenceDrawer } from '@/components/gm/GmReferenceDrawer'
+import { GmDiceRollerFAB } from '@/components/gm/GmDiceRollerFAB'
 import { archiveCharacter, restoreCharacter } from '@/lib/characters'
 
 /* ═══════════════════════════════════════
@@ -438,16 +437,6 @@ function GmDashboard() {
   // ── Dark Side Fall / Redemption ──
   const [fallenConfirm, setFallenConfirm] = useState<{ id: string; name: string; isFallen: boolean; morality?: number } | null>(null)
   const [fallenBusy, setFallenBusy] = useState(false)
-
-  // ── GM Roll panel ──
-  const [gmRollLabel, setGmRollLabel] = useState('')
-  const [gmRollHidden, setGmRollHidden] = useState(false)
-  const [gmProficiency, setGmProficiency] = useState(0)
-  const [gmAbility, setGmAbility] = useState(0)
-  const [gmBoost, setGmBoost] = useState(0)
-  const [gmChallenge, setGmChallenge] = useState(0)
-  const [gmDifficulty, setGmDifficulty] = useState(0)
-  const [gmSetback, setGmSetback] = useState(0)
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const supabase = useMemo(() => createClient(), [])
@@ -1343,31 +1332,6 @@ function GmDashboard() {
       flashError('Restore failed: ' + (err instanceof Error ? err.message : String(err)))
     }
   }, [flash, flashError])
-
-  // ── GM Roll ──
-  const handleGmRoll = () => {
-    if (!campaignId) return
-    const pool = {
-      proficiency: gmProficiency,
-      ability: gmAbility,
-      boost: gmBoost,
-      challenge: gmChallenge,
-      difficulty: gmDifficulty,
-      setback: gmSetback,
-      force: 0,
-    }
-    const result = rollPool(pool)
-    logRoll({
-      campaignId,
-      characterId: null,
-      characterName: 'GM',
-      label: gmRollLabel || undefined,
-      pool,
-      result,
-      isDM: true,
-      hidden: gmRollHidden,
-    })
-  }
 
   // ── Helpers ──
   const charById = (id: string) => characters.find(c => c.id === id)
@@ -2597,67 +2561,6 @@ function GmDashboard() {
             <RollFeedPanel rolls={rolls} ownCharacterId="gm" isGm={true} />
           </div>
 
-          {/* GM Roll panel */}
-          <div style={{ flexShrink: 0, padding: 12, borderTop: `1px solid ${BORDER}` }}>
-            <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: GOLD_DIM, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 8 }}>GM Roll</div>
-
-            {/* Label */}
-            <input
-              type="text"
-              placeholder="Roll label..."
-              value={gmRollLabel}
-              onChange={e => setGmRollLabel(e.target.value)}
-              style={{ ...darkInput, width: '100%', marginBottom: 8 }}
-            />
-
-            {/* Hidden toggle */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-              <button
-                onClick={() => setGmRollHidden(h => !h)}
-                style={{
-                  ...btnSmall,
-                  padding: '3px 10px',
-                  background: gmRollHidden ? 'rgba(144,96,208,0.2)' : 'rgba(200,170,80,0.06)',
-                  border: gmRollHidden ? '1px solid rgba(144,96,208,0.4)' : `1px solid rgba(200,170,80,0.2)`,
-                  color: gmRollHidden ? PURPLE : DIM,
-                }}
-              >
-                {gmRollHidden ? '🔒 Hidden' : '👁 Visible'}
-              </button>
-            </div>
-
-            {/* Dice counters */}
-            {([
-              ['proficiency', '⬡ PRO', '#D4B840', gmProficiency, setGmProficiency],
-              ['ability', '⬢ ABL', GREEN, gmAbility, setGmAbility],
-              ['boost', '⬚ BST', CYAN, gmBoost, setGmBoost],
-              ['challenge', '◆ CHL', RED, gmChallenge, setGmChallenge],
-              ['difficulty', '● DIF', PURPLE, gmDifficulty, setGmDifficulty],
-              ['setback', '■ SET', '#707070', gmSetback, setGmSetback],
-            ] as const).map(([, label, color, val, setter]) => (
-              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: color as string, letterSpacing: '0.06em', minWidth: 42 }}>{label}</span>
-                <button onClick={() => (setter as React.Dispatch<React.SetStateAction<number>>)(v => Math.max(0, v - 1))} style={{ ...btnSmall, padding: '2px 7px', fontSize: FS_CAPTION }}>−</button>
-                <span style={{ fontFamily: FC, fontSize: FS_SM, color: val > 0 ? color as string : FAINT, minWidth: 16, textAlign: 'center' }}>{val}</span>
-                <button onClick={() => (setter as React.Dispatch<React.SetStateAction<number>>)(v => v + 1)} style={{ ...btnSmall, padding: '2px 7px', fontSize: FS_CAPTION }}>+</button>
-              </div>
-            ))}
-
-            {/* Roll button */}
-            <button
-              onClick={handleGmRoll}
-              disabled={!campaignId || (gmProficiency + gmAbility + gmBoost + gmChallenge + gmDifficulty + gmSetback === 0)}
-              style={{
-                ...btnPrimary,
-                width: '100%',
-                marginTop: 10,
-                padding: '8px 0',
-                opacity: (gmProficiency + gmAbility + gmBoost + gmChallenge + gmDifficulty + gmSetback === 0) ? 0.4 : 1,
-              }}
-            >
-              ROLL
-            </button>
-          </div>
         </div>
         </>)} {/* end activeTab !== 'staging' */}
       </div>
@@ -3194,29 +3097,35 @@ function GmDashboard() {
         />
       )}
 
-      {/* ── GM REFERENCE SCREEN ── */}
-      <button
-        onClick={() => setGmScreenOpen(o => !o)}
-        title="GM Reference Screen"
-        style={{
-          position: 'fixed', bottom: 24, right: 24, zIndex: 8998,
-          background: gmScreenOpen ? 'rgba(200,170,80,0.2)' : 'rgba(6,13,9,0.92)',
-          border: `2px solid ${gmScreenOpen ? GOLD : GOLD_DIM}`,
-          borderRadius: 8, padding: '10px 16px',
-          cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
-          fontFamily: "var(--font-share-tech-mono), 'Share Tech Mono', monospace",
-          fontSize: 'var(--text-caption)',
-          letterSpacing: '0.14em', textTransform: 'uppercase' as const,
-          color: gmScreenOpen ? GOLD : DIM,
-          boxShadow: gmScreenOpen ? '0 0 16px rgba(200,170,80,0.2)' : '0 2px 12px rgba(0,0,0,0.5)',
-          transition: 'all 0.2s',
-        }}
-        onMouseEnter={e => { if (!gmScreenOpen) { (e.currentTarget as HTMLElement).style.color = GOLD; (e.currentTarget as HTMLElement).style.borderColor = GOLD } }}
-        onMouseLeave={e => { if (!gmScreenOpen) { (e.currentTarget as HTMLElement).style.color = DIM; (e.currentTarget as HTMLElement).style.borderColor = GOLD_DIM } }}
-      >
-        <span style={{ fontSize: 16, lineHeight: 1 }}>⬛</span>
-        GM Screen
-      </button>
+      {/* ── BOTTOM-RIGHT BUTTON BAR ── */}
+      <div style={{
+        position: 'fixed', bottom: 24, right: 24, zIndex: 8998,
+        display: 'flex', alignItems: 'center', gap: 8,
+      }}>
+        <GmDiceRollerFAB isGmScreenOpen={gmScreenOpen} campaignId={campaignId ?? null} />
+        <button
+          onClick={() => setGmScreenOpen(o => !o)}
+          title="GM Reference Screen"
+          style={{
+            background: gmScreenOpen ? 'rgba(200,170,80,0.2)' : 'rgba(6,13,9,0.92)',
+            border: `2px solid ${gmScreenOpen ? GOLD : GOLD_DIM}`,
+            borderRadius: 8, padding: '10px 16px',
+            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
+            fontFamily: "var(--font-share-tech-mono), 'Share Tech Mono', monospace",
+            fontSize: 'var(--text-caption)',
+            letterSpacing: '0.14em', textTransform: 'uppercase' as const,
+            color: gmScreenOpen ? GOLD : DIM,
+            boxShadow: gmScreenOpen ? '0 0 16px rgba(200,170,80,0.2)' : '0 2px 12px rgba(0,0,0,0.5)',
+            transition: 'all 0.2s',
+            whiteSpace: 'nowrap',
+          }}
+          onMouseEnter={e => { if (!gmScreenOpen) { (e.currentTarget as HTMLElement).style.color = GOLD; (e.currentTarget as HTMLElement).style.borderColor = GOLD } }}
+          onMouseLeave={e => { if (!gmScreenOpen) { (e.currentTarget as HTMLElement).style.color = DIM; (e.currentTarget as HTMLElement).style.borderColor = GOLD_DIM } }}
+        >
+          <span style={{ fontSize: 16, lineHeight: 1 }}>⬛</span>
+          GM Screen
+        </button>
+      </div>
       <GmReferenceDrawer open={gmScreenOpen} onClose={() => setGmScreenOpen(false)} />
 
     </div>

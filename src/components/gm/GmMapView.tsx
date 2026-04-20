@@ -246,6 +246,7 @@ export interface GmMapViewProps {
 export function GmMapView({ campaignId, characters, allMaps, activeMap, onDeleteMap, isStagingTab, stagingLibraryOpen, onStagingLibraryClose }: GmMapViewProps) {
   const supabase = useMemo(() => createClient(), [])
 
+  const [mounted,          setMounted]          = useState(false)
   const [uploadOpen,       setUploadOpen]       = useState(false)
   const [libraryOpen,      setLibraryOpen]      = useState(false)
   const [tokenDrawerOpen,  setTokenDrawerOpen]  = useState(false)
@@ -265,6 +266,8 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
   }, [activeMap, supabase])
 
   const { tokens, moveToken, toggleVisibility, removeToken, addToken } = useMapTokens(activeMap?.id ?? null)
+
+  useEffect(() => { setMounted(true) }, [])
 
   // Load active combat encounter (adversaries live here, not in combat_participants)
   useEffect(() => {
@@ -586,87 +589,123 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
           )}
         </div>}
 
-        {/* ── Map library drawer (left side, absolute) ── */}
-        {(isStagingTab ? (stagingLibraryOpen ?? false) : libraryOpen) && (
-          <div
-            onClick={e => e.stopPropagation()}
-            style={{
-              position: 'absolute', top: 0, left: 0, bottom: 0, width: 300, zIndex: 40,
-              background: PANEL_BG, borderRight: `1px solid ${BORDER_HI}`,
-              display: 'flex', flexDirection: 'column',
-              backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-            }}
-          >
-            {/* Drawer header */}
-            <div style={{ padding: '52px 14px 10px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(200,170,80,0.45)' }}>
-                Map Library
-              </div>
-              <button
-                onClick={() => isStagingTab ? onStagingLibraryClose?.() : setLibraryOpen(false)}
-                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: DIM, fontSize: '1.1rem', lineHeight: 1 }}
-              >
-                ×
-              </button>
-            </div>
-
-            {/* Map list */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {allMaps.length === 0 && (
-                <div style={{ fontFamily: FR, fontSize: FS_SM, color: DIM, textAlign: 'center', padding: '24px 0' }}>
-                  No maps uploaded yet.
-                </div>
-              )}
-              {allMaps.map(map => (
+        {/* ── Map library drawer — rendered via portal so it escapes overflow:hidden ── */}
+        {mounted && (() => {
+          const isOpen = isStagingTab ? (stagingLibraryOpen ?? false) : libraryOpen
+          const closeDrawer = () => isStagingTab ? onStagingLibraryClose?.() : setLibraryOpen(false)
+          return createPortal(
+            <>
+              {/* Backdrop */}
+              {isOpen && (
                 <div
-                  key={map.id}
+                  onClick={closeDrawer}
                   style={{
-                    display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px',
-                    background: map.is_active ? 'rgba(200,170,80,0.07)' : 'rgba(255,255,255,0.02)',
-                    border: `1px solid ${map.is_active ? BORDER_HI : BORDER}`,
-                    borderRadius: 6,
+                    position: 'fixed', inset: 0,
+                    background: 'rgba(0,0,0,0.35)',
+                    zIndex: 8999,
                   }}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={map.image_url}
-                    alt={map.name}
-                    style={{ width: 36, height: 26, objectFit: 'cover', borderRadius: 3, border: `1px solid ${BORDER}`, flexShrink: 0 }}
-                  />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700, color: map.is_active ? GOLD : TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {map.name}
-                      {map.is_active && <span style={{ marginLeft: 6, fontSize: FS_OVERLINE, color: GOLD }}>★ ACTIVE</span>}
-                    </div>
-                    <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM }}>
-                      {map.grid_enabled ? `Grid ${map.grid_size}px` : 'No grid'}
-                      {map.is_visible_to_players && <span style={{ marginLeft: 6, color: GREEN }}>● Visible</span>}
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                    {!map.is_active && (
-                      <button
-                        onClick={() => setActive(map.id)}
-                        disabled={busy}
-                        style={{ background: 'rgba(200,170,80,0.08)', border: `1px solid ${BORDER}`, color: DIM, fontFamily: FR, fontSize: FS_CAPTION, padding: '3px 8px', borderRadius: 3, cursor: 'pointer' }}
-                      >
-                        Set Active
-                      </button>
-                    )}
-                    <button onClick={() => deleteMap(map.id)} style={btnDanger} title="Delete map">×</button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                />
+              )}
 
-            {/* Footer */}
-            {activeMap && (
-              <div style={{ padding: '8px 14px', borderTop: `1px solid ${BORDER}`, fontFamily: FR, fontSize: FS_OVERLINE, color: DIM }}>
-                {tokens.length} token{tokens.length !== 1 ? 's' : ''} on map · Scroll to zoom · Drag to pan
+              {/* Drawer */}
+              <div
+                style={{
+                  position:      'fixed',
+                  top:           0,
+                  left:          0,
+                  bottom:        0,
+                  width:         'clamp(300px, 28vw, 420px)',
+                  zIndex:        9000,
+                  display:       'flex',
+                  flexDirection: 'column',
+                  background:    PANEL_BG,
+                  borderRight:   `1px solid ${isOpen ? BORDER_HI : 'transparent'}`,
+                  boxShadow:     isOpen ? '8px 0 40px rgba(0,0,0,0.6)' : 'none',
+                  transform:     isOpen ? 'translateX(0)' : 'translateX(-100%)',
+                  transition:    'transform 0.26s cubic-bezier(0.22,1,0.36,1), border-color 0.2s, box-shadow 0.2s',
+                  pointerEvents: isOpen ? 'auto' : 'none',
+                  backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+                }}
+                onClick={e => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div style={{
+                  flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '0 16px', height: 50,
+                  borderBottom: `1px solid ${BORDER}`,
+                  background: 'rgba(10,18,12,0.92)',
+                }}>
+                  <span style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: GOLD }}>
+                    Map Library
+                  </span>
+                  <button
+                    onClick={closeDrawer}
+                    style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: DIM, fontSize: '1.1rem', lineHeight: 1, padding: '4px 6px' }}
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* Map list */}
+                <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {allMaps.length === 0 && (
+                    <div style={{ fontFamily: FR, fontSize: FS_SM, color: DIM, textAlign: 'center', padding: '24px 0' }}>
+                      No maps uploaded yet.
+                    </div>
+                  )}
+                  {allMaps.map(map => (
+                    <div
+                      key={map.id}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px',
+                        background: map.is_active ? 'rgba(200,170,80,0.07)' : 'rgba(255,255,255,0.02)',
+                        border: `1px solid ${map.is_active ? BORDER_HI : BORDER}`,
+                        borderRadius: 6,
+                      }}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={map.image_url}
+                        alt={map.name}
+                        style={{ width: 36, height: 26, objectFit: 'cover', borderRadius: 3, border: `1px solid ${BORDER}`, flexShrink: 0 }}
+                      />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700, color: map.is_active ? GOLD : TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {map.name}
+                          {map.is_active && <span style={{ marginLeft: 6, fontSize: FS_OVERLINE, color: GOLD }}>★ ACTIVE</span>}
+                        </div>
+                        <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM }}>
+                          {map.grid_enabled ? `Grid ${map.grid_size}px` : 'No grid'}
+                          {map.is_visible_to_players && <span style={{ marginLeft: 6, color: GREEN }}>● Visible</span>}
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                        {!map.is_active && (
+                          <button
+                            onClick={() => setActive(map.id)}
+                            disabled={busy}
+                            style={{ background: 'rgba(200,170,80,0.08)', border: `1px solid ${BORDER}`, color: DIM, fontFamily: FR, fontSize: FS_CAPTION, padding: '3px 8px', borderRadius: 3, cursor: 'pointer' }}
+                          >
+                            Set Active
+                          </button>
+                        )}
+                        <button onClick={() => deleteMap(map.id)} style={btnDanger} title="Delete map">×</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Footer */}
+                {activeMap && (
+                  <div style={{ padding: '8px 14px', borderTop: `1px solid ${BORDER}`, fontFamily: FR, fontSize: FS_OVERLINE, color: DIM }}>
+                    {tokens.length} token{tokens.length !== 1 ? 's' : ''} on map · Scroll to zoom · Drag to pan
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        )}
+            </>,
+            document.body,
+          )
+        })()}
 
         {/* ── Token context menu (right-click on canvas token) ── */}
         {contextMenu && (

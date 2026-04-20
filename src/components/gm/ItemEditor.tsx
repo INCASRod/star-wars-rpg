@@ -11,6 +11,7 @@ import type {
   WeaponQuality,
 } from '@/lib/types'
 import { QualityBadge } from '@/components/character/QualityBadge'
+import { RichText } from '@/components/ui/RichText'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 const PANEL_BG  = 'rgba(6,13,9,0.97)'
@@ -194,6 +195,7 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
   const [rarity,      setRarity]      = useState(String(item?.rarity ?? 0))
   const [encumbrance, setEncumbrance] = useState(String(item?.encumbrance ?? 1))
   const [description, setDescription] = useState(item?.description ?? '')
+  const [descPreview, setDescPreview] = useState(false)
   const [customNotes, setCustomNotes] = useState(item?.custom_notes ?? '')
   // weapon
   const [skillKey,    setSkillKey]    = useState(item?.skill_key ?? 'MELEE')
@@ -1107,7 +1109,9 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
                                 </span>
                               </div>
                               {summary && (
-                                <div style={{ fontFamily: FONT_C, fontStyle: 'italic', fontSize: FS_OVER, color: DIM, marginTop: 2 }}>{summary}</div>
+                                <div style={{ fontFamily: FONT_C, fontStyle: 'italic', fontSize: FS_OVER, color: DIM, marginTop: 2 }}>
+                                  <RichText text={summary} />
+                                </div>
                               )}
                               {!canFit && type === 'weapon' && (
                                 <div style={{ fontFamily: FONT_C, fontSize: FS_OVER, color: 'rgba(224,120,85,0.7)', marginTop: 2 }}>
@@ -1165,9 +1169,40 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
           )}
 
           {/* Description */}
-          <Field label="Description">
-            <textarea value={description} onChange={e => setDescription(e.target.value)} rows={4} style={{ ...inputStyle, width: '100%', resize: 'vertical', fontFamily: FONT_C, fontSize: FS_LABEL }} placeholder="Flavor text / item description" />
-          </Field>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+              <span style={fieldLabel}>Description</span>
+              <button
+                onClick={() => setDescPreview(p => !p)}
+                style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: descPreview ? GOLD : DIM, background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px 6px', letterSpacing: '0.05em' }}
+              >
+                {descPreview ? 'Edit' : 'Preview'}
+              </button>
+            </div>
+            {descPreview ? (
+              <div style={{
+                background: 'rgba(255,255,255,0.03)', border: `1px solid ${BORDER}`,
+                borderRadius: 4, padding: '10px 12px',
+                fontFamily: FONT_C, fontSize: FS_LABEL, color: TEXT, lineHeight: 1.5, minHeight: 80,
+              }}>
+                {description.trim()
+                  ? <RichText text={description} />
+                  : <span style={{ color: DIM, fontStyle: 'italic' }}>No description.</span>
+                }
+              </div>
+            ) : (
+              <textarea
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+                rows={4}
+                style={{ ...inputStyle, width: '100%', resize: 'vertical', fontFamily: FONT_C, fontSize: FS_LABEL }}
+                placeholder="Flavor text / item description"
+              />
+            )}
+            <div style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: DIM, marginTop: 4 }}>
+              Supports RichText markup: [advantage], [success], [triumph], [boost:N], etc.
+            </div>
+          </div>
 
           {/* GM Notes */}
           <Field label="GM Notes (private)">
