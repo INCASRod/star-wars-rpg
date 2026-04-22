@@ -23,7 +23,8 @@ const FC = "'Rajdhani', sans-serif"
 const FM = "'Rajdhani', sans-serif"
 
 interface AddParticipantModalProps {
-  library: Adversary[]
+  library?: Adversary[]
+  searchLibrary?: (term: string) => Promise<Adversary[]>
   encounter: CombatEncounter | null
   groupSizes: Record<string, number>
   onAdd: (adv: Adversary, alignment: 'enemy' | 'allied_npc', successes: number, advantages: number, groupSize?: number) => void
@@ -31,7 +32,7 @@ interface AddParticipantModalProps {
   onClose: () => void
 }
 
-export function AddParticipantModal({ library, encounter, groupSizes, onAdd, onAddVehicle, onClose }: AddParticipantModalProps) {
+export function AddParticipantModal({ library = [], searchLibrary, encounter, groupSizes, onAdd, onAddVehicle, onClose }: AddParticipantModalProps) {
   const [participantTab, setParticipantTab] = useState<'adversaries' | 'vehicles'>('adversaries')
   const [alignment, setAlignment]   = useState<'enemy' | 'allied_npc'>('enemy')
   const [search, setSearch]         = useState('')
@@ -41,6 +42,8 @@ export function AddParticipantModal({ library, encounter, groupSizes, onAdd, onA
   const [localGroupSizes, setLocalGroupSizes] = useState<Record<string, number>>({})
   const [vehicleLibrary, setVehicleLibrary]   = useState<Vehicle[]>([])
   const [vehiclesLoading, setVehiclesLoading] = useState(false)
+  const [searchResults, setSearchResults]     = useState<Adversary[]>([])
+  const [searching, setSearching]             = useState(false)
 
   const isMidCombat = !!encounter
   const accentColor = alignment === 'enemy' ? ENEMY_RED : ALLIED_GREEN
@@ -55,11 +58,24 @@ export function AddParticipantModal({ library, encounter, groupSizes, onAdd, onA
     })
   }, [participantTab, vehicleLibrary.length, vehiclesLoading])
 
-  const filteredAdversaries = useMemo(() => library.filter(a => {
+  // On-demand search via searchLibrary callback
+  useEffect(() => {
+    if (!searchLibrary || participantTab !== 'adversaries') return
+    if (search.length < 2) { setSearchResults([]); return }
+    setSearching(true)
+    searchLibrary(search).then(results => {
+      setSearchResults(results)
+      setSearching(false)
+    })
+  }, [search, searchLibrary, participantTab]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const activeAdversaries = searchLibrary ? searchResults : library
+
+  const filteredAdversaries = useMemo(() => activeAdversaries.filter(a => {
     const matchType = typeFilter === 'all' || a.type === typeFilter
-    const matchSearch = a.name.toLowerCase().includes(search.toLowerCase())
+    const matchSearch = searchLibrary ? true : a.name.toLowerCase().includes(search.toLowerCase())
     return matchType && matchSearch
-  }), [library, typeFilter, search])
+  }), [activeAdversaries, typeFilter, search, searchLibrary])
 
   const filteredVehicles = useMemo(() => vehicleLibrary.filter(v => {
     const matchSil = silFilter === 'all'
@@ -240,7 +256,17 @@ export function AddParticipantModal({ library, encounter, groupSizes, onAdd, onA
           {/* ── Adversaries tab ── */}
           {participantTab === 'adversaries' && (
             <>
-              {filteredAdversaries.length === 0 && (
+              {searchLibrary && search.length < 2 && (
+                <div style={{ fontFamily: FM, fontSize: FS_LABEL, color: TEXT_MUTED, textAlign: 'center', padding: '24px 0' }}>
+                  Type at least 2 characters to search
+                </div>
+              )}
+              {searching && (
+                <div style={{ fontFamily: FM, fontSize: FS_LABEL, color: TEXT_MUTED, textAlign: 'center', padding: '24px 0' }}>
+                  Searching…
+                </div>
+              )}
+              {!searching && (searchLibrary ? search.length >= 2 : true) && filteredAdversaries.length === 0 && (
                 <div style={{ fontFamily: FM, fontSize: FS_LABEL, color: TEXT_MUTED, textAlign: 'center', padding: '24px 0' }}>
                   No adversaries found
                 </div>

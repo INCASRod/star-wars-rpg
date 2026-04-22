@@ -19,6 +19,8 @@ import { TalentDatabaseTab } from '@/components/gm/TalentDatabaseTab'
 import { StagingTopBar } from '@/components/staging/StagingTopBar'
 import { StagingFloatingToolbar } from '@/components/staging/StagingFloatingToolbar'
 import { useActiveMap } from '@/hooks/useActiveMap'
+import { useMapTokens } from '@/hooks/useMapTokens'
+import type { MapToken } from '@/hooks/useMapTokens'
 import { DestinyPoolDisplay, type DestinyPoolRecord } from '@/components/destiny/DestinyPoolDisplay'
 import { toast } from 'sonner'
 import { rarityColor, rarityLabel } from '@/lib/styles'
@@ -28,6 +30,13 @@ import { HolocronLoader } from '@/components/ui/HolocronLoader'
 import { GmReferenceDrawer } from '@/components/gm/GmReferenceDrawer'
 import { GmDiceRollerFAB } from '@/components/gm/GmDiceRollerFAB'
 import { archiveCharacter, restoreCharacter } from '@/lib/characters'
+import { adversaryToInstance, fetchAdversaries } from '@/lib/adversaries'
+import type { Adversary, AdversaryInstance } from '@/lib/adversaries'
+import { vehicleToVehicleInstance, fetchVehicles, dbRowToVehicle } from '@/lib/vehicles'
+import type { Vehicle } from '@/lib/vehicles'
+import type { CombatEncounter, InitiativeSlot } from '@/lib/combat'
+import { InitiativeSetupModal } from '@/components/dm/InitiativeSetupModal'
+import { AddParticipantModal } from '@/components/combat/AddParticipantModal'
 
 /* ═══════════════════════════════════════
    DESIGN TOKENS (Dark HUD)
@@ -330,6 +339,8 @@ function GmDashboard() {
   const GM_TAB_VALID: GmTab[] = ['xp', 'credits', 'duty', 'do', 'loot', 'items', 'talents', 'combat', 'adversaries', 'vehicles', 'force']
   const [activeTab, setActiveTab] = useState<GmTab>(() => {
     if (typeof window === 'undefined') return 'xp'
+    // Allow ?tab=staging in the URL to land directly on the staging view
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tab') === 'staging') return 'staging'
     const saved = window.localStorage.getItem(GM_TAB_KEY)
     return GM_TAB_VALID.includes(saved as GmTab) ? (saved as GmTab) : 'xp'
   })
@@ -443,6 +454,18 @@ function GmDashboard() {
 
   // ── Map state ──
   const { activeMap, allMaps, removeMap } = useActiveMap(campaignId)
+
+  // ── Shared token state for staging tab (single source of truth for GmMapView + StagingFloatingToolbar) ──
+  const { tokens: stagingTokens, moveToken: stagingMoveToken, toggleVisibility: stagingToggleVisibility, removeToken: stagingRemoveToken, removeAllTokens: stagingRemoveAllTokens, addToken: stagingAddToken } = useMapTokens(activeTab === 'staging' ? (activeMap?.id ?? null) : null)
+
+  // ── Staging combat modals ──
+  const [showStagingInitModal,  setShowStagingInitModal]  = useState(false)
+  const [stagingInitRoster,     setStagingInitRoster]     = useState<AdversaryInstance[]>([])
+  const [showStagingAddModal,   setShowStagingAddModal]   = useState(false)
+  const [stagingLibrary,        setStagingLibrary]        = useState<(Adversary & { _isCustom?: boolean })[]>([])
+  const [stagingLibraryLoaded,  setStagingLibraryLoaded]  = useState(false)
+  const [stagingGroupSizes,     setStagingGroupSizes]     = useState<Record<string, number>>({})
+  const [stagingEncounter,      setStagingEncounter]      = useState<CombatEncounter | null>(null)
 
   // ── Derived character lists ──
   const activeChars   = useMemo(() => characters.filter(c => !c.is_archived), [characters])
@@ -1095,6 +1118,334 @@ function GmDashboard() {
     }
   }, [characters])
 
+  // ── Staging encounter subscription (page-level, feeds AddParticipantModal) ──
+  useEffect(() => {
+    if (!campaignId) return
+    supabase
+      .from('combat_encounters')
+      .select('*')
+      .eq('campaign_id', campaignId)
+      .eq('is_active', true)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .then(({ data }) => setStagingEncounter(data?.[0] as CombatEncounter ?? null))
+
+    const ch = supabase
+      .channel(`staging-encounter-page-${campaignId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'combat_encounters', filter: `campaign_id=eq.${campaignId}` },
+        payload => { if (payload.new) setStagingEncounter(payload.new as CombatEncounter) })
+      .subscribe()
+    return () => { supabase.removeChannel(ch) }
+  }, [campaignId]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Load adversary library for AddParticipantModal (lazy, once per session)
+  const loadStagingLibrary = useCallback(async () => {
+    if (stagingLibraryLoaded || !campaignId) return
+    const [{ data: ref }, { data: custom }] = await Promise.all([
+      supabase.from('ref_adversaries').select('*').is('campaign_id', null).order('name'),
+      supabase.from('ref_adversaries').select('*').eq('campaign_id', campaignId).order('name'),
+    ])
+    const merged = [
+      ...(ref ?? []).map((a: Adversary) => ({ ...a })),
+      ...(custom ?? []).map((a: Adversary) => ({ ...a, _isCustom: true as const })),
+    ]
+    setStagingLibrary(merged as (Adversary & { _isCustom?: boolean })[])
+    setStagingLibraryLoaded(true)
+  }, [campaignId, stagingLibraryLoaded]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Add adversary to active staging encounter
+  const stagingAddToEncounter = useCallback(async (
+    adv: Adversary, alignment: 'enemy' | 'allied_npc', successes = 0, advantages = 0,
+  ) => {
+    if (!stagingEncounter) return
+    const size     = stagingGroupSizes[adv.id] ?? (adv.type === 'minion' ? 4 : 1)
+    const instance = adversaryToInstance(adv, size)
+    const slotId   = crypto.randomUUID()
+    const newSlot: InitiativeSlot = {
+      id: slotId, type: 'npc', alignment,
+      order: stagingEncounter.initiative_slots.length + 1,
+      name: adv.name, acted: false, current: false, successes, advantages,
+      adversaryInstanceId: instance.instanceId,
+    }
+    await supabase.from('combat_encounters').update({
+      adversaries:      [...stagingEncounter.adversaries, instance],
+      initiative_slots: [...stagingEncounter.initiative_slots, newSlot],
+      updated_at:       new Date().toISOString(),
+    }).eq('id', stagingEncounter.id)
+  }, [stagingEncounter, stagingGroupSizes]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Add vehicle to active staging encounter
+  const stagingAddVehicleToEncounter = useCallback(async (
+    vehicle: Vehicle, alignment: 'enemy' | 'allied_npc', successes = 0, advantages = 0,
+  ) => {
+    if (!stagingEncounter) return
+    const instance = vehicleToVehicleInstance(vehicle, alignment)
+    const slotId   = crypto.randomUUID()
+    const newSlot: InitiativeSlot = {
+      id: slotId, type: 'npc', alignment,
+      order: stagingEncounter.initiative_slots.length + 1,
+      name: vehicle.name, acted: false, current: false, successes, advantages,
+      vehicleInstanceId: instance.instanceId,
+    }
+    await supabase.from('combat_encounters').update({
+      vehicles:         [...(stagingEncounter.vehicles ?? []), instance],
+      initiative_slots: [...stagingEncounter.initiative_slots, newSlot],
+      updated_at:       new Date().toISOString(),
+    }).eq('id', stagingEncounter.id)
+  }, [stagingEncounter]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Open InitiativeSetupModal: build roster from map tokens, then show modal
+  const openStagingCombatModal = useCallback(async () => {
+    const advTokens = stagingTokens.filter(
+      t => t.participant_type === 'adversary' && t.token_shape !== 'rectangle' && !!t.label,
+    )
+    let roster: AdversaryInstance[] = []
+    if (advTokens.length > 0) {
+      const names = [...new Set(advTokens.map(t => t.label!))]
+      // Try DB first (custom adversaries), then fall back to static JSON list (oggdude adversaries)
+      const [{ data: globalData }, { data: customData }, staticAdvs] = await Promise.all([
+        supabase.from('ref_adversaries').select('*').in('name', names).is('campaign_id', null),
+        supabase.from('ref_adversaries').select('*').in('name', names).eq('campaign_id', campaignId ?? ''),
+        fetchAdversaries(),
+      ])
+      const advMap = new Map<string, Adversary>()
+      // Static list first (lowest priority — overridden by DB rows below)
+      for (const a of staticAdvs) if (names.includes(a.name)) advMap.set(a.name, a)
+      // DB rows override static (custom adversaries take precedence)
+      for (const row of [...(globalData ?? []), ...(customData ?? [])]) advMap.set((row as Adversary).name, row as Adversary)
+      roster = advTokens
+        .map(t => { const a = advMap.get(t.label!); return a ? adversaryToInstance(a, a.type === 'minion' ? 4 : 1) : null })
+        .filter((x): x is AdversaryInstance => x !== null)
+    }
+    setStagingInitRoster(roster)
+    setShowStagingInitModal(true)
+  }, [stagingTokens]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Called by InitiativeSetupModal onStart — creates encounter, links tokens, flips mode
+  const handleStagingCombatStart = useCallback(async (
+    encounterData: Omit<CombatEncounter, 'id' | 'created_at' | 'updated_at'>,
+  ) => {
+    if (!campaignId) return
+    setSessionBusy(true)
+
+    // 1. Upsert encounter (same pattern as CombatPanel)
+    const { data } = await supabase
+      .from('combat_encounters')
+      .upsert({ ...encounterData, campaign_id: campaignId })
+      .select()
+      .single()
+    if (!data) { setSessionBusy(false); return }
+    const enc = data as CombatEncounter
+
+    // 2. Upsert PC participant rows
+    const pcSlots = enc.initiative_slots.filter(s => s.type === 'pc' && s.characterId)
+    if (pcSlots.length > 0) {
+      await supabase.from('combat_participants').upsert(
+        pcSlots.map(s => {
+          const char = activeChars.find(c => c.id === s.characterId)
+          return {
+            campaign_id:           campaignId,
+            character_id:          s.characterId!,
+            slot_type:             'pc' as const,
+            default_character_id:  s.characterId!,
+            active_character_id:   s.characterId!,
+            active_character_name: char?.name ?? s.name,
+            has_acted_this_round:  false,
+            active_weapon_key:     null,
+            active_weapon_name:    null,
+            secondary_weapon_name: null,
+            secondary_weapon_key:  null,
+          }
+        }),
+        { onConflict: 'campaign_id,character_id' },
+      )
+    }
+
+    // 3. Write combat-start system log
+    await supabase.from('combat_log').insert({
+      campaign_id:           campaignId,
+      encounter_id:          enc.id,
+      participant_name:      'System',
+      alignment:             'system',
+      roll_type:             'system',
+      result_summary:        `Combat started — Round 1 · ${enc.initiative_type === 'cool' ? 'Cool' : 'Vigilance'} initiative`,
+      is_visible_to_players: true,
+    })
+
+    // 4. Link adversary map tokens to their new initiative slots
+    const npcSlots = enc.initiative_slots.filter(s => s.type === 'npc' && s.adversaryInstanceId)
+    const instanceToName = new Map(enc.adversaries.map(a => [a.instanceId, a.name]))
+    // Group slot IDs by adversary name so multiple same-name tokens each get a unique slot
+    const slotsByName = new Map<string, string[]>()
+    for (const slot of npcSlots) {
+      const name = instanceToName.get(slot.adversaryInstanceId!) ?? ''
+      slotsByName.set(name, [...(slotsByName.get(name) ?? []), slot.id])
+    }
+    const usedSlots = new Set<string>()
+    for (const token of stagingTokens.filter(
+      t => t.participant_type === 'adversary' && t.token_shape !== 'rectangle' && !t.slot_key && !!t.label,
+    )) {
+      const available = (slotsByName.get(token.label!) ?? []).find(id => !usedSlots.has(id))
+      if (!available) continue
+      usedSlots.add(available)
+      await supabase.from('map_tokens').update({ slot_key: available }).eq('id', token.id)
+    }
+
+    // 5. Flip session mode and notify players
+    const round = 1
+    await supabase.from('campaigns').update({
+      session_mode:    'combat',
+      combat_round:    round,
+      mode_changed_at: new Date().toISOString(),
+    }).eq('id', campaignId)
+    setSessionMode('combat')
+    setCombatRound(round)
+    broadcastCombatState('combat', round)
+
+    setShowStagingInitModal(false)
+    setStagingEncounter(enc)
+    setSessionBusy(false)
+    toast('Combat initiated — players notified.')
+  }, [campaignId, activeChars, stagingTokens, broadcastCombatState]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Ensure an active combat_encounters row exists, then sync any standalone map
+  // tokens into it. Called from beginCombat — encounter creation is unconditional;
+  // token population is best-effort and only runs if an active map has unlinked tokens.
+  const autoPopulateEncounterFromTokens = async () => {
+    if (!campaignId) return
+
+    // Always fetch or create the encounter row — this is what makes Combat Feed
+    // and Encounter panels show content instead of "No active combat".
+    const { data: rows } = await supabase
+      .from('combat_encounters')
+      .select('*')
+      .eq('campaign_id', campaignId)
+      .eq('is_active', true)
+      .order('created_at', { ascending: false })
+      .limit(1)
+
+    let enc: CombatEncounter | null = rows && rows.length > 0 ? (rows[0] as CombatEncounter) : null
+    if (!enc) {
+      const { data: created } = await supabase
+        .from('combat_encounters')
+        .insert({
+          campaign_id:        campaignId,
+          round:              1,
+          is_active:          true,
+          current_slot_index: 0,
+          initiative_type:    'cool',
+          initiative_slots:   [],
+          adversaries:        [],
+          vehicles:           [],
+          log_entries:        [],
+        })
+        .select('*')
+        .single()
+      enc = created as CombatEncounter | null
+    }
+    if (!enc) return
+
+    // Token population — only if there are unlinked adversary tokens on the active map
+    if (!activeMap?.id) return
+    const pending = stagingTokens.filter(
+      t => t.participant_type === 'adversary' && !t.slot_key && !!t.label,
+    )
+    if (pending.length === 0) return
+
+    const advTokens = pending.filter(t => t.token_shape !== 'rectangle')
+    const vehTokens = pending.filter(t => t.token_shape === 'rectangle')
+
+    // Fetch adversary templates by name (label)
+    const advNames = [...new Set(advTokens.map(t => t.label!))]
+    const advMap = new Map<string, Adversary>()
+    if (advNames.length > 0) {
+      const { data } = await supabase.from('ref_adversaries').select('*').in('name', advNames)
+      for (const row of (data ?? [])) advMap.set((row as Adversary).name, row as Adversary)
+    }
+
+    // Fetch vehicle templates by name — custom from DB, standard from JSON
+    const vehNames = [...new Set(vehTokens.map(t => t.label!))]
+    const vehMap = new Map<string, Vehicle>()
+    if (vehNames.length > 0) {
+      const { data: customRows } = await supabase.from('ref_vehicles').select('*').in('name', vehNames)
+      for (const row of (customRows ?? [])) {
+        const v = dbRowToVehicle(row as Record<string, unknown>)
+        vehMap.set(v.name, v)
+      }
+      const missingNames = vehNames.filter(n => !vehMap.has(n))
+      if (missingNames.length > 0) {
+        const all = await fetchVehicles()
+        for (const v of all) {
+          if (missingNames.includes(v.name)) vehMap.set(v.name, v)
+        }
+      }
+    }
+
+    // Build new instances and initiative slots
+    const newAdversaries = [...enc.adversaries]
+    const newVehicles    = [...(enc.vehicles ?? [])]
+    const newSlots       = [...enc.initiative_slots]
+    const slotUpdates: Array<{ tokenId: string; slotId: string }> = []
+
+    for (const token of advTokens) {
+      const adv = advMap.get(token.label!)
+      if (!adv) continue
+      const instance = adversaryToInstance(adv, adv.type === 'minion' ? 4 : 1)
+      const slotId   = crypto.randomUUID()
+      const slot: InitiativeSlot = {
+        id:                  slotId,
+        type:                'npc',
+        alignment:           token.alignment === 'allied_npc' ? 'allied_npc' : 'enemy',
+        order:               newSlots.length + 1,
+        name:                token.label ?? adv.name,
+        acted:               false,
+        current:             false,
+        successes:           0,
+        advantages:          0,
+        adversaryInstanceId: instance.instanceId,
+      }
+      newAdversaries.push(instance)
+      newSlots.push(slot)
+      slotUpdates.push({ tokenId: token.id, slotId })
+    }
+
+    for (const token of vehTokens) {
+      const veh = vehMap.get(token.label!)
+      if (!veh) continue
+      const alignment = token.alignment === 'allied_npc' ? 'allied_npc' : 'enemy'
+      const instance  = vehicleToVehicleInstance(veh, alignment, token.token_image_url)
+      const slotId    = crypto.randomUUID()
+      const slot: InitiativeSlot = {
+        id:               slotId,
+        type:             'npc',
+        alignment,
+        order:            newSlots.length + 1,
+        name:             token.label ?? veh.name,
+        acted:            false,
+        current:          false,
+        successes:        0,
+        advantages:       0,
+        vehicleInstanceId: instance.instanceId,
+      }
+      newVehicles.push(instance)
+      newSlots.push(slot)
+      slotUpdates.push({ tokenId: token.id, slotId })
+    }
+
+    await supabase.from('combat_encounters').update({
+      adversaries:      newAdversaries,
+      vehicles:         newVehicles,
+      initiative_slots: newSlots,
+      updated_at:       new Date().toISOString(),
+    }).eq('id', enc.id)
+
+    await Promise.all(
+      slotUpdates.map(({ tokenId, slotId }) =>
+        supabase.from('map_tokens').update({ slot_key: slotId }).eq('id', tokenId),
+      ),
+    )
+  }
+
   const beginCombat = async () => {
     if (!campaignId) return
     setSessionBusy(true)
@@ -1103,6 +1454,7 @@ function GmDashboard() {
     setSessionMode('combat')
     setCombatRound(round)
     broadcastCombatState('combat', round)
+    await autoPopulateEncounterFromTokens()
     setSessionBusy(false)
     toast('Combat initiated — players notified.')
   }
@@ -1430,7 +1782,7 @@ function GmDashboard() {
         {/* Mode toggle pill */}
         <div style={{ display: 'flex', borderRadius: 4, overflow: 'hidden', border: `1px solid rgba(200,170,80,0.2)` }}>
           <button
-            onClick={beginCombat}
+            onClick={endEncounter}
             disabled={sessionBusy}
             style={{
               padding: '4px 14px', fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 600,
@@ -1442,7 +1794,7 @@ function GmDashboard() {
             ◈ Exploration
           </button>
           <button
-            onClick={endEncounter}
+            onClick={activeTab === 'staging' && sessionMode !== 'combat' ? openStagingCombatModal : beginCombat}
             disabled={sessionBusy}
             style={{
               padding: '4px 14px', fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 600,
@@ -1570,12 +1922,17 @@ function GmDashboard() {
               isStagingTab={true}
               stagingLibraryOpen={mapLibraryOpen}
               onStagingLibraryClose={() => setMapLibraryOpen(false)}
+              stagingTokens={stagingTokens}
+              onStagingMoveToken={stagingMoveToken}
+              onStagingToggleVisibility={stagingToggleVisibility}
+              onStagingRemoveToken={stagingRemoveToken}
+              onStagingAddToken={stagingAddToken}
             />
             <StagingTopBar
               sessionMode={sessionMode}
               sessionBusy={sessionBusy}
               combatRound={combatRound}
-              onBeginCombat={beginCombat}
+              onBeginCombat={openStagingCombatModal}
               onEndCombat={endEncounter}
             />
             <StagingFloatingToolbar
@@ -1585,7 +1942,50 @@ function GmDashboard() {
               characters={activeChars}
               mapsLibraryOpen={mapLibraryOpen}
               onMapsClick={() => setMapLibraryOpen(o => !o)}
+              isMapVisible={activeMap?.is_visible_to_players ?? false}
+              tokenScale={activeMap?.token_scale ?? 1.0}
+              tokens={stagingTokens}
+              addToken={stagingAddToken}
+              removeToken={stagingRemoveToken}
+              toggleVisibility={stagingToggleVisibility}
+              removeAllTokens={stagingRemoveAllTokens}
+              onAddEnemy={sessionMode === 'combat' ? () => { setShowStagingAddModal(true) } : undefined}
             />
+
+            {/* ── Staging: InitiativeSetupModal ─────────────── */}
+            {showStagingInitModal && (
+              <InitiativeSetupModal
+                campaignId={campaignId ?? ''}
+                characters={activeChars}
+                roster={stagingInitRoster}
+                sendToChar={sendToChar}
+                onClose={() => setShowStagingInitModal(false)}
+                onStart={handleStagingCombatStart}
+              />
+            )}
+
+            {/* ── Staging: AddParticipantModal ──────────────── */}
+            {showStagingAddModal && stagingEncounter && (
+              <AddParticipantModal
+                searchLibrary={async (term: string) => {
+                  const [{ data: global }, { data: custom }] = await Promise.all([
+                    supabase.from('ref_adversaries').select('*').ilike('name', `%${term}%`).is('campaign_id', null).order('name').limit(30),
+                    supabase.from('ref_adversaries').select('*').ilike('name', `%${term}%`).eq('campaign_id', campaignId ?? '').order('name').limit(30),
+                  ])
+                  return [...(global ?? []), ...(custom ?? [])] as Adversary[]
+                }}
+                encounter={stagingEncounter}
+                groupSizes={stagingGroupSizes}
+                onAdd={(adv: Adversary, alignment: 'enemy' | 'allied_npc', successes: number, advantages: number, groupSize?: number) => {
+                  if (groupSize !== undefined) setStagingGroupSizes(prev => ({ ...prev, [adv.id]: groupSize }))
+                  void stagingAddToEncounter(adv, alignment, successes, advantages)
+                }}
+                onAddVehicle={(vehicle: Vehicle, alignment: 'enemy' | 'allied_npc', successes: number, advantages: number) => {
+                  void stagingAddVehicleToEncounter(vehicle, alignment, successes, advantages)
+                }}
+                onClose={() => setShowStagingAddModal(false)}
+              />
+            )}
           </>
         )}
 

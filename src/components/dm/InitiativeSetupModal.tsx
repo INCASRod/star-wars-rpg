@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
 import { sortInitiative } from '@/lib/combat'
 import { rollPool } from '@/components/player-hud/dice-engine'
@@ -268,17 +269,17 @@ export function InitiativeSetupModal({ campaignId, characters, roster, sendToCha
   }
   const tdStyle: React.CSSProperties = { padding: '8px 8px', verticalAlign: 'middle' }
 
-  return (
+  return createPortal(
     <div style={{
-      position: 'fixed', inset: 0, zIndex: 200,
+      position: 'fixed', inset: 0, zIndex: 9500,
       background: 'rgba(0,0,0,0.78)', backdropFilter: 'blur(10px)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: 24,
     }}>
       <div style={{
-        width: '100%', maxWidth: 860,
+        width: '100%', maxWidth: 680,
         background: PANEL_SOLID, border: `1px solid ${BORDER_HI}`,
-        borderRadius: 6, maxHeight: '92vh', overflowY: 'auto',
+        borderRadius: 6, maxHeight: '80vh', overflowY: 'auto',
         position: 'relative',
       }}>
         {/* Header */}
@@ -517,6 +518,7 @@ export function InitiativeSetupModal({ campaignId, characters, roster, sendToCha
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

@@ -510,8 +510,10 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
 
           {standaloneTokens.map(token => {
             const isVehicle  = token.token_shape === 'rectangle'
-            const tokenColor = token.alignment === 'allied_npc' ? GREEN
-              : token.alignment === 'enemy' ? '#e05252'
+            const tokenColor = token.alignment === 'allied_npc' ? '#5AAAE0'
+              : token.alignment === 'nemesis'   ? '#9060D0'
+              : token.alignment === 'rival'     ? '#FF9800'
+              : token.alignment === 'minion' || token.alignment === 'enemy' ? '#E05252'
               : GOLD
 
             return (

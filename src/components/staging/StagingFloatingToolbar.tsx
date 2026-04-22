@@ -28,7 +28,6 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useMapTokens } from '@/hooks/useMapTokens'
 import type { MapToken } from '@/hooks/useMapTokens'
 import type { Character } from '@/lib/types'
 import type { Adversary } from '@/lib/adversaries'
@@ -95,6 +94,15 @@ export interface StagingFloatingToolbarProps {
   characters:      Character[]
   mapsLibraryOpen: boolean
   onMapsClick:     () => void
+  isMapVisible:    boolean
+  tokenScale:      number
+  // Token state shared from page level (single source of truth with GmMapView)
+  tokens:          MapToken[]
+  addToken:        (token: Omit<MapToken, 'id' | 'updated_at'>) => Promise<MapToken | null>
+  removeToken:     (id: string) => Promise<void>
+  toggleVisibility:(id: string, visible: boolean) => Promise<void>
+  removeAllTokens: () => Promise<void>
+  onAddEnemy?:     () => void
 }
 
 export function StagingFloatingToolbar({
@@ -104,12 +112,28 @@ export function StagingFloatingToolbar({
   characters,
   mapsLibraryOpen,
   onMapsClick,
+  isMapVisible,
+  tokenScale,
+  tokens: mapTokens,
+  addToken,
+  removeToken,
+  toggleVisibility,
+  removeAllTokens,
+  onAddEnemy,
 }: StagingFloatingToolbarProps) {
   const supabase = useMemo(() => createClient(), [])
   const isCombat = sessionMode === 'combat'
 
-  /* ── Shared map-token state (always mounted, drives canvas + panel) ── */
-  const { tokens: mapTokens, addToken, removeToken, toggleVisibility, removeAllTokens } = useMapTokens(mapId)
+  async function toggleReveal() {
+    if (!mapId) return
+    await supabase.from('maps').update({ is_visible_to_players: !isMapVisible }).eq('id', mapId)
+  }
+
+  async function adjustTokenScale(delta: number) {
+    if (!mapId) return
+    const next = Math.round(Math.max(0.25, Math.min(4.0, tokenScale + delta)) * 100) / 100
+    await supabase.from('maps').update({ token_scale: next }).eq('id', mapId)
+  }
 
   /* ── Drawer state ─────────────────────────────────────────
    * Left and right drawers are tracked independently.
@@ -148,30 +172,10 @@ export function StagingFloatingToolbar({
     return leftPanel === entry.id
   }
 
-  /* ── Adversary token images (for "Add Token" callbacks) ── */
-  const [advTokenImages, setAdvTokenImages] = useState<Record<string, string>>({})
-
-  useEffect(() => {
-    supabase
-      .from('adversary_token_images')
-      .select('adversary_key, token_image_url')
-      .then(({ data }) => {
-        if (data) {
-          setAdvTokenImages(
-            Object.fromEntries(
-              (data as Array<{ adversary_key: string; token_image_url: string }>)
-                .map(r => [r.adversary_key, r.token_image_url])
-            )
-          )
-        }
-      })
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
   /* ── "Add Token" callbacks ────────────────────────────────
-   * Bypasses the combat-encounter flow — adds a standalone
-   * map_token that GmMapView will pick up via its subscription. */
+   * The library passes _tokenImageUrl on the object — no duplicate DB fetch needed. */
   const handleAddAdversaryToken = useCallback(
-    async (adv: Adversary & { _isCustom?: boolean }, alignment: 'enemy' | 'allied_npc') => {
+    async (adv: Adversary & { _isCustom?: boolean; _tokenImageUrl?: string | null }, alignment: 'enemy' | 'allied_npc') => {
       if (!mapId || !campaignId) return
       await addToken({
         map_id:           mapId,
@@ -181,21 +185,21 @@ export function StagingFloatingToolbar({
         participant_id:   null,
         slot_key:         null,
         label:            adv.name,
-        alignment,
+        alignment:        alignment === 'allied_npc' ? 'allied_npc' : adv.type,
         x:                0.5,
         y:                0.5,
         is_visible:       false,
         token_size:       1.0,
         wound_pct:        null,
-        token_image_url:  advTokenImages[adv.name] ?? null,
+        token_image_url:  adv._tokenImageUrl ?? null,
         token_shape:      'circle',
       })
     },
-    [mapId, campaignId, advTokenImages, addToken], // eslint-disable-line react-hooks/exhaustive-deps
+    [mapId, campaignId, addToken], // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   const handleAddVehicleToken = useCallback(
-    async (vehicle: Vehicle & { _isCustom?: boolean }, alignment: 'enemy' | 'allied_npc') => {
+    async (vehicle: Vehicle & { _isCustom?: boolean; _tokenImageUrl?: string | null }, alignment: 'enemy' | 'allied_npc') => {
       if (!mapId || !campaignId) return
       await addToken({
         map_id:           mapId,
@@ -211,7 +215,7 @@ export function StagingFloatingToolbar({
         is_visible:       false,
         token_size:       1.0,
         wound_pct:        null,
-        token_image_url:  null,
+        token_image_url:  vehicle._tokenImageUrl ?? null,
         token_shape:      'rectangle',
       })
     },
@@ -258,6 +262,75 @@ export function StagingFloatingToolbar({
             />
           )
         })}
+
+        {/* Token scale control */}
+        <div
+          style={{
+            display:              'flex',
+            alignItems:           'center',
+            gap:                  0,
+            background:           'rgba(6,13,9,0.90)',
+            backdropFilter:       'blur(14px)',
+            WebkitBackdropFilter: 'blur(14px)',
+            border:               '1px solid rgba(200,170,80,0.22)',
+            borderRadius:         8,
+            overflow:             'hidden',
+            pointerEvents:        'auto',
+            boxShadow:            '0 2px 8px rgba(0,0,0,0.35)',
+          }}
+        >
+          <button
+            disabled={!mapId}
+            onClick={() => adjustTokenScale(-0.25)}
+            title="Decrease token scale"
+            style={{
+              padding:    '7px 11px',
+              background: 'transparent',
+              border:     'none',
+              cursor:     mapId ? 'pointer' : 'not-allowed',
+              color:      mapId ? GOLD : DIM,
+              fontFamily: FR,
+              fontSize:   16,
+              lineHeight: 1,
+            }}
+          >−</button>
+          <span style={{
+            fontFamily:    FR,
+            fontSize:      'var(--text-label)',
+            fontWeight:    700,
+            letterSpacing: '0.06em',
+            color:         mapId ? GOLD : DIM,
+            minWidth:      42,
+            textAlign:     'center',
+            userSelect:    'none',
+          }}>
+            {tokenScale.toFixed(2)}×
+          </span>
+          <button
+            disabled={!mapId}
+            onClick={() => adjustTokenScale(0.25)}
+            title="Increase token scale"
+            style={{
+              padding:    '7px 11px',
+              background: 'transparent',
+              border:     'none',
+              cursor:     mapId ? 'pointer' : 'not-allowed',
+              color:      mapId ? GOLD : DIM,
+              fontFamily: FR,
+              fontSize:   16,
+              lineHeight: 1,
+            }}
+          >+</button>
+        </div>
+
+        <Pill
+          icon={isMapVisible ? '◉' : '○'}
+          label={isMapVisible ? 'Hide Map' : 'Reveal Map'}
+          active={isMapVisible}
+          disabled={!mapId}
+          accentColor='#4EC87A'
+          onClick={toggleReveal}
+        />
       </div>
 
       {/* ── Right pill stack (combat only) ───────────────── */}
@@ -285,6 +358,16 @@ export function StagingFloatingToolbar({
               onClick={() => openRight(entry.id)}
             />
           ))}
+          {onAddEnemy && (
+            <Pill
+              icon="⚡"
+              label="Add Enemy"
+              active={false}
+              disabled={false}
+              accentColor={RED}
+              onClick={onAddEnemy}
+            />
+          )}
         </div>
       )}
 

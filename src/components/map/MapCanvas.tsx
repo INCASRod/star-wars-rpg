@@ -8,10 +8,11 @@ let PIXI: typeof import('pixi.js') | null = null
 
 const BORDER_COLOURS: Record<string, number> = {
   pc:          0xC8AA50,  // gold
-  allied_npc:  0x52e08a,  // green
-  minion:      0xe05252,  // red
+  allied_npc:  0x5AAAE0,  // blue
+  minion:      0xE05252,  // red
   rival:       0xFF9800,  // orange
-  nemesis:     0xDC143C,  // crimson
+  nemesis:     0x9060D0,  // purple
+  enemy:       0xE05252,  // red fallback for untyped enemy tokens
 }
 
 export interface MapCanvasProps {
@@ -301,6 +302,8 @@ function syncTokens(
         }
         c.scale.set(tokenScale)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(c as any).__applyLabelScale?.(tokenScale)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ;(c as any).alpha = (!isGM && !token.is_visible) ? 0 : (isGM && !token.is_visible ? 0.4 : 1)
         existing.delete(token.id)
         continue
@@ -313,6 +316,7 @@ function syncTokens(
       mapW, mapH, offsetX, offsetY,
       onMoveRef, onContextRef, onHoverRef, onHoverEndRef, containerRef, draggingTokenIdRef,
       mapWRef, mapHRef, mapOffsetXRef, mapOffsetYRef,
+      tokenScale,
     )
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(sprite as any).__imageUrl = token.token_image_url ?? null
@@ -348,6 +352,7 @@ function buildTokenSprite(
   mapHRef:             React.MutableRefObject<number>,
   mapOffsetXRef:       React.MutableRefObject<number>,
   mapOffsetYRef:       React.MutableRefObject<number>,
+  tokenScale:          number,
 ): InstanceType<typeof import('pixi.js').Container> {
   const SIZE   = 24 * (token.token_size ?? 1)
   const RADIUS = SIZE / 2
@@ -416,19 +421,45 @@ function buildTokenSprite(
     c.addChild(arc)
   }
 
+  // Label — crisp text on a solid pill background for readability against any map.
+  // The label group is counter-scaled by 1/tokenScale so text stays at a fixed
+  // screen size regardless of how large the token is. Its y position is adjusted
+  // so the gap between the ring edge and the label top is always 4 screen pixels.
   const lbl = new px.Text(token.label ?? '', {
-    fontFamily:         'Rajdhani, sans-serif',
-    fontSize:           6,
-    fill:               0xE8DFC8,
-    align:              'center',
-    dropShadow:         true,
-    dropShadowDistance: 1,
-    dropShadowColor:    0x000000,
+    fontFamily: 'Rajdhani, sans-serif',
+    fontWeight: '700',
+    fontSize:   10,
+    fill:       0xF0E8C8,
+    align:      'center',
   })
-  lbl.anchor.set(0.5, 0)
-  lbl.y      = RADIUS + 2
-  lbl.zIndex = 4
-  c.addChild(lbl)
+  lbl.resolution = 2
+  lbl.anchor.set(0.5, 0.5)
+
+  const PAD_X    = 5
+  const PAD_Y    = 2
+  const lblW     = lbl.width  + PAD_X * 2
+  const lblH     = lbl.height + PAD_Y * 2
+
+  const lblBg = new px.Graphics()
+  lblBg.beginFill(0x060D09, 0.82)
+  lblBg.lineStyle(0.75, colour, 0.55)
+  lblBg.drawRoundedRect(-lblW / 2, -lblH / 2, lblW, lblH, 3)
+  lblBg.endFill()
+
+  const lblGroup = new px.Container()
+  lblGroup.addChild(lblBg, lbl)
+  lblGroup.zIndex = 4
+
+  // Keeps label at constant screen size and a fixed 4px gap below the ring.
+  const applyLabelScale = (s: number) => {
+    lblGroup.scale.set(1 / s)
+    lblGroup.y = RADIUS + (4 + lblH / 2) / s
+  }
+  applyLabelScale(tokenScale)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(c as any).__applyLabelScale = applyLabelScale
+
+  c.addChild(lblGroup)
 
   // Position using map image bounds (not canvas bounds)
   c.x = offsetX + token.x * mapW
