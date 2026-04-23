@@ -132,8 +132,8 @@ export function StagingTopBar({
       {isCombat ? (
         <TopBarButton
           label="⬛ End Combat"
-          color={DIM}
-          hoverColor={RED}
+          color={RED}
+          hoverColor="#FF6464"
           disabled={sessionBusy}
           onClick={onEndCombat}
         />

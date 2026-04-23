@@ -89,7 +89,7 @@ export interface AdversaryLibraryProps {
   campaignId:   string
   sessionMode:  'exploration' | 'combat'
   /** When provided, switches "Add to Combat" to "Add Token" mode with a simplified alignment picker. */
-  onAddToken?:  (adv: Adversary & { _isCustom?: boolean }, alignment: 'enemy' | 'allied_npc') => void
+  onAddToken?:  (adv: Adversary & { _isCustom?: boolean; _tokenImageUrl?: string | null }, alignment: 'enemy' | 'allied_npc') => void
   /** When provided, passed to AdversaryDetailPanel so token uploads also patch existing map_tokens rows. */
   mapId?:       string | null
 }
@@ -281,7 +281,7 @@ export function AdversaryLibrary({ campaignId, sessionMode, onAddToken, mapId }:
 
   const confirmAddToken = (alignment: 'enemy' | 'allied_npc') => {
     if (!addTokenPending || !onAddToken) return
-    onAddToken(addTokenPending, alignment)
+    onAddToken({ ...addTokenPending, _tokenImageUrl: tokenImages[addTokenPending.name] ?? null }, alignment)
     setAddTokenPending(null)
   }
 

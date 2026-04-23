@@ -1462,9 +1462,13 @@ function GmDashboard() {
   const endEncounter = async () => {
     if (!campaignId) return
     setSessionBusy(true)
-    await supabase.from('campaigns').update({ session_mode: 'exploration', combat_round: 0, mode_changed_at: new Date().toISOString() }).eq('id', campaignId)
+    await Promise.all([
+      supabase.from('campaigns').update({ session_mode: 'exploration', combat_round: 0, mode_changed_at: new Date().toISOString() }).eq('id', campaignId),
+      supabase.from('combat_encounters').update({ is_active: false, updated_at: new Date().toISOString() }).eq('campaign_id', campaignId).eq('is_active', true),
+    ])
     setSessionMode('exploration')
     setCombatRound(1)
+    setStagingEncounter(null)
     broadcastCombatState('exploration', 0)
     setSessionBusy(false)
     toast('Encounter ended — exploration mode.')

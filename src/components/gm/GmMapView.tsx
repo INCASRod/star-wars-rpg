@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { ActiveMap } from '@/hooks/useActiveMap'
 import type { MapToken } from '@/hooks/useMapTokens'
@@ -241,10 +242,18 @@ export interface GmMapViewProps {
   stagingLibraryOpen?:      boolean
   /** Called when the close button inside the library drawer is clicked (staging only). */
   onStagingLibraryClose?:   () => void
+  /** Shared token state lifted to page level — avoids dual hook instances causing stale canvas. */
+  stagingTokens?:              MapToken[]
+  onStagingMoveToken?:         (id: string, x: number, y: number) => Promise<void>
+  onStagingToggleVisibility?:  (id: string, visible: boolean) => Promise<void>
+  onStagingRemoveToken?:       (id: string) => Promise<void>
+  onStagingAddToken?:          (token: Omit<MapToken, 'id' | 'updated_at'>) => Promise<MapToken | null>
 }
 
-export function GmMapView({ campaignId, characters, allMaps, activeMap, onDeleteMap, isStagingTab, stagingLibraryOpen, onStagingLibraryClose }: GmMapViewProps) {
+export function GmMapView({ campaignId, characters, allMaps, activeMap, onDeleteMap, isStagingTab, stagingLibraryOpen, onStagingLibraryClose, stagingTokens, onStagingMoveToken, onStagingToggleVisibility, onStagingRemoveToken, onStagingAddToken }: GmMapViewProps) {
   const supabase = useMemo(() => createClient(), [])
+
+  const router = useRouter()
 
   const [mounted,          setMounted]          = useState(false)
   const [uploadOpen,       setUploadOpen]       = useState(false)
@@ -252,6 +261,7 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
   const [tokenDrawerOpen,  setTokenDrawerOpen]  = useState(false)
   const [contextMenu,      setContextMenu]      = useState<ContextMenuState | null>(null)
   const [encounter,        setEncounter]        = useState<EncounterRow | null>(null)
+  const [previewMap,       setPreviewMap]       = useState<ActiveMap | null>(null)
   const [advTokens,        setAdvTokens]        = useState<AdversaryTokenImage[]>([])
   const [busy,             setBusy]             = useState(false)
   const [advTokenBusy,     setAdvTokenBusy]     = useState<string | null>(null)
@@ -265,7 +275,13 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
       .then(({ error }) => { if (error) console.warn('[token scale]', error.message) })
   }, [activeMap, supabase])
 
-  const { tokens, moveToken, toggleVisibility, removeToken, addToken } = useMapTokens(activeMap?.id ?? null)
+  // When staging tab passes its own token state, use it — avoids dual subscriptions causing stale canvas
+  const { tokens: hookTokens, moveToken: hookMoveToken, toggleVisibility: hookToggleVisibility, removeToken: hookRemoveToken, addToken: hookAddToken } = useMapTokens(isStagingTab ? null : (activeMap?.id ?? null))
+  const tokens          = isStagingTab ? (stagingTokens ?? [])           : hookTokens
+  const moveToken       = isStagingTab ? (onStagingMoveToken       ?? hookMoveToken)       : hookMoveToken
+  const toggleVisibility = isStagingTab ? (onStagingToggleVisibility ?? hookToggleVisibility) : hookToggleVisibility
+  const removeToken     = isStagingTab ? (onStagingRemoveToken     ?? hookRemoveToken)     : hookRemoveToken
+  const addToken        = isStagingTab ? (onStagingAddToken        ?? hookAddToken)        : hookAddToken
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -371,6 +387,7 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
     const { error } = await supabase.from('maps').delete().eq('id', mapId)
     if (!error) onDeleteMap(mapId)
   }
+
 
   // ── Token helpers ──────────────────────────────────────
   // Tokens default hidden (is_visible: false) — GM reveals explicitly via drawer
@@ -491,18 +508,40 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>
 
         {/* ── Canvas ── */}
-        {activeMap ? (
-          <MapCanvas
-            mapImageUrl={activeMap.image_url}
-            tokens={tokens}
-            isGM={true}
-            currentCharacterId={null}
-            onTokenMove={moveToken}
-            gridEnabled={activeMap.grid_enabled}
-            gridSize={activeMap.grid_size ?? 50}
-            onTokenContextMenu={handleTokenContextMenu}
-            tokenScale={tokenScale}
-          />
+        {(previewMap ?? activeMap) ? (
+          <>
+            <MapCanvas
+              mapImageUrl={(previewMap ?? activeMap)!.image_url}
+              tokens={tokens}
+              isGM={true}
+              currentCharacterId={null}
+              onTokenMove={moveToken}
+              gridEnabled={(previewMap ?? activeMap)!.grid_enabled}
+              gridSize={(previewMap ?? activeMap)!.grid_size ?? 50}
+              onTokenContextMenu={handleTokenContextMenu}
+              tokenScale={tokenScale}
+            />
+            {previewMap && (
+              <div style={{
+                position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)',
+                zIndex: 50, display: 'flex', alignItems: 'center', gap: 8,
+                background: 'rgba(6,13,9,0.92)', border: `1px solid ${BORDER_HI}`,
+                borderRadius: 20, padding: '4px 10px 4px 12px',
+                backdropFilter: 'blur(8px)',
+              }}>
+                <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: GOLD }}>
+                  Preview: {previewMap.name}
+                </span>
+                <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>· not live</span>
+                <button
+                  onClick={() => setPreviewMap(null)}
+                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: DIM, fontSize: '0.9rem', lineHeight: 1, padding: '0 2px', marginLeft: 2 }}
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12 }}>
             <div style={{ fontFamily: FC, fontSize: FS_H4, color: GOLD, letterSpacing: '0.1em' }}>No Active Map</div>
@@ -680,6 +719,20 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
                         </div>
                       </div>
                       <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                        <button
+                          onClick={() => { setPreviewMap(map); closeDrawer() }}
+                          title="Load on GM canvas without going live"
+                          style={{ background: 'rgba(200,170,80,0.08)', border: `1px solid ${BORDER}`, color: DIM, fontFamily: FR, fontSize: FS_CAPTION, padding: '3px 8px', borderRadius: 3, cursor: 'pointer' }}
+                        >
+                          Load
+                        </button>
+                        <button
+                          onClick={() => router.push(`/gm/mapforge?campaign=${campaignId}&mapId=${map.id}&mapName=${encodeURIComponent(map.name)}&imageUrl=${encodeURIComponent(map.image_url)}`)}
+                          title="Edit in Map Forge"
+                          style={{ background: 'rgba(200,170,80,0.08)', border: `1px solid ${BORDER}`, color: DIM, fontFamily: FR, fontSize: FS_CAPTION, padding: '3px 8px', borderRadius: 3, cursor: 'pointer' }}
+                        >
+                          Edit
+                        </button>
                         {!map.is_active && (
                           <button
                             onClick={() => setActive(map.id)}
@@ -693,6 +746,28 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
                       </div>
                     </div>
                   ))}
+                </div>
+
+                {/* Map actions footer */}
+                <div style={{ flexShrink: 0, borderTop: `1px solid ${BORDER}`, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <button
+                    onClick={() => { closeDrawer(); setUploadOpen(true) }}
+                    disabled={!campaignId}
+                    style={{ ...btnSmall, width: '100%', textAlign: 'center' }}
+                  >
+                    ↑ Upload Map
+                  </button>
+                  <button
+                    onClick={() => {
+                      // Wipe any stale draft before navigating so MapForge always opens clean
+                      try { localStorage.removeItem(`mapforge_draft_${campaignId}`) } catch { /* ignore */ }
+                      router.push(`/gm/mapforge?campaign=${campaignId}`)
+                    }}
+                    disabled={!campaignId}
+                    style={{ ...btnSmall, width: '100%', textAlign: 'center' }}
+                  >
+                    ◈ Generate Map
+                  </button>
                 </div>
 
                 {/* Footer */}
