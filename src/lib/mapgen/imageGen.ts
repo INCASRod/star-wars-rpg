@@ -18,7 +18,7 @@ export async function generateMapWithAsset(assetUrl: string, rawPrompt: string):
   const res = await fetch('/api/fal-edit', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt, imageUrl: assetUrl }),
+    body: JSON.stringify({ prompt, imageUrls: [assetUrl] }),
   })
 
   if (!res.ok) {
@@ -34,14 +34,24 @@ export async function generateMapWithAsset(assetUrl: string, rawPrompt: string):
   throw new Error('fal.ai returned no image')
 }
 
-export async function editMapImage(currentImageUrl: string, rawPrompt: string): Promise<string> {
+/**
+ * Edit an existing scene. The scene is always imageUrls[0]; any reference
+ * images the user uploads (ships, props, subjects to incorporate) follow as
+ * imageUrls[1..n]. fal.ai passes all of them to gpt-image-2 together.
+ */
+export async function editMapImage(
+  sceneUrl:      string,
+  rawPrompt:     string,
+  referenceUrls: string[] = [],
+): Promise<string> {
   const prompt = buildEditPrompt(rawPrompt)
   console.log('[mapgen] edit prompt:', prompt)
+  console.log('[mapgen] edit images:', 1 + referenceUrls.length, '(scene + references)')
 
   const res = await fetch('/api/fal-edit', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt, imageUrl: currentImageUrl }),
+    body: JSON.stringify({ prompt, imageUrls: [sceneUrl, ...referenceUrls] }),
   })
 
   if (!res.ok) {

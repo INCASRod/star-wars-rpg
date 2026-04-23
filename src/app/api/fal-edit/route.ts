@@ -6,24 +6,24 @@ export async function POST(req: NextRequest) {
   const apiKey = process.env.FAL_KEY
   if (!apiKey) return NextResponse.json({ error: 'FAL_KEY not configured' }, { status: 500 })
 
-  const { prompt, imageUrl } = await req.json()
-  if (!prompt || !imageUrl) return NextResponse.json({ error: 'prompt and imageUrl are required' }, { status: 400 })
-
-  const imgRes = await fetch(imageUrl)
-  if (!imgRes.ok) return NextResponse.json({ error: 'Failed to fetch source image' }, { status: 500 })
-  const imgBlob = await imgRes.blob()
-
-  const form = new FormData()
-  form.append('image', imgBlob, 'image.png')
-  form.append('prompt', prompt)
-  form.append('n', '1')
-  form.append('size', '1536x1024')
-  form.append('quality', 'high')
+  const { prompt, imageUrls } = await req.json()
+  if (!prompt || !Array.isArray(imageUrls) || imageUrls.length === 0) {
+    return NextResponse.json({ error: 'prompt and imageUrls[] are required' }, { status: 400 })
+  }
 
   const upstream = await fetch(FAL_EDIT_URL, {
     method: 'POST',
-    headers: { 'Authorization': `Key ${apiKey}` },
-    body: form,
+    headers: {
+      'Authorization': `Key ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      prompt,
+      image_urls:    imageUrls,
+      quality:       'high',
+      num_images:    1,
+      output_format: 'png',
+    }),
   })
 
   const text = await upstream.text()
