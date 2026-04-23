@@ -227,12 +227,13 @@ function MapForgeInner() {
 
     try {
       setStepIdx(0)
-      if (editBase) {
-        pushLog('Sending edit instruction to Flux img2img…')
-        const url = await editMapImage(editBase, prompt)
-        pushLog('Edited image received.')
-        setImageUrl(url)
-      } else if (primaryAsset) {
+      // if (editBase) {
+      //   pushLog('Sending edit instruction to gpt-image-2…')
+      //   const url = await editMapImage(editBase, prompt)
+      //   pushLog('Edited image received.')
+      //   setImageUrl(url)
+      // } else
+      if (primaryAsset) {
         pushLog(`Using reference asset "${primaryAsset.name}" as visual anchor…`)
         const url = await generateMapWithAsset(primaryAsset.url!, prompt)
         pushLog('Asset-guided image received.')

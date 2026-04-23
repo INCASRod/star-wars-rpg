@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, memo } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -324,6 +324,28 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
   const onMapCharIds  = useMemo(() => new Set(tokens.map(t => t.character_id).filter(Boolean as unknown as (v: string | null) => v is string)), [tokens])
   const onMapSlotKeys = useMemo(() => new Set(tokens.map(t => t.slot_key).filter(Boolean as unknown as (v: string | null) => v is string)), [tokens])
 
+  // O(1) lookup maps — avoids Array.find inside render loops
+  const advTokensByKey = useMemo(() => {
+    const m = new Map<string, string>()
+    for (const a of advTokens) m.set(a.adversary_key, a.token_image_url)
+    return m
+  }, [advTokens])
+  const tokensById = useMemo(() => {
+    const m = new Map<string, MapToken>()
+    for (const t of tokens) m.set(t.id, t)
+    return m
+  }, [tokens])
+  const tokensBySlotKey = useMemo(() => {
+    const m = new Map<string, MapToken>()
+    for (const t of tokens) { if (t.slot_key) m.set(t.slot_key, t) }
+    return m
+  }, [tokens])
+  const tokensByCharId = useMemo(() => {
+    const m = new Map<string, MapToken>()
+    for (const t of tokens) { if (t.character_id) m.set(t.character_id, t) }
+    return m
+  }, [tokens])
+
   // All active (non-archived) characters for the player section
   const activeCharacters = useMemo(
     () => characters.filter(c => !c.is_archived),
@@ -389,9 +411,8 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
   }
 
 
-  // ── Token helpers ──────────────────────────────────────
-  // Tokens default hidden (is_visible: false) — GM reveals explicitly via drawer
-  async function addCharacterToken(character: Character, x = 0.5, y = 0.5) {
+  // ── Token helpers (stable refs so TokenDrawer memo is effective) ──
+  const addCharacterToken = useCallback(async (character: Character, x = 0.5, y = 0.5) => {
     if (!activeMap || !campaignId) return
     await addToken({
       map_id:           activeMap.id,
@@ -409,11 +430,11 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
       token_image_url:  character.portrait_url ?? null,
       token_shape:      'circle',
     })
-  }
+  }, [activeMap, campaignId, addToken])
 
-  async function addAdversaryToken(slot: NpcDrawerSlot, x = 0.5, y = 0.5) {
+  const addAdversaryToken = useCallback(async (slot: NpcDrawerSlot, x = 0.5, y = 0.5) => {
     if (!activeMap || !campaignId) return
-    const advImg = advTokens.find(a => a.adversary_key === slot.name)?.token_image_url ?? null
+    const advImg = advTokensByKey.get(slot.name) ?? null
     await addToken({
       map_id:           activeMap.id,
       campaign_id:      campaignId,
@@ -430,9 +451,9 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
       token_image_url:  advImg,
       token_shape:      'circle',
     })
-  }
+  }, [activeMap, campaignId, addToken, advTokensByKey])
 
-  async function addVehicleToken(slot: VehicleDrawerSlot, x = 0.5, y = 0.5) {
+  const addVehicleToken = useCallback(async (slot: VehicleDrawerSlot, x = 0.5, y = 0.5) => {
     if (!activeMap || !campaignId) return
     await addToken({
       map_id:           activeMap.id,
@@ -450,18 +471,25 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
       token_image_url:  slot.token_image_url,
       token_shape:      'rectangle',
     })
-  }
+  }, [activeMap, campaignId, addToken])
 
-  async function addAllPlayers() {
+  const addAllPlayers = useCallback(async () => {
     if (!activeMap || !campaignId) return
     const count = availablePcs.length
     if (count === 0) return
     for (let i = 0; i < count; i++) {
-      await addCharacterToken(availablePcs[i], 0.5 + (i - count / 2) * 0.05, 0.5)
+      const c = availablePcs[i]
+      await addToken({
+        map_id: activeMap.id, campaign_id: campaignId,
+        participant_type: 'pc', character_id: c.id, participant_id: null, slot_key: null,
+        label: c.name, alignment: 'pc', x: 0.5 + (i - count / 2) * 0.05, y: 0.5,
+        is_visible: true, token_size: 1.0, wound_pct: null,
+        token_image_url: c.portrait_url ?? null, token_shape: 'circle',
+      })
     }
-  }
+  }, [activeMap, campaignId, availablePcs, addToken])
 
-  async function handleAdvTokenUpload(adversaryKey: string, file: File) {
+  const handleAdvTokenUpload = useCallback(async (adversaryKey: string, file: File) => {
     if (file.size > 2 * 1024 * 1024) return
     setAdvTokenBusy(adversaryKey)
     const ext  = file.name.split('.').pop() ?? 'png'
@@ -476,18 +504,21 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
       })
     }
     setAdvTokenBusy(null)
-  }
+  }, [supabase])
 
-  async function clearAdvToken(adversaryKey: string) {
+  const clearAdvToken = useCallback(async (adversaryKey: string) => {
     await supabase.from('adversary_token_images').delete().eq('adversary_key', adversaryKey)
     setAdvTokens(prev => prev.filter(a => a.adversary_key !== adversaryKey))
-  }
+  }, [supabase])
 
-  function handleTokenContextMenu(tokenId: string, e: MouseEvent) {
+  const handleTokenContextMenu = useCallback((tokenId: string, e: MouseEvent) => {
     e.preventDefault()
-    const token = tokens.find(t => t.id === tokenId)
+    const token = tokensById.get(tokenId)
     setContextMenu({ tokenId, x: e.clientX, y: e.clientY, isVisible: token?.is_visible ?? true })
-  }
+  }, [tokensById])
+
+  const closeTokenDrawer = useCallback(() => setTokenDrawerOpen(false), [])
+  const closeContextMenu = useCallback(() => setContextMenu(null), [])
 
   // Close token drawer on Escape
   useEffect(() => {
@@ -784,321 +815,39 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
 
         {/* ── Token context menu (right-click on canvas token) ── */}
         {contextMenu && (
-          <div
-            onClick={e => e.stopPropagation()}
-            style={{
-              position: 'fixed', left: contextMenu.x, top: contextMenu.y,
-              zIndex: 900, background: PANEL_BG, border: `1px solid ${BORDER_HI}`,
-              borderRadius: 6, boxShadow: '0 8px 24px rgba(0,0,0,0.8)',
-              overflow: 'hidden', minWidth: 160,
-            }}
-          >
-            <button
-              onClick={async () => { await toggleVisibility(contextMenu.tokenId, !contextMenu.isVisible); setContextMenu(null) }}
-              style={{ display: 'block', width: '100%', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', padding: '9px 14px', fontFamily: FR, fontSize: FS_LABEL, color: TEXT, borderBottom: `1px solid ${BORDER}` }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(200,170,80,0.08)' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
-            >
-              {contextMenu.isVisible ? '◉ Hide from players' : '◉ Show to players'}
-            </button>
-            <button
-              onClick={async () => { await removeToken(contextMenu.tokenId); setContextMenu(null) }}
-              style={{ display: 'block', width: '100%', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', padding: '9px 14px', fontFamily: FR, fontSize: FS_LABEL, color: '#E05050' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(224,80,80,0.08)' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
-            >
-              ✕ Remove from map
-            </button>
-          </div>
+          <TokenContextMenu
+            contextMenu={contextMenu}
+            onToggleVisibility={toggleVisibility}
+            onRemoveToken={removeToken}
+            onClose={closeContextMenu}
+          />
         )}
       </div>
 
       {/* ══ TOKEN STAGING DRAWER (right, 280px) ══ */}
       {tokenDrawerOpen && (
-        <div
-          onClick={e => e.stopPropagation()}
-          style={{
-            width: 280, flexShrink: 0,
-            background: PANEL_BG,
-            borderLeft: '1px solid rgba(200,170,80,0.25)',
-            display: 'flex', flexDirection: 'column',
-            overflow: 'hidden',
-          }}
-        >
-          {/* Header */}
-          <div style={{
-            padding: '14px 14px 10px',
-            borderBottom: `1px solid ${BORDER}`,
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            flexShrink: 0,
-          }}>
-            <div style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, letterSpacing: '0.14em', color: GOLD }}>
-              ◈ TOKENS
-            </div>
-            <button
-              onClick={() => setTokenDrawerOpen(false)}
-              style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: DIM, fontSize: '1.1rem', lineHeight: 1 }}
-            >
-              ×
-            </button>
-          </div>
-
-          {/* Scrollable body */}
-          <div style={{ flex: 1, overflowY: 'auto' }}>
-
-            {/* ── Section A: Adversaries ── */}
-            {npcSlots.length > 0 && (
-              <>
-                <div style={{ padding: '10px 14px 6px', fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(200,170,80,0.4)', borderBottom: `1px solid ${BORDER}` }}>
-                  Adversaries
-                </div>
-
-                {npcSlots.map(p => {
-                  const advImg     = advTokens.find(a => a.adversary_key === p.name)?.token_image_url ?? null
-                  const tokenColor = p.adversaryType === 'minion' ? '#e05252' : p.adversaryType === 'nemesis' ? '#a852e0' : '#FF9800'
-                  const label      = p.name
-                  const badge      = p.adversaryType === 'minion' ? 'MINION' : p.adversaryType === 'nemesis' ? 'NEMESIS' : 'RIVAL'
-                  const isOnMap    = onMapSlotKeys.has(p.slotId)
-                  const mapToken   = tokens.find(t => t.slot_key === p.slotId) ?? null
-
-                  return (
-                    <div key={p.slotId} style={{ padding: '10px 12px', borderBottom: `1px solid ${BORDER}` }}>
-                      {/* Row: preview + info + add/on-map */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-
-                        {/* Token preview (40×40) */}
-                        {advImg ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={advImg} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: `2px solid ${tokenColor}60` }} />
-                        ) : (
-                          <div style={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, background: `${tokenColor}20`, border: `2px solid ${tokenColor}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FC, fontSize: 16, fontWeight: 700, color: tokenColor }}>
-                            {label.charAt(0).toUpperCase()}
-                          </div>
-                        )}
-
-                        {/* Name + badge */}
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {label}
-                          </div>
-                          <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.1em', color: tokenColor }}>
-                            {badge}
-                          </div>
-                        </div>
-
-                        {/* Add / On map */}
-                        {activeMap && (
-                          isOnMap ? (
-                            <span style={{ fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, color: GREEN, flexShrink: 0 }}>On map ✓</span>
-                          ) : (
-                            <button onClick={() => void addAdversaryToken(p)} style={btnSmall}>+ Add</button>
-                          )
-                        )}
-                      </div>
-
-                      {/* Token image upload (if no image yet) */}
-                      {!advImg && (
-                        <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, cursor: advTokenBusy === p.name ? 'wait' : 'pointer' }}>
-                          <input type="file" accept="image/*" hidden onChange={e => { const f = e.target.files?.[0]; if (f) void handleAdvTokenUpload(p.name, f) }} />
-                          <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>
-                            {advTokenBusy === p.name ? 'Uploading…' : '↑ Upload Image'}
-                          </span>
-                          <span style={{ fontFamily: FR, fontStyle: 'italic', fontSize: FS_OVERLINE, color: 'rgba(200,170,80,0.3)' }}>
-                            · Used as token on the map
-                          </span>
-                        </label>
-                      )}
-
-                      {/* Uploaded image controls (clear) */}
-                      {advImg && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6 }}>
-                          <label style={{ display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer' }}>
-                            <input type="file" accept="image/*" hidden onChange={e => { const f = e.target.files?.[0]; if (f) void handleAdvTokenUpload(p.name, f) }} />
-                            <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>↑ Replace image</span>
-                          </label>
-                          <span style={{ color: BORDER_HI }}>·</span>
-                          <button onClick={() => clearAdvToken(p.name)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: FR, fontSize: FS_CAPTION, color: '#E05050', padding: 0 }}>Remove</button>
-                        </div>
-                      )}
-
-                      {/* On-map controls: visibility toggle + remove from map */}
-                      {isOnMap && mapToken && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
-                          <button
-                            onClick={() => void toggleVisibility(mapToken.id, !mapToken.is_visible)}
-                            style={{
-                              flex: 1, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
-                              letterSpacing: '0.06em', cursor: 'pointer', borderRadius: 3,
-                              padding: '4px 8px', border: 'none',
-                              background: mapToken.is_visible ? 'rgba(78,200,122,0.12)' : 'rgba(255,255,255,0.04)',
-                              color: mapToken.is_visible ? GREEN : DIM,
-                              transition: '.15s',
-                            }}
-                          >
-                            {mapToken.is_visible ? '◉ Visible to players' : '◯ Hidden from players'}
-                          </button>
-                          <button onClick={() => void removeToken(mapToken.id)} style={btnDanger} title="Remove from map">✕</button>
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-              </>
-            )}
-
-            {/* ── Section B: Vehicles ── */}
-            {vehicleSlots.length > 0 && (
-              <>
-                <div style={{ padding: '10px 14px 6px', fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(200,170,80,0.4)', borderBottom: `1px solid ${BORDER}`, borderTop: `1px solid ${BORDER}` }}>
-                  Vehicles
-                </div>
-
-                {vehicleSlots.map(p => {
-                  const isOnMap  = onMapSlotKeys.has(p.slotId)
-                  const mapToken = tokens.find(t => t.slot_key === p.slotId) ?? null
-                  const tokenColor = p.alignment === 'allied_npc' ? '#4EC87A' : '#e05252'
-
-                  return (
-                    <div key={p.slotId} style={{ padding: '10px 12px', borderBottom: `1px solid ${BORDER}` }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-
-                        {/* Token preview (40×28 rectangle) */}
-                        {p.token_image_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={p.token_image_url} alt="" style={{ width: 40, height: 28, borderRadius: 3, objectFit: 'cover', flexShrink: 0, border: `2px solid ${tokenColor}60` }} />
-                        ) : (
-                          <div style={{ width: 40, height: 28, borderRadius: 3, flexShrink: 0, background: `${tokenColor}20`, border: `2px solid ${tokenColor}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FC, fontSize: 13, fontWeight: 700, color: tokenColor }}>
-                            {p.name.charAt(0).toUpperCase()}
-                          </div>
-                        )}
-
-                        {/* Name + badge */}
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {p.name}
-                          </div>
-                          <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.1em', color: tokenColor }}>
-                            {p.alignment === 'allied_npc' ? 'ALLIED' : 'ENEMY'} · VEHICLE
-                          </div>
-                        </div>
-
-                        {/* Add / On map */}
-                        {activeMap && (
-                          isOnMap ? (
-                            <span style={{ fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, color: GREEN, flexShrink: 0 }}>On map ✓</span>
-                          ) : (
-                            <button onClick={() => void addVehicleToken(p)} style={btnSmall}>+ Add</button>
-                          )
-                        )}
-                      </div>
-
-                      {/* On-map controls: visibility toggle + remove from map */}
-                      {isOnMap && mapToken && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
-                          <button
-                            onClick={() => void toggleVisibility(mapToken.id, !mapToken.is_visible)}
-                            style={{
-                              flex: 1, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
-                              letterSpacing: '0.06em', cursor: 'pointer', borderRadius: 3,
-                              padding: '4px 8px', border: 'none',
-                              background: mapToken.is_visible ? 'rgba(78,200,122,0.12)' : 'rgba(255,255,255,0.04)',
-                              color: mapToken.is_visible ? GREEN : DIM,
-                              transition: '.15s',
-                            }}
-                          >
-                            {mapToken.is_visible ? '◉ Visible to players' : '◯ Hidden from players'}
-                          </button>
-                          <button onClick={() => void removeToken(mapToken.id)} style={btnDanger} title="Remove from map">✕</button>
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-              </>
-            )}
-
-            {/* ── Section C: Players ── */}
-            <div style={{ padding: '10px 14px 6px', fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(200,170,80,0.4)', borderBottom: `1px solid ${BORDER}`, borderTop: (npcSlots.length > 0 || vehicleSlots.length > 0) ? `1px solid ${BORDER}` : 'none' }}>
-              Players
-            </div>
-
-            {activeCharacters.length === 0 && (
-              <div style={{ padding: '12px 14px', fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>
-                No active characters.
-              </div>
-            )}
-
-            {activeCharacters.map(char => {
-              const isOnMap  = onMapCharIds.has(char.id)
-              const mapToken = tokens.find(t => t.character_id === char.id) ?? null
-
-              return (
-                <div key={char.id} style={{ padding: '10px 12px', borderBottom: `1px solid ${BORDER}` }}>
-                  {/* Row: portrait + name + add/on-map */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-
-                    {/* Portrait (40×40) */}
-                    {char.portrait_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={char.portrait_url} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid rgba(200,170,80,0.4)' }} />
-                    ) : (
-                      <div style={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, background: 'rgba(200,170,80,0.15)', border: '2px solid rgba(200,170,80,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FC, fontSize: 16, fontWeight: 700, color: GOLD }}>
-                        {char.name.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-
-                    {/* Name */}
-                    <div style={{ flex: 1, fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {char.name}
-                    </div>
-
-                    {/* Add / On map */}
-                    {activeMap && (
-                      isOnMap ? (
-                        <span style={{ fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, color: GREEN, flexShrink: 0 }}>On map ✓</span>
-                      ) : (
-                        <button onClick={() => void addCharacterToken(char)} style={btnSmall}>+ Add</button>
-                      )
-                    )}
-                  </div>
-
-                  {/* On-map controls: visibility toggle + remove from map */}
-                  {isOnMap && mapToken && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
-                      <button
-                        onClick={() => void toggleVisibility(mapToken.id, !mapToken.is_visible)}
-                        style={{
-                          flex: 1, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
-                          letterSpacing: '0.06em', cursor: 'pointer', borderRadius: 3,
-                          padding: '4px 8px', border: 'none',
-                          background: mapToken.is_visible ? 'rgba(78,200,122,0.12)' : 'rgba(255,255,255,0.04)',
-                          color: mapToken.is_visible ? GREEN : DIM,
-                          transition: '.15s',
-                        }}
-                      >
-                        {mapToken.is_visible ? '◉ Visible to players' : '◯ Hidden from players'}
-                      </button>
-                      <button onClick={() => void removeToken(mapToken.id)} style={btnDanger} title="Remove from map">✕</button>
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-
-            {/* Add All Players */}
-            {activeMap && availablePcs.length > 0 && (
-              <div style={{ padding: '10px 12px' }}>
-                <button
-                  onClick={() => void addAllPlayers()}
-                  style={{ ...btnTool, width: '100%', justifyContent: 'center', display: 'flex' }}
-                >
-                  ◉ Add All Players
-                </button>
-              </div>
-            )}
-
-          </div>{/* end scrollable body */}
-        </div>
+        <TokenDrawer
+          npcSlots={npcSlots}
+          vehicleSlots={vehicleSlots}
+          activeCharacters={activeCharacters}
+          availablePcs={availablePcs}
+          activeMap={activeMap}
+          advTokensByKey={advTokensByKey}
+          tokensBySlotKey={tokensBySlotKey}
+          tokensByCharId={tokensByCharId}
+          onMapSlotKeys={onMapSlotKeys}
+          onMapCharIds={onMapCharIds}
+          advTokenBusy={advTokenBusy}
+          onClose={closeTokenDrawer}
+          onAddAdversaryToken={addAdversaryToken}
+          onAddVehicleToken={addVehicleToken}
+          onAddCharacterToken={addCharacterToken}
+          onAddAllPlayers={addAllPlayers}
+          onAdvTokenUpload={handleAdvTokenUpload}
+          onClearAdvToken={clearAdvToken}
+          onToggleVisibility={toggleVisibility}
+          onRemoveToken={removeToken}
+        />
       )}
 
       {/* ── Upload modal ── */}
@@ -1109,3 +858,294 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
     </div>
   )
 }
+
+/* ── TokenContextMenu ──────────────────────────────────────── */
+interface TokenContextMenuProps {
+  contextMenu:        ContextMenuState
+  onToggleVisibility: (id: string, visible: boolean) => Promise<void>
+  onRemoveToken:      (id: string) => Promise<void>
+  onClose:            () => void
+}
+
+const TokenContextMenu = memo(function TokenContextMenu({ contextMenu, onToggleVisibility, onRemoveToken, onClose }: TokenContextMenuProps) {
+  return (
+    <div
+      onClick={e => e.stopPropagation()}
+      style={{
+        position: 'fixed', left: contextMenu.x, top: contextMenu.y,
+        zIndex: 900, background: PANEL_BG, border: `1px solid ${BORDER_HI}`,
+        borderRadius: 6, boxShadow: '0 8px 24px rgba(0,0,0,0.8)',
+        overflow: 'hidden', minWidth: 160,
+      }}
+    >
+      <button
+        onClick={async () => { await onToggleVisibility(contextMenu.tokenId, !contextMenu.isVisible); onClose() }}
+        style={{ display: 'block', width: '100%', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', padding: '9px 14px', fontFamily: FR, fontSize: FS_LABEL, color: TEXT, borderBottom: `1px solid ${BORDER}` }}
+        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(200,170,80,0.08)' }}
+        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+      >
+        {contextMenu.isVisible ? '◉ Hide from players' : '◉ Show to players'}
+      </button>
+      <button
+        onClick={async () => { await onRemoveToken(contextMenu.tokenId); onClose() }}
+        style={{ display: 'block', width: '100%', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', padding: '9px 14px', fontFamily: FR, fontSize: FS_LABEL, color: '#E05050' }}
+        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(224,80,80,0.08)' }}
+        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+      >
+        ✕ Remove from map
+      </button>
+    </div>
+  )
+})
+
+/* ── TokenDrawer ───────────────────────────────────────────── */
+interface TokenDrawerProps {
+  npcSlots:           NpcDrawerSlot[]
+  vehicleSlots:       VehicleDrawerSlot[]
+  activeCharacters:   Character[]
+  availablePcs:       Character[]
+  activeMap:          ActiveMap | null
+  advTokensByKey:     Map<string, string>
+  tokensBySlotKey:    Map<string, MapToken>
+  tokensByCharId:     Map<string, MapToken>
+  onMapSlotKeys:      Set<string>
+  onMapCharIds:       Set<string>
+  advTokenBusy:       string | null
+  onClose:            () => void
+  onAddAdversaryToken:(slot: NpcDrawerSlot) => void
+  onAddVehicleToken:  (slot: VehicleDrawerSlot) => void
+  onAddCharacterToken:(char: Character) => void
+  onAddAllPlayers:    () => void
+  onAdvTokenUpload:   (key: string, file: File) => void
+  onClearAdvToken:    (key: string) => void
+  onToggleVisibility: (id: string, visible: boolean) => Promise<void>
+  onRemoveToken:      (id: string) => Promise<void>
+}
+
+const TokenDrawer = memo(function TokenDrawer({
+  npcSlots, vehicleSlots, activeCharacters, availablePcs, activeMap,
+  advTokensByKey, tokensBySlotKey, tokensByCharId, onMapSlotKeys, onMapCharIds,
+  advTokenBusy, onClose, onAddAdversaryToken, onAddVehicleToken, onAddCharacterToken,
+  onAddAllPlayers, onAdvTokenUpload, onClearAdvToken, onToggleVisibility, onRemoveToken,
+}: TokenDrawerProps) {
+  return (
+    <div
+      onClick={e => e.stopPropagation()}
+      style={{
+        width: 280, flexShrink: 0,
+        background: PANEL_BG,
+        borderLeft: '1px solid rgba(200,170,80,0.25)',
+        display: 'flex', flexDirection: 'column',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Header */}
+      <div style={{
+        padding: '14px 14px 10px',
+        borderBottom: `1px solid ${BORDER}`,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        flexShrink: 0,
+      }}>
+        <div style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, letterSpacing: '0.14em', color: GOLD }}>
+          ◈ TOKENS
+        </div>
+        <button
+          onClick={onClose}
+          style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: DIM, fontSize: '1.1rem', lineHeight: 1 }}
+        >
+          ×
+        </button>
+      </div>
+
+      {/* Scrollable body */}
+      <div style={{ flex: 1, overflowY: 'auto' }}>
+
+        {/* ── Section A: Adversaries ── */}
+        {npcSlots.length > 0 && (
+          <>
+            <div style={{ padding: '10px 14px 6px', fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(200,170,80,0.4)', borderBottom: `1px solid ${BORDER}` }}>
+              Adversaries
+            </div>
+
+            {npcSlots.map(p => {
+              const advImg     = advTokensByKey.get(p.name) ?? null
+              const tokenColor = p.adversaryType === 'minion' ? '#e05252' : p.adversaryType === 'nemesis' ? '#a852e0' : '#FF9800'
+              const label      = p.name
+              const badge      = p.adversaryType === 'minion' ? 'MINION' : p.adversaryType === 'nemesis' ? 'NEMESIS' : 'RIVAL'
+              const isOnMap    = onMapSlotKeys.has(p.slotId)
+              const mapToken   = tokensBySlotKey.get(p.slotId) ?? null
+
+              return (
+                <div key={p.slotId} style={{ padding: '10px 12px', borderBottom: `1px solid ${BORDER}` }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    {advImg ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={advImg} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: `2px solid ${tokenColor}60` }} />
+                    ) : (
+                      <div style={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, background: `${tokenColor}20`, border: `2px solid ${tokenColor}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FC, fontSize: 16, fontWeight: 700, color: tokenColor }}>
+                        {label.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</div>
+                      <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.1em', color: tokenColor }}>{badge}</div>
+                    </div>
+                    {activeMap && (
+                      isOnMap
+                        ? <span style={{ fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, color: GREEN, flexShrink: 0 }}>On map ✓</span>
+                        : <button onClick={() => void onAddAdversaryToken(p)} style={btnSmall}>+ Add</button>
+                    )}
+                  </div>
+
+                  {!advImg && (
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, cursor: advTokenBusy === p.name ? 'wait' : 'pointer' }}>
+                      <input type="file" accept="image/*" hidden onChange={e => { const f = e.target.files?.[0]; if (f) void onAdvTokenUpload(p.name, f) }} />
+                      <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>{advTokenBusy === p.name ? 'Uploading…' : '↑ Upload Image'}</span>
+                      <span style={{ fontFamily: FR, fontStyle: 'italic', fontSize: FS_OVERLINE, color: 'rgba(200,170,80,0.3)' }}>· Used as token on the map</span>
+                    </label>
+                  )}
+
+                  {advImg && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6 }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer' }}>
+                        <input type="file" accept="image/*" hidden onChange={e => { const f = e.target.files?.[0]; if (f) void onAdvTokenUpload(p.name, f) }} />
+                        <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>↑ Replace image</span>
+                      </label>
+                      <span style={{ color: BORDER_HI }}>·</span>
+                      <button onClick={() => void onClearAdvToken(p.name)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: FR, fontSize: FS_CAPTION, color: '#E05050', padding: 0 }}>Remove</button>
+                    </div>
+                  )}
+
+                  {isOnMap && mapToken && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
+                      <button
+                        onClick={() => void onToggleVisibility(mapToken.id, !mapToken.is_visible)}
+                        style={{ flex: 1, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.06em', cursor: 'pointer', borderRadius: 3, padding: '4px 8px', border: 'none', background: mapToken.is_visible ? 'rgba(78,200,122,0.12)' : 'rgba(255,255,255,0.04)', color: mapToken.is_visible ? GREEN : DIM, transition: '.15s' }}
+                      >
+                        {mapToken.is_visible ? '◉ Visible to players' : '◯ Hidden from players'}
+                      </button>
+                      <button onClick={() => void onRemoveToken(mapToken.id)} style={btnDanger} title="Remove from map">✕</button>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </>
+        )}
+
+        {/* ── Section B: Vehicles ── */}
+        {vehicleSlots.length > 0 && (
+          <>
+            <div style={{ padding: '10px 14px 6px', fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(200,170,80,0.4)', borderBottom: `1px solid ${BORDER}`, borderTop: `1px solid ${BORDER}` }}>
+              Vehicles
+            </div>
+
+            {vehicleSlots.map(p => {
+              const isOnMap    = onMapSlotKeys.has(p.slotId)
+              const mapToken   = tokensBySlotKey.get(p.slotId) ?? null
+              const tokenColor = p.alignment === 'allied_npc' ? '#4EC87A' : '#e05252'
+
+              return (
+                <div key={p.slotId} style={{ padding: '10px 12px', borderBottom: `1px solid ${BORDER}` }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    {p.token_image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={p.token_image_url} alt="" style={{ width: 40, height: 28, borderRadius: 3, objectFit: 'cover', flexShrink: 0, border: `2px solid ${tokenColor}60` }} />
+                    ) : (
+                      <div style={{ width: 40, height: 28, borderRadius: 3, flexShrink: 0, background: `${tokenColor}20`, border: `2px solid ${tokenColor}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FC, fontSize: 13, fontWeight: 700, color: tokenColor }}>
+                        {p.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
+                      <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.1em', color: tokenColor }}>{p.alignment === 'allied_npc' ? 'ALLIED' : 'ENEMY'} · VEHICLE</div>
+                    </div>
+                    {activeMap && (
+                      isOnMap
+                        ? <span style={{ fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, color: GREEN, flexShrink: 0 }}>On map ✓</span>
+                        : <button onClick={() => void onAddVehicleToken(p)} style={btnSmall}>+ Add</button>
+                    )}
+                  </div>
+
+                  {isOnMap && mapToken && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
+                      <button
+                        onClick={() => void onToggleVisibility(mapToken.id, !mapToken.is_visible)}
+                        style={{ flex: 1, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.06em', cursor: 'pointer', borderRadius: 3, padding: '4px 8px', border: 'none', background: mapToken.is_visible ? 'rgba(78,200,122,0.12)' : 'rgba(255,255,255,0.04)', color: mapToken.is_visible ? GREEN : DIM, transition: '.15s' }}
+                      >
+                        {mapToken.is_visible ? '◉ Visible to players' : '◯ Hidden from players'}
+                      </button>
+                      <button onClick={() => void onRemoveToken(mapToken.id)} style={btnDanger} title="Remove from map">✕</button>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </>
+        )}
+
+        {/* ── Section C: Players ── */}
+        <div style={{ padding: '10px 14px 6px', fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(200,170,80,0.4)', borderBottom: `1px solid ${BORDER}`, borderTop: (npcSlots.length > 0 || vehicleSlots.length > 0) ? `1px solid ${BORDER}` : 'none' }}>
+          Players
+        </div>
+
+        {activeCharacters.length === 0 && (
+          <div style={{ padding: '12px 14px', fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>No active characters.</div>
+        )}
+
+        {activeCharacters.map(char => {
+          const isOnMap  = onMapCharIds.has(char.id)
+          const mapToken = tokensByCharId.get(char.id) ?? null
+
+          return (
+            <div key={char.id} style={{ padding: '10px 12px', borderBottom: `1px solid ${BORDER}` }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                {char.portrait_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={char.portrait_url} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid rgba(200,170,80,0.4)' }} />
+                ) : (
+                  <div style={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, background: 'rgba(200,170,80,0.15)', border: '2px solid rgba(200,170,80,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FC, fontSize: 16, fontWeight: 700, color: GOLD }}>
+                    {char.name.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div style={{ flex: 1, fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {char.name}
+                </div>
+                {activeMap && (
+                  isOnMap
+                    ? <span style={{ fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, color: GREEN, flexShrink: 0 }}>On map ✓</span>
+                    : <button onClick={() => void onAddCharacterToken(char)} style={btnSmall}>+ Add</button>
+                )}
+              </div>
+
+              {isOnMap && mapToken && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
+                  <button
+                    onClick={() => void onToggleVisibility(mapToken.id, !mapToken.is_visible)}
+                    style={{ flex: 1, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.06em', cursor: 'pointer', borderRadius: 3, padding: '4px 8px', border: 'none', background: mapToken.is_visible ? 'rgba(78,200,122,0.12)' : 'rgba(255,255,255,0.04)', color: mapToken.is_visible ? GREEN : DIM, transition: '.15s' }}
+                  >
+                    {mapToken.is_visible ? '◉ Visible to players' : '◯ Hidden from players'}
+                  </button>
+                  <button onClick={() => void onRemoveToken(mapToken.id)} style={btnDanger} title="Remove from map">✕</button>
+                </div>
+              )}
+            </div>
+          )
+        })}
+
+        {/* Add All Players */}
+        {activeMap && availablePcs.length > 0 && (
+          <div style={{ padding: '10px 12px' }}>
+            <button
+              onClick={() => void onAddAllPlayers()}
+              style={{ ...btnTool, width: '100%', justifyContent: 'center', display: 'flex' }}
+            >
+              ◉ Add All Players
+            </button>
+          </div>
+        )}
+
+      </div>
+    </div>
+  )
+})

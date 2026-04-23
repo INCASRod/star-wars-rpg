@@ -1,5 +1,7 @@
 'use client'
 
+import { memo } from 'react'
+
 /* ── Design tokens ────────────────────────────────────────── */
 const FC   = "var(--font-cinzel), 'Cinzel', serif"
 const FR   = "var(--font-rajdhani), 'Rajdhani', sans-serif"
@@ -27,7 +29,7 @@ export interface StagingTopBarProps {
  *
  * z-index: 9002 (above rail at 9001 so it reads on top of the rail's top edge).
  */
-export function StagingTopBar({
+export const StagingTopBar = memo(function StagingTopBar({
   sessionMode,
   sessionBusy,
   combatRound,
@@ -148,7 +150,7 @@ export function StagingTopBar({
       )}
     </div>
   )
-}
+})
 
 /* ── Internal button ──────────────────────────────────────── */
 interface TopBarButtonProps {

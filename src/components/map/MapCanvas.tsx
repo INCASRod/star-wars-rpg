@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, memo } from 'react'
 import type { MapToken } from '@/hooks/useMapTokens'
 
 // Pixi.js v7 — loaded dynamically to avoid SSR issues
@@ -29,7 +29,7 @@ export interface MapCanvasProps {
   onTokenHoverEnd?:    () => void
 }
 
-export function MapCanvas({
+export const MapCanvas = memo(function MapCanvas({
   mapImageUrl, tokens, isGM, currentCharacterId,
   onTokenMove, gridEnabled, gridSize, onTokenContextMenu,
   tokenScale = 1, onTokenHover, onTokenHoverEnd,
@@ -110,9 +110,52 @@ export function MapCanvas({
   const onContextRef  = useRef(onTokenContextMenu)
   onContextRef.current = onTokenContextMenu
 
+  // Delta sync: skip full sweep when only positions/visibility changed
+  const prevTokensMapRef = useRef<Map<string, MapToken>>(new Map())
+  const prevScaleRef     = useRef(tokenScale)
+
   const syncTokensCb = useCallback(() => {
     const app = appRef.current
     if (!app || !PIXI) return
+
+    const prevMap      = prevTokensMapRef.current
+    const scaleChanged = tokenScale !== prevScaleRef.current
+    prevScaleRef.current = tokenScale
+
+    // Fast path: same token IDs + same image URLs → direct property updates only
+    let fastPath = tokens.length === prevMap.size
+    if (fastPath) {
+      for (const t of tokens) {
+        const p = prevMap.get(t.id)
+        if (!p || (t.token_image_url ?? null) !== (p.token_image_url ?? null)) { fastPath = false; break }
+      }
+    }
+
+    if (fastPath) {
+      for (const token of tokens) {
+        const c = tokensRef.current.get(token.id)
+        if (!c) continue
+        if (draggingTokenIdRef.current !== token.id) {
+          const p = prevMap.get(token.id)!
+          if (token.x !== p.x || token.y !== p.y) {
+            c.x = mapOffsetXRef.current + token.x * mapWRef.current
+            c.y = mapOffsetYRef.current + token.y * mapHRef.current
+          }
+        }
+        if (scaleChanged) {
+          c.scale.set(tokenScale)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ;(c as any).__applyLabelScale?.(tokenScale)
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(c as any).alpha = (!isGM && !token.is_visible) ? 0 : (isGM && !token.is_visible ? 0.4 : 1)
+        prevMap.set(token.id, token)
+      }
+      return
+    }
+
+    // Slow path: rebuild map and do full sync (token added/removed/image changed)
+    prevTokensMapRef.current = new Map(tokens.map(t => [t.id, t]))
     syncTokens(
       app, PIXI, tokens, isGM, currentCharacterId,
       onTokenMoveRef, onContextRef, onTokenHoverRef, onTokenHoverEndRef, containerRef, tokensRef,
@@ -129,7 +172,7 @@ export function MapCanvas({
       style={{ width: '100%', height: '100%', cursor: 'grab', overflow: 'hidden' }}
     />
   )
-}
+})
 
 // ── Pan ──────────────────────────────────────────────────────
 function setupPan(app: InstanceType<typeof import('pixi.js').Application>) {

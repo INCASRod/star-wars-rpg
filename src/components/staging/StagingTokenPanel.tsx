@@ -157,6 +157,12 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
       .then(({ data }) => { if (data) setAdvTokens(data as AdversaryTokenImage[]) })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  const advTokensByKey = useMemo(() => {
+    const m = new Map<string, string>()
+    for (const a of advTokens) m.set(a.adversary_key, a.token_image_url)
+    return m
+  }, [advTokens])
+
   /* ── Remove All confirmation state ───────────────────── */
   const [removeAllConfirm, setRemoveAllConfirm] = useState(false)
   const [removeAllBusy,    setRemoveAllBusy]    = useState(false)
@@ -170,6 +176,18 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
     () => new Set(tokens.map(t => t.slot_key).filter((v): v is string => v !== null)),
     [tokens],
   )
+
+  // O(1) token lookups — avoids Array.find inside render loops
+  const tokensBySlotKey = useMemo(() => {
+    const m = new Map<string, MapToken>()
+    for (const t of tokens) { if (t.slot_key) m.set(t.slot_key, t) }
+    return m
+  }, [tokens])
+  const tokensByCharId = useMemo(() => {
+    const m = new Map<string, MapToken>()
+    for (const t of tokens) { if (t.character_id) m.set(t.character_id, t) }
+    return m
+  }, [tokens])
 
   // Tokens placed directly from the Adversaries / Vehicles library (no slot or character link)
   const standaloneTokens = useMemo(
@@ -241,7 +259,7 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
 
   async function addAdversaryToken(slot: NpcDrawerSlot, x = 0.5, y = 0.5) {
     if (!mapId || !campaignId) return
-    const advImg = advTokens.find(a => a.adversary_key === slot.name)?.token_image_url ?? null
+    const advImg = advTokensByKey.get(slot.name) ?? null
     await addToken({
       map_id:           mapId,
       campaign_id:      campaignId,
@@ -342,13 +360,13 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
           <SectionHeader>Adversaries</SectionHeader>
 
           {npcSlots.map(p => {
-            const advImg     = advTokens.find(a => a.adversary_key === p.name)?.token_image_url ?? null
+            const advImg     = advTokensByKey.get(p.name) ?? null
             const tokenColor = p.adversaryType === 'minion' ? '#e05252'
               : p.adversaryType === 'nemesis' ? '#a852e0' : '#FF9800'
             const badge = p.adversaryType === 'minion' ? 'MINION'
               : p.adversaryType === 'nemesis' ? 'NEMESIS' : 'RIVAL'
             const isOnMap  = onMapSlotKeys.has(p.slotId)
-            const mapToken = tokens.find(t => t.slot_key === p.slotId) ?? null
+            const mapToken = tokensBySlotKey.get(p.slotId) ?? null
 
             return (
               <div key={p.slotId} style={{ padding: '10px 12px', borderBottom: `1px solid ${BORDER}` }}>
@@ -441,7 +459,7 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
 
           {vehicleSlots.map(p => {
             const isOnMap    = onMapSlotKeys.has(p.slotId)
-            const mapToken   = tokens.find(t => t.slot_key === p.slotId) ?? null
+            const mapToken   = tokensBySlotKey.get(p.slotId) ?? null
             const tokenColor = p.alignment === 'allied_npc' ? '#4EC87A' : '#e05252'
 
             return (
@@ -597,7 +615,7 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
 
       {activeCharacters.map(char => {
         const isOnMap  = onMapCharIds.has(char.id)
-        const mapToken = tokens.find(t => t.character_id === char.id) ?? null
+        const mapToken = tokensByCharId.get(char.id) ?? null
 
         return (
           <div key={char.id} style={{ padding: '10px 12px', borderBottom: `1px solid ${BORDER}` }}>

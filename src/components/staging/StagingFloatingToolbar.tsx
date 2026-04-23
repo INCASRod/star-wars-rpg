@@ -26,7 +26,7 @@
  * (circle / rectangle respectively) after the GM picks Enemy or Allied NPC.
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, memo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { MapToken } from '@/hooks/useMapTokens'
 import type { Character } from '@/lib/types'
@@ -146,25 +146,33 @@ export function StagingFloatingToolbar({
     setLeftPanel(prev => (prev === id ? null : id))
   }
 
-  function openRight(id: RightPanelId) {
-    setLeftPanel(null)
-    setRightPanel(prev => (prev === id ? null : id))
-  }
-
-  function handleLeftEntry(entry: LeftEntry) {
+  const handleLeftEntry = useCallback((entry: LeftEntry) => {
     if (entry.combatOnly && !isCombat) return
     if (entry.isExternal) {
-      // External entries (Maps) are controlled by the parent; close any open local drawer.
       setLeftPanel(null)
       onMapsClick()
       return
     }
     if (entry.side === 'right') {
-      openRight(entry.id as RightPanelId)
+      setLeftPanel(null)
+      setRightPanel(prev => (prev === (entry.id as RightPanelId) ? null : (entry.id as RightPanelId)))
     } else {
-      openLeft(entry.id as LeftPanelId)
+      setRightPanel(null)
+      setLeftPanel(prev => (prev === (entry.id as LeftPanelId) ? null : (entry.id as LeftPanelId)))
     }
-  }
+  }, [isCombat, onMapsClick])
+
+  // Pre-computed stable handlers — prevents Pill memo busting on every render
+  const leftClickHandlers = useMemo<Record<string, () => void>>(
+    () => Object.fromEntries(LEFT_ENTRIES.map(e => [e.id, () => handleLeftEntry(e)])),
+    [handleLeftEntry],
+  )
+
+  const rightClickHandlers = useMemo<Record<RightPanelId, () => void>>(() => ({
+    'combat-feed':     () => { setLeftPanel(null); setRightPanel(p => (p === 'combat-feed'     ? null : 'combat-feed'))     },
+    'enc-adversaries': () => { setLeftPanel(null); setRightPanel(p => (p === 'enc-adversaries' ? null : 'enc-adversaries')) },
+    'enc-vehicles':    () => { setLeftPanel(null); setRightPanel(p => (p === 'enc-vehicles'    ? null : 'enc-vehicles'))    },
+  }), [])
 
   function activeForEntry(entry: LeftEntry): boolean {
     if (entry.isExternal) return mapsLibraryOpen
@@ -258,7 +266,7 @@ export function StagingFloatingToolbar({
               active={active}
               disabled={disabled}
               accentColor={entry.id === 'combat-feed' ? RED : GOLD}
-              onClick={() => handleLeftEntry(entry)}
+              onClick={leftClickHandlers[entry.id]}
             />
           )
         })}
@@ -355,7 +363,7 @@ export function StagingFloatingToolbar({
               active={rightPanel === entry.id}
               disabled={false}
               accentColor={GOLD}
-              onClick={() => openRight(entry.id)}
+              onClick={rightClickHandlers[entry.id]}
             />
           ))}
           {onAddEnemy && (
@@ -453,7 +461,7 @@ export function StagingFloatingToolbar({
  * border-radius.  The parent container is purely a transparent flex column
  * used for stacking; it contributes no visible panel behind the group.
  */
-function Pill({
+const Pill = memo(function Pill({
   icon, label, active, disabled, accentColor, onClick,
 }: {
   icon:        string
@@ -535,4 +543,4 @@ function Pill({
       </span>
     </button>
   )
-}
+})
