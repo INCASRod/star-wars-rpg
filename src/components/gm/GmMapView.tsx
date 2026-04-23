@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback, memo } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback, memo } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -9,6 +9,8 @@ import type { MapToken } from '@/hooks/useMapTokens'
 import { MapCanvas } from '@/components/map/MapCanvas'
 import { useMapTokens } from '@/hooks/useMapTokens'
 import type { Character } from '@/lib/types'
+import { fetchAdversaries, adversaryToInstance } from '@/lib/adversaries'
+import type { AdversaryInstance } from '@/lib/adversaries'
 
 /* ── Design tokens ─────────────────────────────────────── */
 const FR  = "var(--font-rajdhani), 'Rajdhani', sans-serif"
@@ -124,6 +126,14 @@ interface EncounterRow {
   adversaries: Array<{
     instanceId: string
     type: 'minion' | 'rival' | 'nemesis'
+    name?: string
+    characteristics?: { brawn: number; agility: number; intellect: number; cunning: number; willpower: number; presence: number }
+    soak?: number
+    defense?: { melee: number; ranged: number }
+    woundThreshold?: number
+    woundsCurrent?: number
+    strainThreshold?: number
+    strainCurrent?: number
   }>
   vehicles: Array<{
     instanceId: string
@@ -143,6 +153,12 @@ interface ContextMenuState {
   x:         number
   y:         number
   isVisible: boolean
+}
+
+interface TooltipState {
+  tokenId: string
+  x:       number
+  y:       number
 }
 
 /* ── Upload modal ──────────────────────────────────────── */
@@ -260,11 +276,14 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
   const [libraryOpen,      setLibraryOpen]      = useState(false)
   const [tokenDrawerOpen,  setTokenDrawerOpen]  = useState(false)
   const [contextMenu,      setContextMenu]      = useState<ContextMenuState | null>(null)
+  const [tooltipState,     setTooltipState]     = useState<TooltipState | null>(null)
+  const isDraggingRef = useRef(false)
   const [encounter,        setEncounter]        = useState<EncounterRow | null>(null)
   const [previewMap,       setPreviewMap]       = useState<ActiveMap | null>(null)
   const [advTokens,        setAdvTokens]        = useState<AdversaryTokenImage[]>([])
   const [busy,             setBusy]             = useState(false)
   const [advTokenBusy,     setAdvTokenBusy]     = useState<string | null>(null)
+  const [advStatCache,     setAdvStatCache]     = useState<Map<string, AdversaryInstance>>(new Map())
   // token_scale lives on the maps row; realtime propagates it to all clients automatically
   const tokenScale = activeMap?.token_scale ?? 1.0
 
@@ -320,6 +339,31 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
       .then(({ data }) => { if (data) setAdvTokens(data as AdversaryTokenImage[]) })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Pre-load base adversary stats for all adversary tokens on the map (keyed by name).
+  // Used by the hover tooltip when tokens aren't linked to a combat encounter slot.
+  useEffect(() => {
+    const names = [...new Set(
+      tokens.filter(t => t.participant_type === 'adversary' && t.label).map(t => t.label!),
+    )]
+    if (names.length === 0) return
+    ;(async () => {
+      const [{ data: globalData }, { data: customData }, staticAdvs] = await Promise.all([
+        supabase.from('ref_adversaries').select('*').in('name', names).is('campaign_id', null),
+        campaignId
+          ? supabase.from('ref_adversaries').select('*').in('name', names).eq('campaign_id', campaignId)
+          : Promise.resolve({ data: [] as unknown[] }),
+        fetchAdversaries(),
+      ])
+      type AdvRow = Parameters<typeof adversaryToInstance>[0]
+      const advMap = new Map<string, AdvRow>()
+      for (const a of staticAdvs) if (names.includes(a.name)) advMap.set(a.name, a)
+      for (const row of [...(globalData ?? []), ...(customData ?? [])]) advMap.set((row as AdvRow).name, row as AdvRow)
+      const cache = new Map<string, AdversaryInstance>()
+      for (const [name, adv] of advMap) cache.set(name, adversaryToInstance(adv, adv.type === 'minion' ? 4 : 1))
+      setAdvStatCache(cache)
+    })()
+  }, [tokens]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // Which characters/slots are already on the current map
   const onMapCharIds  = useMemo(() => new Set(tokens.map(t => t.character_id).filter(Boolean as unknown as (v: string | null) => v is string)), [tokens])
   const onMapSlotKeys = useMemo(() => new Set(tokens.map(t => t.slot_key).filter(Boolean as unknown as (v: string | null) => v is string)), [tokens])
@@ -357,6 +401,85 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
     () => activeCharacters.filter(c => !onMapCharIds.has(c.id)),
     [activeCharacters, onMapCharIds]
   )
+
+  const tooltipProps = useMemo(() => {
+    if (!tooltipState) return null
+    const token = tokensById.get(tooltipState.tokenId)
+    if (!token) return null
+
+    if (token.participant_type === 'pc' && token.character_id) {
+      const char = characters.find(c => c.id === token.character_id)
+      if (char) return {
+        x: tooltipState.x, y: tooltipState.y,
+        name: char.name, typeLabel: 'PC', typeColor: GOLD,
+        characteristics: { brawn: char.brawn, agility: char.agility, intellect: char.intellect, cunning: char.cunning, willpower: char.willpower, presence: char.presence },
+        soak: char.soak,
+        defMelee: char.defense_melee,
+        defRanged: char.defense_ranged,
+        wounds: { current: char.wound_current, max: char.wound_threshold },
+        strain: { current: char.strain_current, max: char.strain_threshold },
+      }
+    }
+
+    if (token.slot_key && encounter) {
+      const slot = encounter.initiative_slots.find(s => s.id === token.slot_key)
+      if (slot?.adversaryInstanceId) {
+        const adv = encounter.adversaries.find(a => a.instanceId === slot.adversaryInstanceId)
+        if (adv) {
+          const color = adv.type === 'minion' ? '#E05252' : adv.type === 'nemesis' ? '#9060D0' : '#FF9800'
+          return {
+            x: tooltipState.x, y: tooltipState.y,
+            name: adv.name ?? token.label ?? '?',
+            typeLabel: adv.type.charAt(0).toUpperCase() + adv.type.slice(1),
+            typeColor: color,
+            characteristics: adv.characteristics,
+            soak: adv.soak,
+            defMelee: adv.defense?.melee,
+            defRanged: adv.defense?.ranged,
+            wounds: adv.woundThreshold ? { current: adv.woundsCurrent ?? 0, max: adv.woundThreshold } : undefined,
+            strain: adv.type !== 'minion' && adv.strainThreshold ? { current: adv.strainCurrent ?? 0, max: adv.strainThreshold } : undefined,
+          }
+        }
+      }
+      if (slot?.vehicleInstanceId) {
+        const veh = encounter.vehicles.find(v => v.instanceId === slot.vehicleInstanceId)
+        if (veh) return {
+          x: tooltipState.x, y: tooltipState.y,
+          name: veh.name,
+          typeLabel: 'Vehicle',
+          typeColor: veh.alignment === 'allied_npc' ? '#4EC87A' : '#E05252',
+        }
+      }
+    }
+
+    // Fallback: look up base stats by name from the pre-loaded adversary cache.
+    // This covers pre-combat tokens that have no slot_key / no active encounter.
+    if (token.participant_type === 'adversary' && token.label) {
+      const cached = advStatCache.get(token.label)
+      if (cached) {
+        const color = cached.type === 'minion' ? '#E05252' : cached.type === 'nemesis' ? '#9060D0' : '#FF9800'
+        return {
+          x: tooltipState.x, y: tooltipState.y,
+          name: token.label,
+          typeLabel: cached.type.charAt(0).toUpperCase() + cached.type.slice(1),
+          typeColor: color,
+          characteristics: cached.characteristics,
+          soak: cached.soak,
+          defMelee: cached.defense?.melee,
+          defRanged: cached.defense?.ranged,
+          wounds: cached.woundThreshold ? { current: 0, max: cached.woundThreshold } : undefined,
+          strain: cached.type !== 'minion' && cached.strainThreshold ? { current: 0, max: cached.strainThreshold } : undefined,
+        }
+      }
+    }
+
+    return {
+      x: tooltipState.x, y: tooltipState.y,
+      name: token.label ?? '?',
+      typeLabel: token.alignment ?? 'token',
+      typeColor: GOLD,
+    }
+  }, [tooltipState, tokensById, characters, encounter, advStatCache])
 
   // NPC slots from active encounter — adversaries live in combat_encounters JSONB, not combat_participants
   const npcSlots = useMemo<NpcDrawerSlot[]>(() => {
@@ -520,6 +643,24 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
   const closeTokenDrawer = useCallback(() => setTokenDrawerOpen(false), [])
   const closeContextMenu = useCallback(() => setContextMenu(null), [])
 
+  const handleTokenHover = useCallback((tokenId: string, screenX: number, screenY: number) => {
+    if (isDraggingRef.current) return
+    setTooltipState({ tokenId, x: screenX, y: screenY })
+  }, [])
+
+  const handleTokenHoverEnd = useCallback(() => {
+    setTooltipState(null)
+  }, [])
+
+  const handleTokenDragStart = useCallback((_tokenId: string) => {
+    isDraggingRef.current = true
+    setTooltipState(null)
+  }, [])
+
+  const handleTokenDragEnd = useCallback((_tokenId: string) => {
+    isDraggingRef.current = false
+  }, [])
+
   // Close token drawer on Escape
   useEffect(() => {
     if (!tokenDrawerOpen) return
@@ -551,6 +692,10 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
               gridSize={(previewMap ?? activeMap)!.grid_size ?? 50}
               onTokenContextMenu={handleTokenContextMenu}
               tokenScale={tokenScale}
+              onTokenHover={handleTokenHover}
+              onTokenHoverEnd={handleTokenHoverEnd}
+              onTokenDragStart={handleTokenDragStart}
+              onTokenDragEnd={handleTokenDragEnd}
             />
             {previewMap && (
               <div style={{
@@ -813,6 +958,11 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
           )
         })()}
 
+        {/* ── Token tooltip (hover) ── */}
+        {mounted && tooltipState && tooltipProps && (
+          <TokenTooltip {...tooltipProps} />
+        )}
+
         {/* ── Token context menu (right-click on canvas token) ── */}
         {contextMenu && (
           <TokenContextMenu
@@ -898,7 +1048,6 @@ const TokenContextMenu = memo(function TokenContextMenu({ contextMenu, onToggleV
   )
 })
 
-/* ── TokenDrawer ───────────────────────────────────────────── */
 interface TokenDrawerProps {
   npcSlots:           NpcDrawerSlot[]
   vehicleSlots:       VehicleDrawerSlot[]
@@ -921,6 +1070,114 @@ interface TokenDrawerProps {
   onToggleVisibility: (id: string, visible: boolean) => Promise<void>
   onRemoveToken:      (id: string) => Promise<void>
 }
+
+/* ── TokenTooltip ──────────────────────────────────────────── */
+interface TokenTooltipData {
+  x:              number
+  y:              number
+  name:           string
+  typeLabel:      string
+  typeColor:      string
+  characteristics?: { brawn: number; agility: number; intellect: number; cunning: number; willpower: number; presence: number }
+  soak?:          number | null
+  defMelee?:      number | null
+  defRanged?:     number | null
+  wounds?:        { current: number; max: number }
+  strain?:        { current: number; max: number }
+}
+
+const TOOLTIP_W = 230
+const CHAR_ABBRS = ['BR', 'AG', 'INT', 'CUN', 'WIL', 'PR'] as const
+const CHAR_KEYS  = ['brawn', 'agility', 'intellect', 'cunning', 'willpower', 'presence'] as const
+
+const TokenTooltip = memo(function TokenTooltip(p: TokenTooltipData) {
+  const vw   = typeof window !== 'undefined' ? window.innerWidth  : 1200
+  const vh   = typeof window !== 'undefined' ? window.innerHeight : 800
+  const left = Math.max(8, Math.min(p.x + 14, vw - TOOLTIP_W - 8))
+  const top  = Math.max(8, Math.min(p.y - 12, vh - 300))
+
+  return createPortal(
+    <div style={{
+      position: 'fixed', left, top, width: TOOLTIP_W, zIndex: 1100,
+      background: 'rgba(6,13,9,0.97)',
+      border: `1px solid ${p.typeColor}44`,
+      borderRadius: 6,
+      boxShadow: `0 8px 32px rgba(0,0,0,0.85), 0 0 0 1px ${p.typeColor}18`,
+      backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+      padding: '10px 12px',
+      pointerEvents: 'none',
+    }}>
+      {/* Name + type badge */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+        <div style={{ flex: 1, fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
+        <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: p.typeColor, background: `${p.typeColor}18`, border: `1px solid ${p.typeColor}35`, borderRadius: 3, padding: '1px 5px', flexShrink: 0 }}>{p.typeLabel}</div>
+      </div>
+
+      {/* Characteristics grid */}
+      {p.characteristics && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 3, marginBottom: 8 }}>
+          {CHAR_ABBRS.map((abbr, i) => (
+            <div key={abbr} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, background: 'rgba(255,255,255,0.04)', borderRadius: 3, padding: '4px 2px' }}>
+              <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.04em' }}>{abbr}</div>
+              <div style={{ fontFamily: FR, fontSize: FS_SM, fontWeight: 700, color: GOLD }}>{p.characteristics![CHAR_KEYS[i]]}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Soak + Defense */}
+      {(p.soak != null || p.defMelee != null || p.defRanged != null) && (
+        <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
+          {p.soak != null && (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.04)', borderRadius: 3, padding: '4px 4px' }}>
+              <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.04em' }}>SOAK</div>
+              <div style={{ fontFamily: FR, fontSize: FS_SM, fontWeight: 700, color: TEXT }}>{p.soak}</div>
+            </div>
+          )}
+          {p.defMelee != null && (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.04)', borderRadius: 3, padding: '4px 4px' }}>
+              <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.04em' }}>DEF M</div>
+              <div style={{ fontFamily: FR, fontSize: FS_SM, fontWeight: 700, color: TEXT }}>{p.defMelee}</div>
+            </div>
+          )}
+          {p.defRanged != null && (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.04)', borderRadius: 3, padding: '4px 4px' }}>
+              <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.04em' }}>DEF R</div>
+              <div style={{ fontFamily: FR, fontSize: FS_SM, fontWeight: 700, color: TEXT }}>{p.defRanged}</div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Wounds bar */}
+      {p.wounds && (
+        <div style={{ marginBottom: p.strain ? 6 : 0 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+            <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Wounds</span>
+            <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, color: p.wounds.current >= p.wounds.max ? '#E05050' : TEXT }}>{p.wounds.current}/{p.wounds.max}</span>
+          </div>
+          <div style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: `${Math.min(100, (p.wounds.current / Math.max(p.wounds.max, 1)) * 100)}%`, background: p.wounds.current >= p.wounds.max ? '#E05050' : '#C8AA50', borderRadius: 2 }} />
+          </div>
+        </div>
+      )}
+
+      {/* Strain bar */}
+      {p.strain && (
+        <div style={{ marginTop: p.wounds ? 6 : 0 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+            <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Strain</span>
+            <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, color: p.strain.current >= p.strain.max ? '#E05050' : TEXT }}>{p.strain.current}/{p.strain.max}</span>
+          </div>
+          <div style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: `${Math.min(100, (p.strain.current / Math.max(p.strain.max, 1)) * 100)}%`, background: p.strain.current >= p.strain.max ? '#E05050' : '#4EC87A', borderRadius: 2 }} />
+          </div>
+        </div>
+      )}
+    </div>,
+    document.body,
+  )
+})
 
 const TokenDrawer = memo(function TokenDrawer({
   npcSlots, vehicleSlots, activeCharacters, availablePcs, activeMap,

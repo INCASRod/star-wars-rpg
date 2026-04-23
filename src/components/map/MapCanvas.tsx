@@ -27,12 +27,14 @@ export interface MapCanvasProps {
   tokenScale?:         number   // GM-only visual scale multiplier; players always see 1.0
   onTokenHover?:       (tokenId: string, screenX: number, screenY: number) => void
   onTokenHoverEnd?:    () => void
+  onTokenDragStart?:   (tokenId: string) => void
+  onTokenDragEnd?:     (tokenId: string) => void
 }
 
 export const MapCanvas = memo(function MapCanvas({
   mapImageUrl, tokens, isGM, currentCharacterId,
   onTokenMove, gridEnabled, gridSize, onTokenContextMenu,
-  tokenScale = 1, onTokenHover, onTokenHoverEnd,
+  tokenScale = 1, onTokenHover, onTokenHoverEnd, onTokenDragStart, onTokenDragEnd,
 }: MapCanvasProps) {
   const containerRef       = useRef<HTMLDivElement>(null)
   const appRef             = useRef<InstanceType<typeof import('pixi.js').Application> | null>(null)
@@ -53,6 +55,10 @@ export const MapCanvas = memo(function MapCanvas({
   onTokenHoverRef.current  = onTokenHover
   const onTokenHoverEndRef = useRef(onTokenHoverEnd)
   onTokenHoverEndRef.current = onTokenHoverEnd
+  const onTokenDragStartRef = useRef(onTokenDragStart)
+  onTokenDragStartRef.current = onTokenDragStart
+  const onTokenDragEndRef   = useRef(onTokenDragEnd)
+  onTokenDragEndRef.current  = onTokenDragEnd
 
   // ── Pixi bootstrap ──────────────────────────────────────────
   useEffect(() => {
@@ -158,7 +164,7 @@ export const MapCanvas = memo(function MapCanvas({
     prevTokensMapRef.current = new Map(tokens.map(t => [t.id, t]))
     syncTokens(
       app, PIXI, tokens, isGM, currentCharacterId,
-      onTokenMoveRef, onContextRef, onTokenHoverRef, onTokenHoverEndRef, containerRef, tokensRef,
+      onTokenMoveRef, onContextRef, onTokenHoverRef, onTokenHoverEndRef, onTokenDragStartRef, onTokenDragEndRef, containerRef, tokensRef,
       mapWRef, mapHRef, mapOffsetXRef, mapOffsetYRef,
       draggingTokenIdRef, tokenScale,
     )
@@ -309,6 +315,8 @@ function syncTokens(
   onContextRef:         React.MutableRefObject<((id: string, e: MouseEvent) => void) | undefined>,
   onHoverRef:           React.MutableRefObject<((id: string, x: number, y: number) => void) | undefined>,
   onHoverEndRef:        React.MutableRefObject<(() => void) | undefined>,
+  onDragStartRef:       React.MutableRefObject<((id: string) => void) | undefined>,
+  onDragEndRef:         React.MutableRefObject<((id: string) => void) | undefined>,
   containerRef:         React.RefObject<HTMLDivElement | null>,
   tokensRef:            React.MutableRefObject<Map<string, InstanceType<typeof import('pixi.js').Container>>>,
   mapWRef:              React.MutableRefObject<number>,
@@ -357,7 +365,7 @@ function syncTokens(
     const sprite  = buildTokenSprite(
       px, token, canDrag,
       mapW, mapH, offsetX, offsetY,
-      onMoveRef, onContextRef, onHoverRef, onHoverEndRef, containerRef, draggingTokenIdRef,
+      onMoveRef, onContextRef, onHoverRef, onHoverEndRef, onDragStartRef, onDragEndRef, containerRef, draggingTokenIdRef,
       mapWRef, mapHRef, mapOffsetXRef, mapOffsetYRef,
       tokenScale,
     )
@@ -389,6 +397,8 @@ function buildTokenSprite(
   onContextRef:        React.MutableRefObject<((id: string, e: MouseEvent) => void) | undefined>,
   onHoverRef:          React.MutableRefObject<((id: string, x: number, y: number) => void) | undefined>,
   onHoverEndRef:       React.MutableRefObject<(() => void) | undefined>,
+  onDragStartRef:      React.MutableRefObject<((id: string) => void) | undefined>,
+  onDragEndRef:        React.MutableRefObject<((id: string) => void) | undefined>,
   containerRef:        React.RefObject<HTMLDivElement | null>,
   draggingTokenIdRef:  React.MutableRefObject<string | null>,
   mapWRef:             React.MutableRefObject<number>,
@@ -553,6 +563,7 @@ function buildTokenSprite(
     if (!dragging) return
     dragging = false
     draggingTokenIdRef.current = null
+    onDragEndRef.current?.(token.id)
     c.zIndex = 10
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const stage = c.parent as any
@@ -574,6 +585,7 @@ function buildTokenSprite(
     e.stopPropagation()
     dragging = true
     draggingTokenIdRef.current = token.id
+    onDragStartRef.current?.(token.id)
     // Convert the pointer's canvas-pixel position into stage-local space so
     // offX/offY are in the same coordinate system as c.x/c.y.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
