@@ -217,6 +217,36 @@ export function EncounterAdversaryPanel({ campaignId, characters }: EncounterAdv
     await saveEncounter({ adversaries: updated })
   }, [encounter, saveEncounter])
 
+  /* ── Minion group size adjustment ───────────────────────── */
+  const adjustGroupSize = useCallback(async (adv: AdversaryInstance, delta: number) => {
+    if (!encounter || adv.type !== 'minion') return
+    const newGroupSize = Math.max(1, adv.groupSize + delta)
+    if (newGroupSize === adv.groupSize) return
+
+    let newGroupRemaining: number
+    let newWoundsCurrent: number
+
+    if (delta > 0) {
+      newGroupRemaining = adv.groupRemaining + 1
+      newWoundsCurrent  = adv.woundsCurrent ?? 0
+    } else {
+      newGroupRemaining = Math.min(adv.groupRemaining, newGroupSize)
+      newWoundsCurrent  = Math.min(adv.woundsCurrent ?? 0, adv.woundThreshold * newGroupSize)
+    }
+
+    const updatedAdversaries = encounter.adversaries.map(a =>
+      a.instanceId !== adv.instanceId ? a
+        : { ...a, groupSize: newGroupSize, groupRemaining: newGroupRemaining, woundsCurrent: newWoundsCurrent }
+    )
+    await saveEncounter({ adversaries: updatedAdversaries })
+
+    const advSlot = encounter.initiative_slots.find((s: InitiativeSlot) => s.adversaryInstanceId === adv.instanceId)
+    if (advSlot) {
+      const pct = newGroupRemaining / Math.max(1, newGroupSize)
+      await supabase.from('map_tokens').update({ wound_pct: pct }).eq('slot_key', advSlot.id).eq('campaign_id', campaignId)
+    }
+  }, [encounter, campaignId, saveEncounter]) // eslint-disable-line react-hooks/exhaustive-deps
+
   /* ── Toggle reveal ───────────────────────────────────────── */
   const toggleRevealed = useCallback(async (instanceId: string) => {
     if (!encounter) return
@@ -501,6 +531,7 @@ export function EncounterAdversaryPanel({ campaignId, characters }: EncounterAdv
                 adv={adv} accentColor={accent}
                 onAdjust={delta => void adjustAdversaryWounds(adv, delta)}
                 onAdjustStrain={delta => void adjustAdversaryStrain(adv, delta)}
+                onAdjustGroupSize={adv.type === 'minion' ? delta => void adjustGroupSize(adv, delta) : undefined}
               />
             </div>
 
@@ -917,12 +948,13 @@ export function EncounterAdversaryPanel({ campaignId, characters }: EncounterAdv
 
 /* ── AdversaryWoundTracker (mirrored from CombatPanel) ────── */
 function AdversaryWoundTracker({
-  adv, accentColor, onAdjust, onAdjustStrain,
+  adv, accentColor, onAdjust, onAdjustStrain, onAdjustGroupSize,
 }: {
   adv: AdversaryInstance
   accentColor: string
   onAdjust: (delta: number) => void
   onAdjustStrain?: (delta: number) => void
+  onAdjustGroupSize?: (delta: number) => void
 }) {
   const wounds    = adv.woundsCurrent ?? 0
   const isMinion  = adv.type === 'minion'
@@ -979,6 +1011,35 @@ function AdversaryWoundTracker({
           <span style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: TEXT_MUTED, marginLeft: 4 }}>
             {groupAlive}/{adv.groupSize} · rank {skillRank}
           </span>
+        </div>
+      )}
+      {isMinion && onAdjustGroupSize && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6 }}>
+          <span style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: TEXT_MUTED, letterSpacing: '0.08em', textTransform: 'uppercase', flex: 1 }}>
+            Group Size
+          </span>
+          <button
+            onClick={() => onAdjustGroupSize(-1)}
+            disabled={adv.groupSize <= 1}
+            style={{
+              ...btnBase,
+              width: 28, height: 24,
+              cursor: adv.groupSize <= 1 ? 'not-allowed' : 'pointer',
+              color: adv.groupSize <= 1 ? 'rgba(232,223,200,0.2)' : 'rgba(232,223,200,0.8)',
+            }}
+            title="Remove one unit from group"
+          >−</button>
+          <span style={{
+            fontFamily: "'Share Tech Mono','Courier New',monospace",
+            fontSize: 'clamp(0.7rem,1vw,0.82rem)',
+            color: 'rgba(232,223,200,0.8)',
+            minWidth: 20, textAlign: 'center',
+          }}>{adv.groupSize}</span>
+          <button
+            onClick={() => onAdjustGroupSize(1)}
+            style={{ ...btnBase, width: 28, height: 24 }}
+            title="Add one unit to group"
+          >+</button>
         </div>
       )}
       {adv.type === 'nemesis' && adv.strainThreshold && adv.strainThreshold > 0 && onAdjustStrain && (() => {

@@ -134,6 +134,8 @@ interface EncounterRow {
     woundsCurrent?: number
     strainThreshold?: number
     strainCurrent?: number
+    groupSize?: number
+    groupRemaining?: number
   }>
   vehicles: Array<{
     instanceId: string
@@ -427,6 +429,9 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
         const adv = encounter.adversaries.find(a => a.instanceId === slot.adversaryInstanceId)
         if (adv) {
           const color = adv.type === 'minion' ? '#E05252' : adv.type === 'nemesis' ? '#9060D0' : '#FF9800'
+          const woundsMax = adv.type === 'minion' && adv.groupSize
+            ? (adv.woundThreshold ?? 0) * adv.groupSize
+            : adv.woundThreshold
           return {
             x: tooltipState.x, y: tooltipState.y,
             name: adv.name ?? token.label ?? '?',
@@ -436,8 +441,11 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
             soak: adv.soak,
             defMelee: adv.defense?.melee,
             defRanged: adv.defense?.ranged,
-            wounds: adv.woundThreshold ? { current: adv.woundsCurrent ?? 0, max: adv.woundThreshold } : undefined,
+            wounds: (adv.woundThreshold && woundsMax) ? { current: adv.woundsCurrent ?? 0, max: woundsMax } : undefined,
             strain: adv.type !== 'minion' && adv.strainThreshold ? { current: adv.strainCurrent ?? 0, max: adv.strainThreshold } : undefined,
+            minionGroup: adv.type === 'minion' && adv.groupSize != null
+              ? { alive: adv.groupRemaining ?? 0, total: adv.groupSize }
+              : undefined,
           }
         }
       }
@@ -1084,6 +1092,7 @@ interface TokenTooltipData {
   defRanged?:     number | null
   wounds?:        { current: number; max: number }
   strain?:        { current: number; max: number }
+  minionGroup?:   { alive: number; total: number }
 }
 
 const TOOLTIP_W = 230
@@ -1146,6 +1155,25 @@ const TokenTooltip = memo(function TokenTooltip(p: TokenTooltipData) {
               <div style={{ fontFamily: FR, fontSize: FS_SM, fontWeight: 700, color: TEXT }}>{p.defRanged}</div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Minion group count */}
+      {p.minionGroup && (
+        <div style={{ marginBottom: 6 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+            <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Group</span>
+            <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, color: p.minionGroup.alive === 0 ? '#E05050' : TEXT }}>
+              {p.minionGroup.alive}/{p.minionGroup.total} alive
+            </span>
+          </div>
+          <div style={{ display: 'flex', gap: 3 }}>
+            {Array.from({ length: p.minionGroup.total }).map((_, i) => (
+              <span key={i} style={{ fontSize: 9, color: i < p.minionGroup!.alive ? '#E05252' : 'rgba(255,255,255,0.15)' }}>
+                {i < p.minionGroup!.alive ? '■' : '□'}
+              </span>
+            ))}
+          </div>
         </div>
       )}
 

@@ -341,43 +341,41 @@ export function StagingFloatingToolbar({
         />
       </div>
 
-      {/* ── Right pill stack (combat only) ───────────────── */}
-      {isCombat && (
-        <div
-          style={{
-            position:      'fixed',
-            top:           PILL_TOP,
-            right:         8,
-            zIndex:        40,
-            display:       'flex',
-            flexDirection: 'column',
-            gap:           6,
-            pointerEvents: 'none',
-          }}
-        >
-          {RIGHT_ENTRIES.map(entry => (
-            <Pill
-              key={entry.id}
-              icon={entry.icon}
-              label={entry.label}
-              active={rightPanel === entry.id}
-              disabled={false}
-              accentColor={GOLD}
-              onClick={rightClickHandlers[entry.id]}
-            />
-          ))}
-          {onAddEnemy && (
-            <Pill
-              icon="⚡"
-              label="Add Enemy"
-              active={false}
-              disabled={false}
-              accentColor={RED}
-              onClick={onAddEnemy}
-            />
-          )}
-        </div>
-      )}
+      {/* ── Right pill stack (always visible) ───────────────── */}
+      <div
+        style={{
+          position:      'fixed',
+          top:           PILL_TOP,
+          right:         8,
+          zIndex:        40,
+          display:       'flex',
+          flexDirection: 'column',
+          gap:           6,
+          pointerEvents: 'none',
+        }}
+      >
+        {RIGHT_ENTRIES.map(entry => (
+          <Pill
+            key={entry.id}
+            icon={entry.icon}
+            label={entry.label}
+            active={rightPanel === entry.id}
+            disabled={false}
+            accentColor={GOLD}
+            onClick={rightClickHandlers[entry.id]}
+          />
+        ))}
+        {onAddEnemy && isCombat && (
+          <Pill
+            icon="⚡"
+            label="Add Enemy"
+            active={false}
+            disabled={false}
+            accentColor={RED}
+            onClick={onAddEnemy}
+          />
+        )}
+      </div>
 
       {/* ── Left drawer ──────────────────────────────────── */}
       <StagingDrawer
