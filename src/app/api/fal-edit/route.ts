@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const FAL_EDIT_URL = 'https://fal.run/openai/gpt-image-2/edits'
+const FAL_EDIT_URL = 'https://fal.run/openai/gpt-image-2'
 
 export async function POST(req: NextRequest) {
   const apiKey = process.env.FAL_KEY
