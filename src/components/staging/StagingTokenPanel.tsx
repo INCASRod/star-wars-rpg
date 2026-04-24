@@ -189,9 +189,10 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
     return m
   }, [tokens])
 
-  // Tokens placed directly from the Adversaries / Vehicles library (no slot or character link)
+  // All adversary / vehicle tokens on the map — includes encounter-linked ones
+  // so library-placed tokens always appear here regardless of slot_key state
   const standaloneTokens = useMemo(
-    () => tokens.filter(t => t.slot_key === null && t.character_id === null),
+    () => tokens.filter(t => t.character_id === null),
     [tokens],
   )
 
