@@ -31,7 +31,10 @@ import { createClient } from '@/lib/supabase/client'
 import type { MapToken } from '@/hooks/useMapTokens'
 import type { Character } from '@/lib/types'
 import type { Adversary } from '@/lib/adversaries'
+import { adversaryToInstance } from '@/lib/adversaries'
 import type { Vehicle } from '@/lib/vehicles'
+import { vehicleToVehicleInstance } from '@/lib/vehicles'
+import type { CombatEncounter, InitiativeSlot } from '@/lib/combat'
 import { AdversaryLibrary } from '@/components/gm/AdversaryLibrary'
 import { VehicleLibrary } from '@/components/gm/VehicleLibrary'
 import { StagingDrawer } from './StagingDrawer'
@@ -103,6 +106,38 @@ export interface StagingFloatingToolbarProps {
   toggleVisibility:(id: string, visible: boolean) => Promise<void>
   removeAllTokens: () => Promise<void>
   onAddEnemy?:     () => void
+}
+
+/* ── Encounter helpers ────────────────────────────────────── */
+async function ensureActiveEncounter(
+  supabase: ReturnType<typeof createClient>,
+  campaignId: string,
+): Promise<CombatEncounter | null> {
+  const { data: rows } = await supabase
+    .from('combat_encounters')
+    .select('*')
+    .eq('campaign_id', campaignId)
+    .eq('is_active', true)
+    .order('created_at', { ascending: false })
+    .limit(1)
+  if (rows && rows.length > 0) return rows[0] as CombatEncounter
+
+  const { data: created } = await supabase
+    .from('combat_encounters')
+    .insert({
+      campaign_id:        campaignId,
+      round:              1,
+      is_active:          true,
+      current_slot_index: 0,
+      initiative_type:    'cool',
+      initiative_slots:   [],
+      adversaries:        [],
+      vehicles:           [],
+      log_entries:        [],
+    })
+    .select('*')
+    .single()
+  return created as CombatEncounter | null
 }
 
 export function StagingFloatingToolbar({
@@ -181,11 +216,14 @@ export function StagingFloatingToolbar({
   }
 
   /* ── "Add Token" callbacks ────────────────────────────────
-   * The library passes _tokenImageUrl on the object — no duplicate DB fetch needed. */
+   * Creates the map token then immediately registers the adversary/vehicle
+   * into the active combat encounter (creating one if needed), so the
+   * Encounter panels show it without waiting for combat to be activated. */
   const handleAddAdversaryToken = useCallback(
     async (adv: Adversary & { _isCustom?: boolean; _tokenImageUrl?: string | null }, alignment: 'enemy' | 'allied_npc') => {
       if (!mapId || !campaignId) return
-      await addToken({
+
+      const token = await addToken({
         map_id:           mapId,
         campaign_id:      campaignId,
         participant_type: 'adversary',
@@ -202,14 +240,42 @@ export function StagingFloatingToolbar({
         token_image_url:  adv._tokenImageUrl ?? null,
         token_shape:      'circle',
       })
+      if (!token) return
+
+      const enc = await ensureActiveEncounter(supabase, campaignId)
+      if (!enc) return
+
+      const instance = adversaryToInstance(adv, adv.type === 'minion' ? 4 : 1)
+      const slotId   = crypto.randomUUID()
+      const slot: InitiativeSlot = {
+        id:                  slotId,
+        type:                'npc',
+        alignment:           alignment === 'allied_npc' ? 'allied_npc' : 'enemy',
+        order:               enc.initiative_slots.length + 1,
+        name:                adv.name,
+        acted:               false,
+        current:             false,
+        successes:           0,
+        advantages:          0,
+        adversaryInstanceId: instance.instanceId,
+      }
+
+      await supabase.from('combat_encounters').update({
+        adversaries:      [...enc.adversaries, instance],
+        initiative_slots: [...enc.initiative_slots, slot],
+        updated_at:       new Date().toISOString(),
+      }).eq('id', enc.id)
+
+      await supabase.from('map_tokens').update({ slot_key: slotId }).eq('id', token.id)
     },
-    [mapId, campaignId, addToken], // eslint-disable-line react-hooks/exhaustive-deps
+    [mapId, campaignId, addToken, supabase], // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   const handleAddVehicleToken = useCallback(
     async (vehicle: Vehicle & { _isCustom?: boolean; _tokenImageUrl?: string | null }, alignment: 'enemy' | 'allied_npc') => {
       if (!mapId || !campaignId) return
-      await addToken({
+
+      const token = await addToken({
         map_id:           mapId,
         campaign_id:      campaignId,
         participant_type: 'adversary',
@@ -226,8 +292,35 @@ export function StagingFloatingToolbar({
         token_image_url:  vehicle._tokenImageUrl ?? null,
         token_shape:      'rectangle',
       })
+      if (!token) return
+
+      const enc = await ensureActiveEncounter(supabase, campaignId)
+      if (!enc) return
+
+      const instance = vehicleToVehicleInstance(vehicle, alignment, vehicle._tokenImageUrl)
+      const slotId   = crypto.randomUUID()
+      const slot: InitiativeSlot = {
+        id:               slotId,
+        type:             'npc',
+        alignment,
+        order:            enc.initiative_slots.length + 1,
+        name:             vehicle.name,
+        acted:            false,
+        current:          false,
+        successes:        0,
+        advantages:       0,
+        vehicleInstanceId: instance.instanceId,
+      }
+
+      await supabase.from('combat_encounters').update({
+        vehicles:         [...(enc.vehicles ?? []), instance],
+        initiative_slots: [...enc.initiative_slots, slot],
+        updated_at:       new Date().toISOString(),
+      }).eq('id', enc.id)
+
+      await supabase.from('map_tokens').update({ slot_key: slotId }).eq('id', token.id)
     },
-    [mapId, campaignId, addToken], // eslint-disable-line react-hooks/exhaustive-deps
+    [mapId, campaignId, addToken, supabase], // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   /* ── Drawer title helpers ─────────────────────────────────  */
