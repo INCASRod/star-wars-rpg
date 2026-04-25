@@ -47,7 +47,10 @@ export function useEncounterState(campaignId: string | null): UseEncounterStateR
         event: '*', schema: 'public', table: 'combat_encounters',
         filter: `campaign_id=eq.${campaignId}`,
       }, (payload) => {
-        if (payload.new) setEncounter(payload.new as CombatEncounter)
+        if (payload.new) {
+          const row = payload.new as CombatEncounter
+          setEncounter(row.is_active ? row : null)
+        }
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }

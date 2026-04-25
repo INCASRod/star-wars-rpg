@@ -57,6 +57,8 @@ export interface TalentTreeProps {
   onRemoveTalent?: (talentKey: string, xpCost: number) => void
   isGmMode?: boolean
   xpAvailable?: number
+  /** Read-only preview: all nodes shown as available, no purchase flow */
+  previewMode?: boolean
 }
 
 /* ═══════════════════════════════════════════════════════ */
@@ -111,6 +113,7 @@ function NodeCard({
   onClickAvailable,
   onClickRemove,
   onClickLocked,
+  previewMode,
 }: {
   node: TalentTreeNode
   xpAvailable?: number
@@ -118,6 +121,7 @@ function NodeCard({
   onClickAvailable: (n: TalentTreeNode) => void
   onClickRemove: (n: TalentTreeNode) => void
   onClickLocked: (n: TalentTreeNode) => void
+  previewMode?: boolean
 }) {
   const [hovered, setHovered] = useState(false)
 
@@ -276,11 +280,11 @@ function NodeCard({
     )
   }
 
-  if (node.canPurchase) {
-    /* ── AVAILABLE ── */
+  if (previewMode || node.canPurchase) {
+    /* ── AVAILABLE (or preview) ── */
     return (
       <div
-        onClick={() => onClickAvailable(node)}
+        onClick={() => previewMode ? onClickLocked(node) : onClickAvailable(node)}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
@@ -597,9 +601,11 @@ function PurchasePopover({
 function LockedInfoPopover({
   node,
   onClose,
+  isPreview,
 }: {
   node: TalentTreeNode
   onClose: () => void
+  isPreview?: boolean
 }) {
   const cost = ROW_COSTS[node.row]
   const actColor = ACTIVATION_COLORS[node.activation] ?? DIM
@@ -623,17 +629,17 @@ function LockedInfoPopover({
         minWidth: 280, maxWidth: 320,
         boxShadow: '0 8px 32px rgba(0,0,0,0.7)',
       }}>
-        {/* Locked banner */}
+        {/* Locked / Preview banner */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 8,
-          background: 'rgba(255,255,255,0.04)',
-          border: '1px solid rgba(255,255,255,0.1)',
+          background: isPreview ? 'rgba(200,170,80,0.06)' : 'rgba(255,255,255,0.04)',
+          border: isPreview ? '1px solid rgba(200,170,80,0.18)' : '1px solid rgba(255,255,255,0.1)',
           borderRadius: 4, padding: '5px 10px',
           marginBottom: 10,
         }}>
-          <span style={{ fontSize: 13 }}>🔒</span>
-          <span style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700, color: FAINT, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-            Locked — purchase adjacent talents first
+          <span style={{ fontSize: 13 }}>{isPreview ? '👁' : '🔒'}</span>
+          <span style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700, color: isPreview ? 'rgba(200,170,80,0.6)' : FAINT, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+            {isPreview ? 'Spec Preview — read-only' : 'Locked — purchase adjacent talents first'}
           </span>
         </div>
 
@@ -783,6 +789,7 @@ export function TalentTree({
   onRemoveTalent,
   isGmMode,
   xpAvailable,
+  previewMode,
 }: TalentTreeProps) {
   const [pendingNode, setPendingNode]       = useState<TalentTreeNode | null>(null)
   const [lockedPreview, setLockedPreview]   = useState<TalentTreeNode | null>(null)
@@ -958,6 +965,7 @@ export function TalentTree({
                     node={node}
                     xpAvailable={xpAvailable}
                     isGmMode={isGmMode}
+                    previewMode={previewMode}
                     onClickAvailable={n => setPendingNode(n)}
                     onClickLocked={n => setLockedPreview(n)}
                     onClickRemove={n => {
@@ -999,6 +1007,7 @@ export function TalentTree({
         <LockedInfoPopover
           node={lockedPreview}
           onClose={() => setLockedPreview(null)}
+          isPreview={previewMode}
         />
       )}
     </div >

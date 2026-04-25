@@ -997,10 +997,13 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
   // End combat
   const handleEndCombat = async () => {
     if (!encounter?.id) return
-    await supabase
-      .from('combat_encounters')
-      .update({ is_active: false, updated_at: new Date().toISOString() })
-      .eq('id', encounter.id)
+    await Promise.all([
+      supabase.from('campaigns').update({ session_mode: 'exploration', combat_round: 0, mode_changed_at: new Date().toISOString() }).eq('id', campaignId),
+      supabase.from('combat_encounters').update({ is_active: false, updated_at: new Date().toISOString() }).eq('id', encounter.id),
+    ])
+    for (const c of characters) {
+      sendToChar?.(c.id, { type: 'combat-state', mode: 'exploration', round: 0 })
+    }
     setEncounter(null)
     setRoster([])
   }

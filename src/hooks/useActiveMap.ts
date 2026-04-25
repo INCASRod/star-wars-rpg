@@ -14,6 +14,7 @@ export interface ActiveMap {
   is_visible_to_players: boolean
   token_scale: number
   created_at: string
+  planet_id: string | null
 }
 
 /**

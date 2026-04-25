@@ -32,7 +32,7 @@ import { ForceCheckButton } from '@/components/character/ForceCheckButton'
 import { isDathomiri } from '@/lib/dathomiriUtils'
 import { CombatTransition } from './CombatTransition'
 import { RollFeedPanel, RollFeedMini } from './RollFeedPanel'
-import { RANGE_LABELS, ACTIVATION_LABELS, type Character, type CharacterSpecialization, type RefSpecialization, type SpeciesAbility } from '@/lib/types'
+import { RANGE_LABELS, ACTIVATION_LABELS, type Character, type CharacterSpecialization, type RefSpecialization, type RefTalent, type SpeciesAbility } from '@/lib/types'
 import { parseOggDudeMarkup } from '@/lib/oggdude-markup'
 import { EquipmentImage } from '@/components/ui/EquipmentImage'
 import { HolocronLoader } from '@/components/ui/HolocronLoader'
@@ -276,12 +276,13 @@ function TabBar({ active, onChange, hasCombat, isForceUser, isForceUserFallen, i
 
 // ── BuySpecButton ─────────────────────────────────────────────
 function BuySpecButton({
-  character, charSpecs, refSpecs, refSpecMap, onBuy,
+  character, charSpecs, refSpecs, refSpecMap, refTalentMap, onBuy,
 }: {
   character: Character
   charSpecs: CharacterSpecialization[]
   refSpecs: RefSpecialization[]
   refSpecMap: Record<string, RefSpecialization>
+  refTalentMap: Record<string, RefTalent>
   onBuy: (specKey: string) => void
 }) {
   const [open, setOpen] = useState(false)
@@ -396,6 +397,7 @@ function BuySpecButton({
             }}
             onSelect={spec => { onBuy(spec.key); setOpen(false) }}
             autoFocus
+            refTalentMap={refTalentMap}
           />
         </div>
 
@@ -1773,6 +1775,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
                       charSpecs={charSpecs}
                       refSpecs={refSpecs}
                       refSpecMap={refSpecMap}
+                      refTalentMap={refTalentMap}
                       onBuy={specKey => handleBuySpecialization(specKey, setActiveSpecKey)}
                     />
                   </div>
@@ -2203,6 +2206,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
                 charSpecs={charSpecs}
                 refSpecs={refSpecs}
                 refSpecMap={refSpecMap}
+                refTalentMap={refTalentMap}
                 onBuy={specKey => handleBuySpecialization(specKey, setActiveSpecKey)}
               />
             </div>
