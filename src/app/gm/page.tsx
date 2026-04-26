@@ -1133,7 +1133,12 @@ function GmDashboard() {
     const ch = supabase
       .channel(`staging-encounter-page-${campaignId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'combat_encounters', filter: `campaign_id=eq.${campaignId}` },
-        payload => { if (payload.new) setStagingEncounter(payload.new as CombatEncounter) })
+        payload => {
+          if (payload.new) {
+            const enc = payload.new as CombatEncounter
+            setStagingEncounter(enc.is_active ? enc : null)
+          }
+        })
       .subscribe()
     return () => { supabase.removeChannel(ch) }
   }, [campaignId]) // eslint-disable-line react-hooks/exhaustive-deps

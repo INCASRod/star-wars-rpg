@@ -640,8 +640,13 @@ export function CombatPanel({ campaignId, characters, isDm, sendToChar }: Combat
       }, (payload) => {
         if (payload.new) {
           const enc = payload.new as CombatEncounter
-          setEncounter(enc)
-          setRoster(enc.adversaries ?? [])
+          if (enc.is_active) {
+            setEncounter(enc)
+            setRoster(enc.adversaries ?? [])
+          } else {
+            setEncounter(null)
+            setRoster([])
+          }
         }
       })
       .subscribe()
