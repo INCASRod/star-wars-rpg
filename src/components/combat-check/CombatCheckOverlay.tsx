@@ -529,7 +529,7 @@ export function CombatCheckOverlay({
             </div>
             {!isResult && (
               <div style={{
-                fontFamily: FONT_M,
+                fontFamily: 'var(--font-body)',
                 fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)',
                 color: GOLD_DIM,
                 marginTop: 2,
@@ -546,7 +546,7 @@ export function CombatCheckOverlay({
             onClick={handleClose}
             style={{
               background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px 6px',
-              fontFamily: FONT_M, fontSize: 'clamp(0.9rem, 1.4vw, 1rem)', color: TEXT_DIM,
+              fontFamily: 'var(--font-body)', fontSize: 'clamp(0.9rem, 1.4vw, 1rem)', color: TEXT_DIM,
             }}
           >
             ✕
