@@ -1,9 +1,9 @@
-'use client'
+﻿'use client'
 
 import type { ForcePowerDisplay } from '@/components/player-hud/ForcePanel'
 import { stripBBCode } from '@/lib/utils'
 
-const FONT_C = "var(--font-cinzel), 'Cinzel', serif"
+const FONT_C = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FONT_M = "'Share Tech Mono', 'Courier New', monospace"
 const FORCE_BLUE     = '#7EC8E3'

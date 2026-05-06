@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect } from 'react'
 import { DiceFace } from '@/components/dice/DiceFace'
@@ -11,9 +11,9 @@ import {
   getRangedDifficulty,
   bandIndex,
 } from '@/lib/combatCheckUtils'
+import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
-const GOLD      = '#C8AA50'
 const GOLD_DIM  = 'rgba(200,170,80,0.5)'
 const GOLD_BD   = 'rgba(200,170,80,0.15)'
 const TEXT      = 'rgba(255,255,255,0.85)'
@@ -21,7 +21,7 @@ const TEXT_DIM  = 'rgba(255,255,255,0.5)'
 const CARD_BG   = 'rgba(255,255,255,0.03)'
 const RED_SOFT  = '#e05252'
 const PURPLE    = '#9060D0'
-const FONT_C    = "var(--font-cinzel), 'Cinzel', serif"
+const FONT_C    = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FONT_M    = "'Share Tech Mono', 'Courier New', monospace"
 
@@ -144,7 +144,7 @@ export function RangeBandStep({ attackType, weapon, selectedBand, onSelect }: Ra
         borderRadius: 6,
         border: `1px solid rgba(255,255,255,0.06)`,
       }}>
-        Max range: <strong style={{ color: GOLD }}>{RANGE_BAND_LABELS[maxRange]}</strong>.
+        Max range: <strong style={{ color: HUD.gold }}>{RANGE_BAND_LABELS[maxRange]}</strong>.
         Difficulty dice represent the check&apos;s inherent challenge.
       </div>
     </div>
@@ -175,7 +175,7 @@ function BandCard({
         width: '100%',
         padding: '10px 14px',
         background: selected ? 'rgba(200,170,80,0.06)' : 'rgba(255,255,255,0.02)',
-        border: `${selected ? 2 : 1}px solid ${selected ? GOLD : 'rgba(200,170,80,0.12)'}`,
+        border: `${selected ? 2 : 1}px solid ${selected ? HUD.gold : 'rgba(200,170,80,0.12)'}`,
         borderRadius: 8,
         cursor: blocked ? 'not-allowed' : 'pointer',
         textAlign: 'left',
@@ -192,7 +192,7 @@ function BandCard({
           fontFamily: "'Cinzel', serif",
           fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)',
           fontWeight: 700,
-          color: blocked ? TEXT_DIM : selected ? GOLD : TEXT,
+          color: blocked ? TEXT_DIM : selected ? HUD.gold : TEXT,
           marginBottom: notes.length > 0 ? 4 : 0,
         }}>
           {label}

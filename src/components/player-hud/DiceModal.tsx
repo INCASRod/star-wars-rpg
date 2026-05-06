@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect } from 'react'
 import { C, SYM, DICE_META, FONT_CINZEL, FONT_RAJDHANI, type DiceType, type SymbolKey } from './design-tokens'
+import { Modal } from '@/components/ui/Modal'
 import { DiceFace } from '@/components/dice/DiceFace'
 import type { RollResult, DieResult } from './dice-engine'
 
@@ -95,38 +95,16 @@ export function DiceModal({ result, skillName, onDismiss }: DiceModalProps) {
   const netSuccess = Math.abs(net.success)
   const netAdvantage = Math.abs(net.advantage)
 
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onDismiss() }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [onDismiss])
-
-  const headlineColor = isSuccess ? '#4EC87A' : isFailure ? '#E05050' : '#C8AA50'
+  const headlineColor = isSuccess ? '#4EC87A' : isFailure ? '#E05050' : 'var(--hud-gold)'
   const headlineText = isSuccess ? 'SUCCESS' : isFailure ? 'FAILURE' : 'WASH'
 
   return (
-    <div
-      onClick={onDismiss}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 300,
-        background: 'rgba(4,8,6,0.85)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: 24,
-      }}
+    <Modal
+      open
+      onClose={onDismiss}
+      maxWidth={560}
+      shadow="0 0 48px rgba(224,58,30,0.12), 0 8px 48px rgba(0,0,0,0.5)"
     >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          width: '100%', maxWidth: 560,
-          background: 'rgba(6,13,9,0.96)',
-          border: `1px solid ${C.borderHi}`,
-          borderRadius: 8,
-          boxShadow: `0 0 48px rgba(200,170,80,0.12), 0 8px 48px rgba(0,0,0,0.5)`,
-          overflow: 'hidden',
-        }}
-      >
         {/* Header */}
         <div style={{
           padding: '24px 24px 16px',
@@ -213,6 +191,7 @@ export function DiceModal({ result, skillName, onDismiss }: DiceModalProps) {
         <div style={{ padding: '0 24px 24px', textAlign: 'center' }}>
           <button
             onClick={onDismiss}
+            className="hov-gold"
             style={{
               background: 'transparent',
               border: `1px solid ${C.border}`,
@@ -221,13 +200,10 @@ export function DiceModal({ result, skillName, onDismiss }: DiceModalProps) {
               letterSpacing: '0.1em', color: C.textDim,
               cursor: 'pointer', transition: '.2s',
             }}
-            onMouseEnter={e => { (e.target as HTMLElement).style.borderColor = C.gold; (e.target as HTMLElement).style.color = C.gold }}
-            onMouseLeave={e => { (e.target as HTMLElement).style.borderColor = C.border; (e.target as HTMLElement).style.color = C.textDim }}
           >
             DISMISS
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   )
 }

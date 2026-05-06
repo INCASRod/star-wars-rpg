@@ -1,0 +1,317 @@
+'use client'
+
+import { createPortal } from 'react-dom'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import { DiceModal } from './DiceModal'
+import { HudTalentTreeModal } from './HudTalentTreeModal'
+import { HudForcePowerTreeModal } from './HudForcePowerTreeModal'
+import { ForceRollModal } from './ForceRollModal'
+import { InitiativeRollModal } from './InitiativeRollModal'
+import { HudSpendCreditsModal } from './HudSpendCreditsModal'
+import { DedicationModal } from './DedicationModal'
+import { FloatingDiceRollerFAB } from './FloatingDiceRollerFAB'
+import { VendorPurchaseDialog, type VendorOffer } from './VendorPurchaseDialog'
+import { SkillRollPopover } from '@/components/character/SkillRollPopover'
+import { EquipmentImage } from '@/components/ui/EquipmentImage'
+import { DestinyRollModal } from '@/components/destiny/DestinyRollModal'
+import { DestinySpendConfirmModal } from '@/components/destiny/DestinySpendConfirmModal'
+import { DestinyGMFlash, DestinyConsideringBanner } from '@/components/destiny/DestinyGMFlash'
+import type { DestinyPoolRecord } from '@/components/destiny/DestinyPoolDisplay'
+import type { RollResult } from './dice-engine'
+import type { ForceRollResult } from './dice-engine'
+import type { HudSkill } from './SkillsPanel'
+import type { ForcePowerDisplay } from './ForcePanel'
+import type { TalentTreeNode, TalentTreeConnection } from '@/components/character/TalentTree'
+import type { ForceTreeNode, ForceTreeConnection } from '@/components/character/ForcePowerTree'
+import type {
+  Character, CharacterSkill, CharacterTalent, CharacterSpecialization,
+  RefSpecialization, RefTalent, SpeciesAbility, RefWeaponQuality,
+} from '@/lib/types'
+
+interface HudModalsOverlayProps {
+  character: Character
+  skills: CharacterSkill[]
+  talents: CharacterTalent[]
+  refTalentMap: Record<string, RefTalent>
+  speciesAbilities: SpeciesAbility[]
+  forceRating: number
+  effectiveCampaignId: string | null
+  supabase: SupabaseClient
+  isGmMode: boolean
+  refSpecs: RefSpecialization[]
+  refSpecMap: Record<string, RefSpecialization>
+  refWeaponQualityMap: Record<string, RefWeaponQuality>
+
+  rollResult: RollResult | null
+  rollLabel: string | undefined
+  setRollResult: (r: RollResult | null) => void
+
+  showTalentTree: boolean
+  setShowTalentTree: (b: boolean) => void
+  charSpecs: CharacterSpecialization[]
+  activeSpecKey: string | null
+  setActiveSpecKey: (k: string) => void
+  talentTreeData: { specName: string; nodes: TalentTreeNode[]; connections: TalentTreeConnection[] } | null
+  onPurchaseTalent: (talentKey: string, row: number, col: number, specKey: string) => Promise<string | undefined>
+  onRemoveTalent: ((talentId: string, xpCost: number) => void) | undefined
+  onBuySpecialization: (specKey: string, setSpecKey: (k: string) => void) => void
+  showForceTree: boolean
+  setShowForceTree: (b: boolean) => void
+  allForcePowers: ForcePowerDisplay[]
+  activePowerKey: string | null
+  setActivePowerKey: (k: string | null) => void
+  forcePowerTreeData: { powerName: string; nodes: ForceTreeNode[]; connections: ForceTreeConnection[]; purchasedCount: number; totalCount: number } | null
+  onPurchaseForceAbility: (abilityKey: string, row: number, col: number, cost: number, powerKey: string) => void
+
+  gmDialog: string | null
+  setGmDialog: (s: string | null) => void
+
+  forceRollResult: ForceRollResult | null
+  setForceRollResult: (r: ForceRollResult | null) => void
+
+  initRoll: { type: 'vigilance' | 'cool'; campaignId: string } | null
+  setInitRoll: (r: { type: 'vigilance' | 'cool'; campaignId: string } | null) => void
+
+  skillPopover: { skill: HudSkill; anchor: DOMRect } | null
+  setSkillPopover: (p: { skill: HudSkill; anchor: DOMRect } | null) => void
+  onRoll: (result: RollResult, label?: string, pool?: Record<string, number>) => void
+
+  destinyRollRequest: { poolId: string } | null
+  setDestinyRollRequest: (r: { poolId: string } | null) => void
+  destinySpendOpen: boolean
+  setDestinySpendOpen: (b: boolean) => void
+  destinyPoolRecord: DestinyPoolRecord | null
+  destinyGmFlash: { prevLight: number; prevDark: number; newLight: number; newDark: number } | null
+  setDestinyGmFlash: (f: { prevLight: number; prevDark: number; newLight: number; newDark: number } | null) => void
+  destinyConsidering: string | null
+  setDestinyConsidering: (s: string | null) => void
+
+  lootReveal: Record<string, unknown> | null
+  setLootReveal: (r: Record<string, unknown> | null) => void
+  vendorOffer: VendorOffer | null
+  setVendorOffer: (o: VendorOffer | null) => void
+  onCreditSpend: (amount: number, cid: string) => Promise<void>
+
+  spendCreditsOpen: boolean
+  setSpendCreditsOpen: (b: boolean) => void
+
+  pendingDedication: { talentId: string; row: number; col: number; specKey: string } | null
+  setPendingDedication: (d: { talentId: string; row: number; col: number; specKey: string } | null) => void
+  onResolveDedication: (talentId: string, charKey: string) => Promise<void>
+}
+
+export function HudModalsOverlay({
+  character, skills, talents, refTalentMap, speciesAbilities, forceRating,
+  effectiveCampaignId, supabase, isGmMode, refSpecs, refSpecMap, refWeaponQualityMap,
+  rollResult, rollLabel, setRollResult,
+  showTalentTree, setShowTalentTree, charSpecs, activeSpecKey, setActiveSpecKey,
+  talentTreeData, onPurchaseTalent, onRemoveTalent, onBuySpecialization,
+  showForceTree, setShowForceTree, allForcePowers, activePowerKey, setActivePowerKey, forcePowerTreeData, onPurchaseForceAbility,
+  gmDialog, setGmDialog,
+  forceRollResult, setForceRollResult,
+  initRoll, setInitRoll,
+  skillPopover, setSkillPopover, onRoll,
+  destinyRollRequest, setDestinyRollRequest,
+  destinySpendOpen, setDestinySpendOpen, destinyPoolRecord,
+  destinyGmFlash, setDestinyGmFlash,
+  destinyConsidering, setDestinyConsidering,
+  lootReveal, setLootReveal,
+  vendorOffer, setVendorOffer, onCreditSpend,
+  spendCreditsOpen, setSpendCreditsOpen,
+  pendingDedication, setPendingDedication, onResolveDedication,
+}: HudModalsOverlayProps) {
+  return (
+    <>
+      {rollResult && (
+        <DiceModal result={rollResult} skillName={rollLabel} onDismiss={() => setRollResult(null)} />
+      )}
+
+      <HudTalentTreeModal
+        open={showTalentTree}
+        onClose={() => setShowTalentTree(false)}
+        charSpecs={charSpecs}
+        refSpecMap={refSpecMap}
+        activeSpecKey={activeSpecKey}
+        setActiveSpecKey={setActiveSpecKey}
+        talentTreeData={talentTreeData}
+        character={character}
+        refSpecs={refSpecs}
+        refTalentMap={refTalentMap}
+        isGmMode={isGmMode}
+        onPurchaseTalent={onPurchaseTalent}
+        onRemoveTalent={onRemoveTalent}
+        onBuySpecialization={onBuySpecialization}
+        onPendingDedication={setPendingDedication}
+      />
+
+      <HudForcePowerTreeModal
+        open={showForceTree}
+        onClose={() => setShowForceTree(false)}
+        allForcePowers={allForcePowers}
+        activePowerKey={activePowerKey}
+        setActivePowerKey={setActivePowerKey}
+        forcePowerTreeData={forcePowerTreeData}
+        xpAvailable={character.xp_available}
+        onPurchaseForceAbility={onPurchaseForceAbility}
+      />
+
+      {gmDialog && (
+        <div onClick={() => setGmDialog(null)} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,.5)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '420px', background: 'var(--sand)', border: '2px solid var(--gold)', boxShadow: '0 0 40px var(--gold-glow-s), 0 8px 48px rgba(0,0,0,.3)', padding: '32px 28px 24px', textAlign: 'center' }}>
+            <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)', fontWeight: 700, letterSpacing: '0.2em', color: 'var(--gold-d)', marginBottom: '16px' }}>INCOMING TRANSMISSION</div>
+            <div style={{ fontFamily: 'var(--font-chakra)', fontSize: 'var(--font-md)', color: 'var(--ink)', lineHeight: 1.6, marginBottom: '24px' }}>{gmDialog}</div>
+            <button onClick={() => setGmDialog(null)} style={{ background: 'var(--gold)', border: 'none', padding: '12px 40px', fontFamily: 'var(--font-orbitron)', fontSize: 'var(--text-label)', fontWeight: 700, letterSpacing: '0.15em', color: 'var(--white)', cursor: 'pointer' }}>DISMISS</button>
+          </div>
+        </div>
+      )}
+
+      {forceRollResult && (
+        <ForceRollModal result={forceRollResult} forceRating={forceRating} onDismiss={() => setForceRollResult(null)} />
+      )}
+
+      {initRoll && (
+        <InitiativeRollModal
+          character={character}
+          skills={skills}
+          initiativeType={initRoll.type}
+          campaignId={initRoll.campaignId}
+          forceRating={forceRating}
+          onClose={() => setInitRoll(null)}
+        />
+      )}
+
+      {skillPopover && (
+        <SkillRollPopover
+          skill={skillPopover.skill}
+          anchor={skillPopover.anchor}
+          talentHints={(() => {
+            const rankMap = new Map<string, number>()
+            for (const t of talents) {
+              const ref = refTalentMap[t.talent_key]
+              if (!ref?.modifiers?.relevant_skills?.includes(skillPopover.skill.key)) continue
+              rankMap.set(t.talent_key, (rankMap.get(t.talent_key) ?? 0) + (t.ranks ?? 1))
+            }
+            for (const sa of speciesAbilities) {
+              if (sa.mechanical_type !== 'talent_rank' || !sa.talent_key) continue
+              const ref = refTalentMap[sa.talent_key]
+              if (!ref?.modifiers?.relevant_skills?.includes(skillPopover.skill.key)) continue
+              rankMap.set(sa.talent_key, (rankMap.get(sa.talent_key) ?? 0) + (sa.rank_add ?? 1))
+            }
+            const hints = Array.from(rankMap.entries()).map(([key, ranks]) => {
+              const ref = refTalentMap[key]!
+              return { name: ref.name, activation: ref.activation, description: ref.description ?? '', ranks }
+            })
+            for (const sa of speciesAbilities) {
+              if (sa.mechanical_type !== 'die_modifier') continue
+              if (!Array.isArray(sa.affected_skills) || !sa.affected_skills.includes(skillPopover.skill.key)) continue
+              hints.push({ name: sa.name, activation: 'taPassive', description: sa.description ?? '', ranks: 1 })
+            }
+            return hints
+          })()}
+          onRoll={(result, label, pool) => {
+            onRoll(result, label, pool as Record<string, number>)
+            setSkillPopover(null)
+          }}
+          onClose={() => setSkillPopover(null)}
+        />
+      )}
+
+      {destinyRollRequest && effectiveCampaignId && (
+        <DestinyRollModal
+          poolId={destinyRollRequest.poolId}
+          campaignId={effectiveCampaignId}
+          characterId={character.id}
+          characterName={character.name}
+          supabase={supabase}
+          onSubmitted={() => setDestinyRollRequest(null)}
+        />
+      )}
+
+      {destinySpendOpen && destinyPoolRecord && effectiveCampaignId && (
+        <DestinySpendConfirmModal
+          pool={destinyPoolRecord}
+          characterName={character.name}
+          campaignId={effectiveCampaignId}
+          characterId={character.id}
+          supabase={supabase}
+          onClose={() => setDestinySpendOpen(false)}
+          onConfirmed={() => setDestinySpendOpen(false)}
+        />
+      )}
+
+      {destinyGmFlash && (
+        <DestinyGMFlash
+          prevLightCount={destinyGmFlash.prevLight}
+          prevDarkCount={destinyGmFlash.prevDark}
+          newLightCount={destinyGmFlash.newLight}
+          newDarkCount={destinyGmFlash.newDark}
+          onDismiss={() => setDestinyGmFlash(null)}
+        />
+      )}
+
+      {destinyConsidering && (
+        <DestinyConsideringBanner characterName={destinyConsidering} onDismiss={() => setDestinyConsidering(null)} />
+      )}
+
+      {lootReveal && (() => {
+        const r = lootReveal
+        const rarity = (r.rarity as number) || 0
+        const color = rarity <= 2 ? 'var(--txt3)' : rarity <= 4 ? 'var(--green)' : rarity <= 6 ? 'var(--blue)' : rarity <= 8 ? '#7B3FA0' : 'var(--gold)'
+        const label = rarity <= 2 ? 'Common' : rarity <= 4 ? 'Uncommon' : rarity <= 6 ? 'Rare' : rarity <= 8 ? 'Epic' : 'Legendary'
+        return (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 250, background: 'rgba(0,0,0,.75)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+            <div style={{ width: '100%', maxWidth: '420px', background: 'var(--sand)', border: `3px solid ${color}`, boxShadow: `0 0 40px ${color}, 0 8px 48px rgba(0,0,0,.4)`, padding: '32px 28px 28px', textAlign: 'center', position: 'relative' }}>
+              <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)', fontWeight: 700, letterSpacing: '0.25em', color, marginBottom: '16px', textTransform: 'uppercase' }}>{r.source as string}</div>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+                <EquipmentImage itemKey={r.key as string} itemType={r.itemType as 'weapon' | 'armor' | 'gear'} categories={r.categories as string[]} size="lg" style={{ width: 120, height: 120 }} />
+              </div>
+              <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-lg)', fontWeight: 900, letterSpacing: '0.1em', color: 'var(--ink)', marginBottom: '8px', lineHeight: 1.2 }}>{r.name as string}</div>
+              <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)', fontWeight: 700, color, marginBottom: '12px', letterSpacing: '0.1em' }}>Rarity {rarity} — {label}</div>
+              <button onClick={() => setLootReveal(null)} style={{ background: 'var(--gold)', border: 'none', padding: '10px 32px', fontFamily: 'var(--font-orbitron)', fontSize: 'var(--text-label)', fontWeight: 700, letterSpacing: '0.15em', color: 'var(--white)', cursor: 'pointer' }}>CLAIM</button>
+            </div>
+          </div>
+        )
+      })()}
+
+      {vendorOffer && (
+        <VendorPurchaseDialog
+          offer={vendorOffer}
+          character={character}
+          refWeaponQualityMap={refWeaponQualityMap}
+          supabase={supabase}
+          onCreditSpend={(amount, cid) => onCreditSpend(amount, cid)}
+          onClose={() => setVendorOffer(null)}
+        />
+      )}
+
+      <HudSpendCreditsModal
+        open={spendCreditsOpen}
+        onClose={() => setSpendCreditsOpen(false)}
+        credits={character.credits}
+        onConfirm={async (amount) => {
+          setSpendCreditsOpen(false)
+          await onCreditSpend(amount, effectiveCampaignId!)
+        }}
+      />
+
+      {pendingDedication && typeof document !== 'undefined' && createPortal(
+        <DedicationModal
+          character={character}
+          onConfirm={async (charKey) => {
+            const { talentId } = pendingDedication
+            setPendingDedication(null)
+            await onResolveDedication(talentId, charKey)
+          }}
+          onCancel={() => setPendingDedication(null)}
+        />,
+        document.body,
+      )}
+
+      <FloatingDiceRollerFAB
+        characterId={character.id}
+        characterName={character.name}
+        campaignId={effectiveCampaignId}
+      />
+    </>
+  )
+}

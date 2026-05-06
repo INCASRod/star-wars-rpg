@@ -25,10 +25,10 @@ import { isForceUserSensitive } from '@/lib/forceUtils'
 import { isDathomiri } from '@/lib/dathomiriUtils'
 import { RANGE_LABELS } from '@/lib/types'
 import type { ForceTreeNode, ForceTreeConnection } from '@/components/character/ForcePowerTree'
+import { HUD } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 const BG   = '#060D09'
-const GOLD = '#C8AA50'
 const TEXT = 'rgba(255,255,255,0.85)'
 const TEXT_DIM   = 'rgba(255,255,255,0.5)'
 const BORDER     = 'rgba(200,170,80,0.1)'
@@ -207,7 +207,7 @@ export function MobileSessionCompanion({ characterId, campaignId }: MobileSessio
         gap: 12, padding: 24,
       }}>
         <span style={{ fontSize: 32 }}>⚠️</span>
-        <p style={{ fontFamily: FONT_C, color: GOLD, textAlign: 'center', fontSize: 'clamp(0.9rem, 3.5vw, 1rem)' }}>
+        <p style={{ fontFamily: FONT_C, color: HUD.gold, textAlign: 'center', fontSize: 'clamp(0.9rem, 3.5vw, 1rem)' }}>
           {error ?? 'Character not found.'}
         </p>
       </div>
@@ -304,7 +304,7 @@ export function MobileSessionCompanion({ characterId, campaignId }: MobileSessio
                   fontFamily: FONT_C,
                   fontSize: 'clamp(0.6rem, 2.4vw, 0.75rem)',
                   fontWeight: 700,
-                  color: GOLD,
+                  color: HUD.gold,
                   textTransform: 'uppercase',
                   letterSpacing: '0.1em',
                   paddingBottom: 6,

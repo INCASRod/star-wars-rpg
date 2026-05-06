@@ -1,10 +1,10 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Character } from '@/lib/types'
 
-const FONT_C = "var(--font-cinzel), 'Cinzel', serif"
+const FONT_C = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FONT_M = "'Share Tech Mono', 'Courier New', monospace"
 const FORCE_BLUE     = '#7EC8E3'
@@ -17,19 +17,24 @@ export interface TargetEntry {
 }
 
 interface ForceTargetStepProps {
-  isCombat:        boolean
-  campaignId:      string | null
-  characterId:     string
-  selectedTargets: TargetEntry[]
-  targetContext:   'environment' | 'character' | null
-  onSelectTargets: (targets: TargetEntry[]) => void
-  onTargetContext: (ctx: 'environment' | 'character') => void
+  isCombat:           boolean
+  campaignId:         string | null
+  characterId:        string
+  selectedTargets:    TargetEntry[]
+  targetContext:      'environment' | 'character' | null
+  onSelectTargets:    (targets: TargetEntry[]) => void
+  onTargetContext:    (ctx: 'environment' | 'character') => void
+  /** Pre-fetched campaign characters — skips the DB fetch when provided */
+  campaignCharacters?: Character[]
+  /** Pre-fetched encounter enemies mapped to TargetEntry — skips the DB fetch when provided */
+  encounterEnemies?:  TargetEntry[]
 }
 
 export function ForceTargetStep({
   isCombat, campaignId, characterId,
   selectedTargets, targetContext,
   onSelectTargets, onTargetContext,
+  campaignCharacters, encounterEnemies,
 }: ForceTargetStepProps) {
   const [pcs, setPcs]           = useState<Character[]>([])
   const [enemies, setEnemies]   = useState<TargetEntry[]>([])
@@ -46,6 +51,11 @@ export function ForceTargetStep({
   }
 
   useEffect(() => {
+    // Use pre-fetched data if provided — skip DB
+    if (campaignCharacters) { setPcs(campaignCharacters); setLoading(false) }
+    if (encounterEnemies)   { setEnemies(encounterEnemies); setLoading(false) }
+    if (campaignCharacters || encounterEnemies) return
+
     if (!campaignId) return
     setLoading(true)
     const supabase = createClient()
@@ -68,7 +78,7 @@ export function ForceTargetStep({
       setLoading(false)
     }
     loadAll()
-  }, [campaignId, isCombat])
+  }, [campaignId, isCombat, campaignCharacters, encounterEnemies])
 
   if (!isCombat) {
     return (
@@ -169,7 +179,7 @@ function TargetSection({ label, targets, selectedIds, onToggle, color }: {
   color: string
 }) {
   const [open, setOpen] = useState(true)
-  const FONT_C = "var(--font-cinzel), 'Cinzel', serif"
+  const FONT_C = "var(--font-rajdhani), 'Cinzel', serif"
   const FONT_R = "var(--font-rajdhani), 'Rajdhani', sans-serif"
   return (
     <div>

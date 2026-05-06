@@ -5,9 +5,9 @@ import type { Character, CharacterWeapon, CharacterCriticalInjury, RefWeapon, Re
 import { WeaponDamageDisplay, isMeleeSkill } from '@/components/character/WeaponDamageDisplay'
 import type { EffectiveStats } from '@/lib/derivedStats'
 import { canDualWield, validateLoadout, type WeaponForLoadout } from '@/lib/weaponHandedness'
+import { HUD } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
-const GOLD     = '#C8AA50'
 const GOLD_DIM = 'rgba(200,170,80,0.6)'
 const GOLD_BD  = 'rgba(200,170,80,0.15)'
 const BORDER   = 'rgba(200,170,80,0.1)'
@@ -50,7 +50,7 @@ function SectionHeader({ label }: { label: string }) {
       fontFamily: FONT_C,
       fontSize: 'clamp(0.6rem, 2.4vw, 0.75rem)',
       fontWeight: 700,
-      color: GOLD,
+      color: HUD.gold,
       textTransform: 'uppercase',
       letterSpacing: '0.1em',
       padding: '12px 16px 6px',
@@ -96,7 +96,7 @@ export function StatusTab({ character, weapons, crits, refWeaponMap, refSkillMap
               fontFamily: FONT_C,
               fontSize: 'clamp(1.2rem, 5vw, 1.6rem)',
               fontWeight: 700,
-              color: GOLD,
+              color: HUD.gold,
               lineHeight: 1,
             }}>
               {character[key] as number}
@@ -123,7 +123,7 @@ export function StatusTab({ character, weapons, crits, refWeaponMap, refSkillMap
             gap: 6,
           }}>
             <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.65rem, 2.5vw, 0.8rem)', color: TEXT_DIM }}>{label}</span>
-            <span style={{ fontFamily: FONT_C, fontSize: 'clamp(0.8rem, 3vw, 1rem)', fontWeight: 700, color: GOLD }}>{value}</span>
+            <span style={{ fontFamily: FONT_C, fontSize: 'clamp(0.8rem, 3vw, 1rem)', fontWeight: 700, color: HUD.gold }}>{value}</span>
           </div>
         ))}
       </div>

@@ -1,7 +1,6 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { WeaponDamageDisplay, isMeleeSkill } from '@/components/character/WeaponDamageDisplay'
 import { QualityBadge } from '@/components/character/QualityBadge'
 import type { CharacterWeapon, RefWeapon, RefSkill, RefWeaponQuality, Character } from '@/lib/types'
@@ -9,9 +8,9 @@ import { getSkillPool } from '@/components/player-hud/dice-engine'
 import { CHAR_FIELD_MAP, isRangedSkill, isMeleeSkill as isMeleeSkillKey } from '@/lib/combatCheckUtils'
 import { RANGE_LABELS } from '@/lib/types'
 import { canDualWield } from '@/lib/weaponHandedness'
+import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
-const GOLD      = '#C8AA50'
 const GOLD_DIM  = 'rgba(200,170,80,0.5)'
 const GOLD_BD   = 'rgba(200,170,80,0.15)'
 const TEXT      = 'rgba(255,255,255,0.85)'
@@ -19,7 +18,7 @@ const TEXT_DIM  = 'rgba(255,255,255,0.5)'
 const CARD_BG   = 'rgba(255,255,255,0.03)'
 const RED_SOFT  = '#e05252'
 const ORANGE    = '#FF9800'
-const FONT_C    = "var(--font-cinzel), 'Cinzel', serif"
+const FONT_C    = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FONT_M    = "'Share Tech Mono', 'Courier New', monospace"
 
@@ -36,6 +35,8 @@ interface WeaponSelectStepProps {
   onNext:             () => void
   /** Skip DB equip writes — weapons are already marked equipped */
   isGmMode?:          boolean
+  /** Called when a stowed weapon is equipped mid-combat — parent owns the DB write */
+  onEquipWeapon?:     (weaponId: string, idsToUnequip: string[]) => Promise<void>
   /** Called when player chooses Dual Wield Attack */
   onDualWieldSelect?: (primary: CharacterWeapon, secondary: CharacterWeapon) => void
 }
@@ -109,6 +110,7 @@ export function WeaponSelectStep({
   onSelect,
   onNext,
   isGmMode,
+  onEquipWeapon,
   onDualWieldSelect,
 }: WeaponSelectStepProps) {
   const [maneuverWarningFor, setManeuverWarningFor] = useState<string | null>(null)
@@ -141,24 +143,10 @@ export function WeaponSelectStep({
   }
 
   async function equipWeapon(w: CharacterWeapon) {
+    if (!onEquipWeapon) return
     setEquipping(true)
-    const supabase = createClient()
-
-    // Unequip any currently equipped weapon of the same skill type
-    const toUnequip = equipped.filter(e => e.id !== w.id)
-    for (const e of toUnequip) {
-      await supabase
-        .from('character_weapons')
-        .update({ is_equipped: false, equip_state: 'stowed' })
-        .eq('id', e.id)
-    }
-
-    // Equip this weapon
-    await supabase
-      .from('character_weapons')
-      .update({ is_equipped: true, equip_state: 'equipped' })
-      .eq('id', w.id)
-
+    const idsToUnequip = equipped.filter(e => e.id !== w.id).map(e => e.id)
+    await onEquipWeapon(w.id, idsToUnequip)
     setEquipping(false)
     setManeuverWarningFor(null)
     onSelect(w)
@@ -198,7 +186,7 @@ export function WeaponSelectStep({
             width: '100%',
             padding: '10px 12px',
             background: isSelected ? 'rgba(200,170,80,0.06)' : CARD_BG,
-            border: `${isSelected ? 2 : 1}px solid ${isSelected ? GOLD : GOLD_BD}`,
+            border: `${isSelected ? 2 : 1}px solid ${isSelected ? HUD.gold : GOLD_BD}`,
             borderRadius: 8,
             cursor: 'pointer',
             textAlign: 'left',
@@ -213,7 +201,7 @@ export function WeaponSelectStep({
                 fontFamily: FONT_C,
                 fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)',
                 fontWeight: 700,
-                color: isSelected ? GOLD : TEXT,
+                color: isSelected ? HUD.gold : TEXT,
                 marginBottom: 4,
               }}>
                 {name}
@@ -280,7 +268,7 @@ export function WeaponSelectStep({
               <div style={{
                 fontFamily: FONT_M,
                 fontSize: 'clamp(0.55rem, 0.82vw, 0.65rem)',
-                color: GOLD,
+                color: HUD.gold,
                 flexShrink: 0,
                 paddingLeft: 6,
               }}>
@@ -339,11 +327,11 @@ export function WeaponSelectStep({
                 style={{
                   flex: 2, padding: '8px 0',
                   background: equipping ? 'rgba(200,170,80,0.15)' : 'rgba(200,170,80,0.15)',
-                  border: `1px solid ${GOLD}60`,
+                  border: `1px solid ${HUD.gold}60`,
                   borderRadius: 6, cursor: equipping ? 'wait' : 'pointer',
                   fontFamily: FONT_C,
                   fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)',
-                  color: GOLD,
+                  color: HUD.gold,
                 }}
               >
                 {equipping ? 'Equipping…' : 'Equip & Continue'}
@@ -422,10 +410,10 @@ export function WeaponSelectStep({
             padding: '14px 16px',
           }}>
             <div style={{
-              fontFamily: "var(--font-cinzel), 'Cinzel', serif",
+              fontFamily: "var(--font-rajdhani), 'Cinzel', serif",
               fontSize: 'clamp(0.85rem, 1.3vw, 1rem)',
               fontWeight: 700,
-              color: GOLD,
+              color: HUD.gold,
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
               marginBottom: 8,
@@ -465,7 +453,7 @@ export function WeaponSelectStep({
                   background: 'linear-gradient(135deg, #C8AA50, #8B7430)',
                   border: 'none',
                   borderRadius: 8, cursor: 'pointer',
-                  fontFamily: "var(--font-cinzel), 'Cinzel', serif",
+                  fontFamily: "var(--font-rajdhani), 'Cinzel', serif",
                   fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)',
                   fontWeight: 700,
                   color: '#060D09',

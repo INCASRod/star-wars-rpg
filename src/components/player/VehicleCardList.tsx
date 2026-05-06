@@ -5,10 +5,10 @@ import type { VehicleInstance } from '@/lib/vehicles'
 import { vehicleWeaponDisplayName, vehicleWeaponStats } from '@/lib/vehicles'
 import type { InitiativeSlot } from '@/lib/combat'
 import { FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4 } from '@/components/player-hud/design-tokens'
+import { HUD } from '@/lib/tokens'
 
 // ── Design tokens (mirrored from AdversaryCardList) ──
 const PANEL_BG   = 'rgba(8,16,10,0.88)'
-const GOLD       = '#C8AA50'
 const BORDER     = 'rgba(200,170,80,0.18)'
 const BORDER_MD  = 'rgba(200,170,80,0.32)'
 const CHAR_AG    = '#52a8e0'

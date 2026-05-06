@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { Toaster as Sonner, type ToasterProps } from "sonner"
 
@@ -10,14 +10,14 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         style: {
           zIndex: 300,
-          fontFamily: 'var(--font-chakra)',
+          fontFamily: 'var(--font-rajdhani)',
         },
       }}
       style={
         {
-          "--normal-bg": "var(--parch)",
-          "--normal-text": "var(--ink)",
-          "--normal-border": "var(--bdr)",
+          "--normal-bg": "var(--bs-panel)",
+          "--normal-text": "var(--bs-ink)",
+          "--normal-border": "var(--bs-bdr-strong)",
           "--border-radius": "2px",
           zIndex: 300,
         } as React.CSSProperties

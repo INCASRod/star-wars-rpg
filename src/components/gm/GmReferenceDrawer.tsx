@@ -33,6 +33,7 @@ import {
   SQUADRON_FORMATIONS,
 } from '@/lib/gmScreenData'
 import { RichText } from '@/components/ui/RichText'
+import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ─────────────────────────────────────────────
 const FC  = "var(--font-rajdhani), 'Rajdhani', sans-serif"
@@ -40,7 +41,6 @@ const FST = "var(--font-share-tech-mono), 'Share Tech Mono', monospace"
 
 const BG         = 'rgba(6,10,8,0.97)'
 const PANEL      = 'rgba(10,18,12,0.92)'
-const GOLD       = '#C8AA50'
 const GOLD_DIM   = '#7A6830'
 const TEXT       = '#C8D8C0'
 const DIM        = '#6A8070'
@@ -52,7 +52,7 @@ const RED        = '#E05050'
 const BLUE       = '#5AAAE0'
 const PURPLE     = '#9060D0'
 const ORANGE     = '#E07855'
-const YELLOW     = '#C8AA50'
+const YELLOW     = 'var(--hud-gold)'
 
 const FS_OVERLINE = 'var(--text-overline)'
 const FS_CAPTION  = 'var(--text-caption)'
@@ -133,7 +133,7 @@ function DiceTab() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {DICE_SYMBOLS.map(s => (
             <div key={s.name} style={{ padding: '6px 0', borderBottom: `1px solid ${BORDER}` }}>
-              <div style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: GOLD, marginBottom: 3 }}>
+              <div style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: HUD.gold, marginBottom: 3 }}>
                 {s.name}
               </div>
               <div style={{ fontFamily: FC, fontSize: FS_CAPTION, color: TEXT, lineHeight: 1.5 }}>
@@ -262,7 +262,7 @@ function CombatTab() {
         <Note>{ACTION_ECONOMY_NOTE}</Note>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
           <div>
-            <div style={{ fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 700, color: GOLD, marginBottom: 6 }}>Maneuvers</div>
+            <div style={{ fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 700, color: HUD.gold, marginBottom: 6 }}>Maneuvers</div>
             {COMBAT_MANEUVERS.map(m => (
               <div key={m.name} style={{ padding: '5px 0', borderBottom: `1px solid ${BORDER}` }}>
                 <span style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: BLUE }}>{m.name}: </span>
@@ -271,7 +271,7 @@ function CombatTab() {
             ))}
           </div>
           <div>
-            <div style={{ fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 700, color: GOLD, marginBottom: 6 }}>Actions</div>
+            <div style={{ fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 700, color: HUD.gold, marginBottom: 6 }}>Actions</div>
             {COMBAT_ACTIONS.map(a => (
               <div key={a.name} style={{ padding: '5px 0', borderBottom: `1px solid ${BORDER}` }}>
                 <span style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: ORANGE }}>{a.name}: </span>
@@ -323,7 +323,7 @@ function InjuriesTab() {
           style={{
             flex: 1, background: 'transparent', border: 'none',
             borderBottom: `1px solid ${BORDER_HI}`, outline: 'none',
-            fontFamily: FST, fontSize: FS_SM, color: GOLD,
+            fontFamily: FST, fontSize: FS_SM, color: HUD.gold,
             padding: '2px 4px', textAlign: 'center',
           }}
         />
@@ -462,7 +462,7 @@ function VehiclesTab() {
           style={{
             flex: 1, background: 'transparent', border: 'none',
             borderBottom: `1px solid ${BORDER_HI}`, outline: 'none',
-            fontFamily: FST, fontSize: FS_SM, color: GOLD,
+            fontFamily: FST, fontSize: FS_SM, color: HUD.gold,
             padding: '2px 4px', textAlign: 'center',
           }}
         />
@@ -638,7 +638,7 @@ function WeaponsTab() {
           style={{
             flex: 1, background: 'transparent', border: 'none',
             borderBottom: `1px solid ${BORDER_HI}`, outline: 'none',
-            fontFamily: FC, fontSize: FS_SM, color: GOLD,
+            fontFamily: FC, fontSize: FS_SM, color: HUD.gold,
             padding: '2px 4px',
           }}
         />
@@ -726,7 +726,7 @@ function SquadsTab() {
         <div style={{
           fontFamily: FC, fontSize: `clamp(10px, 1.2vw, 13px)`,
           fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase',
-          color: GOLD, marginBottom: 10, paddingBottom: 5,
+          color: HUD.gold, marginBottom: 10, paddingBottom: 5,
           borderBottom: `1px solid ${BORDER_HI}`,
         }}>
           Squad Overview
@@ -750,7 +750,7 @@ function SquadsTab() {
         <div style={{
           fontFamily: FC, fontSize: `clamp(10px, 1.2vw, 13px)`,
           fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase',
-          color: GOLD, marginBottom: 10, paddingBottom: 5,
+          color: HUD.gold, marginBottom: 10, paddingBottom: 5,
           borderBottom: `1px solid ${BORDER_HI}`,
         }}>
           Leadership Check Results
@@ -760,7 +760,7 @@ function SquadsTab() {
             <div key={r.title} style={{ display: 'flex', gap: 10, padding: '6px 10px', background: PANEL, borderRadius: 4, border: `1px solid ${BORDER}` }}>
               <div style={{
                 fontFamily: FC, fontSize: `clamp(9px, 1vw, 11px)`,
-                fontWeight: 700, color: GOLD, flexShrink: 0, minWidth: 70,
+                fontWeight: 700, color: HUD.gold, flexShrink: 0, minWidth: 70,
               }}>
                 {r.title}
               </div>
@@ -777,7 +777,7 @@ function SquadsTab() {
         <div style={{
           fontFamily: FC, fontSize: `clamp(10px, 1.2vw, 13px)`,
           fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase',
-          color: GOLD, marginBottom: 10, paddingBottom: 5,
+          color: HUD.gold, marginBottom: 10, paddingBottom: 5,
           borderBottom: `1px solid ${BORDER_HI}`,
         }}>
           Squad Combat Rules
@@ -801,7 +801,7 @@ function SquadsTab() {
         <div style={{
           fontFamily: FC, fontSize: `clamp(10px, 1.2vw, 13px)`,
           fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase',
-          color: GOLD, marginBottom: 10, paddingBottom: 5,
+          color: HUD.gold, marginBottom: 10, paddingBottom: 5,
           borderBottom: `1px solid ${BORDER_HI}`,
         }}>
           Disbanding a Squad
@@ -825,7 +825,7 @@ function SquadsTab() {
         <div style={{
           fontFamily: FC, fontSize: `clamp(10px, 1.2vw, 13px)`,
           fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase',
-          color: GOLD, marginBottom: 10, paddingBottom: 5,
+          color: HUD.gold, marginBottom: 10, paddingBottom: 5,
           borderBottom: `1px solid ${BORDER_HI}`,
         }}>
           Squad Formations
@@ -849,7 +849,7 @@ function SquadsTab() {
         <div style={{
           fontFamily: FC, fontSize: `clamp(10px, 1.2vw, 13px)`,
           fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase',
-          color: GOLD, marginBottom: 10, paddingBottom: 5,
+          color: HUD.gold, marginBottom: 10, paddingBottom: 5,
           borderBottom: `1px solid ${BORDER_HI}`,
         }}>
           Squadron Formations
@@ -935,7 +935,7 @@ export function GmReferenceDrawer({ open, onClose }: GmReferenceDrawerProps) {
         }}>
           <span style={{
             fontFamily: FST, fontSize: FS_LABEL, letterSpacing: '0.2em',
-            textTransform: 'uppercase', color: GOLD, fontWeight: 700,
+            textTransform: 'uppercase', color: HUD.gold, fontWeight: 700,
           }}>
             GM Screen
           </span>
@@ -971,8 +971,8 @@ export function GmReferenceDrawer({ open, onClose }: GmReferenceDrawerProps) {
                   padding: '10px 4px',
                   fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 700,
                   letterSpacing: '0.1em', textTransform: 'uppercase',
-                  color: isActive ? GOLD : DIM,
-                  borderBottom: `2px solid ${isActive ? GOLD : 'transparent'}`,
+                  color: isActive ? HUD.gold : DIM,
+                  borderBottom: `2px solid ${isActive ? HUD.gold : 'transparent'}`,
                   transition: 'color 0.15s, border-color 0.15s',
                   whiteSpace: 'nowrap',
                 }}

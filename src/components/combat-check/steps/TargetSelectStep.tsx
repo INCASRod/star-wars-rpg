@@ -1,17 +1,17 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { AdversaryInstance } from '@/lib/adversaries'
+import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
-const GOLD      = '#C8AA50'
 const GOLD_DIM  = 'rgba(200,170,80,0.5)'
 const GOLD_BD   = 'rgba(200,170,80,0.15)'
 const TEXT      = 'rgba(255,255,255,0.85)'
 const TEXT_DIM  = 'rgba(255,255,255,0.5)'
 const CARD_BG   = 'rgba(255,255,255,0.03)'
-const FONT_C    = "var(--font-cinzel), 'Cinzel', serif"
+const FONT_C    = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FONT_M    = "'Share Tech Mono', 'Courier New', monospace"
 
@@ -28,6 +28,8 @@ interface TargetSelectStepProps {
   onSelect:        (targets: AdversaryInstance[]) => void
   /** When set, skip the DB fetch and show these pre-built targets instead */
   gmTargets?:      AdversaryInstance[]
+  /** Pre-fetched enemies from the parent's encounter state — skips the DB fetch */
+  enemies?:        AdversaryInstance[]
 }
 
 function WoundBar({ current, max }: { current: number; max: number }) {
@@ -51,17 +53,16 @@ function WoundBar({ current, max }: { current: number; max: number }) {
   )
 }
 
-export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSelect, gmTargets }: TargetSelectStepProps) {
+export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSelect, gmTargets, enemies: propEnemies }: TargetSelectStepProps) {
   const [enemies, setEnemies]   = useState<AdversaryInstance[]>([])
   const [loading, setLoading]   = useState(false)
   const [encounterId, setEncounterId] = useState<string | null>(null)
 
   useEffect(() => {
     // GM mode: targets are provided directly — skip DB fetch
-    if (gmTargets) {
-      setEnemies(gmTargets)
-      return
-    }
+    if (gmTargets) { setEnemies(gmTargets); return }
+    // Parent pre-fetched enemies — skip DB fetch
+    if (propEnemies) { setEnemies(propEnemies.filter(a => a.revealed !== false)); return }
     if (!campaignId) return
     setLoading(true)
     const supabase = createClient()
@@ -80,7 +81,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
         }
         setLoading(false)
       })
-  }, [campaignId, gmTargets])
+  }, [campaignId, gmTargets, propEnemies])
 
   function toggleTarget(enemy: AdversaryInstance) {
     const already = selectedTargets.find(t => t.instanceId === enemy.instanceId)
@@ -122,7 +123,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
             marginTop: 16, padding: '8px 20px',
             background: 'rgba(200,170,80,0.1)', border: `1px solid ${GOLD_BD}`,
             borderRadius: 6, cursor: 'pointer',
-            fontFamily: FONT_C, fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)', color: GOLD,
+            fontFamily: FONT_C, fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)', color: HUD.gold,
           }}
         >
           Skip Target
@@ -145,7 +146,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
             padding: '10px 24px',
             background: 'rgba(200,170,80,0.1)', border: `1px solid ${GOLD_BD}`,
             borderRadius: 6, cursor: 'pointer',
-            fontFamily: FONT_C, fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)', color: GOLD,
+            fontFamily: FONT_C, fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)', color: HUD.gold,
           }}
         >
           Skip Target
@@ -183,7 +184,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
                 width: '100%',
                 padding: '10px 12px',
                 background: isSelected ? 'rgba(200,170,80,0.06)' : CARD_BG,
-                border: `${isSelected ? 2 : 1}px solid ${isSelected ? GOLD : GOLD_BD}`,
+                border: `${isSelected ? 2 : 1}px solid ${isSelected ? HUD.gold : GOLD_BD}`,
                 borderRadius: 8, cursor: 'pointer', textAlign: 'left',
                 transition: 'border-color 120ms, background 120ms',
               }}
@@ -209,7 +210,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
                     fontFamily: FONT_R,
                     fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)',
                     fontWeight: 700,
-                    color: isSelected ? GOLD : TEXT,
+                    color: isSelected ? HUD.gold : TEXT,
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   }}>
                     {enemy.name}
@@ -241,7 +242,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
                 </div>
 
                 {isSelected && (
-                  <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.55rem, 0.82vw, 0.65rem)', color: GOLD, flexShrink: 0 }}>
+                  <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.55rem, 0.82vw, 0.65rem)', color: HUD.gold, flexShrink: 0 }}>
                     ✓
                   </div>
                 )}

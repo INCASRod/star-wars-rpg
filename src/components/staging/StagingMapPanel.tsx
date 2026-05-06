@@ -1,14 +1,15 @@
-'use client'
+﻿'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
+import { useMapPlanets, type MapPlanet } from '@/hooks/useMapPlanets'
 import type { ActiveMap } from '@/hooks/useActiveMap'
+import { HUD } from '@/lib/tokens'
 
 /* ── Design tokens ────────────────────────────────────────── */
-const FC        = "var(--font-cinzel), 'Cinzel', serif"
+const FC        = "var(--font-rajdhani), 'Cinzel', serif"
 const FR        = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const GOLD      = '#C8AA50'
 const DIM       = '#6A8070'
 const TEXT      = '#C8D8C0'
 const GREEN     = '#4EC87A'
@@ -36,14 +37,6 @@ const darkInput: React.CSSProperties = {
   outline: 'none',
 }
 
-/* ── Types ────────────────────────────────────────────────── */
-export interface MapPlanet {
-  id: string
-  campaign_id: string
-  name: string
-  created_at: string
-}
-
 /* ── Props ────────────────────────────────────────────────── */
 export interface StagingMapPanelProps {
   campaignId:  string
@@ -61,35 +54,13 @@ export function StagingMapPanel({ campaignId, allMaps, onDeleteMap }: StagingMap
   const [deleteConfirm, setDeleteConfirm]  = useState<string | null>(null)
 
   // Planet state
-  const [planets,             setPlanets]             = useState<MapPlanet[]>([])
+  const { planets, setPlanets } = useMapPlanets(campaignId)
   const [expandedId,          setExpandedId]          = useState<string | 'all' | 'unassigned' | null>(null)
   const [planetSearch,        setPlanetSearch]        = useState('')
   const [newPlanetOpen,       setNewPlanetOpen]       = useState(false)
   const [newPlanetName,       setNewPlanetName]       = useState('')
   const [planetBusy,          setPlanetBusy]          = useState(false)
   const [deletePlanetConfirm, setDeletePlanetConfirm] = useState<string | null>(null)
-
-  // Load planets + realtime
-  useEffect(() => {
-    supabase.from('map_planets').select('*').eq('campaign_id', campaignId).order('name')
-      .then(({ data }) => { if (data) setPlanets(data as MapPlanet[]) })
-
-    const ch = supabase.channel(`map-planets-${campaignId}`)
-      .on('postgres_changes', {
-        event: '*', schema: 'public', table: 'map_planets',
-        filter: `campaign_id=eq.${campaignId}`,
-      }, (payload) => {
-        if (payload.eventType === 'INSERT') {
-          setPlanets(prev => [...prev, payload.new as MapPlanet].sort((a, b) => a.name.localeCompare(b.name)))
-        } else if (payload.eventType === 'UPDATE') {
-          setPlanets(prev => prev.map(p => p.id === (payload.new as MapPlanet).id ? payload.new as MapPlanet : p))
-        } else if (payload.eventType === 'DELETE') {
-          setPlanets(prev => prev.filter(p => p.id !== (payload.old as MapPlanet).id))
-        }
-      })
-      .subscribe()
-    return () => { supabase.removeChannel(ch) }
-  }, [campaignId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Maps grouped by planet
   const { mapsByPlanetId, unassignedMaps } = useMemo(() => {
@@ -180,12 +151,12 @@ export function StagingMapPanel({ campaignId, allMaps, onDeleteMap }: StagingMap
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
               fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700,
-              color: map.is_active ? GOLD : TEXT,
+              color: map.is_active ? HUD.gold : TEXT,
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             }}>
               {map.name}
               {map.is_active && (
-                <span style={{ marginLeft: 6, fontFamily: FR, fontSize: FS_OVERLINE, color: GOLD }}>
+                <span style={{ marginLeft: 6, fontFamily: FR, fontSize: FS_OVERLINE, color: HUD.gold }}>
                   ★ ACTIVE
                 </span>
               )}
@@ -204,7 +175,7 @@ export function StagingMapPanel({ campaignId, allMaps, onDeleteMap }: StagingMap
                 disabled={busy}
                 style={{
                   background: 'rgba(200,170,80,0.08)', border: `1px solid rgba(200,170,80,0.25)`,
-                  color: busy ? 'rgba(200,170,80,0.3)' : GOLD,
+                  color: busy ? 'rgba(200,170,80,0.3)' : HUD.gold,
                   fontFamily: FR, fontSize: FS_CAPTION, padding: '3px 8px',
                   borderRadius: 3, cursor: busy ? 'not-allowed' : 'pointer',
                 }}
@@ -332,7 +303,7 @@ export function StagingMapPanel({ campaignId, allMaps, onDeleteMap }: StagingMap
               disabled={planetBusy || !newPlanetName.trim()}
               style={{
                 background: 'rgba(200,170,80,0.1)', border: `1px solid rgba(200,170,80,0.35)`,
-                color: GOLD, fontFamily: FR, fontSize: FS_SM, fontWeight: 700,
+                color: HUD.gold, fontFamily: FR, fontSize: FS_SM, fontWeight: 700,
                 padding: '0 10px', borderRadius: 4, cursor: 'pointer',
                 opacity: (!newPlanetName.trim() || planetBusy) ? 0.45 : 1,
               }}
@@ -363,7 +334,7 @@ export function StagingMapPanel({ campaignId, allMaps, onDeleteMap }: StagingMap
               style={{
                 flex: 1, padding: '6px 0', borderRadius: 4,
                 background: 'rgba(200,170,80,0.08)', border: `1px solid rgba(200,170,80,0.3)`,
-                color: GOLD, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
+                color: HUD.gold, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
                 letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer',
               }}
             >↑ Upload Map</button>
@@ -491,12 +462,12 @@ function FolderRow({ label, count, expanded, onToggle, onDelete }: FolderRowProp
         userSelect: 'none',
       }}
     >
-      <span style={{ color: expanded ? GOLD : DIM, fontSize: 9, flexShrink: 0, lineHeight: 1 }}>
+      <span style={{ color: expanded ? HUD.gold : DIM, fontSize: 9, flexShrink: 0, lineHeight: 1 }}>
         {expanded ? '▾' : '▶'}
       </span>
       <span style={{
         fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 700,
-        color: expanded ? GOLD : TEXT,
+        color: expanded ? HUD.gold : TEXT,
         letterSpacing: '0.1em', textTransform: 'uppercase',
         flex: 1, minWidth: 0,
         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
@@ -597,7 +568,7 @@ function MapUploadModal({ campaignId, planets, onClose }: MapUploadModalProps) {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ fontFamily: FC, fontSize: FS_H4, color: GOLD }}>Upload New Map</div>
+          <div style={{ fontFamily: FC, fontSize: FS_H4, color: HUD.gold }}>Upload New Map</div>
           <button onClick={onClose} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: DIM, fontSize: FS_H4, lineHeight: 1 }}>×</button>
         </div>
 
@@ -654,7 +625,7 @@ function MapUploadModal({ campaignId, planets, onClose }: MapUploadModalProps) {
               type="checkbox"
               checked={gridEnabled}
               onChange={e => setGridEnabled(e.target.checked)}
-              style={{ accentColor: GOLD }}
+              style={{ accentColor: HUD.gold }}
             />
             <span style={{ fontFamily: FR, fontSize: FS_LABEL, color: TEXT }}>Grid overlay</span>
           </label>
@@ -687,7 +658,7 @@ function MapUploadModal({ campaignId, planets, onClose }: MapUploadModalProps) {
             disabled={busy}
             style={{
               background: 'rgba(200,170,80,0.1)', border: `1px solid rgba(200,170,80,0.35)`,
-              color: GOLD, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
+              color: HUD.gold, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
               padding: '6px 14px', borderRadius: 4,
               cursor: busy ? 'not-allowed' : 'pointer',
               opacity: busy ? 0.6 : 1,

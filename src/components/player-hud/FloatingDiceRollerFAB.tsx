@@ -29,8 +29,8 @@ function DiceIcon({ size = 24 }: { size?: number }) {
   }).join(' ')
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display: 'block', flexShrink: 0 }}>
-      <polygon points={pts} fill="none" stroke="#C8AA50" strokeWidth={1.5} />
-      <polygon points={pts} fill="rgba(200,170,80,0.12)" />
+      <polygon points={pts} fill="none" stroke="#E03A1E" strokeWidth={1.5} />
+      <polygon points={pts} fill="rgba(224,58,30,0.12)" />
     </svg>
   )
 }
@@ -73,8 +73,8 @@ export function FloatingDiceRollerFAB({ characterId, characterName, campaignId }
             left:       FAB_LEFT,
             width:      PANEL_W,
             zIndex:     190,
-            background: 'rgba(6,13,9,0.97)',
-            border:     `1px solid rgba(200,170,80,0.35)`,
+            background: 'var(--hud-surface-hi)',
+            border:     `1px solid rgba(224,58,30,0.35)`,
             borderRadius: 12,
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
@@ -90,17 +90,17 @@ export function FloatingDiceRollerFAB({ characterId, characterName, campaignId }
             alignItems:   'center',
             justifyContent: 'space-between',
             padding:      '12px 16px 10px',
-            borderBottom: `1px solid rgba(200,170,80,0.15)`,
+            borderBottom: `1px solid rgba(224,58,30,0.15)`,
             position:     'sticky',
             top:          0,
-            background:   'rgba(6,13,9,0.97)',
+            background:   'var(--hud-surface-hi)',
             zIndex:       1,
           }}>
             <span style={{
               fontFamily:    FONT_CINZEL,
               fontSize:      13,
               fontWeight:    700,
-              color:         '#C8AA50',
+              color:         'var(--hud-gold)',
               letterSpacing: '0.1em',
               textTransform: 'uppercase',
             }}>
@@ -151,11 +151,11 @@ export function FloatingDiceRollerFAB({ characterId, characterName, campaignId }
           zIndex:      190,
           borderRadius: '50%',
           background:  open
-            ? 'rgba(200,170,80,0.2)'
-            : 'rgba(6,13,9,0.92)',
-          border:      `1.5px solid ${open ? '#C8AA50' : 'rgba(200,170,80,0.45)'}`,
+            ? 'rgba(224,58,30,0.2)'
+            : 'var(--hud-surface-mid)',
+          border:      `1.5px solid ${open ? 'var(--hud-gold)' : 'rgba(224,58,30,0.45)'}`,
           boxShadow:   open
-            ? '0 0 16px rgba(200,170,80,0.35), 0 4px 20px rgba(0,0,0,0.6)'
+            ? '0 0 16px rgba(224,58,30,0.35), 0 4px 20px rgba(0,0,0,0.6)'
             : '0 4px 20px rgba(0,0,0,0.6)',
           cursor:      'pointer',
           display:     'flex',

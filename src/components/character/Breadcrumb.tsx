@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 interface BreadcrumbProps {
   characterName: string
@@ -14,21 +14,21 @@ export function Breadcrumb({ characterName, activeTab = 'Character' }: Breadcrum
       gap: 'var(--sp-sm)',
     }}>
       <span style={{
-        fontFamily: 'var(--font-orbitron)',
+        fontFamily: 'var(--font-rajdhani)',
         fontSize: 'var(--font-sm)',
         fontWeight: 600,
         letterSpacing: '0.08rem',
-        color: 'var(--txt3)',
+        color: 'var(--bs-txt3)',
       }}>
         {activeTab}
       </span>
-      <span style={{ color: 'var(--bdr)', fontSize: 'var(--font-sm)' }}>/</span>
+      <span style={{ color: 'var(--bs-bdr-strong)', fontSize: 'var(--font-sm)' }}>/</span>
       <span style={{
-        fontFamily: 'var(--font-orbitron)',
+        fontFamily: 'var(--font-rajdhani)',
         fontSize: 'var(--font-sm)',
         fontWeight: 600,
         letterSpacing: '0.08rem',
-        color: 'var(--txt2)',
+        color: 'var(--bs-txt2)',
       }}>
         {characterName}
       </span>

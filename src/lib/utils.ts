@@ -15,7 +15,7 @@ const DICE_TAGS_RE = /\[(BO|BST|SE|SET|BL|DI|DIF|CH|CHL|PR|PRO|AB|ABL)\]/gi
 
 /**
  * Strips OggDude BBCode markup while preserving known dice tags ([BO], [SE],
- * [DI], [CH], etc.) so they can be processed by parseDiceText / DiceText.
+ * [DI], [CH], etc.) while stripping all other BBCode formatting.
  */
 export function stripBBCode(text: string): string {
   // Stash dice tags behind NUL placeholders so the catch-all strip misses them

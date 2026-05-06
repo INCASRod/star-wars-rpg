@@ -1,9 +1,9 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
-const FONT_C = "var(--font-cinzel), 'Cinzel', serif"
+const FONT_C = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FONT_M = "'Share Tech Mono', 'Courier New', monospace"
 const PURPLE     = '#9060D0'

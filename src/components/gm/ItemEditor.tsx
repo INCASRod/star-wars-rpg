@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
@@ -12,10 +12,10 @@ import type {
 } from '@/lib/types'
 import { QualityBadge } from '@/components/character/QualityBadge'
 import { RichText } from '@/components/ui/RichText'
+import { HUD } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 const PANEL_BG  = 'rgba(6,13,9,0.97)'
-const GOLD      = '#C8AA50'
 const GOLD_DIM  = 'rgba(200,170,80,0.5)'
 const GOLD_BD   = 'rgba(200,170,80,0.3)'
 const TEXT      = 'rgba(232,223,200,0.85)'
@@ -28,7 +28,7 @@ const BLUE      = '#5AAAE0'
 const GREEN     = '#50A870'
 const FONT_C    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FONT_M    = "'Share Tech Mono','Courier New',monospace"
-const FONT_CINZEL = "var(--font-cinzel), 'Cinzel', serif"
+const FONT_CINZEL = "var(--font-rajdhani), 'Cinzel', serif"
 const FS_OVER   = 'var(--text-overline)'
 const FS_CAP    = 'var(--text-caption)'
 const FS_LABEL  = 'var(--text-label)'
@@ -171,7 +171,7 @@ function HpBar({ used, total }: { used: number; total: number }) {
         <div style={{
           height: '100%',
           width: `${pct * 100}%`,
-          background: over ? RED : GOLD,
+          background: over ? RED : HUD.gold,
           borderRadius: 3,
           transition: 'width 150ms ease',
         }} />
@@ -628,7 +628,7 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
           position: 'sticky', top: 0, background: 'rgba(6,13,9,0.98)', zIndex: 1,
           borderRadius: '14px 14px 0 0',
         }}>
-          <div style={{ fontFamily: FONT_C, fontSize: FS_SM, fontWeight: 700, color: GOLD, letterSpacing: '0.08em' }}>
+          <div style={{ fontFamily: FONT_C, fontSize: FS_SM, fontWeight: 700, color: HUD.gold, letterSpacing: '0.08em' }}>
             {isNew ? 'New Custom Item' : isOggDude ? 'Create Custom Copy' : `Edit ${item!.name}`}
           </div>
           <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: DIM, cursor: 'pointer', fontFamily: FONT_C, fontSize: FS_SM }}>
@@ -694,9 +694,8 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
                         <button
                           key={r.key}
                           onMouseDown={e => { e.preventDefault(); selectTemplate(r) }}
+                          className="hov-gold-bg"
                           style={{ display: 'block', width: '100%', textAlign: 'left', padding: '7px 12px', background: 'transparent', border: 'none', cursor: 'pointer', borderBottom: `1px solid ${BORDER}` }}
-                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(200,170,80,0.07)' }}
-                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
                         >
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                             <span style={{ fontFamily: FONT_M, fontSize: FS_OVER, fontWeight: 700, textTransform: 'uppercase', color: TYPE_COLOR[r.type], border: `1px solid ${TYPE_COLOR[r.type]}40`, borderRadius: 2, padding: '1px 4px', flexShrink: 0 }}>{r.type}</span>
@@ -750,7 +749,7 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
                   <button key={t} onClick={() => setType(t)} style={{
                     fontFamily: FONT_C, fontSize: FS_CAP, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em',
                     padding: '5px 14px', borderRadius: 3, cursor: 'pointer', border: '1px solid',
-                    color:       type === t ? (t === 'weapon' ? RED : t === 'armor' ? BLUE : GOLD) : DIM,
+                    color:       type === t ? (t === 'weapon' ? RED : t === 'armor' ? BLUE : HUD.gold) : DIM,
                     borderColor: type === t ? (t === 'weapon' ? 'rgba(224,80,80,0.5)' : t === 'armor' ? 'rgba(90,170,224,0.5)' : GOLD_BD) : BORDER,
                     background:  type === t ? (t === 'weapon' ? 'rgba(224,80,80,0.08)' : t === 'armor' ? 'rgba(90,170,224,0.08)' : 'rgba(200,170,80,0.08)') : 'transparent',
                   }}>
@@ -847,7 +846,7 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
                     display: 'flex', alignItems: 'center', gap: 6,
                   }}
                 >
-                  <span style={{ color: GOLD }}>+</span>
+                  <span style={{ color: HUD.gold }}>+</span>
                   <span>Add Quality…</span>
                   <span style={{ marginLeft: 'auto', fontSize: 10, opacity: 0.6 }}>▾</span>
                 </button>
@@ -874,14 +873,13 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
                           <button
                             key={q.key}
                             onMouseDown={e => { e.preventDefault(); added ? removeQuality(q.key) : addQuality(q) }}
+                            className="hov-gold-bg"
                             style={{
                               display: 'flex', width: '100%', alignItems: 'center', gap: 8,
                               padding: '6px 10px', background: 'transparent', border: 'none',
                               cursor: 'pointer', borderBottom: `1px solid ${BORDER}`,
                               textAlign: 'left',
                             }}
-                            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(200,170,80,0.07)' }}
-                            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
                           >
                             <span style={{ width: 14, flexShrink: 0, color: GREEN, fontSize: 14 }}>{added ? '✓' : ''}</span>
                             <span style={{ fontFamily: FONT_C, fontSize: FS_LABEL, color: TEXT, flex: 1 }}>{q.name}</span>
@@ -1054,7 +1052,7 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
                     cursor: type === 'weapon' && hpTotal === 0 ? 'not-allowed' : 'pointer',
                   }}
                 >
-                  <span style={{ color: GOLD }}>+</span>
+                  <span style={{ color: HUD.gold }}>+</span>
                   <span>Add Attachment…</span>
                   <span style={{ marginLeft: 'auto', fontSize: 10, opacity: 0.6 }}>▾</span>
                 </button>
@@ -1091,6 +1089,7 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
                             <button
                               key={r.key}
                               onMouseDown={e => { e.preventDefault(); if (canFit || type !== 'weapon') addAttachment(r) }}
+                              className={canFit || type !== 'weapon' ? 'hov-gold-bg' : ''}
                               style={{
                                 display: 'block', width: '100%', textAlign: 'left',
                                 padding: '8px 10px', background: 'transparent', border: 'none',
@@ -1098,8 +1097,6 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
                                 borderBottom: `1px solid ${BORDER}`,
                                 opacity: !canFit && type === 'weapon' ? 0.55 : 1,
                               }}
-                              onMouseEnter={e => { if (canFit || type !== 'weapon') (e.currentTarget as HTMLElement).style.background = 'rgba(200,170,80,0.07)' }}
-                              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
                             >
                               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
                                 <span style={{ fontFamily: FONT_CINZEL, fontSize: 'clamp(0.75rem, 1.1vw, 0.85rem)', color: TEXT, flex: 1 }}>{r.name}</span>
@@ -1136,7 +1133,7 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
                 {/* Damage */}
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
                   <span style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: DIM, textTransform: 'uppercase', letterSpacing: '0.1em', width: 80 }}>Damage</span>
-                  <span style={{ fontFamily: FONT_M, fontSize: FS_LABEL, color: GOLD }}>
+                  <span style={{ fontFamily: FONT_M, fontSize: FS_LABEL, color: HUD.gold }}>
                     {['MELEE', 'BRAWL', 'LTSABER'].includes(skillKey) ? `Brawn+${preview.damage}` : preview.damage}
                   </span>
                   {preview.damageSources.length > 1 && (
@@ -1174,7 +1171,7 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
               <span style={fieldLabel}>Description</span>
               <button
                 onClick={() => setDescPreview(p => !p)}
-                style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: descPreview ? GOLD : DIM, background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px 6px', letterSpacing: '0.05em' }}
+                style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: descPreview ? HUD.gold : DIM, background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px 6px', letterSpacing: '0.05em' }}
               >
                 {descPreview ? 'Edit' : 'Preview'}
               </button>
@@ -1293,7 +1290,7 @@ function QualityRow({
             background: 'rgba(0,0,0,0.4)',
             border: `1px solid rgba(200,170,80,0.3)`,
             borderRadius: 4,
-            color: GOLD,
+            color: HUD.gold,
             padding: 0,
             outline: 'none',
           }}
@@ -1352,7 +1349,7 @@ const inputStyle: React.CSSProperties = {
 const btnPrimaryStyle: React.CSSProperties = {
   background: 'rgba(200,170,80,0.15)',
   border: `1px solid rgba(200,170,80,0.3)`,
-  color: '#C8AA50',
+  color: 'var(--hud-gold)',
   fontFamily: "var(--font-rajdhani), 'Rajdhani', sans-serif",
   fontSize: 'var(--text-caption)',
   fontWeight: 700,

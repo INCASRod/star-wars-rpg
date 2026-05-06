@@ -1,11 +1,11 @@
 'use client'
 
 import type { SessionRollState } from '@/hooks/useSessionRollState'
+import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const FC = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FONT_CINZEL = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const GOLD = '#C8AA50'
 const TEXT_MUTED = 'rgba(232,223,200,0.7)'
 
 const baseStyle: React.CSSProperties = {
@@ -78,7 +78,7 @@ export function SessionStatusBanner({
               background: 'rgba(200,170,80,0.1)',
               borderBottom: '1px solid rgba(200,170,80,0.4)',
               fontFamily: FONT_CINZEL,
-              color: GOLD,
+              color: HUD.gold,
             }}>
               <div style={{ fontWeight: 700 }}>✦ YOUR Duty is triggered this session!</div>
               <div style={{ fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)', color: 'rgba(200,170,80,0.8)' }}>

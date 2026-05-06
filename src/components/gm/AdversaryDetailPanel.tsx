@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
@@ -8,15 +8,15 @@ import type { Adversary } from '@/lib/adversaries'
 import { resolveWeapon } from '@/lib/resolve-weapon'
 import { TokenImageLinks } from './TokenImageLinks'
 import { RichText } from '@/components/ui/RichText'
+import { HUD } from '@/lib/tokens'
 
 /* ── Design tokens ─────────────────────────────────────── */
-const FC       = "var(--font-cinzel), 'Cinzel', serif"
+const FC       = "var(--font-rajdhani), 'Cinzel', serif"
 const FR       = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FM       = "'Share Tech Mono','Courier New',monospace"
 const BG       = '#060D09'
 const PANEL_BG = 'rgba(6,13,9,0.97)'
 const RAISED   = 'rgba(14,26,18,0.9)'
-const GOLD     = '#C8AA50'
 const GOLD_DIM = 'rgba(200,170,80,0.5)'
 const TEXT     = '#C8D8C0'
 const DIM      = '#6A8070'
@@ -37,7 +37,7 @@ const FS_H3       = 'var(--text-h3)'
 const TYPE_COLORS: Record<string, string> = {
   minion:  DIM,
   rival:   BLUE,
-  nemesis: GOLD,
+  nemesis: HUD.gold,
 }
 
 /* ── Helpers ───────────────────────────────────────────── */
@@ -231,7 +231,7 @@ export function AdversaryDetailPanel({
                 fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: TEXT,
                 letterSpacing: '0.06em',
               }}>
-                {adv._isCustom && <span style={{ color: GOLD }}>★ </span>}
+                {adv._isCustom && <span style={{ color: HUD.gold }}>★ </span>}
                 {adv.name}
               </div>
               <TypeBadge type={adv.type} />
@@ -302,7 +302,7 @@ export function AdversaryDetailPanel({
                     : skill
                   return (
                   <span key={skill} style={{ fontFamily: FR, fontSize: FS_SM, color: TEXT }}>
-                    {displayName} <span style={{ color: GOLD, fontWeight: 700 }}>{rank}</span>
+                    {displayName} <span style={{ color: HUD.gold, fontWeight: 700 }}>{rank}</span>
                   </span>
                   )
                 })}
@@ -361,7 +361,7 @@ export function AdversaryDetailPanel({
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {adv.talents?.map((t, i) => (
                   <div key={i}>
-                    <span style={{ fontFamily: FR, fontSize: FS_SM, fontWeight: 700, color: GOLD }}>{t.name}</span>
+                    <span style={{ fontFamily: FR, fontSize: FS_SM, fontWeight: 700, color: HUD.gold }}>{t.name}</span>
                     {t.description && (
                       <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}> — <RichText text={t.description} /></span>
                     )}
@@ -410,7 +410,7 @@ export function AdversaryDetailPanel({
                   style={{
                     background: 'rgba(200,170,80,0.08)',
                     border: `1px solid ${GOLD_DIM}`,
-                    color: GOLD, fontFamily: FR, fontSize: FS_CAPTION,
+                    color: HUD.gold, fontFamily: FR, fontSize: FS_CAPTION,
                     fontWeight: 700, letterSpacing: '0.08em',
                     padding: '6px 14px', borderRadius: 3, cursor: 'pointer',
                     opacity: uploading ? 0.6 : 1,
@@ -477,7 +477,7 @@ export function AdversaryDetailPanel({
               flex: 1,
               background: 'rgba(200,170,80,0.08)',
               border: `1px solid ${GOLD_DIM}`,
-              color: GOLD, fontFamily: FR, fontSize: FS_SM, fontWeight: 700,
+              color: HUD.gold, fontFamily: FR, fontSize: FS_SM, fontWeight: 700,
               letterSpacing: '0.1em', padding: '9px 0',
               borderRadius: 3, cursor: 'pointer',
             }}

@@ -1,10 +1,10 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import { HUD } from '@/lib/tokens'
 
 const FR       = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const PANEL_BG = 'rgba(6,13,9,0.97)'
-const GOLD     = '#C8AA50'
 const DIM      = '#6A8070'
 const BORDER_HI = 'rgba(200,170,80,0.36)'
 
@@ -64,7 +64,7 @@ export function TokenImageLinks({ onClose }: TokenImageLinksProps) {
     >
       <div style={{
         fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700,
-        color: GOLD, letterSpacing: '0.15em', textTransform: 'uppercase' as const,
+        color: HUD.gold, letterSpacing: '0.15em', textTransform: 'uppercase' as const,
         marginBottom: 10,
       }}>
         🔗 Find Token Images
@@ -87,7 +87,7 @@ export function TokenImageLinks({ onClose }: TokenImageLinksProps) {
             textDecoration: 'none',
           }}
         >
-          <div style={{ fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, color: GOLD }}>
+          <div style={{ fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, color: HUD.gold }}>
             → {r.label}
           </div>
           <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, marginTop: 2 }}>

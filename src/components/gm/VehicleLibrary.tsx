@@ -1,7 +1,8 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useVehicleTokenImages } from '@/hooks/useVehicleTokenImages'
 import { fetchVehicles, vehicleToInstance, dbRowToVehicle } from '@/lib/vehicles'
 import type { Vehicle } from '@/lib/vehicles'
 import type { CombatEncounter, InitiativeSlot } from '@/lib/combat'
@@ -9,15 +10,16 @@ import { randomUUID } from '@/lib/utils'
 import { toast } from 'sonner'
 import { VehicleDetailPanel } from './VehicleDetailPanel'
 import { VehicleEditor } from './VehicleEditor'
+import { HUD } from '@/lib/tokens'
+import { Modal } from '@/components/ui/Modal'
 
 /* ── Design tokens ─────────────────────────────────────── */
-const FC       = "var(--font-cinzel), 'Cinzel', serif"
+const FC       = "var(--font-rajdhani), 'Cinzel', serif"
 const FR       = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FM       = "'Share Tech Mono','Courier New',monospace"
 const PANEL_BG = 'rgba(8,16,10,0.88)'
 const RAISED   = 'rgba(14,26,18,0.9)'
 const INPUT_BG = 'rgba(0,0,0,0.35)'
-const GOLD     = '#C8AA50'
 const GOLD_DIM = 'rgba(200,170,80,0.5)'
 const TEXT     = '#C8D8C0'
 const DIM      = '#6A8070'
@@ -36,7 +38,6 @@ const FS_H4       = 'var(--text-h4)'
 type CategoryFilter = 'all' | 'ground' | 'starship'
 type SourceFilter   = 'all' | 'oggdude' | 'custom'
 
-interface TokenMap { [key: string]: string }
 
 interface AddCombatState {
   vehicle:   Vehicle & { _isCustom?: boolean }
@@ -45,7 +46,7 @@ interface AddCombatState {
 
 /* ── Helpers ───────────────────────────────────────────── */
 function PillBtn({ active, onClick, children, color }: { active: boolean; onClick: () => void; children: React.ReactNode; color?: string }) {
-  const c = color ?? GOLD
+  const c = color ?? HUD.gold
   return (
     <button onClick={onClick} style={{
       fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.08em',
@@ -77,7 +78,7 @@ export function VehicleLibrary({ campaignId, sessionMode, onAddToken, mapId }: V
   /* ── Data ────────────────────────────────────────────── */
   const [oggdude,     setOggdude]     = useState<Vehicle[]>([])
   const [custom,      setCustom]      = useState<(Vehicle & { _isCustom: true; _dbId: string })[]>([])
-  const [tokenImages, setTokenImages] = useState<TokenMap>({})
+  const { tokenImages, setTokenImages } = useVehicleTokenImages()
   const [loading,     setLoading]     = useState(true)
 
   /* ── Filters ─────────────────────────────────────────── */
@@ -99,19 +100,13 @@ export function VehicleLibrary({ campaignId, sessionMode, onAddToken, mapId }: V
     let cancelled = false
     const load = async () => {
       try {
-        const [vehicles, customResult, tokensResult] = await Promise.all([
+        const [vehicles, customResult] = await Promise.all([
           fetchVehicles(),
           supabase.from('ref_vehicles').select('*').order('name'),
-          supabase.from('vehicle_token_images').select('vehicle_key, token_image_url'),
         ])
         if (cancelled) return
         setOggdude(vehicles)
         if (customResult.data) setCustom(customResult.data.map(r => dbRowToVehicle(r as Record<string, unknown>)))
-        if (tokensResult.data) {
-          const map: TokenMap = {}
-          for (const row of tokensResult.data) map[String(row.vehicle_key)] = String(row.token_image_url)
-          setTokenImages(map)
-        }
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -236,14 +231,14 @@ export function VehicleLibrary({ campaignId, sessionMode, onAddToken, mapId }: V
 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-        <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: GOLD, letterSpacing: '0.08em' }}>
+        <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: HUD.gold, letterSpacing: '0.08em' }}>
           Vehicle Library
         </div>
         <button
           onClick={openNew}
           style={{
             background: 'rgba(200,170,80,0.08)', border: `1px solid ${GOLD_DIM}`,
-            color: GOLD, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
+            color: HUD.gold, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
             letterSpacing: '0.1em', padding: '6px 14px', borderRadius: 3, cursor: 'pointer', flexShrink: 0,
           }}
         >
@@ -268,7 +263,7 @@ export function VehicleLibrary({ campaignId, sessionMode, onAddToken, mapId }: V
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         {(['all', 'ground', 'starship'] as CategoryFilter[]).map(f => (
           <PillBtn key={f} active={categoryFilter === f} onClick={() => setCategoryFilter(f)}
-            color={f === 'starship' ? BLUE : GOLD}
+            color={f === 'starship' ? BLUE : HUD.gold}
           >
             {f === 'all' ? 'All' : f === 'ground' ? 'Ground' : 'Starship'}
           </PillBtn>
@@ -385,7 +380,7 @@ function VehicleRow({ vehicle, tokenUrl, isLast, onView, onEdit, onAddToCombat, 
   /** When provided, overrides the row action button label (default '⚔ Combat'). */
   addLabel?: string
 }) {
-  const accentColor = vehicle.isStarship ? BLUE : GOLD
+  const accentColor = vehicle.isStarship ? BLUE : HUD.gold
   const btnRowStyle: React.CSSProperties = {
     background: 'transparent', border: `1px solid ${BORDER}`, color: DIM,
     fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.08em',
@@ -415,7 +410,7 @@ function VehicleRow({ vehicle, tokenUrl, isLast, onView, onEdit, onAddToCombat, 
       <div style={{ flex: 1, minWidth: 120 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <span style={{ fontFamily: FR, fontSize: 'clamp(0.82rem,1.3vw,0.95rem)', fontWeight: 700, color: TEXT }}>
-            {vehicle._isCustom && <span style={{ color: GOLD }}>★ </span>}
+            {vehicle._isCustom && <span style={{ color: HUD.gold }}>★ </span>}
             {vehicle.name}
           </span>
           <span style={{
@@ -434,18 +429,9 @@ function VehicleRow({ vehicle, tokenUrl, isLast, onView, onEdit, onAddToCombat, 
 
       {/* Actions */}
       <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-        <button onClick={onView} style={btnRowStyle}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = GOLD; (e.currentTarget as HTMLElement).style.color = GOLD }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = BORDER; (e.currentTarget as HTMLElement).style.color = DIM }}
-        >View</button>
-        <button onClick={onEdit} style={btnRowStyle}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = GOLD_DIM; (e.currentTarget as HTMLElement).style.color = GOLD }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = BORDER; (e.currentTarget as HTMLElement).style.color = DIM }}
-        >Edit</button>
-        <button onClick={onAddToCombat} style={{ ...btnRowStyle, borderColor: 'rgba(224,80,80,0.3)', color: RED }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(224,80,80,0.08)' }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
-        >{addLabel ?? '⚔ Combat'}</button>
+        <button onClick={onView} className="hov-gold" style={btnRowStyle}>View</button>
+        <button onClick={onEdit} className="hov-gold" style={btnRowStyle}>Edit</button>
+        <button onClick={onAddToCombat} className="hov-red-bg" style={{ ...btnRowStyle, borderColor: 'rgba(224,80,80,0.3)', color: RED }}>{addLabel ?? '⚔ Combat'}</button>
       </div>
     </div>
   )
@@ -461,21 +447,22 @@ function AddToCombatOverlay({ state, busy, onChange, onConfirm, onCancel }: {
 }) {
   const { vehicle, alignment } = state
   return (
-    <div onClick={onCancel} style={{
-      position: 'fixed', inset: 0, zIndex: 9050,
-      background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
-    }}>
-      <div onClick={e => e.stopPropagation()} style={{
-        width: '100%', maxWidth: 400, background: 'rgba(8,16,10,0.97)',
-        border: `1px solid ${BORDER_HI}`, borderRadius: 8, padding: '20px 24px',
-        boxShadow: '0 16px 48px rgba(0,0,0,0.8)',
-      }}>
-        <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: GOLD, letterSpacing: '0.1em', marginBottom: 4 }}>
+    <Modal
+      open
+      onClose={onCancel}
+      zIndex={9050}
+      maxWidth={400}
+      backdrop="rgba(0,0,0,0.72)"
+      borderColor={BORDER_HI}
+      shadow="0 16px 48px rgba(0,0,0,0.8)"
+      panelBackground="rgba(8,16,10,0.97)"
+    >
+      <div style={{ padding: '20px 24px' }}>
+        <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: HUD.gold, letterSpacing: '0.1em', marginBottom: 4 }}>
           Add to Combat
         </div>
         <div style={{ fontFamily: FR, fontSize: FS_SM, color: TEXT, marginBottom: 16 }}>
-          <span style={{ color: vehicle.isStarship ? BLUE : GOLD, fontWeight: 700 }}>{vehicle.name}</span>
+          <span style={{ color: vehicle.isStarship ? BLUE : HUD.gold, fontWeight: 700 }}>{vehicle.name}</span>
           {' '}
           <span style={{ fontFamily: FM, fontSize: FS_CAPTION, color: DIM }}>
             Sil {vehicle.silhouette} · Armor {vehicle.armor} · Hull {vehicle.hullTrauma}
@@ -512,7 +499,7 @@ function AddToCombatOverlay({ state, busy, onChange, onConfirm, onCancel }: {
           </button>
         </div>
       </div>
-    </div>
+    </Modal>
   )
 }
 
@@ -525,27 +512,18 @@ function AddTokenOverlay({
   onCancel:   () => void
 }) {
   return (
-    <div
-      onClick={onCancel}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 9100,
-        background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: 24,
-      }}
+    <Modal
+      open
+      onClose={onCancel}
+      zIndex={9100}
+      maxWidth={360}
+      backdrop="rgba(0,0,0,0.72)"
+      borderColor={BORDER_HI}
+      shadow="0 16px 48px rgba(0,0,0,0.8)"
+      panelBackground="rgba(8,16,10,0.97)"
     >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          width: '100%', maxWidth: 360,
-          background: 'rgba(8,16,10,0.97)',
-          border: `1px solid ${BORDER_HI}`,
-          borderRadius: 8,
-          padding: '20px 24px',
-          boxShadow: '0 16px 48px rgba(0,0,0,0.8)',
-        }}
-      >
-        <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: GOLD, letterSpacing: '0.1em', marginBottom: 4 }}>
+      <div style={{ padding: '20px 24px' }}>
+        <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: HUD.gold, letterSpacing: '0.1em', marginBottom: 4 }}>
           Add Token
         </div>
         <div style={{ fontFamily: FR, fontSize: FS_SM, color: TEXT, marginBottom: 20 }}>
@@ -592,6 +570,6 @@ function AddTokenOverlay({
           Cancel
         </button>
       </div>
-    </div>
+    </Modal>
   )
 }

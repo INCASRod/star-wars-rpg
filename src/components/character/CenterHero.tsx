@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useRef, useState } from 'react'
 
@@ -35,7 +35,7 @@ export function CenterHero({ name, subtitle, portraitUrl, credits, xpTotal, xpAv
         transform: 'translateX(-50%)',
         width: 'clamp(280px, 24vw, 600px)',
         height: 'clamp(60px, 6vw, 150px)',
-        background: 'radial-gradient(ellipse, var(--gold-glow-s) 0%, transparent 70%)',
+        background: 'radial-gradient(ellipse, var(--bs-red-glow-s) 0%, transparent 70%)',
         zIndex: 0,
         animation: 'glowPulse 3s ease-in-out infinite',
       }} />
@@ -81,13 +81,13 @@ export function CenterHero({ name, subtitle, portraitUrl, credits, xpTotal, xpAv
                 <button
                   onClick={() => fileRef.current?.click()}
                   style={{
-                    background: 'rgba(255,255,255,.85)', backdropFilter: 'blur(6px)',
-                    border: '1px solid var(--bdr-l)',
+                    background: 'var(--bs-card)', backdropFilter: 'blur(6px)',
+                    border: '1px solid var(--bs-bdr-mid)',
                     padding: '0.25rem 0.5rem',
                     cursor: 'pointer',
-                    fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)',
+                    fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)',
                     fontWeight: 700, letterSpacing: '0.08rem',
-                    color: 'var(--txt2)', transition: '.15s',
+                    color: 'var(--bs-txt2)', transition: '.15s',
                   }}
                 >
                   CHANGE
@@ -99,7 +99,7 @@ export function CenterHero({ name, subtitle, portraitUrl, credits, xpTotal, xpAv
                     border: '1px solid var(--red)',
                     padding: '0.25rem 0.5rem',
                     cursor: 'pointer',
-                    fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)',
+                    fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)',
                     fontWeight: 700, letterSpacing: '0.08rem',
                     color: 'var(--red)', transition: '.15s',
                   }}
@@ -124,17 +124,17 @@ export function CenterHero({ name, subtitle, portraitUrl, credits, xpTotal, xpAv
             >
               <div style={{
                 width: '5rem', height: '5rem', borderRadius: '50%',
-                border: '2px dashed var(--bdr-l)',
+                border: '2px dashed var(--bs-bdr-mid)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 'var(--font-xl)', color: 'var(--txt3)',
+                fontSize: 'var(--font-xl)', color: 'var(--bs-txt3)',
                 transition: '.2s',
               }}>
                 +
               </div>
               <div style={{
-                fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)',
+                fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)',
                 fontWeight: 600, letterSpacing: '0.15rem',
-                color: 'var(--txt3)',
+                color: 'var(--bs-txt3)',
               }}>
                 UPLOAD PORTRAIT
               </div>
@@ -170,7 +170,7 @@ export function CenterHero({ name, subtitle, portraitUrl, credits, xpTotal, xpAv
         <div style={{
           position: 'absolute',
           inset: 0,
-          background: 'linear-gradient(to top, rgba(244,240,232,.95) 0%, rgba(244,240,232,.8) 60%, transparent 100%)',
+          background: 'linear-gradient(to top, rgba(232,221,208,.95) 0%, rgba(232,221,208,.8) 60%, transparent 100%)',
           pointerEvents: 'none',
           zIndex: -1,
         }} />
@@ -182,19 +182,19 @@ export function CenterHero({ name, subtitle, portraitUrl, credits, xpTotal, xpAv
           paddingTop: 'var(--sp-lg)',
         }}>
           <h1 style={{
-            fontFamily: 'var(--font-orbitron)',
+            fontFamily: 'var(--font-rajdhani)',
             fontWeight: 900,
             fontSize: 'var(--font-hero)',
             letterSpacing: '0.4rem',
-            color: 'var(--ink)',
-            textShadow: '0 0 40px var(--gold-glow-s)',
+            color: 'var(--bs-ink)',
+            textShadow: '0 0 40px var(--bs-red-glow-s)',
           }}>
             {name}
           </h1>
           <div style={{
-            fontFamily: 'var(--font-mono)',
+            fontFamily: 'var(--font-rajdhani)',
             fontSize: 'var(--font-lg)',
-            color: 'var(--txt2)',
+            color: 'var(--bs-txt2)',
             letterSpacing: '0.1rem',
             marginTop: '0.25rem',
             whiteSpace: 'nowrap',
@@ -211,7 +211,7 @@ export function CenterHero({ name, subtitle, portraitUrl, credits, xpTotal, xpAv
           justifyContent: 'center',
           marginBottom: 'var(--sp-xs)',
         }}>
-          <MetaItem value={credits} label="Credits" color="var(--gold-d)" />
+          <MetaItem value={credits} label="Credits" color="var(--bs-red-mid)" />
           <MetaItem value={xpTotal} label="Total XP" />
           <MetaItem value={xpAvailable} label="Available" color="var(--blue)" />
         </div>
@@ -224,19 +224,19 @@ function MetaItem({ value, label, color }: { value: number; label: string; color
   return (
     <div style={{ textAlign: 'center' }}>
       <div style={{
-        fontFamily: 'var(--font-orbitron)',
+        fontFamily: 'var(--font-rajdhani)',
         fontSize: 'var(--font-xl)',
         fontWeight: 800,
-        color: color || 'var(--ink)',
+        color: color || 'var(--bs-ink)',
       }}>
         {value}
       </div>
       <div style={{
-        fontFamily: 'var(--font-orbitron)',
+        fontFamily: 'var(--font-rajdhani)',
         fontSize: 'var(--font-xs)',
         fontWeight: 600,
         letterSpacing: '0.15rem',
-        color: 'var(--txt3)',
+        color: 'var(--bs-txt3)',
         marginTop: '0.25rem',
       }}>
         {label}

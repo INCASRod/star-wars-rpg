@@ -1,9 +1,9 @@
-'use client'
+﻿'use client'
 
 export function Badge({ color, bg, children }: { color: string; bg: string; children: React.ReactNode }) {
   return (
     <span style={{
-      fontFamily: 'var(--font-mono)',
+      fontFamily: 'var(--font-rajdhani)',
       fontSize: 'var(--font-2xs)',
       fontWeight: 600,
       letterSpacing: '0.06rem',

@@ -1,11 +1,11 @@
-'use client'
+﻿'use client'
 
 import { memo } from 'react'
+import { HUD } from '@/lib/tokens'
 
 /* ── Design tokens ────────────────────────────────────────── */
-const FC   = "var(--font-cinzel), 'Cinzel', serif"
+const FC   = "var(--font-rajdhani), 'Cinzel', serif"
 const FR   = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const GOLD = '#C8AA50'
 const DIM  = '#6A8070'
 const RED  = '#E05050'
 const GREEN = '#4EC87A'
@@ -119,7 +119,7 @@ export const StagingTopBar = memo(function StagingTopBar({
               fontSize:      'var(--text-sm, 0.82rem)',
               fontWeight:    700,
               letterSpacing: '0.08em',
-              color:         GOLD,
+              color:         HUD.gold,
             }}
           >
             {combatRound}

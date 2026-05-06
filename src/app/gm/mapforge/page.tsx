@@ -1,14 +1,14 @@
-'use client'
+﻿'use client'
 
 import { useState, useRef, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { generateMapImage, generateMapWithAsset, editMapImage } from '@/lib/mapgen/imageGen'
+import { HUD } from '@/lib/tokens'
 
 /* ── Design tokens (matches GM view) ─────────────────────── */
 const FR   = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FC   = "var(--font-cinzel), 'Cinzel', serif"
-const GOLD = '#C8AA50'
+const FC   = "var(--font-rajdhani), 'Cinzel', serif"
 const DIM  = '#6A8070'
 const TEXT = '#C8D8C0'
 const BG   = '#060D09'
@@ -65,7 +65,7 @@ const darkInput: React.CSSProperties = {
 const btnGold: React.CSSProperties = {
   background: 'rgba(200,170,80,0.08)',
   border: `1px solid rgba(200,170,80,0.4)`,
-  color: GOLD,
+  color: HUD.gold,
   fontFamily: FR,
   fontSize: FS_LABEL,
   fontWeight: 700,
@@ -359,7 +359,7 @@ function MapForgeInner() {
             <img src={a.previewUrl} alt={a.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', opacity: a.url ? 1 : 0.45 }} />
             {!a.url && (
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ width: 16, height: 16, borderRadius: '50%', border: `2px solid ${GOLD}`, borderTopColor: 'transparent', animation: 'mf-spin 0.8s linear infinite' }} />
+                <div style={{ width: 16, height: 16, borderRadius: '50%', border: `2px solid ${HUD.gold}`, borderTopColor: 'transparent', animation: 'mf-spin 0.8s linear infinite' }} />
               </div>
             )}
             {i === 0 && primaryLabel && a.url && (
@@ -392,7 +392,7 @@ function MapForgeInner() {
           ← Back to Staging
         </button>
         <div style={{ width: 1, height: 22, background: BORDER }} />
-        <span style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: GOLD }}>
+        <span style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: HUD.gold }}>
           Map Forge
         </span>
         {editModeActive && (
@@ -459,7 +459,7 @@ function MapForgeInner() {
                   style={{ width: '100%', padding: '10px', border: `1px dashed ${editRefUploading ? BORDER : BORDER_HI}`, borderRadius: 4, background: 'transparent', cursor: editRefUploading ? 'wait' : 'pointer', fontFamily: FR, fontSize: FS_CAPTION, color: editRefUploading ? DIM : TEXT, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
                 >
                   {editRefUploading
-                    ? <><div style={{ width: 12, height: 12, borderRadius: '50%', border: `1.5px solid ${GOLD}`, borderTopColor: 'transparent', animation: 'mf-spin 0.8s linear infinite' }} />Uploading…</>
+                    ? <><div style={{ width: 12, height: 12, borderRadius: '50%', border: `1.5px solid ${HUD.gold}`, borderTopColor: 'transparent', animation: 'mf-spin 0.8s linear infinite' }} />Uploading…</>
                     : <>↑ Add Reference Image{editRefs.length > 0 ? 's' : ''}</>
                   }
                 </button>
@@ -564,11 +564,11 @@ function MapForgeInner() {
                   onClick={() => freshAssetInputRef.current?.click()}
                   disabled={freshUploading || busy}
                   style={{ width: '100%', padding: '10px', border: `1px dashed ${freshUploading ? BORDER : BORDER_HI}`, borderRadius: 4, background: 'transparent', cursor: freshUploading ? 'wait' : 'pointer', fontFamily: FR, fontSize: FS_CAPTION, color: freshUploading ? DIM : TEXT, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
-                  onMouseEnter={e => { if (!freshUploading) (e.currentTarget as HTMLElement).style.borderColor = GOLD }}
+                  onMouseEnter={e => { if (!freshUploading) (e.currentTarget as HTMLElement).style.borderColor = HUD.gold }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = freshUploading ? BORDER : BORDER_HI }}
                 >
                   {freshUploading
-                    ? <><div style={{ width: 12, height: 12, borderRadius: '50%', border: `1.5px solid ${GOLD}`, borderTopColor: 'transparent', animation: 'mf-spin 0.8s linear infinite' }} />Uploading…</>
+                    ? <><div style={{ width: 12, height: 12, borderRadius: '50%', border: `1.5px solid ${HUD.gold}`, borderTopColor: 'transparent', animation: 'mf-spin 0.8s linear infinite' }} />Uploading…</>
                     : <>↑ Add Reference Image{freshAssets.length > 0 ? 's' : ''}</>
                   }
                 </button>
@@ -590,8 +590,8 @@ function MapForgeInner() {
             <div style={{ position: 'fixed', inset: 0, zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)' }}>
               <div style={{ width: 360, background: 'rgba(8,16,11,0.98)', border: `1px solid ${BORDER_HI}`, borderRadius: 8, boxShadow: '0 24px 64px rgba(0,0,0,0.8)', overflow: 'hidden' }}>
                 <div style={{ padding: '14px 18px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 14, height: 14, borderRadius: '50%', border: `2px solid ${GOLD}`, borderTopColor: 'transparent', animation: 'mf-spin 0.8s linear infinite', flexShrink: 0 }} />
-                  <span style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: GOLD }}>
+                  <div style={{ width: 14, height: 14, borderRadius: '50%', border: `2px solid ${HUD.gold}`, borderTopColor: 'transparent', animation: 'mf-spin 0.8s linear infinite', flexShrink: 0 }} />
+                  <span style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: HUD.gold }}>
                     {saving ? 'Saving Map' : editModeActive ? 'Applying Edit' : 'Generating Map'}
                   </span>
                   <span style={{ marginLeft: 'auto', fontFamily: FR, fontSize: FS_CAPTION, color: DIM, fontVariantNumeric: 'tabular-nums' }}>{elapsed}s</span>
@@ -601,9 +601,9 @@ function MapForgeInner() {
                     const done = i < stepIdx, active = i === stepIdx
                     return (
                       <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: done ? GOLD : active ? '#4EC87A' : 'transparent', border: `1.5px solid ${done ? GOLD : active ? '#4EC87A' : DIM}`, boxShadow: active ? '0 0 8px #4EC87A88' : 'none', animation: active ? 'mf-pulse 1.2s ease-in-out infinite' : 'none' }} />
+                        <div style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: done ? HUD.gold : active ? '#4EC87A' : 'transparent', border: `1.5px solid ${done ? HUD.gold : active ? '#4EC87A' : DIM}`, boxShadow: active ? '0 0 8px #4EC87A88' : 'none', animation: active ? 'mf-pulse 1.2s ease-in-out infinite' : 'none' }} />
                         <span style={{ fontFamily: FR, fontSize: FS_SM, color: done ? TEXT : active ? '#4EC87A' : DIM }}>{s}</span>
-                        {done && <span style={{ marginLeft: 'auto', fontFamily: FR, fontSize: FS_CAPTION, color: GOLD }}>✓</span>}
+                        {done && <span style={{ marginLeft: 'auto', fontFamily: FR, fontSize: FS_CAPTION, color: HUD.gold }}>✓</span>}
                       </div>
                     )
                   })}

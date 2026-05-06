@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useMemo } from 'react'
+import { Modal } from '@/components/ui/Modal'
 import { createClient } from '@/lib/supabase/client'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { rollPool, rollForceDice } from './dice-engine'
@@ -166,18 +167,7 @@ export function InitiativeRollModal({ character, skills, initiativeType, campaig
   }
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 300,
-      background: 'rgba(0,0,0,0.82)', backdropFilter: 'blur(8px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: 24,
-    }}>
-      <div style={{
-        ...panelBase,
-        width: '100%', maxWidth: 440,
-        border: `1px solid ${C.borderHi}`,
-        overflow: 'hidden',
-      }}>
+    <Modal open onClose={onClose} maxWidth={440}>
 
         {/* ── Header ── */}
         <div style={{ padding: '14px 18px', borderBottom: `1px solid ${C.border}` }}>
@@ -229,6 +219,7 @@ export function InitiativeRollModal({ character, skills, initiativeType, campaig
           {!submitted && (
             <button
               onClick={handleRoll}
+              className="hov-gold-bg"
               style={{
                 width: '100%', padding: '10px 0',
                 background: `${C.gold}18`, border: `1px solid ${C.borderHi}`,
@@ -237,8 +228,6 @@ export function InitiativeRollModal({ character, skills, initiativeType, campaig
                 letterSpacing: '0.2em', color: C.gold, textTransform: 'uppercase',
                 transition: '.15s',
               }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = `${C.gold}30` }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = `${C.gold}18` }}
             >
               {rolled ? '↺ Re-Roll' : '▶ Roll Initiative'}
             </button>
@@ -375,7 +364,6 @@ export function InitiativeRollModal({ character, skills, initiativeType, campaig
           )}
 
         </div>
-      </div>
-    </div>
+    </Modal>
   )
 }

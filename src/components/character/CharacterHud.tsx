@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { Sidebar } from './Sidebar'
 import { Breadcrumb } from './Breadcrumb'
@@ -121,7 +121,7 @@ export function CharacterHud({
       <div style={{
         position: 'fixed', inset: 0,
         backgroundImage: `
-          radial-gradient(circle at 30% 40%, rgba(200,162,78,.06) 0%, transparent 50%),
+          radial-gradient(circle at 30% 40%, rgba(224,58,30,.06) 0%, transparent 50%),
           radial-gradient(circle at 70% 60%, rgba(43,93,174,.04) 0%, transparent 50%)
         `,
         pointerEvents: 'none',
@@ -133,8 +133,8 @@ export function CharacterHud({
         gridColumn: '1 / -1',
         display: 'grid',
         gridTemplateColumns: '11% 1fr 32%',
-        borderBottom: '1px solid var(--bdr-l)',
-        background: 'rgba(250,247,242,.85)',
+        borderBottom: '1px solid var(--bs-bdr-mid)',
+        background: 'var(--bs-panel)',
         backdropFilter: 'blur(10px)',
         zIndex: 10,
         minHeight: 'clamp(30px, 2.4rem, 50px)',
@@ -143,20 +143,20 @@ export function CharacterHud({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          borderRight: '1px solid var(--bdr-l)',
+          borderRight: '1px solid var(--bs-bdr-mid)',
         }}>
           <span style={{
-            fontFamily: 'var(--font-orbitron)',
+            fontFamily: 'var(--font-rajdhani)',
             fontWeight: 700,
             fontSize: 'var(--font-base)',
             letterSpacing: '0.25rem',
-            color: 'var(--gold-d)',
+            color: 'var(--bs-red-mid)',
           }}>
             HOLOCRON
           </span>
         </div>
         <Breadcrumb characterName={data.name} activeTab={activeTab} />
-        <div style={{ borderLeft: '1px solid var(--bdr-l)' }} />
+        <div style={{ borderLeft: '1px solid var(--bs-bdr-mid)' }} />
       </div>
 
       {/* ── Sidebar — below top bar ── */}
@@ -264,7 +264,7 @@ export function CharacterHud({
         gap: 'var(--sp-sm)',
         overflowY: 'auto',
         zIndex: 2,
-        borderLeft: '1px solid var(--bdr-l)',
+        borderLeft: '1px solid var(--bs-bdr-mid)',
       }}>
         {/* Characteristics — always open */}
         <CharacteristicsCard

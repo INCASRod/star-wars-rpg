@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { createPortal } from 'react-dom'
+import { Modal } from '@/components/ui/Modal'
 import { createClient } from '@/lib/supabase/client'
 import { sortInitiative } from '@/lib/combat'
 import { rollPool } from '@/components/player-hud/dice-engine'
@@ -10,13 +10,13 @@ import type { InitiativeSlot, CombatEncounter } from '@/lib/combat'
 import type { AdversaryInstance } from '@/lib/adversaries'
 import type { Character } from '@/lib/types'
 import { FS_CAPTION, FS_LABEL, FS_SM, FS_H3, FS_OVERLINE } from '@/components/player-hud/design-tokens'
+import { HUD } from '@/lib/tokens'
 
 // ── Design Tokens ──
 const BG          = '#060D09'
 const PANEL_SOLID = '#0a1510'
 const RAISED_BG   = 'rgba(14,26,18,0.9)'
 const INPUT_BG    = 'rgba(6,13,9,0.7)'
-const GOLD        = '#C8AA50'
 const BORDER      = 'rgba(200,170,80,0.18)'
 const BORDER_MD   = 'rgba(200,170,80,0.32)'
 const BORDER_HI   = 'rgba(200,170,80,0.55)'
@@ -70,9 +70,11 @@ interface Props {
   sendToChar?: (charId: string, payload: Record<string, unknown>) => void
   onClose: () => void
   onStart: (encounter: Omit<CombatEncounter, 'id' | 'created_at' | 'updated_at'>) => Promise<void>
+  /** Pre-fetched Cool/Vigilance skill ranks per character — skips the character_skills SELECT when provided */
+  charSkillRanks?: Record<string, { cool: number; vigilance: number }>
 }
 
-export function InitiativeSetupModal({ campaignId, characters, roster, sendToChar, onClose, onStart }: Props) {
+export function InitiativeSetupModal({ campaignId, characters, roster, sendToChar, onClose, onStart, charSkillRanks: propSkillRanks }: Props) {
   const [initType, setInitType] = useState<'cool' | 'vigilance'>('vigilance')
 
   // PC roll results — updated via broadcast from players
@@ -85,8 +87,9 @@ export function InitiativeSetupModal({ campaignId, characters, roster, sendToCha
     Object.fromEntries(roster.map(a => [a.instanceId, { successes: 0, advantages: 0 }]))
   )
 
-  // PC skill ranks loaded from DB
-  const [charSkillRanks, setCharSkillRanks] = useState<Record<string, { cool: number; vigilance: number }>>({})
+  // PC skill ranks — prefer prop, fall back to DB fetch
+  const [fetchedSkillRanks, setFetchedSkillRanks] = useState<Record<string, { cool: number; vigilance: number }>>({})
+  const charSkillRanks = propSkillRanks ?? fetchedSkillRanks
 
   const [isStarting, setIsStarting] = useState(false)
   const [requesting, setRequesting] = useState(false)
@@ -110,9 +113,9 @@ export function InitiativeSetupModal({ campaignId, characters, roster, sendToCha
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [campaignId])
 
-  // ── Load PC Cool/Vigilance skill ranks from DB ──
+  // ── Load PC Cool/Vigilance skill ranks from DB (only when not provided as prop) ──
   useEffect(() => {
-    if (characters.length === 0) return
+    if (propSkillRanks || characters.length === 0) return
     supabase
       .from('character_skills')
       .select('character_id, skill_key, rank')
@@ -126,10 +129,10 @@ export function InitiativeSetupModal({ campaignId, characters, roster, sendToCha
           if (r.skill_key === 'COOL')  map[r.character_id].cool = r.rank
           if (r.skill_key === 'VIGIL') map[r.character_id].vigilance = r.rank
         }
-        setCharSkillRanks(map)
+        setFetchedSkillRanks(map)
       })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [characters])
+  }, [characters, propSkillRanks])
 
   // ── Request player rolls via already-subscribed GM channels ──
   const handleRequestRolls = () => {
@@ -263,32 +266,21 @@ export function InitiativeSetupModal({ campaignId, characters, roster, sendToCha
 
   const thStyle: React.CSSProperties = {
     fontFamily: FC, fontSize: FS_CAPTION, letterSpacing: '0.2em',
-    textTransform: 'uppercase', color: `${GOLD}b3`,
+    textTransform: 'uppercase', color: `${HUD.gold}b3`,
     padding: '6px 8px', borderBottom: `1px solid ${BORDER}`,
     textAlign: 'left',
   }
   const tdStyle: React.CSSProperties = { padding: '8px 8px', verticalAlign: 'middle' }
 
-  return createPortal(
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 9500,
-      background: 'rgba(0,0,0,0.78)', backdropFilter: 'blur(10px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: 24,
-    }}>
-      <div style={{
-        width: '100%', maxWidth: 680,
-        background: PANEL_SOLID, border: `1px solid ${BORDER_HI}`,
-        borderRadius: 6, maxHeight: '80vh', overflowY: 'auto',
-        position: 'relative',
-      }}>
+  return (
+    <Modal open onClose={onClose} maxWidth={680}>
         {/* Header */}
         <div style={{ padding: '16px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <div style={{ fontFamily: FC, fontSize: FS_CAPTION, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${GOLD}b3`, marginBottom: 4 }}>
+            <div style={{ fontFamily: FC, fontSize: FS_CAPTION, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${HUD.gold}b3`, marginBottom: 4 }}>
               Initiative Setup
             </div>
-            <div style={{ fontFamily: FC, fontSize: FS_H3, fontWeight: 700, color: GOLD }}>
+            <div style={{ fontFamily: FC, fontSize: FS_H3, fontWeight: 700, color: HUD.gold }}>
               BEGIN COMBAT
             </div>
           </div>
@@ -303,13 +295,13 @@ export function InitiativeSetupModal({ campaignId, characters, roster, sendToCha
 
           {/* Step 1: Combat type toggle */}
           <div>
-            <div style={{ fontFamily: FC, fontSize: FS_CAPTION, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${GOLD}b3`, marginBottom: 10 }}>
+            <div style={{ fontFamily: FC, fontSize: FS_CAPTION, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${HUD.gold}b3`, marginBottom: 10 }}>
               Step 1 — Initiative Skill
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', border: `1px solid ${BORDER_MD}`, borderRadius: 4, overflow: 'hidden' }}>
               {([
                 { key: 'cool', title: 'COOL', desc: 'Prepared · Springing an ambush', sub: 'Presence + Cool ranks', color: CHAR_WIL },
-                { key: 'vigilance', title: 'VIGILANCE', desc: 'Unexpected · Being ambushed', sub: 'Willpower + Vigilance ranks', color: GOLD },
+                { key: 'vigilance', title: 'VIGILANCE', desc: 'Unexpected · Being ambushed', sub: 'Willpower + Vigilance ranks', color: HUD.gold },
               ] as const).map(opt => (
                 <button
                   key={opt.key}
@@ -335,7 +327,7 @@ export function InitiativeSetupModal({ campaignId, characters, roster, sendToCha
           {characters.length > 0 && (
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <div style={{ fontFamily: FC, fontSize: FS_CAPTION, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${GOLD}b3` }}>
+                <div style={{ fontFamily: FC, fontSize: FS_CAPTION, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${HUD.gold}b3` }}>
                   Step 2 — Player Character Rolls
                 </div>
                 <button
@@ -346,7 +338,7 @@ export function InitiativeSetupModal({ campaignId, characters, roster, sendToCha
                     background: 'rgba(200,170,80,0.12)', border: `1px solid ${BORDER_HI}`,
                     borderRadius: 4, padding: '6px 14px', cursor: requesting || !sendToChar ? 'default' : 'pointer',
                     fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700,
-                    letterSpacing: '0.1em', color: GOLD, textTransform: 'uppercase',
+                    letterSpacing: '0.1em', color: HUD.gold, textTransform: 'uppercase',
                     opacity: requesting || !sendToChar ? 0.5 : 1, transition: '.15s',
                   }}
                 >
@@ -401,7 +393,7 @@ export function InitiativeSetupModal({ campaignId, characters, roster, sendToCha
           {/* Step 3: NPC / Adversary Rolls */}
           {roster.length > 0 && (
             <div>
-              <div style={{ fontFamily: FC, fontSize: FS_CAPTION, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${GOLD}b3`, marginBottom: 10 }}>
+              <div style={{ fontFamily: FC, fontSize: FS_CAPTION, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${HUD.gold}b3`, marginBottom: 10 }}>
                 Step 3 — Adversary Initiative (GM Rolls)
               </div>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -439,7 +431,7 @@ export function InitiativeSetupModal({ campaignId, characters, roster, sendToCha
                         <td style={{ ...tdStyle, whiteSpace: 'nowrap' }}>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                             {rollBtn('Cool', CHAR_WIL,  () => rollAdvInitiative(a, 'cool'))}
-                            {rollBtn('Vig',  GOLD,      () => rollAdvInitiative(a, 'vigilance'))}
+                            {rollBtn('Vig',  HUD.gold,      () => rollAdvInitiative(a, 'vigilance'))}
                           </div>
                         </td>
                         {/* Cool Pool */}
@@ -471,7 +463,7 @@ export function InitiativeSetupModal({ campaignId, characters, roster, sendToCha
 
           {/* Step 4: Initiative Order Preview */}
           <div>
-            <div style={{ fontFamily: FC, fontSize: FS_CAPTION, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${GOLD}b3`, marginBottom: 10 }}>
+            <div style={{ fontFamily: FC, fontSize: FS_CAPTION, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${HUD.gold}b3`, marginBottom: 10 }}>
               {roster.length > 0 ? 'Step 4' : 'Step 3'} — Initiative Order Preview
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -484,7 +476,7 @@ export function InitiativeSetupModal({ campaignId, characters, roster, sendToCha
                 }}>
                   <span style={{
                     fontFamily: FC, fontSize: FS_H3, fontWeight: 700,
-                    color: i === 0 ? GOLD : TEXT_MUTED,
+                    color: i === 0 ? HUD.gold : TEXT_MUTED,
                     minWidth: 24, lineHeight: 1,
                   }}>{i + 1}</span>
                   <span style={{
@@ -510,15 +502,13 @@ export function InitiativeSetupModal({ campaignId, characters, roster, sendToCha
               background: '#C8AA5025', border: '1px solid #C8AA5088',
               borderRadius: 4, cursor: isStarting ? 'default' : 'pointer',
               fontFamily: FC, fontSize: FS_BODY, fontWeight: 700,
-              letterSpacing: '0.15em', color: GOLD, textTransform: 'uppercase',
+              letterSpacing: '0.15em', color: HUD.gold, textTransform: 'uppercase',
               opacity: isStarting ? 0.6 : 1, transition: '.15s',
             }}
           >
             {isStarting ? 'Starting…' : 'Lock Order & Start Combat →'}
           </button>
         </div>
-      </div>
-    </div>,
-    document.body,
+    </Modal>
   )
 }

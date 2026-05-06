@@ -10,13 +10,13 @@ import { DiceFace } from '@/components/dice/DiceFace'
 import { RichText } from '@/components/ui/RichText'
 import { getSkillPool, rollPool, type RollResult } from '@/components/player-hud/dice-engine'
 import type { HudSkill } from '@/components/player-hud/SkillsPanel'
+import { HUD } from '@/lib/tokens'
 
 // ─── Local tokens ─────────────────────────────────────────────────────────────
 const FONT_MONO = "'Share Tech Mono', 'Courier New', monospace"
 const POP_BG    = 'rgba(6,13,9,0.97)'
 const BORDER    = 'rgba(200,170,80,0.35)'
 const SEC_LABEL = 'rgba(200,170,80,0.45)'
-const GOLD      = '#C8AA50'
 const DIM       = 'rgba(255,255,255,0.12)'
 
 // ─── Difficulty presets ────────────────────────────────────────────────────────
@@ -191,7 +191,7 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
           fontFamily: FONT_CINZEL,
           fontSize: 'clamp(0.85rem, 1.5vw, 1rem)',
           fontWeight: 700,
-          color: GOLD,
+          color: HUD.gold,
         }}>
           {skill.name}
         </span>
@@ -290,7 +290,7 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
               <span style={{
                 fontFamily: FONT_MONO,
                 fontSize: 'clamp(0.8rem, 1.3vw, 0.95rem)',
-                color: GOLD,
+                color: HUD.gold,
                 minWidth: 24,
                 textAlign: 'center',
               }}>
@@ -320,7 +320,7 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
                     fontFamily: FONT_RAJDHANI,
                     fontSize: 'clamp(0.65rem, 1.1vw, 0.75rem)',
                     fontWeight: 700,
-                    color: GOLD,
+                    color: HUD.gold,
                   }}>
                     {hint.name}
                   </span>

@@ -5,13 +5,14 @@ import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
 import { FONT_RAJDHANI, FS_OVERLINE, FS_LABEL, FS_SM } from '@/components/player-hud/design-tokens'
 import { MarkupText } from '@/components/ui/MarkupText'
+import { HUD } from '@/lib/tokens'
+import { Modal } from '@/components/ui/Modal'
 
 /* ═══════════════════════════════════════ */
 /*  THEME CONSTANTS                       */
 /* ═══════════════════════════════════════ */
 
 const BG       = '#060D09'
-const GOLD     = '#C8AA50'
 const GOLD_DIM = '#7A6830'
 const GOLD_BR  = '#E0C060'
 const TEXT     = '#C8D8C0'
@@ -71,20 +72,18 @@ function PurchasePopover({ node, xpAvailable, onConfirm, onCancel }: {
   const remaining = (xpAvailable ?? 0) - node.cost
   const canAfford = xpAvailable === undefined || xpAvailable >= node.cost
   return (
-    <>
-      {/* Backdrop */}
-      <div onClick={onCancel} style={{ position: 'fixed', inset: 0, zIndex: 499, background: 'rgba(0,0,0,0.4)', cursor: 'pointer' }} />
-      {/* Popover */}
-      <div style={{
-        position: 'fixed', top: '50%', left: '50%',
-        transform: 'translate(-50%,-50%)', zIndex: 500,
-        background: 'rgba(8,16,10,0.98)',
-        border: `1px solid rgba(200,170,80,0.5)`,
-        borderRadius: 6, padding: '14px 16px',
-        minWidth: 280, maxWidth: 320,
-        boxShadow: '0 8px 32px rgba(0,0,0,0.7), 0 0 0 1px rgba(200,170,80,0.1)',
-      }}>
-        <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: GOLD, marginBottom: 4 }}>
+    <Modal
+      open
+      onClose={onCancel}
+      maxWidth={320}
+      zIndex={500}
+      backdrop="rgba(0,0,0,0.4)"
+      borderColor="rgba(200,170,80,0.5)"
+      shadow="0 8px 32px rgba(0,0,0,0.7), 0 0 0 1px rgba(200,170,80,0.1)"
+      panelBackground="rgba(8,16,10,0.98)"
+    >
+      <div style={{ padding: '14px 16px' }}>
+        <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: HUD.gold, marginBottom: 4 }}>
           {node.name}
         </div>
         <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: DIM, marginBottom: 2 }}>
@@ -106,12 +105,12 @@ function PurchasePopover({ node, xpAvailable, onConfirm, onCancel }: {
           <button onClick={onCancel} style={{ background: 'transparent', border: `1px solid ${BORDER}`, borderRadius: 3, fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: DIM, padding: '6px 16px', cursor: 'pointer' }}>
             Cancel
           </button>
-          <button onClick={canAfford ? onConfirm : undefined} disabled={!canAfford} style={{ background: 'rgba(200,170,80,0.15)', border: '1px solid rgba(200,170,80,0.5)', borderRadius: 3, fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, fontWeight: 700, color: canAfford ? GOLD : GOLD_DIM, padding: '6px 16px', cursor: canAfford ? 'pointer' : 'not-allowed', opacity: canAfford ? 1 : 0.5 }}>
+          <button onClick={canAfford ? onConfirm : undefined} disabled={!canAfford} style={{ background: 'rgba(200,170,80,0.15)', border: '1px solid rgba(200,170,80,0.5)', borderRadius: 3, fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, fontWeight: 700, color: canAfford ? HUD.gold : GOLD_DIM, padding: '6px 16px', cursor: canAfford ? 'pointer' : 'not-allowed', opacity: canAfford ? 1 : 0.5 }}>
             Spend {node.cost} XP
           </button>
         </div>
       </div>
-    </>
+    </Modal>
   )
 }
 
@@ -137,7 +136,7 @@ function ForceTooltip({ node, pos }: { node: ForceTreeNode; pos: FixedPos }) {
       zIndex: 9999,
       width: TOOLTIP_W,
       background: 'rgba(4,9,6,0.97)',
-      border: `1px solid ${GOLD}40`,
+      border: `1px solid ${HUD.gold}40`,
       padding: '12px 16px',
       boxShadow: '0 8px 32px rgba(0,0,0,.5)', pointerEvents: 'none',
       fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL,
@@ -155,7 +154,7 @@ function ForceTooltip({ node, pos }: { node: ForceTreeNode; pos: FixedPos }) {
         marginBottom: '8px', paddingBottom: '8px',
         borderBottom: `1px solid rgba(200,170,80,0.3)`,
       }}>
-        <span style={{ fontWeight: 700, color: GOLD }}>
+        <span style={{ fontWeight: 700, color: HUD.gold }}>
           {node.cost} XP
         </span>
       </div>
@@ -167,7 +166,7 @@ function ForceTooltip({ node, pos }: { node: ForceTreeNode; pos: FixedPos }) {
       <div style={{
         marginTop: '8px', fontSize: FS_OVERLINE,
         fontWeight: 700, letterSpacing: '0.1em',
-        color: node.purchased ? GREEN : node.canPurchase ? GOLD : DIM,
+        color: node.purchased ? GREEN : node.canPurchase ? HUD.gold : DIM,
       }}>
         {node.purchased ? 'PURCHASED' : node.canPurchase ? 'CLICK TO PURCHASE' : 'LOCKED'}
       </div>
@@ -274,7 +273,7 @@ function ForceNode({
       {isPurchased && (
         <div style={{
           position: 'absolute', top: '-1px', right: '-1px',
-          width: '12px', height: '12px', background: GOLD,
+          width: '12px', height: '12px', background: HUD.gold,
           clipPath: 'polygon(0 0, 100% 0, 100% 100%)',
         }} />
       )}
@@ -435,7 +434,7 @@ export function ForcePowerTree({
         <div>
           <div style={{
             fontFamily: FONT_RAJDHANI, fontSize: FS_SM,
-            fontWeight: 700, color: GOLD,
+            fontWeight: 700, color: HUD.gold,
           }}>
             {powerName}
           </div>
@@ -452,7 +451,7 @@ export function ForcePowerTree({
             border: '1px solid rgba(200,170,80,0.3)',
             borderRadius: 3, padding: '2px 10px',
             fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL,
-            color: GOLD,
+            color: HUD.gold,
           }}>
             {xpAvailable} XP
           </div>

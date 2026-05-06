@@ -1,7 +1,8 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useAdversaryTokenImages } from '@/hooks/useAdversaryTokenImages'
 import { fetchAdversaries, adversaryToInstance } from '@/lib/adversaries'
 import type { Adversary } from '@/lib/adversaries'
 import type { CombatEncounter, InitiativeSlot } from '@/lib/combat'
@@ -9,15 +10,16 @@ import { randomUUID } from '@/lib/utils'
 import { toast } from 'sonner'
 import { AdversaryDetailPanel } from './AdversaryDetailPanel'
 import { AdversaryEditor } from './AdversaryEditor'
+import { HUD } from '@/lib/tokens'
+import { Modal } from '@/components/ui/Modal'
 
 /* ── Design tokens ─────────────────────────────────────── */
-const FC       = "var(--font-cinzel), 'Cinzel', serif"
+const FC       = "var(--font-rajdhani), 'Cinzel', serif"
 const FR       = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FM       = "'Share Tech Mono','Courier New',monospace"
 const PANEL_BG = 'rgba(8,16,10,0.88)'
 const RAISED   = 'rgba(14,26,18,0.9)'
 const INPUT_BG = 'rgba(0,0,0,0.35)'
-const GOLD     = '#C8AA50'
 const GOLD_DIM = 'rgba(200,170,80,0.5)'
 const TEXT     = '#C8D8C0'
 const DIM      = '#6A8070'
@@ -36,14 +38,13 @@ const FS_H4       = 'var(--text-h4)'
 const TYPE_COLORS: Record<string, string> = {
   minion:  DIM,
   rival:   BLUE,
-  nemesis: GOLD,
+  nemesis: HUD.gold,
 }
 
 /* ── Types ─────────────────────────────────────────────── */
 type TypeFilter   = 'all' | 'minion' | 'rival' | 'nemesis'
 type SourceFilter = 'all' | 'oggdude' | 'custom'
 
-interface AdversaryTokenMap { [name: string]: string }
 
 interface AddCombatState {
   adversary:  Adversary & { _isCustom?: boolean }
@@ -114,7 +115,7 @@ function PillBtn({
 }: {
   active: boolean; onClick: () => void; children: React.ReactNode; color?: string
 }) {
-  const c = color ?? GOLD
+  const c = color ?? HUD.gold
   return (
     <button
       onClick={onClick}
@@ -162,7 +163,7 @@ export function AdversaryLibrary({ campaignId, sessionMode, onAddToken, mapId }:
   /* ── Data state ──────────────────────────────────────── */
   const [oggdude,       setOggdude]       = useState<Adversary[]>([])
   const [custom,        setCustom]        = useState<(Adversary & { _isCustom: true; _dbId: string })[]>([])
-  const [tokenImages,   setTokenImages]   = useState<AdversaryTokenMap>({})
+  const { tokenImages, setTokenImages }   = useAdversaryTokenImages()
   const [loading,       setLoading]       = useState(true)
 
   /* ── Filter state ────────────────────────────────────── */
@@ -185,10 +186,9 @@ export function AdversaryLibrary({ campaignId, sessionMode, onAddToken, mapId }:
 
     const load = async () => {
       try {
-        const [advsResult, customResult, tokensResult] = await Promise.all([
+        const [advsResult, customResult] = await Promise.all([
           fetchAdversaries(),
           supabase.from('ref_adversaries').select('*').order('name'),
-          supabase.from('adversary_token_images').select('adversary_key, token_image_url'),
         ])
 
         if (cancelled) return
@@ -197,14 +197,6 @@ export function AdversaryLibrary({ campaignId, sessionMode, onAddToken, mapId }:
 
         if (customResult.data) {
           setCustom(customResult.data.map(r => dbRowToAdversary(r as Record<string, unknown>)))
-        }
-
-        if (tokensResult.data) {
-          const map: AdversaryTokenMap = {}
-          for (const row of tokensResult.data) {
-            map[String(row.adversary_key)] = String(row.token_image_url)
-          }
-          setTokenImages(map)
         }
       } finally {
         if (!cancelled) setLoading(false)
@@ -357,7 +349,7 @@ export function AdversaryLibrary({ campaignId, sessionMode, onAddToken, mapId }:
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         <div style={{
           fontFamily: FC, fontSize: FS_H4, fontWeight: 700,
-          color: GOLD, letterSpacing: '0.08em',
+          color: HUD.gold, letterSpacing: '0.08em',
         }}>
           Adversary Library
         </div>
@@ -365,7 +357,7 @@ export function AdversaryLibrary({ campaignId, sessionMode, onAddToken, mapId }:
           onClick={openNew}
           style={{
             background: 'rgba(200,170,80,0.08)', border: `1px solid ${GOLD_DIM}`,
-            color: GOLD, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
+            color: HUD.gold, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
             letterSpacing: '0.1em', padding: '6px 14px', borderRadius: 3,
             cursor: 'pointer', flexShrink: 0,
           }}
@@ -394,7 +386,7 @@ export function AdversaryLibrary({ campaignId, sessionMode, onAddToken, mapId }:
             key={t}
             active={typeFilter === t}
             onClick={() => setTypeFilter(t)}
-            color={t === 'all' ? GOLD : TYPE_COLORS[t]}
+            color={t === 'all' ? HUD.gold : TYPE_COLORS[t]}
           >
             {t === 'all' ? 'All' : t}
           </PillBtn>
@@ -569,7 +561,7 @@ function AdversaryRow({
             fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)',
             fontWeight: 700, color: TEXT,
           }}>
-            {adversary._isCustom && <span style={{ color: GOLD }}>★ </span>}
+            {adversary._isCustom && <span style={{ color: HUD.gold }}>★ </span>}
             {adversary.name}
           </span>
           <TypeBadge type={adversary.type} />
@@ -582,26 +574,19 @@ function AdversaryRow({
 
       {/* Actions */}
       <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-        <button onClick={onView} style={btnRowStyle}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = GOLD; (e.currentTarget as HTMLElement).style.color = GOLD }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = BORDER; (e.currentTarget as HTMLElement).style.color = DIM }}
-        >
+        <button onClick={onView} className="hov-gold" style={btnRowStyle}>
           View
         </button>
-        <button onClick={onEdit} style={btnRowStyle}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = GOLD_DIM; (e.currentTarget as HTMLElement).style.color = GOLD }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = BORDER; (e.currentTarget as HTMLElement).style.color = DIM }}
-        >
+        <button onClick={onEdit} className="hov-gold" style={btnRowStyle}>
           Edit
         </button>
         <button
           onClick={onAddToCombat}
+          className="hov-red-bg"
           style={{
             ...btnRowStyle,
             borderColor: 'rgba(224,80,80,0.3)', color: RED,
           }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(224,80,80,0.08)' }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
         >
           {addLabel ?? '⚔ Combat'}
         </button>
@@ -624,29 +609,20 @@ function AddToCombatOverlay({
   const color = TYPE_COLORS[adversary.type] ?? DIM
 
   return (
-    <div
-      onClick={onCancel}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 9050,
-        background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: 24,
-      }}
+    <Modal
+      open
+      onClose={onCancel}
+      zIndex={9050}
+      maxWidth={400}
+      backdrop="rgba(0,0,0,0.72)"
+      borderColor={BORDER_HI}
+      shadow="0 16px 48px rgba(0,0,0,0.8)"
+      panelBackground="rgba(8,16,10,0.97)"
     >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          width: '100%', maxWidth: 400,
-          background: 'rgba(8,16,10,0.97)',
-          border: `1px solid ${BORDER_HI}`,
-          borderRadius: 8,
-          padding: '20px 24px',
-          boxShadow: '0 16px 48px rgba(0,0,0,0.8)',
-        }}
-      >
+      <div style={{ padding: '20px 24px' }}>
         <div style={{
           fontFamily: FC, fontSize: FS_H4, fontWeight: 700,
-          color: GOLD, letterSpacing: '0.1em', marginBottom: 4,
+          color: HUD.gold, letterSpacing: '0.1em', marginBottom: 4,
         }}>
           Add to Combat
         </div>
@@ -759,7 +735,7 @@ function AddToCombatOverlay({
           </button>
         </div>
       </div>
-    </div>
+    </Modal>
   )
 }
 
@@ -772,27 +748,18 @@ function AddTokenOverlay({
   onCancel:   () => void
 }) {
   return (
-    <div
-      onClick={onCancel}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 9100,
-        background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: 24,
-      }}
+    <Modal
+      open
+      onClose={onCancel}
+      zIndex={9100}
+      maxWidth={360}
+      backdrop="rgba(0,0,0,0.72)"
+      borderColor={BORDER_HI}
+      shadow="0 16px 48px rgba(0,0,0,0.8)"
+      panelBackground="rgba(8,16,10,0.97)"
     >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          width: '100%', maxWidth: 360,
-          background: 'rgba(8,16,10,0.97)',
-          border: `1px solid ${BORDER_HI}`,
-          borderRadius: 8,
-          padding: '20px 24px',
-          boxShadow: '0 16px 48px rgba(0,0,0,0.8)',
-        }}
-      >
-        <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: GOLD, letterSpacing: '0.1em', marginBottom: 4 }}>
+      <div style={{ padding: '20px 24px' }}>
+        <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: HUD.gold, letterSpacing: '0.1em', marginBottom: 4 }}>
           Add Token
         </div>
         <div style={{ fontFamily: FR, fontSize: FS_SM, color: TEXT, marginBottom: 20 }}>
@@ -839,6 +806,6 @@ function AddTokenOverlay({
           Cancel
         </button>
       </div>
-    </div>
+    </Modal>
   )
 }

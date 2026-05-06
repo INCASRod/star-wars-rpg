@@ -3,9 +3,9 @@
 import { BottomSheet } from '@/components/mobile/shared/BottomSheet'
 import { EncumbranceBar } from '@/components/character/EncumbranceBar'
 import type { Character } from '@/lib/types'
+import { HUD } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
-const GOLD     = '#C8AA50'
 const GOLD_DIM = 'rgba(200,170,80,0.6)'
 const GOLD_BD  = 'rgba(200,170,80,0.4)'
 const TEXT     = 'rgba(255,255,255,0.85)'
@@ -39,7 +39,7 @@ function VitalBtn({ label, disabled, onClick }: { label: string; disabled: boole
         fontFamily: FONT_C,
         fontSize: 'clamp(1.2rem, 5vw, 1.5rem)',
         fontWeight: 700,
-        color: disabled ? 'rgba(200,170,80,0.25)' : GOLD,
+        color: disabled ? 'rgba(200,170,80,0.25)' : HUD.gold,
         transition: 'background 0.15s',
       }}
     >
@@ -61,7 +61,7 @@ function VitalSection({
   dangerColor: string
 }) {
   const atDanger = current >= threshold
-  const valueColor = atDanger ? dangerColor : GOLD
+  const valueColor = atDanger ? dangerColor : HUD.gold
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '0 12px' }}>
@@ -125,7 +125,7 @@ export function WoundsStrainFab({ character, woundBonus = 0 }: { character: Char
     }}>
       <span style={{ color: woundDanger ? WOUND_DANGER : TEXT }}>
         ❤️ {character.wound_current}/{character.wound_threshold}
-        {woundBonus > 0 && <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.6rem, 2.2vw, 0.72rem)', color: GOLD, marginLeft: 2 }}>+{woundBonus}</span>}
+        {woundBonus > 0 && <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.6rem, 2.2vw, 0.72rem)', color: HUD.gold, marginLeft: 2 }}>+{woundBonus}</span>}
       </span>
       <span style={{ color: 'rgba(200,170,80,0.3)' }}>·</span>
       <span style={{ color: strainDanger ? STRAIN_WARN : TEXT }}>
@@ -146,7 +146,7 @@ export function WoundsStrainOverlay({ character, onVitalChange, woundBonus = 0, 
         fontFamily: FONT_C,
         fontSize: 'clamp(0.8rem, 3.2vw, 1rem)',
         fontWeight: 700,
-        color: GOLD,
+        color: HUD.gold,
         textTransform: 'uppercase',
         letterSpacing: '0.1em',
         textAlign: 'center',
@@ -154,7 +154,7 @@ export function WoundsStrainOverlay({ character, onVitalChange, woundBonus = 0, 
       }}>
         Vitals
         {woundBonus > 0 && (
-          <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.6rem, 2.2vw, 0.72rem)', color: GOLD, marginLeft: 8, opacity: 0.8 }}>
+          <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.6rem, 2.2vw, 0.72rem)', color: HUD.gold, marginLeft: 8, opacity: 0.8 }}>
             Duty +{woundBonus} WT
           </span>
         )}

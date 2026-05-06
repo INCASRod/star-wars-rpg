@@ -5,9 +5,9 @@ import { DICE_META, SYM, EMPTY_POOL, type DiceType } from '@/components/player-h
 import { DiceFace } from '@/components/dice/DiceFace'
 import { rollPool, poolSize, type RollResult } from '@/components/player-hud/dice-engine'
 import { logRoll } from '@/lib/logRoll'
+import { HUD } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
-const GOLD     = '#C8AA50'
 const GOLD_DIM = 'rgba(200,170,80,0.6)'
 const TEXT     = 'rgba(255,255,255,0.85)'
 const TEXT_DIM = 'rgba(255,255,255,0.5)'
@@ -81,7 +81,7 @@ function DiceStepper({
               cursor: count > 0 ? 'pointer' : 'not-allowed',
               fontFamily: FONT_C,
               fontSize: 'clamp(1rem, 4vw, 1.3rem)',
-              color: count > 0 ? GOLD : 'rgba(200,170,80,0.25)',
+              color: count > 0 ? HUD.gold : 'rgba(200,170,80,0.25)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
           >
@@ -110,7 +110,7 @@ function DiceStepper({
               cursor: 'pointer',
               fontFamily: FONT_C,
               fontSize: 'clamp(1rem, 4vw, 1.3rem)',
-              color: GOLD,
+              color: HUD.gold,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
           >
@@ -265,7 +265,7 @@ export function DiceRollerSheet({ prePopSkill, characterId, characterName, campa
       {/* Header */}
       {prePopSkill ? (
         <div style={{ textAlign: 'center', marginBottom: 4 }}>
-          <div style={{ fontFamily: FONT_C, fontSize: 'clamp(0.95rem, 3.8vw, 1.15rem)', fontWeight: 700, color: GOLD }}>
+          <div style={{ fontFamily: FONT_C, fontSize: 'clamp(0.95rem, 3.8vw, 1.15rem)', fontWeight: 700, color: HUD.gold }}>
             {prePopSkill.name}
           </div>
           <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.6rem, 2.4vw, 0.75rem)', color: GOLD_DIM, marginTop: 2 }}>
@@ -273,7 +273,7 @@ export function DiceRollerSheet({ prePopSkill, characterId, characterName, campa
           </div>
         </div>
       ) : (
-        <div style={{ fontFamily: FONT_C, fontSize: 'clamp(0.9rem, 3.5vw, 1.1rem)', fontWeight: 700, color: GOLD, textAlign: 'center', marginBottom: 4 }}>
+        <div style={{ fontFamily: FONT_C, fontSize: 'clamp(0.9rem, 3.5vw, 1.1rem)', fontWeight: 700, color: HUD.gold, textAlign: 'center', marginBottom: 4 }}>
           Dice Roller
         </div>
       )}

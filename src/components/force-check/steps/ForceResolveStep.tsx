@@ -1,10 +1,10 @@
-'use client'
+﻿'use client'
 
 import type { ForceRollResult } from '@/lib/forceRoll'
 import type { TargetEntry } from './ForceTargetStep'
 import { stripBBCode } from '@/lib/utils'
 
-const FONT_C = "var(--font-cinzel), 'Cinzel', serif"
+const FONT_C = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FONT_M = "'Share Tech Mono', 'Courier New', monospace"
 const FORCE_BLUE  = '#7EC8E3'
@@ -144,7 +144,7 @@ export function ForceResolveStep({
             background: 'rgba(200,170,80,0.12)',
             border: '1px solid rgba(200,170,80,0.4)',
             fontFamily: FONT_R, fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)', fontWeight: 700,
-            letterSpacing: '0.08em', textTransform: 'uppercase', color: '#C8AA50',
+            letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--hud-gold)',
             transition: 'all .15s',
           }}
         >

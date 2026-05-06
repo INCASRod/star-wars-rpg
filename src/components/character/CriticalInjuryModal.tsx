@@ -1,15 +1,16 @@
-'use client'
+﻿'use client'
 
 import React, { useState, useCallback } from 'react'
+import { Modal } from '@/components/ui/Modal'
 import { createClient } from '@/lib/supabase/client'
 import type { CriticalInjuryRequest, RefCriticalInjury, CharacterCriticalInjury } from '@/lib/types'
+import { HUD } from '@/lib/tokens'
 
-const FONT_C = "var(--font-cinzel), 'Cinzel', serif"
+const FONT_C = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FONT_M = "'Share Tech Mono','Courier New',monospace"
 
 const CRIMSON = '#DC143C'
-const GOLD    = '#C8AA50'
 const TEXT    = 'rgba(232,223,200,0.85)'
 const DIM     = 'rgba(200,170,80,0.5)'
 
@@ -110,24 +111,12 @@ export function CriticalInjuryModal({
   ].filter(m => m.value > 0)
 
   return (
-    // Full-screen backdrop
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 9000,
-      background: 'rgba(0,0,0,0.7)',
-      backdropFilter: 'blur(6px)',
-      WebkitBackdropFilter: 'blur(6px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-    }}>
-      <div style={{
-        width: 'clamp(320px, 45vw, 460px)',
-        background: 'rgba(8,16,10,0.97)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        border: `2px solid rgba(220,20,60,0.5)`,
-        borderRadius: 14,
-        padding: 24,
-        display: 'flex', flexDirection: 'column', gap: 16,
-      }}>
+    <Modal
+      open
+      maxWidth={460}
+      borderColor="rgba(220,20,60,0.5)"
+      shadow="0 16px 48px rgba(0,0,0,0.8), 0 0 32px rgba(220,20,60,0.08)"
+    >
 
         {/* Header */}
         <div>
@@ -167,7 +156,7 @@ export function CriticalInjuryModal({
                 </div>
               ))}
               <div style={{ height: 1, background: 'rgba(200,170,80,0.15)', margin: '4px 0' }} />
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: FONT_M, fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)', color: GOLD }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: FONT_M, fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)', color: HUD.gold }}>
                 <span>Total modifier</span>
                 <span style={{ fontWeight: 700 }}>+{request.total_modifier}</span>
               </div>
@@ -272,7 +261,7 @@ export function CriticalInjuryModal({
                       {request.total_modifier}
                     </span>
                     <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.82rem, 1.2vw, 0.9rem)', color: DIM }}>=</span>
-                    <span style={{ fontFamily: FONT_M, fontSize: 'clamp(1.1rem, 1.8vw, 1.3rem)', color: GOLD, fontWeight: 700 }}>
+                    <span style={{ fontFamily: FONT_M, fontSize: 'clamp(1.1rem, 1.8vw, 1.3rem)', color: HUD.gold, fontWeight: 700 }}>
                       {finalResult}
                     </span>
                   </>
@@ -313,7 +302,6 @@ export function CriticalInjuryModal({
         }}>
           This roll is mandatory — you must submit a result.
         </div>
-      </div>
-    </div>
+    </Modal>
   )
 }

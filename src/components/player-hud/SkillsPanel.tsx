@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import { C, CHAR_COLOR, CHAR_ABBR3, FONT_CINZEL, FONT_RAJDHANI, panelBase, type CharKey } from './design-tokens'
@@ -8,17 +8,9 @@ import { RichText } from '@/components/ui/RichText'
 import { getSkillTip } from '@/lib/tooltips/skillDescriptions'
 import { PanelSearchInput } from '@/components/character/PanelSearchInput'
 import type { SkillDiceModifier } from '@/lib/derivedStats'
-import type { SpeciesAbility } from '@/lib/types'
+import type { SpeciesAbility, HudSkill } from '@/lib/types'
 
-export interface HudSkill {
-  key: string
-  name: string
-  charKey: CharKey
-  charVal: number
-  rank: number
-  isCareer: boolean
-  type?: 'stGeneral' | 'stCombat' | 'stKnowledge'
-}
+export type { HudSkill } from '@/lib/types'
 
 interface SkillsPanelProps {
   skills: HudSkill[]
@@ -91,7 +83,7 @@ function SkillModifierBadges({ mod }: { mod: SkillDiceModifier }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 3,
-      borderLeft: `1px solid rgba(200,170,80,0.2)`,
+      borderLeft: `1px solid rgba(224,58,30,0.2)`,
       paddingLeft: 4,
       marginLeft: 2,
     }}>
@@ -117,7 +109,7 @@ const TYPE_LABELS: Record<string, string> = {
   stKnowledge: 'Knowledge',
 }
 const TYPE_COLORS: Record<string, string> = {
-  stGeneral:   '#C8AA50',
+  stGeneral:   'var(--hud-gold)',
   stCombat:    '#E05050',
   stKnowledge: '#5AAAE0',
 }
@@ -160,7 +152,7 @@ function PoolPreview({ charVal, rank }: { charVal: number; rank: number }) {
         <span style={{
           fontFamily: POOL_OVERFLOW_FONT,
           fontSize: 'clamp(0.58rem, 0.85vw, 0.68rem)',
-          color: 'rgba(232,223,200,0.4)',
+          color: 'rgba(90,40,24,0.4)',
         }}>
           +{overflow}
         </span>
@@ -203,7 +195,7 @@ function getSkillUpgradeCost(currentRank: number, isCareer: boolean): number {
 }
 
 const FONT_MONO = "'Share Tech Mono','Courier New',monospace"
-const FONT_CINZEL_REAL = "var(--font-cinzel),'Cinzel',serif"
+const FONT_CINZEL_REAL = "var(--font-rajdhani),'Cinzel',serif"
 const RED = 'rgba(244,67,54,0.8)'
 
 // ── Upgrade button (left of rank pips) ────────────────────────────────────
@@ -223,17 +215,17 @@ function UpgradeButton({ skill, xpAvailable, onClick }: {
         onClick={(e) => { e.stopPropagation(); if (canAfford) onClick() }}
         onMouseEnter={(e) => {
           setShowTip(true)
-          if (canAfford) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(200,170,80,0.2)'
+          if (canAfford) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(224,58,30,0.2)'
         }}
         onMouseLeave={(e) => {
           setShowTip(false)
-          ;(e.currentTarget as HTMLButtonElement).style.background = canAfford ? 'rgba(200,170,80,0.1)' : 'rgba(255,255,255,0.02)'
+          ;(e.currentTarget as HTMLButtonElement).style.background = canAfford ? 'rgba(224,58,30,0.1)' : 'rgba(255,255,255,0.02)'
         }}
         style={{
           width: 28, height: 28, borderRadius: 6,
-          background: canAfford ? 'rgba(200,170,80,0.1)' : 'rgba(255,255,255,0.02)',
-          border: `1px solid ${canAfford ? 'rgba(200,170,80,0.35)' : 'rgba(255,255,255,0.1)'}`,
-          color: canAfford ? C.gold : 'rgba(232,223,200,0.2)',
+          background: canAfford ? 'rgba(224,58,30,0.1)' : 'rgba(255,255,255,0.02)',
+          border: `1px solid ${canAfford ? 'rgba(224,58,30,0.35)' : 'rgba(255,255,255,0.1)'}`,
+          color: canAfford ? C.gold : 'rgba(90,40,24,0.2)',
           fontFamily: FONT_CINZEL_REAL,
           fontSize: 'clamp(0.75rem, 1.1vw, 0.85rem)',
           cursor: canAfford ? 'pointer' : 'not-allowed',
@@ -251,7 +243,7 @@ function UpgradeButton({ skill, xpAvailable, onClick }: {
           transform: 'translateX(-50%)',
           zIndex: 9000,
           background: 'rgba(4,10,6,0.97)',
-          border: '1px solid rgba(200,170,80,0.32)',
+          border: '1px solid rgba(224,58,30,0.32)',
           borderRadius: 8,
           padding: '10px 12px',
           minWidth: 150,
@@ -265,7 +257,7 @@ function UpgradeButton({ skill, xpAvailable, onClick }: {
           <div style={{ fontFamily: FONT_MONO, fontSize: 'clamp(0.6rem, 0.9vw, 0.72rem)', color: canAfford ? C.gold : RED, marginBottom: 2 }}>
             Cost: {cost} XP
           </div>
-          <div style={{ fontFamily: FONT_MONO, fontSize: 'clamp(0.6rem, 0.9vw, 0.72rem)', color: canAfford ? 'rgba(232,223,200,0.7)' : RED }}>
+          <div style={{ fontFamily: FONT_MONO, fontSize: 'clamp(0.6rem, 0.9vw, 0.72rem)', color: canAfford ? 'rgba(90,40,24,0.7)' : RED }}>
             Available: {xpAvailable} XP
           </div>
           {!canAfford && (
@@ -293,7 +285,7 @@ function InlineConfirmation({ skill, xpAvailable, onConfirm, onCancel }: {
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
           fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)',
-          fontWeight: 600, color: 'rgba(232,223,200,0.85)',
+          fontWeight: 600, color: 'rgba(90,40,24,0.85)',
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         }}>
           {skill.name} → Rank {skill.rank + 1}
@@ -321,7 +313,7 @@ function InlineConfirmation({ skill, xpAvailable, onConfirm, onCancel }: {
           onClick={(e) => { e.stopPropagation(); onConfirm() }}
           style={{
             width: 26, height: 26, borderRadius: 4,
-            background: 'linear-gradient(135deg, rgba(200,170,80,0.25), rgba(200,170,80,0.15))',
+            background: 'linear-gradient(135deg, rgba(224,58,30,0.25), rgba(224,58,30,0.15))',
             border: `1px solid ${C.gold}`,
             color: C.gold, cursor: 'pointer',
             fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.78rem, 1.1vw, 0.88rem)',
@@ -478,8 +470,8 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
           padding: '5px 6px', marginBottom: 2,
           borderRadius: isConfirming ? 6 : 3,
           ...(isConfirming ? {
-            border: '1px solid rgba(200,170,80,0.3)',
-            background: 'rgba(200,170,80,0.08)',
+            border: '1px solid rgba(224,58,30,0.3)',
+            background: 'rgba(224,58,30,0.08)',
           } : {
             borderLeft: skill.isCareer ? `2px solid ${careerBorderColor}88` : '2px solid transparent',
             background: 'transparent',
@@ -543,7 +535,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
   }
 
   const xpColor = xpAvailable > 20
-    ? 'rgba(200,170,80,0.6)'
+    ? 'rgba(224,58,30,0.6)'
     : xpAvailable > 0
     ? '#FF9800'
     : 'rgba(244,67,54,0.7)'
@@ -640,19 +632,19 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <DiceFace type="proficiency" size={14} />
-          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.68rem, 1vw, 0.78rem)', fontWeight: 600, color: 'rgba(232,223,200,0.55)' }}>Proficiency dice</span>
+          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.68rem, 1vw, 0.78rem)', fontWeight: 600, color: 'rgba(90,40,24,0.55)' }}>Proficiency dice</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <DiceFace type="ability" size={14} />
-          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.68rem, 1vw, 0.78rem)', fontWeight: 600, color: 'rgba(232,223,200,0.55)' }}>Ability dice</span>
+          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.68rem, 1vw, 0.78rem)', fontWeight: 600, color: 'rgba(90,40,24,0.55)' }}>Ability dice</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <div style={{ width: 9, height: 9, borderRadius: 2, background: C.gold, border: `1px solid ${C.gold}` }} />
-          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.68rem, 1vw, 0.78rem)', fontWeight: 600, color: 'rgba(232,223,200,0.55)' }}>Skill level</span>
+          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.68rem, 1vw, 0.78rem)', fontWeight: 600, color: 'rgba(90,40,24,0.55)' }}>Skill level</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <div style={{ width: 2, height: 14, background: `${C.gold}88`, borderRadius: 1 }} />
-          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.68rem, 1vw, 0.78rem)', fontWeight: 600, color: 'rgba(232,223,200,0.55)' }}>Career</span>
+          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.68rem, 1vw, 0.78rem)', fontWeight: 600, color: 'rgba(90,40,24,0.55)' }}>Career</span>
         </div>
       </div>
 
@@ -669,7 +661,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
           textAlign: 'center',
           fontFamily: FONT_RAJDHANI,
           fontSize: 'clamp(0.8rem, 1.3vw, 0.9rem)',
-          color: 'rgba(200,170,80,0.35)',
+          color: 'rgba(224,58,30,0.35)',
           fontStyle: 'italic',
           padding: '16px 0',
         }}>

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { HudCard } from '../ui/HudCard'
@@ -62,24 +62,24 @@ export function SkillsCard({ title, skills, animClass = 'ar d1', scrollable = fa
             <div key={i} style={{
               display: 'flex', alignItems: 'center', gap: '0.25rem',
               padding: '0.25rem 0',
-              borderBottom: i < skills.length - 1 ? '1px solid rgba(216,208,196,.5)' : 'none',
+              borderBottom: i < skills.length - 1 ? `1px solid var(--bs-bdr-subtle)` : 'none',
               fontSize: 'var(--font-sm)',
             }}>
               <span style={{
                 flex: 1, fontWeight: sk.isCareer ? 600 : 500,
-                color: sk.isCareer ? '#9E7E1E' : 'var(--txt)',
+                color: sk.isCareer ? 'var(--bs-red-mid)' : 'var(--bs-txt)',
               }}>
                 {sk.name}
               </span>
               <span style={{
-                fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)',
-                color: 'var(--txt3)', width: '1.6rem', textAlign: 'center',
+                fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)',
+                color: 'var(--bs-txt3)', width: '1.6rem', textAlign: 'center',
               }}>
                 {sk.characteristic}
               </span>
               <span style={{
-                fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)',
-                fontWeight: 700, color: 'var(--ink)',
+                fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)',
+                fontWeight: 700, color: 'var(--bs-ink)',
                 width: '1.1rem', textAlign: 'center',
               }}>
                 {sk.rank}
@@ -105,10 +105,10 @@ export function SkillsCard({ title, skills, animClass = 'ar d1', scrollable = fa
                   onClick={() => setConfirmSkill(sk)}
                   title={`Buy rank ${sk.rank + 1} (${(sk.rank + 1) * 5 + (sk.isCareer ? 0 : 5)} XP)`}
                   style={{
-                    background: 'none', border: '1px solid var(--bdr-l)',
+                    background: 'none', border: '1px solid var(--bs-bdr-mid)',
                     width: '1.2rem', height: '1.2rem', cursor: 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 'var(--font-sm)', color: 'var(--gold-d)', fontWeight: 700,
+                    fontSize: 'var(--font-sm)', color: 'var(--bs-red-mid)', fontWeight: 700,
                     transition: '.2s', flexShrink: 0,
                   }}
                 >
@@ -122,19 +122,19 @@ export function SkillsCard({ title, skills, animClass = 'ar d1', scrollable = fa
 
       {/* Buy confirmation dialog */}
       <AlertDialog open={!!confirmSkill} onOpenChange={(open) => !open && setConfirmSkill(null)}>
-        <AlertDialogContent style={{ fontFamily: 'var(--font-chakra)' }}>
+        <AlertDialogContent style={{ fontFamily: 'var(--font-rajdhani)' }}>
           <AlertDialogHeader>
             <AlertDialogTitle style={{
-              fontFamily: 'var(--font-orbitron)', fontSize: 'var(--text-body)',
+              fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--text-body)',
               fontWeight: 700, letterSpacing: '0.08em',
             }}>
               Buy {confirmSkill?.name} Rank {confirmSkill ? confirmSkill.rank + 1 : 0}?
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
-              <div style={{ fontSize: 'var(--text-body-sm)', lineHeight: 1.6, color: 'var(--txt2)' }}>
+              <div style={{ fontSize: 'var(--text-body-sm)', lineHeight: 1.6, color: 'var(--bs-txt2)' }}>
                 <span style={{
-                  fontFamily: 'var(--font-orbitron)', fontWeight: 700,
-                  color: 'var(--gold-d)',
+                  fontFamily: 'var(--font-rajdhani)', fontWeight: 700,
+                  color: 'var(--bs-red-mid)',
                 }}>
                   {confirmCost} XP
                 </span>
@@ -143,7 +143,7 @@ export function SkillsCard({ title, skills, animClass = 'ar d1', scrollable = fa
                   <>
                     {' '}You have{' '}
                     <span style={{
-                      fontFamily: 'var(--font-orbitron)', fontWeight: 700,
+                      fontFamily: 'var(--font-rajdhani)', fontWeight: 700,
                       color: 'var(--blue)',
                     }}>
                       {xpAvailable} XP
@@ -153,8 +153,8 @@ export function SkillsCard({ title, skills, animClass = 'ar d1', scrollable = fa
                 )}
                 {confirmSkill && !confirmSkill.isCareer && (
                   <div style={{
-                    fontFamily: 'var(--font-mono)', fontSize: 'var(--text-caption)',
-                    color: 'var(--txt3)', marginTop: '4px',
+                    fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--text-caption)',
+                    color: 'var(--bs-txt3)', marginTop: '4px',
                   }}>
                     Non-career skill (+5 XP surcharge)
                   </div>
@@ -164,7 +164,7 @@ export function SkillsCard({ title, skills, animClass = 'ar d1', scrollable = fa
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel style={{
-              fontFamily: 'var(--font-orbitron)', fontSize: 'var(--text-caption)',
+              fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--text-caption)',
               fontWeight: 600, letterSpacing: '0.1em',
             }}>
               CANCEL
@@ -172,9 +172,9 @@ export function SkillsCard({ title, skills, animClass = 'ar d1', scrollable = fa
             <AlertDialogAction
               onClick={() => { confirmSkill?.onBuy?.(); setConfirmSkill(null) }}
               style={{
-                fontFamily: 'var(--font-orbitron)', fontSize: 'var(--text-caption)',
+                fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--text-caption)',
                 fontWeight: 700, letterSpacing: '0.1em',
-                background: 'var(--gold)', color: '#fff',
+                background: 'var(--bs-red-sun)', color: 'var(--bs-on-red)',
               }}
             >
               CONFIRM PURCHASE
@@ -185,19 +185,19 @@ export function SkillsCard({ title, skills, animClass = 'ar d1', scrollable = fa
 
       {/* Reduce confirmation dialog (GM mode) */}
       <AlertDialog open={!!confirmReduce} onOpenChange={(open) => !open && setConfirmReduce(null)}>
-        <AlertDialogContent style={{ fontFamily: 'var(--font-chakra)' }}>
+        <AlertDialogContent style={{ fontFamily: 'var(--font-rajdhani)' }}>
           <AlertDialogHeader>
             <AlertDialogTitle style={{
-              fontFamily: 'var(--font-orbitron)', fontSize: 'var(--text-body)',
+              fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--text-body)',
               fontWeight: 700, letterSpacing: '0.08em',
             }}>
               Reduce {confirmReduce?.name} Rank {confirmReduce?.rank} → {confirmReduce ? confirmReduce.rank - 1 : 0}?
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
-              <div style={{ fontSize: 'var(--text-body-sm)', lineHeight: 1.6, color: 'var(--txt2)' }}>
+              <div style={{ fontSize: 'var(--text-body-sm)', lineHeight: 1.6, color: 'var(--bs-txt2)' }}>
                 Refund{' '}
                 <span style={{
-                  fontFamily: 'var(--font-orbitron)', fontWeight: 700,
+                  fontFamily: 'var(--font-rajdhani)', fontWeight: 700,
                   color: 'var(--green)',
                 }}>
                   {refundAmount} XP
@@ -205,8 +205,8 @@ export function SkillsCard({ title, skills, animClass = 'ar d1', scrollable = fa
                 {' '}to the character.
                 {confirmReduce && !confirmReduce.isCareer && (
                   <div style={{
-                    fontFamily: 'var(--font-mono)', fontSize: 'var(--text-caption)',
-                    color: 'var(--txt3)', marginTop: '4px',
+                    fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--text-caption)',
+                    color: 'var(--bs-txt3)', marginTop: '4px',
                   }}>
                     Non-career skill (includes +5 XP surcharge refund)
                   </div>
@@ -216,7 +216,7 @@ export function SkillsCard({ title, skills, animClass = 'ar d1', scrollable = fa
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel style={{
-              fontFamily: 'var(--font-orbitron)', fontSize: 'var(--text-caption)',
+              fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--text-caption)',
               fontWeight: 600, letterSpacing: '0.1em',
             }}>
               CANCEL
@@ -224,7 +224,7 @@ export function SkillsCard({ title, skills, animClass = 'ar d1', scrollable = fa
             <AlertDialogAction
               onClick={() => { confirmReduce?.onReduce?.(); setConfirmReduce(null) }}
               style={{
-                fontFamily: 'var(--font-orbitron)', fontSize: 'var(--text-caption)',
+                fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--text-caption)',
                 fontWeight: 700, letterSpacing: '0.1em',
                 background: 'var(--red)', color: '#fff',
               }}

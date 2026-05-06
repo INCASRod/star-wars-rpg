@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useState } from 'react'
 import type { Character } from '@/lib/types'
 import type { WeaponRef } from '@/lib/resolve-weapon'
 import { FS_OVERLINE, FS_CAPTION, FS_SM, FS_H3 } from '@/components/player-hud/design-tokens'
@@ -9,12 +8,13 @@ import { TalentQuickReference } from './TalentQuickReference'
 import { AdversaryCardList } from './AdversaryCardList'
 import { InitiativeStrip } from './InitiativeStrip'
 import { useEncounterState } from '@/hooks/useEncounterState'
+import { useRefWeapons } from '@/hooks/useRefWeapons'
+import { HUD } from '@/lib/tokens'
 
 // ── Design Tokens ──
 const BG = '#060D09'
 const PANEL_BG = 'rgba(8,16,10,0.88)'
 const RAISED_BG = 'rgba(14,26,18,0.9)'
-const GOLD = '#C8AA50'
 const BORDER = 'rgba(200,170,80,0.18)'
 const BORDER_MD = 'rgba(200,170,80,0.32)'
 const CHAR_BR = '#e05252'
@@ -58,25 +58,9 @@ interface Props {
 
 export function CombatTracker({ character, campaignId, talents = [] }: Props) {
   const { encounter } = useEncounterState(campaignId)
-  const [weaponRef, setWeaponRef] = useState<Record<string, WeaponRef>>({})
+  const weaponRef = useRefWeapons()
   // Collapsed state for adversary cards (true = collapsed; active-turn card overrides)
   const [cardCollapsed, setCardCollapsed] = useState<Record<string, boolean>>({})
-  const supabase = createClient()
-
-  // Load weapon reference for stat lookup (weapons in adversaries.json are name-only strings)
-  useEffect(() => {
-    supabase
-      .from('ref_weapons')
-      .select('name, damage, damage_add, range_value')
-      .then(({ data }) => {
-        if (!data) return
-        const map: Record<string, WeaponRef> = {}
-        data.forEach((w: { name: string; damage: number; damage_add: number | null; range_value: string | null }) => {
-          map[w.name.toLowerCase()] = w
-        })
-        setWeaponRef(map)
-      })
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!encounter || !encounter.is_active) {
     return (
@@ -123,7 +107,7 @@ export function CombatTracker({ character, campaignId, talents = [] }: Props) {
           {/* Combat Log Feed */}
           <div style={{ flexShrink: 0, borderTop: `1px solid ${BORDER}`, maxHeight: 180, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             <div style={{ padding: '6px 16px 0', flexShrink: 0 }}>
-              <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${GOLD}b3`, marginBottom: 6 }}>
+              <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${HUD.gold}b3`, marginBottom: 6 }}>
                 Combat Log
               </div>
             </div>
@@ -141,7 +125,7 @@ export function CombatTracker({ character, campaignId, talents = [] }: Props) {
                     paddingLeft: 8, display: 'flex', gap: 8, alignItems: 'flex-start',
                   }}>
                     <span style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED, flexShrink: 0 }}>R{entry.round}·S{entry.slot}</span>
-                    <span style={{ fontFamily: FC, fontSize: FS_CAPTION, color: GOLD, flexShrink: 0, minWidth: 80 }}>{entry.actor}</span>
+                    <span style={{ fontFamily: FC, fontSize: FS_CAPTION, color: HUD.gold, flexShrink: 0, minWidth: 80 }}>{entry.actor}</span>
                     <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: TEXT_SEC }}>{entry.text}</span>
                   </div>
                 )

@@ -1,19 +1,19 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useRef, useMemo } from 'react'
-import { createPortal } from 'react-dom'
+import { Modal } from '@/components/ui/Modal'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Adversary, AdversaryWeapon, AdversaryTalent, AdversaryGear } from '@/lib/adversaries'
 import { toast } from 'sonner'
+import { HUD } from '@/lib/tokens'
 
 /* ── Design tokens ─────────────────────────────────────── */
-const FC       = "var(--font-cinzel), 'Cinzel', serif"
+const FC       = "var(--font-rajdhani), 'Cinzel', serif"
 const FR       = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const BG       = '#060D09'
 const PANEL_BG = 'rgba(8,16,10,0.97)'
 const RAISED   = 'rgba(14,26,18,0.92)'
 const INPUT_BG = 'rgba(0,0,0,0.35)'
-const GOLD     = '#C8AA50'
 const GOLD_DIM = 'rgba(200,170,80,0.5)'
 const TEXT     = '#C8D8C0'
 const DIM      = '#6A8070'
@@ -41,7 +41,7 @@ const numInput: React.CSSProperties = {
 
 const btnPrimary: React.CSSProperties = {
   background: 'rgba(200,170,80,0.12)', border: `1px solid ${GOLD_DIM}`,
-  color: GOLD, fontFamily: FR, fontSize: FS_SM, fontWeight: 700,
+  color: HUD.gold, fontFamily: FR, fontSize: FS_SM, fontWeight: 700,
   letterSpacing: '0.1em', padding: '8px 20px',
   borderRadius: 3, cursor: 'pointer',
 }
@@ -388,36 +388,14 @@ export function AdversaryEditor({
 
   const isEdit = !!editId
 
-  return createPortal(
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 9050,
-        background: 'rgba(0,0,0,0.75)',
-        backdropFilter: 'blur(6px)',
-        WebkitBackdropFilter: 'blur(6px)',
-        display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
-        padding: 'clamp(16px, 3vh, 32px) 16px',
-        overflowY: 'auto',
-      }}
-    >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          width: '100%', maxWidth: 640,
-          background: PANEL_BG,
-          border: `1px solid ${BORDER_HI}`,
-          borderRadius: 8,
-          boxShadow: '0 16px 64px rgba(0,0,0,0.8)',
-          overflow: 'hidden',
-        }}
-      >
+  return (
+    <Modal open onClose={onClose} maxWidth={640}>
         {/* Header */}
         <div style={{
           padding: '16px 20px', borderBottom: `1px solid ${BORDER}`,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
-          <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: GOLD, letterSpacing: '0.1em' }}>
+          <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: HUD.gold, letterSpacing: '0.1em' }}>
             {isEdit ? 'Edit Adversary' : 'New Adversary'}
           </div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: DIM, cursor: 'pointer', fontSize: FS_H4 }}>×</button>
@@ -446,7 +424,7 @@ export function AdversaryEditor({
                   padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 }}>
                   <span style={{ fontFamily: FR, fontSize: FS_SM, color: TEXT }}>
-                    Based on <strong style={{ color: GOLD }}>{tmplSelected.name}</strong>
+                    Based on <strong style={{ color: HUD.gold }}>{tmplSelected.name}</strong>
                   </span>
                   <button
                     onClick={() => { setTmplSelected(null); setTmplSearch('') }}
@@ -475,6 +453,7 @@ export function AdversaryEditor({
                         <button
                           key={a.id}
                           onClick={() => applyTemplate(a)}
+                          className="hov-gold-bg"
                           style={{
                             display: 'block', width: '100%', textAlign: 'left',
                             background: 'transparent', border: 'none',
@@ -482,8 +461,6 @@ export function AdversaryEditor({
                             fontFamily: FR, fontSize: FS_SM, color: TEXT,
                             borderBottom: `1px solid ${BORDER}`,
                           }}
-                          onMouseEnter={e => (e.currentTarget.style.background = RAISED)}
-                          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                         >
                           {a.name}
                           <span style={{ marginLeft: 8, fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>
@@ -650,9 +627,9 @@ export function AdversaryEditor({
                                 fontSize: 'clamp(0.58rem, 0.88vw, 0.68rem)',
                                 padding: '2px 8px',
                                 borderRadius: 3,
-                                border: `1px solid ${(s.characteristicOverride ?? '') === opt.key ? GOLD : BORDER}`,
+                                border: `1px solid ${(s.characteristicOverride ?? '') === opt.key ? HUD.gold : BORDER}`,
                                 background: (s.characteristicOverride ?? '') === opt.key ? 'rgba(200,170,80,0.12)' : 'transparent',
-                                color: (s.characteristicOverride ?? '') === opt.key ? GOLD : DIM,
+                                color: (s.characteristicOverride ?? '') === opt.key ? HUD.gold : DIM,
                                 cursor: 'pointer',
                               }}
                             >
@@ -869,8 +846,6 @@ export function AdversaryEditor({
           </div>
 
         </div>
-      </div>
-    </div>,
-    document.body,
+    </Modal>
   )
 }

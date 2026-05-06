@@ -6,10 +6,10 @@ import type { Character, RefDutyType, RefObligationType } from '@/lib/types'
 import { DutyObligationSetupModal } from './DutyObligationSetupModal'
 import { SessionRollSimulator } from './SessionRollSimulator'
 import { resolveDutyName, resolveObligationName } from '@/lib/dutyObligationUtils'
+import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const FC = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const GOLD = '#C8AA50'
 const TEXT = '#C8D8C0'
 const DIM = '#6A8070'
 const FAINT = '#2A3A2E'
@@ -134,7 +134,7 @@ function ChartRow({ character, field, color, maxValue, resolvedTypeName, hasCust
         <div style={{ fontFamily: FC, fontSize: 10, color: DIM, display: 'flex', alignItems: 'center', gap: 4 }}>
           {resolvedTypeName}
           {hasCustomName && (
-            <span title="Custom name set by GM" style={{ fontSize: 9, color: GOLD, opacity: 0.7 }}>✎</span>
+            <span title="Custom name set by GM" style={{ fontSize: 9, color: HUD.gold, opacity: 0.7 }}>✎</span>
           )}
         </div>
       </div>
@@ -225,7 +225,7 @@ export function DutyObligationTab({
           border: `1px solid rgba(200,170,80,0.3)`,
           borderRadius: 6, padding: '12px 16px',
         }}>
-          <div style={{ fontFamily: FC, fontSize: 10, fontWeight: 700, color: GOLD, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 8 }}>
+          <div style={{ fontFamily: FC, fontSize: 10, fontWeight: 700, color: HUD.gold, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 8 }}>
             ⚑ Setup Required
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -237,7 +237,7 @@ export function DutyObligationTab({
                   fontFamily: FC, fontSize: 11, fontWeight: 700,
                   border: `1px solid rgba(200,170,80,0.4)`,
                   borderRadius: 4, padding: '5px 14px',
-                  background: 'rgba(200,170,80,0.1)', color: GOLD, cursor: 'pointer',
+                  background: 'rgba(200,170,80,0.1)', color: HUD.gold, cursor: 'pointer',
                 }}
               >
                 Configure {c.name}
@@ -309,7 +309,7 @@ export function DutyObligationTab({
 
       {/* ── Session Roll Simulator ── */}
       <div style={panelBase}>
-        {sectionHeader('Session Roll Simulator', GOLD)}
+        {sectionHeader('Session Roll Simulator', HUD.gold)}
         <SessionRollSimulator
           characters={characters}
           campaignId={campaignId}
@@ -344,7 +344,7 @@ export function DutyObligationTab({
                   <div>
                     <div style={{ fontFamily: FC, fontSize: 9, color: BLUE, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
                       Duty — {resolveDutyName(c, dutyTypes)} ({c.duty_value ?? 0})
-                      {c.duty_custom_name && <span title="Custom name set by GM" style={{ fontSize: 9, color: GOLD, opacity: 0.7 }}>✎</span>}
+                      {c.duty_custom_name && <span title="Custom name set by GM" style={{ fontSize: 9, color: HUD.gold, opacity: 0.7 }}>✎</span>}
                     </div>
                     {c.duty_lore && (
                       <div style={{ fontFamily: FC, fontSize: 10, color: DIM, lineHeight: 1.5, fontStyle: 'italic' }}>
@@ -355,7 +355,7 @@ export function DutyObligationTab({
                   <div>
                     <div style={{ fontFamily: FC, fontSize: 9, color: getThreatColor(c.obligation_value ?? 0), letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
                       Obligation — {resolveObligationName(c, obligationTypes)} ({c.obligation_value ?? 0})
-                      {c.obligation_custom_name && <span title="Custom name set by GM" style={{ fontSize: 9, color: GOLD, opacity: 0.7 }}>✎</span>}
+                      {c.obligation_custom_name && <span title="Custom name set by GM" style={{ fontSize: 9, color: HUD.gold, opacity: 0.7 }}>✎</span>}
                     </div>
                     {c.obligation_lore && (
                       <div style={{ fontFamily: FC, fontSize: 10, color: DIM, lineHeight: 1.5, fontStyle: 'italic' }}>

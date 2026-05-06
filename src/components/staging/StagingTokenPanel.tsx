@@ -1,14 +1,16 @@
-'use client'
+﻿'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useEncounterState } from '@/hooks/useEncounterState'
+import { useAdversaryTokenImages } from '@/hooks/useAdversaryTokenImages'
 import type { MapToken } from '@/hooks/useMapTokens'
 import type { Character } from '@/lib/types'
+import { HUD } from '@/lib/tokens'
 
 /* ── Design tokens (match GmMapView exactly) ──────────────── */
-const FC       = "var(--font-cinzel), 'Cinzel', serif"
+const FC       = "var(--font-rajdhani), 'Cinzel', serif"
 const FR       = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const GOLD     = '#C8AA50'
 const DIM      = '#6A8070'
 const TEXT     = '#C8D8C0'
 const GREEN    = '#4EC87A'
@@ -22,7 +24,7 @@ const FS_LABEL    = 'var(--text-label)'
 const btnSmall: React.CSSProperties = {
   background: 'rgba(200,170,80,0.08)',
   border: `1px solid rgba(200,170,80,0.3)`,
-  color: GOLD,
+  color: HUD.gold,
   fontFamily: FR,
   fontSize: FS_CAPTION,
   fontWeight: 700,
@@ -62,32 +64,6 @@ interface VehicleDrawerSlot {
   token_image_url:   string | null
 }
 
-interface EncounterRow {
-  id: string
-  is_active: boolean
-  initiative_slots: Array<{
-    id: string
-    type: 'pc' | 'npc'
-    name: string
-    adversaryInstanceId?: string
-    vehicleInstanceId?: string
-  }>
-  adversaries: Array<{
-    instanceId: string
-    type: 'minion' | 'rival' | 'nemesis'
-  }>
-  vehicles: Array<{
-    instanceId: string
-    name: string
-    alignment: 'enemy' | 'allied_npc'
-    token_image_url?: string | null
-  }>
-}
-
-interface AdversaryTokenImage {
-  adversary_key:   string
-  token_image_url: string
-}
 
 /* ── Props ────────────────────────────────────────────────── */
 export interface StagingTokenPanelProps {
@@ -117,51 +93,17 @@ export interface StagingTokenPanelProps {
 export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addToken, removeToken, toggleVisibility, removeAllTokens }: StagingTokenPanelProps) {
   const supabase = useMemo(() => createClient(), [])
 
-  /* ── Encounter subscription (same pattern as GmMapView) ── */
-  const [encounter, setEncounter] = useState<EncounterRow | null>(null)
-
-  useEffect(() => {
-    if (!campaignId) return
-
-    supabase
-      .from('combat_encounters')
-      .select('id, is_active, initiative_slots, adversaries, vehicles')
-      .eq('campaign_id', campaignId)
-      .eq('is_active', true)
-      .maybeSingle()
-      .then(({ data }) => { setEncounter(data as EncounterRow | null) })
-
-    const ch = supabase
-      .channel(`staging-tokens-encounter-${campaignId}`)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'combat_encounters', filter: `campaign_id=eq.${campaignId}` },
-        (payload) => {
-          const { eventType, new: n } = payload
-          if (eventType === 'DELETE') { setEncounter(null); return }
-          const row = n as EncounterRow
-          setEncounter(row.is_active ? row : null)
-        },
-      )
-      .subscribe()
-
-    return () => { supabase.removeChannel(ch) }
-  }, [campaignId]) // eslint-disable-line react-hooks/exhaustive-deps
+  /* ── Encounter state ──────────────────────────────────── */
+  const { encounter } = useEncounterState(campaignId)
 
   /* ── Adversary token images ───────────────────────────── */
-  const [advTokens,    setAdvTokens]    = useState<AdversaryTokenImage[]>([])
+  const { tokenImages: advTokenImages, setTokenImages: setAdvTokenImages } = useAdversaryTokenImages()
   const [advTokenBusy, setAdvTokenBusy] = useState<string | null>(null)
 
-  useEffect(() => {
-    supabase.from('adversary_token_images').select('*')
-      .then(({ data }) => { if (data) setAdvTokens(data as AdversaryTokenImage[]) })
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const advTokensByKey = useMemo(() => {
-    const m = new Map<string, string>()
-    for (const a of advTokens) m.set(a.adversary_key, a.token_image_url)
-    return m
-  }, [advTokens])
+  const advTokensByKey = useMemo(
+    () => new Map(Object.entries(advTokenImages)),
+    [advTokenImages],
+  )
 
   /* ── Remove All confirmation state ───────────────────── */
   const [removeAllConfirm, setRemoveAllConfirm] = useState(false)
@@ -328,17 +270,14 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
           .eq('map_id', mapId)
           .eq('label', adversaryKey)
       }
-      setAdvTokens(prev => {
-        const next = prev.filter(a => a.adversary_key !== adversaryKey)
-        return [...next, { adversary_key: adversaryKey, token_image_url: data.publicUrl }]
-      })
+      setAdvTokenImages(prev => ({ ...prev, [adversaryKey]: data.publicUrl }))
     }
     setAdvTokenBusy(null)
   }
 
   async function clearAdvToken(adversaryKey: string) {
     await supabase.from('adversary_token_images').delete().eq('adversary_key', adversaryKey)
-    setAdvTokens(prev => prev.filter(a => a.adversary_key !== adversaryKey))
+    setAdvTokenImages(prev => { const n = { ...prev }; delete n[adversaryKey]; return n })
   }
 
   /* ── Remove All Tokens ────────────────────────────────── */
@@ -533,7 +472,7 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
               : token.alignment === 'nemesis'   ? '#9060D0'
               : token.alignment === 'rival'     ? '#FF9800'
               : token.alignment === 'minion' || token.alignment === 'enemy' ? '#E05252'
-              : GOLD
+              : HUD.gold
 
             return (
               <div key={token.id} style={{ padding: '10px 12px', borderBottom: `1px solid ${BORDER}` }}>
@@ -627,7 +566,7 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={char.portrait_url} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid rgba(200,170,80,0.4)' }} />
               ) : (
-                <div style={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, background: 'rgba(200,170,80,0.15)', border: '2px solid rgba(200,170,80,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FC, fontSize: 16, fontWeight: 700, color: GOLD }}>
+                <div style={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, background: 'rgba(200,170,80,0.15)', border: '2px solid rgba(200,170,80,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FC, fontSize: 16, fontWeight: 700, color: HUD.gold }}>
                   {char.name.charAt(0).toUpperCase()}
                 </div>
               )}
@@ -675,7 +614,7 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
             onClick={() => void addAllPlayers()}
             style={{
               background: 'rgba(6,13,9,0.92)', border: `1px solid rgba(200,170,80,0.35)`,
-              color: GOLD, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
+              color: HUD.gold, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
               letterSpacing: '0.1em', textTransform: 'uppercase', padding: '6px 13px',
               borderRadius: 4, cursor: 'pointer', width: '100%',
             }}

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
@@ -150,7 +150,7 @@ export function VendorPurchaseDialog({
       }}>
         {/* Source label */}
         <div style={{
-          fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)', fontWeight: 700,
+          fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)', fontWeight: 700,
           letterSpacing: '0.25em', color, marginBottom: 14, textTransform: 'uppercase',
         }}>
           Vendor Offer
@@ -158,16 +158,16 @@ export function VendorPurchaseDialog({
 
         {done ? (
           <div style={{ padding: '20px 0' }}>
-            <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-lg)', fontWeight: 900, color: 'var(--green)', marginBottom: 8 }}>
+            <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-lg)', fontWeight: 900, color: 'var(--green)', marginBottom: 8 }}>
               PURCHASED!
             </div>
-            <div style={{ fontFamily: 'var(--font-chakra)', fontSize: 'var(--font-sm)', color: 'var(--ink)' }}>
+            <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', color: 'var(--ink)' }}>
               {item.name} added to your inventory.
             </div>
           </div>
         ) : declined ? (
           <div style={{ padding: '20px 0' }}>
-            <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-lg)', fontWeight: 900, color: 'var(--ink)', opacity: 0.5, marginBottom: 8 }}>
+            <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-lg)', fontWeight: 900, color: 'var(--ink)', opacity: 0.5, marginBottom: 8 }}>
               DECLINED
             </div>
           </div>
@@ -186,7 +186,7 @@ export function VendorPurchaseDialog({
 
             {/* Name */}
             <div style={{
-              fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-lg)', fontWeight: 900,
+              fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-lg)', fontWeight: 900,
               letterSpacing: '0.06em', color: 'var(--ink)', marginBottom: 4, lineHeight: 1.2,
             }}>
               {quantity > 1 ? `${item.name} ×${quantity}` : item.name}
@@ -194,7 +194,7 @@ export function VendorPurchaseDialog({
 
             {/* Rarity */}
             <div style={{
-              fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)', fontWeight: 700,
+              fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', fontWeight: 700,
               color, marginBottom: 14, letterSpacing: '0.1em',
             }}>
               Rarity {rarity} — {rarityLabel(rarity)}
@@ -246,7 +246,7 @@ export function VendorPurchaseDialog({
             {/* Description */}
             {item.description && (
               <div style={{
-                fontFamily: 'var(--font-chakra)', fontSize: 'var(--font-xs)', color: 'var(--ink)',
+                fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', color: 'var(--ink)',
                 lineHeight: 1.5, marginBottom: 14, textAlign: 'left',
                 maxHeight: 72, overflowY: 'auto',
               }}>
@@ -256,18 +256,18 @@ export function VendorPurchaseDialog({
 
             {/* Price section */}
             <div style={{
-              background: 'rgba(200,170,80,0.08)',
-              border: '1px solid rgba(200,170,80,0.3)',
+              background: 'rgba(224,58,30,0.08)',
+              border: '1px solid rgba(224,58,30,0.3)',
               borderRadius: 4, padding: '12px 14px',
               marginBottom: 18,
             }}>
               <div style={{
-                fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xl)', fontWeight: 900,
+                fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xl)', fontWeight: 900,
                 color: 'var(--gold-d)', letterSpacing: '0.05em', marginBottom: 4,
               }}>
                 {totalCost.toLocaleString()} cr
               </div>
-              <div style={{ fontFamily: 'var(--font-chakra)', fontSize: 'var(--font-sm)', color: 'var(--ink)', opacity: 0.7 }}>
+              <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', color: 'var(--ink)', opacity: 0.7 }}>
                 Your balance:{' '}
                 <span style={{ fontWeight: 700, color: canAfford ? 'var(--ink)' : '#E05050' }}>
                   {character.credits.toLocaleString()} cr
@@ -288,7 +288,7 @@ export function VendorPurchaseDialog({
                   flex: 1, padding: '12px 0',
                   background: 'transparent',
                   border: '2px solid rgba(0,0,0,0.15)',
-                  fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)',
+                  fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)',
                   fontWeight: 700, letterSpacing: '0.15em', color: 'var(--ink)', opacity: 0.6,
                   cursor: 'pointer', textTransform: 'uppercase',
                 }}
@@ -302,7 +302,7 @@ export function VendorPurchaseDialog({
                   flex: 2, padding: '12px 0',
                   background: canAfford ? 'var(--gold)' : 'rgba(0,0,0,0.1)',
                   border: 'none',
-                  fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)',
+                  fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)',
                   fontWeight: 700, letterSpacing: '0.15em',
                   color: canAfford ? 'var(--white)' : 'rgba(0,0,0,0.3)',
                   cursor: canAfford && !busy ? 'pointer' : 'not-allowed',
@@ -328,14 +328,14 @@ function StatPill({ label, value }: { label: string; value: string }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <span style={{
-        fontFamily: 'var(--font-orbitron)', fontSize: '0.55rem',
+        fontFamily: 'var(--font-rajdhani)', fontSize: '0.55rem',
         letterSpacing: '0.1em', textTransform: 'uppercase',
         color: 'rgba(0,0,0,0.4)', marginBottom: 1,
       }}>
         {label}
       </span>
       <span style={{
-        fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)',
+        fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)',
         fontWeight: 700, color: 'var(--ink)',
       }}>
         {value}

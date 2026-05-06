@@ -1,15 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useMemo } from 'react'
+import { useCombatParticipants } from '@/hooks/useCombatParticipants'
+import { useCharacterPortraits } from '@/hooks/useCharacterPortraits'
 import type { Character } from '@/lib/types'
 import type { CombatEncounter } from '@/lib/combat'
 import { FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_H4, FS_H3 } from '@/components/player-hud/design-tokens'
+import { HUD } from '@/lib/tokens'
 
 // ── Design tokens (mirrored from CombatTracker) ──
 const RAISED_BG  = 'rgba(14,26,18,0.9)'
 const PANEL_BG   = 'rgba(8,16,10,0.88)'
-const GOLD       = '#C8AA50'
 const BORDER     = 'rgba(200,170,80,0.18)'
 const BORDER_MD  = 'rgba(200,170,80,0.32)'
 const CHAR_BR    = '#e05252'
@@ -27,72 +28,25 @@ interface Props {
 }
 
 export function InitiativeStrip({ encounter, character }: Props) {
-  const supabase = createClient()
-  // Active character assignments keyed by default character_id
-  const [slotAssignments, setSlotAssignments] = useState<Record<string, string | null>>({})
-  // Portrait URLs keyed by characterId
-  const [portraits, setPortraits] = useState<Record<string, string>>({})
+  const { combatParticipants } = useCombatParticipants(encounter.campaign_id ?? '')
 
-  // Subscribe to combat_participants for real-time slot assignment updates
-  useEffect(() => {
-    const cid = encounter.campaign_id
-    if (!cid) return
-    supabase
-      .from('combat_participants')
-      .select('character_id, active_character_name')
-      .eq('campaign_id', cid)
-      .eq('slot_type', 'pc')
-      .then(({ data }) => {
-        if (!data) return
-        const map: Record<string, string | null> = {}
-        for (const r of data as { character_id: string; active_character_name: string | null }[]) {
-          map[r.character_id] = r.active_character_name
-        }
-        setSlotAssignments(map)
-      })
-    const ch = supabase
-      .channel(`is-participants-${cid}`)
-      .on('postgres_changes', {
-        event: '*', schema: 'public', table: 'combat_participants',
-        filter: `campaign_id=eq.${cid}`,
-      }, (payload) => {
-        if (payload.eventType === 'DELETE') {
-          const old = payload.old as { character_id: string }
-          setSlotAssignments(prev => {
-            const next = { ...prev }
-            delete next[old.character_id]
-            return next
-          })
-        } else if (payload.new) {
-          const r = payload.new as { character_id: string; active_character_name: string | null; slot_type: string }
-          if (r.slot_type === 'pc') {
-            setSlotAssignments(prev => ({ ...prev, [r.character_id]: r.active_character_name }))
-          }
-        }
-      })
-      .subscribe()
-    return () => { supabase.removeChannel(ch) }
-  }, [encounter.campaign_id]) // eslint-disable-line react-hooks/exhaustive-deps
+  // Derive slot assignments (character_id → active_character_name) from the hook
+  const slotAssignments = useMemo<Record<string, string | null>>(() => {
+    const map: Record<string, string | null> = {}
+    for (const row of Object.values(combatParticipants)) {
+      if (row.slot_type === 'pc') map[row.character_id] = row.active_character_name
+    }
+    return map
+  }, [combatParticipants])
 
-  // Fetch portrait URLs for all PC slots in the encounter
-  useEffect(() => {
-    const ids = encounter.initiative_slots
+  // Fetch portraits for all PC slots in the encounter
+  const pcSlotIds = useMemo(
+    () => encounter.initiative_slots
       .filter(s => s.type === 'pc' && s.characterId)
-      .map(s => s.characterId as string)
-    if (ids.length === 0) return
-    supabase
-      .from('characters')
-      .select('id, portrait_url')
-      .in('id', ids)
-      .then(({ data }) => {
-        if (!data) return
-        const map: Record<string, string> = {}
-        for (const row of data as { id: string; portrait_url: string | null }[]) {
-          if (row.portrait_url) map[row.id] = row.portrait_url
-        }
-        setPortraits(map)
-      })
-  }, [encounter.initiative_slots]) // eslint-disable-line react-hooks/exhaustive-deps
+      .map(s => s.characterId as string),
+    [encounter.initiative_slots],
+  )
+  const portraits = useCharacterPortraits(pcSlotIds)
 
   const currentSlot = encounter.initiative_slots[encounter.current_slot_index]
   const isMyTurn = currentSlot?.characterId === character.id
@@ -126,7 +80,7 @@ export function InitiativeStrip({ encounter, character }: Props) {
 
         {/* Round */}
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontFamily: FC, fontSize: FS_H3, fontWeight: 700, color: GOLD, lineHeight: 1 }}>{encounter.round}</div>
+          <div style={{ fontFamily: FC, fontSize: FS_H3, fontWeight: 700, color: HUD.gold, lineHeight: 1 }}>{encounter.round}</div>
           <div style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED, letterSpacing: '0.15em', textTransform: 'uppercase' }}>Round</div>
         </div>
       </div>
@@ -221,7 +175,7 @@ export function InitiativeStrip({ encounter, character }: Props) {
                   </div>
                 )}
                 {/* Name */}
-                <div style={{ fontFamily: FM, fontSize: FS_LABEL, fontWeight: 700, color: isMe ? GOLD : TEXT_MUTED, textAlign: 'center', maxWidth: 64, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontFamily: FM, fontSize: FS_LABEL, fontWeight: 700, color: isMe ? HUD.gold : TEXT_MUTED, textAlign: 'center', maxWidth: 64, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {isMe ? `YOU · ` : ''}{displayName}
                 </div>
               </div>

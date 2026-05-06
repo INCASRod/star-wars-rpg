@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { createPortal } from 'react-dom'
@@ -12,12 +12,12 @@ import {
   DICE_META, EMPTY_POOL, SYM,
   type DiceType, type SymbolKey,
 } from '@/components/player-hud/design-tokens'
+import { HUD } from '@/lib/tokens'
 
 /* ── Design tokens ────────────────────────────────────────── */
-const FC        = "var(--font-cinzel), 'Cinzel', serif"
+const FC        = "var(--font-rajdhani), 'Cinzel', serif"
 const FR        = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FST       = "var(--font-share-tech-mono), 'Share Tech Mono', monospace"
-const GOLD      = '#C8AA50'
 const GOLD_DIM  = '#5A4A20'
 const DIM       = '#6A8070'
 const TEXT      = '#C8D8C0'
@@ -111,7 +111,7 @@ function RevealControl({
             style={{
               fontFamily: FR, fontSize: 10, fontWeight: 700,
               border: `1px solid rgba(200,170,80,0.35)`, borderRadius: 4, padding: '3px 10px',
-              background: 'rgba(200,170,80,0.08)', color: GOLD,
+              background: 'rgba(200,170,80,0.08)', color: HUD.gold,
               cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.5 : 1,
             }}
           >
@@ -162,7 +162,7 @@ function NarrativeResult({ result }: { result: RollResult }) {
   const { net, dice } = result
   const isSuccess = net.success > 0
   const isFailure = net.success < 0
-  const headlineColor = isSuccess ? GREEN : isFailure ? '#E05050' : GOLD
+  const headlineColor = isSuccess ? GREEN : isFailure ? '#E05050' : HUD.gold
   const headlineText  = isSuccess ? 'SUCCESS' : isFailure ? 'FAILURE' : 'WASH'
 
   type Pill = { count: number; symKey: SymbolKey; label: string }
@@ -281,7 +281,7 @@ function D100Result({ value }: { value: number }) {
       background: 'rgba(0,0,0,0.3)', border: `1px solid ${BORDER_HI}`, borderRadius: 6,
       textAlign: 'center',
     }}>
-      <div style={{ fontFamily: FC, fontSize: 'var(--text-h3)', color: GOLD, letterSpacing: '0.06em', lineHeight: 1 }}>
+      <div style={{ fontFamily: FC, fontSize: 'var(--text-h3)', color: HUD.gold, letterSpacing: '0.06em', lineHeight: 1 }}>
         {display}
       </div>
       {isDoubles && (
@@ -289,7 +289,7 @@ function D100Result({ value }: { value: number }) {
           display: 'inline-block', marginTop: 6,
           padding: '2px 10px', borderRadius: 4,
           background: 'rgba(200,170,80,0.12)', border: `1px solid ${BORDER_HI}`,
-          fontFamily: FR, fontSize: 10, fontWeight: 700, color: GOLD,
+          fontFamily: FR, fontSize: 10, fontWeight: 700, color: HUD.gold,
           letterSpacing: '0.12em', textTransform: 'uppercase' as const,
         }}>
           Doubles
@@ -474,31 +474,18 @@ export function GmDiceRollerFAB({
       title="GM Dice Roller"
       style={{
         background:   open ? 'rgba(200,170,80,0.2)' : 'rgba(6,13,9,0.92)',
-        border:       `2px solid ${open ? GOLD : GOLD_DIM}`,
+        border:       `2px solid ${open ? HUD.gold : GOLD_DIM}`,
         borderRadius: 8, padding: '10px 16px',
         cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
         fontFamily:    FST,
         fontSize:      'var(--text-caption)',
         letterSpacing: '0.14em', textTransform: 'uppercase' as const,
-        color:         open ? GOLD : DIM,
+        color:         open ? HUD.gold : DIM,
         boxShadow:     open ? '0 0 16px rgba(200,170,80,0.2)' : '0 2px 12px rgba(0,0,0,0.5)',
         transition:    'all 0.2s',
         whiteSpace:    'nowrap' as const,
       }}
-      onMouseEnter={e => {
-        if (!open) {
-          const el = e.currentTarget as HTMLElement
-          el.style.color = GOLD
-          el.style.borderColor = GOLD
-        }
-      }}
-      onMouseLeave={e => {
-        if (!open) {
-          const el = e.currentTarget as HTMLElement
-          el.style.color = DIM
-          el.style.borderColor = GOLD_DIM
-        }
-      }}
+      className={!open ? 'hov-gold' : ''}
     >
       <DiceIcon size={16} />
       Dice
@@ -536,7 +523,7 @@ export function GmDiceRollerFAB({
         position: 'sticky', top: 0,
         background: PANEL_BG, zIndex: 1,
       }}>
-        <span style={{ fontFamily: FC, fontSize: 'var(--text-label)', fontWeight: 700, color: GOLD, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+        <span style={{ fontFamily: FC, fontSize: 'var(--text-label)', fontWeight: 700, color: HUD.gold, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
           GM Dice Roller
         </span>
         <button
@@ -724,7 +711,7 @@ export function GmDiceRollerFAB({
               background: 'rgba(200,170,80,0.06)', border: `1px solid ${BORDER_HI}`,
               borderRadius: 4, cursor: 'pointer',
               fontFamily: FC, fontSize: 'var(--text-caption)', fontWeight: 700,
-              letterSpacing: '0.1em', color: GOLD,
+              letterSpacing: '0.1em', color: HUD.gold,
             }}
           >
             ROLL d100

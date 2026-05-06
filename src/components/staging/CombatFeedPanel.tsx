@@ -1,21 +1,27 @@
 'use client'
 
-import { useState, useCallback, useEffect, useMemo } from 'react'
+import { useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
 import { useEncounterState } from '@/hooks/useEncounterState'
+import { useCombatParticipants } from '@/hooks/useCombatParticipants'
+import { usePendingDamage } from '@/hooks/usePendingDamage'
+import { useEquippedWeapons } from '@/hooks/useEquippedWeapons'
+import type { CombatParticipantRow } from '@/hooks/useCombatParticipants'
+import type { PendingDamage } from '@/hooks/usePendingDamage'
+import type { CharacterWeapon } from '@/hooks/useEquippedWeapons'
 import { advanceInitiative } from '@/lib/combat'
 import type { CombatEncounter, InitiativeSlot, SlotAlignment } from '@/lib/combat'
 import type { Character } from '@/lib/types'
 import { applyDamageToAdversary } from '@/lib/damageEngine'
 import type { AdversaryInstance } from '@/lib/adversaries'
 import { FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4 } from '@/components/player-hud/design-tokens'
+import { HUD } from '@/lib/tokens'
 
 /* ── Design tokens ────────────────────────────────────────── */
 const BG        = '#060D09'
 const PANEL_BG  = 'rgba(8,16,10,0.88)'
 const RAISED_BG = 'rgba(14,26,18,0.9)'
-const GOLD      = '#C8AA50'
 const BORDER    = 'rgba(200,170,80,0.18)'
 const BORDER_MD = 'rgba(200,170,80,0.32)'
 const RED       = '#e05252'
@@ -25,50 +31,6 @@ const TEAL      = '#52e0a8'
 const TEXT      = '#E8DFC8'
 const TEXT_MUTED = 'rgba(232,223,200,0.45)'
 const FC        = "'Rajdhani', sans-serif"
-
-/* ── Types ────────────────────────────────────────────────── */
-interface PendingDamage {
-  id:                        string
-  campaign_id:               string
-  encounter_id:              string | null
-  target_instance_id:        string | null
-  target_name:               string
-  attacker_name:             string
-  raw_damage:                number
-  soak_value:                number
-  net_damage:                number
-  status:                    'pending' | 'pending_secondary' | 'applied' | 'modified' | 'dismissed'
-  weapon_name:               string | null
-  attack_type:               string | null
-  range_band:                string | null
-  created_at:                string
-  crit_eligible:             boolean
-  crit_rating:               number | null
-  crit_modifier:             number
-  crit_triggered_by_triumph: boolean
-}
-
-interface CombatParticipantRow {
-  character_id:          string
-  default_character_id:  string | null
-  active_character_id:   string | null
-  active_character_name: string | null
-  active_weapon_key:     string | null
-  active_weapon_name:    string | null
-  secondary_weapon_key:  string | null
-  secondary_weapon_name: string | null
-  has_acted_this_round:  boolean
-  slot_type:             'pc' | 'npc'
-}
-
-interface CharacterWeapon {
-  id:           string
-  character_id: string
-  weapon_key:   string
-  custom_name:  string | null
-  is_equipped:  boolean
-  equip_state:  string | null
-}
 
 /* ── Props ────────────────────────────────────────────────── */
 export interface CombatFeedPanelProps {
@@ -113,101 +75,16 @@ const smallBtn: React.CSSProperties = {
 export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps) {
   const { encounter, isLoading } = useEncounterState(campaignId)
 
-  /* ── Combat participants (PC active-character names) ─────── */
-  const [participants, setParticipants] = useState<Record<string, CombatParticipantRow>>({})
-
-  /* ── Pending damage ──────────────────────────────────────── */
-  const [pendingDamages, setPendingDamages] = useState<PendingDamage[]>([])
-  const [editedDamages, setEditedDamages]   = useState<Record<string, number>>({})
-
-  /* ── Equipped weapons per PC character ──────────────────── */
-  const [equippedByChar, setEquippedByChar] = useState<Record<string, CharacterWeapon[]>>({})
+  /* ── Combat participants, pending damage, equipped weapons ── */
+  const { combatParticipants: participants } = useCombatParticipants(campaignId)
+  const { pendingDamages, setPendingDamages, editedDamages, setEditedDamages } = usePendingDamage(campaignId)
+  const equippedByChar = useEquippedWeapons(characters.map(c => c.id))
 
   /* ── Reassign dropdown ───────────────────────────────────── */
   const [reassignSlotId,   setReassignSlotId]   = useState<string | null>(null)
   const [reassignAnchor,   setReassignAnchor]   = useState<DOMRect | null>(null)
 
   const supabase = createClient()
-
-  useEffect(() => {
-    if (!campaignId) return
-    // Initial load
-    supabase.from('combat_participants').select(
-      'character_id, default_character_id, active_character_id, active_character_name, active_weapon_key, active_weapon_name, secondary_weapon_key, secondary_weapon_name, has_acted_this_round, slot_type'
-    ).eq('campaign_id', campaignId).then(({ data }) => {
-      if (!data) return
-      const map: Record<string, CombatParticipantRow> = {}
-      for (const r of data as CombatParticipantRow[]) map[r.character_id] = r
-      setParticipants(map)
-    })
-    // Realtime
-    const ch = supabase.channel(`cf-participants-${campaignId}`)
-      .on('postgres_changes', {
-        event: '*', schema: 'public', table: 'combat_participants',
-        filter: `campaign_id=eq.${campaignId}`,
-      }, (payload) => {
-        if (payload.eventType === 'DELETE') {
-          const old = payload.old as { character_id: string }
-          setParticipants(prev => { const n = { ...prev }; delete n[old.character_id]; return n })
-        } else if (payload.new) {
-          const r = payload.new as CombatParticipantRow
-          setParticipants(prev => ({ ...prev, [r.character_id]: r }))
-        }
-      })
-      .subscribe()
-    return () => { void supabase.removeChannel(ch) }
-  }, [campaignId]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  /* ── Pending damage: load + realtime ────────────────────── */
-  useEffect(() => {
-    if (!campaignId) return
-    supabase
-      .from('pending_damage')
-      .select('*')
-      .eq('campaign_id', campaignId)
-      .in('status', ['pending', 'pending_secondary'])
-      .order('created_at')
-      .then(({ data }) => { if (data) setPendingDamages(data as PendingDamage[]) })
-
-    const ch = supabase
-      .channel(`cf-pending-damage-${campaignId}`)
-      .on('postgres_changes', {
-        event: 'INSERT', schema: 'public', table: 'pending_damage',
-        filter: `campaign_id=eq.${campaignId}`,
-      }, payload => {
-        setPendingDamages(prev => [...prev, payload.new as PendingDamage])
-      })
-      .on('postgres_changes', {
-        event: 'UPDATE', schema: 'public', table: 'pending_damage',
-        filter: `campaign_id=eq.${campaignId}`,
-      }, payload => {
-        if (payload.new.status !== 'pending' && payload.new.status !== 'pending_secondary') {
-          setPendingDamages(prev => prev.filter(d => d.id !== payload.new.id))
-        }
-      })
-      .subscribe()
-    return () => { void supabase.removeChannel(ch) }
-  }, [campaignId]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  /* ── Fetch equipped weapons for all PC characters ───────── */
-  useEffect(() => {
-    const charIds = characters.map(c => c.id)
-    if (charIds.length === 0) return
-    supabase
-      .from('character_weapons')
-      .select('id, character_id, weapon_key, custom_name, is_equipped, equip_state')
-      .in('character_id', charIds)
-      .then(({ data }) => {
-        if (!data) return
-        const equipped = (data as CharacterWeapon[]).filter(w => w.equip_state === 'equipped' || w.is_equipped)
-        const byChar: Record<string, CharacterWeapon[]> = {}
-        for (const w of equipped) {
-          if (!byChar[w.character_id]) byChar[w.character_id] = []
-          byChar[w.character_id].push(w)
-        }
-        setEquippedByChar(byChar)
-      })
-  }, [characters]) // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── Core save helper ────────────────────────────────────── */
   const saveEncounter = useCallback(async (partial: Partial<CombatEncounter>) => {
@@ -460,12 +337,12 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           {/* Round */}
           <div style={{
-            background: `${GOLD}18`, border: `1px solid ${GOLD}40`,
+            background: `${HUD.gold}18`, border: `1px solid ${HUD.gold}40`,
             borderRadius: 4, padding: '4px 10px', flexShrink: 0,
             display: 'flex', alignItems: 'baseline', gap: 5,
           }}>
             <span style={{ fontFamily: FC, fontSize: FS_CAPTION, color: TEXT_MUTED, letterSpacing: '0.15em', textTransform: 'uppercase' }}>Round</span>
-            <span style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: GOLD, lineHeight: 1 }}>{encounter.round}</span>
+            <span style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: HUD.gold, lineHeight: 1 }}>{encounter.round}</span>
           </div>
 
           {/* Acting now banner */}
@@ -494,15 +371,13 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
         <div style={{ display: 'flex', gap: 6 }}>
           <button
             onClick={() => void handlePrev()}
+            className="hov-gold-bg"
             style={ghostBtn}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = `${GOLD}0f` }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
           >← Prev</button>
           <button
             onClick={() => void handleMarkActed()}
-            style={{ ...ghostBtn, border: `1px solid ${GOLD}60`, color: GOLD, background: `${GOLD}15` }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = `${GOLD}22` }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = `${GOLD}15` }}
+            className="hov-gold-bg"
+            style={{ ...ghostBtn, border: `1px solid ${HUD.gold}60`, color: HUD.gold, background: `${HUD.gold}15` }}
           >✓ Acted / Next →</button>
         </div>
       </div>
@@ -536,20 +411,20 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
 
             return (
               <div key={pd.id} style={{
-                background:   isSecondary ? `${GOLD}08` : 'rgba(224,82,82,0.06)',
-                border:       isSecondary ? `1px solid ${GOLD}40` : '1px solid rgba(224,82,82,0.3)',
+                background:   isSecondary ? `${HUD.gold}08` : 'rgba(224,82,82,0.06)',
+                border:       isSecondary ? `1px solid ${HUD.gold}40` : '1px solid rgba(224,82,82,0.3)',
                 borderRadius: 8, padding: '10px 10px',
               }}>
                 {/* Secondary hit label */}
                 {isSecondary && (
                   <div style={{
                     fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 700,
-                    color: GOLD, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 6,
+                    color: HUD.gold, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 6,
                   }}>⚔ Secondary Hit Available</div>
                 )}
 
                 {/* Attacker → Target */}
-                <div style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: GOLD, marginBottom: 2 }}>
+                <div style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: HUD.gold, marginBottom: 2 }}>
                   {pd.attacker_name} → {pd.target_name}
                 </div>
 
@@ -582,8 +457,8 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
                     display: 'flex', justifyContent: 'space-between',
                     borderTop: `1px solid ${BORDER}`, paddingTop: 3, marginTop: 1,
                   }}>
-                    <span style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: GOLD }}>Net</span>
-                    <span style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: GOLD }}>{pd.net_damage}</span>
+                    <span style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: HUD.gold }}>Net</span>
+                    <span style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: HUD.gold }}>{pd.net_damage}</span>
                   </div>
                 </div>
 
@@ -612,14 +487,14 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <button
                       onClick={() => setEdited(editedVal - 1)} disabled={editedVal <= 0}
-                      style={{ ...smallBtn, color: editedVal <= 0 ? TEXT_MUTED : GOLD, borderColor: BORDER_MD }}
+                      style={{ ...smallBtn, color: editedVal <= 0 ? TEXT_MUTED : HUD.gold, borderColor: BORDER_MD }}
                     >−</button>
-                    <span style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: GOLD, minWidth: 24, textAlign: 'center' }}>
+                    <span style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: HUD.gold, minWidth: 24, textAlign: 'center' }}>
                       {editedVal}
                     </span>
                     <button
                       onClick={() => setEdited(editedVal + 1)}
-                      style={{ ...smallBtn, color: GOLD, borderColor: BORDER_MD, background: `${GOLD}10` }}
+                      style={{ ...smallBtn, color: HUD.gold, borderColor: BORDER_MD, background: `${HUD.gold}10` }}
                     >+</button>
                   </div>
                 </div>
@@ -639,11 +514,11 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
                     onClick={() => void applyPendingDamage(pd, editedVal)}
                     style={{
                       flex: 2, padding: '6px 0',
-                      background: isSecondary ? `${GOLD}18` : 'rgba(224,82,82,0.15)',
-                      border:     isSecondary ? `1px solid ${GOLD}50` : '1px solid rgba(224,82,82,0.5)',
+                      background: isSecondary ? `${HUD.gold}18` : 'rgba(224,82,82,0.15)',
+                      border:     isSecondary ? `1px solid ${HUD.gold}50` : '1px solid rgba(224,82,82,0.5)',
                       borderRadius: 5, cursor: 'pointer',
                       fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700,
-                      color: isSecondary ? GOLD : RED,
+                      color: isSecondary ? HUD.gold : RED,
                     }}
                   >{isSecondary ? '✓ Apply Secondary' : '✓ Apply Damage'}</button>
                 </div>
@@ -782,9 +657,9 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
                     style={{
                       ...smallBtn,
                       width: 'auto', padding: '1px 6px',
-                      color: isReassigned ? GOLD : TEXT_MUTED,
-                      borderColor: isReassigned ? `${GOLD}50` : BORDER_MD,
-                      background: isReassigned ? `${GOLD}10` : 'transparent',
+                      color: isReassigned ? HUD.gold : TEXT_MUTED,
+                      borderColor: isReassigned ? `${HUD.gold}50` : BORDER_MD,
+                      background: isReassigned ? `${HUD.gold}10` : 'transparent',
                       fontSize: 12,
                     }}
                   >⇄</button>
@@ -956,15 +831,13 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
                   <div style={{ display: 'flex', gap: 5 }}>
                     <button
                       onClick={() => void handleMarkActed()}
-                      style={{ ...ghostBtn, border: `1px solid ${GOLD}60`, color: GOLD, background: `${GOLD}15`, padding: '3px 8px' }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = `${GOLD}22` }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = `${GOLD}15` }}
+                      className="hov-gold-bg"
+                      style={{ ...ghostBtn, border: `1px solid ${HUD.gold}60`, color: HUD.gold, background: `${HUD.gold}15`, padding: '3px 8px' }}
                     >Acted</button>
                     <button
                       onClick={() => void handleSkip(trueIdx)}
+                      className="hov-gold-bg"
                       style={{ ...ghostBtn, padding: '3px 8px' }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = `${GOLD}0f` }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
                     >Skip</button>
                   </div>
                 ) : null}
@@ -1068,7 +941,7 @@ function TypeBadge({ type }: { type: 'pc' | 'npc' | 'vehicle' }) {
   const cfg = {
     pc:      { color: BLUE,  label: 'PC' },
     npc:     { color: RED,   label: 'NPC' },
-    vehicle: { color: GOLD,  label: 'VEH' },
+    vehicle: { color: HUD.gold,  label: 'VEH' },
   }[type]
   return (
     <span style={{

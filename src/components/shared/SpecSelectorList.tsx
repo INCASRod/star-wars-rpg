@@ -12,15 +12,15 @@
 
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { parseOggDudeMarkup } from '@/lib/oggdude-markup'
+import { RichText } from '@/components/ui/RichText'
 import { Tooltip, TipBody } from '@/components/ui/Tooltip'
 import { TalentTree } from '@/components/character/TalentTree'
 import { buildTalentTree } from '@/lib/buildTalentTree'
 import type { RefSpecialization, RefTalent } from '@/lib/types'
+import { HUD } from '@/lib/tokens'
 
 const FR  = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FM  = "'Share Tech Mono', 'Courier New', monospace"
-const GOLD      = '#C8AA50'
 const BORDER    = 'rgba(200,170,80,0.14)'
 const BORDER_HI = 'rgba(200,170,80,0.36)'
 const TEXT      = '#C8D8C0'
@@ -94,7 +94,7 @@ function SpecTreePreviewModal({ spec, refTalentMap, onClose }: SpecTreePreviewMo
         <div>
           <div style={{
             fontFamily: FR, fontSize: 'clamp(0.95rem, 1.5vw, 1.1rem)',
-            fontWeight: 700, color: GOLD, letterSpacing: '0.06em',
+            fontWeight: 700, color: HUD.gold, letterSpacing: '0.06em',
           }}>
             {spec.name}
           </div>
@@ -111,7 +111,7 @@ function SpecTreePreviewModal({ spec, refTalentMap, onClose }: SpecTreePreviewMo
           style={{
             background: 'rgba(200,170,80,0.08)',
             border: `1px solid ${BORDER_HI}`,
-            borderRadius: 4, color: GOLD,
+            borderRadius: 4, color: HUD.gold,
             fontFamily: FR, fontSize: 'clamp(0.85rem, 1.2vw, 0.95rem)',
             fontWeight: 700, padding: '5px 14px',
             cursor: 'pointer', transition: 'background 0.15s',
@@ -180,7 +180,6 @@ function SpecDetailPanel({ spec, cost, affordable, onBuy, onClose, refTalentMap 
 
   if (!mounted) return null
 
-  const descHtml = parseOggDudeMarkup(spec.description)
 
   return createPortal(
     <>
@@ -216,15 +215,15 @@ function SpecDetailPanel({ spec, cost, affordable, onBuy, onClose, refTalentMap 
           <div>
             <div style={{
               fontFamily: FR, fontSize: 'clamp(0.95rem, 1.5vw, 1.1rem)',
-              fontWeight: 700, color: GOLD, letterSpacing: '0.06em',
+              fontWeight: 700, color: HUD.gold, letterSpacing: '0.06em',
             }}>
               {spec.name}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 5, flexWrap: 'wrap' }}>
               <span style={{
                 fontFamily: FR, fontSize: 'clamp(0.65rem, 0.9vw, 0.72rem)',
-                color: GOLD, background: `${GOLD}12`,
-                border: `1px solid ${GOLD}30`,
+                color: HUD.gold, background: `${HUD.gold}12`,
+                border: `1px solid ${HUD.gold}30`,
                 borderRadius: 3, padding: '1px 7px',
                 textTransform: 'uppercase', letterSpacing: '0.1em',
               }}>
@@ -273,7 +272,7 @@ function SpecDetailPanel({ spec, cost, affordable, onBuy, onClose, refTalentMap 
             </span>
             <span style={{
               fontFamily: FM, fontSize: 'clamp(0.8rem, 1.1vw, 0.9rem)',
-              color: affordable ? GOLD : RED,
+              color: affordable ? HUD.gold : RED,
               fontWeight: 700,
             }}>
               {cost} XP
@@ -325,14 +324,10 @@ function SpecDetailPanel({ spec, cost, affordable, onBuy, onClose, refTalentMap 
             }}>
               Description
             </div>
-            {descHtml ? (
-              <div
-                dangerouslySetInnerHTML={{ __html: descHtml }}
-                style={{
-                  fontFamily: FR, fontSize: 'clamp(0.8rem, 1.1vw, 0.88rem)',
-                  color: TEXT, lineHeight: 1.65,
-                }}
-              />
+            {spec.description ? (
+              <div style={{ fontFamily: FR, fontSize: 'clamp(0.8rem, 1.1vw, 0.88rem)', color: TEXT, lineHeight: 1.65 }}>
+                <RichText text={spec.description} />
+              </div>
             ) : (
               <div style={{
                 fontFamily: FR, fontSize: 'clamp(0.8rem, 1.1vw, 0.88rem)',
@@ -373,11 +368,11 @@ function SpecDetailPanel({ spec, cost, affordable, onBuy, onClose, refTalentMap 
               style={{
                 width: '100%',
                 background: 'rgba(200,170,80,0.14)',
-                border: `1px solid ${GOLD}55`,
+                border: `1px solid ${HUD.gold}55`,
                 borderRadius: 4, padding: '10px',
                 fontFamily: FR, fontSize: 'clamp(0.8rem, 1.1vw, 0.9rem)',
                 fontWeight: 700, letterSpacing: '0.12em',
-                textTransform: 'uppercase', color: GOLD,
+                textTransform: 'uppercase', color: HUD.gold,
                 cursor: 'pointer', transition: 'background 0.15s',
               }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(200,170,80,0.24)' }}
@@ -492,7 +487,7 @@ export function SpecSelectorList({
                 justifyContent: 'space-between',
                 padding: '10px 12px',
                 background: isCareer ? 'rgba(200,170,80,0.06)' : 'rgba(255,255,255,0.02)',
-                border: `1px solid ${isCareer ? `${GOLD}30` : BORDER}`,
+                border: `1px solid ${isCareer ? `${HUD.gold}30` : BORDER}`,
                 borderRadius: 4,
                 cursor: 'pointer',
                 transition: 'border-color 0.15s, background 0.15s',
@@ -500,12 +495,12 @@ export function SpecSelectorList({
               onMouseEnter={e => {
                 const el = e.currentTarget as HTMLElement
                 el.style.background = isCareer ? 'rgba(200,170,80,0.12)' : 'rgba(255,255,255,0.05)'
-                el.style.borderColor = isCareer ? `${GOLD}55` : `${GOLD}25`
+                el.style.borderColor = isCareer ? `${HUD.gold}55` : `${HUD.gold}25`
               }}
               onMouseLeave={e => {
                 const el = e.currentTarget as HTMLElement
                 el.style.background = isCareer ? 'rgba(200,170,80,0.06)' : 'rgba(255,255,255,0.02)'
-                el.style.borderColor = isCareer ? `${GOLD}30` : BORDER
+                el.style.borderColor = isCareer ? `${HUD.gold}30` : BORDER
               }}
             >
               {/* Left: name + badges */}
@@ -526,7 +521,7 @@ export function SpecSelectorList({
                   <span style={{
                     fontFamily: FR,
                     fontSize: 'clamp(0.65rem, 0.9vw, 0.72rem)',
-                    color: isCareer ? GOLD : FAINT,
+                    color: isCareer ? HUD.gold : FAINT,
                     textTransform: 'uppercase',
                     letterSpacing: '0.1em',
                   }}>

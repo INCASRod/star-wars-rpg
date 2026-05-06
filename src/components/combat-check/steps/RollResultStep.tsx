@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { DiceFace } from '@/components/dice/DiceFace'
 import { SYM, DICE_META, type DiceType, type SymbolKey } from '@/components/player-hud/design-tokens'
@@ -10,13 +10,13 @@ import { RANGE_BAND_LABELS, isRangedSkill } from '@/lib/combatCheckUtils'
 import type { CriticalEligibility } from '@/lib/criticalUtils'
 import { checkCriticalEligibility } from '@/lib/criticalUtils'
 import type { DualWieldState } from './DicePoolReviewStep'
+import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
-const GOLD     = '#C8AA50'
 const GOLD_DIM = 'rgba(200,170,80,0.5)'
 const TEXT     = 'rgba(255,255,255,0.85)'
 const TEXT_DIM = 'rgba(255,255,255,0.5)'
-const FONT_C   = "var(--font-cinzel), 'Cinzel', serif"
+const FONT_C   = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R   = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FONT_M   = "'Share Tech Mono', 'Courier New', monospace"
 
@@ -197,7 +197,7 @@ export function RollResultStep({
             fontFamily: FONT_C,
             fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)',
             fontWeight: 700,
-            color: GOLD,
+            color: HUD.gold,
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
             marginBottom: 6,
@@ -332,7 +332,7 @@ export function RollResultStep({
             borderRadius: 8, cursor: 'pointer',
             fontFamily: FONT_C,
             fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)',
-            color: GOLD,
+            color: HUD.gold,
             letterSpacing: '0.1em', textTransform: 'uppercase',
           }}
         >

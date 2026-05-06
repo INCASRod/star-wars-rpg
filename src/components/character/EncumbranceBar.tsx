@@ -5,7 +5,7 @@ import { RichText } from '@/components/ui/RichText'
 
 const ENC_WARN   = '#E07855'
 const ENC_OK     = 'rgba(90,170,224,0.7)'
-const GOLD_DIM   = 'rgba(200,170,80,0.5)'
+const GOLD_DIM   = 'rgba(224,58,30,0.5)'
 const FONT_C     = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FONT_M     = "'Share Tech Mono','Courier New',monospace"
 
@@ -75,7 +75,7 @@ export function EncumbranceBar({ current, threshold, brawn, compact = false, lab
         <span style={{
           fontFamily: FONT_M,
           fontSize: 'clamp(0.65rem, 2.5vw, 0.78rem)',
-          color: over ? ENC_WARN : 'rgba(200,170,80,0.7)',
+          color: over ? ENC_WARN : 'rgba(224,58,30,0.7)',
         }}>
           {current}/{threshold}
         </span>

@@ -207,7 +207,7 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll, onCombatChe
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                       padding: '6px 10px', borderRadius: 4, cursor: 'pointer', textAlign: 'left',
-                      background: isSelected ? 'rgba(224,120,85,0.15)' : 'rgba(200,170,80,0.05)',
+                      background: isSelected ? 'rgba(224,120,85,0.15)' : 'rgba(224,58,30,0.05)',
                       border: `1px solid ${isSelected ? 'rgba(224,120,85,0.55)' : C.border}`,
                       transition: '.12s', width: '100%',
                     }}
@@ -284,8 +284,8 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll, onCombatChe
             <div style={{
               marginTop: 12,
               padding: '16px 12px',
-              background: 'rgba(200,170,80,0.05)',
-              border: `1px solid rgba(200,170,80,0.25)`,
+              background: 'rgba(224,58,30,0.05)',
+              border: `1px solid rgba(224,58,30,0.25)`,
               borderRadius: 6,
               textAlign: 'center',
             }}>
@@ -421,7 +421,7 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll, onCombatChe
             disabled={isEmpty}
             style={{
               width: '100%', padding: '10px 0',
-              background: isEmpty ? C.textFaint : selectedWeapon ? 'linear-gradient(135deg, #E07855, #A04030)' : 'linear-gradient(135deg, #C8AA50, #8E6E2A)',
+              background: isEmpty ? C.textFaint : selectedWeapon ? 'linear-gradient(135deg, #E07855, #A04030)' : 'linear-gradient(135deg, #E03A1E, #A02010)',
               border: 'none', borderRadius: 4, cursor: isEmpty ? 'not-allowed' : 'pointer',
               fontFamily: FONT_CINZEL, fontSize: 13, fontWeight: 700,
               letterSpacing: '0.12em', color: isEmpty ? C.textDim : C.bg,

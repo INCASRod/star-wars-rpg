@@ -2,10 +2,10 @@
 
 import { RichText } from '@/components/ui/RichText'
 import { FS_OVERLINE, FS_CAPTION, FS_LABEL } from '@/components/player-hud/design-tokens'
+import { HUD } from '@/lib/tokens'
 
 // ── Design tokens (mirrored from CombatTracker) ──
 const RAISED_BG   = 'rgba(14,26,18,0.9)'
-const GOLD        = '#C8AA50'
 const BORDER      = 'rgba(200,170,80,0.18)'
 const CHAR_BR     = '#e05252'
 const CHAR_AG     = '#52a8e0'
@@ -20,7 +20,7 @@ const FM          = "'Rajdhani', sans-serif"
 const ACTIVATION_ORDER  = ['incidental', 'out of turn', 'maneuver', 'action']
 const ACTIVATION_COLORS: Record<string, string> = {
   passive:              TEXT_MUTED,
-  incidental:           GOLD,
+  incidental:           HUD.gold,
   maneuver:             CHAR_AG,
   action:               CHAR_BR,
   'out of turn':        CHAR_WIL,
@@ -54,7 +54,7 @@ export function TalentQuickReference({ talents }: Props) {
 
   return (
     <div style={{ width: 300, flexShrink: 0, overflowY: 'auto', padding: '14px 14px' }}>
-      <div style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${GOLD}b3`, marginBottom: 10 }}>
+      <div style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${HUD.gold}b3`, marginBottom: 10 }}>
         Talent Quick Reference
       </div>
 
@@ -81,7 +81,7 @@ export function TalentQuickReference({ talents }: Props) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             {group.items.map((t, i) => (
               <div key={i} style={{
-                background: group.activation === 'incidental' ? `${GOLD}08`
+                background: group.activation === 'incidental' ? `${HUD.gold}08`
                   : group.activation === 'out of turn' ? `${CHAR_WIL}08`
                     : RAISED_BG,
                 backdropFilter: 'blur(8px)',
@@ -119,7 +119,7 @@ export function TalentQuickReference({ talents }: Props) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {passiveTalents.map((t, i) => (
               <div key={i} style={{ fontFamily: FM, fontSize: FS_CAPTION, color: TEXT_SEC, display: 'flex', gap: 6 }}>
-                <span style={{ color: GOLD }}>+{t.statBonus!.value} {t.statBonus!.stat}</span>
+                <span style={{ color: HUD.gold }}>+{t.statBonus!.value} {t.statBonus!.stat}</span>
                 <span style={{ color: TEXT_MUTED }}>· {t.name}</span>
               </div>
             ))}

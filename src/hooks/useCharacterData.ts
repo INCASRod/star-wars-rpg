@@ -4,6 +4,9 @@ import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { randomUUID } from '@/lib/utils'
+import {
+  RANGE_LABELS, ACTIVATION_LABELS, CHARACTERISTIC_ABBR,
+} from '@/lib/types'
 import type {
   Character, CharacterSkill, CharacterTalent, CharacterWeapon, CharacterArmor,
   CharacterGear, CharacterCriticalInjury, CharacterSpecialization,
@@ -12,6 +15,7 @@ import type {
   RefForcePower, RefForceAbility, CharacterForceAbility,
   RefWeaponQuality, RefItemAttachment, EquipState,
   RefObligationType, RefDutyType,
+  SpeciesAbility, HudSkill, HudTalent, WpnDisplay, ArmDisplay, GearRow,
 } from '@/lib/types'
 
 export function useCharacterData(characterId: string) {
@@ -232,17 +236,25 @@ export function useCharacterData(characterId: string) {
     await supabase.from('character_weapons').update({ equip_state: next, is_equipped: next === 'equipped' }).eq('id', id)
   }
 
-  const handleSetEquipState = async (id: string, type: 'weapon' | 'armor' | 'gear', state: EquipState) => {
+  const handleSetEquipState = async (
+    id: string,
+    type: 'weapon' | 'armor' | 'gear',
+    state: EquipState,
+    location?: import('@/lib/types').StowLocation | null,
+  ) => {
     markSelf()
+    const locFields = state === 'stowed' && location
+      ? { stow_location_id: location.id, stow_location_name: location.name, stow_location_type: location.type }
+      : { stow_location_id: null, stow_location_name: null, stow_location_type: null }
     if (type === 'weapon') {
-      setWeapons(prev => prev.map(x => x.id === id ? { ...x, equip_state: state, is_equipped: state === 'equipped' } : x))
-      await supabase.from('character_weapons').update({ equip_state: state, is_equipped: state === 'equipped' }).eq('id', id)
+      setWeapons(prev => prev.map(x => x.id === id ? { ...x, equip_state: state, is_equipped: state === 'equipped', ...locFields } : x))
+      await supabase.from('character_weapons').update({ equip_state: state, is_equipped: state === 'equipped', ...locFields }).eq('id', id)
     } else if (type === 'armor') {
-      setArmor(prev => prev.map(x => x.id === id ? { ...x, equip_state: state, is_equipped: state === 'equipped' } : x))
-      await supabase.from('character_armor').update({ equip_state: state, is_equipped: state === 'equipped' }).eq('id', id)
+      setArmor(prev => prev.map(x => x.id === id ? { ...x, equip_state: state, is_equipped: state === 'equipped', ...locFields } : x))
+      await supabase.from('character_armor').update({ equip_state: state, is_equipped: state === 'equipped', ...locFields }).eq('id', id)
     } else {
-      setGear(prev => prev.map(x => x.id === id ? { ...x, equip_state: state, is_equipped: state === 'equipped' } : x))
-      await supabase.from('character_gear').update({ equip_state: state, is_equipped: state === 'equipped' }).eq('id', id)
+      setGear(prev => prev.map(x => x.id === id ? { ...x, equip_state: state, is_equipped: state === 'equipped', ...locFields } : x))
+      await supabase.from('character_gear').update({ equip_state: state, is_equipped: state === 'equipped', ...locFields }).eq('id', id)
     }
   }
 
@@ -566,6 +578,169 @@ export function useCharacterData(characterId: string) {
     ])
   }
 
+  // ── HUD transforms ──────────────────────────────────────────────────────────
+
+  const speciesAbilities = useMemo((): SpeciesAbility[] => {
+    const sp = refSpeciesAll.find(s => s.key === character?.species_key)
+    return (sp?.special_abilities ?? []) as SpeciesAbility[]
+  }, [refSpeciesAll, character?.species_key])
+
+  const hudSkills = useMemo((): HudSkill[] => {
+    if (!character) return []
+    const charSkillMap = Object.fromEntries(skills.map(s => [s.skill_key, s]))
+    return refSkills.map(rs => {
+      const cs      = charSkillMap[rs.key]
+      const charKey = CHARACTERISTIC_ABBR[rs.characteristic_key]
+      const charVal = (character[charKey as keyof Character] as number) || 0
+      return {
+        key: rs.key, name: rs.name,
+        charKey, charVal,
+        rank: cs?.rank || 0, isCareer: cs?.is_career || false,
+        type: rs.type,
+      }
+    }).sort((a, b) => a.name.localeCompare(b.name))
+  }, [character, skills, refSkills])
+
+  const hudTalents = useMemo((): HudTalent[] => {
+    const map = new Map<string, HudTalent>()
+    for (const t of talents) {
+      const ref = refTalentMap[t.talent_key]
+      const existing = map.get(t.talent_key)
+      if (existing) {
+        existing.rank = (existing.rank ?? 0) + (t.ranks ?? 1)
+      } else {
+        map.set(t.talent_key, {
+          key:        t.talent_key,
+          name:       ref?.name || t.talent_key,
+          rank:       t.ranks ?? 1,
+          activation: ref ? ACTIVATION_LABELS[ref.activation] || ref.activation : 'Passive',
+          description: ref?.description,
+        })
+      }
+    }
+    for (const sa of speciesAbilities) {
+      if (sa.mechanical_type !== 'talent_rank' || !sa.talent_key) continue
+      const ref = refTalentMap[sa.talent_key]
+      if (!ref) continue
+      const existing = map.get(sa.talent_key)
+      if (existing) {
+        existing.rank = (existing.rank ?? 0) + (sa.rank_add ?? 1)
+      } else {
+        map.set(sa.talent_key, {
+          key:              `species_${sa.talent_key}`,
+          name:             ref.name,
+          rank:             sa.rank_add ?? 1,
+          activation:       ACTIVATION_LABELS[ref.activation] || ref.activation,
+          description:      ref.description,
+          isSpeciesGranted: true,
+        })
+      }
+    }
+    for (const sa of speciesAbilities) {
+      if (sa.mechanical_type !== 'die_modifier') continue
+      if (!Array.isArray(sa.affected_skills) || sa.affected_skills.length === 0) continue
+      const cardKey = `species_die_${sa.key}`
+      if (!map.has(cardKey)) {
+        map.set(cardKey, {
+          key:              cardKey,
+          name:             sa.name,
+          rank:             1,
+          activation:       'Passive',
+          description:      sa.description,
+          isSpeciesGranted: true,
+        })
+      }
+    }
+    return Array.from(map.values())
+  }, [talents, refTalentMap, speciesAbilities])
+
+  const hudWeapons = useMemo((): WpnDisplay[] =>
+    weapons.map(w => {
+      const ref           = w.weapon_key ? refWeaponMap[w.weapon_key] : null
+      const isMeleeSkill  = ['MELEE', 'BRAWL', 'LTSABER'].includes(ref?.skill_key || '')
+      const hasBrawnScale = isMeleeSkill && ref?.damage_add != null
+      const baseDamage    = hasBrawnScale ? (ref.damage_add ?? 0) : (ref?.damage || 0)
+      const quals         = Array.isArray(ref?.qualities)
+        ? ref.qualities.map((q: { key: string; count?: number }) => ({ key: q.key, count: q.count }))
+        : []
+      return {
+        id:          w.id,
+        name:        w.custom_name || ref?.name || w.weapon_key || 'Unknown',
+        damage:      { baseDamage, isMelee: hasBrawnScale, brawn: hasBrawnScale ? (character?.brawn ?? 0) : 0 },
+        crit:        ref?.crit || 0,
+        range:       ref?.range_value ? RANGE_LABELS[ref.range_value] || '' : '',
+        enc:         ref?.encumbrance || 0,
+        hardPoints:  ref?.hard_points || 0,
+        qualities:   quals,
+        equipState:  w.equip_state ?? (w.is_equipped ? 'equipped' : 'carrying'),
+        skillName:   ref?.skill_key ? refSkillMap[ref.skill_key]?.name || '' : '',
+        description: ref?.description ?? null,
+      }
+    })
+  , [weapons, refWeaponMap, refSkillMap, character?.brawn])
+
+  const hudArmor = useMemo((): ArmDisplay[] =>
+    armor.map(a => {
+      const ref = a.armor_key ? refArmorMap[a.armor_key] : null
+      return {
+        id:          a.id,
+        name:        a.custom_name || ref?.name || a.armor_key || 'Armor',
+        soak:        ref?.soak || 0,
+        defense:     ref?.defense || 0,
+        enc:         ref?.encumbrance || 0,
+        hardPoints:  ref?.hard_points || 0,
+        rarity:      ref?.rarity || 0,
+        equipState:  a.equip_state ?? (a.is_equipped ? 'equipped' : 'carrying'),
+        description: ref?.description ?? null,
+      }
+    })
+  , [armor, refArmorMap])
+
+  const hudGear = useMemo((): GearRow[] =>
+    gear.map(g => {
+      const ref = g.gear_key ? refGearMap[g.gear_key] : null
+      return {
+        id:          g.id,
+        name:        g.custom_name || ref?.name || g.gear_key || 'Gear',
+        qty:         g.quantity,
+        enc:         ref?.encumbrance || 0,
+        equipState:  g.equip_state ?? (g.is_equipped ? 'equipped' : 'carrying'),
+        description: ref?.description ?? null,
+      }
+    })
+  , [gear, refGearMap])
+
+  const encumbranceCurrent = useMemo(() => {
+    let sum = 0
+    for (const a of armor) {
+      const state = a.equip_state ?? (a.is_equipped ? 'equipped' : 'carrying')
+      if (state === 'stowed') continue
+      const enc = refArmorMap[a.armor_key]?.encumbrance || 0
+      sum += state === 'equipped' ? Math.max(0, enc - 3) : enc
+    }
+    for (const g of gear) {
+      const state = g.equip_state ?? (g.is_equipped ? 'equipped' : 'carrying')
+      if (state === 'stowed') continue
+      sum += refGearMap[g.gear_key]?.encumbrance || 0
+    }
+    for (const w of weapons) {
+      const state = w.equip_state ?? (w.is_equipped ? 'equipped' : 'carrying')
+      if (state === 'stowed') continue
+      sum += refWeaponMap[w.weapon_key]?.encumbrance || 0
+    }
+    return sum
+  }, [armor, gear, weapons, refArmorMap, refGearMap, refWeaponMap])
+
+  const encumbranceBonus = useMemo(() =>
+    gear.reduce((s, g) => {
+      const state = g.equip_state ?? (g.is_equipped ? 'equipped' : 'carrying')
+      const ref = refGearMap[g.gear_key]
+      return s + (state === 'equipped' && ref?.encumbrance_bonus ? ref.encumbrance_bonus : 0)
+    }, 0)
+  , [gear, refGearMap])
+
+  // ── End HUD transforms ───────────────────────────────────────────────────────
+
   const handleBuySpecialization = async (specKey: string, setActiveSpecKey: (key: string) => void) => {
     if (!character) return
     markSelf()
@@ -611,6 +786,9 @@ export function useCharacterData(characterId: string) {
     refAttachmentMap,
     // Derived
     forceRating,
+    // HUD transforms
+    speciesAbilities, hudSkills, hudTalents, hudWeapons, hudArmor, hudGear,
+    encumbranceCurrent, encumbranceBonus,
     // Supabase client (for broadcast listener in page)
     supabase,
     // Mutations

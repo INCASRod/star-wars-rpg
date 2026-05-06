@@ -2,17 +2,16 @@
 
 import { useState, useRef } from 'react'
 import { RefSpecies, SpeciesAbility } from '@/lib/types'
-import { parseOggDudeMarkup } from '@/lib/oggdude-markup'
 import { Tooltip, TipLabel, TipBody, TipDivider } from '@/components/ui/Tooltip'
 import { RichText } from '@/components/ui/RichText'
 import { DutyCard } from '@/components/character/DutyCard'
 import { ObligationCard } from '@/components/character/ObligationCard'
+import { HUD } from '@/lib/tokens'
 
 // ─── Design Tokens ───────────────────────────────────────────────────────────
 const FC = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FR = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 
-const GOLD = '#C8AA50'
 const GOLD_DIM = '#7A6830'
 const GOLD_BRT = '#E0C060'
 const TEXT = '#C8D8C0'
@@ -143,7 +142,6 @@ function SectionDivider() {
 
 /** Drop-cap rendered backstory */
 function BackstoryView({ backstory }: { backstory: string }) {
-  const html = parseOggDudeMarkup(backstory)
   const trimmed = backstory.trimStart()
 
   if (!trimmed) {
@@ -154,27 +152,24 @@ function BackstoryView({ backstory }: { backstory: string }) {
     )
   }
 
-  // Split on OggDude section markers ([P] becomes <br><br>). For rendering we
-  // just work with the raw text segments split on [P], then parse each chunk.
+  // Split on OggDude paragraph markers so each chunk renders independently.
   const segments = backstory.split(/\[P\]/gi).filter(s => s.trim().length > 0)
 
   return (
     <div>
       {segments.map((seg, idx) => {
         const segTrimmed = seg.trimStart()
-        const parsed = parseOggDudeMarkup(seg)
 
         if (idx === 0 && segTrimmed.length > 0) {
-          // First segment: extract drop-cap character
+          // First segment: extract drop-cap character, render remainder via RichText
           const firstChar = segTrimmed[0]
-          const rest = parseOggDudeMarkup(segTrimmed.slice(1))
           return (
             <div key={idx}>
               <span style={{
                 fontFamily: FC,
                 fontSize: 52,
                 fontWeight: 700,
-                color: GOLD,
+                color: HUD.gold,
                 float: 'left',
                 lineHeight: 0.85,
                 marginRight: 10,
@@ -182,9 +177,9 @@ function BackstoryView({ backstory }: { backstory: string }) {
               }}>
                 {firstChar}
               </span>
-              <span
+              <RichText
+                text={segTrimmed.slice(1)}
                 style={{ fontFamily: FR, fontSize: 13, lineHeight: 1.9, color: TEXT }}
-                dangerouslySetInnerHTML={{ __html: rest }}
               />
             </div>
           )
@@ -193,9 +188,9 @@ function BackstoryView({ backstory }: { backstory: string }) {
         return (
           <div key={idx}>
             {idx > 0 && <SectionDivider />}
-            <span
+            <RichText
+              text={seg}
               style={{ fontFamily: FR, fontSize: 13, lineHeight: 1.9, color: TEXT }}
-              dangerouslySetInnerHTML={{ __html: parsed }}
             />
           </div>
         )
@@ -249,7 +244,7 @@ export function LoreContent({
           <CornerBrackets />
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
-              <div style={{ fontFamily: FC, fontSize: 18, fontWeight: 700, color: GOLD, lineHeight: 1.1 }}>
+              <div style={{ fontFamily: FC, fontSize: 18, fontWeight: 700, color: HUD.gold, lineHeight: 1.1 }}>
                 {characterName}
               </div>
               <div style={{
@@ -279,7 +274,7 @@ export function LoreContent({
                 fontFamily: FR,
                 fontSize: 10,
                 fontWeight: 700,
-                color: GOLD,
+                color: HUD.gold,
                 letterSpacing: '0.08em',
                 textTransform: 'uppercase',
               }}
@@ -451,7 +446,7 @@ export function LoreContent({
                     textAlign: 'center',
                   }}
                 >
-                  <div style={{ fontFamily: FR, fontSize: 18, fontWeight: 600, color: GOLD, lineHeight: 1 }}>
+                  <div style={{ fontFamily: FR, fontSize: 18, fontWeight: 600, color: HUD.gold, lineHeight: 1 }}>
                     {statValue}
                   </div>
                   <div style={{
@@ -586,7 +581,7 @@ export function LoreContent({
           <div style={{ ...panelStyle, padding: '14px 16px' }}>
             <CornerBrackets />
             <SectionLabel label="Motivation" />
-            <div style={{ fontFamily: FC, fontSize: 14, color: GOLD, marginBottom: motivationDesc ? 8 : 0 }}>
+            <div style={{ fontFamily: FC, fontSize: 14, color: HUD.gold, marginBottom: motivationDesc ? 8 : 0 }}>
               {motivationType}
             </div>
             {motivationDesc && (

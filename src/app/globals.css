@@ -57,6 +57,57 @@ html {
   --bdr:   #D8D0C4;
   --bdr-l: #E8E2D8;
 
+  /* ── Binary Sunset — light theme accent palette ─────────────── */
+  /* Warm parchment backgrounds */
+  --bs-sky:         #E8DDD0;
+  --bs-panel:       #DDD0C0;
+  --bs-surface:     #D4C5B0;
+  --bs-card:        #CBBAA0;
+  --bs-card-hi:     #C0AD94;
+  /* Red-sun accent ramp */
+  --bs-red-pale:    #E86050;
+  --bs-red-sun:     #E03A1E;
+  --bs-red-hi:      #C82A10;
+  --bs-red-mid:     #A82010;
+  --bs-red-dim:     #7A1808;
+  --bs-red-mute:    #3A0C04;
+  /* Warm brown text */
+  --bs-ink:         #2A1008;
+  --bs-txt:         #5A2818;
+  --bs-txt2:        #8A5040;
+  --bs-txt3:        #AA7860;
+  --bs-on-red:      #FFF0E8;
+  /* Borders */
+  --bs-bdr-strong:  #B09080;
+  --bs-bdr-mid:     #C0A890;
+  --bs-bdr-subtle:  #CDB8A4;
+  /* Glow effects */
+  --bs-red-glow:    rgba(224,58,30,.12);
+  --bs-red-glow-s:  rgba(224,58,30,.28);
+  /* Semantic aliases */
+  --bs-wounds:      var(--bs-red-sun);
+  --bs-strain:      var(--bs-red-dim);
+  --bs-career:      var(--bs-red-pale);
+  --bs-success-txt: #5A7A3A;
+  --bs-corner:      var(--bs-red-mid);
+  /* Shell layout constants (fixed px — structural positioning, not spacing) */
+  --bs-topbar-h:    48px;
+  --bs-modebar-h:   36px;
+  --bs-shell-offset: 84px;
+
+  /* ── Die / Symbol chip colors (used by .die.* classes below) ─── */
+  --die-boost:      #70C8E8;
+  --die-setback:    #A0A0A0;
+  --die-difficulty: #B070D8;
+  --die-challenge:  #E05050;
+  --die-force:      #5AAAE0;
+  --die-success:    #4EC87A;
+  --die-advantage:  #4EC8C8;
+  --die-threat:     #E07855;
+  --die-triumph:    #FFD700;
+  --die-despair:    #C04040;
+  --die-forcepip:   #E8E8FF;
+
   /* ── Fluid Type Scale (design-rules.md) ─────────────────────── */
   --text-display:  clamp(2.25rem, 5vw + 1rem, 5rem);            /* 36→80px */
   --text-hero:     clamp(1.375rem, 2vw + 0.5rem, 2rem);         /* dashboard feature values */
@@ -165,20 +216,28 @@ html {
   --sp-lg: var(--space-5);
   --sp-xl: var(--space-6);
 
-  /* ── Cinzel → Rajdhani redirect ───────────────────────────────  */
-  /*    var(--font-cinzel) resolves to Rajdhani everywhere          */
-  --font-cinzel: var(--font-rajdhani), 'Rajdhani', sans-serif;
+  /* ── Font aliases ───────────────────────────────────────────────
+     --font-display and --font-body are set by next/font on <html>.
+     Legacy aliases below resolve to the new fonts automatically.   */
+  --font-rajdhani: var(--font-body);    /* backward compat → Exo 2     */
+  --font-cinzel:   var(--font-display); /* backward compat → Orbitron  */
+  --font-orbitron: var(--font-display); /* backward compat → Orbitron  */
+  --font-mono:     var(--font-body);    /* backward compat → Exo 2     */
 
-  /* ── HUD Dark Terminal Theme ──────────────────────────────────  */
+  /* ── HUD Binary Sunset Theme ─────────────────────────────────  */
   /*    Used by PlayerHUD, CombatPanel, CombatTracker, wireframe    */
-  --hud-bg:         #060D09;
-  --hud-panel:      rgba(8,16,10,0.82);
-  --hud-border:     rgba(200,170,80,0.14);
-  --hud-border-hi:  rgba(200,170,80,0.32);
-  --hud-text:       #C8D8C0;
-  --hud-text-dim:   #6A8070;
-  --hud-text-faint: #2A3A2E;
-  --hud-gold:       #C8AA50;
+  /*    To retheme: change only these vars — no component edits     */
+  --hud-bg:            var(--bs-sky);          /* warm parchment: #E8DDD0 */
+  --hud-panel:         rgba(212,197,176,0.88); /* bs-surface at 88%       */
+  --hud-surface-lo:    rgba(212,197,176,0.55); /* light panel overlays    */
+  --hud-surface-mid:   rgba(196,178,154,0.92); /* bars, column backgrounds */
+  --hud-surface-hi:    rgba(188,170,144,0.97); /* modals, tooltips        */
+  --hud-border:        rgba(224,58,30,0.18);
+  --hud-border-hi:     rgba(224,58,30,0.38);
+  --hud-text:          var(--bs-txt);          /* warm dark brown: #5A2818 */
+  --hud-text-dim:      var(--bs-txt2);         /* medium brown:   #8A5040 */
+  --hud-text-faint:    var(--bs-txt3);         /* light brown:    #AA7860 */
+  --hud-gold:          #E03A1E;
 
   /* ── HUD Font Size Aliases (map to fluid type scale) ──────────  */
   /*    Use these instead of hardcoded px in HUD inline styles       */
@@ -250,10 +309,30 @@ html {
   --color-bdr:        var(--bdr);
   --color-bdr-l:      var(--bdr-l);
 
-  /* Font vars — Rajdhani for all roles (no Cinzel) */
-  --font-orbitron: var(--font-rajdhani), 'Rajdhani', sans-serif;
-  --font-chakra:   var(--font-rajdhani), 'Rajdhani', sans-serif;
-  --font-mono:     var(--font-rajdhani), 'Rajdhani', sans-serif;
+  /* Binary Sunset */
+  --color-bs-sky:         var(--bs-sky);
+  --color-bs-panel:       var(--bs-panel);
+  --color-bs-surface:     var(--bs-surface);
+  --color-bs-card:        var(--bs-card);
+  --color-bs-card-hi:     var(--bs-card-hi);
+  --color-bs-red-pale:    var(--bs-red-pale);
+  --color-bs-red-sun:     var(--bs-red-sun);
+  --color-bs-red-hi:      var(--bs-red-hi);
+  --color-bs-red-mid:     var(--bs-red-mid);
+  --color-bs-red-dim:     var(--bs-red-dim);
+  --color-bs-red-mute:    var(--bs-red-mute);
+  --color-bs-ink:         var(--bs-ink);
+  --color-bs-txt:         var(--bs-txt);
+  --color-bs-txt2:        var(--bs-txt2);
+  --color-bs-txt3:        var(--bs-txt3);
+  --color-bs-on-red:      var(--bs-on-red);
+  --color-bs-bdr-strong:  var(--bs-bdr-strong);
+  --color-bs-bdr-mid:     var(--bs-bdr-mid);
+  --color-bs-bdr-subtle:  var(--bs-bdr-subtle);
+  --color-bs-red-glow:    var(--bs-red-glow);
+  --color-bs-red-glow-s:  var(--bs-red-glow-s);
+
+  /* Fonts: --font-display (Orbitron) · --font-body (Exo 2). Use these vars, not raw names. */
 
   --color-sidebar-ring:                var(--sidebar-ring);
   --color-sidebar-border:              var(--sidebar-border);
@@ -310,14 +389,14 @@ html, body {
 }
 
 body {
-  font-family: var(--font-rajdhani), 'Rajdhani', sans-serif;
+  font-family: var(--font-body), 'Exo 2', sans-serif;
   font-size:   var(--text-body);
   line-height: var(--leading-normal);
   -webkit-font-smoothing: antialiased;
   overflow-y: auto;
   overflow-x: hidden;
-  background: var(--sand);
-  color: var(--txt);
+  background: var(--bs-sky);
+  color: var(--bs-txt);
 }
 
 /* ═══════════════════════════════════════════════════════════════ */
@@ -457,17 +536,17 @@ label, caption, .text-secondary {
 /*  HUD CARD                                                       */
 /* ═══════════════════════════════════════════════════════════════ */
 .hud-card {
-  background:     rgba(255,255,255,.72);
+  background:     color-mix(in srgb, var(--bs-sky) 85%, transparent);
   backdrop-filter: blur(8px);
-  border:         1px solid var(--bdr-l);
+  border:         1px solid var(--bs-bdr-mid);
   padding:        var(--space-4);
   position:       relative;
   transition:     .25s;
   box-shadow:     0 1px 4px rgba(0,0,0,.04);
 }
 .hud-card:hover {
-  border-color: var(--gold-l);
-  box-shadow:   0 2px 16px var(--gold-glow);
+  border-color: var(--bs-red-hi);
+  box-shadow:   0 2px 16px var(--bs-red-glow);
 }
 .hud-card::before {
   content:  '';
@@ -475,18 +554,18 @@ label, caption, .text-secondary {
   top: 0; left: 0;
   width:   0.2rem;
   height:  100%;
-  background: var(--gold);
+  background: var(--bs-red-sun);
   opacity:    0;
   transition: .25s;
 }
 .hud-card:hover::before { opacity: 1; }
 
 .card-hdr {
-  font-family:    var(--font-orbitron);
+  font-family:    var(--font-body), 'Exo 2', sans-serif;
   font-size:      var(--text-caption);
   font-weight:    700;
   letter-spacing: var(--tracking-widest);
-  color:          var(--txt3);
+  color:          var(--bs-txt3);
   text-transform: uppercase;
   margin-bottom:  var(--space-2);
   display:        flex;
@@ -497,7 +576,156 @@ label, caption, .text-secondary {
   content:    '';
   flex:       1;
   height:     1px;
-  background: var(--bdr-l);
+  background: var(--bs-bdr-mid);
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/*  HOVER UTILITIES                                                 */
+/*  Replace onMouseEnter/onMouseLeave JS handlers with these.      */
+/*  For conditional hover, apply conditionally: className={x?'hov-gold-bg':''} */
+/* ═══════════════════════════════════════════════════════════════ */
+.hov-gold-bg {
+  transition: background var(--ease-default);
+}
+.hov-gold-bg:hover {
+  background: rgba(224,58,30,.06);
+}
+
+/* Force power chip — replaces JS onMouseEnter/Leave in ForcePowersCard */
+.force-power-chip {
+  background:  rgba(224,58,30,.06);
+  border:      1px solid var(--bs-bdr-mid);
+  transition:  border-color var(--ease-default), background var(--ease-default);
+}
+.force-power-chip:hover {
+  border-color: var(--bs-red-sun);
+  background:   var(--bs-red-glow);
+}
+
+/* Combat check button — replaces JS hover state in CombatCheckButton */
+.combat-check-btn {
+  width: 100%;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: linear-gradient(135deg, rgba(224,58,30,.12), rgba(224,58,30,.07));
+  border: 1px solid rgba(224,58,30,.35);
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: clamp(0.85rem, 1.3vw, 1rem);
+  font-weight: 700;
+  color: var(--bs-red-sun);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: all 150ms ease;
+}
+.combat-check-btn:hover {
+  background: rgba(224,58,30,.18);
+  border-color: rgba(224,58,30,.6);
+  box-shadow: 0 0 12px var(--bs-red-glow);
+  transform: translateY(-1px);
+}
+.combat-check-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 0 6px var(--bs-red-glow);
+}
+@keyframes combatPulse {
+  0%, 100% { border-color: rgba(224,58,30,.3);  box-shadow: none; }
+  50%       { border-color: rgba(224,58,30,.65); box-shadow: 0 0 14px var(--bs-red-glow); }
+}
+.combat-check-btn-pulse {
+  animation: combatPulse 2s ease-in-out infinite;
+}
+
+.hov-red-bg {
+  background:  rgba(224,82,82,0.15);
+  transition:  background var(--ease-default);
+}
+.hov-red-bg:hover {
+  background: rgba(224,82,82,0.35);
+}
+
+.hov-gold-text {
+  transition: color var(--ease-default);
+}
+.hov-gold-text:hover {
+  color: var(--hud-gold);
+}
+
+.hov-gold-border {
+  transition: border-color var(--ease-default);
+}
+.hov-gold-border:hover {
+  border-color: var(--hud-border-hi);
+}
+
+/* Combined text + border gold highlight — most common HUD interactive pattern */
+.hov-gold {
+  transition: color var(--ease-default), border-color var(--ease-default);
+}
+.hov-gold:hover {
+  color:        var(--hud-gold);
+  border-color: rgba(224,58,30,0.6);
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/*  INTERACTIVE STATES — focus, disabled                           */
+/* ═══════════════════════════════════════════════════════════════ */
+:focus-visible {
+  outline:        2px solid var(--bs-red-sun);
+  outline-offset: 2px;
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled,
+[aria-disabled="true"] {
+  opacity:        0.4;
+  cursor:         not-allowed;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/*  MODAL BACKDROP                                                  */
+/*  Replace 50+ inline fixed+inset style objects with this class.  */
+/*  Variant modifiers: .modal-backdrop--light (less blur)          */
+/* ═══════════════════════════════════════════════════════════════ */
+.modal-backdrop {
+  position:        fixed;
+  inset:           0;
+  z-index:         400;
+  background:      rgba(0,0,0,0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+}
+.modal-backdrop--light {
+  background:      rgba(0,0,0,0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/*  HUD PANEL                                                       */
+/*  Dark terminal panel with blur — replaces panelBase style obj.  */
+/*  Use className="hud-panel" instead of style={{...panelBase}}    */
+/* ═══════════════════════════════════════════════════════════════ */
+.hud-panel {
+  background:       var(--hud-panel);
+  backdrop-filter:  blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border:           1px solid var(--hud-border);
+  border-radius:    8px;
+  position:         relative;
+}
+.hud-panel--hi {
+  border-color:     var(--hud-border-hi);
 }
 
 /* ═══════════════════════════════════════════════════════════════ */
@@ -573,22 +801,22 @@ i.ffi {
   vertical-align: middle;
   white-space:    nowrap;
   margin:         0 2px;
-  font-family:    var(--font-rajdhani), 'Rajdhani', sans-serif;
+  font-family:    var(--font-body), 'Exo 2', sans-serif;
 }
-/* Dice-pool additions */
-.die.boost      { color: #70C8E8; background: rgba(112,200,232,.12); border: 1px solid rgba(112,200,232,.35); }
-.die.setback    { color: #A0A0A0; background: rgba(120,120,120,.12); border: 1px solid rgba(140,140,140,.35); }
-.die.difficulty { color: #B070D8; background: rgba(176,112,216,.12); border: 1px solid rgba(176,112,216,.35); }
-.die.challenge  { color: #E05050; background: rgba(224, 80, 80,.12); border: 1px solid rgba(224, 80, 80,.35); }
-.die.force      { color: #5AAAE0; background: rgba( 90,170,224,.12); border: 1px solid rgba( 90,170,224,.35); }
+/* Dice-pool chips — colors reference CSS vars defined in :root */
+.die.boost      { color: var(--die-boost);      background: color-mix(in srgb, var(--die-boost) 12%, transparent);      border: 1px solid color-mix(in srgb, var(--die-boost) 35%, transparent); }
+.die.setback    { color: var(--die-setback);    background: color-mix(in srgb, var(--die-setback) 12%, transparent);    border: 1px solid color-mix(in srgb, var(--die-setback) 35%, transparent); }
+.die.difficulty { color: var(--die-difficulty); background: color-mix(in srgb, var(--die-difficulty) 12%, transparent); border: 1px solid color-mix(in srgb, var(--die-difficulty) 35%, transparent); }
+.die.challenge  { color: var(--die-challenge);  background: color-mix(in srgb, var(--die-challenge) 12%, transparent);  border: 1px solid color-mix(in srgb, var(--die-challenge) 35%, transparent); }
+.die.force      { color: var(--die-force);      background: color-mix(in srgb, var(--die-force) 12%, transparent);      border: 1px solid color-mix(in srgb, var(--die-force) 35%, transparent); }
 /* Result symbols */
-.die.success    { color: #4EC87A; background: rgba( 78,200,122,.12); border: 1px solid rgba( 78,200,122,.35); }
-.die.advantage  { color: #4EC8C8; background: rgba( 78,200,200,.12); border: 1px solid rgba( 78,200,200,.35); }
-.die.threat     { color: #E07855; background: rgba(224,120, 85,.12); border: 1px solid rgba(224,120, 85,.35); }
-.die.triumph    { color: #FFD700; background: rgba(255,215,  0,.12); border: 1px solid rgba(255,215,  0,.35); }
-.die.despair    { color: #C04040; background: rgba(192, 64, 64,.12); border: 1px solid rgba(192, 64, 64,.35); }
+.die.success    { color: var(--die-success);    background: color-mix(in srgb, var(--die-success) 12%, transparent);    border: 1px solid color-mix(in srgb, var(--die-success) 35%, transparent); }
+.die.advantage  { color: var(--die-advantage);  background: color-mix(in srgb, var(--die-advantage) 12%, transparent);  border: 1px solid color-mix(in srgb, var(--die-advantage) 35%, transparent); }
+.die.threat     { color: var(--die-threat);     background: color-mix(in srgb, var(--die-threat) 12%, transparent);     border: 1px solid color-mix(in srgb, var(--die-threat) 35%, transparent); }
+.die.triumph    { color: var(--die-triumph);    background: color-mix(in srgb, var(--die-triumph) 12%, transparent);    border: 1px solid color-mix(in srgb, var(--die-triumph) 35%, transparent); }
+.die.despair    { color: var(--die-despair);    background: color-mix(in srgb, var(--die-despair) 12%, transparent);    border: 1px solid color-mix(in srgb, var(--die-despair) 35%, transparent); }
 /* Force pip */
-.die.forcepip   { color: #E8E8FF; background: rgba( 90,170,224,.10); border: 1px solid rgba(232,232,255,.30); }
+.die.forcepip   { color: var(--die-forcepip);   background: color-mix(in srgb, var(--die-force) 10%, transparent);      border: 1px solid color-mix(in srgb, var(--die-forcepip) 30%, transparent); }
 
 @layer base {
   * {

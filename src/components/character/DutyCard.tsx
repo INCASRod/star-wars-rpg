@@ -1,10 +1,10 @@
 'use client'
 
 import { stripBBCode } from '@/lib/utils'
+import { HUD } from '@/lib/tokens'
 
 // ── Design tokens (inline — no import needed, file is standalone) ─────────────
 const FC = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const GOLD = '#C8AA50'
 const TEXT = '#C8D8C0'
 const DIM = '#6A8070'
 const BLUE = '#4FC3F7'

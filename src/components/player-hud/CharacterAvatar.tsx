@@ -68,7 +68,7 @@ export function CharacterAvatar({ avatarUrl, characterName, career, spec, onUplo
         style={{
           width: '100%',
           aspectRatio: '3/4',
-          border: `1.5px solid rgba(200,170,80,${hovered && canEdit ? '0.65' : '0.4'})`,
+          border: `1.5px solid rgba(224,58,30,${hovered && canEdit ? '0.65' : '0.4'})`,
           borderRadius: 6,
           overflow: 'hidden',
           position: 'relative',
@@ -89,8 +89,8 @@ export function CharacterAvatar({ avatarUrl, characterName, career, spec, onUplo
         ) : (
           <div style={{
             width: '100%', height: '100%',
-            background: hovered ? 'rgba(200,170,80,0.10)' : 'rgba(200,170,80,0.06)',
-            border: `1.5px dashed rgba(200,170,80,0.3)`,
+            background: hovered ? 'rgba(224,58,30,0.10)' : 'rgba(224,58,30,0.06)',
+            border: `1.5px dashed rgba(224,58,30,0.3)`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontFamily: FONT_CINZEL, fontSize: 28, fontWeight: 700,
             color: C.gold, letterSpacing: '0.1em',
@@ -103,7 +103,7 @@ export function CharacterAvatar({ avatarUrl, characterName, career, spec, onUplo
         {/* Bottom gradient — always present */}
         <div style={{
           position: 'absolute', inset: 0,
-          background: 'linear-gradient(to bottom, transparent 60%, rgba(200,170,80,0.08) 100%)',
+          background: 'linear-gradient(to bottom, transparent 60%, rgba(224,58,30,0.08) 100%)',
           pointerEvents: 'none',
         }} />
 
@@ -118,17 +118,16 @@ export function CharacterAvatar({ avatarUrl, characterName, career, spec, onUplo
             {/* Upload button */}
             <button
               onClick={e => { e.stopPropagation(); fileRef.current?.click() }}
+              className="hov-gold-bg"
               style={{
-                background: 'rgba(200,170,80,0.22)',
-                border: `1px solid rgba(200,170,80,0.7)`,
+                background: 'rgba(224,58,30,0.22)',
+                border: `1px solid rgba(224,58,30,0.7)`,
                 borderRadius: 4, padding: '6px 14px',
                 fontFamily: FONT_RAJDHANI, fontSize: 11, fontWeight: 700,
                 letterSpacing: '0.1em', textTransform: 'uppercase',
                 color: C.gold, cursor: 'pointer', width: '100%',
                 transition: '.15s',
               }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(200,170,80,0.35)' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(200,170,80,0.22)' }}
             >
               ↑ {avatarUrl ? 'Replace' : 'Upload'}
             </button>
@@ -137,6 +136,7 @@ export function CharacterAvatar({ avatarUrl, characterName, career, spec, onUplo
             {avatarUrl && onDelete && !confirming && (
               <button
                 onClick={e => { e.stopPropagation(); setConfirming(true) }}
+                className="hov-red-bg"
                 style={{
                   background: 'rgba(224,80,80,0.18)',
                   border: '1px solid rgba(224,80,80,0.55)',
@@ -146,8 +146,6 @@ export function CharacterAvatar({ avatarUrl, characterName, career, spec, onUplo
                   color: '#E05050', cursor: 'pointer', width: '100%',
                   transition: '.15s',
                 }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(224,80,80,0.32)' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(224,80,80,0.18)' }}
               >
                 ✕ Remove
               </button>
@@ -191,7 +189,7 @@ export function CharacterAvatar({ avatarUrl, characterName, career, spec, onUplo
         {uploading && (
           <div style={{
             position: 'absolute', inset: 0,
-            background: 'rgba(6,13,9,0.75)',
+            background: 'var(--hud-surface-lo)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <div style={{

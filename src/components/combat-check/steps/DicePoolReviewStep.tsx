@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { DiceFace } from '@/components/dice/DiceFace'
 import { getSkillPool } from '@/components/player-hud/dice-engine'
@@ -11,14 +11,14 @@ import {
   RANGE_VALUE_MAP, CHAR_FIELD_MAP, isRangedSkill,
 } from '@/lib/combatCheckUtils'
 import { useState } from 'react'
+import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
-const GOLD      = '#C8AA50'
 const GOLD_DIM  = 'rgba(200,170,80,0.5)'
 const GOLD_BD   = 'rgba(200,170,80,0.15)'
 const TEXT      = 'rgba(255,255,255,0.85)'
 const TEXT_DIM  = 'rgba(255,255,255,0.5)'
-const FONT_C    = "var(--font-cinzel), 'Cinzel', serif"
+const FONT_C    = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FONT_M    = "'Share Tech Mono', 'Courier New', monospace"
 
@@ -130,7 +130,7 @@ function AdjustControl({
         >
           −
         </button>
-        <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)', color: GOLD, width: 20, textAlign: 'center' }}>
+        <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)', color: HUD.gold, width: 20, textAlign: 'center' }}>
           {value}
         </span>
         <button
@@ -138,7 +138,7 @@ function AdjustControl({
           style={{
             width: 22, height: 22, borderRadius: 4, cursor: 'pointer',
             background: 'rgba(200,170,80,0.1)', border: `1px solid ${GOLD_BD}`,
-            fontFamily: FONT_M, fontSize: 14, color: GOLD,
+            fontFamily: FONT_M, fontSize: 14, color: HUD.gold,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
         >
@@ -347,7 +347,7 @@ export function DicePoolReviewStep({
           fontSize: 'clamp(0.68rem, 1.05vw, 0.8rem)',
           color: 'rgba(200,170,80,0.6)',
         }}>
-          <span style={{ color: '#C8AA50', fontWeight: 700 }}>DUAL WIELD ATTACK</span>
+          <span style={{ color: 'var(--hud-gold)', fontWeight: 700 }}>DUAL WIELD ATTACK</span>
           {'  '}Primary: {dualWield.primaryWeapon.custom_name || (refWeaponMap?.[dualWield.primaryWeapon.weapon_key]?.name) || 'Primary'} ({dwPrimarySkillLabel})
           {'  '}·{'  '}
           Secondary: {dualWield.secondaryWeapon.custom_name || (refWeaponMap?.[dualWield.secondaryWeapon.weapon_key]?.name) || 'Secondary'} ({dwSecondarySkillLabel})

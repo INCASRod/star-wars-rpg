@@ -1,13 +1,14 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback } from 'react'
+import { Modal } from '@/components/ui/Modal'
 import { createClient } from '@/lib/supabase/client'
 import type { Character, RefDutyType, RefObligationType } from '@/lib/types'
 import { stripBBCode } from '@/lib/utils'
+import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const FC = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const GOLD = '#C8AA50'
 const TEXT = '#C8D8C0'
 const DIM = '#6A8070'
 const FAINT = '#2A3A2E'
@@ -105,39 +106,15 @@ export function DutyObligationSetupModal({
     onClose()
   }, [allFilled, character.id, dutyTypeKey, dutyCustomName, dutyValue, dutyLore, oblTypeKey, oblCustomName, oblValue, oblLore, onSaved, onClose])
 
-  // Close on Escape
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [onClose])
-
   return (
-    <div
-      style={{
-        position: 'fixed', inset: 0, zIndex: 9000,
-        background: 'rgba(0,0,0,0.75)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '16px',
-      }}
-      onClick={e => { if (e.target === e.currentTarget) onClose() }}
-    >
-      <div style={{
-        background: BG_MODAL,
-        border: `1px solid ${BORDER_HI}`,
-        borderRadius: 8,
-        width: '100%',
-        maxWidth: 680,
-        maxHeight: '90vh',
-        overflowY: 'auto',
-        padding: '24px 28px',
-      }}>
+    <Modal open onClose={onClose} maxWidth={680}>
+      <div style={{ padding: '24px 28px' }}>
         {/* Title */}
         <div style={{ marginBottom: 24 }}>
           <div style={{ fontFamily: FC, fontSize: 10, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: DIM, marginBottom: 4 }}>
             GM Setup
           </div>
-          <div style={{ fontFamily: FC, fontSize: 18, fontWeight: 700, color: GOLD }}>
+          <div style={{ fontFamily: FC, fontSize: 18, fontWeight: 700, color: HUD.gold }}>
             Duty & Obligation — {character.name}
           </div>
         </div>
@@ -314,10 +291,10 @@ export function DutyObligationSetupModal({
             style={{
               fontFamily: FC, fontSize: 12, fontWeight: 700, letterSpacing: '0.1em',
               padding: '8px 24px',
-              border: `1px solid ${allFilled && !busy ? GOLD : FAINT}`,
+              border: `1px solid ${allFilled && !busy ? HUD.gold : FAINT}`,
               borderRadius: 4,
               background: allFilled && !busy ? 'rgba(200,170,80,0.15)' : 'rgba(200,170,80,0.04)',
-              color: allFilled && !busy ? GOLD : DIM,
+              color: allFilled && !busy ? HUD.gold : DIM,
               cursor: allFilled && !busy ? 'pointer' : 'not-allowed',
               transition: '.15s',
             }}
@@ -326,6 +303,6 @@ export function DutyObligationSetupModal({
           </button>
         </div>
       </div>
-    </div>
+    </Modal>
   )
 }

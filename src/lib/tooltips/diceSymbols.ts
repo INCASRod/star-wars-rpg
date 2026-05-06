@@ -58,7 +58,7 @@ export const SYMBOL_TIPS: Record<string, SymbolTooltip> = {
   T: {
     name:        'Triumph',
     icon:        '✦',
-    color:       '#C8AA50',
+    color:       'var(--hud-gold)',
     description: 'Triumph counts as 1 Success AND provides a powerful additional effect. It represents moments of extraordinary fortune — a signature move landing perfectly.',
     spendOn:     [
       'Counts as 1 Success (stackable)',

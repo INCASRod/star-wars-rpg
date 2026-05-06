@@ -6,9 +6,9 @@ import { LootAwardModal, type AwardableItem } from './LootAwardModal'
 import { VendorSellModal, type VendorItem } from './VendorSellModal'
 import type { Character } from '@/lib/types'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { HUD } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
-const GOLD      = '#C8AA50'
 const GOLD_DIM  = 'rgba(200,170,80,0.5)'
 const GOLD_BD   = 'rgba(200,170,80,0.3)'
 const TEXT      = 'rgba(232,223,200,0.85)'
@@ -332,7 +332,7 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
                 fontFamily: FONT_C, fontSize: FS_CAP, fontWeight: 700, textTransform: 'uppercase',
                 letterSpacing: '0.08em', padding: '4px 12px', border: 'none', cursor: 'pointer',
                 background: activeView === v ? 'rgba(200,170,80,0.15)' : 'transparent',
-                color: activeView === v ? GOLD : DIM,
+                color: activeView === v ? HUD.gold : DIM,
               }}
             >
               {v === 'dropped' ? `Dropped${droppedItems.length > 0 ? ` (${droppedItems.length})` : ''}` : 'Items'}
@@ -378,7 +378,7 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
                       ? s === 'vendor' ? 'rgba(78,200,122,0.15)' : 'rgba(200,170,80,0.15)'
                       : 'transparent',
                     color: filterScope === s
-                      ? s === 'vendor' ? '#4EC87A' : GOLD
+                      ? s === 'vendor' ? '#4EC87A' : HUD.gold
                       : DIM,
                   }}
                 >
@@ -397,7 +397,7 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
                     fontFamily: FONT_C, fontSize: FS_CAP, fontWeight: 700, textTransform: 'uppercase',
                     letterSpacing: '0.08em', padding: '4px 10px', border: 'none', cursor: 'pointer',
                     background: filterType === t ? 'rgba(200,170,80,0.12)' : 'transparent',
-                    color: filterType === t ? GOLD : DIM,
+                    color: filterType === t ? HUD.gold : DIM,
                   }}
                 >
                   {t}
@@ -425,7 +425,7 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
                 fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)',
                 textTransform: 'uppercase',
                 border: '1px solid rgba(200,170,80,0.25)',
-                color: expanded ? GOLD : 'rgba(200,170,80,0.5)',
+                color: expanded ? HUD.gold : 'rgba(200,170,80,0.5)',
                 borderRadius: 5,
                 padding: '4px 10px',
                 background: expanded ? 'rgba(200,170,80,0.08)' : 'transparent',
@@ -434,9 +434,9 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
                 transition: 'color 150ms, background 150ms',
                 flexShrink: 0,
               }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = GOLD; (e.currentTarget as HTMLElement).style.borderColor = GOLD_BD }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = HUD.gold; (e.currentTarget as HTMLElement).style.borderColor = GOLD_BD }}
               onMouseLeave={e => {
-                (e.currentTarget as HTMLElement).style.color = expanded ? GOLD : 'rgba(200,170,80,0.5)'
+                (e.currentTarget as HTMLElement).style.color = expanded ? HUD.gold : 'rgba(200,170,80,0.5)'
                 ;(e.currentTarget as HTMLElement).style.borderColor = 'rgba(200,170,80,0.25)'
               }}
             >
@@ -511,9 +511,9 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
                         <button onClick={() => setVendingItem(item)} style={actionBtn('#4EC87A')}>🛒 Sell</button>
                       )}
                       {characters.length > 0 && filterScope !== 'vendor' && (
-                        <button onClick={() => setAwardingItem(item)} style={actionBtn(GOLD)}>Award</button>
+                        <button onClick={() => setAwardingItem(item)} style={actionBtn(HUD.gold)}>Award</button>
                       )}
-                      <button onClick={() => openEdit(item)} style={actionBtn(item.is_custom ? GOLD : DIM)}>
+                      <button onClick={() => openEdit(item)} style={actionBtn(item.is_custom ? HUD.gold : DIM)}>
                         {item.is_custom ? '✎' : '⊕'}
                       </button>
                       {item.is_custom && item.campaign_id === campaignId && (
@@ -582,9 +582,9 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
                       <button onClick={() => setVendingItem(item)} style={actionBtn('#4EC87A')}>🛒 Sell</button>
                     )}
                     {characters.length > 0 && filterScope !== 'vendor' && (
-                      <button onClick={() => setAwardingItem(item)} style={actionBtn(GOLD)}>Award</button>
+                      <button onClick={() => setAwardingItem(item)} style={actionBtn(HUD.gold)}>Award</button>
                     )}
-                    <button onClick={() => openEdit(item)} style={actionBtn(item.is_custom ? GOLD : DIM)}>
+                    <button onClick={() => openEdit(item)} style={actionBtn(item.is_custom ? HUD.gold : DIM)}>
                       {item.is_custom ? '✎ Edit' : '⊕ Copy'}
                     </button>
                     {item.is_custom && item.campaign_id === campaignId && (
@@ -633,7 +633,7 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
                   </span>
 
                   {/* Item name */}
-                  <span style={{ fontFamily: FONT_C, fontSize: FS_LABEL, color: GOLD, fontWeight: 600, flex: 1, minWidth: 0 }}>
+                  <span style={{ fontFamily: FONT_C, fontSize: FS_LABEL, color: HUD.gold, fontWeight: 600, flex: 1, minWidth: 0 }}>
                     {d.itemName}
                     {d.droppedNote && (
                       <span style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: DIM, marginLeft: 6 }}>†</span>
@@ -662,7 +662,7 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
                   ) : (
                     <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
                       {characters.length > 0 && (
-                        <button onClick={() => setAwardingDropped(d)} style={actionBtn(GOLD)}>Award</button>
+                        <button onClick={() => setAwardingDropped(d)} style={actionBtn(HUD.gold)}>Award</button>
                       )}
                       <button
                         onClick={() => setDestroyConfirm(d.rowId)}

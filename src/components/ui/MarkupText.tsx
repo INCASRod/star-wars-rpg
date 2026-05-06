@@ -1,11 +1,10 @@
 'use client'
 
-import { parseOggDudeMarkup } from '@/lib/oggdude-markup'
+import { RichText } from '@/components/ui/RichText'
 
 /**
- * Renders OggDude markup text as styled HTML.
- * Bracket codes like [BO], [SE], [FP], [SU] become coloured inline chips.
- * [P] and [BR] become paragraph / line breaks.
+ * Renders OggDude markup text as styled inline content.
+ * Thin wrapper around <RichText> — preserved for callsite compatibility.
  */
 export function MarkupText({
   text,
@@ -17,11 +16,5 @@ export function MarkupText({
   style?: React.CSSProperties
 }) {
   if (!text) return null
-  return (
-    <span
-      className={className}
-      style={style}
-      dangerouslySetInnerHTML={{ __html: parseOggDudeMarkup(text) }}
-    />
-  )
+  return <RichText text={text} className={className} style={style} />
 }

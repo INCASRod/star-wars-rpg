@@ -1,8 +1,10 @@
 'use client'
 
-import { useState, useCallback, useEffect, useMemo } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useEncounterState } from '@/hooks/useEncounterState'
+import { useRefWeapons } from '@/hooks/useRefWeapons'
+import { useCharacterSkills } from '@/hooks/useCharacterSkills'
 import { applyDamageToAdversary } from '@/lib/damageEngine'
 import { getSkillPool, rollPool } from '@/components/player-hud/dice-engine'
 import { logRoll, type RollMeta } from '@/lib/logRoll'
@@ -16,12 +18,12 @@ import type { Character, CharacterSkill } from '@/lib/types'
 import { EMPTY_POOL } from '@/components/player-hud/design-tokens'
 import { FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4 } from '@/components/player-hud/design-tokens'
 import type { RollResult } from '@/components/player-hud/dice-engine'
+import { HUD } from '@/lib/tokens'
 
 /* ── Design tokens ────────────────────────────────────────── */
 const BG        = '#060D09'
 const PANEL_BG  = 'rgba(8,16,10,0.88)'
 const RAISED_BG = 'rgba(14,26,18,0.9)'
-const GOLD      = '#C8AA50'
 const BORDER    = 'rgba(200,170,80,0.18)'
 const RED       = '#e05252'
 const BLUE      = '#52a8e0'
@@ -62,7 +64,7 @@ const SKILL_CHAR: Record<string, keyof AdversaryInstance['characteristics']> = {
   Charm: 'presence', Cool: 'presence', Leadership: 'presence', Negotiation: 'presence',
 }
 const TALENT_ACT_COLORS: Record<string, string> = {
-  passive: TEXT_MUTED, incidental: GOLD, maneuver: BLUE, action: RED, 'out of turn': WIL_C,
+  passive: TEXT_MUTED, incidental: HUD.gold, maneuver: BLUE, action: RED, 'out of turn': WIL_C,
 }
 const CHAR_ABBR_FULL: Record<string, string> = {
   BR: 'Brawn', AGI: 'Agility', INT: 'Intellect', CUN: 'Cunning', WIL: 'Willpower', PR: 'Presence',
@@ -97,35 +99,10 @@ export function EncounterAdversaryPanel({ campaignId, characters }: EncounterAdv
   } | null>(null)
 
   /* ── Weapon reference (for stats display) ─────────────────── */
-  const [weaponRef, setWeaponRef] = useState<Record<string, WeaponRef>>({})
-  useEffect(() => {
-    supabase.from('ref_weapons').select('name, damage, damage_add, range_value')
-      .then(({ data }) => {
-        if (!data) return
-        const map: Record<string, WeaponRef> = {}
-        for (const w of data as { name: string; damage: number; damage_add: number | null; range_value: string | null }[]) {
-          map[w.name.toLowerCase()] = w
-        }
-        setWeaponRef(map)
-      })
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  const weaponRef = useRefWeapons()
 
   /* ── Character skills (for CombatCheckOverlay targets) ────── */
-  const [charSkillsByChar, setCharSkillsByChar] = useState<Record<string, CharacterSkill[]>>({})
-  useEffect(() => {
-    const ids = characters.map(c => c.id)
-    if (ids.length === 0) return
-    supabase.from('character_skills').select('id, character_id, skill_key, rank').in('character_id', ids)
-      .then(({ data }) => {
-        if (!data) return
-        const map: Record<string, CharacterSkill[]> = {}
-        for (const row of data as CharacterSkill[]) {
-          if (!map[row.character_id]) map[row.character_id] = []
-          map[row.character_id].push(row)
-        }
-        setCharSkillsByChar(map)
-      })
-  }, [characters]) // eslint-disable-line react-hooks/exhaustive-deps
+  const charSkillsByChar = useCharacterSkills(characters.map(c => c.id))
 
   /* ── Synthetic weapon refs (adversary instance weapons) ────── */
   const syntheticWeaponRef = useMemo<Record<string, import('@/lib/types').RefWeapon>>(() => {
@@ -591,7 +568,7 @@ export function EncounterAdversaryPanel({ campaignId, characters }: EncounterAdv
                           {adv.soak !== expectedSoak && (
                             <button
                               onClick={e => { e.stopPropagation(); void updateAdversarySoak(adv.instanceId, expectedSoak) }}
-                              style={{ background: `${GOLD}15`, border: `1px solid ${GOLD}50`, borderRadius: 3, padding: '1px 6px', cursor: 'pointer', fontFamily: FC, fontSize: FS_OVERLINE, color: GOLD }}
+                              style={{ background: `${HUD.gold}15`, border: `1px solid ${HUD.gold}50`, borderRadius: 3, padding: '1px 6px', cursor: 'pointer', fontFamily: FC, fontSize: FS_OVERLINE, color: HUD.gold }}
                             >Apply</button>
                           )}
                         </div>
@@ -603,7 +580,7 @@ export function EncounterAdversaryPanel({ campaignId, characters }: EncounterAdv
                 {/* Skills */}
                 {Object.keys(adv.skillRanks ?? {}).length > 0 && (
                   <div style={{ marginBottom: 10 }}>
-                    <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, letterSpacing: '0.15em', textTransform: 'uppercase', color: `${GOLD}90`, marginBottom: 6 }}>Skills</div>
+                    <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, letterSpacing: '0.15em', textTransform: 'uppercase', color: `${HUD.gold}90`, marginBottom: 6 }}>Skills</div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 32px 24px auto', gap: '2px 6px', marginBottom: 3 }}>
                       {['Skill', 'Char', 'Rnk', 'Roll'].map(h => (
                         <div key={h} style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: TEXT_MUTED, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{h}</div>
@@ -651,7 +628,7 @@ export function EncounterAdversaryPanel({ campaignId, characters }: EncounterAdv
                 {/* Talents */}
                 {adv.talents && adv.talents.length > 0 && (
                   <div style={{ marginBottom: 8 }}>
-                    <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, letterSpacing: '0.15em', textTransform: 'uppercase', color: `${GOLD}90`, marginBottom: 5 }}>Talents</div>
+                    <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, letterSpacing: '0.15em', textTransform: 'uppercase', color: `${HUD.gold}90`, marginBottom: 5 }}>Talents</div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                       {adv.talents.map((t, i) => {
                         const actKey = (t.activation ?? 'passive').toLowerCase()
@@ -693,7 +670,7 @@ export function EncounterAdversaryPanel({ campaignId, characters }: EncounterAdv
                 {/* Gear */}
                 {adv.gear && adv.gear.length > 0 && (
                   <div style={{ marginBottom: 8 }}>
-                    <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, letterSpacing: '0.15em', textTransform: 'uppercase', color: `${GOLD}90`, marginBottom: 5 }}>Gear</div>
+                    <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, letterSpacing: '0.15em', textTransform: 'uppercase', color: `${HUD.gold}90`, marginBottom: 5 }}>Gear</div>
                     {adv.gear.map((item, i) => {
                       const label = typeof item === 'string' ? item
                         : [item.name, item.encumbrance ? `Enc ${item.encumbrance}` : ''].filter(Boolean).join(' — ')
@@ -710,7 +687,7 @@ export function EncounterAdversaryPanel({ campaignId, characters }: EncounterAdv
                 {/* Weapons */}
                 {adv.weapons && adv.weapons.length > 0 && (
                   <div style={{ marginBottom: 8 }}>
-                    <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, letterSpacing: '0.15em', textTransform: 'uppercase', color: `${GOLD}90`, marginBottom: 5 }}>Weapons</div>
+                    <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, letterSpacing: '0.15em', textTransform: 'uppercase', color: `${HUD.gold}90`, marginBottom: 5 }}>Weapons</div>
                     {adv.weapons.map((w, i) => {
                       const { dmg, range, crit } = resolveWeapon(w, adv.characteristics.brawn, weaponRef)
                       const quals = w.qualities && w.qualities.length > 0 ? w.qualities.join(', ') : ''
@@ -770,9 +747,9 @@ export function EncounterAdversaryPanel({ campaignId, characters }: EncounterAdv
                   return sum + (m?.groupRemaining ?? 0)
                 }, 0)
                 return (
-                  <div style={{ borderTop: `1px solid ${GOLD}40`, padding: '8px 12px', background: `${GOLD}09` }}>
+                  <div style={{ borderTop: `1px solid ${HUD.gold}40`, padding: '8px 12px', background: `${HUD.gold}09` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                      <span style={{ fontFamily: "'Cinzel',serif", fontSize: 'clamp(9px,1vw,11px)', fontWeight: 700, letterSpacing: '0.18em', color: GOLD, textTransform: 'uppercase' }}>
+                      <span style={{ fontFamily: "'Cinzel',serif", fontSize: 'clamp(9px,1vw,11px)', fontWeight: 700, letterSpacing: '0.18em', color: HUD.gold, textTransform: 'uppercase' }}>
                         Squad Active
                       </span>
                       <span style={{ fontFamily: FC, fontSize: FS_CAPTION, color: TEXT_SEC }}>{liveCount}/{adv.squad_total_minions ?? 0} minions</span>
@@ -802,8 +779,8 @@ export function EncounterAdversaryPanel({ campaignId, characters }: EncounterAdv
                   return sum + (m?.groupRemaining ?? 0)
                 }, 0)
                 return (
-                  <div style={{ borderTop: `1px solid ${GOLD}40`, padding: '8px 12px', background: `${GOLD}07` }}>
-                    <div style={{ fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 600, color: GOLD, marginBottom: 6, letterSpacing: '0.06em' }}>
+                  <div style={{ borderTop: `1px solid ${HUD.gold}40`, padding: '8px 12px', background: `${HUD.gold}07` }}>
+                    <div style={{ fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 600, color: HUD.gold, marginBottom: 6, letterSpacing: '0.06em' }}>
                       Select minion groups for squad (max {CAP} total):
                     </div>
                     {availableMinions.length === 0 && (
@@ -823,7 +800,7 @@ export function EncounterAdversaryPanel({ campaignId, characters }: EncounterAdv
                                   return next
                                 })
                               }}
-                              style={{ accentColor: GOLD, width: 13, height: 13 }}
+                              style={{ accentColor: HUD.gold, width: 13, height: 13 }}
                             />
                             <span style={{ fontFamily: FC, fontSize: FS_CAPTION, color: TEXT }}>{m.name}</span>
                             <span style={{ fontFamily: FC, fontSize: FS_CAPTION, color: TEXT_MUTED }}>({m.groupRemaining} minions)</span>
@@ -842,11 +819,11 @@ export function EncounterAdversaryPanel({ campaignId, characters }: EncounterAdv
                         disabled={selectedTotal === 0 || selectedTotal > CAP}
                         style={{
                           flex: 1, padding: '4px 0',
-                          background: selectedTotal > 0 && selectedTotal <= CAP ? `${GOLD}20` : 'transparent',
-                          border: `1px solid ${selectedTotal > 0 && selectedTotal <= CAP ? GOLD : BORDER}`,
+                          background: selectedTotal > 0 && selectedTotal <= CAP ? `${HUD.gold}20` : 'transparent',
+                          border: `1px solid ${selectedTotal > 0 && selectedTotal <= CAP ? HUD.gold : BORDER}`,
                           borderRadius: 3, cursor: selectedTotal > 0 && selectedTotal <= CAP ? 'pointer' : 'not-allowed',
                           fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 600,
-                          color: selectedTotal > 0 && selectedTotal <= CAP ? GOLD : TEXT_MUTED,
+                          color: selectedTotal > 0 && selectedTotal <= CAP ? HUD.gold : TEXT_MUTED,
                         }}
                       >Confirm Squad</button>
                       <button
@@ -863,7 +840,7 @@ export function EncounterAdversaryPanel({ campaignId, characters }: EncounterAdv
                 <div style={{ borderTop: `1px solid ${BORDER}`, padding: '7px 12px' }}>
                   <button
                     onClick={() => void handleFormSquad(adv)}
-                    style={{ width: '100%', padding: '5px 0', background: `${GOLD}10`, border: `1px solid ${GOLD}40`, borderRadius: 4, cursor: 'pointer', fontFamily: FC, fontSize: FS_LABEL, fontWeight: 600, color: GOLD, letterSpacing: '0.05em' }}
+                    style={{ width: '100%', padding: '5px 0', background: `${HUD.gold}10`, border: `1px solid ${HUD.gold}40`, borderRadius: 4, cursor: 'pointer', fontFamily: FC, fontSize: FS_LABEL, fontWeight: 600, color: HUD.gold, letterSpacing: '0.05em' }}
                   >Form Squad</button>
                 </div>
               )
@@ -886,7 +863,7 @@ export function EncounterAdversaryPanel({ campaignId, characters }: EncounterAdv
           boxShadow: '0 4px 20px rgba(0,0,0,0.7)',
           pointerEvents: 'none',
         }}>
-          <div style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, color: GOLD, marginBottom: 4 }}>
+          <div style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, color: HUD.gold, marginBottom: 4 }}>
             {talentTooltip.name}
             {talentTooltip.activation && (
               <span style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: TEXT_MUTED, marginLeft: 6, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
@@ -935,10 +912,7 @@ export function EncounterAdversaryPanel({ campaignId, characters }: EncounterAdv
             campaignId={campaignId}
             characterId={adv.instanceId}
             onRoll={handleAdvRoll}
-            isGmMode={true}
-            gmTargets={gmTargets}
-            gmAlignment={alignment}
-            gmHiddenFromPlayers={!adv.revealed}
+            gmOverrides={{ isGmMode: true, gmTargets, gmAlignment: alignment, gmHiddenFromPlayers: !adv.revealed }}
           />
         )
       })()}
@@ -1083,7 +1057,7 @@ function AdversaryWoundTracker({
 function TypeBadge({ type }: { type: 'minion' | 'rival' | 'nemesis' }) {
   const cfg = {
     minion:  { color: TEXT_MUTED, label: 'MINION' },
-    rival:   { color: GOLD,       label: 'RIVAL' },
+    rival:   { color: HUD.gold,       label: 'RIVAL' },
     nemesis: { color: RED,        label: 'NEMESIS' },
   }[type]
   return (

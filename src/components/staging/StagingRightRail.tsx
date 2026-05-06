@@ -1,14 +1,14 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import type { Character } from '@/lib/types'
 import { StagingDrawer } from './StagingDrawer'
 import { EncounterAdversaryPanel } from './EncounterAdversaryPanel'
 import { EncounterVehiclePanel } from './EncounterVehiclePanel'
+import { HUD } from '@/lib/tokens'
 
 /* ── Design tokens ────────────────────────────────────────── */
-const FC   = "var(--font-cinzel), 'Cinzel', serif"
-const GOLD = '#C8AA50'
+const FC   = "var(--font-rajdhani), 'Cinzel', serif"
 const DIM  = '#6A8070'
 
 /* ── Panel registry ───────────────────────────────────────── */
@@ -123,13 +123,14 @@ function RailButton({
 }: {
   icon: string; label: string; active: boolean; onClick: () => void
 }) {
-  const iconColor  = active ? GOLD : DIM
-  const labelColor = active ? GOLD : 'rgba(106,128,112,0.55)'
+  const iconColor  = active ? HUD.gold : DIM
+  const labelColor = active ? HUD.gold : 'rgba(106,128,112,0.55)'
 
   return (
     <button
       onClick={onClick}
       title={label}
+      className={!active ? 'hov-gold-bg' : ''}
       style={{
         width:         52,
         padding:       '10px 0 9px',
@@ -144,12 +145,6 @@ function RailButton({
         cursor:        'pointer',
         transition:    'background 0.15s, outline 0.15s',
         flexShrink:    0,
-      }}
-      onMouseEnter={e => {
-        if (!active) (e.currentTarget as HTMLElement).style.background = 'rgba(200,170,80,0.06)'
-      }}
-      onMouseLeave={e => {
-        if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent'
       }}
     >
       <span style={{ fontSize: 18, lineHeight: 1, color: iconColor, display: 'block', transition: 'color 0.15s' }}>

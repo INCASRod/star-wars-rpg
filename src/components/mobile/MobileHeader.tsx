@@ -1,9 +1,9 @@
 'use client'
+import { HUD } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 const PANEL  = 'rgba(6,13,9,0.95)'
 const BORDER = 'rgba(200,170,80,0.2)'
-const GOLD   = '#C8AA50'
 const FONT_C = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FONT_R = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 
@@ -31,7 +31,7 @@ export function MobileHeader({ characterName, onOpenDiceRoller }: MobileHeaderPr
         fontFamily: FONT_C,
         fontSize: 'clamp(0.85rem, 3vw, 1rem)',
         fontWeight: 700,
-        color: GOLD,
+        color: HUD.gold,
         letterSpacing: '0.08em',
         textTransform: 'uppercase',
       }}>
@@ -51,7 +51,7 @@ export function MobileHeader({ characterName, onOpenDiceRoller }: MobileHeaderPr
           fontSize: 20,
           lineHeight: 1,
           fontFamily: FONT_R,
-          color: GOLD,
+          color: HUD.gold,
           transition: 'background 0.15s',
         }}
       >

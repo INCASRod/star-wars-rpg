@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
+import { Modal } from '@/components/ui/Modal'
 import { RichText } from '@/components/ui/RichText'
 import type { Character } from '@/lib/types'
 import { ACTIVATION_LABELS } from '@/lib/types'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { HUD } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
-const GOLD      = '#C8AA50'
 const GOLD_DIM  = 'rgba(200,170,80,0.5)'
 const GOLD_BD   = 'rgba(200,170,80,0.3)'
 const TEXT      = 'rgba(232,223,200,0.85)'
@@ -28,7 +29,7 @@ const FS_SM     = 'var(--text-sm)'
 
 const ACTIVATION_COLOR: Record<string, string> = {
   taPassive:       'rgba(150,150,150,0.8)',
-  taAction:        '#C8AA50',
+  taAction:        'var(--hud-gold)',
   taManeuver:      '#4FC3F7',
   taIncidental:    '#81C784',
   taIncidentalOOT: '#81C784',
@@ -127,15 +128,9 @@ function AssignModal({ talent, characters, supabase, onClose, sendToChar }: Assi
     onClose()
   }
 
-  return createPortal(
-    <div
-      style={{ position: 'fixed', inset: 0, zIndex: 600, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
-      onClick={onClose}
-    >
-      <div
-        style={{ background: EDITOR_BG, border: `1px solid ${BORDER_HI}`, borderRadius: 6, padding: 24, maxWidth: '28rem', width: '100%', backdropFilter: 'blur(12px)' }}
-        onClick={e => e.stopPropagation()}
-      >
+  return (
+    <Modal open onClose={onClose} maxWidth={448}>
+      <div style={{ padding: 24 }}>
         <div style={{ fontFamily: FONT_C, fontSize: FS_SM, fontWeight: 700, color: TEXT, marginBottom: 4 }}>
           Assign: {talent.name}
         </div>
@@ -164,8 +159,7 @@ function AssignModal({ talent, characters, supabase, onClose, sendToChar }: Assi
           </button>
         </div>
       </div>
-    </div>,
-    document.body,
+    </Modal>
   )
 }
 
@@ -258,7 +252,7 @@ function EditorPanel({ talent, campaignId, supabase, onSaved, onClose }: EditorP
       }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: `1px solid ${BORDER}` }}>
-          <span style={{ fontFamily: FONT_C, fontSize: FS_SM, fontWeight: 700, color: GOLD, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+          <span style={{ fontFamily: FONT_C, fontSize: FS_SM, fontWeight: 700, color: HUD.gold, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
             {isNew ? 'New Custom Talent' : 'Edit Talent'}
           </span>
           <button onClick={handleClose} style={{ background: 'none', border: 'none', color: DIM, cursor: 'pointer', fontFamily: FONT_C, fontSize: FS_SM }}>✕</button>
@@ -295,7 +289,7 @@ function EditorPanel({ talent, campaignId, supabase, onSaved, onClose }: EditorP
               onClick={() => setIsRanked(r => !r)}
               style={{
                 width: 36, height: 20, borderRadius: 10, border: 'none', cursor: 'pointer',
-                background: isRanked ? GOLD : 'rgba(255,255,255,0.1)',
+                background: isRanked ? HUD.gold : 'rgba(255,255,255,0.1)',
                 position: 'relative', transition: 'background 0.2s', flexShrink: 0,
               }}
             >
@@ -320,7 +314,7 @@ function EditorPanel({ talent, campaignId, supabase, onSaved, onClose }: EditorP
                 style={{
                   background: 'none', border: 'none', cursor: 'pointer',
                   fontFamily: FONT_M, fontSize: FS_CAP,
-                  color: preview ? GOLD : DIM,
+                  color: preview ? HUD.gold : DIM,
                   padding: 0,
                 }}
               >
@@ -434,7 +428,7 @@ export function TalentDatabaseTab({ campaignId, supabase, characters = [], sendT
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div>
-          <div style={{ fontFamily: FONT_C, fontSize: FS_SM, fontWeight: 700, color: GOLD, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+          <div style={{ fontFamily: FONT_C, fontSize: FS_SM, fontWeight: 700, color: HUD.gold, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
             Custom Talents
           </div>
           <div style={{ fontFamily: FONT_C, fontSize: FS_CAP, color: DIM, marginTop: 2 }}>
@@ -457,7 +451,7 @@ export function TalentDatabaseTab({ campaignId, supabase, characters = [], sendT
           padding: '32px 0', textAlign: 'center',
           border: `1px dashed ${BORDER}`, borderRadius: 4,
         }}>
-          No custom talents yet. Click <strong style={{ color: GOLD }}>+ New Talent</strong> to create one.
+          No custom talents yet. Click <strong style={{ color: HUD.gold }}>+ New Talent</strong> to create one.
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -501,7 +495,7 @@ export function TalentDatabaseTab({ campaignId, supabase, characters = [], sendT
                       {characters.length > 0 && (
                         <button onClick={() => setAssigning(t)} style={actionBtn(GREEN)}>Assign</button>
                       )}
-                      <button onClick={() => openEdit(t)} style={actionBtn(GOLD)}>✎ Edit</button>
+                      <button onClick={() => openEdit(t)} style={actionBtn(HUD.gold)}>✎ Edit</button>
                       <button onClick={() => setDeleteConfirm(t.key)} style={actionBtn(RED)}>✕</button>
                     </div>
                   ) : (
@@ -576,7 +570,7 @@ const darkInput: React.CSSProperties = {
 
 const btnPrimary: React.CSSProperties = {
   background: 'rgba(200,170,80,0.15)', border: `1px solid ${GOLD_BD}`,
-  color: GOLD, fontFamily: FONT_C, fontSize: FS_CAP, fontWeight: 700,
+  color: HUD.gold, fontFamily: FONT_C, fontSize: FS_CAP, fontWeight: 700,
   letterSpacing: '0.12em', textTransform: 'uppercase',
   padding: '8px 16px', borderRadius: 3, cursor: 'pointer',
 }

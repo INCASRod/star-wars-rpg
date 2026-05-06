@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -16,16 +16,16 @@ import { RangeBandStep } from './steps/RangeBandStep'
 import { DicePoolReviewStep, type ManualAdjustments, EMPTY_ADJUSTMENTS, type DualWieldState } from './steps/DicePoolReviewStep'
 import { DualWieldReviewStep } from './steps/DualWieldReviewStep'
 import { RollResultStep } from './steps/RollResultStep'
+import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const BG       = 'rgba(6,13,9,0.97)'
-const GOLD     = '#C8AA50'
 const GOLD_DIM = 'rgba(200,170,80,0.45)'
 const GOLD_BD  = 'rgba(200,170,80,0.15)'
 const GOLD_BAR = 'rgba(200,170,80,0.6)'
 const TEXT     = 'rgba(255,255,255,0.85)'
 const TEXT_DIM = 'rgba(255,255,255,0.5)'
-const FONT_C   = "var(--font-cinzel), 'Cinzel', serif"
+const FONT_C   = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R   = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FONT_M   = "'Share Tech Mono', 'Courier New', monospace"
 
@@ -86,16 +86,19 @@ export interface CombatCheckOverlayProps {
 
   onRoll: (result: RollResult, label?: string, pool?: Record<string, number>, meta?: RollMeta) => void
 
-  /** GM mode: suppresses DB weapon equip/unequip writes and adjusts targeting */
-  isGmMode?:   boolean
-  /** Pre-built targets to show in TargetSelectStep instead of fetching from DB */
-  gmTargets?:  AdversaryInstance[]
-  /** Alignment override for combat_log writes (default: 'player') */
-  gmAlignment?: string
-  /** When true, combat_log entries are written with is_visible_to_players=false (unrevealed adversary) */
-  gmHiddenFromPlayers?: boolean
+  /** Group all GM-specific overrides — extend this object rather than adding top-level props */
+  gmOverrides?: {
+    isGmMode?:          boolean
+    gmTargets?:         AdversaryInstance[]
+    gmAlignment?:       string
+    gmHiddenFromPlayers?: boolean
+  }
   speciesAbilities?: SpeciesAbility[]
   speciesName?: string
+  /** Pre-fetched active encounter ID from the parent — skips the combat_encounters SELECT on roll */
+  encounterId?: string | null
+  /** Pre-fetched encounter adversaries from the parent — skips the combat_encounters SELECT on target step */
+  encounterEnemies?: AdversaryInstance[]
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -104,10 +107,15 @@ export function CombatCheckOverlay({
   character, weapons, charSkills,
   refWeaponMap, refSkillMap, refWeaponQualityMap,
   skillModifiers, campaignId, characterId, onRoll,
-  isGmMode, gmTargets, gmAlignment, gmHiddenFromPlayers,
+  gmOverrides,
   speciesAbilities = [], speciesName,
+  encounterId: propEncounterId,
+  encounterEnemies,
 }: CombatCheckOverlayProps) {
+  const { isGmMode, gmTargets, gmAlignment, gmHiddenFromPlayers } = gmOverrides ?? {}
   const [state, setState] = useState<CombatCheckState>(() => makeInitialState(initialAttackType))
+  // Seed encounterId from prop so the combat_log write doesn't need a SELECT
+  const seedEncounterId = propEncounterId ?? null
   const [mounted, setMounted] = useState(false)
   const [visible, setVisible] = useState(false)
 
@@ -211,6 +219,14 @@ export function CombatCheckOverlay({
       .eq('character_id', characterId)
   }, [isGmMode, campaignId, characterId])
 
+  const handleEquipWeapon = useCallback(async (weaponId: string, idsToUnequip: string[]) => {
+    const supabase = createClient()
+    for (const id of idsToUnequip) {
+      await supabase.from('character_weapons').update({ is_equipped: false, equip_state: 'stowed' }).eq('id', id)
+    }
+    await supabase.from('character_weapons').update({ is_equipped: true, equip_state: 'equipped' }).eq('id', weaponId)
+  }, [])
+
   // Clear selected weapon on close so the GM sees equipped baseline again
   const handleClose = () => {
     void writeWeaponToParticipant(null, null, null, null)
@@ -302,8 +318,8 @@ export function CombatCheckOverlay({
     // Write to combat_log if in an encounter
     if (campaignId) {
       const supabase = createClient()
-      // Get active encounter id if we don't have it yet
-      let encounterId = state.encounterId
+      // Prefer prop-seeded id → cached state → DB lookup (last resort)
+      let encounterId = state.encounterId ?? seedEncounterId
       if (!encounterId) {
         const { data } = await supabase
           .from('combat_encounters')
@@ -412,7 +428,7 @@ export function CombatCheckOverlay({
         await supabase.from('pending_damage').insert(pendingRows)
       }
     }
-  }, [state, refWeapon, refWeaponMap, campaignId, character.name, character.brawn, onRoll])
+  }, [state, refWeapon, refWeaponMap, campaignId, character.name, character.brawn, onRoll, seedEncounterId])
 
   // ── Roll Again: reset to step 4, keep weapon/target/dual wield ───────────
   const handleRollAgain = () => {
@@ -500,7 +516,7 @@ export function CombatCheckOverlay({
               fontFamily: FONT_C,
               fontSize: 'clamp(0.9rem, 1.5vw, 1.1rem)',
               fontWeight: 700,
-              color: GOLD,
+              color: HUD.gold,
               textTransform: 'uppercase',
               letterSpacing: '0.1em',
             }}>
@@ -587,6 +603,7 @@ export function CombatCheckOverlay({
             onSelect={handleWeaponSelect}
             onNext={goNext}
             isGmMode={isGmMode}
+            onEquipWeapon={handleEquipWeapon}
             onDualWieldSelect={handleDualWieldSelect}
           />
         )}
@@ -608,6 +625,7 @@ export function CombatCheckOverlay({
             selectedTargets={state.selectedTargets}
             onSelect={handleTargetSelect}
             gmTargets={gmTargets}
+            enemies={encounterEnemies}
           />
         )}
 

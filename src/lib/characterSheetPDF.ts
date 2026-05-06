@@ -34,9 +34,6 @@ import type {
 const BLACK = rgb(0, 0, 0)
 const WHITE = rgb(1, 1, 1)
 
-// Set to false for final clean output
-const DEBUG_BOXES = true
-
 // ── Skill layout: ordered exactly as they appear on the official sheet ────────
 
 // Skill y-positions calibrated from sheet-page1.png:
@@ -352,18 +349,6 @@ function fillPage2(
 /** Draw text at (x, y) — shorthand to keep layout code readable. */
 function t(page: PDFPage, font: PDFFont, text: string, x: number, y: number, size: number) {
   if (!text) return
-  if (DEBUG_BOXES) {
-    page.drawRectangle({
-      x: x - 2,
-      y: y - 2,
-      width: 80,
-      height: size + 4,
-      borderColor: rgb(0.8, 0.8, 0.8),
-      borderWidth: 0.5,
-      borderOpacity: 0.5,
-      opacity: 0,
-    })
-  }
   page.drawText(text, { x, y, size, font, color: BLACK })
 }
 
@@ -373,18 +358,6 @@ function t(page: PDFPage, font: PDFFont, text: string, x: number, y: number, siz
  * Each pip is radius 3, spaced 7pt apart.
  */
 function drawSkillPips(page: PDFPage, x: number, y: number, rank: number) {
-  if (DEBUG_BOXES) {
-    page.drawRectangle({
-      x: x - 2,
-      y: y - 5,
-      width: 38,
-      height: 10,
-      borderColor: rgb(0.7, 0.85, 1.0),
-      borderWidth: 0.5,
-      borderOpacity: 0.5,
-      opacity: 0,
-    })
-  }
   const r = Math.max(0, Math.min(5, rank))
   for (let i = 0; i < 5; i++) {
     const cx = x + i * 7

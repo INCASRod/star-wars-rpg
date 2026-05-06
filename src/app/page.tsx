@@ -6,13 +6,13 @@ import { createClient } from '@/lib/supabase/client'
 import { randomUUID } from '@/lib/utils'
 import type { Character } from '@/lib/types'
 import { VersionWatermark } from '@/components/ui/VersionWatermark'
+import { HUD } from '@/lib/tokens'
 
 // ─── Design Tokens ───────────────────────────────────────────────────────────
 const BG = '#060D09'
 const PANEL = 'rgba(8,16,10,0.92)'
 const RAISED = 'rgba(14,26,18,0.85)'
 const INPUT_BG = 'rgba(6,13,9,0.7)'
-const GOLD = '#C8AA50'
 const GOLD_L = '#E8CC70'
 const GOLD_DIM = 'rgba(200,170,80,0.3)'
 const BORDER = 'rgba(200,170,80,0.15)'
@@ -91,11 +91,11 @@ function CharacterCard({
   const cardCursor = state === 'self' ? 'default' : 'pointer'
   const cardTransform = hovered && state !== 'self' ? 'translateY(-2px)' : 'none'
 
-  const avatarBorderColor = state === 'self' ? GOLD : BORDER_MD
+  const avatarBorderColor = state === 'self' ? HUD.gold : BORDER_MD
   const avatarShadow = state === 'self' ? `0 0 12px rgba(200,170,80,0.4)` : 'none'
 
   const dotColor = state === 'self'
-    ? GOLD
+    ? HUD.gold
     : online
       ? SUCCESS
       : TEXT_MUT
@@ -151,7 +151,7 @@ function CharacterCard({
       {/* Top gradient line */}
       <div style={{
         position: 'absolute', top: 0, left: 0, right: 0, height: 2,
-        background: `linear-gradient(90deg, transparent, ${GOLD}, transparent)`,
+        background: `linear-gradient(90deg, transparent, ${HUD.gold}, transparent)`,
         opacity: state === 'self' ? 1 : hovered ? 0.6 : 0,
         transition: 'opacity 0.2s',
       }} />
@@ -198,7 +198,7 @@ function CharacterCard({
           ) : (
             <span style={{
               fontFamily: FC, fontSize: 22,
-              color: state === 'self' ? GOLD : TEXT_SEC,
+              color: state === 'self' ? HUD.gold : TEXT_SEC,
             }}>
               {char.name.charAt(0)}
             </span>
@@ -226,7 +226,7 @@ function CharacterCard({
           <div style={{
             marginTop: 6,
             display: 'inline-flex', alignItems: 'center', gap: 5,
-            border: `1px solid ${state === 'self' ? GOLD : TEXT_MUT}`,
+            border: `1px solid ${state === 'self' ? HUD.gold : TEXT_MUT}`,
             borderRadius: 3,
             padding: '3px 8px',
             background: state === 'self' ? 'rgba(200,170,80,0.1)' : 'transparent',
@@ -238,8 +238,8 @@ function CharacterCard({
             )}
             {state === 'self' && (
               <>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: GOLD, animation: 'pulse-dot 1.8s ease-in-out infinite' }} />
-                <span style={{ fontFamily: FM, fontSize: 9, color: GOLD, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: HUD.gold, animation: 'pulse-dot 1.8s ease-in-out infinite' }} />
+                <span style={{ fontFamily: FM, fontSize: 9, color: HUD.gold, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                   You · Active
                 </span>
               </>
@@ -517,8 +517,8 @@ export default function Home() {
       }} xmlns="http://www.w3.org/2000/svg">
         <defs>
           <pattern id="crosshatch" width="20" height="20" patternUnits="userSpaceOnUse">
-            <line x1="0" y1="20" x2="20" y2="0" stroke={GOLD} strokeWidth="0.5" />
-            <line x1="0" y1="0" x2="20" y2="20" stroke={GOLD} strokeWidth="0.5" />
+            <line x1="0" y1="20" x2="20" y2="0" stroke={HUD.gold} strokeWidth="0.5" />
+            <line x1="0" y1="0" x2="20" y2="20" stroke={HUD.gold} strokeWidth="0.5" />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#crosshatch)" />
@@ -555,7 +555,7 @@ export default function Home() {
               fontWeight: 900,
               fontSize: 28,
               letterSpacing: '0.4em',
-              color: GOLD,
+              color: HUD.gold,
               textShadow: '0 0 40px rgba(200,170,80,0.6)',
               display: 'inline-block',
             }}>
@@ -629,7 +629,7 @@ export default function Home() {
           fontSize: 9,
           letterSpacing: '0.28em',
           textTransform: 'uppercase',
-          color: `${GOLD}a5`,
+          color: `${HUD.gold}a5`,
           width: '100%',
         }}>
           Select Your Character
@@ -676,7 +676,7 @@ export default function Home() {
             style={{
               background: 'rgba(200,170,80,0.12)',
               border: `1px solid ${BORDER_MD}`,
-              color: GOLD,
+              color: HUD.gold,
               fontFamily: FR,
               fontSize: 13,
               fontWeight: 700,
@@ -754,7 +754,7 @@ export default function Home() {
                 style={{
                   background: `rgba(200,170,80,0.18)`,
                   border: `1px solid ${BORDER_HI}`,
-                  color: GOLD,
+                  color: HUD.gold,
                   fontFamily: FC,
                   fontSize: 11,
                   letterSpacing: '0.1em',

@@ -33,7 +33,7 @@ const STAT_COLOR: Record<string, string> = {
 
 const NOTE_COLOR: Record<string, string> = {
   armor: '#5AAAE0',
-  talent: '#C8AA50',
+  talent: 'var(--hud-gold)',
   species: '#B070D8',
 }
 

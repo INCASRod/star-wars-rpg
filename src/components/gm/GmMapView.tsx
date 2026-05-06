@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useRef, useMemo, useCallback, memo } from 'react'
 import { createPortal } from 'react-dom'
@@ -8,15 +8,18 @@ import type { ActiveMap } from '@/hooks/useActiveMap'
 import type { MapToken } from '@/hooks/useMapTokens'
 import { MapCanvas } from '@/components/map/MapCanvas'
 import { useMapTokens } from '@/hooks/useMapTokens'
+import { useMapPlanets } from '@/hooks/useMapPlanets'
+import type { MapPlanet } from '@/hooks/useMapPlanets'
+import { useAdversaryTokenImages } from '@/hooks/useAdversaryTokenImages'
 import type { Character } from '@/lib/types'
 import { fetchAdversaries, adversaryToInstance } from '@/lib/adversaries'
 import type { AdversaryInstance } from '@/lib/adversaries'
+import { HUD } from '@/lib/tokens'
 
 /* ── Design tokens ─────────────────────────────────────── */
 const FR  = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FC  = "var(--font-cinzel), 'Cinzel', serif"
+const FC  = "var(--font-rajdhani), 'Cinzel', serif"
 const BG  = '#060D09'
-const GOLD = '#C8AA50'
 const DIM  = '#6A8070'
 const TEXT = '#C8D8C0'
 const GREEN = '#4EC87A'
@@ -33,7 +36,7 @@ const FS_H4       = 'var(--text-h4)'
 const btnTool: React.CSSProperties = {
   background: 'rgba(6,13,9,0.92)',
   border: `1px solid rgba(200,170,80,0.35)`,
-  color: GOLD,
+  color: HUD.gold,
   fontFamily: FR,
   fontSize: FS_CAPTION,
   fontWeight: 700,
@@ -63,7 +66,7 @@ const btnDanger: React.CSSProperties = {
 const btnSmall: React.CSSProperties = {
   background: 'rgba(200,170,80,0.08)',
   border: `1px solid rgba(200,170,80,0.3)`,
-  color: GOLD,
+  color: HUD.gold,
   fontFamily: FR,
   fontSize: FS_CAPTION,
   fontWeight: 700,
@@ -145,11 +148,6 @@ interface EncounterRow {
   }>
 }
 
-interface AdversaryTokenImage {
-  adversary_key: string
-  token_image_url: string
-}
-
 interface ContextMenuState {
   tokenId:   string
   x:         number
@@ -161,13 +159,6 @@ interface TooltipState {
   tokenId: string
   x:       number
   y:       number
-}
-
-interface MapPlanet {
-  id: string
-  campaign_id: string
-  name: string
-  created_at: string
 }
 
 /* ── Upload modal ──────────────────────────────────────── */
@@ -218,7 +209,7 @@ function UploadModal({ campaignId, planets, onClose, onSaved }: { campaignId: st
         style={{ background: PANEL_BG, border: `1px solid ${BORDER_HI}`, borderRadius: 8, padding: 24, width: '100%', maxWidth: 440, display: 'flex', flexDirection: 'column', gap: 14, boxShadow: '0 20px 60px rgba(0,0,0,0.8)' }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ fontFamily: FC, fontSize: FS_H4, color: GOLD }}>Upload New Map</div>
+          <div style={{ fontFamily: FC, fontSize: FS_H4, color: HUD.gold }}>Upload New Map</div>
           <button onClick={onClose} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: DIM, fontSize: FS_H4 }}>×</button>
         </div>
         <div>
@@ -245,7 +236,7 @@ function UploadModal({ campaignId, planets, onClose, onSaved }: { campaignId: st
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-            <input type="checkbox" checked={gridEnabled} onChange={e => setGridEnabled(e.target.checked)} style={{ accentColor: GOLD }} />
+            <input type="checkbox" checked={gridEnabled} onChange={e => setGridEnabled(e.target.checked)} style={{ accentColor: HUD.gold }} />
             <span style={{ fontFamily: FR, fontSize: FS_LABEL, color: TEXT }}>Grid overlay</span>
           </label>
           {gridEnabled && (
@@ -299,8 +290,8 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
   const [uploadOpen,       setUploadOpen]       = useState(false)
   const [libraryOpen,      setLibraryOpen]      = useState(false)
 
-  // Planet state
-  const [planets,             setPlanets]             = useState<MapPlanet[]>([])
+  // Planet state — owned by useMapPlanets (fetch + realtime)
+  const { planets, setPlanets }                        = useMapPlanets(campaignId ?? '')
   const [expandedPlanet,      setExpandedPlanet]      = useState<string | 'all' | 'unassigned' | null>(null)
   const [planetSearch,        setPlanetSearch]        = useState('')
   const [newPlanetOpen,       setNewPlanetOpen]       = useState(false)
@@ -313,7 +304,7 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
   const isDraggingRef = useRef(false)
   const [encounter,        setEncounter]        = useState<EncounterRow | null>(null)
   const [previewMap,       setPreviewMap]       = useState<ActiveMap | null>(null)
-  const [advTokens,        setAdvTokens]        = useState<AdversaryTokenImage[]>([])
+  const { tokenImages: advTokenImages, setTokenImages: setAdvTokenImages } = useAdversaryTokenImages()
   const [busy,             setBusy]             = useState(false)
   const [advTokenBusy,     setAdvTokenBusy]     = useState<string | null>(null)
   const [advStatCache,     setAdvStatCache]     = useState<Map<string, AdversaryInstance>>(new Map())
@@ -336,21 +327,6 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
   const addToken        = isStagingTab ? (onStagingAddToken        ?? hookAddToken)        : hookAddToken
 
   useEffect(() => { setMounted(true) }, [])
-
-  // Load planets + realtime
-  useEffect(() => {
-    if (!campaignId) return
-    supabase.from('map_planets').select('*').eq('campaign_id', campaignId).order('name')
-      .then(({ data }) => { if (data) setPlanets(data as MapPlanet[]) })
-    const ch = supabase.channel(`map-planets-gmview-${campaignId}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'map_planets', filter: `campaign_id=eq.${campaignId}` }, (payload) => {
-        if (payload.eventType === 'INSERT') setPlanets(prev => [...prev, payload.new as MapPlanet].sort((a, b) => a.name.localeCompare(b.name)))
-        else if (payload.eventType === 'UPDATE') setPlanets(prev => prev.map(p => p.id === (payload.new as MapPlanet).id ? payload.new as MapPlanet : p))
-        else if (payload.eventType === 'DELETE') setPlanets(prev => prev.filter(p => p.id !== (payload.old as MapPlanet).id))
-      })
-      .subscribe()
-    return () => { supabase.removeChannel(ch) }
-  }, [campaignId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load active combat encounter (adversaries live here, not in combat_participants)
   useEffect(() => {
@@ -380,12 +356,6 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
 
     return () => { supabase.removeChannel(ch) }
   }, [campaignId]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Load adversary token images
-  useEffect(() => {
-    supabase.from('adversary_token_images').select('*')
-      .then(({ data }) => { if (data) setAdvTokens(data as AdversaryTokenImage[]) })
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Pre-load base adversary stats for all adversary tokens on the map (keyed by name).
   // Used by the hover tooltip when tokens aren't linked to a combat encounter slot.
@@ -417,11 +387,7 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
   const onMapSlotKeys = useMemo(() => new Set(tokens.map(t => t.slot_key).filter(Boolean as unknown as (v: string | null) => v is string)), [tokens])
 
   // O(1) lookup maps — avoids Array.find inside render loops
-  const advTokensByKey = useMemo(() => {
-    const m = new Map<string, string>()
-    for (const a of advTokens) m.set(a.adversary_key, a.token_image_url)
-    return m
-  }, [advTokens])
+  const advTokensByKey = useMemo(() => new Map(Object.entries(advTokenImages)), [advTokenImages])
   const tokensById = useMemo(() => {
     const m = new Map<string, MapToken>()
     for (const t of tokens) m.set(t.id, t)
@@ -459,7 +425,7 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
       const char = characters.find(c => c.id === token.character_id)
       if (char) return {
         x: tooltipState.x, y: tooltipState.y,
-        name: char.name, typeLabel: 'PC', typeColor: GOLD,
+        name: char.name, typeLabel: 'PC', typeColor: HUD.gold,
         characteristics: { brawn: char.brawn, agility: char.agility, intellect: char.intellect, cunning: char.cunning, willpower: char.willpower, presence: char.presence },
         soak: char.soak,
         defMelee: char.defense_melee,
@@ -531,7 +497,7 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
       x: tooltipState.x, y: tooltipState.y,
       name: token.label ?? '?',
       typeLabel: token.alignment ?? 'token',
-      typeColor: GOLD,
+      typeColor: HUD.gold,
     }
   }, [tooltipState, tokensById, characters, encounter, advStatCache])
 
@@ -729,18 +695,15 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
     if (!error) {
       const { data } = supabase.storage.from('tokens').getPublicUrl(path)
       await supabase.from('adversary_token_images').upsert({ adversary_key: adversaryKey, token_image_url: data.publicUrl })
-      setAdvTokens(prev => {
-        const next = prev.filter(a => a.adversary_key !== adversaryKey)
-        return [...next, { adversary_key: adversaryKey, token_image_url: data.publicUrl }]
-      })
+      setAdvTokenImages(prev => ({ ...prev, [adversaryKey]: data.publicUrl }))
     }
     setAdvTokenBusy(null)
-  }, [supabase])
+  }, [supabase, setAdvTokenImages])
 
   const clearAdvToken = useCallback(async (adversaryKey: string) => {
     await supabase.from('adversary_token_images').delete().eq('adversary_key', adversaryKey)
-    setAdvTokens(prev => prev.filter(a => a.adversary_key !== adversaryKey))
-  }, [supabase])
+    setAdvTokenImages(prev => { const n = { ...prev }; delete n[adversaryKey]; return n })
+  }, [supabase, setAdvTokenImages])
 
   const handleTokenContextMenu = useCallback((tokenId: string, e: MouseEvent) => {
     e.preventDefault()
@@ -813,7 +776,7 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
                 borderRadius: 20, padding: '4px 10px 4px 12px',
                 backdropFilter: 'blur(8px)',
               }}>
-                <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: GOLD }}>
+                <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: HUD.gold }}>
                   Preview: {previewMap.name}
                 </span>
                 <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>· not live</span>
@@ -828,7 +791,7 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
           </>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12 }}>
-            <div style={{ fontFamily: FC, fontSize: FS_H4, color: GOLD, letterSpacing: '0.1em' }}>No Active Map</div>
+            <div style={{ fontFamily: FC, fontSize: FS_H4, color: HUD.gold, letterSpacing: '0.1em' }}>No Active Map</div>
             <div style={{ fontFamily: FR, fontSize: FS_SM, color: DIM }}>Upload a map and set it as active to get started.</div>
             {campaignId && (
               <button onClick={() => setUploadOpen(true)} style={{ ...btnTool, marginTop: 8 }}>↑ Upload Map</button>
@@ -848,7 +811,7 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
               style={{
                 ...btnTool,
                 borderColor: libraryOpen ? 'rgba(200,170,80,0.65)' : 'rgba(200,170,80,0.35)',
-                color: libraryOpen ? GOLD : DIM,
+                color: libraryOpen ? HUD.gold : DIM,
               }}
             >
               ≡ Maps{allMaps.length > 0 ? ` (${allMaps.length})` : ''}
@@ -868,17 +831,17 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
                 <button
                   onClick={() => adjustTokenScale(-0.25)}
                   disabled={tokenScale <= 0.25}
-                  style={{ background: 'transparent', border: 'none', color: tokenScale <= 0.25 ? 'rgba(200,170,80,0.25)' : GOLD, fontFamily: "'Share Tech Mono', monospace", fontSize: FS_CAPTION, padding: '6px 10px', cursor: tokenScale <= 0.25 ? 'default' : 'pointer', lineHeight: 1 }}
+                  style={{ background: 'transparent', border: 'none', color: tokenScale <= 0.25 ? 'rgba(200,170,80,0.25)' : HUD.gold, fontFamily: "'Share Tech Mono', monospace", fontSize: FS_CAPTION, padding: '6px 10px', cursor: tokenScale <= 0.25 ? 'default' : 'pointer', lineHeight: 1 }}
                 >
                   −
                 </button>
-                <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: FS_CAPTION, color: GOLD, minWidth: 42, textAlign: 'center', letterSpacing: '0.04em' }}>
+                <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: FS_CAPTION, color: HUD.gold, minWidth: 42, textAlign: 'center', letterSpacing: '0.04em' }}>
                   {tokenScale.toFixed(2)}×
                 </span>
                 <button
                   onClick={() => adjustTokenScale(0.25)}
                   disabled={tokenScale >= 3.0}
-                  style={{ background: 'transparent', border: 'none', color: tokenScale >= 3.0 ? 'rgba(200,170,80,0.25)' : GOLD, fontFamily: "'Share Tech Mono', monospace", fontSize: FS_CAPTION, padding: '6px 10px', cursor: tokenScale >= 3.0 ? 'default' : 'pointer', lineHeight: 1 }}
+                  style={{ background: 'transparent', border: 'none', color: tokenScale >= 3.0 ? 'rgba(200,170,80,0.25)' : HUD.gold, fontFamily: "'Share Tech Mono', monospace", fontSize: FS_CAPTION, padding: '6px 10px', cursor: tokenScale >= 3.0 ? 'default' : 'pointer', lineHeight: 1 }}
                 >
                   +
                 </button>
@@ -958,7 +921,7 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
                   borderBottom: `1px solid ${BORDER}`,
                   background: 'rgba(10,18,12,0.92)',
                 }}>
-                  <span style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: GOLD }}>
+                  <span style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: HUD.gold }}>
                     Map Library
                   </span>
                   <button
@@ -1197,17 +1160,15 @@ const TokenContextMenu = memo(function TokenContextMenu({ contextMenu, onToggleV
     >
       <button
         onClick={async () => { await onToggleVisibility(contextMenu.tokenId, !contextMenu.isVisible); onClose() }}
+        className="hov-gold-bg"
         style={{ display: 'block', width: '100%', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', padding: '9px 14px', fontFamily: FR, fontSize: FS_LABEL, color: TEXT, borderBottom: `1px solid ${BORDER}` }}
-        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(200,170,80,0.08)' }}
-        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
       >
         {contextMenu.isVisible ? '◉ Hide from players' : '◉ Show to players'}
       </button>
       <button
         onClick={async () => { await onRemoveToken(contextMenu.tokenId); onClose() }}
+        className="hov-red-bg"
         style={{ display: 'block', width: '100%', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', padding: '9px 14px', fontFamily: FR, fontSize: FS_LABEL, color: '#E05050' }}
-        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(224,80,80,0.08)' }}
-        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
       >
         ✕ Remove from map
       </button>
@@ -1287,7 +1248,7 @@ const TokenTooltip = memo(function TokenTooltip(p: TokenTooltipData) {
           {CHAR_ABBRS.map((abbr, i) => (
             <div key={abbr} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, background: 'rgba(255,255,255,0.04)', borderRadius: 3, padding: '4px 2px' }}>
               <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.04em' }}>{abbr}</div>
-              <div style={{ fontFamily: FR, fontSize: FS_SM, fontWeight: 700, color: GOLD }}>{p.characteristics![CHAR_KEYS[i]]}</div>
+              <div style={{ fontFamily: FR, fontSize: FS_SM, fontWeight: 700, color: HUD.gold }}>{p.characteristics![CHAR_KEYS[i]]}</div>
             </div>
           ))}
         </div>
@@ -1344,7 +1305,7 @@ const TokenTooltip = memo(function TokenTooltip(p: TokenTooltipData) {
             <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, color: p.wounds.current >= p.wounds.max ? '#E05050' : TEXT }}>{p.wounds.current}/{p.wounds.max}</span>
           </div>
           <div style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: `${Math.min(100, (p.wounds.current / Math.max(p.wounds.max, 1)) * 100)}%`, background: p.wounds.current >= p.wounds.max ? '#E05050' : '#C8AA50', borderRadius: 2 }} />
+            <div style={{ height: '100%', width: `${Math.min(100, (p.wounds.current / Math.max(p.wounds.max, 1)) * 100)}%`, background: p.wounds.current >= p.wounds.max ? '#E05050' : 'var(--hud-gold)', borderRadius: 2 }} />
           </div>
         </div>
       )}
@@ -1390,7 +1351,7 @@ const TokenDrawer = memo(function TokenDrawer({
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         flexShrink: 0,
       }}>
-        <div style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, letterSpacing: '0.14em', color: GOLD }}>
+        <div style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, letterSpacing: '0.14em', color: HUD.gold }}>
           ◈ TOKENS
         </div>
         <button
@@ -1548,7 +1509,7 @@ const TokenDrawer = memo(function TokenDrawer({
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={char.portrait_url} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid rgba(200,170,80,0.4)' }} />
                 ) : (
-                  <div style={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, background: 'rgba(200,170,80,0.15)', border: '2px solid rgba(200,170,80,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FC, fontSize: 16, fontWeight: 700, color: GOLD }}>
+                  <div style={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, background: 'rgba(200,170,80,0.15)', border: '2px solid rgba(200,170,80,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FC, fontSize: 16, fontWeight: 700, color: HUD.gold }}>
                     {char.name.charAt(0).toUpperCase()}
                   </div>
                 )}
@@ -1619,12 +1580,12 @@ function LibFolderRow({ label, count, expanded, onToggle, onDelete }: LibFolderR
         cursor: 'pointer', userSelect: 'none', transition: 'background 0.1s',
       }}
     >
-      <span style={{ color: expanded ? GOLD : DIM, fontSize: 9, flexShrink: 0, lineHeight: 1 }}>
+      <span style={{ color: expanded ? HUD.gold : DIM, fontSize: 9, flexShrink: 0, lineHeight: 1 }}>
         {expanded ? '▾' : '▶'}
       </span>
       <span style={{
         fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.1em',
-        textTransform: 'uppercase', color: expanded ? GOLD : TEXT,
+        textTransform: 'uppercase', color: expanded ? HUD.gold : TEXT,
         flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
       }}>
         {label}
@@ -1674,9 +1635,9 @@ function LibMapRow({ map, planets, busy, onLoad, onEdit, onSetActive, onDelete, 
           style={{ width: 36, height: 26, objectFit: 'cover', borderRadius: 3, border: `1px solid ${map.is_active ? BORDER_HI : BORDER}`, flexShrink: 0 }}
         />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700, color: map.is_active ? GOLD : TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <div style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700, color: map.is_active ? HUD.gold : TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {map.name}
-            {map.is_active && <span style={{ marginLeft: 6, fontSize: FS_OVERLINE, color: GOLD }}>★ ACTIVE</span>}
+            {map.is_active && <span style={{ marginLeft: 6, fontSize: FS_OVERLINE, color: HUD.gold }}>★ ACTIVE</span>}
           </div>
           <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM }}>
             {map.grid_enabled ? `Grid ${map.grid_size}px` : 'No grid'}

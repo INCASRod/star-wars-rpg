@@ -10,9 +10,9 @@ import type {
 } from '@/lib/types'
 import { WeaponDamageDisplay, isMeleeSkill } from '@/components/character/WeaponDamageDisplay'
 import { QualityBadge } from '@/components/character/QualityBadge'
+import { HUD } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
-const GOLD     = '#C8AA50'
 const GOLD_DIM = 'rgba(200,170,80,0.6)'
 const GOLD_BD  = 'rgba(200,170,80,0.15)'
 const BORDER   = 'rgba(200,170,80,0.1)'
@@ -27,7 +27,7 @@ const EQUIP_STATES: EquipState[] = ['stowed', 'carrying', 'equipped']
 const EQUIP_LABELS: Record<EquipState, string> = { stowed: 'STOW', carrying: 'CARRY', equipped: 'EQUIP' }
 const EQUIP_ACTIVE: Record<EquipState, React.CSSProperties> = {
   stowed:   { background: 'rgba(232,223,200,0.08)', borderColor: 'rgba(232,223,200,0.4)',  color: 'rgba(232,223,200,0.9)' },
-  carrying: { background: 'rgba(200,170,80,0.1)',   borderColor: 'rgba(200,170,80,0.45)', color: GOLD },
+  carrying: { background: 'rgba(200,170,80,0.1)',   borderColor: 'rgba(200,170,80,0.45)', color: HUD.gold },
   equipped: { background: 'rgba(76,175,80,0.1)',    borderColor: 'rgba(76,175,80,0.45)',  color: '#4CAF50' },
 }
 
@@ -70,7 +70,7 @@ function SectionHeader({ label }: { label: string }) {
       fontFamily: FONT_C,
       fontSize: 'clamp(0.6rem, 2.4vw, 0.75rem)',
       fontWeight: 700,
-      color: GOLD,
+      color: HUD.gold,
       textTransform: 'uppercase',
       letterSpacing: '0.1em',
       padding: '12px 16px 6px',
@@ -226,7 +226,7 @@ export function GearTab({
                   )}
                   {qualDescs.map(({ q, qref }, i) => (
                     <div key={i} style={{ marginTop: descText && i === 0 ? 8 : 4 }}>
-                      <span style={{ fontFamily: FONT_C, fontSize: 'clamp(0.6rem, 2.4vw, 0.72rem)', color: GOLD, fontWeight: 600 }}>
+                      <span style={{ fontFamily: FONT_C, fontSize: 'clamp(0.6rem, 2.4vw, 0.72rem)', color: HUD.gold, fontWeight: 600 }}>
                         {qref.name}{qref.is_ranked && q.count && q.count > 1 ? ` ${q.count}` : ''}:{' '}
                       </span>
                       <RichText

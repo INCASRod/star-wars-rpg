@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 interface VitalBarProps {
   label: string
@@ -52,29 +52,29 @@ export function VitalBar({ label, current, max, icon, variant, onIncrement, onDe
       <div style={{ flex: 1 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
           <span style={{
-            fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)', fontWeight: 600,
-            letterSpacing: '0.15rem', color: 'var(--txt3)', textTransform: 'uppercase' as const,
+            fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', fontWeight: 600,
+            letterSpacing: '0.15rem', color: 'var(--bs-txt3)', textTransform: 'uppercase' as const,
           }}>
             {label}
           </span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
             {onDecrement && (
-              <button onClick={onDecrement} style={{ cursor: 'pointer', background: 'none', border: '1px solid var(--bdr-l)', width: '1.3rem', height: '1.3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--font-base)', color: 'var(--txt2)' }}>-</button>
+              <button onClick={onDecrement} style={{ cursor: 'pointer', background: 'none', border: '1px solid var(--bs-bdr-mid)', width: '1.3rem', height: '1.3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--font-base)', color: 'var(--bs-txt2)' }}>-</button>
             )}
             <span style={{
-              fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xl)', fontWeight: 800,
+              fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xl)', fontWeight: 800,
               color: s.numColor,
             }}>
               {current}
-              {showBar && <span style={{ fontSize: 'var(--font-base)', color: 'var(--txt3)', fontWeight: 400 }}> / {max}</span>}
+              {showBar && <span style={{ fontSize: 'var(--font-base)', color: 'var(--bs-txt3)', fontWeight: 400 }}> / {max}</span>}
             </span>
             {onIncrement && (
-              <button onClick={onIncrement} style={{ cursor: 'pointer', background: 'none', border: '1px solid var(--bdr-l)', width: '1.3rem', height: '1.3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--font-base)', color: 'var(--txt2)' }}>+</button>
+              <button onClick={onIncrement} style={{ cursor: 'pointer', background: 'none', border: '1px solid var(--bs-bdr-mid)', width: '1.3rem', height: '1.3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--font-base)', color: 'var(--bs-txt2)' }}>+</button>
             )}
           </div>
         </div>
         {showBar && (
-          <div style={{ height: '0.2rem', background: 'var(--bdr-l)', marginTop: '0.25rem', overflow: 'hidden', borderRadius: '0.1rem' }}>
+          <div style={{ height: '0.2rem', background: 'var(--bs-bdr-mid)', marginTop: '0.25rem', overflow: 'hidden', borderRadius: '0.1rem' }}>
             <div style={{ height: '100%', borderRadius: '0.1rem', transition: 'width .4s', width: `${pct}%`, background: s.fillGradient }} />
           </div>
         )}

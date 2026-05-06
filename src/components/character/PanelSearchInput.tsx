@@ -67,14 +67,13 @@ export function PanelSearchInput({ value, onChange, placeholder = 'Search...' }:
             onChange('')
             inputRef.current?.focus()
           }}
+          className="hov-gold-text"
           style={{
             position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
             background: 'none', border: 'none', cursor: 'pointer',
             color: ICON_COLOR,
             fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)', lineHeight: 1, padding: 0,
           }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(200,170,80,0.8)' }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = ICON_COLOR }}
         >
           ✕
         </button>

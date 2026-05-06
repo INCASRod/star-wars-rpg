@@ -1,10 +1,10 @@
-'use client'
+﻿'use client'
 
 import type { ForceRollResult } from '@/lib/forceRoll'
 import { rollForceDice } from '@/components/player-hud/dice-engine'
 import { DiceFace } from '@/components/dice/DiceFace'
 
-const FONT_C = "var(--font-cinzel), 'Cinzel', serif"
+const FONT_C = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FONT_M = "'Share Tech Mono', 'Courier New', monospace"
 const FORCE_BLUE     = '#7EC8E3'

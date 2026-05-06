@@ -2,14 +2,15 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import type { Character, RefDutyType, RefObligationType } from '@/lib/types'
+import { useSessionRollState } from '@/hooks/useSessionRollState'
 import type { SessionRollState } from '@/hooks/useSessionRollState'
+import type { Character, RefDutyType, RefObligationType } from '@/lib/types'
 import { resolveDutyName, resolveObligationName } from '@/lib/dutyObligationUtils'
+import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const FC = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FONT_MONO = "'Share Tech Mono', 'Courier New', monospace"
-const GOLD = '#C8AA50'
 const TEXT = '#C8D8C0'
 const DIM = '#6A8070'
 const FAINT = '#2A3A2E'
@@ -148,7 +149,7 @@ function RevealControl({
         style={{
           fontFamily: FC, fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)', fontWeight: 700,
           border: `1px solid rgba(200,170,80,0.35)`, borderRadius: 4, padding: '3px 12px',
-          background: `rgba(200,170,80,0.08)`, color: GOLD, cursor: 'pointer',
+          background: `rgba(200,170,80,0.08)`, color: HUD.gold, cursor: 'pointer',
           opacity: busy ? 0.5 : 1,
         }}
       >
@@ -174,7 +175,7 @@ function RollDisplay({ result, label, color }: { result: RollResult; label: stri
         {result.isDoubles && (
           <span style={{
             fontFamily: FC, fontSize: 9, fontWeight: 700,
-            color: GOLD, background: `${GOLD}18`, border: `1px solid ${GOLD}40`,
+            color: HUD.gold, background: `${HUD.gold}18`, border: `1px solid ${HUD.gold}40`,
             borderRadius: 3, padding: '1px 6px', letterSpacing: '0.1em', textTransform: 'uppercase',
           }}>Doubles</span>
         )}
@@ -204,7 +205,7 @@ function RollDisplay({ result, label, color }: { result: RollResult; label: stri
         </div>
       )}
       {result.doublesNote && (
-        <div style={{ fontFamily: FC, fontSize: 10, color: GOLD, lineHeight: 1.4 }}>✦ {result.doublesNote}</div>
+        <div style={{ fontFamily: FC, fontSize: 10, color: HUD.gold, lineHeight: 1.4 }}>✦ {result.doublesNote}</div>
       )}
     </div>
   )
@@ -250,41 +251,24 @@ export function SessionRollSimulator({ characters, campaignId, dutyTypes = [], o
 
   const [dutyResult,  setDutyResult]  = useState<RollResult | null>(null)
   const [oblResult,   setOblResult]   = useState<RollResult | null>(null)
-  const [savedState,  setSavedState]  = useState<SessionRollState | null>(null)
   const [busyReveal,  setBusyReveal]  = useState<{ duty: boolean; obl: boolean }>({ duty: false, obl: false })
   const [busyRoll,    setBusyRoll]    = useState(false)
   const [showTables,  setShowTables]  = useState(false)
   const [resetConfirm, setResetConfirm] = useState(false)
   const [busyReset,   setBusyReset]   = useState(false)
 
-  // ── Load saved state and subscribe ──
+  // ── Live session roll state via hook (replaces manual DB fetch + subscription) ──
+  const savedState = useSessionRollState(campaignId ?? null)
+  const initialized = useRef(false)
+
+  // One-time restoration of display results when the DB state first loads
   useEffect(() => {
-    if (!campaignId) return
-
-    supabase.from('session_roll_state').select('*').eq('campaign_id', campaignId).single()
-      .then(({ data }) => {
-        if (data) {
-          const s = data as SessionRollState
-          setSavedState(s)
-          // Reconstruct display results from saved state
-          setDutyResult(reconstructResult(s.duty_roll, s.duty_triggered, s.duty_triggered_char_id, s.duty_is_doubles, dutyTable))
-          setOblResult(reconstructResult(s.obligation_roll, s.obligation_triggered, s.obligation_triggered_char_id, false, oblTable))
-        }
-      })
-
-    const channel = supabase
-      .channel(`gm-session-roll-${campaignId}`)
-      .on('postgres_changes', {
-        event: '*', schema: 'public', table: 'session_roll_state',
-        filter: `campaign_id=eq.${campaignId}`,
-      }, (payload) => {
-        setSavedState(payload.new as SessionRollState)
-      })
-      .subscribe()
-
-    return () => { supabase.removeChannel(channel) }
+    if (initialized.current || !savedState) return
+    initialized.current = true
+    setDutyResult(reconstructResult(savedState.duty_roll, savedState.duty_triggered, savedState.duty_triggered_char_id, savedState.duty_is_doubles, dutyTable))
+    setOblResult(reconstructResult(savedState.obligation_roll, savedState.obligation_triggered, savedState.obligation_triggered_char_id, false, oblTable))
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [campaignId])
+  }, [savedState])
 
   // ── Persist roll to DB ──
   const persistRoll = useCallback(async (
@@ -405,7 +389,7 @@ export function SessionRollSimulator({ characters, campaignId, dutyTypes = [], o
       {/* Roll buttons */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
         <button disabled={busyRoll} onClick={rollBoth}
-          style={{ ...btnBase, borderColor: GOLD, background: 'rgba(200,170,80,0.12)', color: GOLD, opacity: busyRoll ? 0.5 : 1 }}>
+          style={{ ...btnBase, borderColor: HUD.gold, background: 'rgba(200,170,80,0.12)', color: HUD.gold, opacity: busyRoll ? 0.5 : 1 }}>
           Roll Both (D100)
         </button>
         <button disabled={busyRoll} onClick={rollDuty}

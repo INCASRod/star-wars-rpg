@@ -1,12 +1,12 @@
-'use client'
+﻿'use client'
+import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
-const GOLD     = '#C8AA50'
 const GOLD_DIM = 'rgba(200,170,80,0.5)'
 const GOLD_BD  = 'rgba(200,170,80,0.15)'
 const TEXT     = 'rgba(255,255,255,0.85)'
 const CARD_BG  = 'rgba(255,255,255,0.03)'
-const FONT_C   = "var(--font-cinzel), 'Cinzel', serif"
+const FONT_C   = "var(--font-rajdhani), 'Cinzel', serif"
 
 interface AttackTypeStepProps {
   onSelect: (type: 'ranged' | 'melee') => void
@@ -54,7 +54,7 @@ export function AttackTypeStep({ onSelect }: AttackTypeStepProps) {
             width: '100%',
           }}
           onMouseEnter={e => {
-            ;(e.currentTarget as HTMLButtonElement).style.borderColor = GOLD
+            ;(e.currentTarget as HTMLButtonElement).style.borderColor = HUD.gold
             ;(e.currentTarget as HTMLButtonElement).style.background = 'rgba(200,170,80,0.06)'
             ;(e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-2px)'
           }}
@@ -67,7 +67,7 @@ export function AttackTypeStep({ onSelect }: AttackTypeStepProps) {
           <span style={{
             fontSize: 'clamp(1.6rem, 3vw, 2rem)',
             lineHeight: 1,
-            color: GOLD,
+            color: HUD.gold,
             flexShrink: 0,
             width: 36,
             textAlign: 'center',

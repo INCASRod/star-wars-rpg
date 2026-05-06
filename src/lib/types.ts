@@ -450,6 +450,20 @@ export interface CharacterTalent {
 
 export type EquipState = 'equipped' | 'carrying' | 'stowed'
 
+export type StowLocationType = 'vehicle' | 'starship' | 'safe_house' | 'base_of_operations'
+
+export interface StowLocation {
+  id: string | null   // group_asset.id, or null for Base of Operations
+  name: string
+  type: StowLocationType
+}
+
+export interface StowableAsset {
+  id: string
+  name: string
+  type: 'vehicle' | 'starship' | 'safe_house'
+}
+
 export interface CharacterWeapon {
   id: string
   character_id: string
@@ -463,6 +477,9 @@ export interface CharacterWeapon {
   is_one_handed_override?: boolean | null
   /** GM override: treat as two-handed regardless of skill type */
   is_two_handed_override?: boolean | null
+  stow_location_id?:   string | null
+  stow_location_name?: string | null
+  stow_location_type?: StowLocationType | null
 }
 
 export interface CharacterArmor {
@@ -474,6 +491,9 @@ export interface CharacterArmor {
   equip_state: EquipState
   attachments: unknown[]
   notes?: string
+  stow_location_id?:   string | null
+  stow_location_name?: string | null
+  stow_location_type?: StowLocationType | null
 }
 
 export interface CharacterGear {
@@ -485,6 +505,9 @@ export interface CharacterGear {
   is_equipped: boolean      // legacy — use equip_state
   equip_state: EquipState
   notes?: string
+  stow_location_id?:   string | null
+  stow_location_name?: string | null
+  stow_location_type?: StowLocationType | null
 }
 
 export interface CharacterCriticalInjury {
@@ -548,5 +571,64 @@ export const ACTIVATION_LABELS: Record<string, string> = {
   taManeuver: 'Maneuver',
   taIncidental: 'Incidental',
   taIncidentalOOT: 'Incidental (OOT)',
+}
+
+// ── HUD display types ────────────────────────────────────────────────────────
+
+export interface HudSkill {
+  key:      string
+  name:     string
+  charKey:  CharacteristicKey
+  charVal:  number
+  rank:     number
+  isCareer: boolean
+  type?:    'stGeneral' | 'stCombat' | 'stKnowledge'
+}
+
+export interface HudTalent {
+  key:               string
+  name:              string
+  rank:              number
+  activation:        string
+  description?:      string
+  isSpeciesGranted?: boolean
+}
+
+export interface WpnDisplay {
+  id:            string
+  name:          string
+  damage:        { baseDamage: number; isMelee: boolean; brawn: number }
+  crit:          number
+  range:         string
+  enc:           number
+  hardPoints:    number
+  qualities:     { key: string; count?: number | null }[]
+  equipState:    EquipState
+  skillName:     string
+  description?:  string | null
+  stowLocation?: StowLocation | null
+}
+
+export interface ArmDisplay {
+  id:            string
+  name:          string
+  soak:          number
+  defense:       number
+  enc:           number
+  hardPoints:    number
+  rarity:        number
+  equipState:    EquipState
+  description?:  string | null
+  stowLocation?: StowLocation | null
+}
+
+export interface GearRow {
+  id:            string
+  name:          string
+  qty:           number
+  enc:           number
+  equipState:    EquipState
+  description?:  string | null
+  stowLocation?: StowLocation | null
 }
 

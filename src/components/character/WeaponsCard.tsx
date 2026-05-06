@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { HudCard } from '../ui/HudCard'
@@ -9,6 +9,8 @@ import {
   getWeaponHandedness, canDualWield, validateLoadout,
   type WeaponForLoadout,
 } from '@/lib/weaponHandedness'
+import { HUD } from '@/lib/tokens'
+import { Modal } from '@/components/ui/Modal'
 
 export interface WeaponDisplay {
   id?: string
@@ -82,13 +84,12 @@ interface BlockDialogState {
 const AMBER     = '#FF9800'
 const AMBER_BG  = 'rgba(255,152,0,0.06)'
 const AMBER_BD  = 'rgba(255,152,0,0.45)'
-const GOLD      = '#C8AA50'
 const GOLD_DIM  = 'rgba(200,170,80,0.5)'
 const GOLD_BD   = 'rgba(200,170,80,0.15)'
 const TEXT      = 'rgba(255,255,255,0.85)'
 const TEXT_DIM  = 'rgba(255,255,255,0.5)'
 const GREEN     = '#4CAF50'
-const FONT_C    = "var(--font-cinzel), 'Cinzel', serif"
+const FONT_C    = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FONT_M    = "'Share Tech Mono', 'Courier New', monospace"
 
@@ -146,7 +147,7 @@ export function WeaponsCard({
             <div style={{
               display: 'flex', alignItems: 'center', gap: 'var(--sp-sm)',
               padding: '0.5rem 0',
-              borderBottom: i < weapons.length - 1 ? '1px solid var(--bdr-l)' : 'none',
+              borderBottom: i < weapons.length - 1 ? '1px solid var(--bs-bdr-mid)' : 'none',
             }}>
               {/* Equip toggle */}
               <button
@@ -166,15 +167,15 @@ export function WeaponsCard({
                     categories={wpn.categories}
                     size="sm"
                     style={{
-                      background: 'var(--parch)', border: '1px solid var(--bdr-l)',
+                      background: 'var(--bs-surface)', border: '1px solid var(--bs-bdr-mid)',
                       opacity: wpn.equipped ? 1 : 0.45,
                       transition: '.2s',
                     }}
                   />
                 ) : (
                   <div style={{
-                    width: '2rem', height: '2rem', background: 'var(--parch)',
-                    border: '1px solid var(--bdr-l)',
+                    width: '2rem', height: '2rem', background: 'var(--bs-surface)',
+                    border: '1px solid var(--bs-bdr-mid)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 'var(--font-md)', flexShrink: 0,
                     opacity: wpn.equipped ? 1 : 0.45,
@@ -187,12 +188,12 @@ export function WeaponsCard({
                   width: '0.45rem', height: '0.45rem', borderRadius: '50%',
                   background: wpn.equipped ? 'var(--green)' : 'transparent',
                   boxShadow: wpn.equipped ? '0 0 0.3rem var(--green)' : 'none',
-                  border: wpn.equipped ? 'none' : '1.5px solid var(--txt3)',
+                  border: wpn.equipped ? 'none' : '1.5px solid var(--bs-txt3)',
                 }} />
               </button>
 
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--txt)' }}>{wpn.name}</div>
+                <div style={{ fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--bs-txt)' }}>{wpn.name}</div>
                 <div style={{
                   marginTop: '0.25rem', display: 'flex', flexWrap: 'wrap', gap: '0.25rem',
                 }}>
@@ -213,12 +214,12 @@ export function WeaponsCard({
 
               <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-lg)', fontWeight: 800, color: 'var(--red)' }}>{wpn.damage}</div>
-                  <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.06rem', color: 'var(--txt3)' }}>DAM</div>
+                  <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-lg)', fontWeight: 800, color: 'var(--red)' }}>{wpn.damage}</div>
+                  <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.06rem', color: 'var(--bs-txt3)' }}>DAM</div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-lg)', fontWeight: 800, color: 'var(--amber)' }}>{wpn.crit}</div>
-                  <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.06rem', color: 'var(--txt3)' }}>CRIT</div>
+                  <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-lg)', fontWeight: 800, color: 'var(--amber)' }}>{wpn.crit}</div>
+                  <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.06rem', color: 'var(--bs-txt3)' }}>CRIT</div>
                 </div>
                 {isGmMode && onRemoveWeapon && wpn.id && (
                   <button
@@ -256,7 +257,7 @@ export function WeaponsCard({
                   style={{
                     fontFamily: FONT_R,
                     fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)',
-                    color: GOLD,
+                    color: HUD.gold,
                     background: 'rgba(200,170,80,0.05)',
                     border: `1px solid ${GOLD_BD}`,
                     borderRadius: 4,
@@ -276,7 +277,7 @@ export function WeaponsCard({
 
         {/* ── Loadout status indicator ── */}
         {equippedWeapons.length >= 2 && (
-          <div style={{ marginTop: '0.5rem', paddingTop: '0.4rem', borderTop: '1px solid var(--bdr-l)' }}>
+          <div style={{ marginTop: '0.5rem', paddingTop: '0.4rem', borderTop: '1px solid var(--bs-bdr-mid)' }}>
             {loadoutValidation.valid && isDualWield ? (
               <div style={{
                 fontFamily: FONT_M,
@@ -304,20 +305,15 @@ export function WeaponsCard({
 
       {/* ── Hard block dialog ── */}
       {blockDialog && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 999,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: 'rgba(0,0,0,0.65)',
-          backdropFilter: 'blur(4px)',
-        }}>
-          <div style={{
-            width: 'clamp(300px, 40vw, 420px)',
-            background: 'rgba(6,13,9,0.97)',
-            border: `1px solid ${AMBER_BD}`,
-            borderRadius: 12,
-            padding: '20px 24px',
-            boxShadow: '0 0 32px rgba(255,152,0,0.15)',
-          }}>
+        <Modal
+          open
+          zIndex={999}
+          maxWidth="clamp(300px, 40vw, 420px)"
+          borderColor={AMBER_BD}
+          shadow="0 0 32px rgba(255,152,0,0.15)"
+          panelBackground="rgba(6,13,9,0.97)"
+        >
+          <div style={{ padding: '20px 24px' }}>
             <div style={{
               fontFamily: FONT_C,
               fontSize: 'clamp(0.85rem, 1.3vw, 1rem)',
@@ -404,7 +400,7 @@ export function WeaponsCard({
               </button>
             )}
           </div>
-        </div>
+        </Modal>
       )}
     </>
   )

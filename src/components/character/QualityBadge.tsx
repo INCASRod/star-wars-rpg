@@ -26,7 +26,7 @@ export function QualityBadge({ quality, refQualityMap, variant = 'desktop' }: Qu
         cursor:      description ? 'help' : 'default',
         fontFamily:  "var(--font-rajdhani), 'Rajdhani', sans-serif",
         fontSize:    'clamp(0.55rem, 0.9vw, 0.65rem)',
-        color:       '#C8AA50',
+        color:       'var(--hud-gold)',
         whiteSpace:  'nowrap' as const,
       }
     : {

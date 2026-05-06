@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useMemo, useRef } from 'react'
 import { CHAR_REF_MAP, CHAR_ABBR3 } from '@/components/player-hud/design-tokens'
@@ -7,9 +7,9 @@ import { getSkillPool } from '@/components/player-hud/dice-engine'
 import type { Character, CharacterSkill, RefSkill } from '@/lib/types'
 import type { MobilePrePopSkill } from '@/components/mobile/overlays/DiceRollerSheet'
 import type { SkillDiceModifier } from '@/lib/derivedStats'
+import { HUD } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
-const GOLD       = '#C8AA50'
 const GOLD_DIM   = 'rgba(200,170,80,0.6)'
 const GOLD_BD    = 'rgba(200,170,80,0.15)'
 const BORDER     = 'rgba(200,170,80,0.1)'
@@ -20,7 +20,7 @@ const INPUT_BG   = 'rgba(6,13,9,0.9)'
 const FONT_C     = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FONT_R     = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FONT_M     = "'Courier New', monospace"
-const FONT_CINZEL_REAL = "var(--font-cinzel),'Cinzel',serif"
+const FONT_CINZEL_REAL = "var(--font-rajdhani),'Cinzel',serif"
 const RED        = 'rgba(244,67,54,0.8)'
 
 type SkillGroup = 'stGeneral' | 'stCombat' | 'stKnowledge'
@@ -37,8 +37,8 @@ function RankPips({ rank }: { rank: number }) {
       {Array.from({ length: 5 }).map((_, i) => (
         <div key={i} style={{
           width: 8, height: 8, borderRadius: 2,
-          background: i < rank ? GOLD : 'transparent',
-          border: `1px solid ${i < rank ? GOLD : GOLD_BD}`,
+          background: i < rank ? HUD.gold : 'transparent',
+          border: `1px solid ${i < rank ? HUD.gold : GOLD_BD}`,
         }} />
       ))}
     </div>
@@ -153,7 +153,7 @@ function MobileInlineConfirmation({ name, newRank, cost, xpAvailable, onConfirm,
         }}>
           {name} → Rank {newRank}
         </div>
-        <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.65rem, 2.5vw, 0.78rem)', color: GOLD }}>
+        <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.65rem, 2.5vw, 0.78rem)', color: HUD.gold }}>
           {cost} XP · {xpAvailable} available
         </div>
       </div>
@@ -177,8 +177,8 @@ function MobileInlineConfirmation({ name, newRank, cost, xpAvailable, onConfirm,
           style={{
             width: 36, height: 36, borderRadius: 6,
             background: 'linear-gradient(135deg, rgba(200,170,80,0.25), rgba(200,170,80,0.15))',
-            border: `1px solid ${GOLD}`,
-            color: GOLD, cursor: 'pointer',
+            border: `1px solid ${HUD.gold}`,
+            color: HUD.gold, cursor: 'pointer',
             fontFamily: FONT_R, fontSize: 'clamp(0.85rem, 3.5vw, 1rem)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             padding: 0,
@@ -307,7 +307,7 @@ export function SkillsTab({ character, charSkills, refSkills, onSkillTap, skillM
               border: `1px solid rgba(200,170,80,0.3)`,
               borderRadius: 6,
               padding: '8px 10px 8px 32px',
-              color: GOLD,
+              color: HUD.gold,
               fontFamily: FONT_M,
               fontSize: 'clamp(0.75rem, 3vw, 0.9rem)',
               outline: 'none',
@@ -340,7 +340,7 @@ export function SkillsTab({ character, charSkills, refSkills, onSkillTap, skillM
                 fontFamily: FONT_C,
                 fontSize: 'clamp(0.6rem, 2.4vw, 0.75rem)',
                 fontWeight: 700,
-                color: GOLD,
+                color: HUD.gold,
                 textTransform: 'uppercase',
                 letterSpacing: '0.1em',
               }}>
@@ -406,8 +406,8 @@ export function SkillsTab({ character, charSkills, refSkills, onSkillTap, skillM
                         {/* Career dot */}
                         <div style={{
                           width: 6, height: 6, borderRadius: '50%', flexShrink: 0,
-                          background: isCareer ? GOLD : 'transparent',
-                          border: `1px solid ${isCareer ? GOLD : GOLD_BD}`,
+                          background: isCareer ? HUD.gold : 'transparent',
+                          border: `1px solid ${isCareer ? HUD.gold : GOLD_BD}`,
                         }} />
 
                         {/* Skill name */}
@@ -452,7 +452,7 @@ export function SkillsTab({ character, charSkills, refSkills, onSkillTap, skillM
                               width: 28, height: 28, borderRadius: 6,
                               background: canAfford ? 'rgba(200,170,80,0.1)' : 'rgba(255,255,255,0.02)',
                               border: `1px solid ${canAfford ? 'rgba(200,170,80,0.35)' : 'rgba(255,255,255,0.1)'}`,
-                              color: canAfford ? GOLD : 'rgba(232,223,200,0.2)',
+                              color: canAfford ? HUD.gold : 'rgba(232,223,200,0.2)',
                               fontFamily: FONT_CINZEL_REAL,
                               fontSize: 'clamp(0.75rem, 3vw, 0.85rem)',
                               cursor: canAfford ? 'pointer' : 'not-allowed',

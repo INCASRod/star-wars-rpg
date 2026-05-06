@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { FS_OVERLINE, FS_CAPTION, FS_LABEL } from '@/components/player-hud/design-tokens'
+import { useCombatLog, type CombatLogAlignment } from '@/hooks/useCombatLog'
+import { HUD } from '@/lib/tokens'
 
-const GOLD         = '#C8AA50'
 const BORDER       = 'rgba(200,170,80,0.18)'
 const BORDER_MD    = 'rgba(200,170,80,0.32)'
 const RAISED_BG    = 'rgba(14,26,18,0.9)'
@@ -19,68 +20,31 @@ const FC = "'Rajdhani', sans-serif"
 const FM = "'Rajdhani', sans-serif"
 const FR = "'Rajdhani', sans-serif"
 
-type LogAlignment = 'player' | 'allied_npc' | 'enemy' | 'system'
-
-interface CombatLogEntry {
-  id: string
-  created_at: string
-  participant_name: string
-  alignment: LogAlignment
-  roll_type: string | null
-  weapon_name: string | null
-  result_summary: string | null
-  is_visible_to_players: boolean
-}
+type LogAlignment = CombatLogAlignment
 
 interface CombatLogProps {
-  campaignId: string
+  campaignId:  string
   encounterId: string | null
-  isDm: boolean
+  isDm:        boolean
+  /** 'embedded' (default) — compact panel capped at 160px, suits inline column placement.
+   *  'full' — fills parent height, suited for a dedicated drawer. */
+  variant?:    'embedded' | 'full'
 }
 
 const ALIGNMENT_COLOR: Record<LogAlignment, string> = {
   player:     PLAYER_BLUE,
   allied_npc: ALLIED_GREEN,
   enemy:      ENEMY_RED,
-  system:     GOLD,
+  system:     HUD.gold,
 }
 
-export function CombatLog({ campaignId, encounterId, isDm }: CombatLogProps) {
-  const [entries, setEntries]       = useState<CombatLogEntry[]>([])
+export function CombatLog({ campaignId, encounterId, isDm, variant = 'embedded' }: CombatLogProps) {
+  const { entries }                 = useCombatLog(encounterId)
   const [logInput, setLogInput]     = useState('')
   const [logDmOnly, setLogDmOnly]   = useState(false)
   const [showGmOnly, setShowGmOnly] = useState(true)
   const [userScrolled, setUserScrolled] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
-  const supabase = createClient()
-
-  // Load existing entries
-  useEffect(() => {
-    if (!encounterId) { setEntries([]); return }
-    supabase
-      .from('combat_log')
-      .select('id, created_at, participant_name, alignment, roll_type, weapon_name, result_summary, is_visible_to_players')
-      .eq('encounter_id', encounterId)
-      .order('created_at', { ascending: true })
-      .then(({ data }) => { if (data) setEntries(data as CombatLogEntry[]) })
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [encounterId])
-
-  // Realtime: new INSERT entries
-  useEffect(() => {
-    if (!encounterId) return
-    const ch = supabase
-      .channel(`combat-log-${encounterId}`)
-      .on('postgres_changes', {
-        event: 'INSERT', schema: 'public', table: 'combat_log',
-        filter: `encounter_id=eq.${encounterId}`,
-      }, (payload) => {
-        setEntries(prev => [...prev, payload.new as CombatLogEntry])
-      })
-      .subscribe()
-    return () => { supabase.removeChannel(ch) }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [encounterId])
 
   // Auto-scroll to bottom when new entries arrive (unless user has scrolled up)
   useEffect(() => {
@@ -102,7 +66,7 @@ export function CombatLog({ campaignId, encounterId, isDm }: CombatLogProps) {
 
   const handleAddManual = async () => {
     if (!logInput.trim() || !encounterId) return
-    await supabase.from('combat_log').insert({
+    await createClient().from('combat_log').insert({
       campaign_id: campaignId,
       encounter_id: encounterId,
       participant_name: 'GM',
@@ -124,12 +88,13 @@ export function CombatLog({ campaignId, encounterId, isDm }: CombatLogProps) {
     } catch { return '' }
   }
 
+  const isFull = variant === 'full'
+
   return (
-    <div style={{
-      flexShrink: 0, borderTop: `1px solid ${BORDER}`,
-      background: RAISED_BG, maxHeight: 160, overflow: 'hidden',
-      display: 'flex', flexDirection: 'column',
-    }}>
+    <div style={isFull
+      ? { display: 'flex', flexDirection: 'column', height: '100%', background: RAISED_BG, overflow: 'hidden' }
+      : { flexShrink: 0, borderTop: `1px solid ${BORDER}`, background: RAISED_BG, maxHeight: 160, overflow: 'hidden', display: 'flex', flexDirection: 'column' }
+    }>
       {/* Log header */}
       <div style={{
         padding: '5px 14px 0', flexShrink: 0,
@@ -137,7 +102,7 @@ export function CombatLog({ campaignId, encounterId, isDm }: CombatLogProps) {
       }}>
         <div style={{
           fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 600,
-          letterSpacing: '0.25em', textTransform: 'uppercase', color: `${GOLD}b3`,
+          letterSpacing: '0.25em', textTransform: 'uppercase', color: `${HUD.gold}b3`,
         }}>
           Combat Log
         </div>
@@ -156,9 +121,9 @@ export function CombatLog({ campaignId, encounterId, isDm }: CombatLogProps) {
           <button
             onClick={scrollToBottom}
             style={{
-              background: `${GOLD}15`, border: `1px solid ${GOLD}50`,
+              background: `${HUD.gold}15`, border: `1px solid ${HUD.gold}50`,
               borderRadius: 3, padding: '1px 6px', cursor: 'pointer',
-              fontFamily: FM, fontSize: FS_OVERLINE, color: GOLD,
+              fontFamily: FM, fontSize: FS_OVERLINE, color: HUD.gold,
               marginLeft: isDm ? 0 : 'auto',
             }}
           >↓</button>
@@ -177,7 +142,7 @@ export function CombatLog({ campaignId, encounterId, isDm }: CombatLogProps) {
           </div>
         )}
         {displayEntries.map(entry => {
-          const color = ALIGNMENT_COLOR[entry.alignment] ?? GOLD
+          const color = ALIGNMENT_COLOR[entry.alignment] ?? HUD.gold
           const isGmOnly = !entry.is_visible_to_players
           const isPcAttack = isDm && entry.alignment === 'player' && !!entry.weapon_name
           return (
@@ -211,7 +176,7 @@ export function CombatLog({ campaignId, encounterId, isDm }: CombatLogProps) {
                   <span style={{ color: TEXT_MUTED, marginRight: 4 }}>[{entry.roll_type}]</span>
                 )}
                 {entry.weapon_name && (
-                  <span style={{ color: isPcAttack ? GOLD : `${GOLD}90`, fontWeight: isPcAttack ? 700 : 400, marginRight: 4 }}>
+                  <span style={{ color: isPcAttack ? HUD.gold : `${HUD.gold}90`, fontWeight: isPcAttack ? 700 : 400, marginRight: 4 }}>
                     {entry.weapon_name}:
                   </span>
                 )}

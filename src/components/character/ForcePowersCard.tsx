@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { HudCard } from '../ui/HudCard'
 
@@ -24,16 +24,16 @@ export function ForcePowersCard({ powers, forceRating, onViewTree }: ForcePowers
       <div style={{
         display: 'flex', alignItems: 'center', gap: '0.5rem',
         marginBottom: '0.5rem', paddingBottom: '0.5rem',
-        borderBottom: '1px solid var(--bdr-l)',
+        borderBottom: '1px solid var(--bs-bdr-mid)',
       }}>
         <span style={{
-          fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)',
-          fontWeight: 700, letterSpacing: '0.12rem', color: 'var(--txt3)',
+          fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)',
+          fontWeight: 700, letterSpacing: '0.12rem', color: 'var(--bs-txt3)',
         }}>
           FORCE RATING
         </span>
         <span style={{
-          fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-md)',
+          fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-md)',
           fontWeight: 800, color: 'var(--blue)',
         }}>
           {forceRating}
@@ -46,26 +46,22 @@ export function ForcePowersCard({ powers, forceRating, onViewTree }: ForcePowers
           <button
             key={p.powerKey}
             onClick={() => onViewTree(p.powerKey)}
+            className="force-power-chip"
             style={{
-              background: 'rgba(200,162,78,.06)',
-              border: '1px solid var(--bdr-l)',
               padding: '0.25rem 0.5rem',
               cursor: 'pointer',
               display: 'flex', alignItems: 'center', gap: '0.25rem',
-              transition: '.2s',
             }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--gold)'; e.currentTarget.style.background = 'var(--gold-glow)' }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--bdr-l)'; e.currentTarget.style.background = 'rgba(200,162,78,.06)' }}
           >
             <span style={{
-              fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)',
-              fontWeight: 700, letterSpacing: '0.06em', color: 'var(--ink)',
+              fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)',
+              fontWeight: 700, letterSpacing: '0.06em', color: 'var(--bs-ink)',
             }}>
               {p.powerName}
             </span>
             <span style={{
-              fontFamily: 'var(--font-mono)', fontSize: 'var(--font-2xs)',
-              fontWeight: 600, color: 'var(--txt3)',
+              fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)',
+              fontWeight: 600, color: 'var(--bs-txt3)',
             }}>
               {p.purchasedCount}/{p.totalCount}
             </span>

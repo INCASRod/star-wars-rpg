@@ -4,9 +4,9 @@ import { useState } from 'react'
 import type { Character } from '@/lib/types'
 import { DutyCard } from '@/components/character/DutyCard'
 import { ObligationCard } from '@/components/character/ObligationCard'
+import { HUD } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
-const GOLD     = '#C8AA50'
 const GOLD_DIM = 'rgba(200,170,80,0.6)'
 const GOLD_BD  = 'rgba(200,170,80,0.2)'
 const BORDER   = 'rgba(200,170,80,0.1)'
@@ -23,7 +23,7 @@ function SectionHeader({ label }: { label: string }) {
       fontFamily: FONT_C,
       fontSize: 'clamp(0.6rem, 2.4vw, 0.75rem)',
       fontWeight: 700,
-      color: GOLD,
+      color: HUD.gold,
       textTransform: 'uppercase',
       letterSpacing: '0.1em',
       padding: '12px 16px 6px',
@@ -93,7 +93,7 @@ export function NotesTab({ character }: NotesTabProps) {
                       <div style={{ fontFamily: FONT_C, fontSize: 'clamp(0.55rem, 2.2vw, 0.7rem)', color: GOLD_DIM, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>Obligation</div>
                       <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.8rem, 3vw, 0.95rem)', fontWeight: 600, color: TEXT }}>{character.obligation_type}</div>
                     </div>
-                    <div style={{ marginLeft: 'auto', fontFamily: FONT_C, fontSize: 'clamp(1.2rem, 5vw, 1.5rem)', fontWeight: 700, color: GOLD }}>
+                    <div style={{ marginLeft: 'auto', fontFamily: FONT_C, fontSize: 'clamp(1.2rem, 5vw, 1.5rem)', fontWeight: 700, color: HUD.gold }}>
                       {character.obligation_value ?? '—'}
                     </div>
                   </div>

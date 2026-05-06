@@ -1,16 +1,16 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { createPortal } from 'react-dom'
+import { Modal } from '@/components/ui/Modal'
 import type { Character } from '@/lib/types'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { DestinyPoolRecord } from '@/components/destiny/DestinyPoolDisplay'
+import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
-const FONT_C    = "var(--font-cinzel), 'Cinzel', serif"
+const FONT_C    = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FONT_M    = "'Share Tech Mono','Courier New',monospace"
-const GOLD      = '#C8AA50'
 const GOLD_BD   = 'rgba(200,170,80,0.3)'
 const GOLD_DIM  = 'rgba(200,170,80,0.5)'
 const TEXT      = 'rgba(232,223,200,0.85)'
@@ -160,17 +160,14 @@ export function DestinyGeneratePanel({
   const darkTotal    = Object.values(rollStatuses).reduce((s, r) => s + (r.status === 'rolled' ? r.darkRolled : 0), 0)
 
   const modal = (
-    <div
-      style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
-      onClick={phase === 'complete' ? onClose : undefined}
+    <Modal
+      open
+      onClose={phase === 'complete' ? onClose : undefined}
+      maxWidth={540}
     >
-      <div
-        style={{ width: 'clamp(340px, 90vw, 540px)', background: BG, border: `1px solid ${BORDER_HI}`, borderRadius: 12, boxShadow: '0 16px 48px rgba(0,0,0,0.8)', overflow: 'hidden' }}
-        onClick={e => e.stopPropagation()}
-      >
         {/* Header */}
         <div style={{ padding: '18px 24px 14px', borderBottom: `1px solid ${BORDER}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontFamily: FONT_C, fontSize: FS_H4, fontWeight: 700, color: GOLD, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+          <div style={{ fontFamily: FONT_C, fontSize: FS_H4, fontWeight: 700, color: HUD.gold, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
             ◈ Generate Destiny Pool
           </div>
           {phase !== 'rolling' && (
@@ -232,7 +229,7 @@ export function DestinyGeneratePanel({
               <div style={{ fontFamily: FONT_R, fontSize: FS_SM, color: TEXT }}>
                 Waiting for players to roll…
               </div>
-              <div style={{ fontFamily: FONT_M, fontSize: FS_SM, color: GOLD }}>
+              <div style={{ fontFamily: FONT_M, fontSize: FS_SM, color: HUD.gold }}>
                 {rolledCount}/{totalPlayers}
               </div>
             </div>
@@ -271,7 +268,7 @@ export function DestinyGeneratePanel({
           {/* Phase: complete */}
           {phase === 'complete' && poolRow && (<>
             <div style={{ textAlign: 'center', padding: '8px 0' }}>
-              <div style={{ fontFamily: FONT_C, fontSize: FS_H4, color: GOLD, marginBottom: 12 }}>Pool generated!</div>
+              <div style={{ fontFamily: FONT_C, fontSize: FS_H4, color: HUD.gold, marginBottom: 12 }}>Pool generated!</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <span style={{ fontFamily: FONT_R, fontSize: FS_SM, color: LIGHT_CLR, fontWeight: 700, minWidth: 60 }}>Light:</span>
@@ -300,7 +297,7 @@ export function DestinyGeneratePanel({
             <button
               onClick={handleSendRollRequest}
               disabled={busy || characters.length === 0}
-              style={{ fontFamily: FONT_R, fontSize: FS_CAP, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', padding: 'clamp(6px, 1vh, 9px) 18px', borderRadius: 4, cursor: busy ? 'wait' : 'pointer', background: 'rgba(200,170,80,0.15)', border: `1px solid ${GOLD_BD}`, color: GOLD, opacity: busy || characters.length === 0 ? 0.4 : 1 }}
+              style={{ fontFamily: FONT_R, fontSize: FS_CAP, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', padding: 'clamp(6px, 1vh, 9px) 18px', borderRadius: 4, cursor: busy ? 'wait' : 'pointer', background: 'rgba(200,170,80,0.15)', border: `1px solid ${GOLD_BD}`, color: HUD.gold, opacity: busy || characters.length === 0 ? 0.4 : 1 }}
             >
               {busy ? 'Creating…' : 'Send Roll Request to All Players'}
             </button>
@@ -311,15 +308,13 @@ export function DestinyGeneratePanel({
             </div>
           )}
           {phase === 'complete' && (
-            <button onClick={onClose} style={{ fontFamily: FONT_R, fontSize: FS_CAP, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', padding: 'clamp(6px, 1vh, 9px) 18px', borderRadius: 4, cursor: 'pointer', background: 'rgba(200,170,80,0.15)', border: `1px solid ${GOLD_BD}`, color: GOLD }}>
+            <button onClick={onClose} style={{ fontFamily: FONT_R, fontSize: FS_CAP, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', padding: 'clamp(6px, 1vh, 9px) 18px', borderRadius: 4, cursor: 'pointer', background: 'rgba(200,170,80,0.15)', border: `1px solid ${GOLD_BD}`, color: HUD.gold }}>
               Done
             </button>
           )}
         </div>
-      </div>
-    </div>
+    </Modal>
   )
 
-  if (typeof window === 'undefined') return null
-  return createPortal(modal, document.body)
+  return modal
 }

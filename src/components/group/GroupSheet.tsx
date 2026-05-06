@@ -10,6 +10,7 @@ import type { Vehicle } from '@/lib/vehicles'
 import { fetchVehicles, dbRowToVehicle, vehicleWeaponDisplayName, vehicleWeaponStats } from '@/lib/vehicles'
 import { resolveWeapon } from '@/lib/resolve-weapon'
 import { RichText } from '@/components/ui/RichText'
+import { Modal } from '@/components/ui/Modal'
 
 const FONT_MONO = "'Share Tech Mono','Courier New',monospace"
 
@@ -141,17 +142,8 @@ function PinModal({ onConfirm, onCancel }: { onConfirm: (pin: string) => void; o
   const inputRef = useRef<HTMLInputElement>(null)
   useEffect(() => { inputRef.current?.focus() }, [])
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 200,
-      background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-    }}>
-      <div style={{
-        ...panelBase,
-        border: `1px solid ${C.borderHi}`,
-        borderRadius: 8, padding: '24px 32px',
-        display: 'flex', flexDirection: 'column', gap: 16, minWidth: 280,
-      }}>
+    <Modal open zIndex={200} maxWidth={380} borderColor={C.borderHi} backdrop="rgba(0,0,0,0.7)">
+      <div style={{ padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_H4, color: C.gold, letterSpacing: '0.08em' }}>
           GM VERIFICATION
         </div>
@@ -174,7 +166,7 @@ function PinModal({ onConfirm, onCancel }: { onConfirm: (pin: string) => void; o
           <button onClick={() => onConfirm(val)} style={btnStyle(true)}>Unlock</button>
         </div>
       </div>
-    </div>
+    </Modal>
   )
 }
 
@@ -1249,19 +1241,8 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
 
       {/* ── Reward edit modal (at root to escape backdropFilter stacking context) ── */}
       {showRewardModal && (
-      <div style={{
-        position: 'fixed', inset: 0, zIndex: 200,
-        background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
-        <div style={{
-          background: '#0A1410',
-          border: `1px solid ${C.borderHi}`,
-          borderRadius: 8, padding: '24px 32px',
-          display: 'flex', flexDirection: 'column', gap: 14,
-          minWidth: 340, maxWidth: 480, width: '90vw',
-          boxShadow: '0 8px 40px rgba(0,0,0,0.8)',
-        }}>
+      <Modal open onClose={() => setShowRewardModal(false)} zIndex={200} maxWidth={480} backdrop="rgba(0,0,0,0.75)" borderColor={C.borderHi} shadow="0 8px 40px rgba(0,0,0,0.8)" panelBackground="#0A1410">
+        <div style={{ padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_H4, color: C.gold, letterSpacing: '0.08em' }}>
             SET ALLIANCE REWARD
           </div>
@@ -1301,7 +1282,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
             </button>
           </div>
         </div>
-      </div>
+      </Modal>
     )}
     </div>
   )

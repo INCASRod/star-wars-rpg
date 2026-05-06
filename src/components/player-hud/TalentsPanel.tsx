@@ -5,16 +5,9 @@ import { C, FONT_CINZEL, FONT_RAJDHANI, panelBase } from './design-tokens'
 import { Tooltip, TipLabel, TipBody } from '@/components/ui/Tooltip'
 import { RichText } from '@/components/ui/RichText'
 import { PanelSearchInput } from '@/components/character/PanelSearchInput'
+import type { HudTalent } from '@/lib/types'
 
-export interface HudTalent {
-  key: string
-  name: string
-  rank: number
-  activation: string
-  description?: string
-  /** True when this talent is granted by a species ability, not purchased with XP */
-  isSpeciesGranted?: boolean
-}
+export type { HudTalent } from '@/lib/types'
 
 interface TalentsPanelProps {
   talents: HudTalent[]
@@ -223,14 +216,13 @@ export function TalentsPanel({ talents, onViewTree, characterId }: TalentsPanelP
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <button
             onClick={onViewTree}
+            className="hov-gold-bg"
             style={{
               background: `${C.gold}12`, border: `1px solid ${C.borderHi}`,
               borderRadius: 4, padding: '5px 14px',
               fontFamily: FONT_CINZEL, fontSize: 13, fontWeight: 600,
               letterSpacing: '0.1em', color: C.gold, cursor: 'pointer', transition: '.15s',
             }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = `${C.gold}22` }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = `${C.gold}12` }}
           >
             TALENT TREE
           </button>
@@ -250,7 +242,7 @@ export function TalentsPanel({ talents, onViewTree, characterId }: TalentsPanelP
           textAlign: 'center',
           fontFamily: FONT_RAJDHANI,
           fontSize: 'clamp(0.8rem, 1.3vw, 0.9rem)',
-          color: 'rgba(200,170,80,0.35)',
+          color: 'rgba(224,58,30,0.35)',
           fontStyle: 'italic',
           padding: '16px 0',
         }}>

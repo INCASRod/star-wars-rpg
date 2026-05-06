@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { HudCard } from '../ui/HudCard'
 
@@ -25,8 +25,8 @@ const CHARS: { key: string; label: string }[] = [
 
 const gmBtnStyle: React.CSSProperties = {
   width: 20, height: 20, fontSize: 'var(--text-caption)', fontWeight: 700,
-  background: 'var(--gold-glow)', border: '1px solid var(--gold)',
-  color: 'var(--gold-d)', cursor: 'pointer', display: 'flex',
+  background: 'var(--bs-red-glow)', border: '1px solid var(--bs-red-sun)',
+  color: 'var(--bs-red-mid)', cursor: 'pointer', display: 'flex',
   alignItems: 'center', justifyContent: 'center', padding: 0,
   lineHeight: 1, flexShrink: 0,
 }
@@ -53,8 +53,8 @@ export function CharacteristicsCard(props: CharacteristicsCardProps) {
           <div key={ch.key} style={{
             textAlign: 'center',
             padding: 'var(--sp-sm) 0.25rem',
-            background: 'var(--parch)',
-            border: '1px solid var(--bdr-l)',
+            background: 'var(--bs-surface)',
+            border: '1px solid var(--bs-bdr-mid)',
             transition: '.2s',
             position: 'relative',
             overflow: 'hidden',
@@ -63,10 +63,10 @@ export function CharacteristicsCard(props: CharacteristicsCardProps) {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
                 <button style={gmBtnStyle} onClick={() => onCharacteristicChange(ch.key, -1)}>−</button>
                 <div style={{
-                  fontFamily: 'var(--font-orbitron)',
+                  fontFamily: 'var(--font-rajdhani)',
                   fontSize: 'var(--font-2xl)',
                   fontWeight: 900,
-                  color: 'var(--ink)',
+                  color: 'var(--bs-ink)',
                   lineHeight: 1,
                   minWidth: 20,
                 }}>
@@ -76,21 +76,21 @@ export function CharacteristicsCard(props: CharacteristicsCardProps) {
               </div>
             ) : (
               <div style={{
-                fontFamily: 'var(--font-orbitron)',
+                fontFamily: 'var(--font-rajdhani)',
                 fontSize: 'var(--font-2xl)',
                 fontWeight: 900,
-                color: 'var(--ink)',
+                color: 'var(--bs-ink)',
                 lineHeight: 1,
               }}>
                 {values[ch.key]}
               </div>
             )}
             <div style={{
-              fontFamily: 'var(--font-orbitron)',
+              fontFamily: 'var(--font-rajdhani)',
               fontSize: 'var(--font-xs)',
               fontWeight: 700,
               letterSpacing: '0.15rem',
-              color: 'var(--txt3)',
+              color: 'var(--bs-txt3)',
               marginTop: '0.25rem',
               textTransform: 'uppercase',
             }}>

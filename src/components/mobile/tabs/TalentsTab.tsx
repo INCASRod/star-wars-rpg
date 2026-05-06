@@ -4,9 +4,10 @@ import { useState, useMemo } from 'react'
 import { ACTIVATION_LABELS } from '@/lib/types'
 import type { CharacterTalent, RefTalent } from '@/lib/types'
 import { RichText } from '@/components/ui/RichText'
+import { stripBBCode } from '@/lib/utils'
+import { HUD } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
-const GOLD     = '#C8AA50'
 const GOLD_DIM = 'rgba(200,170,80,0.6)'
 const GOLD_BD  = 'rgba(200,170,80,0.15)'
 const BORDER   = 'rgba(200,170,80,0.1)'
@@ -21,7 +22,7 @@ const FONT_M   = "'Courier New', monospace"
 
 const ACTIVATION_COLOR: Record<string, string> = {
   taPassive:        'rgba(150,150,150,0.8)',
-  taAction:         '#C8AA50',
+  taAction:         'var(--hud-gold)',
   taManeuver:       '#4FC3F7',
   taIncidental:     '#81C784',
   taIncidentalOOT:  '#81C784',
@@ -85,7 +86,7 @@ export function TalentsTab({ charTalents, refTalentMap }: TalentsTabProps) {
               border: `1px solid rgba(200,170,80,0.3)`,
               borderRadius: 6,
               padding: '8px 10px 8px 32px',
-              color: GOLD,
+              color: HUD.gold,
               fontFamily: FONT_M,
               fontSize: 'clamp(0.75rem, 3vw, 0.9rem)',
               outline: 'none',
@@ -107,7 +108,7 @@ export function TalentsTab({ charTalents, refTalentMap }: TalentsTabProps) {
           const activationLabel = ACTIVATION_LABELS[ref.activation] ?? ref.activation
           const activationColor = ACTIVATION_COLOR[ref.activation] ?? 'rgba(150,150,150,0.8)'
           const totalRanks = (Array.isArray(charTalents) ? charTalents : []).filter(t => t.talent_key === ref.key).reduce((s, t) => s + (t.ranks || 1), 0)
-          const summary = (ref.description ?? '').replace(/\[.*?\]/g, '').slice(0, 80)
+          const summary = stripBBCode(ref.description ?? '').slice(0, 80)
           const truncated = (ref.description ?? '').length > 80
 
           return (
@@ -131,7 +132,7 @@ export function TalentsTab({ charTalents, refTalentMap }: TalentsTabProps) {
                   fontFamily: FONT_C,
                   fontSize: 'clamp(0.8rem, 3vw, 0.95rem)',
                   fontWeight: 700,
-                  color: GOLD,
+                  color: HUD.gold,
                   flex: 1,
                   minWidth: 0,
                 }}>

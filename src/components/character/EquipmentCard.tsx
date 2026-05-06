@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { HudCard } from '../ui/HudCard'
 import { Badge } from '../ui/Badge'
@@ -36,7 +36,7 @@ function EquipmentRow({ item, isLast, onToggle, isGmMode, onRemove }: {
     <div style={{
       display: 'flex', alignItems: 'center', gap: '0.5rem',
       padding: '0.5rem 0',
-      borderBottom: isLast ? 'none' : '1px solid var(--bdr-l)',
+      borderBottom: isLast ? 'none' : '1px solid var(--bs-bdr-mid)',
     }}>
       <button
         onClick={() => onToggle?.(item)}
@@ -68,11 +68,11 @@ function EquipmentRow({ item, isLast, onToggle, isGmMode, onRemove }: {
           width: '0.45rem', height: '0.45rem', borderRadius: '50%',
           background: item.equipped ? 'var(--green)' : 'transparent',
           boxShadow: item.equipped ? '0 0 0.3rem var(--green)' : 'none',
-          border: item.equipped ? 'none' : '1.5px solid var(--txt3)',
+          border: item.equipped ? 'none' : '1.5px solid var(--bs-txt3)',
         }} />
       </button>
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--txt)' }}>{item.name}</div>
+        <div style={{ fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--bs-txt)' }}>{item.name}</div>
         <div style={{ marginTop: '0.25rem', display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
           {item.equipped && (
             <Badge color="var(--green)" bg="rgba(45,143,78,.1)">EQUIPPED</Badge>
@@ -89,8 +89,8 @@ function EquipmentRow({ item, isLast, onToggle, isGmMode, onRemove }: {
         </div>
       </div>
       <span style={{
-        fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)',
-        color: 'var(--txt3)',
+        fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)',
+        color: 'var(--bs-txt3)',
       }}>
         {item.encumbrance}
       </span>
@@ -117,8 +117,8 @@ export function EquipmentCard({ items, encumbranceCurrent, encumbranceThreshold,
       {items.length === 0 && (
         <div style={{
           textAlign: 'center', padding: '0.5rem 0',
-          fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sm)',
-          color: 'var(--txt3)', letterSpacing: '0.15rem',
+          fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)',
+          color: 'var(--bs-txt3)', letterSpacing: '0.15rem',
         }}>
           NO EQUIPMENT
         </div>
@@ -128,8 +128,8 @@ export function EquipmentCard({ items, encumbranceCurrent, encumbranceThreshold,
       {armorItems.length > 0 && (
         <>
           <div style={{
-            fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)', fontWeight: 700,
-            letterSpacing: '0.12rem', color: 'var(--txt3)',
+            fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)', fontWeight: 700,
+            letterSpacing: '0.12rem', color: 'var(--bs-txt3)',
             padding: '0.25rem 0 0.25rem', marginTop: items.indexOf(armorItems[0]) > 0 ? '0.25rem' : 0,
           }}>
             ARMOR
@@ -144,10 +144,10 @@ export function EquipmentCard({ items, encumbranceCurrent, encumbranceThreshold,
       {gearItems.length > 0 && (
         <>
           <div style={{
-            fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)', fontWeight: 700,
-            letterSpacing: '0.12rem', color: 'var(--txt3)',
+            fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)', fontWeight: 700,
+            letterSpacing: '0.12rem', color: 'var(--bs-txt3)',
             padding: '0.25rem 0 0.25rem', marginTop: armorItems.length > 0 ? '0.25rem' : 0,
-            borderTop: armorItems.length > 0 ? '1px solid var(--bdr-l)' : 'none',
+            borderTop: armorItems.length > 0 ? '1px solid var(--bs-bdr-mid)' : 'none',
           }}>
             GEAR
           </div>
@@ -160,18 +160,18 @@ export function EquipmentCard({ items, encumbranceCurrent, encumbranceThreshold,
       {/* Encumbrance row */}
       <div style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--bdr-l)',
+        marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--bs-bdr-mid)',
       }}>
         <span style={{
-          fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)', fontWeight: 600,
-          letterSpacing: '0.15rem', color: 'var(--txt3)',
+          fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', fontWeight: 600,
+          letterSpacing: '0.15rem', color: 'var(--bs-txt3)',
         }}>ENCUMBRANCE</span>
         <span style={{
-          fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-lg)', fontWeight: 800,
-          color: overEncumbered ? 'var(--red)' : 'var(--ink)',
+          fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-lg)', fontWeight: 800,
+          color: overEncumbered ? 'var(--red)' : 'var(--bs-ink)',
         }}>
           {encumbranceCurrent}{' '}
-          <span style={{ color: overEncumbered ? 'var(--red)' : 'var(--txt3)', fontWeight: 400, fontSize: 'var(--font-base)' }}>/ {encumbranceThreshold}</span>
+          <span style={{ color: overEncumbered ? 'var(--red)' : 'var(--bs-txt3)', fontWeight: 400, fontSize: 'var(--font-base)' }}>/ {encumbranceThreshold}</span>
         </span>
       </div>
     </HudCard>

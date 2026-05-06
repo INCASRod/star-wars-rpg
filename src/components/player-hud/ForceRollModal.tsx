@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect } from 'react'
 import { C, FONT_CINZEL, FONT_RAJDHANI } from './design-tokens'
+import { Modal } from '@/components/ui/Modal'
 import type { ForceRollResult, ForceDie } from './dice-engine'
 
 const FORCE_BLUE  = '#5AAAE0'
@@ -56,34 +56,14 @@ interface ForceRollModalProps {
 }
 
 export function ForceRollModal({ result, forceRating, onDismiss }: ForceRollModalProps) {
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onDismiss() }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [onDismiss])
-
   return (
-    <div
-      onClick={onDismiss}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 300,
-        background: 'rgba(4,8,6,0.88)',
-        backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: 24,
-      }}
+    <Modal
+      open
+      onClose={onDismiss}
+      maxWidth={480}
+      borderColor={`${FORCE_BLUE}50`}
+      shadow={`0 0 48px ${FORCE_BLUE}18, 0 8px 48px rgba(0,0,0,0.5)`}
     >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          width: '100%', maxWidth: 480,
-          background: 'rgba(6,13,9,0.97)',
-          border: `1px solid ${FORCE_BLUE}50`,
-          borderRadius: 8,
-          boxShadow: `0 0 48px ${FORCE_BLUE}18, 0 8px 48px rgba(0,0,0,0.5)`,
-          overflow: 'hidden',
-        }}
-      >
         {/* Header */}
         <div style={{
           padding: '20px 24px 14px', borderBottom: `1px solid ${C.border}`,
@@ -194,7 +174,6 @@ export function ForceRollModal({ result, forceRating, onDismiss }: ForceRollModa
             DISMISS
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   )
 }

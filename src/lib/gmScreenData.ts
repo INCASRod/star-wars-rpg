@@ -130,7 +130,7 @@ export const DICE_TYPES: DiceType[] = [
   },
   {
     name:     'Proficiency',
-    color:    '#C8AA50',
+    color:    'var(--hud-gold)',
     sides:    12,
     contains: ['Success', 'Advantage', 'Success+Advantage', 'Triumph', 'Blank'],
   },

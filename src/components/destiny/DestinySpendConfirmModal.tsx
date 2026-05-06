@@ -1,15 +1,15 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
-import { createPortal } from 'react-dom'
+import { Modal } from '@/components/ui/Modal'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { DestinyPoolRecord } from './DestinyPoolDisplay'
+import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
-const FONT_C    = "var(--font-cinzel), 'Cinzel', serif"
+const FONT_C    = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FONT_M    = "'Share Tech Mono','Courier New',monospace"
-const GOLD      = '#C8AA50'
 const GOLD_BD   = 'rgba(200,170,80,0.3)'
 const TEXT      = 'rgba(232,223,200,0.85)'
 const DIM       = '#6A8070'
@@ -115,22 +115,12 @@ export function DestinySpendConfirmModal({
   )
 
   const modal = (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 9050,
-      background: 'rgba(0,0,0,0.7)',
-      backdropFilter: 'blur(6px)',
-      WebkitBackdropFilter: 'blur(6px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: 16,
-    }}>
-      <div style={{
-        width: 'clamp(320px, 90vw, 500px)',
-        background: BG,
-        border: `2px solid rgba(126,200,227,0.4)`,
-        borderRadius: 12,
-        boxShadow: '0 16px 48px rgba(0,0,0,0.8)',
-        overflow: 'hidden',
-      }}>
+    <Modal
+      open
+      onClose={handleCancel}
+      maxWidth={500}
+      borderColor="rgba(126,200,227,0.4)"
+    >
         {/* Header */}
         <div style={{
           padding: '18px 24px 14px',
@@ -160,7 +150,7 @@ export function DestinySpendConfirmModal({
 
           {/* Before / After */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '12px 14px', background: 'rgba(0,0,0,0.25)', borderRadius: 6, border: `1px solid ${BORDER}` }}>
-            <div style={{ fontFamily: FONT_R, fontSize: FS_OVER, fontWeight: 700, color: GOLD, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 4 }}>
+            <div style={{ fontFamily: FONT_R, fontSize: FS_OVER, fontWeight: 700, color: HUD.gold, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 4 }}>
               After spending
             </div>
             <TokenRow count={afterLight} color={LIGHT_CLR} label="Light Side:" />
@@ -200,7 +190,7 @@ export function DestinySpendConfirmModal({
               cursor: busy ? 'wait' : 'pointer',
               background: 'rgba(200,170,80,0.18)',
               border: `1px solid ${GOLD_BD}`,
-              color: GOLD,
+              color: HUD.gold,
               opacity: busy || pool.light_count < 1 ? 0.4 : 1,
               transition: '.15s',
             }}
@@ -208,10 +198,8 @@ export function DestinySpendConfirmModal({
             {busy ? 'Spending…' : 'Spend Destiny Point'}
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   )
 
-  if (typeof window === 'undefined') return null
-  return createPortal(modal, document.body)
+  return modal
 }

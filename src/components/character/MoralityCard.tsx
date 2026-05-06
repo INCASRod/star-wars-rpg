@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { HudCard } from '../ui/HudCard'
@@ -15,8 +15,8 @@ interface MoralityCardProps {
 
 const gmBtnStyle: React.CSSProperties = {
   width: 20, height: 20, fontSize: 'var(--text-caption)', fontWeight: 700,
-  background: 'var(--gold-glow)', border: '1px solid var(--gold)',
-  color: 'var(--gold-d)', cursor: 'pointer', display: 'flex',
+  background: 'var(--bs-red-glow)', border: '1px solid var(--bs-red-sun)',
+  color: 'var(--bs-red-mid)', cursor: 'pointer', display: 'flex',
   alignItems: 'center', justifyContent: 'center', padding: 0,
   lineHeight: 1, flexShrink: 0,
 }
@@ -29,10 +29,10 @@ export function MoralityCard({ value, strength, weakness, animClass = 'al d3', i
     <HudCard title="Morality" animClass={animClass}>
       <div style={{
         textAlign: 'center',
-        fontFamily: 'var(--font-orbitron)',
+        fontFamily: 'var(--font-rajdhani)',
         fontSize: 'var(--font-base)',
         fontWeight: 700,
-        color: 'var(--txt)',
+        color: 'var(--bs-txt)',
         marginBottom: '0.25rem',
       }}>
         {isGmMode && onMoralityChange ? (
@@ -50,7 +50,7 @@ export function MoralityCard({ value, strength, weakness, animClass = 'al d3', i
       <div style={{
         height: '0.4rem',
         borderRadius: '0.2rem',
-        background: 'linear-gradient(90deg, var(--red-l), var(--amber), var(--gold-l), var(--blue-l))',
+        background: 'linear-gradient(90deg, var(--red-l), var(--amber), var(--bs-red-hi), var(--blue-l))',
         position: 'relative',
         margin: '0 0 0.5rem',
       }}>
@@ -61,7 +61,7 @@ export function MoralityCard({ value, strength, weakness, animClass = 'al d3', i
           left: `${value}%`,
           width: '0.2rem',
           height: '1rem',
-          background: 'var(--ink)',
+          background: 'var(--bs-ink)',
           borderRadius: '0.1rem',
           transform: 'translateX(-50%)',
           boxShadow: '0 0 6px rgba(0,0,0,.3)',
@@ -73,11 +73,11 @@ export function MoralityCard({ value, strength, weakness, animClass = 'al d3', i
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
-        fontFamily: 'var(--font-orbitron)',
+        fontFamily: 'var(--font-rajdhani)',
         fontSize: 'var(--font-2xs)',
         fontWeight: 600,
         letterSpacing: '0.15rem',
-        color: 'var(--txt3)',
+        color: 'var(--bs-txt3)',
       }}>
         <span style={{ color: 'var(--red)' }}>DARK SIDE</span>
         <span style={{ color: 'var(--blue)' }}>LIGHT SIDE</span>
@@ -94,19 +94,19 @@ export function MoralityCard({ value, strength, weakness, animClass = 'al d3', i
             onBlur={() => onMoralityKeyChange('strength', editStrength)}
             style={{
               fontSize: 'var(--text-body-sm)', padding: '2px 6px', fontWeight: 600,
-              color: 'var(--blue)', background: 'var(--white)',
-              border: '1px solid var(--bdr-l)', width: 100, textAlign: 'center',
+              color: 'var(--blue)', background: 'var(--bs-surface)',
+              border: '1px solid var(--bs-bdr-mid)', width: 100, textAlign: 'center',
             }}
           />
-          <span style={{ fontSize: 'var(--font-xs)', color: 'var(--txt3)' }}>/</span>
+          <span style={{ fontSize: 'var(--font-xs)', color: 'var(--bs-txt3)' }}>/</span>
           <input
             value={editWeakness}
             onChange={e => setEditWeakness(e.target.value)}
             onBlur={() => onMoralityKeyChange('weakness', editWeakness)}
             style={{
               fontSize: 'var(--text-body-sm)', padding: '2px 6px', fontWeight: 600,
-              color: 'var(--red)', background: 'var(--white)',
-              border: '1px solid var(--bdr-l)', width: 100, textAlign: 'center',
+              color: 'var(--red)', background: 'var(--bs-surface)',
+              border: '1px solid var(--bs-bdr-mid)', width: 100, textAlign: 'center',
             }}
           />
         </div>
@@ -114,7 +114,7 @@ export function MoralityCard({ value, strength, weakness, animClass = 'al d3', i
         <div style={{
           textAlign: 'center',
           fontSize: 'var(--font-xs)',
-          color: 'var(--txt2)',
+          color: 'var(--bs-txt2)',
           marginTop: '0.25rem',
         }}>
           <b style={{ color: 'var(--blue)' }}>{strength}</b>

@@ -522,17 +522,16 @@ export function ForcePanel({
           </div>
           <button
             onClick={onAdd}
+            className="hov-gold-bg"
             style={{
-              background: 'rgba(200,170,80,0.08)',
-              border: `1px solid rgba(200,170,80,0.3)`,
+              background: 'rgba(224,58,30,0.08)',
+              border: `1px solid rgba(224,58,30,0.3)`,
               borderRadius: 3, padding: '2px 10px',
               fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL,
               fontWeight: 700, letterSpacing: '0.1em',
               color: C.gold, cursor: 'pointer',
               transition: '.15s',
             }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(200,170,80,0.16)' }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(200,170,80,0.08)' }}
           >
             + Add
           </button>

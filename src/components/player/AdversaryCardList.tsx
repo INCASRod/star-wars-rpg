@@ -5,11 +5,11 @@ import type { AdversaryInstance } from '@/lib/adversaries'
 import type { InitiativeSlot } from '@/lib/combat'
 import { resolveWeapon, type WeaponRef } from '@/lib/resolve-weapon'
 import { FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4 } from '@/components/player-hud/design-tokens'
+import { HUD } from '@/lib/tokens'
 
 // ── Design tokens (mirrored from CombatTracker) ──
 const PANEL_BG   = 'rgba(8,16,10,0.88)'
 const RAISED_BG  = 'rgba(14,26,18,0.9)'
-const GOLD       = '#C8AA50'
 const BORDER     = 'rgba(200,170,80,0.18)'
 const BORDER_MD  = 'rgba(200,170,80,0.32)'
 const CHAR_BR    = '#e05252'
@@ -32,13 +32,13 @@ const CHAR_COLORS      = [CHAR_BR, CHAR_AG, CHAR_INT, CHAR_CUN, CHAR_WIL, CHAR_P
 const CHAR_KEYS        = ['brawn', 'agility', 'intellect', 'cunning', 'willpower', 'presence'] as const
 const CHAR_ABBR_LABELS = ['BR', 'AG', 'INT', 'CUN', 'WIL', 'PR']
 const TALENT_COLORS: Record<string, string> = {
-  passive: TEXT_MUTED, incidental: GOLD, maneuver: CHAR_AG,
+  passive: TEXT_MUTED, incidental: HUD.gold, maneuver: CHAR_AG,
   action: CHAR_BR, 'out of turn': CHAR_WIL,
 }
 
 function TypeBadge({ type }: { type: string }) {
   const colors: Record<string, string> = {
-    minion: TEXT_MUTED, rival: GOLD, nemesis: CHAR_BR, pc: CHAR_AG, npc: CHAR_BR,
+    minion: TEXT_MUTED, rival: HUD.gold, nemesis: CHAR_BR, pc: CHAR_AG, npc: CHAR_BR,
   }
   const color = colors[type] ?? TEXT_MUTED
   return (
@@ -72,7 +72,7 @@ export function AdversaryCardList({
   return (
     <div style={{ flex: 1, overflowY: 'auto', padding: '14px 16px' }}>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
-        <div style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${GOLD}b3`, flex: 1 }}>
+        <div style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${HUD.gold}b3`, flex: 1 }}>
           Adversaries
         </div>
         {revealedAdversaries.length > 0 && (() => {
@@ -86,6 +86,7 @@ export function AdversaryCardList({
                   ? Object.fromEntries(revealedAdversaries.map(a => [a.instanceId, true]))
                   : {}
               )}
+              className="hov-gold"
               style={{
                 height: 28, borderRadius: 5, padding: '0 10px',
                 fontFamily: "'Share Tech Mono', 'Courier New', monospace",
@@ -95,16 +96,6 @@ export function AdversaryCardList({
                 border: '1px solid rgba(200,170,80,0.25)',
                 color: 'rgba(200,170,80,0.5)',
                 cursor: 'pointer',
-              }}
-              onMouseEnter={e => {
-                const el = e.currentTarget as HTMLElement
-                el.style.borderColor = 'rgba(200,170,80,0.6)'
-                el.style.color = 'rgba(200,170,80,0.6)'
-              }}
-              onMouseLeave={e => {
-                const el = e.currentTarget as HTMLElement
-                el.style.borderColor = 'rgba(200,170,80,0.25)'
-                el.style.color = 'rgba(200,170,80,0.5)'
               }}
             >
               {anyExpanded ? 'Collapse All' : 'Expand All'}

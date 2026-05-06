@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -18,7 +18,7 @@ const FB_DIM     = 'rgba(126,200,227,0.45)'
 const FB_BD      = 'rgba(126,200,227,0.15)'
 const FB_BAR     = 'rgba(126,200,227,0.6)'
 const TEXT_DIM   = 'rgba(255,255,255,0.5)'
-const FONT_C     = "var(--font-cinzel), 'Cinzel', serif"
+const FONT_C     = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R     = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FONT_M     = "'Share Tech Mono', 'Courier New', monospace"
 
@@ -72,6 +72,8 @@ export interface ForceCheckOverlayProps {
   isCombat:       boolean
   campaignId:     string | null
   characterId:    string
+  /** Pre-fetched active encounter ID — skips the combat_encounters SELECT when writing combat_log */
+  encounterId?:   string | null
 }
 
 export function ForceCheckOverlay({
@@ -79,6 +81,7 @@ export function ForceCheckOverlay({
   character, forceRating, committedForce,
   forcePowers, isDathomiri, isCombat,
   campaignId, characterId,
+  encounterId: propEncounterId,
 }: ForceCheckOverlayProps) {
   const [state, setState] = useState<ForceCheckState>(makeInitialState)
   const [mounted, setMounted]   = useState(false)
@@ -173,6 +176,8 @@ export function ForceCheckOverlay({
 
       // Advancing to step 5: write combat_log entry
       if (nextStep === 5 && supabase && campaignId && state.forceRoll) {
+        // Prefer prop-seeded id → cached state → DB lookup (last resort)
+        if (!encounterId) encounterId = propEncounterId ?? null
         if (!encounterId && isCombat) {
           const { data } = await supabase
             .from('combat_encounters')

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { HudCard } from '../ui/HudCard'
@@ -13,8 +13,8 @@ interface ObligationDutyCardProps {
 
 const gmBtnStyle: React.CSSProperties = {
   width: 20, height: 20, fontSize: 'var(--text-caption)', fontWeight: 700,
-  background: 'var(--gold-glow)', border: '1px solid var(--gold)',
-  color: 'var(--gold-d)', cursor: 'pointer', display: 'flex',
+  background: 'var(--bs-red-glow)', border: '1px solid var(--bs-red-sun)',
+  color: 'var(--bs-red-mid)', cursor: 'pointer', display: 'flex',
   alignItems: 'center', justifyContent: 'center', padding: 0,
   lineHeight: 1, flexShrink: 0,
 }
@@ -29,8 +29,8 @@ function EditableSection({
   return (
     <div style={{ flex: 1 }}>
       <div style={{
-        fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)', fontWeight: 600,
-        letterSpacing: '0.12rem', color: 'var(--txt3)', marginBottom: '0.25rem',
+        fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', fontWeight: 600,
+        letterSpacing: '0.12rem', color: 'var(--bs-txt3)', marginBottom: '0.25rem',
       }}>{label}</div>
       <input
         value={editType}
@@ -38,13 +38,13 @@ function EditableSection({
         onBlur={() => onChange('type', editType)}
         style={{
           fontSize: 'var(--text-body-sm)', padding: '2px 6px', fontWeight: 600,
-          color: 'var(--txt)', background: 'var(--white)',
-          border: '1px solid var(--bdr-l)', width: '100%', marginBottom: 4,
+          color: 'var(--bs-txt)', background: 'var(--bs-surface)',
+          border: '1px solid var(--bs-bdr-mid)', width: '100%', marginBottom: 4,
         }}
       />
       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
         <button style={gmBtnStyle} onClick={() => onChange('value', Math.max(0, value - 5))}>−</button>
-        <span style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-md)', fontWeight: 800, color, minWidth: 20, textAlign: 'center' }}>{value}</span>
+        <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-md)', fontWeight: 800, color, minWidth: 20, textAlign: 'center' }}>{value}</span>
         <button style={gmBtnStyle} onClick={() => onChange('value', value + 5)}>+</button>
       </div>
     </div>
@@ -70,18 +70,18 @@ export function ObligationDutyCard({ obligation, duty, isGmMode, onObligationCha
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
               <div style={{
-                fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)', fontWeight: 600,
-                letterSpacing: '0.12rem', color: 'var(--txt3)', marginBottom: '0.25rem',
+                fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', fontWeight: 600,
+                letterSpacing: '0.12rem', color: 'var(--bs-txt3)', marginBottom: '0.25rem',
               }}>OBLIGATION</div>
-              <div style={{ fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--txt)' }}>{obligation.type}</div>
+              <div style={{ fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--bs-txt)' }}>{obligation.type}</div>
             </div>
             <div style={{
-              fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-md)', fontWeight: 800, color: 'var(--red)',
+              fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-md)', fontWeight: 800, color: 'var(--red)',
             }}>{obligation.value}</div>
           </div>
         ) : null}
         {(obligation || isGmMode) && (duty || isGmMode) && (
-          <div style={{ width: '1px', background: 'var(--bdr-l)' }} />
+          <div style={{ width: '1px', background: 'var(--bs-bdr-mid)' }} />
         )}
         {isGmMode && onDutyChange ? (
           <EditableSection
@@ -95,13 +95,13 @@ export function ObligationDutyCard({ obligation, duty, isGmMode, onObligationCha
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
               <div style={{
-                fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)', fontWeight: 600,
-                letterSpacing: '0.12rem', color: 'var(--txt3)', marginBottom: '0.25rem',
+                fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', fontWeight: 600,
+                letterSpacing: '0.12rem', color: 'var(--bs-txt3)', marginBottom: '0.25rem',
               }}>DUTY</div>
-              <div style={{ fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--txt)' }}>{duty.type}</div>
+              <div style={{ fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--bs-txt)' }}>{duty.type}</div>
             </div>
             <div style={{
-              fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-md)', fontWeight: 800, color: 'var(--blue)',
+              fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-md)', fontWeight: 800, color: 'var(--blue)',
             }}>{duty.value}</div>
           </div>
         ) : null}

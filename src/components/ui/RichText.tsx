@@ -4,9 +4,6 @@ import { parseSymbols } from '@/lib/parseSymbols'
 import { DiceFace } from '@/components/dice/DiceFace'
 import type { DiceType } from '@/components/player-hud/design-tokens'
 
-// ── Result symbols ─────────────────────────────────────────────────────────
-// Rendered as <i className="ffi ffi-swrpg-{cls}"> using the locally-loaded
-// sw-rpg-icons font (declared in globals.css via --font-sw-rpg-icons).
 const CSS_ICON: Record<string, string> = {
   success:   'ffi-swrpg-success',
   failure:   'ffi-swrpg-failure',
@@ -16,22 +13,15 @@ const CSS_ICON: Record<string, string> = {
   despair:   'ffi-swrpg-despair',
 }
 
-// ── Force pips ─────────────────────────────────────────────────────────────
-// The package has no separate light/dark-pip glyph; we reuse ffi-swrpg-force
-// with a colour override.  White = light side, near-black = dark side.
 const FORCE_PIP_COLOR: Record<string, string> = {
   light: '#FFFFFF',
   dark:  '#333333',
 }
 
-// ── Dice faces ─────────────────────────────────────────────────────────────
-// Rendered via the DiceFace SVG component (no sw-rpg-icons glyph exists for
-// FFG custom polyhedra shapes).
 const DICE_FACE_KEYS = new Set<string>([
   'boost', 'ability', 'proficiency', 'setback', 'difficulty', 'challenge', 'force',
 ])
 
-// ── Human-readable labels for title / accessibility ────────────────────────
 const LABEL: Record<string, string> = {
   success:     'Success',
   failure:     'Failure',
@@ -50,91 +40,105 @@ const LABEL: Record<string, string> = {
   force:       'Force die',
 }
 
-// ── Inline style applied to every symbol to keep it in the text flow ───────
-const INLINE: React.CSSProperties = {
-  display:       'inline',
-  verticalAlign: 'middle',
-  lineHeight:    1,
-}
+const INLINE: React.CSSProperties = { display: 'inline', verticalAlign: 'middle', lineHeight: 1 }
 
 interface RichTextProps {
-  text: string
+  text:       string
   className?: string
-  style?: React.CSSProperties
+  style?:     React.CSSProperties
 }
 
 /**
- * <RichText> renders a string containing shortcode markup as inline content.
+ * Renders a string containing OggDude shortcode markup as inline React content.
  *
- * Usage:
- *   <RichText text="Roll [difficulty:2] and spend [advantage] to recover [success]." />
+ * Handles result symbols, force pips, dice faces, and formatting tags:
+ *   [B]…[b]  bold   [I]…[i]  italic   [H3]…[h3]  [H4]…[h4]  headings
+ *   [P]  paragraph break   [BR]  line break
  *
- * The root element is a <span> so the component never breaks surrounding text flow.
- * Unknown shortcodes (e.g. [banana]) are preserved as literal text.
+ * The root element is always a <span> so the component never breaks text flow.
  */
 export function RichText({ text, className, style }: RichTextProps) {
   const segments = parseSymbols(text)
+  const nodes: React.ReactNode[] = []
+
+  // Formatting state tracked across segments
+  let isBold    = false
+  let isItalic  = false
+  let heading: 0 | 3 | 4 = 0
+
+  for (let i = 0; i < segments.length; i++) {
+    const seg = segments[i]
+    const k   = String(i)
+
+    if (seg.type === 'text') {
+      const hasFormat = isBold || isItalic || heading > 0
+      if (!hasFormat) {
+        nodes.push(seg.value)
+      } else {
+        const s: React.CSSProperties = {}
+        if (isBold || heading > 0) s.fontWeight = 700
+        if (isItalic)              s.fontStyle  = 'italic'
+        if (heading === 3)         s.fontSize   = '1.05em'
+        nodes.push(<span key={k} style={s}>{seg.value}</span>)
+      }
+      continue
+    }
+
+    if (seg.type === 'format') {
+      switch (seg.tag) {
+        case 'bold-open':    isBold   = true;  break
+        case 'bold-close':   isBold   = false; break
+        case 'italic-open':  isItalic = true;  break
+        case 'italic-close': isItalic = false; break
+        case 'h3-open':      heading  = 3;     break
+        case 'h3-close':     heading  = 0;     break
+        case 'h4-open':      heading  = 4;     break
+        case 'h4-close':     heading  = 0;     break
+        case 'paragraph':
+          nodes.push(<br key={k} />, <br key={k + '_'} />)
+          break
+        case 'linebreak':
+          nodes.push(<br key={k} />)
+          break
+      }
+      continue
+    }
+
+    // seg.type === 'symbol'
+    const { key, count } = seg
+    const label = LABEL[key] ?? key
+
+    for (let iconIdx = 0; iconIdx < count; iconIdx++) {
+      const ik = `${k}-${iconIdx}`
+
+      if (key in CSS_ICON) {
+        nodes.push(
+          <i key={ik} className={`ffi ${CSS_ICON[key]}`} aria-hidden="true" title={label} style={INLINE} />
+        )
+        continue
+      }
+
+      if (key in FORCE_PIP_COLOR) {
+        nodes.push(
+          <i key={ik} className="ffi ffi-swrpg-force" aria-hidden="true" title={label}
+            style={{ ...INLINE, color: FORCE_PIP_COLOR[key] }} />
+        )
+        continue
+      }
+
+      if (DICE_FACE_KEYS.has(key)) {
+        nodes.push(
+          <span key={ik} aria-hidden="true" title={label} style={{ ...INLINE, display: 'inline-block' }}>
+            <DiceFace type={key as DiceType} size={14} style={{ verticalAlign: 'middle' }} />
+          </span>
+        )
+      }
+    }
+  }
 
   return (
     <span className={className} style={style}>
-      {segments.map((seg, segIdx) => {
-        if (seg.type === 'text') {
-          return seg.value
-        }
-
-        const { key, count } = seg
-        const label = LABEL[key] ?? key
-
-        return Array.from({ length: count }, (_, iconIdx) => {
-          const k = `${segIdx}-${iconIdx}`
-
-          // ── CSS result-symbol icon ──
-          if (key in CSS_ICON) {
-            return (
-              <i
-                key={k}
-                className={`ffi ${CSS_ICON[key]}`}
-                aria-hidden="true"
-                title={label}
-                style={INLINE}
-              />
-            )
-          }
-
-          // ── Force pip (light / dark) — ffi-swrpg-force with colour override ──
-          if (key in FORCE_PIP_COLOR) {
-            return (
-              <i
-                key={k}
-                className="ffi ffi-swrpg-force"
-                aria-hidden="true"
-                title={label}
-                style={{ ...INLINE, color: FORCE_PIP_COLOR[key] }}
-              />
-            )
-          }
-
-          // ── Dice face SVG ──
-          if (DICE_FACE_KEYS.has(key)) {
-            return (
-              <span
-                key={k}
-                aria-hidden="true"
-                title={label}
-                style={{ ...INLINE, display: 'inline-block' }}
-              >
-                <DiceFace
-                  type={key as DiceType}
-                  size={14}
-                  style={{ verticalAlign: 'middle' }}
-                />
-              </span>
-            )
-          }
-
-          return null
-        })
-      })}
+      {nodes}
     </span>
   )
 }

@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { createPortal } from 'react-dom'
+import { Modal } from '@/components/ui/Modal'
 import type { Character } from '@/lib/types'
+import { HUD } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
-const GOLD      = '#C8AA50'
 const GOLD_DIM  = 'rgba(200,170,80,0.5)'
 const GOLD_BD   = 'rgba(200,170,80,0.3)'
 const TEXT      = 'rgba(232,223,200,0.85)'
@@ -67,19 +67,14 @@ export function VendorSellModal({ item, characters, campaignId: _cid, onSend, on
 
   const typeColor = TYPE_COLOR[item.type] ?? DIM
 
-  return createPortal(
-    <div
-      style={{ position: 'fixed', inset: 0, zIndex: 600, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
-      onClick={onClose}
-    >
-      <div
-        style={{ background: PANEL_BG, border: `1px solid ${BORDER_HI}`, borderTop: `3px solid ${GOLD}`, borderRadius: 4, padding: 24, maxWidth: '30rem', width: '100%', backdropFilter: 'blur(12px)', boxShadow: '0 16px 60px rgba(0,0,0,0.7)' }}
-        onClick={e => e.stopPropagation()}
+  return (
+    <Modal open onClose={onClose} maxWidth={480}>
+      <div style={{ padding: 24 }}
       >
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
           <div>
-            <div style={{ fontFamily: FONT_M, fontSize: FS_OVER, textTransform: 'uppercase', letterSpacing: '0.18em', color: GOLD, marginBottom: 4 }}>
+            <div style={{ fontFamily: FONT_M, fontSize: FS_OVER, textTransform: 'uppercase', letterSpacing: '0.18em', color: HUD.gold, marginBottom: 4 }}>
               Vendor Offer
             </div>
             <div style={{ fontFamily: FONT_C, fontSize: FS_SM, fontWeight: 700, color: TEXT }}>
@@ -127,7 +122,7 @@ export function VendorSellModal({ item, characters, campaignId: _cid, onSend, on
         {quantity > 1 && (
           <div style={{
             fontFamily: FONT_M, fontSize: FS_LABEL,
-            color: GOLD, marginBottom: 14,
+            color: HUD.gold, marginBottom: 14,
             padding: '6px 10px',
             background: 'rgba(200,170,80,0.06)',
             border: `1px solid rgba(200,170,80,0.2)`,
@@ -161,8 +156,7 @@ export function VendorSellModal({ item, characters, campaignId: _cid, onSend, on
           </button>
         </div>
       </div>
-    </div>,
-    document.body,
+    </Modal>
   )
 }
 
@@ -184,7 +178,7 @@ const darkInput: React.CSSProperties = {
 
 const btnPrimary: React.CSSProperties = {
   background: 'rgba(200,170,80,0.15)', border: `1px solid ${GOLD_BD}`,
-  color: GOLD, fontFamily: FONT_C, fontSize: FS_CAP, fontWeight: 700,
+  color: HUD.gold, fontFamily: FONT_C, fontSize: FS_CAP, fontWeight: 700,
   letterSpacing: '0.12em', textTransform: 'uppercase',
   padding: '8px 18px', borderRadius: 3, cursor: 'pointer',
 }

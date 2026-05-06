@@ -1,13 +1,20 @@
 import type { Metadata, Viewport } from "next";
-import { Rajdhani } from "next/font/google";
+import { Orbitron, Exo_2 } from "next/font/google";
 import localFont from "next/font/local";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
-const rajdhani = Rajdhani({
-  variable: "--font-rajdhani",
+const orbitron = Orbitron({
+  variable: "--font-display",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "600", "700"],
+});
+
+const exo2 = Exo_2({
+  variable: "--font-body",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  style: ["normal", "italic"],
 });
 
 const swRpgIcons = localFont({
@@ -34,10 +41,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${rajdhani.variable} ${swRpgIcons.variable} antialiased`}
-      >
+    <html lang="en" className={`${orbitron.variable} ${exo2.variable} ${swRpgIcons.variable}`}>
+      <body className="antialiased">
         {children}
         <Toaster position="top-center" richColors />
       </body>

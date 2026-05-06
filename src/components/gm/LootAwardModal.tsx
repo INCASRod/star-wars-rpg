@@ -1,17 +1,17 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { createPortal } from 'react-dom'
+import { Modal } from '@/components/ui/Modal'
 import type { Character, CharacterWeapon, CharacterArmor, CharacterGear, RefWeaponQuality } from '@/lib/types'
 import type { RefWeapon, RefArmor, RefGear } from '@/lib/types'
 import { computeEncumbranceStats } from '@/lib/derivedStats'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { QualityBadge } from '@/components/character/QualityBadge'
+import { HUD } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 const BG        = 'rgba(0,0,0,0.7)'
 const PANEL_BG  = 'rgba(8,16,10,0.97)'
-const GOLD      = '#C8AA50'
 const GOLD_DIM  = 'rgba(200,170,80,0.5)'
 const GOLD_BD   = 'rgba(200,170,80,0.3)'
 const TEXT      = 'rgba(232,223,200,0.85)'
@@ -220,24 +220,9 @@ export function LootAwardModal({
 
   const itemTypeColor = item.type === 'weapon' ? RED : item.type === 'armor' ? BLUE : DIM
 
-  return createPortal(
-    <div
-      style={{ position: 'fixed', inset: 0, zIndex: 550, background: BG, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
-      onClick={onClose}
-    >
-      <div
-        style={{
-          background: PANEL_BG,
-          border: `1px solid ${BORDER_HI}`,
-          borderRadius: 6, padding: 24,
-          maxWidth: '38rem', width: '100%',
-          maxHeight: '85vh', overflowY: 'auto',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          boxShadow: '0 16px 60px rgba(0,0,0,0.7)',
-        }}
-        onClick={e => e.stopPropagation()}
-      >
+  return (
+    <Modal open onClose={onClose} maxWidth="38rem">
+      <div style={{ padding: 24 }}>
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 }}>
           <div>
@@ -257,9 +242,8 @@ export function LootAwardModal({
           </div>
           <button
             onClick={onClose}
+            className="hov-gold-text"
             style={{ background: 'transparent', border: 'none', color: DIM, cursor: 'pointer', fontFamily: FONT_C, fontSize: FS_SM }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = GOLD }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = DIM }}
           >✕</button>
         </div>
 
@@ -304,8 +288,8 @@ export function LootAwardModal({
                       {/* Checkbox */}
                       <div style={{
                         width: 16, height: 16, borderRadius: 3, flexShrink: 0,
-                        border: `1px solid ${isSelected ? GOLD : BORDER_HI}`,
-                        background: isSelected ? GOLD : 'transparent',
+                        border: `1px solid ${isSelected ? HUD.gold : BORDER_HI}`,
+                        background: isSelected ? HUD.gold : 'transparent',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                       }}>
                         {isSelected && <span style={{ fontSize: 10, color: '#060D09', fontWeight: 700 }}>✓</span>}
@@ -356,8 +340,7 @@ export function LootAwardModal({
           </button>
         </div>
       </div>
-    </div>,
-    document.body,
+    </Modal>
   )
 }
 
@@ -378,7 +361,7 @@ const inputStyle: React.CSSProperties = {
 
 const btnPrimaryStyle: React.CSSProperties = {
   background: 'rgba(200,170,80,0.15)', border: `1px solid ${GOLD_BD}`,
-  color: GOLD, fontFamily: FONT_C, fontSize: FS_CAP, fontWeight: 700,
+  color: HUD.gold, fontFamily: FONT_C, fontSize: FS_CAP, fontWeight: 700,
   letterSpacing: '0.12em', textTransform: 'uppercase',
   padding: '8px 18px', borderRadius: 3, cursor: 'pointer',
 }

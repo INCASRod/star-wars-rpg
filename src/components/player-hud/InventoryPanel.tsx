@@ -1,47 +1,39 @@
 'use client'
 
 import React, { useState, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { C, FONT_CINZEL, FONT_RAJDHANI, panelBase, FS_OVERLINE, FS_LABEL, FS_SM } from './design-tokens'
 import { WeaponDamageDisplay } from '@/components/character/WeaponDamageDisplay'
 import { QualityBadge } from '@/components/character/QualityBadge'
 import { RichText } from '@/components/ui/RichText'
 import { stripBBCode } from '@/lib/utils'
-import type { EquipState, RefWeaponQuality } from '@/lib/types'
+import type { EquipState, RefWeaponQuality, StowLocation, StowLocationType, StowableAsset, WpnDisplay, ArmDisplay, GearRow } from '@/lib/types'
+import { HUD } from '@/lib/tokens'
 
-export interface WpnDisplay {
-  id:          string
-  name:        string
-  damage:      { baseDamage: number; isMelee: boolean; brawn: number }
-  crit:        number
-  range:       string
-  enc:         number
-  hardPoints:  number
-  qualities:   { key: string; count?: number | null }[]
-  equipState:  EquipState
-  skillName:   string
-  description?: string | null
+// ── Stow location visual config ─────────────────────────────────────────────
+
+const STOW_COLOR: Record<StowLocationType, string> = {
+  vehicle:            '#4EC87A',
+  starship:           '#40C4D4',
+  safe_house:         '#D4A84B',
+  base_of_operations: '#9B59B6',
 }
 
-export interface ArmDisplay {
-  id:          string
-  name:        string
-  soak:        number
-  defense:     number
-  enc:         number
-  hardPoints:  number
-  rarity:      number
-  equipState:  EquipState
-  description?: string | null
+const STOW_ICON: Record<StowLocationType, string> = {
+  vehicle:            '▶',
+  starship:           '◈',
+  safe_house:         '◆',
+  base_of_operations: '★',
 }
 
-export interface GearRow {
-  id:         string
-  name:       string
-  qty:        number
-  enc:        number
-  equipState: EquipState
-  description?: string | null
+const STOW_TYPE_LABEL: Record<'vehicle' | 'starship' | 'safe_house', string> = {
+  vehicle:   'Vehicle',
+  starship:  'Starship',
+  safe_house:'Safe House',
 }
+
+// ── Public interfaces ────────────────────────────────────────────────────────
+export type { WpnDisplay, ArmDisplay, GearRow } from '@/lib/types'
 
 interface InventoryPanelProps {
   weapons:              WpnDisplay[]
@@ -50,15 +42,19 @@ interface InventoryPanelProps {
   encumbranceCurrent:   number
   encumbranceThreshold: number
   refWeaponQualityMap:  Record<string, RefWeaponQuality>
-  onSetWeaponState:     (id: string, state: EquipState) => void
-  onSetArmorState:      (id: string, state: EquipState) => void
-  onSetGearState:       (id: string, state: EquipState) => void
+  stowableAssets?:      StowableAsset[]
+  baseOfOperationsName?: string | null
+  onSetWeaponState:     (id: string, state: EquipState, location?: StowLocation | null) => void
+  onSetArmorState:      (id: string, state: EquipState, location?: StowLocation | null) => void
+  onSetGearState:       (id: string, state: EquipState, location?: StowLocation | null) => void
   onDiscardWeapon?:     (id: string, note?: string) => void
   onDiscardArmor?:      (id: string, note?: string) => void
   onDiscardGear?:       (id: string, note?: string) => void
   isGmMode?:            boolean
   characterName?:       string
 }
+
+// ── Sub-components ───────────────────────────────────────────────────────────
 
 function EncBar({ current, threshold }: { current: number; threshold: number }) {
   const pct    = threshold > 0 ? Math.min((current / threshold) * 100, 100) : 0
@@ -101,11 +97,11 @@ function SectionLabel({ text }: { text: string }) {
 }
 
 const RANGE_COLOR: Record<string, string> = {
-  Engaged: '#2EC9B8',   // teal  — light
-  Short:   '#2EC9B8',   // teal  — light
-  Medium:  '#AAEE33',   // highlighter green — medium
-  Long:    '#A855E8',   // purple — heavy
-  Extreme: '#A855E8',   // purple — heavy
+  Engaged: '#2EC9B8',
+  Short:   '#2EC9B8',
+  Medium:  '#AAEE33',
+  Long:    '#A855E8',
+  Extreme: '#A855E8',
 }
 
 function StatBadge({ label, value, color = C.textDim }: { label: string; value: React.ReactNode; color?: string }) {
@@ -121,12 +117,27 @@ function StatBadge({ label, value, color = C.textDim }: { label: string; value: 
   )
 }
 
+function StowPill({ location }: { location: StowLocation }) {
+  const color = STOW_COLOR[location.type]
+  const icon  = STOW_ICON[location.type]
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 3,
+      padding: '1px 7px', borderRadius: 10,
+      background: `${color}18`, border: `1px solid ${color}45`,
+      fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE,
+      color, letterSpacing: '0.04em', flexShrink: 0, whiteSpace: 'nowrap',
+    }}>
+      {icon} {location.name}
+    </span>
+  )
+}
 
 const EQUIP_BTN_STATES: EquipState[] = ['stowed', 'carrying', 'equipped']
 const EQUIP_BTN_LABELS: Record<EquipState, string> = { stowed: 'STOW', carrying: 'CARRY', equipped: 'EQUIP' }
 const EQUIP_BTN_ACTIVE: Record<EquipState, React.CSSProperties> = {
-  stowed:   { background: 'rgba(232,223,200,0.08)', borderColor: 'rgba(232,223,200,0.4)',  color: 'rgba(232,223,200,0.9)' },
-  carrying: { background: 'rgba(200,170,80,0.1)',   borderColor: 'rgba(200,170,80,0.45)', color: C.gold },
+  stowed:   { background: 'rgba(90,40,24,0.08)', borderColor: 'rgba(90,40,24,0.4)',  color: 'rgba(90,40,24,0.9)' },
+  carrying: { background: 'rgba(224,58,30,0.1)',   borderColor: 'rgba(224,58,30,0.45)', color: C.gold },
   equipped: { background: 'rgba(76,175,80,0.1)',    borderColor: 'rgba(76,175,80,0.45)',  color: '#4CAF50' },
 }
 
@@ -151,11 +162,11 @@ function EquipStateButtons({ equipState, onSet }: { equipState: EquipState; onSe
               ...(isActive ? active : {
                 background: 'rgba(255,255,255,0.04)',
                 borderColor: 'rgba(255,255,255,0.12)',
-                color: 'rgba(232,223,200,0.45)',
+                color: 'rgba(90,40,24,0.45)',
               }),
             }}
-            onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(200,170,80,0.3)'; (e.currentTarget as HTMLElement).style.color = 'rgba(232,223,200,0.7)' } }}
-            onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.12)'; (e.currentTarget as HTMLElement).style.color = 'rgba(232,223,200,0.45)' } }}
+            onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(224,58,30,0.3)'; (e.currentTarget as HTMLElement).style.color = 'rgba(90,40,24,0.7)' } }}
+            onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.12)'; (e.currentTarget as HTMLElement).style.color = 'rgba(90,40,24,0.45)' } }}
           >
             {EQUIP_BTN_LABELS[s]}
           </button>
@@ -182,7 +193,7 @@ function TrashBtn({
 }: { isGm: boolean; isEquipped: boolean; onClick: () => void }) {
   const [hov, setHov] = useState(false)
   const blocked = !isGm && isEquipped
-  const baseAlpha = isGm ? 'rgba(200,170,80,' : 'rgba(244,67,54,'
+  const baseAlpha = isGm ? 'rgba(224,58,30,' : 'rgba(244,67,54,'
   const alpha = blocked ? '0.18)' : hov ? '0.9)' : '0.4)'
   return (
     <button
@@ -231,7 +242,7 @@ function DiscardStrip({
             placeholder="Note (optional)"
             style={{
               marginTop: 4, width: '100%', boxSizing: 'border-box',
-              background: 'rgba(0,0,0,0.3)', border: `1px solid rgba(200,170,80,0.2)`,
+              background: 'rgba(0,0,0,0.3)', border: `1px solid rgba(224,58,30,0.2)`,
               color: C.text, fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE,
               padding: '3px 8px', borderRadius: 3, outline: 'none',
             }}
@@ -244,7 +255,7 @@ function DiscardStrip({
           height: 26, padding: '0 10px', borderRadius: 5, cursor: 'pointer',
           fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE,
           background: 'transparent', border: `1px solid rgba(255,255,255,0.15)`,
-          color: 'rgba(232,223,200,0.6)', flexShrink: 0, marginTop: isGm ? 2 : 0,
+          color: 'rgba(90,40,24,0.6)', flexShrink: 0, marginTop: isGm ? 2 : 0,
         }}
       >Cancel</button>
       <button
@@ -262,10 +273,190 @@ function DiscardStrip({
   )
 }
 
+// ── Stow Location Modal ──────────────────────────────────────────────────────
+
+const DIM  = 'var(--hud-text-dim)'
+const TEXT = 'var(--hud-text)'
+const BG   = 'var(--hud-surface-hi)'
+
+interface StowLocationModalProps {
+  itemName:             string
+  stowableAssets:       StowableAsset[]
+  baseOfOperationsName: string | null
+  onConfirm:            (location: StowLocation | null) => void
+  onCancel:             () => void
+}
+
+function StowLocationModal({
+  itemName, stowableAssets, baseOfOperationsName, onConfirm, onCancel,
+}: StowLocationModalProps) {
+  const BOO_VALUE = '__boo__'
+  const defaultVal = baseOfOperationsName
+    ? BOO_VALUE
+    : stowableAssets[0]?.id ?? ''
+
+  const [selected, setSelected] = useState(defaultVal)
+
+  const hasOptions = !!baseOfOperationsName || stowableAssets.length > 0
+
+  const handleConfirm = () => {
+    if (!selected) {
+      onConfirm(null)
+      return
+    }
+    if (selected === BOO_VALUE) {
+      onConfirm({ id: null, name: baseOfOperationsName!, type: 'base_of_operations' })
+      return
+    }
+    const asset = stowableAssets.find(a => a.id === selected)
+    if (asset) onConfirm({ id: asset.id, name: asset.name, type: asset.type })
+    else        onConfirm(null)
+  }
+
+  return createPortal(
+    <>
+      {/* Backdrop */}
+      <div
+        onClick={onCancel}
+        style={{ position: 'fixed', inset: 0, zIndex: 1099, background: 'rgba(0,0,0,0.65)', cursor: 'pointer' }}
+      />
+      {/* Modal */}
+      <div style={{
+        position: 'fixed', top: '50%', left: '50%',
+        transform: 'translate(-50%,-50%)',
+        zIndex: 1100,
+        width: 'clamp(300px, 36vw, 420px)',
+        background: BG,
+        border: `1px solid rgba(224,58,30,0.45)`,
+        borderRadius: 6,
+        padding: '20px 22px',
+        boxShadow: '0 16px 48px rgba(0,0,0,0.75), 0 0 0 1px rgba(224,58,30,0.08)',
+      }}>
+        {/* Header */}
+        <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_SM, fontWeight: 700, color: HUD.gold, marginBottom: 4 }}>
+          Stow Item
+        </div>
+        <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: DIM, marginBottom: 14, lineHeight: 1.4 }}>
+          Where would you like to stow{' '}
+          <span style={{ color: TEXT, fontWeight: 600 }}>{itemName}</span>?
+        </div>
+
+        <div style={{ height: 1, background: 'rgba(224,58,30,0.15)', marginBottom: 16 }} />
+
+        {/* Location picker */}
+        {hasOptions ? (
+          <>
+            <div style={{
+              fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE,
+              fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase',
+              color: 'rgba(224,58,30,0.5)', marginBottom: 8,
+            }}>
+              Storage Location
+            </div>
+            <select
+              value={selected}
+              onChange={e => setSelected(e.target.value)}
+              style={{
+                width: '100%', padding: '8px 10px',
+                background: 'rgba(0,0,0,0.45)',
+                border: '1px solid rgba(224,58,30,0.28)',
+                borderRadius: 4,
+                color: TEXT,
+                fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL,
+                outline: 'none', cursor: 'pointer',
+                marginBottom: 18,
+                appearance: 'none',
+                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23E03A1E' opacity='0.6'/%3E%3C/svg%3E")`,
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'right 10px center',
+                paddingRight: 28,
+              }}
+            >
+              <option value="">— No specific location —</option>
+              {baseOfOperationsName && (
+                <option value={BOO_VALUE}>
+                  ★ {baseOfOperationsName} (Base of Operations)
+                </option>
+              )}
+              {stowableAssets.map(a => (
+                <option key={a.id} value={a.id}>
+                  {STOW_ICON[a.type]} {a.name} ({STOW_TYPE_LABEL[a.type]})
+                </option>
+              ))}
+            </select>
+
+            {/* Preview pill for selected location */}
+            {selected && selected !== '' && (
+              <div style={{ marginBottom: 18 }}>
+                {(() => {
+                  let loc: StowLocation | null = null
+                  if (selected === BOO_VALUE && baseOfOperationsName) {
+                    loc = { id: null, name: baseOfOperationsName, type: 'base_of_operations' }
+                  } else {
+                    const a = stowableAssets.find(x => x.id === selected)
+                    if (a) loc = { id: a.id, name: a.name, type: a.type }
+                  }
+                  return loc ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, color: DIM }}>Will appear as:</span>
+                      <StowPill location={loc} />
+                    </div>
+                  ) : null
+                })()}
+              </div>
+            )}
+          </>
+        ) : (
+          <div style={{
+            fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: DIM,
+            fontStyle: 'italic', marginBottom: 18, lineHeight: 1.5,
+          }}>
+            No group assets available yet. The item will be stowed without a specific location.
+            Add vehicles, starships, or safe houses in the Group Sheet to assign a location.
+          </div>
+        )}
+
+        {/* Action buttons */}
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <button
+            onClick={onCancel}
+            style={{
+              height: 32, padding: '0 14px', borderRadius: 4, cursor: 'pointer',
+              fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL,
+              background: 'transparent',
+              border: `1px solid rgba(255,255,255,0.15)`,
+              color: 'rgba(90,40,24,0.6)',
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleConfirm}
+            style={{
+              height: 32, padding: '0 18px', borderRadius: 4, cursor: 'pointer',
+              fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, fontWeight: 700,
+              background: 'rgba(224,58,30,0.14)',
+              border: `1px solid rgba(224,58,30,0.5)`,
+              color: HUD.gold,
+            }}
+          >
+            Stow
+          </button>
+        </div>
+      </div>
+    </>,
+    document.body,
+  )
+}
+
+// ── Main component ───────────────────────────────────────────────────────────
+
 export function InventoryPanel({
   weapons, armorItems, gearItems,
   encumbranceCurrent, encumbranceThreshold,
   refWeaponQualityMap,
+  stowableAssets = [],
+  baseOfOperationsName = null,
   onSetWeaponState, onSetArmorState, onSetGearState,
   onDiscardWeapon, onDiscardArmor, onDiscardGear,
   isGmMode, characterName,
@@ -276,6 +467,38 @@ export function InventoryPanel({
   const [hoveredRow, setHoveredRow] = useState<string | null>(null)
   const [confirmingDiscard, setConfirmingDiscard] = useState<{ id: string; type: 'weapon' | 'armor' | 'gear' } | null>(null)
   const discardTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // ── Stow location modal state ──
+  const [pendingStow, setPendingStow] = useState<{
+    id:   string
+    type: 'weapon' | 'armor' | 'gear'
+    name: string
+  } | null>(null)
+
+  // Intercept equip-state changes: show modal when stowing, clear location otherwise
+  const handleEquipChange = (
+    id: string,
+    type: 'weapon' | 'armor' | 'gear',
+    name: string,
+    s: EquipState,
+  ) => {
+    if (s === 'stowed') {
+      setPendingStow({ id, type, name })
+    } else {
+      if (type === 'weapon') onSetWeaponState(id, s, null)
+      else if (type === 'armor') onSetArmorState(id, s, null)
+      else onSetGearState(id, s, null)
+    }
+  }
+
+  const confirmStow = (location: StowLocation | null) => {
+    if (!pendingStow) return
+    const { id, type } = pendingStow
+    if (type === 'weapon') onSetWeaponState(id, 'stowed', location)
+    else if (type === 'armor') onSetArmorState(id, 'stowed', location)
+    else onSetGearState(id, 'stowed', location)
+    setPendingStow(null)
+  }
 
   const startDiscard = (id: string, type: 'weapon' | 'armor' | 'gear') => {
     if (discardTimerRef.current) clearTimeout(discardTimerRef.current)
@@ -299,7 +522,7 @@ export function InventoryPanel({
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <EncBar current={encumbranceCurrent} threshold={encumbranceThreshold} />
 
-      {/* Weapons */}
+      {/* ── Weapons ── */}
       {weapons.length > 0 && (
         <div>
           <SectionLabel text="Weapons" />
@@ -320,12 +543,15 @@ export function InventoryPanel({
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
                     <div>
                       <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_SM, fontWeight: 600, color: C.text }}>{w.name}</div>
-                      <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: C.textDim, marginTop: 2, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                        {w.skillName}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 2 }}>
+                        <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: C.textDim, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                          {w.skillName}
+                        </span>
+                        {w.stowLocation && <StowPill location={w.stowLocation} />}
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <EquipStateButtons equipState={w.equipState} onSet={s => onSetWeaponState(w.id, s)} />
+                      <EquipStateButtons equipState={w.equipState} onSet={s => handleEquipChange(w.id, 'weapon', w.name, s)} />
                       {onDiscardWeapon && (hoveredRow === w.id || confirmingDiscard?.id === w.id) && (
                         <TrashBtn isGm={!!isGmMode} isEquipped={w.equipState === 'equipped'} onClick={() => startDiscard(w.id, 'weapon')} />
                       )}
@@ -391,7 +617,7 @@ export function InventoryPanel({
         </div>
       )}
 
-      {/* Armor */}
+      {/* ── Armor ── */}
       {armorItems.length > 0 && (
         <div>
           <SectionLabel text="Armor" />
@@ -406,9 +632,16 @@ export function InventoryPanel({
                 >
                   <CornerBrackets />
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
-                    <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_SM, fontWeight: 600, color: C.text }}>{a.name}</div>
+                    <div>
+                      <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_SM, fontWeight: 600, color: C.text }}>{a.name}</div>
+                      {a.stowLocation && (
+                        <div style={{ marginTop: 3 }}>
+                          <StowPill location={a.stowLocation} />
+                        </div>
+                      )}
+                    </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <EquipStateButtons equipState={a.equipState} onSet={s => onSetArmorState(a.id, s)} />
+                      <EquipStateButtons equipState={a.equipState} onSet={s => handleEquipChange(a.id, 'armor', a.name, s)} />
                       {onDiscardArmor && (hoveredRow === a.id || confirmingDiscard?.id === a.id) && (
                         <TrashBtn isGm={!!isGmMode} isEquipped={a.equipState === 'equipped'} onClick={() => startDiscard(a.id, 'armor')} />
                       )}
@@ -454,7 +687,7 @@ export function InventoryPanel({
         </div>
       )}
 
-      {/* Gear */}
+      {/* ── Gear ── */}
       {gearItems.length > 0 && (
         <div>
           <SectionLabel text="Gear" />
@@ -466,22 +699,25 @@ export function InventoryPanel({
               return (
                 <div key={g.id} style={{
                   borderRadius: 4,
-                  background: 'rgba(8,16,10,0.5)', border: `1px solid ${C.border}`,
+                  background: 'var(--hud-surface-lo)', border: `1px solid ${C.border}`,
                 }}
                   onMouseEnter={() => setHoveredRow(g.id)}
                   onMouseLeave={() => setHoveredRow(null)}
                 >
                   <div style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '6px 10px',
+                    padding: '6px 10px', gap: 8,
                   }}>
-                    <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.text }}>{g.name}</div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, flex: 1 }}>
+                      <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.text, flexShrink: 0 }}>{g.name}</span>
+                      {g.stowLocation && <StowPill location={g.stowLocation} />}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
                       {g.qty > 1 && (
                         <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: C.textDim }}>×{g.qty}</span>
                       )}
                       <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: C.textDim }}>Enc {g.enc}</span>
-                      <EquipStateButtons equipState={g.equipState} onSet={s => onSetGearState(g.id, s)} />
+                      <EquipStateButtons equipState={g.equipState} onSet={s => handleEquipChange(g.id, 'gear', g.name, s)} />
                       {descText && (
                         <button
                           onClick={() => toggleExpand(g.id)}
@@ -527,6 +763,17 @@ export function InventoryPanel({
         }}>
           Inventory is empty.
         </div>
+      )}
+
+      {/* Stow location modal — rendered to body via portal */}
+      {pendingStow && (
+        <StowLocationModal
+          itemName={pendingStow.name}
+          stowableAssets={stowableAssets}
+          baseOfOperationsName={baseOfOperationsName}
+          onConfirm={confirmStow}
+          onCancel={() => setPendingStow(null)}
+        />
       )}
     </div>
   )

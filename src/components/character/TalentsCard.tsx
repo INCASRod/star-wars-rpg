@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { HudCard } from '../ui/HudCard'
 import { removeBtnStyle as baseRemoveBtnStyle } from '@/lib/styles'
@@ -38,23 +38,23 @@ export function TalentsCard({ talents, animClass = 'ar d4', onOpenTree, collapsi
         {talents.map((tal, i) => (
           <div key={i} style={{
             display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-            background: 'var(--parch)', border: '1px solid var(--bdr-l)',
+            background: 'var(--bs-surface)', border: '1px solid var(--bs-bdr-mid)',
             padding: '0.5rem 0.75rem', margin: '0 0.25rem 0.25rem 0',
             fontSize: 'var(--font-sm)', transition: '.2s', cursor: 'default',
           }}>
             <div style={{
-              fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)', fontWeight: 800,
-              color: 'var(--gold-d)', background: 'var(--gold-glow)',
+              fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', fontWeight: 800,
+              color: 'var(--bs-red-mid)', background: 'var(--bs-red-glow)',
               width: '1.1rem', height: '1.1rem',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
               {tal.rank}
             </div>
             <div>
-              <div style={{ fontWeight: 600, color: 'var(--txt)' }}>{tal.name}</div>
+              <div style={{ fontWeight: 600, color: 'var(--bs-txt)' }}>{tal.name}</div>
               <div style={{
-                fontFamily: 'var(--font-mono)', fontSize: 'var(--font-xs)',
-                fontWeight: 600, color: ACTIVATION_COLORS[tal.activation] || 'var(--txt2)', letterSpacing: '0.06rem',
+                fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)',
+                fontWeight: 600, color: ACTIVATION_COLORS[tal.activation] || 'var(--bs-txt2)', letterSpacing: '0.06rem',
               }}>
                 {tal.activation}
               </div>
@@ -78,13 +78,13 @@ export function TalentsCard({ talents, animClass = 'ar d4', onOpenTree, collapsi
           onClick={onOpenTree}
           style={{
             width: '100%', marginTop: '0.5rem',
-            background: 'rgba(200,162,78,.08)',
-            border: '1px solid var(--gold)',
+            background: 'rgba(224,58,30,.08)',
+            border: '1px solid var(--bs-red-sun)',
             padding: '0.5rem',
             cursor: 'pointer',
-            fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-xs)',
+            fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)',
             fontWeight: 700, letterSpacing: '0.1rem',
-            color: 'var(--gold-d)', textAlign: 'center',
+            color: 'var(--bs-red-mid)', textAlign: 'center',
             transition: '.2s',
           }}
         >

@@ -3,6 +3,8 @@
 import { useState, useRef } from 'react'
 import { FS_OVERLINE, FS_LABEL, FS_SM } from '@/components/player-hud/design-tokens'
 import { RichText } from '@/components/ui/RichText'
+import { HUD } from '@/lib/tokens'
+import { Modal } from '@/components/ui/Modal'
 
 /* ═══════════════════════════════════════════════════════ */
 /*  DESIGN TOKENS                                         */
@@ -12,7 +14,6 @@ const FC = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FR = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 
 const BG = '#060D09'
-const GOLD = '#C8AA50'
 const GOLD_DIM = '#7A6830'
 const GOLD_BR = '#E0C060'
 const TEXT = '#C8D8C0'
@@ -209,9 +210,9 @@ function NodeCard({
                   width: 6,
                   height: 6,
                   borderRadius: '50%',
-                  background: i === 0 ? GOLD : 'rgba(200,170,80,0.2)',
-                  border: `1px solid ${GOLD}`,
-                  boxShadow: i === 0 ? `0 0 4px ${GOLD}` : 'none',
+                  background: i === 0 ? HUD.gold : 'rgba(200,170,80,0.2)',
+                  border: `1px solid ${HUD.gold}`,
+                  boxShadow: i === 0 ? `0 0 4px ${HUD.gold}` : 'none',
                 }}
               />
             ))}
@@ -464,42 +465,23 @@ function PurchasePopover({
   const canAfford = xpAvailable === undefined || xpAvailable >= cost
 
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        onClick={onCancel}
-        style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 499,
-          background: 'rgba(0,0,0,0.4)',
-          cursor: 'pointer',
-        }}
-      />
-
-      {/* Popover */}
-      <div
-        style={{
-          position: 'fixed',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%,-50%)',
-          zIndex: 500,
-          background: 'rgba(8,16,10,0.98)',
-          border: '1px solid rgba(200,170,80,0.5)',
-          borderRadius: 6,
-          padding: '14px 16px',
-          minWidth: 280,
-          maxWidth: 320,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.7), 0 0 0 1px rgba(200,170,80,0.1)',
-        }}
-      >
+    <Modal
+      open
+      onClose={onCancel}
+      maxWidth={320}
+      zIndex={500}
+      backdrop="rgba(0,0,0,0.4)"
+      borderColor="rgba(200,170,80,0.5)"
+      shadow="0 8px 32px rgba(0,0,0,0.7), 0 0 0 1px rgba(200,170,80,0.1)"
+      panelBackground="rgba(8,16,10,0.98)"
+    >
+      <div style={{ padding: '14px 16px' }}>
         {/* Title */}
         <div
           style={{
             fontFamily: FC,
             fontSize: FS_SM,
-            color: GOLD,
+            color: HUD.gold,
             marginBottom: 4,
           }}
         >
@@ -580,7 +562,7 @@ function PurchasePopover({
               fontFamily: FR,
               fontSize: FS_LABEL,
               fontWeight: 700,
-              color: canAfford ? GOLD : GOLD_DIM,
+              color: canAfford ? HUD.gold : GOLD_DIM,
               padding: '6px 16px',
               cursor: canAfford ? 'pointer' : 'not-allowed',
               opacity: canAfford ? 1 : 0.5,
@@ -590,7 +572,7 @@ function PurchasePopover({
           </button>
         </div>
       </div>
-    </>
+    </Modal>
   )
 }
 
@@ -611,24 +593,17 @@ function LockedInfoPopover({
   const actColor = ACTIVATION_COLORS[node.activation] ?? DIM
 
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        onClick={onClose}
-        style={{ position: 'fixed', inset: 0, zIndex: 499, background: 'rgba(0,0,0,0.4)', cursor: 'pointer' }}
-      />
-      {/* Popover */}
-      <div style={{
-        position: 'fixed', top: '50%', left: '50%',
-        transform: 'translate(-50%,-50%)',
-        zIndex: 500,
-        background: 'rgba(8,16,10,0.98)',
-        border: '1px solid rgba(255,255,255,0.12)',
-        borderRadius: 6,
-        padding: '14px 16px',
-        minWidth: 280, maxWidth: 320,
-        boxShadow: '0 8px 32px rgba(0,0,0,0.7)',
-      }}>
+    <Modal
+      open
+      onClose={onClose}
+      maxWidth={320}
+      zIndex={500}
+      backdrop="rgba(0,0,0,0.4)"
+      borderColor="rgba(255,255,255,0.12)"
+      shadow="0 8px 32px rgba(0,0,0,0.7)"
+      panelBackground="rgba(8,16,10,0.98)"
+    >
+      <div style={{ padding: '14px 16px' }}>
         {/* Locked / Preview banner */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 8,
@@ -690,7 +665,7 @@ function LockedInfoPopover({
           Close
         </button>
       </div>
-    </>
+    </Modal>
   )
 }
 
@@ -829,7 +804,7 @@ export function TalentTree({
         }}
       >
         <div>
-          <div style={{ fontFamily: FC, fontSize: FS_SM, color: GOLD, lineHeight: 1.3 }}>
+          <div style={{ fontFamily: FC, fontSize: FS_SM, color: HUD.gold, lineHeight: 1.3 }}>
             {specName}
           </div>
           <div style={{ fontFamily: FR, fontSize: FS_LABEL, color: DIM, marginTop: 2 }}>
@@ -846,7 +821,7 @@ export function TalentTree({
               padding: '2px 10px',
               fontFamily: FC,
               fontSize: FS_LABEL,
-              color: GOLD,
+              color: HUD.gold,
             }}
           >
             {xpAvailable} XP
@@ -873,7 +848,7 @@ export function TalentTree({
               display: 'inline-block',
               width: 8,
               height: 8,
-              background: GOLD,
+              background: HUD.gold,
             }}
           />
           <span style={{ fontFamily: FR, fontSize: FS_LABEL, color: DIM }}>Purchased</span>
@@ -886,7 +861,7 @@ export function TalentTree({
               width: 8,
               height: 8,
               background: 'transparent',
-              border: `1px solid ${GOLD}`,
+              border: `1px solid ${HUD.gold}`,
             }}
           />
           <span style={{ fontFamily: FR, fontSize: FS_LABEL, color: DIM }}>Available</span>

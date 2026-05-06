@@ -3,7 +3,6 @@
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const FONT_C    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FONT_M    = "'Share Tech Mono','Courier New',monospace"
-const GOLD      = '#C8AA50'
 const DIM       = '#6A8070'
 const LIGHT_CLR = '#7EC8E3'   // Force blue
 const DARK_CLR  = '#8B2BE2'   // Dark side purple

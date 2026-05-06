@@ -1,15 +1,15 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
-import { createPortal } from 'react-dom'
 import { rollForceDice } from '@/lib/forceRoll'
+import { Modal } from '@/components/ui/Modal'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
-const FONT_C    = "var(--font-cinzel), 'Cinzel', serif"
+const FONT_C    = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FONT_M    = "'Share Tech Mono','Courier New',monospace"
-const GOLD      = '#C8AA50'
 const GOLD_BD   = 'rgba(200,170,80,0.3)'
 const GOLD_DIM  = 'rgba(200,170,80,0.5)'
 const TEXT      = 'rgba(232,223,200,0.85)'
@@ -101,22 +101,12 @@ export function DestinyRollModal({
   }
 
   const modal = (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 9100,
-      background: 'rgba(0,0,0,0.75)',
-      backdropFilter: 'blur(8px)',
-      WebkitBackdropFilter: 'blur(8px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: 16,
-    }}>
-      <div style={{
-        width: 'clamp(320px, 90vw, 480px)',
-        background: BG,
-        border: `2px solid rgba(126,200,227,0.4)`,
-        borderRadius: 12,
-        boxShadow: '0 16px 48px rgba(0,0,0,0.8), 0 0 40px rgba(126,200,227,0.08)',
-        overflow: 'hidden',
-      }}>
+    <Modal
+      open
+      maxWidth={480}
+      borderColor="rgba(126,200,227,0.4)"
+      shadow="0 16px 48px rgba(0,0,0,0.8), 0 0 40px rgba(126,200,227,0.08)"
+    >
         {/* Header */}
         <div style={{
           padding: '18px 24px 14px',
@@ -257,7 +247,7 @@ export function DestinyRollModal({
               cursor: !hasResult || busy ? 'not-allowed' : 'pointer',
               background: 'rgba(200,170,80,0.15)',
               border: `1px solid ${GOLD_BD}`,
-              color: GOLD,
+              color: HUD.gold,
               opacity: !hasResult || busy ? 0.4 : 1,
               transition: '.15s',
             }}
@@ -268,10 +258,8 @@ export function DestinyRollModal({
             This roll is mandatory — you must submit a result.
           </div>
         </div>
-      </div>
-    </div>
+    </Modal>
   )
 
-  if (typeof window === 'undefined') return null
-  return createPortal(modal, document.body)
+  return modal
 }

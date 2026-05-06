@@ -100,7 +100,7 @@ function ForcePips({ light, dark }: { light: number; dark: number }) {
         <div key={`l${i}`} style={{ width: 10, height: 10, borderRadius: '50%', flexShrink: 0, background: FORCE_BLUE, boxShadow: `0 0 4px ${FORCE_BLUE}80` }} />
       ))}
       {light > 0 && dark > 0 && (
-        <span style={{ fontFamily: FONT_MONO, fontSize: 'clamp(0.55rem, 0.88vw, 0.68rem)', color: 'rgba(232,223,200,0.3)', margin: '0 2px' }}>·</span>
+        <span style={{ fontFamily: FONT_MONO, fontSize: 'clamp(0.55rem, 0.88vw, 0.68rem)', color: 'rgba(90,40,24,0.3)', margin: '0 2px' }}>·</span>
       )}
       {Array.from({ length: dark }).map((_, i) => (
         <div key={`d${i}`} style={{ width: 10, height: 10, borderRadius: '50%', flexShrink: 0, background: FORCE_PURPLE }} />
@@ -145,7 +145,7 @@ function outcomeLabel(netSuccess: number): string {
 function outcomeColor(netSuccess: number): string {
   if (netSuccess > 0) return '#4CAF50'
   if (netSuccess < 0) return '#f44336'
-  return 'rgba(232,223,200,0.5)'
+  return 'rgba(90,40,24,0.5)'
 }
 
 // ── Result symbols row ────────────────────────────────────────────────────────
@@ -178,7 +178,7 @@ function CardHeader({ roll, isOwn, ac }: { roll: RollEntry; isOwn: boolean; ac: 
       <span style={{ fontFamily: FONT_CINZEL, fontSize: FS_NAME, fontWeight: 600, color: ac, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {roll.character_name}
       </span>
-      <span style={{ fontFamily: FONT_MONO, fontSize: FS_TIME, color: 'rgba(232,223,200,0.3)', whiteSpace: 'nowrap' }}>
+      <span style={{ fontFamily: FONT_MONO, fontSize: FS_TIME, color: 'rgba(90,40,24,0.3)', whiteSpace: 'nowrap' }}>
         {relativeTime(roll.rolled_at)}
       </span>
     </div>
@@ -202,12 +202,12 @@ function SkillCard({ roll, isOwn, isGm }: { roll: RollEntry; isOwn: boolean; isG
   const isHidden = roll.hidden && !isOwn
 
   return (
-    <div style={{ ...panelBase, padding: '10px 12px', borderLeft: `3px solid ${ac}`, background: isOwn ? 'rgba(200,170,80,0.04)' : C.panelBg }}>
+    <div style={{ ...panelBase, padding: '10px 12px', borderLeft: `3px solid ${ac}`, background: isOwn ? 'rgba(224,58,30,0.04)' : C.panelBg }}>
       <CornerBrackets />
       <CardHeader roll={roll} isOwn={isOwn} ac={ac} />
 
       {roll.roll_label && (
-        <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_TYPE, color: 'rgba(232,223,200,0.55)', fontStyle: 'italic', marginBottom: 6 }}>
+        <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_TYPE, color: 'rgba(90,40,24,0.55)', fontStyle: 'italic', marginBottom: 6 }}>
           {roll.roll_label}
         </div>
       )}
@@ -267,7 +267,7 @@ function CombatCard({ roll, isOwn, isGm }: { roll: RollEntry; isOwn: boolean; is
     : null
 
   return (
-    <div style={{ ...panelBase, padding: '10px 12px', borderLeft: `3px solid ${ac}`, background: isOwn ? 'rgba(200,170,80,0.04)' : C.panelBg }}>
+    <div style={{ ...panelBase, padding: '10px 12px', borderLeft: `3px solid ${ac}`, background: isOwn ? 'rgba(224,58,30,0.04)' : C.panelBg }}>
       <CornerBrackets />
       <CardHeader roll={roll} isOwn={isOwn} ac={ac} />
 
@@ -275,9 +275,9 @@ function CombatCard({ roll, isOwn, isGm }: { roll: RollEntry; isOwn: boolean; is
       <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_TYPE, fontStyle: 'italic', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
         <span style={{ color: C.gold, fontWeight: 600 }}>⚔ {weaponName}</span>
         {targetName && <>
-          <span style={{ color: 'rgba(232,223,200,0.4)' }}>→</span>
+          <span style={{ color: 'rgba(90,40,24,0.4)' }}>→</span>
           <span style={{ color: '#E05050' }}>{targetName}</span>
-          {rangeBand && <span style={{ color: 'rgba(232,223,200,0.4)' }}>· {rangeBand}</span>}
+          {rangeBand && <span style={{ color: 'rgba(90,40,24,0.4)' }}>· {rangeBand}</span>}
         </>}
       </div>
 
@@ -331,7 +331,7 @@ function ForceCard({ roll, isOwn, isGm }: { roll: RollEntry; isOwn: boolean; isG
   const forceCount = roll.pool?.force ?? 0
 
   return (
-    <div style={{ ...panelBase, padding: '10px 12px', borderLeft: `3px solid ${FORCE_BLUE}`, background: isOwn ? 'rgba(200,170,80,0.04)' : C.panelBg }}>
+    <div style={{ ...panelBase, padding: '10px 12px', borderLeft: `3px solid ${FORCE_BLUE}`, background: isOwn ? 'rgba(224,58,30,0.04)' : C.panelBg }}>
       <CornerBrackets />
       <CardHeader roll={roll} isOwn={isOwn} ac={FORCE_BLUE} />
 
@@ -362,7 +362,7 @@ function ForceCard({ roll, isOwn, isGm }: { roll: RollEntry; isOwn: boolean; isG
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.68rem, 1.05vw, 0.8rem)', marginBottom: 4 }}>
             {light > 0 && <span style={{ color: FORCE_BLUE }}>{light} Light FP</span>}
             {dark > 0 && <>
-              {light > 0 && <span style={{ color: 'rgba(232,223,200,0.3)' }}>·</span>}
+              {light > 0 && <span style={{ color: 'rgba(90,40,24,0.3)' }}>·</span>}
               <span style={{ color: FORCE_PURPLE }}>{dark} Dark FP</span>
               {darkUsed > 0 && <span style={{ color: 'rgba(200,80,80,0.8)' }}>({darkUsed} used)</span>}
             </>}
@@ -384,17 +384,17 @@ function InitiativeGroupCard({ rolls }: { rolls: RollEntry[] }) {
   const single  = rolls.length === 1
 
   return (
-    <div style={{ padding: '8px 12px', borderLeft: '3px solid rgba(232,223,200,0.15)', borderRadius: 6, background: 'rgba(255,255,255,0.02)' }}>
+    <div style={{ padding: '8px 12px', borderLeft: '3px solid rgba(90,40,24,0.15)', borderRadius: 6, background: 'rgba(255,255,255,0.02)' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_TYPE, color: 'rgba(232,223,200,0.4)', fontStyle: 'italic', flex: 1 }}>
+        <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_TYPE, color: 'rgba(90,40,24,0.4)', fontStyle: 'italic', flex: 1 }}>
           ⚙ Initiative Rolled · {single ? rolls[0].character_name : `${rolls.length} participants`}
         </span>
-        <span style={{ fontFamily: FONT_MONO, fontSize: FS_TIME, color: 'rgba(232,223,200,0.25)', whiteSpace: 'nowrap' }}>
+        <span style={{ fontFamily: FONT_MONO, fontSize: FS_TIME, color: 'rgba(90,40,24,0.25)', whiteSpace: 'nowrap' }}>
           {relativeTime(latest.rolled_at)}
         </span>
       </div>
       {single && (
-        <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.65rem, 1vw, 0.78rem)', color: 'rgba(232,223,200,0.28)', marginTop: 2 }}>
+        <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.65rem, 1vw, 0.78rem)', color: 'rgba(90,40,24,0.28)', marginTop: 2 }}>
           {rolls[0].result.netSuccess} success{rolls[0].result.netSuccess !== 1 ? 'es' : ''}
           {rolls[0].result.netAdvantage > 0 && ` · ${rolls[0].result.netAdvantage} adv`}
         </div>
@@ -413,14 +413,14 @@ function SystemCard({ roll }: { roll: RollEntry }) {
     const itemPart    = splitIdx >= 0 ? label.slice(0, splitIdx) : label
     const recipients  = splitIdx >= 0 ? label.slice(splitIdx + ' awarded to '.length) : ''
     return (
-      <div style={{ padding: '6px 12px', borderLeft: '3px solid rgba(200,170,80,0.25)', borderRadius: 6, background: 'rgba(200,170,80,0.03)' }}>
+      <div style={{ padding: '6px 12px', borderLeft: '3px solid rgba(224,58,30,0.25)', borderRadius: 6, background: 'rgba(224,58,30,0.03)' }}>
         <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_TYPE }}>
           <span style={{ marginRight: 4 }}>🎁</span>
-          <span style={{ color: '#C8AA50', fontWeight: 700 }}>{itemPart}</span>
+          <span style={{ color: 'var(--hud-gold)', fontWeight: 700 }}>{itemPart}</span>
           {recipients && (
             <>
-              <span style={{ color: 'rgba(232,223,200,0.4)' }}> awarded to </span>
-              <span style={{ color: 'rgba(232,223,200,0.8)' }}>{recipients}</span>
+              <span style={{ color: 'rgba(90,40,24,0.4)' }}> awarded to </span>
+              <span style={{ color: 'rgba(90,40,24,0.8)' }}>{recipients}</span>
             </>
           )}
         </span>
@@ -429,8 +429,8 @@ function SystemCard({ roll }: { roll: RollEntry }) {
   }
 
   return (
-    <div style={{ padding: '6px 12px', borderLeft: '3px solid rgba(232,223,200,0.15)', borderRadius: 6, background: 'rgba(255,255,255,0.02)' }}>
-      <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_TYPE, color: 'rgba(232,223,200,0.35)' }}>
+    <div style={{ padding: '6px 12px', borderLeft: '3px solid rgba(90,40,24,0.15)', borderRadius: 6, background: 'rgba(255,255,255,0.02)' }}>
+      <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_TYPE, color: 'rgba(90,40,24,0.35)' }}>
         ⚙ {roll.roll_label ?? 'System Message'}
       </span>
     </div>
@@ -532,16 +532,15 @@ export function RollFeedMini({ rolls, ownCharacterId, onExpand }: {
             <div
               key={roll.id}
               onClick={onExpand}
+              className="hov-gold-bg"
               style={{ padding: '5px 8px', borderRadius: 3, cursor: 'pointer', borderLeft: `2px solid ${ac}`, background: 'transparent', transition: '.12s' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = `${C.gold}08` }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
             >
               {/* Row 1: name + time */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontFamily: FONT_CINZEL, fontSize: FS_COMPACT, color: ac }}>
                   {roll.character_name}
                 </span>
-                <span style={{ fontFamily: FONT_MONO, fontSize: 'clamp(0.55rem, 0.85vw, 0.65rem)', color: 'rgba(232,223,200,0.25)' }}>
+                <span style={{ fontFamily: FONT_MONO, fontSize: 'clamp(0.55rem, 0.85vw, 0.65rem)', color: 'rgba(90,40,24,0.25)' }}>
                   {relativeTime(roll.rolled_at)}
                 </span>
               </div>
@@ -568,10 +567,10 @@ export function RollFeedMini({ rolls, ownCharacterId, onExpand }: {
                   {/* Skill name or weapon name */}
                   {(roll.roll_label || roll.weapon_name) && (
                     <>
-                      <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_COMPACT, color: 'rgba(232,223,200,0.55)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 80 }}>
+                      <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_COMPACT, color: 'rgba(90,40,24,0.55)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 80 }}>
                         {category === 'combat' ? (roll.weapon_name || roll.roll_label) : roll.roll_label}
                       </span>
-                      <span style={{ color: 'rgba(232,223,200,0.3)', fontSize: FS_COMPACT }}>·</span>
+                      <span style={{ color: 'rgba(90,40,24,0.3)', fontSize: FS_COMPACT }}>·</span>
                     </>
                   )}
                   {/* Outcome */}

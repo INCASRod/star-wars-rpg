@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { HUD } from '@/lib/tokens'
 
-const GOLD = '#C8AA50'
 const BG   = '#060D09'
 
 const STEPS = [
@@ -55,7 +55,7 @@ export function HolocronLoader() {
       <div style={{
         fontFamily: "var(--font-rajdhani), 'Rajdhani', sans-serif",
         fontSize: 28, fontWeight: 700, letterSpacing: '0.55em',
-        color: GOLD, textTransform: 'uppercase',
+        color: HUD.gold, textTransform: 'uppercase',
         animation: 'holo-pulse 2.4s ease-in-out infinite',
       }}>
         HOLOCRON
@@ -67,21 +67,21 @@ export function HolocronLoader() {
         {/* Track */}
         <div style={{
           width: '100%', height: 2,
-          background: `${GOLD}18`, borderRadius: 2, overflow: 'hidden',
+          background: `${HUD.gold}18`, borderRadius: 2, overflow: 'hidden',
           position: 'relative',
         }}>
           {/* Fill — driven by CSS animation so it stays smooth */}
           <div style={{
             position: 'absolute', top: 0, left: 0, height: '100%',
-            background: `linear-gradient(90deg, ${GOLD}80, ${GOLD})`,
+            background: `linear-gradient(90deg, ${HUD.gold}80, ${HUD.gold})`,
             borderRadius: 2,
-            boxShadow: `0 0 10px ${GOLD}60`,
+            boxShadow: `0 0 10px ${HUD.gold}60`,
             animation: `holo-bar ${TOTAL}s cubic-bezier(0.4, 0, 0.2, 1) forwards`,
           }} />
           {/* Shimmer */}
           <div style={{
             position: 'absolute', top: 0, left: '-60%', height: '100%', width: '60%',
-            background: `linear-gradient(90deg, transparent, ${GOLD}50, transparent)`,
+            background: `linear-gradient(90deg, transparent, ${HUD.gold}50, transparent)`,
             animation: 'holo-shimmer 1.6s ease-in-out infinite',
           }} />
         </div>
@@ -90,7 +90,7 @@ export function HolocronLoader() {
         <div style={{
           fontFamily: "var(--font-rajdhani), 'Rajdhani', sans-serif",
           fontSize: 16, fontWeight: 600, letterSpacing: '0.25em',
-          color: `${GOLD}CC`,
+          color: `${HUD.gold}CC`,
           fontVariantNumeric: 'tabular-nums',
         }}>
           — {pct}% —
@@ -101,7 +101,7 @@ export function HolocronLoader() {
       <div key={stepIdx} style={{
         fontFamily: "var(--font-rajdhani), 'Rajdhani', sans-serif",
         fontSize: 13, letterSpacing: '0.2em',
-        color: `${GOLD}88`,
+        color: `${HUD.gold}88`,
         textTransform: 'uppercase',
         height: 20,
         textAlign: 'center',
@@ -112,8 +112,8 @@ export function HolocronLoader() {
 
       <style>{`
         @keyframes holo-pulse {
-          0%, 100% { opacity: 0.7; text-shadow: 0 0 12px ${GOLD}40; }
-          50%       { opacity: 1;   text-shadow: 0 0 28px ${GOLD}90; }
+          0%, 100% { opacity: 0.7; text-shadow: 0 0 12px ${HUD.gold}40; }
+          50%       { opacity: 1;   text-shadow: 0 0 28px ${HUD.gold}90; }
         }
         @keyframes holo-bar {
           0%   { width: 0% }

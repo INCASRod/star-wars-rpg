@@ -1,9 +1,9 @@
 'use client'
+import { HUD } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 const PANEL  = 'rgba(6,13,9,0.95)'
 const BORDER = 'rgba(200,170,80,0.2)'
-const GOLD   = '#C8AA50'
 const GOLD_I = 'rgba(200,170,80,0.4)'
 const FORCE_BLUE = '#7EC8E3'
 const FONT_R = "var(--font-rajdhani), 'Rajdhani', sans-serif"
@@ -51,7 +51,7 @@ export function MobileTabBar({ activeTab, onTabChange, hasCampaign, hasForce }: 
       {tabs.map(tab => {
         const active = tab.id === activeTab
         const isForceTab = tab.id === 'force'
-        const accentColor = isForceTab ? FORCE_BLUE : GOLD
+        const accentColor = isForceTab ? FORCE_BLUE : HUD.gold
         const inactiveColor = isForceTab ? 'rgba(126,200,227,0.4)' : GOLD_I
         return (
           <button

@@ -1,14 +1,14 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import { HUD } from '@/lib/tokens'
 
 /* ── Design tokens (mirrored from GmReferenceDrawer) ──────── */
-const FC      = "var(--font-cinzel), 'Cinzel', serif"
+const FC      = "var(--font-rajdhani), 'Cinzel', serif"
 const FR      = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const BG      = 'rgba(6,10,8,0.97)'
 const PANEL   = 'rgba(10,18,12,0.92)'
-const GOLD    = '#C8AA50'
 const DIM     = '#6A8070'
 const TEXT    = '#C8D8C0'
 const BORDER     = 'rgba(200,170,80,0.14)'
@@ -88,7 +88,7 @@ export function StagingLeftDrawer({ open, onClose, title, children }: StagingLef
           <span
             style={{
               fontFamily: FC, fontSize: 'var(--text-label)', fontWeight: 700,
-              letterSpacing: '0.2em', textTransform: 'uppercase', color: GOLD,
+              letterSpacing: '0.2em', textTransform: 'uppercase', color: HUD.gold,
             }}
           >
             {title}

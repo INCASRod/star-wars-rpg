@@ -1,16 +1,17 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
+import { Modal } from '@/components/ui/Modal'
 import type { Adversary } from '@/lib/adversaries'
 import type { Vehicle } from '@/lib/vehicles'
 import { fetchVehicles } from '@/lib/vehicles'
 import type { CombatEncounter } from '@/lib/combat'
 import { FS_OVERLINE, FS_LABEL, FS_SM, FS_H3 } from '@/components/player-hud/design-tokens'
+import { HUD } from '@/lib/tokens'
 
 const PANEL_BG    = '#0a1510'
 const RAISED_BG   = 'rgba(14,26,18,0.9)'
 const INPUT_BG    = 'rgba(6,13,9,0.7)'
-const GOLD        = '#C8AA50'
 const BORDER      = 'rgba(200,170,80,0.18)'
 const BORDER_MD   = 'rgba(200,170,80,0.32)'
 const BORDER_HI   = 'rgba(200,170,80,0.55)'
@@ -98,24 +99,13 @@ export function AddParticipantModal({ library = [], searchLibrary, encounter, gr
   }
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 300,
-      background: 'rgba(0,0,0,0.78)', backdropFilter: 'blur(10px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: 24,
-    }}>
-      <div style={{
-        width: '100%', maxWidth: 560,
-        background: PANEL_BG, border: `1px solid ${BORDER_HI}`,
-        borderRadius: 6, maxHeight: '88vh',
-        display: 'flex', flexDirection: 'column',
-      }}>
+    <Modal open onClose={onClose} maxWidth={560}>
         {/* Header */}
         <div style={{
           padding: '14px 18px', borderBottom: `1px solid ${BORDER}`,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0,
         }}>
-          <div style={{ fontFamily: FC, fontSize: FS_H3, fontWeight: 700, color: GOLD }}>
+          <div style={{ fontFamily: FC, fontSize: FS_H3, fontWeight: 700, color: HUD.gold }}>
             {isMidCombat ? 'ADD TO COMBAT' : 'ADD TO ENCOUNTER'}
           </div>
           <button
@@ -139,10 +129,10 @@ export function AddParticipantModal({ library = [], searchLibrary, encounter, gr
               style={{
                 flex: 1, padding: '9px 0', cursor: 'pointer',
                 background: 'transparent', border: 'none',
-                borderBottom: `2px solid ${participantTab === tab ? GOLD : 'transparent'}`,
+                borderBottom: `2px solid ${participantTab === tab ? HUD.gold : 'transparent'}`,
                 fontFamily: FC, fontSize: FS_SM, fontWeight: 700,
                 letterSpacing: '0.1em', textTransform: 'uppercase',
-                color: participantTab === tab ? GOLD : TEXT_MUTED,
+                color: participantTab === tab ? HUD.gold : TEXT_MUTED,
                 transition: '.15s', marginBottom: -1,
               }}
             >
@@ -155,7 +145,7 @@ export function AddParticipantModal({ library = [], searchLibrary, encounter, gr
         <div style={{ padding: '12px 18px', borderBottom: `1px solid ${BORDER}`, flexShrink: 0 }}>
           <div style={{
             fontFamily: FC, fontSize: FS_OVERLINE, letterSpacing: '0.2em',
-            textTransform: 'uppercase', color: `${GOLD}b3`, marginBottom: 8,
+            textTransform: 'uppercase', color: `${HUD.gold}b3`, marginBottom: 8,
           }}>
             Participant Type
           </div>
@@ -207,11 +197,11 @@ export function AddParticipantModal({ library = [], searchLibrary, encounter, gr
                   onClick={() => setTypeFilter(t)}
                   style={{
                     flex: 1, padding: '3px 0',
-                    background: typeFilter === t ? `${GOLD}20` : 'transparent',
+                    background: typeFilter === t ? `${HUD.gold}20` : 'transparent',
                     border: `1px solid ${typeFilter === t ? BORDER_MD : BORDER}`,
                     borderRadius: 3, cursor: 'pointer',
                     fontFamily: FM, fontSize: FS_OVERLINE, letterSpacing: '0.06em',
-                    color: typeFilter === t ? GOLD : TEXT_MUTED,
+                    color: typeFilter === t ? HUD.gold : TEXT_MUTED,
                     textTransform: 'uppercase',
                   }}
                 >
@@ -229,11 +219,11 @@ export function AddParticipantModal({ library = [], searchLibrary, encounter, gr
                   onClick={() => setSilFilter(s)}
                   style={{
                     flex: 1, padding: '3px 0',
-                    background: silFilter === s ? `${GOLD}20` : 'transparent',
+                    background: silFilter === s ? `${HUD.gold}20` : 'transparent',
                     border: `1px solid ${silFilter === s ? BORDER_MD : BORDER}`,
                     borderRadius: 3, cursor: 'pointer',
                     fontFamily: FM, fontSize: FS_OVERLINE, letterSpacing: '0.06em',
-                    color: silFilter === s ? GOLD : TEXT_MUTED,
+                    color: silFilter === s ? HUD.gold : TEXT_MUTED,
                     textTransform: 'uppercase',
                   }}
                 >
@@ -292,9 +282,9 @@ export function AddParticipantModal({ library = [], searchLibrary, encounter, gr
                         <div style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>
                           {adv.type}
                           {adv.type === 'minion' && (
-                            <span style={{ color: `${GOLD}70`, marginLeft: 5 }}>×{size}</span>
+                            <span style={{ color: `${HUD.gold}70`, marginLeft: 5 }}>×{size}</span>
                           )}
-                          <span style={{ color: `${GOLD}70`, marginLeft: 8 }}>
+                          <span style={{ color: `${HUD.gold}70`, marginLeft: 8 }}>
                             BR {adv.brawn} · AG {adv.agility}
                           </span>
                         </div>
@@ -364,7 +354,7 @@ export function AddParticipantModal({ library = [], searchLibrary, encounter, gr
                             }}
                           >−</button>
                           <span style={{
-                            fontFamily: FM, fontSize: FS_LABEL, fontWeight: 700, color: GOLD,
+                            fontFamily: FM, fontSize: FS_LABEL, fontWeight: 700, color: HUD.gold,
                             minWidth: 22, textAlign: 'center',
                           }}>{size}</span>
                           <button
@@ -372,8 +362,8 @@ export function AddParticipantModal({ library = [], searchLibrary, encounter, gr
                             disabled={size >= 20}
                             style={{
                               width: 20, height: 20, borderRadius: 3, cursor: size >= 20 ? 'not-allowed' : 'pointer',
-                              background: `${GOLD}18`, border: `1px solid ${BORDER_MD}`,
-                              fontFamily: FM, fontSize: FS_SM, color: GOLD,
+                              background: `${HUD.gold}18`, border: `1px solid ${BORDER_MD}`,
+                              fontFamily: FM, fontSize: FS_SM, color: HUD.gold,
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
                             }}
                           >+</button>
@@ -421,7 +411,7 @@ export function AddParticipantModal({ library = [], searchLibrary, encounter, gr
                         <span style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 600, color: TEXT }}>{v.name}</span>
                         <div style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>
                           {v.type}
-                          <span style={{ color: `${GOLD}70`, marginLeft: 8 }}>
+                          <span style={{ color: `${HUD.gold}70`, marginLeft: 8 }}>
                             Sil {v.silhouette} · Spd {v.speed} · HT {v.hullTrauma} · SS {v.systemStrain}
                           </span>
                         </div>
@@ -476,7 +466,6 @@ export function AddParticipantModal({ library = [], searchLibrary, encounter, gr
             </>
           )}
         </div>
-      </div>
-    </div>
+    </Modal>
   )
 }

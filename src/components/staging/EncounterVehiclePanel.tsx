@@ -6,10 +6,10 @@ import { useEncounterState } from '@/hooks/useEncounterState'
 import type { CombatEncounter } from '@/lib/combat'
 import type { VehicleInstance } from '@/lib/vehicles'
 import { FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4 } from '@/components/player-hud/design-tokens'
+import { HUD } from '@/lib/tokens'
 
 /* ── Design tokens ────────────────────────────────────────── */
 const PANEL_BG  = 'rgba(8,16,10,0.88)'
-const GOLD      = '#C8AA50'
 const BORDER    = 'rgba(200,170,80,0.18)'
 const RED       = '#e05252'
 const BLUE      = '#52a8e0'
@@ -143,8 +143,8 @@ export function EncounterVehiclePanel({ campaignId }: EncounterVehiclePanelProps
             {/* Sil + Speed row */}
             <div style={{ padding: '0 12px 6px', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {[
-                { label: 'Sil',   value: vehicle.silhouette,          color: GOLD },
-                { label: 'Speed', value: vehicle.speed,               color: GOLD },
+                { label: 'Sil',   value: vehicle.silhouette,          color: HUD.gold },
+                { label: 'Speed', value: vehicle.speed,               color: HUD.gold },
                 { label: 'Def',   value: vehicle.defense.fore,         color: TEXT_MUTED },
                 { label: 'Armor', value: vehicle.armor,               color: TEXT_MUTED },
                 { label: 'HT',    value: vehicle.hullTraumaThreshold,  color: RED },

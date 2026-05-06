@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import type { Adversary } from '@/lib/adversaries'
@@ -10,11 +10,11 @@ import { VehicleLibrary } from '@/components/gm/VehicleLibrary'
 import { StagingTokenPanel } from './StagingTokenPanel'
 import { StagingDrawer } from './StagingDrawer'
 import { CombatFeedPanel } from './CombatFeedPanel'
+import { HUD } from '@/lib/tokens'
 
 /* ── Design tokens ────────────────────────────────────────── */
-const FC   = "var(--font-cinzel), 'Cinzel', serif"
+const FC   = "var(--font-rajdhani), 'Cinzel', serif"
 const FR   = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const GOLD = '#C8AA50'
 const DIM  = '#6A8070'
 
 /* ── Panel registry ───────────────────────────────────────── */
@@ -209,14 +209,15 @@ interface RailButtonProps {
 }
 
 function RailButton({ icon, label, active, disabled, onClick }: RailButtonProps) {
-  const iconColor  = disabled ? 'rgba(106,128,112,0.28)' : active ? GOLD : DIM
-  const labelColor = disabled ? 'rgba(106,128,112,0.22)' : active ? GOLD : 'rgba(106,128,112,0.55)'
+  const iconColor  = disabled ? 'rgba(106,128,112,0.28)' : active ? HUD.gold : DIM
+  const labelColor = disabled ? 'rgba(106,128,112,0.22)' : active ? HUD.gold : 'rgba(106,128,112,0.55)'
 
   return (
     <button
       disabled={disabled}
       onClick={onClick}
       title={label.replace('\n', ' ')}
+      className={!disabled && !active ? 'hov-gold-bg' : ''}
       style={{
         width:          52,
         padding:        '10px 0 9px',
@@ -231,14 +232,6 @@ function RailButton({ icon, label, active, disabled, onClick }: RailButtonProps)
         cursor:         disabled ? 'not-allowed' : 'pointer',
         transition:     'background 0.15s, outline 0.15s',
         flexShrink:     0,
-      }}
-      onMouseEnter={e => {
-        if (!disabled && !active)
-          (e.currentTarget as HTMLElement).style.background = 'rgba(200,170,80,0.06)'
-      }}
-      onMouseLeave={e => {
-        if (!active)
-          (e.currentTarget as HTMLElement).style.background = 'transparent'
       }}
     >
       {/* Icon */}

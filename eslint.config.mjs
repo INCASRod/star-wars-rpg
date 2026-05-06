@@ -13,6 +13,18 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  {
+    rules: {
+      // Ban the raw gold hex — import HUD.gold or COLOR.gold from @/lib/tokens instead.
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "Literal[value='#C8AA50']",
+          message: "Use HUD.gold or COLOR.gold from '@/lib/tokens' instead of '#C8AA50'.",
+        },
+      ],
+    },
+  },
 ]);
 
 export default eslintConfig;

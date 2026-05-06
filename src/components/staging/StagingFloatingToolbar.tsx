@@ -37,11 +37,14 @@ import { vehicleToVehicleInstance } from '@/lib/vehicles'
 import type { CombatEncounter, InitiativeSlot } from '@/lib/combat'
 import { AdversaryLibrary } from '@/components/gm/AdversaryLibrary'
 import { VehicleLibrary } from '@/components/gm/VehicleLibrary'
+import { CombatLog } from '@/components/combat/CombatLog'
 import { StagingDrawer } from './StagingDrawer'
 import { StagingTokenPanel } from './StagingTokenPanel'
 import { CombatFeedPanel } from './CombatFeedPanel'
 import { EncounterAdversaryPanel } from './EncounterAdversaryPanel'
 import { EncounterVehiclePanel } from './EncounterVehiclePanel'
+import { useEncounterState } from '@/hooks/useEncounterState'
+import { HUD } from '@/lib/tokens'
 
 /* ── Layout constants ─────────────────────────────────────── */
 /** TOP BAR (56px) + MODE BAR (48px) + 8px gap = 112px.
@@ -50,20 +53,20 @@ const PILL_TOP = 112
 
 /* ── Design tokens ────────────────────────────────────────── */
 const FR   = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const GOLD = '#C8AA50'
 const DIM  = '#6A8070'
 const RED  = '#E05050'
 
 /* ── Panel type definitions ───────────────────────────────── */
-type LeftPanelId  = 'adversaries' | 'vehicles' | 'tokens'
-type RightPanelId = 'combat-feed' | 'enc-adversaries' | 'enc-vehicles'
+type LeftPanelId   = 'adversaries' | 'vehicles' | 'tokens'
+type RightPanelId  = 'combat-feed' | 'enc-adversaries' | 'enc-vehicles'
+type BottomPanelId = 'combat-log'
 
 interface LeftEntry {
-  id:          LeftPanelId | 'combat-feed' | 'maps'   // Combat Feed → right drawer; maps → external
+  id:          LeftPanelId | 'combat-feed' | 'maps' | BottomPanelId
   icon:        string
   label:       string
   drawerTitle: string
-  side:        'left' | 'right'
+  side:        'left' | 'right' | 'bottom'
   combatOnly?: true
   /** When true, clicking calls onMapsClick instead of opening a local drawer. */
   isExternal?: true
@@ -77,11 +80,12 @@ interface RightEntry {
 }
 
 const LEFT_ENTRIES: LeftEntry[] = [
-  { id: 'maps',        icon: '◉', label: 'Maps',        drawerTitle: '',            side: 'left',  isExternal: true },
-  { id: 'adversaries', icon: '◆', label: 'Adversaries', drawerTitle: 'Adversaries', side: 'left'  },
-  { id: 'vehicles',    icon: '△', label: 'Vehicles',    drawerTitle: 'Vehicles',    side: 'left'  },
-  { id: 'tokens',      icon: '◈', label: 'Tokens',      drawerTitle: 'Tokens',      side: 'left'  },
-  { id: 'combat-feed', icon: '⚔', label: 'Combat Feed', drawerTitle: 'Combat Feed', side: 'right', combatOnly: true },
+  { id: 'maps',        icon: '◉', label: 'Maps',        drawerTitle: '',             side: 'left',   isExternal: true },
+  { id: 'adversaries', icon: '◆', label: 'Adversaries', drawerTitle: 'Adversaries',  side: 'left'   },
+  { id: 'vehicles',    icon: '△', label: 'Vehicles',    drawerTitle: 'Vehicles',     side: 'left'   },
+  { id: 'tokens',      icon: '◈', label: 'Tokens',      drawerTitle: 'Tokens',       side: 'left'   },
+  { id: 'combat-feed', icon: '⚔', label: 'Combat Feed', drawerTitle: 'Combat Feed',  side: 'right',  combatOnly: true },
+  { id: 'combat-log',  icon: '≡', label: 'Combat Log',  drawerTitle: 'Combat Log',   side: 'bottom' },
 ]
 
 const RIGHT_ENTRIES: RightEntry[] = [
@@ -159,6 +163,8 @@ export function StagingFloatingToolbar({
   const supabase = useMemo(() => createClient(), [])
   const isCombat = sessionMode === 'combat'
 
+  const { encounter } = useEncounterState(campaignId)
+
   async function toggleReveal() {
     if (!mapId) return
     await supabase.from('maps').update({ is_visible_to_players: !isMapVisible }).eq('id', mapId)
@@ -171,28 +177,35 @@ export function StagingFloatingToolbar({
   }
 
   /* ── Drawer state ─────────────────────────────────────────
-   * Left and right drawers are tracked independently.
-   * Opening one side closes the other.                       */
-  const [leftPanel,  setLeftPanel]  = useState<LeftPanelId | null>(null)
-  const [rightPanel, setRightPanel] = useState<RightPanelId | null>(null)
+   * Left, right, and bottom drawers are tracked independently.
+   * Opening any one closes the other two.                     */
+  const [leftPanel,   setLeftPanel]   = useState<LeftPanelId | null>(null)
+  const [rightPanel,  setRightPanel]  = useState<RightPanelId | null>(null)
+  const [bottomPanel, setBottomPanel] = useState<BottomPanelId | null>(null)
 
   function openLeft(id: LeftPanelId) {
     setRightPanel(null)
+    setBottomPanel(null)
     setLeftPanel(prev => (prev === id ? null : id))
   }
 
   const handleLeftEntry = useCallback((entry: LeftEntry) => {
     if (entry.combatOnly && !isCombat) return
     if (entry.isExternal) {
-      setLeftPanel(null)
+      setLeftPanel(null); setRightPanel(null); setBottomPanel(null)
       onMapsClick()
       return
     }
+    if (entry.side === 'bottom') {
+      setLeftPanel(null); setRightPanel(null)
+      setBottomPanel(prev => (prev === (entry.id as BottomPanelId) ? null : (entry.id as BottomPanelId)))
+      return
+    }
     if (entry.side === 'right') {
-      setLeftPanel(null)
+      setLeftPanel(null); setBottomPanel(null)
       setRightPanel(prev => (prev === (entry.id as RightPanelId) ? null : (entry.id as RightPanelId)))
     } else {
-      setRightPanel(null)
+      setRightPanel(null); setBottomPanel(null)
       setLeftPanel(prev => (prev === (entry.id as LeftPanelId) ? null : (entry.id as LeftPanelId)))
     }
   }, [isCombat, onMapsClick])
@@ -204,14 +217,15 @@ export function StagingFloatingToolbar({
   )
 
   const rightClickHandlers = useMemo<Record<RightPanelId, () => void>>(() => ({
-    'combat-feed':     () => { setLeftPanel(null); setRightPanel(p => (p === 'combat-feed'     ? null : 'combat-feed'))     },
-    'enc-adversaries': () => { setLeftPanel(null); setRightPanel(p => (p === 'enc-adversaries' ? null : 'enc-adversaries')) },
-    'enc-vehicles':    () => { setLeftPanel(null); setRightPanel(p => (p === 'enc-vehicles'    ? null : 'enc-vehicles'))    },
+    'combat-feed':     () => { setLeftPanel(null); setBottomPanel(null); setRightPanel(p => (p === 'combat-feed'     ? null : 'combat-feed'))     },
+    'enc-adversaries': () => { setLeftPanel(null); setBottomPanel(null); setRightPanel(p => (p === 'enc-adversaries' ? null : 'enc-adversaries')) },
+    'enc-vehicles':    () => { setLeftPanel(null); setBottomPanel(null); setRightPanel(p => (p === 'enc-vehicles'    ? null : 'enc-vehicles'))    },
   }), [])
 
   function activeForEntry(entry: LeftEntry): boolean {
     if (entry.isExternal) return mapsLibraryOpen
-    if (entry.side === 'right') return rightPanel === entry.id
+    if (entry.side === 'bottom') return bottomPanel === entry.id
+    if (entry.side === 'right')  return rightPanel  === entry.id
     return leftPanel === entry.id
   }
 
@@ -324,11 +338,14 @@ export function StagingFloatingToolbar({
   )
 
   /* ── Drawer title helpers ─────────────────────────────────  */
-  const leftTitle  = leftPanel
+  const leftTitle   = leftPanel
     ? (LEFT_ENTRIES.find(e => e.id === leftPanel)?.drawerTitle ?? '')
     : ''
-  const rightTitle = rightPanel
+  const rightTitle  = rightPanel
     ? ([...LEFT_ENTRIES, ...RIGHT_ENTRIES.map(e => ({ ...e, side: 'right' as const }))].find(e => e.id === rightPanel)?.drawerTitle ?? '')
+    : ''
+  const bottomTitle = bottomPanel
+    ? (LEFT_ENTRIES.find(e => e.id === bottomPanel)?.drawerTitle ?? '')
     : ''
 
   /* ── Render ───────────────────────────────────────────────  */
@@ -358,7 +375,7 @@ export function StagingFloatingToolbar({
               label={entry.label}
               active={active}
               disabled={disabled}
-              accentColor={entry.id === 'combat-feed' ? RED : GOLD}
+              accentColor={entry.id === 'combat-feed' ? RED : HUD.gold}
               onClick={leftClickHandlers[entry.id]}
             />
           )
@@ -389,7 +406,7 @@ export function StagingFloatingToolbar({
               background: 'transparent',
               border:     'none',
               cursor:     mapId ? 'pointer' : 'not-allowed',
-              color:      mapId ? GOLD : DIM,
+              color:      mapId ? HUD.gold : DIM,
               fontFamily: FR,
               fontSize:   16,
               lineHeight: 1,
@@ -400,7 +417,7 @@ export function StagingFloatingToolbar({
             fontSize:      'var(--text-label)',
             fontWeight:    700,
             letterSpacing: '0.06em',
-            color:         mapId ? GOLD : DIM,
+            color:         mapId ? HUD.gold : DIM,
             minWidth:      42,
             textAlign:     'center',
             userSelect:    'none',
@@ -416,7 +433,7 @@ export function StagingFloatingToolbar({
               background: 'transparent',
               border:     'none',
               cursor:     mapId ? 'pointer' : 'not-allowed',
-              color:      mapId ? GOLD : DIM,
+              color:      mapId ? HUD.gold : DIM,
               fontFamily: FR,
               fontSize:   16,
               lineHeight: 1,
@@ -454,7 +471,7 @@ export function StagingFloatingToolbar({
             label={entry.label}
             active={rightPanel === entry.id}
             disabled={false}
-            accentColor={GOLD}
+            accentColor={HUD.gold}
             onClick={rightClickHandlers[entry.id]}
           />
         ))}
@@ -539,6 +556,24 @@ export function StagingFloatingToolbar({
         {rightPanel === 'enc-vehicles' && (
           <EncounterVehiclePanel
             campaignId={campaignId}
+          />
+        )}
+      </StagingDrawer>
+
+      {/* ── Bottom drawer ────────────────────────────────── */}
+      <StagingDrawer
+        direction="bottom"
+        open={bottomPanel !== null}
+        onClose={() => setBottomPanel(null)}
+        title={bottomTitle}
+        railWidth={0}
+      >
+        {bottomPanel === 'combat-log' && (
+          <CombatLog
+            campaignId={campaignId}
+            encounterId={encounter?.id ?? null}
+            isDm
+            variant="full"
           />
         )}
       </StagingDrawer>

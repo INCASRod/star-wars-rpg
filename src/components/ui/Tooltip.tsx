@@ -2,10 +2,10 @@
 
 import React, { useState, useRef, useCallback, useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import { HUD } from '@/lib/tokens'
 
 const FONT_CINZEL   = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FONT_RAJDHANI = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const GOLD          = '#C8AA50'
 const BG            = 'rgba(4,10,6,0.96)'
 const BORDER        = 'rgba(200,170,80,0.32)'
 
@@ -23,10 +23,10 @@ function CornerBrackets() {
   const s: React.CSSProperties = { position: 'absolute', width: 6, height: 6 }
   return (
     <>
-      <div style={{ ...s, top: 0, left: 0, borderTop: `1px solid ${GOLD}`, borderLeft: `1px solid ${GOLD}` }} />
-      <div style={{ ...s, top: 0, right: 0, borderTop: `1px solid ${GOLD}`, borderRight: `1px solid ${GOLD}` }} />
-      <div style={{ ...s, bottom: 0, left: 0, borderBottom: `1px solid ${GOLD}`, borderLeft: `1px solid ${GOLD}` }} />
-      <div style={{ ...s, bottom: 0, right: 0, borderBottom: `1px solid ${GOLD}`, borderRight: `1px solid ${GOLD}` }} />
+      <div style={{ ...s, top: 0, left: 0, borderTop: `1px solid ${HUD.gold}`, borderLeft: `1px solid ${HUD.gold}` }} />
+      <div style={{ ...s, top: 0, right: 0, borderTop: `1px solid ${HUD.gold}`, borderRight: `1px solid ${HUD.gold}` }} />
+      <div style={{ ...s, bottom: 0, left: 0, borderBottom: `1px solid ${HUD.gold}`, borderLeft: `1px solid ${HUD.gold}` }} />
+      <div style={{ ...s, bottom: 0, right: 0, borderBottom: `1px solid ${HUD.gold}`, borderRight: `1px solid ${HUD.gold}` }} />
     </>
   )
 }
@@ -167,7 +167,7 @@ export function TipLabel({ children }: { children: React.ReactNode }) {
     <div style={{
       fontFamily: FONT_CINZEL, fontSize: 9, fontWeight: 700,
       letterSpacing: '0.12em', textTransform: 'uppercase',
-      color: GOLD, marginBottom: 4,
+      color: HUD.gold, marginBottom: 4,
     }}>
       {children}
     </div>

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
@@ -6,14 +6,14 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Vehicle, VehicleAbility } from '@/lib/vehicles'
 import { vehicleWeaponStats, ALL_VEHICLE_WEAPONS } from '@/lib/vehicles'
 import { toast } from 'sonner'
+import { HUD } from '@/lib/tokens'
 
 /* ── Design tokens ─────────────────────────────────────── */
-const FC       = "var(--font-cinzel), 'Cinzel', serif"
+const FC       = "var(--font-rajdhani), 'Cinzel', serif"
 const FR       = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const PANEL_BG = 'rgba(8,16,10,0.97)'
 const RAISED   = 'rgba(14,26,18,0.92)'
 const INPUT_BG = 'rgba(0,0,0,0.35)'
-const GOLD     = '#C8AA50'
 const GOLD_DIM = 'rgba(200,170,80,0.5)'
 const TEXT     = '#C8D8C0'
 const DIM      = '#6A8070'
@@ -368,7 +368,7 @@ export function VehicleEditor({
       >
         {/* Header */}
         <div style={{ flexShrink: 0, padding: '16px 24px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: GOLD, letterSpacing: '0.08em' }}>
+          <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: HUD.gold, letterSpacing: '0.08em' }}>
             {editId ? 'Edit Vehicle' : 'New Vehicle'}
           </div>
           <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: DIM, cursor: 'pointer', fontFamily: FR, fontSize: FS_H4, lineHeight: 1 }}>×</button>
@@ -387,7 +387,7 @@ export function VehicleEditor({
                   padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 }}>
                   <span style={{ fontFamily: FR, fontSize: FS_SM, color: TEXT }}>
-                    Based on <strong style={{ color: GOLD }}>{tmplSelected.name}</strong>
+                    Based on <strong style={{ color: HUD.gold }}>{tmplSelected.name}</strong>
                   </span>
                   <button
                     onClick={() => { setTmplSelected(null); setTmplSearch('') }}
@@ -423,8 +423,7 @@ export function VehicleEditor({
                             fontFamily: FR, fontSize: FS_SM, color: TEXT,
                             borderBottom: `1px solid ${BORDER}`,
                           }}
-                          onMouseEnter={e => (e.currentTarget.style.background = RAISED)}
-                          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                          className="hov-gold-bg"
                         >
                           {v.name}
                           <span style={{ marginLeft: 8, fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>
@@ -571,7 +570,7 @@ export function VehicleEditor({
                     type="checkbox"
                     checked={naviComputer}
                     onChange={e => setNaviComputer(e.target.checked)}
-                    style={{ accentColor: GOLD }}
+                    style={{ accentColor: HUD.gold }}
                   />
                   Navicomputer
                 </label>
@@ -674,7 +673,7 @@ export function VehicleEditor({
                         <input type="number" value={w.count} onChange={e => updateWeapon(i, 'count', parseInt(e.target.value) || 1)} style={numInput} min={1} />
                       </div>
                       <label style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, paddingBottom: 2, whiteSpace: 'nowrap' }}>
-                        <input type="checkbox" checked={w.turret} onChange={e => updateWeapon(i, 'turret', e.target.checked)} style={{ accentColor: GOLD }} />
+                        <input type="checkbox" checked={w.turret} onChange={e => updateWeapon(i, 'turret', e.target.checked)} style={{ accentColor: HUD.gold }} />
                         Turret
                       </label>
                     </div>
@@ -715,7 +714,7 @@ export function VehicleEditor({
                                 type="checkbox"
                                 checked={checked}
                                 onChange={e => updateWeapon(i, field, e.target.checked)}
-                                style={{ accentColor: GOLD }}
+                                style={{ accentColor: HUD.gold }}
                               />
                               {label}
                             </label>
@@ -790,7 +789,7 @@ export function VehicleEditor({
             <button
               onClick={handleSave}
               disabled={saving}
-              style={{ flex: 2, background: 'rgba(200,170,80,0.12)', border: `1px solid ${GOLD_DIM}`, color: GOLD, fontFamily: FR, fontSize: FS_SM, fontWeight: 700, letterSpacing: '0.1em', padding: '9px 0', borderRadius: 3, cursor: saving ? 'wait' : 'pointer', opacity: saving ? 0.6 : 1 }}
+              style={{ flex: 2, background: 'rgba(200,170,80,0.12)', border: `1px solid ${GOLD_DIM}`, color: HUD.gold, fontFamily: FR, fontSize: FS_SM, fontWeight: 700, letterSpacing: '0.1em', padding: '9px 0', borderRadius: 3, cursor: saving ? 'wait' : 'pointer', opacity: saving ? 0.6 : 1 }}
             >
               {saving ? 'Saving…' : editId ? '✓ Save Changes' : '✓ Create Vehicle'}
             </button>

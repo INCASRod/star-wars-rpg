@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import React, { useRef, useState } from 'react'
 
@@ -29,7 +29,7 @@ const SEV_LABEL: Record<CritSeverity, string> = {
 }
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
-const FONT_C = "var(--font-cinzel), 'Cinzel', serif"
+const FONT_C = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FONT_M = "'Share Tech Mono','Courier New',monospace"
 
@@ -184,7 +184,7 @@ export function CriticalInjuryPip({ pip, onHeal }: CriticalInjuryPipProps) {
                 <div style={{
                   fontFamily: FONT_M,
                   fontSize: 'clamp(0.52rem, 0.82vw, 0.6rem)',
-                  color: 'rgba(200,170,80,0.5)',
+                  color: 'rgba(224,58,30,0.5)',
                   display: 'flex', gap: 6, flexWrap: 'wrap',
                 }}>
                   {pip.sessionLabel && <span>{pip.sessionLabel}</span>}

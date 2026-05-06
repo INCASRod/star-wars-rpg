@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
@@ -8,14 +8,14 @@ import type { Vehicle } from '@/lib/vehicles'
 import { vehicleWeaponDisplayName, vehicleWeaponStats } from '@/lib/vehicles'
 import { TokenImageLinks } from './TokenImageLinks'
 import { RichText } from '@/components/ui/RichText'
+import { HUD } from '@/lib/tokens'
 
 /* ── Design tokens ─────────────────────────────────────── */
-const FC       = "var(--font-cinzel), 'Cinzel', serif"
+const FC       = "var(--font-rajdhani), 'Cinzel', serif"
 const FR       = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FM       = "'Share Tech Mono','Courier New',monospace"
 const PANEL_BG = 'rgba(6,13,9,0.97)'
 const RAISED   = 'rgba(14,26,18,0.9)'
-const GOLD     = '#C8AA50'
 const GOLD_DIM = 'rgba(200,170,80,0.5)'
 const TEXT     = '#C8D8C0'
 const DIM      = '#6A8070'
@@ -191,13 +191,13 @@ export function VehicleDetailPanel({
           {/* Token */}
           <div style={{
             width: 64, height: 64, borderRadius: 6, flexShrink: 0,
-            background: RAISED, border: `2px solid ${v.isStarship ? BLUE : GOLD}`,
+            background: RAISED, border: `2px solid ${v.isStarship ? BLUE : HUD.gold}`,
             overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             {tokenUrl ? (
               <img src={tokenUrl} alt={v.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             ) : (
-              <span style={{ fontFamily: FC, fontSize: FS_H4, color: v.isStarship ? BLUE : GOLD, fontWeight: 700 }}>
+              <span style={{ fontFamily: FC, fontSize: FS_H4, color: v.isStarship ? BLUE : HUD.gold, fontWeight: 700 }}>
                 {v.isStarship ? '🚀' : '🚗'}
               </span>
             )}
@@ -206,15 +206,15 @@ export function VehicleDetailPanel({
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
               <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: TEXT, letterSpacing: '0.06em' }}>
-                {v._isCustom && <span style={{ color: GOLD }}>★ </span>}
+                {v._isCustom && <span style={{ color: HUD.gold }}>★ </span>}
                 {v.name}
               </div>
               <span style={{
                 fontFamily: FM, fontSize: FS_CAPTION, fontWeight: 700,
-                color: v.isStarship ? BLUE : GOLD,
-                border: `1px solid ${v.isStarship ? BLUE : GOLD}`,
+                color: v.isStarship ? BLUE : HUD.gold,
+                border: `1px solid ${v.isStarship ? BLUE : HUD.gold}`,
                 borderRadius: 3, padding: '1px 7px', letterSpacing: '0.1em',
-                background: `${v.isStarship ? BLUE : GOLD}18`,
+                background: `${v.isStarship ? BLUE : HUD.gold}18`,
               }}>
                 {v.isStarship ? 'STARSHIP' : 'GROUND'}
               </span>
@@ -404,7 +404,7 @@ export function VehicleDetailPanel({
                   disabled={uploading}
                   style={{
                     background: 'rgba(200,170,80,0.08)', border: `1px solid ${GOLD_DIM}`,
-                    color: GOLD, fontFamily: FR, fontSize: FS_CAPTION,
+                    color: HUD.gold, fontFamily: FR, fontSize: FS_CAPTION,
                     fontWeight: 700, letterSpacing: '0.08em',
                     padding: '6px 14px', borderRadius: 3, cursor: 'pointer',
                     opacity: uploading ? 0.6 : 1,
@@ -465,7 +465,7 @@ export function VehicleDetailPanel({
             onClick={onEdit}
             style={{
               flex: 1, background: 'rgba(200,170,80,0.08)', border: `1px solid ${GOLD_DIM}`,
-              color: GOLD, fontFamily: FR, fontSize: FS_SM, fontWeight: 700,
+              color: HUD.gold, fontFamily: FR, fontSize: FS_SM, fontWeight: 700,
               letterSpacing: '0.1em', padding: '9px 0', borderRadius: 3, cursor: 'pointer',
             }}
           >
