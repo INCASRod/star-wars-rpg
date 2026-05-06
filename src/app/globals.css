@@ -729,6 +729,48 @@ textarea:disabled,
 }
 
 /* ═══════════════════════════════════════════════════════════════ */
+/*  HUD INPUT — search bars, text inputs, dropdowns               */
+/*  To retheme: change --hud-surface-lo/border/text in vars only  */
+/* ═══════════════════════════════════════════════════════════════ */
+.hud-input {
+  width:            100%;
+  background:       var(--hud-surface-lo);
+  border:           1px solid var(--hud-border);
+  border-radius:    6px;
+  padding:          7px 12px 7px 34px;
+  color:            var(--hud-text);
+  font-family:      var(--font-body);
+  font-size:        clamp(0.72rem, 1.1vw, 0.85rem);
+  outline:          none;
+  box-sizing:       border-box;
+  transition:       border-color 0.15s;
+}
+.hud-input:focus        { border-color: var(--hud-border-hi); }
+.hud-input::placeholder { color: var(--hud-text-faint); }
+.hud-input--padded-r    { padding-right: 30px; }
+
+/* ═══════════════════════════════════════════════════════════════ */
+/*  HUD TEXTAREA — backstory, notes, editable descriptions        */
+/* ═══════════════════════════════════════════════════════════════ */
+.hud-textarea {
+  background:       var(--hud-surface-lo);
+  border:           1px solid var(--hud-border);
+  color:            var(--hud-text);
+  font-family:      var(--font-body);
+  font-size:        13px;
+  padding:          14px;
+  line-height:      1.7;
+  resize:           vertical;
+  width:            100%;
+  outline:          none;
+  border-radius:    4px;
+  box-sizing:       border-box;
+  transition:       border-color 0.15s;
+}
+.hud-textarea:focus        { border-color: var(--hud-border-hi); }
+.hud-textarea::placeholder { color: var(--hud-text-faint); }
+
+/* ═══════════════════════════════════════════════════════════════ */
 /*  DARK THEME (shadcn)                                            */
 /* ═══════════════════════════════════════════════════════════════ */
 .dark {

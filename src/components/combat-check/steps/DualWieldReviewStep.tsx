@@ -5,15 +5,15 @@ import type { CharacterWeapon, RefWeapon } from '@/lib/types'
 import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
-const GOLD_DIM  = 'rgba(200,170,80,0.5)'
-const GOLD_BD   = 'rgba(200,170,80,0.15)'
-const GOLD_BG   = 'rgba(200,170,80,0.06)'
-const TEXT      = 'rgba(255,255,255,0.85)'
-const TEXT_DIM  = 'rgba(255,255,255,0.5)'
-const TEXT_MUTED = 'rgba(232,223,200,0.45)'
+const GOLD_DIM  = 'rgba(224,58,30,0.5)'
+const GOLD_BD   = 'rgba(224,58,30,0.15)'
+const GOLD_BG   = 'rgba(224,58,30,0.06)'
+const TEXT = 'var(--hud-text)'
+const TEXT_DIM = 'var(--hud-text-dim)'
+const TEXT_MUTED = 'var(--hud-text-faint)'
 const FONT_C    = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M    = "'Share Tech Mono', 'Courier New', monospace"
+
 
 interface DualWieldReviewStepProps {
   primaryWeapon:    CharacterWeapon
@@ -44,7 +44,7 @@ function WeaponCard({
       border: `1px solid ${isPrimary ? HUD.gold : GOLD_BD}`,
       borderRadius: 10,
       padding: '12px 14px',
-      background: isPrimary ? GOLD_BG : 'rgba(255,255,255,0.02)',
+      background: isPrimary ? GOLD_BG : 'rgba(224,58,30,0.01)',
     }}>
       <div style={{
         fontFamily: FONT_C,
@@ -70,7 +70,7 @@ function WeaponCard({
       </div>
 
       <div style={{
-        fontFamily: FONT_M,
+        fontFamily: "var(--font-body)",
         fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)',
         color: TEXT_DIM,
         display: 'flex',
@@ -111,12 +111,12 @@ export function DualWieldReviewStep({
           title="Swap primary and secondary"
           style={{
             flexShrink: 0,
-            background: 'rgba(200,170,80,0.08)',
+            background: 'rgba(224,58,30,0.08)',
             border: `1px solid ${GOLD_BD}`,
             borderRadius: 8,
             width: 36, height: 36,
             cursor: 'pointer',
-            fontFamily: FONT_M,
+            fontFamily: "var(--font-body)",
             fontSize: 'clamp(0.8rem, 1.2vw, 0.95rem)',
             color: GOLD_DIM,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -186,3 +186,5 @@ export function DualWieldReviewStep({
     </div>
   )
 }
+
+

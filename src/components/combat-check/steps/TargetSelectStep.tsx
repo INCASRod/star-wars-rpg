@@ -6,17 +6,17 @@ import type { AdversaryInstance } from '@/lib/adversaries'
 import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
-const GOLD_DIM  = 'rgba(200,170,80,0.5)'
-const GOLD_BD   = 'rgba(200,170,80,0.15)'
-const TEXT      = 'rgba(255,255,255,0.85)'
-const TEXT_DIM  = 'rgba(255,255,255,0.5)'
+const GOLD_DIM  = 'rgba(224,58,30,0.5)'
+const GOLD_BD   = 'rgba(224,58,30,0.15)'
+const TEXT = 'var(--hud-text)'
+const TEXT_DIM = 'var(--hud-text-dim)'
 const CARD_BG   = 'rgba(255,255,255,0.03)'
 const FONT_C    = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M    = "'Share Tech Mono', 'Courier New', monospace"
+
 
 const TYPE_COLORS: Record<string, string> = {
-  minion:  'rgba(200,170,80,0.4)',
+  minion:  'rgba(224,58,30,0.4)',
   rival:   '#FF9800',
   nemesis: '#e05252',
 }
@@ -46,7 +46,7 @@ function WoundBar({ current, max }: { current: number; max: number }) {
           background: color, transition: 'width 200ms',
         }} />
       </div>
-      <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)', color: TEXT_DIM, whiteSpace: 'nowrap' }}>
+      <span style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)', color: TEXT_DIM, whiteSpace: 'nowrap' }}>
         {current}/{max}
       </span>
     </div>
@@ -121,7 +121,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
           onClick={() => onSelect([])}
           style={{
             marginTop: 16, padding: '8px 20px',
-            background: 'rgba(200,170,80,0.1)', border: `1px solid ${GOLD_BD}`,
+            background: 'rgba(224,58,30,0.1)', border: `1px solid ${GOLD_BD}`,
             borderRadius: 6, cursor: 'pointer',
             fontFamily: FONT_C, fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)', color: HUD.gold,
           }}
@@ -144,7 +144,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
           onClick={() => onSelect([])}
           style={{
             padding: '10px 24px',
-            background: 'rgba(200,170,80,0.1)', border: `1px solid ${GOLD_BD}`,
+            background: 'rgba(224,58,30,0.1)', border: `1px solid ${GOLD_BD}`,
             borderRadius: 6, cursor: 'pointer',
             fontFamily: FONT_C, fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)', color: HUD.gold,
           }}
@@ -161,8 +161,8 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
     <div>
       {multipleSelected && (
         <div style={{
-          background: 'rgba(200,170,80,0.06)',
-          border: `1px solid rgba(200,170,80,0.2)`,
+          background: 'rgba(224,58,30,0.06)',
+          border: `1px solid rgba(224,58,30,0.2)`,
           borderRadius: 6, padding: '8px 12px', marginBottom: 12,
           fontFamily: FONT_R, fontSize: 'clamp(0.7rem, 1.05vw, 0.82rem)', color: GOLD_DIM,
         }}>
@@ -183,7 +183,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
               style={{
                 width: '100%',
                 padding: '10px 12px',
-                background: isSelected ? 'rgba(200,170,80,0.06)' : CARD_BG,
+                background: isSelected ? 'rgba(224,58,30,0.06)' : CARD_BG,
                 border: `${isSelected ? 2 : 1}px solid ${isSelected ? HUD.gold : GOLD_BD}`,
                 borderRadius: 8, cursor: 'pointer', textAlign: 'left',
                 transition: 'border-color 120ms, background 120ms',
@@ -197,7 +197,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
                   border: `1px solid ${typeColor}40`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   flexShrink: 0,
-                  fontFamily: FONT_M, fontSize: 'clamp(0.55rem, 0.82vw, 0.65rem)', color: typeColor,
+                  fontFamily: "var(--font-body)", fontSize: 'clamp(0.55rem, 0.82vw, 0.65rem)', color: typeColor,
                 }}>
                   {enemy.type === 'minion'  && 'MIN'}
                   {enemy.type === 'rival'   && 'RVL'}
@@ -215,14 +215,14 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
                   }}>
                     {enemy.name}
                     {enemy.type === 'minion' && enemy.groupRemaining != null && (
-                      <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.58rem, 0.85vw, 0.68rem)', color: TEXT_DIM, marginLeft: 6 }}>
+                      <span style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.58rem, 0.85vw, 0.68rem)', color: TEXT_DIM, marginLeft: 6 }}>
                         ×{enemy.groupRemaining}
                       </span>
                     )}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 1 }}>
                     <span style={{
-                      fontFamily: FONT_M,
+                      fontFamily: "var(--font-body)",
                       fontSize: 'clamp(0.55rem, 0.82vw, 0.65rem)',
                       color: typeColor,
                       textTransform: 'capitalize',
@@ -231,7 +231,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
                     </span>
                     {enemy.soak > 0 && (
                       <span style={{
-                        fontFamily: FONT_M,
+                        fontFamily: "var(--font-body)",
                         fontSize: 'clamp(0.55rem, 0.82vw, 0.65rem)',
                         color: TEXT_DIM,
                       }}>
@@ -242,7 +242,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
                 </div>
 
                 {isSelected && (
-                  <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.55rem, 0.82vw, 0.65rem)', color: HUD.gold, flexShrink: 0 }}>
+                  <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.55rem, 0.82vw, 0.65rem)', color: HUD.gold, flexShrink: 0 }}>
                     ✓
                   </div>
                 )}
@@ -271,3 +271,5 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
     </div>
   )
 }
+
+

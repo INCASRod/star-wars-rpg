@@ -5,12 +5,12 @@ import { stripBBCode } from '@/lib/utils'
 
 const FONT_C = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M = "'Share Tech Mono', 'Courier New', monospace"
+
 const FORCE_BLUE     = '#7EC8E3'
 const FORCE_BLUE_DIM = 'rgba(126,200,227,0.15)'
 const FORCE_BLUE_SEL = 'rgba(126,200,227,0.1)'
-const TEXT     = 'rgba(232,223,200,0.9)'
-const TEXT_DIM = 'rgba(232,223,200,0.5)'
+const TEXT = 'var(--hud-text)'
+const TEXT_DIM = 'var(--hud-text-dim)'
 
 interface SelectPowerStepProps {
   powers:           ForcePowerDisplay[]
@@ -24,7 +24,7 @@ export function SelectPowerStep({ powers, selectedPowerKey, onSelect }: SelectPo
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{
-        fontFamily: FONT_M,
+        fontFamily: "var(--font-body)",
         fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)',
         color: 'rgba(126,200,227,0.55)',
         textTransform: 'uppercase',
@@ -91,7 +91,7 @@ export function SelectPowerStep({ powers, selectedPowerKey, onSelect }: SelectPo
                   </div>
                 )}
                 <div style={{
-                  fontFamily: FONT_M,
+                  fontFamily: "var(--font-body)",
                   fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)',
                   color: 'rgba(126,200,227,0.45)',
                 }}>
@@ -105,3 +105,4 @@ export function SelectPowerStep({ powers, selectedPowerKey, onSelect }: SelectPo
     </div>
   )
 }
+

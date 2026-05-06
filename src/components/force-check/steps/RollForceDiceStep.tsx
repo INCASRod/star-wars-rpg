@@ -6,7 +6,7 @@ import { DiceFace } from '@/components/dice/DiceFace'
 
 const FONT_C = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M = "'Share Tech Mono', 'Courier New', monospace"
+
 const FORCE_BLUE     = '#7EC8E3'
 const FORCE_BLUE_DIM = 'rgba(126,200,227,0.35)'
 const LIGHT_COLOR    = '#E8E8FF'
@@ -68,7 +68,7 @@ export function RollForceDiceStep({
       {/* Pool info */}
       <div>
         <div style={{
-          fontFamily: FONT_M,
+          fontFamily: "var(--font-body)",
           fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)',
           color: 'rgba(126,200,227,0.55)',
           textTransform: 'uppercase', letterSpacing: '0.18em',
@@ -78,7 +78,7 @@ export function RollForceDiceStep({
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 12 }}>
-          <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)', color: 'rgba(126,200,227,0.6)' }}>
+          <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)', color: 'rgba(126,200,227,0.6)' }}>
             Force Rating: {forceRating}
           </div>
           {committedForce > 0 && (
@@ -86,7 +86,7 @@ export function RollForceDiceStep({
               ({committedForce} committed to ongoing effects)
             </div>
           )}
-          <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)', color: FORCE_BLUE }}>
+          <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)', color: FORCE_BLUE }}>
             Available: {available}
           </div>
         </div>
@@ -132,7 +132,7 @@ export function RollForceDiceStep({
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {/* Section label */}
-          <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: 'rgba(126,200,227,0.55)', textTransform: 'uppercase', letterSpacing: '0.18em' }}>
+          <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: 'rgba(126,200,227,0.55)', textTransform: 'uppercase', letterSpacing: '0.18em' }}>
             Result
           </div>
 
@@ -183,15 +183,15 @@ export function RollForceDiceStep({
 
           {/* Zero warning — inverted for fallen characters */}
           {!isFallen && result.totalLight === 0 && (
-            <div style={{ padding: '8px 12px', background: 'rgba(200,170,80,0.06)', border: '1px solid rgba(200,170,80,0.2)', borderRadius: 6 }}>
-              <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)', color: 'rgba(200,170,80,0.7)', lineHeight: 1.45 }}>
+            <div style={{ padding: '8px 12px', background: 'rgba(224,58,30,0.06)', border: '1px solid rgba(224,58,30,0.2)', borderRadius: 6 }}>
+              <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)', color: 'rgba(224,58,30,0.7)', lineHeight: 1.45 }}>
                 ⚠ No light side Force Points generated. The power activates but has no effect. You may still use dark side pips.
               </div>
             </div>
           )}
           {isFallen && result.totalDark === 0 && (
-            <div style={{ padding: '8px 12px', background: 'rgba(200,170,80,0.06)', border: '1px solid rgba(200,170,80,0.2)', borderRadius: 6 }}>
-              <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)', color: 'rgba(200,170,80,0.7)', lineHeight: 1.45 }}>
+            <div style={{ padding: '8px 12px', background: 'rgba(224,58,30,0.06)', border: '1px solid rgba(224,58,30,0.2)', borderRadius: 6 }}>
+              <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)', color: 'rgba(224,58,30,0.7)', lineHeight: 1.45 }}>
                 ⚠ No dark side Force Points generated. The power activates but has no effect. You may still use light side pips.
               </div>
             </div>
@@ -217,3 +217,4 @@ export function RollForceDiceStep({
     </div>
   )
 }
+

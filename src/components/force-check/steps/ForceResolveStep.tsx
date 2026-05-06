@@ -6,7 +6,7 @@ import { stripBBCode } from '@/lib/utils'
 
 const FONT_C = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M = "'Share Tech Mono', 'Courier New', monospace"
+
 const FORCE_BLUE  = '#7EC8E3'
 const LIGHT_COLOR = '#E8E8FF'
 const DARK_COLOR  = 'rgba(80,40,120,0.9)'
@@ -42,10 +42,10 @@ function PipRow({ light, dark }: { light: number; dark: number }) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: 'rgba(200,170,80,0.55)', textTransform: 'uppercase', letterSpacing: '0.15em' }}>
+      <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: 'rgba(224,58,30,0.55)', textTransform: 'uppercase', letterSpacing: '0.15em' }}>
         {label}
       </div>
-      <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)', color: 'rgba(232,223,200,0.9)' }}>
+      <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)', color: 'rgba(90,40,24,0.9)' }}>
         {children}
       </div>
     </div>
@@ -96,7 +96,7 @@ export function ForceResolveStep({
                 } {isFallen ? 'light' : 'dark'} used
               </span>
             )}
-            <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.62rem,0.95vw,0.72rem)', color: 'rgba(232,223,200,0.45)' }}>
+            <span style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.62rem,0.95vw,0.72rem)', color: 'rgba(90,40,24,0.45)' }}>
               ({totalFP} total FP)
             </span>
           </span>
@@ -107,7 +107,7 @@ export function ForceResolveStep({
       {/* Power description */}
       {desc && (
         <div style={{ padding: '10px 12px', background: 'rgba(126,200,227,0.03)', border: '1px solid rgba(126,200,227,0.1)', borderRadius: 6 }}>
-          <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)', color: 'rgba(232,223,200,0.65)', lineHeight: 1.55 }}>
+          <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)', color: 'rgba(90,40,24,0.65)', lineHeight: 1.55 }}>
             {desc}
           </div>
         </div>
@@ -141,8 +141,8 @@ export function ForceResolveStep({
           onClick={onDone}
           style={{
             flex: 1, height: 44, borderRadius: 8, cursor: 'pointer',
-            background: 'rgba(200,170,80,0.12)',
-            border: '1px solid rgba(200,170,80,0.4)',
+            background: 'rgba(224,58,30,0.12)',
+            border: '1px solid rgba(224,58,30,0.4)',
             fontFamily: FONT_R, fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)', fontWeight: 700,
             letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--hud-gold)',
             transition: 'all .15s',
@@ -154,3 +154,4 @@ export function ForceResolveStep({
     </div>
   )
 }
+

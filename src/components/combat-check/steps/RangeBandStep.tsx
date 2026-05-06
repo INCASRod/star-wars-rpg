@@ -14,16 +14,16 @@ import {
 import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
-const GOLD_DIM  = 'rgba(200,170,80,0.5)'
-const GOLD_BD   = 'rgba(200,170,80,0.15)'
-const TEXT      = 'rgba(255,255,255,0.85)'
-const TEXT_DIM  = 'rgba(255,255,255,0.5)'
+const GOLD_DIM  = 'rgba(224,58,30,0.5)'
+const GOLD_BD   = 'rgba(224,58,30,0.15)'
+const TEXT = 'var(--hud-text)'
+const TEXT_DIM = 'var(--hud-text-dim)'
 const CARD_BG   = 'rgba(255,255,255,0.03)'
 const RED_SOFT  = '#e05252'
 const PURPLE    = '#9060D0'
 const FONT_C    = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M    = "'Share Tech Mono', 'Courier New', monospace"
+
 
 interface RangeBandStepProps {
   attackType:       'ranged' | 'melee'
@@ -34,10 +34,10 @@ interface RangeBandStepProps {
 
 function DifficultyDice({ count, challenge = 0, opposedLabel }: { count: number; challenge?: number; opposedLabel?: string }) {
   if (opposedLabel) {
-    return <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)', color: GOLD_DIM }}>{opposedLabel}</span>
+    return <span style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)', color: GOLD_DIM }}>{opposedLabel}</span>
   }
   if (count === 0 && challenge === 0) {
-    return <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)', color: TEXT_DIM }}>Simple (—)</span>
+    return <span style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)', color: TEXT_DIM }}>Simple (—)</span>
   }
   return (
     <div style={{ display: 'flex', gap: 3, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -140,7 +140,7 @@ export function RangeBandStep({ attackType, weapon, selectedBand, onSelect }: Ra
         color: TEXT_DIM,
         lineHeight: 1.4,
         padding: '8px 10px',
-        background: 'rgba(255,255,255,0.02)',
+        background: 'rgba(224,58,30,0.01)',
         borderRadius: 6,
         border: `1px solid rgba(255,255,255,0.06)`,
       }}>
@@ -174,8 +174,8 @@ function BandCard({
       style={{
         width: '100%',
         padding: '10px 14px',
-        background: selected ? 'rgba(200,170,80,0.06)' : 'rgba(255,255,255,0.02)',
-        border: `${selected ? 2 : 1}px solid ${selected ? HUD.gold : 'rgba(200,170,80,0.12)'}`,
+        background: selected ? 'rgba(224,58,30,0.06)' : 'rgba(224,58,30,0.01)',
+        border: `${selected ? 2 : 1}px solid ${selected ? HUD.gold : 'rgba(224,58,30,0.12)'}`,
         borderRadius: 8,
         cursor: blocked ? 'not-allowed' : 'pointer',
         textAlign: 'left',
@@ -196,7 +196,7 @@ function BandCard({
           marginBottom: notes.length > 0 ? 4 : 0,
         }}>
           {label}
-          {isOnly && <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.55rem, 0.82vw, 0.65rem)', color: GOLD_DIM, marginLeft: 8 }}>AUTO-SELECTED</span>}
+          {isOnly && <span style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.55rem, 0.82vw, 0.65rem)', color: GOLD_DIM, marginLeft: 8 }}>AUTO-SELECTED</span>}
         </div>
         {notes.length > 0 && (
           <div style={{
@@ -212,12 +212,12 @@ function BandCard({
       <div style={{ flexShrink: 0, textAlign: 'right' }}>
         {!blocked && <DifficultyDice count={difficultyDice} challenge={challengeDice} opposedLabel={opposedLabel} />}
         {blocked && (
-          <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.58rem, 0.88vw, 0.68rem)', color: '#e05252' }}>
+          <span style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.58rem, 0.88vw, 0.68rem)', color: '#e05252' }}>
             {diffLabel ?? 'Blocked'}
           </span>
         )}
         {!blocked && diffLabel && (
-          <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.55rem, 0.82vw, 0.65rem)', color: TEXT_DIM, marginTop: 2 }}>
+          <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.55rem, 0.82vw, 0.65rem)', color: TEXT_DIM, marginTop: 2 }}>
             {diffLabel}
           </div>
         )}
@@ -225,3 +225,5 @@ function BandCard({
     </button>
   )
 }
+
+

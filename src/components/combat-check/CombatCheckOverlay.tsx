@@ -19,15 +19,14 @@ import { RollResultStep } from './steps/RollResultStep'
 import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
-const BG       = 'rgba(6,13,9,0.97)'
-const GOLD_DIM = 'rgba(200,170,80,0.45)'
-const GOLD_BD  = 'rgba(200,170,80,0.15)'
-const GOLD_BAR = 'rgba(200,170,80,0.6)'
-const TEXT     = 'rgba(255,255,255,0.85)'
-const TEXT_DIM = 'rgba(255,255,255,0.5)'
-const FONT_C   = "var(--font-rajdhani), 'Cinzel', serif"
-const FONT_R   = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M   = "'Share Tech Mono', 'Courier New', monospace"
+const BG       = 'var(--hud-surface-hi)'
+const GOLD_DIM = 'rgba(224,58,30,0.45)'
+const GOLD_BD  = 'var(--hud-border)'
+const GOLD_BAR = 'rgba(224,58,30,0.6)'
+const TEXT     = 'var(--hud-text)'
+const TEXT_DIM = 'var(--hud-text-dim)'
+const FONT_C   = 'var(--font-body)'
+const FONT_R   = 'var(--font-body)'
 
 // ── Step labels ───────────────────────────────────────────────────────────────
 const STEP_LABELS: Record<number, string> = {
@@ -480,7 +479,7 @@ export function CombatCheckOverlay({
         background: BG,
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        borderLeft: `1px solid rgba(200,170,80,0.25)`,
+        borderLeft: `1px solid var(--hud-border)`,
         boxShadow: '-8px 0 32px rgba(0,0,0,0.6)',
         zIndex: 150,
         display: 'flex', flexDirection: 'column',
@@ -557,7 +556,7 @@ export function CombatCheckOverlay({
 
       {/* ── Progress bar ── */}
       {!isResult && (
-        <div style={{ height: 4, background: 'rgba(200,170,80,0.1)', flexShrink: 0 }}>
+        <div style={{ height: 4, background: 'rgba(224,58,30,0.1)', flexShrink: 0 }}>
           <div style={{
             height: '100%',
             width: `${(state.currentStep / totalSteps) * 100}%`,
@@ -676,9 +675,9 @@ export function CombatCheckOverlay({
               textTransform: 'uppercase',
               letterSpacing: '0.1em',
               background: canAdvance()
-                ? 'linear-gradient(135deg, #C8AA50, #8B7430)'
-                : 'rgba(200,170,80,0.15)',
-              color: canAdvance() ? '#060D09' : 'rgba(200,170,80,0.4)',
+                ? 'linear-gradient(135deg, #E03A1E, #A02010)'
+                : 'rgba(224,58,30,0.15)',
+              color: canAdvance() ? 'var(--hud-bg)' : 'rgba(224,58,30,0.4)',
               transition: 'background 150ms',
             }}
           >

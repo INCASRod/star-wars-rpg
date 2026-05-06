@@ -9,17 +9,15 @@ import { ObligationCard } from '@/components/character/ObligationCard'
 import { HUD } from '@/lib/tokens'
 
 // ─── Design Tokens ───────────────────────────────────────────────────────────
-const FC = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FR = "var(--font-rajdhani), 'Rajdhani', sans-serif"
+const FC = 'var(--font-body)'
+const FR = 'var(--font-body)'
 
-const GOLD_DIM = '#7A6830'
-const GOLD_BRT = '#E0C060'
-const TEXT = '#C8D8C0'
-const DIM = '#6A8070'
-const FAINT = '#2A3A2E'
-const BLUE = '#5AAAE0'
+const TEXT  = 'var(--hud-text)'
+const DIM   = 'var(--hud-text-dim)'
+const FAINT = 'var(--hud-text-faint)'
+const BLUE  = '#5AAAE0'
 const GREEN = '#4EC87A'
-const RED = '#E05050'
+const RED   = '#E05050'
 
 // ─── Props ───────────────────────────────────────────────────────────────────
 interface LoreContentProps {
@@ -64,25 +62,10 @@ function useDebounced(init: string, onSave: (v: string) => void) {
 // ─── Shared style factories ───────────────────────────────────────────────────
 const panelStyle: React.CSSProperties = {
   position: 'relative',
-  background: 'rgba(8,16,10,0.88)',
+  background: 'var(--hud-surface-lo)',
   backdropFilter: 'blur(12px)',
-  border: '1px solid rgba(200,170,80,0.14)',
+  border: '1px solid var(--hud-border)',
   borderRadius: 6,
-}
-
-const textareaStyle: React.CSSProperties = {
-  background: 'rgba(0,0,0,0.3)',
-  border: '1px solid rgba(200,170,80,0.3)',
-  color: TEXT,
-  fontFamily: FR,
-  fontSize: 13,
-  padding: 14,
-  lineHeight: 1.7,
-  resize: 'vertical',
-  width: '100%',
-  outline: 'none',
-  borderRadius: 4,
-  boxSizing: 'border-box',
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -94,7 +77,7 @@ function CornerBrackets() {
     width: 8,
     height: 8,
   }
-  const color = `rgba(122,104,48,0.5)` // GOLD_DIM ~50% opacity
+  const color = 'rgba(224,58,30,0.35)'
   return (
     <>
       <div style={{ ...base, top: 0, left: 0, borderTop: `1px solid ${color}`, borderLeft: `1px solid ${color}` }} />
@@ -109,14 +92,14 @@ function CornerBrackets() {
 function SectionLabel({ label }: { label: string }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-      <div style={{ width: 14, height: 1, background: 'linear-gradient(90deg,transparent,rgba(200,170,80,0.4))' }} />
+      <div style={{ width: 14, height: 1, background: 'linear-gradient(90deg,transparent,rgba(224,58,30,0.35))' }} />
       <span style={{
         fontFamily: FC,
         fontSize: 10,
         fontWeight: 700,
         letterSpacing: '0.22em',
         textTransform: 'uppercase',
-        color: 'rgba(200,170,80,0.4)',
+        color: 'rgba(224,58,30,0.5)',
       }}>
         {label}
       </span>
@@ -129,12 +112,12 @@ function SectionDivider() {
   const line: React.CSSProperties = {
     flex: 1,
     height: 1,
-    background: 'linear-gradient(90deg, transparent, rgba(200,170,80,0.25), transparent)',
+    background: 'linear-gradient(90deg, transparent, rgba(224,58,30,0.2), transparent)',
   }
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '18px 0' }}>
       <div style={line} />
-      <span style={{ color: 'rgba(200,170,80,0.35)', fontSize: 10 }}>◈</span>
+      <span style={{ color: 'rgba(224,58,30,0.35)', fontSize: 10 }}>◈</span>
       <div style={line} />
     </div>
   )
@@ -173,7 +156,7 @@ function BackstoryView({ backstory }: { backstory: string }) {
                 float: 'left',
                 lineHeight: 0.85,
                 marginRight: 10,
-                textShadow: '0 0 20px rgba(200,170,80,0.4)',
+                textShadow: '0 0 20px rgba(224,58,30,0.3)',
               }}>
                 {firstChar}
               </span>
@@ -263,8 +246,8 @@ export function LoreContent({
             <button
               onClick={() => setEditingBackstory(e => !e)}
               style={{
-                border: '1px solid rgba(200,170,80,0.36)',
-                background: 'rgba(200,170,80,0.07)',
+                border: '1px solid var(--hud-border-hi)',
+                background: 'rgba(224,58,30,0.07)',
                 borderRadius: 4,
                 padding: '5px 11px',
                 cursor: 'pointer',
@@ -296,7 +279,7 @@ export function LoreContent({
                 value={localBackstory}
                 onChange={e => handleBackstoryChange(e.target.value)}
                 placeholder="Write your character's backstory... (OggDude markup supported)"
-                style={{ ...textareaStyle, minHeight: 240 }}
+                className="hud-textarea" style={{ minHeight: 240 }}
                 autoFocus
               />
               <div style={{
@@ -323,7 +306,7 @@ export function LoreContent({
             value={localNotes}
             onChange={e => handleNotesChange(e.target.value)}
             placeholder="Session notes, reminders, contacts, safehouses..."
-            style={{ ...textareaStyle, minHeight: 120 }}
+            className="hud-textarea" style={{ minHeight: 120 }}
           />
           <div style={{
             fontFamily: FR,
@@ -361,7 +344,7 @@ export function LoreContent({
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 padding: '6px 0',
-                borderBottom: idx < arr.length - 1 ? '1px solid rgba(200,170,80,0.1)' : 'none',
+                borderBottom: idx < arr.length - 1 ? '1px solid var(--hud-border)' : 'none',
               }}
             >
               <span style={{
@@ -439,8 +422,8 @@ export function LoreContent({
                 <div
                   key={statLabel}
                   style={{
-                    background: 'rgba(200,170,80,0.06)',
-                    border: '1px solid rgba(200,170,80,0.12)',
+                    background: 'rgba(224,58,30,0.06)',
+                    border: '1px solid var(--hud-border)',
                     borderRadius: 4,
                     padding: '8px 6px',
                     textAlign: 'center',
@@ -472,7 +455,7 @@ export function LoreContent({
                   {specialAbilities.map((ability, idx) => {
                     const isCond = ability.is_conditional
                     const pillStyle: React.CSSProperties = {
-                      fontFamily: "'Share Tech Mono','Courier New',monospace",
+                      fontFamily: 'var(--font-body)',
                       fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)',
                       textTransform: 'uppercase' as const,
                       borderRadius: 20,
@@ -486,9 +469,9 @@ export function LoreContent({
                             color: '#FF9800',
                           }
                         : {
-                            border: '1px solid rgba(200,170,80,0.4)',
-                            background: 'rgba(200,170,80,0.08)',
-                            color: 'rgba(200,170,80,0.8)',
+                            border: '1px solid var(--hud-border-hi)',
+                            background: 'rgba(224,58,30,0.08)',
+                            color: 'var(--hud-gold)',
                           }),
                     }
                     const tipContent = (

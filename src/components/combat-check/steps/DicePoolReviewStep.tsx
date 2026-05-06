@@ -14,13 +14,13 @@ import { useState } from 'react'
 import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
-const GOLD_DIM  = 'rgba(200,170,80,0.5)'
-const GOLD_BD   = 'rgba(200,170,80,0.15)'
-const TEXT      = 'rgba(255,255,255,0.85)'
-const TEXT_DIM  = 'rgba(255,255,255,0.5)'
+const GOLD_DIM  = 'rgba(224,58,30,0.5)'
+const GOLD_BD   = 'rgba(224,58,30,0.15)'
+const TEXT = 'var(--hud-text)'
+const TEXT_DIM = 'var(--hud-text-dim)'
 const FONT_C    = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M    = "'Share Tech Mono', 'Courier New', monospace"
+
 
 export interface ManualAdjustments {
   boostAdd:          number
@@ -86,7 +86,7 @@ function DiceRow({ label, types }: { label: string; types: { type: string; count
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
       <span style={{
-        fontFamily: FONT_M,
+        fontFamily: "var(--font-body)",
         fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)',
         color: TEXT_DIM,
         width: 80,
@@ -124,21 +124,21 @@ function AdjustControl({
           style={{
             width: 22, height: 22, borderRadius: 4, cursor: value <= min ? 'not-allowed' : 'pointer',
             background: 'transparent', border: `1px solid ${GOLD_BD}`,
-            fontFamily: FONT_M, fontSize: 14, color: value <= min ? 'rgba(200,170,80,0.2)' : GOLD_DIM,
+            fontFamily: "var(--font-body)", fontSize: 14, color: value <= min ? 'rgba(224,58,30,0.2)' : GOLD_DIM,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
         >
           −
         </button>
-        <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)', color: HUD.gold, width: 20, textAlign: 'center' }}>
+        <span style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)', color: HUD.gold, width: 20, textAlign: 'center' }}>
           {value}
         </span>
         <button
           onClick={onAdd}
           style={{
             width: 22, height: 22, borderRadius: 4, cursor: 'pointer',
-            background: 'rgba(200,170,80,0.1)', border: `1px solid ${GOLD_BD}`,
-            fontFamily: FONT_M, fontSize: 14, color: HUD.gold,
+            background: 'rgba(224,58,30,0.1)', border: `1px solid ${GOLD_BD}`,
+            fontFamily: "var(--font-body)", fontSize: 14, color: HUD.gold,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
         >
@@ -324,15 +324,15 @@ export function DicePoolReviewStep({
     <div>
       {/* Context summary */}
       <div style={{
-        fontFamily: FONT_M,
+        fontFamily: "var(--font-body)",
         fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)',
-        color: 'rgba(200,170,80,0.5)',
+        color: 'rgba(224,58,30,0.5)',
         display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap',
         marginBottom: 4,
       }}>
         <span>{weaponName}</span>
-        {targetName && <><span style={{ color: 'rgba(200,170,80,0.25)' }}>→</span><span>{targetName}</span></>}
-        {rangeBand && <><span style={{ color: 'rgba(200,170,80,0.25)' }}>→</span><span>{RANGE_BAND_LABELS[rangeBand]}</span></>}
+        {targetName && <><span style={{ color: 'rgba(224,58,30,0.25)' }}>→</span><span>{targetName}</span></>}
+        {rangeBand && <><span style={{ color: 'rgba(224,58,30,0.25)' }}>→</span><span>{RANGE_BAND_LABELS[rangeBand]}</span></>}
       </div>
 
       {/* Dual wield header */}
@@ -340,12 +340,12 @@ export function DicePoolReviewStep({
         <div style={{
           marginBottom: 10,
           padding: '8px 12px',
-          background: 'rgba(200,170,80,0.04)',
-          border: '1px solid rgba(200,170,80,0.15)',
+          background: 'rgba(224,58,30,0.04)',
+          border: '1px solid rgba(224,58,30,0.15)',
           borderRadius: 8,
           fontFamily: FONT_R,
           fontSize: 'clamp(0.68rem, 1.05vw, 0.8rem)',
-          color: 'rgba(200,170,80,0.6)',
+          color: 'rgba(224,58,30,0.6)',
         }}>
           <span style={{ color: 'var(--hud-gold)', fontWeight: 700 }}>DUAL WIELD ATTACK</span>
           {'  '}Primary: {dualWield.primaryWeapon.custom_name || (refWeaponMap?.[dualWield.primaryWeapon.weapon_key]?.name) || 'Primary'} ({dwPrimarySkillLabel})
@@ -377,7 +377,7 @@ export function DicePoolReviewStep({
         <div style={{
           fontFamily: FONT_R,
           fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)',
-          color: 'rgba(200,170,80,0.5)',
+          color: 'rgba(224,58,30,0.5)',
           marginBottom: 6,
         }}>
           ⊘ {talentSbRemove} setback removed by talent
@@ -429,7 +429,7 @@ export function DicePoolReviewStep({
         <div style={{
           fontFamily: 'Rajdhani, sans-serif',
           fontSize: 'clamp(0.68rem, 1vw, 0.78rem)',
-          color: 'rgba(232,223,200,0.4)',
+          color: 'rgba(90,40,24,0.4)',
           fontStyle: 'italic',
           marginBottom: 6,
         }}>
@@ -446,7 +446,7 @@ export function DicePoolReviewStep({
               background: 'transparent', border: 'none', cursor: 'pointer', padding: 0,
               fontFamily: FONT_R,
               fontSize: 'clamp(0.68rem, 1.05vw, 0.78rem)',
-              color: 'rgba(200,170,80,0.55)',
+              color: 'rgba(224,58,30,0.55)',
               textDecoration: 'underline',
               marginBottom: breakdownOpen ? 8 : 0,
             }}
@@ -456,13 +456,13 @@ export function DicePoolReviewStep({
 
           {breakdownOpen && (
             <div style={{
-              fontFamily: FONT_M,
+              fontFamily: "var(--font-body)",
               fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)',
               color: TEXT_DIM,
               lineHeight: 1.8,
               padding: '8px 10px',
-              background: 'rgba(255,255,255,0.02)',
-              border: '1px solid rgba(200,170,80,0.1)',
+              background: 'rgba(224,58,30,0.01)',
+              border: '1px solid rgba(224,58,30,0.1)',
               borderRadius: 6,
             }}>
               <div>Skill rank used: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{dwUsedSkillRank} (lower of {dwPrimarySkillRank} / {dwSecondarySkillRank})</div>
@@ -473,7 +473,7 @@ export function DicePoolReviewStep({
                   ? `Same-skill penalty: &nbsp;&nbsp;&nbsp;+1`
                   : `Diff-skill penalty: &nbsp;&nbsp;&nbsp;&nbsp;+2`}
               </div>
-              <div style={{ borderTop: '1px solid rgba(200,170,80,0.15)', marginTop: 4, paddingTop: 4 }}>
+              <div style={{ borderTop: '1px solid rgba(224,58,30,0.15)', marginTop: 4, paddingTop: 4 }}>
                 Final difficulty: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{finalDiff + finalChal}
               </div>
             </div>
@@ -545,13 +545,13 @@ export function DicePoolReviewStep({
         onClick={() => onRoll(finalPool)}
         style={{
           width: '100%', height: 48,
-          background: 'linear-gradient(135deg, #C8AA50, #8B7430)',
+          background: 'linear-gradient(135deg, #E03A1E, #A02010)',
           border: 'none', borderRadius: 10, cursor: 'pointer',
           fontFamily: FONT_C,
           fontSize: 'clamp(0.85rem, 1.3vw, 1rem)',
-          fontWeight: 700, color: '#060D09',
+          fontWeight: 700, color: 'var(--hud-bg)',
           letterSpacing: '0.12em', textTransform: 'uppercase',
-          boxShadow: '0 2px 16px rgba(200,170,80,0.3)',
+          boxShadow: '0 2px 16px rgba(224,58,30,0.3)',
         }}
       >
         {isDualWield ? 'Roll Dual Wield Attack' : 'Roll Attack'}
@@ -559,3 +559,5 @@ export function DicePoolReviewStep({
     </div>
   )
 }
+
+

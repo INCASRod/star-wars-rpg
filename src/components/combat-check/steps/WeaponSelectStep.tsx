@@ -11,16 +11,16 @@ import { canDualWield } from '@/lib/weaponHandedness'
 import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
-const GOLD_DIM  = 'rgba(200,170,80,0.5)'
-const GOLD_BD   = 'rgba(200,170,80,0.15)'
-const TEXT      = 'rgba(255,255,255,0.85)'
-const TEXT_DIM  = 'rgba(255,255,255,0.5)'
+const GOLD_DIM  = 'rgba(224,58,30,0.5)'
+const GOLD_BD   = 'rgba(224,58,30,0.15)'
+const TEXT = 'var(--hud-text)'
+const TEXT_DIM = 'var(--hud-text-dim)'
 const CARD_BG   = 'rgba(255,255,255,0.03)'
 const RED_SOFT  = '#e05252'
 const ORANGE    = '#FF9800'
 const FONT_C    = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M    = "'Share Tech Mono', 'Courier New', monospace"
+
 
 interface WeaponSelectStepProps {
   attackType:         'ranged' | 'melee'
@@ -185,7 +185,7 @@ export function WeaponSelectStep({
           style={{
             width: '100%',
             padding: '10px 12px',
-            background: isSelected ? 'rgba(200,170,80,0.06)' : CARD_BG,
+            background: isSelected ? 'rgba(224,58,30,0.06)' : CARD_BG,
             border: `${isSelected ? 2 : 1}px solid ${isSelected ? HUD.gold : GOLD_BD}`,
             borderRadius: 8,
             cursor: 'pointer',
@@ -209,7 +209,7 @@ export function WeaponSelectStep({
 
               {/* Stats row */}
               <div style={{
-                fontFamily: FONT_M,
+                fontFamily: "var(--font-body)",
                 fontSize: 'clamp(0.62rem, 0.95vw, 0.75rem)',
                 color: TEXT_DIM,
                 display: 'flex',
@@ -266,7 +266,7 @@ export function WeaponSelectStep({
 
             {isSelected && (
               <div style={{
-                fontFamily: FONT_M,
+                fontFamily: "var(--font-body)",
                 fontSize: 'clamp(0.55rem, 0.82vw, 0.65rem)',
                 color: HUD.gold,
                 flexShrink: 0,
@@ -326,7 +326,7 @@ export function WeaponSelectStep({
                 disabled={equipping}
                 style={{
                   flex: 2, padding: '8px 0',
-                  background: equipping ? 'rgba(200,170,80,0.15)' : 'rgba(200,170,80,0.15)',
+                  background: equipping ? 'rgba(224,58,30,0.15)' : 'rgba(224,58,30,0.15)',
                   border: `1px solid ${HUD.gold}60`,
                   borderRadius: 6, cursor: equipping ? 'wait' : 'pointer',
                   fontFamily: FONT_C,
@@ -404,8 +404,8 @@ export function WeaponSelectStep({
         return (
           <div style={{
             marginTop: 16,
-            background: 'rgba(200,170,80,0.06)',
-            border: '1px solid rgba(200,170,80,0.3)',
+            background: 'rgba(224,58,30,0.06)',
+            border: '1px solid rgba(224,58,30,0.3)',
             borderRadius: 10,
             padding: '14px 16px',
           }}>
@@ -423,11 +423,11 @@ export function WeaponSelectStep({
             <div style={{
               fontFamily: FONT_R,
               fontSize: 'clamp(0.8rem, 1.2vw, 0.92rem)',
-              color: 'rgba(232,223,200,0.75)',
+              color: 'rgba(90,40,24,0.75)',
               lineHeight: 1.4,
               marginBottom: 14,
             }}>
-              You also have <strong style={{ color: 'rgba(232,223,200,0.9)' }}>{partnerName}</strong> equipped ({partnerSkillName}).
+              You also have <strong style={{ color: 'rgba(90,40,24,0.9)' }}>{partnerName}</strong> equipped ({partnerSkillName}).
               <br />
               Would you like to attack with both weapons?
             </div>
@@ -437,7 +437,7 @@ export function WeaponSelectStep({
                 style={{
                   flex: 1, padding: '9px 0',
                   background: 'transparent',
-                  border: '1px solid rgba(200,170,80,0.2)',
+                  border: '1px solid rgba(224,58,30,0.2)',
                   borderRadius: 8, cursor: 'pointer',
                   fontFamily: FONT_R,
                   fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)',
@@ -450,13 +450,13 @@ export function WeaponSelectStep({
                 onClick={() => onDualWieldSelect(selectedWeapon, partner)}
                 style={{
                   flex: 2, padding: '9px 0',
-                  background: 'linear-gradient(135deg, #C8AA50, #8B7430)',
+                  background: 'linear-gradient(135deg, #E03A1E, #A02010)',
                   border: 'none',
                   borderRadius: 8, cursor: 'pointer',
                   fontFamily: "var(--font-rajdhani), 'Cinzel', serif",
                   fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)',
                   fontWeight: 700,
-                  color: '#060D09',
+                  color: 'var(--hud-bg)',
                   letterSpacing: '0.08em',
                 }}
               >
@@ -469,3 +469,5 @@ export function WeaponSelectStep({
     </div>
   )
 }
+
+

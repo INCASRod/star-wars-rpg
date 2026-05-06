@@ -12,15 +12,14 @@ import { DarkSidePipsStep } from './steps/DarkSidePipsStep'
 import { ForceTargetStep } from './steps/ForceTargetStep'
 import { ForceResolveStep } from './steps/ForceResolveStep'
 
-const BG         = 'rgba(6,13,9,0.97)'
+const BG         = 'var(--hud-surface-hi)'
 const FORCE_BLUE = '#7EC8E3'
 const FB_DIM     = 'rgba(126,200,227,0.45)'
-const FB_BD      = 'rgba(126,200,227,0.15)'
+const FB_BD      = 'rgba(126,200,227,0.25)'
 const FB_BAR     = 'rgba(126,200,227,0.6)'
-const TEXT_DIM   = 'rgba(255,255,255,0.5)'
-const FONT_C     = "var(--font-rajdhani), 'Cinzel', serif"
-const FONT_R     = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M     = "'Share Tech Mono', 'Courier New', monospace"
+const TEXT_DIM   = 'var(--hud-text-dim)'
+const FONT_C     = 'var(--font-body)'
+const FONT_R     = 'var(--font-body)'
 
 type Step = 1 | 2 | 3 | 4 | 5
 
@@ -311,7 +310,7 @@ export function ForceCheckOverlay({
               {isFallen ? '☠' : '✦'} Force Check
             </div>
             {!isResolve && (
-              <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: dimColor, marginTop: 2 }}>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: dimColor, marginTop: 2 }}>
                 {STEP_LABELS[state.currentStep]}
               </div>
             )}
@@ -322,7 +321,7 @@ export function ForceCheckOverlay({
             onClick={onClose}
             style={{
               background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px 6px',
-              fontFamily: FONT_M, fontSize: 'clamp(0.9rem, 1.4vw, 1rem)', color: TEXT_DIM,
+              fontFamily: 'var(--font-body)', fontSize: 'clamp(0.9rem, 1.4vw, 1rem)', color: TEXT_DIM,
             }}
           >
             ✕

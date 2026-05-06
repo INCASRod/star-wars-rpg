@@ -1,37 +1,23 @@
-﻿'use client'
+'use client'
 import { HUD } from '@/lib/tokens'
 
-// ── Design tokens ──────────────────────────────────────────────────────────────
-const GOLD_DIM = 'rgba(200,170,80,0.5)'
-const GOLD_BD  = 'rgba(200,170,80,0.15)'
-const TEXT     = 'rgba(255,255,255,0.85)'
-const CARD_BG  = 'rgba(255,255,255,0.03)'
-const FONT_C   = "var(--font-rajdhani), 'Cinzel', serif"
+const FONT_C = 'var(--font-body)'
 
 interface AttackTypeStepProps {
   onSelect: (type: 'ranged' | 'melee') => void
 }
 
-interface TypeCard {
-  type:     'ranged' | 'melee'
-  label:    string
-  icon:     string
-}
-
-const CARDS: TypeCard[] = [
-  { type: 'ranged', label: 'Ranged',  icon: '⊙' },
-  { type: 'melee',  label: 'Melee',   icon: '⚔' },
+const CARDS = [
+  { type: 'ranged' as const, label: 'Ranged', icon: '⊙', sub: 'Ranged Light · Ranged Heavy · Gunnery' },
+  { type: 'melee'  as const, label: 'Melee',  icon: '⚔', sub: 'Melee · Brawl · Lightsaber' },
 ]
 
 export function AttackTypeStep({ onSelect }: AttackTypeStepProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <p style={{
-        fontFamily: FONT_C,
-        fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)',
-        color: GOLD_DIM,
-        margin: '0 0 8px',
-        letterSpacing: '0.05em',
+        fontFamily: FONT_C, fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)',
+        color: 'var(--hud-text-dim)', margin: '0 0 8px', letterSpacing: '0.05em',
       }}>
         Select the type of attack to make.
       </p>
@@ -40,59 +26,35 @@ export function AttackTypeStep({ onSelect }: AttackTypeStepProps) {
         <button
           key={card.type}
           onClick={() => onSelect(card.type)}
+          className="hov-gold-border"
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 16,
+            display: 'flex', alignItems: 'center', gap: 16,
             padding: '20px 20px',
-            background: CARD_BG,
-            border: `1px solid ${GOLD_BD}`,
-            borderRadius: 12,
-            cursor: 'pointer',
-            textAlign: 'left',
-            transition: 'border-color 120ms, background 120ms, transform 120ms',
+            background: 'rgba(224,58,30,0.04)',
+            border: `1px solid var(--hud-border)`,
+            borderRadius: 12, cursor: 'pointer', textAlign: 'left',
+            transition: 'border-color 120ms, background 120ms',
             width: '100%',
-          }}
-          onMouseEnter={e => {
-            ;(e.currentTarget as HTMLButtonElement).style.borderColor = HUD.gold
-            ;(e.currentTarget as HTMLButtonElement).style.background = 'rgba(200,170,80,0.06)'
-            ;(e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-2px)'
-          }}
-          onMouseLeave={e => {
-            ;(e.currentTarget as HTMLButtonElement).style.borderColor = GOLD_BD
-            ;(e.currentTarget as HTMLButtonElement).style.background = CARD_BG
-            ;(e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)'
           }}
         >
           <span style={{
-            fontSize: 'clamp(1.6rem, 3vw, 2rem)',
-            lineHeight: 1,
-            color: HUD.gold,
-            flexShrink: 0,
-            width: 36,
-            textAlign: 'center',
+            fontSize: 'clamp(1.6rem, 3vw, 2rem)', lineHeight: 1,
+            color: HUD.gold, flexShrink: 0, width: 36, textAlign: 'center',
           }}>
             {card.icon}
           </span>
           <div>
             <div style={{
-              fontFamily: FONT_C,
-              fontSize: 'clamp(0.85rem, 1.4vw, 1rem)',
-              fontWeight: 700,
-              color: TEXT,
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
+              fontFamily: FONT_C, fontSize: 'clamp(0.85rem, 1.4vw, 1rem)', fontWeight: 700,
+              color: 'var(--hud-text)', textTransform: 'uppercase', letterSpacing: '0.1em',
             }}>
               {card.label}
             </div>
             <div style={{
-              fontFamily: "'Share Tech Mono', 'Courier New', monospace",
-              fontSize: 'clamp(0.62rem, 0.9vw, 0.72rem)',
-              color: GOLD_DIM,
-              marginTop: 3,
+              fontFamily: 'var(--font-body)', fontSize: 'clamp(0.62rem, 0.9vw, 0.72rem)',
+              color: 'var(--hud-text-dim)', marginTop: 3,
             }}>
-              {card.type === 'ranged' && 'Ranged Light · Ranged Heavy · Gunnery'}
-              {card.type === 'melee'  && 'Melee · Brawl · Lightsaber'}
+              {card.sub}
             </div>
           </div>
         </button>

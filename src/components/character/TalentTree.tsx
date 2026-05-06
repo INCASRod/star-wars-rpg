@@ -10,22 +10,20 @@ import { Modal } from '@/components/ui/Modal'
 /*  DESIGN TOKENS                                         */
 /* ═══════════════════════════════════════════════════════ */
 
-const FC = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FR = "var(--font-rajdhani), 'Rajdhani', sans-serif"
+const FC = 'var(--font-body)'
+const FR = 'var(--font-body)'
 
-const BG = '#060D09'
-const GOLD_DIM = '#7A6830'
-const GOLD_BR = '#E0C060'
-const TEXT = '#C8D8C0'
-const DIM = '#6A8070'
-const FAINT = '#2A3A2E'
-const BORDER = 'rgba(200,170,80,0.14)'
-const BORDER_HI = 'rgba(200,170,80,0.36)'
-const BLUE = '#5AAAE0'
-const GREEN = '#4EC87A'
-const RED = '#E05050'
+const BG       = 'var(--hud-bg)'
+const TEXT     = 'var(--hud-text)'
+const DIM      = 'var(--hud-text-dim)'
+const FAINT    = 'var(--hud-text-faint)'
+const BORDER   = 'var(--hud-border)'
+const BORDER_HI = 'var(--hud-border-hi)'
+const PANEL_BG = 'var(--hud-surface-lo)'
+const BLUE   = '#5AAAE0'
+const GREEN  = '#4EC87A'
+const RED    = '#E05050'
 const ORANGE = '#E07855'
-const PANEL_BG = 'rgba(8,16,10,0.88)'
 
 /* ═══════════════════════════════════════════════════════ */
 /*  EXPORTED TYPES                                        */
@@ -143,9 +141,9 @@ function NodeCard({
           flexDirection: 'column',
           gap: 4,
           overflow: 'hidden',
-          background: 'rgba(200,170,80,0.10)',
-          border: '1.5px solid rgba(200,170,80,0.55)',
-          boxShadow: '0 0 14px rgba(200,170,80,0.12), inset 0 1px 0 rgba(200,170,80,0.18)',
+          background: 'rgba(224,58,30,0.10)',
+          border: '1.5px solid rgba(224,58,30,0.55)',
+          boxShadow: '0 0 14px rgba(224,58,30,0.12), inset 0 1px 0 rgba(224,58,30,0.18)',
         }}
       >
         {/* Top-right owned badge */}
@@ -210,7 +208,7 @@ function NodeCard({
                   width: 6,
                   height: 6,
                   borderRadius: '50%',
-                  background: i === 0 ? HUD.gold : 'rgba(200,170,80,0.2)',
+                  background: i === 0 ? HUD.gold : 'rgba(224,58,30,0.2)',
                   border: `1px solid ${HUD.gold}`,
                   boxShadow: i === 0 ? `0 0 4px ${HUD.gold}` : 'none',
                 }}
@@ -299,8 +297,8 @@ function NodeCard({
           fontWeight: 600,
           gap: 4,
           overflow: 'hidden',
-          background: hovered ? 'rgba(200,170,80,0.07)' : 'rgba(255,255,255,0.03)',
-          border: `1.5px solid ${hovered ? 'rgba(200,170,80,0.5)' : 'rgba(200,170,80,0.22)'}`,
+          background: hovered ? 'rgba(224,58,30,0.07)' : 'rgba(224,58,30,0.02)',
+          border: `1.5px solid ${hovered ? 'rgba(224,58,30,0.5)' : 'rgba(224,58,30,0.22)'}`,
           cursor: 'pointer',
           transition: 'all 0.15s',
         }}
@@ -311,8 +309,8 @@ function NodeCard({
             position: 'absolute',
             top: 5,
             right: 5,
-            background: 'rgba(200,170,80,0.08)',
-            border: '1px solid rgba(200,170,80,0.3)',
+            background: 'rgba(224,58,30,0.08)',
+            border: '1px solid rgba(224,58,30,0.3)',
             borderRadius: 3,
             padding: '1px 5px',
             fontFamily: FR,
@@ -390,8 +388,8 @@ function NodeCard({
         flexDirection: 'column',
         gap: 4,
         overflow: 'hidden',
-        background: hovered ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.015)',
-        border: hovered ? '1px dashed rgba(200,170,80,0.22)' : '1px dashed rgba(255,255,255,0.08)',
+        background: hovered ? 'rgba(224,58,30,0.06)' : 'rgba(224,58,30,0.01)',
+        border: hovered ? '1px dashed rgba(224,58,30,0.22)' : '1px dashed rgba(224,58,30,0.12)',
         opacity: hovered ? 0.82 : 0.42,
         cursor: 'pointer',
         transition: 'all 0.15s',
@@ -471,9 +469,9 @@ function PurchasePopover({
       maxWidth={320}
       zIndex={500}
       backdrop="rgba(0,0,0,0.4)"
-      borderColor="rgba(200,170,80,0.5)"
-      shadow="0 8px 32px rgba(0,0,0,0.7), 0 0 0 1px rgba(200,170,80,0.1)"
-      panelBackground="rgba(8,16,10,0.98)"
+      borderColor="rgba(224,58,30,0.5)"
+      shadow="0 8px 32px rgba(0,0,0,0.7), 0 0 0 1px rgba(224,58,30,0.1)"
+      panelBackground="var(--hud-surface-hi)"
     >
       <div style={{ padding: '14px 16px' }}>
         {/* Title */}
@@ -513,7 +511,7 @@ function PurchasePopover({
         )}
 
         {/* Divider */}
-        <div style={{ height: 1, background: 'rgba(200,170,80,0.15)', marginBottom: 10 }} />
+        <div style={{ height: 1, background: 'rgba(224,58,30,0.15)', marginBottom: 10 }} />
 
         {/* Description */}
         {node.description && (
@@ -533,7 +531,7 @@ function PurchasePopover({
         )}
 
         {/* Divider */}
-        <div style={{ height: 1, background: 'rgba(200,170,80,0.15)', marginBottom: 10 }} />
+        <div style={{ height: 1, background: 'rgba(224,58,30,0.15)', marginBottom: 10 }} />
 
         {/* Buttons */}
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
@@ -556,8 +554,8 @@ function PurchasePopover({
             onClick={canAfford ? onConfirm : undefined}
             disabled={!canAfford}
             style={{
-              background: 'rgba(200,170,80,0.15)',
-              border: '1px solid rgba(200,170,80,0.5)',
+              background: 'rgba(224,58,30,0.15)',
+              border: '1px solid rgba(224,58,30,0.5)',
               borderRadius: 3,
               fontFamily: FR,
               fontSize: FS_LABEL,
@@ -599,21 +597,21 @@ function LockedInfoPopover({
       maxWidth={320}
       zIndex={500}
       backdrop="rgba(0,0,0,0.4)"
-      borderColor="rgba(255,255,255,0.12)"
+      borderColor="var(--hud-border)"
       shadow="0 8px 32px rgba(0,0,0,0.7)"
-      panelBackground="rgba(8,16,10,0.98)"
+      panelBackground="var(--hud-surface-hi)"
     >
       <div style={{ padding: '14px 16px' }}>
         {/* Locked / Preview banner */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 8,
-          background: isPreview ? 'rgba(200,170,80,0.06)' : 'rgba(255,255,255,0.04)',
-          border: isPreview ? '1px solid rgba(200,170,80,0.18)' : '1px solid rgba(255,255,255,0.1)',
+          background: isPreview ? 'rgba(224,58,30,0.06)' : 'rgba(224,58,30,0.02)',
+          border: isPreview ? '1px solid rgba(224,58,30,0.18)' : '1px solid var(--hud-border)',
           borderRadius: 4, padding: '5px 10px',
           marginBottom: 10,
         }}>
           <span style={{ fontSize: 13 }}>{isPreview ? '👁' : '🔒'}</span>
-          <span style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700, color: isPreview ? 'rgba(200,170,80,0.6)' : FAINT, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+          <span style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700, color: isPreview ? 'rgba(224,58,30,0.6)' : FAINT, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
             {isPreview ? 'Spec Preview — read-only' : 'Locked — purchase adjacent talents first'}
           </span>
         </div>
@@ -637,7 +635,7 @@ function LockedInfoPopover({
           <span style={{ fontFamily: FR, fontSize: FS_LABEL, color: GOLD_DIM, marginLeft: 'auto' }}>{cost} XP when unlocked</span>
         </div>
 
-        <div style={{ height: 1, background: 'rgba(200,170,80,0.15)', marginBottom: 10 }} />
+        <div style={{ height: 1, background: 'rgba(224,58,30,0.15)', marginBottom: 10 }} />
 
         {/* Description */}
         {node.description ? (
@@ -707,7 +705,7 @@ function ConnectionLines({
         const bothPurchased = !!(fromNode?.purchased && toNode?.purchased)
         const onePurchased = !!(fromNode?.purchased || toNode?.purchased)
 
-        const stroke = bothPurchased ? 'rgba(200,170,80,0.7)' : onePurchased ? 'rgba(200,170,80,0.35)' : 'rgba(200,170,80,0.15)'
+        const stroke = bothPurchased ? 'rgba(224,58,30,0.7)' : onePurchased ? 'rgba(224,58,30,0.35)' : 'rgba(224,58,30,0.15)'
         const strokeWidth = bothPurchased ? 2 : 1.5
         const filter = bothPurchased ? 'url(#glow-line)' : undefined
 
@@ -815,8 +813,8 @@ export function TalentTree({
         {xpAvailable !== undefined && (
           <div
             style={{
-              background: 'rgba(200,170,80,0.1)',
-              border: '1px solid rgba(200,170,80,0.3)',
+              background: 'rgba(224,58,30,0.1)',
+              border: '1px solid rgba(224,58,30,0.3)',
               borderRadius: 3,
               padding: '2px 10px',
               fontFamily: FC,
@@ -832,7 +830,7 @@ export function TalentTree({
       {/* ── LEGEND ── */}
       <div
         style={{
-          background: 'rgba(0,0,0,0.2)',
+          background: 'rgba(224,58,30,0.04)',
           padding: '8px 16px',
           display: 'flex',
           fontWeight: 600,
@@ -873,8 +871,8 @@ export function TalentTree({
               display: 'inline-block',
               width: 8,
               height: 8,
-              background: 'rgba(200,170,80,0.15)',
-              border: '1px dashed rgba(200,170,80,0.3)',
+              background: 'rgba(224,58,30,0.15)',
+              border: '1px dashed rgba(224,58,30,0.3)',
               opacity: 0.5,
             }}
           />

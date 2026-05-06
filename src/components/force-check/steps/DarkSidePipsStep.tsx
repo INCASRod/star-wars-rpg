@@ -2,7 +2,7 @@
 
 const FONT_C = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M = "'Share Tech Mono', 'Courier New', monospace"
+
 const FORCE_BLUE   = '#7EC8E3'
 const DARK_PURPLE  = '#8B2BE2'
 
@@ -52,7 +52,7 @@ export function DarkSidePipsStep({
       <div style={{
         fontFamily: FONT_R,
         fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)',
-        color: 'rgba(232,223,200,0.8)',
+        color: 'rgba(90,40,24,0.8)',
         lineHeight: 1.6,
         display: 'flex', flexDirection: 'column', gap: 6,
       }}>
@@ -75,30 +75,30 @@ export function DarkSidePipsStep({
 
       {/* Selector */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: 'rgba(232,223,200,0.45)', textTransform: 'uppercase', letterSpacing: '0.15em' }}>
+        <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: 'rgba(90,40,24,0.45)', textTransform: 'uppercase', letterSpacing: '0.15em' }}>
           {isFallen ? 'Light' : 'Dark'} pips to use
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <button
             onClick={() => onChangeDark(Math.max(0, darkPipsUsed - 1))}
-            style={{ width: 36, height: 36, borderRadius: 6, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', color: 'rgba(232,223,200,0.8)', fontSize: 'clamp(0.9rem,1.4vw,1.1rem)', fontFamily: FONT_M }}
+            style={{ width: 36, height: 36, borderRadius: 6, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', color: 'rgba(90,40,24,0.8)', fontSize: 'clamp(0.9rem,1.4vw,1.1rem)', fontFamily: "var(--font-body)" }}
           >−</button>
-          <div style={{ fontFamily: FONT_C, fontSize: 'clamp(1.2rem, 2vw, 1.6rem)', fontWeight: 700, color: darkPipsUsed > 0 ? accentColor : 'rgba(232,223,200,0.4)', minWidth: 32, textAlign: 'center' }}>
+          <div style={{ fontFamily: FONT_C, fontSize: 'clamp(1.2rem, 2vw, 1.6rem)', fontWeight: 700, color: darkPipsUsed > 0 ? accentColor : 'rgba(90,40,24,0.4)', minWidth: 32, textAlign: 'center' }}>
             {darkPipsUsed}
           </div>
           <button
             onClick={() => onChangeDark(Math.min(darkPips, darkPipsUsed + 1))}
-            style={{ width: 36, height: 36, borderRadius: 6, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', color: 'rgba(232,223,200,0.8)', fontSize: 'clamp(0.9rem,1.4vw,1.1rem)', fontFamily: FONT_M }}
+            style={{ width: 36, height: 36, borderRadius: 6, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', color: 'rgba(90,40,24,0.8)', fontSize: 'clamp(0.9rem,1.4vw,1.1rem)', fontFamily: "var(--font-body)" }}
           >+</button>
         </div>
 
         {/* Live cost summary */}
         {darkPipsUsed > 0 && (
           <div style={{ padding: '10px 12px', background: isFallen ? 'rgba(126,200,227,0.06)' : 'rgba(144,96,208,0.08)', border: `1px solid ${isFallen ? 'rgba(126,200,227,0.2)' : 'rgba(144,96,208,0.2)'}`, borderRadius: 6, display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)', color: 'rgba(232,223,200,0.7)' }}>
+            <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)', color: 'rgba(90,40,24,0.7)' }}>
               Using {darkPipsUsed} {costlyLabel} pip{darkPipsUsed !== 1 ? 's' : ''}:
             </div>
-            <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: 'rgba(232,223,200,0.5)', display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: 'rgba(90,40,24,0.5)', display: 'flex', flexDirection: 'column', gap: 2 }}>
               <div>Strain cost:   {darkPipsUsed}</div>
               <div>Destiny flip:  1 {destinyFlip}</div>
               <div style={{ color: FORCE_BLUE }}>Total FP:      {totalFP}</div>
@@ -116,10 +116,11 @@ export function DarkSidePipsStep({
             </div>
           </div>
         )}
-        <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)', color: 'rgba(232,223,200,0.4)', fontStyle: 'italic' }}>
+        <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)', color: 'rgba(90,40,24,0.4)', fontStyle: 'italic' }}>
           Adjust the selector above then click Continue to proceed.
         </div>
       </div>
     </div>
   )
 }
+

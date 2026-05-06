@@ -13,12 +13,12 @@ import type { DualWieldState } from './DicePoolReviewStep'
 import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
-const GOLD_DIM = 'rgba(200,170,80,0.5)'
-const TEXT     = 'rgba(255,255,255,0.85)'
-const TEXT_DIM = 'rgba(255,255,255,0.5)'
+const GOLD_DIM = 'rgba(224,58,30,0.5)'
+const TEXT = 'var(--hud-text)'
+const TEXT_DIM = 'var(--hud-text-dim)'
 const FONT_C   = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R   = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M   = "'Share Tech Mono', 'Courier New', monospace"
+
 
 interface RollResultStepProps {
   result:      RollResult
@@ -175,7 +175,7 @@ export function RollResultStep({
           )}
         </div>
         {succeeded && (
-          <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.9rem, 1.4vw, 1.1rem)', color: TEXT }}>
+          <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.9rem, 1.4vw, 1.1rem)', color: TEXT }}>
             Damage: <strong style={{ color: '#E07855' }}>{totalDmg}</strong>
             <span style={{ fontFamily: FONT_R, fontSize: 'clamp(0.65rem, 1vw, 0.75rem)', color: TEXT_DIM, marginLeft: 6 }}>
               ({hasBrawnScale ? `${baseDmg >= 0 ? '+' : ''}${baseDmg}+${characterBrawn} Brawn` : String(baseDmg)} + {net.success} success)
@@ -189,8 +189,8 @@ export function RollResultStep({
         <div style={{
           marginBottom: 16,
           padding: '12px 14px',
-          background: 'rgba(200,170,80,0.05)',
-          border: '1px solid rgba(200,170,80,0.25)',
+          background: 'rgba(224,58,30,0.05)',
+          border: '1px solid rgba(224,58,30,0.25)',
           borderRadius: 8,
         }}>
           <div style={{
@@ -204,13 +204,13 @@ export function RollResultStep({
           }}>
             <i className="ffi ffi-swrpg-advantage" /><i className="ffi ffi-swrpg-advantage" /> available — secondary: {secWeaponName}
           </div>
-          <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)', color: TEXT, marginBottom: 4 }}>
+          <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)', color: TEXT, marginBottom: 4 }}>
             Secondary damage if hit: <strong style={{ color: '#E07855' }}>{secTotalDmg}</strong>
             <span style={{ fontFamily: FONT_R, fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: TEXT_DIM, marginLeft: 6 }}>
               ({secBase >= 0 ? '' : ''}{secHasBrawnScale ? `+${secBase}+${characterBrawn} Brawn` : String(secBase)} + {net.success} success)
             </span>
           </div>
-          <div style={{ fontFamily: FONT_R, fontStyle: 'italic', fontSize: 'clamp(0.65rem, 1vw, 0.75rem)', color: 'rgba(232,223,200,0.5)' }}>
+          <div style={{ fontFamily: FONT_R, fontStyle: 'italic', fontSize: 'clamp(0.65rem, 1vw, 0.75rem)', color: 'rgba(90,40,24,0.5)' }}>
             Secondary hit requires <i className="ffi ffi-swrpg-advantage" /><i className="ffi ffi-swrpg-advantage" /> or <i className="ffi ffi-swrpg-triumph" /> — GM/player decides.
           </div>
         </div>
@@ -230,7 +230,7 @@ export function RollResultStep({
 
       {/* Context */}
       <div style={{
-        fontFamily: FONT_M,
+        fontFamily: "var(--font-body)",
         fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)',
         color: GOLD_DIM,
         marginBottom: 12,
@@ -327,7 +327,7 @@ export function RollResultStep({
           onClick={onRollAgain}
           style={{
             width: '100%', height: 44,
-            background: 'rgba(200,170,80,0.1)',
+            background: 'rgba(224,58,30,0.1)',
             border: `1px solid ${GOLD_DIM}`,
             borderRadius: 8, cursor: 'pointer',
             fontFamily: FONT_C,
@@ -356,3 +356,5 @@ export function RollResultStep({
     </div>
   )
 }
+
+

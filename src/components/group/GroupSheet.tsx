@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
@@ -12,7 +12,7 @@ import { resolveWeapon } from '@/lib/resolve-weapon'
 import { RichText } from '@/components/ui/RichText'
 import { Modal } from '@/components/ui/Modal'
 
-const FONT_MONO = "'Share Tech Mono','Courier New',monospace"
+const FONT_MONO = 'var(--font-body)'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -100,7 +100,7 @@ const ASSET_COLORS: Record<AssetType, string> = {
   starship:         '#40C4D4',
   safe_house:       '#D4A84B',
   strategic_asset:  '#9B59B6',
-  other:            '#6A8070',
+  other:            'var(--hud-text-dim)',
 }
 
 const ASSET_LABELS: Record<AssetType, string> = {
@@ -155,7 +155,7 @@ function PinModal({ onConfirm, onCancel }: { onConfirm: (pin: string) => void; o
           onChange={e => setVal(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') onConfirm(val) }}
           style={{
-            background: 'rgba(0,0,0,0.4)', border: `1px solid ${C.border}`,
+            background: 'var(--hud-surface-lo)', border: `1px solid ${C.border}`,
             borderRadius: 4, padding: '8px 12px',
             fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.text,
             outline: 'none', letterSpacing: '0.2em',
@@ -173,7 +173,7 @@ function PinModal({ onConfirm, onCancel }: { onConfirm: (pin: string) => void; o
 function btnStyle(primary: boolean): React.CSSProperties {
   return {
     padding: '6px 16px',
-    background: primary ? 'rgba(200,170,80,0.15)' : 'transparent',
+    background: primary ? 'rgba(224,58,30,0.15)' : 'transparent',
     border: `1px solid ${primary ? C.gold : C.border}`,
     borderRadius: 4,
     color: primary ? C.gold : C.textDim,
@@ -551,7 +551,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <div style={{
-              background: '#0A1410',
+              background: 'var(--hud-surface-hi)',
               border: `1px solid ${C.borderHi}`,
               borderRadius: 8,
               display: 'flex', flexDirection: 'column',
@@ -598,7 +598,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
                     <div style={{
                       maxHeight: 220, overflowY: 'auto',
                       border: `1px solid ${C.border}`, borderRadius: 6,
-                      background: 'rgba(0,0,0,0.25)',
+                      background: 'var(--hud-surface-lo)',
                     }}>
                       {libLoading && (
                         <div style={{ padding: '16px', fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: C.textDim, textAlign: 'center' }}>
@@ -841,7 +841,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
           <div style={{
             display: 'flex', alignItems: 'center', gap: 10,
             padding: '10px 14px',
-            background: 'rgba(200,170,80,0.03)',
+            background: 'rgba(224,58,30,0.03)',
             border: `1px solid rgba(255,255,255,0.07)`,
             borderRadius: 6,
           }}>
@@ -922,7 +922,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
                           <span style={{
                             display: 'inline-flex', alignItems: 'center', gap: 3,
                             padding: '1px 6px', borderRadius: 10,
-                            background: 'rgba(200,170,80,0.12)',
+                            background: 'rgba(224,58,30,0.12)',
                             border: `1px solid ${C.gold}55`,
                             fontFamily: FONT_MONO, fontSize: FS_OVERLINE,
                             color: C.gold, letterSpacing: '0.06em', whiteSpace: 'nowrap',
@@ -943,7 +943,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
                           position: 'absolute',
                           ...(isTop ? { top: 'calc(100% + 4px)' } : { bottom: 'calc(100% + 6px)' }),
                           left: 0, zIndex: 50,
-                          background: 'rgba(6,13,9,0.97)', border: `1px solid ${C.borderHi}`,
+                          background: 'var(--hud-surface-hi)', border: `1px solid ${C.borderHi}`,
                           borderRadius: 6, padding: '10px 14px',
                           maxWidth: 320, minWidth: 180,
                           boxShadow: '0 4px 20px rgba(0,0,0,0.6)',
@@ -1005,12 +1005,12 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
             <span style={{ fontFamily: FONT_CINZEL, fontSize: FS_CAPTION, color: C.textDim, letterSpacing: '0.08em' }}>
               GROUP DUTY
             </span>
-            <span style={{ fontFamily: 'Share Tech Mono, monospace', fontSize: FS_CAPTION, color: milestone ? C.gold : C.textDim }}>
+            <span style={{ fontFamily: 'var(--font-body)', fontSize: FS_CAPTION, color: milestone ? C.gold : C.textDim }}>
               {dutyTotal} / 100
             </span>
           </div>
           <div style={{
-            height: 8, borderRadius: 4, background: 'rgba(200,170,80,0.1)',
+            height: 8, borderRadius: 4, background: 'rgba(224,58,30,0.1)',
             overflow: 'hidden', position: 'relative',
           }}>
             <div style={{
@@ -1018,7 +1018,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
               width: `${dutyPct}%`,
               background: milestone
                 ? `linear-gradient(90deg, ${C.gold}, #F5D77A)`
-                : `linear-gradient(90deg, rgba(200,170,80,0.6), rgba(200,170,80,0.9))`,
+                : `linear-gradient(90deg, rgba(224,58,30,0.6), rgba(224,58,30,0.9))`,
               transition: 'width 0.4s ease',
               boxShadow: milestone ? `0 0 8px ${C.gold}88` : undefined,
             }} />
@@ -1036,7 +1036,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
                   onClick={() => handleResetGroupDuty()}
                   style={{
                     padding: '6px 20px',
-                    background: 'rgba(200,170,80,0.12)',
+                    background: 'rgba(224,58,30,0.12)',
                     border: `1px solid ${C.gold}`,
                     borderRadius: 4,
                     color: C.gold,
@@ -1044,7 +1044,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
                     fontSize: FS_LABEL,
                     letterSpacing: '0.1em',
                     cursor: 'pointer',
-                    boxShadow: `0 0 10px rgba(200,170,80,0.2)`,
+                    boxShadow: `0 0 10px rgba(224,58,30,0.2)`,
                   }}
                 >
                   ↑ RESET GROUP DUTY & ADVANCE RANK
@@ -1076,7 +1076,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
                   width: 18, height: 18, borderRadius: '50%',
                   background: i < rank
                     ? `radial-gradient(circle at 35% 35%, #F5D77A, ${C.gold})`
-                    : 'rgba(200,170,80,0.1)',
+                    : 'rgba(224,58,30,0.1)',
                   border: `1px solid ${i < rank ? C.gold : C.border}`,
                   boxShadow: i < rank ? `0 0 6px ${C.gold}66` : undefined,
                   transition: 'all 0.2s',
@@ -1218,7 +1218,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
               <span style={{
                 padding: '2px 10px', borderRadius: 12, fontSize: FS_CAPTION,
                 fontFamily: FONT_CINZEL, letterSpacing: '0.06em',
-                background: 'rgba(200,170,80,0.1)', border: `1px solid ${C.border}`,
+                background: 'rgba(224,58,30,0.1)', border: `1px solid ${C.border}`,
                 color: C.gold,
               }}>
                 {(ASSET_LABELS as Record<string, string>)[campaign.last_alliance_reward.type] ?? campaign.last_alliance_reward.type}
@@ -1241,7 +1241,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
 
       {/* ── Reward edit modal (at root to escape backdropFilter stacking context) ── */}
       {showRewardModal && (
-      <Modal open onClose={() => setShowRewardModal(false)} zIndex={200} maxWidth={480} backdrop="rgba(0,0,0,0.75)" borderColor={C.borderHi} shadow="0 8px 40px rgba(0,0,0,0.8)" panelBackground="#0A1410">
+      <Modal open onClose={() => setShowRewardModal(false)} zIndex={200} maxWidth={480} backdrop="rgba(0,0,0,0.75)" borderColor={C.borderHi} shadow="0 8px 40px rgba(0,0,0,0.8)" panelBackground="var(--hud-surface-hi)">
         <div style={{ padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_H4, color: C.gold, letterSpacing: '0.08em' }}>
             SET ALLIANCE REWARD
@@ -1310,7 +1310,7 @@ function TooltipCard({ label, color, text, nextText, symbolSrc, symbolCorner, sy
   return (
     <div style={{
       flex: 1, borderRadius: 6, padding: '10px 12px',
-      background: 'rgba(8,16,10,0.95)',
+      background: 'var(--hud-surface-lo)',
       border: `1px solid ${color}66`,
       position: 'relative',
       overflow: 'hidden',
@@ -1338,7 +1338,7 @@ function TooltipCard({ label, color, text, nextText, symbolSrc, symbolCorner, sy
       <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_CAPTION, color, letterSpacing: '0.08em', marginBottom: 4, fontWeight: 700 }}>
         {label}
       </div>
-      <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: '#ffffff', lineHeight: 1.5, marginBottom: nextText !== undefined ? 8 : 0 }}>
+      <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: 'var(--hud-text)', lineHeight: 1.5, marginBottom: nextText !== undefined ? 8 : 0 }}>
         {text}
       </div>
       {/* Next rank */}
@@ -1347,7 +1347,7 @@ function TooltipCard({ label, color, text, nextText, symbolSrc, symbolCorner, sy
           <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_CAPTION, color: color + '88', letterSpacing: '0.08em', marginBottom: 3, fontWeight: 600 }}>
             NEXT RANK
           </div>
-          <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: 'rgba(255,255,255,0.6)', lineHeight: 1.5 }}>
+          <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: 'var(--hud-text-dim)', lineHeight: 1.5 }}>
             {nextText ?? 'Maximum rank achieved.'}
           </div>
         </>
@@ -1358,10 +1358,10 @@ function TooltipCard({ label, color, text, nextText, symbolSrc, symbolCorner, sy
 
 // ── Asset View Modal ─────────────────────────────────────────────────────────
 
-const _VM_RAISED  = 'rgba(14,26,18,0.9)'
-const _VM_BORDER  = 'rgba(200,170,80,0.14)'
-const _VM_DIM     = '#6A8070'
-const _VM_TEXT    = '#C8D8C0'
+const _VM_RAISED  = 'var(--hud-surface-mid)'
+const _VM_BORDER  = 'var(--hud-border)'
+const _VM_DIM     = 'var(--hud-text-dim)'
+const _VM_TEXT    = 'var(--hud-text)'
 const _VM_RED     = '#E05050'
 const _VM_GREEN   = '#4EC87A'
 const _VM_BLUE    = '#5AAAE0'
@@ -1371,7 +1371,7 @@ function _VmSection({ children }: { children: React.ReactNode }) {
     <div style={{
       fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, fontWeight: 700,
       letterSpacing: '0.2em', textTransform: 'uppercase',
-      color: 'rgba(200,170,80,0.5)', borderBottom: `1px solid ${_VM_BORDER}`,
+      color: 'rgba(224,58,30,0.5)', borderBottom: `1px solid ${_VM_BORDER}`,
       paddingBottom: 4, marginBottom: 8,
     }}>{children}</div>
   )
@@ -1430,7 +1430,7 @@ function AssetViewModal({ asset, adversary, vehicle, loading, onClose }: {
       <div style={{
         position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 10060,
         width: 'clamp(340px, 42vw, 560px)',
-        background: '#0A1410',
+        background: 'var(--hud-surface-hi)',
         backdropFilter: 'blur(18px)',
         WebkitBackdropFilter: 'blur(18px)',
         borderLeft: `1px solid ${C.borderHi}`,
@@ -1761,7 +1761,7 @@ function AssetCard({ asset, canArchive, onArchive, onView }: {
   return (
     <div style={{
       borderRadius: 6, padding: '10px 12px',
-      background: 'rgba(8,16,10,0.5)', border: `1px solid ${C.border}`,
+      background: 'var(--hud-surface-lo)', border: `1px solid ${C.border}`,
       display: 'flex', alignItems: 'flex-start', gap: 10,
     }}>
       <span style={{
@@ -1818,7 +1818,7 @@ function tdStyle(): React.CSSProperties {
 
 function inlineInputStyle(): React.CSSProperties {
   return {
-    background: 'rgba(0,0,0,0.4)', border: `1px solid ${C.border}`,
+    background: 'var(--hud-surface-lo)', border: `1px solid ${C.border}`,
     borderRadius: 4, padding: '6px 10px', width: '100%',
     fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.text,
     outline: 'none', boxSizing: 'border-box',
@@ -1831,3 +1831,4 @@ function labelStyle(): React.CSSProperties {
     fontFamily: FONT_CINZEL, fontSize: FS_CAPTION, color: C.textDim, letterSpacing: '0.08em',
   }
 }
+
