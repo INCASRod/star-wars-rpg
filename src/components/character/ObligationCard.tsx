@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react'
 import { stripBBCode } from '@/lib/utils'
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
-const FC = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const TEXT = '#C8D8C0'
-const DIM = '#6A8070'
+const FC   = 'var(--font-body)'
+const TEXT = 'var(--hud-text)'
+const DIM  = 'var(--hud-text-dim)'
 
 function getThreatTier(value: number): {
   color: string

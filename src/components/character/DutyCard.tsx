@@ -3,15 +3,15 @@
 import { stripBBCode } from '@/lib/utils'
 import { HUD } from '@/lib/tokens'
 
-// ── Design tokens (inline — no import needed, file is standalone) ─────────────
-const FC = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const TEXT = '#C8D8C0'
-const DIM = '#6A8070'
+// ── Design tokens ─────────────────────────────────────────────────────────────
+const FC   = 'var(--font-body)'
+const TEXT = 'var(--hud-text)'
+const DIM  = 'var(--hud-text-dim)'
 const BLUE = '#4FC3F7'
 
 const panelStyle: React.CSSProperties = {
   position: 'relative',
-  background: 'rgba(8,16,10,0.88)',
+  background: 'var(--hud-surface-lo)',
   backdropFilter: 'blur(12px)',
   border: '1px solid rgba(79,195,247,0.2)',
   borderRadius: 6,
