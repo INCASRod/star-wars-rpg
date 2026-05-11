@@ -303,7 +303,7 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
   }
 
   /* ── Render ───────────────────────────────────────────── */
-  const hasTokens = tokens.length > 0
+  const hasTokens = tokens.length > 0 || npcSlots.length > 0 || vehicleSlots.length > 0
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
