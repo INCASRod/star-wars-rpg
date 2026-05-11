@@ -497,6 +497,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
             {activeTab === 'Session' && (
               <HudSessionTab
                 character={character}
+                campaignId={effectiveCampaignId}
                 visibleMap={visibleMap}
                 visibleMapTokens={visibleMapTokens}
                 onTokenMove={mapTokens.moveToken}
