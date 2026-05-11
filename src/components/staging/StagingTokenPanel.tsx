@@ -280,10 +280,24 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
     setAdvTokenImages(prev => { const n = { ...prev }; delete n[adversaryKey]; return n })
   }
 
-  /* ── Remove All Tokens ────────────────────────────────── */
+  /* ── Reset Board ─────────────────────────────────────── */
   async function handleRemoveAll() {
     setRemoveAllBusy(true)
-    await removeAllTokens()
+    await Promise.all([
+      // Delete ALL map tokens for this campaign — covers current map AND
+      // any legacy tokens left on previous maps from past sessions
+      supabase.from('map_tokens').delete().eq('campaign_id', campaignId),
+      // Clear adversaries, vehicles, and initiative slots from the active
+      // encounter so the Adversaries / Vehicles sections also empty out
+      encounter
+        ? supabase.from('combat_encounters').update({
+            adversaries:      [],
+            vehicles:         [],
+            initiative_slots: [],
+            updated_at:       new Date().toISOString(),
+          }).eq('id', encounter.id)
+        : Promise.resolve(),
+    ])
     setRemoveAllBusy(false)
     setRemoveAllConfirm(false)
   }
