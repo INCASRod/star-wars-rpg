@@ -6,13 +6,13 @@ import { createClient } from '@/lib/supabase/client'
 import type { CriticalInjuryRequest, RefCriticalInjury, CharacterCriticalInjury } from '@/lib/types'
 import { HUD } from '@/lib/tokens'
 
-const FONT_C = "var(--font-rajdhani), 'Cinzel', serif"
-const FONT_R = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M = "'Share Tech Mono','Courier New',monospace"
+const FONT_C = 'var(--font-body)'
+const FONT_R = 'var(--font-body)'
+const FONT_M = 'var(--font-body)'
 
 const CRIMSON = '#DC143C'
-const TEXT    = 'rgba(232,223,200,0.85)'
-const DIM     = 'rgba(200,170,80,0.5)'
+const TEXT    = 'var(--hud-text)'
+const DIM     = 'var(--hud-text-faint)'
 
 interface CriticalInjuryModalProps {
   request:      CriticalInjuryRequest
@@ -155,7 +155,7 @@ export function CriticalInjuryModal({
                   <span style={{ color: CRIMSON, fontWeight: 700 }}>+{m.value}</span>
                 </div>
               ))}
-              <div style={{ height: 1, background: 'rgba(200,170,80,0.15)', margin: '4px 0' }} />
+              <div style={{ height: 1, background: 'var(--hud-border)', margin: '4px 0' }} />
               <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: FONT_M, fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)', color: HUD.gold }}>
                 <span>Total modifier</span>
                 <span style={{ fontWeight: 700 }}>+{request.total_modifier}</span>
@@ -181,7 +181,7 @@ export function CriticalInjuryModal({
                 value={tens ?? ''}
                 onChange={e => setTens(e.target.value === '' ? null : parseInt(e.target.value, 10))}
                 style={{
-                  background: 'rgba(0,0,0,0.5)',
+                  background: 'var(--hud-surface-lo)',
                   border: `1px solid rgba(220,20,60,0.3)`,
                   borderRadius: 6, padding: '8px 12px',
                   fontFamily: FONT_M, fontSize: 'clamp(0.85rem, 1.3vw, 1rem)',
@@ -207,7 +207,7 @@ export function CriticalInjuryModal({
                 value={ones ?? ''}
                 onChange={e => setOnes(e.target.value === '' ? null : parseInt(e.target.value, 10))}
                 style={{
-                  background: 'rgba(0,0,0,0.5)',
+                  background: 'var(--hud-surface-lo)',
                   border: `1px solid rgba(220,20,60,0.3)`,
                   borderRadius: 6, padding: '8px 12px',
                   fontFamily: FONT_M, fontSize: 'clamp(0.85rem, 1.3vw, 1rem)',
@@ -298,7 +298,7 @@ export function CriticalInjuryModal({
 
         <div style={{
           fontFamily: FONT_M, fontSize: 'clamp(0.5rem, 0.78vw, 0.6rem)',
-          color: 'rgba(200,170,80,0.3)', textAlign: 'center', letterSpacing: '0.1em',
+          color: 'var(--hud-text-faint)', textAlign: 'center', letterSpacing: '0.1em',
         }}>
           This roll is mandatory — you must submit a result.
         </div>

@@ -651,8 +651,8 @@ function CreateWizard() {
                   return obl?.description ? (
                     <div style={{
                       marginTop: '0.5rem',
-                      background: 'rgba(200,170,80,0.04)',
-                      border: '1px solid rgba(200,170,80,0.15)',
+                      background: 'var(--bs-red-glow)',
+                      border: '1px solid var(--hud-border)',
                       borderRadius: 8,
                       padding: 12,
                       maxHeight: 120,
@@ -773,8 +773,8 @@ function CreateWizard() {
                   return duty?.description ? (
                     <div style={{
                       marginTop: '0.5rem',
-                      background: 'rgba(200,170,80,0.04)',
-                      border: '1px solid rgba(200,170,80,0.15)',
+                      background: 'var(--bs-red-glow)',
+                      border: '1px solid var(--hud-border)',
                       borderRadius: 8,
                       padding: 12,
                       maxHeight: 120,
@@ -1734,7 +1734,7 @@ function XpInvestmentStep({
               )
             })}
 
-            <div style={{ maxHeight: '18rem', display: 'flex', flexDirection: 'column', background: 'rgba(6,13,9,0.96)', border: '1px solid rgba(200,170,80,0.18)', borderRadius: 4, padding: '8px', overflow: 'hidden' }}>
+            <div style={{ maxHeight: '18rem', display: 'flex', flexDirection: 'column', background: 'var(--hud-surface-hi)', border: '1px solid var(--hud-border)', borderRadius: 4, padding: '8px', overflow: 'hidden' }}>
               <SpecSelectorList
                 refSpecs={specializations}
                 ownedKeys={existingKeys}
@@ -1770,7 +1770,7 @@ function XpInvestmentStep({
                     onClick={() => setActiveTalentSpecKey(spec.key)}
                     style={{
                       padding: '0.3rem 0.75rem',
-                      background: activeTalentSpec?.key === spec.key ? 'rgba(224,58,30,.15)' : 'rgba(0,0,0,.04)',
+                      background: activeTalentSpec?.key === spec.key ? 'rgba(224,58,30,.15)' : 'transparent',
                       border: `1px solid ${activeTalentSpec?.key === spec.key ? 'var(--bs-red-sun)' : 'var(--bs-bdr-mid)'}`,
                       fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', fontWeight: 600,
                       color: activeTalentSpec?.key === spec.key ? 'var(--bs-red-mid)' : 'var(--bs-txt2)',

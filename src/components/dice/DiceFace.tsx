@@ -3,9 +3,9 @@
 import type { DiceType } from '@/components/player-hud/design-tokens'
 
 export const DICE_COLORS: Record<DiceType, string> = {
-  proficiency: '#F5C518',
-  ability:     '#4CAF50',
-  boost:       '#29B6F6',
+  proficiency: '#C8961A',
+  ability:     '#4A7A30',
+  boost:       '#1A78A0',
   challenge:   '#C62828',
   difficulty:  '#7B1FA2',
   setback:     '#455A64',

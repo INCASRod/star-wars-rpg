@@ -67,7 +67,7 @@ export function HudSessionTab({
           {/* Initiative strip — full-height glassmorphic wrapper, z:30 sits above panels */}
           <div style={{
             position: 'absolute', top: 0, left: 0, right: 0,
-            background: 'rgba(6,13,9,0.85)', backdropFilter: 'blur(8px)',
+            background: 'var(--hud-surface-hi)', backdropFilter: 'blur(8px)',
             WebkitBackdropFilter: 'blur(8px)',
             zIndex: 30,
           }}>
@@ -87,8 +87,8 @@ export function HudSessionTab({
           style={{
             fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, fontWeight: 700,
             letterSpacing: '0.14em', textTransform: 'uppercase',
-            color: talentDrawerOpen ? '#060D09' : C.gold,
-            background: talentDrawerOpen ? C.gold : 'rgba(6,13,9,0.88)',
+            color: talentDrawerOpen ? 'var(--bs-on-red)' : C.gold,
+            background: talentDrawerOpen ? C.gold : 'var(--hud-surface-mid)',
             border: `1px solid rgba(224,58,30,0.5)`,
             borderRadius: 4, padding: '4px 10px',
             cursor: 'pointer',
@@ -100,8 +100,8 @@ export function HudSessionTab({
             style={{
               fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, fontWeight: 700,
               letterSpacing: '0.14em', textTransform: 'uppercase',
-              color: adversaryDrawerOpen ? '#060D09' : C.gold,
-              background: adversaryDrawerOpen ? C.gold : 'rgba(6,13,9,0.88)',
+              color: adversaryDrawerOpen ? 'var(--bs-on-red)' : C.gold,
+              background: adversaryDrawerOpen ? C.gold : 'var(--hud-surface-mid)',
               border: `1px solid rgba(224,58,30,0.5)`,
               borderRadius: 4, padding: '4px 10px',
               cursor: 'pointer',
@@ -146,15 +146,15 @@ export function HudSessionTab({
             left: tokenHoverInfo.x + 14,
             top: tokenHoverInfo.y - 40,
             zIndex: 9999,
-            background: 'rgba(6,13,9,0.96)',
-            border: '1px solid rgba(224,58,30,0.45)',
+            background: 'var(--hud-surface-hi)',
+            border: `1px solid var(--hud-border-hi)`,
             borderRadius: 6, padding: '8px 12px',
             fontFamily: FONT_RAJDHANI,
             minWidth: 150, pointerEvents: 'none',
             boxShadow: '0 4px 16px rgba(0,0,0,0.6)',
           }}>
             <div style={{ color: C.gold, fontWeight: 700, fontSize: FS_SM, marginBottom: 4 }}>{adv.name}</div>
-            <div style={{ color: 'rgba(90,40,24,0.7)', fontSize: FS_CAPTION, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <div style={{ color: 'var(--hud-text-dim)', fontSize: FS_CAPTION, display: 'flex', flexDirection: 'column', gap: 2 }}>
               {adv.type === 'minion' && (
                 <div>Group: {adv.groupSize} · W: {adv.woundsCurrent ?? 0}/{wMax}</div>
               )}

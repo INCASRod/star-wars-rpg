@@ -2,10 +2,10 @@
 import { HUD } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
-const PANEL  = 'rgba(6,13,9,0.95)'
-const BORDER = 'rgba(200,170,80,0.2)'
-const FONT_C = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_R = "var(--font-rajdhani), 'Rajdhani', sans-serif"
+const PANEL  = 'var(--hud-surface-hi)'
+const BORDER = 'var(--hud-border)'
+const FONT_C = 'var(--font-body)'
+const FONT_R = 'var(--font-body)'
 
 interface MobileHeaderProps {
   characterName: string
@@ -44,8 +44,8 @@ export function MobileHeader({ characterName, onOpenDiceRoller }: MobileHeaderPr
         style={{
           width: 44, height: 44,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: 'rgba(200,170,80,0.08)',
-          border: `1px solid rgba(200,170,80,0.25)`,
+          background: 'var(--hud-surface-lo)',
+          border: `1px solid var(--hud-border)`,
           borderRadius: 8,
           cursor: 'pointer',
           fontSize: 20,

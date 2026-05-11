@@ -26,7 +26,7 @@ export function SelectPowerStep({ powers, selectedPowerKey, onSelect }: SelectPo
       <div style={{
         fontFamily: "var(--font-body)",
         fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)',
-        color: 'rgba(126,200,227,0.55)',
+        color: 'rgba(58,12,4,0.55)',
         textTransform: 'uppercase',
         letterSpacing: '0.18em',
       }}>
@@ -41,7 +41,7 @@ export function SelectPowerStep({ powers, selectedPowerKey, onSelect }: SelectPo
           <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.85rem, 1.3vw, 1rem)', color: TEXT_DIM }}>
             No Force powers purchased yet.
           </div>
-          <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)', color: 'rgba(126,200,227,0.35)' }}>
+          <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)', color: 'rgba(58,12,4,0.4)' }}>
             Visit the Force tab to purchase powers.
           </div>
         </div>
@@ -65,12 +65,12 @@ export function SelectPowerStep({ powers, selectedPowerKey, onSelect }: SelectPo
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: desc ? 6 : 0 }}>
-                  <span style={{ color: FORCE_BLUE, opacity: 0.8, fontSize: 11 }}>✦</span>
+                  <span style={{ color: '#3A0C04', opacity: 0.8, fontSize: 11 }}>✦</span>
                   <span style={{
                     fontFamily: FONT_C,
                     fontSize: 'clamp(0.88rem, 1.4vw, 1.05rem)',
                     fontWeight: 700,
-                    color: FORCE_BLUE,
+                    color: '#3A0C04',
                   }}>
                     {p.powerName}
                   </span>
@@ -93,7 +93,7 @@ export function SelectPowerStep({ powers, selectedPowerKey, onSelect }: SelectPo
                 <div style={{
                   fontFamily: "var(--font-body)",
                   fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)',
-                  color: 'rgba(126,200,227,0.45)',
+                  color: 'rgba(58,12,4,0.5)',
                 }}>
                   {p.purchasedCount} upgrade{p.purchasedCount !== 1 ? 's' : ''} purchased
                 </div>

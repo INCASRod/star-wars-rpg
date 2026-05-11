@@ -13,7 +13,7 @@ import type { DualWieldState } from './DicePoolReviewStep'
 import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
-const GOLD_DIM = 'rgba(224,58,30,0.5)'
+const GOLD_DIM  = 'var(--hud-text-faint)'
 const TEXT = 'var(--hud-text)'
 const TEXT_DIM = 'var(--hud-text-dim)'
 const FONT_C   = "var(--font-rajdhani), 'Cinzel', serif"
@@ -189,8 +189,8 @@ export function RollResultStep({
         <div style={{
           marginBottom: 16,
           padding: '12px 14px',
-          background: 'rgba(224,58,30,0.05)',
-          border: '1px solid rgba(224,58,30,0.25)',
+          background: 'var(--hud-surface-lo)',
+          border: '1px solid var(--hud-border)',
           borderRadius: 8,
         }}>
           <div style={{
@@ -210,7 +210,7 @@ export function RollResultStep({
               ({secBase >= 0 ? '' : ''}{secHasBrawnScale ? `+${secBase}+${characterBrawn} Brawn` : String(secBase)} + {net.success} success)
             </span>
           </div>
-          <div style={{ fontFamily: FONT_R, fontStyle: 'italic', fontSize: 'clamp(0.65rem, 1vw, 0.75rem)', color: 'rgba(90,40,24,0.5)' }}>
+          <div style={{ fontFamily: FONT_R, fontStyle: 'italic', fontSize: 'clamp(0.65rem, 1vw, 0.75rem)', color: 'var(--hud-text-faint)' }}>
             Secondary hit requires <i className="ffi ffi-swrpg-advantage" /><i className="ffi ffi-swrpg-advantage" /> or <i className="ffi ffi-swrpg-triumph" /> — GM/player decides.
           </div>
         </div>
@@ -343,7 +343,7 @@ export function RollResultStep({
           style={{
             width: '100%', height: 44,
             background: 'transparent',
-            border: `1px solid rgba(255,255,255,0.1)`,
+            border: `1px solid var(--hud-border)`,
             borderRadius: 8, cursor: 'pointer',
             fontFamily: FONT_R,
             fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)',

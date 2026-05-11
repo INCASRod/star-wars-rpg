@@ -311,8 +311,8 @@ function NodeCard({
             position: 'absolute',
             top: 5,
             right: 5,
-            background: 'rgba(224,58,30,0.08)',
-            border: '1px solid rgba(224,58,30,0.3)',
+            background: 'var(--hud-surface-lo)',
+            border: '1px solid var(--hud-border)',
             borderRadius: 3,
             padding: '1px 5px',
             fontFamily: FR,
@@ -472,7 +472,7 @@ function PurchasePopover({
       zIndex={500}
       backdrop="rgba(0,0,0,0.4)"
       borderColor="rgba(224,58,30,0.5)"
-      shadow="0 8px 32px rgba(0,0,0,0.7), 0 0 0 1px rgba(224,58,30,0.1)"
+      shadow="0 8px 32px rgba(0,0,0,0.7)"
       panelBackground="var(--hud-surface-hi)"
     >
       <div style={{ padding: '14px 16px' }}>
@@ -513,7 +513,7 @@ function PurchasePopover({
         )}
 
         {/* Divider */}
-        <div style={{ height: 1, background: 'rgba(224,58,30,0.15)', marginBottom: 10 }} />
+        <div style={{ height: 1, background: 'var(--hud-border)', marginBottom: 10 }} />
 
         {/* Description */}
         {node.description && (
@@ -533,7 +533,7 @@ function PurchasePopover({
         )}
 
         {/* Divider */}
-        <div style={{ height: 1, background: 'rgba(224,58,30,0.15)', marginBottom: 10 }} />
+        <div style={{ height: 1, background: 'var(--hud-border)', marginBottom: 10 }} />
 
         {/* Buttons */}
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
@@ -607,13 +607,13 @@ function LockedInfoPopover({
         {/* Locked / Preview banner */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 8,
-          background: isPreview ? 'rgba(224,58,30,0.06)' : 'rgba(224,58,30,0.02)',
-          border: isPreview ? '1px solid rgba(224,58,30,0.18)' : '1px solid var(--hud-border)',
+          background: isPreview ? 'var(--hud-surface-lo)' : 'transparent',
+          border: '1px solid var(--hud-border)',
           borderRadius: 4, padding: '5px 10px',
           marginBottom: 10,
         }}>
           <span style={{ fontSize: 13 }}>{isPreview ? '👁' : '🔒'}</span>
-          <span style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700, color: isPreview ? 'rgba(224,58,30,0.6)' : FAINT, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+          <span style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700, color: isPreview ? 'var(--hud-gold)' : FAINT, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
             {isPreview ? 'Spec Preview — read-only' : 'Locked — purchase adjacent talents first'}
           </span>
         </div>
@@ -637,7 +637,7 @@ function LockedInfoPopover({
           <span style={{ fontFamily: FR, fontSize: FS_LABEL, color: GOLD_DIM, marginLeft: 'auto' }}>{cost} XP when unlocked</span>
         </div>
 
-        <div style={{ height: 1, background: 'rgba(224,58,30,0.15)', marginBottom: 10 }} />
+        <div style={{ height: 1, background: 'var(--hud-border)', marginBottom: 10 }} />
 
         {/* Description */}
         {node.description ? (
@@ -815,8 +815,8 @@ export function TalentTree({
         {xpAvailable !== undefined && (
           <div
             style={{
-              background: 'rgba(224,58,30,0.1)',
-              border: '1px solid rgba(224,58,30,0.3)',
+              background: 'var(--hud-surface-lo)',
+              border: '1px solid var(--hud-border)',
               borderRadius: 3,
               padding: '2px 10px',
               fontFamily: FC,
@@ -832,7 +832,7 @@ export function TalentTree({
       {/* ── LEGEND ── */}
       <div
         style={{
-          background: 'rgba(224,58,30,0.04)',
+          background: 'var(--hud-surface-lo)',
           padding: '8px 16px',
           display: 'flex',
           fontWeight: 600,

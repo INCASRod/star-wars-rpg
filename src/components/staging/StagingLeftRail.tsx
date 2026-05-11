@@ -13,8 +13,8 @@ import { CombatFeedPanel } from './CombatFeedPanel'
 import { HUD } from '@/lib/tokens'
 
 /* ── Design tokens ────────────────────────────────────────── */
-const FC   = "var(--font-rajdhani), 'Cinzel', serif"
-const FR   = "var(--font-rajdhani), 'Rajdhani', sans-serif"
+const FC   = 'var(--font-body)'
+const FR   = 'var(--font-body)'
 const DIM  = '#6A8070'
 
 /* ── Panel registry ───────────────────────────────────────── */
@@ -117,10 +117,10 @@ export function StagingLeftRail({
           paddingTop:           12,
           paddingBottom:        12,
           gap:                  4,
-          background:           'rgba(6,13,9,0.82)',
+          background:           'var(--hud-surface-hi)',
           backdropFilter:       'blur(14px)',
           WebkitBackdropFilter: 'blur(14px)',
-          borderRight:          '1px solid rgba(200,170,80,0.16)',
+          borderRight:          '1px solid var(--hud-border)',
         }}
       >
         {RAIL_ENTRIES.map(entry => {
@@ -225,10 +225,10 @@ function RailButton({ icon, label, active, disabled, onClick }: RailButtonProps)
         flexDirection:  'column',
         alignItems:     'center',
         gap:            5,
-        background:     active ? 'rgba(200,170,80,0.11)' : 'transparent',
+        background:     active ? 'var(--hud-surface-lo)' : 'transparent',
         border:         'none',
         borderRadius:   6,
-        outline:        active ? '1px solid rgba(200,170,80,0.32)' : 'none',
+        outline:        active ? '1px solid var(--hud-border-hi)' : 'none',
         cursor:         disabled ? 'not-allowed' : 'pointer',
         transition:     'background 0.15s, outline 0.15s',
         flexShrink:     0,
@@ -290,7 +290,7 @@ function PanelStub({ panelId }: { panelId: StagingPanelId }) {
         style={{
           fontFamily:    FC,
           fontSize:      'var(--text-sm)',
-          color:         'rgba(200,170,80,0.35)',
+          color:         'var(--hud-text-dim)',
           letterSpacing: '0.1em',
           textTransform: 'uppercase',
         }}

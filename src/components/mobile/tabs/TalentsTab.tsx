@@ -8,20 +8,20 @@ import { stripBBCode } from '@/lib/utils'
 import { HUD } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
-const GOLD_DIM = 'rgba(200,170,80,0.6)'
-const GOLD_BD  = 'rgba(200,170,80,0.15)'
-const BORDER   = 'rgba(200,170,80,0.1)'
-const TEXT     = 'rgba(255,255,255,0.85)'
-const TEXT_DIM = 'rgba(255,255,255,0.6)'
-const CARD_BG  = 'rgba(255,255,255,0.03)'
-const STICKY_BG = 'rgba(6,13,9,0.96)'
-const INPUT_BG  = 'rgba(6,13,9,0.9)'
-const FONT_C   = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_R   = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M   = "'Courier New', monospace"
+const GOLD_DIM  = 'var(--hud-text-faint)'
+const GOLD_BD   = 'var(--hud-border)'
+const BORDER    = 'var(--hud-border)'
+const TEXT      = 'var(--hud-text)'
+const TEXT_DIM  = 'var(--hud-text-dim)'
+const CARD_BG   = 'var(--hud-surface-lo)'
+const STICKY_BG = 'var(--hud-surface-hi)'
+const INPUT_BG  = 'var(--hud-surface-lo)'
+const FONT_C    = 'var(--font-body)'
+const FONT_R    = 'var(--font-body)'
+const FONT_M    = 'var(--font-body)'
 
 const ACTIVATION_COLOR: Record<string, string> = {
-  taPassive:        'rgba(150,150,150,0.8)',
+  taPassive:        'var(--hud-text-faint)',
   taAction:         'var(--hud-gold)',
   taManeuver:       '#4FC3F7',
   taIncidental:     '#81C784',
@@ -83,7 +83,7 @@ export function TalentsTab({ charTalents, refTalentMap }: TalentsTabProps) {
             style={{
               width: '100%',
               background: INPUT_BG,
-              border: `1px solid rgba(200,170,80,0.3)`,
+              border: `1px solid var(--hud-border)`,
               borderRadius: 6,
               padding: '8px 10px 8px 32px',
               color: HUD.gold,
@@ -106,7 +106,7 @@ export function TalentsTab({ charTalents, refTalentMap }: TalentsTabProps) {
         {filtered.map(({ ct, ref }) => {
           const isExpanded = !!expanded[ref.key]
           const activationLabel = ACTIVATION_LABELS[ref.activation] ?? ref.activation
-          const activationColor = ACTIVATION_COLOR[ref.activation] ?? 'rgba(150,150,150,0.8)'
+          const activationColor = ACTIVATION_COLOR[ref.activation] ?? 'var(--hud-text-faint)'
           const totalRanks = (Array.isArray(charTalents) ? charTalents : []).filter(t => t.talent_key === ref.key).reduce((s, t) => s + (t.ranks || 1), 0)
           const summary = stripBBCode(ref.description ?? '').slice(0, 80)
           const truncated = (ref.description ?? '').length > 80

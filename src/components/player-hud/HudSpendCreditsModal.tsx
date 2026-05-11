@@ -42,7 +42,7 @@ export function HudSpendCreditsModal({ open, onClose, credits, onConfirm }: HudS
       >
         <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_H4, fontWeight: 700, color: '#4EC87A', letterSpacing: '0.15em', marginBottom: 4 }}>SPEND CREDITS</div>
         <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.textDim, marginBottom: 18 }}>
-          Available: <span style={{ color: '#FFFFFF', fontWeight: 600 }}>{credits.toLocaleString()}</span>
+          Available: <span style={{ color: 'var(--hud-text)', fontWeight: 600 }}>{credits.toLocaleString()}</span>
         </div>
         <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: C.textDim, letterSpacing: '0.08em', marginBottom: 6 }}>HOW MUCH DO YOU WANT TO SPEND?</div>
         <input
@@ -54,7 +54,7 @@ export function HudSpendCreditsModal({ open, onClose, credits, onConfirm }: HudS
           onKeyDown={e => { if (e.key === 'Enter') handleConfirm(); if (e.key === 'Escape') handleClose() }}
           autoFocus
           placeholder="0"
-          style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: `1px solid ${C.borderHi}`, color: '#FFFFFF', fontFamily: FONT_RAJDHANI, fontSize: FS_H3, fontWeight: 700, padding: '10px 14px', outline: 'none', boxSizing: 'border-box', marginBottom: 18 }}
+          style={{ width: '100%', background: 'var(--hud-surface-lo)', border: `1px solid ${C.borderHi}`, color: 'var(--hud-text)', fontFamily: FONT_RAJDHANI, fontSize: FS_H3, fontWeight: 700, padding: '10px 14px', outline: 'none', boxSizing: 'border-box', marginBottom: 18 }}
         />
         <div style={{ display: 'flex', gap: 10 }}>
           <button onClick={handleClose} style={{ flex: 1, padding: '10px 0', background: 'transparent', border: `1px solid ${C.border}`, fontFamily: FONT_RAJDHANI, fontSize: FS_SM, fontWeight: 600, letterSpacing: '0.1em', color: C.textDim, cursor: 'pointer' }}>

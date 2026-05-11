@@ -136,7 +136,7 @@ function StowPill({ location }: { location: StowLocation }) {
 const EQUIP_BTN_STATES: EquipState[] = ['stowed', 'carrying', 'equipped']
 const EQUIP_BTN_LABELS: Record<EquipState, string> = { stowed: 'STOW', carrying: 'CARRY', equipped: 'EQUIP' }
 const EQUIP_BTN_ACTIVE: Record<EquipState, React.CSSProperties> = {
-  stowed:   { background: 'rgba(90,40,24,0.08)', borderColor: 'rgba(90,40,24,0.4)',  color: 'rgba(90,40,24,0.9)' },
+  stowed:   { background: 'var(--hud-surface-mid)', borderColor: 'var(--hud-border-hi)', color: 'var(--hud-text)' },
   carrying: { background: 'rgba(224,58,30,0.1)',   borderColor: 'rgba(224,58,30,0.45)', color: C.gold },
   equipped: { background: 'rgba(76,175,80,0.1)',    borderColor: 'rgba(76,175,80,0.45)',  color: '#4CAF50' },
 }
@@ -160,13 +160,13 @@ function EquipStateButtons({ equipState, onSet }: { equipState: EquipState; onSe
               transition: 'border-color .15s, color .15s',
               border: '1px solid',
               ...(isActive ? active : {
-                background: 'rgba(255,255,255,0.04)',
-                borderColor: 'rgba(255,255,255,0.12)',
-                color: 'rgba(90,40,24,0.45)',
+                background: 'var(--hud-surface-lo)',
+                borderColor: 'var(--hud-border)',
+                color: 'var(--hud-text-faint)',
               }),
             }}
-            onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(224,58,30,0.3)'; (e.currentTarget as HTMLElement).style.color = 'rgba(90,40,24,0.7)' } }}
-            onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.12)'; (e.currentTarget as HTMLElement).style.color = 'rgba(90,40,24,0.45)' } }}
+            onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(224,58,30,0.3)'; (e.currentTarget as HTMLElement).style.color = 'var(--hud-text-dim)' } }}
+            onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.borderColor = 'var(--hud-border)'; (e.currentTarget as HTMLElement).style.color = 'var(--hud-text-faint)' } }}
           >
             {EQUIP_BTN_LABELS[s]}
           </button>
@@ -222,7 +222,7 @@ function DiscardStrip({
   const confirmColor = isGm ? C.gold : '#E05050'
   return (
     <div style={{
-      marginTop: 8, paddingTop: 8, borderTop: `1px solid rgba(255,255,255,0.06)`,
+      marginTop: 8, paddingTop: 8, borderTop: `1px solid var(--hud-border)`,
       display: 'flex', alignItems: 'flex-start', gap: 8,
     }}>
       <div style={{ flex: 1 }}>
@@ -242,7 +242,7 @@ function DiscardStrip({
             placeholder="Note (optional)"
             style={{
               marginTop: 4, width: '100%', boxSizing: 'border-box',
-              background: 'rgba(0,0,0,0.3)', border: `1px solid rgba(224,58,30,0.2)`,
+              background: 'var(--hud-surface-lo)', border: `1px solid var(--hud-border)`,
               color: C.text, fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE,
               padding: '3px 8px', borderRadius: 3, outline: 'none',
             }}
@@ -254,8 +254,8 @@ function DiscardStrip({
         style={{
           height: 26, padding: '0 10px', borderRadius: 5, cursor: 'pointer',
           fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE,
-          background: 'transparent', border: `1px solid rgba(255,255,255,0.15)`,
-          color: 'rgba(90,40,24,0.6)', flexShrink: 0, marginTop: isGm ? 2 : 0,
+          background: 'transparent', border: `1px solid var(--hud-border)`,
+          color: 'var(--hud-text-dim)', flexShrink: 0, marginTop: isGm ? 2 : 0,
         }}
       >Cancel</button>
       <button
@@ -327,10 +327,10 @@ function StowLocationModal({
         zIndex: 1100,
         width: 'clamp(300px, 36vw, 420px)',
         background: BG,
-        border: `1px solid rgba(224,58,30,0.45)`,
+        border: `1px solid var(--hud-border-hi)`,
         borderRadius: 6,
         padding: '20px 22px',
-        boxShadow: '0 16px 48px rgba(0,0,0,0.75), 0 0 0 1px rgba(224,58,30,0.08)',
+        boxShadow: '0 16px 48px rgba(0,0,0,0.75)',
       }}>
         {/* Header */}
         <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_SM, fontWeight: 700, color: HUD.gold, marginBottom: 4 }}>
@@ -341,7 +341,7 @@ function StowLocationModal({
           <span style={{ color: TEXT, fontWeight: 600 }}>{itemName}</span>?
         </div>
 
-        <div style={{ height: 1, background: 'rgba(224,58,30,0.15)', marginBottom: 16 }} />
+        <div style={{ height: 1, background: 'var(--hud-border)', marginBottom: 16 }} />
 
         {/* Location picker */}
         {hasOptions ? (
@@ -349,7 +349,7 @@ function StowLocationModal({
             <div style={{
               fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE,
               fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase',
-              color: 'rgba(224,58,30,0.5)', marginBottom: 8,
+              color: 'var(--hud-text-faint)', marginBottom: 8,
             }}>
               Storage Location
             </div>
@@ -358,8 +358,8 @@ function StowLocationModal({
               onChange={e => setSelected(e.target.value)}
               style={{
                 width: '100%', padding: '8px 10px',
-                background: 'rgba(0,0,0,0.45)',
-                border: '1px solid rgba(224,58,30,0.28)',
+                background: 'var(--hud-surface-lo)',
+                border: `1px solid var(--hud-border)`,
                 borderRadius: 4,
                 color: TEXT,
                 fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL,
@@ -424,8 +424,8 @@ function StowLocationModal({
               height: 32, padding: '0 14px', borderRadius: 4, cursor: 'pointer',
               fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL,
               background: 'transparent',
-              border: `1px solid rgba(255,255,255,0.15)`,
-              color: 'rgba(90,40,24,0.6)',
+              border: `1px solid var(--hud-border)`,
+              color: 'var(--hud-text-dim)',
             }}
           >
             Cancel

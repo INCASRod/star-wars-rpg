@@ -7,8 +7,8 @@ const FORCE_BLUE = '#7EC8E3'
 
 const FORCE_PULSE_STYLE = `
 @keyframes forcePulse {
-  0%, 100% { border-color: rgba(126,200,227,0.45); }
-  50%       { border-color: rgba(126,200,227,0.75); }
+  0%, 100% { border-color: rgba(58,12,4,0.28); }
+  50%       { border-color: rgba(58,12,4,0.52); }
 }
 .force-check-btn-pulse { animation: forcePulse 3s ease-in-out infinite; }
 `
@@ -33,13 +33,13 @@ export function ForceCheckButton({ onOpen }: ForceCheckButtonProps) {
       : hovered
       ? 'rgba(126,200,227,0.18)'
       : 'rgba(126,200,227,0.1)',
-    border: `1px solid ${hovered ? 'rgba(126,200,227,0.7)' : 'rgba(126,200,227,0.45)'}`,
+    border: `1px solid ${hovered ? 'rgba(58,12,4,0.55)' : 'rgba(58,12,4,0.32)'}`,
     borderRadius: 10,
     cursor: 'pointer',
     fontFamily: FONT_C,
     fontSize: 'clamp(0.85rem, 1.3vw, 1rem)',
     fontWeight: 700,
-    color: FORCE_BLUE,
+    color: '#3A0C04',
     letterSpacing: '0.1em',
     textTransform: 'uppercase',
     boxShadow: hovered ? '0 0 14px rgba(126,200,227,0.2)' : 'none',

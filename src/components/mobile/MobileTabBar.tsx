@@ -2,11 +2,11 @@
 import { HUD } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
-const PANEL  = 'rgba(6,13,9,0.95)'
-const BORDER = 'rgba(200,170,80,0.2)'
-const GOLD_I = 'rgba(200,170,80,0.4)'
+const PANEL  = 'var(--hud-surface-hi)'
+const BORDER = 'var(--hud-border)'
+const GOLD_I = 'var(--hud-text-dim)'
 const FORCE_BLUE = '#7EC8E3'
-const FONT_R = "var(--font-rajdhani), 'Rajdhani', sans-serif"
+const FONT_R = 'var(--font-body)'
 
 export type TabId = 'status' | 'skills' | 'gear' | 'feed' | 'combat' | 'force'
 

@@ -8,18 +8,18 @@ import { FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4 } from '@/components/pl
 import { HUD } from '@/lib/tokens'
 
 // ── Design tokens (mirrored from AdversaryCardList) ──
-const PANEL_BG   = 'rgba(8,16,10,0.88)'
-const BORDER     = 'rgba(200,170,80,0.18)'
-const BORDER_MD  = 'rgba(200,170,80,0.32)'
+const PANEL_BG   = 'var(--hud-surface-lo)'
+const BORDER     = 'var(--hud-border)'
+const BORDER_MD  = 'var(--hud-border-hi)'
 const CHAR_AG    = '#52a8e0'
 const CHAR_BR    = '#e05252'
 const CHAR_CUN   = '#e0a852'
 const CHAR_INT   = '#a852e0'
 const CHAR_WIL   = '#52e0a8'
-const TEXT       = '#E8DFC8'
-const TEXT_MUTED = 'rgba(232,223,200,0.35)'
-const FC         = "'Rajdhani', sans-serif"
-const FM         = "'Rajdhani', sans-serif"
+const TEXT       = 'var(--hud-text)'
+const TEXT_MUTED = 'var(--hud-text-faint)'
+const FC         = 'var(--font-body)'
+const FM         = 'var(--font-body)'
 
 void CHAR_INT; void CHAR_CUN
 
@@ -77,7 +77,7 @@ export function VehicleCardList({
               )}
               style={{
                 height: 28, borderRadius: 5, padding: '0 10px',
-                fontFamily: "'Share Tech Mono', 'Courier New', monospace",
+                fontFamily: 'var(--font-body)',
                 fontSize: 'clamp(0.6rem, 0.92vw, 0.72rem)',
                 textTransform: 'uppercase',
                 background: 'transparent',
@@ -123,8 +123,8 @@ export function VehicleCardList({
               borderRadius: 6,
               position: 'relative',
               borderTop: `2px solid ${vColor}80`,
-              borderRight: `1px solid ${isActiveTurn ? 'rgba(200,170,80,0.3)' : BORDER}`,
-              borderBottom: `1px solid ${isActiveTurn ? 'rgba(200,170,80,0.3)' : BORDER}`,
+              borderRight: `1px solid ${isActiveTurn ? 'var(--hud-border-hi)' : BORDER}`,
+              borderBottom: `1px solid ${isActiveTurn ? 'var(--hud-border-hi)' : BORDER}`,
               borderLeft: `3px solid ${vColor}`,
               overflow: 'hidden',
               animation: isActiveTurn ? 'activeTurnPulse 2s ease-in-out infinite' : 'none',
@@ -144,16 +144,16 @@ export function VehicleCardList({
                   {v.name}
                 </span>
                 {/* Hull trauma inline */}
-                <span style={{ fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: FS_LABEL, color: 'rgba(232,223,200,0.8)', flexShrink: 0 }}>
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: FS_LABEL, color: 'var(--hud-text)', flexShrink: 0 }}>
                   🛡 {htCur}/{htMax}
                 </span>
                 {/* System strain inline */}
                 {ssMax > 0 && (
-                  <span style={{ fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: FS_LABEL, color: 'rgba(232,223,200,0.6)', flexShrink: 0 }}>
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: FS_LABEL, color: 'var(--hud-text-dim)', flexShrink: 0 }}>
                     ⚡ {ssCur}/{ssMax}
                   </span>
                 )}
-                <span style={{ color: 'rgba(232,223,200,0.35)', fontSize: FS_LABEL, flexShrink: 0, transition: 'transform 200ms' }}>
+                <span style={{ color: 'var(--hud-text-faint)', fontSize: FS_LABEL, flexShrink: 0, transition: 'transform 200ms' }}>
                   {isExpanded ? '▼' : '▶'}
                 </span>
               </div>
@@ -203,7 +203,7 @@ export function VehicleCardList({
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                         <span style={{ fontFamily: FM, fontSize: FS_CAPTION, color: TEXT_MUTED, flex: 1 }}>
                           Hull Trauma
-                          <span style={{ fontFamily: "'Share Tech Mono','Courier New',monospace", color: pct >= 1 ? CHAR_BR : TEXT, marginLeft: 6 }}>
+                          <span style={{ fontFamily: 'var(--font-body)', color: pct >= 1 ? CHAR_BR : TEXT, marginLeft: 6 }}>
                             {htCur}/{htMax}
                           </span>
                           {pct >= 1 && <span style={{ color: CHAR_BR, marginLeft: 6 }}>☠ DISABLED</span>}
@@ -221,7 +221,7 @@ export function VehicleCardList({
                           </div>
                         )}
                       </div>
-                      <div style={{ height: 5, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden' }}>
+                      <div style={{ height: 5, background: 'var(--hud-border)', borderRadius: 3, overflow: 'hidden' }}>
                         <div style={{
                           width: `${pct * 100}%`, height: '100%', background: barColor,
                           borderRadius: 3, transition: 'width 300ms ease',
@@ -241,7 +241,7 @@ export function VehicleCardList({
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                         <span style={{ fontFamily: FM, fontSize: FS_CAPTION, color: TEXT_MUTED, flex: 1 }}>
                           System Strain
-                          <span style={{ fontFamily: "'Share Tech Mono','Courier New',monospace", color: pct >= 1 ? CHAR_BR : TEXT, marginLeft: 6 }}>
+                          <span style={{ fontFamily: 'var(--font-body)', color: pct >= 1 ? CHAR_BR : TEXT, marginLeft: 6 }}>
                             {ssCur}/{ssMax}
                           </span>
                           {pct >= 1 && <span style={{ color: CHAR_BR, marginLeft: 6 }}>⚠ STRAINED</span>}
@@ -259,7 +259,7 @@ export function VehicleCardList({
                           </div>
                         )}
                       </div>
-                      <div style={{ height: 5, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden' }}>
+                      <div style={{ height: 5, background: 'var(--hud-border)', borderRadius: 3, overflow: 'hidden' }}>
                         <div style={{
                           width: `${pct * 100}%`, height: '100%', background: barColor,
                           borderRadius: 3, transition: 'width 300ms ease',

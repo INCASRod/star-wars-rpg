@@ -4,9 +4,9 @@ import type { SessionRollState } from '@/hooks/useSessionRollState'
 import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
-const FC = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_CINZEL = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const TEXT_MUTED = 'rgba(232,223,200,0.7)'
+const FC = 'var(--font-body)'
+const FONT_CINZEL = 'var(--font-body)'
+const TEXT_MUTED = 'var(--hud-text-dim)'
 
 const baseStyle: React.CSSProperties = {
   padding: '7px 16px',
@@ -75,13 +75,13 @@ export function SessionStatusBanner({
           return (
             <div style={{
               ...baseStyle,
-              background: 'rgba(200,170,80,0.1)',
-              borderBottom: '1px solid rgba(200,170,80,0.4)',
+              background: 'var(--hud-surface-lo)',
+              borderBottom: '1px solid var(--hud-border-hi)',
               fontFamily: FONT_CINZEL,
               color: HUD.gold,
             }}>
               <div style={{ fontWeight: 700 }}>✦ YOUR Duty is triggered this session!</div>
-              <div style={{ fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)', color: 'rgba(200,170,80,0.8)' }}>
+              <div style={{ fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)', color: 'var(--hud-text-dim)' }}>
                 +{bonus} Wound Threshold active for this session.
                 {s.duty_is_doubles && ' (Doubles)'}
               </div>
@@ -112,8 +112,8 @@ export function SessionStatusBanner({
           return (
             <div style={{
               ...baseStyle,
-              background: 'rgba(200,170,80,0.04)',
-              borderBottom: '1px solid rgba(200,170,80,0.15)',
+              background: 'var(--hud-surface-lo)',
+              borderBottom: '1px solid var(--hud-border)',
               color: TEXT_MUTED,
             }}>
               ⚠ Obligation Check: No Obligation triggered this session.

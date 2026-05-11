@@ -6,11 +6,11 @@ import type { AdversaryInstance } from '@/lib/adversaries'
 import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
-const GOLD_DIM  = 'rgba(224,58,30,0.5)'
-const GOLD_BD   = 'rgba(224,58,30,0.15)'
+const GOLD_DIM  = 'var(--hud-text-faint)'
+const GOLD_BD   = 'var(--hud-border)'
 const TEXT = 'var(--hud-text)'
 const TEXT_DIM = 'var(--hud-text-dim)'
-const CARD_BG   = 'rgba(255,255,255,0.03)'
+const CARD_BG   = 'var(--hud-surface-lo)'
 const FONT_C    = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 
@@ -38,7 +38,7 @@ function WoundBar({ current, max }: { current: number; max: number }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
       <div style={{
-        flex: 1, height: 4, background: 'rgba(255,255,255,0.08)',
+        flex: 1, height: 4, background: 'var(--hud-border)',
         borderRadius: 2, overflow: 'hidden',
       }}>
         <div style={{
@@ -161,8 +161,8 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
     <div>
       {multipleSelected && (
         <div style={{
-          background: 'rgba(224,58,30,0.06)',
-          border: `1px solid rgba(224,58,30,0.2)`,
+          background: 'var(--hud-surface-lo)',
+          border: `1px solid var(--hud-border)`,
           borderRadius: 6, padding: '8px 12px', marginBottom: 12,
           fontFamily: FONT_R, fontSize: 'clamp(0.7rem, 1.05vw, 0.82rem)', color: GOLD_DIM,
         }}>
@@ -260,7 +260,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
           onClick={() => onSelect([])}
           style={{
             marginTop: 12, width: '100%', padding: '8px 0',
-            background: 'transparent', border: `1px solid rgba(255,255,255,0.1)`,
+            background: 'transparent', border: `1px solid var(--hud-border)`,
             borderRadius: 6, cursor: 'pointer',
             fontFamily: FONT_R, fontSize: 'clamp(0.7rem, 1.05vw, 0.82rem)', color: TEXT_DIM,
           }}

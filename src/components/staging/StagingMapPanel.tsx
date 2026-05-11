@@ -8,16 +8,16 @@ import type { ActiveMap } from '@/hooks/useActiveMap'
 import { HUD } from '@/lib/tokens'
 
 /* ── Design tokens ────────────────────────────────────────── */
-const FC        = "var(--font-rajdhani), 'Cinzel', serif"
-const FR        = "var(--font-rajdhani), 'Rajdhani', sans-serif"
+const FC        = 'var(--font-body)'
+const FR        = 'var(--font-body)'
 const DIM       = '#6A8070'
-const TEXT      = '#C8D8C0'
+const TEXT      = 'var(--hud-text)'
 const GREEN     = '#4EC87A'
-const BLUE      = '#7AB4E0'
+const BLUE      = 'var(--bs-red-sun)'
 const RED       = '#E05050'
-const BORDER    = 'rgba(200,170,80,0.14)'
-const BORDER_HI = 'rgba(200,170,80,0.36)'
-const PANEL_BG  = 'rgba(8,16,10,0.95)'
+const BORDER    = 'var(--hud-border)'
+const BORDER_HI = 'var(--hud-border-hi)'
+const PANEL_BG  = 'var(--hud-surface-hi)'
 const FS_OVERLINE = 'var(--text-overline)'
 const FS_CAPTION  = 'var(--text-caption)'
 const FS_LABEL    = 'var(--text-label)'
@@ -25,7 +25,7 @@ const FS_SM       = 'var(--text-sm)'
 const FS_H4       = 'var(--text-h4)'
 
 const darkInput: React.CSSProperties = {
-  background: 'rgba(255,255,255,0.04)',
+  background: 'var(--hud-surface-lo)',
   border: `1px solid ${BORDER_HI}`,
   borderRadius: 4,
   color: TEXT,
@@ -134,7 +134,7 @@ export function StagingMapPanel({ campaignId, allMaps, onDeleteMap }: StagingMap
         style={{
           padding: '10px 14px 10px 22px',
           borderBottom: `1px solid ${BORDER}`,
-          background: map.is_active ? 'rgba(200,170,80,0.04)' : 'transparent',
+          background: map.is_active ? 'var(--hud-surface-lo)' : 'transparent',
         }}
       >
         {/* Row: thumbnail + name + actions */}
@@ -174,8 +174,8 @@ export function StagingMapPanel({ campaignId, allMaps, onDeleteMap }: StagingMap
                 onClick={() => void handleSetActive(map.id)}
                 disabled={busy}
                 style={{
-                  background: 'rgba(200,170,80,0.08)', border: `1px solid rgba(200,170,80,0.25)`,
-                  color: busy ? 'rgba(200,170,80,0.3)' : HUD.gold,
+                  background: 'var(--hud-surface-lo)', border: `1px solid ${BORDER}`,
+                  color: busy ? 'var(--hud-text-faint)' : HUD.gold,
                   fontFamily: FR, fontSize: FS_CAPTION, padding: '3px 8px',
                   borderRadius: 3, cursor: busy ? 'not-allowed' : 'pointer',
                 }}
@@ -200,7 +200,7 @@ export function StagingMapPanel({ campaignId, allMaps, onDeleteMap }: StagingMap
             value={map.planet_id ?? ''}
             onChange={e => void handleAssignPlanet(map.id, e.target.value || null)}
             style={{
-              background: 'rgba(6,13,9,0.8)',
+              background: 'var(--hud-surface-hi)',
               border: `1px solid ${BORDER}`,
               borderRadius: 3,
               color: map.planet_id ? TEXT : DIM,
@@ -226,7 +226,7 @@ export function StagingMapPanel({ campaignId, allMaps, onDeleteMap }: StagingMap
             onClick={() => void handleToggleVisible(map)}
             style={{
               marginTop: 6, width: '100%', padding: '4px 0', borderRadius: 3, border: 'none',
-              background: map.is_visible_to_players ? 'rgba(78,200,122,0.12)' : 'rgba(255,255,255,0.04)',
+              background: map.is_visible_to_players ? 'rgba(78,200,122,0.12)' : 'var(--hud-surface-lo)',
               color: map.is_visible_to_players ? GREEN : DIM,
               fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
               letterSpacing: '0.06em', cursor: 'pointer', transition: '.15s',
@@ -302,7 +302,7 @@ export function StagingMapPanel({ campaignId, allMaps, onDeleteMap }: StagingMap
               onClick={() => void handleCreatePlanet()}
               disabled={planetBusy || !newPlanetName.trim()}
               style={{
-                background: 'rgba(200,170,80,0.1)', border: `1px solid rgba(200,170,80,0.35)`,
+                background: 'var(--hud-surface-lo)', border: `1px solid ${BORDER_HI}`,
                 color: HUD.gold, fontFamily: FR, fontSize: FS_SM, fontWeight: 700,
                 padding: '0 10px', borderRadius: 4, cursor: 'pointer',
                 opacity: (!newPlanetName.trim() || planetBusy) ? 0.45 : 1,
@@ -324,7 +324,7 @@ export function StagingMapPanel({ campaignId, allMaps, onDeleteMap }: StagingMap
               onClick={() => setNewPlanetOpen(true)}
               style={{
                 flex: 1, padding: '6px 0', borderRadius: 4,
-                background: 'rgba(90,140,200,0.07)', border: `1px solid rgba(90,140,200,0.25)`,
+                background: 'var(--bs-red-glow)', border: `1px solid var(--bs-red-glow-s)`,
                 color: BLUE, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
                 letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer',
               }}
@@ -333,7 +333,7 @@ export function StagingMapPanel({ campaignId, allMaps, onDeleteMap }: StagingMap
               onClick={() => setUploadOpen(true)}
               style={{
                 flex: 1, padding: '6px 0', borderRadius: 4,
-                background: 'rgba(200,170,80,0.08)', border: `1px solid rgba(200,170,80,0.3)`,
+                background: 'var(--hud-surface-lo)', border: `1px solid ${BORDER}`,
                 color: HUD.gold, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
                 letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer',
               }}
@@ -456,7 +456,7 @@ function FolderRow({ label, count, expanded, onToggle, onDelete }: FolderRowProp
         display: 'flex', alignItems: 'center', gap: 8,
         padding: '9px 14px',
         borderBottom: `1px solid ${BORDER}`,
-        background: expanded ? 'rgba(200,170,80,0.05)' : hovered ? 'rgba(200,170,80,0.02)' : 'transparent',
+        background: expanded ? 'var(--hud-surface-lo)' : hovered ? 'var(--hud-surface-lo)' : 'transparent',
         cursor: 'pointer',
         transition: 'background 0.1s',
         userSelect: 'none',
@@ -657,7 +657,7 @@ function MapUploadModal({ campaignId, planets, onClose }: MapUploadModalProps) {
             onClick={() => void handleSave()}
             disabled={busy}
             style={{
-              background: 'rgba(200,170,80,0.1)', border: `1px solid rgba(200,170,80,0.35)`,
+              background: 'var(--hud-surface-lo)', border: `1px solid ${BORDER_HI}`,
               color: HUD.gold, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
               padding: '6px 14px', borderRadius: 4,
               cursor: busy ? 'not-allowed' : 'pointer',

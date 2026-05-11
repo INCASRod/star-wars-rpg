@@ -5,9 +5,9 @@ import type { CharacterWeapon, RefWeapon } from '@/lib/types'
 import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
-const GOLD_DIM  = 'rgba(224,58,30,0.5)'
-const GOLD_BD   = 'rgba(224,58,30,0.15)'
-const GOLD_BG   = 'rgba(224,58,30,0.06)'
+const GOLD_DIM  = 'var(--hud-text-faint)'
+const GOLD_BD   = 'var(--hud-border)'
+const GOLD_BG   = 'var(--hud-surface-lo)'
 const TEXT = 'var(--hud-text)'
 const TEXT_DIM = 'var(--hud-text-dim)'
 const TEXT_MUTED = 'var(--hud-text-faint)'
@@ -44,7 +44,7 @@ function WeaponCard({
       border: `1px solid ${isPrimary ? HUD.gold : GOLD_BD}`,
       borderRadius: 10,
       padding: '12px 14px',
-      background: isPrimary ? GOLD_BG : 'rgba(224,58,30,0.01)',
+      background: isPrimary ? GOLD_BG : 'transparent',
     }}>
       <div style={{
         fontFamily: FONT_C,

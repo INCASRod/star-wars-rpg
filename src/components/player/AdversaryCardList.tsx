@@ -8,23 +8,23 @@ import { FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4 } from '@/components/pl
 import { HUD } from '@/lib/tokens'
 
 // ── Design tokens (mirrored from CombatTracker) ──
-const PANEL_BG   = 'rgba(8,16,10,0.88)'
-const RAISED_BG  = 'rgba(14,26,18,0.9)'
-const BORDER     = 'rgba(200,170,80,0.18)'
-const BORDER_MD  = 'rgba(200,170,80,0.32)'
+const PANEL_BG   = 'var(--hud-surface-lo)'
+const RAISED_BG  = 'var(--hud-surface-lo)'
+const BORDER     = 'var(--hud-border)'
+const BORDER_MD  = 'var(--hud-border-hi)'
 const CHAR_BR    = '#e05252'
 const CHAR_AG    = '#52a8e0'
 const CHAR_CUN   = '#e0a852'
 const CHAR_INT   = '#a852e0'
 const CHAR_WIL   = '#52e0a8'
 const CHAR_PR    = '#e05298'
-const TEXT       = '#E8DFC8'
-const TEXT_SEC   = 'rgba(232,223,200,0.6)'
-const TEXT_MUTED = 'rgba(232,223,200,0.35)'
+const TEXT       = 'var(--hud-text)'
+const TEXT_SEC   = 'var(--hud-text-dim)'
+const TEXT_MUTED = 'var(--hud-text-faint)'
 const TEXTGR     = '#72B421'
-const FC         = "'Rajdhani', sans-serif"
-const FR         = "'Rajdhani', sans-serif"
-const FM         = "'Rajdhani', sans-serif"
+const FC         = 'var(--font-body)'
+const FR         = 'var(--font-body)'
+const FM         = 'var(--font-body)'
 
 void RAISED_BG; void TEXT_SEC; void FR
 
@@ -89,12 +89,12 @@ export function AdversaryCardList({
               className="hov-gold"
               style={{
                 height: 28, borderRadius: 5, padding: '0 10px',
-                fontFamily: "'Share Tech Mono', 'Courier New', monospace",
+                fontFamily: 'var(--font-body)',
                 fontSize: 'clamp(0.6rem, 0.92vw, 0.72rem)',
                 textTransform: 'uppercase',
                 background: 'transparent',
-                border: '1px solid rgba(200,170,80,0.25)',
-                color: 'rgba(200,170,80,0.5)',
+                border: '1px solid var(--hud-border)',
+                color: 'var(--hud-text-faint)',
                 cursor: 'pointer',
               }}
             >
@@ -134,8 +134,8 @@ export function AdversaryCardList({
               borderRadius: 6,
               position: 'relative',
               borderTop: `2px solid ${advColor}80`,
-              borderRight: `1px solid ${isActiveTurn ? 'rgba(200,170,80,0.3)' : BORDER}`,
-              borderBottom: `1px solid ${isActiveTurn ? 'rgba(200,170,80,0.3)' : BORDER}`,
+              borderRight: `1px solid ${isActiveTurn ? 'var(--hud-border-hi)' : BORDER}`,
+              borderBottom: `1px solid ${isActiveTurn ? 'var(--hud-border-hi)' : BORDER}`,
               borderLeft: `3px solid ${advColor}`,
               overflow: 'hidden',
               animation: isActiveTurn ? 'activeTurnPulse 2s ease-in-out infinite' : 'none',
@@ -155,22 +155,22 @@ export function AdversaryCardList({
                   {adv.name}
                 </span>
                 {/* Wound inline */}
-                <span style={{ fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: FS_LABEL, color: 'rgba(232,223,200,0.8)', flexShrink: 0 }}>
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: FS_LABEL, color: 'var(--hud-text)', flexShrink: 0 }}>
                   ❤ {woundsCur}/{woundsMax}
                 </span>
                 {/* Strain inline — nemesis only */}
                 {adv.type === 'nemesis' && strainMax > 0 && (
-                  <span style={{ fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: FS_LABEL, color: 'rgba(232,223,200,0.6)', flexShrink: 0 }}>
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: FS_LABEL, color: 'var(--hud-text-dim)', flexShrink: 0 }}>
                     🧠 {strainCur}/{strainMax}
                   </span>
                 )}
                 {/* Minion count inline */}
                 {adv.type === 'minion' && (
-                  <span style={{ fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: FS_LABEL, color: CHAR_BR, flexShrink: 0 }}>
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: FS_LABEL, color: CHAR_BR, flexShrink: 0 }}>
                     👤 {adv.groupRemaining}
                   </span>
                 )}
-                <span style={{ color: 'rgba(232,223,200,0.35)', fontSize: FS_LABEL, flexShrink: 0, transition: 'transform 200ms' }}>
+                <span style={{ color: 'var(--hud-text-faint)', fontSize: FS_LABEL, flexShrink: 0, transition: 'transform 200ms' }}>
                   {isExpanded ? '▼' : '▶'}
                 </span>
               </div>
@@ -256,7 +256,7 @@ export function AdversaryCardList({
                   const barColor = pct >= 1 ? '#9C27B0' : pct >= 0.8 ? '#f44336' : pct >= 0.5 ? '#FF9800' : CHAR_BR
                   return (
                     <div style={{ marginBottom: 10 }}>
-                      <div style={{ height: 5, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden' }}>
+                      <div style={{ height: 5, background: 'var(--hud-border)', borderRadius: 3, overflow: 'hidden' }}>
                         <div style={{
                           width: `${pct * 100}%`, height: '100%', background: barColor,
                           borderRadius: 3, transition: 'width 300ms ease',
@@ -264,8 +264,8 @@ export function AdversaryCardList({
                         }} />
                       </div>
                       <div style={{
-                        fontFamily: "'Share Tech Mono','Courier New',monospace",
-                        fontSize: 'clamp(0.62rem,0.9vw,0.72rem)', color: 'rgba(232,223,200,0.4)',
+                        fontFamily: 'var(--font-body)',
+                        fontSize: 'clamp(0.62rem,0.9vw,0.72rem)', color: 'var(--hud-text-faint)',
                         textAlign: 'right', marginTop: 2,
                       }}>
                         {cur} / {max} wounds
@@ -285,7 +285,7 @@ export function AdversaryCardList({
                   const skillRank = Math.max(0, groupAlive - 1)
                   return (
                     <div style={{ marginBottom: 10 }}>
-                      <div style={{ height: 5, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden' }}>
+                      <div style={{ height: 5, background: 'var(--hud-border)', borderRadius: 3, overflow: 'hidden' }}>
                         <div style={{
                           width: `${pct * 100}%`, height: '100%', background: barColor,
                           borderRadius: 3, transition: 'width 300ms ease',
@@ -293,8 +293,8 @@ export function AdversaryCardList({
                         }} />
                       </div>
                       <div style={{
-                        fontFamily: "'Share Tech Mono','Courier New',monospace",
-                        fontSize: 'clamp(0.62rem,0.9vw,0.72rem)', color: 'rgba(232,223,200,0.4)',
+                        fontFamily: 'var(--font-body)',
+                        fontSize: 'clamp(0.62rem,0.9vw,0.72rem)', color: 'var(--hud-text-faint)',
                         textAlign: 'right', marginTop: 2,
                       }}>
                         {cur} / {minionWoundTotal} wounds

@@ -8,15 +8,15 @@ import { canDualWield, validateLoadout, type WeaponForLoadout } from '@/lib/weap
 import { HUD } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
-const GOLD_DIM = 'rgba(200,170,80,0.6)'
-const GOLD_BD  = 'rgba(200,170,80,0.15)'
-const BORDER   = 'rgba(200,170,80,0.1)'
-const TEXT     = 'rgba(255,255,255,0.85)'
-const TEXT_DIM = 'rgba(255,255,255,0.5)'
-const CARD_BG  = 'rgba(255,255,255,0.03)'
-const FONT_C   = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_R   = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M   = "'Courier New', monospace"
+const GOLD_DIM = 'var(--hud-text-dim)'
+const GOLD_BD  = 'var(--hud-border)'
+const BORDER   = 'var(--hud-border)'
+const TEXT     = 'var(--hud-text)'
+const TEXT_DIM = 'var(--hud-text-dim)'
+const CARD_BG  = 'var(--hud-surface-lo)'
+const FONT_C   = 'var(--font-body)'
+const FONT_R   = 'var(--font-body)'
+const FONT_M   = 'var(--font-body)'
 
 const CHAR_ENTRIES: { key: keyof Character; label: string }[] = [
   { key: 'brawn',     label: 'Brawn'     },
@@ -114,8 +114,8 @@ export function StatusTab({ character, weapons, crits, refWeaponMap, refSkillMap
           { label: 'Def (R)', value: effectiveStats?.defenseRanged  ?? character.defense_ranged },
         ].map(({ label, value }) => (
           <div key={label} style={{
-            background: 'rgba(200,170,80,0.08)',
-            border: `1px solid rgba(200,170,80,0.2)`,
+            background: 'var(--hud-surface-lo)',
+            border: `1px solid ${GOLD_BD}`,
             borderRadius: 20,
             padding: '5px 14px',
             display: 'flex',

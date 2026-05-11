@@ -11,11 +11,11 @@ import { canDualWield } from '@/lib/weaponHandedness'
 import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
-const GOLD_DIM  = 'rgba(224,58,30,0.5)'
-const GOLD_BD   = 'rgba(224,58,30,0.15)'
+const GOLD_DIM  = 'var(--hud-text-faint)'
+const GOLD_BD   = 'var(--hud-border)'
 const TEXT = 'var(--hud-text)'
 const TEXT_DIM = 'var(--hud-text-dim)'
-const CARD_BG   = 'rgba(255,255,255,0.03)'
+const CARD_BG   = 'var(--hud-surface-lo)'
 const RED_SOFT  = '#e05252'
 const ORANGE    = '#FF9800'
 const FONT_C    = "var(--font-rajdhani), 'Cinzel', serif"
@@ -312,7 +312,7 @@ export function WeaponSelectStep({
                 style={{
                   flex: 1, padding: '8px 0',
                   background: 'transparent',
-                  border: `1px solid rgba(255,255,255,0.15)`,
+                  border: `1px solid var(--hud-border)`,
                   borderRadius: 6, cursor: 'pointer',
                   fontFamily: FONT_C,
                   fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)',
@@ -404,8 +404,8 @@ export function WeaponSelectStep({
         return (
           <div style={{
             marginTop: 16,
-            background: 'rgba(224,58,30,0.06)',
-            border: '1px solid rgba(224,58,30,0.3)',
+            background: 'var(--hud-surface-lo)',
+            border: '1px solid var(--hud-border)',
             borderRadius: 10,
             padding: '14px 16px',
           }}>
@@ -423,11 +423,11 @@ export function WeaponSelectStep({
             <div style={{
               fontFamily: FONT_R,
               fontSize: 'clamp(0.8rem, 1.2vw, 0.92rem)',
-              color: 'rgba(90,40,24,0.75)',
+              color: 'var(--hud-text-dim)',
               lineHeight: 1.4,
               marginBottom: 14,
             }}>
-              You also have <strong style={{ color: 'rgba(90,40,24,0.9)' }}>{partnerName}</strong> equipped ({partnerSkillName}).
+              You also have <strong style={{ color: 'var(--hud-text)' }}>{partnerName}</strong> equipped ({partnerSkillName}).
               <br />
               Would you like to attack with both weapons?
             </div>

@@ -262,6 +262,10 @@ export function ForceCheckOverlay({
   const barColor    = isFallen ? 'rgba(139,43,226,0.6)' : FB_BAR
   const dimColor    = isFallen ? 'rgba(139,43,226,0.5)' : FB_DIM
   const bdColor     = isFallen ? 'rgba(139,43,226,0.15)' : FB_BD
+  // Text colors — dark on light-blue bg for normal path; keep purple for fallen
+  const textColor     = isFallen ? '#8B2BE2'              : '#3A0C04'
+  const textDimColor  = isFallen ? 'rgba(139,43,226,0.5)' : 'rgba(58,12,4,0.55)'
+  const textFaintColor = isFallen ? 'rgba(139,43,226,0.3)' : 'rgba(58,12,4,0.3)'
 
   return (
     <div style={{
@@ -293,7 +297,7 @@ export function ForceCheckOverlay({
             onClick={goBack}
             style={{
               background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px 4px',
-              fontFamily: FONT_R, fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)', color: FB_DIM,
+              fontFamily: FONT_R, fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)', color: textDimColor,
               visibility: (!isResolve && state.currentStep > 1) ? 'visible' : 'hidden',
             }}
           >
@@ -304,13 +308,13 @@ export function ForceCheckOverlay({
           <div style={{ flex: 1, textAlign: 'center' }}>
             <div style={{
               fontFamily: FONT_C, fontSize: 'clamp(0.9rem, 1.5vw, 1.1rem)', fontWeight: 700,
-              color: accentColor, textTransform: 'uppercase', letterSpacing: '0.1em',
-              textShadow: `0 0 12px ${isFallen ? 'rgba(139,43,226,0.4)' : 'rgba(126,200,227,0.3)'}`,
+              color: textColor, textTransform: 'uppercase', letterSpacing: '0.1em',
+              textShadow: isFallen ? '0 0 12px rgba(139,43,226,0.4)' : 'none',
             }}>
               {isFallen ? '☠' : '✦'} Force Check
             </div>
             {!isResolve && (
-              <div style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: dimColor, marginTop: 2 }}>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: textDimColor, marginTop: 2 }}>
                 {STEP_LABELS[state.currentStep]}
               </div>
             )}
@@ -418,7 +422,7 @@ export function ForceCheckOverlay({
                   ? 'linear-gradient(135deg, rgba(139,43,226,0.35), rgba(139,43,226,0.2))'
                   : 'linear-gradient(135deg, rgba(126,200,227,0.35), rgba(126,200,227,0.2))'
                 : isFallen ? 'rgba(139,43,226,0.06)' : 'rgba(126,200,227,0.06)',
-              color: (canAdvance() && !busy) ? accentColor : isFallen ? 'rgba(139,43,226,0.3)' : 'rgba(126,200,227,0.3)',
+              color: (canAdvance() && !busy) ? textColor : textFaintColor,
               transition: 'background 150ms',
             }}
           >

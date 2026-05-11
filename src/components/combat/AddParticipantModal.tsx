@@ -9,19 +9,19 @@ import type { CombatEncounter } from '@/lib/combat'
 import { FS_OVERLINE, FS_LABEL, FS_SM, FS_H3 } from '@/components/player-hud/design-tokens'
 import { HUD } from '@/lib/tokens'
 
-const PANEL_BG    = '#0a1510'
-const RAISED_BG   = 'rgba(14,26,18,0.9)'
-const INPUT_BG    = 'rgba(6,13,9,0.7)'
-const BORDER      = 'rgba(200,170,80,0.18)'
-const BORDER_MD   = 'rgba(200,170,80,0.32)'
-const BORDER_HI   = 'rgba(200,170,80,0.55)'
+const PANEL_BG    = 'var(--hud-surface-hi)'
+const RAISED_BG   = 'var(--hud-surface-lo)'
+const INPUT_BG    = 'var(--hud-surface-mid)'
+const BORDER      = 'var(--hud-border)'
+const BORDER_MD   = 'var(--hud-border-hi)'
+const BORDER_HI   = 'var(--hud-border-hi)'
 const ENEMY_RED   = '#e05252'
 const ALLIED_GREEN = '#52e08a'
-const TEXT        = '#E8DFC8'
-const TEXT_SEC    = 'rgba(232,223,200,0.6)'
-const TEXT_MUTED  = 'rgba(232,223,200,0.35)'
-const FC = "'Rajdhani', sans-serif"
-const FM = "'Rajdhani', sans-serif"
+const TEXT        = 'var(--hud-text)'
+const TEXT_SEC    = 'var(--hud-text-dim)'
+const TEXT_MUTED  = 'var(--hud-text-faint)'
+const FC = 'var(--font-body)'
+const FM = 'var(--font-body)'
 
 interface AddParticipantModalProps {
   library?: Adversary[]

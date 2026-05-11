@@ -284,8 +284,8 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll, onCombatChe
             <div style={{
               marginTop: 12,
               padding: '16px 12px',
-              background: 'rgba(224,58,30,0.05)',
-              border: `1px solid rgba(224,58,30,0.25)`,
+              background: 'var(--hud-surface-lo)',
+              border: `1px solid var(--hud-border)`,
               borderRadius: 6,
               textAlign: 'center',
             }}>
@@ -323,7 +323,7 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll, onCombatChe
             <div style={{
               marginTop: 12,
               padding: '14px 12px',
-              background: 'rgba(255,255,255,0.02)',
+              background: 'transparent',
               border: `1px solid ${C.border}`,
               borderRadius: 6,
               textAlign: 'center',

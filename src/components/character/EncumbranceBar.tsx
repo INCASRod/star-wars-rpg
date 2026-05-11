@@ -5,9 +5,8 @@ import { RichText } from '@/components/ui/RichText'
 
 const ENC_WARN   = '#E07855'
 const ENC_OK     = 'rgba(90,170,224,0.7)'
-const GOLD_DIM   = 'rgba(224,58,30,0.5)'
-const FONT_C     = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M     = "'Share Tech Mono','Courier New',monospace"
+const FONT_C     = 'var(--font-body)'
+const FONT_M     = 'var(--font-body)'
 
 interface EncumbranceBarProps {
   current: number
@@ -68,14 +67,14 @@ export function EncumbranceBar({ current, threshold, brawn, compact = false, lab
           fontFamily: FONT_C,
           fontSize: labelFontSize ?? 'clamp(0.6rem, 2.4vw, 0.72rem)',
           textTransform: 'uppercase', letterSpacing: '0.08em',
-          color: GOLD_DIM,
+          color: 'var(--hud-text-faint)',
         }}>
           ENC
         </span>
         <span style={{
           fontFamily: FONT_M,
           fontSize: 'clamp(0.65rem, 2.5vw, 0.78rem)',
-          color: over ? ENC_WARN : 'rgba(224,58,30,0.7)',
+          color: over ? ENC_WARN : 'var(--hud-text)',
         }}>
           {current}/{threshold}
         </span>
@@ -91,20 +90,20 @@ export function EncumbranceBar({ current, threshold, brawn, compact = false, lab
           fontFamily: FONT_C,
           fontSize: labelFontSize ?? 'clamp(0.58rem, 0.9vw, 0.68rem)',
           textTransform: 'uppercase', letterSpacing: '0.15em',
-          color: GOLD_DIM,
+          color: 'var(--hud-text-faint)',
         }}>
           ENC
         </span>
         <span style={{
           fontFamily: FONT_M,
           fontSize: 'clamp(0.68rem, 1.0vw, 0.8rem)',
-          color: over ? ENC_WARN : 'rgba(232,223,200,0.6)',
+          color: over ? ENC_WARN : 'var(--hud-text-dim)',
           display: 'flex', alignItems: 'center', gap: 4,
         }}>
           {current}/{threshold}{over && <>{' '}{warningIcon}</>}
         </span>
       </div>
-      <div style={{ height: 6, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden' }}>
+      <div style={{ height: 6, background: 'var(--hud-border)', borderRadius: 3, overflow: 'hidden' }}>
         <div style={{
           height: '100%', width: `${pct}%`,
           background: fill, borderRadius: 3,

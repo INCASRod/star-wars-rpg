@@ -29,9 +29,9 @@ const SEV_LABEL: Record<CritSeverity, string> = {
 }
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
-const FONT_C = "var(--font-rajdhani), 'Cinzel', serif"
-const FONT_R = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M = "'Share Tech Mono','Courier New',monospace"
+const FONT_C = 'var(--font-body)'
+const FONT_R = 'var(--font-body)'
+const FONT_M = 'var(--font-body)'
 
 // ── Pip data shape (matches what PlayerHUDDesktop maps from CharacterCriticalInjury) ──
 export interface CritPip {
@@ -117,7 +117,7 @@ export function CriticalInjuryPip({ pip, onHeal }: CriticalInjuryPipProps) {
               : { top: tipPos.anchorY + 10 }),
             zIndex: 210,
             width: TOOLTIP_W,
-            background: 'rgba(6,13,9,0.97)',
+            background: 'var(--hud-surface-hi)',
             backdropFilter: 'blur(14px)',
             WebkitBackdropFilter: 'blur(14px)',
             border: `1px solid rgba(220,20,60,0.35)`,
@@ -169,7 +169,7 @@ export function CriticalInjuryPip({ pip, onHeal }: CriticalInjuryPipProps) {
               <div style={{
                 fontFamily: FONT_R,
                 fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)',
-                color: 'rgba(232,223,200,0.8)',
+                color: 'var(--hud-text)',
                 lineHeight: 1.5,
                 marginBottom: 6,
               }}>
@@ -184,7 +184,7 @@ export function CriticalInjuryPip({ pip, onHeal }: CriticalInjuryPipProps) {
                 <div style={{
                   fontFamily: FONT_M,
                   fontSize: 'clamp(0.52rem, 0.82vw, 0.6rem)',
-                  color: 'rgba(224,58,30,0.5)',
+                  color: 'var(--hud-text-faint)',
                   display: 'flex', gap: 6, flexWrap: 'wrap',
                 }}>
                   {pip.sessionLabel && <span>{pip.sessionLabel}</span>}

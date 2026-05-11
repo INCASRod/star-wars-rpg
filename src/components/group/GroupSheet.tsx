@@ -841,8 +841,8 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
           <div style={{
             display: 'flex', alignItems: 'center', gap: 10,
             padding: '10px 14px',
-            background: 'rgba(224,58,30,0.03)',
-            border: `1px solid rgba(255,255,255,0.07)`,
+            background: 'var(--hud-surface-lo)',
+            border: `1px solid var(--hud-border)`,
             borderRadius: 6,
           }}>
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -922,7 +922,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
                           <span style={{
                             display: 'inline-flex', alignItems: 'center', gap: 3,
                             padding: '1px 6px', borderRadius: 10,
-                            background: 'rgba(224,58,30,0.12)',
+                            background: 'var(--hud-surface-lo)',
                             border: `1px solid ${C.gold}55`,
                             fontFamily: FONT_MONO, fontSize: FS_OVERLINE,
                             color: C.gold, letterSpacing: '0.06em', whiteSpace: 'nowrap',
@@ -1010,7 +1010,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
             </span>
           </div>
           <div style={{
-            height: 8, borderRadius: 4, background: 'rgba(224,58,30,0.1)',
+            height: 8, borderRadius: 4, background: 'var(--hud-border)',
             overflow: 'hidden', position: 'relative',
           }}>
             <div style={{
@@ -1076,7 +1076,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
                   width: 18, height: 18, borderRadius: '50%',
                   background: i < rank
                     ? `radial-gradient(circle at 35% 35%, #F5D77A, ${C.gold})`
-                    : 'rgba(224,58,30,0.1)',
+                    : 'var(--hud-surface-mid)',
                   border: `1px solid ${i < rank ? C.gold : C.border}`,
                   boxShadow: i < rank ? `0 0 6px ${C.gold}66` : undefined,
                   transition: 'all 0.2s',
@@ -1218,7 +1218,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
               <span style={{
                 padding: '2px 10px', borderRadius: 12, fontSize: FS_CAPTION,
                 fontFamily: FONT_CINZEL, letterSpacing: '0.06em',
-                background: 'rgba(224,58,30,0.1)', border: `1px solid ${C.border}`,
+                background: 'var(--hud-surface-lo)', border: `1px solid ${C.border}`,
                 color: C.gold,
               }}>
                 {(ASSET_LABELS as Record<string, string>)[campaign.last_alliance_reward.type] ?? campaign.last_alliance_reward.type}
@@ -1371,7 +1371,7 @@ function _VmSection({ children }: { children: React.ReactNode }) {
     <div style={{
       fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, fontWeight: 700,
       letterSpacing: '0.2em', textTransform: 'uppercase',
-      color: 'rgba(224,58,30,0.5)', borderBottom: `1px solid ${_VM_BORDER}`,
+      color: 'var(--hud-text-dim)', borderBottom: `1px solid ${_VM_BORDER}`,
       paddingBottom: 4, marginBottom: 8,
     }}>{children}</div>
   )

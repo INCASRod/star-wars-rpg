@@ -28,7 +28,7 @@ export function HudForcePowerTreeModal({
   if (!open) return null
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,.65)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-      <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '1100px', maxHeight: '95vh', overflowY: 'auto', background: 'var(--hud-bg)', border: `1px solid rgba(224,58,30,0.18)`, boxShadow: '0 8px 48px rgba(0,0,0,.7), 0 0 0 1px rgba(224,58,30,0.08)', borderRadius: 8, padding: '16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '1100px', maxHeight: '95vh', overflowY: 'auto', background: 'var(--hud-bg)', border: `1px solid var(--hud-border)`, boxShadow: '0 8px 48px rgba(0,0,0,.7)', borderRadius: 8, padding: '16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         {/* Power selector tabs */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
           {allForcePowers.map(fp => {
@@ -38,8 +38,8 @@ export function HudForcePowerTreeModal({
                 key={fp.powerKey}
                 onClick={() => setActivePowerKey(fp.powerKey)}
                 style={{
-                  background: isActive ? 'rgba(224,58,30,0.15)' : 'rgba(255,255,255,0.03)',
-                  border: `1px solid ${isActive ? 'rgba(224,58,30,0.55)' : 'rgba(224,58,30,0.14)'}`,
+                  background: isActive ? 'rgba(224,58,30,0.15)' : 'var(--hud-surface-lo)',
+                  border: `1px solid ${isActive ? 'rgba(224,58,30,0.55)' : 'var(--hud-border)'}`,
                   borderRadius: 4, padding: '6px 12px', cursor: 'pointer',
                   fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL,
                   fontWeight: isActive ? 700 : 500,
@@ -49,7 +49,7 @@ export function HudForcePowerTreeModal({
                 }}
               >
                 {fp.powerName}
-                <span style={{ fontSize: FS_OVERLINE, color: isActive ? 'rgba(224,58,30,0.6)' : '#3A5040', marginLeft: 6 }}>
+                <span style={{ fontSize: FS_OVERLINE, color: isActive ? 'var(--hud-gold)' : 'var(--hud-text-faint)', marginLeft: 6 }}>
                   {fp.purchasedCount}/{fp.totalCount}
                 </span>
               </button>
@@ -69,7 +69,7 @@ export function HudForcePowerTreeModal({
             totalCount={forcePowerTreeData.totalCount}
           />
         ) : (
-          <div style={{ textAlign: 'center', padding: '48px', fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: '#3A5040' }}>No force power tree data.</div>
+          <div style={{ textAlign: 'center', padding: '48px', fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: 'var(--hud-text-faint)' }}>No force power tree data.</div>
         )}
 
         {/* Close */}

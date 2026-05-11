@@ -9,21 +9,21 @@ import type { Character } from '@/lib/types'
 import { HUD } from '@/lib/tokens'
 
 /* ── Design tokens (match GmMapView exactly) ──────────────── */
-const FC       = "var(--font-rajdhani), 'Cinzel', serif"
-const FR       = "var(--font-rajdhani), 'Rajdhani', sans-serif"
+const FC       = 'var(--font-body)'
+const FR       = 'var(--font-body)'
 const DIM      = '#6A8070'
-const TEXT     = '#C8D8C0'
+const TEXT     = 'var(--hud-text)'
 const GREEN    = '#4EC87A'
-const BORDER   = 'rgba(200,170,80,0.14)'
-const BORDER_HI = 'rgba(200,170,80,0.36)'
+const BORDER   = 'var(--hud-border)'
+const BORDER_HI = 'var(--hud-border-hi)'
 
 const FS_OVERLINE = 'var(--text-overline)'
 const FS_CAPTION  = 'var(--text-caption)'
 const FS_LABEL    = 'var(--text-label)'
 
 const btnSmall: React.CSSProperties = {
-  background: 'rgba(200,170,80,0.08)',
-  border: `1px solid rgba(200,170,80,0.3)`,
+  background: 'var(--hud-surface-lo)',
+  border: `1px solid var(--hud-border)`,
   color: HUD.gold,
   fontFamily: FR,
   fontSize: FS_CAPTION,
@@ -347,7 +347,7 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
                     <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>
                       {advTokenBusy === p.name ? 'Uploading…' : '↑ Upload Image'}
                     </span>
-                    <span style={{ fontFamily: FR, fontStyle: 'italic', fontSize: FS_OVERLINE, color: 'rgba(200,170,80,0.3)' }}>
+                    <span style={{ fontFamily: FR, fontStyle: 'italic', fontSize: FS_OVERLINE, color: 'var(--hud-text-faint)' }}>
                       · Used as token on the map
                     </span>
                   </label>
@@ -376,7 +376,7 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
                         flex: 1, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
                         letterSpacing: '0.06em', cursor: 'pointer', borderRadius: 3,
                         padding: '4px 8px', border: 'none',
-                        background: mapToken.is_visible ? 'rgba(78,200,122,0.12)' : 'rgba(255,255,255,0.04)',
+                        background: mapToken.is_visible ? 'rgba(78,200,122,0.12)' : 'var(--hud-surface-lo)',
                         color: mapToken.is_visible ? GREEN : DIM,
                         transition: '.15s',
                       }}
@@ -443,7 +443,7 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
                         flex: 1, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
                         letterSpacing: '0.06em', cursor: 'pointer', borderRadius: 3,
                         padding: '4px 8px', border: 'none',
-                        background: mapToken.is_visible ? 'rgba(78,200,122,0.12)' : 'rgba(255,255,255,0.04)',
+                        background: mapToken.is_visible ? 'rgba(78,200,122,0.12)' : 'var(--hud-surface-lo)',
                         color: mapToken.is_visible ? GREEN : DIM,
                         transition: '.15s',
                       }}
@@ -527,7 +527,7 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
                       flex: 1, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
                       letterSpacing: '0.06em', cursor: 'pointer', borderRadius: 3,
                       padding: '4px 8px', border: 'none',
-                      background: token.is_visible ? 'rgba(78,200,122,0.12)' : 'rgba(255,255,255,0.04)',
+                      background: token.is_visible ? 'rgba(78,200,122,0.12)' : 'var(--hud-surface-lo)',
                       color: token.is_visible ? GREEN : DIM,
                       transition: '.15s',
                     }}
@@ -564,9 +564,9 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
               {/* Portrait */}
               {char.portrait_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={char.portrait_url} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid rgba(200,170,80,0.4)' }} />
+                <img src={char.portrait_url} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid var(--hud-border-hi)' }} />
               ) : (
-                <div style={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, background: 'rgba(200,170,80,0.15)', border: '2px solid rgba(200,170,80,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FC, fontSize: 16, fontWeight: 700, color: HUD.gold }}>
+                <div style={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, background: 'var(--hud-surface-lo)', border: '2px solid var(--hud-border-hi)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FC, fontSize: 16, fontWeight: 700, color: HUD.gold }}>
                   {char.name.charAt(0).toUpperCase()}
                 </div>
               )}
@@ -613,7 +613,7 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
           <button
             onClick={() => void addAllPlayers()}
             style={{
-              background: 'rgba(6,13,9,0.92)', border: `1px solid rgba(200,170,80,0.35)`,
+              background: 'var(--hud-surface-hi)', border: `1px solid ${BORDER_HI}`,
               color: HUD.gold, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
               letterSpacing: '0.1em', textTransform: 'uppercase', padding: '6px 13px',
               borderRadius: 4, cursor: 'pointer', width: '100%',
@@ -716,7 +716,7 @@ function SectionHeader({
       padding: '10px 14px 6px',
       fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 700,
       letterSpacing: '0.2em', textTransform: 'uppercase',
-      color: 'rgba(200,170,80,0.4)',
+      color: 'var(--hud-text-dim)',
       borderBottom: `1px solid ${BORDER}`,
       borderTop: topBorder ? `1px solid ${BORDER}` : 'none',
     }}>

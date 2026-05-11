@@ -5,14 +5,14 @@ import { createPortal } from 'react-dom'
 import { HUD } from '@/lib/tokens'
 
 /* ── Design tokens (mirrored from GmReferenceDrawer) ──────── */
-const FC      = "var(--font-rajdhani), 'Cinzel', serif"
-const FR      = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const BG      = 'rgba(6,10,8,0.97)'
-const PANEL   = 'rgba(10,18,12,0.92)'
+const FC      = 'var(--font-body)'
+const FR      = 'var(--font-body)'
+const BG      = 'var(--hud-surface-hi)'
+const PANEL   = 'var(--hud-surface-mid)'
 const DIM     = '#6A8070'
-const TEXT    = '#C8D8C0'
-const BORDER     = 'rgba(200,170,80,0.14)'
-const BORDER_HI  = 'rgba(200,170,80,0.36)'
+const TEXT    = 'var(--hud-text)'
+const BORDER     = 'var(--hud-border)'
+const BORDER_HI  = 'var(--hud-border-hi)'
 
 const DRAWER_WIDTH = 'clamp(380px, 34vw, 520px)'
 

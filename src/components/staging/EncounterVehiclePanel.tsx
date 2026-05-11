@@ -9,16 +9,16 @@ import { FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4 } from '@/components/pl
 import { HUD } from '@/lib/tokens'
 
 /* ── Design tokens ────────────────────────────────────────── */
-const PANEL_BG  = 'rgba(8,16,10,0.88)'
-const BORDER    = 'rgba(200,170,80,0.18)'
+const PANEL_BG  = 'var(--hud-surface-mid)'
+const BORDER    = 'var(--hud-border)'
 const RED       = '#e05252'
 const BLUE      = '#52a8e0'
 const GREEN     = '#52e08a'
 const AMBER     = '#FF9800'
 const PURPLE    = '#9C27B0'
-const TEXT      = '#E8DFC8'
-const TEXT_MUTED = 'rgba(232,223,200,0.45)'
-const FC        = "'Rajdhani', sans-serif"
+const TEXT      = 'var(--hud-text)'
+const TEXT_MUTED = 'var(--hud-text-faint)'
+const FC        = 'var(--font-body)'
 
 export interface EncounterVehiclePanelProps {
   campaignId: string
@@ -129,8 +129,8 @@ export function EncounterVehiclePanel({ campaignId }: EncounterVehiclePanelProps
               {isDisabled && (
                 <span style={{
                   fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.1em',
-                  color: 'rgba(232,223,200,0.3)', border: '1px solid rgba(232,223,200,0.15)',
-                  borderRadius: 3, padding: '1px 5px', background: 'rgba(232,223,200,0.05)',
+                  color: TEXT_MUTED, border: `1px solid var(--hud-border)`,
+                  borderRadius: 3, padding: '1px 5px', background: 'var(--hud-surface-lo)',
                 }}>DISABLED</span>
               )}
               <span style={{
@@ -195,10 +195,10 @@ function VehicleWoundTracker({
 
   const btnBase: React.CSSProperties = {
     width: 36, height: 28, borderRadius: 5,
-    background: 'rgba(255,255,255,0.04)',
-    border: '1px solid rgba(255,255,255,0.12)',
+    background: 'var(--hud-surface-lo)',
+    border: '1px solid var(--hud-border)',
     cursor: 'pointer', fontFamily: FC, fontSize: 16, lineHeight: 1,
-    color: 'rgba(232,223,200,0.8)',
+    color: TEXT,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     transition: 'border-color .12s', flexShrink: 0,
   }
@@ -210,24 +210,24 @@ function VehicleWoundTracker({
         <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: RED, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 3 }}>
           Hull Trauma
         </div>
-        <div style={{ height: 6, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden', marginBottom: 2 }}>
+        <div style={{ height: 6, background: 'var(--hud-surface-lo)', borderRadius: 3, overflow: 'hidden', marginBottom: 2 }}>
           <div style={{ width: `${htPct * 100}%`, height: '100%', background: htColor, borderRadius: 3, transition: 'width 300ms ease' }} />
         </div>
-        <div style={{ fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: FS_CAPTION, color: TEXT_MUTED, textAlign: 'right', marginBottom: 3 }}>
+        <div style={{ fontFamily: FC, fontSize: FS_CAPTION, color: TEXT_MUTED, textAlign: 'right', marginBottom: 3 }}>
           {htCur} / {htMax}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <button onClick={() => onAdjustHullTrauma(-1)} disabled={htCur === 0}
-            style={{ ...btnBase, cursor: htCur === 0 ? 'not-allowed' : 'pointer', color: htCur === 0 ? 'rgba(232,223,200,0.2)' : 'rgba(232,223,200,0.8)' }}
+            style={{ ...btnBase, cursor: htCur === 0 ? 'not-allowed' : 'pointer', color: htCur === 0 ? 'var(--hud-text-faint)' : TEXT }}
             onMouseEnter={e => { if (htCur > 0) (e.currentTarget as HTMLElement).style.borderColor = `${RED}66` }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.12)' }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--hud-border)' }}
           >−</button>
-          <span style={{ flex: 1, textAlign: 'center', fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: FS_LABEL, color: 'rgba(232,223,200,0.8)' }}>
+          <span style={{ flex: 1, textAlign: 'center', fontFamily: FC, fontSize: FS_LABEL, color: TEXT }}>
             {htCur} trauma
           </span>
           <button onClick={() => onAdjustHullTrauma(1)} style={btnBase}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${RED}66` }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.12)' }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--hud-border)' }}
           >+</button>
         </div>
       </div>
@@ -238,24 +238,24 @@ function VehicleWoundTracker({
           <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: AMBER, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 3, marginTop: 2 }}>
             System Strain
           </div>
-          <div style={{ height: 6, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden', marginBottom: 2 }}>
+          <div style={{ height: 6, background: 'var(--hud-surface-lo)', borderRadius: 3, overflow: 'hidden', marginBottom: 2 }}>
             <div style={{ width: `${ssPct * 100}%`, height: '100%', background: ssColor, borderRadius: 3, transition: 'width 300ms ease' }} />
           </div>
-          <div style={{ fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: FS_CAPTION, color: TEXT_MUTED, textAlign: 'right', marginBottom: 3 }}>
+          <div style={{ fontFamily: FC, fontSize: FS_CAPTION, color: TEXT_MUTED, textAlign: 'right', marginBottom: 3 }}>
             {ssCur} / {ssMax}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <button onClick={() => onAdjustSystemStrain(-1)} disabled={ssCur === 0}
-              style={{ ...btnBase, cursor: ssCur === 0 ? 'not-allowed' : 'pointer', color: ssCur === 0 ? 'rgba(232,223,200,0.2)' : 'rgba(232,223,200,0.8)' }}
+              style={{ ...btnBase, cursor: ssCur === 0 ? 'not-allowed' : 'pointer', color: ssCur === 0 ? 'var(--hud-text-faint)' : TEXT }}
               onMouseEnter={e => { if (ssCur > 0) (e.currentTarget as HTMLElement).style.borderColor = `${AMBER}66` }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.12)' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--hud-border)' }}
             >−</button>
-            <span style={{ flex: 1, textAlign: 'center', fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: FS_LABEL, color: 'rgba(232,223,200,0.8)' }}>
+            <span style={{ flex: 1, textAlign: 'center', fontFamily: FC, fontSize: FS_LABEL, color: TEXT }}>
               {ssCur} strain
             </span>
             <button onClick={() => onAdjustSystemStrain(1)} style={btnBase}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${AMBER}66` }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.12)' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--hud-border)' }}
             >+</button>
           </div>
         </div>

@@ -10,21 +10,21 @@ export function VersionWatermark() {
       bottom:        12,
       right:         16,
       zIndex:        10,
-      fontFamily:    "'Share Tech Mono', 'Courier New', monospace",
+      fontFamily:    'var(--font-body)',
       fontSize:      'clamp(0.58rem, 0.85vw, 0.68rem)',
-      color:         'rgba(200,170,80,0.25)',
+      color:         'var(--hud-text-faint)',
       letterSpacing: '0.05em',
       userSelect:    'none',
       pointerEvents: 'none',
     }}
       onMouseEnter={e => {
         const el = e.currentTarget as HTMLElement
-        el.style.color         = 'rgba(200,170,80,0.6)'
+        el.style.color         = 'var(--hud-text-dim)'
         el.style.pointerEvents = 'auto'
       }}
       onMouseLeave={e => {
         const el = e.currentTarget as HTMLElement
-        el.style.color         = 'rgba(200,170,80,0.25)'
+        el.style.color         = 'var(--hud-text-faint)'
         el.style.pointerEvents = 'none'
       }}
     >

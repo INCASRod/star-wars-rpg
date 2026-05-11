@@ -6,19 +6,19 @@ import { FS_OVERLINE, FS_CAPTION, FS_LABEL } from '@/components/player-hud/desig
 import { useCombatLog, type CombatLogAlignment } from '@/hooks/useCombatLog'
 import { HUD } from '@/lib/tokens'
 
-const BORDER       = 'rgba(200,170,80,0.18)'
-const BORDER_MD    = 'rgba(200,170,80,0.32)'
-const RAISED_BG    = 'rgba(14,26,18,0.9)'
-const INPUT_BG     = 'rgba(6,13,9,0.7)'
+const BORDER       = 'var(--hud-border)'
+const BORDER_MD    = 'var(--hud-border-hi)'
+const RAISED_BG    = 'var(--hud-surface-lo)'
+const INPUT_BG     = 'var(--hud-surface-mid)'
 const ENEMY_RED    = '#e05252'
 const ALLIED_GREEN = '#52e08a'
 const PLAYER_BLUE  = '#52a8e0'
-const TEXT         = '#E8DFC8'
-const TEXT_SEC     = 'rgba(232,223,200,0.6)'
-const TEXT_MUTED   = 'rgba(232,223,200,0.35)'
-const FC = "'Rajdhani', sans-serif"
-const FM = "'Rajdhani', sans-serif"
-const FR = "'Rajdhani', sans-serif"
+const TEXT         = 'var(--hud-text)'
+const TEXT_SEC     = 'var(--hud-text-dim)'
+const TEXT_MUTED   = 'var(--hud-text-faint)'
+const FC = 'var(--font-body)'
+const FM = 'var(--font-body)'
+const FR = 'var(--font-body)'
 
 type LogAlignment = CombatLogAlignment
 

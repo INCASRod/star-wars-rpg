@@ -242,7 +242,7 @@ export function TalentsPanel({ talents, onViewTree, characterId }: TalentsPanelP
           textAlign: 'center',
           fontFamily: FONT_RAJDHANI,
           fontSize: 'clamp(0.8rem, 1.3vw, 0.9rem)',
-          color: 'rgba(224,58,30,0.35)',
+          color: 'var(--hud-text-faint)',
           fontStyle: 'italic',
           padding: '16px 0',
         }}>

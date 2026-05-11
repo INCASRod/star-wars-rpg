@@ -5,17 +5,17 @@ import { FS_OVERLINE, FS_CAPTION, FS_LABEL } from '@/components/player-hud/desig
 import { HUD } from '@/lib/tokens'
 
 // ── Design tokens (mirrored from CombatTracker) ──
-const RAISED_BG   = 'rgba(14,26,18,0.9)'
-const BORDER      = 'rgba(200,170,80,0.18)'
+const RAISED_BG   = 'var(--hud-surface-lo)'
+const BORDER      = 'var(--hud-border)'
 const CHAR_BR     = '#e05252'
 const CHAR_AG     = '#52a8e0'
 const CHAR_WIL    = '#52e0a8'
-const TEXT        = '#E8DFC8'
-const TEXT_MUTED  = 'rgba(232,223,200,0.35)'
-const TEXT_SEC    = 'rgba(232,223,200,0.6)'
-const FC          = "'Rajdhani', sans-serif"
-const FR          = "'Rajdhani', sans-serif"
-const FM          = "'Rajdhani', sans-serif"
+const TEXT        = 'var(--hud-text)'
+const TEXT_MUTED  = 'var(--hud-text-faint)'
+const TEXT_SEC    = 'var(--hud-text-dim)'
+const FC          = 'var(--font-body)'
+const FR          = 'var(--font-body)'
+const FM          = 'var(--font-body)'
 
 const ACTIVATION_ORDER  = ['incidental', 'out of turn', 'maneuver', 'action']
 const ACTIVATION_COLORS: Record<string, string> = {

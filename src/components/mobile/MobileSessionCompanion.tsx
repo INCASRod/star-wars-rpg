@@ -28,13 +28,13 @@ import type { ForceTreeNode, ForceTreeConnection } from '@/components/character/
 import { HUD } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
-const BG   = '#060D09'
-const TEXT = 'rgba(255,255,255,0.85)'
-const TEXT_DIM   = 'rgba(255,255,255,0.5)'
-const BORDER     = 'rgba(200,170,80,0.1)'
-const FONT_C = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M = "'Share Tech Mono', 'Courier New', monospace"
-const FONT_R = "var(--font-rajdhani), 'Rajdhani', sans-serif"
+const BG   = 'var(--hud-bg)'
+const TEXT = 'var(--hud-text)'
+const TEXT_DIM   = 'var(--hud-text-dim)'
+const BORDER     = 'var(--hud-border)'
+const FONT_C = 'var(--font-body)'
+const FONT_M = 'var(--font-body)'
+const FONT_R = 'var(--font-body)'
 
 interface MobileSessionCompanionProps {
   characterId: string
@@ -220,7 +220,7 @@ export function MobileSessionCompanion({ characterId, campaignId }: MobileSessio
     ? character.wound_current / character.wound_threshold : 0
   const fabBorderColor = woundPct >= 0.8
     ? 'rgba(244,67,54,0.7)'
-    : 'rgba(200,170,80,0.4)'
+    : 'var(--hud-border-hi)'
 
   const isForceUser = isForceUserSensitive(character, effectiveStats?.forceRating ?? forceRating)
   const hasCampaign = !!effectiveCampaignId
@@ -320,8 +320,8 @@ export function MobileSessionCompanion({ characterId, campaignId }: MobileSessio
                     return (
                       <div key={cw.id} style={{
                         display: 'flex', alignItems: 'center', gap: 8,
-                        background: 'rgba(200,170,80,0.04)',
-                        border: `1px solid rgba(200,170,80,0.12)`,
+                        background: 'var(--hud-surface-lo)',
+                        border: `1px solid ${BORDER}`,
                         borderRadius: 6,
                         padding: '7px 10px',
                         minHeight: 44,
@@ -416,7 +416,7 @@ export function MobileSessionCompanion({ characterId, campaignId }: MobileSessio
           bottom: 80,
           right: 16,
           zIndex: 50,
-          background: 'rgba(6,13,9,0.9)',
+          background: 'var(--hud-surface-hi)',
           border: `1px solid ${fabBorderColor}`,
           borderRadius: 24,
           backdropFilter: 'blur(12px)',

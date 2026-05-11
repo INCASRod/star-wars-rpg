@@ -12,24 +12,24 @@ import { useRefWeapons } from '@/hooks/useRefWeapons'
 import { HUD } from '@/lib/tokens'
 
 // ── Design Tokens ──
-const BG = '#060D09'
-const PANEL_BG = 'rgba(8,16,10,0.88)'
-const RAISED_BG = 'rgba(14,26,18,0.9)'
-const BORDER = 'rgba(200,170,80,0.18)'
-const BORDER_MD = 'rgba(200,170,80,0.32)'
+const BG = 'var(--hud-bg)'
+const PANEL_BG = 'var(--hud-surface-lo)'
+const RAISED_BG = 'var(--hud-surface-lo)'
+const BORDER = 'var(--hud-border)'
+const BORDER_MD = 'var(--hud-border-hi)'
 const CHAR_BR = '#e05252'
 const CHAR_AG = '#52a8e0'
 const CHAR_CUN = '#e0a852'
 const CHAR_INT = '#a852e0'
 const CHAR_WIL = '#52e0a8'
 const CHAR_PR = '#e05298'
-const TEXT = '#E8DFC8'
-const TEXT_SEC = 'rgba(232,223,200,0.6)'
-const TEXT_MUTED = 'rgba(232,223,200,0.35)'
+const TEXT = 'var(--hud-text)'
+const TEXT_SEC = 'var(--hud-text-dim)'
+const TEXT_MUTED = 'var(--hud-text-faint)'
 const TEXTGR = "#72B421"
-const FC = "'Rajdhani', sans-serif"
-const FR = "'Rajdhani', sans-serif"
-const FM = "'Rajdhani', sans-serif"
+const FC = 'var(--font-body)'
+const FR = 'var(--font-body)'
+const FM = 'var(--font-body)'
 
 const panelBase: React.CSSProperties = {
   background: PANEL_BG,
@@ -148,8 +148,8 @@ export function CombatTracker({ character, campaignId, talents = [] }: Props) {
           50% { box-shadow: 0 0 8px 2px rgba(224,82,82,0.25); }
         }
         @keyframes activeTurnPulse {
-          0%, 100% { border-color: rgba(200,170,80,0.3); }
-          50%       { border-color: rgba(200,170,80,0.7); }
+          0%, 100% { border-color: var(--hud-border); }
+          50%       { border-color: var(--hud-border-hi); }
         }
       `}</style>
     </div>

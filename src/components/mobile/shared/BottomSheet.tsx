@@ -3,8 +3,8 @@
 import { useRef, useEffect } from 'react'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
-const PANEL   = 'rgba(8,18,12,0.97)'
-const BORDER  = 'rgba(200,170,80,0.3)'
+const PANEL   = 'var(--hud-surface-hi)'
+const BORDER  = 'var(--hud-border-hi)'
 const SCRIM   = 'rgba(0,0,0,0.6)'
 
 interface BottomSheetProps {
@@ -68,7 +68,7 @@ export function BottomSheet({ open, onClose, children, maxHeight = '85dvh' }: Bo
         <div style={{ padding: '12px 0 4px', display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
           <div style={{
             width: 32, height: 4,
-            background: 'rgba(200,170,80,0.3)',
+            background: 'var(--hud-border-hi)',
             borderRadius: 2,
           }} />
         </div>

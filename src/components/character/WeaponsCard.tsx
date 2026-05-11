@@ -84,10 +84,10 @@ interface BlockDialogState {
 const AMBER     = '#FF9800'
 const AMBER_BG  = 'rgba(255,152,0,0.06)'
 const AMBER_BD  = 'rgba(255,152,0,0.45)'
-const GOLD_DIM  = 'rgba(200,170,80,0.5)'
-const GOLD_BD   = 'rgba(200,170,80,0.15)'
-const TEXT      = 'rgba(255,255,255,0.85)'
-const TEXT_DIM  = 'rgba(255,255,255,0.5)'
+const GOLD_DIM  = 'var(--hud-text-faint)'
+const GOLD_BD   = 'var(--hud-border)'
+const TEXT      = 'var(--hud-text)'
+const TEXT_DIM  = 'var(--hud-text-dim)'
 const GREEN     = '#4CAF50'
 const FONT_C    = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
@@ -258,7 +258,7 @@ export function WeaponsCard({
                     fontFamily: FONT_R,
                     fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)',
                     color: HUD.gold,
-                    background: 'rgba(200,170,80,0.05)',
+                    background: 'var(--hud-surface-lo)',
                     border: `1px solid ${GOLD_BD}`,
                     borderRadius: 4,
                     padding: '1px 4px',
@@ -311,7 +311,7 @@ export function WeaponsCard({
           maxWidth="clamp(300px, 40vw, 420px)"
           borderColor={AMBER_BD}
           shadow="0 0 32px rgba(255,152,0,0.15)"
-          panelBackground="rgba(6,13,9,0.97)"
+          panelBackground="var(--hud-surface-hi)"
         >
           <div style={{ padding: '20px 24px' }}>
             <div style={{
@@ -355,7 +355,7 @@ export function WeaponsCard({
                   style={{
                     flex: 1, padding: '9px 0',
                     background: 'transparent',
-                    border: '1px solid rgba(255,255,255,0.15)',
+                    border: '1px solid var(--hud-border)',
                     borderRadius: 8, cursor: 'pointer',
                     fontFamily: FONT_C,
                     fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)',

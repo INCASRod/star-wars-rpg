@@ -4,7 +4,7 @@ import { C, FONT_CINZEL, FONT_RAJDHANI } from './design-tokens'
 import { Modal } from '@/components/ui/Modal'
 import type { ForceRollResult, ForceDie } from './dice-engine'
 
-const FORCE_BLUE  = '#5AAAE0'
+const FORCE_BLUE  = '#1A78A0'
 const LIGHT_COLOR = '#E8E8FF'
 const DARK_COLOR  = '#1a1a2e'
 const DARK_BORDER = '#6060A0'
@@ -15,7 +15,7 @@ function ForceDieFace({ die }: { die: ForceDie }) {
   return (
     <div style={{
       width: 48, height: 48, borderRadius: '50%',
-      background: 'rgba(90,170,224,0.08)',
+      background: 'rgba(126,200,227,0.08)',
       border: `2px solid ${FORCE_BLUE}60`,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       flexDirection: 'column', gap: 3, flexShrink: 0,

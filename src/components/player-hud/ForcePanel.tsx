@@ -6,9 +6,9 @@ import { ForcePowerTree, type ForceTreeNode, type ForceTreeConnection } from '@/
 import { RichText } from '@/components/ui/RichText'
 
 // ── Force colour ──────────────────────────────────────────────────────────────
-const FORCE_BLUE      = '#7EC8E3'
-const FORCE_BLUE_DIM  = 'rgba(126,200,227,0.35)'
-const FORCE_BLUE_GLOW = 'rgba(126,200,227,0.18)'
+const FORCE_BLUE      = '#1A78A0'
+const FORCE_BLUE_DIM  = 'rgba(26,120,160,0.35)'
+const FORCE_BLUE_GLOW = 'rgba(26,120,160,0.18)'
 const DARK_PURPLE     = '#8B2BE2'
 const DARK_PURPLE_DIM = 'rgba(139,43,226,0.35)'
 const DARK_PURPLE_GLOW = 'rgba(139,43,226,0.18)'
@@ -240,7 +240,7 @@ function MoralityCard({
         <div style={{
           position: 'absolute', left: 0, top: 0, bottom: 0, borderRadius: 3,
           width: `${Math.min(100, Math.max(0, moralityValue))}%`,
-          background: 'linear-gradient(90deg, #E05050 0%, #C8AA50 45%, #4EC87A 70%, #7EC8E3 100%)',
+          background: 'linear-gradient(90deg, #E03A1E 0%, #C8AA50 45%, #4EC87A 70%, #1A78A0 100%)',
           transition: 'width .3s ease',
         }} />
         <div style={{
@@ -256,7 +256,7 @@ function MoralityCard({
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <span style={{
           fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE,
-          color: '#E05050', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
+          color: '#E03A1E', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
         }}>
           {moralityWeakness || 'Weakness'}
         </span>
@@ -295,7 +295,7 @@ function ConflictPips({ conflicts, isFallen = false }: { conflicts: ConflictEntr
         </div>
         <div style={{
           fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE,
-          color: activeConflicts.length > 0 ? '#E07050' : C.textDim,
+          color: activeConflicts.length > 0 ? '#E03A1E' : C.textDim,
         }}>
           {activeConflicts.length} unresolved
         </div>
@@ -317,17 +317,17 @@ function ConflictPips({ conflicts, isFallen = false }: { conflicts: ConflictEntr
                   ? 'transparent'
                   : isFallen
                     ? 'rgba(220,230,240,0.85)'
-                    : 'rgba(224,112,80,0.9)',
+                    : 'rgba(224,58,30,0.9)',
                 border: c.is_resolved
                   ? `1px solid ${C.border}`
                   : isFallen
                     ? '1px solid rgba(200,215,230,0.9)'
-                    : '1px solid #E07050',
+                    : '1px solid #E03A1E',
                 boxShadow: c.is_resolved
                   ? 'none'
                   : isFallen
                     ? '0 0 4px rgba(220,230,240,0.5)'
-                    : '0 0 4px rgba(224,112,80,0.5)',
+                    : '0 0 4px rgba(224,58,30,0.5)',
                 cursor: 'default',
               }}
             />
@@ -404,7 +404,7 @@ function ForcePowerCard({
         <div style={{ height: 3, background: C.textFaint, borderRadius: 2, overflow: 'hidden' }}>
           <div style={{
             height: '100%', width: `${pct}%`,
-            background: `linear-gradient(90deg, ${FORCE_BLUE}, #B070D8)`,
+            background: `linear-gradient(90deg, ${FORCE_BLUE}, ${DARK_PURPLE})`,
             borderRadius: 2, transition: 'width .4s ease',
           }} />
         </div>

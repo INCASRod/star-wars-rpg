@@ -10,17 +10,17 @@ import type { SkillDiceModifier } from '@/lib/derivedStats'
 import { HUD } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
-const GOLD_DIM   = 'rgba(200,170,80,0.6)'
-const GOLD_BD    = 'rgba(200,170,80,0.15)'
-const BORDER     = 'rgba(200,170,80,0.1)'
-const TEXT       = 'rgba(255,255,255,0.85)'
-const TEXT_DIM   = 'rgba(255,255,255,0.45)'
-const STICKY_BG  = 'rgba(6,13,9,0.96)'
-const INPUT_BG   = 'rgba(6,13,9,0.9)'
-const FONT_C     = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_R     = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M     = "'Courier New', monospace"
-const FONT_CINZEL_REAL = "var(--font-rajdhani),'Cinzel',serif"
+const GOLD_DIM   = 'var(--hud-text-dim)'
+const GOLD_BD    = 'var(--hud-border-hi)'
+const BORDER     = 'var(--hud-border)'
+const TEXT       = 'var(--hud-text)'
+const TEXT_DIM   = 'var(--hud-text-dim)'
+const STICKY_BG  = 'var(--hud-surface-hi)'
+const INPUT_BG   = 'var(--hud-surface-mid)'
+const FONT_C     = 'var(--font-body)'
+const FONT_R     = 'var(--font-body)'
+const FONT_M     = 'var(--font-body)'
+const FONT_CINZEL_REAL = 'var(--font-body)'
 const RED        = 'rgba(244,67,54,0.8)'
 
 type SkillGroup = 'stGeneral' | 'stCombat' | 'stKnowledge'
@@ -46,7 +46,7 @@ function RankPips({ rank }: { rank: number }) {
 }
 
 const POOL_CAP = 6
-const POOL_OVERFLOW_FONT = "'Share Tech Mono', 'Courier New', monospace"
+const POOL_OVERFLOW_FONT = 'var(--font-body)'
 
 function PoolPips({ proficiency, ability }: { proficiency: number; ability: number }) {
   const total = proficiency + ability
@@ -76,7 +76,7 @@ function PoolPips({ proficiency, ability }: { proficiency: number; ability: numb
         <span style={{
           fontFamily: POOL_OVERFLOW_FONT,
           fontSize: 'clamp(0.58rem, 0.85vw, 0.68rem)',
-          color: 'rgba(232,223,200,0.4)',
+          color: 'var(--hud-text-faint)',
         }}>
           +{overflow}
         </span>
@@ -119,7 +119,7 @@ function BoostAddBadge({ count }: { count: number }) {
         <span style={{
           fontFamily: POOL_OVERFLOW_FONT,
           fontSize: 'clamp(0.55rem, 0.8vw, 0.65rem)',
-          color: 'rgba(232,223,200,0.4)',
+          color: 'var(--hud-text-faint)',
         }}>×{count}</span>
       )}
     </div>
@@ -148,7 +148,7 @@ function MobileInlineConfirmation({ name, newRank, cost, xpAvailable, onConfirm,
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
           fontFamily: FONT_R, fontSize: 'clamp(0.8rem, 3.2vw, 0.95rem)',
-          fontWeight: 600, color: 'rgba(232,223,200,0.85)',
+          fontWeight: 600, color: TEXT,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         }}>
           {name} → Rank {newRank}
@@ -176,7 +176,7 @@ function MobileInlineConfirmation({ name, newRank, cost, xpAvailable, onConfirm,
           onClick={(e) => { e.stopPropagation(); onConfirm() }}
           style={{
             width: 36, height: 36, borderRadius: 6,
-            background: 'linear-gradient(135deg, rgba(200,170,80,0.25), rgba(200,170,80,0.15))',
+            background: 'var(--hud-surface-lo)',
             border: `1px solid ${HUD.gold}`,
             color: HUD.gold, cursor: 'pointer',
             fontFamily: FONT_R, fontSize: 'clamp(0.85rem, 3.5vw, 1rem)',
@@ -264,7 +264,7 @@ export function SkillsTab({ character, charSkills, refSkills, onSkillTap, skillM
   }
 
   const xpColor = xpAvailable !== undefined
-    ? xpAvailable > 20 ? 'rgba(200,170,80,0.6)'
+    ? xpAvailable > 20 ? GOLD_DIM
       : xpAvailable > 0 ? '#FF9800'
       : 'rgba(244,67,54,0.7)'
     : GOLD_DIM
@@ -304,7 +304,7 @@ export function SkillsTab({ character, charSkills, refSkills, onSkillTap, skillM
             style={{
               width: '100%',
               background: INPUT_BG,
-              border: `1px solid rgba(200,170,80,0.3)`,
+              border: `1px solid ${GOLD_BD}`,
               borderRadius: 6,
               padding: '8px 10px 8px 32px',
               color: HUD.gold,
@@ -330,7 +330,7 @@ export function SkillsTab({ character, charSkills, refSkills, onSkillTap, skillM
               style={{
                 width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '10px 16px',
-                background: 'rgba(200,170,80,0.05)',
+                background: 'var(--hud-surface-lo)',
                 border: 'none',
                 borderBottom: `1px solid ${BORDER}`,
                 cursor: 'pointer',
@@ -372,7 +372,7 @@ export function SkillsTab({ character, charSkills, refSkills, onSkillTap, skillM
                     alignItems: 'center',
                     minHeight: 44,
                     borderBottom: `1px solid ${BORDER}`,
-                    background: isConfirming ? 'rgba(200,170,80,0.05)' : 'transparent',
+                    background: isConfirming ? 'var(--hud-surface-lo)' : 'transparent',
                   }}
                 >
                   {isConfirming ? (
@@ -450,9 +450,9 @@ export function SkillsTab({ character, charSkills, refSkills, onSkillTap, skillM
                             title={`Upgrade to Rank ${rank + 1} — Cost: ${cost} XP${!canAfford ? ' (Not enough XP)' : ''}`}
                             style={{
                               width: 28, height: 28, borderRadius: 6,
-                              background: canAfford ? 'rgba(200,170,80,0.1)' : 'rgba(255,255,255,0.02)',
-                              border: `1px solid ${canAfford ? 'rgba(200,170,80,0.35)' : 'rgba(255,255,255,0.1)'}`,
-                              color: canAfford ? HUD.gold : 'rgba(232,223,200,0.2)',
+                              background: canAfford ? 'var(--hud-surface-lo)' : 'transparent',
+                              border: `1px solid ${canAfford ? 'var(--hud-border-hi)' : 'var(--hud-border)'}`,
+                              color: canAfford ? HUD.gold : 'var(--hud-text-faint)',
                               fontFamily: FONT_CINZEL_REAL,
                               fontSize: 'clamp(0.75rem, 3vw, 0.85rem)',
                               cursor: canAfford ? 'pointer' : 'not-allowed',
@@ -478,7 +478,7 @@ export function SkillsTab({ character, charSkills, refSkills, onSkillTap, skillM
                         {skillModifiers[rs.key] && (skillModifiers[rs.key].boostAdd > 0 || skillModifiers[rs.key].setbackRemove > 0) && (
                           <div style={{
                             display: 'flex', alignItems: 'center', gap: 3,
-                            borderLeft: `1px solid rgba(200,170,80,0.2)`,
+                            borderLeft: `1px solid ${BORDER}`,
                             paddingLeft: 4,
                             flexShrink: 0,
                           }}>

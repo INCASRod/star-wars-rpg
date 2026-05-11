@@ -56,7 +56,7 @@ export function DedicationModal({
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   padding: '10px 14px',
-                  background: isSel ? `${color}22` : 'rgba(255,255,255,0.03)',
+                  background: isSel ? `${color}22` : 'var(--hud-surface-lo)',
                   border: `1px solid ${isSel ? color : C.border}`,
                   outline: isSel ? `1px solid ${color}` : 'none',
                   cursor: maxed ? 'not-allowed' : 'pointer',
@@ -68,7 +68,7 @@ export function DedicationModal({
                   {DEDICATION_CHAR_LABEL[key]}
                 </span>
                 <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_H3, fontWeight: 700, color: isSel ? color : C.textDim, lineHeight: 1 }}>
-                  {val} <span style={{ fontSize: FS_CAPTION, color: isSel ? color : '#3A5A45', fontFamily: FONT_RAJDHANI }}>→ {val + 1}</span>
+                  {val} <span style={{ fontSize: FS_CAPTION, color: isSel ? color : 'var(--hud-text-faint)', fontFamily: FONT_RAJDHANI }}>→ {val + 1}</span>
                 </span>
               </button>
             )
@@ -83,7 +83,7 @@ export function DedicationModal({
           <button
             onClick={() => selected && onConfirm(selected)}
             disabled={!selected}
-            style={{ flex: 2, padding: '10px 0', background: selected ? C.gold : 'rgba(224,58,30,0.15)', border: `1px solid ${selected ? C.gold : C.border}`, fontFamily: FONT_RAJDHANI, fontSize: FS_SM, fontWeight: 700, letterSpacing: '0.12em', color: selected ? C.bg : C.textDim, cursor: selected ? 'pointer' : 'default', transition: 'background 0.15s' }}
+            style={{ flex: 2, padding: '10px 0', background: selected ? C.gold : 'var(--hud-surface-lo)', border: `1px solid ${selected ? C.gold : C.border}`, fontFamily: FONT_RAJDHANI, fontSize: FS_SM, fontWeight: 700, letterSpacing: '0.12em', color: selected ? C.bg : C.textDim, cursor: selected ? 'pointer' : 'default', transition: 'background 0.15s' }}
           >
             CONFIRM
           </button>

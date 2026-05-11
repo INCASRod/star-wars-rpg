@@ -14,11 +14,11 @@ import {
 import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
-const GOLD_DIM  = 'rgba(224,58,30,0.5)'
-const GOLD_BD   = 'rgba(224,58,30,0.15)'
+const GOLD_DIM  = 'var(--hud-text-faint)'
+const GOLD_BD   = 'var(--hud-border)'
 const TEXT = 'var(--hud-text)'
 const TEXT_DIM = 'var(--hud-text-dim)'
-const CARD_BG   = 'rgba(255,255,255,0.03)'
+const CARD_BG   = 'var(--hud-surface-lo)'
 const RED_SOFT  = '#e05252'
 const PURPLE    = '#9060D0'
 const FONT_C    = "var(--font-rajdhani), 'Cinzel', serif"
@@ -140,9 +140,9 @@ export function RangeBandStep({ attackType, weapon, selectedBand, onSelect }: Ra
         color: TEXT_DIM,
         lineHeight: 1.4,
         padding: '8px 10px',
-        background: 'rgba(224,58,30,0.01)',
+        background: 'var(--hud-surface-lo)',
         borderRadius: 6,
-        border: `1px solid rgba(255,255,255,0.06)`,
+        border: `1px solid var(--hud-border)`,
       }}>
         Max range: <strong style={{ color: HUD.gold }}>{RANGE_BAND_LABELS[maxRange]}</strong>.
         Difficulty dice represent the check&apos;s inherent challenge.

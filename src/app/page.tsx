@@ -6,37 +6,37 @@ import { createClient } from '@/lib/supabase/client'
 import { randomUUID } from '@/lib/utils'
 import type { Character } from '@/lib/types'
 import { VersionWatermark } from '@/components/ui/VersionWatermark'
-import { HUD } from '@/lib/tokens'
+import { HUD, CHAR_COLOR } from '@/lib/tokens'
 
 // ─── Design Tokens ───────────────────────────────────────────────────────────
-const BG = '#060D09'
-const PANEL = 'rgba(8,16,10,0.92)'
-const RAISED = 'rgba(14,26,18,0.85)'
-const INPUT_BG = 'rgba(6,13,9,0.7)'
-const GOLD_L = '#E8CC70'
-const GOLD_DIM = 'rgba(200,170,80,0.3)'
-const BORDER = 'rgba(200,170,80,0.15)'
-const BORDER_MD = 'rgba(200,170,80,0.3)'
-const BORDER_HI = 'rgba(200,170,80,0.55)'
-const C_BR = '#e05252'
-const C_AG = '#52a8e0'
-const C_INT = '#a852e0'
-const C_CUN = '#e0a852'
-const C_WIL = '#52e0a8'
-const C_PR = '#e05298'
-const SUCCESS = '#3cb96b'
-const DANGER = '#e05252'
-const WARN = '#e0a852'
-const TEXT = '#E8DFC8'
-const TEXT_SEC = 'rgba(232,223,200,0.58)'
-const TEXT_MUT = 'rgba(232,223,200,0.50)'
-const FC = "'Rajdhani', sans-serif"
-const FR = "'Rajdhani', sans-serif"
-const FM = "'Rajdhani', sans-serif"
+const BG        = 'var(--bs-sky)'
+const PANEL     = 'var(--hud-surface-hi)'
+const RAISED    = 'var(--hud-surface-mid)'
+const INPUT_BG  = 'var(--hud-surface-lo)'
+const GOLD_L    = HUD.gold
+const GOLD_DIM  = 'var(--hud-text-faint)'
+const BORDER    = 'var(--hud-border)'
+const BORDER_MD = 'var(--hud-border)'
+const BORDER_HI = 'var(--hud-border-hi)'
+// Raw hex for SVG attributes and <style> strings — CSS vars can't be used there
+const ACCENT_HEX = '#E03A1E'
+const SUCCESS   = '#5A7A3A'            // design-system success green (roll results / online)
+const DANGER    = 'var(--bs-red-sun)'  // wounds, delete button
+const WARN      = 'var(--bs-red-dim)'  // strain
+const TEXT      = 'var(--hud-text)'
+const TEXT_SEC  = 'var(--hud-text-dim)'
+const TEXT_MUT  = 'var(--hud-text-faint)'
+const FC        = 'var(--font-body)'
+const FR        = 'var(--font-body)'
+const FM        = 'var(--font-body)'
 
 const CHAR_COLORS: Record<string, string> = {
-  brawn: C_BR, agility: C_AG, intellect: C_INT,
-  cunning: C_CUN, willpower: C_WIL, presence: C_PR,
+  brawn:     CHAR_COLOR.brawn,
+  agility:   CHAR_COLOR.agility,
+  intellect: CHAR_COLOR.intellect,
+  cunning:   CHAR_COLOR.cunning,
+  willpower: CHAR_COLOR.willpower,
+  presence:  CHAR_COLOR.presence,
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -83,16 +83,16 @@ function CharacterCard({
 
   const cardBg = PANEL
   const cardShadow = state === 'self'
-    ? `0 0 20px rgba(200,170,80,0.15)`
+    ? '0 2px 10px rgba(90,40,24,0.18)'
     : hovered
-      ? `0 8px 24px rgba(200,170,80,0.12)`
+      ? '0 4px 12px rgba(90,40,24,0.10)'
       : 'none'
 
   const cardCursor = state === 'self' ? 'default' : 'pointer'
   const cardTransform = hovered && state !== 'self' ? 'translateY(-2px)' : 'none'
 
   const avatarBorderColor = state === 'self' ? HUD.gold : BORDER_MD
-  const avatarShadow = state === 'self' ? `0 0 12px rgba(200,170,80,0.4)` : 'none'
+  const avatarShadow = state === 'self' ? '0 0 8px rgba(90,40,24,0.2)' : 'none'
 
   const dotColor = state === 'self'
     ? HUD.gold
@@ -229,7 +229,7 @@ function CharacterCard({
             border: `1px solid ${state === 'self' ? HUD.gold : TEXT_MUT}`,
             borderRadius: 3,
             padding: '3px 8px',
-            background: state === 'self' ? 'rgba(200,170,80,0.1)' : 'transparent',
+            background: state === 'self' ? 'var(--hud-surface-lo)' : 'transparent',
           }}>
             {state === 'available' && (
               <span style={{ fontFamily: FM, fontSize: 10, color: TEXT_MUT, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
@@ -309,7 +309,7 @@ function CharacterCard({
               <div key={i} style={{
                 width: 8, height: 8, borderRadius: 1,
                 background: i < char.wound_current ? DANGER : 'transparent',
-                border: `1px solid ${i < char.wound_current ? DANGER : 'rgba(224,82,82,0.3)'}`,
+                border: `1px solid ${i < char.wound_current ? DANGER : 'rgba(224,58,30,0.25)'}`,
               }} />
             ))}
           </div>
@@ -327,7 +327,7 @@ function CharacterCard({
               <div key={i} style={{
                 width: 8, height: 8, borderRadius: 1,
                 background: i < char.strain_current ? WARN : 'transparent',
-                border: `1px solid ${i < char.strain_current ? WARN : 'rgba(224,162,82,0.3)'}`,
+                border: `1px solid ${i < char.strain_current ? WARN : 'rgba(122,24,8,0.25)'}`,
               }} />
             ))}
           </div>
@@ -351,6 +351,7 @@ export default function Home() {
   const [showGmInput, setShowGmInput] = useState(false)
   const [gmPin, setGmPin] = useState('')
   const [sessionMode, setSessionMode] = useState<string>('exploration')
+  const [createHovered, setCreateHovered] = useState(false)
 
   const campaignIdRef = useRef<string | null>(null)
 
@@ -517,8 +518,8 @@ export default function Home() {
       }} xmlns="http://www.w3.org/2000/svg">
         <defs>
           <pattern id="crosshatch" width="20" height="20" patternUnits="userSpaceOnUse">
-            <line x1="0" y1="20" x2="20" y2="0" stroke={HUD.gold} strokeWidth="0.5" />
-            <line x1="0" y1="0" x2="20" y2="20" stroke={HUD.gold} strokeWidth="0.5" />
+            <line x1="0" y1="20" x2="20" y2="0" stroke={ACCENT_HEX} strokeWidth="0.5" />
+            <line x1="0" y1="0" x2="20" y2="20" stroke={ACCENT_HEX} strokeWidth="0.5" />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#crosshatch)" />
@@ -527,7 +528,7 @@ export default function Home() {
       {/* Background: radial gradient */}
       <div style={{
         position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
-        background: `radial-gradient(ellipse 80% 40% at 50% 0%, rgba(200,170,80,0.07) 0%, transparent 70%)`,
+        background: `radial-gradient(ellipse 80% 40% at 50% 0%, rgba(224,58,30,0.06) 0%, transparent 70%)`,
       }} />
 
       {/* Content column */}
@@ -556,7 +557,7 @@ export default function Home() {
               fontSize: 28,
               letterSpacing: '0.4em',
               color: HUD.gold,
-              textShadow: '0 0 40px rgba(200,170,80,0.6)',
+              textShadow: '0 0 40px rgba(224,58,30,0.45)',
               display: 'inline-block',
             }}>
               HOLOCRON
@@ -629,7 +630,7 @@ export default function Home() {
           fontSize: 9,
           letterSpacing: '0.28em',
           textTransform: 'uppercase',
-          color: `${HUD.gold}a5`,
+          color: TEXT_MUT,
           width: '100%',
         }}>
           Select Your Character
@@ -673,8 +674,11 @@ export default function Home() {
           {/* Create character button */}
           <button
             onClick={() => router.push(`/create?campaign=${campaignId}`)}
+            onMouseEnter={() => setCreateHovered(true)}
+            onMouseLeave={() => setCreateHovered(false)}
             style={{
-              background: 'rgba(200,170,80,0.12)',
+              background: createHovered ? 'var(--bs-red-glow-s)' : 'var(--bs-red-glow)',
+              boxShadow: createHovered ? '0 0 16px rgba(224,58,30,0.2)' : 'none',
               border: `1px solid ${BORDER_MD}`,
               color: HUD.gold,
               fontFamily: FR,
@@ -687,16 +691,6 @@ export default function Home() {
               cursor: 'pointer',
               transition: 'all 0.2s',
               textTransform: 'uppercase',
-            }}
-            onMouseEnter={e => {
-              const el = e.currentTarget
-              el.style.background = 'rgba(200,170,80,0.22)'
-              el.style.boxShadow = '0 0 16px rgba(200,170,80,0.2)'
-            }}
-            onMouseLeave={e => {
-              const el = e.currentTarget
-              el.style.background = 'rgba(200,170,80,0.12)'
-              el.style.boxShadow = 'none'
             }}
           >
             + Create New Character
@@ -752,7 +746,7 @@ export default function Home() {
               <button
                 onClick={() => void handleGmLogin()}
                 style={{
-                  background: `rgba(200,170,80,0.18)`,
+                  background: 'var(--bs-red-glow-s)',
                   border: `1px solid ${BORDER_HI}`,
                   color: HUD.gold,
                   fontFamily: FC,

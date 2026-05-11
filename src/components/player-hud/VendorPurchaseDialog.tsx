@@ -256,8 +256,8 @@ export function VendorPurchaseDialog({
 
             {/* Price section */}
             <div style={{
-              background: 'rgba(224,58,30,0.08)',
-              border: '1px solid rgba(224,58,30,0.3)',
+              background: 'var(--hud-surface-lo)',
+              border: '1px solid var(--hud-border)',
               borderRadius: 4, padding: '12px 14px',
               marginBottom: 18,
             }}>

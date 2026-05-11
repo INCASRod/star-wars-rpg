@@ -4,10 +4,10 @@ import React, { useState, useRef, useCallback, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { HUD } from '@/lib/tokens'
 
-const FONT_CINZEL   = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_RAJDHANI = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const BG            = 'rgba(4,10,6,0.96)'
-const BORDER        = 'rgba(200,170,80,0.32)'
+const FONT_CINZEL   = 'var(--font-body)'
+const FONT_RAJDHANI = 'var(--font-body)'
+const BG            = 'var(--hud-surface-hi)'
+const BORDER        = 'var(--hud-border-hi)'
 
 interface TooltipProps {
   content:    React.ReactNode
@@ -143,7 +143,7 @@ export function Tooltip({
             background:           BG,
             border:               `1px solid ${BORDER}`,
             borderRadius:         8,
-            boxShadow:            `0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(200,170,80,0.08)`,
+            boxShadow:            `0 8px 32px rgba(0,0,0,0.2), 0 0 0 1px var(--hud-border)`,
             padding:              '12px 14px',
             pointerEvents:        'none',
             animation:            'tooltipIn 0.15s ease forwards',
@@ -178,7 +178,7 @@ export function TipBody({ children }: { children: React.ReactNode }) {
   return (
     <div style={{
       fontFamily: FONT_RAJDHANI, fontSize: 12,
-      color: '#C8D8C0', lineHeight: 1.55,
+      color: 'var(--hud-text)', lineHeight: 1.55,
     }}>
       {children}
     </div>
@@ -186,5 +186,5 @@ export function TipBody({ children }: { children: React.ReactNode }) {
 }
 
 export function TipDivider() {
-  return <div style={{ height: 1, background: 'rgba(200,170,80,0.14)', margin: '8px 0' }} />
+  return <div style={{ height: 1, background: 'var(--hud-border)', margin: '8px 0' }} />
 }

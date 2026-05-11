@@ -47,7 +47,7 @@ export function HudTalentsTab({
                 onClick={() => setActiveSpecKey(cs.specialization_key)}
                 style={{
                   background: isActive ? 'rgba(224,58,30,0.12)' : 'transparent',
-                  border: `1px solid ${isActive ? 'rgba(224,58,30,0.5)' : 'rgba(224,58,30,0.2)'}`,
+                  border: `1px solid ${isActive ? 'rgba(224,58,30,0.5)' : 'var(--hud-border)'}`,
                   borderRadius: 4, padding: '5px 12px',
                   cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
                   fontFamily: "'Rajdhani', sans-serif",
@@ -57,7 +57,7 @@ export function HudTalentsTab({
                 }}
               >
                 {ref?.name || cs.specialization_key}
-                <span style={{ fontFamily: "var(--font-rajdhani),'Rajdhani',sans-serif", fontSize: FS_OVERLINE, color: isActive ? 'rgba(224,58,30,0.53)' : 'var(--hud-text-faint)', background: 'rgba(224,58,30,0.08)', borderRadius: 8, padding: '0 5px' }}>
+                <span style={{ fontFamily: "var(--font-rajdhani),'Rajdhani',sans-serif", fontSize: FS_OVERLINE, color: isActive ? 'var(--hud-gold)' : 'var(--hud-text-faint)', background: 'var(--hud-surface-lo)', borderRadius: 8, padding: '0 5px' }}>
                   {purchased}/{total}
                 </span>
               </button>

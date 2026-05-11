@@ -13,9 +13,9 @@ const RAISED_BG  = 'var(--hud-surface-mid)'
 const PANEL_BG   = 'var(--hud-surface-lo)'
 const BORDER     = 'var(--hud-border)'
 const BORDER_MD  = 'var(--hud-border-hi)'
-const CHAR_BR    = '#e05252'
-const CHAR_AG    = '#52a8e0'
-const CHAR_WIL   = '#52e0a8'
+const CHAR_BR    = 'var(--bs-red-sun)'   // adversary slots — vivid red-sun
+const CHAR_AG    = 'var(--bs-red-pale)'  // PC/player slots — soft red-pale
+const CHAR_WIL   = 'var(--hud-text-dim)' // "acted" checkmark badge
 const TEXT       = 'var(--hud-text)'
 const TEXT_MUTED = 'var(--hud-text-faint)'
 const BG         = 'var(--hud-bg)'
@@ -136,12 +136,12 @@ export function InitiativeStrip({ encounter, character }: Props) {
                 {/* Avatar */}
                 <div style={{
                   width: 50, height: 50, borderRadius: '50%', flexShrink: 0,
-                  background: isActed ? '#1a1a1a' : isPC ? `${CHAR_AG}20` : `${CHAR_BR}20`,
+                  background: isActed ? 'var(--hud-surface-hi)' : isPC ? `${CHAR_AG}20` : `${CHAR_BR}20`,
                   border: isCurrent
                     ? `3px solid ${ringColor}`
                     : `2px solid ${isPC ? `${CHAR_AG}40` : `${CHAR_BR}40`}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontFamily: FC, fontSize: FS_H4, color: isActed ? '#555' : isPC ? CHAR_AG : CHAR_BR,
+                  fontFamily: FC, fontSize: FS_H4, color: isActed ? 'var(--hud-text-faint)' : isPC ? CHAR_AG : CHAR_BR,
                   position: 'relative', overflow: 'hidden',
                   filter: isActed ? 'grayscale(100%)' : 'none',
                   boxShadow: isCurrent ? `0 0 16px ${ringColor}60` : 'none',

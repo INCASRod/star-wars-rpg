@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import { createPortal } from 'react-dom'
@@ -12,14 +12,14 @@ import { getSkillPool, rollPool, type RollResult } from '@/components/player-hud
 import type { HudSkill } from '@/components/player-hud/SkillsPanel'
 import { HUD } from '@/lib/tokens'
 
-// ─── Local tokens ─────────────────────────────────────────────────────────────
-const FONT_MONO = "'Share Tech Mono', 'Courier New', monospace"
-const POP_BG    = 'rgba(6,13,9,0.97)'
-const BORDER    = 'rgba(200,170,80,0.35)'
-const SEC_LABEL = 'rgba(200,170,80,0.45)'
-const DIM       = 'rgba(255,255,255,0.12)'
+// â”€â”€â”€ Local tokens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const FONT_MONO = 'var(--font-body)'
+const POP_BG    = 'var(--hud-surface-hi)'
+const BORDER    = 'var(--hud-border-hi)'
+const SEC_LABEL = 'var(--hud-text-dim)'
+const DIM       = 'var(--hud-border)'
 
-// ─── Difficulty presets ────────────────────────────────────────────────────────
+// â”€â”€â”€ Difficulty presets â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const DIFF_PRESETS = [
   { label: 'Simple',    dif: 0 },
   { label: 'Easy',      dif: 1 },
@@ -29,7 +29,7 @@ const DIFF_PRESETS = [
   { label: 'Formidable', dif: 5 },
 ]
 
-// ─── Adjustable dice (display order: 2×2 grid) ────────────────────────────────
+// â”€â”€â”€ Adjustable dice (display order: 2Ã—2 grid) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const ADJ_DICE: { key: DiceType }[] = [
   { key: 'difficulty' },
   { key: 'challenge'  },
@@ -37,7 +37,7 @@ const ADJ_DICE: { key: DiceType }[] = [
   { key: 'setback'    },
 ]
 
-// ─── ± button ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Â± button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function AdjBtn({ label, disabled, onClick }: { label: string; disabled: boolean; onClick: () => void }) {
   const [hovered, setHovered] = useState(false)
   return (
@@ -49,11 +49,11 @@ function AdjBtn({ label, disabled, onClick }: { label: string; disabled: boolean
       style={{
         width: 28, height: 28,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'rgba(255,255,255,0.05)',
-        border: `1px solid ${hovered && !disabled ? 'rgba(200,170,80,0.4)' : DIM}`,
+        background: 'var(--hud-surface-mid)',
+        border: `1px solid ${hovered && !disabled ? 'rgba(224,58,30,0.4)' : DIM}`,
         borderRadius: 6,
         cursor: disabled ? 'not-allowed' : 'pointer',
-        color: disabled ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.75)',
+        color: disabled ? 'var(--hud-text-faint)' : 'var(--hud-text)',
         fontSize: 15,
         lineHeight: 1,
         opacity: disabled ? 0.4 : 1,
@@ -66,7 +66,7 @@ function AdjBtn({ label, disabled, onClick }: { label: string; disabled: boolean
   )
 }
 
-// ─── Talent hint ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ Talent hint â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export interface TalentHint {
   name: string
   activation: string
@@ -82,7 +82,7 @@ const ACTIVATION_SHORT: Record<string, string> = {
   taIncidentalOOT:  'OOT Incidental',
 }
 
-// ─── Props ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Props â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export interface SkillRollPopoverProps {
   skill: HudSkill
   anchor: DOMRect
@@ -91,14 +91,14 @@ export interface SkillRollPopoverProps {
   onClose: () => void
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }: SkillRollPopoverProps) {
   const [difficulty, setDifficulty] = useState(0)
   const [challenge,  setChallenge]  = useState(0)
   const [boost,      setBoost]      = useState(0)
   const [setback,    setSetback]    = useState(0)
 
-  // Position state — null = not yet measured (render hidden first)
+  // Position state â€” null = not yet measured (render hidden first)
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
   const [visible, setVisible] = useState(false)
   const popoverRef = useRef<HTMLDivElement>(null)
@@ -153,7 +153,7 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
     onRoll(rollPool(pool), skill.name, pool)
   }
 
-  // Map dice key → count + setter
+  // Map dice key â†’ count + setter
   const getAdj = (key: DiceType): [number, (v: number) => void] => {
     if (key === 'difficulty') return [difficulty, setDifficulty]
     if (key === 'challenge')  return [challenge,  setChallenge]
@@ -185,7 +185,7 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
         transition: 'opacity 150ms ease-out, transform 150ms ease-out',
       }}
     >
-      {/* ── Header ──────────────────────────────────────────── */}
+      {/* â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 12 }}>
         <span style={{
           fontFamily: FONT_CINZEL,
@@ -195,17 +195,17 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
         }}>
           {skill.name}
         </span>
-        <span style={{ color: 'rgba(200,170,80,0.4)', fontFamily: FONT_MONO, fontSize: 'clamp(0.7rem, 1.2vw, 0.85rem)' }}>·</span>
+        <span style={{ color: 'rgba(224,58,30,0.4)', fontFamily: FONT_MONO, fontSize: 'clamp(0.7rem, 1.2vw, 0.85rem)' }}>Â·</span>
         <span style={{
           fontFamily: FONT_MONO,
           fontSize: 'clamp(0.7rem, 1.2vw, 0.85rem)',
-          color: 'rgba(200,170,80,0.5)',
+          color: 'rgba(224,58,30,0.5)',
         }}>
           {CHAR_ABBR3[skill.charKey]}
         </span>
       </div>
 
-      {/* ── Your Dice ───────────────────────────────────────── */}
+      {/* â”€â”€ Your Dice â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <SectionLabel text="Your Dice" />
       <div style={{ marginBottom: 10 }}>
         {proficiency === 0 && ability === 0 ? (
@@ -215,7 +215,7 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
             color: C.textFaint,
             fontStyle: 'italic',
           }}>
-            No dice — characteristic is 0
+            No dice â€” characteristic is 0
           </span>
         ) : (
           <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
@@ -247,7 +247,7 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
         )}
       </div>
 
-      {/* ── Difficulty shortcuts ─────────────────────────────── */}
+      {/* â”€â”€ Difficulty shortcuts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div style={{ overflowX: 'auto', whiteSpace: 'nowrap', marginBottom: 12, paddingBottom: 2 }}>
         {DIFF_PRESETS.map(p => {
           const active = isActiveDiffPreset(p.dif)
@@ -267,7 +267,7 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
                 fontSize: 'clamp(0.55rem, 0.9vw, 0.65rem)',
                 fontWeight: 600,
                 letterSpacing: '0.04em',
-                color: active ? '#CE93D8' : 'rgba(200,170,80,0.55)',
+                color: active ? '#CE93D8' : 'rgba(224,58,30,0.55)',
                 transition: 'border-color 0.12s, background 0.12s',
                 whiteSpace: 'nowrap',
               }}
@@ -278,7 +278,7 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
         })}
       </div>
 
-      {/* ── Add Dice ─────────────────────────────────────────── */}
+      {/* â”€â”€ Add Dice â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <SectionLabel text="Add Dice" />
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 20px', marginBottom: 14 }}>
         {ADJ_DICE.map(({ key }) => {
@@ -286,7 +286,7 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
           return (
             <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <DiceFace type={key} size={20} />
-              <AdjBtn label="−" disabled={count <= 0} onClick={() => setCount(Math.max(0, count - 1))} />
+              <AdjBtn label="âˆ’" disabled={count <= 0} onClick={() => setCount(Math.max(0, count - 1))} />
               <span style={{
                 fontFamily: FONT_MONO,
                 fontSize: 'clamp(0.8rem, 1.3vw, 0.95rem)',
@@ -302,16 +302,16 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
         })}
       </div>
 
-      {/* ── Relevant Talents ─────────────────────────────────── */}
+      {/* â”€â”€ Relevant Talents â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {talentHints && talentHints.length > 0 && (
         <>
-          <div style={{ height: 1, background: 'rgba(200,170,80,0.15)', marginBottom: 10 }} />
+          <div style={{ height: 1, background: 'var(--hud-border)', marginBottom: 10 }} />
           <SectionLabel text="Relevant Talents" />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
             {talentHints.map((hint, i) => (
               <div key={i} style={{
-                background: 'rgba(200,170,80,0.06)',
-                border: '1px solid rgba(200,170,80,0.18)',
+                background: 'var(--hud-surface-lo)',
+                border: '1px solid var(--hud-border)',
                 borderRadius: 6,
                 padding: '6px 8px',
               }}>
@@ -330,8 +330,8 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
                     fontWeight: 600,
                     letterSpacing: '0.08em',
                     textTransform: 'uppercase',
-                    color: 'rgba(200,170,80,0.45)',
-                    border: '1px solid rgba(200,170,80,0.25)',
+                    color: 'var(--hud-text-faint)',
+                    border: '1px solid var(--hud-border)',
                     borderRadius: 3,
                     padding: '0 4px',
                   }}>
@@ -344,9 +344,9 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
                       fontWeight: 700,
                       letterSpacing: '0.06em',
                       textTransform: 'uppercase',
-                      color: 'rgba(255,255,255,0.7)',
-                      background: 'rgba(255,255,255,0.1)',
-                      border: '1px solid rgba(255,255,255,0.2)',
+                      color: 'var(--hud-text)',
+                      background: 'var(--hud-surface-mid)',
+                      border: '1px solid var(--hud-border)',
                       borderRadius: 3,
                       padding: '0 5px',
                     }}>
@@ -357,7 +357,7 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
                 <div style={{
                   fontFamily: FONT_MONO,
                   fontSize: 'clamp(0.55rem, 0.95vw, 0.65rem)',
-                  color: 'rgba(255,255,255,0.5)',
+                  color: 'var(--hud-text-dim)',
                   lineHeight: 1.45,
                 }}>
                   <RichText text={hint.description} />
@@ -368,16 +368,16 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
         </>
       )}
 
-      {/* ── Divider ──────────────────────────────────────────── */}
-      <div style={{ height: 1, background: 'rgba(200,170,80,0.15)', marginBottom: 12 }} />
+      {/* â”€â”€ Divider â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <div style={{ height: 1, background: 'var(--hud-border)', marginBottom: 12 }} />
 
-      {/* ── Roll button ──────────────────────────────────────── */}
+      {/* â”€â”€ Roll button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <button
         onClick={handleRoll}
         style={{
           width: '100%',
           height: 40,
-          background: 'linear-gradient(135deg, #C8AA50 0%, #8B7430 100%)',
+          background: 'linear-gradient(135deg, var(--bs-red-sun) 0%, var(--bs-red-hi) 100%)',
           border: 'none',
           borderRadius: 8,
           cursor: 'pointer',
@@ -386,7 +386,7 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
           fontWeight: 700,
           textTransform: 'uppercase',
           letterSpacing: '0.08em',
-          color: '#060D09',
+          color: 'var(--bs-on-red)',
         }}
       >
         Roll
@@ -397,7 +397,7 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
   return createPortal(popover, document.body)
 }
 
-// ─── Shared section label ─────────────────────────────────────────────────────
+// â”€â”€â”€ Shared section label â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function SectionLabel({ text }: { text: string }) {
   return (
     <div style={{

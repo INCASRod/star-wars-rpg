@@ -7,17 +7,17 @@ import type { DestinyPoolRecord } from './DestinyPoolDisplay'
 import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
-const FONT_C    = "var(--font-rajdhani), 'Cinzel', serif"
-const FONT_R    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M    = "'Share Tech Mono','Courier New',monospace"
-const GOLD_BD   = 'rgba(200,170,80,0.3)'
-const TEXT      = 'rgba(232,223,200,0.85)'
-const DIM       = '#6A8070'
-const BORDER    = 'rgba(200,170,80,0.14)'
-const LIGHT_CLR = '#7EC8E3'
+const FONT_C    = 'var(--font-body)'
+const FONT_R    = 'var(--font-body)'
+const FONT_M    = 'var(--font-body)'
+const GOLD_BD   = 'var(--hud-border-hi)'
+const TEXT      = 'var(--hud-text)'
+const DIM       = 'var(--hud-text-faint)'
+const BORDER    = 'var(--hud-border)'
+const LIGHT_CLR = '#1A78A0'
 const DARK_CLR  = '#8B2BE2'
-const WARN      = 'rgba(255,152,0,0.85)'
-const BG        = 'rgba(6,13,9,0.98)'
+const WARN      = '#E03A1E'
+const BG        = 'var(--hud-surface-hi)'
 const FS_OVER   = 'var(--text-overline)'
 const FS_CAP    = 'var(--text-caption)'
 const FS_LABEL  = 'var(--text-label)'
@@ -141,7 +141,7 @@ export function DestinySpendConfirmModal({
           {/* Warning */}
           <div style={{
             padding: '10px 14px', borderRadius: 6,
-            background: 'rgba(255,152,0,0.06)', border: '1px solid rgba(255,152,0,0.2)',
+            background: 'rgba(224,58,30,0.06)', border: '1px solid rgba(224,58,30,0.2)',
           }}>
             <div style={{ fontFamily: FONT_R, fontSize: FS_LABEL, color: WARN, fontStyle: 'italic', lineHeight: 1.5 }}>
               ⚠ This will give the GM a Dark Side Destiny Point to use against the party.
@@ -149,7 +149,7 @@ export function DestinySpendConfirmModal({
           </div>
 
           {/* Before / After */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '12px 14px', background: 'rgba(0,0,0,0.25)', borderRadius: 6, border: `1px solid ${BORDER}` }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '12px 14px', background: 'var(--hud-surface-lo)', borderRadius: 6, border: `1px solid ${BORDER}` }}>
             <div style={{ fontFamily: FONT_R, fontSize: FS_OVER, fontWeight: 700, color: HUD.gold, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 4 }}>
               After spending
             </div>
@@ -188,7 +188,7 @@ export function DestinySpendConfirmModal({
               letterSpacing: '0.1em', textTransform: 'uppercase',
               padding: 'clamp(7px, 1.2vh, 10px) 20px', borderRadius: 5,
               cursor: busy ? 'wait' : 'pointer',
-              background: 'rgba(200,170,80,0.18)',
+              background: 'var(--hud-surface-lo)',
               border: `1px solid ${GOLD_BD}`,
               color: HUD.gold,
               opacity: busy || pool.light_count < 1 ? 0.4 : 1,

@@ -8,7 +8,7 @@ import { EncounterVehiclePanel } from './EncounterVehiclePanel'
 import { HUD } from '@/lib/tokens'
 
 /* ── Design tokens ────────────────────────────────────────── */
-const FC   = "var(--font-rajdhani), 'Cinzel', serif"
+const FC   = 'var(--font-body)'
 const DIM  = '#6A8070'
 
 /* ── Panel registry ───────────────────────────────────────── */
@@ -76,10 +76,10 @@ export function StagingRightRail({ campaignId, characters, isCombatActive }: Sta
           paddingTop:           12,
           paddingBottom:        12,
           gap:                  4,
-          background:           'rgba(6,13,9,0.82)',
+          background:           'var(--hud-surface-hi)',
           backdropFilter:       'blur(14px)',
           WebkitBackdropFilter: 'blur(14px)',
-          borderLeft:           '1px solid rgba(200,170,80,0.16)',
+          borderLeft:           '1px solid var(--hud-border)',
         }}
       >
         {RAIL_ENTRIES.map(entry => (
@@ -138,10 +138,10 @@ function RailButton({
         flexDirection: 'column',
         alignItems:    'center',
         gap:           5,
-        background:    active ? 'rgba(200,170,80,0.11)' : 'transparent',
+        background:    active ? 'var(--hud-surface-lo)' : 'transparent',
         border:        'none',
         borderRadius:  6,
-        outline:       active ? '1px solid rgba(200,170,80,0.32)' : 'none',
+        outline:       active ? '1px solid var(--hud-border-hi)' : 'none',
         cursor:        'pointer',
         transition:    'background 0.15s, outline 0.15s',
         flexShrink:    0,

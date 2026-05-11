@@ -77,7 +77,7 @@ function CornerBrackets() {
     width: 8,
     height: 8,
   }
-  const color = 'rgba(224,58,30,0.35)'
+  const color = 'var(--hud-border-hi)'
   return (
     <>
       <div style={{ ...base, top: 0, left: 0, borderTop: `1px solid ${color}`, borderLeft: `1px solid ${color}` }} />
@@ -92,14 +92,14 @@ function CornerBrackets() {
 function SectionLabel({ label }: { label: string }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-      <div style={{ width: 14, height: 1, background: 'linear-gradient(90deg,transparent,rgba(224,58,30,0.35))' }} />
+      <div style={{ width: 14, height: 1, background: 'linear-gradient(90deg,transparent,var(--hud-border-hi))' }} />
       <span style={{
         fontFamily: FC,
         fontSize: 10,
         fontWeight: 700,
         letterSpacing: '0.22em',
         textTransform: 'uppercase',
-        color: 'rgba(224,58,30,0.5)',
+        color: 'var(--hud-text-dim)',
       }}>
         {label}
       </span>
@@ -112,12 +112,12 @@ function SectionDivider() {
   const line: React.CSSProperties = {
     flex: 1,
     height: 1,
-    background: 'linear-gradient(90deg, transparent, rgba(224,58,30,0.2), transparent)',
+    background: 'linear-gradient(90deg, transparent, var(--hud-border), transparent)',
   }
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '18px 0' }}>
       <div style={line} />
-      <span style={{ color: 'rgba(224,58,30,0.35)', fontSize: 10 }}>◈</span>
+      <span style={{ color: 'var(--hud-text-faint)', fontSize: 10 }}>◈</span>
       <div style={line} />
     </div>
   )
@@ -422,7 +422,7 @@ export function LoreContent({
                 <div
                   key={statLabel}
                   style={{
-                    background: 'rgba(224,58,30,0.06)',
+                    background: 'var(--hud-surface-mid)',
                     border: '1px solid var(--hud-border)',
                     borderRadius: 4,
                     padding: '8px 6px',
@@ -470,7 +470,7 @@ export function LoreContent({
                           }
                         : {
                             border: '1px solid var(--hud-border-hi)',
-                            background: 'rgba(224,58,30,0.08)',
+                            background: 'var(--hud-surface-lo)',
                             color: 'var(--hud-gold)',
                           }),
                     }

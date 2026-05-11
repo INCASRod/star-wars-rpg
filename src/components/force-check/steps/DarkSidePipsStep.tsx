@@ -23,8 +23,8 @@ export function DarkSidePipsStep({
 }: DarkSidePipsStepProps) {
   const totalFP = lightPips + darkPipsUsed
 
-  const accentColor   = isFallen ? FORCE_BLUE : '#E05252'
-  const accentMuted   = isFallen ? 'rgba(126,200,227,0.4)' : 'rgba(224,82,82,0.4)'
+  const accentColor   = isFallen ? FORCE_BLUE : '#E03A1E'
+  const accentMuted   = isFallen ? 'rgba(126,200,227,0.4)' : 'rgba(224,58,30,0.4)'
   const costlyLabel   = isFallen ? 'light side' : 'dark side'
   const freeLabel     = isFallen ? 'dark side' : 'light side'
   const destinyFlip   = isFallen ? 'dark → light' : 'light → dark'
@@ -68,7 +68,7 @@ export function DarkSidePipsStep({
           <div>• Suffer <strong style={{ color: accentColor }}>{darkPipsUsed} strain</strong> (1 per pip used)</div>
           {!isFallen && <div>• Gain Conflict (your GM will be notified)</div>}
         </div>
-        <div style={{ color: isFallen ? `${FORCE_BLUE}90` : `${FORCE_BLUE}90` }}>
+        <div style={{ color: 'rgba(58,12,4,0.55)' }}>
           You already have {lightPips} {freeLabel} Force Point{lightPips !== 1 ? 's' : ''} available without consequence.
         </div>
       </div>
@@ -81,14 +81,14 @@ export function DarkSidePipsStep({
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <button
             onClick={() => onChangeDark(Math.max(0, darkPipsUsed - 1))}
-            style={{ width: 36, height: 36, borderRadius: 6, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', color: 'rgba(90,40,24,0.8)', fontSize: 'clamp(0.9rem,1.4vw,1.1rem)', fontFamily: "var(--font-body)" }}
+            style={{ width: 36, height: 36, borderRadius: 6, background: 'var(--hud-surface-lo)', border: '1px solid var(--hud-border)', cursor: 'pointer', color: 'var(--hud-text-dim)', fontSize: 'clamp(0.9rem,1.4vw,1.1rem)', fontFamily: "var(--font-body)" }}
           >−</button>
           <div style={{ fontFamily: FONT_C, fontSize: 'clamp(1.2rem, 2vw, 1.6rem)', fontWeight: 700, color: darkPipsUsed > 0 ? accentColor : 'rgba(90,40,24,0.4)', minWidth: 32, textAlign: 'center' }}>
             {darkPipsUsed}
           </div>
           <button
             onClick={() => onChangeDark(Math.min(darkPips, darkPipsUsed + 1))}
-            style={{ width: 36, height: 36, borderRadius: 6, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', color: 'rgba(90,40,24,0.8)', fontSize: 'clamp(0.9rem,1.4vw,1.1rem)', fontFamily: "var(--font-body)" }}
+            style={{ width: 36, height: 36, borderRadius: 6, background: 'var(--hud-surface-lo)', border: '1px solid var(--hud-border)', cursor: 'pointer', color: 'var(--hud-text-dim)', fontSize: 'clamp(0.9rem,1.4vw,1.1rem)', fontFamily: "var(--font-body)" }}
           >+</button>
         </div>
 
@@ -101,7 +101,7 @@ export function DarkSidePipsStep({
             <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: 'rgba(90,40,24,0.5)', display: 'flex', flexDirection: 'column', gap: 2 }}>
               <div>Strain cost:   {darkPipsUsed}</div>
               <div>Destiny flip:  1 {destinyFlip}</div>
-              <div style={{ color: FORCE_BLUE }}>Total FP:      {totalFP}</div>
+              <div style={{ color: '#3A0C04' }}>Total FP:      {totalFP}</div>
             </div>
           </div>
         )}
@@ -110,8 +110,8 @@ export function DarkSidePipsStep({
       {/* Decision guidance */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
         {darkPipsUsed > 0 && (
-          <div style={{ padding: '8px 10px', background: isFallen ? 'rgba(126,200,227,0.05)' : 'rgba(224,82,82,0.06)', border: `1px solid ${isFallen ? 'rgba(126,200,227,0.2)' : 'rgba(224,82,82,0.2)'}`, borderRadius: 6 }}>
-            <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)', color: isFallen ? 'rgba(126,200,227,0.7)' : 'rgba(224,82,82,0.7)', lineHeight: 1.4 }}>
+          <div style={{ padding: '8px 10px', background: isFallen ? 'rgba(126,200,227,0.05)' : 'rgba(224,58,30,0.06)', border: `1px solid ${isFallen ? 'rgba(126,200,227,0.2)' : 'rgba(224,58,30,0.2)'}`, borderRadius: 6 }}>
+            <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)', color: isFallen ? 'rgba(58,12,4,0.65)' : 'rgba(224,58,30,0.75)', lineHeight: 1.4 }}>
               Remember: suffer {darkPipsUsed} strain and flip 1 Destiny Point when the GM confirms.
             </div>
           </div>

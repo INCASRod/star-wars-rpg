@@ -8,12 +8,13 @@ import { logRoll } from '@/lib/logRoll'
 import { HUD } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
-const GOLD_DIM = 'rgba(200,170,80,0.6)'
-const TEXT     = 'rgba(255,255,255,0.85)'
-const TEXT_DIM = 'rgba(255,255,255,0.5)'
-const FONT_C   = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_R   = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M   = "'Courier New', monospace"
+const GOLD_DIM = 'var(--hud-text-dim)'
+const TEXT     = 'var(--hud-text)'
+const TEXT_DIM = 'var(--hud-text-dim)'
+const BORDER   = 'var(--hud-border)'
+const FONT_C   = 'var(--font-body)'
+const FONT_R   = 'var(--font-body)'
+const FONT_M   = 'var(--font-body)'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface MobilePrePopSkill {
@@ -76,12 +77,12 @@ function DiceStepper({
             style={{
               width: 44, height: 44,
               background: 'transparent',
-              border: `1px solid rgba(200,170,80,0.2)`,
+              border: `1px solid ${BORDER}`,
               borderRadius: '8px 0 0 8px',
               cursor: count > 0 ? 'pointer' : 'not-allowed',
               fontFamily: FONT_C,
               fontSize: 'clamp(1rem, 4vw, 1.3rem)',
-              color: count > 0 ? HUD.gold : 'rgba(200,170,80,0.25)',
+              color: count > 0 ? HUD.gold : 'var(--hud-text-faint)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
           >
@@ -95,7 +96,7 @@ function DiceStepper({
             fontWeight: 700,
             color: meta.color,
             background: `${meta.color}0C`,
-            border: `1px solid rgba(200,170,80,0.15)`,
+            border: `1px solid ${BORDER}`,
             borderLeft: 'none', borderRight: 'none',
           }}>
             {count}
@@ -105,7 +106,7 @@ function DiceStepper({
             style={{
               width: 44, height: 44,
               background: 'transparent',
-              border: `1px solid rgba(200,170,80,0.2)`,
+              border: `1px solid ${BORDER}`,
               borderRadius: '0 8px 8px 0',
               cursor: 'pointer',
               fontFamily: FONT_C,
@@ -308,7 +309,7 @@ export function DiceRollerSheet({ prePopSkill, characterId, characterName, campa
       </div>
 
       {/* Divider */}
-      <div style={{ height: 1, background: 'rgba(200,170,80,0.1)' }} />
+      <div style={{ height: 1, background: BORDER }} />
 
       {/* Negative dice */}
       <div>
@@ -336,7 +337,7 @@ export function DiceRollerSheet({ prePopSkill, characterId, characterName, campa
           width: '100%',
           height: 52,
           background: isEmpty
-            ? 'rgba(200,170,80,0.12)'
+            ? 'var(--hud-surface-lo)'
             : 'linear-gradient(135deg, #C8AA50, #8B7430)',
           border: 'none',
           borderRadius: 10,
@@ -346,7 +347,7 @@ export function DiceRollerSheet({ prePopSkill, characterId, characterName, campa
           fontWeight: 700,
           letterSpacing: '0.1em',
           textTransform: 'uppercase',
-          color: isEmpty ? 'rgba(200,170,80,0.35)' : '#060D09',
+          color: isEmpty ? 'var(--hud-text-faint)' : 'var(--hud-text)',
           marginTop: 4,
           transition: 'background 0.2s, color 0.2s',
         }}

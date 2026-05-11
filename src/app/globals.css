@@ -228,12 +228,12 @@ html {
   /*    Used by PlayerHUD, CombatPanel, CombatTracker, wireframe    */
   /*    To retheme: change only these vars — no component edits     */
   --hud-bg:            var(--bs-sky);          /* warm parchment: #E8DDD0 */
-  --hud-panel:         rgba(212,197,176,0.88); /* bs-surface at 88%       */
-  --hud-surface-lo:    rgba(212,197,176,0.55); /* light panel overlays    */
-  --hud-surface-mid:   rgba(196,178,154,0.92); /* bars, column backgrounds */
-  --hud-surface-hi:    rgba(188,170,144,0.97); /* modals, tooltips        */
-  --hud-border:        rgba(224,58,30,0.18);
-  --hud-border-hi:     rgba(224,58,30,0.38);
+  --hud-panel:         var(--bs-panel);        /* #DDD0C0                 */
+  --hud-surface-lo:    var(--bs-surface);      /* #D4C5B0                 */
+  --hud-surface-mid:   var(--bs-card);         /* #CBBAA0                 */
+  --hud-surface-hi:    var(--bs-card-hi);      /* #C0AD94                 */
+  --hud-border:        var(--bs-bdr-subtle);   /* warm brown: #CDB8A4     */
+  --hud-border-hi:     var(--bs-bdr-mid);      /* warm brown: #C0A890     */
   --hud-text:          var(--bs-txt);          /* warm dark brown: #5A2818 */
   --hud-text-dim:      var(--bs-txt2);         /* medium brown:   #8A5040 */
   --hud-text-faint:    var(--bs-txt3);         /* light brown:    #AA7860 */
@@ -588,7 +588,7 @@ label, caption, .text-secondary {
   transition: background var(--ease-default);
 }
 .hov-gold-bg:hover {
-  background: rgba(224,58,30,.06);
+  background: var(--bs-card-hi);
 }
 
 /* Force power chip — replaces JS onMouseEnter/Leave in ForcePowersCard */
@@ -745,7 +745,7 @@ textarea:disabled,
   box-sizing:       border-box;
   transition:       border-color 0.15s;
 }
-.hud-input:focus        { border-color: var(--hud-border-hi); }
+.hud-input:focus        { border-color: var(--bs-red-sun); }
 .hud-input::placeholder { color: var(--hud-text-faint); }
 .hud-input--padded-r    { padding-right: 30px; }
 
@@ -767,7 +767,7 @@ textarea:disabled,
   box-sizing:       border-box;
   transition:       border-color 0.15s;
 }
-.hud-textarea:focus        { border-color: var(--hud-border-hi); }
+.hud-textarea:focus        { border-color: var(--bs-red-sun); }
 .hud-textarea::placeholder { color: var(--hud-text-faint); }
 
 /* ═══════════════════════════════════════════════════════════════ */

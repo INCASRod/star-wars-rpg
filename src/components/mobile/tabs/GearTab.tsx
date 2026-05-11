@@ -13,21 +13,21 @@ import { QualityBadge } from '@/components/character/QualityBadge'
 import { HUD } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
-const GOLD_DIM = 'rgba(200,170,80,0.6)'
-const GOLD_BD  = 'rgba(200,170,80,0.15)'
-const BORDER   = 'rgba(200,170,80,0.1)'
-const TEXT     = 'rgba(255,255,255,0.85)'
-const TEXT_DIM = 'rgba(255,255,255,0.5)'
-const CARD_BG  = 'rgba(255,255,255,0.03)'
-const FONT_C   = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_R   = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M   = "'Courier New', monospace"
+const GOLD_DIM = 'var(--hud-text-dim)'
+const GOLD_BD  = 'var(--hud-border-hi)'
+const BORDER   = 'var(--hud-border)'
+const TEXT     = 'var(--hud-text)'
+const TEXT_DIM = 'var(--hud-text-dim)'
+const CARD_BG  = 'var(--hud-surface-lo)'
+const FONT_C   = 'var(--font-body)'
+const FONT_R   = 'var(--font-body)'
+const FONT_M   = 'var(--font-body)'
 
 const EQUIP_STATES: EquipState[] = ['stowed', 'carrying', 'equipped']
 const EQUIP_LABELS: Record<EquipState, string> = { stowed: 'STOW', carrying: 'CARRY', equipped: 'EQUIP' }
 const EQUIP_ACTIVE: Record<EquipState, React.CSSProperties> = {
-  stowed:   { background: 'rgba(232,223,200,0.08)', borderColor: 'rgba(232,223,200,0.4)',  color: 'rgba(232,223,200,0.9)' },
-  carrying: { background: 'rgba(200,170,80,0.1)',   borderColor: 'rgba(200,170,80,0.45)', color: HUD.gold },
+  stowed:   { background: 'var(--hud-surface-lo)', borderColor: 'var(--hud-border-hi)',  color: 'var(--hud-text)' },
+  carrying: { background: 'var(--hud-surface-lo)', borderColor: 'var(--hud-border-hi)', color: HUD.gold },
   equipped: { background: 'rgba(76,175,80,0.1)',    borderColor: 'rgba(76,175,80,0.45)',  color: '#4CAF50' },
 }
 
@@ -50,9 +50,9 @@ function EquipStateButtons({ equipState, onSet }: { equipState: EquipState; onSe
               cursor: (!onSet || isActive) ? 'default' : 'pointer',
               border: '1px solid',
               ...(isActive ? active : {
-                background: 'rgba(255,255,255,0.04)',
-                borderColor: 'rgba(255,255,255,0.12)',
-                color: 'rgba(232,223,200,0.45)',
+                background: 'var(--hud-surface-lo)',
+                borderColor: 'var(--hud-border)',
+                color: 'var(--hud-text-faint)',
               }),
             }}
           >
@@ -88,8 +88,8 @@ function StatPill({ label, value }: { label: string; value: React.ReactNode }) {
       fontFamily: FONT_M,
       fontSize: 'clamp(0.6rem, 2.4vw, 0.75rem)',
       color: TEXT_DIM,
-      background: 'rgba(200,170,80,0.06)',
-      border: `1px solid rgba(200,170,80,0.15)`,
+      background: 'var(--hud-surface-lo)',
+      border: `1px solid ${BORDER}`,
       borderRadius: 10,
       padding: '2px 8px',
       whiteSpace: 'nowrap',
@@ -172,7 +172,7 @@ export function GearTab({
           return (
             <div key={cw.id} style={{
               background: CARD_BG,
-              border: `1px solid ${equip === 'equipped' ? GOLD_BD : 'rgba(200,170,80,0.08)'}`,
+              border: `1px solid ${equip === 'equipped' ? GOLD_BD : BORDER}`,
               borderRadius: 8,
               padding: '10px 12px',
             }}>
@@ -188,7 +188,7 @@ export function GearTab({
                       style={{
                         background: 'none', border: 'none', padding: '2px 6px',
                         cursor: 'pointer', lineHeight: 1, flexShrink: 0,
-                        color: confirmingDiscard?.id === cw.id ? GOLD_DIM : 'rgba(232,223,200,0.25)',
+                        color: confirmingDiscard?.id === cw.id ? GOLD_DIM : 'var(--hud-text-faint)',
                         fontSize: 18,
                       }}
                     >×</button>
@@ -238,9 +238,9 @@ export function GearTab({
                 </div>
               )}
               {onDiscardWeapon && confirmingDiscard?.id === cw.id && (
-                <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px solid rgba(255,255,255,0.06)`, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span style={{ fontFamily: FONT_R, fontSize: 'clamp(0.7rem, 2.8vw, 0.82rem)', color: TEXT_DIM, flex: 1 }}>Drop this item?</span>
-                  <button onClick={cancelDiscard} style={{ height: 26, padding: '0 10px', borderRadius: 5, cursor: 'pointer', fontFamily: FONT_M, fontSize: 'clamp(0.6rem, 2.4vw, 0.72rem)', background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(232,223,200,0.6)' }}>Cancel</button>
+                  <button onClick={cancelDiscard} style={{ height: 26, padding: '0 10px', borderRadius: 5, cursor: 'pointer', fontFamily: FONT_M, fontSize: 'clamp(0.6rem, 2.4vw, 0.72rem)', background: 'transparent', border: `1px solid ${BORDER}`, color: TEXT_DIM }}>Cancel</button>
                   <button onClick={executeDiscard} style={{ height: 26, padding: '0 10px', borderRadius: 5, cursor: 'pointer', fontFamily: FONT_M, fontSize: 'clamp(0.6rem, 2.4vw, 0.72rem)', fontWeight: 700, background: 'rgba(244,67,54,0.12)', border: '1px solid rgba(244,67,54,0.5)', color: '#E05050' }}>Drop</button>
                 </div>
               )}
@@ -277,7 +277,7 @@ export function GearTab({
           return (
             <div key={ca.id} style={{
               background: CARD_BG,
-              border: `1px solid ${equip === 'equipped' ? GOLD_BD : 'rgba(200,170,80,0.08)'}`,
+              border: `1px solid ${equip === 'equipped' ? GOLD_BD : BORDER}`,
               borderRadius: 8,
               padding: '10px 12px',
             }}>
@@ -293,7 +293,7 @@ export function GearTab({
                       style={{
                         background: 'none', border: 'none', padding: '2px 6px',
                         cursor: 'pointer', lineHeight: 1, flexShrink: 0,
-                        color: confirmingDiscard?.id === ca.id ? GOLD_DIM : 'rgba(232,223,200,0.25)',
+                        color: confirmingDiscard?.id === ca.id ? GOLD_DIM : 'var(--hud-text-faint)',
                         fontSize: 18,
                       }}
                     >×</button>
@@ -315,9 +315,9 @@ export function GearTab({
                 </div>
               )}
               {onDiscardArmor && confirmingDiscard?.id === ca.id && (
-                <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px solid rgba(255,255,255,0.06)`, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span style={{ fontFamily: FONT_R, fontSize: 'clamp(0.7rem, 2.8vw, 0.82rem)', color: TEXT_DIM, flex: 1 }}>Drop this item?</span>
-                  <button onClick={cancelDiscard} style={{ height: 26, padding: '0 10px', borderRadius: 5, cursor: 'pointer', fontFamily: FONT_M, fontSize: 'clamp(0.6rem, 2.4vw, 0.72rem)', background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(232,223,200,0.6)' }}>Cancel</button>
+                  <button onClick={cancelDiscard} style={{ height: 26, padding: '0 10px', borderRadius: 5, cursor: 'pointer', fontFamily: FONT_M, fontSize: 'clamp(0.6rem, 2.4vw, 0.72rem)', background: 'transparent', border: `1px solid ${BORDER}`, color: TEXT_DIM }}>Cancel</button>
                   <button onClick={executeDiscard} style={{ height: 26, padding: '0 10px', borderRadius: 5, cursor: 'pointer', fontFamily: FONT_M, fontSize: 'clamp(0.6rem, 2.4vw, 0.72rem)', fontWeight: 700, background: 'rgba(244,67,54,0.12)', border: '1px solid rgba(244,67,54,0.5)', color: '#E05050' }}>Drop</button>
                 </div>
               )}
@@ -385,7 +385,7 @@ export function GearTab({
                       style={{
                         background: 'none', border: 'none', padding: '2px 4px',
                         cursor: 'pointer', lineHeight: 1, flexShrink: 0,
-                        color: confirmingDiscard?.id === cg.id ? GOLD_DIM : 'rgba(232,223,200,0.25)',
+                        color: confirmingDiscard?.id === cg.id ? GOLD_DIM : 'var(--hud-text-faint)',
                         fontSize: 16,
                       }}
                     >×</button>
@@ -403,7 +403,7 @@ export function GearTab({
               {onDiscardGear && confirmingDiscard?.id === cg.id && (
                 <div style={{ paddingBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span style={{ fontFamily: FONT_R, fontSize: 'clamp(0.7rem, 2.8vw, 0.82rem)', color: TEXT_DIM, flex: 1 }}>Drop this item?</span>
-                  <button onClick={cancelDiscard} style={{ height: 24, padding: '0 8px', borderRadius: 5, cursor: 'pointer', fontFamily: FONT_M, fontSize: 'clamp(0.6rem, 2.4vw, 0.72rem)', background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(232,223,200,0.6)' }}>Cancel</button>
+                  <button onClick={cancelDiscard} style={{ height: 24, padding: '0 8px', borderRadius: 5, cursor: 'pointer', fontFamily: FONT_M, fontSize: 'clamp(0.6rem, 2.4vw, 0.72rem)', background: 'transparent', border: `1px solid ${BORDER}`, color: TEXT_DIM }}>Cancel</button>
                   <button onClick={executeDiscard} style={{ height: 24, padding: '0 8px', borderRadius: 5, cursor: 'pointer', fontFamily: FONT_M, fontSize: 'clamp(0.6rem, 2.4vw, 0.72rem)', fontWeight: 700, background: 'rgba(244,67,54,0.12)', border: '1px solid rgba(244,67,54,0.5)', color: '#E05050' }}>Drop</button>
                 </div>
               )}

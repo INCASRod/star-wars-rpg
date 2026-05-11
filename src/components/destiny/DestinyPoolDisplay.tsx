@@ -1,15 +1,49 @@
 'use client'
 
+import { useState } from 'react'
+
 // ── Design tokens ─────────────────────────────────────────────────────────────
-const FONT_C    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M    = "'Share Tech Mono','Courier New',monospace"
-const DIM       = '#6A8070'
-const LIGHT_CLR = '#7EC8E3'   // Force blue
+const FONT_C    = 'var(--font-body)'
+const FONT_M    = 'var(--font-body)'
+const DIM       = 'var(--hud-text-faint)'
+const LIGHT_CLR = '#1A78A0'   // deep cerulean
 const DARK_CLR  = '#8B2BE2'   // Dark side purple
 const FS_OVER   = 'var(--text-overline)'
 const FS_CAP    = 'var(--text-caption)'
 
 const MAX_VISIBLE = 10
+
+// ── Token button ──────────────────────────────────────────────────────────────
+
+function TokenButton({ color, canClick, tooltip, onClick }: {
+  color: string
+  canClick: boolean
+  tooltip: string
+  onClick?: () => void
+}) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <button
+      title={tooltip}
+      onClick={canClick ? onClick : undefined}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        width: 20, height: 20, borderRadius: '50%',
+        border: `2px solid ${canClick ? color : `${color}60`}`,
+        background: canClick ? `${color}22` : `${color}0C`,
+        cursor:  canClick ? 'pointer'  : 'not-allowed',
+        opacity: canClick ? 1          : 0.5,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 0, flexShrink: 0,
+        transition: 'box-shadow .15s, opacity .15s',
+        boxShadow: hovered && canClick ? `0 0 8px ${color}80` : 'none',
+      }}
+    >
+      <span style={{ width: 8, height: 8, borderRadius: '50%', background: color, display: 'block', opacity: canClick ? 0.9 : 0.5 }} />
+    </button>
+  )
+}
 
 export interface DestinyPoolRecord {
   id:            string
@@ -65,25 +99,13 @@ export function DestinyPoolDisplay({
     return (
       <>
         {Array.from({ length: visible }).map((_, i) => (
-          <button
+          <TokenButton
             key={`${side}-${i}`}
-            title={tooltip}
-            onClick={canClick ? (side === 'light' ? onClickLight : onClickDark) : undefined}
-            style={{
-              width: 20, height: 20, borderRadius: '50%',
-              border: `2px solid ${canClick ? color : `${color}60`}`,
-              background: canClick ? `${color}22` : `${color}0C`,
-              cursor:  canClick  ? 'pointer'  : 'not-allowed',
-              opacity: canClick  ? 1          : 0.5,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              padding: 0, flexShrink: 0,
-              transition: 'box-shadow .15s, opacity .15s',
-            }}
-            onMouseEnter={e => { if (canClick) (e.currentTarget as HTMLElement).style.boxShadow = `0 0 8px ${color}80` }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = 'none' }}
-          >
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: color, display: 'block', opacity: canClick ? 0.9 : 0.5 }} />
-          </button>
+            color={color}
+            canClick={canClick}
+            tooltip={tooltip}
+            onClick={side === 'light' ? onClickLight : onClickDark}
+          />
         ))}
         {overflow > 0 && (
           <span style={{ fontFamily: FONT_M, fontSize: FS_OVER, color, opacity: 0.7 }}>
@@ -122,7 +144,7 @@ export function DestinyPoolDisplay({
 
       {/* Session label */}
       {!compact && session_label && (
-        <div style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: 'rgba(232,223,200,0.3)', letterSpacing: '0.06em' }}>
+        <div style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: 'var(--hud-text-faint)', letterSpacing: '0.06em' }}>
           {session_label} · {total} Destiny {total === 1 ? 'Point' : 'Points'}
         </div>
       )}

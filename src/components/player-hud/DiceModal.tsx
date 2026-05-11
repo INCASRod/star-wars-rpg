@@ -103,7 +103,7 @@ export function DiceModal({ result, skillName, onDismiss }: DiceModalProps) {
       open
       onClose={onDismiss}
       maxWidth={560}
-      shadow="0 0 48px rgba(224,58,30,0.12), 0 8px 48px rgba(0,0,0,0.5)"
+      shadow="0 8px 48px rgba(0,0,0,0.5)"
     >
         {/* Header */}
         <div style={{

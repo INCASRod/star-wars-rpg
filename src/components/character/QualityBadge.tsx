@@ -19,8 +19,8 @@ export function QualityBadge({ quality, refQualityMap, variant = 'desktop' }: Qu
 
   const chipStyle = variant === 'desktop'
     ? {
-        background:  'rgba(200,170,80,0.12)',
-        border:      '1px solid rgba(200,170,80,0.2)',
+        background:  'var(--hud-surface-mid)',
+        border:      '1px solid var(--hud-border)',
         borderRadius: 10,
         padding:     '1px 7px',
         cursor:      description ? 'help' : 'default',

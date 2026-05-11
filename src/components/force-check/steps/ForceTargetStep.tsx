@@ -83,7 +83,7 @@ export function ForceTargetStep({
   if (!isCombat) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: 'rgba(126,200,227,0.55)', textTransform: 'uppercase', letterSpacing: '0.18em' }}>
+        <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: 'rgba(58,12,4,0.55)', textTransform: 'uppercase', letterSpacing: '0.18em' }}>
           How will you use this power?
         </div>
         {(['environment', 'character'] as const).map(ctx => (
@@ -92,12 +92,12 @@ export function ForceTargetStep({
             onClick={() => onTargetContext(ctx)}
             style={{
               textAlign: 'left', padding: '14px 16px', borderRadius: 10, cursor: 'pointer',
-              background: targetContext === ctx ? 'rgba(126,200,227,0.1)' : 'rgba(255,255,255,0.03)',
+              background: targetContext === ctx ? 'rgba(126,200,227,0.1)' : 'var(--hud-surface-lo)',
               border: `${targetContext === ctx ? 2 : 1}px solid ${targetContext === ctx ? FORCE_BLUE : FORCE_BLUE_DIM}`,
               transition: 'all .15s',
             }}
           >
-            <div style={{ fontFamily: FONT_C, fontSize: 'clamp(0.88rem, 1.4vw, 1.05rem)', color: targetContext === ctx ? FORCE_BLUE : 'rgba(90,40,24,0.7)', marginBottom: 4 }}>
+            <div style={{ fontFamily: FONT_C, fontSize: 'clamp(0.88rem, 1.4vw, 1.05rem)', color: targetContext === ctx ? '#3A0C04' : 'rgba(90,40,24,0.7)', marginBottom: 4 }}>
               {ctx === 'environment' ? '🌍  Use on Environment' : '👤  Use on a Character'}
             </div>
             <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)', color: 'rgba(90,40,24,0.45)' }}>
@@ -118,10 +118,10 @@ export function ForceTargetStep({
               return (
                 <button key={c.id} onClick={() => toggleTarget(t)} style={{
                   textAlign: 'left', padding: '8px 12px', borderRadius: 6, cursor: 'pointer',
-                  background: sel ? 'rgba(126,200,227,0.08)' : 'rgba(255,255,255,0.02)',
+                  background: sel ? 'rgba(126,200,227,0.08)' : 'transparent',
                   border: `1px solid ${sel ? FORCE_BLUE : FORCE_BLUE_DIM}`,
                   fontFamily: FONT_R, fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)',
-                  color: sel ? FORCE_BLUE : 'rgba(90,40,24,0.65)', transition: 'all .15s',
+                  color: sel ? '#3A0C04' : 'rgba(90,40,24,0.65)', transition: 'all .15s',
                 }}>
                   {sel ? '● ' : '○ '}{c.name}
                 </button>
@@ -138,12 +138,12 @@ export function ForceTargetStep({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: 'rgba(126,200,227,0.55)', textTransform: 'uppercase', letterSpacing: '0.18em' }}>
+      <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: 'rgba(58,12,4,0.55)', textTransform: 'uppercase', letterSpacing: '0.18em' }}>
         Select Targets
       </div>
 
       <div style={{ padding: '7px 10px', background: 'rgba(126,200,227,0.04)', border: `1px solid ${FORCE_BLUE_DIM}`, borderRadius: 6 }}>
-        <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)', color: 'rgba(126,200,227,0.5)', fontStyle: 'italic', lineHeight: 1.45 }}>
+        <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)', color: 'rgba(58,12,4,0.55)', fontStyle: 'italic', lineHeight: 1.45 }}>
           ℹ Force powers may target anyone. Select all applicable targets. The GM will determine valid targeting.
         </div>
       </div>
@@ -157,30 +157,32 @@ export function ForceTargetStep({
       {!loading && pcTargets.length === 0 && enemies.length === 0 && (
         <div style={{ textAlign: 'center', padding: '24px 0', display: 'flex', flexDirection: 'column', gap: 6 }}>
           <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.85rem, 1.3vw, 1rem)', color: 'rgba(90,40,24,0.4)' }}>No participants in the current encounter.</div>
-          <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)', color: 'rgba(126,200,227,0.35)' }}>Ask your GM to set up the initiative tracker.</div>
+          <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)', color: 'rgba(58,12,4,0.4)' }}>Ask your GM to set up the initiative tracker.</div>
         </div>
       )}
 
       {pcTargets.length > 0 && (
-        <TargetSection label="Player Characters" targets={pcTargets} selectedIds={selectedIds} onToggle={toggleTarget} color={FORCE_BLUE} />
+        <TargetSection label="Player Characters" targets={pcTargets} selectedIds={selectedIds} onToggle={toggleTarget} color={FORCE_BLUE} textColor="#3A0C04" />
       )}
       {enemies.length > 0 && (
-        <TargetSection label="Enemies" targets={enemies} selectedIds={selectedIds} onToggle={toggleTarget} color="#E05050" />
+        <TargetSection label="Enemies" targets={enemies} selectedIds={selectedIds} onToggle={toggleTarget} color="#E03A1E" />
       )}
     </div>
   )
 }
 
-function TargetSection({ label, targets, selectedIds, onToggle, color }: {
+function TargetSection({ label, targets, selectedIds, onToggle, color, textColor }: {
   label: string
   targets: TargetEntry[]
   selectedIds: Set<string>
   onToggle: (t: TargetEntry) => void
   color: string
+  textColor?: string
 }) {
   const [open, setOpen] = useState(true)
   const FONT_C = "var(--font-rajdhani), 'Cinzel', serif"
   const FONT_R = "var(--font-rajdhani), 'Rajdhani', sans-serif"
+  const resolvedText = textColor ?? color
   return (
     <div>
       <button onClick={() => setOpen(v => !v)} style={{
@@ -199,10 +201,10 @@ function TargetSection({ label, targets, selectedIds, onToggle, color }: {
             return (
               <button key={t.instanceId} onClick={() => onToggle(t)} style={{
                 textAlign: 'left', padding: '7px 10px', borderRadius: 6, cursor: 'pointer',
-                background: sel ? `${color}10` : 'rgba(255,255,255,0.02)',
-                border: `1px solid ${sel ? `${color}60` : 'rgba(255,255,255,0.06)'}`,
+                background: sel ? `${color}10` : 'transparent',
+                border: `1px solid ${sel ? `${color}60` : 'var(--hud-border)'}`,
                 fontFamily: FONT_R, fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)',
-                color: sel ? color : 'rgba(90,40,24,0.6)', transition: 'all .15s',
+                color: sel ? resolvedText : 'rgba(90,40,24,0.6)', transition: 'all .15s',
               }}>
                 {sel ? '● ' : '○ '}{t.name}
               </button>

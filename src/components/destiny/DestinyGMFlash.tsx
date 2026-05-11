@@ -4,13 +4,13 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
-const FONT_C    = "var(--font-rajdhani), 'Cinzel', serif"
-const FONT_R    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M    = "'Share Tech Mono','Courier New',monospace"
+const FONT_C    = 'var(--font-body)'
+const FONT_R    = 'var(--font-body)'
+const FONT_M    = 'var(--font-body)'
 const DARK_CLR  = '#8B2BE2'
-const LIGHT_CLR = '#7EC8E3'
-const TEXT      = 'rgba(232,223,200,0.85)'
-const DIM       = '#6A8070'
+const LIGHT_CLR = '#1A78A0'
+const TEXT      = 'var(--hud-text)'
+const DIM       = 'var(--hud-text-faint)'
 const FS_OVER   = 'var(--text-overline)'
 const FS_CAP    = 'var(--text-caption)'
 const FS_LABEL  = 'var(--text-label)'
@@ -160,7 +160,7 @@ export function DestinyConsideringBanner({ characterName, onDismiss }: DestinyCo
       opacity: out ? 0 : 1,
       textAlign: 'center',
     }}>
-      <span style={{ fontFamily: FONT_R, fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)', color: 'rgba(232,223,200,0.72)', fontStyle: 'italic', letterSpacing: '0.04em' }}>
+      <span style={{ fontFamily: FONT_R, fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)', color: 'var(--hud-text)', fontStyle: 'italic', letterSpacing: '0.04em' }}>
         ⚠ {characterName} is considering spending a Destiny Point
       </span>
     </div>

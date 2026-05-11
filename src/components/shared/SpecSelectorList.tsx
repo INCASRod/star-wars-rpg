@@ -19,14 +19,14 @@ import { buildTalentTree } from '@/lib/buildTalentTree'
 import type { RefSpecialization, RefTalent } from '@/lib/types'
 import { HUD } from '@/lib/tokens'
 
-const FR  = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FM  = "'Share Tech Mono', 'Courier New', monospace"
-const BORDER    = 'rgba(200,170,80,0.14)'
-const BORDER_HI = 'rgba(200,170,80,0.36)'
-const TEXT      = '#C8D8C0'
-const DIM       = '#6A8070'
-const FAINT     = '#2A3A2E'
-const EDITOR_BG = 'rgba(6,13,9,0.97)'
+const FR  = 'var(--font-body)'
+const FM  = 'var(--font-body)'
+const BORDER    = 'var(--hud-border)'
+const BORDER_HI = 'var(--hud-border-hi)'
+const TEXT      = 'var(--hud-text)'
+const DIM       = 'var(--hud-text-faint)'
+const FAINT     = 'var(--hud-text-faint)'
+const EDITOR_BG = 'var(--hud-surface-hi)'
 const RED       = '#E05050'
 
 const SKILL_LABEL: Record<string, string> = {
@@ -88,7 +88,7 @@ function SpecTreePreviewModal({ spec, refTalentMap, onClose }: SpecTreePreviewMo
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '14px 20px', flexShrink: 0,
-        background: 'rgba(6,13,9,0.97)',
+        background: 'var(--hud-surface-hi)',
         borderBottom: `1px solid ${BORDER}`,
       }}>
         <div>
@@ -109,15 +109,15 @@ function SpecTreePreviewModal({ spec, refTalentMap, onClose }: SpecTreePreviewMo
         <button
           onClick={close}
           style={{
-            background: 'rgba(200,170,80,0.08)',
+            background: 'var(--hud-surface-lo)',
             border: `1px solid ${BORDER_HI}`,
             borderRadius: 4, color: HUD.gold,
             fontFamily: FR, fontSize: 'clamp(0.85rem, 1.2vw, 0.95rem)',
             fontWeight: 700, padding: '5px 14px',
             cursor: 'pointer', transition: 'background 0.15s',
           }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(200,170,80,0.16)' }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(200,170,80,0.08)' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--hud-surface-mid)' }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--hud-surface-lo)' }}
         >
           ✕
         </button>
@@ -260,7 +260,7 @@ function SpecDetailPanel({ spec, cost, affordable, onBuy, onClose, refTalentMap 
           <div style={{
             display: 'flex', alignItems: 'center', gap: 10,
             marginBottom: 16,
-            background: 'rgba(200,170,80,0.05)',
+            background: 'var(--hud-surface-lo)',
             border: `1px solid ${BORDER}`,
             borderRadius: 4, padding: '8px 12px',
           }}>
@@ -296,7 +296,7 @@ function SpecDetailPanel({ spec, cost, affordable, onBuy, onClose, refTalentMap 
               <div style={{
                 fontFamily: FR, fontSize: 'clamp(0.62rem, 0.85vw, 0.7rem)',
                 fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase',
-                color: 'rgba(200,170,80,0.5)', marginBottom: 8,
+                color: 'var(--hud-text-dim)', marginBottom: 8,
               }}>
                 Career Skills
               </div>
@@ -304,7 +304,7 @@ function SpecDetailPanel({ spec, cost, affordable, onBuy, onClose, refTalentMap 
                 {spec.career_skill_keys.map(k => (
                   <span key={k} style={{
                     fontFamily: FR, fontSize: 'clamp(0.72rem, 0.95vw, 0.8rem)',
-                    color: TEXT, background: 'rgba(255,255,255,0.04)',
+                    color: TEXT, background: 'var(--hud-surface-lo)',
                     border: `1px solid ${BORDER}`,
                     borderRadius: 3, padding: '2px 9px',
                   }}>
@@ -320,7 +320,7 @@ function SpecDetailPanel({ spec, cost, affordable, onBuy, onClose, refTalentMap 
             <div style={{
               fontFamily: FR, fontSize: 'clamp(0.62rem, 0.85vw, 0.7rem)',
               fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase',
-              color: 'rgba(200,170,80,0.5)', marginBottom: 8,
+              color: 'var(--hud-text-dim)', marginBottom: 8,
             }}>
               Description
             </div>
@@ -367,7 +367,7 @@ function SpecDetailPanel({ spec, cost, affordable, onBuy, onClose, refTalentMap 
               onClick={buy}
               style={{
                 width: '100%',
-                background: 'rgba(200,170,80,0.14)',
+                background: 'var(--hud-surface-lo)',
                 border: `1px solid ${HUD.gold}55`,
                 borderRadius: 4, padding: '10px',
                 fontFamily: FR, fontSize: 'clamp(0.8rem, 1.1vw, 0.9rem)',
@@ -375,8 +375,8 @@ function SpecDetailPanel({ spec, cost, affordable, onBuy, onClose, refTalentMap 
                 textTransform: 'uppercase', color: HUD.gold,
                 cursor: 'pointer', transition: 'background 0.15s',
               }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(200,170,80,0.24)' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(200,170,80,0.14)' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--hud-surface-mid)' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--hud-surface-lo)' }}
             >
               Buy Specialization — {cost} XP
             </button>
@@ -459,7 +459,7 @@ export function SpecSelectorList({
           width: '100%',
           boxSizing: 'border-box',
           padding: '7px 10px',
-          background: 'rgba(255,255,255,0.04)',
+          background: 'var(--hud-surface-lo)',
           border: `1px solid ${BORDER}`,
           borderRadius: 4,
           fontFamily: FR,
@@ -486,7 +486,7 @@ export function SpecSelectorList({
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 padding: '10px 12px',
-                background: isCareer ? 'rgba(200,170,80,0.06)' : 'rgba(255,255,255,0.02)',
+                background: isCareer ? 'var(--hud-surface-lo)' : 'transparent',
                 border: `1px solid ${isCareer ? `${HUD.gold}30` : BORDER}`,
                 borderRadius: 4,
                 cursor: 'pointer',
@@ -494,12 +494,12 @@ export function SpecSelectorList({
               }}
               onMouseEnter={e => {
                 const el = e.currentTarget as HTMLElement
-                el.style.background = isCareer ? 'rgba(200,170,80,0.12)' : 'rgba(255,255,255,0.05)'
+                el.style.background = isCareer ? 'var(--hud-surface-mid)' : 'var(--hud-surface-lo)'
                 el.style.borderColor = isCareer ? `${HUD.gold}55` : `${HUD.gold}25`
               }}
               onMouseLeave={e => {
                 const el = e.currentTarget as HTMLElement
-                el.style.background = isCareer ? 'rgba(200,170,80,0.06)' : 'rgba(255,255,255,0.02)'
+                el.style.background = isCareer ? 'var(--hud-surface-lo)' : 'transparent'
                 el.style.borderColor = isCareer ? `${HUD.gold}30` : BORDER
               }}
             >
@@ -545,7 +545,7 @@ export function SpecSelectorList({
               <div style={{
                 fontFamily: FM,
                 fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)',
-                color: affordable ? 'rgba(200,170,80,0.5)' : RED,
+                color: affordable ? 'var(--hud-text-dim)' : RED,
                 whiteSpace: 'nowrap',
                 marginLeft: 12,
                 flexShrink: 0,

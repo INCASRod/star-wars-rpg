@@ -34,7 +34,7 @@ function ForceDieFace({ die }: { die: { light: number; dark: number } }) {
       flexDirection: 'column', gap: 3, flexShrink: 0,
     }}>
       {empty && (
-        <span style={{ fontFamily: FONT_R, fontSize: 'clamp(0.72rem,1.1vw,0.85rem)', color: 'rgba(126,200,227,0.25)' }}>—</span>
+        <span style={{ fontFamily: FONT_R, fontSize: 'clamp(0.72rem,1.1vw,0.85rem)', color: 'rgba(58,12,4,0.3)' }}>—</span>
       )}
       {die.light > 0 && (
         <div style={{ display: 'flex', gap: 2 }}>
@@ -70,7 +70,7 @@ export function RollForceDiceStep({
         <div style={{
           fontFamily: "var(--font-body)",
           fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)',
-          color: 'rgba(126,200,227,0.55)',
+          color: 'rgba(58,12,4,0.55)',
           textTransform: 'uppercase', letterSpacing: '0.18em',
           marginBottom: 10,
         }}>
@@ -78,15 +78,15 @@ export function RollForceDiceStep({
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 12 }}>
-          <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)', color: 'rgba(126,200,227,0.6)' }}>
+          <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)', color: 'rgba(58,12,4,0.75)' }}>
             Force Rating: {forceRating}
           </div>
           {committedForce > 0 && (
-            <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)', color: 'rgba(126,200,227,0.4)', fontStyle: 'italic' }}>
+            <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)', color: 'rgba(58,12,4,0.45)', fontStyle: 'italic' }}>
               ({committedForce} committed to ongoing effects)
             </div>
           )}
-          <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)', color: FORCE_BLUE }}>
+          <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)', color: '#3A0C04' }}>
             Available: {available}
           </div>
         </div>
@@ -97,7 +97,7 @@ export function RollForceDiceStep({
             <DiceFace key={i} type="force" size={36} active={false} />
           ))}
           {available === 0 && (
-            <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)', color: 'rgba(126,200,227,0.35)', fontStyle: 'italic' }}>
+            <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)', color: 'rgba(58,12,4,0.4)', fontStyle: 'italic' }}>
               No Force dice available
             </div>
           )}
@@ -119,7 +119,7 @@ export function RollForceDiceStep({
             fontFamily: FONT_C,
             fontSize: 'clamp(0.9rem, 1.4vw, 1.05rem)',
             fontWeight: 700,
-            color: available > 0 ? FORCE_BLUE : 'rgba(126,200,227,0.3)',
+            color: available > 0 ? '#3A0C04' : 'rgba(58,12,4,0.3)',
             letterSpacing: '0.1em',
             textTransform: 'uppercase' as const,
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
@@ -132,7 +132,7 @@ export function RollForceDiceStep({
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {/* Section label */}
-          <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: 'rgba(126,200,227,0.55)', textTransform: 'uppercase', letterSpacing: '0.18em' }}>
+          <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: 'rgba(58,12,4,0.55)', textTransform: 'uppercase', letterSpacing: '0.18em' }}>
             Result
           </div>
 
@@ -183,15 +183,15 @@ export function RollForceDiceStep({
 
           {/* Zero warning — inverted for fallen characters */}
           {!isFallen && result.totalLight === 0 && (
-            <div style={{ padding: '8px 12px', background: 'rgba(224,58,30,0.06)', border: '1px solid rgba(224,58,30,0.2)', borderRadius: 6 }}>
-              <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)', color: 'rgba(224,58,30,0.7)', lineHeight: 1.45 }}>
+            <div style={{ padding: '8px 12px', background: 'var(--hud-surface-lo)', border: '1px solid var(--hud-border)', borderRadius: 6 }}>
+              <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)', color: 'var(--hud-text-dim)', lineHeight: 1.45 }}>
                 ⚠ No light side Force Points generated. The power activates but has no effect. You may still use dark side pips.
               </div>
             </div>
           )}
           {isFallen && result.totalDark === 0 && (
-            <div style={{ padding: '8px 12px', background: 'rgba(224,58,30,0.06)', border: '1px solid rgba(224,58,30,0.2)', borderRadius: 6 }}>
-              <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)', color: 'rgba(224,58,30,0.7)', lineHeight: 1.45 }}>
+            <div style={{ padding: '8px 12px', background: 'var(--hud-surface-lo)', border: '1px solid var(--hud-border)', borderRadius: 6 }}>
+              <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)', color: 'var(--hud-text-dim)', lineHeight: 1.45 }}>
                 ⚠ No dark side Force Points generated. The power activates but has no effect. You may still use light side pips.
               </div>
             </div>
@@ -199,8 +199,8 @@ export function RollForceDiceStep({
 
           {/* Consequence warning */}
           {!isFallen && result.totalDark > 0 && !isDathomiri && (
-            <div style={{ padding: '8px 12px', background: 'rgba(224,82,82,0.07)', border: '1px solid rgba(224,82,82,0.22)', borderRadius: 6 }}>
-              <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)', color: 'rgba(224,82,82,0.8)', fontStyle: 'italic', lineHeight: 1.45 }}>
+            <div style={{ padding: '8px 12px', background: 'rgba(224,58,30,0.07)', border: '1px solid rgba(224,58,30,0.22)', borderRadius: 6 }}>
+              <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)', color: 'rgba(224,58,30,0.85)', fontStyle: 'italic', lineHeight: 1.45 }}>
                 ⚠ Dark side Force Points available. Using them has consequences. See next step.
               </div>
             </div>

@@ -4,8 +4,8 @@ import { memo } from 'react'
 import { HUD } from '@/lib/tokens'
 
 /* ── Design tokens ────────────────────────────────────────── */
-const FC   = "var(--font-rajdhani), 'Cinzel', serif"
-const FR   = "var(--font-rajdhani), 'Rajdhani', sans-serif"
+const FC   = 'var(--font-body)'
+const FR   = 'var(--font-body)'
 const DIM  = '#6A8070'
 const RED  = '#E05050'
 const GREEN = '#4EC87A'
@@ -52,10 +52,10 @@ export const StagingTopBar = memo(function StagingTopBar({
         paddingLeft:          16,
         paddingRight:         16,
         gap:                  12,
-        background:           'rgba(6,10,8,0.84)',
+        background:           'var(--hud-surface-hi)',
         backdropFilter:       'blur(14px)',
         WebkitBackdropFilter: 'blur(14px)',
-        borderBottom:         '1px solid rgba(200,170,80,0.14)',
+        borderBottom:         '1px solid var(--hud-border)',
         boxShadow:            '0 2px 20px rgba(0,0,0,0.5)',
         pointerEvents:        'auto',
       }}
@@ -67,7 +67,7 @@ export const StagingTopBar = memo(function StagingTopBar({
           alignItems:    'center',
           gap:           6,
           paddingRight:  12,
-          borderRight:   '1px solid rgba(200,170,80,0.16)',
+          borderRight:   '1px solid var(--hud-border)',
         }}
       >
         <span
@@ -173,8 +173,8 @@ function TopBarButton({ label, color, hoverColor, disabled, onClick }: TopBarBut
         letterSpacing: '0.12em',
         textTransform: 'uppercase',
         color:         disabled ? 'rgba(106,128,112,0.35)' : color,
-        background:    'rgba(200,170,80,0.07)',
-        border:        `1px solid ${disabled ? 'rgba(106,128,112,0.14)' : 'rgba(200,170,80,0.18)'}`,
+        background:    'var(--hud-surface-lo)',
+        border:        `1px solid ${disabled ? 'rgba(106,128,112,0.14)' : 'var(--hud-border)'}`,
         borderRadius:  4,
         padding:       '5px 14px',
         cursor:        disabled ? 'not-allowed' : 'pointer',
@@ -185,16 +185,16 @@ function TopBarButton({ label, color, hoverColor, disabled, onClick }: TopBarBut
         if (!disabled) {
           const el = e.currentTarget as HTMLElement
           el.style.color = hoverColor
-          el.style.background = 'rgba(200,170,80,0.13)'
-          el.style.borderColor = 'rgba(200,170,80,0.30)'
+          el.style.background = 'var(--hud-surface-mid)'
+          el.style.borderColor = 'var(--hud-border-hi)'
         }
       }}
       onMouseLeave={e => {
         if (!disabled) {
           const el = e.currentTarget as HTMLElement
           el.style.color = color
-          el.style.background = 'rgba(200,170,80,0.07)'
-          el.style.borderColor = 'rgba(200,170,80,0.18)'
+          el.style.background = 'var(--hud-surface-lo)'
+          el.style.borderColor = 'var(--hud-border)'
         }
       }}
     >

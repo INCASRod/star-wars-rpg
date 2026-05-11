@@ -50,7 +50,7 @@ function SetbackRemovalIndicator({ count, sources }: { count: number; sources: s
               width={16}
               height={16}
             >
-              <line x1="3" y1="3" x2="13" y2="13" stroke="#e05252" strokeWidth="2" strokeLinecap="round" />
+              <line x1="3" y1="3" x2="13" y2="13" stroke="#E03A1E" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </div>
         ))}
@@ -83,7 +83,7 @@ function SkillModifierBadges({ mod }: { mod: SkillDiceModifier }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 3,
-      borderLeft: `1px solid rgba(224,58,30,0.2)`,
+      borderLeft: `1px solid var(--hud-border)`,
       paddingLeft: 4,
       marginLeft: 2,
     }}>
@@ -110,8 +110,8 @@ const TYPE_LABELS: Record<string, string> = {
 }
 const TYPE_COLORS: Record<string, string> = {
   stGeneral:   'var(--hud-gold)',
-  stCombat:    '#E05050',
-  stKnowledge: '#5AAAE0',
+  stCombat:    '#C82A10',  // BS red-hi — combat/danger
+  stKnowledge: '#C8AA50',  // antique gold — knowledge
 }
 
 const CHAR_ABBR2: Record<string, string> = {
@@ -152,7 +152,7 @@ function PoolPreview({ charVal, rank }: { charVal: number; rank: number }) {
         <span style={{
           fontFamily: POOL_OVERFLOW_FONT,
           fontSize: 'clamp(0.58rem, 0.85vw, 0.68rem)',
-          color: 'rgba(90,40,24,0.4)',
+          color: 'var(--hud-text-faint)',
         }}>
           +{overflow}
         </span>
@@ -196,7 +196,7 @@ function getSkillUpgradeCost(currentRank: number, isCareer: boolean): number {
 
 const FONT_MONO = "'Share Tech Mono','Courier New',monospace"
 const FONT_CINZEL_REAL = "var(--font-rajdhani),'Cinzel',serif"
-const RED = 'rgba(244,67,54,0.8)'
+const RED = 'rgba(224,58,30,0.85)'
 
 // ── Upgrade button (left of rank pips) ────────────────────────────────────
 
@@ -219,12 +219,12 @@ function UpgradeButton({ skill, xpAvailable, onClick }: {
         }}
         onMouseLeave={(e) => {
           setShowTip(false)
-          ;(e.currentTarget as HTMLButtonElement).style.background = canAfford ? 'rgba(224,58,30,0.1)' : 'rgba(255,255,255,0.02)'
+          ;(e.currentTarget as HTMLButtonElement).style.background = canAfford ? 'rgba(224,58,30,0.1)' : 'var(--hud-surface-lo)'
         }}
         style={{
           width: 28, height: 28, borderRadius: 6,
-          background: canAfford ? 'rgba(224,58,30,0.1)' : 'rgba(255,255,255,0.02)',
-          border: `1px solid ${canAfford ? 'rgba(224,58,30,0.35)' : 'rgba(255,255,255,0.1)'}`,
+          background: canAfford ? 'rgba(224,58,30,0.1)' : 'var(--hud-surface-lo)',
+          border: `1px solid ${canAfford ? 'rgba(224,58,30,0.35)' : 'var(--hud-border)'}`,
           color: canAfford ? C.gold : 'rgba(90,40,24,0.2)',
           fontFamily: FONT_CINZEL_REAL,
           fontSize: 'clamp(0.75rem, 1.1vw, 0.85rem)',
@@ -242,8 +242,8 @@ function UpgradeButton({ skill, xpAvailable, onClick }: {
           left: '50%',
           transform: 'translateX(-50%)',
           zIndex: 9000,
-          background: 'rgba(4,10,6,0.97)',
-          border: '1px solid rgba(224,58,30,0.32)',
+          background: 'var(--hud-surface-hi)',
+          border: `1px solid var(--hud-border-hi)`,
           borderRadius: 8,
           padding: '10px 12px',
           minWidth: 150,
@@ -257,7 +257,7 @@ function UpgradeButton({ skill, xpAvailable, onClick }: {
           <div style={{ fontFamily: FONT_MONO, fontSize: 'clamp(0.6rem, 0.9vw, 0.72rem)', color: canAfford ? C.gold : RED, marginBottom: 2 }}>
             Cost: {cost} XP
           </div>
-          <div style={{ fontFamily: FONT_MONO, fontSize: 'clamp(0.6rem, 0.9vw, 0.72rem)', color: canAfford ? 'rgba(90,40,24,0.7)' : RED }}>
+          <div style={{ fontFamily: FONT_MONO, fontSize: 'clamp(0.6rem, 0.9vw, 0.72rem)', color: canAfford ? 'var(--hud-text-dim)' : RED }}>
             Available: {xpAvailable} XP
           </div>
           {!canAfford && (
@@ -285,7 +285,7 @@ function InlineConfirmation({ skill, xpAvailable, onConfirm, onCancel }: {
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
           fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)',
-          fontWeight: 600, color: 'rgba(90,40,24,0.85)',
+          fontWeight: 600, color: 'var(--hud-text)',
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         }}>
           {skill.name} → Rank {skill.rank + 1}
@@ -299,8 +299,8 @@ function InlineConfirmation({ skill, xpAvailable, onConfirm, onCancel }: {
           onClick={(e) => { e.stopPropagation(); onCancel() }}
           style={{
             width: 26, height: 26, borderRadius: 4,
-            background: 'rgba(244,67,54,0.08)',
-            border: '1px solid rgba(244,67,54,0.35)',
+            background: 'rgba(224,58,30,0.08)',
+            border: '1px solid rgba(224,58,30,0.35)',
             color: RED, cursor: 'pointer',
             fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.78rem, 1.1vw, 0.88rem)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -348,11 +348,11 @@ function SpeciesConditionalBadge({ ability }: { ability: SpeciesAbility }) {
       <span style={{
         fontFamily: "'Share Tech Mono','Courier New',monospace",
         fontSize: 'clamp(0.55rem, 0.85vw, 0.65rem)',
-        background: 'rgba(255,152,0,0.08)',
-        border: '1px solid rgba(255,152,0,0.3)',
+        background: 'rgba(232,96,80,0.08)',
+        border: '1px solid rgba(232,96,80,0.3)',
         borderRadius: 4,
         padding: '1px 5px',
-        color: '#FF9800',
+        color: '#E86050',
         flexShrink: 0,
         cursor: 'help',
         whiteSpace: 'nowrap' as const,
@@ -443,7 +443,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
   const renderSkillRow = (skill: HudSkill, careerBorderColor: string) => {
     const tip = getSkillTip(skill.name)
     const isMaxRank = skill.rank >= 5
-    const hoverColor = isCombat ? '#4EC87A' : C.gold
+    const hoverColor = C.gold
     const isConfirming = confirmingKey === skill.key
 
     const tooltipContent = tip ? (
@@ -537,8 +537,8 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
   const xpColor = xpAvailable > 20
     ? 'rgba(224,58,30,0.6)'
     : xpAvailable > 0
-    ? '#FF9800'
-    : 'rgba(244,67,54,0.7)'
+    ? '#E03A1E'
+    : '#C82A10'
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
@@ -553,18 +553,12 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
                 key={f}
                 onClick={() => setFilter(f)}
                 style={{
-                  background: active
-                    ? isBonus ? 'rgba(78,200,122,0.15)' : `${C.gold}22`
-                    : 'transparent',
-                  border: `1px solid ${active
-                    ? isBonus ? 'rgba(78,200,122,0.7)' : C.gold
-                    : isBonus ? 'rgba(78,200,122,0.3)' : C.border}`,
+                  background: active ? `${C.gold}22` : 'transparent',
+                  border: `1px solid ${active ? C.gold : C.border}`,
                   borderRadius: 4, padding: '3px 10px',
                   fontFamily: FONT_RAJDHANI, fontSize: 11, fontWeight: 700,
                   letterSpacing: '0.08em', textTransform: 'uppercase',
-                  color: active
-                    ? isBonus ? '#4EC87A' : C.gold
-                    : isBonus ? 'rgba(78,200,122,0.6)' : C.textDim,
+                  color: active ? C.gold : C.textDim,
                   cursor: 'pointer', transition: '.15s',
                 }}
               >
@@ -588,8 +582,8 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
           <div style={{
             fontFamily: FONT_RAJDHANI, fontSize: 9, fontWeight: 700,
             letterSpacing: '0.12em', textTransform: 'uppercase',
-            color: isCombat ? '#E05050' : C.gold,
-            border: `1px solid ${isCombat ? 'rgba(224,80,80,0.4)' : `${C.gold}44`}`,
+            color: isCombat ? '#E03A1E' : C.gold,
+            border: `1px solid ${isCombat ? 'rgba(224,58,30,0.4)' : `${C.gold}44`}`,
             borderRadius: 3, padding: '2px 7px',
           }}>
             {isCombat ? 'Click to make a check' : 'Click to Upgrade'}
@@ -632,19 +626,19 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <DiceFace type="proficiency" size={14} />
-          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.68rem, 1vw, 0.78rem)', fontWeight: 600, color: 'rgba(90,40,24,0.55)' }}>Proficiency dice</span>
+          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.68rem, 1vw, 0.78rem)', fontWeight: 600, color: 'var(--hud-text-faint)' }}>Proficiency dice</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <DiceFace type="ability" size={14} />
-          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.68rem, 1vw, 0.78rem)', fontWeight: 600, color: 'rgba(90,40,24,0.55)' }}>Ability dice</span>
+          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.68rem, 1vw, 0.78rem)', fontWeight: 600, color: 'var(--hud-text-faint)' }}>Ability dice</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <div style={{ width: 9, height: 9, borderRadius: 2, background: C.gold, border: `1px solid ${C.gold}` }} />
-          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.68rem, 1vw, 0.78rem)', fontWeight: 600, color: 'rgba(90,40,24,0.55)' }}>Skill level</span>
+          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.68rem, 1vw, 0.78rem)', fontWeight: 600, color: 'var(--hud-text-faint)' }}>Skill level</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <div style={{ width: 2, height: 14, background: `${C.gold}88`, borderRadius: 1 }} />
-          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.68rem, 1vw, 0.78rem)', fontWeight: 600, color: 'rgba(90,40,24,0.55)' }}>Career</span>
+          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.68rem, 1vw, 0.78rem)', fontWeight: 600, color: 'var(--hud-text-faint)' }}>Career</span>
         </div>
       </div>
 
@@ -661,7 +655,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
           textAlign: 'center',
           fontFamily: FONT_RAJDHANI,
           fontSize: 'clamp(0.8rem, 1.3vw, 0.9rem)',
-          color: 'rgba(224,58,30,0.35)',
+          color: 'var(--hud-text-faint)',
           fontStyle: 'italic',
           padding: '16px 0',
         }}>

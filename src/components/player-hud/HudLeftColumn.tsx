@@ -50,8 +50,8 @@ export function HudLeftColumn({
   const sPct = sThreshold > 0 ? Math.min((sCurrent / sThreshold) * 100, 100) : 0
   const wOver = wCurrent >= wThreshold + woundBonus
   const sOver = sCurrent >= sThreshold
-  const wFill = wOver ? '#9C27B0' : '#e05252'
-  const sFill = sOver ? '#9C27B0' : '#FF9800'
+  const wFill = wOver ? '#3A0C04' : '#E03A1E'
+  const sFill = sOver ? '#3A0C04' : '#A82010'
   const encThreshold = character.encumbrance_threshold + encumbranceBonus
 
   const LABEL_STYLE: React.CSSProperties = {
@@ -59,7 +59,7 @@ export function HudLeftColumn({
     fontSize: 'clamp(0.58rem, 0.9vw, 0.68rem)',
     textTransform: 'uppercase',
     letterSpacing: '0.15em',
-    color: 'rgba(224,58,30,0.5)',
+    color: 'var(--hud-text-faint)',
     marginBottom: 5,
   }
   const CTRL_BTN: React.CSSProperties = {
@@ -77,7 +77,7 @@ export function HudLeftColumn({
   const NUM_STYLE: React.CSSProperties = {
     fontFamily: "'Share Tech Mono','Courier New',monospace",
     fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)',
-    color: 'rgba(90,40,24,0.7)',
+    color: 'var(--hud-text-dim)',
     userSelect: 'none',
   }
 
@@ -107,7 +107,7 @@ export function HudLeftColumn({
       top, left,
       zIndex: 9999,
       background: 'var(--hud-surface-hi)',
-      border: '1px solid rgba(224,58,30,0.35)',
+      border: `1px solid var(--hud-border-hi)`,
       borderRadius: 8,
       padding: '8px 12px',
       minWidth: 140,
@@ -117,11 +117,11 @@ export function HudLeftColumn({
       {breakdown.map(({ label, value }, i) => (
         <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 16,
           fontFamily: "'Share Tech Mono','Courier New',monospace",
-          fontSize: '0.72rem', color: i === 0 ? 'rgba(90,40,24,0.55)' : 'rgba(90,40,24,0.85)',
+          fontSize: '0.72rem', color: i === 0 ? 'var(--hud-text-faint)' : 'var(--hud-text-dim)',
           marginBottom: i < breakdown.length - 1 ? 3 : 0,
         }}>
           <span>{label}</span>
-          <span style={{ color: i === 0 ? 'rgba(224,58,30,0.6)' : C.gold }}>{i === 0 ? value : `+${value}`}</span>
+          <span style={{ color: i === 0 ? 'var(--hud-text-dim)' : C.gold }}>{i === 0 ? value : `+${value}`}</span>
         </div>
       ))}
     </div>,
@@ -148,7 +148,7 @@ export function HudLeftColumn({
 
       {/* ── Vitals Panel (wounds + strain + crit pips) ── */}
       <div style={{
-        border: '1px solid rgba(224,58,30,0.2)',
+        border: `1px solid var(--hud-border)`,
         borderRadius: 10,
         background: 'var(--hud-surface-lo)',
         backdropFilter: 'blur(8px)',
@@ -168,7 +168,7 @@ export function HudLeftColumn({
               <VitalTooltip breakdown={woundBreakdown} top={woundTipPos.top} left={woundTipPos.left} />
             )}
             <div style={LABEL_STYLE}>WOUNDS</div>
-            <div style={{ height: 10, background: 'rgba(255,255,255,0.06)', borderRadius: 5, overflow: 'hidden', marginBottom: 6 }}>
+            <div style={{ height: 10, background: 'var(--hud-border)', borderRadius: 5, overflow: 'hidden', marginBottom: 6 }}>
               <div style={{
                 height: '100%', width: `${wPct}%`,
                 background: wFill, borderRadius: 5,
@@ -186,7 +186,7 @@ export function HudLeftColumn({
           </div>
 
           {/* Divider */}
-          <div style={{ width: 1, background: 'rgba(224,58,30,0.12)', alignSelf: 'stretch', flexShrink: 0 }} />
+          <div style={{ width: 1, background: 'var(--hud-border)', alignSelf: 'stretch', flexShrink: 0 }} />
 
           {/* STRAIN */}
           <div style={{ flex: 1, minWidth: 0, position: 'relative' }}
@@ -200,7 +200,7 @@ export function HudLeftColumn({
               <VitalTooltip breakdown={strainBreakdown} top={strainTipPos.top} left={strainTipPos.left} />
             )}
             <div style={LABEL_STYLE}>STRAIN</div>
-            <div style={{ height: 10, background: 'rgba(255,255,255,0.06)', borderRadius: 5, overflow: 'hidden', marginBottom: 6 }}>
+            <div style={{ height: 10, background: 'var(--hud-border)', borderRadius: 5, overflow: 'hidden', marginBottom: 6 }}>
               <div style={{
                 height: '100%', width: `${sPct}%`,
                 background: sFill, borderRadius: 5,
@@ -216,7 +216,7 @@ export function HudLeftColumn({
         </div>
 
         {/* Encumbrance bar */}
-        <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(224,58,30,0.08)' }}>
+        <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px solid var(--hud-border)` }}>
           <EncumbranceBar current={encumbranceCurrent} threshold={encThreshold} brawn={character.brawn} />
         </div>
 
@@ -242,7 +242,7 @@ export function HudLeftColumn({
             textAlign: 'center',
             padding: '6px 4px',
             background: 'var(--hud-surface-lo)',
-            border: '1px solid rgba(224,58,30,0.2)',
+            border: `1px solid var(--hud-border)`,
             borderRadius: 6,
           }}>
             <div style={{
@@ -259,7 +259,7 @@ export function HudLeftColumn({
               fontSize: 'clamp(0.48rem, 0.72vw, 0.58rem)',
               fontWeight: 700,
               letterSpacing: '0.08em',
-              color: 'rgba(224,58,30,0.5)',
+              color: 'var(--hud-text-faint)',
               marginTop: 3,
               textTransform: 'uppercase',
             }}>

@@ -46,8 +46,8 @@ export function HudAdversaryDrawer({
         position: 'fixed', top: 0, left: 0, bottom: 0, width: 320,
         zIndex: 9000,
         display: 'flex', flexDirection: 'column',
-        background: 'rgba(6,10,8,0.97)',
-        borderRight: `1px solid ${open ? 'rgba(224,58,30,0.36)' : 'transparent'}`,
+        background: 'var(--hud-surface-hi)',
+        borderRight: `1px solid ${open ? 'var(--hud-border-hi)' : 'transparent'}`,
         boxShadow: open ? '8px 0 40px rgba(0,0,0,0.6)' : 'none',
         transform: open ? 'translateX(0)' : 'translateX(-100%)',
         transition: 'transform 0.26s cubic-bezier(0.22,1,0.36,1), border-color 0.2s',
@@ -56,8 +56,8 @@ export function HudAdversaryDrawer({
         <div style={{
           flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '0 16px', height: 50,
-          borderBottom: 'rgba(224,58,30,0.14)',
-          background: 'rgba(10,18,12,0.92)',
+          borderBottom: '1px solid var(--hud-border)',
+          background: 'var(--hud-surface-hi)',
         }}>
           <span style={{
             fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, letterSpacing: '0.2em',
@@ -67,7 +67,7 @@ export function HudAdversaryDrawer({
             onClick={onClose}
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
-              color: 'rgba(106,128,112,1)', fontSize: 18, lineHeight: 1,
+              color: 'var(--hud-text-faint)', fontSize: 18, lineHeight: 1,
               padding: '4px 6px', borderRadius: 4,
             }}
             aria-label="Close adversaries drawer"

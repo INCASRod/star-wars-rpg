@@ -183,12 +183,12 @@ export const HUD = {
 // These are used in JS contexts (canvas, SVG, icon tinting) where
 // CSS vars cannot be resolved — hardcoded hex is intentional here.
 export const CHAR_COLOR = {
-  brawn:     '#E07855',
-  agility:   '#4EC87A',
-  intellect: '#5AAAE0',
-  cunning:   '#D4B840',
-  willpower: '#B070D8',
-  presence:  '#D87060',
+  brawn:     '#E03A1E',  // BS red-sun — raw force
+  agility:   '#D4903A',  // warm amber — swift
+  intellect: '#C8AA50',  // antique gold — knowledge
+  cunning:   '#B07828',  // dark bronze — guile
+  willpower: '#C82A10',  // BS red-hi — composed resolve
+  presence:  '#E07050',  // warm coral — charisma
 } as const
 
 export type CharKey = 'brawn' | 'agility' | 'intellect' | 'cunning' | 'willpower' | 'presence'
@@ -206,9 +206,9 @@ export const CHAR_REF_MAP: Record<string, CharKey> = {
 // ── Dice pool colors ─────────────────────────────────────────────
 // Used in JS/canvas contexts where CSS vars don't resolve.
 export const DICE_COLOR = {
-  proficiency: '#F5C518',
-  ability:     '#4CAF50',
-  boost:       '#29B6F6',
+  proficiency: '#C8961A',
+  ability:     '#4A7A30',
+  boost:       '#1A78A0',
   challenge:   '#C62828',
   difficulty:  '#7B1FA2',
   setback:     '#455A64',
@@ -241,9 +241,9 @@ export const EMPTY_POOL: Record<DiceType, number> = {
 
 // ── Result symbol colors ─────────────────────────────────────────
 export const SYM_COLOR = {
-  success:   '#4EC87A',
+  success:   '#4A7A30',
   failure:   '#E05050',
-  advantage: '#70C8E8',
+  advantage: '#1A78A0',
   threat:    '#B060D0',
   triumph:   '#D4B840',
   despair:   '#FF6060',

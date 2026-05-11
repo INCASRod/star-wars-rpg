@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Holocron — Design System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  @font-face {
+    font-family: 'Geist Mono';
+    src: url('https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist-mono/GeistMono-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+  }
+</style>
+<style>
+
+/* ============================================================
+   HOLOCRON DESIGN SYSTEM — LIGHT UI (BINARY SUNSET)
+   Source of truth for all colour, typography, spacing, radius.
+   CC should import or replicate these tokens in globals.css.
+   ============================================================ */
+
+:root {
+
+  /* ----------------------------------------------------------
+     COLOUR TOKENS — Light Palette
+     Background scale: sky → panel → surface → card → card-hi
+     Red scale: pale → sun → hi → mid → dim → mute (darkest)
+     ---------------------------------------------------------- */
+
+  /* Backgrounds */
+  --color-bg-sky:        #E8DDD0;   /* page / outermost background */
+  --color-bg-panel:      #DDD0C0;   /* sidebar, right panel */
+  --color-bg-surface:    #D4C5B0;   /* section headers, input fields */
+  --color-bg-card:       #CBBAA0;   /* card, row alternates */
+  --color-bg-card-hi:    #C0AD94;   /* hovered card, active row */
+
+  /* Red accent scale — all UI accent comes from this ramp */
+  --color-red-pale:      #E86050;   /* soft highlights, tertiary accents */
+  --color-red-sun:       #E03A1E;   /* primary accent: logo, active tab, buttons */
+  --color-red-hi:        #C82A10;   /* primary accent hover state */
+  --color-red-mid:       #A82010;   /* secondary accent, trained skills */
+  --color-red-dim:       #7A1808;   /* deep accent, strain, Force indicator */
+  --color-red-mute:      #3A0C04;   /* near-black, shadows, deep text */
+
+  /* Mountain layer colours — used in portrait / art elements only */
+  --color-mtn-1:         #E85040;
+  --color-mtn-2:         #C83828;
+  --color-mtn-3:         #A02818;
+  --color-mtn-4:         #781808;
+
+  /* Text */
+  --color-text-primary:   #2A1008;   /* headings, high-contrast labels */
+  --color-text-secondary: #5A2818;   /* body, subheadings */
+  --color-text-muted:     #8A5040;   /* supporting labels, disabled */
+  --color-text-faint:     #AA7860;   /* placeholders, timestamps */
+  --color-text-on-red:    #FFF0E8;   /* text placed on red backgrounds */
+
+  /* Borders */
+  --color-border-strong:  #B09080;   /* primary panel borders, dividers */
+  --color-border-mid:     #C0A890;   /* card borders, inner separators */
+  --color-border-subtle:  #CDB8A4;   /* row separators, very light dividers */
+
+  /* Semantic aliases */
+  --color-wounds:         var(--color-red-sun);
+  --color-strain:         var(--color-red-dim);
+  --color-career:         var(--color-red-pale);
+  --color-success:        #5A7A3A;   /* roll result: success */
+  --color-wash:           var(--color-text-faint);
+
+
+  /* ----------------------------------------------------------
+     TYPOGRAPHY TOKENS
+     All font-size values use clamp(MIN, VW, MAX).
+     Designed for 1280–1920px viewport width.
+     Never hardcode px font sizes in components.
+     ---------------------------------------------------------- */
+
+  /* Font families */
+  --font-numeric:  'Geist Mono', monospace;      /* wordmark + stat numerals ONLY — bold weight always */
+  --font-heading:  'Lato', sans-serif;           /* section headings, panel titles, button labels — 700/900 */
+  --font-body:     'Lato', sans-serif;           /* all body text, skill names, labels — 300/400 */
+  --font-mono:     'DM Mono', monospace;         /* badges, tab labels, timestamps, readouts — 400/500 */
+
+  /* Font weight tokens */
+  --weight-light:     300;
+  --weight-regular:   400;
+  --weight-semibold:  700;   /* Lato has no 600 — use 700 as semibold */
+  --weight-bold:      900;   /* Lato 900 = true bold display weight */
+  --weight-mono:      500;   /* DM Mono medium for emphasis */
+
+  /* Type scale — UI labels and body */
+  --text-2xs:   clamp(9px,  0.55vw, 11px);    /* micro labels, corner tags */
+  --text-xs:    clamp(10px, 0.65vw, 12px);    /* timestamps, legend items */
+  --text-sm:    clamp(11px, 0.75vw, 13px);    /* badges, tab labels, row meta */
+  --text-base:  clamp(12px, 0.85vw, 14px);    /* skill names, body text */
+  --text-md:    clamp(13px, 0.95vw, 15px);    /* char name in topbar */
+  --text-lg:    clamp(14px, 1.05vw, 17px);    /* section subheadings */
+  --text-xl:    clamp(16px, 1.25vw, 20px);    /* panel headings */
+  --text-2xl:   clamp(20px, 1.6vw,  26px);    /* page-level headings */
+  --text-3xl:   clamp(26px, 2.2vw,  34px);    /* hero headings */
+
+  /* Type scale — numeric / stat display */
+  --text-stat-sm:   clamp(14px, 1.1vw,  18px);   /* characteristic badge */
+  --text-stat-md:   clamp(20px, 1.6vw,  26px);   /* vital card value */
+  --text-stat-lg:   clamp(28px, 2.2vw,  36px);   /* prominent KPI */
+
+  /* Logo */
+  --text-logo:  clamp(11px, 0.85vw, 14px);    /* HOLOCRON wordmark */
+
+  /* Line heights */
+  --leading-tight:   1.1;
+  --leading-snug:    1.25;
+  --leading-normal:  1.5;
+  --leading-loose:   1.75;
+
+  /* Letter spacing */
+  --tracking-tight:   -0.02em;
+  --tracking-normal:  0;
+  --tracking-wide:    0.05em;
+  --tracking-wider:   0.1em;
+  --tracking-widest:  0.2em;   /* ALL CAPS labels, badges */
+
+
+  /* ----------------------------------------------------------
+     SPACING TOKENS — 4px base grid
+     Every spacing value is a multiple of 4px.
+     Use these tokens everywhere; never write ad-hoc px gaps.
+     ---------------------------------------------------------- */
+
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Semantic spacing aliases */
+  --padding-row:      var(--space-1) var(--space-2);   /* dense table/skill rows */
+  --padding-badge:    var(--space-1) var(--space-2);   /* pill/badge */
+  --padding-card:     var(--space-2) var(--space-3);   /* card inner padding */
+  --padding-panel:    var(--space-3);                  /* sidebar/panel padding */
+  --padding-section:  var(--space-2) var(--space-3);   /* section header */
+  --gap-row:          var(--space-1);                  /* gap between rows */
+  --gap-card:         var(--space-2);                  /* gap between cards */
+  --gap-section:      var(--space-3);                  /* gap between sections */
+  --gap-panel:        var(--space-4);                  /* gap between top-level panels */
+
+
+  /* ----------------------------------------------------------
+     BORDER RADIUS TOKENS
+     Holocron uses a near-flat aesthetic — radii are deliberately
+     small. Stick to sm (1px) or md (2px) only.
+     ---------------------------------------------------------- */
+
+  --radius-none:  0px;
+  --radius-sm:    1px;    /* tags, tight UI elements */
+  --radius-md:    2px;    /* buttons, inputs, cards — PROJECT STANDARD */
+  --radius-lg:    4px;    /* modals, drawers only */
+  --radius-full:  9999px; /* avatar circles, pip indicators */
+
+  /* PROJECT RULE: default to --radius-md (2px) on all components.
+     Only use --radius-lg inside full-screen modals/drawers.
+     Never mix radii within the same component. */
+
+
+  /* ----------------------------------------------------------
+     ELEVATION / SHADOW TOKENS
+     Light UI needs subtle shadows to establish hierarchy.
+     Never stack more than one shadow level per component.
+     ---------------------------------------------------------- */
+
+  --shadow-sm:  0 1px 2px rgba(42, 16, 8, 0.08);
+  --shadow-md:  0 2px 8px rgba(42, 16, 8, 0.12);
+  --shadow-lg:  0 4px 16px rgba(42, 16, 8, 0.16);
+
+
+  /* ----------------------------------------------------------
+     LAYOUT TOKENS — fixed shell dimensions
+     Top bar + mode bar heights are fixed; rail containers
+     must account for both when positioning sticky elements.
+     ---------------------------------------------------------- */
+
+  --topbar-height:   48px;
+  --modebar-height:  36px;
+  --shell-offset:    84px;   /* topbar + modebar combined */
+
+  --sidebar-width:   clamp(180px, 14vw, 240px);
+  --rightpanel-width: clamp(200px, 16vw, 280px);
+
+
+  /* ----------------------------------------------------------
+     COMPONENT-LEVEL TOKENS
+     Assembled from primitives above. CC should use these
+     rather than reaching for raw primitives in components.
+     ---------------------------------------------------------- */
+
+  /* Topbar */
+  --topbar-bg:           var(--color-bg-panel);
+  --topbar-border:       var(--color-border-strong);
+  --topbar-logo-color:   var(--color-red-sun);
+
+  /* Mode bar / tabs */
+  --tab-bg:              var(--color-bg-surface);
+  --tab-color:           var(--color-text-faint);
+  --tab-active-color:    var(--color-red-sun);
+  --tab-active-border:   var(--color-red-sun);
+  --tab-session-color:   var(--color-red-mid);
+
+  /* Sidebar */
+  --sidebar-bg:          var(--color-bg-panel);
+  --sidebar-border:      var(--color-border-strong);
+
+  /* Cards / panels */
+  --card-bg:             var(--color-bg-panel);
+  --card-border:         var(--color-border-mid);
+  --card-bg-trained:     var(--color-bg-card);
+
+  /* Skill group header */
+  --group-header-bg:     var(--color-bg-surface);
+  --group-header-border: var(--color-border-strong);
+
+  /* Vital cards — top accent borders */
+  --vital-accent-wounds: var(--color-wounds);
+  --vital-accent-strain: var(--color-strain);
+  --vital-accent-soak:   var(--color-red-pale);
+  --vital-accent-def:    var(--color-border-strong);
+
+  /* Buttons — primary (red) */
+  --btn-primary-bg:      var(--color-red-sun);
+  --btn-primary-border:  var(--color-red-hi);
+  --btn-primary-text:    var(--color-text-on-red);
+  --btn-primary-hover-bg: var(--color-red-hi);
+
+  /* Buttons — ghost */
+  --btn-ghost-border:    var(--color-border-strong);
+  --btn-ghost-text:      var(--color-text-muted);
+  --btn-ghost-hover-bg:  var(--color-bg-card);
+
+  /* Tracker bars */
+  --tracker-bg:          var(--color-bg-card);
+  --tracker-border:      var(--color-border-strong);
+
+  /* Corner brackets (decorative) */
+  --corner-color:        var(--color-red-mid);
+}
+
+
+/* ============================================================
+   REFERENCE SHEET STYLES — not production code
+   Everything below is for the design system document only.
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--color-bg-sky);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-weight: var(--weight-regular);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  padding: var(--space-8);
+}
+
+.ds-page-title {
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  color: var(--color-red-sun);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  margin-bottom: var(--space-1);
+}
+
+.ds-page-sub {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  letter-spacing: var(--tracking-wide);
+  margin-bottom: var(--space-8);
+}
+
+.ds-divider {
+  height: 1px;
+  background: var(--color-border-strong);
+  margin: var(--space-8) 0;
+}
+
+.ds-section-title {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border-mid);
+}
+
+.ds-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+  margin-bottom: var(--space-4);
+}
+
+.ds-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.ds-grid-auto {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+/* ---- Colour Swatches ---- */
+
+.ds-swatch-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.ds-swatch-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.ds-swatch {
+  width: 40px;
+  height: 28px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+.ds-swatch-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.ds-swatch-name {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.ds-swatch-hex {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.ds-swatch-token {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-red-mid);
+}
+
+/* ---- Type Specimens ---- */
+
+.ds-type-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.ds-type-meta {
+  width: 220px;
+  flex-shrink: 0;
+}
+
+.ds-type-token {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-red-mid);
+}
+
+.ds-type-desc {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.ds-type-sample {
+  color: var(--color-text-primary);
+}
+
+/* ---- Spacing Scale ---- */
+
+.ds-space-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-1) 0;
+}
+
+.ds-space-bar-wrap {
+  width: 200px;
+  display: flex;
+  align-items: center;
+}
+
+.ds-space-bar {
+  height: 8px;
+  background: var(--color-red-sun);
+  border-radius: var(--radius-sm);
+}
+
+.ds-space-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-red-mid);
+  width: 80px;
+  flex-shrink: 0;
+}
+
+.ds-space-px {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  width: 36px;
+  flex-shrink: 0;
+}
+
+.ds-space-use {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+/* ---- Component Specimens ---- */
+
+.ds-specimen-card {
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border-mid);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+
+.ds-specimen-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  margin-bottom: var(--space-3);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--padding-badge);
+  font-family: var(--font-heading);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  border: 1px solid;
+  line-height: 1;
+  padding: var(--space-2) var(--space-3);
+}
+
+.btn-primary {
+  background: var(--btn-primary-bg);
+  border-color: var(--btn-primary-border);
+  color: var(--btn-primary-text);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--btn-ghost-border);
+  color: var(--btn-ghost-text);
+}
+
+.btn-danger {
+  background: var(--color-red-dim);
+  border-color: var(--color-red-mute);
+  color: var(--color-text-on-red);
+}
+
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: var(--space-1) var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  border-radius: var(--radius-md);
+  border: 1px solid;
+  line-height: 1;
+}
+
+.badge-default {
+  background: var(--color-bg-surface);
+  border-color: var(--color-border-strong);
+  color: var(--color-text-secondary);
+}
+
+.badge-accent {
+  background: var(--color-red-sun);
+  border-color: var(--color-red-hi);
+  color: var(--color-text-on-red);
+}
+
+.badge-muted {
+  background: var(--color-bg-card);
+  border-color: var(--color-border-mid);
+  color: var(--color-text-muted);
+}
+
+/* Stat box */
+.stat-box {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  text-align: center;
+  padding: var(--space-2) var(--space-3);
+}
+
+.stat-box-val {
+  font-family: var(--font-numeric);
+  font-size: var(--text-stat-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-red-sun);
+  line-height: var(--leading-tight);
+}
+
+.stat-box-lbl {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--color-text-muted);
+  margin-top: var(--space-1);
+}
+
+/* Vital card */
+.vital-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-top: 2px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  position: relative;
+}
+
+.vital-card.wounds { border-top-color: var(--vital-accent-wounds); }
+.vital-card.strain { border-top-color: var(--vital-accent-strain); }
+.vital-card.soak   { border-top-color: var(--vital-accent-soak); }
+
+.vital-card-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  color: var(--color-text-muted);
+}
+
+.vital-card-num {
+  font-family: var(--font-numeric);
+  font-size: var(--text-stat-md);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+  line-height: var(--leading-tight);
+}
+
+.vital-card-num.wounds { color: var(--color-wounds); }
+.vital-card-num.strain { color: var(--color-strain); }
+
+.vital-card-sub {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-text-muted);
+}
+
+/* Skill row */
+.skill-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--padding-row);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.skill-row-name {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: 300;
+  color: var(--color-text-muted);
+}
+
+.skill-row-name.trained {
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+.skill-dots {
+  display: flex;
+  gap: 3px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: transparent;
+}
+
+.dot.filled { background: var(--color-red-sun); border-color: var(--color-red-hi); }
+
+/* Tracker bar */
+.tracker {
+  height: 3px;
+  background: var(--tracker-bg);
+  border: 1px solid var(--tracker-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.tracker-fill {
+  height: 100%;
+  border-radius: var(--radius-sm);
+}
+
+.tracker-fill.wounds { background: var(--color-wounds); }
+.tracker-fill.strain { background: var(--color-strain); }
+.tracker-fill.enc    { background: var(--color-red-pale); }
+
+/* Input */
+.input-field {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--color-text-primary);
+  width: 100%;
+}
+
+.input-field::placeholder { color: var(--color-text-faint); }
+.input-field:focus {
+  outline: none;
+  border-color: var(--color-red-sun);
+  box-shadow: 0 0 0 2px rgba(224, 58, 30, 0.15);
+}
+
+/* Roll entry */
+.roll-entry {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-mid);
+  border-left: 2px solid var(--color-red-sun);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+}
+
+.roll-entry-name {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.roll-entry-result {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+/* Corner bracket decoration */
+.corner { position: absolute; width: 8px; height: 8px; }
+.corner.tl { top: 0; left: 0; border-top: 1px solid var(--corner-color); border-left: 1px solid var(--corner-color); }
+.corner.br { bottom: 0; right: 0; border-bottom: 1px solid var(--corner-color); border-right: 1px solid var(--corner-color); }
+
+/* Action button */
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-strong);
+  border-left: 2px solid var(--color-red-sun);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.action-btn-label {
+  font-family: var(--font-heading);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-red-sun);
+}
+
+/* ============================================================
+   DOCUMENT LAYOUT
+   ============================================================ */
+
+.ds-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-8);
+}
+
+.ds-full {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+</style>
+</head>
+<body>
+
+<div class="ds-full">
+
+  <div class="ds-page-title">Holocron — Design System</div>
+  <div class="ds-page-sub">LIGHT UI · BINARY SUNSET PALETTE · v1.0</div>
+
+
+  <!-- ====== COLOUR ====== -->
+  <div class="ds-section-title">Colour Tokens</div>
+
+  <div class="ds-two-col">
+
+    <div>
+      <div class="ds-specimen-label">Backgrounds</div>
+      <div class="ds-swatch-group">
+        <div class="ds-swatch-row">
+          <div class="ds-swatch" style="background:#E8DDD0;"></div>
+          <div class="ds-swatch-info">
+            <div class="ds-swatch-name">Sky</div>
+            <div class="ds-swatch-hex">#E8DDD0</div>
+            <div class="ds-swatch-token">--color-bg-sky</div>
+          </div>
+        </div>
+        <div class="ds-swatch-row">
+          <div class="ds-swatch" style="background:#DDD0C0;"></div>
+          <div class="ds-swatch-info">
+            <div class="ds-swatch-name">Panel</div>
+            <div class="ds-swatch-hex">#DDD0C0</div>
+            <div class="ds-swatch-token">--color-bg-panel</div>
+          </div>
+        </div>
+        <div class="ds-swatch-row">
+          <div class="ds-swatch" style="background:#D4C5B0;"></div>
+          <div class="ds-swatch-info">
+            <div class="ds-swatch-name">Surface</div>
+            <div class="ds-swatch-hex">#D4C5B0</div>
+            <div class="ds-swatch-token">--color-bg-surface</div>
+          </div>
+        </div>
+        <div class="ds-swatch-row">
+          <div class="ds-swatch" style="background:#CBBAA0;"></div>
+          <div class="ds-swatch-info">
+            <div class="ds-swatch-name">Card</div>
+            <div class="ds-swatch-hex">#CBBAA0</div>
+            <div class="ds-swatch-token">--color-bg-card</div>
+          </div>
+        </div>
+        <div class="ds-swatch-row">
+          <div class="ds-swatch" style="background:#C0AD94;"></div>
+          <div class="ds-swatch-info">
+            <div class="ds-swatch-name">Card Hover</div>
+            <div class="ds-swatch-hex">#C0AD94</div>
+            <div class="ds-swatch-token">--color-bg-card-hi</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="ds-specimen-label">Red Accent Ramp</div>
+      <div class="ds-swatch-group">
+        <div class="ds-swatch-row">
+          <div class="ds-swatch" style="background:#E86050;"></div>
+          <div class="ds-swatch-info">
+            <div class="ds-swatch-name">Pale Red</div>
+            <div class="ds-swatch-hex">#E86050</div>
+            <div class="ds-swatch-token">--color-red-pale</div>
+          </div>
+        </div>
+        <div class="ds-swatch-row">
+          <div class="ds-swatch" style="background:#E03A1E;"></div>
+          <div class="ds-swatch-info">
+            <div class="ds-swatch-name">Sun Red — Primary</div>
+            <div class="ds-swatch-hex">#E03A1E</div>
+            <div class="ds-swatch-token">--color-red-sun</div>
+          </div>
+        </div>
+        <div class="ds-swatch-row">
+          <div class="ds-swatch" style="background:#C82A10;"></div>
+          <div class="ds-swatch-info">
+            <div class="ds-swatch-name">Red Hi — Hover</div>
+            <div class="ds-swatch-hex">#C82A10</div>
+            <div class="ds-swatch-token">--color-red-hi</div>
+          </div>
+        </div>
+        <div class="ds-swatch-row">
+          <div class="ds-swatch" style="background:#A82010;"></div>
+          <div class="ds-swatch-info">
+            <div class="ds-swatch-name">Red Mid — Secondary</div>
+            <div class="ds-swatch-hex">#A82010</div>
+            <div class="ds-swatch-token">--color-red-mid</div>
+          </div>
+        </div>
+        <div class="ds-swatch-row">
+          <div class="ds-swatch" style="background:#7A1808;"></div>
+          <div class="ds-swatch-info">
+            <div class="ds-swatch-name">Red Dim — Deep</div>
+            <div class="ds-swatch-hex">#7A1808</div>
+            <div class="ds-swatch-token">--color-red-dim</div>
+          </div>
+        </div>
+        <div class="ds-swatch-row">
+          <div class="ds-swatch" style="background:#3A0C04;"></div>
+          <div class="ds-swatch-info">
+            <div class="ds-swatch-name">Red Mute — Shadow</div>
+            <div class="ds-swatch-hex">#3A0C04</div>
+            <div class="ds-swatch-token">--color-red-mute</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="margin-top: var(--space-4);">
+    <div class="ds-specimen-label">Text &amp; Border Tokens</div>
+    <div class="ds-grid-auto">
+      <div class="ds-swatch-row">
+        <div class="ds-swatch" style="background:#2A1008;"></div>
+        <div class="ds-swatch-info">
+          <div class="ds-swatch-name">Text Primary</div>
+          <div class="ds-swatch-hex">#2A1008</div>
+          <div class="ds-swatch-token">--color-text-primary</div>
+        </div>
+      </div>
+      <div class="ds-swatch-row">
+        <div class="ds-swatch" style="background:#5A2818;"></div>
+        <div class="ds-swatch-info">
+          <div class="ds-swatch-name">Text Secondary</div>
+          <div class="ds-swatch-hex">#5A2818</div>
+          <div class="ds-swatch-token">--color-text-secondary</div>
+        </div>
+      </div>
+      <div class="ds-swatch-row">
+        <div class="ds-swatch" style="background:#8A5040;"></div>
+        <div class="ds-swatch-info">
+          <div class="ds-swatch-name">Text Muted</div>
+          <div class="ds-swatch-hex">#8A5040</div>
+          <div class="ds-swatch-token">--color-text-muted</div>
+        </div>
+      </div>
+      <div class="ds-swatch-row">
+        <div class="ds-swatch" style="background:#AA7860;"></div>
+        <div class="ds-swatch-info">
+          <div class="ds-swatch-name">Text Faint</div>
+          <div class="ds-swatch-hex">#AA7860</div>
+          <div class="ds-swatch-token">--color-text-faint</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ds-divider"></div>
+
+
+  <!-- ====== TYPOGRAPHY ====== -->
+  <div class="ds-section-title">Typography Scale</div>
+  <div style="margin-bottom: var(--space-4);">
+    <div class="ds-type-row">
+      <div class="ds-type-meta">
+        <div class="ds-type-token">--font-numeric</div>
+        <div class="ds-type-desc">Wordmark + stat numerals — bold only</div>
+      </div>
+      <div class="ds-type-sample" style="font-family: var(--font-numeric); font-size: var(--text-xl); font-weight: 700;">Geist Mono — HOLOCRON 42</div>
+    </div>
+    <div class="ds-type-row">
+      <div class="ds-type-meta">
+        <div class="ds-type-token">--font-heading</div>
+        <div class="ds-type-desc">Section headings, panel titles — 700/900</div>
+      </div>
+      <div class="ds-type-sample" style="font-family: var(--font-heading); font-size: var(--text-xl); font-weight: 700;">Lato Bold — Combat Check</div>
+    </div>
+    <div class="ds-type-row">
+      <div class="ds-type-meta">
+        <div class="ds-type-token">--font-body</div>
+        <div class="ds-type-desc">Body text, skill names, labels — 300/400</div>
+      </div>
+      <div class="ds-type-sample" style="font-family: var(--font-body); font-size: var(--text-xl); font-weight: 400;">Lato Regular — Bylethia Ford (Wrath)</div>
+    </div>
+    <div class="ds-type-row">
+      <div class="ds-type-meta">
+        <div class="ds-type-token">--font-mono</div>
+        <div class="ds-type-desc">Badges, timestamps, readouts — 400/500</div>
+      </div>
+      <div class="ds-type-sample" style="font-family: var(--font-mono); font-size: var(--text-xl);">DM Mono — XP 5 · 0/12 · 303h ago</div>
+    </div>
+  </div>
+
+  <div style="margin-bottom: var(--space-4);">
+    <div class="ds-specimen-label" style="margin-bottom: var(--space-2);">UI Type Scale (clamp-based)</div>
+    <div class="ds-type-row">
+      <div class="ds-type-meta"><div class="ds-type-token">--text-2xs</div><div class="ds-type-desc">clamp(9px, 0.55vw, 11px) · micro labels</div></div>
+      <div class="ds-type-sample" style="font-size: var(--text-2xs); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: var(--tracking-widest);">WOUNDS · SOAK · M.DEF</div>
+    </div>
+    <div class="ds-type-row">
+      <div class="ds-type-meta"><div class="ds-type-token">--text-xs</div><div class="ds-type-desc">clamp(10px, 0.65vw, 12px) · timestamps, legend</div></div>
+      <div class="ds-type-sample" style="font-size: var(--text-xs); font-family: var(--font-mono);">303h ago · CLICK TO UPGRADE</div>
+    </div>
+    <div class="ds-type-row">
+      <div class="ds-type-meta"><div class="ds-type-token">--text-sm</div><div class="ds-type-desc">clamp(11px, 0.75vw, 13px) · badges, tab labels</div></div>
+      <div class="ds-type-sample" style="font-size: var(--text-sm); font-family: var(--font-mono);">SKILLS · TALENTS · SESSION</div>
+    </div>
+    <div class="ds-type-row">
+      <div class="ds-type-meta"><div class="ds-type-token">--text-base</div><div class="ds-type-desc">clamp(12px, 0.85vw, 14px) · skill names, body</div></div>
+      <div class="ds-type-sample" style="font-size: var(--text-base);">Athletics · Melee · Stealth</div>
+    </div>
+    <div class="ds-type-row">
+      <div class="ds-type-meta"><div class="ds-type-token">--text-md</div><div class="ds-type-desc">clamp(13px, 0.95vw, 15px) · char name topbar</div></div>
+      <div class="ds-type-sample" style="font-size: var(--text-md); font-weight: 500;">Bylethia Ford (Wrath)</div>
+    </div>
+    <div class="ds-type-row">
+      <div class="ds-type-meta"><div class="ds-type-token">--text-xl</div><div class="ds-type-desc">clamp(16px, 1.25vw, 20px) · panel headings</div></div>
+      <div class="ds-type-sample" style="font-size: var(--text-xl); font-family: var(--font-heading); font-weight: 700; color: var(--color-red-sun);">COMBAT CHECK</div>
+    </div>
+    <div class="ds-type-row">
+      <div class="ds-type-meta"><div class="ds-type-token">--text-logo</div><div class="ds-type-desc">clamp(11px, 0.85vw, 14px) · logo wordmark</div></div>
+      <div class="ds-type-sample" style="font-size: var(--text-logo); font-family: var(--font-numeric); font-weight: 700; letter-spacing: 0.25em; color: var(--color-red-sun);">HOLOCRON</div>
+    </div>
+  </div>
+
+  <div style="margin-bottom: var(--space-4);">
+    <div class="ds-specimen-label" style="margin-bottom: var(--space-2);">Numeric / Stat Scale</div>
+    <div class="ds-type-row">
+      <div class="ds-type-meta"><div class="ds-type-token">--text-stat-sm</div><div class="ds-type-desc">clamp(14px, 1.1vw, 18px) · characteristic badge</div></div>
+      <div class="ds-type-sample" style="font-size: var(--text-stat-sm); font-family: var(--font-numeric); font-weight: 700; color: var(--color-red-sun);">2 BRN</div>
+    </div>
+    <div class="ds-type-row">
+      <div class="ds-type-meta"><div class="ds-type-token">--text-stat-md</div><div class="ds-type-desc">clamp(20px, 1.6vw, 26px) · vital card values</div></div>
+      <div class="ds-type-sample" style="font-size: var(--text-stat-md); font-family: var(--font-numeric); font-weight: 700; color: var(--color-wounds);">12</div>
+    </div>
+    <div class="ds-type-row">
+      <div class="ds-type-meta"><div class="ds-type-token">--text-stat-lg</div><div class="ds-type-desc">clamp(28px, 2.2vw, 36px) · prominent KPI</div></div>
+      <div class="ds-type-sample" style="font-size: var(--text-stat-lg); font-family: var(--font-numeric); font-weight: 700; color: var(--color-text-primary);">034717</div>
+    </div>
+  </div>
+
+  <div class="ds-divider"></div>
+
+
+  <!-- ====== SPACING ====== -->
+  <div class="ds-section-title">Spacing Scale — 4px grid</div>
+  <div style="margin-bottom: var(--space-6);">
+    <div class="ds-space-row"><div class="ds-space-label">--space-1</div><div class="ds-space-px">4px</div><div class="ds-space-bar-wrap"><div class="ds-space-bar" style="width:4px;"></div></div><div class="ds-space-use">Dot gap, icon nudge</div></div>
+    <div class="ds-space-row"><div class="ds-space-label">--space-2</div><div class="ds-space-px">8px</div><div class="ds-space-bar-wrap"><div class="ds-space-bar" style="width:8px;"></div></div><div class="ds-space-use">Row padding, badge padding, card inner gap</div></div>
+    <div class="ds-space-row"><div class="ds-space-label">--space-3</div><div class="ds-space-px">12px</div><div class="ds-space-bar-wrap"><div class="ds-space-bar" style="width:12px;"></div></div><div class="ds-space-use">Card padding, section header padding</div></div>
+    <div class="ds-space-row"><div class="ds-space-label">--space-4</div><div class="ds-space-px">16px</div><div class="ds-space-bar-wrap"><div class="ds-space-bar" style="width:16px;"></div></div><div class="ds-space-use">Panel padding, gap between cards</div></div>
+    <div class="ds-space-row"><div class="ds-space-label">--space-5</div><div class="ds-space-px">20px</div><div class="ds-space-bar-wrap"><div class="ds-space-bar" style="width:20px;"></div></div><div class="ds-space-use">Intra-section vertical rhythm</div></div>
+    <div class="ds-space-row"><div class="ds-space-label">--space-6</div><div class="ds-space-px">24px</div><div class="ds-space-bar-wrap"><div class="ds-space-bar" style="width:24px;"></div></div><div class="ds-space-use">Gap between panel sections</div></div>
+    <div class="ds-space-row"><div class="ds-space-label">--space-8</div><div class="ds-space-px">32px</div><div class="ds-space-bar-wrap"><div class="ds-space-bar" style="width:32px;"></div></div><div class="ds-space-use">Document / section-level separation</div></div>
+    <div class="ds-space-row"><div class="ds-space-label">--space-12</div><div class="ds-space-px">48px</div><div class="ds-space-bar-wrap"><div class="ds-space-bar" style="width:48px;"></div></div><div class="ds-space-use">Top-level page margin</div></div>
+  </div>
+
+  <div class="ds-divider"></div>
+
+
+  <!-- ====== RADIUS ====== -->
+  <div class="ds-section-title">Border Radius</div>
+  <div class="ds-grid-auto" style="align-items: flex-end; margin-bottom: var(--space-6);">
+    <div style="text-align:center;">
+      <div style="width:48px; height:48px; background:var(--color-bg-card); border:1px solid var(--color-border-strong); border-radius:var(--radius-none); margin: 0 auto var(--space-1);"></div>
+      <div class="ds-type-token" style="font-size:var(--text-xs);">--radius-none</div>
+      <div style="font-size:var(--text-xs); color:var(--color-text-muted);">0px</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="width:48px; height:48px; background:var(--color-bg-card); border:1px solid var(--color-border-strong); border-radius:var(--radius-sm); margin: 0 auto var(--space-1);"></div>
+      <div class="ds-type-token" style="font-size:var(--text-xs);">--radius-sm</div>
+      <div style="font-size:var(--text-xs); color:var(--color-text-muted);">1px · tags</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="width:48px; height:48px; background:var(--color-red-sun); border-radius:var(--radius-md); margin: 0 auto var(--space-1);"></div>
+      <div class="ds-type-token" style="font-size:var(--text-xs);">--radius-md ★</div>
+      <div style="font-size:var(--text-xs); color:var(--color-text-muted);">2px · PROJECT DEFAULT</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="width:48px; height:48px; background:var(--color-bg-card); border:1px solid var(--color-border-strong); border-radius:var(--radius-lg); margin: 0 auto var(--space-1);"></div>
+      <div class="ds-type-token" style="font-size:var(--text-xs);">--radius-lg</div>
+      <div style="font-size:var(--text-xs); color:var(--color-text-muted);">4px · modals only</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="width:48px; height:48px; background:var(--color-bg-card); border:1px solid var(--color-border-strong); border-radius:var(--radius-full); margin: 0 auto var(--space-1);"></div>
+      <div class="ds-type-token" style="font-size:var(--text-xs);">--radius-full</div>
+      <div style="font-size:var(--text-xs); color:var(--color-text-muted);">9999px · avatars, pips</div>
+    </div>
+  </div>
+
+  <div class="ds-divider"></div>
+
+
+  <!-- ====== COMPONENTS ====== -->
+  <div class="ds-section-title">Component Specimens</div>
+
+  <div class="ds-two-col" style="gap: var(--space-6);">
+
+    <div>
+      <div class="ds-specimen-label">Buttons</div>
+      <div class="ds-specimen-card" style="display:flex; gap:var(--space-3); flex-wrap:wrap; align-items:center;">
+        <button class="btn btn-primary">✕ Combat Check</button>
+        <button class="btn btn-primary">✦ Force Check</button>
+        <button class="btn btn-ghost">All</button>
+        <button class="btn btn-ghost">Trained</button>
+        <button class="btn btn-danger">Disband Squad</button>
+      </div>
+
+      <div class="ds-specimen-label" style="margin-top:var(--space-4);">Badges</div>
+      <div class="ds-specimen-card" style="display:flex; gap:var(--space-2); flex-wrap:wrap; align-items:center;">
+        <span class="badge badge-default">DESTINY ◈2</span>
+        <span class="badge badge-default">CREDITS 2,500</span>
+        <span class="badge badge-accent">XP 5</span>
+        <span class="badge badge-muted">Career</span>
+        <span class="badge badge-muted">Trained</span>
+      </div>
+
+      <div class="ds-specimen-label" style="margin-top:var(--space-4);">Characteristic Stats</div>
+      <div class="ds-specimen-card">
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:var(--space-2);">
+          <div class="stat-box"><div class="stat-box-val">2</div><div class="stat-box-lbl">Brawn</div></div>
+          <div class="stat-box"><div class="stat-box-val">3</div><div class="stat-box-lbl">Intellect</div></div>
+          <div class="stat-box"><div class="stat-box-val">3</div><div class="stat-box-lbl">Willpwr</div></div>
+        </div>
+      </div>
+
+      <div class="ds-specimen-label" style="margin-top:var(--space-4);">Tracker Bars</div>
+      <div class="ds-specimen-card" style="display:flex; flex-direction:column; gap:var(--space-3);">
+        <div>
+          <div style="font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-muted); margin-bottom:var(--space-1);">WOUNDS 0/12</div>
+          <div class="tracker"><div class="tracker-fill wounds" style="width:0%;"></div></div>
+        </div>
+        <div>
+          <div style="font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-muted); margin-bottom:var(--space-1);">STRAIN 4/14</div>
+          <div class="tracker"><div class="tracker-fill strain" style="width:28%;"></div></div>
+        </div>
+        <div>
+          <div style="font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-muted); margin-bottom:var(--space-1);">ENC 3/8</div>
+          <div class="tracker"><div class="tracker-fill enc" style="width:38%;"></div></div>
+        </div>
+      </div>
+
+      <div class="ds-specimen-label" style="margin-top:var(--space-4);">Input Field</div>
+      <div class="ds-specimen-card">
+        <input class="input-field" type="text" placeholder="Search skills...">
+      </div>
+    </div>
+
+    <div>
+      <div class="ds-specimen-label">Vital Cards</div>
+      <div class="ds-specimen-card" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:var(--space-2);">
+        <div class="vital-card wounds" style="position:relative;">
+          <div class="corner tl"></div><div class="corner br"></div>
+          <div class="vital-card-label">Wounds</div>
+          <div class="vital-card-num wounds">12</div>
+          <div class="vital-card-sub">Wound Threshold</div>
+        </div>
+        <div class="vital-card strain" style="position:relative;">
+          <div class="corner tl"></div><div class="corner br"></div>
+          <div class="vital-card-label">Strain</div>
+          <div class="vital-card-num strain">14</div>
+          <div class="vital-card-sub">Strain Threshold</div>
+        </div>
+        <div class="vital-card soak" style="position:relative;">
+          <div class="corner tl"></div><div class="corner br"></div>
+          <div class="vital-card-label">Soak</div>
+          <div class="vital-card-num">3</div>
+          <div class="vital-card-sub">Soak Value</div>
+        </div>
+      </div>
+
+      <div class="ds-specimen-label" style="margin-top:var(--space-4);">Skill Rows</div>
+      <div class="ds-specimen-card" style="padding:0; overflow:hidden;">
+        <div style="background:var(--color-bg-surface); border-bottom:1px solid var(--color-border-strong); padding:var(--space-1) var(--space-3); display:flex; align-items:center; gap:var(--space-2);">
+          <span style="font-family:var(--font-numeric); font-size:var(--text-stat-sm); font-weight:700; color:var(--color-red-sun);">2</span>
+          <span style="font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-muted); text-transform:uppercase; letter-spacing:var(--tracking-widest);">BRN</span>
+        </div>
+        <div class="skill-row">
+          <span style="font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-faint); margin-right:var(--space-1);">+</span>
+          <span class="skill-row-name">Athletics</span>
+          <div class="skill-dots" style="margin-right:var(--space-2);">
+            <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+          </div>
+          <div style="display:flex; gap:3px;">
+            <div style="width:14px;height:14px;border-radius:50%;background:var(--color-bg-card);border:1px solid var(--color-border-strong);"></div>
+            <div style="width:14px;height:14px;border-radius:50%;background:var(--color-bg-card);border:1px solid var(--color-border-strong);"></div>
+          </div>
+        </div>
+        <div class="skill-row" style="background:var(--color-bg-card);">
+          <span style="font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-red-sun); margin-right:var(--space-1);">+</span>
+          <span class="skill-row-name trained">Melee ◆</span>
+          <div class="skill-dots" style="margin-right:var(--space-2);">
+            <div class="dot filled"></div><div class="dot filled"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+          </div>
+          <div style="display:flex; gap:3px;">
+            <div style="width:14px;height:14px;border-radius:50%;background:#F0D0C0;border:1px solid var(--color-red-hi); font-size:7px; display:flex; align-items:center; justify-content:center; color:var(--color-red-sun); font-weight:700;">◈</div>
+            <div style="width:14px;height:14px;border-radius:50%;background:var(--color-bg-card);border:1px solid var(--color-border-strong);"></div>
+          </div>
+        </div>
+        <div class="skill-row">
+          <span style="font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-faint); margin-right:var(--space-1);">+</span>
+          <span class="skill-row-name">Resilience</span>
+          <div class="skill-dots" style="margin-right:var(--space-2);">
+            <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+          </div>
+          <div style="display:flex; gap:3px;">
+            <div style="width:14px;height:14px;border-radius:50%;background:var(--color-bg-card);border:1px solid var(--color-border-strong);"></div>
+            <div style="width:14px;height:14px;border-radius:50%;background:var(--color-bg-card);border:1px solid var(--color-border-strong);"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ds-specimen-label" style="margin-top:var(--space-4);">Roll Entries</div>
+      <div class="ds-specimen-card" style="display:flex; flex-direction:column; gap:var(--space-2);">
+        <div class="roll-entry">
+          <div style="display:flex; justify-content:space-between;">
+            <div class="roll-entry-name">Grevi Unduli</div>
+            <div style="font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-faint);">303h ago</div>
+          </div>
+          <div class="roll-entry-result">SUCCESS ✦2 ✧2</div>
+        </div>
+        <div class="roll-entry" style="border-left-color:var(--color-red-dim);">
+          <div style="display:flex; justify-content:space-between;">
+            <div class="roll-entry-name">Grevi Unduli</div>
+            <div style="font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-faint);">303h ago</div>
+          </div>
+          <div style="font-family:var(--font-mono); font-size:var(--text-sm); color:var(--color-text-faint);">WASH ☯1</div>
+        </div>
+      </div>
+
+      <div class="ds-specimen-label" style="margin-top:var(--space-4);">Action Buttons</div>
+      <div class="ds-specimen-card" style="display:flex; flex-direction:column; gap:var(--space-2);">
+        <div class="action-btn"><span style="color:var(--color-red-sun)">⚔</span><span class="action-btn-label">Combat Check</span></div>
+        <div class="action-btn" style="border-left-color:var(--color-red-dim);"><span style="color:var(--color-red-dim)">✦</span><span class="action-btn-label" style="color:var(--color-red-dim);">Force Check</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="ds-divider"></div>
+
+
+  <!-- ====== LAYOUT ====== -->
+  <div class="ds-section-title">Layout Tokens</div>
+  <div style="font-family:var(--font-mono); font-size:var(--text-sm); color:var(--color-text-secondary); display:flex; flex-direction:column; gap:var(--space-2); margin-bottom:var(--space-6);">
+    <div><span style="color:var(--color-red-mid);">--topbar-height</span>: 48px (fixed)</div>
+    <div><span style="color:var(--color-red-mid);">--modebar-height</span>: 36px (fixed)</div>
+    <div><span style="color:var(--color-red-mid);">--shell-offset</span>: 84px = topbar + modebar (use for sticky rail positioning)</div>
+    <div><span style="color:var(--color-red-mid);">--sidebar-width</span>: clamp(180px, 14vw, 240px)</div>
+    <div><span style="color:var(--color-red-mid);">--rightpanel-width</span>: clamp(200px, 16vw, 280px)</div>
+  </div>
+
+  <div class="ds-divider"></div>
+  <div style="font-family:var(--font-mono); font-size:var(--text-xs); color:var(--color-text-faint); text-align:center; padding-bottom:var(--space-8);">
+    HOLOCRON DESIGN SYSTEM · BINARY SUNSET LIGHT UI · v1.0 · holocron-design-system.html
+  </div>
+
+</div>
+</body>
+</html>

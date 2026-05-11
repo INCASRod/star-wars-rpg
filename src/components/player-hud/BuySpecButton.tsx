@@ -97,7 +97,7 @@ export function BuySpecButton({
         <div style={{
           fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: C.textDim,
           lineHeight: 1.5,
-          background: 'rgba(224,58,30,0.06)', border: `1px solid ${C.border}`,
+          background: 'var(--hud-surface-lo)', border: `1px solid ${C.border}`,
           borderRadius: 4, padding: '8px 10px',
         }}>
           Career specs cost{' '}

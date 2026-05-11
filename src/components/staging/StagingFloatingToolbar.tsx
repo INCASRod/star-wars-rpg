@@ -52,7 +52,7 @@ import { HUD } from '@/lib/tokens'
 const PILL_TOP = 112
 
 /* ── Design tokens ────────────────────────────────────────── */
-const FR   = "var(--font-rajdhani), 'Rajdhani', sans-serif"
+const FR   = 'var(--font-body)'
 const DIM  = '#6A8070'
 const RED  = '#E05050'
 
@@ -387,10 +387,10 @@ export function StagingFloatingToolbar({
             display:              'flex',
             alignItems:           'center',
             gap:                  0,
-            background:           'rgba(6,13,9,0.90)',
+            background:           'var(--hud-surface-hi)',
             backdropFilter:       'blur(14px)',
             WebkitBackdropFilter: 'blur(14px)',
-            border:               '1px solid rgba(200,170,80,0.22)',
+            border:               '1px solid var(--hud-border)',
             borderRadius:         8,
             overflow:             'hidden',
             pointerEvents:        'auto',
@@ -603,12 +603,12 @@ const Pill = memo(function Pill({
     ? accentColor
     : DIM
 
-  const bg     = active ? `${accentColor}15` : 'rgba(6,13,9,0.90)'
+  const bg     = active ? `${accentColor}15` : 'var(--hud-surface-hi)'
   const border = active
     ? `1px solid ${accentColor}88`
     : disabled
-    ? '1px solid rgba(200,170,80,0.07)'
-    : '1px solid rgba(200,170,80,0.22)'
+    ? '1px solid var(--hud-surface-lo)'
+    : '1px solid var(--hud-border)'
 
   return (
     <button
@@ -641,8 +641,8 @@ const Pill = memo(function Pill({
       onMouseLeave={e => {
         if (!active) {
           const el = e.currentTarget as HTMLElement
-          el.style.background  = 'rgba(6,13,9,0.90)'
-          el.style.borderColor = disabled ? 'rgba(200,170,80,0.07)' : 'rgba(200,170,80,0.22)'
+          el.style.background  = 'var(--hud-surface-hi)'
+          el.style.borderColor = disabled ? 'var(--hud-surface-lo)' : 'var(--hud-border)'
         }
       }}
     >

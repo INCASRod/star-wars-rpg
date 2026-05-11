@@ -20,7 +20,7 @@ import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const BG       = 'var(--hud-surface-hi)'
-const GOLD_DIM = 'rgba(224,58,30,0.45)'
+const GOLD_DIM = 'var(--hud-text-dim)'
 const GOLD_BD  = 'var(--hud-border)'
 const GOLD_BAR = 'rgba(224,58,30,0.6)'
 const TEXT     = 'var(--hud-text)'
@@ -556,7 +556,7 @@ export function CombatCheckOverlay({
 
       {/* ── Progress bar ── */}
       {!isResult && (
-        <div style={{ height: 4, background: 'rgba(224,58,30,0.1)', flexShrink: 0 }}>
+        <div style={{ height: 4, background: 'var(--hud-border)', flexShrink: 0 }}>
           <div style={{
             height: '100%',
             width: `${(state.currentStep / totalSteps) * 100}%`,
@@ -677,7 +677,7 @@ export function CombatCheckOverlay({
               background: canAdvance()
                 ? 'linear-gradient(135deg, #E03A1E, #A02010)'
                 : 'rgba(224,58,30,0.15)',
-              color: canAdvance() ? 'var(--hud-bg)' : 'rgba(224,58,30,0.4)',
+              color: canAdvance() ? 'var(--hud-bg)' : 'var(--hud-text-faint)',
               transition: 'background 150ms',
             }}
           >

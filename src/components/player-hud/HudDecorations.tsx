@@ -27,7 +27,7 @@ const BG_GLOW_TL: React.CSSProperties = {
 }
 const BG_GLOW_BR: React.CSSProperties = {
   position: 'absolute', bottom: 0, right: 0, width: '40%', height: '40%', zIndex: 0, pointerEvents: 'none',
-  background: 'radial-gradient(ellipse at 100% 100%, rgba(224,58,30,0.06) 0%, transparent 70%)',
+  background: 'radial-gradient(ellipse at 100% 100%, rgba(90,40,24,0.05) 0%, transparent 70%)',
 }
 const HEX_SVG_URL = `url("data:image/svg+xml,${encodeURIComponent(
   `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="52"><polygon points="30,1 59,16 59,36 30,51 1,36 1,16" fill="none" stroke="#E03A1E" stroke-width="0.5"/></svg>`

@@ -834,12 +834,12 @@ function GmDashboard() {
       {fallenConfirm && (
         <Modal open zIndex={200} maxWidth="28rem" backdrop="rgba(0,0,0,0.65)" borderColor={fallenConfirm.isFallen ? 'rgba(126,200,227,0.3)' : 'rgba(139,43,226,0.35)'} shadow={fallenConfirm.isFallen ? '0 8px 40px rgba(126,200,227,0.15)' : '0 8px 40px rgba(139,43,226,0.2)'}>
           <div style={{ padding: 24 }}>
-            <div style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: fallenConfirm.isFallen ? '#7EC8E3' : '#8B2BE2', letterSpacing: '0.15em', marginBottom: 12 }}>
+            <div style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: fallenConfirm.isFallen ? '#1A78A0' : '#8B2BE2', letterSpacing: '0.15em', marginBottom: 12 }}>
               {fallenConfirm.isFallen ? '✦ Grant Redemption' : '☠ Dark Side Fall'}
             </div>
             <div style={{ fontFamily: FR, fontSize: FS_SM, color: TEXT, lineHeight: 1.7, marginBottom: 8 }}>
               {fallenConfirm.isFallen
-                ? <><span>Grant Redemption to </span><strong style={{ color: '#7EC8E3' }}>{fallenConfirm.name}</strong>? This restores standard light side Force mechanics.</>
+                ? <><span>Grant Redemption to </span><strong style={{ color: '#1A78A0' }}>{fallenConfirm.name}</strong>? This restores standard light side Force mechanics.</>
                 : <><span>Declare </span><strong style={{ color: '#8B2BE2' }}>{fallenConfirm.name}</strong> fallen to the Dark Side? This inverts their Force pip mechanics permanently until Redemption is granted.</>}
             </div>
             {!fallenConfirm.isFallen && fallenConfirm.morality !== undefined && (
@@ -847,7 +847,7 @@ function GmDashboard() {
             )}
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 16 }}>
               <button onClick={() => setFallenConfirm(null)} style={btnSmall} disabled={fallenBusy}>CANCEL</button>
-              <button onClick={handleFallenToggle} disabled={fallenBusy} style={{ ...btnSmall, background: fallenConfirm.isFallen ? 'rgba(126,200,227,0.15)' : 'rgba(139,43,226,0.2)', border: `1px solid ${fallenConfirm.isFallen ? 'rgba(126,200,227,0.5)' : 'rgba(139,43,226,0.6)'}`, color: fallenConfirm.isFallen ? '#7EC8E3' : '#8B2BE2', opacity: fallenBusy ? 0.5 : 1 }}>
+              <button onClick={handleFallenToggle} disabled={fallenBusy} style={{ ...btnSmall, background: fallenConfirm.isFallen ? 'rgba(126,200,227,0.15)' : 'rgba(139,43,226,0.2)', border: `1px solid ${fallenConfirm.isFallen ? 'rgba(126,200,227,0.5)' : 'rgba(139,43,226,0.6)'}`, color: fallenConfirm.isFallen ? '#1A78A0' : '#8B2BE2', opacity: fallenBusy ? 0.5 : 1 }}>
                 {fallenBusy ? '…' : fallenConfirm.isFallen ? 'Confirm — Grant Redemption' : 'Confirm — Fall to Dark Side'}
               </button>
             </div>
@@ -907,10 +907,10 @@ function GmDashboard() {
               <button onClick={() => setManualAdjustOpen(false)} style={{ ...btnSmall, padding: '2px 8px', fontSize: FS_CAPTION }}>✕</button>
             </div>
             <div style={{ marginBottom: 18 }}>
-              <div style={{ fontFamily: FR, fontSize: FS_LABEL, color: '#7EC8E3', marginBottom: 8 }}>Light Side Destiny</div>
+              <div style={{ fontFamily: FR, fontSize: FS_LABEL, color: '#1A78A0', marginBottom: 8 }}>Light Side Destiny</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <button onClick={() => setManualLight(l => Math.max(0, l - 1))} style={btnSmallSm}>−</button>
-                <span style={{ fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: FS_H4, color: '#7EC8E3', minWidth: 32, textAlign: 'center' }}>{manualLight}</span>
+                <span style={{ fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: FS_H4, color: '#1A78A0', minWidth: 32, textAlign: 'center' }}>{manualLight}</span>
                 <button onClick={() => setManualLight(l => l + 1)} style={btnSmallSm}>+</button>
               </div>
             </div>

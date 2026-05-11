@@ -24,17 +24,18 @@ interface DerivedStat {
 // ── Colors ────────────────────────────────────────────────────────────────────
 
 const STAT_COLOR: Record<string, string> = {
-  soak: '#4EC87A',
-  wounds: '#E05050',
-  strain: '#60C8E0',
-  mdef: '#E07855',
-  rdef: '#5AAAE0',
+  soak:   '#E86050',  // red-pale   — soft, armoured protection
+  wounds: '#E03A1E',  // red-sun    — primary danger, injury
+  strain: '#A82010',  // red-mid    — secondary, mental stress
+  mdef:   '#C82A10',  // red-hi     — active melee defence
+  rdef:   '#7A1808',  // red-dim    — passive ranged defence
 }
 
+// All raw hex — these are alpha-concatenated (e.g. ${color}40) so CSS vars break here
 const NOTE_COLOR: Record<string, string> = {
-  armor: '#5AAAE0',
-  talent: 'var(--hud-gold)',
-  species: '#B070D8',
+  armor:   '#C82A10',  // red-hi
+  talent:  '#E03A1E',  // red-sun
+  species: '#7A1808',  // red-dim
 }
 
 // ── Static fallback ───────────────────────────────────────────────────────────
@@ -112,7 +113,7 @@ function BreakdownTooltip({ stat, anchor }: { stat: DerivedStat; anchor: DOMRect
       transform: 'translateX(-50%) translateY(-100%)',
       zIndex: 9999,
       border: `1px solid ${stat.color}40`,
-      background: 'rgba(4,9,6,0.97)',
+      background: 'var(--hud-surface-hi)',
       backdropFilter: 'blur(16px)',
       WebkitBackdropFilter: 'blur(16px)',
       padding: '10px 12px',
@@ -124,7 +125,7 @@ function BreakdownTooltip({ stat, anchor }: { stat: DerivedStat; anchor: DOMRect
       {/* Arrow pointing DOWN (tooltip is above the pill) */}
       <div style={{
         position: 'absolute', bottom: -5, left: '50%',
-        width: 8, height: 8, background: 'rgba(4,9,6,0.97)',
+        width: 8, height: 8, background: 'var(--hud-surface-hi)',
         border: `1px solid ${stat.color}40`, borderTop: 'none', borderLeft: 'none',
         transform: 'translateX(-50%) rotate(45deg)',
       }} />
@@ -291,11 +292,11 @@ function StatPill({
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
                 <button
                   onClick={e => { e.stopPropagation(); onTrack(-1) }}
-                  style={{ ...btn, color: atThreshold ? '#E05050' : C.textDim }}
+                  style={{ ...btn, color: atThreshold ? '#E03A1E' : C.textDim }}
                 >−</button>
                 <span style={{
                   fontFamily: FONT_CINZEL, fontSize: FS_H4, fontWeight: 700,
-                  color: atThreshold ? '#E05050' : C.text,
+                  color: atThreshold ? '#E03A1E' : C.text,
                   minWidth: 28, textAlign: 'center',
                 }}>
                   {current}
@@ -314,7 +315,7 @@ function StatPill({
                 <div style={{
                   height: '100%',
                   width: `${pct}%`,
-                  background: atThreshold ? '#E05050' : `linear-gradient(90deg, ${color}88, ${color})`,
+                  background: atThreshold ? '#E03A1E' : `linear-gradient(90deg, ${color}88, ${color})`,
                   borderRadius: 2,
                   transition: 'width 0.3s',
                 }} />
@@ -324,7 +325,7 @@ function StatPill({
                 <div style={{
                   fontFamily: FONT_RAJDHANI, fontWeight: 700, fontSize: FS_OVERLINE,
                   textTransform: 'uppercase', letterSpacing: '0.1em',
-                  color: '#E05050', textAlign: 'center',
+                  color: '#E03A1E', textAlign: 'center',
                 }}>
                   ■ CRITICAL
                 </div>

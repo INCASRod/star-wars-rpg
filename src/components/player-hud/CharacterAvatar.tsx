@@ -103,7 +103,7 @@ export function CharacterAvatar({ avatarUrl, characterName, career, spec, onUplo
         {/* Bottom gradient — always present */}
         <div style={{
           position: 'absolute', inset: 0,
-          background: 'linear-gradient(to bottom, transparent 60%, rgba(224,58,30,0.08) 100%)',
+          background: 'linear-gradient(to bottom, transparent 60%, var(--hud-surface-mid) 100%)',
           pointerEvents: 'none',
         }} />
 
@@ -170,7 +170,7 @@ export function CharacterAvatar({ avatarUrl, characterName, career, spec, onUplo
                 <button
                   onClick={e => { e.stopPropagation(); setConfirming(false) }}
                   style={{
-                    flex: 1, background: 'rgba(100,120,100,0.22)',
+                    flex: 1, background: 'var(--hud-surface-mid)',
                     border: `1px solid ${C.border}`,
                     borderRadius: 4, padding: '6px 0',
                     fontFamily: FONT_RAJDHANI, fontSize: 10, fontWeight: 700,

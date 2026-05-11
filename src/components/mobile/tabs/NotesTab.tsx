@@ -7,15 +7,15 @@ import { ObligationCard } from '@/components/character/ObligationCard'
 import { HUD } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
-const GOLD_DIM = 'rgba(200,170,80,0.6)'
-const GOLD_BD  = 'rgba(200,170,80,0.2)'
-const BORDER   = 'rgba(200,170,80,0.1)'
-const TEXT     = 'rgba(255,255,255,0.85)'
-const TEXT_DIM = 'rgba(255,255,255,0.5)'
-const CARD_BG  = 'rgba(255,255,255,0.03)'
-const FONT_C   = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_R   = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M   = "'Courier New', monospace"
+const GOLD_DIM = 'var(--hud-text-dim)'
+const GOLD_BD  = 'var(--hud-border)'
+const BORDER   = 'var(--hud-border)'
+const TEXT     = 'var(--hud-text)'
+const TEXT_DIM = 'var(--hud-text-dim)'
+const CARD_BG  = 'var(--hud-surface-lo)'
+const FONT_C   = 'var(--font-body)'
+const FONT_R   = 'var(--font-body)'
+const FONT_M   = 'var(--font-body)'
 
 function SectionHeader({ label }: { label: string }) {
   return (
@@ -154,10 +154,10 @@ export function NotesTab({ character }: NotesTabProps) {
           style={{
             width: '100%',
             minHeight: 200,
-            background: 'rgba(255,255,255,0.03)',
-            border: `1px solid rgba(200,170,80,0.2)`,
+            background: 'var(--hud-surface-lo)',
+            border: `1px solid ${GOLD_BD}`,
             borderRadius: 8,
-            color: 'rgba(255,255,255,0.85)',
+            color: TEXT,
             fontFamily: FONT_M,
             fontSize: 'clamp(0.75rem, 3vw, 0.9rem)',
             padding: 12,

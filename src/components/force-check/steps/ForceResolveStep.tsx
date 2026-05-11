@@ -42,7 +42,7 @@ function PipRow({ light, dark }: { light: number; dark: number }) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: 'rgba(224,58,30,0.55)', textTransform: 'uppercase', letterSpacing: '0.15em' }}>
+      <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: 'var(--hud-text-faint)', textTransform: 'uppercase', letterSpacing: '0.15em' }}>
         {label}
       </div>
       <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)', color: 'rgba(90,40,24,0.9)' }}>
@@ -74,7 +74,7 @@ export function ForceResolveStep({
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* Header */}
       <div style={{ textAlign: 'center', paddingBottom: 12, borderBottom: '1px solid rgba(126,200,227,0.15)' }}>
-        <div style={{ fontFamily: FONT_C, fontSize: 'clamp(1rem, 1.6vw, 1.2rem)', fontWeight: 700, color: FORCE_BLUE, letterSpacing: '0.1em', textTransform: 'uppercase', textShadow: '0 0 16px rgba(126,200,227,0.4)' }}>
+        <div style={{ fontFamily: FONT_C, fontSize: 'clamp(1rem, 1.6vw, 1.2rem)', fontWeight: 700, color: '#3A0C04', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
           ✦ Force Power Activated
         </div>
       </div>
@@ -116,7 +116,7 @@ export function ForceResolveStep({
       {/* Consequence reminder */}
       {costlyUsed > 0 && (
         <div style={{ padding: '8px 12px', background: isFallen ? 'rgba(126,200,227,0.06)' : 'rgba(144,96,208,0.08)', border: `1px solid ${isFallen ? 'rgba(126,200,227,0.22)' : 'rgba(144,96,208,0.22)'}`, borderRadius: 6 }}>
-          <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)', color: isFallen ? 'rgba(126,200,227,0.75)' : 'rgba(200,150,255,0.75)', lineHeight: 1.45 }}>
+          <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)', color: 'rgba(58,12,4,0.7)', lineHeight: 1.45 }}>
             Reminder: suffer {costlyUsed} strain and flip 1 Destiny Point {destinyFlip}.
           </div>
         </div>
@@ -131,7 +131,7 @@ export function ForceResolveStep({
             background: 'rgba(126,200,227,0.08)',
             border: '1px solid rgba(126,200,227,0.3)',
             fontFamily: FONT_R, fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)', fontWeight: 700,
-            letterSpacing: '0.08em', textTransform: 'uppercase', color: FORCE_BLUE,
+            letterSpacing: '0.08em', textTransform: 'uppercase', color: '#3A0C04',
             transition: 'all .15s',
           }}
         >

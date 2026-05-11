@@ -21,10 +21,10 @@ import type { RollResult } from '@/components/player-hud/dice-engine'
 import { HUD } from '@/lib/tokens'
 
 /* ── Design tokens ────────────────────────────────────────── */
-const BG        = '#060D09'
-const PANEL_BG  = 'rgba(8,16,10,0.88)'
-const RAISED_BG = 'rgba(14,26,18,0.9)'
-const BORDER    = 'rgba(200,170,80,0.18)'
+const BG        = 'var(--hud-bg)'
+const PANEL_BG  = 'var(--hud-surface-mid)'
+const RAISED_BG = 'var(--hud-surface-lo)'
+const BORDER    = 'var(--hud-border)'
 const RED       = '#e05252'
 const BLUE      = '#52a8e0'
 const GREEN     = '#52e08a'
@@ -33,10 +33,10 @@ const INT_C     = '#a852e0'
 const CUN_C     = '#e0a852'
 const WIL_C     = '#52e0a8'
 const TEXTGR    = '#72B421'
-const TEXT      = '#E8DFC8'
-const TEXT_SEC  = 'rgba(232,223,200,0.6)'
-const TEXT_MUTED = 'rgba(232,223,200,0.45)'
-const FC        = "'Rajdhani', sans-serif"
+const TEXT      = 'var(--hud-text)'
+const TEXT_SEC  = 'var(--hud-text-dim)'
+const TEXT_MUTED = 'var(--hud-text-faint)'
+const FC        = 'var(--font-body)'
 
 /* ── Characteristic display config ───────────────────────── */
 const CHAR_COLORS = [RED, BLUE, INT_C, CUN_C, WIL_C, '#e05298']
@@ -425,10 +425,10 @@ export function EncounterAdversaryPanel({ campaignId, characters }: EncounterAdv
 
         return (
           <div key={adv.instanceId} style={{
-            background: isDefeated ? 'rgba(232,223,200,0.02)' : PANEL_BG,
+            background: isDefeated ? 'var(--hud-surface-lo)' : PANEL_BG,
             backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
             borderRadius: 6, position: 'relative',
-            borderTop: `2px solid ${isDefeated ? 'rgba(232,223,200,0.1)' : `${accent}80`}`,
+            borderTop: `2px solid ${isDefeated ? 'var(--hud-border)' : `${accent}80`}`,
             borderRight: `1px solid ${BORDER}`,
             borderBottom: `1px solid ${BORDER}`,
             borderLeft: `1px solid ${BORDER}`,
@@ -450,8 +450,8 @@ export function EncounterAdversaryPanel({ campaignId, characters }: EncounterAdv
                   {isDefeated ? (
                     <span style={{
                       fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.1em',
-                      color: 'rgba(232,223,200,0.25)', border: '1px solid rgba(232,223,200,0.15)',
-                      borderRadius: 3, padding: '1px 5px', background: 'rgba(232,223,200,0.05)',
+                      color: TEXT_MUTED, border: `1px solid var(--hud-border)`,
+                      borderRadius: 3, padding: '1px 5px', background: 'var(--hud-surface-lo)',
                     }}>DEFEATED</span>
                   ) : (
                     <TypeBadge type={adv.type} />
@@ -473,7 +473,7 @@ export function EncounterAdversaryPanel({ campaignId, characters }: EncounterAdv
                   onClick={e => e.stopPropagation()}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 6,
-                    background: 'rgba(6,13,9,0.97)', border: '1px solid rgba(224,80,80,0.4)',
+                    background: 'var(--hud-surface-hi)', border: '1px solid rgba(224,80,80,0.4)',
                     borderRadius: 4, padding: '3px 8px', flexShrink: 0,
                   }}
                 >
@@ -749,7 +749,7 @@ export function EncounterAdversaryPanel({ campaignId, characters }: EncounterAdv
                 return (
                   <div style={{ borderTop: `1px solid ${HUD.gold}40`, padding: '8px 12px', background: `${HUD.gold}09` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                      <span style={{ fontFamily: "'Cinzel',serif", fontSize: 'clamp(9px,1vw,11px)', fontWeight: 700, letterSpacing: '0.18em', color: HUD.gold, textTransform: 'uppercase' }}>
+                      <span style={{ fontFamily: FC, fontSize: 'clamp(9px,1vw,11px)', fontWeight: 700, letterSpacing: '0.18em', color: HUD.gold, textTransform: 'uppercase' }}>
                         Squad Active
                       </span>
                       <span style={{ fontFamily: FC, fontSize: FS_CAPTION, color: TEXT_SEC }}>{liveCount}/{adv.squad_total_minions ?? 0} minions</span>
@@ -856,8 +856,8 @@ export function EncounterAdversaryPanel({ campaignId, characters }: EncounterAdv
           top: talentTooltip.rect.bottom + 6,
           left: Math.min(talentTooltip.rect.left, window.innerWidth - 280),
           zIndex: 9100,
-          background: 'rgba(6,10,8,0.97)',
-          border: '1px solid rgba(200,170,80,0.35)',
+          background: 'var(--hud-surface-hi)',
+          border: '1px solid var(--hud-border-hi)',
           borderRadius: 6, padding: '8px 12px',
           maxWidth: 260,
           boxShadow: '0 4px 20px rgba(0,0,0,0.7)',
@@ -946,39 +946,39 @@ function AdversaryWoundTracker({
 
   const btnBase: React.CSSProperties = {
     width: 36, height: 28, borderRadius: 5,
-    background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)',
+    background: 'var(--hud-surface-lo)', border: '1px solid var(--hud-border)',
     cursor: 'pointer', fontFamily: FC, fontSize: 16, lineHeight: 1,
-    color: 'rgba(232,223,200,0.8)',
+    color: TEXT,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     transition: 'border-color .12s', flexShrink: 0,
   }
 
   return (
     <div>
-      <div style={{ height: 6, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden' }}>
+      <div style={{ height: 6, background: 'var(--hud-surface-lo)', borderRadius: 3, overflow: 'hidden' }}>
         <div style={{ width: `${pct * 100}%`, height: '100%', background: barColor, borderRadius: 3, transition: 'width 300ms ease', animation: pct >= 1 ? 'pulse-dot 1.4s ease-in-out infinite' : 'none' }} />
       </div>
-      <div style={{ fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: 'clamp(0.65rem,1vw,0.78rem)', color: TEXT_MUTED, textAlign: 'right', marginTop: 2 }}>
+      <div style={{ fontFamily: FC, fontSize: 'clamp(0.65rem,1vw,0.78rem)', color: TEXT_MUTED, textAlign: 'right', marginTop: 2 }}>
         {wounds} / {maxWounds}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
         <button onClick={() => onAdjust(-1)} disabled={wounds === 0}
-          style={{ ...btnBase, cursor: wounds === 0 ? 'not-allowed' : 'pointer', color: wounds === 0 ? 'rgba(232,223,200,0.2)' : 'rgba(232,223,200,0.8)' }}
+          style={{ ...btnBase, cursor: wounds === 0 ? 'not-allowed' : 'pointer', color: wounds === 0 ? 'var(--hud-text-faint)' : TEXT }}
           onMouseEnter={e => { if (wounds > 0) (e.currentTarget as HTMLElement).style.borderColor = `${accentColor}66` }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.12)' }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--hud-border)' }}
         >−</button>
-        <span style={{ flex: 1, textAlign: 'center', fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: 'clamp(0.75rem,1.2vw,0.88rem)', color: 'rgba(232,223,200,0.8)' }}>
+        <span style={{ flex: 1, textAlign: 'center', fontFamily: FC, fontSize: 'clamp(0.75rem,1.2vw,0.88rem)', color: TEXT }}>
           {wounds} wound{wounds !== 1 ? 's' : ''}
         </span>
         <button onClick={() => onAdjust(1)} style={btnBase}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${accentColor}66` }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.12)' }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--hud-border)' }}
         >+</button>
       </div>
       {isMinion && groupAlive !== null && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginTop: 5 }}>
           {Array.from({ length: adv.groupSize }).map((_, i) => (
-            <span key={i} style={{ fontSize: 'clamp(0.6rem,0.9vw,0.7rem)', color: i < groupAlive ? barColor : 'rgba(255,255,255,0.15)' }}>
+            <span key={i} style={{ fontSize: 'clamp(0.6rem,0.9vw,0.7rem)', color: i < groupAlive ? barColor : 'var(--hud-surface-lo)' }}>
               {i < groupAlive ? '■' : '□'}
             </span>
           ))}
@@ -999,14 +999,14 @@ function AdversaryWoundTracker({
               ...btnBase,
               width: 28, height: 24,
               cursor: adv.groupSize <= 1 ? 'not-allowed' : 'pointer',
-              color: adv.groupSize <= 1 ? 'rgba(232,223,200,0.2)' : 'rgba(232,223,200,0.8)',
+              color: adv.groupSize <= 1 ? 'var(--hud-text-faint)' : TEXT,
             }}
             title="Remove one unit from group"
           >−</button>
           <span style={{
-            fontFamily: "'Share Tech Mono','Courier New',monospace",
+            fontFamily: FC,
             fontSize: 'clamp(0.7rem,1vw,0.82rem)',
-            color: 'rgba(232,223,200,0.8)',
+            color: TEXT,
             minWidth: 20, textAlign: 'center',
           }}>{adv.groupSize}</span>
           <button
@@ -1026,24 +1026,24 @@ function AdversaryWoundTracker({
         return (
           <div style={{ marginTop: 10 }}>
             <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: AMBER_C, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 4 }}>Strain</div>
-            <div style={{ height: 6, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden' }}>
+            <div style={{ height: 6, background: 'var(--hud-surface-lo)', borderRadius: 3, overflow: 'hidden' }}>
               <div style={{ width: `${sPct * 100}%`, height: '100%', background: sBarColor, borderRadius: 3, transition: 'width 300ms ease' }} />
             </div>
-            <div style={{ fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: 'clamp(0.65rem,1vw,0.78rem)', color: TEXT_MUTED, textAlign: 'right', marginTop: 2 }}>
+            <div style={{ fontFamily: FC, fontSize: 'clamp(0.65rem,1vw,0.78rem)', color: TEXT_MUTED, textAlign: 'right', marginTop: 2 }}>
               {strain} / {strainMax}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
               <button onClick={() => onAdjustStrain(-1)} disabled={strain === 0}
-                style={{ ...btnBase, cursor: strain === 0 ? 'not-allowed' : 'pointer', color: strain === 0 ? 'rgba(232,223,200,0.2)' : 'rgba(232,223,200,0.8)' }}
+                style={{ ...btnBase, cursor: strain === 0 ? 'not-allowed' : 'pointer', color: strain === 0 ? 'var(--hud-text-faint)' : TEXT }}
                 onMouseEnter={e => { if (strain > 0) (e.currentTarget as HTMLElement).style.borderColor = `${AMBER_C}66` }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.12)' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--hud-border)' }}
               >−</button>
-              <span style={{ flex: 1, textAlign: 'center', fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: 'clamp(0.75rem,1.2vw,0.88rem)', color: 'rgba(232,223,200,0.8)' }}>
+              <span style={{ flex: 1, textAlign: 'center', fontFamily: FC, fontSize: 'clamp(0.75rem,1.2vw,0.88rem)', color: TEXT }}>
                 {strain} strain
               </span>
               <button onClick={() => onAdjustStrain(1)} style={btnBase}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${AMBER_C}66` }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.12)' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--hud-border)' }}
               >+</button>
             </div>
           </div>
@@ -1069,8 +1069,8 @@ function TypeBadge({ type }: { type: 'minion' | 'rival' | 'nemesis' }) {
 
 /* ── smallCtrlBtn ─────────────────────────────────────────── */
 const smallCtrlBtn: React.CSSProperties = {
-  background: 'transparent', border: '1px solid rgba(200,170,80,0.32)',
+  background: 'transparent', border: `1px solid var(--hud-border-hi)`,
   borderRadius: 3, padding: '1px 7px', cursor: 'pointer',
-  fontFamily: "'Rajdhani', sans-serif", fontSize: FS_CAPTION, color: TEXT,
+  fontFamily: FC, fontSize: FS_CAPTION, color: TEXT,
   transition: '.15s', lineHeight: 1,
 }

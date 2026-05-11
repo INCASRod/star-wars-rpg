@@ -7,17 +7,17 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { HUD } from '@/lib/tokens'
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
-const FONT_C    = "var(--font-rajdhani), 'Cinzel', serif"
-const FONT_R    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M    = "'Share Tech Mono','Courier New',monospace"
-const GOLD_BD   = 'rgba(200,170,80,0.3)'
-const GOLD_DIM  = 'rgba(200,170,80,0.5)'
-const TEXT      = 'rgba(232,223,200,0.85)'
-const DIM       = '#6A8070'
-const BORDER    = 'rgba(200,170,80,0.14)'
-const LIGHT_CLR = '#7EC8E3'
+const FONT_C    = 'var(--font-body)'
+const FONT_R    = 'var(--font-body)'
+const FONT_M    = 'var(--font-body)'
+const GOLD_BD   = 'var(--hud-border-hi)'
+const GOLD_DIM  = 'var(--hud-text-faint)'
+const TEXT      = 'var(--hud-text)'
+const DIM       = 'var(--hud-text-faint)'
+const BORDER    = 'var(--hud-border)'
+const LIGHT_CLR = '#1A78A0'
 const DARK_CLR  = '#8B2BE2'
-const BG        = 'rgba(6,13,9,0.98)'
+const BG        = 'var(--hud-surface-hi)'
 const FS_OVER   = 'var(--text-overline)'
 const FS_CAP    = 'var(--text-caption)'
 const FS_LABEL  = 'var(--text-label)'
@@ -205,7 +205,7 @@ export function DestinyRollModal({
                   onChange={e => setManualLight(Math.min(5, Math.max(0, parseInt(e.target.value) || 0)))}
                   style={{
                     width: 64, textAlign: 'center',
-                    background: 'rgba(0,0,0,0.4)', border: `1px solid rgba(126,200,227,0.3)`,
+                    background: 'var(--hud-surface-lo)', border: `1px solid rgba(126,200,227,0.3)`,
                     color: LIGHT_CLR, fontFamily: FONT_M, fontSize: FS_H4,
                     padding: '8px 4px', borderRadius: 4, outline: 'none',
                   }}
@@ -245,7 +245,7 @@ export function DestinyRollModal({
               letterSpacing: '0.12em', textTransform: 'uppercase',
               padding: 'clamp(9px, 1.5vh, 13px) 24px', borderRadius: 6,
               cursor: !hasResult || busy ? 'not-allowed' : 'pointer',
-              background: 'rgba(200,170,80,0.15)',
+              background: 'var(--hud-surface-lo)',
               border: `1px solid ${GOLD_BD}`,
               color: HUD.gold,
               opacity: !hasResult || busy ? 0.4 : 1,
