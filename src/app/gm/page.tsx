@@ -189,12 +189,7 @@ function GmDashboard() {
 
   const { activeMap, allMaps, removeMap } = useActiveMap(campaignId)
 
-  const { tokens: stagingTokens, moveToken: stagingMoveToken, toggleVisibility: stagingToggleVisibility, removeToken: stagingRemoveToken, removeAllTokens: stagingRemoveAllTokens, addToken: stagingAddToken } = useMapTokens(
-    // only subscribe to tokens when on the staging tab
-    typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tab') === 'staging'
-      ? (activeMap?.id ?? null)
-      : null
-  )
+  const { tokens: stagingTokens, moveToken: stagingMoveToken, toggleVisibility: stagingToggleVisibility, removeToken: stagingRemoveToken, removeAllTokens: stagingRemoveAllTokens, addToken: stagingAddToken } = useMapTokens(activeMap?.id ?? null)
 
   const {
     sessionMode, combatRound, sessionBusy, stagingEncounter,
