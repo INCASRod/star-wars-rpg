@@ -271,6 +271,14 @@ export function useGmSession(params: {
     if (!campaignId) return
     setSessionBusy(true)
 
+    // Deactivate any staging encounter created during token placement so we
+    // don't leave orphaned is_active=true rows alongside the new combat one.
+    await supabase
+      .from('combat_encounters')
+      .update({ is_active: false, updated_at: new Date().toISOString() })
+      .eq('campaign_id', campaignId)
+      .eq('is_active', true)
+
     const { data } = await supabase
       .from('combat_encounters')
       .upsert({ ...encounterData, campaign_id: campaignId })

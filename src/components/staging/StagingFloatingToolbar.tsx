@@ -113,8 +113,10 @@ export interface StagingFloatingToolbarProps {
 }
 
 /* ── Encounter helpers ────────────────────────────────────── */
-// Returns the current active encounter, or null if combat has not been started.
-// Never creates one — encounter creation is the GM's exclusive action via beginCombat().
+// Returns the active encounter, creating a staging one if none exists yet.
+// Creating with is_active:true is intentional — GM panels need it to show adversaries.
+// Players are shielded from "Combat Active" UI by the isCombat sessionMode gate in
+// PlayerHUDDesktop, so this does not prematurely activate combat for them.
 async function ensureActiveEncounter(
   supabase: ReturnType<typeof createClient>,
   campaignId: string,
@@ -126,7 +128,24 @@ async function ensureActiveEncounter(
     .eq('is_active', true)
     .order('created_at', { ascending: false })
     .limit(1)
-  return rows && rows.length > 0 ? (rows[0] as CombatEncounter) : null
+  if (rows && rows.length > 0) return rows[0] as CombatEncounter
+
+  const { data: created } = await supabase
+    .from('combat_encounters')
+    .insert({
+      campaign_id:        campaignId,
+      round:              1,
+      is_active:          true,
+      current_slot_index: 0,
+      initiative_type:    'cool',
+      initiative_slots:   [],
+      adversaries:        [],
+      vehicles:           [],
+      log_entries:        [],
+    })
+    .select('*')
+    .single()
+  return created as CombatEncounter | null
 }
 
 export function StagingFloatingToolbar({

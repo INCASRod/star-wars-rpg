@@ -180,7 +180,9 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   // ── Session tab — subscribe to active map visibility ──
   const { visibleMap } = useActiveMap(effectiveCampaignId)
   const { encounter }  = useEncounterState(effectiveCampaignId)
-  const isCombatActive = encounter !== null && encounter.is_active
+  // Gate on sessionMode so a staging encounter (is_active=true, session still exploration)
+  // does not show "Combat Active" on player sheets before the GM explicitly starts combat.
+  const isCombatActive = isCombat && encounter !== null && encounter.is_active
 
   const mapTokens = useMapTokens(visibleMap?.id ?? null)
   const visibleMapTokens = mapTokens.tokens.filter(t => t.is_visible)
