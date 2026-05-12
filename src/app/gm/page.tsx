@@ -270,12 +270,14 @@ function GmDashboard() {
   })
   const prevToolsTab = useRef<GmTab>(activeTab === 'staging' ? 'xp' : activeTab)
 
-  // When entering staging view, sync any adversary tokens that have no encounter slot yet.
-  // This repairs tokens placed before an encounter existed (e.g. from a prior session).
+  // When entering staging view (or when tokens finish loading while in staging), sync any
+  // adversary tokens that have no encounter slot yet.  stagingTokens is in the deps so the
+  // effect re-fires once the async fetch completes — fixing the race where the tab was
+  // already active but tokens hadn't arrived yet on the first render.
   useEffect(() => {
     if (activeTab === 'staging') void syncStagingTokensToEncounter()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab])
+  }, [activeTab, stagingTokens])
 
   // wrap openStagingCombatModal to also open the modal
   const handleOpenStagingModal = useCallback(async () => {

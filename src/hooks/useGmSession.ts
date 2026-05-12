@@ -99,6 +99,11 @@ export function useGmSession(params: {
 
   const autoPopulateEncounterFromTokens = useCallback(async () => {
     if (!campaignId) return
+    if (!activeMapId) return
+
+    // Guard first — no DB work at all if there's nothing to sync.
+    const pending = stagingTokens.filter(t => t.participant_type === 'adversary' && !t.slot_key && !!t.label)
+    if (pending.length === 0) return
 
     const { data: rows } = await supabase
       .from('combat_encounters')
@@ -121,10 +126,6 @@ export function useGmSession(params: {
       enc = created as CombatEncounter | null
     }
     if (!enc) return
-    if (!activeMapId) return
-
-    const pending = stagingTokens.filter(t => t.participant_type === 'adversary' && !t.slot_key && !!t.label)
-    if (pending.length === 0) return
 
     const advTokens = pending.filter(t => t.token_shape !== 'rectangle')
     const vehTokens = pending.filter(t => t.token_shape === 'rectangle')
