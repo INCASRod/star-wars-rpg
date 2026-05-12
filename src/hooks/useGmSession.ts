@@ -32,6 +32,7 @@ export interface UseGmSessionReturn {
   stagingAddToEncounter:    (adv: Adversary, alignment: 'enemy' | 'allied_npc', successes?: number, advantages?: number) => Promise<void>
   stagingAddVehicleToEncounter: (vehicle: Vehicle, alignment: 'enemy' | 'allied_npc', successes?: number, advantages?: number) => Promise<void>
   loadStagingLibrary:       () => Promise<void>
+  syncStagingTokensToEncounter: () => Promise<void>
 }
 
 export function useGmSession(params: {
@@ -411,5 +412,6 @@ export function useGmSession(params: {
     openStagingCombatModal, handleStagingCombatStart,
     stagingAddToEncounter, stagingAddVehicleToEncounter,
     loadStagingLibrary,
+    syncStagingTokensToEncounter: autoPopulateEncounterFromTokens,
   }
 }

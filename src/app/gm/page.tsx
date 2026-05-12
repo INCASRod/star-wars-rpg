@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useMemo, useRef, useState, useCallback } from 'react'
+import { Suspense, useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -197,6 +197,7 @@ function GmDashboard() {
     beginCombat, endEncounter, changeRound,
     openStagingCombatModal, handleStagingCombatStart,
     stagingAddToEncounter, stagingAddVehicleToEncounter,
+    syncStagingTokensToEncounter,
   } = useGmSession({ campaignId, campaign, activeChars, characters, stagingTokens, activeMapId: activeMap?.id, sendToChar })
 
   const {
@@ -268,6 +269,13 @@ function GmDashboard() {
     return GM_TAB_VALID.includes(saved as GmTab) ? (saved as GmTab) : 'xp'
   })
   const prevToolsTab = useRef<GmTab>(activeTab === 'staging' ? 'xp' : activeTab)
+
+  // When entering staging view, sync any adversary tokens that have no encounter slot yet.
+  // This repairs tokens placed before an encounter existed (e.g. from a prior session).
+  useEffect(() => {
+    if (activeTab === 'staging') void syncStagingTokensToEncounter()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab])
 
   // wrap openStagingCombatModal to also open the modal
   const handleOpenStagingModal = useCallback(async () => {

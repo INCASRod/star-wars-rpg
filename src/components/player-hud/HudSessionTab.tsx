@@ -338,7 +338,7 @@ export function HudSessionTab({
             borderRadius: 4, padding: '4px 10px', cursor: 'pointer',
           }}
         >Talents</button>
-        {isCombatActive && encounter && (
+        {encounter && encounter.adversaries.length > 0 && visibleMapTokens.some(t => t.participant_type === 'adversary') && (
           <button
             onClick={() => setAdversaryDrawerOpen(o => !o)}
             style={{
@@ -349,7 +349,7 @@ export function HudSessionTab({
               border: `1px solid rgba(224,58,30,0.5)`,
               borderRadius: 4, padding: '4px 10px', cursor: 'pointer',
             }}
-          >{encounter && (encounter.vehicles ?? []).length > 0 ? 'Adversaries & Vehicles' : 'Adversaries'}</button>
+          >{(encounter.vehicles ?? []).length > 0 ? 'Adversaries & Vehicles' : 'Adversaries'}</button>
         )}
       </div>
 
@@ -359,7 +359,7 @@ export function HudSessionTab({
         onClose={() => setTalentDrawerOpen(false)}
         hudTalents={hudTalents}
       />
-      {isCombatActive && encounter && (
+      {encounter && encounter.adversaries.length > 0 && visibleMapTokens.some(t => t.participant_type === 'adversary') && (
         <HudAdversaryDrawer
           open={adversaryDrawerOpen}
           onClose={() => setAdversaryDrawerOpen(false)}
