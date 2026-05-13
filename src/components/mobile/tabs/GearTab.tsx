@@ -26,9 +26,9 @@ const FONT_M   = 'var(--font-body)'
 const EQUIP_STATES: EquipState[] = ['stowed', 'carrying', 'equipped']
 const EQUIP_LABELS: Record<EquipState, string> = { stowed: 'STOW', carrying: 'CARRY', equipped: 'EQUIP' }
 const EQUIP_ACTIVE: Record<EquipState, React.CSSProperties> = {
-  stowed:   { background: 'var(--hud-surface-lo)', borderColor: 'var(--hud-border-hi)',  color: 'var(--hud-text)' },
+  stowed:   { background: 'var(--hud-surface-lo)', borderColor: 'var(--hud-border-hi)', color: 'var(--hud-text)' },
   carrying: { background: 'var(--hud-surface-lo)', borderColor: 'var(--hud-border-hi)', color: HUD.gold },
-  equipped: { background: 'rgba(76,175,80,0.1)',    borderColor: 'rgba(76,175,80,0.45)',  color: '#4CAF50' },
+  equipped: { background: 'rgba(78,200,122,0.18)', borderColor: '#4EC87A',              color: 'var(--hud-text-faint)' },
 }
 
 function EquipStateButtons({ equipState, onSet }: { equipState: EquipState; onSet?: (s: EquipState) => void }) {

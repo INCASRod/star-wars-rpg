@@ -171,11 +171,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   const isCombat = sessionMode === 'combat'
 
   // ── UI State ──
-  const TAB_KEY = `holocron:char-tab:${characterId}`
-  const [activeTab, setActiveTab] = useState<TabName>(() => {
-    const saved = typeof window !== 'undefined' ? window.localStorage.getItem(TAB_KEY) : null
-    return (['Skills','Talents','Inventory','Force','Lore','Feed','Session','Group'] as TabName[]).includes(saved as TabName) ? (saved as TabName) : 'Session'
-  })
+  const [activeTab, setActiveTab] = useState<TabName>('Session')
 
   // ── Session tab — subscribe to active map visibility ──
   const { visibleMap } = useActiveMap(effectiveCampaignId)
@@ -387,7 +383,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         }}>
           <TabBar
             active={activeTab}
-            onChange={t => { setActiveTab(t); localStorage.setItem(TAB_KEY, t) }}
+            onChange={t => setActiveTab(t)}
             hasCombat={isCombat}
             isForceUser={isForceUserSensitive(character, effectiveStats?.forceRating ?? forceRating)}
             isForceUserFallen={character.is_dark_side_fallen === true}
@@ -403,100 +399,9 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
             ownObligationValue={character.obligation_value}
           />
 
-          <div key={activeTab} style={
-            activeTab === 'Session'
-              ? { flex: 1, overflow: 'hidden', position: 'relative' }
-              : { flex: 1, overflowY: 'auto', padding: 'var(--space-2) var(--space-3)', animation: 'hudTabIn 0.2s ease forwards' }
-          }>
-            {activeTab === 'Skills' && (
-              <HudSkillsTab
-                character={character}
-                hudSkills={hudSkills}
-                hudTalents={hudTalents}
-                isCombat={isCombat}
-                effectiveStats={effectiveStats}
-                engineBreakdown={engineBreakdown}
-                skillModifiers={skillModifiers}
-                speciesAbilities={speciesAbilities}
-                bonusSkillKeys={bonusSkillKeys}
-                onRoll={handleRoll}
-                onBuySkill={handleBuySkill}
-                onOpenPopover={(skill, anchor) => setSkillPopover({ skill, anchor })}
-                onVitalChange={handleVitalChange}
-              />
-            )}
-            {activeTab === 'Talents' && (
-              <HudTalentsTab
-                character={character}
-                characterId={characterId}
-                charSpecs={charSpecs}
-                refSpecMap={refSpecMap}
-                refSpecs={refSpecs}
-                refTalentMap={refTalentMap}
-                talents={talents}
-                hudTalents={hudTalents}
-                activeSpecKey={activeSpecKey}
-                setActiveSpecKey={setActiveSpecKey}
-                talentTreeData={talentTreeData}
-                isGmMode={isGmMode}
-                onPurchaseTalent={handlePurchaseTalent}
-                onRemoveTalent={isGmMode ? handleRemoveTalent : undefined}
-                onBuySpecialization={handleBuySpecialization}
-                onPendingDedication={setPendingDedication}
-              />
-            )}
-            {activeTab === 'Inventory' && (
-              <HudInventoryTab
-                hudWeapons={hudWeapons}
-                hudArmor={hudArmor}
-                hudGear={hudGear}
-                encumbranceCurrent={encumbranceCurrent}
-                encThreshold={encThreshold}
-                refWeaponQualityMap={refWeaponQualityMap}
-                isGmMode={isGmMode}
-                characterName={character.name}
-                characterId={character.id}
-                stowableAssets={stowableAssets}
-                baseOfOperationsName={baseOfOperationsName}
-                effectiveCampaignId={effectiveCampaignId}
-                supabase={supabase}
-                onSetEquipState={handleSetEquipState}
-                onRemoveWeapon={handleRemoveWeapon}
-                onRemoveEquipment={handleRemoveEquipment}
-              />
-            )}
-            {activeTab === 'Force' && (
-              <HudForceTab
-                character={character}
-                forceRating={forceRating}
-                effectiveStats={effectiveStats}
-                allForcePowers={allForcePowers}
-                conflicts={conflicts}
-                onPurchaseForceAbility={handlePurchaseForceAbility}
-                onViewPower={pk => { setActivePowerKey(pk); setShowForceTree(true) }}
-                onAdd={() => { setActivePowerKey(allForcePowers[0]?.powerKey ?? null); setShowForceTree(true) }}
-              />
-            )}
-            {activeTab === 'Lore' && (
-              <HudLoreTab
-                character={character}
-                careerName={careerName}
-                speciesName={speciesName}
-                refSpeciesAll={refSpeciesAll}
-                refDutyTypes={refDutyTypes}
-                refObligationTypes={refObligationTypes}
-                onBackstoryChange={handleBackstoryChange}
-                onNotesChange={handleNotesChange}
-              />
-            )}
-            {activeTab === 'Feed' && (
-              <RollFeedPanel
-                rolls={rolls}
-                ownCharacterId={character.id}
-                isGm={false}
-              />
-            )}
-            {activeTab === 'Session' && (
+          {/* Session tab */}
+          {activeTab === 'Session' && (
+            <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
               <HudSessionTab
                 character={character}
                 campaignId={effectiveCampaignId}
@@ -507,20 +412,114 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
                 encounter={encounter}
                 hudTalents={hudTalents}
               />
-            )}
-            {activeTab === 'Group' && effectiveCampaignId && (
-              <GroupSheet
-                campaignId={effectiveCampaignId}
-                characterName={character.name}
-              />
-            )}
-            {activeTab === 'Group' && !effectiveCampaignId && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, flexDirection: 'column', gap: 12, padding: 40 }}>
-                <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_H4, color: C.textFaint }}>NO CAMPAIGN</div>
-                <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.textFaint }}>Join a campaign to access the group sheet</div>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
+
+          {/* All other tabs — keyed so each mount triggers the slide-in animation */}
+          {activeTab !== 'Session' && (
+            <div key={activeTab} style={{ flex: 1, overflowY: 'auto', padding: 'var(--space-2) var(--space-3)', animation: 'hudTabIn 0.2s ease forwards' }}>
+              {activeTab === 'Skills' && (
+                <HudSkillsTab
+                  character={character}
+                  hudSkills={hudSkills}
+                  hudTalents={hudTalents}
+                  isCombat={isCombat}
+                  effectiveStats={effectiveStats}
+                  engineBreakdown={engineBreakdown}
+                  skillModifiers={skillModifiers}
+                  speciesAbilities={speciesAbilities}
+                  bonusSkillKeys={bonusSkillKeys}
+                  onRoll={handleRoll}
+                  onBuySkill={handleBuySkill}
+                  onOpenPopover={(skill, anchor) => setSkillPopover({ skill, anchor })}
+                  onVitalChange={handleVitalChange}
+                />
+              )}
+              {activeTab === 'Talents' && (
+                <HudTalentsTab
+                  character={character}
+                  characterId={characterId}
+                  charSpecs={charSpecs}
+                  refSpecMap={refSpecMap}
+                  refSpecs={refSpecs}
+                  refTalentMap={refTalentMap}
+                  talents={talents}
+                  hudTalents={hudTalents}
+                  activeSpecKey={activeSpecKey}
+                  setActiveSpecKey={setActiveSpecKey}
+                  talentTreeData={talentTreeData}
+                  isGmMode={isGmMode}
+                  onPurchaseTalent={handlePurchaseTalent}
+                  onRemoveTalent={isGmMode ? handleRemoveTalent : undefined}
+                  onBuySpecialization={handleBuySpecialization}
+                  onPendingDedication={setPendingDedication}
+                />
+              )}
+              {activeTab === 'Inventory' && (
+                <HudInventoryTab
+                  hudWeapons={hudWeapons}
+                  hudArmor={hudArmor}
+                  hudGear={hudGear}
+                  encumbranceCurrent={encumbranceCurrent}
+                  encThreshold={encThreshold}
+                  refWeaponQualityMap={refWeaponQualityMap}
+                  isGmMode={isGmMode}
+                  characterName={character.name}
+                  characterId={character.id}
+                  stowableAssets={stowableAssets}
+                  baseOfOperationsName={baseOfOperationsName}
+                  effectiveCampaignId={effectiveCampaignId}
+                  supabase={supabase}
+                  onSetEquipState={handleSetEquipState}
+                  onRemoveWeapon={handleRemoveWeapon}
+                  onRemoveEquipment={handleRemoveEquipment}
+                />
+              )}
+              {activeTab === 'Force' && (
+                <HudForceTab
+                  character={character}
+                  forceRating={forceRating}
+                  effectiveStats={effectiveStats}
+                  allForcePowers={allForcePowers}
+                  conflicts={conflicts}
+                  onPurchaseForceAbility={handlePurchaseForceAbility}
+                  onViewPower={pk => { setActivePowerKey(pk); setShowForceTree(true) }}
+                  onAdd={() => { setActivePowerKey(allForcePowers[0]?.powerKey ?? null); setShowForceTree(true) }}
+                />
+              )}
+              {activeTab === 'Lore' && (
+                <HudLoreTab
+                  character={character}
+                  careerName={careerName}
+                  speciesName={speciesName}
+                  refSpeciesAll={refSpeciesAll}
+                  refDutyTypes={refDutyTypes}
+                  refObligationTypes={refObligationTypes}
+                  onBackstoryChange={handleBackstoryChange}
+                  onNotesChange={handleNotesChange}
+                />
+              )}
+              {activeTab === 'Feed' && (
+                <RollFeedPanel
+                  rolls={rolls}
+                  ownCharacterId={character.id}
+                  isGm={false}
+                />
+              )}
+              {activeTab === 'Group' && effectiveCampaignId && (
+                <GroupSheet
+                  campaignId={effectiveCampaignId}
+                  characterName={character.name}
+                />
+              )}
+              {activeTab === 'Group' && !effectiveCampaignId && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, flexDirection: 'column', gap: 12, padding: 40 }}>
+                  <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_H4, color: C.textFaint }}>NO CAMPAIGN</div>
+                  <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.textFaint }}>Join a campaign to access the group sheet</div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* ══ RIGHT COLUMN ═════════════════════════════════════ */}

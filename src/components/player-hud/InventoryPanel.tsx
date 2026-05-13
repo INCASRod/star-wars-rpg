@@ -97,10 +97,10 @@ function SectionLabel({ text }: { text: string }) {
 }
 
 const RANGE_COLOR: Record<string, string> = {
-  Engaged: '#2EC9B8',
-  Short:   '#2EC9B8',
-  Medium:  '#AAEE33',
-  Long:    '#A855E8',
+  Engaged: '#E05252',
+  Short:   '#FF9800',
+  Medium:  HUD.gold,
+  Long:    '#4EC87A',
   Extreme: '#A855E8',
 }
 
@@ -137,8 +137,8 @@ const EQUIP_BTN_STATES: EquipState[] = ['stowed', 'carrying', 'equipped']
 const EQUIP_BTN_LABELS: Record<EquipState, string> = { stowed: 'STOW', carrying: 'CARRY', equipped: 'EQUIP' }
 const EQUIP_BTN_ACTIVE: Record<EquipState, React.CSSProperties> = {
   stowed:   { background: 'var(--hud-surface-mid)', borderColor: 'var(--hud-border-hi)', color: 'var(--hud-text)' },
-  carrying: { background: 'rgba(224,58,30,0.1)',   borderColor: 'rgba(224,58,30,0.45)', color: C.gold },
-  equipped: { background: 'rgba(76,175,80,0.1)',    borderColor: 'rgba(76,175,80,0.45)',  color: '#4CAF50' },
+  carrying: { background: 'rgba(224,58,30,0.1)',    borderColor: 'rgba(224,58,30,0.45)', color: C.gold },
+  equipped: { background: 'rgba(78,200,122,0.18)',  borderColor: '#4EC87A',              color: 'var(--hud-text-faint)' },
 }
 
 function EquipStateButtons({ equipState, onSet }: { equipState: EquipState; onSet: (s: EquipState) => void }) {

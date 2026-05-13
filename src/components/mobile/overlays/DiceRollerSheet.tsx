@@ -3,18 +3,19 @@
 import { useState } from 'react'
 import { DICE_META, SYM, EMPTY_POOL, type DiceType } from '@/components/player-hud/design-tokens'
 import { DiceFace } from '@/components/dice/DiceFace'
-import { rollPool, poolSize, type RollResult } from '@/components/player-hud/dice-engine'
+import { rollPool, rollForceDice, poolSize, type RollResult, type ForceRollResult } from '@/components/player-hud/dice-engine'
 import { logRoll } from '@/lib/logRoll'
 import { HUD } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
-const GOLD_DIM = 'var(--hud-text-dim)'
-const TEXT     = 'var(--hud-text)'
-const TEXT_DIM = 'var(--hud-text-dim)'
-const BORDER   = 'var(--hud-border)'
-const FONT_C   = 'var(--font-body)'
-const FONT_R   = 'var(--font-body)'
-const FONT_M   = 'var(--font-body)'
+const GOLD_DIM  = 'var(--hud-text-dim)'
+const TEXT      = 'var(--hud-text)'
+const TEXT_DIM  = 'var(--hud-text-dim)'
+const BORDER    = 'var(--hud-border)'
+const FONT_C    = 'var(--font-body)'
+const FONT_M    = 'var(--font-body)'
+const LIGHT_COL = '#E8E870'
+const DARK_COL  = '#8070D8'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface MobilePrePopSkill {
@@ -30,6 +31,8 @@ interface DiceRollerSheetProps {
   characterName: string
   campaignId: string | null | undefined
 }
+
+type Mode = 'pool' | 'force'
 
 // ─── Dice types shown in the sheet ───────────────────────────────────────────
 const ADJUSTABLE: DiceType[] = ['difficulty', 'challenge', 'boost', 'setback']
@@ -224,6 +227,58 @@ function ResultDisplay({ result }: { result: RollResult }) {
   )
 }
 
+// ─── Force result display ─────────────────────────────────────────────────────
+function ForceResult({ result }: { result: ForceRollResult }) {
+  const { dice, totalLight, totalDark } = result
+  return (
+    <div style={{
+      marginTop: 16,
+      padding: '12px 16px',
+      background: 'rgba(0,0,0,0.2)',
+      border: `1px solid ${BORDER}`,
+      borderRadius: 10,
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginBottom: 12 }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontFamily: FONT_C, fontSize: 'clamp(1.2rem, 5vw, 1.6rem)', fontWeight: 700, color: LIGHT_COL, lineHeight: 1 }}>
+            {totalLight}
+          </div>
+          <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.55rem, 2.2vw, 0.7rem)', color: TEXT_DIM, marginTop: 2 }}>
+            LIGHT
+          </div>
+        </div>
+        <div style={{ width: 1, background: BORDER, alignSelf: 'stretch' }} />
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontFamily: FONT_C, fontSize: 'clamp(1.2rem, 5vw, 1.6rem)', fontWeight: 700, color: DARK_COL, lineHeight: 1 }}>
+            {totalDark}
+          </div>
+          <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.55rem, 2.2vw, 0.7rem)', color: TEXT_DIM, marginTop: 2 }}>
+            DARK
+          </div>
+        </div>
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center' }}>
+        {dice.map((die, i) => (
+          <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+            <DiceFace type="force" size={28} />
+            <div style={{ display: 'flex', gap: 3, minHeight: 8 }}>
+              {Array.from({ length: die.light }).map((_, j) => (
+                <div key={`l${j}`} style={{ width: 7, height: 7, borderRadius: '50%', background: LIGHT_COL }} />
+              ))}
+              {Array.from({ length: die.dark }).map((_, j) => (
+                <div key={`k${j}`} style={{ width: 7, height: 7, borderRadius: '50%', background: DARK_COL }} />
+              ))}
+              {die.light === 0 && die.dark === 0 && (
+                <span style={{ fontFamily: FONT_M, fontSize: 9, color: TEXT_DIM }}>—</span>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 export function DiceRollerSheet({ prePopSkill, characterId, characterName, campaignId }: DiceRollerSheetProps) {
   const initPool = (): Record<DiceType, number> => {
@@ -235,11 +290,11 @@ export function DiceRollerSheet({ prePopSkill, characterId, characterName, campa
     }
   }
 
-  const [pool, setPool] = useState<Record<DiceType, number>>(initPool)
-  const [result, setResult] = useState<RollResult | null>(null)
-
-  // Reset when skill changes
-  const poolKey = prePopSkill ? `${prePopSkill.name}-${prePopSkill.proficiency}-${prePopSkill.ability}` : 'free'
+  const [mode,        setMode]        = useState<Mode>('pool')
+  const [pool,        setPool]        = useState<Record<DiceType, number>>(initPool)
+  const [result,      setResult]      = useState<RollResult | null>(null)
+  const [forceCount,  setForceCount]  = useState(1)
+  const [forceResult, setForceResult] = useState<ForceRollResult | null>(null)
 
   const addDie    = (type: DiceType) => setPool(p => ({ ...p, [type]: p[type] + 1 }))
   const removeDie = (type: DiceType) => setPool(p => ({ ...p, [type]: Math.max(0, p[type] - 1) }))
@@ -259,104 +314,221 @@ export function DiceRollerSheet({ prePopSkill, characterId, characterName, campa
     }
   }
 
+  const handleRollForce = () => {
+    setForceResult(rollForceDice(forceCount))
+  }
+
   const isEmpty = poolSize(pool) === 0
 
   return (
     <div style={{ padding: '8px 16px 32px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-      {/* Header */}
-      {prePopSkill ? (
-        <div style={{ textAlign: 'center', marginBottom: 4 }}>
-          <div style={{ fontFamily: FONT_C, fontSize: 'clamp(0.95rem, 3.8vw, 1.15rem)', fontWeight: 700, color: HUD.gold }}>
-            {prePopSkill.name}
+
+      {/* Mode tabs */}
+      <div style={{ display: 'flex', borderBottom: `1px solid ${BORDER}`, marginBottom: 4 }}>
+        {(['pool', 'force'] as Mode[]).map(m => (
+          <button
+            key={m}
+            onClick={() => setMode(m)}
+            style={{
+              flex: 1,
+              padding: '8px 0',
+              background: 'transparent',
+              border: 'none',
+              borderBottom: `2px solid ${mode === m ? HUD.gold : 'transparent'}`,
+              cursor: 'pointer',
+              fontFamily: FONT_M,
+              fontSize: 'clamp(0.6rem, 2.4vw, 0.75rem)',
+              fontWeight: 700,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase' as const,
+              color: mode === m ? HUD.gold : GOLD_DIM,
+              marginBottom: -1,
+              transition: 'color 0.15s',
+            }}
+          >
+            {m === 'pool' ? 'Dice Pool' : 'Force Dice'}
+          </button>
+        ))}
+      </div>
+
+      {mode === 'pool' ? (
+        <>
+          {/* Skill header */}
+          {prePopSkill ? (
+            <div style={{ textAlign: 'center', marginBottom: 4 }}>
+              <div style={{ fontFamily: FONT_C, fontSize: 'clamp(0.95rem, 3.8vw, 1.15rem)', fontWeight: 700, color: HUD.gold }}>
+                {prePopSkill.name}
+              </div>
+              <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.6rem, 2.4vw, 0.75rem)', color: GOLD_DIM, marginTop: 2 }}>
+                {prePopSkill.charAbbr}
+              </div>
+            </div>
+          ) : (
+            <div style={{ fontFamily: FONT_C, fontSize: 'clamp(0.9rem, 3.5vw, 1.1rem)', fontWeight: 700, color: HUD.gold, textAlign: 'center', marginBottom: 4 }}>
+              Dice Roller
+            </div>
+          )}
+
+          {/* Positive dice */}
+          <div>
+            <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.55rem, 2.2vw, 0.68rem)', color: GOLD_DIM, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>
+              Positive
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <DiceStepper
+                type="proficiency"
+                count={pool.proficiency}
+                locked={!!prePopSkill}
+                onAdd={() => addDie('proficiency')}
+                onRemove={() => removeDie('proficiency')}
+              />
+              <DiceStepper
+                type="ability"
+                count={pool.ability}
+                locked={!!prePopSkill}
+                onAdd={() => addDie('ability')}
+                onRemove={() => removeDie('ability')}
+              />
+              <DiceStepper
+                type="boost"
+                count={pool.boost}
+                onAdd={() => addDie('boost')}
+                onRemove={() => removeDie('boost')}
+              />
+            </div>
           </div>
-          <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.6rem, 2.4vw, 0.75rem)', color: GOLD_DIM, marginTop: 2 }}>
-            {prePopSkill.charAbbr}
+
+          {/* Divider */}
+          <div style={{ height: 1, background: BORDER }} />
+
+          {/* Negative dice */}
+          <div>
+            <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.55rem, 2.2vw, 0.68rem)', color: GOLD_DIM, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>
+              Negative
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {ADJUSTABLE.filter(t => t !== 'boost').map(type => (
+                <DiceStepper
+                  key={type}
+                  type={type}
+                  count={pool[type]}
+                  onAdd={() => addDie(type)}
+                  onRemove={() => removeDie(type)}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+
+          {/* Roll button */}
+          <button
+            onClick={handleRoll}
+            disabled={isEmpty}
+            style={{
+              width: '100%',
+              height: 52,
+              background: isEmpty
+                ? 'var(--hud-surface-lo)'
+                : 'linear-gradient(135deg, #C8AA50, #8B7430)',
+              border: 'none',
+              borderRadius: 10,
+              cursor: isEmpty ? 'not-allowed' : 'pointer',
+              fontFamily: FONT_C,
+              fontSize: 'clamp(0.9rem, 3.5vw, 1.1rem)',
+              fontWeight: 700,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase' as const,
+              color: isEmpty ? 'var(--hud-text-faint)' : 'var(--hud-text)',
+              marginTop: 4,
+              transition: 'background 0.2s, color 0.2s',
+            }}
+          >
+            {isEmpty ? 'Add Dice to Roll' : `Roll ${poolSize(pool)} Dice`}
+          </button>
+
+          {result && <ResultDisplay result={result} />}
+        </>
       ) : (
-        <div style={{ fontFamily: FONT_C, fontSize: 'clamp(0.9rem, 3.5vw, 1.1rem)', fontWeight: 700, color: HUD.gold, textAlign: 'center', marginBottom: 4 }}>
-          Dice Roller
-        </div>
+        <>
+          {/* Force die + stepper */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginTop: 8 }}>
+            <DiceFace type="force" size={40} active />
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+              <button
+                onClick={() => setForceCount(c => Math.max(1, c - 1))}
+                disabled={forceCount <= 1}
+                style={{
+                  width: 44, height: 44,
+                  background: 'transparent',
+                  border: `1px solid ${BORDER}`,
+                  borderRadius: '8px 0 0 8px',
+                  cursor: forceCount > 1 ? 'pointer' : 'not-allowed',
+                  fontFamily: FONT_C,
+                  fontSize: 'clamp(1rem, 4vw, 1.3rem)',
+                  color: forceCount > 1 ? HUD.gold : 'var(--hud-text-faint)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+              >−</button>
+              <div style={{
+                minWidth: 44, height: 44,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: FONT_C,
+                fontSize: 'clamp(1rem, 4vw, 1.3rem)',
+                fontWeight: 700,
+                color: TEXT,
+                background: 'rgba(255,255,255,0.04)',
+                border: `1px solid ${BORDER}`,
+                borderLeft: 'none', borderRight: 'none',
+              }}>
+                {forceCount}
+              </div>
+              <button
+                onClick={() => setForceCount(c => Math.min(8, c + 1))}
+                disabled={forceCount >= 8}
+                style={{
+                  width: 44, height: 44,
+                  background: 'transparent',
+                  border: `1px solid ${BORDER}`,
+                  borderRadius: '0 8px 8px 0',
+                  cursor: forceCount < 8 ? 'pointer' : 'not-allowed',
+                  fontFamily: FONT_C,
+                  fontSize: 'clamp(1rem, 4vw, 1.3rem)',
+                  color: forceCount < 8 ? HUD.gold : 'var(--hud-text-faint)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+              >+</button>
+            </div>
+
+            <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.6rem, 2.4vw, 0.75rem)', color: GOLD_DIM }}>
+              {forceCount === 1 ? '1 die' : `${forceCount} dice`}
+            </span>
+          </div>
+
+          {/* Roll Force button */}
+          <button
+            onClick={handleRollForce}
+            style={{
+              width: '100%',
+              height: 52,
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.18)',
+              borderRadius: 10,
+              cursor: 'pointer',
+              fontFamily: FONT_C,
+              fontSize: 'clamp(0.9rem, 3.5vw, 1.1rem)',
+              fontWeight: 700,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase' as const,
+              color: TEXT,
+              marginTop: 4,
+            }}
+          >
+            Roll Force
+          </button>
+
+          {forceResult && <ForceResult result={forceResult} />}
+        </>
       )}
-
-      {/* Positive dice */}
-      <div>
-        <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.55rem, 2.2vw, 0.68rem)', color: GOLD_DIM, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>
-          Positive
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <DiceStepper
-            type="proficiency"
-            count={pool.proficiency}
-            locked={!!prePopSkill}
-            onAdd={() => addDie('proficiency')}
-            onRemove={() => removeDie('proficiency')}
-          />
-          <DiceStepper
-            type="ability"
-            count={pool.ability}
-            locked={!!prePopSkill}
-            onAdd={() => addDie('ability')}
-            onRemove={() => removeDie('ability')}
-          />
-          <DiceStepper
-            type="boost"
-            count={pool.boost}
-            onAdd={() => addDie('boost')}
-            onRemove={() => removeDie('boost')}
-          />
-        </div>
-      </div>
-
-      {/* Divider */}
-      <div style={{ height: 1, background: BORDER }} />
-
-      {/* Negative dice */}
-      <div>
-        <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.55rem, 2.2vw, 0.68rem)', color: GOLD_DIM, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>
-          Negative
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {ADJUSTABLE.filter(t => t !== 'boost').map(type => (
-            <DiceStepper
-              key={type}
-              type={type}
-              count={pool[type]}
-              onAdd={() => addDie(type)}
-              onRemove={() => removeDie(type)}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Roll button */}
-      <button
-        onClick={handleRoll}
-        disabled={isEmpty}
-        style={{
-          width: '100%',
-          height: 52,
-          background: isEmpty
-            ? 'var(--hud-surface-lo)'
-            : 'linear-gradient(135deg, #C8AA50, #8B7430)',
-          border: 'none',
-          borderRadius: 10,
-          cursor: isEmpty ? 'not-allowed' : 'pointer',
-          fontFamily: FONT_C,
-          fontSize: 'clamp(0.9rem, 3.5vw, 1.1rem)',
-          fontWeight: 700,
-          letterSpacing: '0.1em',
-          textTransform: 'uppercase',
-          color: isEmpty ? 'var(--hud-text-faint)' : 'var(--hud-text)',
-          marginTop: 4,
-          transition: 'background 0.2s, color 0.2s',
-        }}
-      >
-        {isEmpty ? 'Add Dice to Roll' : `Roll ${poolSize(pool)} Dice`}
-      </button>
-
-      {/* Results */}
-      {result && <ResultDisplay result={result} />}
     </div>
   )
 }

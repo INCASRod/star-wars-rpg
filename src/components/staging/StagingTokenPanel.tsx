@@ -3,7 +3,6 @@
 import { useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useEncounterState } from '@/hooks/useEncounterState'
-import { useAdversaryTokenImages } from '@/hooks/useAdversaryTokenImages'
 import type { MapToken } from '@/hooks/useMapTokens'
 import type { Character } from '@/lib/types'
 import { HUD } from '@/lib/tokens'
@@ -49,13 +48,6 @@ const btnDanger: React.CSSProperties = {
 }
 
 /* ── Internal types (mirrored from GmMapView) ─────────────── */
-interface NpcDrawerSlot {
-  slotId:              string
-  adversaryInstanceId: string
-  name:                string
-  adversaryType:       'minion' | 'rival' | 'nemesis'
-}
-
 interface VehicleDrawerSlot {
   slotId:            string
   vehicleInstanceId: string
@@ -95,15 +87,6 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
 
   /* ── Encounter state ──────────────────────────────────── */
   const { encounter } = useEncounterState(campaignId)
-
-  /* ── Adversary token images ───────────────────────────── */
-  const { tokenImages: advTokenImages, setTokenImages: setAdvTokenImages } = useAdversaryTokenImages()
-  const [advTokenBusy, setAdvTokenBusy] = useState<string | null>(null)
-
-  const advTokensByKey = useMemo(
-    () => new Map(Object.entries(advTokenImages)),
-    [advTokenImages],
-  )
 
   /* ── Remove All confirmation state ───────────────────── */
   const [removeAllConfirm, setRemoveAllConfirm] = useState(false)
@@ -148,21 +131,6 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
     [activeCharacters, onMapCharIds],
   )
 
-  const npcSlots = useMemo<NpcDrawerSlot[]>(() => {
-    if (!encounter) return []
-    return encounter.initiative_slots
-      .filter(s => s.type === 'npc' && s.adversaryInstanceId)
-      .map(s => {
-        const adv = encounter.adversaries.find(a => a.instanceId === s.adversaryInstanceId)
-        return {
-          slotId:              s.id,
-          adversaryInstanceId: s.adversaryInstanceId!,
-          name:                s.name,
-          adversaryType:       adv?.type ?? 'rival',
-        }
-      })
-  }, [encounter])
-
   const vehicleSlots = useMemo<VehicleDrawerSlot[]>(() => {
     if (!encounter) return []
     return encounter.initiative_slots
@@ -200,27 +168,6 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
     })
   }
 
-  async function addAdversaryToken(slot: NpcDrawerSlot, x = 0.5, y = 0.5) {
-    if (!mapId || !campaignId) return
-    const advImg = advTokensByKey.get(slot.name) ?? null
-    await addToken({
-      map_id:           mapId,
-      campaign_id:      campaignId,
-      participant_type: 'adversary',
-      character_id:     null,
-      participant_id:   null,
-      slot_key:         slot.slotId,
-      label:            slot.name,
-      alignment:        slot.adversaryType,
-      x, y,
-      is_visible:       false,
-      token_size:       1.0,
-      wound_pct:        null,
-      token_image_url:  advImg,
-      token_shape:      'circle',
-    })
-  }
-
   async function addVehicleToken(slot: VehicleDrawerSlot, x = 0.5, y = 0.5) {
     if (!mapId || !campaignId) return
     await addToken({
@@ -250,36 +197,6 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
     }
   }
 
-  /* ── Adversary token image helpers ───────────────────── */
-  async function handleAdvTokenUpload(adversaryKey: string, file: File) {
-    if (file.size > 2 * 1024 * 1024) return
-    setAdvTokenBusy(adversaryKey)
-    const ext  = file.name.split('.').pop() ?? 'png'
-    const path = `${adversaryKey}.${ext}`
-    const { error } = await supabase.storage.from('tokens').upload(path, file, { upsert: true })
-    if (!error) {
-      const { data } = supabase.storage.from('tokens').getPublicUrl(path)
-      await supabase.from('adversary_token_images').upsert({
-        adversary_key: adversaryKey, token_image_url: data.publicUrl,
-      })
-      // Patch any existing map tokens for this adversary so the canvas updates live
-      if (mapId) {
-        await supabase
-          .from('map_tokens')
-          .update({ token_image_url: data.publicUrl })
-          .eq('map_id', mapId)
-          .eq('label', adversaryKey)
-      }
-      setAdvTokenImages(prev => ({ ...prev, [adversaryKey]: data.publicUrl }))
-    }
-    setAdvTokenBusy(null)
-  }
-
-  async function clearAdvToken(adversaryKey: string) {
-    await supabase.from('adversary_token_images').delete().eq('adversary_key', adversaryKey)
-    setAdvTokenImages(prev => { const n = { ...prev }; delete n[adversaryKey]; return n })
-  }
-
   /* ── Reset Board ─────────────────────────────────────── */
   async function handleRemoveAll() {
     setRemoveAllBusy(true)
@@ -303,113 +220,15 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
   }
 
   /* ── Render ───────────────────────────────────────────── */
-  const hasTokens = tokens.length > 0 || npcSlots.length > 0 || vehicleSlots.length > 0
+  const hasTokens = tokens.length > 0 || vehicleSlots.length > 0
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
 
-      {/* ── Section A: Adversaries ── */}
-      {npcSlots.length > 0 && (
-        <>
-          <SectionHeader>Adversaries</SectionHeader>
-
-          {npcSlots.map(p => {
-            const advImg     = advTokensByKey.get(p.name) ?? null
-            const tokenColor = p.adversaryType === 'minion' ? '#e05252'
-              : p.adversaryType === 'nemesis' ? '#a852e0' : '#FF9800'
-            const badge = p.adversaryType === 'minion' ? 'MINION'
-              : p.adversaryType === 'nemesis' ? 'NEMESIS' : 'RIVAL'
-            const isOnMap  = onMapSlotKeys.has(p.slotId)
-            const mapToken = tokensBySlotKey.get(p.slotId) ?? null
-
-            return (
-              <div key={p.slotId} style={{ padding: '10px 12px', borderBottom: `1px solid ${BORDER}` }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-
-                  {/* Token preview */}
-                  {advImg ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={advImg} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: `2px solid ${tokenColor}60` }} />
-                  ) : (
-                    <div style={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, background: `${tokenColor}20`, border: `2px solid ${tokenColor}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FC, fontSize: 16, fontWeight: 700, color: tokenColor }}>
-                      {p.name.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-
-                  {/* Name + badge */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {p.name}
-                    </div>
-                    <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.1em', color: tokenColor }}>
-                      {badge}
-                    </div>
-                  </div>
-
-                  {/* Add / On map */}
-                  {mapId && (
-                    isOnMap
-                      ? <span style={{ fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, color: GREEN, flexShrink: 0 }}>On map ✓</span>
-                      : <button onClick={() => void addAdversaryToken(p)} style={btnSmall}>+ Add</button>
-                  )}
-                </div>
-
-                {/* Token image upload */}
-                {!advImg && (
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, cursor: advTokenBusy === p.name ? 'wait' : 'pointer' }}>
-                    <input type="file" accept="image/*" hidden onChange={e => { const f = e.target.files?.[0]; if (f) void handleAdvTokenUpload(p.name, f) }} />
-                    <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>
-                      {advTokenBusy === p.name ? 'Uploading…' : '↑ Upload Image'}
-                    </span>
-                    <span style={{ fontFamily: FR, fontStyle: 'italic', fontSize: FS_OVERLINE, color: 'var(--hud-text-faint)' }}>
-                      · Used as token on the map
-                    </span>
-                  </label>
-                )}
-
-                {/* Replace / clear image */}
-                {advImg && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6 }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer' }}>
-                      <input type="file" accept="image/*" hidden onChange={e => { const f = e.target.files?.[0]; if (f) void handleAdvTokenUpload(p.name, f) }} />
-                      <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>↑ Replace image</span>
-                    </label>
-                    <span style={{ color: BORDER_HI }}>·</span>
-                    <button onClick={() => clearAdvToken(p.name)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: FR, fontSize: FS_CAPTION, color: '#E05050', padding: 0 }}>
-                      Remove
-                    </button>
-                  </div>
-                )}
-
-                {/* On-map controls */}
-                {isOnMap && mapToken && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
-                    <button
-                      onClick={() => void toggleVisibility(mapToken.id, !mapToken.is_visible)}
-                      style={{
-                        flex: 1, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
-                        letterSpacing: '0.06em', cursor: 'pointer', borderRadius: 3,
-                        padding: '4px 8px', border: 'none',
-                        background: mapToken.is_visible ? 'rgba(78,200,122,0.12)' : 'var(--hud-surface-lo)',
-                        color: mapToken.is_visible ? GREEN : DIM,
-                        transition: '.15s',
-                      }}
-                    >
-                      {mapToken.is_visible ? '◉ Visible to players' : '◯ Hidden from players'}
-                    </button>
-                    <button onClick={() => void removeToken(mapToken.id)} style={btnDanger} title="Remove from map">✕</button>
-                  </div>
-                )}
-              </div>
-            )
-          })}
-        </>
-      )}
-
       {/* ── Section B: Vehicles ── */}
       {vehicleSlots.length > 0 && (
         <>
-          <SectionHeader topBorder={npcSlots.length > 0}>Vehicles</SectionHeader>
+          <SectionHeader>Vehicles</SectionHeader>
 
           {vehicleSlots.map(p => {
             const isOnMap    = onMapSlotKeys.has(p.slotId)
@@ -476,7 +295,7 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
       {/* ── Section C: Standalone (library-placed) tokens ── */}
       {standaloneTokens.length > 0 && (
         <>
-          <SectionHeader topBorder={npcSlots.length > 0 || vehicleSlots.length > 0}>
+          <SectionHeader topBorder={vehicleSlots.length > 0}>
             Placed Tokens
           </SectionHeader>
 
@@ -557,7 +376,7 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
       )}
 
       {/* ── Section D: Players ── */}
-      <SectionHeader topBorder={npcSlots.length > 0 || vehicleSlots.length > 0 || standaloneTokens.length > 0}>
+      <SectionHeader topBorder={vehicleSlots.length > 0 || standaloneTokens.length > 0}>
         Players
       </SectionHeader>
 

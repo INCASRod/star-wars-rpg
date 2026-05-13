@@ -9,7 +9,7 @@ const FORCE_TAB_BLUE   = '#1A78A0'
 const FORCE_TAB_PURPLE = '#8B2BE2'
 
 export function TabBar({ active, onChange, hasCombat, isForceUser, isForceUserFallen, isCombatActive }: { active: TabName; onChange: (t: TabName) => void; hasCombat?: boolean; isForceUser?: boolean; isForceUserFallen?: boolean; isCombatActive?: boolean }) {
-  const allTabs: TabName[] = ['Skills', 'Talents', 'Inventory', 'Force', 'Lore', 'Feed', 'Session', 'Group']
+  const allTabs: TabName[] = ['Session', 'Skills', 'Talents', 'Inventory', 'Force', 'Lore', 'Feed', 'Group']
   const tabs = allTabs.filter(t => {
     if (t === 'Force') return !!isForceUser
     return true

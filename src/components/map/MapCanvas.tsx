@@ -48,8 +48,8 @@ export const MapCanvas = memo(function MapCanvas({
   const mapOffsetYRef = useRef(0)
 
   // Always-current props ref — the async init closure reads this after it resolves
-  const propsRef = useRef({ mapImageUrl, gridEnabled, gridSize })
-  propsRef.current = { mapImageUrl, gridEnabled, gridSize }
+  const propsRef = useRef({ mapImageUrl, gridEnabled, gridSize, tokens, isGM, currentCharacterId, tokenScale })
+  propsRef.current = { mapImageUrl, gridEnabled, gridSize, tokens, isGM, currentCharacterId, tokenScale }
 
   const onTokenHoverRef    = useRef(onTokenHover)
   onTokenHoverRef.current  = onTokenHover
@@ -65,7 +65,7 @@ export const MapCanvas = memo(function MapCanvas({
     if (!containerRef.current) return
     let destroyed = false
 
-    import('pixi.js').then((px) => {
+    import('pixi.js').then(async (px) => {
       if (destroyed || !containerRef.current) return
       PIXI = px
 
@@ -84,11 +84,21 @@ export const MapCanvas = memo(function MapCanvas({
       setupPan(app)
       setupZoom(app, containerRef.current)
 
-      // KEY: call rebuildMap NOW — the earlier effect already returned
-      // because appRef was null when mapImageUrl first arrived.
+      // Await rebuildMap so map dimensions are set before syncing tokens.
+      // The sync effect already fired once (when app was null) and won't
+      // re-fire unless tokens change — so we sync explicitly here.
       const { mapImageUrl: url, gridEnabled: ge, gridSize: gs } = propsRef.current
       if (url) {
-        rebuildMap(app, px, url, ge, gs, mapWRef, mapHRef, mapOffsetXRef, mapOffsetYRef)
+        await rebuildMap(app, px, url, ge, gs, mapWRef, mapHRef, mapOffsetXRef, mapOffsetYRef)
+      }
+      if (!destroyed) {
+        const { tokens: t, isGM: gm, currentCharacterId: cid, tokenScale: ts } = propsRef.current
+        syncTokens(
+          app, px, t, gm, cid,
+          onTokenMoveRef, onContextRef, onTokenHoverRef, onTokenHoverEndRef, onTokenDragStartRef, onTokenDragEndRef,
+          containerRef, tokensRef, mapWRef, mapHRef, mapOffsetXRef, mapOffsetYRef,
+          draggingTokenIdRef, ts,
+        )
       }
     })
 
