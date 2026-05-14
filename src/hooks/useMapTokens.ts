@@ -20,6 +20,7 @@ export interface MapToken {
   wound_pct: number | null
   token_image_url: string | null
   token_shape: 'circle' | 'rectangle'
+  token_type?: string | null
   updated_at: string
 }
 

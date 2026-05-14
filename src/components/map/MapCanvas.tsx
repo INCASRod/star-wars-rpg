@@ -15,6 +15,12 @@ const BORDER_COLOURS: Record<string, number> = {
   enemy:       0xE05252,  // red fallback for untyped enemy tokens
 }
 
+const POINTER_COLOURS: Record<string, number> = {
+  pointer_green:  0x22c55e,
+  pointer_red:    0xef4444,
+  pointer_orange: 0xf97316,
+}
+
 export interface MapCanvasProps {
   mapImageUrl:         string
   tokens:              MapToken[]
@@ -417,6 +423,106 @@ function buildTokenSprite(
   mapOffsetYRef:       React.MutableRefObject<number>,
   tokenScale:          number,
 ): InstanceType<typeof import('pixi.js').Container> {
+  // ── Pointer tokens — distinct shape, skip all standard rendering ──────────
+  if (token.token_type?.startsWith('pointer_')) {
+    const SIZE  = 24 * (token.token_size ?? 1)
+    const HALF  = SIZE / 2
+    const color = POINTER_COLOURS[token.token_type] ?? 0xffffff
+
+    const c = new px.Container()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(c as any).name = `token-${token.id}`
+    c.zIndex = 10
+
+    const g = new px.Graphics()
+
+    // Diamond: low-opacity fill + solid outline stroke
+    g.lineStyle(2, color, 1)
+    g.beginFill(color, 0.18)
+    g.drawPolygon([0, -HALF, HALF, 0, 0, HALF, -HALF, 0])
+    g.endFill()
+
+    // Corner brackets: L-shapes just outside the diamond bounding box
+    const BL = Math.max(5, HALF * 0.38)   // bracket leg length, scales with token
+    const BO = HALF + 4                    // bracket offset from centre
+    g.lineStyle(2.5, color, 1)
+    // top-left
+    g.moveTo(-BO, -BO + BL); g.lineTo(-BO, -BO); g.lineTo(-BO + BL, -BO)
+    // top-right
+    g.moveTo( BO - BL, -BO); g.lineTo( BO, -BO); g.lineTo( BO, -BO + BL)
+    // bottom-right
+    g.moveTo( BO,  BO - BL); g.lineTo( BO,  BO); g.lineTo( BO - BL,  BO)
+    // bottom-left
+    g.moveTo(-BO + BL,  BO); g.lineTo(-BO,  BO); g.lineTo(-BO,  BO - BL)
+
+    // Centre dot
+    g.lineStyle(0)
+    g.beginFill(color, 1)
+    g.drawCircle(0, 0, 3)
+    g.endFill()
+
+    c.addChild(g)
+    c.x = offsetX + token.x * mapW
+    c.y = offsetY + token.y * mapH
+    c.scale.set(tokenScale)
+    c.alpha = 1  // fast-path sync loop corrects visibility on next update
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(c as any).eventMode = 'static'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(c as any).cursor = canDrag ? 'pointer' : 'default'
+
+    if (!canDrag) return c
+
+    // GM drag — identical logic to standard tokens
+    let dragging = false
+    let offX = 0, offY = 0
+
+    const onStageMove = (e: { globalX: number; globalY: number }) => {
+      if (!dragging) return
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const local = (c.parent as any).toLocal({ x: e.globalX, y: e.globalY })
+      c.x = local.x - offX
+      c.y = local.y - offY
+    }
+
+    const onStageUp = () => {
+      if (!dragging) return
+      dragging = false
+      draggingTokenIdRef.current = null
+      onDragEndRef.current?.(token.id)
+      c.zIndex = 10
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const stage = c.parent as any
+      stage.off('pointermove',      onStageMove)
+      stage.off('pointerup',        onStageUp)
+      stage.off('pointerupoutside', onStageUp)
+      const nx = Math.max(0, Math.min(1, (c.x - mapOffsetXRef.current) / mapWRef.current))
+      const ny = Math.max(0, Math.min(1, (c.y - mapOffsetYRef.current) / mapHRef.current))
+      onMoveRef.current(token.id, nx, ny)
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(c as any).on('pointerdown', (e: { stopPropagation: () => void; globalX: number; globalY: number }) => {
+      e.stopPropagation()
+      dragging = true
+      draggingTokenIdRef.current = token.id
+      onDragStartRef.current?.(token.id)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const local = (c.parent as any).toLocal({ x: e.globalX, y: e.globalY })
+      offX = local.x - c.x
+      offY = local.y - c.y
+      c.zIndex = 20
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const stage = c.parent as any
+      stage.on('pointermove',      onStageMove)
+      stage.on('pointerup',        onStageUp)
+      stage.on('pointerupoutside', onStageUp)
+    })
+
+    return c
+  }
+
   const SIZE   = 24 * (token.token_size ?? 1)
   const RADIUS = SIZE / 2
   const colour = BORDER_COLOURS[token.alignment ?? 'pc'] ?? 0xffffff

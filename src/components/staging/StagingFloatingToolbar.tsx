@@ -489,6 +489,45 @@ export function StagingFloatingToolbar({
             onClick={onAddEnemy}
           />
         )}
+
+        {/* ── Pointer token buttons ───────────────────────── */}
+        {POINTER_DEFS.map(({ type, hex, label }) => {
+          const existing = mapTokens.find(t => t.token_type === type)
+          return (
+            <PointerPill
+              key={type}
+              color={hex}
+              label={label}
+              active={!!existing}
+              disabled={!mapId}
+              onClick={async () => {
+                if (!mapId || !campaignId) return
+                if (existing) {
+                  await removeToken(existing.id)
+                } else {
+                  await addToken({
+                    map_id:           mapId,
+                    campaign_id:      campaignId,
+                    participant_type: 'adversary',
+                    character_id:     null,
+                    participant_id:   null,
+                    slot_key:         null,
+                    label:            null,
+                    alignment:        null,
+                    x:                0.5,
+                    y:                0.5,
+                    is_visible:       true,
+                    token_size:       1.0,
+                    wound_pct:        null,
+                    token_image_url:  null,
+                    token_shape:      'circle',
+                    token_type:       type,
+                  })
+                }
+              }}
+            />
+          )
+        })}
       </div>
 
       {/* ── Left drawer ──────────────────────────────────── */}
@@ -526,7 +565,7 @@ export function StagingFloatingToolbar({
             mapId={mapId}
             campaignId={campaignId}
             characters={characters}
-            tokens={mapTokens}
+            tokens={mapTokens.filter(t => !t.token_type?.startsWith('pointer_'))}
             addToken={addToken}
             removeToken={removeToken}
             toggleVisibility={toggleVisibility}
@@ -584,6 +623,85 @@ export function StagingFloatingToolbar({
     </>
   )
 }
+
+/* ── Pointer token definitions ───────────────────────────── */
+const POINTER_DEFS = [
+  { type: 'pointer_green',  hex: '#22c55e', label: 'Green Pointer'  },
+  { type: 'pointer_red',    hex: '#ef4444', label: 'Red Pointer'    },
+  { type: 'pointer_orange', hex: '#f97316', label: 'Orange Pointer' },
+] as const
+
+/* ── Pointer SVG preview ──────────────────────────────────── */
+function PointerSvg({ color, size = 16 }: { color: string; size?: number }) {
+  // Fixed 20×20 canvas, viewBox expanded to show brackets that extend outside
+  return (
+    <svg
+      width={size} height={size}
+      viewBox="-2 -2 24 24"
+      style={{ display: 'block', flexShrink: 0 }}
+    >
+      {/* Diamond: low-opacity fill + solid stroke */}
+      <polygon
+        points="10,1 19,10 10,19 1,10"
+        fill={color} fillOpacity={0.18}
+        stroke={color} strokeWidth={1.5} strokeLinejoin="miter"
+      />
+      {/* Corner brackets */}
+      <path d="M -1,4 L -1,-1 L 4,-1"   stroke={color} strokeWidth={2} strokeLinecap="round" fill="none" />
+      <path d="M 16,-1 L 21,-1 L 21,4"  stroke={color} strokeWidth={2} strokeLinecap="round" fill="none" />
+      <path d="M 21,16 L 21,21 L 16,21" stroke={color} strokeWidth={2} strokeLinecap="round" fill="none" />
+      <path d="M 4,21 L -1,21 L -1,16"  stroke={color} strokeWidth={2} strokeLinecap="round" fill="none" />
+      {/* Centre dot */}
+      <circle cx={10} cy={10} r={2} fill={color} />
+    </svg>
+  )
+}
+
+/* ── Pointer pill button ──────────────────────────────────── */
+const PointerPill = memo(function PointerPill({
+  color, label, active, disabled, onClick,
+}: {
+  color:    string
+  label:    string
+  active:   boolean
+  disabled: boolean
+  onClick:  () => void
+}) {
+  const bg     = active ? 'rgba(224,80,80,0.12)' : 'var(--hud-surface-hi)'
+  const border = active
+    ? '1px solid rgba(224,80,80,0.5)'
+    : disabled
+    ? '1px solid var(--hud-surface-lo)'
+    : '1px solid var(--hud-border)'
+
+  return (
+    <button
+      disabled={disabled}
+      onClick={onClick}
+      title={active ? `Remove ${label}` : `Place ${label}`}
+      style={{
+        display:              'flex',
+        alignItems:           'center',
+        justifyContent:       'center',
+        padding:              '7px 14px',
+        background:           bg,
+        backdropFilter:       'blur(14px)',
+        WebkitBackdropFilter: 'blur(14px)',
+        border,
+        borderRadius:         8,
+        cursor:               disabled ? 'not-allowed' : 'pointer',
+        pointerEvents:        'auto',
+        transition:           'background 0.15s, border-color 0.15s',
+        boxShadow:            active ? '0 2px 12px rgba(0,0,0,0.5)' : '0 2px 8px rgba(0,0,0,0.35)',
+      }}
+    >
+      {active
+        ? <span style={{ fontSize: 13, color: RED, lineHeight: 1, fontFamily: FR }}>✕</span>
+        : <PointerSvg color={color} size={16} />
+      }
+    </button>
+  )
+})
 
 /* ── Pill ─────────────────────────────────────────────────── */
 /**
