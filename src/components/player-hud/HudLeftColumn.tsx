@@ -1,7 +1,7 @@
 'use client'
 
 import { C } from './design-tokens'
-import { FONT_BODY, FONT_DISPLAY, FS } from '@/lib/tokens'
+import { FONT_BODY, FONT_DISPLAY, FS, RADIUS } from '@/lib/tokens'
 import { SkillsPanel } from './SkillsPanel'
 import { getSkillPool, rollPool } from './dice-engine'
 import type { DiceType } from './design-tokens'
@@ -41,7 +41,7 @@ export function HudLeftColumn({
     }}>
       {/* ── Characteristics 3×2 grid ── */}
       <div style={{ padding: 'var(--space-2)', flexShrink: 0 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-1)' }}>
           {([
             { label: 'Brawn',     value: character.brawn },
             { label: 'Agility',   value: character.agility },
@@ -54,7 +54,7 @@ export function HudLeftColumn({
               textAlign: 'center', padding: '6px 4px',
               background: 'var(--hud-surface-lo)',
               border: '1px solid var(--hud-border)',
-              borderRadius: 6,
+              borderRadius: RADIUS.lg,
             }}>
               <div style={{
                 fontFamily: FONT_DISPLAY,
