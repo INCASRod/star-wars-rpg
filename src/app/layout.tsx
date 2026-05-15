@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Orbitron, Exo_2 } from "next/font/google";
 import localFont from "next/font/local";
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeInit } from "@/components/ThemeInit";
 import "./globals.css";
 
 const orbitron = Orbitron({
@@ -43,6 +44,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${orbitron.variable} ${exo2.variable} ${swRpgIcons.variable}`}>
       <body className="antialiased">
+        <ThemeInit />
         {children}
         <Toaster position="top-center" richColors />
       </body>

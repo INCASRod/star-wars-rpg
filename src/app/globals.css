@@ -238,6 +238,18 @@ html {
   --hud-text-dim:      var(--bs-txt2);         /* medium brown:   #8A5040 */
   --hud-text-faint:    var(--bs-txt3);         /* light brown:    #AA7860 */
   --hud-gold:          #E03A1E;
+  --hud-accent-10:     rgba(224,58,30,0.10);
+  --hud-accent-20:     rgba(224,58,30,0.20);
+  --hud-accent-25:     rgba(224,58,30,0.25);
+  --hud-accent-35:     rgba(224,58,30,0.35);
+  --hud-accent-40:     rgba(224,58,30,0.40);
+  --hud-accent-45:     rgba(224,58,30,0.45);
+  --hud-accent-50:     rgba(224,58,30,0.50);
+  --hud-accent-60:     rgba(224,58,30,0.60);
+  --hud-accent-border: rgba(224,58,30,0.30);
+  --hud-gold-subtle:   rgba(200,170,80,0.15);
+  --hud-gold-border:   rgba(200,170,80,0.25);
+  --hud-gold-40:       rgba(200,170,80,0.40);
 
   /* ── HUD Font Size Aliases (map to fluid type scale) ──────────  */
   /*    Use these instead of hardcoded px in HUD inline styles       */
