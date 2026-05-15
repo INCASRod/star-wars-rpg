@@ -685,9 +685,15 @@ label, caption, .text-secondary {
 
 .hud-skill-row:hover {
   background: var(--hud-surface-hi);
+  opacity: 1 !important;
 }
 .hud-skill-row:active {
   background: var(--hud-accent-10);
+  opacity: 1 !important;
+}
+.hud-skill-search::placeholder {
+  color: var(--hud-text-faint);
+  opacity: 1;
 }
 
 /* Combined text + border gold highlight — most common HUD interactive pattern */
