@@ -305,14 +305,18 @@ Cleanup via `useEffect` return → `supabase.removeChannel(channel)`.
 ### Tier 1 — Page Shells (route-level)
 ```
 /character/[id]/page.tsx
-  └── PlayerHUDDesktop          (~2,700 lines — GOD COMPONENT)
+  └── PlayerHUDDesktop          (3-row CSS grid: TopBar / StatusStrip / content columns)
+        ├── HudTopBar           (row 1 — logo, portrait chip, character name, campaign/XP meta)
+        ├── HudStatusStrip      (row 2 — wounds ±, strain ±, encumbrance bar, crit pips, action buttons)
+        ├── HudLeftColumn       (row 3 left — characteristics 3×2 grid + compact scrollable SkillsPanel)
+        ├── HudRightColumn      (row 3 right — full-height RollFeedPanel)
+        ├── HudTabBar           (tab navigation: Session|Skills|Talents|Inventory|Force|Lore|Group)
         ├── InventoryPanel
         ├── SkillsPanel
         ├── TalentsPanel
         ├── ForcePanel
         ├── CriticalInjuriesPanel
-        ├── CharacterHeader
-        └── StatusBars (wounds/strain inline)
+        └── HudLoreTab          (character portrait upload/delete + lore fields)
 
 /gm/page.tsx                    (~3,000+ lines — GOD COMPONENT)
   ├── CombatPanel               (~3,647 lines — GOD COMPONENT)
@@ -339,6 +343,14 @@ Each panel is a self-contained component accepting pre-computed display data fro
 - `CombatPanel` — encounter initiative, token management, dice rolling
 - `GroupSheet` — group asset management
 - `GmMapView` — interactive token map with stat-block hover tooltips and health bars
+
+### Player HUD Sub-components (`src/components/player-hud/`)
+- `HudTopBar` — grid row 1; renders the HOLOCRON logo, a portrait chip (avatar thumbnail), character name, and campaign/XP meta; accent colors use CSS vars (`--hud-accent-*`) rather than rgba literals
+- `HudStatusStrip` — grid row 2, `gridColumn: 1 / -1`; full-width strip with Wounds ±, Strain ±, compact `EncumbranceBar`, `CriticalInjuryPips`, `CombatCheckButton`, and `ForceCheckButton` (rendered only for force-sensitive characters); vitals and action buttons were moved here from `HudLeftColumn` / `HudRightColumn`
+- `HudTabBar` — tab navigation strip; `TabName` union is `Session | Skills | Talents | Inventory | Force | Lore | Group`; the Feed tab was removed from `allTabs`
+- `HudLeftColumn` — grid row 3 left panel; characteristics displayed in a 3×2 grid; compact scrollable `SkillsPanel` below; vitals moved to `HudStatusStrip`
+- `HudRightColumn` — grid row 3 right panel; contains full-height `RollFeedPanel` with a Roll Feed header; action buttons moved to `HudStatusStrip`
+- `HudLoreTab` — lore tab content; `CharacterAvatar` at top with portrait upload/delete support; accepts `onPortraitUpload` and `onPortraitDelete` props; portrait was moved here from `HudLeftColumn`
 
 ### Tier 3 — Atoms & Utilities
 - `ThemeInit` (`src/components/ThemeInit.tsx`) — client component (marked 'use client'); calls `initTheme()` on mount; returns null; rendered as first child of `<body>` in root layout to initialize theme on every page load
