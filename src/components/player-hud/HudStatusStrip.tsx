@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
-import { C, FONT_RAJDHANI, FS_OVERLINE } from './design-tokens'
+import { C } from './design-tokens'
+import { FONT_BODY, FS, RADIUS, SHADOW, Z } from '@/lib/tokens'
 import { CombatCheckButton } from '@/components/character/CombatCheckButton'
 import { ForceCheckButton } from '@/components/character/ForceCheckButton'
 import { CriticalInjuryPips, type CritPip } from '@/components/character/CriticalInjuryPip'
@@ -36,21 +37,21 @@ function groupSources(sources: { label: string; value: number }[]): { label: str
 const CTRL_BTN: React.CSSProperties = {
   background: 'transparent',
   border: '1px solid var(--hud-border)',
-  borderRadius: 4, width: 20, height: 20,
+  borderRadius: RADIUS.md, width: 20, height: 20,
   cursor: 'pointer', color: 'var(--hud-text-dim)',
-  fontFamily: "'Share Tech Mono','Courier New',monospace",
+  fontFamily: FONT_BODY,
   fontSize: 'clamp(0.7rem, 1.1vw, 0.82rem)',
   display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
 }
 
 const LABEL_S: React.CSSProperties = {
-  fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, fontWeight: 700,
+  fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
   letterSpacing: '0.14em', textTransform: 'uppercase',
   color: 'var(--hud-text-faint)', whiteSpace: 'nowrap',
 }
 
 const NUM_S: React.CSSProperties = {
-  fontFamily: "'Share Tech Mono','Courier New',monospace",
+  fontFamily: FONT_BODY,
   fontSize: 'clamp(0.68rem, 1vw, 0.80rem)',
   color: 'var(--hud-text-dim)', userSelect: 'none',
   minWidth: 32, textAlign: 'center',
@@ -58,6 +59,39 @@ const NUM_S: React.CSSProperties = {
 
 const DIVIDER: React.CSSProperties = {
   width: 1, background: 'var(--hud-border)', alignSelf: 'stretch', flexShrink: 0,
+}
+
+interface VitalTooltipProps {
+  breakdown: { label: string; value: number }[]
+  top: number
+  left: number
+}
+
+function VitalTooltip({ breakdown, top, left }: VitalTooltipProps) {
+  return createPortal(
+    <div style={{
+      position: 'fixed', top, left, zIndex: Z.tooltip,
+      background: 'var(--hud-surface-hi)', border: '1px solid var(--hud-border-hi)',
+      borderRadius: RADIUS.lg, padding: '8px 12px', minWidth: 140,
+      pointerEvents: 'none', boxShadow: SHADOW.lg,
+    }}>
+      {breakdown.map(({ label, value }, i) => (
+        <div key={i} style={{
+          display: 'flex', justifyContent: 'space-between', gap: 16,
+          fontFamily: FONT_BODY,
+          fontSize: FS.caption,
+          color: i === 0 ? 'var(--hud-text-faint)' : 'var(--hud-text-dim)',
+          marginBottom: i < breakdown.length - 1 ? 3 : 0,
+        }}>
+          <span>{label}</span>
+          <span style={{ color: i === 0 ? 'var(--hud-text-dim)' : C.gold }}>
+            {i === 0 ? value : `+${value}`}
+          </span>
+        </div>
+      ))}
+    </div>,
+    document.body,
+  )
 }
 
 export function HudStatusStrip({
@@ -82,33 +116,6 @@ export function HudStatusStrip({
 
   const woundBreakdown  = groupSources(engineBreakdown?.woundThreshold  ?? [])
   const strainBreakdown = groupSources(engineBreakdown?.strainThreshold ?? [])
-
-  function VitalTooltip({ breakdown, top, left }: { breakdown: { label: string; value: number }[]; top: number; left: number }) {
-    return createPortal(
-      <div style={{
-        position: 'fixed', top, left, zIndex: 9999,
-        background: 'var(--hud-surface-hi)', border: '1px solid var(--hud-border-hi)',
-        borderRadius: 8, padding: '8px 12px', minWidth: 140,
-        pointerEvents: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.7)',
-      }}>
-        {breakdown.map(({ label, value }, i) => (
-          <div key={i} style={{
-            display: 'flex', justifyContent: 'space-between', gap: 16,
-            fontFamily: "'Share Tech Mono','Courier New',monospace",
-            fontSize: '0.72rem',
-            color: i === 0 ? 'var(--hud-text-faint)' : 'var(--hud-text-dim)',
-            marginBottom: i < breakdown.length - 1 ? 3 : 0,
-          }}>
-            <span>{label}</span>
-            <span style={{ color: i === 0 ? 'var(--hud-text-dim)' : C.gold }}>
-              {i === 0 ? value : `+${value}`}
-            </span>
-          </div>
-        ))}
-      </div>,
-      document.body,
-    )
-  }
 
   const critPips: CritPip[] = crits.map(c => ({
     id: c.id, severity: c.severity, name: c.custom_name || 'Injury',
@@ -139,11 +146,11 @@ export function HudStatusStrip({
         )}
         <span style={LABEL_S}>Wounds</span>
         <button style={CTRL_BTN} onClick={() => onVitalAdjust('wound_current', -1)}>−</button>
-        <div style={{ width: 56, height: 7, background: 'var(--hud-border)', borderRadius: 4, overflow: 'hidden', flexShrink: 0 }}>
+        <div style={{ width: 56, height: 7, background: 'var(--hud-border)', borderRadius: RADIUS.md, overflow: 'hidden', flexShrink: 0 }}>
           <div style={{
             height: '100%', width: `${wPct}%`,
             background: wOver ? 'var(--bs-red-mute)' : 'var(--bs-red-sun)',
-            borderRadius: 4, transition: 'width 300ms ease, background 300ms ease',
+            borderRadius: RADIUS.md, transition: 'width 300ms ease, background 300ms ease',
           }} />
         </div>
         <span style={NUM_S}>
@@ -169,11 +176,11 @@ export function HudStatusStrip({
         )}
         <span style={LABEL_S}>Strain</span>
         <button style={CTRL_BTN} onClick={() => onVitalAdjust('strain_current', -1)}>−</button>
-        <div style={{ width: 56, height: 7, background: 'var(--hud-border)', borderRadius: 4, overflow: 'hidden', flexShrink: 0 }}>
+        <div style={{ width: 56, height: 7, background: 'var(--hud-border)', borderRadius: RADIUS.md, overflow: 'hidden', flexShrink: 0 }}>
           <div style={{
             height: '100%', width: `${sPct}%`,
             background: sOver ? 'var(--bs-red-mute)' : 'var(--bs-red-mid)',
-            borderRadius: 4, transition: 'width 300ms ease, background 300ms ease',
+            borderRadius: RADIUS.md, transition: 'width 300ms ease, background 300ms ease',
           }} />
         </div>
         <span style={NUM_S}>{sCurrent}/{sThreshold}</span>
