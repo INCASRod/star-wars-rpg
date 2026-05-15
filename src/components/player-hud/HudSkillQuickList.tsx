@@ -35,8 +35,8 @@ function PoolDice({ charVal, rank }: { charVal: number; rank: number }) {
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
-      {Array.from({ length: proShown }).map((_, i) => <DiceFace key={`p${i}`} type="proficiency" size={13} />)}
-      {Array.from({ length: ablShown }).map((_, i) => <DiceFace key={`a${i}`} type="ability"     size={13} />)}
+      {Array.from({ length: proShown }).map((_, i) => <DiceFace key={`p${i}`} type="proficiency" size={13} solid />)}
+      {Array.from({ length: ablShown }).map((_, i) => <DiceFace key={`a${i}`} type="ability"     size={13} solid />)}
       {overflow > 0 && (
         <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: 'var(--hud-text-dim)' }}>
           +{overflow}

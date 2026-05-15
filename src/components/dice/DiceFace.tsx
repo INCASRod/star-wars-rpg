@@ -27,14 +27,16 @@ interface DiceFaceProps {
   active?: boolean
   /** Reduce overall opacity to ~30% (zero-rank indicator). */
   dimmed?: boolean
+  /** Use fully opaque fill instead of the default transparent tint. */
+  solid?: boolean
   /** Extra CSS applied to the SVG element — use for inline-block positioning in text flow. */
   style?: React.CSSProperties
 }
 
-export function DiceFace({ type, size = 32, active = true, dimmed = false, style }: DiceFaceProps) {
+export function DiceFace({ type, size = 32, active = true, dimmed = false, solid = false, style }: DiceFaceProps) {
   const color  = DICE_COLORS[type]
-  const fill   = active ? `${color}28` : `${color}0E`
-  const stroke = active ? color        : `${color}70`
+  const fill   = solid ? color : (active ? `${color}28` : `${color}0E`)
+  const stroke = active ? color : `${color}70`
   const sw     = size < 16 ? 1 : 1.5
 
   let shape: React.ReactNode
