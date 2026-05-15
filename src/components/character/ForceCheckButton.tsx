@@ -23,20 +23,20 @@ export function ForceCheckButton({ onOpen, compact = false }: ForceCheckButtonPr
   const [pressed, setPressed] = useState(false)
 
   const style: React.CSSProperties = {
-    width: compact ? 'auto' : '100%',
-    height: compact ? 28 : 48,
-    padding: compact ? '0 10px' : undefined,
+    width: compact ? 22 : '100%',
+    height: compact ? 22 : 48,
+    padding: compact ? 0 : undefined,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: compact ? 5 : 10,
+    gap: compact ? 0 : 10,
     background: pressed
       ? 'rgba(126,200,227,0.14)'
       : hovered
       ? 'rgba(126,200,227,0.18)'
       : 'rgba(126,200,227,0.1)',
     border: `1px solid ${hovered ? 'rgba(58,12,4,0.55)' : 'rgba(58,12,4,0.32)'}`,
-    borderRadius: compact ? 6 : 10,
+    borderRadius: compact ? 4 : 10,
     cursor: 'pointer',
     fontFamily: FONT_C,
     fontSize: compact ? 'clamp(0.68rem, 1vw, 0.76rem)' : 'clamp(0.85rem, 1.3vw, 1rem)',
@@ -56,6 +56,7 @@ export function ForceCheckButton({ onOpen, compact = false }: ForceCheckButtonPr
       <style>{FORCE_PULSE_STYLE}</style>
       <button
         className={!hovered ? 'force-check-btn-pulse' : undefined}
+        title={compact ? 'Force Check' : undefined}
         style={style}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => { setHovered(false); setPressed(false) }}
@@ -63,8 +64,8 @@ export function ForceCheckButton({ onOpen, compact = false }: ForceCheckButtonPr
         onMouseUp={() => setPressed(false)}
         onClick={onOpen}
       >
-        <span style={{ opacity: 0.85, fontSize: compact ? 'clamp(10px, 0.9vw, 12px)' : 'clamp(13px, 1.1vw, 16px)' }}>✦</span>
-        Force Check
+        <span style={{ opacity: 0.85, fontSize: compact ? '12px' : 'clamp(13px, 1.1vw, 16px)' }}>✦</span>
+        {!compact && 'Force Check'}
       </button>
     </>
   )

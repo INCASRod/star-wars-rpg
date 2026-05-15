@@ -616,24 +616,16 @@ label, caption, .text-secondary {
 
 /* Combat check button — replaces JS hover state in CombatCheckButton */
 .combat-check-btn {
-  width: auto;
-  height: 28px;
-  padding: 0 10px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
   background: linear-gradient(135deg, rgba(224,58,30,.12), rgba(224,58,30,.07));
   border: 1px solid rgba(224,58,30,.35);
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
-  font-family: var(--font-body);
-  font-size: clamp(0.68rem, 1vw, 0.76rem);
-  font-weight: 700;
-  color: var(--bs-red-sun);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  white-space: nowrap;
   flex-shrink: 0;
   transition: all 150ms ease;
 }
