@@ -39,7 +39,7 @@ export function ForceCheckButton({ onOpen, compact = false }: ForceCheckButtonPr
     borderRadius: compact ? 4 : 10,
     cursor: 'pointer',
     fontFamily: FONT_C,
-    fontSize: compact ? 'clamp(0.68rem, 1vw, 0.76rem)' : 'clamp(0.85rem, 1.3vw, 1rem)',
+    fontSize: compact ? '0.65rem' : 'clamp(0.85rem, 1.3vw, 1rem)',
     fontWeight: 700,
     color: '#3A0C04',
     letterSpacing: compact ? '0.06em' : '0.1em',
@@ -56,7 +56,6 @@ export function ForceCheckButton({ onOpen, compact = false }: ForceCheckButtonPr
       <style>{FORCE_PULSE_STYLE}</style>
       <button
         className={!hovered ? 'force-check-btn-pulse' : undefined}
-        title={compact ? 'Force Check' : undefined}
         style={style}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => { setHovered(false); setPressed(false) }}
@@ -64,8 +63,8 @@ export function ForceCheckButton({ onOpen, compact = false }: ForceCheckButtonPr
         onMouseUp={() => setPressed(false)}
         onClick={onOpen}
       >
-        <span style={{ opacity: 0.85, fontSize: compact ? '12px' : 'clamp(13px, 1.1vw, 16px)' }}>✦</span>
-        {!compact && 'Force Check'}
+        <span style={{ opacity: 0.85, fontSize: compact ? '11px' : 'clamp(13px, 1.1vw, 16px)' }}>✦</span>
+        Force Check
       </button>
     </>
   )
