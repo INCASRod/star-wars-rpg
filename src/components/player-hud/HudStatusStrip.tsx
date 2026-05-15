@@ -128,13 +128,13 @@ export function HudStatusStrip({
       gridColumn: '1 / -1',
       background: isCombat ? 'var(--hud-surface-hi)' : 'var(--hud-surface-mid)',
       borderBottom: isCombat ? '1px solid var(--hud-accent-35)' : `1px solid ${C.border}`,
-      display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
-      padding: '5px var(--space-3)', flexShrink: 0,
+      display: 'flex', alignItems: 'center', gap: 'var(--space-3)',
+      padding: '6px var(--space-3)', flexShrink: 0,
       transition: 'background 0.6s, border-color 0.6s',
     }}>
       {/* WOUNDS */}
       <div
-        style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0, position: 'relative' }}
+        style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, position: 'relative' }}
         onMouseEnter={e => {
           const r = e.currentTarget.getBoundingClientRect()
           setWoundTipPos({ top: r.bottom + 6, left: r.left })
@@ -164,7 +164,7 @@ export function HudStatusStrip({
 
       {/* STRAIN */}
       <div
-        style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0, position: 'relative' }}
+        style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, position: 'relative' }}
         onMouseEnter={e => {
           const r = e.currentTarget.getBoundingClientRect()
           setStrainTipPos({ top: r.bottom + 6, left: r.left })
@@ -207,7 +207,7 @@ export function HudStatusStrip({
 
       {/* Action buttons */}
       <CombatCheckButton onOpen={onOpenCombatCheck} isInCombat={isCombat} />
-      {isForceUser && <ForceCheckButton onOpen={onOpenForceCheck} />}
+      {isForceUser && <ForceCheckButton onOpen={onOpenForceCheck} compact />}
     </div>
   )
 }

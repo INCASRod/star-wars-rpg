@@ -15,33 +15,37 @@ const FORCE_PULSE_STYLE = `
 
 interface ForceCheckButtonProps {
   onOpen: () => void
+  compact?: boolean
 }
 
-export function ForceCheckButton({ onOpen }: ForceCheckButtonProps) {
+export function ForceCheckButton({ onOpen, compact = false }: ForceCheckButtonProps) {
   const [hovered, setHovered] = useState(false)
   const [pressed, setPressed] = useState(false)
 
   const style: React.CSSProperties = {
-    width: '100%',
-    height: 48,
+    width: compact ? 'auto' : '100%',
+    height: compact ? 28 : 48,
+    padding: compact ? '0 10px' : undefined,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
+    gap: compact ? 5 : 10,
     background: pressed
       ? 'rgba(126,200,227,0.14)'
       : hovered
       ? 'rgba(126,200,227,0.18)'
       : 'rgba(126,200,227,0.1)',
     border: `1px solid ${hovered ? 'rgba(58,12,4,0.55)' : 'rgba(58,12,4,0.32)'}`,
-    borderRadius: 10,
+    borderRadius: compact ? 6 : 10,
     cursor: 'pointer',
     fontFamily: FONT_C,
-    fontSize: 'clamp(0.85rem, 1.3vw, 1rem)',
+    fontSize: compact ? 'clamp(0.68rem, 1vw, 0.76rem)' : 'clamp(0.85rem, 1.3vw, 1rem)',
     fontWeight: 700,
     color: '#3A0C04',
-    letterSpacing: '0.1em',
+    letterSpacing: compact ? '0.06em' : '0.1em',
     textTransform: 'uppercase',
+    whiteSpace: 'nowrap',
+    flexShrink: 0,
     boxShadow: hovered ? '0 0 14px rgba(126,200,227,0.2)' : 'none',
     transform: hovered && !pressed ? 'translateY(-1px)' : 'translateY(0)',
     transition: 'all 150ms ease',
@@ -59,7 +63,7 @@ export function ForceCheckButton({ onOpen }: ForceCheckButtonProps) {
         onMouseUp={() => setPressed(false)}
         onClick={onOpen}
       >
-        <span style={{ opacity: 0.85, fontSize: 'clamp(13px, 1.1vw, 16px)' }}>✦</span>
+        <span style={{ opacity: 0.85, fontSize: compact ? 'clamp(10px, 0.9vw, 12px)' : 'clamp(13px, 1.1vw, 16px)' }}>✦</span>
         Force Check
       </button>
     </>
