@@ -2,36 +2,16 @@
 
 import { C } from './design-tokens'
 import { FONT_BODY, FONT_DISPLAY, FS, RADIUS } from '@/lib/tokens'
-import { SkillsPanel } from './SkillsPanel'
-import { getSkillPool, rollPool } from './dice-engine'
-import type { DiceType } from './design-tokens'
-import type { Character, HudSkill, SpeciesAbility } from '@/lib/types'
-import type { SkillDiceModifier } from '@/lib/derivedStats'
-import type { RollResult } from './dice-engine'
-import type { RollMeta } from '@/lib/logRoll'
+import { HudSkillQuickList } from './HudSkillQuickList'
+import type { Character, HudSkill } from '@/lib/types'
 
 interface HudLeftColumnProps {
   character: Character
   hudSkills: HudSkill[]
-  isCombat: boolean
-  skillModifiers: Record<string, SkillDiceModifier>
-  speciesAbilities: SpeciesAbility[]
-  bonusSkillKeys: Set<string>
-  onRoll: (result: RollResult, label?: string, pool?: Record<string, number>, meta?: RollMeta) => void
-  onBuySkill: (key: string, rank: number, isCareer: boolean) => void
   onOpenPopover: (skill: HudSkill, anchor: DOMRect) => void
 }
 
-export function HudLeftColumn({
-  character, hudSkills, isCombat, skillModifiers, speciesAbilities, bonusSkillKeys,
-  onRoll, onBuySkill, onOpenPopover,
-}: HudLeftColumnProps) {
-  function handleSkillRoll(skill: HudSkill) {
-    const { proficiency, ability } = getSkillPool(skill.charVal, skill.rank)
-    const pool: Record<DiceType, number> = { proficiency, ability, boost: 0, challenge: 0, difficulty: 2, setback: 0, force: 0 }
-    onRoll(rollPool(pool), skill.name, pool as Record<string, number>)
-  }
-
+export function HudLeftColumn({ character, hudSkills, onOpenPopover }: HudLeftColumnProps) {
   return (
     <div style={{
       background: 'var(--hud-surface-lo)',
@@ -79,21 +59,8 @@ export function HudLeftColumn({
 
       <div style={{ height: 1, background: 'var(--hud-border)', flexShrink: 0 }} />
 
-      {/* ── Compact scrollable skill list ── */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: 'var(--space-1) var(--space-2)' }}>
-        <SkillsPanel
-          skills={hudSkills}
-          onRoll={handleSkillRoll}
-          onUpgrade={skill => onBuySkill(skill.key, skill.rank, skill.isCareer)}
-          isCombat={isCombat}
-          xpAvailable={character.xp_available}
-          onOpenPopover={onOpenPopover}
-          characterId={character.id}
-          skillModifiers={skillModifiers}
-          speciesAbilities={speciesAbilities}
-          bonusSkillKeys={bonusSkillKeys}
-        />
-      </div>
+      {/* ── Quick-access skill list ── */}
+      <HudSkillQuickList skills={hudSkills} onOpenPopover={onOpenPopover} />
     </div>
   )
 }

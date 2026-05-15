@@ -379,12 +379,6 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         <HudLeftColumn
           character={character}
           hudSkills={hudSkills}
-          isCombat={isCombat}
-          skillModifiers={skillModifiers}
-          speciesAbilities={speciesAbilities}
-          bonusSkillKeys={bonusSkillKeys}
-          onRoll={handleRoll}
-          onBuySkill={handleBuySkill}
           onOpenPopover={(skill, anchor) => setSkillPopover({ skill, anchor })}
         />
 
