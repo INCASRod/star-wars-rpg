@@ -1,43 +1,40 @@
 'use client'
-import { CombatCheckButton } from '@/components/character/CombatCheckButton'
-import { ForceCheckButton } from '@/components/character/ForceCheckButton'
-import { RollFeedMini } from './RollFeedPanel'
-import { isForceUserSensitive } from '@/lib/forceUtils'
-import type { Character } from '@/lib/types'
-import type { EffectiveStats } from '@/lib/derivedStats'
+
+import { C } from './design-tokens'
+import { FONT_BODY, FS } from '@/lib/tokens'
+import { RollFeedPanel } from './RollFeedPanel'
 import type { RollEntry } from '@/hooks/useRollFeed'
 
 interface HudRightColumnProps {
-  character: Character
-  effectiveStats?: EffectiveStats | null
-  forceRating: number
-  isCombat: boolean
   rolls: RollEntry[]
-  onOpenCombatCheck: () => void
-  onOpenForceCheck: () => void
-  onExpandFeed: () => void
+  ownCharacterId: string
+  isGm: boolean
 }
 
-export function HudRightColumn({
-  character, effectiveStats, forceRating, isCombat, rolls,
-  onOpenCombatCheck, onOpenForceCheck, onExpandFeed,
-}: HudRightColumnProps) {
+export function HudRightColumn({ rolls, ownCharacterId, isGm }: HudRightColumnProps) {
   return (
     <div style={{
       background: 'var(--hud-surface-lo)',
-      overflowY: 'auto', overflowX: 'hidden',
-      padding: 'var(--space-2)',
-      display: 'flex', flexDirection: 'column', gap: 'var(--space-2)',
+      borderLeft: `1px solid ${C.border}`,
+      display: 'flex', flexDirection: 'column',
+      overflow: 'hidden',
     }}>
-      <CombatCheckButton onOpen={onOpenCombatCheck} isInCombat={isCombat} />
-      {isForceUserSensitive(character, effectiveStats?.forceRating ?? forceRating) && (
-        <div style={{ marginTop: 8 }}>
-          <ForceCheckButton onOpen={onOpenForceCheck} />
-        </div>
-      )}
-      {rolls.length > 0 && (
-        <RollFeedMini rolls={rolls} ownCharacterId={character.id} onExpand={onExpandFeed} />
-      )}
+      <div style={{
+        padding: '6px var(--space-2)',
+        borderBottom: `1px solid ${C.border}`,
+        flexShrink: 0,
+      }}>
+        <span style={{
+          fontFamily: FONT_BODY, fontSize: FS.overline,
+          fontWeight: 700, letterSpacing: '0.18em',
+          textTransform: 'uppercase', color: 'var(--hud-text-faint)',
+        }}>
+          Roll Feed
+        </span>
+      </div>
+      <div style={{ flex: 1, overflowY: 'auto' }}>
+        <RollFeedPanel rolls={rolls} ownCharacterId={ownCharacterId} isGm={isGm} />
+      </div>
     </div>
   )
 }
