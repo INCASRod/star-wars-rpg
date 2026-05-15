@@ -1,6 +1,6 @@
 # Holocron — Architecture, Routes & Hooks Reference
 
-> Updated 2026-05-06. Read from codebase; update when structure changes.
+> Updated 2026-05-15. Read from codebase; update when structure changes.
 > For full design token and color reference see **[docs/design-system.md](design-system.md)**.
 
 ---
@@ -341,6 +341,7 @@ Each panel is a self-contained component accepting pre-computed display data fro
 - `GmMapView` — interactive token map with stat-block hover tooltips and health bars
 
 ### Tier 3 — Atoms & Utilities
+- `ThemeInit` (`src/components/ThemeInit.tsx`) — client component (marked 'use client'); calls `initTheme()` on mount; returns null; rendered as first child of `<body>` in root layout to initialize theme on every page load
 - `Modal` (`src/components/ui/Modal.tsx`) — shared portal modal: dark backdrop + blur, ESC key, click-outside dismiss, panel with HUD tokens. Props: `open`, `onClose?`, `maxWidth`, `zIndex`, `borderColor`, `shadow`.
 - `RichText` — renders OggDude markup with icon font; accepts optional `style` prop
 - `EquipStateButtons` — equipped/carrying/stowed toggle
@@ -377,6 +378,10 @@ import { COLOR, HUD, FS, SP, RADIUS, Z, SHADOW, EASE, CHAR_COLOR, DICE_META, SYM
 
 **CSS custom properties**: `src/app/globals.css` defines `--color-gold`, `--font-rajdhani`, etc. using `clamp()` for fluid scaling.
 
+**Theme-aware semantic CSS variables**: New opacity stops for HUD colors enable theme overrides via `[data-theme]` selectors without component changes:
+- `--hud-accent-10`, `--hud-accent-20`, `--hud-accent-25`, `--hud-accent-35`, `--hud-accent-40`, `--hud-accent-45`, `--hud-accent-50`, `--hud-accent-60`, `--hud-accent-border`
+- `--hud-gold-subtle`, `--hud-gold-border`, `--hud-gold-40`
+
 **Backward-compat shims**: `src/components/player-hud/design-tokens.ts`, `src/components/wireframe/wf-tokens.ts`, and `src/lib/styles.ts` re-export from `tokens.ts`. New code must import directly from `@/lib/tokens`.
 
 ---
@@ -388,6 +393,7 @@ import { COLOR, HUD, FS, SP, RADIUS, Z, SHADOW, EASE, CHAR_COLOR, DICE_META, SYM
 | `types.ts` | All TypeScript interfaces and type aliases |
 | `supabase/client.ts` | Singleton Supabase browser client |
 | `tokens.ts` | Design tokens — colors, fonts, spacing, z-index, radius, shadows |
+| `theme.ts` | Theme management: `ThemeId` type; `getTheme()`, `setTheme()`, `initTheme()` functions; persists selection in localStorage (key: `holocron_theme`); sets `data-theme` attribute on `<html>` for CSS targeting |
 | `parseSymbols.ts` | OggDude shortcode `[su]`, `:colon:` → typed segment array; used by `RichText` |
 | `utils.ts` | `cn()` class merge, `stripBBCode()` (plain-text extractor), `randomUUID()` |
 | `characterSheetPDF.ts` | jsPDF-based character sheet PDF export |
