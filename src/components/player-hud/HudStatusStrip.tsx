@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { C } from './design-tokens'
-import { FONT_BODY, FS, RADIUS, SHADOW, Z } from '@/lib/tokens'
+import { FONT_BODY, FS, RADIUS, SHADOW, SP, Z } from '@/lib/tokens'
 import { CombatCheckButton } from '@/components/character/CombatCheckButton'
 import { ForceCheckButton } from '@/components/character/ForceCheckButton'
 import { CriticalInjuryPips, type CritPip } from '@/components/character/CriticalInjuryPip'
@@ -40,7 +40,7 @@ const CTRL_BTN: React.CSSProperties = {
   borderRadius: RADIUS.md, width: 20, height: 20,
   cursor: 'pointer', color: 'var(--hud-text-dim)',
   fontFamily: FONT_BODY,
-  fontSize: 'clamp(0.7rem, 1.1vw, 0.82rem)',
+  fontSize: FS.caption,
   display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
 }
 
@@ -52,7 +52,7 @@ const LABEL_S: React.CSSProperties = {
 
 const NUM_S: React.CSSProperties = {
   fontFamily: FONT_BODY,
-  fontSize: 'clamp(0.68rem, 1vw, 0.80rem)',
+  fontSize: FS.caption,
   color: 'var(--hud-text-dim)', userSelect: 'none',
   minWidth: 32, textAlign: 'center',
 }
@@ -77,11 +77,11 @@ function VitalTooltip({ breakdown, top, left }: VitalTooltipProps) {
     }}>
       {breakdown.map(({ label, value }, i) => (
         <div key={i} style={{
-          display: 'flex', justifyContent: 'space-between', gap: 16,
+          display: 'flex', justifyContent: 'space-between', gap: SP[4],
           fontFamily: FONT_BODY,
           fontSize: FS.caption,
           color: i === 0 ? 'var(--hud-text-faint)' : 'var(--hud-text-dim)',
-          marginBottom: i < breakdown.length - 1 ? 3 : 0,
+          marginBottom: i < breakdown.length - 1 ? SP[1] : 0,
         }}>
           <span>{label}</span>
           <span style={{ color: i === 0 ? 'var(--hud-text-dim)' : C.gold }}>
