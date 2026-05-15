@@ -43,16 +43,40 @@ export function HudTopBar({
       gridColumn: '1 / -1',
       background: isCombat ? 'var(--hud-surface-hi)' : 'var(--hud-surface-mid)',
       backdropFilter: 'blur(16px)',
-      borderBottom: isCombat ? '1px solid rgba(224,58,30,0.35)' : `1px solid ${C.border}`,
+      borderBottom: isCombat ? '1px solid var(--hud-accent-35)' : `1px solid ${C.border}`,
       display: 'flex', alignItems: 'center', padding: '0 var(--space-3)', gap: 'var(--space-2)',
       zIndex: 10,
       transition: 'background 0.6s, border-color 0.6s',
     }}>
       {/* Logo */}
-      <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_H4, fontWeight: 700, color: C.gold, letterSpacing: '0.15em', whiteSpace: 'nowrap', textShadow: '0 0 12px rgba(224,58,30,0.4)' }}>
+      <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_H4, fontWeight: 700, color: C.gold, letterSpacing: '0.15em', whiteSpace: 'nowrap', textShadow: '0 0 12px var(--hud-accent-40)' }}>
         HOLOCRON
       </div>
       <div style={{ width: 1, height: 28, background: C.border }} />
+      {/* Portrait chip */}
+      {character.portrait_url ? (
+        <img
+          src={character.portrait_url}
+          alt=""
+          style={{
+            width: 30, height: 30, borderRadius: '50%',
+            objectFit: 'cover', flexShrink: 0,
+            border: '1.5px solid var(--hud-gold-40)',
+          }}
+        />
+      ) : (
+        <div style={{
+          width: 30, height: 30, borderRadius: '50%',
+          background: 'var(--hud-surface-hi)',
+          border: '1.5px solid var(--hud-gold-40)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexShrink: 0,
+          fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, fontWeight: 700,
+          color: C.gold, letterSpacing: '0.05em',
+        }}>
+          {character.name.split(/\s+/).map((w: string) => w[0] ?? '').join('').slice(0, 2).toUpperCase()}
+        </div>
+      )}
       {/* Character identity */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: 'var(--hud-text)', fontWeight: 700, letterSpacing: '0.06em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -81,7 +105,7 @@ export function HudTopBar({
         {/* XP pill */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 6,
-          background: 'rgba(224,58,30,0.1)', border: '1px solid rgba(224,58,30,0.3)',
+          background: 'var(--hud-accent-10)', border: '1px solid var(--hud-accent-border)',
           borderRadius: 4, padding: '3px 10px',
         }}>
           <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.gold }}>XP</span>
@@ -95,8 +119,8 @@ export function HudTopBar({
           onMouseLeave={() => setCreditsHovered(false)}
           style={{
             display: 'flex', alignItems: 'center', gap: 6,
-            background: creditsHovered ? 'rgba(224,58,30,0.2)' : 'rgba(224,58,30,0.1)',
-            border: '1px solid rgba(224,58,30,0.3)',
+            background: creditsHovered ? 'var(--hud-accent-20)' : 'var(--hud-accent-10)',
+            border: '1px solid var(--hud-accent-border)',
             borderRadius: 4, padding: '3px 10px',
             cursor: 'pointer', transition: 'background 0.15s',
           }}
@@ -116,9 +140,9 @@ export function HudTopBar({
           fontSize: 'clamp(0.55rem, 0.8vw, 0.65rem)',
           letterSpacing: '0.08em',
           textTransform: 'uppercase',
-          color: pdfGenerating ? C.textFaint : printHovered ? C.gold : 'rgba(224,58,30,0.6)',
+          color: pdfGenerating ? C.textFaint : printHovered ? C.gold : 'var(--hud-accent-60)',
           background: 'transparent',
-          border: printHovered && !pdfGenerating ? '1px solid rgba(224,58,30,0.5)' : '1px solid rgba(224,58,30,0.25)',
+          border: printHovered && !pdfGenerating ? '1px solid var(--hud-accent-50)' : '1px solid var(--hud-accent-25)',
           borderRadius: 4,
           padding: '3px 9px',
           cursor: pdfGenerating ? 'wait' : 'pointer',
@@ -148,10 +172,10 @@ export function HudTopBar({
       {isCombat && (
         <div style={{
           marginLeft: 'auto',
-          background: 'rgba(224,58,30,0.18)', border: '1px solid rgba(224,58,30,0.5)',
+          background: 'var(--hud-accent-20)', border: '1px solid var(--hud-accent-50)',
           borderRadius: 4, padding: '3px 10px',
           fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.18em',
-          color: '#E03A1E', textShadow: '0 0 8px rgba(224,58,30,0.6)',
+          color: 'var(--bs-red-sun)', textShadow: '0 0 8px var(--hud-accent-60)',
           whiteSpace: 'nowrap',
         }}>
           COMBAT · ROUND {combatRound}
