@@ -16,6 +16,7 @@ import { HudLoreTab } from './HudLoreTab'
 import { HudSkillsTab } from './HudSkillsTab'
 import { HudForceTab } from './HudForceTab'
 import { HudRightColumn } from './HudRightColumn'
+import { HudStatusStrip } from './HudStatusStrip'
 import { useCriticalInjuryRequest } from '@/hooks/useCriticalInjuryRequest'
 import { usePlayerBroadcast } from '@/hooks/usePlayerBroadcast'
 import { useCharacterConflicts } from '@/hooks/useCharacterConflicts'
@@ -28,7 +29,6 @@ import { CombatCheckOverlay } from '@/components/combat-check/CombatCheckOverlay
 import { ForceCheckOverlay } from '@/components/force-check/ForceCheckOverlay'
 import { isDathomiri } from '@/lib/dathomiriUtils'
 import { CombatTransition } from './CombatTransition'
-import { RollFeedPanel } from './RollFeedPanel'
 import type { Character } from '@/lib/types'
 import { HolocronLoader } from '@/components/ui/HolocronLoader'
 import { useSessionMode } from '@/hooks/useSessionMode'
@@ -337,8 +337,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
       <div style={{
         position: 'relative', zIndex: 1,
         display: 'grid',
-        gridTemplateColumns: 'clamp(220px, 18vw, 320px) 1fr clamp(260px, 20vw, 360px)',
-        gridTemplateRows: 'clamp(48px, 4vh, 64px) 1fr',
+        gridTemplateColumns: 'clamp(200px,22%,260px) 1fr clamp(200px,20%,240px)',
+        gridTemplateRows: 'auto auto 1fr',
         height: '100vh',
       }}>
 
@@ -358,8 +358,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
           onLogout={handleLogout}
         />
 
-        {/* ══ LEFT COLUMN ══════���═══════════════════════════════ */}
-        <HudLeftColumn
+        {/* ══ STATUS STRIP ═════════════════════════════════════ */}
+        <HudStatusStrip
           character={character}
           effectiveStats={effectiveStats}
           engineBreakdown={engineBreakdown}
@@ -367,12 +367,25 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
           encumbranceCurrent={encumbranceCurrent}
           encumbranceBonus={encumbranceBonus}
           crits={crits}
-          careerName={careerName}
-          specNames={specNames}
+          forceRating={forceRating}
+          isCombat={isCombat}
           onVitalAdjust={handleVitalAdjust}
           onHealCrit={handleHealCrit}
-          onPortraitUpload={handlePortraitUpload}
-          onPortraitDelete={handlePortraitDelete}
+          onOpenCombatCheck={() => setCombatCheckOpen(true)}
+          onOpenForceCheck={() => setForceCheckOpen(true)}
+        />
+
+        {/* ══ LEFT COLUMN ══════���═══════════════════════════════ */}
+        <HudLeftColumn
+          character={character}
+          hudSkills={hudSkills}
+          isCombat={isCombat}
+          skillModifiers={skillModifiers}
+          speciesAbilities={speciesAbilities}
+          bonusSkillKeys={bonusSkillKeys}
+          onRoll={handleRoll}
+          onBuySkill={handleBuySkill}
+          onOpenPopover={(skill, anchor) => setSkillPopover({ skill, anchor })}
         />
 
         {/* ══ CENTER COLUMN ════════════════════════════════════ */}
@@ -497,13 +510,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
                   refObligationTypes={refObligationTypes}
                   onBackstoryChange={handleBackstoryChange}
                   onNotesChange={handleNotesChange}
-                />
-              )}
-              {activeTab === 'Feed' && (
-                <RollFeedPanel
-                  rolls={rolls}
-                  ownCharacterId={character.id}
-                  isGm={false}
+                  onPortraitUpload={handlePortraitUpload}
+                  onPortraitDelete={handlePortraitDelete}
                 />
               )}
               {activeTab === 'Group' && effectiveCampaignId && (
@@ -524,14 +532,9 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
 
         {/* ══ RIGHT COLUMN ═════════════════════════════════════ */}
         <HudRightColumn
-          character={character}
-          effectiveStats={effectiveStats}
-          forceRating={forceRating}
-          isCombat={isCombat}
           rolls={rolls}
-          onOpenCombatCheck={() => setCombatCheckOpen(true)}
-          onOpenForceCheck={() => setForceCheckOpen(true)}
-          onExpandFeed={() => setActiveTab('Feed')}
+          ownCharacterId={character.id}
+          isGm={isGmMode}
         />
       </div>
 
