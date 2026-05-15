@@ -655,6 +655,12 @@ label, caption, .text-secondary {
   animation: combatPulse 2s ease-in-out infinite;
 }
 
+@keyframes forcePulse {
+  0%, 100% { border-color: rgba(58,12,4,0.28); }
+  50%       { border-color: rgba(58,12,4,0.52); }
+}
+.force-check-btn-pulse { animation: forcePulse 3s ease-in-out infinite; }
+
 .hov-red-bg {
   background:  rgba(224,82,82,0.15);
   transition:  background var(--ease-default);

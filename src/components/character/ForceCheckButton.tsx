@@ -1,17 +1,8 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 
 const FONT_C = "var(--font-rajdhani), 'Cinzel', serif"
-const FORCE_BLUE = '#7EC8E3'
-
-const FORCE_PULSE_STYLE = `
-@keyframes forcePulse {
-  0%, 100% { border-color: rgba(58,12,4,0.28); }
-  50%       { border-color: rgba(58,12,4,0.52); }
-}
-.force-check-btn-pulse { animation: forcePulse 3s ease-in-out infinite; }
-`
 
 interface ForceCheckButtonProps {
   onOpen: () => void
@@ -23,13 +14,13 @@ export function ForceCheckButton({ onOpen, compact = false }: ForceCheckButtonPr
   const [pressed, setPressed] = useState(false)
 
   const style: React.CSSProperties = {
-    width: compact ? 22 : '100%',
+    width: compact ? 'auto' : '100%',
     height: compact ? 22 : 48,
-    padding: compact ? 0 : undefined,
+    padding: compact ? '0 8px' : undefined,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: compact ? 0 : 10,
+    gap: compact ? 5 : 10,
     background: pressed
       ? 'rgba(126,200,227,0.14)'
       : hovered
@@ -52,20 +43,17 @@ export function ForceCheckButton({ onOpen, compact = false }: ForceCheckButtonPr
   }
 
   return (
-    <>
-      <style>{FORCE_PULSE_STYLE}</style>
-      <button
-        className={!hovered ? 'force-check-btn-pulse' : undefined}
-        style={style}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => { setHovered(false); setPressed(false) }}
-        onMouseDown={() => setPressed(true)}
-        onMouseUp={() => setPressed(false)}
-        onClick={onOpen}
-      >
-        <span style={{ opacity: 0.85, fontSize: compact ? '11px' : 'clamp(13px, 1.1vw, 16px)' }}>✦</span>
-        Force Check
-      </button>
-    </>
+    <button
+      className={!hovered ? 'force-check-btn-pulse' : undefined}
+      style={style}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => { setHovered(false); setPressed(false) }}
+      onMouseDown={() => setPressed(true)}
+      onMouseUp={() => setPressed(false)}
+      onClick={onOpen}
+    >
+      <span style={{ opacity: 0.85, fontSize: compact ? '11px' : 'clamp(13px, 1.1vw, 16px)' }}>✦</span>
+      Force Check
+    </button>
   )
 }

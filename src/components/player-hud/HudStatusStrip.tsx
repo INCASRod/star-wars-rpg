@@ -128,7 +128,7 @@ export function HudStatusStrip({
       gridColumn: '1 / -1',
       background: isCombat ? 'var(--hud-surface-hi)' : 'var(--hud-surface-mid)',
       borderBottom: isCombat ? '1px solid var(--hud-accent-35)' : `1px solid ${C.border}`,
-      display: 'flex', alignItems: 'center', gap: 'var(--space-3)',
+      display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
       padding: '6px var(--space-3)', flexShrink: 0,
       transition: 'background 0.6s, border-color 0.6s',
     }}>
