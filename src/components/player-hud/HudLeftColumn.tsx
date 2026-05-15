@@ -1,7 +1,7 @@
 'use client'
 
-import { C, FONT_RAJDHANI } from './design-tokens'
-import { FONT_DISPLAY, FS } from '@/lib/tokens'
+import { C } from './design-tokens'
+import { FONT_BODY, FONT_DISPLAY, FS } from '@/lib/tokens'
 import { SkillsPanel } from './SkillsPanel'
 import { getSkillPool, rollPool } from './dice-engine'
 import type { DiceType } from './design-tokens'
@@ -64,7 +64,7 @@ export function HudLeftColumn({
                 {ch.value}
               </div>
               <div style={{
-                fontFamily: FONT_RAJDHANI,
+                fontFamily: FONT_BODY,
                 fontSize: FS.overline,
                 fontWeight: 700, letterSpacing: '0.08em',
                 color: 'var(--hud-text-faint)', marginTop: 3,
