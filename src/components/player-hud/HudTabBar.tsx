@@ -3,13 +3,13 @@
 import { C, FONT_RAJDHANI, FS_LABEL } from './design-tokens'
 import { COLOR } from '@/lib/tokens'
 
-export type TabName = 'Skills' | 'Talents' | 'Inventory' | 'Force' | 'Lore' | 'Feed' | 'Session' | 'Group'
+export type TabName = 'Skills' | 'Talents' | 'Inventory' | 'Force' | 'Lore' | 'Session' | 'Group'
 
 const FORCE_TAB_BLUE   = '#1A78A0'
 const FORCE_TAB_PURPLE = '#8B2BE2'
 
 export function TabBar({ active, onChange, hasCombat, isForceUser, isForceUserFallen, isCombatActive }: { active: TabName; onChange: (t: TabName) => void; hasCombat?: boolean; isForceUser?: boolean; isForceUserFallen?: boolean; isCombatActive?: boolean }) {
-  const allTabs: TabName[] = ['Session', 'Skills', 'Talents', 'Inventory', 'Force', 'Lore', 'Feed', 'Group']
+  const allTabs: TabName[] = ['Session', 'Skills', 'Talents', 'Inventory', 'Force', 'Lore', 'Group']
   const tabs = allTabs.filter(t => {
     if (t === 'Force') return !!isForceUser
     return true
@@ -20,13 +20,12 @@ export function TabBar({ active, onChange, hasCombat, isForceUser, isForceUserFa
       paddingLeft: 16, gap: 2, flexShrink: 0,
     }}>
       {tabs.map(tab => {
-        const isFeed       = tab === 'Feed'
         const isForceTab   = tab === 'Force'
         const isSessionTab = tab === 'Session'
         const forceColor   = isForceUserFallen ? FORCE_TAB_PURPLE : FORCE_TAB_BLUE
         // Combat-active → red-sun (vivid); peaceful session → red-pale (soft)
         const sessionColor = isCombatActive ? C.gold : COLOR.bsRedPale
-        const sessionDim   = isCombatActive ? 'rgba(224,58,30,0.45)' : 'rgba(232,96,80,0.45)'
+        const sessionDim   = isCombatActive ? 'var(--hud-accent-45)' : 'rgba(232,96,80,0.45)'
         const tabColor     = isForceTab
           ? forceColor
           : isSessionTab ? sessionColor
@@ -51,7 +50,7 @@ export function TabBar({ active, onChange, hasCombat, isForceUser, isForceUserFa
               textShadow: isForceTab && active === tab
                 ? (isForceUserFallen ? '0 0 8px rgba(139,43,226,0.6)' : '0 0 10px rgba(126,200,227,0.4)')
                 : isSessionTab && active === tab
-                  ? (isCombatActive ? '0 0 10px rgba(224,58,30,0.4)' : '0 0 8px rgba(232,96,80,0.3)')
+                  ? (isCombatActive ? '0 0 10px var(--hud-accent-40)' : '0 0 8px rgba(232,96,80,0.3)')
                   : 'none',
             }}
           >
