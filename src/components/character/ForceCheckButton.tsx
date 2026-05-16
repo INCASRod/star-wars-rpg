@@ -26,13 +26,13 @@ export function ForceCheckButton({ onOpen, compact = false }: ForceCheckButtonPr
       : hovered
       ? 'rgba(126,200,227,0.18)'
       : 'rgba(126,200,227,0.1)',
-    border: `1px solid ${hovered ? 'rgba(58,12,4,0.55)' : 'rgba(58,12,4,0.32)'}`,
+    border: `1px solid ${hovered ? 'rgba(126,200,227,.45)' : 'rgba(126,200,227,.22)'}`,
     borderRadius: compact ? 4 : 10,
     cursor: 'pointer',
     fontFamily: FONT_C,
     fontSize: compact ? '0.65rem' : 'clamp(0.85rem, 1.3vw, 1rem)',
     fontWeight: 700,
-    color: '#3A0C04',
+    color: 'rgba(126,200,227,.9)',
     letterSpacing: compact ? '0.06em' : '0.1em',
     textTransform: 'uppercase',
     whiteSpace: 'nowrap',

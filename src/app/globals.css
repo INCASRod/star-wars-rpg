@@ -667,8 +667,8 @@ label, caption, .text-secondary {
 }
 
 @keyframes forcePulse {
-  0%, 100% { border-color: rgba(58,12,4,0.28); }
-  50%       { border-color: rgba(58,12,4,0.52); }
+  0%, 100% { border-color: rgba(126,200,227,.22); }
+  50%       { border-color: rgba(126,200,227,.52); box-shadow: 0 0 10px rgba(126,200,227,.18); }
 }
 .force-check-btn-pulse { animation: forcePulse 3s ease-in-out infinite; }
 
