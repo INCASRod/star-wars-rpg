@@ -15,7 +15,7 @@ export function HudLeftColumn({ character, hudSkills, onOpenPopover }: HudLeftCo
   return (
     <div style={{
       background: 'var(--hud-surface-lo)',
-      borderRight: `1px solid ${C.border}`,
+      borderRight: '2px solid var(--hud-border-strong)',
       display: 'flex', flexDirection: 'column',
       overflow: 'hidden',
     }}>
@@ -32,8 +32,8 @@ export function HudLeftColumn({ character, hudSkills, onOpenPopover }: HudLeftCo
           ] as const).map(ch => (
             <div key={ch.label} style={{
               textAlign: 'center', padding: '6px 4px',
-              background: 'var(--hud-surface-lo)',
-              border: '1px solid var(--hud-border)',
+              background: 'rgba(224,58,30,0.06)',
+              border: '1px solid rgba(224,58,30,0.18)',
               borderRadius: RADIUS.lg,
             }}>
               <div style={{
