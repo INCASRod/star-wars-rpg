@@ -5,18 +5,16 @@ import { useCombatParticipants } from '@/hooks/useCombatParticipants'
 import { useCharacterPortraits } from '@/hooks/useCharacterPortraits'
 import type { Character } from '@/lib/types'
 import type { CombatEncounter } from '@/lib/combat'
-import { FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_H4, FS_H3 } from '@/components/player-hud/design-tokens'
+import { FS_OVERLINE, FS_LABEL } from '@/components/player-hud/design-tokens'
 import { HUD } from '@/lib/tokens'
 
-// ── Design tokens (mirrored from CombatTracker) ──
-const RAISED_BG  = 'var(--hud-surface-mid)'
+// ── Design tokens ──
 const PANEL_BG   = 'var(--hud-surface-lo)'
 const BORDER     = 'var(--hud-border)'
 const BORDER_MD  = 'var(--hud-border-hi)'
 const CHAR_BR    = 'var(--bs-red-sun)'   // adversary slots — vivid red-sun
 const CHAR_AG    = 'var(--bs-red-pale)'  // PC/player slots — soft red-pale
 const CHAR_WIL   = 'var(--hud-text-dim)' // "acted" checkmark badge
-const TEXT       = 'var(--hud-text)'
 const TEXT_MUTED = 'var(--hud-text-faint)'
 const BG         = 'var(--hud-bg)'
 const FC  = 'var(--font-body)'
@@ -48,66 +46,12 @@ export function InitiativeStrip({ encounter, character }: Props) {
   )
   const portraits = useCharacterPortraits(pcSlotIds)
 
-  const currentSlot = encounter.initiative_slots[encounter.current_slot_index]
-  const isMyTurn = currentSlot?.characterId === character.id
-
   return (
     <>
-      {/* ── Header Bar ── */}
-      <div style={{
-        flexShrink: 0, position: 'relative', zIndex: 1,
-        background: RAISED_BG, borderBottom: `1px solid ${BORDER}`,
-        padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 16,
-      }}>
-        {/* Character info */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: TEXT }}>{character.name}</div>
-          <div style={{ fontFamily: FM, fontSize: FS_CAPTION, color: TEXT_MUTED }}>{character.species_key} · {character.career_key}</div>
-        </div>
-
-        {/* Combat Active badge */}
-        <div style={{
-          background: `${CHAR_BR}18`, border: `1px solid ${CHAR_BR}60`,
-          borderRadius: 4, padding: '5px 12px',
-          display: 'flex', alignItems: 'center', gap: 6,
-          animation: 'pulse-border 2s ease-in-out infinite',
-        }}>
-          <div style={{ width: 7, height: 7, borderRadius: '50%', background: CHAR_BR, boxShadow: `0 0 6px ${CHAR_BR}` }} />
-          <span style={{ fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.15em', color: CHAR_BR }}>
-            COMBAT ACTIVE
-          </span>
-        </div>
-
-        {/* Round */}
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontFamily: FC, fontSize: FS_H3, fontWeight: 700, color: HUD.gold, lineHeight: 1 }}>{encounter.round}</div>
-          <div style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED, letterSpacing: '0.15em', textTransform: 'uppercase' }}>Round</div>
-        </div>
-      </div>
-
-      {/* ── Your Turn Alert ── */}
-      {isMyTurn && (
-        <div style={{
-          flexShrink: 0, position: 'relative', zIndex: 1,
-          background: `${CHAR_AG}18`, border: `1px solid ${CHAR_AG}60`,
-          padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 10,
-          boxShadow: `0 0 20px ${CHAR_AG}20`,
-        }}>
-          <div style={{
-            width: 10, height: 10, borderRadius: '50%', background: CHAR_AG,
-            boxShadow: `0 0 10px ${CHAR_AG}`, flexShrink: 0,
-            animation: 'pulse-dot 1s ease-in-out infinite',
-          }} />
-          <span style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, color: CHAR_AG, letterSpacing: '0.1em' }}>
-            IT&apos;S YOUR TURN — {character.name} is acting now
-          </span>
-        </div>
-      )}
-
       {/* ── Turn Strip ── */}
       <div style={{
         flexShrink: 0, position: 'relative', zIndex: 1,
-        borderBottom: `1px solid ${BORDER}`, padding: '12px 16px',
+        borderBottom: `1px solid ${BORDER}`, padding: '8px 12px',
         overflowX: 'auto', display: 'flex', alignItems: 'center', gap: 0,
         background: PANEL_BG,
       }}>
@@ -132,19 +76,19 @@ export function InitiativeStrip({ encounter, character }: Props) {
 
           return (
             <div key={slot.id} style={{ display: 'flex', alignItems: 'center' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, minWidth: 70, padding: '0 4px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, minWidth: 54, padding: '0 3px' }}>
                 {/* Avatar */}
                 <div style={{
-                  width: 50, height: 50, borderRadius: '50%', flexShrink: 0,
+                  width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
                   background: isActed ? 'var(--hud-surface-hi)' : isPC ? `${CHAR_AG}20` : `${CHAR_BR}20`,
                   border: isCurrent
-                    ? `3px solid ${ringColor}`
-                    : `2px solid ${isPC ? `${CHAR_AG}40` : `${CHAR_BR}40`}`,
+                    ? `2px solid ${ringColor}`
+                    : `1px solid ${isPC ? `${CHAR_AG}40` : `${CHAR_BR}40`}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontFamily: FC, fontSize: FS_H4, color: isActed ? 'var(--hud-text-faint)' : isPC ? CHAR_AG : CHAR_BR,
+                  fontFamily: FC, fontSize: FS_LABEL, color: isActed ? 'var(--hud-text-faint)' : isPC ? CHAR_AG : CHAR_BR,
                   position: 'relative', overflow: 'hidden',
                   filter: isActed ? 'grayscale(100%)' : 'none',
-                  boxShadow: isCurrent ? `0 0 16px ${ringColor}60` : 'none',
+                  boxShadow: isCurrent ? `0 0 10px ${ringColor}60` : 'none',
                   transition: '.3s',
                 }}>
                   {isPC && slot.characterId && portraits[slot.characterId] ? (
@@ -160,28 +104,28 @@ export function InitiativeStrip({ encounter, character }: Props) {
                   {/* Acted checkmark */}
                   {isActed && (
                     <div style={{
-                      position: 'absolute', top: -2, right: -2,
-                      width: 16, height: 16, borderRadius: '50%',
-                      background: CHAR_WIL, border: `2px solid ${BG}`,
+                      position: 'absolute', top: -1, right: -1,
+                      width: 13, height: 13, borderRadius: '50%',
+                      background: CHAR_WIL, border: `1px solid ${BG}`,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: FS_LABEL, color: BG, fontWeight: 700,
+                      fontSize: 8, color: BG, fontWeight: 700,
                     }}>✓</div>
                   )}
                 </div>
-                {/* "NOW" label */}
+                {/* "NOW" arrow */}
                 {isCurrent && (
-                  <div style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, color: CHAR_AG, letterSpacing: '0.15em', animation: 'pulse-dot 1.2s ease-in-out infinite' }}>
-                    ▲ NOW
+                  <div style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, color: isPC ? CHAR_AG : CHAR_BR, animation: 'pulse-dot 1.2s ease-in-out infinite', lineHeight: 1 }}>
+                    ▲
                   </div>
                 )}
                 {/* Name */}
-                <div style={{ fontFamily: FM, fontSize: FS_LABEL, fontWeight: 700, color: isMe ? HUD.gold : TEXT_MUTED, textAlign: 'center', maxWidth: 64, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {isMe ? `YOU · ` : ''}{displayName}
+                <div style={{ fontFamily: FM, fontSize: FS_OVERLINE, fontWeight: 700, color: isMe ? HUD.gold : TEXT_MUTED, textAlign: 'center', maxWidth: 52, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {isMe ? 'YOU' : displayName}
                 </div>
               </div>
               {/* Connector dash */}
               {i < encounter.initiative_slots.length - 1 && (
-                <div style={{ width: 20, height: 1, background: BORDER_MD, flexShrink: 0 }} />
+                <div style={{ width: 10, height: 1, background: BORDER_MD, flexShrink: 0 }} />
               )}
             </div>
           )

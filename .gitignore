@@ -45,3 +45,6 @@ next-env.d.ts
 
 # Claude Code agent worktrees + session data (large build artifacts)
 .claude/
+
+# Superpowers brainstorm sessions
+.superpowers/
