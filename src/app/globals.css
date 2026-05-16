@@ -230,7 +230,7 @@ html {
   --hud-bg:            var(--bs-sky);          /* warm parchment: #E8DDD0 */
   --hud-panel:         var(--bs-panel);        /* #DDD0C0                 */
   --hud-surface-lo:    var(--bs-surface);      /* #D4C5B0                 */
-  --hud-surface-mid:   var(--bs-card);         /* #CBBAA0                 */
+  --hud-surface-mid:   #C8B89A;                /* stepped darker than bs-card; was #CBBAA0 */
   --hud-surface-hi:    var(--bs-card-hi);      /* #C0AD94                 */
   --hud-border:        var(--bs-bdr-subtle);   /* warm brown: #CDB8A4     */
   --hud-border-hi:     var(--bs-bdr-mid);      /* warm brown: #C0A890     */
@@ -250,6 +250,17 @@ html {
   --hud-gold-subtle:   rgba(200,170,80,0.15);
   --hud-gold-border:   rgba(200,170,80,0.25);
   --hud-gold-40:       rgba(200,170,80,0.40);
+  /* ── HUD vital strip (StatusStrip deep-red zone) ─────────────── */
+  --hud-vital-bg:       #6A1A0A;               /* deep red strip background */
+  --hud-vital-border:   #4A1006;               /* strip bottom edge */
+  --hud-vital-text:     var(--bs-on-red);      /* #FFF0E8 — on-red readable */
+  --hud-vital-text-dim: rgba(255,240,232,.65); /* muted labels/controls on strip */
+  --hud-vital-sep:      rgba(255,255,255,.2);  /* vertical dividers inside strip */
+  --hud-vital-wounds:   #FF7050;              /* wound fill — pops on dark bg */
+  --hud-vital-strain:   #FFB060;              /* strain fill — warm amber on dark bg */
+
+  /* ── Stronger structural column edges ────────────────────────── */
+  --hud-border-strong:  #9A8068;              /* 2px column borders */
 
   /* ── HUD Font Size Aliases (map to fluid type scale) ──────────  */
   /*    Use these instead of hardcoded px in HUD inline styles       */
