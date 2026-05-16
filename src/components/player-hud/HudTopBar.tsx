@@ -43,7 +43,9 @@ export function HudTopBar({
       gridColumn: '1 / -1',
       background: isCombat ? 'var(--hud-surface-hi)' : 'var(--hud-surface-mid)',
       backdropFilter: 'blur(16px)',
-      borderBottom: isCombat ? '1px solid var(--hud-accent-35)' : `1px solid ${C.border}`,
+      borderBottom: isCombat
+  ? '2px solid var(--hud-accent-35)'
+  : '2px solid var(--hud-border-strong)',
       display: 'flex', alignItems: 'center', padding: '0 var(--space-3)', gap: 'var(--space-2)',
       zIndex: 10,
       transition: 'background 0.6s, border-color 0.6s',
