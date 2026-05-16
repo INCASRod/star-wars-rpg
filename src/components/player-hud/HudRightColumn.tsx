@@ -15,7 +15,7 @@ export function HudRightColumn({ rolls, ownCharacterId, isGm }: HudRightColumnPr
   return (
     <div style={{
       background: 'var(--hud-surface-lo)',
-      borderLeft: `1px solid ${C.border}`,
+      borderLeft: '2px solid var(--hud-border-strong)',
       display: 'flex', flexDirection: 'column',
       overflow: 'hidden',
     }}>
