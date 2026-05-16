@@ -36,9 +36,9 @@ function groupSources(sources: { label: string; value: number }[]): { label: str
 
 const CTRL_BTN: React.CSSProperties = {
   background: 'transparent',
-  border: '1px solid var(--hud-border)',
+  border: '1px solid var(--hud-vital-sep)',
   borderRadius: RADIUS.md, width: 20, height: 20,
-  cursor: 'pointer', color: 'var(--hud-text-dim)',
+  cursor: 'pointer', color: 'var(--hud-vital-text-dim)',
   fontFamily: FONT_BODY,
   fontSize: FS.caption,
   display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
@@ -47,18 +47,18 @@ const CTRL_BTN: React.CSSProperties = {
 const LABEL_S: React.CSSProperties = {
   fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
   letterSpacing: '0.14em', textTransform: 'uppercase',
-  color: 'var(--hud-text-faint)', whiteSpace: 'nowrap',
+  color: 'var(--hud-vital-text-dim)', whiteSpace: 'nowrap',
 }
 
 const NUM_S: React.CSSProperties = {
   fontFamily: FONT_BODY,
   fontSize: FS.caption,
-  color: 'var(--hud-text-dim)', userSelect: 'none',
+  color: 'var(--hud-vital-text)', userSelect: 'none',
   minWidth: 32, textAlign: 'center',
 }
 
 const DIVIDER: React.CSSProperties = {
-  width: 1, background: 'var(--hud-border)', alignSelf: 'stretch', flexShrink: 0,
+  width: 1, background: 'var(--hud-vital-sep)', alignSelf: 'stretch', flexShrink: 0,
 }
 
 interface VitalTooltipProps {
@@ -126,8 +126,9 @@ export function HudStatusStrip({
   return (
     <div style={{
       gridColumn: '1 / -1',
-      background: isCombat ? 'var(--hud-surface-hi)' : 'var(--hud-surface-mid)',
-      borderBottom: isCombat ? '1px solid var(--hud-accent-35)' : `1px solid ${C.border}`,
+      background: 'var(--hud-vital-bg)',
+      backdropFilter: 'blur(8px)',
+      borderBottom: `2px solid var(--hud-vital-border)`,
       display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
       padding: '6px var(--space-3)', flexShrink: 0,
       transition: 'background 0.6s, border-color 0.6s',
@@ -146,10 +147,10 @@ export function HudStatusStrip({
         )}
         <span style={LABEL_S}>Wounds</span>
         <button style={CTRL_BTN} onClick={() => onVitalAdjust('wound_current', -1)}>−</button>
-        <div style={{ width: 56, height: 7, background: 'var(--hud-border)', borderRadius: RADIUS.md, overflow: 'hidden', flexShrink: 0 }}>
+        <div style={{ width: 56, height: 7, background: 'rgba(0,0,0,.35)', borderRadius: RADIUS.md, overflow: 'hidden', flexShrink: 0 }}>
           <div style={{
             height: '100%', width: `${wPct}%`,
-            background: wOver ? 'var(--bs-red-mute)' : 'var(--bs-red-sun)',
+            background: wOver ? 'rgba(255,112,80,.45)' : 'var(--hud-vital-wounds)',
             borderRadius: RADIUS.md, transition: 'width 300ms ease, background 300ms ease',
           }} />
         </div>
@@ -176,10 +177,10 @@ export function HudStatusStrip({
         )}
         <span style={LABEL_S}>Strain</span>
         <button style={CTRL_BTN} onClick={() => onVitalAdjust('strain_current', -1)}>−</button>
-        <div style={{ width: 56, height: 7, background: 'var(--hud-border)', borderRadius: RADIUS.md, overflow: 'hidden', flexShrink: 0 }}>
+        <div style={{ width: 56, height: 7, background: 'rgba(0,0,0,.35)', borderRadius: RADIUS.md, overflow: 'hidden', flexShrink: 0 }}>
           <div style={{
             height: '100%', width: `${sPct}%`,
-            background: sOver ? 'var(--bs-red-mute)' : 'var(--bs-red-mid)',
+            background: sOver ? 'rgba(255,176,96,.45)' : 'var(--hud-vital-strain)',
             borderRadius: RADIUS.md, transition: 'width 300ms ease, background 300ms ease',
           }} />
         </div>
