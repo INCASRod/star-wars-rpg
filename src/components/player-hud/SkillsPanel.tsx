@@ -299,8 +299,8 @@ function InlineConfirmation({ skill, xpAvailable, onConfirm, onCancel }: {
           onClick={(e) => { e.stopPropagation(); onCancel() }}
           style={{
             width: 26, height: 26, borderRadius: 4,
-            background: 'rgba(224,58,30,0.08)',
-            border: '1px solid rgba(224,58,30,0.35)',
+            background: 'var(--hud-accent-10)',
+            border: '1px solid var(--hud-accent-35)',
             color: RED, cursor: 'pointer',
             fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.78rem, 1.1vw, 0.88rem)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -313,7 +313,7 @@ function InlineConfirmation({ skill, xpAvailable, onConfirm, onCancel }: {
           onClick={(e) => { e.stopPropagation(); onConfirm() }}
           style={{
             width: 26, height: 26, borderRadius: 4,
-            background: 'linear-gradient(135deg, rgba(224,58,30,0.25), rgba(224,58,30,0.15))',
+            background: 'linear-gradient(135deg, var(--hud-accent-25), var(--hud-accent-10))',
             border: `1px solid ${C.gold}`,
             color: C.gold, cursor: 'pointer',
             fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.78rem, 1.1vw, 0.88rem)',
@@ -348,11 +348,11 @@ function SpeciesConditionalBadge({ ability }: { ability: SpeciesAbility }) {
       <span style={{
         fontFamily: "'Share Tech Mono','Courier New',monospace",
         fontSize: 'clamp(0.55rem, 0.85vw, 0.65rem)',
-        background: 'rgba(232,96,80,0.08)',
-        border: '1px solid rgba(232,96,80,0.3)',
+        background: 'var(--hud-accent-10)',
+        border: '1px solid var(--hud-accent-border)',
         borderRadius: 4,
         padding: '1px 5px',
-        color: '#E86050',
+        color: 'var(--bs-red-pale)',
         flexShrink: 0,
         cursor: 'help',
         whiteSpace: 'nowrap' as const,
@@ -470,8 +470,8 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
           padding: '5px 6px', marginBottom: 2,
           borderRadius: isConfirming ? 6 : 3,
           ...(isConfirming ? {
-            border: '1px solid rgba(224,58,30,0.3)',
-            background: 'rgba(224,58,30,0.08)',
+            border: '1px solid var(--hud-accent-35)',
+            background: 'var(--hud-accent-10)',
           } : {
             borderLeft: skill.isCareer ? `2px solid ${careerBorderColor}88` : '2px solid transparent',
             background: 'transparent',
@@ -535,10 +535,10 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
   }
 
   const xpColor = xpAvailable > 20
-    ? 'rgba(224,58,30,0.6)'
+    ? 'var(--hud-accent-60)'
     : xpAvailable > 0
-    ? '#E03A1E'
-    : '#C82A10'
+    ? 'var(--hud-gold)'
+    : 'var(--bs-red-hi)'
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>

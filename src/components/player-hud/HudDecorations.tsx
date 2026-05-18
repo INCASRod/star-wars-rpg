@@ -29,6 +29,8 @@ const BG_GLOW_BR: React.CSSProperties = {
   position: 'absolute', bottom: 0, right: 0, width: '40%', height: '40%', zIndex: 0, pointerEvents: 'none',
   background: 'radial-gradient(ellipse at 100% 100%, rgba(90,40,24,0.05) 0%, transparent 70%)',
 }
+// CSS vars cannot be resolved inside inline SVG data URIs; stroke colour stays hardcoded.
+// At opacity:0.03 (applied in BG_HEX_GRID_BASE) this is imperceptible across all themes.
 const HEX_SVG_URL = `url("data:image/svg+xml,${encodeURIComponent(
   `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="52"><polygon points="30,1 59,16 59,36 30,51 1,36 1,16" fill="none" stroke="#E03A1E" stroke-width="0.5"/></svg>`
 )}")`
