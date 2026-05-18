@@ -66,7 +66,7 @@ function groupRolls(rolls: RollEntry[]): GroupedEntry[] {
 function alignColor(roll: RollEntry, isOwn: boolean): string {
   if (isOwn)                       return C.gold
   if (roll.is_dm)                  return '#9060D0'
-  if (roll.alignment === 'enemy')  return 'var(--hud-accent)'
+  if (roll.alignment === 'enemy')  return '#E03A1E'
   if (roll.alignment === 'allied') return '#4EC87A'
   return '#D4903A'  // other player — warm amber
 }
@@ -276,7 +276,7 @@ function CombatCard({ roll, isOwn, isGm }: { roll: RollEntry; isOwn: boolean; is
         <span style={{ color: C.gold, fontWeight: 600 }}>⚔ {weaponName}</span>
         {targetName && <>
           <span style={{ color: 'var(--hud-text-faint)' }}>→</span>
-          <span style={{ color: 'var(--hud-accent)' }}>{targetName}</span>
+          <span style={{ color: '#E03A1E' }}>{targetName}</span>
           {rangeBand && <span style={{ color: 'var(--hud-text-faint)' }}>· {rangeBand}</span>}
         </>}
       </div>
