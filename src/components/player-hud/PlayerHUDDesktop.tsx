@@ -46,7 +46,7 @@ import { useEncounterState } from '@/hooks/useEncounterState'
 import { generateCharacterSheetPDF } from '@/lib/characterSheetPDF'
 import { buildTalentTree as _buildTalentTree } from '@/lib/buildTalentTree'
 import { GroupSheet } from '@/components/group/GroupSheet'
-
+import { type UiTheme } from './ThemeSwitcher'
 
 interface PlayerHUDDesktopProps {
   characterId: string
@@ -172,6 +172,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
 
   // ── UI State ──
   const [activeTab, setActiveTab] = useState<TabName>('Session')
+  const [uiTheme, setUiTheme] = useState<UiTheme>('binary-sunset')
 
   // ── Session tab — subscribe to active map visibility ──
   const { visibleMap } = useActiveMap(effectiveCampaignId)
@@ -206,6 +207,21 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [talents])
 
+  // ── Load persisted theme from character_sessions ──────────────────────────
+  useEffect(() => {
+    const sessionKey = localStorage.getItem('holocron_session_key')
+    if (!sessionKey) return
+    supabase
+      .from('character_sessions')
+      .select('ui_theme')
+      .eq('character_id', characterId)
+      .eq('session_key', sessionKey)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.ui_theme) setUiTheme(data.ui_theme as UiTheme)
+      })
+  }, [characterId]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── PDF download ──
   async function handleDownloadPDF() {
     if (!character) return
@@ -221,6 +237,21 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
       await supabase.from('character_sessions').delete().eq('session_key', sessionKey).eq('campaign_id', effectiveCampaignId)
     }
     router.push('/')
+  }
+
+  // ── Theme switching ──
+  function handleThemeChange(theme: UiTheme) {
+    setUiTheme(theme)
+    const sessionKey = localStorage.getItem('holocron_session_key')
+    if (!sessionKey) return
+    supabase
+      .from('character_sessions')
+      .update({ ui_theme: theme })
+      .eq('character_id', characterId)
+      .eq('session_key', sessionKey)
+      .then(({ error }) => {
+        if (error) console.warn('[theme save] failed:', error.message)
+      })
   }
 
   // ── Derived: career / spec / species names ──
@@ -271,7 +302,10 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   const encThreshold = character.encumbrance_threshold + encumbranceBonus
 
   return (
-    <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', background: C.bg }}>
+    <div
+      data-theme={uiTheme === 'binary-sunset' ? undefined : uiTheme}
+      style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', background: C.bg }}
+    >
       <BackgroundEffects />
       <CombatTransition pending={transitionPending} prevMode={prevMode} />
 
@@ -356,6 +390,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
           onSpendCreditsOpen={() => setSpendCreditsOpen(true)}
           onDownloadPDF={handleDownloadPDF}
           onLogout={handleLogout}
+          uiTheme={uiTheme}
+          onThemeChange={handleThemeChange}
         />
 
         {/* ══ STATUS STRIP ═════════════════════════════════════ */}
