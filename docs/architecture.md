@@ -244,7 +244,7 @@
 - `character_force_abilities` — purchased Force power upgrades
 - `character_critical_injuries` — tracked injuries
 - `character_conflicts` — Force-user morality conflict log (description, session_label, is_resolved)
-- `character_sessions` — active session keys; cleared on disconnect via `/api/release-session`
+- `character_sessions` — active session keys (with player's chosen `ui_theme`: 'binary-sunset'|'operative'|'kyber'); cleared on disconnect via `/api/release-session`
 - `critical_injury_requests` — GM-initiated requests for crit injury rolls (status: pending/applied)
 
 **Inventory**
@@ -457,3 +457,5 @@ import { COLOR, HUD, FS, SP, RADIUS, Z, SHADOW, EASE, CHAR_COLOR, DICE_META, SYM
 | 049 | Custom GM-created talents (`custom_talents`) |
 | 050 | Map planets — planet folder grouping for maps |
 | 051 | Stow location columns on character item tables |
+| 052 | Pointer token cosmetics |
+| 053 | UI theme column on character_sessions (for theme switcher) |
