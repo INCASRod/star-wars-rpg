@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { C, FONT_RAJDHANI, FS_OVERLINE, FS_LABEL, FS_CAPTION, FS_H4, FS_SM } from './design-tokens'
 import { DestinyPoolDisplay, type DestinyPoolRecord } from '@/components/destiny/DestinyPoolDisplay'
 import type { Character } from '@/lib/types'
+import { ThemeSwitcher, type UiTheme } from './ThemeSwitcher'
 
 interface HudTopBarProps {
   character: Character
@@ -18,6 +19,8 @@ interface HudTopBarProps {
   onSpendCreditsOpen: () => void
   onDownloadPDF: () => void
   onLogout: () => void
+  uiTheme: UiTheme
+  onThemeChange: (theme: UiTheme) => void
 }
 
 export function HudTopBar({
@@ -33,6 +36,8 @@ export function HudTopBar({
   onSpendCreditsOpen,
   onDownloadPDF,
   onLogout,
+  uiTheme,
+  onThemeChange,
 }: HudTopBarProps) {
   const [creditsHovered, setCreditsHovered] = useState(false)
   const [printHovered,   setPrintHovered]   = useState(false)
@@ -157,6 +162,10 @@ export function HudTopBar({
       >
         {pdfGenerating ? 'Generating…' : '⬇ Print Sheet'}
       </button>
+      <div style={{ width: 1, height: 28, background: C.border }} />
+      {/* Theme switcher */}
+      <ThemeSwitcher current={uiTheme} onChange={onThemeChange} />
+      <div style={{ width: 1, height: 28, background: C.border }} />
       <button
         onClick={onLogout}
         style={{
