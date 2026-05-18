@@ -62,13 +62,21 @@ function groupRolls(rolls: RollEntry[]): GroupedEntry[] {
   return out
 }
 
-// ── Alignment colour helper ───────────────────────────────────────────────────
+// ── Alignment colour helpers ──────────────────────────────────────────────────
+// Border / dot colour — concrete hex so ${ac}60 box-shadow template works
 function alignColor(roll: RollEntry, isOwn: boolean): string {
   if (isOwn)                       return C.gold
   if (roll.is_dm)                  return '#9060D0'
-  if (roll.alignment === 'enemy')  return '#E03A1E'
-  if (roll.alignment === 'allied') return '#4EC87A'
-  return '#D4903A'  // other player — warm amber
+  if (roll.alignment === 'enemy')  return '#8B3025'
+  if (roll.alignment === 'allied') return '#2D6B3A'
+  return '#6A5840'  // other player — neutral warm grey
+}
+
+// Name text colour — own/DM get identity colour, all others get neutral text
+function nameColor(roll: RollEntry, isOwn: boolean): string {
+  if (isOwn)      return C.gold
+  if (roll.is_dm) return '#9060D0'
+  return 'var(--hud-text)'
 }
 
 // ── Relative time ─────────────────────────────────────────────────────────────
@@ -143,8 +151,8 @@ function outcomeLabel(netSuccess: number): string {
 }
 
 function outcomeColor(netSuccess: number): string {
-  if (netSuccess > 0) return '#4A7A30'
-  if (netSuccess < 0) return '#f44336'
+  if (netSuccess > 0) return 'var(--hud-gold)'
+  if (netSuccess < 0) return 'var(--hud-accent-60)'
   return 'var(--hud-text-dim)'
 }
 
@@ -204,7 +212,7 @@ function SkillCard({ roll, isOwn, isGm }: { roll: RollEntry; isOwn: boolean; isG
   return (
     <div style={{ ...panelBase, padding: '10px 12px', borderLeft: `3px solid ${ac}`, background: isOwn ? 'var(--hud-surface-mid)' : C.panelBg }}>
       <CornerBrackets />
-      <CardHeader roll={roll} isOwn={isOwn} ac={ac} />
+      <CardHeader roll={roll} isOwn={isOwn} ac={ac} textColor={nameColor(roll, isOwn)} />
 
       {roll.roll_label && (
         <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_TYPE, color: 'var(--hud-text-faint)', fontStyle: 'italic', marginBottom: 6 }}>
@@ -269,14 +277,14 @@ function CombatCard({ roll, isOwn, isGm }: { roll: RollEntry; isOwn: boolean; is
   return (
     <div style={{ ...panelBase, padding: '10px 12px', borderLeft: `3px solid ${ac}`, background: isOwn ? 'var(--hud-surface-mid)' : C.panelBg }}>
       <CornerBrackets />
-      <CardHeader roll={roll} isOwn={isOwn} ac={ac} />
+      <CardHeader roll={roll} isOwn={isOwn} ac={ac} textColor={nameColor(roll, isOwn)} />
 
       {/* Weapon → Target line */}
       <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_TYPE, fontStyle: 'italic', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
         <span style={{ color: C.gold, fontWeight: 600 }}>⚔ {weaponName}</span>
         {targetName && <>
           <span style={{ color: 'var(--hud-text-faint)' }}>→</span>
-          <span style={{ color: '#E03A1E' }}>{targetName}</span>
+          <span style={{ color: 'var(--hud-accent-60)' }}>{targetName}</span>
           {rangeBand && <span style={{ color: 'var(--hud-text-faint)' }}>· {rangeBand}</span>}
         </>}
       </div>
@@ -526,7 +534,7 @@ export function RollFeedMini({ rolls, ownCharacterId, onExpand }: {
           const category = classifyRoll(roll)
           const isOwn    = roll.character_id === ownCharacterId
           const ac       = category === 'force' ? FORCE_BLUE : alignColor(roll, isOwn)
-          const textAc   = category === 'force' ? FORCE_BLUE : ac
+          const textAc   = category === 'force' ? FORCE_BLUE : nameColor(roll, isOwn)
           const isHidden = roll.hidden && !isOwn
 
           return (
