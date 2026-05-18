@@ -354,6 +354,7 @@ Each panel is a self-contained component accepting pre-computed display data fro
 
 ### Tier 3 — Atoms & Utilities
 - `ThemeInit` (`src/components/ThemeInit.tsx`) — client component (marked 'use client'); calls `initTheme()` on mount; returns null; rendered as first child of `<body>` in root layout to initialize theme on every page load
+- `ThemeSwitcher` (`src/components/player-hud/ThemeSwitcher.tsx`) — HUD theme switcher component; exports `UiTheme` type; renders three theme color swatches (Binary Sunset, Rebel Operative, Kyber Archive); accepts `current` theme and `onChange` callback; fully controlled via props
 - `Modal` (`src/components/ui/Modal.tsx`) — shared portal modal: dark backdrop + blur, ESC key, click-outside dismiss, panel with HUD tokens. Props: `open`, `onClose?`, `maxWidth`, `zIndex`, `borderColor`, `shadow`.
 - `RichText` — renders OggDude markup with icon font; accepts optional `style` prop
 - `EquipStateButtons` — equipped/carrying/stowed toggle
