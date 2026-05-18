@@ -215,16 +215,16 @@ function UpgradeButton({ skill, xpAvailable, onClick }: {
         onClick={(e) => { e.stopPropagation(); if (canAfford) onClick() }}
         onMouseEnter={(e) => {
           setShowTip(true)
-          if (canAfford) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(224,58,30,0.2)'
+          if (canAfford) (e.currentTarget as HTMLButtonElement).style.background = 'var(--hud-accent-20)'
         }}
         onMouseLeave={(e) => {
           setShowTip(false)
-          ;(e.currentTarget as HTMLButtonElement).style.background = canAfford ? 'rgba(224,58,30,0.1)' : 'var(--hud-surface-lo)'
+          ;(e.currentTarget as HTMLButtonElement).style.background = canAfford ? 'var(--hud-accent-10)' : 'var(--hud-surface-lo)'
         }}
         style={{
           width: 28, height: 28, borderRadius: 6,
-          background: canAfford ? 'rgba(224,58,30,0.1)' : 'var(--hud-surface-lo)',
-          border: `1px solid ${canAfford ? 'rgba(224,58,30,0.35)' : 'var(--hud-border)'}`,
+          background: canAfford ? 'var(--hud-accent-10)' : 'var(--hud-surface-lo)',
+          border: `1px solid ${canAfford ? 'var(--hud-accent-35)' : 'var(--hud-border)'}`,
           color: canAfford ? C.gold : 'rgba(90,40,24,0.2)',
           fontFamily: FONT_CINZEL_REAL,
           fontSize: 'clamp(0.75rem, 1.1vw, 0.85rem)',
@@ -582,8 +582,8 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
           <div style={{
             fontFamily: FONT_RAJDHANI, fontSize: 9, fontWeight: 700,
             letterSpacing: '0.12em', textTransform: 'uppercase',
-            color: isCombat ? '#E03A1E' : C.gold,
-            border: `1px solid ${isCombat ? 'rgba(224,58,30,0.4)' : `${C.gold}44`}`,
+            color: C.gold,
+            border: '1px solid var(--hud-accent-40)',
             borderRadius: 3, padding: '2px 7px',
           }}>
             {isCombat ? 'Click to make a check' : 'Click to Upgrade'}
