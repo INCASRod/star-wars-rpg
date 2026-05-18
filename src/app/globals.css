@@ -625,7 +625,7 @@ label, caption, .text-secondary {
   background:   var(--bs-red-glow);
 }
 
-/* Combat check button — replaces JS hover state in CombatCheckButton */
+/* Combat check button — warm off-white on dark red strip (var(--bs-on-red) canonical) */
 .combat-check-btn {
   width: auto;
   height: 22px;
@@ -634,14 +634,14 @@ label, caption, .text-secondary {
   align-items: center;
   justify-content: center;
   gap: 5px;
-  background: linear-gradient(135deg, rgba(224,58,30,.12), rgba(224,58,30,.07));
-  border: 1px solid rgba(224,58,30,.35);
+  background: rgba(255,240,232,.07);
+  border: 1px solid rgba(255,240,232,.28);
   border-radius: 4px;
   cursor: pointer;
   font-family: var(--font-body);
   font-size: 0.65rem;
   font-weight: 700;
-  color: var(--bs-red-sun);
+  color: var(--bs-on-red);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -649,18 +649,18 @@ label, caption, .text-secondary {
   transition: all 150ms ease;
 }
 .combat-check-btn:hover {
-  background: rgba(224,58,30,.18);
-  border-color: rgba(224,58,30,.6);
-  box-shadow: 0 0 12px var(--bs-red-glow);
+  background: rgba(255,240,232,.14);
+  border-color: rgba(255,240,232,.50);
+  box-shadow: 0 0 10px rgba(255,240,232,.08);
   transform: translateY(-1px);
 }
 .combat-check-btn:active {
   transform: translateY(0);
-  box-shadow: 0 0 6px var(--bs-red-glow);
+  box-shadow: none;
 }
 @keyframes combatPulse {
-  0%, 100% { border-color: rgba(224,58,30,.3);  box-shadow: none; }
-  50%       { border-color: rgba(224,58,30,.65); box-shadow: 0 0 14px var(--bs-red-glow); }
+  0%, 100% { border-color: rgba(255,240,232,.22); box-shadow: none; }
+  50%       { border-color: rgba(255,240,232,.48); box-shadow: 0 0 10px rgba(255,240,232,.10); }
 }
 .combat-check-btn-pulse {
   animation: combatPulse 2s ease-in-out infinite;
@@ -904,6 +904,170 @@ i.ffi {
 .die.despair    { color: var(--die-despair);    background: color-mix(in srgb, var(--die-despair) 12%, transparent);    border: 1px solid color-mix(in srgb, var(--die-despair) 35%, transparent); }
 /* Force pip */
 .die.forcepip   { color: var(--die-forcepip);   background: color-mix(in srgb, var(--die-force) 10%, transparent);      border: 1px solid color-mix(in srgb, var(--die-forcepip) 30%, transparent); }
+
+/* ═══════════════════════════════════════════════════════════════ */
+/*  THEME: Rebel Operative — dark warm-charcoal / rebel orange    */
+/* ═══════════════════════════════════════════════════════════════ */
+[data-theme="operative"] {
+  --hud-bg:            #141210;
+  --hud-panel:         #1E1A16;
+  --hud-surface-lo:    #262018;
+  --hud-surface-mid:   #2A2218;
+  --hud-surface-hi:    #2E281E;
+
+  --hud-border:        rgba(210,185,150,.13);
+  --hud-border-hi:     rgba(210,185,150,.22);
+  --hud-border-strong: rgba(210,185,150,.30);
+
+  --hud-text:          #B0A490;
+  --hud-text-dim:      #726050;
+  --hud-text-faint:    #4C4038;
+
+  --hud-gold:          #D4681A;
+  --hud-accent-10:     rgba(212,104,26,.10);
+  --hud-accent-20:     rgba(212,104,26,.20);
+  --hud-accent-25:     rgba(212,104,26,.25);
+  --hud-accent-35:     rgba(212,104,26,.35);
+  --hud-accent-40:     rgba(212,104,26,.40);
+  --hud-accent-45:     rgba(212,104,26,.45);
+  --hud-accent-50:     rgba(212,104,26,.50);
+  --hud-accent-60:     rgba(212,104,26,.60);
+  --hud-accent-border: rgba(212,104,26,.28);
+
+  --hud-gold-subtle:   rgba(200,148,56,.15);
+  --hud-gold-border:   rgba(200,148,56,.25);
+  --hud-gold-40:       rgba(200,148,56,.40);
+
+  --hud-vital-bg:      #180C06;
+  --hud-vital-border:  #0E0602;
+  --hud-vital-text:    #E8C888;
+  --hud-vital-text-dim:rgba(232,200,136,.60);
+  --hud-vital-sep:     rgba(232,200,136,.18);
+  --hud-vital-wounds:  #CC4020;
+  --hud-vital-strain:  #C07818;
+
+  --bs-sky:            #141210;
+  --bs-panel:          #1E1A16;
+  --bs-surface:        #262018;
+  --bs-card:           #2E281E;
+  --bs-card-hi:        #362E24;
+  --bs-red-sun:        #D4681A;
+  --bs-red-pale:       #E07840;
+  --bs-red-hi:         #B85016;
+  --bs-red-mid:        #904010;
+  --bs-red-dim:        #602808;
+  --bs-red-mute:       #301404;
+  --bs-ink:            #E8DED0;
+  --bs-txt:            #B0A490;
+  --bs-txt2:           #726050;
+  --bs-txt3:           #4C4038;
+  --bs-on-red:         #FFF0E0;
+  --bs-bdr-strong:     rgba(210,185,150,.30);
+  --bs-bdr-mid:        rgba(210,185,150,.20);
+  --bs-bdr-subtle:     rgba(210,185,150,.13);
+  --bs-red-glow:       rgba(212,104,26,.12);
+  --bs-red-glow-s:     rgba(212,104,26,.28);
+}
+
+[data-theme="operative"] .combat-check-btn {
+  background: rgba(212,104,26,.10);
+  border: 1px solid rgba(212,104,26,.35);
+  color: #E8C888;
+}
+[data-theme="operative"] .combat-check-btn:hover {
+  background: rgba(212,104,26,.20);
+  border-color: rgba(212,104,26,.55);
+  box-shadow: 0 0 10px rgba(212,104,26,.12);
+}
+@keyframes combatPulseOperative {
+  0%, 100% { border-color: rgba(212,104,26,.25); box-shadow: none; }
+  50%       { border-color: rgba(212,104,26,.55); box-shadow: 0 0 10px rgba(212,104,26,.14); }
+}
+[data-theme="operative"] .combat-check-btn-pulse {
+  animation: combatPulseOperative 2s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/*  THEME: Kyber Archive — midnight indigo / kyber-crystal cyan   */
+/* ═══════════════════════════════════════════════════════════════ */
+[data-theme="kyber"] {
+  --hud-bg:            #0C0E1A;
+  --hud-panel:         #111326;
+  --hud-surface-lo:    #161830;
+  --hud-surface-mid:   #1A1C34;
+  --hud-surface-hi:    #1C1E38;
+
+  --hud-border:        rgba(91,188,216,.16);
+  --hud-border-hi:     rgba(91,188,216,.28);
+  --hud-border-strong: rgba(91,188,216,.38);
+
+  --hud-text:          #B0B8D0;
+  --hud-text-dim:      #707898;
+  --hud-text-faint:    #485070;
+
+  --hud-gold:          #5BBCD8;
+  --hud-accent-10:     rgba(91,188,216,.10);
+  --hud-accent-20:     rgba(91,188,216,.20);
+  --hud-accent-25:     rgba(91,188,216,.25);
+  --hud-accent-35:     rgba(91,188,216,.35);
+  --hud-accent-40:     rgba(91,188,216,.40);
+  --hud-accent-45:     rgba(91,188,216,.45);
+  --hud-accent-50:     rgba(91,188,216,.50);
+  --hud-accent-60:     rgba(91,188,216,.60);
+  --hud-accent-border: rgba(91,188,216,.25);
+
+  --hud-gold-subtle:   rgba(200,162,78,.15);
+  --hud-gold-border:   rgba(200,162,78,.25);
+  --hud-gold-40:       rgba(200,162,78,.40);
+
+  --hud-vital-bg:      #081220;
+  --hud-vital-border:  #050C18;
+  --hud-vital-text:    #80CCE8;
+  --hud-vital-text-dim:rgba(128,204,232,.60);
+  --hud-vital-sep:     rgba(128,204,232,.18);
+  --hud-vital-wounds:  #D84030;
+  --hud-vital-strain:  #C89830;
+
+  --bs-sky:            #0C0E1A;
+  --bs-panel:          #111326;
+  --bs-surface:        #161830;
+  --bs-card:           #1C1E38;
+  --bs-card-hi:        #202240;
+  --bs-red-sun:        #5BBCD8;
+  --bs-red-pale:       #80D4EC;
+  --bs-red-hi:         #3A9CBD;
+  --bs-red-mid:        #2A7898;
+  --bs-red-dim:        #1A5070;
+  --bs-red-mute:       #0C2840;
+  --bs-ink:            #EEF0F8;
+  --bs-txt:            #B0B8D0;
+  --bs-txt2:           #707898;
+  --bs-txt3:           #485070;
+  --bs-on-red:         #040814;
+  --bs-bdr-strong:     rgba(91,188,216,.38);
+  --bs-bdr-mid:        rgba(91,188,216,.26);
+  --bs-bdr-subtle:     rgba(91,188,216,.16);
+  --bs-red-glow:       rgba(91,188,216,.12);
+  --bs-red-glow-s:     rgba(91,188,216,.28);
+}
+
+[data-theme="kyber"] .combat-check-btn {
+  background: rgba(91,188,216,.10);
+  border: 1px solid rgba(91,188,216,.35);
+  color: #80CCE8;
+}
+[data-theme="kyber"] .combat-check-btn:hover {
+  background: rgba(91,188,216,.18);
+  border-color: rgba(91,188,216,.55);
+  box-shadow: 0 0 10px rgba(91,188,216,.12);
+}
+@keyframes combatPulseKyber {
+  0%, 100% { border-color: rgba(91,188,216,.25); box-shadow: none; }
+  50%       { border-color: rgba(91,188,216,.55); box-shadow: 0 0 10px rgba(91,188,216,.14); }
+}
+[data-theme="kyber"] .combat-check-btn-pulse {
+  animation: combatPulseKyber 2s ease-in-out infinite;
+}
 
 @layer base {
   * {
