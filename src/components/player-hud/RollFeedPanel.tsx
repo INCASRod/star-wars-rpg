@@ -66,7 +66,7 @@ function groupRolls(rolls: RollEntry[]): GroupedEntry[] {
 function alignColor(roll: RollEntry, isOwn: boolean): string {
   if (isOwn)                       return C.gold
   if (roll.is_dm)                  return '#9060D0'
-  if (roll.alignment === 'enemy')  return '#E03A1E'
+  if (roll.alignment === 'enemy')  return 'var(--hud-accent)'
   if (roll.alignment === 'allied') return '#4EC87A'
   return '#D4903A'  // other player — warm amber
 }
@@ -100,7 +100,7 @@ function ForcePips({ light, dark }: { light: number; dark: number }) {
         <div key={`l${i}`} style={{ width: 10, height: 10, borderRadius: '50%', flexShrink: 0, background: FORCE_BLUE, boxShadow: `0 0 4px ${FORCE_BLUE}80` }} />
       ))}
       {light > 0 && dark > 0 && (
-        <span style={{ fontFamily: FONT_MONO, fontSize: 'clamp(0.55rem, 0.88vw, 0.68rem)', color: 'rgba(90,40,24,0.3)', margin: '0 2px' }}>·</span>
+        <span style={{ fontFamily: FONT_MONO, fontSize: 'clamp(0.55rem, 0.88vw, 0.68rem)', color: 'var(--hud-text-faint)', margin: '0 2px' }}>·</span>
       )}
       {Array.from({ length: dark }).map((_, i) => (
         <div key={`d${i}`} style={{ width: 10, height: 10, borderRadius: '50%', flexShrink: 0, background: FORCE_PURPLE }} />
@@ -276,7 +276,7 @@ function CombatCard({ roll, isOwn, isGm }: { roll: RollEntry; isOwn: boolean; is
         <span style={{ color: C.gold, fontWeight: 600 }}>⚔ {weaponName}</span>
         {targetName && <>
           <span style={{ color: 'var(--hud-text-faint)' }}>→</span>
-          <span style={{ color: '#E03A1E' }}>{targetName}</span>
+          <span style={{ color: 'var(--hud-accent)' }}>{targetName}</span>
           {rangeBand && <span style={{ color: 'var(--hud-text-faint)' }}>· {rangeBand}</span>}
         </>}
       </div>
@@ -333,15 +333,15 @@ function ForceCard({ roll, isOwn, isGm }: { roll: RollEntry; isOwn: boolean; isG
   return (
     <div style={{ ...panelBase, padding: '10px 12px', borderLeft: `3px solid ${FORCE_BLUE}`, background: isOwn ? 'var(--hud-surface-mid)' : C.panelBg }}>
       <CornerBrackets />
-      <CardHeader roll={roll} isOwn={isOwn} ac={FORCE_BLUE} textColor="#3A0C04" />
+      <CardHeader roll={roll} isOwn={isOwn} ac={FORCE_BLUE} />
 
       {/* Force power label */}
-      <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_TYPE, color: '#3A0C04', fontStyle: 'italic', marginBottom: 6 }}>
+      <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_TYPE, color: 'var(--hud-text-faint)', fontStyle: 'italic', marginBottom: 6 }}>
         ✦ {powerName} (Force Power)
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: isHidden ? 0 : 6 }}>
-        <span style={{ fontFamily: FONT_CINZEL, fontSize: FS_RESULT, fontWeight: 700, color: '#3A0C04' }}>
+        <span style={{ fontFamily: FONT_CINZEL, fontSize: FS_RESULT, fontWeight: 700, color: FORCE_BLUE }}>
           ACTIVATED
         </span>
         {isHidden && !isGm && <HiddenBadge forGm={false} />}
@@ -360,9 +360,9 @@ function ForceCard({ roll, isOwn, isGm }: { roll: RollEntry; isOwn: boolean; isG
 
           {/* FP summary */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.68rem, 1.05vw, 0.8rem)', marginBottom: 4 }}>
-            {light > 0 && <span style={{ color: '#3A0C04' }}>{light} Light FP</span>}
+            {light > 0 && <span style={{ color: FORCE_BLUE }}>{light} Light FP</span>}
             {dark > 0 && <>
-              {light > 0 && <span style={{ color: 'rgba(90,40,24,0.3)' }}>·</span>}
+              {light > 0 && <span style={{ color: 'var(--hud-text-faint)' }}>·</span>}
               <span style={{ color: FORCE_PURPLE }}>{dark} Dark FP</span>
               {darkUsed > 0 && <span style={{ color: 'rgba(200,80,80,0.8)' }}>({darkUsed} used)</span>}
             </>}
@@ -526,7 +526,7 @@ export function RollFeedMini({ rolls, ownCharacterId, onExpand }: {
           const category = classifyRoll(roll)
           const isOwn    = roll.character_id === ownCharacterId
           const ac       = category === 'force' ? FORCE_BLUE : alignColor(roll, isOwn)
-          const textAc   = category === 'force' ? '#3A0C04' : ac
+          const textAc   = category === 'force' ? FORCE_BLUE : ac
           const isHidden = roll.hidden && !isOwn
 
           return (
@@ -551,11 +551,11 @@ export function RollFeedMini({ rolls, ownCharacterId, onExpand }: {
                 <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_COMPACT, color: C.textFaint }}>[Hidden]</div>
               ) : category === 'force' ? (
                 <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginTop: 2, flexWrap: 'wrap' }}>
-                  <span style={{ fontFamily: FONT_CINZEL, fontSize: FS_COMPACT, color: '#3A0C04', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 90 }}>
+                  <span style={{ fontFamily: FONT_CINZEL, fontSize: FS_COMPACT, color: 'var(--hud-text-faint)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 90 }}>
                     {roll.weapon_name || roll.roll_label || 'Force'}
                   </span>
-                  <span style={{ fontFamily: FONT_CINZEL, fontSize: FS_COMPACT, color: 'rgba(58,12,4,0.4)' }}>·</span>
-                  <span style={{ fontFamily: FONT_CINZEL, fontSize: FS_COMPACT, color: '#3A0C04', fontWeight: 700 }}>ACTIVATED</span>
+                  <span style={{ fontFamily: FONT_CINZEL, fontSize: FS_COMPACT, color: 'var(--hud-text-faint)' }}>·</span>
+                  <span style={{ fontFamily: FONT_CINZEL, fontSize: FS_COMPACT, color: FORCE_BLUE, fontWeight: 700 }}>ACTIVATED</span>
                   {roll.result.netSuccess > 0 && Array.from({ length: Math.min(roll.result.netSuccess, 4) }).map((_, i) => (
                     <div key={`l${i}`} style={{ width: 6, height: 6, borderRadius: '50%', flexShrink: 0, background: FORCE_BLUE }} />
                   ))}

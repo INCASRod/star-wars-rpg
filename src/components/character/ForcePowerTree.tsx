@@ -211,7 +211,7 @@ function ForceNode({
   const handleClick = useCallback(() => {
     if (!node.canPurchase || node.purchased) return
     if (!canAfford) {
-      toast.error(`Not enough XP â€” need ${node.cost}, have ${xpAvailable ?? 0}`)
+      toast.error(`Not enough XP — need ${node.cost}, have ${xpAvailable ?? 0}`)
       return
     }
     onClickPurchase?.(node)

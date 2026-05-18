@@ -1,6 +1,6 @@
 'use client'
 
-const SWORD_DIM = 'rgba(224,58,30,0.6)'
+const SWORD_DIM = 'rgba(255,240,232,0.55)'
 
 interface CombatCheckButtonProps {
   onOpen:     () => void
