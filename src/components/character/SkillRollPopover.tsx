@@ -50,7 +50,7 @@ function AdjBtn({ label, disabled, onClick }: { label: string; disabled: boolean
         width: 28, height: 28,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         background: 'var(--hud-surface-mid)',
-        border: `1px solid ${hovered && !disabled ? 'rgba(224,58,30,0.4)' : DIM}`,
+        border: `1px solid ${hovered && !disabled ? 'var(--hud-accent-40)' : DIM}`,
         borderRadius: 6,
         cursor: disabled ? 'not-allowed' : 'pointer',
         color: disabled ? 'var(--hud-text-faint)' : 'var(--hud-text)',
@@ -195,11 +195,11 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
         }}>
           {skill.name}
         </span>
-        <span style={{ color: 'rgba(224,58,30,0.4)', fontFamily: FONT_MONO, fontSize: 'clamp(0.7rem, 1.2vw, 0.85rem)' }}>Â·</span>
+        <span style={{ color: 'var(--hud-accent-40)', fontFamily: FONT_MONO, fontSize: 'clamp(0.7rem, 1.2vw, 0.85rem)' }}>&middot;</span>
         <span style={{
           fontFamily: FONT_MONO,
           fontSize: 'clamp(0.7rem, 1.2vw, 0.85rem)',
-          color: 'rgba(224,58,30,0.5)',
+          color: 'var(--hud-accent-50)',
         }}>
           {CHAR_ABBR3[skill.charKey]}
         </span>
@@ -215,7 +215,7 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
             color: C.textFaint,
             fontStyle: 'italic',
           }}>
-            No dice â€” characteristic is 0
+            No dice &mdash; characteristic is 0
           </span>
         ) : (
           <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
@@ -267,7 +267,7 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
                 fontSize: 'clamp(0.55rem, 0.9vw, 0.65rem)',
                 fontWeight: 600,
                 letterSpacing: '0.04em',
-                color: active ? '#CE93D8' : 'rgba(224,58,30,0.55)',
+                color: active ? '#CE93D8' : 'var(--hud-accent-50)',
                 transition: 'border-color 0.12s, background 0.12s',
                 whiteSpace: 'nowrap',
               }}
@@ -286,7 +286,7 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
           return (
             <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <DiceFace type={key} size={20} />
-              <AdjBtn label="âˆ’" disabled={count <= 0} onClick={() => setCount(Math.max(0, count - 1))} />
+              <AdjBtn label="-" disabled={count <= 0} onClick={() => setCount(Math.max(0, count - 1))} />
               <span style={{
                 fontFamily: FONT_MONO,
                 fontSize: 'clamp(0.8rem, 1.3vw, 0.95rem)',

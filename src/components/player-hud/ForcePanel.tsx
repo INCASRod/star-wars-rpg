@@ -524,8 +524,8 @@ export function ForcePanel({
             onClick={onAdd}
             className="hov-gold-bg"
             style={{
-              background: 'rgba(224,58,30,0.08)',
-              border: `1px solid rgba(224,58,30,0.3)`,
+              background: 'var(--hud-accent-10)',
+              border: '1px solid var(--hud-accent-border)',
               borderRadius: 3, padding: '2px 10px',
               fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL,
               fontWeight: 700, letterSpacing: '0.1em',

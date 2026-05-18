@@ -301,9 +301,9 @@ function CombatCard({ roll, isOwn, isGm }: { roll: RollEntry; isOwn: boolean; is
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: 4,
               padding: '2px 7px', borderRadius: 3, marginBottom: 4,
-              background: 'rgba(224,58,30,0.1)', border: '1px solid rgba(224,58,30,0.35)',
+              background: 'var(--hud-accent-10)', border: '1px solid var(--hud-accent-35)',
               fontFamily: FONT_MONO, fontSize: 'clamp(0.58rem, 0.88vw, 0.68rem)',
-              color: '#E03A1E', fontWeight: 700, letterSpacing: '0.05em',
+              color: 'var(--hud-gold)', fontWeight: 700, letterSpacing: '0.05em',
             }}>
               ⚠ CRITICAL ELIGIBLE
               {(meta.critModifier ?? 0) > 0 && (

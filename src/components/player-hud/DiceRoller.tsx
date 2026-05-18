@@ -253,18 +253,18 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll, onCombatChe
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                       padding: '6px 10px', borderRadius: 4, cursor: 'pointer', textAlign: 'left',
-                      background: isSelected ? 'rgba(224,120,85,0.15)' : 'rgba(224,58,30,0.05)',
-                      border: `1px solid ${isSelected ? 'rgba(224,120,85,0.55)' : C.border}`,
+                      background: isSelected ? 'var(--hud-accent-20)' : 'var(--hud-accent-10)',
+                      border: `1px solid ${isSelected ? 'var(--hud-accent-50)' : C.border}`,
                       transition: '.12s', width: '100%',
                     }}
                   >
                     <div>
-                      <div style={{ fontFamily: FONT_CINZEL, fontSize: 12, fontWeight: 700, color: isSelected ? '#E07855' : C.text }}>
+                      <div style={{ fontFamily: FONT_CINZEL, fontSize: 12, fontWeight: 700, color: isSelected ? 'var(--hud-gold)' : C.text }}>
                         {wpn.name}
                       </div>
                       <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 11, color: C.textDim, marginTop: 2 }}>
                         {wpn.skillName && <span>{wpn.skillName} · </span>}
-                        <span style={{ color: '#E07855' }}>DMG {wpn.damage}</span>
+                        <span style={{ color: 'var(--bs-red-pale)' }}>DMG {wpn.damage}</span>
                         {wpn.crit > 0 && <span style={{ color: '#E05050' }}> · CRIT {wpn.crit}</span>}
                         {wpn.range && <span> · {wpn.range}</span>}
                       </div>
@@ -493,7 +493,7 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll, onCombatChe
             disabled={isEmpty}
             style={{
               width: '100%', padding: '10px 0',
-              background: isEmpty ? C.textFaint : selectedWeapon ? 'linear-gradient(135deg, #E07855, #A04030)' : 'linear-gradient(135deg, #E03A1E, #A02010)',
+              background: isEmpty ? C.textFaint : selectedWeapon ? 'linear-gradient(135deg, var(--bs-red-pale), var(--bs-red-hi))' : 'linear-gradient(135deg, var(--hud-gold), var(--bs-red-hi))',
               border: 'none', borderRadius: 4, cursor: isEmpty ? 'not-allowed' : 'pointer',
               fontFamily: FONT_CINZEL, fontSize: 13, fontWeight: 700,
               letterSpacing: '0.12em', color: isEmpty ? C.textDim : C.bg,
