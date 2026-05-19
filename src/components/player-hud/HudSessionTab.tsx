@@ -7,12 +7,10 @@ import { C, FONT_RAJDHANI, FS_SM, FS_CAPTION } from './design-tokens'
 import { HUD, FONT_BODY, FONT_DISPLAY, FS, RADIUS } from '@/lib/tokens'
 import { MapCanvas } from '@/components/map/MapCanvas'
 import { InitiativeStrip } from '@/components/player/InitiativeStrip'
-import { HudTalentDrawer } from './HudTalentDrawer'
 import { HudAdversaryDrawer } from './HudAdversaryDrawer'
 import { HudSkillQuickList } from './HudSkillQuickList'
 import { fetchAdversaries, adversaryToInstance } from '@/lib/adversaries'
 import type { AdversaryInstance } from '@/lib/adversaries'
-import type { HudTalent } from './TalentsPanel'
 import type { MapToken } from '@/hooks/useMapTokens'
 import type { CombatEncounter } from '@/lib/combat'
 import type { Character, WpnDisplay, HudSkill } from '@/lib/types'
@@ -153,7 +151,6 @@ interface HudSessionTabProps {
   onTokenMove:        (tokenId: string, x: number, y: number) => void
   isCombatActive:     boolean
   encounter:          CombatEncounter | null
-  hudTalents:         HudTalent[]
   // Quick drawer props
   activeQuickPanel?:   'combat' | 'force' | 'skill' | null
   onCloseQuickPanel?:  () => void
@@ -174,7 +171,6 @@ export function HudSessionTab({
   onTokenMove,
   isCombatActive,
   encounter,
-  hudTalents,
   activeQuickPanel   = null,
   onCloseQuickPanel  = () => {},
   hudSkills          = [],
@@ -186,7 +182,6 @@ export function HudSessionTab({
   onOpenForceCheck   = () => {},
 }: HudSessionTabProps) {
   const supabase = useMemo(() => createClient(), [])
-  const [talentDrawerOpen,      setTalentDrawerOpen]      = useState(false)
   const [adversaryDrawerOpen,   setAdversaryDrawerOpen]   = useState(false)
   const [tokenHoverInfo,        setTokenHoverInfo]        = useState<{ tokenId: string; x: number; y: number } | null>(null)
   const initiativeBarRef = useRef<HTMLDivElement>(null)
@@ -509,18 +504,7 @@ export function HudSessionTab({
       )}
 
       {/* ── Session drawer trigger buttons ── */}
-      <div style={{ position: 'absolute', bottom: isCombatActive && encounter ? 70 : 12, left: 12, display: 'flex', gap: 6, zIndex: 31 }}>
-        <button
-          onClick={() => setTalentDrawerOpen(o => !o)}
-          style={{
-            fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, fontWeight: 700,
-            letterSpacing: '0.14em', textTransform: 'uppercase',
-            color: talentDrawerOpen ? 'var(--bs-on-red)' : C.gold,
-            background: talentDrawerOpen ? C.gold : 'var(--hud-surface-mid)',
-            border: `1px solid rgba(224,58,30,0.5)`,
-            borderRadius: 4, padding: '4px 10px', cursor: 'pointer',
-          }}
-        >Talents</button>
+      <div style={{ position: 'absolute', bottom: isCombatActive && encounter ? 90 : 12, left: 12, display: 'flex', gap: 6, zIndex: 31 }}>
         {encounter && encounter.adversaries.some(a => a.revealed) && visibleMapTokens.some(t => t.participant_type === 'adversary') && (
           <button
             onClick={() => setAdversaryDrawerOpen(o => !o)}
@@ -537,11 +521,6 @@ export function HudSessionTab({
       </div>
 
       {/* ── Drawers ── */}
-      <HudTalentDrawer
-        open={talentDrawerOpen}
-        onClose={() => setTalentDrawerOpen(false)}
-        hudTalents={hudTalents}
-      />
       {encounter && encounter.adversaries.some(a => a.revealed) && visibleMapTokens.some(t => t.participant_type === 'adversary') && (
         <HudAdversaryDrawer
           open={adversaryDrawerOpen}

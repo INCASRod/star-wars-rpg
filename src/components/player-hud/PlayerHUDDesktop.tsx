@@ -387,7 +387,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
       <div style={{
         position: 'relative', zIndex: 1,
         display: 'grid',
-        gridTemplateColumns: '52px 1fr clamp(200px,20%,240px)',
+        gridTemplateColumns: '64px 1fr clamp(200px,20%,240px)',
         gridTemplateRows: 'auto auto 1fr',
         height: '100vh',
       }}>
@@ -458,7 +458,6 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
               onTokenMove={mapTokens.moveToken}
               isCombatActive={isCombatActive}
               encounter={encounter}
-              hudTalents={hudTalents}
               activeQuickPanel={activeQuickPanel}
               onCloseQuickPanel={() => setActiveQuickPanel(null)}
               hudSkills={hudSkills}
