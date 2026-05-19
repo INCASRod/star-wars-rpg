@@ -219,10 +219,10 @@ html {
   /* ── Font aliases ───────────────────────────────────────────────
      --font-display and --font-body are set by next/font on <html>.
      Legacy aliases below resolve to the new fonts automatically.   */
-  --font-rajdhani: var(--font-body);    /* backward compat → Exo 2     */
-  --font-cinzel:   var(--font-display); /* backward compat → Orbitron  */
-  --font-orbitron: var(--font-display); /* backward compat → Orbitron  */
-  --font-mono:     var(--font-body);    /* backward compat → Exo 2     */
+  --font-rajdhani: var(--font-body);    /* backward compat → Palanquin  */
+  --font-cinzel:   var(--font-display); /* backward compat → Signika    */
+  --font-orbitron: var(--font-display); /* backward compat → Signika    */
+  --font-mono:     var(--font-body);    /* backward compat → Palanquin  */
 
   /* ── HUD Binary Sunset Theme ─────────────────────────────────  */
   /*    Used by PlayerHUD, CombatPanel, CombatTracker, wireframe    */
@@ -247,6 +247,7 @@ html {
   --hud-accent-50:     rgba(224,58,30,0.50);
   --hud-accent-60:     rgba(224,58,30,0.60);
   --hud-accent-border: rgba(224,58,30,0.30);
+  --hud-accent-purple: #9060D0;
   --hud-gold-subtle:   rgba(200,170,80,0.15);
   --hud-gold-border:   rgba(200,170,80,0.25);
   --hud-gold-40:       rgba(200,170,80,0.40);
@@ -355,7 +356,7 @@ html {
   --color-bs-red-glow:    var(--bs-red-glow);
   --color-bs-red-glow-s:  var(--bs-red-glow-s);
 
-  /* Fonts: --font-display (Orbitron) · --font-body (Exo 2). Use these vars, not raw names. */
+  /* Fonts: --font-display (Signika) · --font-body (Palanquin). Use these vars, not raw names. */
 
   --color-sidebar-ring:                var(--sidebar-ring);
   --color-sidebar-border:              var(--sidebar-border);
@@ -412,7 +413,7 @@ html, body {
 }
 
 body {
-  font-family: var(--font-body), 'Exo 2', sans-serif;
+  font-family: var(--font-body), 'Palanquin', sans-serif;
   font-size:   var(--text-body);
   line-height: var(--leading-normal);
   -webkit-font-smoothing: antialiased;
@@ -584,7 +585,7 @@ label, caption, .text-secondary {
 .hud-card:hover::before { opacity: 1; }
 
 .card-hdr {
-  font-family:    var(--font-body), 'Exo 2', sans-serif;
+  font-family:    var(--font-body), 'Palanquin', sans-serif;
   font-size:      var(--text-caption);
   font-weight:    700;
   letter-spacing: var(--tracking-widest);
@@ -888,7 +889,7 @@ i.ffi {
   vertical-align: middle;
   white-space:    nowrap;
   margin:         0 2px;
-  font-family:    var(--font-body), 'Exo 2', sans-serif;
+  font-family:    var(--font-body), 'Palanquin', sans-serif;
 }
 /* Dice-pool chips — colors reference CSS vars defined in :root */
 .die.boost      { color: var(--die-boost);      background: color-mix(in srgb, var(--die-boost) 12%, transparent);      border: 1px solid color-mix(in srgb, var(--die-boost) 35%, transparent); }
@@ -933,6 +934,7 @@ i.ffi {
   --hud-accent-50:     rgba(212,104,26,.50);
   --hud-accent-60:     rgba(212,104,26,.60);
   --hud-accent-border: rgba(212,104,26,.28);
+  --hud-accent-purple: #9060D0;
 
   --hud-gold-subtle:   rgba(200,148,56,.15);
   --hud-gold-border:   rgba(200,148,56,.25);
@@ -1015,6 +1017,7 @@ i.ffi {
   --hud-accent-50:     rgba(91,188,216,.50);
   --hud-accent-60:     rgba(91,188,216,.60);
   --hud-accent-border: rgba(91,188,216,.25);
+  --hud-accent-purple: #9060D0;
 
   --hud-gold-subtle:   rgba(200,162,78,.15);
   --hud-gold-border:   rgba(200,162,78,.25);
@@ -1069,8 +1072,157 @@ i.ffi {
   animation: combatPulseKyber 2s ease-in-out infinite;
 }
 
+/* ═══════════════════════════════════════════════════════════════ */
+/*  THEME: Star Destroyer Slate — GM-only chrome grey / hull black */
+/* ═══════════════════════════════════════════════════════════════ */
+[data-theme="star-destroyer-slate"] {
+  --hud-bg:            #0A0A0C;
+  --hud-panel:         #101214;
+  --hud-surface-lo:    #171A1E;
+  --hud-surface-mid:   #1E2228;
+  --hud-surface-hi:    #22272F;
+
+  --hud-border:        #181D22;
+  --hud-border-hi:     #2E3540;
+  --hud-border-strong: #3E4A58;
+
+  --hud-text:          #C4CDD4;
+  --hud-text-dim:      #5E6870;
+  --hud-text-faint:    #2E3640;
+
+  --hud-gold:          #96A8B4;
+  --hud-accent-10:     rgba(150,168,180,.10);
+  --hud-accent-20:     rgba(150,168,180,.20);
+  --hud-accent-25:     rgba(150,168,180,.25);
+  --hud-accent-35:     rgba(150,168,180,.35);
+  --hud-accent-40:     rgba(150,168,180,.40);
+  --hud-accent-45:     rgba(150,168,180,.45);
+  --hud-accent-50:     rgba(150,168,180,.50);
+  --hud-accent-60:     rgba(150,168,180,.60);
+  --hud-accent-border: rgba(150,168,180,.25);
+  --hud-accent-purple: #9060D0;
+
+  --hud-gold-subtle:   rgba(150,168,180,.10);
+  --hud-gold-border:   rgba(150,168,180,.20);
+  --hud-gold-40:       rgba(150,168,180,.40);
+
+  --hud-vital-bg:      #0A0C10;
+  --hud-vital-border:  #060810;
+  --hud-vital-text:    #C4CDD4;
+  --hud-vital-text-dim:rgba(196,205,212,.60);
+  --hud-vital-sep:     rgba(196,205,212,.15);
+  --hud-vital-wounds:  #C04040;
+  --hud-vital-strain:  #8090A4;
+
+  --bs-sky:            #0A0A0C;
+  --bs-panel:          #101214;
+  --bs-surface:        #171A1E;
+  --bs-card:           #1E2228;
+  --bs-card-hi:        #22272F;
+  --bs-red-sun:        #96A8B4;
+  --bs-red-pale:       #C8D8E0;
+  --bs-red-hi:         #6080A0;
+  --bs-red-mid:        #405870;
+  --bs-red-dim:        #283848;
+  --bs-red-mute:       #141C24;
+  --bs-ink:            #EEF2F5;
+  --bs-txt:            #C4CDD4;
+  --bs-txt2:           #5E6870;
+  --bs-txt3:           #2E3640;
+  --bs-on-red:         #0A0A0C;
+  --bs-bdr-strong:     #3E4A58;
+  --bs-bdr-mid:        #2E3540;
+  --bs-bdr-subtle:     #181D22;
+  --bs-red-glow:       rgba(150,168,180,.10);
+  --bs-red-glow-s:     rgba(150,168,180,.22);
+}
+
+[data-theme="star-destroyer-slate"] .combat-check-btn {
+  background: rgba(150,168,180,.10);
+  border: 1px solid rgba(150,168,180,.30);
+  color: #C4CDD4;
+}
+[data-theme="star-destroyer-slate"] .combat-check-btn:hover {
+  background: rgba(150,168,180,.18);
+  border-color: rgba(150,168,180,.50);
+  box-shadow: 0 0 10px rgba(150,168,180,.10);
+}
+@keyframes combatPulseSlate {
+  0%, 100% { border-color: rgba(150,168,180,.20); box-shadow: none; }
+  50%       { border-color: rgba(150,168,180,.50); box-shadow: 0 0 10px rgba(150,168,180,.12); }
+}
+[data-theme="star-destroyer-slate"] .combat-check-btn-pulse {
+  animation: combatPulseSlate 2s ease-in-out infinite;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/*  INITIATIVE STRIP — GM reorder / swap controls                  */
+/* ═══════════════════════════════════════════════════════════════ */
+.init-slot-card { position: relative; }
+
+.init-slot-gm-bar {
+  display:         flex;
+  justify-content: center;
+  align-items:     center;
+  gap:             2px;
+  opacity:         0;
+  pointer-events:  none;
+  transition:      opacity 0.15s;
+}
+
+/* Show on hover or when a child (e.g. swap button) holds focus */
+.init-slot-card:hover .init-slot-gm-bar,
+.init-slot-card:focus-within .init-slot-gm-bar {
+  opacity:        1;
+  pointer-events: auto;
+}
+
+.init-slot-gm-bar button {
+  background:    rgba(150, 168, 180, 0.12);
+  border:        1px solid rgba(150, 168, 180, 0.25);
+  border-radius: 2px;
+  color:         var(--hud-text-dim);
+  font-family:   var(--font-body);
+  font-size:     11px;
+  line-height:   1;
+  padding:       3px 7px;
+  cursor:        pointer;
+  transition:    background 0.1s, border-color 0.1s, color 0.1s;
+}
+
+.init-slot-gm-bar button:hover:not(:disabled) {
+  background:   rgba(150, 168, 180, 0.22);
+  border-color: rgba(150, 168, 180, 0.5);
+  color:        var(--hud-text);
+}
+
+.init-slot-gm-bar button:disabled {
+  opacity: 0.25;
+  cursor:  not-allowed;
+}
+
+.init-swap-target {
+  background:    transparent;
+  border:        1px solid transparent;
+  border-radius: 3px;
+  color:         var(--hud-text);
+  font-family:   var(--font-body);
+  font-size:     var(--text-caption);
+  font-weight:   600;
+  padding:       4px 8px;
+  cursor:        pointer;
+  text-align:    left;
+  transition:    background 0.1s, border-color 0.1s;
+  width:         100%;
+}
+
+.init-swap-target:hover {
+  background:   rgba(150, 168, 180, 0.12);
+  border-color: rgba(150, 168, 180, 0.3);
 }

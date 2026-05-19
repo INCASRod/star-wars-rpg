@@ -4,7 +4,7 @@
 // RULES (enforced by CLAUDE.md):
 //   1. No inline style={{ }} objects in components.
 //      Use CSS classes (Tailwind utilities or globals.css classes).
-//   2. Only two fonts: Rajdhani (all UI text) + sw-rpg-icons (icons).
+//   2. Only two fonts: Palanquin (body) + Signika (display) + sw-rpg-icons (icons).
 //   3. All colors, sizes, spacing, z-index, radius come from this file.
 //   4. CSS custom properties (var(--*)) are the CSS side of this file.
 //      Anything in :root in globals.css must have a matching export here.
@@ -14,12 +14,12 @@ import type React from 'react'
 
 // ── Fonts ────────────────────────────────────────────────────────
 // Two UI fonts + one icon font. Do not add more.
-//   FONT_DISPLAY → Orbitron  — logos, stat numerics, display headings
-//   FONT_BODY    → Exo 2     — all other UI text: labels, body, HUD, buttons
+//   FONT_DISPLAY → Signika    — logos, stat numerics, display headings
+//   FONT_BODY    → Palanquin  — all other UI text: labels, body, HUD, buttons
 //   FONT_ICONS   → sw-rpg-icons — dice/result symbol icon font only
 //   FONT         → alias for FONT_BODY (backward compat — existing refs unchanged)
-export const FONT_DISPLAY = "var(--font-display), 'Orbitron', monospace"
-export const FONT_BODY    = "var(--font-body), 'Exo 2', sans-serif"
+export const FONT_DISPLAY = "var(--font-display), 'Signika', sans-serif"
+export const FONT_BODY    = "var(--font-body), 'Palanquin', sans-serif"
 export const FONT         = FONT_BODY
 export const FONT_ICONS   = 'var(--font-sw-rpg-icons)'
 
@@ -168,15 +168,16 @@ export const COLOR = {
 // Used by PlayerHUD, CombatPanel, CombatTracker, wireframe panels.
 // Reference CSS custom properties — do not hardcode HUD hex values.
 export const HUD = {
-  bg:        'var(--hud-bg)',
-  panel:     'var(--hud-panel)',
-  panelBg:   'var(--hud-panel)',  // alias — prefer .panel in new code
-  border:    'var(--hud-border)',
-  borderHi:  'var(--hud-border-hi)',
-  text:      'var(--hud-text)',
-  textDim:   'var(--hud-text-dim)',
-  textFaint: 'var(--hud-text-faint)',
-  gold:      'var(--hud-gold)',
+  bg:           'var(--hud-bg)',
+  panel:        'var(--hud-panel)',
+  panelBg:      'var(--hud-panel)',  // alias — prefer .panel in new code
+  border:       'var(--hud-border)',
+  borderHi:     'var(--hud-border-hi)',
+  text:         'var(--hud-text)',
+  textDim:      'var(--hud-text-dim)',
+  textFaint:    'var(--hud-text-faint)',
+  gold:         'var(--hud-gold)',
+  accentPurple: 'var(--hud-accent-purple)',
 } as const
 
 // ── Characteristic colors ────────────────────────────────────────
