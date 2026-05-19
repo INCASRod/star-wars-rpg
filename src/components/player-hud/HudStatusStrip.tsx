@@ -4,11 +4,8 @@ import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { C } from './design-tokens'
 import { FONT_BODY, FS, RADIUS, SHADOW, SP, Z } from '@/lib/tokens'
-import { CombatCheckButton } from '@/components/character/CombatCheckButton'
-import { ForceCheckButton } from '@/components/character/ForceCheckButton'
 import { CriticalInjuryPips, type CritPip } from '@/components/character/CriticalInjuryPip'
 import { EncumbranceBar } from '@/components/character/EncumbranceBar'
-import { isForceUserSensitive } from '@/lib/forceUtils'
 import type { Character } from '@/lib/types'
 import type { EffectiveStats } from '@/lib/derivedStats'
 
@@ -24,8 +21,6 @@ interface HudStatusStripProps {
   isCombat: boolean
   onVitalAdjust: (field: 'wound_current' | 'strain_current', delta: number) => Promise<void>
   onHealCrit: (id: string) => void
-  onOpenCombatCheck: () => void
-  onOpenForceCheck: () => void
 }
 
 function groupSources(sources: { label: string; value: number }[]): { label: string; value: number }[] {
@@ -98,7 +93,7 @@ export function HudStatusStrip({
   character, effectiveStats, engineBreakdown, woundBonus,
   encumbranceCurrent, encumbranceBonus, crits,
   forceRating, isCombat,
-  onVitalAdjust, onHealCrit, onOpenCombatCheck, onOpenForceCheck,
+  onVitalAdjust, onHealCrit,
 }: HudStatusStripProps) {
   const [woundTipPos,  setWoundTipPos]  = useState<{ top: number; left: number } | null>(null)
   const [strainTipPos, setStrainTipPos] = useState<{ top: number; left: number } | null>(null)
@@ -112,7 +107,6 @@ export function HudStatusStrip({
   const wOver = wCurrent >= wThreshold + woundBonus
   const sOver = sCurrent >= sThreshold
   const encThreshold = character.encumbrance_threshold + encumbranceBonus
-  const isForceUser  = isForceUserSensitive(character, effectiveStats?.forceRating ?? forceRating)
 
   const woundBreakdown  = groupSources(engineBreakdown?.woundThreshold  ?? [])
   const strainBreakdown = groupSources(engineBreakdown?.strainThreshold ?? [])
@@ -205,10 +199,6 @@ export function HudStatusStrip({
 
       {/* Spacer */}
       <div style={{ flex: 1 }} />
-
-      {/* Action buttons */}
-      <CombatCheckButton onOpen={onOpenCombatCheck} isInCombat={isCombat} />
-      {isForceUser && <ForceCheckButton onOpen={onOpenForceCheck} compact />}
     </div>
   )
 }
