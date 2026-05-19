@@ -326,7 +326,7 @@ export function HudSessionTab({
       {/* ── Combat Check quick drawer ── */}
       <div
         className={`hud-quick-drawer${activeQuickPanel === 'combat' ? ' open' : ''}`}
-        style={{ background: '#100e0e', borderRight: '1px solid rgba(224,58,30,0.28)', display: 'flex', flexDirection: 'column' }}
+        style={{ background: 'var(--hud-panel)', borderRight: '1px solid rgba(224,58,30,0.28)', display: 'flex', flexDirection: 'column' }}
       >
         <div style={{
           padding: '10px 14px', borderBottom: '1px solid rgba(224,58,30,0.18)',
@@ -373,7 +373,7 @@ export function HudSessionTab({
       {/* ── Force Check quick drawer ── */}
       <div
         className={`hud-quick-drawer${activeQuickPanel === 'force' ? ' open' : ''}`}
-        style={{ background: '#0d0b12', borderRight: '1px solid rgba(144,96,208,0.28)', display: 'flex', flexDirection: 'column' }}
+        style={{ background: 'var(--hud-panel)', borderRight: '1px solid rgba(144,96,208,0.28)', display: 'flex', flexDirection: 'column' }}
       >
         <div style={{
           padding: '10px 14px', borderBottom: '1px solid rgba(144,96,208,0.18)',

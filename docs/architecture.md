@@ -305,18 +305,15 @@ Cleanup via `useEffect` return → `supabase.removeChannel(channel)`.
 ### Tier 1 — Page Shells (route-level)
 ```
 /character/[id]/page.tsx
-  └── PlayerHUDDesktop          (3-row CSS grid: TopBar / StatusStrip / content columns)
+  └── PlayerHUDDesktop          (3-row CSS grid: 52px rail · centre · right column)
         ├── HudTopBar           (row 1 — logo, portrait chip, character name, campaign/XP meta)
-        ├── HudStatusStrip      (row 2 — wounds ±, strain ±, encumbrance bar, crit pips, action buttons)
-        ├── HudLeftColumn       (row 3 left — characteristics 3×2 grid + compact scrollable SkillsPanel)
+        ├── HudStatusStrip      (row 2 — wounds ±, strain ±, encumbrance bar, crit pips)
+        ├── HudLeftRail         (row 3 left — 52px icon rail; quick action buttons open HudQuickDrawers; nav buttons open HudFullPanels)
         ├── HudRightColumn      (row 3 right — full-height RollFeedPanel)
-        ├── HudTabBar           (tab navigation: Session|Skills|Talents|Inventory|Force|Lore|Group)
-        ├── InventoryPanel
-        ├── SkillsPanel
-        ├── TalentsPanel
-        ├── ForcePanel
-        ├── CriticalInjuriesPanel
-        └── HudLoreTab          (character portrait upload/delete + lore fields)
+        ├── HudSessionTab       (row 3 centre — map canvas + initiative strip + quick drawers)
+        │     ├── HudQuickDrawer (combat/force/skill — 260px, position:absolute, slide from left)
+        │     └── InitiativeStrip (compact mode, position:absolute bottom:0)
+        └── HudFullPanel (skills/talents/inventory/lore/group — 82%, position:absolute, slide from left)
 
 /gm/page.tsx                    (~3,000+ lines — GOD COMPONENT)
   ├── CombatPanel               (~3,647 lines — GOD COMPONENT)
@@ -346,9 +343,9 @@ Each panel is a self-contained component accepting pre-computed display data fro
 
 ### Player HUD Sub-components (`src/components/player-hud/`)
 - `HudTopBar` — grid row 1; renders the HOLOCRON logo, a portrait chip (avatar thumbnail), character name, and campaign/XP meta; accent colors use CSS vars (`--hud-accent-*`) rather than rgba literals
-- `HudStatusStrip` — grid row 2, `gridColumn: 1 / -1`; full-width strip with Wounds ±, Strain ±, compact `EncumbranceBar`, `CriticalInjuryPips`, `CombatCheckButton`, and `ForceCheckButton` (rendered only for force-sensitive characters); vitals and action buttons were moved here from `HudLeftColumn` / `HudRightColumn`
-- `HudTabBar` — tab navigation strip; `TabName` union is `Session | Skills | Talents | Inventory | Force | Lore | Group`; the Feed tab was removed from `allTabs`
-- `HudLeftColumn` — grid row 3 left panel; characteristics displayed in a 3×2 grid; compact scrollable `SkillsPanel` below; vitals moved to `HudStatusStrip`
+- `HudStatusStrip` — grid row 2, `gridColumn: 1 / -1`; full-width strip with Wounds ±, Strain ±, compact `EncumbranceBar`, `CriticalInjuryPips`; combat/force check buttons moved to `HudLeftRail`
+- `HudLeftRail` — grid row 3 left (52px fixed); quick action buttons (Combat Check, Force Check [force-sensitive only], Skill Check) open narrow drawers inside the map area; nav buttons (Skills, Talents, Inventory, Lore, Group) open full-width slide-in panels over the centre column; no tab bar needed
+- `HudFullPanel` — generic slide-in panel wrapper; `position: absolute; width: 82%` inside the centre column div; used for all five navigation panels; contains a header (symbol + title + close button) and a scrollable body
 - `HudRightColumn` — grid row 3 right panel; contains full-height `RollFeedPanel` with a Roll Feed header; action buttons moved to `HudStatusStrip`
 - `HudLoreTab` — lore tab content; `CharacterAvatar` at top with portrait upload/delete support; accepts `onPortraitUpload` and `onPortraitDelete` props; portrait was moved here from `HudLeftColumn`
 
