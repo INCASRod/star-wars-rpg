@@ -146,6 +146,12 @@ Clicking a mini card opens a **full-screen modal** centred on the map. The Party
 
 Opens a **250px left panel** auto-populated from tokens currently on the map. No manual add/remove — all changes flow through the Map panel's token placement.
 
+### Panel header actions
+
+**▶ Start Combat** — always visible. Opens the existing `InitiativeSetupModal` multi-step flow (Cool vs Vigilance selection → PC dice pool rolls → adversary rolls → order preview → Lock & Start). This is the existing setup flow, now surfaced from the Combat panel rather than a FAB or separate tab.
+
+**◉ Initiative Order** — visible only when `encounter.is_active = true`. Opens the Initiative Drawer (see below).
+
 ### Encounter Adversaries section
 
 Per adversary row:
@@ -162,6 +168,26 @@ Per vehicle row:
 ### Empty state
 
 When no tokens are on the map: "Add tokens via 🗺 Map → Tokens" hint text. No add buttons in this panel.
+
+---
+
+## 5a. Initiative Drawer
+
+A **bottom drawer** that slides up from the bottom edge of the map area when the GM taps "◉ Initiative Order" in the Combat panel. The left rail, Combat panel, and Roll Feed remain visible; only the map is partially obscured by the drawer.
+
+### Contents
+
+- **Round counter** — "Round 3" label, top-left
+- **InitiativeStrip** — the existing horizontal strip component showing all slots in turn order: participant avatar/initial, name label, ▲ NOW indicator on the current slot, ✓ badge on acted slots. PCs in blue, adversaries in red (existing colour logic).
+- **Advance Turn** button — moves `current_slot_index` forward; auto-wraps to next round when all slots have acted
+- **End Combat** button — sets `encounter.is_active = false`, clears the strip
+- **✕ Close** — dismisses the drawer without ending combat; state is preserved
+
+### Behaviour
+
+- Drawer is on-demand only — the GM opens it to check order or advance the turn, then closes it to restore full map view
+- Does not auto-open when combat starts; GM opens it explicitly
+- Coexists with an open Combat panel (both visible simultaneously)
 
 ---
 
@@ -212,14 +238,14 @@ The current `src/app/gm/page.tsx` (~3 000 lines) must be split as part of this w
 | `GmCombatPanel` | Encounter adversaries + vehicles live view |
 | `GmCharacterModal` | Full character card modal (wraps existing `GmCharacterCard`) |
 | `GmTokenControls` | Add Player / Adversary / Vehicle token flows |
+| `GmInitiativeDrawer` | Bottom drawer wrapping existing `InitiativeStrip` + Advance Turn / End Combat controls |
 
-Existing components retained as-is: `GmMapView`, `StagingTopBar`, `RollFeedPanel`, `GmCharacterCard`, `GmDiceRollerFAB`, `GmReferenceDrawer`.
+Existing components retained as-is: `GmMapView`, `StagingTopBar`, `RollFeedPanel`, `GmCharacterCard`, `GmDiceRollerFAB`, `GmReferenceDrawer`, `InitiativeStrip`, `InitiativeSetupModal`.
 
 ---
 
 ## 8. Out of scope
 
-- Initiative / turn-order tracker (not designed, not included)
 - Adversary stat-block editing (creation only in this pass)
 - Mobile / tablet GM view
 - Multiplayer GM (single GM assumed)
