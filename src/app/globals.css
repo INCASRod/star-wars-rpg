@@ -1226,3 +1226,47 @@ i.ffi {
   background:   rgba(150, 168, 180, 0.12);
   border-color: rgba(150, 168, 180, 0.3);
 }
+
+/* ── Player HUD Left Rail ─────────────────────────────────────── */
+.hud-rail-btn-combat:hover,
+.hud-rail-btn-combat.active { background: rgba(224,58,30,0.12); border-color: rgba(224,58,30,0.35); }
+.hud-rail-btn-combat.active .hud-rail-label { color: var(--bs-red-pale); }
+
+.hud-rail-btn-force:hover,
+.hud-rail-btn-force.active { background: rgba(144,96,208,0.12); border-color: rgba(144,96,208,0.35); }
+.hud-rail-btn-force.active .hud-rail-label { color: var(--hud-accent-purple); }
+
+.hud-rail-btn-skill:hover,
+.hud-rail-btn-skill.active { background: rgba(200,170,80,0.12); border-color: rgba(200,170,80,0.35); }
+.hud-rail-btn-skill.active .hud-rail-label { color: var(--hud-gold); }
+
+.hud-rail-btn-nav:hover { background: rgba(150,168,180,0.08); border-color: rgba(150,168,180,0.20); }
+.hud-rail-btn-nav.active { background: rgba(150,168,180,0.14); border-color: rgba(150,168,180,0.35); }
+.hud-rail-btn-nav.active .hud-rail-label { color: var(--hud-text); }
+
+/* ── Quick drawers / Full panels slide-in ─────────────────────── */
+.hud-quick-drawer {
+  position: absolute; top: 0; left: 0; bottom: 0;
+  width: 260px;
+  z-index: 102;
+  transform: translateX(-100%);
+  transition: transform 0.22s cubic-bezier(0.22,1,0.36,1);
+  box-shadow: 4px 0 32px rgba(0,0,0,0.7);
+}
+.hud-quick-drawer.open { transform: translateX(0); }
+
+.hud-full-panel {
+  position: absolute; top: 0; left: 0; bottom: 0;
+  width: 82%;
+  z-index: 101;
+  transform: translateX(-100%);
+  transition: transform 0.26s cubic-bezier(0.22,1,0.36,1);
+  box-shadow: 6px 0 48px rgba(0,0,0,0.85);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.hud-full-panel.open { transform: translateX(0); }
+
+/* ── Weapon / Force power row hover (inside quick drawers) ───── */
+.hud-combat-wpn-row:hover { background: rgba(224,58,30,0.06); }
+.hud-force-power-row:hover { background: rgba(144,96,208,0.06); }
