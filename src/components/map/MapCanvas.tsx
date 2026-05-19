@@ -30,7 +30,9 @@ export interface MapCanvasProps {
   gridEnabled:         boolean
   gridSize:            number
   onTokenContextMenu?: (tokenId: string, e: MouseEvent) => void
-  tokenScale?:         number   // GM-only visual scale multiplier; players always see 1.0
+  tokenScale?:         number                        // GM-only visual scale multiplier; players always see 1.0
+  initialScale?:       number                        // stage zoom applied once on first load (default 1.0)
+  bottomOverlayRef?:   React.RefObject<HTMLElement | null>  // ref to element at the bottom; its height shifts the initial vertical centre upward
   onTokenHover?:       (tokenId: string, screenX: number, screenY: number) => void
   onTokenHoverEnd?:    () => void
   onTokenDragStart?:   (tokenId: string) => void
@@ -40,7 +42,8 @@ export interface MapCanvasProps {
 export const MapCanvas = memo(function MapCanvas({
   mapImageUrl, tokens, isGM, currentCharacterId,
   onTokenMove, gridEnabled, gridSize, onTokenContextMenu,
-  tokenScale = 1, onTokenHover, onTokenHoverEnd, onTokenDragStart, onTokenDragEnd,
+  tokenScale = 1, initialScale = 1, bottomOverlayRef,
+  onTokenHover, onTokenHoverEnd, onTokenDragStart, onTokenDragEnd,
 }: MapCanvasProps) {
   const containerRef       = useRef<HTMLDivElement>(null)
   const appRef             = useRef<InstanceType<typeof import('pixi.js').Application> | null>(null)
@@ -96,6 +99,18 @@ export const MapCanvas = memo(function MapCanvas({
       const { mapImageUrl: url, gridEnabled: ge, gridSize: gs } = propsRef.current
       if (url) {
         await rebuildMap(app, px, url, ge, gs, mapWRef, mapHRef, mapOffsetXRef, mapOffsetYRef)
+        if (initialScale !== 1) {
+          app.stage.scale.set(initialScale)
+          const cw = app.screen.width
+          const ch = app.screen.height
+          // Re-centre: at scale < 1 the stage origin drifts; shift by the
+          // gap that opens up on each side so the map stays centred in the
+          // visible area. If a bottom overlay (e.g. initiative strip) is
+          // present, its rendered height shifts the vertical centre upward.
+          const overlayH = bottomOverlayRef?.current?.offsetHeight ?? 0
+          app.stage.x = cw * (1 - initialScale) / 2
+          app.stage.y = ch * (1 - initialScale) / 2 - overlayH / 2
+        }
       }
       if (!destroyed) {
         const { tokens: t, isGM: gm, currentCharacterId: cid, tokenScale: ts } = propsRef.current
