@@ -19,13 +19,13 @@ import { HUD } from '@/lib/tokens'
 /* ── Design tokens ─────────────────────────────────────── */
 const FR  = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 const FC  = "var(--font-rajdhani), 'Cinzel', serif"
-const BG  = '#060D09'
-const DIM  = '#6A8070'
-const TEXT = '#C8D8C0'
+const BG  = 'var(--hud-bg)'
+const DIM  = 'var(--hud-text-dim)'
+const TEXT = 'var(--hud-text)'
 const GREEN = '#4EC87A'
-const PANEL_BG  = 'rgba(6,13,9,0.97)'
-const BORDER    = 'rgba(200,170,80,0.14)'
-const BORDER_HI = 'rgba(200,170,80,0.36)'
+const PANEL_BG  = 'rgba(10,10,12,0.97)'
+const BORDER    = 'rgba(150,168,180,0.14)'
+const BORDER_HI = 'var(--hud-accent-35)'
 
 const FS_OVERLINE = 'var(--text-overline)'
 const FS_CAPTION  = 'var(--text-caption)'
@@ -34,8 +34,8 @@ const FS_SM       = 'var(--text-sm)'
 const FS_H4       = 'var(--text-h4)'
 
 const btnTool: React.CSSProperties = {
-  background: 'rgba(6,13,9,0.92)',
-  border: `1px solid rgba(200,170,80,0.35)`,
+  background: 'rgba(10,10,12,0.92)',
+  border: `1px solid var(--hud-accent-35)`,
   color: HUD.gold,
   fontFamily: FR,
   fontSize: FS_CAPTION,
@@ -64,8 +64,8 @@ const btnDanger: React.CSSProperties = {
 }
 
 const btnSmall: React.CSSProperties = {
-  background: 'rgba(200,170,80,0.08)',
-  border: `1px solid rgba(200,170,80,0.3)`,
+  background: 'var(--hud-accent-10)',
+  border: `1px solid rgba(150,168,180,0.30)`,
   color: HUD.gold,
   fontFamily: FR,
   fontSize: FS_CAPTION,
@@ -96,7 +96,7 @@ const fieldLabel: React.CSSProperties = {
   fontWeight: 700,
   letterSpacing: '0.18em',
   textTransform: 'uppercase',
-  color: 'rgba(200,170,80,0.5)',
+  color: 'var(--hud-accent-50)',
   marginBottom: 4,
 }
 
@@ -772,7 +772,7 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
               <div style={{
                 position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)',
                 zIndex: 50, display: 'flex', alignItems: 'center', gap: 8,
-                background: 'rgba(6,13,9,0.92)', border: `1px solid ${BORDER_HI}`,
+                background: 'rgba(10,10,12,0.92)', border: `1px solid ${BORDER_HI}`,
                 borderRadius: 20, padding: '4px 10px 4px 12px',
                 backdropFilter: 'blur(8px)',
               }}>
@@ -810,7 +810,7 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
               onClick={() => setLibraryOpen(o => !o)}
               style={{
                 ...btnTool,
-                borderColor: libraryOpen ? 'rgba(200,170,80,0.65)' : 'rgba(200,170,80,0.35)',
+                borderColor: libraryOpen ? 'rgba(150,168,180,0.65)' : 'rgba(150,168,180,0.35)',
                 color: libraryOpen ? HUD.gold : DIM,
               }}
             >
@@ -827,11 +827,11 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
           {activeMap && (
             <div style={{ display: 'flex', gap: 8, pointerEvents: 'all', alignItems: 'center' }}>
               {/* Token scale control */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 0, background: 'rgba(6,13,9,0.92)', border: '1px solid rgba(200,170,80,0.35)', borderRadius: 4 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 0, background: 'rgba(10,10,12,0.92)', border: '1px solid rgba(150,168,180,0.35)', borderRadius: 4 }}>
                 <button
                   onClick={() => adjustTokenScale(-0.25)}
                   disabled={tokenScale <= 0.25}
-                  style={{ background: 'transparent', border: 'none', color: tokenScale <= 0.25 ? 'rgba(200,170,80,0.25)' : HUD.gold, fontFamily: "'Share Tech Mono', monospace", fontSize: FS_CAPTION, padding: '6px 10px', cursor: tokenScale <= 0.25 ? 'default' : 'pointer', lineHeight: 1 }}
+                  style={{ background: 'transparent', border: 'none', color: tokenScale <= 0.25 ? 'rgba(150,168,180,0.25)' : HUD.gold, fontFamily: "'Share Tech Mono', monospace", fontSize: FS_CAPTION, padding: '6px 10px', cursor: tokenScale <= 0.25 ? 'default' : 'pointer', lineHeight: 1 }}
                 >
                   −
                 </button>
@@ -841,7 +841,7 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
                 <button
                   onClick={() => adjustTokenScale(0.25)}
                   disabled={tokenScale >= 3.0}
-                  style={{ background: 'transparent', border: 'none', color: tokenScale >= 3.0 ? 'rgba(200,170,80,0.25)' : HUD.gold, fontFamily: "'Share Tech Mono', monospace", fontSize: FS_CAPTION, padding: '6px 10px', cursor: tokenScale >= 3.0 ? 'default' : 'pointer', lineHeight: 1 }}
+                  style={{ background: 'transparent', border: 'none', color: tokenScale >= 3.0 ? 'rgba(150,168,180,0.25)' : HUD.gold, fontFamily: "'Share Tech Mono', monospace", fontSize: FS_CAPTION, padding: '6px 10px', cursor: tokenScale >= 3.0 ? 'default' : 'pointer', lineHeight: 1 }}
                 >
                   +
                 </button>
@@ -853,7 +853,7 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
                 style={{
                   ...btnTool,
                   color: activeMap.is_visible_to_players ? GREEN : DIM,
-                  borderColor: activeMap.is_visible_to_players ? 'rgba(78,200,122,0.45)' : 'rgba(200,170,80,0.35)',
+                  borderColor: activeMap.is_visible_to_players ? 'rgba(78,200,122,0.45)' : 'rgba(150,168,180,0.35)',
                 }}
               >
                 {activeMap.is_visible_to_players ? '◉ Visible' : '◯ Hidden'}
@@ -864,9 +864,9 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
                 onClick={() => setTokenDrawerOpen(o => !o)}
                 style={{
                   ...btnTool,
-                  color: tokenDrawerOpen ? '#52C8A0' : DIM,
-                  borderColor: tokenDrawerOpen ? 'rgba(82,200,160,0.45)' : 'rgba(200,170,80,0.35)',
-                  background: tokenDrawerOpen ? 'rgba(82,200,160,0.1)' : 'rgba(6,13,9,0.92)',
+                  color: tokenDrawerOpen ? 'var(--hud-gold)' : DIM,
+                  borderColor: tokenDrawerOpen ? 'rgba(150,168,180,0.45)' : 'rgba(150,168,180,0.35)',
+                  background: tokenDrawerOpen ? 'rgba(150,168,180,0.1)' : 'rgba(10,10,12,0.92)',
                 }}
               >
                 ◈ Tokens
@@ -897,8 +897,8 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
               <div
                 style={{
                   position:      'fixed',
-                  top:           0,
-                  left:          0,
+                  top:           44,
+                  left:          52,
                   bottom:        0,
                   width:         'clamp(300px, 28vw, 420px)',
                   zIndex:        9000,
@@ -907,7 +907,7 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
                   background:    PANEL_BG,
                   borderRight:   `1px solid ${isOpen ? BORDER_HI : 'transparent'}`,
                   boxShadow:     isOpen ? '8px 0 40px rgba(0,0,0,0.6)' : 'none',
-                  transform:     isOpen ? 'translateX(0)' : 'translateX(-100%)',
+                  transform:     isOpen ? 'translateX(0)' : 'translateX(calc(-100% - 52px))',
                   transition:    'transform 0.26s cubic-bezier(0.22,1,0.36,1), border-color 0.2s, box-shadow 0.2s',
                   pointerEvents: isOpen ? 'auto' : 'none',
                   backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
@@ -919,7 +919,7 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
                   flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   padding: '0 16px', height: 50,
                   borderBottom: `1px solid ${BORDER}`,
-                  background: 'rgba(10,18,12,0.92)',
+                  background: 'rgba(10,10,12,0.92)',
                 }}>
                   <span style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: HUD.gold }}>
                     Map Library
@@ -964,7 +964,7 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
                     <div style={{ display: 'flex', gap: 6 }}>
                       <button
                         onClick={() => setNewPlanetOpen(true)}
-                        style={{ flex: 1, padding: '5px 0', borderRadius: 4, background: 'rgba(90,140,200,0.07)', border: '1px solid rgba(90,140,200,0.25)', color: '#7AB4E0', fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer' }}
+                        style={{ flex: 1, padding: '5px 0', borderRadius: 4, background: 'rgba(150,168,180,0.07)', border: '1px solid rgba(150,168,180,0.25)', color: 'var(--hud-gold)', fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer' }}
                       >⊕ New Planet</button>
                       <button
                         onClick={() => { closeDrawer(); setUploadOpen(true) }}
@@ -1228,7 +1228,7 @@ const TokenTooltip = memo(function TokenTooltip(p: TokenTooltipData) {
   return createPortal(
     <div style={{
       position: 'fixed', left, top, width: TOOLTIP_W, zIndex: 1100,
-      background: 'rgba(6,13,9,0.97)',
+      background: 'rgba(10,10,12,0.97)',
       border: `1px solid ${p.typeColor}44`,
       borderRadius: 6,
       boxShadow: `0 8px 32px rgba(0,0,0,0.85), 0 0 0 1px ${p.typeColor}18`,
@@ -1339,7 +1339,7 @@ const TokenDrawer = memo(function TokenDrawer({
       style={{
         width: 280, flexShrink: 0,
         background: PANEL_BG,
-        borderLeft: '1px solid rgba(200,170,80,0.25)',
+        borderLeft: '1px solid rgba(150,168,180,0.25)',
         display: 'flex', flexDirection: 'column',
         overflow: 'hidden',
       }}
@@ -1368,7 +1368,7 @@ const TokenDrawer = memo(function TokenDrawer({
         {/* ── Section A: Adversaries ── */}
         {npcSlots.length > 0 && (
           <>
-            <div style={{ padding: '10px 14px 6px', fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(200,170,80,0.4)', borderBottom: `1px solid ${BORDER}` }}>
+            <div style={{ padding: '10px 14px 6px', fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(150,168,180,0.4)', borderBottom: `1px solid ${BORDER}` }}>
               Adversaries
             </div>
 
@@ -1406,7 +1406,7 @@ const TokenDrawer = memo(function TokenDrawer({
                     <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, cursor: advTokenBusy === p.name ? 'wait' : 'pointer' }}>
                       <input type="file" accept="image/*" hidden onChange={e => { const f = e.target.files?.[0]; if (f) void onAdvTokenUpload(p.name, f) }} />
                       <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>{advTokenBusy === p.name ? 'Uploading…' : '↑ Upload Image'}</span>
-                      <span style={{ fontFamily: FR, fontStyle: 'italic', fontSize: FS_OVERLINE, color: 'rgba(200,170,80,0.3)' }}>· Used as token on the map</span>
+                      <span style={{ fontFamily: FR, fontStyle: 'italic', fontSize: FS_OVERLINE, color: 'rgba(150,168,180,0.3)' }}>· Used as token on the map</span>
                     </label>
                   )}
 
@@ -1441,7 +1441,7 @@ const TokenDrawer = memo(function TokenDrawer({
         {/* ── Section B: Vehicles ── */}
         {vehicleSlots.length > 0 && (
           <>
-            <div style={{ padding: '10px 14px 6px', fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(200,170,80,0.4)', borderBottom: `1px solid ${BORDER}`, borderTop: `1px solid ${BORDER}` }}>
+            <div style={{ padding: '10px 14px 6px', fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(150,168,180,0.4)', borderBottom: `1px solid ${BORDER}`, borderTop: `1px solid ${BORDER}` }}>
               Vehicles
             </div>
 
@@ -1490,7 +1490,7 @@ const TokenDrawer = memo(function TokenDrawer({
         )}
 
         {/* ── Section C: Players ── */}
-        <div style={{ padding: '10px 14px 6px', fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(200,170,80,0.4)', borderBottom: `1px solid ${BORDER}`, borderTop: (npcSlots.length > 0 || vehicleSlots.length > 0) ? `1px solid ${BORDER}` : 'none' }}>
+        <div style={{ padding: '10px 14px 6px', fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(150,168,180,0.4)', borderBottom: `1px solid ${BORDER}`, borderTop: (npcSlots.length > 0 || vehicleSlots.length > 0) ? `1px solid ${BORDER}` : 'none' }}>
           Players
         </div>
 
@@ -1507,9 +1507,9 @@ const TokenDrawer = memo(function TokenDrawer({
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 {char.portrait_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={char.portrait_url} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid rgba(200,170,80,0.4)' }} />
+                  <img src={char.portrait_url} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid rgba(150,168,180,0.4)' }} />
                 ) : (
-                  <div style={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, background: 'rgba(200,170,80,0.15)', border: '2px solid rgba(200,170,80,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FC, fontSize: 16, fontWeight: 700, color: HUD.gold }}>
+                  <div style={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, background: 'rgba(150,168,180,0.15)', border: '2px solid rgba(150,168,180,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FC, fontSize: 16, fontWeight: 700, color: HUD.gold }}>
                     {char.name.charAt(0).toUpperCase()}
                   </div>
                 )}
@@ -1576,7 +1576,7 @@ function LibFolderRow({ label, count, expanded, onToggle, onDelete }: LibFolderR
         display: 'flex', alignItems: 'center', gap: 8,
         padding: '9px 12px',
         borderBottom: `1px solid ${BORDER}`,
-        background: expanded ? 'rgba(200,170,80,0.05)' : hovered ? 'rgba(200,170,80,0.02)' : 'transparent',
+        background: expanded ? 'rgba(150,168,180,0.05)' : hovered ? 'rgba(150,168,180,0.02)' : 'transparent',
         cursor: 'pointer', userSelect: 'none', transition: 'background 0.1s',
       }}
     >
@@ -1626,7 +1626,7 @@ function LibMapRow({ map, planets, busy, onLoad, onEdit, onSetActive, onDelete, 
     <div style={{
       padding: '8px 12px 8px 20px',
       borderBottom: `1px solid ${BORDER}`,
-      background: map.is_active ? 'rgba(200,170,80,0.05)' : 'transparent',
+      background: map.is_active ? 'rgba(150,168,180,0.05)' : 'transparent',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -1645,10 +1645,10 @@ function LibMapRow({ map, planets, busy, onLoad, onEdit, onSetActive, onDelete, 
           </div>
         </div>
         <div style={{ display: 'flex', gap: 3, flexShrink: 0 }}>
-          <button onClick={onLoad} title="Load on GM canvas" style={{ background: 'rgba(200,170,80,0.08)', border: `1px solid ${BORDER}`, color: DIM, fontFamily: FR, fontSize: FS_CAPTION, padding: '3px 7px', borderRadius: 3, cursor: 'pointer' }}>Load</button>
-          <button onClick={onEdit} title="Edit in Map Forge" style={{ background: 'rgba(200,170,80,0.08)', border: `1px solid ${BORDER}`, color: DIM, fontFamily: FR, fontSize: FS_CAPTION, padding: '3px 7px', borderRadius: 3, cursor: 'pointer' }}>Edit</button>
+          <button onClick={onLoad} title="Load on GM canvas" style={{ background: 'rgba(150,168,180,0.08)', border: `1px solid ${BORDER}`, color: DIM, fontFamily: FR, fontSize: FS_CAPTION, padding: '3px 7px', borderRadius: 3, cursor: 'pointer' }}>Load</button>
+          <button onClick={onEdit} title="Edit in Map Forge" style={{ background: 'rgba(150,168,180,0.08)', border: `1px solid ${BORDER}`, color: DIM, fontFamily: FR, fontSize: FS_CAPTION, padding: '3px 7px', borderRadius: 3, cursor: 'pointer' }}>Edit</button>
           {!map.is_active && (
-            <button onClick={onSetActive} disabled={busy} style={{ background: 'rgba(200,170,80,0.08)', border: `1px solid ${BORDER}`, color: DIM, fontFamily: FR, fontSize: FS_CAPTION, padding: '3px 7px', borderRadius: 3, cursor: 'pointer' }}>Set Active</button>
+            <button onClick={onSetActive} disabled={busy} style={{ background: 'rgba(150,168,180,0.08)', border: `1px solid ${BORDER}`, color: DIM, fontFamily: FR, fontSize: FS_CAPTION, padding: '3px 7px', borderRadius: 3, cursor: 'pointer' }}>Set Active</button>
           )}
           <button onClick={onDelete} style={btnDanger} title="Delete map">×</button>
         </div>
