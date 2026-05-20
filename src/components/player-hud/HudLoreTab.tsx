@@ -1,6 +1,7 @@
 'use client'
 import { LoreContent } from '@/components/character/LoreContent'
 import { CharacterAvatar } from './CharacterAvatar'
+import { isForceUserSensitive } from '@/lib/forceUtils'
 import type { Character, RefSpecies } from '@/lib/types'
 
 interface HudLoreTabProps {
@@ -22,7 +23,7 @@ export function HudLoreTab({
   onBackstoryChange, onNotesChange,
   onPortraitUpload, onPortraitDelete,
 }: HudLoreTabProps) {
-  const isForceUser = (character.force_rating ?? 0) > 0
+  const isForceUser = isForceUserSensitive(character)
 
   // Obligation/Duty summary chip — obligation takes priority when both configured
   const obligationChip = character.duty_obligation_configured
@@ -51,6 +52,7 @@ export function HudLoreTab({
         onUpload={onPortraitUpload}
         onDelete={onPortraitDelete}
         obligationChip={obligationChip}
+        // TODO: wire conflictTotal from conflict entries when GM Force tab feature ships
         conflictTotal={undefined}
         motivationChip={motivationChip}
       />
@@ -77,6 +79,7 @@ export function HudLoreTab({
         obligationCustomName={character.obligation_custom_name}
         obligationResolvedType={refObligationTypes.find(o => o.key === character.obligation_type)?.name}
         dutyObligationConfigured={character.duty_obligation_configured}
+        // TODO: wire conflictEntries from GM Force tab feature
         conflictEntries={[]}
         isForceUser={isForceUser}
         onBackstoryChange={onBackstoryChange}
