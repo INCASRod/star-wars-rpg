@@ -22,6 +22,24 @@ export function HudLoreTab({
   onBackstoryChange, onNotesChange,
   onPortraitUpload, onPortraitDelete,
 }: HudLoreTabProps) {
+  const isForceUser = (character.force_rating ?? 0) > 0
+
+  // Obligation/Duty summary chip — obligation takes priority when both configured
+  const obligationChip = character.duty_obligation_configured
+    ? character.obligation_type && character.obligation_value !== undefined
+      ? `Obligation · ${character.obligation_value}`
+      : character.duty_type && character.duty_value !== undefined
+      ? `Duty · ${character.duty_value}`
+      : undefined
+    : undefined
+
+  // Motivation chip — "Type · Specific" or just "Type"
+  const motivationChip = character.motivation_configured && character.motivation_type
+    ? character.motivation_specific
+      ? `${character.motivation_type} · ${character.motivation_specific}`
+      : character.motivation_type
+    : undefined
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
       <CharacterAvatar
@@ -29,8 +47,12 @@ export function HudLoreTab({
         characterName={character.name}
         career={careerName}
         spec={speciesName}
+        gender={character.gender}
         onUpload={onPortraitUpload}
         onDelete={onPortraitDelete}
+        obligationChip={obligationChip}
+        conflictTotal={undefined}
+        motivationChip={motivationChip}
       />
       <LoreContent
         characterName={character.name}
@@ -55,6 +77,8 @@ export function HudLoreTab({
         obligationCustomName={character.obligation_custom_name}
         obligationResolvedType={refObligationTypes.find(o => o.key === character.obligation_type)?.name}
         dutyObligationConfigured={character.duty_obligation_configured}
+        conflictEntries={[]}
+        isForceUser={isForceUser}
         onBackstoryChange={onBackstoryChange}
         onNotesChange={onNotesChange}
       />
