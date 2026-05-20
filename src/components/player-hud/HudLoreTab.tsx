@@ -22,7 +22,7 @@ export function HudLoreTab({
   onBackstoryChange, onNotesChange,
   onPortraitUpload, onPortraitDelete,
 }: HudLoreTabProps) {
-  const isForceUser = character.force_rating > 0 || !!character.is_force_sensitive
+  const isForceUser = (character.force_rating ?? 0) > 0
 
   // Obligation/Duty summary chip — obligation takes priority when both configured
   const obligationChip = character.duty_obligation_configured
