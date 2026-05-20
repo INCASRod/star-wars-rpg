@@ -6,7 +6,7 @@ import { Tooltip, TipLabel, TipBody, TipDivider } from '@/components/ui/Tooltip'
 import { RichText } from '@/components/ui/RichText'
 import { DutyCard } from '@/components/character/DutyCard'
 import { ObligationCard } from '@/components/character/ObligationCard'
-import { HUD } from '@/lib/tokens'
+import { HUD, FS, RADIUS } from '@/lib/tokens'
 
 // ─── Design Tokens ───────────────────────────────────────────────────────────
 const FC = 'var(--font-body)'
@@ -43,6 +43,8 @@ interface LoreContentProps {
   obligationCustomName?: string | null
   obligationResolvedType?: string
   dutyObligationConfigured?: boolean
+  conflictEntries?: { label: string; value: number }[]
+  isForceUser?: boolean
   onBackstoryChange: (v: string) => void
   onNotesChange: (v: string) => void
 }
@@ -119,6 +121,51 @@ function SectionDivider() {
       <div style={line} />
       <span style={{ color: 'var(--hud-text-faint)', fontSize: 10 }}>◈</span>
       <div style={line} />
+    </div>
+  )
+}
+
+function ConflictCard({ entries }: { entries: { label: string; value: number }[] }) {
+  const total = entries.reduce((s, e) => s + e.value, 0)
+  return (
+    <div style={{ ...panelStyle, padding: '14px 16px', borderColor: 'rgba(224,80,80,0.2)' }}>
+      <CornerBrackets />
+      <SectionLabel label="Conflict" />
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 10 }}>
+        <div style={{ fontFamily: FC, fontSize: FS.h4, fontWeight: 700, color: RED, lineHeight: 1 }}>
+          {total}
+        </div>
+        <div style={{ fontFamily: FR, fontSize: FS.overline, color: FAINT, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          total active
+        </div>
+      </div>
+      {entries.map((entry, idx) => (
+        <div
+          key={idx}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: '5px 0',
+            borderBottom: idx < entries.length - 1 ? '1px solid var(--hud-border)' : 'none',
+          }}
+        >
+          <div style={{
+            width: 7,
+            height: 7,
+            borderRadius: RADIUS.full,
+            background: RED,
+            boxShadow: '0 0 6px rgba(224,80,80,0.5)',
+            flexShrink: 0,
+          }} />
+          <div style={{ flex: 1, fontFamily: FR, fontSize: FS.caption, color: TEXT }}>
+            {entry.label}
+          </div>
+          <div style={{ fontFamily: FC, fontSize: FS.caption, fontWeight: 700, color: RED }}>
+            {entry.value}
+          </div>
+        </div>
+      ))}
     </div>
   )
 }
@@ -206,6 +253,8 @@ export function LoreContent({
   obligationCustomName,
   obligationResolvedType,
   dutyObligationConfigured,
+  conflictEntries,
+  isForceUser,
   onBackstoryChange,
   onNotesChange,
 }: LoreContentProps) {
@@ -514,27 +563,12 @@ export function LoreContent({
           </div>
         )}
 
-        {/* 3. Duty & Obligation cards — shown when configured */}
-        {dutyObligationConfigured && dutyType && dutyValue !== undefined && (
-          <DutyCard
-            dutyType={dutyType}
-            dutyValue={dutyValue}
-            dutyLore={dutyLore}
-            dutyCustomName={dutyCustomName}
-            resolvedTypeName={dutyResolvedType}
-          />
-        )}
-        {dutyObligationConfigured && obligationType && obligationValue !== undefined && (
-          <ObligationCard
-            obligationType={obligationType}
-            obligationValue={obligationValue}
-            obligationLore={obligationLore}
-            obligationCustomName={obligationCustomName}
-            resolvedTypeName={obligationResolvedType}
-          />
+        {/* 3. Conflict card — Force-sensitive only, shown when entries exist */}
+        {isForceUser && conflictEntries && conflictEntries.length > 0 && (
+          <ConflictCard entries={conflictEntries} />
         )}
 
-        {/* 3b. Motivation card — shown when configured, or as legacy fallback */}
+        {/* 4. Motivation card — shown when configured, or as legacy fallback */}
         {(motivationConfigured && motivationType) ? (
           <div style={{ ...panelStyle, padding: '14px 16px' }}>
             <CornerBrackets />
@@ -582,6 +616,26 @@ export function LoreContent({
             </div>
           </div>
         ) : null}
+
+        {/* 5. Duty & Obligation cards — shown when configured */}
+        {dutyObligationConfigured && dutyType && dutyValue !== undefined && (
+          <DutyCard
+            dutyType={dutyType}
+            dutyValue={dutyValue}
+            dutyLore={dutyLore}
+            dutyCustomName={dutyCustomName}
+            resolvedTypeName={dutyResolvedType}
+          />
+        )}
+        {dutyObligationConfigured && obligationType && obligationValue !== undefined && (
+          <ObligationCard
+            obligationType={obligationType}
+            obligationValue={obligationValue}
+            obligationLore={obligationLore}
+            obligationCustomName={obligationCustomName}
+            resolvedTypeName={obligationResolvedType}
+          />
+        )}
       </div>
     </div>
   )
