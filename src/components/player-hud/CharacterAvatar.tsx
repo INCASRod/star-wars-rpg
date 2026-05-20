@@ -1,11 +1,34 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { C, FONT_CINZEL, FONT_RAJDHANI, panelBase } from './design-tokens'
-import { FS, RADIUS, FONT_BODY } from '@/lib/tokens'
+import { C, panelBase } from './design-tokens'
+import { FS, RADIUS, FONT_BODY, FONT_DISPLAY } from '@/lib/tokens'
 
 const HUD_RED  = '#E05050'
 const HUD_BLUE = '#5AAAE0'
+
+const chipBase: React.CSSProperties = {
+  fontFamily: FONT_BODY,
+  fontSize: FS.overline,
+  fontWeight: 700,
+  letterSpacing: '0.1em',
+  textTransform: 'uppercase' as const,
+  padding: '2px 8px',
+  borderRadius: RADIUS.sm,
+  display: 'inline-block',
+}
+const redChip: React.CSSProperties = {
+  ...chipBase,
+  background: 'rgba(224,80,80,0.10)',
+  border: '1px solid rgba(224,80,80,0.28)',
+  color: HUD_RED,
+}
+const blueChip: React.CSSProperties = {
+  ...chipBase,
+  background: 'rgba(90,170,224,0.10)',
+  border: '1px solid rgba(90,170,224,0.28)',
+  color: HUD_BLUE,
+}
 
 interface CharacterAvatarProps {
   avatarUrl:       string | null | undefined
@@ -54,28 +77,6 @@ export function CharacterAvatar({
 
   const canEdit = !!(onUpload || onDelete)
 
-  const chipBase: React.CSSProperties = {
-    fontFamily: FONT_BODY,
-    fontSize: FS.overline,
-    fontWeight: 700,
-    letterSpacing: '0.1em',
-    textTransform: 'uppercase' as const,
-    padding: '2px 8px',
-    borderRadius: RADIUS.sm,
-    display: 'inline-block',
-  }
-  const redChip: React.CSSProperties = {
-    ...chipBase,
-    background: 'rgba(224,80,80,0.10)',
-    border: '1px solid rgba(224,80,80,0.28)',
-    color: HUD_RED,
-  }
-  const blueChip: React.CSSProperties = {
-    ...chipBase,
-    background: 'rgba(90,170,224,0.10)',
-    border: '1px solid rgba(90,170,224,0.28)',
-    color: HUD_BLUE,
-  }
   const showChips = obligationChip || (conflictTotal !== undefined && conflictTotal > 0) || motivationChip
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -131,7 +132,7 @@ export function CharacterAvatar({
               width: '100%', height: '100%',
               background: hovered ? 'rgba(224,58,30,0.10)' : 'rgba(224,58,30,0.06)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: FONT_CINZEL, fontSize: 22, fontWeight: 700,
+              fontFamily: FONT_DISPLAY, fontSize: FS.h4, fontWeight: 700,
               color: C.gold, letterSpacing: '0.1em',
               transition: 'background .2s',
             }}>
@@ -161,7 +162,7 @@ export function CharacterAvatar({
                   background: 'rgba(224,58,30,0.22)',
                   border: '1px solid rgba(224,58,30,0.7)',
                   borderRadius: RADIUS.sm, padding: '4px 0',
-                  fontFamily: FONT_RAJDHANI, fontSize: 10, fontWeight: 700,
+                  fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
                   letterSpacing: '0.1em', textTransform: 'uppercase',
                   color: C.gold, cursor: 'pointer', width: '100%',
                   transition: '.15s',
@@ -178,7 +179,7 @@ export function CharacterAvatar({
                     background: 'rgba(224,80,80,0.18)',
                     border: '1px solid rgba(224,80,80,0.55)',
                     borderRadius: RADIUS.sm, padding: '4px 0',
-                    fontFamily: FONT_RAJDHANI, fontSize: 10, fontWeight: 700,
+                    fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
                     letterSpacing: '0.1em', textTransform: 'uppercase',
                     color: HUD_RED, cursor: 'pointer', width: '100%',
                     transition: '.15s',
@@ -196,7 +197,7 @@ export function CharacterAvatar({
                       flex: 1, background: 'rgba(224,80,80,0.35)',
                       border: '1px solid rgba(224,80,80,0.8)',
                       borderRadius: RADIUS.sm, padding: '4px 0',
-                      fontFamily: FONT_RAJDHANI, fontSize: 9, fontWeight: 700,
+                      fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
                       letterSpacing: '0.08em', textTransform: 'uppercase',
                       color: HUD_RED, cursor: 'pointer',
                     }}
@@ -209,7 +210,7 @@ export function CharacterAvatar({
                       flex: 1, background: 'var(--hud-surface-mid)',
                       border: `1px solid ${C.border}`,
                       borderRadius: RADIUS.sm, padding: '4px 0',
-                      fontFamily: FONT_RAJDHANI, fontSize: 9, fontWeight: 700,
+                      fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
                       letterSpacing: '0.08em', textTransform: 'uppercase',
                       color: C.textDim, cursor: 'pointer',
                     }}
@@ -229,7 +230,7 @@ export function CharacterAvatar({
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
               <div style={{
-                fontFamily: FONT_RAJDHANI, fontSize: 10, fontWeight: 700,
+                fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
                 letterSpacing: '0.15em', textTransform: 'uppercase', color: C.gold,
               }}>
                 Uploading…
@@ -241,19 +242,19 @@ export function CharacterAvatar({
         {/* Right side: name, subtitle, chips */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
-            fontFamily: FONT_CINZEL, fontSize: FS.sm, fontWeight: 600,
+            fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 600,
             color: C.gold, letterSpacing: '0.04em', lineHeight: 1.2,
           }}>
             {characterName}
           </div>
           <div style={{
-            fontFamily: FONT_RAJDHANI, fontSize: FS.overline, color: C.textDim,
+            fontFamily: FONT_BODY, fontSize: FS.overline, color: C.textDim,
             marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.08em',
           }}>
             {career}{spec ? ` · ${spec}` : ''}{gender ? ` · ${gender}` : ''}
           </div>
           {canEdit && (
-            <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS.overline, color: C.textFaint, marginTop: 2, letterSpacing: '0.06em' }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: C.textFaint, marginTop: 2, letterSpacing: '0.06em' }}>
               hover portrait to edit
             </div>
           )}
