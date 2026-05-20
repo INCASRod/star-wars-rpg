@@ -152,15 +152,13 @@ interface HudSessionTabProps {
   isCombatActive:     boolean
   encounter:          CombatEncounter | null
   // Quick drawer props
-  activeQuickPanel?:   'combat' | 'force' | 'skill' | null
-  onCloseQuickPanel?:  () => void
-  hudSkills?:          HudSkill[]
-  hudWeapons?:         WpnDisplay[]
-  allForcePowers?:     ForcePowerDisplay[]
-  forceRating?:        number
-  onOpenSkillPopover?: (skill: HudSkill, anchor: DOMRect) => void
-  onOpenCombatCheck?:  () => void
-  onOpenForceCheck?:   () => void
+  activeQuickPanel?:        'skill' | null
+  onCloseQuickPanel?:       () => void
+  hudSkills?:               HudSkill[]
+  onOpenSkillPopover?:      (skill: HudSkill, anchor: DOMRect) => void
+  // Adversary drawer — externally controlled when rail button is used
+  adversariesOpen?:         boolean
+  onAdversariesOpenChange?: (open: boolean) => void
 }
 
 export function HudSessionTab({
@@ -171,18 +169,21 @@ export function HudSessionTab({
   onTokenMove,
   isCombatActive,
   encounter,
-  activeQuickPanel   = null,
-  onCloseQuickPanel  = () => {},
-  hudSkills          = [],
-  hudWeapons         = [],
-  allForcePowers     = [],
-  forceRating        = 0,
-  onOpenSkillPopover = () => {},
-  onOpenCombatCheck  = () => {},
-  onOpenForceCheck   = () => {},
+  activeQuickPanel         = null,
+  onCloseQuickPanel        = () => {},
+  hudSkills                = [],
+  onOpenSkillPopover       = () => {},
+  adversariesOpen:         externalAdversariesOpen,
+  onAdversariesOpenChange,
 }: HudSessionTabProps) {
+  const isAdversariesControlled = externalAdversariesOpen !== undefined
   const supabase = useMemo(() => createClient(), [])
-  const [adversaryDrawerOpen,   setAdversaryDrawerOpen]   = useState(false)
+  const [internalAdversaryDrawerOpen, setInternalAdversaryDrawerOpen] = useState(false)
+  const adversaryDrawerOpen = isAdversariesControlled ? externalAdversariesOpen! : internalAdversaryDrawerOpen
+  const setAdversaryDrawerOpen = (v: boolean) => {
+    if (isAdversariesControlled) onAdversariesOpenChange?.(v)
+    else setInternalAdversaryDrawerOpen(v)
+  }
   const [tokenHoverInfo,        setTokenHoverInfo]        = useState<{ tokenId: string; x: number; y: number } | null>(null)
   const initiativeBarRef = useRef<HTMLDivElement>(null)
   const [sessionCardCollapsed,  setSessionCardCollapsed]  = useState<Record<string, boolean>>({})
@@ -318,111 +319,6 @@ export function HudSessionTab({
         />
       )}
 
-      {/* ── Combat Check quick drawer ── */}
-      <div
-        className={`hud-quick-drawer${activeQuickPanel === 'combat' ? ' open' : ''}`}
-        style={{ background: 'var(--hud-panel)', borderRight: '1px solid rgba(224,58,30,0.28)', display: 'flex', flexDirection: 'column' }}
-      >
-        <div style={{
-          padding: '10px 14px', borderBottom: '1px solid rgba(224,58,30,0.18)',
-          background: 'var(--hud-panel)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0,
-        }}>
-          <span style={{ fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--bs-red-pale)', flex: 1 }}>
-            ⚔ Combat Check
-          </span>
-          <button onClick={onCloseQuickPanel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--hud-text-dim)', fontSize: 15 }}>✕</button>
-        </div>
-        <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', padding: '8px 12px 4px', color: 'var(--hud-text-faint)', flexShrink: 0 }}>
-          Select Weapon
-        </div>
-        <div style={{ flex: 1, overflowY: 'auto' }}>
-          {hudWeapons.map(wpn => (
-            <button
-              key={wpn.id}
-              onClick={() => { onOpenCombatCheck(); onCloseQuickPanel() }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                width: '100%', padding: '8px 12px', textAlign: 'left',
-                background: 'transparent', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.04)',
-                cursor: 'pointer',
-              }}
-              className="hud-combat-wpn-row"
-            >
-              <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700, color: 'var(--hud-text)' }}>{wpn.name}</div>
-                <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-dim)', marginTop: 2 }}>
-                  {wpn.skillName} · Dam {wpn.damage.isMelee ? `+${wpn.damage.baseDamage}` : wpn.damage.baseDamage} · Crit {wpn.crit} · {wpn.range}
-                </div>
-              </div>
-              <span style={{ color: 'rgba(224,58,30,0.4)', fontSize: 14 }}>›</span>
-            </button>
-          ))}
-          {hudWeapons.length === 0 && (
-            <div style={{ padding: '16px 12px', fontFamily: FONT_BODY, fontSize: FS.label, color: 'var(--hud-text-faint)', fontStyle: 'italic' }}>
-              No weapons equipped
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ── Force Check quick drawer ── */}
-      <div
-        className={`hud-quick-drawer${activeQuickPanel === 'force' ? ' open' : ''}`}
-        style={{ background: 'var(--hud-panel)', borderRight: '1px solid rgba(144,96,208,0.28)', display: 'flex', flexDirection: 'column' }}
-      >
-        <div style={{
-          padding: '10px 14px', borderBottom: '1px solid rgba(144,96,208,0.18)',
-          background: 'var(--hud-panel)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0,
-        }}>
-          <span style={{ fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--hud-accent-purple)', flex: 1 }}>
-            ✦ Force Check
-          </span>
-          <button onClick={onCloseQuickPanel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--hud-text-dim)', fontSize: 15 }}>✕</button>
-        </div>
-        <div style={{ display: 'flex', gap: 5, padding: '10px 12px', alignItems: 'center', flexShrink: 0 }}>
-          {Array.from({ length: forceRating }).map((_, i) => (
-            <div key={i} style={{ width: 12, height: 12, borderRadius: RADIUS.full, background: 'var(--hud-gold)', boxShadow: '0 0 5px rgba(200,170,80,0.5)' }} />
-          ))}
-          {Array.from({ length: Math.max(0, 5 - forceRating) }).map((_, i) => (
-            <div key={i} style={{ width: 12, height: 12, borderRadius: RADIUS.full, border: '1px solid rgba(144,96,208,0.3)' }} />
-          ))}
-          <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)', marginLeft: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-            Rating {forceRating}
-          </span>
-        </div>
-        <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', padding: '4px 12px 4px', color: 'var(--hud-text-faint)', flexShrink: 0 }}>
-          Active Powers
-        </div>
-        <div style={{ flex: 1, overflowY: 'auto' }}>
-          {allForcePowers.map(fp => (
-            <button
-              key={fp.powerKey}
-              onClick={() => { onOpenForceCheck(); onCloseQuickPanel() }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                width: '100%', padding: '8px 12px', textAlign: 'left',
-                background: 'transparent', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.04)',
-                cursor: 'pointer',
-              }}
-              className="hud-force-power-row"
-            >
-              <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700, color: 'var(--hud-text)' }}>{fp.powerName}</div>
-                <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-dim)', marginTop: 2 }}>
-                  {fp.purchasedCount}/{fp.totalCount} abilities purchased
-                </div>
-              </div>
-              <span style={{ color: 'rgba(144,96,208,0.4)', fontSize: 14 }}>›</span>
-            </button>
-          ))}
-          {allForcePowers.length === 0 && (
-            <div style={{ padding: '16px 12px', fontFamily: FONT_BODY, fontSize: FS.label, color: 'var(--hud-text-faint)', fontStyle: 'italic' }}>
-              No Force powers purchased
-            </div>
-          )}
-        </div>
-      </div>
-
       {/* ── Skill Check quick drawer ── */}
       <div
         className={`hud-quick-drawer${activeQuickPanel === 'skill' ? ' open' : ''}`}
@@ -503,22 +399,24 @@ export function HudSessionTab({
         </div>
       )}
 
-      {/* ── Session drawer trigger buttons ── */}
-      <div style={{ position: 'absolute', bottom: isCombatActive && encounter ? 90 : 12, left: 12, display: 'flex', gap: 6, zIndex: 31 }}>
-        {encounter && encounter.adversaries.some(a => a.revealed) && visibleMapTokens.some(t => t.participant_type === 'adversary') && (
-          <button
-            onClick={() => setAdversaryDrawerOpen(o => !o)}
-            style={{
-              fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, fontWeight: 700,
-              letterSpacing: '0.14em', textTransform: 'uppercase',
-              color: adversaryDrawerOpen ? 'var(--bs-on-red)' : C.gold,
-              background: adversaryDrawerOpen ? C.gold : 'var(--hud-surface-mid)',
-              border: `1px solid rgba(224,58,30,0.5)`,
-              borderRadius: 4, padding: '4px 10px', cursor: 'pointer',
-            }}
-          >{(encounter.vehicles ?? []).length > 0 ? 'Adversaries & Vehicles' : 'Adversaries'}</button>
-        )}
-      </div>
+      {/* ── Session drawer trigger button — shown only when not rail-controlled ── */}
+      {!isAdversariesControlled && (
+        <div style={{ position: 'absolute', bottom: isCombatActive && encounter ? 90 : 12, left: 12, display: 'flex', gap: 6, zIndex: 31 }}>
+          {encounter && encounter.adversaries.some(a => a.revealed) && visibleMapTokens.some(t => t.participant_type === 'adversary') && (
+            <button
+              onClick={() => setAdversaryDrawerOpen(!adversaryDrawerOpen)}
+              style={{
+                fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, fontWeight: 700,
+                letterSpacing: '0.14em', textTransform: 'uppercase',
+                color: adversaryDrawerOpen ? 'var(--bs-on-red)' : C.gold,
+                background: adversaryDrawerOpen ? C.gold : 'var(--hud-surface-mid)',
+                border: `1px solid rgba(224,58,30,0.5)`,
+                borderRadius: 4, padding: '4px 10px', cursor: 'pointer',
+              }}
+            >{(encounter.vehicles ?? []).length > 0 ? 'Adversaries & Vehicles' : 'Adversaries'}</button>
+          )}
+        </div>
+      )}
 
       {/* ── Drawers ── */}
       {encounter && encounter.adversaries.some(a => a.revealed) && visibleMapTokens.some(t => t.participant_type === 'adversary') && (

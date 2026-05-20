@@ -6,11 +6,13 @@ import { FONT_BODY, FS, RADIUS } from '@/lib/tokens'
 export type RailPanelId =
   | 'combat' | 'force' | 'skill'
   | 'skills' | 'talents' | 'inventory' | 'lore' | 'group'
+  | 'dice' | 'adversaries'
 
 interface HudLeftRailProps {
-  isForceUser:   boolean
-  activePanel:   RailPanelId | null
-  onPanelToggle: (id: RailPanelId) => void
+  isForceUser:      boolean
+  activePanel:      RailPanelId | null
+  onPanelToggle:    (id: RailPanelId) => void
+  showAdversaries?: boolean
 }
 
 const BTN_STYLE: React.CSSProperties = {
@@ -28,7 +30,7 @@ const SYMBOL_STYLE: React.CSSProperties = {
 
 const LABEL_STYLE: React.CSSProperties = {
   fontFamily: FONT_BODY,
-  fontSize: FS.overline,
+  fontSize: '7px',
   fontWeight: 700,
   letterSpacing: '0.05em',
   textTransform: 'uppercase',
@@ -54,8 +56,13 @@ const NAV_BUTTONS: { id: RailPanelId; symbol: string; label: string }[] = [
   { id: 'group',     symbol: '◎', label: 'Group'     },
 ]
 
+const UTILITY_BUTTONS: { id: RailPanelId; symbol: string; label: string }[] = [
+  { id: 'dice',        symbol: '⬡', label: 'Dice'       },
+  { id: 'adversaries', symbol: '⚠', label: 'Adversaries' },
+]
+
 export const HudLeftRail = memo(function HudLeftRail({
-  isForceUser, activePanel, onPanelToggle,
+  isForceUser, activePanel, onPanelToggle, showAdversaries = false,
 }: HudLeftRailProps) {
   return (
     <div style={{
@@ -95,6 +102,24 @@ export const HudLeftRail = memo(function HudLeftRail({
           <span className="hud-rail-label" style={LABEL_STYLE}>{label}</span>
         </button>
       ))}
+
+      <div style={{ width: 30, height: 1, background: 'var(--hud-border-hi)', margin: '4px 0', flexShrink: 0 }} />
+
+      {UTILITY_BUTTONS.map(({ id, symbol, label }) => {
+        if (id === 'adversaries' && !showAdversaries) return null
+        return (
+          <button
+            key={id}
+            className={`hud-rail-btn-nav${activePanel === id ? ' active' : ''}`}
+            style={BTN_STYLE}
+            onClick={() => onPanelToggle(id)}
+            title={label}
+          >
+            <span style={SYMBOL_STYLE}>{symbol}</span>
+            <span className="hud-rail-label" style={LABEL_STYLE}>{label}</span>
+          </button>
+        )
+      })}
     </div>
   )
 })

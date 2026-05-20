@@ -98,6 +98,9 @@ interface HudModalsOverlayProps {
   pendingDedication: { talentId: string; row: number; col: number; specKey: string } | null
   setPendingDedication: (d: { talentId: string; row: number; col: number; specKey: string } | null) => void
   onResolveDedication: (talentId: string, charKey: string) => Promise<void>
+
+  diceOpen?:         boolean
+  onDiceOpenChange?: (open: boolean) => void
 }
 
 export function HudModalsOverlay({
@@ -119,6 +122,7 @@ export function HudModalsOverlay({
   vendorOffer, setVendorOffer, onCreditSpend,
   spendCreditsOpen, setSpendCreditsOpen,
   pendingDedication, setPendingDedication, onResolveDedication,
+  diceOpen, onDiceOpenChange,
 }: HudModalsOverlayProps) {
   return (
     <>
@@ -311,6 +315,8 @@ export function HudModalsOverlay({
         characterId={character.id}
         characterName={character.name}
         campaignId={effectiveCampaignId}
+        open={diceOpen}
+        onOpenChange={onDiceOpenChange}
       />
     </>
   )

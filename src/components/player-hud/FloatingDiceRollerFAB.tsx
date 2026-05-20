@@ -12,9 +12,11 @@ const FAB_LEFT   = 28
 const PANEL_W    = 320
 
 interface FloatingDiceRollerFABProps {
-  characterId:   string | null
-  characterName: string
-  campaignId:    string | null | undefined
+  characterId:    string | null
+  characterName:  string
+  campaignId:     string | null | undefined
+  open?:          boolean
+  onOpenChange?:  (open: boolean) => void
 }
 
 // ─── Dice SVG icon ────────────────────────────────────────────────────────────
@@ -36,8 +38,12 @@ function DiceIcon({ size = 24 }: { size?: number }) {
 }
 
 // ─── FAB + Panel ──────────────────────────────────────────────────────────────
-export function FloatingDiceRollerFAB({ characterId, characterName, campaignId }: FloatingDiceRollerFABProps) {
-  const [open, setOpen] = useState(false)
+export function FloatingDiceRollerFAB({ characterId, characterName, campaignId, open: controlledOpen, onOpenChange }: FloatingDiceRollerFABProps) {
+  const isControlled = controlledOpen !== undefined
+  const [internalOpen, setInternalOpen] = useState(false)
+  const open    = isControlled ? controlledOpen! : internalOpen
+  const setOpen = (v: boolean) => { if (isControlled) onOpenChange?.(v); else setInternalOpen(v) }
+
   const panelRef = useRef<HTMLDivElement>(null)
 
   // Close on click-outside
@@ -51,6 +57,7 @@ export function FloatingDiceRollerFAB({ characterId, characterName, campaignId }
     // Delay to avoid the FAB click itself closing the panel
     const id = setTimeout(() => document.addEventListener('mousedown', handler), 50)
     return () => { clearTimeout(id); document.removeEventListener('mousedown', handler) }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   // Close on Escape
@@ -59,6 +66,7 @@ export function FloatingDiceRollerFAB({ characterId, characterName, campaignId }
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
     document.addEventListener('keydown', handler)
     return () => document.removeEventListener('keydown', handler)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   return createPortal(
@@ -138,9 +146,9 @@ export function FloatingDiceRollerFAB({ characterId, characterName, campaignId }
         </div>
       )}
 
-      {/* ── FAB button ── */}
-      <button
-        onClick={() => setOpen(o => !o)}
+      {/* ── FAB button — hidden when controlled by the rail ── */}
+      {!isControlled && <button
+        onClick={() => setOpen(!open)}
         title="Dice Roller"
         style={{
           position:    'fixed',
@@ -166,7 +174,7 @@ export function FloatingDiceRollerFAB({ characterId, characterName, campaignId }
         }}
       >
         <DiceIcon size={26} />
-      </button>
+      </button>}
 
       <style>{`
         @keyframes fabPanelIn {

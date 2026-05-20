@@ -170,20 +170,30 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   const isCombat = sessionMode === 'combat'
 
   // ── UI State ──
-  const [activeQuickPanel, setActiveQuickPanel] = useState<'combat' | 'force' | 'skill' | null>(null)
+  const [activeQuickPanel, setActiveQuickPanel] = useState<'skill' | null>(null)
   const [activeFullPanel,  setActiveFullPanel]  = useState<'skills' | 'talents' | 'inventory' | 'lore' | 'group' | null>(null)
+  const [diceOpen,         setDiceOpen]         = useState(false)
+  const [adversariesOpen,  setAdversariesOpen]  = useState(false)
 
   function handlePanelToggle(id: RailPanelId) {
-    const QUICK = ['combat', 'force', 'skill'] as const
-    const FULL  = ['skills', 'talents', 'inventory', 'lore', 'group'] as const
-    if ((QUICK as readonly string[]).includes(id)) {
-      const qid = id as typeof QUICK[number]
-      setActiveQuickPanel(prev => prev === qid ? null : qid)
+    if (id === 'dice')        { setDiceOpen(o => !o); return }
+    if (id === 'adversaries') { setAdversariesOpen(o => !o); return }
+    if (id === 'combat') { setCombatCheckOpen(true); setActiveFullPanel(null); setActiveQuickPanel(null); return }
+    if (id === 'force')  { setForceCheckOpen(true);  setActiveFullPanel(null); setActiveQuickPanel(null); return }
+    if (id === 'skill') {
+      setActiveQuickPanel(prev => prev === 'skill' ? null : 'skill')
       setActiveFullPanel(null)
-    } else if ((FULL as readonly string[]).includes(id)) {
+      setCombatCheckOpen(false)
+      setForceCheckOpen(false)
+      return
+    }
+    const FULL = ['skills', 'talents', 'inventory', 'lore', 'group'] as const
+    if ((FULL as readonly string[]).includes(id)) {
       const fid = id as typeof FULL[number]
       setActiveFullPanel(prev => prev === fid ? null : fid)
       setActiveQuickPanel(null)
+      setCombatCheckOpen(false)
+      setForceCheckOpen(false)
     }
   }
 
@@ -339,42 +349,6 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         />
       )}
 
-      {/* Combat Check Overlay */}
-      <CombatCheckOverlay
-        open={combatCheckOpen}
-        initialAttackType={null}
-        onClose={() => setCombatCheckOpen(false)}
-        character={character}
-        weapons={weapons}
-        charSkills={skills}
-        refWeaponMap={refWeaponMap}
-        refSkillMap={refSkillMap}
-        refWeaponQualityMap={refWeaponQualityMap}
-        skillModifiers={skillModifiers}
-        campaignId={effectiveCampaignId}
-        characterId={character.id}
-        onRoll={handleRoll}
-        speciesAbilities={speciesAbilities}
-        speciesName={speciesName}
-        encounterId={encounter?.id ?? null}
-        encounterEnemies={encounter?.adversaries}
-      />
-
-      {/* Force Check Overlay */}
-      <ForceCheckOverlay
-        open={forceCheckOpen}
-        onClose={() => setForceCheckOpen(false)}
-        character={character}
-        forceRating={effectiveStats?.forceRating ?? forceRating}
-        committedForce={character.force_rating_committed ?? 0}
-        forcePowers={allForcePowers}
-        isDathomiri={isDathomiri(character)}
-        isCombat={isCombat}
-        campaignId={effectiveCampaignId}
-        characterId={character.id}
-        encounterId={encounter?.id ?? null}
-      />
-
       {/* GM mode overlays */}
       {isGmMode && (
         <>
@@ -428,8 +402,18 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         {/* ══ LEFT RAIL ═════════════════════════════════════════════════ */}
         <HudLeftRail
           isForceUser={isForceUser}
-          activePanel={activeQuickPanel ?? activeFullPanel}
+          activePanel={
+            combatCheckOpen ? 'combat' :
+            forceCheckOpen  ? 'force'  :
+            diceOpen        ? 'dice'   :
+            adversariesOpen ? 'adversaries' :
+            (activeQuickPanel ?? activeFullPanel)
+          }
           onPanelToggle={handlePanelToggle}
+          showAdversaries={
+            !!(encounter && encounter.adversaries.some(a => a.revealed) &&
+               visibleMapTokens.some(t => t.participant_type === 'adversary'))
+          }
         />
 
         {/* ══ CENTER COLUMN ════════════════════════════════════ */}
@@ -461,19 +445,16 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
               activeQuickPanel={activeQuickPanel}
               onCloseQuickPanel={() => setActiveQuickPanel(null)}
               hudSkills={hudSkills}
-              hudWeapons={hudWeapons}
-              allForcePowers={allForcePowers}
-              forceRating={effectiveStats?.forceRating ?? forceRating}
               onOpenSkillPopover={(skill, anchor) => setSkillPopover({ skill, anchor })}
-              onOpenCombatCheck={() => setCombatCheckOpen(true)}
-              onOpenForceCheck={() => setForceCheckOpen(true)}
+              adversariesOpen={adversariesOpen}
+              onAdversariesOpenChange={setAdversariesOpen}
             />
           </div>
 
-          {/* Full panel backdrop */}
-          {activeFullPanel && (
+          {/* Full panel / overlay backdrop */}
+          {(activeFullPanel || combatCheckOpen || forceCheckOpen) && (
             <div
-              onClick={() => setActiveFullPanel(null)}
+              onClick={() => { setActiveFullPanel(null); setCombatCheckOpen(false); setForceCheckOpen(false) }}
               style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100 }}
             />
           )}
@@ -483,17 +464,13 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
             <HudSkillsTab
               character={character}
               hudSkills={hudSkills}
-              hudTalents={hudTalents}
               isCombat={isCombat}
-              effectiveStats={effectiveStats}
-              engineBreakdown={engineBreakdown}
               skillModifiers={skillModifiers}
               speciesAbilities={speciesAbilities}
               bonusSkillKeys={bonusSkillKeys}
               onRoll={handleRoll}
               onBuySkill={handleBuySkill}
               onOpenPopover={(skill, anchor) => setSkillPopover({ skill, anchor })}
-              onVitalChange={handleVitalChange}
             />
           </HudFullPanel>
 
@@ -565,6 +542,40 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
               )
             }
           </HudFullPanel>
+
+          {/* ── Combat / Force check overlays (absolute, same footprint as full panels) ── */}
+          <CombatCheckOverlay
+            open={combatCheckOpen}
+            initialAttackType={null}
+            onClose={() => setCombatCheckOpen(false)}
+            character={character}
+            weapons={weapons}
+            charSkills={skills}
+            refWeaponMap={refWeaponMap}
+            refSkillMap={refSkillMap}
+            refWeaponQualityMap={refWeaponQualityMap}
+            skillModifiers={skillModifiers}
+            campaignId={effectiveCampaignId}
+            characterId={character.id}
+            onRoll={handleRoll}
+            speciesAbilities={speciesAbilities}
+            speciesName={speciesName}
+            encounterId={encounter?.id ?? null}
+            encounterEnemies={encounter?.adversaries}
+          />
+          <ForceCheckOverlay
+            open={forceCheckOpen}
+            onClose={() => setForceCheckOpen(false)}
+            character={character}
+            forceRating={effectiveStats?.forceRating ?? forceRating}
+            committedForce={character.force_rating_committed ?? 0}
+            forcePowers={allForcePowers}
+            isDathomiri={isDathomiri(character)}
+            isCombat={isCombat}
+            campaignId={effectiveCampaignId}
+            characterId={character.id}
+            encounterId={encounter?.id ?? null}
+          />
         </div>
 
         {/* ══ RIGHT COLUMN ═════════════════════════════════════ */}
@@ -635,6 +646,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         pendingDedication={pendingDedication}
         setPendingDedication={setPendingDedication}
         onResolveDedication={handleResolveDedication}
+        diceOpen={diceOpen}
+        onDiceOpenChange={setDiceOpen}
       />
     </div>
   )
