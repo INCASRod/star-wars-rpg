@@ -128,7 +128,7 @@ function SectionDivider() {
 function ConflictCard({ entries }: { entries: { label: string; value: number }[] }) {
   const total = entries.reduce((s, e) => s + e.value, 0)
   return (
-    <div style={{ ...panelStyle, padding: '14px 16px', borderColor: 'rgba(224,80,80,0.2)' }}>
+    <div style={{ ...panelStyle, padding: '14px 16px', border: '1px solid rgba(224,80,80,0.2)' }}>
       <CornerBrackets />
       <SectionLabel label="Conflict" />
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 10 }}>
