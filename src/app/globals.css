@@ -1244,6 +1244,40 @@ i.ffi {
 .hud-rail-btn-nav.active { background: rgba(150,168,180,0.14); border-color: rgba(150,168,180,0.35); }
 .hud-rail-btn-nav.active .hud-rail-label { color: var(--hud-text); }
 
+/* ── Faction image buttons (rebel.png, jedi.webp, empire.png) ── */
+.hud-fi {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  border-radius: 50%;
+  display: block;
+}
+
+/* Default theme: Binary Sunset — light parchment background */
+.hud-fi-rebel  { filter: saturate(1.3) brightness(0.9); }
+.hud-fi-jedi   { filter: brightness(0.82) opacity(0.9); }
+.hud-fi-empire { filter: brightness(0) invert(1) sepia(1) saturate(0.4) brightness(0.82); }
+
+/* Rebel Operative — dark warm charcoal */
+[data-theme="operative"] .hud-fi-rebel { filter: saturate(1.5) hue-rotate(20deg) brightness(1.8); }
+[data-theme="operative"] .hud-fi-jedi  { filter: brightness(1.5) opacity(0.88); }
+
+/* Kyber Archive — midnight indigo */
+[data-theme="kyber"] .hud-fi-rebel { filter: saturate(1.8) hue-rotate(25deg) brightness(1.9); }
+[data-theme="kyber"] .hud-fi-jedi  { filter: brightness(1.4) opacity(0.88); }
+
+/* ── Rail symbol colours ── */
+/* Force Check symbol — blue across all themes */
+.hud-rail-btn-force .hud-rail-symbol  { color: var(--die-force); }
+/* Combat Check symbol — red */
+.hud-rail-btn-combat .hud-rail-symbol { color: rgba(224,80,80,0.80); }
+
+/* Adversaries button — red hover/active, red symbol */
+.hud-rail-btn-adversaries:hover,
+.hud-rail-btn-adversaries.active { background: rgba(224,80,80,0.12); border-color: rgba(224,80,80,0.35); }
+.hud-rail-btn-adversaries.active .hud-rail-label { color: rgba(224,80,80,0.9); }
+.hud-rail-btn-adversaries .hud-rail-symbol       { color: rgba(224,80,80,0.75); }
+
 /* ── Quick drawers / Full panels slide-in ─────────────────────── */
 .hud-quick-drawer {
   position: absolute; top: 0; left: 0; bottom: 0;
@@ -1251,7 +1285,6 @@ i.ffi {
   z-index: 102;
   transform: translateX(-100%);
   transition: transform 0.22s cubic-bezier(0.22,1,0.36,1);
-  box-shadow: 4px 0 32px rgba(0,0,0,0.7);
 }
 .hud-quick-drawer.open { transform: translateX(0); }
 
@@ -1261,7 +1294,6 @@ i.ffi {
   z-index: 101;
   transform: translateX(-100%);
   transition: transform 0.26s cubic-bezier(0.22,1,0.36,1);
-  box-shadow: 6px 0 48px rgba(0,0,0,0.85);
   display: flex; flex-direction: column;
   overflow: hidden;
 }
