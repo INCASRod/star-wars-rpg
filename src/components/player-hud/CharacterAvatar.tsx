@@ -2,7 +2,10 @@
 
 import { useRef, useState } from 'react'
 import { C, FONT_CINZEL, FONT_RAJDHANI, panelBase } from './design-tokens'
-import { FS, RADIUS } from '@/lib/tokens'
+import { FS, RADIUS, FONT_BODY } from '@/lib/tokens'
+
+const HUD_RED  = '#E05050'
+const HUD_BLUE = '#5AAAE0'
 
 interface CharacterAvatarProps {
   avatarUrl:       string | null | undefined
@@ -52,7 +55,7 @@ export function CharacterAvatar({
   const canEdit = !!(onUpload || onDelete)
 
   const chipBase: React.CSSProperties = {
-    fontFamily: FONT_RAJDHANI,
+    fontFamily: FONT_BODY,
     fontSize: FS.overline,
     fontWeight: 700,
     letterSpacing: '0.1em',
@@ -65,13 +68,13 @@ export function CharacterAvatar({
     ...chipBase,
     background: 'rgba(224,80,80,0.10)',
     border: '1px solid rgba(224,80,80,0.28)',
-    color: '#E05050',
+    color: HUD_RED,
   }
   const blueChip: React.CSSProperties = {
     ...chipBase,
     background: 'rgba(90,170,224,0.10)',
     border: '1px solid rgba(90,170,224,0.28)',
-    color: '#5AAAE0',
+    color: HUD_BLUE,
   }
   const showChips = obligationChip || (conflictTotal !== undefined && conflictTotal > 0) || motivationChip
 
