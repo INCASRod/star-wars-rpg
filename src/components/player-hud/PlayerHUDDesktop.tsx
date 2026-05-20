@@ -11,6 +11,7 @@ import { HudFullPanel } from './HudFullPanel'
 import { HudTalentsTab } from './HudTalentsTab'
 import { HudSessionTab } from './HudSessionTab'
 import { HudModalsOverlay } from './HudModalsOverlay'
+import { HudForceTab } from './HudForceTab'
 import { HudInventoryTab } from './HudInventoryTab'
 import { HudLoreTab } from './HudLoreTab'
 import { HudSkillsTab } from './HudSkillsTab'
@@ -171,7 +172,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
 
   // ── UI State ──
   const [activeQuickPanel, setActiveQuickPanel] = useState<'skill' | null>(null)
-  const [activeFullPanel,  setActiveFullPanel]  = useState<'skills' | 'talents' | 'inventory' | 'lore' | 'group' | null>(null)
+  const [activeFullPanel,  setActiveFullPanel]  = useState<'skills' | 'talents' | 'force-panel' | 'inventory' | 'lore' | 'group' | null>(null)
   const [diceOpen,         setDiceOpen]         = useState(false)
   const [adversariesOpen,  setAdversariesOpen]  = useState(false)
 
@@ -187,7 +188,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
       setForceCheckOpen(false)
       return
     }
-    const FULL = ['skills', 'talents', 'inventory', 'lore', 'group'] as const
+    const FULL = ['skills', 'talents', 'force-panel', 'inventory', 'lore', 'group'] as const
     if ((FULL as readonly string[]).includes(id)) {
       const fid = id as typeof FULL[number]
       setActiveFullPanel(prev => prev === fid ? null : fid)
@@ -492,6 +493,19 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
               onRemoveTalent={isGmMode ? handleRemoveTalent : undefined}
               onBuySpecialization={handleBuySpecialization}
               onPendingDedication={setPendingDedication}
+            />
+          </HudFullPanel>
+
+          <HudFullPanel open={activeFullPanel === 'force-panel'} title="Force" symbol="✦" onClose={() => setActiveFullPanel(null)}>
+            <HudForceTab
+              character={character}
+              forceRating={forceRating}
+              effectiveStats={effectiveStats}
+              allForcePowers={allForcePowers}
+              conflicts={conflicts}
+              onPurchaseForceAbility={handlePurchaseForceAbility}
+              onViewPower={(pk) => { setActivePowerKey(pk); setShowForceTree(true) }}
+              onAdd={() => { setActivePowerKey(null); setShowForceTree(true) }}
             />
           </HudFullPanel>
 
