@@ -1,11 +1,11 @@
 'use client'
 
 import { memo } from 'react'
-import { FONT_BODY, FS, RADIUS } from '@/lib/tokens'
+import { FONT_BODY, RADIUS } from '@/lib/tokens'
 
 export type RailPanelId =
   | 'combat' | 'force' | 'skill'
-  | 'skills' | 'talents' | 'inventory' | 'lore' | 'group'
+  | 'skills' | 'talents' | 'force-panel' | 'inventory' | 'lore' | 'group'
   | 'dice' | 'adversaries'
 
 interface HudLeftRailProps {
@@ -43,22 +43,32 @@ const LABEL_STYLE: React.CSSProperties = {
 }
 
 const QUICK_BUTTONS: { id: RailPanelId; symbol: string; label: string; cls: string }[] = [
-  { id: 'combat', symbol: '⚔', label: 'Combat Check', cls: 'hud-rail-btn-combat' },
-  { id: 'force',  symbol: '✦', label: 'Force Check',  cls: 'hud-rail-btn-force'  },
-  { id: 'skill',  symbol: '◈', label: 'Skill Check',  cls: 'hud-rail-btn-skill'  },
+  { id: 'combat', symbol: '⌖', label: 'Combat Check', cls: 'hud-rail-btn-combat' },
+  { id: 'force',  symbol: '≋', label: 'Force Check',  cls: 'hud-rail-btn-force'  },
+  { id: 'skill',  symbol: '⬠', label: 'Skill Check',  cls: 'hud-rail-btn-skill'  },
 ]
 
-const NAV_BUTTONS: { id: RailPanelId; symbol: string; label: string }[] = [
-  { id: 'skills',    symbol: '≋', label: 'Skills'    },
-  { id: 'talents',   symbol: '◆', label: 'Talents'   },
-  { id: 'inventory', symbol: '▣', label: 'Inventory' },
-  { id: 'lore',      symbol: '✧', label: 'Lore'      },
-  { id: 'group',     symbol: '◎', label: 'Group'     },
+interface NavButton {
+  id:         RailPanelId
+  symbol?:    string
+  imgSrc?:    string
+  imgClass?:  string
+  label:      string
+  gateForce?: boolean
+}
+
+const NAV_BUTTONS: NavButton[] = [
+  { id: 'skills',      symbol: '⚙',                                                                   label: 'Skills'    },
+  { id: 'talents',     symbol: '★',                                                                   label: 'Talents'   },
+  { id: 'force-panel', imgSrc: '/images/factions/jedi.webp', imgClass: 'hud-fi-jedi', label: 'Force', gateForce: true },
+  { id: 'inventory',   symbol: '▣',                                                                   label: 'Inventory' },
+  { id: 'lore',        symbol: '✦',                                                                   label: 'Lore'      },
+  { id: 'group',       imgSrc: '/images/factions/rebel.png', imgClass: 'hud-fi-rebel', label: 'Group' },
 ]
 
-const UTILITY_BUTTONS: { id: RailPanelId; symbol: string; label: string }[] = [
-  { id: 'dice',        symbol: '⬡', label: 'Dice'       },
-  { id: 'adversaries', symbol: '⚠', label: 'Adversaries' },
+const UTILITY_BUTTONS: { id: RailPanelId; symbol: string; label: string; cls: string }[] = [
+  { id: 'dice',        symbol: '⬡', label: 'Dice',        cls: 'hud-rail-btn-nav'          },
+  { id: 'adversaries', symbol: '⊗', label: 'Adversaries', cls: 'hud-rail-btn-adversaries'  },
 ]
 
 export const HudLeftRail = memo(function HudLeftRail({
@@ -82,7 +92,7 @@ export const HudLeftRail = memo(function HudLeftRail({
             onClick={() => onPanelToggle(id)}
             title={label}
           >
-            <span style={SYMBOL_STYLE}>{symbol}</span>
+            <span className="hud-rail-symbol" style={SYMBOL_STYLE}>{symbol}</span>
             <span className="hud-rail-label" style={LABEL_STYLE}>{label}</span>
           </button>
         )
@@ -90,23 +100,8 @@ export const HudLeftRail = memo(function HudLeftRail({
 
       <div style={{ width: 30, height: 1, background: 'var(--hud-border-hi)', margin: '4px 0', flexShrink: 0 }} />
 
-      {NAV_BUTTONS.map(({ id, symbol, label }) => (
-        <button
-          key={id}
-          className={`hud-rail-btn-nav${activePanel === id ? ' active' : ''}`}
-          style={BTN_STYLE}
-          onClick={() => onPanelToggle(id)}
-          title={label}
-        >
-          <span style={SYMBOL_STYLE}>{symbol}</span>
-          <span className="hud-rail-label" style={LABEL_STYLE}>{label}</span>
-        </button>
-      ))}
-
-      <div style={{ width: 30, height: 1, background: 'var(--hud-border-hi)', margin: '4px 0', flexShrink: 0 }} />
-
-      {UTILITY_BUTTONS.map(({ id, symbol, label }) => {
-        if (id === 'adversaries' && !showAdversaries) return null
+      {NAV_BUTTONS.map(({ id, symbol, imgSrc, imgClass, label, gateForce }) => {
+        if (gateForce && !isForceUser) return null
         return (
           <button
             key={id}
@@ -115,7 +110,28 @@ export const HudLeftRail = memo(function HudLeftRail({
             onClick={() => onPanelToggle(id)}
             title={label}
           >
-            <span style={SYMBOL_STYLE}>{symbol}</span>
+            {imgSrc
+              ? <img src={imgSrc} className={`hud-fi ${imgClass ?? ''}`} alt="" aria-hidden />
+              : <span className="hud-rail-symbol" style={SYMBOL_STYLE}>{symbol}</span>
+            }
+            <span className="hud-rail-label" style={LABEL_STYLE}>{label}</span>
+          </button>
+        )
+      })}
+
+      <div style={{ width: 30, height: 1, background: 'var(--hud-border-hi)', margin: '4px 0', flexShrink: 0 }} />
+
+      {UTILITY_BUTTONS.map(({ id, symbol, label, cls }) => {
+        if (id === 'adversaries' && !showAdversaries) return null
+        return (
+          <button
+            key={id}
+            className={`${cls}${activePanel === id ? ' active' : ''}`}
+            style={BTN_STYLE}
+            onClick={() => onPanelToggle(id)}
+            title={label}
+          >
+            <span className="hud-rail-symbol" style={SYMBOL_STYLE}>{symbol}</span>
             <span className="hud-rail-label" style={LABEL_STYLE}>{label}</span>
           </button>
         )
