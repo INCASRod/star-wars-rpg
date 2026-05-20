@@ -1,6 +1,6 @@
 # Holocron — Architecture, Routes & Hooks Reference
 
-> Updated 2026-05-15. Read from codebase; update when structure changes.
+> Updated 2026-05-20. Read from codebase; update when structure changes.
 > For full design token and color reference see **[docs/design-system.md](design-system.md)**.
 
 ---
@@ -305,17 +305,18 @@ Cleanup via `useEffect` return → `supabase.removeChannel(channel)`.
 ### Tier 1 — Page Shells (route-level)
 ```
 /character/[id]/page.tsx
-  └── PlayerHUDDesktop          (3-row CSS grid: 52px rail · centre · right column)
+  └── PlayerHUDDesktop          (3-row CSS grid: 64px rail · centre · right column)
         ├── HudTopBar           (row 1 — logo, portrait chip, character name, campaign/XP meta)
         ├── HudStatusStrip      (row 2 — wounds ±, strain ±, encumbrance bar, crit pips)
-        ├── HudLeftRail         (row 3 left — 52px icon rail; quick action buttons open HudQuickDrawers; nav buttons open HudFullPanels)
+        ├── HudLeftRail         (row 3 left — 64px icon rail; quick action buttons open HudQuickDrawers; nav buttons open HudFullPanels; utility buttons for dice/adversaries)
         ├── HudRightColumn      (row 3 right — full-height RollFeedPanel)
         ├── HudSessionTab       (row 3 centre — map canvas + initiative strip + quick drawers)
         │     ├── HudQuickDrawer (combat/force/skill — 260px, position:absolute, slide from left)
         │     └── InitiativeStrip (compact mode, position:absolute bottom:0)
-        └── HudFullPanel (skills/talents/inventory/lore/group — 82%, position:absolute, slide from left)
+        └── HudFullPanel (skills/talents/force-panel/inventory/lore/group — 82%, position:absolute, slide from left)
 
 /gm/page.tsx                    (~3,000+ lines — GOD COMPONENT)
+  ├── GmLeftRail                (52px fixed left rail; buttons for map/tools/party/combat; utilities for dice/screen)
   ├── CombatPanel               (~3,647 lines — GOD COMPONENT)
   ├── GroupSheet                (~1,852 lines)
   ├── ItemDatabaseTab
@@ -335,7 +336,7 @@ Each panel is a self-contained component accepting pre-computed display data fro
 - `InventoryPanel` — weapons, armor, gear with equip/stow controls
 - `SkillsPanel` — skill list with dice pool popover
 - `TalentsPanel` — talent tree grid per specialization
-- `ForcePanel` — force power tree grid
+- `HudForceTab` — force power tree grid (moved to full panel in `HudLeftRail` as `force-panel`)
 - `CriticalInjuriesPanel` — injury tracker
 - `CombatPanel` — encounter initiative, token management, dice rolling
 - `GroupSheet` — group asset management
@@ -344,10 +345,16 @@ Each panel is a self-contained component accepting pre-computed display data fro
 ### Player HUD Sub-components (`src/components/player-hud/`)
 - `HudTopBar` — grid row 1; renders the HOLOCRON logo, a portrait chip (avatar thumbnail), character name, and campaign/XP meta; accent colors use CSS vars (`--hud-accent-*`) rather than rgba literals
 - `HudStatusStrip` — grid row 2, `gridColumn: 1 / -1`; full-width strip with Wounds ±, Strain ±, compact `EncumbranceBar`, `CriticalInjuryPips`; combat/force check buttons moved to `HudLeftRail`
-- `HudLeftRail` — grid row 3 left (52px fixed); quick action buttons (Combat Check, Force Check [force-sensitive only], Skill Check) open narrow drawers inside the map area; nav buttons (Skills, Talents, Inventory, Lore, Group) open full-width slide-in panels over the centre column; no tab bar needed
-- `HudFullPanel` — generic slide-in panel wrapper; `position: absolute; width: 82%` inside the centre column div; used for all five navigation panels; contains a header (symbol + title + close button) and a scrollable body
+- `HudLeftRail` — grid row 3 left (64px fixed); quick action buttons (⌖ Combat, ≋ Force [force-sensitive only], ⬠ Skill) open narrow drawers inside the map area; nav buttons (⚙ Skills, ★ Talents, ✦ Force Panel [force-sensitive only], ▣ Inventory, ✦ Lore, Group [faction image]) open full-width slide-in panels; utility buttons (⬡ Dice, ⊗ Adversaries [red]) below divider; Force and Group buttons use faction images (jedi.webp, rebel.png) with per-theme CSS filters
+- `HudFullPanel` — generic slide-in panel wrapper; `position: absolute; width: 82%` inside the centre column div; used for six navigation panels (skills, talents, force-panel, inventory, lore, group); contains a header (symbol + title + close button) and a scrollable body
 - `HudRightColumn` — grid row 3 right panel; contains full-height `RollFeedPanel` with a Roll Feed header; action buttons moved to `HudStatusStrip`
 - `HudLoreTab` — lore tab content; `CharacterAvatar` at top with portrait upload/delete support; accepts `onPortraitUpload` and `onPortraitDelete` props; portrait was moved here from `HudLeftColumn`
+
+### GM HUD Sub-components (`src/app/gm/`)
+- `GmLeftRail` — 52px fixed left rail; navigation buttons (◎ Map/gold, ⊞ Tools/blue, ◉ Party/teal, Combat with empire.png faction image/red); utility buttons (⬡ Dice/gold, ▦ Screen/gold) below divider; uses `FONT_BODY`, `RADIUS`, `Z.fab` from tokens; Combat button uses empire.png faction image with CSS filter chain
+- `GmTopBar` — (mentioned in git status) top navigation bar for GM dashboard
+- `GmShell` — (mentioned in git status) shell layout wrapper for GM interface
+- `GmMapView` — interactive token map with stat-block hover tooltips and health bars
 
 ### Tier 3 — Atoms & Utilities
 - `ThemeInit` (`src/components/ThemeInit.tsx`) — client component (marked 'use client'); calls `initTheme()` on mount; returns null; rendered as first child of `<body>` in root layout to initialize theme on every page load
@@ -391,6 +398,10 @@ import { COLOR, HUD, FS, SP, RADIUS, Z, SHADOW, EASE, CHAR_COLOR, DICE_META, SYM
 **Theme-aware semantic CSS variables**: New opacity stops for HUD colors enable theme overrides via `[data-theme]` selectors without component changes:
 - `--hud-accent-10`, `--hud-accent-20`, `--hud-accent-25`, `--hud-accent-35`, `--hud-accent-40`, `--hud-accent-45`, `--hud-accent-50`, `--hud-accent-60`, `--hud-accent-border`
 - `--hud-gold-subtle`, `--hud-gold-border`, `--hud-gold-40`
+
+**Faction image styling** (`.hud-fi` base class): 18×18px container with per-faction CSS filter chains applied via `.hud-fi-rebel`, `.hud-fi-jedi`, `.hud-fi-empire` classes; theme-specific overrides via `[data-theme="operative"]` and `[data-theme="kyber"]` selectors
+
+**Rail button styling**: `.hud-rail-btn-*` classes for quick/nav/utility buttons; `.hud-rail-btn-adversaries` for red-tinted adversaries button
 
 **Backward-compat shims**: `src/components/player-hud/design-tokens.ts`, `src/components/wireframe/wf-tokens.ts`, and `src/lib/styles.ts` re-export from `tokens.ts`. New code must import directly from `@/lib/tokens`.
 
