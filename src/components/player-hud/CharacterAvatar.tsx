@@ -180,7 +180,7 @@ export function CharacterAvatar({
                     borderRadius: RADIUS.sm, padding: '4px 0',
                     fontFamily: FONT_RAJDHANI, fontSize: 10, fontWeight: 700,
                     letterSpacing: '0.1em', textTransform: 'uppercase',
-                    color: '#E05050', cursor: 'pointer', width: '100%',
+                    color: HUD_RED, cursor: 'pointer', width: '100%',
                     transition: '.15s',
                   }}
                 >
@@ -198,7 +198,7 @@ export function CharacterAvatar({
                       borderRadius: RADIUS.sm, padding: '4px 0',
                       fontFamily: FONT_RAJDHANI, fontSize: 9, fontWeight: 700,
                       letterSpacing: '0.08em', textTransform: 'uppercase',
-                      color: '#E05050', cursor: 'pointer',
+                      color: HUD_RED, cursor: 'pointer',
                     }}
                   >
                     Confirm
