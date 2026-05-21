@@ -592,6 +592,7 @@ export function StagingFloatingToolbar({
         {rightPanel === 'enc-adversaries' && (
           <EncounterAdversaryPanel
             campaignId={campaignId}
+            encounter={encounter}
             characters={characters}
           />
         )}
@@ -599,6 +600,7 @@ export function StagingFloatingToolbar({
         {rightPanel === 'enc-vehicles' && (
           <EncounterVehiclePanel
             campaignId={campaignId}
+            encounter={encounter}
           />
         )}
       </StagingDrawer>
