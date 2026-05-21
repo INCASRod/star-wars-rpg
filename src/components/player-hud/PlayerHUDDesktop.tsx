@@ -239,7 +239,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [talents])
 
-  // Seed the conflict notification queue once on mount from unacknowledged DB rows
+  // Seed the conflict queue once on load. Delivery is login-persistent (DB-backed),
+  // not realtime — players see new GM-assigned conflicts on their next login.
   useEffect(() => {
     if (conflictSeeded.current || !pendingConflicts.length) return
     conflictSeeded.current = true
@@ -281,10 +282,11 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
 
   async function acknowledgeConflict(id: string) {
     setAckBusy(true)
-    await supabase
+    const { error } = await supabase
       .from('character_conflicts')
       .update({ player_acknowledged: true })
       .eq('id', id)
+    if (error) console.error('[acknowledgeConflict] failed:', error.message)
     setAckBusy(false)
     setConflictQueue(prev => prev.filter(c => c.id !== id))
   }

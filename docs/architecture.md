@@ -211,7 +211,9 @@
 
 ### `useCharacterConflicts(characterId, supabase)`
 - Loads `character_conflicts` for Force-user morality tracking
-- State: `conflicts: ConflictEntry[]` — each entry has description, session label, is_resolved
+- State: `conflicts: ConflictEntry[]` — each entry has `description` (type label), `narrative?`, `session_label`, `is_resolved`, `player_acknowledged?`, `created_at`
+- Derived: `pendingConflicts: ConflictEntry[]` — subset where `player_acknowledged === false`, sorted oldest-first; drives the player notification queue
+- Returns: `{ conflicts, setConflicts, pendingConflicts }`
 
 ### `useGmCampaignConflicts(campaignId, forceSensitiveCharIds)`
 - Loads all unresolved (`is_resolved = false`) `character_conflicts` for a set of force-sensitive character IDs
