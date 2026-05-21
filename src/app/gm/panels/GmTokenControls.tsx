@@ -277,7 +277,6 @@ export function GmTokenControls({
 
   /* ── Player token panel ── */
   if (view === 'player') {
-    const playerTokens = tokens.filter(t => !t.token_type?.startsWith('pointer_'))
     return (
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
         <div style={{ padding: '8px 12px', borderBottom: `1px solid ${BORDER}`, flexShrink: 0 }}>
@@ -290,11 +289,12 @@ export function GmTokenControls({
             mapId={mapId}
             campaignId={campaignId}
             characters={characters}
-            tokens={playerTokens}
+            tokens={tokens}
             addToken={addToken}
             removeToken={removeToken}
             toggleVisibility={toggleVisibility}
             removeAllTokens={removeAllTokens}
+            playersOnly
           />
         </div>
       </div>

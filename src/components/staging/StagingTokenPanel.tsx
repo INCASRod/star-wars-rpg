@@ -70,6 +70,8 @@ export interface StagingTokenPanelProps {
   removeToken:       (id: string) => Promise<void>
   toggleVisibility:  (id: string, visible: boolean) => Promise<void>
   removeAllTokens:   () => Promise<void>
+  /** When true, hides the Vehicles and Placed Tokens sections — shows only the Players section. */
+  playersOnly?:      boolean
 }
 
 /**
@@ -82,7 +84,7 @@ export interface StagingTokenPanelProps {
  *   • PC tokens default to is_visible: true (visible to players on add)
  *   • Adds "Remove All Tokens" with an inline confirmation step
  */
-export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addToken, removeToken, toggleVisibility, removeAllTokens }: StagingTokenPanelProps) {
+export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addToken, removeToken, toggleVisibility, removeAllTokens, playersOnly = false }: StagingTokenPanelProps) {
   const supabase = useMemo(() => createClient(), [])
 
   /* ── Encounter state ──────────────────────────────────── */
@@ -226,7 +228,7 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
 
       {/* ── Section B: Vehicles ── */}
-      {vehicleSlots.length > 0 && (
+      {!playersOnly && vehicleSlots.length > 0 && (
         <>
           <SectionHeader>Vehicles</SectionHeader>
 
@@ -293,7 +295,7 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
       )}
 
       {/* ── Section C: Standalone (library-placed) tokens ── */}
-      {standaloneTokens.length > 0 && (
+      {!playersOnly && standaloneTokens.length > 0 && (
         <>
           <SectionHeader topBorder={vehicleSlots.length > 0}>
             Placed Tokens
@@ -376,7 +378,7 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
       )}
 
       {/* ── Section D: Players ── */}
-      <SectionHeader topBorder={vehicleSlots.length > 0 || standaloneTokens.length > 0}>
+      <SectionHeader topBorder={!playersOnly && (vehicleSlots.length > 0 || standaloneTokens.length > 0)}>
         Players
       </SectionHeader>
 
