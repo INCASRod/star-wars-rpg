@@ -222,13 +222,16 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     const advMap = new Map<string, AdversaryInstance>(
       (encounter?.adversaries ?? []).map(a => [a.instanceId, a])
     )
-    return advTokens.map(t => {
-      if (t.slot_key && advMap.has(t.slot_key)) return advMap.get(t.slot_key)!
-      // Stub for tokens placed without an encounter (exploration mode)
-      return {
+    return advTokens.flatMap(t => {
+      if (t.slot_key && advMap.has(t.slot_key)) return [advMap.get(t.slot_key)!]
+      // Tokens with no encounter match and no label are silently skipped —
+      // showing "Unknown" would reveal the existence of a hidden adversary.
+      if (!t.label) return []
+      // Stub for labelled tokens placed outside any encounter (exploration mode)
+      return [{
         instanceId:      t.id,
         sourceId:        '',
-        name:            t.label ?? 'Unknown',
+        name:            t.label,
         type:            'rival' as const,
         groupSize:       1,
         groupRemaining:  1,
@@ -245,7 +248,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         weapons:         [],
         gear:            [],
         woundsCurrent:   0,
-      } satisfies AdversaryInstance
+      } satisfies AdversaryInstance]
     })
   }, [visibleMapTokens, encounter])
   const [rollResult, setRollResult]             = useState<RollResult | null>(null)
