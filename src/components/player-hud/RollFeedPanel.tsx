@@ -7,8 +7,22 @@ import type { RollEntry }                                  from '@/hooks/useRoll
 
 // Alignment / force colours are not in the design token system — they are
 // specific to the roll feed's alignment identity system.
-const FORCE_BLUE   = '#1A78A0'
-const FORCE_PURPLE = 'rgba(139,43,226,0.9)'
+const ALIGN_OWN     = '#C8AA50'
+const ALIGN_GM      = '#9060D0'
+const ALIGN_ENEMY   = '#8B3025'
+const ALIGN_ALLIED  = '#2D6B3A'
+const ALIGN_NEUTRAL = '#6A5840'
+const FORCE_BLUE      = '#1A78A0'
+const FORCE_PURPLE    = 'rgba(139,43,226,0.9)'
+const FORCE_DARK_USED = 'rgba(200,80,80,0.8)'
+// Collapsed row palette — dark near-black values not in the token system
+const COL_BG     = '#0A0B0F'
+const COL_BORDER = '#141318'
+const COL_NAME   = '#5A4A38'
+const COL_TYPE   = '#3A3228'
+const COL_TIME   = '#2A2228'
+const COL_SUC    = '#8A7030'
+const COL_FAIL   = '#8A3020'
 
 // ── Roll classification ─────────────────────────────────────────────
 type RollCategory = 'skill' | 'combat' | 'force' | 'initiative' | 'system'
@@ -59,17 +73,17 @@ function groupRolls(rolls: RollEntry[]): GroupedEntry[] {
 
 // ── Alignment colour helpers ────────────────────────────────────────
 function alignColor(roll: RollEntry, isOwn: boolean): string {
-  if (isOwn)                       return '#C8AA50'
-  if (roll.is_dm)                  return '#9060D0'
-  if (roll.alignment === 'enemy')  return '#8B3025'
-  if (roll.alignment === 'allied') return '#2D6B3A'
-  return '#6A5840'
+  if (isOwn)                       return ALIGN_OWN
+  if (roll.is_dm)                  return ALIGN_GM
+  if (roll.alignment === 'enemy')  return ALIGN_ENEMY
+  if (roll.alignment === 'allied') return ALIGN_ALLIED
+  return ALIGN_NEUTRAL
 }
 
 function nameColor(roll: RollEntry, isOwn: boolean): string {
-  if (isOwn)      return '#C8AA50'
-  if (roll.is_dm) return '#9060D0'
-  return 'var(--hud-text)'
+  if (isOwn)      return ALIGN_OWN
+  if (roll.is_dm) return ALIGN_GM
+  return HUD.text
 }
 
 // ── Relative time ───────────────────────────────────────────────────
@@ -88,7 +102,7 @@ function ForcePips({ light, dark }: { light: number; dark: number }) {
         <div key={`l${i}`} style={{ width: 10, height: 10, borderRadius: RADIUS.full, flexShrink: 0, background: FORCE_BLUE, boxShadow: `0 0 4px ${FORCE_BLUE}80` }} />
       ))}
       {light > 0 && dark > 0 && (
-        <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: 'var(--hud-text-faint)', margin: '0 2px' }}>·</span>
+        <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint, margin: '0 2px' }}>·</span>
       )}
       {Array.from({ length: dark }).map((_, i) => (
         <div key={`d${i}`} style={{ width: 10, height: 10, borderRadius: RADIUS.full, flexShrink: 0, background: FORCE_PURPLE }} />
@@ -133,7 +147,7 @@ function outcomeLabel(n: number): string {
 function outcomeColor(n: number): string {
   if (n > 0) return HUD.gold
   if (n < 0) return 'var(--hud-accent-60)'
-  return 'var(--hud-text-faint)'
+  return HUD.textFaint
 }
 
 // ── Result symbols row ──────────────────────────────────────────────
@@ -161,7 +175,7 @@ function ResultSymbols({ result }: { result: RollEntry['result'] }) {
 // ── Hidden badge ────────────────────────────────────────────────────
 function HiddenBadge({ forGm }: { forGm: boolean }) {
   return (
-    <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: forGm ? '#9060D0' : 'var(--hud-text-faint)', fontStyle: 'italic', marginBottom: 3 }}>
+    <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: forGm ? ALIGN_GM : HUD.textFaint, fontStyle: 'italic', marginBottom: 3 }}>
       {forGm ? '[HIDDEN FROM PLAYERS]' : '[Hidden]'}
     </div>
   )
@@ -203,11 +217,11 @@ function SkillCard({
           {roll.character_name}
         </span>
         {roll.roll_label && (
-          <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontStyle: 'italic', color: 'var(--hud-text-faint)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>
+          <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontStyle: 'italic', color: HUD.textFaint, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>
             {roll.roll_label}
           </span>
         )}
-        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)', whiteSpace: 'nowrap', marginLeft: 4 }}>
+        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint, whiteSpace: 'nowrap', marginLeft: 4 }}>
           {relativeTime(roll.rolled_at)}
         </span>
       </div>
@@ -283,10 +297,10 @@ function CombatCard({
         <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: nameColor(roll, isOwn), whiteSpace: 'nowrap' }}>
           {roll.character_name}
         </span>
-        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontStyle: 'italic', color: 'var(--hud-text-faint)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginLeft: 4 }}>
+        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontStyle: 'italic', color: HUD.textFaint, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginLeft: 4 }}>
           {bandLabel}
         </span>
-        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)', whiteSpace: 'nowrap', marginLeft: 4 }}>
+        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint, whiteSpace: 'nowrap', marginLeft: 4 }}>
           {relativeTime(roll.rolled_at)}
         </span>
       </div>
@@ -314,7 +328,7 @@ function CombatCard({
                 padding: '2px 6px', borderRadius: RADIUS.sm, marginBottom: 3,
                 background: 'var(--hud-accent-10)', border: '1px solid var(--hud-accent-35)',
                 fontFamily: FONT_BODY, fontSize: FS.overline,
-                color: 'var(--hud-gold)', fontWeight: 700, letterSpacing: '0.05em',
+                color: HUD.gold, fontWeight: 700, letterSpacing: '0.05em',
               }}>
                 ⚠ CRITICAL ELIGIBLE
                 {(meta.critModifier ?? 0) > 0 && (
@@ -356,10 +370,10 @@ function ForceCard({
         <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: FORCE_BLUE, whiteSpace: 'nowrap' }}>
           {roll.character_name}
         </span>
-        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontStyle: 'italic', color: 'var(--hud-text-faint)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginLeft: 4 }}>
+        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontStyle: 'italic', color: HUD.textFaint, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginLeft: 4 }}>
           ✦ {powerName} · Force Power
         </span>
-        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)', whiteSpace: 'nowrap', marginLeft: 4 }}>
+        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint, whiteSpace: 'nowrap', marginLeft: 4 }}>
           {relativeTime(roll.rolled_at)}
         </span>
       </div>
@@ -382,9 +396,9 @@ function ForceCard({
               {light > 0 && <span style={{ color: FORCE_BLUE }}>{light} Light FP</span>}
               {dark > 0 && (
                 <>
-                  {light > 0 && <span style={{ color: 'var(--hud-text-faint)' }}>·</span>}
+                  {light > 0 && <span style={{ color: HUD.textFaint }}>·</span>}
                   <span style={{ color: FORCE_PURPLE }}>{dark} Dark FP</span>
-                  {darkUsed > 0 && <span style={{ color: 'rgba(200,80,80,0.8)' }}>({darkUsed} used)</span>}
+                  {darkUsed > 0 && <span style={{ color: FORCE_DARK_USED }}>({darkUsed} used)</span>}
                 </>
               )}
             </div>
@@ -417,10 +431,10 @@ function InitiativeRow({ group }: { group: { rolls: RollEntry[] } }) {
     : `${group.rolls.length} participants`
   return (
     <div style={{ padding: '3px 4px', display: 'flex', alignItems: 'center', gap: 6 }}>
-      <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontStyle: 'italic', color: 'var(--hud-text-faint)', flex: 1 }}>
+      <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontStyle: 'italic', color: HUD.textFaint, flex: 1 }}>
         ⚙ Initiative Rolled · {label}
       </span>
-      <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)', whiteSpace: 'nowrap' }}>
+      <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint, whiteSpace: 'nowrap' }}>
         {relativeTime(latest.rolled_at)}
       </span>
     </div>
@@ -447,8 +461,8 @@ function SystemRow({ roll }: { roll: RollEntry }) {
         <span style={{ color: HUD.gold, fontWeight: 700 }}>{itemPart}</span>
         {recipients && (
           <>
-            <span style={{ color: 'var(--hud-text-faint)' }}> awarded to </span>
-            <span style={{ color: 'var(--hud-text-dim)' }}>{recipients}</span>
+            <span style={{ color: HUD.textFaint }}> awarded to </span>
+            <span style={{ color: HUD.textDim }}>{recipients}</span>
           </>
         )}
       </div>
@@ -456,14 +470,14 @@ function SystemRow({ roll }: { roll: RollEntry }) {
   }
 
   return (
-    <div style={{ padding: '3px 4px', fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)' }}>
+    <div style={{ padding: '3px 4px', fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint }}>
       <span>⚙ </span>
       {isLong ? (
         <>
           <span>{expanded ? label : `${label.slice(0, SYSTEM_LONG_THRESHOLD)}…`}</span>
           <button
             onClick={() => setExpanded(v => !v)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--hud-text-faint)', fontFamily: FONT_BODY, fontSize: FS.overline, marginLeft: 4, padding: 0 }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: HUD.textFaint, fontFamily: FONT_BODY, fontSize: FS.overline, marginLeft: 4, padding: 0 }}
           >
             {expanded ? '‹' : '›'}
           </button>
@@ -498,7 +512,7 @@ function CollapsedRow({
     : (roll.roll_label || 'Roll')
   const net       = roll.result.netSuccess
   const abbr      = outcomeAbbr(net)
-  const abbrColor = net > 0 ? '#8A7030' : net < 0 ? '#8A3020' : 'var(--hud-text-faint)'
+  const abbrColor = net > 0 ? COL_SUC : net < 0 ? COL_FAIL : HUD.textFaint
 
   return (
     <button
@@ -506,22 +520,22 @@ function CollapsedRow({
       style={{
         display: 'flex', alignItems: 'center', gap: 5,
         padding: '3px 7px', width: '100%', textAlign: 'left',
-        background: '#0A0B0F', border: '1px solid #141318',
-        borderRadius: RADIUS.md, cursor: 'pointer',
+        background: COL_BG, border: `1px solid ${COL_BORDER}`,
+        borderRadius: RADIUS.sm, cursor: 'pointer',
         fontFamily: FONT_BODY,
       }}
     >
       <div style={{ width: 4, height: 4, borderRadius: RADIUS.full, flexShrink: 0, background: ac }} />
-      <span style={{ fontSize: FS.overline, color: '#5A4A38', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      <span style={{ fontSize: FS.overline, color: COL_NAME, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {roll.character_name}
       </span>
-      <span style={{ fontSize: FS.overline, color: '#3A3228', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 80 }}>
+      <span style={{ fontSize: FS.overline, color: COL_TYPE, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 80 }}>
         {typeLabel}
       </span>
       <span style={{ fontSize: FS.overline, fontWeight: 700, color: abbrColor, minWidth: 28, textAlign: 'right' }}>
         {abbr}
       </span>
-      <span style={{ fontSize: FS.overline, color: '#2A2228', whiteSpace: 'nowrap' }}>
+      <span style={{ fontSize: FS.overline, color: COL_TIME, whiteSpace: 'nowrap' }}>
         {relativeTime(roll.rolled_at)}
       </span>
     </button>
@@ -553,7 +567,7 @@ export function RollFeedPanel({
 
   if (rolls.length === 0) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 48, fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 48, fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint }}>
         No rolls yet this session.
       </div>
     )
@@ -598,7 +612,7 @@ export function RollFeedPanel({
           <div key="history-label" style={{
             fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
             letterSpacing: '0.12em', textTransform: 'uppercase',
-            color: 'var(--hud-text-faint)', padding: '4px 2px 2px', opacity: 0.5,
+            color: HUD.textFaint, padding: '4px 2px 2px', opacity: 0.5,
           }}>
             Earlier this session
           </div>
