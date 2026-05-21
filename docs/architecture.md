@@ -213,6 +213,13 @@
 - Loads `character_conflicts` for Force-user morality tracking
 - State: `conflicts: ConflictEntry[]` — each entry has description, session label, is_resolved
 
+### `useGmCampaignConflicts(campaignId, forceSensitiveCharIds)`
+- Loads all unresolved (`is_resolved = false`) `character_conflicts` for a set of force-sensitive character IDs
+- State: `conflicts: GmConflictRow[]` — each row has `id`, `character_id`, `description`, `narrative?`, `created_at`
+- Realtime: subscribes to INSERT on `character_conflicts` filtered by `campaign_id`; prepends new rows live
+- Returns empty array immediately when `forceSensitiveCharIds` is empty (no query fired)
+- Returns: `{ conflicts }`
+
 ### `usePlayerBroadcast(options)`
 - Player-side: subscribes to GM broadcast channels for this character
 - Handles: destiny flash, vendor offer, crit injury request, dialog/toast messages
@@ -243,7 +250,7 @@
 - `character_specializations` — purchased specs, in purchase order
 - `character_force_abilities` — purchased Force power upgrades
 - `character_critical_injuries` — tracked injuries
-- `character_conflicts` — Force-user morality conflict log (description, session_label, is_resolved)
+- `character_conflicts` — Force-user morality conflict log; `description` = type label; `narrative` = optional body; `player_acknowledged` = false until player dismisses notification
 - `character_sessions` — active session keys (with player's chosen `ui_theme`: 'binary-sunset'|'operative'|'kyber'); cleared on disconnect via `/api/release-session`
 - `critical_injury_requests` — GM-initiated requests for crit injury rolls (status: pending/applied)
 
@@ -469,3 +476,4 @@ import { COLOR, HUD, FS, SP, RADIUS, Z, SHADOW, EASE, CHAR_COLOR, DICE_META, SYM
 | 051 | Stow location columns on character item tables |
 | 052 | Pointer token cosmetics |
 | 053 | UI theme column on character_sessions (for theme switcher) |
+| 054 | `character_conflicts` — `player_acknowledged` (delivery flag) + `narrative` (body text) |
