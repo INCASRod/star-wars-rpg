@@ -355,6 +355,7 @@ Each panel is a self-contained component accepting pre-computed display data fro
 - `GmTopBar` — (mentioned in git status) top navigation bar for GM dashboard
 - `GmShell` — (mentioned in git status) shell layout wrapper for GM interface
 - `GmMapView` — interactive token map with stat-block hover tooltips and health bars
+- `AddConflictModal` (`src/components/gm/AddConflictModal.tsx`) — modal for GM to add morality conflicts to Force-sensitive characters; filters character list to force-sensitive only; inserts to `character_conflicts` table with character_id, campaign_id, description, narrative, session_label, is_resolved, player_acknowledged
 
 ### Tier 3 — Atoms & Utilities
 - `ThemeInit` (`src/components/ThemeInit.tsx`) — client component (marked 'use client'); calls `initTheme()` on mount; returns null; rendered as first child of `<body>` in root layout to initialize theme on every page load
