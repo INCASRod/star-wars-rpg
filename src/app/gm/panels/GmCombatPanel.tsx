@@ -4,20 +4,18 @@ import type { Character } from '@/lib/types'
 import type { CombatEncounter } from '@/lib/combat'
 import { EncounterAdversaryPanel } from '@/components/staging/EncounterAdversaryPanel'
 import { EncounterVehiclePanel } from '@/components/staging/EncounterVehiclePanel'
-import { HUD } from '@/lib/tokens'
-
 const FONT  = 'var(--font-body)'
 const RED   = '#E05050'
 const GREEN = '#4EC87A'
 const DIM   = 'var(--hud-text-dim)'
 
-const headerBtn = (accent: string, active = false): React.CSSProperties => ({
+const headerBtn = (accent: string): React.CSSProperties => ({
   display:       'flex',
   alignItems:    'center',
   gap:           6,
   padding:       '6px 14px',
-  background:    active ? `${accent}18` : 'transparent',
-  border:        `1px solid ${active ? `${accent}55` : 'var(--hud-border-hi)'}`,
+  background:    'transparent',
+  border:        '1px solid var(--hud-border-hi)',
   borderRadius:  4,
   cursor:        'pointer',
   fontFamily:    FONT,
@@ -25,25 +23,21 @@ const headerBtn = (accent: string, active = false): React.CSSProperties => ({
   fontWeight:    700,
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
-  color:         active ? accent : DIM,
+  color:         accent,
   transition:    'background 0.15s, border-color 0.15s',
   whiteSpace:    'nowrap',
 })
 
 export interface GmCombatPanelProps {
-  campaignId:       string
-  encounter:        CombatEncounter | null
-  characters:       Character[]
-  onStartCombat:    () => void
-  onInitiativeOrder:() => void
-  initiativeOpen:   boolean
+  campaignId:    string
+  encounter:     CombatEncounter | null
+  characters:    Character[]
+  onStartCombat: () => void
 }
 
 export function GmCombatPanel({
-  campaignId, encounter, characters, onStartCombat, onInitiativeOrder, initiativeOpen,
+  campaignId, encounter, characters, onStartCombat,
 }: GmCombatPanelProps) {
-  const isActive = encounter?.is_active === true
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
 
@@ -59,11 +53,6 @@ export function GmCombatPanel({
         <button onClick={onStartCombat} style={headerBtn(GREEN)}>
           ▶ Start Combat
         </button>
-        {isActive && (
-          <button onClick={onInitiativeOrder} style={headerBtn(HUD.gold, initiativeOpen)}>
-            ◉ Initiative Order
-          </button>
-        )}
       </div>
 
       {/* Scrollable content */}

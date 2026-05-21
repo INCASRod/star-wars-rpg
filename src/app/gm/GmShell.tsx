@@ -133,6 +133,12 @@ export function GmShell() {
   // ── UI state ────────────────────────────────────────────────────
   const [activePanel,           setActivePanel]           = useState<GmPanelId | null>(null)
   const [initiativeOpen,        setInitiativeOpen]        = useState(false)
+
+  // Persist the last seen encounter so the Enemies panel stays populated after combat ends
+  const [displayEncounter, setDisplayEncounter] = useState<CombatEncounter | null>(null)
+  useEffect(() => {
+    if (stagingEncounter) setDisplayEncounter(stagingEncounter)
+  }, [stagingEncounter])
   const [initiativeSetupOpen,   setInitiativeSetupOpen]   = useState(false)
   const [recheckInitiativeOpen, setRecheckInitiativeOpen] = useState(false)
   const [referenceOpen,         setReferenceOpen]         = useState(false)
@@ -358,11 +364,9 @@ export function GmShell() {
             {activePanel === 'combat' && (
               <GmCombatPanel
                 campaignId={campaignId ?? ''}
-                encounter={stagingEncounter}
+                encounter={displayEncounter}
                 characters={activeChars}
                 onStartCombat={handleStartCombat}
-                onInitiativeOrder={() => setInitiativeOpen(o => !o)}
-                initiativeOpen={initiativeOpen}
               />
             )}
           </div>
@@ -406,6 +410,8 @@ export function GmShell() {
         combatRound={combatRound}
         onBeginCombat={handleStartCombat}
         onEndCombat={endEncounter}
+        onInitiativeOrder={() => setInitiativeOpen(o => !o)}
+        initiativeOpen={initiativeOpen}
         onLobby={() => router.push('/')}
         destinySlot={destinyPoolRecord ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>

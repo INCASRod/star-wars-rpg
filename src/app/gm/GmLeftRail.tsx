@@ -18,7 +18,7 @@ const BUTTONS: RailButton[] = [
   { id: 'map',    icon: '◎', label: 'Map',    accent: HUD.gold },
   { id: 'tools',  icon: '⊞', label: 'Tools',  accent: '#5AAAE0' },
   { id: 'party',  icon: '◉', label: 'Party',  accent: '#4EC8A8' },
-  { id: 'combat', icon: '',  label: 'Combat', accent: '#E05050',
+  { id: 'combat', icon: '',  label: 'Enemies', accent: '#E05050',
     imgSrc: '/images/factions/empire.png', imgClass: 'hud-fi hud-fi-empire' },
 ]
 

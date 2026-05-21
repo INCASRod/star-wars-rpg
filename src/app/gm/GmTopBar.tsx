@@ -10,21 +10,23 @@ const RED          = '#E05050'
 const GREEN        = '#4EC87A'
 
 export interface GmTopBarProps {
-  campaignName:  string
-  sessionMode:   'exploration' | 'combat'
-  sessionBusy:   boolean
-  combatRound:   number
-  onBeginCombat: () => void | Promise<void>
-  onEndCombat:   () => void | Promise<void>
-  onLobby:       () => void
+  campaignName:       string
+  sessionMode:        'exploration' | 'combat'
+  sessionBusy:        boolean
+  combatRound:        number
+  onBeginCombat:      () => void | Promise<void>
+  onEndCombat:        () => void | Promise<void>
+  onInitiativeOrder:  () => void
+  initiativeOpen:     boolean
+  onLobby:            () => void
   /** Destiny pool content — rendered between the combat toggle and the Lobby button */
-  destinySlot?:  React.ReactNode
+  destinySlot?:       React.ReactNode
 }
 
 export const GmTopBar = memo(function GmTopBar({
   campaignName,
   sessionMode, sessionBusy, combatRound,
-  onBeginCombat, onEndCombat, onLobby,
+  onBeginCombat, onEndCombat, onInitiativeOrder, initiativeOpen, onLobby,
   destinySlot,
 }: GmTopBarProps) {
   const isCombat = sessionMode === 'combat'
@@ -126,7 +128,10 @@ export const GmTopBar = memo(function GmTopBar({
 
       {/* ── Right: combat toggle ───────────────────────────── */}
       {isCombat ? (
-        <TopBarButton label="⬛ End Combat"   color={RED} disabled={sessionBusy} onClick={onEndCombat} />
+        <>
+          <TopBarButton label="◉ Initiative Order" color={HUD.gold} disabled={false} onClick={onInitiativeOrder} active={initiativeOpen} />
+          <TopBarButton label="⬛ End Combat" color={RED} disabled={sessionBusy} onClick={onEndCombat} />
+        </>
       ) : (
         <TopBarButton label="▶ Begin Combat" color={RED} disabled={sessionBusy} onClick={onBeginCombat} />
       )}
@@ -179,8 +184,8 @@ function Divider() {
 }
 
 function TopBarButton({
-  label, color, disabled, onClick,
-}: { label: string; color: string; disabled: boolean; onClick: () => void | Promise<void> }) {
+  label, color, disabled, onClick, active = false,
+}: { label: string; color: string; disabled: boolean; onClick: () => void | Promise<void>; active?: boolean }) {
   return (
     <button
       disabled={disabled}
@@ -192,8 +197,8 @@ function TopBarButton({
         letterSpacing: '0.12em',
         textTransform: 'uppercase',
         color:         disabled ? 'rgba(150,168,180,0.25)' : color,
-        background:    'var(--hud-surface-lo)',
-        border:        `1px solid ${disabled ? 'var(--hud-border)' : 'var(--hud-border-hi)'}`,
+        background:    active ? `${color}18` : 'var(--hud-surface-lo)',
+        border:        `1px solid ${disabled ? 'var(--hud-border)' : active ? color : 'var(--hud-border-hi)'}`,
         borderRadius:  4,
         padding:       '5px 14px',
         cursor:        disabled ? 'not-allowed' : 'pointer',
@@ -203,15 +208,15 @@ function TopBarButton({
       onMouseEnter={e => {
         if (!disabled) {
           const el = e.currentTarget as HTMLElement
-          el.style.background = 'var(--hud-surface-mid)'
+          el.style.background = active ? `${color}28` : 'var(--hud-surface-mid)'
           el.style.borderColor = color
         }
       }}
       onMouseLeave={e => {
         if (!disabled) {
           const el = e.currentTarget as HTMLElement
-          el.style.background = 'var(--hud-surface-lo)'
-          el.style.borderColor = 'var(--hud-border-hi)'
+          el.style.background = active ? `${color}18` : 'var(--hud-surface-lo)'
+          el.style.borderColor = active ? color : 'var(--hud-border-hi)'
         }
       }}
     >
