@@ -4,6 +4,9 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCharacterData } from '@/hooks/useCharacterData'
 import { C, FONT_RAJDHANI, FS_CAPTION, FS_LABEL, FS_SM, FS_H4 } from './design-tokens'
+import { Modal } from '@/components/ui/Modal'
+import { FONT_BODY, RADIUS, Z } from '@/lib/tokens'
+import type { ConflictEntry } from '@/components/player-hud/ForcePanel'
 import { BackgroundEffects } from './HudDecorations'
 import { HudTopBar } from './HudTopBar'
 import { HudLeftRail, type RailPanelId } from './HudLeftRail'
@@ -219,7 +222,10 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   const [skillPopover, setSkillPopover]         = useState<{ skill: HudSkill; anchor: DOMRect } | null>(null)
   const [combatCheckOpen, setCombatCheckOpen]         = useState(false)
   const [forceCheckOpen,  setForceCheckOpen]          = useState(false)
-  const { conflicts } = useCharacterConflicts(character?.id, supabase)
+  const { conflicts, pendingConflicts } = useCharacterConflicts(character?.id, supabase)
+  const [conflictQueue, setConflictQueue] = useState<ConflictEntry[]>([])
+  const [ackBusy,       setAckBusy]       = useState(false)
+  const conflictSeeded                    = useRef(false)
   const { pendingCritRequest, setPendingCritRequest } = useCriticalInjuryRequest(character?.id, supabase)
   const [pdfGenerating,     setPdfGenerating]         = useState(false)
   const [pendingDedication, setPendingDedication]     = useState<{ talentId: string; row: number; col: number; specKey: string } | null>(null)
@@ -232,6 +238,14 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     if (u) setPendingDedication({ talentId: u.id, row: u.tree_row ?? 4, col: u.tree_col ?? 0, specKey: u.specialization_key ?? '' })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [talents])
+
+  // Seed the conflict notification queue once on mount from unacknowledged DB rows
+  useEffect(() => {
+    if (conflictSeeded.current || !pendingConflicts.length) return
+    conflictSeeded.current = true
+    setConflictQueue(pendingConflicts)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingConflicts])
 
   // ── Load persisted theme from character_sessions ──────────────────────────
   useEffect(() => {
@@ -263,6 +277,16 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
       await supabase.from('character_sessions').delete().eq('session_key', sessionKey).eq('campaign_id', effectiveCampaignId)
     }
     router.push('/')
+  }
+
+  async function acknowledgeConflict(id: string) {
+    setAckBusy(true)
+    await supabase
+      .from('character_conflicts')
+      .update({ player_acknowledged: true })
+      .eq('id', id)
+    setAckBusy(false)
+    setConflictQueue(prev => prev.filter(c => c.id !== id))
   }
 
   // ── Theme switching ──
@@ -348,6 +372,49 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
           sessionLabel={null}
           onDismiss={() => setPendingCritRequest(null)}
         />
+      )}
+
+      {/* Conflict notification — shown for unacknowledged GM-assigned conflicts */}
+      {conflictQueue.length > 0 && (
+        <Modal
+          open
+          zIndex={Z.modal + 10}
+          borderColor="rgba(144,96,208,0.5)"
+          shadow="0 0 32px rgba(144,96,208,0.25)"
+        >
+          <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: 'var(--text-sm)', fontWeight: 700, color: '#9060D0', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+              ⚠ Conflict Gained
+            </div>
+            <div style={{ fontFamily: FONT_BODY, fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--hud-text)', lineHeight: 1.3 }}>
+              {conflictQueue[0].description}
+            </div>
+            {conflictQueue[0].narrative && (
+              <div style={{ fontFamily: FONT_BODY, fontSize: 'var(--text-sm)', color: 'var(--hud-text-dim)', lineHeight: 1.55 }}>
+                {conflictQueue[0].narrative}
+              </div>
+            )}
+            <button
+              onClick={() => acknowledgeConflict(conflictQueue[0].id)}
+              disabled={ackBusy}
+              style={{
+                height:        36,
+                borderRadius:  RADIUS.sm,
+                background:    ackBusy ? 'transparent' : 'rgba(144,96,208,0.12)',
+                border:        '1px solid rgba(144,96,208,0.4)',
+                fontFamily:    FONT_BODY,
+                fontSize:      'var(--text-caption)',
+                fontWeight:    700,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                color:         ackBusy ? 'rgba(144,96,208,0.35)' : '#9060D0',
+                cursor:        ackBusy ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {ackBusy ? 'Saving...' : 'Acknowledge'}
+            </button>
+          </div>
+        </Modal>
       )}
 
       {/* GM mode overlays */}
