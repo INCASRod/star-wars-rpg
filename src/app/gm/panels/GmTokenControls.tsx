@@ -88,7 +88,7 @@ const POINTER_DEFS = [
   { type: 'pointer_orange', hex: '#f97316', label: 'Orange' },
 ] as const
 
-type TokenView = 'menu' | 'adversary' | 'vehicle' | 'player'
+type TokenView = 'menu' | 'adversary' | 'vehicle' | 'player' | 'placed'
 
 export interface GmTokenControlsProps {
   campaignId:      string
@@ -301,9 +301,59 @@ export function GmTokenControls({
     )
   }
 
+  /* ── Placed tokens view ── */
+  if (view === 'placed') {
+    const placedTokens = tokens.filter(t => !t.token_type?.startsWith('pointer_'))
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div style={{ padding: '8px 12px', borderBottom: `1px solid ${BORDER}`, flexShrink: 0 }}>
+          <button onClick={() => setView('menu')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--hud-text-dim)', fontFamily: FONT, fontSize: 'var(--text-caption)', display: 'flex', alignItems: 'center', gap: 4 }}>
+            ← Back
+          </button>
+        </div>
+        <div style={{ flex: 1, overflowY: 'auto' }}>
+          <StagingTokenPanel
+            mapId={mapId}
+            campaignId={campaignId}
+            characters={characters}
+            tokens={placedTokens}
+            addToken={addToken}
+            removeToken={removeToken}
+            toggleVisibility={toggleVisibility}
+            removeAllTokens={removeAllTokens}
+          />
+        </div>
+      </div>
+    )
+  }
+
   /* ── Menu view ── */
+  const placedCount = tokens.filter(t => !t.token_type?.startsWith('pointer_')).length
+
   return (
     <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+      {/* Placed tokens shortcut */}
+      <div>
+        <div style={sectionHeader}>Placed Tokens</div>
+        <button
+          style={{ ...tokenBtn, color: placedCount > 0 ? HUD.gold : 'var(--hud-text-dim)', justifyContent: 'space-between' }}
+          onClick={() => setView('placed')}
+        >
+          <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span>◈</span> Placed Tokens
+          </span>
+          {placedCount > 0 && (
+            <span style={{
+              fontFamily: FONT, fontSize: 'var(--text-overline)', fontWeight: 700,
+              background: 'rgba(150,168,180,0.12)', border: '1px solid var(--hud-border-hi)',
+              borderRadius: 10, padding: '1px 7px', color: HUD.gold,
+            }}>
+              {placedCount}
+            </span>
+          )}
+        </button>
+      </div>
 
       {/* Add tokens */}
       <div>
