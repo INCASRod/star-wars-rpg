@@ -135,6 +135,11 @@ export function useGmSession(params: {
     if (advNames.length > 0) {
       const { data } = await supabase.from('ref_adversaries').select('*').in('name', advNames)
       for (const row of (data ?? [])) advMap.set((row as Adversary).name, row as Adversary)
+      const missingNames = advNames.filter(n => !advMap.has(n))
+      if (missingNames.length > 0) {
+        const staticAdvs = await fetchAdversaries()
+        for (const a of staticAdvs) if (missingNames.includes(a.name)) advMap.set(a.name, a)
+      }
     }
 
     const vehNames = [...new Set(vehTokens.map(t => t.label!))]
@@ -224,6 +229,7 @@ export function useGmSession(params: {
     await Promise.all([
       supabase.from('campaigns').update({ session_mode: 'exploration', combat_round: 0, mode_changed_at: new Date().toISOString() }).eq('id', campaignId),
       supabase.from('combat_encounters').update({ is_active: false, updated_at: new Date().toISOString() }).eq('campaign_id', campaignId).eq('is_active', true),
+      supabase.from('map_tokens').update({ slot_key: null }).eq('campaign_id', campaignId).not('slot_key', 'is', null),
     ])
     setSessionMode('exploration')
     setCombatRound(1)
@@ -325,7 +331,7 @@ export function useGmSession(params: {
     }
     const usedSlots = new Set<string>()
     for (const token of stagingTokens.filter(
-      t => t.participant_type === 'adversary' && t.token_shape !== 'rectangle' && !t.slot_key && !!t.label
+      t => t.participant_type === 'adversary' && t.token_shape !== 'rectangle' && !!t.label
     )) {
       const available = (slotsByName.get(token.label!) ?? []).find(id => !usedSlots.has(id))
       if (!available) continue
