@@ -393,6 +393,7 @@ export interface Character {
   obligation_custom_name?: string | null
   force_rating?: number
   force_rating_committed?: number
+  is_force_sensitive?: boolean
   morality_configured?: boolean
   is_dark_side_fallen?: boolean
   dark_side_fallen_at?: string
