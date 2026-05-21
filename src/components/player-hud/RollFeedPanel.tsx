@@ -15,9 +15,7 @@ const ALIGN_NEUTRAL = '#6A5840'
 const FORCE_BLUE      = '#1A78A0'
 const FORCE_PURPLE    = 'rgba(139,43,226,0.9)'
 const FORCE_DARK_USED = 'rgba(200,80,80,0.8)'
-// Collapsed row palette — dark near-black values not in the token system
-const COL_BG     = '#0A0B0F'
-const COL_BORDER = '#141318'
+// Collapsed row text palette — muted values not in the token system
 const COL_NAME   = '#5A4A38'
 const COL_TYPE   = '#3A3228'
 const COL_TIME   = '#2A2228'
@@ -520,7 +518,7 @@ function CollapsedRow({
       style={{
         display: 'flex', alignItems: 'center', gap: 5,
         padding: '3px 7px', width: '100%', textAlign: 'left',
-        background: COL_BG, border: `1px solid ${COL_BORDER}`,
+        background: HUD.panel, border: `1px solid ${HUD.border}`,
         borderRadius: RADIUS.sm, cursor: 'pointer',
         fontFamily: FONT_BODY,
       }}
