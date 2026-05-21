@@ -1,12 +1,13 @@
 ﻿'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { FS } from '@/lib/tokens'
 import { createClient } from '@/lib/supabase/client'
 import type { Character } from '@/lib/types'
 import type { ForceRollResult } from '@/lib/forceRoll'
 import type { ForcePowerDisplay } from '@/components/player-hud/ForcePanel'
 import type { TargetEntry } from './steps/ForceTargetStep'
+import type { AdversaryInstance } from '@/lib/adversaries'
 import { SelectPowerStep } from './steps/SelectPowerStep'
 import { RollForceDiceStep } from './steps/RollForceDiceStep'
 import { DarkSidePipsStep } from './steps/DarkSidePipsStep'
@@ -74,6 +75,8 @@ export interface ForceCheckOverlayProps {
   characterId:    string
   /** Pre-fetched active encounter ID — skips the combat_encounters SELECT when writing combat_log */
   encounterId?:   string | null
+  /** Visible adversary tokens from the map — shown as targets regardless of combat state */
+  visibleEnemies?: AdversaryInstance[]
 }
 
 export function ForceCheckOverlay({
@@ -82,6 +85,7 @@ export function ForceCheckOverlay({
   forcePowers, isDathomiri, isCombat,
   campaignId, characterId,
   encounterId: propEncounterId,
+  visibleEnemies,
 }: ForceCheckOverlayProps) {
   const [state, setState] = useState<ForceCheckState>(makeInitialState)
   const [busy, setBusy] = useState(false)
@@ -94,6 +98,10 @@ export function ForceCheckOverlay({
   // ── Derived ───────────────────────────────────────────────────────────────
   const isFallen = character.is_dark_side_fallen === true
   const STEP_LABELS = isFallen ? STEP_LABELS_FALLEN : STEP_LABELS_NORMAL
+
+  const enemyTargets = useMemo<TargetEntry[]>(() =>
+    (visibleEnemies ?? []).map(a => ({ instanceId: a.instanceId, name: a.name, kind: 'enemy' as const }))
+  , [visibleEnemies])
 
   // Skip step 3 for Dathomiri (all pips free), or when the costly-pip count is 0
   const costlyPipsRolled = isFallen
@@ -364,6 +372,7 @@ export function ForceCheckOverlay({
             targetContext={state.targetContext}
             onSelectTargets={targets => setState(s => ({ ...s, selectedTargets: targets }))}
             onTargetContext={ctx => setState(s => ({ ...s, targetContext: ctx }))}
+            encounterEnemies={enemyTargets.length > 0 ? enemyTargets : undefined}
           />
         )}
 

@@ -26,6 +26,7 @@ import { useCharacterConflicts } from '@/hooks/useCharacterConflicts'
 import { useForcePowers } from '@/hooks/useForcePowers'
 import { useBonusSkillKeys } from '@/hooks/useBonusSkillKeys'
 import { type RollResult, type ForceRollResult } from './dice-engine'
+import type { AdversaryInstance } from '@/lib/adversaries'
 import type { HudSkill } from '@/lib/types'
 import { isForceUserSensitive } from '@/lib/forceUtils'
 import { CombatCheckOverlay } from '@/components/combat-check/CombatCheckOverlay'
@@ -212,6 +213,41 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
 
   const mapTokens = useMapTokens(visibleMap?.id ?? null)
   const visibleMapTokens = mapTokens.tokens.filter(t => t.is_visible)
+
+  // Build the full enemy list from visible adversary tokens, enriched with encounter data.
+  // This is passed to both check overlays so target selection works regardless of combat state.
+  const visibleEnemies = useMemo<AdversaryInstance[]>(() => {
+    const advTokens = visibleMapTokens.filter(t => t.participant_type === 'adversary')
+    if (advTokens.length === 0) return []
+    const advMap = new Map<string, AdversaryInstance>(
+      (encounter?.adversaries ?? []).map(a => [a.instanceId, a])
+    )
+    return advTokens.map(t => {
+      if (t.slot_key && advMap.has(t.slot_key)) return advMap.get(t.slot_key)!
+      // Stub for tokens placed without an encounter (exploration mode)
+      return {
+        instanceId:      t.id,
+        sourceId:        '',
+        name:            t.label ?? 'Unknown',
+        type:            'rival' as const,
+        groupSize:       1,
+        groupRemaining:  1,
+        revealed:        true,
+        characteristics: { brawn: 2, agility: 2, intellect: 2, cunning: 2, willpower: 2, presence: 2 },
+        soak:            2,
+        woundThreshold:  10,
+        strainThreshold: 10,
+        defense:         { melee: 0, ranged: 0 },
+        skills:          [],
+        skillRanks:      {},
+        talents:         [],
+        abilities:       [],
+        weapons:         [],
+        gear:            [],
+        woundsCurrent:   0,
+      } satisfies AdversaryInstance
+    })
+  }, [visibleMapTokens, encounter])
   const [rollResult, setRollResult]             = useState<RollResult | null>(null)
   const [rollLabel, setRollLabel]               = useState<string | undefined>()
   const [showTalentTree, setShowTalentTree]     = useState(false)
@@ -644,7 +680,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
             speciesAbilities={speciesAbilities}
             speciesName={speciesName}
             encounterId={encounter?.id ?? null}
-            encounterEnemies={encounter?.adversaries}
+            encounterEnemies={visibleEnemies}
           />
           <ForceCheckOverlay
             open={forceCheckOpen}
@@ -658,6 +694,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
             campaignId={effectiveCampaignId}
             characterId={character.id}
             encounterId={encounter?.id ?? null}
+            visibleEnemies={visibleEnemies}
           />
         </div>
 

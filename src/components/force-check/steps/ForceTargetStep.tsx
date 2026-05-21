@@ -130,6 +130,9 @@ export function ForceTargetStep({
             })}
           </div>
         )}
+        {enemies.length > 0 && (
+          <TargetSection label="Enemy Tokens" targets={enemies} selectedIds={selectedIds} onToggle={toggleTarget} color="#E03A1E" />
+        )}
       </div>
     )
   }
