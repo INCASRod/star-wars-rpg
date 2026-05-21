@@ -16,7 +16,7 @@ import { RangeBandStep } from './steps/RangeBandStep'
 import { DicePoolReviewStep, type ManualAdjustments, EMPTY_ADJUSTMENTS, type DualWieldState } from './steps/DicePoolReviewStep'
 import { DualWieldReviewStep } from './steps/DualWieldReviewStep'
 import { RollResultStep } from './steps/RollResultStep'
-import { HUD } from '@/lib/tokens'
+import { HUD, FS } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const BG       = 'var(--hud-surface-hi)'
@@ -115,23 +115,6 @@ export function CombatCheckOverlay({
   const [state, setState] = useState<CombatCheckState>(() => makeInitialState(initialAttackType))
   // Seed encounterId from prop so the combat_log write doesn't need a SELECT
   const seedEncounterId = propEncounterId ?? null
-  const [mounted, setMounted] = useState(false)
-  const [visible, setVisible] = useState(false)
-
-  // ── Slide animation ────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (open) {
-      setMounted(true)
-      // Trigger animation after mount
-      const t = requestAnimationFrame(() => { requestAnimationFrame(() => setVisible(true)) })
-      return () => cancelAnimationFrame(t)
-    } else {
-      setVisible(false)
-      const t = setTimeout(() => setMounted(false), 260)
-      return () => clearTimeout(t)
-    }
-  }, [open])
-
   // ── Reset state when overlay opens ─────────────────────────────────────────
   useEffect(() => {
     if (open) {
@@ -469,40 +452,30 @@ export function CombatCheckOverlay({
     ? 'Dual Wield Review'
     : (STEP_LABELS[state.currentStep] ?? '')
 
-  if (!mounted) return null
-
   return (
     <div
+      className={`hud-quick-drawer${open ? ' open' : ''}`}
       style={{
-        position: 'fixed', top: 0, right: 0, height: '100dvh',
-        width: 'clamp(380px, 35vw, 480px)',
         background: BG,
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        borderLeft: `1px solid var(--hud-border)`,
-        boxShadow: '-8px 0 32px rgba(0,0,0,0.6)',
-        zIndex: 150,
-        display: 'flex', flexDirection: 'column',
-        transform: visible ? 'translateX(0)' : 'translateX(100%)',
-        transition: visible
-          ? 'transform 300ms cubic-bezier(0.16,1,0.3,1)'
-          : 'transform 250ms ease-in',
+        borderRight: `1px solid var(--hud-border)`,
       }}
     >
       {/* ── Header ── */}
       <div style={{
-        padding: '14px 16px',
+        padding: '10px 14px',
         borderBottom: `1px solid ${GOLD_BD}`,
         display: 'flex', flexDirection: 'column', gap: 4,
         flexShrink: 0,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {/* Back button */}
           <button
             onClick={goBack}
             style={{
               background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px 4px',
-              fontFamily: FONT_R, fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)', color: GOLD_DIM,
+              fontFamily: FONT_R, fontSize: FS.caption, color: GOLD_DIM,
               visibility: (!isResult && state.currentStep > initialStep) ? 'visible' : 'hidden',
             }}
           >
@@ -513,11 +486,11 @@ export function CombatCheckOverlay({
           <div style={{ flex: 1, textAlign: 'center' }}>
             <div style={{
               fontFamily: FONT_C,
-              fontSize: 'clamp(0.9rem, 1.5vw, 1.1rem)',
+              fontSize: FS.label,
               fontWeight: 700,
               color: HUD.gold,
               textTransform: 'uppercase',
-              letterSpacing: '0.1em',
+              letterSpacing: '0.15em',
             }}>
               {isResult
                 ? 'Attack Result'
@@ -530,7 +503,7 @@ export function CombatCheckOverlay({
             {!isResult && (
               <div style={{
                 fontFamily: 'var(--font-body)',
-                fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)',
+                fontSize: FS.overline,
                 color: GOLD_DIM,
                 marginTop: 2,
               }}>
@@ -546,7 +519,7 @@ export function CombatCheckOverlay({
             onClick={handleClose}
             style={{
               background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px 6px',
-              fontFamily: 'var(--font-body)', fontSize: 'clamp(0.9rem, 1.4vw, 1rem)', color: TEXT_DIM,
+              fontFamily: 'var(--font-body)', fontSize: 15, color: TEXT_DIM,
             }}
           >
             ✕

@@ -67,14 +67,14 @@ export function EncumbranceBar({ current, threshold, brawn, compact = false, lab
           fontFamily: FONT_C,
           fontSize: labelFontSize ?? 'clamp(0.6rem, 2.4vw, 0.72rem)',
           textTransform: 'uppercase', letterSpacing: '0.08em',
-          color: 'var(--hud-text-faint)',
+          color: 'var(--hud-vital-text-dim)',
         }}>
           ENC
         </span>
         <span style={{
           fontFamily: FONT_M,
           fontSize: 'clamp(0.65rem, 2.5vw, 0.78rem)',
-          color: over ? ENC_WARN : 'var(--hud-text)',
+          color: over ? ENC_WARN : 'var(--hud-vital-text)',
         }}>
           {current}/{threshold}
         </span>

@@ -10,7 +10,7 @@ import { RANGE_BAND_LABELS, isRangedSkill } from '@/lib/combatCheckUtils'
 import type { CriticalEligibility } from '@/lib/criticalUtils'
 import { checkCriticalEligibility } from '@/lib/criticalUtils'
 import type { DualWieldState } from './DicePoolReviewStep'
-import { HUD } from '@/lib/tokens'
+import { HUD, FS } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const GOLD_DIM  = 'var(--hud-text-faint)'
@@ -67,7 +67,7 @@ function NetPill({ count, symKey }: { count: number; symKey: SymbolKey }) {
       display: 'inline-flex', alignItems: 'center', gap: 5,
       padding: '4px 10px', borderRadius: 4,
       background: `${color}18`, border: `1px solid ${color}50`,
-      fontFamily: FONT_R, fontSize: 'clamp(0.8rem, 1.3vw, 0.95rem)', fontWeight: 700, color,
+      fontFamily: FONT_R, fontSize: FS.label, fontWeight: 700, color,
     }}>
       <i className={`ffi ffi-${icon}`} />
       {Math.abs(count)} {symKey === 'S' ? (count > 0 ? 'Success' : 'Failure') :
@@ -85,10 +85,10 @@ function CritBlock({ label, eligibility, result }: {
   if (!eligibility.isEligible) return null
   return (
     <div style={{ marginBottom: 8, padding: '8px 12px', background: 'rgba(255,152,0,0.06)', border: '1px solid rgba(255,152,0,0.35)', borderRadius: 7 }}>
-      <div style={{ fontFamily: FONT_C, fontSize: 'clamp(0.7rem, 1.1vw, 0.82rem)', fontWeight: 700, color: '#FF9800', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 3 }}>
+      <div style={{ fontFamily: FONT_C, fontSize: FS.caption, fontWeight: 700, color: '#FF9800', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 3 }}>
         {label}
       </div>
-      <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.68rem, 1.05vw, 0.78rem)', color: 'rgba(255,152,0,0.85)', lineHeight: 1.4 }}>
+      <div style={{ fontFamily: FONT_R, fontSize: FS.caption, color: 'rgba(255,152,0,0.85)', lineHeight: 1.4 }}>
         {eligibility.triggeredByTriumph && eligibility.triggeredByAdvantage
           ? `Triumph + ${result.net.advantage} Advantages (≥ Crit ${eligibility.critRating})`
           : eligibility.triggeredByTriumph
@@ -160,7 +160,7 @@ export function RollResultStep({
       }}>
         <div style={{
           fontFamily: FONT_C,
-          fontSize: 'clamp(1rem, 1.6vw, 1.2rem)',
+          fontSize: FS.sm,
           fontWeight: 700,
           color: succeeded ? '#4CAF50' : '#e05252',
           letterSpacing: '0.1em',
@@ -169,15 +169,15 @@ export function RollResultStep({
         }}>
           {isDualWield ? (succeeded ? '✦ PRIMARY HIT' : 'Miss') : (succeeded ? 'Hit!' : 'Miss')}
           {isDualWield && succeeded && (
-            <span style={{ fontFamily: FONT_R, fontSize: 'clamp(0.65rem, 1vw, 0.75rem)', display: 'block', color: 'rgba(76,175,80,0.8)', textTransform: 'none', letterSpacing: 0, marginTop: 2 }}>
+            <span style={{ fontFamily: FONT_R, fontSize: FS.overline, display: 'block', color: 'rgba(76,175,80,0.8)', textTransform: 'none', letterSpacing: 0, marginTop: 2 }}>
               {weaponName}
             </span>
           )}
         </div>
         {succeeded && (
-          <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.9rem, 1.4vw, 1.1rem)', color: TEXT }}>
+          <div style={{ fontFamily: "var(--font-body)", fontSize: FS.sm, color: TEXT }}>
             Damage: <strong style={{ color: '#E07855' }}>{totalDmg}</strong>
-            <span style={{ fontFamily: FONT_R, fontSize: 'clamp(0.65rem, 1vw, 0.75rem)', color: TEXT_DIM, marginLeft: 6 }}>
+            <span style={{ fontFamily: FONT_R, fontSize: FS.overline, color: TEXT_DIM, marginLeft: 6 }}>
               ({hasBrawnScale ? `${baseDmg >= 0 ? '+' : ''}${baseDmg}+${characterBrawn} Brawn` : String(baseDmg)} + {net.success} success)
             </span>
           </div>
@@ -195,7 +195,7 @@ export function RollResultStep({
         }}>
           <div style={{
             fontFamily: FONT_C,
-            fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)',
+            fontSize: FS.caption,
             fontWeight: 700,
             color: HUD.gold,
             letterSpacing: '0.08em',
@@ -204,13 +204,13 @@ export function RollResultStep({
           }}>
             <i className="ffi ffi-swrpg-advantage" /><i className="ffi ffi-swrpg-advantage" /> available — secondary: {secWeaponName}
           </div>
-          <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)', color: TEXT, marginBottom: 4 }}>
+          <div style={{ fontFamily: "var(--font-body)", fontSize: FS.label, color: TEXT, marginBottom: 4 }}>
             Secondary damage if hit: <strong style={{ color: '#E07855' }}>{secTotalDmg}</strong>
-            <span style={{ fontFamily: FONT_R, fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: TEXT_DIM, marginLeft: 6 }}>
+            <span style={{ fontFamily: FONT_R, fontSize: FS.overline, color: TEXT_DIM, marginLeft: 6 }}>
               ({secBase >= 0 ? '' : ''}{secHasBrawnScale ? `+${secBase}+${characterBrawn} Brawn` : String(secBase)} + {net.success} success)
             </span>
           </div>
-          <div style={{ fontFamily: FONT_R, fontStyle: 'italic', fontSize: 'clamp(0.65rem, 1vw, 0.75rem)', color: 'var(--hud-text-faint)' }}>
+          <div style={{ fontFamily: FONT_R, fontStyle: 'italic', fontSize: FS.overline, color: 'var(--hud-text-faint)' }}>
             Secondary hit requires <i className="ffi ffi-swrpg-advantage" /><i className="ffi ffi-swrpg-advantage" /> or <i className="ffi ffi-swrpg-triumph" /> — GM/player decides.
           </div>
         </div>
@@ -231,7 +231,7 @@ export function RollResultStep({
       {/* Context */}
       <div style={{
         fontFamily: "var(--font-body)",
-        fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)',
+        fontSize: FS.overline,
         color: GOLD_DIM,
         marginBottom: 12,
       }}>
@@ -243,7 +243,7 @@ export function RollResultStep({
       {/* Individual dice */}
       <div style={{
         fontFamily: FONT_C,
-        fontSize: 'clamp(0.58rem, 0.9vw, 0.68rem)',
+        fontSize: FS.overline,
         color: GOLD_DIM,
         textTransform: 'uppercase',
         letterSpacing: '0.12em',
@@ -268,7 +268,7 @@ export function RollResultStep({
               borderRadius: 8,
               marginBottom: 8,
             }}>
-              <div style={{ fontFamily: FONT_C, fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)', fontWeight: 700, color: '#FF9800', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>
+              <div style={{ fontFamily: FONT_C, fontSize: FS.caption, fontWeight: 700, color: '#FF9800', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>
                 ⚠ Critical Eligible
               </div>
               <CritBlock label={`Primary (${weaponName}) · Crit ${critEligibility.critRating}`} eligibility={critEligibility} result={result} />
@@ -289,7 +289,7 @@ export function RollResultStep({
           }}>
             <div style={{
               fontFamily: FONT_C,
-              fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)',
+              fontSize: FS.caption,
               fontWeight: 700,
               color: '#FF9800',
               letterSpacing: '0.1em',
@@ -300,7 +300,7 @@ export function RollResultStep({
             </div>
             <div style={{
               fontFamily: FONT_R,
-              fontSize: 'clamp(0.7rem, 1.1vw, 0.82rem)',
+              fontSize: FS.caption,
               color: 'rgba(255,152,0,0.85)',
               lineHeight: 1.4,
             }}>
@@ -331,7 +331,7 @@ export function RollResultStep({
             border: `1px solid ${GOLD_DIM}`,
             borderRadius: 8, cursor: 'pointer',
             fontFamily: FONT_C,
-            fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)',
+            fontSize: FS.label,
             color: HUD.gold,
             letterSpacing: '0.1em', textTransform: 'uppercase',
           }}
@@ -346,7 +346,7 @@ export function RollResultStep({
             border: `1px solid var(--hud-border)`,
             borderRadius: 8, cursor: 'pointer',
             fontFamily: FONT_R,
-            fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)',
+            fontSize: FS.label,
             color: TEXT_DIM,
           }}
         >

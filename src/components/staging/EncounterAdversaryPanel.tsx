@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useEncounterState } from '@/hooks/useEncounterState'
 import { useRefWeapons } from '@/hooks/useRefWeapons'
 import { useCharacterSkills } from '@/hooks/useCharacterSkills'
 import { applyDamageToAdversary } from '@/lib/damageEngine'
@@ -73,17 +72,16 @@ const CHAR_ABBR_FULL: Record<string, string> = {
 /* ── Props ────────────────────────────────────────────────── */
 export interface EncounterAdversaryPanelProps {
   campaignId: string
+  encounter:  CombatEncounter | null
   characters: Character[]
 }
 
 /**
  * EncounterAdversaryPanel — live, fully-interactive adversary detail cards
- * for the staging right drawer. All behaviour from CombatPanel's right column
- * is preserved: wound tracking, soak overrides, reveal toggle, combat check
- * buttons, squad formation, defeat logging, and map token wound_pct sync.
+ * for the staging right drawer. Receives encounter state via props (from
+ * useGmSession in GmShell) to avoid competing Supabase Realtime subscriptions.
  */
-export function EncounterAdversaryPanel({ campaignId, characters }: EncounterAdversaryPanelProps) {
-  const { encounter, isLoading } = useEncounterState(campaignId)
+export function EncounterAdversaryPanel({ campaignId, encounter, characters }: EncounterAdversaryPanelProps) {
   const supabase = createClient()
 
   /* ── UI state ────────────────────────────────────────────── */
@@ -164,7 +162,7 @@ export function EncounterAdversaryPanel({ campaignId, characters }: EncounterAdv
     const advSlot = encounter.initiative_slots.find((s: InitiativeSlot) => s.adversaryInstanceId === adv.instanceId)
     if (advSlot) {
       const pct = adv.type === 'minion'
-        ? (result.groupRemaining / Math.max(1, adv.groupSize))
+        ? 1 - (result.groupRemaining / Math.max(1, adv.groupSize))
         : Math.min(1, result.woundsCurrent / Math.max(1, adv.woundThreshold))
       await supabase.from('map_tokens').update({ wound_pct: pct }).eq('slot_key', advSlot.id).eq('campaign_id', campaignId)
     }
@@ -219,19 +217,10 @@ export function EncounterAdversaryPanel({ campaignId, characters }: EncounterAdv
 
     const advSlot = encounter.initiative_slots.find((s: InitiativeSlot) => s.adversaryInstanceId === adv.instanceId)
     if (advSlot) {
-      const pct = newGroupRemaining / Math.max(1, newGroupSize)
+      const pct = 1 - (newGroupRemaining / Math.max(1, newGroupSize))
       await supabase.from('map_tokens').update({ wound_pct: pct }).eq('slot_key', advSlot.id).eq('campaign_id', campaignId)
     }
   }, [encounter, campaignId, saveEncounter]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  /* ── Toggle reveal ───────────────────────────────────────── */
-  const toggleRevealed = useCallback(async (instanceId: string) => {
-    if (!encounter) return
-    const updated = encounter.adversaries.map(a =>
-      a.instanceId !== instanceId ? a : { ...a, revealed: !a.revealed }
-    )
-    await saveEncounter({ adversaries: updated })
-  }, [encounter, saveEncounter])
 
   /* ── Update soak override ────────────────────────────────── */
   const updateAdversarySoak = useCallback(async (instanceId: string, newSoak: number) => {
@@ -368,11 +357,6 @@ export function EncounterAdversaryPanel({ campaignId, characters }: EncounterAdv
     if ((d.match(/add\w* (?:a |one |two |an? )?setback|impose\w* (?:a |one |two |an? )?setback/g) ?? []).length > 0)
       chips.push({ label: '+■', color: '#909090', title: 'Adds Setback die' })
     return chips
-  }
-
-  /* ── Empty / loading ─────────────────────────────────────── */
-  if (isLoading) {
-    return <div style={{ padding: '32px 16px', textAlign: 'center', fontFamily: FC, fontSize: FS_SM, color: TEXT_MUTED }}>Loading…</div>
   }
 
   const adversaries = encounter?.adversaries ?? []
@@ -699,22 +683,6 @@ export function EncounterAdversaryPanel({ campaignId, characters }: EncounterAdv
                     })}
                   </div>
                 )}
-              </div>
-            )}
-
-            {/* ── Reveal toggle ─────────────────────────────────── */}
-            {isOpen && (
-              <div style={{ borderTop: `1px solid ${BORDER}`, padding: '7px 12px', background: adv.revealed ? `${BLUE}0a` : RAISED_BG }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-                  <input
-                    type="checkbox" checked={adv.revealed}
-                    onChange={() => void toggleRevealed(adv.instanceId)}
-                    style={{ accentColor: BLUE, width: 14, height: 14 }}
-                  />
-                  <span style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 600, color: adv.revealed ? BLUE : TEXT_MUTED, letterSpacing: '0.08em' }}>
-                    {adv.revealed ? '✓ Revealed to Players' : 'Reveal to Players'}
-                  </span>
-                </label>
               </div>
             )}
 

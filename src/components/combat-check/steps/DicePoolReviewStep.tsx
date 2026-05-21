@@ -11,7 +11,7 @@ import {
   RANGE_VALUE_MAP, CHAR_FIELD_MAP, isRangedSkill,
 } from '@/lib/combatCheckUtils'
 import { useState } from 'react'
-import { HUD } from '@/lib/tokens'
+import { HUD, FS } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const GOLD_DIM  = 'var(--hud-text-faint)'
@@ -66,7 +66,7 @@ function SectionLabel({ text }: { text: string }) {
   return (
     <div style={{
       fontFamily: FONT_C,
-      fontSize: 'clamp(0.58rem, 0.9vw, 0.68rem)',
+      fontSize: FS.overline,
       fontWeight: 700,
       color: GOLD_DIM,
       textTransform: 'uppercase',
@@ -87,7 +87,7 @@ function DiceRow({ label, types }: { label: string; types: { type: string; count
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
       <span style={{
         fontFamily: "var(--font-body)",
-        fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)',
+        fontSize: FS.overline,
         color: TEXT_DIM,
         width: 80,
         flexShrink: 0,
@@ -114,7 +114,7 @@ function AdjustControl({
       padding: '6px 0',
       borderBottom: `1px solid var(--hud-border)`,
     }}>
-      <span style={{ fontFamily: FONT_R, fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)', color: TEXT_DIM, flex: 1 }}>
+      <span style={{ fontFamily: FONT_R, fontSize: FS.caption, color: TEXT_DIM, flex: 1 }}>
         {label}
       </span>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -124,13 +124,13 @@ function AdjustControl({
           style={{
             width: 22, height: 22, borderRadius: 4, cursor: value <= min ? 'not-allowed' : 'pointer',
             background: 'transparent', border: `1px solid ${GOLD_BD}`,
-            fontFamily: "var(--font-body)", fontSize: 14, color: value <= min ? 'var(--hud-border-hi)' : GOLD_DIM,
+            fontFamily: "var(--font-body)", fontSize: FS.label, color: value <= min ? 'var(--hud-border-hi)' : GOLD_DIM,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
         >
           −
         </button>
-        <span style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)', color: HUD.gold, width: 20, textAlign: 'center' }}>
+        <span style={{ fontFamily: "var(--font-body)", fontSize: FS.caption, color: HUD.gold, width: 20, textAlign: 'center' }}>
           {value}
         </span>
         <button
@@ -138,7 +138,7 @@ function AdjustControl({
           style={{
             width: 22, height: 22, borderRadius: 4, cursor: 'pointer',
             background: 'rgba(224,58,30,0.1)', border: `1px solid ${GOLD_BD}`,
-            fontFamily: "var(--font-body)", fontSize: 14, color: HUD.gold,
+            fontFamily: "var(--font-body)", fontSize: FS.label, color: HUD.gold,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
         >
@@ -325,7 +325,7 @@ export function DicePoolReviewStep({
       {/* Context summary */}
       <div style={{
         fontFamily: "var(--font-body)",
-        fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)',
+        fontSize: FS.overline,
         color: 'var(--hud-text-faint)',
         display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap',
         marginBottom: 4,
@@ -344,7 +344,7 @@ export function DicePoolReviewStep({
           border: '1px solid var(--hud-border)',
           borderRadius: 8,
           fontFamily: FONT_R,
-          fontSize: 'clamp(0.68rem, 1.05vw, 0.8rem)',
+          fontSize: FS.caption,
           color: 'var(--hud-text-dim)',
         }}>
           <span style={{ color: 'var(--hud-gold)', fontWeight: 700 }}>DUAL WIELD ATTACK</span>
@@ -366,7 +366,7 @@ export function DicePoolReviewStep({
       {talentMod?.sources && talentMod.sources.length > 0 && (
         <div style={{
           fontFamily: FONT_R,
-          fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)',
+          fontSize: FS.overline,
           color: 'rgba(41,182,246,0.7)',
           marginBottom: 6,
         }}>
@@ -376,7 +376,7 @@ export function DicePoolReviewStep({
       {talentSbRemove > 0 && (
         <div style={{
           fontFamily: FONT_R,
-          fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)',
+          fontSize: FS.overline,
           color: 'var(--hud-text-faint)',
           marginBottom: 6,
         }}>
@@ -393,7 +393,7 @@ export function DicePoolReviewStep({
       {isDualWield && (
         <div style={{
           fontFamily: FONT_R,
-          fontSize: 'clamp(0.65rem, 1vw, 0.75rem)',
+          fontSize: FS.overline,
           color: 'rgba(255,152,0,0.7)',
           marginBottom: 6,
         }}>
@@ -406,7 +406,7 @@ export function DicePoolReviewStep({
       {meleeDifficultyNote && (
         <div style={{
           fontFamily: FONT_R,
-          fontSize: 'clamp(0.65rem, 1vw, 0.75rem)',
+          fontSize: FS.overline,
           color: TEXT_DIM,
           fontStyle: 'italic',
           lineHeight: 1.4,
@@ -418,7 +418,7 @@ export function DicePoolReviewStep({
       {meleeDiffDefault && (
         <div style={{
           fontFamily: FONT_R,
-          fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)',
+          fontSize: FS.overline,
           color: 'rgba(255,152,0,0.7)',
           marginBottom: 6,
         }}>
@@ -428,7 +428,7 @@ export function DicePoolReviewStep({
       {meleeRankDefaulted && (
         <div style={{
           fontFamily: 'Rajdhani, sans-serif',
-          fontSize: 'clamp(0.68rem, 1vw, 0.78rem)',
+          fontSize: FS.caption,
           color: 'rgba(90,40,24,0.4)',
           fontStyle: 'italic',
           marginBottom: 6,
@@ -445,7 +445,7 @@ export function DicePoolReviewStep({
             style={{
               background: 'transparent', border: 'none', cursor: 'pointer', padding: 0,
               fontFamily: FONT_R,
-              fontSize: 'clamp(0.68rem, 1.05vw, 0.78rem)',
+              fontSize: FS.caption,
               color: 'var(--hud-gold)',
               textDecoration: 'underline',
               marginBottom: breakdownOpen ? 8 : 0,
@@ -457,7 +457,7 @@ export function DicePoolReviewStep({
           {breakdownOpen && (
             <div style={{
               fontFamily: "var(--font-body)",
-              fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)',
+              fontSize: FS.overline,
               color: TEXT_DIM,
               lineHeight: 1.8,
               padding: '8px 10px',
@@ -487,7 +487,7 @@ export function DicePoolReviewStep({
         .map((a, i) => (
           <div key={i} style={{
             fontFamily: FONT_R,
-            fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)',
+            fontSize: FS.caption,
             color: 'rgba(255,152,0,0.7)',
             fontStyle: 'italic',
             lineHeight: 1.5,
@@ -498,7 +498,7 @@ export function DicePoolReviewStep({
             borderRadius: 6,
           }}>
             ⚠ {speciesName ? `${speciesName} — ` : ''}{a.name}: {a.description}
-            <div style={{ marginTop: 4, fontStyle: 'normal', fontSize: 'clamp(0.65rem, 1vw, 0.75rem)', color: 'rgba(255,152,0,0.5)' }}>
+            <div style={{ marginTop: 4, fontStyle: 'normal', fontSize: FS.overline, color: 'rgba(255,152,0,0.5)' }}>
               Use manual adjustments above if this applies.
             </div>
           </div>
@@ -548,7 +548,7 @@ export function DicePoolReviewStep({
           background: 'linear-gradient(135deg, #E03A1E, #A02010)',
           border: 'none', borderRadius: 10, cursor: 'pointer',
           fontFamily: FONT_C,
-          fontSize: 'clamp(0.85rem, 1.3vw, 1rem)',
+          fontSize: FS.sm,
           fontWeight: 700, color: 'var(--hud-bg)',
           letterSpacing: '0.12em', textTransform: 'uppercase',
           boxShadow: '0 2px 16px rgba(224,58,30,0.3)',

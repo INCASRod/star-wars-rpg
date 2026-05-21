@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { AdversaryInstance } from '@/lib/adversaries'
-import { HUD } from '@/lib/tokens'
+import { HUD, FS } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const GOLD_DIM  = 'var(--hud-text-faint)'
@@ -46,7 +46,7 @@ function WoundBar({ current, max }: { current: number; max: number }) {
           background: color, transition: 'width 200ms',
         }} />
       </div>
-      <span style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)', color: TEXT_DIM, whiteSpace: 'nowrap' }}>
+      <span style={{ fontFamily: "var(--font-body)", fontSize: FS.overline, color: TEXT_DIM, whiteSpace: 'nowrap' }}>
         {current}/{max}
       </span>
     </div>
@@ -105,7 +105,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
 
   if (loading) {
     return (
-      <div style={{ padding: '32px 16px', textAlign: 'center', fontFamily: FONT_R, fontSize: 'clamp(0.8rem, 1.2vw, 0.9rem)', color: GOLD_DIM }}>
+      <div style={{ padding: '32px 16px', textAlign: 'center', fontFamily: FONT_R, fontSize: FS.label, color: GOLD_DIM }}>
         Loading encounter…
       </div>
     )
@@ -114,7 +114,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
   if (!campaignId) {
     return (
       <div style={{ padding: '32px 16px', textAlign: 'center' }}>
-        <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.8rem, 1.2vw, 0.9rem)', color: TEXT_DIM, lineHeight: 1.5 }}>
+        <div style={{ fontFamily: FONT_R, fontSize: FS.label, color: TEXT_DIM, lineHeight: 1.5 }}>
           No campaign selected. Join a campaign to see combat targets.
         </div>
         <button
@@ -123,7 +123,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
             marginTop: 16, padding: '8px 20px',
             background: 'rgba(224,58,30,0.1)', border: `1px solid ${GOLD_BD}`,
             borderRadius: 6, cursor: 'pointer',
-            fontFamily: FONT_C, fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)', color: HUD.gold,
+            fontFamily: FONT_C, fontSize: FS.caption, color: HUD.gold,
           }}
         >
           Skip Target
@@ -135,7 +135,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
   if (enemies.length === 0) {
     return (
       <div style={{ padding: '32px 16px', textAlign: 'center' }}>
-        <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.8rem, 1.2vw, 0.9rem)', color: TEXT_DIM, lineHeight: 1.5, marginBottom: 16 }}>
+        <div style={{ fontFamily: FONT_R, fontSize: FS.label, color: TEXT_DIM, lineHeight: 1.5, marginBottom: 16 }}>
           No enemies in the current encounter.
           <br />
           Ask your GM to add enemies to the initiative tracker.
@@ -146,7 +146,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
             padding: '10px 24px',
             background: 'rgba(224,58,30,0.1)', border: `1px solid ${GOLD_BD}`,
             borderRadius: 6, cursor: 'pointer',
-            fontFamily: FONT_C, fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)', color: HUD.gold,
+            fontFamily: FONT_C, fontSize: FS.caption, color: HUD.gold,
           }}
         >
           Skip Target
@@ -164,7 +164,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
           background: 'var(--hud-surface-lo)',
           border: `1px solid var(--hud-border)`,
           borderRadius: 6, padding: '8px 12px', marginBottom: 12,
-          fontFamily: FONT_R, fontSize: 'clamp(0.7rem, 1.05vw, 0.82rem)', color: GOLD_DIM,
+          fontFamily: FONT_R, fontSize: FS.caption, color: GOLD_DIM,
         }}>
           ℹ Multiple targets selected. The GM will determine valid targeting.
         </div>
@@ -197,7 +197,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
                   border: `1px solid ${typeColor}40`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   flexShrink: 0,
-                  fontFamily: "var(--font-body)", fontSize: 'clamp(0.55rem, 0.82vw, 0.65rem)', color: typeColor,
+                  fontFamily: "var(--font-body)", fontSize: FS.overline, color: typeColor,
                 }}>
                   {enemy.type === 'minion'  && 'MIN'}
                   {enemy.type === 'rival'   && 'RVL'}
@@ -208,14 +208,14 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{
                     fontFamily: FONT_R,
-                    fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)',
+                    fontSize: FS.label,
                     fontWeight: 700,
                     color: isSelected ? HUD.gold : TEXT,
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   }}>
                     {enemy.name}
                     {enemy.type === 'minion' && enemy.groupRemaining != null && (
-                      <span style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.58rem, 0.85vw, 0.68rem)', color: TEXT_DIM, marginLeft: 6 }}>
+                      <span style={{ fontFamily: "var(--font-body)", fontSize: FS.overline, color: TEXT_DIM, marginLeft: 6 }}>
                         ×{enemy.groupRemaining}
                       </span>
                     )}
@@ -223,7 +223,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 1 }}>
                     <span style={{
                       fontFamily: "var(--font-body)",
-                      fontSize: 'clamp(0.55rem, 0.82vw, 0.65rem)',
+                      fontSize: FS.overline,
                       color: typeColor,
                       textTransform: 'capitalize',
                     }}>
@@ -232,7 +232,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
                     {enemy.soak > 0 && (
                       <span style={{
                         fontFamily: "var(--font-body)",
-                        fontSize: 'clamp(0.55rem, 0.82vw, 0.65rem)',
+                        fontSize: FS.overline,
                         color: TEXT_DIM,
                       }}>
                         · Soak {enemy.soak}
@@ -242,7 +242,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
                 </div>
 
                 {isSelected && (
-                  <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.55rem, 0.82vw, 0.65rem)', color: HUD.gold, flexShrink: 0 }}>
+                  <div style={{ fontFamily: "var(--font-body)", fontSize: FS.overline, color: HUD.gold, flexShrink: 0 }}>
                     ✓
                   </div>
                 )}
@@ -262,7 +262,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
             marginTop: 12, width: '100%', padding: '8px 0',
             background: 'transparent', border: `1px solid var(--hud-border)`,
             borderRadius: 6, cursor: 'pointer',
-            fontFamily: FONT_R, fontSize: 'clamp(0.7rem, 1.05vw, 0.82rem)', color: TEXT_DIM,
+            fontFamily: FONT_R, fontSize: FS.caption, color: TEXT_DIM,
           }}
         >
           Skip Target (GM will handle)

@@ -2,7 +2,6 @@
 
 import { useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useEncounterState } from '@/hooks/useEncounterState'
 import type { CombatEncounter } from '@/lib/combat'
 import type { VehicleInstance } from '@/lib/vehicles'
 import { FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4 } from '@/components/player-hud/design-tokens'
@@ -22,16 +21,15 @@ const FC        = 'var(--font-body)'
 
 export interface EncounterVehiclePanelProps {
   campaignId: string
+  encounter:  CombatEncounter | null
 }
 
 /**
  * EncounterVehiclePanel — live vehicle wound tracker for the staging right drawer.
- * Self-contained: owns its Supabase subscription via useEncounterState.
- * Fully functional — hull trauma and system strain adjustments write directly
- * to the same combat_encounters row as CombatPanel.
+ * Receives encounter state via props (from useGmSession in GmShell) to avoid
+ * competing Supabase Realtime subscriptions.
  */
-export function EncounterVehiclePanel({ campaignId }: EncounterVehiclePanelProps) {
-  const { encounter, isLoading } = useEncounterState(campaignId)
+export function EncounterVehiclePanel({ campaignId, encounter }: EncounterVehiclePanelProps) {
   const supabase = createClient()
 
   /* ── save helper ─────────────────────────────────────────── */
@@ -77,15 +75,6 @@ export function EncounterVehiclePanel({ campaignId }: EncounterVehiclePanelProps
     )
     await saveEncounter({ vehicles: updated })
   }, [encounter, saveEncounter])
-
-  /* ── empty / loading ─────────────────────────────────────── */
-  if (isLoading) {
-    return (
-      <div style={{ padding: '32px 16px', textAlign: 'center', fontFamily: FC, fontSize: FS_SM, color: TEXT_MUTED }}>
-        Loading…
-      </div>
-    )
-  }
 
   const vehicles = encounter?.vehicles ?? []
 

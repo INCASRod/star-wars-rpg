@@ -11,7 +11,7 @@ import {
   getRangedDifficulty,
   bandIndex,
 } from '@/lib/combatCheckUtils'
-import { HUD } from '@/lib/tokens'
+import { HUD, FS } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const GOLD_DIM  = 'var(--hud-text-faint)'
@@ -34,10 +34,10 @@ interface RangeBandStepProps {
 
 function DifficultyDice({ count, challenge = 0, opposedLabel }: { count: number; challenge?: number; opposedLabel?: string }) {
   if (opposedLabel) {
-    return <span style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)', color: GOLD_DIM }}>{opposedLabel}</span>
+    return <span style={{ fontFamily: "var(--font-body)", fontSize: FS.overline, color: GOLD_DIM }}>{opposedLabel}</span>
   }
   if (count === 0 && challenge === 0) {
-    return <span style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)', color: TEXT_DIM }}>Simple (—)</span>
+    return <span style={{ fontFamily: "var(--font-body)", fontSize: FS.overline, color: TEXT_DIM }}>Simple (—)</span>
   }
   return (
     <div style={{ display: 'flex', gap: 3, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -136,7 +136,7 @@ export function RangeBandStep({ attackType, weapon, selectedBand, onSelect }: Ra
       <div style={{
         marginTop: 8,
         fontFamily: FONT_R,
-        fontSize: 'clamp(0.65rem, 1vw, 0.75rem)',
+        fontSize: FS.overline,
         color: TEXT_DIM,
         lineHeight: 1.4,
         padding: '8px 10px',
@@ -190,18 +190,18 @@ function BandCard({
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
           fontFamily: "'Cinzel', serif",
-          fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)',
+          fontSize: FS.label,
           fontWeight: 700,
           color: blocked ? TEXT_DIM : selected ? HUD.gold : TEXT,
           marginBottom: notes.length > 0 ? 4 : 0,
         }}>
           {label}
-          {isOnly && <span style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.55rem, 0.82vw, 0.65rem)', color: GOLD_DIM, marginLeft: 8 }}>AUTO-SELECTED</span>}
+          {isOnly && <span style={{ fontFamily: "var(--font-body)", fontSize: FS.overline, color: GOLD_DIM, marginLeft: 8 }}>AUTO-SELECTED</span>}
         </div>
         {notes.length > 0 && (
           <div style={{
             fontFamily: FONT_R,
-            fontSize: 'clamp(0.65rem, 1vw, 0.75rem)',
+            fontSize: FS.overline,
             color: blocked ? '#e05252' : GOLD_DIM,
             lineHeight: 1.3,
           }}>
@@ -212,12 +212,12 @@ function BandCard({
       <div style={{ flexShrink: 0, textAlign: 'right' }}>
         {!blocked && <DifficultyDice count={difficultyDice} challenge={challengeDice} opposedLabel={opposedLabel} />}
         {blocked && (
-          <span style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.58rem, 0.88vw, 0.68rem)', color: '#e05252' }}>
+          <span style={{ fontFamily: "var(--font-body)", fontSize: FS.overline, color: '#e05252' }}>
             {diffLabel ?? 'Blocked'}
           </span>
         )}
         {!blocked && diffLabel && (
-          <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.55rem, 0.82vw, 0.65rem)', color: TEXT_DIM, marginTop: 2 }}>
+          <div style={{ fontFamily: "var(--font-body)", fontSize: FS.overline, color: TEXT_DIM, marginTop: 2 }}>
             {diffLabel}
           </div>
         )}

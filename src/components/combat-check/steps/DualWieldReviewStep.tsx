@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import type { CharacterWeapon, RefWeapon } from '@/lib/types'
-import { HUD } from '@/lib/tokens'
+import { HUD, FS } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const GOLD_DIM  = 'var(--hud-text-faint)'
@@ -48,7 +48,7 @@ function WeaponCard({
     }}>
       <div style={{
         fontFamily: FONT_C,
-        fontSize: 'clamp(0.55rem, 0.85vw, 0.65rem)',
+        fontSize: FS.overline,
         fontWeight: 700,
         color: isPrimary ? HUD.gold : GOLD_DIM,
         textTransform: 'uppercase',
@@ -60,7 +60,7 @@ function WeaponCard({
 
       <div style={{
         fontFamily: FONT_C,
-        fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)',
+        fontSize: FS.label,
         fontWeight: 700,
         color: isPrimary ? HUD.gold : TEXT,
         marginBottom: 6,
@@ -71,7 +71,7 @@ function WeaponCard({
 
       <div style={{
         fontFamily: "var(--font-body)",
-        fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)',
+        fontSize: FS.overline,
         color: TEXT_DIM,
         display: 'flex',
         flexDirection: 'column',
@@ -117,7 +117,7 @@ export function DualWieldReviewStep({
             width: 36, height: 36,
             cursor: 'pointer',
             fontFamily: "var(--font-body)",
-            fontSize: 'clamp(0.8rem, 1.2vw, 0.95rem)',
+            fontSize: FS.label,
             color: GOLD_DIM,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
@@ -138,7 +138,7 @@ export function DualWieldReviewStep({
       }}>
         <div style={{
           fontFamily: FONT_R,
-          fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)',
+          fontSize: FS.caption,
           color: TEXT,
           lineHeight: 1.5,
         }}>
@@ -153,7 +153,7 @@ export function DualWieldReviewStep({
       <div style={{
         fontFamily: FONT_R,
         fontStyle: 'italic',
-        fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)',
+        fontSize: FS.caption,
         color: TEXT_MUTED,
         lineHeight: 1.5,
       }}>
@@ -176,7 +176,7 @@ export function DualWieldReviewStep({
           borderRadius: 8,
           cursor: 'pointer',
           fontFamily: FONT_R,
-          fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)',
+          fontSize: FS.label,
           color: GOLD_DIM,
           letterSpacing: '0.05em',
         }}

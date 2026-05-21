@@ -12,7 +12,13 @@ import type { EffectiveStats } from '@/lib/derivedStats'
 interface HudStatusStripProps {
   character: Character
   effectiveStats: EffectiveStats | undefined
-  engineBreakdown: { woundThreshold: { label: string; value: number }[]; strainThreshold: { label: string; value: number }[] } | undefined
+  engineBreakdown: {
+    woundThreshold:  { label: string; value: number }[]
+    strainThreshold: { label: string; value: number }[]
+    soak:            { label: string; value: number }[]
+    defenseMelee:    { label: string; value: number }[]
+    defenseRanged:   { label: string; value: number }[]
+  } | undefined
   woundBonus: number
   encumbranceCurrent: number
   encumbranceBonus: number
@@ -97,6 +103,9 @@ export function HudStatusStrip({
 }: HudStatusStripProps) {
   const [woundTipPos,  setWoundTipPos]  = useState<{ top: number; left: number } | null>(null)
   const [strainTipPos, setStrainTipPos] = useState<{ top: number; left: number } | null>(null)
+  const [soakTipPos,   setSoakTipPos]   = useState<{ top: number; left: number } | null>(null)
+  const [melDefTipPos, setMelDefTipPos] = useState<{ top: number; left: number } | null>(null)
+  const [rngDefTipPos, setRngDefTipPos] = useState<{ top: number; left: number } | null>(null)
 
   const wThreshold = effectiveStats?.woundThreshold ?? character.wound_threshold
   const sThreshold = effectiveStats?.strainThreshold ?? character.strain_threshold
@@ -110,6 +119,13 @@ export function HudStatusStrip({
 
   const woundBreakdown  = groupSources(engineBreakdown?.woundThreshold  ?? [])
   const strainBreakdown = groupSources(engineBreakdown?.strainThreshold ?? [])
+  const soakBreakdown   = groupSources(engineBreakdown?.soak            ?? [])
+  const melDefBreakdown = groupSources(engineBreakdown?.defenseMelee    ?? [])
+  const rngDefBreakdown = groupSources(engineBreakdown?.defenseRanged   ?? [])
+
+  const soak   = effectiveStats?.soak          ?? character.brawn
+  const melDef = effectiveStats?.defenseMelee  ?? 0
+  const rngDef = effectiveStats?.defenseRanged ?? 0
 
   const critPips: CritPip[] = crits.map(c => ({
     id: c.id, severity: c.severity, name: c.custom_name || 'Injury',
@@ -180,6 +196,47 @@ export function HudStatusStrip({
         </div>
         <span style={NUM_S}>{sCurrent}/{sThreshold}</span>
         <button style={CTRL_BTN} onClick={() => onVitalAdjust('strain_current', 1)}>+</button>
+      </div>
+
+      <div style={DIVIDER} />
+
+      {/* SOAK */}
+      <div
+        style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}
+        onMouseEnter={e => { const r = e.currentTarget.getBoundingClientRect(); setSoakTipPos({ top: r.bottom + 6, left: r.left }) }}
+        onMouseLeave={() => setSoakTipPos(null)}
+      >
+        {soakTipPos && soakBreakdown.length > 0 && (
+          <VitalTooltip breakdown={soakBreakdown} top={soakTipPos.top} left={soakTipPos.left} />
+        )}
+        <span style={LABEL_S}>Soak</span>
+        <span style={NUM_S}>{soak}</span>
+      </div>
+
+      {/* MEL DEF */}
+      <div
+        style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}
+        onMouseEnter={e => { const r = e.currentTarget.getBoundingClientRect(); setMelDefTipPos({ top: r.bottom + 6, left: r.left }) }}
+        onMouseLeave={() => setMelDefTipPos(null)}
+      >
+        {melDefTipPos && melDefBreakdown.length > 0 && (
+          <VitalTooltip breakdown={melDefBreakdown} top={melDefTipPos.top} left={melDefTipPos.left} />
+        )}
+        <span style={LABEL_S}>Mel Def</span>
+        <span style={NUM_S}>{melDef}</span>
+      </div>
+
+      {/* RNG DEF */}
+      <div
+        style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}
+        onMouseEnter={e => { const r = e.currentTarget.getBoundingClientRect(); setRngDefTipPos({ top: r.bottom + 6, left: r.left }) }}
+        onMouseLeave={() => setRngDefTipPos(null)}
+      >
+        {rngDefTipPos && rngDefBreakdown.length > 0 && (
+          <VitalTooltip breakdown={rngDefBreakdown} top={rngDefTipPos.top} left={rngDefTipPos.left} />
+        )}
+        <span style={LABEL_S}>Rng Def</span>
+        <span style={NUM_S}>{rngDef}</span>
       </div>
 
       <div style={DIVIDER} />

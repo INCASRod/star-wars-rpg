@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Character } from '@/lib/types'
+import { FS } from '@/lib/tokens'
 
 const FONT_C = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R = "var(--font-rajdhani), 'Rajdhani', sans-serif"
@@ -83,7 +84,7 @@ export function ForceTargetStep({
   if (!isCombat) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: 'rgba(58,12,4,0.55)', textTransform: 'uppercase', letterSpacing: '0.18em' }}>
+        <div style={{ fontFamily: "var(--font-body)", fontSize: FS.overline, color: 'rgba(58,12,4,0.55)', textTransform: 'uppercase', letterSpacing: '0.18em' }}>
           How will you use this power?
         </div>
         {(['environment', 'character'] as const).map(ctx => (
@@ -97,10 +98,10 @@ export function ForceTargetStep({
               transition: 'all .15s',
             }}
           >
-            <div style={{ fontFamily: FONT_C, fontSize: 'clamp(0.88rem, 1.4vw, 1.05rem)', color: targetContext === ctx ? '#3A0C04' : 'rgba(90,40,24,0.7)', marginBottom: 4 }}>
+            <div style={{ fontFamily: FONT_C, fontSize: FS.sm, color: targetContext === ctx ? '#3A0C04' : 'rgba(90,40,24,0.7)', marginBottom: 4 }}>
               {ctx === 'environment' ? '🌍  Use on Environment' : '👤  Use on a Character'}
             </div>
-            <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)', color: 'rgba(90,40,24,0.45)' }}>
+            <div style={{ fontFamily: FONT_R, fontSize: FS.caption, color: 'rgba(90,40,24,0.45)' }}>
               {ctx === 'environment'
                 ? 'Targeting an object, location, or environmental feature'
                 : 'Target a PC or friendly NPC'}
@@ -109,7 +110,7 @@ export function ForceTargetStep({
         ))}
         {targetContext === 'character' && pcs.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingTop: 4 }}>
-            <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: 'rgba(90,40,24,0.35)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+            <div style={{ fontFamily: "var(--font-body)", fontSize: FS.overline, color: 'rgba(90,40,24,0.35)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
               Select character (optional)
             </div>
             {pcs.filter(c => c.id !== characterId).map(c => {
@@ -120,7 +121,7 @@ export function ForceTargetStep({
                   textAlign: 'left', padding: '8px 12px', borderRadius: 6, cursor: 'pointer',
                   background: sel ? 'rgba(126,200,227,0.08)' : 'transparent',
                   border: `1px solid ${sel ? FORCE_BLUE : FORCE_BLUE_DIM}`,
-                  fontFamily: FONT_R, fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)',
+                  fontFamily: FONT_R, fontSize: FS.label,
                   color: sel ? '#3A0C04' : 'rgba(90,40,24,0.65)', transition: 'all .15s',
                 }}>
                   {sel ? '● ' : '○ '}{c.name}
@@ -138,26 +139,26 @@ export function ForceTargetStep({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: 'rgba(58,12,4,0.55)', textTransform: 'uppercase', letterSpacing: '0.18em' }}>
+      <div style={{ fontFamily: "var(--font-body)", fontSize: FS.overline, color: 'rgba(58,12,4,0.55)', textTransform: 'uppercase', letterSpacing: '0.18em' }}>
         Select Targets
       </div>
 
       <div style={{ padding: '7px 10px', background: 'rgba(126,200,227,0.04)', border: `1px solid ${FORCE_BLUE_DIM}`, borderRadius: 6 }}>
-        <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)', color: 'rgba(58,12,4,0.55)', fontStyle: 'italic', lineHeight: 1.45 }}>
+        <div style={{ fontFamily: FONT_R, fontSize: FS.caption, color: 'rgba(58,12,4,0.55)', fontStyle: 'italic', lineHeight: 1.45 }}>
           ℹ Force powers may target anyone. Select all applicable targets. The GM will determine valid targeting.
         </div>
       </div>
 
       {loading && (
-        <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)', color: 'rgba(90,40,24,0.3)', textAlign: 'center', padding: '16px 0' }}>
+        <div style={{ fontFamily: FONT_R, fontSize: FS.label, color: 'rgba(90,40,24,0.3)', textAlign: 'center', padding: '16px 0' }}>
           Loading participants…
         </div>
       )}
 
       {!loading && pcTargets.length === 0 && enemies.length === 0 && (
         <div style={{ textAlign: 'center', padding: '24px 0', display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.85rem, 1.3vw, 1rem)', color: 'rgba(90,40,24,0.4)' }}>No participants in the current encounter.</div>
-          <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)', color: 'rgba(58,12,4,0.4)' }}>Ask your GM to set up the initiative tracker.</div>
+          <div style={{ fontFamily: FONT_R, fontSize: FS.sm, color: 'rgba(90,40,24,0.4)' }}>No participants in the current encounter.</div>
+          <div style={{ fontFamily: FONT_R, fontSize: FS.caption, color: 'rgba(58,12,4,0.4)' }}>Ask your GM to set up the initiative tracker.</div>
         </div>
       )}
 
@@ -191,8 +192,8 @@ function TargetSection({ label, targets, selectedIds, onToggle, color, textColor
         padding: '4px 0', marginBottom: open ? 6 : 0,
       }}>
         <span style={{ color: 'rgba(90,40,24,0.3)', fontSize: 10 }}>{open ? '▼' : '▶'}</span>
-        <span style={{ fontFamily: FONT_C, fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)', color: `${color}90`, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{label}</span>
-        <span style={{ fontFamily: "var(--font-body)", fontSize: 'clamp(0.62rem,0.95vw,0.72rem)', color: 'rgba(90,40,24,0.25)' }}>({targets.length})</span>
+        <span style={{ fontFamily: FONT_C, fontSize: FS.caption, color: `${color}90`, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{label}</span>
+        <span style={{ fontFamily: "var(--font-body)", fontSize: FS.overline, color: 'rgba(90,40,24,0.25)' }}>({targets.length})</span>
       </button>
       {open && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
@@ -203,7 +204,7 @@ function TargetSection({ label, targets, selectedIds, onToggle, color, textColor
                 textAlign: 'left', padding: '7px 10px', borderRadius: 6, cursor: 'pointer',
                 background: sel ? `${color}10` : 'transparent',
                 border: `1px solid ${sel ? `${color}60` : 'var(--hud-border)'}`,
-                fontFamily: FONT_R, fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)',
+                fontFamily: FONT_R, fontSize: FS.label,
                 color: sel ? resolvedText : 'rgba(90,40,24,0.6)', transition: 'all .15s',
               }}>
                 {sel ? '● ' : '○ '}{t.name}

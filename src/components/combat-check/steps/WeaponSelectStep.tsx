@@ -8,7 +8,7 @@ import { getSkillPool } from '@/components/player-hud/dice-engine'
 import { CHAR_FIELD_MAP, isRangedSkill, isMeleeSkill as isMeleeSkillKey } from '@/lib/combatCheckUtils'
 import { RANGE_LABELS } from '@/lib/types'
 import { canDualWield } from '@/lib/weaponHandedness'
-import { HUD } from '@/lib/tokens'
+import { HUD, FS } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const GOLD_DIM  = 'var(--hud-text-faint)'
@@ -73,7 +73,7 @@ function SectionLabel({ text }: { text: string }) {
   return (
     <div style={{
       fontFamily: FONT_C,
-      fontSize: 'clamp(0.58rem, 0.9vw, 0.68rem)',
+      fontSize: FS.overline,
       fontWeight: 700,
       color: GOLD_DIM,
       textTransform: 'uppercase',
@@ -199,7 +199,7 @@ export function WeaponSelectStep({
               {/* Name */}
               <div style={{
                 fontFamily: FONT_C,
-                fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)',
+                fontSize: FS.label,
                 fontWeight: 700,
                 color: isSelected ? HUD.gold : TEXT,
                 marginBottom: 4,
@@ -210,7 +210,7 @@ export function WeaponSelectStep({
               {/* Stats row */}
               <div style={{
                 fontFamily: "var(--font-body)",
-                fontSize: 'clamp(0.62rem, 0.95vw, 0.75rem)',
+                fontSize: FS.overline,
                 color: TEXT_DIM,
                 display: 'flex',
                 flexWrap: 'wrap',
@@ -267,7 +267,7 @@ export function WeaponSelectStep({
             {isSelected && (
               <div style={{
                 fontFamily: "var(--font-body)",
-                fontSize: 'clamp(0.55rem, 0.82vw, 0.65rem)',
+                fontSize: FS.overline,
                 color: HUD.gold,
                 flexShrink: 0,
                 paddingLeft: 6,
@@ -289,7 +289,7 @@ export function WeaponSelectStep({
           }}>
             <div style={{
               fontFamily: FONT_R,
-              fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)',
+              fontSize: FS.caption,
               color: ORANGE,
               marginBottom: 8,
               fontWeight: 700,
@@ -298,7 +298,7 @@ export function WeaponSelectStep({
             </div>
             <div style={{
               fontFamily: FONT_R,
-              fontSize: 'clamp(0.7rem, 1.05vw, 0.82rem)',
+              fontSize: FS.caption,
               color: TEXT_DIM,
               marginBottom: 12,
               lineHeight: 1.4,
@@ -315,7 +315,7 @@ export function WeaponSelectStep({
                   border: `1px solid var(--hud-border)`,
                   borderRadius: 6, cursor: 'pointer',
                   fontFamily: FONT_C,
-                  fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)',
+                  fontSize: FS.caption,
                   color: TEXT_DIM,
                 }}
               >
@@ -330,7 +330,7 @@ export function WeaponSelectStep({
                   border: `1px solid ${HUD.gold}60`,
                   borderRadius: 6, cursor: equipping ? 'wait' : 'pointer',
                   fontFamily: FONT_C,
-                  fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)',
+                  fontSize: FS.caption,
                   color: HUD.gold,
                 }}
               >
@@ -381,7 +381,7 @@ export function WeaponSelectStep({
           padding: '40px 16px',
           textAlign: 'center',
           fontFamily: FONT_R,
-          fontSize: 'clamp(0.8rem, 1.2vw, 0.92rem)',
+          fontSize: FS.label,
           color: TEXT_DIM,
         }}>
           No {attackType === 'ranged' ? 'ranged' : 'melee'} weapons found.
@@ -411,7 +411,7 @@ export function WeaponSelectStep({
           }}>
             <div style={{
               fontFamily: "var(--font-rajdhani), 'Cinzel', serif",
-              fontSize: 'clamp(0.85rem, 1.3vw, 1rem)',
+              fontSize: FS.sm,
               fontWeight: 700,
               color: HUD.gold,
               letterSpacing: '0.08em',
@@ -422,7 +422,7 @@ export function WeaponSelectStep({
             </div>
             <div style={{
               fontFamily: FONT_R,
-              fontSize: 'clamp(0.8rem, 1.2vw, 0.92rem)',
+              fontSize: FS.label,
               color: 'var(--hud-text-dim)',
               lineHeight: 1.4,
               marginBottom: 14,
@@ -440,7 +440,7 @@ export function WeaponSelectStep({
                   border: '1px solid rgba(224,58,30,0.2)',
                   borderRadius: 8, cursor: 'pointer',
                   fontFamily: FONT_R,
-                  fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)',
+                  fontSize: FS.caption,
                   color: TEXT_DIM,
                 }}
               >
@@ -454,7 +454,7 @@ export function WeaponSelectStep({
                   border: 'none',
                   borderRadius: 8, cursor: 'pointer',
                   fontFamily: "var(--font-rajdhani), 'Cinzel', serif",
-                  fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)',
+                  fontSize: FS.caption,
                   fontWeight: 700,
                   color: 'var(--hud-bg)',
                   letterSpacing: '0.08em',

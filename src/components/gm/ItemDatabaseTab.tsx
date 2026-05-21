@@ -32,6 +32,7 @@ interface ItemDatabaseTabProps {
   supabase: SupabaseClient
   characters?: Character[]
   sendToChar?: (charId: string, payload: Record<string, unknown>) => void
+  onGenerateLoot?: () => void
 }
 
 type FilterType = 'all' | ItemType
@@ -73,7 +74,7 @@ function relativeTime(iso: string | null): string {
   return `${Math.floor(h / 24)}d ago`
 }
 
-export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToChar }: ItemDatabaseTabProps) {
+export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToChar, onGenerateLoot }: ItemDatabaseTabProps) {
   // ── Items tab state ──
   const [items,       setItems]       = useState<DbItem[]>([])
   const [loading,     setLoading]     = useState(false)
@@ -386,6 +387,23 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
                 </button>
               ))}
             </div>
+
+            {/* Generate Loot */}
+            {onGenerateLoot && (
+              <button
+                onClick={onGenerateLoot}
+                style={{
+                  fontFamily: FONT_C, fontSize: FS_CAP, fontWeight: 700,
+                  textTransform: 'uppercase', letterSpacing: '0.08em',
+                  padding: '4px 12px', borderRadius: 3, cursor: 'pointer',
+                  border: `1px solid rgba(150,168,180,0.35)`,
+                  color: HUD.gold,
+                  background: 'rgba(150,168,180,0.10)',
+                }}
+              >
+                🎲 Loot
+              </button>
+            )}
 
             {/* Type filter */}
             <div style={{ display: 'flex', gap: 0, border: `1px solid ${BORDER}`, borderRadius: 3, overflow: 'hidden' }}>

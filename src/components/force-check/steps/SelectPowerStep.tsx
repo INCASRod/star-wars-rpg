@@ -2,6 +2,7 @@
 
 import type { ForcePowerDisplay } from '@/components/player-hud/ForcePanel'
 import { stripBBCode } from '@/lib/utils'
+import { FS } from '@/lib/tokens'
 
 const FONT_C = "var(--font-rajdhani), 'Cinzel', serif"
 const FONT_R = "var(--font-rajdhani), 'Rajdhani', sans-serif"
@@ -25,7 +26,7 @@ export function SelectPowerStep({ powers, selectedPowerKey, onSelect }: SelectPo
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{
         fontFamily: "var(--font-body)",
-        fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)',
+        fontSize: FS.overline,
         color: 'rgba(58,12,4,0.55)',
         textTransform: 'uppercase',
         letterSpacing: '0.18em',
@@ -38,10 +39,10 @@ export function SelectPowerStep({ powers, selectedPowerKey, onSelect }: SelectPo
           textAlign: 'center', padding: '32px 16px',
           display: 'flex', flexDirection: 'column', gap: 8,
         }}>
-          <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.85rem, 1.3vw, 1rem)', color: TEXT_DIM }}>
+          <div style={{ fontFamily: FONT_R, fontSize: FS.sm, color: TEXT_DIM }}>
             No Force powers purchased yet.
           </div>
-          <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)', color: 'rgba(58,12,4,0.4)' }}>
+          <div style={{ fontFamily: FONT_R, fontSize: FS.caption, color: 'rgba(58,12,4,0.4)' }}>
             Visit the Force tab to purchase powers.
           </div>
         </div>
@@ -68,7 +69,7 @@ export function SelectPowerStep({ powers, selectedPowerKey, onSelect }: SelectPo
                   <span style={{ color: '#3A0C04', opacity: 0.8, fontSize: 11 }}>✦</span>
                   <span style={{
                     fontFamily: FONT_C,
-                    fontSize: 'clamp(0.88rem, 1.4vw, 1.05rem)',
+                    fontSize: FS.sm,
                     fontWeight: 700,
                     color: '#3A0C04',
                   }}>
@@ -78,7 +79,7 @@ export function SelectPowerStep({ powers, selectedPowerKey, onSelect }: SelectPo
                 {desc && (
                   <div style={{
                     fontFamily: FONT_R,
-                    fontSize: 'clamp(0.8rem, 1.2vw, 0.92rem)',
+                    fontSize: FS.label,
                     color: TEXT_DIM,
                     lineHeight: 1.4,
                     display: '-webkit-box',
@@ -92,7 +93,7 @@ export function SelectPowerStep({ powers, selectedPowerKey, onSelect }: SelectPo
                 )}
                 <div style={{
                   fontFamily: "var(--font-body)",
-                  fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)',
+                  fontSize: FS.overline,
                   color: 'rgba(58,12,4,0.5)',
                 }}>
                   {p.purchasedCount} upgrade{p.purchasedCount !== 1 ? 's' : ''} purchased

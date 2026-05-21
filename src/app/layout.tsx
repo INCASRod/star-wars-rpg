@@ -1,21 +1,26 @@
 import type { Metadata, Viewport } from "next";
-import { Orbitron, Exo_2 } from "next/font/google";
 import localFont from "next/font/local";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeInit } from "@/components/ThemeInit";
 import "./globals.css";
 
-const orbitron = Orbitron({
+const signika = localFont({
+  src: "../../public/fonts/Signika/Signika-VariableFont_GRAD,wght.ttf",
   variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["400", "600", "700"],
+  display: "swap",
+  weight: "300 700",
 });
 
-const exo2 = Exo_2({
+const palanquin = localFont({
+  src: [
+    { path: "../../public/fonts/Palanquin/Palanquin-Light.ttf",    weight: "300", style: "normal" },
+    { path: "../../public/fonts/Palanquin/Palanquin-Regular.ttf",  weight: "400", style: "normal" },
+    { path: "../../public/fonts/Palanquin/Palanquin-Medium.ttf",   weight: "500", style: "normal" },
+    { path: "../../public/fonts/Palanquin/Palanquin-SemiBold.ttf", weight: "600", style: "normal" },
+    { path: "../../public/fonts/Palanquin/Palanquin-Bold.ttf",     weight: "700", style: "normal" },
+  ],
   variable: "--font-body",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
-  style: ["normal", "italic"],
+  display: "swap",
 });
 
 const swRpgIcons = localFont({
@@ -42,7 +47,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${orbitron.variable} ${exo2.variable} ${swRpgIcons.variable}`}>
+    <html lang="en" className={`${signika.variable} ${palanquin.variable} ${swRpgIcons.variable}`}>
       <body className="antialiased">
         <ThemeInit />
         {children}

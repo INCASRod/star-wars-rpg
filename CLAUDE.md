@@ -32,7 +32,7 @@ The following are banned in component files:
 ```ts
 // ❌ banned
 style={{ color: '#C8AA50' }}
-style={{ fontFamily: "'Exo 2', sans-serif" }}
+style={{ fontFamily: "'Palanquin', sans-serif" }}
 style={{ fontSize: '11px' }}
 style={{ padding: '8px 16px' }}
 style={{ zIndex: 9999 }}
@@ -53,8 +53,8 @@ The project uses exactly two UI fonts plus the icon font. Do not add more.
 
 | Font | CSS variable | TS constant | Use |
 |---|---|---|---|
-| **Orbitron** | `var(--font-display)` | `FONT_DISPLAY` | Logos, stat numerics, display headings |
-| **Exo 2** | `var(--font-body)` | `FONT_BODY` | All other UI text — labels, body, HUD, buttons |
+| **Signika** | `var(--font-display)` | `FONT_DISPLAY` | Logos, stat numerics, display headings |
+| **Palanquin** | `var(--font-body)` | `FONT_BODY` | All other UI text — labels, body, HUD, buttons |
 | **sw-rpg-icons** | `var(--font-sw-rpg-icons)` | `FONT_ICONS` | Star Wars RPG dice/result icon font only |
 
 In TypeScript: `import { FONT_DISPLAY, FONT_BODY, FONT, FONT_ICONS } from '@/lib/tokens'`

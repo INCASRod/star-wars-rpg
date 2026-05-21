@@ -1,6 +1,7 @@
 ﻿'use client'
 
 import { useState, useEffect } from 'react'
+import { FS } from '@/lib/tokens'
 import { createClient } from '@/lib/supabase/client'
 import type { Character } from '@/lib/types'
 import type { ForceRollResult } from '@/lib/forceRoll'
@@ -83,22 +84,7 @@ export function ForceCheckOverlay({
   encounterId: propEncounterId,
 }: ForceCheckOverlayProps) {
   const [state, setState] = useState<ForceCheckState>(makeInitialState)
-  const [mounted, setMounted]   = useState(false)
-  const [visible, setVisible]   = useState(false)
-  const [busy,    setBusy]      = useState(false)
-
-  // ── Slide animation ───────────────────────────────────────────────────────
-  useEffect(() => {
-    if (open) {
-      setMounted(true)
-      const t = requestAnimationFrame(() => { requestAnimationFrame(() => setVisible(true)) })
-      return () => cancelAnimationFrame(t)
-    } else {
-      setVisible(false)
-      const t = setTimeout(() => setMounted(false), 260)
-      return () => clearTimeout(t)
-    }
-  }, [open])
+  const [busy, setBusy] = useState(false)
 
   // ── Reset on open ─────────────────────────────────────────────────────────
   useEffect(() => {
@@ -253,8 +239,6 @@ export function ForceCheckOverlay({
   const handleUseAgain = () => { setState(makeInitialState()); setBusy(false) }
   const handleDone     = () => onClose()
 
-  if (!mounted) return null
-
   const isResolve   = state.currentStep === 5
   const totalSteps  = isDathomiri ? 4 : 5
   const accentColor = isFallen ? '#8B2BE2' : FORCE_BLUE
@@ -268,36 +252,30 @@ export function ForceCheckOverlay({
   const textFaintColor = isFallen ? 'rgba(139,43,226,0.3)' : 'rgba(58,12,4,0.3)'
 
   return (
-    <div style={{
-      position: 'fixed', top: 0, right: 0, height: '100dvh',
-      width: 'clamp(380px, 35vw, 480px)',
-      background: BG,
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
-      borderLeft: `1px solid ${borderColor}`,
-      boxShadow: '-8px 0 32px rgba(0,0,0,0.6)',
-      zIndex: 150,
-      display: 'flex', flexDirection: 'column',
-      transform: visible ? 'translateX(0)' : 'translateX(100%)',
-      transition: visible
-        ? 'transform 300ms cubic-bezier(0.16,1,0.3,1)'
-        : 'transform 250ms ease-in',
-    }}>
+    <div
+      className={`hud-quick-drawer${open ? ' open' : ''}`}
+      style={{
+        background: BG,
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderRight: `1px solid ${borderColor}`,
+      }}
+    >
 
       {/* ── Header ── */}
       <div style={{
-        padding: '14px 16px',
+        padding: '10px 14px',
         borderBottom: `1px solid ${bdColor}`,
         display: 'flex', flexDirection: 'column', gap: 4,
         flexShrink: 0,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {/* Back */}
           <button
             onClick={goBack}
             style={{
               background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px 4px',
-              fontFamily: FONT_R, fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)', color: textDimColor,
+              fontFamily: FONT_R, fontSize: FS.caption, color: textDimColor,
               visibility: (!isResolve && state.currentStep > 1) ? 'visible' : 'hidden',
             }}
           >
@@ -307,14 +285,14 @@ export function ForceCheckOverlay({
           {/* Title */}
           <div style={{ flex: 1, textAlign: 'center' }}>
             <div style={{
-              fontFamily: FONT_C, fontSize: 'clamp(0.9rem, 1.5vw, 1.1rem)', fontWeight: 700,
-              color: textColor, textTransform: 'uppercase', letterSpacing: '0.1em',
+              fontFamily: FONT_C, fontSize: FS.label, fontWeight: 700,
+              color: textColor, textTransform: 'uppercase', letterSpacing: '0.15em',
               textShadow: isFallen ? '0 0 12px rgba(139,43,226,0.4)' : 'none',
             }}>
               {isFallen ? '☠' : '✦'} Force Check
             </div>
             {!isResolve && (
-              <div style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: textDimColor, marginTop: 2 }}>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: FS.overline, color: textDimColor, marginTop: 2 }}>
                 {STEP_LABELS[state.currentStep]}
               </div>
             )}
@@ -325,7 +303,7 @@ export function ForceCheckOverlay({
             onClick={onClose}
             style={{
               background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px 6px',
-              fontFamily: 'var(--font-body)', fontSize: 'clamp(0.9rem, 1.4vw, 1rem)', color: TEXT_DIM,
+              fontFamily: 'var(--font-body)', fontSize: 15, color: TEXT_DIM,
             }}
           >
             ✕

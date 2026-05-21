@@ -1,5 +1,5 @@
 'use client'
-import { HUD } from '@/lib/tokens'
+import { HUD, FS } from '@/lib/tokens'
 
 const FONT_C = 'var(--font-body)'
 
@@ -16,7 +16,7 @@ export function AttackTypeStep({ onSelect }: AttackTypeStepProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <p style={{
-        fontFamily: FONT_C, fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)',
+        fontFamily: FONT_C, fontSize: FS.caption,
         color: 'var(--hud-text-dim)', margin: '0 0 8px', letterSpacing: '0.05em',
       }}>
         Select the type of attack to make.
@@ -38,20 +38,20 @@ export function AttackTypeStep({ onSelect }: AttackTypeStepProps) {
           }}
         >
           <span style={{
-            fontSize: 'clamp(1.6rem, 3vw, 2rem)', lineHeight: 1,
+            fontSize: FS.h4, lineHeight: 1,
             color: HUD.gold, flexShrink: 0, width: 36, textAlign: 'center',
           }}>
             {card.icon}
           </span>
           <div>
             <div style={{
-              fontFamily: FONT_C, fontSize: 'clamp(0.85rem, 1.4vw, 1rem)', fontWeight: 700,
+              fontFamily: FONT_C, fontSize: FS.sm, fontWeight: 700,
               color: 'var(--hud-text)', textTransform: 'uppercase', letterSpacing: '0.1em',
             }}>
               {card.label}
             </div>
             <div style={{
-              fontFamily: 'var(--font-body)', fontSize: 'clamp(0.62rem, 0.9vw, 0.72rem)',
+              fontFamily: 'var(--font-body)', fontSize: FS.overline,
               color: 'var(--hud-text-dim)', marginTop: 3,
             }}>
               {card.sub}

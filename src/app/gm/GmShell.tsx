@@ -261,6 +261,7 @@ export function GmShell() {
         <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
           <GmMapView
             campaignId={campaignId}
+            encounter={stagingEncounter}
             characters={activeChars}
             allMaps={allMaps}
             activeMap={activeMap}
@@ -357,6 +358,7 @@ export function GmShell() {
             {activePanel === 'combat' && (
               <GmCombatPanel
                 campaignId={campaignId ?? ''}
+                encounter={stagingEncounter}
                 characters={activeChars}
                 onStartCombat={handleStartCombat}
                 onInitiativeOrder={() => setInitiativeOpen(o => !o)}
@@ -424,7 +426,7 @@ export function GmShell() {
 
       {/* Initiative drawer (portal, slides up from bottom) */}
       <GmInitiativeDrawer
-        campaignId={campaignId ?? ''}
+        encounter={stagingEncounter}
         characters={activeChars}
         isOpen={initiativeOpen}
         onClose={() => setInitiativeOpen(false)}

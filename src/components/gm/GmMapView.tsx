@@ -12,6 +12,7 @@ import { useMapPlanets } from '@/hooks/useMapPlanets'
 import type { MapPlanet } from '@/hooks/useMapPlanets'
 import { useAdversaryTokenImages } from '@/hooks/useAdversaryTokenImages'
 import type { Character } from '@/lib/types'
+import type { CombatEncounter } from '@/lib/combat'
 import { fetchAdversaries, adversaryToInstance } from '@/lib/adversaries'
 import type { AdversaryInstance } from '@/lib/adversaries'
 import { HUD } from '@/lib/tokens'
@@ -262,6 +263,7 @@ function UploadModal({ campaignId, planets, onClose, onSaved }: { campaignId: st
 /* ── Main view ─────────────────────────────────────────── */
 export interface GmMapViewProps {
   campaignId:          string | null
+  encounter:           CombatEncounter | null
   characters:          Character[]
   allMaps:             ActiveMap[]
   activeMap:           ActiveMap | null
@@ -281,7 +283,7 @@ export interface GmMapViewProps {
   onStagingAddToken?:          (token: Omit<MapToken, 'id' | 'updated_at'>) => Promise<MapToken | null>
 }
 
-export function GmMapView({ campaignId, characters, allMaps, activeMap, onDeleteMap, isStagingTab, stagingLibraryOpen, onStagingLibraryClose, stagingTokens, onStagingMoveToken, onStagingToggleVisibility, onStagingRemoveToken, onStagingAddToken }: GmMapViewProps) {
+export function GmMapView({ campaignId, encounter: encounterProp, characters, allMaps, activeMap, onDeleteMap, isStagingTab, stagingLibraryOpen, onStagingLibraryClose, stagingTokens, onStagingMoveToken, onStagingToggleVisibility, onStagingRemoveToken, onStagingAddToken }: GmMapViewProps) {
   const supabase = useMemo(() => createClient(), [])
 
   const router = useRouter()
@@ -302,7 +304,7 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
   const [contextMenu,      setContextMenu]      = useState<ContextMenuState | null>(null)
   const [tooltipState,     setTooltipState]     = useState<TooltipState | null>(null)
   const isDraggingRef = useRef(false)
-  const [encounter,        setEncounter]        = useState<EncounterRow | null>(null)
+  const encounter = encounterProp as unknown as EncounterRow | null
   const [previewMap,       setPreviewMap]       = useState<ActiveMap | null>(null)
   const { tokenImages: advTokenImages, setTokenImages: setAdvTokenImages } = useAdversaryTokenImages()
   const [busy,             setBusy]             = useState(false)
@@ -327,35 +329,6 @@ export function GmMapView({ campaignId, characters, allMaps, activeMap, onDelete
   const addToken        = isStagingTab ? (onStagingAddToken        ?? hookAddToken)        : hookAddToken
 
   useEffect(() => { setMounted(true) }, [])
-
-  // Load active combat encounter (adversaries live here, not in combat_participants)
-  useEffect(() => {
-    if (!campaignId) return
-
-    supabase
-      .from('combat_encounters')
-      .select('id, is_active, initiative_slots, adversaries, vehicles')
-      .eq('campaign_id', campaignId)
-      .eq('is_active', true)
-      .maybeSingle()
-      .then(({ data }) => { setEncounter(data as EncounterRow | null) })
-
-    const ch = supabase
-      .channel(`map-encounter-${campaignId}`)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'combat_encounters', filter: `campaign_id=eq.${campaignId}` },
-        (payload) => {
-          const { eventType, new: n } = payload
-          if (eventType === 'DELETE') { setEncounter(null); return }
-          const row = n as EncounterRow
-          setEncounter(row.is_active ? row : null)
-        },
-      )
-      .subscribe()
-
-    return () => { supabase.removeChannel(ch) }
-  }, [campaignId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Pre-load base adversary stats for all adversary tokens on the map (keyed by name).
   // Used by the hover tooltip when tokens aren't linked to a combat encounter slot.

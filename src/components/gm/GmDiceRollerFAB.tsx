@@ -303,13 +303,21 @@ function D100Result({ value }: { value: number }) {
 export function GmDiceRollerFAB({
   isGmScreenOpen,
   campaignId,
+  open: controlledOpen,
+  onOpenChange,
 }: {
   isGmScreenOpen: boolean
   campaignId:     string | null
+  open?:          boolean
+  onOpenChange?:  (open: boolean) => void
 }) {
   const supabase = useMemo(() => createClient(), [])
 
-  const [open,    setOpen]    = useState(false)
+  const isControlled = controlledOpen !== undefined
+  const [internalOpen, setInternalOpen] = useState(false)
+  const open    = isControlled ? controlledOpen! : internalOpen
+  const setOpen = (v: boolean) => { if (isControlled) onOpenChange?.(v); else setInternalOpen(v) }
+
   const [mounted, setMounted] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
   const btnRef   = useRef<HTMLButtonElement>(null)
@@ -322,11 +330,12 @@ export function GmDiceRollerFAB({
     const handler = (e: MouseEvent) => {
       if (
         panelRef.current && !panelRef.current.contains(e.target as Node) &&
-        btnRef.current   && !btnRef.current.contains(e.target as Node)
+        (!btnRef.current  || !btnRef.current.contains(e.target as Node))
       ) setOpen(false)
     }
     const id = setTimeout(() => document.addEventListener('mousedown', handler), 50)
     return () => { clearTimeout(id); document.removeEventListener('mousedown', handler) }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   // Close on Escape
@@ -335,6 +344,7 @@ export function GmDiceRollerFAB({
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
     document.addEventListener('keydown', handler)
     return () => document.removeEventListener('keydown', handler)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   /* ── Shared roll label ────────────────────────────────── */
@@ -470,7 +480,7 @@ export function GmDiceRollerFAB({
   const button = (
     <button
       ref={btnRef}
-      onClick={() => setOpen(o => !o)}
+      onClick={() => setOpen(!open)}
       title="GM Dice Roller"
       style={{
         background:   open ? 'rgba(200,170,80,0.2)' : 'rgba(6,13,9,0.92)',
@@ -492,7 +502,7 @@ export function GmDiceRollerFAB({
     </button>
   )
 
-  if (!mounted) return button
+  if (!mounted) return isControlled ? null : button
 
   /* ── Panel ────────────────────────────────────────────── */
   const panel = open ? createPortal(
@@ -746,7 +756,7 @@ export function GmDiceRollerFAB({
 
   return (
     <>
-      {button}
+      {!isControlled && button}
       {panel}
     </>
   )
