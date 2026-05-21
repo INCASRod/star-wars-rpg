@@ -1,7 +1,7 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { FS } from '@/lib/tokens'
+import { FS, HUD, FONT_DISPLAY, FONT_BODY } from '@/lib/tokens'
 import { createClient } from '@/lib/supabase/client'
 import type { Character } from '@/lib/types'
 import type { ForceRollResult } from '@/lib/forceRoll'
@@ -20,8 +20,6 @@ const FB_DIM     = 'rgba(126,200,227,0.45)'
 const FB_BD      = 'rgba(126,200,227,0.25)'
 const FB_BAR     = 'rgba(126,200,227,0.6)'
 const TEXT_DIM   = 'var(--hud-text-dim)'
-const FONT_C     = 'var(--font-body)'
-const FONT_R     = 'var(--font-body)'
 
 type Step = 1 | 2 | 3 | 4 | 5
 
@@ -254,10 +252,10 @@ export function ForceCheckOverlay({
   const barColor    = isFallen ? 'rgba(139,43,226,0.6)' : FB_BAR
   const dimColor    = isFallen ? 'rgba(139,43,226,0.5)' : FB_DIM
   const bdColor     = isFallen ? 'rgba(139,43,226,0.15)' : FB_BD
-  // Text colors — dark on light-blue bg for normal path; keep purple for fallen
-  const textColor     = isFallen ? '#8B2BE2'              : '#3A0C04'
-  const textDimColor  = isFallen ? 'rgba(139,43,226,0.5)' : 'rgba(58,12,4,0.55)'
-  const textFaintColor = isFallen ? 'rgba(139,43,226,0.3)' : 'rgba(58,12,4,0.3)'
+  // Text colors — use HUD tokens on dark overlay
+  const textColor      = isFallen ? '#8B2BE2'              : HUD.text
+  const textDimColor   = isFallen ? 'rgba(139,43,226,0.5)' : HUD.textDim
+  const textFaintColor = isFallen ? 'rgba(139,43,226,0.3)' : HUD.textFaint
 
   return (
     <div
@@ -283,7 +281,7 @@ export function ForceCheckOverlay({
             onClick={goBack}
             style={{
               background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px 4px',
-              fontFamily: FONT_R, fontSize: FS.caption, color: textDimColor,
+              fontFamily: FONT_BODY, fontSize: FS.caption, color: textDimColor,
               visibility: (!isResolve && state.currentStep > 1) ? 'visible' : 'hidden',
             }}
           >
@@ -293,7 +291,7 @@ export function ForceCheckOverlay({
           {/* Title */}
           <div style={{ flex: 1, textAlign: 'center' }}>
             <div style={{
-              fontFamily: FONT_C, fontSize: FS.label, fontWeight: 700,
+              fontFamily: FONT_DISPLAY, fontSize: FS.label, fontWeight: 700,
               color: textColor, textTransform: 'uppercase', letterSpacing: '0.15em',
               textShadow: isFallen ? '0 0 12px rgba(139,43,226,0.4)' : 'none',
             }}>
@@ -402,7 +400,7 @@ export function ForceCheckOverlay({
               width: '100%', height: 48, borderRadius: 10,
               border: 'none',
               cursor: (canAdvance() && !busy) ? 'pointer' : 'not-allowed',
-              fontFamily: FONT_C, fontSize: 'clamp(0.85rem, 1.3vw, 1rem)', fontWeight: 700,
+              fontFamily: FONT_DISPLAY, fontSize: 'clamp(0.85rem, 1.3vw, 1rem)', fontWeight: 700,
               textTransform: 'uppercase', letterSpacing: '0.1em',
               background: (canAdvance() && !busy)
                 ? isFallen

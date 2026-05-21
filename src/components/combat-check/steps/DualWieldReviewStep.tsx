@@ -1,8 +1,8 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import type { CharacterWeapon, RefWeapon } from '@/lib/types'
-import { HUD, FS } from '@/lib/tokens'
+import { HUD, FS, FONT_DISPLAY, FONT_BODY, SYM_COLOR } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const GOLD_DIM  = 'var(--hud-text-faint)'
@@ -11,8 +11,6 @@ const GOLD_BG   = 'var(--hud-surface-lo)'
 const TEXT = 'var(--hud-text)'
 const TEXT_DIM = 'var(--hud-text-dim)'
 const TEXT_MUTED = 'var(--hud-text-faint)'
-const FONT_C    = "var(--font-rajdhani), 'Cinzel', serif"
-const FONT_R    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 
 
 interface DualWieldReviewStepProps {
@@ -47,7 +45,7 @@ function WeaponCard({
       background: isPrimary ? GOLD_BG : 'transparent',
     }}>
       <div style={{
-        fontFamily: FONT_C,
+        fontFamily: FONT_DISPLAY,
         fontSize: FS.overline,
         fontWeight: 700,
         color: isPrimary ? HUD.gold : GOLD_DIM,
@@ -59,7 +57,7 @@ function WeaponCard({
       </div>
 
       <div style={{
-        fontFamily: FONT_C,
+        fontFamily: FONT_DISPLAY,
         fontSize: FS.label,
         fontWeight: 700,
         color: isPrimary ? HUD.gold : TEXT,
@@ -80,8 +78,8 @@ function WeaponCard({
         <span>{skillName}</span>
         {refWeapon && (
           <>
-            <span style={{ color: '#E07855' }}>DMG {refWeapon.damage_add != null ? `+${refWeapon.damage_add}` : refWeapon.damage}</span>
-            <span style={{ color: '#E05050' }}>Crit {refWeapon.crit}</span>
+            <span style={{ color: HUD.gold }}>DMG {refWeapon.damage_add != null ? `+${refWeapon.damage_add}` : refWeapon.damage}</span>
+            <span style={{ color: SYM_COLOR.failure }}>Crit {refWeapon.crit}</span>
           </>
         )}
       </div>
@@ -137,7 +135,7 @@ export function DualWieldReviewStep({
         marginBottom: 14,
       }}>
         <div style={{
-          fontFamily: FONT_R,
+          fontFamily: FONT_BODY,
           fontSize: FS.caption,
           color: TEXT,
           lineHeight: 1.5,
@@ -151,7 +149,7 @@ export function DualWieldReviewStep({
 
       {/* Combined check rules */}
       <div style={{
-        fontFamily: FONT_R,
+        fontFamily: FONT_BODY,
         fontStyle: 'italic',
         fontSize: FS.caption,
         color: TEXT_MUTED,
@@ -175,7 +173,7 @@ export function DualWieldReviewStep({
           border: `1px solid ${GOLD_BD}`,
           borderRadius: 8,
           cursor: 'pointer',
-          fontFamily: FONT_R,
+          fontFamily: FONT_BODY,
           fontSize: FS.label,
           color: GOLD_DIM,
           letterSpacing: '0.05em',
@@ -186,5 +184,4 @@ export function DualWieldReviewStep({
     </div>
   )
 }
-
 

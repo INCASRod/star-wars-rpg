@@ -1,12 +1,9 @@
-﻿'use client'
+'use client'
 
 import type { ForceRollResult } from '@/lib/forceRoll'
 import { rollForceDice } from '@/components/player-hud/dice-engine'
 import { DiceFace } from '@/components/dice/DiceFace'
-import { FS } from '@/lib/tokens'
-
-const FONT_C = "var(--font-rajdhani), 'Cinzel', serif"
-const FONT_R = "var(--font-rajdhani), 'Rajdhani', sans-serif"
+import { FS, HUD, FONT_DISPLAY, FONT_BODY } from '@/lib/tokens'
 
 const FORCE_BLUE     = '#7EC8E3'
 const FORCE_BLUE_DIM = 'rgba(126,200,227,0.35)'
@@ -35,7 +32,7 @@ function ForceDieFace({ die }: { die: { light: number; dark: number } }) {
       flexDirection: 'column', gap: 3, flexShrink: 0,
     }}>
       {empty && (
-        <span style={{ fontFamily: FONT_R, fontSize: FS.caption, color: 'rgba(58,12,4,0.3)' }}>—</span>
+        <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint }}>—</span>
       )}
       {die.light > 0 && (
         <div style={{ display: 'flex', gap: 2 }}>
@@ -71,7 +68,7 @@ export function RollForceDiceStep({
         <div style={{
           fontFamily: "var(--font-body)",
           fontSize: FS.overline,
-          color: 'rgba(58,12,4,0.55)',
+          color: HUD.textDim,
           textTransform: 'uppercase', letterSpacing: '0.18em',
           marginBottom: 10,
         }}>
@@ -79,15 +76,15 @@ export function RollForceDiceStep({
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 12 }}>
-          <div style={{ fontFamily: "var(--font-body)", fontSize: FS.caption, color: 'rgba(58,12,4,0.75)' }}>
+          <div style={{ fontFamily: "var(--font-body)", fontSize: FS.caption, color: HUD.text }}>
             Force Rating: {forceRating}
           </div>
           {committedForce > 0 && (
-            <div style={{ fontFamily: FONT_R, fontSize: FS.caption, color: 'rgba(58,12,4,0.45)', fontStyle: 'italic' }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textDim, fontStyle: 'italic' }}>
               ({committedForce} committed to ongoing effects)
             </div>
           )}
-          <div style={{ fontFamily: "var(--font-body)", fontSize: FS.caption, color: '#3A0C04' }}>
+          <div style={{ fontFamily: "var(--font-body)", fontSize: FS.caption, color: HUD.text }}>
             Available: {available}
           </div>
         </div>
@@ -98,7 +95,7 @@ export function RollForceDiceStep({
             <DiceFace key={i} type="force" size={36} active={false} />
           ))}
           {available === 0 && (
-            <div style={{ fontFamily: FONT_R, fontSize: FS.label, color: 'rgba(58,12,4,0.4)', fontStyle: 'italic' }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: HUD.textFaint, fontStyle: 'italic' }}>
               No Force dice available
             </div>
           )}
@@ -117,10 +114,10 @@ export function RollForceDiceStep({
               : 'rgba(126,200,227,0.05)',
             border: `1px solid ${available > 0 ? 'rgba(126,200,227,0.6)' : FORCE_BLUE_DIM}`,
             cursor: available > 0 ? 'pointer' : 'not-allowed',
-            fontFamily: FONT_C,
+            fontFamily: FONT_DISPLAY,
             fontSize: FS.sm,
             fontWeight: 700,
-            color: available > 0 ? '#3A0C04' : 'rgba(58,12,4,0.3)',
+            color: available > 0 ? HUD.text : HUD.textFaint,
             letterSpacing: '0.1em',
             textTransform: 'uppercase' as const,
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
@@ -133,7 +130,7 @@ export function RollForceDiceStep({
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {/* Section label */}
-          <div style={{ fontFamily: "var(--font-body)", fontSize: FS.overline, color: 'rgba(58,12,4,0.55)', textTransform: 'uppercase', letterSpacing: '0.18em' }}>
+          <div style={{ fontFamily: "var(--font-body)", fontSize: FS.overline, color: HUD.textDim, textTransform: 'uppercase', letterSpacing: '0.18em' }}>
             Result
           </div>
 
@@ -155,10 +152,10 @@ export function RollForceDiceStep({
                 {Array.from({ length: result.totalLight }).map((_, i) => (
                   <div key={i} style={{ width: 11, height: 11, borderRadius: '50%', background: LIGHT_COLOR, boxShadow: `0 0 4px ${LIGHT_COLOR}` }} />
                 ))}
-                {result.totalLight === 0 && <span style={{ fontFamily: FONT_R, color: 'rgba(232,232,255,0.2)', fontSize: FS.caption }}>—</span>}
+                {result.totalLight === 0 && <span style={{ fontFamily: FONT_BODY, color: 'rgba(232,232,255,0.2)', fontSize: FS.caption }}>—</span>}
               </div>
-              <div style={{ fontFamily: FONT_C, fontSize: FS.sm, fontWeight: 700, color: LIGHT_COLOR, lineHeight: 1 }}>{result.totalLight}</div>
-              <div style={{ fontFamily: FONT_R, fontSize: FS.overline, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: isFallen ? 'rgba(126,200,227,0.5)' : 'rgba(232,232,255,0.5)', marginTop: 3 }}>
+              <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700, color: LIGHT_COLOR, lineHeight: 1 }}>{result.totalLight}</div>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: isFallen ? 'rgba(126,200,227,0.5)' : 'rgba(232,232,255,0.5)', marginTop: 3 }}>
                 Light ○{isFallen ? ' (cost)' : ''}
               </div>
             </div>
@@ -173,10 +170,10 @@ export function RollForceDiceStep({
                 {Array.from({ length: result.totalDark }).map((_, i) => (
                   <div key={i} style={{ width: 11, height: 11, borderRadius: '50%', background: DARK_COLOR, border: `1px solid ${DARK_BORDER}` }} />
                 ))}
-                {result.totalDark === 0 && <span style={{ fontFamily: FONT_R, color: 'rgba(96,96,160,0.3)', fontSize: FS.caption }}>—</span>}
+                {result.totalDark === 0 && <span style={{ fontFamily: FONT_BODY, color: 'rgba(96,96,160,0.3)', fontSize: FS.caption }}>—</span>}
               </div>
-              <div style={{ fontFamily: FONT_C, fontSize: FS.sm, fontWeight: 700, color: isFallen ? '#8B2BE2' : DARK_BORDER, lineHeight: 1 }}>{result.totalDark}</div>
-              <div style={{ fontFamily: FONT_R, fontSize: FS.overline, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: isFallen ? 'rgba(139,43,226,0.7)' : 'rgba(96,96,160,0.6)', marginTop: 3 }}>
+              <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700, color: isFallen ? '#8B2BE2' : DARK_BORDER, lineHeight: 1 }}>{result.totalDark}</div>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: isFallen ? 'rgba(139,43,226,0.7)' : 'rgba(96,96,160,0.6)', marginTop: 3 }}>
                 Dark ●{isFallen ? ' (free)' : ''}
               </div>
             </div>
@@ -185,14 +182,14 @@ export function RollForceDiceStep({
           {/* Zero warning — inverted for fallen characters */}
           {!isFallen && result.totalLight === 0 && (
             <div style={{ padding: '8px 12px', background: 'var(--hud-surface-lo)', border: '1px solid var(--hud-border)', borderRadius: 6 }}>
-              <div style={{ fontFamily: FONT_R, fontSize: FS.caption, color: 'var(--hud-text-dim)', lineHeight: 1.45 }}>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: 'var(--hud-text-dim)', lineHeight: 1.45 }}>
                 ⚠ No light side Force Points generated. The power activates but has no effect. You may still use dark side pips.
               </div>
             </div>
           )}
           {isFallen && result.totalDark === 0 && (
             <div style={{ padding: '8px 12px', background: 'var(--hud-surface-lo)', border: '1px solid var(--hud-border)', borderRadius: 6 }}>
-              <div style={{ fontFamily: FONT_R, fontSize: FS.caption, color: 'var(--hud-text-dim)', lineHeight: 1.45 }}>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: 'var(--hud-text-dim)', lineHeight: 1.45 }}>
                 ⚠ No dark side Force Points generated. The power activates but has no effect. You may still use light side pips.
               </div>
             </div>
@@ -201,14 +198,14 @@ export function RollForceDiceStep({
           {/* Consequence warning */}
           {!isFallen && result.totalDark > 0 && !isDathomiri && (
             <div style={{ padding: '8px 12px', background: 'rgba(224,58,30,0.07)', border: '1px solid rgba(224,58,30,0.22)', borderRadius: 6 }}>
-              <div style={{ fontFamily: FONT_R, fontSize: FS.caption, color: 'rgba(224,58,30,0.85)', fontStyle: 'italic', lineHeight: 1.45 }}>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: 'rgba(224,58,30,0.85)', fontStyle: 'italic', lineHeight: 1.45 }}>
                 ⚠ Dark side Force Points available. Using them has consequences. See next step.
               </div>
             </div>
           )}
           {isFallen && result.totalLight > 0 && (
             <div style={{ padding: '8px 12px', background: 'rgba(126,200,227,0.05)', border: '1px solid rgba(126,200,227,0.2)', borderRadius: 6 }}>
-              <div style={{ fontFamily: FONT_R, fontSize: FS.caption, color: 'rgba(126,200,227,0.7)', fontStyle: 'italic', lineHeight: 1.45 }}>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: 'rgba(126,200,227,0.7)', fontStyle: 'italic', lineHeight: 1.45 }}>
                 ✦ Light side Force Points available. Using them costs Destiny + strain. See next step.
               </div>
             </div>
@@ -218,4 +215,3 @@ export function RollForceDiceStep({
     </div>
   )
 }
-

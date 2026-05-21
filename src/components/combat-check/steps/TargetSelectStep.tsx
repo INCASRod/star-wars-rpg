@@ -1,9 +1,9 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { AdversaryInstance } from '@/lib/adversaries'
-import { HUD, FS } from '@/lib/tokens'
+import { HUD, FS, FONT_DISPLAY, FONT_BODY, SYM_COLOR } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const GOLD_DIM  = 'var(--hud-text-faint)'
@@ -11,14 +11,12 @@ const GOLD_BD   = 'var(--hud-border)'
 const TEXT = 'var(--hud-text)'
 const TEXT_DIM = 'var(--hud-text-dim)'
 const CARD_BG   = 'var(--hud-surface-lo)'
-const FONT_C    = "var(--font-rajdhani), 'Cinzel', serif"
-const FONT_R    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 
 
 const TYPE_COLORS: Record<string, string> = {
   minion:  'rgba(224,58,30,0.4)',
   rival:   '#FF9800',
-  nemesis: '#e05252',
+  nemesis: SYM_COLOR.failure,
 }
 
 interface TargetSelectStepProps {
@@ -34,7 +32,7 @@ interface TargetSelectStepProps {
 
 function WoundBar({ current, max }: { current: number; max: number }) {
   const pct = max > 0 ? Math.min(1, current / max) : 0
-  const color = pct >= 0.75 ? '#e05252' : pct >= 0.5 ? '#FF9800' : '#4CAF50'
+  const color = pct >= 0.75 ? SYM_COLOR.failure : pct >= 0.5 ? '#FF9800' : SYM_COLOR.success
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
       <div style={{
@@ -105,7 +103,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
 
   if (loading) {
     return (
-      <div style={{ padding: '32px 16px', textAlign: 'center', fontFamily: FONT_R, fontSize: FS.label, color: GOLD_DIM }}>
+      <div style={{ padding: '32px 16px', textAlign: 'center', fontFamily: FONT_BODY, fontSize: FS.label, color: GOLD_DIM }}>
         Loading encounter…
       </div>
     )
@@ -114,7 +112,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
   if (!campaignId) {
     return (
       <div style={{ padding: '32px 16px', textAlign: 'center' }}>
-        <div style={{ fontFamily: FONT_R, fontSize: FS.label, color: TEXT_DIM, lineHeight: 1.5 }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT_DIM, lineHeight: 1.5 }}>
           No campaign selected. Join a campaign to see combat targets.
         </div>
         <button
@@ -123,7 +121,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
             marginTop: 16, padding: '8px 20px',
             background: 'rgba(224,58,30,0.1)', border: `1px solid ${GOLD_BD}`,
             borderRadius: 6, cursor: 'pointer',
-            fontFamily: FONT_C, fontSize: FS.caption, color: HUD.gold,
+            fontFamily: FONT_DISPLAY, fontSize: FS.caption, color: HUD.gold,
           }}
         >
           Skip Target
@@ -135,7 +133,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
   if (enemies.length === 0) {
     return (
       <div style={{ padding: '32px 16px', textAlign: 'center' }}>
-        <div style={{ fontFamily: FONT_R, fontSize: FS.label, color: TEXT_DIM, lineHeight: 1.5, marginBottom: 16 }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT_DIM, lineHeight: 1.5, marginBottom: 16 }}>
           No enemies in the current encounter.
           <br />
           Ask your GM to add enemies to the initiative tracker.
@@ -146,7 +144,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
             padding: '10px 24px',
             background: 'rgba(224,58,30,0.1)', border: `1px solid ${GOLD_BD}`,
             borderRadius: 6, cursor: 'pointer',
-            fontFamily: FONT_C, fontSize: FS.caption, color: HUD.gold,
+            fontFamily: FONT_DISPLAY, fontSize: FS.caption, color: HUD.gold,
           }}
         >
           Skip Target
@@ -164,7 +162,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
           background: 'var(--hud-surface-lo)',
           border: `1px solid var(--hud-border)`,
           borderRadius: 6, padding: '8px 12px', marginBottom: 12,
-          fontFamily: FONT_R, fontSize: FS.caption, color: GOLD_DIM,
+          fontFamily: FONT_BODY, fontSize: FS.caption, color: GOLD_DIM,
         }}>
           ℹ Multiple targets selected. The GM will determine valid targeting.
         </div>
@@ -207,7 +205,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
                 {/* Name */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{
-                    fontFamily: FONT_R,
+                    fontFamily: FONT_BODY,
                     fontSize: FS.label,
                     fontWeight: 700,
                     color: isSelected ? HUD.gold : TEXT,
@@ -262,7 +260,7 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
             marginTop: 12, width: '100%', padding: '8px 0',
             background: 'transparent', border: `1px solid var(--hud-border)`,
             borderRadius: 6, cursor: 'pointer',
-            fontFamily: FONT_R, fontSize: FS.caption, color: TEXT_DIM,
+            fontFamily: FONT_BODY, fontSize: FS.caption, color: TEXT_DIM,
           }}
         >
           Skip Target (GM will handle)
@@ -271,5 +269,4 @@ export function TargetSelectStep({ campaignId, attackType, selectedTargets, onSe
     </div>
   )
 }
-
 

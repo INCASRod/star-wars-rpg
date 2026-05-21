@@ -1,9 +1,6 @@
-﻿'use client'
+'use client'
 
-import { FS } from '@/lib/tokens'
-
-const FONT_C = "var(--font-rajdhani), 'Cinzel', serif"
-const FONT_R = "var(--font-rajdhani), 'Rajdhani', sans-serif"
+import { FS, HUD, FONT_DISPLAY, FONT_BODY } from '@/lib/tokens'
 
 const FORCE_BLUE   = '#7EC8E3'
 const DARK_PURPLE  = '#8B2BE2'
@@ -38,7 +35,7 @@ export function DarkSidePipsStep({
       {/* Warning header */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         <div style={{
-          fontFamily: FONT_C,
+          fontFamily: FONT_DISPLAY,
           fontSize: FS.sm,
           fontWeight: 700,
           color: accentColor,
@@ -52,9 +49,9 @@ export function DarkSidePipsStep({
 
       {/* Explanation */}
       <div style={{
-        fontFamily: FONT_R,
+        fontFamily: FONT_BODY,
         fontSize: FS.label,
-        color: 'rgba(90,40,24,0.8)',
+        color: HUD.text,
         lineHeight: 1.6,
         display: 'flex', flexDirection: 'column', gap: 6,
       }}>
@@ -70,14 +67,14 @@ export function DarkSidePipsStep({
           <div>• Suffer <strong style={{ color: accentColor }}>{darkPipsUsed} strain</strong> (1 per pip used)</div>
           {!isFallen && <div>• Gain Conflict (your GM will be notified)</div>}
         </div>
-        <div style={{ color: 'rgba(58,12,4,0.55)' }}>
+        <div style={{ color: HUD.textDim }}>
           You already have {lightPips} {freeLabel} Force Point{lightPips !== 1 ? 's' : ''} available without consequence.
         </div>
       </div>
 
       {/* Selector */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <div style={{ fontFamily: "var(--font-body)", fontSize: FS.overline, color: 'rgba(90,40,24,0.45)', textTransform: 'uppercase', letterSpacing: '0.15em' }}>
+        <div style={{ fontFamily: "var(--font-body)", fontSize: FS.overline, color: HUD.textFaint, textTransform: 'uppercase', letterSpacing: '0.15em' }}>
           {isFallen ? 'Light' : 'Dark'} pips to use
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -85,7 +82,7 @@ export function DarkSidePipsStep({
             onClick={() => onChangeDark(Math.max(0, darkPipsUsed - 1))}
             style={{ width: 36, height: 36, borderRadius: 6, background: 'var(--hud-surface-lo)', border: '1px solid var(--hud-border)', cursor: 'pointer', color: 'var(--hud-text-dim)', fontSize: FS.sm, fontFamily: "var(--font-body)" }}
           >−</button>
-          <div style={{ fontFamily: FONT_C, fontSize: FS.sm, fontWeight: 700, color: darkPipsUsed > 0 ? accentColor : 'rgba(90,40,24,0.4)', minWidth: 32, textAlign: 'center' }}>
+          <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700, color: darkPipsUsed > 0 ? accentColor : HUD.textFaint, minWidth: 32, textAlign: 'center' }}>
             {darkPipsUsed}
           </div>
           <button
@@ -97,13 +94,13 @@ export function DarkSidePipsStep({
         {/* Live cost summary */}
         {darkPipsUsed > 0 && (
           <div style={{ padding: '10px 12px', background: isFallen ? 'rgba(126,200,227,0.06)' : 'rgba(144,96,208,0.08)', border: `1px solid ${isFallen ? 'rgba(126,200,227,0.2)' : 'rgba(144,96,208,0.2)'}`, borderRadius: 6, display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <div style={{ fontFamily: FONT_R, fontSize: FS.caption, color: 'rgba(90,40,24,0.7)' }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textDim }}>
               Using {darkPipsUsed} {costlyLabel} pip{darkPipsUsed !== 1 ? 's' : ''}:
             </div>
-            <div style={{ fontFamily: "var(--font-body)", fontSize: FS.overline, color: 'rgba(90,40,24,0.5)', display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <div style={{ fontFamily: "var(--font-body)", fontSize: FS.overline, color: HUD.textFaint, display: 'flex', flexDirection: 'column', gap: 2 }}>
               <div>Strain cost:   {darkPipsUsed}</div>
               <div>Destiny flip:  1 {destinyFlip}</div>
-              <div style={{ color: '#3A0C04' }}>Total FP:      {totalFP}</div>
+              <div style={{ color: HUD.text }}>Total FP:      {totalFP}</div>
             </div>
           </div>
         )}
@@ -113,16 +110,15 @@ export function DarkSidePipsStep({
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
         {darkPipsUsed > 0 && (
           <div style={{ padding: '8px 10px', background: isFallen ? 'rgba(126,200,227,0.05)' : 'rgba(224,58,30,0.06)', border: `1px solid ${isFallen ? 'rgba(126,200,227,0.2)' : 'rgba(224,58,30,0.2)'}`, borderRadius: 6 }}>
-            <div style={{ fontFamily: FONT_R, fontSize: FS.caption, color: isFallen ? 'rgba(58,12,4,0.65)' : 'rgba(224,58,30,0.75)', lineHeight: 1.4 }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: isFallen ? HUD.textDim : 'rgba(224,58,30,0.75)', lineHeight: 1.4 }}>
               Remember: suffer {darkPipsUsed} strain and flip 1 Destiny Point when the GM confirms.
             </div>
           </div>
         )}
-        <div style={{ fontFamily: FONT_R, fontSize: FS.caption, color: 'rgba(90,40,24,0.4)', fontStyle: 'italic' }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint, fontStyle: 'italic' }}>
           Adjust the selector above then click Continue to proceed.
         </div>
       </div>
     </div>
   )
 }
-

@@ -1,12 +1,9 @@
-﻿'use client'
+'use client'
 
 import type { ForceRollResult } from '@/lib/forceRoll'
 import type { TargetEntry } from './ForceTargetStep'
 import { stripBBCode } from '@/lib/utils'
-import { FS } from '@/lib/tokens'
-
-const FONT_C = "var(--font-rajdhani), 'Cinzel', serif"
-const FONT_R = "var(--font-rajdhani), 'Rajdhani', sans-serif"
+import { FS, HUD, FONT_DISPLAY, FONT_BODY } from '@/lib/tokens'
 
 const FORCE_BLUE  = '#7EC8E3'
 const LIGHT_COLOR = '#E8E8FF'
@@ -43,10 +40,10 @@ function PipRow({ light, dark }: { light: number; dark: number }) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <div style={{ fontFamily: "var(--font-body)", fontSize: FS.overline, color: 'var(--hud-text-faint)', textTransform: 'uppercase', letterSpacing: '0.15em' }}>
+      <div style={{ fontFamily: "var(--font-body)", fontSize: FS.overline, color: HUD.textFaint, textTransform: 'uppercase', letterSpacing: '0.15em' }}>
         {label}
       </div>
-      <div style={{ fontFamily: FONT_R, fontSize: FS.label, color: 'rgba(90,40,24,0.9)' }}>
+      <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: HUD.text }}>
         {children}
       </div>
     </div>
@@ -75,7 +72,7 @@ export function ForceResolveStep({
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* Header */}
       <div style={{ textAlign: 'center', paddingBottom: 12, borderBottom: '1px solid rgba(126,200,227,0.15)' }}>
-        <div style={{ fontFamily: FONT_C, fontSize: FS.sm, fontWeight: 700, color: '#3A0C04', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+        <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700, color: HUD.text, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
           ✦ Force Power Activated
         </div>
       </div>
@@ -97,7 +94,7 @@ export function ForceResolveStep({
                 } {isFallen ? 'light' : 'dark'} used
               </span>
             )}
-            <span style={{ fontFamily: "var(--font-body)", fontSize: FS.overline, color: 'rgba(90,40,24,0.45)' }}>
+            <span style={{ fontFamily: "var(--font-body)", fontSize: FS.overline, color: HUD.textFaint }}>
               ({totalFP} total FP)
             </span>
           </span>
@@ -108,7 +105,7 @@ export function ForceResolveStep({
       {/* Power description */}
       {desc && (
         <div style={{ padding: '10px 12px', background: 'rgba(126,200,227,0.03)', border: '1px solid rgba(126,200,227,0.1)', borderRadius: 6 }}>
-          <div style={{ fontFamily: FONT_R, fontSize: FS.label, color: 'rgba(90,40,24,0.65)', lineHeight: 1.55 }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: HUD.textDim, lineHeight: 1.55 }}>
             {desc}
           </div>
         </div>
@@ -117,7 +114,7 @@ export function ForceResolveStep({
       {/* Consequence reminder */}
       {costlyUsed > 0 && (
         <div style={{ padding: '8px 12px', background: isFallen ? 'rgba(126,200,227,0.06)' : 'rgba(144,96,208,0.08)', border: `1px solid ${isFallen ? 'rgba(126,200,227,0.22)' : 'rgba(144,96,208,0.22)'}`, borderRadius: 6 }}>
-          <div style={{ fontFamily: FONT_R, fontSize: FS.caption, color: 'rgba(58,12,4,0.7)', lineHeight: 1.45 }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textDim, lineHeight: 1.45 }}>
             Reminder: suffer {costlyUsed} strain and flip 1 Destiny Point {destinyFlip}.
           </div>
         </div>
@@ -131,8 +128,8 @@ export function ForceResolveStep({
             flex: 1, height: 44, borderRadius: 8, cursor: 'pointer',
             background: 'rgba(126,200,227,0.08)',
             border: '1px solid rgba(126,200,227,0.3)',
-            fontFamily: FONT_R, fontSize: FS.label, fontWeight: 700,
-            letterSpacing: '0.08em', textTransform: 'uppercase', color: '#3A0C04',
+            fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700,
+            letterSpacing: '0.08em', textTransform: 'uppercase', color: HUD.text,
             transition: 'all .15s',
           }}
         >
@@ -144,7 +141,7 @@ export function ForceResolveStep({
             flex: 1, height: 44, borderRadius: 8, cursor: 'pointer',
             background: 'rgba(224,58,30,0.12)',
             border: '1px solid rgba(224,58,30,0.4)',
-            fontFamily: FONT_R, fontSize: FS.label, fontWeight: 700,
+            fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700,
             letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--hud-gold)',
             transition: 'all .15s',
           }}
@@ -155,4 +152,3 @@ export function ForceResolveStep({
     </div>
   )
 }
-

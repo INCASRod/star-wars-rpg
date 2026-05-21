@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { DiceFace } from '@/components/dice/DiceFace'
 import { SYM, DICE_META, type DiceType, type SymbolKey } from '@/components/player-hud/design-tokens'
@@ -10,14 +10,12 @@ import { RANGE_BAND_LABELS, isRangedSkill } from '@/lib/combatCheckUtils'
 import type { CriticalEligibility } from '@/lib/criticalUtils'
 import { checkCriticalEligibility } from '@/lib/criticalUtils'
 import type { DualWieldState } from './DicePoolReviewStep'
-import { HUD, FS } from '@/lib/tokens'
+import { HUD, FS, FONT_DISPLAY, FONT_BODY, SYM_COLOR } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const GOLD_DIM  = 'var(--hud-text-faint)'
 const TEXT = 'var(--hud-text)'
 const TEXT_DIM = 'var(--hud-text-dim)'
-const FONT_C   = "var(--font-rajdhani), 'Cinzel', serif"
-const FONT_R   = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 
 
 interface RollResultStepProps {
@@ -67,7 +65,7 @@ function NetPill({ count, symKey }: { count: number; symKey: SymbolKey }) {
       display: 'inline-flex', alignItems: 'center', gap: 5,
       padding: '4px 10px', borderRadius: 4,
       background: `${color}18`, border: `1px solid ${color}50`,
-      fontFamily: FONT_R, fontSize: FS.label, fontWeight: 700, color,
+      fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700, color,
     }}>
       <i className={`ffi ffi-${icon}`} />
       {Math.abs(count)} {symKey === 'S' ? (count > 0 ? 'Success' : 'Failure') :
@@ -85,10 +83,10 @@ function CritBlock({ label, eligibility, result }: {
   if (!eligibility.isEligible) return null
   return (
     <div style={{ marginBottom: 8, padding: '8px 12px', background: 'rgba(255,152,0,0.06)', border: '1px solid rgba(255,152,0,0.35)', borderRadius: 7 }}>
-      <div style={{ fontFamily: FONT_C, fontSize: FS.caption, fontWeight: 700, color: '#FF9800', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 3 }}>
+      <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.caption, fontWeight: 700, color: '#FF9800', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 3 }}>
         {label}
       </div>
-      <div style={{ fontFamily: FONT_R, fontSize: FS.caption, color: 'rgba(255,152,0,0.85)', lineHeight: 1.4 }}>
+      <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: 'rgba(255,152,0,0.85)', lineHeight: 1.4 }}>
         {eligibility.triggeredByTriumph && eligibility.triggeredByAdvantage
           ? `Triumph + ${result.net.advantage} Advantages (≥ Crit ${eligibility.critRating})`
           : eligibility.triggeredByTriumph
@@ -159,25 +157,25 @@ export function RollResultStep({
         marginBottom: 16,
       }}>
         <div style={{
-          fontFamily: FONT_C,
+          fontFamily: FONT_DISPLAY,
           fontSize: FS.sm,
           fontWeight: 700,
-          color: succeeded ? '#4CAF50' : '#e05252',
+          color: succeeded ? SYM_COLOR.success : SYM_COLOR.failure,
           letterSpacing: '0.1em',
           textTransform: 'uppercase',
           marginBottom: 4,
         }}>
           {isDualWield ? (succeeded ? '✦ PRIMARY HIT' : 'Miss') : (succeeded ? 'Hit!' : 'Miss')}
           {isDualWield && succeeded && (
-            <span style={{ fontFamily: FONT_R, fontSize: FS.overline, display: 'block', color: 'rgba(76,175,80,0.8)', textTransform: 'none', letterSpacing: 0, marginTop: 2 }}>
+            <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, display: 'block', color: 'rgba(76,175,80,0.8)', textTransform: 'none', letterSpacing: 0, marginTop: 2 }}>
               {weaponName}
             </span>
           )}
         </div>
         {succeeded && (
           <div style={{ fontFamily: "var(--font-body)", fontSize: FS.sm, color: TEXT }}>
-            Damage: <strong style={{ color: '#E07855' }}>{totalDmg}</strong>
-            <span style={{ fontFamily: FONT_R, fontSize: FS.overline, color: TEXT_DIM, marginLeft: 6 }}>
+            Damage: <strong style={{ color: HUD.gold }}>{totalDmg}</strong>
+            <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: TEXT_DIM, marginLeft: 6 }}>
               ({hasBrawnScale ? `${baseDmg >= 0 ? '+' : ''}${baseDmg}+${characterBrawn} Brawn` : String(baseDmg)} + {net.success} success)
             </span>
           </div>
@@ -194,7 +192,7 @@ export function RollResultStep({
           borderRadius: 8,
         }}>
           <div style={{
-            fontFamily: FONT_C,
+            fontFamily: FONT_DISPLAY,
             fontSize: FS.caption,
             fontWeight: 700,
             color: HUD.gold,
@@ -205,12 +203,12 @@ export function RollResultStep({
             <i className="ffi ffi-swrpg-advantage" /><i className="ffi ffi-swrpg-advantage" /> available — secondary: {secWeaponName}
           </div>
           <div style={{ fontFamily: "var(--font-body)", fontSize: FS.label, color: TEXT, marginBottom: 4 }}>
-            Secondary damage if hit: <strong style={{ color: '#E07855' }}>{secTotalDmg}</strong>
-            <span style={{ fontFamily: FONT_R, fontSize: FS.overline, color: TEXT_DIM, marginLeft: 6 }}>
+            Secondary damage if hit: <strong style={{ color: HUD.gold }}>{secTotalDmg}</strong>
+            <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: TEXT_DIM, marginLeft: 6 }}>
               ({secBase >= 0 ? '' : ''}{secHasBrawnScale ? `+${secBase}+${characterBrawn} Brawn` : String(secBase)} + {net.success} success)
             </span>
           </div>
-          <div style={{ fontFamily: FONT_R, fontStyle: 'italic', fontSize: FS.overline, color: 'var(--hud-text-faint)' }}>
+          <div style={{ fontFamily: FONT_BODY, fontStyle: 'italic', fontSize: FS.overline, color: 'var(--hud-text-faint)' }}>
             Secondary hit requires <i className="ffi ffi-swrpg-advantage" /><i className="ffi ffi-swrpg-advantage" /> or <i className="ffi ffi-swrpg-triumph" /> — GM/player decides.
           </div>
         </div>
@@ -242,7 +240,7 @@ export function RollResultStep({
 
       {/* Individual dice */}
       <div style={{
-        fontFamily: FONT_C,
+        fontFamily: FONT_DISPLAY,
         fontSize: FS.overline,
         color: GOLD_DIM,
         textTransform: 'uppercase',
@@ -268,7 +266,7 @@ export function RollResultStep({
               borderRadius: 8,
               marginBottom: 8,
             }}>
-              <div style={{ fontFamily: FONT_C, fontSize: FS.caption, fontWeight: 700, color: '#FF9800', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>
+              <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.caption, fontWeight: 700, color: '#FF9800', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>
                 ⚠ Critical Eligible
               </div>
               <CritBlock label={`Primary (${weaponName}) · Crit ${critEligibility.critRating}`} eligibility={critEligibility} result={result} />
@@ -288,7 +286,7 @@ export function RollResultStep({
             borderRadius: 8,
           }}>
             <div style={{
-              fontFamily: FONT_C,
+              fontFamily: FONT_DISPLAY,
               fontSize: FS.caption,
               fontWeight: 700,
               color: '#FF9800',
@@ -299,7 +297,7 @@ export function RollResultStep({
               ⚠ Critical Hit Available
             </div>
             <div style={{
-              fontFamily: FONT_R,
+              fontFamily: FONT_BODY,
               fontSize: FS.caption,
               color: 'rgba(255,152,0,0.85)',
               lineHeight: 1.4,
@@ -330,7 +328,7 @@ export function RollResultStep({
             background: 'rgba(224,58,30,0.1)',
             border: `1px solid ${GOLD_DIM}`,
             borderRadius: 8, cursor: 'pointer',
-            fontFamily: FONT_C,
+            fontFamily: FONT_DISPLAY,
             fontSize: FS.label,
             color: HUD.gold,
             letterSpacing: '0.1em', textTransform: 'uppercase',
@@ -345,7 +343,7 @@ export function RollResultStep({
             background: 'transparent',
             border: `1px solid var(--hud-border)`,
             borderRadius: 8, cursor: 'pointer',
-            fontFamily: FONT_R,
+            fontFamily: FONT_BODY,
             fontSize: FS.label,
             color: TEXT_DIM,
           }}
@@ -356,5 +354,4 @@ export function RollResultStep({
     </div>
   )
 }
-
 

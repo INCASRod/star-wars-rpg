@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -16,7 +16,7 @@ import { RangeBandStep } from './steps/RangeBandStep'
 import { DicePoolReviewStep, type ManualAdjustments, EMPTY_ADJUSTMENTS, type DualWieldState } from './steps/DicePoolReviewStep'
 import { DualWieldReviewStep } from './steps/DualWieldReviewStep'
 import { RollResultStep } from './steps/RollResultStep'
-import { HUD, FS } from '@/lib/tokens'
+import { HUD, FS, FONT_DISPLAY, FONT_BODY } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const BG       = 'var(--hud-surface-hi)'
@@ -25,8 +25,6 @@ const GOLD_BD  = 'var(--hud-border)'
 const GOLD_BAR = 'rgba(224,58,30,0.6)'
 const TEXT     = 'var(--hud-text)'
 const TEXT_DIM = 'var(--hud-text-dim)'
-const FONT_C   = 'var(--font-body)'
-const FONT_R   = 'var(--font-body)'
 
 // ── Step labels ───────────────────────────────────────────────────────────────
 const STEP_LABELS: Record<number, string> = {
@@ -475,7 +473,7 @@ export function CombatCheckOverlay({
             onClick={goBack}
             style={{
               background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px 4px',
-              fontFamily: FONT_R, fontSize: FS.caption, color: GOLD_DIM,
+              fontFamily: FONT_BODY, fontSize: FS.caption, color: GOLD_DIM,
               visibility: (!isResult && state.currentStep > initialStep) ? 'visible' : 'hidden',
             }}
           >
@@ -485,7 +483,7 @@ export function CombatCheckOverlay({
           {/* Title */}
           <div style={{ flex: 1, textAlign: 'center' }}>
             <div style={{
-              fontFamily: FONT_C,
+              fontFamily: FONT_DISPLAY,
               fontSize: FS.label,
               fontWeight: 700,
               color: HUD.gold,
@@ -642,7 +640,7 @@ export function CombatCheckOverlay({
             style={{
               width: '100%', height: 48, borderRadius: 10,
               border: 'none', cursor: canAdvance() ? 'pointer' : 'not-allowed',
-              fontFamily: FONT_C,
+              fontFamily: FONT_DISPLAY,
               fontSize: 'clamp(0.85rem, 1.3vw, 1rem)',
               fontWeight: 700,
               textTransform: 'uppercase',

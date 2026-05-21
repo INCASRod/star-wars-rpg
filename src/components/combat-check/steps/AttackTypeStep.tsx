@@ -1,7 +1,5 @@
 'use client'
-import { HUD, FS } from '@/lib/tokens'
-
-const FONT_C = 'var(--font-body)'
+import { HUD, FS, FONT_BODY } from '@/lib/tokens'
 
 interface AttackTypeStepProps {
   onSelect: (type: 'ranged' | 'melee') => void
@@ -16,7 +14,7 @@ export function AttackTypeStep({ onSelect }: AttackTypeStepProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <p style={{
-        fontFamily: FONT_C, fontSize: FS.caption,
+        fontFamily: FONT_BODY, fontSize: FS.caption,
         color: 'var(--hud-text-dim)', margin: '0 0 8px', letterSpacing: '0.05em',
       }}>
         Select the type of attack to make.
@@ -45,7 +43,7 @@ export function AttackTypeStep({ onSelect }: AttackTypeStepProps) {
           </span>
           <div>
             <div style={{
-              fontFamily: FONT_C, fontSize: FS.sm, fontWeight: 700,
+              fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700,
               color: 'var(--hud-text)', textTransform: 'uppercase', letterSpacing: '0.1em',
             }}>
               {card.label}

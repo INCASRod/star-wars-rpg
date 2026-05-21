@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { WeaponDamageDisplay, isMeleeSkill } from '@/components/character/WeaponDamageDisplay'
@@ -8,7 +8,7 @@ import { getSkillPool } from '@/components/player-hud/dice-engine'
 import { CHAR_FIELD_MAP, isRangedSkill, isMeleeSkill as isMeleeSkillKey } from '@/lib/combatCheckUtils'
 import { RANGE_LABELS } from '@/lib/types'
 import { canDualWield } from '@/lib/weaponHandedness'
-import { HUD, FS } from '@/lib/tokens'
+import { HUD, FS, FONT_DISPLAY, FONT_BODY, SYM_COLOR, DICE_COLOR } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const GOLD_DIM  = 'var(--hud-text-faint)'
@@ -16,10 +16,7 @@ const GOLD_BD   = 'var(--hud-border)'
 const TEXT = 'var(--hud-text)'
 const TEXT_DIM = 'var(--hud-text-dim)'
 const CARD_BG   = 'var(--hud-surface-lo)'
-const RED_SOFT  = '#e05252'
 const ORANGE    = '#FF9800'
-const FONT_C    = "var(--font-rajdhani), 'Cinzel', serif"
-const FONT_R    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 
 
 interface WeaponSelectStepProps {
@@ -72,7 +69,7 @@ function findDualWieldPartner(
 function SectionLabel({ text }: { text: string }) {
   return (
     <div style={{
-      fontFamily: FONT_C,
+      fontFamily: FONT_DISPLAY,
       fontSize: FS.overline,
       fontWeight: 700,
       color: GOLD_DIM,
@@ -198,7 +195,7 @@ export function WeaponSelectStep({
             <div style={{ flex: 1, minWidth: 0 }}>
               {/* Name */}
               <div style={{
-                fontFamily: FONT_C,
+                fontFamily: FONT_DISPLAY,
                 fontSize: FS.label,
                 fontWeight: 700,
                 color: isSelected ? HUD.gold : TEXT,
@@ -219,7 +216,7 @@ export function WeaponSelectStep({
               }}>
                 {skill && <span>{skill.name}</span>}
                 {!isUnarmed && ref && (
-                  <span style={{ color: '#E07855' }}>
+                  <span style={{ color: HUD.gold }}>
                     DMG <WeaponDamageDisplay
                       baseDamage={baseDmg}
                       isMelee={isMelee}
@@ -227,11 +224,11 @@ export function WeaponSelectStep({
                     />
                   </span>
                 )}
-                {isUnarmed && <span style={{ color: '#E07855' }}>DMG +0+Br</span>}
+                {isUnarmed && <span style={{ color: HUD.gold }}>DMG +0+Br</span>}
                 {!isUnarmed && ref && ref.crit > 0 && (
-                  <span style={{ color: '#E05050' }}>CRIT {ref.crit}</span>
+                  <span style={{ color: SYM_COLOR.failure }}>CRIT {ref.crit}</span>
                 )}
-                {isUnarmed && <span style={{ color: '#E05050' }}>CRIT 5</span>}
+                {isUnarmed && <span style={{ color: SYM_COLOR.failure }}>CRIT 5</span>}
                 {!isUnarmed && ref?.range_value && (
                   <span>{RANGE_LABELS[ref.range_value] ?? ref.range_value}</span>
                 )}
@@ -252,13 +249,13 @@ export function WeaponSelectStep({
             <div style={{ display: 'flex', gap: 2, flexShrink: 0, alignItems: 'center' }}>
               {Array.from({ length: proficiency }).map((_, i) => (
                 <div key={`p${i}`} style={{
-                  width: 12, height: 12, background: '#F5C518',
+                  width: 12, height: 12, background: DICE_COLOR.proficiency,
                   clipPath: 'polygon(50% 0%,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%)',
                 }} />
               ))}
               {Array.from({ length: ability }).map((_, i) => (
                 <div key={`a${i}`} style={{
-                  width: 12, height: 12, background: '#4CAF50',
+                  width: 12, height: 12, background: DICE_COLOR.ability,
                   transform: 'rotate(45deg)',
                 }} />
               ))}
@@ -288,7 +285,7 @@ export function WeaponSelectStep({
             padding: '12px 14px',
           }}>
             <div style={{
-              fontFamily: FONT_R,
+              fontFamily: FONT_BODY,
               fontSize: FS.caption,
               color: ORANGE,
               marginBottom: 8,
@@ -297,7 +294,7 @@ export function WeaponSelectStep({
               ⚠ Equipping costs a Maneuver
             </div>
             <div style={{
-              fontFamily: FONT_R,
+              fontFamily: FONT_BODY,
               fontSize: FS.caption,
               color: TEXT_DIM,
               marginBottom: 12,
@@ -314,7 +311,7 @@ export function WeaponSelectStep({
                   background: 'transparent',
                   border: `1px solid var(--hud-border)`,
                   borderRadius: 6, cursor: 'pointer',
-                  fontFamily: FONT_C,
+                  fontFamily: FONT_DISPLAY,
                   fontSize: FS.caption,
                   color: TEXT_DIM,
                 }}
@@ -329,7 +326,7 @@ export function WeaponSelectStep({
                   background: equipping ? 'rgba(224,58,30,0.15)' : 'rgba(224,58,30,0.15)',
                   border: `1px solid ${HUD.gold}60`,
                   borderRadius: 6, cursor: equipping ? 'wait' : 'pointer',
-                  fontFamily: FONT_C,
+                  fontFamily: FONT_DISPLAY,
                   fontSize: FS.caption,
                   color: HUD.gold,
                 }}
@@ -380,7 +377,7 @@ export function WeaponSelectStep({
         <div style={{
           padding: '40px 16px',
           textAlign: 'center',
-          fontFamily: FONT_R,
+          fontFamily: FONT_BODY,
           fontSize: FS.label,
           color: TEXT_DIM,
         }}>
@@ -410,7 +407,7 @@ export function WeaponSelectStep({
             padding: '14px 16px',
           }}>
             <div style={{
-              fontFamily: "var(--font-rajdhani), 'Cinzel', serif",
+              fontFamily: FONT_DISPLAY,
               fontSize: FS.sm,
               fontWeight: 700,
               color: HUD.gold,
@@ -421,7 +418,7 @@ export function WeaponSelectStep({
               ⚔⚔  Dual Wield Available
             </div>
             <div style={{
-              fontFamily: FONT_R,
+              fontFamily: FONT_BODY,
               fontSize: FS.label,
               color: 'var(--hud-text-dim)',
               lineHeight: 1.4,
@@ -439,7 +436,7 @@ export function WeaponSelectStep({
                   background: 'transparent',
                   border: '1px solid rgba(224,58,30,0.2)',
                   borderRadius: 8, cursor: 'pointer',
-                  fontFamily: FONT_R,
+                  fontFamily: FONT_BODY,
                   fontSize: FS.caption,
                   color: TEXT_DIM,
                 }}
@@ -453,7 +450,7 @@ export function WeaponSelectStep({
                   background: 'linear-gradient(135deg, #E03A1E, #A02010)',
                   border: 'none',
                   borderRadius: 8, cursor: 'pointer',
-                  fontFamily: "var(--font-rajdhani), 'Cinzel', serif",
+                  fontFamily: FONT_DISPLAY,
                   fontSize: FS.caption,
                   fontWeight: 700,
                   color: 'var(--hud-bg)',
@@ -469,5 +466,4 @@ export function WeaponSelectStep({
     </div>
   )
 }
-
 

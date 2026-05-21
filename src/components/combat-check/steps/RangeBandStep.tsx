@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useEffect } from 'react'
 import { DiceFace } from '@/components/dice/DiceFace'
@@ -11,7 +11,7 @@ import {
   getRangedDifficulty,
   bandIndex,
 } from '@/lib/combatCheckUtils'
-import { HUD, FS } from '@/lib/tokens'
+import { HUD, FS, FONT_DISPLAY, FONT_BODY, SYM_COLOR } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const GOLD_DIM  = 'var(--hud-text-faint)'
@@ -19,10 +19,7 @@ const GOLD_BD   = 'var(--hud-border)'
 const TEXT = 'var(--hud-text)'
 const TEXT_DIM = 'var(--hud-text-dim)'
 const CARD_BG   = 'var(--hud-surface-lo)'
-const RED_SOFT  = '#e05252'
 const PURPLE    = '#9060D0'
-const FONT_C    = "var(--font-rajdhani), 'Cinzel', serif"
-const FONT_R    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
 
 
 interface RangeBandStepProps {
@@ -135,7 +132,7 @@ export function RangeBandStep({ attackType, weapon, selectedBand, onSelect }: Ra
 
       <div style={{
         marginTop: 8,
-        fontFamily: FONT_R,
+        fontFamily: FONT_BODY,
         fontSize: FS.overline,
         color: TEXT_DIM,
         lineHeight: 1.4,
@@ -189,7 +186,7 @@ function BandCard({
     >
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
-          fontFamily: "'Cinzel', serif",
+          fontFamily: FONT_DISPLAY,
           fontSize: FS.label,
           fontWeight: 700,
           color: blocked ? TEXT_DIM : selected ? HUD.gold : TEXT,
@@ -200,9 +197,9 @@ function BandCard({
         </div>
         {notes.length > 0 && (
           <div style={{
-            fontFamily: FONT_R,
+            fontFamily: FONT_BODY,
             fontSize: FS.overline,
-            color: blocked ? '#e05252' : GOLD_DIM,
+            color: blocked ? SYM_COLOR.failure : GOLD_DIM,
             lineHeight: 1.3,
           }}>
             {notes.join(' · ')}
@@ -212,7 +209,7 @@ function BandCard({
       <div style={{ flexShrink: 0, textAlign: 'right' }}>
         {!blocked && <DifficultyDice count={difficultyDice} challenge={challengeDice} opposedLabel={opposedLabel} />}
         {blocked && (
-          <span style={{ fontFamily: "var(--font-body)", fontSize: FS.overline, color: '#e05252' }}>
+          <span style={{ fontFamily: "var(--font-body)", fontSize: FS.overline, color: SYM_COLOR.failure }}>
             {diffLabel ?? 'Blocked'}
           </span>
         )}
@@ -225,5 +222,4 @@ function BandCard({
     </button>
   )
 }
-
 
