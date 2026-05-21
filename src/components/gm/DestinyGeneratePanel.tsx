@@ -236,8 +236,14 @@ export function DestinyGeneratePanel({
 
             {/* Running tally */}
             <div style={{ display: 'flex', gap: 16, padding: '8px 12px', background: 'rgba(0,0,0,0.25)', borderRadius: 6, border: `1px solid ${BORDER}` }}>
-              <span style={{ fontFamily: FONT_M, fontSize: FS_LABEL, color: LIGHT_CLR }}>○ {lightTotal}</span>
-              <span style={{ fontFamily: FONT_M, fontSize: FS_LABEL, color: DARK_CLR }}>● {darkTotal}</span>
+              <span style={{ fontFamily: FONT_M, fontSize: FS_LABEL, color: LIGHT_CLR, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ display: 'inline-block', width: 13, height: 13, flexShrink: 0, WebkitMask: `url('/images/factions/LightSymbol.png') center/contain no-repeat`, mask: `url('/images/factions/LightSymbol.png') center/contain no-repeat`, background: LIGHT_CLR }} />
+                {lightTotal}
+              </span>
+              <span style={{ fontFamily: FONT_M, fontSize: FS_LABEL, color: DARK_CLR, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ display: 'inline-block', width: 13, height: 13, flexShrink: 0, WebkitMask: `url('/images/factions/DarkSymbol.png') center/contain no-repeat`, mask: `url('/images/factions/DarkSymbol.png') center/contain no-repeat`, background: DARK_CLR }} />
+                {darkTotal}
+              </span>
             </div>
 
             {/* Player statuses */}
@@ -250,10 +256,10 @@ export function DestinyGeneratePanel({
                     <span style={{ width: 7, height: 7, borderRadius: '50%', background: rolled ? GREEN : GOLD_DIM, flexShrink: 0 }} />
                     <span style={{ fontFamily: FONT_R, fontSize: FS_LABEL, color: rolled ? TEXT : DIM, flex: 1 }}>{c.name}</span>
                     {rolled ? (
-                      <span style={{ fontFamily: FONT_M, fontSize: FS_CAP, color: GREEN }}>
+                      <span style={{ fontFamily: FONT_M, fontSize: FS_CAP, color: GREEN, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                         ✓ rolled
-                        {s.lightRolled > 0 && <span style={{ color: LIGHT_CLR }}> ○{s.lightRolled}</span>}
-                        {s.darkRolled > 0  && <span style={{ color: DARK_CLR }}>  ●{s.darkRolled}</span>}
+                        {s.lightRolled > 0 && <span style={{ color: LIGHT_CLR, display: 'inline-flex', alignItems: 'center', gap: 2 }}><span style={{ display: 'inline-block', width: 10, height: 10, flexShrink: 0, WebkitMask: `url('/images/factions/LightSymbol.png') center/contain no-repeat`, mask: `url('/images/factions/LightSymbol.png') center/contain no-repeat`, background: LIGHT_CLR }} />{s.lightRolled}</span>}
+                        {s.darkRolled > 0  && <span style={{ color: DARK_CLR,  display: 'inline-flex', alignItems: 'center', gap: 2 }}><span style={{ display: 'inline-block', width: 10, height: 10, flexShrink: 0, WebkitMask: `url('/images/factions/DarkSymbol.png') center/contain no-repeat`,  mask: `url('/images/factions/DarkSymbol.png') center/contain no-repeat`,  background: DARK_CLR  }} />{s.darkRolled}</span>}
                         {s.lightRolled === 0 && s.darkRolled === 0 && <span style={{ color: DIM }}> —</span>}
                       </span>
                     ) : (
@@ -272,12 +278,20 @@ export function DestinyGeneratePanel({
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <span style={{ fontFamily: FONT_R, fontSize: FS_SM, color: LIGHT_CLR, fontWeight: 700, minWidth: 60 }}>Light:</span>
-                  <span style={{ fontFamily: FONT_M, fontSize: FS_SM, color: LIGHT_CLR }}>{Array.from({ length: Math.min(poolRow.light_count, 10) }).map(() => '○').join('')}</span>
+                  <span style={{ display: 'inline-flex', gap: 3, alignItems: 'center' }}>
+                    {Array.from({ length: Math.min(poolRow.light_count, 10) }).map((_, i) => (
+                      <span key={i} style={{ display: 'inline-block', width: 14, height: 14, flexShrink: 0, WebkitMask: `url('/images/factions/LightSymbol.png') center/contain no-repeat`, mask: `url('/images/factions/LightSymbol.png') center/contain no-repeat`, background: LIGHT_CLR }} />
+                    ))}
+                  </span>
                   <span style={{ fontFamily: FONT_M, fontSize: FS_SM, color: LIGHT_CLR }}>{poolRow.light_count}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <span style={{ fontFamily: FONT_R, fontSize: FS_SM, color: DARK_CLR, fontWeight: 700, minWidth: 60 }}>Dark:</span>
-                  <span style={{ fontFamily: FONT_M, fontSize: FS_SM, color: DARK_CLR }}>{Array.from({ length: Math.min(poolRow.dark_count, 10) }).map(() => '●').join('')}</span>
+                  <span style={{ display: 'inline-flex', gap: 3, alignItems: 'center' }}>
+                    {Array.from({ length: Math.min(poolRow.dark_count, 10) }).map((_, i) => (
+                      <span key={i} style={{ display: 'inline-block', width: 14, height: 14, flexShrink: 0, WebkitMask: `url('/images/factions/DarkSymbol.png') center/contain no-repeat`, mask: `url('/images/factions/DarkSymbol.png') center/contain no-repeat`, background: DARK_CLR }} />
+                    ))}
+                  </span>
                   <span style={{ fontFamily: FONT_M, fontSize: FS_SM, color: DARK_CLR }}>{poolRow.dark_count}</span>
                 </div>
                 <div style={{ fontFamily: FONT_R, fontSize: FS_LABEL, color: DIM, marginTop: 4 }}>

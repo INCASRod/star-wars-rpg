@@ -9,6 +9,8 @@ const FONT_R    = 'var(--font-body)'
 const FONT_M    = 'var(--font-body)'
 const DARK_CLR  = '#8B2BE2'
 const LIGHT_CLR = '#1A78A0'
+const LIGHT_IMG = '/images/factions/LightSymbol.png'
+const DARK_IMG  = '/images/factions/DarkSymbol.png'
 const TEXT      = 'var(--hud-text)'
 const DIM       = 'var(--hud-text-faint)'
 const FS_OVER   = 'var(--text-overline)'
@@ -50,15 +52,24 @@ export function DestinyGMFlash({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const TokenDots = ({ count, color }: { count: number; color: string }) => (
-    <span style={{ display: 'inline-flex', gap: 3, alignItems: 'center' }}>
-      {Array.from({ length: Math.min(count, 6) }).map((_, i) => (
-        <span key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: `${color}50`, border: `1.5px solid ${color}` }} />
-      ))}
-      {count > 6 && <span style={{ fontFamily: FONT_M, fontSize: FS_OVER, color }}>+{count - 6}</span>}
-      {count === 0 && <span style={{ fontFamily: FONT_M, fontSize: FS_CAP, color: DIM }}>—</span>}
-    </span>
-  )
+  const TokenDots = ({ count, color, side }: { count: number; color: string; side: 'light' | 'dark' }) => {
+    const src = side === 'light' ? LIGHT_IMG : DARK_IMG
+    return (
+      <span style={{ display: 'inline-flex', gap: 3, alignItems: 'center' }}>
+        {Array.from({ length: Math.min(count, 6) }).map((_, i) => (
+          <span key={i} style={{
+            display: 'inline-block', flexShrink: 0,
+            width: 13, height: 13,
+            WebkitMask: `url('${src}') center/contain no-repeat`,
+            mask:        `url('${src}') center/contain no-repeat`,
+            background:  color,
+          }} />
+        ))}
+        {count > 6 && <span style={{ fontFamily: FONT_M, fontSize: FS_OVER, color }}>+{count - 6}</span>}
+        {count === 0 && <span style={{ fontFamily: FONT_M, fontSize: FS_CAP, color: DIM }}>—</span>}
+      </span>
+    )
+  }
 
   const content = (
     <>
@@ -107,17 +118,17 @@ export function DestinyGMFlash({
             <span style={{ fontFamily: FONT_R, fontSize: FS_LABEL, color: DARK_CLR, fontWeight: 700, minWidth: 80, textAlign: 'right' }}>
               Dark Side:
             </span>
-            <TokenDots count={prevDarkCount}  color={DARK_CLR} />
+            <TokenDots count={prevDarkCount}  color={DARK_CLR}  side="dark"  />
             <span style={{ fontFamily: FONT_M, fontSize: FS_CAP, color: DIM }}>→</span>
-            <TokenDots count={newDarkCount}   color={DARK_CLR} />
+            <TokenDots count={newDarkCount}   color={DARK_CLR}  side="dark"  />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
             <span style={{ fontFamily: FONT_R, fontSize: FS_LABEL, color: LIGHT_CLR, fontWeight: 700, minWidth: 80, textAlign: 'right' }}>
               Light Side:
             </span>
-            <TokenDots count={prevLightCount} color={LIGHT_CLR} />
+            <TokenDots count={prevLightCount} color={LIGHT_CLR} side="light" />
             <span style={{ fontFamily: FONT_M, fontSize: FS_CAP, color: DIM }}>→</span>
-            <TokenDots count={newLightCount}  color={LIGHT_CLR} />
+            <TokenDots count={newLightCount}  color={LIGHT_CLR} side="light" />
           </div>
         </div>
 

@@ -12,10 +12,26 @@ const FS_OVER   = 'var(--text-overline)'
 const FS_CAP    = 'var(--text-caption)'
 
 const MAX_VISIBLE = 10
+const LIGHT_IMG   = '/images/factions/LightSymbol.png'
+const DARK_IMG    = '/images/factions/DarkSymbol.png'
+
+// ── Destiny symbol icon (transparent PNG masked to a colour) ──────────────────
+function DestinyIcon({ side, size, color }: { side: 'light' | 'dark'; size: number; color: string }) {
+  const src = side === 'light' ? LIGHT_IMG : DARK_IMG
+  return (
+    <span style={{
+      display: 'inline-block', flexShrink: 0,
+      width: size, height: size,
+      WebkitMask: `url('${src}') center/contain no-repeat`,
+      mask:        `url('${src}') center/contain no-repeat`,
+      background:  color,
+    }} />
+  )
+}
 
 // ── Token button ──────────────────────────────────────────────────────────────
-
-function TokenButton({ color, canClick, tooltip, onClick }: {
+function TokenButton({ side, color, canClick, tooltip, onClick }: {
+  side: 'light' | 'dark'
   color: string
   canClick: boolean
   tooltip: string
@@ -29,18 +45,18 @@ function TokenButton({ color, canClick, tooltip, onClick }: {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        width: 20, height: 20, borderRadius: '50%',
-        border: `2px solid ${canClick ? color : `${color}60`}`,
-        background: canClick ? `${color}22` : `${color}0C`,
+        width: 24, height: 24, borderRadius: '50%',
+        border: `1.5px solid ${canClick ? `${color}70` : `${color}30`}`,
+        background: canClick ? `${color}18` : 'transparent',
         cursor:  canClick ? 'pointer'  : 'not-allowed',
-        opacity: canClick ? 1          : 0.5,
+        opacity: canClick ? 1          : 0.4,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: 0, flexShrink: 0,
+        padding: 4, flexShrink: 0,
         transition: 'box-shadow .15s, opacity .15s',
-        boxShadow: hovered && canClick ? `0 0 8px ${color}80` : 'none',
+        boxShadow: hovered && canClick ? `0 0 10px ${color}70` : 'none',
       }}
     >
-      <span style={{ width: 8, height: 8, borderRadius: '50%', background: color, display: 'block', opacity: canClick ? 0.9 : 0.5 }} />
+      <DestinyIcon side={side} size={14} color={color} />
     </button>
   )
 }
@@ -101,6 +117,7 @@ export function DestinyPoolDisplay({
         {Array.from({ length: visible }).map((_, i) => (
           <TokenButton
             key={`${side}-${i}`}
+            side={side}
             color={color}
             canClick={canClick}
             tooltip={tooltip}
@@ -121,8 +138,9 @@ export function DestinyPoolDisplay({
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
         {/* Light tokens */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-          <span style={{ fontFamily: FONT_C, fontSize: FS_OVER, color: LIGHT_CLR, letterSpacing: '0.1em', fontWeight: 700, whiteSpace: 'nowrap' }}>
-            ○ {light_count}
+          <span style={{ fontFamily: FONT_C, fontSize: FS_OVER, color: LIGHT_CLR, letterSpacing: '0.1em', fontWeight: 700, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <DestinyIcon side="light" size={11} color={LIGHT_CLR} />
+            {light_count}
           </span>
           <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
             {renderTokens(light_count, 'light')}
@@ -133,8 +151,9 @@ export function DestinyPoolDisplay({
 
         {/* Dark tokens */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-          <span style={{ fontFamily: FONT_C, fontSize: FS_OVER, color: DARK_CLR, letterSpacing: '0.1em', fontWeight: 700, whiteSpace: 'nowrap' }}>
-            ● {dark_count}
+          <span style={{ fontFamily: FONT_C, fontSize: FS_OVER, color: DARK_CLR, letterSpacing: '0.1em', fontWeight: 700, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <DestinyIcon side="dark" size={11} color={DARK_CLR} />
+            {dark_count}
           </span>
           <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
             {renderTokens(dark_count, 'dark')}
