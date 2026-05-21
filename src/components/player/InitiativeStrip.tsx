@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { useCombatParticipants } from '@/hooks/useCombatParticipants'
 import { useCharacterPortraits } from '@/hooks/useCharacterPortraits'
+import { useAdversaryTokenImages } from '@/hooks/useAdversaryTokenImages'
 import type { Character } from '@/lib/types'
 import type { CombatEncounter, InitiativeSlot } from '@/lib/combat'
 import { FS_OVERLINE, FS_LABEL } from '@/components/player-hud/design-tokens'
@@ -54,6 +55,7 @@ export function InitiativeStrip({ encounter, character, gmControls, compact = fa
     [encounter.initiative_slots],
   )
   const portraits = useCharacterPortraits(pcSlotIds)
+  const { tokenImages: advTokenImages } = useAdversaryTokenImages()
 
   function getSwapTargets(slotId: string): InitiativeSlot[] {
     const slot = encounter.initiative_slots.find(s => s.id === slotId)
@@ -129,6 +131,13 @@ export function InitiativeStrip({ encounter, character, gmControls, compact = fa
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={portraits[slot.characterId]}
+                      alt={displayName}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    />
+                  ) : !isPC && (isRevealed || !!gmControls) && advTokenImages[slot.name] ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={advTokenImages[slot.name]}
                       alt={displayName}
                       style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                     />
