@@ -6,7 +6,7 @@ import { useState } from 'react'
 const FONT_C    = 'var(--font-body)'
 const FONT_M    = 'var(--font-body)'
 const DIM       = 'var(--hud-text-faint)'
-const LIGHT_CLR = '#3DD8F8'   // vivid Force-cyan
+const LIGHT_CLR = '#0EA5E9'   // sky-blue — vivid on dark, legible on parchment
 const DARK_CLR  = '#A845F5'   // vivid Sith-violet
 const FS_OVER   = 'var(--text-overline)'
 const FS_CAP    = 'var(--text-caption)'
