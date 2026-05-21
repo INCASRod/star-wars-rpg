@@ -5,6 +5,7 @@ import type { Character } from '@/lib/types'
 import { StagingDrawer } from './StagingDrawer'
 import { EncounterAdversaryPanel } from './EncounterAdversaryPanel'
 import { EncounterVehiclePanel } from './EncounterVehiclePanel'
+import { useEncounterState } from '@/hooks/useEncounterState'
 import { HUD } from '@/lib/tokens'
 
 /* ── Design tokens ────────────────────────────────────────── */
@@ -48,6 +49,7 @@ export interface StagingRightRailProps {
  *   this rail              9003  ← above all, always clickable
  */
 export function StagingRightRail({ campaignId, characters, isCombatActive }: StagingRightRailProps) {
+  const { encounter } = useEncounterState(campaignId)
   const [openPanel, setOpenPanel] = useState<RightPanelId | null>(null)
 
   // Hide rail entirely outside combat
@@ -103,6 +105,7 @@ export function StagingRightRail({ campaignId, characters, isCombatActive }: Sta
         {openPanel === 'adversaries' && (
           <EncounterAdversaryPanel
             campaignId={campaignId}
+            encounter={encounter}
             characters={characters}
           />
         )}
@@ -110,6 +113,7 @@ export function StagingRightRail({ campaignId, characters, isCombatActive }: Sta
         {openPanel === 'vehicles' && (
           <EncounterVehiclePanel
             campaignId={campaignId}
+            encounter={encounter}
           />
         )}
       </StagingDrawer>
