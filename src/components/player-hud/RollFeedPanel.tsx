@@ -407,16 +407,232 @@ function FullCard({
   return                            <SkillCard  roll={roll} isOwn={isOwn} isGm={isGm} onCollapse={onCollapse} />
 }
 
-// ── Temporary stub — replaced in Task 2 ────────────────────────────
-export function RollFeedPanel({ rolls, ownCharacterId, isGm = false }: {
+// ═══════════════════════════════════════════════════════════════════
+// INITIATIVE ROW — compact, non-expandable notification
+// ═══════════════════════════════════════════════════════════════════
+function InitiativeRow({ group }: { group: { rolls: RollEntry[] } }) {
+  const latest = group.rolls[group.rolls.length - 1] ?? group.rolls[0]
+  const label  = group.rolls.length === 1
+    ? group.rolls[0].character_name
+    : `${group.rolls.length} participants`
+  return (
+    <div style={{ padding: '3px 4px', display: 'flex', alignItems: 'center', gap: 6 }}>
+      <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontStyle: 'italic', color: 'var(--hud-text-faint)', flex: 1 }}>
+        ⚙ Initiative Rolled · {label}
+      </span>
+      <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)', whiteSpace: 'nowrap' }}>
+        {relativeTime(latest.rolled_at)}
+      </span>
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SYSTEM ROW — compact; long messages get an expand toggle
+// ═══════════════════════════════════════════════════════════════════
+const SYSTEM_LONG_THRESHOLD = 60
+
+function SystemRow({ roll }: { roll: RollEntry }) {
+  const [expanded, setExpanded] = useState(false)
+  const label  = roll.roll_label ?? 'System Message'
+  const isLong = label.length > SYSTEM_LONG_THRESHOLD
+
+  if (roll.roll_type === 'Item Award') {
+    const splitIdx   = label.indexOf(' awarded to ')
+    const itemPart   = splitIdx >= 0 ? label.slice(0, splitIdx) : label
+    const recipients = splitIdx >= 0 ? label.slice(splitIdx + ' awarded to '.length) : ''
+    return (
+      <div style={{ padding: '3px 4px', fontFamily: FONT_BODY, fontSize: FS.overline }}>
+        <span>🎁 </span>
+        <span style={{ color: HUD.gold, fontWeight: 700 }}>{itemPart}</span>
+        {recipients && (
+          <>
+            <span style={{ color: 'var(--hud-text-faint)' }}> awarded to </span>
+            <span style={{ color: 'var(--hud-text-dim)' }}>{recipients}</span>
+          </>
+        )}
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ padding: '3px 4px', fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)' }}>
+      <span>⚙ </span>
+      {isLong ? (
+        <>
+          <span>{expanded ? label : `${label.slice(0, SYSTEM_LONG_THRESHOLD)}…`}</span>
+          <button
+            onClick={() => setExpanded(v => !v)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--hud-text-faint)', fontFamily: FONT_BODY, fontSize: FS.overline, marginLeft: 4, padding: 0 }}
+          >
+            {expanded ? '‹' : '›'}
+          </button>
+        </>
+      ) : (
+        <span>{label}</span>
+      )}
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// COLLAPSED ROW — one-line summary for history entries; click to expand
+// ═══════════════════════════════════════════════════════════════════
+function outcomeAbbr(n: number): string {
+  if (n > 0) return 'SUC'
+  if (n < 0) return 'FAIL'
+  return '—'
+}
+
+function CollapsedRow({
+  roll, isOwn, onClick,
+}: {
+  roll: RollEntry; isOwn: boolean; onClick: () => void
+}) {
+  const ac       = alignColor(roll, isOwn)
+  const category = classifyRoll(roll)
+  const typeLabel = category === 'combat'
+    ? (roll.weapon_name || roll.roll_label || 'Attack')
+    : category === 'force'
+    ? (roll.weapon_name || roll.roll_label || 'Force')
+    : (roll.roll_label || 'Roll')
+  const net       = roll.result.netSuccess
+  const abbr      = outcomeAbbr(net)
+  const abbrColor = net > 0 ? '#8A7030' : net < 0 ? '#8A3020' : 'var(--hud-text-faint)'
+
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 5,
+        padding: '3px 7px', width: '100%', textAlign: 'left',
+        background: '#0A0B0F', border: '1px solid #141318',
+        borderRadius: RADIUS.md, cursor: 'pointer',
+        fontFamily: FONT_BODY,
+      }}
+    >
+      <div style={{ width: 4, height: 4, borderRadius: RADIUS.full, flexShrink: 0, background: ac }} />
+      <span style={{ fontSize: FS.overline, color: '#5A4A38', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {roll.character_name}
+      </span>
+      <span style={{ fontSize: FS.overline, color: '#3A3228', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 80 }}>
+        {typeLabel}
+      </span>
+      <span style={{ fontSize: FS.overline, fontWeight: 700, color: abbrColor, minWidth: 28, textAlign: 'right' }}>
+        {abbr}
+      </span>
+      <span style={{ fontSize: FS.overline, color: '#2A2228', whiteSpace: 'nowrap' }}>
+        {relativeTime(roll.rolled_at)}
+      </span>
+    </button>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ROLL FEED PANEL — Approach A layout
+// ═══════════════════════════════════════════════════════════════════
+export function RollFeedPanel({
+  rolls,
+  ownCharacterId,
+  isGm = false,
+}: {
   rolls:          RollEntry[]
   ownCharacterId: string
   isGm?:          boolean
 }) {
-  void rolls; void ownCharacterId; void isGm
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
+
+  function toggleExpanded(id: string) {
+    setExpandedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  if (rolls.length === 0) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 48, fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)' }}>
+        No rolls yet this session.
+      </div>
+    )
+  }
+
+  // Players never see hidden rolls; GMs see everything
+  const visible = isGm ? [...rolls].reverse() : [...rolls].reverse().filter(r => !r.hidden)
+  const grouped = groupRolls(visible)
+
+  const nodes: ReactNode[] = []
+  let expandedSlots  = 0
+  let historyStarted = false
+
+  for (let i = 0; i < grouped.length; i++) {
+    const g = grouped[i]
+
+    if (g.kind === 'initiative-group') {
+      nodes.push(<InitiativeRow key={`init-${i}`} group={g} />)
+      continue
+    }
+
+    const { roll, category } = g
+
+    if (category === 'system') {
+      nodes.push(<SystemRow key={roll.id} roll={roll} />)
+      continue
+    }
+
+    const isOwn = roll.character_id === ownCharacterId
+
+    if (expandedSlots < 2) {
+      // Always-expanded top-2 cards — no onCollapse, not togglable
+      nodes.push(
+        <FullCard key={roll.id} roll={roll} isOwn={isOwn} isGm={isGm} category={category} />
+      )
+      expandedSlots++
+    } else {
+      // History section
+      if (!historyStarted) {
+        historyStarted = true
+        nodes.push(
+          <div key="history-label" style={{
+            fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
+            letterSpacing: '0.12em', textTransform: 'uppercase',
+            color: 'var(--hud-text-faint)', padding: '4px 2px 2px', opacity: 0.5,
+          }}>
+            Earlier this session
+          </div>
+        )
+      }
+
+      if (expandedIds.has(roll.id)) {
+        // History-expanded: clicking the band collapses it
+        nodes.push(
+          <FullCard
+            key={roll.id}
+            roll={roll}
+            isOwn={isOwn}
+            isGm={isGm}
+            category={category}
+            onCollapse={() => toggleExpanded(roll.id)}
+          />
+        )
+      } else {
+        nodes.push(
+          <CollapsedRow
+            key={roll.id}
+            roll={roll}
+            isOwn={isOwn}
+            onClick={() => toggleExpanded(roll.id)}
+          />
+        )
+      }
+    }
+  }
+
   return (
-    <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)', padding: 12 }}>
-      Loading feed…
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+      {nodes}
     </div>
   )
 }
