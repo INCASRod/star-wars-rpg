@@ -1,0 +1,765 @@
+# Roll Feed Redesign — Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Rewrite `RollFeedPanel` to show the 2 most recent meaningful rolls as full Design-B cards and collapse older rolls into a compact, expandable history list.
+
+**Architecture:** Single-file complete rewrite of `src/components/player-hud/RollFeedPanel.tsx`. All utility logic (classifyRoll, groupRolls, alignColor) is preserved verbatim. The card layer switches to Design B (tinted header band + clean result body). The feed layer implements Approach A (top-2 expanded, history collapsed, click-to-expand). Parent components and `useRollFeed` are untouched.
+
+**Tech Stack:** React (useState, ReactNode), TypeScript, Next.js `'use client'`, tokens from `@/lib/tokens`, `DiceFace` component for dice pips.
+
+---
+
+## File Structure
+
+| File | Action |
+|---|---|
+| `src/components/player-hud/RollFeedPanel.tsx` | **Complete rewrite** |
+| `docs/architecture.md` | **Update** — RollFeedPanel entry |
+
+---
+
+### Task 1: New file foundation — imports, utilities, and full card components
+
+**Files:**
+- Modify: `src/components/player-hud/RollFeedPanel.tsx` (full replace)
+
+This task writes the first ~220 lines of the new file: the import block, all shared utility functions (preserved from the old file), shared sub-components (`ForcePips`, `DicePoolRow`, `ForceDiceRow`, `ResultSymbols`, `HiddenBadge`), the Design-B `BandStyle` helper, and all three full card components (`SkillCard`, `CombatCard`, `ForceCard`, `FullCard`). A temporary stub export for `RollFeedPanel` is included at the bottom so the file compiles while Task 2 is not yet done.
+
+`RollFeedMini` is **not** carried over — it is unused.
+
+- [ ] **Step 1: Replace the entire file with the new foundation**
+
+  Write `src/components/player-hud/RollFeedPanel.tsx` with the following content:
+
+  ```tsx
+  'use client'
+
+  import { useState, type ReactNode }                       from 'react'
+  import { FONT_BODY, RADIUS, SYM, FS, type DiceType }      from '@/lib/tokens'
+  import { DiceFace }                                        from '@/components/dice/DiceFace'
+  import type { RollEntry }                                  from '@/hooks/useRollFeed'
+
+  // Alignment / force colours are not in the design token system — they are
+  // specific to the roll feed's alignment identity system.
+  const FORCE_BLUE   = '#1A78A0'
+  const FORCE_PURPLE = 'rgba(139,43,226,0.9)'
+
+  // ── Roll classification ─────────────────────────────────────────────
+  type RollCategory = 'skill' | 'combat' | 'force' | 'initiative' | 'system'
+
+  function classifyRoll(entry: RollEntry): RollCategory {
+    if (entry.roll_type === 'force')      return 'force'
+    if (entry.roll_type === 'initiative') return 'initiative'
+    if (
+      entry.roll_type === 'system' ||
+      entry.roll_type === 'Item Award' ||
+      entry.alignment === 'system'
+    ) return 'system'
+    if (entry.roll_type === 'combat') return 'combat'
+    if ((entry.pool?.force ?? 0) > 0) return 'force'
+    if (entry.roll_label?.match(/^(Ranged|Melee) Attack/)) return 'combat'
+    return 'skill'
+  }
+
+  // ── Initiative grouping (30-second window) ──────────────────────────
+  type GroupedEntry =
+    | { kind: 'single';           roll: RollEntry; category: RollCategory }
+    | { kind: 'initiative-group'; rolls: RollEntry[] }
+
+  function groupRolls(rolls: RollEntry[]): GroupedEntry[] {
+    const out: GroupedEntry[] = []
+    let i = 0
+    while (i < rolls.length) {
+      const entry    = rolls[i]
+      const category = classifyRoll(entry)
+      if (category === 'initiative') {
+        const group: RollEntry[] = [entry]
+        const t0 = new Date(entry.rolled_at).getTime()
+        let j = i + 1
+        while (j < rolls.length && classifyRoll(rolls[j]) === 'initiative') {
+          const tN = new Date(rolls[j].rolled_at).getTime()
+          if (Math.abs(tN - t0) <= 30_000) { group.push(rolls[j]); j++ }
+          else break
+        }
+        out.push({ kind: 'initiative-group', rolls: group })
+        i = j
+      } else {
+        out.push({ kind: 'single', roll: entry, category })
+        i++
+      }
+    }
+    return out
+  }
+
+  // ── Alignment colour helpers ────────────────────────────────────────
+  function alignColor(roll: RollEntry, isOwn: boolean): string {
+    if (isOwn)                       return '#C8AA50'
+    if (roll.is_dm)                  return '#9060D0'
+    if (roll.alignment === 'enemy')  return '#8B3025'
+    if (roll.alignment === 'allied') return '#2D6B3A'
+    return '#6A5840'
+  }
+
+  function nameColor(roll: RollEntry, isOwn: boolean): string {
+    if (isOwn)      return '#C8AA50'
+    if (roll.is_dm) return '#9060D0'
+    return 'var(--hud-text)'
+  }
+
+  // ── Relative time ───────────────────────────────────────────────────
+  function relativeTime(iso: string): string {
+    const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000)
+    if (diff < 60)   return `${diff}s ago`
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
+    return `${Math.floor(diff / 3600)}h ago`
+  }
+
+  // ── Force pip row ───────────────────────────────────────────────────
+  function ForcePips({ light, dark }: { light: number; dark: number }) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+        {Array.from({ length: light }).map((_, i) => (
+          <div key={`l${i}`} style={{ width: 10, height: 10, borderRadius: RADIUS.full, flexShrink: 0, background: FORCE_BLUE, boxShadow: `0 0 4px ${FORCE_BLUE}80` }} />
+        ))}
+        {light > 0 && dark > 0 && (
+          <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: 'var(--hud-text-faint)', margin: '0 2px' }}>·</span>
+        )}
+        {Array.from({ length: dark }).map((_, i) => (
+          <div key={`d${i}`} style={{ width: 10, height: 10, borderRadius: RADIUS.full, flexShrink: 0, background: FORCE_PURPLE }} />
+        ))}
+      </div>
+    )
+  }
+
+  // ── Dice pool rows ──────────────────────────────────────────────────
+  const POOL_ORDER: DiceType[] = ['proficiency', 'ability', 'boost', 'challenge', 'difficulty', 'setback']
+
+  function DicePoolRow({ pool }: { pool: Record<DiceType, number> }) {
+    const dice: DiceType[] = []
+    for (const t of POOL_ORDER) {
+      const n = pool[t] ?? 0
+      for (let i = 0; i < n; i++) dice.push(t)
+    }
+    if (dice.length === 0) return null
+    return (
+      <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap', marginTop: 3 }}>
+        {dice.map((t, i) => <DiceFace key={i} type={t} size={12} />)}
+      </div>
+    )
+  }
+
+  function ForceDiceRow({ count }: { count: number }) {
+    if (count <= 0) return null
+    return (
+      <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap', marginTop: 3 }}>
+        {Array.from({ length: count }).map((_, i) => <DiceFace key={i} type="force" size={12} />)}
+      </div>
+    )
+  }
+
+  // ── Outcome helpers ─────────────────────────────────────────────────
+  function outcomeLabel(n: number): string {
+    if (n > 0) return 'SUCCESS'
+    if (n < 0) return 'FAILURE'
+    return 'WASH'
+  }
+
+  function outcomeColor(n: number): string {
+    if (n > 0) return '#C8AA50'
+    if (n < 0) return '#C04040'
+    return 'var(--hud-text-faint)'
+  }
+
+  // ── Result symbols row ──────────────────────────────────────────────
+  function ResultSymbols({ result }: { result: RollEntry['result'] }) {
+    const items: { icon: string; color: string; n: number }[] = []
+    if (result.netSuccess   > 0) items.push({ icon: SYM.S.icon, color: SYM.S.color, n: result.netSuccess })
+    if (result.netSuccess   < 0) items.push({ icon: SYM.F.icon, color: SYM.F.color, n: Math.abs(result.netSuccess) })
+    if (result.netAdvantage > 0) items.push({ icon: SYM.A.icon, color: SYM.A.color, n: result.netAdvantage })
+    if (result.netAdvantage < 0) items.push({ icon: SYM.H.icon, color: SYM.H.color, n: Math.abs(result.netAdvantage) })
+    if (result.triumph      > 0) items.push({ icon: SYM.T.icon, color: SYM.T.color, n: result.triumph })
+    if (result.despair      > 0) items.push({ icon: SYM.D.icon, color: SYM.D.color, n: result.despair })
+    if (items.length === 0) return null
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: FONT_BODY, fontSize: FS.sm }}>
+        {items.map(({ icon, color, n }, idx) => (
+          <span key={idx} style={{ color }}>
+            <i className={`ffi ffi-${icon}`} />
+            {n > 1 ? n : ''}
+          </span>
+        ))}
+      </div>
+    )
+  }
+
+  // ── Hidden badge ────────────────────────────────────────────────────
+  function HiddenBadge({ forGm }: { forGm: boolean }) {
+    return (
+      <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: forGm ? '#9060D0' : 'var(--hud-text-faint)', fontStyle: 'italic', marginBottom: 3 }}>
+        {forGm ? '[HIDDEN FROM PLAYERS]' : '[Hidden]'}
+      </div>
+    )
+  }
+
+  // ── Design B: header band style helper ─────────────────────────────
+  // ac must be a 6-digit hex string — appending 2-digit alpha hex works.
+  function bandStyle(ac: string) {
+    return {
+      background:   `${ac}12`,
+      borderBottom: `1px solid ${ac}26`,
+      display:      'flex',
+      alignItems:   'center',
+      gap:          6,
+      padding:      '5px 9px',
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // SKILL CARD (Design B)
+  // ═══════════════════════════════════════════════════════════════════
+  function SkillCard({
+    roll, isOwn, isGm, onCollapse,
+  }: {
+    roll: RollEntry; isOwn: boolean; isGm: boolean; onCollapse?: () => void
+  }) {
+    const ac       = alignColor(roll, isOwn)
+    const isHidden = roll.hidden && !isOwn
+
+    return (
+      <div style={{ borderRadius: RADIUS.md, overflow: 'hidden', border: `1px solid ${ac}30` }}>
+        {/* Band */}
+        <div
+          style={{ ...bandStyle(ac), cursor: onCollapse ? 'pointer' : 'default' }}
+          onClick={onCollapse}
+        >
+          <div style={{ width: 5, height: 5, borderRadius: RADIUS.full, flexShrink: 0, background: ac, boxShadow: `0 0 5px ${ac}80` }} />
+          <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: nameColor(roll, isOwn), flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {roll.character_name}
+          </span>
+          {roll.roll_label && (
+            <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontStyle: 'italic', color: 'var(--hud-text-faint)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>
+              {roll.roll_label}
+            </span>
+          )}
+          <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)', whiteSpace: 'nowrap', marginLeft: 4 }}>
+            {relativeTime(roll.rolled_at)}
+          </span>
+        </div>
+        {/* Body */}
+        <div style={{ padding: '7px 9px 6px', background: isOwn ? 'var(--hud-surface-mid)' : '#0D0E12' }}>
+          {isHidden && !isGm ? (
+            <HiddenBadge forGm={false} />
+          ) : (
+            <>
+              {isGm && roll.hidden && <HiddenBadge forGm={true} />}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3, flexWrap: 'wrap' }}>
+                <span style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 900, color: outcomeColor(roll.result.netSuccess) }}>
+                  {outcomeLabel(roll.result.netSuccess)}
+                </span>
+                <ResultSymbols result={roll.result} />
+              </div>
+              <DicePoolRow pool={roll.pool} />
+            </>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // COMBAT CARD (Design B)
+  // ═══════════════════════════════════════════════════════════════════
+  type RollMetaShape = {
+    weaponDamage?:    number
+    weaponDamageAdd?: number
+    characterBrawn?:  number
+    attackType?:      string
+    critEligible?:    boolean
+    critRating?:      number
+    critModifier?:    number
+  }
+
+  function CombatCard({
+    roll, isOwn, isGm, onCollapse,
+  }: {
+    roll: RollEntry; isOwn: boolean; isGm: boolean; onCollapse?: () => void
+  }) {
+    const ac         = alignColor(roll, isOwn)
+    const isHidden   = roll.hidden && !isOwn
+    const weaponName = roll.weapon_name || roll.roll_label || 'Attack'
+    const bandLabel  = roll.target_name
+      ? `⚔ ${weaponName} → ${roll.target_name}${roll.range_band ? ` · ${roll.range_band}` : ''}`
+      : `⚔ ${weaponName}`
+
+    const meta      = roll.roll_meta as RollMetaShape | null | undefined
+    const isRanged  = meta?.attackType !== 'melee'
+    const base      = meta?.weaponDamage ?? 0
+    const damageAdd = isRanged ? 0 : (meta?.weaponDamageAdd ?? 0)
+    const brawnMod  = isRanged ? 0 : (meta?.characterBrawn ?? 0)
+    const netSuc    = Math.max(0, roll.result.netSuccess)
+    const total     = base + brawnMod + damageAdd + netSuc
+    const dmgLine   = (meta?.weaponDamage != null && roll.result.netSuccess > 0)
+      ? isRanged
+        ? `${base}+${netSuc} = ${total}`
+        : damageAdd > 0
+          ? `${base}+${brawnMod}+${damageAdd}+${netSuc} = ${total}`
+          : `${base}+${brawnMod}+${netSuc} = ${total}`
+      : null
+
+    return (
+      <div style={{ borderRadius: RADIUS.md, overflow: 'hidden', border: `1px solid ${ac}30` }}>
+        {/* Band */}
+        <div
+          style={{ ...bandStyle(ac), cursor: onCollapse ? 'pointer' : 'default' }}
+          onClick={onCollapse}
+        >
+          <div style={{ width: 5, height: 5, borderRadius: RADIUS.full, flexShrink: 0, background: ac, boxShadow: `0 0 5px ${ac}80` }} />
+          <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: nameColor(roll, isOwn), whiteSpace: 'nowrap' }}>
+            {roll.character_name}
+          </span>
+          <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontStyle: 'italic', color: 'var(--hud-text-faint)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginLeft: 4 }}>
+            {bandLabel}
+          </span>
+          <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)', whiteSpace: 'nowrap', marginLeft: 4 }}>
+            {relativeTime(roll.rolled_at)}
+          </span>
+        </div>
+        {/* Body */}
+        <div style={{ padding: '7px 9px 6px', background: isOwn ? 'var(--hud-surface-mid)' : '#0D0E12' }}>
+          {isHidden && !isGm ? (
+            <HiddenBadge forGm={false} />
+          ) : (
+            <>
+              {isGm && roll.hidden && <HiddenBadge forGm={true} />}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3, flexWrap: 'wrap' }}>
+                <span style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 900, color: outcomeColor(roll.result.netSuccess) }}>
+                  {outcomeLabel(roll.result.netSuccess)}
+                </span>
+                <ResultSymbols result={roll.result} />
+              </div>
+              {dmgLine && (
+                <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: '#C8AA50', marginBottom: 3 }}>
+                  Dmg: {dmgLine}
+                </div>
+              )}
+              {meta?.critEligible && (
+                <div style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 4,
+                  padding: '2px 6px', borderRadius: RADIUS.sm, marginBottom: 3,
+                  background: 'var(--hud-accent-10)', border: '1px solid var(--hud-accent-35)',
+                  fontFamily: FONT_BODY, fontSize: FS.overline,
+                  color: 'var(--hud-gold)', fontWeight: 700, letterSpacing: '0.05em',
+                }}>
+                  ⚠ CRITICAL ELIGIBLE
+                  {(meta.critModifier ?? 0) > 0 && (
+                    <span style={{ opacity: 0.75 }}> +{meta.critModifier}</span>
+                  )}
+                </div>
+              )}
+              <DicePoolRow pool={roll.pool} />
+            </>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // FORCE CARD (Design B)
+  // ═══════════════════════════════════════════════════════════════════
+  function ForceCard({
+    roll, isOwn, isGm, onCollapse,
+  }: {
+    roll: RollEntry; isOwn: boolean; isGm: boolean; onCollapse?: () => void
+  }) {
+    const isHidden   = roll.hidden && !isOwn
+    const powerName  = roll.weapon_name || roll.roll_label || 'Force Power'
+    const light      = roll.result.netSuccess
+    const dark       = roll.result.netAdvantage
+    const darkUsed   = roll.result.triumph
+    const forceCount = roll.pool?.force ?? 0
+
+    return (
+      <div style={{ borderRadius: RADIUS.md, overflow: 'hidden', border: `1px solid ${FORCE_BLUE}30` }}>
+        {/* Band — force-blue tint */}
+        <div
+          style={{ ...bandStyle(FORCE_BLUE), cursor: onCollapse ? 'pointer' : 'default' }}
+          onClick={onCollapse}
+        >
+          <div style={{ width: 5, height: 5, borderRadius: RADIUS.full, flexShrink: 0, background: FORCE_BLUE, boxShadow: `0 0 5px ${FORCE_BLUE}80` }} />
+          <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: FORCE_BLUE, whiteSpace: 'nowrap' }}>
+            {roll.character_name}
+          </span>
+          <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontStyle: 'italic', color: 'var(--hud-text-faint)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginLeft: 4 }}>
+            ✦ {powerName} · Force Power
+          </span>
+          <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)', whiteSpace: 'nowrap', marginLeft: 4 }}>
+            {relativeTime(roll.rolled_at)}
+          </span>
+        </div>
+        {/* Body */}
+        <div style={{ padding: '7px 9px 6px', background: isOwn ? 'var(--hud-surface-mid)' : '#0D0E12' }}>
+          {isHidden && !isGm ? (
+            <HiddenBadge forGm={false} />
+          ) : (
+            <>
+              {isGm && roll.hidden && <HiddenBadge forGm={true} />}
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 900, color: FORCE_BLUE, marginBottom: 4 }}>
+                ACTIVATED
+              </div>
+              {(light > 0 || dark > 0) && (
+                <div style={{ marginBottom: 4 }}>
+                  <ForcePips light={light} dark={dark} />
+                </div>
+              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', fontFamily: FONT_BODY, fontSize: FS.caption, marginBottom: 3 }}>
+                {light > 0 && <span style={{ color: FORCE_BLUE }}>{light} Light FP</span>}
+                {dark > 0 && (
+                  <>
+                    {light > 0 && <span style={{ color: 'var(--hud-text-faint)' }}>·</span>}
+                    <span style={{ color: FORCE_PURPLE }}>{dark} Dark FP</span>
+                    {darkUsed > 0 && <span style={{ color: 'rgba(200,80,80,0.8)' }}>({darkUsed} used)</span>}
+                  </>
+                )}
+              </div>
+              <ForceDiceRow count={forceCount} />
+            </>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // ── Card router ─────────────────────────────────────────────────────
+  function FullCard({
+    roll, isOwn, isGm, category, onCollapse,
+  }: {
+    roll: RollEntry; isOwn: boolean; isGm: boolean; category: RollCategory; onCollapse?: () => void
+  }) {
+    if (category === 'force')  return <ForceCard  roll={roll} isOwn={isOwn} isGm={isGm} onCollapse={onCollapse} />
+    if (category === 'combat') return <CombatCard roll={roll} isOwn={isOwn} isGm={isGm} onCollapse={onCollapse} />
+    return                            <SkillCard  roll={roll} isOwn={isOwn} isGm={isGm} onCollapse={onCollapse} />
+  }
+
+  // ── Temporary stub — replaced in Task 2 ────────────────────────────
+  export function RollFeedPanel({ rolls, ownCharacterId, isGm = false }: {
+    rolls:          RollEntry[]
+    ownCharacterId: string
+    isGm?:          boolean
+  }) {
+    void rolls; void ownCharacterId; void isGm
+    return (
+      <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)', padding: 12 }}>
+        Loading feed…
+      </div>
+    )
+  }
+  ```
+
+- [ ] **Step 2: Verify TypeScript compiles**
+
+  ```powershell
+  npx tsc --noEmit
+  ```
+
+  Expected: zero errors. If you see errors about `React.CSSProperties` — add `import type React from 'react'` at the top alongside the existing react import.
+
+- [ ] **Step 3: Commit**
+
+  ```powershell
+  git add src/components/player-hud/RollFeedPanel.tsx
+  git commit -m "feat(feed): rewrite foundation — Design B cards, utilities, stub export"
+  ```
+
+---
+
+### Task 2: Compact rows and complete RollFeedPanel export
+
+**Files:**
+- Modify: `src/components/player-hud/RollFeedPanel.tsx` — append compact rows and replace stub export
+
+**Context:** The file from Task 1 already contains everything up through `FullCard` and a stub `RollFeedPanel`. This task appends `InitiativeRow`, `SystemRow`, `CollapsedRow`, then replaces the stub with the real `RollFeedPanel` that implements the Approach A feed layout.
+
+- [ ] **Step 1: Remove the stub export and append all remaining components + real export**
+
+  Delete the "Temporary stub" section at the bottom of the file (the last `export function RollFeedPanel` block including the comment above it), then append the following in its place:
+
+  ```tsx
+  // ═══════════════════════════════════════════════════════════════════
+  // INITIATIVE ROW — compact, non-expandable notification
+  // ═══════════════════════════════════════════════════════════════════
+  function InitiativeRow({ group }: { group: { rolls: RollEntry[] } }) {
+    const latest = group.rolls[group.rolls.length - 1] ?? group.rolls[0]
+    const label  = group.rolls.length === 1
+      ? group.rolls[0].character_name
+      : `${group.rolls.length} participants`
+    return (
+      <div style={{ padding: '3px 4px', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontStyle: 'italic', color: 'var(--hud-text-faint)', flex: 1 }}>
+          ⚙ Initiative Rolled · {label}
+        </span>
+        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)', whiteSpace: 'nowrap' }}>
+          {relativeTime(latest.rolled_at)}
+        </span>
+      </div>
+    )
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // SYSTEM ROW — compact; long messages get an expand toggle
+  // ═══════════════════════════════════════════════════════════════════
+  const SYSTEM_LONG_THRESHOLD = 60
+
+  function SystemRow({ roll }: { roll: RollEntry }) {
+    const [expanded, setExpanded] = useState(false)
+    const label  = roll.roll_label ?? 'System Message'
+    const isLong = label.length > SYSTEM_LONG_THRESHOLD
+
+    if (roll.roll_type === 'Item Award') {
+      const splitIdx   = label.indexOf(' awarded to ')
+      const itemPart   = splitIdx >= 0 ? label.slice(0, splitIdx) : label
+      const recipients = splitIdx >= 0 ? label.slice(splitIdx + ' awarded to '.length) : ''
+      return (
+        <div style={{ padding: '3px 4px', fontFamily: FONT_BODY, fontSize: FS.overline }}>
+          <span>🎁 </span>
+          <span style={{ color: '#C8AA50', fontWeight: 700 }}>{itemPart}</span>
+          {recipients && (
+            <>
+              <span style={{ color: 'var(--hud-text-faint)' }}> awarded to </span>
+              <span style={{ color: 'var(--hud-text-dim)' }}>{recipients}</span>
+            </>
+          )}
+        </div>
+      )
+    }
+
+    return (
+      <div style={{ padding: '3px 4px', fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)' }}>
+        <span>⚙ </span>
+        {isLong ? (
+          <>
+            <span>{expanded ? label : `${label.slice(0, SYSTEM_LONG_THRESHOLD)}…`}</span>
+            <button
+              onClick={() => setExpanded(v => !v)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--hud-text-faint)', fontFamily: FONT_BODY, fontSize: FS.overline, marginLeft: 4, padding: 0 }}
+            >
+              {expanded ? '‹' : '›'}
+            </button>
+          </>
+        ) : (
+          <span>{label}</span>
+        )}
+      </div>
+    )
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // COLLAPSED ROW — one-line summary for history entries; click to expand
+  // ═══════════════════════════════════════════════════════════════════
+  function outcomeAbbr(n: number): string {
+    if (n > 0) return 'SUC'
+    if (n < 0) return 'FAIL'
+    return '—'
+  }
+
+  function CollapsedRow({
+    roll, isOwn, onClick,
+  }: {
+    roll: RollEntry; isOwn: boolean; onClick: () => void
+  }) {
+    const ac       = alignColor(roll, isOwn)
+    const category = classifyRoll(roll)
+    const typeLabel = category === 'combat'
+      ? (roll.weapon_name || roll.roll_label || 'Attack')
+      : category === 'force'
+      ? (roll.weapon_name || roll.roll_label || 'Force')
+      : (roll.roll_label || 'Roll')
+    const net       = roll.result.netSuccess
+    const abbr      = outcomeAbbr(net)
+    const abbrColor = net > 0 ? '#8A7030' : net < 0 ? '#8A3020' : 'var(--hud-text-faint)'
+
+    return (
+      <button
+        onClick={onClick}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 5,
+          padding: '3px 7px', width: '100%', textAlign: 'left',
+          background: '#0A0B0F', border: '1px solid #141318',
+          borderRadius: RADIUS.md, cursor: 'pointer',
+          fontFamily: FONT_BODY,
+        }}
+      >
+        <div style={{ width: 4, height: 4, borderRadius: RADIUS.full, flexShrink: 0, background: ac }} />
+        <span style={{ fontSize: FS.overline, color: '#5A4A38', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {roll.character_name}
+        </span>
+        <span style={{ fontSize: FS.overline, color: '#3A3228', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 80 }}>
+          {typeLabel}
+        </span>
+        <span style={{ fontSize: FS.overline, fontWeight: 700, color: abbrColor, minWidth: 28, textAlign: 'right' }}>
+          {abbr}
+        </span>
+        <span style={{ fontSize: FS.overline, color: '#2A2228', whiteSpace: 'nowrap' }}>
+          {relativeTime(roll.rolled_at)}
+        </span>
+      </button>
+    )
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // ROLL FEED PANEL — Approach A layout
+  // ═══════════════════════════════════════════════════════════════════
+  export function RollFeedPanel({
+    rolls,
+    ownCharacterId,
+    isGm = false,
+  }: {
+    rolls:          RollEntry[]
+    ownCharacterId: string
+    isGm?:          boolean
+  }) {
+    const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
+
+    function toggleExpanded(id: string) {
+      setExpandedIds(prev => {
+        const next = new Set(prev)
+        if (next.has(id)) next.delete(id)
+        else next.add(id)
+        return next
+      })
+    }
+
+    if (rolls.length === 0) {
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 48, fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)' }}>
+          No rolls yet this session.
+        </div>
+      )
+    }
+
+    // Players never see hidden rolls; GMs see everything
+    const visible = isGm ? [...rolls].reverse() : [...rolls].reverse().filter(r => !r.hidden)
+    const grouped = groupRolls(visible)
+
+    const nodes: ReactNode[] = []
+    let expandedSlots  = 0
+    let historyStarted = false
+
+    for (let i = 0; i < grouped.length; i++) {
+      const g = grouped[i]
+
+      if (g.kind === 'initiative-group') {
+        nodes.push(<InitiativeRow key={`init-${i}`} group={g} />)
+        continue
+      }
+
+      const { roll, category } = g
+
+      if (category === 'system') {
+        nodes.push(<SystemRow key={roll.id} roll={roll} />)
+        continue
+      }
+
+      const isOwn = roll.character_id === ownCharacterId
+
+      if (expandedSlots < 2) {
+        // Always-expanded top-2 cards — not togglable, no onCollapse
+        nodes.push(
+          <FullCard key={roll.id} roll={roll} isOwn={isOwn} isGm={isGm} category={category} />
+        )
+        expandedSlots++
+      } else {
+        // History section
+        if (!historyStarted) {
+          historyStarted = true
+          nodes.push(
+            <div key="history-label" style={{
+              fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
+              letterSpacing: '0.12em', textTransform: 'uppercase',
+              color: 'var(--hud-text-faint)', padding: '4px 2px 2px', opacity: 0.5,
+            }}>
+              Earlier this session
+            </div>
+          )
+        }
+
+        if (expandedIds.has(roll.id)) {
+          // History-expanded: render full card; clicking the band collapses it
+          nodes.push(
+            <FullCard
+              key={roll.id}
+              roll={roll}
+              isOwn={isOwn}
+              isGm={isGm}
+              category={category}
+              onCollapse={() => toggleExpanded(roll.id)}
+            />
+          )
+        } else {
+          nodes.push(
+            <CollapsedRow
+              key={roll.id}
+              roll={roll}
+              isOwn={isOwn}
+              onClick={() => toggleExpanded(roll.id)}
+            />
+          )
+        }
+      }
+    }
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+        {nodes}
+      </div>
+    )
+  }
+  ```
+
+- [ ] **Step 2: Verify TypeScript compiles**
+
+  ```powershell
+  npx tsc --noEmit
+  ```
+
+  Expected: zero errors.
+
+- [ ] **Step 3: Commit**
+
+  ```powershell
+  git add src/components/player-hud/RollFeedPanel.tsx
+  git commit -m "feat(feed): complete rewrite — compact rows + Approach A feed layout"
+  ```
+
+---
+
+### Task 3: Update architecture doc
+
+**Files:**
+- Modify: `docs/architecture.md`
+
+Find the existing `RollFeedPanel` entry (search for "RollFeedPanel" or "RollFeedMini") and update it to reflect the new behaviour. Replace whatever is there with:
+
+- [ ] **Step 1: Update the RollFeedPanel entry in `docs/architecture.md`**
+
+  Find the section describing `RollFeedPanel` (it may be under a "Components" or "Player HUD" heading). Replace the description with:
+
+  ```
+  RollFeedPanel — src/components/player-hud/RollFeedPanel.tsx
+  Live roll feed used by both player HUD (HudRightColumn) and GM view (GmShell).
+  Layout: Approach A — the 2 most recent skill/combat/force rolls are shown as full
+  Design-B cards (tinted header band + result body). Initiative entries are always
+  compact single-line notifications. System entries are compact with an expand toggle
+  for long messages. All older skill/combat/force entries collapse to one-line rows;
+  clicking a row expands it in-place via expandedIds Set state; clicking the expanded
+  card's header band collapses it again. RollFeedMini has been removed (was unused).
+  Props: rolls: RollEntry[], ownCharacterId: string, isGm?: boolean
+  ```
+
+- [ ] **Step 2: Commit**
+
+  ```powershell
+  git add docs/architecture.md
+  git commit -m "docs(arch): update RollFeedPanel entry for redesign"
+  ```
