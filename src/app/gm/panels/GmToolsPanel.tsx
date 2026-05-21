@@ -131,7 +131,7 @@ export function GmToolsPanel({
   const [addConflictOpen, setAddConflictOpen] = useState(false)
 
   const forceSensitiveCharIds = useMemo(
-    () => activeChars.filter(c => c.is_force_sensitive).map(c => c.id),
+    () => activeChars.filter(c => (c.force_rating ?? 0) > 0).map(c => c.id),
     [activeChars],
   )
 

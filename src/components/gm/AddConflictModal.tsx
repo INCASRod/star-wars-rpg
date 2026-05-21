@@ -42,7 +42,7 @@ interface AddConflictModalProps {
 
 export function AddConflictModal({ open, onClose, campaignId, characters }: AddConflictModalProps) {
   const supabase      = useMemo(() => createClient(), [])
-  const forceChars    = characters.filter(c => c.is_force_sensitive)
+  const forceChars    = characters.filter(c => (c.force_rating ?? 0) > 0)
 
   const [charId,    setCharId]    = useState('')
   const [type,      setType]      = useState('')
