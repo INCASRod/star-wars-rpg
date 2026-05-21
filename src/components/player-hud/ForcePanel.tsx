@@ -53,11 +53,13 @@ export interface ForcePowerDisplay {
 }
 
 export interface ConflictEntry {
-  id:            string
-  description?:  string
-  session_label?: string
-  is_resolved:   boolean
-  created_at:    string
+  id:                   string
+  description?:         string
+  narrative?:           string
+  session_label?:       string
+  is_resolved:          boolean
+  player_acknowledged?: boolean
+  created_at:           string
 }
 
 // ── Props ─────────────────────────────────────────────────────────────────────
