@@ -15,12 +15,9 @@ const ALIGN_NEUTRAL = '#6A5840'
 const FORCE_BLUE      = '#1A78A0'
 const FORCE_PURPLE    = 'rgba(139,43,226,0.9)'
 const FORCE_DARK_USED = 'rgba(200,80,80,0.8)'
-// Collapsed row text palette — muted values not in the token system
-const COL_NAME   = '#5A4A38'
-const COL_TYPE   = '#3A3228'
-const COL_TIME   = '#2A2228'
-const COL_SUC    = '#8A7030'
-const COL_FAIL   = '#8A3020'
+// Collapsed row outcome abbreviation colours — theme-independent
+const COL_SUC    = '#C8A030'   // gold-yellow for success
+const COL_FAIL   = '#C04040'   // red for failure
 
 // ── Roll classification ─────────────────────────────────────────────
 type RollCategory = 'skill' | 'combat' | 'force' | 'initiative' | 'system'
@@ -524,16 +521,16 @@ function CollapsedRow({
       }}
     >
       <div style={{ width: 4, height: 4, borderRadius: RADIUS.full, flexShrink: 0, background: ac }} />
-      <span style={{ fontSize: FS.overline, color: COL_NAME, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      <span style={{ fontSize: FS.overline, color: HUD.text, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {roll.character_name}
       </span>
-      <span style={{ fontSize: FS.overline, color: COL_TYPE, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 80 }}>
+      <span style={{ fontSize: FS.overline, color: HUD.textDim, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 80 }}>
         {typeLabel}
       </span>
       <span style={{ fontSize: FS.overline, fontWeight: 700, color: abbrColor, minWidth: 28, textAlign: 'right' }}>
         {abbr}
       </span>
-      <span style={{ fontSize: FS.overline, color: COL_TIME, whiteSpace: 'nowrap' }}>
+      <span style={{ fontSize: FS.overline, color: HUD.textFaint, whiteSpace: 'nowrap' }}>
         {relativeTime(roll.rolled_at)}
       </span>
     </button>
@@ -610,7 +607,7 @@ export function RollFeedPanel({
           <div key="history-label" style={{
             fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
             letterSpacing: '0.12em', textTransform: 'uppercase',
-            color: HUD.textFaint, padding: '4px 2px 2px', opacity: 0.5,
+            color: HUD.textFaint, padding: '4px 2px 2px',
           }}>
             Earlier this session
           </div>
