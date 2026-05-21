@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, type ReactNode }                       from 'react'
-import { FONT_BODY, RADIUS, SYM, FS, type DiceType }      from '@/lib/tokens'
+import { FONT_BODY, RADIUS, SYM, FS, HUD, type DiceType } from '@/lib/tokens'
 import { DiceFace }                                        from '@/components/dice/DiceFace'
 import type { RollEntry }                                  from '@/hooks/useRollFeed'
 
@@ -131,8 +131,8 @@ function outcomeLabel(n: number): string {
 }
 
 function outcomeColor(n: number): string {
-  if (n > 0) return '#C8AA50'
-  if (n < 0) return '#C04040'
+  if (n > 0) return HUD.gold
+  if (n < 0) return 'var(--hud-accent-60)'
   return 'var(--hud-text-faint)'
 }
 
@@ -212,7 +212,7 @@ function SkillCard({
         </span>
       </div>
       {/* Body */}
-      <div style={{ padding: '7px 9px 6px', background: isOwn ? 'var(--hud-surface-mid)' : '#0D0E12' }}>
+      <div style={{ padding: '7px 9px 6px', background: isOwn ? 'var(--hud-surface-mid)' : HUD.panel }}>
         {isHidden && !isGm ? (
           <HiddenBadge forGm={false} />
         ) : (
@@ -291,7 +291,7 @@ function CombatCard({
         </span>
       </div>
       {/* Body */}
-      <div style={{ padding: '7px 9px 6px', background: isOwn ? 'var(--hud-surface-mid)' : '#0D0E12' }}>
+      <div style={{ padding: '7px 9px 6px', background: isOwn ? 'var(--hud-surface-mid)' : HUD.panel }}>
         {isHidden && !isGm ? (
           <HiddenBadge forGm={false} />
         ) : (
@@ -304,7 +304,7 @@ function CombatCard({
               <ResultSymbols result={roll.result} />
             </div>
             {dmgLine && (
-              <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: '#C8AA50', marginBottom: 3 }}>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.gold, marginBottom: 3 }}>
                 Dmg: {dmgLine}
               </div>
             )}
@@ -364,7 +364,7 @@ function ForceCard({
         </span>
       </div>
       {/* Body */}
-      <div style={{ padding: '7px 9px 6px', background: isOwn ? 'var(--hud-surface-mid)' : '#0D0E12' }}>
+      <div style={{ padding: '7px 9px 6px', background: isOwn ? 'var(--hud-surface-mid)' : HUD.panel }}>
         {isHidden && !isGm ? (
           <HiddenBadge forGm={false} />
         ) : (
