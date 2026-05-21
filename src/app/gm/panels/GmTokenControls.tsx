@@ -321,6 +321,7 @@ export function GmTokenControls({
             removeToken={removeToken}
             toggleVisibility={toggleVisibility}
             removeAllTokens={removeAllTokens}
+            noPlayers
           />
         </div>
       </div>
@@ -360,7 +361,7 @@ export function GmTokenControls({
         <div style={sectionHeader}>Add Tokens</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <button style={{ ...tokenBtn, color: HUD.gold }} onClick={() => setView('player')}>
-            <span>👤</span> Add Player Token
+            <span>👤</span> Manage Player Tokens
           </button>
           <button style={{ ...tokenBtn, color: HUD.gold }} onClick={() => setView('adversary')}>
             <span>◆</span> Add Adversary Token

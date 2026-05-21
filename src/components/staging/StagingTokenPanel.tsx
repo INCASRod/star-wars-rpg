@@ -72,6 +72,8 @@ export interface StagingTokenPanelProps {
   removeAllTokens:   () => Promise<void>
   /** When true, hides the Vehicles and Placed Tokens sections — shows only the Players section. */
   playersOnly?:      boolean
+  /** When true, hides the Players section — shows only Vehicles and Placed Tokens. */
+  noPlayers?:        boolean
 }
 
 /**
@@ -84,7 +86,7 @@ export interface StagingTokenPanelProps {
  *   • PC tokens default to is_visible: true (visible to players on add)
  *   • Adds "Remove All Tokens" with an inline confirmation step
  */
-export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addToken, removeToken, toggleVisibility, removeAllTokens, playersOnly = false }: StagingTokenPanelProps) {
+export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addToken, removeToken, toggleVisibility, removeAllTokens, playersOnly = false, noPlayers = false }: StagingTokenPanelProps) {
   const supabase = useMemo(() => createClient(), [])
 
   /* ── Encounter state ──────────────────────────────────── */
@@ -378,85 +380,89 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
       )}
 
       {/* ── Section D: Players ── */}
-      <SectionHeader topBorder={!playersOnly && (vehicleSlots.length > 0 || standaloneTokens.length > 0)}>
-        Players
-      </SectionHeader>
+      {!noPlayers && (
+        <>
+          <SectionHeader topBorder={!playersOnly && (vehicleSlots.length > 0 || standaloneTokens.length > 0)}>
+            Players
+          </SectionHeader>
 
-      {activeCharacters.length === 0 && (
-        <div style={{ padding: '12px 14px', fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>
-          No active characters.
-        </div>
-      )}
-
-      {activeCharacters.map(char => {
-        const isOnMap  = onMapCharIds.has(char.id)
-        const mapToken = tokensByCharId.get(char.id) ?? null
-
-        return (
-          <div key={char.id} style={{ padding: '10px 12px', borderBottom: `1px solid ${BORDER}` }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-
-              {/* Portrait */}
-              {char.portrait_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={char.portrait_url} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid var(--hud-border-hi)' }} />
-              ) : (
-                <div style={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, background: 'var(--hud-surface-lo)', border: '2px solid var(--hud-border-hi)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FC, fontSize: 16, fontWeight: 700, color: HUD.gold }}>
-                  {char.name.charAt(0).toUpperCase()}
-                </div>
-              )}
-
-              {/* Name */}
-              <div style={{ flex: 1, fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {char.name}
-              </div>
-
-              {/* Add / On map */}
-              {mapId && (
-                isOnMap
-                  ? <span style={{ fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, color: GREEN, flexShrink: 0 }}>On map ✓</span>
-                  : <button onClick={() => void addCharacterToken(char)} style={btnSmall}>+ Add</button>
-              )}
+          {activeCharacters.length === 0 && (
+            <div style={{ padding: '12px 14px', fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>
+              No active characters.
             </div>
+          )}
 
-            {/* On-map controls */}
-            {isOnMap && mapToken && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
-                <button
-                  onClick={() => void toggleVisibility(mapToken.id, !mapToken.is_visible)}
-                  style={{
-                    flex: 1, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
-                    letterSpacing: '0.06em', cursor: 'pointer', borderRadius: 3,
-                    padding: '4px 8px', border: 'none',
-                    background: mapToken.is_visible ? 'rgba(78,200,122,0.12)' : 'rgba(255,255,255,0.04)',
-                    color: mapToken.is_visible ? GREEN : DIM,
-                    transition: '.15s',
-                  }}
-                >
-                  {mapToken.is_visible ? '◉ Visible to players' : '◯ Hidden from players'}
-                </button>
-                <button onClick={() => void removeToken(mapToken.id)} style={btnDanger} title="Remove from map">✕</button>
+          {activeCharacters.map(char => {
+            const isOnMap  = onMapCharIds.has(char.id)
+            const mapToken = tokensByCharId.get(char.id) ?? null
+
+            return (
+              <div key={char.id} style={{ padding: '10px 12px', borderBottom: `1px solid ${BORDER}` }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+
+                  {/* Portrait */}
+                  {char.portrait_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={char.portrait_url} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid var(--hud-border-hi)' }} />
+                  ) : (
+                    <div style={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, background: 'var(--hud-surface-lo)', border: '2px solid var(--hud-border-hi)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FC, fontSize: 16, fontWeight: 700, color: HUD.gold }}>
+                      {char.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+
+                  {/* Name */}
+                  <div style={{ flex: 1, fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {char.name}
+                  </div>
+
+                  {/* Add / On map */}
+                  {mapId && (
+                    isOnMap
+                      ? <span style={{ fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, color: GREEN, flexShrink: 0 }}>On map ✓</span>
+                      : <button onClick={() => void addCharacterToken(char)} style={btnSmall}>+ Add</button>
+                  )}
+                </div>
+
+                {/* On-map controls */}
+                {isOnMap && mapToken && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
+                    <button
+                      onClick={() => void toggleVisibility(mapToken.id, !mapToken.is_visible)}
+                      style={{
+                        flex: 1, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
+                        letterSpacing: '0.06em', cursor: 'pointer', borderRadius: 3,
+                        padding: '4px 8px', border: 'none',
+                        background: mapToken.is_visible ? 'rgba(78,200,122,0.12)' : 'rgba(255,255,255,0.04)',
+                        color: mapToken.is_visible ? GREEN : DIM,
+                        transition: '.15s',
+                      }}
+                    >
+                      {mapToken.is_visible ? '◉ Visible to players' : '◯ Hidden from players'}
+                    </button>
+                    <button onClick={() => void removeToken(mapToken.id)} style={btnDanger} title="Remove from map">✕</button>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        )
-      })}
+            )
+          })}
 
-      {/* Add All Players */}
-      {mapId && availablePcs.length > 0 && (
-        <div style={{ padding: '10px 12px', borderTop: `1px solid ${BORDER}` }}>
-          <button
-            onClick={() => void addAllPlayers()}
-            style={{
-              background: 'var(--hud-surface-hi)', border: `1px solid ${BORDER_HI}`,
-              color: HUD.gold, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
-              letterSpacing: '0.1em', textTransform: 'uppercase', padding: '6px 13px',
-              borderRadius: 4, cursor: 'pointer', width: '100%',
-            }}
-          >
-            ◉ Add All Players
-          </button>
-        </div>
+          {/* Add All Players */}
+          {mapId && availablePcs.length > 0 && (
+            <div style={{ padding: '10px 12px', borderTop: `1px solid ${BORDER}` }}>
+              <button
+                onClick={() => void addAllPlayers()}
+                style={{
+                  background: 'var(--hud-surface-hi)', border: `1px solid ${BORDER_HI}`,
+                  color: HUD.gold, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
+                  letterSpacing: '0.1em', textTransform: 'uppercase', padding: '6px 13px',
+                  borderRadius: 4, cursor: 'pointer', width: '100%',
+                }}
+              >
+                ◉ Add All Players
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       {/* ── Remove All Tokens ─────────────────────────────── */}
