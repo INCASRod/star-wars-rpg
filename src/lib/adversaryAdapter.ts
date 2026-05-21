@@ -159,21 +159,6 @@ function rangeToRangeValue(range: string): string {
   }
 }
 
-function resolveWeaponDamage(w: AdversaryWeapon, _brawn: number): { damage: number; damage_add?: number } {
-  // Fixed numeric damage (non-zero): flat value, not brawn-scaled
-  if (typeof w.damage === 'number' && w.damage !== 0) {
-    return { damage: w.damage }
-  }
-  // Brawn-scaled string "Brawn+N": separate out the bonus from brawn
-  if (typeof w.damage === 'string') {
-    const m = w.damage.match(/^Brawn([+-]\d+)$/i)
-    if (m) return { damage: 0, damage_add: parseInt(m[1]) }
-    const plain = parseInt(w.damage)
-    if (!isNaN(plain)) return { damage: plain }
-  }
-  // Fallback: treat as Brawn+0 (name-only or unrecognised weapon)
-  return { damage: 0, damage_add: 0 }
-}
 
 // ── Public output type ────────────────────────────────────────────────────────
 
@@ -235,9 +220,8 @@ export function adaptAdversaryForCombatCheck(
     const weaponKey = `adv-${adv.instanceId}-w${i}`
     const skillKey  = weaponSkillKey(w)
     const charKey   = SKILL_KEY_TO_CHAR[skillKey] ?? 'BR'
-    const { damage, damage_add } = resolveWeaponDamage(w, brawn)
-
-    const { crit: resolvedCrit } = resolveWeapon(w, brawn, {})
+    const { dmg: resolvedDmg, range: resolvedRange, crit: resolvedCrit } = resolveWeapon(w, brawn, {})
+    const damage = parseInt(resolvedDmg) || 0
 
     charWeapons.push({
       id:           weaponKey,
@@ -254,9 +238,8 @@ export function adaptAdversaryForCombatCheck(
       name:         w.name,
       skill_key:    skillKey,
       damage,
-      damage_add,
       crit:         resolvedCrit ?? 4,
-      range_value:  rangeToRangeValue(w.range ?? 'Engaged'),
+      range_value:  rangeToRangeValue(resolvedRange),
       encumbrance:  0,
       hard_points:  0,
       price:        0,
@@ -267,7 +250,7 @@ export function adaptAdversaryForCombatCheck(
     if (!refSkillMap[skillKey]) {
       refSkillMap[skillKey] = {
         key:                skillKey,
-        name:               skillKey,
+        name:               SKILL_NAME_TO_KEY_REVERSE[skillKey] ?? skillKey,
         characteristic_key: charKey,
         type:               'stCombat',
       }
