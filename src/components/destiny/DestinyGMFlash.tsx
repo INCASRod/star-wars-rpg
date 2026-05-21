@@ -7,8 +7,8 @@ import { createPortal } from 'react-dom'
 const FONT_C    = 'var(--font-body)'
 const FONT_R    = 'var(--font-body)'
 const FONT_M    = 'var(--font-body)'
-const DARK_CLR  = '#8B2BE2'
-const LIGHT_CLR = '#1A78A0'
+const DARK_CLR  = '#A845F5'   // vivid Sith-violet
+const LIGHT_CLR = '#3DD8F8'   // vivid Force-cyan
 const LIGHT_IMG = '/images/factions/LightSymbol.png'
 const DARK_IMG  = '/images/factions/DarkSymbol.png'
 const TEXT      = 'var(--hud-text)'

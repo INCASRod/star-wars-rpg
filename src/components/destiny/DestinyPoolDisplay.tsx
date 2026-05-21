@@ -6,8 +6,8 @@ import { useState } from 'react'
 const FONT_C    = 'var(--font-body)'
 const FONT_M    = 'var(--font-body)'
 const DIM       = 'var(--hud-text-faint)'
-const LIGHT_CLR = '#1A78A0'   // deep cerulean
-const DARK_CLR  = '#8B2BE2'   // Dark side purple
+const LIGHT_CLR = '#3DD8F8'   // vivid Force-cyan
+const DARK_CLR  = '#A845F5'   // vivid Sith-violet
 const FS_OVER   = 'var(--text-overline)'
 const FS_CAP    = 'var(--text-caption)'
 
