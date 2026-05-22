@@ -225,6 +225,49 @@ function TalentsBody({ query, results }: { query: string; results: RefTalent[] }
 
 // ── Force Powers tab ───────────────────────────────────────────────────────────
 
+function AbilityRow({ ability }: { ability: RefForceAbility }) {
+  const [expanded, setExpanded] = useState(false)
+  return (
+    <div
+      style={{
+        padding:    '7px 12px',
+        borderTop:  '1px solid rgba(144,96,208,0.1)',
+        background: 'rgba(4,8,6,0.5)',
+        cursor:     ability.description ? 'pointer' : 'default',
+      }}
+      onClick={() => ability.description && setExpanded(e => !e)}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span style={{
+          fontFamily: FONT_BODY,
+          fontSize:   'var(--text-caption)',
+          fontWeight: 600,
+          color:      'rgba(200,180,240,0.75)',
+          flex:       1,
+        }}>
+          {ability.name}
+        </span>
+        {ability.description && (
+          <span style={{ fontSize: 8, color: 'rgba(144,96,208,0.45)', flexShrink: 0 }}>
+            {expanded ? '▲' : '▼'}
+          </span>
+        )}
+      </div>
+      {expanded && ability.description && (
+        <div style={{
+          fontFamily: FONT_BODY,
+          fontSize:   'var(--text-caption)',
+          color:      'rgba(90,110,100,0.85)',
+          lineHeight: 1.4,
+          marginTop:  4,
+        }}>
+          <RichText text={ability.description} />
+        </div>
+      )}
+    </div>
+  )
+}
+
 function ForcePowerCard({ power, abilities }: { power: RefForcePower; abilities: RefForceAbility[] }) {
   return (
     <div style={{
@@ -251,82 +294,57 @@ function ForcePowerCard({ power, abilities }: { power: RefForcePower; abilities:
       </div>
       {power.description && (
         <div style={{
-          padding:         '7px 12px',
-          fontFamily:      FONT_BODY,
-          fontSize:        'var(--text-caption)',
-          color:           DIM,
-          lineHeight:      1.45,
-          overflow:        'hidden',
-          display:         '-webkit-box',
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical',
-        } as React.CSSProperties}>
+          padding:    '7px 12px',
+          fontFamily: FONT_BODY,
+          fontSize:   'var(--text-caption)',
+          color:      DIM,
+          lineHeight: 1.45,
+        }}>
           <RichText text={power.description} />
         </div>
       )}
       {abilities.map(ability => (
-        <div key={ability.key} style={{
-          padding:    '7px 12px',
-          borderTop:  '1px solid rgba(144,96,208,0.1)',
-          background: 'rgba(4,8,6,0.5)',
-        }}>
-          <div style={{
-            fontFamily:   FONT_BODY,
-            fontSize:     'var(--text-caption)',
-            fontWeight:   600,
-            color:        'rgba(200,180,240,0.75)',
-            marginBottom: 3,
-          }}>
-            {ability.name}
-          </div>
-          {ability.description && (
-            <div style={{
-              fontFamily:      FONT_BODY,
-              fontSize:        'var(--text-caption)',
-              color:           'rgba(90,110,100,0.85)',
-              lineHeight:      1.4,
-              overflow:        'hidden',
-              display:         '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-            } as React.CSSProperties}>
-              <RichText text={ability.description} />
-            </div>
-          )}
-        </div>
+        <AbilityRow key={ability.key} ability={ability} />
       ))}
     </div>
   )
 }
 
 function StandaloneAbilityCard({ ability, powerName }: { ability: RefForceAbility; powerName: string }) {
+  const [expanded, setExpanded] = useState(false)
   return (
-    <div style={{
-      margin:       '4px 10px',
-      padding:      '8px 12px',
-      background:   'rgba(144,96,208,0.04)',
-      border:       '1px solid rgba(144,96,208,0.14)',
-      borderRadius: RADIUS.md,
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+    <div
+      style={{
+        margin:       '4px 10px',
+        padding:      '8px 12px',
+        background:   'rgba(144,96,208,0.04)',
+        border:       '1px solid rgba(144,96,208,0.14)',
+        borderRadius: RADIUS.md,
+        cursor:       ability.description ? 'pointer' : 'default',
+      }}
+      onClick={() => ability.description && setExpanded(e => !e)}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <span style={{ fontFamily: FONT_BODY, fontSize: 'var(--text-caption)', fontWeight: 600, color: 'rgba(200,180,240,0.8)', flex: 1 }}>
           {ability.name}
         </span>
         <span style={{ fontFamily: FONT_BODY, fontSize: '8px', color: 'rgba(144,96,208,0.5)', flexShrink: 0 }}>
           {powerName}
         </span>
+        {ability.description && (
+          <span style={{ fontSize: 8, color: 'rgba(144,96,208,0.45)', flexShrink: 0 }}>
+            {expanded ? '▲' : '▼'}
+          </span>
+        )}
       </div>
-      {ability.description && (
+      {expanded && ability.description && (
         <div style={{
-          fontFamily:      FONT_BODY,
-          fontSize:        'var(--text-caption)',
-          color:           'rgba(90,110,100,0.85)',
-          lineHeight:      1.4,
-          overflow:        'hidden',
-          display:         '-webkit-box',
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical',
-        } as React.CSSProperties}>
+          fontFamily: FONT_BODY,
+          fontSize:   'var(--text-caption)',
+          color:      'rgba(90,110,100,0.85)',
+          lineHeight: 1.4,
+          marginTop:  6,
+        }}>
           <RichText text={ability.description} />
         </div>
       )}
