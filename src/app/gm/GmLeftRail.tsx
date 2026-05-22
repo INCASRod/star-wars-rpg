@@ -3,7 +3,7 @@
 import { memo } from 'react'
 import { HUD, FONT_BODY, RADIUS, Z } from '@/lib/tokens'
 
-export type GmPanelId = 'map' | 'tools' | 'party' | 'combat'
+export type GmPanelId = 'map' | 'tools' | 'party' | 'combat' | 'library'
 
 interface RailButton {
   id:        GmPanelId
@@ -63,8 +63,9 @@ export const GmLeftRail = memo(function GmLeftRail({
 
       <div style={{ width: 28, height: 1, background: 'var(--hud-border-hi)', margin: '6px 0' }} />
 
-      <RailBtn icon="⬡" label="Dice"   active={diceActive}   accent={HUD.gold} onClick={onDiceClick} />
-      <RailBtn icon="▦" label="Screen" active={screenActive} accent={HUD.gold} onClick={onScreenClick} />
+      <RailBtn icon="⬡" label="Dice"    active={diceActive}              accent={HUD.gold}  onClick={onDiceClick} />
+      <RailBtn icon="▦" label="Screen"  active={screenActive}            accent={HUD.gold}  onClick={onScreenClick} />
+      <RailBtn icon="⊟" label="Library" active={activePanel === 'library'} accent="#5AAAE0" onClick={() => onPanelToggle('library')} />
     </div>
   )
 })
