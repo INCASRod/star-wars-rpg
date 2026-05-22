@@ -30,6 +30,7 @@ import { HolocronLoader } from '@/components/ui/HolocronLoader'
 import { Modal } from '@/components/ui/Modal'
 
 import { GmLeftRail, type GmPanelId } from './GmLeftRail'
+import { GmReferenceLibraryPanel } from '@/components/gm/GmReferenceLibraryPanel'
 import { GmMapPanel } from './panels/GmMapPanel'
 import { GmToolsPanel } from './panels/GmToolsPanel'
 import { GmPartyPanel } from './panels/GmPartyPanel'
@@ -288,7 +289,7 @@ export function GmShell() {
             top:        0,
             left:       0,
             bottom:     0,
-            width:      activePanel === 'tools' ? 560 : 360,
+            width:      activePanel === 'tools' ? 560 : activePanel === 'library' ? 420 : 360,
             background: 'var(--hud-panel)',
             borderRight:'1px solid var(--hud-border-hi)',
             boxShadow:  '4px 0 24px rgba(0,0,0,0.5)',
@@ -368,6 +369,9 @@ export function GmShell() {
                 characters={activeChars}
                 onStartCombat={handleStartCombat}
               />
+            )}
+            {activePanel === 'library' && (
+              <GmReferenceLibraryPanel />
             )}
           </div>
         </div>
