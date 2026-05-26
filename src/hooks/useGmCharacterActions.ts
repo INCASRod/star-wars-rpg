@@ -366,6 +366,7 @@ export function useGmCharacterActions(params: {
     setAddCritName('')
     setAddCritDesc('')
     setAddCritSeverity('')
+    setAddCritBusy(false)
   }, [])
 
   const addCriticalInjury = useCallback(async (charId: string) => {
