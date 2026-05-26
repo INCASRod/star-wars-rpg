@@ -220,6 +220,7 @@ export function GmShell() {
     charActions.setCritReqLethal(0)
     charActions.setCritReqGm(0)
     charActions.setAddCritOpenFor(charId)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [charActions.setCritReqOpenFor, charActions.setCritReqVicious, charActions.setCritReqLethal, charActions.setCritReqGm, charActions.setAddCritOpenFor])
 
   // ── Loading / Error ──────────────────────────────────────────────
@@ -248,7 +249,7 @@ export function GmShell() {
     critReqGm, setCritReqGm,
     critReqBusy,
     sendCritRequest,
-    addCritOpenFor, setAddCritOpenFor,
+    addCritOpenFor,
     addCritRefId, addCritName, setAddCritName,
     addCritDesc, setAddCritDesc,
     addCritSeverity, addCritBusy,
