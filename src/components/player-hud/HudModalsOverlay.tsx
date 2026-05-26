@@ -66,6 +66,9 @@ interface HudModalsOverlayProps {
   gmDialog: string | null
   setGmDialog: (s: string | null) => void
 
+  gmCritInjuryDialog:    { name: string; severity: string; description: string } | null
+  setGmCritInjuryDialog: (d: { name: string; severity: string; description: string } | null) => void
+
   forceRollResult: ForceRollResult | null
   setForceRollResult: (r: ForceRollResult | null) => void
 
@@ -111,6 +114,7 @@ export function HudModalsOverlay({
   talentTreeData, onPurchaseTalent, onRemoveTalent, onBuySpecialization,
   showForceTree, setShowForceTree, allForcePowers, activePowerKey, setActivePowerKey, forcePowerTreeData, onPurchaseForceAbility,
   gmDialog, setGmDialog,
+  gmCritInjuryDialog, setGmCritInjuryDialog,
   forceRollResult, setForceRollResult,
   initRoll, setInitRoll,
   skillPopover, setSkillPopover, onRoll,
@@ -165,6 +169,76 @@ export function HudModalsOverlay({
             <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)', fontWeight: 700, letterSpacing: '0.2em', color: 'var(--gold-d)', marginBottom: '16px' }}>INCOMING TRANSMISSION</div>
             <div style={{ fontFamily: 'var(--font-chakra)', fontSize: 'var(--font-md)', color: 'var(--ink)', lineHeight: 1.6, marginBottom: '24px' }}>{gmDialog}</div>
             <button onClick={() => setGmDialog(null)} style={{ background: 'var(--gold)', border: 'none', padding: '12px 40px', fontFamily: 'var(--font-orbitron)', fontSize: 'var(--text-label)', fontWeight: 700, letterSpacing: '0.15em', color: 'var(--white)', cursor: 'pointer' }}>DISMISS</button>
+          </div>
+        </div>
+      )}
+
+      {gmCritInjuryDialog && (
+        <div
+          onClick={() => setGmCritInjuryDialog(null)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 410,
+            background: 'rgba(0,0,0,.75)', backdropFilter: 'blur(6px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px',
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: '420px',
+              background: 'var(--sand)',
+              border: '2px solid rgba(220,20,60,0.55)',
+              boxShadow: '0 0 40px rgba(220,20,60,0.2), 0 8px 48px rgba(0,0,0,.4)',
+              padding: '28px 24px 20px',
+            }}
+          >
+            <div style={{
+              fontFamily: 'var(--font-body)', fontSize: 'var(--text-overline)',
+              fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase',
+              color: 'rgba(220,20,60,0.8)', marginBottom: '8px',
+            }}>
+              ⚠ Critical Injury Received
+            </div>
+            <div style={{
+              fontFamily: 'var(--font-display)', fontSize: 'var(--text-h4)',
+              fontWeight: 700, color: 'var(--ink)', marginBottom: '10px',
+            }}>
+              {gmCritInjuryDialog.name}
+            </div>
+            {gmCritInjuryDialog.severity && (
+              <div style={{
+                display: 'inline-block', marginBottom: '14px',
+                background: 'rgba(220,20,60,0.1)', border: '1px solid rgba(220,20,60,0.35)',
+                padding: '2px 8px',
+                fontFamily: 'var(--font-body)', fontSize: 'var(--text-overline)',
+                fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
+                color: 'rgba(220,20,60,0.85)',
+              }}>
+                {gmCritInjuryDialog.severity}
+              </div>
+            )}
+            {gmCritInjuryDialog.description && (
+              <div style={{
+                fontFamily: 'var(--font-body)', fontSize: 'var(--text-sm)',
+                color: 'var(--ink)', lineHeight: 1.65, marginBottom: '20px',
+                borderLeft: '2px solid rgba(220,20,60,0.3)', paddingLeft: '10px',
+              }}>
+                {gmCritInjuryDialog.description}
+              </div>
+            )}
+            <button
+              onClick={() => setGmCritInjuryDialog(null)}
+              style={{
+                width: '100%',
+                background: 'rgba(220,20,60,0.1)', border: '1px solid rgba(220,20,60,0.4)',
+                padding: '10px 0',
+                fontFamily: 'var(--font-body)', fontSize: 'var(--text-label)',
+                fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase',
+                color: 'rgba(220,20,60,0.9)', cursor: 'pointer',
+              }}
+            >
+              Acknowledge
+            </button>
           </div>
         </div>
       )}
