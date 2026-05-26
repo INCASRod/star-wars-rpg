@@ -41,6 +41,7 @@ export function usePlayerBroadcast({
   const [broadcastSession, setBroadcastSession] = useState<BroadcastSessionState | null>(null)
   const [broadcastTransition, setBroadcastTransition] = useState<{ pending: boolean; prevMode: 'combat' | 'exploration' | null }>({ pending: false, prevMode: null })
   const [gmDialog, setGmDialog] = useState<string | null>(null)
+  const [gmCritInjuryDialog, setGmCritInjuryDialog] = useState<{ name: string; severity: string; description: string } | null>(null)
   const [lootReveal, setLootReveal] = useState<Record<string, unknown> | null>(null)
   const [vendorOffer, setVendorOffer] = useState<VendorOffer | null>(null)
   const [initRoll, setInitRoll] = useState<{ type: 'cool' | 'vigilance'; campaignId: string } | null>(null)
@@ -102,6 +103,12 @@ export function usePlayerBroadcast({
             router.push('/')
           }
           void doLogout()
+        } else if (payload.type === 'crit-injury-added') {
+          setGmCritInjuryDialog({
+            name:        payload.name        as string,
+            severity:    payload.severity    as string,
+            description: payload.description as string,
+          })
         } else {
           setGmDialog(payload.message as string)
         }
@@ -115,6 +122,7 @@ export function usePlayerBroadcast({
     broadcastSession, setBroadcastSession,
     broadcastTransition, setBroadcastTransition,
     gmDialog, setGmDialog,
+    gmCritInjuryDialog, setGmCritInjuryDialog,
     lootReveal, setLootReveal,
     vendorOffer, setVendorOffer,
     initRoll, setInitRoll,
