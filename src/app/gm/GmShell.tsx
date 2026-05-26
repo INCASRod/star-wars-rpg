@@ -214,6 +214,14 @@ export function GmShell() {
     toast.success('Initiative order updated.')
   }, [campaignId, stagingEncounter, supabase])
 
+  const handleAddCritOpen = useCallback((charId: string) => {
+    charActions.setCritReqOpenFor(null)
+    charActions.setCritReqVicious(0)
+    charActions.setCritReqLethal(0)
+    charActions.setCritReqGm(0)
+    charActions.setAddCritOpenFor(charId)
+  }, [charActions.setCritReqOpenFor, charActions.setCritReqVicious, charActions.setCritReqLethal, charActions.setCritReqGm, charActions.setAddCritOpenFor])
+
   // ── Loading / Error ──────────────────────────────────────────────
   if (loading) return <HolocronLoader />
   if (error || !campaign) {
@@ -246,14 +254,6 @@ export function GmShell() {
     addCritSeverity, addCritBusy,
     selectAddCritRef, closeAddCrit, addCriticalInjury,
   } = charActions
-
-  const handleAddCritOpen = useCallback((charId: string) => {
-    setCritReqOpenFor(null)
-    setCritReqVicious(0)
-    setCritReqLethal(0)
-    setCritReqGm(0)
-    setAddCritOpenFor(charId)
-  }, [setCritReqOpenFor, setCritReqVicious, setCritReqLethal, setCritReqGm, setAddCritOpenFor])
 
   // ── Render ───────────────────────────────────────────────────────
   return (
