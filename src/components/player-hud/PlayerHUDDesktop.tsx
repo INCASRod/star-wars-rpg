@@ -156,6 +156,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   const {
     broadcastSession, broadcastTransition,
     gmDialog, setGmDialog,
+    gmCritInjuryDialog, setGmCritInjuryDialog,
     lootReveal, setLootReveal,
     vendorOffer, setVendorOffer,
     initRoll, setInitRoll,
@@ -743,6 +744,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         onPurchaseForceAbility={handlePurchaseForceAbility}
         gmDialog={gmDialog}
         setGmDialog={setGmDialog}
+        gmCritInjuryDialog={gmCritInjuryDialog}
+        setGmCritInjuryDialog={setGmCritInjuryDialog}
         forceRollResult={forceRollResult}
         setForceRollResult={setForceRollResult}
         initRoll={initRoll}
