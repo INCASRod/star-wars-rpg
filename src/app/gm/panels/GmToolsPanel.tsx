@@ -11,7 +11,7 @@ import { GmLootModal } from '@/components/gm/GmLootModal'
 import { LootAwardModal } from '@/components/gm/LootAwardModal'
 import { AdversaryEditor } from '@/components/gm/AdversaryEditor'
 import { VehicleEditor } from '@/components/gm/VehicleEditor'
-import { HUD } from '@/lib/tokens'
+import { HUD, COLOR, RADIUS } from '@/lib/tokens'
 import type { useGmLoot } from '@/hooks/useGmLoot'
 import type { useGmAwards } from '@/hooks/useGmAwards'
 import type { useGmCharacterActions } from '@/hooks/useGmCharacterActions'
@@ -119,6 +119,7 @@ export function GmToolsPanel({
   const {
     odMode, setOdMode, odType, setOdType, odAmount, setOdAmount, odTarget, setOdTarget, odBusy,
     handleBulkOD, handleIndividualOD,
+    adjustMorality,
   } = charActions
 
   const {
@@ -412,6 +413,49 @@ export function GmToolsPanel({
         {/* ── Force ── */}
         {activeTab === 'force' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+            {/* ── Morality ── */}
+            {hasForceSensitive && (
+              <div>
+                <div style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(150,168,180,0.4)', marginBottom: 8 }}>
+                  Morality
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {activeChars
+                    .filter(c => (c.force_rating ?? 0) > 0)
+                    .map(c => {
+                      const val = c.morality_value ?? 50
+                      const isLight = val >= 50
+                      return (
+                        <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          {/* Name */}
+                          <span style={{ flex: 1, fontFamily: FONT, fontSize: 'var(--text-sm)', color: 'var(--hud-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {c.name}
+                          </span>
+                          {/* Gradient bar */}
+                          <div style={{ position: 'relative', width: 64, height: 5, borderRadius: RADIUS.full, background: 'linear-gradient(to right, #E05050, #C8AA50 40%, #4CAF50 60%, #5AAAE0)', flexShrink: 0 }}>
+                            <div style={{ position: 'absolute', top: -4, left: `${val}%`, transform: 'translateX(-50%)', width: 2, height: 13, background: '#fff', borderRadius: 1, boxShadow: '0 0 4px rgba(255,255,255,0.5)' }} />
+                          </div>
+                          {/* Numeric value */}
+                          <span style={{ fontFamily: FONT, fontSize: 'var(--text-caption)', fontWeight: 700, color: isLight ? COLOR.blue : COLOR.red, width: 22, textAlign: 'right', flexShrink: 0 }}>
+                            {val}
+                          </span>
+                          {/* − button */}
+                          <button
+                            onClick={() => adjustMorality(c.id, -1)}
+                            style={{ width: 20, height: 20, borderRadius: RADIUS.sm, border: `1px solid rgba(224,80,80,0.4)`, background: 'rgba(224,80,80,0.10)', color: COLOR.red, fontSize: 15, cursor: 'pointer', padding: 0, lineHeight: 1 }}
+                          >−</button>
+                          {/* + button */}
+                          <button
+                            onClick={() => adjustMorality(c.id, 1)}
+                            style={{ width: 20, height: 20, borderRadius: RADIUS.sm, border: `1px solid rgba(90,170,224,0.4)`, background: 'rgba(90,170,224,0.10)', color: COLOR.blue, fontSize: 15, cursor: 'pointer', padding: 0, lineHeight: 1 }}
+                          >+</button>
+                        </div>
+                      )
+                    })}
+                </div>
+              </div>
+            )}
 
             {/* Add Conflict button */}
             <button
