@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import type { Character, RefDutyType, RefObligationType } from '@/lib/types'
+import type { Character, RefCriticalInjury, RefDutyType, RefObligationType } from '@/lib/types'
 import { HUD } from '@/lib/tokens'
 
 /* ── Design tokens (scoped to this component) ── */
@@ -98,6 +98,19 @@ export interface GmCharacterCardProps {
   onSetCritLethal:    React.Dispatch<React.SetStateAction<number>>
   onSetCritGm:        React.Dispatch<React.SetStateAction<number>>
   onSendCritRequest:  (charId: string) => void
+  refCritsDb:         RefCriticalInjury[]
+  addCritOpenFor:     string | null
+  addCritRefId:       number | null
+  addCritName:        string
+  addCritDesc:        string
+  addCritSeverity:    string
+  addCritBusy:        boolean
+  onAddCritOpen:      (charId: string) => void
+  onAddCritClose:     () => void
+  onSelectAddCritRef: (refId: number) => void
+  onSetAddCritName:   React.Dispatch<React.SetStateAction<string>>
+  onSetAddCritDesc:   React.Dispatch<React.SetStateAction<string>>
+  onAddCritApply:     (charId: string) => Promise<void>
 }
 
 export function GmCharacterCard({
@@ -108,6 +121,10 @@ export function GmCharacterCard({
   onMoralitySetup, onFallenConfirm, onArchiveConfirm,
   onCritOpen, onCritClose, onSetCritVicious, onSetCritLethal, onSetCritGm,
   onSendCritRequest,
+  refCritsDb,
+  addCritOpenFor, addCritRefId, addCritName, addCritDesc, addCritSeverity, addCritBusy,
+  onAddCritOpen, onAddCritClose, onSelectAddCritRef,
+  onSetAddCritName, onSetAddCritDesc, onAddCritApply,
 }: GmCharacterCardProps) {
   const router = useRouter()
 
@@ -369,9 +386,10 @@ export function GmCharacterCard({
         </div>
       )}
 
-      {/* Critical Injury Request */}
+      {/* Critical Injury Actions */}
       <div style={{ marginTop: 8, borderTop: `1px solid ${BORDER}`, paddingTop: 8 }}>
         {critReqOpenFor === c.id ? (
+          /* ── Existing roll request form (unchanged) ── */
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: RED, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 2 }}>
               ⚡ Crit Injury Roll
@@ -424,21 +442,125 @@ export function GmCharacterCard({
               </button>
             </div>
           </div>
+        ) : addCritOpenFor === c.id ? (
+          /* ── Add Critical Injury form ── */
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: RED, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 2 }}>
+              ＋ Add Critical Injury
+            </div>
+            {/* Reference injury selector */}
+            <div>
+              <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 3 }}>Reference injury</div>
+              <select
+                value={addCritRefId ?? ''}
+                onChange={e => { if (e.target.value) onSelectAddCritRef(Number(e.target.value)) }}
+                style={{
+                  width: '100%', background: 'rgba(255,255,255,0.04)',
+                  border: `1px solid rgba(220,20,60,0.25)`, borderRadius: 4,
+                  padding: '4px 8px', color: TEXT, fontFamily: FR, fontSize: FS_CAPTION,
+                  boxSizing: 'border-box',
+                }}
+              >
+                <option value="">— select from ref table —</option>
+                {refCritsDb.map(r => (
+                  <option key={r.id} value={r.id}>{r.name} — {r.severity}</option>
+                ))}
+              </select>
+            </div>
+            {/* Severity badge (read-only, from ref) */}
+            {addCritSeverity && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Severity</span>
+                <span style={{ background: 'rgba(220,20,60,0.15)', border: `1px solid rgba(220,20,60,0.35)`, borderRadius: 3, padding: '2px 6px', fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: RED }}>
+                  {addCritSeverity}
+                </span>
+              </div>
+            )}
+            {/* Editable name */}
+            <div>
+              <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 3 }}>Injury name</div>
+              <input
+                value={addCritName}
+                onChange={e => onSetAddCritName(e.target.value)}
+                placeholder="e.g. Crippled Arm"
+                style={{
+                  width: '100%', background: 'rgba(255,255,255,0.04)',
+                  border: `1px solid rgba(220,20,60,0.25)`, borderRadius: 4,
+                  padding: '4px 8px', color: TEXT, fontFamily: FR, fontSize: FS_CAPTION,
+                  boxSizing: 'border-box',
+                }}
+              />
+            </div>
+            {/* Editable description */}
+            <div>
+              <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 3 }}>Description</div>
+              <textarea
+                value={addCritDesc}
+                onChange={e => onSetAddCritDesc(e.target.value)}
+                placeholder="What does this injury entail?"
+                rows={3}
+                style={{
+                  width: '100%', background: 'rgba(255,255,255,0.04)',
+                  border: `1px solid rgba(220,20,60,0.25)`, borderRadius: 4,
+                  padding: '4px 8px', color: TEXT, fontFamily: FR, fontSize: FS_CAPTION,
+                  boxSizing: 'border-box', resize: 'vertical',
+                }}
+              />
+            </div>
+            {/* Action buttons */}
+            <div style={{ display: 'flex', gap: 4, marginTop: 2 }}>
+              <button
+                onClick={onAddCritClose}
+                style={{ flex: 1, background: 'transparent', border: `1px solid rgba(100,100,100,0.25)`, borderRadius: 4, padding: '4px 0', cursor: 'pointer', fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => { void onAddCritApply(c.id) }}
+                disabled={!addCritName.trim() || addCritBusy}
+                style={{
+                  flex: 2, background: 'rgba(220,20,60,0.12)', border: `1px solid rgba(220,20,60,0.4)`,
+                  borderRadius: 4, padding: '4px 0', cursor: 'pointer',
+                  fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.06em',
+                  color: RED, opacity: !addCritName.trim() || addCritBusy ? 0.4 : 1,
+                }}
+              >
+                {addCritBusy ? '…' : '✓ Apply Injury'}
+              </button>
+            </div>
+          </div>
         ) : (
-          <button
-            onClick={() => onCritOpen(c.id)}
-            style={{
-              width: '100%',
-              background: 'rgba(220,20,60,0.06)',
-              border: `1px solid rgba(220,20,60,0.4)`,
-              borderRadius: 8, padding: '5px 0', cursor: 'pointer',
-              fontFamily: FR, fontSize: FS_CAPTION,
-              fontWeight: 700, letterSpacing: '0.06em',
-              color: RED,
-            }}
-          >
-            ⚡ Request Crit Injury Roll
-          </button>
+          /* ── Default: two-button row ── */
+          <div style={{ display: 'flex', gap: 5 }}>
+            <button
+              onClick={() => onCritOpen(c.id)}
+              style={{
+                flex: 1,
+                background: 'rgba(220,20,60,0.06)',
+                border: `1px solid rgba(220,20,60,0.4)`,
+                borderRadius: 8, padding: '5px 0', cursor: 'pointer',
+                fontFamily: FR, fontSize: FS_CAPTION,
+                fontWeight: 700, letterSpacing: '0.06em',
+                color: RED,
+              }}
+            >
+              ⚡ Crit Roll
+            </button>
+            <button
+              onClick={() => onAddCritOpen(c.id)}
+              style={{
+                flex: 1,
+                background: 'rgba(220,20,60,0.06)',
+                border: `1px solid rgba(220,20,60,0.4)`,
+                borderRadius: 8, padding: '5px 0', cursor: 'pointer',
+                fontFamily: FR, fontSize: FS_CAPTION,
+                fontWeight: 700, letterSpacing: '0.06em',
+                color: RED,
+              }}
+            >
+              ＋ Add Injury
+            </button>
+          </div>
         )}
       </div>
 
