@@ -19,6 +19,11 @@ type CardCallbacks = Pick<
   | 'onCritOpen' | 'onCritClose'
   | 'onSetCritVicious' | 'onSetCritLethal' | 'onSetCritGm'
   | 'onSendCritRequest'
+  | 'refCritsDb'
+  | 'addCritOpenFor' | 'addCritRefId'
+  | 'addCritName' | 'addCritDesc' | 'addCritSeverity' | 'addCritBusy'
+  | 'onAddCritOpen' | 'onAddCritClose' | 'onSelectAddCritRef'
+  | 'onSetAddCritName' | 'onSetAddCritDesc' | 'onAddCritApply'
 >
 
 export interface GmPartyPanelProps extends CardCallbacks {

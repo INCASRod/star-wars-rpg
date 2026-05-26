@@ -240,7 +240,20 @@ export function GmShell() {
     critReqGm, setCritReqGm,
     critReqBusy,
     sendCritRequest,
+    addCritOpenFor, setAddCritOpenFor,
+    addCritRefId, addCritName, setAddCritName,
+    addCritDesc, setAddCritDesc,
+    addCritSeverity, addCritBusy,
+    selectAddCritRef, closeAddCrit, addCriticalInjury,
   } = charActions
+
+  const handleAddCritOpen = useCallback((charId: string) => {
+    setCritReqOpenFor(null)
+    setCritReqVicious(0)
+    setCritReqLethal(0)
+    setCritReqGm(0)
+    setAddCritOpenFor(charId)
+  }, [setCritReqOpenFor, setCritReqVicious, setCritReqLethal, setCritReqGm, setAddCritOpenFor])
 
   // ── Render ───────────────────────────────────────────────────────
   return (
@@ -354,12 +367,25 @@ export function GmShell() {
                 onMoralitySetup={openMoralitySetup}
                 onFallenConfirm={setFallenConfirm}
                 onArchiveConfirm={setArchiveConfirm}
-                onCritOpen={setCritReqOpenFor}
+                onCritOpen={id => { closeAddCrit(); setCritReqOpenFor(id) }}
                 onCritClose={() => { setCritReqOpenFor(null); setCritReqVicious(0); setCritReqLethal(0); setCritReqGm(0) }}
                 onSetCritVicious={setCritReqVicious}
                 onSetCritLethal={setCritReqLethal}
                 onSetCritGm={setCritReqGm}
                 onSendCritRequest={sendCritRequest}
+                refCritsDb={refCritsDb}
+                addCritOpenFor={addCritOpenFor}
+                addCritRefId={addCritRefId}
+                addCritName={addCritName}
+                addCritDesc={addCritDesc}
+                addCritSeverity={addCritSeverity}
+                addCritBusy={addCritBusy}
+                onAddCritOpen={handleAddCritOpen}
+                onAddCritClose={closeAddCrit}
+                onSelectAddCritRef={selectAddCritRef}
+                onSetAddCritName={setAddCritName}
+                onSetAddCritDesc={setAddCritDesc}
+                onAddCritApply={addCriticalInjury}
               />
             )}
             {activePanel === 'combat' && (
