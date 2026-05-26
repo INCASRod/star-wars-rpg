@@ -31,6 +31,19 @@ export interface UseGmCharacterActionsReturn {
   cancelCritResult:        (req: CriticalInjuryRequest) => Promise<void>
   overrideCritResult:      (req: CriticalInjuryRequest, injuryId: number) => Promise<void>
   healCrit:                (critId: string, charId: string) => Promise<void>
+  // Add critical injury (direct apply)
+  addCritOpenFor:    string | null
+  setAddCritOpenFor: React.Dispatch<React.SetStateAction<string | null>>
+  addCritRefId:      number | null
+  addCritName:       string
+  setAddCritName:    React.Dispatch<React.SetStateAction<string>>
+  addCritDesc:       string
+  setAddCritDesc:    React.Dispatch<React.SetStateAction<string>>
+  addCritSeverity:   string
+  addCritBusy:       boolean
+  selectAddCritRef:  (refId: number) => void
+  closeAddCrit:      () => void
+  addCriticalInjury: (charId: string) => Promise<void>
   // Wound / strain
   addWound:    (charId: string, amount: number) => Promise<void>
   healWounds:  (charId: string, amount: number) => Promise<void>
@@ -109,6 +122,12 @@ export function useGmCharacterActions(params: {
   const [critReqGm,       setCritReqGm]       = useState(0)
   const [critReqBusy,     setCritReqBusy]     = useState(false)
   const [critCustomNames, setCritCustomNames] = useState<Record<string, string>>({})
+  const [addCritOpenFor,  setAddCritOpenFor]  = useState<string | null>(null)
+  const [addCritRefId,    setAddCritRefId]    = useState<number | null>(null)
+  const [addCritName,     setAddCritName]     = useState('')
+  const [addCritDesc,     setAddCritDesc]     = useState('')
+  const [addCritSeverity, setAddCritSeverity] = useState('')
+  const [addCritBusy,     setAddCritBusy]     = useState(false)
   // D&O
   const [odMode,   setOdMode]   = useState<'group' | 'individual'>('group')
   const [odType,   setOdType]   = useState<'obligation' | 'duty'>('obligation')
@@ -332,6 +351,52 @@ export function useGmCharacterActions(params: {
     setCharActiveCritCounts(prev => ({ ...prev, [charId]: Math.max(0, (prev[charId] ?? 1) - 1) }))
   }, [supabase, setCharActiveCritCounts])
 
+  const selectAddCritRef = useCallback((refId: number) => {
+    const ref = refCritsDb.find(r => r.id === refId)
+    if (!ref) return
+    setAddCritRefId(refId)
+    setAddCritName(ref.name)
+    setAddCritDesc(ref.description ?? '')
+    setAddCritSeverity(ref.severity)
+  }, [refCritsDb])
+
+  const closeAddCrit = useCallback(() => {
+    setAddCritOpenFor(null)
+    setAddCritRefId(null)
+    setAddCritName('')
+    setAddCritDesc('')
+    setAddCritSeverity('')
+  }, [])
+
+  const addCriticalInjury = useCallback(async (charId: string) => {
+    if (!addCritName.trim()) return
+    setAddCritBusy(true)
+    try {
+      const { error } = await supabase.from('character_critical_injuries').insert({
+        character_id: charId,
+        injury_id:    addCritRefId ?? undefined,
+        custom_name:  addCritName.trim(),
+        severity:     addCritSeverity || 'Average',
+        description:  addCritDesc.trim() || undefined,
+        is_healed:    false,
+        received_at:  new Date().toISOString(),
+      })
+      if (error) throw error
+      setCharActiveCritCounts(prev => ({ ...prev, [charId]: (prev[charId] ?? 0) + 1 }))
+      sendToChar(charId, {
+        type:        'crit-injury-added',
+        name:        addCritName.trim(),
+        severity:    addCritSeverity || 'Average',
+        description: addCritDesc.trim(),
+      })
+      flash('Critical injury applied!')
+      closeAddCrit()
+    } catch (err: unknown) {
+      flashError('Failed to apply injury: ' + (err instanceof Error ? err.message : String(err)))
+    }
+    setAddCritBusy(false)
+  }, [addCritName, addCritRefId, addCritSeverity, addCritDesc, sendToChar, flash, flashError, supabase, setCharActiveCritCounts, closeAddCrit])
+
   // ── Archive / restore ────────────────────────────���───────────────
 
   const handleArchive = useCallback(async () => {
@@ -409,6 +474,11 @@ export function useGmCharacterActions(params: {
     critReqLethal, setCritReqLethal, critReqGm, setCritReqGm,
     critReqBusy, critCustomNames, setCritCustomNames,
     sendCritRequest, confirmCritResult, cancelCritResult, overrideCritResult, healCrit,
+    addCritOpenFor, setAddCritOpenFor,
+    addCritRefId, addCritName, setAddCritName,
+    addCritDesc, setAddCritDesc,
+    addCritSeverity, addCritBusy,
+    selectAddCritRef, closeAddCrit, addCriticalInjury,
     addWound, healWounds, addStrain, healStrain,
     odMode, setOdMode, odType, setOdType, odAmount, setOdAmount, odTarget, setOdTarget, odBusy,
     adjustObligation, adjustDuty, adjustMorality, handleBulkOD, handleIndividualOD,
