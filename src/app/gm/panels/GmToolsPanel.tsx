@@ -11,14 +11,13 @@ import { GmLootModal } from '@/components/gm/GmLootModal'
 import { LootAwardModal } from '@/components/gm/LootAwardModal'
 import { AdversaryEditor } from '@/components/gm/AdversaryEditor'
 import { VehicleEditor } from '@/components/gm/VehicleEditor'
-import { HUD, COLOR, RADIUS } from '@/lib/tokens'
+import { HUD, COLOR, RADIUS, FONT_BODY as FONT } from '@/lib/tokens'
 import type { useGmLoot } from '@/hooks/useGmLoot'
 import type { useGmAwards } from '@/hooks/useGmAwards'
 import type { useGmCharacterActions } from '@/hooks/useGmCharacterActions'
 import { AddConflictModal } from '@/components/gm/AddConflictModal'
 import { useGmCampaignConflicts } from '@/hooks/useGmCampaignConflicts'
 
-const FONT = 'var(--font-body)'
 const DIM  = 'var(--hud-text-dim)'
 const RED  = '#E05050'
 const GREEN = '#4EC87A'
@@ -434,7 +433,7 @@ export function GmToolsPanel({
                           </span>
                           {/* Gradient bar */}
                           <div style={{ position: 'relative', width: 64, height: 5, borderRadius: RADIUS.full, background: 'linear-gradient(to right, #E05050, #C8AA50 40%, #4CAF50 60%, #5AAAE0)', flexShrink: 0 }}>
-                            <div style={{ position: 'absolute', top: -4, left: `${val}%`, transform: 'translateX(-50%)', width: 2, height: 13, background: '#fff', borderRadius: 1, boxShadow: '0 0 4px rgba(255,255,255,0.5)' }} />
+                            <div style={{ position: 'absolute', top: -4, left: `${val}%`, transform: 'translateX(-50%)', width: 2, height: 13, background: '#fff', borderRadius: RADIUS.sm, boxShadow: '0 0 4px rgba(255,255,255,0.5)' }} />
                           </div>
                           {/* Numeric value */}
                           <span style={{ fontFamily: FONT, fontSize: 'var(--text-caption)', fontWeight: 700, color: isLight ? COLOR.blue : COLOR.red, width: 22, textAlign: 'right', flexShrink: 0 }}>
