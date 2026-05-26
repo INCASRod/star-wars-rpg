@@ -520,7 +520,7 @@ export function GmCharacterCard({
                 disabled={!addCritName.trim() || addCritBusy}
                 style={{
                   flex: 2, background: 'rgba(220,20,60,0.12)', border: `1px solid rgba(220,20,60,0.4)`,
-                  borderRadius: 4, padding: '4px 0', cursor: 'pointer',
+                  borderRadius: 4, padding: '4px 0', cursor: !addCritName.trim() || addCritBusy ? 'not-allowed' : 'pointer',
                   fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.06em',
                   color: RED, opacity: !addCritName.trim() || addCritBusy ? 0.4 : 1,
                 }}
