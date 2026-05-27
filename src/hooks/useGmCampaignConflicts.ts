@@ -53,5 +53,5 @@ export function useGmCampaignConflicts(
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [campaignId, charIdsKey])
 
-  return { conflicts }
+  return { conflicts, setConflicts }
 }
