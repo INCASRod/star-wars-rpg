@@ -362,14 +362,15 @@ export function useGmCharacterActions(params: {
     }
     if (!foundCharId) return
     const charId = foundCharId
-    await supabase.from('character_critical_injuries').update({ is_healed: true }).eq('id', injuryId)
+    const { error } = await supabase.from('character_critical_injuries').update({ is_healed: true }).eq('id', injuryId)
+    if (error) { flashError('Failed to heal injury: ' + error.message); return }
     setCharCrits(prev => ({
       ...prev,
       [charId]: (prev[charId] ?? []).filter(inj => inj.id !== injuryId),
     }))
     setCharActiveCritCounts(prev => ({ ...prev, [charId]: Math.max(0, (prev[charId] ?? 1) - 1) }))
     notify(charId, 'toast', 'Critical injury healed')
-  }, [charCrits, setCharCrits, supabase, setCharActiveCritCounts, notify])
+  }, [charCrits, setCharCrits, supabase, setCharActiveCritCounts, notify, flashError])
 
   const selectAddCritRef = useCallback((refId: number) => {
     const ref = refCritsDb.find(r => r.id === refId)
