@@ -45,7 +45,7 @@ export function GmConflictPip({ conflict, onResolve }: GmConflictPipProps) {
         onClick={handleToggle}
         role="button"
         tabIndex={0}
-        onKeyDown={e => e.key === 'Enter' && handleToggle()}
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggle() } }}
         aria-label={conflict.description ?? 'Conflict'}
         style={{
           width:        10,
