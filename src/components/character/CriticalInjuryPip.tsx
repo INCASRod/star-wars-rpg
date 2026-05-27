@@ -68,7 +68,7 @@ export function CriticalInjuryPip({ pip, onHeal }: CriticalInjuryPipProps) {
   const isGrievous = sev === 'grievous'
 
   const handleToggle = () => {
-    if (tooltipOpen) { setTooltipOpen(false); return }
+    if (tooltipOpen) { setTooltipOpen(false); setConfirmingHeal(false); return }
     if (btnRef.current) {
       const r  = btnRef.current.getBoundingClientRect()
       const vw = window.innerWidth
