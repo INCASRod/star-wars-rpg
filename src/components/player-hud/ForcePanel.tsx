@@ -315,7 +315,7 @@ function ConflictPips({ conflicts, isFallen = false }: { conflicts: ConflictEntr
                 </div>
               )}
               <strong>{baseDesc}</strong>
-              {c.session_label && <div style={{ color: 'var(--hud-text-dim)', fontSize: 10, marginTop: 2 }}>{c.session_label}</div>}
+              {c.description && c.session_label && <div style={{ color: 'var(--hud-text-dim)', fontSize: 10, marginTop: 2 }}>{c.session_label}</div>}
             </div>
           )
           return (
