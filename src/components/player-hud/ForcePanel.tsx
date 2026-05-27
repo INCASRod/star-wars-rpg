@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { C, FONT_CINZEL, FONT_RAJDHANI, panelBase, FS_OVERLINE, FS_LABEL, FS_SM, FS_H3 } from './design-tokens'
 import { ForcePowerTree, type ForceTreeNode, type ForceTreeConnection } from '@/components/character/ForcePowerTree'
 import { RichText } from '@/components/ui/RichText'
+import { Tooltip } from '@/components/ui/Tooltip'
 
 // ── Force colour ──────────────────────────────────────────────────────────────
 const FORCE_BLUE      = '#1A78A0'
@@ -306,33 +307,41 @@ function ConflictPips({ conflicts, isFallen = false }: { conflicts: ConflictEntr
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
         {conflicts.map((c, i) => {
           const baseDesc = c.description ?? `Conflict ${i + 1}${c.session_label ? ` — ${c.session_label}` : ''}`
-          const tooltip  = isFallen && !c.is_resolved
-            ? `Light Side Conflict\n─────────────────────\n${baseDesc}`
-            : baseDesc
+          const tipContent = (
+            <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, lineHeight: 1.4 }}>
+              {isFallen && !c.is_resolved && (
+                <div style={{ color: 'rgba(220,230,240,0.55)', fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 3 }}>
+                  Light Side Conflict
+                </div>
+              )}
+              <strong>{baseDesc}</strong>
+              {c.session_label && <div style={{ color: 'var(--hud-text-dim)', fontSize: 10, marginTop: 2 }}>{c.session_label}</div>}
+            </div>
+          )
           return (
-            <div
-              key={c.id}
-              title={tooltip}
-              style={{
-                width: 12, height: 12, borderRadius: '50%',
-                background: c.is_resolved
-                  ? 'transparent'
-                  : isFallen
-                    ? 'rgba(220,230,240,0.85)'
-                    : 'rgba(224,58,30,0.9)',
-                border: c.is_resolved
-                  ? `1px solid ${C.border}`
-                  : isFallen
-                    ? '1px solid rgba(200,215,230,0.9)'
-                    : '1px solid #E03A1E',
-                boxShadow: c.is_resolved
-                  ? 'none'
-                  : isFallen
-                    ? '0 0 4px rgba(220,230,240,0.5)'
-                    : '0 0 4px rgba(224,58,30,0.5)',
-                cursor: 'default',
-              }}
-            />
+            <Tooltip key={c.id} content={tipContent} placement="top" maxWidth={200}>
+              <div
+                style={{
+                  width: 12, height: 12, borderRadius: '50%',
+                  background: c.is_resolved
+                    ? 'transparent'
+                    : isFallen
+                      ? 'rgba(220,230,240,0.85)'
+                      : 'rgba(224,58,30,0.9)',
+                  border: c.is_resolved
+                    ? `1px solid ${C.border}`
+                    : isFallen
+                      ? '1px solid rgba(200,215,230,0.9)'
+                      : '1px solid #E03A1E',
+                  boxShadow: c.is_resolved
+                    ? 'none'
+                    : isFallen
+                      ? '0 0 4px rgba(220,230,240,0.5)'
+                      : '0 0 4px rgba(224,58,30,0.5)',
+                  cursor: 'default',
+                }}
+              />
+            </Tooltip>
           )
         })}
         {resolvedConflicts.length > 0 && activeConflicts.length > 0 && (
