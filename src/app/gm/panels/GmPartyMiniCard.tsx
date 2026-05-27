@@ -1,7 +1,7 @@
 'use client'
 
 import type { Character, CharacterCriticalInjury } from '@/lib/types'
-import { HUD, FONT_BODY as FONT } from '@/lib/tokens'
+import { HUD, FONT_BODY as FONT, FS } from '@/lib/tokens'
 import { CriticalInjuryPip, type CritPip } from '@/components/character/CriticalInjuryPip'
 import { GmConflictPip } from '@/components/gm/GmConflictPip'
 import { Tooltip } from '@/components/ui/Tooltip'
@@ -26,7 +26,7 @@ function OverflowBadge({ color, count, items }: { color: string; count: number; 
   return (
     <Tooltip
       content={
-        <div style={{ fontFamily: FONT, fontSize: 10, lineHeight: 1.5 }}>
+        <div style={{ fontFamily: FONT, fontSize: FS.caption, lineHeight: 1.5 }}>
           {items.map((item, i) => <div key={i}>{item}</div>)}
         </div>
       }
