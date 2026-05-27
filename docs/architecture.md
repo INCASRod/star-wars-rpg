@@ -110,9 +110,9 @@
 
 ### `useGmData(campaignId)`
 - **Primary GM data hook** — owns campaign + characters load and common GM reference data
-- Fetches: `campaigns`, `characters` (for campaign), `ref_morality`
+- Fetches: `campaigns`, `characters` (for campaign), `ref_morality`, `character_critical_injuries` (active, full rows)
 - State: `campaign`, `setCampaign`, `characters`, `setCharacters`, `activeChars`, `forceNotifications`, etc.
-- Returns the `UseGmDataReturn` interface
+- Returns the `UseGmDataReturn` interface; includes `charCrits: Record<string, CharacterCriticalInjury[]>` and `charActiveCritCounts: Record<string, number>`
 
 ### `useGmBroadcast(characters)`
 - GM → player Supabase broadcast channel management
@@ -137,7 +137,9 @@
 ### `useGmCharacterActions(campaignId, characters, refMorality, sendToChar)`
 - GM-side character action handlers: crit injury request dispatch, morality setup, fall/redemption flow
 - State: `critReqOpenFor`, `moralitySetup`, `fallRedemptionOpen`, etc.
-- Writes to `critical_injury_requests`, `characters` (morality fields)
+- Writes to `critical_injury_requests`, `characters` (morality fields), `character_critical_injuries`
+- Params include `charCrits`/`setCharCrits` (from `useGmData`) for optimistic pip updates
+- Exposes `healCritInjury(injuryId)` — heals an injury by ID, optimistically removes pip, sends player toast
 
 ### `useEncounterData(campaignId)`
 - Owns encounter loading and realtime subscription for `combat_encounters`, extracted from `CombatPanel` to satisfy Single Responsibility
@@ -217,9 +219,10 @@
 
 ### `useGmCampaignConflicts(campaignId, forceSensitiveCharIds)`
 - Loads all unresolved (`is_resolved = false`) `character_conflicts` for a set of force-sensitive character IDs
-- State: `conflicts: GmConflictRow[]` — each row has `id`, `character_id`, `description`, `narrative?`, `created_at`
+- State: `conflicts: GmConflictRow[]` — each row has `id`, `character_id`, `description`, `narrative?`, `session_label?`, `created_at`
 - Realtime: subscribes to INSERT on `character_conflicts` filtered by `campaign_id`; prepends new rows live
 - Returns empty array immediately when `forceSensitiveCharIds` is empty (no query fired)
+- Called from `GmShell` (lifted from `GmToolsPanel`); reshaped into `Record<string, GmConflictRow[]>` for `GmPartyPanel`
 - Returns: `{ conflicts }`
 
 ### `usePlayerBroadcast(options)`
@@ -365,6 +368,8 @@ Each panel is a self-contained component accepting pre-computed display data fro
 - `GmShell` — (mentioned in git status) shell layout wrapper for GM interface
 - `GmMapView` — interactive token map with stat-block hover tooltips and health bars
 - `AddConflictModal` (`src/components/gm/AddConflictModal.tsx`) — modal for GM to add morality conflicts to Force-sensitive characters; filters character list to force-sensitive only; inserts to `character_conflicts` table with character_id, campaign_id, description, narrative, session_label, is_resolved, player_acknowledged
+- `GmConflictPip` (`src/components/gm/GmConflictPip.tsx`) — read-only 10×10 purple circle pip; wraps `<Tooltip>` with conflict description + session label; used in `GmPartyMiniCard` pip row
+- `GmPartyMiniCard` (`src/app/gm/panels/GmPartyMiniCard.tsx`) — compact character card in the GM party panel; pip row between strain bar and soak shows `CriticalInjuryPip` (with heal confirm) and `GmConflictPip` up to 3 each, with `+N` overflow badge
 - `GmReferenceLibraryPanel` (`src/components/gm/GmReferenceLibraryPanel.tsx`) — searchable read-only reference panel accessed via the ⊟ Library rail button; `'library'` is part of `GmPanelId` and uses the existing left-side slide mechanism at 420px; Talents tab queries `ref_talents` (all rows) on first keystroke and filters client-side by name; Force Powers tab queries `ref_force_powers` + `ref_force_abilities` on first keystroke — matched powers render as purple cards with all their ability rows nested below; abilities matching without a matched parent power render as standalone cards labelled with the parent power name; both tabs show empty state until text is entered
 
 ### Tier 3 — Atoms & Utilities

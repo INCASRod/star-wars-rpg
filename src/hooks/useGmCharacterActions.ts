@@ -322,14 +322,19 @@ export function useGmCharacterActions(params: {
       .select('id').eq('character_id', req.character_id).eq('total_roll', req.final_result)
       .order('received_at', { ascending: false }).limit(1)
     if (data?.[0]) {
-      await supabase.from('character_critical_injuries').delete().eq('id', (data[0] as { id: string }).id)
+      const injuryId = (data[0] as { id: string }).id
+      await supabase.from('character_critical_injuries').delete().eq('id', injuryId)
       setCharActiveCritCounts(prev => ({ ...prev, [req.character_id]: Math.max(0, (prev[req.character_id] ?? 1) - 1) }))
+      setCharCrits(prev => ({
+        ...prev,
+        [req.character_id]: (prev[req.character_id] ?? []).filter(inj => inj.id !== injuryId),
+      }))
     }
     await supabase.from('critical_injury_requests').update({ status: 'dismissed', resolved_at: new Date().toISOString() }).eq('id', req.id)
     setRolledCritRequests(prev => prev.filter(r => r.id !== req.id))
     setCritCustomNames(prev => { const n = { ...prev }; delete n[req.id]; return n })
     flash('Critical injury cancelled.')
-  }, [supabase, setRolledCritRequests, setCharActiveCritCounts, flash])
+  }, [supabase, setRolledCritRequests, setCharActiveCritCounts, setCharCrits, flash])
 
   const overrideCritResult = useCallback(async (req: CriticalInjuryRequest, injuryId: number) => {
     const injury = refCritsDb.find(r => r.id === injuryId)
@@ -338,17 +343,30 @@ export function useGmCharacterActions(params: {
       .select('id').eq('character_id', req.character_id).eq('total_roll', req.final_result)
       .order('received_at', { ascending: false }).limit(1)
     if (data?.[0]) {
+      const rowId = (data[0] as { id: string }).id
       const customName = critCustomNames[req.id]?.trim()
       await supabase.from('character_critical_injuries').update({
         injury_id: injury.id, custom_name: customName || injury.name,
         severity: injury.severity, description: injury.description,
-      }).eq('id', (data[0] as { id: string }).id)
+      }).eq('id', rowId)
+      setCharCrits(prev => ({
+        ...prev,
+        [req.character_id]: (prev[req.character_id] ?? []).map(inj =>
+          inj.id !== rowId ? inj : {
+            ...inj,
+            injury_id:   injury.id,
+            custom_name: customName || injury.name,
+            severity:    injury.severity,
+            description: injury.description,
+          }
+        ),
+      }))
     }
     await supabase.from('critical_injury_requests').update({ injury_key: injuryId, status: 'dismissed', resolved_at: new Date().toISOString() }).eq('id', req.id)
     setRolledCritRequests(prev => prev.filter(r => r.id !== req.id))
     setCritCustomNames(prev => { const n = { ...prev }; delete n[req.id]; return n })
     flash('Critical injury result overridden.')
-  }, [refCritsDb, critCustomNames, supabase, setRolledCritRequests, flash])
+  }, [refCritsDb, critCustomNames, supabase, setRolledCritRequests, setCharCrits, flash])
 
   const healCrit = useCallback(async (critId: string, charId: string) => {
     await supabase.from('character_critical_injuries').update({ is_healed: true }).eq('id', critId)
@@ -394,7 +412,7 @@ export function useGmCharacterActions(params: {
     if (!addCritName.trim()) return
     setAddCritBusy(true)
     try {
-      const { error } = await supabase.from('character_critical_injuries').insert({
+      const { data: newInjury, error } = await supabase.from('character_critical_injuries').insert({
         character_id: charId,
         injury_id:    addCritRefId ?? undefined,
         custom_name:  addCritName.trim(),
@@ -402,9 +420,15 @@ export function useGmCharacterActions(params: {
         description:  addCritDesc.trim() || undefined,
         is_healed:    false,
         received_at:  new Date().toISOString(),
-      })
+      }).select().single()
       if (error) throw error
       setCharActiveCritCounts(prev => ({ ...prev, [charId]: (prev[charId] ?? 0) + 1 }))
+      if (newInjury) {
+        setCharCrits(prev => ({
+          ...prev,
+          [charId]: [...(prev[charId] ?? []), newInjury as CharacterCriticalInjury],
+        }))
+      }
       sendToChar(charId, {
         type:        'crit-injury-added',
         name:        addCritName.trim(),
@@ -417,7 +441,7 @@ export function useGmCharacterActions(params: {
       flashError('Failed to apply injury: ' + (err instanceof Error ? err.message : String(err)))
     }
     setAddCritBusy(false)
-  }, [addCritName, addCritRefId, addCritSeverity, addCritDesc, sendToChar, flash, flashError, supabase, setCharActiveCritCounts, closeAddCrit])
+  }, [addCritName, addCritRefId, addCritSeverity, addCritDesc, sendToChar, flash, flashError, supabase, setCharActiveCritCounts, setCharCrits, closeAddCrit])
 
   // ── Archive / restore ────────────────────────────���───────────────
 
