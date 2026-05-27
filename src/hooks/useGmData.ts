@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import type { Character, Campaign, RefDutyType, RefObligationType, CriticalInjuryRequest, RefCriticalInjury } from '@/lib/types'
+import type { Character, Campaign, RefDutyType, RefObligationType, CriticalInjuryRequest, RefCriticalInjury, CharacterCriticalInjury } from '@/lib/types'
 import type { ForceNotification } from '@/components/gm/ForceNotificationCard'
 
 export interface RefMorality {
@@ -30,6 +30,8 @@ export interface UseGmDataReturn {
   refCritsDb:              RefCriticalInjury[]
   charActiveCritCounts:    Record<string, number>
   setCharActiveCritCounts: React.Dispatch<React.SetStateAction<Record<string, number>>>
+  charCrits:               Record<string, CharacterCriticalInjury[]>
+  setCharCrits:            React.Dispatch<React.SetStateAction<Record<string, CharacterCriticalInjury[]>>>
   activeSessions:          Record<string, string>
   setActiveSessions:       React.Dispatch<React.SetStateAction<Record<string, string>>>
   rolledCritRequests:      CriticalInjuryRequest[]
@@ -56,6 +58,7 @@ export function useGmData(campaignId: string | null): UseGmDataReturn {
   const [moralityWeaknesses,   setMoralityWeaknesses]   = useState<RefMorality[]>([])
   const [refCritsDb,           setRefCritsDb]           = useState<RefCriticalInjury[]>([])
   const [charActiveCritCounts, setCharActiveCritCounts] = useState<Record<string, number>>({})
+  const [charCrits,            setCharCrits]            = useState<Record<string, CharacterCriticalInjury[]>>({})
   const [activeSessions,       setActiveSessions]       = useState<Record<string, string>>({})
   const [rolledCritRequests,   setRolledCritRequests]   = useState<CriticalInjuryRequest[]>([])
   const [forceNotifications,   setForceNotifications]   = useState<ForceNotification[]>([])
@@ -111,7 +114,7 @@ export function useGmData(campaignId: string | null): UseGmDataReturn {
       if (chars.length > 0) {
         const [specRes, critsRes, refCritsRes] = await Promise.all([
           supabase.from('character_specializations').select('character_id, specialization_key').in('character_id', chars.map(c => c.id)).order('purchase_order'),
-          supabase.from('character_critical_injuries').select('character_id').in('character_id', chars.map(c => c.id)).eq('is_healed', false),
+          supabase.from('character_critical_injuries').select('*').in('character_id', chars.map(c => c.id)).eq('is_healed', false).order('received_at', { ascending: true }),
           supabase.from('ref_critical_injuries').select('*').order('roll_min'),
         ])
         const specMap: Record<string, string[]> = {}
@@ -122,11 +125,14 @@ export function useGmData(campaignId: string | null): UseGmDataReturn {
         }
         setCharSpecs(specMap)
         const critCounts: Record<string, number> = {}
+        const critMap: Record<string, CharacterCriticalInjury[]> = {}
         for (const row of critsRes.data || []) {
-          const r = row as { character_id: string }
+          const r = row as CharacterCriticalInjury
           critCounts[r.character_id] = (critCounts[r.character_id] ?? 0) + 1
+          ;(critMap[r.character_id] ??= []).push(r)
         }
         setCharActiveCritCounts(critCounts)
+        setCharCrits(critMap)
         if (refCritsRes.data) setRefCritsDb(refCritsRes.data as RefCriticalInjury[])
       }
     } catch (err: unknown) {
@@ -231,7 +237,7 @@ export function useGmData(campaignId: string | null): UseGmDataReturn {
     players, charSpecs,
     loading, error,
     dutyTypes, obligationTypes, moralityStrengths, moralityWeaknesses,
-    refCritsDb, charActiveCritCounts, setCharActiveCritCounts,
+    refCritsDb, charActiveCritCounts, setCharActiveCritCounts, charCrits, setCharCrits,
     activeSessions, setActiveSessions,
     rolledCritRequests, setRolledCritRequests,
     forceNotifications, setForceNotifications,
