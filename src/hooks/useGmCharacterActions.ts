@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { archiveCharacter, restoreCharacter } from '@/lib/characters'
 import type { Character, CriticalInjuryRequest, RefCriticalInjury, CharacterCriticalInjury } from '@/lib/types'
 import type { RefMorality } from './useGmData'
-
+import type { GmConflictRow } from './useGmCampaignConflicts'
 export interface MoralitySetupState {
   id: string; name: string
   score: number
@@ -32,6 +32,7 @@ export interface UseGmCharacterActionsReturn {
   overrideCritResult:      (req: CriticalInjuryRequest, injuryId: number) => Promise<void>
   healCrit:                (critId: string, charId: string) => Promise<void>
   healCritInjury:          (injuryId: string) => Promise<void>
+  resolveConflict:         (conflictId: string) => Promise<void>
   // Add critical injury (direct apply)
   addCritOpenFor:    string | null
   setAddCritOpenFor: React.Dispatch<React.SetStateAction<string | null>>
@@ -100,6 +101,8 @@ export function useGmCharacterActions(params: {
   setRolledCritRequests:   React.Dispatch<React.SetStateAction<CriticalInjuryRequest[]>>
   charCrits:               Record<string, CharacterCriticalInjury[]>
   setCharCrits:            React.Dispatch<React.SetStateAction<Record<string, CharacterCriticalInjury[]>>>
+  conflicts:               GmConflictRow[]
+  setConflicts:            React.Dispatch<React.SetStateAction<GmConflictRow[]>>
   activeSessions:          Record<string, string>
   setActiveSessions:       React.Dispatch<React.SetStateAction<Record<string, string>>>
   moralityStrengths:       RefMorality[]
@@ -113,6 +116,7 @@ export function useGmCharacterActions(params: {
     campaignId, characters, activeChars, setCharacters,
     charActiveCritCounts, setCharActiveCritCounts, refCritsDb, setRolledCritRequests,
     charCrits, setCharCrits,
+    conflicts, setConflicts,
     activeSessions, setActiveSessions,
     notify, sendToChar, flash, flashError,
   } = params
@@ -390,6 +394,22 @@ export function useGmCharacterActions(params: {
     notify(charId, 'toast', 'Critical injury healed')
   }, [charCrits, setCharCrits, supabase, setCharActiveCritCounts, notify, flashError])
 
+  const resolveConflict = useCallback(async (conflictId: string) => {
+    let foundCharId: string | undefined
+    for (const c of conflicts) {
+      if (c.id === conflictId) { foundCharId = c.character_id; break }
+    }
+    if (!foundCharId) return
+    const charId = foundCharId
+    const { error } = await supabase
+      .from('character_conflicts')
+      .update({ is_resolved: true })
+      .eq('id', conflictId)
+    if (error) { flashError('Failed to resolve conflict: ' + error.message); return }
+    setConflicts(prev => prev.filter(c => c.id !== conflictId))
+    notify(charId, 'toast', 'Conflict resolved')
+  }, [conflicts, setConflicts, supabase, notify, flashError])
+
   const selectAddCritRef = useCallback((refId: number) => {
     const ref = refCritsDb.find(r => r.id === refId)
     if (!ref) return
@@ -519,7 +539,7 @@ export function useGmCharacterActions(params: {
     critReqOpenFor, setCritReqOpenFor, critReqVicious, setCritReqVicious,
     critReqLethal, setCritReqLethal, critReqGm, setCritReqGm,
     critReqBusy, critCustomNames, setCritCustomNames,
-    sendCritRequest, confirmCritResult, cancelCritResult, overrideCritResult, healCrit, healCritInjury,
+    sendCritRequest, confirmCritResult, cancelCritResult, overrideCritResult, healCrit, healCritInjury, resolveConflict,
     addCritOpenFor, setAddCritOpenFor,
     addCritRefId, addCritName, setAddCritName,
     addCritDesc, setAddCritDesc,
