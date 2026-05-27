@@ -1,9 +1,12 @@
 'use client'
 
-import type { Character } from '@/lib/types'
-import { HUD } from '@/lib/tokens'
+import type { Character, CharacterCriticalInjury } from '@/lib/types'
+import { HUD, FONT_BODY as FONT } from '@/lib/tokens'
+import { CriticalInjuryPip, type CritPip } from '@/components/character/CriticalInjuryPip'
+import { GmConflictPip } from '@/components/gm/GmConflictPip'
+import { Tooltip } from '@/components/ui/Tooltip'
+import type { GmConflictRow } from '@/hooks/useGmCampaignConflicts'
 
-const FONT = 'var(--font-body)'
 const RED   = '#C04040'
 const AMBER = '#C08040'
 
@@ -14,9 +17,37 @@ interface Props {
   onAddStrain:  (id: string) => void
   onHealStrain: (id: string) => void
   onClick:      () => void
+  crits?:       CharacterCriticalInjury[]
+  conflicts?:   GmConflictRow[]
+  onHealCrit?:  (id: string) => void
 }
 
-export function GmPartyMiniCard({ character: c, onAddWound, onHealWound, onAddStrain, onHealStrain, onClick }: Props) {
+function OverflowBadge({ color, count, items }: { color: string; count: number; items: string[] }) {
+  return (
+    <Tooltip
+      content={
+        <div style={{ fontFamily: FONT, fontSize: 10, lineHeight: 1.5 }}>
+          {items.map((item, i) => <div key={i}>{item}</div>)}
+        </div>
+      }
+      placement="top"
+      maxWidth={180}
+    >
+      <span style={{
+        fontFamily: FONT,
+        fontSize: 'var(--text-caption)',
+        color,
+        fontWeight: 700,
+        cursor: 'default',
+        flexShrink: 0,
+      }}>
+        +{count}
+      </span>
+    </Tooltip>
+  )
+}
+
+export function GmPartyMiniCard({ character: c, onAddWound, onHealWound, onAddStrain, onHealStrain, onClick, crits, conflicts, onHealCrit }: Props) {
   const wPct     = Math.min(100, (c.wound_current / c.wound_threshold) * 100)
   const sPct     = Math.min(100, (c.strain_current / c.strain_threshold) * 100)
   const isDown   = c.wound_current >= c.wound_threshold
@@ -92,6 +123,47 @@ export function GmPartyMiniCard({ character: c, onAddWound, onHealWound, onAddSt
           <div style={{ height: '100%', width: `${sPct}%`, background: sPct >= 100 ? RED : '#5AAAE0', borderRadius: 2, transition: 'width 0.3s' }} />
         </div>
       </div>
+
+      {/* Pip row: injuries left, conflicts right — hidden when both empty */}
+      {((crits?.length ?? 0) > 0 || (conflicts?.length ?? 0) > 0) && (
+        <div
+          onClick={e => e.stopPropagation()}
+          style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6, marginTop: 4 }}
+        >
+          {/* Injury pips (max 3) */}
+          {crits?.slice(0, 3).map(inj => {
+            const pip: CritPip = {
+              id:           inj.id,
+              severity:     inj.severity,
+              name:         inj.custom_name ?? 'Critical Injury',
+              description:  inj.description,
+              sessionLabel: inj.session_label ?? undefined,
+              rollResult:   inj.roll_result,
+            }
+            return <CriticalInjuryPip key={inj.id} pip={pip} onHeal={onHealCrit} />
+          })}
+          {crits && crits.length > 3 && (
+            <OverflowBadge
+              color="#E05050"
+              count={crits.length - 3}
+              items={crits.slice(3).map(inj => inj.custom_name ?? 'Critical Injury')}
+            />
+          )}
+          {/* Flex spacer */}
+          <div style={{ flex: 1 }} />
+          {/* Conflict pips (max 3) */}
+          {conflicts?.slice(0, 3).map(con => (
+            <GmConflictPip key={con.id} conflict={con} />
+          ))}
+          {conflicts && conflicts.length > 3 && (
+            <OverflowBadge
+              color="#9060D0"
+              count={conflicts.length - 3}
+              items={conflicts.slice(3).map(con => con.description ?? 'Conflict')}
+            />
+          )}
+        </div>
+      )}
 
       {/* Soak */}
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
