@@ -27,14 +27,15 @@ type CardCallbacks = Pick<
 >
 
 export interface GmPartyPanelProps extends CardCallbacks {
-  campaignId:     string
-  characters:     Character[]
-  charCrits:      Record<string, CharacterCriticalInjury[]>
-  charConflicts:  Record<string, GmConflictRow[]>
-  onHealCrit:     (id: string) => void
+  campaignId:        string
+  characters:        Character[]
+  charCrits:         Record<string, CharacterCriticalInjury[]>
+  charConflicts:     Record<string, GmConflictRow[]>
+  onHealCrit:        (id: string) => void
+  onResolveConflict: (id: string) => void
 }
 
-export function GmPartyPanel({ campaignId, characters, charCrits, charConflicts, onHealCrit, ...cardCallbacks }: GmPartyPanelProps) {
+export function GmPartyPanel({ campaignId, characters, charCrits, charConflicts, onHealCrit, onResolveConflict, ...cardCallbacks }: GmPartyPanelProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const selected = characters.find(c => c.id === selectedId) ?? null
 
@@ -78,6 +79,7 @@ export function GmPartyPanel({ campaignId, characters, charCrits, charConflicts,
               crits={charCrits[c.id] ?? []}
               conflicts={charConflicts[c.id] ?? []}
               onHealCrit={onHealCrit}
+              onResolveConflict={onResolveConflict}
             />
           ))}
         </div>

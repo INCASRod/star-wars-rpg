@@ -87,7 +87,7 @@ export function GmShell() {
     [activeChars],
   )
 
-  const { conflicts } = useGmCampaignConflicts(campaignId ?? '', forceSensitiveCharIds)
+  const { conflicts, setConflicts } = useGmCampaignConflicts(campaignId ?? '', forceSensitiveCharIds)
 
   const charConflicts = useMemo(
     () => conflicts.reduce<Record<string, GmConflictRow[]>>((acc, c) => {
@@ -132,6 +132,7 @@ export function GmShell() {
     campaignId, characters, activeChars, setCharacters,
     charActiveCritCounts, setCharActiveCritCounts, refCritsDb, setRolledCritRequests,
     charCrits, setCharCrits,
+    conflicts, setConflicts,
     activeSessions, setActiveSessions,
     moralityStrengths, moralityWeaknesses,
     notify, sendToChar, flash, flashError,
@@ -273,6 +274,7 @@ export function GmShell() {
     addCritSeverity, addCritBusy,
     selectAddCritRef, closeAddCrit, addCriticalInjury,
     healCritInjury,
+    resolveConflict,
   } = charActions
 
   // ── Render ───────────────────────────────────────────────────────
@@ -410,6 +412,7 @@ export function GmShell() {
                 charCrits={charCrits}
                 charConflicts={charConflicts}
                 onHealCrit={healCritInjury}
+                onResolveConflict={resolveConflict}
               />
             )}
             {activePanel === 'combat' && (

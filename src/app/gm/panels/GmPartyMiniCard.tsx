@@ -11,15 +11,16 @@ const RED   = '#C04040'
 const AMBER = '#C08040'
 
 interface Props {
-  character:    Character
-  onAddWound:   (id: string) => void
-  onHealWound:  (id: string) => void
-  onAddStrain:  (id: string) => void
-  onHealStrain: (id: string) => void
-  onClick:      () => void
-  crits?:       CharacterCriticalInjury[]
-  conflicts?:   GmConflictRow[]
-  onHealCrit?:  (id: string) => void
+  character:          Character
+  onAddWound:         (id: string) => void
+  onHealWound:        (id: string) => void
+  onAddStrain:        (id: string) => void
+  onHealStrain:       (id: string) => void
+  onClick:            () => void
+  crits?:             CharacterCriticalInjury[]
+  conflicts?:         GmConflictRow[]
+  onHealCrit?:        (id: string) => void
+  onResolveConflict?: (id: string) => void
 }
 
 function OverflowBadge({ color, count, items }: { color: string; count: number; items: string[] }) {
@@ -47,7 +48,7 @@ function OverflowBadge({ color, count, items }: { color: string; count: number; 
   )
 }
 
-export function GmPartyMiniCard({ character: c, onAddWound, onHealWound, onAddStrain, onHealStrain, onClick, crits, conflicts, onHealCrit }: Props) {
+export function GmPartyMiniCard({ character: c, onAddWound, onHealWound, onAddStrain, onHealStrain, onClick, crits, conflicts, onHealCrit, onResolveConflict }: Props) {
   const wPct     = Math.min(100, (c.wound_current / c.wound_threshold) * 100)
   const sPct     = Math.min(100, (c.strain_current / c.strain_threshold) * 100)
   const isDown   = c.wound_current >= c.wound_threshold
@@ -153,7 +154,7 @@ export function GmPartyMiniCard({ character: c, onAddWound, onHealWound, onAddSt
           <div style={{ flex: 1 }} />
           {/* Conflict pips (max 3) */}
           {conflicts?.slice(0, 3).map(con => (
-            <GmConflictPip key={con.id} conflict={con} />
+            <GmConflictPip key={con.id} conflict={con} onResolve={onResolveConflict} />
           ))}
           {conflicts && conflicts.length > 3 && (
             <OverflowBadge
