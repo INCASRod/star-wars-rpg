@@ -61,6 +61,7 @@ interface CriticalInjuryPipProps {
 export function CriticalInjuryPip({ pip, onHeal }: CriticalInjuryPipProps) {
   const [tooltipOpen, setTooltipOpen] = useState(false)
   const [tipPos, setTipPos] = useState<TooltipPos>({ left: 0, openUp: true, anchorY: 0, vh: 0 })
+  const [confirmingHeal, setConfirmingHeal] = useState(false)
   const btnRef = useRef<HTMLButtonElement>(null)
   const sev   = normalizeSeverity(pip.severity)
   const color = SEV_COLOR[sev]
@@ -106,7 +107,7 @@ export function CriticalInjuryPip({ pip, onHeal }: CriticalInjuryPipProps) {
           {/* Click-away backdrop */}
           <div
             style={{ position: 'fixed', inset: 0, zIndex: 200 }}
-            onClick={() => setTooltipOpen(false)}
+            onClick={() => { setTooltipOpen(false); setConfirmingHeal(false) }}
           />
           <div style={{
             position: 'fixed',
@@ -127,7 +128,7 @@ export function CriticalInjuryPip({ pip, onHeal }: CriticalInjuryPipProps) {
           }}>
             {/* Close button */}
             <button
-              onClick={(e) => { e.stopPropagation(); setTooltipOpen(false) }}
+              onClick={(e) => { e.stopPropagation(); setTooltipOpen(false); setConfirmingHeal(false) }}
               style={{
                 position: 'absolute', top: 6, right: 6,
                 background: 'none', border: 'none', padding: '2px 4px',
@@ -194,9 +195,9 @@ export function CriticalInjuryPip({ pip, onHeal }: CriticalInjuryPipProps) {
             )}
 
             {/* Heal button (GM-facing — only shown if handler provided) */}
-            {onHeal && (
+            {onHeal && !confirmingHeal && (
               <button
-                onClick={(e) => { e.stopPropagation(); onHeal(pip.id); setTooltipOpen(false) }}
+                onClick={(e) => { e.stopPropagation(); setConfirmingHeal(true) }}
                 style={{
                   marginTop: 8, width: '100%',
                   background: 'rgba(78,200,122,0.1)',
@@ -210,6 +211,47 @@ export function CriticalInjuryPip({ pip, onHeal }: CriticalInjuryPipProps) {
               >
                 ✓ Heal Injury
               </button>
+            )}
+            {onHeal && confirmingHeal && (
+              <div style={{ marginTop: 8 }}>
+                <div style={{
+                  fontFamily: FONT_R,
+                  fontSize: 'clamp(0.78rem, 1.2vw, 0.88rem)',
+                  color: 'var(--hud-text)',
+                  textAlign: 'center',
+                  marginBottom: 6,
+                }}>
+                  Heal <strong style={{ color: '#DC143C' }}>{pip.name}</strong>?
+                </div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onHeal(pip.id); setTooltipOpen(false); setConfirmingHeal(false) }}
+                    style={{
+                      flex: 1, padding: '4px 0',
+                      background: 'rgba(78,200,122,0.12)',
+                      border: '1px solid rgba(78,200,122,0.4)',
+                      borderRadius: 3,
+                      fontFamily: FONT_R, fontSize: 'clamp(0.7rem, 1.1vw, 0.78rem)',
+                      fontWeight: 700, color: '#4EC87A', cursor: 'pointer',
+                    }}
+                  >
+                    Confirm
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setConfirmingHeal(false) }}
+                    style={{
+                      flex: 1, padding: '4px 0',
+                      background: 'transparent',
+                      border: '1px solid rgba(150,168,180,0.2)',
+                      borderRadius: 3,
+                      fontFamily: FONT_R, fontSize: 'clamp(0.7rem, 1.1vw, 0.78rem)',
+                      fontWeight: 700, color: 'rgba(150,168,180,0.5)', cursor: 'pointer',
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         </>
