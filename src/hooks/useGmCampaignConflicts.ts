@@ -4,11 +4,12 @@ import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 export interface GmConflictRow {
-  id:           string
-  character_id: string
-  description:  string
-  narrative?:   string
-  created_at:   string
+  id:            string
+  character_id:  string
+  description:   string
+  narrative?:    string
+  session_label?: string
+  created_at:    string
 }
 
 export function useGmCampaignConflicts(
@@ -28,7 +29,7 @@ export function useGmCampaignConflicts(
 
     supabase
       .from('character_conflicts')
-      .select('id, character_id, description, narrative, created_at')
+      .select('id, character_id, description, narrative, session_label, created_at')
       .in('character_id', forceSensitiveCharIds)
       .eq('is_resolved', false)
       .order('created_at', { ascending: false })
