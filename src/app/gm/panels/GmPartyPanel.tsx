@@ -3,11 +3,10 @@
 import { useState } from 'react'
 import type { Character, RefDutyType, RefObligationType, CharacterCriticalInjury } from '@/lib/types'
 import type { GmConflictRow } from '@/hooks/useGmCampaignConflicts'
+import { FONT_BODY as FONT } from '@/lib/tokens'
 import { GmPartyMiniCard } from './GmPartyMiniCard'
 import { GmCharacterModal } from './GmCharacterModal'
 import type { GmCharacterCardProps } from '@/components/gm/GmCharacterCard'
-
-const FONT = 'var(--font-body)'
 
 type CardCallbacks = Pick<
   GmCharacterCardProps,
