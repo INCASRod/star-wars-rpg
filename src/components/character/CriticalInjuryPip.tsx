@@ -2,6 +2,7 @@
 
 import React, { useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { Z } from '@/lib/tokens'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 export type CritSeverity = 'minor' | 'moderate' | 'serious' | 'grievous'
@@ -107,7 +108,7 @@ export function CriticalInjuryPip({ pip, onHeal }: CriticalInjuryPipProps) {
         <>
           {/* Click-away backdrop */}
           <div
-            style={{ position: 'fixed', inset: 0, zIndex: 200 }}
+            style={{ position: 'fixed', inset: 0, zIndex: Z.backdrop }}
             onClick={() => { setTooltipOpen(false); setConfirmingHeal(false) }}
           />
           <div style={{
@@ -117,7 +118,7 @@ export function CriticalInjuryPip({ pip, onHeal }: CriticalInjuryPipProps) {
             ...(tipPos.openUp
               ? { bottom: tipPos.vh - tipPos.anchorY + 10 }
               : { top: tipPos.anchorY + 10 }),
-            zIndex: 210,
+            zIndex: Z.tooltip,
             width: TOOLTIP_W,
             background: 'var(--hud-surface-hi)',
             backdropFilter: 'blur(14px)',

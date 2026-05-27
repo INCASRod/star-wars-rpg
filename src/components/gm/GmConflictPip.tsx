@@ -2,6 +2,7 @@
 
 import React, { useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { Z } from '@/lib/tokens'
 import { FONT_BODY as FONT } from '@/lib/tokens'
 import type { GmConflictRow } from '@/hooks/useGmCampaignConflicts'
 
@@ -63,7 +64,7 @@ export function GmConflictPip({ conflict, onResolve }: GmConflictPipProps) {
         <>
           {/* Click-away backdrop */}
           <div
-            style={{ position: 'fixed', inset: 0, zIndex: 200 }}
+            style={{ position: 'fixed', inset: 0, zIndex: Z.backdrop }}
             onClick={() => { setTooltipOpen(false); setConfirmingResolve(false) }}
           />
           <div style={{
@@ -72,7 +73,7 @@ export function GmConflictPip({ conflict, onResolve }: GmConflictPipProps) {
             ...(tipPos.openUp
               ? { bottom: tipPos.vh - tipPos.anchorY + 10 }
               : { top: tipPos.anchorY + 10 }),
-            zIndex:               210,
+            zIndex:               Z.tooltip,
             width:                TOOLTIP_W,
             background:           'var(--hud-surface-hi)',
             backdropFilter:       'blur(14px)',
