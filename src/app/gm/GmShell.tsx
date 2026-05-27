@@ -17,6 +17,7 @@ import { useGmLoot } from '@/hooks/useGmLoot'
 import { useGmCharacterActions } from '@/hooks/useGmCharacterActions'
 import { useGmDestinyPool } from '@/hooks/useGmDestinyPool'
 import { useRollFeed } from '@/hooks/useRollFeed'
+import { useGmCampaignConflicts, type GmConflictRow } from '@/hooks/useGmCampaignConflicts'
 
 import { GmMapView } from '@/components/gm/GmMapView'
 import { RollFeedPanel } from '@/components/player-hud/RollFeedPanel'
@@ -72,6 +73,7 @@ export function GmShell() {
     players, loading, error, dutyTypes, obligationTypes,
     moralityStrengths, moralityWeaknesses, refCritsDb,
     charActiveCritCounts, setCharActiveCritCounts,
+    charCrits, setCharCrits,
     activeSessions, setActiveSessions,
     rolledCritRequests, setRolledCritRequests,
     forceNotifications, setForceNotifications,
@@ -79,6 +81,21 @@ export function GmShell() {
   } = useGmData(campaignId)
 
   const { notify, sendToChar, broadcastAll } = useGmBroadcast(characters)
+
+  const forceSensitiveCharIds = useMemo(
+    () => activeChars.filter(c => (c.force_rating ?? 0) > 0).map(c => c.id),
+    [activeChars],
+  )
+
+  const { conflicts } = useGmCampaignConflicts(campaignId ?? '', forceSensitiveCharIds)
+
+  const charConflicts = useMemo(
+    () => conflicts.reduce<Record<string, GmConflictRow[]>>((acc, c) => {
+      ;(acc[c.character_id] ??= []).push(c)
+      return acc
+    }, {}),
+    [conflicts],
+  )
 
   const { activeMap, allMaps, removeMap } = useActiveMap(campaignId)
 
@@ -114,6 +131,7 @@ export function GmShell() {
   const charActions = useGmCharacterActions({
     campaignId, characters, activeChars, setCharacters,
     charActiveCritCounts, setCharActiveCritCounts, refCritsDb, setRolledCritRequests,
+    charCrits, setCharCrits,
     activeSessions, setActiveSessions,
     moralityStrengths, moralityWeaknesses,
     notify, sendToChar, flash, flashError,
@@ -254,6 +272,7 @@ export function GmShell() {
     addCritDesc, setAddCritDesc,
     addCritSeverity, addCritBusy,
     selectAddCritRef, closeAddCrit, addCriticalInjury,
+    healCritInjury,
   } = charActions
 
   // ── Render ───────────────────────────────────────────────────────
@@ -343,6 +362,7 @@ export function GmShell() {
                 charActions={charActions}
                 loot={loot}
                 sendToChar={sendToChar}
+                conflicts={conflicts}
               />
             )}
             {activePanel === 'party' && (
@@ -387,6 +407,9 @@ export function GmShell() {
                 onSetAddCritName={setAddCritName}
                 onSetAddCritDesc={setAddCritDesc}
                 onAddCritApply={addCriticalInjury}
+                charCrits={charCrits}
+                charConflicts={charConflicts}
+                onHealCrit={healCritInjury}
               />
             )}
             {activePanel === 'combat' && (

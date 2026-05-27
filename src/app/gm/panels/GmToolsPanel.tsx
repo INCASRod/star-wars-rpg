@@ -16,7 +16,7 @@ import type { useGmLoot } from '@/hooks/useGmLoot'
 import type { useGmAwards } from '@/hooks/useGmAwards'
 import type { useGmCharacterActions } from '@/hooks/useGmCharacterActions'
 import { AddConflictModal } from '@/components/gm/AddConflictModal'
-import { useGmCampaignConflicts } from '@/hooks/useGmCampaignConflicts'
+import type { GmConflictRow } from '@/hooks/useGmCampaignConflicts'
 
 const DIM  = 'var(--hud-text-dim)'
 const RED  = '#E05050'
@@ -94,12 +94,13 @@ export interface GmToolsPanelProps {
   charActions: ReturnType<typeof useGmCharacterActions>
   loot:        ReturnType<typeof useGmLoot>
   sendToChar:  (charId: string, payload: Record<string, unknown>) => void
+  conflicts:   GmConflictRow[]
 }
 
 export function GmToolsPanel({
   campaignId, activeChars, dutyTypes, obligationTypes,
   forceNotifications, setForceNotifications, handleCharacterUpdated,
-  awards, charActions, loot, sendToChar,
+  awards, charActions, loot, sendToChar, conflicts,
 }: GmToolsPanelProps) {
   const supabase = useMemo(() => createClient(), [])
   const [activeTab, setActiveTab] = useState<ToolsTab>('xp')
@@ -134,8 +135,6 @@ export function GmToolsPanel({
     () => activeChars.filter(c => (c.force_rating ?? 0) > 0).map(c => c.id),
     [activeChars],
   )
-
-  const { conflicts: campaignConflicts } = useGmCampaignConflicts(campaignId, forceSensitiveCharIds)
 
   const charNameMap = useMemo(
     () => Object.fromEntries(activeChars.map(c => [c.id, c.name])),
@@ -510,11 +509,11 @@ export function GmToolsPanel({
               <div style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(150,168,180,0.4)', marginBottom: 8 }}>
                 Active Conflicts
               </div>
-              {campaignConflicts.length === 0 ? (
+              {conflicts.length === 0 ? (
                 <div style={{ fontFamily: FONT, fontSize: 'var(--text-sm)', color: DIM }}>No active conflicts.</div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {campaignConflicts.map(c => (
+                  {conflicts.map(c => (
                     <div key={c.id} style={{ padding: '10px 12px', background: 'rgba(144,96,208,0.06)', border: '1px solid rgba(144,96,208,0.2)', borderRadius: 6 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
                         <span style={{ fontFamily: FONT, fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--hud-text)' }}>

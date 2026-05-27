@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import type { Character, RefDutyType, RefObligationType } from '@/lib/types'
+import type { Character, RefDutyType, RefObligationType, CharacterCriticalInjury } from '@/lib/types'
+import type { GmConflictRow } from '@/hooks/useGmCampaignConflicts'
 import { GmPartyMiniCard } from './GmPartyMiniCard'
 import { GmCharacterModal } from './GmCharacterModal'
 import type { GmCharacterCardProps } from '@/components/gm/GmCharacterCard'
@@ -27,11 +28,14 @@ type CardCallbacks = Pick<
 >
 
 export interface GmPartyPanelProps extends CardCallbacks {
-  campaignId:  string
-  characters:  Character[]
+  campaignId:     string
+  characters:     Character[]
+  charCrits:      Record<string, CharacterCriticalInjury[]>
+  charConflicts:  Record<string, GmConflictRow[]>
+  onHealCrit:     (id: string) => void
 }
 
-export function GmPartyPanel({ campaignId, characters, ...cardCallbacks }: GmPartyPanelProps) {
+export function GmPartyPanel({ campaignId, characters, charCrits, charConflicts, onHealCrit, ...cardCallbacks }: GmPartyPanelProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const selected = characters.find(c => c.id === selectedId) ?? null
 
@@ -72,6 +76,9 @@ export function GmPartyPanel({ campaignId, characters, ...cardCallbacks }: GmPar
               onAddStrain={cardCallbacks.onAddStrain}
               onHealStrain={cardCallbacks.onHealStrain}
               onClick={() => setSelectedId(c.id)}
+              crits={charCrits[c.id] ?? []}
+              conflicts={charConflicts[c.id] ?? []}
+              onHealCrit={onHealCrit}
             />
           ))}
         </div>
