@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { FONT_BODY as FONT } from '@/lib/tokens'
 import type { GmConflictRow } from '@/hooks/useGmCampaignConflicts'
 
@@ -58,7 +59,7 @@ export function GmConflictPip({ conflict, onResolve }: GmConflictPipProps) {
         }}
       />
 
-      {tooltipOpen && (
+      {tooltipOpen && createPortal(
         <>
           {/* Click-away backdrop */}
           <div
@@ -225,7 +226,8 @@ export function GmConflictPip({ conflict, onResolve }: GmConflictPipProps) {
               </div>
             )}
           </div>
-        </>
+        </>,
+        document.body,
       )}
     </div>
   )

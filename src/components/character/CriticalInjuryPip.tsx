@@ -1,6 +1,7 @@
 ﻿'use client'
 
 import React, { useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 export type CritSeverity = 'minor' | 'moderate' | 'serious' | 'grievous'
@@ -101,8 +102,8 @@ export function CriticalInjuryPip({ pip, onHeal }: CriticalInjuryPipProps) {
         </svg>
       </button>
 
-      {/* Tooltip — position: fixed so it's always relative to the viewport */}
-      {tooltipOpen && (
+      {/* Tooltip — portalled to document.body to escape panel stacking context */}
+      {tooltipOpen && createPortal(
         <>
           {/* Click-away backdrop */}
           <div
@@ -254,7 +255,8 @@ export function CriticalInjuryPip({ pip, onHeal }: CriticalInjuryPipProps) {
               </div>
             )}
           </div>
-        </>
+        </>,
+        document.body,
       )}
     </div>
   )
