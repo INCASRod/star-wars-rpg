@@ -11,7 +11,7 @@ import { GmLootModal } from '@/components/gm/GmLootModal'
 import { LootAwardModal } from '@/components/gm/LootAwardModal'
 import { AdversaryEditor } from '@/components/gm/AdversaryEditor'
 import { VehicleEditor } from '@/components/gm/VehicleEditor'
-import { HUD, COLOR, RADIUS, FONT_BODY as FONT } from '@/lib/tokens'
+import { HUD, COLOR, RADIUS, FONT_BODY as FONT, FS } from '@/lib/tokens'
 import type { useGmLoot } from '@/hooks/useGmLoot'
 import type { useGmAwards } from '@/hooks/useGmAwards'
 import type { useGmCharacterActions } from '@/hooks/useGmCharacterActions'
@@ -19,9 +19,6 @@ import { AddConflictModal } from '@/components/gm/AddConflictModal'
 import type { GmConflictRow } from '@/hooks/useGmCampaignConflicts'
 
 const DIM  = 'var(--hud-text-dim)'
-const RED  = '#E05050'
-const GREEN = '#4EC87A'
-const PURPLE = '#9060D0'
 
 const fieldLabel: React.CSSProperties = {
   fontFamily:    FONT,
@@ -29,22 +26,22 @@ const fieldLabel: React.CSSProperties = {
   fontWeight:    700,
   letterSpacing: '0.18em',
   textTransform: 'uppercase',
-  color:         'rgba(150,168,180,0.5)',
-  marginBottom:  4,
+  color:         'var(--hud-text-faint)',
+  marginBottom:  '0.25rem',
 }
 const darkInput: React.CSSProperties = {
   background:   'rgba(0,0,0,0.4)',
   border:       '1px solid var(--hud-border-hi)',
   color:        'var(--hud-text)',
   fontFamily:   FONT,
-  padding:      '6px 10px',
-  borderRadius: 3,
+  padding:      '0.375rem 0.625rem',
+  borderRadius: RADIUS.sm,
   outline:      'none',
   fontSize:     'var(--text-sm)',
   width:        '100%',
 }
 const btnPrimary: React.CSSProperties = {
-  background:    'rgba(150,168,180,0.12)',
+  background:    'var(--hud-surface-hi)',
   border:        '1px solid rgba(150,168,180,0.35)',
   color:         HUD.gold,
   fontFamily:    FONT,
@@ -52,8 +49,8 @@ const btnPrimary: React.CSSProperties = {
   fontWeight:    700,
   letterSpacing: '0.12em',
   textTransform: 'uppercase',
-  padding:       '6px 14px',
-  borderRadius:  3,
+  padding:       '0.375rem 0.875rem',
+  borderRadius:  RADIUS.sm,
   cursor:        'pointer',
 }
 const btnSmall: React.CSSProperties = {
@@ -62,8 +59,8 @@ const btnSmall: React.CSSProperties = {
   color:        DIM,
   fontFamily:   FONT,
   fontSize:     'var(--text-caption)',
-  padding:      '4px 10px',
-  borderRadius: 3,
+  padding:      '0.25rem 0.625rem',
+  borderRadius: RADIUS.sm,
   cursor:       'pointer',
 }
 
@@ -79,7 +76,7 @@ const TABS: { key: ToolsTab; label: string; color?: string }[] = [
   { key: 'talents',       label: 'Talents'       },
   { key: 'new-adversary', label: 'Adversary' },
   { key: 'new-vehicle',   label: 'Vehicle'   },
-  { key: 'force',         label: 'Force', color: PURPLE },
+  { key: 'force',         label: 'Force', color: 'var(--hud-accent-purple)' },
 ]
 
 export interface GmToolsPanelProps {
@@ -166,7 +163,7 @@ export function GmToolsPanel({
               onClick={() => setActiveTab(t.key)}
               style={{
                 flexShrink:    0,
-                padding:       '9px 9px',
+                padding:       '0.5625rem',
                 background:    active ? `${accent}12` : 'transparent',
                 border:        'none',
                 borderBottom:  active ? `2px solid ${accent}` : '2px solid transparent',
@@ -183,7 +180,7 @@ export function GmToolsPanel({
             >
               {t.label}
               {t.key === 'force' && pending.length > 0 && (
-                <span style={{ marginLeft: 4, color: PURPLE }}>({pending.length})</span>
+                <span style={{ marginLeft: '0.25rem', color: 'var(--hud-accent-purple)' }}>({pending.length})</span>
               )}
             </button>
           )
@@ -191,20 +188,20 @@ export function GmToolsPanel({
       </div>
 
       {/* Tab content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: 14 }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0.875rem' }}>
 
         {/* ── XP ── */}
         {activeTab === 'xp' && (
           <div>
-            <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+            <div style={{ display: 'flex', gap: '0.375rem', marginBottom: '0.75rem' }}>
               {(['group', 'individual'] as const).map(m => (
                 <button key={m} onClick={() => { setXpMode(m); setXpAmount(''); setXpReason('') }}
-                  style={{ ...btnSmall, background: xpMode === m ? 'rgba(150,168,180,0.2)' : undefined, color: xpMode === m ? HUD.gold : DIM }}>
+                  style={{ ...btnSmall, background: xpMode === m ? 'var(--hud-surface-hi)' : undefined, color: xpMode === m ? HUD.gold : DIM }}>
                   {m === 'group' ? 'Group' : 'Individual'}
                 </button>
               ))}
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '0.75rem' }}>
               {xpMode === 'individual' && (
                 <div>
                   <div style={fieldLabel}>Character</div>
@@ -216,7 +213,7 @@ export function GmToolsPanel({
               )}
               <div>
                 <div style={fieldLabel}>Amount</div>
-                <input type="number" placeholder="0" value={xpAmount} onChange={e => setXpAmount(e.target.value)} style={{ ...darkInput, width: 80 }} />
+                <input type="number" placeholder="0" value={xpAmount} onChange={e => setXpAmount(e.target.value)} style={{ ...darkInput, width: '5rem' }} />
               </div>
               <div>
                 <div style={fieldLabel}>Reason</div>
@@ -229,17 +226,17 @@ export function GmToolsPanel({
               </button>
             </div>
             {xpHistory.length > 0 && (
-              <div style={{ borderTop: '1px solid var(--hud-border)', paddingTop: 12 }}>
-                <div style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(150,168,180,0.4)', marginBottom: 6 }}>History</div>
+              <div style={{ borderTop: '1px solid var(--hud-border)', paddingTop: '0.75rem' }}>
+                <div style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--hud-text-faint)', marginBottom: '0.375rem' }}>History</div>
                 {(xpHistoryExpanded ? xpHistory : xpHistory.slice(0, 5)).map((e) => (
-                  <div key={e.id} style={{ display: 'flex', gap: 8, padding: '4px 0', borderBottom: '1px solid var(--hud-border)' }}>
-                    <span style={{ fontFamily: FONT, fontSize: 'var(--text-sm)', fontWeight: 700, color: e.amount >= 0 ? HUD.gold : RED }}>{e.amount >= 0 ? '+' : ''}{e.amount} XP</span>
+                  <div key={e.id} style={{ display: 'flex', gap: '0.5rem', padding: '0.25rem 0', borderBottom: '1px solid var(--hud-border)' }}>
+                    <span style={{ fontFamily: FONT, fontSize: 'var(--text-sm)', fontWeight: 700, color: e.amount >= 0 ? HUD.gold : 'var(--state-failure)' }}>{e.amount >= 0 ? '+' : ''}{e.amount} XP</span>
                     <span style={{ fontFamily: FONT, fontSize: 'var(--text-caption)', color: DIM }}>{e.mode === 'group' ? `→ All (${e.recipient_count})` : `→ ${e.target_name}`}</span>
                     {e.reason && <span style={{ fontFamily: FONT, fontSize: 'var(--text-caption)', color: 'var(--hud-text)', flex: 1 }}>{e.reason}</span>}
                   </div>
                 ))}
                 {xpHistory.length > 5 && (
-                  <button onClick={() => setXpHistoryExpanded(v => !v)} style={{ marginTop: 6, background: 'transparent', border: 'none', color: DIM, fontFamily: FONT, fontSize: 'var(--text-caption)', cursor: 'pointer', padding: 0 }}>
+                  <button onClick={() => setXpHistoryExpanded(v => !v)} style={{ marginTop: '0.375rem', background: 'transparent', border: 'none', color: DIM, fontFamily: FONT, fontSize: 'var(--text-caption)', cursor: 'pointer', padding: 0 }}>
                     {xpHistoryExpanded ? '▲ Show less' : `▼ Show all ${xpHistory.length}`}
                   </button>
                 )}
@@ -248,13 +245,13 @@ export function GmToolsPanel({
 
             {/* XP confirm dialog */}
             {xpConfirm && (
-              <div style={{ marginTop: 12, padding: 12, background: 'var(--hud-surface-mid)', border: '1px solid var(--hud-border-hi)', borderRadius: 4 }}>
-                <div style={{ fontFamily: FONT, fontSize: 'var(--text-sm)', color: 'var(--hud-text)', marginBottom: 8 }}>
+              <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'var(--hud-surface-mid)', border: '1px solid var(--hud-border-hi)', borderRadius: RADIUS.md }}>
+                <div style={{ fontFamily: FONT, fontSize: 'var(--text-sm)', color: 'var(--hud-text)', marginBottom: '0.5rem' }}>
                   <div>Target: {xpConfirm.targetName || `All (${activeChars.length})`}</div>
-                  <div>Amount: <span style={{ color: xpConfirm.amount > 0 ? GREEN : RED, fontWeight: 700 }}>{xpConfirm.amount > 0 ? '+' : ''}{xpConfirm.amount} XP</span></div>
+                  <div>Amount: <span style={{ color: xpConfirm.amount > 0 ? 'var(--state-success)' : 'var(--state-failure)', fontWeight: 700 }}>{xpConfirm.amount > 0 ? '+' : ''}{xpConfirm.amount} XP</span></div>
                   <div>Reason: {xpConfirm.reason}</div>
                 </div>
-                <div style={{ display: 'flex', gap: 8 }}>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <button onClick={() => setXpConfirm(null)} style={btnSmall}>Cancel</button>
                   <button onClick={() => xpConfirm.target ? handleIndividualXp() : handleBulkXp()} style={btnPrimary}>Confirm</button>
                 </div>
@@ -266,15 +263,15 @@ export function GmToolsPanel({
         {/* ── Credits ── */}
         {activeTab === 'credits' && (
           <div>
-            <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+            <div style={{ display: 'flex', gap: '0.375rem', marginBottom: '0.75rem' }}>
               {(['group', 'individual'] as const).map(m => (
                 <button key={m} onClick={() => { setCreditsMode(m); setCreditsAmount('') }}
-                  style={{ ...btnSmall, background: creditsMode === m ? 'rgba(150,168,180,0.2)' : undefined, color: creditsMode === m ? HUD.gold : DIM }}>
+                  style={{ ...btnSmall, background: creditsMode === m ? 'var(--hud-surface-hi)' : undefined, color: creditsMode === m ? HUD.gold : DIM }}>
                   {m === 'group' ? 'Group' : 'Individual'}
                 </button>
               ))}
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '0.75rem' }}>
               {creditsMode === 'individual' && (
                 <div>
                   <div style={fieldLabel}>Character</div>
@@ -286,7 +283,7 @@ export function GmToolsPanel({
               )}
               <div>
                 <div style={fieldLabel}>{creditsMode === 'group' ? 'Amount per Character' : 'Amount'}</div>
-                <input type="number" placeholder="0" value={creditsAmount} onChange={e => setCreditsAmount(e.target.value)} style={{ ...darkInput, width: 100 }} />
+                <input type="number" placeholder="0" value={creditsAmount} onChange={e => setCreditsAmount(e.target.value)} style={{ ...darkInput, width: '6.25rem' }} />
               </div>
               <button onClick={creditsMode === 'group' ? handleBulkCredits : handleIndividualCredits}
                 disabled={creditsBusy || !creditsAmount || (creditsMode === 'individual' && !creditsTarget)}
@@ -295,16 +292,16 @@ export function GmToolsPanel({
               </button>
             </div>
             {creditsHistory.length > 0 && (
-              <div style={{ borderTop: '1px solid var(--hud-border)', paddingTop: 12 }}>
-                <div style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(150,168,180,0.4)', marginBottom: 6 }}>History</div>
+              <div style={{ borderTop: '1px solid var(--hud-border)', paddingTop: '0.75rem' }}>
+                <div style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--hud-text-faint)', marginBottom: '0.375rem' }}>History</div>
                 {(creditsHistoryExpanded ? creditsHistory : creditsHistory.slice(0, 5)).map((e) => (
-                  <div key={e.id} style={{ display: 'flex', gap: 8, padding: '4px 0', borderBottom: '1px solid var(--hud-border)' }}>
-                    <span style={{ fontFamily: FONT, fontSize: 'var(--text-sm)', fontWeight: 700, color: e.amount >= 0 ? GREEN : RED }}>{e.amount >= 0 ? '+' : ''}{e.amount.toLocaleString()} cr</span>
+                  <div key={e.id} style={{ display: 'flex', gap: '0.5rem', padding: '0.25rem 0', borderBottom: '1px solid var(--hud-border)' }}>
+                    <span style={{ fontFamily: FONT, fontSize: 'var(--text-sm)', fontWeight: 700, color: e.amount >= 0 ? 'var(--state-success)' : 'var(--state-failure)' }}>{e.amount >= 0 ? '+' : ''}{e.amount.toLocaleString()} cr</span>
                     <span style={{ fontFamily: FONT, fontSize: 'var(--text-caption)', color: DIM }}>{e.mode === 'group' ? `→ All (${e.recipient_count})` : `→ ${e.target_name}`}</span>
                   </div>
                 ))}
                 {creditsHistory.length > 5 && (
-                  <button onClick={() => setCreditsHistoryExpanded(v => !v)} style={{ marginTop: 6, background: 'transparent', border: 'none', color: DIM, fontFamily: FONT, fontSize: 'var(--text-caption)', cursor: 'pointer', padding: 0 }}>
+                  <button onClick={() => setCreditsHistoryExpanded(v => !v)} style={{ marginTop: '0.375rem', background: 'transparent', border: 'none', color: DIM, fontFamily: FONT, fontSize: 'var(--text-caption)', cursor: 'pointer', padding: 0 }}>
                     {creditsHistoryExpanded ? '▲ Show less' : `▼ Show all ${creditsHistory.length}`}
                   </button>
                 )}
@@ -316,23 +313,23 @@ export function GmToolsPanel({
         {/* ── Duty / Obligation ── */}
         {activeTab === 'duty' && (
           <div>
-            <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+            <div style={{ display: 'flex', gap: '0.375rem', marginBottom: '0.5rem' }}>
               {(['obligation', 'duty'] as const).map(t => (
                 <button key={t} onClick={() => { setOdType(t); setOdAmount(''); setOdTarget('') }}
-                  style={{ ...btnSmall, background: odType === t ? 'rgba(150,168,180,0.2)' : undefined, color: odType === t ? HUD.gold : DIM }}>
+                  style={{ ...btnSmall, background: odType === t ? 'var(--hud-surface-hi)' : undefined, color: odType === t ? HUD.gold : DIM }}>
                   {t === 'obligation' ? 'Obligation' : 'Duty'}
                 </button>
               ))}
             </div>
-            <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+            <div style={{ display: 'flex', gap: '0.375rem', marginBottom: '0.75rem' }}>
               {(['group', 'individual'] as const).map(m => (
                 <button key={m} onClick={() => { setOdMode(m); setOdAmount(''); setOdTarget('') }}
-                  style={{ ...btnSmall, fontSize: 'var(--text-overline)', background: odMode === m ? 'rgba(150,168,180,0.12)' : undefined, color: odMode === m ? HUD.gold : DIM }}>
+                  style={{ ...btnSmall, fontSize: 'var(--text-overline)', background: odMode === m ? 'var(--hud-surface-hi)' : undefined, color: odMode === m ? HUD.gold : DIM }}>
                   {m === 'group' ? 'Group' : 'Individual'}
                 </button>
               ))}
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '0.75rem' }}>
               {odMode === 'individual' && (
                 <div>
                   <div style={fieldLabel}>Character</div>
@@ -347,7 +344,7 @@ export function GmToolsPanel({
               )}
               <div>
                 <div style={fieldLabel}>Amount (+/−)</div>
-                <input type="number" placeholder="0" value={odAmount} onChange={e => setOdAmount(e.target.value)} style={{ ...darkInput, width: 80 }} />
+                <input type="number" placeholder="0" value={odAmount} onChange={e => setOdAmount(e.target.value)} style={{ ...darkInput, width: '5rem' }} />
               </div>
               <button onClick={odMode === 'group' ? handleBulkOD : handleIndividualOD}
                 disabled={odBusy || !odAmount || (odMode === 'individual' && !odTarget)}
@@ -410,43 +407,43 @@ export function GmToolsPanel({
 
         {/* ── Force ── */}
         {activeTab === 'force' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
 
             {/* ── Morality ── */}
             {hasForceSensitive && (
               <div>
-                <div style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(150,168,180,0.4)', marginBottom: 8 }}>
+                <div style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--hud-text-faint)', marginBottom: '0.5rem' }}>
                   Morality
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   {activeChars
                     .filter(c => (c.force_rating ?? 0) > 0)
                     .map(c => {
                       const val = c.morality_value ?? 50
                       const isLight = val >= 50
                       return (
-                        <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                           {/* Name */}
                           <span style={{ flex: 1, fontFamily: FONT, fontSize: 'var(--text-sm)', color: 'var(--hud-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {c.name}
                           </span>
                           {/* Gradient bar */}
-                          <div style={{ position: 'relative', width: 64, height: 5, borderRadius: RADIUS.full, background: 'linear-gradient(to right, #E05050, #C8AA50 40%, #4CAF50 60%, #5AAAE0)', flexShrink: 0 }}>
-                            <div style={{ position: 'absolute', top: -4, left: `${val}%`, transform: 'translateX(-50%)', width: 2, height: 13, background: '#fff', borderRadius: RADIUS.sm, boxShadow: '0 0 4px rgba(255,255,255,0.5)' }} />
+                          <div style={{ position: 'relative', width: '4rem', height: '0.3125rem', borderRadius: RADIUS.full, background: 'linear-gradient(to right, #E05050, #C8AA50 40%, #4CAF50 60%, #5AAAE0)', flexShrink: 0 }}>
+                            <div style={{ position: 'absolute', top: '-0.25rem', left: `${val}%`, transform: 'translateX(-50%)', width: '0.125rem', height: '0.8125rem', background: '#fff', borderRadius: RADIUS.sm, boxShadow: '0 0 4px rgba(255,255,255,0.5)' }} />
                           </div>
                           {/* Numeric value */}
-                          <span style={{ fontFamily: FONT, fontSize: 'var(--text-caption)', fontWeight: 700, color: isLight ? COLOR.blue : COLOR.red, width: 22, textAlign: 'right', flexShrink: 0 }}>
+                          <span style={{ fontFamily: FONT, fontSize: 'var(--text-caption)', fontWeight: 700, color: isLight ? COLOR.blue : COLOR.red, width: '1.375rem', textAlign: 'right', flexShrink: 0 }}>
                             {val}
                           </span>
                           {/* − button */}
                           <button
                             onClick={() => adjustMorality(c.id, -1)}
-                            style={{ width: 20, height: 20, borderRadius: RADIUS.sm, border: `1px solid rgba(224,80,80,0.4)`, background: 'rgba(224,80,80,0.10)', color: COLOR.red, fontSize: 15, cursor: 'pointer', padding: 0, lineHeight: 1 }}
+                            style={{ width: '1.25rem', height: '1.25rem', borderRadius: RADIUS.sm, border: `1px solid rgba(224,80,80,0.4)`, background: 'rgba(224,80,80,0.10)', color: COLOR.red, fontSize: FS.h4, cursor: 'pointer', padding: 0, lineHeight: 1 }}
                           >−</button>
                           {/* + button */}
                           <button
                             onClick={() => adjustMorality(c.id, 1)}
-                            style={{ width: 20, height: 20, borderRadius: RADIUS.sm, border: `1px solid rgba(90,170,224,0.4)`, background: 'rgba(90,170,224,0.10)', color: COLOR.blue, fontSize: 15, cursor: 'pointer', padding: 0, lineHeight: 1 }}
+                            style={{ width: '1.25rem', height: '1.25rem', borderRadius: RADIUS.sm, border: `1px solid rgba(90,170,224,0.4)`, background: 'rgba(90,170,224,0.10)', color: COLOR.blue, fontSize: FS.h4, cursor: 'pointer', padding: 0, lineHeight: 1 }}
                           >+</button>
                         </div>
                       )
@@ -462,8 +459,8 @@ export function GmToolsPanel({
               title={hasForceSensitive ? undefined : 'No force-sensitive characters in this campaign'}
               style={{
                 width:         '100%',
-                height:        36,
-                borderRadius:  3,
+                height:        '2.25rem',
+                borderRadius:  RADIUS.sm,
                 background:    hasForceSensitive ? 'rgba(144,96,208,0.12)' : 'transparent',
                 border:        '1px solid rgba(144,96,208,0.35)',
                 fontFamily:    FONT,
@@ -471,7 +468,7 @@ export function GmToolsPanel({
                 fontWeight:    700,
                 letterSpacing: '0.1em',
                 textTransform: 'uppercase',
-                color:         hasForceSensitive ? PURPLE : 'rgba(144,96,208,0.3)',
+                color:         hasForceSensitive ? 'var(--hud-accent-purple)' : 'rgba(144,96,208,0.3)',
                 cursor:        hasForceSensitive ? 'pointer' : 'not-allowed',
               }}
             >
@@ -480,16 +477,16 @@ export function GmToolsPanel({
 
             {/* Force notifications section */}
             <div>
-              <div style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(150,168,180,0.4)', marginBottom: 8 }}>
+              <div style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--hud-text-faint)', marginBottom: '0.5rem' }}>
                 Force Notifications
               </div>
               {pending.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '16px 0' }}>
                   <div style={{ fontFamily: FONT, fontSize: 'var(--text-sm)', color: DIM }}>No pending Force notifications.</div>
-                  <div style={{ fontFamily: FONT, fontSize: 'var(--text-caption)', color: PURPLE, marginTop: 4, opacity: 0.6 }}>Dark side use will appear here in real time.</div>
+                  <div style={{ fontFamily: FONT, fontSize: 'var(--text-caption)', color: 'var(--hud-accent-purple)', marginTop: '0.25rem', opacity: 0.6 }}>Dark side use will appear here in real time.</div>
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   {(forceNotifications as { id: string; character_id: string; status: string }[])
                     .filter(n => n.status === 'pending')
                     .map(n => (
@@ -506,16 +503,16 @@ export function GmToolsPanel({
 
             {/* Active conflicts section */}
             <div>
-              <div style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(150,168,180,0.4)', marginBottom: 8 }}>
+              <div style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--hud-text-faint)', marginBottom: '0.5rem' }}>
                 Active Conflicts
               </div>
               {conflicts.length === 0 ? (
                 <div style={{ fontFamily: FONT, fontSize: 'var(--text-sm)', color: DIM }}>No active conflicts.</div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   {conflicts.map(c => (
-                    <div key={c.id} style={{ padding: '10px 12px', background: 'rgba(144,96,208,0.06)', border: '1px solid rgba(144,96,208,0.2)', borderRadius: 6 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
+                    <div key={c.id} style={{ padding: '0.625rem 0.75rem', background: 'rgba(144,96,208,0.06)', border: '1px solid rgba(144,96,208,0.2)', borderRadius: RADIUS.lg }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.25rem' }}>
                         <span style={{ fontFamily: FONT, fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--hud-text)' }}>
                           {charNameMap[c.character_id] ?? 'Unknown'}
                         </span>
@@ -523,11 +520,11 @@ export function GmToolsPanel({
                           {c.created_at.slice(0, 10)}
                         </span>
                       </div>
-                      <div style={{ fontFamily: FONT, fontSize: 'var(--text-sm)', fontWeight: 700, color: PURPLE }}>
+                      <div style={{ fontFamily: FONT, fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--hud-accent-purple)' }}>
                         {c.description}
                       </div>
                       {c.narrative && (
-                        <div style={{ fontFamily: FONT, fontSize: 'var(--text-caption)', color: DIM, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <div style={{ fontFamily: FONT, fontSize: 'var(--text-caption)', color: DIM, marginTop: '0.125rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {c.narrative}
                         </div>
                       )}

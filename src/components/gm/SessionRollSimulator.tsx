@@ -6,24 +6,22 @@ import { useSessionRollState } from '@/hooks/useSessionRollState'
 import type { SessionRollState } from '@/hooks/useSessionRollState'
 import type { Character, RefDutyType, RefObligationType } from '@/lib/types'
 import { resolveDutyName, resolveObligationName } from '@/lib/dutyObligationUtils'
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_BODY, EASE, FS, RADIUS } from '@/lib/tokens'
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
-const FC = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_MONO = "'Share Tech Mono', 'Courier New', monospace"
-const TEXT = '#C8D8C0'
-const DIM = '#6A8070'
-const FAINT = '#2A3A2E'
-const BORDER = 'rgba(200,170,80,0.14)'
-const BLUE = '#4FC3F7'
-const RED = '#E05050'
-const GREEN = '#4CAF50'
+const TEXT   = HUD.text
+const DIM    = HUD.textDim
+const FAINT  = HUD.textFaint
+const BORDER = HUD.border
+const BLUE   = '#4FC3F7'   // pre-approved: force/duty identity color
+const RED    = 'var(--state-failure)'
+const GREEN  = 'var(--state-success)'
 
 const panelBase: React.CSSProperties = {
-  background: 'rgba(8,16,10,0.88)',
+  background: HUD.panel,
   border: `1px solid ${BORDER}`,
-  borderRadius: 6,
-  padding: '16px',
+  borderRadius: RADIUS.lg,
+  padding: '1rem',
 }
 
 // ── Range table ───────────────────────────────────────────────────────────────
@@ -115,10 +113,10 @@ function RevealControl({
 
   if (revealed) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-          <span style={{ width: 7, height: 7, borderRadius: '50%', background: dot ? GREEN : `${GREEN}80`, display: 'inline-block', transition: 'background .4s' }} />
-          <span style={{ fontFamily: FONT_MONO, fontSize: 'clamp(0.68rem, 1vw, 0.78rem)', color: 'rgba(232,223,200,0.4)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.625rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.3125rem' }}>
+          <span style={{ width: '0.4375rem', height: '0.4375rem', borderRadius: RADIUS.full, background: dot ? GREEN : `${GREEN}80`, display: 'inline-block', transition: `background ${EASE.smooth}` }} />
+          <span style={{ fontFamily: FONT_BODY, fontSize: 'clamp(0.68rem, 1vw, 0.78rem)', color: HUD.textFaint }}>
             Result revealed to players.
           </span>
         </div>
@@ -126,9 +124,9 @@ function RevealControl({
           disabled={busy}
           onClick={onHide}
           style={{
-            fontFamily: FC, fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)', fontWeight: 700,
-            border: '1px solid rgba(232,223,200,0.25)', borderRadius: 4, padding: '3px 12px',
-            background: 'transparent', color: 'rgba(232,223,200,0.4)', cursor: 'pointer',
+            fontFamily: FONT_BODY, fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)', fontWeight: 700,
+            border: `1px solid rgba(232,223,200,0.25)`, borderRadius: RADIUS.md, padding: '0.1875rem 0.75rem',
+            background: 'transparent', color: HUD.textFaint, cursor: 'pointer',
             opacity: busy ? 0.5 : 1,
           }}
         >
@@ -139,16 +137,16 @@ function RevealControl({
   }
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
-      <span style={{ fontFamily: FONT_MONO, fontSize: 'clamp(0.68rem, 1vw, 0.78rem)', color: 'rgba(232,223,200,0.4)' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.625rem' }}>
+      <span style={{ fontFamily: FONT_BODY, fontSize: 'clamp(0.68rem, 1vw, 0.78rem)', color: HUD.textFaint }}>
         Players cannot see this result.
       </span>
       <button
         disabled={busy}
         onClick={onReveal}
         style={{
-          fontFamily: FC, fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)', fontWeight: 700,
-          border: `1px solid rgba(200,170,80,0.35)`, borderRadius: 4, padding: '3px 12px',
+          fontFamily: FONT_BODY, fontSize: 'clamp(0.75rem, 1.2vw, 0.88rem)', fontWeight: 700,
+          border: `1px solid rgba(200,170,80,0.35)`, borderRadius: RADIUS.md, padding: '0.1875rem 0.75rem',
           background: `rgba(200,170,80,0.08)`, color: HUD.gold, cursor: 'pointer',
           opacity: busy ? 0.5 : 1,
         }}
@@ -166,46 +164,46 @@ function RollDisplay({ result, label, color }: { result: RollResult; label: stri
   const border = result.triggered ? `1px solid ${color}40` : `1px solid ${BORDER}`
 
   return (
-    <div style={{ background: bg, border, borderRadius: 6, padding: '14px 16px' }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 }}>
-        <span style={{ fontFamily: FC, fontSize: 32, fontWeight: 700, color, lineHeight: 1 }}>
+    <div style={{ background: bg, border, borderRadius: RADIUS.lg, padding: '0.875rem 1rem' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.5rem' }}>
+        <span style={{ fontFamily: FONT_BODY, fontSize: FS.h2, fontWeight: 700, color, lineHeight: 1 }}>
           {result.roll}
         </span>
-        <span style={{ fontFamily: FC, fontSize: 11, color: DIM }}>/ {result.groupTotal} total</span>
+        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: DIM }}>/ {result.groupTotal} total</span>
         {result.isDoubles && (
           <span style={{
-            fontFamily: FC, fontSize: 9, fontWeight: 700,
+            fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
             color: HUD.gold, background: `${HUD.gold}18`, border: `1px solid ${HUD.gold}40`,
-            borderRadius: 3, padding: '1px 6px', letterSpacing: '0.1em', textTransform: 'uppercase',
+            borderRadius: RADIUS.sm, padding: '0.0625rem 0.375rem', letterSpacing: '0.1em', textTransform: 'uppercase',
           }}>Doubles</span>
         )}
       </div>
       <div style={{
-        fontFamily: FC, fontSize: 12, fontWeight: 700,
+        fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
         color: result.triggered ? color : DIM,
         letterSpacing: '0.08em', textTransform: 'uppercase',
-        marginBottom: (result.triggeredEntry || result.doublesNote) ? 8 : 0,
+        marginBottom: (result.triggeredEntry || result.doublesNote) ? '0.5rem' : 0,
       }}>
         {result.triggered ? `▶ ${label} Triggered` : `— No ${label}`}
       </div>
       {result.triggeredEntry && (
         <div style={{
           background: `${color}08`, border: `1px solid ${color}25`,
-          borderRadius: 4, padding: '6px 10px',
-          marginBottom: result.doublesNote ? 8 : 0,
+          borderRadius: RADIUS.md, padding: '0.375rem 0.625rem',
+          marginBottom: result.doublesNote ? '0.5rem' : 0,
         }}>
-          <div style={{ fontFamily: FC, fontSize: 10, color: DIM, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 2 }}>Character</div>
-          <div style={{ fontFamily: FC, fontSize: 14, fontWeight: 700, color: TEXT }}>{result.triggeredEntry.characterName}</div>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: DIM, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.125rem' }}>Character</div>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700, color: TEXT }}>{result.triggeredEntry.characterName}</div>
           {result.triggeredEntry.typeName && (
-            <div style={{ fontFamily: FC, fontSize: 11, color, marginTop: 1 }}>{result.triggeredEntry.typeName}</div>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color, marginTop: '0.0625rem' }}>{result.triggeredEntry.typeName}</div>
           )}
-          <div style={{ fontFamily: FC, fontSize: 10, color: DIM, marginTop: 2 }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: DIM, marginTop: '0.125rem' }}>
             Range {result.triggeredEntry.rangeLow}–{result.triggeredEntry.rangeHigh} (value {result.triggeredEntry.value})
           </div>
         </div>
       )}
       {result.doublesNote && (
-        <div style={{ fontFamily: FC, fontSize: 10, color: HUD.gold, lineHeight: 1.4 }}>✦ {result.doublesNote}</div>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.gold, lineHeight: 1.4 }}>✦ {result.doublesNote}</div>
       )}
     </div>
   )
@@ -213,20 +211,20 @@ function RollDisplay({ result, label, color }: { result: RollResult; label: stri
 
 function RangeTable({ entries, color }: { entries: RangeEntry[]; color: string }) {
   if (entries.length === 0) return (
-    <div style={{ fontFamily: FC, fontSize: 11, color: DIM, fontStyle: 'italic' }}>No values set.</div>
+    <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: DIM, fontStyle: 'italic' }}>No values set.</div>
   )
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.125rem' }}>
       {entries.map(e => (
         <div key={e.characterId} style={{
           display: 'flex', justifyContent: 'space-between',
-          fontFamily: FC, fontSize: 11, color: DIM, padding: '2px 0',
+          fontFamily: FONT_BODY, fontSize: FS.overline, color: DIM, padding: '0.125rem 0',
           borderBottom: `1px solid ${FAINT}`,
         }}>
           <span style={{ color: TEXT }}>{e.characterName}</span>
           <span style={{ color }}>
             {e.rangeLow === e.rangeHigh ? e.rangeLow : `${e.rangeLow}–${e.rangeHigh}`}
-            <span style={{ color: DIM, marginLeft: 6 }}>(+{e.value})</span>
+            <span style={{ color: DIM, marginLeft: '0.375rem' }}>(+{e.value})</span>
           </span>
         </div>
       ))}
@@ -379,15 +377,15 @@ export function SessionRollSimulator({ characters, campaignId, dutyTypes = [], o
   const oblRevealed  = savedState?.obligation_revealed ?? false
 
   const btnBase: React.CSSProperties = {
-    fontFamily: FC, fontSize: 11, fontWeight: 700, letterSpacing: '0.12em',
+    fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.12em',
     textTransform: 'uppercase', border: '1px solid',
-    borderRadius: 4, padding: '7px 16px', cursor: 'pointer', transition: '.15s',
+    borderRadius: RADIUS.md, padding: '0.4375rem 1rem', cursor: 'pointer', transition: EASE.quick,
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       {/* Roll buttons */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
         <button disabled={busyRoll} onClick={rollBoth}
           style={{ ...btnBase, borderColor: HUD.gold, background: 'rgba(200,170,80,0.12)', color: HUD.gold, opacity: busyRoll ? 0.5 : 1 }}>
           Roll Both (D100)
@@ -409,7 +407,7 @@ export function SessionRollSimulator({ characters, campaignId, dutyTypes = [], o
 
       {/* Results with reveal controls */}
       {(dutyResult || oblResult) && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
           {dutyResult && (
             <div>
               <RollDisplay result={dutyResult} label="Duty" color={BLUE} />
@@ -441,13 +439,13 @@ export function SessionRollSimulator({ characters, campaignId, dutyTypes = [], o
 
       {/* Range tables */}
       {showTables && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
           <div style={panelBase}>
-            <div style={{ fontFamily: FC, fontSize: 10, fontWeight: 700, color: BLUE, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 8 }}>Duty Range Table</div>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, color: BLUE, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Duty Range Table</div>
             <RangeTable entries={dutyTable} color={BLUE} />
           </div>
           <div style={panelBase}>
-            <div style={{ fontFamily: FC, fontSize: 10, fontWeight: 700, color: RED, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 8 }}>Obligation Range Table</div>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, color: RED, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Obligation Range Table</div>
             <RangeTable entries={oblTable} color={RED} />
           </div>
         </div>
@@ -455,33 +453,33 @@ export function SessionRollSimulator({ characters, campaignId, dutyTypes = [], o
 
       {/* Reset */}
       {campaignId && (
-        <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: 12, display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
           {!resetConfirm ? (
             <button
               onClick={() => setResetConfirm(true)}
               style={{
-                fontFamily: FC, fontSize: 10, fontWeight: 700, letterSpacing: '0.1em',
-                border: `1px solid rgba(232,223,200,0.25)`, borderRadius: 4, padding: '5px 14px',
-                background: 'transparent', color: 'rgba(232,223,200,0.3)', cursor: 'pointer',
+                fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.1em',
+                border: `1px solid rgba(232,223,200,0.25)`, borderRadius: RADIUS.md, padding: '0.3125rem 0.875rem',
+                background: 'transparent', color: HUD.textFaint, cursor: 'pointer',
               }}
             >
               Reset Session Rolls
             </button>
           ) : (
             <>
-              <span style={{ fontFamily: FC, fontSize: 11, color: 'rgba(232,223,200,0.55)' }}>
+              <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textDim }}>
                 Reset all session rolls? This cannot be undone.
               </span>
               <button
                 onClick={() => setResetConfirm(false)}
-                style={{ fontFamily: FC, fontSize: 10, border: `1px solid ${BORDER}`, borderRadius: 4, padding: '4px 12px', background: 'transparent', color: DIM, cursor: 'pointer' }}
+                style={{ fontFamily: FONT_BODY, fontSize: FS.overline, border: `1px solid ${BORDER}`, borderRadius: RADIUS.md, padding: '0.25rem 0.75rem', background: 'transparent', color: DIM, cursor: 'pointer' }}
               >
                 Cancel
               </button>
               <button
                 onClick={handleReset}
                 disabled={busyReset}
-                style={{ fontFamily: FC, fontSize: 10, fontWeight: 700, border: `1px solid rgba(224,80,80,0.4)`, borderRadius: 4, padding: '4px 12px', background: 'rgba(224,80,80,0.1)', color: RED, cursor: 'pointer', opacity: busyReset ? 0.5 : 1 }}
+                style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, border: `1px solid rgba(224,80,80,0.4)`, borderRadius: RADIUS.md, padding: '0.25rem 0.75rem', background: 'rgba(224,80,80,0.1)', color: RED, cursor: 'pointer', opacity: busyReset ? 0.5 : 1 }}
               >
                 {busyReset ? 'Resetting...' : 'Confirm Reset'}
               </button>

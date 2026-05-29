@@ -5,9 +5,9 @@ import { createClient } from '@/lib/supabase/client'
 import type { MapToken } from '@/hooks/useMapTokens'
 import type { Character } from '@/lib/types'
 import { GmTokenControls } from './GmTokenControls'
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_BODY, EASE, FS, RADIUS } from '@/lib/tokens'
 
-const FONT   = 'var(--font-body)'
+const FONT   = FONT_BODY
 const BORDER = 'var(--hud-border)'
 
 const sectionHeader: React.CSSProperties = {
@@ -17,42 +17,42 @@ const sectionHeader: React.CSSProperties = {
   letterSpacing: '0.18em',
   textTransform: 'uppercase',
   color:         'var(--hud-text-dim)',
-  marginBottom:  6,
-  paddingBottom: 4,
+  marginBottom:  '0.375rem',
+  paddingBottom: '0.25rem',
   borderBottom:  `1px solid ${BORDER}`,
 }
 
 const controlRow: React.CSSProperties = {
   display:    'flex',
   alignItems: 'center',
-  gap:        8,
-  padding:    '4px 0',
+  gap:        '0.5rem',
+  padding:    '0.25rem 0',
 }
 
 const toggleBtn = (active: boolean): React.CSSProperties => ({
-  padding:       '4px 10px',
+  padding:       '0.25rem 0.625rem',
   background:    active ? 'rgba(78,200,122,0.15)' : 'var(--hud-surface-mid)',
   border:        `1px solid ${active ? 'rgba(78,200,122,0.4)' : 'var(--hud-border-hi)'}`,
-  borderRadius:  4,
+  borderRadius:  RADIUS.md,
   cursor:        'pointer',
   fontFamily:    FONT,
   fontSize:      'var(--text-caption)',
   fontWeight:    700,
   letterSpacing: '0.06em',
-  color:         active ? '#4EC87A' : 'var(--hud-text-dim)',
-  transition:    'background 0.15s, border-color 0.15s',
+  color:         active ? 'var(--state-success)' : 'var(--hud-text-dim)',
+  transition:    `background ${EASE.quick}, border-color ${EASE.quick}`,
 })
 
 const stepBtn: React.CSSProperties = {
-  width:      28,
-  height:     28,
+  width:      '1.75rem',
+  height:     '1.75rem',
   background: 'var(--hud-surface-mid)',
   border:     '1px solid var(--hud-border-hi)',
-  borderRadius: 4,
+  borderRadius: RADIUS.md,
   cursor:     'pointer',
   color:      HUD.gold,
   fontFamily: FONT,
-  fontSize:   16,
+  fontSize:   FS.h4,
   display:    'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -93,26 +93,26 @@ export function GmMapPanel({
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto' }}>
 
       {/* Map section */}
-      <div style={{ padding: '12px 14px 0', flexShrink: 0 }}>
+      <div style={{ padding: '0.75rem 0.875rem 0', flexShrink: 0 }}>
         <div style={sectionHeader}>Map</div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
           <button
             onClick={onMapsClick}
             style={{
               ...controlRow,
               background:    'var(--hud-surface-mid)',
               border:        '1px solid var(--hud-border-hi)',
-              borderRadius:  4,
+              borderRadius:  RADIUS.md,
               cursor:        'pointer',
-              padding:       '7px 12px',
+              padding:       '0.4375rem 0.75rem',
               fontFamily:    FONT,
               fontSize:      'var(--text-label)',
               fontWeight:    700,
               color:         HUD.gold,
               width:         '100%',
               justifyContent: 'flex-start',
-              gap:           8,
+              gap:           '0.5rem',
             }}
           >
             <span>◉</span> Map Library
@@ -134,10 +134,10 @@ export function GmMapPanel({
       </div>
 
       {/* Divider */}
-      <div style={{ height: 1, background: BORDER, margin: '12px 14px' }} />
+      <div style={{ height: 1, background: BORDER, margin: '0.75rem 0.875rem' }} />
 
       {/* Token Scale section */}
-      <div style={{ padding: '0 14px', flexShrink: 0 }}>
+      <div style={{ padding: '0 0.875rem', flexShrink: 0 }}>
         <div style={sectionHeader}>Token Scale</div>
         <div style={controlRow}>
           <button disabled={!mapId} onClick={() => adjustTokenScale(-0.25)} style={stepBtn}>−</button>
@@ -146,7 +146,7 @@ export function GmMapPanel({
             fontSize:      'var(--text-sm)',
             fontWeight:    700,
             color:         mapId ? HUD.gold : 'var(--hud-text-dim)',
-            minWidth:      48,
+            minWidth:      '3rem',
             textAlign:     'center',
           }}>
             {tokenScale.toFixed(2)}×
@@ -156,11 +156,11 @@ export function GmMapPanel({
       </div>
 
       {/* Divider */}
-      <div style={{ height: 1, background: BORDER, margin: '12px 14px' }} />
+      <div style={{ height: 1, background: BORDER, margin: '0.75rem 0.875rem' }} />
 
       {/* Tokens section */}
-      <div style={{ padding: '0 0', flex: 1 }}>
-        <div style={{ ...sectionHeader, margin: '0 14px', marginBottom: 8 }}>Tokens</div>
+      <div style={{ padding: 0, flex: 1 }}>
+        <div style={{ ...sectionHeader, margin: '0 0.875rem', marginBottom: '0.5rem' }}>Tokens</div>
         <GmTokenControls
           campaignId={campaignId}
           mapId={mapId}

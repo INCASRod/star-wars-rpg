@@ -5,25 +5,22 @@ import { Modal } from '@/components/ui/Modal'
 import { createClient } from '@/lib/supabase/client'
 import type { Character, RefDutyType, RefObligationType } from '@/lib/types'
 import { stripBBCode } from '@/lib/utils'
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_BODY, RADIUS, EASE, FS } from '@/lib/tokens'
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
-const FC = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const TEXT = '#C8D8C0'
-const DIM = '#6A8070'
-const FAINT = '#2A3A2E'
-const BORDER = 'rgba(200,170,80,0.14)'
-const BORDER_HI = 'rgba(200,170,80,0.36)'
-const BG_MODAL = 'rgba(4, 10, 6, 0.96)'
+// Pre-approved: rgba(0,0,0,*) overlay on darkInput background.
+// Duty blue (#4FC3F7) and obligation red (#E05050) map to CSS state tokens.
+const BLUE = 'var(--state-info)'     // duty colour
+const RED  = 'var(--state-failure)'  // obligation colour
 
 const darkInput: React.CSSProperties = {
   background: 'rgba(0,0,0,0.4)',
-  border: `1px solid ${BORDER_HI}`,
-  borderRadius: 4,
-  color: TEXT,
-  fontFamily: FC,
-  fontSize: 13,
-  padding: '7px 10px',
+  border: `1px solid ${HUD.borderHi}`,
+  borderRadius: RADIUS.md,
+  color: HUD.text,
+  fontFamily: FONT_BODY,
+  fontSize: FS.body,
+  padding: '0.4375rem 0.625rem',
   outline: 'none',
   width: '100%',
   boxSizing: 'border-box',
@@ -32,18 +29,18 @@ const darkInput: React.CSSProperties = {
 const darkTextarea: React.CSSProperties = {
   ...darkInput,
   resize: 'vertical',
-  minHeight: 72,
+  minHeight: '4.5rem',
   lineHeight: 1.6,
 }
 
 const fieldLabel: React.CSSProperties = {
-  fontFamily: FC,
-  fontSize: 10,
+  fontFamily: FONT_BODY,
+  fontSize: FS.overline,
   fontWeight: 700,
   letterSpacing: '0.16em',
   textTransform: 'uppercase',
-  color: DIM,
-  marginBottom: 4,
+  color: HUD.textDim,
+  marginBottom: '0.25rem',
 }
 
 const STARTING_VALUES = [5, 10, 15, 20]
@@ -108,22 +105,22 @@ export function DutyObligationSetupModal({
 
   return (
     <Modal open onClose={onClose} maxWidth={680}>
-      <div style={{ padding: '24px 28px' }}>
+      <div style={{ padding: '1.5rem 1.75rem' }}>
         {/* Title */}
-        <div style={{ marginBottom: 24 }}>
-          <div style={{ fontFamily: FC, fontSize: 10, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: DIM, marginBottom: 4 }}>
+        <div style={{ marginBottom: '1.5rem' }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: HUD.textDim, marginBottom: '0.25rem' }}>
             GM Setup
           </div>
-          <div style={{ fontFamily: FC, fontSize: 18, fontWeight: 700, color: HUD.gold }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.h4, fontWeight: 700, color: HUD.gold }}>
             Duty & Obligation — {character.name}
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
 
           {/* ── DUTY ─────────────────────────────────────────────────────────── */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div style={{ fontFamily: FC, fontSize: 11, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#4FC3F7', borderBottom: '1px solid rgba(79,195,247,0.2)', paddingBottom: 6 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: BLUE, borderBottom: '1px solid rgba(79,195,247,0.2)', paddingBottom: '0.375rem' }}>
               Duty
             </div>
 
@@ -140,7 +137,7 @@ export function DutyObligationSetupModal({
                 ))}
               </select>
               {dutyDescClean && (
-                <div style={{ fontFamily: FC, fontSize: 10, color: DIM, marginTop: 6, lineHeight: 1.5 }}>
+                <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textDim, marginTop: '0.375rem', lineHeight: 1.5 }}>
                   {dutyDescClean}
                 </div>
               )}
@@ -155,25 +152,25 @@ export function DutyObligationSetupModal({
                 placeholder={dutyTypes.find(d => d.key === dutyTypeKey)?.name ?? 'Override display name…'}
                 style={darkInput}
               />
-              <div style={{ fontFamily: FC, fontSize: 10, color: DIM, marginTop: 4, lineHeight: 1.4 }}>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textDim, marginTop: '0.25rem', lineHeight: 1.4 }}>
                 Replaces the type name everywhere it appears. Leave blank to use the standard name.
               </div>
             </div>
 
             <div>
               <div style={fieldLabel}>Starting Value</div>
-              <div style={{ display: 'flex', gap: 6 }}>
+              <div style={{ display: 'flex', gap: '0.375rem' }}>
                 {STARTING_VALUES.map(v => (
                   <button
                     key={v}
                     onClick={() => setDutyValue(v)}
                     style={{
-                      flex: 1, padding: '6px 0',
+                      flex: 1, padding: '0.375rem 0',
                       background: dutyValue === v ? 'rgba(79,195,247,0.2)' : 'rgba(79,195,247,0.05)',
                       border: `1px solid ${dutyValue === v ? 'rgba(79,195,247,0.6)' : 'rgba(79,195,247,0.15)'}`,
-                      borderRadius: 4, cursor: 'pointer',
-                      fontFamily: FC, fontSize: 13, fontWeight: 700,
-                      color: dutyValue === v ? '#4FC3F7' : DIM,
+                      borderRadius: RADIUS.md, cursor: 'pointer',
+                      fontFamily: FONT_BODY, fontSize: FS.body, fontWeight: 700,
+                      color: dutyValue === v ? BLUE : HUD.textDim,
                     }}
                   >
                     {v}
@@ -194,8 +191,8 @@ export function DutyObligationSetupModal({
           </div>
 
           {/* ── OBLIGATION ────────────────────────────────────────────────────── */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div style={{ fontFamily: FC, fontSize: 11, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#E05050', borderBottom: '1px solid rgba(224,80,80,0.2)', paddingBottom: 6 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: RED, borderBottom: '1px solid rgba(224,80,80,0.2)', paddingBottom: '0.375rem' }}>
               Obligation
             </div>
 
@@ -212,7 +209,7 @@ export function DutyObligationSetupModal({
                 ))}
               </select>
               {oblDescClean && (
-                <div style={{ fontFamily: FC, fontSize: 10, color: DIM, marginTop: 6, lineHeight: 1.5 }}>
+                <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textDim, marginTop: '0.375rem', lineHeight: 1.5 }}>
                   {oblDescClean}
                 </div>
               )}
@@ -227,25 +224,25 @@ export function DutyObligationSetupModal({
                 placeholder={obligationTypes.find(o => o.key === oblTypeKey)?.name ?? 'Override display name…'}
                 style={darkInput}
               />
-              <div style={{ fontFamily: FC, fontSize: 10, color: DIM, marginTop: 4, lineHeight: 1.4 }}>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textDim, marginTop: '0.25rem', lineHeight: 1.4 }}>
                 Replaces the type name everywhere it appears. Leave blank to use the standard name.
               </div>
             </div>
 
             <div>
               <div style={fieldLabel}>Starting Value</div>
-              <div style={{ display: 'flex', gap: 6 }}>
+              <div style={{ display: 'flex', gap: '0.375rem' }}>
                 {STARTING_VALUES.map(v => (
                   <button
                     key={v}
                     onClick={() => setOblValue(v)}
                     style={{
-                      flex: 1, padding: '6px 0',
+                      flex: 1, padding: '0.375rem 0',
                       background: oblValue === v ? 'rgba(224,80,80,0.2)' : 'rgba(224,80,80,0.05)',
                       border: `1px solid ${oblValue === v ? 'rgba(224,80,80,0.6)' : 'rgba(224,80,80,0.15)'}`,
-                      borderRadius: 4, cursor: 'pointer',
-                      fontFamily: FC, fontSize: 13, fontWeight: 700,
-                      color: oblValue === v ? '#E05050' : DIM,
+                      borderRadius: RADIUS.md, cursor: 'pointer',
+                      fontFamily: FONT_BODY, fontSize: FS.body, fontWeight: 700,
+                      color: oblValue === v ? RED : HUD.textDim,
                     }}
                   >
                     {v}
@@ -268,19 +265,19 @@ export function DutyObligationSetupModal({
 
         {/* Error */}
         {error && (
-          <div style={{ fontFamily: FC, fontSize: 11, color: '#E05050', marginTop: 16 }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: 'var(--state-failure)', marginTop: '1rem' }}>
             Error: {error}
           </div>
         )}
 
         {/* Actions */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 24, paddingTop: 16, borderTop: `1px solid ${BORDER}` }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.625rem', marginTop: '1.5rem', paddingTop: '1rem', borderTop: `1px solid ${HUD.border}` }}>
           <button
             onClick={onClose}
             style={{
-              fontFamily: FC, fontSize: 12, fontWeight: 700, letterSpacing: '0.1em',
-              padding: '8px 20px', border: `1px solid ${BORDER}`,
-              borderRadius: 4, background: 'transparent', color: DIM, cursor: 'pointer',
+              fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700, letterSpacing: '0.1em',
+              padding: '0.5rem 1.25rem', border: `1px solid ${HUD.border}`,
+              borderRadius: RADIUS.md, background: 'transparent', color: HUD.textDim, cursor: 'pointer',
             }}
           >
             Cancel
@@ -289,14 +286,14 @@ export function DutyObligationSetupModal({
             onClick={handleSave}
             disabled={!allFilled || busy}
             style={{
-              fontFamily: FC, fontSize: 12, fontWeight: 700, letterSpacing: '0.1em',
-              padding: '8px 24px',
-              border: `1px solid ${allFilled && !busy ? HUD.gold : FAINT}`,
-              borderRadius: 4,
+              fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700, letterSpacing: '0.1em',
+              padding: '0.5rem 1.5rem',
+              border: `1px solid ${allFilled && !busy ? HUD.gold : 'var(--hud-surface-hi)'}`,
+              borderRadius: RADIUS.md,
               background: allFilled && !busy ? 'rgba(200,170,80,0.15)' : 'rgba(200,170,80,0.04)',
-              color: allFilled && !busy ? HUD.gold : DIM,
+              color: allFilled && !busy ? HUD.gold : HUD.textDim,
               cursor: allFilled && !busy ? 'pointer' : 'not-allowed',
-              transition: '.15s',
+              transition: EASE.quick,
             }}
           >
             {busy ? 'Saving...' : character.duty_obligation_configured ? 'Update' : 'Save & Configure'}

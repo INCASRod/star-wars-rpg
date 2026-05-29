@@ -10,26 +10,20 @@ import { randomUUID } from '@/lib/utils'
 import { toast } from 'sonner'
 import { VehicleDetailPanel } from './VehicleDetailPanel'
 import { VehicleEditor } from './VehicleEditor'
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_BODY, EASE } from '@/lib/tokens'
 import { Modal } from '@/components/ui/Modal'
 
 /* ── Design tokens ─────────────────────────────────────── */
-const FC       = "var(--font-rajdhani), 'Cinzel', serif"
-const FR       = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FM       = "'Share Tech Mono','Courier New',monospace"
-const PANEL_BG = 'rgba(8,16,10,0.88)'
 const RAISED   = 'rgba(14,26,18,0.9)'
 const INPUT_BG = 'rgba(0,0,0,0.35)'
-const GOLD_DIM = 'rgba(200,170,80,0.5)'
-const TEXT     = '#C8D8C0'
-const DIM      = '#6A8070'
-const BORDER   = 'rgba(200,170,80,0.14)'
-const BORDER_HI = 'rgba(200,170,80,0.36)'
-const GREEN    = '#4EC87A'
-const RED      = '#E05050'
-const BLUE     = '#5AAAE0'
+const TEXT     = HUD.text
+const DIM      = HUD.textDim
+const BORDER   = HUD.border
+const BORDER_HI = HUD.borderHi
+const GREEN    = 'var(--state-success)'
+const RED      = 'var(--state-failure)'
+const BLUE     = 'var(--die-force)'
 
-const FS_OVERLINE = 'var(--text-overline)'
 const FS_CAPTION  = 'var(--text-caption)'
 const FS_SM       = 'var(--text-sm)'
 const FS_H4       = 'var(--text-h4)'
@@ -49,11 +43,11 @@ function PillBtn({ active, onClick, children, color }: { active: boolean; onClic
   const c = color ?? HUD.gold
   return (
     <button onClick={onClick} style={{
-      fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.08em',
-      textTransform: 'uppercase' as const, padding: '4px 12px', borderRadius: 12,
+      fontFamily: FONT_BODY, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.08em',
+      textTransform: 'uppercase' as const, padding: '0.25rem 0.75rem', borderRadius: 12,
       border: `1px solid ${active ? c : BORDER}`,
       background: active ? `${c}20` : 'transparent',
-      color: active ? c : DIM, cursor: 'pointer', transition: '.12s',
+      color: active ? c : DIM, cursor: 'pointer', transition: EASE.quick,
     }}>
       {children}
     </button>
@@ -227,19 +221,19 @@ export function VehicleLibrary({ campaignId, sessionMode, onAddToken, mapId }: V
 
   /* ── Render ──────────────────────────────────────────── */
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-        <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: HUD.gold, letterSpacing: '0.08em' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS_H4, fontWeight: 700, color: HUD.gold, letterSpacing: '0.08em' }}>
           Vehicle Library
         </div>
         <button
           onClick={openNew}
           style={{
-            background: 'rgba(200,170,80,0.08)', border: `1px solid ${GOLD_DIM}`,
-            color: HUD.gold, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
-            letterSpacing: '0.1em', padding: '6px 14px', borderRadius: 3, cursor: 'pointer', flexShrink: 0,
+            background: 'rgba(200,170,80,0.08)', border: `1px solid ${HUD.borderHi}`,
+            color: HUD.gold, fontFamily: FONT_BODY, fontSize: FS_CAPTION, fontWeight: 700,
+            letterSpacing: '0.1em', padding: '0.375rem 0.875rem', borderRadius: 3, cursor: 'pointer', flexShrink: 0,
           }}
         >
           + New Vehicle
@@ -254,13 +248,13 @@ export function VehicleLibrary({ campaignId, sessionMode, onAddToken, mapId }: V
         onChange={e => setSearch(e.target.value)}
         style={{
           background: INPUT_BG, border: `1px solid ${BORDER}`, borderRadius: 4,
-          color: TEXT, fontFamily: FR, fontSize: FS_SM,
-          padding: '8px 12px', outline: 'none', width: '100%', boxSizing: 'border-box',
+          color: TEXT, fontFamily: FONT_BODY, fontSize: FS_SM,
+          padding: '0.5rem 0.75rem', outline: 'none', width: '100%', boxSizing: 'border-box',
         }}
       />
 
       {/* Filters */}
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap' }}>
         {(['all', 'ground', 'starship'] as CategoryFilter[]).map(f => (
           <PillBtn key={f} active={categoryFilter === f} onClick={() => setCategoryFilter(f)}
             color={f === 'starship' ? BLUE : HUD.gold}
@@ -268,7 +262,7 @@ export function VehicleLibrary({ campaignId, sessionMode, onAddToken, mapId }: V
             {f === 'all' ? 'All' : f === 'ground' ? 'Ground' : 'Starship'}
           </PillBtn>
         ))}
-        <div style={{ width: 1, background: BORDER, margin: '0 4px' }} />
+        <div style={{ width: 1, background: BORDER, margin: '0 0.25rem' }} />
         {([['all', 'All Sources'], ['oggdude', 'OggDude'], ['custom', 'Custom']] as [SourceFilter, string][]).map(([s, label]) => (
           <PillBtn key={s} active={sourceFilter === s} onClick={() => setSourceFilter(s)}>{label}</PillBtn>
         ))}
@@ -276,23 +270,23 @@ export function VehicleLibrary({ campaignId, sessionMode, onAddToken, mapId }: V
 
       {/* Count + List */}
       {!search.trim() && sourceFilter !== 'custom' ? (
-        <div style={{ textAlign: 'center', padding: '24px 0', fontFamily: FR, fontSize: FS_SM, color: DIM }}>
+        <div style={{ textAlign: 'center', padding: '1.5rem 0', fontFamily: FONT_BODY, fontSize: FS_SM, color: DIM }}>
           Search for a vehicle above, or select &ldquo;Custom&rdquo; to browse your vehicles.
         </div>
       ) : loading ? (
-        <div style={{ textAlign: 'center', padding: '24px 0', fontFamily: FR, fontSize: FS_SM, color: DIM }}>
+        <div style={{ textAlign: 'center', padding: '1.5rem 0', fontFamily: FONT_BODY, fontSize: FS_SM, color: DIM }}>
           Loading vehicles…
         </div>
       ) : (
         <>
-          <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: DIM }}>
             {search.trim()
               ? <>Showing {filtered.length} vehicle{filtered.length !== 1 ? 's' : ''} matching &ldquo;{search}&rdquo;</>
               : <>Showing {filtered.length} custom vehicle{filtered.length !== 1 ? 's' : ''}</>
             }
           </div>
           {filtered.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '24px 0', fontFamily: FR, fontSize: FS_SM, color: DIM }}>
+            <div style={{ textAlign: 'center', padding: '1.5rem 0', fontFamily: FONT_BODY, fontSize: FS_SM, color: DIM }}>
               No vehicles found.
             </div>
           ) : (
@@ -383,13 +377,13 @@ function VehicleRow({ vehicle, tokenUrl, isLast, onView, onEdit, onAddToCombat, 
   const accentColor = vehicle.isStarship ? BLUE : HUD.gold
   const btnRowStyle: React.CSSProperties = {
     background: 'transparent', border: `1px solid ${BORDER}`, color: DIM,
-    fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.08em',
-    padding: '4px 10px', borderRadius: 3, cursor: 'pointer', flexShrink: 0, transition: '.12s',
+    fontFamily: FONT_BODY, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.08em',
+    padding: '0.25rem 0.625rem', borderRadius: 3, cursor: 'pointer', flexShrink: 0, transition: EASE.quick,
   }
 
   return (
     <div style={{
-      display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px',
+      display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.625rem 0.875rem',
       background: 'transparent', borderBottom: isLast ? 'none' : `1px solid ${BORDER}`,
       flexWrap: 'wrap',
     }}>
@@ -402,19 +396,19 @@ function VehicleRow({ vehicle, tokenUrl, isLast, onView, onEdit, onAddToCombat, 
         {tokenUrl ? (
           <img src={tokenUrl} alt={vehicle.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         ) : (
-          <span style={{ fontSize: '16px' }}>{vehicle.isStarship ? '🚀' : '🚗'}</span>
+          <span style={{ fontSize: '1rem' }}>{vehicle.isStarship ? '🚀' : '🚗'}</span>
         )}
       </div>
 
       {/* Info */}
       <div style={{ flex: 1, minWidth: 120 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <span style={{ fontFamily: FR, fontSize: 'clamp(0.82rem,1.3vw,0.95rem)', fontWeight: 700, color: TEXT }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <span style={{ fontFamily: FONT_BODY, fontSize: 'clamp(0.82rem,1.3vw,0.95rem)', fontWeight: 700, color: TEXT }}>
             {vehicle._isCustom && <span style={{ color: HUD.gold }}>★ </span>}
             {vehicle.name}
           </span>
           <span style={{
-            fontFamily: FM, fontSize: FS_CAPTION, fontWeight: 700,
+            fontFamily: FONT_BODY, fontSize: FS_CAPTION, fontWeight: 700,
             color: accentColor, border: `1px solid ${accentColor}`,
             borderRadius: 2, padding: '1px 5px', letterSpacing: '0.08em',
             background: `${accentColor}18`,
@@ -422,13 +416,13 @@ function VehicleRow({ vehicle, tokenUrl, isLast, onView, onEdit, onAddToCombat, 
             {vehicle.isStarship ? 'STARSHIP' : 'GROUND'}
           </span>
         </div>
-        <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, marginTop: 2 }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: DIM, marginTop: 2 }}>
           Sil {vehicle.silhouette} · Spd {vehicle.speed} · Armor {vehicle.armor} · Hull {vehicle.hullTrauma}
         </div>
       </div>
 
       {/* Actions */}
-      <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+      <div style={{ display: 'flex', gap: '0.375rem', flexShrink: 0 }}>
         <button onClick={onView} className="hov-gold" style={btnRowStyle}>View</button>
         <button onClick={onEdit} className="hov-gold" style={btnRowStyle}>Edit</button>
         <button onClick={onAddToCombat} className="hov-red-bg" style={{ ...btnRowStyle, borderColor: 'rgba(224,80,80,0.3)', color: RED }}>{addLabel ?? '⚔ Combat'}</button>
@@ -457,31 +451,31 @@ function AddToCombatOverlay({ state, busy, onChange, onConfirm, onCancel }: {
       shadow="0 16px 48px rgba(0,0,0,0.8)"
       panelBackground="rgba(8,16,10,0.97)"
     >
-      <div style={{ padding: '20px 24px' }}>
-        <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: HUD.gold, letterSpacing: '0.1em', marginBottom: 4 }}>
+      <div style={{ padding: '1.25rem 1.5rem' }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS_H4, fontWeight: 700, color: HUD.gold, letterSpacing: '0.1em', marginBottom: '0.25rem' }}>
           Add to Combat
         </div>
-        <div style={{ fontFamily: FR, fontSize: FS_SM, color: TEXT, marginBottom: 16 }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS_SM, color: TEXT, marginBottom: '1rem' }}>
           <span style={{ color: vehicle.isStarship ? BLUE : HUD.gold, fontWeight: 700 }}>{vehicle.name}</span>
           {' '}
-          <span style={{ fontFamily: FM, fontSize: FS_CAPTION, color: DIM }}>
+          <span style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: DIM }}>
             Sil {vehicle.silhouette} · Armor {vehicle.armor} · Hull {vehicle.hullTrauma}
           </span>
         </div>
 
         {/* Alignment */}
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>Alignment</div>
-          <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ marginBottom: '1rem' }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: DIM, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Alignment</div>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
             {(['enemy', 'allied_npc'] as const).map(al => {
               const alColor = al === 'enemy' ? RED : GREEN
               const active = alignment === al
               return (
                 <button key={al} onClick={() => onChange({ ...state, alignment: al })} style={{
-                  flex: 1, padding: '8px 0', borderRadius: 3,
-                  fontFamily: FR, fontSize: FS_SM, fontWeight: 700, letterSpacing: '0.08em',
+                  flex: 1, padding: '0.5rem 0', borderRadius: 3,
+                  fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700, letterSpacing: '0.08em',
                   cursor: 'pointer', border: `1px solid ${active ? alColor : BORDER}`,
-                  background: active ? `${alColor}15` : 'transparent', color: active ? alColor : DIM, transition: '.12s',
+                  background: active ? `${alColor}15` : 'transparent', color: active ? alColor : DIM, transition: EASE.quick,
                 }}>
                   {al === 'enemy' ? '⚔ Enemy' : '🤝 Allied NPC'}
                 </button>
@@ -490,11 +484,11 @@ function AddToCombatOverlay({ state, busy, onChange, onConfirm, onCancel }: {
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={onCancel} style={{ flex: 1, padding: '9px 0', borderRadius: 3, background: 'transparent', border: `1px solid ${BORDER}`, color: DIM, fontFamily: FR, fontSize: FS_SM, fontWeight: 700, cursor: 'pointer' }}>
+        <div style={{ display: 'flex', gap: '0.625rem' }}>
+          <button onClick={onCancel} style={{ flex: 1, padding: '0.5625rem 0', borderRadius: 3, background: 'transparent', border: `1px solid ${BORDER}`, color: DIM, fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700, cursor: 'pointer' }}>
             Cancel
           </button>
-          <button onClick={onConfirm} disabled={busy} style={{ flex: 2, padding: '9px 0', borderRadius: 3, background: 'rgba(224,80,80,0.10)', border: `1px solid rgba(224,80,80,0.45)`, color: RED, fontFamily: FR, fontSize: FS_SM, fontWeight: 700, letterSpacing: '0.1em', cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.6 : 1 }}>
+          <button onClick={onConfirm} disabled={busy} style={{ flex: 2, padding: '0.5625rem 0', borderRadius: 3, background: 'rgba(224,80,80,0.10)', border: `1px solid rgba(224,80,80,0.45)`, color: RED, fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700, letterSpacing: '0.1em', cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.6 : 1 }}>
             {busy ? 'Adding…' : '⚔ Add to Combat'}
           </button>
         </div>
@@ -522,24 +516,24 @@ function AddTokenOverlay({
       shadow="0 16px 48px rgba(0,0,0,0.8)"
       panelBackground="rgba(8,16,10,0.97)"
     >
-      <div style={{ padding: '20px 24px' }}>
-        <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: HUD.gold, letterSpacing: '0.1em', marginBottom: 4 }}>
+      <div style={{ padding: '1.25rem 1.5rem' }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS_H4, fontWeight: 700, color: HUD.gold, letterSpacing: '0.1em', marginBottom: '0.25rem' }}>
           Add Token
         </div>
-        <div style={{ fontFamily: FR, fontSize: FS_SM, color: TEXT, marginBottom: 20 }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS_SM, color: TEXT, marginBottom: '1.25rem' }}>
           <span style={{ fontWeight: 700 }}>{entityName}</span>
           {' '}&mdash; choose alignment:
         </div>
-        <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
+        <div style={{ display: 'flex', gap: '0.625rem', marginBottom: '0.75rem' }}>
           <button
             onClick={() => onAdd('enemy')}
             style={{
-              flex: 1, padding: '12px 0', borderRadius: 4,
-              fontFamily: FR, fontSize: FS_SM, fontWeight: 700,
+              flex: 1, padding: '0.75rem 0', borderRadius: 4,
+              fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700,
               letterSpacing: '0.08em', cursor: 'pointer',
               background: 'rgba(224,80,80,0.12)',
               border: '1px solid rgba(224,80,80,0.5)',
-              color: RED, transition: '.12s',
+              color: RED, transition: EASE.quick,
             }}
           >
             ⚔ Enemy
@@ -547,12 +541,12 @@ function AddTokenOverlay({
           <button
             onClick={() => onAdd('allied_npc')}
             style={{
-              flex: 1, padding: '12px 0', borderRadius: 4,
-              fontFamily: FR, fontSize: FS_SM, fontWeight: 700,
+              flex: 1, padding: '0.75rem 0', borderRadius: 4,
+              fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700,
               letterSpacing: '0.08em', cursor: 'pointer',
               background: 'rgba(78,200,122,0.12)',
               border: '1px solid rgba(78,200,122,0.5)',
-              color: GREEN, transition: '.12s',
+              color: GREEN, transition: EASE.quick,
             }}
           >
             🤝 Friendly NPC
@@ -561,9 +555,9 @@ function AddTokenOverlay({
         <button
           onClick={onCancel}
           style={{
-            width: '100%', padding: '7px 0', borderRadius: 4,
+            width: '100%', padding: '0.4375rem 0', borderRadius: 4,
             background: 'transparent', border: `1px solid ${BORDER}`,
-            color: DIM, fontFamily: FR, fontSize: FS_SM, fontWeight: 700,
+            color: DIM, fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700,
             cursor: 'pointer',
           }}
         >

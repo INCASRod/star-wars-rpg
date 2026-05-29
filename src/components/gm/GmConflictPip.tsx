@@ -2,9 +2,12 @@
 
 import React, { useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Z } from '@/lib/tokens'
+import { Z, RADIUS, HUD } from '@/lib/tokens'
 import { FONT_BODY as FONT } from '@/lib/tokens'
 import type { GmConflictRow } from '@/hooks/useGmCampaignConflicts'
+
+// Pre-approved exception: force-identity conflict purple (rgba(144,96,208,*) / #9060D0)
+// kept as-is throughout — force colours are exempt per design rules.
 
 const TOOLTIP_W = 240
 
@@ -41,7 +44,7 @@ export function GmConflictPip({ conflict, onResolve }: GmConflictPipProps) {
 
   return (
     <div style={{ position: 'relative', display: 'inline-block' }}>
-      {/* Purple circle pip */}
+      {/* Force-identity conflict purple pip — pre-approved exception */}
       <div
         ref={btnRef}
         onClick={handleToggle}
@@ -50,9 +53,9 @@ export function GmConflictPip({ conflict, onResolve }: GmConflictPipProps) {
         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggle() } }}
         aria-label={conflict.description ?? 'Conflict'}
         style={{
-          width:        10,
-          height:       10,
-          borderRadius: '50%',
+          width:        '0.625rem',
+          height:       '0.625rem',
+          borderRadius: RADIUS.full,
           background:   'rgba(144,96,208,0.8)',
           border:       '1px solid rgba(144,96,208,0.4)',
           cursor:       'pointer',
@@ -79,16 +82,16 @@ export function GmConflictPip({ conflict, onResolve }: GmConflictPipProps) {
             backdropFilter:       'blur(14px)',
             WebkitBackdropFilter: 'blur(14px)',
             border:               '1px solid rgba(144,96,208,0.35)',
-            borderRadius:         8,
-            padding:              '10px 12px',
+            borderRadius:         RADIUS.lg,
+            padding:              '0.625rem 0.75rem',
             boxShadow:            '0 8px 24px rgba(0,0,0,0.8)',
           }}>
             {/* Close button */}
             <button
               onClick={(e) => { e.stopPropagation(); setTooltipOpen(false); setConfirmingResolve(false) }}
               style={{
-                position:   'absolute', top: 6, right: 6,
-                background: 'none', border: 'none', padding: '2px 4px',
+                position:   'absolute', top: '0.375rem', right: '0.375rem',
+                background: 'none', border: 'none', padding: '0.125rem 0.25rem',
                 cursor:     'pointer', lineHeight: 1,
                 fontFamily: FONT, fontSize: '0.7rem',
                 color:      'rgba(144,96,208,0.5)',
@@ -103,23 +106,23 @@ export function GmConflictPip({ conflict, onResolve }: GmConflictPipProps) {
               textTransform: 'uppercase',
               letterSpacing: '0.12em',
               color:         'rgba(144,96,208,0.8)',
-              marginBottom:  3,
+              marginBottom:  '0.1875rem',
             }}>
               Conflict
             </div>
 
-            {/* Description (title) */}
+            {/* Description (title) — force-identity purple, pre-approved */}
             <div style={{
               fontFamily:   FONT,
               fontSize:     'clamp(0.82rem, 1.3vw, 0.95rem)',
               color:        '#9060D0',
               fontWeight:   700,
-              marginBottom: 6,
+              marginBottom: '0.375rem',
             }}>
               {conflict.description ?? 'Conflict'}
             </div>
 
-            <div style={{ height: 1, background: 'rgba(144,96,208,0.2)', marginBottom: 6 }} />
+            <div style={{ height: 1, background: 'rgba(144,96,208,0.2)', marginBottom: '0.375rem' }} />
 
             {/* Narrative */}
             {conflict.narrative && (
@@ -128,7 +131,7 @@ export function GmConflictPip({ conflict, onResolve }: GmConflictPipProps) {
                 fontSize:     'clamp(0.78rem, 1.2vw, 0.9rem)',
                 color:        'var(--hud-text)',
                 lineHeight:   1.5,
-                marginBottom: 6,
+                marginBottom: '0.375rem',
               }}>
                 {conflict.narrative}
               </div>
@@ -137,7 +140,7 @@ export function GmConflictPip({ conflict, onResolve }: GmConflictPipProps) {
             {/* Session label */}
             {conflict.session_label && (
               <>
-                <div style={{ height: 1, background: 'rgba(144,96,208,0.15)', marginBottom: 6 }} />
+                <div style={{ height: 1, background: 'rgba(144,96,208,0.15)', marginBottom: '0.375rem' }} />
                 <div style={{
                   fontFamily: FONT,
                   fontSize:   'clamp(0.52rem, 0.82vw, 0.6rem)',
@@ -153,12 +156,12 @@ export function GmConflictPip({ conflict, onResolve }: GmConflictPipProps) {
               <button
                 onClick={(e) => { e.stopPropagation(); setConfirmingResolve(true) }}
                 style={{
-                  marginTop:     8,
+                  marginTop:     '0.5rem',
                   width:         '100%',
                   background:    'rgba(144,96,208,0.1)',
                   border:        '1px solid rgba(144,96,208,0.3)',
-                  borderRadius:  4,
-                  padding:       '4px 0',
+                  borderRadius:  RADIUS.md,
+                  padding:       '0.25rem 0',
                   fontFamily:    FONT,
                   fontSize:      'clamp(0.7rem, 1.1vw, 0.8rem)',
                   fontWeight:    700,
@@ -173,17 +176,17 @@ export function GmConflictPip({ conflict, onResolve }: GmConflictPipProps) {
 
             {/* Resolve button — confirm state */}
             {onResolve && confirmingResolve && (
-              <div style={{ marginTop: 8 }}>
+              <div style={{ marginTop: '0.5rem' }}>
                 <div style={{
                   fontFamily:   FONT,
                   fontSize:     'clamp(0.78rem, 1.2vw, 0.88rem)',
                   color:        'var(--hud-text)',
                   textAlign:    'center',
-                  marginBottom: 6,
+                  marginBottom: '0.375rem',
                 }}>
                   Resolve <strong style={{ color: '#9060D0' }}>{conflict.description ?? 'this conflict'}</strong>?
                 </div>
-                <div style={{ display: 'flex', gap: 6 }}>
+                <div style={{ display: 'flex', gap: '0.375rem' }}>
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
@@ -193,10 +196,10 @@ export function GmConflictPip({ conflict, onResolve }: GmConflictPipProps) {
                     }}
                     style={{
                       flex:         1,
-                      padding:      '4px 0',
+                      padding:      '0.25rem 0',
                       background:   'rgba(144,96,208,0.12)',
                       border:       '1px solid rgba(144,96,208,0.4)',
-                      borderRadius: 3,
+                      borderRadius: RADIUS.sm,
                       fontFamily:   FONT,
                       fontSize:     'clamp(0.7rem, 1.1vw, 0.78rem)',
                       fontWeight:   700,
@@ -210,14 +213,14 @@ export function GmConflictPip({ conflict, onResolve }: GmConflictPipProps) {
                     onClick={(e) => { e.stopPropagation(); setConfirmingResolve(false) }}
                     style={{
                       flex:         1,
-                      padding:      '4px 0',
+                      padding:      '0.25rem 0',
                       background:   'transparent',
-                      border:       '1px solid rgba(150,168,180,0.2)',
-                      borderRadius: 3,
+                      border:       `1px solid ${HUD.border}`,
+                      borderRadius: RADIUS.sm,
                       fontFamily:   FONT,
                       fontSize:     'clamp(0.7rem, 1.1vw, 0.78rem)',
                       fontWeight:   700,
-                      color:        'rgba(150,168,180,0.5)',
+                      color:        'var(--hud-text-faint)',
                       cursor:       'pointer',
                     }}
                   >

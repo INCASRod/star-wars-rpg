@@ -12,19 +12,19 @@ import {
   DICE_META, EMPTY_POOL, SYM,
   type DiceType, type SymbolKey,
 } from '@/components/player-hud/design-tokens'
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_BODY, EASE, FS, RADIUS, Z } from '@/lib/tokens'
 
 /* ── Design tokens ────────────────────────────────────────── */
-const FC        = "var(--font-rajdhani), 'Cinzel', serif"
-const FR        = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FST       = "var(--font-share-tech-mono), 'Share Tech Mono', monospace"
-const GOLD_DIM  = '#5A4A20'
-const DIM       = '#6A8070'
-const TEXT      = '#C8D8C0'
-const GREEN     = '#4EC87A'
-const BORDER    = 'rgba(200,170,80,0.14)'
-const BORDER_HI = 'rgba(200,170,80,0.36)'
-const PANEL_BG  = 'rgba(6,13,9,0.97)'
+const FC        = FONT_BODY
+const FR        = FONT_BODY
+const FST       = FONT_BODY
+const GOLD_DIM  = HUD.gold
+const DIM       = HUD.textDim
+const TEXT      = HUD.text
+const GREEN     = 'var(--state-success)'
+const BORDER    = HUD.border
+const BORDER_HI = HUD.borderHi
+const PANEL_BG  = HUD.bg
 const LIGHT_COL = '#E8E870'
 const DARK_COL  = '#8070D8'
 
@@ -53,9 +53,9 @@ function DiceIcon({ size = 16 }: { size?: number }) {
 function SectionLabel({ text }: { text: string }) {
   return (
     <div style={{
-      fontFamily: FR, fontSize: 10, fontWeight: 700,
+      fontFamily: FR, fontSize: FS.caption, fontWeight: 700,
       letterSpacing: '0.15em', textTransform: 'uppercase' as const,
-      color: DIM, marginBottom: 10, paddingBottom: 4,
+      color: DIM, marginBottom: '0.625rem', paddingBottom: '0.25rem',
       borderBottom: `1px solid ${BORDER}`,
     }}>
       {text}
@@ -75,15 +75,15 @@ function RevealControl({
   }, [revealed])
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
       {revealed ? (
         <>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.3125rem' }}>
             <span style={{
-              width: 6, height: 6, borderRadius: '50%', display: 'inline-block',
-              background: dot ? GREEN : `${GREEN}80`, transition: 'background .4s',
+              width: '0.375rem', height: '0.375rem', borderRadius: RADIUS.full, display: 'inline-block',
+              background: dot ? GREEN : `${GREEN}80`, transition: `background ${EASE.smooth}`,
             }} />
-            <span style={{ fontFamily: FST, fontSize: 9, color: 'rgba(200,216,192,0.45)' }}>
+            <span style={{ fontFamily: FST, fontSize: FS.overline, color: HUD.textFaint }}>
               Visible to players
             </span>
           </div>
@@ -91,9 +91,9 @@ function RevealControl({
             disabled={busy}
             onClick={onHide}
             style={{
-              fontFamily: FR, fontSize: 10, fontWeight: 700,
-              border: '1px solid rgba(200,216,192,0.2)', borderRadius: 4, padding: '3px 10px',
-              background: 'transparent', color: 'rgba(200,216,192,0.45)',
+              fontFamily: FR, fontSize: FS.caption, fontWeight: 700,
+              border: `1px solid ${HUD.border}`, borderRadius: RADIUS.md, padding: '0.1875rem 0.625rem',
+              background: 'transparent', color: HUD.textFaint,
               cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.5 : 1,
             }}
           >
@@ -102,16 +102,16 @@ function RevealControl({
         </>
       ) : (
         <>
-          <span style={{ fontFamily: FST, fontSize: 9, color: 'rgba(200,216,192,0.35)' }}>
+          <span style={{ fontFamily: FST, fontSize: FS.overline, color: HUD.textFaint }}>
             Hidden from players
           </span>
           <button
             disabled={busy}
             onClick={onReveal}
             style={{
-              fontFamily: FR, fontSize: 10, fontWeight: 700,
-              border: `1px solid rgba(200,170,80,0.35)`, borderRadius: 4, padding: '3px 10px',
-              background: 'rgba(200,170,80,0.08)', color: HUD.gold,
+              fontFamily: FR, fontSize: FS.caption, fontWeight: 700,
+              border: `1px solid ${HUD.borderHi}`, borderRadius: RADIUS.md, padding: '0.1875rem 0.625rem',
+              background: 'var(--hud-gold-subtle)', color: HUD.gold,
               cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.5 : 1,
             }}
           >
@@ -129,15 +129,15 @@ function DiceBtn({
 }: { type: DiceType; count: number; onAdd: () => void; onRemove: () => void }) {
   const meta = DICE_META[type]
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.125rem' }}>
       <div style={{ position: 'relative', cursor: 'pointer' }} onClick={onAdd} title={`Add ${meta.label}`}>
         <DiceFace type={type} size={36} active={count > 0} />
         {count > 0 && (
           <div style={{
-            position: 'absolute', top: -4, right: -4, width: 14, height: 14,
-            background: meta.color, borderRadius: '50%',
+            position: 'absolute', top: '-0.25rem', right: '-0.25rem', width: '0.875rem', height: '0.875rem',
+            background: meta.color, borderRadius: RADIUS.full,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: FR, fontSize: 11, fontWeight: 700, color: '#060D09',
+            fontFamily: FR, fontSize: FS.overline, fontWeight: 700, color: HUD.bg,
           }}>
             {count}
           </div>
@@ -146,11 +146,11 @@ function DiceBtn({
       {count > 0 && (
         <button onClick={onRemove} style={{
           background: 'transparent', border: `1px solid ${BORDER}`,
-          borderRadius: 3, padding: '1px 8px', cursor: 'pointer',
-          fontFamily: FR, fontSize: 10, color: DIM,
+          borderRadius: RADIUS.sm, padding: '0.0625rem 0.5rem', cursor: 'pointer',
+          fontFamily: FR, fontSize: FS.caption, color: DIM,
         }}>−</button>
       )}
-      <div style={{ fontFamily: FR, fontSize: 10, color: DIM, letterSpacing: '0.04em', textTransform: 'uppercase' as const }}>
+      <div style={{ fontFamily: FR, fontSize: FS.caption, color: DIM, letterSpacing: '0.04em', textTransform: 'uppercase' as const }}>
         {meta.label}
       </div>
     </div>
@@ -162,7 +162,7 @@ function NarrativeResult({ result }: { result: RollResult }) {
   const { net, dice } = result
   const isSuccess = net.success > 0
   const isFailure = net.success < 0
-  const headlineColor = isSuccess ? GREEN : isFailure ? '#E05050' : HUD.gold
+  const headlineColor = isSuccess ? GREEN : isFailure ? 'var(--state-failure)' : HUD.gold
   const headlineText  = isSuccess ? 'SUCCESS' : isFailure ? 'FAILURE' : 'WASH'
 
   type Pill = { count: number; symKey: SymbolKey; label: string }
@@ -176,34 +176,34 @@ function NarrativeResult({ result }: { result: RollResult }) {
 
   return (
     <div style={{
-      padding: '10px 10px 8px', marginTop: 8,
-      background: 'rgba(0,0,0,0.3)', border: `1px solid ${BORDER_HI}`, borderRadius: 6,
+      padding: '0.625rem 0.625rem 0.5rem', marginTop: '0.5rem',
+      background: 'rgba(0,0,0,0.3)', border: `1px solid ${BORDER_HI}`, borderRadius: RADIUS.lg,
     }}>
       <div style={{
-        fontFamily: FC, fontSize: 'var(--text-h4)', color: headlineColor,
-        textAlign: 'center', letterSpacing: '0.08em', marginBottom: 6,
+        fontFamily: FC, fontSize: FS.h4, color: headlineColor,
+        textAlign: 'center', letterSpacing: '0.08em', marginBottom: '0.375rem',
       }}>
         {headlineText}
       </div>
       {pills.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, justifyContent: 'center', marginBottom: 8 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', justifyContent: 'center', marginBottom: '0.5rem' }}>
           {pills.map(({ count, symKey, label }) => {
             const { icon, color } = SYM[symKey]
             return (
               <div key={symKey} style={{
-                display: 'inline-flex', alignItems: 'center', gap: 4,
-                padding: '2px 8px', borderRadius: 4,
+                display: 'inline-flex', alignItems: 'center', gap: '0.25rem',
+                padding: '0.125rem 0.5rem', borderRadius: RADIUS.md,
                 background: `${color}18`, border: `1px solid ${color}50`,
-                fontFamily: FR, fontSize: 12, fontWeight: 700, color,
+                fontFamily: FR, fontSize: FS.sm, fontWeight: 700, color,
               }}>
-                <i className={`ffi ffi-${icon}`} style={{ fontSize: 12 }} />
+                <i className={`ffi ffi-${icon}`} style={{ fontSize: FS.sm }} />
                 {count} {label}
               </div>
             )
           })}
         </div>
       )}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, justifyContent: 'center' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3125rem', justifyContent: 'center' }}>
         {dice.map((die, i) => {
           const symKeys = die.symbols.filter(s => s in SYM) as SymbolKey[]
           return (
@@ -211,12 +211,12 @@ function NarrativeResult({ result }: { result: RollResult }) {
               <DiceFace type={die.type} size={30} />
               <div style={{
                 position: 'absolute', inset: 0,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.0625rem',
               }}>
                 {symKeys.length === 0
-                  ? <span style={{ color: DIM, fontSize: 9 }}>—</span>
+                  ? <span style={{ color: DIM, fontSize: FS.overline }}>—</span>
                   : symKeys.map((s, j) => (
-                      <i key={j} className={`ffi ffi-${SYM[s].icon}`} style={{ color: SYM[s].color, fontSize: 9 }} />
+                      <i key={j} className={`ffi ffi-${SYM[s].icon}`} style={{ color: SYM[s].color, fontSize: FS.overline }} />
                     ))
                 }
               </div>
@@ -233,33 +233,33 @@ function ForceResult({ result }: { result: ForceRollResult }) {
   const { dice, totalLight, totalDark } = result
   return (
     <div style={{
-      padding: '10px 10px 8px', marginTop: 8,
-      background: 'rgba(0,0,0,0.3)', border: `1px solid ${BORDER_HI}`, borderRadius: 6,
+      padding: '0.625rem 0.625rem 0.5rem', marginTop: '0.5rem',
+      background: 'rgba(0,0,0,0.3)', border: `1px solid ${BORDER_HI}`, borderRadius: RADIUS.lg,
     }}>
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginBottom: 8 }}>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '1.25rem', marginBottom: '0.5rem' }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontFamily: FC, fontSize: 'var(--text-h4)', color: LIGHT_COL }}>{totalLight}</div>
-          <div style={{ fontFamily: FR, fontSize: 9, color: DIM, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Light</div>
+          <div style={{ fontFamily: FC, fontSize: FS.h4, color: LIGHT_COL }}>{totalLight}</div>
+          <div style={{ fontFamily: FR, fontSize: FS.overline, color: DIM, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Light</div>
         </div>
         <div style={{ width: 1, background: BORDER, alignSelf: 'stretch' }} />
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontFamily: FC, fontSize: 'var(--text-h4)', color: DARK_COL }}>{totalDark}</div>
-          <div style={{ fontFamily: FR, fontSize: 9, color: DIM, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Dark</div>
+          <div style={{ fontFamily: FC, fontSize: FS.h4, color: DARK_COL }}>{totalDark}</div>
+          <div style={{ fontFamily: FR, fontSize: FS.overline, color: DIM, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Dark</div>
         </div>
       </div>
-      <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
         {dice.map((die, i) => (
-          <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+          <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.1875rem' }}>
             <DiceFace type="force" size={28} />
-            <div style={{ display: 'flex', gap: 2, minHeight: 8 }}>
+            <div style={{ display: 'flex', gap: '0.125rem', minHeight: '0.5rem' }}>
               {Array.from({ length: die.light }).map((_, j) => (
-                <div key={`l${j}`} style={{ width: 6, height: 6, borderRadius: '50%', background: LIGHT_COL }} />
+                <div key={`l${j}`} style={{ width: '0.375rem', height: '0.375rem', borderRadius: RADIUS.full, background: LIGHT_COL }} />
               ))}
               {Array.from({ length: die.dark }).map((_, j) => (
-                <div key={`k${j}`} style={{ width: 6, height: 6, borderRadius: '50%', background: DARK_COL }} />
+                <div key={`k${j}`} style={{ width: '0.375rem', height: '0.375rem', borderRadius: RADIUS.full, background: DARK_COL }} />
               ))}
               {die.light === 0 && die.dark === 0 && (
-                <span style={{ fontFamily: FR, fontSize: 8, color: DIM }}>—</span>
+                <span style={{ fontFamily: FR, fontSize: FS.overline, color: DIM }}>—</span>
               )}
             </div>
           </div>
@@ -277,19 +277,19 @@ function D100Result({ value }: { value: number }) {
   const display   = value === 100 ? '00' : String(value).padStart(2, '0')
   return (
     <div style={{
-      padding: '10px 10px 8px', marginTop: 8,
-      background: 'rgba(0,0,0,0.3)', border: `1px solid ${BORDER_HI}`, borderRadius: 6,
+      padding: '0.625rem 0.625rem 0.5rem', marginTop: '0.5rem',
+      background: 'rgba(0,0,0,0.3)', border: `1px solid ${BORDER_HI}`, borderRadius: RADIUS.lg,
       textAlign: 'center',
     }}>
-      <div style={{ fontFamily: FC, fontSize: 'var(--text-h3)', color: HUD.gold, letterSpacing: '0.06em', lineHeight: 1 }}>
+      <div style={{ fontFamily: FC, fontSize: FS.h3, color: HUD.gold, letterSpacing: '0.06em', lineHeight: 1 }}>
         {display}
       </div>
       {isDoubles && (
         <div style={{
-          display: 'inline-block', marginTop: 6,
-          padding: '2px 10px', borderRadius: 4,
-          background: 'rgba(200,170,80,0.12)', border: `1px solid ${BORDER_HI}`,
-          fontFamily: FR, fontSize: 10, fontWeight: 700, color: HUD.gold,
+          display: 'inline-block', marginTop: '0.375rem',
+          padding: '0.125rem 0.625rem', borderRadius: RADIUS.md,
+          background: 'var(--hud-gold-subtle)', border: `1px solid ${BORDER_HI}`,
+          fontFamily: FR, fontSize: FS.caption, fontWeight: 700, color: HUD.gold,
           letterSpacing: '0.12em', textTransform: 'uppercase' as const,
         }}>
           Doubles
@@ -483,16 +483,16 @@ export function GmDiceRollerFAB({
       onClick={() => setOpen(!open)}
       title="GM Dice Roller"
       style={{
-        background:   open ? 'rgba(200,170,80,0.2)' : 'rgba(6,13,9,0.92)',
+        background:   open ? 'var(--hud-gold-subtle)' : HUD.bg,
         border:       `2px solid ${open ? HUD.gold : GOLD_DIM}`,
-        borderRadius: 8, padding: '10px 16px',
-        cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
+        borderRadius: RADIUS.lg, padding: '0.625rem 1rem',
+        cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem',
         fontFamily:    FST,
-        fontSize:      'var(--text-caption)',
+        fontSize:      FS.caption,
         letterSpacing: '0.14em', textTransform: 'uppercase' as const,
         color:         open ? HUD.gold : DIM,
         boxShadow:     open ? '0 0 16px rgba(200,170,80,0.2)' : '0 2px 12px rgba(0,0,0,0.5)',
-        transition:    'all 0.2s',
+        transition:    EASE.default,
         whiteSpace:    'nowrap' as const,
       }}
       className={!open ? 'hov-gold' : ''}
@@ -510,17 +510,17 @@ export function GmDiceRollerFAB({
       ref={panelRef}
       style={{
         position:             'fixed',
-        bottom:               76,
-        right:                24,
-        width:                320,
-        zIndex:               9001,
+        bottom:               '4.75rem',
+        right:                '1.5rem',
+        width:                '20rem',
+        zIndex:               'var(--z-hud-combat)' as unknown as number,
         background:           PANEL_BG,
         border:               `1px solid ${BORDER_HI}`,
-        borderRadius:         12,
+        borderRadius:         RADIUS.xl,
         backdropFilter:       'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         boxShadow:            '0 8px 40px rgba(0,0,0,0.7)',
-        maxHeight:            'calc(100vh - 120px)',
+        maxHeight:            'calc(100vh - 7.5rem)',
         overflowY:            'auto',
         animation:            'gmDicePanelIn 150ms ease-out',
       }}
@@ -528,33 +528,33 @@ export function GmDiceRollerFAB({
       {/* ── Header ──────────────────────────────── */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '12px 16px 10px',
+        padding: '0.75rem 1rem 0.625rem',
         borderBottom: `1px solid ${BORDER}`,
         position: 'sticky', top: 0,
-        background: PANEL_BG, zIndex: 1,
+        background: PANEL_BG, zIndex: Z.raised,
       }}>
-        <span style={{ fontFamily: FC, fontSize: 'var(--text-label)', fontWeight: 700, color: HUD.gold, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+        <span style={{ fontFamily: FC, fontSize: FS.label, fontWeight: 700, color: HUD.gold, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
           GM Dice Roller
         </span>
         <button
           onClick={() => setOpen(false)}
           style={{
-            background: 'transparent', border: `1px solid ${BORDER}`, borderRadius: 4,
-            width: 26, height: 26, cursor: 'pointer',
+            background: 'transparent', border: `1px solid ${BORDER}`, borderRadius: RADIUS.md,
+            width: '1.625rem', height: '1.625rem', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: DIM, fontSize: 16, lineHeight: 1,
+            color: DIM, fontSize: FS.h4, lineHeight: 1,
           }}
         >×</button>
       </div>
 
-      <div style={{ padding: '14px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ padding: '0.875rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
 
         {/* ── ROLL LABEL ──────────────────────────── */}
         <div>
           <div style={{
-            fontFamily: FR, fontSize: 10, fontWeight: 700,
+            fontFamily: FR, fontSize: FS.caption, fontWeight: 700,
             letterSpacing: '0.12em', textTransform: 'uppercase' as const,
-            color: DIM, marginBottom: 6,
+            color: DIM, marginBottom: '0.375rem',
           }}>
             Roll Name
           </div>
@@ -565,16 +565,16 @@ export function GmDiceRollerFAB({
             placeholder="e.g. Stealth Check, Perception…"
             style={{
               width: '100%', boxSizing: 'border-box',
-              padding: '7px 10px',
+              padding: '0.4375rem 0.625rem',
               background: 'rgba(255,255,255,0.04)',
               border: `1px solid ${BORDER_HI}`,
-              borderRadius: 4,
-              color: TEXT, fontFamily: FR, fontSize: 12,
+              borderRadius: RADIUS.md,
+              color: TEXT, fontFamily: FR, fontSize: FS.sm,
               outline: 'none',
             }}
           />
           {campaignId && (
-            <div style={{ fontFamily: FR, fontSize: 9, color: 'rgba(106,128,112,0.6)', marginTop: 4 }}>
+            <div style={{ fontFamily: FR, fontSize: FS.overline, color: HUD.textFaint, marginTop: '0.25rem' }}>
               Rolls are logged hidden — reveal to players after rolling
             </div>
           )}
@@ -586,30 +586,30 @@ export function GmDiceRollerFAB({
         <div>
           <SectionLabel text="Narrative Dice" />
 
-          <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '0.5rem' }}>
             {POSITIVE.map(type => (
               <DiceBtn key={type} type={type} count={pool[type]} onAdd={() => addDie(type)} onRemove={() => removeDie(type)} />
             ))}
           </div>
 
-          <div style={{ height: 1, background: BORDER, margin: '4px 0 8px' }} />
+          <div style={{ height: 1, background: BORDER, margin: '0.25rem 0 0.5rem' }} />
 
-          <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: 10 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '0.625rem' }}>
             {NEGATIVE.map(type => (
               <DiceBtn key={type} type={type} count={pool[type]} onAdd={() => addDie(type)} onRemove={() => removeDie(type)} />
             ))}
           </div>
 
-          <div style={{ display: 'flex', gap: 6 }}>
+          <div style={{ display: 'flex', gap: '0.375rem' }}>
             <button
               onClick={() => void handleRollNarrative()}
               disabled={isEmpty}
               style={{
-                flex: 1, padding: '8px 0',
-                background: isEmpty ? 'rgba(255,255,255,0.04)' : 'linear-gradient(135deg, #C8AA50, #8E6E2A)',
-                border: 'none', borderRadius: 4, cursor: isEmpty ? 'not-allowed' : 'pointer',
-                fontFamily: FC, fontSize: 'var(--text-caption)', fontWeight: 700,
-                letterSpacing: '0.1em', color: isEmpty ? DIM : '#060D09',
+                flex: 1, padding: '0.5rem 0',
+                background: isEmpty ? 'rgba(255,255,255,0.04)' : 'linear-gradient(135deg, var(--hud-gold), color-mix(in srgb, var(--hud-gold) 60%, transparent))',
+                border: 'none', borderRadius: RADIUS.md, cursor: isEmpty ? 'not-allowed' : 'pointer',
+                fontFamily: FC, fontSize: FS.caption, fontWeight: 700,
+                letterSpacing: '0.1em', color: isEmpty ? DIM : HUD.bg,
               }}
             >
               {isEmpty ? 'ADD DICE TO ROLL' : `ROLL ${poolSize(pool)} DICE`}
@@ -618,10 +618,10 @@ export function GmDiceRollerFAB({
               <button
                 onClick={clearPool}
                 style={{
-                  padding: '8px 12px',
+                  padding: '0.5rem 0.75rem',
                   background: 'transparent', border: `1px solid ${BORDER}`,
-                  borderRadius: 4, cursor: 'pointer',
-                  fontFamily: FR, fontSize: 12, color: DIM,
+                  borderRadius: RADIUS.md, cursor: 'pointer',
+                  fontFamily: FR, fontSize: FS.sm, color: DIM,
                 }}
               >✕</button>
             )}
@@ -648,34 +648,34 @@ export function GmDiceRollerFAB({
         <div>
           <SectionLabel text="Force Dice" />
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.625rem' }}>
             <DiceFace type="force" size={36} active />
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
               <button
                 onClick={() => setForceCount(c => Math.max(1, c - 1))}
                 style={{
-                  width: 24, height: 24, background: 'transparent',
-                  border: `1px solid ${BORDER}`, borderRadius: 3,
-                  cursor: 'pointer', color: DIM, fontFamily: FR, fontSize: 14,
+                  width: '1.5rem', height: '1.5rem', background: 'transparent',
+                  border: `1px solid ${BORDER}`, borderRadius: RADIUS.sm,
+                  cursor: 'pointer', color: DIM, fontFamily: FR, fontSize: FS.label,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
               >−</button>
-              <span style={{ fontFamily: FC, fontSize: 'var(--text-h4)', color: TEXT, minWidth: 20, textAlign: 'center' }}>
+              <span style={{ fontFamily: FC, fontSize: FS.h4, color: TEXT, minWidth: '1.25rem', textAlign: 'center' }}>
                 {forceCount}
               </span>
               <button
                 onClick={() => setForceCount(c => Math.min(8, c + 1))}
                 style={{
-                  width: 24, height: 24, background: 'transparent',
-                  border: `1px solid ${BORDER}`, borderRadius: 3,
-                  cursor: 'pointer', color: DIM, fontFamily: FR, fontSize: 14,
+                  width: '1.5rem', height: '1.5rem', background: 'transparent',
+                  border: `1px solid ${BORDER}`, borderRadius: RADIUS.sm,
+                  cursor: 'pointer', color: DIM, fontFamily: FR, fontSize: FS.label,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
               >+</button>
             </div>
 
-            <span style={{ fontFamily: FR, fontSize: 10, color: DIM, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            <span style={{ fontFamily: FR, fontSize: FS.caption, color: DIM, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               {forceCount === 1 ? '1 die' : `${forceCount} dice`}
             </span>
           </div>
@@ -683,10 +683,10 @@ export function GmDiceRollerFAB({
           <button
             onClick={() => void handleRollForce()}
             style={{
-              width: '100%', padding: '8px 0',
+              width: '100%', padding: '0.5rem 0',
               background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.18)',
-              borderRadius: 4, cursor: 'pointer',
-              fontFamily: FC, fontSize: 'var(--text-caption)', fontWeight: 700,
+              borderRadius: RADIUS.md, cursor: 'pointer',
+              fontFamily: FC, fontSize: FS.caption, fontWeight: 700,
               letterSpacing: '0.1em', color: TEXT,
             }}
           >
@@ -717,10 +717,10 @@ export function GmDiceRollerFAB({
           <button
             onClick={() => void handleRollD100()}
             style={{
-              width: '100%', padding: '8px 0',
-              background: 'rgba(200,170,80,0.06)', border: `1px solid ${BORDER_HI}`,
-              borderRadius: 4, cursor: 'pointer',
-              fontFamily: FC, fontSize: 'var(--text-caption)', fontWeight: 700,
+              width: '100%', padding: '0.5rem 0',
+              background: 'var(--hud-gold-subtle)', border: `1px solid ${BORDER_HI}`,
+              borderRadius: RADIUS.md, cursor: 'pointer',
+              fontFamily: FC, fontSize: FS.caption, fontWeight: 700,
               letterSpacing: '0.1em', color: HUD.gold,
             }}
           >

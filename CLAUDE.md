@@ -32,7 +32,7 @@ The following are banned in component files:
 ```ts
 // ❌ banned
 style={{ color: '#C8AA50' }}
-style={{ fontFamily: "'Palanquin', sans-serif" }}
+style={{ fontFamily: "'JetBrains Mono', monospace" }}
 style={{ fontSize: '11px' }}
 style={{ padding: '8px 16px' }}
 style={{ zIndex: 9999 }}
@@ -53,15 +53,15 @@ The project uses exactly two UI fonts plus the icon font. Do not add more.
 
 | Font | CSS variable | TS constant | Use |
 |---|---|---|---|
-| **Signika** | `var(--font-display)` | `FONT_DISPLAY` | Logos, stat numerics, display headings |
-| **Palanquin** | `var(--font-body)` | `FONT_BODY` | All other UI text — labels, body, HUD, buttons |
+| **Space Grotesk** | `var(--font-display)` | `FONT_DISPLAY` | Logos, stat numerics, display headings |
+| **JetBrains Mono** | `var(--font-body)` | `FONT_BODY` | All other UI text — labels, body, HUD, buttons |
 | **sw-rpg-icons** | `var(--font-sw-rpg-icons)` | `FONT_ICONS` | Star Wars RPG dice/result icon font only |
 
 In TypeScript: `import { FONT_DISPLAY, FONT_BODY, FONT, FONT_ICONS } from '@/lib/tokens'`
 
-`FONT` is an alias for `FONT_BODY` and exists for backward compatibility only — existing references to `FONT` continue to work and resolve to Exo 2.
+`FONT` is an alias for `FONT_BODY` and exists for backward compatibility only.
 
-Legacy CSS aliases (`--font-rajdhani`, `--font-cinzel`, `--font-orbitron`, `--font-mono`) exist in `globals.css` and resolve to the new fonts — do not use them in new code.
+Legacy CSS aliases (`--font-rajdhani`, `--font-cinzel`, `--font-orbitron`, `--font-mono`) exist in `src/styles/holo-tokens.css` and resolve to the new fonts — do not use them in new code.
 
 ### Hover and focus states
 

@@ -1,16 +1,15 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { FONT_BODY, EASE, RADIUS } from '@/lib/tokens'
 
-const FONT_C = "var(--font-rajdhani), 'Cinzel', serif"
-const FONT_R = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M = "'Share Tech Mono', 'Courier New', monospace"
-const PURPLE     = '#9060D0'
+// Force identity colours — pre-approved exceptions (light/dark identity)
+const PURPLE     = 'var(--hud-accent-purple)'
 const PURPLE_BD  = 'rgba(144,96,208,0.28)'
 const PURPLE_BG  = 'rgba(144,96,208,0.06)'
 
-// Silver-white palette for fallen characters (light side temptation)
+// Silver-white palette for fallen characters (light side temptation) — pre-approved
 const SILVER     = 'rgba(220,230,240,0.85)'
 const SILVER_BD  = 'rgba(200,215,230,0.4)'
 const SILVER_BG  = 'rgba(200,215,230,0.05)'
@@ -71,29 +70,29 @@ export function ForceNotificationCard({ notification, onAcknowledged, isFallen =
 
   return (
     <div style={{
-      padding: '14px 16px',
+      padding: '0.875rem 1rem',
       background: cardBg,
       border: `1px solid ${cardBorder}`,
-      borderRadius: 8,
-      display: 'flex', flexDirection: 'column', gap: 10,
+      borderRadius: RADIUS.lg,
+      display: 'flex', flexDirection: 'column', gap: '0.625rem',
     }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{
-          fontFamily: FONT_C, fontSize: 'clamp(0.88rem, 1.4vw, 1.05rem)',
+          fontFamily: FONT_BODY, fontSize: 'clamp(0.88rem, 1.4vw, 1.05rem)',
           fontWeight: 700,
           color: isFallen ? 'rgba(200,215,230,0.85)' : PURPLE,
         }}>
           {isFallen ? '✦ Light Side Temptation' : '⚠ Dark Side Used'}
         </span>
-        <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: isFallen ? 'rgba(200,215,230,0.35)' : 'rgba(200,150,255,0.4)' }}>
+        <span style={{ fontFamily: FONT_BODY, fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: isFallen ? 'rgba(200,215,230,0.35)' : 'rgba(200,150,255,0.4)' }}>
           {timeLabel}
         </span>
       </div>
 
       {/* Details */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)', color: 'rgba(232,223,200,0.9)', lineHeight: 1.45 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)', color: 'rgba(232,223,200,0.9)', lineHeight: 1.45 }}>
           <strong>{notification.character_name}</strong>{' '}
           {isFallen ? (
             <>
@@ -113,7 +112,7 @@ export function ForceNotificationCard({ notification, onAcknowledged, isFallen =
             </>
           )}
         </div>
-        <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: isFallen ? 'rgba(200,215,230,0.5)' : 'rgba(200,150,255,0.6)' }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: isFallen ? 'rgba(200,215,230,0.5)' : 'rgba(200,150,255,0.6)' }}>
           {isFallen
             ? `Strain: ${notification.strain_cost} · Destiny: 1 dark → light`
             : `Strain: ${notification.strain_cost} · Destiny: 1 light → dark`
@@ -122,8 +121,8 @@ export function ForceNotificationCard({ notification, onAcknowledged, isFallen =
       </div>
 
       {/* Conflict description */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: 'rgba(232,223,200,0.35)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: 'rgba(232,223,200,0.35)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
           {isFallen ? 'Light Side Conflict description (optional)' : 'Conflict description (optional)'}
         </div>
         <input
@@ -137,15 +136,15 @@ export function ForceNotificationCard({ notification, onAcknowledged, isFallen =
           style={{
             background: 'rgba(255,255,255,0.04)',
             border: `1px solid ${isFallen ? 'rgba(200,215,230,0.2)' : 'rgba(200,150,255,0.2)'}`,
-            borderRadius: 4, padding: '7px 10px',
-            fontFamily: FONT_R, fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)',
+            borderRadius: RADIUS.md, padding: '0.4375rem 0.625rem',
+            fontFamily: FONT_BODY, fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)',
             color: 'rgba(232,223,200,0.8)', outline: 'none',
             width: '100%', boxSizing: 'border-box',
           }}
         />
         {isFallen && (
           <div style={{
-            fontFamily: FONT_R, fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)',
+            fontFamily: FONT_BODY, fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)',
             color: 'rgba(220,230,240,0.5)', fontStyle: 'italic', lineHeight: 1.45,
           }}>
             This character has fallen to the Dark Side. Conflict represents light side pull — moments of mercy, compassion, or doubt.
@@ -154,21 +153,21 @@ export function ForceNotificationCard({ notification, onAcknowledged, isFallen =
       </div>
 
       {/* Actions */}
-      <div style={{ display: 'flex', gap: 8 }}>
+      <div style={{ display: 'flex', gap: '0.5rem' }}>
         <button
           onClick={handleAddConflict}
           disabled={busy}
           style={{
-            flex: 2, height: 36, borderRadius: 6,
+            flex: 2, height: '2.25rem', borderRadius: RADIUS.lg,
             cursor: busy ? 'not-allowed' : 'pointer',
             background: busy ? 'transparent' : isFallen ? 'rgba(200,215,230,0.08)' : 'rgba(144,96,208,0.15)',
             border: `1px solid ${isFallen ? SILVER_BD : 'rgba(144,96,208,0.4)'}`,
-            fontFamily: FONT_R, fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)', fontWeight: 700,
+            fontFamily: FONT_BODY, fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)', fontWeight: 700,
             letterSpacing: '0.08em',
             color: busy
               ? isFallen ? 'rgba(200,215,230,0.3)' : 'rgba(200,150,255,0.4)'
               : isFallen ? SILVER : PURPLE,
-            transition: 'all .15s',
+            transition: EASE.quick,
           }}
         >
           + Add Conflict
@@ -177,11 +176,11 @@ export function ForceNotificationCard({ notification, onAcknowledged, isFallen =
           onClick={handleSkip}
           disabled={busy}
           style={{
-            flex: 1, height: 36, borderRadius: 6,
+            flex: 1, height: '2.25rem', borderRadius: RADIUS.lg,
             cursor: busy ? 'not-allowed' : 'pointer',
             background: 'transparent', border: '1px solid rgba(255,255,255,0.1)',
-            fontFamily: FONT_R, fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)',
-            color: 'rgba(232,223,200,0.4)', transition: 'all .15s',
+            fontFamily: FONT_BODY, fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)',
+            color: 'rgba(232,223,200,0.4)', transition: EASE.quick,
           }}
         >
           Skip

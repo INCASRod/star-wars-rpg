@@ -1,7 +1,7 @@
 'use client'
 
 import { memo } from 'react'
-import { HUD, FONT_BODY, RADIUS, Z } from '@/lib/tokens'
+import { HUD, FONT_BODY, RADIUS, Z, EASE, FS } from '@/lib/tokens'
 
 export type GmPanelId = 'map' | 'tools' | 'party' | 'combat' | 'library'
 
@@ -16,9 +16,9 @@ interface RailButton {
 
 const BUTTONS: RailButton[] = [
   { id: 'map',    icon: '◎', label: 'Map',    accent: HUD.gold },
-  { id: 'tools',  icon: '⊞', label: 'Tools',  accent: '#5AAAE0' },
-  { id: 'party',  icon: '◉', label: 'Party',  accent: '#4EC8A8' },
-  { id: 'combat', icon: '',  label: 'Enemies', accent: '#E05050',
+  { id: 'tools',  icon: '⊞', label: 'Tools',  accent: 'var(--die-force)' },
+  { id: 'party',  icon: '◉', label: 'Party',  accent: '#4EC8A8' }, // pre-approved: no matching token
+  { id: 'combat', icon: '',  label: 'Enemies', accent: 'var(--state-failure)',
     imgSrc: '/images/factions/empire.png', imgClass: 'hud-fi hud-fi-empire' },
 ]
 
@@ -36,14 +36,14 @@ export const GmLeftRail = memo(function GmLeftRail({
 }: Props) {
   return (
     <div style={{
-      width:         52,
+      width:         '3.25rem',
       flexShrink:    0,
       display:       'flex',
       flexDirection: 'column',
       alignItems:    'center',
-      gap:           2,
-      paddingTop:    8,
-      paddingBottom: 8,
+      gap:           '0.125rem',
+      paddingTop:    '0.5rem',
+      paddingBottom: '0.5rem',
       background:    'var(--hud-panel)',
       borderRight:   '1px solid var(--hud-border-hi)',
       zIndex:        Z.fab,
@@ -61,11 +61,11 @@ export const GmLeftRail = memo(function GmLeftRail({
         />
       ))}
 
-      <div style={{ width: 28, height: 1, background: 'var(--hud-border-hi)', margin: '6px 0' }} />
+      <div style={{ width: '1.75rem', height: 1, background: 'var(--hud-border-hi)', margin: '0.375rem 0' }} />
 
-      <RailBtn icon="⬡" label="Dice"    active={diceActive}              accent={HUD.gold}  onClick={onDiceClick} />
-      <RailBtn icon="▦" label="Screen"  active={screenActive}            accent={HUD.gold}  onClick={onScreenClick} />
-      <RailBtn icon="⊟" label="Library" active={activePanel === 'library'} accent="#5AAAE0" onClick={() => onPanelToggle('library')} />
+      <RailBtn icon="⬡" label="Dice"    active={diceActive}              accent={HUD.gold}              onClick={onDiceClick} />
+      <RailBtn icon="▦" label="Screen"  active={screenActive}            accent={HUD.gold}              onClick={onScreenClick} />
+      <RailBtn icon="⊟" label="Library" active={activePanel === 'library'} accent="var(--die-force)"   onClick={() => onPanelToggle('library')} />
     </div>
   )
 })
@@ -79,27 +79,27 @@ function RailBtn({ icon, label, active, accent, onClick, imgSrc, imgClass }: {
       onClick={onClick}
       title={label}
       style={{
-        width:          40,
-        height:         44,
+        width:          '2.5rem',
+        height:         '2.75rem',
         display:        'flex',
         flexDirection:  'column',
         alignItems:     'center',
         justifyContent: 'center',
-        gap:            3,
+        gap:            '0.1875rem',
         background:     active ? `${accent}18` : 'transparent',
         border:         active ? `1px solid ${accent}55` : '1px solid transparent',
         borderRadius:   RADIUS.md,
         cursor:         'pointer',
-        transition:     'background 0.15s, border-color 0.15s',
+        transition:     `background ${EASE.quick}, border-color ${EASE.quick}`,
       }}
     >
       {imgSrc
         ? <img src={imgSrc} className={imgClass} alt="" aria-hidden />
-        : <span style={{ fontSize: 16, lineHeight: 1 }}>{icon}</span>
+        : <span style={{ fontSize: FS.h4, lineHeight: 1 }}>{icon}</span>
       }
       <span style={{
         fontFamily:    FONT_BODY,
-        fontSize:      '8px',
+        fontSize:      'var(--text-overline)',
         fontWeight:    700,
         letterSpacing: '0.05em',
         textTransform: 'uppercase',

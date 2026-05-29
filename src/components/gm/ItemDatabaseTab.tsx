@@ -6,24 +6,18 @@ import { LootAwardModal, type AwardableItem } from './LootAwardModal'
 import { VendorSellModal, type VendorItem } from './VendorSellModal'
 import type { Character } from '@/lib/types'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_BODY, EASE, FS, RADIUS } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 const GOLD_DIM  = 'rgba(200,170,80,0.5)'
 const GOLD_BD   = 'rgba(200,170,80,0.3)'
-const TEXT      = 'rgba(232,223,200,0.85)'
-const DIM       = '#6A8070'
-const BORDER    = 'rgba(200,170,80,0.14)'
-const BORDER_HI = 'rgba(200,170,80,0.36)'
-const RED       = '#E05050'
-const BLUE      = '#5AAAE0'
-const PANEL_BG  = 'rgba(8,16,10,0.7)'
-const FONT_C    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M    = "'Share Tech Mono','Courier New',monospace"
-const FS_OVER   = 'var(--text-overline)'
-const FS_CAP    = 'var(--text-caption)'
-const FS_LABEL  = 'var(--text-label)'
-const FS_SM     = 'var(--text-sm)'
+const TEXT      = HUD.text
+const DIM       = HUD.textDim
+const BORDER    = HUD.border
+const BORDER_HI = HUD.borderHi
+const RED       = 'var(--state-failure)'
+const BLUE      = 'var(--die-force)'
+const PANEL_BG  = HUD.panel
 
 const LS_EXPANDED = 'holocron_gm_toolbar_expanded'
 
@@ -317,21 +311,21 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div style={{
-      width: activeView === 'items' && expanded ? 'calc(100% - 32px)' : '100%',
-      transition: 'all 200ms ease',
+      width: activeView === 'items' && expanded ? 'calc(100% - 2rem)' : '100%',
+      transition: `all ${EASE.default}`,
     }}>
       {/* ── Toolbar ── */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 14 }}>
+      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center', marginBottom: '0.875rem' }}>
 
         {/* View switcher: Items / Dropped */}
-        <div style={{ display: 'flex', gap: 0, border: `1px solid ${BORDER_HI}`, borderRadius: 3, overflow: 'hidden' }}>
+        <div style={{ display: 'flex', gap: 0, border: `1px solid ${BORDER_HI}`, borderRadius: RADIUS.sm, overflow: 'hidden' }}>
           {(['items', 'dropped'] as ActiveView[]).map(v => (
             <button
               key={v}
               onClick={() => setActiveView(v)}
               style={{
-                fontFamily: FONT_C, fontSize: FS_CAP, fontWeight: 700, textTransform: 'uppercase',
-                letterSpacing: '0.08em', padding: '4px 12px', border: 'none', cursor: 'pointer',
+                fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700, textTransform: 'uppercase',
+                letterSpacing: '0.08em', padding: '0.25rem 0.75rem', border: 'none', cursor: 'pointer',
                 background: activeView === v ? 'rgba(200,170,80,0.15)' : 'transparent',
                 color: activeView === v ? HUD.gold : DIM,
               }}
@@ -350,9 +344,9 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
                 onClick={() => openNew(t)}
                 disabled={!campaignId}
                 style={{
-                  fontFamily: FONT_C, fontSize: FS_CAP, fontWeight: 700,
+                  fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
                   textTransform: 'uppercase', letterSpacing: '0.1em',
-                  padding: '5px 12px', borderRadius: 3,
+                  padding: '0.3125rem 0.75rem', borderRadius: RADIUS.sm,
                   cursor: campaignId ? 'pointer' : 'not-allowed',
                   border: `1px solid ${TYPE_COLOR[t]}44`,
                   color: TYPE_COLOR[t],
@@ -367,19 +361,19 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
             <div style={{ flex: 1 }} />
 
             {/* Scope toggle */}
-            <div style={{ display: 'flex', gap: 0, border: `1px solid ${BORDER_HI}`, borderRadius: 3, overflow: 'hidden' }}>
+            <div style={{ display: 'flex', gap: 0, border: `1px solid ${BORDER_HI}`, borderRadius: RADIUS.sm, overflow: 'hidden' }}>
               {([['custom', 'Campaign'], ['global', 'System'], ['vendor', '🛒 Vendor']] as [FilterScope, string][]).map(([s, label]) => (
                 <button
                   key={s}
                   onClick={() => setFilterScope(s)}
                   style={{
-                    fontFamily: FONT_C, fontSize: FS_CAP, fontWeight: 700, textTransform: 'uppercase',
-                    letterSpacing: '0.08em', padding: '4px 12px', border: 'none', cursor: 'pointer',
+                    fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700, textTransform: 'uppercase',
+                    letterSpacing: '0.08em', padding: '0.25rem 0.75rem', border: 'none', cursor: 'pointer',
                     background: filterScope === s
                       ? s === 'vendor' ? 'rgba(78,200,122,0.15)' : 'rgba(200,170,80,0.15)'
                       : 'transparent',
                     color: filterScope === s
-                      ? s === 'vendor' ? '#4EC87A' : HUD.gold
+                      ? s === 'vendor' ? 'var(--state-success)' : HUD.gold
                       : DIM,
                   }}
                 >
@@ -393,9 +387,9 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
               <button
                 onClick={onGenerateLoot}
                 style={{
-                  fontFamily: FONT_C, fontSize: FS_CAP, fontWeight: 700,
+                  fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
                   textTransform: 'uppercase', letterSpacing: '0.08em',
-                  padding: '4px 12px', borderRadius: 3, cursor: 'pointer',
+                  padding: '0.25rem 0.75rem', borderRadius: RADIUS.sm, cursor: 'pointer',
                   border: `1px solid rgba(150,168,180,0.35)`,
                   color: HUD.gold,
                   background: 'rgba(150,168,180,0.10)',
@@ -406,14 +400,14 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
             )}
 
             {/* Type filter */}
-            <div style={{ display: 'flex', gap: 0, border: `1px solid ${BORDER}`, borderRadius: 3, overflow: 'hidden' }}>
+            <div style={{ display: 'flex', gap: 0, border: `1px solid ${BORDER}`, borderRadius: RADIUS.sm, overflow: 'hidden' }}>
               {(['all', 'weapon', 'armor', 'gear'] as FilterType[]).map(t => (
                 <button
                   key={t}
                   onClick={() => setFilterType(t)}
                   style={{
-                    fontFamily: FONT_C, fontSize: FS_CAP, fontWeight: 700, textTransform: 'uppercase',
-                    letterSpacing: '0.08em', padding: '4px 10px', border: 'none', cursor: 'pointer',
+                    fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700, textTransform: 'uppercase',
+                    letterSpacing: '0.08em', padding: '0.25rem 0.625rem', border: 'none', cursor: 'pointer',
                     background: filterType === t ? 'rgba(200,170,80,0.12)' : 'transparent',
                     color: filterType === t ? HUD.gold : DIM,
                   }}
@@ -430,8 +424,8 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
               placeholder="Search…"
               style={{
                 background: 'rgba(0,0,0,0.3)', border: `1px solid ${BORDER}`,
-                color: TEXT, fontFamily: FONT_C, fontSize: FS_LABEL,
-                padding: '4px 10px', borderRadius: 3, outline: 'none', width: 140,
+                color: TEXT, fontFamily: FONT_BODY, fontSize: FS.label,
+                padding: '0.25rem 0.625rem', borderRadius: RADIUS.sm, outline: 'none', width: '8.75rem',
               }}
             />
 
@@ -439,23 +433,18 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
             <button
               onClick={toggleExpanded}
               style={{
-                fontFamily: FONT_M,
+                fontFamily: FONT_BODY,
                 fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)',
                 textTransform: 'uppercase',
-                border: '1px solid rgba(200,170,80,0.25)',
-                color: expanded ? HUD.gold : 'rgba(200,170,80,0.5)',
-                borderRadius: 5,
-                padding: '4px 10px',
+                border: `1px solid ${GOLD_BD}`,
+                color: expanded ? HUD.gold : GOLD_DIM,
+                borderRadius: RADIUS.md,
+                padding: '0.25rem 0.625rem',
                 background: expanded ? 'rgba(200,170,80,0.08)' : 'transparent',
                 cursor: 'pointer',
                 letterSpacing: '0.08em',
-                transition: 'color 150ms, background 150ms',
+                transition: `color ${EASE.quick}, background ${EASE.quick}`,
                 flexShrink: 0,
-              }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = HUD.gold; (e.currentTarget as HTMLElement).style.borderColor = GOLD_BD }}
-              onMouseLeave={e => {
-                (e.currentTarget as HTMLElement).style.color = expanded ? HUD.gold : 'rgba(200,170,80,0.5)'
-                ;(e.currentTarget as HTMLElement).style.borderColor = 'rgba(200,170,80,0.25)'
               }}
             >
               {expanded ? '⬇ Collapse' : '⬆ Expand'}
@@ -469,9 +458,9 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
             <button
               onClick={loadDropped}
               style={{
-                fontFamily: FONT_M, fontSize: FS_CAP, textTransform: 'uppercase',
-                border: `1px solid ${BORDER}`, color: DIM, borderRadius: 3,
-                padding: '4px 10px', background: 'transparent', cursor: 'pointer',
+                fontFamily: FONT_BODY, fontSize: FS.caption, textTransform: 'uppercase',
+                border: `1px solid ${BORDER}`, color: DIM, borderRadius: RADIUS.sm,
+                padding: '0.25rem 0.625rem', background: 'transparent', cursor: 'pointer',
                 letterSpacing: '0.08em',
               }}
             >↻ Refresh</button>
@@ -484,12 +473,12 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
         <div style={{
           maxHeight: expanded ? '70vh' : '40vh',
           overflowY: 'auto',
-          transition: 'max-height 200ms ease',
+          transition: `max-height ${EASE.default}`,
         }}>
           {loading ? (
-            <div style={{ fontFamily: FONT_C, fontSize: FS_SM, color: DIM, textAlign: 'center', padding: 24 }}>Loading…</div>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: DIM, textAlign: 'center', padding: '1.5rem' }}>Loading…</div>
           ) : items.length === 0 ? (
-            <div style={{ fontFamily: FONT_C, fontSize: FS_SM, color: DIM, textAlign: 'center', padding: 24 }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: DIM, textAlign: 'center', padding: '1.5rem' }}>
               {filterScope === 'custom'
                 ? 'No custom items for this campaign yet. Use the + buttons above to create one.'
                 : filterScope === 'vendor'
@@ -501,32 +490,32 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-              gap: 6,
+              gap: '0.375rem',
             }}>
               {items.map(item => (
                 <div
                   key={`${item._table}-${item.key}`}
                   style={{
-                    display: 'flex', flexDirection: 'column', gap: 6,
-                    padding: '10px 12px',
+                    display: 'flex', flexDirection: 'column', gap: '0.375rem',
+                    padding: '0.625rem 0.75rem',
                     background: PANEL_BG,
                     border: `1px solid ${BORDER}`,
-                    borderRadius: 4,
+                    borderRadius: RADIUS.md,
                   }}
                 >
                   {/* Top row: type badge + rarity + actions */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
                     <span style={{
-                      fontFamily: FONT_C, fontSize: FS_OVER, fontWeight: 700,
+                      fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
                       textTransform: 'uppercase', letterSpacing: '0.12em',
                       color: TYPE_COLOR[item.type],
                     }}>
                       {item.type}
                     </span>
-                    <span style={{ fontFamily: FONT_C, fontSize: FS_CAP, color: DIM, flex: 1 }}>R{item.rarity}</span>
-                    <div style={{ display: 'flex', gap: 4 }}>
+                    <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: DIM, flex: 1 }}>R{item.rarity}</span>
+                    <div style={{ display: 'flex', gap: '0.25rem' }}>
                       {characters.length > 0 && filterScope === 'vendor' && (
-                        <button onClick={() => setVendingItem(item)} style={actionBtn('#4EC87A')}>🛒 Sell</button>
+                        <button onClick={() => setVendingItem(item)} style={actionBtn('var(--state-success)')}>🛒 Sell</button>
                       )}
                       {characters.length > 0 && filterScope !== 'vendor' && (
                         <button onClick={() => setAwardingItem(item)} style={actionBtn(HUD.gold)}>Award</button>
@@ -541,12 +530,12 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
                   </div>
 
                   {/* Name */}
-                  <div style={{ fontFamily: FONT_C, fontSize: FS_LABEL, color: TEXT, fontWeight: 600, lineHeight: 1.2 }}>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT, fontWeight: 600, lineHeight: 1.2 }}>
                     {item.name}
                   </div>
 
                   {/* Stats */}
-                  <div style={{ fontFamily: FONT_C, fontSize: FS_CAP, color: DIM }}>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: DIM }}>
                     {item.type === 'weapon' && `DMG ${item.damage_add != null ? `Brawn+${item.damage_add}` : item.damage} · CRIT ${item.crit} · ENC ${item.encumbrance}`}
                     {item.type === 'armor'  && `SOAK+${item.soak} · DEF ${item.defense} · ENC ${item.encumbrance}`}
                     {item.type === 'gear'   && `ENC ${item.encumbrance}${item.encumbrance_bonus ? ` (+${item.encumbrance_bonus} thresh)` : ''}`}
@@ -556,48 +545,48 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
             </div>
           ) : (
             /* ── List layout (collapsed) ── */
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.125rem' }}>
               {items.map(item => (
                 <div
                   key={`${item._table}-${item.key}`}
                   style={{
-                    display: 'flex', alignItems: 'center', gap: 10,
-                    padding: '7px 10px',
+                    display: 'flex', alignItems: 'center', gap: '0.625rem',
+                    padding: '0.4375rem 0.625rem',
                     background: PANEL_BG,
                     border: `1px solid ${BORDER}`,
-                    borderRadius: 3,
+                    borderRadius: RADIUS.sm,
                   }}
                 >
                   {/* Type badge */}
                   <span style={{
-                    fontFamily: FONT_C, fontSize: FS_OVER, fontWeight: 700,
+                    fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
                     textTransform: 'uppercase', letterSpacing: '0.12em',
-                    color: TYPE_COLOR[item.type], width: 52, flexShrink: 0,
+                    color: TYPE_COLOR[item.type], width: '3.25rem', flexShrink: 0,
                   }}>
                     {item.type}
                   </span>
 
                   {/* Name */}
-                  <span style={{ fontFamily: FONT_C, fontSize: FS_LABEL, color: TEXT, flex: 1 }}>
+                  <span style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT, flex: 1 }}>
                     {item.name}
                   </span>
 
                   {/* Stats summary */}
-                  <span style={{ fontFamily: FONT_C, fontSize: FS_CAP, color: DIM }}>
+                  <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: DIM }}>
                     {item.type === 'weapon' && `DMG ${item.damage_add != null ? `Brawn+${item.damage_add}` : item.damage} · CRIT ${item.crit}`}
                     {item.type === 'armor'  && `SOAK+${item.soak} · DEF ${item.defense}`}
                     {item.type === 'gear'   && `ENC ${item.encumbrance}${item.encumbrance_bonus ? ` (+${item.encumbrance_bonus} thresh)` : ''}`}
                   </span>
 
                   {/* Rarity */}
-                  <span style={{ fontFamily: FONT_C, fontSize: FS_CAP, color: DIM, minWidth: 28 }}>
+                  <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: DIM, minWidth: '1.75rem' }}>
                     R{item.rarity}
                   </span>
 
                   {/* Actions */}
-                  <div style={{ display: 'flex', gap: 6 }}>
+                  <div style={{ display: 'flex', gap: '0.375rem' }}>
                     {characters.length > 0 && filterScope === 'vendor' && (
-                      <button onClick={() => setVendingItem(item)} style={actionBtn('#4EC87A')}>🛒 Sell</button>
+                      <button onClick={() => setVendingItem(item)} style={actionBtn('var(--state-success)')}>🛒 Sell</button>
                     )}
                     {characters.length > 0 && filterScope !== 'vendor' && (
                       <button onClick={() => setAwardingItem(item)} style={actionBtn(HUD.gold)}>Award</button>
@@ -620,65 +609,65 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
       {activeView === 'dropped' && (
         <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
           {droppedLoading ? (
-            <div style={{ fontFamily: FONT_C, fontSize: FS_SM, color: DIM, textAlign: 'center', padding: 24 }}>Loading…</div>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: DIM, textAlign: 'center', padding: '1.5rem' }}>Loading…</div>
           ) : droppedItems.length === 0 ? (
-            <div style={{ fontFamily: FONT_C, fontSize: FS_SM, color: DIM, textAlign: 'center', padding: 32, lineHeight: 1.6 }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: DIM, textAlign: 'center', padding: '2rem', lineHeight: 1.6 }}>
               No dropped items. Items discarded by players or removed by the GM will appear here.
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1875rem' }}>
               {droppedItems.map(d => (
                 <div
                   key={d.rowId}
                   title={d.droppedNote ?? undefined}
                   style={{
-                    display: 'flex', alignItems: 'center', gap: 10,
-                    padding: '8px 12px',
+                    display: 'flex', alignItems: 'center', gap: '0.625rem',
+                    padding: '0.5rem 0.75rem',
                     background: PANEL_BG,
                     border: `1px solid ${BORDER}`,
-                    borderRadius: 3,
+                    borderRadius: RADIUS.sm,
                   }}
                 >
                   {/* Type badge */}
                   <span style={{
-                    fontFamily: FONT_M, fontSize: FS_OVER, fontWeight: 700,
+                    fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
                     textTransform: 'uppercase', letterSpacing: '0.1em',
                     color: TYPE_COLOR[d.itemType],
                     border: `1px solid ${TYPE_COLOR[d.itemType]}40`,
-                    borderRadius: 3, padding: '1px 5px', flexShrink: 0,
+                    borderRadius: RADIUS.sm, padding: '0.0625rem 0.3125rem', flexShrink: 0,
                   }}>
                     {d.itemType}
                   </span>
 
                   {/* Item name */}
-                  <span style={{ fontFamily: FONT_C, fontSize: FS_LABEL, color: HUD.gold, fontWeight: 600, flex: 1, minWidth: 0 }}>
+                  <span style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: HUD.gold, fontWeight: 600, flex: 1, minWidth: 0 }}>
                     {d.itemName}
                     {d.droppedNote && (
-                      <span style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: DIM, marginLeft: 6 }}>†</span>
+                      <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: DIM, marginLeft: '0.375rem' }}>†</span>
                     )}
                   </span>
 
                   {/* Owner / source */}
-                  <span style={{ fontFamily: FONT_C, fontSize: FS_CAP, color: DIM, flexShrink: 0 }}>
+                  <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: DIM, flexShrink: 0 }}>
                     {d.droppedBy === 'gm' ? `removed by GM · ${d.characterName}` : `dropped by ${d.characterName}`}
                   </span>
 
                   {/* Time */}
-                  <span style={{ fontFamily: FONT_M, fontSize: FS_CAP, color: `${DIM}99`, minWidth: 60, textAlign: 'right', flexShrink: 0 }}>
+                  <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: `${DIM}99`, minWidth: '3.75rem', textAlign: 'right', flexShrink: 0 }}>
                     {relativeTime(d.droppedAt)}
                   </span>
 
                   {/* Actions */}
                   {destroyConfirm === d.rowId ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                      <span style={{ fontFamily: FONT_M, fontSize: FS_CAP, color: RED }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', flexShrink: 0 }}>
+                      <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: RED }}>
                         Permanently destroy?
                       </span>
                       <button onClick={() => setDestroyConfirm(null)} style={actionBtn(DIM)}>Cancel</button>
                       <button onClick={() => handleDestroy(d)} style={actionBtn(RED)}>Destroy</button>
                     </div>
                   ) : (
-                    <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                    <div style={{ display: 'flex', gap: '0.25rem', flexShrink: 0 }}>
                       {characters.length > 0 && (
                         <button onClick={() => setAwardingDropped(d)} style={actionBtn(HUD.gold)}>Award</button>
                       )}
@@ -792,9 +781,9 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
 
 function actionBtn(color: string): React.CSSProperties {
   return {
-    fontFamily: FONT_C, fontSize: FS_CAP, fontWeight: 700,
+    fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
     textTransform: 'uppercase', letterSpacing: '0.08em',
-    padding: '3px 8px', borderRadius: 3, cursor: 'pointer',
+    padding: '0.1875rem 0.5rem', borderRadius: RADIUS.sm, cursor: 'pointer',
     border: `1px solid ${color}44`, color, background: `${color}10`,
   }
 }

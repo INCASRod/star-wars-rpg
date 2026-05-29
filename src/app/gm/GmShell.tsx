@@ -38,23 +38,20 @@ import { GmPartyPanel } from './panels/GmPartyPanel'
 import { GmCombatPanel } from './panels/GmCombatPanel'
 import { GmInitiativeDrawer } from './panels/GmInitiativeDrawer'
 
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_BODY, Z, EASE, RADIUS } from '@/lib/tokens'
 
-const FONT   = 'var(--font-body)'
-const DIM    = 'var(--hud-text-dim)'
-const RED    = '#E05050'
-const BLUE   = '#5AAAE0'
-const GREEN  = '#4EC87A'
+const FONT = FONT_BODY
+const DIM  = 'var(--hud-text-dim)'
 
 const darkInput: React.CSSProperties = {
   background: 'rgba(0,0,0,0.4)', border: '1px solid var(--hud-border-hi)',
-  color: 'var(--hud-text)', fontFamily: FONT, padding: '6px 10px',
-  borderRadius: 3, outline: 'none', fontSize: 'var(--text-sm)',
+  color: 'var(--hud-text)', fontFamily: FONT, padding: '0.375rem 0.625rem',
+  borderRadius: RADIUS.sm, outline: 'none', fontSize: 'var(--text-sm)',
 }
 const btnSmall: React.CSSProperties = {
   background: 'rgba(150,168,180,0.06)', border: '1px solid rgba(150,168,180,0.2)',
   color: DIM, fontFamily: FONT, fontSize: 'var(--text-caption)',
-  padding: '4px 10px', borderRadius: 3, cursor: 'pointer',
+  padding: '0.25rem 0.625rem', borderRadius: RADIUS.sm, cursor: 'pointer',
 }
 
 export function GmShell() {
@@ -165,11 +162,17 @@ export function GmShell() {
   const [diceOpen,              setDiceOpen]              = useState(false)
   const [mapLibraryOpen,        setMapLibraryOpen]        = useState(false)
 
-  // Force Star Destroyer Slate theme for the entire GM view, including portals
+  // Force GM Imperial Steel theme for the entire GM view, including portals
   useEffect(() => {
     const prev = document.documentElement.dataset.theme
-    document.documentElement.dataset.theme = 'star-destroyer-slate'
-    return () => { document.documentElement.dataset.theme = prev ?? '' }
+    document.documentElement.dataset.theme = 'gm-imperial'
+    return () => {
+      if (prev) {
+        document.documentElement.dataset.theme = prev
+      } else {
+        document.documentElement.removeAttribute('data-theme')
+      }
+    }
   }, [])
 
   // Sync encounter slots from placed tokens (idempotent)
@@ -246,8 +249,8 @@ export function GmShell() {
   if (loading) return <HolocronLoader />
   if (error || !campaign) {
     return (
-      <div style={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--hud-bg)', gap: 16 }}>
-        <div style={{ fontFamily: FONT, color: RED, fontSize: 'var(--text-h4)' }}>{error || 'Campaign not found'}</div>
+      <div style={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--hud-bg)', gap: 'var(--space-4)' }}>
+        <div style={{ fontFamily: FONT, color: 'var(--state-failure)', fontSize: 'var(--text-h4)' }}>{error || 'Campaign not found'}</div>
         <button onClick={() => router.push('/')} style={{ ...btnSmall, color: HUD.gold, border: '1px solid var(--hud-border-hi)' }}>Return Home</button>
       </div>
     )
@@ -280,14 +283,14 @@ export function GmShell() {
   // ── Render ───────────────────────────────────────────────────────
   return (
     <div
-      data-theme="star-destroyer-slate"
+      data-theme="gm-imperial"
       style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', background: 'var(--hud-bg)' }}
     >
       {/* 44px spacer — StagingTopBar is position:fixed at top:0 */}
-      <div style={{ height: 44, flexShrink: 0 }} />
+      <div style={{ height: '2.75rem', flexShrink: 0 }} />
 
       {/* ── Body row ── */}
-      <div style={{ display: 'flex', height: 'calc(100vh - 44px)', overflow: 'hidden' }}>
+      <div style={{ display: 'flex', height: 'calc(100vh - 2.75rem)', overflow: 'hidden' }}>
 
         {/* Left rail */}
         <GmLeftRail
@@ -324,13 +327,13 @@ export function GmShell() {
             top:        0,
             left:       0,
             bottom:     0,
-            width:      activePanel === 'tools' ? 560 : activePanel === 'library' ? 420 : 360,
+            width:      activePanel === 'tools' ? '35rem' : activePanel === 'library' ? '26.25rem' : '22.5rem',
             background: 'var(--hud-panel)',
             borderRight:'1px solid var(--hud-border-hi)',
             boxShadow:  '4px 0 24px rgba(0,0,0,0.5)',
             transform:  activePanel ? 'translateX(0)' : 'translateX(-100%)',
-            transition: 'transform 0.26s cubic-bezier(0.22,1,0.36,1), width 0.26s cubic-bezier(0.22,1,0.36,1)',
-            zIndex:     20,
+            transition: `transform ${EASE.panel}, width ${EASE.panel}`,
+            zIndex:     Z.dropdown,
             overflow:   'hidden',
             display:    'flex',
             flexDirection: 'column',
@@ -431,7 +434,7 @@ export function GmShell() {
 
         {/* Roll feed rail */}
         <div style={{
-          width:        260,
+          width:        '16.25rem',
           flexShrink:   0,
           borderLeft:   '1px solid var(--hud-border)',
           display:      'flex',
@@ -440,16 +443,16 @@ export function GmShell() {
           background:   'var(--hud-panel)',
         }}>
           <div style={{
-            padding:      '8px 10px',
+            padding:      '0.5rem 0.625rem',
             borderBottom: '1px solid var(--hud-border)',
             flexShrink:   0,
             display:      'flex',
             alignItems:   'center',
-            gap:          6,
+            gap:          '0.375rem',
           }}>
             <span style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', color: DIM, letterSpacing: '0.15em', textTransform: 'uppercase', flex: 1 }}>Roll Feed</span>
-            <span style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', color: GREEN, display: 'flex', alignItems: 'center', gap: 3 }}>
-              <span style={{ display: 'inline-block', width: 5, height: 5, borderRadius: '50%', background: GREEN }} />
+            <span style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', color: 'var(--state-success)', display: 'flex', alignItems: 'center', gap: '0.1875rem' }}>
+              <span style={{ display: 'inline-block', width: '0.3125rem', height: '0.3125rem', borderRadius: '50%', background: 'var(--state-success)' }} />
               Live
             </span>
           </div>
@@ -471,18 +474,18 @@ export function GmShell() {
         initiativeOpen={initiativeOpen}
         onLobby={() => router.push('/')}
         destinySlot={destinyPoolRecord ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', color: BLUE, letterSpacing: '0.1em', textTransform: 'uppercase', flexShrink: 0 }}>Destiny</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+            <span style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', color: 'var(--die-force)', letterSpacing: '0.1em', textTransform: 'uppercase', flexShrink: 0 }}>Destiny</span>
             <DestinyPoolDisplay poolRecord={destinyPoolRecord} isGm={true} onClickDark={handleGmSpendDark} compact />
             {gmSpendConfirm && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 6px', background: 'rgba(139,43,226,0.12)', border: '1px solid rgba(139,43,226,0.35)', borderRadius: 4 }}>
-                <span style={{ fontFamily: FONT, fontSize: 'var(--text-caption)', color: '#B070D8' }}>Spend dark?</span>
-                <button onClick={handleGmSpendDark} style={{ ...btnSmall, padding: '1px 6px', color: '#B070D8', border: '1px solid rgba(139,43,226,0.4)' }}>Spend</button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', padding: '0.125rem 0.375rem', background: 'rgba(139,43,226,0.12)', border: '1px solid rgba(139,43,226,0.35)', borderRadius: RADIUS.md }}>
+                <span style={{ fontFamily: FONT, fontSize: 'var(--text-caption)', color: 'var(--hud-accent-purple)' }}>Spend dark?</span>
+                <button onClick={handleGmSpendDark} style={{ ...btnSmall, padding: '1px 6px', color: 'var(--hud-accent-purple)', border: '1px solid rgba(139,43,226,0.4)' }}>Spend</button>
                 <button onClick={() => setGmSpendConfirm(false)} style={{ ...btnSmall, padding: '1px 4px' }}>✕</button>
               </div>
             )}
-            <button onClick={() => setDestinyGenerateOpen(true)} style={{ ...btnSmall, height: 26, padding: '0 8px', color: HUD.gold, border: '1px solid var(--hud-border-hi)', flexShrink: 0 }}>◈ Generate</button>
-            <button onClick={() => setManualAdjustOpen(true)} style={{ ...btnSmall, height: 26, padding: '0 8px', flexShrink: 0 }}>✎ Adjust</button>
+            <button onClick={() => setDestinyGenerateOpen(true)} style={{ ...btnSmall, height: '1.625rem', padding: '0 0.5rem', color: HUD.gold, border: '1px solid var(--hud-border-hi)', flexShrink: 0 }}>◈ Generate</button>
+            <button onClick={() => setManualAdjustOpen(true)} style={{ ...btnSmall, height: '1.625rem', padding: '0 0.5rem', flexShrink: 0 }}>✎ Adjust</button>
           </div>
         ) : undefined}
       />
@@ -523,47 +526,47 @@ export function GmShell() {
       {/* ── Morality Setup Modal ── */}
       {moralitySetup && (() => {
         const mv = moralitySetup.score
-        const scoreColor = mv >= 70 ? BLUE : mv >= 40 ? HUD.gold : RED
+        const scoreColor = mv >= 70 ? 'var(--die-force)' : mv >= 40 ? HUD.gold : 'var(--state-failure)'
         const selStr = moralityStrengths.find(m => m.key === moralitySetup.strengthKey)
         const selWk  = moralityWeaknesses.find(m => m.key === moralitySetup.weaknessKey)
         return (
           <Modal open zIndex={200} maxWidth="30rem" backdrop="rgba(0,0,0,0.65)" borderColor="rgba(90,170,224,0.3)" shadow="0 8px 40px rgba(90,170,224,0.12)">
-            <div style={{ padding: 24 }}>
-              <div style={{ fontFamily: FONT, fontSize: 'var(--text-sm)', fontWeight: 700, color: BLUE, letterSpacing: '0.15em', marginBottom: 14 }}>✦ Configure Morality — {moralitySetup.name}</div>
-              <div style={{ marginBottom: 14 }}>
-                <div style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(150,168,180,0.5)', marginBottom: 4 }}>Morality Score</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ padding: '1.5rem' }}>
+              <div style={{ fontFamily: FONT, fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--die-force)', letterSpacing: '0.15em', marginBottom: '0.875rem' }}>✦ Configure Morality — {moralitySetup.name}</div>
+              <div style={{ marginBottom: '0.875rem' }}>
+                <div style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(150,168,180,0.5)', marginBottom: '0.25rem' }}>Morality Score</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
                   <input type="number" min={1} max={100} value={moralitySetup.score}
                     onChange={e => setMoralitySetup(s => s && ({ ...s, score: parseInt(e.target.value) || 50 }))}
-                    style={{ ...darkInput, width: 70 }} />
+                    style={{ ...darkInput, width: '4.375rem' }} />
                   <span style={{ fontFamily: FONT, fontSize: 'var(--text-h4)', fontWeight: 700, color: scoreColor }}>{mv}</span>
                   <span style={{ fontFamily: FONT, fontSize: 'var(--text-label)', color: scoreColor, opacity: 0.8 }}>
                     {mv >= 70 ? 'Strong — Light side' : mv >= 40 ? 'Balanced' : 'Weak — Dark side temptation'}
                   </span>
                 </div>
-                <div style={{ marginTop: 6, height: 6, background: 'var(--hud-surface-lo)', borderRadius: 3, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${Math.min(100, Math.max(1, mv))}%`, background: `linear-gradient(90deg, ${RED}, #4EC87A 60%, ${BLUE})`, borderRadius: 3, transition: '.2s' }} />
+                <div style={{ marginTop: '0.375rem', height: '0.375rem', background: 'var(--hud-surface-lo)', borderRadius: RADIUS.sm, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${Math.min(100, Math.max(1, mv))}%`, background: `linear-gradient(90deg, var(--state-failure), var(--state-success) 60%, var(--die-force))`, borderRadius: RADIUS.sm, transition: '.2s' }} />
                 </div>
               </div>
-              <div style={{ marginBottom: 10 }}>
-                <div style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(150,168,180,0.5)', marginBottom: 4 }}>Strength</div>
+              <div style={{ marginBottom: '0.625rem' }}>
+                <div style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(150,168,180,0.5)', marginBottom: '0.25rem' }}>Strength</div>
                 <select value={moralitySetup.strengthKey} onChange={e => setMoralitySetup(s => s && ({ ...s, strengthKey: e.target.value }))} style={{ ...darkInput, width: '100%' }}>
                   <option value="">— Select a Strength —</option>
                   {moralityStrengths.map(m => <option key={m.key} value={m.key}>{m.name}</option>)}
                 </select>
-                {selStr?.description && <div style={{ marginTop: 5, fontFamily: FONT, fontSize: 'var(--text-overline)', color: DIM, lineHeight: 1.5 }}>{selStr.description.replace(/\[.*?\]/g, '').slice(0, 160)}…</div>}
+                {selStr?.description && <div style={{ marginTop: '0.3125rem', fontFamily: FONT, fontSize: 'var(--text-overline)', color: DIM, lineHeight: 1.5 }}>{selStr.description.replace(/\[.*?\]/g, '').slice(0, 160)}…</div>}
               </div>
-              <div style={{ marginBottom: 18 }}>
-                <div style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(150,168,180,0.5)', marginBottom: 4 }}>Weakness</div>
+              <div style={{ marginBottom: '1.125rem' }}>
+                <div style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(150,168,180,0.5)', marginBottom: '0.25rem' }}>Weakness</div>
                 <select value={moralitySetup.weaknessKey} onChange={e => setMoralitySetup(s => s && ({ ...s, weaknessKey: e.target.value }))} style={{ ...darkInput, width: '100%' }}>
                   <option value="">— Select a Weakness —</option>
                   {moralityWeaknesses.map(m => <option key={m.key} value={m.key}>{m.name}</option>)}
                 </select>
-                {selWk?.description && <div style={{ marginTop: 5, fontFamily: FONT, fontSize: 'var(--text-overline)', color: DIM, lineHeight: 1.5 }}>{selWk.description.replace(/\[.*?\]/g, '').slice(0, 160)}…</div>}
+                {selWk?.description && <div style={{ marginTop: '0.3125rem', fontFamily: FONT, fontSize: 'var(--text-overline)', color: DIM, lineHeight: 1.5 }}>{selWk.description.replace(/\[.*?\]/g, '').slice(0, 160)}…</div>}
               </div>
-              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <div style={{ display: 'flex', gap: '0.625rem', justifyContent: 'flex-end' }}>
                 <button onClick={() => setMoralitySetup(null)} style={btnSmall} disabled={moralityBusy}>Cancel</button>
-                <button onClick={handleMoralitySave} disabled={moralityBusy} style={{ ...btnSmall, background: 'rgba(90,170,224,0.15)', border: '1px solid rgba(90,170,224,0.5)', color: BLUE, opacity: moralityBusy ? 0.5 : 1 }}>
+                <button onClick={handleMoralitySave} disabled={moralityBusy} style={{ ...btnSmall, background: 'rgba(90,170,224,0.15)', border: '1px solid rgba(90,170,224,0.5)', color: 'var(--die-force)', opacity: moralityBusy ? 0.5 : 1 }}>
                   {moralityBusy ? '…' : 'Save Morality'}
                 </button>
               </div>
@@ -577,27 +580,27 @@ export function GmShell() {
         <Modal open zIndex={200} maxWidth="28rem" backdrop="rgba(0,0,0,0.65)"
           borderColor={fallenConfirm.isFallen ? 'rgba(126,200,227,0.3)' : 'rgba(139,43,226,0.35)'}
           shadow={fallenConfirm.isFallen ? '0 8px 40px rgba(126,200,227,0.15)' : '0 8px 40px rgba(139,43,226,0.2)'}>
-          <div style={{ padding: 24 }}>
-            <div style={{ fontFamily: FONT, fontSize: 'var(--text-sm)', fontWeight: 700, color: fallenConfirm.isFallen ? '#1A78A0' : '#8B2BE2', letterSpacing: '0.15em', marginBottom: 12 }}>
+          <div style={{ padding: '1.5rem' }}>
+            <div style={{ fontFamily: FONT, fontSize: 'var(--text-sm)', fontWeight: 700, color: fallenConfirm.isFallen ? 'var(--die-force)' : 'var(--hud-accent-purple)', letterSpacing: '0.15em', marginBottom: '0.75rem' }}>
               {fallenConfirm.isFallen ? '✦ Grant Redemption' : '☠ Dark Side Fall'}
             </div>
-            <div style={{ fontFamily: FONT, fontSize: 'var(--text-sm)', color: 'var(--hud-text)', lineHeight: 1.7, marginBottom: 8 }}>
+            <div style={{ fontFamily: FONT, fontSize: 'var(--text-sm)', color: 'var(--hud-text)', lineHeight: 1.7, marginBottom: '0.5rem' }}>
               {fallenConfirm.isFallen
-                ? <><span>Grant Redemption to </span><strong style={{ color: '#1A78A0' }}>{fallenConfirm.name}</strong>? This restores standard light side Force mechanics.</>
-                : <><span>Declare </span><strong style={{ color: '#8B2BE2' }}>{fallenConfirm.name}</strong> fallen to the Dark Side? This inverts their Force pip mechanics permanently until Redemption is granted.</>}
+                ? <><span>Grant Redemption to </span><strong style={{ color: 'var(--die-force)' }}>{fallenConfirm.name}</strong>? This restores standard light side Force mechanics.</>
+                : <><span>Declare </span><strong style={{ color: 'var(--hud-accent-purple)' }}>{fallenConfirm.name}</strong> fallen to the Dark Side? This inverts their Force pip mechanics permanently until Redemption is granted.</>}
             </div>
             {!fallenConfirm.isFallen && fallenConfirm.morality !== undefined && (
-              <div style={{ fontFamily: FONT, fontSize: 'var(--text-label)', color: DIM, marginBottom: 16 }}>
-                Current Morality: <span style={{ color: (fallenConfirm.morality ?? 0) >= 50 ? BLUE : RED, fontWeight: 700 }}>{fallenConfirm.morality}</span>
+              <div style={{ fontFamily: FONT, fontSize: 'var(--text-label)', color: DIM, marginBottom: '1rem' }}>
+                Current Morality: <span style={{ color: (fallenConfirm.morality ?? 0) >= 50 ? 'var(--die-force)' : 'var(--state-failure)', fontWeight: 700 }}>{fallenConfirm.morality}</span>
               </div>
             )}
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 16 }}>
+            <div style={{ display: 'flex', gap: '0.625rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
               <button onClick={() => setFallenConfirm(null)} style={btnSmall} disabled={fallenBusy}>CANCEL</button>
               <button onClick={handleFallenToggle} disabled={fallenBusy} style={{
                 ...btnSmall,
                 background: fallenConfirm.isFallen ? 'rgba(126,200,227,0.15)' : 'rgba(139,43,226,0.2)',
                 border: `1px solid ${fallenConfirm.isFallen ? 'rgba(126,200,227,0.5)' : 'rgba(139,43,226,0.6)'}`,
-                color: fallenConfirm.isFallen ? '#1A78A0' : '#8B2BE2',
+                color: fallenConfirm.isFallen ? 'var(--die-force)' : 'var(--hud-accent-purple)',
                 opacity: fallenBusy ? 0.5 : 1,
               }}>
                 {fallenBusy ? '…' : fallenConfirm.isFallen ? 'Confirm — Grant Redemption' : 'Confirm — Fall to Dark Side'}
@@ -610,14 +613,14 @@ export function GmShell() {
       {/* ── Archive Confirmation ── */}
       {archiveConfirm && (
         <Modal open zIndex={200} maxWidth="26rem" backdrop="rgba(0,0,0,0.6)" shadow="0 8px 40px rgba(0,0,0,0.5)">
-          <div style={{ padding: 24 }}>
-            <div style={{ fontFamily: FONT, fontSize: 'var(--text-sm)', fontWeight: 700, color: 'rgba(150,168,180,0.55)', letterSpacing: '0.15em', marginBottom: 12 }}>Archive Character</div>
-            <div style={{ fontFamily: FONT, fontSize: 'var(--text-sm)', color: 'var(--hud-text)', lineHeight: 1.7, marginBottom: 20 }}>
+          <div style={{ padding: '1.5rem' }}>
+            <div style={{ fontFamily: FONT, fontSize: 'var(--text-sm)', fontWeight: 700, color: 'rgba(150,168,180,0.55)', letterSpacing: '0.15em', marginBottom: '0.75rem' }}>Archive Character</div>
+            <div style={{ fontFamily: FONT, fontSize: 'var(--text-sm)', color: 'var(--hud-text)', lineHeight: 1.7, marginBottom: '1.25rem' }}>
               <strong style={{ color: HUD.gold }}>{archiveConfirm.name}</strong> will be hidden from all player views. Their data is preserved and can be restored at any time.
             </div>
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', gap: '0.625rem', justifyContent: 'flex-end' }}>
               <button onClick={() => setArchiveConfirm(null)} style={btnSmall} disabled={archiveBusy}>CANCEL</button>
-              <button onClick={handleArchive} disabled={archiveBusy} style={{ ...btnSmall, background: 'rgba(224,80,80,0.15)', border: '1px solid rgba(224,80,80,0.4)', color: RED, opacity: archiveBusy ? 0.5 : 1 }}>
+              <button onClick={handleArchive} disabled={archiveBusy} style={{ ...btnSmall, background: 'rgba(224,80,80,0.15)', border: '1px solid rgba(224,80,80,0.4)', color: 'var(--state-failure)', opacity: archiveBusy ? 0.5 : 1 }}>
                 {archiveBusy ? 'ARCHIVING…' : 'ARCHIVE'}
               </button>
             </div>
@@ -641,30 +644,30 @@ export function GmShell() {
       {/* ── Destiny Manual Adjust ── */}
       {manualAdjustOpen && typeof window !== 'undefined' && createPortal(
         <>
-          <div onClick={() => setManualAdjustOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9100 }} />
-          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 9101, width: 'clamp(320px, 40vw, 440px)', background: 'var(--hud-panel)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid var(--hud-border-hi)', borderRadius: 12, padding: '24px 28px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+          <div onClick={() => setManualAdjustOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: Z.backdrop }} />
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: Z.modal, width: 'clamp(320px, 40vw, 440px)', background: 'var(--hud-panel)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid var(--hud-border-hi)', borderRadius: RADIUS.xl, padding: '1.5rem 1.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
               <span style={{ fontFamily: FONT, fontSize: 'var(--text-h4)', fontWeight: 700, color: HUD.gold, letterSpacing: '0.08em', textTransform: 'uppercase' }}>✎ Adjust Destiny Pool</span>
               <button onClick={() => setManualAdjustOpen(false)} style={{ ...btnSmall, padding: '2px 8px' }}>✕</button>
             </div>
-            <div style={{ marginBottom: 18 }}>
-              <div style={{ fontFamily: FONT, fontSize: 'var(--text-label)', color: '#1A78A0', marginBottom: 8 }}>Light Side Destiny</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ marginBottom: '1.125rem' }}>
+              <div style={{ fontFamily: FONT, fontSize: 'var(--text-label)', color: 'var(--die-force)', marginBottom: '0.5rem' }}>Light Side Destiny</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
                 <button onClick={() => setManualLight(l => Math.max(0, l - 1))} style={{ ...btnSmall, padding: '3px 12px' }}>−</button>
-                <span style={{ fontFamily: FONT, fontSize: 'var(--text-h4)', color: '#1A78A0', minWidth: 32, textAlign: 'center' }}>{manualLight}</span>
+                <span style={{ fontFamily: FONT, fontSize: 'var(--text-h4)', color: 'var(--die-force)', minWidth: '2rem', textAlign: 'center' }}>{manualLight}</span>
                 <button onClick={() => setManualLight(l => l + 1)} style={{ ...btnSmall, padding: '3px 12px' }}>+</button>
               </div>
             </div>
-            <div style={{ marginBottom: 20 }}>
-              <div style={{ fontFamily: FONT, fontSize: 'var(--text-label)', color: '#B070D8', marginBottom: 8 }}>Dark Side Destiny</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ marginBottom: '1.25rem' }}>
+              <div style={{ fontFamily: FONT, fontSize: 'var(--text-label)', color: 'var(--hud-accent-purple)', marginBottom: '0.5rem' }}>Dark Side Destiny</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
                 <button onClick={() => setManualDark(d => Math.max(0, d - 1))} style={{ ...btnSmall, padding: '3px 12px' }}>−</button>
-                <span style={{ fontFamily: FONT, fontSize: 'var(--text-h4)', color: '#B070D8', minWidth: 32, textAlign: 'center' }}>{manualDark}</span>
+                <span style={{ fontFamily: FONT, fontSize: 'var(--text-h4)', color: 'var(--hud-accent-purple)', minWidth: '2rem', textAlign: 'center' }}>{manualDark}</span>
                 <button onClick={() => setManualDark(d => d + 1)} style={{ ...btnSmall, padding: '3px 12px' }}>+</button>
               </div>
             </div>
-            <div style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', color: 'rgba(196,205,212,0.3)', fontStyle: 'italic', marginBottom: 20 }}>Changes apply immediately to all screens.</div>
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <div style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', color: 'rgba(196,205,212,0.3)', fontStyle: 'italic', marginBottom: '1.25rem' }}>Changes apply immediately to all screens.</div>
+            <div style={{ display: 'flex', gap: '0.625rem', justifyContent: 'flex-end' }}>
               <button onClick={() => setManualAdjustOpen(false)} style={{ ...btnSmall, padding: '4px 16px' }}>Cancel</button>
               <button
                 onClick={handleApplyManual}

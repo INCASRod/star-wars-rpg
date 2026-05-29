@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
@@ -8,37 +8,26 @@ import type { Vehicle } from '@/lib/vehicles'
 import { vehicleWeaponDisplayName, vehicleWeaponStats } from '@/lib/vehicles'
 import { TokenImageLinks } from './TokenImageLinks'
 import { RichText } from '@/components/ui/RichText'
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_DISPLAY, FONT_BODY, FONT_MONO, RADIUS, EASE } from '@/lib/tokens'
 
-/* ── Design tokens ─────────────────────────────────────── */
-const FC       = "var(--font-rajdhani), 'Cinzel', serif"
-const FR       = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FM       = "'Share Tech Mono','Courier New',monospace"
-const PANEL_BG = 'rgba(6,13,9,0.97)'
-const RAISED   = 'rgba(14,26,18,0.9)'
-const GOLD_DIM = 'rgba(200,170,80,0.5)'
-const TEXT     = '#C8D8C0'
-const DIM      = '#6A8070'
-const BORDER   = 'rgba(200,170,80,0.14)'
-const BORDER_HI = 'rgba(200,170,80,0.36)'
-const GREEN    = '#4EC87A'
-const RED      = '#E05050'
-const BLUE     = '#5AAAE0'
-
+/* ── Design tokens ─────────────────────────────────────────────── */
 const FS_OVERLINE = 'var(--text-overline)'
 const FS_CAPTION  = 'var(--text-caption)'
-const FS_LABEL    = 'var(--text-label)'
 const FS_SM       = 'var(--text-sm)'
 const FS_H4       = 'var(--text-h4)'
 
-/* ── Helpers ───────────────────────────────────────────── */
+// Vehicle type identity colours — pre-approved vehicle identity exception
+// isStarship uses var(--die-force) (blue) vs HUD.gold for ground vehicles
+const STARSHIP_COLOR = 'var(--die-force)'
+
+/* ── Helpers ───────────────────────────────────────────────────── */
 function SectionHead({ children }: { children: React.ReactNode }) {
   return (
     <div style={{
-      fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700,
+      fontFamily: FONT_BODY, fontSize: FS_OVERLINE, fontWeight: 700,
       letterSpacing: '0.2em', textTransform: 'uppercase' as const,
-      color: GOLD_DIM, borderBottom: `1px solid ${BORDER}`,
-      paddingBottom: 4, marginBottom: 8,
+      color: 'var(--hud-gold-40)', borderBottom: `1px solid ${HUD.border}`,
+      paddingBottom: '0.25rem', marginBottom: '0.5rem',
     }}>
       {children}
     </div>
@@ -49,20 +38,20 @@ function StatBox({ label, value, color }: { label: string; value: string | numbe
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
-      background: RAISED, border: `1px solid ${BORDER}`, borderRadius: 4,
-      padding: '8px 10px', minWidth: 52,
+      background: 'var(--hud-surface-lo)', border: `1px solid ${HUD.border}`, borderRadius: RADIUS.md,
+      padding: '0.5rem 0.625rem', minWidth: 52,
     }}>
-      <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.12em', marginBottom: 4 }}>
+      <div style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, color: HUD.textDim, letterSpacing: '0.12em', marginBottom: '0.25rem' }}>
         {label}
       </div>
-      <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: color ?? TEXT }}>
+      <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS_H4, fontWeight: 700, color: color ?? HUD.text }}>
         {value}
       </div>
     </div>
   )
 }
 
-/* ── Props ─────────────────────────────────────────────── */
+/* ── Props ─────────────────────────────────────────────────────── */
 export interface VehicleDetailPanelProps {
   vehicle:         Vehicle & { _isCustom?: boolean }
   campaignId:      string
@@ -78,7 +67,7 @@ export interface VehicleDetailPanelProps {
   addButtonLabel?: string
 }
 
-/* ── Component ─────────────────────────────────────────── */
+/* ── Component ─────────────────────────────────────────────────── */
 export function VehicleDetailPanel({
   vehicle, campaignId, supabase, tokenUrl,
   onClose, onEdit, onAddToCombat, onTokenUploaded,
@@ -154,6 +143,9 @@ export function VehicleDetailPanel({
     v.defStarboard  > 0 && `S:${v.defStarboard}`,
   ].filter(Boolean).join(' ')
 
+  // Vehicle type accent — starship = force-die blue, ground = hud gold (identity colours)
+  const typeAccent = v.isStarship ? STARSHIP_COLOR : HUD.gold
+
   if (!mounted) return null
   return createPortal(
     <>
@@ -161,65 +153,66 @@ export function VehicleDetailPanel({
       <div
         onClick={handleClose}
         style={{
-          position: 'fixed', inset: 0, zIndex: 9050,
-          background: 'rgba(0,0,0,0.5)',
-          transition: 'opacity 0.26s',
+          position: 'fixed', inset: 0, zIndex: 'var(--z-hud-overlay)' as unknown as number,
+          background: 'rgba(0,0,0,0.5)',   // pre-approved: rgba(0,0,0,*) overlay
+          transition: EASE.panel,
           opacity: visible ? 1 : 0,
         }}
       />
 
       {/* Panel */}
       <div style={{
-        position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 9060,
+        position: 'fixed', top: 0, right: 0, bottom: 0,
+        zIndex: 'var(--z-hud-combat)' as unknown as number,
         width: 'clamp(340px, 44vw, 580px)',
-        background: PANEL_BG,
+        background: HUD.panel,
         backdropFilter: 'blur(18px)',
         WebkitBackdropFilter: 'blur(18px)',
-        borderLeft: `1px solid ${BORDER_HI}`,
+        borderLeft: `1px solid ${HUD.borderHi}`,
         display: 'flex', flexDirection: 'column',
         transform: visible ? 'translateX(0)' : 'translateX(100%)',
-        transition: 'transform 0.26s cubic-bezier(0.22,1,0.36,1)',
+        transition: EASE.panel,
         overflowY: 'auto',
       }}>
 
         {/* Header */}
         <div style={{
-          flexShrink: 0, padding: '16px 20px',
-          borderBottom: `1px solid ${BORDER}`,
-          display: 'flex', alignItems: 'flex-start', gap: 14,
+          flexShrink: 0, padding: '1rem 1.25rem',
+          borderBottom: `1px solid ${HUD.border}`,
+          display: 'flex', alignItems: 'flex-start', gap: '0.875rem',
         }}>
           {/* Token */}
           <div style={{
-            width: 64, height: 64, borderRadius: 6, flexShrink: 0,
-            background: RAISED, border: `2px solid ${v.isStarship ? BLUE : HUD.gold}`,
+            width: 64, height: 64, borderRadius: RADIUS.md, flexShrink: 0,
+            background: 'var(--hud-surface-lo)', border: `2px solid ${typeAccent}`,
             overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             {tokenUrl ? (
               <img src={tokenUrl} alt={v.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             ) : (
-              <span style={{ fontFamily: FC, fontSize: FS_H4, color: v.isStarship ? BLUE : HUD.gold, fontWeight: 700 }}>
+              <span style={{ fontFamily: FONT_DISPLAY, fontSize: FS_H4, color: typeAccent, fontWeight: 700 }}>
                 {v.isStarship ? '🚀' : '🚗'}
               </span>
             )}
           </div>
 
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-              <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: TEXT, letterSpacing: '0.06em' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', flexWrap: 'wrap' }}>
+              <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS_H4, fontWeight: 700, color: HUD.text, letterSpacing: '0.06em' }}>
                 {v._isCustom && <span style={{ color: HUD.gold }}>★ </span>}
                 {v.name}
               </div>
               <span style={{
-                fontFamily: FM, fontSize: FS_CAPTION, fontWeight: 700,
-                color: v.isStarship ? BLUE : HUD.gold,
-                border: `1px solid ${v.isStarship ? BLUE : HUD.gold}`,
-                borderRadius: 3, padding: '1px 7px', letterSpacing: '0.1em',
-                background: `${v.isStarship ? BLUE : HUD.gold}18`,
+                fontFamily: FONT_MONO, fontSize: FS_CAPTION, fontWeight: 700,
+                color: typeAccent,
+                border: `1px solid ${typeAccent}`,
+                borderRadius: RADIUS.sm, padding: '0.0625rem 0.4375rem', letterSpacing: '0.1em',
+                background: `${typeAccent}18`,
               }}>
                 {v.isStarship ? 'STARSHIP' : 'GROUND'}
               </span>
             </div>
-            <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, marginTop: 3 }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: HUD.textDim, marginTop: '0.1875rem' }}>
               {v.type}{v.source ? ` · ${v.source}` : ''}
             </div>
           </div>
@@ -228,31 +221,31 @@ export function VehicleDetailPanel({
             onClick={handleClose}
             style={{
               background: 'transparent', border: 'none',
-              color: DIM, cursor: 'pointer',
-              fontFamily: FR, fontSize: FS_H4, lineHeight: 1,
-              padding: '0 4px', flexShrink: 0,
+              color: HUD.textDim, cursor: 'pointer',
+              fontFamily: FONT_BODY, fontSize: FS_H4, lineHeight: 1,
+              padding: '0 0.25rem', flexShrink: 0,
             }}
             aria-label="Close"
           >×</button>
         </div>
 
         {/* Content */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '1rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
           {/* Performance */}
           <div>
             <SectionHead>Performance</SectionHead>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               <StatBox label="Sil"   value={v.silhouette} />
               <StatBox label="Speed" value={v.speed}      />
-              <StatBox label="Hdl"   value={handlingStr} color={v.handling < 0 ? RED : v.handling > 0 ? GREEN : TEXT} />
+              <StatBox label="Hdl"   value={handlingStr} color={v.handling < 0 ? 'var(--state-failure)' : v.handling > 0 ? 'var(--state-success)' : HUD.text} />
             </div>
           </div>
 
           {/* Combat Stats */}
           <div>
             <SectionHead>Combat Stats</SectionHead>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               <StatBox label="Armor" value={v.armor}       />
               <StatBox label="Hull"  value={v.hullTrauma}  />
               <StatBox label="Sys"   value={v.systemStrain} />
@@ -262,7 +255,7 @@ export function VehicleDetailPanel({
               {v.defStarboard > 0 && <StatBox label="Def S" value={v.defStarboard} />}
             </div>
             {!arcsLabel && (
-              <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, marginTop: 4 }}>No defense</div>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: HUD.textDim, marginTop: '0.25rem' }}>No defense</div>
             )}
           </div>
 
@@ -270,18 +263,18 @@ export function VehicleDetailPanel({
           {(v.crew || v.passengers != null || v.encumbranceCapacity != null) && (
             <div>
               <SectionHead>Crew &amp; Cargo</SectionHead>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontFamily: FR, fontSize: FS_SM }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontFamily: FONT_BODY, fontSize: FS_SM }}>
                 {v.crew && (
-                  <div><span style={{ color: DIM }}>Crew: </span><span style={{ color: TEXT }}>{v.crew}</span></div>
+                  <div><span style={{ color: HUD.textDim }}>Crew: </span><span style={{ color: HUD.text }}>{v.crew}</span></div>
                 )}
                 {v.passengers != null && (
-                  <div><span style={{ color: DIM }}>Passengers: </span><span style={{ color: TEXT }}>{v.passengers}</span></div>
+                  <div><span style={{ color: HUD.textDim }}>Passengers: </span><span style={{ color: HUD.text }}>{v.passengers}</span></div>
                 )}
                 {v.encumbranceCapacity != null && (
-                  <div><span style={{ color: DIM }}>Cargo: </span><span style={{ color: TEXT }}>{v.encumbranceCapacity} enc.</span></div>
+                  <div><span style={{ color: HUD.textDim }}>Cargo: </span><span style={{ color: HUD.text }}>{v.encumbranceCapacity} enc.</span></div>
                 )}
                 {v.consumables && (
-                  <div><span style={{ color: DIM }}>Consumables: </span><span style={{ color: TEXT }}>{v.consumables}</span></div>
+                  <div><span style={{ color: HUD.textDim }}>Consumables: </span><span style={{ color: HUD.text }}>{v.consumables}</span></div>
                 )}
               </div>
             </div>
@@ -291,18 +284,18 @@ export function VehicleDetailPanel({
           {v.isStarship && (v.hyperdrivePrimary != null || v.naviComputer != null) && (
             <div>
               <SectionHead>Hyperdrive</SectionHead>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontFamily: FR, fontSize: FS_SM }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontFamily: FONT_BODY, fontSize: FS_SM }}>
                 {v.hyperdrivePrimary != null && v.hyperdrivePrimary > 0 && (
-                  <div><span style={{ color: DIM }}>Primary: </span><span style={{ color: TEXT }}>Class {v.hyperdrivePrimary}</span></div>
+                  <div><span style={{ color: HUD.textDim }}>Primary: </span><span style={{ color: HUD.text }}>Class {v.hyperdrivePrimary}</span></div>
                 )}
                 {v.hyperdriveBackup != null && v.hyperdriveBackup > 0 && (
-                  <div><span style={{ color: DIM }}>Backup: </span><span style={{ color: TEXT }}>Class {v.hyperdriveBackup}</span></div>
+                  <div><span style={{ color: HUD.textDim }}>Backup: </span><span style={{ color: HUD.text }}>Class {v.hyperdriveBackup}</span></div>
                 )}
                 {v.naviComputer != null && (
-                  <div><span style={{ color: DIM }}>Navicomputer: </span><span style={{ color: TEXT }}>{v.naviComputer ? 'Yes' : 'No'}</span></div>
+                  <div><span style={{ color: HUD.textDim }}>Navicomputer: </span><span style={{ color: HUD.text }}>{v.naviComputer ? 'Yes' : 'No'}</span></div>
                 )}
                 {v.sensorRange && (
-                  <div><span style={{ color: DIM }}>Sensors: </span><span style={{ color: TEXT }}>{v.sensorRange.replace('sr', '')}</span></div>
+                  <div><span style={{ color: HUD.textDim }}>Sensors: </span><span style={{ color: HUD.text }}>{v.sensorRange.replace('sr', '')}</span></div>
                 )}
               </div>
             </div>
@@ -312,7 +305,7 @@ export function VehicleDetailPanel({
           {v.weapons && v.weapons.length > 0 && (
             <div>
               <SectionHead>Weapons</SectionHead>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
                 {v.weapons.map((w, i) => {
                   const stats = vehicleWeaponStats(w.weaponKey)
                   const displayName = vehicleWeaponDisplayName(w.weaponKey)
@@ -326,28 +319,28 @@ export function VehicleDetailPanel({
                   ].filter(Boolean).join('/')
                   return (
                     <div key={i} style={{
-                      padding: '6px 10px', background: RAISED,
-                      borderRadius: 4, border: `1px solid ${BORDER}`,
+                      padding: '0.375rem 0.625rem', background: 'var(--hud-surface-lo)',
+                      borderRadius: RADIUS.md, border: `1px solid ${HUD.border}`,
                     }}>
-                      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                        <span style={{ fontFamily: FR, fontSize: FS_SM, fontWeight: 700, color: TEXT, minWidth: 160 }}>
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <span style={{ fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700, color: HUD.text, minWidth: 160 }}>
                           {w.count > 1 ? `${w.count}× ` : ''}{displayName}{w.turret ? ' (Turret)' : ''}
                         </span>
                         {stats && stats.damage > 0 && (
-                          <span style={{ fontFamily: FM, fontSize: FS_CAPTION, color: RED }}>Dmg {stats.damage}</span>
+                          <span style={{ fontFamily: FONT_MONO, fontSize: FS_CAPTION, color: 'var(--state-failure)' }}>Dmg {stats.damage}</span>
                         )}
                         {stats?.crit !== undefined && (
-                          <span style={{ fontFamily: FM, fontSize: FS_CAPTION, color: RED }}>Crit {stats.crit}</span>
+                          <span style={{ fontFamily: FONT_MONO, fontSize: FS_CAPTION, color: 'var(--state-failure)' }}>Crit {stats.crit}</span>
                         )}
                         {stats && (
-                          <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>{stats.range}</span>
+                          <span style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: HUD.textDim }}>{stats.range}</span>
                         )}
                         {arcParts && (
-                          <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>[{arcParts}]</span>
+                          <span style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: HUD.textDim }}>[{arcParts}]</span>
                         )}
                       </div>
                       {w.qualities.length > 0 && (
-                        <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, marginTop: 3 }}>
+                        <div style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: HUD.textDim, marginTop: '0.1875rem' }}>
                           {w.qualities.map(q => `${q.key}${q.count > 1 ? ` ${q.count}` : ''}`).join(', ')}
                         </div>
                       )}
@@ -362,12 +355,12 @@ export function VehicleDetailPanel({
           {v.abilities && v.abilities.length > 0 && (
             <div>
               <SectionHead>Special Features</SectionHead>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 {v.abilities.map((a, i) => (
                   <div key={i}>
-                    <span style={{ fontFamily: FR, fontSize: FS_SM, fontWeight: 700, color: GREEN }}>{a.name}</span>
+                    <span style={{ fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700, color: 'var(--state-success)' }}>{a.name}</span>
                     {a.description && (
-                      <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}> — {a.description}</span>
+                      <span style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: HUD.textDim }}> — {a.description}</span>
                     )}
                   </div>
                 ))}
@@ -378,20 +371,20 @@ export function VehicleDetailPanel({
           {/* Token Image */}
           <div>
             <SectionHead>Token Image</SectionHead>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
               <div style={{
-                width: 64, height: 64, borderRadius: 6, flexShrink: 0,
-                background: RAISED, border: `2px solid ${BORDER_HI}`,
+                width: 64, height: 64, borderRadius: RADIUS.md, flexShrink: 0,
+                background: 'var(--hud-surface-lo)', border: `2px solid ${HUD.borderHi}`,
                 overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 {tokenUrl ? (
                   <img src={tokenUrl} alt="token" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
-                  <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>None</span>
+                  <span style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: HUD.textDim }}>None</span>
                 )}
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <input
                   ref={fileRef}
                   type="file"
@@ -403,10 +396,10 @@ export function VehicleDetailPanel({
                   onClick={() => fileRef.current?.click()}
                   disabled={uploading}
                   style={{
-                    background: 'rgba(200,170,80,0.08)', border: `1px solid ${GOLD_DIM}`,
-                    color: HUD.gold, fontFamily: FR, fontSize: FS_CAPTION,
+                    background: 'var(--hud-gold-subtle)', border: `1px solid var(--hud-gold-40)`,
+                    color: HUD.gold, fontFamily: FONT_BODY, fontSize: FS_CAPTION,
                     fontWeight: 700, letterSpacing: '0.08em',
-                    padding: '6px 14px', borderRadius: 3, cursor: 'pointer',
+                    padding: '0.375rem 0.875rem', borderRadius: RADIUS.sm, cursor: 'pointer',
                     opacity: uploading ? 0.6 : 1,
                   }}
                 >
@@ -414,11 +407,11 @@ export function VehicleDetailPanel({
                 </button>
                 <div style={{ position: 'relative' }}>
                   <button
-                    onClick={() => setShowLinks(v => !v)}
+                    onClick={() => setShowLinks(x => !x)}
                     style={{
-                      background: 'transparent', border: `1px solid ${BORDER}`,
-                      color: DIM, fontFamily: FR, fontSize: FS_CAPTION,
-                      padding: '5px 12px', borderRadius: 3, cursor: 'pointer',
+                      background: 'transparent', border: `1px solid ${HUD.border}`,
+                      color: HUD.textDim, fontFamily: FONT_BODY, fontSize: FS_CAPTION,
+                      padding: '0.3125rem 0.75rem', borderRadius: RADIUS.sm, cursor: 'pointer',
                     }}
                   >
                     🔗 Find Token Images
@@ -436,17 +429,17 @@ export function VehicleDetailPanel({
                 onClick={() => setDescExpanded(x => !x)}
                 style={{
                   background: 'transparent', border: 'none', padding: 0, cursor: 'pointer',
-                  fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700,
+                  fontFamily: FONT_BODY, fontSize: FS_OVERLINE, fontWeight: 700,
                   letterSpacing: '0.2em', textTransform: 'uppercase' as const,
-                  color: GOLD_DIM, display: 'flex', alignItems: 'center', gap: 6,
+                  color: 'var(--hud-gold-40)', display: 'flex', alignItems: 'center', gap: '0.375rem',
                 }}
               >
                 Description {descExpanded ? '▾' : '▸'}
               </button>
               {descExpanded && (
                 <div style={{
-                  marginTop: 8, fontFamily: FR, fontSize: FS_SM, color: DIM,
-                  lineHeight: 1.6, borderLeft: `2px solid ${BORDER}`, paddingLeft: 12,
+                  marginTop: '0.5rem', fontFamily: FONT_BODY, fontSize: FS_SM, color: HUD.textDim,
+                  lineHeight: 1.6, borderLeft: `2px solid ${HUD.border}`, paddingLeft: '0.75rem',
                 }}>
                   <RichText text={v.description} />
                 </div>
@@ -457,16 +450,16 @@ export function VehicleDetailPanel({
 
         {/* Footer actions */}
         <div style={{
-          flexShrink: 0, padding: '14px 20px',
-          borderTop: `1px solid ${BORDER}`,
-          display: 'flex', gap: 10,
+          flexShrink: 0, padding: '0.875rem 1.25rem',
+          borderTop: `1px solid ${HUD.border}`,
+          display: 'flex', gap: '0.625rem',
         }}>
           <button
             onClick={onEdit}
             style={{
-              flex: 1, background: 'rgba(200,170,80,0.08)', border: `1px solid ${GOLD_DIM}`,
-              color: HUD.gold, fontFamily: FR, fontSize: FS_SM, fontWeight: 700,
-              letterSpacing: '0.1em', padding: '9px 0', borderRadius: 3, cursor: 'pointer',
+              flex: 1, background: 'var(--hud-gold-subtle)', border: `1px solid var(--hud-gold-40)`,
+              color: HUD.gold, fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700,
+              letterSpacing: '0.1em', padding: '0.5625rem 0', borderRadius: RADIUS.sm, cursor: 'pointer',
             }}
           >
             Edit
@@ -474,9 +467,11 @@ export function VehicleDetailPanel({
           <button
             onClick={onAddToCombat}
             style={{
-              flex: 1, background: 'rgba(224,80,80,0.10)', border: `1px solid rgba(224,80,80,0.45)`,
-              color: RED, fontFamily: FR, fontSize: FS_SM, fontWeight: 700,
-              letterSpacing: '0.1em', padding: '9px 0', borderRadius: 3, cursor: 'pointer',
+              flex: 1,
+              background: 'color-mix(in srgb, var(--state-failure) 10%, transparent)',
+              border: `1px solid color-mix(in srgb, var(--state-failure) 45%, transparent)`,
+              color: 'var(--state-failure)', fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700,
+              letterSpacing: '0.1em', padding: '0.5625rem 0', borderRadius: RADIUS.sm, cursor: 'pointer',
             }}
           >
             {addButtonLabel ?? '⚔ Add to Combat'}

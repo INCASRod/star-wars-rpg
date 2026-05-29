@@ -1,7 +1,7 @@
-export type ThemeId = 'binary-sunset'
+export type ThemeId = 'ember' | 'kyber' | 'gm-imperial'
 
 const STORAGE_KEY = 'holocron_theme'
-const DEFAULT: ThemeId = 'binary-sunset'
+const DEFAULT: ThemeId = 'ember'
 
 export function getTheme(): ThemeId {
   if (typeof window === 'undefined') return DEFAULT

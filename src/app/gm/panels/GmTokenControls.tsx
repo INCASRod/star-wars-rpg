@@ -12,11 +12,10 @@ import type { CombatEncounter, InitiativeSlot } from '@/lib/combat'
 import { AdversaryLibrary } from '@/components/gm/AdversaryLibrary'
 import { VehicleLibrary } from '@/components/gm/VehicleLibrary'
 import { StagingTokenPanel } from '@/components/staging/StagingTokenPanel'
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_BODY, EASE, FS, RADIUS } from '@/lib/tokens'
 
-const FONT   = 'var(--font-body)'
+const FONT   = FONT_BODY
 const BORDER = 'var(--hud-border-hi)'
-const RED    = '#E05050'
 
 const sectionHeader: React.CSSProperties = {
   fontFamily:    FONT,
@@ -25,20 +24,20 @@ const sectionHeader: React.CSSProperties = {
   letterSpacing: '0.18em',
   textTransform: 'uppercase',
   color:         'var(--hud-text-dim)',
-  marginBottom:  6,
-  paddingBottom: 4,
+  marginBottom:  '0.375rem',
+  paddingBottom: '0.25rem',
   borderBottom:  `1px solid var(--hud-border)`,
 }
 
 const tokenBtn: React.CSSProperties = {
   display:       'flex',
   alignItems:    'center',
-  gap:           8,
+  gap:           '0.5rem',
   width:         '100%',
-  padding:       '7px 12px',
+  padding:       '0.4375rem 0.75rem',
   background:    'var(--hud-surface-mid)',
   border:        `1px solid var(--hud-border-hi)`,
-  borderRadius:  4,
+  borderRadius:  RADIUS.md,
   cursor:        'pointer',
   fontFamily:    FONT,
   fontSize:      'var(--text-label)',
@@ -46,7 +45,7 @@ const tokenBtn: React.CSSProperties = {
   letterSpacing: '0.06em',
   color:         'var(--hud-text)',
   textAlign:     'left',
-  transition:    'background 0.15s, border-color 0.15s',
+  transition:    `background ${EASE.quick}, border-color ${EASE.quick}`,
 }
 
 /* ── Encounter helper (mirrors StagingFloatingToolbar.ensureActiveEncounter) ── */
@@ -233,16 +232,23 @@ export function GmTokenControls({
     }
   }
 
+  const backBtn: React.CSSProperties = {
+    background: 'none', border: 'none', cursor: 'pointer',
+    color: 'var(--hud-text-dim)', fontFamily: FONT, fontSize: 'var(--text-caption)',
+    display: 'flex', alignItems: 'center', gap: '0.25rem',
+  }
+  const subViewHeader: React.CSSProperties = {
+    padding: '0.5rem 0.75rem', borderBottom: `1px solid ${BORDER}`, flexShrink: 0,
+  }
+
   /* ── Adversary library view ── */
   if (view === 'adversary') {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <div style={{ padding: '8px 12px', borderBottom: `1px solid ${BORDER}`, flexShrink: 0 }}>
-          <button onClick={() => setView('menu')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--hud-text-dim)', fontFamily: FONT, fontSize: 'var(--text-caption)', display: 'flex', alignItems: 'center', gap: 4 }}>
-            ← Back
-          </button>
+        <div style={subViewHeader}>
+          <button onClick={() => setView('menu')} style={backBtn}>← Back</button>
         </div>
-        <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '0.75rem 0.875rem' }}>
           <AdversaryLibrary
             campaignId={campaignId}
             sessionMode="exploration"
@@ -258,12 +264,10 @@ export function GmTokenControls({
   if (view === 'vehicle') {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <div style={{ padding: '8px 12px', borderBottom: `1px solid ${BORDER}`, flexShrink: 0 }}>
-          <button onClick={() => setView('menu')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--hud-text-dim)', fontFamily: FONT, fontSize: 'var(--text-caption)', display: 'flex', alignItems: 'center', gap: 4 }}>
-            ← Back
-          </button>
+        <div style={subViewHeader}>
+          <button onClick={() => setView('menu')} style={backBtn}>← Back</button>
         </div>
-        <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '0.75rem 0.875rem' }}>
           <VehicleLibrary
             campaignId={campaignId}
             sessionMode="exploration"
@@ -279,10 +283,8 @@ export function GmTokenControls({
   if (view === 'player') {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <div style={{ padding: '8px 12px', borderBottom: `1px solid ${BORDER}`, flexShrink: 0 }}>
-          <button onClick={() => setView('menu')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--hud-text-dim)', fontFamily: FONT, fontSize: 'var(--text-caption)', display: 'flex', alignItems: 'center', gap: 4 }}>
-            ← Back
-          </button>
+        <div style={subViewHeader}>
+          <button onClick={() => setView('menu')} style={backBtn}>← Back</button>
         </div>
         <div style={{ flex: 1, overflowY: 'auto' }}>
           <StagingTokenPanel
@@ -306,10 +308,8 @@ export function GmTokenControls({
     const placedTokens = tokens.filter(t => !t.token_type?.startsWith('pointer_'))
     return (
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <div style={{ padding: '8px 12px', borderBottom: `1px solid ${BORDER}`, flexShrink: 0 }}>
-          <button onClick={() => setView('menu')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--hud-text-dim)', fontFamily: FONT, fontSize: 'var(--text-caption)', display: 'flex', alignItems: 'center', gap: 4 }}>
-            ← Back
-          </button>
+        <div style={subViewHeader}>
+          <button onClick={() => setView('menu')} style={backBtn}>← Back</button>
         </div>
         <div style={{ flex: 1, overflowY: 'auto' }}>
           <StagingTokenPanel
@@ -332,7 +332,7 @@ export function GmTokenControls({
   const placedCount = tokens.filter(t => !t.token_type?.startsWith('pointer_')).length
 
   return (
-    <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div style={{ padding: '0.75rem 0.875rem', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
 
       {/* Placed tokens shortcut */}
       <div>
@@ -341,14 +341,14 @@ export function GmTokenControls({
           style={{ ...tokenBtn, color: placedCount > 0 ? HUD.gold : 'var(--hud-text-dim)', justifyContent: 'space-between' }}
           onClick={() => setView('placed')}
         >
-          <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span>◈</span> Placed Tokens
           </span>
           {placedCount > 0 && (
             <span style={{
               fontFamily: FONT, fontSize: 'var(--text-overline)', fontWeight: 700,
               background: 'rgba(150,168,180,0.12)', border: '1px solid var(--hud-border-hi)',
-              borderRadius: 10, padding: '1px 7px', color: HUD.gold,
+              borderRadius: '0.625rem', padding: '0.0625rem 0.4375rem', color: HUD.gold,
             }}>
               {placedCount}
             </span>
@@ -359,7 +359,7 @@ export function GmTokenControls({
       {/* Add tokens */}
       <div>
         <div style={sectionHeader}>Add Tokens</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
           <button style={{ ...tokenBtn, color: HUD.gold }} onClick={() => setView('player')}>
             <span>👤</span> Manage Player Tokens
           </button>
@@ -375,7 +375,7 @@ export function GmTokenControls({
       {/* Pointer tokens */}
       <div>
         <div style={sectionHeader}>Pointer Tokens</div>
-        <div style={{ display: 'flex', gap: 6 }}>
+        <div style={{ display: 'flex', gap: '0.375rem' }}>
           {POINTER_DEFS.map(({ type, hex, label }) => {
             const active = tokens.some(t => t.token_type === type)
             return (
@@ -386,20 +386,21 @@ export function GmTokenControls({
                 title={active ? `Remove ${label}` : `Place ${label}`}
                 style={{
                   flex:         1,
-                  padding:      '6px 4px',
+                  padding:      '0.375rem 0.25rem',
                   background:   active ? 'var(--hud-surface-hi)' : 'var(--hud-surface-mid)',
                   border:       `1px solid ${active ? 'var(--hud-border-strong)' : 'var(--hud-border-hi)'}`,
-                  borderRadius: 4,
+                  borderRadius: RADIUS.md,
                   cursor:       mapId ? 'pointer' : 'not-allowed',
                   opacity:      mapId ? 1 : 0.4,
                   display:      'flex',
                   flexDirection:'column',
                   alignItems:   'center',
-                  gap:          3,
+                  gap:          '0.1875rem',
                 }}
               >
-                <span style={{ width: 12, height: 12, borderRadius: '50%', background: hex, display: 'block', boxShadow: active ? `0 0 6px ${hex}88` : 'none' }} />
-                <span style={{ fontFamily: FONT, fontSize: '9px', color: active ? 'var(--hud-text)' : 'var(--hud-text-dim)', fontWeight: 700 }}>{label}</span>
+                {/* hex is a pre-approved map token colour */}
+                <span style={{ width: '0.75rem', height: '0.75rem', borderRadius: RADIUS.full, background: hex, display: 'block', boxShadow: active ? `0 0 6px ${hex}88` : 'none' }} />
+                <span style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', color: active ? 'var(--hud-text)' : 'var(--hud-text-dim)', fontWeight: 700 }}>{label}</span>
               </button>
             )
           })}
@@ -414,8 +415,8 @@ export function GmTokenControls({
           onClick={removeAllTokens}
           style={{
             ...tokenBtn,
-            borderColor: RED,
-            color:       RED,
+            borderColor: 'var(--state-failure)',
+            color:       'var(--state-failure)',
             opacity:     (!mapId || tokens.length === 0) ? 0.4 : 1,
           }}
         >

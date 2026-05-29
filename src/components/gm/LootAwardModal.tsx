@@ -7,26 +7,25 @@ import type { RefWeapon, RefArmor, RefGear } from '@/lib/types'
 import { computeEncumbranceStats } from '@/lib/derivedStats'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { QualityBadge } from '@/components/character/QualityBadge'
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_BODY, FONT_MONO, RADIUS, EASE, FS } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
-const BG        = 'rgba(0,0,0,0.7)'
-const PANEL_BG  = 'rgba(8,16,10,0.97)'
-const GOLD_DIM  = 'rgba(200,170,80,0.5)'
-const GOLD_BD   = 'rgba(200,170,80,0.3)'
-const TEXT      = 'rgba(232,223,200,0.85)'
-const DIM       = '#6A8070'
-const BORDER    = 'rgba(200,170,80,0.14)'
-const BORDER_HI = 'rgba(200,170,80,0.36)'
-const RED       = '#E05050'
-const BLUE      = '#5AAAE0'
-const WARN      = '#E07855'
-const FONT_C    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M    = "'Share Tech Mono','Courier New',monospace"
+// Pre-approved exceptions kept:
+//   - rgba(0,0,0,*) overlay backgrounds
+//   - Rarity / item-type identity colours remain as CSS state tokens
+//   - #060D09 checkmark contrast colour (single use, dark bg fg)
+// Mapped:
+//   RED  (#E05050) → var(--state-failure)    weapon type indicator
+//   BLUE (#5AAAE0) → var(--die-force)        armor type indicator
+//   WARN (#E07855) → var(--state-threat)     encumbrance over-limit warning
+const RED  = 'var(--state-failure)'
+const BLUE = 'var(--die-force)'
+const WARN = 'var(--state-threat)'
+
 const FS_OVER   = 'var(--text-overline)'
 const FS_CAP    = 'var(--text-caption)'
 const FS_LABEL  = 'var(--text-label)'
-const FS_SM     = 'var(--text-sm)'
+const FS_SM     = 'var(--text-body-sm)'
 
 export interface AwardableItem {
   key:         string
@@ -218,22 +217,22 @@ export function LootAwardModal({
     onAwardComplete(charNames, charIds)
   }
 
-  const itemTypeColor = item.type === 'weapon' ? RED : item.type === 'armor' ? BLUE : DIM
+  const itemTypeColor = item.type === 'weapon' ? RED : item.type === 'armor' ? BLUE : HUD.textDim
 
   return (
     <Modal open onClose={onClose} maxWidth="38rem">
-      <div style={{ padding: 24 }}>
+      <div style={{ padding: '1.5rem' }}>
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.125rem' }}>
           <div>
-            <div style={{ fontFamily: FONT_C, fontSize: FS_SM, fontWeight: 700, color: TEXT, letterSpacing: '0.05em' }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700, color: HUD.text, letterSpacing: '0.05em' }}>
               {item.name}
             </div>
-            <div style={{ fontFamily: FONT_C, fontSize: FS_CAP, color: itemTypeColor, textTransform: 'uppercase', letterSpacing: '0.15em', marginTop: 2 }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS_CAP, color: itemTypeColor, textTransform: 'uppercase', letterSpacing: '0.15em', marginTop: '0.125rem' }}>
               Award {item.type} · ENC {item.encumbrance}
             </div>
             {item.qualities && item.qualities.length > 0 && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginTop: '0.375rem' }}>
                 {item.qualities.map(q => (
                   <QualityBadge key={q.key} quality={q} refQualityMap={refQualityMap} variant="desktop" />
                 ))}
@@ -243,13 +242,13 @@ export function LootAwardModal({
           <button
             onClick={onClose}
             className="hov-gold-text"
-            style={{ background: 'transparent', border: 'none', color: DIM, cursor: 'pointer', fontFamily: FONT_C, fontSize: FS_SM }}
+            style={{ background: 'transparent', border: 'none', color: HUD.textDim, cursor: 'pointer', fontFamily: FONT_BODY, fontSize: FS_SM }}
           >✕</button>
         </div>
 
         {/* Quantity (gear only, not when quantity is fixed) */}
         {item.type === 'gear' && !fixedQuantity && (
-          <div style={{ marginBottom: 16 }}>
+          <div style={{ marginBottom: '1rem' }}>
             <div style={fieldLabel}>Quantity</div>
             <input
               type="number" min={1} max={99}
@@ -261,12 +260,12 @@ export function LootAwardModal({
         )}
 
         {/* Character list */}
-        <div style={{ marginBottom: 18 }}>
+        <div style={{ marginBottom: '1.125rem' }}>
           <div style={fieldLabel}>Award to</div>
           {loadingInv ? (
-            <div style={{ fontFamily: FONT_C, fontSize: FS_LABEL, color: DIM, padding: '12px 0' }}>Loading inventories…</div>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS_LABEL, color: HUD.textDim, padding: '0.75rem 0' }}>Loading inventories…</div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
               {characters.map(c => {
                 const isSelected = selected.has(c.id)
                 const enc = encByChar[c.id]
@@ -278,33 +277,34 @@ export function LootAwardModal({
                     key={c.id}
                     style={{
                       background: isSelected ? 'rgba(200,170,80,0.07)' : 'rgba(0,0,0,0.2)',
-                      border: `1px solid ${isSelected ? BORDER_HI : BORDER}`,
-                      borderRadius: 4, padding: '8px 12px',
-                      cursor: 'pointer', transition: '.15s',
+                      border: `1px solid ${isSelected ? HUD.borderHi : HUD.border}`,
+                      borderRadius: RADIUS.md, padding: '0.5rem 0.75rem',
+                      cursor: 'pointer', transition: EASE.quick,
                     }}
                     onClick={() => toggleChar(c.id)}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
                       {/* Checkbox */}
                       <div style={{
-                        width: 16, height: 16, borderRadius: 3, flexShrink: 0,
-                        border: `1px solid ${isSelected ? HUD.gold : BORDER_HI}`,
+                        width: '1rem', height: '1rem', borderRadius: RADIUS.sm, flexShrink: 0,
+                        border: `1px solid ${isSelected ? HUD.gold : HUD.borderHi}`,
                         background: isSelected ? HUD.gold : 'transparent',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                       }}>
-                        {isSelected && <span style={{ fontSize: 10, color: '#060D09', fontWeight: 700 }}>✓</span>}
+                        {/* Pre-approved: #060D09 is a near-black contrast colour for gold checkbox tick */}
+                        {isSelected && <span style={{ fontSize: FS_OVER, color: '#060D09', fontWeight: 700 }}>✓</span>}
                       </div>
 
                       {/* Name */}
-                      <span style={{ fontFamily: FONT_C, fontSize: FS_LABEL, color: isSelected ? TEXT : DIM, fontWeight: isSelected ? 700 : 400, flex: 1 }}>
+                      <span style={{ fontFamily: FONT_BODY, fontSize: FS_LABEL, color: isSelected ? HUD.text : HUD.textDim, fontWeight: isSelected ? 700 : 400, flex: 1 }}>
                         {c.name}
                       </span>
 
                       {/* Encumbrance status */}
                       {enc && (
-                        <span style={{ fontFamily: FONT_M, fontSize: FS_CAP, color: afterOver ? WARN : currentOver ? WARN : 'rgba(200,170,80,0.5)' }}>
+                        <span style={{ fontFamily: FONT_MONO, fontSize: FS_CAP, color: afterOver || currentOver ? WARN : 'rgba(200,170,80,0.5)' }}>
                           {currentOver && '⚠ '}ENC {enc.current}→{enc.afterCurrent}/{enc.threshold}
-                          {afterOver && !currentOver && <span style={{ marginLeft: 4, color: WARN }}>OVER</span>}
+                          {afterOver && !currentOver && <span style={{ marginLeft: '0.25rem', color: WARN }}>OVER</span>}
                         </span>
                       )}
 
@@ -314,7 +314,7 @@ export function LootAwardModal({
                           value={getEquipChoice(c.id)}
                           onChange={e => { e.stopPropagation(); setEquipChoice(c.id, e.target.value as EquipChoice) }}
                           onClick={e => e.stopPropagation()}
-                          style={{ ...inputStyle, padding: '2px 6px', fontSize: FS_CAP, minWidth: 90 }}
+                          style={{ ...inputStyle, padding: '0.125rem 0.375rem', fontSize: FS_CAP, minWidth: '5.625rem' }}
                         >
                           <option value="carrying">Carrying</option>
                           <option value="stowed">Stowed</option>
@@ -329,7 +329,7 @@ export function LootAwardModal({
         </div>
 
         {/* Actions */}
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
           <button onClick={onClose} style={btnSecondaryStyle}>Cancel</button>
           <button
             onClick={handleAward}
@@ -347,28 +347,28 @@ export function LootAwardModal({
 // ── Shared styles ─────────────────────────────────────────────────────────────
 
 const fieldLabel: React.CSSProperties = {
-  fontFamily: FONT_C, fontSize: FS_OVER, fontWeight: 700,
+  fontFamily: FONT_BODY, fontSize: FS_OVER, fontWeight: 700,
   letterSpacing: '0.18em', textTransform: 'uppercase',
-  color: GOLD_DIM, marginBottom: 6,
+  color: 'rgba(200,170,80,0.5)', marginBottom: '0.375rem',
 }
 
 const inputStyle: React.CSSProperties = {
   background: 'rgba(0,0,0,0.4)',
-  border: `1px solid ${GOLD_BD}`,
-  color: TEXT, fontFamily: FONT_C, fontSize: FS_LABEL,
-  padding: '6px 10px', borderRadius: 3, outline: 'none',
+  border: `1px solid rgba(200,170,80,0.3)`,
+  color: HUD.text, fontFamily: FONT_BODY, fontSize: FS_LABEL,
+  padding: '0.375rem 0.625rem', borderRadius: RADIUS.sm, outline: 'none',
 }
 
 const btnPrimaryStyle: React.CSSProperties = {
-  background: 'rgba(200,170,80,0.15)', border: `1px solid ${GOLD_BD}`,
-  color: HUD.gold, fontFamily: FONT_C, fontSize: FS_CAP, fontWeight: 700,
+  background: 'rgba(200,170,80,0.15)', border: `1px solid rgba(200,170,80,0.3)`,
+  color: HUD.gold, fontFamily: FONT_BODY, fontSize: FS_CAP, fontWeight: 700,
   letterSpacing: '0.12em', textTransform: 'uppercase',
-  padding: '8px 18px', borderRadius: 3, cursor: 'pointer',
+  padding: '0.5rem 1.125rem', borderRadius: RADIUS.sm, cursor: 'pointer',
 }
 
 const btnSecondaryStyle: React.CSSProperties = {
-  background: 'transparent', border: `1px solid ${BORDER}`,
-  color: DIM, fontFamily: FONT_C, fontSize: FS_CAP, fontWeight: 700,
+  background: 'transparent', border: `1px solid ${HUD.border}`,
+  color: HUD.textDim, fontFamily: FONT_BODY, fontSize: FS_CAP, fontWeight: 700,
   letterSpacing: '0.1em', textTransform: 'uppercase',
-  padding: '8px 14px', borderRadius: 3, cursor: 'pointer',
+  padding: '0.5rem 0.875rem', borderRadius: RADIUS.sm, cursor: 'pointer',
 }

@@ -7,17 +7,16 @@ import { InitiativeStrip } from '@/components/player/InitiativeStrip'
 import type { GmControls } from '@/components/player/InitiativeStrip'
 import type { CombatEncounter } from '@/lib/combat'
 import type { Character } from '@/lib/types'
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_BODY, EASE, RADIUS } from '@/lib/tokens'
 
-const FONT  = 'var(--font-body)'
-const RED   = '#E05050'
-const DIM   = 'var(--hud-text-dim)'
+const FONT = FONT_BODY
+const DIM  = 'var(--hud-text-dim)'
 
 const actionBtn = (accent: string): React.CSSProperties => ({
-  padding:       '6px 16px',
+  padding:       '0.375rem 1rem',
   background:    `${accent}12`,
   border:        `1px solid ${accent}45`,
-  borderRadius:  4,
+  borderRadius:  RADIUS.md,
   cursor:        'pointer',
   fontFamily:    FONT,
   fontSize:      'var(--text-caption)',
@@ -132,16 +131,16 @@ export function GmInitiativeDrawer({ encounter, characters, isOpen, onClose, onR
     <div
       style={{
         position:   'fixed',
-        left:       52,       // clear the rail
-        right:      195,      // clear roll feed
+        left:       '3.25rem',
+        right:      '12.1875rem',
         bottom:     0,
-        height:     'clamp(220px, 32vh, 380px)',
-        zIndex:     9050,
+        height:     'clamp(13.75rem, 32vh, 23.75rem)',
+        zIndex:     'var(--z-hud-combat)' as unknown as number,
         background: 'var(--hud-surface-lo)',
         borderTop:  '1px solid var(--hud-border-hi)',
         boxShadow:  '0 -8px 40px rgba(0,0,0,0.6)',
         transform:  isOpen ? 'translateY(0)' : 'translateY(100%)',
-        transition: 'transform 0.26s cubic-bezier(0.22,1,0.36,1)',
+        transition: `transform ${EASE.panel}`,
         pointerEvents: isOpen ? 'auto' : 'none',
         display:    'flex',
         flexDirection: 'column',
@@ -152,8 +151,8 @@ export function GmInitiativeDrawer({ encounter, characters, isOpen, onClose, onR
         flexShrink:    0,
         display:       'flex',
         alignItems:    'center',
-        gap:           12,
-        padding:       '8px 16px',
+        gap:           '0.75rem',
+        padding:       '0.5rem 1rem',
         borderBottom:  '1px solid var(--hud-border)',
         background:    'var(--hud-panel)',
       }}>
@@ -163,8 +162,8 @@ export function GmInitiativeDrawer({ encounter, characters, isOpen, onClose, onR
         <div style={{ flex: 1 }} />
         <button onClick={advanceTurn}          style={actionBtn(HUD.gold)}>Advance Turn</button>
         <button onClick={onRecheckInitiative}  style={actionBtn(DIM)}>Recheck Initiative</button>
-        <button onClick={endCombat}            style={actionBtn(RED)}>End Combat</button>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: DIM, fontSize: 18, lineHeight: 1, padding: '2px 4px' }}>✕</button>
+        <button onClick={endCombat}            style={actionBtn('var(--state-failure)')}>End Combat</button>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: DIM, fontSize: 'var(--text-h3)', lineHeight: 1, padding: '0.125rem 0.25rem' }}>✕</button>
       </div>
 
       {/* Initiative strip */}
@@ -180,7 +179,7 @@ export function GmInitiativeDrawer({ encounter, characters, isOpen, onClose, onR
             } satisfies GmControls}
           />
         ) : (
-          <div style={{ padding: '24px 16px', textAlign: 'center', fontFamily: FONT, fontSize: 'var(--text-sm)', color: DIM }}>
+          <div style={{ padding: '1.5rem 1rem', textAlign: 'center', fontFamily: FONT, fontSize: 'var(--text-sm)', color: DIM }}>
             No active encounter.
           </div>
         )}

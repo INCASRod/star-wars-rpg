@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
@@ -6,52 +6,41 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Vehicle, VehicleAbility } from '@/lib/vehicles'
 import { vehicleWeaponStats, ALL_VEHICLE_WEAPONS } from '@/lib/vehicles'
 import { toast } from 'sonner'
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_DISPLAY, FONT_BODY, FONT_MONO, RADIUS } from '@/lib/tokens'
 
-/* ── Design tokens ─────────────────────────────────────── */
-const FC       = "var(--font-rajdhani), 'Cinzel', serif"
-const FR       = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const PANEL_BG = 'rgba(8,16,10,0.97)'
-const RAISED   = 'rgba(14,26,18,0.92)'
-const INPUT_BG = 'rgba(0,0,0,0.35)'
-const GOLD_DIM = 'rgba(200,170,80,0.5)'
-const TEXT     = '#C8D8C0'
-const DIM      = '#6A8070'
-const BORDER   = 'rgba(200,170,80,0.14)'
-const BORDER_HI = 'rgba(200,170,80,0.36)'
-const RED      = '#E05050'
-
+/* ── Design tokens ─────────────────────────────────────────────── */
 const FS_OVERLINE = 'var(--text-overline)'
 const FS_CAPTION  = 'var(--text-caption)'
 const FS_SM       = 'var(--text-sm)'
 const FS_H4       = 'var(--text-h4)'
 
-/* ── Styles ────────────────────────────────────────────── */
+/* ── Styles ────────────────────────────────────────────────────── */
 const inputStyle: React.CSSProperties = {
-  background: INPUT_BG, border: `1px solid ${BORDER}`, borderRadius: 3,
-  color: TEXT, fontFamily: FR, fontSize: FS_SM, padding: '6px 10px',
+  background: 'rgba(0,0,0,0.35)',  // pre-approved: rgba(0,0,0,*) overlay
+  border: `1px solid ${HUD.border}`, borderRadius: RADIUS.sm,
+  color: HUD.text, fontFamily: FONT_BODY, fontSize: FS_SM, padding: '0.375rem 0.625rem',
   outline: 'none', width: '100%', boxSizing: 'border-box',
 }
 const numInput: React.CSSProperties   = { ...inputStyle, width: 70, textAlign: 'center' }
 const fieldLabel: React.CSSProperties = {
-  fontFamily: FR, fontSize: FS_CAPTION, color: DIM,
-  letterSpacing: '0.08em', textTransform: 'uppercase' as const, marginBottom: 4,
+  fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: HUD.textDim,
+  letterSpacing: '0.08em', textTransform: 'uppercase' as const, marginBottom: '0.25rem',
 }
 const sectionHead: React.CSSProperties = {
-  fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700,
+  fontFamily: FONT_BODY, fontSize: FS_OVERLINE, fontWeight: 700,
   letterSpacing: '0.2em', textTransform: 'uppercase' as const,
-  color: GOLD_DIM, borderBottom: `1px solid ${BORDER}`,
-  paddingBottom: 4, marginBottom: 12,
+  color: 'var(--hud-gold-40)', borderBottom: `1px solid ${HUD.border}`,
+  paddingBottom: '0.25rem', marginBottom: '0.75rem',
 }
 const btnSmall: React.CSSProperties = {
-  background: 'transparent', border: `1px solid ${BORDER}`,
-  color: DIM, fontFamily: FR, fontSize: FS_CAPTION,
-  padding: '4px 10px', borderRadius: 3, cursor: 'pointer',
+  background: 'transparent', border: `1px solid ${HUD.border}`,
+  color: HUD.textDim, fontFamily: FONT_BODY, fontSize: FS_CAPTION,
+  padding: '0.25rem 0.625rem', borderRadius: RADIUS.sm, cursor: 'pointer',
 }
 const btnDanger: React.CSSProperties = {
-  background: 'transparent', border: `1px solid rgba(224,80,80,0.3)`,
-  color: RED, fontFamily: FR, fontSize: FS_CAPTION,
-  padding: '4px 8px', borderRadius: 3, cursor: 'pointer',
+  background: 'transparent', border: `1px solid color-mix(in srgb, var(--state-failure) 30%, transparent)`,
+  color: 'var(--state-failure)', fontFamily: FONT_BODY, fontSize: FS_CAPTION,
+  padding: '0.25rem 0.5rem', borderRadius: RADIUS.sm, cursor: 'pointer',
 }
 
 const VEHICLE_TYPES = [
@@ -139,7 +128,7 @@ function fromVehicle(v: Vehicle) {
   }
 }
 
-/* ── Props ─────────────────────────────────────────────── */
+/* ── Props ─────────────────────────────────────────────────────── */
 export interface VehicleEditorProps {
   editId?:      string
   template?:    Vehicle & { _isCustom?: boolean }
@@ -355,27 +344,36 @@ export function VehicleEditor({
   /* ── Modal portal ───────────────────────────────────── */
   const modal = (
     <>
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 9050, background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)' }} />
+      <div
+        onClick={onClose}
+        style={{
+          position: 'fixed', inset: 0,
+          zIndex: 'var(--z-hud-overlay)' as unknown as number,
+          background: 'rgba(0,0,0,0.72)',   // pre-approved: rgba(0,0,0,*) overlay
+          backdropFilter: 'blur(8px)',
+        }}
+      />
       <div
         onClick={e => e.stopPropagation()}
         style={{
           position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-          zIndex: 9060, width: 'min(640px, 96vw)', maxHeight: '90vh',
-          background: PANEL_BG, border: `1px solid ${BORDER_HI}`, borderRadius: 8,
+          zIndex: 'var(--z-hud-combat)' as unknown as number,
+          width: 'min(640px, 96vw)', maxHeight: '90vh',
+          background: HUD.panel, border: `1px solid ${HUD.borderHi}`, borderRadius: RADIUS.lg,
           display: 'flex', flexDirection: 'column',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.8)',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.8)',   // pre-approved: rgba(0,0,0,*) shadow
         }}
       >
         {/* Header */}
-        <div style={{ flexShrink: 0, padding: '16px 24px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: HUD.gold, letterSpacing: '0.08em' }}>
+        <div style={{ flexShrink: 0, padding: '1rem 1.5rem', borderBottom: `1px solid ${HUD.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS_H4, fontWeight: 700, color: HUD.gold, letterSpacing: '0.08em' }}>
             {editId ? 'Edit Vehicle' : 'New Vehicle'}
           </div>
-          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: DIM, cursor: 'pointer', fontFamily: FR, fontSize: FS_H4, lineHeight: 1 }}>×</button>
+          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: HUD.textDim, cursor: 'pointer', fontFamily: FONT_BODY, fontSize: FS_H4, lineHeight: 1 }}>×</button>
         </div>
 
         {/* Body */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
           {/* Template search (only for new vehicles) */}
           {!isEdit && (
@@ -383,10 +381,10 @@ export function VehicleEditor({
               <div style={sectionHead}>Start from Existing (Optional)</div>
               {tmplSelected ? (
                 <div style={{
-                  background: RAISED, border: `1px solid ${BORDER}`, borderRadius: 4,
-                  padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  background: 'var(--hud-surface-lo)', border: `1px solid ${HUD.border}`, borderRadius: RADIUS.md,
+                  padding: '0.5rem 0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 }}>
-                  <span style={{ fontFamily: FR, fontSize: FS_SM, color: TEXT }}>
+                  <span style={{ fontFamily: FONT_BODY, fontSize: FS_SM, color: HUD.text }}>
                     Based on <strong style={{ color: HUD.gold }}>{tmplSelected.name}</strong>
                   </span>
                   <button
@@ -407,10 +405,11 @@ export function VehicleEditor({
                   />
                   {tmplResults.length > 0 && (
                     <div style={{
-                      position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10,
-                      background: PANEL_BG, border: `1px solid ${BORDER_HI}`,
-                      borderRadius: 4, maxHeight: 200, overflowY: 'auto',
-                      boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+                      position: 'absolute', top: '100%', left: 0, right: 0,
+                      zIndex: 'var(--z-hud-overlay)' as unknown as number,
+                      background: HUD.panel, border: `1px solid ${HUD.borderHi}`,
+                      borderRadius: RADIUS.md, maxHeight: 200, overflowY: 'auto',
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.6)',   // pre-approved: rgba(0,0,0,*) shadow
                     }}>
                       {tmplResults.map(v => (
                         <button
@@ -419,21 +418,21 @@ export function VehicleEditor({
                           style={{
                             display: 'block', width: '100%', textAlign: 'left',
                             background: 'transparent', border: 'none',
-                            padding: '8px 12px', cursor: 'pointer',
-                            fontFamily: FR, fontSize: FS_SM, color: TEXT,
-                            borderBottom: `1px solid ${BORDER}`,
+                            padding: '0.5rem 0.75rem', cursor: 'pointer',
+                            fontFamily: FONT_BODY, fontSize: FS_SM, color: HUD.text,
+                            borderBottom: `1px solid ${HUD.border}`,
                           }}
                           className="hov-gold-bg"
                         >
                           {v.name}
-                          <span style={{ marginLeft: 8, fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>
+                          <span style={{ marginLeft: '0.5rem', fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: HUD.textDim }}>
                             [{v.type}]
                           </span>
                         </button>
                       ))}
                       <div style={{
-                        padding: '6px 12px', borderTop: `1px solid ${BORDER}`,
-                        fontFamily: FR, fontSize: FS_CAPTION, color: DIM,
+                        padding: '0.375rem 0.75rem', borderTop: `1px solid ${HUD.border}`,
+                        fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: HUD.textDim,
                         fontStyle: 'italic',
                       }}>
                         — or start from scratch —
@@ -448,9 +447,9 @@ export function VehicleEditor({
           {/* Identity */}
           <div>
             <div style={sectionHead}>Identity</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
               <div style={{ gridColumn: '1/-1' }}>
-                <div style={fieldLabel}>Name {errors.name && <span style={{ color: RED }}>— {errors.name}</span>}</div>
+                <div style={fieldLabel}>Name {errors.name && <span style={{ color: 'var(--state-failure)' }}>— {errors.name}</span>}</div>
                 <input value={name} onChange={e => setName(e.target.value)} style={inputStyle} placeholder="Vehicle name" />
               </div>
               <div>
@@ -463,13 +462,13 @@ export function VehicleEditor({
                   {VEHICLE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingTop: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', paddingTop: '1.25rem' }}>
                 <input
                   type="checkbox" id="isStarship" checked={isStarship}
                   onChange={e => setIsStarship(e.target.checked)}
                   style={{ cursor: 'pointer' }}
                 />
-                <label htmlFor="isStarship" style={{ fontFamily: FR, fontSize: FS_SM, color: TEXT, cursor: 'pointer' }}>
+                <label htmlFor="isStarship" style={{ fontFamily: FONT_BODY, fontSize: FS_SM, color: HUD.text, cursor: 'pointer' }}>
                   Starship
                 </label>
               </div>
@@ -479,7 +478,7 @@ export function VehicleEditor({
           {/* Performance */}
           <div>
             <div style={sectionHead}>Performance</div>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
               {([['Silhouette', silhouette, setSilhouette], ['Speed', speed, setSpeed], ['Handling', handling, setHandling]] as [string, number, (n: number) => void][]).map(([label, val, setter]) => (
                 <div key={label}>
                   <div style={fieldLabel}>{label}</div>
@@ -492,7 +491,7 @@ export function VehicleEditor({
           {/* Combat Stats */}
           <div>
             <div style={sectionHead}>Combat Stats</div>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
               {([['Armor', armor, setArmor], ['Hull Trauma', hullTrauma, setHullTrauma], ['Sys. Strain', systemStrain, setSystemStrain]] as [string, number, (n: number) => void][]).map(([label, val, setter]) => (
                 <div key={label}>
                   <div style={fieldLabel}>{label}</div>
@@ -505,7 +504,7 @@ export function VehicleEditor({
           {/* Defense Arcs */}
           <div>
             <div style={sectionHead}>Defense Arcs</div>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
               {([['Fore', defFore, setDefFore], ['Aft', defAft, setDefAft], ['Port', defPort, setDefPort], ['Stbd', defStarboard, setDefStarboard]] as [string, number, (n: number) => void][]).map(([label, val, setter]) => (
                 <div key={label}>
                   <div style={fieldLabel}>{label}</div>
@@ -518,7 +517,7 @@ export function VehicleEditor({
           {/* Crew & Cargo */}
           <div>
             <div style={sectionHead}>Crew &amp; Cargo</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
               <div style={{ gridColumn: '1/-1' }}>
                 <div style={fieldLabel}>Crew</div>
                 <input value={crew} onChange={e => setCrew(e.target.value)} style={inputStyle} placeholder="e.g. One pilot, one gunner" />
@@ -542,7 +541,7 @@ export function VehicleEditor({
           {isStarship && (
             <div>
               <div style={sectionHead}>Hyperdrive &amp; Sensors</div>
-              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
                 <div>
                   <div style={fieldLabel}>Primary Class</div>
                   <input
@@ -565,7 +564,7 @@ export function VehicleEditor({
                     placeholder="—"
                   />
                 </div>
-                <label style={{ fontFamily: FR, fontSize: FS_SM, color: naviComputer ? TEXT : DIM, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, paddingBottom: 2 }}>
+                <label style={{ fontFamily: FONT_BODY, fontSize: FS_SM, color: naviComputer ? HUD.text : HUD.textDim, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', paddingBottom: '0.125rem' }}>
                   <input
                     type="checkbox"
                     checked={naviComputer}
@@ -592,7 +591,7 @@ export function VehicleEditor({
           {/* Misc Stats */}
           <div>
             <div style={sectionHead}>Miscellaneous</div>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
               <div>
                 <div style={fieldLabel}>Hard Points</div>
                 <input
@@ -645,14 +644,14 @@ export function VehicleEditor({
           {/* Weapons */}
           <div>
             <div style={sectionHead}>Weapons</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
               {weapons.map((w, i) => {
                 const stats = vehicleWeaponStats(w.weaponKey)
                 return (
-                  <div key={i} style={{ background: 'rgba(14,26,18,0.6)', border: `1px solid ${BORDER}`, borderRadius: 4, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div key={i} style={{ background: 'var(--hud-surface-lo)', border: `1px solid ${HUD.border}`, borderRadius: RADIUS.md, padding: '0.625rem 0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
 
                     {/* Row 1: weapon select + count + turret */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 64px auto', gap: 8, alignItems: 'end' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 64px auto', gap: '0.5rem', alignItems: 'end' }}>
                       <div>
                         <div style={fieldLabel}>Weapon</div>
                         <select
@@ -672,7 +671,7 @@ export function VehicleEditor({
                         <div style={fieldLabel}>Count</div>
                         <input type="number" value={w.count} onChange={e => updateWeapon(i, 'count', parseInt(e.target.value) || 1)} style={numInput} min={1} />
                       </div>
-                      <label style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, paddingBottom: 2, whiteSpace: 'nowrap' }}>
+                      <label style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: HUD.textDim, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.375rem', paddingBottom: '0.125rem', whiteSpace: 'nowrap' }}>
                         <input type="checkbox" checked={w.turret} onChange={e => updateWeapon(i, 'turret', e.target.checked)} style={{ accentColor: HUD.gold }} />
                         Turret
                       </label>
@@ -680,24 +679,24 @@ export function VehicleEditor({
 
                     {/* Stats preview — shown when key resolves */}
                     {stats ? (
-                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                        <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, letterSpacing: '0.06em' }}>
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <span style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: HUD.textDim, letterSpacing: '0.06em' }}>
                           {stats.name}
                         </span>
-                        <span style={{ fontFamily: "'Share Tech Mono',monospace", fontSize: FS_CAPTION, color: RED }}>
+                        <span style={{ fontFamily: FONT_MONO, fontSize: FS_CAPTION, color: 'var(--state-failure)' }}>
                           Dmg {stats.damage}
                         </span>
                         {stats.crit !== undefined && (
-                          <span style={{ fontFamily: "'Share Tech Mono',monospace", fontSize: FS_CAPTION, color: RED }}>
+                          <span style={{ fontFamily: FONT_MONO, fontSize: FS_CAPTION, color: 'var(--state-failure)' }}>
                             Crit {stats.crit}
                           </span>
                         )}
-                        <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>
+                        <span style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: HUD.textDim }}>
                           {stats.range}
                         </span>
                       </div>
                     ) : w.weaponKey ? (
-                      <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: 'rgba(224,80,80,0.6)', fontStyle: 'italic' }}>
+                      <div style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: 'color-mix(in srgb, var(--state-failure) 60%, transparent)', fontStyle: 'italic' }}>
                         Unknown key — stats not available
                       </div>
                     ) : null}
@@ -705,11 +704,11 @@ export function VehicleEditor({
                     {/* Firing arcs */}
                     <div>
                       <div style={fieldLabel}>Firing Arcs</div>
-                      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                         {ARC_FIELDS.map(({ label, field, defaultVal }) => {
                           const checked = arcVal(w, field, defaultVal)
                           return (
-                            <label key={field} style={{ fontFamily: FR, fontSize: FS_CAPTION, color: checked ? TEXT : DIM, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
+                            <label key={field} style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: checked ? HUD.text : HUD.textDim, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3125rem' }}>
                               <input
                                 type="checkbox"
                                 checked={checked}
@@ -742,9 +741,9 @@ export function VehicleEditor({
           {/* Special Features / Abilities */}
           <div>
             <div style={sectionHead}>Special Features</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
               {abilities.map((a, i) => (
-                <div key={i} style={{ background: 'rgba(14,26,18,0.6)', border: `1px solid ${BORDER}`, borderRadius: 4, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div key={i} style={{ background: 'var(--hud-surface-lo)', border: `1px solid ${HUD.border}`, borderRadius: RADIUS.md, padding: '0.625rem 0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   <div>
                     <div style={fieldLabel}>Name</div>
                     <input value={a.name} onChange={e => updateAbility(i, 'name', e.target.value)} style={inputStyle} placeholder="Feature name" />
@@ -776,20 +775,20 @@ export function VehicleEditor({
         </div>
 
         {/* Footer */}
-        <div style={{ flexShrink: 0, padding: '14px 24px', borderTop: `1px solid ${BORDER}`, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ flexShrink: 0, padding: '0.875rem 1.5rem', borderTop: `1px solid ${HUD.border}`, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           {saveError && (
-            <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: RED, background: 'rgba(224,80,80,0.08)', border: '1px solid rgba(224,80,80,0.25)', borderRadius: 3, padding: '6px 10px' }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: 'var(--state-failure)', background: 'color-mix(in srgb, var(--state-failure) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--state-failure) 25%, transparent)', borderRadius: RADIUS.sm, padding: '0.375rem 0.625rem' }}>
               {saveError}
             </div>
           )}
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={onClose} style={{ flex: 1, background: 'transparent', border: `1px solid ${BORDER}`, color: DIM, fontFamily: FR, fontSize: FS_SM, fontWeight: 700, padding: '9px 0', borderRadius: 3, cursor: 'pointer' }}>
+          <div style={{ display: 'flex', gap: '0.625rem' }}>
+            <button onClick={onClose} style={{ flex: 1, background: 'transparent', border: `1px solid ${HUD.border}`, color: HUD.textDim, fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700, padding: '0.5625rem 0', borderRadius: RADIUS.sm, cursor: 'pointer' }}>
               Cancel
             </button>
             <button
               onClick={handleSave}
               disabled={saving}
-              style={{ flex: 2, background: 'rgba(200,170,80,0.12)', border: `1px solid ${GOLD_DIM}`, color: HUD.gold, fontFamily: FR, fontSize: FS_SM, fontWeight: 700, letterSpacing: '0.1em', padding: '9px 0', borderRadius: 3, cursor: saving ? 'wait' : 'pointer', opacity: saving ? 0.6 : 1 }}
+              style={{ flex: 2, background: 'var(--hud-gold-subtle)', border: `1px solid var(--hud-gold-40)`, color: HUD.gold, fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700, letterSpacing: '0.1em', padding: '0.5625rem 0', borderRadius: RADIUS.sm, cursor: saving ? 'wait' : 'pointer', opacity: saving ? 0.6 : 1 }}
             >
               {saving ? 'Saving…' : editId ? '✓ Save Changes' : '✓ Create Vehicle'}
             </button>

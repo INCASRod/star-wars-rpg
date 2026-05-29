@@ -242,6 +242,15 @@
 - Responsive breakpoint detection via `matchMedia`; defaults to 768px
 - Returns: `boolean`
 
+### `useTicker(text, isOpen, delayMs?)`
+- Drives the character-scramble "ticker" animation for panel headers
+- Exports `TickerChar` type: `{ key: string; display: string; settled: boolean }`
+- When `isOpen` flips true: after `delayMs` (default 60ms), reveals chars left-to-right with 28ms stagger; each scramblable char cycles through 4 random glyphs at 35ms before landing
+- Spaces and non-alphanumeric chars are never scrambled — they appear immediately at their stagger position with `settled: true`
+- When `isOpen` flips false: immediately resets all chars to their final settled values and cancels all pending timeouts
+- All timeouts cleaned up on unmount
+- Returns: `{ chars: TickerChar[] }`
+
 ---
 
 ## Data Layer
@@ -377,6 +386,7 @@ Each panel is a self-contained component accepting pre-computed display data fro
 - `ThemeSwitcher` (`src/components/player-hud/ThemeSwitcher.tsx`) — HUD theme switcher component; exports `UiTheme` type; renders three theme color swatches (Binary Sunset, Rebel Operative, Kyber Archive); accepts `current` theme and `onChange` callback; fully controlled via props
 - `RollFeedPanel` (`src/components/player-hud/RollFeedPanel.tsx`) — **Approach A feed layout** with state `expandedIds: Set<string>` for expand/collapse UI. Props: `rolls: RollEntry[]`, `ownCharacterId: string`, `isGm?: boolean`. Layout: top 2 most-recent skill/combat/force rolls render as **Design B cards** (tinted header band with alignment colour at 7% opacity + 15% border, character name, roll type, relative time; card body with large outcome word, result symbols, type-specific extras like damage calc or force pips, and dice pips); older rolls collapse to **compact single-line rows** (4px accent dot, character name, type label, outcome abbr, relative time); clicking a collapsed row expands it as a full card in-place; clicking the header band of an expanded history card collapses it (always-expanded top-2 cards have no collapse affordance). Initiative rolls always render as **compact non-expandable notifications** (one-liner with group count if multiple; grouped within 30-second window). System entries are **compact rows** (gear icon + message or award label); long system messages (>60 chars) get an expand toggle. Players never see hidden rolls; GMs see everything.
 - `Modal` (`src/components/ui/Modal.tsx`) — shared portal modal: dark backdrop + blur, ESC key, click-outside dismiss, panel with HUD tokens. Props: `open`, `onClose?`, `maxWidth`, `zIndex`, `borderColor`, `shadow`.
+- `TickerText` (`src/components/ui/TickerText.tsx`) — renders a scramble-ticker animation for a text string; wraps `useTicker`; outputs `.ticker-ready` span containing one `.ticker-char` span per character (unsettled chars get `opacity: 0.5`, `aria-hidden`); includes a `.sr-only` span with the full text for screen readers. Props: `text`, `isOpen`, `delayMs?`, `className?`.
 - `RichText` — renders OggDude markup with icon font; accepts optional `style` prop
 - `EquipStateButtons` — equipped/carrying/stowed toggle
 - `DicePoolDisplay` — characteristic + skill rank → die faces
@@ -384,6 +394,14 @@ Each panel is a self-contained component accepting pre-computed display data fro
 - `StowPill` — colored badge for stow location
 - `StowLocationModal` — portal modal for picking stow destination
 - `SpecSelectorList` — specialization selector with talent tree preview
+
+---
+
+## Contexts (`src/contexts/`)
+
+| File | Purpose |
+|---|---|
+| `HudPanelContext.tsx` | Provides `{ isOpen: boolean }` to all children of `HudFullPanel`; consumed via `useHudPanelContext()` so section-header components (TickerText wrappers) know when their panel is open |
 
 ---
 
@@ -431,7 +449,7 @@ import { COLOR, HUD, FS, SP, RADIUS, Z, SHADOW, EASE, CHAR_COLOR, DICE_META, SYM
 | `types.ts` | All TypeScript interfaces and type aliases |
 | `supabase/client.ts` | Singleton Supabase browser client |
 | `tokens.ts` | Design tokens — colors, fonts, spacing, z-index, radius, shadows |
-| `theme.ts` | Theme management: `ThemeId` type; `getTheme()`, `setTheme()`, `initTheme()` functions; persists selection in localStorage (key: `holocron_theme`); sets `data-theme` attribute on `<html>` for CSS targeting |
+| `theme.ts` | Theme management: `ThemeId = 'ember' \| 'kyber' \| 'gm-imperial'`; `getTheme()`, `setTheme()`, `initTheme()` functions; persists selection in localStorage (key: `holocron_theme`); sets `data-theme` attribute on `<html>` for CSS targeting. `gm-imperial` is set directly by `GmShell.tsx` on mount (not via ThemeSwitcher) and removed on unmount. |
 | `parseSymbols.ts` | OggDude shortcode `[su]`, `:colon:` → typed segment array; used by `RichText` |
 | `utils.ts` | `cn()` class merge, `stripBBCode()` (plain-text extractor), `randomUUID()` |
 | `characterSheetPDF.ts` | jsPDF-based character sheet PDF export |

@@ -10,34 +10,27 @@ import { randomUUID } from '@/lib/utils'
 import { toast } from 'sonner'
 import { AdversaryDetailPanel } from './AdversaryDetailPanel'
 import { AdversaryEditor } from './AdversaryEditor'
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_BODY, EASE } from '@/lib/tokens'
 import { Modal } from '@/components/ui/Modal'
 
 /* ── Design tokens ─────────────────────────────────────── */
-const FC       = "var(--font-rajdhani), 'Cinzel', serif"
-const FR       = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FM       = "'Share Tech Mono','Courier New',monospace"
-const PANEL_BG = 'rgba(8,16,10,0.88)'
 const RAISED   = 'rgba(14,26,18,0.9)'
 const INPUT_BG = 'rgba(0,0,0,0.35)'
-const GOLD_DIM = 'rgba(200,170,80,0.5)'
-const TEXT     = '#C8D8C0'
-const DIM      = '#6A8070'
-const BORDER   = 'rgba(200,170,80,0.14)'
-const BORDER_HI = 'rgba(200,170,80,0.36)'
-const GREEN    = '#4EC87A'
-const RED      = '#E05050'
-const BLUE     = '#5AAAE0'
+const TEXT     = HUD.text
+const DIM      = HUD.textDim
+const BORDER   = HUD.border
+const BORDER_HI = HUD.borderHi
+const GREEN    = 'var(--state-success)'
+const RED      = 'var(--state-failure)'
+const BLUE     = 'var(--die-force)'
 
-const FS_OVERLINE = 'var(--text-overline)'
 const FS_CAPTION  = 'var(--text-caption)'
-const FS_LABEL    = 'var(--text-label)'
 const FS_SM       = 'var(--text-sm)'
 const FS_H4       = 'var(--text-h4)'
 
 const TYPE_COLORS: Record<string, string> = {
-  minion:  DIM,
-  rival:   BLUE,
+  minion:  HUD.textDim,
+  rival:   'var(--die-force)',
   nemesis: HUD.gold,
 }
 
@@ -97,10 +90,10 @@ export interface AdversaryLibraryProps {
 
 /* ── Helpers ───────────────────────────────────────────── */
 function TypeBadge({ type }: { type: string }) {
-  const color = TYPE_COLORS[type] ?? DIM
+  const color = TYPE_COLORS[type] ?? HUD.textDim
   return (
     <span style={{
-      fontFamily: FM, fontSize: FS_CAPTION, fontWeight: 700, flexShrink: 0,
+      fontFamily: FONT_BODY, fontSize: FS_CAPTION, fontWeight: 700, flexShrink: 0,
       color, border: `1px solid ${color}`, borderRadius: 2,
       padding: '1px 6px', letterSpacing: '0.08em',
       background: `${color}18`,
@@ -120,12 +113,12 @@ function PillBtn({
     <button
       onClick={onClick}
       style={{
-        fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
+        fontFamily: FONT_BODY, fontSize: FS_CAPTION, fontWeight: 700,
         letterSpacing: '0.08em', textTransform: 'uppercase' as const,
-        padding: '4px 12px', borderRadius: 12, border: `1px solid ${active ? c : BORDER}`,
+        padding: '0.25rem 0.75rem', borderRadius: 12, border: `1px solid ${active ? c : BORDER}`,
         background: active ? `${c}20` : 'transparent',
         color: active ? c : DIM,
-        cursor: 'pointer', transition: '.12s',
+        cursor: 'pointer', transition: EASE.quick,
       }}
     >
       {children}
@@ -136,7 +129,7 @@ function PillBtn({
 function TokenCircle({
   adversary, tokenUrl,
 }: { adversary: Adversary; tokenUrl?: string }) {
-  const color = TYPE_COLORS[adversary.type] ?? DIM
+  const color = TYPE_COLORS[adversary.type] ?? HUD.textDim
   return (
     <div style={{
       width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
@@ -146,7 +139,7 @@ function TokenCircle({
       {tokenUrl ? (
         <img src={tokenUrl} alt={adversary.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       ) : (
-        <span style={{ fontFamily: FC, fontSize: FS_CAPTION, color, fontWeight: 700 }}>
+        <span style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color, fontWeight: 700 }}>
           {adversary.name.charAt(0)}
         </span>
       )}
@@ -343,12 +336,12 @@ export function AdversaryLibrary({ campaignId, sessionMode, onAddToken, mapId }:
 
   /* ── Render ──────────────────────────────────────────── */
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
         <div style={{
-          fontFamily: FC, fontSize: FS_H4, fontWeight: 700,
+          fontFamily: FONT_BODY, fontSize: FS_H4, fontWeight: 700,
           color: HUD.gold, letterSpacing: '0.08em',
         }}>
           Adversary Library
@@ -356,9 +349,9 @@ export function AdversaryLibrary({ campaignId, sessionMode, onAddToken, mapId }:
         <button
           onClick={openNew}
           style={{
-            background: 'rgba(200,170,80,0.08)', border: `1px solid ${GOLD_DIM}`,
-            color: HUD.gold, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
-            letterSpacing: '0.1em', padding: '6px 14px', borderRadius: 3,
+            background: 'rgba(200,170,80,0.08)', border: `1px solid ${HUD.borderHi}`,
+            color: HUD.gold, fontFamily: FONT_BODY, fontSize: FS_CAPTION, fontWeight: 700,
+            letterSpacing: '0.1em', padding: '0.375rem 0.875rem', borderRadius: 3,
             cursor: 'pointer', flexShrink: 0,
           }}
         >
@@ -374,13 +367,13 @@ export function AdversaryLibrary({ campaignId, sessionMode, onAddToken, mapId }:
         onChange={e => setSearch(e.target.value)}
         style={{
           background: INPUT_BG, border: `1px solid ${BORDER}`, borderRadius: 4,
-          color: TEXT, fontFamily: FR, fontSize: FS_SM,
-          padding: '8px 12px', outline: 'none', width: '100%', boxSizing: 'border-box',
+          color: TEXT, fontFamily: FONT_BODY, fontSize: FS_SM,
+          padding: '0.5rem 0.75rem', outline: 'none', width: '100%', boxSizing: 'border-box',
         }}
       />
 
       {/* Filters */}
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap' }}>
         {(['all', 'minion', 'rival', 'nemesis'] as TypeFilter[]).map(t => (
           <PillBtn
             key={t}
@@ -391,7 +384,7 @@ export function AdversaryLibrary({ campaignId, sessionMode, onAddToken, mapId }:
             {t === 'all' ? 'All' : t}
           </PillBtn>
         ))}
-        <div style={{ width: 1, background: BORDER, margin: '0 4px' }} />
+        <div style={{ width: 1, background: BORDER, margin: '0 0.25rem' }} />
         {([
           ['all',     'All Sources'],
           ['oggdude', 'OggDude'],
@@ -405,23 +398,23 @@ export function AdversaryLibrary({ campaignId, sessionMode, onAddToken, mapId }:
 
       {/* Count + List */}
       {!search.trim() && sourceFilter !== 'custom' ? (
-        <div style={{ textAlign: 'center', padding: '24px 0', fontFamily: FR, fontSize: FS_SM, color: DIM }}>
+        <div style={{ textAlign: 'center', padding: '1.5rem 0', fontFamily: FONT_BODY, fontSize: FS_SM, color: DIM }}>
           Search for an adversary above, or select &ldquo;Custom&rdquo; to browse your adversaries.
         </div>
       ) : loading ? (
-        <div style={{ textAlign: 'center', padding: '24px 0', fontFamily: FR, fontSize: FS_SM, color: DIM }}>
+        <div style={{ textAlign: 'center', padding: '1.5rem 0', fontFamily: FONT_BODY, fontSize: FS_SM, color: DIM }}>
           Loading adversaries…
         </div>
       ) : (
         <>
-          <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: DIM }}>
             {search.trim()
               ? <>Showing {filtered.length} adversar{filtered.length === 1 ? 'y' : 'ies'} matching &ldquo;{search}&rdquo;</>
               : <>Showing {filtered.length} custom adversar{filtered.length === 1 ? 'y' : 'ies'}</>
             }
           </div>
           {filtered.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '24px 0', fontFamily: FR, fontSize: FS_SM, color: DIM }}>
+            <div style={{ textAlign: 'center', padding: '1.5rem 0', fontFamily: FONT_BODY, fontSize: FS_SM, color: DIM }}>
               No adversaries found.
             </div>
           ) : (
@@ -518,22 +511,22 @@ function AdversaryRow({
   /** When provided, overrides the row action button label (default '⚔ Combat'). */
   addLabel?: string
 }) {
-  const color = TYPE_COLORS[adversary.type] ?? DIM
+  const color = TYPE_COLORS[adversary.type] ?? HUD.textDim
 
   const btnRowStyle: React.CSSProperties = {
     background: 'transparent',
     border: `1px solid ${BORDER}`,
     color: DIM,
-    fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
+    fontFamily: FONT_BODY, fontSize: FS_CAPTION, fontWeight: 700,
     letterSpacing: '0.08em',
-    padding: '4px 10px', borderRadius: 3,
-    cursor: 'pointer', flexShrink: 0, transition: '.12s',
+    padding: '0.25rem 0.625rem', borderRadius: 3,
+    cursor: 'pointer', flexShrink: 0, transition: EASE.quick,
   }
 
   return (
     <div style={{
-      display: 'flex', alignItems: 'center', gap: 12,
-      padding: '10px 14px',
+      display: 'flex', alignItems: 'center', gap: '0.75rem',
+      padding: '0.625rem 0.875rem',
       background: 'transparent',
       borderBottom: isLast ? 'none' : `1px solid ${BORDER}`,
       flexWrap: 'wrap',
@@ -541,13 +534,13 @@ function AdversaryRow({
       {/* Token */}
       <div style={{
         width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
-        background: 'rgba(14,26,18,0.9)', border: `2px solid ${color}`,
+        background: RAISED, border: `2px solid ${color}`,
         overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
         {tokenUrl ? (
           <img src={tokenUrl} alt={adversary.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         ) : (
-          <span style={{ fontFamily: FC, fontSize: FS_CAPTION, color, fontWeight: 700 }}>
+          <span style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color, fontWeight: 700 }}>
             {adversary.name.charAt(0)}
           </span>
         )}
@@ -555,9 +548,9 @@ function AdversaryRow({
 
       {/* Info */}
       <div style={{ flex: 1, minWidth: 120 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
           <span style={{
-            fontFamily: FC,
+            fontFamily: FONT_BODY,
             fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)',
             fontWeight: 700, color: TEXT,
           }}>
@@ -566,14 +559,14 @@ function AdversaryRow({
           </span>
           <TypeBadge type={adversary.type} />
         </div>
-        <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, marginTop: 2 }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: DIM, marginTop: 2 }}>
           Soak {adversary.soak} · WT {adversary.wound}
           {adversary.type === 'minion' && ' (per minion)'}
         </div>
       </div>
 
       {/* Actions */}
-      <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+      <div style={{ display: 'flex', gap: '0.375rem', flexShrink: 0 }}>
         <button onClick={onView} className="hov-gold" style={btnRowStyle}>
           View
         </button>
@@ -619,20 +612,20 @@ function AddToCombatOverlay({
       shadow="0 16px 48px rgba(0,0,0,0.8)"
       panelBackground="rgba(8,16,10,0.97)"
     >
-      <div style={{ padding: '20px 24px' }}>
+      <div style={{ padding: '1.25rem 1.5rem' }}>
         <div style={{
-          fontFamily: FC, fontSize: FS_H4, fontWeight: 700,
-          color: HUD.gold, letterSpacing: '0.1em', marginBottom: 4,
+          fontFamily: FONT_BODY, fontSize: FS_H4, fontWeight: 700,
+          color: HUD.gold, letterSpacing: '0.1em', marginBottom: '0.25rem',
         }}>
           Add to Combat
         </div>
         <div style={{
-          fontFamily: FR, fontSize: FS_SM, color: TEXT, marginBottom: 16,
-          display: 'flex', alignItems: 'center', gap: 8,
+          fontFamily: FONT_BODY, fontSize: FS_SM, color: TEXT, marginBottom: '1rem',
+          display: 'flex', alignItems: 'center', gap: '0.5rem',
         }}>
           <span style={{ color: color, fontWeight: 700 }}>{adversary.name}</span>
           <span style={{
-            fontFamily: '"Share Tech Mono","Courier New",monospace',
+            fontFamily: FONT_BODY,
             fontSize: FS_CAPTION, color, border: `1px solid ${color}`,
             borderRadius: 2, padding: '1px 6px', background: `${color}18`,
           }}>
@@ -641,11 +634,11 @@ function AddToCombatOverlay({
         </div>
 
         {/* Alignment toggle */}
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>
+        <div style={{ marginBottom: '1rem' }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: DIM, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
             Alignment
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
             {(['enemy', 'allied_npc'] as const).map(al => {
               const alColor = al === 'enemy' ? RED : GREEN
               const active = alignment === al
@@ -654,13 +647,13 @@ function AddToCombatOverlay({
                   key={al}
                   onClick={() => onChange({ ...state, alignment: al })}
                   style={{
-                    flex: 1, padding: '8px 0', borderRadius: 3,
-                    fontFamily: FR, fontSize: FS_SM, fontWeight: 700,
+                    flex: 1, padding: '0.5rem 0', borderRadius: 3,
+                    fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700,
                     letterSpacing: '0.08em', cursor: 'pointer',
                     border: `1px solid ${active ? alColor : BORDER}`,
                     background: active ? `${alColor}15` : 'transparent',
                     color: active ? alColor : DIM,
-                    transition: '.12s',
+                    transition: EASE.quick,
                   }}
                 >
                   {al === 'enemy' ? '⚔ Enemy' : '🤝 Allied NPC'}
@@ -672,23 +665,23 @@ function AddToCombatOverlay({
 
         {/* Group size for minions */}
         {adversary.type === 'minion' && (
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>
+          <div style={{ marginBottom: '1rem' }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: DIM, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
               Group Size
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
               <button
                 onClick={() => onChange({ ...state, groupSize: Math.max(1, groupSize - 1) })}
                 style={{
                   width: 32, height: 32, borderRadius: 3,
                   background: 'transparent', border: `1px solid ${BORDER}`,
-                  color: DIM, cursor: 'pointer', fontFamily: FR, fontSize: FS_H4,
+                  color: DIM, cursor: 'pointer', fontFamily: FONT_BODY, fontSize: FS_H4,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
               >
                 −
               </button>
-              <span style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: TEXT, minWidth: 32, textAlign: 'center' }}>
+              <span style={{ fontFamily: FONT_BODY, fontSize: FS_H4, fontWeight: 700, color: TEXT, minWidth: 32, textAlign: 'center' }}>
                 {groupSize}
               </span>
               <button
@@ -696,7 +689,7 @@ function AddToCombatOverlay({
                 style={{
                   width: 32, height: 32, borderRadius: 3,
                   background: 'transparent', border: `1px solid ${BORDER}`,
-                  color: DIM, cursor: 'pointer', fontFamily: FR, fontSize: FS_H4,
+                  color: DIM, cursor: 'pointer', fontFamily: FONT_BODY, fontSize: FS_H4,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
               >
@@ -707,13 +700,13 @@ function AddToCombatOverlay({
         )}
 
         {/* Buttons */}
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div style={{ display: 'flex', gap: '0.625rem' }}>
           <button
             onClick={onCancel}
             style={{
-              flex: 1, padding: '9px 0', borderRadius: 3,
+              flex: 1, padding: '0.5625rem 0', borderRadius: 3,
               background: 'transparent', border: `1px solid ${BORDER}`,
-              color: DIM, fontFamily: FR, fontSize: FS_SM, fontWeight: 700,
+              color: DIM, fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700,
               cursor: 'pointer',
             }}
           >
@@ -723,10 +716,10 @@ function AddToCombatOverlay({
             onClick={onConfirm}
             disabled={busy}
             style={{
-              flex: 2, padding: '9px 0', borderRadius: 3,
+              flex: 2, padding: '0.5625rem 0', borderRadius: 3,
               background: 'rgba(224,80,80,0.10)',
               border: `1px solid rgba(224,80,80,0.45)`,
-              color: RED, fontFamily: FR, fontSize: FS_SM, fontWeight: 700,
+              color: RED, fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700,
               letterSpacing: '0.1em', cursor: busy ? 'wait' : 'pointer',
               opacity: busy ? 0.6 : 1,
             }}
@@ -758,24 +751,24 @@ function AddTokenOverlay({
       shadow="0 16px 48px rgba(0,0,0,0.8)"
       panelBackground="rgba(8,16,10,0.97)"
     >
-      <div style={{ padding: '20px 24px' }}>
-        <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: HUD.gold, letterSpacing: '0.1em', marginBottom: 4 }}>
+      <div style={{ padding: '1.25rem 1.5rem' }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS_H4, fontWeight: 700, color: HUD.gold, letterSpacing: '0.1em', marginBottom: '0.25rem' }}>
           Add Token
         </div>
-        <div style={{ fontFamily: FR, fontSize: FS_SM, color: TEXT, marginBottom: 20 }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS_SM, color: TEXT, marginBottom: '1.25rem' }}>
           <span style={{ fontWeight: 700 }}>{entityName}</span>
           {' '}&mdash; choose alignment:
         </div>
-        <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
+        <div style={{ display: 'flex', gap: '0.625rem', marginBottom: '0.75rem' }}>
           <button
             onClick={() => onAdd('enemy')}
             style={{
-              flex: 1, padding: '12px 0', borderRadius: 4,
-              fontFamily: FR, fontSize: FS_SM, fontWeight: 700,
+              flex: 1, padding: '0.75rem 0', borderRadius: 4,
+              fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700,
               letterSpacing: '0.08em', cursor: 'pointer',
               background: 'rgba(224,80,80,0.12)',
               border: '1px solid rgba(224,80,80,0.5)',
-              color: RED, transition: '.12s',
+              color: RED, transition: EASE.quick,
             }}
           >
             ⚔ Enemy
@@ -783,12 +776,12 @@ function AddTokenOverlay({
           <button
             onClick={() => onAdd('allied_npc')}
             style={{
-              flex: 1, padding: '12px 0', borderRadius: 4,
-              fontFamily: FR, fontSize: FS_SM, fontWeight: 700,
+              flex: 1, padding: '0.75rem 0', borderRadius: 4,
+              fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700,
               letterSpacing: '0.08em', cursor: 'pointer',
               background: 'rgba(78,200,122,0.12)',
               border: '1px solid rgba(78,200,122,0.5)',
-              color: GREEN, transition: '.12s',
+              color: GREEN, transition: EASE.quick,
             }}
           >
             🤝 Friendly NPC
@@ -797,9 +790,9 @@ function AddTokenOverlay({
         <button
           onClick={onCancel}
           style={{
-            width: '100%', padding: '7px 0', borderRadius: 4,
+            width: '100%', padding: '0.4375rem 0', borderRadius: 4,
             background: 'transparent', border: `1px solid ${BORDER}`,
-            color: DIM, fontFamily: FR, fontSize: FS_SM, fontWeight: 700,
+            color: DIM, fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700,
             cursor: 'pointer',
           }}
         >

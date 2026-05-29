@@ -44,7 +44,7 @@ export function GmPartyPanel({ campaignId, characters, charCrits, charConflicts,
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
         {/* Header */}
         <div style={{
-          padding:      '8px 14px',
+          padding:      '0.5rem 0.875rem',
           borderBottom: '1px solid var(--hud-border)',
           flexShrink:   0,
         }}>
@@ -61,9 +61,9 @@ export function GmPartyPanel({ campaignId, characters, charCrits, charConflicts,
         </div>
 
         {/* Card list */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '10px 10px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '0.625rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           {characters.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '32px 0', fontFamily: FONT, fontSize: 'var(--text-sm)', color: 'var(--hud-text-dim)' }}>
+            <div style={{ textAlign: 'center', padding: '2rem 0', fontFamily: FONT, fontSize: 'var(--text-sm)', color: 'var(--hud-text-dim)' }}>
               No active characters.
             </div>
           )}

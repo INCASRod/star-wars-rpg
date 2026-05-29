@@ -1,13 +1,9 @@
 'use client'
 
 import { memo } from 'react'
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_DISPLAY, FONT_BODY, RADIUS } from '@/lib/tokens'
 
-const FONT_DISPLAY = 'var(--font-display)'
-const FONT         = 'var(--font-body)'
-const DIM          = 'var(--hud-text-dim)'
-const RED          = '#E05050'
-const GREEN        = '#4EC87A'
+const FONT = FONT_BODY
 
 export interface GmTopBarProps {
   campaignName:       string
@@ -37,13 +33,13 @@ export const GmTopBar = memo(function GmTopBar({
       top:                  0,
       left:                 0,
       right:                0,
-      height:               44,
-      zIndex:               9002,
+      height:               '2.75rem',
+      zIndex:               'var(--z-hud-combat)' as unknown as number,
       display:              'flex',
       alignItems:           'center',
-      paddingLeft:          16,
-      paddingRight:         16,
-      gap:                  10,
+      paddingLeft:          'var(--space-4)',
+      paddingRight:         'var(--space-4)',
+      gap:                  '0.625rem',
       background:           'var(--hud-surface-hi)',
       backdropFilter:       'blur(14px)',
       WebkitBackdropFilter: 'blur(14px)',
@@ -67,10 +63,10 @@ export const GmTopBar = memo(function GmTopBar({
       <Divider />
 
       <div style={{
-        background:    'rgba(150,168,180,0.10)',
-        border:        '1px solid rgba(150,168,180,0.35)',
-        borderRadius:  3,
-        padding:       '2px 7px',
+        background:    'var(--hud-surface-lo)',
+        border:        '1px solid var(--hud-border-hi)',
+        borderRadius:  RADIUS.sm,
+        padding:       '0.125rem 0.4375rem',
         fontFamily:    FONT,
         fontSize:      'var(--text-overline)',
         fontWeight:    700,
@@ -88,7 +84,7 @@ export const GmTopBar = memo(function GmTopBar({
         whiteSpace:   'nowrap',
         overflow:     'hidden',
         textOverflow: 'ellipsis',
-        maxWidth:     200,
+        maxWidth:     '12.5rem',
       }}>
         {campaignName}
       </span>
@@ -96,17 +92,17 @@ export const GmTopBar = memo(function GmTopBar({
       <Divider />
 
       {/* Mode badge */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-        <span style={{ fontSize: 13, color: isCombat ? RED : GREEN, lineHeight: 1 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', flexShrink: 0 }}>
+        <span style={{ fontSize: 'var(--text-sm)', color: isCombat ? 'var(--state-failure)' : 'var(--state-success)', lineHeight: 1 }}>
           {isCombat ? '⚔' : '◈'}
         </span>
         <span style={{
           fontFamily:    FONT,
-          fontSize:      '0.6rem',
+          fontSize:      'var(--text-overline)',
           fontWeight:    700,
           letterSpacing: '0.14em',
           textTransform: 'uppercase',
-          color:         isCombat ? RED : GREEN,
+          color:         isCombat ? 'var(--state-failure)' : 'var(--state-success)',
         }}>
           {isCombat ? 'Combat' : 'Exploration'}
         </span>
@@ -130,10 +126,10 @@ export const GmTopBar = memo(function GmTopBar({
       {isCombat ? (
         <>
           <TopBarButton label="◉ Initiative Order" color={HUD.gold} disabled={false} onClick={onInitiativeOrder} active={initiativeOpen} />
-          <TopBarButton label="⬛ End Combat" color={RED} disabled={sessionBusy} onClick={onEndCombat} />
+          <TopBarButton label="⬛ End Combat" color="var(--state-failure)" disabled={sessionBusy} onClick={onEndCombat} />
         </>
       ) : (
-        <TopBarButton label="▶ Begin Combat" color={RED} disabled={sessionBusy} onClick={onBeginCombat} />
+        <TopBarButton label="▶ Begin Combat" color="var(--state-failure)" disabled={sessionBusy} onClick={onBeginCombat} />
       )}
 
       {/* ── Right: destiny slot ────────────────────────────── */}
@@ -149,28 +145,18 @@ export const GmTopBar = memo(function GmTopBar({
       {/* ── Right: lobby ───────────────────────────────────── */}
       <button
         onClick={onLobby}
+        className="gm-lobby-btn"
         style={{
           background:    'transparent',
           border:        '1px solid var(--hud-border)',
-          borderRadius:  3,
-          padding:       '4px 12px',
+          borderRadius:  RADIUS.sm,
+          padding:       '0.25rem 0.75rem',
           fontFamily:    FONT,
           fontSize:      'var(--text-caption)',
-          color:         DIM,
+          color:         'var(--hud-text-dim)',
           cursor:        'pointer',
           letterSpacing: '0.06em',
           flexShrink:    0,
-          transition:    'color 0.15s, border-color 0.15s',
-        }}
-        onMouseEnter={e => {
-          const el = e.currentTarget as HTMLElement
-          el.style.color = 'var(--hud-text)'
-          el.style.borderColor = 'var(--hud-border-hi)'
-        }}
-        onMouseLeave={e => {
-          const el = e.currentTarget as HTMLElement
-          el.style.color = DIM
-          el.style.borderColor = 'var(--hud-border)'
         }}
       >
         ← Lobby
@@ -180,7 +166,7 @@ export const GmTopBar = memo(function GmTopBar({
 })
 
 function Divider() {
-  return <div style={{ width: 1, height: 20, background: 'var(--hud-border-hi)', flexShrink: 0 }} />
+  return <div style={{ width: 1, height: '1.25rem', background: 'var(--hud-border-hi)', flexShrink: 0 }} />
 }
 
 function TopBarButton({
@@ -190,35 +176,22 @@ function TopBarButton({
     <button
       disabled={disabled}
       onClick={() => void onClick()}
+      className="gm-top-bar-btn"
       style={{
-        fontFamily:    FONT,
-        fontSize:      '0.58rem',
-        fontWeight:    700,
-        letterSpacing: '0.12em',
-        textTransform: 'uppercase',
-        color:         disabled ? 'rgba(150,168,180,0.25)' : color,
-        background:    active ? `${color}18` : 'var(--hud-surface-lo)',
-        border:        `1px solid ${disabled ? 'var(--hud-border)' : active ? color : 'var(--hud-border-hi)'}`,
-        borderRadius:  4,
-        padding:       '5px 14px',
-        cursor:        disabled ? 'not-allowed' : 'pointer',
-        transition:    'color 0.15s, background 0.15s, border-color 0.15s',
-        flexShrink:    0,
-      }}
-      onMouseEnter={e => {
-        if (!disabled) {
-          const el = e.currentTarget as HTMLElement
-          el.style.background = active ? `${color}28` : 'var(--hud-surface-mid)'
-          el.style.borderColor = color
-        }
-      }}
-      onMouseLeave={e => {
-        if (!disabled) {
-          const el = e.currentTarget as HTMLElement
-          el.style.background = active ? `${color}18` : 'var(--hud-surface-lo)'
-          el.style.borderColor = active ? color : 'var(--hud-border-hi)'
-        }
-      }}
+        '--btn-accent':  color,
+        fontFamily:      FONT,
+        fontSize:        'var(--text-overline)',
+        fontWeight:      700,
+        letterSpacing:   '0.12em',
+        textTransform:   'uppercase',
+        color:           disabled ? 'var(--hud-text-faint)' : color,
+        background:      active ? `${color}18` : 'var(--hud-surface-lo)',
+        border:          `1px solid ${disabled ? 'var(--hud-border)' : active ? color : 'var(--hud-border-hi)'}`,
+        borderRadius:    RADIUS.md,
+        padding:         '0.3125rem 0.875rem',
+        cursor:          disabled ? 'not-allowed' : 'pointer',
+        flexShrink:      0,
+      } as React.CSSProperties}
     >
       {label}
     </button>

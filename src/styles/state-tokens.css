@@ -1,0 +1,250 @@
+/* ═══════════════════════════════════════════════════════════════ */
+/*  STATE-TOKENS — Semantic Colour Tokens                         */
+/*  Theme-specific. :root = Ember Tatooine (default).             */
+/*  [data-theme="kyber"] = Kyber Archive override block.          */
+/*  Imported by globals.css after holo-tokens.css.                */
+/* ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Project Palette ─────────────────────────────────────────── */
+  /* Shared across all themes — neutral swatches, brand colors.   */
+  --sand:      #F2EDE4;
+  --sand-warm: #E8E0D2;
+  --parch:     #FAF7F2;
+  --white:     #fff;
+
+  --gold:      #C8A24E;
+  --gold-l:    #DCBE6E;
+  --gold-d:    #8E6E2A;
+  --gold-glow: rgba(200,162,78,.22);
+  --gold-glow-s: rgba(200,162,78,.45);
+
+  --blue:      #2B5DAE;
+  --blue-l:    #5B8FE0;
+  --blue-pale: #DCE8F8;
+
+  --red:       #B83A2A;
+  --red-l:     #E05842;
+  --red-pale:  #F8DAD4;
+
+  --amber:     #C47F17;
+  --amber-pale: #F5E6C8;
+
+  --green:     #2D8F4E;
+  --green-pale: #D0F0DB;
+
+  --color-magenta: #d64d8a;
+
+  --ink:  #1A1A1C;
+  --txt:  #2C2C2E;
+  --txt2: #6B6B6B;
+  --txt3: #A0A0A0;
+
+  --bdr:   #D8D0C4;
+  --bdr-l: #E8E2D8;
+
+  /* ── Die / Symbol chip colors ───────────────────────────────── */
+  /* Immutable — used by .die.* CSS classes; never change between themes. */
+  --die-boost:       #70C8E8;
+  --die-setback:     #A0A0A0;
+  --die-ability:     #4EC87A;
+  --die-proficiency: #C8A020;
+  --die-difficulty:  #B070D8;
+  --die-challenge:   #E05050;
+  --die-force:       #5AAAE0;
+  --die-success:     #4EC87A;
+  --die-advantage:   #4EC8C8;
+  --die-threat:      #E07855;
+  --die-triumph:     #FFD700;
+  --die-despair:     #C04040;
+  --die-forcepip:    #E8E8FF;
+
+  /* ── Game-state outcome colors ──────────────────────────────── */
+  /* Theme-agnostic result/outcome colors for roll displays.      */
+  --state-success:   #4EC87A;
+  --state-failure:   #E05050;
+  --state-advantage: #4EC8C8;
+  --state-threat:    #E07855;
+  --state-triumph:   #FFD700;
+  --state-despair:   #C04040;
+  --state-activated: #9060D0;
+  --state-light-fp:  #E8E8FF;
+  --state-dark-fp:   #9060D0;
+  /* Vital states — theme-sensitive, alias hud-vital-* */
+  --state-wounds: var(--hud-vital-wounds);
+  --state-strain: var(--hud-vital-strain);
+
+  /* ── HUD Ember Tatooine defaults ────────────────────────────── */
+  --hud-bg:            #E8DDD0;
+  --hud-panel:         #DDD0C0;
+  --hud-surface-lo:    #D4C5B0;
+  --hud-surface-mid:   #C8B89A;
+  --hud-surface-hi:    #C0AD94;
+  --hud-border:        #CDB8A4;
+  --hud-border-hi:     #C0A890;
+  --hud-border-strong: #9A8068;
+  --hud-text:          #5A2818;
+  --hud-text-dim:      #8A5040;
+  --hud-text-faint:    #AA7860;
+  --hud-gold:          #E03A1E;
+  --hud-accent:        var(--hud-gold);
+  --hud-accent-10:     rgba(224,58,30,0.10);
+  --hud-accent-20:     rgba(224,58,30,0.20);
+  --hud-accent-25:     rgba(224,58,30,0.25);
+  --hud-accent-35:     rgba(224,58,30,0.35);
+  --hud-accent-40:     rgba(224,58,30,0.40);
+  --hud-accent-45:     rgba(224,58,30,0.45);
+  --hud-accent-50:     rgba(224,58,30,0.50);
+  --hud-accent-60:     rgba(224,58,30,0.60);
+  --hud-accent-border: rgba(224,58,30,0.30);
+  --hud-accent-purple: #9060D0;
+  --hud-gold-subtle:   rgba(200,170,80,0.15);
+  --hud-gold-border:   rgba(200,170,80,0.25);
+  --hud-gold-40:       rgba(200,170,80,0.40);
+  --hud-vital-bg:       #6A1A0A;
+  --hud-vital-border:   #4A1006;
+  --hud-vital-text:     #FFF0E8;
+  --hud-vital-text-dim: rgba(255,240,232,.65);
+  --hud-vital-sep:      rgba(255,255,255,.2);
+  --hud-vital-wounds:   #FF7050;
+  --hud-vital-strain:   #FFB060;
+}
+
+/* ── Ember Tatooine — combat animations ─────────────────────── */
+@keyframes combatPulseEmber {
+  0%, 100% { border-color: rgba(255,240,232,.22); box-shadow: none; }
+  50%       { border-color: rgba(255,240,232,.48); box-shadow: 0 0 10px rgba(255,240,232,.10); }
+}
+
+@keyframes forcePulse {
+  0%, 100% { border-color: rgba(126,200,227,.22); }
+  50%       { border-color: rgba(126,200,227,.52); box-shadow: 0 0 10px rgba(126,200,227,.18); }
+}
+
+/* ── Faction image filters — Ember Tatooine (light parchment bg) */
+.hud-fi-rebel  { filter: saturate(1.3) brightness(0.9); }
+.hud-fi-jedi   { filter: brightness(0.82) opacity(0.9); }
+.hud-fi-empire { filter: brightness(0) invert(1) sepia(1) saturate(0.4) brightness(0.82); }
+
+/* ═══════════════════════════════════════════════════════════════ */
+/*  THEME: Kyber Archive — midnight indigo / kyber-crystal cyan   */
+/* ═══════════════════════════════════════════════════════════════ */
+[data-theme="kyber"] {
+  --hud-bg:            #0C0E1A;
+  --hud-panel:         #111326;
+  --hud-surface-lo:    #161830;
+  --hud-surface-mid:   #1A1C34;
+  --hud-surface-hi:    #1C1E38;
+
+  --hud-border:        rgba(91,188,216,.16);
+  --hud-border-hi:     rgba(91,188,216,.28);
+  --hud-border-strong: rgba(91,188,216,.38);
+
+  --hud-text:          #B0B8D0;
+  --hud-text-dim:      #707898;
+  --hud-text-faint:    #485070;
+
+  --hud-gold:          #5BBCD8;
+  --hud-accent-10:     rgba(91,188,216,.10);
+  --hud-accent-20:     rgba(91,188,216,.20);
+  --hud-accent-25:     rgba(91,188,216,.25);
+  --hud-accent-35:     rgba(91,188,216,.35);
+  --hud-accent-40:     rgba(91,188,216,.40);
+  --hud-accent-45:     rgba(91,188,216,.45);
+  --hud-accent-50:     rgba(91,188,216,.50);
+  --hud-accent-60:     rgba(91,188,216,.60);
+  --hud-accent-border: rgba(91,188,216,.25);
+  --hud-accent-purple: #9060D0;
+
+  --hud-gold-subtle:   rgba(200,162,78,.15);
+  --hud-gold-border:   rgba(200,162,78,.25);
+  --hud-gold-40:       rgba(200,162,78,.40);
+
+  --hud-vital-bg:      #081220;
+  --hud-vital-border:  #050C18;
+  --hud-vital-text:    #80CCE8;
+  --hud-vital-text-dim:rgba(128,204,232,.60);
+  --hud-vital-sep:     rgba(128,204,232,.18);
+  --hud-vital-wounds:  #D84030;
+  --hud-vital-strain:  #C89830;
+}
+
+[data-theme="kyber"] .combat-check-btn {
+  background: rgba(91,188,216,.10);
+  border: 1px solid rgba(91,188,216,.35);
+  color: #80CCE8;
+}
+[data-theme="kyber"] .combat-check-btn:hover {
+  background: rgba(91,188,216,.18);
+  border-color: rgba(91,188,216,.55);
+  box-shadow: 0 0 10px rgba(91,188,216,.12);
+}
+@keyframes combatPulseKyber {
+  0%, 100% { border-color: rgba(91,188,216,.25); box-shadow: none; }
+  50%       { border-color: rgba(91,188,216,.55); box-shadow: 0 0 10px rgba(91,188,216,.14); }
+}
+[data-theme="kyber"] .combat-check-btn-pulse {
+  animation: combatPulseKyber 2s ease-in-out infinite;
+}
+
+[data-theme="kyber"] .hud-fi-rebel { filter: saturate(1.8) hue-rotate(25deg) brightness(1.9); }
+[data-theme="kyber"] .hud-fi-jedi  { filter: brightness(1.4) opacity(0.88); }
+
+/* ═══════════════════════════════════════════════════════════════ */
+/*  THEME: GM Imperial Steel — cold blue-grey, desaturated dark   */
+/* ═══════════════════════════════════════════════════════════════ */
+[data-theme="gm-imperial"] {
+  /* Imperial Steel surfaces */
+  --hud-bg:           #07090C;
+  --hud-panel:        #0A0D12;
+  --hud-surface-lo:   #0E1218;
+  --hud-surface-mid:  #12171E;
+  --hud-surface-hi:   #161C24;
+
+  /* Cold blue borders */
+  --hud-border:        rgba(90, 120, 155, 0.22);
+  --hud-border-hi:     rgba(90, 120, 155, 0.38);
+  --hud-border-strong: rgba(90, 120, 155, 0.55);
+
+  /* Cool off-white text */
+  --hud-text:          #B8C4D0;
+  --hud-text-dim:      #6A7A8A;
+  --hud-text-faint:    #404C58;
+
+  /* Steel blue accent */
+  --hud-accent:        #6B8FA8;
+  --hud-accent-hi:     #8AAFC8;
+
+  /* Gold — same as other themes, used for destiny/portraits */
+  --hud-gold:          #C8A24E;
+
+  /* Vitals strip */
+  --hud-vital-bg:       #050709;
+  --hud-vital-border:   rgba(90, 120, 155, 0.16);
+  --hud-vital-text:     #A8B8C8;
+  --hud-vital-text-dim: rgba(168, 184, 200, 0.65);
+  --hud-vital-sep:      rgba(168, 184, 200, 0.20);
+  --hud-vital-wounds:   #C04030;
+  --hud-vital-strain:   #B07820;
+
+  /* Section ghost numbers */
+  --hud-section-ghost: rgba(90, 120, 155, 0.09);
+}
+
+[data-theme="gm-imperial"] .combat-check-btn {
+  background:   rgba(90, 120, 155, 0.10);
+  border-color: rgba(90, 120, 155, 0.38);
+  color:        #8AAFC8;
+}
+[data-theme="gm-imperial"] .combat-check-btn:hover {
+  background:   rgba(90, 120, 155, 0.20);
+  border-color: rgba(90, 120, 155, 0.58);
+  box-shadow:   0 0 0.625rem rgba(90, 120, 155, 0.14);
+}
+
+[data-theme="gm-imperial"] .hud-fi-rebel {
+  filter: saturate(0.4) brightness(1.4) hue-rotate(180deg);
+}
+[data-theme="gm-imperial"] .hud-fi-jedi {
+  filter: brightness(1.2) saturate(0.5) opacity(0.80);
+}

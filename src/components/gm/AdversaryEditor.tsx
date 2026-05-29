@@ -5,22 +5,20 @@ import { Modal } from '@/components/ui/Modal'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Adversary, AdversaryWeapon, AdversaryTalent, AdversaryGear } from '@/lib/adversaries'
 import { toast } from 'sonner'
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_BODY, RADIUS, Z } from '@/lib/tokens'
 
 /* ── Design tokens ─────────────────────────────────────── */
-const FC       = "var(--font-rajdhani), 'Cinzel', serif"
-const FR       = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const BG       = '#060D09'
-const PANEL_BG = 'rgba(8,16,10,0.97)'
-const RAISED   = 'rgba(14,26,18,0.92)'
+const FC       = FONT_BODY
+const FR       = FONT_BODY
+const RAISED   = HUD.panel
 const INPUT_BG = 'rgba(0,0,0,0.35)'
 const GOLD_DIM = 'rgba(200,170,80,0.5)'
-const TEXT     = '#C8D8C0'
-const DIM      = '#6A8070'
-const BORDER   = 'rgba(200,170,80,0.14)'
-const BORDER_HI = 'rgba(200,170,80,0.36)'
-const RED      = '#E05050'
-const GREEN    = '#4EC87A'
+const TEXT     = HUD.text
+const DIM      = HUD.textFaint
+const BORDER   = HUD.border
+const BORDER_HI = HUD.borderHi
+const RED      = 'var(--state-failure)'
+const GREEN    = 'var(--state-success)'
 
 const FS_OVERLINE = 'var(--text-overline)'
 const FS_CAPTION  = 'var(--text-caption)'
@@ -30,45 +28,45 @@ const FS_H4       = 'var(--text-h4)'
 
 /* ── Styles ────────────────────────────────────────────── */
 const inputStyle: React.CSSProperties = {
-  background: INPUT_BG, border: `1px solid ${BORDER}`, borderRadius: 3,
-  color: TEXT, fontFamily: FR, fontSize: FS_SM, padding: '6px 10px',
+  background: INPUT_BG, border: `1px solid ${BORDER}`, borderRadius: RADIUS.sm,
+  color: TEXT, fontFamily: FR, fontSize: FS_SM, padding: '0.375rem 0.625rem',
   outline: 'none', width: '100%', boxSizing: 'border-box',
 }
 
 const numInput: React.CSSProperties = {
-  ...inputStyle, width: 60, textAlign: 'center',
+  ...inputStyle, width: '3.75rem', textAlign: 'center',
 }
 
 const btnPrimary: React.CSSProperties = {
   background: 'rgba(200,170,80,0.12)', border: `1px solid ${GOLD_DIM}`,
   color: HUD.gold, fontFamily: FR, fontSize: FS_SM, fontWeight: 700,
-  letterSpacing: '0.1em', padding: '8px 20px',
-  borderRadius: 3, cursor: 'pointer',
+  letterSpacing: '0.1em', padding: '0.5rem 1.25rem',
+  borderRadius: RADIUS.sm, cursor: 'pointer',
 }
 
 const btnSmall: React.CSSProperties = {
   background: 'transparent', border: `1px solid ${BORDER}`,
   color: DIM, fontFamily: FR, fontSize: FS_CAPTION,
-  padding: '4px 10px', borderRadius: 3, cursor: 'pointer',
+  padding: '0.25rem 0.625rem', borderRadius: RADIUS.sm, cursor: 'pointer',
 }
 
 const btnDanger: React.CSSProperties = {
   background: 'transparent', border: `1px solid rgba(224,80,80,0.3)`,
   color: RED, fontFamily: FR, fontSize: FS_CAPTION,
-  padding: '4px 8px', borderRadius: 3, cursor: 'pointer',
+  padding: '0.25rem 0.5rem', borderRadius: RADIUS.sm, cursor: 'pointer',
 }
 
 const fieldLabel: React.CSSProperties = {
   fontFamily: FR, fontSize: FS_CAPTION, color: DIM,
   letterSpacing: '0.08em', textTransform: 'uppercase' as const,
-  marginBottom: 4,
+  marginBottom: '0.25rem',
 }
 
 const sectionHead: React.CSSProperties = {
   fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700,
   letterSpacing: '0.2em', textTransform: 'uppercase' as const,
   color: GOLD_DIM, borderBottom: `1px solid ${BORDER}`,
-  paddingBottom: 4, marginBottom: 12,
+  paddingBottom: '0.25rem', marginBottom: '0.75rem',
 }
 
 /* ── All SWRPG skill names (AoE Core Rulebook Table 3-1) ── */
@@ -392,7 +390,7 @@ export function AdversaryEditor({
     <Modal open onClose={onClose} maxWidth={640}>
         {/* Header */}
         <div style={{
-          padding: '16px 20px', borderBottom: `1px solid ${BORDER}`,
+          padding: '1rem 1.25rem', borderBottom: `1px solid ${BORDER}`,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
           <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: HUD.gold, letterSpacing: '0.1em' }}>
@@ -401,14 +399,14 @@ export function AdversaryEditor({
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: DIM, cursor: 'pointer', fontSize: FS_H4 }}>×</button>
         </div>
 
-        <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 24, maxHeight: '80vh', overflowY: 'auto' }}>
+        <div style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', maxHeight: '80vh', overflowY: 'auto' }}>
 
           {/* OggDude copy warning */}
           {isOggDudeCopy && (
             <div style={{
               background: 'rgba(224,120,85,0.08)', border: `1px solid rgba(224,120,85,0.3)`,
-              borderRadius: 4, padding: '10px 14px',
-              fontFamily: FR, fontSize: FS_CAPTION, color: '#E07855',
+              borderRadius: RADIUS.md, padding: '0.625rem 0.875rem',
+              fontFamily: FR, fontSize: FS_CAPTION, color: 'var(--state-threat)',
             }}>
               ✎ Based on OggDude data — all fields editable. Saves as a new custom adversary.
             </div>
@@ -420,8 +418,8 @@ export function AdversaryEditor({
               <div style={sectionHead}>Start from Existing (Optional)</div>
               {tmplSelected ? (
                 <div style={{
-                  background: RAISED, border: `1px solid ${BORDER}`, borderRadius: 4,
-                  padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  background: RAISED, border: `1px solid ${BORDER}`, borderRadius: RADIUS.md,
+                  padding: '0.5rem 0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 }}>
                   <span style={{ fontFamily: FR, fontSize: FS_SM, color: TEXT }}>
                     Based on <strong style={{ color: HUD.gold }}>{tmplSelected.name}</strong>
@@ -444,9 +442,9 @@ export function AdversaryEditor({
                   />
                   {tmplResults.length > 0 && (
                     <div style={{
-                      position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10,
-                      background: PANEL_BG, border: `1px solid ${BORDER_HI}`,
-                      borderRadius: 4, maxHeight: 200, overflowY: 'auto',
+                      position: 'absolute', top: '100%', left: 0, right: 0, zIndex: Z.dropdown,
+                      background: HUD.panel, border: `1px solid ${BORDER_HI}`,
+                      borderRadius: RADIUS.md, maxHeight: '12.5rem', overflowY: 'auto',
                       boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
                     }}>
                       {tmplResults.map(a => (
@@ -457,7 +455,7 @@ export function AdversaryEditor({
                           style={{
                             display: 'block', width: '100%', textAlign: 'left',
                             background: 'transparent', border: 'none',
-                            padding: '8px 12px', cursor: 'pointer',
+                            padding: '0.5rem 0.75rem', cursor: 'pointer',
                             fontFamily: FR, fontSize: FS_SM, color: TEXT,
                             borderBottom: `1px solid ${BORDER}`,
                           }}
@@ -469,7 +467,7 @@ export function AdversaryEditor({
                         </button>
                       ))}
                       <div style={{
-                        padding: '6px 12px', borderTop: `1px solid ${BORDER}`,
+                        padding: '0.375rem 0.75rem', borderTop: `1px solid ${BORDER}`,
                         fontFamily: FR, fontSize: FS_CAPTION, color: DIM,
                         fontStyle: 'italic',
                       }}>
@@ -485,7 +483,7 @@ export function AdversaryEditor({
           {/* Basic Info */}
           <div>
             <div style={sectionHead}>Basic Info</div>
-            <div style={{ display: 'flex', gap: 12 }}>
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
               <div style={{ flex: 2 }}>
                 <div style={fieldLabel}>Name *</div>
                 <input
@@ -493,7 +491,7 @@ export function AdversaryEditor({
                   value={name} onChange={e => setName(e.target.value)}
                   style={{ ...inputStyle, borderColor: errors.name ? RED : BORDER }}
                 />
-                {errors.name && <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: RED, marginTop: 3 }}>{errors.name}</div>}
+                {errors.name && <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: RED, marginTop: '0.1875rem' }}>{errors.name}</div>}
               </div>
               <div style={{ flex: 1 }}>
                 <div style={fieldLabel}>Type</div>
@@ -513,7 +511,7 @@ export function AdversaryEditor({
           {/* Characteristics */}
           <div>
             <div style={sectionHead}>Characteristics</div>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '0.625rem', flexWrap: 'wrap' }}>
               {([
                 ['BR',  brawn,     setBrawn],
                 ['AG',  agility,   setAgility],
@@ -523,7 +521,7 @@ export function AdversaryEditor({
                 ['PR',  presence,  setPresence],
               ] as [string, number, (v: number) => void][]).map(([label, val, setter]) => (
                 <div key={label} style={{ textAlign: 'center' }}>
-                  <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, marginBottom: 4 }}>{label}</div>
+                  <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, marginBottom: '0.25rem' }}>{label}</div>
                   <input
                     type="number" min={1} max={6}
                     value={val}
@@ -538,15 +536,15 @@ export function AdversaryEditor({
           {/* Derived */}
           <div>
             <div style={sectionHead}>Derived Stats</div>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
               <div>
                 <div style={fieldLabel}>Wound Threshold *</div>
                 <input
                   type="number" min={1} value={wt}
                   onChange={e => setWt(Number(e.target.value))}
-                  style={{ ...numInput, width: 80, borderColor: errors.wt ? RED : BORDER }}
+                  style={{ ...numInput, width: '5rem', borderColor: errors.wt ? RED : BORDER }}
                 />
-                {errors.wt && <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: RED, marginTop: 3 }}>{errors.wt}</div>}
+                {errors.wt && <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: RED, marginTop: '0.1875rem' }}>{errors.wt}</div>}
               </div>
               {type === 'nemesis' && (
                 <div>
@@ -555,7 +553,7 @@ export function AdversaryEditor({
                     type="number" min={1}
                     value={st === '' ? '' : st}
                     onChange={e => setSt(e.target.value === '' ? '' : Number(e.target.value))}
-                    style={{ ...numInput, width: 80 }}
+                    style={{ ...numInput, width: '5rem' }}
                   />
                 </div>
               )}
@@ -564,7 +562,7 @@ export function AdversaryEditor({
                 <input
                   type="number" min={0} max={4} value={defMelee}
                   onChange={e => setDefMelee(Number(e.target.value))}
-                  style={{ ...numInput, width: 72 }}
+                  style={{ ...numInput, width: '4.5rem' }}
                 />
               </div>
               <div>
@@ -572,11 +570,11 @@ export function AdversaryEditor({
                 <input
                   type="number" min={0} max={4} value={defRanged}
                   onChange={e => setDefRanged(Number(e.target.value))}
-                  style={{ ...numInput, width: 72 }}
+                  style={{ ...numInput, width: '4.5rem' }}
                 />
               </div>
             </div>
-            <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, marginTop: 6 }}>
+            <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, marginTop: '0.375rem' }}>
               Soak = Brawn + armor (computed at runtime).
             </div>
           </div>
@@ -587,14 +585,14 @@ export function AdversaryEditor({
               <span style={sectionHead}>Skills</span>
               <button onClick={addSkill} style={btnSmall}>+ Add Skill</button>
             </div>
-            <div style={{ borderBottom: `1px solid ${BORDER}`, marginBottom: 12 }} />
+            <div style={{ borderBottom: `1px solid ${BORDER}`, marginBottom: '0.75rem' }} />
             {skills.length === 0 ? (
-              <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, padding: '4px 0' }}>No skills added.</div>
+              <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, padding: '0.25rem 0' }}>No skills added.</div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
                 {skills.map((s, i) => (
-                  <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                       <select
                         value={s.skill}
                         onChange={e => updateSkill(i, { skill: e.target.value, characteristicOverride: e.target.value === 'Lightsaber' ? (s.characteristicOverride ?? '') : undefined })}
@@ -607,26 +605,26 @@ export function AdversaryEditor({
                         type="number" min={1} max={5}
                         value={s.rank}
                         onChange={e => updateSkill(i, { rank: Math.min(5, Math.max(1, Number(e.target.value))) })}
-                        style={{ ...numInput, width: 56 }}
+                        style={{ ...numInput, width: '3.5rem' }}
                       />
                       <button onClick={() => removeSkill(i)} style={btnDanger}>×</button>
                     </div>
                     {/* Characteristic override selector — only for Lightsaber */}
                     {s.skill === 'Lightsaber' && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 4 }}>
-                        <span style={{ fontFamily: FR, fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)', color: GOLD_DIM, whiteSpace: 'nowrap' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', paddingLeft: '0.25rem' }}>
+                        <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: GOLD_DIM, whiteSpace: 'nowrap' }}>
                           Characteristic:
                         </span>
-                        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
                           {LIGHTSABER_CHAR_OPTIONS.map(opt => (
                             <button
                               key={opt.key}
                               onClick={() => updateSkill(i, { characteristicOverride: opt.key })}
                               style={{
                                 fontFamily: FR,
-                                fontSize: 'clamp(0.58rem, 0.88vw, 0.68rem)',
-                                padding: '2px 8px',
-                                borderRadius: 3,
+                                fontSize: FS_OVERLINE,
+                                padding: '0.125rem 0.5rem',
+                                borderRadius: RADIUS.sm,
                                 border: `1px solid ${(s.characteristicOverride ?? '') === opt.key ? HUD.gold : BORDER}`,
                                 background: (s.characteristicOverride ?? '') === opt.key ? 'rgba(200,170,80,0.12)' : 'transparent',
                                 color: (s.characteristicOverride ?? '') === opt.key ? HUD.gold : DIM,
@@ -647,22 +645,22 @@ export function AdversaryEditor({
 
           {/* Weapons */}
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
               <span style={sectionHead}>Weapons</span>
               <button onClick={addWeapon} style={btnSmall}>+ Add Weapon</button>
             </div>
-            <div style={{ borderBottom: `1px solid ${BORDER}`, marginBottom: 12 }} />
+            <div style={{ borderBottom: `1px solid ${BORDER}`, marginBottom: '0.75rem' }} />
             {weapons.length === 0 ? (
-              <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, padding: '4px 0' }}>No weapons added.</div>
+              <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, padding: '0.25rem 0' }}>No weapons added.</div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
                 {weapons.map((w, i) => (
                   <div key={i} style={{
                     background: RAISED, border: `1px solid ${BORDER}`,
-                    borderRadius: 4, padding: '10px 12px',
-                    display: 'flex', flexDirection: 'column', gap: 6,
+                    borderRadius: RADIUS.md, padding: '0.625rem 0.75rem',
+                    display: 'flex', flexDirection: 'column', gap: '0.375rem',
                   }}>
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                       <input
                         type="text" placeholder="Weapon name…"
                         value={w.name}
@@ -671,8 +669,8 @@ export function AdversaryEditor({
                       />
                       <button onClick={() => removeWeapon(i)} style={btnDanger}>×</button>
                     </div>
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                      <div style={{ flex: 1, minWidth: 120 }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      <div style={{ flex: 1, minWidth: '7.5rem' }}>
                         <div style={fieldLabel}>Skill</div>
                         <input
                           type="text" placeholder="e.g. Ranged (Heavy)"
@@ -681,7 +679,7 @@ export function AdversaryEditor({
                           style={inputStyle}
                         />
                       </div>
-                      <div style={{ width: 72 }}>
+                      <div style={{ width: '4.5rem' }}>
                         <div style={fieldLabel}>Damage</div>
                         <input
                           type="text" placeholder="8"
@@ -690,7 +688,7 @@ export function AdversaryEditor({
                           style={inputStyle}
                         />
                       </div>
-                      <div style={{ width: 96 }}>
+                      <div style={{ width: '6rem' }}>
                         <div style={fieldLabel}>Range</div>
                         <select
                           value={w.range}
@@ -720,29 +718,29 @@ export function AdversaryEditor({
 
           {/* Gear */}
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
               <span style={sectionHead}>Gear</span>
               <button onClick={addGear} style={btnSmall}>+ Add Gear</button>
             </div>
-            <div style={{ borderBottom: `1px solid ${BORDER}`, marginBottom: 12 }} />
+            <div style={{ borderBottom: `1px solid ${BORDER}`, marginBottom: '0.75rem' }} />
             {gear.length === 0 ? (
-              <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, padding: '4px 0' }}>No gear added.</div>
+              <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, padding: '0.25rem 0' }}>No gear added.</div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
                 {gear.map((g, i) => (
                   <div key={i} style={{
                     background: RAISED, border: `1px solid ${BORDER}`,
-                    borderRadius: 4, padding: '10px 12px',
-                    display: 'flex', flexDirection: 'column', gap: 6,
+                    borderRadius: RADIUS.md, padding: '0.625rem 0.75rem',
+                    display: 'flex', flexDirection: 'column', gap: '0.375rem',
                   }}>
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                       <input
                         type="text" placeholder="Gear name…"
                         value={g.name}
                         onChange={e => updateGear(i, { name: e.target.value })}
                         style={{ ...inputStyle, flex: 1 }}
                       />
-                      <div style={{ width: 72 }}>
+                      <div style={{ width: '4.5rem' }}>
                         <div style={fieldLabel}>Encumbrance</div>
                         <input
                           type="text" placeholder="0"
@@ -770,20 +768,20 @@ export function AdversaryEditor({
 
           {/* Talents & Abilities */}
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
               <span style={sectionHead}>Talents &amp; Abilities</span>
-              <div style={{ display: 'flex', gap: 6 }}>
+              <div style={{ display: 'flex', gap: '0.375rem' }}>
                 <button onClick={addTalent} style={btnSmall}>+ Talent</button>
                 <button onClick={addAbility} style={btnSmall}>+ Ability</button>
               </div>
             </div>
-            <div style={{ borderBottom: `1px solid ${BORDER}`, marginBottom: 12 }} />
+            <div style={{ borderBottom: `1px solid ${BORDER}`, marginBottom: '0.75rem' }} />
             {talents.length === 0 && abilities.length === 0 ? (
-              <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, padding: '4px 0' }}>None added.</div>
+              <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, padding: '0.25rem 0' }}>None added.</div>
             ) : null}
             {talents.map((t, i) => (
-              <div key={`t${i}`} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 8 }}>
-                <div style={{ flex: 1, display: 'flex', gap: 8 }}>
+              <div key={`t${i}`} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                <div style={{ flex: 1, display: 'flex', gap: '0.5rem' }}>
                   <input
                     type="text" placeholder="Talent name…"
                     value={t.name} onChange={e => updateTalent(i, { name: e.target.value })}
@@ -799,8 +797,8 @@ export function AdversaryEditor({
               </div>
             ))}
             {abilities.map((a, i) => (
-              <div key={`a${i}`} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 8 }}>
-                <div style={{ flex: 1, display: 'flex', gap: 8 }}>
+              <div key={`a${i}`} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                <div style={{ flex: 1, display: 'flex', gap: '0.5rem' }}>
                   <input
                     type="text" placeholder="Ability name…"
                     value={a.name} onChange={e => updateAbility(i, { name: e.target.value })}
@@ -834,7 +832,7 @@ export function AdversaryEditor({
           </div>
 
           {/* Actions */}
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 8, borderTop: `1px solid ${BORDER}` }}>
+          <div style={{ display: 'flex', gap: '0.625rem', justifyContent: 'flex-end', paddingTop: '0.5rem', borderTop: `1px solid ${BORDER}` }}>
             <button onClick={onClose} style={btnSmall}>Cancel</button>
             <button
               onClick={handleSave}

@@ -3,19 +3,19 @@
 import { useState, useMemo, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { RichText } from '@/components/ui/RichText'
-import { FONT_BODY, HUD, RADIUS } from '@/lib/tokens'
+import { FONT_BODY, HUD, RADIUS, EASE, FS } from '@/lib/tokens'
 import { ACTIVATION_LABELS, type RefTalent, type RefForcePower, type RefForceAbility } from '@/lib/types'
 
 // ── Local palette ──────────────────────────────────────────────────────────────
-const BLUE      = '#5AAAE0'
-const PURPLE    = '#9060D0'
+const BLUE      = 'var(--die-force)'
+const PURPLE    = 'var(--hud-accent-purple)'
 const BG        = 'rgba(6,10,8,0.97)'
 const PANEL     = 'rgba(10,18,12,0.95)'
-const BORDER    = 'rgba(200,170,80,0.14)'
-const BORDER_HI = 'rgba(200,170,80,0.28)'
-const TEXT      = 'rgba(232,223,200,0.87)'
-const DIM       = 'rgba(106,128,112,0.85)'
-const DIM_LO    = 'rgba(100,128,112,0.4)'
+const BORDER    = 'var(--hud-border)'
+const BORDER_HI = HUD.borderHi
+const TEXT      = HUD.text
+const DIM       = HUD.textDim
+const DIM_LO    = HUD.textFaint
 
 const ACTIVATION_COLOR: Record<string, string> = {
   taPassive:       'rgba(160,160,160,0.85)',
@@ -35,7 +35,7 @@ function ActivationBadge({ activation }: { activation: string }) {
   return (
     <span style={{
       fontFamily:    FONT_BODY,
-      fontSize:      '8px',
+      fontSize:      FS.overline,
       fontWeight:    700,
       letterSpacing: '0.06em',
       textTransform: 'uppercase',
@@ -43,7 +43,7 @@ function ActivationBadge({ activation }: { activation: string }) {
       background:    `${color}18`,
       border:        `1px solid ${color}40`,
       borderRadius:  RADIUS.sm,
-      padding:       '2px 6px',
+      padding:       '0.125rem 0.375rem',
       flexShrink:    0,
     }}>
       {label}
@@ -58,17 +58,17 @@ function SearchInput({ value, placeholder, onChange, onClear }: {
   onClear:     () => void
 }) {
   return (
-    <div style={{ padding: '10px 14px', borderBottom: `1px solid ${BORDER}`, flexShrink: 0 }}>
+    <div style={{ padding: '0.625rem 0.875rem', borderBottom: `1px solid ${BORDER}`, flexShrink: 0 }}>
       <div style={{
         display:      'flex',
         alignItems:   'center',
-        gap:          8,
+        gap:          '0.5rem',
         background:   'rgba(0,0,0,0.45)',
         border:       `1px solid ${BORDER_HI}`,
         borderRadius: RADIUS.sm,
-        padding:      '7px 10px',
+        padding:      '0.4375rem 0.625rem',
       }}>
-        <span style={{ fontSize: 11, opacity: 0.45, flexShrink: 0 }}>🔍</span>
+        <span style={{ fontSize: FS.overline, opacity: 0.45, flexShrink: 0 }}>🔍</span>
         <input
           type="text"
           value={value}
@@ -93,7 +93,7 @@ function SearchInput({ value, placeholder, onChange, onClear }: {
               border:     'none',
               cursor:     'pointer',
               color:      DIM_LO,
-              fontSize:   11,
+              fontSize:   FS.overline,
               lineHeight: 1,
               padding:    0,
               flexShrink: 0,
@@ -113,11 +113,11 @@ function EmptyState({ message, sub }: { message: string; sub: string }) {
       alignItems:     'center',
       justifyContent: 'center',
       height:         '100%',
-      gap:            8,
-      padding:        32,
+      gap:            '0.5rem',
+      padding:        '2rem',
       textAlign:      'center',
     }}>
-      <div style={{ fontSize: 28, opacity: 0.15 }}>⊟</div>
+      <div style={{ fontSize: '1.75rem', opacity: 0.15 }}>⊟</div>
       <div style={{
         fontFamily:    FONT_BODY,
         fontSize:      'var(--text-label)',
@@ -144,9 +144,9 @@ function EmptyState({ message, sub }: { message: string; sub: string }) {
 function ResultCount({ label }: { label: string }) {
   return (
     <div style={{
-      padding:       '4px 14px 8px',
+      padding:       '0.25rem 0.875rem 0.5rem',
       fontFamily:    FONT_BODY,
-      fontSize:      '8px',
+      fontSize:      FS.overline,
       fontWeight:    700,
       letterSpacing: '0.1em',
       textTransform: 'uppercase',
@@ -161,8 +161,8 @@ function ResultCount({ label }: { label: string }) {
 
 function TalentCard({ talent }: { talent: RefTalent }) {
   return (
-    <div style={{ padding: '9px 14px', borderBottom: `1px solid ${BORDER}` }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 5 }}>
+    <div style={{ padding: '0.5625rem 0.875rem', borderBottom: `1px solid ${BORDER}` }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4375rem', marginBottom: '0.3125rem' }}>
         <span style={{
           fontFamily: FONT_BODY,
           fontSize:   'var(--text-sm)',
@@ -177,7 +177,7 @@ function TalentCard({ talent }: { talent: RefTalent }) {
         {talent.is_ranked && (
           <span style={{
             fontFamily: FONT_BODY,
-            fontSize:   '8px',
+            fontSize:   FS.overline,
             color:      'rgba(200,170,80,0.45)',
             flexShrink: 0,
           }}>
@@ -230,14 +230,14 @@ function AbilityRow({ ability }: { ability: RefForceAbility }) {
   return (
     <div
       style={{
-        padding:    '7px 12px',
+        padding:    '0.4375rem 0.75rem',
         borderTop:  '1px solid rgba(144,96,208,0.1)',
         background: 'rgba(4,8,6,0.5)',
         cursor:     ability.description ? 'pointer' : 'default',
       }}
       onClick={() => ability.description && setExpanded(e => !e)}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
         <span style={{
           fontFamily: FONT_BODY,
           fontSize:   'var(--text-caption)',
@@ -248,7 +248,7 @@ function AbilityRow({ ability }: { ability: RefForceAbility }) {
           {ability.name}
         </span>
         {ability.description && (
-          <span style={{ fontSize: 8, color: 'rgba(144,96,208,0.45)', flexShrink: 0 }}>
+          <span style={{ fontSize: FS.overline, color: 'rgba(144,96,208,0.45)', flexShrink: 0 }}>
             {expanded ? '▲' : '▼'}
           </span>
         )}
@@ -259,7 +259,7 @@ function AbilityRow({ ability }: { ability: RefForceAbility }) {
           fontSize:   'var(--text-caption)',
           color:      'rgba(90,110,100,0.85)',
           lineHeight: 1.4,
-          marginTop:  4,
+          marginTop:  '0.25rem',
         }}>
           <RichText text={ability.description} />
         </div>
@@ -271,7 +271,7 @@ function AbilityRow({ ability }: { ability: RefForceAbility }) {
 function ForcePowerCard({ power, abilities }: { power: RefForcePower; abilities: RefForceAbility[] }) {
   return (
     <div style={{
-      margin:       '6px 10px 2px',
+      margin:       '0.375rem 0.625rem 0.125rem',
       background:   'rgba(144,96,208,0.06)',
       border:       '1px solid rgba(144,96,208,0.2)',
       borderRadius: RADIUS.md,
@@ -280,21 +280,21 @@ function ForcePowerCard({ power, abilities }: { power: RefForcePower; abilities:
       <div style={{
         display:      'flex',
         alignItems:   'center',
-        gap:          8,
-        padding:      '9px 12px',
+        gap:          '0.5rem',
+        padding:      '0.5625rem 0.75rem',
         borderBottom: '1px solid rgba(144,96,208,0.12)',
         background:   'rgba(144,96,208,0.08)',
       }}>
         <span style={{ fontFamily: FONT_BODY, fontSize: 'var(--text-sm)', fontWeight: 700, color: 'rgba(200,180,240,0.9)', flex: 1 }}>
           {power.name}
         </span>
-        <span style={{ fontFamily: FONT_BODY, fontSize: '8px', color: 'rgba(144,96,208,0.6)', flexShrink: 0 }}>
+        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'rgba(144,96,208,0.6)', flexShrink: 0 }}>
           FR {power.min_force_rating}+
         </span>
       </div>
       {power.description && (
         <div style={{
-          padding:    '7px 12px',
+          padding:    '0.4375rem 0.75rem',
           fontFamily: FONT_BODY,
           fontSize:   'var(--text-caption)',
           color:      DIM,
@@ -315,8 +315,8 @@ function StandaloneAbilityCard({ ability, powerName }: { ability: RefForceAbilit
   return (
     <div
       style={{
-        margin:       '4px 10px',
-        padding:      '8px 12px',
+        margin:       '0.25rem 0.625rem',
+        padding:      '0.5rem 0.75rem',
         background:   'rgba(144,96,208,0.04)',
         border:       '1px solid rgba(144,96,208,0.14)',
         borderRadius: RADIUS.md,
@@ -324,15 +324,15 @@ function StandaloneAbilityCard({ ability, powerName }: { ability: RefForceAbilit
       }}
       onClick={() => ability.description && setExpanded(e => !e)}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
         <span style={{ fontFamily: FONT_BODY, fontSize: 'var(--text-caption)', fontWeight: 600, color: 'rgba(200,180,240,0.8)', flex: 1 }}>
           {ability.name}
         </span>
-        <span style={{ fontFamily: FONT_BODY, fontSize: '8px', color: 'rgba(144,96,208,0.5)', flexShrink: 0 }}>
+        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'rgba(144,96,208,0.5)', flexShrink: 0 }}>
           {powerName}
         </span>
         {ability.description && (
-          <span style={{ fontSize: 8, color: 'rgba(144,96,208,0.45)', flexShrink: 0 }}>
+          <span style={{ fontSize: FS.overline, color: 'rgba(144,96,208,0.45)', flexShrink: 0 }}>
             {expanded ? '▲' : '▼'}
           </span>
         )}
@@ -343,7 +343,7 @@ function StandaloneAbilityCard({ ability, powerName }: { ability: RefForceAbilit
           fontSize:   'var(--text-caption)',
           color:      'rgba(90,110,100,0.85)',
           lineHeight: 1.4,
-          marginTop:  6,
+          marginTop:  '0.375rem',
         }}>
           <RichText text={ability.description} />
         </div>
@@ -487,8 +487,8 @@ export function GmReferenceLibraryPanel() {
         flexShrink:   0,
         display:      'flex',
         alignItems:   'center',
-        height:       50,
-        padding:      '0 16px',
+        height:       '3.125rem',
+        padding:      '0 1rem',
         borderBottom: `1px solid ${BORDER}`,
         background:   PANEL,
       }}>
@@ -526,14 +526,14 @@ export function GmReferenceLibraryPanel() {
                 border:        'none',
                 borderBottom:  `2px solid ${active ? t.accent : 'transparent'}`,
                 cursor:        'pointer',
-                padding:       '10px 4px',
+                padding:       '0.625rem 0.25rem',
                 fontFamily:    FONT_BODY,
                 fontSize:      'var(--text-caption)',
                 fontWeight:    700,
                 letterSpacing: '0.1em',
                 textTransform: 'uppercase',
                 color:         active ? t.accent : DIM_LO,
-                transition:    'color 0.15s, border-color 0.15s',
+                transition:    EASE.quick,
               }}
             >
               {t.label}

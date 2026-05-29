@@ -4,20 +4,18 @@ import { EquipmentImage } from '@/components/ui/EquipmentImage'
 import { RichText } from '@/components/ui/RichText'
 import type { Character } from '@/lib/types'
 import type { UseGmLootReturn, LootItem } from '@/hooks/useGmLoot'
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_BODY, RADIUS, Z, panelBase as _panelBase } from '@/lib/tokens'
 import { rarityColor, rarityLabel } from '@/lib/styles'
 
 /* ── Design tokens ── */
-const FC = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FR = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const PANEL_BG = 'rgba(8,16,10,0.88)'
-const TEXT = '#C8D8C0'
-const DIM = '#6A8070'
-const FAINT = '#2A3A2E'
-const BORDER = 'rgba(200,170,80,0.14)'
-const BORDER_HI = 'rgba(200,170,80,0.36)'
-const RED = '#E05050'
-const BLUE = '#5AAAE0'
+const FC = FONT_BODY
+const FR = FONT_BODY
+const TEXT = HUD.text
+const DIM  = HUD.textDim
+const BORDER    = HUD.border
+const BORDER_HI = HUD.borderHi
+const RED  = 'var(--state-failure)'
+const BLUE = 'var(--die-force)'
 
 const FS_OVERLINE = 'var(--text-overline)'
 const FS_CAPTION  = 'var(--text-caption)'
@@ -25,12 +23,8 @@ const FS_LABEL    = 'var(--text-label)'
 const FS_SM       = 'var(--text-sm)'
 
 const panelBase: React.CSSProperties = {
-  background: PANEL_BG,
-  backdropFilter: 'blur(12px)',
-  WebkitBackdropFilter: 'blur(12px)',
-  border: `1px solid ${BORDER}`,
-  borderRadius: 6,
-  position: 'relative',
+  ..._panelBase,
+  borderRadius: RADIUS.lg,
 }
 const fieldLabel: React.CSSProperties = {
   fontFamily: FC,
@@ -38,7 +32,7 @@ const fieldLabel: React.CSSProperties = {
   fontWeight: 700,
   letterSpacing: '0.18em',
   textTransform: 'uppercase',
-  color: 'rgba(200,170,80,0.5)',
+  color: HUD.gold,
   marginBottom: 4,
 }
 const btnSmall: React.CSSProperties = {
@@ -48,7 +42,7 @@ const btnSmall: React.CSSProperties = {
   fontFamily: FR,
   fontSize: FS_CAPTION,
   padding: '4px 10px',
-  borderRadius: 3,
+  borderRadius: RADIUS.md,
   cursor: 'pointer',
 }
 const btnPrimary: React.CSSProperties = {
@@ -61,7 +55,7 @@ const btnPrimary: React.CSSProperties = {
   letterSpacing: '0.12em',
   textTransform: 'uppercase',
   padding: '6px 14px',
-  borderRadius: 3,
+  borderRadius: RADIUS.md,
   cursor: 'pointer',
 }
 const btnSecondary: React.CSSProperties = {
@@ -74,7 +68,7 @@ const btnSecondary: React.CSSProperties = {
   letterSpacing: '0.1em',
   textTransform: 'uppercase',
   padding: '6px 14px',
-  borderRadius: 3,
+  borderRadius: RADIUS.md,
   cursor: 'pointer',
 }
 const btnDanger: React.CSSProperties = {
@@ -87,7 +81,7 @@ const btnDanger: React.CSSProperties = {
   letterSpacing: '0.1em',
   textTransform: 'uppercase',
   padding: '6px 14px',
-  borderRadius: 3,
+  borderRadius: RADIUS.md,
   cursor: 'pointer',
 }
 const darkInput: React.CSSProperties = {
@@ -96,7 +90,7 @@ const darkInput: React.CSSProperties = {
   color: TEXT,
   fontFamily: FR,
   padding: '6px 10px',
-  borderRadius: 3,
+  borderRadius: RADIUS.md,
   outline: 'none',
   fontSize: FS_SM,
 }
@@ -116,14 +110,14 @@ function CornerBrackets() {
 
 const badgeStyle = (bg: string, fg: string): React.CSSProperties => ({
   display: 'inline-flex', alignItems: 'center', gap: '4px',
-  padding: '2px 7px', borderRadius: '3px',
+  padding: '2px 7px', borderRadius: RADIUS.md,
   fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
   background: bg, color: fg, whiteSpace: 'nowrap',
 })
 
 function LootBadges({ item, size = 'sm' }: { item: LootItem; size?: 'sm' | 'md' }) {
   const badges: React.ReactNode[] = []
-  const fs = size === 'md' ? '13px' : '11px'
+  const fs = size === 'md' ? FS_LABEL : FS_OVERLINE
   const pad = '4px 8px'
   const b = (bg: string, fg: string): React.CSSProperties => ({ ...badgeStyle(bg, fg), fontSize: fs, padding: pad })
 
@@ -134,12 +128,12 @@ function LootBadges({ item, size = 'sm' }: { item: LootItem; size?: 'sm' | 'md' 
       ? `Brawn+${item.damage_add ?? 0}`
       : item.damage != null ? String(item.damage) : null
     if (dmg != null) badges.push(<span key="dmg" style={b('rgba(224,80,80,0.15)', RED)}>DMG {dmg}</span>)
-    if (item.crit != null && item.crit > 0) badges.push(<span key="crit" style={b('rgba(224,80,80,0.10)', '#B44')}>CRIT {item.crit}</span>)
+    if (item.crit != null && item.crit > 0) badges.push(<span key="crit" style={b('rgba(224,80,80,0.10)', RED)}>CRIT {item.crit}</span>)
     if (item.range_value) badges.push(<span key="rng" style={b('rgba(200,170,80,0.08)', DIM)}>{item.range_value}</span>)
   }
   if (item.type === 'armor') {
     if (item.defense != null && item.defense > 0) badges.push(<span key="def" style={b('rgba(90,170,224,0.15)', BLUE)}>DEF {item.defense}</span>)
-    if (item.soak != null && item.soak > 0) badges.push(<span key="soak" style={b('rgba(90,170,224,0.10)', '#2B5DAE')}>SOAK +{item.soak}</span>)
+    if (item.soak != null && item.soak > 0) badges.push(<span key="soak" style={b('rgba(90,170,224,0.10)', BLUE)}>SOAK +{item.soak}</span>)
   }
   if (badges.length === 0) return null
   return <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>{badges}</div>
@@ -169,7 +163,7 @@ export function GmLootModal({
 }: GmLootModalProps) {
   return (
     <div style={{
-      position: 'fixed', inset: 0, zIndex: 100,
+      position: 'fixed', inset: 0, zIndex: Z.modal,
       background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
       display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
     }}>
@@ -267,8 +261,8 @@ export function GmLootModal({
                     ...panelBase,
                     padding: 10, cursor: 'pointer',
                     border: `1px solid ${isSelected ? BORDER_HI : BORDER}`,
-                    background: isSelected ? 'rgba(200,170,80,0.08)' : PANEL_BG,
-                    transition: '.15s', display: 'flex', gap: 8, alignItems: 'center',
+                    background: isSelected ? 'rgba(200,170,80,0.08)' : HUD.panel,
+                    transition: 'var(--ease-quick)', display: 'flex', gap: 8, alignItems: 'center',
                   }}
                 >
                   <EquipmentImage itemKey={item.key} itemType={item.type} categories={item.categories} size="md" />
@@ -307,10 +301,10 @@ export function GmLootModal({
               aria-label="Close item detail"
               className="hov-gold-text"
               style={{
-                position: 'absolute', top: 8, right: 8, zIndex: 1,
+                position: 'absolute', top: 8, right: 8, zIndex: Z.raised,
                 background: 'transparent', border: 'none',
                 color: DIM, cursor: 'pointer',
-                fontFamily: FR, fontSize: FS_SM, padding: '2px 6px', borderRadius: 3,
+                fontFamily: FR, fontSize: FS_SM, padding: '2px 6px', borderRadius: RADIUS.md,
               }}
             >
               ✕
@@ -359,7 +353,7 @@ export function GmLootModal({
 
         {/* Reveal assignment row */}
         {revealItem && (
-          <div style={{ padding: 12, background: 'rgba(200,170,80,0.07)', border: `2px solid ${BORDER_HI}`, borderRadius: 4, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ padding: 12, background: 'rgba(200,170,80,0.07)', border: `1px solid ${BORDER_HI}`, borderRadius: RADIUS.md, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
             <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, letterSpacing: '0.1em', color: HUD.gold }}>
               REVEALING: <span style={{ color: TEXT }}>{revealItem.name}</span>
             </div>

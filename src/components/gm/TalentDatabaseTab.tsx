@@ -7,29 +7,23 @@ import { RichText } from '@/components/ui/RichText'
 import type { Character } from '@/lib/types'
 import { ACTIVATION_LABELS } from '@/lib/types'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_BODY, EASE, FS, RADIUS, Z } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 const GOLD_DIM  = 'rgba(200,170,80,0.5)'
 const GOLD_BD   = 'rgba(200,170,80,0.3)'
-const TEXT      = 'rgba(232,223,200,0.85)'
-const DIM       = '#6A8070'
-const BORDER    = 'rgba(200,170,80,0.14)'
-const BORDER_HI = 'rgba(200,170,80,0.36)'
-const RED       = '#E05050'
-const GREEN     = '#4CAF50'
-const PANEL_BG  = 'rgba(8,16,10,0.7)'
-const EDITOR_BG = 'rgba(6,13,9,0.97)'
-const FONT_C    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M    = "'Share Tech Mono','Courier New',monospace"
-const FS_OVER   = 'var(--text-overline)'
-const FS_CAP    = 'var(--text-caption)'
-const FS_LABEL  = 'var(--text-label)'
-const FS_SM     = 'var(--text-sm)'
+const TEXT      = HUD.text
+const DIM       = HUD.textDim
+const BORDER    = HUD.border
+const BORDER_HI = HUD.borderHi
+const RED       = 'var(--state-failure)'
+const GREEN     = 'var(--state-success)'
+const PANEL_BG  = HUD.panel
+const EDITOR_BG = HUD.panel
 
 const ACTIVATION_COLOR: Record<string, string> = {
   taPassive:       'rgba(150,150,150,0.8)',
-  taAction:        'var(--hud-gold)',
+  taAction:        HUD.gold,
   taManeuver:      '#4FC3F7',
   taIncidental:    '#81C784',
   taIncidentalOOT: '#81C784',
@@ -72,15 +66,15 @@ function ActivationBadge({ activation }: { activation: string }) {
   const color = ACTIVATION_COLOR[activation] ?? 'rgba(150,150,150,0.8)'
   return (
     <span style={{
-      fontFamily: FONT_M,
-      fontSize: FS_OVER,
+      fontFamily: FONT_BODY,
+      fontSize: FS.overline,
       textTransform: 'uppercase',
       letterSpacing: '0.06em',
       color,
       background: `${color}18`,
       border: `1px solid ${color}40`,
-      borderRadius: 4,
-      padding: '2px 6px',
+      borderRadius: RADIUS.md,
+      padding: '0.125rem 0.375rem',
       flexShrink: 0,
     }}>
       {label}
@@ -130,15 +124,15 @@ function AssignModal({ talent, characters, supabase, onClose, sendToChar }: Assi
 
   return (
     <Modal open onClose={onClose} maxWidth={448}>
-      <div style={{ padding: 24 }}>
-        <div style={{ fontFamily: FONT_C, fontSize: FS_SM, fontWeight: 700, color: TEXT, marginBottom: 4 }}>
+      <div style={{ padding: '1.5rem' }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700, color: TEXT, marginBottom: '0.25rem' }}>
           Assign: {talent.name}
         </div>
-        <div style={{ fontFamily: FONT_C, fontSize: FS_CAP, color: DIM, marginBottom: 18 }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: DIM, marginBottom: '1.125rem' }}>
           Select a character to receive this talent.
         </div>
 
-        <div style={{ marginBottom: 16 }}>
+        <div style={{ marginBottom: '1rem' }}>
           <div style={fieldLabel}>Character</div>
           <select value={selectedId} onChange={e => setSelectedId(e.target.value)} style={{ ...darkInput, width: '100%' }}>
             <option value="">Select character…</option>
@@ -146,9 +140,9 @@ function AssignModal({ talent, characters, supabase, onClose, sendToChar }: Assi
           </select>
         </div>
 
-        {error && <div style={{ fontFamily: FONT_C, fontSize: FS_CAP, color: RED, marginBottom: 8 }}>⚠ {error}</div>}
+        {error && <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: RED, marginBottom: '0.5rem' }}>⚠ {error}</div>}
 
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
           <button onClick={onClose} style={btnSecondary}>Cancel</button>
           <button
             onClick={handleAssign}
@@ -236,33 +230,33 @@ function EditorPanel({ talent, campaignId, supabase, onSaved, onClose }: EditorP
       {/* Backdrop */}
       <div
         onClick={handleClose}
-        style={{ position: 'fixed', inset: 0, zIndex: 10050, background: 'rgba(0,0,0,0.45)', opacity: visible ? 1 : 0, transition: 'opacity 0.26s' }}
+        style={{ position: 'fixed', inset: 0, zIndex: Z.modal - 1, background: 'rgba(0,0,0,0.45)', opacity: visible ? 1 : 0, transition: EASE.panel }}
       />
 
       {/* Slide-in panel */}
       <div style={{
-        position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 10060,
+        position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: Z.modal,
         width: 'clamp(320px, 38vw, 520px)',
         background: EDITOR_BG,
         borderLeft: `1px solid ${BORDER_HI}`,
         boxShadow: '-8px 0 40px rgba(0,0,0,0.6)',
         display: 'flex', flexDirection: 'column',
         transform: visible ? 'translateX(0)' : 'translateX(100%)',
-        transition: 'transform 0.26s cubic-bezier(0.22,1,0.36,1)',
+        transition: `transform 0.26s cubic-bezier(0.22,1,0.36,1)`,
       }}>
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: `1px solid ${BORDER}` }}>
-          <span style={{ fontFamily: FONT_C, fontSize: FS_SM, fontWeight: 700, color: HUD.gold, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 1.25rem', borderBottom: `1px solid ${BORDER}` }}>
+          <span style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700, color: HUD.gold, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
             {isNew ? 'New Custom Talent' : 'Edit Talent'}
           </span>
-          <button onClick={handleClose} style={{ background: 'none', border: 'none', color: DIM, cursor: 'pointer', fontFamily: FONT_C, fontSize: FS_SM }}>✕</button>
+          <button onClick={handleClose} style={{ background: 'none', border: 'none', color: DIM, cursor: 'pointer', fontFamily: FONT_BODY, fontSize: FS.sm }}>✕</button>
         </div>
 
         {/* Body */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem' }}>
 
           {/* Name */}
-          <div style={{ marginBottom: 14 }}>
+          <div style={{ marginBottom: '0.875rem' }}>
             <div style={fieldLabel}>Name</div>
             <input
               type="text"
@@ -274,7 +268,7 @@ function EditorPanel({ talent, campaignId, supabase, onSaved, onClose }: EditorP
           </div>
 
           {/* Activation */}
-          <div style={{ marginBottom: 14 }}>
+          <div style={{ marginBottom: '0.875rem' }}>
             <div style={fieldLabel}>Activation</div>
             <select value={activation} onChange={e => setActivation(e.target.value)} style={{ ...darkInput, width: '100%' }}>
               {(Object.entries(ACTIVATION_LABELS) as [ActivationKey, string][]).map(([k, v]) => (
@@ -284,36 +278,36 @@ function EditorPanel({ talent, campaignId, supabase, onSaved, onClose }: EditorP
           </div>
 
           {/* Is Ranked */}
-          <div style={{ marginBottom: 18, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ marginBottom: '1.125rem', display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
             <button
               onClick={() => setIsRanked(r => !r)}
               style={{
-                width: 36, height: 20, borderRadius: 10, border: 'none', cursor: 'pointer',
+                width: '2.25rem', height: '1.25rem', borderRadius: RADIUS.full, border: 'none', cursor: 'pointer',
                 background: isRanked ? HUD.gold : 'rgba(255,255,255,0.1)',
-                position: 'relative', transition: 'background 0.2s', flexShrink: 0,
+                position: 'relative', transition: `background ${EASE.quick}`, flexShrink: 0,
               }}
             >
               <span style={{
-                position: 'absolute', top: 2, left: isRanked ? 18 : 2,
-                width: 16, height: 16, borderRadius: 8,
-                background: isRanked ? '#060D09' : 'rgba(255,255,255,0.5)',
-                transition: 'left 0.2s',
+                position: 'absolute', top: '0.125rem', left: isRanked ? '1.125rem' : '0.125rem',
+                width: '1rem', height: '1rem', borderRadius: RADIUS.full,
+                background: isRanked ? HUD.panel : 'rgba(255,255,255,0.5)',
+                transition: `left ${EASE.quick}`,
               }} />
             </button>
-            <span style={{ fontFamily: FONT_C, fontSize: FS_LABEL, color: isRanked ? TEXT : DIM }}>
-              Ranked {isRanked && <span style={{ color: GOLD_DIM, fontSize: FS_CAP }}>(can be purchased multiple times)</span>}
+            <span style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: isRanked ? TEXT : DIM }}>
+              Ranked {isRanked && <span style={{ color: GOLD_DIM, fontSize: FS.caption }}>(can be purchased multiple times)</span>}
             </span>
           </div>
 
           {/* Description */}
-          <div style={{ marginBottom: 14 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+          <div style={{ marginBottom: '0.875rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '0.375rem' }}>
               <span style={fieldLabel}>Description</span>
               <button
                 onClick={() => setPreview(p => !p)}
                 style={{
                   background: 'none', border: 'none', cursor: 'pointer',
-                  fontFamily: FONT_M, fontSize: FS_CAP,
+                  fontFamily: FONT_BODY, fontSize: FS.caption,
                   color: preview ? HUD.gold : DIM,
                   padding: 0,
                 }}
@@ -326,9 +320,9 @@ function EditorPanel({ talent, campaignId, supabase, onSaved, onClose }: EditorP
               <div style={{
                 background: 'rgba(255,255,255,0.03)',
                 border: `1px solid ${BORDER}`,
-                borderRadius: 4, padding: '10px 12px',
-                fontFamily: FONT_C, fontSize: FS_LABEL,
-                color: TEXT, lineHeight: 1.5, minHeight: 80,
+                borderRadius: RADIUS.md, padding: '0.625rem 0.75rem',
+                fontFamily: FONT_BODY, fontSize: FS.label,
+                color: TEXT, lineHeight: 1.5, minHeight: '5rem',
               }}>
                 {description.trim()
                   ? <RichText text={description} />
@@ -341,19 +335,19 @@ function EditorPanel({ talent, campaignId, supabase, onSaved, onClose }: EditorP
                 onChange={e => setDescription(e.target.value)}
                 rows={6}
                 placeholder="Describe what the talent does. Use [advantage], [boost:2], [success] etc. for dice symbols."
-                style={{ ...darkInput, width: '100%', resize: 'vertical', fontFamily: FONT_C, fontSize: FS_LABEL }}
+                style={{ ...darkInput, width: '100%', resize: 'vertical', fontFamily: FONT_BODY, fontSize: FS.label }}
               />
             )}
-            <div style={{ fontFamily: FONT_M, fontSize: FS_CAP, color: DIM, marginTop: 4 }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: DIM, marginTop: '0.25rem' }}>
               Supports RichText markup: [advantage], [success], [triumph], [boost:N], etc.
             </div>
           </div>
 
-          {error && <div style={{ fontFamily: FONT_C, fontSize: FS_CAP, color: RED, padding: '4px 0' }}>⚠ {error}</div>}
+          {error && <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: RED, padding: '0.25rem 0' }}>⚠ {error}</div>}
         </div>
 
         {/* Footer */}
-        <div style={{ padding: '12px 20px', borderTop: `1px solid ${BORDER}`, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        <div style={{ padding: '0.75rem 1.25rem', borderTop: `1px solid ${BORDER}`, display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
           <button onClick={handleClose} style={btnSecondary}>Cancel</button>
           <button onClick={handleSave} disabled={busy || !name.trim()} style={{ ...btnPrimary, opacity: busy || !name.trim() ? 0.4 : 1 }}>
             {busy ? 'Saving…' : isNew ? 'Create Talent' : 'Save Changes'}
@@ -426,35 +420,35 @@ export function TalentDatabaseTab({ campaignId, supabase, characters = [], sendT
   return (
     <div>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
         <div>
-          <div style={{ fontFamily: FONT_C, fontSize: FS_SM, fontWeight: 700, color: HUD.gold, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700, color: HUD.gold, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
             Custom Talents
           </div>
-          <div style={{ fontFamily: FONT_C, fontSize: FS_CAP, color: DIM, marginTop: 2 }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: DIM, marginTop: '0.125rem' }}>
             {talents.length} custom talent{talents.length !== 1 ? 's' : ''} for this campaign
           </div>
         </div>
-        <button onClick={openNew} style={{ ...btnPrimary, display: 'flex', alignItems: 'center', gap: 6 }}>
+        <button onClick={openNew} style={{ ...btnPrimary, display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
           <span style={{ fontSize: '1.1em', lineHeight: 1 }}>+</span> New Talent
         </button>
       </div>
 
       {/* List */}
       {loading ? (
-        <div style={{ fontFamily: FONT_C, fontSize: FS_LABEL, color: DIM, padding: '24px 0', textAlign: 'center' }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: DIM, padding: '1.5rem 0', textAlign: 'center' }}>
           Loading…
         </div>
       ) : talents.length === 0 ? (
         <div style={{
-          fontFamily: FONT_C, fontSize: FS_LABEL, color: DIM,
-          padding: '32px 0', textAlign: 'center',
-          border: `1px dashed ${BORDER}`, borderRadius: 4,
+          fontFamily: FONT_BODY, fontSize: FS.label, color: DIM,
+          padding: '2rem 0', textAlign: 'center',
+          border: `1px dashed ${BORDER}`, borderRadius: RADIUS.md,
         }}>
           No custom talents yet. Click <strong style={{ color: HUD.gold }}>+ New Talent</strong> to create one.
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
           {talents.map(t => {
             const isExp = !!expanded[t.key]
             const isDeleting = deleteConfirm === t.key
@@ -464,26 +458,26 @@ export function TalentDatabaseTab({ campaignId, supabase, characters = [], sendT
                 style={{
                   background: PANEL_BG,
                   border: `1px solid ${isDeleting ? 'rgba(224,80,80,0.4)' : BORDER}`,
-                  borderRadius: 4,
+                  borderRadius: RADIUS.md,
                   overflow: 'hidden',
-                  transition: 'border-color 0.15s',
+                  transition: `border-color ${EASE.quick}`,
                 }}
               >
                 {/* Top row */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.625rem 0.75rem' }}>
                   {/* Expand toggle */}
                   <button
                     onClick={() => toggleExpanded(t.key)}
-                    style={{ background: 'none', border: 'none', color: DIM, cursor: 'pointer', padding: 0, fontSize: 10, flexShrink: 0 }}
+                    style={{ background: 'none', border: 'none', color: DIM, cursor: 'pointer', padding: 0, fontSize: FS.overline, flexShrink: 0 }}
                   >
                     {isExp ? '▼' : '▶'}
                   </button>
 
                   {/* Name */}
-                  <span style={{ fontFamily: FONT_C, fontSize: FS_LABEL, color: TEXT, fontWeight: 600, flex: 1 }}>
+                  <span style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT, fontWeight: 600, flex: 1 }}>
                     {t.name}
                     {t.is_ranked && (
-                      <span style={{ fontFamily: FONT_M, fontSize: FS_CAP, color: GOLD_DIM, marginLeft: 6 }}>Ranked</span>
+                      <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: GOLD_DIM, marginLeft: '0.375rem' }}>Ranked</span>
                     )}
                   </span>
 
@@ -491,7 +485,7 @@ export function TalentDatabaseTab({ campaignId, supabase, characters = [], sendT
 
                   {/* Action buttons */}
                   {!isDeleting ? (
-                    <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                    <div style={{ display: 'flex', gap: '0.25rem', flexShrink: 0 }}>
                       {characters.length > 0 && (
                         <button onClick={() => setAssigning(t)} style={actionBtn(GREEN)}>Assign</button>
                       )}
@@ -499,8 +493,8 @@ export function TalentDatabaseTab({ campaignId, supabase, characters = [], sendT
                       <button onClick={() => setDeleteConfirm(t.key)} style={actionBtn(RED)}>✕</button>
                     </div>
                   ) : (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                      <span style={{ fontFamily: FONT_C, fontSize: FS_CAP, color: RED }}>Delete talent + all assignments?</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', flexShrink: 0 }}>
+                      <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: RED }}>Delete talent + all assignments?</span>
                       <button onClick={() => handleDelete(t.key)} style={actionBtn(RED)}>Confirm</button>
                       <button onClick={() => setDeleteConfirm(null)} style={actionBtn(DIM)}>Cancel</button>
                     </div>
@@ -509,13 +503,13 @@ export function TalentDatabaseTab({ campaignId, supabase, characters = [], sendT
 
                 {/* Expanded description */}
                 {isExp && (
-                  <div style={{ padding: '0 12px 12px 32px', borderTop: `1px solid ${BORDER}` }}>
+                  <div style={{ padding: '0 0.75rem 0.75rem 2rem', borderTop: `1px solid ${BORDER}` }}>
                     {t.description ? (
-                      <div style={{ fontFamily: FONT_C, fontSize: FS_LABEL, color: TEXT, lineHeight: 1.5, paddingTop: 10 }}>
+                      <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT, lineHeight: 1.5, paddingTop: '0.625rem' }}>
                         <RichText text={t.description} />
                       </div>
                     ) : (
-                      <div style={{ fontFamily: FONT_C, fontSize: FS_CAP, color: DIM, paddingTop: 10, fontStyle: 'italic' }}>
+                      <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: DIM, paddingTop: '0.625rem', fontStyle: 'italic' }}>
                         No description provided.
                       </div>
                     )}
@@ -555,38 +549,38 @@ export function TalentDatabaseTab({ campaignId, supabase, characters = [], sendT
 // ── Shared styles ─────────────────────────────────────────────────────────────
 
 const fieldLabel: React.CSSProperties = {
-  fontFamily: FONT_C, fontSize: FS_OVER, fontWeight: 700,
+  fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
   letterSpacing: '0.18em', textTransform: 'uppercase',
-  color: GOLD_DIM, marginBottom: 6,
+  color: GOLD_DIM, marginBottom: '0.375rem',
 }
 
 const darkInput: React.CSSProperties = {
   background: 'rgba(0,0,0,0.4)',
   border: `1px solid ${GOLD_BD}`,
-  color: TEXT, fontFamily: FONT_C, fontSize: FS_LABEL,
-  padding: '6px 10px', borderRadius: 3, outline: 'none',
+  color: HUD.text, fontFamily: FONT_BODY, fontSize: FS.label,
+  padding: '0.375rem 0.625rem', borderRadius: RADIUS.sm, outline: 'none',
   boxSizing: 'border-box',
 }
 
 const btnPrimary: React.CSSProperties = {
   background: 'rgba(200,170,80,0.15)', border: `1px solid ${GOLD_BD}`,
-  color: HUD.gold, fontFamily: FONT_C, fontSize: FS_CAP, fontWeight: 700,
+  color: HUD.gold, fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
   letterSpacing: '0.12em', textTransform: 'uppercase',
-  padding: '8px 16px', borderRadius: 3, cursor: 'pointer',
+  padding: '0.5rem 1rem', borderRadius: RADIUS.sm, cursor: 'pointer',
 }
 
 const btnSecondary: React.CSSProperties = {
   background: 'transparent', border: `1px solid ${BORDER}`,
-  color: DIM, fontFamily: FONT_C, fontSize: FS_CAP, fontWeight: 700,
+  color: DIM, fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
   letterSpacing: '0.1em', textTransform: 'uppercase',
-  padding: '8px 14px', borderRadius: 3, cursor: 'pointer',
+  padding: '0.5rem 0.875rem', borderRadius: RADIUS.sm, cursor: 'pointer',
 }
 
 function actionBtn(color: string): React.CSSProperties {
   return {
     background: `${color}14`, border: `1px solid ${color}40`,
-    color, fontFamily: FONT_C, fontSize: FS_CAP, fontWeight: 700,
+    color, fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
     letterSpacing: '0.08em', textTransform: 'uppercase',
-    padding: '4px 10px', borderRadius: 3, cursor: 'pointer',
+    padding: '0.25rem 0.625rem', borderRadius: RADIUS.sm, cursor: 'pointer',
   }
 }

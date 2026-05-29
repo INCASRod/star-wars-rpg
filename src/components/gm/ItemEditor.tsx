@@ -12,23 +12,22 @@ import type {
 } from '@/lib/types'
 import { QualityBadge } from '@/components/character/QualityBadge'
 import { RichText } from '@/components/ui/RichText'
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_BODY, EASE, RADIUS, Z } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
-const PANEL_BG  = 'rgba(6,13,9,0.97)'
 const GOLD_DIM  = 'rgba(200,170,80,0.5)'
 const GOLD_BD   = 'rgba(200,170,80,0.3)'
-const TEXT      = 'rgba(232,223,200,0.85)'
-const DIM       = '#6A8070'
-const BORDER    = 'rgba(200,170,80,0.14)'
-const BORDER_HI = 'rgba(200,170,80,0.36)'
-const ORANGE    = '#E07855'
-const RED       = '#E05050'
-const BLUE      = '#5AAAE0'
-const GREEN     = '#50A870'
-const FONT_C    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M    = "'Share Tech Mono','Courier New',monospace"
-const FONT_CINZEL = "var(--font-rajdhani), 'Cinzel', serif"
+const TEXT      = HUD.text
+const DIM       = HUD.textFaint
+const BORDER    = HUD.border
+const BORDER_HI = HUD.borderHi
+const ORANGE    = 'var(--state-threat)'
+const RED       = 'var(--state-failure)'
+const BLUE      = 'var(--die-force)'
+const GREEN     = 'var(--state-success)'
+const FONT_C    = FONT_BODY
+const FONT_M    = FONT_BODY
+const FONT_CINZEL = FONT_BODY
 const FS_OVER   = 'var(--text-overline)'
 const FS_CAP    = 'var(--text-caption)'
 const FS_LABEL  = 'var(--text-label)'
@@ -146,6 +145,11 @@ const SKILL_SHORT: Record<string, string> = {
 }
 
 const TYPE_COLOR: Record<ItemType, string> = { weapon: RED, armor: BLUE, gear: GOLD_DIM }
+const TYPE_BORDER: Record<ItemType, string> = {
+  weapon: 'rgba(224,80,80,0.25)',
+  armor:  'rgba(90,170,224,0.25)',
+  gear:   'rgba(200,170,80,0.25)',
+}
 
 function templateStatLine(t: TemplateResult): string {
   if (t.type === 'weapon') {
@@ -162,9 +166,9 @@ function HpBar({ used, total }: { used: number; total: number }) {
   const pct = total > 0 ? Math.min(used / total, 1) : 0
   const over = used > total
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
       <div style={{
-        flex: 1, height: 6, borderRadius: 3,
+        flex: 1, height: '0.375rem', borderRadius: RADIUS.sm,
         background: 'rgba(200,170,80,0.1)', border: `1px solid ${BORDER}`,
         overflow: 'hidden',
       }}>
@@ -172,11 +176,11 @@ function HpBar({ used, total }: { used: number; total: number }) {
           height: '100%',
           width: `${pct * 100}%`,
           background: over ? RED : HUD.gold,
-          borderRadius: 3,
-          transition: 'width 150ms ease',
+          borderRadius: RADIUS.sm,
+          transition: `width ${EASE.quick}`,
         }} />
       </div>
-      <span style={{ fontFamily: FONT_M, fontSize: FS_CAP, color: over ? RED : TEXT, minWidth: 40, textAlign: 'right' }}>
+      <span style={{ fontFamily: FONT_M, fontSize: FS_CAP, color: over ? RED : TEXT, minWidth: '2.5rem', textAlign: 'right' }}>
         {used} / {total}
       </span>
     </div>
@@ -594,39 +598,39 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
   // ── Portal ──
   return createPortal(
     <div style={{
-      position: 'fixed', inset: 0, zIndex: 200,
+      position: 'fixed', inset: 0, zIndex: Z.modal,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: 16,
+      padding: '1rem',
     }}>
       {/* Scrim */}
       <div
-        style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 0 }}
+        style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: Z.base }}
         onClick={onClose}
       />
 
       {/* Modal box */}
       <div style={{
-        position: 'relative', zIndex: 1,
+        position: 'relative', zIndex: Z.raised,
         width: 'clamp(520px, 60vw, 780px)',
         maxHeight: '90dvh',
         overflowY: 'auto',
         background: 'rgba(6,13,9,0.98)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        border: `1px solid rgba(200,170,80,0.3)`,
-        borderRadius: 14,
+        border: `1px solid ${GOLD_BD}`,
+        borderRadius: RADIUS.xl,
         boxShadow: '0 16px 48px rgba(0,0,0,0.7)',
         display: 'flex', flexDirection: 'column',
         opacity:   mounted ? 1 : 0,
         transform: mounted ? 'scale(1)' : 'scale(0.96)',
-        transition: 'opacity 200ms ease-out, transform 200ms ease-out',
+        transition: `opacity ${EASE.default}, transform ${EASE.default}`,
       }}>
         {/* Header */}
         <div style={{
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          padding: '16px 20px', borderBottom: `1px solid ${BORDER}`,
-          position: 'sticky', top: 0, background: 'rgba(6,13,9,0.98)', zIndex: 1,
-          borderRadius: '14px 14px 0 0',
+          padding: '1rem 1.25rem', borderBottom: `1px solid ${BORDER}`,
+          position: 'sticky', top: 0, background: 'rgba(6,13,9,0.98)', zIndex: Z.raised,
+          borderRadius: `${RADIUS.xl}px ${RADIUS.xl}px 0 0`,
         }}>
           <div style={{ fontFamily: FONT_C, fontSize: FS_SM, fontWeight: 700, color: HUD.gold, letterSpacing: '0.08em' }}>
             {isNew ? 'New Custom Item' : isOggDude ? 'Create Custom Copy' : `Edit ${item!.name}`}
@@ -638,8 +642,8 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
 
         {/* OggDude warning */}
         {isOggDude && (
-          <div style={{ margin: '12px 20px 0', padding: 10, background: 'rgba(224,120,85,0.08)', border: `1px solid rgba(224,120,85,0.3)`, borderRadius: 4 }}>
-            <div style={{ fontFamily: FONT_C, fontSize: FS_CAP, color: ORANGE, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>System Item</div>
+          <div style={{ margin: '0.75rem 1.25rem 0', padding: '0.625rem', background: 'rgba(224,120,85,0.08)', border: `1px solid rgba(224,120,85,0.3)`, borderRadius: RADIUS.md }}>
+            <div style={{ fontFamily: FONT_C, fontSize: FS_CAP, color: ORANGE, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.25rem' }}>System Item</div>
             <div style={{ fontFamily: FONT_C, fontSize: FS_CAP, color: DIM }}>
               This item is from the system database and cannot be edited directly. A custom copy will be created for this campaign.
             </div>
@@ -647,7 +651,7 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
         )}
 
         {/* Body */}
-        <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 14, flex: 1 }}>
+        <div style={{ padding: '1rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '0.875rem', flex: 1 }}>
 
           {/* ── Template search (new items only) ── */}
           {isNew && (
@@ -655,20 +659,20 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
               <div style={sectionLabel}>Start from existing item (optional)</div>
               {template ? (
                 <div style={{
-                  display: 'flex', alignItems: 'center', gap: 8,
+                  display: 'flex', alignItems: 'center', gap: '0.5rem',
                   background: 'rgba(200,170,80,0.06)', border: `1px solid ${GOLD_BD}`,
-                  borderRadius: 3, padding: '6px 10px',
+                  borderRadius: RADIUS.sm, padding: '0.375rem 0.625rem',
                 }}>
-                  <span style={{ fontFamily: FONT_M, fontSize: FS_OVER, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: TYPE_COLOR[template.type], flexShrink: 0, border: `1px solid ${TYPE_COLOR[template.type]}40`, borderRadius: 2, padding: '1px 5px' }}>
+                  <span style={{ fontFamily: FONT_M, fontSize: FS_OVER, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: TYPE_COLOR[template.type], flexShrink: 0, border: `1px solid ${TYPE_BORDER[template.type]}`, borderRadius: RADIUS.sm, padding: '0.0625rem 0.3125rem' }}>
                     {template.type}
                   </span>
                   <span style={{ fontFamily: FONT_C, fontSize: FS_LABEL, color: TEXT, flex: 1 }}>{template.name}</span>
                   {template.is_custom && <span style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: GOLD_DIM }}>★</span>}
-                  <button onClick={clearTemplate} title="Clear template" style={{ background: 'none', border: 'none', color: GOLD_DIM, cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: '0 2px', flexShrink: 0 }}>×</button>
+                  <button onClick={clearTemplate} title="Clear template" style={{ background: 'none', border: 'none', color: GOLD_DIM, cursor: 'pointer', fontSize: FS_SM, lineHeight: 1, padding: '0 0.125rem', flexShrink: 0 }}>×</button>
                 </div>
               ) : (
                 <div style={{ position: 'relative' }}>
-                  <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', fontSize: 13, color: DIM, pointerEvents: 'none' }}>🔍</span>
+                  <span style={{ position: 'absolute', left: '0.625rem', top: '50%', transform: 'translateY(-50%)', fontSize: FS_SM, color: DIM, pointerEvents: 'none' }}>🔍</span>
                   <input
                     value={searchQuery}
                     onChange={e => { setSearchQuery(e.target.value); if (e.target.value.trim()) setSearchOpen(true) }}
@@ -677,32 +681,32 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
                     placeholder="Search weapons, armor, gear…"
                     style={{ ...inputStyle, width: '100%', boxSizing: 'border-box', paddingLeft: 32 }}
                   />
-                  {searchBusy && <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: 11, color: DIM }}>…</span>}
+                  {searchBusy && <span style={{ position: 'absolute', right: '0.625rem', top: '50%', transform: 'translateY(-50%)', fontSize: FS_OVER, color: DIM }}>…</span>}
                 </div>
               )}
               {searchOpen && groupedResults.length > 0 && !template && (
                 <div style={{
-                  position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, zIndex: 100,
+                  position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, zIndex: Z.overlay,
                   background: 'rgba(6,13,9,0.99)', border: `1px solid ${BORDER_HI}`,
-                  borderRadius: 4, maxHeight: 200, overflowY: 'auto',
+                  borderRadius: RADIUS.md, maxHeight: '12.5rem', overflowY: 'auto',
                   boxShadow: '0 8px 28px rgba(0,0,0,0.7)',
                 }}>
                   {groupedResults.map((group, gi) => (
                     <div key={group.type}>
-                      {gi > 0 && <div style={{ padding: '3px 10px', fontFamily: FONT_M, fontSize: FS_OVER, color: DIM, background: 'rgba(0,0,0,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>─── {group.type.toUpperCase()} ───</div>}
+                      {gi > 0 && <div style={{ padding: '0.1875rem 0.625rem', fontFamily: FONT_M, fontSize: FS_OVER, color: DIM, background: 'rgba(0,0,0,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>─── {group.type.toUpperCase()} ───</div>}
                       {group.items.map(r => (
                         <button
                           key={r.key}
                           onMouseDown={e => { e.preventDefault(); selectTemplate(r) }}
                           className="hov-gold-bg"
-                          style={{ display: 'block', width: '100%', textAlign: 'left', padding: '7px 12px', background: 'transparent', border: 'none', cursor: 'pointer', borderBottom: `1px solid ${BORDER}` }}
+                          style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.4375rem 0.75rem', background: 'transparent', border: 'none', cursor: 'pointer', borderBottom: `1px solid ${BORDER}` }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <span style={{ fontFamily: FONT_M, fontSize: FS_OVER, fontWeight: 700, textTransform: 'uppercase', color: TYPE_COLOR[r.type], border: `1px solid ${TYPE_COLOR[r.type]}40`, borderRadius: 2, padding: '1px 4px', flexShrink: 0 }}>{r.type}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                            <span style={{ fontFamily: FONT_M, fontSize: FS_OVER, fontWeight: 700, textTransform: 'uppercase', color: TYPE_COLOR[r.type], border: `1px solid ${TYPE_BORDER[r.type]}`, borderRadius: RADIUS.sm, padding: '0.0625rem 0.25rem', flexShrink: 0 }}>{r.type}</span>
                             <span style={{ fontFamily: FONT_C, fontSize: FS_LABEL, color: TEXT, flex: 1 }}>{r.name}</span>
                             {r.is_custom && <span style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: GOLD_DIM }}>★</span>}
                           </div>
-                          <div style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: DIM, marginTop: 2 }}>{templateStatLine(r)}</div>
+                          <div style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: DIM, marginTop: '0.125rem' }}>{templateStatLine(r)}</div>
                         </button>
                       ))}
                     </div>
@@ -710,28 +714,28 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
                 </div>
               )}
               {template && !typeMismatch && !clearConfirm && (
-                <div style={{ fontFamily: FONT_C, fontStyle: 'italic', fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)', color: 'rgba(200,170,80,0.5)', marginTop: 6 }}>
+                <div style={{ fontFamily: FONT_C, fontStyle: 'italic', fontSize: FS_CAP, color: 'rgba(200,170,80,0.5)', marginTop: '0.375rem' }}>
                   Based on {template.name} — all fields are editable. This will save as a new custom item.
                 </div>
               )}
               {typeMismatch && !clearConfirm && (
-                <div style={{ marginTop: 8, padding: '8px 12px', background: 'rgba(224,120,85,0.07)', border: `1px solid rgba(224,120,85,0.3)`, borderRadius: 4, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                  <span style={{ fontFamily: FONT_C, fontSize: FS_CAP, color: ORANGE, flex: 1, minWidth: 200 }}>
+                <div style={{ marginTop: '0.5rem', padding: '0.5rem 0.75rem', background: 'rgba(224,120,85,0.07)', border: `1px solid rgba(224,120,85,0.3)`, borderRadius: RADIUS.md, display: 'flex', alignItems: 'center', gap: '0.625rem', flexWrap: 'wrap' }}>
+                  <span style={{ fontFamily: FONT_C, fontSize: FS_CAP, color: ORANGE, flex: 1, minWidth: '12.5rem' }}>
                     This is a {typeMismatch} item. Switch item type to {typeMismatch}?
                   </span>
                   <button onClick={() => { setTypeMismatch(null); setTimeout(() => nameInputRef.current?.focus(), 50) }} style={btnSecondaryStyle}>Keep as {type}</button>
-                  <button onClick={() => acceptTypeMismatch(typeMismatch)} style={{ ...btnPrimaryStyle, padding: '6px 14px' }}>Switch to {typeMismatch}</button>
+                  <button onClick={() => acceptTypeMismatch(typeMismatch)} style={{ ...btnPrimaryStyle, padding: '0.375rem 0.875rem' }}>Switch to {typeMismatch}</button>
                 </div>
               )}
               {clearConfirm && (
-                <div style={{ marginTop: 8, padding: '8px 12px', background: 'rgba(200,170,80,0.04)', border: `1px solid ${GOLD_BD}`, borderRadius: 4, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                  <span style={{ fontFamily: FONT_C, fontSize: FS_CAP, color: TEXT, flex: 1, minWidth: 200 }}>Clear template and reset all fields?</span>
+                <div style={{ marginTop: '0.5rem', padding: '0.5rem 0.75rem', background: 'rgba(200,170,80,0.04)', border: `1px solid ${GOLD_BD}`, borderRadius: RADIUS.md, display: 'flex', alignItems: 'center', gap: '0.625rem', flexWrap: 'wrap' }}>
+                  <span style={{ fontFamily: FONT_C, fontSize: FS_CAP, color: TEXT, flex: 1, minWidth: '12.5rem' }}>Clear template and reset all fields?</span>
                   <button onClick={() => setClearConfirm(false)} style={btnSecondaryStyle}>Cancel</button>
-                  <button onClick={doActualClear} style={{ ...btnPrimaryStyle, padding: '6px 14px', color: RED, borderColor: 'rgba(224,80,80,0.4)' }}>Clear</button>
+                  <button onClick={doActualClear} style={{ ...btnPrimaryStyle, padding: '0.375rem 0.875rem', color: RED, borderColor: 'rgba(224,80,80,0.4)' }}>Clear</button>
                 </div>
               )}
               {!template && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.75rem' }}>
                   <div style={{ flex: 1, height: 1, background: BORDER }} />
                   <span style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: DIM, textTransform: 'uppercase', letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>or start from scratch</span>
                   <div style={{ flex: 1, height: 1, background: BORDER }} />
@@ -744,11 +748,11 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
           {isNew && (
             <div>
               <div style={fieldLabel}>Type</div>
-              <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
                 {(['weapon', 'armor', 'gear'] as ItemType[]).map(t => (
                   <button key={t} onClick={() => setType(t)} style={{
                     fontFamily: FONT_C, fontSize: FS_CAP, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em',
-                    padding: '5px 14px', borderRadius: 3, cursor: 'pointer', border: '1px solid',
+                    padding: '0.3125rem 0.875rem', borderRadius: RADIUS.sm, cursor: 'pointer', border: '1px solid',
                     color:       type === t ? (t === 'weapon' ? RED : t === 'armor' ? BLUE : HUD.gold) : DIM,
                     borderColor: type === t ? (t === 'weapon' ? 'rgba(224,80,80,0.5)' : t === 'armor' ? 'rgba(90,170,224,0.5)' : GOLD_BD) : BORDER,
                     background:  type === t ? (t === 'weapon' ? 'rgba(224,80,80,0.08)' : t === 'armor' ? 'rgba(90,170,224,0.08)' : 'rgba(200,170,80,0.08)') : 'transparent',
@@ -766,15 +770,15 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
           </Field>
 
           {/* Common fields */}
-          <div style={{ display: 'flex', gap: 10 }}>
-            <Field label="Price"><input type="number" min={0} value={price} onChange={e => setPrice(e.target.value)} style={{ ...inputStyle, width: 80 }} /></Field>
-            <Field label="Rarity"><input type="number" min={0} max={10} value={rarity} onChange={e => setRarity(e.target.value)} style={{ ...inputStyle, width: 60 }} /></Field>
-            <Field label="Encumbrance"><input type="number" min={0} value={encumbrance} onChange={e => setEncumbrance(e.target.value)} style={{ ...inputStyle, width: 60 }} /></Field>
+          <div style={{ display: 'flex', gap: '0.625rem' }}>
+            <Field label="Price"><input type="number" min={0} value={price} onChange={e => setPrice(e.target.value)} style={{ ...inputStyle, width: '5rem' }} /></Field>
+            <Field label="Rarity"><input type="number" min={0} max={10} value={rarity} onChange={e => setRarity(e.target.value)} style={{ ...inputStyle, width: '3.75rem' }} /></Field>
+            <Field label="Encumbrance"><input type="number" min={0} value={encumbrance} onChange={e => setEncumbrance(e.target.value)} style={{ ...inputStyle, width: '3.75rem' }} /></Field>
           </div>
 
           {/* Weapon fields */}
           {type === 'weapon' && <>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '0.625rem', flexWrap: 'wrap' }}>
               <Field label="Skill">
                 <select value={skillKey} onChange={e => setSkillKey(e.target.value)} style={{ ...inputStyle }}>
                   {SKILL_OPTIONS.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
@@ -786,29 +790,29 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
                 </select>
               </Field>
             </div>
-            <div style={{ display: 'flex', gap: 10 }}>
+            <div style={{ display: 'flex', gap: '0.625rem' }}>
               {['MELEE', 'BRAWL', 'LTSABER'].includes(skillKey) ? (
-                <Field label="Damage (Brawn+)"><input type="number" min={0} value={damageAdd} onChange={e => setDamageAdd(e.target.value)} style={{ ...inputStyle, width: 70 }} placeholder="0" /></Field>
+                <Field label="Damage (Brawn+)"><input type="number" min={0} value={damageAdd} onChange={e => setDamageAdd(e.target.value)} style={{ ...inputStyle, width: '4.375rem' }} placeholder="0" /></Field>
               ) : (
-                <Field label="Damage"><input type="number" min={0} value={damage} onChange={e => setDamage(e.target.value)} style={{ ...inputStyle, width: 70 }} /></Field>
+                <Field label="Damage"><input type="number" min={0} value={damage} onChange={e => setDamage(e.target.value)} style={{ ...inputStyle, width: '4.375rem' }} /></Field>
               )}
-              <Field label="Crit"><input type="number" min={1} value={crit} onChange={e => setCrit(e.target.value)} style={{ ...inputStyle, width: 60 }} /></Field>
-              <Field label="Hard Points"><input type="number" min={0} value={hardPoints} onChange={e => setHardPoints(e.target.value)} style={{ ...inputStyle, width: 60 }} /></Field>
+              <Field label="Crit"><input type="number" min={1} value={crit} onChange={e => setCrit(e.target.value)} style={{ ...inputStyle, width: '3.75rem' }} /></Field>
+              <Field label="Hard Points"><input type="number" min={0} value={hardPoints} onChange={e => setHardPoints(e.target.value)} style={{ ...inputStyle, width: '3.75rem' }} /></Field>
             </div>
           </>}
 
           {/* Armor fields */}
           {type === 'armor' && (
-            <div style={{ display: 'flex', gap: 10 }}>
-              <Field label="Defense"><input type="number" min={0} value={defense} onChange={e => setDefense(e.target.value)} style={{ ...inputStyle, width: 70 }} /></Field>
-              <Field label="Soak Bonus"><input type="number" min={0} value={soak} onChange={e => setSoak(e.target.value)} style={{ ...inputStyle, width: 70 }} /></Field>
+            <div style={{ display: 'flex', gap: '0.625rem' }}>
+              <Field label="Defense"><input type="number" min={0} value={defense} onChange={e => setDefense(e.target.value)} style={{ ...inputStyle, width: '4.375rem' }} /></Field>
+              <Field label="Soak Bonus"><input type="number" min={0} value={soak} onChange={e => setSoak(e.target.value)} style={{ ...inputStyle, width: '4.375rem' }} /></Field>
             </div>
           )}
 
           {/* Gear fields */}
           {type === 'gear' && (
             <Field label="Encumbrance Bonus (storage container)">
-              <input type="number" min={0} value={encBonus} onChange={e => setEncBonus(e.target.value)} style={{ ...inputStyle, width: 80 }} placeholder="—" />
+              <input type="number" min={0} value={encBonus} onChange={e => setEncBonus(e.target.value)} style={{ ...inputStyle, width: '5rem' }} placeholder="—" />
             </Field>
           )}
 
@@ -819,7 +823,7 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
 
               {/* Added qualities list */}
               {qualities.length > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 8 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginBottom: '0.5rem' }}>
                   {qualities.map(q => {
                     const refQ = allQualities.find(r => r.key === q.key)
                     return (
@@ -842,22 +846,22 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
                 <button
                   onClick={() => setQualOpen(o => !o)}
                   style={{
-                    ...btnSecondaryStyle, padding: '5px 12px',
-                    display: 'flex', alignItems: 'center', gap: 6,
+                    ...btnSecondaryStyle, padding: '0.3125rem 0.75rem',
+                    display: 'flex', alignItems: 'center', gap: '0.375rem',
                   }}
                 >
                   <span style={{ color: HUD.gold }}>+</span>
                   <span>Add Quality…</span>
-                  <span style={{ marginLeft: 'auto', fontSize: 10, opacity: 0.6 }}>▾</span>
+                  <span style={{ marginLeft: 'auto', fontSize: FS_OVER, opacity: 0.6 }}>▾</span>
                 </button>
 
                 {qualOpen && (
                   <div style={{
-                    position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50,
-                    width: 280, background: 'rgba(6,13,9,0.99)', border: `1px solid ${BORDER_HI}`,
-                    borderRadius: 4, boxShadow: '0 8px 28px rgba(0,0,0,0.7)',
+                    position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: Z.dropdown,
+                    width: '17.5rem', background: 'rgba(6,13,9,0.99)', border: `1px solid ${BORDER_HI}`,
+                    borderRadius: RADIUS.md, boxShadow: '0 8px 28px rgba(0,0,0,0.7)',
                   }}>
-                    <div style={{ padding: '6px 8px', borderBottom: `1px solid ${BORDER}` }}>
+                    <div style={{ padding: '0.375rem 0.5rem', borderBottom: `1px solid ${BORDER}` }}>
                       <input
                         autoFocus
                         value={qualSearch}
@@ -866,7 +870,7 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
                         style={{ ...inputStyle, width: '100%', boxSizing: 'border-box', fontSize: FS_CAP }}
                       />
                     </div>
-                    <div style={{ maxHeight: 220, overflowY: 'auto' }}>
+                    <div style={{ maxHeight: '13.75rem', overflowY: 'auto' }}>
                       {filteredQualities.map(q => {
                         const added = qualities.find(x => x.key === q.key)
                         return (
@@ -875,13 +879,13 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
                             onMouseDown={e => { e.preventDefault(); added ? removeQuality(q.key) : addQuality(q) }}
                             className="hov-gold-bg"
                             style={{
-                              display: 'flex', width: '100%', alignItems: 'center', gap: 8,
-                              padding: '6px 10px', background: 'transparent', border: 'none',
+                              display: 'flex', width: '100%', alignItems: 'center', gap: '0.5rem',
+                              padding: '0.375rem 0.625rem', background: 'transparent', border: 'none',
                               cursor: 'pointer', borderBottom: `1px solid ${BORDER}`,
                               textAlign: 'left',
                             }}
                           >
-                            <span style={{ width: 14, flexShrink: 0, color: GREEN, fontSize: 14 }}>{added ? '✓' : ''}</span>
+                            <span style={{ width: '0.875rem', flexShrink: 0, color: GREEN, fontSize: FS_SM }}>{added ? '✓' : ''}</span>
                             <span style={{ fontFamily: FONT_C, fontSize: FS_LABEL, color: TEXT, flex: 1 }}>{q.name}</span>
                             {q.is_ranked && <span style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: DIM }}>ranked</span>}
                           </button>
@@ -901,12 +905,12 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
 
               {/* HP bar */}
               {type === 'weapon' && (
-                <div style={{ marginBottom: 10 }}>
+                <div style={{ marginBottom: '0.625rem' }}>
                   {hpTotal === 0 ? (
                     <div style={{ fontFamily: FONT_C, fontSize: FS_CAP, color: DIM, fontStyle: 'italic' }}>No hard points — set Hard Points above to add attachments</div>
                   ) : (
                     <>
-                      <div style={{ fontFamily: FONT_C, fontSize: FS_OVER, color: DIM, letterSpacing: '0.1em', marginBottom: 4 }}>HARD POINTS</div>
+                      <div style={{ fontFamily: FONT_C, fontSize: FS_OVER, color: DIM, letterSpacing: '0.1em', marginBottom: '0.25rem' }}>HARD POINTS</div>
                       <HpBar used={hpUsed} total={hpTotal} />
                     </>
                   )}
@@ -924,40 +928,40 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
                 return (
                   <div key={att.key} style={{
                     border: `1px solid ${BORDER_HI}`,
-                    borderRadius: 6, marginBottom: 6,
+                    borderRadius: RADIUS.lg, marginBottom: '0.375rem',
                     background: 'rgba(200,170,80,0.03)',
                     overflow: 'hidden',
                   }}>
                     {/* Card header */}
                     <div style={{
-                      display: 'flex', alignItems: 'center', gap: 8,
-                      padding: '8px 12px',
+                      display: 'flex', alignItems: 'center', gap: '0.5rem',
+                      padding: '0.5rem 0.75rem',
                       cursor: 'pointer',
                       borderBottom: isExpanded ? `1px solid ${BORDER}` : 'none',
                     }}
                       onClick={() => setExpandedAtt(isExpanded ? null : att.key)}
                     >
-                      <span style={{ fontFamily: FONT_CINZEL, fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)', color: TEXT, flex: 1, fontWeight: 600 }}>
+                      <span style={{ fontFamily: FONT_CINZEL, fontSize: FS_LABEL, color: TEXT, flex: 1, fontWeight: 600 }}>
                         {ref.name}
                       </span>
                       {(ref.hp_required ?? 0) > 0 && (
                         <span style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: DIM }}>HP: {ref.hp_required}</span>
                       )}
-                      <span style={{ fontFamily: FONT_M, fontSize: 13, color: DIM, userSelect: 'none' }}>{isExpanded ? '▲' : '▼'}</span>
+                      <span style={{ fontFamily: FONT_M, fontSize: FS_SM, color: DIM, userSelect: 'none' }}>{isExpanded ? '▲' : '▼'}</span>
 
                       {/* Remove button */}
                       {confirmRemoveAtt === att.key ? (
-                        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }} onClick={e => e.stopPropagation()}>
+                        <div style={{ display: 'flex', gap: '0.375rem', alignItems: 'center' }} onClick={e => e.stopPropagation()}>
                           <span style={{ fontFamily: FONT_C, fontSize: FS_OVER, color: ORANGE }}>Remove?</span>
                           <button
                             onClick={() => removeAttachment(att.key)}
-                            style={{ fontFamily: FONT_M, fontSize: FS_OVER, background: 'rgba(224,80,80,0.15)', border: '1px solid rgba(224,80,80,0.4)', color: RED, borderRadius: 3, cursor: 'pointer', padding: '2px 8px' }}
+                            style={{ fontFamily: FONT_M, fontSize: FS_OVER, background: 'rgba(224,80,80,0.15)', border: '1px solid rgba(224,80,80,0.4)', color: RED, borderRadius: RADIUS.sm, cursor: 'pointer', padding: '0.125rem 0.5rem' }}
                           >
                             Yes
                           </button>
                           <button
                             onClick={() => setConfirmRemoveAtt(null)}
-                            style={{ ...btnSecondaryStyle, padding: '2px 8px', fontSize: FS_OVER }}
+                            style={{ ...btnSecondaryStyle, padding: '0.125rem 0.5rem', fontSize: FS_OVER }}
                           >
                             No
                           </button>
@@ -966,9 +970,8 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
                         <button
                           onClick={e => { e.stopPropagation(); setConfirmRemoveAtt(att.key) }}
                           title={`Remove ${ref.name}`}
-                          style={{ background: 'none', border: 'none', color: 'rgba(224,80,80,0.5)', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: '0 2px' }}
-                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = RED }}
-                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(224,80,80,0.5)' }}
+                          className="hov-danger"
+                          style={{ background: 'none', border: 'none', color: 'rgba(224,80,80,0.5)', cursor: 'pointer', fontSize: FS_SM, lineHeight: 1, padding: '0 0.125rem' }}
                         >
                           ×
                         </button>
@@ -977,12 +980,12 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
 
                     {/* Expanded body */}
                     {isExpanded && (
-                      <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      <div style={{ padding: '0.625rem 0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
 
                         {/* Base mods */}
                         {baseMods.length > 0 && (
                           <div>
-                            <div style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: DIM, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>Base Mods (automatic)</div>
+                            <div style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: DIM, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.25rem' }}>Base Mods (automatic)</div>
                             {baseMods.map((entry, i) => {
                               const label = modLabel(entry)
                               if (!label) return null
@@ -998,15 +1001,15 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
                         {/* Optional mods */}
                         {addedMods.length > 0 && (
                           <div>
-                            <div style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: DIM, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>Optional Mods (via Mechanics)</div>
+                            <div style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: DIM, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.25rem' }}>Optional Mods (via Mechanics)</div>
                             {addedMods.map((entry, i) => {
                               const label = modLabel(entry)
                               if (!label) return null
                               const isInstalled = att.installedAddedModIndices.includes(i)
                               return (
                                 <div key={i} style={{
-                                  display: 'flex', alignItems: 'center', gap: 8,
-                                  padding: '3px 8px', borderRadius: 3,
+                                  display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                  padding: '0.1875rem 0.5rem', borderRadius: RADIUS.sm,
                                   background: isInstalled ? 'rgba(80,168,112,0.07)' : 'transparent',
                                 }}>
                                   <span style={{ fontFamily: FONT_C, fontSize: FS_CAP, color: isInstalled ? GREEN : TEXT, flex: 1 }}>
@@ -1023,7 +1026,7 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
                                       background: isInstalled ? 'rgba(80,168,112,0.15)' : 'rgba(200,170,80,0.07)',
                                       border: `1px solid ${isInstalled ? 'rgba(80,168,112,0.4)' : BORDER}`,
                                       color: isInstalled ? GREEN : DIM,
-                                      borderRadius: 3, cursor: 'pointer', padding: '2px 8px',
+                                      borderRadius: RADIUS.sm, cursor: 'pointer', padding: '0.125rem 0.5rem',
                                       textTransform: 'uppercase', letterSpacing: '0.08em',
                                     }}
                                   >
@@ -1046,24 +1049,24 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
                   onClick={() => setAttOpen(o => !o)}
                   disabled={type === 'weapon' && hpTotal === 0}
                   style={{
-                    ...btnSecondaryStyle, padding: '5px 12px',
-                    display: 'flex', alignItems: 'center', gap: 6,
+                    ...btnSecondaryStyle, padding: '0.3125rem 0.75rem',
+                    display: 'flex', alignItems: 'center', gap: '0.375rem',
                     opacity: type === 'weapon' && hpTotal === 0 ? 0.4 : 1,
                     cursor: type === 'weapon' && hpTotal === 0 ? 'not-allowed' : 'pointer',
                   }}
                 >
                   <span style={{ color: HUD.gold }}>+</span>
                   <span>Add Attachment…</span>
-                  <span style={{ marginLeft: 'auto', fontSize: 10, opacity: 0.6 }}>▾</span>
+                  <span style={{ marginLeft: 'auto', fontSize: FS_OVER, opacity: 0.6 }}>▾</span>
                 </button>
 
                 {attOpen && (
                   <div style={{
-                    position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50,
-                    width: 360, background: 'rgba(6,13,9,0.99)', border: `1px solid ${BORDER_HI}`,
-                    borderRadius: 4, boxShadow: '0 8px 28px rgba(0,0,0,0.7)',
+                    position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: Z.dropdown,
+                    width: '22.5rem', background: 'rgba(6,13,9,0.99)', border: `1px solid ${BORDER_HI}`,
+                    borderRadius: RADIUS.md, boxShadow: '0 8px 28px rgba(0,0,0,0.7)',
                   }}>
-                    <div style={{ padding: '6px 8px', borderBottom: `1px solid ${BORDER}` }}>
+                    <div style={{ padding: '0.375rem 0.5rem', borderBottom: `1px solid ${BORDER}` }}>
                       <input
                         autoFocus
                         value={attSearch}
@@ -1072,7 +1075,7 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
                         style={{ ...inputStyle, width: '100%', boxSizing: 'border-box', fontSize: FS_CAP }}
                       />
                     </div>
-                    <div style={{ maxHeight: 300, overflowY: 'auto' }}>
+                    <div style={{ maxHeight: '18.75rem', overflowY: 'auto' }}>
                       {allAttachments
                         .filter(r => r.name.toLowerCase().includes(attSearch.toLowerCase()))
                         .filter(r => !attachments.find(a => a.key === r.key))
@@ -1092,26 +1095,26 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
                               className={canFit || type !== 'weapon' ? 'hov-gold-bg' : ''}
                               style={{
                                 display: 'block', width: '100%', textAlign: 'left',
-                                padding: '8px 10px', background: 'transparent', border: 'none',
+                                padding: '0.5rem 0.625rem', background: 'transparent', border: 'none',
                                 cursor: canFit || type !== 'weapon' ? 'pointer' : 'default',
                                 borderBottom: `1px solid ${BORDER}`,
                                 opacity: !canFit && type === 'weapon' ? 0.55 : 1,
                               }}
                             >
-                              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                                <span style={{ fontFamily: FONT_CINZEL, fontSize: 'clamp(0.75rem, 1.1vw, 0.85rem)', color: TEXT, flex: 1 }}>{r.name}</span>
+                              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+                                <span style={{ fontFamily: FONT_CINZEL, fontSize: FS_LABEL, color: TEXT, flex: 1 }}>{r.name}</span>
                                 <span style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: DIM, flexShrink: 0 }}>
                                   HP: {r.hp_required ?? 0}
                                   {r.price != null ? `  ·  ${r.price.toLocaleString()}cr` : ''}
                                 </span>
                               </div>
                               {summary && (
-                                <div style={{ fontFamily: FONT_C, fontStyle: 'italic', fontSize: FS_OVER, color: DIM, marginTop: 2 }}>
+                                <div style={{ fontFamily: FONT_C, fontStyle: 'italic', fontSize: FS_OVER, color: DIM, marginTop: '0.125rem' }}>
                                   <RichText text={summary} />
                                 </div>
                               )}
                               {!canFit && type === 'weapon' && (
-                                <div style={{ fontFamily: FONT_C, fontSize: FS_OVER, color: 'rgba(224,120,85,0.7)', marginTop: 2 }}>
+                                <div style={{ fontFamily: FONT_C, fontSize: FS_OVER, color: 'rgba(224,120,85,0.7)', marginTop: '0.125rem' }}>
                                   Requires {r.hp_required} HP — only {hpRemaining} remaining
                                 </div>
                               )}
@@ -1129,10 +1132,10 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
           {preview && (attachments.length > 0) && (
             <div>
               <SectionDivider label="Effective Stats (with attachments)" />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                 {/* Damage */}
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                  <span style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: DIM, textTransform: 'uppercase', letterSpacing: '0.1em', width: 80 }}>Damage</span>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.375rem' }}>
+                  <span style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: DIM, textTransform: 'uppercase', letterSpacing: '0.1em', width: '5rem' }}>Damage</span>
                   <span style={{ fontFamily: FONT_M, fontSize: FS_LABEL, color: HUD.gold }}>
                     {['MELEE', 'BRAWL', 'LTSABER'].includes(skillKey) ? `Brawn+${preview.damage}` : preview.damage}
                   </span>
@@ -1146,9 +1149,9 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
                 {preview.qualities.length > 0 && (() => {
                   const refQualityMap = Object.fromEntries(allQualities.map(q => [q.key, q]))
                   return (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                      <span style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: DIM, textTransform: 'uppercase', letterSpacing: '0.1em', width: 80, flexShrink: 0 }}>Qualities</span>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', flexWrap: 'wrap' }}>
+                      <span style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: DIM, textTransform: 'uppercase', letterSpacing: '0.1em', width: '5rem', flexShrink: 0 }}>Qualities</span>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
                         {preview.qualities.map(q => (
                           <QualityBadge
                             key={q.key}
@@ -1167,11 +1170,11 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
 
           {/* Description */}
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
               <span style={fieldLabel}>Description</span>
               <button
                 onClick={() => setDescPreview(p => !p)}
-                style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: descPreview ? HUD.gold : DIM, background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px 6px', letterSpacing: '0.05em' }}
+                style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: descPreview ? HUD.gold : DIM, background: 'transparent', border: 'none', cursor: 'pointer', padding: '0.125rem 0.375rem', letterSpacing: '0.05em' }}
               >
                 {descPreview ? 'Edit' : 'Preview'}
               </button>
@@ -1179,8 +1182,8 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
             {descPreview ? (
               <div style={{
                 background: 'rgba(255,255,255,0.03)', border: `1px solid ${BORDER}`,
-                borderRadius: 4, padding: '10px 12px',
-                fontFamily: FONT_C, fontSize: FS_LABEL, color: TEXT, lineHeight: 1.5, minHeight: 80,
+                borderRadius: RADIUS.md, padding: '0.625rem 0.75rem',
+                fontFamily: FONT_C, fontSize: FS_LABEL, color: TEXT, lineHeight: 1.5, minHeight: '5rem',
               }}>
                 {description.trim()
                   ? <RichText text={description} />
@@ -1196,7 +1199,7 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
                 placeholder="Flavor text / item description"
               />
             )}
-            <div style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: DIM, marginTop: 4 }}>
+            <div style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: DIM, marginTop: '0.25rem' }}>
               Supports RichText markup: [advantage], [success], [triumph], [boost:N], etc.
             </div>
           </div>
@@ -1207,15 +1210,15 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
           </Field>
 
           {/* Error */}
-          {error && <div style={{ fontFamily: FONT_C, fontSize: FS_CAP, color: RED, padding: '6px 0' }}>⚠ {error}</div>}
+          {error && <div style={{ fontFamily: FONT_C, fontSize: FS_CAP, color: RED, padding: '0.375rem 0' }}>⚠ {error}</div>}
         </div>
 
         {/* Footer */}
         <div style={{
-          padding: '12px 20px', borderTop: `1px solid ${BORDER}`,
-          display: 'flex', justifyContent: 'flex-end', gap: 10,
+          padding: '0.75rem 1.25rem', borderTop: `1px solid ${BORDER}`,
+          display: 'flex', justifyContent: 'flex-end', gap: '0.625rem',
           position: 'sticky', bottom: 0, background: 'rgba(6,13,9,0.98)',
-          borderRadius: '0 0 14px 14px',
+          borderRadius: `0 0 ${RADIUS.xl}px ${RADIUS.xl}px`,
         }}>
           <button onClick={onClose} style={btnSecondaryStyle}>Cancel</button>
           <button onClick={handleSave} disabled={busy} style={{ ...btnPrimaryStyle, opacity: busy ? 0.5 : 1 }}>
@@ -1241,10 +1244,10 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function SectionDivider({ label }: { label: string }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '0.625rem' }}>
       <div style={{ flex: 1, height: 1, background: BORDER }} />
       <span style={{
-        fontFamily: FONT_M, fontSize: 'clamp(0.6rem, 0.9vw, 0.72rem)',
+        fontFamily: FONT_M, fontSize: FS_OVER,
         color: GOLD_DIM, textTransform: 'uppercase', letterSpacing: '0.18em',
         whiteSpace: 'nowrap',
       }}>
@@ -1265,14 +1268,12 @@ function QualityRow({
   onCountChange: (n: number) => void
   onRemove: () => void
 }) {
-  const [hov, setHov] = useState(false)
   return (
     <div
-      style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 8px', borderRadius: 3, background: hov ? 'rgba(200,170,80,0.04)' : 'transparent' }}
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
+      className="hov-gold-bg quality-row"
+      style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.25rem 0.5rem', borderRadius: RADIUS.sm }}
     >
-      <span style={{ fontFamily: FONT_C, fontSize: 'clamp(0.8rem, 1.2vw, 0.92rem)', color: TEXT, flex: 1 }}>
+      <span style={{ fontFamily: FONT_C, fontSize: FS_LABEL, color: TEXT, flex: 1 }}>
         {displayName}
       </span>
       {isRanked ? (
@@ -1283,28 +1284,29 @@ function QualityRow({
           value={count}
           onChange={e => onCountChange(Math.max(1, Math.min(6, parseInt(e.target.value) || 1)))}
           style={{
-            width: 28, height: 28,
+            width: '1.75rem', height: '1.75rem',
             textAlign: 'center',
             fontFamily: FONT_M,
             fontSize: FS_CAP,
             background: 'rgba(0,0,0,0.4)',
             border: `1px solid rgba(200,170,80,0.3)`,
-            borderRadius: 4,
+            borderRadius: RADIUS.md,
             color: HUD.gold,
             padding: 0,
             outline: 'none',
           }}
         />
       ) : (
-        <span style={{ width: 28, height: 28, display: 'inline-block' }} />
+        <span style={{ width: '1.75rem', height: '1.75rem', display: 'inline-block' }} />
       )}
       <button
         onClick={onRemove}
+        className="hov-danger"
         style={{
           background: 'none', border: 'none',
-          color: hov ? RED : 'transparent',
-          cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: '0 2px',
-          transition: 'color 100ms',
+          color: 'transparent',
+          cursor: 'pointer', fontSize: FS_SM, lineHeight: 1, padding: '0 0.125rem',
+          transition: `color ${EASE.quick}`,
         }}
       >
         ×
@@ -1316,60 +1318,60 @@ function QualityRow({
 // ── Shared styles ─────────────────────────────────────────────────────────────
 
 const sectionLabel: React.CSSProperties = {
-  fontFamily: FONT_C,
+  fontFamily: FONT_BODY,
   fontSize: 'var(--text-overline)',
   fontWeight: 700,
   letterSpacing: '0.15em',
   textTransform: 'uppercase',
   color: 'rgba(200,170,80,0.5)',
-  marginBottom: 6,
+  marginBottom: '0.375rem',
 }
 
 const fieldLabel: React.CSSProperties = {
-  fontFamily: FONT_C,
+  fontFamily: FONT_BODY,
   fontSize: 'var(--text-overline)',
   fontWeight: 700,
   letterSpacing: '0.18em',
   textTransform: 'uppercase',
   color: 'rgba(200,170,80,0.5)',
-  marginBottom: 5,
+  marginBottom: '0.3125rem',
 }
 
 const inputStyle: React.CSSProperties = {
   background: 'rgba(0,0,0,0.4)',
   border: `1px solid rgba(200,170,80,0.3)`,
-  color: 'rgba(232,223,200,0.85)',
-  fontFamily: "var(--font-rajdhani), 'Rajdhani', sans-serif",
+  color: HUD.text,
+  fontFamily: FONT_BODY,
   fontSize: 'var(--text-label)',
-  padding: '6px 10px',
-  borderRadius: 3,
+  padding: '0.375rem 0.625rem',
+  borderRadius: RADIUS.sm,
   outline: 'none',
 }
 
 const btnPrimaryStyle: React.CSSProperties = {
   background: 'rgba(200,170,80,0.15)',
   border: `1px solid rgba(200,170,80,0.3)`,
-  color: 'var(--hud-gold)',
-  fontFamily: "var(--font-rajdhani), 'Rajdhani', sans-serif",
+  color: HUD.gold,
+  fontFamily: FONT_BODY,
   fontSize: 'var(--text-caption)',
   fontWeight: 700,
   letterSpacing: '0.12em',
   textTransform: 'uppercase',
-  padding: '8px 18px',
-  borderRadius: 3,
+  padding: '0.5rem 1.125rem',
+  borderRadius: RADIUS.sm,
   cursor: 'pointer',
 }
 
 const btnSecondaryStyle: React.CSSProperties = {
   background: 'transparent',
   border: `1px solid rgba(200,170,80,0.14)`,
-  color: '#6A8070',
-  fontFamily: "var(--font-rajdhani), 'Rajdhani', sans-serif",
+  color: HUD.textFaint,
+  fontFamily: FONT_BODY,
   fontSize: 'var(--text-caption)',
   fontWeight: 700,
   letterSpacing: '0.1em',
   textTransform: 'uppercase',
-  padding: '8px 14px',
-  borderRadius: 3,
+  padding: '0.5rem 0.875rem',
+  borderRadius: RADIUS.sm,
   cursor: 'pointer',
 }

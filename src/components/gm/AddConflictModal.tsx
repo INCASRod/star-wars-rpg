@@ -6,7 +6,8 @@ import { Modal } from '@/components/ui/Modal'
 import type { Character } from '@/lib/types'
 import { FONT_BODY, RADIUS } from '@/lib/tokens'
 
-const PURPLE    = '#9060D0'
+// Force identity colours — pre-approved exception
+const PURPLE    = 'var(--hud-accent-purple)'
 const PURPLE_BG = 'rgba(144,96,208,0.12)'
 const PURPLE_BD = 'rgba(144,96,208,0.4)'
 
@@ -17,7 +18,7 @@ const fieldLabel: React.CSSProperties = {
   letterSpacing: '0.18em',
   textTransform: 'uppercase',
   color:         'rgba(150,168,180,0.5)',
-  marginBottom:  4,
+  marginBottom:  '0.25rem',
 }
 
 const darkInput: React.CSSProperties = {
@@ -25,7 +26,7 @@ const darkInput: React.CSSProperties = {
   border:       '1px solid var(--hud-border-hi)',
   color:        'var(--hud-text)',
   fontFamily:   FONT_BODY,
-  padding:      '6px 10px',
+  padding:      '0.375rem 0.625rem',
   borderRadius: RADIUS.sm,
   outline:      'none',
   fontSize:     'var(--text-sm)',
@@ -76,9 +77,9 @@ export function AddConflictModal({ open, onClose, campaignId, characters }: AddC
 
   return (
     <Modal open={open} onClose={handleClose} maxWidth={440} borderColor={PURPLE_BD}>
-      <div style={{ padding: '20px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
 
-        <div style={{ fontFamily: FONT_BODY, fontSize: 'var(--text-sm)', fontWeight: 700, color: PURPLE, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: 'var(--text-body-sm)', fontWeight: 700, color: PURPLE, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
           Add Conflict
         </div>
 
@@ -116,7 +117,7 @@ export function AddConflictModal({ open, onClose, campaignId, characters }: AddC
           onClick={handleAdd}
           disabled={!canAdd}
           style={{
-            height:        36,
+            height:        '2.25rem',
             borderRadius:  RADIUS.sm,
             background:    canAdd ? PURPLE_BG : 'transparent',
             border:        `1px solid ${PURPLE_BD}`,

@@ -15,17 +15,15 @@ import type { Character } from '@/lib/types'
 import type { CombatEncounter } from '@/lib/combat'
 import { fetchAdversaries, adversaryToInstance } from '@/lib/adversaries'
 import type { AdversaryInstance } from '@/lib/adversaries'
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_BODY, EASE, RADIUS } from '@/lib/tokens'
 
 /* ── Design tokens ─────────────────────────────────────── */
-const FR  = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FC  = "var(--font-rajdhani), 'Cinzel', serif"
 const BG  = 'var(--hud-bg)'
 const DIM  = 'var(--hud-text-dim)'
 const TEXT = 'var(--hud-text)'
-const GREEN = '#4EC87A'
-const PANEL_BG  = 'rgba(10,10,12,0.97)'
-const BORDER    = 'rgba(150,168,180,0.14)'
+const GREEN = 'var(--state-success)'
+const PANEL_BG  = 'var(--hud-panel)'
+const BORDER    = 'var(--hud-border)'
 const BORDER_HI = 'var(--hud-accent-35)'
 
 const FS_OVERLINE = 'var(--text-overline)'
@@ -35,16 +33,16 @@ const FS_SM       = 'var(--text-sm)'
 const FS_H4       = 'var(--text-h4)'
 
 const btnTool: React.CSSProperties = {
-  background: 'rgba(10,10,12,0.92)',
+  background: 'var(--hud-panel)',
   border: `1px solid var(--hud-accent-35)`,
   color: HUD.gold,
-  fontFamily: FR,
+  fontFamily: FONT_BODY,
   fontSize: FS_CAPTION,
   fontWeight: 700,
   letterSpacing: '0.1em',
   textTransform: 'uppercase',
-  padding: '6px 13px',
-  borderRadius: 4,
+  padding: '0.375rem 0.8125rem',
+  borderRadius: RADIUS.md,
   cursor: 'pointer',
   backdropFilter: 'blur(10px)',
   WebkitBackdropFilter: 'blur(10px)',
@@ -54,26 +52,26 @@ const btnTool: React.CSSProperties = {
 const btnDanger: React.CSSProperties = {
   background: 'rgba(224,80,80,0.10)',
   border: `1px solid rgba(224,80,80,0.35)`,
-  color: '#E05050',
-  fontFamily: FR,
+  color: 'var(--state-failure)',
+  fontFamily: FONT_BODY,
   fontSize: FS_CAPTION,
   fontWeight: 700,
-  padding: '4px 9px',
-  borderRadius: 3,
+  padding: '0.25rem 0.5625rem',
+  borderRadius: RADIUS.sm,
   cursor: 'pointer',
   flexShrink: 0,
 }
 
 const btnSmall: React.CSSProperties = {
   background: 'var(--hud-accent-10)',
-  border: `1px solid rgba(150,168,180,0.30)`,
+  border: `1px solid var(--hud-border-hi)`,
   color: HUD.gold,
-  fontFamily: FR,
+  fontFamily: FONT_BODY,
   fontSize: FS_CAPTION,
   fontWeight: 700,
   letterSpacing: '0.06em',
-  padding: '3px 9px',
-  borderRadius: 3,
+  padding: '0.1875rem 0.5625rem',
+  borderRadius: RADIUS.sm,
   cursor: 'pointer',
   whiteSpace: 'nowrap',
 }
@@ -82,9 +80,9 @@ const darkInput: React.CSSProperties = {
   background: 'rgba(0,0,0,0.4)',
   border: `1px solid ${BORDER_HI}`,
   color: TEXT,
-  fontFamily: FR,
-  padding: '6px 10px',
-  borderRadius: 3,
+  fontFamily: FONT_BODY,
+  padding: '0.375rem 0.625rem',
+  borderRadius: RADIUS.sm,
   outline: 'none',
   fontSize: FS_SM,
   width: '100%',
@@ -92,13 +90,13 @@ const darkInput: React.CSSProperties = {
 }
 
 const fieldLabel: React.CSSProperties = {
-  fontFamily: FR,
+  fontFamily: FONT_BODY,
   fontSize: FS_OVERLINE,
   fontWeight: 700,
   letterSpacing: '0.18em',
   textTransform: 'uppercase',
   color: 'var(--hud-accent-50)',
-  marginBottom: 4,
+  marginBottom: '0.25rem',
 }
 
 /* ── Types ─────────────────────────────────────────────── */
@@ -203,14 +201,14 @@ function UploadModal({ campaignId, planets, onClose, onSaved }: { campaignId: st
   return createPortal(
     <div
       onClick={onClose}
-      style={{ position: 'fixed', inset: 0, zIndex: 800, background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      style={{ position: 'fixed', inset: 0, zIndex: 'var(--z-toast)' as unknown as number, background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
     >
       <div
         onClick={e => e.stopPropagation()}
-        style={{ background: PANEL_BG, border: `1px solid ${BORDER_HI}`, borderRadius: 8, padding: 24, width: '100%', maxWidth: 440, display: 'flex', flexDirection: 'column', gap: 14, boxShadow: '0 20px 60px rgba(0,0,0,0.8)' }}
+        style={{ background: PANEL_BG, border: `1px solid ${BORDER_HI}`, borderRadius: RADIUS.lg, padding: '1.5rem', width: '100%', maxWidth: 440, display: 'flex', flexDirection: 'column', gap: '0.875rem', boxShadow: '0 20px 60px rgba(0,0,0,0.8)' }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ fontFamily: FC, fontSize: FS_H4, color: HUD.gold }}>Upload New Map</div>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS_H4, color: HUD.gold }}>Upload New Map</div>
           <button onClick={onClose} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: DIM, fontSize: FS_H4 }}>×</button>
         </div>
         <div>
@@ -232,23 +230,23 @@ function UploadModal({ campaignId, planets, onClose, onSaved }: { campaignId: st
         )}
         <div>
           <div style={fieldLabel}>Image (JPG / PNG / WebP, max 10 MB)</div>
-          <input type="file" accept="image/jpeg,image/png,image/webp" onChange={e => setFile(e.target.files?.[0] ?? null)} style={{ ...darkInput, padding: '5px 8px' }} />
-          {file && <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, marginTop: 4 }}>{file.name} ({(file.size / 1024 / 1024).toFixed(1)} MB)</div>}
+          <input type="file" accept="image/jpeg,image/png,image/webp" onChange={e => setFile(e.target.files?.[0] ?? null)} style={{ ...darkInput, padding: '0.3125rem 0.5rem' }} />
+          {file && <div style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: DIM, marginTop: '0.25rem' }}>{file.name} ({(file.size / 1024 / 1024).toFixed(1)} MB)</div>}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
             <input type="checkbox" checked={gridEnabled} onChange={e => setGridEnabled(e.target.checked)} style={{ accentColor: HUD.gold }} />
-            <span style={{ fontFamily: FR, fontSize: FS_LABEL, color: TEXT }}>Grid overlay</span>
+            <span style={{ fontFamily: FONT_BODY, fontSize: FS_LABEL, color: TEXT }}>Grid overlay</span>
           </label>
           {gridEnabled && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}>
-              <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>Cell size (px)</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginLeft: 'auto' }}>
+              <span style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: DIM }}>Cell size (px)</span>
               <input type="number" value={gridSize} onChange={e => setGridSize(Math.max(10, Number(e.target.value)))} style={{ ...darkInput, width: 64, textAlign: 'center' }} />
             </div>
           )}
         </div>
-        {err && <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: '#E05050' }}>{err}</div>}
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 4 }}>
+        {err && <div style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: 'var(--state-failure)' }}>{err}</div>}
+        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '0.25rem' }}>
           <button onClick={onClose} style={{ ...btnTool, color: DIM, border: `1px solid ${BORDER}` }}>Cancel</button>
           <button onClick={handleSave} disabled={busy} style={{ ...btnTool, opacity: busy ? 0.6 : 1 }}>
             {busy ? 'Uploading…' : '↑ Upload Map'}
@@ -743,19 +741,19 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
             />
             {previewMap && (
               <div style={{
-                position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)',
-                zIndex: 50, display: 'flex', alignItems: 'center', gap: 8,
-                background: 'rgba(10,10,12,0.92)', border: `1px solid ${BORDER_HI}`,
-                borderRadius: 20, padding: '4px 10px 4px 12px',
+                position: 'absolute', top: '0.625rem', left: '50%', transform: 'translateX(-50%)',
+                zIndex: 'var(--z-overlay)' as unknown as number, display: 'flex', alignItems: 'center', gap: '0.5rem',
+                background: PANEL_BG, border: `1px solid ${BORDER_HI}`,
+                borderRadius: '1.25rem', padding: '0.25rem 0.625rem 0.25rem 0.75rem',
                 backdropFilter: 'blur(8px)',
               }}>
-                <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: HUD.gold }}>
+                <span style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: HUD.gold }}>
                   Preview: {previewMap.name}
                 </span>
-                <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>· not live</span>
+                <span style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: DIM }}>· not live</span>
                 <button
                   onClick={() => setPreviewMap(null)}
-                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: DIM, fontSize: '0.9rem', lineHeight: 1, padding: '0 2px', marginLeft: 2 }}
+                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: DIM, fontSize: '0.9rem', lineHeight: 1, padding: '0 0.125rem', marginLeft: '0.125rem' }}
                 >
                   ✕
                 </button>
@@ -763,27 +761,27 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
             )}
           </>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12 }}>
-            <div style={{ fontFamily: FC, fontSize: FS_H4, color: HUD.gold, letterSpacing: '0.1em' }}>No Active Map</div>
-            <div style={{ fontFamily: FR, fontSize: FS_SM, color: DIM }}>Upload a map and set it as active to get started.</div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '0.75rem' }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS_H4, color: HUD.gold, letterSpacing: '0.1em' }}>No Active Map</div>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS_SM, color: DIM }}>Upload a map and set it as active to get started.</div>
             {campaignId && (
-              <button onClick={() => setUploadOpen(true)} style={{ ...btnTool, marginTop: 8 }}>↑ Upload Map</button>
+              <button onClick={() => setUploadOpen(true)} style={{ ...btnTool, marginTop: '0.5rem' }}>↑ Upload Map</button>
             )}
           </div>
         )}
 
         {/* ── Floating toolbar (hidden on staging tab — pills toolbar takes over) ── */}
         {!isStagingTab && <div
-          style={{ position: 'absolute', top: 12, left: 12, right: 12, display: 'flex', alignItems: 'center', gap: 8, zIndex: 50, pointerEvents: 'none' }}
+          style={{ position: 'absolute', top: '0.75rem', left: '0.75rem', right: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', zIndex: 'var(--z-overlay)' as unknown as number, pointerEvents: 'none' }}
           onClick={e => e.stopPropagation()}
         >
           {/* Left: library toggle + upload */}
-          <div style={{ display: 'flex', gap: 8, pointerEvents: 'all' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', pointerEvents: 'all' }}>
             <button
               onClick={() => setLibraryOpen(o => !o)}
               style={{
                 ...btnTool,
-                borderColor: libraryOpen ? 'rgba(150,168,180,0.65)' : 'rgba(150,168,180,0.35)',
+                borderColor: libraryOpen ? 'var(--hud-border-active)' : 'var(--hud-accent-35)',
                 color: libraryOpen ? HUD.gold : DIM,
               }}
             >
@@ -798,23 +796,23 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
 
           {/* Right: active-map actions */}
           {activeMap && (
-            <div style={{ display: 'flex', gap: 8, pointerEvents: 'all', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', pointerEvents: 'all', alignItems: 'center' }}>
               {/* Token scale control */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 0, background: 'rgba(10,10,12,0.92)', border: '1px solid rgba(150,168,180,0.35)', borderRadius: 4 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 0, background: PANEL_BG, border: `1px solid var(--hud-accent-35)`, borderRadius: RADIUS.md }}>
                 <button
                   onClick={() => adjustTokenScale(-0.25)}
                   disabled={tokenScale <= 0.25}
-                  style={{ background: 'transparent', border: 'none', color: tokenScale <= 0.25 ? 'rgba(150,168,180,0.25)' : HUD.gold, fontFamily: "'Share Tech Mono', monospace", fontSize: FS_CAPTION, padding: '6px 10px', cursor: tokenScale <= 0.25 ? 'default' : 'pointer', lineHeight: 1 }}
+                  style={{ background: 'transparent', border: 'none', color: tokenScale <= 0.25 ? 'rgba(150,168,180,0.25)' : HUD.gold, fontFamily: FONT_BODY, fontSize: FS_CAPTION, padding: '0.375rem 0.625rem', cursor: tokenScale <= 0.25 ? 'default' : 'pointer', lineHeight: 1 }}
                 >
                   −
                 </button>
-                <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: FS_CAPTION, color: HUD.gold, minWidth: 42, textAlign: 'center', letterSpacing: '0.04em' }}>
+                <span style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: HUD.gold, minWidth: '2.625rem', textAlign: 'center', letterSpacing: '0.04em' }}>
                   {tokenScale.toFixed(2)}×
                 </span>
                 <button
                   onClick={() => adjustTokenScale(0.25)}
                   disabled={tokenScale >= 3.0}
-                  style={{ background: 'transparent', border: 'none', color: tokenScale >= 3.0 ? 'rgba(150,168,180,0.25)' : HUD.gold, fontFamily: "'Share Tech Mono', monospace", fontSize: FS_CAPTION, padding: '6px 10px', cursor: tokenScale >= 3.0 ? 'default' : 'pointer', lineHeight: 1 }}
+                  style={{ background: 'transparent', border: 'none', color: tokenScale >= 3.0 ? 'rgba(150,168,180,0.25)' : HUD.gold, fontFamily: FONT_BODY, fontSize: FS_CAPTION, padding: '0.375rem 0.625rem', cursor: tokenScale >= 3.0 ? 'default' : 'pointer', lineHeight: 1 }}
                 >
                   +
                 </button>
@@ -826,7 +824,7 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
                 style={{
                   ...btnTool,
                   color: activeMap.is_visible_to_players ? GREEN : DIM,
-                  borderColor: activeMap.is_visible_to_players ? 'rgba(78,200,122,0.45)' : 'rgba(150,168,180,0.35)',
+                  borderColor: activeMap.is_visible_to_players ? 'rgba(78,200,122,0.45)' : 'var(--hud-accent-35)',
                 }}
               >
                 {activeMap.is_visible_to_players ? '◉ Visible' : '◯ Hidden'}
@@ -838,8 +836,8 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
                 style={{
                   ...btnTool,
                   color: tokenDrawerOpen ? 'var(--hud-gold)' : DIM,
-                  borderColor: tokenDrawerOpen ? 'rgba(150,168,180,0.45)' : 'rgba(150,168,180,0.35)',
-                  background: tokenDrawerOpen ? 'rgba(150,168,180,0.1)' : 'rgba(10,10,12,0.92)',
+                  borderColor: tokenDrawerOpen ? 'var(--hud-border-active)' : 'var(--hud-accent-35)',
+                  background: tokenDrawerOpen ? 'rgba(150,168,180,0.1)' : PANEL_BG,
                 }}
               >
                 ◈ Tokens
@@ -861,7 +859,7 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
                   style={{
                     position: 'fixed', inset: 0,
                     background: 'rgba(0,0,0,0.35)',
-                    zIndex: 8999,
+                    zIndex: 'var(--z-backdrop)' as unknown as number,
                   }}
                 />
               )}
@@ -870,18 +868,18 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
               <div
                 style={{
                   position:      'fixed',
-                  top:           44,
-                  left:          52,
+                  top:           '2.75rem',
+                  left:          '3.25rem',
                   bottom:        0,
                   width:         'clamp(300px, 28vw, 420px)',
-                  zIndex:        9000,
+                  zIndex:        'var(--z-modal)' as unknown as number,
                   display:       'flex',
                   flexDirection: 'column',
                   background:    PANEL_BG,
                   borderRight:   `1px solid ${isOpen ? BORDER_HI : 'transparent'}`,
                   boxShadow:     isOpen ? '8px 0 40px rgba(0,0,0,0.6)' : 'none',
-                  transform:     isOpen ? 'translateX(0)' : 'translateX(calc(-100% - 52px))',
-                  transition:    'transform 0.26s cubic-bezier(0.22,1,0.36,1), border-color 0.2s, box-shadow 0.2s',
+                  transform:     isOpen ? 'translateX(0)' : 'translateX(calc(-100% - 3.25rem))',
+                  transition:    `transform ${EASE.panel}, border-color ${EASE.quick}, box-shadow ${EASE.quick}`,
                   pointerEvents: isOpen ? 'auto' : 'none',
                   backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
                 }}
@@ -890,23 +888,23 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
                 {/* Header */}
                 <div style={{
                   flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '0 16px', height: 50,
+                  padding: '0 1rem', height: '3.125rem',
                   borderBottom: `1px solid ${BORDER}`,
-                  background: 'rgba(10,10,12,0.92)',
+                  background: PANEL_BG,
                 }}>
-                  <span style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: HUD.gold }}>
+                  <span style={{ fontFamily: FONT_BODY, fontSize: FS_LABEL, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: HUD.gold }}>
                     Map Library
                   </span>
                   <button
                     onClick={closeDrawer}
-                    style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: DIM, fontSize: '1.1rem', lineHeight: 1, padding: '4px 6px' }}
+                    style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: DIM, fontSize: '1.1rem', lineHeight: 1, padding: '0.25rem 0.375rem' }}
                   >
                     ✕
                   </button>
                 </div>
 
                 {/* ── Planet search + new planet ── */}
-                <div style={{ flexShrink: 0, borderBottom: `1px solid ${BORDER}`, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 7 }}>
+                <div style={{ flexShrink: 0, borderBottom: `1px solid ${BORDER}`, padding: '0.625rem 0.75rem', display: 'flex', flexDirection: 'column', gap: '0.4375rem' }}>
                   <input
                     value={planetSearch}
                     onChange={e => setPlanetSearch(e.target.value)}
@@ -914,35 +912,35 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
                     style={darkInput}
                   />
                   {newPlanetOpen ? (
-                    <div style={{ display: 'flex', gap: 5 }}>
+                    <div style={{ display: 'flex', gap: '0.3125rem' }}>
                       <input
                         value={newPlanetName}
                         onChange={e => setNewPlanetName(e.target.value)}
                         onKeyDown={e => { if (e.key === 'Enter') void handleCreatePlanet(); if (e.key === 'Escape') { setNewPlanetOpen(false); setNewPlanetName('') } }}
                         placeholder="Planet name…"
                         autoFocus
-                        style={{ ...darkInput, flex: 1, padding: '5px 8px' }}
+                        style={{ ...darkInput, flex: 1, padding: '0.3125rem 0.5rem' }}
                       />
                       <button
                         onClick={() => void handleCreatePlanet()}
                         disabled={planetBusy || !newPlanetName.trim()}
-                        style={{ ...btnSmall, opacity: (!newPlanetName.trim() || planetBusy) ? 0.45 : 1, padding: '0 10px' }}
+                        style={{ ...btnSmall, opacity: (!newPlanetName.trim() || planetBusy) ? 0.45 : 1, padding: '0 0.625rem' }}
                       >✓</button>
                       <button
                         onClick={() => { setNewPlanetOpen(false); setNewPlanetName('') }}
-                        style={{ background: 'transparent', border: `1px solid ${BORDER}`, color: DIM, fontFamily: FR, fontSize: FS_SM, padding: '0 8px', borderRadius: 4, cursor: 'pointer' }}
+                        style={{ background: 'transparent', border: `1px solid ${BORDER}`, color: DIM, fontFamily: FONT_BODY, fontSize: FS_SM, padding: '0 0.5rem', borderRadius: RADIUS.md, cursor: 'pointer' }}
                       >×</button>
                     </div>
                   ) : (
-                    <div style={{ display: 'flex', gap: 6 }}>
+                    <div style={{ display: 'flex', gap: '0.375rem' }}>
                       <button
                         onClick={() => setNewPlanetOpen(true)}
-                        style={{ flex: 1, padding: '5px 0', borderRadius: 4, background: 'rgba(150,168,180,0.07)', border: '1px solid rgba(150,168,180,0.25)', color: 'var(--hud-gold)', fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer' }}
+                        style={{ flex: 1, padding: '0.3125rem 0', borderRadius: RADIUS.md, background: 'rgba(150,168,180,0.07)', border: '1px solid rgba(150,168,180,0.25)', color: 'var(--hud-gold)', fontFamily: FONT_BODY, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer' }}
                       >⊕ New Planet</button>
                       <button
                         onClick={() => { closeDrawer(); setUploadOpen(true) }}
                         disabled={!campaignId}
-                        style={{ ...btnSmall, flex: 1, textAlign: 'center', padding: '5px 0' }}
+                        style={{ ...btnSmall, flex: 1, textAlign: 'center', padding: '0.3125rem 0' }}
                       >↑ Upload Map</button>
                     </div>
                   )}
@@ -977,13 +975,13 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
                         onDelete={() => setDeletePlanetConfirm(planet.id)}
                       />
                       {deletePlanetConfirm === planet.id && (
-                        <div style={{ padding: '8px 12px', background: 'rgba(224,80,80,0.06)', borderBottom: `1px solid ${BORDER}` }}>
-                          <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: '#E05050', marginBottom: 6 }}>
+                        <div style={{ padding: '0.5rem 0.75rem', background: 'rgba(224,80,80,0.06)', borderBottom: `1px solid ${BORDER}` }}>
+                          <div style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: 'var(--state-failure)', marginBottom: '0.375rem' }}>
                             Delete &quot;{planet.name}&quot;? Maps will become unassigned.
                           </div>
-                          <div style={{ display: 'flex', gap: 6 }}>
-                            <button onClick={() => setDeletePlanetConfirm(null)} style={{ flex: 1, padding: '4px 0', borderRadius: 3, background: 'transparent', border: `1px solid ${BORDER}`, color: DIM, fontFamily: FR, fontSize: FS_CAPTION, cursor: 'pointer' }}>Cancel</button>
-                            <button onClick={() => void handleDeletePlanet(planet.id)} style={{ flex: 2, padding: '4px 0', borderRadius: 3, background: 'rgba(224,80,80,0.15)', border: '1px solid rgba(224,80,80,0.5)', color: '#E05050', fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, cursor: 'pointer' }}>✕ Delete Planet</button>
+                          <div style={{ display: 'flex', gap: '0.375rem' }}>
+                            <button onClick={() => setDeletePlanetConfirm(null)} style={{ flex: 1, padding: '0.25rem 0', borderRadius: RADIUS.sm, background: 'transparent', border: `1px solid ${BORDER}`, color: DIM, fontFamily: FONT_BODY, fontSize: FS_CAPTION, cursor: 'pointer' }}>Cancel</button>
+                            <button onClick={() => void handleDeletePlanet(planet.id)} style={{ flex: 2, padding: '0.25rem 0', borderRadius: RADIUS.sm, background: 'rgba(224,80,80,0.15)', border: '1px solid rgba(224,80,80,0.5)', color: 'var(--state-failure)', fontFamily: FONT_BODY, fontSize: FS_CAPTION, fontWeight: 700, cursor: 'pointer' }}>✕ Delete Planet</button>
                           </div>
                         </div>
                       )}
@@ -1005,7 +1003,7 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
 
                   {/* No search results */}
                   {planetSearch.trim() && filteredPlanets.length === 0 && (
-                    <div style={{ padding: '12px', fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>
+                    <div style={{ padding: '0.75rem', fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: DIM }}>
                       No planets match &quot;{planetSearch}&quot;.
                     </div>
                   )}
@@ -1028,7 +1026,7 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
                 </div>
 
                 {/* Map actions footer */}
-                <div style={{ flexShrink: 0, borderTop: `1px solid ${BORDER}`, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div style={{ flexShrink: 0, borderTop: `1px solid ${BORDER}`, padding: '0.625rem 0.75rem', display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
                   <button
                     onClick={() => { closeDrawer(); setUploadOpen(true) }}
                     disabled={!campaignId}
@@ -1051,7 +1049,7 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
 
                 {/* Footer */}
                 {activeMap && (
-                  <div style={{ padding: '8px 14px', borderTop: `1px solid ${BORDER}`, fontFamily: FR, fontSize: FS_OVERLINE, color: DIM }}>
+                  <div style={{ padding: '0.5rem 0.875rem', borderTop: `1px solid ${BORDER}`, fontFamily: FONT_BODY, fontSize: FS_OVERLINE, color: DIM }}>
                     {tokens.length} token{tokens.length !== 1 ? 's' : ''} on map · Scroll to zoom · Drag to pan
                   </div>
                 )}
@@ -1126,22 +1124,22 @@ const TokenContextMenu = memo(function TokenContextMenu({ contextMenu, onToggleV
       onClick={e => e.stopPropagation()}
       style={{
         position: 'fixed', left: contextMenu.x, top: contextMenu.y,
-        zIndex: 900, background: PANEL_BG, border: `1px solid ${BORDER_HI}`,
-        borderRadius: 6, boxShadow: '0 8px 24px rgba(0,0,0,0.8)',
+        zIndex: 'var(--z-dialog)' as unknown as number, background: PANEL_BG, border: `1px solid ${BORDER_HI}`,
+        borderRadius: RADIUS.lg, boxShadow: '0 8px 24px rgba(0,0,0,0.8)',
         overflow: 'hidden', minWidth: 160,
       }}
     >
       <button
         onClick={async () => { await onToggleVisibility(contextMenu.tokenId, !contextMenu.isVisible); onClose() }}
         className="hov-gold-bg"
-        style={{ display: 'block', width: '100%', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', padding: '9px 14px', fontFamily: FR, fontSize: FS_LABEL, color: TEXT, borderBottom: `1px solid ${BORDER}` }}
+        style={{ display: 'block', width: '100%', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', padding: '0.5625rem 0.875rem', fontFamily: FONT_BODY, fontSize: FS_LABEL, color: TEXT, borderBottom: `1px solid ${BORDER}` }}
       >
         {contextMenu.isVisible ? '◉ Hide from players' : '◉ Show to players'}
       </button>
       <button
         onClick={async () => { await onRemoveToken(contextMenu.tokenId); onClose() }}
         className="hov-red-bg"
-        style={{ display: 'block', width: '100%', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', padding: '9px 14px', fontFamily: FR, fontSize: FS_LABEL, color: '#E05050' }}
+        style={{ display: 'block', width: '100%', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', padding: '0.5625rem 0.875rem', fontFamily: FONT_BODY, fontSize: FS_LABEL, color: 'var(--state-failure)' }}
       >
         ✕ Remove from map
       </button>
@@ -1200,28 +1198,28 @@ const TokenTooltip = memo(function TokenTooltip(p: TokenTooltipData) {
 
   return createPortal(
     <div style={{
-      position: 'fixed', left, top, width: TOOLTIP_W, zIndex: 1100,
-      background: 'rgba(10,10,12,0.97)',
+      position: 'fixed', left, top, width: TOOLTIP_W, zIndex: 'var(--z-tooltip)' as unknown as number,
+      background: PANEL_BG,
       border: `1px solid ${p.typeColor}44`,
-      borderRadius: 6,
+      borderRadius: RADIUS.lg,
       boxShadow: `0 8px 32px rgba(0,0,0,0.85), 0 0 0 1px ${p.typeColor}18`,
       backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-      padding: '10px 12px',
+      padding: '0.625rem 0.75rem',
       pointerEvents: 'none',
     }}>
       {/* Name + type badge */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-        <div style={{ flex: 1, fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
-        <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: p.typeColor, background: `${p.typeColor}18`, border: `1px solid ${p.typeColor}35`, borderRadius: 3, padding: '1px 5px', flexShrink: 0 }}>{p.typeLabel}</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginBottom: '0.5rem' }}>
+        <div style={{ flex: 1, fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: p.typeColor, background: `${p.typeColor}18`, border: `1px solid ${p.typeColor}35`, borderRadius: RADIUS.sm, padding: '1px 0.3125rem', flexShrink: 0 }}>{p.typeLabel}</div>
       </div>
 
       {/* Characteristics grid */}
       {p.characteristics && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 3, marginBottom: 8 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '0.1875rem', marginBottom: '0.5rem' }}>
           {CHAR_ABBRS.map((abbr, i) => (
-            <div key={abbr} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, background: 'rgba(255,255,255,0.04)', borderRadius: 3, padding: '4px 2px' }}>
-              <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.04em' }}>{abbr}</div>
-              <div style={{ fontFamily: FR, fontSize: FS_SM, fontWeight: 700, color: HUD.gold }}>{p.characteristics![CHAR_KEYS[i]]}</div>
+            <div key={abbr} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px', background: 'rgba(255,255,255,0.04)', borderRadius: RADIUS.sm, padding: '0.25rem 0.125rem' }}>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.04em' }}>{abbr}</div>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700, color: HUD.gold }}>{p.characteristics![CHAR_KEYS[i]]}</div>
             </div>
           ))}
         </div>
@@ -1229,23 +1227,23 @@ const TokenTooltip = memo(function TokenTooltip(p: TokenTooltipData) {
 
       {/* Soak + Defense */}
       {(p.soak != null || p.defMelee != null || p.defRanged != null) && (
-        <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
+        <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '0.5rem' }}>
           {p.soak != null && (
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.04)', borderRadius: 3, padding: '4px 4px' }}>
-              <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.04em' }}>SOAK</div>
-              <div style={{ fontFamily: FR, fontSize: FS_SM, fontWeight: 700, color: TEXT }}>{p.soak}</div>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.04)', borderRadius: RADIUS.sm, padding: '0.25rem' }}>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.04em' }}>SOAK</div>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700, color: TEXT }}>{p.soak}</div>
             </div>
           )}
           {p.defMelee != null && (
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.04)', borderRadius: 3, padding: '4px 4px' }}>
-              <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.04em' }}>DEF M</div>
-              <div style={{ fontFamily: FR, fontSize: FS_SM, fontWeight: 700, color: TEXT }}>{p.defMelee}</div>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.04)', borderRadius: RADIUS.sm, padding: '0.25rem' }}>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.04em' }}>DEF M</div>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700, color: TEXT }}>{p.defMelee}</div>
             </div>
           )}
           {p.defRanged != null && (
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.04)', borderRadius: 3, padding: '4px 4px' }}>
-              <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.04em' }}>DEF R</div>
-              <div style={{ fontFamily: FR, fontSize: FS_SM, fontWeight: 700, color: TEXT }}>{p.defRanged}</div>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.04)', borderRadius: RADIUS.sm, padding: '0.25rem' }}>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.04em' }}>DEF R</div>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700, color: TEXT }}>{p.defRanged}</div>
             </div>
           )}
         </div>
@@ -1253,16 +1251,16 @@ const TokenTooltip = memo(function TokenTooltip(p: TokenTooltipData) {
 
       {/* Minion group count */}
       {p.minionGroup && (
-        <div style={{ marginBottom: 6 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-            <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Group</span>
-            <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, color: p.minionGroup.alive === 0 ? '#E05050' : TEXT }}>
+        <div style={{ marginBottom: '0.375rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.1875rem' }}>
+            <span style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Group</span>
+            <span style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, fontWeight: 700, color: p.minionGroup.alive === 0 ? 'var(--state-failure)' : TEXT }}>
               {p.minionGroup.alive}/{p.minionGroup.total} alive
             </span>
           </div>
-          <div style={{ display: 'flex', gap: 3 }}>
+          <div style={{ display: 'flex', gap: '0.1875rem' }}>
             {Array.from({ length: p.minionGroup.total }).map((_, i) => (
-              <span key={i} style={{ fontSize: 9, color: i < p.minionGroup!.alive ? '#E05252' : 'rgba(255,255,255,0.15)' }}>
+              <span key={i} style={{ fontSize: '0.5625rem', color: i < p.minionGroup!.alive ? '#E05252' : 'rgba(255,255,255,0.15)' }}>
                 {i < p.minionGroup!.alive ? '■' : '□'}
               </span>
             ))}
@@ -1273,12 +1271,12 @@ const TokenTooltip = memo(function TokenTooltip(p: TokenTooltipData) {
       {/* Wounds bar */}
       {p.wounds && (
         <div style={{ marginBottom: p.strain ? 6 : 0 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-            <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Wounds</span>
-            <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, color: p.wounds.current >= p.wounds.max ? '#E05050' : TEXT }}>{p.wounds.current}/{p.wounds.max}</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.1875rem' }}>
+            <span style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Wounds</span>
+            <span style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, fontWeight: 700, color: p.wounds.current >= p.wounds.max ? 'var(--state-failure)' : TEXT }}>{p.wounds.current}/{p.wounds.max}</span>
           </div>
-          <div style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: `${Math.min(100, (p.wounds.current / Math.max(p.wounds.max, 1)) * 100)}%`, background: p.wounds.current >= p.wounds.max ? '#E05050' : 'var(--hud-gold)', borderRadius: 2 }} />
+          <div style={{ height: '0.25rem', background: 'rgba(255,255,255,0.08)', borderRadius: RADIUS.sm, overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: `${Math.min(100, (p.wounds.current / Math.max(p.wounds.max, 1)) * 100)}%`, background: p.wounds.current >= p.wounds.max ? 'var(--state-failure)' : 'var(--hud-gold)', borderRadius: RADIUS.sm }} />
           </div>
         </div>
       )}
@@ -1286,12 +1284,12 @@ const TokenTooltip = memo(function TokenTooltip(p: TokenTooltipData) {
       {/* Strain bar */}
       {p.strain && (
         <div style={{ marginTop: p.wounds ? 6 : 0 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-            <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Strain</span>
-            <span style={{ fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, color: p.strain.current >= p.strain.max ? '#E05050' : TEXT }}>{p.strain.current}/{p.strain.max}</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.1875rem' }}>
+            <span style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Strain</span>
+            <span style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, fontWeight: 700, color: p.strain.current >= p.strain.max ? 'var(--state-failure)' : TEXT }}>{p.strain.current}/{p.strain.max}</span>
           </div>
-          <div style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: `${Math.min(100, (p.strain.current / Math.max(p.strain.max, 1)) * 100)}%`, background: p.strain.current >= p.strain.max ? '#E05050' : '#4EC87A', borderRadius: 2 }} />
+          <div style={{ height: '0.25rem', background: 'rgba(255,255,255,0.08)', borderRadius: RADIUS.sm, overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: `${Math.min(100, (p.strain.current / Math.max(p.strain.max, 1)) * 100)}%`, background: p.strain.current >= p.strain.max ? 'var(--state-failure)' : 'var(--state-success)', borderRadius: RADIUS.sm }} />
           </div>
         </div>
       )}
@@ -1312,19 +1310,19 @@ const TokenDrawer = memo(function TokenDrawer({
       style={{
         width: 280, flexShrink: 0,
         background: PANEL_BG,
-        borderLeft: '1px solid rgba(150,168,180,0.25)',
+        borderLeft: `1px solid ${BORDER}`,
         display: 'flex', flexDirection: 'column',
         overflow: 'hidden',
       }}
     >
       {/* Header */}
       <div style={{
-        padding: '14px 14px 10px',
+        padding: '0.875rem 0.875rem 0.625rem',
         borderBottom: `1px solid ${BORDER}`,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         flexShrink: 0,
       }}>
-        <div style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, letterSpacing: '0.14em', color: HUD.gold }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS_LABEL, fontWeight: 700, letterSpacing: '0.14em', color: HUD.gold }}>
           ◈ TOKENS
         </div>
         <button
@@ -1341,7 +1339,7 @@ const TokenDrawer = memo(function TokenDrawer({
         {/* ── Section A: Adversaries ── */}
         {npcSlots.length > 0 && (
           <>
-            <div style={{ padding: '10px 14px 6px', fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(150,168,180,0.4)', borderBottom: `1px solid ${BORDER}` }}>
+            <div style={{ padding: '0.625rem 0.875rem 0.375rem', fontFamily: FONT_BODY, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(150,168,180,0.4)', borderBottom: `1px solid ${BORDER}` }}>
               Adversaries
             </div>
 
@@ -1354,51 +1352,51 @@ const TokenDrawer = memo(function TokenDrawer({
               const mapToken   = tokensBySlotKey.get(p.slotId) ?? null
 
               return (
-                <div key={p.slotId} style={{ padding: '10px 12px', borderBottom: `1px solid ${BORDER}` }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div key={p.slotId} style={{ padding: '0.625rem 0.75rem', borderBottom: `1px solid ${BORDER}` }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
                     {advImg ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={advImg} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: `2px solid ${tokenColor}60` }} />
                     ) : (
-                      <div style={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, background: `${tokenColor}20`, border: `2px solid ${tokenColor}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FC, fontSize: 16, fontWeight: 700, color: tokenColor }}>
+                      <div style={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, background: `${tokenColor}20`, border: `2px solid ${tokenColor}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FONT_BODY, fontSize: '1rem', fontWeight: 700, color: tokenColor }}>
                         {label.charAt(0).toUpperCase()}
                       </div>
                     )}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</div>
-                      <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.1em', color: tokenColor }}>{badge}</div>
+                      <div style={{ fontFamily: FONT_BODY, fontSize: FS_LABEL, fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</div>
+                      <div style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.1em', color: tokenColor }}>{badge}</div>
                     </div>
                     {activeMap && (
                       isOnMap
-                        ? <span style={{ fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, color: GREEN, flexShrink: 0 }}>On map ✓</span>
+                        ? <span style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, fontWeight: 700, color: GREEN, flexShrink: 0 }}>On map ✓</span>
                         : <button onClick={() => void onAddAdversaryToken(p)} style={btnSmall}>+ Add</button>
                     )}
                   </div>
 
                   {!advImg && (
-                    <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, cursor: advTokenBusy === p.name ? 'wait' : 'pointer' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginTop: '0.5rem', cursor: advTokenBusy === p.name ? 'wait' : 'pointer' }}>
                       <input type="file" accept="image/*" hidden onChange={e => { const f = e.target.files?.[0]; if (f) void onAdvTokenUpload(p.name, f) }} />
-                      <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>{advTokenBusy === p.name ? 'Uploading…' : '↑ Upload Image'}</span>
-                      <span style={{ fontFamily: FR, fontStyle: 'italic', fontSize: FS_OVERLINE, color: 'rgba(150,168,180,0.3)' }}>· Used as token on the map</span>
+                      <span style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: DIM }}>{advTokenBusy === p.name ? 'Uploading…' : '↑ Upload Image'}</span>
+                      <span style={{ fontFamily: FONT_BODY, fontStyle: 'italic', fontSize: FS_OVERLINE, color: 'rgba(150,168,180,0.3)' }}>· Used as token on the map</span>
                     </label>
                   )}
 
                   {advImg && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6 }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginTop: '0.375rem' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.3125rem', cursor: 'pointer' }}>
                         <input type="file" accept="image/*" hidden onChange={e => { const f = e.target.files?.[0]; if (f) void onAdvTokenUpload(p.name, f) }} />
-                        <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>↑ Replace image</span>
+                        <span style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: DIM }}>↑ Replace image</span>
                       </label>
                       <span style={{ color: BORDER_HI }}>·</span>
-                      <button onClick={() => void onClearAdvToken(p.name)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: FR, fontSize: FS_CAPTION, color: '#E05050', padding: 0 }}>Remove</button>
+                      <button onClick={() => void onClearAdvToken(p.name)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: 'var(--state-failure)', padding: 0 }}>Remove</button>
                     </div>
                   )}
 
                   {isOnMap && mapToken && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginTop: '0.5rem' }}>
                       <button
                         onClick={() => void onToggleVisibility(mapToken.id, !mapToken.is_visible)}
-                        style={{ flex: 1, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.06em', cursor: 'pointer', borderRadius: 3, padding: '4px 8px', border: 'none', background: mapToken.is_visible ? 'rgba(78,200,122,0.12)' : 'rgba(255,255,255,0.04)', color: mapToken.is_visible ? GREEN : DIM, transition: '.15s' }}
+                        style={{ flex: 1, fontFamily: FONT_BODY, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.06em', cursor: 'pointer', borderRadius: RADIUS.sm, padding: '0.25rem 0.5rem', border: 'none', background: mapToken.is_visible ? 'rgba(78,200,122,0.12)' : 'rgba(255,255,255,0.04)', color: mapToken.is_visible ? GREEN : DIM, transition: `background ${EASE.quick}` }}
                       >
                         {mapToken.is_visible ? '◉ Visible to players' : '◯ Hidden from players'}
                       </button>
@@ -1414,7 +1412,7 @@ const TokenDrawer = memo(function TokenDrawer({
         {/* ── Section B: Vehicles ── */}
         {vehicleSlots.length > 0 && (
           <>
-            <div style={{ padding: '10px 14px 6px', fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(150,168,180,0.4)', borderBottom: `1px solid ${BORDER}`, borderTop: `1px solid ${BORDER}` }}>
+            <div style={{ padding: '0.625rem 0.875rem 0.375rem', fontFamily: FONT_BODY, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(150,168,180,0.4)', borderBottom: `1px solid ${BORDER}`, borderTop: `1px solid ${BORDER}` }}>
               Vehicles
             </div>
 
@@ -1424,32 +1422,32 @@ const TokenDrawer = memo(function TokenDrawer({
               const tokenColor = p.alignment === 'allied_npc' ? '#4EC87A' : '#e05252'
 
               return (
-                <div key={p.slotId} style={{ padding: '10px 12px', borderBottom: `1px solid ${BORDER}` }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div key={p.slotId} style={{ padding: '0.625rem 0.75rem', borderBottom: `1px solid ${BORDER}` }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
                     {p.token_image_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={p.token_image_url} alt="" style={{ width: 40, height: 28, borderRadius: 3, objectFit: 'cover', flexShrink: 0, border: `2px solid ${tokenColor}60` }} />
+                      <img src={p.token_image_url} alt="" style={{ width: 40, height: 28, borderRadius: RADIUS.sm, objectFit: 'cover', flexShrink: 0, border: `2px solid ${tokenColor}60` }} />
                     ) : (
-                      <div style={{ width: 40, height: 28, borderRadius: 3, flexShrink: 0, background: `${tokenColor}20`, border: `2px solid ${tokenColor}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FC, fontSize: 13, fontWeight: 700, color: tokenColor }}>
+                      <div style={{ width: 40, height: 28, borderRadius: RADIUS.sm, flexShrink: 0, background: `${tokenColor}20`, border: `2px solid ${tokenColor}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FONT_BODY, fontSize: '0.8125rem', fontWeight: 700, color: tokenColor }}>
                         {p.name.charAt(0).toUpperCase()}
                       </div>
                     )}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
-                      <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.1em', color: tokenColor }}>{p.alignment === 'allied_npc' ? 'ALLIED' : 'ENEMY'} · VEHICLE</div>
+                      <div style={{ fontFamily: FONT_BODY, fontSize: FS_LABEL, fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
+                      <div style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.1em', color: tokenColor }}>{p.alignment === 'allied_npc' ? 'ALLIED' : 'ENEMY'} · VEHICLE</div>
                     </div>
                     {activeMap && (
                       isOnMap
-                        ? <span style={{ fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, color: GREEN, flexShrink: 0 }}>On map ✓</span>
+                        ? <span style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, fontWeight: 700, color: GREEN, flexShrink: 0 }}>On map ✓</span>
                         : <button onClick={() => void onAddVehicleToken(p)} style={btnSmall}>+ Add</button>
                     )}
                   </div>
 
                   {isOnMap && mapToken && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginTop: '0.5rem' }}>
                       <button
                         onClick={() => void onToggleVisibility(mapToken.id, !mapToken.is_visible)}
-                        style={{ flex: 1, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.06em', cursor: 'pointer', borderRadius: 3, padding: '4px 8px', border: 'none', background: mapToken.is_visible ? 'rgba(78,200,122,0.12)' : 'rgba(255,255,255,0.04)', color: mapToken.is_visible ? GREEN : DIM, transition: '.15s' }}
+                        style={{ flex: 1, fontFamily: FONT_BODY, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.06em', cursor: 'pointer', borderRadius: RADIUS.sm, padding: '0.25rem 0.5rem', border: 'none', background: mapToken.is_visible ? 'rgba(78,200,122,0.12)' : 'rgba(255,255,255,0.04)', color: mapToken.is_visible ? GREEN : DIM, transition: `background ${EASE.quick}` }}
                       >
                         {mapToken.is_visible ? '◉ Visible to players' : '◯ Hidden from players'}
                       </button>
@@ -1463,12 +1461,12 @@ const TokenDrawer = memo(function TokenDrawer({
         )}
 
         {/* ── Section C: Players ── */}
-        <div style={{ padding: '10px 14px 6px', fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(150,168,180,0.4)', borderBottom: `1px solid ${BORDER}`, borderTop: (npcSlots.length > 0 || vehicleSlots.length > 0) ? `1px solid ${BORDER}` : 'none' }}>
+        <div style={{ padding: '0.625rem 0.875rem 0.375rem', fontFamily: FONT_BODY, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(150,168,180,0.4)', borderBottom: `1px solid ${BORDER}`, borderTop: (npcSlots.length > 0 || vehicleSlots.length > 0) ? `1px solid ${BORDER}` : 'none' }}>
           Players
         </div>
 
         {activeCharacters.length === 0 && (
-          <div style={{ padding: '12px 14px', fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>No active characters.</div>
+          <div style={{ padding: '0.75rem 0.875rem', fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: DIM }}>No active characters.</div>
         )}
 
         {activeCharacters.map(char => {
@@ -1476,31 +1474,31 @@ const TokenDrawer = memo(function TokenDrawer({
           const mapToken = tokensByCharId.get(char.id) ?? null
 
           return (
-            <div key={char.id} style={{ padding: '10px 12px', borderBottom: `1px solid ${BORDER}` }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div key={char.id} style={{ padding: '0.625rem 0.75rem', borderBottom: `1px solid ${BORDER}` }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
                 {char.portrait_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={char.portrait_url} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid rgba(150,168,180,0.4)' }} />
                 ) : (
-                  <div style={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, background: 'rgba(150,168,180,0.15)', border: '2px solid rgba(150,168,180,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FC, fontSize: 16, fontWeight: 700, color: HUD.gold }}>
+                  <div style={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, background: 'rgba(150,168,180,0.15)', border: '2px solid rgba(150,168,180,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FONT_BODY, fontSize: '1rem', fontWeight: 700, color: HUD.gold }}>
                     {char.name.charAt(0).toUpperCase()}
                   </div>
                 )}
-                <div style={{ flex: 1, fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ flex: 1, fontFamily: FONT_BODY, fontSize: FS_LABEL, fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {char.name}
                 </div>
                 {activeMap && (
                   isOnMap
-                    ? <span style={{ fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, color: GREEN, flexShrink: 0 }}>On map ✓</span>
+                    ? <span style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, fontWeight: 700, color: GREEN, flexShrink: 0 }}>On map ✓</span>
                     : <button onClick={() => void onAddCharacterToken(char)} style={btnSmall}>+ Add</button>
                 )}
               </div>
 
               {isOnMap && mapToken && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginTop: '0.5rem' }}>
                   <button
                     onClick={() => void onToggleVisibility(mapToken.id, !mapToken.is_visible)}
-                    style={{ flex: 1, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.06em', cursor: 'pointer', borderRadius: 3, padding: '4px 8px', border: 'none', background: mapToken.is_visible ? 'rgba(78,200,122,0.12)' : 'rgba(255,255,255,0.04)', color: mapToken.is_visible ? GREEN : DIM, transition: '.15s' }}
+                    style={{ flex: 1, fontFamily: FONT_BODY, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.06em', cursor: 'pointer', borderRadius: RADIUS.sm, padding: '0.25rem 0.5rem', border: 'none', background: mapToken.is_visible ? 'rgba(78,200,122,0.12)' : 'rgba(255,255,255,0.04)', color: mapToken.is_visible ? GREEN : DIM, transition: `background ${EASE.quick}` }}
                   >
                     {mapToken.is_visible ? '◉ Visible to players' : '◯ Hidden from players'}
                   </button>
@@ -1513,7 +1511,7 @@ const TokenDrawer = memo(function TokenDrawer({
 
         {/* Add All Players */}
         {activeMap && availablePcs.length > 0 && (
-          <div style={{ padding: '10px 12px' }}>
+          <div style={{ padding: '0.625rem 0.75rem' }}>
             <button
               onClick={() => void onAddAllPlayers()}
               style={{ ...btnTool, width: '100%', justifyContent: 'center', display: 'flex' }}
@@ -1546,29 +1544,29 @@ function LibFolderRow({ label, count, expanded, onToggle, onDelete }: LibFolderR
       onMouseLeave={() => setHovered(false)}
       onClick={onToggle}
       style={{
-        display: 'flex', alignItems: 'center', gap: 8,
-        padding: '9px 12px',
+        display: 'flex', alignItems: 'center', gap: '0.5rem',
+        padding: '0.5625rem 0.75rem',
         borderBottom: `1px solid ${BORDER}`,
         background: expanded ? 'rgba(150,168,180,0.05)' : hovered ? 'rgba(150,168,180,0.02)' : 'transparent',
-        cursor: 'pointer', userSelect: 'none', transition: 'background 0.1s',
+        cursor: 'pointer', userSelect: 'none', transition: `background ${EASE.quick}`,
       }}
     >
-      <span style={{ color: expanded ? HUD.gold : DIM, fontSize: 9, flexShrink: 0, lineHeight: 1 }}>
+      <span style={{ color: expanded ? HUD.gold : DIM, fontSize: '0.5625rem', flexShrink: 0, lineHeight: 1 }}>
         {expanded ? '▾' : '▶'}
       </span>
       <span style={{
-        fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.1em',
+        fontFamily: FONT_BODY, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.1em',
         textTransform: 'uppercase', color: expanded ? HUD.gold : TEXT,
         flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
       }}>
         {label}
       </span>
-      <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, flexShrink: 0 }}>{count}</span>
+      <span style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: DIM, flexShrink: 0 }}>{count}</span>
       {onDelete && (hovered || expanded) && (
         <button
           onClick={e => { e.stopPropagation(); onDelete() }}
           title={`Delete ${label}`}
-          style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'rgba(224,80,80,0.55)', fontSize: 15, lineHeight: 1, padding: '0 2px', flexShrink: 0, marginLeft: 2 }}
+          style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'rgba(224,80,80,0.55)', fontSize: '0.9375rem', lineHeight: 1, padding: '0 0.125rem', flexShrink: 0, marginLeft: '0.125rem' }}
         >×</button>
       )}
     </div>
@@ -1577,7 +1575,7 @@ function LibFolderRow({ label, count, expanded, onToggle, onDelete }: LibFolderR
 
 function LibFolderEmpty({ label }: { label: string }) {
   return (
-    <div style={{ padding: '10px 20px', fontFamily: FR, fontSize: FS_CAPTION, color: DIM, borderBottom: `1px solid ${BORDER}` }}>
+    <div style={{ padding: '0.625rem 1.25rem', fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: DIM, borderBottom: `1px solid ${BORDER}` }}>
       {label}
     </div>
   )
@@ -1597,42 +1595,42 @@ interface LibMapRowProps {
 function LibMapRow({ map, planets, busy, onLoad, onEdit, onSetActive, onDelete, onAssignPlanet }: LibMapRowProps) {
   return (
     <div style={{
-      padding: '8px 12px 8px 20px',
+      padding: '0.5rem 0.75rem 0.5rem 1.25rem',
       borderBottom: `1px solid ${BORDER}`,
       background: map.is_active ? 'rgba(150,168,180,0.05)' : 'transparent',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={map.image_url} alt={map.name}
-          style={{ width: 36, height: 26, objectFit: 'cover', borderRadius: 3, border: `1px solid ${map.is_active ? BORDER_HI : BORDER}`, flexShrink: 0 }}
+          style={{ width: 36, height: 26, objectFit: 'cover', borderRadius: RADIUS.sm, border: `1px solid ${map.is_active ? BORDER_HI : BORDER}`, flexShrink: 0 }}
         />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700, color: map.is_active ? HUD.gold : TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS_LABEL, fontWeight: 700, color: map.is_active ? HUD.gold : TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {map.name}
-            {map.is_active && <span style={{ marginLeft: 6, fontSize: FS_OVERLINE, color: HUD.gold }}>★ ACTIVE</span>}
+            {map.is_active && <span style={{ marginLeft: '0.375rem', fontSize: FS_OVERLINE, color: HUD.gold }}>★ ACTIVE</span>}
           </div>
-          <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, color: DIM }}>
             {map.grid_enabled ? `Grid ${map.grid_size}px` : 'No grid'}
-            {map.is_visible_to_players && <span style={{ marginLeft: 6, color: GREEN }}>● Visible</span>}
+            {map.is_visible_to_players && <span style={{ marginLeft: '0.375rem', color: GREEN }}>● Visible</span>}
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 3, flexShrink: 0 }}>
-          <button onClick={onLoad} title="Load on GM canvas" style={{ background: 'rgba(150,168,180,0.08)', border: `1px solid ${BORDER}`, color: DIM, fontFamily: FR, fontSize: FS_CAPTION, padding: '3px 7px', borderRadius: 3, cursor: 'pointer' }}>Load</button>
-          <button onClick={onEdit} title="Edit in Map Forge" style={{ background: 'rgba(150,168,180,0.08)', border: `1px solid ${BORDER}`, color: DIM, fontFamily: FR, fontSize: FS_CAPTION, padding: '3px 7px', borderRadius: 3, cursor: 'pointer' }}>Edit</button>
+        <div style={{ display: 'flex', gap: '0.1875rem', flexShrink: 0 }}>
+          <button onClick={onLoad} title="Load on GM canvas" style={{ background: 'rgba(150,168,180,0.08)', border: `1px solid ${BORDER}`, color: DIM, fontFamily: FONT_BODY, fontSize: FS_CAPTION, padding: '0.1875rem 0.4375rem', borderRadius: RADIUS.sm, cursor: 'pointer' }}>Load</button>
+          <button onClick={onEdit} title="Edit in Map Forge" style={{ background: 'rgba(150,168,180,0.08)', border: `1px solid ${BORDER}`, color: DIM, fontFamily: FONT_BODY, fontSize: FS_CAPTION, padding: '0.1875rem 0.4375rem', borderRadius: RADIUS.sm, cursor: 'pointer' }}>Edit</button>
           {!map.is_active && (
-            <button onClick={onSetActive} disabled={busy} style={{ background: 'rgba(150,168,180,0.08)', border: `1px solid ${BORDER}`, color: DIM, fontFamily: FR, fontSize: FS_CAPTION, padding: '3px 7px', borderRadius: 3, cursor: 'pointer' }}>Set Active</button>
+            <button onClick={onSetActive} disabled={busy} style={{ background: 'rgba(150,168,180,0.08)', border: `1px solid ${BORDER}`, color: DIM, fontFamily: FONT_BODY, fontSize: FS_CAPTION, padding: '0.1875rem 0.4375rem', borderRadius: RADIUS.sm, cursor: 'pointer' }}>Set Active</button>
           )}
           <button onClick={onDelete} style={btnDanger} title="Delete map">×</button>
         </div>
       </div>
       {/* Planet assignment */}
-      <div style={{ marginTop: 5, display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, flexShrink: 0 }}>Planet:</span>
+      <div style={{ marginTop: '0.3125rem', display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+        <span style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: DIM, flexShrink: 0 }}>Planet:</span>
         <select
           value={map.planet_id ?? ''}
           onChange={e => onAssignPlanet(e.target.value || null)}
-          style={{ background: 'rgba(0,0,0,0.4)', border: `1px solid ${BORDER}`, borderRadius: 3, color: map.planet_id ? TEXT : DIM, fontFamily: FR, fontSize: FS_CAPTION, padding: '2px 4px', flex: 1, minWidth: 0, cursor: 'pointer', outline: 'none' }}
+          style={{ background: 'rgba(0,0,0,0.4)', border: `1px solid ${BORDER}`, borderRadius: RADIUS.sm, color: map.planet_id ? TEXT : DIM, fontFamily: FONT_BODY, fontSize: FS_CAPTION, padding: '0.125rem 0.25rem', flex: 1, minWidth: 0, cursor: 'pointer', outline: 'none' }}
         >
           <option value="">— none —</option>
           {planets.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
