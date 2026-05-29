@@ -298,7 +298,11 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
       .eq('session_key', sessionKey)
       .maybeSingle()
       .then(({ data }) => {
-        if (data?.ui_theme) setUiTheme(data.ui_theme as UiTheme)
+        if (!data?.ui_theme) return
+        // Map legacy theme names to current names, fall back to 'ember'
+        const LEGACY: Record<string, UiTheme> = { 'binary-sunset': 'ember', 'operative': 'ember' }
+        const resolved: UiTheme = LEGACY[data.ui_theme] ?? (['ember', 'kyber'].includes(data.ui_theme) ? data.ui_theme as UiTheme : 'ember')
+        setUiTheme(resolved)
       })
   }, [characterId]) // eslint-disable-line react-hooks/exhaustive-deps
 
