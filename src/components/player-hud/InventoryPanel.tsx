@@ -468,6 +468,7 @@ export function InventoryPanel({
   onDiscardWeapon, onDiscardArmor, onDiscardGear,
   isGmMode, characterName,
 }: InventoryPanelProps) {
+  const { isOpen } = useHudPanelContext()
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({})
   const toggleExpand = (id: string) => setExpandedItems(prev => ({ ...prev, [id]: !prev[id] }))
 
@@ -551,7 +552,7 @@ export function InventoryPanel({
                   <CornerBrackets />
                   <div className="flex items-start justify-between" style={{ gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
                     <div>
-                      <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_SM, fontWeight: 600, color: C.text }}>{w.name}</div>
+                      <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_SM, fontWeight: 600, color: C.text }}><TickerText text={w.name} isOpen={isOpen} delayMs={120} /></div>
                       <div className="flex items-center flex-wrap" style={{ gap: '0.375rem', marginTop: '0.125rem' }}>
                         <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: C.textDim, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                           {w.skillName}
@@ -647,7 +648,7 @@ export function InventoryPanel({
                   <CornerBrackets />
                   <div className="flex items-start justify-between" style={{ gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
                     <div>
-                      <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_SM, fontWeight: 600, color: C.text }}>{a.name}</div>
+                      <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_SM, fontWeight: 600, color: C.text }}><TickerText text={a.name} isOpen={isOpen} delayMs={120} /></div>
                       {a.stowLocation && (
                         <div style={{ marginTop: '0.1875rem' }}>
                           <StowPill location={a.stowLocation} />
@@ -726,7 +727,7 @@ export function InventoryPanel({
                 >
                   <div className="flex items-center justify-between" style={{ padding: '0.375rem 0.625rem', gap: 'var(--space-2)' }}>
                     <div className="flex items-center" style={{ gap: '0.375rem', minWidth: 0, flex: 1 }}>
-                      <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.text, flexShrink: 0 }}>{g.name}</span>
+                      <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.text, flexShrink: 0 }}><TickerText text={g.name} isOpen={isOpen} delayMs={120} /></span>
                       {g.stowLocation && <StowPill location={g.stowLocation} />}
                     </div>
                     <div className="flex items-center flex-shrink-0" style={{ gap: 'var(--space-3)' }}>

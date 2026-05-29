@@ -87,6 +87,7 @@ function CornerBrackets() {
 }
 
 function TalentCard({ talent }: { talent: HudTalent }) {
+  const { isOpen } = useHudPanelContext()
   const color = ACTIVATION_COLORS[talent.activation] ?? C.textDim
   const hints = parseDiceHints(talent.description)
 
@@ -110,7 +111,7 @@ function TalentCard({ talent }: { talent: HudTalent }) {
           fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 600,
           color: C.text, letterSpacing: '0.02em',
         }}>
-          {talent.name}
+          <TickerText text={talent.name} isOpen={isOpen} delayMs={120} />
         </div>
         {talent.rank > 1 && (
           <div style={{

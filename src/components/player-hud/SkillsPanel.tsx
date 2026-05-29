@@ -493,7 +493,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
                 color: skill.rank > 0 ? C.text : C.textDim,
                 whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
               }}>
-                {skill.name}
+                <TickerText text={skill.name} isOpen={isOpen} delayMs={120} />
               </div>
             </Tooltip>
 

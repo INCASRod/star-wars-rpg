@@ -6,6 +6,8 @@ import { FONT_BODY } from '@/lib/tokens'
 import { ForcePowerTree, type ForceTreeNode, type ForceTreeConnection } from '@/components/character/ForcePowerTree'
 import { RichText } from '@/components/ui/RichText'
 import { Tooltip } from '@/components/ui/Tooltip'
+import { useHudPanelContext } from '@/contexts/HudPanelContext'
+import { TickerText } from '@/components/ui/TickerText'
 
 // ── Force colour ──────────────────────────────────────────────────────────────
 const FORCE_BLUE      = 'var(--die-force)'
@@ -363,6 +365,7 @@ function ForcePowerCard({
   xpAvailable?: number
   onPurchase?: (abilityKey: string, row: number, col: number, cost: number) => void
 }) {
+  const { isOpen } = useHudPanelContext()
   const [expanded, setExpanded] = useState(false)
   const [headerHovered, setHeaderHovered] = useState(false)
   const pct = fp.totalCount > 0 ? (fp.purchasedCount / fp.totalCount) * 100 : 0
@@ -400,7 +403,7 @@ function ForcePowerCard({
             fontFamily: FONT_CINZEL, fontSize: FS_SM, fontWeight: 600,
             color: C.text, minWidth: 0,
           }}>
-            {fp.powerName}
+            <TickerText text={fp.powerName} isOpen={isOpen} delayMs={120} />
           </div>
           <span className="shrink-0" style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, color: FORCE_BLUE }}>
             {fp.purchasedCount}/{fp.totalCount}
