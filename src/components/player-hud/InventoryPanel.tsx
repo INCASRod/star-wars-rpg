@@ -2,7 +2,10 @@
 
 import React, { useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { C, FONT_CINZEL, FONT_RAJDHANI, panelBase, FS_OVERLINE, FS_LABEL, FS_SM } from './design-tokens'
+import { C, FONT_CINZEL, FONT_RAJDHANI, panelBase, FS_OVERLINE, FS_LABEL, FS_SM, RADIUS } from './design-tokens'
+import { FONT_BODY } from '@/lib/tokens'
+import { useHudPanelContext } from '@/contexts/HudPanelContext'
+import { TickerText } from '@/components/ui/TickerText'
 import { WeaponDamageDisplay } from '@/components/character/WeaponDamageDisplay'
 import { QualityBadge } from '@/components/character/QualityBadge'
 import { RichText } from '@/components/ui/RichText'
@@ -13,10 +16,10 @@ import { HUD } from '@/lib/tokens'
 // ── Stow location visual config ─────────────────────────────────────────────
 
 const STOW_COLOR: Record<StowLocationType, string> = {
-  vehicle:            '#4EC87A',
-  starship:           '#40C4D4',
-  safe_house:         '#D4A84B',
-  base_of_operations: '#9B59B6',
+  vehicle:            'var(--state-success)',
+  starship:           'var(--state-advantage)',
+  safe_house:         '#D4A84B', // DEVIATION: #D4A84B — no token, keeping raw
+  base_of_operations: 'var(--state-activated)',
 }
 
 const STOW_ICON: Record<StowLocationType, string> = {
@@ -60,23 +63,23 @@ function EncBar({ current, threshold }: { current: number; threshold: number }) 
   const pct    = threshold > 0 ? Math.min((current / threshold) * 100, 100) : 0
   const overenc = current > threshold
   return (
-    <div style={{ marginBottom: 16 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+    <div style={{ marginBottom: 'var(--space-4)' }}>
+      <div className="flex justify-between items-center" style={{ marginBottom: '0.375rem' }}>
         <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.textDim }}>
           Encumbrance
         </div>
-        <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_SM, color: overenc ? '#E05050' : C.gold, fontWeight: 700 }}>
+        <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_SM, color: overenc ? 'var(--hud-accent)' : C.gold, fontWeight: 700 }}>
           {current} / {threshold}
         </div>
       </div>
-      <div style={{ height: 5, background: C.textFaint, borderRadius: 3, overflow: 'hidden' }}>
+      <div className="overflow-hidden" style={{ height: '0.3125rem', background: C.textFaint, borderRadius: RADIUS.sm }}>
         <div style={{
           height: '100%', width: `${pct}%`,
           background: overenc
-            ? 'linear-gradient(90deg, #E05050, #FF6060)'
-            : `linear-gradient(90deg, ${C.gold}88, ${C.gold})`,
-          transition: 'width .4s ease',
-          borderRadius: 3,
+            ? 'linear-gradient(90deg, var(--hud-accent), color-mix(in srgb, var(--hud-accent) 80%, white))'
+            : `linear-gradient(90deg, color-mix(in srgb, var(--hud-gold) 53%, transparent), var(--hud-gold))`,
+          transition: 'width var(--ease-smooth)',
+          borderRadius: RADIUS.sm,
         }} />
       </div>
     </div>
@@ -84,35 +87,37 @@ function EncBar({ current, threshold }: { current: number; threshold: number }) 
 }
 
 function SectionLabel({ text }: { text: string }) {
+  const { isOpen } = useHudPanelContext()
   return (
     <div style={{
       fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, fontWeight: 700,
       letterSpacing: '0.15em', textTransform: 'uppercase',
-      color: C.textDim, marginBottom: 8, paddingBottom: 4,
+      color: C.textDim, marginBottom: 'var(--space-2)', paddingBottom: 'var(--space-1)',
       borderBottom: `1px solid ${C.border}`,
     }}>
-      {text}
+      <TickerText text={text} isOpen={isOpen} delayMs={120} />
     </div>
   )
 }
 
 const RANGE_COLOR: Record<string, string> = {
-  Engaged: '#E05252',
-  Short:   '#FF9800',
+  Engaged: 'var(--hud-accent)',
+  Short:   '#FF9800', // DEVIATION: #FF9800 — no token (orange), keeping raw
   Medium:  HUD.gold,
-  Long:    '#4EC87A',
-  Extreme: '#A855E8',
+  Long:    'var(--state-success)',
+  Extreme: 'var(--state-activated)',
 }
 
 function StatBadge({ label, value, color = C.textDim }: { label: string; value: React.ReactNode; color?: string }) {
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
-      background: `${color}10`, border: `1px solid ${color}30`,
-      borderRadius: 4, padding: '3px 8px', minWidth: 40,
+      background: `color-mix(in srgb, ${color} 6%, transparent)`,
+      border: `1px solid color-mix(in srgb, ${color} 19%, transparent)`,
+      borderRadius: RADIUS.md, padding: '3px var(--space-2)', minWidth: '2.5rem',
     }}>
       <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_SM, fontWeight: 700, color, lineHeight: 1 }}>{value}</div>
-      <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, color: C.textDim, letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 2 }}>{label}</div>
+      <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, color: C.textDim, letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: '0.125rem' }}>{label}</div>
     </div>
   )
 }
@@ -122,9 +127,10 @@ function StowPill({ location }: { location: StowLocation }) {
   const icon  = STOW_ICON[location.type]
   return (
     <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 3,
-      padding: '1px 7px', borderRadius: 10,
-      background: `${color}18`, border: `1px solid ${color}45`,
+      display: 'inline-flex', alignItems: 'center', gap: '0.1875rem',
+      padding: '1px 0.4375rem', borderRadius: RADIUS.xl,
+      background: `color-mix(in srgb, ${color} 9%, transparent)`,
+      border: `1px solid color-mix(in srgb, ${color} 27%, transparent)`,
       fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE,
       color, letterSpacing: '0.04em', flexShrink: 0, whiteSpace: 'nowrap',
     }}>
@@ -137,13 +143,13 @@ const EQUIP_BTN_STATES: EquipState[] = ['stowed', 'carrying', 'equipped']
 const EQUIP_BTN_LABELS: Record<EquipState, string> = { stowed: 'STOW', carrying: 'CARRY', equipped: 'EQUIP' }
 const EQUIP_BTN_ACTIVE: Record<EquipState, React.CSSProperties> = {
   stowed:   { background: 'var(--hud-surface-mid)', borderColor: 'var(--hud-border-hi)', color: 'var(--hud-text)' },
-  carrying: { background: 'rgba(224,58,30,0.1)',    borderColor: 'rgba(224,58,30,0.45)', color: C.gold },
-  equipped: { background: 'rgba(78,200,122,0.18)',  borderColor: '#4EC87A',              color: 'var(--hud-text-faint)' },
+  carrying: { background: 'color-mix(in srgb, var(--hud-accent) 10%, transparent)', borderColor: 'color-mix(in srgb, var(--hud-accent) 45%, transparent)', color: C.gold },
+  equipped: { background: 'color-mix(in srgb, var(--state-success) 18%, transparent)', borderColor: 'var(--state-success)', color: 'var(--hud-text-faint)' },
 }
 
 function EquipStateButtons({ equipState, onSet }: { equipState: EquipState; onSet: (s: EquipState) => void }) {
   return (
-    <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+    <div className="flex flex-shrink-0" style={{ gap: 'var(--space-1)' }}>
       {EQUIP_BTN_STATES.map(s => {
         const isActive = equipState === s
         const active = EQUIP_BTN_ACTIVE[s]
@@ -152,12 +158,12 @@ function EquipStateButtons({ equipState, onSet }: { equipState: EquipState; onSe
             key={s}
             onClick={() => { if (!isActive) onSet(s) }}
             style={{
-              height: 28, borderRadius: 5, padding: '0 10px',
-              fontFamily: "'Share Tech Mono', 'Courier New', monospace",
+              height: '1.75rem', borderRadius: RADIUS.md, padding: '0 0.625rem',
+              fontFamily: FONT_BODY,
               fontSize: 'clamp(0.6rem, 0.92vw, 0.72rem)',
               textTransform: 'uppercase',
               cursor: isActive ? 'default' : 'pointer',
-              transition: 'border-color .15s, color .15s',
+              transition: 'border-color var(--ease-default), color var(--ease-default)',
               border: '1px solid',
               ...(isActive ? active : {
                 background: 'var(--hud-surface-lo)',
@@ -165,7 +171,7 @@ function EquipStateButtons({ equipState, onSet }: { equipState: EquipState; onSe
                 color: 'var(--hud-text-faint)',
               }),
             }}
-            onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(224,58,30,0.3)'; (e.currentTarget as HTMLElement).style.color = 'var(--hud-text-dim)' } }}
+            onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.borderColor = 'color-mix(in srgb, var(--hud-accent) 30%, transparent)'; (e.currentTarget as HTMLElement).style.color = 'var(--hud-text-dim)' } }}
             onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.borderColor = 'var(--hud-border)'; (e.currentTarget as HTMLElement).style.color = 'var(--hud-text-faint)' } }}
           >
             {EQUIP_BTN_LABELS[s]}
@@ -177,7 +183,7 @@ function EquipStateButtons({ equipState, onSet }: { equipState: EquipState; onSe
 }
 
 function CornerBrackets() {
-  const s = { position: 'absolute' as const, width: 6, height: 6 }
+  const s = { position: 'absolute' as const, width: '0.375rem', height: '0.375rem' }
   return (
     <>
       <div style={{ ...s, top: 0, left: 0, borderTop: `1px solid ${C.gold}`, borderLeft: `1px solid ${C.gold}` }} />
@@ -193,8 +199,7 @@ function TrashBtn({
 }: { isGm: boolean; isEquipped: boolean; onClick: () => void }) {
   const [hov, setHov] = useState(false)
   const blocked = !isGm && isEquipped
-  const baseAlpha = isGm ? 'rgba(224,58,30,' : 'rgba(244,67,54,'
-  const alpha = blocked ? '0.18)' : hov ? '0.9)' : '0.4)'
+  const accentPct = blocked ? '18%' : hov ? '90%' : '40%'
   return (
     <button
       onClick={blocked ? undefined : onClick}
@@ -202,12 +207,12 @@ function TrashBtn({
       onMouseLeave={() => setHov(false)}
       title={blocked ? 'Unequip before discarding' : isGm ? 'Remove item' : 'Discard item'}
       style={{
-        background: 'none', border: 'none', padding: '2px 4px',
+        background: 'none', border: 'none', padding: '2px var(--space-1)',
         cursor: blocked ? 'not-allowed' : 'pointer',
-        color: `${baseAlpha}${alpha}`,
-        fontSize: isGm ? 18 : 14,
+        color: `color-mix(in srgb, var(--hud-accent) ${accentPct}, transparent)`,
+        fontSize: isGm ? '1.125rem' : '0.875rem',
         lineHeight: 1, flexShrink: 0,
-        transition: 'color 0.15s',
+        transition: 'color var(--ease-default)',
       }}
     >
       {isGm ? '×' : '🗑'}
@@ -219,11 +224,11 @@ function DiscardStrip({
   isGm, characterName, onCancel, onConfirm,
 }: { isGm: boolean; characterName?: string; onCancel: () => void; onConfirm: (note?: string) => void }) {
   const [note, setNote] = useState('')
-  const confirmColor = isGm ? C.gold : '#E05050'
+  const confirmColor = isGm ? C.gold : 'var(--hud-accent)'
   return (
     <div style={{
-      marginTop: 8, paddingTop: 8, borderTop: `1px solid var(--hud-border)`,
-      display: 'flex', alignItems: 'flex-start', gap: 8,
+      marginTop: 'var(--space-2)', paddingTop: 'var(--space-2)', borderTop: `1px solid var(--hud-border)`,
+      display: 'flex', alignItems: 'flex-start', gap: 'var(--space-2)',
     }}>
       <div style={{ flex: 1 }}>
         <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: confirmColor, fontWeight: 600 }}>
@@ -241,10 +246,10 @@ function DiscardStrip({
             onChange={e => setNote(e.target.value)}
             placeholder="Note (optional)"
             style={{
-              marginTop: 4, width: '100%', boxSizing: 'border-box',
+              marginTop: 'var(--space-1)', width: '100%', boxSizing: 'border-box',
               background: 'var(--hud-surface-lo)', border: `1px solid var(--hud-border)`,
               color: C.text, fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE,
-              padding: '3px 8px', borderRadius: 3, outline: 'none',
+              padding: '3px var(--space-2)', borderRadius: RADIUS.sm, outline: 'none',
             }}
           />
         )}
@@ -252,7 +257,7 @@ function DiscardStrip({
       <button
         onClick={onCancel}
         style={{
-          height: 26, padding: '0 10px', borderRadius: 5, cursor: 'pointer',
+          height: '1.625rem', padding: '0 0.625rem', borderRadius: RADIUS.md, cursor: 'pointer',
           fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE,
           background: 'transparent', border: `1px solid var(--hud-border)`,
           color: 'var(--hud-text-dim)', flexShrink: 0, marginTop: isGm ? 2 : 0,
@@ -261,9 +266,10 @@ function DiscardStrip({
       <button
         onClick={() => onConfirm(isGm && note.trim() ? note.trim() : undefined)}
         style={{
-          height: 26, padding: '0 10px', borderRadius: 5, cursor: 'pointer',
+          height: '1.625rem', padding: '0 0.625rem', borderRadius: RADIUS.md, cursor: 'pointer',
           fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, fontWeight: 700,
-          background: `${confirmColor}18`, border: `1px solid ${confirmColor}80`,
+          background: `color-mix(in srgb, ${confirmColor} 9%, transparent)`,
+          border: `1px solid color-mix(in srgb, ${confirmColor} 50%, transparent)`,
           color: confirmColor, flexShrink: 0, marginTop: isGm ? 2 : 0,
         }}
       >
@@ -318,30 +324,31 @@ function StowLocationModal({
       {/* Backdrop */}
       <div
         onClick={onCancel}
-        style={{ position: 'fixed', inset: 0, zIndex: 1099, background: 'rgba(0,0,0,0.65)', cursor: 'pointer' }}
+        className="fixed inset-0 cursor-pointer"
+        style={{ zIndex: 'var(--z-dialog)', background: 'rgba(0,0,0,0.65)' }}
       />
       {/* Modal */}
       <div style={{
         position: 'fixed', top: '50%', left: '50%',
         transform: 'translate(-50%,-50%)',
-        zIndex: 1100,
+        zIndex: 'var(--z-dialog)',
         width: 'clamp(300px, 36vw, 420px)',
         background: BG,
         border: `1px solid var(--hud-border-hi)`,
-        borderRadius: 6,
-        padding: '20px 22px',
+        borderRadius: RADIUS.lg,
+        padding: 'var(--space-5) 1.375rem',
         boxShadow: '0 16px 48px rgba(0,0,0,0.75)',
       }}>
         {/* Header */}
-        <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_SM, fontWeight: 700, color: HUD.gold, marginBottom: 4 }}>
+        <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_SM, fontWeight: 700, color: HUD.gold, marginBottom: 'var(--space-1)' }}>
           Stow Item
         </div>
-        <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: DIM, marginBottom: 14, lineHeight: 1.4 }}>
+        <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: DIM, marginBottom: '0.875rem', lineHeight: 1.4 }}>
           Where would you like to stow{' '}
           <span style={{ color: TEXT, fontWeight: 600 }}>{itemName}</span>?
         </div>
 
-        <div style={{ height: 1, background: 'var(--hud-border)', marginBottom: 16 }} />
+        <div style={{ height: 1, background: 'var(--hud-border)', marginBottom: 'var(--space-4)' }} />
 
         {/* Location picker */}
         {hasOptions ? (
@@ -349,7 +356,7 @@ function StowLocationModal({
             <div style={{
               fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE,
               fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase',
-              color: 'var(--hud-text-faint)', marginBottom: 8,
+              color: 'var(--hud-text-faint)', marginBottom: 'var(--space-2)',
             }}>
               Storage Location
             </div>
@@ -357,19 +364,19 @@ function StowLocationModal({
               value={selected}
               onChange={e => setSelected(e.target.value)}
               style={{
-                width: '100%', padding: '8px 10px',
+                width: '100%', padding: 'var(--space-2) 0.625rem',
                 background: 'var(--hud-surface-lo)',
                 border: `1px solid var(--hud-border)`,
-                borderRadius: 4,
+                borderRadius: RADIUS.md,
                 color: TEXT,
                 fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL,
                 outline: 'none', cursor: 'pointer',
-                marginBottom: 18,
+                marginBottom: '1.125rem',
                 appearance: 'none',
                 backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23E03A1E' opacity='0.6'/%3E%3C/svg%3E")`,
                 backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'right 10px center',
-                paddingRight: 28,
+                backgroundPosition: 'right 0.625rem center',
+                paddingRight: '1.75rem',
               }}
             >
               <option value="">— No specific location —</option>
@@ -387,7 +394,7 @@ function StowLocationModal({
 
             {/* Preview pill for selected location */}
             {selected && selected !== '' && (
-              <div style={{ marginBottom: 18 }}>
+              <div style={{ marginBottom: '1.125rem' }}>
                 {(() => {
                   let loc: StowLocation | null = null
                   if (selected === BOO_VALUE && baseOfOperationsName) {
@@ -397,7 +404,7 @@ function StowLocationModal({
                     if (a) loc = { id: a.id, name: a.name, type: a.type }
                   }
                   return loc ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div className="flex items-center" style={{ gap: '0.375rem' }}>
                       <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, color: DIM }}>Will appear as:</span>
                       <StowPill location={loc} />
                     </div>
@@ -409,7 +416,7 @@ function StowLocationModal({
         ) : (
           <div style={{
             fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: DIM,
-            fontStyle: 'italic', marginBottom: 18, lineHeight: 1.5,
+            fontStyle: 'italic', marginBottom: '1.125rem', lineHeight: 1.5,
           }}>
             No group assets available yet. The item will be stowed without a specific location.
             Add vehicles, starships, or safe houses in the Group Sheet to assign a location.
@@ -417,11 +424,11 @@ function StowLocationModal({
         )}
 
         {/* Action buttons */}
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        <div className="flex justify-end" style={{ gap: 'var(--space-2)' }}>
           <button
             onClick={onCancel}
             style={{
-              height: 32, padding: '0 14px', borderRadius: 4, cursor: 'pointer',
+              height: '2rem', padding: '0 0.875rem', borderRadius: RADIUS.md, cursor: 'pointer',
               fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL,
               background: 'transparent',
               border: `1px solid var(--hud-border)`,
@@ -433,10 +440,10 @@ function StowLocationModal({
           <button
             onClick={handleConfirm}
             style={{
-              height: 32, padding: '0 18px', borderRadius: 4, cursor: 'pointer',
+              height: '2rem', padding: '0 1.125rem', borderRadius: RADIUS.md, cursor: 'pointer',
               fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, fontWeight: 700,
-              background: 'rgba(224,58,30,0.14)',
-              border: `1px solid rgba(224,58,30,0.5)`,
+              background: 'color-mix(in srgb, var(--hud-accent) 14%, transparent)',
+              border: `1px solid color-mix(in srgb, var(--hud-accent) 50%, transparent)`,
               color: HUD.gold,
             }}
           >
@@ -519,15 +526,15 @@ export function InventoryPanel({
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="flex flex-col" style={{ gap: 'var(--space-4)' }}>
       <EncBar current={encumbranceCurrent} threshold={encumbranceThreshold} />
 
       {/* ── Weapons ── */}
       {weapons.length > 0 && (
         <div>
           <SectionLabel text="Weapons" />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {weapons.map(w => {
+          <div className="flex flex-col" style={{ gap: 'var(--space-2)' }}>
+            {weapons.map((w, idx) => {
               const isExpanded = !!expandedItems[w.id]
               const descText = w.description ? stripBBCode(w.description).trim() : ''
               const qualDescs = w.qualities
@@ -535,44 +542,46 @@ export function InventoryPanel({
                 .filter(({ ref }) => ref?.description?.trim())
               const hasContent = !!(descText || qualDescs.length)
               return (
-                <div key={w.id} style={{ ...panelBase, padding: '10px 12px' }}
+                <div key={w.id} data-stagger={idx}>
+                <div className="panel-row-enter">
+                <div style={{ ...panelBase, padding: '0.625rem var(--space-3)' }}
                   onMouseEnter={() => setHoveredRow(w.id)}
                   onMouseLeave={() => setHoveredRow(null)}
                 >
                   <CornerBrackets />
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+                  <div className="flex items-start justify-between" style={{ gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
                     <div>
                       <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_SM, fontWeight: 600, color: C.text }}>{w.name}</div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 2 }}>
+                      <div className="flex items-center flex-wrap" style={{ gap: '0.375rem', marginTop: '0.125rem' }}>
                         <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: C.textDim, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                           {w.skillName}
                         </span>
                         {w.stowLocation && <StowPill location={w.stowLocation} />}
                       </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <div className="flex items-center" style={{ gap: 'var(--space-1)' }}>
                       <EquipStateButtons equipState={w.equipState} onSet={s => handleEquipChange(w.id, 'weapon', w.name, s)} />
                       {onDiscardWeapon && (hoveredRow === w.id || confirmingDiscard?.id === w.id) && (
                         <TrashBtn isGm={!!isGmMode} isEquipped={w.equipState === 'equipped'} onClick={() => startDiscard(w.id, 'weapon')} />
                       )}
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                    <StatBadge label="DMG"  value={<WeaponDamageDisplay {...w.damage} />} color="#E07855" />
-                    <StatBadge label="CRIT" value={w.crit || '—'}    color="#E05050" />
+                  <div className="flex flex-wrap" style={{ gap: '0.375rem' }}>
+                    <StatBadge label="DMG"  value={<WeaponDamageDisplay {...w.damage} />} color="var(--state-threat)" />
+                    <StatBadge label="CRIT" value={w.crit || '—'}    color="var(--hud-accent)" />
                     <StatBadge label="RNG"  value={w.range}          color={RANGE_COLOR[w.range] ?? C.textDim} />
                     <StatBadge label="ENC"  value={w.enc} />
                     <StatBadge label="HP"   value={w.hardPoints} />
                   </div>
                   {w.qualities.length > 0 && (
-                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 6 }}>
+                    <div className="flex flex-wrap" style={{ gap: 'var(--space-1)', marginTop: '0.375rem' }}>
                       {w.qualities.map((q, i) => (
                         <QualityBadge key={i} quality={q} refQualityMap={refWeaponQualityMap} variant="desktop" />
                       ))}
                     </div>
                   )}
                   {hasContent && isExpanded && (
-                    <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px solid ${C.border}` }}>
+                    <div style={{ marginTop: 'var(--space-2)', paddingTop: 'var(--space-2)', borderTop: `1px solid ${C.border}` }}>
                       {descText && (
                         <RichText
                           text={descText}
@@ -580,7 +589,7 @@ export function InventoryPanel({
                         />
                       )}
                       {qualDescs.map(({ q, ref }, i) => (
-                        <div key={i} style={{ marginTop: descText && i === 0 ? 8 : 4 }}>
+                        <div key={i} style={{ marginTop: descText && i === 0 ? 'var(--space-2)' : 'var(--space-1)' }}>
                           <span style={{ fontFamily: FONT_CINZEL, fontSize: FS_OVERLINE, color: C.gold, fontWeight: 600 }}>
                             {ref.name}{ref.is_ranked && q.count && q.count > 1 ? ` ${q.count}` : ''}:{' '}
                           </span>
@@ -598,10 +607,11 @@ export function InventoryPanel({
                   {hasContent && (
                     <button
                       onClick={() => toggleExpand(w.id)}
+                      className="block w-full cursor-pointer text-center"
                       style={{
-                        display: 'block', width: '100%', marginTop: 6,
-                        background: 'none', border: 'none', cursor: 'pointer',
-                        color: C.textDim, fontSize: '0.6rem', textAlign: 'center',
+                        marginTop: '0.375rem',
+                        background: 'none', border: 'none',
+                        color: C.textDim, fontSize: '0.6rem',
                         padding: '2px 0', opacity: 0.6,
                       }}
                       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
@@ -610,6 +620,8 @@ export function InventoryPanel({
                       {isExpanded ? '▲' : '▼'}
                     </button>
                   )}
+                </div>
+                </div>
                 </div>
               )
             })}
@@ -621,41 +633,44 @@ export function InventoryPanel({
       {armorItems.length > 0 && (
         <div>
           <SectionLabel text="Armor" />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {armorItems.map(a => {
+          <div className="flex flex-col" style={{ gap: 'var(--space-2)' }}>
+            {armorItems.map((a, idx) => {
               const isExpanded = !!expandedItems[a.id]
               const descText = a.description ? stripBBCode(a.description).trim() : ''
               return (
-                <div key={a.id} style={{ ...panelBase, padding: '10px 12px' }}
+                <div key={a.id} data-stagger={idx}>
+                <div className="panel-row-enter">
+                <div style={{ ...panelBase, padding: '0.625rem var(--space-3)' }}
                   onMouseEnter={() => setHoveredRow(a.id)}
                   onMouseLeave={() => setHoveredRow(null)}
                 >
                   <CornerBrackets />
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+                  <div className="flex items-start justify-between" style={{ gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
                     <div>
                       <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_SM, fontWeight: 600, color: C.text }}>{a.name}</div>
                       {a.stowLocation && (
-                        <div style={{ marginTop: 3 }}>
+                        <div style={{ marginTop: '0.1875rem' }}>
                           <StowPill location={a.stowLocation} />
                         </div>
                       )}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <div className="flex items-center" style={{ gap: 'var(--space-1)' }}>
                       <EquipStateButtons equipState={a.equipState} onSet={s => handleEquipChange(a.id, 'armor', a.name, s)} />
                       {onDiscardArmor && (hoveredRow === a.id || confirmingDiscard?.id === a.id) && (
                         <TrashBtn isGm={!!isGmMode} isEquipped={a.equipState === 'equipped'} onClick={() => startDiscard(a.id, 'armor')} />
                       )}
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  <div className="flex flex-wrap" style={{ gap: '0.375rem' }}>
+                    {/* DEVIATION: #5AAAE0 — no token, keeping raw */}
                     <StatBadge label="SOAK"   value={`+${a.soak}`} color="#5AAAE0" />
-                    <StatBadge label="DEF"    value={a.defense}    color="#4EC87A" />
+                    <StatBadge label="DEF"    value={a.defense}    color="var(--state-success)" />
                     <StatBadge label="ENC"    value={a.enc} />
                     <StatBadge label="HP"     value={a.hardPoints} />
                     <StatBadge label="RARITY" value={a.rarity} />
                   </div>
                   {descText && isExpanded && (
-                    <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px solid ${C.border}` }}>
+                    <div style={{ marginTop: 'var(--space-2)', paddingTop: 'var(--space-2)', borderTop: `1px solid ${C.border}` }}>
                       <RichText
                         text={descText}
                         style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.textDim, lineHeight: 1.55, whiteSpace: 'pre-wrap' }}
@@ -668,10 +683,11 @@ export function InventoryPanel({
                   {descText && (
                     <button
                       onClick={() => toggleExpand(a.id)}
+                      className="block w-full cursor-pointer text-center"
                       style={{
-                        display: 'block', width: '100%', marginTop: 6,
-                        background: 'none', border: 'none', cursor: 'pointer',
-                        color: C.textDim, fontSize: '0.6rem', textAlign: 'center',
+                        marginTop: '0.375rem',
+                        background: 'none', border: 'none',
+                        color: C.textDim, fontSize: '0.6rem',
                         padding: '2px 0', opacity: 0.6,
                       }}
                       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
@@ -680,6 +696,8 @@ export function InventoryPanel({
                       {isExpanded ? '▲' : '▼'}
                     </button>
                   )}
+                </div>
+                </div>
                 </div>
               )
             })}
@@ -691,28 +709,27 @@ export function InventoryPanel({
       {gearItems.length > 0 && (
         <div>
           <SectionLabel text="Gear" />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            {gearItems.map(g => {
+          <div className="flex flex-col" style={{ gap: 'var(--space-1)' }}>
+            {gearItems.map((g, idx) => {
               const isExpanded = !!expandedItems[g.id]
               const descText = g.description ? stripBBCode(g.description).trim() : ''
               const gIsConfirming = confirmingDiscard?.id === g.id
               return (
-                <div key={g.id} style={{
-                  borderRadius: 4,
+                <div key={g.id} data-stagger={idx}>
+                <div className="panel-row-enter">
+                <div style={{
+                  borderRadius: RADIUS.md,
                   background: 'var(--hud-surface-lo)', border: `1px solid ${C.border}`,
                 }}
                   onMouseEnter={() => setHoveredRow(g.id)}
                   onMouseLeave={() => setHoveredRow(null)}
                 >
-                  <div style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '6px 10px', gap: 8,
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, flex: 1 }}>
+                  <div className="flex items-center justify-between" style={{ padding: '0.375rem 0.625rem', gap: 'var(--space-2)' }}>
+                    <div className="flex items-center" style={{ gap: '0.375rem', minWidth: 0, flex: 1 }}>
                       <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.text, flexShrink: 0 }}>{g.name}</span>
                       {g.stowLocation && <StowPill location={g.stowLocation} />}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                    <div className="flex items-center flex-shrink-0" style={{ gap: 'var(--space-3)' }}>
                       {g.qty > 1 && (
                         <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: C.textDim }}>×{g.qty}</span>
                       )}
@@ -721,9 +738,10 @@ export function InventoryPanel({
                       {descText && (
                         <button
                           onClick={() => toggleExpand(g.id)}
+                          className="cursor-pointer"
                           style={{
-                            background: 'none', border: 'none', cursor: 'pointer',
-                            color: C.textDim, fontSize: '0.6rem', padding: '0 4px', opacity: 0.6,
+                            background: 'none', border: 'none',
+                            color: C.textDim, fontSize: '0.6rem', padding: '0 var(--space-1)', opacity: 0.6,
                           }}
                           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
                           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '0.6' }}
@@ -737,7 +755,7 @@ export function InventoryPanel({
                     </div>
                   </div>
                   {descText && isExpanded && (
-                    <div style={{ padding: '6px 10px 8px', borderTop: `1px solid ${C.border}` }}>
+                    <div style={{ padding: '0.375rem 0.625rem var(--space-2)', borderTop: `1px solid ${C.border}` }}>
                       <RichText
                         text={descText}
                         style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.textDim, lineHeight: 1.55, whiteSpace: 'pre-wrap' }}
@@ -745,10 +763,12 @@ export function InventoryPanel({
                     </div>
                   )}
                   {onDiscardGear && gIsConfirming && (
-                    <div style={{ padding: '0 10px 8px' }}>
+                    <div style={{ padding: '0 0.625rem var(--space-2)' }}>
                       <DiscardStrip isGm={!!isGmMode} characterName={characterName} onCancel={cancelDiscard} onConfirm={executeDiscard} />
                     </div>
                   )}
+                </div>
+                </div>
                 </div>
               )
             })}
@@ -757,10 +777,7 @@ export function InventoryPanel({
       )}
 
       {weapons.length === 0 && armorItems.length === 0 && gearItems.length === 0 && (
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: 48, fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: C.textFaint,
-        }}>
+        <div className="flex items-center justify-center" style={{ padding: 'var(--space-12)', fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: C.textFaint }}>
           Inventory is empty.
         </div>
       )}

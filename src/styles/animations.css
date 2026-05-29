@@ -1,0 +1,155 @@
+/*
+ * animations.css
+ * HOLOCRON animation system.
+ * Keyframes, ticker utilities, stagger helpers.
+ *
+ * All durations use token values where possible.
+ * Never add layout or colour rules to this file.
+ * Never import this file from component files —
+ * it is globally imported via globals.css.
+ */
+
+/* ── PANEL ENTRANCE ──────────────────────────────
+ * The existing translateX transition handles the
+ * panel slide. We layer a clip-path reveal on top
+ * so content appears to be uncovered left-to-right
+ * as the panel arrives. The clip-path transition is
+ * slightly faster than the slide so the panel edge
+ * is always ahead of the reveal.
+ * ──────────────────────────────────────────────── */
+
+.hud-full-panel,
+.hud-quick-drawer {
+  clip-path: inset(0 100% 0 0);
+}
+
+.hud-full-panel.open,
+.hud-quick-drawer.open {
+  clip-path: inset(0 0% 0 0);
+  transition:
+    transform var(--ease-panel),
+    clip-path 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── STAGGER HELPERS ─────────────────────────────
+ * Data attribute driven stagger for content rows.
+ * Apply data-stagger="N" (0-indexed) to each row.
+ * The panel open class on the ancestor triggers
+ * the transition via the .panel-row-enter class.
+ * ──────────────────────────────────────────────── */
+
+.panel-row-enter {
+  opacity: 0;
+  transform: translateY(0.25rem);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.hud-full-panel.open .panel-row-enter,
+.hud-quick-drawer.open .panel-row-enter {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger delays — 0 through 19 covers any panel */
+.hud-full-panel.open [data-stagger="0"]  .panel-row-enter,
+.hud-quick-drawer.open [data-stagger="0"]  .panel-row-enter
+  { transition-delay: 120ms; }
+.hud-full-panel.open [data-stagger="1"]  .panel-row-enter,
+.hud-quick-drawer.open [data-stagger="1"]  .panel-row-enter
+  { transition-delay: 150ms; }
+.hud-full-panel.open [data-stagger="2"]  .panel-row-enter,
+.hud-quick-drawer.open [data-stagger="2"]  .panel-row-enter
+  { transition-delay: 180ms; }
+.hud-full-panel.open [data-stagger="3"]  .panel-row-enter,
+.hud-quick-drawer.open [data-stagger="3"]  .panel-row-enter
+  { transition-delay: 210ms; }
+.hud-full-panel.open [data-stagger="4"]  .panel-row-enter,
+.hud-quick-drawer.open [data-stagger="4"]  .panel-row-enter
+  { transition-delay: 240ms; }
+.hud-full-panel.open [data-stagger="5"]  .panel-row-enter,
+.hud-quick-drawer.open [data-stagger="5"]  .panel-row-enter
+  { transition-delay: 270ms; }
+.hud-full-panel.open [data-stagger="6"]  .panel-row-enter,
+.hud-quick-drawer.open [data-stagger="6"]  .panel-row-enter
+  { transition-delay: 300ms; }
+.hud-full-panel.open [data-stagger="7"]  .panel-row-enter,
+.hud-quick-drawer.open [data-stagger="7"]  .panel-row-enter
+  { transition-delay: 320ms; }
+.hud-full-panel.open [data-stagger="8"]  .panel-row-enter,
+.hud-quick-drawer.open [data-stagger="8"]  .panel-row-enter
+  { transition-delay: 340ms; }
+.hud-full-panel.open [data-stagger="9"]  .panel-row-enter,
+.hud-quick-drawer.open [data-stagger="9"]  .panel-row-enter
+  { transition-delay: 355ms; }
+
+/* Cap stagger at 355ms — rows beyond 9 get the same
+   delay so very long lists don't make users wait */
+.hud-full-panel.open [data-stagger="10"] .panel-row-enter,
+.hud-quick-drawer.open [data-stagger="10"] .panel-row-enter,
+.hud-full-panel.open [data-stagger="11"] .panel-row-enter,
+.hud-quick-drawer.open [data-stagger="11"] .panel-row-enter,
+.hud-full-panel.open [data-stagger="12"] .panel-row-enter,
+.hud-quick-drawer.open [data-stagger="12"] .panel-row-enter
+  { transition-delay: 355ms; }
+
+
+/* ── TICKER KEYFRAMES ────────────────────────────
+ * Used by the useTicker hook (created in Step 3).
+ * The keyframes here are a fallback for browsers
+ * that don't support the JS ticker — they show a
+ * simple fade-in rather than the scramble effect.
+ * ──────────────────────────────────────────────── */
+
+@keyframes tickerFallback {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.ticker-ready {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  gap: 0;
+}
+
+.ticker-char {
+  display: inline-block;
+  min-width: 0.5ch;
+  transition: opacity 40ms ease;
+}
+
+/* ── SECTION HEADER GHOST NUMBER ─────────────────
+ * Already defined in state-tokens.css as
+ * --hud-section-ghost. This rule ensures the
+ * ghost number is always positioned correctly
+ * relative to the label text.
+ * ──────────────────────────────────────────────── */
+
+.section-ghost-num {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--hud-section-ghost);
+  line-height: 1;
+  margin-right: var(--space-2);
+  letter-spacing: -0.02em;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+
+/* ── PANEL CLOSE — reverse stagger ──────────────
+ * When the open class is removed, rows snap back
+ * immediately (no delay on close) so the panel
+ * feels crisp when dismissed.
+ * ──────────────────────────────────────────────── */
+
+.panel-row-enter {
+  transition-delay: 0ms !important;
+}
+
+.hud-full-panel.open .panel-row-enter,
+.hud-quick-drawer.open .panel-row-enter {
+  transition-delay: var(--row-stagger-delay, 0ms);
+}

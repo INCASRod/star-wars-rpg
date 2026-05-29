@@ -1,10 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { C, FONT_CINZEL, FONT_RAJDHANI, panelBase } from './design-tokens'
+import { C, panelBase } from './design-tokens'
+import { FONT_BODY, FS, RADIUS } from '@/lib/tokens'
 import { Tooltip, TipLabel, TipBody } from '@/components/ui/Tooltip'
 import { RichText } from '@/components/ui/RichText'
 import { PanelSearchInput } from '@/components/character/PanelSearchInput'
+import { useHudPanelContext } from '@/contexts/HudPanelContext'
+import { TickerText } from '@/components/ui/TickerText'
 import type { HudTalent } from '@/lib/types'
 
 export type { HudTalent } from '@/lib/types'
@@ -17,10 +20,10 @@ interface TalentsPanelProps {
 
 const ACTIVATION_COLORS: Record<string, string> = {
   Passive: C.textDim,
-  Incidental: '#70C8E8',
-  'Incidental (OOT)': '#70C8E8',
-  Maneuver: '#4EC87A',
-  Action: '#E07855',
+  Incidental: 'var(--die-boost)',
+  'Incidental (OOT)': 'var(--die-boost)',
+  Maneuver: 'var(--die-ability)',
+  Action: 'var(--die-threat)',
 }
 
 const ACTIVATION_ORDER = ['Passive', 'Incidental', 'Incidental (OOT)', 'Maneuver', 'Action']
@@ -49,23 +52,27 @@ function parseDiceHints(desc = ''): DiceHints {
 
 function DiceHintChips({ hints }: { hints: DiceHints }) {
   const chips: { label: string; color: string; title: string }[] = []
-  if (hints.boosts > 0)         chips.push({ label: `+${hints.boosts > 1 ? hints.boosts : ''}□`, color: '#70C8E8', title: 'Adds Boost die (blue)' })
-  if (hints.removeSetbacks > 0) chips.push({ label: `−${hints.removeSetbacks > 1 ? hints.removeSetbacks : ''}■`, color: '#4EC87A', title: 'Removes Setback die' })
-  if (hints.upgrades > 0)       chips.push({ label: '↑', color: '#FFD700', title: 'Upgrades ability die to proficiency' })
-  if (hints.addSetbacks > 0)    chips.push({ label: `+${hints.addSetbacks > 1 ? hints.addSetbacks : ''}■`, color: '#909090', title: 'Adds Setback die (black)' })
+  if (hints.boosts > 0)         chips.push({ label: `+${hints.boosts > 1 ? hints.boosts : ''}□`, color: 'var(--die-boost)', title: 'Adds Boost die (blue)' })
+  if (hints.removeSetbacks > 0) chips.push({ label: `−${hints.removeSetbacks > 1 ? hints.removeSetbacks : ''}■`, color: 'var(--die-ability)', title: 'Removes Setback die' })
+  if (hints.upgrades > 0)       chips.push({ label: '↑', color: 'var(--die-triumph)', title: 'Upgrades ability die to proficiency' })
+  if (hints.addSetbacks > 0)    chips.push({ label: `+${hints.addSetbacks > 1 ? hints.addSetbacks : ''}■`, color: 'var(--die-setback)', title: 'Adds Setback die (black)' })
   if (chips.length === 0) return null
   return (
     <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap', marginTop: 4 }}>
       {chips.map((c, i) => (
         <span key={i} title={c.title} style={{
-          fontFamily: FONT_RAJDHANI, fontSize: 10, fontWeight: 700,
-          color: c.color, background: `${c.color}18`, border: `1px solid ${c.color}50`,
-          borderRadius: 3, padding: '1px 5px', letterSpacing: '0.05em',
+          fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
+          color: c.color, background: `color-mix(in srgb, ${c.color} 9%, transparent)`,
+          border: `1px solid color-mix(in srgb, ${c.color} 31%, transparent)`,
+          borderRadius: RADIUS.sm, padding: '1px 5px', letterSpacing: '0.05em',
         }}>{c.label}</span>
       ))}
     </div>
   )
 }
+
+// Species color: sky blue — using die-boost as closest available token
+const SPECIES_COLOR = 'var(--die-boost)'
 
 function CornerBrackets() {
   const s = { position: 'absolute' as const, width: 6, height: 6 }
@@ -78,8 +85,6 @@ function CornerBrackets() {
     </>
   )
 }
-
-const SPECIES_COLOR = '#38BDF8'
 
 function TalentCard({ talent }: { talent: HudTalent }) {
   const color = ACTIVATION_COLORS[talent.activation] ?? C.textDim
@@ -102,16 +107,17 @@ function TalentCard({ talent }: { talent: HudTalent }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: talent.description ? 4 : 0 }}>
         <div style={{
           flex: 1,
-          fontFamily: FONT_CINZEL, fontSize: 12, fontWeight: 600,
+          fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 600,
           color: C.text, letterSpacing: '0.02em',
         }}>
           {talent.name}
         </div>
         {talent.rank > 1 && (
           <div style={{
-            background: `${color}20`, border: `1px solid ${color}50`,
-            borderRadius: 3, padding: '1px 6px',
-            fontFamily: FONT_RAJDHANI, fontSize: 10, fontWeight: 700,
+            background: `color-mix(in srgb, ${color} 13%, transparent)`,
+            border: `1px solid color-mix(in srgb, ${color} 31%, transparent)`,
+            borderRadius: RADIUS.sm, padding: '1px 6px',
+            fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
             color, letterSpacing: '0.08em',
           }}>
             ×{talent.rank}
@@ -119,9 +125,10 @@ function TalentCard({ talent }: { talent: HudTalent }) {
         )}
         {talent.isSpeciesGranted && (
           <div style={{
-            background: `${SPECIES_COLOR}15`, border: `1px solid ${SPECIES_COLOR}50`,
-            borderRadius: 3, padding: '1px 6px',
-            fontFamily: FONT_RAJDHANI, fontSize: 9, fontWeight: 700,
+            background: `color-mix(in srgb, ${SPECIES_COLOR} 8%, transparent)`,
+            border: `1px solid color-mix(in srgb, ${SPECIES_COLOR} 31%, transparent)`,
+            borderRadius: RADIUS.sm, padding: '1px 6px',
+            fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
             color: SPECIES_COLOR, letterSpacing: '0.1em', textTransform: 'uppercase',
             whiteSpace: 'nowrap',
           }}>
@@ -129,9 +136,10 @@ function TalentCard({ talent }: { talent: HudTalent }) {
           </div>
         )}
         <div style={{
-          background: `${color}12`, border: `1px solid ${color}30`,
-          borderRadius: 12, padding: '1px 8px',
-          fontFamily: FONT_RAJDHANI, fontSize: 9, fontWeight: 700,
+          background: `color-mix(in srgb, ${color} 7%, transparent)`,
+          border: `1px solid color-mix(in srgb, ${color} 19%, transparent)`,
+          borderRadius: RADIUS.xl, padding: '1px 8px',
+          fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
           color, letterSpacing: '0.1em', textTransform: 'uppercase',
           whiteSpace: 'nowrap',
         }}>
@@ -140,7 +148,7 @@ function TalentCard({ talent }: { talent: HudTalent }) {
       </div>
       {talent.description && (
         <div style={{
-          fontFamily: FONT_RAJDHANI, fontSize: 11, color: C.textDim,
+          fontFamily: FONT_BODY, fontSize: FS.label, color: C.textDim,
           lineHeight: 1.5, marginTop: 4,
           maxHeight: '6em', overflow: 'hidden',
         }}>
@@ -161,6 +169,7 @@ function TalentCard({ talent }: { talent: HudTalent }) {
 
 export function TalentsPanel({ talents, onViewTree, characterId }: TalentsPanelProps) {
   const [talentSearch, setTalentSearch] = useState('')
+  const { isOpen } = useHudPanelContext()
 
   // Reset search when character changes
   useEffect(() => { setTalentSearch('') }, [characterId])
@@ -171,7 +180,7 @@ export function TalentsPanel({ talents, onViewTree, characterId }: TalentsPanelP
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
         padding: 48, gap: 12,
       }}>
-        <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 13, color: C.textFaint }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: C.textFaint }}>
           No talents purchased yet.
         </div>
         {onViewTree && (
@@ -179,8 +188,8 @@ export function TalentsPanel({ talents, onViewTree, characterId }: TalentsPanelP
             onClick={onViewTree}
             style={{
               background: `${C.gold}18`, border: `1px solid ${C.gold}`,
-              borderRadius: 4, padding: '8px 20px',
-              fontFamily: FONT_CINZEL, fontSize: 11, fontWeight: 600,
+              borderRadius: RADIUS.md, padding: '8px 20px',
+              fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 600,
               letterSpacing: '0.1em', color: C.gold, cursor: 'pointer',
             }}
           >
@@ -219,8 +228,8 @@ export function TalentsPanel({ talents, onViewTree, characterId }: TalentsPanelP
             className="hov-gold-bg"
             style={{
               background: `${C.gold}12`, border: `1px solid ${C.borderHi}`,
-              borderRadius: 4, padding: '5px 14px',
-              fontFamily: FONT_CINZEL, fontSize: 13, fontWeight: 600,
+              borderRadius: RADIUS.md, padding: '5px 14px',
+              fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 600,
               letterSpacing: '0.1em', color: C.gold, cursor: 'pointer', transition: '.15s',
             }}
           >
@@ -240,8 +249,8 @@ export function TalentsPanel({ talents, onViewTree, characterId }: TalentsPanelP
       {grouped.length === 0 && extra.length === 0 && searchQuery && (
         <div style={{
           textAlign: 'center',
-          fontFamily: FONT_RAJDHANI,
-          fontSize: 'clamp(0.8rem, 1.3vw, 0.9rem)',
+          fontFamily: FONT_BODY,
+          fontSize: FS.sm,
           color: 'var(--hud-text-faint)',
           fontStyle: 'italic',
           padding: '16px 0',
@@ -253,35 +262,47 @@ export function TalentsPanel({ talents, onViewTree, characterId }: TalentsPanelP
       {grouped.map(({ activation, items }) => (
         <div key={activation}>
           <div style={{
-            fontFamily: FONT_RAJDHANI, fontSize: 13, fontWeight: 700,
+            fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700,
             letterSpacing: '0.15em', textTransform: 'uppercase',
             color: ACTIVATION_COLORS[activation] ?? C.textDim,
             marginBottom: 6, paddingBottom: 4,
             borderBottom: `1px solid ${C.border}`,
           }}>
-            {activation}
+            <TickerText text={activation} isOpen={isOpen} delayMs={120} />
           </div>
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
             gap: 8,
           }}>
-            {items.map(t => <TalentCard key={t.key} talent={t} />)}
+            {items.map((t, idx) => (
+              <div key={t.key} data-stagger={idx}>
+                <div className="panel-row-enter">
+                  <TalentCard talent={t} />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       ))}
       {extra.length > 0 && (
         <div>
           <div style={{
-            fontFamily: FONT_RAJDHANI, fontSize: 10, fontWeight: 700,
+            fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
             letterSpacing: '0.15em', textTransform: 'uppercase',
             color: C.textDim, marginBottom: 6, paddingBottom: 4,
             borderBottom: `1px solid ${C.border}`,
           }}>
-            Other
+            <TickerText text="Other" isOpen={isOpen} delayMs={120} />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 8 }}>
-            {extra.map(t => <TalentCard key={t.key} talent={t} />)}
+            {extra.map((t, idx) => (
+              <div key={t.key} data-stagger={idx}>
+                <div className="panel-row-enter">
+                  <TalentCard talent={t} />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

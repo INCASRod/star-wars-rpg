@@ -1,12 +1,15 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { C, CHAR_COLOR, CHAR_ABBR3, FONT_CINZEL, FONT_RAJDHANI, panelBase, type CharKey } from './design-tokens'
+import { C, CHAR_COLOR, CHAR_ABBR3, panelBase, type CharKey } from './design-tokens'
+import { FONT_BODY, FS, RADIUS, Z, EASE } from '@/lib/tokens'
 import { DiceFace } from '@/components/dice/DiceFace'
 import { Tooltip, TipLabel, TipBody, TipDivider } from '@/components/ui/Tooltip'
 import { RichText } from '@/components/ui/RichText'
 import { getSkillTip } from '@/lib/tooltips/skillDescriptions'
 import { PanelSearchInput } from '@/components/character/PanelSearchInput'
+import { useHudPanelContext } from '@/contexts/HudPanelContext'
+import { TickerText } from '@/components/ui/TickerText'
 import type { SkillDiceModifier } from '@/lib/derivedStats'
 import type { SpeciesAbility, HudSkill } from '@/lib/types'
 
@@ -50,7 +53,7 @@ function SetbackRemovalIndicator({ count, sources }: { count: number; sources: s
               width={16}
               height={16}
             >
-              <line x1="3" y1="3" x2="13" y2="13" stroke="#E03A1E" strokeWidth="2" strokeLinecap="round" />
+              <line x1="3" y1="3" x2="13" y2="13" stroke={CHAR_COLOR.brawn} strokeWidth="2" strokeLinecap="round" />
             </svg>
           </div>
         ))}
@@ -110,8 +113,8 @@ const TYPE_LABELS: Record<string, string> = {
 }
 const TYPE_COLORS: Record<string, string> = {
   stGeneral:   'var(--hud-gold)',
-  stCombat:    '#C82A10',  // BS red-hi — combat/danger
-  stKnowledge: '#C8AA50',  // antique gold — knowledge
+  stCombat:    CHAR_COLOR.willpower,  // #C82A10 — combat/danger
+  stKnowledge: CHAR_COLOR.intellect,  // #C8AA50 — knowledge
 }
 
 const CHAR_ABBR2: Record<string, string> = {
@@ -120,7 +123,6 @@ const CHAR_ABBR2: Record<string, string> = {
 }
 
 const POOL_CAP = 6
-const POOL_OVERFLOW_FONT = "'Share Tech Mono', 'Courier New', monospace"
 
 function PoolPreview({ charVal, rank }: { charVal: number; rank: number }) {
   const proficiency = Math.min(charVal, rank)
@@ -150,8 +152,8 @@ function PoolPreview({ charVal, rank }: { charVal: number; rank: number }) {
       ))}
       {overflow > 0 && (
         <span style={{
-          fontFamily: POOL_OVERFLOW_FONT,
-          fontSize: 'clamp(0.58rem, 0.85vw, 0.68rem)',
+          fontFamily: FONT_BODY,
+          fontSize: FS.overline,
           color: 'var(--hud-text-faint)',
         }}>
           +{overflow}
@@ -166,7 +168,7 @@ function RankPips({ rank }: { rank: number }) {
     <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
       {Array.from({ length: 5 }).map((_, i) => (
         <div key={i} style={{
-          width: 9, height: 9, borderRadius: 2,
+          width: 9, height: 9, borderRadius: RADIUS.sm,
           background: i < rank ? C.gold : 'transparent',
           border: `1px solid ${i < rank ? C.gold : C.border}`,
         }} />
@@ -194,10 +196,6 @@ function getSkillUpgradeCost(currentRank: number, isCareer: boolean): number {
   return isCareer ? 5 * newRank : (5 * newRank) + 5
 }
 
-const FONT_MONO = "'Share Tech Mono','Courier New',monospace"
-const FONT_CINZEL_REAL = "var(--font-rajdhani),'Cinzel',serif"
-const RED = 'rgba(224,58,30,0.85)'
-
 // ── Upgrade button (left of rank pips) ────────────────────────────────────
 
 function UpgradeButton({ skill, xpAvailable, onClick }: {
@@ -213,21 +211,16 @@ function UpgradeButton({ skill, xpAvailable, onClick }: {
     <div style={{ position: 'relative', flexShrink: 0 }}>
       <button
         onClick={(e) => { e.stopPropagation(); if (canAfford) onClick() }}
-        onMouseEnter={(e) => {
-          setShowTip(true)
-          if (canAfford) (e.currentTarget as HTMLButtonElement).style.background = 'var(--hud-accent-20)'
-        }}
-        onMouseLeave={(e) => {
-          setShowTip(false)
-          ;(e.currentTarget as HTMLButtonElement).style.background = canAfford ? 'var(--hud-accent-10)' : 'var(--hud-surface-lo)'
-        }}
+        onMouseEnter={() => setShowTip(true)}
+        onMouseLeave={() => setShowTip(false)}
+        className={canAfford ? 'skills-upgrade-btn skills-upgrade-btn--affordable' : 'skills-upgrade-btn skills-upgrade-btn--locked'}
         style={{
-          width: 28, height: 28, borderRadius: 6,
+          width: 28, height: 28, borderRadius: RADIUS.lg,
           background: canAfford ? 'var(--hud-accent-10)' : 'var(--hud-surface-lo)',
           border: `1px solid ${canAfford ? 'var(--hud-accent-35)' : 'var(--hud-border)'}`,
           color: canAfford ? C.gold : 'rgba(90,40,24,0.2)',
-          fontFamily: FONT_CINZEL_REAL,
-          fontSize: 'clamp(0.75rem, 1.1vw, 0.85rem)',
+          fontFamily: FONT_BODY,
+          fontSize: FS.sm,
           cursor: canAfford ? 'pointer' : 'not-allowed',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexShrink: 0, transition: '.15s', padding: 0, lineHeight: 1,
@@ -241,27 +234,27 @@ function UpgradeButton({ skill, xpAvailable, onClick }: {
           bottom: 'calc(100% + 8px)',
           left: '50%',
           transform: 'translateX(-50%)',
-          zIndex: 9000,
+          zIndex: Z.tooltip,
           background: 'var(--hud-surface-hi)',
           border: `1px solid var(--hud-border-hi)`,
-          borderRadius: 8,
+          borderRadius: RADIUS.lg,
           padding: '10px 12px',
           minWidth: 150,
           pointerEvents: 'none',
           boxShadow: '0 8px 24px rgba(0,0,0,0.7)',
           whiteSpace: 'nowrap',
         }}>
-          <div style={{ fontFamily: FONT_CINZEL_REAL, fontSize: 'clamp(0.55rem, 0.85vw, 0.65rem)', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.gold, marginBottom: 5 }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.gold, marginBottom: 5 }}>
             Upgrade to Rank {skill.rank + 1}
           </div>
-          <div style={{ fontFamily: FONT_MONO, fontSize: 'clamp(0.6rem, 0.9vw, 0.72rem)', color: canAfford ? C.gold : RED, marginBottom: 2 }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: canAfford ? C.gold : 'var(--state-failure)', marginBottom: 2 }}>
             Cost: {cost} XP
           </div>
-          <div style={{ fontFamily: FONT_MONO, fontSize: 'clamp(0.6rem, 0.9vw, 0.72rem)', color: canAfford ? 'var(--hud-text-dim)' : RED }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: canAfford ? 'var(--hud-text-dim)' : 'var(--state-failure)' }}>
             Available: {xpAvailable} XP
           </div>
           {!canAfford && (
-            <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.6rem, 0.9vw, 0.72rem)', color: RED, fontWeight: 700, marginTop: 5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: 'var(--state-failure)', fontWeight: 700, marginTop: 5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Not enough XP
             </div>
           )}
@@ -284,13 +277,13 @@ function InlineConfirmation({ skill, xpAvailable, onConfirm, onCancel }: {
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
-          fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)',
+          fontFamily: FONT_BODY, fontSize: FS.sm,
           fontWeight: 600, color: 'var(--hud-text)',
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         }}>
           {skill.name} → Rank {skill.rank + 1}
         </div>
-        <div style={{ fontFamily: FONT_MONO, fontSize: 'clamp(0.62rem, 0.95vw, 0.75rem)', color: C.gold }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: C.gold }}>
           {cost} XP · {xpAvailable} available
         </div>
       </div>
@@ -298,11 +291,11 @@ function InlineConfirmation({ skill, xpAvailable, onConfirm, onCancel }: {
         <button
           onClick={(e) => { e.stopPropagation(); onCancel() }}
           style={{
-            width: 26, height: 26, borderRadius: 4,
+            width: 26, height: 26, borderRadius: RADIUS.md,
             background: 'var(--hud-accent-10)',
             border: '1px solid var(--hud-accent-35)',
-            color: RED, cursor: 'pointer',
-            fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.78rem, 1.1vw, 0.88rem)',
+            color: 'var(--state-failure)', cursor: 'pointer',
+            fontFamily: FONT_BODY, fontSize: FS.sm,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             padding: 0, transition: '.15s',
           }}
@@ -312,11 +305,11 @@ function InlineConfirmation({ skill, xpAvailable, onConfirm, onCancel }: {
         <button
           onClick={(e) => { e.stopPropagation(); onConfirm() }}
           style={{
-            width: 26, height: 26, borderRadius: 4,
+            width: 26, height: 26, borderRadius: RADIUS.md,
             background: 'linear-gradient(135deg, var(--hud-accent-25), var(--hud-accent-10))',
             border: `1px solid ${C.gold}`,
             color: C.gold, cursor: 'pointer',
-            fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.78rem, 1.1vw, 0.88rem)',
+            fontFamily: FONT_BODY, fontSize: FS.sm,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             padding: 0, transition: '.15s',
           }}
@@ -346,13 +339,13 @@ function SpeciesConditionalBadge({ ability }: { ability: SpeciesAbility }) {
   return (
     <Tooltip content={tipContent} placement="top" maxWidth={260}>
       <span style={{
-        fontFamily: "'Share Tech Mono','Courier New',monospace",
-        fontSize: 'clamp(0.55rem, 0.85vw, 0.65rem)',
+        fontFamily: FONT_BODY,
+        fontSize: FS.overline,
         background: 'var(--hud-accent-10)',
         border: '1px solid var(--hud-accent-border)',
-        borderRadius: 4,
+        borderRadius: RADIUS.md,
         padding: '1px 5px',
-        color: 'var(--bs-red-pale)',
+        color: 'var(--red-pale)',
         flexShrink: 0,
         cursor: 'help',
         whiteSpace: 'nowrap' as const,
@@ -374,6 +367,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
   const [confirmingKey, setConfirmingKey] = useState<string | null>(null)
   const [skillSearch, setSkillSearch] = useState('')
   const confirmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const { isOpen } = useHudPanelContext()
 
   useEffect(() => { setSkillSearch('') }, [characterId])
 
@@ -440,10 +434,9 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
     }
   }
 
-  const renderSkillRow = (skill: HudSkill, careerBorderColor: string) => {
+  const renderSkillRow = (skill: HudSkill, careerBorderColor: string, staggerIdx?: number) => {
     const tip = getSkillTip(skill.name)
     const isMaxRank = skill.rank >= 5
-    const hoverColor = C.gold
     const isConfirming = confirmingKey === skill.key
 
     const tooltipContent = tip ? (
@@ -464,11 +457,15 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
     return (
       <div
         key={skill.key}
+        data-stagger={staggerIdx !== undefined ? staggerIdx : undefined}
         onClick={!isConfirming ? (e) => handleSkillClick(skill, e) : undefined}
+        className={staggerIdx !== undefined
+          ? (!isConfirming ? 'skills-row panel-row-enter' : 'panel-row-enter')
+          : (!isConfirming ? 'skills-row' : undefined)}
         style={{
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '5px 6px', marginBottom: 2,
-          borderRadius: isConfirming ? 6 : 3,
+          borderRadius: isConfirming ? RADIUS.lg : RADIUS.sm,
           ...(isConfirming ? {
             border: '1px solid var(--hud-accent-35)',
             background: 'var(--hud-accent-10)',
@@ -479,16 +476,6 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
           cursor: !isConfirming ? 'pointer' : 'default',
           transition: '.15s',
           opacity: !isConfirming && !isCombat && isMaxRank ? 0.5 : 1,
-        }}
-        onMouseEnter={e => {
-          if (!isConfirming) {
-            (e.currentTarget as HTMLElement).style.background = `${hoverColor}0D`
-          }
-        }}
-        onMouseLeave={e => {
-          if (!isConfirming) {
-            (e.currentTarget as HTMLElement).style.background = 'transparent'
-          }
         }}
       >
         {isConfirming ? (
@@ -502,7 +489,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
           <>
             <Tooltip content={tooltipContent} placement="right" maxWidth={280}>
               <div style={{
-                flex: 1, fontFamily: FONT_RAJDHANI, fontSize: 14, fontWeight: 600,
+                flex: 1, fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 600,
                 color: skill.rank > 0 ? C.text : C.textDim,
                 whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
               }}>
@@ -538,7 +525,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
     ? 'var(--hud-accent-60)'
     : xpAvailable > 0
     ? 'var(--hud-gold)'
-    : 'var(--bs-red-hi)'
+    : 'var(--state-failure)'
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
@@ -546,7 +533,6 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
         <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
           {(['All', 'Trained', 'Career', 'Has Bonus'] as Filter[]).map(f => {
-            const isBonus = f === 'Has Bonus'
             const active  = filter === f
             return (
               <button
@@ -555,8 +541,8 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
                 style={{
                   background: active ? `${C.gold}22` : 'transparent',
                   border: `1px solid ${active ? C.gold : C.border}`,
-                  borderRadius: 4, padding: '3px 10px',
-                  fontFamily: FONT_RAJDHANI, fontSize: 11, fontWeight: 700,
+                  borderRadius: RADIUS.md, padding: '3px 10px',
+                  fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700,
                   letterSpacing: '0.08em', textTransform: 'uppercase',
                   color: active ? C.gold : C.textDim,
                   cursor: 'pointer', transition: '.15s',
@@ -571,8 +557,8 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {/* Available XP indicator */}
           <div style={{
-            fontFamily: FONT_MONO,
-            fontSize: 'clamp(0.65rem, 1vw, 0.78rem)',
+            fontFamily: FONT_BODY,
+            fontSize: FS.caption,
             color: xpColor,
           }}>
             {xpAvailable} XP
@@ -580,11 +566,11 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
 
           {/* Mode badge */}
           <div style={{
-            fontFamily: FONT_RAJDHANI, fontSize: 9, fontWeight: 700,
+            fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
             letterSpacing: '0.12em', textTransform: 'uppercase',
             color: C.gold,
             border: '1px solid var(--hud-accent-40)',
-            borderRadius: 3, padding: '2px 7px',
+            borderRadius: RADIUS.sm, padding: '2px 7px',
           }}>
             {isCombat ? 'Click to make a check' : 'Click to Upgrade'}
           </div>
@@ -594,7 +580,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
       {/* Group view toggle */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <span style={{
-          fontFamily: FONT_RAJDHANI, fontSize: 10, fontWeight: 700,
+          fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
           letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textDim,
         }}>
           View:
@@ -609,8 +595,8 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
               style={{
                 background: active ? `${C.gold}22` : 'transparent',
                 border: `1px solid ${active ? C.gold : C.border}`,
-                borderRadius: 4, padding: '3px 10px',
-                fontFamily: FONT_RAJDHANI, fontSize: 11, fontWeight: 700,
+                borderRadius: RADIUS.md, padding: '3px 10px',
+                fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700,
                 letterSpacing: '0.08em', textTransform: 'uppercase',
                 color: active ? C.gold : C.textDim,
                 cursor: 'pointer', transition: '.15s',
@@ -626,19 +612,19 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <DiceFace type="proficiency" size={14} />
-          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.68rem, 1vw, 0.78rem)', fontWeight: 600, color: 'var(--hud-text-faint)' }}>Proficiency dice</span>
+          <span style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 600, color: 'var(--hud-text-faint)' }}>Proficiency dice</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <DiceFace type="ability" size={14} />
-          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.68rem, 1vw, 0.78rem)', fontWeight: 600, color: 'var(--hud-text-faint)' }}>Ability dice</span>
+          <span style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 600, color: 'var(--hud-text-faint)' }}>Ability dice</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <div style={{ width: 9, height: 9, borderRadius: 2, background: C.gold, border: `1px solid ${C.gold}` }} />
-          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.68rem, 1vw, 0.78rem)', fontWeight: 600, color: 'var(--hud-text-faint)' }}>Skill level</span>
+          <div style={{ width: 9, height: 9, borderRadius: RADIUS.sm, background: C.gold, border: `1px solid ${C.gold}` }} />
+          <span style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 600, color: 'var(--hud-text-faint)' }}>Skill level</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <div style={{ width: 2, height: 14, background: `${C.gold}88`, borderRadius: 1 }} />
-          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.68rem, 1vw, 0.78rem)', fontWeight: 600, color: 'var(--hud-text-faint)' }}>Career</span>
+          <div style={{ width: 2, height: 14, background: `${C.gold}88`, borderRadius: RADIUS.sm }} />
+          <span style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 600, color: 'var(--hud-text-faint)' }}>Career</span>
         </div>
       </div>
 
@@ -653,8 +639,8 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
       {(groupView === 'characteristic' ? grouped : groupedByType).length === 0 && searchQuery && (
         <div style={{
           textAlign: 'center',
-          fontFamily: FONT_RAJDHANI,
-          fontSize: 'clamp(0.8rem, 1.3vw, 0.9rem)',
+          fontFamily: FONT_BODY,
+          fontSize: FS.sm,
           color: 'var(--hud-text-faint)',
           fontStyle: 'italic',
           padding: '16px 0',
@@ -678,22 +664,22 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
                 {/* Group header */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                   <div style={{
-                    width: 28, height: 28, borderRadius: 4, flexShrink: 0,
+                    width: 28, height: 28, borderRadius: RADIUS.md, flexShrink: 0,
                     background: `${color}22`, border: `1px solid ${color}55`,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: FONT_RAJDHANI, fontSize: 18, fontWeight: 700, color,
+                    fontFamily: FONT_BODY, fontSize: FS.h4, fontWeight: 700, color,
                   }}>
                     {charVal}
                   </div>
                   <div style={{
-                    fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700,
+                    fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
                     letterSpacing: '0.1em', textTransform: 'uppercase',
                     color: `${color}CC`,
                   }}>
-                    {CHAR_ABBR3[charKey]}
+                    <TickerText text={CHAR_ABBR3[charKey]} isOpen={isOpen} delayMs={120} />
                   </div>
                 </div>
-                {groupSkills.map(skill => renderSkillRow(skill, color))}
+                {groupSkills.map((skill, idx) => renderSkillRow(skill, color, idx))}
               </div>
             )
           })}
@@ -729,7 +715,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
                     width={10} height={10} viewBox="0 0 10 10"
                     style={{
                       flexShrink: 0,
-                      transition: 'transform .18s',
+                      transition: `transform ${EASE.default}`,
                       transform: collapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
                     }}
                   >
@@ -740,22 +726,22 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
                     />
                   </svg>
                   <div style={{
-                    fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700,
+                    fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
                     letterSpacing: '0.12em', textTransform: 'uppercase',
                     color: `${color}CC`,
                     borderLeft: `2px solid ${color}66`,
                     paddingLeft: 8,
                   }}>
-                    {TYPE_LABELS[typeKey]}
+                    <TickerText text={TYPE_LABELS[typeKey]} isOpen={isOpen} delayMs={120} />
                   </div>
-                  <div style={{ fontFamily: FONT_MONO, fontSize: 10, color: `${color}66` }}>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: `${color}66` }}>
                     {groupSkills.length} skill{groupSkills.length !== 1 ? 's' : ''}
                   </div>
                 </button>
                 {/* Skill rows */}
                 {!collapsed && (
                   <div style={{ padding: '0 10px 6px' }}>
-                    {groupSkills.map(skill => renderSkillRow(skill, CHAR_COLOR[skill.charKey]))}
+                    {groupSkills.map((skill, idx) => renderSkillRow(skill, CHAR_COLOR[skill.charKey], idx))}
                   </div>
                 )}
               </div>

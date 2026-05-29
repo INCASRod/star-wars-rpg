@@ -1,277 +1,16 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-
+@import '../styles/holo-tokens.css';
+@import '../styles/state-tokens.css';
+@import '../styles/animations.css';
 
 @custom-variant dark (&:is(.dark *));
 
 /* ═══════════════════════════════════════════════════════════════ */
-/*  ROOT SCALING — 16px@1280 → 20px@1920 → 24px@2560 → 32px@4K  */
-/*  rem values in clamp() here are relative to browser default    */
-/*  (16px), not self-referential. Non-circular.                   */
-/* ═══════════════════════════════════════════════════════════════ */
-html {
-  font-size: clamp(14px, 1vw + 0.5rem, 18px);
-  -webkit-text-size-adjust: 100%;
-}
-
-/* ═══════════════════════════════════════════════════════════════ */
-/*  DESIGN TOKENS                                                  */
+/*  DESIGN TOKENS — shadcn/Radix required tokens only             */
 /* ═══════════════════════════════════════════════════════════════ */
 :root {
-  /* ── Breakpoints reference ──────────────────────────────────── */
-  /*  xs: 320–479px   sm: 480–767px   md: 768–1023px              */
-  /*  lg: 1024–1279px xl: 1280–1535px 2xl: 1536px+                */
-
-  /* ── Project Colors ─────────────────────────────────────────── */
-  --sand:      #F2EDE4;
-  --sand-warm: #E8E0D2;
-  --parch:     #FAF7F2;
-  --white:     #fff;
-
-  --gold:      #C8A24E;
-  --gold-l:    #DCBE6E;
-  --gold-d:    #8E6E2A;
-  --gold-glow: rgba(200,162,78,.22);
-  --gold-glow-s: rgba(200,162,78,.45);
-
-  --blue:      #2B5DAE;
-  --blue-l:    #5B8FE0;
-  --blue-pale: #DCE8F8;
-
-  --red:       #B83A2A;
-  --red-l:     #E05842;
-  --red-pale:  #F8DAD4;
-
-  --amber:     #C47F17;
-  --amber-pale: #F5E6C8;
-
-  --green:     #2D8F4E;
-  --green-pale: #D0F0DB;
-
-  --ink:  #1A1A1C;
-  --txt:  #2C2C2E;
-  --txt2: #6B6B6B;
-  --txt3: #A0A0A0;
-
-  --bdr:   #D8D0C4;
-  --bdr-l: #E8E2D8;
-
-  /* ── Binary Sunset — light theme accent palette ─────────────── */
-  /* Warm parchment backgrounds */
-  --bs-sky:         #E8DDD0;
-  --bs-panel:       #DDD0C0;
-  --bs-surface:     #D4C5B0;
-  --bs-card:        #CBBAA0;
-  --bs-card-hi:     #C0AD94;
-  /* Red-sun accent ramp */
-  --bs-red-pale:    #E86050;
-  --bs-red-sun:     #E03A1E;
-  --bs-red-hi:      #C82A10;
-  --bs-red-mid:     #A82010;
-  --bs-red-dim:     #7A1808;
-  --bs-red-mute:    #3A0C04;
-  /* Warm brown text */
-  --bs-ink:         #2A1008;
-  --bs-txt:         #5A2818;
-  --bs-txt2:        #8A5040;
-  --bs-txt3:        #AA7860;
-  --bs-on-red:      #FFF0E8;
-  /* Borders */
-  --bs-bdr-strong:  #B09080;
-  --bs-bdr-mid:     #C0A890;
-  --bs-bdr-subtle:  #CDB8A4;
-  /* Glow effects */
-  --bs-red-glow:    rgba(224,58,30,.12);
-  --bs-red-glow-s:  rgba(224,58,30,.28);
-  /* Semantic aliases */
-  --bs-wounds:      var(--bs-red-sun);
-  --bs-strain:      var(--bs-red-dim);
-  --bs-career:      var(--bs-red-pale);
-  --bs-success-txt: #5A7A3A;
-  --bs-corner:      var(--bs-red-mid);
-  /* Shell layout constants (fixed px — structural positioning, not spacing) */
-  --bs-topbar-h:    48px;
-  --bs-modebar-h:   36px;
-  --bs-shell-offset: 84px;
-
-  /* ── Die / Symbol chip colors (used by .die.* classes below) ─── */
-  --die-boost:      #70C8E8;
-  --die-setback:    #A0A0A0;
-  --die-difficulty: #B070D8;
-  --die-challenge:  #E05050;
-  --die-force:      #5AAAE0;
-  --die-success:    #4EC87A;
-  --die-advantage:  #4EC8C8;
-  --die-threat:     #E07855;
-  --die-triumph:    #FFD700;
-  --die-despair:    #C04040;
-  --die-forcepip:   #E8E8FF;
-
-  /* ── Fluid Type Scale (design-rules.md) ─────────────────────── */
-  --text-display:  clamp(2.25rem, 5vw + 1rem, 5rem);            /* 36→80px */
-  --text-hero:     clamp(1.375rem, 2vw + 0.5rem, 2rem);         /* dashboard feature values */
-  --text-h1:       clamp(1.75rem, 3.5vw + 0.75rem, 3.5rem);     /* 28→56px */
-  --text-h2:       clamp(1.375rem, 2.5vw + 0.5rem, 2.5rem);     /* 22→40px */
-  --text-h3:       clamp(1.125rem, 1.5vw + 0.5rem, 1.75rem);    /* 18→28px */
-  --text-h4:       clamp(1rem, 1vw + 0.5rem, 1.375rem);         /* 16→22px */
-  --text-body:     clamp(0.9375rem, 0.5vw + 0.75rem, 1.125rem); /* 15→18px */
-  --text-body-lg:  clamp(1rem, 0.75vw + 0.75rem, 1.25rem);      /* 16→20px */
-  --text-body-sm:  clamp(0.75rem, 0.25vw + 0.6rem, 0.875rem);   /* 12→14px */
-  --text-label:    clamp(0.6875rem, 0.3vw + 0.55rem, 0.8125rem);/* 11→13px */
-  --text-caption:  clamp(0.625rem, 0.2vw + 0.5rem, 0.75rem);    /* 10→12px */
-  --text-overline: clamp(0.5625rem, 0.15vw + 0.45rem, 0.6875rem);/* 9→11px */
-
-  /* design-rules.md short aliases */
-  --text-sm: var(--text-body-sm);
-  --text-xs: var(--text-caption);
-
-  /* ── Typography Roles (design-rules.md) ─────────────────────── */
-  /*  display  : lh 1.05  ls -0.04em                              */
-  /*  h1       : lh 1.1   ls -0.03em                              */
-  /*  h2       : lh 1.2   ls -0.02em                              */
-  /*  h3       : lh 1.3   ls -0.01em                              */
-  /*  h4       : lh 1.4   ls  0em                                 */
-  /*  body     : lh 1.6   ls  0em                                 */
-  /*  body-lg  : lh 1.65  ls  0.005em                             */
-  /*  sm/label : lh 1.5   ls  0.01em                              */
-  /*  label    : lh 1.2   ls  0.1em                               */
-
-  /* ── Line Heights ───────────────────────────────────────────── */
-  --leading-none:    1;
-  --leading-tight:   1.15;
-  --leading-snug:    1.35;
-  --leading-normal:  1.5;
-  --leading-relaxed: 1.65;
-  --leading-loose:   1.8;
-
-  /* ── Letter Spacing ─────────────────────────────────────────── */
-  --tracking-tighter: -0.05em;
-  --tracking-tight:   -0.025em;
-  --tracking-snug:    -0.015em;
-  --tracking-normal:   0em;
-  --tracking-wide:     0.05em;
-  --tracking-wider:    0.1em;
-  --tracking-widest:   0.2em;
-
-  /* ── Measure (line length) ──────────────────────────────────── */
-  --measure-narrow: 45ch;
-  --measure-body:   68ch;
-  --measure-wide:   80ch;
-  --measure-prose:  72ch;
-
-  /* ── Fluid Spacing Scale (design-rules.md) ──────────────────── */
-  --space-1:  clamp(0.25rem,  0.5vw,  0.5rem);    /*  4→8px   */
-  --space-2:  clamp(0.5rem,   1vw,    1rem);       /*  8→16px  */
-  --space-3:  clamp(0.75rem,  1.5vw,  1.5rem);     /* 12→24px  */
-  --space-4:  clamp(1rem,     2vw,    2rem);        /* 16→32px  */
-  --space-5:  1.25rem;                              /* fixed    */
-  --space-6:  clamp(1.5rem,   3vw,    3rem);        /* 24→48px  */
-  --space-8:  clamp(2rem,     4vw,    4rem);        /* 32→64px  */
-  --space-10: 2.5rem;                               /* fixed    */
-  --space-12: clamp(3rem,     6vw,    6rem);        /* 48→96px  */
-  --space-16: clamp(4rem,     8vw,    10rem);       /* 64→160px */
-  --space-20: 5rem;                                 /* fixed    */
-  --space-24: clamp(6rem,     10vw,   14rem);       /* 96→224px */
-  --space-32: 8rem;                                 /* fixed    */
-  --space-48: 12rem;                                /* fixed    */
-  --space-64: 16rem;                                /* fixed    */
-
-  /* ── Font Weights ───────────────────────────────────────────── */
-  --weight-regular: 400;
-  --weight-medium:  500;
-  --weight-bold:    600;
-
-  /* ── Shadows ────────────────────────────────────────────────── */
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.10);
-  --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
-
-  /* ── Transitions ────────────────────────────────────────────── */
-  --ease-default: 200ms ease;
-  --ease-spring:  300ms cubic-bezier(0.34, 1.56, 0.64, 1);
-
-  /* ── Container Widths ───────────────────────────────────────── */
-  --container-sm:   40rem;
-  --container-md:   56rem;
-  --container-lg:   75rem;
-  --container-xl:   90rem;
-  --container-full: 100%;
-
-  /* ── Legacy Font Aliases (backwards compat) ─────────────────── */
-  --font-2xs:  var(--text-overline);
-  --font-xs:   var(--text-caption);
-  --font-sm:   var(--text-label);
-  --font-base: var(--text-body-sm);
-  --font-md:   var(--text-body);
-  --font-lg:   var(--text-h4);
-  --font-xl:   var(--text-h3);
-  --font-2xl:  var(--text-h1);
-  --font-hero: var(--text-hero);
-
-  /* ── Legacy Spacing Aliases ─────────────────────────────────── */
-  --sp-xs: var(--space-1);
-  --sp-sm: var(--space-2);
-  --sp-md: var(--space-4);
-  --sp-lg: var(--space-5);
-  --sp-xl: var(--space-6);
-
-  /* ── Font aliases ───────────────────────────────────────────────
-     --font-display and --font-body are set by next/font on <html>.
-     Legacy aliases below resolve to the new fonts automatically.   */
-  --font-rajdhani: var(--font-body);    /* backward compat → Palanquin  */
-  --font-cinzel:   var(--font-display); /* backward compat → Signika    */
-  --font-orbitron: var(--font-display); /* backward compat → Signika    */
-  --font-mono:     var(--font-body);    /* backward compat → Palanquin  */
-
-  /* ── HUD Binary Sunset Theme ─────────────────────────────────  */
-  /*    Used by PlayerHUD, CombatPanel, CombatTracker, wireframe    */
-  /*    To retheme: change only these vars — no component edits     */
-  --hud-bg:            var(--bs-sky);          /* warm parchment: #E8DDD0 */
-  --hud-panel:         var(--bs-panel);        /* #DDD0C0                 */
-  --hud-surface-lo:    var(--bs-surface);      /* #D4C5B0                 */
-  --hud-surface-mid:   #C8B89A;                /* stepped darker than bs-card; was #CBBAA0 */
-  --hud-surface-hi:    var(--bs-card-hi);      /* #C0AD94                 */
-  --hud-border:        var(--bs-bdr-subtle);   /* warm brown: #CDB8A4     */
-  --hud-border-hi:     var(--bs-bdr-mid);      /* warm brown: #C0A890     */
-  --hud-text:          var(--bs-txt);          /* warm dark brown: #5A2818 */
-  --hud-text-dim:      var(--bs-txt2);         /* medium brown:   #8A5040 */
-  --hud-text-faint:    var(--bs-txt3);         /* light brown:    #AA7860 */
-  --hud-gold:          #E03A1E;
-  --hud-accent-10:     rgba(224,58,30,0.10);
-  --hud-accent-20:     rgba(224,58,30,0.20);
-  --hud-accent-25:     rgba(224,58,30,0.25);
-  --hud-accent-35:     rgba(224,58,30,0.35);
-  --hud-accent-40:     rgba(224,58,30,0.40);
-  --hud-accent-45:     rgba(224,58,30,0.45);
-  --hud-accent-50:     rgba(224,58,30,0.50);
-  --hud-accent-60:     rgba(224,58,30,0.60);
-  --hud-accent-border: rgba(224,58,30,0.30);
-  --hud-accent-purple: #9060D0;
-  --hud-gold-subtle:   rgba(200,170,80,0.15);
-  --hud-gold-border:   rgba(200,170,80,0.25);
-  --hud-gold-40:       rgba(200,170,80,0.40);
-  /* ── HUD vital strip (StatusStrip deep-red zone) ─────────────── */
-  --hud-vital-bg:       #6A1A0A;               /* deep red strip background */
-  --hud-vital-border:   #4A1006;               /* strip bottom edge */
-  --hud-vital-text:     var(--bs-on-red);      /* #FFF0E8 — on-red readable */
-  --hud-vital-text-dim: rgba(255,240,232,.65); /* muted labels/controls on strip */
-  --hud-vital-sep:      rgba(255,255,255,.2);  /* vertical dividers inside strip */
-  --hud-vital-wounds:   #FF7050;              /* wound fill — pops on dark bg */
-  --hud-vital-strain:   #FFB060;              /* strain fill — warm amber on dark bg */
-
-  /* ── Stronger structural column edges ────────────────────────── */
-  --hud-border-strong:  #9A8068;              /* 2px column borders */
-
-  /* ── HUD Font Size Aliases (map to fluid type scale) ──────────  */
-  /*    Use these instead of hardcoded px in HUD inline styles       */
-  --hud-sz-overline: var(--text-overline);  /*  9→11px: tiny labels   */
-  --hud-sz-caption:  var(--text-caption);   /* 10→12px: captions       */
-  --hud-sz-label:    var(--text-label);     /* 11→13px: labels         */
-  --hud-sz-sm:       var(--text-body-sm);   /* 12→14px: small body     */
-  --hud-sz-h4:       var(--text-h4);        /* 16→22px: section heads  */
-  --hud-sz-h3:       var(--text-h3);        /* 18→28px: panel titles   */
-
   /* ── shadcn/Radix required tokens ──────────────────────────── */
   --radius: 0.625rem;
   --background: oklch(1 0 0);
@@ -333,30 +72,7 @@ html {
   --color-bdr:        var(--bdr);
   --color-bdr-l:      var(--bdr-l);
 
-  /* Binary Sunset */
-  --color-bs-sky:         var(--bs-sky);
-  --color-bs-panel:       var(--bs-panel);
-  --color-bs-surface:     var(--bs-surface);
-  --color-bs-card:        var(--bs-card);
-  --color-bs-card-hi:     var(--bs-card-hi);
-  --color-bs-red-pale:    var(--bs-red-pale);
-  --color-bs-red-sun:     var(--bs-red-sun);
-  --color-bs-red-hi:      var(--bs-red-hi);
-  --color-bs-red-mid:     var(--bs-red-mid);
-  --color-bs-red-dim:     var(--bs-red-dim);
-  --color-bs-red-mute:    var(--bs-red-mute);
-  --color-bs-ink:         var(--bs-ink);
-  --color-bs-txt:         var(--bs-txt);
-  --color-bs-txt2:        var(--bs-txt2);
-  --color-bs-txt3:        var(--bs-txt3);
-  --color-bs-on-red:      var(--bs-on-red);
-  --color-bs-bdr-strong:  var(--bs-bdr-strong);
-  --color-bs-bdr-mid:     var(--bs-bdr-mid);
-  --color-bs-bdr-subtle:  var(--bs-bdr-subtle);
-  --color-bs-red-glow:    var(--bs-red-glow);
-  --color-bs-red-glow-s:  var(--bs-red-glow-s);
-
-  /* Fonts: --font-display (Signika) · --font-body (Palanquin). Use these vars, not raw names. */
+  /* Fonts: --font-display (Space Grotesk) · --font-body (JetBrains Mono). Use these vars, not raw names. */
 
   --color-sidebar-ring:                var(--sidebar-ring);
   --color-sidebar-border:              var(--sidebar-border);
@@ -419,8 +135,8 @@ body {
   -webkit-font-smoothing: antialiased;
   overflow-y: auto;
   overflow-x: hidden;
-  background: var(--bs-sky);
-  color: var(--bs-txt);
+  background: var(--hud-bg);
+  color: var(--hud-text);
 }
 
 /* ═══════════════════════════════════════════════════════════════ */
@@ -560,17 +276,17 @@ label, caption, .text-secondary {
 /*  HUD CARD                                                       */
 /* ═══════════════════════════════════════════════════════════════ */
 .hud-card {
-  background:     color-mix(in srgb, var(--bs-sky) 85%, transparent);
+  background:     color-mix(in srgb, var(--hud-bg) 85%, transparent);
   backdrop-filter: blur(8px);
-  border:         1px solid var(--bs-bdr-mid);
+  border:         1px solid var(--hud-border);
   padding:        var(--space-4);
   position:       relative;
   transition:     .25s;
   box-shadow:     0 1px 4px rgba(0,0,0,.04);
 }
 .hud-card:hover {
-  border-color: var(--bs-red-hi);
-  box-shadow:   0 2px 16px var(--bs-red-glow);
+  border-color: var(--hud-accent);
+  box-shadow:   0 2px 16px var(--hud-accent-10);
 }
 .hud-card::before {
   content:  '';
@@ -578,7 +294,7 @@ label, caption, .text-secondary {
   top: 0; left: 0;
   width:   0.2rem;
   height:  100%;
-  background: var(--bs-red-sun);
+  background: var(--hud-accent);
   opacity:    0;
   transition: .25s;
 }
@@ -589,7 +305,7 @@ label, caption, .text-secondary {
   font-size:      var(--text-caption);
   font-weight:    700;
   letter-spacing: var(--tracking-widest);
-  color:          var(--bs-txt3);
+  color:          var(--hud-text-faint);
   text-transform: uppercase;
   margin-bottom:  var(--space-2);
   display:        flex;
@@ -600,7 +316,7 @@ label, caption, .text-secondary {
   content:    '';
   flex:       1;
   height:     1px;
-  background: var(--bs-bdr-mid);
+  background: var(--hud-border);
 }
 
 /* ═══════════════════════════════════════════════════════════════ */
@@ -612,21 +328,21 @@ label, caption, .text-secondary {
   transition: background var(--ease-default);
 }
 .hov-gold-bg:hover {
-  background: var(--bs-card-hi);
+  background: var(--hud-surface-hi);
 }
 
 /* Force power chip — replaces JS onMouseEnter/Leave in ForcePowersCard */
 .force-power-chip {
   background:  rgba(224,58,30,.06);
-  border:      1px solid var(--bs-bdr-mid);
+  border:      1px solid var(--hud-border);
   transition:  border-color var(--ease-default), background var(--ease-default);
 }
 .force-power-chip:hover {
-  border-color: var(--bs-red-sun);
-  background:   var(--bs-red-glow);
+  border-color: var(--hud-accent);
+  background:   var(--hud-accent-10);
 }
 
-/* Combat check button — warm off-white on dark red strip (var(--bs-on-red) canonical) */
+/* Combat check button — warm off-white on dark red strip (var(--hud-vital-text) canonical) */
 .combat-check-btn {
   width: auto;
   height: 22px;
@@ -642,7 +358,7 @@ label, caption, .text-secondary {
   font-family: var(--font-body);
   font-size: 0.65rem;
   font-weight: 700;
-  color: var(--bs-on-red);
+  color: var(--hud-vital-text);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -659,17 +375,54 @@ label, caption, .text-secondary {
   transform: translateY(0);
   box-shadow: none;
 }
-@keyframes combatPulse {
-  0%, 100% { border-color: rgba(255,240,232,.22); box-shadow: none; }
-  50%       { border-color: rgba(255,240,232,.48); box-shadow: 0 0 10px rgba(255,240,232,.10); }
-}
 .combat-check-btn-pulse {
-  animation: combatPulse 2s ease-in-out infinite;
+  animation: combatPulseEmber 2s ease-in-out infinite;
 }
 
-@keyframes forcePulse {
-  0%, 100% { border-color: rgba(126,200,227,.22); }
-  50%       { border-color: rgba(126,200,227,.52); box-shadow: 0 0 10px rgba(126,200,227,.18); }
+/* Force check button — teal/force-blue palette */
+.force-check-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(126,200,227,0.10);
+  border: 1px solid rgba(126,200,227,0.22);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-weight: 700;
+  color: rgba(126,200,227,0.9);
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 150ms ease;
+}
+.force-check-btn:hover {
+  background: rgba(126,200,227,0.18);
+  border-color: rgba(126,200,227,0.45);
+  box-shadow: 0 0 14px rgba(126,200,227,0.2);
+  transform: translateY(-1px);
+}
+.force-check-btn:active {
+  background: rgba(126,200,227,0.14);
+  transform: translateY(0);
+  box-shadow: none;
+}
+/* compact variant */
+.force-check-btn--compact {
+  height: 22px;
+  padding: 0 8px;
+  gap: 5px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+}
+/* full-width variant */
+.force-check-btn--full {
+  width: 100%;
+  height: 48px;
+  gap: 10px;
+  border-radius: 10px;
+  font-size: clamp(0.85rem, 1.3vw, 1rem);
+  letter-spacing: 0.1em;
 }
 .force-check-btn-pulse { animation: forcePulse 3s ease-in-out infinite; }
 
@@ -700,7 +453,7 @@ label, caption, .text-secondary {
   opacity: 1 !important;
 }
 .hud-skill-row:active {
-  background: var(--hud-accent-10);
+  background: color-mix(in srgb, var(--hud-accent) 10%, transparent);
   opacity: 1 !important;
 }
 .hud-skill-search::placeholder {
@@ -717,11 +470,60 @@ label, caption, .text-secondary {
   border-color: rgba(224,58,30,0.6);
 }
 
+/* Combined text + border agility highlight — vehicle/agility panels */
+.hov-ag {
+  transition: color var(--ease-default), border-color var(--ease-default);
+}
+.hov-ag:hover {
+  color:        rgba(212,144,58,0.6);
+  border-color: rgba(212,144,58,0.6);
+}
+/* Static base state used alongside .hov-ag */
+.hov-ag-base {
+  color:        rgba(212,144,58,0.5);
+  border-color: rgba(212,144,58,0.25);
+}
+
+/* Combined text + border danger (failure/cancel) highlight */
+.hov-danger {
+  transition: color var(--ease-default), border-color var(--ease-default);
+}
+.hov-danger:hover {
+  color:        var(--state-failure);
+  border-color: var(--state-failure);
+}
+
+/* Buy-spec trigger button — dashed gold border fades to full gold on hover */
+.buy-spec-btn {
+  color:        color-mix(in srgb, var(--hud-gold) 53%, transparent);
+  border-color: color-mix(in srgb, var(--hud-gold) 33%, transparent);
+  transition:   color var(--ease-default), border-color var(--ease-default);
+}
+.buy-spec-btn:hover {
+  color:        var(--hud-gold);
+  border-color: color-mix(in srgb, var(--hud-gold) 60%, transparent);
+}
+
+/* EncounterVehiclePanel wound-tracker buttons */
+.vhp-ht-btn:hover:not(:disabled) { border-color: rgba(224,82,82,0.4); }
+.vhp-ss-btn:hover:not(:disabled) { border-color: rgba(255,152,0,0.4); }
+
+/* StagingTopBar combat toggle button */
+.staging-topbar-btn:hover:not(:disabled) {
+  color:        #FF6464 !important;
+  background:   var(--hud-surface-mid) !important;
+  border-color: var(--hud-border-hi) !important;
+}
+
+/* StagingDrawer / StagingLeftDrawer / StagingRightDrawer close button */
+.staging-close-btn            { color: #6A8070; transition: color var(--ease-default); }
+.staging-close-btn:hover      { color: var(--hud-text); }
+
 /* ═══════════════════════════════════════════════════════════════ */
 /*  INTERACTIVE STATES — focus, disabled                           */
 /* ═══════════════════════════════════════════════════════════════ */
 :focus-visible {
-  outline:        2px solid var(--bs-red-sun);
+  outline:        2px solid var(--hud-accent);
   outline-offset: 2px;
 }
 
@@ -791,7 +593,7 @@ textarea:disabled,
   box-sizing:       border-box;
   transition:       border-color 0.15s;
 }
-.hud-input:focus        { border-color: var(--bs-red-sun); }
+.hud-input:focus        { border-color: var(--hud-accent); }
 .hud-input::placeholder { color: var(--hud-text-faint); }
 .hud-input--padded-r    { padding-right: 30px; }
 
@@ -813,7 +615,7 @@ textarea:disabled,
   box-sizing:       border-box;
   transition:       border-color 0.15s;
 }
-.hud-textarea:focus        { border-color: var(--bs-red-sun); }
+.hud-textarea:focus        { border-color: var(--hud-accent); }
 .hud-textarea::placeholder { color: var(--hud-text-faint); }
 
 /* ═══════════════════════════════════════════════════════════════ */
@@ -906,254 +708,6 @@ i.ffi {
 /* Force pip */
 .die.forcepip   { color: var(--die-forcepip);   background: color-mix(in srgb, var(--die-force) 10%, transparent);      border: 1px solid color-mix(in srgb, var(--die-forcepip) 30%, transparent); }
 
-/* ═══════════════════════════════════════════════════════════════ */
-/*  THEME: Rebel Operative — dark warm-charcoal / rebel orange    */
-/* ═══════════════════════════════════════════════════════════════ */
-[data-theme="operative"] {
-  --hud-bg:            #141210;
-  --hud-panel:         #1E1A16;
-  --hud-surface-lo:    #262018;
-  --hud-surface-mid:   #2A2218;
-  --hud-surface-hi:    #2E281E;
-
-  --hud-border:        rgba(210,185,150,.13);
-  --hud-border-hi:     rgba(210,185,150,.22);
-  --hud-border-strong: rgba(210,185,150,.30);
-
-  --hud-text:          #B0A490;
-  --hud-text-dim:      #726050;
-  --hud-text-faint:    #4C4038;
-
-  --hud-gold:          #D4681A;
-  --hud-accent-10:     rgba(212,104,26,.10);
-  --hud-accent-20:     rgba(212,104,26,.20);
-  --hud-accent-25:     rgba(212,104,26,.25);
-  --hud-accent-35:     rgba(212,104,26,.35);
-  --hud-accent-40:     rgba(212,104,26,.40);
-  --hud-accent-45:     rgba(212,104,26,.45);
-  --hud-accent-50:     rgba(212,104,26,.50);
-  --hud-accent-60:     rgba(212,104,26,.60);
-  --hud-accent-border: rgba(212,104,26,.28);
-  --hud-accent-purple: #9060D0;
-
-  --hud-gold-subtle:   rgba(200,148,56,.15);
-  --hud-gold-border:   rgba(200,148,56,.25);
-  --hud-gold-40:       rgba(200,148,56,.40);
-
-  --hud-vital-bg:      #180C06;
-  --hud-vital-border:  #0E0602;
-  --hud-vital-text:    #E8C888;
-  --hud-vital-text-dim:rgba(232,200,136,.60);
-  --hud-vital-sep:     rgba(232,200,136,.18);
-  --hud-vital-wounds:  #CC4020;
-  --hud-vital-strain:  #C07818;
-
-  --bs-sky:            #141210;
-  --bs-panel:          #1E1A16;
-  --bs-surface:        #262018;
-  --bs-card:           #2E281E;
-  --bs-card-hi:        #362E24;
-  --bs-red-sun:        #D4681A;
-  --bs-red-pale:       #E07840;
-  --bs-red-hi:         #B85016;
-  --bs-red-mid:        #904010;
-  --bs-red-dim:        #602808;
-  --bs-red-mute:       #301404;
-  --bs-ink:            #E8DED0;
-  --bs-txt:            #B0A490;
-  --bs-txt2:           #726050;
-  --bs-txt3:           #4C4038;
-  --bs-on-red:         #FFF0E0;
-  --bs-bdr-strong:     rgba(210,185,150,.30);
-  --bs-bdr-mid:        rgba(210,185,150,.20);
-  --bs-bdr-subtle:     rgba(210,185,150,.13);
-  --bs-red-glow:       rgba(212,104,26,.12);
-  --bs-red-glow-s:     rgba(212,104,26,.28);
-}
-
-[data-theme="operative"] .combat-check-btn {
-  background: rgba(212,104,26,.10);
-  border: 1px solid rgba(212,104,26,.35);
-  color: #E8C888;
-}
-[data-theme="operative"] .combat-check-btn:hover {
-  background: rgba(212,104,26,.20);
-  border-color: rgba(212,104,26,.55);
-  box-shadow: 0 0 10px rgba(212,104,26,.12);
-}
-@keyframes combatPulseOperative {
-  0%, 100% { border-color: rgba(212,104,26,.25); box-shadow: none; }
-  50%       { border-color: rgba(212,104,26,.55); box-shadow: 0 0 10px rgba(212,104,26,.14); }
-}
-[data-theme="operative"] .combat-check-btn-pulse {
-  animation: combatPulseOperative 2s ease-in-out infinite;
-}
-
-/* ═══════════════════════════════════════════════════════════════ */
-/*  THEME: Kyber Archive — midnight indigo / kyber-crystal cyan   */
-/* ═══════════════════════════════════════════════════════════════ */
-[data-theme="kyber"] {
-  --hud-bg:            #0C0E1A;
-  --hud-panel:         #111326;
-  --hud-surface-lo:    #161830;
-  --hud-surface-mid:   #1A1C34;
-  --hud-surface-hi:    #1C1E38;
-
-  --hud-border:        rgba(91,188,216,.16);
-  --hud-border-hi:     rgba(91,188,216,.28);
-  --hud-border-strong: rgba(91,188,216,.38);
-
-  --hud-text:          #B0B8D0;
-  --hud-text-dim:      #707898;
-  --hud-text-faint:    #485070;
-
-  --hud-gold:          #5BBCD8;
-  --hud-accent-10:     rgba(91,188,216,.10);
-  --hud-accent-20:     rgba(91,188,216,.20);
-  --hud-accent-25:     rgba(91,188,216,.25);
-  --hud-accent-35:     rgba(91,188,216,.35);
-  --hud-accent-40:     rgba(91,188,216,.40);
-  --hud-accent-45:     rgba(91,188,216,.45);
-  --hud-accent-50:     rgba(91,188,216,.50);
-  --hud-accent-60:     rgba(91,188,216,.60);
-  --hud-accent-border: rgba(91,188,216,.25);
-  --hud-accent-purple: #9060D0;
-
-  --hud-gold-subtle:   rgba(200,162,78,.15);
-  --hud-gold-border:   rgba(200,162,78,.25);
-  --hud-gold-40:       rgba(200,162,78,.40);
-
-  --hud-vital-bg:      #081220;
-  --hud-vital-border:  #050C18;
-  --hud-vital-text:    #80CCE8;
-  --hud-vital-text-dim:rgba(128,204,232,.60);
-  --hud-vital-sep:     rgba(128,204,232,.18);
-  --hud-vital-wounds:  #D84030;
-  --hud-vital-strain:  #C89830;
-
-  --bs-sky:            #0C0E1A;
-  --bs-panel:          #111326;
-  --bs-surface:        #161830;
-  --bs-card:           #1C1E38;
-  --bs-card-hi:        #202240;
-  --bs-red-sun:        #5BBCD8;
-  --bs-red-pale:       #80D4EC;
-  --bs-red-hi:         #3A9CBD;
-  --bs-red-mid:        #2A7898;
-  --bs-red-dim:        #1A5070;
-  --bs-red-mute:       #0C2840;
-  --bs-ink:            #EEF0F8;
-  --bs-txt:            #B0B8D0;
-  --bs-txt2:           #707898;
-  --bs-txt3:           #485070;
-  --bs-on-red:         #040814;
-  --bs-bdr-strong:     rgba(91,188,216,.38);
-  --bs-bdr-mid:        rgba(91,188,216,.26);
-  --bs-bdr-subtle:     rgba(91,188,216,.16);
-  --bs-red-glow:       rgba(91,188,216,.12);
-  --bs-red-glow-s:     rgba(91,188,216,.28);
-}
-
-[data-theme="kyber"] .combat-check-btn {
-  background: rgba(91,188,216,.10);
-  border: 1px solid rgba(91,188,216,.35);
-  color: #80CCE8;
-}
-[data-theme="kyber"] .combat-check-btn:hover {
-  background: rgba(91,188,216,.18);
-  border-color: rgba(91,188,216,.55);
-  box-shadow: 0 0 10px rgba(91,188,216,.12);
-}
-@keyframes combatPulseKyber {
-  0%, 100% { border-color: rgba(91,188,216,.25); box-shadow: none; }
-  50%       { border-color: rgba(91,188,216,.55); box-shadow: 0 0 10px rgba(91,188,216,.14); }
-}
-[data-theme="kyber"] .combat-check-btn-pulse {
-  animation: combatPulseKyber 2s ease-in-out infinite;
-}
-
-/* ═══════════════════════════════════════════════════════════════ */
-/*  THEME: Star Destroyer Slate — GM-only chrome grey / hull black */
-/* ═══════════════════════════════════════════════════════════════ */
-[data-theme="star-destroyer-slate"] {
-  --hud-bg:            #0A0A0C;
-  --hud-panel:         #101214;
-  --hud-surface-lo:    #171A1E;
-  --hud-surface-mid:   #1E2228;
-  --hud-surface-hi:    #22272F;
-
-  --hud-border:        #181D22;
-  --hud-border-hi:     #2E3540;
-  --hud-border-strong: #3E4A58;
-
-  --hud-text:          #C4CDD4;
-  --hud-text-dim:      #5E6870;
-  --hud-text-faint:    #2E3640;
-
-  --hud-gold:          #96A8B4;
-  --hud-accent-10:     rgba(150,168,180,.10);
-  --hud-accent-20:     rgba(150,168,180,.20);
-  --hud-accent-25:     rgba(150,168,180,.25);
-  --hud-accent-35:     rgba(150,168,180,.35);
-  --hud-accent-40:     rgba(150,168,180,.40);
-  --hud-accent-45:     rgba(150,168,180,.45);
-  --hud-accent-50:     rgba(150,168,180,.50);
-  --hud-accent-60:     rgba(150,168,180,.60);
-  --hud-accent-border: rgba(150,168,180,.25);
-  --hud-accent-purple: #9060D0;
-
-  --hud-gold-subtle:   rgba(150,168,180,.10);
-  --hud-gold-border:   rgba(150,168,180,.20);
-  --hud-gold-40:       rgba(150,168,180,.40);
-
-  --hud-vital-bg:      #0A0C10;
-  --hud-vital-border:  #060810;
-  --hud-vital-text:    #C4CDD4;
-  --hud-vital-text-dim:rgba(196,205,212,.60);
-  --hud-vital-sep:     rgba(196,205,212,.15);
-  --hud-vital-wounds:  #C04040;
-  --hud-vital-strain:  #8090A4;
-
-  --bs-sky:            #0A0A0C;
-  --bs-panel:          #101214;
-  --bs-surface:        #171A1E;
-  --bs-card:           #1E2228;
-  --bs-card-hi:        #22272F;
-  --bs-red-sun:        #96A8B4;
-  --bs-red-pale:       #C8D8E0;
-  --bs-red-hi:         #6080A0;
-  --bs-red-mid:        #405870;
-  --bs-red-dim:        #283848;
-  --bs-red-mute:       #141C24;
-  --bs-ink:            #EEF2F5;
-  --bs-txt:            #C4CDD4;
-  --bs-txt2:           #5E6870;
-  --bs-txt3:           #2E3640;
-  --bs-on-red:         #0A0A0C;
-  --bs-bdr-strong:     #3E4A58;
-  --bs-bdr-mid:        #2E3540;
-  --bs-bdr-subtle:     #181D22;
-  --bs-red-glow:       rgba(150,168,180,.10);
-  --bs-red-glow-s:     rgba(150,168,180,.22);
-}
-
-[data-theme="star-destroyer-slate"] .combat-check-btn {
-  background: rgba(150,168,180,.10);
-  border: 1px solid rgba(150,168,180,.30);
-  color: #C4CDD4;
-}
-[data-theme="star-destroyer-slate"] .combat-check-btn:hover {
-  background: rgba(150,168,180,.18);
-  border-color: rgba(150,168,180,.50);
-  box-shadow: 0 0 10px rgba(150,168,180,.10);
-}
-@keyframes combatPulseSlate {
-  0%, 100% { border-color: rgba(150,168,180,.20); box-shadow: none; }
-  50%       { border-color: rgba(150,168,180,.50); box-shadow: 0 0 10px rgba(150,168,180,.12); }
-}
-[data-theme="star-destroyer-slate"] .combat-check-btn-pulse {
-  animation: combatPulseSlate 2s ease-in-out infinite;
-}
 
 @layer base {
   * {
@@ -1230,7 +784,7 @@ i.ffi {
 /* ── Player HUD Left Rail ─────────────────────────────────────── */
 .hud-rail-btn-combat:hover,
 .hud-rail-btn-combat.active { background: rgba(224,58,30,0.12); border-color: rgba(224,58,30,0.35); }
-.hud-rail-btn-combat.active .hud-rail-label { color: var(--bs-red-pale); }
+.hud-rail-btn-combat.active .hud-rail-label { color: var(--hud-accent); }
 
 .hud-rail-btn-force:hover,
 .hud-rail-btn-force.active { background: rgba(144,96,208,0.12); border-color: rgba(144,96,208,0.35); }
@@ -1253,18 +807,7 @@ i.ffi {
   display: block;
 }
 
-/* Default theme: Binary Sunset — light parchment background */
-.hud-fi-rebel  { filter: saturate(1.3) brightness(0.9); }
-.hud-fi-jedi   { filter: brightness(0.82) opacity(0.9); }
-.hud-fi-empire { filter: brightness(0) invert(1) sepia(1) saturate(0.4) brightness(0.82); }
-
-/* Rebel Operative — dark warm charcoal */
-[data-theme="operative"] .hud-fi-rebel { filter: saturate(1.5) hue-rotate(20deg) brightness(1.8); }
-[data-theme="operative"] .hud-fi-jedi  { filter: brightness(1.5) opacity(0.88); }
-
-/* Kyber Archive — midnight indigo */
-[data-theme="kyber"] .hud-fi-rebel { filter: saturate(1.8) hue-rotate(25deg) brightness(1.9); }
-[data-theme="kyber"] .hud-fi-jedi  { filter: brightness(1.4) opacity(0.88); }
+/* Default theme: Ember Tatooine — see state-tokens.css for overrides */
 
 /* ── Rail symbol colours ── */
 /* Force Check symbol — blue across all themes */
@@ -1301,4 +844,37 @@ i.ffi {
 
 /* ── Weapon / Force power row hover (inside quick drawers) ───── */
 .hud-combat-wpn-row:hover { background: rgba(224,58,30,0.06); }
+
+/* ── SkillsPanel — skill row hover ──────────────────────────────
+   Replaces onMouseEnter/onMouseLeave inline style mutation.
+   Uses hud-accent at ~5% (0D hex) to match original gold hint. */
+.skills-row:hover { background: var(--hud-accent-10); }
+
+/* ── SkillsPanel — upgrade button hover ─────────────────────────
+   Affordable state brightens to accent-20 on hover;
+   locked state has no hover since cursor is not-allowed. */
+.skills-upgrade-btn--affordable:hover { background: var(--hud-accent-20) !important; }
 .hud-force-power-row:hover { background: rgba(144,96,208,0.06); }
+
+/* ── GmTopBar — lobby button hover ───────────────────────────── */
+.gm-lobby-btn {
+  transition: color var(--ease-quick), border-color var(--ease-quick);
+}
+.gm-lobby-btn:hover {
+  color: var(--hud-text) !important;
+  border-color: var(--hud-border-hi) !important;
+}
+
+/* ── GmTopBar — combat action buttons ────────────────────────── */
+.gm-top-bar-btn {
+  transition: color var(--ease-quick), background var(--ease-quick), border-color var(--ease-quick);
+}
+.gm-top-bar-btn:hover:not(:disabled) {
+  background: var(--hud-surface-mid);
+  border-color: var(--btn-accent, var(--hud-border-hi));
+}
+
+/* ── GmReferenceDrawer — close button and tab hover ─────────────
+   Replaces onMouseEnter/onMouseLeave inline style mutations. */
+.gm-ref-close-btn:hover { color: var(--hud-text) !important; }
+.gm-ref-tab:hover:not(.gm-ref-tab--active) { color: var(--hud-text) !important; }

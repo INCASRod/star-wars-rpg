@@ -2,23 +2,24 @@
 
 import { useState } from 'react'
 import { C, FONT_CINZEL, FONT_RAJDHANI, panelBase, FS_OVERLINE, FS_LABEL, FS_SM, FS_H3 } from './design-tokens'
+import { FONT_BODY } from '@/lib/tokens'
 import { ForcePowerTree, type ForceTreeNode, type ForceTreeConnection } from '@/components/character/ForcePowerTree'
 import { RichText } from '@/components/ui/RichText'
 import { Tooltip } from '@/components/ui/Tooltip'
 
 // ── Force colour ──────────────────────────────────────────────────────────────
-const FORCE_BLUE      = '#1A78A0'
-const FORCE_BLUE_DIM  = 'rgba(26,120,160,0.35)'
-const FORCE_BLUE_GLOW = 'rgba(26,120,160,0.18)'
-const DARK_PURPLE     = '#8B2BE2'
-const DARK_PURPLE_DIM = 'rgba(139,43,226,0.35)'
-const DARK_PURPLE_GLOW = 'rgba(139,43,226,0.18)'
+const FORCE_BLUE      = 'var(--die-force)'
+const FORCE_BLUE_DIM  = 'color-mix(in srgb, var(--die-force) 35%, transparent)'
+const FORCE_BLUE_GLOW = 'color-mix(in srgb, var(--die-force) 18%, transparent)'
+const DARK_PURPLE     = 'var(--state-activated)'
+const DARK_PURPLE_DIM = 'color-mix(in srgb, var(--state-activated) 35%, transparent)'
+const DARK_PURPLE_GLOW = 'color-mix(in srgb, var(--state-activated) 18%, transparent)'
 
 // ── Dark side fallen pulse animation ─────────────────────────────────────────
 const FALLEN_PULSE_STYLE = `
 @keyframes fallenPulse {
-  0%, 100% { box-shadow: 0 0 14px rgba(139,43,226,0.12); }
-  50%       { box-shadow: 0 0 22px rgba(139,43,226,0.28); }
+  0%, 100% { box-shadow: 0 0 14px color-mix(in srgb, var(--state-activated) 12%, transparent); }
+  50%       { box-shadow: 0 0 22px color-mix(in srgb, var(--state-activated) 28%, transparent); }
 }
 .force-rating-fallen { animation: fallenPulse 3s ease-in-out infinite; }
 `
@@ -116,7 +117,7 @@ function ForceRatingCard({
         className={isFallen ? 'force-rating-fallen' : undefined}
         style={{
           ...panelBase,
-          padding: '14px 12px',
+          padding: '0.875rem var(--space-3)',
           textAlign: 'center',
           border: `1px solid ${accentDim}`,
           boxShadow: `0 0 18px ${accentGlow}`,
@@ -127,7 +128,7 @@ function ForceRatingCard({
         <div style={{
           fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, fontWeight: 700,
           letterSpacing: '0.15em', textTransform: 'uppercase',
-          color: accent, marginBottom: 4, opacity: 0.8,
+          color: accent, marginBottom: 'var(--space-1)', opacity: 0.8,
         }}>
           Force Rating
         </div>
@@ -142,18 +143,17 @@ function ForceRatingCard({
 
         {/* Dark Side badge for fallen characters */}
         {isFallen && (
-          <div style={{
-            display: 'inline-flex', alignItems: 'center',
-            marginTop: 6, padding: '2px 8px',
-            background: 'rgba(139,43,226,0.1)',
-            border: '1px solid rgba(139,43,226,0.35)',
-            borderRadius: 4,
+          <div className="inline-flex items-center" style={{
+            marginTop: '0.375rem', padding: '2px var(--space-2)',
+            background: 'color-mix(in srgb, var(--state-activated) 10%, transparent)',
+            border: '1px solid color-mix(in srgb, var(--state-activated) 35%, transparent)',
+            borderRadius: 'var(--radius-md)',
           }}>
             <span style={{
-              fontFamily: "'Share Tech Mono','Courier New',monospace",
+              fontFamily: FONT_BODY,
               fontSize: 'clamp(0.58rem, 0.9vw, 0.68rem)',
               textTransform: 'uppercase', letterSpacing: '0.12em',
-              color: 'rgba(139,43,226,0.7)',
+              color: 'color-mix(in srgb, var(--state-activated) 70%, transparent)',
             }}>
               ☠ DARK SIDE USER
             </span>
@@ -161,7 +161,7 @@ function ForceRatingCard({
         )}
 
         {/* Pip row */}
-        <div style={{ display: 'flex', gap: 5, justifyContent: 'center', marginTop: 8, marginBottom: 10 }}>
+        <div className="flex justify-center" style={{ gap: 5, marginTop: 'var(--space-2)', marginBottom: '0.625rem' }}>
           {Array.from({ length: Math.max(forceRating, 1) }).map((_, i) => {
             const isCommitted = i >= available
             const isFilled    = i < forceRating
@@ -183,19 +183,19 @@ function ForceRatingCard({
         {committedForce > 0 && (
           <div style={{
             fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE,
-            color: `${accent}90`, marginBottom: 8,
+            color: `${accent}90`, marginBottom: 'var(--space-2)',
           }}>
             {available} available · {committedForce} committed
           </div>
         )}
 
         {/* Light / Dark legend */}
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 8 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#E8E8FF', boxShadow: '0 0 4px #E8E8FF' }} />
-            <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, color: 'rgba(232,232,255,0.6)' }}>Light</span>
+        <div className="flex justify-center" style={{ gap: '0.625rem', marginTop: 'var(--space-2)' }}>
+          <div className="flex items-center" style={{ gap: 3 }}>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--state-light-fp)', boxShadow: '0 0 4px var(--state-light-fp)' }} />
+            <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, color: 'color-mix(in srgb, var(--state-light-fp) 60%, transparent)' }}>Light</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+          <div className="flex items-center" style={{ gap: 3 }}>
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#1a1a2e', border: '1px solid #6060A0' }} />
             <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, color: 'rgba(96,96,160,0.8)' }}>Dark</span>
           </div>
@@ -219,53 +219,53 @@ function MoralityCard({
   const scoreColor = isFallen ? DARK_PURPLE : C.gold
 
   return (
-    <div style={{ ...panelBase, padding: '14px 12px', textAlign: 'center' }}>
+    <div style={{ ...panelBase, padding: '0.875rem var(--space-3)', textAlign: 'center' }}>
       <CornerBrackets />
 
       <div style={{
         fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, fontWeight: 700,
         letterSpacing: '0.15em', textTransform: 'uppercase',
-        color: C.textDim, marginBottom: 4,
+        color: C.textDim, marginBottom: 'var(--space-1)',
       }}>
         Morality
       </div>
 
       <div style={{
         fontFamily: FONT_CINZEL, fontSize: FS_H3, fontWeight: 700,
-        color: scoreColor, lineHeight: 1, marginBottom: 8,
-        textShadow: isFallen ? '0 0 12px rgba(139,43,226,0.4)' : 'none',
+        color: scoreColor, lineHeight: 1, marginBottom: 'var(--space-2)',
+        textShadow: isFallen ? '0 0 12px color-mix(in srgb, var(--state-activated) 40%, transparent)' : 'none',
       }}>
         {moralityValue}
       </div>
 
       {/* Track */}
-      <div style={{ position: 'relative', height: 6, background: C.textFaint, borderRadius: 3, marginBottom: 6 }}>
-        <div style={{
-          position: 'absolute', left: 0, top: 0, bottom: 0, borderRadius: 3,
+      <div className="relative" style={{ height: 6, background: C.textFaint, borderRadius: 3, marginBottom: '0.375rem' }}>
+        <div className="absolute" style={{
+          left: 0, top: 0, bottom: 0, borderRadius: 3,
           width: `${Math.min(100, Math.max(0, moralityValue))}%`,
-          background: 'linear-gradient(90deg, #E03A1E 0%, #C8AA50 45%, #4EC87A 70%, #1A78A0 100%)',
-          transition: 'width .3s ease',
+          background: 'linear-gradient(90deg, var(--hud-accent) 0%, var(--hud-gold) 45%, var(--state-success) 70%, var(--die-force) 100%)',
+          transition: 'width var(--ease-smooth)',
         }} />
-        <div style={{
-          position: 'absolute', top: '50%', transform: 'translate(-50%, -50%)',
+        <div className="absolute" style={{
+          top: '50%', transform: 'translate(-50%, -50%)',
           left: `${Math.min(100, Math.max(0, moralityValue))}%`,
           width: 10, height: 10, borderRadius: '50%',
           background: C.gold, border: `2px solid ${C.bg}`,
           boxShadow: `0 0 6px ${C.gold}`,
-          transition: 'left .3s ease',
+          transition: 'left var(--ease-smooth)',
         }} />
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <div className="flex justify-between">
         <span style={{
           fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE,
-          color: '#E03A1E', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
+          color: 'var(--hud-accent)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
         }}>
           {moralityWeakness || 'Weakness'}
         </span>
         <span style={{
           fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE,
-          color: FORCE_BLUE, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
+          color: 'var(--die-force)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
         }}>
           {moralityStrength || 'Strength'}
         </span>
@@ -284,12 +284,9 @@ function ConflictPips({ conflicts, isFallen = false }: { conflicts: ConflictEntr
   const labelColor = isFallen ? 'rgba(220,230,240,0.45)' : C.textDim
 
   return (
-    <div style={{ ...panelBase, padding: '12px 14px' }}>
+    <div style={{ ...panelBase, padding: 'var(--space-3) var(--space-4)' }}>
       <CornerBrackets />
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        marginBottom: 8,
-      }}>
+      <div className="flex items-center justify-between" style={{ marginBottom: 'var(--space-2)' }}>
         <div style={{
           fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, fontWeight: 700,
           letterSpacing: '0.12em', textTransform: 'uppercase', color: labelColor,
@@ -298,13 +295,13 @@ function ConflictPips({ conflicts, isFallen = false }: { conflicts: ConflictEntr
         </div>
         <div style={{
           fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE,
-          color: activeConflicts.length > 0 ? '#E03A1E' : C.textDim,
+          color: activeConflicts.length > 0 ? 'var(--hud-accent)' : C.textDim,
         }}>
           {activeConflicts.length} unresolved
         </div>
       </div>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+      <div className="flex" style={{ flexWrap: 'wrap', gap: 5 }}>
         {conflicts.map((c, i) => {
           const baseDesc = c.description ?? `Conflict ${i + 1}${c.session_label ? ` — ${c.session_label}` : ''}`
           const tipContent = (
@@ -327,17 +324,17 @@ function ConflictPips({ conflicts, isFallen = false }: { conflicts: ConflictEntr
                     ? 'transparent'
                     : isFallen
                       ? 'rgba(220,230,240,0.85)'
-                      : 'rgba(224,58,30,0.9)',
+                      : 'color-mix(in srgb, var(--hud-accent) 90%, transparent)',
                   border: c.is_resolved
                     ? `1px solid ${C.border}`
                     : isFallen
                       ? '1px solid rgba(200,215,230,0.9)'
-                      : '1px solid #E03A1E',
+                      : '1px solid var(--hud-accent)',
                   boxShadow: c.is_resolved
                     ? 'none'
                     : isFallen
                       ? '0 0 4px rgba(220,230,240,0.5)'
-                      : '0 0 4px rgba(224,58,30,0.5)',
+                      : '0 0 4px color-mix(in srgb, var(--hud-accent) 50%, transparent)',
                   cursor: 'default',
                 }}
               />
@@ -378,7 +375,7 @@ function ForcePowerCard({
         padding: 0,
         border: `1px solid ${FORCE_BLUE_DIM}`,
         overflow: 'hidden',
-        transition: 'border-color .15s',
+        transition: 'border-color var(--ease-default)',
       }}
       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = FORCE_BLUE }}
       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = FORCE_BLUE_DIM }}
@@ -388,35 +385,34 @@ function ForcePowerCard({
         onClick={() => setExpanded(v => !v)}
         onMouseEnter={() => setHeaderHovered(true)}
         onMouseLeave={() => setHeaderHovered(false)}
+        className="cursor-pointer select-none"
         style={{
-          padding: '10px 12px',
-          cursor: 'pointer',
-          background: headerHovered ? 'rgba(126,200,227,0.06)' : 'transparent',
-          transition: 'background .15s',
-          userSelect: 'none',
+          padding: '0.625rem var(--space-3)',
+          background: headerHovered ? 'color-mix(in srgb, var(--die-force) 6%, transparent)' : 'transparent',
+          transition: 'background var(--ease-default)',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-          <span style={{ color: C.textDim, fontSize: 10, flexShrink: 0 }}>
+        <div className="flex items-center" style={{ gap: 'var(--space-2)', marginBottom: '0.375rem' }}>
+          <span className="shrink-0" style={{ color: C.textDim, fontSize: 10 }}>
             {expanded ? '▼' : '▶'}
           </span>
-          <div style={{
+          <div className="flex-1" style={{
             fontFamily: FONT_CINZEL, fontSize: FS_SM, fontWeight: 600,
-            color: C.text, flex: 1, minWidth: 0,
+            color: C.text, minWidth: 0,
           }}>
             {fp.powerName}
           </div>
-          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, color: FORCE_BLUE, flexShrink: 0 }}>
+          <span className="shrink-0" style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, color: FORCE_BLUE }}>
             {fp.purchasedCount}/{fp.totalCount}
           </span>
         </div>
 
         {/* Progress bar */}
-        <div style={{ height: 3, background: C.textFaint, borderRadius: 2, overflow: 'hidden' }}>
+        <div className="overflow-hidden" style={{ height: 3, background: C.textFaint, borderRadius: 2 }}>
           <div style={{
             height: '100%', width: `${pct}%`,
-            background: `linear-gradient(90deg, ${FORCE_BLUE}, ${DARK_PURPLE})`,
-            borderRadius: 2, transition: 'width .4s ease',
+            background: `linear-gradient(90deg, var(--die-force), var(--state-activated))`,
+            borderRadius: 2, transition: 'width var(--ease-smooth)',
           }} />
         </div>
       </div>
@@ -425,14 +421,14 @@ function ForcePowerCard({
       {expanded && (
         <div style={{
           borderTop: `1px solid ${FORCE_BLUE_DIM}`,
-          padding: '8px 0 0',
-          background: 'rgba(126,200,227,0.04)',
+          padding: 'var(--space-2) 0 0',
+          background: 'color-mix(in srgb, var(--die-force) 4%, transparent)',
         }}>
           {description && (
             <div style={{
               fontFamily: FONT_RAJDHANI, fontSize: 'clamp(0.85rem, 1.3vw, 1rem)',
-              color: C.textDim, marginBottom: 8, lineHeight: 1.45,
-              padding: '0 12px',
+              color: C.textDim, marginBottom: 'var(--space-2)', lineHeight: 1.45,
+              padding: '0 var(--space-3)',
             }}>
               <RichText text={description} />
             </div>
@@ -473,10 +469,10 @@ export function ForcePanel({
   isFallen = false,
 }: ForcePanelProps) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="flex flex-col" style={{ gap: 'var(--space-4)' }}>
 
       {/* Top row: Force Rating + Morality side by side */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
         <ForceRatingCard
           forceRating={forceRating}
           committedForce={committedForce}
@@ -490,11 +486,10 @@ export function ForcePanel({
             isFallen={isFallen}
           />
         ) : (
-          <div style={{
+          <div className="flex flex-col items-center justify-center" style={{
             ...panelBase,
-            padding: '14px 12px',
-            display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center', gap: 8,
+            padding: '0.875rem var(--space-3)',
+            gap: 'var(--space-2)',
             opacity: 0.6,
           }}>
             <div style={{
@@ -519,9 +514,8 @@ export function ForcePanel({
 
       {/* Force Powers */}
       <div>
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          marginBottom: 10, paddingBottom: 6,
+        <div className="flex items-center justify-between" style={{
+          marginBottom: '0.625rem', paddingBottom: '0.375rem',
           borderBottom: `1px solid ${C.border}`,
         }}>
           <div style={{
@@ -533,15 +527,15 @@ export function ForcePanel({
           </div>
           <button
             onClick={onAdd}
-            className="hov-gold-bg"
+            className="hov-gold-bg cursor-pointer"
             style={{
               background: 'var(--hud-accent-10)',
               border: '1px solid var(--hud-accent-border)',
-              borderRadius: 3, padding: '2px 10px',
+              borderRadius: 3, padding: '2px 0.625rem',
               fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL,
               fontWeight: 700, letterSpacing: '0.1em',
-              color: C.gold, cursor: 'pointer',
-              transition: '.15s',
+              color: C.gold,
+              transition: 'var(--ease-default)',
             }}
           >
             + Add
@@ -549,24 +543,24 @@ export function ForcePanel({
         </div>
 
         {forcePowers.length > 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {forcePowers.map(fp => (
-              <ForcePowerCard
-                key={fp.powerKey}
-                fp={fp}
-                xpAvailable={xpAvailable}
-                onPurchase={onPurchasePower
-                  ? (abilityKey, row, col, cost) => onPurchasePower(abilityKey, row, col, cost, fp.powerKey)
-                  : undefined
-                }
-              />
+          <div className="flex flex-col" style={{ gap: 'var(--space-2)' }}>
+            {forcePowers.map((fp, idx) => (
+              <div key={fp.powerKey} data-stagger={idx}>
+                <div className="panel-row-enter">
+                  <ForcePowerCard
+                    fp={fp}
+                    xpAvailable={xpAvailable}
+                    onPurchase={onPurchasePower
+                      ? (abilityKey, row, col, cost) => onPurchasePower(abilityKey, row, col, cost, fp.powerKey)
+                      : undefined
+                    }
+                  />
+                </div>
+              </div>
             ))}
           </div>
         ) : (
-          <div style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center',
-            justifyContent: 'center', gap: 12, padding: '28px 0',
-          }}>
+          <div className="flex flex-col items-center justify-center" style={{ gap: 'var(--space-3)', padding: '1.75rem 0' }}>
             <div style={{
               fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: C.textFaint,
             }}>
@@ -574,15 +568,16 @@ export function ForcePanel({
             </div>
             <button
               onClick={onAdd}
+              className="cursor-pointer"
               style={{
                 background: FORCE_BLUE_GLOW,
                 border: `1px solid ${FORCE_BLUE_DIM}`,
-                borderRadius: 4, padding: '8px 20px',
+                borderRadius: 'var(--radius-md)', padding: 'var(--space-2) var(--space-5)',
                 fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL,
                 fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase',
-                color: FORCE_BLUE, cursor: 'pointer',
+                color: FORCE_BLUE,
               }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(126,200,227,0.24)' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'color-mix(in srgb, var(--die-force) 24%, transparent)' }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = FORCE_BLUE_GLOW }}
             >
               Browse Force Powers
