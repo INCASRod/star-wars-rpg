@@ -1,3 +1,28 @@
+/*
+ * tokens.ts — HOLOCRON typed token references
+ *
+ * This file is a thin re-export layer.
+ * CSS custom properties in src/styles/holo-tokens.css
+ * and src/styles/state-tokens.css are the source of
+ * truth for all values.
+ *
+ * This file holds typed JS references to those CSS vars
+ * for use in inline styles and canvas/Pixi contexts.
+ *
+ * RULE: never hardcode a hex value here unless it is
+ * in a canvas-only export (see sealed exports below).
+ *
+ * SEALED — never modify without explicit instruction:
+ *   DICE_COLOR   — hardcoded hex, Pixi canvas context
+ *   SYM_COLOR    — hardcoded hex, Pixi canvas context
+ *   CHAR_COLOR   — hardcoded hex, Pixi canvas context
+ *   ASSET_COLOR  — hardcoded hex, Pixi canvas context
+ *   FONT_ICONS   — sw-rpg-icons font var, never reassign
+ *   DICE_META    — die metadata, not a visual token
+ *   SYM          — symbol metadata, not a visual token
+ *   EMPTY_POOL   — zero-filled pool, not a visual token
+ */
+
 // ═══════════════════════════════════════════════════════════════
 // HOLOCRON — Single Source of Truth: Design Tokens
 //
@@ -80,6 +105,11 @@ export const Z = {
   toast:      800,
   dialog:     820,
   tooltip:    9999,
+  // ── HUD high-stack layer (values from holo-tokens.css) ──────
+  hudDrawer:  8999,   // --z-hud-drawer  — behind full overlay
+  hudOverlay: 9000,   // --z-hud-overlay — full-screen overlays
+  hudCombat:  9001,   // --z-hud-combat  — combat transition layer
+  hudSupreme: 9999,   // --z-hud-supreme — tooltip on overlay
 } as const
 
 // ── Shadows ──────────────────────────────────────────────────────
