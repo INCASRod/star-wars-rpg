@@ -320,7 +320,7 @@
 
 .hud-card:hover {
   box-shadow:
-    0 2px 16px var(--hud-accent-10),
+    0 2px 16px color-mix(in srgb, var(--hud-accent) 10%, transparent),
     0 0 1.25rem color-mix(in srgb, var(--hud-accent) 12%, transparent),
     0 0.25rem 0.75rem rgba(0, 0, 0, 0.4);
 }

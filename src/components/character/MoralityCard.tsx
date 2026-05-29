@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { HudCard } from '../ui/HudCard'
@@ -16,7 +16,7 @@ interface MoralityCardProps {
 
 const gmBtnStyle: React.CSSProperties = {
   width: 20, height: 20, fontSize: FS.caption, fontWeight: 700,
-  background: 'var(--hud-accent-10)', border: `1px solid var(--hud-accent)`,
+  background: 'color-mix(in srgb, var(--hud-accent) 10%, transparent)', border: `1px solid var(--hud-accent)`,
   color: 'var(--hud-accent)', cursor: 'pointer', display: 'flex',
   alignItems: 'center', justifyContent: 'center', padding: 0,
   lineHeight: 1, flexShrink: 0,

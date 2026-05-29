@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useRef, useState } from 'react'
 import { panelBase } from './design-tokens'
@@ -110,7 +110,7 @@ export function CharacterAvatar({
           style={{
             width: 72,
             height: 96,
-            border: `1.5px solid ${hovered && canEdit ? 'var(--hud-accent-60)' : 'var(--hud-accent-border)'}`,
+            border: `1.5px solid ${hovered && canEdit ? 'color-mix(in srgb, var(--hud-accent) 60%, transparent)' : 'var(--hud-accent-border)'}`,
             borderRadius: RADIUS.md,
             overflow: 'hidden',
             position: 'relative',
@@ -132,7 +132,7 @@ export function CharacterAvatar({
           ) : (
             <div style={{
               width: '100%', height: '100%',
-              background: hovered ? 'var(--hud-accent-10)' : 'rgba(224,58,30,0.06)',
+              background: hovered ? 'color-mix(in srgb, var(--hud-accent) 10%, transparent)' : 'rgba(224,58,30,0.06)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontFamily: FONT_DISPLAY, fontSize: FS.h4, fontWeight: 700,
               color: HUD.gold, letterSpacing: '0.1em',
@@ -161,8 +161,8 @@ export function CharacterAvatar({
                 onClick={e => { e.stopPropagation(); fileRef.current?.click() }}
                 className="hov-gold-bg"
                 style={{
-                  background: 'var(--hud-accent-20)',
-                  border: `1px solid var(--hud-accent-60)`,
+                  background: 'color-mix(in srgb, var(--hud-accent) 20%, transparent)',
+                  border: `1px solid color-mix(in srgb, var(--hud-accent) 60%, transparent)`,
                   borderRadius: RADIUS.sm, padding: '4px 0',
                   fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
                   letterSpacing: '0.1em', textTransform: 'uppercase',

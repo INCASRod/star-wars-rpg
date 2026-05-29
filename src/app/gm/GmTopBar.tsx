@@ -185,7 +185,7 @@ function TopBarButton({
         letterSpacing:   '0.12em',
         textTransform:   'uppercase',
         color:           disabled ? 'var(--hud-text-faint)' : color,
-        background:      active ? `${color}18` : 'var(--hud-surface-lo)',
+        background:      active ? `color-mix(in srgb, ${color} 9%, transparent)` : 'var(--hud-surface-lo)',
         border:          `1px solid ${disabled ? 'var(--hud-border)' : active ? color : 'var(--hud-border-hi)'}`,
         borderRadius:    RADIUS.md,
         padding:         '0.3125rem 0.875rem',

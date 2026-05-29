@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { HUD, FS, SP, RADIUS, EASE, FONT_DISPLAY, FONT_BODY } from '@/lib/tokens'
 import { HudCard } from '../ui/HudCard'
@@ -26,7 +26,7 @@ const CHARS: { key: string; label: string }[] = [
 
 const gmBtnStyle: React.CSSProperties = {
   width: 20, height: 20, fontSize: FS.caption, fontWeight: 700,
-  background: 'var(--hud-accent-10)', border: `1px solid var(--hud-gold)`,
+  background: 'color-mix(in srgb, var(--hud-accent) 10%, transparent)', border: `1px solid var(--hud-gold)`,
   color: 'var(--hud-accent)', cursor: 'pointer', display: 'flex',
   alignItems: 'center', justifyContent: 'center', padding: 0,
   lineHeight: 1, flexShrink: 0,

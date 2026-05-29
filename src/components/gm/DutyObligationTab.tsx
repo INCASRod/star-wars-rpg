@@ -28,7 +28,7 @@ function sectionHeader(label: string, color: string) {
     <div style={{
       fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
       letterSpacing: '0.2em', textTransform: 'uppercase',
-      color, borderBottom: `1px solid ${color}22`,
+      color, borderBottom: `1px solid color-mix(in srgb, ${color} 13%, transparent)`,
       paddingBottom: '0.375rem', marginBottom: '0.75rem',
     }}>
       {label}
@@ -81,7 +81,7 @@ function InlineValue({ value, characterId, field, color, onUpdated }: InlineValu
         style={{
           width: '3.25rem', textAlign: 'center',
           background: 'rgba(0,0,0,0.5)',
-          border: `1px solid ${color}60`,
+          border: `1px solid color-mix(in srgb, ${color} 38%, transparent)`,
           borderRadius: RADIUS.sm, color,
           fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700,
           padding: '0.125rem 0.25rem', outline: 'none',
@@ -96,7 +96,7 @@ function InlineValue({ value, characterId, field, color, onUpdated }: InlineValu
       onClick={() => { setLocal(String(value)); setEditing(true) }}
       style={{
         fontFamily: FONT_BODY, fontSize: FS.h4, fontWeight: 700, color,
-        cursor: 'pointer', borderBottom: `1px dashed ${color}40`,
+        cursor: 'pointer', borderBottom: `1px dashed color-mix(in srgb, ${color} 25%, transparent)`,
         opacity: busy ? 0.5 : 1,
       }}
     >

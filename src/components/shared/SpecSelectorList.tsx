@@ -222,8 +222,8 @@ function SpecDetailPanel({ spec, cost, affordable, onBuy, onClose, refTalentMap 
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 5, flexWrap: 'wrap' }}>
               <span style={{
                 fontFamily: FR, fontSize: 'clamp(0.65rem, 0.9vw, 0.72rem)',
-                color: HUD.gold, background: `${HUD.gold}12`,
-                border: `1px solid ${HUD.gold}30`,
+                color: HUD.gold, background: `color-mix(in srgb, ${HUD.gold} 7%, transparent)`,
+                border: `1px solid color-mix(in srgb, ${HUD.gold} 19%, transparent)`,
                 borderRadius: 3, padding: '1px 7px',
                 textTransform: 'uppercase', letterSpacing: '0.1em',
               }}>
@@ -368,7 +368,7 @@ function SpecDetailPanel({ spec, cost, affordable, onBuy, onClose, refTalentMap 
               style={{
                 width: '100%',
                 background: 'var(--hud-surface-lo)',
-                border: `1px solid ${HUD.gold}55`,
+                border: `1px solid color-mix(in srgb, ${HUD.gold} 33%, transparent)`,
                 borderRadius: 4, padding: '10px',
                 fontFamily: FR, fontSize: 'clamp(0.8rem, 1.1vw, 0.9rem)',
                 fontWeight: 700, letterSpacing: '0.12em',
@@ -487,7 +487,7 @@ export function SpecSelectorList({
                 justifyContent: 'space-between',
                 padding: '10px 12px',
                 background: isCareer ? 'var(--hud-surface-lo)' : 'transparent',
-                border: `1px solid ${isCareer ? `${HUD.gold}30` : BORDER}`,
+                border: `1px solid ${isCareer ? `color-mix(in srgb, ${HUD.gold} 19%, transparent)` : BORDER}`,
                 borderRadius: 4,
                 cursor: 'pointer',
                 transition: 'border-color 0.15s, background 0.15s',
@@ -495,12 +495,12 @@ export function SpecSelectorList({
               onMouseEnter={e => {
                 const el = e.currentTarget as HTMLElement
                 el.style.background = isCareer ? 'var(--hud-surface-mid)' : 'var(--hud-surface-lo)'
-                el.style.borderColor = isCareer ? `${HUD.gold}55` : `${HUD.gold}25`
+                el.style.borderColor = isCareer ? `color-mix(in srgb, ${HUD.gold} 33%, transparent)` : `color-mix(in srgb, ${HUD.gold} 15%, transparent)`
               }}
               onMouseLeave={e => {
                 const el = e.currentTarget as HTMLElement
                 el.style.background = isCareer ? 'var(--hud-surface-lo)' : 'transparent'
-                el.style.borderColor = isCareer ? `${HUD.gold}30` : BORDER
+                el.style.borderColor = isCareer ? `color-mix(in srgb, ${HUD.gold} 19%, transparent)` : BORDER
               }}
             >
               {/* Left: name + badges */}

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { TalentTree, type TalentTreeNode, type TalentTreeConnection } from '@/components/character/TalentTree'
 import { BuySpecButton } from './BuySpecButton'
@@ -49,7 +49,7 @@ export function HudTalentTreeModal({
             const ref = refSpecMap[cs.specialization_key]
             const isActive = activeSpecKey === cs.specialization_key
             return (
-              <button key={cs.id} onClick={() => setActiveSpecKey(cs.specialization_key)} style={{ background: isActive ? 'var(--hud-accent-10)' : HUD.panel, border: `1px solid ${isActive ? HUD.gold : HUD.borderHi}`, padding: `${SP[2]} ${SP[4]}`, cursor: 'pointer', fontFamily: FONT_DISPLAY, fontSize: FS.caption, fontWeight: isActive ? 700 : 600, letterSpacing: '0.08em', color: isActive ? HUD.gold : HUD.textDim }}>
+              <button key={cs.id} onClick={() => setActiveSpecKey(cs.specialization_key)} style={{ background: isActive ? 'color-mix(in srgb, var(--hud-accent) 10%, transparent)' : HUD.panel, border: `1px solid ${isActive ? HUD.gold : HUD.borderHi}`, padding: `${SP[2]} ${SP[4]}`, cursor: 'pointer', fontFamily: FONT_DISPLAY, fontSize: FS.caption, fontWeight: isActive ? 700 : 600, letterSpacing: '0.08em', color: isActive ? HUD.gold : HUD.textDim }}>
                 {ref?.name || cs.specialization_key}
                 {cs.is_starting && <span style={{ fontSize: FS.overline, color: HUD.textFaint, marginLeft: SP[2] }}>START</span>}
               </button>

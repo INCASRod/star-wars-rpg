@@ -46,7 +46,7 @@ export function TalentQuickReference({ talents }: Props) {
 
   return (
     <div style={{ width: '18.75rem', flexShrink: 0, overflowY: 'auto', padding: '0.875rem' }}>
-      <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${HUD.gold}b3`, marginBottom: '0.625rem' }}>
+      <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: `color-mix(in srgb, ${HUD.gold} 70%, transparent)`, marginBottom: '0.625rem' }}>
         Talent Quick Reference
       </div>
 
@@ -73,7 +73,7 @@ export function TalentQuickReference({ talents }: Props) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3125rem' }}>
             {group.items.map((t, i) => (
               <div key={i} style={{
-                background: group.activation === 'incidental' ? `${HUD.gold}08`
+                background: group.activation === 'incidental' ? `color-mix(in srgb, ${HUD.gold} 3%, transparent)`
                   : group.activation === 'out of turn' ? `${ACT_TEAL}08`
                     : 'var(--hud-surface-lo)',
                 backdropFilter: 'blur(8px)',

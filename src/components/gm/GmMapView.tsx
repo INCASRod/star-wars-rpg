@@ -24,7 +24,7 @@ const TEXT = 'var(--hud-text)'
 const GREEN = 'var(--state-success)'
 const PANEL_BG  = 'var(--hud-panel)'
 const BORDER    = 'var(--hud-border)'
-const BORDER_HI = 'var(--hud-accent-35)'
+const BORDER_HI = 'color-mix(in srgb, var(--hud-accent) 35%, transparent)'
 
 const FS_OVERLINE = 'var(--text-overline)'
 const FS_CAPTION  = 'var(--text-caption)'
@@ -34,7 +34,7 @@ const FS_H4       = 'var(--text-h4)'
 
 const btnTool: React.CSSProperties = {
   background: 'var(--hud-panel)',
-  border: `1px solid var(--hud-accent-35)`,
+  border: `1px solid color-mix(in srgb, var(--hud-accent) 35%, transparent)`,
   color: HUD.gold,
   fontFamily: FONT_BODY,
   fontSize: FS_CAPTION,
@@ -63,7 +63,7 @@ const btnDanger: React.CSSProperties = {
 }
 
 const btnSmall: React.CSSProperties = {
-  background: 'var(--hud-accent-10)',
+  background: 'color-mix(in srgb, var(--hud-accent) 10%, transparent)',
   border: `1px solid var(--hud-border-hi)`,
   color: HUD.gold,
   fontFamily: FONT_BODY,
@@ -95,7 +95,7 @@ const fieldLabel: React.CSSProperties = {
   fontWeight: 700,
   letterSpacing: '0.18em',
   textTransform: 'uppercase',
-  color: 'var(--hud-accent-50)',
+  color: 'color-mix(in srgb, var(--hud-accent) 50%, transparent)',
   marginBottom: '0.25rem',
 }
 
@@ -781,7 +781,7 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
               onClick={() => setLibraryOpen(o => !o)}
               style={{
                 ...btnTool,
-                borderColor: libraryOpen ? 'var(--hud-border-active)' : 'var(--hud-accent-35)',
+                borderColor: libraryOpen ? 'var(--hud-border-active)' : 'color-mix(in srgb, var(--hud-accent) 35%, transparent)',
                 color: libraryOpen ? HUD.gold : DIM,
               }}
             >
@@ -798,7 +798,7 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
           {activeMap && (
             <div style={{ display: 'flex', gap: '0.5rem', pointerEvents: 'all', alignItems: 'center' }}>
               {/* Token scale control */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 0, background: PANEL_BG, border: `1px solid var(--hud-accent-35)`, borderRadius: RADIUS.md }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 0, background: PANEL_BG, border: `1px solid color-mix(in srgb, var(--hud-accent) 35%, transparent)`, borderRadius: RADIUS.md }}>
                 <button
                   onClick={() => adjustTokenScale(-0.25)}
                   disabled={tokenScale <= 0.25}
@@ -824,7 +824,7 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
                 style={{
                   ...btnTool,
                   color: activeMap.is_visible_to_players ? GREEN : DIM,
-                  borderColor: activeMap.is_visible_to_players ? 'rgba(78,200,122,0.45)' : 'var(--hud-accent-35)',
+                  borderColor: activeMap.is_visible_to_players ? 'rgba(78,200,122,0.45)' : 'color-mix(in srgb, var(--hud-accent) 35%, transparent)',
                 }}
               >
                 {activeMap.is_visible_to_players ? '◉ Visible' : '◯ Hidden'}
@@ -836,7 +836,7 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
                 style={{
                   ...btnTool,
                   color: tokenDrawerOpen ? 'var(--hud-gold)' : DIM,
-                  borderColor: tokenDrawerOpen ? 'var(--hud-border-active)' : 'var(--hud-accent-35)',
+                  borderColor: tokenDrawerOpen ? 'var(--hud-border-active)' : 'color-mix(in srgb, var(--hud-accent) 35%, transparent)',
                   background: tokenDrawerOpen ? 'rgba(150,168,180,0.1)' : PANEL_BG,
                 }}
               >

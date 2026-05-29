@@ -102,7 +102,7 @@ export function CombatLog({ campaignId, encounterId, isDm, variant = 'embedded' 
       }}>
         <div style={{
           fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 600,
-          letterSpacing: '0.25em', textTransform: 'uppercase', color: `${HUD.gold}b3`,
+          letterSpacing: '0.25em', textTransform: 'uppercase', color: `color-mix(in srgb, ${HUD.gold} 70%, transparent)`,
         }}>
           Combat Log
         </div>
@@ -121,7 +121,7 @@ export function CombatLog({ campaignId, encounterId, isDm, variant = 'embedded' 
           <button
             onClick={scrollToBottom}
             style={{
-              background: `${HUD.gold}15`, border: `1px solid ${HUD.gold}50`,
+              background: `color-mix(in srgb, ${HUD.gold} 8%, transparent)`, border: `1px solid color-mix(in srgb, ${HUD.gold} 31%, transparent)`,
               borderRadius: 3, padding: '1px 6px', cursor: 'pointer',
               fontFamily: FM, fontSize: FS_OVERLINE, color: HUD.gold,
               marginLeft: isDm ? 0 : 'auto',
@@ -176,7 +176,7 @@ export function CombatLog({ campaignId, encounterId, isDm, variant = 'embedded' 
                   <span style={{ color: TEXT_MUTED, marginRight: 4 }}>[{entry.roll_type}]</span>
                 )}
                 {entry.weapon_name && (
-                  <span style={{ color: isPcAttack ? HUD.gold : `${HUD.gold}90`, fontWeight: isPcAttack ? 700 : 400, marginRight: 4 }}>
+                  <span style={{ color: isPcAttack ? HUD.gold : `color-mix(in srgb, ${HUD.gold} 57%, transparent)`, fontWeight: isPcAttack ? 700 : 400, marginRight: 4 }}>
                     {entry.weapon_name}:
                   </span>
                 )}

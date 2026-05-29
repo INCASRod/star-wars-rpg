@@ -220,7 +220,7 @@ export function InitiativeRollModal({ character, skills, initiativeType, campaig
               className="hov-gold-bg w-full cursor-pointer"
               style={{
                 padding: '0.625rem 0',
-                background: `${C.gold}18`, border: `1px solid ${C.borderHi}`,
+                background: `color-mix(in srgb, ${C.gold} 9%, transparent)`, border: `1px solid ${C.borderHi}`,
                 borderRadius: 4,
                 fontFamily: FONT_CINZEL, fontSize: FS_LABEL, fontWeight: 700,
                 letterSpacing: '0.2em', color: C.gold, textTransform: 'uppercase',

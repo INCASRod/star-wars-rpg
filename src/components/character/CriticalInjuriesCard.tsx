@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { HudCard } from '../ui/HudCard'
@@ -90,7 +90,7 @@ export function CriticalInjuriesCard({ injuries, animClass = 'ar d5', onRollCrit
           onClick={onRollCrit}
           style={{
             width: '100%', marginTop: SP[1],
-            background: 'var(--hud-accent-10)',
+            background: 'color-mix(in srgb, var(--hud-accent) 10%, transparent)',
             border: '1px solid var(--red)',
             padding: SP[1],
             cursor: 'pointer',

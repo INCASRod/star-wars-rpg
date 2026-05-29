@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { Tooltip, TipLabel, TipBody } from '@/components/ui/Tooltip'
 import { RichText } from '@/components/ui/RichText'
@@ -34,8 +34,8 @@ export function QualityBadge({ quality, refQualityMap, variant = 'desktop' }: Qu
         fontFamily:   FONT_BODY,
         fontSize:     'clamp(0.55rem, 2vw, 0.65rem)',
         color:        'var(--hud-accent)',
-        background:   'var(--hud-accent-10)',
-        border:       '1px solid var(--hud-accent-20)',
+        background:   'color-mix(in srgb, var(--hud-accent) 10%, transparent)',
+        border:       '1px solid color-mix(in srgb, var(--hud-accent) 20%, transparent)',
         borderRadius: RADIUS.md,
         padding:      '1px 6px',
         cursor:       description ? 'help' : 'default',

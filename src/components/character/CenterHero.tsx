@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useRef, useState } from 'react'
 import { HUD, FS, FONT_BODY, FONT_DISPLAY, Z } from '@/lib/tokens'
@@ -36,8 +36,8 @@ export function CenterHero({ name, subtitle, portraitUrl, credits, xpTotal, xpAv
         transform: 'translateX(-50%)',
         width: 'clamp(280px, 24vw, 600px)',
         height: 'clamp(60px, 6vw, 150px)',
-        // --bs-red-glow-s → var(--hud-accent-45)
-        background: 'radial-gradient(ellipse, var(--hud-accent-45) 0%, transparent 70%)',
+        // --bs-red-glow-s → color-mix(in srgb, var(--hud-accent) 45%, transparent)
+        background: 'radial-gradient(ellipse, color-mix(in srgb, var(--hud-accent) 45%, transparent) 0%, transparent 70%)',
         zIndex: Z.base,
         animation: 'glowPulse 3s ease-in-out infinite',
       }} />
@@ -194,8 +194,8 @@ export function CenterHero({ name, subtitle, portraitUrl, credits, xpTotal, xpAv
             fontSize: 'var(--font-hero)',
             letterSpacing: '0.4rem',
             color: HUD.text,
-            // --bs-red-glow-s → var(--hud-accent-45)
-            textShadow: '0 0 40px var(--hud-accent-45)',
+            // --bs-red-glow-s → color-mix(in srgb, var(--hud-accent) 45%, transparent)
+            textShadow: '0 0 40px color-mix(in srgb, var(--hud-accent) 45%, transparent)',
           }}>
             {name}
           </h1>

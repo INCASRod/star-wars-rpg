@@ -266,7 +266,7 @@ export function InitiativeSetupModal({ campaignId, characters, roster, sendToCha
 
   const thStyle: React.CSSProperties = {
     fontFamily: FC, fontSize: FS_CAPTION, letterSpacing: '0.2em',
-    textTransform: 'uppercase', color: `${HUD.gold}b3`,
+    textTransform: 'uppercase', color: `color-mix(in srgb, ${HUD.gold} 70%, transparent)`,
     padding: '6px 8px', borderBottom: `1px solid ${BORDER}`,
     textAlign: 'left',
   }
@@ -277,7 +277,7 @@ export function InitiativeSetupModal({ campaignId, characters, roster, sendToCha
         {/* Header */}
         <div style={{ padding: '16px 20px', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <div style={{ fontFamily: FC, fontSize: FS_CAPTION, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${HUD.gold}b3`, marginBottom: 4 }}>
+            <div style={{ fontFamily: FC, fontSize: FS_CAPTION, letterSpacing: '0.25em', textTransform: 'uppercase', color: `color-mix(in srgb, ${HUD.gold} 70%, transparent)`, marginBottom: 4 }}>
               Initiative Setup
             </div>
             <div style={{ fontFamily: FC, fontSize: FS_H3, fontWeight: 700, color: HUD.gold }}>
@@ -295,7 +295,7 @@ export function InitiativeSetupModal({ campaignId, characters, roster, sendToCha
 
           {/* Step 1: Combat type toggle */}
           <div>
-            <div style={{ fontFamily: FC, fontSize: FS_CAPTION, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${HUD.gold}b3`, marginBottom: 10 }}>
+            <div style={{ fontFamily: FC, fontSize: FS_CAPTION, letterSpacing: '0.25em', textTransform: 'uppercase', color: `color-mix(in srgb, ${HUD.gold} 70%, transparent)`, marginBottom: 10 }}>
               Step 1 — Initiative Skill
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', border: `1px solid ${BORDER_MD}`, borderRadius: 4, overflow: 'hidden' }}>
@@ -327,7 +327,7 @@ export function InitiativeSetupModal({ campaignId, characters, roster, sendToCha
           {characters.length > 0 && (
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <div style={{ fontFamily: FC, fontSize: FS_CAPTION, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${HUD.gold}b3` }}>
+                <div style={{ fontFamily: FC, fontSize: FS_CAPTION, letterSpacing: '0.25em', textTransform: 'uppercase', color: `color-mix(in srgb, ${HUD.gold} 70%, transparent)` }}>
                   Step 2 — Player Character Rolls
                 </div>
                 <button
@@ -393,7 +393,7 @@ export function InitiativeSetupModal({ campaignId, characters, roster, sendToCha
           {/* Step 3: NPC / Adversary Rolls */}
           {roster.length > 0 && (
             <div>
-              <div style={{ fontFamily: FC, fontSize: FS_CAPTION, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${HUD.gold}b3`, marginBottom: 10 }}>
+              <div style={{ fontFamily: FC, fontSize: FS_CAPTION, letterSpacing: '0.25em', textTransform: 'uppercase', color: `color-mix(in srgb, ${HUD.gold} 70%, transparent)`, marginBottom: 10 }}>
                 Step 3 — Adversary Initiative (GM Rolls)
               </div>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -463,7 +463,7 @@ export function InitiativeSetupModal({ campaignId, characters, roster, sendToCha
 
           {/* Step 4: Initiative Order Preview */}
           <div>
-            <div style={{ fontFamily: FC, fontSize: FS_CAPTION, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${HUD.gold}b3`, marginBottom: 10 }}>
+            <div style={{ fontFamily: FC, fontSize: FS_CAPTION, letterSpacing: '0.25em', textTransform: 'uppercase', color: `color-mix(in srgb, ${HUD.gold} 70%, transparent)`, marginBottom: 10 }}>
               {roster.length > 0 ? 'Step 4' : 'Step 3'} — Initiative Order Preview
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>

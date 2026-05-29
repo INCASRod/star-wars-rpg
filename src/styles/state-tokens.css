@@ -234,9 +234,10 @@
   /* Steel blue accent */
   --hud-accent:        #6B8FA8;
   --hud-accent-hi:     #8AAFC8;
+  --hud-accent-border: rgba(90, 120, 155, 0.30);
 
   /* Gold — same as other themes, used for destiny/portraits */
-  --hud-gold:          #C8A24E;
+  --hud-gold:          #8AAFC8;
 
   /* Vitals strip */
   --hud-vital-bg:       #050709;

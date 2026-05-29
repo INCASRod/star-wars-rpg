@@ -623,7 +623,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
                             onClick={() => setAssetNameDraft(itemName)}
                             style={{
                               width: '100%', textAlign: 'left',
-                              background: isSelected ? `${C.gold}18` : 'transparent',
+                              background: isSelected ? `color-mix(in srgb, ${C.gold} 9%, transparent)` : 'transparent',
                               border: 'none',
                               borderBottom: i < libraryItems.length - 1 ? `1px solid ${C.border}` : 'none',
                               padding: '8px 12px', cursor: 'pointer',
@@ -718,13 +718,13 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
                 if (e.key === 'Escape') setEditingCampaignName(false)
               }}
               style={{
-                fontFamily: FONT_MONO, fontSize: FS_CAPTION, color: `${C.gold}66`,
+                fontFamily: FONT_MONO, fontSize: FS_CAPTION, color: `color-mix(in srgb, ${C.gold} 40%, transparent)`,
                 background: 'transparent', border: 'none', borderBottom: `1px solid ${C.border}`,
                 outline: 'none', textAlign: 'center', letterSpacing: '0.14em', width: '16em',
               }}
             />
           ) : (
-            <span style={{ fontFamily: FONT_MONO, fontSize: FS_CAPTION, color: `${C.gold}55`, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
+            <span style={{ fontFamily: FONT_MONO, fontSize: FS_CAPTION, color: `color-mix(in srgb, ${C.gold} 33%, transparent)`, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
               {campaign.name}
             </span>
           )}
@@ -732,7 +732,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
             <button
               onClick={() => { setCampaignNameDraft(campaign.name); setEditingCampaignName(true) }}
               title="Edit campaign name"
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: `${C.gold}44`, fontSize: FS_OVERLINE, padding: '0 2px', lineHeight: 1 }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: `color-mix(in srgb, ${C.gold} 27%, transparent)`, fontSize: FS_OVERLINE, padding: '0 2px', lineHeight: 1 }}
             >✎</button>
           )}
         </div>
@@ -785,7 +785,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
             </button>
           ) : (
             <>
-              <span style={{ fontFamily: FONT_MONO, fontSize: FS_OVERLINE, color: `${C.gold}99`, letterSpacing: '0.1em' }}>
+              <span style={{ fontFamily: FONT_MONO, fontSize: FS_OVERLINE, color: `color-mix(in srgb, ${C.gold} 60%, transparent)`, letterSpacing: '0.1em' }}>
                 ★ GM UNLOCKED
               </span>
               <button
@@ -794,10 +794,10 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
                 style={{
                   padding: '2px 8px',
                   background: 'transparent',
-                  border: `1px solid ${campaign.group_name_editable ? `${C.gold}55` : C.border}`,
+                  border: `1px solid ${campaign.group_name_editable ? `color-mix(in srgb, ${C.gold} 33%, transparent)` : C.border}`,
                   borderRadius: 3,
                   cursor: 'pointer',
-                  color: campaign.group_name_editable ? `${C.gold}99` : C.textDim,
+                  color: campaign.group_name_editable ? `color-mix(in srgb, ${C.gold} 60%, transparent)` : C.textDim,
                   fontFamily: FONT_MONO, fontSize: FS_OVERLINE, letterSpacing: '0.08em',
                 }}
               >
@@ -809,7 +809,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
 
         {/* ── Tier 3: Base of Operations block ─────────────────────────────── */}
         <div style={{ textAlign: 'center', marginBottom: 6 }}>
-          <span style={{ fontFamily: FONT_MONO, fontSize: FS_CAPTION, color: `${C.gold}55`, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
+          <span style={{ fontFamily: FONT_MONO, fontSize: FS_CAPTION, color: `color-mix(in srgb, ${C.gold} 33%, transparent)`, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
             Base of Operations
           </span>
         </div>
@@ -923,7 +923,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
                             display: 'inline-flex', alignItems: 'center', gap: 3,
                             padding: '1px 6px', borderRadius: 10,
                             background: 'var(--hud-surface-lo)',
-                            border: `1px solid ${C.gold}55`,
+                            border: `1px solid color-mix(in srgb, ${C.gold} 33%, transparent)`,
                             fontFamily: FONT_MONO, fontSize: FS_OVERLINE,
                             color: C.gold, letterSpacing: '0.06em', whiteSpace: 'nowrap',
                           }}>
@@ -1020,7 +1020,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
                 ? `linear-gradient(90deg, ${C.gold}, #F5D77A)`
                 : `linear-gradient(90deg, rgba(224,58,30,0.6), rgba(224,58,30,0.9))`,
               transition: 'width 0.4s ease',
-              boxShadow: milestone ? `0 0 8px ${C.gold}88` : undefined,
+              boxShadow: milestone ? `0 0 8px color-mix(in srgb, ${C.gold} 53%, transparent)` : undefined,
             }} />
           </div>
           {milestone && (
@@ -1078,7 +1078,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
                     ? `radial-gradient(circle at 35% 35%, #F5D77A, ${C.gold})`
                     : 'var(--hud-surface-mid)',
                   border: `1px solid ${i < rank ? C.gold : C.border}`,
-                  boxShadow: i < rank ? `0 0 6px ${C.gold}66` : undefined,
+                  boxShadow: i < rank ? `0 0 6px color-mix(in srgb, ${C.gold} 40%, transparent)` : undefined,
                   transition: 'all 0.2s',
                 }}
               />
@@ -1481,7 +1481,7 @@ function AssetViewModal({ asset, adversary, vehicle, loading, onClose }: {
                     fontFamily: FONT_MONO, fontSize: FS_CAPTION, fontWeight: 700,
                     color: adv.type === 'nemesis' ? C.gold : adv.type === 'rival' ? _VM_BLUE : _VM_DIM,
                     border: `1px solid currentColor`, borderRadius: 3, padding: '1px 7px', letterSpacing: '0.1em',
-                    background: adv.type === 'nemesis' ? `${C.gold}18` : adv.type === 'rival' ? `${_VM_BLUE}18` : `${_VM_DIM}18`,
+                    background: adv.type === 'nemesis' ? `color-mix(in srgb, ${C.gold} 9%, transparent)` : adv.type === 'rival' ? `${_VM_BLUE}18` : `color-mix(in srgb, ${_VM_DIM} 9%, transparent)`,
                   }}>
                     {adv.type.toUpperCase()}
                   </span>
@@ -1599,7 +1599,7 @@ function AssetViewModal({ asset, adversary, vehicle, loading, onClose }: {
                     fontFamily: FONT_MONO, fontSize: FS_CAPTION, fontWeight: 700,
                     color: v.isStarship ? _VM_BLUE : C.gold,
                     border: `1px solid currentColor`, borderRadius: 3, padding: '1px 7px', letterSpacing: '0.1em',
-                    background: v.isStarship ? `${_VM_BLUE}18` : `${C.gold}18`,
+                    background: v.isStarship ? `${_VM_BLUE}18` : `color-mix(in srgb, ${C.gold} 9%, transparent)`,
                   }}>
                     {v.isStarship ? 'STARSHIP' : 'GROUND VEHICLE'}
                   </span>

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useMemo } from 'react'
 import { createPortal } from 'react-dom'
@@ -318,7 +318,7 @@ export function StagingMapPanel({ campaignId, allMaps, onDeleteMap }: StagingMap
               onClick={() => setNewPlanetOpen(true)}
               style={{
                 flex: 1, padding: `6px 0`, borderRadius: RADIUS.md,
-                background: 'var(--hud-accent-10)', border: `1px solid var(--hud-accent-border)`,
+                background: 'color-mix(in srgb, var(--hud-accent) 10%, transparent)', border: `1px solid var(--hud-accent-border)`,
                 color: BLUE, fontFamily: FR, fontSize: FS.caption, fontWeight: 700,
                 letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer',
               }}

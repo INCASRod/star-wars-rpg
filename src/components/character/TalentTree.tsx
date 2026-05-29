@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useRef } from 'react'
 import { RichText } from '@/components/ui/RichText'
@@ -21,7 +21,7 @@ const BORDER    = HUD.border
 const PANEL_BG  = 'var(--hud-surface-lo)'
 const GOLD_BR   = HUD.gold
 // GOLD_DIM: dimmed accent at ~45% opacity — no HUD named property, use CSS var
-const GOLD_DIM  = 'var(--hud-accent-45)'
+const GOLD_DIM  = 'color-mix(in srgb, var(--hud-accent) 45%, transparent)'
 
 // Activation type colours — pre-approved hex exceptions: no CSS vars exist for
 // these specific asset/state colours (BLUE, GREEN, RED, ORANGE). Kept as-is per
@@ -147,11 +147,9 @@ function NodeCard({
           flexDirection: 'column',
           gap: 4,
           overflow: 'hidden',
-          // Force identity accent colours: rgba(224,58,30,*) — pre-approved,
-          // these power the purchased-state glow and are the tree's visual identity.
-          background: 'rgba(224,58,30,0.10)',
-          border: '1.5px solid rgba(224,58,30,0.55)',
-          boxShadow: '0 0 14px rgba(224,58,30,0.12), inset 0 1px 0 rgba(224,58,30,0.18)',
+          background: 'color-mix(in srgb, var(--hud-accent) 10%, transparent)',
+          border: '1.5px solid color-mix(in srgb, var(--hud-accent) 55%, transparent)',
+          boxShadow: '0 0 14px color-mix(in srgb, var(--hud-accent) 12%, transparent), inset 0 1px 0 color-mix(in srgb, var(--hud-accent) 18%, transparent)',
         }}
       >
         {/* Top-right owned badge */}
@@ -217,8 +215,7 @@ function NodeCard({
                   width: 6,
                   height: 6,
                   borderRadius: RADIUS.full,
-                  // rgba(224,58,30,0.2) — pre-approved force identity accent tint
-                  background: i === 0 ? HUD.gold : 'rgba(224,58,30,0.2)',
+                  background: i === 0 ? HUD.gold : 'color-mix(in srgb, var(--hud-accent) 20%, transparent)',
                   border: `1px solid ${HUD.gold}`,
                   boxShadow: i === 0 ? `0 0 4px ${HUD.gold}` : 'none',
                 }}
@@ -308,9 +305,8 @@ function NodeCard({
           fontWeight: 600,
           gap: 4,
           overflow: 'hidden',
-          // Dynamic hover-state colours — rgba(224,58,30,*) force identity, pre-approved
-          background: hovered ? 'rgba(224,58,30,0.07)' : 'rgba(224,58,30,0.02)',
-          border: `1.5px solid ${hovered ? 'rgba(224,58,30,0.5)' : 'rgba(224,58,30,0.22)'}`,
+          background: hovered ? 'color-mix(in srgb, var(--hud-accent) 7%, transparent)' : 'color-mix(in srgb, var(--hud-accent) 2%, transparent)',
+          border: `1.5px solid ${hovered ? 'color-mix(in srgb, var(--hud-accent) 50%, transparent)' : 'color-mix(in srgb, var(--hud-accent) 22%, transparent)'}`,
           cursor: 'pointer',
           transition: EASE.default,
         }}
@@ -400,9 +396,8 @@ function NodeCard({
         flexDirection: 'column',
         gap: 4,
         overflow: 'hidden',
-        // Dynamic hover-state colours — rgba(224,58,30,*) force identity, pre-approved
-        background: hovered ? 'rgba(224,58,30,0.06)' : 'rgba(224,58,30,0.01)',
-        border: hovered ? '1px dashed rgba(224,58,30,0.22)' : '1px dashed rgba(224,58,30,0.12)',
+        background: hovered ? 'color-mix(in srgb, var(--hud-accent) 6%, transparent)' : 'color-mix(in srgb, var(--hud-accent) 1%, transparent)',
+        border: hovered ? '1px dashed color-mix(in srgb, var(--hud-accent) 22%, transparent)' : '1px dashed color-mix(in srgb, var(--hud-accent) 12%, transparent)',
         opacity: hovered ? 0.82 : 0.42,
         cursor: 'pointer',
         transition: EASE.default,
@@ -482,7 +477,7 @@ function PurchasePopover({
       maxWidth={320}
       zIndex={500}
       backdrop="rgba(0,0,0,0.4)"
-      borderColor="rgba(224,58,30,0.5)"
+      borderColor="color-mix(in srgb, var(--hud-accent) 50%, transparent)"
       shadow="0 8px 32px rgba(0,0,0,0.7)"
       panelBackground="var(--hud-surface-hi)"
     >
@@ -567,9 +562,8 @@ function PurchasePopover({
             onClick={canAfford ? onConfirm : undefined}
             disabled={!canAfford}
             style={{
-              // rgba(224,58,30,*) — force identity accent, pre-approved
-              background: 'rgba(224,58,30,0.15)',
-              border: '1px solid rgba(224,58,30,0.5)',
+              background: 'color-mix(in srgb, var(--hud-accent) 15%, transparent)',
+              border: '1px solid color-mix(in srgb, var(--hud-accent) 50%, transparent)',
               borderRadius: RADIUS.sm,
               fontFamily: FR,
               fontSize: FS.label,
@@ -719,8 +713,7 @@ function ConnectionLines({
         const bothPurchased = !!(fromNode?.purchased && toNode?.purchased)
         const onePurchased = !!(fromNode?.purchased || toNode?.purchased)
 
-        // rgba(224,58,30,*) — force identity accent strokes, pre-approved
-        const stroke = bothPurchased ? 'rgba(224,58,30,0.7)' : onePurchased ? 'rgba(224,58,30,0.35)' : 'rgba(224,58,30,0.15)'
+        const stroke = bothPurchased ? 'color-mix(in srgb, var(--hud-accent) 70%, transparent)' : onePurchased ? 'color-mix(in srgb, var(--hud-accent) 35%, transparent)' : 'color-mix(in srgb, var(--hud-accent) 15%, transparent)'
         const strokeWidth = bothPurchased ? 2 : 1.5
         const filter = bothPurchased ? 'url(#glow-line)' : undefined
 
@@ -886,9 +879,8 @@ export function TalentTree({
               display: 'inline-block',
               width: 8,
               height: 8,
-              // rgba(224,58,30,*) — force identity tint, pre-approved
-              background: 'rgba(224,58,30,0.15)',
-              border: '1px dashed rgba(224,58,30,0.3)',
+              background: 'color-mix(in srgb, var(--hud-accent) 15%, transparent)',
+              border: '1px dashed color-mix(in srgb, var(--hud-accent) 30%, transparent)',
               opacity: 0.5,
             }}
           />

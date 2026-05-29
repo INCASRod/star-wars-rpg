@@ -96,7 +96,7 @@ function TypeBadge({ type }: { type: string }) {
       fontFamily: FONT_BODY, fontSize: FS_CAPTION, fontWeight: 700, flexShrink: 0,
       color, border: `1px solid ${color}`, borderRadius: 2,
       padding: '1px 6px', letterSpacing: '0.08em',
-      background: `${color}18`,
+      background: `color-mix(in srgb, ${color} 9%, transparent)`,
     }}>
       {type.toUpperCase()}
     </span>

@@ -71,8 +71,8 @@ function ActivationBadge({ activation }: { activation: string }) {
       textTransform: 'uppercase',
       letterSpacing: '0.06em',
       color,
-      background: `${color}18`,
-      border: `1px solid ${color}40`,
+      background: `color-mix(in srgb, ${color} 9%, transparent)`,
+      border: `1px solid color-mix(in srgb, ${color} 25%, transparent)`,
       borderRadius: RADIUS.md,
       padding: '0.125rem 0.375rem',
       flexShrink: 0,
@@ -578,7 +578,7 @@ const btnSecondary: React.CSSProperties = {
 
 function actionBtn(color: string): React.CSSProperties {
   return {
-    background: `${color}14`, border: `1px solid ${color}40`,
+    background: `color-mix(in srgb, ${color} 8%, transparent)`, border: `1px solid color-mix(in srgb, ${color} 25%, transparent)`,
     color, fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
     letterSpacing: '0.08em', textTransform: 'uppercase',
     padding: '0.25rem 0.625rem', borderRadius: RADIUS.sm, cursor: 'pointer',

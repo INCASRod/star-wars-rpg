@@ -31,7 +31,7 @@ function TypeBadge({ type }: { type: string }) {
       fontFamily: FONT_MONO, fontSize: FS_CAPTION, fontWeight: 700,
       color, border: `1px solid ${color}`, borderRadius: RADIUS.sm,
       padding: '0.0625rem 0.4375rem', letterSpacing: '0.1em',
-      background: `${color}18`,
+      background: `color-mix(in srgb, ${color} 9%, transparent)`,
     }}>
       {type.toUpperCase()}
     </span>

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import {
@@ -253,8 +253,8 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll, onCombatChe
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                       padding: `0.375rem 0.625rem`, borderRadius: RADIUS.md, cursor: 'pointer', textAlign: 'left',
-                      background: isSelected ? 'var(--hud-accent-20)' : 'var(--hud-accent-10)',
-                      border: `1px solid ${isSelected ? 'var(--hud-accent-50)' : C.border}`,
+                      background: isSelected ? 'color-mix(in srgb, var(--hud-accent) 20%, transparent)' : 'color-mix(in srgb, var(--hud-accent) 10%, transparent)',
+                      border: `1px solid ${isSelected ? 'color-mix(in srgb, var(--hud-accent) 50%, transparent)' : C.border}`,
                       transition: EASE.default, width: '100%',
                     }}
                   >
@@ -311,7 +311,7 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll, onCombatChe
                   }}
                   style={{
                     flex: 1, padding: '0.3125rem 0',
-                    background: isActive ? `var(--hud-accent-20)` : 'transparent',
+                    background: isActive ? `color-mix(in srgb, var(--hud-accent) 20%, transparent)` : 'transparent',
                     border: `1px solid ${isActive ? C.gold : C.border}`,
                     borderRadius: RADIUS.sm, cursor: 'pointer',
                     fontFamily: FONT_BODY, fontSize: 'var(--text-body-sm)', fontWeight: 700,
@@ -498,7 +498,7 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll, onCombatChe
               fontFamily: FONT_DISPLAY, fontSize: 'var(--text-label)', fontWeight: 700,
               letterSpacing: '0.12em', color: isEmpty ? C.textDim : C.bg,
               transition: EASE.default,
-              boxShadow: isEmpty ? 'none' : `0 2px 12px ${selectedWeapon ? 'var(--hud-accent-40)' : 'var(--hud-gold-40)'}`,
+              boxShadow: isEmpty ? 'none' : `0 2px 12px ${selectedWeapon ? 'color-mix(in srgb, var(--hud-accent) 40%, transparent)' : 'var(--hud-gold-40)'}`,
             }}
           >
             {isEmpty ? 'ADD DICE TO ROLL' : selectedWeapon ? `ATTACK — ${selectedWeapon.name}` : `ROLL ${poolSize(pool)} DICE`}

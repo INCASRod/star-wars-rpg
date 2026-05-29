@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import { C, CHAR_COLOR, CHAR_ABBR3, panelBase, type CharKey } from './design-tokens'
@@ -216,8 +216,8 @@ function UpgradeButton({ skill, xpAvailable, onClick }: {
         className={canAfford ? 'skills-upgrade-btn skills-upgrade-btn--affordable' : 'skills-upgrade-btn skills-upgrade-btn--locked'}
         style={{
           width: 28, height: 28, borderRadius: RADIUS.lg,
-          background: canAfford ? 'var(--hud-accent-10)' : 'var(--hud-surface-lo)',
-          border: `1px solid ${canAfford ? 'var(--hud-accent-35)' : 'var(--hud-border)'}`,
+          background: canAfford ? 'color-mix(in srgb, var(--hud-accent) 10%, transparent)' : 'var(--hud-surface-lo)',
+          border: `1px solid ${canAfford ? 'color-mix(in srgb, var(--hud-accent) 35%, transparent)' : 'var(--hud-border)'}`,
           color: canAfford ? C.gold : 'rgba(90,40,24,0.2)',
           fontFamily: FONT_BODY,
           fontSize: FS.sm,
@@ -292,8 +292,8 @@ function InlineConfirmation({ skill, xpAvailable, onConfirm, onCancel }: {
           onClick={(e) => { e.stopPropagation(); onCancel() }}
           style={{
             width: 26, height: 26, borderRadius: RADIUS.md,
-            background: 'var(--hud-accent-10)',
-            border: '1px solid var(--hud-accent-35)',
+            background: 'color-mix(in srgb, var(--hud-accent) 10%, transparent)',
+            border: '1px solid color-mix(in srgb, var(--hud-accent) 35%, transparent)',
             color: 'var(--state-failure)', cursor: 'pointer',
             fontFamily: FONT_BODY, fontSize: FS.sm,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -306,7 +306,7 @@ function InlineConfirmation({ skill, xpAvailable, onConfirm, onCancel }: {
           onClick={(e) => { e.stopPropagation(); onConfirm() }}
           style={{
             width: 26, height: 26, borderRadius: RADIUS.md,
-            background: 'linear-gradient(135deg, var(--hud-accent-25), var(--hud-accent-10))',
+            background: 'linear-gradient(135deg, color-mix(in srgb, var(--hud-accent) 25%, transparent), color-mix(in srgb, var(--hud-accent) 10%, transparent))',
             border: `1px solid ${C.gold}`,
             color: C.gold, cursor: 'pointer',
             fontFamily: FONT_BODY, fontSize: FS.sm,
@@ -341,7 +341,7 @@ function SpeciesConditionalBadge({ ability }: { ability: SpeciesAbility }) {
       <span style={{
         fontFamily: FONT_BODY,
         fontSize: FS.overline,
-        background: 'var(--hud-accent-10)',
+        background: 'color-mix(in srgb, var(--hud-accent) 10%, transparent)',
         border: '1px solid var(--hud-accent-border)',
         borderRadius: RADIUS.md,
         padding: '1px 5px',
@@ -467,8 +467,8 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
           padding: '5px 6px', marginBottom: 2,
           borderRadius: isConfirming ? RADIUS.lg : RADIUS.sm,
           ...(isConfirming ? {
-            border: '1px solid var(--hud-accent-35)',
-            background: 'var(--hud-accent-10)',
+            border: '1px solid color-mix(in srgb, var(--hud-accent) 35%, transparent)',
+            background: 'color-mix(in srgb, var(--hud-accent) 10%, transparent)',
           } : {
             borderLeft: skill.isCareer ? `2px solid ${careerBorderColor}88` : '2px solid transparent',
             background: 'transparent',
@@ -522,7 +522,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
   }
 
   const xpColor = xpAvailable > 20
-    ? 'var(--hud-accent-60)'
+    ? 'color-mix(in srgb, var(--hud-accent) 60%, transparent)'
     : xpAvailable > 0
     ? 'var(--hud-gold)'
     : 'var(--state-failure)'
@@ -539,7 +539,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
                 key={f}
                 onClick={() => setFilter(f)}
                 style={{
-                  background: active ? `${C.gold}22` : 'transparent',
+                  background: active ? `color-mix(in srgb, ${C.gold} 13%, transparent)` : 'transparent',
                   border: `1px solid ${active ? C.gold : C.border}`,
                   borderRadius: RADIUS.md, padding: '3px 10px',
                   fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700,
@@ -569,7 +569,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
             fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
             letterSpacing: '0.12em', textTransform: 'uppercase',
             color: C.gold,
-            border: '1px solid var(--hud-accent-40)',
+            border: '1px solid color-mix(in srgb, var(--hud-accent) 40%, transparent)',
             borderRadius: RADIUS.sm, padding: '2px 7px',
           }}>
             {isCombat ? 'Click to make a check' : 'Click to Upgrade'}
@@ -593,7 +593,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
               key={v}
               onClick={() => setGroupView(v)}
               style={{
-                background: active ? `${C.gold}22` : 'transparent',
+                background: active ? `color-mix(in srgb, ${C.gold} 13%, transparent)` : 'transparent',
                 border: `1px solid ${active ? C.gold : C.border}`,
                 borderRadius: RADIUS.md, padding: '3px 10px',
                 fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700,
@@ -623,7 +623,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
           <span style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 600, color: 'var(--hud-text-faint)' }}>Skill level</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <div style={{ width: 2, height: 14, background: `${C.gold}88`, borderRadius: RADIUS.sm }} />
+          <div style={{ width: 2, height: 14, background: `color-mix(in srgb, ${C.gold} 53%, transparent)`, borderRadius: RADIUS.sm }} />
           <span style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 600, color: 'var(--hud-text-faint)' }}>Career</span>
         </div>
       </div>

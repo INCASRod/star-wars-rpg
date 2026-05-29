@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { HudCard } from '../ui/HudCard'
 import { VitalBar } from '../ui/VitalBar'
@@ -22,7 +22,7 @@ interface VitalsCardProps {
 
 const gmBtnStyle: React.CSSProperties = {
   width: 20, height: 20, fontSize: FS.caption, fontWeight: 700,
-  background: 'var(--hud-accent-10)', border: `1px solid ${HUD.gold}`,
+  background: 'color-mix(in srgb, var(--hud-accent) 10%, transparent)', border: `1px solid ${HUD.gold}`,
   color: 'var(--hud-accent)', cursor: 'pointer', display: 'flex',
   alignItems: 'center', justifyContent: 'center', padding: 0,
   lineHeight: 1, flexShrink: 0,

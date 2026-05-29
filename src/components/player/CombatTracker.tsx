@@ -71,7 +71,7 @@ export function CombatTracker({ character, campaignId, talents = [] }: Props) {
           {/* Combat Log Feed */}
           <div style={{ flexShrink: 0, borderTop: `1px solid ${HUD.border}`, maxHeight: '11.25rem', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             <div style={{ padding: `0.375rem ${SP[4]} 0`, flexShrink: 0 }}>
-              <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${HUD.gold}b3`, marginBottom: '0.375rem' }}>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: `color-mix(in srgb, ${HUD.gold} 70%, transparent)`, marginBottom: '0.375rem' }}>
                 Combat Log
               </div>
             </div>

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { HUD, FS, SP, RADIUS, EASE, FONT_DISPLAY, FONT_BODY } from '@/lib/tokens'
 import { HudCard } from '../ui/HudCard'
@@ -45,7 +45,7 @@ export function TalentsCard({ talents, animClass = 'ar d4', onOpenTree, collapsi
           }}>
             <div style={{
               fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 800,
-              color: 'var(--hud-accent)', background: 'var(--hud-accent-10)',
+              color: 'var(--hud-accent)', background: 'color-mix(in srgb, var(--hud-accent) 10%, transparent)',
               width: '1.1rem', height: '1.1rem',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
@@ -79,7 +79,7 @@ export function TalentsCard({ talents, animClass = 'ar d4', onOpenTree, collapsi
           onClick={onOpenTree}
           style={{
             width: '100%', marginTop: SP[2],
-            background: 'var(--hud-accent-10)',
+            background: 'color-mix(in srgb, var(--hud-accent) 10%, transparent)',
             border: `1px solid var(--hud-gold)`,
             padding: SP[2],
             cursor: 'pointer',

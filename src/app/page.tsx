@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -304,7 +304,7 @@ function CharacterCard({
               <div key={i} style={{
                 width: '0.5rem', height: '0.5rem', borderRadius: RADIUS.sm,
                 background: i < char.wound_current ? DANGER : 'transparent',
-                border: `1px solid ${i < char.wound_current ? DANGER : 'var(--hud-accent-25)'}`,
+                border: `1px solid ${i < char.wound_current ? DANGER : 'color-mix(in srgb, var(--hud-accent) 25%, transparent)'}`,
               }} />
             ))}
           </div>
@@ -672,7 +672,7 @@ export default function Home() {
             onMouseEnter={() => setCreateHovered(true)}
             onMouseLeave={() => setCreateHovered(false)}
             style={{
-              background: createHovered ? 'var(--hud-accent-20)' : 'var(--hud-accent-10)',
+              background: createHovered ? 'color-mix(in srgb, var(--hud-accent) 20%, transparent)' : 'color-mix(in srgb, var(--hud-accent) 10%, transparent)',
               boxShadow: createHovered ? '0 0 16px rgba(224,58,30,0.2)' : 'none',
               border: `1px solid ${BORDER_MD}`,
               color: HUD.gold,
@@ -740,7 +740,7 @@ export default function Home() {
               <button
                 onClick={() => void handleGmLogin()}
                 style={{
-                  background: 'var(--hud-accent-20)',
+                  background: 'color-mix(in srgb, var(--hud-accent) 20%, transparent)',
                   border: `1px solid ${BORDER_HI}`,
                   color: HUD.gold,
                   fontFamily: FONT_BODY,

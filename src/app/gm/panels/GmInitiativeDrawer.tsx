@@ -14,8 +14,8 @@ const DIM  = 'var(--hud-text-dim)'
 
 const actionBtn = (accent: string): React.CSSProperties => ({
   padding:       '0.375rem 1rem',
-  background:    `${accent}12`,
-  border:        `1px solid ${accent}45`,
+  background:    `color-mix(in srgb, ${accent} 7%, transparent)`,
+  border:        `1px solid color-mix(in srgb, ${accent} 27%, transparent)`,
   borderRadius:  RADIUS.md,
   cursor:        'pointer',
   fontFamily:    FONT,

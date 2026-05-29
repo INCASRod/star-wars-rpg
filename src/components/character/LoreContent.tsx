@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useRef } from 'react'
 import { RefSpecies, SpeciesAbility } from '@/lib/types'
@@ -285,7 +285,7 @@ export function LoreContent({
               onClick={() => setEditingBackstory(e => !e)}
               style={{
                 border: `1px solid ${HUD.borderHi}`,
-                background: 'var(--hud-accent-10)',
+                background: 'color-mix(in srgb, var(--hud-accent) 10%, transparent)',
                 borderRadius: RADIUS.md,
                 padding: '5px 11px',
                 cursor: 'pointer',

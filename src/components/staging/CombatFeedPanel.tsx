@@ -336,7 +336,7 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
           {/* Round */}
           <div style={{
-            background: `${HUD.gold}18`, border: `1px solid ${HUD.gold}40`,
+            background: `color-mix(in srgb, ${HUD.gold} 9%, transparent)`, border: `1px solid color-mix(in srgb, ${HUD.gold} 25%, transparent)`,
             borderRadius: RADIUS.md, padding: `${SP[1]} 0.625rem`, flexShrink: 0,
             display: 'flex', alignItems: 'baseline', gap: '0.3125rem',
           }}>
@@ -376,7 +376,7 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
           <button
             onClick={() => void handleMarkActed()}
             className="hov-gold-bg"
-            style={{ ...ghostBtn, border: `1px solid ${HUD.gold}60`, color: HUD.gold, background: `${HUD.gold}15` }}
+            style={{ ...ghostBtn, border: `1px solid color-mix(in srgb, ${HUD.gold} 38%, transparent)`, color: HUD.gold, background: `color-mix(in srgb, ${HUD.gold} 8%, transparent)` }}
           >✓ Acted / Next →</button>
         </div>
       </div>
@@ -410,8 +410,8 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
 
             return (
               <div key={pd.id} style={{
-                background:   isSecondary ? `${HUD.gold}08` : 'rgba(224,82,82,0.06)',
-                border:       isSecondary ? `1px solid ${HUD.gold}40` : '1px solid rgba(224,82,82,0.3)',
+                background:   isSecondary ? `color-mix(in srgb, ${HUD.gold} 3%, transparent)` : 'rgba(224,82,82,0.06)',
+                border:       isSecondary ? `1px solid color-mix(in srgb, ${HUD.gold} 25%, transparent)` : '1px solid rgba(224,82,82,0.3)',
                 borderRadius: RADIUS.lg, padding: `0.625rem`,
               }}>
                 {/* Secondary hit label */}
@@ -493,7 +493,7 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
                     </span>
                     <button
                       onClick={() => setEdited(editedVal + 1)}
-                      style={{ ...smallBtn, color: HUD.gold, borderColor: BORDER_MD, background: `${HUD.gold}10` }}
+                      style={{ ...smallBtn, color: HUD.gold, borderColor: BORDER_MD, background: `color-mix(in srgb, ${HUD.gold} 6%, transparent)` }}
                     >+</button>
                   </div>
                 </div>
@@ -513,8 +513,8 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
                     onClick={() => void applyPendingDamage(pd, editedVal)}
                     style={{
                       flex: 2, padding: `0.375rem 0`,
-                      background: isSecondary ? `${HUD.gold}18` : 'rgba(224,82,82,0.15)',
-                      border:     isSecondary ? `1px solid ${HUD.gold}50` : '1px solid rgba(224,82,82,0.5)',
+                      background: isSecondary ? `color-mix(in srgb, ${HUD.gold} 9%, transparent)` : 'rgba(224,82,82,0.15)',
+                      border:     isSecondary ? `1px solid color-mix(in srgb, ${HUD.gold} 31%, transparent)` : '1px solid rgba(224,82,82,0.5)',
                       borderRadius: RADIUS.md, cursor: 'pointer',
                       fontFamily: FC, fontSize: FS.label, fontWeight: 700,
                       color: isSecondary ? HUD.gold : RED,
@@ -657,8 +657,8 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
                       ...smallBtn,
                       width: 'auto', padding: '1px 6px',
                       color: isReassigned ? HUD.gold : HUD.textDim,
-                      borderColor: isReassigned ? `${HUD.gold}50` : BORDER_MD,
-                      background: isReassigned ? `${HUD.gold}10` : 'transparent',
+                      borderColor: isReassigned ? `color-mix(in srgb, ${HUD.gold} 31%, transparent)` : BORDER_MD,
+                      background: isReassigned ? `color-mix(in srgb, ${HUD.gold} 6%, transparent)` : 'transparent',
                       fontSize: '0.75rem',
                     }}
                   >⇄</button>
@@ -831,7 +831,7 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
                     <button
                       onClick={() => void handleMarkActed()}
                       className="hov-gold-bg"
-                      style={{ ...ghostBtn, border: `1px solid ${HUD.gold}60`, color: HUD.gold, background: `${HUD.gold}15`, padding: `0.1875rem ${SP[2]}` }}
+                      style={{ ...ghostBtn, border: `1px solid color-mix(in srgb, ${HUD.gold} 38%, transparent)`, color: HUD.gold, background: `color-mix(in srgb, ${HUD.gold} 8%, transparent)`, padding: `0.1875rem ${SP[2]}` }}
                     >Acted</button>
                     <button
                       onClick={() => void handleSkip(trueIdx)}

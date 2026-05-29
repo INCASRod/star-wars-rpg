@@ -156,7 +156,7 @@ function RollCard({ roll }: { roll: RollEntry }) {
           {roll.isDm ? 'GM' : roll.characterName}
         </span>
         {roll.isSelf && (
-          <span style={{ fontFamily: FONT_RAJDHANI, fontWeight: 700, fontSize: FS_OVERLINE, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.gold, border: `1px solid ${C.gold}50`, borderRadius: 2, padding: '0 4px' }}>
+          <span style={{ fontFamily: FONT_RAJDHANI, fontWeight: 700, fontSize: FS_OVERLINE, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.gold, border: `1px solid color-mix(in srgb, ${C.gold} 31%, transparent)`, borderRadius: 2, padding: '0 4px' }}>
             YOU
           </span>
         )}
@@ -230,7 +230,7 @@ export function DiceFeed({ liveRolls, ownCharacterId, campaignName }: DiceFeedPr
   const visible = filter === 'Mine' ? ROLLS.filter(r => r.isSelf) : ROLLS
 
   const filterBtn = (f: 'All' | 'Mine') => ({
-    background: filter === f ? `${C.gold}20` : 'transparent',
+    background: filter === f ? `color-mix(in srgb, ${C.gold} 13%, transparent)` : 'transparent',
     border: `1px solid ${filter === f ? C.gold : C.border}`,
     borderRadius: 4, padding: '3px 10px', cursor: 'pointer',
     fontFamily: FONT_RAJDHANI, fontWeight: 700, fontSize: FS_OVERLINE,

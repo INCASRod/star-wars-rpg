@@ -167,7 +167,7 @@ function ForceTooltip({ node, pos }: { node: ForceTreeNode; pos: FixedPos }) {
       width: TOOLTIP_W,
       background: 'var(--hud-surface-hi)',
       // HUD.gold + hex alpha suffix: dynamic alpha construction — kept as template
-      border: `1px solid ${HUD.gold}40`,
+      border: `1px solid color-mix(in srgb, ${HUD.gold} 25%, transparent)`,
       padding: '12px 16px',
       boxShadow: '0 8px 32px rgba(0,0,0,.5)',
       pointerEvents: 'none',

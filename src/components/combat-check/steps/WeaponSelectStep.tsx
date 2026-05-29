@@ -324,7 +324,7 @@ export function WeaponSelectStep({
                 style={{
                   flex: 2, padding: '8px 0',
                   background: equipping ? 'rgba(224,58,30,0.15)' : 'rgba(224,58,30,0.15)',
-                  border: `1px solid ${HUD.gold}60`,
+                  border: `1px solid color-mix(in srgb, ${HUD.gold} 38%, transparent)`,
                   borderRadius: 6, cursor: equipping ? 'wait' : 'pointer',
                   fontFamily: FONT_DISPLAY,
                   fontSize: FS.caption,

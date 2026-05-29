@@ -173,7 +173,7 @@ function RollDisplay({ result, label, color }: { result: RollResult; label: stri
         {result.isDoubles && (
           <span style={{
             fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
-            color: HUD.gold, background: `${HUD.gold}18`, border: `1px solid ${HUD.gold}40`,
+            color: HUD.gold, background: `color-mix(in srgb, ${HUD.gold} 9%, transparent)`, border: `1px solid color-mix(in srgb, ${HUD.gold} 25%, transparent)`,
             borderRadius: RADIUS.sm, padding: '0.0625rem 0.375rem', letterSpacing: '0.1em', textTransform: 'uppercase',
           }}>Doubles</span>
         )}

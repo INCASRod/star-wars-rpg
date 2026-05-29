@@ -131,7 +131,7 @@ function TalentCard({ t }: { t: Talent }) {
 
       {/* Stat bonus */}
       {t.statBonus && (
-        <div style={{ borderLeft: `2px solid ${C.gold}40`, paddingLeft: 6, marginTop: 6, fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: C.textDim }}>
+        <div style={{ borderLeft: `2px solid color-mix(in srgb, ${C.gold} 25%, transparent)`, paddingLeft: 6, marginTop: 6, fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: C.textDim }}>
           ↑ {t.statBonus.stat} <strong style={{ color: C.gold }}>+{t.statBonus.value}</strong>
         </div>
       )}
@@ -232,7 +232,7 @@ export function TalentsPanel({ liveTalents, characterName, characterId }: Talent
 
         {/* ── Passive summary banner (only when not searching) ── */}
         {!searchQuery && tab === 'Passive' && passiveBonuses.length > 0 && (
-          <div style={{ background: `${C.gold}08`, border: `1px solid ${C.gold}30`, borderRadius: 4, padding: '7px 10px' }}>
+          <div style={{ background: `color-mix(in srgb, ${C.gold} 3%, transparent)`, border: `1px solid color-mix(in srgb, ${C.gold} 19%, transparent)`, borderRadius: 4, padding: '7px 10px' }}>
             <div style={{ fontFamily: FONT_RAJDHANI, fontWeight: 700, fontSize: FS_OVERLINE, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.gold, marginBottom: 4 }}>
               ■ Passive Bonuses Applied
             </div>

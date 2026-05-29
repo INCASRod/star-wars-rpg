@@ -145,7 +145,7 @@ export function AddParticipantModal({ library = [], searchLibrary, encounter, gr
         <div style={{ padding: '12px 18px', borderBottom: `1px solid ${BORDER}`, flexShrink: 0 }}>
           <div style={{
             fontFamily: FC, fontSize: FS_OVERLINE, letterSpacing: '0.2em',
-            textTransform: 'uppercase', color: `${HUD.gold}b3`, marginBottom: 8,
+            textTransform: 'uppercase', color: `color-mix(in srgb, ${HUD.gold} 70%, transparent)`, marginBottom: 8,
           }}>
             Participant Type
           </div>
@@ -197,7 +197,7 @@ export function AddParticipantModal({ library = [], searchLibrary, encounter, gr
                   onClick={() => setTypeFilter(t)}
                   style={{
                     flex: 1, padding: '3px 0',
-                    background: typeFilter === t ? `${HUD.gold}20` : 'transparent',
+                    background: typeFilter === t ? `color-mix(in srgb, ${HUD.gold} 13%, transparent)` : 'transparent',
                     border: `1px solid ${typeFilter === t ? BORDER_MD : BORDER}`,
                     borderRadius: 3, cursor: 'pointer',
                     fontFamily: FM, fontSize: FS_OVERLINE, letterSpacing: '0.06em',
@@ -219,7 +219,7 @@ export function AddParticipantModal({ library = [], searchLibrary, encounter, gr
                   onClick={() => setSilFilter(s)}
                   style={{
                     flex: 1, padding: '3px 0',
-                    background: silFilter === s ? `${HUD.gold}20` : 'transparent',
+                    background: silFilter === s ? `color-mix(in srgb, ${HUD.gold} 13%, transparent)` : 'transparent',
                     border: `1px solid ${silFilter === s ? BORDER_MD : BORDER}`,
                     borderRadius: 3, cursor: 'pointer',
                     fontFamily: FM, fontSize: FS_OVERLINE, letterSpacing: '0.06em',
@@ -282,9 +282,9 @@ export function AddParticipantModal({ library = [], searchLibrary, encounter, gr
                         <div style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>
                           {adv.type}
                           {adv.type === 'minion' && (
-                            <span style={{ color: `${HUD.gold}70`, marginLeft: 5 }}>×{size}</span>
+                            <span style={{ color: `color-mix(in srgb, ${HUD.gold} 44%, transparent)`, marginLeft: 5 }}>×{size}</span>
                           )}
-                          <span style={{ color: `${HUD.gold}70`, marginLeft: 8 }}>
+                          <span style={{ color: `color-mix(in srgb, ${HUD.gold} 44%, transparent)`, marginLeft: 8 }}>
                             BR {adv.brawn} · AG {adv.agility}
                           </span>
                         </div>
@@ -362,7 +362,7 @@ export function AddParticipantModal({ library = [], searchLibrary, encounter, gr
                             disabled={size >= 20}
                             style={{
                               width: 20, height: 20, borderRadius: 3, cursor: size >= 20 ? 'not-allowed' : 'pointer',
-                              background: `${HUD.gold}18`, border: `1px solid ${BORDER_MD}`,
+                              background: `color-mix(in srgb, ${HUD.gold} 9%, transparent)`, border: `1px solid ${BORDER_MD}`,
                               fontFamily: FM, fontSize: FS_SM, color: HUD.gold,
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
                             }}
@@ -411,7 +411,7 @@ export function AddParticipantModal({ library = [], searchLibrary, encounter, gr
                         <span style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 600, color: TEXT }}>{v.name}</span>
                         <div style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>
                           {v.type}
-                          <span style={{ color: `${HUD.gold}70`, marginLeft: 8 }}>
+                          <span style={{ color: `color-mix(in srgb, ${HUD.gold} 44%, transparent)`, marginLeft: 8 }}>
                             Sil {v.silhouette} · Spd {v.speed} · HT {v.hullTrauma} · SS {v.systemStrain}
                           </span>
                         </div>

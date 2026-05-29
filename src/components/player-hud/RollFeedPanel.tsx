@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, type ReactNode }                       from 'react'
 import { FONT_BODY, RADIUS, SYM, FS, HUD, type DiceType } from '@/lib/tokens'
@@ -141,7 +141,7 @@ function outcomeLabel(n: number): string {
 
 function outcomeColor(n: number): string {
   if (n > 0) return HUD.gold
-  if (n < 0) return 'var(--hud-accent-60)'
+  if (n < 0) return 'color-mix(in srgb, var(--hud-accent) 60%, transparent)'
   return HUD.textFaint
 }
 
@@ -321,7 +321,7 @@ function CombatCard({
               <div style={{
                 display: 'inline-flex', alignItems: 'center', gap: 'var(--space-1)',
                 padding: '2px var(--space-1-5, 0.375rem)', borderRadius: RADIUS.sm, marginBottom: 3,
-                background: 'var(--hud-accent-10)', border: '1px solid var(--hud-accent-35)',
+                background: 'color-mix(in srgb, var(--hud-accent) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--hud-accent) 35%, transparent)',
                 fontFamily: FONT_BODY, fontSize: FS.overline,
                 color: HUD.gold, fontWeight: 700, letterSpacing: '0.05em',
               }}>

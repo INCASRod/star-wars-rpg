@@ -286,7 +286,7 @@ label, caption, .text-secondary {
 }
 .hud-card:hover {
   border-color: var(--hud-accent);
-  box-shadow:   0 2px 16px var(--hud-accent-10);
+  box-shadow:   0 2px 16px color-mix(in srgb, var(--hud-accent) 10%, transparent);
 }
 .hud-card::before {
   content:  '';
@@ -339,7 +339,7 @@ label, caption, .text-secondary {
 }
 .force-power-chip:hover {
   border-color: var(--hud-accent);
-  background:   var(--hud-accent-10);
+  background:   color-mix(in srgb, var(--hud-accent) 10%, transparent);
 }
 
 /* Combat check button — warm off-white on dark red strip (var(--hud-vital-text) canonical) */
@@ -848,12 +848,12 @@ i.ffi {
 /* ── SkillsPanel — skill row hover ──────────────────────────────
    Replaces onMouseEnter/onMouseLeave inline style mutation.
    Uses hud-accent at ~5% (0D hex) to match original gold hint. */
-.skills-row:hover { background: var(--hud-accent-10); }
+.skills-row:hover { background: color-mix(in srgb, var(--hud-accent) 10%, transparent); }
 
 /* ── SkillsPanel — upgrade button hover ─────────────────────────
    Affordable state brightens to accent-20 on hover;
    locked state has no hover since cursor is not-allowed. */
-.skills-upgrade-btn--affordable:hover { background: var(--hud-accent-20) !important; }
+.skills-upgrade-btn--affordable:hover { background: color-mix(in srgb, var(--hud-accent) 20%, transparent) !important; }
 .hud-force-power-row:hover { background: rgba(144,96,208,0.06); }
 
 /* ── GmTopBar — lobby button hover ───────────────────────────── */

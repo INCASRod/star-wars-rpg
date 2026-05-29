@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import { createPortal } from 'react-dom'
@@ -49,7 +49,7 @@ function AdjBtn({ label, disabled, onClick }: { label: string; disabled: boolean
         width: 28, height: 28,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         background: 'var(--hud-surface-mid)',
-        border: `1px solid ${hovered && !disabled ? 'var(--hud-accent-40)' : DIM}`,
+        border: `1px solid ${hovered && !disabled ? 'color-mix(in srgb, var(--hud-accent) 40%, transparent)' : DIM}`,
         borderRadius: RADIUS.lg,
         cursor: disabled ? 'not-allowed' : 'pointer',
         color: disabled ? HUD.textFaint : HUD.text,
@@ -195,11 +195,11 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
         }}>
           {skill.name}
         </span>
-        <span style={{ color: 'var(--hud-accent-40)', fontFamily: FONT_BODY, fontSize: 'clamp(0.7rem, 1.2vw, 0.85rem)' }}>&middot;</span>
+        <span style={{ color: 'color-mix(in srgb, var(--hud-accent) 40%, transparent)', fontFamily: FONT_BODY, fontSize: 'clamp(0.7rem, 1.2vw, 0.85rem)' }}>&middot;</span>
         <span style={{
           fontFamily: FONT_BODY,
           fontSize: 'clamp(0.7rem, 1.2vw, 0.85rem)',
-          color: 'var(--hud-accent-50)',
+          color: 'color-mix(in srgb, var(--hud-accent) 50%, transparent)',
         }}>
           {CHAR_ABBR3[skill.charKey]}
         </span>
@@ -271,7 +271,7 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
                 fontWeight: 600,
                 letterSpacing: '0.04em',
                 // Active tint tied to difficulty die identity — pre-approved exception
-                color: active ? '#CE93D8' : 'var(--hud-accent-50)',
+                color: active ? '#CE93D8' : 'color-mix(in srgb, var(--hud-accent) 50%, transparent)',
                 transition: `border-color ${EASE.default}, background ${EASE.default}`,
                 whiteSpace: 'nowrap',
               }}

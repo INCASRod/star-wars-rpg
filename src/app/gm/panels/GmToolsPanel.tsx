@@ -164,7 +164,7 @@ export function GmToolsPanel({
               style={{
                 flexShrink:    0,
                 padding:       '0.5625rem',
-                background:    active ? `${accent}12` : 'transparent',
+                background:    active ? `color-mix(in srgb, ${accent} 7%, transparent)` : 'transparent',
                 border:        'none',
                 borderBottom:  active ? `2px solid ${accent}` : '2px solid transparent',
                 cursor:        'pointer',

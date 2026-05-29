@@ -187,7 +187,7 @@ export function TalentsPanel({ talents, onViewTree, characterId }: TalentsPanelP
           <button
             onClick={onViewTree}
             style={{
-              background: `${C.gold}18`, border: `1px solid ${C.gold}`,
+              background: `color-mix(in srgb, ${C.gold} 9%, transparent)`, border: `1px solid ${C.gold}`,
               borderRadius: RADIUS.md, padding: '8px 20px',
               fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 600,
               letterSpacing: '0.1em', color: C.gold, cursor: 'pointer',
@@ -227,7 +227,7 @@ export function TalentsPanel({ talents, onViewTree, characterId }: TalentsPanelP
             onClick={onViewTree}
             className="hov-gold-bg"
             style={{
-              background: `${C.gold}12`, border: `1px solid ${C.borderHi}`,
+              background: `color-mix(in srgb, ${C.gold} 7%, transparent)`, border: `1px solid ${C.borderHi}`,
               borderRadius: RADIUS.md, padding: '5px 14px',
               fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 600,
               letterSpacing: '0.1em', color: C.gold, cursor: 'pointer', transition: '.15s',

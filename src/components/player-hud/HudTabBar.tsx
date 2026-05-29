@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { HUD, FONT_BODY, FS, EASE } from '@/lib/tokens'
 
@@ -24,7 +24,7 @@ export function TabBar({ active, onChange, hasCombat, isForceUser, isForceUserFa
         const forceColor   = isForceUserFallen ? FORCE_TAB_PURPLE : FORCE_TAB_BLUE
         // Combat-active → gold accent (vivid); peaceful session → red-pale (soft)
         const sessionColor = isCombatActive ? HUD.gold : 'var(--red-pale)'
-        const sessionDim   = isCombatActive ? 'var(--hud-accent-45)' : 'rgba(232,96,80,0.45)'
+        const sessionDim   = isCombatActive ? 'color-mix(in srgb, var(--hud-accent) 45%, transparent)' : 'rgba(232,96,80,0.45)'
         const tabColor     = isForceTab
           ? forceColor
           : isSessionTab ? sessionColor
@@ -49,7 +49,7 @@ export function TabBar({ active, onChange, hasCombat, isForceUser, isForceUserFa
               textShadow: isForceTab && active === tab
                 ? (isForceUserFallen ? '0 0 8px rgba(139,43,226,0.6)' : '0 0 10px rgba(126,200,227,0.4)')
                 : isSessionTab && active === tab
-                  ? (isCombatActive ? '0 0 10px var(--hud-accent-40)' : '0 0 8px rgba(232,96,80,0.3)')
+                  ? (isCombatActive ? '0 0 10px color-mix(in srgb, var(--hud-accent) 40%, transparent)' : '0 0 8px rgba(232,96,80,0.3)')
                   : 'none',
             }}
           >

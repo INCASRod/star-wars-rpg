@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { TalentTree, type TalentTreeNode, type TalentTreeConnection } from '@/components/character/TalentTree'
 import { BuySpecButton } from './BuySpecButton'
@@ -46,7 +46,7 @@ export function HudTalentsTab({
                 key={cs.id}
                 onClick={() => setActiveSpecKey(cs.specialization_key)}
                 style={{
-                  background: isActive ? 'var(--hud-accent-10)' : 'transparent',
+                  background: isActive ? 'color-mix(in srgb, var(--hud-accent) 10%, transparent)' : 'transparent',
                   border: `1px solid ${isActive ? 'var(--hud-accent-border)' : 'var(--hud-border)'}`,
                   borderRadius: RADIUS.md, padding: `${SP[1]} ${SP[3]}`,
                   cursor: 'pointer', display: 'flex', alignItems: 'center', gap: SP[2],

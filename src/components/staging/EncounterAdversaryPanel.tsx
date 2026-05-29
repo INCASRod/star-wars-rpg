@@ -454,8 +454,8 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
                   {adv.type === 'minion' && !isDefeated && (
                     <span style={{
                       fontFamily: FC, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.1em',
-                      color: accent, border: `1px solid ${accent}50`, borderRadius: RADIUS.sm,
-                      padding: '1px 5px', background: `${accent}10`,
+                      color: accent, border: `1px solid color-mix(in srgb, ${accent} 31%, transparent)`, borderRadius: RADIUS.sm,
+                      padding: '1px 5px', background: `color-mix(in srgb, ${accent} 6%, transparent)`,
                     }}>MINION GROUP</span>
                   )}
                 </div>
@@ -563,7 +563,7 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
                           {adv.soak !== expectedSoak && (
                             <button
                               onClick={e => { e.stopPropagation(); void updateAdversarySoak(adv.instanceId, expectedSoak) }}
-                              style={{ background: `${HUD.gold}15`, border: `1px solid ${HUD.gold}50`, borderRadius: RADIUS.sm, padding: '1px 6px', cursor: 'pointer', fontFamily: FC, fontSize: FS.overline, color: HUD.gold }}
+                              style={{ background: `color-mix(in srgb, ${HUD.gold} 8%, transparent)`, border: `1px solid color-mix(in srgb, ${HUD.gold} 31%, transparent)`, borderRadius: RADIUS.sm, padding: '1px 6px', cursor: 'pointer', fontFamily: FC, fontSize: FS.overline, color: HUD.gold }}
                             >Apply</button>
                           )}
                         </div>
@@ -575,7 +575,7 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
                 {/* Skills */}
                 {Object.keys(adv.skillRanks ?? {}).length > 0 && (
                   <div style={{ marginBottom: SP[2] }}>
-                    <div style={{ fontFamily: FC, fontSize: FS.overline, letterSpacing: '0.15em', textTransform: 'uppercase', color: `${HUD.gold}90`, marginBottom: '0.375rem' }}>Skills</div>
+                    <div style={{ fontFamily: FC, fontSize: FS.overline, letterSpacing: '0.15em', textTransform: 'uppercase', color: `color-mix(in srgb, ${HUD.gold} 57%, transparent)`, marginBottom: '0.375rem' }}>Skills</div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 2rem 1.5rem auto', gap: '2px 6px', marginBottom: 3 }}>
                       {['Skill', 'Char', 'Rnk', 'Roll'].map(h => (
                         <div key={h} style={{ fontFamily: FC, fontSize: FS.overline, color: TEXT_MUTED, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{h}</div>
@@ -623,7 +623,7 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
                 {/* Talents */}
                 {adv.talents && adv.talents.length > 0 && (
                   <div style={{ marginBottom: SP[2] }}>
-                    <div style={{ fontFamily: FC, fontSize: FS.overline, letterSpacing: '0.15em', textTransform: 'uppercase', color: `${HUD.gold}90`, marginBottom: '0.3125rem' }}>Talents</div>
+                    <div style={{ fontFamily: FC, fontSize: FS.overline, letterSpacing: '0.15em', textTransform: 'uppercase', color: `color-mix(in srgb, ${HUD.gold} 57%, transparent)`, marginBottom: '0.3125rem' }}>Talents</div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: SP[1] }}>
                       {adv.talents.map((t, i) => {
                         const actKey = (t.activation ?? 'passive').toLowerCase()
@@ -665,7 +665,7 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
                 {/* Gear */}
                 {adv.gear && adv.gear.length > 0 && (
                   <div style={{ marginBottom: SP[2] }}>
-                    <div style={{ fontFamily: FC, fontSize: FS.overline, letterSpacing: '0.15em', textTransform: 'uppercase', color: `${HUD.gold}90`, marginBottom: '0.3125rem' }}>Gear</div>
+                    <div style={{ fontFamily: FC, fontSize: FS.overline, letterSpacing: '0.15em', textTransform: 'uppercase', color: `color-mix(in srgb, ${HUD.gold} 57%, transparent)`, marginBottom: '0.3125rem' }}>Gear</div>
                     {adv.gear.map((item, i) => {
                       const label = typeof item === 'string' ? item
                         : [item.name, item.encumbrance ? `Enc ${item.encumbrance}` : ''].filter(Boolean).join(' — ')
@@ -682,7 +682,7 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
                 {/* Weapons */}
                 {adv.weapons && adv.weapons.length > 0 && (
                   <div style={{ marginBottom: SP[2] }}>
-                    <div style={{ fontFamily: FC, fontSize: FS.overline, letterSpacing: '0.15em', textTransform: 'uppercase', color: `${HUD.gold}90`, marginBottom: '0.3125rem' }}>Weapons</div>
+                    <div style={{ fontFamily: FC, fontSize: FS.overline, letterSpacing: '0.15em', textTransform: 'uppercase', color: `color-mix(in srgb, ${HUD.gold} 57%, transparent)`, marginBottom: '0.3125rem' }}>Weapons</div>
                     {adv.weapons.map((w, i) => {
                       const { dmg, range, crit } = resolveWeapon(w, adv.characteristics.brawn, weaponRef)
                       const quals = w.qualities && w.qualities.length > 0 ? w.qualities.join(', ') : ''
@@ -705,7 +705,7 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
                     onClick={() => setAdvCombatCheck({ adv, attackType: type, alignment: advAlignment })}
                     style={{
                       flex: 1, padding: '0.3125rem 0',
-                      background: `${accent}15`, border: `1px solid ${accent}50`,
+                      background: `color-mix(in srgb, ${accent} 8%, transparent)`, border: `1px solid color-mix(in srgb, ${accent} 31%, transparent)`,
                       borderRadius: RADIUS.md, cursor: 'pointer',
                       fontFamily: FC, fontSize: FS.label, fontWeight: 600, color: accent, letterSpacing: '0.05em',
                     }}
@@ -726,7 +726,7 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
                   return sum + (m?.groupRemaining ?? 0)
                 }, 0)
                 return (
-                  <div style={{ borderTop: `1px solid ${HUD.gold}40`, padding: `${SP[2]} ${SP[3]}`, background: `${HUD.gold}09` }}>
+                  <div style={{ borderTop: `1px solid color-mix(in srgb, ${HUD.gold} 25%, transparent)`, padding: `${SP[2]} ${SP[3]}`, background: `color-mix(in srgb, ${HUD.gold} 4%, transparent)` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: SP[2], marginBottom: SP[1] }}>
                       <span style={{ fontFamily: FC, fontSize: 'clamp(9px,1vw,11px)', fontWeight: 700, letterSpacing: '0.18em', color: HUD.gold, textTransform: 'uppercase' }}>
                         Squad Active
@@ -758,7 +758,7 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
                   return sum + (m?.groupRemaining ?? 0)
                 }, 0)
                 return (
-                  <div style={{ borderTop: `1px solid ${HUD.gold}40`, padding: `${SP[2]} ${SP[3]}`, background: `${HUD.gold}07` }}>
+                  <div style={{ borderTop: `1px solid color-mix(in srgb, ${HUD.gold} 25%, transparent)`, padding: `${SP[2]} ${SP[3]}`, background: `color-mix(in srgb, ${HUD.gold} 3%, transparent)` }}>
                     <div style={{ fontFamily: FC, fontSize: FS.caption, fontWeight: 600, color: HUD.gold, marginBottom: '0.375rem', letterSpacing: '0.06em' }}>
                       Select minion groups for squad (max {CAP} total):
                     </div>
@@ -798,7 +798,7 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
                         disabled={selectedTotal === 0 || selectedTotal > CAP}
                         style={{
                           flex: 1, padding: `${SP[1]} 0`,
-                          background: selectedTotal > 0 && selectedTotal <= CAP ? `${HUD.gold}20` : 'transparent',
+                          background: selectedTotal > 0 && selectedTotal <= CAP ? `color-mix(in srgb, ${HUD.gold} 13%, transparent)` : 'transparent',
                           border: `1px solid ${selectedTotal > 0 && selectedTotal <= CAP ? HUD.gold : BORDER}`,
                           borderRadius: RADIUS.sm, cursor: selectedTotal > 0 && selectedTotal <= CAP ? 'pointer' : 'not-allowed',
                           fontFamily: FC, fontSize: FS.caption, fontWeight: 600,
@@ -819,7 +819,7 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
                 <div style={{ borderTop: `1px solid ${BORDER}`, padding: `0.4375rem ${SP[3]}` }}>
                   <button
                     onClick={() => void handleFormSquad(adv)}
-                    style={{ width: '100%', padding: '0.3125rem 0', background: `${HUD.gold}10`, border: `1px solid ${HUD.gold}40`, borderRadius: RADIUS.md, cursor: 'pointer', fontFamily: FC, fontSize: FS.label, fontWeight: 600, color: HUD.gold, letterSpacing: '0.05em' }}
+                    style={{ width: '100%', padding: '0.3125rem 0', background: `color-mix(in srgb, ${HUD.gold} 6%, transparent)`, border: `1px solid color-mix(in srgb, ${HUD.gold} 25%, transparent)`, borderRadius: RADIUS.md, cursor: 'pointer', fontFamily: FC, fontSize: FS.label, fontWeight: 600, color: HUD.gold, letterSpacing: '0.05em' }}
                   >Form Squad</button>
                 </div>
               )

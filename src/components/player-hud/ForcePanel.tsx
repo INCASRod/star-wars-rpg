@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { C, FONT_CINZEL, FONT_RAJDHANI, panelBase, FS_OVERLINE, FS_LABEL, FS_SM, FS_H3 } from './design-tokens'
@@ -171,7 +171,7 @@ function ForceRatingCard({
                 background: !isFilled
                   ? 'transparent'
                   : isCommitted
-                  ? `${accent}40`
+                  ? `color-mix(in srgb, ${accent} 25%, transparent)`
                   : accent,
                 border: `1px solid ${isFilled ? accent : C.border}`,
                 boxShadow: isFilled && !isCommitted ? `0 0 5px ${accentGlow}` : 'none',
@@ -529,7 +529,7 @@ export function ForcePanel({
             onClick={onAdd}
             className="hov-gold-bg cursor-pointer"
             style={{
-              background: 'var(--hud-accent-10)',
+              background: 'color-mix(in srgb, var(--hud-accent) 10%, transparent)',
               border: '1px solid var(--hud-accent-border)',
               borderRadius: 3, padding: '2px 0.625rem',
               fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL,

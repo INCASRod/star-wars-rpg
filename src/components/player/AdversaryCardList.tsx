@@ -67,7 +67,7 @@ export function AdversaryCardList({
   return (
     <div style={{ flex: 1, overflowY: 'auto', padding: `0.875rem 1rem` }}>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.625rem' }}>
-        <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${HUD.gold}b3`, flex: 1 }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: `color-mix(in srgb, ${HUD.gold} 70%, transparent)`, flex: 1 }}>
           Adversaries
         </div>
         {revealedAdversaries.length > 0 && (() => {

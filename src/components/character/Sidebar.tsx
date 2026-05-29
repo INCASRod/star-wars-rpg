@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useRouter } from 'next/navigation'
 import { HUD, SP, Z, EASE, FONT_BODY } from '@/lib/tokens'
@@ -66,7 +66,7 @@ export function Sidebar({ activeTab = 'Character', onTabChange }: SidebarProps) 
             key={tab.key}
             onClick={() => onTabChange?.(tab.key)}
             style={{
-              background: isActive ? 'var(--hud-accent-10)' : 'transparent',
+              background: isActive ? 'color-mix(in srgb, var(--hud-accent) 10%, transparent)' : 'transparent',
               border: 'none',
               borderLeft: isActive ? `3px solid ${HUD.gold}` : '3px solid transparent',
               cursor: 'pointer',
