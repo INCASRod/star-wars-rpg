@@ -1,0 +1,149 @@
+/* ═══════════════════════════════════════════════════════════════ */
+/*  HOLO-TOKENS — Structural / Layout Tokens                      */
+/*  Theme-agnostic. Values here never change between themes.      */
+/*  Imported by globals.css before state-tokens.css.              */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* ── Root scaling ───────────────────────────────────────────────
+   16px@1280 → 20px@1920 → 24px@2560 → 32px@4K
+   rem values in clamp() are relative to browser default (16px),
+   not self-referential — non-circular.                           */
+html {
+  font-size: clamp(14px, 1vw + 0.5rem, 18px);
+  -webkit-text-size-adjust: 100%;
+}
+
+:root {
+  /* ── Fluid Type Scale ───────────────────────────────────────── */
+  --text-display:  clamp(2.25rem, 5vw + 1rem, 5rem);            /* 36→80px */
+  --text-hero:     clamp(1.375rem, 2vw + 0.5rem, 2rem);
+  --text-h1:       clamp(1.75rem, 3.5vw + 0.75rem, 3.5rem);     /* 28→56px */
+  --text-h2:       clamp(1.375rem, 2.5vw + 0.5rem, 2.5rem);     /* 22→40px */
+  --text-h3:       clamp(1.125rem, 1.5vw + 0.5rem, 1.75rem);    /* 18→28px */
+  --text-h4:       clamp(1rem, 1vw + 0.5rem, 1.375rem);         /* 16→22px */
+  --text-body:     clamp(0.9375rem, 0.5vw + 0.75rem, 1.125rem); /* 15→18px */
+  --text-body-lg:  clamp(1rem, 0.75vw + 0.75rem, 1.25rem);      /* 16→20px */
+  --text-body-sm:  clamp(0.75rem, 0.25vw + 0.6rem, 0.875rem);   /* 12→14px */
+  --text-label:    clamp(0.6875rem, 0.3vw + 0.55rem, 0.8125rem);/* 11→13px */
+  --text-caption:  clamp(0.625rem, 0.2vw + 0.5rem, 0.75rem);    /* 10→12px */
+  --text-overline: clamp(0.5625rem, 0.15vw + 0.45rem, 0.6875rem);/*  9→11px */
+  --text-sm: var(--text-body-sm);
+  --text-xs: var(--text-caption);
+
+  /* ── Line Heights ───────────────────────────────────────────── */
+  --leading-none:    1;
+  --leading-tight:   1.15;
+  --leading-snug:    1.35;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.65;
+  --leading-loose:   1.8;
+
+  /* ── Letter Spacing ─────────────────────────────────────────── */
+  --tracking-tighter: -0.05em;
+  --tracking-tight:   -0.025em;
+  --tracking-snug:    -0.015em;
+  --tracking-normal:   0em;
+  --tracking-wide:     0.05em;
+  --tracking-wider:    0.1em;
+  --tracking-widest:   0.2em;
+
+  /* ── Measure (line length) ──────────────────────────────────── */
+  --measure-narrow: 45ch;
+  --measure-body:   68ch;
+  --measure-wide:   80ch;
+  --measure-prose:  72ch;
+
+  /* ── Fluid Spacing Scale ────────────────────────────────────── */
+  --space-1:  clamp(0.25rem,  0.5vw,  0.5rem);    /*  4→8px   */
+  --space-2:  clamp(0.5rem,   1vw,    1rem);       /*  8→16px  */
+  --space-3:  clamp(0.75rem,  1.5vw,  1.5rem);     /* 12→24px  */
+  --space-4:  clamp(1rem,     2vw,    2rem);        /* 16→32px  */
+  --space-5:  1.25rem;                              /* fixed    */
+  --space-6:  clamp(1.5rem,   3vw,    3rem);        /* 24→48px  */
+  --space-8:  clamp(2rem,     4vw,    4rem);        /* 32→64px  */
+  --space-10: 2.5rem;                               /* fixed    */
+  --space-12: clamp(3rem,     6vw,    6rem);        /* 48→96px  */
+  --space-16: clamp(4rem,     8vw,    10rem);       /* 64→160px */
+  --space-20: 5rem;                                 /* fixed    */
+  --space-24: clamp(6rem,     10vw,   14rem);       /* 96→224px */
+  --space-32: 8rem;                                 /* fixed    */
+  --space-48: 12rem;                                /* fixed    */
+  --space-64: 16rem;                                /* fixed    */
+
+  /* ── Font Weights ───────────────────────────────────────────── */
+  --weight-regular: 400;
+  --weight-medium:  500;
+  --weight-bold:    600;
+
+  /* ── Shadows ────────────────────────────────────────────────── */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.10);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+
+  /* ── Transitions ────────────────────────────────────────────── */
+  --ease-default: 200ms ease;
+  --ease-quick:   120ms ease;
+  --ease-spring:  300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-panel:   260ms cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-smooth:  300ms ease;
+
+  /* ── Z-index scale ──────────────────────────────────────────── */
+  /* Use var(--z-*) in CSS; use Z.* from @/lib/tokens in TypeScript. */
+  --z-base:        0;
+  --z-raised:      10;
+  --z-drawer:      30;
+  --z-overlay:     100;
+  --z-panel:       100;
+  --z-fab:         190;
+  --z-modal:       200;
+  --z-toast:       410;
+  --z-popover:     500;
+  --z-dialog:      900;
+  --z-tooltip:     9999;
+  --z-hud-drawer:  8999;
+  --z-hud-overlay: 9000;
+  --z-hud-combat:  9001;
+  --z-hud-supreme: 9999;
+
+  /* ── Container Widths ───────────────────────────────────────── */
+  --container-sm:   40rem;
+  --container-md:   56rem;
+  --container-lg:   75rem;
+  --container-xl:   90rem;
+  --container-full: 100%;
+
+  /* ── HUD Font Size Aliases (map to fluid type scale) ──────────
+     Use these in HUD inline styles instead of hardcoded px.     */
+  --hud-sz-overline: var(--text-overline);
+  --hud-sz-caption:  var(--text-caption);
+  --hud-sz-label:    var(--text-label);
+  --hud-sz-sm:       var(--text-body-sm);
+  --hud-sz-h4:       var(--text-h4);
+  --hud-sz-h3:       var(--text-h3);
+
+  /* ── Legacy Font-size Aliases (backward compat) ─────────────── */
+  --font-2xs:  var(--text-overline);
+  --font-xs:   var(--text-caption);
+  --font-sm:   var(--text-label);
+  --font-base: var(--text-body-sm);
+  --font-md:   var(--text-body);
+  --font-lg:   var(--text-h4);
+  --font-xl:   var(--text-h3);
+  --font-2xl:  var(--text-h1);
+  --font-hero: var(--text-hero);
+
+  /* ── Legacy Spacing Aliases ─────────────────────────────────── */
+  --sp-xs: var(--space-1);
+  --sp-sm: var(--space-2);
+  --sp-md: var(--space-4);
+  --sp-lg: var(--space-5);
+  --sp-xl: var(--space-6);
+
+  /* ── Font Aliases (backward compat) ─────────────────────────── */
+  /* --font-display and --font-body are set by next/font on <html>.
+     Legacy aliases below resolve to the new fonts automatically. */
+  --font-rajdhani: var(--font-body);
+  --font-cinzel:   var(--font-display);
+  --font-orbitron: var(--font-display);
+  --font-mono:     var(--font-body);
+}
