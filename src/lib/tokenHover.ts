@@ -62,6 +62,7 @@ export function attachTokenHover(
   container._hoverScale    = 1.0
   container._glowAlpha     = 0
   container._baseAlpha     = container.alpha ?? 1
+  container._baseScale     = container.scale.x
   container._hoverTickerFn = null
 }
 
@@ -91,9 +92,10 @@ export function onTokenPointerOver(
   const fn = () => {
     if (!container._hoverActive) return
 
-    // Lerp scale toward 1.08
-    const currentScale = container.scale?.x ?? 1
-    const targetScale  = 1.08
+    // Lerp scale toward baseScale * 1.08
+    const baseScale    = container._baseScale ?? 1.0
+    const currentScale = container.scale?.x ?? baseScale
+    const targetScale  = baseScale * 1.08
     const nextScale    = lerp(currentScale, targetScale, 0.18)
     container.scale?.set(nextScale)
 
@@ -104,7 +106,7 @@ export function onTokenPointerOver(
     }
 
     // Settle check
-    const scaleDone = Math.abs((container.scale?.x ?? 1) - targetScale) < 0.01
+    const scaleDone = Math.abs((container.scale?.x ?? baseScale) - targetScale) < 0.01
     const alphaDone = !glowRing || Math.abs(glowRing.alpha - 0.9) < 0.01
 
     if (scaleDone && alphaDone) {
@@ -128,9 +130,8 @@ export function onTokenPointerOut(
   removeHoverTicker(container, ticker)
 
   const glowRing = container.getChildByName('glowRing')
-  // Restore base scale before hover (stored tokenScale, not necessarily 1.0)
-  // We lerp back toward the pre-hover scale. Use 1.0 as the resting hover scale target.
-  const restScale = container._restScale ?? 1.0
+  // Lerp back toward the token's base scale (set at attachTokenHover time)
+  const restScale = container._baseScale ?? 1.0
 
   const fn = () => {
     // Lerp scale toward restScale
