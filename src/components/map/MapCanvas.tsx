@@ -3,6 +3,7 @@
 import { useEffect, useRef, useCallback, memo } from 'react'
 import type { MapToken } from '@/hooks/useMapTokens'
 import { runMapWipe } from '@/lib/mapWipe'
+import { attachTokenHover, onTokenPointerOver, onTokenPointerOut, destroyTokenHover } from '@/lib/tokenHover'
 
 // Pixi.js v7 — loaded dynamically to avoid SSR issues
 let PIXI: typeof import('pixi.js') | null = null
@@ -183,7 +184,11 @@ export const MapCanvas = memo(function MapCanvas({
           }
         }
         if (scaleChanged) {
-          c.scale.set(tokenScale)
+          // Only reset scale if not hovering (hover animation manages scale)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          if (!(c as any)._hoverActive) {
+            c.scale.set(tokenScale)
+          }
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ;(c as any).__applyLabelScale?.(tokenScale)
         }
@@ -442,6 +447,7 @@ function syncTokens(
       // image is displayed (e.g. after uploading a token image for an existing token).
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if ((c as any).__imageUrl !== (token.token_image_url ?? null)) {
+        destroyTokenHover(c, app.ticker)
         app.stage.removeChild(c)
         c.destroy({ children: true })
         tokensRef.current.delete(token.id)
@@ -470,6 +476,7 @@ function syncTokens(
       onMoveRef, onContextRef, onHoverRef, onHoverEndRef, onDragStartRef, onDragEndRef, containerRef, draggingTokenIdRef,
       mapWRef, mapHRef, mapOffsetXRef, mapOffsetYRef,
       tokenScale,
+      app.ticker,
     )
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(sprite as any).__imageUrl = token.token_image_url ?? null
@@ -481,7 +488,7 @@ function syncTokens(
 
   for (const staleId of existing) {
     const c = tokensRef.current.get(staleId)
-    if (c) { app.stage.removeChild(c); c.destroy({ children: true }) }
+    if (c) { destroyTokenHover(c, app.ticker); app.stage.removeChild(c); c.destroy({ children: true }) }
     tokensRef.current.delete(staleId)
   }
 }
@@ -508,6 +515,7 @@ function buildTokenSprite(
   mapOffsetXRef:       React.MutableRefObject<number>,
   mapOffsetYRef:       React.MutableRefObject<number>,
   tokenScale:          number,
+  ticker:              InstanceType<typeof import('pixi.js').Ticker>,
 ): InstanceType<typeof import('pixi.js').Container> {
   // ── Pointer tokens — distinct shape, skip all standard rendering ──────────
   if (token.token_type?.startsWith('pointer_')) {
@@ -548,6 +556,7 @@ function buildTokenSprite(
     g.endFill()
 
     c.addChild(g)
+    attachTokenHover(c, px, 0xffffff, ticker, SIZE, false)
     c.x = offsetX + token.x * mapW
     c.y = offsetY + token.y * mapH
     c.scale.set(tokenScale)
@@ -557,6 +566,12 @@ function buildTokenSprite(
     ;(c as any).eventMode = 'static'
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(c as any).cursor = canDrag ? 'pointer' : 'default'
+
+    // Hover glow for pointer tokens
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(c as any).on('pointerover', () => { onTokenPointerOver(c, ticker) })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(c as any).on('pointerout', () => { onTokenPointerOut(c, ticker) })
 
     if (!canDrag) return c
 
@@ -629,6 +644,8 @@ function buildTokenSprite(
   }
   ring.zIndex = 2
   c.addChild(ring)
+
+  attachTokenHover(c, px, colour, ticker, SIZE, isRect)
 
   if (token.token_image_url) {
     const mask = new px.Graphics()
@@ -733,13 +750,17 @@ function buildTokenSprite(
   // Hover — fire callback with screen coordinates derived from canvas rect
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(c as any).on('pointerover', (e: { globalX: number; globalY: number }) => {
+    onTokenPointerOver(c, ticker)
     if (!onHoverRef.current) return
     const rect = containerRef.current?.getBoundingClientRect()
     if (!rect) return
     onHoverRef.current(token.id, rect.left + e.globalX, rect.top + e.globalY)
   })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(c as any).on('pointerout', () => { onHoverEndRef.current?.() })
+  ;(c as any).on('pointerout', () => {
+    onHoverEndRef.current?.()
+    onTokenPointerOut(c, ticker)
+  })
 
   if (!canDrag) return c
 
