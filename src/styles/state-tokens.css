@@ -75,45 +75,65 @@
   --state-strain: var(--hud-vital-strain);
 
   /* ── HUD Ember Tatooine defaults ────────────────────────────── */
-  --hud-bg:            #E8DDD0;
-  --hud-panel:         #DDD0C0;
-  --hud-surface-lo:    #D4C5B0;
-  --hud-surface-mid:   #C8B89A;
-  --hud-surface-hi:    #C0AD94;
-  --hud-border:        #CDB8A4;
-  --hud-border-hi:     #C0A890;
-  --hud-border-strong: #9A8068;
-  --hud-text:          #5A2818;
-  --hud-text-dim:      #8A5040;
-  --hud-text-faint:    #AA7860;
-  --hud-gold:          #E03A1E;
-  --hud-accent:        var(--hud-gold);
-  --hud-accent-10:     rgba(224,58,30,0.10);
-  --hud-accent-20:     rgba(224,58,30,0.20);
-  --hud-accent-25:     rgba(224,58,30,0.25);
-  --hud-accent-35:     rgba(224,58,30,0.35);
-  --hud-accent-40:     rgba(224,58,30,0.40);
-  --hud-accent-45:     rgba(224,58,30,0.45);
-  --hud-accent-50:     rgba(224,58,30,0.50);
-  --hud-accent-60:     rgba(224,58,30,0.60);
-  --hud-accent-border: rgba(224,58,30,0.30);
+  --hud-bg:            #0A0806;
+  --hud-panel:         #0D0A07;
+  --hud-surface-lo:    #110D09;
+  --hud-surface-mid:   #151008;
+  --hud-surface-hi:    #1A1208;
+
+  --hud-border:        rgba(176, 48, 32, 0.18);
+  --hud-border-hi:     rgba(176, 48, 32, 0.30);
+  --hud-border-strong: rgba(176, 48, 32, 0.42);
+
+  --hud-text:          #C8C0B0;
+  --hud-text-dim:      #8A7060;
+  --hud-text-faint:    #6A5040;
+
+  --hud-gold:          #C8A24E;
+  --hud-accent:        #E03020;
+  --hud-accent-hi:     #F05040;
+  --hud-accent-10:     rgba(224, 48, 32, 0.10);
+  --hud-accent-20:     rgba(224, 48, 32, 0.20);
+  --hud-accent-25:     rgba(224, 48, 32, 0.25);
+  --hud-accent-35:     rgba(224, 48, 32, 0.35);
+  --hud-accent-40:     rgba(224, 48, 32, 0.40);
+  --hud-accent-45:     rgba(224, 48, 32, 0.45);
+  --hud-accent-50:     rgba(224, 48, 32, 0.50);
+  --hud-accent-60:     rgba(224, 48, 32, 0.60);
+  --hud-accent-border: rgba(224, 48, 32, 0.30);
   --hud-accent-purple: #9060D0;
-  --hud-gold-subtle:   rgba(200,170,80,0.15);
-  --hud-gold-border:   rgba(200,170,80,0.25);
-  --hud-gold-40:       rgba(200,170,80,0.40);
-  --hud-vital-bg:       #6A1A0A;
-  --hud-vital-border:   #4A1006;
-  --hud-vital-text:     #FFF0E8;
-  --hud-vital-text-dim: rgba(255,240,232,.65);
-  --hud-vital-sep:      rgba(255,255,255,.2);
-  --hud-vital-wounds:   #FF7050;
-  --hud-vital-strain:   #FFB060;
+
+  --hud-gold-subtle:   rgba(200, 162, 78, 0.15);
+  --hud-gold-border:   rgba(200, 162, 78, 0.25);
+  --hud-gold-40:       rgba(200, 162, 78, 0.40);
+
+  --hud-vital-bg:       #130E09;
+  --hud-vital-border:   rgba(176, 48, 32, 0.14);
+  --hud-vital-text:     #C8C0B0;
+  --hud-vital-text-dim: rgba(200, 192, 176, 0.65);
+  --hud-vital-sep:      rgba(200, 192, 176, 0.20);
+  --hud-vital-wounds:   #E03020;
+  --hud-vital-strain:   #E8A020;
+
+  --hud-section-ghost: rgba(224, 48, 32, 0.09);
+}
+
+/* ── Ember Tatooine — default combat-check-btn ─────────────── */
+.combat-check-btn {
+  background:   rgba(224, 48, 32, 0.10);
+  border-color: rgba(224, 48, 32, 0.35);
+  color:        #F08070;
+}
+.combat-check-btn:hover {
+  background:   rgba(224, 48, 32, 0.20);
+  border-color: rgba(224, 48, 32, 0.55);
+  box-shadow:   0 0 0.625rem rgba(224, 48, 32, 0.14);
 }
 
 /* ── Ember Tatooine — combat animations ─────────────────────── */
 @keyframes combatPulseEmber {
-  0%, 100% { border-color: rgba(255,240,232,.22); box-shadow: none; }
-  50%       { border-color: rgba(255,240,232,.48); box-shadow: 0 0 10px rgba(255,240,232,.10); }
+  0%, 100% { border-color: rgba(224, 48, 32, 0.25); box-shadow: none; }
+  50%       { border-color: rgba(224, 48, 32, 0.55); box-shadow: 0 0 0.625rem rgba(224, 48, 32, 0.16); }
 }
 
 @keyframes forcePulse {
@@ -189,64 +209,6 @@
 
 [data-theme="kyber"] .hud-fi-rebel { filter: saturate(1.8) hue-rotate(25deg) brightness(1.9); }
 [data-theme="kyber"] .hud-fi-jedi  { filter: brightness(1.4) opacity(0.88); }
-
-/* ═══════════════════════════════════════════════════════════════ */
-/*  THEME: Rebel Operative — warm charcoal / ember-orange         */
-/* ═══════════════════════════════════════════════════════════════ */
-[data-theme="operative"] {
-  --hud-bg:            #141210;
-  --hud-panel:         #1E1A16;
-  --hud-surface-lo:    #262018;
-  --hud-surface-mid:   #2A2218;
-  --hud-surface-hi:    #2E281E;
-
-  --hud-border:        rgba(210, 185, 150, 0.13);
-  --hud-border-hi:     rgba(210, 185, 150, 0.22);
-  --hud-border-strong: rgba(210, 185, 150, 0.30);
-
-  --hud-text:          #B0A490;
-  --hud-text-dim:      #726050;
-  --hud-text-faint:    #4C4038;
-
-  --hud-gold:          #D4681A;
-  --hud-accent:        var(--hud-gold);
-  --hud-accent-10:     rgba(212, 104, 26, 0.10);
-  --hud-accent-20:     rgba(212, 104, 26, 0.20);
-  --hud-accent-25:     rgba(212, 104, 26, 0.25);
-  --hud-accent-35:     rgba(212, 104, 26, 0.35);
-  --hud-accent-40:     rgba(212, 104, 26, 0.40);
-  --hud-accent-45:     rgba(212, 104, 26, 0.45);
-  --hud-accent-50:     rgba(212, 104, 26, 0.50);
-  --hud-accent-60:     rgba(212, 104, 26, 0.60);
-  --hud-accent-border: rgba(212, 104, 26, 0.28);
-  --hud-accent-purple: #9060D0;
-
-  --hud-gold-subtle:   rgba(200, 148, 56, 0.15);
-  --hud-gold-border:   rgba(200, 148, 56, 0.25);
-  --hud-gold-40:       rgba(200, 148, 56, 0.40);
-
-  --hud-vital-bg:       #180C06;
-  --hud-vital-border:   #0E0602;
-  --hud-vital-text:     #E8C888;
-  --hud-vital-text-dim: rgba(232, 200, 136, 0.60);
-  --hud-vital-sep:      rgba(232, 200, 136, 0.18);
-  --hud-vital-wounds:   #CC4020;
-  --hud-vital-strain:   #C07818;
-}
-
-[data-theme="operative"] .combat-check-btn {
-  background:   rgba(212, 104, 26, 0.10);
-  border-color: rgba(212, 104, 26, 0.35);
-  color:        #E8C888;
-}
-[data-theme="operative"] .combat-check-btn:hover {
-  background:   rgba(212, 104, 26, 0.20);
-  border-color: rgba(212, 104, 26, 0.55);
-  box-shadow:   0 0 10px rgba(212, 104, 26, 0.12);
-}
-
-[data-theme="operative"] .hud-fi-rebel { filter: saturate(1.5) hue-rotate(20deg) brightness(1.8); }
-[data-theme="operative"] .hud-fi-jedi  { filter: brightness(1.5) opacity(0.88); }
 
 /* ═══════════════════════════════════════════════════════════════ */
 /*  THEME: GM Imperial Steel — cold blue-grey, desaturated dark   */

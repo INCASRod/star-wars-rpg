@@ -301,7 +301,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         if (!data?.ui_theme) return
         // 'binary-sunset' was renamed to 'ember'; all other unrecognised values fall back to 'ember'
         const LEGACY: Record<string, UiTheme> = { 'binary-sunset': 'ember' }
-        const VALID_THEMES: UiTheme[] = ['ember', 'kyber', 'operative']
+        const VALID_THEMES: UiTheme[] = ['ember', 'kyber']
         const resolved: UiTheme = LEGACY[data.ui_theme] ?? (VALID_THEMES.includes(data.ui_theme as UiTheme) ? data.ui_theme as UiTheme : 'ember')
         setUiTheme(resolved)
       })
