@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useCallback, memo } from 'react'
 import type { MapToken } from '@/hooks/useMapTokens'
+import { runMapWipe } from '@/lib/mapWipe'
 
 // Pixi.js v7 — loaded dynamically to avoid SSR issues
 let PIXI: typeof import('pixi.js') | null = null
@@ -49,6 +50,8 @@ export const MapCanvas = memo(function MapCanvas({
   const appRef             = useRef<InstanceType<typeof import('pixi.js').Application> | null>(null)
   const tokensRef          = useRef<Map<string, InstanceType<typeof import('pixi.js').Container>>>(new Map())
   const draggingTokenIdRef = useRef<string | null>(null)
+
+  const wipeInProgress = useRef(false)
 
   // Map image bounds within the canvas (updated by rebuildMap)
   const mapWRef       = useRef(800)
@@ -138,7 +141,7 @@ export const MapCanvas = memo(function MapCanvas({
   useEffect(() => {
     const app = appRef.current
     if (!app || !PIXI || !mapImageUrl) return
-    rebuildMap(app, PIXI, mapImageUrl, gridEnabled, gridSize, mapWRef, mapHRef, mapOffsetXRef, mapOffsetYRef)
+    rebuildMap(app, PIXI, mapImageUrl, gridEnabled, gridSize, mapWRef, mapHRef, mapOffsetXRef, mapOffsetYRef, wipeInProgress)
   }, [mapImageUrl, gridEnabled, gridSize])
 
   // ── Sync tokens ─────────────────────────────────────────────
@@ -276,7 +279,12 @@ async function rebuildMap(
   mapHRef:       React.MutableRefObject<number>,
   mapOffsetXRef: React.MutableRefObject<number>,
   mapOffsetYRef: React.MutableRefObject<number>,
+  wipeInProgressRef?: React.MutableRefObject<boolean>,
 ) {
+  // Check if there is a previous map to wipe from
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const hadPreviousMap = app.stage.children.some((c: any) => c.name === 'mapBg')
+
   // Remove old bg/grid layers
   const toRemove = app.stage.children.filter(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -284,13 +292,71 @@ async function rebuildMap(
   )
   toRemove.forEach(c => app.stage.removeChild(c))
 
+  // Skip wipe on first load (no previous map)
+  if (!hadPreviousMap || !wipeInProgressRef) {
+    const cw = app.screen.width
+    const ch = app.screen.height
+
+    try {
+      const texture = await px.Assets.load(imageUrl)
+
+      const scaleX = cw / texture.width
+      const scaleY = ch / texture.height
+      const scale  = Math.min(scaleX, scaleY)
+
+      const mapW    = Math.round(texture.width  * scale)
+      const mapH    = Math.round(texture.height * scale)
+      const offsetX = Math.round((cw - mapW) / 2)
+      const offsetY = Math.round((ch - mapH) / 2)
+
+      mapWRef.current       = mapW
+      mapHRef.current       = mapH
+      mapOffsetXRef.current = offsetX
+      mapOffsetYRef.current = offsetY
+
+      const bg = new px.Sprite(texture)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(bg as any).name = 'mapBg'
+      bg.x      = offsetX
+      bg.y      = offsetY
+      bg.width  = mapW
+      bg.height = mapH
+      bg.zIndex = 0
+      app.stage.addChild(bg)
+
+      if (gridEnabled && gridSize > 0) {
+        const g = new px.Graphics()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(g as any).name = 'grid'
+        g.zIndex = 1
+        g.lineStyle(1, 0xffffff, 0.12)
+        for (let x = offsetX; x <= offsetX + mapW; x += gridSize) {
+          g.moveTo(x, offsetY); g.lineTo(x, offsetY + mapH)
+        }
+        for (let y = offsetY; y <= offsetY + mapH; y += gridSize) {
+          g.moveTo(offsetX, y); g.lineTo(offsetX + mapW, y)
+        }
+        app.stage.addChild(g)
+      }
+    } catch (err) {
+      console.error('[MapCanvas] Failed to load map texture:', err)
+    }
+    return
+  }
+
+  // Guard against concurrent wipes
+  if (wipeInProgressRef.current) return
+  wipeInProgressRef.current = true
+
   const cw = app.screen.width
   const ch = app.screen.height
 
   try {
+    // Start wipe IN — runs concurrently with texture load
+    const wipe = await runMapWipe(app, px)
+
     const texture = await px.Assets.load(imageUrl)
 
-    // Uniform scale — contain within canvas, preserve aspect ratio
     const scaleX = cw / texture.width
     const scaleY = ch / texture.height
     const scale  = Math.min(scaleX, scaleY)
@@ -300,7 +366,6 @@ async function rebuildMap(
     const offsetX = Math.round((cw - mapW) / 2)
     const offsetY = Math.round((ch - mapH) / 2)
 
-    // Update refs so token positioning uses the correct bounds
     mapWRef.current       = mapW
     mapHRef.current       = mapH
     mapOffsetXRef.current = offsetX
@@ -330,8 +395,14 @@ async function rebuildMap(
       }
       app.stage.addChild(g)
     }
+
+    // Wipe OUT — reveal the new map
+    wipe.reveal()
+    await wipe.done
   } catch (err) {
     console.error('[MapCanvas] Failed to load map texture:', err)
+  } finally {
+    wipeInProgressRef.current = false
   }
 }
 
