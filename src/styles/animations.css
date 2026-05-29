@@ -153,3 +153,417 @@
 .hud-quick-drawer.open .panel-row-enter {
   transition-delay: var(--row-stagger-delay, 0ms);
 }
+
+/* ════════════════════════════════════════════════
+   HOVER HIGHLIGHT SYSTEM
+   Three layers: left-border spring, sweep shimmer,
+   element glow. Applied via .hov-lift class on any
+   interactive element, plus specific overrides per
+   element type.
+   ════════════════════════════════════════════════ */
+
+/* ── LAYER 1: LEFT-BORDER SPRING ACCENT ─────────
+ * A ::before pseudo-element on the left edge.
+ * scaleY(0) → scaleY(1) on hover via spring easing.
+ * Applied to row-type elements.
+ * ──────────────────────────────────────────────── */
+
+.hov-lift {
+  position: relative;
+  overflow: hidden;
+}
+
+.hov-lift::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 0.125rem;
+  background: var(--hud-accent);
+  transform: scaleY(0);
+  transform-origin: center;
+  transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hov-lift:hover::before {
+  transform: scaleY(1);
+}
+
+/* ── LAYER 2: SWEEP SHIMMER ──────────────────────
+ * A ::after pseudo-element that sweeps left to right
+ * on hover entry. One-shot — exits off the right edge.
+ * ──────────────────────────────────────────────── */
+
+.hov-lift::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  left: -100%;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--hud-accent) 6%, transparent) 50%,
+    transparent 100%
+  );
+  transition: left 380ms ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hov-lift:hover::after {
+  left: 100%;
+}
+
+/* ── LAYER 3: TEXT AND RANK LIFT ON HOVER ────────
+ * Direct children with .hov-lift-text transition
+ * from text-dim to text on parent hover.
+ * ──────────────────────────────────────────────── */
+
+.hov-lift-text {
+  color: var(--hud-text-dim);
+  transition: color 150ms ease;
+}
+
+.hov-lift:hover .hov-lift-text {
+  color: var(--hud-text);
+}
+
+
+/* ── ROW ELEMENT HOVER ───────────────────────────
+ * Applied to all row-type clickable elements.
+ * Adds .hov-lift behaviour + background tint.
+ * ──────────────────────────────────────────────── */
+
+.skills-row,
+.hud-skill-row,
+.hud-combat-wpn-row,
+.hud-force-power-row,
+.init-slot-card,
+.init-swap-target {
+  position: relative;
+  overflow: hidden;
+}
+
+.skills-row::before,
+.hud-skill-row::before,
+.hud-combat-wpn-row::before,
+.hud-force-power-row::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 0.125rem;
+  background: var(--hud-accent);
+  transform: scaleY(0);
+  transform-origin: center;
+  transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.skills-row:hover::before,
+.hud-skill-row:hover::before,
+.hud-combat-wpn-row:hover::before,
+.hud-force-power-row:hover::before {
+  transform: scaleY(1);
+}
+
+.skills-row::after,
+.hud-skill-row::after,
+.hud-combat-wpn-row::after,
+.hud-force-power-row::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  left: -100%;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--hud-accent) 6%, transparent) 50%,
+    transparent 100%
+  );
+  transition: left 380ms ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.skills-row:hover::after,
+.hud-skill-row:hover::after,
+.hud-combat-wpn-row:hover::after,
+.hud-force-power-row:hover::after {
+  left: 100%;
+}
+
+
+/* ── RAIL BUTTON GLOW ────────────────────────────
+ * Box-shadow glow added to all rail button hover
+ * states. Layers on top of existing bg/border rules.
+ * ──────────────────────────────────────────────── */
+
+.hud-rail-btn-combat:hover,
+.hud-rail-btn-force:hover,
+.hud-rail-btn-skill:hover,
+.hud-rail-btn-nav:hover,
+.hud-rail-btn-adversaries:hover {
+  box-shadow: 0 0 0.75rem
+    color-mix(in srgb, var(--hud-accent) 20%, transparent);
+}
+
+
+/* ── CARD GLOW ───────────────────────────────────
+ * Enhances existing .hud-card:hover with a glow.
+ * The existing border-color rule stays — we only
+ * add the box-shadow here.
+ * ──────────────────────────────────────────────── */
+
+.hud-card:hover {
+  box-shadow:
+    0 2px 16px var(--hud-accent-10),
+    0 0 1.25rem color-mix(in srgb, var(--hud-accent) 12%, transparent),
+    0 0.25rem 0.75rem rgba(0, 0, 0, 0.4);
+}
+
+
+/* ── BUTTON GLOW ─────────────────────────────────
+ * Generic glow for button-type elements on hover.
+ * Layers on top of existing hover rules.
+ * ──────────────────────────────────────────────── */
+
+.combat-check-btn:hover,
+.force-check-btn:hover,
+.buy-spec-btn:hover,
+.force-power-chip:hover,
+.staging-topbar-btn:hover:not(:disabled),
+.gm-top-bar-btn:hover:not(:disabled),
+.gm-lobby-btn:hover,
+.skills-upgrade-btn--affordable:hover {
+  box-shadow: 0 0 0.875rem
+    color-mix(in srgb, var(--hud-accent) 18%, transparent);
+}
+
+
+/* ── REDUCED MOTION ──────────────────────────────
+ * Users who prefer reduced motion get instant
+ * colour changes with no movement or shimmer.
+ * ──────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .hov-lift::before,
+  .hov-lift::after,
+  .skills-row::before,
+  .skills-row::after,
+  .hud-skill-row::before,
+  .hud-skill-row::after,
+  .hud-combat-wpn-row::before,
+  .hud-combat-wpn-row::after,
+  .hud-force-power-row::before,
+  .hud-force-power-row::after {
+    transition: none;
+    animation: none;
+  }
+
+  .hov-lift::after,
+  .skills-row::after,
+  .hud-skill-row::after,
+  .hud-combat-wpn-row::after,
+  .hud-force-power-row::after {
+    display: none;
+  }
+
+  .hud-card:hover,
+  .combat-check-btn:hover,
+  .force-check-btn:hover,
+  .buy-spec-btn:hover,
+  .force-power-chip:hover,
+  .hud-rail-btn-combat:hover,
+  .hud-rail-btn-force:hover,
+  .hud-rail-btn-skill:hover,
+  .hud-rail-btn-nav:hover,
+  .hud-rail-btn-adversaries:hover {
+    box-shadow: none;
+  }
+}
+
+/* ════════════════════════════════════════════════
+   TOOLTIP DRIFTING GLOW
+   A radial gradient pseudo-element drifts slowly
+   around the tooltip interior. Theme-aware via
+   data-theme on the html element.
+   ════════════════════════════════════════════════ */
+
+/* ── KEYFRAMES ───────────────────────────────────
+ * Three drift paths — one per theme.
+ * Each runs at a different speed and direction
+ * so multiple visible tooltips never synchronise.
+ * ──────────────────────────────────────────────── */
+
+@keyframes tooltipGlowDriftEmber {
+  0%   { transform: translate(-10%, -15%) scale(1.0); }
+  20%  { transform: translate(25%, -5%)   scale(1.1); }
+  40%  { transform: translate(15%, 30%)   scale(0.95); }
+  60%  { transform: translate(-20%, 20%)  scale(1.05); }
+  80%  { transform: translate(-15%, -10%) scale(1.1); }
+  100% { transform: translate(-10%, -15%) scale(1.0); }
+}
+
+@keyframes tooltipGlowDriftEmberInner {
+  0%   { transform: translate(0%, 0%); }
+  33%  { transform: translate(20%, -20%); }
+  66%  { transform: translate(-15%, 15%); }
+  100% { transform: translate(0%, 0%); }
+}
+
+@keyframes tooltipGlowDriftKyber {
+  0%   { transform: translate(10%, -20%)  scale(1.0); }
+  25%  { transform: translate(-20%, 10%)  scale(1.1); }
+  50%  { transform: translate(20%, 25%)   scale(0.9); }
+  75%  { transform: translate(25%, -15%)  scale(1.05); }
+  100% { transform: translate(10%, -20%)  scale(1.0); }
+}
+
+@keyframes tooltipGlowDriftKyberInner {
+  0%   { transform: translate(0%, 0%); }
+  33%  { transform: translate(-20%, 15%); }
+  66%  { transform: translate(15%, -20%); }
+  100% { transform: translate(0%, 0%); }
+}
+
+@keyframes tooltipGlowDriftGM {
+  0%   { transform: translate(-20%, 10%)  scale(1.0); }
+  30%  { transform: translate(15%, -20%)  scale(1.08); }
+  60%  { transform: translate(20%, 20%)   scale(0.95); }
+  80%  { transform: translate(-10%, 15%)  scale(1.05); }
+  100% { transform: translate(-20%, 10%)  scale(1.0); }
+}
+
+@keyframes tooltipGlowDriftGMInner {
+  0%   { transform: translate(0%, 0%); }
+  33%  { transform: translate(15%, 20%); }
+  66%  { transform: translate(-20%, -15%); }
+  100% { transform: translate(0%, 0%); }
+}
+
+
+/* ── TOOLTIP CONTAINER ───────────────────────────
+ * The existing Tooltip.tsx renders a portaled div.
+ * We target it by adding .holo-tooltip to that div
+ * in Step 3. The glow pseudo-elements sit behind
+ * the content via z-index layering.
+ * ──────────────────────────────────────────────── */
+
+.holo-tooltip {
+  position: relative;
+}
+
+/* Outer glow — large, slow drift */
+.holo-tooltip::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.85;
+  z-index: 0;
+}
+
+/* Inner glow — smaller, faster, reverse direction */
+.holo-tooltip::after {
+  content: '';
+  position: absolute;
+  width: 60%;
+  height: 60%;
+  top: 20%;
+  left: 20%;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.65;
+  z-index: 0;
+}
+
+/* Ensure tooltip content sits above the glow */
+.holo-tooltip > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── EMBER TATOOINE GLOW ─────────────────────────
+ * Default theme — no data-theme attribute.
+ * Crimson drift.
+ * ──────────────────────────────────────────────── */
+
+:root .holo-tooltip::before,
+html:not([data-theme]) .holo-tooltip::before {
+  background: radial-gradient(ellipse at center,
+    rgba(224, 48, 32, 0.38) 0%,
+    rgba(180, 30, 15, 0.22) 35%,
+    transparent 70%
+  );
+  animation: tooltipGlowDriftEmber 7s ease-in-out infinite;
+}
+
+:root .holo-tooltip::after,
+html:not([data-theme]) .holo-tooltip::after {
+  background: radial-gradient(ellipse at center,
+    rgba(255, 80, 40, 0.28) 0%,
+    transparent 70%
+  );
+  animation: tooltipGlowDriftEmberInner 4s ease-in-out infinite reverse;
+}
+
+/* ── KYBER ARCHIVE GLOW ──────────────────────────
+ * data-theme="kyber" — cold cyan drift.
+ * ──────────────────────────────────────────────── */
+
+[data-theme="kyber"] .holo-tooltip::before {
+  background: radial-gradient(ellipse at center,
+    rgba(91, 188, 216, 0.32) 0%,
+    rgba(60, 150, 190, 0.20) 35%,
+    transparent 70%
+  );
+  animation: tooltipGlowDriftKyber 8s ease-in-out infinite;
+}
+
+[data-theme="kyber"] .holo-tooltip::after {
+  background: radial-gradient(ellipse at center,
+    rgba(120, 210, 240, 0.24) 0%,
+    transparent 70%
+  );
+  animation: tooltipGlowDriftKyberInner 5s ease-in-out infinite reverse;
+}
+
+/* ── GM IMPERIAL GLOW ────────────────────────────
+ * data-theme="gm-imperial" — steel blue drift.
+ * ──────────────────────────────────────────────── */
+
+[data-theme="gm-imperial"] .holo-tooltip::before {
+  background: radial-gradient(ellipse at center,
+    rgba(90, 120, 155, 0.36) 0%,
+    rgba(70, 100, 135, 0.22) 35%,
+    transparent 70%
+  );
+  animation: tooltipGlowDriftGM 9s ease-in-out infinite;
+}
+
+[data-theme="gm-imperial"] .holo-tooltip::after {
+  background: radial-gradient(ellipse at center,
+    rgba(110, 150, 190, 0.28) 0%,
+    transparent 70%
+  );
+  animation: tooltipGlowDriftGMInner 6s ease-in-out infinite reverse;
+}
+
+/* ── REDUCED MOTION ──────────────────────────────
+ * Static glow, no animation.
+ * ──────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .holo-tooltip::before,
+  .holo-tooltip::after {
+    animation: none;
+  }
+}

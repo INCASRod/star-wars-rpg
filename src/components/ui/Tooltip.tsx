@@ -131,6 +131,7 @@ export function Tooltip({
       {visible && pos && createPortal(
         <div
           ref={tooltipRef}
+          className="holo-tooltip"
           style={{
             position:             'fixed',
             top:                  pos.top,
