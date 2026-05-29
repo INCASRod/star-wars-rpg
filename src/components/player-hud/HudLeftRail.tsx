@@ -16,7 +16,7 @@ interface HudLeftRailProps {
 }
 
 const BTN_STYLE: React.CSSProperties = {
-  width: 52, minHeight: 48,
+  width: 60, minHeight: 48,
   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
   gap: 3, border: '1px solid transparent', borderRadius: RADIUS.md,
   cursor: 'pointer', background: 'transparent',
@@ -39,7 +39,7 @@ const LABEL_STYLE: React.CSSProperties = {
   lineHeight: 1.2,
   whiteSpace: 'normal',
   wordBreak: 'normal',
-  maxWidth: 50,
+  maxWidth: 58,
 }
 
 const QUICK_BUTTONS: { id: RailPanelId; symbol: string; label: string; cls: string }[] = [
@@ -76,7 +76,7 @@ export const HudLeftRail = memo(function HudLeftRail({
 }: HudLeftRailProps) {
   return (
     <div style={{
-      width: 64, flexShrink: 0,
+      width: 72, flexShrink: 0,
       background: 'var(--hud-panel)',
       borderRight: '1px solid var(--hud-border-hi)',
       display: 'flex', flexDirection: 'column', alignItems: 'center',

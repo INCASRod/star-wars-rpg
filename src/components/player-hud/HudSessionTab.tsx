@@ -335,12 +335,12 @@ export function HudSessionTab({
         </div>
         <div className="shrink-0" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-1)', padding: '0.625rem' }}>
           {([
-            { label: 'Brawn',     value: character.brawn },
-            { label: 'Agility',   value: character.agility },
-            { label: 'Intellect', value: character.intellect },
-            { label: 'Cunning',   value: character.cunning },
-            { label: 'Willpower', value: character.willpower },
-            { label: 'Presence',  value: character.presence },
+            { label: 'BRN', value: character.brawn },
+            { label: 'AGI', value: character.agility },
+            { label: 'INT', value: character.intellect },
+            { label: 'CUN', value: character.cunning },
+            { label: 'WIL', value: character.willpower },
+            { label: 'PRS', value: character.presence },
           ] as const).map(ch => (
             <div key={ch.label} style={{
               textAlign: 'center', padding: '0.375rem var(--space-1)',

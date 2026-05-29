@@ -475,7 +475,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
       <div style={{
         position: 'relative', zIndex: 1,
         display: 'grid',
-        gridTemplateColumns: '64px 1fr clamp(200px,20%,240px)',
+        gridTemplateColumns: '72px 1fr clamp(200px,18%,260px)',
         gridTemplateRows: 'auto auto 1fr',
         height: '100vh',
       }}>
