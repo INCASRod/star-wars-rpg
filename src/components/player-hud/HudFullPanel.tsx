@@ -1,5 +1,6 @@
 'use client'
 
+import { useRef, useLayoutEffect } from 'react'
 import { FONT_BODY, FS, RADIUS } from '@/lib/tokens'
 import { TickerText } from '@/components/ui/TickerText'
 import { HudPanelContext } from '@/contexts/HudPanelContext'
@@ -13,8 +14,28 @@ interface HudFullPanelProps {
 }
 
 export function HudFullPanel({ open, title, symbol, onClose, children }: HudFullPanelProps) {
+  const rootRef = useRef<HTMLDivElement>(null)
+
+  // Set data-ticker-pass="true" on the root div whenever the panel opens.
+  // useLayoutEffect fires synchronously after DOM mutations and *before* any
+  // useEffect in child components, so TickerText's gate check (in useEffect)
+  // will always find the attribute on the initial-open render cycle.
+  // The attribute is removed after 600ms — longer than the maximum stagger
+  // delay — so text that mounts later (e.g. inside accordions that open after
+  // the panel is already open) never sees the gate and renders settled.
+  useLayoutEffect(() => {
+    const el = rootRef.current
+    if (!el || !open) return
+    el.dataset.tickerPass = 'true'
+    const t = setTimeout(() => {
+      if (rootRef.current) delete rootRef.current.dataset.tickerPass
+    }, 600)
+    return () => clearTimeout(t)
+  }, [open])
+
   return (
     <div
+      ref={rootRef}
       className={`hud-full-panel${open ? ' open' : ''}`}
       style={{
         background:  'var(--hud-surface-lo)',
