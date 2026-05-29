@@ -191,6 +191,64 @@
 [data-theme="kyber"] .hud-fi-jedi  { filter: brightness(1.4) opacity(0.88); }
 
 /* ═══════════════════════════════════════════════════════════════ */
+/*  THEME: Rebel Operative — warm charcoal / ember-orange         */
+/* ═══════════════════════════════════════════════════════════════ */
+[data-theme="operative"] {
+  --hud-bg:            #141210;
+  --hud-panel:         #1E1A16;
+  --hud-surface-lo:    #262018;
+  --hud-surface-mid:   #2A2218;
+  --hud-surface-hi:    #2E281E;
+
+  --hud-border:        rgba(210, 185, 150, 0.13);
+  --hud-border-hi:     rgba(210, 185, 150, 0.22);
+  --hud-border-strong: rgba(210, 185, 150, 0.30);
+
+  --hud-text:          #B0A490;
+  --hud-text-dim:      #726050;
+  --hud-text-faint:    #4C4038;
+
+  --hud-gold:          #D4681A;
+  --hud-accent:        var(--hud-gold);
+  --hud-accent-10:     rgba(212, 104, 26, 0.10);
+  --hud-accent-20:     rgba(212, 104, 26, 0.20);
+  --hud-accent-25:     rgba(212, 104, 26, 0.25);
+  --hud-accent-35:     rgba(212, 104, 26, 0.35);
+  --hud-accent-40:     rgba(212, 104, 26, 0.40);
+  --hud-accent-45:     rgba(212, 104, 26, 0.45);
+  --hud-accent-50:     rgba(212, 104, 26, 0.50);
+  --hud-accent-60:     rgba(212, 104, 26, 0.60);
+  --hud-accent-border: rgba(212, 104, 26, 0.28);
+  --hud-accent-purple: #9060D0;
+
+  --hud-gold-subtle:   rgba(200, 148, 56, 0.15);
+  --hud-gold-border:   rgba(200, 148, 56, 0.25);
+  --hud-gold-40:       rgba(200, 148, 56, 0.40);
+
+  --hud-vital-bg:       #180C06;
+  --hud-vital-border:   #0E0602;
+  --hud-vital-text:     #E8C888;
+  --hud-vital-text-dim: rgba(232, 200, 136, 0.60);
+  --hud-vital-sep:      rgba(232, 200, 136, 0.18);
+  --hud-vital-wounds:   #CC4020;
+  --hud-vital-strain:   #C07818;
+}
+
+[data-theme="operative"] .combat-check-btn {
+  background:   rgba(212, 104, 26, 0.10);
+  border-color: rgba(212, 104, 26, 0.35);
+  color:        #E8C888;
+}
+[data-theme="operative"] .combat-check-btn:hover {
+  background:   rgba(212, 104, 26, 0.20);
+  border-color: rgba(212, 104, 26, 0.55);
+  box-shadow:   0 0 10px rgba(212, 104, 26, 0.12);
+}
+
+[data-theme="operative"] .hud-fi-rebel { filter: saturate(1.5) hue-rotate(20deg) brightness(1.8); }
+[data-theme="operative"] .hud-fi-jedi  { filter: brightness(1.5) opacity(0.88); }
+
+/* ═══════════════════════════════════════════════════════════════ */
 /*  THEME: GM Imperial Steel — cold blue-grey, desaturated dark   */
 /* ═══════════════════════════════════════════════════════════════ */
 [data-theme="gm-imperial"] {

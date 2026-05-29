@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
-import { ThemeInit } from "@/components/ThemeInit";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -45,7 +44,6 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} ${swRpgIcons.variable}`}>
       <body className="antialiased">
-        <ThemeInit />
         {children}
         <Toaster position="top-center" richColors />
       </body>

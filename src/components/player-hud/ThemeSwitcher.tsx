@@ -2,7 +2,7 @@
 
 import { SP, RADIUS, EASE } from '@/lib/tokens'
 
-export type UiTheme = 'ember' | 'kyber'
+export type UiTheme = 'ember' | 'kyber' | 'operative'
 
 interface ThemeSwitcherProps {
   current: UiTheme
@@ -10,8 +10,9 @@ interface ThemeSwitcherProps {
 }
 
 const THEMES: { key: UiTheme; label: string; bg: string; accent: string }[] = [
-  { key: 'ember', label: 'Ember Tatooine', bg: '#DCCFBC', accent: '#E03A1E' },
-  { key: 'kyber', label: 'Kyber Archive',  bg: '#111326', accent: '#5BBCD8' },
+  { key: 'ember',     label: 'Ember Tatooine',   bg: '#DCCFBC', accent: '#E03A1E' },
+  { key: 'operative', label: 'Rebel Operative',  bg: '#1E1A16', accent: '#D4681A' },
+  { key: 'kyber',     label: 'Kyber Archive',    bg: '#111326', accent: '#5BBCD8' },
 ]
 
 export function ThemeSwitcher({ current, onChange }: ThemeSwitcherProps) {
