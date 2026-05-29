@@ -1,37 +1,31 @@
-﻿'use client'
+'use client'
 
 import { useState, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
 import { useMapPlanets, type MapPlanet } from '@/hooks/useMapPlanets'
 import type { ActiveMap } from '@/hooks/useActiveMap'
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_BODY, FS, SP, RADIUS, Z, EASE } from '@/lib/tokens'
 
 /* ── Design tokens ────────────────────────────────────────── */
-const FC        = 'var(--font-body)'
-const FR        = 'var(--font-body)'
-const DIM       = '#6A8070'
-const TEXT      = 'var(--hud-text)'
-const GREEN     = '#4EC87A'
-const BLUE      = 'var(--bs-red-sun)'
-const RED       = '#E05050'
-const BORDER    = 'var(--hud-border)'
-const BORDER_HI = 'var(--hud-border-hi)'
-const PANEL_BG  = 'var(--hud-surface-hi)'
-const FS_OVERLINE = 'var(--text-overline)'
-const FS_CAPTION  = 'var(--text-caption)'
-const FS_LABEL    = 'var(--text-label)'
-const FS_SM       = 'var(--text-sm)'
-const FS_H4       = 'var(--text-h4)'
+const FC        = FONT_BODY
+const FR        = FONT_BODY
+const DIM       = HUD.textFaint
+const TEXT      = HUD.text
+const GREEN     = 'var(--state-success)'
+const BLUE      = 'var(--state-wounds)'
+const RED       = 'var(--state-failure)'
+const BORDER    = HUD.border
+const BORDER_HI = HUD.borderHi
 
 const darkInput: React.CSSProperties = {
   background: 'var(--hud-surface-lo)',
   border: `1px solid ${BORDER_HI}`,
-  borderRadius: 4,
+  borderRadius: RADIUS.md,
   color: TEXT,
   fontFamily: FR,
-  fontSize: FS_LABEL,
-  padding: '7px 10px',
+  fontSize: FS.label,
+  padding: `7px 10px`,
   width: '100%',
   boxSizing: 'border-box',
   outline: 'none',
@@ -132,52 +126,52 @@ export function StagingMapPanel({ campaignId, allMaps, onDeleteMap }: StagingMap
       <div
         key={map.id}
         style={{
-          padding: '10px 14px 10px 22px',
+          padding: `10px 14px 10px 22px`,
           borderBottom: `1px solid ${BORDER}`,
           background: map.is_active ? 'var(--hud-surface-lo)' : 'transparent',
         }}
       >
         {/* Row: thumbnail + name + actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: SP[2] }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={map.image_url}
             alt={map.name}
             style={{
-              width: 46, height: 32, objectFit: 'cover', borderRadius: 3, flexShrink: 0,
+              width: 46, height: 32, objectFit: 'cover', borderRadius: RADIUS.sm, flexShrink: 0,
               border: `1px solid ${map.is_active ? BORDER_HI : BORDER}`,
             }}
           />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
-              fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700,
+              fontFamily: FR, fontSize: FS.label, fontWeight: 700,
               color: map.is_active ? HUD.gold : TEXT,
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             }}>
               {map.name}
               {map.is_active && (
-                <span style={{ marginLeft: 6, fontFamily: FR, fontSize: FS_OVERLINE, color: HUD.gold }}>
+                <span style={{ marginLeft: 6, fontFamily: FR, fontSize: FS.overline, color: HUD.gold }}>
                   ★ ACTIVE
                 </span>
               )}
             </div>
-            <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, color: DIM, marginTop: 1 }}>
+            <div style={{ fontFamily: FR, fontSize: FS.overline, color: DIM, marginTop: 1 }}>
               {map.grid_enabled ? `Grid ${map.grid_size}px` : 'No grid'}
               {map.is_visible_to_players && (
                 <span style={{ marginLeft: 6, color: GREEN }}>● Visible</span>
               )}
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+          <div style={{ display: 'flex', gap: SP[1], flexShrink: 0 }}>
             {!map.is_active && (
               <button
                 onClick={() => void handleSetActive(map.id)}
                 disabled={busy}
                 style={{
                   background: 'var(--hud-surface-lo)', border: `1px solid ${BORDER}`,
-                  color: busy ? 'var(--hud-text-faint)' : HUD.gold,
-                  fontFamily: FR, fontSize: FS_CAPTION, padding: '3px 8px',
-                  borderRadius: 3, cursor: busy ? 'not-allowed' : 'pointer',
+                  color: busy ? HUD.textFaint : HUD.gold,
+                  fontFamily: FR, fontSize: FS.caption, padding: `3px 8px`,
+                  borderRadius: RADIUS.sm, cursor: busy ? 'not-allowed' : 'pointer',
                 }}
               >Set Active</button>
             )}
@@ -186,27 +180,27 @@ export function StagingMapPanel({ campaignId, allMaps, onDeleteMap }: StagingMap
               title="Delete map"
               style={{
                 background: 'rgba(224,80,80,0.07)', border: '1px solid rgba(224,80,80,0.22)',
-                color: RED, fontFamily: FR, fontSize: FS_LABEL,
-                padding: '2px 8px', borderRadius: 3, cursor: 'pointer', lineHeight: 1,
+                color: RED, fontFamily: FR, fontSize: FS.label,
+                padding: `2px 8px`, borderRadius: RADIUS.sm, cursor: 'pointer', lineHeight: 1,
               }}
             >×</button>
           </div>
         </div>
 
         {/* Planet assignment */}
-        <div style={{ marginTop: 5, display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, flexShrink: 0 }}>Planet:</span>
+        <div style={{ marginTop: SP[1], display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontFamily: FR, fontSize: FS.caption, color: DIM, flexShrink: 0 }}>Planet:</span>
           <select
             value={map.planet_id ?? ''}
             onChange={e => void handleAssignPlanet(map.id, e.target.value || null)}
             style={{
               background: 'var(--hud-surface-hi)',
               border: `1px solid ${BORDER}`,
-              borderRadius: 3,
+              borderRadius: RADIUS.sm,
               color: map.planet_id ? TEXT : DIM,
               fontFamily: FR,
-              fontSize: FS_CAPTION,
-              padding: '2px 4px',
+              fontSize: FS.caption,
+              padding: `2px 4px`,
               flex: 1,
               minWidth: 0,
               cursor: 'pointer',
@@ -225,11 +219,11 @@ export function StagingMapPanel({ campaignId, allMaps, onDeleteMap }: StagingMap
           <button
             onClick={() => void handleToggleVisible(map)}
             style={{
-              marginTop: 6, width: '100%', padding: '4px 0', borderRadius: 3, border: 'none',
+              marginTop: 6, width: '100%', padding: `4px 0`, borderRadius: RADIUS.sm, border: 'none',
               background: map.is_visible_to_players ? 'rgba(78,200,122,0.12)' : 'var(--hud-surface-lo)',
               color: map.is_visible_to_players ? GREEN : DIM,
-              fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
-              letterSpacing: '0.06em', cursor: 'pointer', transition: '.15s',
+              fontFamily: FR, fontSize: FS.caption, fontWeight: 700,
+              letterSpacing: '0.06em', cursor: 'pointer', transition: EASE.default,
             }}
           >
             {map.is_visible_to_players ? '◉ Visible to players' : '◯ Hidden from players'}
@@ -239,28 +233,28 @@ export function StagingMapPanel({ campaignId, allMaps, onDeleteMap }: StagingMap
         {/* Delete confirm */}
         {deleteConfirm === map.id && (
           <div style={{
-            marginTop: 8, padding: '8px 10px', borderRadius: 4,
+            marginTop: SP[2], padding: `8px 10px`, borderRadius: RADIUS.md,
             background: 'rgba(224,80,80,0.08)', border: '1px solid rgba(224,80,80,0.3)',
             display: 'flex', flexDirection: 'column', gap: 6,
           }}>
-            <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: RED }}>
+            <div style={{ fontFamily: FR, fontSize: FS.caption, color: RED }}>
               Delete &quot;{map.name}&quot;? This cannot be undone.
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
               <button
                 onClick={() => setDeleteConfirm(null)}
                 style={{
-                  flex: 1, padding: '4px 0', borderRadius: 3,
+                  flex: 1, padding: `4px 0`, borderRadius: RADIUS.sm,
                   background: 'transparent', border: `1px solid ${BORDER}`,
-                  color: DIM, fontFamily: FR, fontSize: FS_CAPTION, cursor: 'pointer',
+                  color: DIM, fontFamily: FR, fontSize: FS.caption, cursor: 'pointer',
                 }}
               >Cancel</button>
               <button
                 onClick={() => void handleDelete(map.id)}
                 style={{
-                  flex: 2, padding: '4px 0', borderRadius: 3,
+                  flex: 2, padding: `4px 0`, borderRadius: RADIUS.sm,
                   background: 'rgba(224,80,80,0.15)', border: '1px solid rgba(224,80,80,0.5)',
-                  color: RED, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, cursor: 'pointer',
+                  color: RED, fontFamily: FR, fontSize: FS.caption, fontWeight: 700, cursor: 'pointer',
                 }}
               >✕ Delete</button>
             </div>
@@ -276,7 +270,7 @@ export function StagingMapPanel({ campaignId, allMaps, onDeleteMap }: StagingMap
 
       {/* ── Top bar: search + new planet + upload ─────────── */}
       <div style={{
-        padding: '10px 14px',
+        padding: `10px 14px`,
         borderBottom: `1px solid ${BORDER}`,
         display: 'flex', flexDirection: 'column', gap: 7,
       }}>
@@ -289,22 +283,22 @@ export function StagingMapPanel({ campaignId, allMaps, onDeleteMap }: StagingMap
 
         {newPlanetOpen ? (
           /* Inline create form */
-          <div style={{ display: 'flex', gap: 5 }}>
+          <div style={{ display: 'flex', gap: SP[1] }}>
             <input
               value={newPlanetName}
               onChange={e => setNewPlanetName(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') void handleCreatePlanet(); if (e.key === 'Escape') { setNewPlanetOpen(false); setNewPlanetName('') } }}
               placeholder="Planet name…"
               autoFocus
-              style={{ ...darkInput, flex: 1, padding: '5px 8px' }}
+              style={{ ...darkInput, flex: 1, padding: `5px 8px` }}
             />
             <button
               onClick={() => void handleCreatePlanet()}
               disabled={planetBusy || !newPlanetName.trim()}
               style={{
                 background: 'var(--hud-surface-lo)', border: `1px solid ${BORDER_HI}`,
-                color: HUD.gold, fontFamily: FR, fontSize: FS_SM, fontWeight: 700,
-                padding: '0 10px', borderRadius: 4, cursor: 'pointer',
+                color: HUD.gold, fontFamily: FR, fontSize: FS.sm, fontWeight: 700,
+                padding: `0 10px`, borderRadius: RADIUS.md, cursor: 'pointer',
                 opacity: (!newPlanetName.trim() || planetBusy) ? 0.45 : 1,
               }}
             >✓</button>
@@ -312,8 +306,8 @@ export function StagingMapPanel({ campaignId, allMaps, onDeleteMap }: StagingMap
               onClick={() => { setNewPlanetOpen(false); setNewPlanetName('') }}
               style={{
                 background: 'transparent', border: `1px solid ${BORDER}`,
-                color: DIM, fontFamily: FR, fontSize: FS_SM,
-                padding: '0 8px', borderRadius: 4, cursor: 'pointer',
+                color: DIM, fontFamily: FR, fontSize: FS.sm,
+                padding: `0 8px`, borderRadius: RADIUS.md, cursor: 'pointer',
               }}
             >×</button>
           </div>
@@ -323,18 +317,18 @@ export function StagingMapPanel({ campaignId, allMaps, onDeleteMap }: StagingMap
             <button
               onClick={() => setNewPlanetOpen(true)}
               style={{
-                flex: 1, padding: '6px 0', borderRadius: 4,
-                background: 'var(--bs-red-glow)', border: `1px solid var(--bs-red-glow-s)`,
-                color: BLUE, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
+                flex: 1, padding: `6px 0`, borderRadius: RADIUS.md,
+                background: 'var(--hud-accent-10)', border: `1px solid var(--hud-accent-border)`,
+                color: BLUE, fontFamily: FR, fontSize: FS.caption, fontWeight: 700,
                 letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer',
               }}
             >⊕ New Planet</button>
             <button
               onClick={() => setUploadOpen(true)}
               style={{
-                flex: 1, padding: '6px 0', borderRadius: 4,
+                flex: 1, padding: `6px 0`, borderRadius: RADIUS.md,
                 background: 'var(--hud-surface-lo)', border: `1px solid ${BORDER}`,
-                color: HUD.gold, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
+                color: HUD.gold, fontFamily: FR, fontSize: FS.caption, fontWeight: 700,
                 letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer',
               }}
             >↑ Upload Map</button>
@@ -369,28 +363,28 @@ export function StagingMapPanel({ campaignId, allMaps, onDeleteMap }: StagingMap
           {/* Delete planet confirm */}
           {deletePlanetConfirm === planet.id && (
             <div style={{
-              padding: '8px 14px',
+              padding: `8px 14px`,
               background: 'rgba(224,80,80,0.06)',
               borderBottom: `1px solid ${BORDER}`,
             }}>
-              <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: RED, marginBottom: 6 }}>
+              <div style={{ fontFamily: FR, fontSize: FS.caption, color: RED, marginBottom: 6 }}>
                 Delete &quot;{planet.name}&quot;? Maps will become unassigned.
               </div>
               <div style={{ display: 'flex', gap: 6 }}>
                 <button
                   onClick={() => setDeletePlanetConfirm(null)}
                   style={{
-                    flex: 1, padding: '4px 0', borderRadius: 3,
+                    flex: 1, padding: `4px 0`, borderRadius: RADIUS.sm,
                     background: 'transparent', border: `1px solid ${BORDER}`,
-                    color: DIM, fontFamily: FR, fontSize: FS_CAPTION, cursor: 'pointer',
+                    color: DIM, fontFamily: FR, fontSize: FS.caption, cursor: 'pointer',
                   }}
                 >Cancel</button>
                 <button
                   onClick={() => void handleDeletePlanet(planet.id)}
                   style={{
-                    flex: 2, padding: '4px 0', borderRadius: 3,
+                    flex: 2, padding: `4px 0`, borderRadius: RADIUS.sm,
                     background: 'rgba(224,80,80,0.15)', border: '1px solid rgba(224,80,80,0.5)',
-                    color: RED, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, cursor: 'pointer',
+                    color: RED, fontFamily: FR, fontSize: FS.caption, fontWeight: 700, cursor: 'pointer',
                   }}
                 >✕ Delete Planet</button>
               </div>
@@ -407,7 +401,7 @@ export function StagingMapPanel({ campaignId, allMaps, onDeleteMap }: StagingMap
 
       {/* No search results */}
       {planetSearch.trim() && filteredPlanets.length === 0 && (
-        <div style={{ padding: '12px 14px', fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>
+        <div style={{ padding: `12px 14px`, fontFamily: FR, fontSize: FS.caption, color: DIM }}>
           No planets match &quot;{planetSearch}&quot;.
         </div>
       )}
@@ -453,28 +447,28 @@ function FolderRow({ label, count, expanded, onToggle, onDelete }: FolderRowProp
       onMouseLeave={() => setHovered(false)}
       onClick={onToggle}
       style={{
-        display: 'flex', alignItems: 'center', gap: 8,
-        padding: '9px 14px',
-        borderBottom: `1px solid ${BORDER}`,
+        display: 'flex', alignItems: 'center', gap: SP[2],
+        padding: `9px 14px`,
+        borderBottom: `1px solid ${HUD.border}`,
         background: expanded ? 'var(--hud-surface-lo)' : hovered ? 'var(--hud-surface-lo)' : 'transparent',
         cursor: 'pointer',
-        transition: 'background 0.1s',
+        transition: `background ${EASE.default}`,
         userSelect: 'none',
       }}
     >
-      <span style={{ color: expanded ? HUD.gold : DIM, fontSize: 9, flexShrink: 0, lineHeight: 1 }}>
+      <span style={{ color: expanded ? HUD.gold : HUD.textFaint, fontSize: 9, flexShrink: 0, lineHeight: 1 }}>
         {expanded ? '▾' : '▶'}
       </span>
       <span style={{
-        fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 700,
-        color: expanded ? HUD.gold : TEXT,
+        fontFamily: FC, fontSize: FS.caption, fontWeight: 700,
+        color: expanded ? HUD.gold : HUD.text,
         letterSpacing: '0.1em', textTransform: 'uppercase',
         flex: 1, minWidth: 0,
         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
       }}>
         {label}
       </span>
-      <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, flexShrink: 0 }}>
+      <span style={{ fontFamily: FR, fontSize: FS.caption, color: HUD.textFaint, flexShrink: 0 }}>
         {count}
       </span>
       {onDelete && (hovered || expanded) && (
@@ -484,7 +478,7 @@ function FolderRow({ label, count, expanded, onToggle, onDelete }: FolderRowProp
           style={{
             background: 'transparent', border: 'none', cursor: 'pointer',
             color: 'rgba(224,80,80,0.55)', fontSize: 15, lineHeight: 1,
-            padding: '0 2px', flexShrink: 0, marginLeft: 2,
+            padding: `0 2px`, flexShrink: 0, marginLeft: 2,
           }}
         >×</button>
       )}
@@ -496,9 +490,9 @@ function FolderRow({ label, count, expanded, onToggle, onDelete }: FolderRowProp
 function FolderEmpty({ label }: { label: string }) {
   return (
     <div style={{
-      padding: '12px 22px',
-      fontFamily: FR, fontSize: FS_CAPTION, color: DIM,
-      borderBottom: `1px solid ${BORDER}`,
+      padding: `12px 22px`,
+      fontFamily: FR, fontSize: FS.caption, color: HUD.textFaint,
+      borderBottom: `1px solid ${HUD.border}`,
     }}>
       {label}
     </div>
@@ -553,7 +547,7 @@ function MapUploadModal({ campaignId, planets, onClose }: MapUploadModalProps) {
     <div
       onClick={onClose}
       style={{
-        position: 'fixed', inset: 0, zIndex: 9100,
+        position: 'fixed', inset: 0, zIndex: Z.tooltip,
         background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}
@@ -561,20 +555,20 @@ function MapUploadModal({ campaignId, planets, onClose }: MapUploadModalProps) {
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: PANEL_BG, border: `1px solid ${BORDER_HI}`, borderRadius: 8,
-          padding: 24, width: '100%', maxWidth: 440,
+          background: 'var(--hud-surface-hi)', border: `1px solid ${HUD.borderHi}`, borderRadius: RADIUS.lg,
+          padding: SP[6], width: '100%', maxWidth: 440,
           display: 'flex', flexDirection: 'column', gap: 14,
           boxShadow: '0 20px 60px rgba(0,0,0,0.8)',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ fontFamily: FC, fontSize: FS_H4, color: HUD.gold }}>Upload New Map</div>
-          <button onClick={onClose} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: DIM, fontSize: FS_H4, lineHeight: 1 }}>×</button>
+          <div style={{ fontFamily: FC, fontSize: FS.h4, color: HUD.gold }}>Upload New Map</div>
+          <button onClick={onClose} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: HUD.textFaint, fontSize: FS.h4, lineHeight: 1 }}>×</button>
         </div>
 
         {/* Map name */}
         <div>
-          <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, marginBottom: 4 }}>Map Name</div>
+          <div style={{ fontFamily: FR, fontSize: FS.caption, color: HUD.textFaint, marginBottom: SP[1] }}>Map Name</div>
           <input
             value={name}
             onChange={e => setName(e.target.value)}
@@ -585,14 +579,14 @@ function MapUploadModal({ campaignId, planets, onClose }: MapUploadModalProps) {
 
         {/* Planet assignment */}
         <div>
-          <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, marginBottom: 4 }}>Planet (optional)</div>
+          <div style={{ fontFamily: FR, fontSize: FS.caption, color: HUD.textFaint, marginBottom: SP[1] }}>Planet (optional)</div>
           <select
             value={planetId}
             onChange={e => setPlanetId(e.target.value)}
             style={{
               ...darkInput,
               cursor: 'pointer',
-              color: planetId ? TEXT : DIM,
+              color: planetId ? HUD.text : HUD.textFaint,
             }}
           >
             <option value="">— none —</option>
@@ -604,15 +598,15 @@ function MapUploadModal({ campaignId, planets, onClose }: MapUploadModalProps) {
 
         {/* Image */}
         <div>
-          <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, marginBottom: 4 }}>Image (JPG / PNG / WebP, max 10 MB)</div>
+          <div style={{ fontFamily: FR, fontSize: FS.caption, color: HUD.textFaint, marginBottom: SP[1] }}>Image (JPG / PNG / WebP, max 10 MB)</div>
           <input
             type="file"
             accept="image/jpeg,image/png,image/webp"
             onChange={e => setFile(e.target.files?.[0] ?? null)}
-            style={{ ...darkInput, padding: '5px 8px' }}
+            style={{ ...darkInput, padding: `5px 8px` }}
           />
           {file && (
-            <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, marginTop: 4 }}>
+            <div style={{ fontFamily: FR, fontSize: FS.caption, color: HUD.textFaint, marginTop: SP[1] }}>
               {file.name} ({(file.size / 1024 / 1024).toFixed(1)} MB)
             </div>
           )}
@@ -620,18 +614,18 @@ function MapUploadModal({ campaignId, planets, onClose }: MapUploadModalProps) {
 
         {/* Grid */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: SP[2], cursor: 'pointer' }}>
             <input
               type="checkbox"
               checked={gridEnabled}
               onChange={e => setGridEnabled(e.target.checked)}
               style={{ accentColor: HUD.gold }}
             />
-            <span style={{ fontFamily: FR, fontSize: FS_LABEL, color: TEXT }}>Grid overlay</span>
+            <span style={{ fontFamily: FR, fontSize: FS.label, color: HUD.text }}>Grid overlay</span>
           </label>
           {gridEnabled && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}>
-              <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>Cell size (px)</span>
+              <span style={{ fontFamily: FR, fontSize: FS.caption, color: HUD.textFaint }}>Cell size (px)</span>
               <input
                 type="number"
                 value={gridSize}
@@ -642,24 +636,24 @@ function MapUploadModal({ campaignId, planets, onClose }: MapUploadModalProps) {
           )}
         </div>
 
-        {err && <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: RED }}>{err}</div>}
+        {err && <div style={{ fontFamily: FR, fontSize: FS.caption, color: RED }}>{err}</div>}
 
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 4 }}>
+        <div style={{ display: 'flex', gap: SP[2], justifyContent: 'flex-end', marginTop: SP[1] }}>
           <button
             onClick={onClose}
             style={{
-              background: 'transparent', border: `1px solid ${BORDER}`,
-              color: DIM, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
-              padding: '6px 14px', borderRadius: 4, cursor: 'pointer',
+              background: 'transparent', border: `1px solid ${HUD.border}`,
+              color: HUD.textFaint, fontFamily: FR, fontSize: FS.caption, fontWeight: 700,
+              padding: `6px 14px`, borderRadius: RADIUS.md, cursor: 'pointer',
             }}
           >Cancel</button>
           <button
             onClick={() => void handleSave()}
             disabled={busy}
             style={{
-              background: 'var(--hud-surface-lo)', border: `1px solid ${BORDER_HI}`,
-              color: HUD.gold, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
-              padding: '6px 14px', borderRadius: 4,
+              background: 'var(--hud-surface-lo)', border: `1px solid ${HUD.borderHi}`,
+              color: HUD.gold, fontFamily: FR, fontSize: FS.caption, fontWeight: 700,
+              padding: `6px 14px`, borderRadius: RADIUS.md,
               cursor: busy ? 'not-allowed' : 'pointer',
               opacity: busy ? 0.6 : 1,
             }}

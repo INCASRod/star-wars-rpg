@@ -1,14 +1,11 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_BODY, FS, SP, RADIUS, EASE } from '@/lib/tokens'
 
-const FC     = 'var(--font-body)'
-const FR     = 'var(--font-body)'
 const BG     = 'var(--hud-surface-hi)'
 const PANEL  = 'var(--hud-surface-mid)'
-const DIM    = '#6A8070'
 const TEXT   = 'var(--hud-text)'
 const BORDER    = 'var(--hud-border)'
 const BORDER_HI = 'var(--hud-border-hi)'
@@ -64,7 +61,7 @@ export function StagingRightDrawer({ open, onClose, title, children }: StagingRi
           borderLeft:    `1px solid ${open ? BORDER_HI : 'transparent'}`,
           boxShadow:     open ? '-8px 0 40px rgba(0,0,0,0.6)' : 'none',
           transform:     open ? 'translateX(0)' : 'translateX(100%)',
-          transition:    'transform 0.26s cubic-bezier(0.22,1,0.36,1), border-color 0.2s',
+          transition:    `transform 0.26s cubic-bezier(0.22,1,0.36,1), border-color ${EASE.default}`,
           pointerEvents: open ? 'auto' : 'none',
         }}
       >
@@ -73,8 +70,8 @@ export function StagingRightDrawer({ open, onClose, title, children }: StagingRi
           style={{
             flexShrink: 0,
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '0 16px',
-            height: 50,
+            padding: `0 ${SP[4]}`,
+            height: '3.125rem',
             borderBottom: `1px solid ${BORDER}`,
             background: PANEL,
           }}
@@ -82,21 +79,19 @@ export function StagingRightDrawer({ open, onClose, title, children }: StagingRi
           <button
             onClick={onClose}
             aria-label={`Close ${title}`}
+            className="staging-close-btn"
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
-              color: DIM, fontSize: 18, lineHeight: 1,
-              padding: '4px 6px', borderRadius: 4,
-              transition: 'color 0.15s',
-              fontFamily: FR,
+              fontSize: '1.125rem', lineHeight: 1,
+              padding: '0.25rem 0.375rem', borderRadius: RADIUS.md,
+              fontFamily: FONT_BODY,
             }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = TEXT }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = DIM }}
           >
             ✕
           </button>
           <span
             style={{
-              fontFamily: FC, fontSize: 'var(--text-label)', fontWeight: 700,
+              fontFamily: FONT_BODY, fontSize: 'var(--text-label)', fontWeight: 700,
               letterSpacing: '0.2em', textTransform: 'uppercase', color: HUD.gold,
             }}
           >

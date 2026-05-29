@@ -1,6 +1,7 @@
-﻿'use client'
+'use client'
 
 import { useRef, useState } from 'react'
+import { HUD, FS, FONT_BODY, FONT_DISPLAY, Z } from '@/lib/tokens'
 
 interface CenterHeroProps {
   name: string
@@ -24,7 +25,7 @@ export function CenterHero({ name, subtitle, portraitUrl, credits, xpTotal, xpAv
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'flex-end',
-      zIndex: 1,
+      zIndex: Z.raised,
       height: '100%',
     }}>
       {/* Glow disc */}
@@ -35,8 +36,9 @@ export function CenterHero({ name, subtitle, portraitUrl, credits, xpTotal, xpAv
         transform: 'translateX(-50%)',
         width: 'clamp(280px, 24vw, 600px)',
         height: 'clamp(60px, 6vw, 150px)',
-        background: 'radial-gradient(ellipse, var(--bs-red-glow-s) 0%, transparent 70%)',
-        zIndex: 0,
+        // --bs-red-glow-s → var(--hud-accent-45)
+        background: 'radial-gradient(ellipse, var(--hud-accent-45) 0%, transparent 70%)',
+        zIndex: Z.base,
         animation: 'glowPulse 3s ease-in-out infinite',
       }} />
 
@@ -51,7 +53,7 @@ export function CenterHero({ name, subtitle, portraitUrl, credits, xpTotal, xpAv
           transform: 'translateX(-50%)',
           width: 'clamp(320px, 30vw, 800px)',
           height: '92%',
-          zIndex: 0,
+          zIndex: Z.base,
           overflow: 'hidden',
         }}
       >
@@ -66,6 +68,7 @@ export function CenterHero({ name, subtitle, portraitUrl, credits, xpTotal, xpAv
                 height: '100%',
                 objectFit: 'cover',
                 objectPosition: 'center top',
+                // CSS mask gradient — no token equivalent; kept as literal CSS value
                 maskImage: 'linear-gradient(to top, transparent 0%, black 12%, black 85%, transparent 100%)',
                 WebkitMaskImage: 'linear-gradient(to top, transparent 0%, black 12%, black 85%, transparent 100%)',
                 filter: 'brightness(1.02) contrast(1.04)',
@@ -81,13 +84,14 @@ export function CenterHero({ name, subtitle, portraitUrl, credits, xpTotal, xpAv
                 <button
                   onClick={() => fileRef.current?.click()}
                   style={{
-                    background: 'var(--bs-card)', backdropFilter: 'blur(6px)',
-                    border: '1px solid var(--bs-bdr-mid)',
+                    // --bs-card → var(--hud-surface-lo)
+                    background: 'var(--hud-surface-lo)', backdropFilter: 'blur(6px)',
+                    border: `1px solid ${HUD.borderHi}`,
                     padding: '0.25rem 0.5rem',
                     cursor: 'pointer',
-                    fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)',
+                    fontFamily: FONT_BODY, fontSize: FS.caption,
                     fontWeight: 700, letterSpacing: '0.08rem',
-                    color: 'var(--bs-txt2)', transition: '.15s',
+                    color: HUD.textDim, transition: '.15s',
                   }}
                 >
                   CHANGE
@@ -95,11 +99,12 @@ export function CenterHero({ name, subtitle, portraitUrl, credits, xpTotal, xpAv
                 <button
                   onClick={onPortraitDelete}
                   style={{
+                    // Pre-approved: rgba(0,0,0,*) overlay — this is rgba(191,64,64,.12), a themed red overlay
                     background: 'rgba(191,64,64,.12)', backdropFilter: 'blur(6px)',
                     border: '1px solid var(--red)',
                     padding: '0.25rem 0.5rem',
                     cursor: 'pointer',
-                    fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)',
+                    fontFamily: FONT_BODY, fontSize: FS.caption,
                     fontWeight: 700, letterSpacing: '0.08rem',
                     color: 'var(--red)', transition: '.15s',
                   }}
@@ -124,17 +129,17 @@ export function CenterHero({ name, subtitle, portraitUrl, credits, xpTotal, xpAv
             >
               <div style={{
                 width: '5rem', height: '5rem', borderRadius: '50%',
-                border: '2px dashed var(--bs-bdr-mid)',
+                border: `2px dashed ${HUD.borderHi}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 'var(--font-xl)', color: 'var(--bs-txt3)',
+                fontSize: FS.h3, color: HUD.textFaint,
                 transition: '.2s',
               }}>
                 +
               </div>
               <div style={{
-                fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)',
+                fontFamily: FONT_BODY, fontSize: FS.caption,
                 fontWeight: 600, letterSpacing: '0.15rem',
-                color: 'var(--bs-txt3)',
+                color: HUD.textFaint,
               }}>
                 UPLOAD PORTRAIT
               </div>
@@ -159,7 +164,7 @@ export function CenterHero({ name, subtitle, portraitUrl, credits, xpTotal, xpAv
       {/* Info container — sits above the image with a readable backdrop */}
       <div style={{
         position: 'relative',
-        zIndex: 5,
+        zIndex: Z.sticky,
         width: '100%',
         display: 'flex',
         flexDirection: 'column',
@@ -170,6 +175,8 @@ export function CenterHero({ name, subtitle, portraitUrl, credits, xpTotal, xpAv
         <div style={{
           position: 'absolute',
           inset: 0,
+          // Pre-approved: rgba(232,221,208,*) is the parchment/sand background colour used
+          // as a gradient overlay for readability — intentional literal rgba values
           background: 'linear-gradient(to top, rgba(232,221,208,.95) 0%, rgba(232,221,208,.8) 60%, transparent 100%)',
           pointerEvents: 'none',
           zIndex: -1,
@@ -182,19 +189,20 @@ export function CenterHero({ name, subtitle, portraitUrl, credits, xpTotal, xpAv
           paddingTop: 'var(--sp-lg)',
         }}>
           <h1 style={{
-            fontFamily: 'var(--font-rajdhani)',
+            fontFamily: FONT_DISPLAY,
             fontWeight: 900,
             fontSize: 'var(--font-hero)',
             letterSpacing: '0.4rem',
-            color: 'var(--bs-ink)',
-            textShadow: '0 0 40px var(--bs-red-glow-s)',
+            color: HUD.text,
+            // --bs-red-glow-s → var(--hud-accent-45)
+            textShadow: '0 0 40px var(--hud-accent-45)',
           }}>
             {name}
           </h1>
           <div style={{
-            fontFamily: 'var(--font-rajdhani)',
-            fontSize: 'var(--font-lg)',
-            color: 'var(--bs-txt2)',
+            fontFamily: FONT_BODY,
+            fontSize: FS.h4,
+            color: HUD.textDim,
             letterSpacing: '0.1rem',
             marginTop: '0.25rem',
             whiteSpace: 'nowrap',
@@ -211,7 +219,8 @@ export function CenterHero({ name, subtitle, portraitUrl, credits, xpTotal, xpAv
           justifyContent: 'center',
           marginBottom: 'var(--sp-xs)',
         }}>
-          <MetaItem value={credits} label="Credits" color="var(--bs-red-mid)" />
+          {/* Dynamic color prop — kept as inline style in MetaItem */}
+          <MetaItem value={credits} label="Credits" color="var(--hud-accent)" />
           <MetaItem value={xpTotal} label="Total XP" />
           <MetaItem value={xpAvailable} label="Available" color="var(--blue)" />
         </div>
@@ -224,19 +233,20 @@ function MetaItem({ value, label, color }: { value: number; label: string; color
   return (
     <div style={{ textAlign: 'center' }}>
       <div style={{
-        fontFamily: 'var(--font-rajdhani)',
-        fontSize: 'var(--font-xl)',
+        fontFamily: FONT_DISPLAY,
+        fontSize: FS.h3,
         fontWeight: 800,
-        color: color || 'var(--bs-ink)',
+        // Dynamic color — value is passed as a prop at runtime, kept as inline style
+        color: color || HUD.text,
       }}>
         {value}
       </div>
       <div style={{
-        fontFamily: 'var(--font-rajdhani)',
-        fontSize: 'var(--font-xs)',
+        fontFamily: FONT_BODY,
+        fontSize: FS.caption,
         fontWeight: 600,
         letterSpacing: '0.15rem',
-        color: 'var(--bs-txt3)',
+        color: HUD.textFaint,
         marginTop: '0.25rem',
       }}>
         {label}

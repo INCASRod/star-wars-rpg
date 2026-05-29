@@ -1,5 +1,6 @@
 'use client'
 
+// SVG attribute colour — rgba() is intentional here; CSS vars cannot be used in SVG fill/stroke attributes
 const SWORD_DIM = 'rgba(255,240,232,0.55)'
 
 interface CombatCheckButtonProps {

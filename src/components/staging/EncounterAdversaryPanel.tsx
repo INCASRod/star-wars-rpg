@@ -15,37 +15,48 @@ import type { Adversary, AdversaryInstance, AdversaryGear } from '@/lib/adversar
 import type { CombatEncounter, InitiativeSlot } from '@/lib/combat'
 import type { Character, CharacterSkill } from '@/lib/types'
 import { EMPTY_POOL } from '@/components/player-hud/design-tokens'
-import { FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4 } from '@/components/player-hud/design-tokens'
 import type { RollResult } from '@/components/player-hud/dice-engine'
-import { HUD } from '@/lib/tokens'
+import { HUD, FS, SP, FONT_BODY, RADIUS, Z, EASE, COLOR, CHAR_COLOR } from '@/lib/tokens'
 
 /* ── Design tokens ────────────────────────────────────────── */
-const BG        = 'var(--hud-bg)'
-const PANEL_BG  = 'var(--hud-surface-mid)'
-const RAISED_BG = 'var(--hud-surface-lo)'
-const BORDER    = 'var(--hud-border)'
-const RED       = '#e05252'
-const BLUE      = '#52a8e0'
-const GREEN     = '#52e08a'
-const TEAL      = '#52e0a8'
-const INT_C     = '#a852e0'
-const CUN_C     = '#e0a852'
-const WIL_C     = '#52e0a8'
-const TEXTGR    = '#72B421'
-const TEXT      = 'var(--hud-text)'
-const TEXT_SEC  = 'var(--hud-text-dim)'
-const TEXT_MUTED = 'var(--hud-text-faint)'
-const FC        = 'var(--font-body)'
+const FC         = FONT_BODY
+const BG         = 'var(--hud-bg)'
+const PANEL_BG   = 'var(--hud-surface-mid)'
+const RAISED_BG  = 'var(--hud-surface-lo)'
+const BORDER     = 'var(--hud-border)'
+const RED        = COLOR.red          // var(--red)
+const BLUE       = COLOR.blue         // var(--blue)
+const GREEN      = COLOR.green        // var(--green)
+const TEAL       = '#52e0a8'          // no token — keep as-is
+const INT_C      = '#a852e0'          // no token — keep as-is (used for Abilities section)
+const CUN_C      = COLOR.amber        // var(--amber)
+const WIL_C      = '#52e0a8'          // no token — keep as-is (same hue as TEAL)
+const TEXTGR     = '#72B421'          // no token — keep as-is (skill rank / weapon text)
+const TEXT       = HUD.text
+const TEXT_SEC   = HUD.textDim
+const TEXT_MUTED = HUD.textFaint
 
 /* ── Characteristic display config ───────────────────────── */
-const CHAR_COLORS = [RED, BLUE, INT_C, CUN_C, WIL_C, '#e05298']
+const CHAR_COLORS = [
+  CHAR_COLOR.brawn,     // #E03A1E
+  CHAR_COLOR.agility,   // #D4903A
+  CHAR_COLOR.intellect, // #C8AA50
+  CHAR_COLOR.cunning,   // #B07828
+  CHAR_COLOR.willpower, // #C82A10
+  CHAR_COLOR.presence,  // #E07050
+]
 const CHAR_KEYS   = ['brawn', 'agility', 'intellect', 'cunning', 'willpower', 'presence'] as const
 const CHAR_ABBR   = ['BR', 'AG', 'INT', 'CUN', 'WIL', 'PR']
 const CHAR_ABBR_MAP: Record<string, string> = {
   brawn: 'Br', agility: 'Ag', intellect: 'Int', cunning: 'Cun', willpower: 'Wil', presence: 'Pr',
 }
 const CHAR_COLOR_MAP: Record<string, string> = {
-  brawn: RED, agility: BLUE, intellect: INT_C, cunning: CUN_C, willpower: WIL_C, presence: '#e05298',
+  brawn:     CHAR_COLOR.brawn,
+  agility:   CHAR_COLOR.agility,
+  intellect: CHAR_COLOR.intellect,
+  cunning:   CHAR_COLOR.cunning,
+  willpower: CHAR_COLOR.willpower,
+  presence:  CHAR_COLOR.presence,
 }
 const SKILL_CHAR: Record<string, keyof AdversaryInstance['characteristics']> = {
   Athletics: 'brawn', Brawl: 'brawn', Lightsaber: 'brawn', Melee: 'brawn', Resilience: 'brawn',
@@ -349,13 +360,13 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
     const d = desc.toLowerCase()
     const chips: { label: string; color: string; title: string }[] = []
     if ((d.match(/add\w* (?:a |one |two |an? )?boost|boost die|boost dice/g) ?? []).length > 0)
-      chips.push({ label: '+□', color: '#70C8E8', title: 'Adds Boost die' })
+      chips.push({ label: '+□', color: 'var(--die-boost)', title: 'Adds Boost die' })
     if ((d.match(/remov\w* (?:a |one |two |an? )?setback|cancel\w* (?:a |)?setback/g) ?? []).length > 0)
-      chips.push({ label: '−■', color: '#4EC87A', title: 'Removes Setback die' })
+      chips.push({ label: '−■', color: 'var(--state-success)', title: 'Removes Setback die' })
     if ((d.match(/upgrad\w* (?:the |a |an? )?(?:abilit|skill|check|roll)/g) ?? []).length > 0)
-      chips.push({ label: '↑', color: '#FFD700', title: 'Upgrades ability to proficiency' })
+      chips.push({ label: '↑', color: COLOR.gold, title: 'Upgrades ability to proficiency' })
     if ((d.match(/add\w* (?:a |one |two |an? )?setback|impose\w* (?:a |one |two |an? )?setback/g) ?? []).length > 0)
-      chips.push({ label: '+■', color: '#909090', title: 'Adds Setback die' })
+      chips.push({ label: '+■', color: '#909090', title: 'Adds Setback die' }) // no token — neutral grey
     return chips
   }
 
@@ -363,9 +374,9 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
 
   if (!encounter || adversaries.length === 0) {
     return (
-      <div style={{ padding: '40px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-        <div style={{ fontSize: 28, opacity: 0.3 }}>◆</div>
-        <div style={{ fontFamily: FC, fontSize: FS_SM, color: TEXT_MUTED, textAlign: 'center' }}>
+      <div style={{ padding: `2.5rem ${SP[4]}`, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.625rem' }}>
+        <div style={{ fontSize: '1.75rem', opacity: 0.3 }}>◆</div>
+        <div style={{ fontFamily: FC, fontSize: FS.sm, color: TEXT_MUTED, textAlign: 'center' }}>
           No adversaries in this encounter.
         </div>
       </div>
@@ -373,16 +384,16 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
   }
 
   return (
-    <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+    <div style={{ padding: `${SP[3]} 0.875rem`, display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
 
       {/* ── Defeat notification toast ─────────────────────────── */}
       {defeatNotif && (
         <div style={{
-          background: `${RED}18`, border: `1px solid ${RED}50`, borderRadius: 5,
-          padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8,
+          background: `${RED}18`, border: `1px solid ${RED}50`, borderRadius: RADIUS.md,
+          padding: `${SP[2]} ${SP[3]}`, display: 'flex', alignItems: 'center', gap: SP[2],
         }}>
-          <span style={{ fontSize: 14 }}>☠</span>
-          <span style={{ fontFamily: FC, fontSize: FS_LABEL, color: RED, fontWeight: 700 }}>
+          <span style={{ fontSize: '0.875rem' }}>☠</span>
+          <span style={{ fontFamily: FC, fontSize: FS.label, color: RED, fontWeight: 700 }}>
             {defeatNotif.message}
           </span>
         </div>
@@ -411,57 +422,57 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
           <div key={adv.instanceId} style={{
             background: isDefeated ? 'var(--hud-surface-lo)' : PANEL_BG,
             backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-            borderRadius: 6, position: 'relative',
+            borderRadius: RADIUS.lg, position: 'relative',
             borderTop: `2px solid ${isDefeated ? 'var(--hud-border)' : `${accent}80`}`,
             borderRight: `1px solid ${BORDER}`,
             borderBottom: `1px solid ${BORDER}`,
             borderLeft: `1px solid ${BORDER}`,
             opacity: isDefeated ? 0.45 : 1,
-            transition: 'opacity 400ms',
+            transition: `opacity ${EASE.default}`,
           }}>
 
             {/* ── Header ──────────────────────────────────────── */}
             <div
-              style={{ padding: '10px 12px 8px', display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}
+              style={{ padding: `0.625rem ${SP[3]} ${SP[2]}`, display: 'flex', alignItems: 'center', gap: SP[2], cursor: 'pointer' }}
               onClick={toggleOpen}
             >
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', flexWrap: 'wrap' }}>
                   <span style={{
-                    fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: TEXT,
+                    fontFamily: FC, fontSize: FS.sm, fontWeight: 700, color: TEXT,
                     textDecoration: isDefeated ? 'line-through' : 'none',
                   }}>{adv.name}</span>
                   {isDefeated ? (
                     <span style={{
-                      fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.1em',
+                      fontFamily: FC, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.1em',
                       color: TEXT_MUTED, border: `1px solid var(--hud-border)`,
-                      borderRadius: 3, padding: '1px 5px', background: 'var(--hud-surface-lo)',
+                      borderRadius: RADIUS.sm, padding: '1px 5px', background: 'var(--hud-surface-lo)',
                     }}>DEFEATED</span>
                   ) : (
                     <TypeBadge type={adv.type} />
                   )}
                   {adv.type === 'minion' && !isDefeated && (
                     <span style={{
-                      fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.1em',
-                      color: accent, border: `1px solid ${accent}50`, borderRadius: 3,
+                      fontFamily: FC, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.1em',
+                      color: accent, border: `1px solid ${accent}50`, borderRadius: RADIUS.sm,
                       padding: '1px 5px', background: `${accent}10`,
                     }}>MINION GROUP</span>
                   )}
                 </div>
               </div>
-              <span style={{ color: TEXT_MUTED, fontSize: FS_SM }}>{isOpen ? '▲' : '▼'}</span>
+              <span style={{ color: TEXT_MUTED, fontSize: FS.sm }}>{isOpen ? '▲' : '▼'}</span>
 
               {/* Remove button */}
               {removeConfirm === adv.instanceId ? (
                 <div
                   onClick={e => e.stopPropagation()}
                   style={{
-                    display: 'flex', alignItems: 'center', gap: 6,
+                    display: 'flex', alignItems: 'center', gap: '0.375rem',
                     background: 'var(--hud-surface-hi)', border: '1px solid rgba(224,80,80,0.4)',
-                    borderRadius: 4, padding: '3px 8px', flexShrink: 0,
+                    borderRadius: RADIUS.md, padding: `0.1875rem ${SP[2]}`, flexShrink: 0,
                   }}
                 >
-                  <span style={{ fontFamily: FC, fontSize: FS_CAPTION, color: 'rgba(224,80,80,0.85)', whiteSpace: 'nowrap' }}>Remove?</span>
+                  <span style={{ fontFamily: FC, fontSize: FS.caption, color: 'rgba(224,80,80,0.85)', whiteSpace: 'nowrap' }}>Remove?</span>
                   <button onClick={() => setRemoveConfirm(null)}
                     style={smallCtrlBtn}>Cancel</button>
                   <button onClick={() => void removeAdversary(adv.instanceId)}
@@ -477,8 +488,8 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
                   title={`Remove ${adv.name}`}
                   style={{
                     background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0,
-                    color: 'rgba(244,67,54,0.35)', fontSize: 15, lineHeight: 1,
-                    padding: '2px 5px', borderRadius: 3, transition: 'color .15s',
+                    color: 'rgba(244,67,54,0.35)', fontSize: '0.9375rem', lineHeight: 1,
+                    padding: '2px 5px', borderRadius: RADIUS.sm, transition: `color ${EASE.default}`,
                   }}
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(244,67,54,0.85)' }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(244,67,54,0.35)' }}
@@ -487,7 +498,7 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
             </div>
 
             {/* ── Wound tracker (always visible) ──────────────── */}
-            <div style={{ padding: '0 12px 10px' }}>
+            <div style={{ padding: `0 ${SP[3]} ${SP[2]}` }}>
               <AdversaryWoundTracker
                 adv={adv} accentColor={accent}
                 onAdjust={delta => void adjustAdversaryWounds(adv, delta)}
@@ -498,16 +509,16 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
 
             {/* ── Expanded body ────────────────────────────────── */}
             {isOpen && (
-              <div style={{ padding: '0 12px 12px', borderTop: `1px solid ${BORDER}` }}>
+              <div style={{ padding: `0 ${SP[3]} ${SP[3]}`, borderTop: `1px solid ${BORDER}` }}>
 
                 {/* Characteristics */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: 4, marginTop: 10, marginBottom: 10 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: SP[1], marginTop: SP[2], marginBottom: SP[2] }}>
                   {CHAR_KEYS.map((key, i) => (
                     <div key={key} style={{ textAlign: 'center' }}>
-                      <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: CHAR_COLORS[i], lineHeight: 1 }}>
+                      <div style={{ fontFamily: FC, fontSize: FS.h4, fontWeight: 700, color: CHAR_COLORS[i], lineHeight: 1 }}>
                         {adv.characteristics[key]}
                       </div>
-                      <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: TEXT_MUTED, marginTop: 2 }}>{CHAR_ABBR[i]}</div>
+                      <div style={{ fontFamily: FC, fontSize: FS.overline, color: TEXT_MUTED, marginTop: 2 }}>{CHAR_ABBR[i]}</div>
                     </div>
                   ))}
                 </div>
@@ -518,17 +529,17 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
                   const expectedSoak = adv.characteristics.brawn + gearSoak.total
                   return (
                     <>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: gearSoak.total > 0 ? 4 : 10, alignItems: 'flex-start' }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: SP[1], marginBottom: gearSoak.total > 0 ? SP[1] : SP[2], alignItems: 'flex-start' }}>
                         {/* Soak — editable */}
-                        <div style={{ background: `${WIL_C}15`, border: `1px solid ${WIL_C}40`, borderRadius: 3, padding: '3px 5px', textAlign: 'center', minWidth: 52 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'center' }}>
+                        <div style={{ background: `${WIL_C}15`, border: `1px solid ${WIL_C}40`, borderRadius: RADIUS.sm, padding: `0.1875rem 0.3125rem`, textAlign: 'center', minWidth: '3.25rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: SP[1], justifyContent: 'center' }}>
                             <button onClick={e => { e.stopPropagation(); void updateAdversarySoak(adv.instanceId, adv.soak - 1) }}
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px', fontFamily: FC, fontSize: FS_LABEL, color: `${WIL_C}80`, lineHeight: 1 }}>−</button>
-                            <span style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: WIL_C, lineHeight: 1 }}>{adv.soak}</span>
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px', fontFamily: FC, fontSize: FS.label, color: `${WIL_C}80`, lineHeight: 1 }}>−</button>
+                            <span style={{ fontFamily: FC, fontSize: FS.h4, fontWeight: 700, color: WIL_C, lineHeight: 1 }}>{adv.soak}</span>
                             <button onClick={e => { e.stopPropagation(); void updateAdversarySoak(adv.instanceId, adv.soak + 1) }}
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px', fontFamily: FC, fontSize: FS_LABEL, color: `${WIL_C}80`, lineHeight: 1 }}>+</button>
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px', fontFamily: FC, fontSize: FS.label, color: `${WIL_C}80`, lineHeight: 1 }}>+</button>
                           </div>
-                          <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: TEXT_MUTED }}>Soak</div>
+                          <div style={{ fontFamily: FC, fontSize: FS.overline, color: TEXT_MUTED }}>Soak</div>
                         </div>
                         {/* Static stats */}
                         {[
@@ -537,22 +548,22 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
                           { label: 'M.Def', value: adv.defense.melee,   color: CUN_C },
                           { label: 'R.Def', value: adv.defense.ranged,  color: INT_C },
                         ].map(s => (
-                          <div key={s.label} style={{ background: `${s.color}15`, border: `1px solid ${s.color}40`, borderRadius: 3, padding: '3px 7px', textAlign: 'center' }}>
-                            <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: s.color, lineHeight: 1 }}>{s.value}</div>
-                            <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: TEXT_MUTED }}>{s.label}</div>
+                          <div key={s.label} style={{ background: `${s.color}15`, border: `1px solid ${s.color}40`, borderRadius: RADIUS.sm, padding: `0.1875rem 0.4375rem`, textAlign: 'center' }}>
+                            <div style={{ fontFamily: FC, fontSize: FS.h4, fontWeight: 700, color: s.color, lineHeight: 1 }}>{s.value}</div>
+                            <div style={{ fontFamily: FC, fontSize: FS.overline, color: TEXT_MUTED }}>{s.label}</div>
                           </div>
                         ))}
                       </div>
                       {/* Soak breakdown */}
                       {gearSoak.total > 0 && (
-                        <div style={{ marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                          <span style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: TEXT_MUTED }}>
+                        <div style={{ marginBottom: SP[2], display: 'flex', alignItems: 'center', gap: '0.375rem', flexWrap: 'wrap' }}>
+                          <span style={{ fontFamily: FC, fontSize: FS.overline, color: TEXT_MUTED }}>
                             Soak: Br {adv.characteristics.brawn} + {gearSoak.sources.join(' + ')} = {expectedSoak}
                           </span>
                           {adv.soak !== expectedSoak && (
                             <button
                               onClick={e => { e.stopPropagation(); void updateAdversarySoak(adv.instanceId, expectedSoak) }}
-                              style={{ background: `${HUD.gold}15`, border: `1px solid ${HUD.gold}50`, borderRadius: 3, padding: '1px 6px', cursor: 'pointer', fontFamily: FC, fontSize: FS_OVERLINE, color: HUD.gold }}
+                              style={{ background: `${HUD.gold}15`, border: `1px solid ${HUD.gold}50`, borderRadius: RADIUS.sm, padding: '1px 6px', cursor: 'pointer', fontFamily: FC, fontSize: FS.overline, color: HUD.gold }}
                             >Apply</button>
                           )}
                         </div>
@@ -563,11 +574,11 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
 
                 {/* Skills */}
                 {Object.keys(adv.skillRanks ?? {}).length > 0 && (
-                  <div style={{ marginBottom: 10 }}>
-                    <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, letterSpacing: '0.15em', textTransform: 'uppercase', color: `${HUD.gold}90`, marginBottom: 6 }}>Skills</div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 32px 24px auto', gap: '2px 6px', marginBottom: 3 }}>
+                  <div style={{ marginBottom: SP[2] }}>
+                    <div style={{ fontFamily: FC, fontSize: FS.overline, letterSpacing: '0.15em', textTransform: 'uppercase', color: `${HUD.gold}90`, marginBottom: '0.375rem' }}>Skills</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2rem 1.5rem auto', gap: '2px 6px', marginBottom: 3 }}>
                       {['Skill', 'Char', 'Rnk', 'Roll'].map(h => (
-                        <div key={h} style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: TEXT_MUTED, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{h}</div>
+                        <div key={h} style={{ fontFamily: FC, fontSize: FS.overline, color: TEXT_MUTED, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{h}</div>
                       ))}
                     </div>
                     {Object.entries(adv.skillRanks).map(([skill, rank]) => {
@@ -588,20 +599,20 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
                         ? `Lightsaber (${CHAR_ABBR_FULL[overrideKey ?? 'BR'] ?? 'Brawn'})`
                         : skill
                       return (
-                        <div key={skill} style={{ display: 'grid', gridTemplateColumns: '1fr 32px 24px auto', gap: '2px 6px', alignItems: 'center', padding: '3px 0', borderBottom: `1px solid ${BORDER}` }}>
-                          <span style={{ fontFamily: FC, fontSize: FS_LABEL, color: TEXT_SEC }}>{displaySkillName}</span>
-                          <span style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: charColor, textAlign: 'center' }}>
+                        <div key={skill} style={{ display: 'grid', gridTemplateColumns: '1fr 2rem 1.5rem auto', gap: '2px 6px', alignItems: 'center', padding: `0.1875rem 0`, borderBottom: `1px solid ${BORDER}` }}>
+                          <span style={{ fontFamily: FC, fontSize: FS.label, color: TEXT_SEC }}>{displaySkillName}</span>
+                          <span style={{ fontFamily: FC, fontSize: FS.overline, color: charColor, textAlign: 'center' }}>
                             {charKey ? CHAR_ABBR_MAP[charKey] : '—'}
                           </span>
-                          <span style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, color: TEXTGR, textAlign: 'center' }}>{rank}</span>
+                          <span style={{ fontFamily: FC, fontSize: FS.label, fontWeight: 700, color: TEXTGR, textAlign: 'center' }}>{rank}</span>
                           <div style={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
                             {Array.from({ length: prof }).map((_, i) => (
-                              <div key={`p${i}`} style={{ width: 11, height: 11, borderRadius: '50%', background: '#FFE066', border: '1px solid #C8AA50', flexShrink: 0 }} title="Proficiency" />
+                              <div key={`p${i}`} style={{ width: '0.6875rem', height: '0.6875rem', borderRadius: RADIUS.full, background: 'var(--die-proficiency)', border: `1px solid ${COLOR.gold}`, flexShrink: 0 }} title="Proficiency" />
                             ))}
                             {Array.from({ length: abil }).map((_, i) => (
-                              <div key={`a${i}`} style={{ width: 11, height: 11, borderRadius: '50%', background: '#4EC87A', border: '1px solid #2fa85a', flexShrink: 0 }} title="Ability" />
+                              <div key={`a${i}`} style={{ width: '0.6875rem', height: '0.6875rem', borderRadius: RADIUS.full, background: 'var(--die-ability)', border: `1px solid ${COLOR.green}`, flexShrink: 0 }} title="Ability" />
                             ))}
-                            {prof === 0 && abil === 0 && <span style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: TEXT_MUTED }}>—</span>}
+                            {prof === 0 && abil === 0 && <span style={{ fontFamily: FC, fontSize: FS.overline, color: TEXT_MUTED }}>—</span>}
                           </div>
                         </div>
                       )
@@ -611,22 +622,22 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
 
                 {/* Talents */}
                 {adv.talents && adv.talents.length > 0 && (
-                  <div style={{ marginBottom: 8 }}>
-                    <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, letterSpacing: '0.15em', textTransform: 'uppercase', color: `${HUD.gold}90`, marginBottom: 5 }}>Talents</div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                  <div style={{ marginBottom: SP[2] }}>
+                    <div style={{ fontFamily: FC, fontSize: FS.overline, letterSpacing: '0.15em', textTransform: 'uppercase', color: `${HUD.gold}90`, marginBottom: '0.3125rem' }}>Talents</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: SP[1] }}>
                       {adv.talents.map((t, i) => {
                         const actKey = (t.activation ?? 'passive').toLowerCase()
                         const color = TALENT_ACT_COLORS[actKey] ?? TEXT_MUTED
                         const diceChips = parseTalentDice(t.description)
                         return (
                           <div key={i}
-                            style={{ background: `${color}15`, border: `1px solid ${color}40`, borderRadius: 3, padding: '3px 7px', display: 'flex', alignItems: 'center', gap: 5, cursor: t.description ? 'help' : 'default' }}
+                            style={{ background: `${color}15`, border: `1px solid ${color}40`, borderRadius: RADIUS.sm, padding: `0.1875rem 0.4375rem`, display: 'flex', alignItems: 'center', gap: '0.3125rem', cursor: t.description ? 'help' : 'default' }}
                             onMouseEnter={e => { if (t.description) setTalentTooltip({ name: t.name, description: t.description, activation: t.activation, rect: (e.currentTarget as HTMLElement).getBoundingClientRect() }) }}
                             onMouseLeave={() => setTalentTooltip(null)}
                           >
-                            <span style={{ fontFamily: FC, fontSize: FS_OVERLINE, color }}>{t.name}</span>
+                            <span style={{ fontFamily: FC, fontSize: FS.overline, color }}>{t.name}</span>
                             {diceChips.map((chip, ci) => (
-                              <span key={ci} title={chip.title} style={{ fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 700, color: chip.color, background: `${chip.color}18`, border: `1px solid ${chip.color}50`, borderRadius: 2, padding: '0 3px' }}>{chip.label}</span>
+                              <span key={ci} title={chip.title} style={{ fontFamily: FC, fontSize: FS.overline, fontWeight: 700, color: chip.color, background: `${chip.color}18`, border: `1px solid ${chip.color}50`, borderRadius: RADIUS.sm, padding: '0 3px' }}>{chip.label}</span>
                             ))}
                           </div>
                         )
@@ -636,31 +647,31 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
                 )}
 
                 {/* Abilities */}
-                <div style={{ marginBottom: 8 }}>
-                  <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: INT_C, marginBottom: 6 }}>Abilities</div>
-                  <div style={{ background: `${INT_C}0c`, border: `1px solid ${INT_C}30`, borderRadius: 4, padding: '7px 9px', display: 'flex', flexDirection: 'column', gap: 5 }}>
+                <div style={{ marginBottom: SP[2] }}>
+                  <div style={{ fontFamily: FC, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: INT_C, marginBottom: '0.375rem' }}>Abilities</div>
+                  <div style={{ background: `${INT_C}0c`, border: `1px solid ${INT_C}30`, borderRadius: RADIUS.md, padding: `0.4375rem 0.5625rem`, display: 'flex', flexDirection: 'column', gap: '0.3125rem' }}>
                     {adv.abilities && adv.abilities.length > 0
                       ? adv.abilities.map((ab, i) => (
                         <div key={i}>
-                          <span style={{ fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 700, color: INT_C }}>{ab.name}{ab.description ? ': ' : ''}</span>
-                          {ab.description && <span style={{ fontFamily: FC, fontSize: FS_CAPTION, color: TEXT_SEC }}><RichText text={ab.description} /></span>}
+                          <span style={{ fontFamily: FC, fontSize: FS.caption, fontWeight: 700, color: INT_C }}>{ab.name}{ab.description ? ': ' : ''}</span>
+                          {ab.description && <span style={{ fontFamily: FC, fontSize: FS.caption, color: TEXT_SEC }}><RichText text={ab.description} /></span>}
                         </div>
                       ))
-                      : <div style={{ fontFamily: FC, fontSize: FS_CAPTION, color: TEXT_MUTED, fontStyle: 'italic' }}>No special abilities</div>
+                      : <div style={{ fontFamily: FC, fontSize: FS.caption, color: TEXT_MUTED, fontStyle: 'italic' }}>No special abilities</div>
                     }
                   </div>
                 </div>
 
                 {/* Gear */}
                 {adv.gear && adv.gear.length > 0 && (
-                  <div style={{ marginBottom: 8 }}>
-                    <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, letterSpacing: '0.15em', textTransform: 'uppercase', color: `${HUD.gold}90`, marginBottom: 5 }}>Gear</div>
+                  <div style={{ marginBottom: SP[2] }}>
+                    <div style={{ fontFamily: FC, fontSize: FS.overline, letterSpacing: '0.15em', textTransform: 'uppercase', color: `${HUD.gold}90`, marginBottom: '0.3125rem' }}>Gear</div>
                     {adv.gear.map((item, i) => {
                       const label = typeof item === 'string' ? item
                         : [item.name, item.encumbrance ? `Enc ${item.encumbrance}` : ''].filter(Boolean).join(' — ')
                       const notes = typeof item === 'string' ? '' : item.description
                       return (
-                        <div key={i} style={{ fontFamily: FC, fontSize: FS_LABEL, color: TEXT_SEC }}>
+                        <div key={i} style={{ fontFamily: FC, fontSize: FS.label, color: TEXT_SEC }}>
                           · {label}{notes ? <span> — <RichText text={notes} /></span> : null}
                         </div>
                       )
@@ -670,13 +681,13 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
 
                 {/* Weapons */}
                 {adv.weapons && adv.weapons.length > 0 && (
-                  <div style={{ marginBottom: 8 }}>
-                    <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, letterSpacing: '0.15em', textTransform: 'uppercase', color: `${HUD.gold}90`, marginBottom: 5 }}>Weapons</div>
+                  <div style={{ marginBottom: SP[2] }}>
+                    <div style={{ fontFamily: FC, fontSize: FS.overline, letterSpacing: '0.15em', textTransform: 'uppercase', color: `${HUD.gold}90`, marginBottom: '0.3125rem' }}>Weapons</div>
                     {adv.weapons.map((w, i) => {
                       const { dmg, range, crit } = resolveWeapon(w, adv.characteristics.brawn, weaponRef)
                       const quals = w.qualities && w.qualities.length > 0 ? w.qualities.join(', ') : ''
                       return (
-                        <div key={i} style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 500, color: TEXTGR, marginBottom: 2 }}>
+                        <div key={i} style={{ fontFamily: FC, fontSize: FS.label, fontWeight: 500, color: TEXTGR, marginBottom: 2 }}>
                           {w.name} — DMG {dmg}{crit !== undefined ? ` — Crit ${crit}` : ''} — {range}{quals ? <span> — <RichText text={quals} /></span> : null}
                         </div>
                       )
@@ -688,15 +699,15 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
 
             {/* ── Combat check buttons ──────────────────────────── */}
             {isOpen && adv.weapons && adv.weapons.length > 0 && (
-              <div style={{ borderTop: `1px solid ${BORDER}`, padding: '7px 12px', display: 'flex', gap: 6 }}>
+              <div style={{ borderTop: `1px solid ${BORDER}`, padding: `0.4375rem ${SP[3]}`, display: 'flex', gap: '0.375rem' }}>
                 {(['melee', 'ranged'] as const).map(type => (
                   <button key={type}
                     onClick={() => setAdvCombatCheck({ adv, attackType: type, alignment: advAlignment })}
                     style={{
-                      flex: 1, padding: '5px 0',
+                      flex: 1, padding: '0.3125rem 0',
                       background: `${accent}15`, border: `1px solid ${accent}50`,
-                      borderRadius: 4, cursor: 'pointer',
-                      fontFamily: FC, fontSize: FS_LABEL, fontWeight: 600, color: accent, letterSpacing: '0.05em',
+                      borderRadius: RADIUS.md, cursor: 'pointer',
+                      fontFamily: FC, fontSize: FS.label, fontWeight: 600, color: accent, letterSpacing: '0.05em',
                     }}
                   >
                     {type === 'melee' ? '⚔ Melee' : '⊕ Ranged'}
@@ -715,22 +726,22 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
                   return sum + (m?.groupRemaining ?? 0)
                 }, 0)
                 return (
-                  <div style={{ borderTop: `1px solid ${HUD.gold}40`, padding: '8px 12px', background: `${HUD.gold}09` }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <div style={{ borderTop: `1px solid ${HUD.gold}40`, padding: `${SP[2]} ${SP[3]}`, background: `${HUD.gold}09` }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: SP[2], marginBottom: SP[1] }}>
                       <span style={{ fontFamily: FC, fontSize: 'clamp(9px,1vw,11px)', fontWeight: 700, letterSpacing: '0.18em', color: HUD.gold, textTransform: 'uppercase' }}>
                         Squad Active
                       </span>
-                      <span style={{ fontFamily: FC, fontSize: FS_CAPTION, color: TEXT_SEC }}>{liveCount}/{adv.squad_total_minions ?? 0} minions</span>
+                      <span style={{ fontFamily: FC, fontSize: FS.caption, color: TEXT_SEC }}>{liveCount}/{adv.squad_total_minions ?? 0} minions</span>
                       <button
                         onClick={() => void handleDisbandSquad(adv.instanceId)}
-                        style={{ marginLeft: 'auto', background: `${RED}15`, border: `1px solid ${RED}50`, borderRadius: 3, padding: '2px 8px', cursor: 'pointer', fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 600, color: RED }}
+                        style={{ marginLeft: 'auto', background: `${RED}15`, border: `1px solid ${RED}50`, borderRadius: RADIUS.sm, padding: `2px ${SP[2]}`, cursor: 'pointer', fontFamily: FC, fontSize: FS.caption, fontWeight: 600, color: RED }}
                       >Disband</button>
                     </div>
                     {(adv.squad_minion_refs ?? []).map(ref => {
                       const m = encounter.adversaries.find(a => a.instanceId === ref.instanceId)
                       if (!m) return null
                       return (
-                        <div key={ref.instanceId} style={{ fontFamily: FC, fontSize: FS_CAPTION, color: TEXT_MUTED, display: 'flex', gap: 6 }}>
+                        <div key={ref.instanceId} style={{ fontFamily: FC, fontSize: FS.caption, color: TEXT_MUTED, display: 'flex', gap: '0.375rem' }}>
                           <span>{m.name}</span>
                           <span style={{ color: m.groupRemaining > 0 ? TEXT_SEC : RED }}>{m.groupRemaining}/{ref.count}</span>
                         </div>
@@ -747,19 +758,19 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
                   return sum + (m?.groupRemaining ?? 0)
                 }, 0)
                 return (
-                  <div style={{ borderTop: `1px solid ${HUD.gold}40`, padding: '8px 12px', background: `${HUD.gold}07` }}>
-                    <div style={{ fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 600, color: HUD.gold, marginBottom: 6, letterSpacing: '0.06em' }}>
+                  <div style={{ borderTop: `1px solid ${HUD.gold}40`, padding: `${SP[2]} ${SP[3]}`, background: `${HUD.gold}07` }}>
+                    <div style={{ fontFamily: FC, fontSize: FS.caption, fontWeight: 600, color: HUD.gold, marginBottom: '0.375rem', letterSpacing: '0.06em' }}>
                       Select minion groups for squad (max {CAP} total):
                     </div>
                     {availableMinions.length === 0 && (
-                      <div style={{ fontFamily: FC, fontSize: FS_CAPTION, color: TEXT_MUTED, marginBottom: 6 }}>No available minion groups</div>
+                      <div style={{ fontFamily: FC, fontSize: FS.caption, color: TEXT_MUTED, marginBottom: '0.375rem' }}>No available minion groups</div>
                     )}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 8 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: SP[1], marginBottom: SP[2] }}>
                       {availableMinions.map(m => {
                         const isSelected = squadSelections.has(m.instanceId)
                         const wouldExceed = !isSelected && selectedTotal + m.groupRemaining > CAP
                         return (
-                          <label key={m.instanceId} style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: wouldExceed ? 'not-allowed' : 'pointer', opacity: wouldExceed ? 0.45 : 1 }}>
+                          <label key={m.instanceId} style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', cursor: wouldExceed ? 'not-allowed' : 'pointer', opacity: wouldExceed ? 0.45 : 1 }}>
                             <input type="checkbox" checked={isSelected} disabled={wouldExceed}
                               onChange={e => {
                                 setSquadSelections(prev => {
@@ -768,35 +779,35 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
                                   return next
                                 })
                               }}
-                              style={{ accentColor: HUD.gold, width: 13, height: 13 }}
+                              style={{ accentColor: HUD.gold, width: '0.8125rem', height: '0.8125rem' }}
                             />
-                            <span style={{ fontFamily: FC, fontSize: FS_CAPTION, color: TEXT }}>{m.name}</span>
-                            <span style={{ fontFamily: FC, fontSize: FS_CAPTION, color: TEXT_MUTED }}>({m.groupRemaining} minions)</span>
+                            <span style={{ fontFamily: FC, fontSize: FS.caption, color: TEXT }}>{m.name}</span>
+                            <span style={{ fontFamily: FC, fontSize: FS.caption, color: TEXT_MUTED }}>({m.groupRemaining} minions)</span>
                           </label>
                         )
                       })}
                     </div>
                     {selectedTotal > 0 && (
-                      <div style={{ fontFamily: FC, fontSize: FS_CAPTION, color: TEXT_SEC, marginBottom: 6 }}>
+                      <div style={{ fontFamily: FC, fontSize: FS.caption, color: TEXT_SEC, marginBottom: '0.375rem' }}>
                         {selectedTotal} minions selected{selectedTotal > CAP && <span style={{ color: RED }}> — exceeds cap of {CAP}</span>}
                       </div>
                     )}
-                    <div style={{ display: 'flex', gap: 6 }}>
+                    <div style={{ display: 'flex', gap: '0.375rem' }}>
                       <button
                         onClick={() => void handleConfirmSquad(adv.instanceId)}
                         disabled={selectedTotal === 0 || selectedTotal > CAP}
                         style={{
-                          flex: 1, padding: '4px 0',
+                          flex: 1, padding: `${SP[1]} 0`,
                           background: selectedTotal > 0 && selectedTotal <= CAP ? `${HUD.gold}20` : 'transparent',
                           border: `1px solid ${selectedTotal > 0 && selectedTotal <= CAP ? HUD.gold : BORDER}`,
-                          borderRadius: 3, cursor: selectedTotal > 0 && selectedTotal <= CAP ? 'pointer' : 'not-allowed',
-                          fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 600,
+                          borderRadius: RADIUS.sm, cursor: selectedTotal > 0 && selectedTotal <= CAP ? 'pointer' : 'not-allowed',
+                          fontFamily: FC, fontSize: FS.caption, fontWeight: 600,
                           color: selectedTotal > 0 && selectedTotal <= CAP ? HUD.gold : TEXT_MUTED,
                         }}
                       >Confirm Squad</button>
                       <button
                         onClick={() => { setSquadFormingFor(null); setSquadSelections(new Set()) }}
-                        style={{ padding: '4px 10px', background: 'transparent', border: `1px solid ${BORDER}`, borderRadius: 3, cursor: 'pointer', fontFamily: FC, fontSize: FS_CAPTION, color: TEXT_MUTED }}
+                        style={{ padding: `${SP[1]} 0.625rem`, background: 'transparent', border: `1px solid ${BORDER}`, borderRadius: RADIUS.sm, cursor: 'pointer', fontFamily: FC, fontSize: FS.caption, color: TEXT_MUTED }}
                       >Cancel</button>
                     </div>
                   </div>
@@ -805,10 +816,10 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
 
               if (availableMinions.length === 0) return null
               return (
-                <div style={{ borderTop: `1px solid ${BORDER}`, padding: '7px 12px' }}>
+                <div style={{ borderTop: `1px solid ${BORDER}`, padding: `0.4375rem ${SP[3]}` }}>
                   <button
                     onClick={() => void handleFormSquad(adv)}
-                    style={{ width: '100%', padding: '5px 0', background: `${HUD.gold}10`, border: `1px solid ${HUD.gold}40`, borderRadius: 4, cursor: 'pointer', fontFamily: FC, fontSize: FS_LABEL, fontWeight: 600, color: HUD.gold, letterSpacing: '0.05em' }}
+                    style={{ width: '100%', padding: '0.3125rem 0', background: `${HUD.gold}10`, border: `1px solid ${HUD.gold}40`, borderRadius: RADIUS.md, cursor: 'pointer', fontFamily: FC, fontSize: FS.label, fontWeight: 600, color: HUD.gold, letterSpacing: '0.05em' }}
                   >Form Squad</button>
                 </div>
               )
@@ -823,23 +834,23 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
           position: 'fixed',
           top: talentTooltip.rect.bottom + 6,
           left: Math.min(talentTooltip.rect.left, window.innerWidth - 280),
-          zIndex: 9100,
+          zIndex: Z.tooltip,
           background: 'var(--hud-surface-hi)',
           border: '1px solid var(--hud-border-hi)',
-          borderRadius: 6, padding: '8px 12px',
-          maxWidth: 260,
+          borderRadius: RADIUS.lg, padding: `${SP[2]} ${SP[3]}`,
+          maxWidth: '16.25rem',
           boxShadow: '0 4px 20px rgba(0,0,0,0.7)',
           pointerEvents: 'none',
         }}>
-          <div style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, color: HUD.gold, marginBottom: 4 }}>
+          <div style={{ fontFamily: FC, fontSize: FS.label, fontWeight: 700, color: HUD.gold, marginBottom: SP[1] }}>
             {talentTooltip.name}
             {talentTooltip.activation && (
-              <span style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: TEXT_MUTED, marginLeft: 6, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+              <span style={{ fontFamily: FC, fontSize: FS.overline, color: TEXT_MUTED, marginLeft: '0.375rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                 ({talentTooltip.activation})
               </span>
             )}
           </div>
-          <div style={{ fontFamily: FC, fontSize: FS_CAPTION, color: TEXT_SEC, lineHeight: 1.5 }}>
+          <div style={{ fontFamily: FC, fontSize: FS.caption, color: TEXT_SEC, lineHeight: 1.5 }}>
             <RichText text={talentTooltip.description} />
           </div>
         </div>
@@ -903,9 +914,9 @@ function AdversaryWoundTracker({
   const maxWounds = isMinion ? adv.woundThreshold * adv.groupSize : adv.woundThreshold
   const pct       = maxWounds > 0 ? Math.min(1, wounds / maxWounds) : 0
 
-  const AMBER  = '#FF9800'
-  const PURPLE = '#9C27B0'
-  const barColor = pct >= 1 ? PURPLE : pct >= 0.8 ? '#f44336' : pct >= 0.5 ? AMBER : accentColor
+  const AMBER_COLOR  = COLOR.amber   // var(--amber)
+  const PURPLE_COLOR = '#9C27B0'     // no token — keep as-is
+  const barColor = pct >= 1 ? PURPLE_COLOR : pct >= 0.8 ? COLOR.red : pct >= 0.5 ? AMBER_COLOR : accentColor
 
   const groupAlive = isMinion
     ? Math.min(adv.groupSize, Math.max(0, adv.groupSize - Math.floor(wounds / adv.woundThreshold)))
@@ -913,29 +924,29 @@ function AdversaryWoundTracker({
   const skillRank = groupAlive !== null ? Math.max(0, groupAlive - 1) : null
 
   const btnBase: React.CSSProperties = {
-    width: 36, height: 28, borderRadius: 5,
+    width: '2.25rem', height: '1.75rem', borderRadius: RADIUS.md,
     background: 'var(--hud-surface-lo)', border: '1px solid var(--hud-border)',
-    cursor: 'pointer', fontFamily: FC, fontSize: 16, lineHeight: 1,
-    color: TEXT,
+    cursor: 'pointer', fontFamily: FC, fontSize: FS.h4, lineHeight: 1,
+    color: HUD.text,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    transition: 'border-color .12s', flexShrink: 0,
+    transition: `border-color ${EASE.default}`, flexShrink: 0,
   }
 
   return (
     <div>
-      <div style={{ height: 6, background: 'var(--hud-surface-lo)', borderRadius: 3, overflow: 'hidden' }}>
-        <div style={{ width: `${pct * 100}%`, height: '100%', background: barColor, borderRadius: 3, transition: 'width 300ms ease', animation: pct >= 1 ? 'pulse-dot 1.4s ease-in-out infinite' : 'none' }} />
+      <div style={{ height: 6, background: 'var(--hud-surface-lo)', borderRadius: RADIUS.sm, overflow: 'hidden' }}>
+        <div style={{ width: `${pct * 100}%`, height: '100%', background: barColor, borderRadius: RADIUS.sm, transition: `width 300ms ease`, animation: pct >= 1 ? 'pulse-dot 1.4s ease-in-out infinite' : 'none' }} />
       </div>
-      <div style={{ fontFamily: FC, fontSize: 'clamp(0.65rem,1vw,0.78rem)', color: TEXT_MUTED, textAlign: 'right', marginTop: 2 }}>
+      <div style={{ fontFamily: FC, fontSize: 'clamp(0.65rem,1vw,0.78rem)', color: HUD.textFaint, textAlign: 'right', marginTop: 2 }}>
         {wounds} / {maxWounds}
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginTop: SP[1] }}>
         <button onClick={() => onAdjust(-1)} disabled={wounds === 0}
-          style={{ ...btnBase, cursor: wounds === 0 ? 'not-allowed' : 'pointer', color: wounds === 0 ? 'var(--hud-text-faint)' : TEXT }}
+          style={{ ...btnBase, cursor: wounds === 0 ? 'not-allowed' : 'pointer', color: wounds === 0 ? HUD.textFaint : HUD.text }}
           onMouseEnter={e => { if (wounds > 0) (e.currentTarget as HTMLElement).style.borderColor = `${accentColor}66` }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--hud-border)' }}
         >−</button>
-        <span style={{ flex: 1, textAlign: 'center', fontFamily: FC, fontSize: 'clamp(0.75rem,1.2vw,0.88rem)', color: TEXT }}>
+        <span style={{ flex: 1, textAlign: 'center', fontFamily: FC, fontSize: 'clamp(0.75rem,1.2vw,0.88rem)', color: HUD.text }}>
           {wounds} wound{wounds !== 1 ? 's' : ''}
         </span>
         <button onClick={() => onAdjust(1)} style={btnBase}
@@ -944,20 +955,20 @@ function AdversaryWoundTracker({
         >+</button>
       </div>
       {isMinion && groupAlive !== null && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginTop: 5 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginTop: '0.3125rem' }}>
           {Array.from({ length: adv.groupSize }).map((_, i) => (
             <span key={i} style={{ fontSize: 'clamp(0.6rem,0.9vw,0.7rem)', color: i < groupAlive ? barColor : 'var(--hud-surface-lo)' }}>
               {i < groupAlive ? '■' : '□'}
             </span>
           ))}
-          <span style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: TEXT_MUTED, marginLeft: 4 }}>
+          <span style={{ fontFamily: FC, fontSize: FS.overline, color: HUD.textFaint, marginLeft: SP[1] }}>
             {groupAlive}/{adv.groupSize} · rank {skillRank}
           </span>
         </div>
       )}
       {isMinion && onAdjustGroupSize && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6 }}>
-          <span style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: TEXT_MUTED, letterSpacing: '0.08em', textTransform: 'uppercase', flex: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginTop: '0.375rem' }}>
+          <span style={{ fontFamily: FC, fontSize: FS.overline, color: HUD.textFaint, letterSpacing: '0.08em', textTransform: 'uppercase', flex: 1 }}>
             Group Size
           </span>
           <button
@@ -965,21 +976,21 @@ function AdversaryWoundTracker({
             disabled={adv.groupSize <= 1}
             style={{
               ...btnBase,
-              width: 28, height: 24,
+              width: '1.75rem', height: '1.5rem',
               cursor: adv.groupSize <= 1 ? 'not-allowed' : 'pointer',
-              color: adv.groupSize <= 1 ? 'var(--hud-text-faint)' : TEXT,
+              color: adv.groupSize <= 1 ? HUD.textFaint : HUD.text,
             }}
             title="Remove one unit from group"
           >−</button>
           <span style={{
             fontFamily: FC,
             fontSize: 'clamp(0.7rem,1vw,0.82rem)',
-            color: TEXT,
-            minWidth: 20, textAlign: 'center',
+            color: HUD.text,
+            minWidth: '1.25rem', textAlign: 'center',
           }}>{adv.groupSize}</span>
           <button
             onClick={() => onAdjustGroupSize(1)}
-            style={{ ...btnBase, width: 28, height: 24 }}
+            style={{ ...btnBase, width: '1.75rem', height: '1.5rem' }}
             title="Add one unit to group"
           >+</button>
         </div>
@@ -988,29 +999,27 @@ function AdversaryWoundTracker({
         const strain    = adv.strainCurrent ?? 0
         const strainMax = adv.strainThreshold
         const sPct      = strainMax > 0 ? Math.min(1, strain / strainMax) : 0
-        const AMBER_C   = '#FF9800'
-        const PURPLE_C  = '#9C27B0'
-        const sBarColor = sPct >= 1 ? PURPLE_C : AMBER_C
+        const sBarColor = sPct >= 1 ? PURPLE_COLOR : AMBER_COLOR
         return (
-          <div style={{ marginTop: 10 }}>
-            <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: AMBER_C, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 4 }}>Strain</div>
-            <div style={{ height: 6, background: 'var(--hud-surface-lo)', borderRadius: 3, overflow: 'hidden' }}>
-              <div style={{ width: `${sPct * 100}%`, height: '100%', background: sBarColor, borderRadius: 3, transition: 'width 300ms ease' }} />
+          <div style={{ marginTop: SP[2] }}>
+            <div style={{ fontFamily: FC, fontSize: FS.overline, color: AMBER_COLOR, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: SP[1] }}>Strain</div>
+            <div style={{ height: 6, background: 'var(--hud-surface-lo)', borderRadius: RADIUS.sm, overflow: 'hidden' }}>
+              <div style={{ width: `${sPct * 100}%`, height: '100%', background: sBarColor, borderRadius: RADIUS.sm, transition: `width 300ms ease` }} />
             </div>
-            <div style={{ fontFamily: FC, fontSize: 'clamp(0.65rem,1vw,0.78rem)', color: TEXT_MUTED, textAlign: 'right', marginTop: 2 }}>
+            <div style={{ fontFamily: FC, fontSize: 'clamp(0.65rem,1vw,0.78rem)', color: HUD.textFaint, textAlign: 'right', marginTop: 2 }}>
               {strain} / {strainMax}
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginTop: SP[1] }}>
               <button onClick={() => onAdjustStrain(-1)} disabled={strain === 0}
-                style={{ ...btnBase, cursor: strain === 0 ? 'not-allowed' : 'pointer', color: strain === 0 ? 'var(--hud-text-faint)' : TEXT }}
-                onMouseEnter={e => { if (strain > 0) (e.currentTarget as HTMLElement).style.borderColor = `${AMBER_C}66` }}
+                style={{ ...btnBase, cursor: strain === 0 ? 'not-allowed' : 'pointer', color: strain === 0 ? HUD.textFaint : HUD.text }}
+                onMouseEnter={e => { if (strain > 0) (e.currentTarget as HTMLElement).style.borderColor = `${AMBER_COLOR}66` }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--hud-border)' }}
               >−</button>
-              <span style={{ flex: 1, textAlign: 'center', fontFamily: FC, fontSize: 'clamp(0.75rem,1.2vw,0.88rem)', color: TEXT }}>
+              <span style={{ flex: 1, textAlign: 'center', fontFamily: FC, fontSize: 'clamp(0.75rem,1.2vw,0.88rem)', color: HUD.text }}>
                 {strain} strain
               </span>
               <button onClick={() => onAdjustStrain(1)} style={btnBase}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${AMBER_C}66` }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${AMBER_COLOR}66` }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--hud-border)' }}
               >+</button>
             </div>
@@ -1024,12 +1033,12 @@ function AdversaryWoundTracker({
 /* ── TypeBadge ────────────────────────────────────────────── */
 function TypeBadge({ type }: { type: 'minion' | 'rival' | 'nemesis' }) {
   const cfg = {
-    minion:  { color: TEXT_MUTED, label: 'MINION' },
-    rival:   { color: HUD.gold,       label: 'RIVAL' },
-    nemesis: { color: RED,        label: 'NEMESIS' },
+    minion:  { color: HUD.textFaint, label: 'MINION' },
+    rival:   { color: HUD.gold,      label: 'RIVAL' },
+    nemesis: { color: COLOR.red,     label: 'NEMESIS' },
   }[type]
   return (
-    <span style={{ fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.1em', color: cfg.color, border: `1px solid ${cfg.color}50`, borderRadius: 3, padding: '1px 5px', background: `${cfg.color}15` }}>
+    <span style={{ fontFamily: FC, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.1em', color: cfg.color, border: `1px solid ${cfg.color}50`, borderRadius: RADIUS.sm, padding: '1px 5px', background: `${cfg.color}15` }}>
       {cfg.label}
     </span>
   )
@@ -1038,7 +1047,8 @@ function TypeBadge({ type }: { type: 'minion' | 'rival' | 'nemesis' }) {
 /* ── smallCtrlBtn ─────────────────────────────────────────── */
 const smallCtrlBtn: React.CSSProperties = {
   background: 'transparent', border: `1px solid var(--hud-border-hi)`,
-  borderRadius: 3, padding: '1px 7px', cursor: 'pointer',
-  fontFamily: FC, fontSize: FS_CAPTION, color: TEXT,
-  transition: '.15s', lineHeight: 1,
+  borderRadius: RADIUS.sm, padding: `1px 0.4375rem`, cursor: 'pointer',
+  fontFamily: FC, fontSize: FS.caption, color: HUD.text,
+  transition: EASE.default, lineHeight: 1,
 }
+

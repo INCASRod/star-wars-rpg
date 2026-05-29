@@ -2,12 +2,16 @@
 
 import { useEffect, useState } from 'react'
 import { stripBBCode } from '@/lib/utils'
+import { FONT_BODY, FS, RADIUS, HUD } from '@/lib/tokens'
 
-// ── Design tokens ─────────────────────────────────────────────────────────────
-const FC   = 'var(--font-body)'
-const TEXT = 'var(--hud-text)'
-const DIM  = 'var(--hud-text-dim)'
+// ── Local text tokens ─────────────────────────────────────────────────────────
+const TEXT = HUD.text
+const DIM  = HUD.textDim
 
+// ── Threat tier colours ───────────────────────────────────────────────────────
+// These are semantic severity colours for the obligation threat scale.
+// No CSS custom property equivalents exist for this rarity/severity palette,
+// so the hex/rgba values are kept as pre-approved exceptions (same rule as rarity scale).
 function getThreatTier(value: number): {
   color: string
   bg: string
@@ -71,7 +75,7 @@ export function ObligationCard({ obligationType, obligationValue, obligationLore
     background: tier.bg,
     backdropFilter: 'blur(12px)',
     border: `1px solid ${pulse ? tier.color : tier.border}`,
-    borderRadius: 6,
+    borderRadius: RADIUS.lg,
     padding: '14px 16px',
     transition: 'border-color 0.4s ease',
   }
@@ -84,18 +88,18 @@ export function ObligationCard({ obligationType, obligationValue, obligationLore
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
         <div>
-          <div style={{ fontFamily: FC, fontSize: 10, fontWeight: 700, color: tier.color, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 2 }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, color: tier.color, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 2 }}>
             Obligation
           </div>
-          <div style={{ fontFamily: FC, fontSize: 14, fontWeight: 700, color: TEXT }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700, color: TEXT }}>
             {displayName}
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ fontFamily: FC, fontSize: 22, fontWeight: 700, color: tier.color, lineHeight: 1 }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.h3, fontWeight: 700, color: tier.color, lineHeight: 1 }}>
             {obligationValue}
           </div>
-          <div style={{ fontFamily: FC, fontSize: 9, color: DIM, letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 2 }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: DIM, letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 2 }}>
             / 100
           </div>
         </div>
@@ -105,7 +109,7 @@ export function ObligationCard({ obligationType, obligationValue, obligationLore
       <div style={{ display: 'flex', gap: 3, marginBottom: 10 }}>
         {[1, 2, 3, 4, 5].map(seg => (
           <div key={seg} style={{
-            flex: 1, height: 5, borderRadius: 2,
+            flex: 1, height: 5, borderRadius: RADIUS.sm,
             background: seg <= filled ? tier.color : `${tier.color}18`,
             border: `1px solid ${seg <= filled ? tier.color : `${tier.color}30`}`,
             transition: 'background 0.3s',
@@ -116,15 +120,15 @@ export function ObligationCard({ obligationType, obligationValue, obligationLore
       {/* Tier badge */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: tier.warning ? 8 : (obligationLore ? 10 : 0) }}>
         <span style={{
-          fontFamily: FC, fontSize: 9, fontWeight: 700,
+          fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
           color: tier.color, background: `${tier.color}18`,
           border: `1px solid ${tier.color}40`,
-          borderRadius: 3, padding: '1px 6px',
+          borderRadius: RADIUS.sm, padding: '1px 6px',
           letterSpacing: '0.1em', textTransform: 'uppercase',
         }}>
           {tier.label}
         </span>
-        <span style={{ fontFamily: FC, fontSize: 10, color: DIM }}>Threat Level</span>
+        <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: DIM }}>Threat Level</span>
       </div>
 
       {/* Warning banner */}
@@ -132,11 +136,11 @@ export function ObligationCard({ obligationType, obligationValue, obligationLore
         <div style={{
           background: `${tier.color}12`,
           border: `1px solid ${tier.color}35`,
-          borderRadius: 4,
+          borderRadius: RADIUS.md,
           padding: '6px 10px',
           marginBottom: obligationLore ? 10 : 0,
-          fontFamily: FC,
-          fontSize: 10,
+          fontFamily: FONT_BODY,
+          fontSize: FS.caption,
           color: tier.color,
           letterSpacing: '0.04em',
           lineHeight: 1.4,
@@ -150,8 +154,8 @@ export function ObligationCard({ obligationType, obligationValue, obligationLore
         <div style={{
           borderTop: `1px solid ${tier.color}18`,
           paddingTop: 8,
-          fontFamily: FC,
-          fontSize: 11,
+          fontFamily: FONT_BODY,
+          fontSize: FS.label,
           color: DIM,
           lineHeight: 1.6,
           fontStyle: 'italic',

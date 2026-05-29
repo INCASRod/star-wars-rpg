@@ -1,5 +1,7 @@
 'use client'
 
+import { FONT_BODY } from '@/lib/tokens'
+
 export const MELEE_SKILL_KEYS = ['MELEE', 'BRAWL', 'LTSABER'] as const
 
 export function isMeleeSkill(skillKey: string | null | undefined): boolean {
@@ -22,10 +24,10 @@ export function WeaponDamageDisplay({ baseDamage, isMelee, brawn }: WeaponDamage
   if (!isMelee) return <>{baseDamage}</>
   const total = baseDamage + brawn
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: 2 }}>
+    <span className="inline-flex items-baseline" style={{ gap: 2 }}>
       <span>{baseDamage}+{brawn}</span>
       <span style={{
-        fontFamily: "'Share Tech Mono','Courier New',monospace",
+        fontFamily: FONT_BODY,
         fontSize:   '0.75em',
         opacity:    0.6,
         marginLeft: 1,

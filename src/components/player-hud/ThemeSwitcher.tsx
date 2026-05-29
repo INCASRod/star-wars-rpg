@@ -1,6 +1,8 @@
 'use client'
 
-export type UiTheme = 'binary-sunset' | 'operative' | 'kyber'
+import { SP, RADIUS, EASE } from '@/lib/tokens'
+
+export type UiTheme = 'ember' | 'kyber'
 
 interface ThemeSwitcherProps {
   current: UiTheme
@@ -8,14 +10,13 @@ interface ThemeSwitcherProps {
 }
 
 const THEMES: { key: UiTheme; label: string; bg: string; accent: string }[] = [
-  { key: 'binary-sunset', label: 'Binary Sunset',  bg: '#DCCFBC', accent: '#E03A1E' },
-  { key: 'operative',     label: 'Rebel Operative', bg: '#1E1A16', accent: '#D4681A' },
-  { key: 'kyber',         label: 'Kyber Archive',   bg: '#111326', accent: '#5BBCD8' },
+  { key: 'ember', label: 'Ember Tatooine', bg: '#DCCFBC', accent: '#E03A1E' },
+  { key: 'kyber', label: 'Kyber Archive',  bg: '#111326', accent: '#5BBCD8' },
 ]
 
 export function ThemeSwitcher({ current, onChange }: ThemeSwitcherProps) {
   return (
-    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+    <div style={{ display: 'flex', gap: SP[1], alignItems: 'center' }}>
       {THEMES.map(t => {
         const active = t.key === current
         return (
@@ -26,7 +27,7 @@ export function ThemeSwitcher({ current, onChange }: ThemeSwitcherProps) {
             style={{
               width: 16,
               height: 16,
-              borderRadius: '50%',
+              borderRadius: RADIUS.full,
               cursor: 'pointer',
               background: `radial-gradient(circle at 35% 35%, ${t.accent} 0%, ${t.bg} 60%)`,
               border: active ? '2px solid var(--hud-gold)' : '2px solid transparent',
@@ -34,7 +35,7 @@ export function ThemeSwitcher({ current, onChange }: ThemeSwitcherProps) {
               outlineOffset: 1,
               padding: 0,
               flexShrink: 0,
-              transition: 'border-color .15s',
+              transition: `border-color ${EASE.default}`,
             }}
           />
         )

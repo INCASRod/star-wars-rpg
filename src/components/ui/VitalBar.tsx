@@ -1,4 +1,6 @@
-﻿'use client'
+'use client'
+
+import { FONT_BODY, FS, EASE } from '@/lib/tokens'
 
 interface VitalBarProps {
   label: string
@@ -22,7 +24,7 @@ const VARIANT_STYLES = {
     iconBg: 'var(--amber-pale)',
     iconColor: 'var(--amber)',
     numColor: 'var(--amber)',
-    fillGradient: 'linear-gradient(90deg, #D4A017, var(--amber))',
+    fillGradient: 'linear-gradient(90deg, #D4A017, var(--amber))',  // no amber-l token; #D4A017 is pre-approved strain gradient detail
     fillClass: 's',
   },
   soak: {
@@ -44,7 +46,7 @@ export function VitalBar({ label, current, max, icon, variant, onIncrement, onDe
       <div style={{
         width: '2.1rem', height: '2.1rem', borderRadius: '50%',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 'var(--font-lg)', flexShrink: 0,
+        fontSize: FS.h4, flexShrink: 0,
         background: s.iconBg, color: s.iconColor,
       }}>
         {icon}
@@ -52,30 +54,30 @@ export function VitalBar({ label, current, max, icon, variant, onIncrement, onDe
       <div style={{ flex: 1 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
           <span style={{
-            fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', fontWeight: 600,
-            letterSpacing: '0.15rem', color: 'var(--bs-txt3)', textTransform: 'uppercase' as const,
+            fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 600,
+            letterSpacing: '0.15rem', color: 'var(--hud-text-faint)', textTransform: 'uppercase' as const,
           }}>
             {label}
           </span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
             {onDecrement && (
-              <button onClick={onDecrement} style={{ cursor: 'pointer', background: 'none', border: '1px solid var(--bs-bdr-mid)', width: '1.3rem', height: '1.3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--font-base)', color: 'var(--bs-txt2)' }}>-</button>
+              <button onClick={onDecrement} style={{ cursor: 'pointer', background: 'none', border: '1px solid var(--hud-border)', width: '1.3rem', height: '1.3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: FS.sm, color: 'var(--hud-text-dim)' }}>-</button>
             )}
             <span style={{
-              fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xl)', fontWeight: 800,
+              fontFamily: FONT_BODY, fontSize: FS.h3, fontWeight: 800,
               color: s.numColor,
             }}>
               {current}
-              {showBar && <span style={{ fontSize: 'var(--font-base)', color: 'var(--bs-txt3)', fontWeight: 400 }}> / {max}</span>}
+              {showBar && <span style={{ fontSize: FS.sm, color: 'var(--hud-text-faint)', fontWeight: 400 }}> / {max}</span>}
             </span>
             {onIncrement && (
-              <button onClick={onIncrement} style={{ cursor: 'pointer', background: 'none', border: '1px solid var(--bs-bdr-mid)', width: '1.3rem', height: '1.3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--font-base)', color: 'var(--bs-txt2)' }}>+</button>
+              <button onClick={onIncrement} style={{ cursor: 'pointer', background: 'none', border: '1px solid var(--hud-border)', width: '1.3rem', height: '1.3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: FS.sm, color: 'var(--hud-text-dim)' }}>+</button>
             )}
           </div>
         </div>
         {showBar && (
-          <div style={{ height: '0.2rem', background: 'var(--bs-bdr-mid)', marginTop: '0.25rem', overflow: 'hidden', borderRadius: '0.1rem' }}>
-            <div style={{ height: '100%', borderRadius: '0.1rem', transition: 'width .4s', width: `${pct}%`, background: s.fillGradient }} />
+          <div style={{ height: '0.2rem', background: 'var(--hud-border)', marginTop: '0.25rem', overflow: 'hidden', borderRadius: '0.1rem' }}>
+            <div style={{ height: '100%', borderRadius: '0.1rem', transition: `width var(--ease-smooth)`, width: `${pct}%`, background: s.fillGradient }} />
           </div>
         )}
       </div>

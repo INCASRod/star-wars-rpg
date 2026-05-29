@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { C, FONT_RAJDHANI, FS_LABEL, FS_H4, FS_SM, panelBase } from './design-tokens'
+import { HUD, FONT_BODY, FS, RADIUS, Z, panelBase } from '@/lib/tokens'
 import { SpecSelectorList } from '@/components/shared/SpecSelectorList'
 import type { Character, CharacterSpecialization, RefSpecialization, RefTalent } from '@/lib/types'
 
@@ -22,28 +22,17 @@ export function BuySpecButton({
     return (
       <button
         onClick={() => setOpen(true)}
+        className="buy-spec-btn"
         style={{
           background: 'rgba(224,58,30,0.06)',
-          border: `1px dashed ${C.gold}55`,
-          borderRadius: 4,
+          border: `1px dashed`,
+          borderRadius: RADIUS.md,
           padding: '5px 12px',
           cursor: 'pointer',
-          fontFamily: FONT_RAJDHANI,
-          fontSize: FS_LABEL,
+          fontFamily: FONT_BODY,
+          fontSize: FS.label,
           fontWeight: 700,
           letterSpacing: '0.12em',
-          color: `${C.gold}88`,
-          transition: 'border-color 0.15s, color 0.15s',
-        }}
-        onMouseEnter={e => {
-          const el = e.currentTarget as HTMLElement
-          el.style.borderColor = `${C.gold}99`
-          el.style.color = C.gold
-        }}
-        onMouseLeave={e => {
-          const el = e.currentTarget as HTMLElement
-          el.style.borderColor = `${C.gold}55`
-          el.style.color = `${C.gold}88`
         }}
       >
         + NEW SPEC
@@ -55,7 +44,7 @@ export function BuySpecButton({
     <div
       onClick={() => setOpen(false)}
       style={{
-        position: 'fixed', inset: 0, zIndex: 500,
+        position: 'fixed', inset: 0, zIndex: Z.fab,
         background: 'rgba(0,0,0,0.65)',
         backdropFilter: 'blur(6px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -66,9 +55,9 @@ export function BuySpecButton({
         style={{
           ...panelBase,
           background: 'var(--hud-surface-hi)',
-          border: `1px solid ${C.gold}40`,
-          boxShadow: `0 16px 48px rgba(0,0,0,0.8), 0 0 0 1px ${C.gold}15`,
-          borderRadius: 6,
+          border: `1px solid color-mix(in srgb, var(--hud-gold) 25%, transparent)`,
+          boxShadow: `0 16px 48px rgba(0,0,0,0.8), 0 0 0 1px color-mix(in srgb, var(--hud-gold) 8%, transparent)`,
+          borderRadius: RADIUS.lg,
           padding: '20px 20px 16px',
           width: '100%', maxWidth: 480,
           maxHeight: '80vh',
@@ -78,8 +67,8 @@ export function BuySpecButton({
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{
-            fontFamily: FONT_RAJDHANI, fontSize: FS_SM, fontWeight: 700,
-            letterSpacing: '0.14em', textTransform: 'uppercase', color: C.gold,
+            fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700,
+            letterSpacing: '0.14em', textTransform: 'uppercase', color: HUD.gold,
           }}>
             Buy New Specialization
           </div>
@@ -87,7 +76,7 @@ export function BuySpecButton({
             onClick={() => setOpen(false)}
             style={{
               background: 'transparent', border: 'none', cursor: 'pointer',
-              fontFamily: FONT_RAJDHANI, fontSize: FS_H4, color: C.textDim,
+              fontFamily: FONT_BODY, fontSize: FS.h4, color: HUD.textDim,
               lineHeight: 1, padding: '0 4px',
             }}
           >×</button>
@@ -95,17 +84,17 @@ export function BuySpecButton({
 
         {/* XP info */}
         <div style={{
-          fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: C.textDim,
+          fontFamily: FONT_BODY, fontSize: FS.label, color: HUD.textDim,
           lineHeight: 1.5,
-          background: 'var(--hud-surface-lo)', border: `1px solid ${C.border}`,
-          borderRadius: 4, padding: '8px 10px',
+          background: 'var(--hud-surface-lo)', border: `1px solid ${HUD.border}`,
+          borderRadius: RADIUS.md, padding: '8px 10px',
         }}>
           Career specs cost{' '}
-          <span style={{ color: C.gold, fontWeight: 700 }}>{charSpecs.length * 10} XP</span>
+          <span style={{ color: HUD.gold, fontWeight: 700 }}>{charSpecs.length * 10} XP</span>
           {' '}· Non-career costs{' '}
-          <span style={{ color: C.gold, fontWeight: 700 }}>{(charSpecs.length + 1) * 10} XP</span>
+          <span style={{ color: HUD.gold, fontWeight: 700 }}>{(charSpecs.length + 1) * 10} XP</span>
           {' '}· Available:{' '}
-          <span style={{ color: '#4EC87A', fontWeight: 700 }}>{character.xp_available} XP</span>
+          <span style={{ color: 'var(--state-success)', fontWeight: 700 }}>{character.xp_available} XP</span>
         </div>
 
         {/* Spec search + list (shared component) */}
@@ -134,25 +123,15 @@ export function BuySpecButton({
         {/* Cancel */}
         <button
           onClick={() => setOpen(false)}
+          className="hov-danger"
           style={{
             background: 'transparent',
-            border: `1px solid ${C.border}`,
-            borderRadius: 4,
+            border: `1px solid ${HUD.border}`,
+            borderRadius: RADIUS.md,
             padding: '7px',
-            fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, fontWeight: 700,
+            fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700,
             letterSpacing: '0.1em', textTransform: 'uppercase',
-            color: C.textDim, cursor: 'pointer',
-            transition: 'border-color 0.15s, color 0.15s',
-          }}
-          onMouseEnter={e => {
-            const el = e.currentTarget as HTMLElement
-            el.style.borderColor = '#E05050'
-            el.style.color = '#E05050'
-          }}
-          onMouseLeave={e => {
-            const el = e.currentTarget as HTMLElement
-            el.style.borderColor = C.border
-            el.style.color = C.textDim
+            color: HUD.textDim, cursor: 'pointer',
           }}
         >
           Cancel

@@ -15,22 +15,21 @@ import type { CombatEncounter, InitiativeSlot, SlotAlignment } from '@/lib/comba
 import type { Character } from '@/lib/types'
 import { applyDamageToAdversary } from '@/lib/damageEngine'
 import type { AdversaryInstance } from '@/lib/adversaries'
-import { FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4 } from '@/components/player-hud/design-tokens'
-import { HUD } from '@/lib/tokens'
+import { HUD, FS, SP, FONT_BODY, RADIUS, Z, EASE, COLOR } from '@/lib/tokens'
 
 /* ── Design tokens ────────────────────────────────────────── */
-const BG        = 'var(--hud-bg)'
-const PANEL_BG  = 'var(--hud-surface-mid)'
-const RAISED_BG = 'var(--hud-surface-lo)'
-const BORDER    = 'var(--hud-border)'
-const BORDER_MD = 'var(--hud-border-hi)'
-const RED       = '#e05252'
-const BLUE      = '#52a8e0'
-const GREEN     = '#52e08a'
-const TEAL      = '#52e0a8'
-const TEXT      = 'var(--hud-text)'
-const TEXT_MUTED = 'var(--hud-text-dim)'
-const FC        = 'var(--font-body)'
+const FC         = FONT_BODY
+const BG         = 'var(--hud-bg)'
+const PANEL_BG   = 'var(--hud-surface-mid)'
+const RAISED_BG  = 'var(--hud-surface-lo)'
+const BORDER     = 'var(--hud-border)'
+const BORDER_MD  = 'var(--hud-border-hi)'
+const RED        = COLOR.red          // var(--red)
+const BLUE       = COLOR.blue         // var(--blue)
+const GREEN      = COLOR.green        // var(--green)
+const TEAL       = '#52e0a8'          // no token — keep as-is (used for ✓ Acted indicator)
+const TEXT       = HUD.text
+const TEXT_MUTED = HUD.textDim
 
 /* ── Props ────────────────────────────────────────────────── */
 export interface CombatFeedPanelProps {
@@ -42,16 +41,16 @@ export interface CombatFeedPanelProps {
 const ghostBtn: React.CSSProperties = {
   background: 'transparent',
   border: `1px solid ${BORDER_MD}`,
-  borderRadius: 4, padding: '4px 10px', cursor: 'pointer',
-  fontFamily: FC, fontSize: FS_LABEL, color: TEXT,
-  transition: '.15s', lineHeight: 1,
+  borderRadius: RADIUS.md, padding: `${SP[1]} 0.625rem`, cursor: 'pointer',
+  fontFamily: FC, fontSize: FS.label, color: TEXT,
+  transition: EASE.default, lineHeight: 1,
 }
 const smallBtn: React.CSSProperties = {
   background: 'transparent', border: `1px solid ${BORDER_MD}`,
-  borderRadius: 3, width: 22, height: 22, cursor: 'pointer',
-  fontFamily: FC, fontSize: FS_SM, color: TEXT_MUTED,
+  borderRadius: RADIUS.sm, width: '1.375rem', height: '1.375rem', cursor: 'pointer',
+  fontFamily: FC, fontSize: FS.sm, color: HUD.textDim,
   display: 'flex', alignItems: 'center', justifyContent: 'center',
-  transition: '.15s', lineHeight: 1, flexShrink: 0,
+  transition: EASE.default, lineHeight: 1, flexShrink: 0,
 }
 
 /**
@@ -297,7 +296,7 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
   /* ── Empty / loading states ──────────────────────────────── */
   if (isLoading) {
     return (
-      <div style={{ padding: '32px 16px', textAlign: 'center', fontFamily: FC, fontSize: FS_SM, color: TEXT_MUTED }}>
+      <div style={{ padding: `${SP[8]} ${SP[4]}`, textAlign: 'center', fontFamily: FC, fontSize: FS.sm, color: HUD.textDim }}>
         Loading…
       </div>
     )
@@ -306,11 +305,11 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
   if (!encounter) {
     return (
       <div style={{
-        padding: '40px 16px', display: 'flex', flexDirection: 'column',
-        alignItems: 'center', gap: 10,
+        padding: `2.5rem ${SP[4]}`, display: 'flex', flexDirection: 'column',
+        alignItems: 'center', gap: '0.625rem',
       }}>
-        <div style={{ fontSize: 28, opacity: 0.3 }}>⚔</div>
-        <div style={{ fontFamily: FC, fontSize: FS_SM, color: TEXT_MUTED, textAlign: 'center' }}>
+        <div style={{ fontSize: '1.75rem', opacity: 0.3 }}>⚔</div>
+        <div style={{ fontFamily: FC, fontSize: FS.sm, color: HUD.textDim, textAlign: 'center' }}>
           No active combat encounter.<br />Begin combat from the top bar.
         </div>
       </div>
@@ -331,34 +330,34 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
       <div style={{
         flexShrink: 0,
         background: RAISED_BG, borderBottom: `1px solid ${BORDER}`,
-        padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 8,
+        padding: `0.625rem 0.875rem`, display: 'flex', flexDirection: 'column', gap: SP[2],
       }}>
         {/* Row 1: Round badge + acting banner */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
           {/* Round */}
           <div style={{
             background: `${HUD.gold}18`, border: `1px solid ${HUD.gold}40`,
-            borderRadius: 4, padding: '4px 10px', flexShrink: 0,
-            display: 'flex', alignItems: 'baseline', gap: 5,
+            borderRadius: RADIUS.md, padding: `${SP[1]} 0.625rem`, flexShrink: 0,
+            display: 'flex', alignItems: 'baseline', gap: '0.3125rem',
           }}>
-            <span style={{ fontFamily: FC, fontSize: FS_CAPTION, color: TEXT_MUTED, letterSpacing: '0.15em', textTransform: 'uppercase' }}>Round</span>
-            <span style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: HUD.gold, lineHeight: 1 }}>{encounter.round}</span>
+            <span style={{ fontFamily: FC, fontSize: FS.caption, color: HUD.textDim, letterSpacing: '0.15em', textTransform: 'uppercase' }}>Round</span>
+            <span style={{ fontFamily: FC, fontSize: FS.h4, fontWeight: 700, color: HUD.gold, lineHeight: 1 }}>{encounter.round}</span>
           </div>
 
           {/* Acting now banner */}
           {currentSlot && (
             <div style={{
               flex: 1, background: `${bannerColor}15`, border: `1px solid ${bannerColor}50`,
-              borderRadius: 4, padding: '5px 10px',
-              display: 'flex', alignItems: 'center', gap: 7, minWidth: 0,
+              borderRadius: RADIUS.md, padding: `0.3125rem 0.625rem`,
+              display: 'flex', alignItems: 'center', gap: '0.4375rem', minWidth: 0,
             }}>
               <div style={{
-                width: 7, height: 7, borderRadius: '50%', background: bannerColor,
+                width: '0.4375rem', height: '0.4375rem', borderRadius: RADIUS.full, background: bannerColor,
                 boxShadow: `0 0 8px ${bannerColor}`, flexShrink: 0,
                 animation: 'pulse-dot 1.4s ease-in-out infinite',
               }} />
               <span style={{
-                fontFamily: FC, fontSize: FS_LABEL, color: bannerColor, fontWeight: 600,
+                fontFamily: FC, fontSize: FS.label, color: bannerColor, fontWeight: 600,
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               }}>
                 {currentSlot.name}
@@ -368,7 +367,7 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
         </div>
 
         {/* Row 2: Prev / Acted / Skip controls */}
-        <div style={{ display: 'flex', gap: 6 }}>
+        <div style={{ display: 'flex', gap: '0.375rem' }}>
           <button
             onClick={() => void handlePrev()}
             className="hov-gold-bg"
@@ -385,22 +384,22 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
       {/* ── Pending Damage ───────────────────────────────────── */}
       {pendingDamages.length > 0 && (
         <div style={{
-          flexShrink: 0, padding: '10px 12px',
+          flexShrink: 0, padding: `0.625rem ${SP[3]}`,
           borderBottom: `1px solid rgba(224,82,82,0.25)`,
-          display: 'flex', flexDirection: 'column', gap: 8,
+          display: 'flex', flexDirection: 'column', gap: SP[2],
           background: 'rgba(224,82,82,0.04)',
         }}>
           {/* Section header */}
           <div style={{
-            fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700,
+            fontFamily: FC, fontSize: FS.label, fontWeight: 700,
             color: RED, textTransform: 'uppercase', letterSpacing: '0.15em',
-            display: 'flex', alignItems: 'center', gap: 6,
+            display: 'flex', alignItems: 'center', gap: '0.375rem',
           }}>
             ⚔ Pending Damage
             <span style={{
-              fontFamily: FC, fontSize: FS_OVERLINE,
+              fontFamily: FC, fontSize: FS.overline,
               background: 'rgba(224,82,82,0.15)', border: '1px solid rgba(224,82,82,0.3)',
-              borderRadius: 3, padding: '1px 5px', color: RED,
+              borderRadius: RADIUS.sm, padding: '1px 5px', color: RED,
             }}>{pendingDamages.length}</span>
           </div>
 
@@ -413,24 +412,24 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
               <div key={pd.id} style={{
                 background:   isSecondary ? `${HUD.gold}08` : 'rgba(224,82,82,0.06)',
                 border:       isSecondary ? `1px solid ${HUD.gold}40` : '1px solid rgba(224,82,82,0.3)',
-                borderRadius: 8, padding: '10px 10px',
+                borderRadius: RADIUS.lg, padding: `0.625rem`,
               }}>
                 {/* Secondary hit label */}
                 {isSecondary && (
                   <div style={{
-                    fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 700,
-                    color: HUD.gold, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 6,
+                    fontFamily: FC, fontSize: FS.caption, fontWeight: 700,
+                    color: HUD.gold, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '0.375rem',
                   }}>⚔ Secondary Hit Available</div>
                 )}
 
                 {/* Attacker → Target */}
-                <div style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: HUD.gold, marginBottom: 2 }}>
+                <div style={{ fontFamily: FC, fontSize: FS.sm, fontWeight: 700, color: HUD.gold, marginBottom: 2 }}>
                   {pd.attacker_name} → {pd.target_name}
                 </div>
 
                 {/* Weapon line */}
                 {pd.weapon_name && (
-                  <div style={{ fontFamily: FC, fontSize: FS_LABEL, color: TEXT_MUTED, fontStyle: 'italic', marginBottom: 6 }}>
+                  <div style={{ fontFamily: FC, fontSize: FS.label, color: HUD.textDim, fontStyle: 'italic', marginBottom: '0.375rem' }}>
                     {pd.weapon_name}
                     {pd.attack_type && ` (${pd.attack_type.charAt(0).toUpperCase() + pd.attack_type.slice(1)})`}
                     {pd.range_band  && ` · ${pd.range_band.charAt(0).toUpperCase() + pd.range_band.slice(1)}`}
@@ -438,41 +437,41 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
                 )}
 
                 {isSecondary && (
-                  <div style={{ fontFamily: FC, fontSize: FS_CAPTION, color: TEXT_MUTED, fontStyle: 'italic', marginBottom: 6 }}>
+                  <div style={{ fontFamily: FC, fontSize: FS.caption, color: HUD.textDim, fontStyle: 'italic', marginBottom: '0.375rem' }}>
                     Requires ◇◇ or ★ to hit. Confirm before applying.
                   </div>
                 )}
 
                 {/* Damage breakdown */}
-                <div style={{ marginBottom: 8, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <div style={{ marginBottom: SP[2], display: 'flex', flexDirection: 'column', gap: 2 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ fontFamily: FC, fontSize: FS_LABEL, color: TEXT_MUTED }}>Raw</span>
-                    <span style={{ fontFamily: FC, fontSize: FS_LABEL, color: TEXT_MUTED }}>{pd.raw_damage}</span>
+                    <span style={{ fontFamily: FC, fontSize: FS.label, color: HUD.textDim }}>Raw</span>
+                    <span style={{ fontFamily: FC, fontSize: FS.label, color: HUD.textDim }}>{pd.raw_damage}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ fontFamily: FC, fontSize: FS_LABEL, color: BLUE }}>Soak</span>
-                    <span style={{ fontFamily: FC, fontSize: FS_LABEL, color: BLUE }}>− {pd.soak_value}</span>
+                    <span style={{ fontFamily: FC, fontSize: FS.label, color: BLUE }}>Soak</span>
+                    <span style={{ fontFamily: FC, fontSize: FS.label, color: BLUE }}>− {pd.soak_value}</span>
                   </div>
                   <div style={{
                     display: 'flex', justifyContent: 'space-between',
                     borderTop: `1px solid ${BORDER}`, paddingTop: 3, marginTop: 1,
                   }}>
-                    <span style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: HUD.gold }}>Net</span>
-                    <span style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: HUD.gold }}>{pd.net_damage}</span>
+                    <span style={{ fontFamily: FC, fontSize: FS.sm, fontWeight: 700, color: HUD.gold }}>Net</span>
+                    <span style={{ fontFamily: FC, fontSize: FS.sm, fontWeight: 700, color: HUD.gold }}>{pd.net_damage}</span>
                   </div>
                 </div>
 
                 {/* Critical notification */}
                 {pd.crit_eligible && (
                   <div style={{
-                    marginBottom: 8, padding: '6px 8px',
+                    marginBottom: SP[2], padding: `0.375rem ${SP[2]}`,
                     background: 'rgba(255,152,0,0.08)', border: '1px solid rgba(255,152,0,0.4)',
-                    borderRadius: 5,
+                    borderRadius: RADIUS.md,
                   }}>
-                    <div style={{ fontFamily: FC, fontSize: FS_CAPTION, fontWeight: 700, color: '#FF9800', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>
+                    <div style={{ fontFamily: FC, fontSize: FS.caption, fontWeight: 700, color: COLOR.amber, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>
                       ⚠ Crit Available{isSecondary ? ' (if secondary hits)' : ''}
                     </div>
-                    <div style={{ fontFamily: FC, fontSize: FS_CAPTION, color: 'rgba(255,152,0,0.8)' }}>
+                    <div style={{ fontFamily: FC, fontSize: FS.caption, color: `${COLOR.amber}cc` }}>
                       {pd.crit_triggered_by_triumph ? 'Triumph' : `Crit ${pd.crit_rating ?? 4}`}
                       {pd.crit_modifier > 0 && ` · Roll +${pd.crit_modifier}`}
                     </div>
@@ -480,16 +479,16 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
                 )}
 
                 {/* Editable apply value */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <span style={{ fontFamily: FC, fontSize: FS_LABEL, color: TEXT_MUTED }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: SP[2] }}>
+                  <span style={{ fontFamily: FC, fontSize: FS.label, color: HUD.textDim }}>
                     {isSecondary ? 'Secondary dmg:' : 'Apply:'}
                   </span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
                     <button
                       onClick={() => setEdited(editedVal - 1)} disabled={editedVal <= 0}
-                      style={{ ...smallBtn, color: editedVal <= 0 ? TEXT_MUTED : HUD.gold, borderColor: BORDER_MD }}
+                      style={{ ...smallBtn, color: editedVal <= 0 ? HUD.textDim : HUD.gold, borderColor: BORDER_MD }}
                     >−</button>
-                    <span style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: HUD.gold, minWidth: 24, textAlign: 'center' }}>
+                    <span style={{ fontFamily: FC, fontSize: FS.sm, fontWeight: 700, color: HUD.gold, minWidth: '1.5rem', textAlign: 'center' }}>
                       {editedVal}
                     </span>
                     <button
@@ -500,24 +499,24 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
                 </div>
 
                 {/* Action buttons */}
-                <div style={{ display: 'flex', gap: 6 }}>
+                <div style={{ display: 'flex', gap: '0.375rem' }}>
                   <button
                     onClick={() => void dismissPendingDamage(pd.id)}
                     style={{
-                      flex: 1, padding: '6px 0',
+                      flex: 1, padding: `0.375rem 0`,
                       background: 'transparent', border: `1px solid ${BORDER_MD}`,
-                      borderRadius: 5, cursor: 'pointer',
-                      fontFamily: FC, fontSize: FS_LABEL, color: TEXT_MUTED,
+                      borderRadius: RADIUS.md, cursor: 'pointer',
+                      fontFamily: FC, fontSize: FS.label, color: HUD.textDim,
                     }}
                   >{isSecondary ? '✗ No Hit' : '✗ Dismiss'}</button>
                   <button
                     onClick={() => void applyPendingDamage(pd, editedVal)}
                     style={{
-                      flex: 2, padding: '6px 0',
+                      flex: 2, padding: `0.375rem 0`,
                       background: isSecondary ? `${HUD.gold}18` : 'rgba(224,82,82,0.15)',
                       border:     isSecondary ? `1px solid ${HUD.gold}50` : '1px solid rgba(224,82,82,0.5)',
-                      borderRadius: 5, cursor: 'pointer',
-                      fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700,
+                      borderRadius: RADIUS.md, cursor: 'pointer',
+                      fontFamily: FC, fontSize: FS.label, fontWeight: 700,
                       color: isSecondary ? HUD.gold : RED,
                     }}
                   >{isSecondary ? '✓ Apply Secondary' : '✓ Apply Damage'}</button>
@@ -531,10 +530,10 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
       {/* ── Slot list ─────────────────────────────────────────── */}
       <div style={{
         flex: 1, overflowY: 'auto',
-        padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 6,
+        padding: `0.625rem ${SP[3]}`, display: 'flex', flexDirection: 'column', gap: '0.375rem',
       }}>
         {slots.length === 0 && (
-          <div style={{ padding: '24px 0', textAlign: 'center', fontFamily: FC, fontSize: FS_SM, color: TEXT_MUTED, fontStyle: 'italic' }}>
+          <div style={{ padding: `1.5rem 0`, textAlign: 'center', fontFamily: FC, fontSize: FS.sm, color: HUD.textDim, fontStyle: 'italic' }}>
             No initiative slots yet
           </div>
         )}
@@ -600,40 +599,40 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
                 background: isKilled ? `${RED}08` : isCurrent ? `${accent}0a` : PANEL_BG,
                 border: `1px solid ${isKilled ? `${RED}40` : isCurrent ? `${accent}80` : BORDER}`,
                 borderLeft: `3px solid ${accent}`,
-                borderRadius: 6,
+                borderRadius: RADIUS.lg,
                 opacity: isKilled ? 0.55 : isActed ? 0.48 : 1,
-                padding: '8px 10px 8px 12px',
-                display: 'flex', flexDirection: 'column', gap: 6,
-                transition: '.2s',
+                padding: `${SP[2]} 0.625rem ${SP[2]} ${SP[3]}`,
+                display: 'flex', flexDirection: 'column', gap: '0.375rem',
+                transition: EASE.default,
                 boxShadow: isCurrent ? `0 0 12px ${accent}30` : 'none',
               }}
             >
               {/* ── Row 1: name + badges + remove ─────────────── */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: SP[2] }}>
 
                 {/* Current indicator */}
                 {isCurrent && (
                   <div style={{
-                    width: 7, height: 7, borderRadius: '50%', background: accent,
+                    width: '0.4375rem', height: '0.4375rem', borderRadius: RADIUS.full, background: accent,
                     boxShadow: `0 0 7px ${accent}`, flexShrink: 0,
                     animation: 'pulse-dot 1.2s ease-in-out infinite',
                   }} />
                 )}
                 {isActed && (
-                  <span style={{ fontSize: 11, color: TEAL, flexShrink: 0 }}>✓</span>
+                  <span style={{ fontSize: '0.6875rem', color: TEAL, flexShrink: 0 }}>✓</span>
                 )}
 
                 {/* Name + reassigned indicator */}
                 <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <span style={{
-                    fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: TEXT,
+                    fontFamily: FC, fontSize: FS.sm, fontWeight: 700, color: TEXT,
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                     opacity: isActed ? 0.65 : 1,
                   }}>
                     {displayName}
                   </span>
                   {isReassigned && defaultChar && (
-                    <span style={{ fontFamily: FC, fontSize: FS_CAPTION, color: TEXT_MUTED, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <span style={{ fontFamily: FC, fontSize: FS.caption, color: HUD.textDim, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       ↳ {defaultChar.name}
                     </span>
                   )}
@@ -657,10 +656,10 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
                     style={{
                       ...smallBtn,
                       width: 'auto', padding: '1px 6px',
-                      color: isReassigned ? HUD.gold : TEXT_MUTED,
+                      color: isReassigned ? HUD.gold : HUD.textDim,
                       borderColor: isReassigned ? `${HUD.gold}50` : BORDER_MD,
                       background: isReassigned ? `${HUD.gold}10` : 'transparent',
-                      fontSize: 12,
+                      fontSize: '0.75rem',
                     }}
                   >⇄</button>
                 )}
@@ -686,15 +685,15 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
                 {/* Remove (hover reveal) */}
                 {removeConfirm?.slotId === slot.id ? (
                   <div style={{
-                    display: 'flex', alignItems: 'center', gap: 5,
+                    display: 'flex', alignItems: 'center', gap: '0.3125rem',
                     background: PANEL_BG, border: `1px solid ${RED}40`,
-                    borderRadius: 4, padding: '2px 7px',
+                    borderRadius: RADIUS.md, padding: `2px 0.4375rem`,
                   }}>
-                    <span style={{ fontFamily: FC, fontSize: FS_CAPTION, color: `${RED}bb`, whiteSpace: 'nowrap' }}>
+                    <span style={{ fontFamily: FC, fontSize: FS.caption, color: `${RED}bb`, whiteSpace: 'nowrap' }}>
                       Remove?
                     </span>
                     <button onClick={() => setRemoveConfirm(null)}
-                      style={{ ...smallBtn, color: TEXT_MUTED, borderColor: BORDER }}
+                      style={{ ...smallBtn, color: HUD.textDim, borderColor: BORDER }}
                     >✕</button>
                     <button onClick={() => void confirmRemove()}
                       style={{ ...smallBtn, color: RED, borderColor: `${RED}50` }}
@@ -709,48 +708,48 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
                     title={`Remove ${displayName}`}
                     style={{
                       background: 'none', border: 'none', cursor: 'pointer',
-                      color: 'rgba(244,67,54,0.4)', fontSize: 16, lineHeight: 1,
-                      padding: '1px 4px', borderRadius: 3, transition: 'color .15s',
+                      color: 'rgba(244,67,54,0.4)', fontSize: '1rem', lineHeight: 1,
+                      padding: '1px 4px', borderRadius: RADIUS.sm, transition: `color ${EASE.default}`,
                     }}
                     onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(244,67,54,0.85)' }}
                     onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(244,67,54,0.4)' }}
                   >×</button>
-                ) : <div style={{ width: 22, flexShrink: 0 }} />}
+                ) : <div style={{ width: '1.375rem', flexShrink: 0 }} />}
               </div>
 
               {/* ── Weapon row (PC only) ──────────────────────── */}
               {!isNPC && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, minHeight: 18 }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: SP[1], minHeight: '1.125rem' }}>
                   {isDualSelected ? (
                     <div style={{
                       display: 'flex', flexDirection: 'column', gap: 2,
                       background: `${GREEN}0e`, border: `1px solid ${GREEN}40`,
-                      borderRadius: 3, padding: '2px 7px',
+                      borderRadius: RADIUS.sm, padding: `2px 0.4375rem`,
                     }}>
-                      <span style={{ fontFamily: FC, fontSize: FS_CAPTION, color: TEAL, letterSpacing: '0.06em' }}>⚔⚔ SELECTED</span>
-                      <span style={{ fontFamily: FC, fontSize: FS_CAPTION, color: GREEN }}>▸ {p!.active_weapon_name}</span>
-                      <span style={{ fontFamily: FC, fontSize: FS_CAPTION, color: `${GREEN}bb` }}>▸ {p!.secondary_weapon_name}</span>
+                      <span style={{ fontFamily: FC, fontSize: FS.caption, color: TEAL, letterSpacing: '0.06em' }}>⚔⚔ SELECTED</span>
+                      <span style={{ fontFamily: FC, fontSize: FS.caption, color: GREEN }}>▸ {p!.active_weapon_name}</span>
+                      <span style={{ fontFamily: FC, fontSize: FS.caption, color: `${GREEN}bb` }}>▸ {p!.secondary_weapon_name}</span>
                     </div>
                   ) : hasSingleSelected ? (
                     <span style={{
-                      fontFamily: FC, fontSize: FS_CAPTION, color: GREEN,
+                      fontFamily: FC, fontSize: FS.caption, color: GREEN,
                       background: `${GREEN}12`, border: `1px solid ${GREEN}40`,
-                      borderRadius: 3, padding: '2px 7px', whiteSpace: 'nowrap',
+                      borderRadius: RADIUS.sm, padding: `2px 0.4375rem`, whiteSpace: 'nowrap',
                     }}>
                       ⚔ {p!.active_weapon_name}
                     </span>
                   ) : pcEquipped.length > 0 ? (
                     pcEquipped.map(ew => (
                       <span key={ew.id} style={{
-                        fontFamily: FC, fontSize: FS_CAPTION, color: TEXT_MUTED,
+                        fontFamily: FC, fontSize: FS.caption, color: HUD.textDim,
                         background: 'var(--hud-surface-lo)', border: `1px solid ${BORDER}`,
-                        borderRadius: 3, padding: '2px 7px', whiteSpace: 'nowrap',
+                        borderRadius: RADIUS.sm, padding: `2px 0.4375rem`, whiteSpace: 'nowrap',
                       }}>
                         ⚔ {ew.custom_name || ew.weapon_key}
                       </span>
                     ))
                   ) : (
-                    <span style={{ fontFamily: FC, fontSize: FS_CAPTION, color: TEXT_MUTED, fontStyle: 'italic' }}>
+                    <span style={{ fontFamily: FC, fontSize: FS.caption, color: HUD.textDim, fontStyle: 'italic' }}>
                       no weapon equipped
                     </span>
                   )}
@@ -758,36 +757,36 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
               )}
 
               {/* ── Row 2: wounds + action buttons ────────────── */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: SP[2] }}>
 
                 {/* PC wounds */}
                 {!isNPC && pcWT > 0 && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: SP[1] }}>
                     <button onClick={() => void adjustPCWound(slot.id, -1)} style={smallBtn}>−</button>
                     <span style={{
-                      fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700,
-                      color: pcCrit ? RED : pcWounds > 0 ? '#FF9800' : TEXT_MUTED,
-                      minWidth: 34, textAlign: 'center',
+                      fontFamily: FC, fontSize: FS.label, fontWeight: 700,
+                      color: pcCrit ? RED : pcWounds > 0 ? COLOR.amber : HUD.textDim,
+                      minWidth: '2.125rem', textAlign: 'center',
                       background: `${RED}10`, border: `1px solid ${RED}30`,
-                      borderRadius: 3, padding: '1px 4px',
+                      borderRadius: RADIUS.sm, padding: '1px 4px',
                     }}>
                       {pcWounds}/{pcWT}
                     </span>
                     <button onClick={() => void adjustPCWound(slot.id, 1)} style={smallBtn}>+</button>
-                    <span style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: TEXT_MUTED, letterSpacing: '0.1em' }}>W</span>
+                    <span style={{ fontFamily: FC, fontSize: FS.overline, color: HUD.textDim, letterSpacing: '0.1em' }}>W</span>
                   </div>
                 )}
 
                 {/* NPC adversary wounds */}
                 {advInst && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: SP[1] }}>
                     <button onClick={() => void adjustNPCWound(advInst.instanceId, -1)} style={smallBtn}>−</button>
                     <span style={{
-                      fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700,
-                      color: isKilled ? RED : (advInst.woundsCurrent ?? 0) > 0 ? '#FF9800' : TEXT_MUTED,
-                      minWidth: 42, textAlign: 'center',
+                      fontFamily: FC, fontSize: FS.label, fontWeight: 700,
+                      color: isKilled ? RED : (advInst.woundsCurrent ?? 0) > 0 ? COLOR.amber : HUD.textDim,
+                      minWidth: '2.625rem', textAlign: 'center',
                       background: `${RED}10`, border: `1px solid ${RED}30`,
-                      borderRadius: 3, padding: '1px 4px',
+                      borderRadius: RADIUS.sm, padding: '1px 4px',
                     }}>
                       {advInst.woundsCurrent ?? 0}/{
                         advInst.type === 'minion'
@@ -796,25 +795,25 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
                       }
                     </span>
                     <button onClick={() => void adjustNPCWound(advInst.instanceId, 1)} style={smallBtn}>+</button>
-                    <span style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: TEXT_MUTED, letterSpacing: '0.1em' }}>W</span>
+                    <span style={{ fontFamily: FC, fontSize: FS.overline, color: HUD.textDim, letterSpacing: '0.1em' }}>W</span>
                   </div>
                 )}
 
                 {/* Vehicle hull trauma */}
                 {vehInst && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: SP[1] }}>
                     <button onClick={() => void adjustVehicleHull(vehInst.instanceId, -1)} style={smallBtn}>−</button>
                     <span style={{
-                      fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700,
-                      color: isKilled ? RED : vehInst.hullTraumaCurrent > 0 ? '#FF9800' : TEXT_MUTED,
-                      minWidth: 34, textAlign: 'center',
+                      fontFamily: FC, fontSize: FS.label, fontWeight: 700,
+                      color: isKilled ? RED : vehInst.hullTraumaCurrent > 0 ? COLOR.amber : HUD.textDim,
+                      minWidth: '2.125rem', textAlign: 'center',
                       background: `${RED}10`, border: `1px solid ${RED}30`,
-                      borderRadius: 3, padding: '1px 4px',
+                      borderRadius: RADIUS.sm, padding: '1px 4px',
                     }}>
                       {vehInst.hullTraumaCurrent}/{vehInst.hullTraumaThreshold}
                     </span>
                     <button onClick={() => void adjustVehicleHull(vehInst.instanceId, 1)} style={smallBtn}>+</button>
-                    <span style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: TEXT_MUTED, letterSpacing: '0.1em' }}>HT</span>
+                    <span style={{ fontFamily: FC, fontSize: FS.overline, color: HUD.textDim, letterSpacing: '0.1em' }}>HT</span>
                   </div>
                 )}
 
@@ -823,21 +822,21 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
                 {/* Acted badge / Acted + Skip buttons */}
                 {isActed ? (
                   <span style={{
-                    fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, color: TEAL,
-                    border: `1px solid ${TEAL}50`, borderRadius: 3, padding: '2px 7px',
+                    fontFamily: FC, fontSize: FS.label, fontWeight: 700, color: TEAL,
+                    border: `1px solid ${TEAL}50`, borderRadius: RADIUS.sm, padding: `2px 0.4375rem`,
                     whiteSpace: 'nowrap',
                   }}>✓ Acted</span>
                 ) : isCurrent ? (
-                  <div style={{ display: 'flex', gap: 5 }}>
+                  <div style={{ display: 'flex', gap: '0.3125rem' }}>
                     <button
                       onClick={() => void handleMarkActed()}
                       className="hov-gold-bg"
-                      style={{ ...ghostBtn, border: `1px solid ${HUD.gold}60`, color: HUD.gold, background: `${HUD.gold}15`, padding: '3px 8px' }}
+                      style={{ ...ghostBtn, border: `1px solid ${HUD.gold}60`, color: HUD.gold, background: `${HUD.gold}15`, padding: `0.1875rem ${SP[2]}` }}
                     >Acted</button>
                     <button
                       onClick={() => void handleSkip(trueIdx)}
                       className="hov-gold-bg"
-                      style={{ ...ghostBtn, padding: '3px 8px' }}
+                      style={{ ...ghostBtn, padding: `0.1875rem ${SP[2]}` }}
                     >Skip</button>
                   </div>
                 ) : null}
@@ -860,19 +859,19 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
         return createPortal(
           <>
             <div
-              style={{ position: 'fixed', inset: 0, zIndex: 9600 }}
+              style={{ position: 'fixed', inset: 0, zIndex: Z.backdrop }}
               onClick={() => { setReassignSlotId(null); setReassignAnchor(null) }}
             />
             <div style={{
-              position: 'fixed', top, right, zIndex: 9601,
+              position: 'fixed', top, right, zIndex: Z.modal,
               background: 'var(--hud-surface-hi)', border: `1px solid ${BORDER_MD}`,
-              borderRadius: 8, backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)', minWidth: 200,
-              padding: '6px 0', boxShadow: '0 8px 32px rgba(0,0,0,0.7)',
+              borderRadius: RADIUS.lg, backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)', minWidth: '12.5rem',
+              padding: `${SP[1]} 0`, boxShadow: '0 8px 32px rgba(0,0,0,0.7)',
             }}>
               <div style={{
-                padding: '2px 12px 6px', fontFamily: FC, fontSize: FS_CAPTION,
-                color: TEXT_MUTED, borderBottom: `1px solid ${BORDER}`, marginBottom: 4,
+                padding: `2px ${SP[3]} ${SP[1]}`, fontFamily: FC, fontSize: FS.caption,
+                color: HUD.textDim, borderBottom: `1px solid ${BORDER}`, marginBottom: SP[1],
                 letterSpacing: '0.12em', textTransform: 'uppercase',
               }}>
                 Assign slot to:
@@ -892,28 +891,28 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
                       setReassignSlotId(null); setReassignAnchor(null)
                     }}
                     style={{
-                      width: '100%', padding: '6px 12px',
+                      width: '100%', padding: `${SP[1]} ${SP[3]}`,
                       background: isActive ? `${BLUE}10` : 'transparent',
                       border: 'none', cursor: hasActed ? 'default' : 'pointer',
-                      display: 'flex', alignItems: 'center', gap: 8,
-                      opacity: hasActed ? 0.38 : 1, transition: '.1s',
+                      display: 'flex', alignItems: 'center', gap: SP[2],
+                      opacity: hasActed ? 0.38 : 1, transition: EASE.default,
                     }}
                     onMouseEnter={e => { if (!hasActed) (e.currentTarget as HTMLElement).style.background = `${BLUE}18` }}
                     onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = isActive ? `${BLUE}10` : 'transparent' }}
                   >
-                    <span style={{ fontFamily: FC, fontSize: FS_CAPTION, color: BLUE, width: 12, flexShrink: 0 }}>
+                    <span style={{ fontFamily: FC, fontSize: FS.caption, color: BLUE, width: '0.75rem', flexShrink: 0 }}>
                       {isActive ? '●' : '○'}
                     </span>
-                    <span style={{ fontFamily: FC, fontSize: FS_SM, color: hasActed ? TEXT_MUTED : TEXT, flex: 1, textAlign: 'left' }}>
+                    <span style={{ fontFamily: FC, fontSize: FS.sm, color: hasActed ? HUD.textDim : TEXT, flex: 1, textAlign: 'left' }}>
                       {c.name}
                     </span>
                     {isDefault && (
-                      <span style={{ fontFamily: FC, fontSize: FS_CAPTION, color: TEXT_MUTED, fontStyle: 'italic', flexShrink: 0 }}>
+                      <span style={{ fontFamily: FC, fontSize: FS.caption, color: HUD.textDim, fontStyle: 'italic', flexShrink: 0 }}>
                         default
                       </span>
                     )}
                     {hasActed && (
-                      <span style={{ fontFamily: FC, fontSize: FS_CAPTION, color: TEXT_MUTED, fontStyle: 'italic', flexShrink: 0 }}>
+                      <span style={{ fontFamily: FC, fontSize: FS.caption, color: HUD.textDim, fontStyle: 'italic', flexShrink: 0 }}>
                         acted
                       </span>
                     )}
@@ -921,10 +920,10 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
                 )
               })}
 
-              <div style={{ padding: '6px 12px 2px', borderTop: `1px solid ${BORDER}`, marginTop: 4 }}>
+              <div style={{ padding: `${SP[1]} ${SP[3]} 2px`, borderTop: `1px solid ${BORDER}`, marginTop: SP[1] }}>
                 <button
                   onClick={() => { setReassignSlotId(null); setReassignAnchor(null) }}
-                  style={{ ...ghostBtn, fontSize: FS_CAPTION }}
+                  style={{ ...ghostBtn, fontSize: FS.caption }}
                 >Cancel</button>
               </div>
             </div>
@@ -939,15 +938,15 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
 /* ── TypeBadge ────────────────────────────────────────────── */
 function TypeBadge({ type }: { type: 'pc' | 'npc' | 'vehicle' }) {
   const cfg = {
-    pc:      { color: BLUE,  label: 'PC' },
-    npc:     { color: RED,   label: 'NPC' },
+    pc:      { color: BLUE,      label: 'PC' },
+    npc:     { color: RED,       label: 'NPC' },
     vehicle: { color: HUD.gold,  label: 'VEH' },
   }[type]
   return (
     <span style={{
-      fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.1em',
+      fontFamily: FC, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.1em',
       color: cfg.color, border: `1px solid ${cfg.color}50`,
-      borderRadius: 3, padding: '1px 5px', background: `${cfg.color}15`,
+      borderRadius: RADIUS.sm, padding: '1px 5px', background: `${cfg.color}15`,
       flexShrink: 0, whiteSpace: 'nowrap',
     }}>
       {cfg.label}

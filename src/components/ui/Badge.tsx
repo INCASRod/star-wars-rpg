@@ -1,10 +1,12 @@
-﻿'use client'
+'use client'
+
+import { FONT_BODY, FS } from '@/lib/tokens'
 
 export function Badge({ color, bg, children }: { color: string; bg: string; children: React.ReactNode }) {
   return (
     <span style={{
-      fontFamily: 'var(--font-rajdhani)',
-      fontSize: 'var(--font-2xs)',
+      fontFamily: FONT_BODY,
+      fontSize: FS.overline,
       fontWeight: 600,
       letterSpacing: '0.06rem',
       textTransform: 'uppercase',

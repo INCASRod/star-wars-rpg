@@ -1,4 +1,6 @@
-﻿'use client'
+'use client'
+
+import { HUD, SP, FS, FONT_BODY } from '@/lib/tokens'
 
 interface BreadcrumbProps {
   characterName: string
@@ -10,25 +12,25 @@ export function Breadcrumb({ characterName, activeTab = 'Character' }: Breadcrum
     <div style={{
       display: 'flex',
       alignItems: 'center',
-      padding: '0 var(--sp-lg)',
-      gap: 'var(--sp-sm)',
+      padding: `0 ${SP[5]}`,
+      gap: SP[2],
     }}>
       <span style={{
-        fontFamily: 'var(--font-rajdhani)',
-        fontSize: 'var(--font-sm)',
+        fontFamily: FONT_BODY,
+        fontSize: FS.label,
         fontWeight: 600,
         letterSpacing: '0.08rem',
-        color: 'var(--bs-txt3)',
+        color: HUD.textFaint,
       }}>
         {activeTab}
       </span>
-      <span style={{ color: 'var(--bs-bdr-strong)', fontSize: 'var(--font-sm)' }}>/</span>
+      <span style={{ color: 'var(--hud-border-strong)', fontSize: FS.label }}>/</span>
       <span style={{
-        fontFamily: 'var(--font-rajdhani)',
-        fontSize: 'var(--font-sm)',
+        fontFamily: FONT_BODY,
+        fontSize: FS.label,
         fontWeight: 600,
         letterSpacing: '0.08rem',
-        color: 'var(--bs-txt2)',
+        color: HUD.textDim,
       }}>
         {characterName}
       </span>

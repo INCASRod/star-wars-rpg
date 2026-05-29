@@ -2,8 +2,7 @@
 
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
-import { C } from './design-tokens'
-import { FONT_BODY, FS, RADIUS, SHADOW, SP, Z } from '@/lib/tokens'
+import { HUD, FONT_BODY, FS, RADIUS, SHADOW, SP, Z } from '@/lib/tokens'
 import { CriticalInjuryPips, type CritPip } from '@/components/character/CriticalInjuryPip'
 import { EncumbranceBar } from '@/components/character/EncumbranceBar'
 import type { Character } from '@/lib/types'
@@ -85,7 +84,7 @@ function VitalTooltip({ breakdown, top, left }: VitalTooltipProps) {
           marginBottom: i < breakdown.length - 1 ? SP[1] : 0,
         }}>
           <span>{label}</span>
-          <span style={{ color: i === 0 ? 'var(--hud-text-dim)' : C.gold }}>
+          <span style={{ color: i === 0 ? 'var(--hud-text-dim)' : HUD.gold }}>
             {i === 0 ? value : `+${value}`}
           </span>
         </div>
@@ -166,7 +165,7 @@ export function HudStatusStrip({
         </div>
         <span style={NUM_S}>
           {wCurrent}/{wThreshold}
-          {woundBonus > 0 && <span style={{ color: C.gold, marginLeft: 2 }}>+{woundBonus}</span>}
+          {woundBonus > 0 && <span style={{ color: HUD.gold, marginLeft: 2 }}>+{woundBonus}</span>}
         </span>
         <button style={CTRL_BTN} onClick={() => onVitalAdjust('wound_current', 1)}>+</button>
       </div>

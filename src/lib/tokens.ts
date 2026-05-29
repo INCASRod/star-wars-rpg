@@ -4,22 +4,22 @@
 // RULES (enforced by CLAUDE.md):
 //   1. No inline style={{ }} objects in components.
 //      Use CSS classes (Tailwind utilities or globals.css classes).
-//   2. Only two fonts: Palanquin (body) + Signika (display) + sw-rpg-icons (icons).
+//   2. Only two fonts: Space Grotesk (display) + JetBrains Mono (body) + sw-rpg-icons (icons).
 //   3. All colors, sizes, spacing, z-index, radius come from this file.
 //   4. CSS custom properties (var(--*)) are the CSS side of this file.
-//      Anything in :root in globals.css must have a matching export here.
 // ═══════════════════════════════════════════════════════════════
 
 import type React from 'react'
 
 // ── Fonts ────────────────────────────────────────────────────────
 // Two UI fonts + one icon font. Do not add more.
-//   FONT_DISPLAY → Signika    — logos, stat numerics, display headings
-//   FONT_BODY    → Palanquin  — all other UI text: labels, body, HUD, buttons
-//   FONT_ICONS   → sw-rpg-icons — dice/result symbol icon font only
+//   FONT_DISPLAY → Space Grotesk  — logos, stat numerics, display headings
+//   FONT_BODY    → JetBrains Mono — all other UI text: labels, body, HUD, buttons
+//   FONT_ICONS   → sw-rpg-icons   — dice/result symbol icon font only
 //   FONT         → alias for FONT_BODY (backward compat — existing refs unchanged)
-export const FONT_DISPLAY = "var(--font-display), 'Signika', sans-serif"
-export const FONT_BODY    = "var(--font-body), 'Palanquin', sans-serif"
+export const FONT_DISPLAY = "var(--font-display), 'Space Grotesk', sans-serif"
+export const FONT_BODY    = "var(--font-body), 'Space Grotesk', sans-serif"
+export const FONT_MONO    = "var(--font-mono), 'JetBrains Mono', monospace"
 export const FONT         = FONT_BODY
 export const FONT_ICONS   = 'var(--font-sw-rpg-icons)'
 
@@ -68,16 +68,18 @@ export const RADIUS = {
 // ── Z-index scale ────────────────────────────────────────────────
 // All z-index values in the app must use this scale.
 export const Z = {
-  base:    0,
-  raised:  1,
-  sticky:  10,
-  dropdown:20,
-  overlay: 100,
-  backdrop:400,
-  modal:   410,
-  fab:     500,
-  toast:   800,
-  tooltip: 9999,
+  base:       0,
+  raised:     1,
+  sticky:     10,
+  dropdown:   20,
+  overlay:    100,
+  backdrop:   400,
+  modal:      410,
+  popover:    420,
+  fab:        500,
+  toast:      800,
+  dialog:     820,
+  tooltip:    9999,
 } as const
 
 // ── Shadows ──────────────────────────────────────────────────────
@@ -97,12 +99,15 @@ export const MODAL = {
 // ── Transitions ──────────────────────────────────────────────────
 export const EASE = {
   default: 'var(--ease-default)',   // 200ms ease
+  quick:   'var(--ease-quick)',     // 120ms ease — micro-interactions
   spring:  'var(--ease-spring)',    // 300ms cubic-bezier spring
+  panel:   'var(--ease-panel)',     // 260ms cubic-bezier — drawer/panel slides
+  smooth:  'var(--ease-smooth)',    // 300ms ease — fills, backgrounds
 } as const
 
-// ── Light / day theme colors ─────────────────────────────────────
+// ── Project palette colors ───────────────────────────────────────
 // Reference CSS custom properties — use these, not raw hex, in any
-// component that renders in the light theme (character sheet, GM page, etc.)
+// component that renders in the neutral/light contexts (character sheet, etc.)
 export const COLOR = {
   // Backgrounds
   sand:      'var(--sand)',
@@ -135,33 +140,6 @@ export const COLOR = {
   green:     'var(--green)',
   greenPale: 'var(--green-pale)',
 
-  // ── Binary Sunset — warm parchment + red-sun accent ──────────
-  // Backgrounds (warm sand → terracotta scale)
-  bsSky:       'var(--bs-sky)',       // page bg
-  bsPanel:     'var(--bs-panel)',     // sidebar, topbar
-  bsSurface:   'var(--bs-surface)',   // section headers, inputs
-  bsCard:      'var(--bs-card)',      // cards, alternate rows
-  bsCardHi:    'var(--bs-card-hi)',   // hovered card, active row
-  // Red accent ramp (primary accent family)
-  bsRedPale:   'var(--bs-red-pale)',  // soft highlights, career markers
-  bsRedSun:    'var(--bs-red-sun)',   // primary accent: active tab, buttons
-  bsRedHi:     'var(--bs-red-hi)',    // primary accent hover
-  bsRedMid:    'var(--bs-red-mid)',   // secondary accent, trained skills
-  bsRedDim:    'var(--bs-red-dim)',   // deep accent, strain, Force
-  bsRedMute:   'var(--bs-red-mute)',  // near-black shadows
-  // Text (warm brown scale)
-  bsInk:       'var(--bs-ink)',       // headings, high-contrast
-  bsTxt:       'var(--bs-txt)',       // body text
-  bsTxt2:      'var(--bs-txt2)',      // muted / supporting
-  bsTxt3:      'var(--bs-txt3)',      // faint / placeholder
-  bsOnRed:     'var(--bs-on-red)',    // text on red backgrounds
-  // Borders
-  bsBdrStrong: 'var(--bs-bdr-strong)',
-  bsBdrMid:    'var(--bs-bdr-mid)',
-  bsBdrSubtle: 'var(--bs-bdr-subtle)',
-  // Glow effects
-  bsRedGlow:   'var(--bs-red-glow)',
-  bsRedGlowS:  'var(--bs-red-glow-s)',
 } as const
 
 // ── HUD dark terminal theme ──────────────────────────────────────

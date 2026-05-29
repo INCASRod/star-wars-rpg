@@ -1,7 +1,7 @@
 'use client'
 
 import { ForcePowerTree, type ForceTreeNode, type ForceTreeConnection } from '@/components/character/ForcePowerTree'
-import { FONT_RAJDHANI, FS_LABEL, FS_OVERLINE } from './design-tokens'
+import { FONT_BODY, FS, RADIUS, Z } from '@/lib/tokens'
 import type { ForcePowerDisplay } from './ForcePanel'
 
 interface HudForcePowerTreeModalProps {
@@ -27,8 +27,8 @@ export function HudForcePowerTreeModal({
 }: HudForcePowerTreeModalProps) {
   if (!open) return null
   return (
-    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,.65)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-      <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '1100px', maxHeight: '95vh', overflowY: 'auto', background: 'var(--hud-bg)', border: `1px solid var(--hud-border)`, boxShadow: '0 8px 48px rgba(0,0,0,.7)', borderRadius: 8, padding: '16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: Z.overlay, background: 'rgba(0,0,0,.65)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+      <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '1100px', maxHeight: '95vh', overflowY: 'auto', background: 'var(--hud-bg)', border: `1px solid var(--hud-border)`, boxShadow: '0 8px 48px rgba(0,0,0,.7)', borderRadius: RADIUS.lg, padding: '16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         {/* Power selector tabs */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
           {allForcePowers.map(fp => {
@@ -40,8 +40,8 @@ export function HudForcePowerTreeModal({
                 style={{
                   background: isActive ? 'rgba(224,58,30,0.15)' : 'var(--hud-surface-lo)',
                   border: `1px solid ${isActive ? 'rgba(224,58,30,0.55)' : 'var(--hud-border)'}`,
-                  borderRadius: 4, padding: '6px 12px', cursor: 'pointer',
-                  fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL,
+                  borderRadius: RADIUS.md, padding: '6px 12px', cursor: 'pointer',
+                  fontFamily: FONT_BODY, fontSize: FS.label,
                   fontWeight: isActive ? 700 : 500,
                   letterSpacing: '0.06em',
                   color: isActive ? 'var(--hud-gold)' : 'var(--hud-text-dim)',
@@ -49,7 +49,7 @@ export function HudForcePowerTreeModal({
                 }}
               >
                 {fp.powerName}
-                <span style={{ fontSize: FS_OVERLINE, color: isActive ? 'var(--hud-gold)' : 'var(--hud-text-faint)', marginLeft: 6 }}>
+                <span style={{ fontSize: FS.overline, color: isActive ? 'var(--hud-gold)' : 'var(--hud-text-faint)', marginLeft: 6 }}>
                   {fp.purchasedCount}/{fp.totalCount}
                 </span>
               </button>
@@ -69,7 +69,7 @@ export function HudForcePowerTreeModal({
             totalCount={forcePowerTreeData.totalCount}
           />
         ) : (
-          <div style={{ textAlign: 'center', padding: '48px', fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: 'var(--hud-text-faint)' }}>No force power tree data.</div>
+          <div style={{ textAlign: 'center', padding: '48px', fontFamily: FONT_BODY, fontSize: FS.label, color: 'var(--hud-text-faint)' }}>No force power tree data.</div>
         )}
 
         {/* Close */}
@@ -79,8 +79,8 @@ export function HudForcePowerTreeModal({
             display: 'block', margin: '4px auto 0',
             background: 'rgba(224,58,30,0.08)',
             border: '1px solid rgba(224,58,30,0.3)',
-            borderRadius: 4, padding: '10px 40px',
-            fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL,
+            borderRadius: RADIUS.md, padding: '10px 40px',
+            fontFamily: FONT_BODY, fontSize: FS.label,
             fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase',
             color: 'var(--hud-gold)', cursor: 'pointer',
           }}

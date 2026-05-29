@@ -6,18 +6,7 @@ import { Tooltip, TipLabel, TipBody, TipDivider } from '@/components/ui/Tooltip'
 import { RichText } from '@/components/ui/RichText'
 import { DutyCard } from '@/components/character/DutyCard'
 import { ObligationCard } from '@/components/character/ObligationCard'
-import { HUD, FS, RADIUS } from '@/lib/tokens'
-
-// ─── Design Tokens ───────────────────────────────────────────────────────────
-const FC = 'var(--font-body)'
-const FR = 'var(--font-body)'
-
-const TEXT  = 'var(--hud-text)'
-const DIM   = 'var(--hud-text-dim)'
-const FAINT = 'var(--hud-text-faint)'
-const BLUE  = '#5AAAE0'
-const GREEN = '#4EC87A'
-const RED   = '#E05050'
+import { HUD, COLOR, FS, RADIUS, FONT_BODY } from '@/lib/tokens'
 
 // ─── Props ───────────────────────────────────────────────────────────────────
 interface LoreContentProps {
@@ -67,7 +56,7 @@ const panelStyle: React.CSSProperties = {
   background: 'var(--hud-surface-lo)',
   backdropFilter: 'blur(12px)',
   border: '1px solid var(--hud-border)',
-  borderRadius: 6,
+  borderRadius: RADIUS.lg,
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -96,12 +85,12 @@ function SectionLabel({ label }: { label: string }) {
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
       <div style={{ width: 14, height: 1, background: 'linear-gradient(90deg,transparent,var(--hud-border-hi))' }} />
       <span style={{
-        fontFamily: FC,
-        fontSize: 10,
+        fontFamily: FONT_BODY,
+        fontSize: FS.caption,
         fontWeight: 700,
         letterSpacing: '0.22em',
         textTransform: 'uppercase',
-        color: 'var(--hud-text-dim)',
+        color: HUD.textDim,
       }}>
         {label}
       </span>
@@ -119,7 +108,7 @@ function SectionDivider() {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '18px 0' }}>
       <div style={line} />
-      <span style={{ color: 'var(--hud-text-faint)', fontSize: 10 }}>◈</span>
+      <span style={{ color: HUD.textFaint, fontSize: FS.caption }}>◈</span>
       <div style={line} />
     </div>
   )
@@ -132,10 +121,10 @@ function ConflictCard({ entries }: { entries: { label: string; value: number }[]
       <CornerBrackets />
       <SectionLabel label="Conflict" />
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 10 }}>
-        <div style={{ fontFamily: FC, fontSize: FS.h4, fontWeight: 700, color: RED, lineHeight: 1 }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.h4, fontWeight: 700, color: COLOR.red, lineHeight: 1 }}>
           {total}
         </div>
-        <div style={{ fontFamily: FR, fontSize: FS.overline, color: FAINT, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
           total active
         </div>
       </div>
@@ -154,14 +143,14 @@ function ConflictCard({ entries }: { entries: { label: string; value: number }[]
             width: 7,
             height: 7,
             borderRadius: RADIUS.full,
-            background: RED,
+            background: COLOR.red,
             boxShadow: '0 0 6px rgba(224,80,80,0.5)',
             flexShrink: 0,
           }} />
-          <div style={{ flex: 1, fontFamily: FR, fontSize: FS.caption, color: TEXT }}>
+          <div style={{ flex: 1, fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.text }}>
             {entry.label}
           </div>
-          <div style={{ fontFamily: FC, fontSize: FS.caption, fontWeight: 700, color: RED }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700, color: COLOR.red }}>
             {entry.value}
           </div>
         </div>
@@ -176,7 +165,7 @@ function BackstoryView({ backstory }: { backstory: string }) {
 
   if (!trimmed) {
     return (
-      <div style={{ fontFamily: FR, fontSize: 13, color: DIM, fontStyle: 'italic' }}>
+      <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.textDim, fontStyle: 'italic' }}>
         No backstory recorded.
       </div>
     )
@@ -196,7 +185,7 @@ function BackstoryView({ backstory }: { backstory: string }) {
           return (
             <div key={idx}>
               <span style={{
-                fontFamily: FC,
+                fontFamily: FONT_BODY,
                 fontSize: 52,
                 fontWeight: 700,
                 color: HUD.gold,
@@ -209,7 +198,7 @@ function BackstoryView({ backstory }: { backstory: string }) {
               </span>
               <RichText
                 text={segTrimmed.slice(1)}
-                style={{ fontFamily: FR, fontSize: 13, lineHeight: 1.9, color: TEXT }}
+                style={{ fontFamily: FONT_BODY, fontSize: FS.sm, lineHeight: 1.9, color: HUD.text }}
               />
             </div>
           )
@@ -220,7 +209,7 @@ function BackstoryView({ backstory }: { backstory: string }) {
             {idx > 0 && <SectionDivider />}
             <RichText
               text={seg}
-              style={{ fontFamily: FR, fontSize: 13, lineHeight: 1.9, color: TEXT }}
+              style={{ fontFamily: FONT_BODY, fontSize: FS.sm, lineHeight: 1.9, color: HUD.text }}
             />
           </div>
         )
@@ -276,16 +265,16 @@ export function LoreContent({
           <CornerBrackets />
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
-              <div style={{ fontFamily: FC, fontSize: 18, fontWeight: 700, color: HUD.gold, lineHeight: 1.1 }}>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS.h4, fontWeight: 700, color: HUD.gold, lineHeight: 1.1 }}>
                 {characterName}
               </div>
               <div style={{
-                fontFamily: FR,
-                fontSize: 9,
+                fontFamily: FONT_BODY,
+                fontSize: FS.overline,
                 fontWeight: 700,
                 letterSpacing: '0.18em',
                 textTransform: 'uppercase',
-                color: DIM,
+                color: HUD.textDim,
                 marginTop: 4,
               }}>
                 Character Background &amp; History
@@ -295,23 +284,23 @@ export function LoreContent({
             <button
               onClick={() => setEditingBackstory(e => !e)}
               style={{
-                border: '1px solid var(--hud-border-hi)',
-                background: 'rgba(224,58,30,0.07)',
-                borderRadius: 4,
+                border: `1px solid ${HUD.borderHi}`,
+                background: 'var(--hud-accent-10)',
+                borderRadius: RADIUS.md,
                 padding: '5px 11px',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 6,
-                fontFamily: FR,
-                fontSize: 10,
+                fontFamily: FONT_BODY,
+                fontSize: FS.caption,
                 fontWeight: 700,
                 color: HUD.gold,
                 letterSpacing: '0.08em',
                 textTransform: 'uppercase',
               }}
             >
-              <span style={{ fontSize: 13 }}>✎</span>
+              <span style={{ fontSize: FS.sm }}>✎</span>
               {editingBackstory ? 'Preview' : 'Edit Background'}
             </button>
           </div>
@@ -332,9 +321,9 @@ export function LoreContent({
                 autoFocus
               />
               <div style={{
-                fontFamily: FR,
-                fontSize: 10,
-                color: FAINT,
+                fontFamily: FONT_BODY,
+                fontSize: FS.caption,
+                color: HUD.textFaint,
                 marginTop: 6,
                 textAlign: 'right',
                 letterSpacing: '0.06em',
@@ -358,9 +347,9 @@ export function LoreContent({
             className="hud-textarea" style={{ minHeight: 120 }}
           />
           <div style={{
-            fontFamily: FR,
-            fontSize: 11,
-            color: BLUE,
+            fontFamily: FONT_BODY,
+            fontSize: FS.label,
+            color: COLOR.blue,
             marginTop: 6,
             textAlign: 'right',
             letterSpacing: '0.06em',
@@ -397,16 +386,16 @@ export function LoreContent({
               }}
             >
               <span style={{
-                fontFamily: FR,
-                fontSize: 11,
+                fontFamily: FONT_BODY,
+                fontSize: FS.label,
                 fontWeight: 700,
                 textTransform: 'uppercase',
-                color: DIM,
+                color: HUD.textDim,
                 letterSpacing: '0.1em',
               }}>
                 {label}
               </span>
-              <span style={{ fontFamily: FR, fontSize: 11, fontWeight: 600, color: TEXT }}>
+              <span style={{ fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 600, color: HUD.text }}>
                 {value}
               </span>
             </div>
@@ -422,31 +411,31 @@ export function LoreContent({
             <div style={{
               background: 'rgba(90,170,224,0.1)',
               border: '1px solid rgba(90,170,224,0.3)',
-              borderRadius: 12,
+              borderRadius: RADIUS.xl,
               padding: '2px 10px',
               display: 'inline-block',
-              fontFamily: FR,
-              fontSize: 9,
+              fontFamily: FONT_BODY,
+              fontSize: FS.overline,
               fontWeight: 700,
               textTransform: 'uppercase',
-              color: BLUE,
+              color: COLOR.blue,
               letterSpacing: '0.1em',
             }}>
               SPECIES
             </div>
 
             {/* Species name */}
-            <div style={{ fontFamily: FC, fontSize: 16, color: TEXT, marginTop: 6 }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.h4, color: HUD.text, marginTop: 6 }}>
               {speciesRef.name}
             </div>
 
             {/* Type subtitle */}
             <div style={{
-              fontFamily: FR,
-              fontSize: 10,
+              fontFamily: FONT_BODY,
+              fontSize: FS.caption,
               fontWeight: 700,
               textTransform: 'uppercase',
-              color: DIM,
+              color: HUD.textDim,
               marginTop: 2,
               letterSpacing: '0.1em',
             }}>
@@ -473,20 +462,20 @@ export function LoreContent({
                   style={{
                     background: 'var(--hud-surface-mid)',
                     border: '1px solid var(--hud-border)',
-                    borderRadius: 4,
+                    borderRadius: RADIUS.md,
                     padding: '8px 6px',
                     textAlign: 'center',
                   }}
                 >
-                  <div style={{ fontFamily: FR, fontSize: 18, fontWeight: 600, color: HUD.gold, lineHeight: 1 }}>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: FS.h4, fontWeight: 600, color: HUD.gold, lineHeight: 1 }}>
                     {statValue}
                   </div>
                   <div style={{
-                    fontFamily: FR,
-                    fontSize: 10,
+                    fontFamily: FONT_BODY,
+                    fontSize: FS.caption,
                     fontWeight: 600,
                     textTransform: 'uppercase',
-                    color: DIM,
+                    color: HUD.textDim,
                     marginTop: 3,
                     letterSpacing: '0.08em',
                   }}>
@@ -504,10 +493,10 @@ export function LoreContent({
                   {specialAbilities.map((ability, idx) => {
                     const isCond = ability.is_conditional
                     const pillStyle: React.CSSProperties = {
-                      fontFamily: 'var(--font-body)',
+                      fontFamily: FONT_BODY,
                       fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)',
                       textTransform: 'uppercase' as const,
-                      borderRadius: 20,
+                      borderRadius: RADIUS.xl,
                       padding: '3px 10px',
                       cursor: 'help',
                       whiteSpace: 'nowrap' as const,
@@ -518,9 +507,9 @@ export function LoreContent({
                             color: '#FF9800',
                           }
                         : {
-                            border: '1px solid var(--hud-border-hi)',
+                            border: `1px solid ${HUD.borderHi}`,
                             background: 'var(--hud-surface-lo)',
-                            color: 'var(--hud-gold)',
+                            color: HUD.gold,
                           }),
                     }
                     const tipContent = (
@@ -537,8 +526,8 @@ export function LoreContent({
                           <>
                             <TipDivider />
                             <div style={{
-                              fontFamily: FR,
-                              fontSize: 11,
+                              fontFamily: FONT_BODY,
+                              fontSize: FS.label,
                               color: '#FF9800',
                               fontStyle: 'italic',
                               lineHeight: 1.5,
@@ -575,21 +564,21 @@ export function LoreContent({
             <SectionLabel label="Motivation" />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
               <div>
-                <div style={{ fontFamily: FC, fontSize: 10, fontWeight: 700, color: BLUE, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 2 }}>
+                <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700, color: COLOR.blue, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 2 }}>
                   {motivationType}
                 </div>
                 {motivationSpecific && (
-                  <div style={{ fontFamily: FC, fontSize: 14, fontWeight: 700, color: TEXT }}>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700, color: HUD.text }}>
                     {motivationSpecific}
                   </div>
                 )}
               </div>
-              <span style={{ fontFamily: FC, fontSize: 10, color: BLUE, background: 'rgba(90,170,224,0.1)', border: '1px solid rgba(90,170,224,0.3)', borderRadius: 3, padding: '2px 8px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: COLOR.blue, background: 'rgba(90,170,224,0.1)', border: '1px solid rgba(90,170,224,0.3)', borderRadius: RADIUS.sm, padding: '2px 8px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                 Motivation
               </span>
             </div>
             {motivationDesc && (
-              <div style={{ fontFamily: FR, fontSize: 12, color: DIM, lineHeight: 1.6, borderTop: '1px solid rgba(90,170,224,0.1)', paddingTop: 8 }}>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.textDim, lineHeight: 1.6, borderTop: '1px solid rgba(90,170,224,0.1)', paddingTop: 8 }}>
                 {motivationDesc}
               </div>
             )}
@@ -598,11 +587,11 @@ export function LoreContent({
           <div style={{ ...panelStyle, padding: '14px 16px' }}>
             <CornerBrackets />
             <SectionLabel label="Motivation" />
-            <div style={{ fontFamily: FC, fontSize: 14, color: HUD.gold, marginBottom: motivationDesc ? 8 : 0 }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.gold, marginBottom: motivationDesc ? 8 : 0 }}>
               {motivationType}
             </div>
             {motivationDesc && (
-              <div style={{ fontFamily: FR, fontSize: 12, color: DIM, lineHeight: 1.6 }}>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.textDim, lineHeight: 1.6 }}>
                 {motivationDesc}
               </div>
             )}
@@ -611,7 +600,7 @@ export function LoreContent({
           <div style={{ ...panelStyle, padding: '12px 16px' }}>
             <CornerBrackets />
             <SectionLabel label="Motivation" />
-            <div style={{ fontFamily: FR, fontSize: 12, color: DIM, fontStyle: 'italic' }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.textDim, fontStyle: 'italic' }}>
               Motivation not yet set.
             </div>
           </div>

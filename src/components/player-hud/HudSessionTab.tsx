@@ -41,27 +41,27 @@ const TokenTooltip = memo(function TokenTooltip(p: TooltipData) {
   const top  = Math.max(8, Math.min(p.y - 12, vh - 300))
 
   return createPortal(
-    <div style={{
-      position: 'fixed', left, top, width: TOOLTIP_W, zIndex: 9999,
+    <div className="pointer-events-none" style={{
+      position: 'fixed', left, top, width: TOOLTIP_W, zIndex: 'var(--z-hud-supreme)',
       background: 'rgba(6,13,9,0.97)',
       border: `1px solid ${p.typeColor}44`,
-      borderRadius: 6,
+      borderRadius: '0.375rem',
       boxShadow: `0 8px 32px rgba(0,0,0,0.85), 0 0 0 1px ${p.typeColor}18`,
       backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-      padding: '10px 12px', pointerEvents: 'none',
+      padding: '0.625rem var(--space-3)',
       fontFamily: FONT_RAJDHANI,
     }}>
       {/* Name + type badge */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-        <div style={{ flex: 1, fontSize: FS_SM, fontWeight: 700, color: 'var(--hud-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
-        <div style={{ fontSize: FS_OL, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: p.typeColor, background: `${p.typeColor}18`, border: `1px solid ${p.typeColor}35`, borderRadius: 3, padding: '1px 5px', flexShrink: 0 }}>{p.typeLabel}</div>
+      <div className="flex items-center" style={{ gap: '0.375rem', marginBottom: 'var(--space-2)' }}>
+        <div className="flex-1 overflow-hidden whitespace-nowrap" style={{ fontSize: FS_SM, fontWeight: 700, color: 'var(--hud-text)', textOverflow: 'ellipsis' }}>{p.name}</div>
+        <div className="shrink-0" style={{ fontSize: FS_OL, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: p.typeColor, background: `${p.typeColor}18`, border: `1px solid ${p.typeColor}35`, borderRadius: 3, padding: '1px 5px' }}>{p.typeLabel}</div>
       </div>
 
       {/* Characteristics grid */}
       {p.characteristics && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 3, marginBottom: 8 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 3, marginBottom: 'var(--space-2)' }}>
           {CHAR_ABBRS.map((abbr, i) => (
-            <div key={abbr} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, background: 'rgba(255,255,255,0.04)', borderRadius: 3, padding: '4px 2px' }}>
+            <div key={abbr} className="flex flex-col items-center" style={{ gap: 1, background: 'rgba(255,255,255,0.04)', borderRadius: 3, padding: 'var(--space-1) 2px' }}>
               <div style={{ fontSize: FS_OL, color: 'var(--hud-text-dim)', letterSpacing: '0.04em' }}>{abbr}</div>
               <div style={{ fontSize: FS_SM, fontWeight: 700, color: HUD.gold }}>{p.characteristics![CHAR_KEYS[i]]}</div>
             </div>
@@ -71,21 +71,21 @@ const TokenTooltip = memo(function TokenTooltip(p: TooltipData) {
 
       {/* Soak + Defense */}
       {(p.soak != null || p.defMelee != null || p.defRanged != null) && (
-        <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
+        <div className="flex" style={{ gap: 'var(--space-1)', marginBottom: 'var(--space-2)' }}>
           {p.soak != null && (
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.04)', borderRadius: 3, padding: '4px 4px' }}>
+            <div className="flex-1 flex flex-col items-center" style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 3, padding: 'var(--space-1)' }}>
               <div style={{ fontSize: FS_OL, color: 'var(--hud-text-dim)', letterSpacing: '0.04em' }}>SOAK</div>
               <div style={{ fontSize: FS_SM, fontWeight: 700, color: 'var(--hud-text)' }}>{p.soak}</div>
             </div>
           )}
           {p.defMelee != null && (
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.04)', borderRadius: 3, padding: '4px 4px' }}>
+            <div className="flex-1 flex flex-col items-center" style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 3, padding: 'var(--space-1)' }}>
               <div style={{ fontSize: FS_OL, color: 'var(--hud-text-dim)', letterSpacing: '0.04em' }}>DEF M</div>
               <div style={{ fontSize: FS_SM, fontWeight: 700, color: 'var(--hud-text)' }}>{p.defMelee}</div>
             </div>
           )}
           {p.defRanged != null && (
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.04)', borderRadius: 3, padding: '4px 4px' }}>
+            <div className="flex-1 flex flex-col items-center" style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 3, padding: 'var(--space-1)' }}>
               <div style={{ fontSize: FS_OL, color: 'var(--hud-text-dim)', letterSpacing: '0.04em' }}>DEF R</div>
               <div style={{ fontSize: FS_SM, fontWeight: 700, color: 'var(--hud-text)' }}>{p.defRanged}</div>
             </div>
@@ -95,14 +95,14 @@ const TokenTooltip = memo(function TokenTooltip(p: TooltipData) {
 
       {/* Minion group count */}
       {p.minionGroup && (
-        <div style={{ marginBottom: 6 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+        <div style={{ marginBottom: '0.375rem' }}>
+          <div className="flex justify-between" style={{ marginBottom: 3 }}>
             <span style={{ fontSize: FS_OL, color: 'var(--hud-text-dim)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Group</span>
             <span style={{ fontSize: FS_OL, fontWeight: 700, color: p.minionGroup.alive === 0 ? '#E05050' : 'var(--hud-text)' }}>
               {p.minionGroup.alive}/{p.minionGroup.total} alive
             </span>
           </div>
-          <div style={{ display: 'flex', gap: 3 }}>
+          <div className="flex" style={{ gap: 3 }}>
             {Array.from({ length: p.minionGroup.total }).map((_, i) => (
               <span key={i} style={{ fontSize: 9, color: i < p.minionGroup!.alive ? '#E05252' : 'rgba(255,255,255,0.15)' }}>
                 {i < p.minionGroup!.alive ? '■' : '□'}
@@ -114,12 +114,12 @@ const TokenTooltip = memo(function TokenTooltip(p: TooltipData) {
 
       {/* Wounds bar */}
       {p.wounds && (
-        <div style={{ marginBottom: p.strain ? 6 : 0 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+        <div style={{ marginBottom: p.strain ? '0.375rem' : 0 }}>
+          <div className="flex justify-between" style={{ marginBottom: 3 }}>
             <span style={{ fontSize: FS_OL, color: 'var(--hud-text-dim)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Wounds</span>
             <span style={{ fontSize: FS_OL, fontWeight: 700, color: p.wounds.current >= p.wounds.max ? '#E05050' : 'var(--hud-text)' }}>{p.wounds.current}/{p.wounds.max}</span>
           </div>
-          <div style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
+          <div className="overflow-hidden" style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2 }}>
             <div style={{ height: '100%', width: `${Math.min(100, (p.wounds.current / Math.max(p.wounds.max, 1)) * 100)}%`, background: p.wounds.current >= p.wounds.max ? '#E05050' : 'var(--hud-gold)', borderRadius: 2 }} />
           </div>
         </div>
@@ -127,13 +127,13 @@ const TokenTooltip = memo(function TokenTooltip(p: TooltipData) {
 
       {/* Strain bar */}
       {p.strain && (
-        <div style={{ marginTop: p.wounds ? 6 : 0 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+        <div style={{ marginTop: p.wounds ? '0.375rem' : 0 }}>
+          <div className="flex justify-between" style={{ marginBottom: 3 }}>
             <span style={{ fontSize: FS_OL, color: 'var(--hud-text-dim)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Strain</span>
             <span style={{ fontSize: FS_OL, fontWeight: 700, color: p.strain.current >= p.strain.max ? '#E05050' : 'var(--hud-text)' }}>{p.strain.current}/{p.strain.max}</span>
           </div>
-          <div style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: `${Math.min(100, (p.strain.current / Math.max(p.strain.max, 1)) * 100)}%`, background: p.strain.current >= p.strain.max ? '#E05050' : '#4EC87A', borderRadius: 2 }} />
+          <div className="overflow-hidden" style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2 }}>
+            <div style={{ height: '100%', width: `${Math.min(100, (p.strain.current / Math.max(p.strain.max, 1)) * 100)}%`, background: p.strain.current >= p.strain.max ? '#E05050' : 'var(--state-success)', borderRadius: 2 }} />
           </div>
         </div>
       )}
@@ -250,7 +250,7 @@ export function HudSessionTab({
       if (slot?.adversaryInstanceId) {
         const adv = encounter.adversaries.find(a => a.instanceId === slot.adversaryInstanceId)
         if (adv) {
-          const color    = adv.type === 'minion' ? '#E05252' : adv.type === 'nemesis' ? '#9060D0' : '#FF9800'
+          const color    = adv.type === 'minion' ? '#E05252' : adv.type === 'nemesis' ? 'var(--state-activated)' : '#FF9800'
           const woundsMax = adv.type === 'minion' && adv.groupSize
             ? (adv.woundThreshold ?? 0) * adv.groupSize
             : adv.woundThreshold
@@ -276,7 +276,7 @@ export function HudSessionTab({
         if (veh) return {
           x: tokenHoverInfo.x, y: tokenHoverInfo.y,
           name: veh.name, typeLabel: 'Vehicle',
-          typeColor: veh.alignment === 'allied_npc' ? '#4EC87A' : '#E05252',
+          typeColor: veh.alignment === 'allied_npc' ? 'var(--state-success)' : '#E05252',
         }
       }
     }
@@ -285,7 +285,7 @@ export function HudSessionTab({
     if (token.participant_type === 'adversary' && token.label) {
       const cached = advStatCache.get(token.label)
       if (cached) {
-        const color = cached.type === 'minion' ? '#E05252' : cached.type === 'nemesis' ? '#9060D0' : '#FF9800'
+        const color = cached.type === 'minion' ? '#E05252' : cached.type === 'nemesis' ? 'var(--state-activated)' : '#FF9800'
         return {
           x: tokenHoverInfo.x, y: tokenHoverInfo.y,
           name: token.label,
@@ -306,15 +306,15 @@ export function HudSessionTab({
   }, [tokenHoverInfo, tokensById, allChars, encounter, advStatCache])
 
   return (
-    <div style={{ position: 'relative', height: '100%', overflow: 'hidden' }}>
+    <div className="relative h-full overflow-hidden">
       {/* ── Quick drawer backdrop ── */}
       {activeQuickPanel && (
         <div
           onClick={onCloseQuickPanel}
+          className="absolute inset-0"
           style={{
-            position: 'absolute', inset: 0,
             background: 'rgba(0,0,0,0.45)',
-            zIndex: 100,
+            zIndex: 'var(--z-panel)',
           }}
         />
       )}
@@ -324,16 +324,16 @@ export function HudSessionTab({
         className={`hud-quick-drawer${activeQuickPanel === 'skill' ? ' open' : ''}`}
         style={{ background: 'var(--hud-surface-lo)', borderRight: '1px solid var(--hud-border-hi)', display: 'flex', flexDirection: 'column' }}
       >
-        <div style={{
-          padding: '10px 14px', borderBottom: '1px solid var(--hud-border)',
-          background: 'var(--hud-panel)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0,
+        <div className="flex items-center shrink-0" style={{
+          padding: '0.625rem var(--space-4)', borderBottom: '1px solid var(--hud-border)',
+          background: 'var(--hud-panel)', gap: 'var(--space-2)',
         }}>
-          <span style={{ fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--hud-gold)', flex: 1 }}>
+          <span className="flex-1" style={{ fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--hud-gold)' }}>
             ◈ Skill Check
           </span>
-          <button onClick={onCloseQuickPanel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--hud-text-dim)', fontSize: 15 }}>✕</button>
+          <button onClick={onCloseQuickPanel} className="cursor-pointer" style={{ background: 'none', border: 'none', color: 'var(--hud-text-dim)', fontSize: 15 }}>✕</button>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4, padding: 10, flexShrink: 0 }}>
+        <div className="shrink-0" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-1)', padding: '0.625rem' }}>
           {([
             { label: 'Brawn',     value: character.brawn },
             { label: 'Agility',   value: character.agility },
@@ -343,9 +343,9 @@ export function HudSessionTab({
             { label: 'Presence',  value: character.presence },
           ] as const).map(ch => (
             <div key={ch.label} style={{
-              textAlign: 'center', padding: '6px 4px',
-              background: 'rgba(224,58,30,0.06)',
-              border: '1px solid rgba(224,58,30,0.18)',
+              textAlign: 'center', padding: '0.375rem var(--space-1)',
+              background: 'color-mix(in srgb, var(--hud-accent) 6%, transparent)',
+              border: '1px solid color-mix(in srgb, var(--hud-accent) 18%, transparent)',
               borderRadius: RADIUS.lg,
             }}>
               <div style={{ fontFamily: FONT_DISPLAY, fontSize: 'clamp(1rem,1.6vw,1.2rem)', fontWeight: 700, color: 'var(--hud-gold)', lineHeight: 1 }}>
@@ -357,8 +357,8 @@ export function HudSessionTab({
             </div>
           ))}
         </div>
-        <div style={{ height: 1, background: 'var(--hud-border)', flexShrink: 0 }} />
-        <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <div className="shrink-0" style={{ height: 1, background: 'var(--hud-border)' }} />
+        <div className="flex-1 overflow-hidden flex flex-col">
           <HudSkillQuickList skills={hudSkills} onOpenPopover={onOpenSkillPopover} />
         </div>
       </div>
@@ -382,7 +382,7 @@ export function HudSessionTab({
           />
         )
         : (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', flexDirection: 'column', gap: 12, background: 'var(--hud-bg)' }}>
+          <div className="flex items-center justify-center h-full flex-col" style={{ gap: 'var(--space-3)', background: 'var(--hud-bg)' }}>
             <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.textFaint }}>Waiting for GM to set a map</div>
           </div>
         )
@@ -390,10 +390,10 @@ export function HudSessionTab({
 
       {/* ── Combat overlays — only when an active encounter exists ── */}
       {isCombatActive && encounter && (
-        <div ref={initiativeBarRef} style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0,
+        <div ref={initiativeBarRef} className="absolute" style={{
+          bottom: 0, left: 0, right: 0,
           background: 'var(--hud-surface-hi)', backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)', zIndex: 30,
+          WebkitBackdropFilter: 'blur(8px)', zIndex: 'var(--z-drawer)',
         }}>
           <InitiativeStrip encounter={encounter} character={character} compact />
         </div>
@@ -401,17 +401,18 @@ export function HudSessionTab({
 
       {/* ── Session drawer trigger button — shown only when not rail-controlled ── */}
       {!isAdversariesControlled && (
-        <div style={{ position: 'absolute', bottom: isCombatActive && encounter ? 90 : 12, left: 12, display: 'flex', gap: 6, zIndex: 31 }}>
+        <div className="absolute flex" style={{ bottom: isCombatActive && encounter ? 90 : 'var(--space-3)', left: 'var(--space-3)', gap: '0.375rem', zIndex: 'var(--z-hud-drawer)' }}>
           {encounter && encounter.adversaries.some(a => a.revealed) && visibleMapTokens.some(t => t.participant_type === 'adversary') && (
             <button
               onClick={() => setAdversaryDrawerOpen(!adversaryDrawerOpen)}
+              className="cursor-pointer"
               style={{
                 fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, fontWeight: 700,
                 letterSpacing: '0.14em', textTransform: 'uppercase',
-                color: adversaryDrawerOpen ? 'var(--bs-on-red)' : C.gold,
+                color: adversaryDrawerOpen ? 'var(--hud-vital-text)' : C.gold,
                 background: adversaryDrawerOpen ? C.gold : 'var(--hud-surface-mid)',
-                border: `1px solid rgba(224,58,30,0.5)`,
-                borderRadius: 4, padding: '4px 10px', cursor: 'pointer',
+                border: `1px solid color-mix(in srgb, var(--hud-accent) 50%, transparent)`,
+                borderRadius: 'var(--radius-md)', padding: 'var(--space-1) 0.625rem',
               }}
             >{(encounter.vehicles ?? []).length > 0 ? 'Adversaries & Vehicles' : 'Adversaries'}</button>
           )}

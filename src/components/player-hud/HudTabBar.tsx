@@ -1,7 +1,6 @@
 'use client'
 
-import { C, FONT_RAJDHANI, FS_LABEL } from './design-tokens'
-import { COLOR } from '@/lib/tokens'
+import { HUD, FONT_BODY, FS, EASE } from '@/lib/tokens'
 
 export type TabName = 'Skills' | 'Talents' | 'Inventory' | 'Force' | 'Lore' | 'Session' | 'Group'
 
@@ -16,24 +15,24 @@ export function TabBar({ active, onChange, hasCombat, isForceUser, isForceUserFa
   })
   return (
     <div style={{
-      display: 'flex', borderBottom: `1px solid ${C.border}`,
+      display: 'flex', borderBottom: `1px solid ${HUD.border}`,
       paddingLeft: 16, gap: 2, flexShrink: 0,
     }}>
       {tabs.map(tab => {
         const isForceTab   = tab === 'Force'
         const isSessionTab = tab === 'Session'
         const forceColor   = isForceUserFallen ? FORCE_TAB_PURPLE : FORCE_TAB_BLUE
-        // Combat-active → red-sun (vivid); peaceful session → red-pale (soft)
-        const sessionColor = isCombatActive ? C.gold : COLOR.bsRedPale
+        // Combat-active → gold accent (vivid); peaceful session → red-pale (soft)
+        const sessionColor = isCombatActive ? HUD.gold : 'var(--red-pale)'
         const sessionDim   = isCombatActive ? 'var(--hud-accent-45)' : 'rgba(232,96,80,0.45)'
         const tabColor     = isForceTab
           ? forceColor
           : isSessionTab ? sessionColor
-          : C.gold
+          : HUD.gold
         const dimColor     = isForceTab
           ? (isForceUserFallen ? 'rgba(139,43,226,0.45)' : 'rgba(126,200,227,0.45)')
           : isSessionTab ? sessionDim
-          : C.textDim
+          : HUD.textDim
         const sessionIcon  = isCombatActive ? '⚔' : '◉'
         return (
           <button
@@ -43,9 +42,9 @@ export function TabBar({ active, onChange, hasCombat, isForceUser, isForceUserFa
               background: 'transparent', border: 'none',
               borderBottom: `2px solid ${active === tab ? tabColor : 'transparent'}`,
               padding: '10px 14px', cursor: 'pointer',
-              fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, fontWeight: 600, letterSpacing: '0.08em',
+              fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 600, letterSpacing: '0.08em',
               color: active === tab ? tabColor : dimColor,
-              transition: '.15s', marginBottom: -1,
+              transition: EASE.default, marginBottom: -1,
               display: 'flex', alignItems: 'center', gap: 5,
               textShadow: isForceTab && active === tab
                 ? (isForceUserFallen ? '0 0 8px rgba(139,43,226,0.6)' : '0 0 10px rgba(126,200,227,0.4)')
@@ -61,7 +60,7 @@ export function TabBar({ active, onChange, hasCombat, isForceUser, isForceUserFa
                 style={{
                   width: 14, height: 14,
                   opacity: active === tab ? 1 : 0.45,
-                  transition: 'opacity .15s',
+                  transition: `opacity ${EASE.default}`,
                 }}
               />
             )}

@@ -42,7 +42,7 @@ export function HudLoreTab({
     : undefined
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+    <div className="flex flex-col gap-[var(--space-3)]">
       <CharacterAvatar
         avatarUrl={character.portrait_url}
         characterName={character.name}

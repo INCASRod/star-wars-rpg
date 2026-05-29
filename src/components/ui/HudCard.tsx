@@ -1,6 +1,7 @@
 'use client'
 
 import { ReactNode, useState } from 'react'
+import { EASE, FS } from '@/lib/tokens'
 
 interface HudCardProps {
   title: string
@@ -28,9 +29,9 @@ export function HudCard({ title, children, className = '', animClass = '', style
         {collapsible && (
           <span style={{
             display: 'inline-block',
-            transition: 'transform .2s',
+            transition: `transform ${EASE.default}`,
             transform: collapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
-            fontSize: 'var(--font-xs)',
+            fontSize: FS.caption,
             color: 'var(--txt3)',
           }}>
             ▼

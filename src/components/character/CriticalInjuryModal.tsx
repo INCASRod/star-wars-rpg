@@ -4,15 +4,9 @@ import React, { useState, useCallback } from 'react'
 import { Modal } from '@/components/ui/Modal'
 import { createClient } from '@/lib/supabase/client'
 import type { CriticalInjuryRequest, RefCriticalInjury, CharacterCriticalInjury } from '@/lib/types'
-import { HUD } from '@/lib/tokens'
-
-const FONT_C = 'var(--font-body)'
-const FONT_R = 'var(--font-body)'
-const FONT_M = 'var(--font-body)'
+import { HUD, RADIUS, FONT_BODY } from '@/lib/tokens'
 
 const CRIMSON = '#DC143C'
-const TEXT    = 'var(--hud-text)'
-const DIM     = 'var(--hud-text-faint)'
 
 interface CriticalInjuryModalProps {
   request:      CriticalInjuryRequest
@@ -121,7 +115,7 @@ export function CriticalInjuryModal({
         {/* Header */}
         <div>
           <div style={{
-            fontFamily: FONT_C,
+            fontFamily: FONT_BODY,
             fontSize: 'clamp(1rem, 1.6vw, 1.2rem)',
             fontWeight: 700,
             color: CRIMSON,
@@ -131,7 +125,7 @@ export function CriticalInjuryModal({
           }}>
             ⚡ Critical Injury
           </div>
-          <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)', color: TEXT }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)', color: HUD.text }}>
             {characterName}, your GM has requested a Critical Injury roll.
           </div>
         </div>
@@ -140,23 +134,23 @@ export function CriticalInjuryModal({
 
         {/* Modifier breakdown */}
         <div>
-          <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.55rem, 0.85vw, 0.65rem)', textTransform: 'uppercase', letterSpacing: '0.12em', color: DIM, marginBottom: 8 }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: 'clamp(0.55rem, 0.85vw, 0.65rem)', textTransform: 'uppercase', letterSpacing: '0.12em', color: HUD.textFaint, marginBottom: 8 }}>
             Roll Modifier
           </div>
           {modBreakdown.length === 0 ? (
-            <div style={{ fontFamily: FONT_R, fontSize: 'clamp(0.82rem, 1.3vw, 0.9rem)', color: TEXT }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: 'clamp(0.82rem, 1.3vw, 0.9rem)', color: HUD.text }}>
               No modifier — roll d100 straight.
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {modBreakdown.map(m => (
-                <div key={m.label} style={{ display: 'flex', justifyContent: 'space-between', fontFamily: FONT_R, fontSize: 'clamp(0.8rem, 1.2vw, 0.9rem)', color: TEXT }}>
+                <div key={m.label} style={{ display: 'flex', justifyContent: 'space-between', fontFamily: FONT_BODY, fontSize: 'clamp(0.8rem, 1.2vw, 0.9rem)', color: HUD.text }}>
                   <span>{m.label}</span>
                   <span style={{ color: CRIMSON, fontWeight: 700 }}>+{m.value}</span>
                 </div>
               ))}
               <div style={{ height: 1, background: 'var(--hud-border)', margin: '4px 0' }} />
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: FONT_M, fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)', color: HUD.gold }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: FONT_BODY, fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)', color: HUD.gold }}>
                 <span>Total modifier</span>
                 <span style={{ fontWeight: 700 }}>+{request.total_modifier}</span>
               </div>
@@ -168,13 +162,13 @@ export function CriticalInjuryModal({
 
         {/* Dice dropdowns */}
         <div>
-          <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.55rem, 0.85vw, 0.65rem)', textTransform: 'uppercase', letterSpacing: '0.12em', color: DIM, marginBottom: 10 }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: 'clamp(0.55rem, 0.85vw, 0.65rem)', textTransform: 'uppercase', letterSpacing: '0.12em', color: HUD.textFaint, marginBottom: 10 }}>
             Roll two ten-sided dice (d100)
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
             {/* Tens dropdown */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
-              <label style={{ fontFamily: FONT_M, fontSize: 'clamp(0.52rem, 0.8vw, 0.62rem)', color: DIM, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+              <label style={{ fontFamily: FONT_BODY, fontSize: 'clamp(0.52rem, 0.8vw, 0.62rem)', color: HUD.textFaint, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
                 Tens
               </label>
               <select
@@ -183,9 +177,9 @@ export function CriticalInjuryModal({
                 style={{
                   background: 'var(--hud-surface-lo)',
                   border: `1px solid rgba(220,20,60,0.3)`,
-                  borderRadius: 6, padding: '8px 12px',
-                  fontFamily: FONT_M, fontSize: 'clamp(0.85rem, 1.3vw, 1rem)',
-                  color: TEXT, textAlign: 'center',
+                  borderRadius: RADIUS.lg, padding: '8px 12px',
+                  fontFamily: FONT_BODY, fontSize: 'clamp(0.85rem, 1.3vw, 1rem)',
+                  color: HUD.text, textAlign: 'center',
                   cursor: 'pointer',
                 }}
               >
@@ -196,11 +190,11 @@ export function CriticalInjuryModal({
               </select>
             </div>
 
-            <div style={{ fontFamily: FONT_C, fontSize: 'clamp(1rem, 1.5vw, 1.2rem)', color: DIM, marginTop: 18 }}>×</div>
+            <div style={{ fontFamily: FONT_BODY, fontSize: 'clamp(1rem, 1.5vw, 1.2rem)', color: HUD.textFaint, marginTop: 18 }}>×</div>
 
             {/* Ones dropdown */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
-              <label style={{ fontFamily: FONT_M, fontSize: 'clamp(0.52rem, 0.8vw, 0.62rem)', color: DIM, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+              <label style={{ fontFamily: FONT_BODY, fontSize: 'clamp(0.52rem, 0.8vw, 0.62rem)', color: HUD.textFaint, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
                 Ones
               </label>
               <select
@@ -209,9 +203,9 @@ export function CriticalInjuryModal({
                 style={{
                   background: 'var(--hud-surface-lo)',
                   border: `1px solid rgba(220,20,60,0.3)`,
-                  borderRadius: 6, padding: '8px 12px',
-                  fontFamily: FONT_M, fontSize: 'clamp(0.85rem, 1.3vw, 1rem)',
-                  color: TEXT, textAlign: 'center',
+                  borderRadius: RADIUS.lg, padding: '8px 12px',
+                  fontFamily: FONT_BODY, fontSize: 'clamp(0.85rem, 1.3vw, 1rem)',
+                  color: HUD.text, textAlign: 'center',
                   cursor: 'pointer',
                 }}
               >
@@ -230,8 +224,8 @@ export function CriticalInjuryModal({
               width: '100%',
               background: 'rgba(220,20,60,0.08)',
               border: `1px solid rgba(220,20,60,0.3)`,
-              borderRadius: 6, padding: '9px 0',
-              fontFamily: FONT_R, fontSize: 'clamp(0.82rem, 1.2vw, 0.9rem)',
+              borderRadius: RADIUS.lg, padding: '9px 0',
+              fontFamily: FONT_BODY, fontSize: 'clamp(0.82rem, 1.2vw, 0.9rem)',
               fontWeight: 700, letterSpacing: '0.08em',
               color: CRIMSON, cursor: 'pointer',
               marginBottom: rolled ? 12 : 0,
@@ -245,33 +239,33 @@ export function CriticalInjuryModal({
             <div style={{
               background: 'rgba(220,20,60,0.06)',
               border: `1px solid rgba(220,20,60,0.25)`,
-              borderRadius: 6, padding: '10px 14px',
+              borderRadius: RADIUS.lg, padding: '10px 14px',
             }}>
-              <div style={{ fontFamily: FONT_M, fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)', color: DIM, marginBottom: 4 }}>
+              <div style={{ fontFamily: FONT_BODY, fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)', color: HUD.textFaint, marginBottom: 4 }}>
                 Result
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                <span style={{ fontFamily: FONT_M, fontSize: 'clamp(1.1rem, 1.8vw, 1.3rem)', color: TEXT, fontWeight: 700 }}>
+                <span style={{ fontFamily: FONT_BODY, fontSize: 'clamp(1.1rem, 1.8vw, 1.3rem)', color: HUD.text, fontWeight: 700 }}>
                   {baseRoll}
                 </span>
                 {request.total_modifier > 0 && (
                   <>
-                    <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.82rem, 1.2vw, 0.9rem)', color: DIM }}>+</span>
-                    <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.85rem, 1.3vw, 1rem)', color: CRIMSON }}>
+                    <span style={{ fontFamily: FONT_BODY, fontSize: 'clamp(0.82rem, 1.2vw, 0.9rem)', color: HUD.textFaint }}>+</span>
+                    <span style={{ fontFamily: FONT_BODY, fontSize: 'clamp(0.85rem, 1.3vw, 1rem)', color: CRIMSON }}>
                       {request.total_modifier}
                     </span>
-                    <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.82rem, 1.2vw, 0.9rem)', color: DIM }}>=</span>
-                    <span style={{ fontFamily: FONT_M, fontSize: 'clamp(1.1rem, 1.8vw, 1.3rem)', color: HUD.gold, fontWeight: 700 }}>
+                    <span style={{ fontFamily: FONT_BODY, fontSize: 'clamp(0.82rem, 1.2vw, 0.9rem)', color: HUD.textFaint }}>=</span>
+                    <span style={{ fontFamily: FONT_BODY, fontSize: 'clamp(1.1rem, 1.8vw, 1.3rem)', color: HUD.gold, fontWeight: 700 }}>
                       {finalResult}
                     </span>
                   </>
                 )}
               </div>
               {previewInjury && (
-                <div style={{ marginTop: 8, fontFamily: FONT_R, fontSize: 'clamp(0.8rem, 1.2vw, 0.9rem)', color: TEXT }}>
+                <div style={{ marginTop: 8, fontFamily: FONT_BODY, fontSize: 'clamp(0.8rem, 1.2vw, 0.9rem)', color: HUD.text }}>
                   <span style={{ color: CRIMSON, fontWeight: 700 }}>{previewInjury.name}</span>
                   {' '}
-                  <span style={{ color: DIM, fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)' }}>({previewInjury.severity})</span>
+                  <span style={{ color: HUD.textFaint, fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)' }}>({previewInjury.severity})</span>
                 </div>
               )}
             </div>
@@ -285,8 +279,8 @@ export function CriticalInjuryModal({
           style={{
             background: rolled ? 'rgba(220,20,60,0.15)' : 'rgba(100,100,100,0.1)',
             border: `1px solid ${rolled ? 'rgba(220,20,60,0.5)' : 'rgba(100,100,100,0.2)'}`,
-            borderRadius: 8, padding: '12px 0',
-            fontFamily: FONT_R, fontSize: 'clamp(0.88rem, 1.3vw, 1rem)',
+            borderRadius: RADIUS.lg, padding: '12px 0',
+            fontFamily: FONT_BODY, fontSize: 'clamp(0.88rem, 1.3vw, 1rem)',
             fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' as const,
             color: rolled ? CRIMSON : 'rgba(150,150,150,0.5)',
             cursor: rolled ? 'pointer' : 'not-allowed',
@@ -297,8 +291,8 @@ export function CriticalInjuryModal({
         </button>
 
         <div style={{
-          fontFamily: FONT_M, fontSize: 'clamp(0.5rem, 0.78vw, 0.6rem)',
-          color: 'var(--hud-text-faint)', textAlign: 'center', letterSpacing: '0.1em',
+          fontFamily: FONT_BODY, fontSize: 'clamp(0.5rem, 0.78vw, 0.6rem)',
+          color: HUD.textFaint, textAlign: 'center', letterSpacing: '0.1em',
         }}>
           This roll is mandatory — you must submit a result.
         </div>

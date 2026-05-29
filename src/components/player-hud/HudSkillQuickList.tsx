@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import { DiceFace } from '@/components/dice/DiceFace'
 import { getSkillPool } from './dice-engine'
-import { FONT_BODY, FONT_DISPLAY, FS, RADIUS } from '@/lib/tokens'
+import { FONT_BODY, FONT_DISPLAY, FS, RADIUS, SP } from '@/lib/tokens'
 import type { HudSkill } from '@/lib/types'
 
 // ── constants ──────────────────────────────────────────────────────────────
@@ -17,7 +17,7 @@ function RankPips({ rank }: { rank: number }) {
       {Array.from({ length: rank }).map((_, i) => (
         <div key={i} style={{
           width: 5, height: 5,
-          borderRadius: 1,
+          borderRadius: RADIUS.sm,
           background: 'var(--hud-gold)',
           flexShrink: 0,
         }} />

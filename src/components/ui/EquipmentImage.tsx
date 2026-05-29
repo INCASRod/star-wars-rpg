@@ -27,10 +27,10 @@ const TYPE_TO_SECTION: Record<string, string> = {
   species: 'species',
 }
 
-const SIZE_PX: Record<string, number> = {
-  sm: 24,
-  md: 48,
-  lg: 72,
+const SIZE_REM: Record<string, string> = {
+  sm: '1.5rem',
+  md: '3rem',
+  lg: '4.5rem',
 }
 
 interface EquipmentImageProps {
@@ -56,7 +56,7 @@ export function EquipmentImage({
   const [useFallback, setUseFallback] = useState(false)
   const [loaded, setLoaded] = useState(false)
 
-  const px = SIZE_PX[size]
+  const px = SIZE_REM[size]
 
   useEffect(() => {
     let cancelled = false

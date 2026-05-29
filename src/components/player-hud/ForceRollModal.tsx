@@ -1,34 +1,35 @@
 'use client'
 
-import { C, FONT_CINZEL, FONT_RAJDHANI } from './design-tokens'
+import { HUD, FONT_DISPLAY, FONT_BODY, FS, RADIUS, EASE } from '@/lib/tokens'
 import { Modal } from '@/components/ui/Modal'
 import type { ForceRollResult, ForceDie } from './dice-engine'
 
-const FORCE_BLUE  = '#1A78A0'
-const LIGHT_COLOR = '#E8E8FF'
-const DARK_COLOR  = '#1a1a2e'
-const DARK_BORDER = '#6060A0'
+// Force-die palette — using CSS vars so they theme-track correctly
+const FORCE_BLUE  = 'var(--die-force)'
+const LIGHT_COLOR = 'var(--die-forcepip)'
+const DARK_COLOR  = 'var(--hud-bg)'
+const DARK_BORDER = 'var(--hud-accent-purple)'
 
 // A single force die face showing ○ and ● pips
 function ForceDieFace({ die }: { die: ForceDie }) {
   const isEmpty = die.light === 0 && die.dark === 0
   return (
     <div style={{
-      width: 48, height: 48, borderRadius: '50%',
+      width: 48, height: 48, borderRadius: RADIUS.full,
       background: 'rgba(126,200,227,0.08)',
-      border: `2px solid ${FORCE_BLUE}60`,
+      border: `2px solid color-mix(in srgb, var(--die-force) 38%, transparent)`,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       flexDirection: 'column', gap: 3, flexShrink: 0,
-      boxShadow: `0 0 8px ${FORCE_BLUE}20`,
+      boxShadow: `0 0 8px color-mix(in srgb, var(--die-force) 12%, transparent)`,
     }}>
       {isEmpty && (
-        <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 16, color: `${FORCE_BLUE}40` }}>—</span>
+        <span style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: `color-mix(in srgb, var(--die-force) 25%, transparent)` }}>—</span>
       )}
       {die.light > 0 && (
         <div style={{ display: 'flex', gap: 2 }}>
           {Array.from({ length: die.light }).map((_, i) => (
             <div key={i} style={{
-              width: 10, height: 10, borderRadius: '50%',
+              width: 10, height: 10, borderRadius: RADIUS.full,
               background: LIGHT_COLOR, border: `1px solid ${LIGHT_COLOR}`,
               boxShadow: `0 0 4px ${LIGHT_COLOR}`,
             }} />
@@ -39,7 +40,7 @@ function ForceDieFace({ die }: { die: ForceDie }) {
         <div style={{ display: 'flex', gap: 2 }}>
           {Array.from({ length: die.dark }).map((_, i) => (
             <div key={i} style={{
-              width: 10, height: 10, borderRadius: '50%',
+              width: 10, height: 10, borderRadius: RADIUS.full,
               background: DARK_COLOR, border: `1px solid ${DARK_BORDER}`,
             }} />
           ))}
@@ -61,32 +62,32 @@ export function ForceRollModal({ result, forceRating, onDismiss }: ForceRollModa
       open
       onClose={onDismiss}
       maxWidth={480}
-      borderColor={`${FORCE_BLUE}50`}
-      shadow={`0 0 48px ${FORCE_BLUE}18, 0 8px 48px rgba(0,0,0,0.5)`}
+      borderColor={`color-mix(in srgb, var(--die-force) 31%, transparent)`}
+      shadow={`0 0 48px color-mix(in srgb, var(--die-force) 9%, transparent), 0 8px 48px rgba(0,0,0,0.5)`}
     >
         {/* Header */}
         <div style={{
-          padding: '20px 24px 14px', borderBottom: `1px solid ${C.border}`,
+          padding: '20px 24px 14px', borderBottom: `1px solid ${HUD.border}`,
           textAlign: 'center',
         }}>
           <div style={{
-            fontFamily: FONT_RAJDHANI, fontSize: 12, fontWeight: 700,
+            fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
             letterSpacing: '0.2em', textTransform: 'uppercase',
-            color: `${FORCE_BLUE}90`, marginBottom: 6,
+            color: `color-mix(in srgb, var(--die-force) 56%, transparent)`, marginBottom: 6,
           }}>
             Force Rating {forceRating} — {forceRating} {forceRating === 1 ? 'Die' : 'Dice'}
           </div>
           <div style={{
-            fontFamily: FONT_CINZEL, fontSize: 28, fontWeight: 700,
+            fontFamily: FONT_DISPLAY, fontSize: FS.h2, fontWeight: 700,
             color: FORCE_BLUE, letterSpacing: '0.06em', lineHeight: 1,
-            textShadow: `0 0 24px ${FORCE_BLUE}60`,
+            textShadow: `0 0 24px color-mix(in srgb, var(--die-force) 38%, transparent)`,
           }}>
             Force Roll
           </div>
         </div>
 
         {/* Dice row */}
-        <div style={{ padding: '16px 24px', borderBottom: `1px solid ${C.border}` }}>
+        <div style={{ padding: '16px 24px', borderBottom: `1px solid ${HUD.border}` }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center' }}>
             {result.dice.map((die, i) => <ForceDieFace key={i} die={die} />)}
           </div>
@@ -99,24 +100,25 @@ export function ForceRollModal({ result, forceRating, onDismiss }: ForceRollModa
           {/* Light side total */}
           <div style={{
             flex: 1, textAlign: 'center',
-            background: `${LIGHT_COLOR}0A`, border: `1px solid ${LIGHT_COLOR}30`,
-            borderRadius: 6, padding: '12px 8px',
+            background: `color-mix(in srgb, var(--die-forcepip) 4%, transparent)`,
+            border: `1px solid color-mix(in srgb, var(--die-forcepip) 19%, transparent)`,
+            borderRadius: RADIUS.lg, padding: '12px 8px',
           }}>
             <div style={{ display: 'flex', gap: 4, justifyContent: 'center', marginBottom: 8, flexWrap: 'wrap' }}>
               {Array.from({ length: result.totalLight }).map((_, i) => (
                 <div key={i} style={{
-                  width: 14, height: 14, borderRadius: '50%',
+                  width: 14, height: 14, borderRadius: RADIUS.full,
                   background: LIGHT_COLOR, boxShadow: `0 0 6px ${LIGHT_COLOR}`,
                 }} />
               ))}
               {result.totalLight === 0 && (
-                <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 14, color: `${LIGHT_COLOR}30` }}>—</span>
+                <span style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: `color-mix(in srgb, var(--die-forcepip) 19%, transparent)` }}>—</span>
               )}
             </div>
-            <div style={{ fontFamily: FONT_CINZEL, fontSize: 24, fontWeight: 700, color: LIGHT_COLOR, lineHeight: 1 }}>
+            <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.h3, fontWeight: 700, color: LIGHT_COLOR, lineHeight: 1 }}>
               {result.totalLight}
             </div>
-            <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 11, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: `${LIGHT_COLOR}70`, marginTop: 4 }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: `color-mix(in srgb, var(--die-forcepip) 44%, transparent)`, marginTop: 4 }}>
               Light Side ○
             </div>
           </div>
@@ -124,24 +126,25 @@ export function ForceRollModal({ result, forceRating, onDismiss }: ForceRollModa
           {/* Dark side total */}
           <div style={{
             flex: 1, textAlign: 'center',
-            background: `${DARK_BORDER}0A`, border: `1px solid ${DARK_BORDER}40`,
-            borderRadius: 6, padding: '12px 8px',
+            background: `color-mix(in srgb, var(--hud-accent-purple) 4%, transparent)`,
+            border: `1px solid color-mix(in srgb, var(--hud-accent-purple) 25%, transparent)`,
+            borderRadius: RADIUS.lg, padding: '12px 8px',
           }}>
             <div style={{ display: 'flex', gap: 4, justifyContent: 'center', marginBottom: 8, flexWrap: 'wrap' }}>
               {Array.from({ length: result.totalDark }).map((_, i) => (
                 <div key={i} style={{
-                  width: 14, height: 14, borderRadius: '50%',
+                  width: 14, height: 14, borderRadius: RADIUS.full,
                   background: DARK_COLOR, border: `1px solid ${DARK_BORDER}`,
                 }} />
               ))}
               {result.totalDark === 0 && (
-                <span style={{ fontFamily: FONT_RAJDHANI, fontSize: 14, color: `${DARK_BORDER}50` }}>—</span>
+                <span style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: `color-mix(in srgb, var(--hud-accent-purple) 31%, transparent)` }}>—</span>
               )}
             </div>
-            <div style={{ fontFamily: FONT_CINZEL, fontSize: 24, fontWeight: 700, color: DARK_BORDER, lineHeight: 1 }}>
+            <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.h3, fontWeight: 700, color: DARK_BORDER, lineHeight: 1 }}>
               {result.totalDark}
             </div>
-            <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 11, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: `${DARK_BORDER}80`, marginTop: 4 }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: `color-mix(in srgb, var(--hud-accent-purple) 50%, transparent)`, marginTop: 4 }}>
               Dark Side ●
             </div>
           </div>
@@ -150,9 +153,10 @@ export function ForceRollModal({ result, forceRating, onDismiss }: ForceRollModa
         {/* Context hint */}
         <div style={{ padding: '0 24px 16px' }}>
           <div style={{
-            background: `${FORCE_BLUE}08`, border: `1px solid ${FORCE_BLUE}20`,
-            borderRadius: 4, padding: '8px 12px',
-            fontFamily: FONT_RAJDHANI, fontSize: 12, color: `${FORCE_BLUE}90`, lineHeight: 1.5,
+            background: `color-mix(in srgb, var(--die-force) 5%, transparent)`,
+            border: `1px solid color-mix(in srgb, var(--die-force) 12%, transparent)`,
+            borderRadius: RADIUS.md, padding: '8px 12px',
+            fontFamily: FONT_BODY, fontSize: FS.caption, color: `color-mix(in srgb, var(--die-force) 56%, transparent)`, lineHeight: 1.5,
           }}>
             Use ○ Light or ● Dark points to activate force power abilities. Unspent points are lost at end of turn.
           </div>
@@ -162,14 +166,13 @@ export function ForceRollModal({ result, forceRating, onDismiss }: ForceRollModa
         <div style={{ padding: '0 24px 20px', textAlign: 'center' }}>
           <button
             onClick={onDismiss}
+            className="hov-gold"
             style={{
-              background: 'transparent', border: `1px solid ${C.border}`,
-              borderRadius: 4, padding: '8px 40px',
-              fontFamily: FONT_RAJDHANI, fontSize: 13, fontWeight: 600,
-              letterSpacing: '0.1em', color: C.textDim, cursor: 'pointer', transition: '.2s',
+              background: 'transparent', border: `1px solid ${HUD.border}`,
+              borderRadius: RADIUS.md, padding: '8px 40px',
+              fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 600,
+              letterSpacing: '0.1em', color: HUD.textDim, cursor: 'pointer',
             }}
-            onMouseEnter={e => { (e.target as HTMLElement).style.borderColor = FORCE_BLUE; (e.target as HTMLElement).style.color = FORCE_BLUE }}
-            onMouseLeave={e => { (e.target as HTMLElement).style.borderColor = C.border; (e.target as HTMLElement).style.color = C.textDim }}
           >
             DISMISS
           </button>

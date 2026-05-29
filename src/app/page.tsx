@@ -6,10 +6,10 @@ import { createClient } from '@/lib/supabase/client'
 import { randomUUID } from '@/lib/utils'
 import type { Character } from '@/lib/types'
 import { VersionWatermark } from '@/components/ui/VersionWatermark'
-import { HUD, CHAR_COLOR } from '@/lib/tokens'
+import { HUD, CHAR_COLOR, FONT_BODY, FS, SP, RADIUS, Z, EASE } from '@/lib/tokens'
 
 // ─── Design Tokens ───────────────────────────────────────────────────────────
-const BG        = 'var(--bs-sky)'
+const BG        = 'var(--hud-bg)'
 const PANEL     = 'var(--hud-surface-hi)'
 const RAISED    = 'var(--hud-surface-mid)'
 const INPUT_BG  = 'var(--hud-surface-lo)'
@@ -20,15 +20,12 @@ const BORDER_MD = 'var(--hud-border)'
 const BORDER_HI = 'var(--hud-border-hi)'
 // Raw hex for SVG attributes and <style> strings — CSS vars can't be used there
 const ACCENT_HEX = '#E03A1E'
-const SUCCESS   = '#5A7A3A'            // design-system success green (roll results / online)
-const DANGER    = 'var(--bs-red-sun)'  // wounds, delete button
-const WARN      = 'var(--bs-red-dim)'  // strain
+const SUCCESS   = 'var(--state-success)'
+const DANGER    = 'var(--state-wounds)'
+const WARN      = 'var(--state-strain)'
 const TEXT      = 'var(--hud-text)'
 const TEXT_SEC  = 'var(--hud-text-dim)'
 const TEXT_MUT  = 'var(--hud-text-faint)'
-const FC        = 'var(--font-body)'
-const FR        = 'var(--font-body)'
-const FM        = 'var(--font-body)'
 
 const CHAR_COLORS: Record<string, string> = {
   brawn:     CHAR_COLOR.brawn,
@@ -100,7 +97,6 @@ function CharacterCard({
       ? SUCCESS
       : TEXT_MUT
 
-
   const dotPulse = state === 'self' || online ? 'pulse-dot 1.8s ease-in-out infinite' : 'none'
 
   const nameColor = state === 'self' ? GOLD_L : TEXT
@@ -132,14 +128,13 @@ function CharacterCard({
       style={{
         position: 'relative',
         overflow: 'hidden',
-        borderRadius: 6,
-        padding: '14px 14px 12px',
+        borderRadius: RADIUS.lg,
+        padding: `${SP[3]} ${SP[3]} ${SP[2]}`,
         backdropFilter: 'blur(12px)',
-        transition: 'all 0.2s',
+        transition: `all ${EASE.default}`,
         animation: `fadeUp 0.5s ${animDelay}s ease both`,
         border: `1px solid ${cardBorder}`,
         background: cardBg,
-
         cursor: cardCursor,
         transform: cardTransform,
         boxShadow: cardShadow,
@@ -150,10 +145,10 @@ function CharacterCard({
     >
       {/* Top gradient line */}
       <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0, height: 2,
+        position: 'absolute', top: 0, left: 0, right: 0, height: '0.125rem',
         background: `linear-gradient(90deg, transparent, ${HUD.gold}, transparent)`,
         opacity: state === 'self' ? 1 : hovered ? 0.6 : 0,
-        transition: 'opacity 0.2s',
+        transition: `opacity ${EASE.default}`,
       }} />
 
       {/* Delete button */}
@@ -161,16 +156,16 @@ function CharacterCard({
         <button
           onClick={(e) => { e.stopPropagation(); onDelete() }}
           style={{
-            position: 'absolute', top: 6, right: 6,
-            width: 22, height: 22,
-            background: `rgba(224,82,82,0.12)`,
+            position: 'absolute', top: '0.375rem', right: '0.375rem',
+            width: '1.375rem', height: '1.375rem',
+            background: 'rgba(224,82,82,0.12)',
             border: `1px solid ${DANGER}`,
-            borderRadius: 3,
+            borderRadius: RADIUS.sm,
             cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 14, fontWeight: 700, color: DANGER,
-            transition: '0.15s', zIndex: 2,
-            fontFamily: FR,
+            fontSize: FS.sm, fontWeight: 700, color: DANGER,
+            transition: EASE.default, zIndex: Z.raised,
+            fontFamily: FONT_BODY,
           }}
           title="Delete character"
         >
@@ -179,12 +174,12 @@ function CharacterCard({
       )}
 
       {/* Section 1 — CardHeader */}
-      <div style={{ display: 'flex', gap: 12, marginBottom: 12, alignItems: 'flex-start' }}>
+      <div style={{ display: 'flex', gap: SP[3], marginBottom: SP[3], alignItems: 'flex-start' }}>
         {/* Avatar */}
         <div style={{
           flexShrink: 0,
-          width: 56, height: 56,
-          borderRadius: '50%',
+          width: '3.5rem', height: '3.5rem',
+          borderRadius: RADIUS.full,
           overflow: 'hidden',
           position: 'relative',
           border: `2px solid ${avatarBorderColor}`,
@@ -197,7 +192,7 @@ function CharacterCard({
             <img src={char.portrait_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           ) : (
             <span style={{
-              fontFamily: FC, fontSize: 22,
+              fontFamily: FONT_BODY, fontSize: FS.h2,
               color: state === 'self' ? HUD.gold : TEXT_SEC,
             }}>
               {char.name.charAt(0)}
@@ -205,9 +200,9 @@ function CharacterCard({
           )}
           {/* Status dot */}
           <div style={{
-            position: 'absolute', bottom: 5, right: 8,
-            width: 12, height: 12,
-            borderRadius: '50%',
+            position: 'absolute', bottom: '0.3125rem', right: SP[2],
+            width: '0.75rem', height: '0.75rem',
+            borderRadius: RADIUS.full,
             border: `2px solid ${BG}`,
             background: dotColor,
             animation: dotPulse,
@@ -216,30 +211,30 @@ function CharacterCard({
 
         {/* Identity block */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: FC, fontSize: 18, fontWeight: 700, color: nameColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.h3, fontWeight: 700, color: nameColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {char.name}
           </div>
-          <div style={{ fontFamily: FM, fontSize: 12, color: TEXT_MUT, textTransform: 'uppercase', marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: TEXT_MUT, textTransform: 'uppercase', marginTop: SP[1], whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {char.career_key} // {char.species_key}
           </div>
           {/* Status badge */}
           <div style={{
-            marginTop: 6,
-            display: 'inline-flex', alignItems: 'center', gap: 5,
+            marginTop: '0.375rem',
+            display: 'inline-flex', alignItems: 'center', gap: '0.3125rem',
             border: `1px solid ${state === 'self' ? HUD.gold : TEXT_MUT}`,
-            borderRadius: 3,
-            padding: '3px 8px',
+            borderRadius: RADIUS.sm,
+            padding: `0.1875rem ${SP[2]}`,
             background: state === 'self' ? 'var(--hud-surface-lo)' : 'transparent',
           }}>
             {state === 'available' && (
-              <span style={{ fontFamily: FM, fontSize: 10, color: TEXT_MUT, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: TEXT_MUT, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                 Unselected
               </span>
             )}
             {state === 'self' && (
               <>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: HUD.gold, animation: 'pulse-dot 1.8s ease-in-out infinite' }} />
-                <span style={{ fontFamily: FM, fontSize: 9, color: HUD.gold, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                <div style={{ width: '0.375rem', height: '0.375rem', borderRadius: RADIUS.full, background: HUD.gold, animation: 'pulse-dot 1.8s ease-in-out infinite' }} />
+                <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.gold, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                   You · Active
                 </span>
               </>
@@ -251,24 +246,24 @@ function CharacterCard({
       {/* Section 2 — CharacteristicRow */}
       <div style={{
         borderTop: `1px solid ${BORDER}`,
-        paddingTop: 10,
-        marginTop: 4,
+        paddingTop: '0.625rem',
+        marginTop: SP[1],
         display: 'grid',
         gridTemplateColumns: 'repeat(6, 1fr)',
-        gap: 4,
+        gap: SP[1],
       }}>
         {characteristics.map(({ key, label }) => (
           <div key={key} style={{
             background: INPUT_BG,
             border: `1px solid ${BORDER}`,
-            borderRadius: 3,
-            padding: '5px 2px',
+            borderRadius: RADIUS.sm,
+            padding: '0.3125rem 0.125rem',
             textAlign: 'center',
           }}>
-            <div style={{ fontFamily: FC, fontSize: 18, fontWeight: 700, color: CHAR_COLORS[key] }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.h3, fontWeight: 700, color: CHAR_COLORS[key] }}>
               {(char as unknown as Record<string, number>)[key]}
             </div>
-            <div style={{ fontFamily: FM, fontSize: 11, color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               {label}
             </div>
           </div>
@@ -276,20 +271,20 @@ function CharacterCard({
       </div>
 
       {/* Section 3 — DerivedStatsRow */}
-      <div style={{ marginTop: 8, display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+      <div style={{ marginTop: SP[2], display: 'flex', gap: SP[1], flexWrap: 'wrap' }}>
         {derived.map(({ label, value }) => (
           <div key={label} style={{
             background: INPUT_BG,
             border: `1px solid ${BORDER}`,
-            borderRadius: 3,
-            padding: '4px 8px',
-            minWidth: 42,
+            borderRadius: RADIUS.sm,
+            padding: `${SP[1]} ${SP[2]}`,
+            minWidth: '2.625rem',
             textAlign: 'center',
           }}>
-            <div style={{ fontFamily: FC, fontSize: 18, fontWeight: 700, color: TEXT }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.h3, fontWeight: 700, color: TEXT }}>
               {value}
             </div>
-            <div style={{ fontFamily: FM, fontSize: 11, color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
               {label}
             </div>
           </div>
@@ -297,19 +292,19 @@ function CharacterCard({
       </div>
 
       {/* Section 4 — VitalsPips */}
-      <div style={{ marginTop: 8 }}>
+      <div style={{ marginTop: SP[2] }}>
         {/* Wounds */}
-        <div style={{ marginBottom: 6 }}>
+        <div style={{ marginBottom: '0.375rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontFamily: FR, fontSize: 11, color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Wounds</span>
-            <span style={{ fontFamily: FM, fontSize: 11, color: TEXT_MUT }}>{char.wound_current}/{char.wound_threshold}</span>
+            <span style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Wounds</span>
+            <span style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT_MUT }}>{char.wound_current}/{char.wound_threshold}</span>
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, marginTop: 4 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.1875rem', marginTop: SP[1] }}>
             {Array.from({ length: char.wound_threshold }).map((_, i) => (
               <div key={i} style={{
-                width: 8, height: 8, borderRadius: 1,
+                width: '0.5rem', height: '0.5rem', borderRadius: RADIUS.sm,
                 background: i < char.wound_current ? DANGER : 'transparent',
-                border: `1px solid ${i < char.wound_current ? DANGER : 'rgba(224,58,30,0.25)'}`,
+                border: `1px solid ${i < char.wound_current ? DANGER : 'var(--hud-accent-25)'}`,
               }} />
             ))}
           </div>
@@ -317,17 +312,17 @@ function CharacterCard({
         {/* Strain */}
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontFamily: FR, fontSize: 11, color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Strain</span>
+            <span style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Strain</span>
             <span style={{
-              fontFamily: FM, fontSize: 11, color: TEXT_MUT
+              fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT_MUT
             }}>{char.strain_current}/{char.strain_threshold}</span>
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, marginTop: 4 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.1875rem', marginTop: SP[1] }}>
             {Array.from({ length: char.strain_threshold }).map((_, i) => (
               <div key={i} style={{
-                width: 8, height: 8, borderRadius: 1,
+                width: '0.5rem', height: '0.5rem', borderRadius: RADIUS.sm,
                 background: i < char.strain_current ? WARN : 'transparent',
-                border: `1px solid ${i < char.strain_current ? WARN : 'rgba(122,24,8,0.25)'}`,
+                border: `1px solid ${i < char.strain_current ? WARN : 'var(--hud-border)'}`,
               }} />
             ))}
           </div>
@@ -513,7 +508,7 @@ export default function Home() {
     }}>
       {/* Background: crosshatch SVG */}
       <svg style={{
-        position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, opacity: 0.018,
+        position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: Z.base, opacity: 0.018,
         width: '100%', height: '100%',
       }} xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -527,17 +522,17 @@ export default function Home() {
 
       {/* Background: radial gradient */}
       <div style={{
-        position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
+        position: 'fixed', inset: 0, zIndex: Z.base, pointerEvents: 'none',
         background: `radial-gradient(ellipse 80% 40% at 50% 0%, rgba(224,58,30,0.06) 0%, transparent 70%)`,
       }} />
 
       {/* Content column */}
       <div style={{
-        position: 'relative', zIndex: 1,
-        width: '100%', maxWidth: 1240,
-        padding: '48px 20px 60px',
+        position: 'relative', zIndex: Z.raised,
+        width: '100%', maxWidth: '77.5rem',
+        padding: `${SP[12]} var(--space-5) 3.75rem`,
         display: 'flex', flexDirection: 'column',
-        alignItems: 'center', gap: 28,
+        alignItems: 'center', gap: SP[6],
       }}>
 
         {/* Page Header */}
@@ -545,16 +540,16 @@ export default function Home() {
           <div style={{ position: 'relative', textAlign: 'center' }}>
             <span style={{
               position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)',
-              fontSize: 20, color: GOLD_DIM, letterSpacing: 0,
+              fontSize: FS.bodyLg, color: GOLD_DIM, letterSpacing: 0,
             }}>⬡</span>
             <span style={{
               position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)',
-              fontSize: 20, color: GOLD_DIM, letterSpacing: 0,
+              fontSize: FS.bodyLg, color: GOLD_DIM, letterSpacing: 0,
             }}>⬡</span>
             <div style={{
-              fontFamily: FC,
+              fontFamily: FONT_BODY,
               fontWeight: 900,
-              fontSize: 28,
+              fontSize: FS.h1,
               letterSpacing: '0.4em',
               color: HUD.gold,
               textShadow: '0 0 40px rgba(224,58,30,0.45)',
@@ -564,19 +559,19 @@ export default function Home() {
             </div>
           </div>
           <div style={{
-            fontFamily: FM,
-            fontSize: 11,
+            fontFamily: FONT_BODY,
+            fontSize: FS.label,
             letterSpacing: '0.3em',
             color: TEXT_MUT,
             textTransform: 'uppercase',
-            marginTop: 10,
+            marginTop: SP[5],
             textAlign: 'center',
           }}>
             Star Wars RPG · Campaign Manager
           </div>
           <div style={{
-            marginTop: 20,
-            height: 1,
+            marginTop: SP[5],
+            height: '1px',
             background: `linear-gradient(90deg, transparent, ${GOLD_DIM}, transparent)`,
           }} />
         </div>
@@ -587,47 +582,47 @@ export default function Home() {
           width: '100%',
           background: PANEL,
           border: `1px solid ${BORDER}`,
-          borderRadius: 6,
+          borderRadius: RADIUS.lg,
           backdropFilter: 'blur(12px)',
-          padding: '8px 16px',
+          padding: `${SP[2]} ${SP[4]}`,
           display: 'flex',
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
         }}>
           {/* Left */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: SP[2] }}>
             <div style={{
-              width: 8, height: 8, borderRadius: '50%',
+              width: '0.5rem', height: '0.5rem', borderRadius: RADIUS.full,
               background: SUCCESS,
               animation: 'pulse-dot 1.8s ease-in-out infinite',
             }} />
-            <span style={{ fontFamily: FM, fontSize: 11, color: TEXT_SEC }}>
+            <span style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT_SEC }}>
               {onlineKeys.length} players online · {activeSessions.length} claimed
             </span>
           </div>
 
           {/* Divider */}
-          <div style={{ width: 1, height: 20, background: BORDER_MD, flexShrink: 0, margin: '0 12px' }} />
+          <div style={{ width: '1px', height: '1.25rem', background: BORDER_MD, flexShrink: 0, margin: `0 0.75rem` }} />
 
           {/* Center */}
-          <span style={{ fontFamily: FM, fontSize: 11, color: TEXT_SEC }}>
+          <span style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT_SEC }}>
             Session · <span style={{ letterSpacing: '0.05em' }}>{sessionMode.toUpperCase()}</span>
           </span>
 
           {/* Divider */}
-          <div style={{ width: 1, height: 20, background: BORDER_MD, flexShrink: 0, margin: '0 12px' }} />
+          <div style={{ width: '1px', height: '1.25rem', background: BORDER_MD, flexShrink: 0, margin: `0 0.75rem` }} />
 
           {/* Right */}
-          <span style={{ fontFamily: FC, fontSize: 11, color: TEXT_MUT }}>
+          <span style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT_MUT }}>
             {campaignName}
           </span>
         </div>
 
         {/* Section label */}
         <div style={{
-          fontFamily: FC,
-          fontSize: 9,
+          fontFamily: FONT_BODY,
+          fontSize: FS.overline,
           letterSpacing: '0.28em',
           textTransform: 'uppercase',
           color: TEXT_MUT,
@@ -641,7 +636,7 @@ export default function Home() {
           width: '100%',
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
-          gap: 12,
+          gap: SP[3],
         }}>
           {characters.map((char, index) => {
             const cardState = getCardState(char.id)
@@ -666,10 +661,10 @@ export default function Home() {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: 12,
-          marginTop: 8,
+          gap: SP[3],
+          marginTop: SP[2],
           width: '100%',
-          maxWidth: 360,
+          maxWidth: '22.5rem',
         }}>
           {/* Create character button */}
           <button
@@ -677,19 +672,19 @@ export default function Home() {
             onMouseEnter={() => setCreateHovered(true)}
             onMouseLeave={() => setCreateHovered(false)}
             style={{
-              background: createHovered ? 'var(--bs-red-glow-s)' : 'var(--bs-red-glow)',
+              background: createHovered ? 'var(--hud-accent-20)' : 'var(--hud-accent-10)',
               boxShadow: createHovered ? '0 0 16px rgba(224,58,30,0.2)' : 'none',
               border: `1px solid ${BORDER_MD}`,
               color: HUD.gold,
-              fontFamily: FR,
-              fontSize: 13,
+              fontFamily: FONT_BODY,
+              fontSize: FS.sm,
               fontWeight: 700,
               letterSpacing: '0.1em',
-              padding: '10px 0',
+              padding: `0.625rem 0`,
               width: '100%',
-              borderRadius: 4,
+              borderRadius: RADIUS.md,
               cursor: 'pointer',
-              transition: 'all 0.2s',
+              transition: `all ${EASE.default}`,
               textTransform: 'uppercase',
             }}
           >
@@ -700,27 +695,26 @@ export default function Home() {
           {!showGmInput ? (
             <button
               onClick={() => setShowGmInput(true)}
+              className="gm-access-btn"
               style={{
                 background: 'transparent',
                 border: `1px solid ${BORDER}`,
                 color: TEXT_MUT,
-                fontFamily: FR,
-                fontSize: 14,
+                fontFamily: FONT_BODY,
+                fontSize: FS.sm,
                 letterSpacing: '0.1em',
-                padding: '8px 0',
+                padding: `${SP[2]} 0`,
                 width: '100%',
-                borderRadius: 4,
+                borderRadius: RADIUS.md,
                 cursor: 'pointer',
-                transition: 'all 0.2s',
+                transition: `all ${EASE.default}`,
                 textTransform: 'uppercase',
               }}
-              onMouseEnter={e => { e.currentTarget.style.border = `1px solid ${BORDER_MD}` }}
-              onMouseLeave={e => { e.currentTarget.style.border = `1px solid ${BORDER}` }}
             >
               GM Access
             </button>
           ) : (
-            <div style={{ display: 'flex', gap: 8, width: '100%', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: SP[2], width: '100%', alignItems: 'center' }}>
               <input
                 type="password"
                 maxLength={4}
@@ -733,10 +727,10 @@ export default function Home() {
                   flex: 1,
                   background: INPUT_BG,
                   border: `1px solid ${BORDER_MD}`,
-                  borderRadius: 4,
-                  padding: '8px 12px',
-                  fontFamily: FM,
-                  fontSize: 14,
+                  borderRadius: RADIUS.md,
+                  padding: `${SP[2]} ${SP[3]}`,
+                  fontFamily: FONT_BODY,
+                  fontSize: FS.sm,
                   color: TEXT,
                   textAlign: 'center',
                   letterSpacing: '0.3em',
@@ -746,14 +740,14 @@ export default function Home() {
               <button
                 onClick={() => void handleGmLogin()}
                 style={{
-                  background: 'var(--bs-red-glow-s)',
+                  background: 'var(--hud-accent-20)',
                   border: `1px solid ${BORDER_HI}`,
                   color: HUD.gold,
-                  fontFamily: FC,
-                  fontSize: 11,
+                  fontFamily: FONT_BODY,
+                  fontSize: FS.label,
                   letterSpacing: '0.1em',
-                  padding: '8px 16px',
-                  borderRadius: 4,
+                  padding: `${SP[2]} ${SP[4]}`,
+                  borderRadius: RADIUS.md,
                   cursor: 'pointer',
                   textTransform: 'uppercase',
                 }}
@@ -764,7 +758,7 @@ export default function Home() {
           )}
 
           {/* Footer */}
-          <div style={{ fontFamily: FM, fontSize: 10, color: TEXT_MUT, textAlign: 'center' }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: TEXT_MUT, textAlign: 'center' }}>
             Edge of the Empire // Age of Rebellion // Force and Destiny
           </div>
         </div>
@@ -784,6 +778,7 @@ export default function Home() {
           0%, 100% { opacity: 1; transform: scale(1); }
           50% { opacity: 0.5; transform: scale(0.8); }
         }
+        .gm-access-btn:hover { border-color: var(--hud-border-hi); }
       `}</style>
       <VersionWatermark />
     </div>

@@ -1,9 +1,10 @@
-﻿'use client'
+'use client'
 
 import { HudCard } from '../ui/HudCard'
 import { Badge } from '../ui/Badge'
 import { EquipmentImage } from '../ui/EquipmentImage'
 import { removeBtnStyle } from '@/lib/styles'
+import { HUD, FS, FONT_BODY } from '@/lib/tokens'
 
 export interface EquipmentItem {
   id: string
@@ -36,7 +37,7 @@ function EquipmentRow({ item, isLast, onToggle, isGmMode, onRemove }: {
     <div style={{
       display: 'flex', alignItems: 'center', gap: '0.5rem',
       padding: '0.5rem 0',
-      borderBottom: isLast ? 'none' : '1px solid var(--bs-bdr-mid)',
+      borderBottom: isLast ? 'none' : `1px solid ${HUD.borderHi}`,
     }}>
       <button
         onClick={() => onToggle?.(item)}
@@ -63,16 +64,17 @@ function EquipmentRow({ item, isLast, onToggle, isGmMode, onRemove }: {
             {item.type === 'armor' ? '\u{1F6E1}' : '\u{1F4E6}'}
           </div>
         )}
+        {/* Dynamic: background and boxShadow change at runtime based on equipped state */}
         <div style={{
           position: 'absolute', bottom: -2, right: -2,
           width: '0.45rem', height: '0.45rem', borderRadius: '50%',
           background: item.equipped ? 'var(--green)' : 'transparent',
           boxShadow: item.equipped ? '0 0 0.3rem var(--green)' : 'none',
-          border: item.equipped ? 'none' : '1.5px solid var(--bs-txt3)',
+          border: item.equipped ? 'none' : `1.5px solid ${HUD.textFaint}`,
         }} />
       </button>
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--bs-txt)' }}>{item.name}</div>
+        <div style={{ fontSize: FS.label, fontWeight: 600, color: HUD.text }}>{item.name}</div>
         <div style={{ marginTop: '0.25rem', display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
           {item.equipped && (
             <Badge color="var(--green)" bg="rgba(45,143,78,.1)">EQUIPPED</Badge>
@@ -89,8 +91,8 @@ function EquipmentRow({ item, isLast, onToggle, isGmMode, onRemove }: {
         </div>
       </div>
       <span style={{
-        fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)',
-        color: 'var(--bs-txt3)',
+        fontFamily: FONT_BODY, fontSize: FS.caption,
+        color: HUD.textFaint,
       }}>
         {item.encumbrance}
       </span>
@@ -117,8 +119,8 @@ export function EquipmentCard({ items, encumbranceCurrent, encumbranceThreshold,
       {items.length === 0 && (
         <div style={{
           textAlign: 'center', padding: '0.5rem 0',
-          fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)',
-          color: 'var(--bs-txt3)', letterSpacing: '0.15rem',
+          fontFamily: FONT_BODY, fontSize: FS.label,
+          color: HUD.textFaint, letterSpacing: '0.15rem',
         }}>
           NO EQUIPMENT
         </div>
@@ -128,8 +130,8 @@ export function EquipmentCard({ items, encumbranceCurrent, encumbranceThreshold,
       {armorItems.length > 0 && (
         <>
           <div style={{
-            fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)', fontWeight: 700,
-            letterSpacing: '0.12rem', color: 'var(--bs-txt3)',
+            fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
+            letterSpacing: '0.12rem', color: HUD.textFaint,
             padding: '0.25rem 0 0.25rem', marginTop: items.indexOf(armorItems[0]) > 0 ? '0.25rem' : 0,
           }}>
             ARMOR
@@ -144,10 +146,10 @@ export function EquipmentCard({ items, encumbranceCurrent, encumbranceThreshold,
       {gearItems.length > 0 && (
         <>
           <div style={{
-            fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)', fontWeight: 700,
-            letterSpacing: '0.12rem', color: 'var(--bs-txt3)',
+            fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
+            letterSpacing: '0.12rem', color: HUD.textFaint,
             padding: '0.25rem 0 0.25rem', marginTop: armorItems.length > 0 ? '0.25rem' : 0,
-            borderTop: armorItems.length > 0 ? '1px solid var(--bs-bdr-mid)' : 'none',
+            borderTop: armorItems.length > 0 ? `1px solid ${HUD.borderHi}` : 'none',
           }}>
             GEAR
           </div>
@@ -160,18 +162,19 @@ export function EquipmentCard({ items, encumbranceCurrent, encumbranceThreshold,
       {/* Encumbrance row */}
       <div style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--bs-bdr-mid)',
+        marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: `1px solid ${HUD.borderHi}`,
       }}>
         <span style={{
-          fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', fontWeight: 600,
-          letterSpacing: '0.15rem', color: 'var(--bs-txt3)',
+          fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 600,
+          letterSpacing: '0.15rem', color: HUD.textFaint,
         }}>ENCUMBRANCE</span>
+        {/* Dynamic: color changes at runtime based on overEncumbered state */}
         <span style={{
-          fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-lg)', fontWeight: 800,
-          color: overEncumbered ? 'var(--red)' : 'var(--bs-ink)',
+          fontFamily: FONT_BODY, fontSize: FS.h4, fontWeight: 800,
+          color: overEncumbered ? 'var(--red)' : HUD.text,
         }}>
           {encumbranceCurrent}{' '}
-          <span style={{ color: overEncumbered ? 'var(--red)' : 'var(--bs-txt3)', fontWeight: 400, fontSize: 'var(--font-base)' }}>/ {encumbranceThreshold}</span>
+          <span style={{ color: overEncumbered ? 'var(--red)' : HUD.textFaint, fontWeight: 400, fontSize: FS.sm }}>/ {encumbranceThreshold}</span>
         </span>
       </div>
     </HudCard>

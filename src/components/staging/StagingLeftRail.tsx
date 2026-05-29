@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import type { Adversary } from '@/lib/adversaries'
@@ -10,11 +10,9 @@ import { VehicleLibrary } from '@/components/gm/VehicleLibrary'
 import { StagingTokenPanel } from './StagingTokenPanel'
 import { StagingDrawer } from './StagingDrawer'
 import { CombatFeedPanel } from './CombatFeedPanel'
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_BODY, FS, SP, RADIUS, EASE } from '@/lib/tokens'
 
 /* ── Design tokens ────────────────────────────────────────── */
-const FC   = 'var(--font-body)'
-const FR   = 'var(--font-body)'
 const DIM  = '#6A8070'
 
 /* ── Panel registry ───────────────────────────────────────── */
@@ -109,14 +107,14 @@ export function StagingLeftRail({
           top:                  0,
           left:                 0,
           bottom:               0,
-          width:                60,
+          width:                '3.75rem',
           zIndex:               9001,
           display:              'flex',
           flexDirection:        'column',
           alignItems:           'center',
-          paddingTop:           12,
-          paddingBottom:        12,
-          gap:                  4,
+          paddingTop:           SP[3],
+          paddingBottom:        SP[3],
+          gap:                  SP[1],
           background:           'var(--hud-surface-hi)',
           backdropFilter:       'blur(14px)',
           WebkitBackdropFilter: 'blur(14px)',
@@ -152,7 +150,7 @@ export function StagingLeftRail({
         title={activeEntry?.drawerTitle ?? ''}
       >
         {openPanel === 'adversaries' && (
-          <div style={{ padding: '12px 14px' }}>
+          <div style={{ padding: '0.75rem 0.875rem' }}>
             <AdversaryLibrary
               campaignId={campaignId}
               sessionMode={sessionMode}
@@ -162,7 +160,7 @@ export function StagingLeftRail({
         )}
 
         {openPanel === 'vehicles' && (
-          <div style={{ padding: '12px 14px' }}>
+          <div style={{ padding: '0.75rem 0.875rem' }}>
             <VehicleLibrary
               campaignId={campaignId}
               sessionMode={sessionMode}
@@ -219,29 +217,29 @@ function RailButton({ icon, label, active, disabled, onClick }: RailButtonProps)
       title={label.replace('\n', ' ')}
       className={!disabled && !active ? 'hov-gold-bg' : ''}
       style={{
-        width:          52,
-        padding:        '10px 0 9px',
+        width:          '3.25rem',
+        padding:        '0.625rem 0 0.5625rem',
         display:        'flex',
         flexDirection:  'column',
         alignItems:     'center',
-        gap:            5,
+        gap:            '0.3125rem',
         background:     active ? 'var(--hud-surface-lo)' : 'transparent',
         border:         'none',
-        borderRadius:   6,
+        borderRadius:   '0.375rem',
         outline:        active ? '1px solid var(--hud-border-hi)' : 'none',
         cursor:         disabled ? 'not-allowed' : 'pointer',
-        transition:     'background 0.15s, outline 0.15s',
+        transition:     `background ${EASE.default}, outline ${EASE.default}`,
         flexShrink:     0,
       }}
     >
       {/* Icon */}
       <span
         style={{
-          fontSize:   18,
+          fontSize:   '1.125rem',
           lineHeight: 1,
           color:      iconColor,
           display:    'block',
-          transition: 'color 0.15s',
+          transition: `color ${EASE.default}`,
         }}
       >
         {icon}
@@ -250,7 +248,7 @@ function RailButton({ icon, label, active, disabled, onClick }: RailButtonProps)
       {/* Label — Cinzel, tiny, all-caps */}
       <span
         style={{
-          fontFamily:    FC,
+          fontFamily:    FONT_BODY,
           fontSize:      '0.48rem',
           fontWeight:    700,
           letterSpacing: '0.08em',
@@ -261,7 +259,7 @@ function RailButton({ icon, label, active, disabled, onClick }: RailButtonProps)
           whiteSpace:    'pre-wrap',   // honours '\n' in label strings
           maxWidth:      46,
           display:       'block',
-          transition:    'color 0.15s',
+          transition:    `color ${EASE.default}`,
         }}
       >
         {label}
@@ -280,15 +278,15 @@ function PanelStub({ panelId }: { panelId: StagingPanelId }) {
   return (
     <div
       style={{
-        padding:       '24px 16px',
+        padding:       `1.5rem ${SP[4]}`,
         display:       'flex',
         flexDirection: 'column',
-        gap:           8,
+        gap:           SP[2],
       }}
     >
       <div
         style={{
-          fontFamily:    FC,
+          fontFamily:    FONT_BODY,
           fontSize:      'var(--text-sm)',
           color:         'var(--hud-text-dim)',
           letterSpacing: '0.1em',
@@ -299,7 +297,7 @@ function PanelStub({ panelId }: { panelId: StagingPanelId }) {
       </div>
       <div
         style={{
-          fontFamily: FR,
+          fontFamily: FONT_BODY,
           fontSize:   'var(--text-sm)',
           color:      'rgba(106,128,112,0.5)',
           lineHeight: 1.5,
@@ -309,8 +307,8 @@ function PanelStub({ panelId }: { panelId: StagingPanelId }) {
       </div>
       <div
         style={{
-          marginTop:  12,
-          fontFamily: FR,
+          marginTop:  '0.75rem',
+          fontFamily: FONT_BODY,
           fontSize:   'var(--text-caption)',
           color:      'rgba(106,128,112,0.3)',
           fontStyle:  'italic',

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { HUD, COLOR, FONT_DISPLAY, FONT_BODY } from '@/lib/tokens'
+import { HUD, COLOR, FONT_DISPLAY, FONT_BODY, FS, SP, RADIUS } from '@/lib/tokens'
 
 // Raw hex for use in <style> keyframe strings — CSS vars can't be alpha-suffixed
 const ACCENT = '#E03A1E'
@@ -42,7 +42,7 @@ export function HolocronLoader() {
       width: '100vw', height: '100vh',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
-      background: COLOR.bsSky, gap: 32, position: 'relative', overflow: 'hidden',
+      background: HUD.bg, gap: SP[8], position: 'relative', overflow: 'hidden',
     }}>
 
       {/* Hex grid background */}
@@ -55,7 +55,7 @@ export function HolocronLoader() {
       {/* Logo */}
       <div style={{
         fontFamily: FONT_DISPLAY,
-        fontSize: 28, fontWeight: 700, letterSpacing: '0.55em',
+        fontSize: FS.h1, fontWeight: 700, letterSpacing: '0.55em',
         color: HUD.gold, textTransform: 'uppercase',
         animation: 'holo-pulse 2.4s ease-in-out infinite',
       }}>
@@ -63,19 +63,19 @@ export function HolocronLoader() {
       </div>
 
       {/* Progress bar + percentage */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, width: 320 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: SP[3], width: '20rem' }}>
 
         {/* Track */}
         <div style={{
-          width: '100%', height: 2,
-          background: `${ACCENT}18`, borderRadius: 2, overflow: 'hidden',
+          width: '100%', height: '0.125rem',
+          background: `${ACCENT}18`, borderRadius: RADIUS.sm, overflow: 'hidden',
           position: 'relative',
         }}>
           {/* Fill — driven by CSS animation so it stays smooth */}
           <div style={{
             position: 'absolute', top: 0, left: 0, height: '100%',
             background: `linear-gradient(90deg, ${ACCENT}80, ${ACCENT})`,
-            borderRadius: 2,
+            borderRadius: RADIUS.sm,
             boxShadow: `0 0 10px ${ACCENT}60`,
             animation: `holo-bar ${TOTAL}s cubic-bezier(0.4, 0, 0.2, 1) forwards`,
           }} />
@@ -90,7 +90,7 @@ export function HolocronLoader() {
         {/* Percentage — React-driven, always correct */}
         <div style={{
           fontFamily: FONT_BODY,
-          fontSize: 16, fontWeight: 600, letterSpacing: '0.25em',
+          fontSize: FS.h4, fontWeight: 600, letterSpacing: '0.25em',
           color: `${ACCENT}CC`,
           fontVariantNumeric: 'tabular-nums',
         }}>
@@ -101,10 +101,10 @@ export function HolocronLoader() {
       {/* Status message — one at a time, React-driven */}
       <div key={stepIdx} style={{
         fontFamily: FONT_BODY,
-        fontSize: 13, letterSpacing: '0.2em',
+        fontSize: FS.sm, letterSpacing: '0.2em',
         color: `${ACCENT}88`,
         textTransform: 'uppercase',
-        height: 20,
+        height: '1.25rem',
         textAlign: 'center',
         animation: 'holo-fade 0.3s ease forwards',
       }}>

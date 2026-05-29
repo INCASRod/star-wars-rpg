@@ -1,10 +1,10 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { HudCard } from '../ui/HudCard'
 import { Badge } from '../ui/Badge'
 import { EquipmentImage } from '../ui/EquipmentImage'
-import { rarityColor } from '@/lib/styles'
+import { rarityColor, COLOR, FS, FONT_BODY, HUD } from '@/lib/tokens'
 import { RANGE_LABELS } from '@/lib/types'
 import type {
   CharacterWeapon, CharacterArmor, CharacterGear,
@@ -12,7 +12,7 @@ import type {
 } from '@/lib/types'
 
 const numStyle: React.CSSProperties = {
-  justifyContent: 'center', fontFamily: 'var(--font-rajdhani)', fontWeight: 800, fontSize: 'var(--font-md)',
+  justifyContent: 'center', fontFamily: FONT_BODY, fontWeight: 800, fontSize: FS.body,
 }
 
 interface InventoryContentProps {
@@ -71,18 +71,18 @@ export function InventoryContent({
   }
 
   const headerStyle: React.CSSProperties = {
-    fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', fontWeight: 700,
-    letterSpacing: '0.1rem', color: 'var(--bs-txt3)', textTransform: 'uppercase',
+    fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
+    letterSpacing: '0.1rem', color: COLOR.txt3, textTransform: 'uppercase',
     whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
   }
 
   const cellStyle: React.CSSProperties = {
-    fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', fontWeight: 500, color: 'var(--bs-txt2)',
+    fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 500, color: COLOR.txt2,
     display: 'flex', alignItems: 'center',
   }
 
   const nameStyle: React.CSSProperties = {
-    fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--bs-txt)',
+    fontSize: FS.label, fontWeight: 600, color: COLOR.txt,
   }
 
   return (
@@ -90,20 +90,20 @@ export function InventoryContent({
       {/* Encumbrance Summary Strip */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        background: 'var(--bs-card)', border: '1px solid var(--bs-bdr-mid)',
+        background: 'var(--hud-surface-lo)', border: `1px solid ${HUD.borderHi}`,
         padding: '0.5rem 1rem', backdropFilter: 'blur(6px)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
           <div>
-            <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', fontWeight: 600, letterSpacing: '0.15rem', color: 'var(--bs-txt3)' }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 600, letterSpacing: '0.15rem', color: COLOR.txt3 }}>
               ENCUMBRANCE
             </div>
             <div style={{
-              fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-lg)', fontWeight: 800,
-              color: overEncumbered ? 'var(--red)' : 'var(--bs-ink)',
+              fontFamily: FONT_BODY, fontSize: FS.h4, fontWeight: 800,
+              color: overEncumbered ? COLOR.red : COLOR.ink,
             }}>
               {totalEnc}
-              <span style={{ color: overEncumbered ? 'var(--red)' : 'var(--bs-txt3)', fontWeight: 400, fontSize: 'var(--font-md)' }}> / {encumbranceThreshold}</span>
+              <span style={{ color: overEncumbered ? COLOR.red : COLOR.txt3, fontWeight: 400, fontSize: FS.body }}> / {encumbranceThreshold}</span>
             </div>
           </div>
           <div style={{ display: 'flex', gap: '1rem' }}>
@@ -113,10 +113,10 @@ export function InventoryContent({
               { label: 'GEAR', value: gearEnc },
             ].map(s => (
               <div key={s.label} style={{ textAlign: 'center' }}>
-                <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.08rem', color: 'var(--bs-txt3)' }}>
+                <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 600, letterSpacing: '0.08rem', color: COLOR.txt3 }}>
                   {s.label}
                 </div>
-                <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-base)', fontWeight: 600, color: 'var(--bs-txt2)' }}>
+                <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 600, color: COLOR.txt2 }}>
                   {s.value}
                 </div>
               </div>
@@ -125,9 +125,9 @@ export function InventoryContent({
         </div>
         {overEncumbered && (
           <div style={{
-            fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)', fontWeight: 700,
-            color: 'var(--red)', letterSpacing: '0.12rem',
-            border: '1px solid var(--red)', padding: '0.25rem 0.5rem',
+            fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
+            color: COLOR.red, letterSpacing: '0.12rem',
+            border: `1px solid ${COLOR.red}`, padding: '0.25rem 0.5rem',
             background: 'rgba(229,62,62,.06)',
           }}>
             OVER-ENCUMBERED
@@ -138,10 +138,10 @@ export function InventoryContent({
       {/* Weapons */}
       <HudCard title={`Weapons (${weapons.length})`} collapsible defaultCollapsed={collapsedSections.weapons}>
         {weapons.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '1rem 0', fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', color: 'var(--bs-txt3)', letterSpacing: '0.15rem' }}>NO WEAPONS</div>
+          <div style={{ textAlign: 'center', padding: '1rem 0', fontFamily: FONT_BODY, fontSize: FS.label, color: COLOR.txt3, letterSpacing: '0.15rem' }}>NO WEAPONS</div>
         ) : (
           <>
-            <div style={{ display: 'grid', gridTemplateColumns: '48px 1fr 80px 50px 50px 70px 40px 40px 1fr', gap: '0.25rem', padding: '0.25rem 0', borderBottom: '1px solid var(--bs-bdr-mid)', alignItems: 'center' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '48px 1fr 80px 50px 50px 70px 40px 40px 1fr', gap: '0.25rem', padding: '0.25rem 0', borderBottom: `1px solid ${HUD.borderHi}`, alignItems: 'center' }}>
               <div /><div style={headerStyle}>NAME</div><div style={headerStyle}>SKILL</div>
               <div style={{ ...headerStyle, textAlign: 'center' }}>DAM</div><div style={{ ...headerStyle, textAlign: 'center' }}>CRIT</div>
               <div style={headerStyle}>RANGE</div><div style={{ ...headerStyle, textAlign: 'center' }}>ENC</div>
@@ -156,7 +156,7 @@ export function InventoryContent({
               return (
                 <div key={w.id} onClick={() => onToggleEquipped(w.id, 'weapon')} className="hov-gold-bg" style={{
                   display: 'grid', gridTemplateColumns: '48px 1fr 80px 50px 50px 70px 40px 40px 1fr',
-                  gap: '0.25rem', padding: '0.5rem 0', borderBottom: '1px solid var(--bs-bdr-mid)',
+                  gap: '0.25rem', padding: '0.5rem 0', borderBottom: `1px solid ${HUD.borderHi}`,
                   alignItems: 'center', cursor: 'pointer', transition: 'background .15s',
                 }}
                 >
@@ -167,11 +167,11 @@ export function InventoryContent({
                     <span style={nameStyle}>{name}</span>{w.is_equipped && <EquippedBadge />}
                   </div>
                   <div style={cellStyle}>{skill}</div>
-                  <div style={{ ...cellStyle, ...numStyle, color: 'var(--red)' }}>{ref?.damage ?? '—'}</div>
-                  <div style={{ ...cellStyle, ...numStyle, color: 'var(--amber)' }}>{ref?.crit ?? '—'}</div>
+                  <div style={{ ...cellStyle, ...numStyle, color: COLOR.red }}>{ref?.damage ?? '—'}</div>
+                  <div style={{ ...cellStyle, ...numStyle, color: COLOR.amber }}>{ref?.crit ?? '—'}</div>
                   <div style={cellStyle}>{range}</div>
-                  <div style={{ ...cellStyle, ...numStyle, color: 'var(--bs-txt3)' }}>{ref?.encumbrance ?? '—'}</div>
-                  <div style={{ ...cellStyle, ...numStyle, color: 'var(--red)' }}>{ref?.hard_points ?? '—'}</div>
+                  <div style={{ ...cellStyle, ...numStyle, color: COLOR.txt3 }}>{ref?.encumbrance ?? '—'}</div>
+                  <div style={{ ...cellStyle, ...numStyle, color: COLOR.red }}>{ref?.hard_points ?? '—'}</div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', alignItems: 'center' }}>
                     {quals.map((q, qi) => (
                       <Badge key={qi} color="#9B6DD7" bg="rgba(155,109,215,.1)">{q}</Badge>
@@ -187,10 +187,10 @@ export function InventoryContent({
       {/* Armor */}
       <HudCard title={`Armor (${armor.length})`} collapsible defaultCollapsed={collapsedSections.armor}>
         {armor.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '1rem 0', fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', color: 'var(--bs-txt3)', letterSpacing: '0.15rem' }}>NO ARMOR</div>
+          <div style={{ textAlign: 'center', padding: '1rem 0', fontFamily: FONT_BODY, fontSize: FS.label, color: COLOR.txt3, letterSpacing: '0.15rem' }}>NO ARMOR</div>
         ) : (
           <>
-            <div style={{ display: 'grid', gridTemplateColumns: '48px 1fr 50px 50px 40px 40px 50px', gap: '0.25rem', padding: '0.25rem 0', borderBottom: '1px solid var(--bs-bdr-mid)', alignItems: 'center' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '48px 1fr 50px 50px 40px 40px 50px', gap: '0.25rem', padding: '0.25rem 0', borderBottom: `1px solid ${HUD.borderHi}`, alignItems: 'center' }}>
               <div /><div style={headerStyle}>NAME</div>
               <div style={{ ...headerStyle, textAlign: 'center' }}>SOAK</div><div style={{ ...headerStyle, textAlign: 'center' }}>DEF</div>
               <div style={{ ...headerStyle, textAlign: 'center' }}>ENC</div><div style={{ ...headerStyle, textAlign: 'center' }}>HP</div>
@@ -204,7 +204,7 @@ export function InventoryContent({
               return (
                 <div key={a.id} onClick={() => onToggleEquipped(a.id, 'armor')} className="hov-gold-bg" style={{
                   display: 'grid', gridTemplateColumns: '48px 1fr 50px 50px 40px 40px 50px',
-                  gap: '0.25rem', padding: '0.5rem 0', borderBottom: '1px solid var(--bs-bdr-mid)',
+                  gap: '0.25rem', padding: '0.5rem 0', borderBottom: `1px solid ${HUD.borderHi}`,
                   alignItems: 'center', cursor: 'pointer', transition: 'background .15s',
                 }}
                 >
@@ -214,14 +214,14 @@ export function InventoryContent({
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
                     <span style={nameStyle}>{name}</span>{a.is_equipped && <EquippedBadge />}
                   </div>
-                  <div style={{ ...cellStyle, ...numStyle, color: 'var(--blue)' }}>{ref?.soak ?? '—'}</div>
-                  <div style={{ ...cellStyle, ...numStyle, color: 'var(--green)' }}>{ref?.defense ?? '—'}</div>
-                  <div style={{ ...cellStyle, ...numStyle, color: 'var(--bs-txt3)' }}>
+                  <div style={{ ...cellStyle, ...numStyle, color: COLOR.blue }}>{ref?.soak ?? '—'}</div>
+                  <div style={{ ...cellStyle, ...numStyle, color: COLOR.green }}>{ref?.defense ?? '—'}</div>
+                  <div style={{ ...cellStyle, ...numStyle, color: COLOR.txt3 }}>
                     {displayEnc}
-                    {a.is_equipped && enc > 3 && <span style={{ fontSize: 'var(--font-2xs)', color: 'var(--green)', marginLeft: '0.25rem' }}>-3</span>}
+                    {a.is_equipped && enc > 3 && <span style={{ fontSize: FS.overline, color: COLOR.green, marginLeft: '0.25rem' }}>-3</span>}
                   </div>
-                  <div style={{ ...cellStyle, ...numStyle, color: 'var(--red)' }}>{ref?.hard_points ?? '—'}</div>
-                  <div style={{ ...cellStyle, ...numStyle, color: ref?.rarity != null ? rarityColor(ref.rarity) : 'var(--bs-txt3)' }}>{ref?.rarity ?? '—'}</div>
+                  <div style={{ ...cellStyle, ...numStyle, color: COLOR.red }}>{ref?.hard_points ?? '—'}</div>
+                  <div style={{ ...cellStyle, ...numStyle, color: ref?.rarity != null ? rarityColor(ref.rarity) : COLOR.txt3 }}>{ref?.rarity ?? '—'}</div>
                 </div>
               )
             })}
@@ -232,10 +232,10 @@ export function InventoryContent({
       {/* Gear */}
       <HudCard title={`Gear (${gear.length})`} collapsible defaultCollapsed={collapsedSections.gear}>
         {gear.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '1rem 0', fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', color: 'var(--bs-txt3)', letterSpacing: '0.15rem' }}>NO GEAR</div>
+          <div style={{ textAlign: 'center', padding: '1rem 0', fontFamily: FONT_BODY, fontSize: FS.label, color: COLOR.txt3, letterSpacing: '0.15rem' }}>NO GEAR</div>
         ) : (
           <>
-            <div style={{ display: 'grid', gridTemplateColumns: '48px 1fr 50px 40px 50px', gap: '0.25rem', padding: '0.25rem 0', borderBottom: '1px solid var(--bs-bdr-mid)', alignItems: 'center' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '48px 1fr 50px 40px 50px', gap: '0.25rem', padding: '0.25rem 0', borderBottom: `1px solid ${HUD.borderHi}`, alignItems: 'center' }}>
               <div /><div style={headerStyle}>NAME</div>
               <div style={{ ...headerStyle, textAlign: 'center' }}>QTY</div><div style={{ ...headerStyle, textAlign: 'center' }}>ENC</div>
               <div style={{ ...headerStyle, textAlign: 'center' }}>RAR</div>
@@ -246,7 +246,7 @@ export function InventoryContent({
               return (
                 <div key={g.id} onClick={() => onToggleEquipped(g.id, 'gear')} className="hov-gold-bg" style={{
                   display: 'grid', gridTemplateColumns: '48px 1fr 50px 40px 50px',
-                  gap: '0.25rem', padding: '0.5rem 0', borderBottom: '1px solid var(--bs-bdr-mid)',
+                  gap: '0.25rem', padding: '0.5rem 0', borderBottom: `1px solid ${HUD.borderHi}`,
                   alignItems: 'center', cursor: 'pointer', transition: 'background .15s',
                 }}
                 >
@@ -256,9 +256,9 @@ export function InventoryContent({
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
                     <span style={nameStyle}>{name}</span>{g.is_equipped && <EquippedBadge />}
                   </div>
-                  <div style={{ ...cellStyle, ...numStyle, color: 'var(--bs-txt2)' }}>{g.quantity || 1}</div>
-                  <div style={{ ...cellStyle, ...numStyle, color: 'var(--bs-txt3)' }}>{(ref?.encumbrance || 0) * (g.quantity || 1)}</div>
-                  <div style={{ ...cellStyle, ...numStyle, color: ref?.rarity != null ? rarityColor(ref.rarity) : 'var(--bs-txt3)' }}>{ref?.rarity ?? '—'}</div>
+                  <div style={{ ...cellStyle, ...numStyle, color: COLOR.txt2 }}>{g.quantity || 1}</div>
+                  <div style={{ ...cellStyle, ...numStyle, color: COLOR.txt3 }}>{(ref?.encumbrance || 0) * (g.quantity || 1)}</div>
+                  <div style={{ ...cellStyle, ...numStyle, color: ref?.rarity != null ? rarityColor(ref.rarity) : COLOR.txt3 }}>{ref?.rarity ?? '—'}</div>
                 </div>
               )
             })}

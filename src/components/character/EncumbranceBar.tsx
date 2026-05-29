@@ -2,11 +2,10 @@
 
 import { Tooltip, TipLabel, TipBody, TipDivider } from '@/components/ui/Tooltip'
 import { RichText } from '@/components/ui/RichText'
+import { FONT_BODY, RADIUS, EASE } from '@/lib/tokens'
 
-const ENC_WARN   = '#E07855'
-const ENC_OK     = 'rgba(90,170,224,0.7)'
-const FONT_C     = 'var(--font-body)'
-const FONT_M     = 'var(--font-body)'
+const ENC_WARN = 'var(--state-threat)'
+const ENC_OK   = 'rgba(90,170,224,0.7)'
 
 interface EncumbranceBarProps {
   current: number
@@ -64,7 +63,7 @@ export function EncumbranceBar({ current, threshold, brawn, compact = false, lab
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <span style={{
-          fontFamily: FONT_C,
+          fontFamily: FONT_BODY,
           fontSize: labelFontSize ?? 'clamp(0.6rem, 2.4vw, 0.72rem)',
           textTransform: 'uppercase', letterSpacing: '0.08em',
           color: 'var(--hud-vital-text-dim)',
@@ -72,7 +71,7 @@ export function EncumbranceBar({ current, threshold, brawn, compact = false, lab
           ENC
         </span>
         <span style={{
-          fontFamily: FONT_M,
+          fontFamily: FONT_BODY,
           fontSize: 'clamp(0.65rem, 2.5vw, 0.78rem)',
           color: over ? ENC_WARN : 'var(--hud-vital-text)',
         }}>
@@ -87,7 +86,7 @@ export function EncumbranceBar({ current, threshold, brawn, compact = false, lab
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
         <span style={{
-          fontFamily: FONT_C,
+          fontFamily: FONT_BODY,
           fontSize: labelFontSize ?? 'clamp(0.58rem, 0.9vw, 0.68rem)',
           textTransform: 'uppercase', letterSpacing: '0.15em',
           color: 'var(--hud-text-faint)',
@@ -95,7 +94,7 @@ export function EncumbranceBar({ current, threshold, brawn, compact = false, lab
           ENC
         </span>
         <span style={{
-          fontFamily: FONT_M,
+          fontFamily: FONT_BODY,
           fontSize: 'clamp(0.68rem, 1.0vw, 0.8rem)',
           color: over ? ENC_WARN : 'var(--hud-text-dim)',
           display: 'flex', alignItems: 'center', gap: 4,
@@ -103,11 +102,11 @@ export function EncumbranceBar({ current, threshold, brawn, compact = false, lab
           {current}/{threshold}{over && <>{' '}{warningIcon}</>}
         </span>
       </div>
-      <div style={{ height: 6, background: 'var(--hud-border)', borderRadius: 3, overflow: 'hidden' }}>
+      <div style={{ height: 6, background: 'var(--hud-border)', borderRadius: RADIUS.md - 1, overflow: 'hidden' }}>
         <div style={{
           height: '100%', width: `${pct}%`,
-          background: fill, borderRadius: 3,
-          transition: 'width 300ms ease',
+          background: fill, borderRadius: RADIUS.md - 1,
+          transition: `width 300ms ${EASE.default}`,
         }} />
       </div>
     </div>

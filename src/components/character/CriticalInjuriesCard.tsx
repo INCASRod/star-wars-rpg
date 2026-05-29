@@ -1,7 +1,8 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { HudCard } from '../ui/HudCard'
+import { HUD, FS, SP, RADIUS, EASE, FONT_BODY } from '@/lib/tokens'
 
 export interface CriticalInjuryDisplay {
   id: string
@@ -27,45 +28,45 @@ export function CriticalInjuriesCard({ injuries, animClass = 'ar d5', onRollCrit
     <HudCard title="Critical Injuries" animClass={animClass} collapsible={collapsible} defaultCollapsed={defaultCollapsed}>
       {injuries.length === 0 ? (
         <div style={{
-          textAlign: 'center', padding: '0.5rem 0',
-          fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)',
-          color: 'var(--bs-txt3)', letterSpacing: '0.15rem',
+          textAlign: 'center', padding: `${SP[1]} 0`,
+          fontFamily: FONT_BODY, fontSize: FS.caption,
+          color: HUD.textFaint, letterSpacing: '0.15rem',
         }}>
           NO ACTIVE INJURIES
         </div>
       ) : (
         injuries.map((inj) => (
           <div key={inj.id} style={{
-            padding: '0.5rem 0',
-            borderBottom: '1px solid var(--bs-bdr-mid)',
+            padding: `${SP[1]} 0`,
+            borderBottom: `1px solid ${HUD.borderHi}`,
             opacity: inj.isHealed ? 0.4 : 1,
           }}>
             <div
               style={{
-                display: 'flex', alignItems: 'center', gap: '0.5rem',
+                display: 'flex', alignItems: 'center', gap: SP[1],
                 cursor: inj.description ? 'pointer' : 'default',
               }}
               onClick={() => inj.description && setExpanded(expanded === inj.id ? null : inj.id)}
             >
               <div style={{
-                width: '0.42rem', height: '0.42rem', borderRadius: '50%', flexShrink: 0,
+                width: '0.42rem', height: '0.42rem', borderRadius: RADIUS.full, flexShrink: 0,
                 background: inj.isHealed ? 'var(--green)' : 'var(--red)',
                 boxShadow: inj.isHealed ? 'none' : '0 0 0.4rem var(--red)',
               }} />
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--bs-txt)' }}>{inj.name}</div>
-                <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', color: 'var(--bs-txt3)' }}>{inj.severity}</div>
+                <div style={{ fontSize: FS.label, fontWeight: 600, color: HUD.text }}>{inj.name}</div>
+                <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint }}>{inj.severity}</div>
               </div>
               {!inj.isHealed && onHealCrit && (
                 <button
                   onClick={(e) => { e.stopPropagation(); onHealCrit(inj.id) }}
                   title="Heal this injury"
                   style={{
-                    background: 'none', border: '1px solid var(--bs-bdr-mid)',
+                    background: 'none', border: `1px solid ${HUD.borderHi}`,
                     width: '1.2rem', height: '1.2rem', cursor: 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 'var(--font-sm)', color: 'var(--green)', fontWeight: 700,
-                    transition: '.2s', flexShrink: 0,
+                    fontSize: FS.label, color: 'var(--green)', fontWeight: 700,
+                    transition: EASE.default, flexShrink: 0,
                   }}
                 >
                   +
@@ -74,8 +75,8 @@ export function CriticalInjuriesCard({ injuries, animClass = 'ar d5', onRollCrit
             </div>
             {expanded === inj.id && inj.description && (
               <div style={{
-                fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)',
-                color: 'var(--bs-txt2)', padding: '0.25rem 0 0.25rem 1rem',
+                fontFamily: FONT_BODY, fontSize: FS.caption,
+                color: HUD.textDim, padding: `${SP[1]} 0 ${SP[1]} 1rem`,
                 lineHeight: 1.4,
               }}>
                 {inj.description}
@@ -88,15 +89,15 @@ export function CriticalInjuriesCard({ injuries, animClass = 'ar d5', onRollCrit
         <button
           onClick={onRollCrit}
           style={{
-            width: '100%', marginTop: '0.5rem',
-            background: 'rgba(191,64,64,.08)',
+            width: '100%', marginTop: SP[1],
+            background: 'var(--hud-accent-10)',
             border: '1px solid var(--red)',
-            padding: '0.25rem',
+            padding: SP[1],
             cursor: 'pointer',
-            fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)',
+            fontFamily: FONT_BODY, fontSize: FS.caption,
             fontWeight: 700, letterSpacing: '0.1rem',
             color: 'var(--red)', textAlign: 'center',
-            transition: '.2s',
+            transition: EASE.default,
           }}
         >
           ROLL D100 CRITICAL

@@ -2,7 +2,7 @@
 
 import React, { useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Z } from '@/lib/tokens'
+import { Z, RADIUS, FONT_BODY } from '@/lib/tokens'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 export type CritSeverity = 'minor' | 'moderate' | 'serious' | 'grievous'
@@ -29,11 +29,6 @@ const SEV_LABEL: Record<CritSeverity, string> = {
   serious: 'Serious',
   grievous:'Grievous',
 }
-
-// ── Design tokens ─────────────────────────────────────────────────────────────
-const FONT_C = 'var(--font-body)'
-const FONT_R = 'var(--font-body)'
-const FONT_M = 'var(--font-body)'
 
 // ── Pip data shape (matches what PlayerHUDDesktop maps from CharacterCriticalInjury) ──
 export interface CritPip {
@@ -124,27 +119,26 @@ export function CriticalInjuryPip({ pip, onHeal }: CriticalInjuryPipProps) {
             backdropFilter: 'blur(14px)',
             WebkitBackdropFilter: 'blur(14px)',
             border: `1px solid rgba(220,20,60,0.35)`,
-            borderRadius: 8,
+            borderRadius: RADIUS.lg,
             padding: '10px 12px',
             boxShadow: '0 8px 24px rgba(0,0,0,0.8)',
           }}>
             {/* Close button */}
             <button
               onClick={(e) => { e.stopPropagation(); setTooltipOpen(false); setConfirmingHeal(false) }}
+              className="crit-pip-close"
               style={{
                 position: 'absolute', top: 6, right: 6,
                 background: 'none', border: 'none', padding: '2px 4px',
                 cursor: 'pointer', lineHeight: 1,
-                fontFamily: FONT_M, fontSize: '0.7rem',
+                fontFamily: FONT_BODY, fontSize: '0.7rem',
                 color: 'rgba(220,20,60,0.5)',
               }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#DC143C' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(220,20,60,0.5)' }}
               aria-label="Close"
             >✕</button>
             {/* Severity label */}
             <div style={{
-              fontFamily: FONT_M,
+              fontFamily: FONT_BODY,
               fontSize: 'clamp(0.55rem, 0.85vw, 0.62rem)',
               textTransform: 'uppercase',
               letterSpacing: '0.12em',
@@ -156,7 +150,7 @@ export function CriticalInjuryPip({ pip, onHeal }: CriticalInjuryPipProps) {
 
             {/* Injury name */}
             <div style={{
-              fontFamily: FONT_C,
+              fontFamily: FONT_BODY,
               fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)',
               color: '#DC143C',
               fontWeight: 700,
@@ -170,7 +164,7 @@ export function CriticalInjuryPip({ pip, onHeal }: CriticalInjuryPipProps) {
             {/* Description */}
             {pip.description && (
               <div style={{
-                fontFamily: FONT_R,
+                fontFamily: FONT_BODY,
                 fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)',
                 color: 'var(--hud-text)',
                 lineHeight: 1.5,
@@ -185,7 +179,7 @@ export function CriticalInjuryPip({ pip, onHeal }: CriticalInjuryPipProps) {
               <>
                 <div style={{ height: 1, background: 'rgba(220,20,60,0.15)', marginBottom: 6 }} />
                 <div style={{
-                  fontFamily: FONT_M,
+                  fontFamily: FONT_BODY,
                   fontSize: 'clamp(0.52rem, 0.82vw, 0.6rem)',
                   color: 'var(--hud-text-faint)',
                   display: 'flex', gap: 6, flexWrap: 'wrap',
@@ -204,8 +198,8 @@ export function CriticalInjuryPip({ pip, onHeal }: CriticalInjuryPipProps) {
                   marginTop: 8, width: '100%',
                   background: 'rgba(78,200,122,0.1)',
                   border: '1px solid rgba(78,200,122,0.3)',
-                  borderRadius: 4, padding: '4px 0',
-                  fontFamily: FONT_R,
+                  borderRadius: RADIUS.md, padding: '4px 0',
+                  fontFamily: FONT_BODY,
                   fontSize: 'clamp(0.7rem, 1.1vw, 0.8rem)',
                   fontWeight: 700, letterSpacing: '0.08em',
                   color: '#4EC87A', cursor: 'pointer',
@@ -217,7 +211,7 @@ export function CriticalInjuryPip({ pip, onHeal }: CriticalInjuryPipProps) {
             {onHeal && confirmingHeal && (
               <div style={{ marginTop: 8 }}>
                 <div style={{
-                  fontFamily: FONT_R,
+                  fontFamily: FONT_BODY,
                   fontSize: 'clamp(0.78rem, 1.2vw, 0.88rem)',
                   color: 'var(--hud-text)',
                   textAlign: 'center',
@@ -232,8 +226,8 @@ export function CriticalInjuryPip({ pip, onHeal }: CriticalInjuryPipProps) {
                       flex: 1, padding: '4px 0',
                       background: 'rgba(78,200,122,0.12)',
                       border: '1px solid rgba(78,200,122,0.4)',
-                      borderRadius: 3,
-                      fontFamily: FONT_R, fontSize: 'clamp(0.7rem, 1.1vw, 0.78rem)',
+                      borderRadius: RADIUS.sm,
+                      fontFamily: FONT_BODY, fontSize: 'clamp(0.7rem, 1.1vw, 0.78rem)',
                       fontWeight: 700, color: '#4EC87A', cursor: 'pointer',
                     }}
                   >
@@ -245,8 +239,8 @@ export function CriticalInjuryPip({ pip, onHeal }: CriticalInjuryPipProps) {
                       flex: 1, padding: '4px 0',
                       background: 'transparent',
                       border: '1px solid rgba(150,168,180,0.2)',
-                      borderRadius: 3,
-                      fontFamily: FONT_R, fontSize: 'clamp(0.7rem, 1.1vw, 0.78rem)',
+                      borderRadius: RADIUS.sm,
+                      fontFamily: FONT_BODY, fontSize: 'clamp(0.7rem, 1.1vw, 0.78rem)',
                       fontWeight: 700, color: 'rgba(150,168,180,0.5)', cursor: 'pointer',
                     }}
                   >
@@ -279,6 +273,7 @@ export function CriticalInjuryPips({ crits, onHeal }: CriticalInjuryPipsProps) {
           0%, 100% { opacity: 0.75; filter: brightness(1); }
           50%       { opacity: 1;   filter: brightness(1.5) drop-shadow(0 0 4px rgba(139,0,0,0.9)); }
         }
+        .crit-pip-close:hover { color: #DC143C !important; }
       `}</style>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
         {crits.map(pip => (

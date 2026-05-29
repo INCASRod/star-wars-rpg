@@ -1,5 +1,6 @@
-﻿'use client'
+'use client'
 
+import { HUD, FS, SP, RADIUS, EASE, FONT_DISPLAY, FONT_BODY } from '@/lib/tokens'
 import { HudCard } from '../ui/HudCard'
 
 interface CharacteristicsCardProps {
@@ -24,9 +25,9 @@ const CHARS: { key: string; label: string }[] = [
 ]
 
 const gmBtnStyle: React.CSSProperties = {
-  width: 20, height: 20, fontSize: 'var(--text-caption)', fontWeight: 700,
-  background: 'var(--bs-red-glow)', border: '1px solid var(--bs-red-sun)',
-  color: 'var(--bs-red-mid)', cursor: 'pointer', display: 'flex',
+  width: 20, height: 20, fontSize: FS.caption, fontWeight: 700,
+  background: 'var(--hud-accent-10)', border: `1px solid var(--hud-gold)`,
+  color: 'var(--hud-accent)', cursor: 'pointer', display: 'flex',
   alignItems: 'center', justifyContent: 'center', padding: 0,
   lineHeight: 1, flexShrink: 0,
 }
@@ -47,15 +48,15 @@ export function CharacteristicsCard(props: CharacteristicsCardProps) {
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(6, 1fr)',
-        gap: '0.25rem',
+        gap: SP[1],
       }}>
         {CHARS.map(ch => (
           <div key={ch.key} style={{
             textAlign: 'center',
-            padding: 'var(--sp-sm) 0.25rem',
-            background: 'var(--bs-surface)',
-            border: '1px solid var(--bs-bdr-mid)',
-            transition: '.2s',
+            padding: `${SP[1]} ${SP[1]}`,
+            background: 'var(--hud-surface-lo)',
+            border: `1px solid ${HUD.borderHi}`,
+            transition: EASE.default,
             position: 'relative',
             overflow: 'hidden',
           }}>
@@ -63,10 +64,10 @@ export function CharacteristicsCard(props: CharacteristicsCardProps) {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
                 <button style={gmBtnStyle} onClick={() => onCharacteristicChange(ch.key, -1)}>−</button>
                 <div style={{
-                  fontFamily: 'var(--font-rajdhani)',
-                  fontSize: 'var(--font-2xl)',
+                  fontFamily: FONT_DISPLAY,
+                  fontSize: FS.h2,
                   fontWeight: 900,
-                  color: 'var(--bs-ink)',
+                  color: HUD.text,
                   lineHeight: 1,
                   minWidth: 20,
                 }}>
@@ -76,22 +77,22 @@ export function CharacteristicsCard(props: CharacteristicsCardProps) {
               </div>
             ) : (
               <div style={{
-                fontFamily: 'var(--font-rajdhani)',
-                fontSize: 'var(--font-2xl)',
+                fontFamily: FONT_DISPLAY,
+                fontSize: FS.h2,
                 fontWeight: 900,
-                color: 'var(--bs-ink)',
+                color: HUD.text,
                 lineHeight: 1,
               }}>
                 {values[ch.key]}
               </div>
             )}
             <div style={{
-              fontFamily: 'var(--font-rajdhani)',
-              fontSize: 'var(--font-xs)',
+              fontFamily: FONT_BODY,
+              fontSize: FS.overline,
               fontWeight: 700,
               letterSpacing: '0.15rem',
-              color: 'var(--bs-txt3)',
-              marginTop: '0.25rem',
+              color: HUD.textFaint,
+              marginTop: SP[1],
               textTransform: 'uppercase',
             }}>
               {ch.label}

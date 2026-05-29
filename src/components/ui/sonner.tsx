@@ -1,6 +1,7 @@
-﻿"use client"
+"use client"
 
 import { Toaster as Sonner, type ToasterProps } from "sonner"
+import { FONT_BODY, Z } from '@/lib/tokens'
 
 const Toaster = ({ ...props }: ToasterProps) => {
   return (
@@ -9,17 +10,17 @@ const Toaster = ({ ...props }: ToasterProps) => {
       className="toaster group"
       toastOptions={{
         style: {
-          zIndex: 300,
-          fontFamily: 'var(--font-rajdhani)',
+          zIndex: Z.toast,
+          fontFamily: FONT_BODY,
         },
       }}
       style={
         {
-          "--normal-bg": "var(--bs-panel)",
-          "--normal-text": "var(--bs-ink)",
-          "--normal-border": "var(--bs-bdr-strong)",
+          "--normal-bg": "var(--hud-panel)",
+          "--normal-text": "var(--hud-text)",
+          "--normal-border": "var(--hud-border-strong)",
           "--border-radius": "2px",
-          zIndex: 300,
+          zIndex: Z.toast,
         } as React.CSSProperties
       }
       {...props}

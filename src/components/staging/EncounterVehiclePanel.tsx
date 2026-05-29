@@ -4,8 +4,7 @@ import { useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { CombatEncounter } from '@/lib/combat'
 import type { VehicleInstance } from '@/lib/vehicles'
-import { FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4 } from '@/components/player-hud/design-tokens'
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_BODY, FS, SP, RADIUS, EASE } from '@/lib/tokens'
 
 /* ── Design tokens ────────────────────────────────────────── */
 const PANEL_BG  = 'var(--hud-surface-mid)'
@@ -17,7 +16,6 @@ const AMBER     = '#FF9800'
 const PURPLE    = '#9C27B0'
 const TEXT      = 'var(--hud-text)'
 const TEXT_MUTED = 'var(--hud-text-faint)'
-const FC        = 'var(--font-body)'
 
 export interface EncounterVehiclePanelProps {
   campaignId: string
@@ -80,9 +78,9 @@ export function EncounterVehiclePanel({ campaignId, encounter }: EncounterVehicl
 
   if (!encounter || vehicles.length === 0) {
     return (
-      <div style={{ padding: '40px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+      <div style={{ padding: '2.5rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.625rem' }}>
         <div style={{ fontSize: 28, opacity: 0.3 }}>△</div>
-        <div style={{ fontFamily: FC, fontSize: FS_SM, color: TEXT_MUTED, textAlign: 'center' }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: TEXT_MUTED, textAlign: 'center' }}>
           No vehicles in this encounter.
         </div>
       </div>
@@ -90,7 +88,7 @@ export function EncounterVehiclePanel({ campaignId, encounter }: EncounterVehicl
   }
 
   return (
-    <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+    <div style={{ padding: '0.75rem 0.875rem', display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
       {vehicles.map(vehicle => {
         const vSlot = encounter.initiative_slots.find(s => s.vehicleInstanceId === vehicle.instanceId)
         const alignment = vSlot?.alignment ?? vehicle.alignment ?? 'enemy'
@@ -102,35 +100,35 @@ export function EncounterVehiclePanel({ campaignId, encounter }: EncounterVehicl
             background: PANEL_BG,
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
-            borderRadius: 6,
+            borderRadius: '0.375rem',
             borderTop: `2px solid ${isDisabled ? RED : `${accent}80`}`,
             borderRight: `1px solid ${BORDER}`,
             borderBottom: `1px solid ${BORDER}`,
             borderLeft: `3px solid ${isDisabled ? RED : accent}`,
             opacity: isDisabled ? 0.65 : 1,
-            transition: 'opacity 400ms',
+            transition: 'opacity 0.4s ease',
           }}>
             {/* Header */}
-            <div style={{ padding: '10px 12px 4px', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: TEXT, flex: 1 }}>
+            <div style={{ padding: '0.625rem 0.75rem 0.25rem', display: 'flex', alignItems: 'center', gap: SP[2] }}>
+              <span style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700, color: TEXT, flex: 1 }}>
                 {vehicle.name}
               </span>
               {isDisabled && (
                 <span style={{
-                  fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.1em',
+                  fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.1em',
                   color: TEXT_MUTED, border: `1px solid var(--hud-border)`,
-                  borderRadius: 3, padding: '1px 5px', background: 'var(--hud-surface-lo)',
+                  borderRadius: '0.1875rem', padding: '1px 0.3125rem', background: 'var(--hud-surface-lo)',
                 }}>DISABLED</span>
               )}
               <span style={{
-                fontFamily: FC, fontSize: FS_OVERLINE, color: BLUE,
-                border: `1px solid ${BLUE}50`, borderRadius: 2,
-                padding: '1px 5px', background: `${BLUE}15`,
+                fontFamily: FONT_BODY, fontSize: FS.overline, color: BLUE,
+                border: `1px solid ${BLUE}50`, borderRadius: RADIUS.sm,
+                padding: '1px 0.3125rem', background: `${BLUE}15`,
               }}>VEHICLE</span>
             </div>
 
             {/* Sil + Speed row */}
-            <div style={{ padding: '0 12px 6px', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <div style={{ padding: '0 0.75rem 0.375rem', display: 'flex', gap: SP[2], flexWrap: 'wrap' }}>
               {[
                 { label: 'Sil',   value: vehicle.silhouette,          color: HUD.gold },
                 { label: 'Speed', value: vehicle.speed,               color: HUD.gold },
@@ -141,16 +139,16 @@ export function EncounterVehiclePanel({ campaignId, encounter }: EncounterVehicl
               ].map(s => (
                 <div key={s.label} style={{
                   background: `${s.color}12`, border: `1px solid ${s.color}30`,
-                  borderRadius: 3, padding: '2px 6px', textAlign: 'center',
+                  borderRadius: '0.1875rem', padding: '0.125rem 0.375rem', textAlign: 'center',
                 }}>
-                  <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: s.color, lineHeight: 1 }}>{s.value ?? '—'}</div>
-                  <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: TEXT_MUTED }}>{s.label}</div>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: FS.h4, fontWeight: 700, color: s.color, lineHeight: 1 }}>{s.value ?? '—'}</div>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: TEXT_MUTED }}>{s.label}</div>
                 </div>
               ))}
             </div>
 
             {/* Wound trackers */}
-            <div style={{ padding: '0 12px 10px' }}>
+            <div style={{ padding: '0 0.75rem 0.625rem' }}>
               <VehicleWoundTracker
                 vehicle={vehicle}
                 onAdjustHullTrauma={delta => void adjustHullTrauma(vehicle, delta)}
@@ -183,10 +181,10 @@ function VehicleWoundTracker({
   const ssColor = ssPct >= 1 ? PURPLE : ssPct >= 0.8 ? AMBER : AMBER
 
   const btnBase: React.CSSProperties = {
-    width: 36, height: 28, borderRadius: 5,
+    width: '2.25rem', height: '1.75rem', borderRadius: '0.3125rem',
     background: 'var(--hud-surface-lo)',
     border: '1px solid var(--hud-border)',
-    cursor: 'pointer', fontFamily: FC, fontSize: 16, lineHeight: 1,
+    cursor: 'pointer', fontFamily: FONT_BODY, fontSize: FS.h4, lineHeight: 1,
     color: TEXT,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     transition: 'border-color .12s', flexShrink: 0,
@@ -195,28 +193,25 @@ function VehicleWoundTracker({
   return (
     <div>
       {/* Hull Trauma */}
-      <div style={{ marginBottom: htMax > 0 && ssMax > 0 ? 10 : 0 }}>
-        <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: RED, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 3 }}>
+      <div style={{ marginBottom: htMax > 0 && ssMax > 0 ? '0.625rem' : 0 }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: RED, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '0.1875rem' }}>
           Hull Trauma
         </div>
-        <div style={{ height: 6, background: 'var(--hud-surface-lo)', borderRadius: 3, overflow: 'hidden', marginBottom: 2 }}>
-          <div style={{ width: `${htPct * 100}%`, height: '100%', background: htColor, borderRadius: 3, transition: 'width 300ms ease' }} />
+        <div style={{ height: '0.375rem', background: 'var(--hud-surface-lo)', borderRadius: '0.1875rem', overflow: 'hidden', marginBottom: '0.125rem' }}>
+          <div style={{ width: `${htPct * 100}%`, height: '100%', background: htColor, borderRadius: '0.1875rem', transition: `width var(--ease-smooth)` }} />
         </div>
-        <div style={{ fontFamily: FC, fontSize: FS_CAPTION, color: TEXT_MUTED, textAlign: 'right', marginBottom: 3 }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: TEXT_MUTED, textAlign: 'right', marginBottom: '0.1875rem' }}>
           {htCur} / {htMax}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: SP[1] }}>
           <button onClick={() => onAdjustHullTrauma(-1)} disabled={htCur === 0}
+            className="vhp-ht-btn"
             style={{ ...btnBase, cursor: htCur === 0 ? 'not-allowed' : 'pointer', color: htCur === 0 ? 'var(--hud-text-faint)' : TEXT }}
-            onMouseEnter={e => { if (htCur > 0) (e.currentTarget as HTMLElement).style.borderColor = `${RED}66` }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--hud-border)' }}
           >−</button>
-          <span style={{ flex: 1, textAlign: 'center', fontFamily: FC, fontSize: FS_LABEL, color: TEXT }}>
+          <span style={{ flex: 1, textAlign: 'center', fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT }}>
             {htCur} trauma
           </span>
-          <button onClick={() => onAdjustHullTrauma(1)} style={btnBase}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${RED}66` }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--hud-border)' }}
+          <button onClick={() => onAdjustHullTrauma(1)} className="vhp-ht-btn" style={btnBase}
           >+</button>
         </div>
       </div>
@@ -224,27 +219,24 @@ function VehicleWoundTracker({
       {/* System Strain */}
       {ssMax > 0 && (
         <div>
-          <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, color: AMBER, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 3, marginTop: 2 }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: AMBER, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '0.1875rem', marginTop: '0.125rem' }}>
             System Strain
           </div>
-          <div style={{ height: 6, background: 'var(--hud-surface-lo)', borderRadius: 3, overflow: 'hidden', marginBottom: 2 }}>
-            <div style={{ width: `${ssPct * 100}%`, height: '100%', background: ssColor, borderRadius: 3, transition: 'width 300ms ease' }} />
+          <div style={{ height: '0.375rem', background: 'var(--hud-surface-lo)', borderRadius: '0.1875rem', overflow: 'hidden', marginBottom: '0.125rem' }}>
+            <div style={{ width: `${ssPct * 100}%`, height: '100%', background: ssColor, borderRadius: '0.1875rem', transition: `width var(--ease-smooth)` }} />
           </div>
-          <div style={{ fontFamily: FC, fontSize: FS_CAPTION, color: TEXT_MUTED, textAlign: 'right', marginBottom: 3 }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: TEXT_MUTED, textAlign: 'right', marginBottom: '0.1875rem' }}>
             {ssCur} / {ssMax}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: SP[1] }}>
             <button onClick={() => onAdjustSystemStrain(-1)} disabled={ssCur === 0}
+              className="vhp-ss-btn"
               style={{ ...btnBase, cursor: ssCur === 0 ? 'not-allowed' : 'pointer', color: ssCur === 0 ? 'var(--hud-text-faint)' : TEXT }}
-              onMouseEnter={e => { if (ssCur > 0) (e.currentTarget as HTMLElement).style.borderColor = `${AMBER}66` }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--hud-border)' }}
             >−</button>
-            <span style={{ flex: 1, textAlign: 'center', fontFamily: FC, fontSize: FS_LABEL, color: TEXT }}>
+            <span style={{ flex: 1, textAlign: 'center', fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT }}>
               {ssCur} strain
             </span>
-            <button onClick={() => onAdjustSystemStrain(1)} style={btnBase}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${AMBER}66` }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--hud-border)' }}
+            <button onClick={() => onAdjustSystemStrain(1)} className="vhp-ss-btn" style={btnBase}
             >+</button>
           </div>
         </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { memo } from 'react'
-import { FONT_BODY, RADIUS } from '@/lib/tokens'
+import { FONT_BODY, RADIUS, EASE } from '@/lib/tokens'
 
 export type RailPanelId =
   | 'combat' | 'force' | 'skill'
@@ -20,7 +20,7 @@ const BTN_STYLE: React.CSSProperties = {
   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
   gap: 3, border: '1px solid transparent', borderRadius: RADIUS.md,
   cursor: 'pointer', background: 'transparent',
-  transition: 'background 0.15s, border-color 0.15s',
+  transition: `background ${EASE.default}, border-color ${EASE.default}`,
   flexShrink: 0,
 }
 

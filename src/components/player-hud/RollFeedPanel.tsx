@@ -92,15 +92,15 @@ function relativeTime(iso: string): string {
 // ── Force pip row ───────────────────────────────────────────────────
 function ForcePips({ light, dark }: { light: number; dark: number }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+    <div className="flex items-center flex-wrap" style={{ gap: 'var(--space-1)' }}>
       {Array.from({ length: light }).map((_, i) => (
-        <div key={`l${i}`} style={{ width: 10, height: 10, borderRadius: RADIUS.full, flexShrink: 0, background: FORCE_BLUE, boxShadow: `0 0 4px ${FORCE_BLUE}80` }} />
+        <div key={`l${i}`} className="shrink-0" style={{ width: '0.625rem', height: '0.625rem', borderRadius: RADIUS.full, background: FORCE_BLUE, boxShadow: `0 0 4px ${FORCE_BLUE}80` }} />
       ))}
       {light > 0 && dark > 0 && (
         <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint, margin: '0 2px' }}>·</span>
       )}
       {Array.from({ length: dark }).map((_, i) => (
-        <div key={`d${i}`} style={{ width: 10, height: 10, borderRadius: RADIUS.full, flexShrink: 0, background: FORCE_PURPLE }} />
+        <div key={`d${i}`} className="shrink-0" style={{ width: '0.625rem', height: '0.625rem', borderRadius: RADIUS.full, background: FORCE_PURPLE }} />
       ))}
     </div>
   )
@@ -117,7 +117,7 @@ function DicePoolRow({ pool }: { pool: Record<DiceType, number> }) {
   }
   if (dice.length === 0) return null
   return (
-    <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap', marginTop: 3 }}>
+    <div className="flex flex-wrap" style={{ gap: 3, marginTop: 3 }}>
       {dice.map((t, i) => <DiceFace key={i} type={t} size={12} />)}
     </div>
   )
@@ -126,7 +126,7 @@ function DicePoolRow({ pool }: { pool: Record<DiceType, number> }) {
 function ForceDiceRow({ count }: { count: number }) {
   if (count <= 0) return null
   return (
-    <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap', marginTop: 3 }}>
+    <div className="flex flex-wrap" style={{ gap: 3, marginTop: 3 }}>
       {Array.from({ length: count }).map((_, i) => <DiceFace key={i} type="force" size={12} />)}
     </div>
   )
@@ -156,7 +156,7 @@ function ResultSymbols({ result }: { result: RollEntry['result'] }) {
   if (result.despair      > 0) items.push({ icon: SYM.D.icon, color: SYM.D.color, n: result.despair })
   if (items.length === 0) return null
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: FONT_BODY, fontSize: FS.sm }}>
+    <div className="flex items-center" style={{ gap: 6, fontFamily: FONT_BODY, fontSize: FS.sm }}>
       {items.map(({ icon, color, n }, idx) => (
         <span key={idx} style={{ color }}>
           <i className={`ffi ffi-${icon}`} />
@@ -201,22 +201,22 @@ function SkillCard({
   const isHidden = roll.hidden && !isOwn
 
   return (
-    <div style={{ borderRadius: RADIUS.md, overflow: 'hidden', border: `1px solid ${ac}30` }}>
+    <div className="overflow-hidden" style={{ borderRadius: RADIUS.md, border: `1px solid ${ac}30` }}>
       {/* Band */}
       <div
         style={{ ...bandStyle(ac), cursor: onCollapse ? 'pointer' : 'default' }}
         onClick={onCollapse}
       >
-        <div style={{ width: 5, height: 5, borderRadius: RADIUS.full, flexShrink: 0, background: ac, boxShadow: `0 0 5px ${ac}80` }} />
-        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: nameColor(roll, isOwn), flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <div className="shrink-0" style={{ width: 5, height: 5, borderRadius: RADIUS.full, background: ac, boxShadow: `0 0 5px ${ac}80` }} />
+        <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap" style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: nameColor(roll, isOwn) }}>
           {roll.character_name}
         </span>
         {roll.roll_label && (
-          <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontStyle: 'italic', color: HUD.textFaint, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>
+          <span className="overflow-hidden text-ellipsis whitespace-nowrap" style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontStyle: 'italic', color: HUD.textFaint, maxWidth: 120 }}>
             {roll.roll_label}
           </span>
         )}
-        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint, whiteSpace: 'nowrap', marginLeft: 4 }}>
+        <span className="whitespace-nowrap" style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint, marginLeft: 4 }}>
           {relativeTime(roll.rolled_at)}
         </span>
       </div>
@@ -227,7 +227,7 @@ function SkillCard({
         ) : (
           <>
             {isGm && roll.hidden && <HiddenBadge forGm={true} />}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3, flexWrap: 'wrap' }}>
+            <div className="flex items-center flex-wrap" style={{ gap: 8, marginBottom: 3 }}>
               <span style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 900, color: outcomeColor(roll.result.netSuccess) }}>
                 {outcomeLabel(roll.result.netSuccess)}
               </span>
@@ -282,20 +282,20 @@ function CombatCard({
     : null
 
   return (
-    <div style={{ borderRadius: RADIUS.md, overflow: 'hidden', border: `1px solid ${ac}30` }}>
+    <div className="overflow-hidden" style={{ borderRadius: RADIUS.md, border: `1px solid ${ac}30` }}>
       {/* Band */}
       <div
         style={{ ...bandStyle(ac), cursor: onCollapse ? 'pointer' : 'default' }}
         onClick={onCollapse}
       >
-        <div style={{ width: 5, height: 5, borderRadius: RADIUS.full, flexShrink: 0, background: ac, boxShadow: `0 0 5px ${ac}80` }} />
-        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: nameColor(roll, isOwn), whiteSpace: 'nowrap' }}>
+        <div className="shrink-0" style={{ width: 5, height: 5, borderRadius: RADIUS.full, background: ac, boxShadow: `0 0 5px ${ac}80` }} />
+        <span className="whitespace-nowrap" style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: nameColor(roll, isOwn) }}>
           {roll.character_name}
         </span>
-        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontStyle: 'italic', color: HUD.textFaint, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginLeft: 4 }}>
+        <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap" style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontStyle: 'italic', color: HUD.textFaint, marginLeft: 4 }}>
           {bandLabel}
         </span>
-        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint, whiteSpace: 'nowrap', marginLeft: 4 }}>
+        <span className="whitespace-nowrap" style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint, marginLeft: 4 }}>
           {relativeTime(roll.rolled_at)}
         </span>
       </div>
@@ -306,7 +306,7 @@ function CombatCard({
         ) : (
           <>
             {isGm && roll.hidden && <HiddenBadge forGm={true} />}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3, flexWrap: 'wrap' }}>
+            <div className="flex items-center flex-wrap" style={{ gap: 8, marginBottom: 3 }}>
               <span style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 900, color: outcomeColor(roll.result.netSuccess) }}>
                 {outcomeLabel(roll.result.netSuccess)}
               </span>
@@ -319,8 +319,8 @@ function CombatCard({
             )}
             {meta?.critEligible && (
               <div style={{
-                display: 'inline-flex', alignItems: 'center', gap: 4,
-                padding: '2px 6px', borderRadius: RADIUS.sm, marginBottom: 3,
+                display: 'inline-flex', alignItems: 'center', gap: 'var(--space-1)',
+                padding: '2px var(--space-1-5, 0.375rem)', borderRadius: RADIUS.sm, marginBottom: 3,
                 background: 'var(--hud-accent-10)', border: '1px solid var(--hud-accent-35)',
                 fontFamily: FONT_BODY, fontSize: FS.overline,
                 color: HUD.gold, fontWeight: 700, letterSpacing: '0.05em',
@@ -355,20 +355,20 @@ function ForceCard({
   const forceCount = roll.pool?.force ?? 0
 
   return (
-    <div style={{ borderRadius: RADIUS.md, overflow: 'hidden', border: `1px solid ${FORCE_BLUE}30` }}>
+    <div className="overflow-hidden" style={{ borderRadius: RADIUS.md, border: `1px solid ${FORCE_BLUE}30` }}>
       {/* Band — force-blue tint */}
       <div
         style={{ ...bandStyle(FORCE_BLUE), cursor: onCollapse ? 'pointer' : 'default' }}
         onClick={onCollapse}
       >
-        <div style={{ width: 5, height: 5, borderRadius: RADIUS.full, flexShrink: 0, background: FORCE_BLUE, boxShadow: `0 0 5px ${FORCE_BLUE}80` }} />
-        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: FORCE_BLUE, whiteSpace: 'nowrap' }}>
+        <div className="shrink-0" style={{ width: 5, height: 5, borderRadius: RADIUS.full, background: FORCE_BLUE, boxShadow: `0 0 5px ${FORCE_BLUE}80` }} />
+        <span className="whitespace-nowrap" style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: FORCE_BLUE }}>
           {roll.character_name}
         </span>
-        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontStyle: 'italic', color: HUD.textFaint, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginLeft: 4 }}>
+        <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap" style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontStyle: 'italic', color: HUD.textFaint, marginLeft: 4 }}>
           ✦ {powerName} · Force Power
         </span>
-        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint, whiteSpace: 'nowrap', marginLeft: 4 }}>
+        <span className="whitespace-nowrap" style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint, marginLeft: 4 }}>
           {relativeTime(roll.rolled_at)}
         </span>
       </div>
@@ -379,15 +379,15 @@ function ForceCard({
         ) : (
           <>
             {isGm && roll.hidden && <HiddenBadge forGm={true} />}
-            <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 900, color: FORCE_BLUE, marginBottom: 4 }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 900, color: FORCE_BLUE, marginBottom: 'var(--space-1)' }}>
               ACTIVATED
             </div>
             {(light > 0 || dark > 0) && (
-              <div style={{ marginBottom: 4 }}>
+              <div style={{ marginBottom: 'var(--space-1)' }}>
                 <ForcePips light={light} dark={dark} />
               </div>
             )}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', fontFamily: FONT_BODY, fontSize: FS.caption, marginBottom: 3 }}>
+            <div className="flex items-center flex-wrap" style={{ gap: 6, fontFamily: FONT_BODY, fontSize: FS.caption, marginBottom: 3 }}>
               {light > 0 && <span style={{ color: FORCE_BLUE }}>{light} Light FP</span>}
               {dark > 0 && (
                 <>
@@ -425,11 +425,11 @@ function InitiativeRow({ group }: { group: { rolls: RollEntry[] } }) {
     ? group.rolls[0].character_name
     : `${group.rolls.length} participants`
   return (
-    <div style={{ padding: '3px 4px', display: 'flex', alignItems: 'center', gap: 6 }}>
-      <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontStyle: 'italic', color: HUD.textFaint, flex: 1 }}>
+    <div className="flex items-center" style={{ padding: '3px var(--space-1)', gap: 6 }}>
+      <span className="flex-1" style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontStyle: 'italic', color: HUD.textFaint }}>
         ⚙ Initiative Rolled · {label}
       </span>
-      <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint, whiteSpace: 'nowrap' }}>
+      <span className="whitespace-nowrap" style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint }}>
         {relativeTime(latest.rolled_at)}
       </span>
     </div>
@@ -451,7 +451,7 @@ function SystemRow({ roll }: { roll: RollEntry }) {
     const itemPart   = splitIdx >= 0 ? label.slice(0, splitIdx) : label
     const recipients = splitIdx >= 0 ? label.slice(splitIdx + ' awarded to '.length) : ''
     return (
-      <div style={{ padding: '3px 4px', fontFamily: FONT_BODY, fontSize: FS.overline }}>
+      <div style={{ padding: '3px var(--space-1)', fontFamily: FONT_BODY, fontSize: FS.overline }}>
         <span>🎁 </span>
         <span style={{ color: HUD.gold, fontWeight: 700 }}>{itemPart}</span>
         {recipients && (
@@ -465,14 +465,15 @@ function SystemRow({ roll }: { roll: RollEntry }) {
   }
 
   return (
-    <div style={{ padding: '3px 4px', fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint }}>
+    <div style={{ padding: '3px var(--space-1)', fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint }}>
       <span>⚙ </span>
       {isLong ? (
         <>
           <span>{expanded ? label : `${label.slice(0, SYSTEM_LONG_THRESHOLD)}…`}</span>
           <button
             onClick={() => setExpanded(v => !v)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: HUD.textFaint, fontFamily: FONT_BODY, fontSize: FS.overline, marginLeft: 4, padding: 0 }}
+            className="cursor-pointer"
+            style={{ background: 'none', border: 'none', color: HUD.textFaint, fontFamily: FONT_BODY, fontSize: FS.overline, marginLeft: 4, padding: 0 }}
           >
             {expanded ? '‹' : '›'}
           </button>
@@ -512,25 +513,26 @@ function CollapsedRow({
   return (
     <button
       onClick={onClick}
+      className="flex items-center w-full cursor-pointer"
       style={{
-        display: 'flex', alignItems: 'center', gap: 5,
-        padding: '3px 7px', width: '100%', textAlign: 'left',
+        gap: 5,
+        padding: '3px 7px', textAlign: 'left',
         background: HUD.panel, border: `1px solid ${HUD.border}`,
-        borderRadius: RADIUS.sm, cursor: 'pointer',
+        borderRadius: RADIUS.sm,
         fontFamily: FONT_BODY,
       }}
     >
-      <div style={{ width: 4, height: 4, borderRadius: RADIUS.full, flexShrink: 0, background: ac }} />
-      <span style={{ fontSize: FS.overline, color: HUD.text, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      <div className="shrink-0" style={{ width: 4, height: 4, borderRadius: RADIUS.full, background: ac }} />
+      <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap" style={{ fontSize: FS.overline, color: HUD.text }}>
         {roll.character_name}
       </span>
-      <span style={{ fontSize: FS.overline, color: HUD.textDim, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 80 }}>
+      <span className="overflow-hidden text-ellipsis whitespace-nowrap" style={{ fontSize: FS.overline, color: HUD.textDim, maxWidth: 80 }}>
         {typeLabel}
       </span>
       <span style={{ fontSize: FS.overline, fontWeight: 700, color: abbrColor, minWidth: 28, textAlign: 'right' }}>
         {abbr}
       </span>
-      <span style={{ fontSize: FS.overline, color: HUD.textFaint, whiteSpace: 'nowrap' }}>
+      <span className="whitespace-nowrap" style={{ fontSize: FS.overline, color: HUD.textFaint }}>
         {relativeTime(roll.rolled_at)}
       </span>
     </button>
@@ -562,7 +564,7 @@ export function RollFeedPanel({
 
   if (rolls.length === 0) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 48, fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint }}>
+      <div className="flex items-center justify-center" style={{ padding: 'var(--space-12)', fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint }}>
         No rolls yet this session.
       </div>
     )
@@ -607,7 +609,7 @@ export function RollFeedPanel({
           <div key="history-label" style={{
             fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
             letterSpacing: '0.12em', textTransform: 'uppercase',
-            color: HUD.textFaint, padding: '4px 2px 2px',
+            color: HUD.textFaint, padding: 'var(--space-1) 2px 2px',
           }}>
             Earlier this session
           </div>
@@ -640,7 +642,7 @@ export function RollFeedPanel({
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+    <div className="flex flex-col" style={{ gap: 5 }}>
       {nodes}
     </div>
   )

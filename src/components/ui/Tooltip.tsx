@@ -2,12 +2,10 @@
 
 import React, { useState, useRef, useCallback, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_BODY, FS, SP, RADIUS, Z } from '@/lib/tokens'
 
-const FONT_CINZEL   = 'var(--font-body)'
-const FONT_RAJDHANI = 'var(--font-body)'
-const BG            = 'var(--hud-surface-hi)'
-const BORDER        = 'var(--hud-border-hi)'
+const BG     = 'var(--hud-surface-hi)'
+const BORDER = 'var(--hud-border-hi)'
 
 interface TooltipProps {
   content:    React.ReactNode
@@ -20,7 +18,7 @@ interface TooltipProps {
 interface Pos { top: number; left: number; actualPlacement: 'top' | 'bottom' | 'right' | 'left' }
 
 function CornerBrackets() {
-  const s: React.CSSProperties = { position: 'absolute', width: 6, height: 6 }
+  const s: React.CSSProperties = { position: 'absolute', width: '0.375rem', height: '0.375rem' }
   return (
     <>
       <div style={{ ...s, top: 0, left: 0, borderTop: `1px solid ${HUD.gold}`, borderLeft: `1px solid ${HUD.gold}` }} />
@@ -119,12 +117,12 @@ export function Tooltip({
   const arrowStyle = (p: Pos): React.CSSProperties => {
     const base: React.CSSProperties = {
       position: 'absolute', width: 0, height: 0,
-      border: '6px solid transparent',
+      border: '0.375rem solid transparent',
     }
-    if (p.actualPlacement === 'top')    return { ...base, bottom: -12, left: '50%', transform: 'translateX(-50%)', borderTopColor: BORDER }
-    if (p.actualPlacement === 'bottom') return { ...base, top: -12, left: '50%', transform: 'translateX(-50%)', borderBottomColor: BORDER }
-    if (p.actualPlacement === 'right')  return { ...base, left: -12, top: '50%', transform: 'translateY(-50%)', borderRightColor: BORDER }
-    return { ...base, right: -12, top: '50%', transform: 'translateY(-50%)', borderLeftColor: BORDER }
+    if (p.actualPlacement === 'top')    return { ...base, bottom: '-0.75rem', left: '50%', transform: 'translateX(-50%)', borderTopColor: BORDER }
+    if (p.actualPlacement === 'bottom') return { ...base, top: '-0.75rem', left: '50%', transform: 'translateX(-50%)', borderBottomColor: BORDER }
+    if (p.actualPlacement === 'right')  return { ...base, left: '-0.75rem', top: '50%', transform: 'translateY(-50%)', borderRightColor: BORDER }
+    return { ...base, right: '-0.75rem', top: '50%', transform: 'translateY(-50%)', borderLeftColor: BORDER }
   }
 
   return (
@@ -138,13 +136,13 @@ export function Tooltip({
             top:                  pos.top,
             left:                 pos.left,
             transform:            getTransform(pos),
-            zIndex:               8000,
+            zIndex:               Z.tooltip,
             maxWidth,
             background:           BG,
             border:               `1px solid ${BORDER}`,
-            borderRadius:         8,
+            borderRadius:         RADIUS.lg,
             boxShadow:            `0 8px 32px rgba(0,0,0,0.2), 0 0 0 1px var(--hud-border)`,
-            padding:              '12px 14px',
+            padding:              `${SP[3]} 0.875rem`,
             pointerEvents:        'none',
             animation:            'tooltipIn 0.15s ease forwards',
           }}
@@ -165,9 +163,9 @@ export function Tooltip({
 export function TipLabel({ children }: { children: React.ReactNode }) {
   return (
     <div style={{
-      fontFamily: FONT_CINZEL, fontSize: 9, fontWeight: 700,
+      fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
       letterSpacing: '0.12em', textTransform: 'uppercase',
-      color: HUD.gold, marginBottom: 4,
+      color: HUD.gold, marginBottom: SP[1],
     }}>
       {children}
     </div>
@@ -177,7 +175,7 @@ export function TipLabel({ children }: { children: React.ReactNode }) {
 export function TipBody({ children }: { children: React.ReactNode }) {
   return (
     <div style={{
-      fontFamily: FONT_RAJDHANI, fontSize: 12,
+      fontFamily: FONT_BODY, fontSize: FS.sm,
       color: 'var(--hud-text)', lineHeight: 1.55,
     }}>
       {children}
@@ -186,5 +184,5 @@ export function TipBody({ children }: { children: React.ReactNode }) {
 }
 
 export function TipDivider() {
-  return <div style={{ height: 1, background: 'var(--hud-border)', margin: '8px 0' }} />
+  return <div style={{ height: '1px', background: 'var(--hud-border)', margin: `${SP[2]} 0` }} />
 }

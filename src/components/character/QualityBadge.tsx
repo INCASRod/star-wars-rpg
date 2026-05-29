@@ -2,6 +2,7 @@
 
 import { Tooltip, TipLabel, TipBody } from '@/components/ui/Tooltip'
 import { RichText } from '@/components/ui/RichText'
+import { FONT_BODY, RADIUS } from '@/lib/tokens'
 import type { RefWeaponQuality } from '@/lib/types'
 
 interface QualityBadgeProps {
@@ -19,26 +20,26 @@ export function QualityBadge({ quality, refQualityMap, variant = 'desktop' }: Qu
 
   const chipStyle = variant === 'desktop'
     ? {
-        background:  'var(--hud-surface-mid)',
-        border:      '1px solid var(--hud-border)',
-        borderRadius: 10,
-        padding:     '1px 7px',
-        cursor:      description ? 'help' : 'default',
-        fontFamily:  "var(--font-rajdhani), 'Rajdhani', sans-serif",
-        fontSize:    'clamp(0.55rem, 0.9vw, 0.65rem)',
-        color:       'var(--hud-gold)',
-        whiteSpace:  'nowrap' as const,
+        background:   'var(--hud-surface-mid)',
+        border:       '1px solid var(--hud-border)',
+        borderRadius: RADIUS.xl,
+        padding:      '1px 7px',
+        cursor:       description ? 'help' : 'default',
+        fontFamily:   FONT_BODY,
+        fontSize:     'clamp(0.55rem, 0.9vw, 0.65rem)',
+        color:        'var(--hud-gold)',
+        whiteSpace:   'nowrap' as const,
       }
     : {
-        fontFamily:  "'Courier New', monospace",
-        fontSize:    'clamp(0.55rem, 2vw, 0.65rem)',
-        color:       '#70C8E8',
-        background:  'rgba(112,200,232,0.08)',
-        border:      '1px solid rgba(112,200,232,0.2)',
-        borderRadius: 4,
-        padding:     '1px 6px',
-        cursor:      description ? 'help' : 'default',
-        whiteSpace:  'nowrap' as const,
+        fontFamily:   FONT_BODY,
+        fontSize:     'clamp(0.55rem, 2vw, 0.65rem)',
+        color:        'var(--hud-accent)',
+        background:   'var(--hud-accent-10)',
+        border:       '1px solid var(--hud-accent-20)',
+        borderRadius: RADIUS.md,
+        padding:      '1px 6px',
+        cursor:       description ? 'help' : 'default',
+        whiteSpace:   'nowrap' as const,
       }
 
   const chip = <span style={chipStyle}>{displayName}</span>

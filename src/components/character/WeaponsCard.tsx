@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { HudCard } from '../ui/HudCard'
@@ -9,7 +9,7 @@ import {
   getWeaponHandedness, canDualWield, validateLoadout,
   type WeaponForLoadout,
 } from '@/lib/weaponHandedness'
-import { HUD } from '@/lib/tokens'
+import { HUD, FS, FONT_DISPLAY, FONT_BODY } from '@/lib/tokens'
 import { Modal } from '@/components/ui/Modal'
 
 export interface WeaponDisplay {
@@ -80,18 +80,12 @@ interface BlockDialogState {
   currentEquippedNames: string[]
 }
 
-// ── Tokens (HudCard uses CSS vars, these are for the new modal) ───────────────
-const AMBER     = '#FF9800'
-const AMBER_BG  = 'rgba(255,152,0,0.06)'
-const AMBER_BD  = 'rgba(255,152,0,0.45)'
-const GOLD_DIM  = 'var(--hud-text-faint)'
-const GOLD_BD   = 'var(--hud-border)'
-const TEXT      = 'var(--hud-text)'
-const TEXT_DIM  = 'var(--hud-text-dim)'
-const GREEN     = '#4CAF50'
-const FONT_C    = "var(--font-rajdhani), 'Cinzel', serif"
-const FONT_R    = "var(--font-rajdhani), 'Rajdhani', sans-serif"
-const FONT_M    = "'Share Tech Mono', 'Courier New', monospace"
+// ── Pre-approved hex exceptions: rarity/theme colours used in badge props ─────
+// AMBER (#FF9800) and GREEN (#4CAF50) are theme swatch data — do not replace.
+const AMBER    = '#FF9800'
+const AMBER_BG = 'rgba(255,152,0,0.06)'
+const AMBER_BD = 'rgba(255,152,0,0.45)'
+const GREEN    = '#4CAF50'
 
 export function WeaponsCard({
   weapons, animClass = 'al d5', onToggleEquipped, isGmMode, onRemoveWeapon,
@@ -147,7 +141,7 @@ export function WeaponsCard({
             <div style={{
               display: 'flex', alignItems: 'center', gap: 'var(--sp-sm)',
               padding: '0.5rem 0',
-              borderBottom: i < weapons.length - 1 ? '1px solid var(--bs-bdr-mid)' : 'none',
+              borderBottom: i < weapons.length - 1 ? `1px solid ${HUD.borderHi}` : 'none',
             }}>
               {/* Equip toggle */}
               <button
@@ -167,33 +161,34 @@ export function WeaponsCard({
                     categories={wpn.categories}
                     size="sm"
                     style={{
-                      background: 'var(--bs-surface)', border: '1px solid var(--bs-bdr-mid)',
+                      background: 'var(--hud-surface-lo)', border: `1px solid ${HUD.borderHi}`,
                       opacity: wpn.equipped ? 1 : 0.45,
                       transition: '.2s',
                     }}
                   />
                 ) : (
                   <div style={{
-                    width: '2rem', height: '2rem', background: 'var(--bs-surface)',
-                    border: '1px solid var(--bs-bdr-mid)',
+                    width: '2rem', height: '2rem', background: 'var(--hud-surface-lo)',
+                    border: `1px solid ${HUD.borderHi}`,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 'var(--font-md)', flexShrink: 0,
+                    fontSize: FS.body, flexShrink: 0,
                     opacity: wpn.equipped ? 1 : 0.45,
                   }}>
                     {wpn.icon}
                   </div>
                 )}
+                {/* Dynamic: background/boxShadow/border change at runtime based on equipped state */}
                 <div style={{
                   position: 'absolute', bottom: -2, right: -2,
                   width: '0.45rem', height: '0.45rem', borderRadius: '50%',
                   background: wpn.equipped ? 'var(--green)' : 'transparent',
                   boxShadow: wpn.equipped ? '0 0 0.3rem var(--green)' : 'none',
-                  border: wpn.equipped ? 'none' : '1.5px solid var(--bs-txt3)',
+                  border: wpn.equipped ? 'none' : `1.5px solid ${HUD.textFaint}`,
                 }} />
               </button>
 
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--bs-txt)' }}>{wpn.name}</div>
+                <div style={{ fontSize: FS.label, fontWeight: 600, color: HUD.text }}>{wpn.name}</div>
                 <div style={{
                   marginTop: '0.25rem', display: 'flex', flexWrap: 'wrap', gap: '0.25rem',
                 }}>
@@ -214,12 +209,12 @@ export function WeaponsCard({
 
               <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-lg)', fontWeight: 800, color: 'var(--red)' }}>{wpn.damage}</div>
-                  <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.06rem', color: 'var(--bs-txt3)' }}>DAM</div>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: FS.h4, fontWeight: 800, color: 'var(--red)' }}>{wpn.damage}</div>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 600, letterSpacing: '0.06rem', color: HUD.textFaint }}>DAM</div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-lg)', fontWeight: 800, color: 'var(--amber)' }}>{wpn.crit}</div>
-                  <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.06rem', color: 'var(--bs-txt3)' }}>CRIT</div>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: FS.h4, fontWeight: 800, color: 'var(--amber)' }}>{wpn.crit}</div>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 600, letterSpacing: '0.06rem', color: HUD.textFaint }}>CRIT</div>
                 </div>
                 {isGmMode && onRemoveWeapon && wpn.id && (
                   <button
@@ -241,9 +236,9 @@ export function WeaponsCard({
                 borderBottom: i < weapons.length - 1 ? 'none' : 'none',
               }}>
                 <span style={{
-                  fontFamily: FONT_R,
+                  fontFamily: FONT_BODY,
                   fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)',
-                  color: GOLD_DIM,
+                  color: HUD.textFaint,
                 }}>
                   Handedness:
                 </span>
@@ -255,11 +250,11 @@ export function WeaponsCard({
                   }
                   onChange={e => onHandednessOverride(wpn.id!, e.target.value as 'auto' | 'one' | 'two')}
                   style={{
-                    fontFamily: FONT_R,
+                    fontFamily: FONT_BODY,
                     fontSize: 'clamp(0.6rem, 0.9vw, 0.7rem)',
                     color: HUD.gold,
                     background: 'var(--hud-surface-lo)',
-                    border: `1px solid ${GOLD_BD}`,
+                    border: `1px solid ${HUD.border}`,
                     borderRadius: 4,
                     padding: '1px 4px',
                     cursor: 'pointer',
@@ -277,10 +272,10 @@ export function WeaponsCard({
 
         {/* ── Loadout status indicator ── */}
         {equippedWeapons.length >= 2 && (
-          <div style={{ marginTop: '0.5rem', paddingTop: '0.4rem', borderTop: '1px solid var(--bs-bdr-mid)' }}>
+          <div style={{ marginTop: '0.5rem', paddingTop: '0.4rem', borderTop: `1px solid ${HUD.borderHi}` }}>
             {loadoutValidation.valid && isDualWield ? (
               <div style={{
-                fontFamily: FONT_M,
+                fontFamily: FONT_BODY,
                 fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)',
                 color: GREEN,
                 display: 'flex', alignItems: 'center', gap: 6,
@@ -290,7 +285,7 @@ export function WeaponsCard({
               </div>
             ) : !loadoutValidation.valid ? (
               <div style={{
-                fontFamily: FONT_M,
+                fontFamily: FONT_BODY,
                 fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)',
                 color: AMBER,
                 display: 'flex', alignItems: 'center', gap: 6,
@@ -315,7 +310,7 @@ export function WeaponsCard({
         >
           <div style={{ padding: '20px 24px' }}>
             <div style={{
-              fontFamily: FONT_C,
+              fontFamily: FONT_DISPLAY,
               fontSize: 'clamp(0.85rem, 1.3vw, 1rem)',
               fontWeight: 700,
               color: AMBER,
@@ -327,9 +322,9 @@ export function WeaponsCard({
             </div>
 
             <div style={{
-              fontFamily: FONT_R,
+              fontFamily: FONT_BODY,
               fontSize: 'clamp(0.8rem, 1.2vw, 0.92rem)',
-              color: TEXT,
+              color: HUD.text,
               lineHeight: 1.5,
               marginBottom: 8,
             }}>
@@ -338,9 +333,9 @@ export function WeaponsCard({
 
             {blockDialog.currentEquippedNames.length > 0 && (
               <div style={{
-                fontFamily: FONT_R,
+                fontFamily: FONT_BODY,
                 fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)',
-                color: TEXT_DIM,
+                color: HUD.textDim,
                 marginBottom: 16,
               }}>
                 Currently equipped: {blockDialog.currentEquippedNames.join(', ')}
@@ -355,11 +350,11 @@ export function WeaponsCard({
                   style={{
                     flex: 1, padding: '9px 0',
                     background: 'transparent',
-                    border: '1px solid var(--hud-border)',
+                    border: `1px solid ${HUD.border}`,
                     borderRadius: 8, cursor: 'pointer',
-                    fontFamily: FONT_C,
+                    fontFamily: FONT_DISPLAY,
                     fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)',
-                    color: TEXT_DIM,
+                    color: HUD.textDim,
                   }}
                 >
                   Cancel
@@ -371,10 +366,10 @@ export function WeaponsCard({
                   }}
                   style={{
                     flex: 2, padding: '9px 0',
-                    background: 'rgba(255,152,0,0.08)',
+                    background: AMBER_BG,
                     border: `1px solid rgba(255,152,0,0.3)`,
                     borderRadius: 8, cursor: 'pointer',
-                    fontFamily: FONT_C,
+                    fontFamily: FONT_DISPLAY,
                     fontSize: 'clamp(0.72rem, 1.1vw, 0.82rem)',
                     color: AMBER,
                   }}
@@ -387,10 +382,10 @@ export function WeaponsCard({
                 onClick={() => setBlockDialog(null)}
                 style={{
                   width: '100%', padding: '9px 0',
-                  background: 'rgba(255,152,0,0.08)',
+                  background: AMBER_BG,
                   border: `1px solid ${AMBER_BD}`,
                   borderRadius: 8, cursor: 'pointer',
-                  fontFamily: FONT_C,
+                  fontFamily: FONT_DISPLAY,
                   fontSize: 'clamp(0.8rem, 1.2vw, 0.92rem)',
                   fontWeight: 700,
                   color: AMBER,

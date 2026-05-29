@@ -1,11 +1,13 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { C, panelBase } from './design-tokens'
-import { FS, RADIUS, FONT_BODY, FONT_DISPLAY } from '@/lib/tokens'
+import { panelBase } from './design-tokens'
+import { HUD, COLOR, FS, SP, RADIUS, EASE, FONT_BODY, FONT_DISPLAY } from '@/lib/tokens'
 
-const HUD_RED  = '#E05050'
-const HUD_BLUE = '#5AAAE0'
+// HUD_RED: state-failure red (#E05050) — no HUD token; using var(--state-failure)
+const HUD_RED  = 'var(--state-failure)'
+// HUD_BLUE: project blue (#5AAAE0) — using COLOR.blue = var(--blue)
+const HUD_BLUE = COLOR.blue
 
 const chipBase: React.CSSProperties = {
   fontFamily: FONT_BODY,
@@ -13,7 +15,7 @@ const chipBase: React.CSSProperties = {
   fontWeight: 700,
   letterSpacing: '0.1em',
   textTransform: 'uppercase' as const,
-  padding: '2px 8px',
+  padding: `2px ${SP[2]}`,
   borderRadius: RADIUS.sm,
   display: 'inline-block',
 }
@@ -57,10 +59,10 @@ function CornerBrackets() {
   const s = { position: 'absolute' as const, width: 8, height: 8 }
   return (
     <>
-      <div style={{ ...s, top: 0, left: 0, borderTop: `1.5px solid ${C.gold}`, borderLeft: `1.5px solid ${C.gold}` }} />
-      <div style={{ ...s, top: 0, right: 0, borderTop: `1.5px solid ${C.gold}`, borderRight: `1.5px solid ${C.gold}` }} />
-      <div style={{ ...s, bottom: 0, left: 0, borderBottom: `1.5px solid ${C.gold}`, borderLeft: `1.5px solid ${C.gold}` }} />
-      <div style={{ ...s, bottom: 0, right: 0, borderBottom: `1.5px solid ${C.gold}`, borderRight: `1.5px solid ${C.gold}` }} />
+      <div style={{ ...s, top: 0, left: 0, borderTop: `1.5px solid ${HUD.gold}`, borderLeft: `1.5px solid ${HUD.gold}` }} />
+      <div style={{ ...s, top: 0, right: 0, borderTop: `1.5px solid ${HUD.gold}`, borderRight: `1.5px solid ${HUD.gold}` }} />
+      <div style={{ ...s, bottom: 0, left: 0, borderBottom: `1.5px solid ${HUD.gold}`, borderLeft: `1.5px solid ${HUD.gold}` }} />
+      <div style={{ ...s, bottom: 0, right: 0, borderBottom: `1.5px solid ${HUD.gold}`, borderRight: `1.5px solid ${HUD.gold}` }} />
     </>
   )
 }
@@ -98,7 +100,7 @@ export function CharacterAvatar({
   }
 
   return (
-    <div style={{ ...panelBase, padding: 12 }}>
+    <div style={{ ...panelBase, padding: SP[3] }}>
       <CornerBrackets />
 
       <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
@@ -108,12 +110,12 @@ export function CharacterAvatar({
           style={{
             width: 72,
             height: 96,
-            border: `1.5px solid rgba(224,58,30,${hovered && canEdit ? '0.65' : '0.4'})`,
+            border: `1.5px solid ${hovered && canEdit ? 'var(--hud-accent-60)' : 'var(--hud-accent-border)'}`,
             borderRadius: RADIUS.md,
             overflow: 'hidden',
             position: 'relative',
             cursor: canEdit ? 'pointer' : 'default',
-            transition: 'border-color .2s',
+            transition: `border-color ${EASE.default}`,
             flexShrink: 0,
           }}
           onMouseEnter={() => canEdit && setHovered(true)}
@@ -125,16 +127,16 @@ export function CharacterAvatar({
             <img
               src={avatarUrl}
               alt={characterName}
-              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'filter .2s', filter: hovered ? 'brightness(0.55)' : 'none' }}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: `filter ${EASE.default}`, filter: hovered ? 'brightness(0.55)' : 'none' }}
             />
           ) : (
             <div style={{
               width: '100%', height: '100%',
-              background: hovered ? 'rgba(224,58,30,0.10)' : 'rgba(224,58,30,0.06)',
+              background: hovered ? 'var(--hud-accent-10)' : 'rgba(224,58,30,0.06)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontFamily: FONT_DISPLAY, fontSize: FS.h4, fontWeight: 700,
-              color: C.gold, letterSpacing: '0.1em',
-              transition: 'background .2s',
+              color: HUD.gold, letterSpacing: '0.1em',
+              transition: `background ${EASE.default}`,
             }}>
               {uploading ? '…' : getInitials(characterName)}
             </div>
@@ -159,13 +161,13 @@ export function CharacterAvatar({
                 onClick={e => { e.stopPropagation(); fileRef.current?.click() }}
                 className="hov-gold-bg"
                 style={{
-                  background: 'rgba(224,58,30,0.22)',
-                  border: '1px solid rgba(224,58,30,0.7)',
+                  background: 'var(--hud-accent-20)',
+                  border: `1px solid var(--hud-accent-60)`,
                   borderRadius: RADIUS.sm, padding: '4px 0',
                   fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
                   letterSpacing: '0.1em', textTransform: 'uppercase',
-                  color: C.gold, cursor: 'pointer', width: '100%',
-                  transition: '.15s',
+                  color: HUD.gold, cursor: 'pointer', width: '100%',
+                  transition: EASE.default,
                 }}
               >
                 ↑ {avatarUrl ? 'Replace' : 'Upload'}
@@ -182,7 +184,7 @@ export function CharacterAvatar({
                     fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
                     letterSpacing: '0.1em', textTransform: 'uppercase',
                     color: HUD_RED, cursor: 'pointer', width: '100%',
-                    transition: '.15s',
+                    transition: EASE.default,
                   }}
                 >
                   ✕ Remove
@@ -190,7 +192,7 @@ export function CharacterAvatar({
               )}
 
               {confirming && (
-                <div style={{ display: 'flex', gap: 4, width: '100%' }}>
+                <div style={{ display: 'flex', gap: SP[1], width: '100%' }}>
                   <button
                     onClick={e => { e.stopPropagation(); handleDelete() }}
                     style={{
@@ -208,11 +210,11 @@ export function CharacterAvatar({
                     onClick={e => { e.stopPropagation(); setConfirming(false) }}
                     style={{
                       flex: 1, background: 'var(--hud-surface-mid)',
-                      border: `1px solid ${C.border}`,
+                      border: `1px solid ${HUD.border}`,
                       borderRadius: RADIUS.sm, padding: '4px 0',
                       fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
                       letterSpacing: '0.08em', textTransform: 'uppercase',
-                      color: C.textDim, cursor: 'pointer',
+                      color: HUD.textDim, cursor: 'pointer',
                     }}
                   >
                     Cancel
@@ -231,7 +233,7 @@ export function CharacterAvatar({
             }}>
               <div style={{
                 fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
-                letterSpacing: '0.15em', textTransform: 'uppercase', color: C.gold,
+                letterSpacing: '0.15em', textTransform: 'uppercase', color: HUD.gold,
               }}>
                 Uploading…
               </div>
@@ -243,23 +245,23 @@ export function CharacterAvatar({
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
             fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 600,
-            color: C.gold, letterSpacing: '0.04em', lineHeight: 1.2,
+            color: HUD.gold, letterSpacing: '0.04em', lineHeight: 1.2,
           }}>
             {characterName}
           </div>
           <div style={{
-            fontFamily: FONT_BODY, fontSize: FS.overline, color: C.textDim,
+            fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textDim,
             marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.08em',
           }}>
             {career}{spec ? ` · ${spec}` : ''}{gender ? ` · ${gender}` : ''}
           </div>
           {canEdit && (
-            <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: C.textFaint, marginTop: 2, letterSpacing: '0.06em' }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint, marginTop: 2, letterSpacing: '0.06em' }}>
               hover portrait to edit
             </div>
           )}
           {showChips && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: SP[1], marginTop: SP[1] }}>
               {obligationChip && <span style={redChip}>{obligationChip}</span>}
               {conflictTotal !== undefined && conflictTotal > 0 && (
                 <span style={redChip}>Conflict · {conflictTotal}</span>

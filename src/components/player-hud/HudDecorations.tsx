@@ -1,8 +1,8 @@
 'use client'
 
-import { C } from './design-tokens'
+import { HUD, Z } from '@/lib/tokens'
 
-export function CornerBrackets({ color = C.gold, size = 6 }: { color?: string; size?: number }) {
+export function CornerBrackets({ color = HUD.gold, size = 6 }: { color?: string; size?: number }) {
   const s: React.CSSProperties = { position: 'absolute', width: size, height: size }
   return (
     <>
@@ -15,18 +15,18 @@ export function CornerBrackets({ color = C.gold, size = 6 }: { color?: string; s
 }
 
 const BG_SCANLINE: React.CSSProperties = {
-  position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',
+  position: 'absolute', inset: 0, zIndex: Z.base, pointerEvents: 'none',
   backgroundImage: 'repeating-linear-gradient(0deg, transparent 2px, rgba(0,0,0,0.025) 4px)',
 }
 const BG_HEX_GRID_BASE: React.CSSProperties = {
-  position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none', opacity: 0.03,
+  position: 'absolute', inset: 0, zIndex: Z.base, pointerEvents: 'none', opacity: 0.03,
 }
 const BG_GLOW_TL: React.CSSProperties = {
-  position: 'absolute', top: 0, left: 0, width: '40%', height: '40%', zIndex: 0, pointerEvents: 'none',
+  position: 'absolute', top: 0, left: 0, width: '40%', height: '40%', zIndex: Z.base, pointerEvents: 'none',
   background: 'radial-gradient(ellipse at 0% 0%, rgba(78,200,122,0.04) 0%, transparent 70%)',
 }
 const BG_GLOW_BR: React.CSSProperties = {
-  position: 'absolute', bottom: 0, right: 0, width: '40%', height: '40%', zIndex: 0, pointerEvents: 'none',
+  position: 'absolute', bottom: 0, right: 0, width: '40%', height: '40%', zIndex: Z.base, pointerEvents: 'none',
   background: 'radial-gradient(ellipse at 100% 100%, rgba(90,40,24,0.05) 0%, transparent 70%)',
 }
 // CSS vars cannot be resolved inside inline SVG data URIs; stroke colour stays hardcoded.

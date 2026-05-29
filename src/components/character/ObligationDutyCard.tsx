@@ -1,7 +1,8 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { HudCard } from '../ui/HudCard'
+import { HUD, FS, FONT_BODY } from '@/lib/tokens'
 
 interface ObligationDutyCardProps {
   obligation?: { type: string; value: number }
@@ -12,9 +13,9 @@ interface ObligationDutyCardProps {
 }
 
 const gmBtnStyle: React.CSSProperties = {
-  width: 20, height: 20, fontSize: 'var(--text-caption)', fontWeight: 700,
-  background: 'var(--bs-red-glow)', border: '1px solid var(--bs-red-sun)',
-  color: 'var(--bs-red-mid)', cursor: 'pointer', display: 'flex',
+  width: 20, height: 20, fontSize: FS.caption, fontWeight: 700,
+  background: 'var(--hud-accent-10)', border: `1px solid ${HUD.gold}`,
+  color: HUD.gold, cursor: 'pointer', display: 'flex',
   alignItems: 'center', justifyContent: 'center', padding: 0,
   lineHeight: 1, flexShrink: 0,
 }
@@ -29,22 +30,22 @@ function EditableSection({
   return (
     <div style={{ flex: 1 }}>
       <div style={{
-        fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', fontWeight: 600,
-        letterSpacing: '0.12rem', color: 'var(--bs-txt3)', marginBottom: '0.25rem',
+        fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 600,
+        letterSpacing: '0.12rem', color: HUD.textFaint, marginBottom: '0.25rem',
       }}>{label}</div>
       <input
         value={editType}
         onChange={e => setEditType(e.target.value)}
         onBlur={() => onChange('type', editType)}
         style={{
-          fontSize: 'var(--text-body-sm)', padding: '2px 6px', fontWeight: 600,
-          color: 'var(--bs-txt)', background: 'var(--bs-surface)',
-          border: '1px solid var(--bs-bdr-mid)', width: '100%', marginBottom: 4,
+          fontSize: FS.sm, padding: '2px 6px', fontWeight: 600,
+          color: HUD.text, background: 'var(--hud-surface-lo)',
+          border: `1px solid ${HUD.borderHi}`, width: '100%', marginBottom: 4,
         }}
       />
       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
         <button style={gmBtnStyle} onClick={() => onChange('value', Math.max(0, value - 5))}>−</button>
-        <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-md)', fontWeight: 800, color, minWidth: 20, textAlign: 'center' }}>{value}</span>
+        <span style={{ fontFamily: FONT_BODY, fontSize: FS.body, fontWeight: 800, color, minWidth: 20, textAlign: 'center' }}>{value}</span>
         <button style={gmBtnStyle} onClick={() => onChange('value', value + 5)}>+</button>
       </div>
     </div>
@@ -70,18 +71,18 @@ export function ObligationDutyCard({ obligation, duty, isGmMode, onObligationCha
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
               <div style={{
-                fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', fontWeight: 600,
-                letterSpacing: '0.12rem', color: 'var(--bs-txt3)', marginBottom: '0.25rem',
+                fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 600,
+                letterSpacing: '0.12rem', color: HUD.textFaint, marginBottom: '0.25rem',
               }}>OBLIGATION</div>
-              <div style={{ fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--bs-txt)' }}>{obligation.type}</div>
+              <div style={{ fontSize: FS.label, fontWeight: 600, color: HUD.text }}>{obligation.type}</div>
             </div>
             <div style={{
-              fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-md)', fontWeight: 800, color: 'var(--red)',
+              fontFamily: FONT_BODY, fontSize: FS.body, fontWeight: 800, color: 'var(--red)',
             }}>{obligation.value}</div>
           </div>
         ) : null}
         {(obligation || isGmMode) && (duty || isGmMode) && (
-          <div style={{ width: '1px', background: 'var(--bs-bdr-mid)' }} />
+          <div style={{ width: '1px', background: HUD.borderHi }} />
         )}
         {isGmMode && onDutyChange ? (
           <EditableSection
@@ -95,13 +96,13 @@ export function ObligationDutyCard({ obligation, duty, isGmMode, onObligationCha
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
               <div style={{
-                fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', fontWeight: 600,
-                letterSpacing: '0.12rem', color: 'var(--bs-txt3)', marginBottom: '0.25rem',
+                fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 600,
+                letterSpacing: '0.12rem', color: HUD.textFaint, marginBottom: '0.25rem',
               }}>DUTY</div>
-              <div style={{ fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--bs-txt)' }}>{duty.type}</div>
+              <div style={{ fontSize: FS.label, fontWeight: 600, color: HUD.text }}>{duty.type}</div>
             </div>
             <div style={{
-              fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-md)', fontWeight: 800, color: 'var(--blue)',
+              fontFamily: FONT_BODY, fontSize: FS.body, fontWeight: 800, color: 'var(--blue)',
             }}>{duty.value}</div>
           </div>
         ) : null}

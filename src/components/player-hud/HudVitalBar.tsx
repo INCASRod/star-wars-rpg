@@ -1,21 +1,21 @@
 'use client'
 
-import { C, FONT_RAJDHANI, FS_OVERLINE, FS_CAPTION, FS_SM } from './design-tokens'
+import { HUD, FS, SP, RADIUS, EASE, FONT_BODY } from '@/lib/tokens'
 
 export function CompactVital({ label, current, threshold, bonus = 0, color }: { label: string; current: number; threshold: number; bonus?: number; color: string }) {
   const effective = threshold + bonus
   const pct = effective > 0 ? Math.min((current / effective) * 100, 100) : 0
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, width: 100 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: SP[1], width: 100 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, fontWeight: 700, color: C.textDim, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{label}</span>
-        <span style={{ display: 'flex', alignItems: 'baseline', gap: 2 }}>
-          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, color }}>{current}/{threshold}</span>
-          {bonus > 0 && <span style={{ fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: 'clamp(0.65rem, 1vw, 0.75rem)', color: C.gold }}>+{bonus}</span>}
+        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, color: HUD.textDim, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{label}</span>
+        <span style={{ display: 'flex', alignItems: 'baseline', gap: SP[1] }}>
+          <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color }}>{current}/{threshold}</span>
+          {bonus > 0 && <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.gold }}>+{bonus}</span>}
         </span>
       </div>
-      <div style={{ height: 5, background: C.textFaint, borderRadius: 3, overflow: 'hidden' }}>
-        <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: 3, transition: 'width .3s' }} />
+      <div style={{ height: 5, background: HUD.textFaint, borderRadius: RADIUS.md, overflow: 'hidden' }}>
+        <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: RADIUS.md, transition: `width ${EASE.default}` }} />
       </div>
     </div>
   )
@@ -29,35 +29,35 @@ export function VitalBar({ label, current, threshold, bonus = 0, color, onInc, o
   const pct = effective > 0 ? Math.min((current / effective) * 100, 100) : 0
   const overLimit = current >= effective
   return (
-    <div style={{ marginBottom: 10 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-        <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.textDim }}>{label}</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          {onDec && <button onClick={onDec} style={{ background: 'transparent', border: `1px solid ${C.border}`, borderRadius: 3, width: 16, height: 16, cursor: 'pointer', color: C.textDim, fontSize: FS_SM, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>−</button>}
-          <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: overLimit ? '#E05050' : color, fontWeight: 700 }}>{current}/{threshold}</span>
-          {bonus > 0 && <span style={{ fontFamily: "'Share Tech Mono','Courier New',monospace", fontSize: 'clamp(0.65rem, 1vw, 0.75rem)', color: C.gold }}>+{bonus}</span>}
-          {onInc && <button onClick={onInc} style={{ background: 'transparent', border: `1px solid ${C.border}`, borderRadius: 3, width: 16, height: 16, cursor: 'pointer', color: C.textDim, fontSize: FS_SM, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>+</button>}
+    <div style={{ marginBottom: SP[2] }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: SP[1] }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: HUD.textDim }}>{label}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: SP[1] }}>
+          {onDec && <button onClick={onDec} style={{ background: 'transparent', border: `1px solid ${HUD.border}`, borderRadius: RADIUS.md, width: 16, height: 16, cursor: 'pointer', color: HUD.textDim, fontSize: FS.sm, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>−</button>}
+          <span style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: overLimit ? 'var(--state-wounds)' : color, fontWeight: 700 }}>{current}/{threshold}</span>
+          {bonus > 0 && <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.gold }}>+{bonus}</span>}
+          {onInc && <button onClick={onInc} style={{ background: 'transparent', border: `1px solid ${HUD.border}`, borderRadius: RADIUS.md, width: 16, height: 16, cursor: 'pointer', color: HUD.textDim, fontSize: FS.sm, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>+</button>}
         </div>
       </div>
-      <div style={{ height: 6, background: C.textFaint, borderRadius: 3, overflow: 'hidden', marginBottom: 6 }}>
-        <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg, ${color}88, ${color})`, borderRadius: 3, transition: 'width .3s' }} />
+      <div style={{ height: 6, background: HUD.textFaint, borderRadius: RADIUS.md, overflow: 'hidden', marginBottom: SP[1] }}>
+        <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg, ${color}88, ${color})`, borderRadius: RADIUS.md, transition: `width ${EASE.default}` }} />
       </div>
       {/* Pip row — base pips + bonus pips in gold */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: RADIUS.md }}>
         {Array.from({ length: threshold }).map((_, i) => (
           <div key={i} style={{
-            width: 8, height: 8, borderRadius: 2,
+            width: 8, height: 8, borderRadius: RADIUS.sm,
             background: i < current ? color : 'transparent',
-            border: `1px solid ${i < current ? color : C.textFaint}`,
-            transition: '.15s',
+            border: `1px solid ${i < current ? color : HUD.textFaint}`,
+            transition: EASE.default,
           }} />
         ))}
         {bonus > 0 && Array.from({ length: bonus }).map((_, i) => (
           <div key={`bonus-${i}`} style={{
-            width: 8, height: 8, borderRadius: 2,
-            background: (threshold + i) < current ? C.gold : 'transparent',
-            border: `1px solid ${C.gold}60`,
-            transition: '.15s',
+            width: 8, height: 8, borderRadius: RADIUS.sm,
+            background: (threshold + i) < current ? HUD.gold : 'transparent',
+            border: `1px solid var(--hud-gold-40)`,
+            transition: EASE.default,
           }} />
         ))}
       </div>

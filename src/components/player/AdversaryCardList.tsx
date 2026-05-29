@@ -4,29 +4,24 @@ import type { Dispatch, SetStateAction } from 'react'
 import type { AdversaryInstance } from '@/lib/adversaries'
 import type { InitiativeSlot } from '@/lib/combat'
 import { resolveWeapon, type WeaponRef } from '@/lib/resolve-weapon'
-import { FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4 } from '@/components/player-hud/design-tokens'
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_BODY, FS, RADIUS, EASE, COLOR, CHAR_COLOR } from '@/lib/tokens'
 
-// ── Design tokens (mirrored from CombatTracker) ──
+// ── Design tokens ──
 const PANEL_BG   = 'var(--hud-surface-lo)'
-const RAISED_BG  = 'var(--hud-surface-lo)'
 const BORDER     = 'var(--hud-border)'
 const BORDER_MD  = 'var(--hud-border-hi)'
-const CHAR_BR    = '#e05252'
-const CHAR_AG    = '#52a8e0'
-const CHAR_CUN   = '#e0a852'
-const CHAR_INT   = '#a852e0'
-const CHAR_WIL   = '#52e0a8'
-const CHAR_PR    = '#e05298'
 const TEXT       = 'var(--hud-text)'
 const TEXT_SEC   = 'var(--hud-text-dim)'
 const TEXT_MUTED = 'var(--hud-text-faint)'
-const TEXTGR     = '#72B421'
-const FC         = 'var(--font-body)'
-const FR         = 'var(--font-body)'
-const FM         = 'var(--font-body)'
 
-void RAISED_BG; void TEXT_SEC; void FR
+
+// Characteristic colors — use CHAR_COLOR from tokens
+const CHAR_BR  = CHAR_COLOR.brawn
+const CHAR_AG  = CHAR_COLOR.agility
+const CHAR_CUN = CHAR_COLOR.cunning
+const CHAR_INT = CHAR_COLOR.intellect
+const CHAR_WIL = CHAR_COLOR.willpower
+const CHAR_PR  = CHAR_COLOR.presence
 
 const CHAR_COLORS      = [CHAR_BR, CHAR_AG, CHAR_INT, CHAR_CUN, CHAR_WIL, CHAR_PR]
 const CHAR_KEYS        = ['brawn', 'agility', 'intellect', 'cunning', 'willpower', 'presence'] as const
@@ -43,9 +38,9 @@ function TypeBadge({ type }: { type: string }) {
   const color = colors[type] ?? TEXT_MUTED
   return (
     <span style={{
-      fontFamily: FM, fontSize: FS_LABEL, color,
-      border: `1px solid ${color}50`, borderRadius: 2,
-      padding: '1px 5px', background: `${color}15`,
+      fontFamily: FONT_BODY, fontSize: FS.label, color,
+      border: `1px solid ${color}50`, borderRadius: RADIUS.sm,
+      padding: `1px 0.3125rem`, background: `${color}15`,
     }}>
       {type.toUpperCase()}
     </span>
@@ -70,9 +65,9 @@ export function AdversaryCardList({
   weaponRef,
 }: Props) {
   return (
-    <div style={{ flex: 1, overflowY: 'auto', padding: '14px 16px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
-        <div style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${HUD.gold}b3`, flex: 1 }}>
+    <div style={{ flex: 1, overflowY: 'auto', padding: `0.875rem 1rem` }}>
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.625rem' }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${HUD.gold}b3`, flex: 1 }}>
           Adversaries
         </div>
         {revealedAdversaries.length > 0 && (() => {
@@ -88,8 +83,8 @@ export function AdversaryCardList({
               )}
               className="hov-gold"
               style={{
-                height: 28, borderRadius: 5, padding: '0 10px',
-                fontFamily: 'var(--font-body)',
+                height: '1.75rem', borderRadius: RADIUS.md, padding: `0 0.625rem`,
+                fontFamily: FONT_BODY,
                 fontSize: 'clamp(0.6rem, 0.92vw, 0.72rem)',
                 textTransform: 'uppercase',
                 background: 'transparent',
@@ -105,18 +100,18 @@ export function AdversaryCardList({
       </div>
 
       {revealedAdversaries.length === 0 && (
-        <div style={{ fontFamily: FR, fontSize: FS_LABEL, color: TEXT_MUTED, fontStyle: 'italic' }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT_MUTED, fontStyle: 'italic' }}>
           No adversaries revealed yet
         </div>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
         {revealedAdversaries.map(adv => {
           const isActiveTurn = currentSlot?.adversaryInstanceId === adv.instanceId
           const isExpanded   = isActiveTurn || !cardCollapsed[adv.instanceId]
           const advSlot      = initiativeSlots.find(s => s.adversaryInstanceId === adv.instanceId)
           const alignment    = advSlot?.alignment ?? 'enemy'
-          const advColor     = alignment === 'allied_npc' ? '#4CAF50' : CHAR_BR
+          const advColor     = alignment === 'allied_npc' ? COLOR.green : CHAR_BR
 
           // Inline wound display for collapsed header
           const woundsCur = adv.woundsCurrent ?? 0
@@ -131,7 +126,7 @@ export function AdversaryCardList({
               background: PANEL_BG,
               backdropFilter: 'blur(12px)',
               WebkitBackdropFilter: 'blur(12px)',
-              borderRadius: 6,
+              borderRadius: RADIUS.lg,
               position: 'relative',
               borderTop: `2px solid ${advColor}80`,
               borderRight: `1px solid ${isActiveTurn ? 'var(--hud-border-hi)' : BORDER}`,
@@ -139,38 +134,38 @@ export function AdversaryCardList({
               borderLeft: `3px solid ${advColor}`,
               overflow: 'hidden',
               animation: isActiveTurn ? 'activeTurnPulse 2s ease-in-out infinite' : 'none',
-              minHeight: 44,
+              minHeight: '2.75rem',
             }}>
               {/* Collapsed header — always visible, click to expand/collapse */}
               <div
                 onClick={() => { if (!isActiveTurn) setCardCollapsed(prev => ({ ...prev, [adv.instanceId]: !prev[adv.instanceId] })) }}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '10px 14px',
+                  display: 'flex', alignItems: 'center', gap: '0.5rem',
+                  padding: `0.625rem 0.875rem`,
                   cursor: isActiveTurn ? 'default' : 'pointer',
-                  minHeight: 44,
+                  minHeight: '2.75rem',
                 }}
               >
-                <span style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: advColor, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <span style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700, color: advColor, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {adv.name}
                 </span>
                 {/* Wound inline */}
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: FS_LABEL, color: 'var(--hud-text)', flexShrink: 0 }}>
+                <span style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: 'var(--hud-text)', flexShrink: 0 }}>
                   ❤ {woundsCur}/{woundsMax}
                 </span>
                 {/* Strain inline — nemesis only */}
                 {adv.type === 'nemesis' && strainMax > 0 && (
-                  <span style={{ fontFamily: 'var(--font-body)', fontSize: FS_LABEL, color: 'var(--hud-text-dim)', flexShrink: 0 }}>
+                  <span style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: 'var(--hud-text-dim)', flexShrink: 0 }}>
                     🧠 {strainCur}/{strainMax}
                   </span>
                 )}
                 {/* Minion count inline */}
                 {adv.type === 'minion' && (
-                  <span style={{ fontFamily: 'var(--font-body)', fontSize: FS_LABEL, color: CHAR_BR, flexShrink: 0 }}>
+                  <span style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: CHAR_BR, flexShrink: 0 }}>
                     👤 {adv.groupRemaining}
                   </span>
                 )}
-                <span style={{ color: 'var(--hud-text-faint)', fontSize: FS_LABEL, flexShrink: 0, transition: 'transform 200ms' }}>
+                <span style={{ color: 'var(--hud-text-faint)', fontSize: FS.label, flexShrink: 0, transition: `transform ${EASE.default}` }}>
                   {isExpanded ? '▼' : '▶'}
                 </span>
               </div>
@@ -179,50 +174,50 @@ export function AdversaryCardList({
               <div style={{
                 maxHeight: isExpanded ? '2000px' : 0,
                 overflow: 'hidden',
-                transition: 'max-height 250ms ease-out',
-                padding: isExpanded ? '0 14px 12px' : '0 14px',
+                transition: `max-height 250ms ease-out`,
+                padding: isExpanded ? `0 0.875rem 0.75rem` : `0 0.875rem`,
                 borderTop: isExpanded ? `1px solid ${BORDER}` : 'none',
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                  <span style={{ fontFamily: FC, fontSize: FS_SM, fontWeight: 700, color: TEXT }}>{adv.name}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.625rem' }}>
+                  <span style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700, color: TEXT }}>{adv.name}</span>
                   <TypeBadge type={adv.type} />
                   {adv.type === 'minion' && (
-                    <span style={{ fontFamily: FM, fontSize: FS_CAPTION, color: CHAR_BR }}>{adv.groupRemaining}/{adv.groupSize}</span>
+                    <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: CHAR_BR }}>{adv.groupRemaining}/{adv.groupSize}</span>
                   )}
                 </div>
 
                 {/* Stats row: characteristic boxes | divider | derived stats */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'nowrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.625rem', flexWrap: 'nowrap' }}>
 
                   {/* Characteristic boxes */}
-                  <div style={{ display: 'flex', gap: 3, flexShrink: 0 }}>
+                  <div style={{ display: 'flex', gap: '0.1875rem', flexShrink: 0 }}>
                     {CHAR_KEYS.map((key, i) => (
                       <div key={key} style={{
                         background: `${CHAR_COLORS[i]}12`,
                         border: `1px solid ${CHAR_COLORS[i]}35`,
-                        borderRadius: 3, padding: '3px 5px', textAlign: 'center', minWidth: 30,
+                        borderRadius: RADIUS.sm, padding: `0.1875rem 0.3125rem`, textAlign: 'center', minWidth: '1.875rem',
                       }}>
-                        <div style={{ fontFamily: FM, fontSize: FS_H4, fontWeight: 700, color: CHAR_COLORS[i], lineHeight: 1 }}>
+                        <div style={{ fontFamily: FONT_BODY, fontSize: FS.h4, fontWeight: 700, color: CHAR_COLORS[i], lineHeight: 1 }}>
                           {adv.characteristics[key]}
                         </div>
-                        <div style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED, marginTop: 1 }}>{CHAR_ABBR_LABELS[i]}</div>
+                        <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: TEXT_MUTED, marginTop: 1 }}>{CHAR_ABBR_LABELS[i]}</div>
                       </div>
                     ))}
                   </div>
 
                   {/* Vertical divider */}
-                  <div style={{ width: 1, height: 38, background: BORDER_MD, flexShrink: 0 }} />
+                  <div style={{ width: 1, height: '2.375rem', background: BORDER_MD, flexShrink: 0 }} />
 
                   {/* Derived stats — single inline row */}
-                  <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexShrink: 0 }}>
+                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexShrink: 0 }}>
                     {[
                       { label: 'SOAK',  value: adv.soak,           color: CHAR_WIL },
                       { label: 'M.DEF', value: adv.defense.melee,  color: CHAR_CUN },
                       { label: 'R.DEF', value: adv.defense.ranged, color: CHAR_INT },
                     ].map(s => (
                       <div key={s.label} style={{ textAlign: 'center' }}>
-                        <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: s.color, lineHeight: 1 }}>{s.value}</div>
-                        <div style={{ fontFamily: FM, fontSize: FS_LABEL, color: TEXT_MUTED }}>{s.label}</div>
+                        <div style={{ fontFamily: FONT_BODY, fontSize: FS.h4, fontWeight: 700, color: s.color, lineHeight: 1 }}>{s.value}</div>
+                        <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT_MUTED }}>{s.label}</div>
                       </div>
                     ))}
                     {/* Wounds — current/threshold for rival/nemesis */}
@@ -234,12 +229,12 @@ export function AdversaryCardList({
                       const woundColor = dead ? CHAR_BR : crit ? CHAR_CUN : CHAR_BR
                       return (
                         <div style={{ textAlign: 'center' }}>
-                          <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, lineHeight: 1, color: dead ? CHAR_BR : TEXT }}>
+                          <div style={{ fontFamily: FONT_BODY, fontSize: FS.h4, fontWeight: 700, lineHeight: 1, color: dead ? CHAR_BR : TEXT }}>
                             <span style={{ color: dead ? CHAR_BR : crit ? CHAR_CUN : TEXT }}>{cur}</span>
-                            <span style={{ color: TEXT_MUTED, fontSize: FS_LABEL }}>/</span>
+                            <span style={{ color: TEXT_MUTED, fontSize: FS.label }}>/</span>
                             <span style={{ color: woundColor }}>{max}</span>
                           </div>
-                          <div style={{ fontFamily: FM, fontSize: FS_LABEL, color: dead ? CHAR_BR : TEXT_MUTED }}>
+                          <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: dead ? CHAR_BR : TEXT_MUTED }}>
                             {dead ? '☠ KILLED' : 'WOUNDS'}
                           </div>
                         </div>
@@ -253,18 +248,19 @@ export function AdversaryCardList({
                   const cur = adv.woundsCurrent ?? 0
                   const max = adv.woundThreshold
                   const pct = max > 0 ? Math.min(1, cur / max) : 0
+                  // Bar threshold colors: critical=purple(#9C27B0), danger=red(#f44336), warning=amber(#FF9800)
                   const barColor = pct >= 1 ? '#9C27B0' : pct >= 0.8 ? '#f44336' : pct >= 0.5 ? '#FF9800' : CHAR_BR
                   return (
-                    <div style={{ marginBottom: 10 }}>
-                      <div style={{ height: 5, background: 'var(--hud-border)', borderRadius: 3, overflow: 'hidden' }}>
+                    <div style={{ marginBottom: '0.625rem' }}>
+                      <div style={{ height: '0.3125rem', background: 'var(--hud-border)', borderRadius: RADIUS.sm, overflow: 'hidden' }}>
                         <div style={{
                           width: `${pct * 100}%`, height: '100%', background: barColor,
-                          borderRadius: 3, transition: 'width 300ms ease',
+                          borderRadius: RADIUS.sm, transition: `width 300ms ease`,
                           animation: pct >= 1 ? 'pulse-dot 1.4s ease-in-out infinite' : 'none',
                         }} />
                       </div>
                       <div style={{
-                        fontFamily: 'var(--font-body)',
+                        fontFamily: FONT_BODY,
                         fontSize: 'clamp(0.62rem,0.9vw,0.72rem)', color: 'var(--hud-text-faint)',
                         textAlign: 'right', marginTop: 2,
                       }}>
@@ -281,27 +277,28 @@ export function AdversaryCardList({
                   const groupInitial = adv.groupSize
                   const minionWoundTotal = adv.woundThreshold * groupAlive
                   const pct = groupAlive === 0 ? 1 : (minionWoundTotal > 0 ? Math.min(1, cur / minionWoundTotal) : 0)
+                  // Bar threshold colors: critical=purple(#9C27B0), danger=red(#f44336), warning=amber(#FF9800)
                   const barColor = pct >= 1 ? '#9C27B0' : pct >= 0.8 ? '#f44336' : pct >= 0.5 ? '#FF9800' : CHAR_BR
                   const skillRank = Math.max(0, groupAlive - 1)
                   return (
-                    <div style={{ marginBottom: 10 }}>
-                      <div style={{ height: 5, background: 'var(--hud-border)', borderRadius: 3, overflow: 'hidden' }}>
+                    <div style={{ marginBottom: '0.625rem' }}>
+                      <div style={{ height: '0.3125rem', background: 'var(--hud-border)', borderRadius: RADIUS.sm, overflow: 'hidden' }}>
                         <div style={{
                           width: `${pct * 100}%`, height: '100%', background: barColor,
-                          borderRadius: 3, transition: 'width 300ms ease',
+                          borderRadius: RADIUS.sm, transition: `width 300ms ease`,
                           animation: pct >= 1 ? 'pulse-dot 1.4s ease-in-out infinite' : 'none',
                         }} />
                       </div>
                       <div style={{
-                        fontFamily: 'var(--font-body)',
+                        fontFamily: FONT_BODY,
                         fontSize: 'clamp(0.62rem,0.9vw,0.72rem)', color: 'var(--hud-text-faint)',
                         textAlign: 'right', marginTop: 2,
                       }}>
                         {cur} / {minionWoundTotal} wounds
                       </div>
                       <div style={{
-                        fontFamily: FM, fontSize: FS_LABEL, color: TEXT_MUTED,
-                        marginTop: 3, display: 'flex', gap: 10,
+                        fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT_MUTED,
+                        marginTop: '0.1875rem', display: 'flex', gap: '0.625rem',
                       }}>
                         <span>
                           <span style={{ color: groupAlive === 0 ? CHAR_BR : TEXT_SEC }}>{groupAlive}</span>
@@ -315,11 +312,11 @@ export function AdversaryCardList({
 
                 {/* Talent chips */}
                 {adv.talents && adv.talents.length > 0 && (
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginBottom: '0.5rem' }}>
                     {adv.talents.map((t, i) => {
                       const color = TALENT_COLORS[(t.activation ?? 'passive').toLowerCase()] ?? TEXT_MUTED
                       return (
-                        <span key={i} style={{ fontFamily: FM, fontSize: FS_LABEL, color, background: `${color}15`, border: `1px solid ${color}40`, borderRadius: 3, padding: '2px 6px' }} title={t.description}>
+                        <span key={i} style={{ fontFamily: FONT_BODY, fontSize: FS.label, color, background: `${color}15`, border: `1px solid ${color}40`, borderRadius: RADIUS.sm, padding: `2px 0.375rem` }} title={t.description}>
                           {t.name}
                         </span>
                       )
@@ -334,7 +331,7 @@ export function AdversaryCardList({
                       const { dmg, range, crit } = resolveWeapon(w, adv.characteristics.brawn, weaponRef)
                       const quals = w.qualities?.length ? ` — ${w.qualities.join(', ')}` : ''
                       return (
-                        <div key={i} style={{ fontFamily: FM, fontSize: FS_LABEL, color: TEXTGR }}>
+                        <div key={i} style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: COLOR.green }}>
                           {w.name} — DMG {dmg}{crit !== undefined ? ` — Crit ${crit}` : ''} — {range}{quals}
                         </div>
                       )

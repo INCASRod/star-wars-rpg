@@ -1,30 +1,22 @@
 'use client'
 
 import { RichText } from '@/components/ui/RichText'
-import { FS_OVERLINE, FS_CAPTION, FS_LABEL } from '@/components/player-hud/design-tokens'
-import { HUD } from '@/lib/tokens'
+import { FS, SP, RADIUS, HUD, FONT_BODY } from '@/lib/tokens'
 
-// ── Design tokens (mirrored from CombatTracker) ──
-const RAISED_BG   = 'var(--hud-surface-lo)'
-const BORDER      = 'var(--hud-border)'
-const CHAR_BR     = '#e05252'
-const CHAR_AG     = '#52a8e0'
-const CHAR_WIL    = '#52e0a8'
-const TEXT        = 'var(--hud-text)'
-const TEXT_MUTED  = 'var(--hud-text-faint)'
-const TEXT_SEC    = 'var(--hud-text-dim)'
-const FC          = 'var(--font-body)'
-const FR          = 'var(--font-body)'
-const FM          = 'var(--font-body)'
+// ── Activation UI colors — semantic palette, not characteristic stats ──
+// No clean token mappings exist for these three; kept as design-stable hex.
+const ACT_BLUE  = '#52a8e0'  // maneuver / action
+const ACT_RED   = '#e05252'  // action (danger)
+const ACT_TEAL  = '#52e0a8'  // out-of-turn
 
 const ACTIVATION_ORDER  = ['incidental', 'out of turn', 'maneuver', 'action']
 const ACTIVATION_COLORS: Record<string, string> = {
-  passive:              TEXT_MUTED,
+  passive:              HUD.textFaint,
   incidental:           HUD.gold,
-  maneuver:             CHAR_AG,
-  action:               CHAR_BR,
-  'out of turn':        CHAR_WIL,
-  'incidental (oot)':   CHAR_WIL,
+  maneuver:             ACT_BLUE,
+  action:               ACT_RED,
+  'out of turn':        ACT_TEAL,
+  'incidental (oot)':   ACT_TEAL,
 }
 
 type Talent = {
@@ -41,7 +33,7 @@ interface Props {
 export function TalentQuickReference({ talents }: Props) {
   const talentGroups = ACTIVATION_ORDER.map(act => ({
     activation: act,
-    color: ACTIVATION_COLORS[act] ?? TEXT_MUTED,
+    color: ACTIVATION_COLORS[act] ?? HUD.textFaint,
     items: talents.filter(t =>
       t.activation.toLowerCase() === act ||
       (act === 'out of turn' && t.activation.toLowerCase() === 'incidental (oot)')
@@ -53,55 +45,55 @@ export function TalentQuickReference({ talents }: Props) {
   )
 
   return (
-    <div style={{ width: 300, flexShrink: 0, overflowY: 'auto', padding: '14px 14px' }}>
-      <div style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${HUD.gold}b3`, marginBottom: 10 }}>
+    <div style={{ width: '18.75rem', flexShrink: 0, overflowY: 'auto', padding: '0.875rem' }}>
+      <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${HUD.gold}b3`, marginBottom: '0.625rem' }}>
         Talent Quick Reference
       </div>
 
       {/* OOT Alert */}
       <div style={{
-        background: `${CHAR_WIL}12`, border: `1px solid ${CHAR_WIL}50`,
-        borderRadius: 4, padding: '8px 10px', marginBottom: 12,
+        background: `${ACT_TEAL}12`, border: `1px solid ${ACT_TEAL}50`,
+        borderRadius: RADIUS.md, padding: `${SP[2]} 0.625rem`, marginBottom: SP[3],
       }}>
-        <div style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, color: CHAR_WIL, marginBottom: 3 }}>⚡ Out-of-Turn</div>
-        <div style={{ fontFamily: FR, fontSize: FS_LABEL, color: TEXT_MUTED, lineHeight: 1.4 }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700, color: ACT_TEAL, marginBottom: '0.1875rem' }}>⚡ Out-of-Turn</div>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: HUD.textFaint, lineHeight: 1.4 }}>
           Out-of-Turn talents can trigger on ANY player&apos;s turn — watch for them.
         </div>
       </div>
 
       {/* Talent groups */}
       {talentGroups.map(group => (
-        <div key={group.activation} style={{ marginBottom: 12 }}>
-          <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, letterSpacing: '0.18em', textTransform: 'uppercase', color: group.color, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div key={group.activation} style={{ marginBottom: SP[3] }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, letterSpacing: '0.18em', textTransform: 'uppercase', color: group.color, marginBottom: '0.375rem', display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
             {group.activation}
-            <span style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED, background: RAISED_BG, border: `1px solid ${BORDER}`, borderRadius: 10, padding: '0 5px' }}>
+            <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint, background: 'var(--hud-surface-lo)', border: `1px solid ${HUD.border}`, borderRadius: '0.625rem', padding: '0 0.3125rem' }}>
               {group.activation === 'incidental' || group.activation === 'out of turn' ? 'No action cost' : 'Costs action/maneuver'}
             </span>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3125rem' }}>
             {group.items.map((t, i) => (
               <div key={i} style={{
                 background: group.activation === 'incidental' ? `${HUD.gold}08`
-                  : group.activation === 'out of turn' ? `${CHAR_WIL}08`
-                    : RAISED_BG,
+                  : group.activation === 'out of turn' ? `${ACT_TEAL}08`
+                    : 'var(--hud-surface-lo)',
                 backdropFilter: 'blur(8px)',
                 WebkitBackdropFilter: 'blur(8px)',
-                borderRadius: 4,
+                borderRadius: RADIUS.md,
                 position: 'relative',
-                borderTop: `1px solid ${BORDER}`,
-                borderRight: `1px solid ${BORDER}`,
-                borderBottom: `1px solid ${BORDER}`,
+                borderTop: `1px solid ${HUD.border}`,
+                borderRight: `1px solid ${HUD.border}`,
+                borderBottom: `1px solid ${HUD.border}`,
                 borderLeft: `2px solid ${group.color}60`,
-                padding: '8px 10px',
+                padding: `${SP[2]} 0.625rem`,
               }}>
-                <div style={{ fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, color: TEXT, marginBottom: 2 }}>{t.name}</div>
+                <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700, color: HUD.text, marginBottom: '0.125rem' }}>{t.name}</div>
                 {t.description && (
-                  <div style={{ fontFamily: FM, fontSize: FS_LABEL, color: TEXT_MUTED, lineHeight: 1.4 }}><RichText text={t.description} /></div>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: HUD.textFaint, lineHeight: 1.4 }}><RichText text={t.description} /></div>
                 )}
                 <span style={{
-                  display: 'inline-block', marginTop: 4,
-                  fontFamily: FM, fontSize: FS_OVERLINE, color: group.color,
-                  border: `1px solid ${group.color}40`, borderRadius: 2, padding: '0 4px',
+                  display: 'inline-block', marginTop: SP[1],
+                  fontFamily: FONT_BODY, fontSize: FS.overline, color: group.color,
+                  border: `1px solid ${group.color}40`, borderRadius: RADIUS.sm, padding: `0 ${SP[1]}`,
                   background: `${group.color}10`,
                 }}>{group.activation.toUpperCase()}</span>
               </div>
@@ -113,14 +105,14 @@ export function TalentQuickReference({ talents }: Props) {
       {/* Passive bonuses */}
       {passiveTalents.length > 0 && (
         <div>
-          <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, letterSpacing: '0.18em', textTransform: 'uppercase', color: TEXT_MUTED, marginBottom: 6 }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, letterSpacing: '0.18em', textTransform: 'uppercase', color: HUD.textFaint, marginBottom: '0.375rem' }}>
             Passive Bonuses
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: SP[1] }}>
             {passiveTalents.map((t, i) => (
-              <div key={i} style={{ fontFamily: FM, fontSize: FS_CAPTION, color: TEXT_SEC, display: 'flex', gap: 6 }}>
+              <div key={i} style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textDim, display: 'flex', gap: '0.375rem' }}>
                 <span style={{ color: HUD.gold }}>+{t.statBonus!.value} {t.statBonus!.stat}</span>
-                <span style={{ color: TEXT_MUTED }}>· {t.name}</span>
+                <span style={{ color: HUD.textFaint }}>· {t.name}</span>
               </div>
             ))}
           </div>
@@ -128,7 +120,7 @@ export function TalentQuickReference({ talents }: Props) {
       )}
 
       {talentGroups.length === 0 && passiveTalents.length === 0 && (
-        <div style={{ fontFamily: FR, fontSize: FS_LABEL, color: TEXT_MUTED, fontStyle: 'italic', textAlign: 'center', padding: '20px 0' }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: HUD.textFaint, fontStyle: 'italic', textAlign: 'center', padding: '1.25rem 0' }}>
           No active talents to display
         </div>
       )}

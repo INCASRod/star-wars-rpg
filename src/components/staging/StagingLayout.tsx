@@ -1,6 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
+import { Z } from '@/lib/tokens'
 
 /**
  * StagingLayout — Shell for the GM Staging view.
@@ -59,7 +60,7 @@ export function StagingLayout({
             top: 0,
             left: 0,
             right: 0,
-            zIndex: 50,
+            zIndex: Z.dropdown,
             pointerEvents: 'none',
           }}
         >
@@ -76,7 +77,7 @@ export function StagingLayout({
             top: 0,
             left: 0,
             bottom: 0,
-            zIndex: 40,
+            zIndex: Z.sticky,
             pointerEvents: 'auto',
           }}
         >
@@ -92,7 +93,7 @@ export function StagingLayout({
             top: 0,
             right: 0,
             bottom: 0,
-            zIndex: 40,
+            zIndex: Z.sticky,
             pointerEvents: 'auto',
           }}
         >

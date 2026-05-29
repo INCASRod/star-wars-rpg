@@ -1,20 +1,16 @@
 'use client'
 
 import type { SessionRollState } from '@/hooks/useSessionRollState'
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_BODY, FS, SP, COLOR } from '@/lib/tokens'
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
-const FC = 'var(--font-body)'
-const FONT_CINZEL = 'var(--font-body)'
-const TEXT_MUTED = 'var(--hud-text-dim)'
-
 const baseStyle: React.CSSProperties = {
-  padding: '7px 16px',
+  padding: `0.4375rem ${SP[4]}`,
   display: 'flex',
   flexDirection: 'column',
-  gap: 4,
-  fontSize: 'clamp(0.78rem, 1.3vw, 0.9rem)',
-  fontFamily: FC,
+  gap: SP[1],
+  fontSize: FS.sm,
+  fontFamily: FONT_BODY,
 }
 
 interface SessionStatusBannerProps {
@@ -29,11 +25,11 @@ interface SessionStatusBannerProps {
 }
 
 function getObligationBannerColor(value: number | undefined) {
-  if (value === undefined) return { color: '#E09050', bg: 'rgba(224,144,80,0.07)', border: '1px solid rgba(224,144,80,0.25)' }
-  if (value >= 100) return { color: '#C878F0', bg: 'rgba(160,80,220,0.08)', border: '1px solid rgba(160,80,220,0.3)' }
-  if (value >= 67) return  { color: '#E05050', bg: 'rgba(224,80,80,0.08)', border: '1px solid rgba(224,80,80,0.3)' }
-  if (value >= 34) return  { color: '#E09050', bg: 'rgba(224,144,80,0.07)', border: '1px solid rgba(224,144,80,0.25)' }
-  return { color: '#4EC87A', bg: 'rgba(78,200,122,0.06)', border: '1px solid rgba(78,200,122,0.2)' }
+  if (value === undefined) return { color: COLOR.amber, bg: 'rgba(224,144,80,0.07)', border: '1px solid rgba(224,144,80,0.25)' }
+  if (value >= 100) return { color: HUD.accentPurple, bg: 'rgba(160,80,220,0.08)', border: '1px solid rgba(160,80,220,0.3)' }
+  if (value >= 67) return  { color: COLOR.red, bg: 'rgba(224,80,80,0.08)', border: '1px solid rgba(224,80,80,0.3)' }
+  if (value >= 34) return  { color: COLOR.amber, bg: 'rgba(224,144,80,0.07)', border: '1px solid rgba(224,144,80,0.25)' }
+  return { color: COLOR.green, bg: 'rgba(78,200,122,0.06)', border: '1px solid rgba(78,200,122,0.2)' }
 }
 
 export function SessionStatusBanner({
@@ -64,7 +60,7 @@ export function SessionStatusBanner({
               ...baseStyle,
               background: 'rgba(76,175,80,0.06)',
               borderBottom: '1px solid rgba(76,175,80,0.2)',
-              color: TEXT_MUTED,
+              color: HUD.textDim,
             }}>
               ✦ Duty Check: No Duty triggered this session.
             </div>
@@ -77,7 +73,7 @@ export function SessionStatusBanner({
               ...baseStyle,
               background: 'var(--hud-surface-lo)',
               borderBottom: '1px solid var(--hud-border-hi)',
-              fontFamily: FONT_CINZEL,
+              fontFamily: FONT_BODY,
               color: HUD.gold,
             }}>
               <div style={{ fontWeight: 700 }}>✦ YOUR Duty is triggered this session!</div>
@@ -114,7 +110,7 @@ export function SessionStatusBanner({
               ...baseStyle,
               background: 'var(--hud-surface-lo)',
               borderBottom: '1px solid var(--hud-border)',
-              color: TEXT_MUTED,
+              color: HUD.textDim,
             }}>
               ⚠ Obligation Check: No Obligation triggered this session.
             </div>
@@ -127,7 +123,7 @@ export function SessionStatusBanner({
               ...baseStyle,
               background: bg,
               borderBottom: border,
-              fontFamily: FONT_CINZEL,
+              fontFamily: FONT_BODY,
               color,
             }}>
               <div style={{ fontWeight: 700 }}>⚠ YOUR Obligation is triggered this session.</div>

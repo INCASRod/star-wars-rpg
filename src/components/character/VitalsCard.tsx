@@ -1,7 +1,8 @@
-﻿'use client'
+'use client'
 
 import { HudCard } from '../ui/HudCard'
 import { VitalBar } from '../ui/VitalBar'
+import { FS, FONT_BODY, HUD } from '@/lib/tokens'
 
 interface VitalsCardProps {
   woundCurrent: number
@@ -20,9 +21,9 @@ interface VitalsCardProps {
 }
 
 const gmBtnStyle: React.CSSProperties = {
-  width: 20, height: 20, fontSize: 'var(--text-caption)', fontWeight: 700,
-  background: 'var(--bs-red-glow)', border: '1px solid var(--bs-red-sun)',
-  color: 'var(--bs-red-mid)', cursor: 'pointer', display: 'flex',
+  width: 20, height: 20, fontSize: FS.caption, fontWeight: 700,
+  background: 'var(--hud-accent-10)', border: `1px solid ${HUD.gold}`,
+  color: 'var(--hud-accent)', cursor: 'pointer', display: 'flex',
   alignItems: 'center', justifyContent: 'center', padding: 0,
   lineHeight: 1, flexShrink: 0,
 }
@@ -58,13 +59,13 @@ export function VitalsCard({
       {isGmMode && onSoakChange ? (
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          background: 'var(--bs-surface)', border: '1px solid var(--bs-bdr-mid)',
+          background: 'var(--hud-surface-lo)', border: `1px solid ${HUD.borderHi}`,
           padding: '0.5rem 0.75rem', marginTop: '0.25rem',
         }}>
-          <span style={{ fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--bs-txt2)', letterSpacing: '0.06rem' }}>🛡 Soak</span>
+          <span style={{ fontSize: FS.label, fontWeight: 600, color: HUD.textDim, letterSpacing: '0.06rem' }}>🛡 Soak</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <button style={gmBtnStyle} onClick={() => onSoakChange(-1)}>−</button>
-            <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-lg)', fontWeight: 800, color: 'var(--bs-red-mid)', minWidth: 20, textAlign: 'center' }}>{soak}</span>
+            <span style={{ fontFamily: FONT_BODY, fontSize: FS.h4, fontWeight: 800, color: 'var(--hud-accent)', minWidth: 20, textAlign: 'center' }}>{soak}</span>
             <button style={gmBtnStyle} onClick={() => onSoakChange(1)}>+</button>
           </div>
         </div>
@@ -80,34 +81,34 @@ export function VitalsCard({
       <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem' }}>
         <div style={{
           flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          background: 'var(--bs-surface)', border: '1px solid var(--bs-bdr-mid)',
+          background: 'var(--hud-surface-lo)', border: `1px solid ${HUD.borderHi}`,
           padding: '0.5rem 0.75rem',
         }}>
-          <span style={{ fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--bs-txt2)', letterSpacing: '0.06rem' }}>Ranged</span>
+          <span style={{ fontSize: FS.label, fontWeight: 600, color: HUD.textDim, letterSpacing: '0.06rem' }}>Ranged</span>
           {isGmMode && onDefenseChange ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               <button style={gmBtnStyle} onClick={() => onDefenseChange('ranged', -1)}>−</button>
-              <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-lg)', fontWeight: 800, color: 'var(--bs-red-mid)', minWidth: 20, textAlign: 'center' }}>{defenseRanged}</span>
+              <span style={{ fontFamily: FONT_BODY, fontSize: FS.h4, fontWeight: 800, color: 'var(--hud-accent)', minWidth: 20, textAlign: 'center' }}>{defenseRanged}</span>
               <button style={gmBtnStyle} onClick={() => onDefenseChange('ranged', 1)}>+</button>
             </div>
           ) : (
-            <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-lg)', fontWeight: 800, color: 'var(--bs-red-mid)' }}>{defenseRanged}</span>
+            <span style={{ fontFamily: FONT_BODY, fontSize: FS.h4, fontWeight: 800, color: 'var(--hud-accent)' }}>{defenseRanged}</span>
           )}
         </div>
         <div style={{
           flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          background: 'var(--bs-surface)', border: '1px solid var(--bs-bdr-mid)',
+          background: 'var(--hud-surface-lo)', border: `1px solid ${HUD.borderHi}`,
           padding: '0.5rem 0.75rem',
         }}>
-          <span style={{ fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--bs-txt2)', letterSpacing: '0.06rem' }}>Melee</span>
+          <span style={{ fontSize: FS.label, fontWeight: 600, color: HUD.textDim, letterSpacing: '0.06rem' }}>Melee</span>
           {isGmMode && onDefenseChange ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               <button style={gmBtnStyle} onClick={() => onDefenseChange('melee', -1)}>−</button>
-              <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-lg)', fontWeight: 800, color: 'var(--bs-red-mid)', minWidth: 20, textAlign: 'center' }}>{defenseMelee}</span>
+              <span style={{ fontFamily: FONT_BODY, fontSize: FS.h4, fontWeight: 800, color: 'var(--hud-accent)', minWidth: 20, textAlign: 'center' }}>{defenseMelee}</span>
               <button style={gmBtnStyle} onClick={() => onDefenseChange('melee', 1)}>+</button>
             </div>
           ) : (
-            <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-lg)', fontWeight: 800, color: 'var(--bs-red-mid)' }}>{defenseMelee}</span>
+            <span style={{ fontFamily: FONT_BODY, fontSize: FS.h4, fontWeight: 800, color: 'var(--hud-accent)' }}>{defenseMelee}</span>
           )}
         </div>
       </div>

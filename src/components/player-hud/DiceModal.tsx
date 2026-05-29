@@ -1,6 +1,6 @@
 'use client'
 
-import { C, SYM, DICE_META, FONT_CINZEL, FONT_RAJDHANI, type DiceType, type SymbolKey } from './design-tokens'
+import { HUD, FONT_DISPLAY, FONT_BODY, FS, RADIUS, EASE, SYM, DICE_META, type DiceType, type SymbolKey } from '@/lib/tokens'
 import { Modal } from '@/components/ui/Modal'
 import { DiceFace } from '@/components/dice/DiceFace'
 import type { RollResult, DieResult } from './dice-engine'
@@ -35,7 +35,7 @@ function DieShape({ type, size, children }: {
           position: 'absolute', inset: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: size * 0.28, color,
-          fontFamily: FONT_RAJDHANI, fontWeight: 700,
+          fontFamily: FONT_BODY, fontWeight: 700,
           pointerEvents: 'none',
         }}>
           {children}
@@ -59,7 +59,7 @@ function DieChip({ die }: { die: DieResult }) {
             </span>
         }
       </DieShape>
-      <div style={{ fontSize: 12, color: C.textDim, fontFamily: FONT_RAJDHANI, textTransform: 'uppercase' }}>
+      <div style={{ fontSize: FS.caption, color: HUD.textDim, fontFamily: FONT_BODY, textTransform: 'uppercase' }}>
         {meta.label}
       </div>
     </div>
@@ -72,9 +72,9 @@ function NetPill({ count, symKey, label }: { count: number; symKey: SymbolKey; l
   return (
     <div style={{
       display: 'inline-flex', alignItems: 'center', gap: 6,
-      padding: '4px 12px', borderRadius: 4,
+      padding: '4px 12px', borderRadius: RADIUS.md,
       background: `${color}18`, border: `1px solid ${color}50`,
-      fontFamily: FONT_RAJDHANI, fontSize: 14, fontWeight: 700, color,
+      fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700, color,
     }}>
       <i className={`ffi ffi-${icon}`} style={{ fontSize: 16 }} />
       {Math.abs(count)} {label}
@@ -95,7 +95,8 @@ export function DiceModal({ result, skillName, onDismiss }: DiceModalProps) {
   const netSuccess = Math.abs(net.success)
   const netAdvantage = Math.abs(net.advantage)
 
-  const headlineColor = isSuccess ? '#4EC87A' : isFailure ? '#E05050' : 'var(--hud-gold)'
+  // Dynamic — value changes based on JS state — kept as inline style with CSS vars
+  const headlineColor = isSuccess ? 'var(--state-success)' : isFailure ? 'var(--state-failure)' : 'var(--hud-gold)'
   const headlineText = isSuccess ? 'SUCCESS' : isFailure ? 'FAILURE' : 'WASH'
 
   return (
@@ -108,22 +109,22 @@ export function DiceModal({ result, skillName, onDismiss }: DiceModalProps) {
         {/* Header */}
         <div style={{
           padding: '24px 24px 16px',
-          borderBottom: `1px solid ${C.border}`,
+          borderBottom: `1px solid ${HUD.border}`,
           textAlign: 'center',
         }}>
           {skillName && (
             <div style={{
-              fontFamily: FONT_RAJDHANI, fontSize: 14, fontWeight: 700,
-              color: C.textDim, letterSpacing: '0.15em', textTransform: 'uppercase',
+              fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700,
+              color: HUD.textDim, letterSpacing: '0.15em', textTransform: 'uppercase',
               marginBottom: 8,
             }}>
               {skillName}
             </div>
           )}
           <div style={{
-            fontFamily: FONT_CINZEL, fontSize: 34, fontWeight: 700,
+            fontFamily: FONT_DISPLAY, fontSize: FS.h1, fontWeight: 700,
             color: headlineColor, letterSpacing: '0.05em',
-            textShadow: `0 0 24px ${headlineColor}80`,
+            textShadow: `0 0 24px color-mix(in srgb, ${headlineColor} 50%, transparent)`,
             lineHeight: 1,
           }}>
             {headlineText}
@@ -153,15 +154,15 @@ export function DiceModal({ result, skillName, onDismiss }: DiceModalProps) {
         {net.advantage > 0 && (
           <div style={{
             margin: '0 24px 16px',
-            padding: 12, borderRadius: 6,
-            background: 'rgba(112,200,232,0.08)',
-            border: `1px solid rgba(112,200,232,0.2)`,
+            padding: 12, borderRadius: RADIUS.lg,
+            background: 'color-mix(in srgb, var(--die-advantage) 8%, transparent)',
+            border: `1px solid color-mix(in srgb, var(--die-advantage) 20%, transparent)`,
           }}>
-            <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 14, fontWeight: 700, color: '#70C8E8', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 6 }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700, color: 'var(--die-advantage)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 6 }}>
               Advantage Spending
             </div>
             {ADVANTAGE_HINTS.slice(0, Math.min(net.advantage + 1, ADVANTAGE_HINTS.length)).map((hint, i) => (
-              <div key={i} style={{ fontFamily: FONT_RAJDHANI, fontSize: 14, color: C.textDim, lineHeight: 1.6, paddingLeft: 8 }}>
+              <div key={i} style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.textDim, lineHeight: 1.6, paddingLeft: 8 }}>
                 • {hint}
               </div>
             ))}
@@ -172,15 +173,15 @@ export function DiceModal({ result, skillName, onDismiss }: DiceModalProps) {
         {net.advantage < 0 && (
           <div style={{
             margin: '0 24px 16px',
-            padding: 12, borderRadius: 6,
-            background: 'rgba(176,96,208,0.08)',
-            border: `1px solid rgba(176,96,208,0.2)`,
+            padding: 12, borderRadius: RADIUS.lg,
+            background: 'color-mix(in srgb, var(--die-threat) 8%, transparent)',
+            border: `1px solid color-mix(in srgb, var(--die-threat) 20%, transparent)`,
           }}>
-            <div style={{ fontFamily: FONT_RAJDHANI, fontSize: 14, fontWeight: 700, color: '#B060D0', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 6 }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700, color: 'var(--die-threat)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 6 }}>
               GM Threat Spending
             </div>
             {THREAT_HINTS.slice(0, Math.min(-net.advantage + 1, THREAT_HINTS.length)).map((hint, i) => (
-              <div key={i} style={{ fontFamily: FONT_RAJDHANI, fontSize: 14, color: C.textDim, lineHeight: 1.6, paddingLeft: 8 }}>
+              <div key={i} style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.textDim, lineHeight: 1.6, paddingLeft: 8 }}>
                 • {hint}
               </div>
             ))}
@@ -194,11 +195,11 @@ export function DiceModal({ result, skillName, onDismiss }: DiceModalProps) {
             className="hov-gold"
             style={{
               background: 'transparent',
-              border: `1px solid ${C.border}`,
-              borderRadius: 4, padding: '8px 40px',
-              fontFamily: FONT_RAJDHANI, fontSize: 13, fontWeight: 600,
-              letterSpacing: '0.1em', color: C.textDim,
-              cursor: 'pointer', transition: '.2s',
+              border: `1px solid ${HUD.border}`,
+              borderRadius: RADIUS.md, padding: '8px 40px',
+              fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 600,
+              letterSpacing: '0.1em', color: HUD.textDim,
+              cursor: 'pointer',
             }}
           >
             DISMISS

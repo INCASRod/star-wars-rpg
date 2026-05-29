@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { Sidebar } from './Sidebar'
 import { Breadcrumb } from './Breadcrumb'
@@ -13,6 +13,7 @@ import { TalentsCard, TalentDisplay } from './TalentsCard'
 import { CriticalInjuriesCard, CriticalInjuryDisplay } from './CriticalInjuriesCard'
 import { CenterHero } from './CenterHero'
 import { BottomBar } from './BottomBar'
+import { HUD, FONT_BODY, FS, SP, Z } from '@/lib/tokens'
 
 export interface CharacterHudData {
   name: string
@@ -118,6 +119,7 @@ export function CharacterHud({
       position: 'relative',
     }}>
       {/* Subtle radial background */}
+      {/* rgba(0,0,0,*) / brand-overlay radial gradients — pre-approved exceptions */}
       <div style={{
         position: 'fixed', inset: 0,
         backgroundImage: `
@@ -125,7 +127,7 @@ export function CharacterHud({
           radial-gradient(circle at 70% 60%, rgba(43,93,174,.04) 0%, transparent 50%)
         `,
         pointerEvents: 'none',
-        zIndex: 0,
+        zIndex: Z.base,
       }} />
 
       {/* ── Top Bar — full width ── */}
@@ -133,30 +135,30 @@ export function CharacterHud({
         gridColumn: '1 / -1',
         display: 'grid',
         gridTemplateColumns: '11% 1fr 32%',
-        borderBottom: '1px solid var(--bs-bdr-mid)',
-        background: 'var(--bs-panel)',
+        borderBottom: `1px solid ${HUD.borderHi}`,
+        background: HUD.panel,
         backdropFilter: 'blur(10px)',
-        zIndex: 10,
+        zIndex: Z.sticky,
         minHeight: 'clamp(30px, 2.4rem, 50px)',
       }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          borderRight: '1px solid var(--bs-bdr-mid)',
+          borderRight: `1px solid ${HUD.borderHi}`,
         }}>
           <span style={{
-            fontFamily: 'var(--font-rajdhani)',
+            fontFamily: FONT_BODY,
             fontWeight: 700,
-            fontSize: 'var(--font-base)',
+            fontSize: FS.sm,
             letterSpacing: '0.25rem',
-            color: 'var(--bs-red-mid)',
+            color: 'var(--hud-accent)',
           }}>
             HOLOCRON
           </span>
         </div>
         <Breadcrumb characterName={data.name} activeTab={activeTab} />
-        <div style={{ borderLeft: '1px solid var(--bs-bdr-mid)' }} />
+        <div style={{ borderLeft: `1px solid ${HUD.borderHi}` }} />
       </div>
 
       {/* ── Sidebar — below top bar ── */}
@@ -168,9 +170,9 @@ export function CharacterHud({
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          zIndex: 2,
+          zIndex: Z.raised,
         }}>
-          <div style={{ flex: 1, overflowY: 'auto', padding: 'var(--sp-md)' }}>
+          <div style={{ flex: 1, overflowY: 'auto', padding: SP[4] }}>
             {contentOverride}
           </div>
           <BottomBar
@@ -185,14 +187,14 @@ export function CharacterHud({
           gridTemplateColumns: 'clamp(220px, 16vw, 420px) 1fr',
           gridTemplateRows: '1fr auto',
           overflow: 'hidden',
-          zIndex: 2,
+          zIndex: Z.raised,
         }}>
           {/* Left: stats column */}
           <div style={{
-            padding: 'var(--sp-md)',
+            padding: SP[4],
             display: 'flex',
             flexDirection: 'column',
-            gap: 'var(--sp-sm)',
+            gap: SP[2],
             overflowY: 'auto',
           }}>
             <VitalsCard
@@ -258,13 +260,13 @@ export function CharacterHud({
 
       {/* ── Right Panel — scrollable ── */}
       <div style={{
-        padding: 'var(--sp-md)',
+        padding: SP[4],
         display: 'flex',
         flexDirection: 'column',
-        gap: 'var(--sp-sm)',
+        gap: SP[2],
         overflowY: 'auto',
-        zIndex: 2,
-        borderLeft: '1px solid var(--bs-bdr-mid)',
+        zIndex: Z.raised,
+        borderLeft: `1px solid ${HUD.borderHi}`,
       }}>
         {/* Characteristics — always open */}
         <CharacteristicsCard

@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef } from 'react'
+import { FS } from '@/lib/tokens'
 
 export interface PanelSearchInputProps {
   value: string
@@ -12,12 +13,10 @@ export function PanelSearchInput({ value, onChange, placeholder = 'Search...' }:
   const inputRef = useRef<HTMLInputElement>(null)
 
   return (
-    <div style={{ position: 'relative', marginBottom: 10 }}>
+    <div className="relative mb-2.5">
       {/* Search icon */}
-      <span style={{
-        position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)',
-        color: 'var(--hud-text-faint)', fontSize: 14, pointerEvents: 'none', lineHeight: 1,
-      }}>
+      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none leading-none"
+        style={{ color: 'var(--hud-text-faint)', fontSize: 14 }}>
         🔍
       </span>
 
@@ -38,12 +37,10 @@ export function PanelSearchInput({ value, onChange, placeholder = 'Search...' }:
             onChange('')
             inputRef.current?.focus()
           }}
-          className="hov-gold-text"
+          className="hov-gold-text absolute right-2 top-1/2 -translate-y-1/2 bg-transparent border-0 cursor-pointer leading-none p-0"
           style={{
-            position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
-            background: 'none', border: 'none', cursor: 'pointer',
-            color: 'var(--hud-text-faint)',
-            fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)', lineHeight: 1, padding: 0,
+            color:    'var(--hud-text-faint)',
+            fontSize: FS.sm,
           }}
         >
           ✕

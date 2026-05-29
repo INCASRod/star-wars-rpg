@@ -1,6 +1,6 @@
 'use client'
 
-import { FONT_CINZEL } from './design-tokens'
+import { FONT_DISPLAY, FS } from '@/lib/tokens'
 import type { SessionMode } from '@/hooks/useSessionMode'
 
 interface CombatTransitionProps {
@@ -18,7 +18,7 @@ export function CombatTransition({ pending, prevMode }: CombatTransitionProps) {
   if (!pending) return null
 
   const enteringCombat = prevMode === 'exploration'
-  const color          = enteringCombat ? '#E05050' : '#60C8E0'
+  const color          = enteringCombat ? 'var(--state-wounds)' : 'var(--die-boost)'
   const text           = enteringCombat ? 'COMBAT INITIATED' : 'ENCOUNTER ENDED'
 
   return (
@@ -28,7 +28,7 @@ export function CombatTransition({ pending, prevMode }: CombatTransitionProps) {
         style={{
           position:       'fixed',
           inset:          0,
-          zIndex:         9000,
+          zIndex:         'var(--z-hud-overlay)' as unknown as number,
           background:     enteringCombat
             ? 'rgba(224,80,80,0.15)'
             : 'rgba(96,200,224,0.12)',
@@ -43,9 +43,9 @@ export function CombatTransition({ pending, prevMode }: CombatTransitionProps) {
           top:             '50%',
           left:            '50%',
           transform:       'translate(-50%, -50%)',
-          zIndex:          9001,
-          fontFamily:      FONT_CINZEL,
-          fontSize:        28,
+          zIndex:          'var(--z-hud-combat)' as unknown as number,
+          fontFamily:      FONT_DISPLAY,
+          fontSize:        FS.h3,
           letterSpacing:   '0.4em',
           color,
           textShadow:      `0 0 30px ${color}`,

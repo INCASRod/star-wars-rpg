@@ -1,32 +1,34 @@
-﻿'use client'
+'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
-import { FONT_RAJDHANI, FS_OVERLINE, FS_LABEL, FS_SM } from '@/components/player-hud/design-tokens'
 import { MarkupText } from '@/components/ui/MarkupText'
-import { HUD } from '@/lib/tokens'
+import { HUD, FS, FONT_BODY, RADIUS, Z, EASE } from '@/lib/tokens'
 import { Modal } from '@/components/ui/Modal'
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-/*  THEME CONSTANTS                       */
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════════════════════════════════════════ */
+/*  THEME CONSTANTS                                       */
+/* ═══════════════════════════════════════════════════════ */
 
-const BG       = 'var(--hud-bg)'
-const GOLD_DIM = 'var(--hud-text-faint)'
-const GOLD_BR  = 'var(--hud-gold)'
-const TEXT     = 'var(--hud-text)'
-const DIM      = 'var(--hud-text-dim)'
-const FAINT    = 'var(--hud-border-hi)'
-const BORDER   = 'var(--hud-border)'
+const BG       = HUD.bg
+// GOLD_DIM: faint text used for locked-state XP label; maps to textFaint token
+const GOLD_DIM = HUD.textFaint
+const GOLD_BR  = HUD.gold
+const TEXT     = HUD.text
+const DIM      = HUD.textDim
+// FAINT was 'var(--hud-border-hi)' in original — maps to HUD.borderHi
+const FAINT    = HUD.borderHi
+const BORDER   = HUD.border
+// Pre-approved hex exceptions: no CSS vars for these specific type-identity swatches
 const BLUE     = '#5AAAE0'
 const GREEN    = '#4EC87A'
 const RED      = '#E05050'
 const PANEL_BG = 'var(--hud-surface-lo)'
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-/*  TYPES                                 */
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════════════════════════════════════════ */
+/*  TYPES                                                 */
+/* ═══════════════════════════════════════════════════════ */
 
 export interface ForceTreeNode {
   abilityKey: string
@@ -59,9 +61,9 @@ export interface ForcePowerTreeProps {
 
 const COLS = 4
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-/*  PURCHASE POPOVER                      */
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════════════════════════════════════════ */
+/*  PURCHASE POPOVER                                      */
+/* ═══════════════════════════════════════════════════════ */
 
 function PurchasePopover({ node, xpAvailable, onConfirm, onCancel }: {
   node: ForceTreeNode
@@ -78,34 +80,62 @@ function PurchasePopover({ node, xpAvailable, onConfirm, onCancel }: {
       maxWidth={320}
       zIndex={500}
       backdrop="rgba(0,0,0,0.4)"
-      borderColor="var(--hud-border-hi)"
+      borderColor={HUD.borderHi}
       shadow="0 8px 32px rgba(0,0,0,0.7)"
       panelBackground="var(--hud-surface-hi)"
     >
       <div style={{ padding: '14px 16px' }}>
-        <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: HUD.gold, marginBottom: 4 }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.gold, marginBottom: 4 }}>
           {node.name}
         </div>
-        <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: DIM, marginBottom: 2 }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: DIM, marginBottom: 2 }}>
           Spend {node.cost} XP
         </div>
         {xpAvailable !== undefined && (
-          <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: remaining >= 0 ? GREEN : RED, marginBottom: 10 }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: remaining >= 0 ? GREEN : RED, marginBottom: 10 }}>
             Remaining after: {remaining} XP
           </div>
         )}
-        <div style={{ height: 1, background: 'var(--hud-border)', marginBottom: 10 }} />
+        <div style={{ height: 1, background: HUD.border, marginBottom: 10 }} />
         {node.description && (
-          <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: DIM, lineHeight: 1.5, maxHeight: 100, overflowY: 'auto', marginBottom: 10 }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: DIM, lineHeight: 1.5, maxHeight: 100, overflowY: 'auto', marginBottom: 10 }}>
             <MarkupText text={node.description} />
           </div>
         )}
-        <div style={{ height: 1, background: 'var(--hud-border)', marginBottom: 10 }} />
+        <div style={{ height: 1, background: HUD.border, marginBottom: 10 }} />
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-          <button onClick={onCancel} style={{ background: 'transparent', border: `1px solid ${BORDER}`, borderRadius: 3, fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: DIM, padding: '6px 16px', cursor: 'pointer' }}>
+          <button
+            onClick={onCancel}
+            style={{
+              background: 'transparent',
+              border: `1px solid ${BORDER}`,
+              borderRadius: RADIUS.sm,
+              fontFamily: FONT_BODY,
+              fontSize: FS.label,
+              color: DIM,
+              padding: '6px 16px',
+              cursor: 'pointer',
+            }}
+          >
             Cancel
           </button>
-          <button onClick={canAfford ? onConfirm : undefined} disabled={!canAfford} style={{ background: 'rgba(224,58,30,0.15)', border: '1px solid rgba(224,58,30,0.5)', borderRadius: 3, fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, fontWeight: 700, color: canAfford ? HUD.gold : GOLD_DIM, padding: '6px 16px', cursor: canAfford ? 'pointer' : 'not-allowed', opacity: canAfford ? 1 : 0.5 }}>
+          <button
+            onClick={canAfford ? onConfirm : undefined}
+            disabled={!canAfford}
+            style={{
+              // rgba(224,58,30,*) — force identity accent, pre-approved
+              background: 'rgba(224,58,30,0.15)',
+              border: '1px solid rgba(224,58,30,0.5)',
+              borderRadius: RADIUS.sm,
+              fontFamily: FONT_BODY,
+              fontSize: FS.label,
+              fontWeight: 700,
+              color: canAfford ? HUD.gold : GOLD_DIM,
+              padding: '6px 16px',
+              cursor: canAfford ? 'pointer' : 'not-allowed',
+              opacity: canAfford ? 1 : 0.5,
+            }}
+          >
             Spend {node.cost} XP
           </button>
         </div>
@@ -114,9 +144,9 @@ function PurchasePopover({ node, xpAvailable, onConfirm, onCancel }: {
   )
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-/*  TOOLTIP                               */
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════════════════════════════════════════ */
+/*  TOOLTIP                                               */
+/* ═══════════════════════════════════════════════════════ */
 
 const TOOLTIP_W = 300
 
@@ -133,17 +163,21 @@ function ForceTooltip({ node, pos }: { node: ForceTreeNode; pos: FixedPos }) {
       left: pos.left,
       ...(pos.top    !== undefined ? { top:    pos.top    } : {}),
       ...(pos.bottom !== undefined ? { bottom: pos.bottom } : {}),
-      zIndex: 9999,
+      zIndex: Z.tooltip,
       width: TOOLTIP_W,
       background: 'var(--hud-surface-hi)',
+      // HUD.gold + hex alpha suffix: dynamic alpha construction — kept as template
       border: `1px solid ${HUD.gold}40`,
       padding: '12px 16px',
-      boxShadow: '0 8px 32px rgba(0,0,0,.5)', pointerEvents: 'none',
-      fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL,
+      boxShadow: '0 8px 32px rgba(0,0,0,.5)',
+      pointerEvents: 'none',
+      fontFamily: FONT_BODY,
+      fontSize: FS.label,
     }}>
       <div style={{
-        fontSize: FS_SM,
-        fontWeight: 700, letterSpacing: '0.08em',
+        fontSize: FS.sm,
+        fontWeight: 700,
+        letterSpacing: '0.08em',
         color: node.purchased ? GOLD_BR : TEXT,
         marginBottom: '6px',
       }}>
@@ -152,7 +186,7 @@ function ForceTooltip({ node, pos }: { node: ForceTreeNode; pos: FixedPos }) {
       <div style={{
         display: 'flex', alignItems: 'center', gap: '8px',
         marginBottom: '8px', paddingBottom: '8px',
-        borderBottom: `1px solid var(--hud-border)`,
+        borderBottom: `1px solid ${HUD.border}`,
       }}>
         <span style={{ fontWeight: 700, color: HUD.gold }}>
           {node.cost} XP
@@ -164,8 +198,10 @@ function ForceTooltip({ node, pos }: { node: ForceTreeNode; pos: FixedPos }) {
         </div>
       )}
       <div style={{
-        marginTop: '8px', fontSize: FS_OVERLINE,
-        fontWeight: 700, letterSpacing: '0.1em',
+        marginTop: '8px',
+        fontSize: FS.overline,
+        fontWeight: 700,
+        letterSpacing: '0.1em',
         color: node.purchased ? GREEN : node.canPurchase ? HUD.gold : DIM,
       }}>
         {node.purchased ? 'PURCHASED' : node.canPurchase ? 'CLICK TO PURCHASE' : 'LOCKED'}
@@ -174,9 +210,9 @@ function ForceTooltip({ node, pos }: { node: ForceTreeNode; pos: FixedPos }) {
   )
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-/*  NODE                                  */
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════════════════════════════════════════ */
+/*  NODE                                                  */
+/* ═══════════════════════════════════════════════════════ */
 
 function ForceNode({
   node, onClickPurchase, xpAvailable, onHoverChange,
@@ -219,24 +255,25 @@ function ForceNode({
 
   const isPurchased = node.purchased
   const isAvailable = node.canPurchase && !node.purchased
-  const isLocked = !node.purchased && !node.canPurchase
 
   let nodeStyle: React.CSSProperties
   if (isPurchased) {
     nodeStyle = {
+      // rgba(224,58,30,*) — force identity accent, pre-approved
       background: 'rgba(224,58,30,0.10)',
       border: `1.5px solid rgba(224,58,30,0.55)`,
       boxShadow: '0 0 14px rgba(224,58,30,0.12), inset 0 1px 0 rgba(224,58,30,0.18)',
     }
   } else if (isAvailable) {
     nodeStyle = {
+      // Dynamic hover: rgba(224,58,30,*) — force identity, pre-approved
       background: hovered ? 'rgba(224,58,30,0.07)' : 'transparent',
       border: `1.5px dashed ${hovered ? 'rgba(224,58,30,0.5)' : 'rgba(224,58,30,0.22)'}`,
     }
   } else {
     nodeStyle = {
       background: 'transparent',
-      border: '1px dashed var(--hud-border)',
+      border: `1px dashed ${HUD.border}`,
       opacity: 0.5,
     }
   }
@@ -264,10 +301,12 @@ function ForceNode({
         ...nodeStyle,
         padding: '8px 6px',
         cursor: isClickable ? 'pointer' : 'default',
-        transition: 'all .25s ease',
+        transition: EASE.default,
         transform: hovered && isAvailable ? 'scale(1.05)' : 'scale(1)',
-        zIndex: hovered ? 20 : 1, overflow: 'visible',
-        borderRadius: 4,
+        // Z.dropdown (20) for hovered node — elevated within grid but below overlays
+        zIndex: hovered ? Z.dropdown : Z.raised,
+        overflow: 'visible',
+        borderRadius: RADIUS.md,
       }}
     >
       {isPurchased && (
@@ -280,7 +319,7 @@ function ForceNode({
 
       {/* Ability name */}
       <div style={{
-        fontFamily: FONT_RAJDHANI, fontSize: FS_SM,
+        fontFamily: FONT_BODY, fontSize: FS.sm,
         fontWeight: 700,
         color: nameColor,
         textAlign: 'center', lineHeight: 1.3,
@@ -293,11 +332,11 @@ function ForceNode({
 
       {/* Cost */}
       <div style={{
-        fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL,
+        fontFamily: FONT_BODY, fontSize: FS.label,
         fontWeight: 700, marginTop: '4px',
         color: costColor,
       }}>
-        {isPurchased ? '\u2713' : `${node.cost} XP`}
+        {isPurchased ? '✓' : `${node.cost} XP`}
       </div>
 
       {hovered && createPortal(
@@ -308,9 +347,9 @@ function ForceNode({
   )
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-/*  SVG CONNECTIONS                       */
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════════════════════════════════════════ */
+/*  SVG CONNECTIONS                                       */
+/* ═══════════════════════════════════════════════════════ */
 
 function ForceConnectionLines({
   connections, nodeMap, gridRef,
@@ -363,7 +402,7 @@ function ForceConnectionLines({
   }, [computeLines])
 
   return (
-    <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0, overflow: 'visible' }}>
+    <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: Z.base, overflow: 'visible' }}>
       <defs>
         <filter id="force-conn-glow" x="-20%" y="-20%" width="140%" height="140%">
           <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur" />
@@ -378,6 +417,7 @@ function ForceConnectionLines({
         return (
           <line key={i}
             x1={ln.x1} y1={ln.y1} x2={ln.x2} y2={ln.y2}
+            // rgba(224,58,30,*) — force identity accent strokes, pre-approved
             stroke={bothPurchased ? 'rgba(224,58,30,0.7)' : onePurchased ? 'rgba(224,58,30,0.35)' : 'rgba(224,58,30,0.15)'}
             strokeWidth={bothPurchased ? 2 : 1.5}
             strokeLinecap="round"
@@ -389,9 +429,9 @@ function ForceConnectionLines({
   )
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-/*  MAIN FORCE POWER TREE                 */
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════════════════════════════════════════ */
+/*  MAIN FORCE POWER TREE                                 */
+/* ═══════════════════════════════════════════════════════ */
 
 export function ForcePowerTree({
   powerName, nodes, connections, onPurchase, xpAvailable, purchasedCount, totalCount,
@@ -420,9 +460,9 @@ export function ForcePowerTree({
     <div style={{
       background: BG,
       border: `1px solid ${BORDER}`,
-      borderRadius: 6,
+      borderRadius: RADIUS.lg,
       overflow: 'hidden',
-      fontFamily: FONT_RAJDHANI,
+      fontFamily: FONT_BODY,
     }}>
       {/* Header */}
       <div style={{
@@ -433,13 +473,13 @@ export function ForcePowerTree({
       }}>
         <div>
           <div style={{
-            fontFamily: FONT_RAJDHANI, fontSize: FS_SM,
+            fontFamily: FONT_BODY, fontSize: FS.sm,
             fontWeight: 700, color: HUD.gold,
           }}>
             {powerName}
           </div>
           <div style={{
-            fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL,
+            fontFamily: FONT_BODY, fontSize: FS.label,
             color: DIM, marginTop: 2,
           }}>
             {purchasedCount}/{totalCount} abilities
@@ -448,9 +488,10 @@ export function ForcePowerTree({
         {xpAvailable !== undefined && (
           <div style={{
             background: 'var(--hud-surface-lo)',
-            border: '1px solid var(--hud-border)',
-            borderRadius: 3, padding: '2px 10px',
-            fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL,
+            border: `1px solid ${HUD.border}`,
+            borderRadius: RADIUS.sm,
+            padding: '2px 10px',
+            fontFamily: FONT_BODY, fontSize: FS.label,
             color: HUD.gold,
           }}>
             {xpAvailable} XP
@@ -470,7 +511,7 @@ export function ForcePowerTree({
             gap: '8px',
           }}
         >
-          <div style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
+          <div style={{ position: 'absolute', inset: 0, zIndex: Z.base, pointerEvents: 'none' }}>
             <ForceConnectionLines connections={connections} nodeMap={nodeMap} gridRef={gridRef} />
           </div>
 
@@ -491,7 +532,10 @@ export function ForcePowerTree({
                   style={{
                     gridColumn: node.span > 1 ? `${col + 1} / span ${node.span}` : col + 1,
                     gridRow: row + 1,
-                    zIndex: hoveredCell === `${row}-${col}` ? 50 : 1,
+                    // Z.overlay (100) for the hovered cell to clear other grid cells;
+                    // original used 50 which sits between Z.dropdown(20) and Z.overlay(100).
+                    // Z.overlay is the correct token-scale choice for elevated grid content.
+                    zIndex: hoveredCell === `${row}-${col}` ? Z.overlay : Z.raised,
                     minHeight: '160px',
                     position: 'relative',
                   }}
@@ -511,18 +555,20 @@ export function ForcePowerTree({
 
       {/* Legend */}
       <div style={{
+        // rgba(0,0,0,0.2) — pre-approved rgba(0,0,0,*) overlay tint; no token for this specific shade
         background: 'rgba(0,0,0,0.2)',
         padding: '8px 16px',
         display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap',
       }}>
         {[
+          // rgba(224,58,30,*) — force identity accent, pre-approved
           { color: 'rgba(224,58,30,0.55)', label: 'Purchased', style: 'solid' as const },
           { color: 'rgba(224,58,30,0.22)', label: 'Available', style: 'dashed' as const },
-          { color: 'var(--hud-border)', label: 'Locked', style: 'dashed' as const },
+          { color: HUD.border, label: 'Locked', style: 'dashed' as const },
         ].map(item => (
           <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <div style={{ width: '14px', height: '14px', border: `1.5px ${item.style} ${item.color}`, opacity: item.label === 'Locked' ? 0.5 : 1, borderRadius: 2 }} />
-            <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: DIM }}>{item.label}</span>
+            <div style={{ width: '14px', height: '14px', border: `1.5px ${item.style} ${item.color}`, opacity: item.label === 'Locked' ? 0.5 : 1, borderRadius: RADIUS.sm }} />
+            <span style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: DIM }}>{item.label}</span>
           </div>
         ))}
       </div>

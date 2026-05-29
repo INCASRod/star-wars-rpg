@@ -1,26 +1,22 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeInit } from "@/components/ThemeInit";
 import "./globals.css";
 
-const signika = localFont({
-  src: "../../public/fonts/Signika/Signika-VariableFont_GRAD,wght.ttf",
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
   variable: "--font-display",
   display: "swap",
-  weight: "300 700",
+  weight: ["300", "400", "500", "600", "700"],
 });
 
-const palanquin = localFont({
-  src: [
-    { path: "../../public/fonts/Palanquin/Palanquin-Light.ttf",    weight: "300", style: "normal" },
-    { path: "../../public/fonts/Palanquin/Palanquin-Regular.ttf",  weight: "400", style: "normal" },
-    { path: "../../public/fonts/Palanquin/Palanquin-Medium.ttf",   weight: "500", style: "normal" },
-    { path: "../../public/fonts/Palanquin/Palanquin-SemiBold.ttf", weight: "600", style: "normal" },
-    { path: "../../public/fonts/Palanquin/Palanquin-Bold.ttf",     weight: "700", style: "normal" },
-  ],
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
   variable: "--font-body",
   display: "swap",
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 const swRpgIcons = localFont({
@@ -47,7 +43,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${signika.variable} ${palanquin.variable} ${swRpgIcons.variable}`}>
+    <html lang="en" className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} ${swRpgIcons.variable}`}>
       <body className="antialiased">
         <ThemeInit />
         {children}

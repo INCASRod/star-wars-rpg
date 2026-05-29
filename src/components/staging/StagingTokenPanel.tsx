@@ -1,35 +1,31 @@
-﻿'use client'
+'use client'
 
 import { useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useEncounterState } from '@/hooks/useEncounterState'
 import type { MapToken } from '@/hooks/useMapTokens'
 import type { Character } from '@/lib/types'
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_BODY, FS, SP, RADIUS, EASE } from '@/lib/tokens'
 
 /* ── Design tokens (match GmMapView exactly) ──────────────── */
-const FC       = 'var(--font-body)'
-const FR       = 'var(--font-body)'
-const DIM      = '#6A8070'
-const TEXT     = 'var(--hud-text)'
-const GREEN    = '#4EC87A'
-const BORDER   = 'var(--hud-border)'
-const BORDER_HI = 'var(--hud-border-hi)'
-
-const FS_OVERLINE = 'var(--text-overline)'
-const FS_CAPTION  = 'var(--text-caption)'
-const FS_LABEL    = 'var(--text-label)'
+const FC       = FONT_BODY
+const FR       = FONT_BODY
+const DIM      = HUD.textFaint
+const TEXT     = HUD.text
+const GREEN    = 'var(--state-success)'
+const BORDER   = HUD.border
+const BORDER_HI = HUD.borderHi
 
 const btnSmall: React.CSSProperties = {
   background: 'var(--hud-surface-lo)',
-  border: `1px solid var(--hud-border)`,
+  border: `1px solid ${HUD.border}`,
   color: HUD.gold,
   fontFamily: FR,
-  fontSize: FS_CAPTION,
+  fontSize: FS.caption,
   fontWeight: 700,
   letterSpacing: '0.06em',
-  padding: '3px 9px',
-  borderRadius: 3,
+  padding: `3px 9px`,
+  borderRadius: RADIUS.sm,
   cursor: 'pointer',
   whiteSpace: 'nowrap',
 }
@@ -37,12 +33,12 @@ const btnSmall: React.CSSProperties = {
 const btnDanger: React.CSSProperties = {
   background: 'rgba(224,80,80,0.10)',
   border: `1px solid rgba(224,80,80,0.35)`,
-  color: '#E05050',
+  color: 'var(--state-failure)',
   fontFamily: FR,
-  fontSize: FS_CAPTION,
+  fontSize: FS.caption,
   fontWeight: 700,
-  padding: '4px 9px',
-  borderRadius: 3,
+  padding: `4px 9px`,
+  borderRadius: RADIUS.sm,
   cursor: 'pointer',
   flexShrink: 0,
 }
@@ -151,7 +147,7 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
       })
   }, [encounter])
 
-  /* ── Token add helpers ─────────────────────────────────��� */
+  /* ── Token add helpers ────────────────────────────────── */
   async function addCharacterToken(character: Character, x = 0.5, y = 0.5) {
     if (!mapId || !campaignId) return
     await addToken({
@@ -237,28 +233,29 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
           {vehicleSlots.map(p => {
             const isOnMap    = onMapSlotKeys.has(p.slotId)
             const mapToken   = tokensBySlotKey.get(p.slotId) ?? null
+            // Dynamic per-alignment color — data-driven, kept as hex
             const tokenColor = p.alignment === 'allied_npc' ? '#4EC87A' : '#e05252'
 
             return (
-              <div key={p.slotId} style={{ padding: '10px 12px', borderBottom: `1px solid ${BORDER}` }}>
+              <div key={p.slotId} style={{ padding: `10px 12px`, borderBottom: `1px solid ${BORDER}` }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
 
                   {/* Token preview (rectangle) */}
                   {p.token_image_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={p.token_image_url} alt="" style={{ width: 40, height: 28, borderRadius: 3, objectFit: 'cover', flexShrink: 0, border: `2px solid ${tokenColor}60` }} />
+                    <img src={p.token_image_url} alt="" style={{ width: 40, height: 28, borderRadius: RADIUS.sm, objectFit: 'cover', flexShrink: 0, border: `2px solid ${tokenColor}60` }} />
                   ) : (
-                    <div style={{ width: 40, height: 28, borderRadius: 3, flexShrink: 0, background: `${tokenColor}20`, border: `2px solid ${tokenColor}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FC, fontSize: 13, fontWeight: 700, color: tokenColor }}>
+                    <div style={{ width: 40, height: 28, borderRadius: RADIUS.sm, flexShrink: 0, background: `${tokenColor}20`, border: `2px solid ${tokenColor}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FC, fontSize: 13, fontWeight: 700, color: tokenColor }}>
                       {p.name.charAt(0).toUpperCase()}
                     </div>
                   )}
 
                   {/* Name + badge */}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontFamily: FR, fontSize: FS.label, fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {p.name}
                     </div>
-                    <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.1em', color: tokenColor }}>
+                    <div style={{ fontFamily: FR, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.1em', color: tokenColor }}>
                       {p.alignment === 'allied_npc' ? 'ALLIED' : 'ENEMY'} · VEHICLE
                     </div>
                   </div>
@@ -266,23 +263,23 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
                   {/* Add / On map */}
                   {mapId && (
                     isOnMap
-                      ? <span style={{ fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, color: GREEN, flexShrink: 0 }}>On map ✓</span>
+                      ? <span style={{ fontFamily: FR, fontSize: FS.caption, fontWeight: 700, color: GREEN, flexShrink: 0 }}>On map ✓</span>
                       : <button onClick={() => void addVehicleToken(p)} style={btnSmall}>+ Add</button>
                   )}
                 </div>
 
                 {/* On-map controls */}
                 {isOnMap && mapToken && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: SP[2] }}>
                     <button
                       onClick={() => void toggleVisibility(mapToken.id, !mapToken.is_visible)}
                       style={{
-                        flex: 1, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
-                        letterSpacing: '0.06em', cursor: 'pointer', borderRadius: 3,
-                        padding: '4px 8px', border: 'none',
+                        flex: 1, fontFamily: FR, fontSize: FS.caption, fontWeight: 700,
+                        letterSpacing: '0.06em', cursor: 'pointer', borderRadius: RADIUS.sm,
+                        padding: `4px 8px`, border: 'none',
                         background: mapToken.is_visible ? 'rgba(78,200,122,0.12)' : 'var(--hud-surface-lo)',
                         color: mapToken.is_visible ? GREEN : DIM,
-                        transition: '.15s',
+                        transition: EASE.default,
                       }}
                     >
                       {mapToken.is_visible ? '◉ Visible to players' : '◯ Hidden from players'}
@@ -305,6 +302,7 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
 
           {standaloneTokens.map(token => {
             const isVehicle  = token.token_shape === 'rectangle'
+            // Dynamic per-alignment color — data-driven, kept as hex
             const tokenColor = token.alignment === 'allied_npc' ? '#5AAAE0'
               : token.alignment === 'nemesis'   ? '#9060D0'
               : token.alignment === 'rival'     ? '#FF9800'
@@ -312,7 +310,7 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
               : HUD.gold
 
             return (
-              <div key={token.id} style={{ padding: '10px 12px', borderBottom: `1px solid ${BORDER}` }}>
+              <div key={token.id} style={{ padding: `10px 12px`, borderBottom: `1px solid ${BORDER}` }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
 
                   {/* Token preview */}
@@ -324,7 +322,7 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
                       style={{
                         width: isVehicle ? 40 : 40,
                         height: isVehicle ? 28 : 40,
-                        borderRadius: isVehicle ? 3 : '50%',
+                        borderRadius: isVehicle ? RADIUS.sm : RADIUS.full,
                         objectFit: 'cover', flexShrink: 0,
                         border: `2px solid ${tokenColor}60`,
                       }}
@@ -333,7 +331,7 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
                     <div style={{
                       width: isVehicle ? 40 : 40,
                       height: isVehicle ? 28 : 40,
-                      borderRadius: isVehicle ? 3 : '50%',
+                      borderRadius: isVehicle ? RADIUS.sm : RADIUS.full,
                       flexShrink: 0,
                       background: `${tokenColor}20`,
                       border: `2px solid ${tokenColor}50`,
@@ -346,10 +344,10 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
 
                   {/* Name + badge */}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontFamily: FR, fontSize: FS.label, fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {token.label ?? '—'}
                     </div>
-                    <div style={{ fontFamily: FR, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.1em', color: tokenColor }}>
+                    <div style={{ fontFamily: FR, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.1em', color: tokenColor }}>
                       {token.alignment === 'allied_npc' ? 'ALLIED' : 'ENEMY'}
                       {isVehicle ? ' · VEHICLE' : ''}
                     </div>
@@ -357,16 +355,16 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
                 </div>
 
                 {/* On-map controls */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: SP[2] }}>
                   <button
                     onClick={() => void toggleVisibility(token.id, !token.is_visible)}
                     style={{
-                      flex: 1, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
-                      letterSpacing: '0.06em', cursor: 'pointer', borderRadius: 3,
-                      padding: '4px 8px', border: 'none',
+                      flex: 1, fontFamily: FR, fontSize: FS.caption, fontWeight: 700,
+                      letterSpacing: '0.06em', cursor: 'pointer', borderRadius: RADIUS.sm,
+                      padding: `4px 8px`, border: 'none',
                       background: token.is_visible ? 'rgba(78,200,122,0.12)' : 'var(--hud-surface-lo)',
                       color: token.is_visible ? GREEN : DIM,
-                      transition: '.15s',
+                      transition: EASE.default,
                     }}
                   >
                     {token.is_visible ? '◉ Visible to players' : '◯ Hidden from players'}
@@ -387,7 +385,7 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
           </SectionHeader>
 
           {activeCharacters.length === 0 && (
-            <div style={{ padding: '12px 14px', fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>
+            <div style={{ padding: `12px 14px`, fontFamily: FR, fontSize: FS.caption, color: DIM }}>
               No active characters.
             </div>
           )}
@@ -397,44 +395,44 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
             const mapToken = tokensByCharId.get(char.id) ?? null
 
             return (
-              <div key={char.id} style={{ padding: '10px 12px', borderBottom: `1px solid ${BORDER}` }}>
+              <div key={char.id} style={{ padding: `10px 12px`, borderBottom: `1px solid ${BORDER}` }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
 
                   {/* Portrait */}
                   {char.portrait_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={char.portrait_url} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid var(--hud-border-hi)' }} />
+                    <img src={char.portrait_url} alt="" style={{ width: 40, height: 40, borderRadius: RADIUS.full, objectFit: 'cover', flexShrink: 0, border: `2px solid ${HUD.borderHi}` }} />
                   ) : (
-                    <div style={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, background: 'var(--hud-surface-lo)', border: '2px solid var(--hud-border-hi)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FC, fontSize: 16, fontWeight: 700, color: HUD.gold }}>
+                    <div style={{ width: 40, height: 40, borderRadius: RADIUS.full, flexShrink: 0, background: 'var(--hud-surface-lo)', border: `2px solid ${HUD.borderHi}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FC, fontSize: 16, fontWeight: 700, color: HUD.gold }}>
                       {char.name.charAt(0).toUpperCase()}
                     </div>
                   )}
 
                   {/* Name */}
-                  <div style={{ flex: 1, fontFamily: FC, fontSize: FS_LABEL, fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <div style={{ flex: 1, fontFamily: FC, fontSize: FS.label, fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {char.name}
                   </div>
 
                   {/* Add / On map */}
                   {mapId && (
                     isOnMap
-                      ? <span style={{ fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700, color: GREEN, flexShrink: 0 }}>On map ✓</span>
+                      ? <span style={{ fontFamily: FR, fontSize: FS.caption, fontWeight: 700, color: GREEN, flexShrink: 0 }}>On map ✓</span>
                       : <button onClick={() => void addCharacterToken(char)} style={btnSmall}>+ Add</button>
                   )}
                 </div>
 
                 {/* On-map controls */}
                 {isOnMap && mapToken && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: SP[2] }}>
                     <button
                       onClick={() => void toggleVisibility(mapToken.id, !mapToken.is_visible)}
                       style={{
-                        flex: 1, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
-                        letterSpacing: '0.06em', cursor: 'pointer', borderRadius: 3,
-                        padding: '4px 8px', border: 'none',
-                        background: mapToken.is_visible ? 'rgba(78,200,122,0.12)' : 'rgba(255,255,255,0.04)',
+                        flex: 1, fontFamily: FR, fontSize: FS.caption, fontWeight: 700,
+                        letterSpacing: '0.06em', cursor: 'pointer', borderRadius: RADIUS.sm,
+                        padding: `4px 8px`, border: 'none',
+                        background: mapToken.is_visible ? 'rgba(78,200,122,0.12)' : 'var(--hud-surface-lo)',
                         color: mapToken.is_visible ? GREEN : DIM,
-                        transition: '.15s',
+                        transition: EASE.default,
                       }}
                     >
                       {mapToken.is_visible ? '◉ Visible to players' : '◯ Hidden from players'}
@@ -448,14 +446,14 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
 
           {/* Add All Players */}
           {mapId && availablePcs.length > 0 && (
-            <div style={{ padding: '10px 12px', borderTop: `1px solid ${BORDER}` }}>
+            <div style={{ padding: `10px 12px`, borderTop: `1px solid ${BORDER}` }}>
               <button
                 onClick={() => void addAllPlayers()}
                 style={{
                   background: 'var(--hud-surface-hi)', border: `1px solid ${BORDER_HI}`,
-                  color: HUD.gold, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
-                  letterSpacing: '0.1em', textTransform: 'uppercase', padding: '6px 13px',
-                  borderRadius: 4, cursor: 'pointer', width: '100%',
+                  color: HUD.gold, fontFamily: FR, fontSize: FS.caption, fontWeight: 700,
+                  letterSpacing: '0.1em', textTransform: 'uppercase', padding: `6px 13px`,
+                  borderRadius: RADIUS.md, cursor: 'pointer', width: '100%',
                 }}
               >
                 ◉ Add All Players
@@ -467,31 +465,19 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
 
       {/* ── Remove All Tokens ─────────────────────────────── */}
       {hasTokens && (
-        <div style={{ padding: '10px 12px', borderTop: `1px solid ${BORDER}`, marginTop: 'auto' }}>
+        <div style={{ padding: `10px 12px`, borderTop: `1px solid ${BORDER}`, marginTop: 'auto' }}>
           {!removeAllConfirm ? (
             /* Idle state — show the remove-all trigger */
             <button
               onClick={() => setRemoveAllConfirm(true)}
               style={{
-                width: '100%', padding: '6px 0', borderRadius: 4,
+                width: '100%', padding: `6px 0`, borderRadius: RADIUS.md,
                 background: 'rgba(224,80,80,0.07)',
                 border: '1px solid rgba(224,80,80,0.25)',
                 color: 'rgba(224,80,80,0.55)',
-                fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
+                fontFamily: FR, fontSize: FS.caption, fontWeight: 700,
                 letterSpacing: '0.08em', textTransform: 'uppercase',
-                cursor: 'pointer', transition: '.15s',
-              }}
-              onMouseEnter={e => {
-                const el = e.currentTarget as HTMLElement
-                el.style.background = 'rgba(224,80,80,0.12)'
-                el.style.borderColor = 'rgba(224,80,80,0.45)'
-                el.style.color = '#E05050'
-              }}
-              onMouseLeave={e => {
-                const el = e.currentTarget as HTMLElement
-                el.style.background = 'rgba(224,80,80,0.07)'
-                el.style.borderColor = 'rgba(224,80,80,0.25)'
-                el.style.color = 'rgba(224,80,80,0.55)'
+                cursor: 'pointer', transition: EASE.default,
               }}
             >
               ✕ Remove All Tokens ({tokens.length})
@@ -501,10 +487,10 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
             <div style={{
               background: 'rgba(224,80,80,0.08)',
               border: '1px solid rgba(224,80,80,0.35)',
-              borderRadius: 4, padding: '10px 12px',
-              display: 'flex', flexDirection: 'column', gap: 8,
+              borderRadius: RADIUS.md, padding: `10px 12px`,
+              display: 'flex', flexDirection: 'column', gap: SP[2],
             }}>
-              <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: '#E05050', fontWeight: 700 }}>
+              <div style={{ fontFamily: FR, fontSize: FS.caption, color: 'var(--state-failure)', fontWeight: 700 }}>
                 Remove all {tokens.length} token{tokens.length !== 1 ? 's' : ''} from the map?
               </div>
               <div style={{ display: 'flex', gap: 6 }}>
@@ -512,9 +498,9 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
                   onClick={() => setRemoveAllConfirm(false)}
                   disabled={removeAllBusy}
                   style={{
-                    flex: 1, padding: '5px 0', borderRadius: 3,
+                    flex: 1, padding: `5px 0`, borderRadius: RADIUS.sm,
                     background: 'transparent', border: `1px solid ${BORDER}`,
-                    color: DIM, fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
+                    color: DIM, fontFamily: FR, fontSize: FS.caption, fontWeight: 700,
                     cursor: 'pointer',
                   }}
                 >
@@ -524,11 +510,11 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
                   onClick={() => void handleRemoveAll()}
                   disabled={removeAllBusy}
                   style={{
-                    flex: 2, padding: '5px 0', borderRadius: 3,
+                    flex: 2, padding: `5px 0`, borderRadius: RADIUS.sm,
                     background: 'rgba(224,80,80,0.15)',
                     border: '1px solid rgba(224,80,80,0.5)',
-                    color: '#E05050',
-                    fontFamily: FR, fontSize: FS_CAPTION, fontWeight: 700,
+                    color: 'var(--state-failure)',
+                    fontFamily: FR, fontSize: FS.caption, fontWeight: 700,
                     letterSpacing: '0.06em', cursor: removeAllBusy ? 'wait' : 'pointer',
                     opacity: removeAllBusy ? 0.6 : 1,
                   }}
@@ -545,7 +531,7 @@ export function StagingTokenPanel({ mapId, campaignId, characters, tokens, addTo
   )
 }
 
-/* ── Section header ─────────────────────���─────────────────── */
+/* ── Section header ─────────────────────────────────────────── */
 function SectionHeader({
   children, topBorder = false,
 }: {
@@ -554,12 +540,12 @@ function SectionHeader({
 }) {
   return (
     <div style={{
-      padding: '10px 14px 6px',
-      fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 700,
+      padding: `10px 14px 6px`,
+      fontFamily: FC, fontSize: FS.overline, fontWeight: 700,
       letterSpacing: '0.2em', textTransform: 'uppercase',
-      color: 'var(--hud-text-dim)',
-      borderBottom: `1px solid ${BORDER}`,
-      borderTop: topBorder ? `1px solid ${BORDER}` : 'none',
+      color: HUD.textDim,
+      borderBottom: `1px solid ${HUD.border}`,
+      borderTop: topBorder ? `1px solid ${HUD.border}` : 'none',
     }}>
       {children}
     </div>

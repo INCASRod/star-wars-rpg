@@ -1,5 +1,6 @@
-﻿'use client'
+'use client'
 
+import { HUD, FS, SP, RADIUS, EASE, FONT_DISPLAY, FONT_BODY } from '@/lib/tokens'
 import { HudCard } from '../ui/HudCard'
 import { removeBtnStyle as baseRemoveBtnStyle } from '@/lib/styles'
 
@@ -37,24 +38,24 @@ export function TalentsCard({ talents, animClass = 'ar d4', onOpenTree, collapsi
       <div style={{ display: 'flex', flexWrap: 'wrap' }}>
         {talents.map((tal, i) => (
           <div key={i} style={{
-            display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-            background: 'var(--bs-surface)', border: '1px solid var(--bs-bdr-mid)',
-            padding: '0.5rem 0.75rem', margin: '0 0.25rem 0.25rem 0',
-            fontSize: 'var(--font-sm)', transition: '.2s', cursor: 'default',
+            display: 'inline-flex', alignItems: 'center', gap: SP[2],
+            background: 'var(--hud-surface-lo)', border: `1px solid ${HUD.borderHi}`,
+            padding: `${SP[2]} ${SP[3]}`, margin: `0 ${SP[1]} ${SP[1]} 0`,
+            fontSize: FS.sm, transition: EASE.default, cursor: 'default',
           }}>
             <div style={{
-              fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', fontWeight: 800,
-              color: 'var(--bs-red-mid)', background: 'var(--bs-red-glow)',
+              fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 800,
+              color: 'var(--hud-accent)', background: 'var(--hud-accent-10)',
               width: '1.1rem', height: '1.1rem',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
               {tal.rank}
             </div>
             <div>
-              <div style={{ fontWeight: 600, color: 'var(--bs-txt)' }}>{tal.name}</div>
+              <div style={{ fontWeight: 600, color: HUD.text }}>{tal.name}</div>
               <div style={{
-                fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)',
-                fontWeight: 600, color: ACTIVATION_COLORS[tal.activation] || 'var(--bs-txt2)', letterSpacing: '0.06rem',
+                fontFamily: FONT_BODY, fontSize: FS.overline,
+                fontWeight: 600, color: ACTIVATION_COLORS[tal.activation] || HUD.textDim, letterSpacing: '0.06rem',
               }}>
                 {tal.activation}
               </div>
@@ -77,15 +78,15 @@ export function TalentsCard({ talents, animClass = 'ar d4', onOpenTree, collapsi
         <button
           onClick={onOpenTree}
           style={{
-            width: '100%', marginTop: '0.5rem',
-            background: 'rgba(224,58,30,.08)',
-            border: '1px solid var(--bs-red-sun)',
-            padding: '0.5rem',
+            width: '100%', marginTop: SP[2],
+            background: 'var(--hud-accent-10)',
+            border: `1px solid var(--hud-gold)`,
+            padding: SP[2],
             cursor: 'pointer',
-            fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)',
+            fontFamily: FONT_BODY, fontSize: FS.overline,
             fontWeight: 700, letterSpacing: '0.1rem',
-            color: 'var(--bs-red-mid)', textAlign: 'center',
-            transition: '.2s',
+            color: 'var(--hud-accent)', textAlign: 'center',
+            transition: EASE.default,
           }}
         >
           VIEW TALENT TREE

@@ -44,7 +44,7 @@ import { CombatFeedPanel } from './CombatFeedPanel'
 import { EncounterAdversaryPanel } from './EncounterAdversaryPanel'
 import { EncounterVehiclePanel } from './EncounterVehiclePanel'
 import { useEncounterState } from '@/hooks/useEncounterState'
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_BODY, FS, SP, RADIUS, EASE, Z } from '@/lib/tokens'
 
 /* ── Layout constants ─────────────────────────────────────── */
 /** TOP BAR (56px) + MODE BAR (48px) + 8px gap = 112px.
@@ -52,9 +52,8 @@ import { HUD } from '@/lib/tokens'
 const PILL_TOP = 112
 
 /* ── Design tokens ────────────────────────────────────────── */
-const FR   = 'var(--font-body)'
-const DIM  = '#6A8070'
-const RED  = '#E05050'
+const DIM  = '#6A8070'   // pre-approved: dim text color
+const RED  = '#E05050'   // pre-approved: combat/danger indicator
 
 /* ── Panel type definitions ───────────────────────────────── */
 type LeftPanelId   = 'adversaries' | 'vehicles' | 'tokens'
@@ -362,7 +361,7 @@ export function StagingFloatingToolbar({
           position:      'fixed',
           top:           PILL_TOP,
           left:          8,
-          zIndex:        40,      // above canvas; below drawer backdrop (8999)
+          zIndex:        Z.overlay,  // above canvas; below drawer backdrop (8999)
           display:       'flex',
           flexDirection: 'column',
           gap:           6,
@@ -395,7 +394,7 @@ export function StagingFloatingToolbar({
             backdropFilter:       'blur(14px)',
             WebkitBackdropFilter: 'blur(14px)',
             border:               '1px solid var(--hud-border)',
-            borderRadius:         8,
+            borderRadius:         RADIUS.lg,
             overflow:             'hidden',
             pointerEvents:        'auto',
             boxShadow:            '0 2px 8px rgba(0,0,0,0.35)',
@@ -406,23 +405,23 @@ export function StagingFloatingToolbar({
             onClick={() => adjustTokenScale(-0.25)}
             title="Decrease token scale"
             style={{
-              padding:    '7px 11px',
+              padding:    '0.4375rem 0.6875rem',
               background: 'transparent',
               border:     'none',
               cursor:     mapId ? 'pointer' : 'not-allowed',
               color:      mapId ? HUD.gold : DIM,
-              fontFamily: FR,
-              fontSize:   16,
+              fontFamily: FONT_BODY,
+              fontSize:   FS.h4,
               lineHeight: 1,
             }}
           >−</button>
           <span style={{
-            fontFamily:    FR,
+            fontFamily:    FONT_BODY,
             fontSize:      'var(--text-label)',
             fontWeight:    700,
             letterSpacing: '0.06em',
             color:         mapId ? HUD.gold : DIM,
-            minWidth:      42,
+            minWidth:      '2.625rem',
             textAlign:     'center',
             userSelect:    'none',
           }}>
@@ -433,13 +432,13 @@ export function StagingFloatingToolbar({
             onClick={() => adjustTokenScale(0.25)}
             title="Increase token scale"
             style={{
-              padding:    '7px 11px',
+              padding:    '0.4375rem 0.6875rem',
               background: 'transparent',
               border:     'none',
               cursor:     mapId ? 'pointer' : 'not-allowed',
               color:      mapId ? HUD.gold : DIM,
-              fontFamily: FR,
-              fontSize:   16,
+              fontFamily: FONT_BODY,
+              fontSize:   FS.h4,
               lineHeight: 1,
             }}
           >+</button>
@@ -461,7 +460,7 @@ export function StagingFloatingToolbar({
           position:      'fixed',
           top:           PILL_TOP,
           right:         8,
-          zIndex:        40,
+          zIndex:        Z.overlay,
           display:       'flex',
           flexDirection: 'column',
           gap:           6,
@@ -685,20 +684,20 @@ const PointerPill = memo(function PointerPill({
         display:              'flex',
         alignItems:           'center',
         justifyContent:       'center',
-        padding:              '7px 14px',
+        padding:              '0.4375rem 0.875rem',
         background:           bg,
         backdropFilter:       'blur(14px)',
         WebkitBackdropFilter: 'blur(14px)',
         border,
-        borderRadius:         8,
+        borderRadius:         RADIUS.lg,
         cursor:               disabled ? 'not-allowed' : 'pointer',
         pointerEvents:        'auto',
-        transition:           'background 0.15s, border-color 0.15s',
+        transition:           `background ${EASE.default}, border-color ${EASE.default}`,
         boxShadow:            active ? '0 2px 12px rgba(0,0,0,0.5)' : '0 2px 8px rgba(0,0,0,0.35)',
       }}
     >
       {active
-        ? <span style={{ fontSize: 13, color: RED, lineHeight: 1, fontFamily: FR }}>✕</span>
+        ? <span style={{ fontSize: FS.sm, color: RED, lineHeight: 1, fontFamily: FONT_BODY }}>✕</span>
         : <PointerSvg color={color} size={16} />
       }
     </button>
@@ -742,17 +741,17 @@ const Pill = memo(function Pill({
       style={{
         display:              'flex',
         alignItems:           'center',
-        gap:                  8,
-        padding:              '7px 14px',
+        gap:                  SP[2],
+        padding:              '0.4375rem 0.875rem',
         background:           bg,
         backdropFilter:       'blur(14px)',
         WebkitBackdropFilter: 'blur(14px)',
         border,
-        borderRadius:         8,
+        borderRadius:         RADIUS.lg,
         cursor:               disabled ? 'not-allowed' : 'pointer',
         pointerEvents:        'auto',
         whiteSpace:           'nowrap',
-        transition:           'background 0.15s, border-color 0.15s',
+        transition:           `background ${EASE.default}, border-color ${EASE.default}`,
         boxShadow:            active ? `0 2px 12px rgba(0,0,0,0.5)` : '0 2px 8px rgba(0,0,0,0.35)',
       }}
       onMouseEnter={e => {
@@ -771,23 +770,23 @@ const Pill = memo(function Pill({
       }}
     >
       <span style={{
-        fontSize:   13,
+        fontSize:   FS.sm,
         lineHeight: 1,
         color:      textColor,
         flexShrink: 0,
-        transition: 'color 0.15s',
+        transition: `color ${EASE.default}`,
       }}>
         {icon}
       </span>
       <span style={{
-        fontFamily:    FR,
+        fontFamily:    FONT_BODY,
         fontSize:      'var(--text-label)',
         fontWeight:    700,
         letterSpacing: '0.08em',
         textTransform: 'uppercase',
         color:         textColor,
         lineHeight:    1,
-        transition:    'color 0.15s',
+        transition:    `color ${EASE.default}`,
       }}>
         {label}
       </span>

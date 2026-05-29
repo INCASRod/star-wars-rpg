@@ -5,7 +5,7 @@ interface DiceHexProps {
 }
 
 export function DiceHex({ type }: DiceHexProps) {
-  const color = type === 'proficiency' ? '#C8A22C' : 'var(--green)'
+  const color = type === 'proficiency' ? 'var(--die-proficiency)' : 'var(--green)'
   return (
     <div
       style={{

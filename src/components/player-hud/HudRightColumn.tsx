@@ -1,7 +1,6 @@
 'use client'
 
-import { C } from './design-tokens'
-import { FONT_BODY, FS } from '@/lib/tokens'
+import { HUD, FONT_BODY, FS } from '@/lib/tokens'
 import { RollFeedPanel } from './RollFeedPanel'
 import type { RollEntry } from '@/hooks/useRollFeed'
 
@@ -21,7 +20,7 @@ export function HudRightColumn({ rolls, ownCharacterId, isGm }: HudRightColumnPr
     }}>
       <div style={{
         padding: '6px var(--space-2)',
-        borderBottom: `1px solid ${C.border}`,
+        borderBottom: `1px solid ${HUD.border}`,
         flexShrink: 0,
       }}>
         <span style={{

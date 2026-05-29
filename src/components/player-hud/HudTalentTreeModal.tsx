@@ -3,6 +3,7 @@
 import { TalentTree, type TalentTreeNode, type TalentTreeConnection } from '@/components/character/TalentTree'
 import { BuySpecButton } from './BuySpecButton'
 import type { Character, CharacterSpecialization, RefSpecialization, RefTalent } from '@/lib/types'
+import { HUD, FONT_BODY, FONT_DISPLAY, FS, SP, RADIUS, Z } from '@/lib/tokens'
 
 interface HudTalentTreeModalProps {
   open: boolean
@@ -41,16 +42,16 @@ export function HudTalentTreeModal({
 }: HudTalentTreeModalProps) {
   if (!open) return null
   return (
-    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,.5)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-      <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '1200px', maxHeight: '95vh', overflowY: 'auto', background: 'var(--bs-sky)', border: '1px solid var(--bs-bdr-strong)', boxShadow: '0 8px 48px rgba(0,0,0,.3)', padding: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: Z.overlay, background: 'rgba(0,0,0,.5)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: SP[6] }}>
+      <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '1200px', maxHeight: '95vh', overflowY: 'auto', background: HUD.bg, border: '1px solid var(--hud-border-strong)', boxShadow: '0 8px 48px rgba(0,0,0,.3)', padding: SP[4] }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: SP[2], marginBottom: SP[3], flexWrap: 'wrap' }}>
           {charSpecs.map(cs => {
             const ref = refSpecMap[cs.specialization_key]
             const isActive = activeSpecKey === cs.specialization_key
             return (
-              <button key={cs.id} onClick={() => setActiveSpecKey(cs.specialization_key)} style={{ background: isActive ? 'var(--bs-red-glow)' : 'var(--bs-card)', border: `1px solid ${isActive ? 'var(--bs-red-sun)' : 'var(--bs-bdr-mid)'}`, padding: '8px 16px', cursor: 'pointer', fontFamily: 'var(--font-orbitron)', fontSize: 'var(--text-caption)', fontWeight: isActive ? 700 : 600, letterSpacing: '0.08em', color: isActive ? 'var(--bs-red-mid)' : 'var(--bs-txt2)' }}>
+              <button key={cs.id} onClick={() => setActiveSpecKey(cs.specialization_key)} style={{ background: isActive ? 'var(--hud-accent-10)' : HUD.panel, border: `1px solid ${isActive ? HUD.gold : HUD.borderHi}`, padding: `${SP[2]} ${SP[4]}`, cursor: 'pointer', fontFamily: FONT_DISPLAY, fontSize: FS.caption, fontWeight: isActive ? 700 : 600, letterSpacing: '0.08em', color: isActive ? HUD.gold : HUD.textDim }}>
                 {ref?.name || cs.specialization_key}
-                {cs.is_starting && <span style={{ fontSize: 'var(--text-overline)', color: 'var(--bs-txt3)', marginLeft: '8px' }}>START</span>}
+                {cs.is_starting && <span style={{ fontSize: FS.overline, color: HUD.textFaint, marginLeft: SP[2] }}>START</span>}
               </button>
             )
           })}
@@ -81,9 +82,9 @@ export function HudTalentTreeModal({
             xpAvailable={character.xp_available}
           />
         ) : (
-          <div style={{ textAlign: 'center', padding: '48px', fontFamily: 'var(--font-mono)', fontSize: 'var(--text-body-sm)', color: 'var(--bs-txt3)' }}>No talent tree data.</div>
+          <div style={{ textAlign: 'center', padding: SP[12], fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.textFaint }}>No talent tree data.</div>
         )}
-        <button onClick={onClose} style={{ display: 'block', margin: '16px auto 0', background: 'var(--bs-surface)', border: '1px solid var(--bs-bdr-mid)', padding: '12px 32px', fontFamily: 'var(--font-orbitron)', fontSize: 'var(--text-label)', fontWeight: 600, letterSpacing: '0.15em', color: 'var(--bs-txt2)', cursor: 'pointer' }}>CLOSE</button>
+        <button onClick={onClose} style={{ display: 'block', margin: `${SP[4]} auto 0`, background: 'var(--hud-surface-lo)', border: `1px solid ${HUD.borderHi}`, padding: `${SP[3]} ${SP[8]}`, fontFamily: FONT_DISPLAY, fontSize: FS.label, fontWeight: 600, letterSpacing: '0.15em', color: HUD.textDim, cursor: 'pointer' }}>CLOSE</button>
       </div>
     </div>
   )

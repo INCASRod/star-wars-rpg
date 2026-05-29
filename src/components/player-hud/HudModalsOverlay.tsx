@@ -18,6 +18,7 @@ import { DestinySpendConfirmModal } from '@/components/destiny/DestinySpendConfi
 import { DestinyGMFlash, DestinyConsideringBanner } from '@/components/destiny/DestinyGMFlash'
 import type { DestinyPoolRecord } from '@/components/destiny/DestinyPoolDisplay'
 import type { RollResult } from './dice-engine'
+import { FONT_DISPLAY, FONT_BODY } from '@/lib/tokens'
 import type { ForceRollResult } from './dice-engine'
 import type { HudSkill } from './SkillsPanel'
 import type { ForcePowerDisplay } from './ForcePanel'
@@ -164,11 +165,11 @@ export function HudModalsOverlay({
       />
 
       {gmDialog && (
-        <div onClick={() => setGmDialog(null)} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,.5)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '420px', background: 'var(--sand)', border: '2px solid var(--gold)', boxShadow: '0 0 40px var(--gold-glow-s), 0 8px 48px rgba(0,0,0,.3)', padding: '32px 28px 24px', textAlign: 'center' }}>
-            <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)', fontWeight: 700, letterSpacing: '0.2em', color: 'var(--gold-d)', marginBottom: '16px' }}>INCOMING TRANSMISSION</div>
-            <div style={{ fontFamily: 'var(--font-chakra)', fontSize: 'var(--font-md)', color: 'var(--ink)', lineHeight: 1.6, marginBottom: '24px' }}>{gmDialog}</div>
-            <button onClick={() => setGmDialog(null)} style={{ background: 'var(--gold)', border: 'none', padding: '12px 40px', fontFamily: 'var(--font-orbitron)', fontSize: 'var(--text-label)', fontWeight: 700, letterSpacing: '0.15em', color: 'var(--white)', cursor: 'pointer' }}>DISMISS</button>
+        <div onClick={() => setGmDialog(null)} className="fixed inset-0 flex items-center justify-center" style={{ zIndex: 'var(--z-modal)', background: 'rgba(0,0,0,.5)', backdropFilter: 'blur(6px)', padding: 'var(--space-6)' }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '420px', background: 'var(--sand)', border: '2px solid var(--gold)', boxShadow: '0 0 40px var(--gold-glow-s), 0 8px 48px rgba(0,0,0,.3)', padding: 'var(--space-8) 1.75rem var(--space-6)', textAlign: 'center' }}>
+            <div style={{ fontFamily: FONT_DISPLAY, fontSize: 'var(--font-2xs)', fontWeight: 700, letterSpacing: '0.2em', color: 'var(--gold-d)', marginBottom: 'var(--space-4)' }}>INCOMING TRANSMISSION</div>
+            <div style={{ fontFamily: FONT_BODY, fontSize: 'var(--font-md)', color: 'var(--ink)', lineHeight: 1.6, marginBottom: 'var(--space-6)' }}>{gmDialog}</div>
+            <button onClick={() => setGmDialog(null)} style={{ background: 'var(--gold)', border: 'none', padding: 'var(--space-3) 2.5rem', fontFamily: FONT_DISPLAY, fontSize: 'var(--text-label)', fontWeight: 700, letterSpacing: '0.15em', color: 'var(--white)', cursor: 'pointer' }}>DISMISS</button>
           </div>
         </div>
       )}
@@ -176,10 +177,11 @@ export function HudModalsOverlay({
       {gmCritInjuryDialog && (
         <div
           onClick={() => setGmCritInjuryDialog(null)}
+          className="fixed inset-0 flex items-center justify-center"
           style={{
-            position: 'fixed', inset: 0, zIndex: 410,
+            zIndex: 'var(--z-toast)',
             background: 'rgba(0,0,0,.75)', backdropFilter: 'blur(6px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px',
+            padding: 'var(--space-6)',
           }}
         >
           <div
@@ -189,27 +191,27 @@ export function HudModalsOverlay({
               background: 'var(--sand)',
               border: '2px solid rgba(220,20,60,0.55)',
               boxShadow: '0 0 40px rgba(220,20,60,0.2), 0 8px 48px rgba(0,0,0,.4)',
-              padding: '28px 24px 20px',
+              padding: '1.75rem var(--space-6) 1.25rem',
             }}
           >
             <div style={{
               fontFamily: 'var(--font-body)', fontSize: 'var(--text-overline)',
               fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase',
-              color: 'rgba(220,20,60,0.8)', marginBottom: '8px',
+              color: 'rgba(220,20,60,0.8)', marginBottom: 'var(--space-2)',
             }}>
               ⚠ Critical Injury Received
             </div>
             <div style={{
               fontFamily: 'var(--font-display)', fontSize: 'var(--text-h4)',
-              fontWeight: 700, color: 'var(--ink)', marginBottom: '10px',
+              fontWeight: 700, color: 'var(--ink)', marginBottom: '0.625rem',
             }}>
               {gmCritInjuryDialog.name}
             </div>
             {gmCritInjuryDialog.severity && (
               <div style={{
-                display: 'inline-block', marginBottom: '14px',
+                display: 'inline-block', marginBottom: '0.875rem',
                 background: 'rgba(220,20,60,0.1)', border: '1px solid rgba(220,20,60,0.35)',
-                padding: '2px 8px',
+                padding: '2px var(--space-2)',
                 fontFamily: 'var(--font-body)', fontSize: 'var(--text-overline)',
                 fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
                 color: 'rgba(220,20,60,0.85)',
@@ -220,21 +222,21 @@ export function HudModalsOverlay({
             {gmCritInjuryDialog.description && (
               <div style={{
                 fontFamily: 'var(--font-body)', fontSize: 'var(--text-sm)',
-                color: 'var(--ink)', lineHeight: 1.65, marginBottom: '20px',
-                borderLeft: '2px solid rgba(220,20,60,0.3)', paddingLeft: '10px',
+                color: 'var(--ink)', lineHeight: 1.65, marginBottom: 'var(--space-5)',
+                borderLeft: '2px solid rgba(220,20,60,0.3)', paddingLeft: '0.625rem',
               }}>
                 {gmCritInjuryDialog.description}
               </div>
             )}
             <button
               onClick={() => setGmCritInjuryDialog(null)}
+              className="w-full cursor-pointer"
               style={{
-                width: '100%',
                 background: 'rgba(220,20,60,0.1)', border: '1px solid rgba(220,20,60,0.4)',
-                padding: '10px 0',
+                padding: '0.625rem 0',
                 fontFamily: 'var(--font-body)', fontSize: 'var(--text-label)',
                 fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase',
-                color: 'rgba(220,20,60,0.9)', cursor: 'pointer',
+                color: 'rgba(220,20,60,0.9)',
               }}
             >
               Acknowledge
@@ -337,15 +339,15 @@ export function HudModalsOverlay({
         const color = rarity <= 2 ? 'var(--txt3)' : rarity <= 4 ? 'var(--green)' : rarity <= 6 ? 'var(--blue)' : rarity <= 8 ? '#7B3FA0' : 'var(--gold)'
         const label = rarity <= 2 ? 'Common' : rarity <= 4 ? 'Uncommon' : rarity <= 6 ? 'Rare' : rarity <= 8 ? 'Epic' : 'Legendary'
         return (
-          <div style={{ position: 'fixed', inset: 0, zIndex: 250, background: 'rgba(0,0,0,.75)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-            <div style={{ width: '100%', maxWidth: '420px', background: 'var(--sand)', border: `3px solid ${color}`, boxShadow: `0 0 40px ${color}, 0 8px 48px rgba(0,0,0,.4)`, padding: '32px 28px 28px', textAlign: 'center', position: 'relative' }}>
-              <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-2xs)', fontWeight: 700, letterSpacing: '0.25em', color, marginBottom: '16px', textTransform: 'uppercase' }}>{r.source as string}</div>
-              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+          <div className="fixed inset-0 flex items-center justify-center" style={{ zIndex: 'var(--z-modal)', background: 'rgba(0,0,0,.75)', backdropFilter: 'blur(12px)', padding: 'var(--space-6)' }}>
+            <div style={{ width: '100%', maxWidth: '420px', background: 'var(--sand)', border: `3px solid ${color}`, boxShadow: `0 0 40px ${color}, 0 8px 48px rgba(0,0,0,.4)`, padding: 'var(--space-8) 1.75rem var(--space-7)', textAlign: 'center', position: 'relative' }}>
+              <div style={{ fontFamily: FONT_DISPLAY, fontSize: 'var(--font-2xs)', fontWeight: 700, letterSpacing: '0.25em', color, marginBottom: 'var(--space-4)', textTransform: 'uppercase' }}>{r.source as string}</div>
+              <div className="flex justify-center" style={{ marginBottom: 'var(--space-4)' }}>
                 <EquipmentImage itemKey={r.key as string} itemType={r.itemType as 'weapon' | 'armor' | 'gear'} categories={r.categories as string[]} size="lg" style={{ width: 120, height: 120 }} />
               </div>
-              <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-lg)', fontWeight: 900, letterSpacing: '0.1em', color: 'var(--ink)', marginBottom: '8px', lineHeight: 1.2 }}>{r.name as string}</div>
-              <div style={{ fontFamily: 'var(--font-orbitron)', fontSize: 'var(--font-sm)', fontWeight: 700, color, marginBottom: '12px', letterSpacing: '0.1em' }}>Rarity {rarity} — {label}</div>
-              <button onClick={() => setLootReveal(null)} style={{ background: 'var(--gold)', border: 'none', padding: '10px 32px', fontFamily: 'var(--font-orbitron)', fontSize: 'var(--text-label)', fontWeight: 700, letterSpacing: '0.15em', color: 'var(--white)', cursor: 'pointer' }}>CLAIM</button>
+              <div style={{ fontFamily: FONT_DISPLAY, fontSize: 'var(--font-lg)', fontWeight: 900, letterSpacing: '0.1em', color: 'var(--ink)', marginBottom: 'var(--space-2)', lineHeight: 1.2 }}>{r.name as string}</div>
+              <div style={{ fontFamily: FONT_DISPLAY, fontSize: 'var(--font-sm)', fontWeight: 700, color, marginBottom: 'var(--space-3)', letterSpacing: '0.1em' }}>Rarity {rarity} — {label}</div>
+              <button onClick={() => setLootReveal(null)} className="cursor-pointer" style={{ background: 'var(--gold)', border: 'none', padding: '0.625rem 2rem', fontFamily: FONT_DISPLAY, fontSize: 'var(--text-label)', fontWeight: 700, letterSpacing: '0.15em', color: 'var(--white)' }}>CLAIM</button>
             </div>
           </div>
         )

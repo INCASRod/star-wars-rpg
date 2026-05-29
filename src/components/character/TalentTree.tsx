@@ -1,27 +1,31 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { FS_OVERLINE, FS_LABEL, FS_SM } from '@/components/player-hud/design-tokens'
 import { RichText } from '@/components/ui/RichText'
-import { HUD } from '@/lib/tokens'
+import { HUD, FS, FONT_BODY, FONT_DISPLAY, RADIUS, Z, EASE } from '@/lib/tokens'
 import { Modal } from '@/components/ui/Modal'
 
 /* ═══════════════════════════════════════════════════════ */
 /*  DESIGN TOKENS                                         */
 /* ═══════════════════════════════════════════════════════ */
 
-const FC = 'var(--font-body)'
-const FR = 'var(--font-body)'
+// All font references use FONT_BODY (JetBrains Mono) per design system rules.
+// FC (formerly var(--font-body)) and FR (formerly var(--font-body)) unified.
+const FR = FONT_BODY
 
-const BG        = 'var(--hud-bg)'
-const TEXT      = 'var(--hud-text)'
-const DIM       = 'var(--hud-text-dim)'
-const FAINT     = 'var(--hud-text-faint)'
-const BORDER    = 'var(--hud-border)'
-const BORDER_HI = 'var(--hud-border-hi)'
+const BG        = HUD.bg
+const TEXT      = HUD.text
+const DIM       = HUD.textDim
+const FAINT     = HUD.textFaint
+const BORDER    = HUD.border
 const PANEL_BG  = 'var(--hud-surface-lo)'
-const GOLD_DIM  = 'rgba(224,58,30,0.5)'
-const GOLD_BR   = 'var(--hud-gold)'
+const GOLD_BR   = HUD.gold
+// GOLD_DIM: dimmed accent at ~45% opacity — no HUD named property, use CSS var
+const GOLD_DIM  = 'var(--hud-accent-45)'
+
+// Activation type colours — pre-approved hex exceptions: no CSS vars exist for
+// these specific asset/state colours (BLUE, GREEN, RED, ORANGE). Kept as-is per
+// the pre-approved hex exception rule for type-identity swatches.
 const BLUE   = '#5AAAE0'
 const GREEN  = '#4EC87A'
 const RED    = '#E05050'
@@ -94,7 +98,7 @@ function ActivationDot({ activation, dim }: { activation: string; dim?: boolean 
         display: 'inline-block',
         width: 6,
         height: 6,
-        borderRadius: '50%',
+        borderRadius: RADIUS.full,
         background: color,
         opacity: dim ? 0.4 : 1,
         flexShrink: 0,
@@ -134,7 +138,7 @@ function NodeCard({
     return (
       <div
         style={{
-          borderRadius: 4,
+          borderRadius: RADIUS.md,
           padding: '8px 10px',
           position: 'relative',
           height: '100%',
@@ -143,6 +147,8 @@ function NodeCard({
           flexDirection: 'column',
           gap: 4,
           overflow: 'hidden',
+          // Force identity accent colours: rgba(224,58,30,*) — pre-approved,
+          // these power the purchased-state glow and are the tree's visual identity.
           background: 'rgba(224,58,30,0.10)',
           border: '1.5px solid rgba(224,58,30,0.55)',
           boxShadow: '0 0 14px rgba(224,58,30,0.12), inset 0 1px 0 rgba(224,58,30,0.18)',
@@ -154,12 +160,13 @@ function NodeCard({
             position: 'absolute',
             top: 5,
             right: 5,
+            // rgba(78,200,122,*) — GREEN identity swatch, pre-approved
             background: 'rgba(78,200,122,0.15)',
             border: '1px solid rgba(78,200,122,0.4)',
-            borderRadius: 3,
+            borderRadius: RADIUS.sm,
             padding: '1px 5px',
             fontFamily: FR,
-            fontSize: FS_OVERLINE,
+            fontSize: FS.overline,
             fontWeight: 700,
             color: GREEN,
             lineHeight: 1.4,
@@ -172,7 +179,7 @@ function NodeCard({
         <div
           style={{
             fontFamily: FR,
-            fontSize: FS_SM,
+            fontSize: FS.sm,
             fontWeight: 700,
             color: GOLD_BR,
             lineHeight: 1.25,
@@ -188,7 +195,7 @@ function NodeCard({
           <span
             style={{
               fontFamily: FR,
-              fontSize: FS_LABEL,
+              fontSize: FS.label,
               fontWeight: 700,
               color: actColor,
               textTransform: 'uppercase',
@@ -209,7 +216,8 @@ function NodeCard({
                   display: 'inline-block',
                   width: 6,
                   height: 6,
-                  borderRadius: '50%',
+                  borderRadius: RADIUS.full,
+                  // rgba(224,58,30,0.2) — pre-approved force identity accent tint
                   background: i === 0 ? HUD.gold : 'rgba(224,58,30,0.2)',
                   border: `1px solid ${HUD.gold}`,
                   boxShadow: i === 0 ? `0 0 4px ${HUD.gold}` : 'none',
@@ -224,7 +232,7 @@ function NodeCard({
           <div
             style={{
               fontFamily: FR,
-              fontSize: FS_LABEL,
+              fontSize: FS.label,
               color: DIM,
               lineHeight: 1.5,
               overflowY: 'auto',
@@ -244,7 +252,7 @@ function NodeCard({
             bottom: 5,
             right: 6,
             fontFamily: FR,
-            fontSize: FS_OVERLINE,
+            fontSize: FS.overline,
             color: FAINT,
           }}
         >
@@ -261,11 +269,12 @@ function NodeCard({
               left: 4,
               width: 16,
               height: 16,
-              borderRadius: 2,
+              borderRadius: RADIUS.sm,
+              // rgba(224,80,80,*) — RED identity swatch, pre-approved
               border: '1px solid rgba(224,80,80,0.5)',
               background: 'rgba(224,80,80,0.12)',
               color: RED,
-              fontSize: 10,
+              fontSize: FS.overline,
               lineHeight: 1,
               cursor: 'pointer',
               display: 'flex',
@@ -289,7 +298,7 @@ function NodeCard({
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
-          borderRadius: 4,
+          borderRadius: RADIUS.md,
           padding: '8px 10px',
           position: 'relative',
           height: '100%',
@@ -299,10 +308,11 @@ function NodeCard({
           fontWeight: 600,
           gap: 4,
           overflow: 'hidden',
+          // Dynamic hover-state colours — rgba(224,58,30,*) force identity, pre-approved
           background: hovered ? 'rgba(224,58,30,0.07)' : 'rgba(224,58,30,0.02)',
           border: `1.5px solid ${hovered ? 'rgba(224,58,30,0.5)' : 'rgba(224,58,30,0.22)'}`,
           cursor: 'pointer',
-          transition: 'all 0.15s',
+          transition: EASE.default,
         }}
       >
         {/* Cost badge */}
@@ -312,11 +322,11 @@ function NodeCard({
             top: 5,
             right: 5,
             background: 'var(--hud-surface-lo)',
-            border: '1px solid var(--hud-border)',
-            borderRadius: 3,
+            border: `1px solid ${HUD.border}`,
+            borderRadius: RADIUS.sm,
             padding: '1px 5px',
             fontFamily: FR,
-            fontSize: FS_OVERLINE,
+            fontSize: FS.overline,
             color: GOLD_DIM,
             lineHeight: 1.4,
           }}
@@ -328,7 +338,7 @@ function NodeCard({
         <div
           style={{
             fontFamily: FR,
-            fontSize: FS_SM,
+            fontSize: FS.sm,
             fontWeight: 700,
             color: TEXT,
             lineHeight: 1.25,
@@ -344,7 +354,7 @@ function NodeCard({
           <span
             style={{
               fontFamily: FR,
-              fontSize: FS_LABEL,
+              fontSize: FS.label,
               color: actColor,
               textTransform: 'uppercase',
               letterSpacing: '0.04em',
@@ -359,7 +369,7 @@ function NodeCard({
           <div
             style={{
               fontFamily: FR,
-              fontSize: FS_LABEL,
+              fontSize: FS.label,
               color: DIM,
               lineHeight: 1.5,
               overflowY: 'auto',
@@ -381,7 +391,7 @@ function NodeCard({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        borderRadius: 4,
+        borderRadius: RADIUS.md,
         padding: '8px 10px',
         position: 'relative',
         height: '100%',
@@ -390,17 +400,18 @@ function NodeCard({
         flexDirection: 'column',
         gap: 4,
         overflow: 'hidden',
+        // Dynamic hover-state colours — rgba(224,58,30,*) force identity, pre-approved
         background: hovered ? 'rgba(224,58,30,0.06)' : 'rgba(224,58,30,0.01)',
         border: hovered ? '1px dashed rgba(224,58,30,0.22)' : '1px dashed rgba(224,58,30,0.12)',
         opacity: hovered ? 0.82 : 0.42,
         cursor: 'pointer',
-        transition: 'all 0.15s',
+        transition: EASE.default,
       }}
     >
       {/* Locked badge */}
       <div style={{
         position: 'absolute', top: 5, right: 5,
-        fontFamily: FR, fontSize: FS_OVERLINE, color: FAINT,
+        fontFamily: FR, fontSize: FS.overline, color: FAINT,
         letterSpacing: '0.06em',
       }}>
         🔒 {ROW_COSTS[node.row]} XP
@@ -408,10 +419,10 @@ function NodeCard({
 
       {/* Name */}
       <div style={{
-        fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700,
+        fontFamily: FR, fontSize: FS.label, fontWeight: 700,
         color: hovered ? TEXT : FAINT,
         lineHeight: 1.25, paddingRight: 52,
-        transition: 'color 0.15s',
+        transition: `color ${EASE.default}`,
       }}>
         {node.name}
       </div>
@@ -420,10 +431,10 @@ function NodeCard({
       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
         <ActivationDot activation={node.activation} dim={!hovered} />
         <span style={{
-          fontFamily: FR, fontSize: FS_LABEL,
+          fontFamily: FR, fontSize: FS.label,
           color: hovered ? (ACTIVATION_COLORS[node.activation] ?? DIM) : FAINT,
           textTransform: 'uppercase', letterSpacing: '0.04em',
-          transition: 'color 0.15s',
+          transition: `color ${EASE.default}`,
         }}>
           {node.activation}
         </span>
@@ -432,11 +443,11 @@ function NodeCard({
       {/* Description — always present, opacity transitions on hover */}
       {node.description && (
         <div style={{
-          fontFamily: FR, fontSize: FS_LABEL,
+          fontFamily: FR, fontSize: FS.label,
           color: DIM, lineHeight: 1.5,
           overflowY: 'auto', flex: 1, minHeight: 0,
           opacity: hovered ? 0.9 : 0.5,
-          transition: 'opacity 0.15s',
+          transition: `opacity ${EASE.default}`,
         }}>
           <RichText text={node.description} />
         </div>
@@ -479,22 +490,22 @@ function PurchasePopover({
         {/* Title */}
         <div
           style={{
-            fontFamily: FC,
-            fontSize: FS_SM,
+            fontFamily: FR,
+            fontSize: FS.sm,
             color: HUD.gold,
             marginBottom: 4,
           }}
         >
           {node.name}
           {node.isRanked && (
-            <span style={{ fontFamily: FR, fontSize: FS_LABEL, color: DIM, marginLeft: 6 }}>
+            <span style={{ fontFamily: FR, fontSize: FS.label, color: DIM, marginLeft: 6 }}>
               · Rank 1
             </span>
           )}
         </div>
 
         {/* Cost line */}
-        <div style={{ fontFamily: FR, fontSize: FS_LABEL, color: DIM, marginBottom: 2 }}>
+        <div style={{ fontFamily: FR, fontSize: FS.label, color: DIM, marginBottom: 2 }}>
           Spend {cost} XP
         </div>
 
@@ -503,7 +514,7 @@ function PurchasePopover({
           <div
             style={{
               fontFamily: FR,
-              fontSize: FS_LABEL,
+              fontSize: FS.label,
               color: remaining >= 0 ? GREEN : RED,
               marginBottom: 10,
             }}
@@ -513,14 +524,14 @@ function PurchasePopover({
         )}
 
         {/* Divider */}
-        <div style={{ height: 1, background: 'var(--hud-border)', marginBottom: 10 }} />
+        <div style={{ height: 1, background: HUD.border, marginBottom: 10 }} />
 
         {/* Description */}
         {node.description && (
           <div
             style={{
               fontFamily: FR,
-              fontSize: FS_LABEL,
+              fontSize: FS.label,
               color: DIM,
               lineHeight: 1.5,
               maxHeight: 100,
@@ -533,7 +544,7 @@ function PurchasePopover({
         )}
 
         {/* Divider */}
-        <div style={{ height: 1, background: 'var(--hud-border)', marginBottom: 10 }} />
+        <div style={{ height: 1, background: HUD.border, marginBottom: 10 }} />
 
         {/* Buttons */}
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
@@ -542,9 +553,9 @@ function PurchasePopover({
             style={{
               background: 'transparent',
               border: `1px solid ${BORDER}`,
-              borderRadius: 3,
+              borderRadius: RADIUS.sm,
               fontFamily: FR,
-              fontSize: FS_LABEL,
+              fontSize: FS.label,
               color: DIM,
               padding: '6px 16px',
               cursor: 'pointer',
@@ -556,11 +567,12 @@ function PurchasePopover({
             onClick={canAfford ? onConfirm : undefined}
             disabled={!canAfford}
             style={{
+              // rgba(224,58,30,*) — force identity accent, pre-approved
               background: 'rgba(224,58,30,0.15)',
               border: '1px solid rgba(224,58,30,0.5)',
-              borderRadius: 3,
+              borderRadius: RADIUS.sm,
               fontFamily: FR,
-              fontSize: FS_LABEL,
+              fontSize: FS.label,
               fontWeight: 700,
               color: canAfford ? HUD.gold : GOLD_DIM,
               padding: '6px 16px',
@@ -599,7 +611,7 @@ function LockedInfoPopover({
       maxWidth={320}
       zIndex={500}
       backdrop="rgba(0,0,0,0.4)"
-      borderColor="var(--hud-border)"
+      borderColor={HUD.border}
       shadow="0 8px 32px rgba(0,0,0,0.7)"
       panelBackground="var(--hud-surface-hi)"
     >
@@ -608,21 +620,21 @@ function LockedInfoPopover({
         <div style={{
           display: 'flex', alignItems: 'center', gap: 8,
           background: isPreview ? 'var(--hud-surface-lo)' : 'transparent',
-          border: '1px solid var(--hud-border)',
-          borderRadius: 4, padding: '5px 10px',
+          border: `1px solid ${HUD.border}`,
+          borderRadius: RADIUS.md, padding: '5px 10px',
           marginBottom: 10,
         }}>
-          <span style={{ fontSize: 13 }}>{isPreview ? '👁' : '🔒'}</span>
-          <span style={{ fontFamily: FR, fontSize: FS_LABEL, fontWeight: 700, color: isPreview ? 'var(--hud-gold)' : FAINT, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+          <span style={{ fontSize: FS.label }}>{isPreview ? '👁' : '🔒'}</span>
+          <span style={{ fontFamily: FR, fontSize: FS.label, fontWeight: 700, color: isPreview ? HUD.gold : FAINT, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
             {isPreview ? 'Spec Preview — read-only' : 'Locked — purchase adjacent talents first'}
           </span>
         </div>
 
         {/* Name */}
-        <div style={{ fontFamily: FC, fontSize: FS_SM, color: TEXT, marginBottom: 4 }}>
+        <div style={{ fontFamily: FR, fontSize: FS.sm, color: TEXT, marginBottom: 4 }}>
           {node.name}
           {node.isRanked && (
-            <span style={{ fontFamily: FR, fontSize: FS_LABEL, color: DIM, marginLeft: 6 }}>· Ranked</span>
+            <span style={{ fontFamily: FR, fontSize: FS.label, color: DIM, marginLeft: 6 }}>· Ranked</span>
           )}
         </div>
 
@@ -630,25 +642,25 @@ function LockedInfoPopover({
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <ActivationDot activation={node.activation} />
-            <span style={{ fontFamily: FR, fontSize: FS_LABEL, color: actColor, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            <span style={{ fontFamily: FR, fontSize: FS.label, color: actColor, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
               {node.activation}
             </span>
           </div>
-          <span style={{ fontFamily: FR, fontSize: FS_LABEL, color: GOLD_DIM, marginLeft: 'auto' }}>{cost} XP when unlocked</span>
+          <span style={{ fontFamily: FR, fontSize: FS.label, color: GOLD_DIM, marginLeft: 'auto' }}>{cost} XP when unlocked</span>
         </div>
 
-        <div style={{ height: 1, background: 'var(--hud-border)', marginBottom: 10 }} />
+        <div style={{ height: 1, background: HUD.border, marginBottom: 10 }} />
 
         {/* Description */}
         {node.description ? (
           <div style={{
-            fontFamily: FR, fontSize: FS_LABEL, color: DIM,
+            fontFamily: FR, fontSize: FS.label, color: DIM,
             lineHeight: 1.5, maxHeight: 140, overflowY: 'auto', marginBottom: 12,
           }}>
             <RichText text={node.description} />
           </div>
         ) : (
-          <div style={{ fontFamily: FR, fontSize: FS_LABEL, color: FAINT, fontStyle: 'italic', marginBottom: 12 }}>
+          <div style={{ fontFamily: FR, fontSize: FS.label, color: FAINT, fontStyle: 'italic', marginBottom: 12 }}>
             No description available.
           </div>
         )}
@@ -657,8 +669,8 @@ function LockedInfoPopover({
           onClick={onClose}
           style={{
             width: '100%', background: 'transparent',
-            border: `1px solid ${BORDER}`, borderRadius: 3,
-            fontFamily: FR, fontSize: FS_LABEL, color: DIM,
+            border: `1px solid ${BORDER}`, borderRadius: RADIUS.sm,
+            fontFamily: FR, fontSize: FS.label, color: DIM,
             padding: '6px 16px', cursor: 'pointer',
           }}
         >
@@ -691,7 +703,7 @@ function ConnectionLines({
         width: '100%',
         height: '100%',
         pointerEvents: 'none',
-        zIndex: 0,
+        zIndex: Z.base,
       }}
     >
       <defs>
@@ -707,6 +719,7 @@ function ConnectionLines({
         const bothPurchased = !!(fromNode?.purchased && toNode?.purchased)
         const onePurchased = !!(fromNode?.purchased || toNode?.purchased)
 
+        // rgba(224,58,30,*) — force identity accent strokes, pre-approved
         const stroke = bothPurchased ? 'rgba(224,58,30,0.7)' : onePurchased ? 'rgba(224,58,30,0.35)' : 'rgba(224,58,30,0.15)'
         const strokeWidth = bothPurchased ? 2 : 1.5
         const filter = bothPurchased ? 'url(#glow-line)' : undefined
@@ -786,7 +799,7 @@ export function TalentTree({
       style={{
         background: BG,
         border: `1px solid ${BORDER}`,
-        borderRadius: 6,
+        borderRadius: RADIUS.lg,
         overflow: 'hidden',
         fontFamily: FR,
       }}
@@ -804,10 +817,10 @@ export function TalentTree({
         }}
       >
         <div>
-          <div style={{ fontFamily: FC, fontSize: FS_SM, color: HUD.gold, lineHeight: 1.3 }}>
+          <div style={{ fontFamily: FR, fontSize: FS.sm, color: HUD.gold, lineHeight: 1.3 }}>
             {specName}
           </div>
-          <div style={{ fontFamily: FR, fontSize: FS_LABEL, color: DIM, marginTop: 2 }}>
+          <div style={{ fontFamily: FR, fontSize: FS.label, color: DIM, marginTop: 2 }}>
             Specialization Tree · {nodes.length} Talents
           </div>
         </div>
@@ -816,11 +829,11 @@ export function TalentTree({
           <div
             style={{
               background: 'var(--hud-surface-lo)',
-              border: '1px solid var(--hud-border)',
-              borderRadius: 3,
+              border: `1px solid ${HUD.border}`,
+              borderRadius: RADIUS.sm,
               padding: '2px 10px',
-              fontFamily: FC,
-              fontSize: FS_LABEL,
+              fontFamily: FR,
+              fontSize: FS.label,
               color: HUD.gold,
             }}
           >
@@ -851,7 +864,7 @@ export function TalentTree({
               background: HUD.gold,
             }}
           />
-          <span style={{ fontFamily: FR, fontSize: FS_LABEL, color: DIM }}>Purchased</span>
+          <span style={{ fontFamily: FR, fontSize: FS.label, color: DIM }}>Purchased</span>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -864,7 +877,7 @@ export function TalentTree({
               border: `1px solid ${HUD.gold}`,
             }}
           />
-          <span style={{ fontFamily: FR, fontSize: FS_LABEL, color: DIM }}>Available</span>
+          <span style={{ fontFamily: FR, fontSize: FS.label, color: DIM }}>Available</span>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -873,12 +886,13 @@ export function TalentTree({
               display: 'inline-block',
               width: 8,
               height: 8,
+              // rgba(224,58,30,*) — force identity tint, pre-approved
               background: 'rgba(224,58,30,0.15)',
               border: '1px dashed rgba(224,58,30,0.3)',
               opacity: 0.5,
             }}
           />
-          <span style={{ fontFamily: FR, fontSize: FS_LABEL, color: DIM }}>Locked (click to preview)</span>
+          <span style={{ fontFamily: FR, fontSize: FS.label, color: DIM }}>Locked (click to preview)</span>
         </div>
 
         {/* Type legend */}
@@ -895,11 +909,11 @@ export function TalentTree({
                   display: 'inline-block',
                   width: 8,
                   height: 8,
-                  borderRadius: '50%',
+                  borderRadius: RADIUS.full,
                   background: color,
                 }}
               />
-              <span style={{ fontFamily: FR, fontSize: FS_LABEL, color: DIM }}>{label}</span>
+              <span style={{ fontFamily: FR, fontSize: FS.label, color: DIM }}>{label}</span>
             </div>
           ))}
         </div>
@@ -929,7 +943,7 @@ export function TalentTree({
                 style={{
                   position: 'relative',
                   padding: 10,
-                  zIndex: 1,
+                  zIndex: Z.raised,
                   display: 'flex',
                   alignItems: 'stretch',
                   justifyContent: 'stretch',
@@ -955,7 +969,7 @@ export function TalentTree({
                     style={{
                       width: '100%',
                       height: '100%',
-                      borderRadius: 4,
+                      borderRadius: RADIUS.md,
                       border: `1px dashed ${FAINT}`,
                       opacity: 0.3,
                     }}

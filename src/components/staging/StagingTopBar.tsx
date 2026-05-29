@@ -1,11 +1,9 @@
-﻿'use client'
+'use client'
 
 import { memo } from 'react'
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_BODY, FS, SP, RADIUS, EASE } from '@/lib/tokens'
 
 /* ── Design tokens ────────────────────────────────────────── */
-const FC   = 'var(--font-body)'
-const FR   = 'var(--font-body)'
 const DIM  = '#6A8070'
 const RED  = '#E05050'
 const GREEN = '#4EC87A'
@@ -45,13 +43,13 @@ export const StagingTopBar = memo(function StagingTopBar({
         top:                  0,
         left:                 0,
         right:                0,
-        height:               44,
+        height:               '2.75rem',
         zIndex:               9002,
         display:              'flex',
         alignItems:           'center',
-        paddingLeft:          16,
-        paddingRight:         16,
-        gap:                  12,
+        paddingLeft:          SP[4],
+        paddingRight:         SP[4],
+        gap:                  SP[3],
         background:           'var(--hud-surface-hi)',
         backdropFilter:       'blur(14px)',
         WebkitBackdropFilter: 'blur(14px)',
@@ -65,14 +63,14 @@ export const StagingTopBar = memo(function StagingTopBar({
         style={{
           display:       'flex',
           alignItems:    'center',
-          gap:           6,
-          paddingRight:  12,
+          gap:           '0.375rem',
+          paddingRight:  '0.75rem',
           borderRight:   '1px solid var(--hud-border)',
         }}
       >
         <span
           style={{
-            fontSize:   13,
+            fontSize:   FS.sm,
             color:      isCombat ? RED : GREEN,
             lineHeight: 1,
           }}
@@ -81,7 +79,7 @@ export const StagingTopBar = memo(function StagingTopBar({
         </span>
         <span
           style={{
-            fontFamily:    FC,
+            fontFamily:    FONT_BODY,
             fontSize:      '0.6rem',
             fontWeight:    700,
             letterSpacing: '0.14em',
@@ -99,12 +97,12 @@ export const StagingTopBar = memo(function StagingTopBar({
           style={{
             display:    'flex',
             alignItems: 'center',
-            gap:        5,
+            gap:        '0.3125rem',
           }}
         >
           <span
             style={{
-              fontFamily:    FR,
+              fontFamily:    FONT_BODY,
               fontSize:      'var(--text-sm, 0.8rem)',
               color:         DIM,
               letterSpacing: '0.06em',
@@ -115,7 +113,7 @@ export const StagingTopBar = memo(function StagingTopBar({
           </span>
           <span
             style={{
-              fontFamily:    FC,
+              fontFamily:    FONT_BODY,
               fontSize:      'var(--text-sm, 0.82rem)',
               fontWeight:    700,
               letterSpacing: '0.08em',
@@ -135,7 +133,6 @@ export const StagingTopBar = memo(function StagingTopBar({
         <TopBarButton
           label="⬛ End Combat"
           color={RED}
-          hoverColor="#FF6464"
           disabled={sessionBusy}
           onClick={onEndCombat}
         />
@@ -143,7 +140,6 @@ export const StagingTopBar = memo(function StagingTopBar({
         <TopBarButton
           label="▶ Begin Combat"
           color={RED}
-          hoverColor="#FF6464"
           disabled={sessionBusy}
           onClick={onBeginCombat}
         />
@@ -154,20 +150,20 @@ export const StagingTopBar = memo(function StagingTopBar({
 
 /* ── Internal button ──────────────────────────────────────── */
 interface TopBarButtonProps {
-  label:      string
-  color:      string
-  hoverColor: string
-  disabled:   boolean
-  onClick:    () => void | Promise<void>
+  label:    string
+  color:    string
+  disabled: boolean
+  onClick:  () => void | Promise<void>
 }
 
-function TopBarButton({ label, color, hoverColor, disabled, onClick }: TopBarButtonProps) {
+function TopBarButton({ label, color, disabled, onClick }: TopBarButtonProps) {
   return (
     <button
       disabled={disabled}
       onClick={() => void onClick()}
+      className="staging-topbar-btn"
       style={{
-        fontFamily:    FC,
+        fontFamily:    FONT_BODY,
         fontSize:      '0.58rem',
         fontWeight:    700,
         letterSpacing: '0.12em',
@@ -175,27 +171,11 @@ function TopBarButton({ label, color, hoverColor, disabled, onClick }: TopBarBut
         color:         disabled ? 'rgba(106,128,112,0.35)' : color,
         background:    'var(--hud-surface-lo)',
         border:        `1px solid ${disabled ? 'rgba(106,128,112,0.14)' : 'var(--hud-border)'}`,
-        borderRadius:  4,
-        padding:       '5px 14px',
+        borderRadius:  RADIUS.md,
+        padding:       '0.3125rem 0.875rem',
         cursor:        disabled ? 'not-allowed' : 'pointer',
-        transition:    'color 0.15s, background 0.15s, border-color 0.15s',
+        transition:    `color ${EASE.default}, background ${EASE.default}, border-color ${EASE.default}`,
         lineHeight:    1,
-      }}
-      onMouseEnter={e => {
-        if (!disabled) {
-          const el = e.currentTarget as HTMLElement
-          el.style.color = hoverColor
-          el.style.background = 'var(--hud-surface-mid)'
-          el.style.borderColor = 'var(--hud-border-hi)'
-        }
-      }}
-      onMouseLeave={e => {
-        if (!disabled) {
-          const el = e.currentTarget as HTMLElement
-          el.style.color = color
-          el.style.background = 'var(--hud-surface-lo)'
-          el.style.borderColor = 'var(--hud-border)'
-        }
       }}
     >
       {label}

@@ -1,21 +1,15 @@
 'use client'
 
 import { stripBBCode } from '@/lib/utils'
-import { HUD } from '@/lib/tokens'
-
-// ── Design tokens ─────────────────────────────────────────────────────────────
-const FC   = 'var(--font-body)'
-const TEXT = 'var(--hud-text)'
-const DIM  = 'var(--hud-text-dim)'
-const BLUE = '#4FC3F7'
+import { HUD, COLOR, FS, SP, RADIUS, EASE, FONT_BODY } from '@/lib/tokens'
 
 const panelStyle: React.CSSProperties = {
   position: 'relative',
   background: 'var(--hud-surface-lo)',
   backdropFilter: 'blur(12px)',
-  border: '1px solid rgba(79,195,247,0.2)',
-  borderRadius: 6,
-  padding: '14px 16px',
+  border: `1px solid rgba(79,195,247,0.2)`,
+  borderRadius: RADIUS.lg,
+  padding: `${SP[3]} ${SP[4]}`,
 }
 
 function contributionRank(value: number): { rank: number; label: string } {
@@ -42,48 +36,48 @@ export function DutyCard({ dutyType, dutyValue, dutyLore, dutyCustomName, resolv
   return (
     <div style={panelStyle}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: SP[2] }}>
         <div>
-          <div style={{ fontFamily: FC, fontSize: 10, fontWeight: 700, color: BLUE, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 2 }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, color: COLOR.blue, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: SP[1] }}>
             Duty
           </div>
-          <div style={{ fontFamily: FC, fontSize: 14, fontWeight: 700, color: TEXT }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700, color: HUD.text }}>
             {displayName}
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ fontFamily: FC, fontSize: 22, fontWeight: 700, color: BLUE, lineHeight: 1 }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.h3, fontWeight: 700, color: COLOR.blue, lineHeight: 1 }}>
             {dutyValue}
           </div>
-          <div style={{ fontFamily: FC, fontSize: 9, color: DIM, letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 2 }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textDim, letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: SP[1] }}>
             / 100
           </div>
         </div>
       </div>
 
       {/* Progress bar */}
-      <div style={{ height: 4, background: 'rgba(79,195,247,0.12)', borderRadius: 2, marginBottom: 10, overflow: 'hidden' }}>
+      <div style={{ height: 4, background: 'rgba(79,195,247,0.12)', borderRadius: RADIUS.sm, marginBottom: SP[2], overflow: 'hidden' }}>
         <div style={{
           height: '100%',
           width: `${progress}%`,
-          background: `linear-gradient(90deg, rgba(79,195,247,0.5), ${BLUE})`,
-          borderRadius: 2,
-          transition: 'width 0.4s ease',
+          background: `linear-gradient(90deg, rgba(79,195,247,0.5), ${COLOR.blue})`,
+          borderRadius: RADIUS.sm,
+          transition: EASE.default,
         }} />
       </div>
 
       {/* Contribution rank */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: dutyLore ? 10 : 0 }}>
-        <div style={{ display: 'flex', gap: 3 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: SP[2], marginBottom: dutyLore ? SP[2] : 0 }}>
+        <div style={{ display: 'flex', gap: SP[1] }}>
           {[1, 2, 3, 4, 5].map(r => (
             <div key={r} style={{
-              width: 8, height: 8, borderRadius: 1,
-              background: r <= rank ? BLUE : 'rgba(79,195,247,0.12)',
-              border: `1px solid ${r <= rank ? BLUE : 'rgba(79,195,247,0.2)'}`,
+              width: 8, height: 8, borderRadius: RADIUS.sm,
+              background: r <= rank ? COLOR.blue : 'rgba(79,195,247,0.12)',
+              border: `1px solid ${r <= rank ? COLOR.blue : 'rgba(79,195,247,0.2)'}`,
             }} />
           ))}
         </div>
-        <span style={{ fontFamily: FC, fontSize: 10, color: DIM, letterSpacing: '0.06em' }}>
+        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textDim, letterSpacing: '0.06em' }}>
           CR{rank} — {label}
         </span>
       </div>
@@ -92,10 +86,10 @@ export function DutyCard({ dutyType, dutyValue, dutyLore, dutyCustomName, resolv
       {dutyLore && (
         <div style={{
           borderTop: '1px solid rgba(79,195,247,0.12)',
-          paddingTop: 8,
-          fontFamily: FC,
-          fontSize: 11,
-          color: DIM,
+          paddingTop: SP[2],
+          fontFamily: FONT_BODY,
+          fontSize: FS.label,
+          color: HUD.textDim,
           lineHeight: 1.6,
           fontStyle: 'italic',
         }}>

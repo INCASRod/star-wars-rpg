@@ -3,52 +3,16 @@
 import { useState } from 'react'
 import type { Character } from '@/lib/types'
 import type { WeaponRef } from '@/lib/resolve-weapon'
-import { FS_OVERLINE, FS_CAPTION, FS_SM, FS_H3 } from '@/components/player-hud/design-tokens'
+import { FS, SP, RADIUS, Z, HUD, FONT_BODY } from '@/lib/tokens'
 import { TalentQuickReference } from './TalentQuickReference'
 import { AdversaryCardList } from './AdversaryCardList'
 import { InitiativeStrip } from './InitiativeStrip'
 import { useEncounterState } from '@/hooks/useEncounterState'
 import { useRefWeapons } from '@/hooks/useRefWeapons'
-import { HUD } from '@/lib/tokens'
 
-// ── Design Tokens ──
-const BG = 'var(--hud-bg)'
-const PANEL_BG = 'var(--hud-surface-lo)'
-const RAISED_BG = 'var(--hud-surface-lo)'
-const BORDER = 'var(--hud-border)'
-const BORDER_MD = 'var(--hud-border-hi)'
-const CHAR_BR = '#e05252'
-const CHAR_AG = '#52a8e0'
-const CHAR_CUN = '#e0a852'
-const CHAR_INT = '#a852e0'
-const CHAR_WIL = '#52e0a8'
-const CHAR_PR = '#e05298'
-const TEXT = 'var(--hud-text)'
-const TEXT_SEC = 'var(--hud-text-dim)'
-const TEXT_MUTED = 'var(--hud-text-faint)'
-const TEXTGR = "#72B421"
-const FC = 'var(--font-body)'
-const FR = 'var(--font-body)'
-const FM = 'var(--font-body)'
-
-const panelBase: React.CSSProperties = {
-  background: PANEL_BG,
-  backdropFilter: 'blur(12px)',
-  WebkitBackdropFilter: 'blur(12px)',
-  border: `1px solid ${BORDER}`,
-  borderRadius: 6,
-  position: 'relative',
-}
-const raisedPanel: React.CSSProperties = {
-  background: RAISED_BG,
-  backdropFilter: 'blur(8px)',
-  WebkitBackdropFilter: 'blur(8px)',
-  border: `1px solid ${BORDER}`,
-  borderRadius: 4,
-  position: 'relative',
-}
-
-void CHAR_CUN; void CHAR_INT; void CHAR_PR; void CHAR_WIL; void TEXTGR; void TEXT; void panelBase; void raisedPanel
+// ── Outcome colors (not characteristic stats — no clean CHAR_COLOR mapping) ──
+const OUTCOME_FAIL  = 'var(--state-wounds)'   // red: fail/hit entries
+const OUTCOME_SUCC  = 'var(--state-success)'  // green: success entries
 
 interface Props {
   character: Character
@@ -64,9 +28,9 @@ export function CombatTracker({ character, campaignId, talents = [] }: Props) {
 
   if (!encounter || !encounter.is_active) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, flexDirection: 'column', gap: 12, background: BG }}>
-        <div style={{ fontFamily: FC, fontSize: FS_H3, color: TEXT_MUTED }}>NO ACTIVE COMBAT</div>
-        <div style={{ fontFamily: FR, fontSize: FS_SM, color: TEXT_MUTED }}>Waiting for DM to start combat…</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, flexDirection: 'column', gap: SP[3], background: HUD.bg }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.h3, color: HUD.textFaint }}>NO ACTIVE COMBAT</div>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.textFaint }}>Waiting for DM to start combat…</div>
       </div>
     )
   }
@@ -77,11 +41,11 @@ export function CombatTracker({ character, campaignId, talents = [] }: Props) {
   const publicLog = encounter.log_entries.filter(e => !e.dmOnly)
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: BG, overflow: 'hidden', position: 'relative' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: HUD.bg, overflow: 'hidden', position: 'relative' }}>
 
       {/* Background texture */}
       <div style={{
-        position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0,
+        position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: Z.base,
         opacity: 0.015,
         backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h20v20H0z' fill='none'/%3E%3Cpath d='M0 0l20 20M20 0L0 20' stroke='%23C8AA50' stroke-width='0.5'/%3E%3C/svg%3E")`,
       }} />
@@ -89,10 +53,10 @@ export function CombatTracker({ character, campaignId, talents = [] }: Props) {
       <InitiativeStrip encounter={encounter} character={character} />
 
       {/* ── Main content ── */}
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative', zIndex: 1 }}>
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative', zIndex: Z.raised }}>
 
         {/* Left: Adversaries + Log */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', borderRight: `1px solid ${BORDER}` }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', borderRight: `1px solid ${HUD.border}` }}>
 
           {/* Adversary Reveal Panel */}
           <AdversaryCardList
@@ -105,28 +69,28 @@ export function CombatTracker({ character, campaignId, talents = [] }: Props) {
           />
 
           {/* Combat Log Feed */}
-          <div style={{ flexShrink: 0, borderTop: `1px solid ${BORDER}`, maxHeight: 180, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ padding: '6px 16px 0', flexShrink: 0 }}>
-              <div style={{ fontFamily: FC, fontSize: FS_OVERLINE, fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${HUD.gold}b3`, marginBottom: 6 }}>
+          <div style={{ flexShrink: 0, borderTop: `1px solid ${HUD.border}`, maxHeight: '11.25rem', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ padding: `0.375rem ${SP[4]} 0`, flexShrink: 0 }}>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: `${HUD.gold}b3`, marginBottom: '0.375rem' }}>
                 Combat Log
               </div>
             </div>
-            <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 10px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div style={{ flex: 1, overflowY: 'auto', padding: `0 ${SP[4]} 0.625rem`, display: 'flex', flexDirection: 'column', gap: SP[1] }}>
               {publicLog.length === 0 && (
-                <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: TEXT_MUTED, fontStyle: 'italic' }}>No entries yet</div>
+                <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint, fontStyle: 'italic' }}>No entries yet</div>
               )}
               {publicLog.map(entry => {
-                const leftColor = entry.text.toLowerCase().includes('fail') || entry.text.toLowerCase().includes('hit') ? CHAR_BR
-                  : entry.text.toLowerCase().includes('success') ? CHAR_AG
-                    : BORDER_MD
+                const leftColor = entry.text.toLowerCase().includes('fail') || entry.text.toLowerCase().includes('hit') ? OUTCOME_FAIL
+                  : entry.text.toLowerCase().includes('success') ? OUTCOME_SUCC
+                    : HUD.borderHi
                 return (
                   <div key={entry.id} style={{
                     borderLeft: `2px solid ${leftColor}`,
-                    paddingLeft: 8, display: 'flex', gap: 8, alignItems: 'flex-start',
+                    paddingLeft: SP[2], display: 'flex', gap: SP[2], alignItems: 'flex-start',
                   }}>
-                    <span style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED, flexShrink: 0 }}>R{entry.round}·S{entry.slot}</span>
-                    <span style={{ fontFamily: FC, fontSize: FS_CAPTION, color: HUD.gold, flexShrink: 0, minWidth: 80 }}>{entry.actor}</span>
-                    <span style={{ fontFamily: FR, fontSize: FS_CAPTION, color: TEXT_SEC }}>{entry.text}</span>
+                    <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint, flexShrink: 0 }}>R{entry.round}·S{entry.slot}</span>
+                    <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.gold, flexShrink: 0, minWidth: '5rem' }}>{entry.actor}</span>
+                    <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textDim }}>{entry.text}</span>
                   </div>
                 )
               })}

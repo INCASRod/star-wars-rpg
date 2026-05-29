@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { Z, RADIUS, HUD, MODAL } from '@/lib/tokens'
+import { Z, RADIUS, HUD, MODAL, SP } from '@/lib/tokens'
 
 export interface ModalProps {
   open:               boolean
@@ -33,14 +33,14 @@ const BACKDROP: React.CSSProperties = {
   background:           MODAL.backdrop,
   backdropFilter:       'blur(8px)',
   WebkitBackdropFilter: 'blur(8px)',
-  padding:              16,
+  padding:              SP[4],
 }
 
 export function Modal({
   open,
   onClose,
   children,
-  maxWidth = 480,
+  maxWidth = '30rem',
   zIndex = Z.modal,
   borderColor,
   shadow,

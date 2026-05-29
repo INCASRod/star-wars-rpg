@@ -7,20 +7,17 @@ import { useCharacterPortraits } from '@/hooks/useCharacterPortraits'
 import { useAdversaryTokenImages } from '@/hooks/useAdversaryTokenImages'
 import type { Character } from '@/lib/types'
 import type { CombatEncounter, InitiativeSlot } from '@/lib/combat'
-import { FS_OVERLINE, FS_LABEL } from '@/components/player-hud/design-tokens'
-import { HUD } from '@/lib/tokens'
+import { HUD, FONT_BODY, FS, SP, RADIUS, Z, EASE, COLOR, CHAR_COLOR } from '@/lib/tokens'
 
 // ── Design tokens ──
 const PANEL_BG   = 'var(--hud-surface-lo)'
 const BORDER     = 'var(--hud-border)'
 const BORDER_MD  = 'var(--hud-border-hi)'
-const CHAR_BR    = 'var(--bs-red-sun)'   // adversary slots — vivid red-sun
-const CHAR_AG    = 'var(--bs-red-pale)'  // PC/player slots — soft red-pale
+const CHAR_BR    = CHAR_COLOR.brawn    // adversary slots — vivid red-sun (#E03A1E)
+const CHAR_AG    = '#F8DAD4'           // PC/player slots — red-pale hex required for alpha-suffix tinting
 const CHAR_WIL   = 'var(--hud-text-dim)' // "acted" checkmark badge
 const TEXT_MUTED = 'var(--hud-text-faint)'
 const BG         = 'var(--hud-bg)'
-const FC  = 'var(--font-body)'
-const FM  = 'var(--font-body)'
 
 export interface GmControls {
   onMoveLeft:  (index: number) => void
@@ -78,8 +75,8 @@ export function InitiativeStrip({ encounter, character, gmControls, compact = fa
     <>
       {/* ── Turn Strip ── */}
       <div style={{
-        flexShrink: 0, position: 'relative', zIndex: 1,
-        borderBottom: `1px solid ${BORDER}`, padding: compact ? '8px 12px' : '12px 16px',
+        flexShrink: 0, position: 'relative', zIndex: Z.raised,
+        borderBottom: `1px solid ${BORDER}`, padding: compact ? `${SP[2]} ${SP[3]}` : `${SP[3]} ${SP[4]}`,
         overflowX: 'auto', display: 'flex', alignItems: 'center', gap: 0,
         background: PANEL_BG,
       }}>
@@ -110,22 +107,22 @@ export function InitiativeStrip({ encounter, character, gmControls, compact = fa
             <div key={slot.id} style={{ display: 'flex', alignItems: 'center' }}>
               <div
                 className={showControls ? 'init-slot-card' : undefined}
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: compact ? 3 : 5, minWidth: compact ? 64 : 76, padding: '0 4px' }}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: compact ? '0.1875rem' : '0.3125rem', minWidth: compact ? '4rem' : '4.75rem', padding: `0 ${SP[1]}` }}
               >
                 {/* Avatar */}
                 <div style={{
-                  width: compact ? 44 : 52, height: compact ? 44 : 52, borderRadius: '50%', flexShrink: 0,
+                  width: compact ? '2.75rem' : '3.25rem', height: compact ? '2.75rem' : '3.25rem', borderRadius: RADIUS.full, flexShrink: 0,
                   background: isActed ? 'var(--hud-surface-hi)' : isPC ? `${CHAR_AG}20` : `${CHAR_BR}20`,
                   border: isCurrent
                     ? `2px solid ${ringColor}`
                     : `1px solid ${isPC ? `${CHAR_AG}40` : `${CHAR_BR}40`}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontFamily: FC, fontSize: 'var(--text-body-sm)', fontWeight: 700,
+                  fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700,
                   color: isActed ? 'var(--hud-text-faint)' : isPC ? CHAR_AG : CHAR_BR,
                   position: 'relative', overflow: 'hidden',
                   filter: isActed ? 'grayscale(100%)' : 'none',
                   boxShadow: isCurrent ? `0 0 14px ${ringColor}70` : 'none',
-                  transition: '.3s',
+                  transition: `all ${EASE.default}`,
                 }}>
                   {isPC && slot.characterId && portraits[slot.characterId] ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -148,23 +145,23 @@ export function InitiativeStrip({ encounter, character, gmControls, compact = fa
                   {isActed && (
                     <div style={{
                       position: 'absolute', top: -1, right: -1,
-                      width: 17, height: 17, borderRadius: '50%',
+                      width: '1.0625rem', height: '1.0625rem', borderRadius: RADIUS.full,
                       background: CHAR_WIL, border: `1px solid ${BG}`,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 10, color: BG, fontWeight: 700,
+                      fontSize: FS.caption, color: BG, fontWeight: 700,
                     }}>✓</div>
                   )}
                 </div>
 
                 {/* "NOW" arrow */}
                 {isCurrent && (
-                  <div style={{ fontFamily: FC, fontSize: 'var(--text-label)', fontWeight: 700, color: isPC ? CHAR_AG : CHAR_BR, animation: 'pulse-dot 1.2s ease-in-out infinite', lineHeight: 1 }}>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700, color: isPC ? CHAR_AG : CHAR_BR, animation: 'pulse-dot 1.2s ease-in-out infinite', lineHeight: 1 }}>
                     ▲
                   </div>
                 )}
 
                 {/* Name */}
-                <div style={{ fontFamily: FM, fontSize: 'var(--text-caption)', fontWeight: 700, color: isMe ? HUD.gold : TEXT_MUTED, textAlign: 'center', maxWidth: 72, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700, color: isMe ? HUD.gold : TEXT_MUTED, textAlign: 'center', maxWidth: '4.5rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {isMe ? 'YOU' : displayName}
                 </div>
 
@@ -192,7 +189,7 @@ export function InitiativeStrip({ encounter, character, gmControls, compact = fa
 
               {/* Connector dash */}
               {i < lastIdx && (
-                <div style={{ width: compact ? 12 : 16, height: compact ? 1 : 2, background: BORDER_MD, flexShrink: 0 }} />
+                <div style={{ width: compact ? '0.75rem' : '1rem', height: compact ? 1 : 2, background: BORDER_MD, flexShrink: 0 }} />
               )}
             </div>
           )
@@ -205,34 +202,34 @@ export function InitiativeStrip({ encounter, character, gmControls, compact = fa
           {/* Backdrop — closes picker on outside click */}
           <div
             onClick={() => setSwapAnchor(null)}
-            style={{ position: 'fixed', inset: 0, zIndex: 9059 }}
+            style={{ position: 'fixed', inset: 0, zIndex: Z.backdrop }}
           />
           <div style={{
             position:    'fixed',
             top:         swapAnchor.top,
             left:        swapAnchor.left,
             transform:   'translateX(-50%)',
-            zIndex:      9060,
+            zIndex:      Z.tooltip,
             background:  'var(--hud-panel)',
             border:      '1px solid var(--hud-border-hi)',
-            borderRadius: 6,
-            padding:     '6px',
+            borderRadius: RADIUS.lg,
+            padding:     '0.375rem',
             display:     'flex',
             flexDirection: 'column',
-            gap:         3,
-            minWidth:    110,
+            gap:         '0.1875rem',
+            minWidth:    '6.875rem',
             boxShadow:   '0 4px 20px rgba(0,0,0,0.55)',
           }}>
             <div style={{
-              fontFamily:    FC,
-              fontSize:      'var(--text-overline)',
+              fontFamily:    FONT_BODY,
+              fontSize:      FS.overline,
               fontWeight:    700,
               letterSpacing: '0.12em',
               textTransform: 'uppercase',
               color:         'var(--hud-text-dim)',
-              paddingBottom: 4,
+              paddingBottom: SP[1],
               borderBottom:  '1px solid var(--hud-border)',
-              marginBottom:  2,
+              marginBottom:  '0.125rem',
             }}>
               Swap with…
             </div>

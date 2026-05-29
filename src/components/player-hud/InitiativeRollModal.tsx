@@ -9,8 +9,8 @@ import type { ForceDie } from './dice-engine'
 import type { Character, CharacterSkill } from '@/lib/types'
 import { C, FONT_CINZEL, FONT_RAJDHANI, DICE_META, panelBase, FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4, FS_H3 } from './design-tokens'
 
-const FORCE_BLUE  = '#5AAAE0'
-const LIGHT_COLOR = '#E8E8FF'
+const FORCE_BLUE  = 'var(--die-force)'
+const LIGHT_COLOR = 'var(--state-light-fp)'
 const DARK_COLOR  = '#9090C0'
 
 // ── Dice pool builder ──────────────────────────────────────────
@@ -26,10 +26,10 @@ function buildPool(char: Character, skills: CharacterSkill[], type: 'cool' | 'vi
 // ── Die pip display ────────────────────────────────────────────
 function DiePip({ color, label, count }: { color: string; label: string; count: number }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+    <div className="flex items-center" style={{ gap: 6 }}>
       {Array.from({ length: count }).map((_, i) => (
         <div key={i} style={{
-          width: 40, height: 40, borderRadius: 6,
+          width: 40, height: 40, borderRadius: 'var(--space-1-5, 0.375rem)',
           border: `2px solid ${color}`,
           background: `${color}18`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -48,12 +48,11 @@ function ForceDieDisplay({ die }: { die: ForceDie }) {
   if (pips.length === 0) pips.push('blank')
 
   return (
-    <div style={{
+    <div className="flex flex-wrap items-center justify-center" style={{
       width: 44, height: 44, borderRadius: '50%',
-      border: `2px solid ${FORCE_BLUE}50`,
+      border: `2px solid color-mix(in srgb, var(--die-force) 50%, transparent)`,
       background: 'rgba(90,170,224,0.07)',
-      display: 'flex', flexWrap: 'wrap',
-      alignItems: 'center', justifyContent: 'center', gap: 3, padding: 7,
+      gap: 3, padding: 7,
     }}>
       {pips.map((p, i) =>
         p === 'blank' ? (
@@ -170,7 +169,7 @@ export function InitiativeRollModal({ character, skills, initiativeType, campaig
     <Modal open onClose={onClose} maxWidth={440}>
 
         {/* ── Header ── */}
-        <div style={{ padding: '14px 18px', borderBottom: `1px solid ${C.border}` }}>
+        <div style={{ padding: '0.875rem var(--space-4-5, 1.125rem)', borderBottom: `1px solid ${C.border}` }}>
           <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.25em', textTransform: 'uppercase', color: C.textDim, marginBottom: 3 }}>
             Initiative Roll
           </div>
@@ -180,14 +179,14 @@ export function InitiativeRollModal({ character, skills, initiativeType, campaig
           </div>
         </div>
 
-        <div style={{ padding: '18px 18px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="flex flex-col" style={{ padding: 'var(--space-4-5, 1.125rem)', gap: 16 }}>
 
           {/* ── Dice pool display ── */}
           <div>
-            <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.textDim, marginBottom: 10 }}>
+            <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.textDim, marginBottom: '0.625rem' }}>
               Dice Pool
             </div>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+            <div className="flex flex-wrap items-center" style={{ gap: '0.625rem' }}>
               {proficiency > 0 && <DiePip color={DICE_META.proficiency.color} label="Y" count={proficiency} />}
               {ability > 0     && <DiePip color={DICE_META.ability.color}     label="G" count={ability} />}
               {proficiency === 0 && ability === 0 && (
@@ -197,11 +196,10 @@ export function InitiativeRollModal({ character, skills, initiativeType, campaig
               {forceRating > 0 && (<>
                 <div style={{ width: 1, height: 32, background: C.border, margin: '0 2px' }} />
                 {Array.from({ length: forceRating }).map((_, i) => (
-                  <div key={i} style={{
+                  <div key={i} className="flex items-center justify-center" style={{
                     width: 40, height: 40, borderRadius: '50%',
-                    border: `2px solid ${FORCE_BLUE}70`,
+                    border: `2px solid color-mix(in srgb, var(--die-force) 70%, transparent)`,
                     background: 'rgba(90,170,224,0.07)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontFamily: FONT_CINZEL, fontWeight: 700, fontSize: FS_SM, color: FORCE_BLUE,
                   }}>◈</div>
                 ))}
@@ -219,14 +217,14 @@ export function InitiativeRollModal({ character, skills, initiativeType, campaig
           {!submitted && (
             <button
               onClick={handleRoll}
-              className="hov-gold-bg"
+              className="hov-gold-bg w-full cursor-pointer"
               style={{
-                width: '100%', padding: '10px 0',
+                padding: '0.625rem 0',
                 background: `${C.gold}18`, border: `1px solid ${C.borderHi}`,
-                borderRadius: 4, cursor: 'pointer',
+                borderRadius: 4,
                 fontFamily: FONT_CINZEL, fontSize: FS_LABEL, fontWeight: 700,
                 letterSpacing: '0.2em', color: C.gold, textTransform: 'uppercase',
-                transition: '.15s',
+                transition: 'var(--ease-default)',
               }}
             >
               {rolled ? '↺ Re-Roll' : '▶ Roll Initiative'}
@@ -235,20 +233,21 @@ export function InitiativeRollModal({ character, skills, initiativeType, campaig
 
           {/* ── Results ── */}
           {rolled && !submitted && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div className="flex flex-col" style={{ gap: 12 }}>
 
               {/* Successes + Advantages — read-only */}
-              <div style={{ display: 'flex', gap: 10 }}>
+              <div className="flex" style={{ gap: '0.625rem' }}>
                 {[
-                  { label: 'Successes',  value: successes,       color: '#4EC87A', hint: 'Determines order' },
-                  { label: 'Advantages', value: totalAdvantages, color: C.gold,   hint: 'Tiebreaker only' },
+                  { label: 'Successes',  value: successes,       color: 'var(--state-success)', hint: 'Determines order' },
+                  { label: 'Advantages', value: totalAdvantages, color: C.gold,                 hint: 'Tiebreaker only' },
                 ].map(({ label, value, color, hint }) => (
                   <div key={label} style={{
                     flex: 1,
-                    background: `${color}0c`, border: `1px solid ${color}28`,
-                    borderRadius: 4, padding: '8px 10px', textAlign: 'center',
+                    background: `color-mix(in srgb, ${color} 5%, transparent)`,
+                    border: `1px solid color-mix(in srgb, ${color} 16%, transparent)`,
+                    borderRadius: 4, padding: 'var(--space-2) 0.625rem', textAlign: 'center',
                   }}>
-                    <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.textDim, marginBottom: 4 }}>
+                    <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.textDim, marginBottom: 'var(--space-1)' }}>
                       {label}
                     </div>
                     <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_H3, fontWeight: 700, color, lineHeight: 1, marginBottom: 3 }}>
@@ -263,20 +262,20 @@ export function InitiativeRollModal({ character, skills, initiativeType, campaig
 
               {/* ── Force pip section ── */}
               {forceRating > 0 && forceDice.length > 0 && (
-                <div style={{
+                <div className="flex flex-col" style={{
                   background: 'rgba(90,170,224,0.05)',
                   border: '1px solid rgba(90,170,224,0.22)',
-                  borderRadius: 4, padding: '10px 12px',
-                  display: 'flex', flexDirection: 'column', gap: 8,
+                  borderRadius: 4, padding: '0.625rem var(--space-3)',
+                  gap: 'var(--space-2)',
                 }}>
                   <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: FORCE_BLUE }}>
                     ◈ Force Dice — spend pips for +3 Adv each
                   </div>
 
                   {/* Die results */}
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <div className="flex items-center flex-wrap" style={{ gap: 'var(--space-2)' }}>
                     {forceDice.map((die, i) => <ForceDieDisplay key={i} die={die} />)}
-                    <div style={{ marginLeft: 4 }}>
+                    <div style={{ marginLeft: 'var(--space-1)' }}>
                       {totalLight > 0 && (
                         <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: LIGHT_COLOR }}>
                           ○ {totalLight} Light
@@ -297,14 +296,15 @@ export function InitiativeRollModal({ character, skills, initiativeType, campaig
 
                   {/* Spend counter */}
                   {totalPips > 0 && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: C.textDim, flex: 1 }}>
+                    <div className="flex items-center" style={{ gap: 'var(--space-2)' }}>
+                      <span className="flex-1" style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: C.textDim }}>
                         Spend pips:
                       </span>
                       <button
                         onClick={() => setPipsSpent(v => Math.max(0, v - 1))}
                         disabled={pipsSpent === 0}
-                        style={{ background: 'transparent', border: `1px solid ${C.border}`, borderRadius: 3, width: 26, height: 26, cursor: pipsSpent === 0 ? 'default' : 'pointer', fontFamily: FONT_CINZEL, fontSize: FS_SM, color: C.textDim, lineHeight: 1, opacity: pipsSpent === 0 ? 0.3 : 1 }}
+                        className={pipsSpent === 0 ? 'cursor-default' : 'cursor-pointer'}
+                        style={{ background: 'transparent', border: `1px solid ${C.border}`, borderRadius: 3, width: 26, height: 26, fontFamily: FONT_CINZEL, fontSize: FS_SM, color: C.textDim, lineHeight: 1, opacity: pipsSpent === 0 ? 0.3 : 1 }}
                       >−</button>
                       <span style={{ fontFamily: FONT_CINZEL, fontSize: FS_H4, fontWeight: 700, color: FORCE_BLUE, minWidth: 28, textAlign: 'center', lineHeight: 1 }}>
                         {pipsSpent}
@@ -312,7 +312,8 @@ export function InitiativeRollModal({ character, skills, initiativeType, campaig
                       <button
                         onClick={() => setPipsSpent(v => Math.min(totalPips, v + 1))}
                         disabled={pipsSpent >= totalPips}
-                        style={{ background: 'transparent', border: `1px solid ${C.border}`, borderRadius: 3, width: 26, height: 26, cursor: pipsSpent >= totalPips ? 'default' : 'pointer', fontFamily: FONT_CINZEL, fontSize: FS_SM, color: C.textDim, lineHeight: 1, opacity: pipsSpent >= totalPips ? 0.3 : 1 }}
+                        className={pipsSpent >= totalPips ? 'cursor-default' : 'cursor-pointer'}
+                        style={{ background: 'transparent', border: `1px solid ${C.border}`, borderRadius: 3, width: 26, height: 26, fontFamily: FONT_CINZEL, fontSize: FS_SM, color: C.textDim, lineHeight: 1, opacity: pipsSpent >= totalPips ? 0.3 : 1 }}
                       >+</button>
                       <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, fontWeight: 700, color: FORCE_BLUE, minWidth: 48 }}>
                         {pipsSpent > 0 ? `+${pipsSpent * 3} Adv` : `of ${totalPips}`}
@@ -326,13 +327,15 @@ export function InitiativeRollModal({ character, skills, initiativeType, campaig
               <button
                 onClick={handleSubmit}
                 disabled={busy}
+                className={busy ? 'cursor-default' : 'cursor-pointer'}
                 style={{
-                  width: '100%', padding: '10px 0',
-                  background: 'rgba(78,200,122,0.15)', border: '1px solid rgba(78,200,122,0.5)',
-                  borderRadius: 4, cursor: busy ? 'default' : 'pointer',
+                  width: '100%', padding: '0.625rem 0',
+                  background: 'color-mix(in srgb, var(--state-success) 15%, transparent)',
+                  border: '1px solid color-mix(in srgb, var(--state-success) 50%, transparent)',
+                  borderRadius: 4,
                   fontFamily: FONT_CINZEL, fontSize: FS_LABEL, fontWeight: 700,
-                  letterSpacing: '0.2em', color: '#4EC87A', textTransform: 'uppercase',
-                  opacity: busy ? 0.6 : 1, transition: '.15s',
+                  letterSpacing: '0.2em', color: 'var(--state-success)', textTransform: 'uppercase',
+                  opacity: busy ? 0.6 : 1, transition: 'var(--ease-default)',
                 }}
               >
                 ✓ Submit to GM
@@ -342,8 +345,8 @@ export function InitiativeRollModal({ character, skills, initiativeType, campaig
 
           {/* ── Submitted state ── */}
           {submitted && (
-            <div style={{ textAlign: 'center', padding: '10px 0' }}>
-              <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_H4, fontWeight: 700, color: '#4EC87A', marginBottom: 4 }}>
+            <div style={{ textAlign: 'center', padding: '0.625rem 0' }}>
+              <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_H4, fontWeight: 700, color: 'var(--state-success)', marginBottom: 'var(--space-1)' }}>
                 ✓ Submitted
               </div>
               <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, color: C.textDim }}>
@@ -357,7 +360,8 @@ export function InitiativeRollModal({ character, skills, initiativeType, campaig
           {!submitted && (
             <button
               onClick={onClose}
-              style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: C.textDim, textDecoration: 'underline', padding: 0, alignSelf: 'center' }}
+              className="cursor-pointer self-center"
+              style={{ background: 'transparent', border: 'none', fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: C.textDim, textDecoration: 'underline', padding: 0 }}
             >
               Cancel
             </button>

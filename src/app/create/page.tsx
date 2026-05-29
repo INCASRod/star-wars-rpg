@@ -9,6 +9,7 @@ import { stripBBCode } from '@/lib/utils'
 import { SpecSelectorList } from '@/components/shared/SpecSelectorList'
 import { TalentTree } from '@/components/character/TalentTree'
 import { buildTalentTree } from '@/lib/buildTalentTree'
+import { Z, EASE } from '@/lib/tokens'
 import type {
   RefSpecies, RefCareer, RefSpecialization, RefSkill, RefTalent,
   RefMotivation, RefSpecificMotivation,
@@ -63,7 +64,7 @@ function sourceToTab(source: string | null | undefined): string {
 // BBCode stripping for display
 function parseBB(html: string): string {
   return html
-    .replace(/\[H4\]([\s\S]*?)\[h4\]/g, '<strong style="display:block;margin-top:0.5rem;font-weight:700;color:var(--bs-ink)">$1</strong>')
+    .replace(/\[H4\]([\s\S]*?)\[h4\]/g, '<strong style="display:block;margin-top:0.5rem;font-weight:700;color:var(--hud-text)">$1</strong>')
     .replace(/\[B\]([\s\S]*?)\[b\]/g, '<strong>$1</strong>')
     .replace(/\[P\]/g, '<br/><br/>')
     .replace(/\[I\]([\s\S]*?)\[i\]/g, '<em>$1</em>')
@@ -129,42 +130,42 @@ const DEFAULT_DRAFT: CharacterDraft = {
 // ── Shared style helpers ──────────────────────────────────────────────────────
 const S = {
   labelXs: {
-    fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)',
-    fontWeight: 700, letterSpacing: '0.12rem', color: 'var(--bs-txt3)',
+    fontFamily: 'var(--font-body)', fontSize: 'var(--font-xs)',
+    fontWeight: 700, letterSpacing: '0.12rem', color: 'var(--hud-text-faint)',
     display: 'block', marginBottom: '0.3rem',
   } as React.CSSProperties,
   input: {
     width: '100%', padding: 'var(--sp-sm) var(--sp-md)',
-    border: '1px solid var(--bs-bdr-mid)', background: 'var(--bs-surface)',
-    fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-base)',
+    border: '1px solid var(--hud-border)', background: 'var(--hud-surface-lo)',
+    fontFamily: 'var(--font-body)', fontSize: 'var(--font-base)',
     letterSpacing: '0.05rem', outline: 'none',
   } as React.CSSProperties,
   select: {
     width: '100%', padding: 'var(--sp-sm) var(--sp-md)',
-    border: '1px solid var(--bs-bdr-mid)', background: 'var(--bs-surface)',
-    fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-base)',
+    border: '1px solid var(--hud-border)', background: 'var(--hud-surface-lo)',
+    fontFamily: 'var(--font-body)', fontSize: 'var(--font-base)',
     cursor: 'pointer',
   } as React.CSSProperties,
   goldBtn: {
-    background: 'var(--creator-primary, var(--bs-red-sun))', border: 'none',
+    background: 'var(--creator-primary, var(--hud-accent))', border: 'none',
     padding: 'var(--sp-sm) var(--sp-lg)',
-    fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)',
-    fontWeight: 700, color: 'var(--bs-surface)', cursor: 'pointer',
-    letterSpacing: '0.15rem', transition: '.2s', width: '100%',
+    fontFamily: 'var(--font-body)', fontSize: 'var(--font-sm)',
+    fontWeight: 700, color: 'var(--hud-surface-lo)', cursor: 'pointer',
+    letterSpacing: '0.15rem', transition: EASE.default, width: '100%',
   } as React.CSSProperties,
   ghostBtn: {
-    background: 'rgba(255,255,255,.5)', border: '1px solid var(--bs-bdr-mid)',
+    background: 'rgba(255,255,255,.5)', border: '1px solid var(--hud-border)',
     padding: 'var(--sp-sm) var(--sp-lg)',
-    fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)',
-    fontWeight: 600, color: 'var(--bs-txt2)', cursor: 'pointer',
+    fontFamily: 'var(--font-body)', fontSize: 'var(--font-sm)',
+    fontWeight: 600, color: 'var(--hud-text-dim)', cursor: 'pointer',
     letterSpacing: '0.1rem',
   } as React.CSSProperties,
   skillPill: (isCareer: boolean) => ({
-    fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', fontWeight: 600,
+    fontFamily: 'var(--font-body)', fontSize: 'var(--font-xs)', fontWeight: 600,
     letterSpacing: '0.04rem',
-    color: isCareer ? '#d64d8a' : 'var(--bs-txt2)',
+    color: isCareer ? 'var(--color-magenta)' : 'var(--hud-text-dim)',
     background: isCareer ? 'rgba(214,77,138,.08)' : 'rgba(0,0,0,.04)',
-    border: `1px solid ${isCareer ? 'rgba(214,77,138,.3)' : 'var(--bs-bdr-mid)'}`,
+    border: `1px solid ${isCareer ? 'rgba(214,77,138,.3)' : 'var(--hud-border)'}`,
     padding: '0.06rem 0.4rem', whiteSpace: 'nowrap' as const,
   }),
 }
@@ -175,7 +176,7 @@ const S = {
 export default function CreateCharacterPage() {
   return (
     <Suspense fallback={
-      <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bs-sky)', fontFamily: 'var(--font-rajdhani)', color: 'var(--bs-red-mid)', fontSize: 'var(--font-xl)', letterSpacing: '0.3rem' }}>
+      <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--hud-bg)', fontFamily: 'var(--font-body)', color: 'var(--hud-accent)', fontSize: 'var(--font-xl)', letterSpacing: '0.3rem' }}>
         INITIALIZING...
       </div>
     }>
@@ -482,14 +483,14 @@ function CreateWizard() {
   // ── Guards ────────────────────────────────────────────────────────────────
   if (!campaignId) {
     return (
-      <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bs-sky)', fontFamily: 'var(--font-rajdhani)', color: 'var(--red)', fontSize: 'var(--font-md)' }}>
+      <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--hud-bg)', fontFamily: 'var(--font-body)', color: 'var(--red)', fontSize: 'var(--font-md)' }}>
         Missing campaign ID.
       </div>
     )
   }
   if (loading) {
     return (
-      <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bs-sky)', fontFamily: 'var(--font-rajdhani)', color: 'var(--bs-red-mid)', fontSize: 'var(--font-xl)', letterSpacing: '0.3rem' }}>
+      <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--hud-bg)', fontFamily: 'var(--font-body)', color: 'var(--hud-accent)', fontSize: 'var(--font-xl)', letterSpacing: '0.3rem' }}>
         LOADING ARCHIVES...
       </div>
     )
@@ -498,29 +499,29 @@ function CreateWizard() {
   return (
     <div style={{
       width: '100vw', minHeight: '100vh', overflow: 'auto',
-      background: 'var(--bs-sky)',
+      background: 'var(--hud-bg)',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', padding: 'var(--sp-xl) var(--sp-lg) calc(var(--sp-xl) * 3)',
       gap: 'var(--sp-lg)',
-      transition: 'background 0.4s ease',
-      ['--creator-primary' as string]: 'var(--bs-red-sun)',
+      transition: `background var(--ease-smooth)`,
+      ['--creator-primary' as string]: 'var(--hud-accent)',
     } as React.CSSProperties}>
       {/* Ambient bg */}
       <div style={{
-        position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
+        position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: Z.base,
         backgroundImage: `radial-gradient(circle at 30% 40%, rgba(224,58,30,.06) 0%, transparent 50%),
           radial-gradient(circle at 70% 60%, rgba(43,93,174,.04) 0%, transparent 50%)`,
       }} />
 
       {/* Header + step bar */}
-      <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: '52rem', textAlign: 'center' }}>
+      <div style={{ position: 'relative', zIndex: Z.raised, width: '100%', maxWidth: '52rem', textAlign: 'center' }}>
 
         {/* ── Title ── */}
         <div style={{
-          fontFamily: 'var(--font-rajdhani)', fontWeight: 900,
+          fontFamily: 'var(--font-body)', fontWeight: 900,
           fontSize: 'var(--font-hero)', letterSpacing: '0.4rem',
-          color: 'var(--bs-red-mid)',
-          textShadow: '0 0 60px var(--bs-red-glow-s)',
+          color: 'var(--hud-accent)',
+          textShadow: '0 0 60px color-mix(in srgb, var(--hud-accent) 26%, transparent)',
         }}>
           NEW CHARACTER
         </div>
@@ -532,17 +533,17 @@ function CreateWizard() {
               key={s}
               onClick={() => { if (i < step) setStep(i) }}
               style={{
-                fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)',
+                fontFamily: 'var(--font-body)', fontSize: 'var(--font-sm)',
                 fontWeight: i === step ? 700 : 500, letterSpacing: '0.1rem',
                 color: i === step
-                  ? 'var(--bs-red-mid)'
-                  : i < step ? 'var(--bs-txt2)' : 'var(--bs-txt3)',
+                  ? 'var(--hud-accent)'
+                  : i < step ? 'var(--hud-text-dim)' : 'var(--hud-text-faint)',
                 background: 'none', border: 'none',
                 borderBottom: i === step
-                  ? '2px solid var(--bs-red-sun)'
+                  ? '2px solid var(--hud-accent)'
                   : '2px solid transparent',
                 padding: '0.25rem 0.5rem',
-                cursor: i < step ? 'pointer' : 'default', transition: '.2s',
+                cursor: i < step ? 'pointer' : 'default', transition: EASE.default,
               }}
             >
               {i < step ? '✓ ' : ''}{s}
@@ -552,13 +553,13 @@ function CreateWizard() {
       </div>
 
       {/* Step content */}
-      <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: '38rem' }}>
+      <div style={{ position: 'relative', zIndex: Z.raised, width: '100%', maxWidth: '38rem' }}>
 
         {/* ═══ STEP 0: Background ═══════════════════════════════════════════ */}
         {step === 0 && (
           <HudCard title="Background & Concept" animClass="au d1">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-md)' }}>
-              <p style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', color: 'var(--bs-txt2)', margin: 0, lineHeight: 1.6 }}>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-sm)', color: 'var(--hud-text-dim)', margin: 0, lineHeight: 1.6 }}>
                 Who is your character? What drew them to this life? Give them a name, then optionally sketch a brief concept — you can expand the backstory on the character sheet later.
               </p>
               <div>
@@ -598,7 +599,7 @@ function CreateWizard() {
                   onChange={e => setDraft(p => ({ ...p, backstory: e.target.value }))}
                   placeholder="Brief character concept..."
                   rows={3}
-                  style={{ ...S.input, resize: 'vertical', fontFamily: 'var(--font-rajdhani)' }}
+                  style={{ ...S.input, resize: 'vertical', fontFamily: 'var(--font-body)' }}
                 />
               </div>
               <button
@@ -615,7 +616,7 @@ function CreateWizard() {
         {step === 1 && (
           <HudCard title="Obligation" animClass="au d1">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-md)' }}>
-              <p style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', color: 'var(--bs-txt2)', margin: 0, lineHeight: 1.6 }}>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-sm)', color: 'var(--hud-text-dim)', margin: 0, lineHeight: 1.6 }}>
                 Every character on the fringe carries some form of debt, secret, or entanglement from their past. This Obligation can be triggered each session, imposing strain penalties on the group.
               </p>
 
@@ -625,12 +626,12 @@ function CreateWizard() {
                 background: 'rgba(224,58,30,.08)', border: '1px solid rgba(224,58,30,.3)',
                 padding: 'var(--sp-sm) var(--sp-md)',
               }}>
-                <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-hero)', fontWeight: 900, color: 'var(--bs-red-mid)', lineHeight: 1 }}>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-hero)', fontWeight: 900, color: 'var(--hud-accent)', lineHeight: 1 }}>
                   {startingObligation}
                 </div>
-                <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', color: 'var(--bs-txt2)' }}>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-sm)', color: 'var(--hud-text-dim)' }}>
                   Starting Obligation<br />
-                  <span style={{ color: 'var(--bs-txt3)', fontSize: 'var(--font-xs)' }}>({playerCount} player{playerCount !== 1 ? 's' : ''} in campaign)</span>
+                  <span style={{ color: 'var(--hud-text-faint)', fontSize: 'var(--font-xs)' }}>({playerCount} player{playerCount !== 1 ? 's' : ''} in campaign)</span>
                 </div>
               </div>
 
@@ -651,15 +652,15 @@ function CreateWizard() {
                   return obl?.description ? (
                     <div style={{
                       marginTop: '0.5rem',
-                      background: 'var(--bs-red-glow)',
+                      background: 'color-mix(in srgb, var(--hud-accent) 10%, transparent)',
                       border: '1px solid var(--hud-border)',
                       borderRadius: 8,
                       padding: 12,
                       maxHeight: 120,
                       overflowY: 'auto',
-                      fontFamily: "var(--font-rajdhani), 'Rajdhani', sans-serif",
+                      fontFamily: 'var(--font-body)',
                       fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)',
-                      color: 'var(--bs-txt2)',
+                      color: 'var(--hud-text-dim)',
                       lineHeight: 1.5,
                     }}>
                       {stripBBCode(obl.description)}
@@ -680,10 +681,10 @@ function CreateWizard() {
               </div>
 
               {/* Optional extras */}
-              <div style={{ borderTop: '1px solid var(--bs-bdr-mid)', paddingTop: 'var(--sp-md)' }}>
+              <div style={{ borderTop: '1px solid var(--hud-border)', paddingTop: 'var(--sp-md)' }}>
                 <div style={{ ...S.labelXs, marginBottom: 'var(--sp-sm)' }}>
                   OPTIONAL — INCREASE OBLIGATION FOR RESOURCES
-                  <span style={{ fontFamily: 'var(--font-rajdhani)', fontWeight: 400, letterSpacing: 0, color: 'var(--bs-txt3)', marginLeft: '0.5rem' }}>
+                  <span style={{ fontFamily: 'var(--font-body)', fontWeight: 400, letterSpacing: 0, color: 'var(--hud-text-faint)', marginLeft: '0.5rem' }}>
                     (each option once only; cannot exceed starting value)
                   </span>
                 </div>
@@ -702,7 +703,7 @@ function CreateWizard() {
                       display: 'flex', alignItems: 'center', gap: 'var(--sp-sm)',
                       padding: 'var(--sp-sm) var(--sp-md)',
                       background: checked ? 'rgba(224,58,30,.08)' : 'rgba(0,0,0,.02)',
-                      border: `1px solid ${checked ? 'rgba(224,58,30,.4)' : 'var(--bs-bdr-mid)'}`,
+                      border: `1px solid ${checked ? 'rgba(224,58,30,.4)' : 'var(--hud-border)'}`,
                       marginBottom: '0.25rem',
                       cursor: wouldExceed ? 'not-allowed' : 'pointer',
                       opacity: wouldExceed ? 0.4 : 1,
@@ -713,7 +714,7 @@ function CreateWizard() {
                         disabled={wouldExceed}
                         onChange={() => setDraft(p => ({ ...p, [opt.key]: !p[opt.key] }))}
                       />
-                      <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', color: 'var(--bs-txt2)' }}>
+                      <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-sm)', color: 'var(--hud-text-dim)' }}>
                         {opt.label}
                       </span>
                     </label>
@@ -724,16 +725,16 @@ function CreateWizard() {
               {/* Running totals */}
               <div style={{
                 display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--sp-sm)',
-                background: 'rgba(0,0,0,.03)', border: '1px solid var(--bs-bdr-mid)', padding: 'var(--sp-sm)',
+                background: 'rgba(0,0,0,.03)', border: '1px solid var(--hud-border)', padding: 'var(--sp-sm)',
               }}>
                 {[
-                  { label: 'TOTAL OBLIGATION', val: totalObligation, color: 'var(--bs-ink)' },
-                  { label: 'EXTRA XP', val: `+${oblXpBonus}`, color: 'var(--bs-red-mid)' },
-                  { label: 'EXTRA CREDITS', val: `+${extraCredits.toLocaleString()}`, color: '#4EC87A' },
+                  { label: 'TOTAL OBLIGATION', val: totalObligation, color: 'var(--hud-text)' },
+                  { label: 'EXTRA XP', val: `+${oblXpBonus}`, color: 'var(--hud-accent)' },
+                  { label: 'EXTRA CREDITS', val: `+${extraCredits.toLocaleString()}`, color: 'var(--state-success)' },
                 ].map(item => (
                   <div key={item.label} style={{ textAlign: 'center' }}>
-                    <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-lg)', fontWeight: 800, color: item.color }}>{item.val}</div>
-                    <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.08rem', color: 'var(--bs-txt3)' }}>{item.label}</div>
+                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-lg)', fontWeight: 800, color: item.color }}>{item.val}</div>
+                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.08rem', color: 'var(--hud-text-faint)' }}>{item.label}</div>
                   </div>
                 ))}
               </div>
@@ -742,7 +743,7 @@ function CreateWizard() {
                 <button onClick={goPrev} style={{ ...S.ghostBtn, flex: 1 }}>← BACK</button>
                 <button onClick={goNext} style={{ ...S.goldBtn, flex: 2 }}>CONTINUE → DUTY</button>
               </div>
-              <button onClick={goNext} style={{ ...S.ghostBtn, width: '100%', fontSize: 'var(--font-xs)', color: 'var(--bs-txt3)' }}>
+              <button onClick={goNext} style={{ ...S.ghostBtn, width: '100%', fontSize: 'var(--font-xs)', color: 'var(--hud-text-faint)' }}>
                 Skip — No Obligation
               </button>
             </div>
@@ -753,7 +754,7 @@ function CreateWizard() {
         {step === 2 && (
           <HudCard title="Duty" animClass="au d1">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-md)' }}>
-              <p style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', color: 'var(--bs-txt2)', margin: 0, lineHeight: 1.6 }}>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-sm)', color: 'var(--hud-text-dim)', margin: 0, lineHeight: 1.6 }}>
                 As a Rebel, your Duty tracks your contribution and commitment to the Alliance cause. It activates periodically during play, granting benefits when fulfilled.
               </p>
               <div>
@@ -773,15 +774,15 @@ function CreateWizard() {
                   return duty?.description ? (
                     <div style={{
                       marginTop: '0.5rem',
-                      background: 'var(--bs-red-glow)',
+                      background: 'color-mix(in srgb, var(--hud-accent) 10%, transparent)',
                       border: '1px solid var(--hud-border)',
                       borderRadius: 8,
                       padding: 12,
                       maxHeight: 120,
                       overflowY: 'auto',
-                      fontFamily: "var(--font-rajdhani), 'Rajdhani', sans-serif",
+                      fontFamily: 'var(--font-body)',
                       fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)',
-                      color: 'var(--bs-txt2)',
+                      color: 'var(--hud-text-dim)',
                       lineHeight: 1.5,
                     }}>
                       {stripBBCode(duty.description)}
@@ -803,7 +804,7 @@ function CreateWizard() {
                 <button onClick={goPrev} style={{ ...S.ghostBtn, flex: 1 }}>← BACK</button>
                 <button onClick={goNext} style={{ ...S.goldBtn, flex: 2 }}>CONTINUE → SPECIES</button>
               </div>
-              <button onClick={goNext} style={{ ...S.ghostBtn, width: '100%', fontSize: 'var(--font-xs)', color: 'var(--bs-txt3)' }}>
+              <button onClick={goNext} style={{ ...S.ghostBtn, width: '100%', fontSize: 'var(--font-xs)', color: 'var(--hud-text-faint)' }}>
                 Skip — No Duty
               </button>
             </div>
@@ -999,8 +1000,8 @@ function SpeciesStep({
           onClick={() => { setOpen(true); setTimeout(() => inputRef.current?.focus(), 0) }}
           style={{
             display: 'flex', alignItems: 'center',
-            background: 'var(--bs-surface)', border: `1px solid ${open ? 'var(--bs-red-sun)' : 'var(--bs-bdr-mid)'}`,
-            padding: '0.45rem 0.75rem', cursor: 'text', transition: 'border-color .2s',
+            background: 'var(--hud-surface-lo)', border: `1px solid ${open ? 'var(--hud-accent)' : 'var(--hud-border)'}`,
+            padding: '0.45rem 0.75rem', cursor: 'text', transition: `border-color ${EASE.default}`,
           }}
         >
           <input
@@ -1009,28 +1010,28 @@ function SpeciesStep({
             onChange={e => { setQuery(e.target.value); setOpen(true) }}
             onFocus={() => setOpen(true)}
             placeholder={selected ? selected.name : 'Search species...'}
-            style={{ flex: 1, border: 'none', outline: 'none', background: 'none', fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-base)' }}
+            style={{ flex: 1, border: 'none', outline: 'none', background: 'none', fontFamily: 'var(--font-body)', fontSize: 'var(--font-base)' }}
           />
           <button onClick={e => { e.stopPropagation(); setOpen(o => !o) }}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 'var(--font-sm)', color: 'var(--bs-txt3)', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }}>
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 'var(--font-sm)', color: 'var(--hud-text-faint)', transform: open ? 'rotate(180deg)' : 'none', transition: `transform ${EASE.default}` }}>
             ▼
           </button>
         </div>
         {open && (
-          <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 20, maxHeight: '22rem', overflowY: 'auto', background: 'var(--bs-surface)', border: '1px solid var(--bs-bdr-mid)', borderTop: 'none', boxShadow: '0 6px 24px rgba(0,0,0,.1)' }}>
+          <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: Z.dropdown, maxHeight: '22rem', overflowY: 'auto', background: 'var(--hud-surface-lo)', border: '1px solid var(--hud-border)', borderTop: 'none', boxShadow: '0 6px 24px rgba(0,0,0,.1)' }}>
             {filtered.length === 0 ? (
-              <div style={{ padding: '0.75rem', textAlign: 'center', fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', color: 'var(--bs-txt3)' }}>No species found</div>
+              <div style={{ padding: '0.75rem', textAlign: 'center', fontFamily: 'var(--font-body)', fontSize: 'var(--font-sm)', color: 'var(--hud-text-faint)' }}>No species found</div>
             ) : filtered.map(sp => {
               const isSel = selected?.key === sp.key
               return (
                 <button key={sp.key} onClick={() => { onSelect(sp); setQuery(''); setOpen(false) }}
                   className={!isSel ? 'hov-gold-bg' : ''}
-                  style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 0.75rem', background: isSel ? 'var(--bs-red-glow)' : undefined, border: 'none', borderBottom: '1px solid var(--bs-bdr-mid)', cursor: 'pointer' }}
+                  style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 0.75rem', background: isSel ? 'color-mix(in srgb, var(--hud-accent) 10%, transparent)' : undefined, border: 'none', borderBottom: '1px solid var(--hud-border)', cursor: 'pointer' }}
                 >
-                  <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-base)', fontWeight: 700, color: 'var(--bs-ink)', letterSpacing: '0.06rem' }}>{sp.name}</div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-base)', fontWeight: 700, color: 'var(--hud-text)', letterSpacing: '0.06rem' }}>{sp.name}</div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.2rem', marginTop: '0.2rem' }}>
                     {CHAR_KEYS.map(k => (
-                      <span key={k} style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)', fontWeight: 600, color: sp[k] >= 3 ? '#d64d8a' : 'var(--bs-txt2)', background: sp[k] >= 3 ? 'rgba(214,77,138,.08)' : 'rgba(0,0,0,.04)', border: `1px solid ${sp[k] >= 3 ? 'rgba(214,77,138,.3)' : 'var(--bs-bdr-mid)'}`, padding: '0.04rem 0.2rem' }}>
+                      <span key={k} style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-2xs)', fontWeight: 600, color: sp[k] >= 3 ? 'var(--color-magenta)' : 'var(--hud-text-dim)', background: sp[k] >= 3 ? 'rgba(214,77,138,.08)' : 'rgba(0,0,0,.04)', border: `1px solid ${sp[k] >= 3 ? 'rgba(214,77,138,.3)' : 'var(--hud-border)'}`, padding: '0.04rem 0.2rem' }}>
                         {CHAR_SHORT[k]} {sp[k]}
                       </span>
                     ))}
@@ -1044,11 +1045,11 @@ function SpeciesStep({
 
       {/* Selected species detail card */}
       {selected && (
-        <div style={{ background: 'rgba(255,255,255,.72)', backdropFilter: 'blur(8px)', border: '2px solid var(--bs-red-sun)', padding: 'var(--sp-md) var(--sp-lg)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-sm)' }}>
-          <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-md)', fontWeight: 800, color: 'var(--bs-ink)', letterSpacing: '0.1rem' }}>
+        <div style={{ background: 'rgba(255,255,255,.72)', backdropFilter: 'blur(8px)', border: '2px solid var(--hud-accent)', padding: 'var(--sp-md) var(--sp-lg)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-sm)' }}>
+          <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-md)', fontWeight: 800, color: 'var(--hud-text)', letterSpacing: '0.1rem' }}>
             {selected.name}
             {selected.source_book && (
-              <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', fontWeight: 400, color: 'var(--bs-txt3)', marginLeft: '0.75rem' }}>
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-xs)', fontWeight: 400, color: 'var(--hud-text-faint)', marginLeft: '0.75rem' }}>
                 {selected.source_book}
               </span>
             )}
@@ -1058,14 +1059,14 @@ function SpeciesStep({
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: 'var(--sp-xs)' }}>
             {CHAR_KEYS.map(k => (
               <div key={k} style={{ textAlign: 'center' }}>
-                <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-lg)', fontWeight: 800, color: 'var(--bs-ink)' }}>{selected[k]}</div>
-                <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.06rem', color: 'var(--bs-txt3)', textTransform: 'uppercase' }}>{k.slice(0, 3)}</div>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-lg)', fontWeight: 800, color: 'var(--hud-text)' }}>{selected[k]}</div>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.06rem', color: 'var(--hud-text-faint)', textTransform: 'uppercase' }}>{k.slice(0, 3)}</div>
               </div>
             ))}
           </div>
 
           {/* Thresholds + XP row */}
-          <div style={{ display: 'flex', gap: 'var(--sp-lg)', borderTop: '1px solid var(--bs-bdr-mid)', paddingTop: 'var(--sp-sm)', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 'var(--sp-lg)', borderTop: '1px solid var(--hud-border)', paddingTop: 'var(--sp-sm)', flexWrap: 'wrap' }}>
             <StatPill label="WOUND TH" value={`${selected.wound_threshold} + Br`} />
             <StatPill label="STRAIN TH" value={`${selected.strain_threshold} + Wil`} />
             <StatPill label="START XP" value={String(selected.starting_xp)} highlight />
@@ -1081,8 +1082,8 @@ function SpeciesStep({
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
                 {selected.special_abilities.map((ab, i) => (
                   <span key={i} style={{
-                    fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', fontWeight: 600,
-                    color: 'var(--bs-red-mid)', background: 'rgba(224,58,30,.1)',
+                    fontFamily: 'var(--font-body)', fontSize: 'var(--font-xs)', fontWeight: 600,
+                    color: 'var(--hud-accent)', background: 'rgba(224,58,30,.1)',
                     border: '1px solid rgba(224,58,30,.4)', padding: '0.12rem 0.5rem',
                     cursor: 'default',
                   }}
@@ -1097,7 +1098,7 @@ function SpeciesStep({
 
           {/* Option choices (radio buttons) */}
           {parsedChoices.length > 0 && (
-            <div style={{ borderTop: '1px solid var(--bs-bdr-mid)', paddingTop: 'var(--sp-sm)' }}>
+            <div style={{ borderTop: '1px solid var(--hud-border)', paddingTop: 'var(--sp-sm)' }}>
               <div style={{ ...S.labelXs, color: 'var(--red)', marginBottom: '0.4rem' }}>
                 REQUIRED CHOICE — select one starting skill:
               </div>
@@ -1108,13 +1109,13 @@ function SpeciesStep({
                       display: 'flex', alignItems: 'center', gap: '0.4rem',
                       padding: 'var(--sp-xs) var(--sp-sm)',
                       background: optionKey === opt.key ? 'rgba(224,58,30,.12)' : 'rgba(0,0,0,.03)',
-                      border: `1px solid ${optionKey === opt.key ? 'var(--bs-red-sun)' : 'var(--bs-bdr-mid)'}`,
+                      border: `1px solid ${optionKey === opt.key ? 'var(--hud-accent)' : 'var(--hud-border)'}`,
                       cursor: 'pointer',
                     }}>
                       <input type="radio" name={`choice-${ci}`} value={opt.key}
                         checked={optionKey === opt.key}
                         onChange={() => onOptionSelect(opt.key)} />
-                      <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', color: 'var(--bs-txt2)' }}>
+                      <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-sm)', color: 'var(--hud-text-dim)' }}>
                         {opt.name || (opt.skill_modifiers?.[0] ? skillMap[opt.skill_modifiers[0].key]?.name || opt.key : opt.key)}
                       </span>
                     </label>
@@ -1204,12 +1205,12 @@ function CareerStep({
           <button key={tab}
             onClick={() => setSourceTab(tab)}
             style={{
-              background: sourceTab === tab ? 'var(--bs-red-sun)' : 'rgba(0,0,0,.04)',
-              border: `1px solid ${sourceTab === tab ? 'var(--bs-red-sun)' : 'var(--bs-bdr-mid)'}`,
+              background: sourceTab === tab ? 'var(--hud-accent)' : 'rgba(0,0,0,.04)',
+              border: `1px solid ${sourceTab === tab ? 'var(--hud-accent)' : 'var(--hud-border)'}`,
               padding: '0.2rem 0.6rem',
-              fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)',
+              fontFamily: 'var(--font-body)', fontSize: 'var(--font-xs)',
               fontWeight: 600, letterSpacing: '0.1rem',
-              color: sourceTab === tab ? 'var(--bs-surface)' : 'var(--bs-txt3)',
+              color: sourceTab === tab ? 'var(--hud-surface-lo)' : 'var(--hud-text-faint)',
               cursor: 'pointer',
             }}
           >{tab}</button>
@@ -1222,25 +1223,25 @@ function CareerStep({
           onClick={() => { setOpen(true); setTimeout(() => inputRef.current?.focus(), 0) }}
           style={{
             display: 'flex', alignItems: 'center',
-            background: 'var(--bs-surface)', border: `1px solid ${open ? 'var(--bs-red-sun)' : 'var(--bs-bdr-mid)'}`,
-            padding: '0.45rem 0.75rem', cursor: 'text', transition: 'border-color .2s',
+            background: 'var(--hud-surface-lo)', border: `1px solid ${open ? 'var(--hud-accent)' : 'var(--hud-border)'}`,
+            padding: '0.45rem 0.75rem', cursor: 'text', transition: `border-color ${EASE.default}`,
           }}
         >
           <input ref={inputRef} placeholder={selected ? selected.name : 'Search careers...'}
             value={query} onChange={e => { setQuery(e.target.value); setOpen(true) }} onFocus={() => setOpen(true)}
-            style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-base)' }} />
+            style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontFamily: 'var(--font-body)', fontSize: 'var(--font-base)' }} />
           <span onClick={e => { e.stopPropagation(); setOpen(o => !o) }}
-            style={{ cursor: 'pointer', color: 'var(--bs-txt3)', userSelect: 'none' }}>{open ? '▲' : '▼'}</span>
+            style={{ cursor: 'pointer', color: 'var(--hud-text-faint)', userSelect: 'none' }}>{open ? '▲' : '▼'}</span>
         </div>
         {open && (
-          <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 20, maxHeight: '22rem', overflowY: 'auto', background: 'var(--bs-surface)', border: '1px solid var(--bs-bdr-mid)', borderTop: 'none', boxShadow: '0 6px 24px rgba(0,0,0,.1)' }}>
+          <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: Z.dropdown, maxHeight: '22rem', overflowY: 'auto', background: 'var(--hud-surface-lo)', border: '1px solid var(--hud-border)', borderTop: 'none', boxShadow: '0 6px 24px rgba(0,0,0,.1)' }}>
             {filtered.length === 0 ? (
-              <div style={{ padding: '0.75rem', textAlign: 'center', fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', color: 'var(--bs-txt3)' }}>No careers found</div>
+              <div style={{ padding: '0.75rem', textAlign: 'center', fontFamily: 'var(--font-body)', fontSize: 'var(--font-sm)', color: 'var(--hud-text-faint)' }}>No careers found</div>
             ) : filtered.map(car => {
               const isSel = selected?.key === car.key
               return (
                 <button key={car.key} onClick={() => { onSelect(car); setQuery(''); setOpen(false); setHoveredCareer(null) }}
-                  style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 0.75rem', background: isSel ? 'var(--bs-red-glow)' : 'transparent', border: 'none', borderBottom: '1px solid var(--bs-bdr-mid)', cursor: 'pointer' }}
+                  style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 0.75rem', background: isSel ? 'color-mix(in srgb, var(--hud-accent) 10%, transparent)' : 'transparent', border: 'none', borderBottom: '1px solid var(--hud-border)', cursor: 'pointer' }}
                   onMouseEnter={e => {
                     if (!isSel) e.currentTarget.style.background = 'rgba(224,58,30,.06)'
                     setHoveredCareer({ name: car.name, description: car.description, skillKeys: car.career_skill_keys ?? [], source: car.source, isForce: car.is_force_career })
@@ -1249,11 +1250,11 @@ function CareerStep({
                   onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = 'transparent'; setHoveredCareer(null) }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-base)', fontWeight: 700, color: 'var(--bs-ink)', letterSpacing: '0.06rem' }}>{car.name}</span>
-                    {car.source && <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)', color: 'var(--bs-txt3)' }}>{sourceToTab(car.source)}</span>}
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-base)', fontWeight: 700, color: 'var(--hud-text)', letterSpacing: '0.06rem' }}>{car.name}</span>
+                    {car.source && <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-2xs)', color: 'var(--hud-text-faint)' }}>{sourceToTab(car.source)}</span>}
                   </div>
                   {car.is_force_career && (
-                    <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)', fontWeight: 700, color: '#5AAAE0', background: 'rgba(90,170,224,.08)', border: '1px solid rgba(90,170,224,.3)', padding: '0.04rem 0.4rem', marginRight: '0.25rem' }}>FORCE</span>
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-2xs)', fontWeight: 700, color: 'var(--die-force)', background: 'rgba(90,170,224,.08)', border: '1px solid rgba(90,170,224,.3)', padding: '0.04rem 0.4rem', marginRight: '0.25rem' }}>FORCE</span>
                   )}
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.2rem', marginTop: '0.2rem' }}>
                     {car.career_skill_keys?.map(k => (
@@ -1269,15 +1270,15 @@ function CareerStep({
 
       {/* Selected career + skill picker */}
       {selected && (
-        <div style={{ background: 'rgba(255,255,255,.72)', backdropFilter: 'blur(8px)', border: '2px solid var(--bs-red-sun)', padding: 'var(--sp-md) var(--sp-lg)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-sm)' }}>
+        <div style={{ background: 'rgba(255,255,255,.72)', backdropFilter: 'blur(8px)', border: '2px solid var(--hud-accent)', padding: 'var(--sp-md) var(--sp-lg)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-sm)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-md)', fontWeight: 800, color: 'var(--bs-ink)', letterSpacing: '0.1rem' }}>
+            <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-md)', fontWeight: 800, color: 'var(--hud-text)', letterSpacing: '0.1rem' }}>
               {selected.name}
             </div>
-            {selected.source && <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', color: 'var(--bs-txt3)' }}>{selected.source}</span>}
+            {selected.source && <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-xs)', color: 'var(--hud-text-faint)' }}>{selected.source}</span>}
           </div>
 
-          <div style={{ ...S.labelXs, color: freeCareerPicks.length === 4 ? '#4EC87A' : 'var(--bs-txt3)' }}>
+          <div style={{ ...S.labelXs, color: freeCareerPicks.length === 4 ? 'var(--state-success)' : 'var(--hud-text-faint)' }}>
             SELECT 4 FREE CAREER SKILLS — {freeCareerPicks.length}/4 chosen
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '0.3rem' }}>
@@ -1289,13 +1290,13 @@ function CareerStep({
                   display: 'flex', alignItems: 'center', gap: '0.4rem',
                   padding: 'var(--sp-xs) var(--sp-sm)',
                   background: picked ? 'rgba(214,77,138,.1)' : 'rgba(0,0,0,.03)',
-                  border: `1px solid ${picked ? 'rgba(214,77,138,.4)' : 'var(--bs-bdr-mid)'}`,
+                  border: `1px solid ${picked ? 'rgba(214,77,138,.4)' : 'var(--hud-border)'}`,
                   cursor: full ? 'not-allowed' : 'pointer',
                   opacity: full ? 0.4 : 1,
                 }}>
                   <input type="checkbox" checked={picked} disabled={full}
                     onChange={() => onPickToggle(k)} />
-                  <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', color: 'var(--bs-txt2)' }}>
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-sm)', color: 'var(--hud-text-dim)' }}>
                     {skillMap[k]?.name || k}
                   </span>
                 </label>
@@ -1373,7 +1374,7 @@ function SpecStep({
     const isSel = selected?.key === spec.key
     return (
       <button key={spec.key} onClick={() => { onSelect(spec); setQuery(''); setOpen(false); setHoveredSpec(null) }}
-        style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 0.75rem', background: isSel ? 'var(--bs-red-glow)' : 'transparent', border: 'none', borderBottom: '1px solid var(--bs-bdr-mid)', cursor: 'pointer', opacity: isCareer ? 1 : 0.7 }}
+        style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 0.75rem', background: isSel ? 'color-mix(in srgb, var(--hud-accent) 10%, transparent)' : 'transparent', border: 'none', borderBottom: '1px solid var(--hud-border)', cursor: 'pointer', opacity: isCareer ? 1 : 0.7 }}
         onMouseEnter={e => {
           if (!isSel) e.currentTarget.style.background = 'rgba(224,58,30,.06)'
           setHoveredSpec({ name: spec.name, description: spec.description, skillKeys: spec.career_skill_keys ?? [], source: spec.source, isForce: spec.is_force_sensitive })
@@ -1382,12 +1383,12 @@ function SpecStep({
         onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = 'transparent'; setHoveredSpec(null) }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-          <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-base)', fontWeight: 700, color: 'var(--bs-ink)', letterSpacing: '0.06rem' }}>{spec.name}</span>
+          <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-base)', fontWeight: 700, color: 'var(--hud-text)', letterSpacing: '0.06rem' }}>{spec.name}</span>
           {spec.is_force_sensitive && (
-            <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)', fontWeight: 700, color: '#5AAAE0', background: 'rgba(90,170,224,.08)', border: '1px solid rgba(90,170,224,.3)', padding: '0.04rem 0.35rem' }}>FORCE</span>
+            <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-2xs)', fontWeight: 700, color: 'var(--die-force)', background: 'rgba(90,170,224,.08)', border: '1px solid rgba(90,170,224,.3)', padding: '0.04rem 0.35rem' }}>FORCE</span>
           )}
           {!isCareer && (
-            <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)', color: 'var(--bs-txt3)' }}>({sourceToTab(spec.source)})</span>
+            <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-2xs)', color: 'var(--hud-text-faint)' }}>({sourceToTab(spec.source)})</span>
           )}
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.2rem', marginTop: '0.2rem' }}>
@@ -1401,7 +1402,7 @@ function SpecStep({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-md)' }}>
-      <p style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', color: 'var(--bs-txt2)', margin: 0, lineHeight: 1.6 }}>
+      <p style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-sm)', color: 'var(--hud-text-dim)', margin: 0, lineHeight: 1.6 }}>
         Your <strong>first specialisation</strong> is free (must be from your career). It grants 4 bonus career skills — pick 2 for a free rank.
       </p>
 
@@ -1409,23 +1410,23 @@ function SpecStep({
       <div ref={containerRef} style={{ position: 'relative' }}>
         <div
           onClick={() => { setOpen(true); setTimeout(() => inputRef.current?.focus(), 0) }}
-          style={{ display: 'flex', alignItems: 'center', background: 'var(--bs-surface)', border: `1px solid ${open ? 'var(--bs-red-sun)' : 'var(--bs-bdr-mid)'}`, padding: '0.45rem 0.75rem', cursor: 'text', transition: 'border-color .2s' }}
+          style={{ display: 'flex', alignItems: 'center', background: 'var(--hud-surface-lo)', border: `1px solid ${open ? 'var(--hud-accent)' : 'var(--hud-border)'}`, padding: '0.45rem 0.75rem', cursor: 'text', transition: 'border-color .2s' }}
         >
           <input ref={inputRef} placeholder={selected ? selected.name : 'Search career specialisations...'}
             value={query} onChange={e => { setQuery(e.target.value); setOpen(true) }} onFocus={() => setOpen(true)}
-            style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-base)' }} />
+            style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontFamily: 'var(--font-body)', fontSize: 'var(--font-base)' }} />
           <span onClick={e => { e.stopPropagation(); setOpen(o => !o) }}
-            style={{ cursor: 'pointer', color: 'var(--bs-txt3)', userSelect: 'none' }}>{open ? '▲' : '▼'}</span>
+            style={{ cursor: 'pointer', color: 'var(--hud-text-faint)', userSelect: 'none' }}>{open ? '▲' : '▼'}</span>
         </div>
         {open && (
-          <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 20, maxHeight: '22rem', overflowY: 'auto', background: 'var(--bs-surface)', border: '1px solid var(--bs-bdr-mid)', borderTop: 'none', boxShadow: '0 6px 24px rgba(0,0,0,.1)' }}>
+          <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: Z.dropdown, maxHeight: '22rem', overflowY: 'auto', background: 'var(--hud-surface-lo)', border: '1px solid var(--hud-border)', borderTop: 'none', boxShadow: '0 6px 24px rgba(0,0,0,.1)' }}>
             {filtered.career.length === 0 && filtered.other.length === 0 ? (
-              <div style={{ padding: '0.75rem', textAlign: 'center', fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', color: 'var(--bs-txt3)' }}>No specialisations found</div>
+              <div style={{ padding: '0.75rem', textAlign: 'center', fontFamily: 'var(--font-body)', fontSize: 'var(--font-sm)', color: 'var(--hud-text-faint)' }}>No specialisations found</div>
             ) : (
               <>
                 {filtered.career.map(s => renderSpecItem(s, true))}
                 {filtered.other.length > 0 && filtered.career.length > 0 && (
-                  <div style={{ padding: '0.2rem 0.75rem', fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--bs-txt3)', background: 'rgba(0,0,0,.03)', borderBottom: '1px solid var(--bs-bdr-mid)' }}>
+                  <div style={{ padding: '0.2rem 0.75rem', fontFamily: 'var(--font-body)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--hud-text-faint)', background: 'rgba(0,0,0,.03)', borderBottom: '1px solid var(--hud-border)' }}>
                     OTHER CAREERS
                   </div>
                 )}
@@ -1438,16 +1439,16 @@ function SpecStep({
 
       {/* Selected first spec card */}
       {selected && (
-        <div style={{ background: 'rgba(255,255,255,.72)', backdropFilter: 'blur(8px)', border: '2px solid var(--bs-red-sun)', padding: 'var(--sp-md) var(--sp-lg)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-sm)' }}>
+        <div style={{ background: 'rgba(255,255,255,.72)', backdropFilter: 'blur(8px)', border: '2px solid var(--hud-accent)', padding: 'var(--sp-md) var(--sp-lg)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-sm)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-md)', fontWeight: 800, color: 'var(--bs-ink)', letterSpacing: '0.1rem' }}>{selected.name}</span>
+            <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-md)', fontWeight: 800, color: 'var(--hud-text)', letterSpacing: '0.1rem' }}>{selected.name}</span>
             {selected.is_force_sensitive && (
-              <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', fontWeight: 700, color: '#5AAAE0', background: 'rgba(90,170,224,.08)', border: '1px solid rgba(90,170,224,.3)', padding: '0.04rem 0.4rem' }}>FORCE</span>
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-xs)', fontWeight: 700, color: 'var(--die-force)', background: 'rgba(90,170,224,.08)', border: '1px solid rgba(90,170,224,.3)', padding: '0.04rem 0.4rem' }}>FORCE</span>
             )}
           </div>
 
           <div>
-            <div style={{ ...S.labelXs, color: freeSpecPicks.length === 2 ? '#4EC87A' : 'var(--bs-txt3)', marginBottom: '0.4rem' }}>
+            <div style={{ ...S.labelXs, color: freeSpecPicks.length === 2 ? 'var(--state-success)' : 'var(--hud-text-faint)', marginBottom: '0.4rem' }}>
               BONUS CAREER SKILLS — pick 2 for free rank: {freeSpecPicks.length}/2
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
@@ -1459,12 +1460,12 @@ function SpecStep({
                     display: 'flex', alignItems: 'center', gap: '0.35rem',
                     padding: '0.2rem 0.6rem',
                     background: picked ? 'rgba(214,77,138,.12)' : 'rgba(0,0,0,.04)',
-                    border: `1px solid ${picked ? 'rgba(214,77,138,.4)' : 'var(--bs-bdr-mid)'}`,
+                    border: `1px solid ${picked ? 'rgba(214,77,138,.4)' : 'var(--hud-border)'}`,
                     cursor: full ? 'not-allowed' : 'pointer', opacity: full ? 0.4 : 1,
                   }}>
                     <input type="checkbox" checked={picked} disabled={full}
                       onChange={() => onSpecPickToggle(k)} />
-                    <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', color: 'var(--bs-txt2)' }}>
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-sm)', color: 'var(--hud-text-dim)' }}>
                       {skillMap[k]?.name || k}
                     </span>
                   </label>
@@ -1535,7 +1536,7 @@ function XpInvestmentStep({
     return s
   }, [draft.specialization, draft.additionalSpecs])
 
-  const xpColor = xpRemaining < 0 ? '#E05050' : xpRemaining < 20 ? '#E09050' : '#4EC87A'
+  const xpColor = xpRemaining < 0 ? 'var(--state-failure)' : xpRemaining < 20 ? 'var(--state-threat)' : 'var(--state-success)'
 
   return (
     <HudCard title="XP Investment" animClass="au d1">
@@ -1543,39 +1544,39 @@ function XpInvestmentStep({
 
         {/* Persistent XP header */}
         <div style={{
-          position: 'sticky', top: 'var(--sp-sm)', zIndex: 10,
+          position: 'sticky', top: 'var(--sp-sm)', zIndex: Z.sticky,
           background: 'rgba(255,255,255,.95)', backdropFilter: 'blur(8px)',
-          border: '1px solid var(--bs-bdr-mid)', padding: 'var(--sp-sm) var(--sp-md)',
+          border: '1px solid var(--hud-border)', padding: 'var(--sp-sm) var(--sp-md)',
           display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 'var(--sp-xs)',
         }}>
           {[
-            { label: 'TOTAL', val: xpTotal, hint: oblXpBonus > 0 ? `${baseXp}+${oblXpBonus}` : undefined, color: 'var(--bs-red-mid)' },
-            { label: 'CHARS', val: xpSpentOnChars, color: 'var(--bs-ink)' },
-            { label: 'SKILLS', val: xpSpentOnSkills, color: '#d64d8a' },
+            { label: 'TOTAL', val: xpTotal, hint: oblXpBonus > 0 ? `${baseXp}+${oblXpBonus}` : undefined, color: 'var(--hud-accent)' },
+            { label: 'CHARS', val: xpSpentOnChars, color: 'var(--hud-text)' },
+            { label: 'SKILLS', val: xpSpentOnSkills, color: 'var(--color-magenta)' },
             { label: 'REMAINING', val: xpRemaining, color: xpColor },
           ].map(item => (
             <div key={item.label} style={{ textAlign: 'center' }}>
-              <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-lg)', fontWeight: 800, color: item.color, lineHeight: 1 }}>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-lg)', fontWeight: 800, color: item.color, lineHeight: 1 }}>
                 {item.val}
-                {item.hint && <span style={{ fontSize: 'var(--font-2xs)', color: 'var(--bs-txt3)', display: 'block', fontWeight: 400 }}>{item.hint}</span>}
+                {item.hint && <span style={{ fontSize: 'var(--font-2xs)', color: 'var(--hud-text-faint)', display: 'block', fontWeight: 400 }}>{item.hint}</span>}
               </div>
-              <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.08rem', color: 'var(--bs-txt3)' }}>{item.label}</div>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.08rem', color: 'var(--hud-text-faint)' }}>{item.label}</div>
             </div>
           ))}
         </div>
 
         {/* Section tabs */}
-        <div style={{ display: 'flex', borderBottom: '1px solid var(--bs-bdr-mid)', gap: 0 }}>
+        <div style={{ display: 'flex', borderBottom: '1px solid var(--hud-border)', gap: 0 }}>
           {(['chars', 'skills', 'specs', 'talents'] as const).map(s => (
             <button key={s} onClick={() => setSection(s)}
               style={{
                 flex: 1, background: 'none', border: 'none',
-                borderBottom: section === s ? '2px solid var(--bs-red-sun)' : '2px solid transparent',
+                borderBottom: section === s ? '2px solid var(--hud-accent)' : '2px solid transparent',
                 padding: '0.4rem', cursor: 'pointer',
-                fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)',
+                fontFamily: 'var(--font-body)', fontSize: 'var(--font-xs)',
                 fontWeight: section === s ? 700 : 500, letterSpacing: '0.08rem',
-                color: section === s ? 'var(--bs-red-mid)' : 'var(--bs-txt3)',
-                marginBottom: '-1px', transition: 'color .15s',
+                color: section === s ? 'var(--hud-accent)' : 'var(--hud-text-faint)',
+                marginBottom: '-1px', transition: `color ${EASE.default}`,
               }}
             >
               {s === 'chars' ? 'CHARS' : s === 'skills' ? 'SKILLS' : s === 'specs' ? 'MORE SPECS' : 'TALENTS'}
@@ -1591,7 +1592,7 @@ function XpInvestmentStep({
               padding: 'var(--sp-sm) var(--sp-md)', display: 'flex', gap: 'var(--sp-sm)', alignItems: 'flex-start',
             }}>
               <span style={{ fontSize: 'var(--font-lg)' }}>⚠</span>
-              <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', color: '#E05050', lineHeight: 1.5 }}>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-xs)', color: 'var(--state-failure)', lineHeight: 1.5 }}>
                 <strong>CREATION ONLY</strong> — Characteristics cannot be raised with XP after character creation ends. They can only increase later via the Dedication talent.
               </div>
             </div>
@@ -1604,21 +1605,21 @@ function XpInvestmentStep({
                 const canDown = val > base
                 return (
                   <div key={key}
-                    style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-sm)', padding: '0.3rem 0.6rem', background: 'rgba(255,255,255,.5)', border: '1px solid var(--bs-bdr-mid)', cursor: 'default' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-sm)', padding: '0.3rem 0.6rem', background: 'rgba(255,255,255,.5)', border: '1px solid var(--hud-border)', cursor: 'default' }}
                     onMouseEnter={e => setHoveredChar({ key, pos: calcCreatorTipPos(e.currentTarget.getBoundingClientRect()) })}
                     onMouseLeave={() => setHoveredChar(null)}
                   >
-                    <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--bs-txt2)', width: '5rem', letterSpacing: '0.05rem', textTransform: 'uppercase' }}>{key}</span>
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--hud-text-dim)', width: '5rem', letterSpacing: '0.05rem', textTransform: 'uppercase' }}>{key}</span>
                     <button onClick={() => {
                       if (canDown) setDraft(p => ({ ...p, [key]: p[key] - 1 }))
                     }} disabled={!canDown}
-                      style={{ width: '1.4rem', height: '1.4rem', border: '1px solid var(--bs-bdr-mid)', background: 'none', cursor: canDown ? 'pointer' : 'default', fontWeight: 700, color: 'var(--bs-txt3)', opacity: canDown ? 1 : 0.3 }}>-</button>
-                    <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-lg)', fontWeight: 800, color: 'var(--bs-ink)', width: '1.5rem', textAlign: 'center' }}>{val}</span>
+                      style={{ width: '1.4rem', height: '1.4rem', border: '1px solid var(--hud-border)', background: 'none', cursor: canDown ? 'pointer' : 'default', fontWeight: 700, color: 'var(--hud-text-faint)', opacity: canDown ? 1 : 0.3 }}>-</button>
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-lg)', fontWeight: 800, color: 'var(--hud-text)', width: '1.5rem', textAlign: 'center' }}>{val}</span>
                     <button onClick={() => {
                       if (canUp) setDraft(p => ({ ...p, [key]: p[key] + 1 }))
                     }} disabled={!canUp}
-                      style={{ width: '1.4rem', height: '1.4rem', border: '1px solid var(--bs-bdr-mid)', background: 'none', cursor: canUp ? 'pointer' : 'default', fontWeight: 700, color: 'var(--bs-red-mid)', opacity: canUp ? 1 : 0.3 }}>+</button>
-                    <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', color: 'var(--bs-txt3)', marginLeft: 'auto' }}>
+                      style={{ width: '1.4rem', height: '1.4rem', border: '1px solid var(--hud-border)', background: 'none', cursor: canUp ? 'pointer' : 'default', fontWeight: 700, color: 'var(--hud-accent)', opacity: canUp ? 1 : 0.3 }}>+</button>
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-xs)', color: 'var(--hud-text-faint)', marginLeft: 'auto' }}>
                       {val < 5 ? `next: ${nextCost}` : 'MAX'}
                     </span>
                   </div>
@@ -1631,16 +1632,16 @@ function XpInvestmentStep({
         {hoveredChar && createPortal(
           <div style={{
             position: 'fixed', left: hoveredChar.pos.x, top: hoveredChar.pos.y,
-            zIndex: 9999, width: 280, pointerEvents: 'none',
+            zIndex: Z.tooltip, width: 280, pointerEvents: 'none',
             background: 'rgba(252,248,236,0.98)',
-            border: '1px solid rgba(224,58,30,0.55)', borderLeft: '3px solid var(--bs-red-sun)',
+            border: '1px solid rgba(224,58,30,0.55)', borderLeft: '3px solid var(--hud-accent)',
             boxShadow: '0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.1)',
             padding: '10px 13px 12px',
           }}>
-            <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'clamp(0.72rem,1vw,0.84rem)', fontWeight: 800, letterSpacing: '0.07rem', color: 'var(--bs-ink)', marginBottom: 7, textTransform: 'capitalize' }}>
+            <div style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(0.72rem,1vw,0.84rem)', fontWeight: 800, letterSpacing: '0.07rem', color: 'var(--hud-text)', marginBottom: 7, textTransform: 'capitalize' }}>
               {hoveredChar.key}
             </div>
-            <p style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'clamp(0.65rem,0.88vw,0.74rem)', color: 'var(--bs-txt2)', margin: 0, lineHeight: 1.6 }}>
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(0.65rem,0.88vw,0.74rem)', color: 'var(--hud-text-dim)', margin: 0, lineHeight: 1.6 }}>
               {CHAR_DESC[hoveredChar.key]}
             </p>
           </div>,
@@ -1672,9 +1673,9 @@ function XpInvestmentStep({
                   display: 'flex', alignItems: 'center', gap: 'var(--sp-sm)',
                   padding: '0.3rem 0.5rem',
                   background: isCareer ? 'rgba(214,77,138,.04)' : 'rgba(0,0,0,.02)',
-                  border: `1px solid ${isCareer ? 'rgba(214,77,138,.15)' : 'var(--bs-bdr-mid)'}`,
+                  border: `1px solid ${isCareer ? 'rgba(214,77,138,.15)' : 'var(--hud-border)'}`,
                 }}>
-                  <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', fontWeight: 600, color: isCareer ? '#d64d8a' : 'var(--bs-txt2)', flex: 1 }}>
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-xs)', fontWeight: 600, color: isCareer ? 'var(--color-magenta)' : 'var(--hud-text-dim)', flex: 1 }}>
                     {sk.name}
                   </span>
                   {/* Free rank pips */}
@@ -1682,24 +1683,24 @@ function XpInvestmentStep({
                     {[0, 1].map(pip => (
                       <div key={pip} style={{
                         width: '0.6rem', height: '0.6rem', borderRadius: '50%',
-                        background: pip < freeRanks ? '#d64d8a' : pip < totalRanks ? 'var(--bs-red-mid)' : 'rgba(0,0,0,.15)',
-                        border: `1px solid ${pip < freeRanks ? '#d64d8a' : pip < totalRanks ? 'var(--bs-red-sun)' : 'var(--bs-bdr-mid)'}`,
+                        background: pip < freeRanks ? 'var(--color-magenta)' : pip < totalRanks ? 'var(--hud-accent)' : 'rgba(0,0,0,.15)',
+                        border: `1px solid ${pip < freeRanks ? 'var(--color-magenta)' : pip < totalRanks ? 'var(--hud-accent)' : 'var(--hud-border)'}`,
                       }} />
                     ))}
                   </div>
                   <button onClick={() => {
                     if (canDown) setDraft(p => ({ ...p, skillRanks: { ...p.skillRanks, [sk.key]: (p.skillRanks[sk.key] || 0) - 1 } }))
                   }} disabled={!canDown}
-                    style={{ width: '1.2rem', height: '1.2rem', border: '1px solid var(--bs-bdr-mid)', background: 'none', cursor: canDown ? 'pointer' : 'default', fontSize: 'var(--font-xs)', color: 'var(--bs-txt3)', opacity: canDown ? 1 : 0.3 }}>-</button>
-                  <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', fontWeight: 700, color: 'var(--bs-ink)', width: '0.8rem', textAlign: 'center' }}>{totalRanks}</span>
+                    style={{ width: '1.2rem', height: '1.2rem', border: '1px solid var(--hud-border)', background: 'none', cursor: canDown ? 'pointer' : 'default', fontSize: 'var(--font-xs)', color: 'var(--hud-text-faint)', opacity: canDown ? 1 : 0.3 }}>-</button>
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-xs)', fontWeight: 700, color: 'var(--hud-text)', width: '0.8rem', textAlign: 'center' }}>{totalRanks}</span>
                   <button onClick={() => {
                     if (canUp) {
                       const cost = isCareer ? rankBeingBought * 5 : (rankBeingBought * 5) + 5
                       if (xpRemaining >= cost) setDraft(p => ({ ...p, skillRanks: { ...p.skillRanks, [sk.key]: (p.skillRanks[sk.key] || 0) + 1 } }))
                     }
                   }} disabled={!canUp}
-                    style={{ width: '1.2rem', height: '1.2rem', border: '1px solid var(--bs-bdr-mid)', background: 'none', cursor: canUp ? 'pointer' : 'default', fontSize: 'var(--font-xs)', color: 'var(--bs-red-mid)', opacity: canUp ? 1 : 0.3 }}>+</button>
-                  <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', color: 'var(--bs-txt3)', width: '3.5rem', textAlign: 'right' }}>
+                    style={{ width: '1.2rem', height: '1.2rem', border: '1px solid var(--hud-border)', background: 'none', cursor: canUp ? 'pointer' : 'default', fontSize: 'var(--font-xs)', color: 'var(--hud-accent)', opacity: canUp ? 1 : 0.3 }}>+</button>
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-xs)', color: 'var(--hud-text-faint)', width: '3.5rem', textAlign: 'right' }}>
                     {totalRanks < 2 ? `${nextCost} XP` : 'MAX'}
                   </span>
                 </div>
@@ -1711,10 +1712,10 @@ function XpInvestmentStep({
         {/* SECTION C: Additional Specs */}
         {section === 'specs' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-sm)' }}>
-            <p style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', color: 'var(--bs-txt2)', margin: 0, lineHeight: 1.6 }}>
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-sm)', color: 'var(--hud-text-dim)', margin: 0, lineHeight: 1.6 }}>
               Purchase additional specialisations with starting XP. Only your first specialisation grants 2 free bonus skill ranks — additional specs add skills to your career list only.
             </p>
-            <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', color: 'var(--bs-txt3)' }}>
+            <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-xs)', color: 'var(--hud-text-faint)' }}>
               Next cost: {(draft.additionalSpecs.length + 2) * 10} XP (career) / {(draft.additionalSpecs.length + 2) * 10 + 10} XP (non-career)
             </div>
 
@@ -1722,12 +1723,12 @@ function XpInvestmentStep({
               const isCareerSpec = spec.career_key === draft.career?.key
               const cost = (idx + 2) * 10 + (isCareerSpec ? 0 : 10)
               return (
-                <div key={spec.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--sp-xs) var(--sp-sm)', background: 'rgba(0,0,0,.04)', border: '1px solid var(--bs-bdr-mid)' }}>
-                  <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--bs-txt2)' }}>
-                    {spec.name} <span style={{ color: 'var(--bs-txt3)', fontWeight: 400 }}>({cost} XP)</span>
+                <div key={spec.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--sp-xs) var(--sp-sm)', background: 'rgba(0,0,0,.04)', border: '1px solid var(--hud-border)' }}>
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--hud-text-dim)' }}>
+                    {spec.name} <span style={{ color: 'var(--hud-text-faint)', fontWeight: 400 }}>({cost} XP)</span>
                   </span>
                   <button onClick={() => setDraft(p => ({ ...p, additionalSpecs: p.additionalSpecs.filter(s => s.key !== spec.key), talentPicks: p.talentPicks.filter(t => t.specKey !== spec.key) }))}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', color: 'var(--red)' }}>
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 'var(--font-xs)', color: 'var(--red)' }}>
                     Remove
                   </button>
                 </div>
@@ -1771,10 +1772,10 @@ function XpInvestmentStep({
                     style={{
                       padding: '0.3rem 0.75rem',
                       background: activeTalentSpec?.key === spec.key ? 'rgba(224,58,30,.15)' : 'transparent',
-                      border: `1px solid ${activeTalentSpec?.key === spec.key ? 'var(--bs-red-sun)' : 'var(--bs-bdr-mid)'}`,
-                      fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', fontWeight: 600,
-                      color: activeTalentSpec?.key === spec.key ? 'var(--bs-red-mid)' : 'var(--bs-txt2)',
-                      cursor: 'pointer', transition: 'border-color .15s, color .15s',
+                      border: `1px solid ${activeTalentSpec?.key === spec.key ? 'var(--hud-accent)' : 'var(--hud-border)'}`,
+                      fontFamily: 'var(--font-body)', fontSize: 'var(--font-xs)', fontWeight: 600,
+                      color: activeTalentSpec?.key === spec.key ? 'var(--hud-accent)' : 'var(--hud-text-dim)',
+                      cursor: 'pointer', transition: `border-color ${EASE.default}, color ${EASE.default}`,
                     }}
                   >
                     {spec.name}
@@ -1815,14 +1816,14 @@ function XpInvestmentStep({
                 />
               )
             })() : (
-              <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', color: 'var(--bs-txt3)', textAlign: 'center', padding: 'var(--sp-lg)' }}>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-sm)', color: 'var(--hud-text-faint)', textAlign: 'center', padding: 'var(--sp-lg)' }}>
                 No specialisations selected.
               </div>
             )}
           </div>
         )}
 
-        <div style={{ display: 'flex', gap: 'var(--sp-sm)', borderTop: '1px solid var(--bs-bdr-mid)', paddingTop: 'var(--sp-md)' }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-sm)', borderTop: '1px solid var(--hud-border)', paddingTop: 'var(--sp-md)' }}>
           <button onClick={onBack} style={{ ...S.ghostBtn, flex: 1 }}>← BACK</button>
           <button onClick={onContinue}
             style={{ ...S.goldBtn, flex: 2, opacity: xpRemaining >= 0 ? 1 : 0.4, cursor: xpRemaining >= 0 ? 'pointer' : 'default' }}>
@@ -1871,7 +1872,7 @@ function MotivationStep({
   return (
     <HudCard title="Motivation" animClass="au d1">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-md)' }}>
-        <p style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', color: 'var(--bs-txt2)', margin: 0, lineHeight: 1.6 }}>
+        <p style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-sm)', color: 'var(--hud-text-dim)', margin: 0, lineHeight: 1.6 }}>
           Every character is driven by something. Your Motivation provides story hooks and earns you bonus XP each session when you roleplay it authentically.
         </p>
 
@@ -1884,7 +1885,7 @@ function MotivationStep({
             ))}
           </select>
           {currentMotivation?.description && (
-            <p style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', color: 'var(--bs-txt3)', margin: '0.3rem 0 0', lineHeight: 1.5 }}>
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-xs)', color: 'var(--hud-text-faint)', margin: '0.3rem 0 0', lineHeight: 1.5 }}>
               {currentMotivation.description.slice(0, 180)}...
             </p>
           )}
@@ -1904,18 +1905,18 @@ function MotivationStep({
               </button>
             </div>
             {chooseMode && (
-              <div style={{ maxHeight: '16rem', overflowY: 'auto', border: '1px solid var(--bs-bdr-mid)', background: 'var(--bs-surface)', marginBottom: 'var(--sp-sm)' }}>
-                <div style={{ padding: '0.3rem 0.75rem', fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', color: 'var(--bs-txt3)', background: 'rgba(0,0,0,.03)', borderBottom: '1px solid var(--bs-bdr-mid)' }}>
+              <div style={{ maxHeight: '16rem', overflowY: 'auto', border: '1px solid var(--hud-border)', background: 'var(--hud-surface-lo)', marginBottom: 'var(--sp-sm)' }}>
+                <div style={{ padding: '0.3rem 0.75rem', fontFamily: 'var(--font-body)', fontSize: 'var(--font-xs)', color: 'var(--hud-text-faint)', background: 'rgba(0,0,0,.03)', borderBottom: '1px solid var(--hud-border)' }}>
                   Requires GM permission to choose directly
                 </div>
                 {eligibleSpecifics.map(sm => (
                   <button key={sm.key}
                     onClick={() => { onSpecificChange(sm.key, sm.description || ''); setChooseMode(false) }}
                     className={selectedSpecific !== sm.key ? 'hov-gold-bg' : ''}
-                    style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.4rem 0.75rem', background: selectedSpecific === sm.key ? 'var(--bs-red-glow)' : undefined, border: 'none', borderBottom: '1px solid var(--bs-bdr-mid)', cursor: 'pointer' }}
+                    style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.4rem 0.75rem', background: selectedSpecific === sm.key ? 'color-mix(in srgb, var(--hud-accent) 10%, transparent)' : undefined, border: 'none', borderBottom: '1px solid var(--hud-border)', cursor: 'pointer' }}
                   >
-                    <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', fontWeight: 700, color: 'var(--bs-ink)' }}>{sm.name}</div>
-                    {sm.description && <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', color: 'var(--bs-txt3)', marginTop: '0.1rem' }}>{sm.description.slice(0, 80)}...</div>}
+                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-sm)', fontWeight: 700, color: 'var(--hud-text)' }}>{sm.name}</div>
+                    {sm.description && <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-xs)', color: 'var(--hud-text-faint)', marginTop: '0.1rem' }}>{sm.description.slice(0, 80)}...</div>}
                   </button>
                 ))}
               </div>
@@ -1925,11 +1926,11 @@ function MotivationStep({
 
         {currentSpecific && (
           <div style={{ background: 'rgba(224,58,30,.08)', border: '1px solid rgba(224,58,30,.3)', padding: 'var(--sp-sm) var(--sp-md)' }}>
-            <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', fontWeight: 700, color: 'var(--bs-red-mid)', letterSpacing: '0.08rem', marginBottom: '0.3rem' }}>
+            <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-sm)', fontWeight: 700, color: 'var(--hud-accent)', letterSpacing: '0.08rem', marginBottom: '0.3rem' }}>
               {currentMotivation?.name} — {currentSpecific.name}
             </div>
             {currentSpecific.description && (
-              <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', color: 'var(--bs-txt2)', lineHeight: 1.6 }}>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-sm)', color: 'var(--hud-text-dim)', lineHeight: 1.6 }}>
                 {currentSpecific.description}
               </div>
             )}
@@ -1940,7 +1941,7 @@ function MotivationStep({
           <button onClick={onBack} style={{ ...S.ghostBtn, flex: 1 }}>← BACK</button>
           <button onClick={onContinue} style={{ ...S.goldBtn, flex: 2 }}>CONTINUE → REVIEW</button>
         </div>
-        <button onClick={onContinue} style={{ ...S.ghostBtn, width: '100%', fontSize: 'var(--font-xs)', color: 'var(--bs-txt3)' }}>
+        <button onClick={onContinue} style={{ ...S.ghostBtn, width: '100%', fontSize: 'var(--font-xs)', color: 'var(--hud-text-faint)' }}>
           Skip — Set Motivation Later
         </button>
       </div>
@@ -1979,8 +1980,8 @@ function ReviewStep({
 }) {
   const Row = ({ label, val }: { label: string; val: string }) => (
     <>
-      <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--bs-txt3)' }}>{label}</span>
-      <span style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', color: 'var(--bs-ink)', fontWeight: 600 }}>{val}</span>
+      <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-xs)', fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--hud-text-faint)' }}>{label}</span>
+      <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-sm)', color: 'var(--hud-text)', fontWeight: 600 }}>{val}</span>
     </>
   )
 
@@ -2004,15 +2005,15 @@ function ReviewStep({
           <div style={{ display: 'flex', gap: 'var(--sp-md)', flexWrap: 'wrap' }}>
             {CHAR_KEYS.map(k => (
               <div key={k} style={{ textAlign: 'center' }}>
-                <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-lg)', fontWeight: 800, color: 'var(--bs-ink)' }}>{draft[k]}</div>
-                <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', color: 'var(--bs-txt3)', textTransform: 'uppercase' }}>{CHAR_SHORT[k]}</div>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-lg)', fontWeight: 800, color: 'var(--hud-text)' }}>{draft[k]}</div>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-xs)', color: 'var(--hud-text-faint)', textTransform: 'uppercase' }}>{CHAR_SHORT[k]}</div>
               </div>
             ))}
           </div>
         </div>
 
         {/* Derived stats */}
-        <div style={{ display: 'flex', gap: 'var(--sp-md)', flexWrap: 'wrap', borderTop: '1px solid var(--bs-bdr-mid)', paddingTop: 'var(--sp-sm)' }}>
+        <div style={{ display: 'flex', gap: 'var(--sp-md)', flexWrap: 'wrap', borderTop: '1px solid var(--hud-border)', paddingTop: 'var(--sp-sm)' }}>
           {draft.species && (
             <>
               <StatPill label="WOUNDS" value={String(draft.species.wound_threshold + draft.brawn)} />
@@ -2036,27 +2037,27 @@ function ReviewStep({
         )}
 
         {/* XP breakdown */}
-        <div style={{ borderTop: '1px solid var(--bs-bdr-mid)', paddingTop: 'var(--sp-sm)' }}>
+        <div style={{ borderTop: '1px solid var(--hud-border)', paddingTop: 'var(--sp-sm)' }}>
           <div style={{ ...S.labelXs, marginBottom: '0.4rem' }}>XP BREAKDOWN</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
             {[
-              { label: 'TOTAL', val: xpTotal, color: 'var(--bs-red-mid)', bg: 'rgba(224,58,30,.1)', bdr: 'rgba(224,58,30,.4)' },
-              { label: 'CHARS', val: xpSpentOnChars, color: 'var(--bs-ink)', bg: 'rgba(0,0,0,.04)', bdr: 'var(--bs-bdr-mid)' },
-              { label: 'SKILLS', val: xpSpentOnSkills, color: '#d64d8a', bg: 'rgba(214,77,138,.08)', bdr: 'rgba(214,77,138,.3)' },
+              { label: 'TOTAL', val: xpTotal, color: 'var(--hud-accent)', bg: 'rgba(224,58,30,.1)', bdr: 'rgba(224,58,30,.4)' },
+              { label: 'CHARS', val: xpSpentOnChars, color: 'var(--hud-text)', bg: 'rgba(0,0,0,.04)', bdr: 'var(--hud-border)' },
+              { label: 'SKILLS', val: xpSpentOnSkills, color: 'var(--color-magenta)', bg: 'rgba(214,77,138,.08)', bdr: 'rgba(214,77,138,.3)' },
               { label: 'TALENTS', val: xpSpentOnTalents, color: 'var(--blue)', bg: 'rgba(43,93,174,.08)', bdr: 'rgba(43,93,174,.3)' },
-              { label: 'ADD SPECS', val: xpSpentOnAdditionalSpecs, color: 'var(--bs-txt2)', bg: 'rgba(0,0,0,.04)', bdr: 'var(--bs-bdr-mid)' },
-              { label: 'REMAINING', val: xpRemaining, color: xpRemaining >= 0 ? 'var(--blue)' : '#E05050', bg: 'rgba(43,93,174,.06)', bdr: 'rgba(43,93,174,.3)' },
+              { label: 'ADD SPECS', val: xpSpentOnAdditionalSpecs, color: 'var(--hud-text-dim)', bg: 'rgba(0,0,0,.04)', bdr: 'var(--hud-border)' },
+              { label: 'REMAINING', val: xpRemaining, color: xpRemaining >= 0 ? 'var(--blue)' : 'var(--state-failure)', bg: 'rgba(43,93,174,.06)', bdr: 'rgba(43,93,174,.3)' },
             ].map(item => (
               <div key={item.label} style={{ background: item.bg, border: `1px solid ${item.bdr}`, padding: '0.25rem 0.5rem', textAlign: 'center', minWidth: '4rem' }}>
-                <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-lg)', fontWeight: 800, color: item.color }}>{item.val}</div>
-                <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.08rem', color: 'var(--bs-txt3)' }}>{item.label}</div>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-lg)', fontWeight: 800, color: item.color }}>{item.val}</div>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.08rem', color: 'var(--hud-text-faint)' }}>{item.label}</div>
               </div>
             ))}
           </div>
         </div>
 
         {/* Obligation / Duty summary */}
-        <div style={{ borderTop: '1px solid var(--bs-bdr-mid)', paddingTop: 'var(--sp-sm)', display: 'grid', gridTemplateColumns: '7rem 1fr', gap: '0.25rem 0.75rem' }}>
+        <div style={{ borderTop: '1px solid var(--hud-border)', paddingTop: 'var(--sp-sm)', display: 'grid', gridTemplateColumns: '7rem 1fr', gap: '0.25rem 0.75rem' }}>
           {draft.obligationType && <Row label="OBLIGATION" val={`${draft.obligationType} (${totalObligation})`} />}
           {draft.dutyType && <Row label="DUTY" val={draft.dutyType} />}
           {draft.motivationType && <Row label="MOTIVATION" val={`${draft.motivationType}${draft.motivationSpecific ? ` — ${draft.motivationSpecific}` : ''}`} />}
@@ -2083,8 +2084,8 @@ function ReviewStep({
 function StatPill({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
     <div>
-      <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.08rem', color: 'var(--bs-txt3)' }}>{label}</div>
-      <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-base)', fontWeight: 700, color: highlight ? 'var(--bs-red-mid)' : 'var(--bs-ink)' }}>{value}</div>
+      <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.08rem', color: 'var(--hud-text-faint)' }}>{label}</div>
+      <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-base)', fontWeight: 700, color: highlight ? 'var(--hud-accent)' : 'var(--hud-text)' }}>{value}</div>
     </div>
   )
 }
@@ -2092,13 +2093,13 @@ function StatPill({ label, value, highlight }: { label: string; value: string; h
 function CollapsibleDesc({ html }: { html: string }) {
   const [open, setOpen] = useState(false)
   return (
-    <div style={{ borderTop: '1px solid var(--bs-bdr-mid)', paddingTop: 'var(--sp-xs)' }}>
+    <div style={{ borderTop: '1px solid var(--hud-border)', paddingTop: 'var(--sp-xs)' }}>
       <button onClick={() => setOpen(o => !o)}
-        style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-xs)', fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--bs-txt3)', padding: 0 }}>
+        style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 'var(--font-xs)', fontWeight: 600, letterSpacing: '0.1rem', color: 'var(--hud-text-faint)', padding: 0 }}>
         {open ? '▲ HIDE' : '▼ SHOW DESCRIPTION'}
       </button>
       {open && (
-        <div style={{ fontFamily: 'var(--font-rajdhani)', fontSize: 'var(--font-sm)', color: 'var(--bs-txt2)', lineHeight: 1.6, marginTop: 'var(--sp-xs)' }}
+        <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-sm)', color: 'var(--hud-text-dim)', lineHeight: 1.6, marginTop: 'var(--sp-xs)' }}
           dangerouslySetInnerHTML={{ __html: html }} />
       )}
     </div>
@@ -2143,31 +2144,31 @@ function CreatorItemTooltip({
         position:    'fixed',
         left:        pos.x,
         top:         pos.y,
-        zIndex:      9999,
+        zIndex:      Z.tooltip,
         width:       CREATOR_TIP_W,
         maxHeight:   'min(80vh, 600px)',
         overflowY:   'auto',
         pointerEvents: 'none',
         background:  'rgba(252,248,236,0.98)',
         border:      '1px solid rgba(224,58,30,0.55)',
-        borderLeft:  '3px solid var(--bs-red-sun)',
+        borderLeft:  '3px solid var(--hud-accent)',
         boxShadow:   '0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.1)',
         padding:     '10px 13px 12px',
       }}
     >
       <div style={{
-        fontFamily: 'var(--font-rajdhani)',
+        fontFamily: 'var(--font-body)',
         fontSize:   'clamp(0.72rem, 1vw, 0.84rem)',
         fontWeight: 800, letterSpacing: '0.07rem',
-        color:      'var(--bs-ink)',
+        color:      'var(--hud-text)',
         marginBottom: 7,
       }}>
         {item.name}
       </div>
       <p style={{
-        fontFamily: 'var(--font-rajdhani)',
+        fontFamily: 'var(--font-body)',
         fontSize:   'clamp(0.65rem, 0.88vw, 0.74rem)',
-        color:      'var(--bs-txt2)',
+        color:      'var(--hud-text-dim)',
         margin:     0, lineHeight: 1.6,
       }}>
         {desc}

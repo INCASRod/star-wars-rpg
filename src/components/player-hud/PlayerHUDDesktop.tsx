@@ -3,9 +3,8 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCharacterData } from '@/hooks/useCharacterData'
-import { C, FONT_RAJDHANI, FS_CAPTION, FS_LABEL, FS_SM, FS_H4 } from './design-tokens'
 import { Modal } from '@/components/ui/Modal'
-import { FONT_BODY, RADIUS, Z } from '@/lib/tokens'
+import { HUD, FONT_BODY, FS, RADIUS, Z } from '@/lib/tokens'
 import type { ConflictEntry } from '@/components/player-hud/ForcePanel'
 import { BackgroundEffects } from './HudDecorations'
 import { HudTopBar } from './HudTopBar'
@@ -203,7 +202,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     }
   }
 
-  const [uiTheme, setUiTheme] = useState<UiTheme>('binary-sunset')
+  const [uiTheme, setUiTheme] = useState<UiTheme>('ember')
 
   // ── Session tab — subscribe to active map visibility ──
   const { visibleMap } = useActiveMap(effectiveCampaignId)
@@ -386,8 +385,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   // ── Loading / Error ──
   if (loading) return <HolocronLoader />
   if (error || !character) return (
-    <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.bg }}>
-      <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_H4, color: '#E05050' }}>{error || 'Character not found'}</div>
+    <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: HUD.bg }}>
+      <div style={{ fontFamily: FONT_BODY, fontSize: FS.h4, color: 'var(--state-failure)' }}>{error || 'Character not found'}</div>
     </div>
   )
 
@@ -396,8 +395,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
 
   return (
     <div
-      data-theme={uiTheme === 'binary-sunset' ? undefined : uiTheme}
-      style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', background: C.bg }}
+      data-theme={uiTheme === 'ember' ? undefined : uiTheme}
+      style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', background: HUD.bg }}
     >
       <BackgroundEffects />
       <CombatTransition pending={transitionPending} prevMode={prevMode} />
@@ -462,8 +461,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
       {/* GM mode overlays */}
       {isGmMode && (
         <>
-          <button onClick={() => router.push(`/gm?campaign=${campaignId}`)} style={{ position: 'fixed', top: 8, left: 8, zIndex: 200, background: C.gold, border: 'none', padding: '6px 14px', fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL, fontWeight: 700, letterSpacing: '0.1em', color: C.bg, cursor: 'pointer' }}>← GM</button>
-          <div style={{ position: 'fixed', top: 8, right: 8, zIndex: 200, border: `2px solid ${C.gold}`, padding: '3px 12px', fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, fontWeight: 700, letterSpacing: '0.15em', color: C.gold }}>GM MODE</div>
+          <button onClick={() => router.push(`/gm?campaign=${campaignId}`)} style={{ position: 'fixed', top: 8, left: 8, zIndex: 200, background: HUD.gold, border: 'none', padding: '6px 14px', fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700, letterSpacing: '0.1em', color: HUD.bg, cursor: 'pointer' }}>← GM</button>
+          <div style={{ position: 'fixed', top: 8, right: 8, zIndex: 200, border: `2px solid ${HUD.gold}`, padding: '3px 12px', fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700, letterSpacing: '0.15em', color: HUD.gold }}>GM MODE</div>
         </>
       )}
 
@@ -529,7 +528,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         {/* ══ CENTER COLUMN ════════════════════════════════════ */}
         <div style={{
           display: 'flex', flexDirection: 'column',
-          borderRight: `1px solid ${C.border}`,
+          borderRight: `1px solid ${HUD.border}`,
           overflow: 'hidden',
           position: 'relative',
         }}>
@@ -659,8 +658,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
               ? <GroupSheet campaignId={effectiveCampaignId} characterName={character.name} />
               : (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, flexDirection: 'column', gap: 12, padding: 40 }}>
-                  <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_H4, color: C.textFaint }}>NO CAMPAIGN</div>
-                  <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.textFaint }}>Join a campaign to access the group sheet</div>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: FS.h4, color: HUD.textFaint }}>NO CAMPAIGN</div>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.textFaint }}>Join a campaign to access the group sheet</div>
                 </div>
               )
             }
