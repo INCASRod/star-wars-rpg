@@ -17,10 +17,10 @@ export function ItemDetailHero({ name, typeTag, icon, hardPoints, hardPointsUsed
         <img src={item_image_url} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         <div style={{
           position: 'absolute', inset: 0,
-          background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 60%)',
+          background: 'linear-gradient(to top, color-mix(in srgb, black 75%, transparent) 0%, transparent 60%)',
         }} />
         <div style={{ position: 'absolute', bottom: 8, left: 12 }}>
-          <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.overline, color: 'var(--hud-gold)', opacity: 0.7, letterSpacing: '0.1em' }}>
+          <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.overline, color: 'var(--hud-gold)', opacity: 0.6, letterSpacing: '0.1em' }}>
             {typeTag}
           </div>
           <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.h4, color: 'var(--hud-text)', fontWeight: 600 }}>
@@ -51,7 +51,7 @@ export function ItemDetailHero({ name, typeTag, icon, hardPoints, hardPointsUsed
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         border: '1px solid var(--hud-gold)', borderRadius: RADIUS.md,
         background: 'radial-gradient(ellipse at 50% 60%, var(--hud-accent-20) 0%, transparent 70%)',
-        fontSize: 28, color: 'var(--hud-gold)', fontFamily: FONT_BODY,
+        fontSize: 28, color: 'var(--hud-gold)', fontFamily: FONT_BODY, // icon is a unicode glyph, not an sw-rpg-icons char
       }}>
         {icon}
       </div>

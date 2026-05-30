@@ -1,5 +1,5 @@
 'use client'
-import { FONT_BODY, FONT_DISPLAY, RADIUS, FS } from '@/lib/tokens'
+import { FONT_BODY, RADIUS, FS } from '@/lib/tokens'
 import type { ItemCondition } from '@/lib/types'
 
 const CONDITIONS: ItemCondition[] = ['undamaged', 'minor', 'moderate', 'major', 'destroyed']
