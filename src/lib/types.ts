@@ -474,6 +474,8 @@ export interface CharacterWeapon {
   equip_state: EquipState
   attachments: unknown[]
   notes?: string
+  condition?:      string | null
+  item_image_url?: string | null
   /** GM override: treat as one-handed regardless of skill type */
   is_one_handed_override?: boolean | null
   /** GM override: treat as two-handed regardless of skill type */
@@ -492,6 +494,8 @@ export interface CharacterArmor {
   equip_state: EquipState
   attachments: unknown[]
   notes?: string
+  condition?:      string | null
+  item_image_url?: string | null
   stow_location_id?:   string | null
   stow_location_name?: string | null
   stow_location_type?: StowLocationType | null
@@ -506,6 +510,8 @@ export interface CharacterGear {
   is_equipped: boolean      // legacy — use equip_state
   equip_state: EquipState
   notes?: string
+  condition?:      string | null
+  item_image_url?: string | null
   stow_location_id?:   string | null
   stow_location_name?: string | null
   stow_location_type?: StowLocationType | null
@@ -608,6 +614,8 @@ export interface WpnDisplay {
   skillName:     string
   description?:  string | null
   stowLocation?: StowLocation | null
+  condition:      ItemCondition
+  item_image_url: string | null
 }
 
 export interface ArmDisplay {
@@ -621,6 +629,8 @@ export interface ArmDisplay {
   equipState:    EquipState
   description?:  string | null
   stowLocation?: StowLocation | null
+  condition:      ItemCondition
+  item_image_url: string | null
 }
 
 export interface GearRow {
@@ -631,5 +641,14 @@ export interface GearRow {
   equipState:    EquipState
   description?:  string | null
   stowLocation?: StowLocation | null
+  condition:      ItemCondition
+  item_image_url: string | null
 }
+
+export type ItemCondition =
+  | 'undamaged'
+  | 'minor'
+  | 'moderate'
+  | 'major'
+  | 'destroyed'
 

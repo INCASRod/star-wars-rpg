@@ -15,7 +15,7 @@ import type {
   RefForcePower, RefForceAbility, CharacterForceAbility,
   RefWeaponQuality, RefItemAttachment, EquipState,
   RefObligationType, RefDutyType,
-  SpeciesAbility, HudSkill, HudTalent, WpnDisplay, ArmDisplay, GearRow,
+  SpeciesAbility, HudSkill, HudTalent, WpnDisplay, ArmDisplay, GearRow, ItemCondition, StowLocationType,
 } from '@/lib/types'
 
 export function useCharacterData(characterId: string) {
@@ -675,6 +675,11 @@ export function useCharacterData(characterId: string) {
         equipState:  w.equip_state ?? (w.is_equipped ? 'equipped' : 'carrying'),
         skillName:   ref?.skill_key ? refSkillMap[ref.skill_key]?.name || '' : '',
         description: ref?.description ?? null,
+        condition:      (w.condition as ItemCondition) ?? 'undamaged',
+        item_image_url: w.item_image_url ?? null,
+        stowLocation:   w.equip_state === 'stowed' && w.stow_location_id
+          ? { id: w.stow_location_id, name: w.stow_location_name ?? '', type: w.stow_location_type as StowLocationType }
+          : null,
       }
     })
   , [weapons, refWeaponMap, refSkillMap, character?.brawn])
@@ -692,6 +697,11 @@ export function useCharacterData(characterId: string) {
         rarity:      ref?.rarity || 0,
         equipState:  a.equip_state ?? (a.is_equipped ? 'equipped' : 'carrying'),
         description: ref?.description ?? null,
+        condition:      (a.condition as ItemCondition) ?? 'undamaged',
+        item_image_url: a.item_image_url ?? null,
+        stowLocation:   a.equip_state === 'stowed' && a.stow_location_id
+          ? { id: a.stow_location_id, name: a.stow_location_name ?? '', type: a.stow_location_type as StowLocationType }
+          : null,
       }
     })
   , [armor, refArmorMap])
@@ -706,6 +716,11 @@ export function useCharacterData(characterId: string) {
         enc:         ref?.encumbrance || 0,
         equipState:  g.equip_state ?? (g.is_equipped ? 'equipped' : 'carrying'),
         description: ref?.description ?? null,
+        condition:      (g.condition as ItemCondition) ?? 'undamaged',
+        item_image_url: g.item_image_url ?? null,
+        stowLocation:   g.equip_state === 'stowed' && g.stow_location_id
+          ? { id: g.stow_location_id, name: g.stow_location_name ?? '', type: g.stow_location_type as StowLocationType }
+          : null,
       }
     })
   , [gear, refGearMap])
