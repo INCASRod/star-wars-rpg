@@ -654,6 +654,8 @@ export function useCharacterData(characterId: string) {
     return Array.from(map.values())
   }, [talents, refTalentMap, speciesAbilities])
 
+  const VALID_CONDITIONS = new Set<string>(['undamaged', 'minor', 'moderate', 'major', 'destroyed'])
+
   const hudWeapons = useMemo((): WpnDisplay[] =>
     weapons.map(w => {
       const ref           = w.weapon_key ? refWeaponMap[w.weapon_key] : null
@@ -675,10 +677,10 @@ export function useCharacterData(characterId: string) {
         equipState:  w.equip_state ?? (w.is_equipped ? 'equipped' : 'carrying'),
         skillName:   ref?.skill_key ? refSkillMap[ref.skill_key]?.name || '' : '',
         description: ref?.description ?? null,
-        condition:      (w.condition as ItemCondition) ?? 'undamaged',
+        condition:      (VALID_CONDITIONS.has(w.condition ?? '') ? w.condition : 'undamaged') as ItemCondition,
         item_image_url: w.item_image_url ?? null,
-        stowLocation:   w.equip_state === 'stowed' && w.stow_location_id
-          ? { id: w.stow_location_id, name: w.stow_location_name ?? '', type: w.stow_location_type as StowLocationType }
+        stowLocation:   w.equip_state === 'stowed' && w.stow_location_id && w.stow_location_type
+          ? { id: w.stow_location_id, name: w.stow_location_name ?? '', type: w.stow_location_type }
           : null,
       }
     })
@@ -697,10 +699,10 @@ export function useCharacterData(characterId: string) {
         rarity:      ref?.rarity || 0,
         equipState:  a.equip_state ?? (a.is_equipped ? 'equipped' : 'carrying'),
         description: ref?.description ?? null,
-        condition:      (a.condition as ItemCondition) ?? 'undamaged',
+        condition:      (VALID_CONDITIONS.has(a.condition ?? '') ? a.condition : 'undamaged') as ItemCondition,
         item_image_url: a.item_image_url ?? null,
-        stowLocation:   a.equip_state === 'stowed' && a.stow_location_id
-          ? { id: a.stow_location_id, name: a.stow_location_name ?? '', type: a.stow_location_type as StowLocationType }
+        stowLocation:   a.equip_state === 'stowed' && a.stow_location_id && a.stow_location_type
+          ? { id: a.stow_location_id, name: a.stow_location_name ?? '', type: a.stow_location_type }
           : null,
       }
     })
@@ -716,10 +718,10 @@ export function useCharacterData(characterId: string) {
         enc:         ref?.encumbrance || 0,
         equipState:  g.equip_state ?? (g.is_equipped ? 'equipped' : 'carrying'),
         description: ref?.description ?? null,
-        condition:      (g.condition as ItemCondition) ?? 'undamaged',
+        condition:      (VALID_CONDITIONS.has(g.condition ?? '') ? g.condition : 'undamaged') as ItemCondition,
         item_image_url: g.item_image_url ?? null,
-        stowLocation:   g.equip_state === 'stowed' && g.stow_location_id
-          ? { id: g.stow_location_id, name: g.stow_location_name ?? '', type: g.stow_location_type as StowLocationType }
+        stowLocation:   g.equip_state === 'stowed' && g.stow_location_id && g.stow_location_type
+          ? { id: g.stow_location_id, name: g.stow_location_name ?? '', type: g.stow_location_type }
           : null,
       }
     })
