@@ -11,6 +11,8 @@ import { fetchVehicles, dbRowToVehicle, vehicleWeaponDisplayName, vehicleWeaponS
 import { resolveWeapon } from '@/lib/resolve-weapon'
 import { RichText } from '@/components/ui/RichText'
 import { Modal } from '@/components/ui/Modal'
+import { TickerText } from '@/components/ui/TickerText'
+import { useHudPanelContext } from '@/contexts/HudPanelContext'
 
 const FONT_MONO = 'var(--font-body)'
 
@@ -191,6 +193,7 @@ interface GroupSheetProps {
 
 export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
   const supabase = useMemo(() => createClient(), [])
+  const { isOpen } = useHudPanelContext()
 
   // ── Data state ─────────────────────────────────────────────────────────────
   const [campaign, setCampaign]   = useState<CampaignGroupData | null>(null)
@@ -725,7 +728,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
             />
           ) : (
             <span style={{ fontFamily: FONT_MONO, fontSize: FS_CAPTION, color: `color-mix(in srgb, ${C.gold} 33%, transparent)`, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
-              {campaign.name}
+              <TickerText text={campaign.name} isOpen={isOpen} />
             </span>
           )}
           {gmUnlocked && !editingCampaignName && (
@@ -757,7 +760,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
             />
           ) : (
             <span style={{ fontFamily: FONT_CINZEL, fontSize: FS_H3, color: C.gold, letterSpacing: '0.06em' }}>
-              {groupName}
+              <TickerText text={groupName} isOpen={isOpen} />
             </span>
           )}
           {(gmUnlocked || campaign.group_name_editable) && !editingGroupName && (
@@ -810,7 +813,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
         {/* ── Tier 3: Base of Operations block ─────────────────────────────── */}
         <div style={{ textAlign: 'center', marginBottom: 6 }}>
           <span style={{ fontFamily: FONT_MONO, fontSize: FS_CAPTION, color: `color-mix(in srgb, ${C.gold} 33%, transparent)`, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
-            Base of Operations
+            <TickerText text="Base of Operations" isOpen={isOpen} />
           </span>
         </div>
         {editingBoo ? (
@@ -849,11 +852,11 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
               {campaign.base_of_operations_name ? (
                 <>
                   <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.gold, fontWeight: 600, letterSpacing: '0.04em' }}>
-                    {campaign.base_of_operations_name}
+                    <TickerText text={campaign.base_of_operations_name} isOpen={isOpen} />
                   </span>
                   {campaign.base_of_operations_description && (
                     <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.textDim, marginLeft: 8 }}>
-                      {campaign.base_of_operations_description}
+                      <TickerText text={campaign.base_of_operations_description} isOpen={isOpen} />
                     </span>
                   )}
                 </>
@@ -876,7 +879,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
 
       {/* ══ SECTION 2 — GROUP DUTY TABLE ══════════════════════════════════════ */}
       <div style={{ ...panelBase, borderRadius: 8, padding: 'var(--space-3)' }}>
-        <SectionHeader label="GROUP DUTY" />
+        <SectionHeader label="GROUP DUTY" isOpen={isOpen} />
 
         {duties.length === 0 ? (
           <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.textDim, padding: '8px 0' }}>
@@ -1057,7 +1060,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
 
       {/* ══ SECTION 3 — CONTRIBUTION RANK ═════════════════════════════════════ */}
       <div style={{ ...panelBase, borderRadius: 8, padding: 'var(--space-3)' }}>
-        <SectionHeader label="CONTRIBUTION RANK" />
+        <SectionHeader label="CONTRIBUTION RANK" isOpen={isOpen} />
 
         {/* Rank number + pips */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginTop: 8 }}>
@@ -1103,6 +1106,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
               nextText={nextRankEntry ? nextRankEntry.alliance : null}
               symbolSrc="/images/factions/rebel.png"
               symbolCorner="right"
+              isOpen={isOpen}
             />
             <TooltipCard
               label="IMPERIAL THREAT"
@@ -1112,6 +1116,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
               symbolSrc="/images/factions/empire.png"
               symbolCorner="left"
               symbolFilter="invert(1) opacity(0.15)"
+              isOpen={isOpen}
             />
           </div>
 
@@ -1152,7 +1157,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
                 fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: rankDesc ? C.text : C.textDim,
                 fontStyle: rankDesc ? 'normal' : 'italic', lineHeight: 1.5,
               }}>
-                {rankDesc ?? 'Advance your Group Contribution Rank to see rewards.'}
+                <TickerText text={rankDesc ?? 'Advance your Group Contribution Rank to see rewards.'} isOpen={isOpen} />
               </div>
             )}
           </div>
@@ -1162,7 +1167,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
       {/* ══ SECTION 4 — GROUP ASSETS ══════════════════════════════════════════ */}
       <div style={{ ...panelBase, borderRadius: 8, padding: 'var(--space-3)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-          <SectionHeader label="GROUP ASSETS" />
+          <SectionHeader label="GROUP ASSETS" isOpen={isOpen} />
           {gmUnlocked && (
             <button
               onClick={() => setShowAddAsset(true)}
@@ -1186,6 +1191,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
                 canArchive={gmUnlocked}
                 onView={() => setViewingAsset(asset)}
                 onArchive={() => archiveAsset(asset.id)}
+                isOpen={isOpen}
               />
             ))}
           </div>
@@ -1196,7 +1202,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
       {/* ══ SECTION 5 — LAST ALLIANCE REWARD ══════════════════════════════════ */}
       <div style={{ ...panelBase, borderRadius: 8, padding: 'var(--space-3)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-          <SectionHeader label="LAST ALLIANCE REWARD" />
+          <SectionHeader label="LAST ALLIANCE REWARD" isOpen={isOpen} />
           {gmUnlocked && (
             <button
               onClick={() => {
@@ -1221,14 +1227,14 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
                 background: 'var(--hud-surface-lo)', border: `1px solid ${C.border}`,
                 color: C.gold,
               }}>
-                {(ASSET_LABELS as Record<string, string>)[campaign.last_alliance_reward.type] ?? campaign.last_alliance_reward.type}
+                <TickerText text={(ASSET_LABELS as Record<string, string>)[campaign.last_alliance_reward.type] ?? campaign.last_alliance_reward.type} isOpen={isOpen} />
               </span>
               <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: C.textDim }}>
-                {formatDate(campaign.last_alliance_reward.awarded_at)}
+                <TickerText text={formatDate(campaign.last_alliance_reward.awarded_at)} isOpen={isOpen} />
               </span>
             </div>
             <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.text, lineHeight: 1.5 }}>
-              {campaign.last_alliance_reward.description}
+              <TickerText text={campaign.last_alliance_reward.description} isOpen={isOpen} />
             </div>
           </div>
         ) : (
@@ -1290,22 +1296,23 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
 
 // ── Sub-components ──────────────────────────────────────────────────────────────
 
-function SectionHeader({ label }: { label: string }) {
+function SectionHeader({ label, isOpen }: { label: string; isOpen: boolean }) {
   return (
     <div style={{
       fontFamily: FONT_CINZEL, fontSize: FS_LABEL, color: C.textDim,
       letterSpacing: '0.12em', marginBottom: 4,
       borderBottom: `1px solid ${C.border}`, paddingBottom: 4,
     }}>
-      {label}
+      <TickerText text={label} isOpen={isOpen} />
     </div>
   )
 }
 
-function TooltipCard({ label, color, text, nextText, symbolSrc, symbolCorner, symbolFilter }: {
+function TooltipCard({ label, color, text, nextText, symbolSrc, symbolCorner, symbolFilter, isOpen }: {
   label: string; color: string; text: string
   nextText?: string | null
   symbolSrc?: string; symbolCorner?: 'left' | 'right'; symbolFilter?: string
+  isOpen: boolean
 }) {
   return (
     <div style={{
@@ -1336,19 +1343,19 @@ function TooltipCard({ label, color, text, nextText, symbolSrc, symbolCorner, sy
       )}
       {/* Current rank */}
       <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_CAPTION, color, letterSpacing: '0.08em', marginBottom: 4, fontWeight: 700 }}>
-        {label}
+        <TickerText text={label} isOpen={isOpen} />
       </div>
       <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: 'var(--hud-text)', lineHeight: 1.5, marginBottom: nextText !== undefined ? 8 : 0 }}>
-        {text}
+        <TickerText text={text} isOpen={isOpen} />
       </div>
       {/* Next rank */}
       {nextText !== undefined && (
         <>
           <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_CAPTION, color: color + '88', letterSpacing: '0.08em', marginBottom: 3, fontWeight: 600 }}>
-            NEXT RANK
+            <TickerText text="NEXT RANK" isOpen={isOpen} />
           </div>
           <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: 'var(--hud-text-dim)', lineHeight: 1.5 }}>
-            {nextText ?? 'Maximum rank achieved.'}
+            <TickerText text={nextText ?? 'Maximum rank achieved.'} isOpen={isOpen} />
           </div>
         </>
       )}
@@ -1754,8 +1761,8 @@ function AssetViewModal({ asset, adversary, vehicle, loading, onClose }: {
   )
 }
 
-function AssetCard({ asset, canArchive, onArchive, onView }: {
-  asset: GroupAsset; canArchive: boolean; onArchive: () => void; onView: () => void
+function AssetCard({ asset, canArchive, onArchive, onView, isOpen }: {
+  asset: GroupAsset; canArchive: boolean; onArchive: () => void; onView: () => void; isOpen: boolean
 }) {
   const color = ASSET_COLORS[asset.asset_type]
   return (
@@ -1769,15 +1776,15 @@ function AssetCard({ asset, canArchive, onArchive, onView }: {
         fontFamily: FONT_CINZEL, fontSize: FS_CAPTION, letterSpacing: '0.06em',
         background: color + '22', border: `1px solid ${color}66`, color,
       }}>
-        {ASSET_LABELS[asset.asset_type]}
+        <TickerText text={ASSET_LABELS[asset.asset_type]} isOpen={isOpen} />
       </span>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.text, fontWeight: 600 }}>
-          {asset.name}
+          <TickerText text={asset.name} isOpen={isOpen} />
         </div>
         {asset.description && (
           <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: C.textDim, marginTop: 2 }}>
-            {asset.description}
+            <TickerText text={asset.description} isOpen={isOpen} />
           </div>
         )}
       </div>
