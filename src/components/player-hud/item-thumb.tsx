@@ -3,7 +3,6 @@ import { FONT_BODY, RADIUS, FS } from '@/lib/tokens'
 import type { EquipState, ItemCondition } from '@/lib/types'
 
 interface ItemThumbProps {
-  id:         string
   name:       string
   icon:       string
   equipState: EquipState
@@ -34,7 +33,7 @@ const NAME_COLOR: Record<ItemCondition, string> = {
   destroyed: 'var(--hud-text-faint)',
 }
 
-export function ItemThumb({ id: _id, name, icon, equipState, condition, isSelected, onClick }: ItemThumbProps) {
+export function ItemThumb({ name, icon, equipState, condition, isSelected, onClick }: ItemThumbProps) {
   const isDestroyed = condition === 'destroyed'
 
   return (
@@ -77,7 +76,7 @@ export function ItemThumb({ id: _id, name, icon, equipState, condition, isSelect
           <span style={{
             position: 'absolute', inset: 0,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'rgba(0,0,0,0.35)',
+            background: 'color-mix(in srgb, black 35%, transparent)',
             fontSize: 14, color: 'var(--hud-text-faint)',
           }}>✕</span>
         )}

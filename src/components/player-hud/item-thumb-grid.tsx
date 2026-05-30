@@ -1,5 +1,5 @@
 'use client'
-import { FONT_DISPLAY, FS } from '@/lib/tokens'
+import { FONT_DISPLAY, FS, Z } from '@/lib/tokens'
 import { ItemThumb } from './item-thumb'
 import type { WpnDisplay, ArmDisplay, GearRow } from '@/lib/types'
 
@@ -14,7 +14,7 @@ interface ItemThumbGridProps {
 function SectionHead({ label }: { label: string }) {
   return (
     <div style={{
-      position: 'sticky', top: 0, zIndex: 1,
+      position: 'sticky', top: 0, zIndex: Z.raised,
       fontFamily: FONT_DISPLAY, fontSize: FS.overline, fontWeight: 700,
       letterSpacing: '0.14em', textTransform: 'uppercase',
       color: 'var(--hud-gold)',
@@ -45,7 +45,7 @@ export function ItemThumbGrid({ weapons, armorItems, gearItems, selectedId, onSe
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, padding: 5 }}>
             {weapons.map(w => (
               <ItemThumb
-                key={w.id} id={w.id} name={w.name} icon={WEAPON_ICON}
+                key={w.id} name={w.name} icon={WEAPON_ICON}
                 equipState={w.equipState} condition={w.condition}
                 isSelected={selectedId === w.id}
                 onClick={() => onSelect(w.id)}
@@ -60,7 +60,7 @@ export function ItemThumbGrid({ weapons, armorItems, gearItems, selectedId, onSe
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, padding: 5 }}>
             {armorItems.map(a => (
               <ItemThumb
-                key={a.id} id={a.id} name={a.name} icon={ARMOR_ICON}
+                key={a.id} name={a.name} icon={ARMOR_ICON}
                 equipState={a.equipState} condition={a.condition}
                 isSelected={selectedId === a.id}
                 onClick={() => onSelect(a.id)}
@@ -75,7 +75,7 @@ export function ItemThumbGrid({ weapons, armorItems, gearItems, selectedId, onSe
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, padding: 5 }}>
             {gearItems.map(g => (
               <ItemThumb
-                key={g.id} id={g.id} name={g.name} icon={GEAR_ICON}
+                key={g.id} name={g.name} icon={GEAR_ICON}
                 equipState={g.equipState} condition={g.condition}
                 isSelected={selectedId === g.id}
                 onClick={() => onSelect(g.id)}
