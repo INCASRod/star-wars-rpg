@@ -1,4 +1,5 @@
 'use client'
+import { useState, useEffect } from 'react'
 import { FONT_BODY, RADIUS, FS } from '@/lib/tokens'
 import type { EquipState, ItemCondition } from '@/lib/types'
 
@@ -36,6 +37,8 @@ const NAME_COLOR: Record<ItemCondition, string> = {
 
 export function ItemThumb({ name, icon, iconUrl, equipState, condition, isSelected, onClick }: ItemThumbProps) {
   const isDestroyed = condition === 'destroyed'
+  const [iconErr, setIconErr] = useState(false)
+  useEffect(() => { setIconErr(false) }, [iconUrl])
 
   return (
     <button
@@ -57,16 +60,10 @@ export function ItemThumb({ name, icon, iconUrl, equipState, condition, isSelect
         filter: isDestroyed ? 'grayscale(0.8)' : 'none',
         overflow: 'hidden',
       }}>
-        {iconUrl
-          ? <img
-              src={iconUrl} alt=""
-              style={{ width: 32, height: 32, objectFit: 'contain', opacity: isDestroyed ? 0.5 : 0.85 }}
-              onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; (e.currentTarget.nextSibling as HTMLElement | null)?.style.setProperty('display', 'inline') }}
-            />
-          : null}
-        <span style={{ fontSize: 20, color: isSelected ? 'var(--hud-gold)' : 'var(--hud-text-dim)', lineHeight: 1, fontFamily: FONT_BODY, display: iconUrl ? 'none' : 'inline' }}>
-          {icon}
-        </span>
+        {iconUrl && !iconErr
+          ? <img src={iconUrl} alt="" style={{ width: 32, height: 32, objectFit: 'contain', opacity: isDestroyed ? 0.5 : 0.85 }} onError={() => setIconErr(true)} />
+          : <span style={{ fontSize: 20, color: isSelected ? 'var(--hud-gold)' : 'var(--hud-text-dim)', lineHeight: 1, fontFamily: FONT_BODY }}>{icon}</span>
+        }
         {/* equip dot */}
         <span style={{
           position: 'absolute', top: 3, right: 3,

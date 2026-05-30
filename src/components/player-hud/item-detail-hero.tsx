@@ -1,4 +1,5 @@
 'use client'
+import { useState, useEffect } from 'react'
 import { FONT_BODY, FONT_DISPLAY, RADIUS, FS } from '@/lib/tokens'
 
 interface ItemDetailHeroProps {
@@ -12,6 +13,8 @@ interface ItemDetailHeroProps {
 }
 
 export function ItemDetailHero({ name, typeTag, icon, iconUrl, hardPoints, hardPointsUsed, item_image_url }: ItemDetailHeroProps) {
+  const [iconErr, setIconErr] = useState(false)
+  useEffect(() => { setIconErr(false) }, [iconUrl])
   if (item_image_url) {
     return (
       <div style={{ position: 'relative', height: 80, flexShrink: 0, overflow: 'hidden' }}>
@@ -54,15 +57,10 @@ export function ItemDetailHero({ name, typeTag, icon, iconUrl, hardPoints, hardP
         background: 'radial-gradient(ellipse at 50% 60%, var(--hud-accent-20) 0%, transparent 70%)',
         overflow: 'hidden',
       }}>
-        {iconUrl
-          ? <img
-              src={iconUrl} alt="" style={{ width: 44, height: 44, objectFit: 'contain', opacity: 0.9 }}
-              onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; (e.currentTarget.nextSibling as HTMLElement | null)?.style.setProperty('display', 'inline') }}
-            />
-          : null}
-        <span style={{ fontSize: 28, color: 'var(--hud-gold)', fontFamily: FONT_BODY, display: iconUrl ? 'none' : 'inline' }}>
-          {icon}
-        </span>
+        {iconUrl && !iconErr
+          ? <img src={iconUrl} alt="" style={{ width: 44, height: 44, objectFit: 'contain', opacity: 0.9 }} onError={() => setIconErr(true)} />
+          : <span style={{ fontSize: 28, color: 'var(--hud-gold)', fontFamily: FONT_BODY }}>{icon}</span>
+        }
       </div>
       {/* text stack */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0, flex: 1 }}>
