@@ -113,6 +113,13 @@
   gap: 0;
 }
 
+/* Body copy variant — words wrap across lines */
+.ticker-ready-wrap {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0;
+}
+
 .ticker-char {
   display: inline-block;
   min-width: 0.5ch;

@@ -8,9 +8,13 @@ interface TickerTextProps {
   isOpen:     boolean
   delayMs?:   number
   className?: string
+  /** All characters animate simultaneously instead of left-to-right. Use for body copy. */
+  parallel?:  boolean
+  /** Allow the text to wrap across lines. Use for multi-line body copy. */
+  wrap?:      boolean
 }
 
-export function TickerText({ text, isOpen, delayMs, className }: TickerTextProps) {
+export function TickerText({ text, isOpen, delayMs, className, parallel, wrap }: TickerTextProps) {
   const spanRef                    = useRef<HTMLSpanElement>(null)
   const [shouldAnimate, setShouldAnimate] = useState(false)
 
@@ -30,10 +34,11 @@ export function TickerText({ text, isOpen, delayMs, className }: TickerTextProps
     setShouldAnimate(gated)
   }, [isOpen])
 
-  const { chars } = useTicker(text, isOpen && shouldAnimate, delayMs)
+  const { chars } = useTicker(text, isOpen && shouldAnimate, delayMs, parallel ? 0 : undefined)
 
+  const rootClass = wrap ? 'ticker-ready-wrap' : 'ticker-ready'
   return (
-    <span ref={spanRef} className={`ticker-ready${className ? ` ${className}` : ''}`}>
+    <span ref={spanRef} className={`${rootClass}${className ? ` ${className}` : ''}`}>
       {chars.map(char => (
         <span
           key={char.key}

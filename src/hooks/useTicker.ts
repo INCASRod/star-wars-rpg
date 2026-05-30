@@ -26,7 +26,8 @@ function buildSettledChars(text: string): TickerChar[] {
 export function useTicker(
   text: string,
   isOpen: boolean,
-  delayMs: number = 60
+  delayMs: number = 60,
+  staggerMs: number = STAGGER_MS,
 ): { chars: TickerChar[] } {
   const [chars, setChars] = useState<TickerChar[]>(() => buildSettledChars(text))
   const timeoutIds = useRef<Set<ReturnType<typeof setTimeout>>>(new Set())
@@ -58,12 +59,12 @@ export function useTicker(
               next[charIndex] = { key: `char-${charIndex}`, display: finalChar, settled: true }
               return next
             })
-          }, charIndex * STAGGER_MS)
+          }, charIndex * staggerMs)
           timeoutIds.current.add(staggerId)
           return
         }
 
-        const staggerOffset = charIndex * STAGGER_MS
+        const staggerOffset = charIndex * staggerMs
 
         // Show first random glyph at stagger offset
         const showId = setTimeout(() => {
@@ -110,7 +111,7 @@ export function useTicker(
     return () => {
       clearAllTimeouts()
     }
-  }, [isOpen, text, delayMs, clearAllTimeouts])
+  }, [isOpen, text, delayMs, staggerMs, clearAllTimeouts])
 
   return { chars }
 }

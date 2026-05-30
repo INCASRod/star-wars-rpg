@@ -856,7 +856,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
                   </span>
                   {campaign.base_of_operations_description && (
                     <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.textDim, marginLeft: 8 }}>
-                      <TickerText text={campaign.base_of_operations_description} isOpen={isOpen} />
+                      <TickerText text={campaign.base_of_operations_description} isOpen={isOpen} parallel wrap />
                     </span>
                   )}
                 </>
@@ -1157,7 +1157,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
                 fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: rankDesc ? C.text : C.textDim,
                 fontStyle: rankDesc ? 'normal' : 'italic', lineHeight: 1.5,
               }}>
-                <TickerText text={rankDesc ?? 'Advance your Group Contribution Rank to see rewards.'} isOpen={isOpen} />
+                <TickerText text={rankDesc ?? 'Advance your Group Contribution Rank to see rewards.'} isOpen={isOpen} parallel wrap />
               </div>
             )}
           </div>
@@ -1234,7 +1234,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
               </span>
             </div>
             <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.text, lineHeight: 1.5 }}>
-              <TickerText text={campaign.last_alliance_reward.description} isOpen={isOpen} />
+              <TickerText text={campaign.last_alliance_reward.description} isOpen={isOpen} parallel wrap />
             </div>
           </div>
         ) : (
@@ -1346,7 +1346,7 @@ function TooltipCard({ label, color, text, nextText, symbolSrc, symbolCorner, sy
         <TickerText text={label} isOpen={isOpen} />
       </div>
       <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: 'var(--hud-text)', lineHeight: 1.5, marginBottom: nextText !== undefined ? 8 : 0 }}>
-        <TickerText text={text} isOpen={isOpen} />
+        <TickerText text={text} isOpen={isOpen} parallel wrap />
       </div>
       {/* Next rank */}
       {nextText !== undefined && (
@@ -1355,7 +1355,7 @@ function TooltipCard({ label, color, text, nextText, symbolSrc, symbolCorner, sy
             <TickerText text="NEXT RANK" isOpen={isOpen} />
           </div>
           <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: 'var(--hud-text-dim)', lineHeight: 1.5 }}>
-            <TickerText text={nextText ?? 'Maximum rank achieved.'} isOpen={isOpen} />
+            <TickerText text={nextText ?? 'Maximum rank achieved.'} isOpen={isOpen} parallel wrap />
           </div>
         </>
       )}
@@ -1784,7 +1784,7 @@ function AssetCard({ asset, canArchive, onArchive, onView, isOpen }: {
         </div>
         {asset.description && (
           <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: C.textDim, marginTop: 2 }}>
-            <TickerText text={asset.description} isOpen={isOpen} />
+            <TickerText text={asset.description} isOpen={isOpen} parallel wrap />
           </div>
         )}
       </div>
