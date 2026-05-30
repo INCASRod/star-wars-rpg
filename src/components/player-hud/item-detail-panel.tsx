@@ -254,7 +254,7 @@ export function ItemDetailPanel({
     const typeTag = w.damage.isMelee ? 'Melee' : 'Ranged'
     return (
       <>
-        <ItemDetailHero name={w.name} typeTag={typeTag} icon="⚔" hardPoints={w.hardPoints} hardPointsUsed={0} item_image_url={w.item_image_url} />
+        <ItemDetailHero name={w.name} typeTag={typeTag} icon="⚔" iconUrl={w.iconUrl} hardPoints={w.hardPoints} hardPointsUsed={0} item_image_url={w.item_image_url} />
         <div style={STATS_ROW_STYLE}>
           <StatBox label="DMG"   value={dmgVal}       color="var(--die-threat)" />
           <StatBox label="CRIT"  value={w.crit}       color="var(--die-challenge)" />
@@ -279,7 +279,7 @@ export function ItemDetailPanel({
   function renderArmor(a: ArmDisplay) {
     return (
       <>
-        <ItemDetailHero name={a.name} typeTag="Armour" icon="◈" hardPoints={a.hardPoints} hardPointsUsed={0} item_image_url={a.item_image_url} />
+        <ItemDetailHero name={a.name} typeTag="Armour" icon="◈" iconUrl={a.iconUrl} hardPoints={a.hardPoints} hardPointsUsed={0} item_image_url={a.item_image_url} />
         <div style={STATS_ROW_STYLE}>
           <StatBox label="SOAK" value={a.soak}       color="var(--die-success)" />
           <StatBox label="DEF"  value={a.defense}    color="var(--die-force)" />
@@ -302,7 +302,7 @@ export function ItemDetailPanel({
   function renderGear(g: GearRow) {
     return (
       <>
-        <ItemDetailHero name={g.name} typeTag="Gear" icon="◆" hardPoints={0} hardPointsUsed={0} item_image_url={g.item_image_url} />
+        <ItemDetailHero name={g.name} typeTag="Gear" icon="◆" iconUrl={g.iconUrl} hardPoints={0} hardPointsUsed={0} item_image_url={g.item_image_url} />
         <div style={STATS_ROW_STYLE}>
           <StatBox label="QTY" value={g.qty} color="var(--hud-gold)" />
           <StatBox label="ENC" value={g.enc} color="var(--hud-text-dim)" />

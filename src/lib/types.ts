@@ -616,6 +616,7 @@ export interface WpnDisplay {
   stowLocation?: StowLocation | null
   condition:      ItemCondition
   item_image_url: string | null
+  iconUrl:        string | null
 }
 
 export interface ArmDisplay {
@@ -631,6 +632,7 @@ export interface ArmDisplay {
   stowLocation?: StowLocation | null
   condition:      ItemCondition
   item_image_url: string | null
+  iconUrl:        string | null
 }
 
 export interface GearRow {
@@ -643,6 +645,7 @@ export interface GearRow {
   stowLocation?: StowLocation | null
   condition:      ItemCondition
   item_image_url: string | null
+  iconUrl:        string | null
 }
 
 export type ItemCondition =

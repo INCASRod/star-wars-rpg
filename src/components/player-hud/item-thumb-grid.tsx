@@ -45,7 +45,7 @@ export function ItemThumbGrid({ weapons, armorItems, gearItems, selectedId, onSe
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 4, padding: 5 }}>
             {weapons.map(w => (
               <ItemThumb
-                key={w.id} name={w.name} icon={WEAPON_ICON}
+                key={w.id} name={w.name} icon={WEAPON_ICON} iconUrl={w.iconUrl}
                 equipState={w.equipState} condition={w.condition}
                 isSelected={selectedId === w.id}
                 onClick={() => onSelect(w.id)}
@@ -60,7 +60,7 @@ export function ItemThumbGrid({ weapons, armorItems, gearItems, selectedId, onSe
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 4, padding: 5 }}>
             {armorItems.map(a => (
               <ItemThumb
-                key={a.id} name={a.name} icon={ARMOR_ICON}
+                key={a.id} name={a.name} icon={ARMOR_ICON} iconUrl={a.iconUrl}
                 equipState={a.equipState} condition={a.condition}
                 isSelected={selectedId === a.id}
                 onClick={() => onSelect(a.id)}
@@ -75,7 +75,7 @@ export function ItemThumbGrid({ weapons, armorItems, gearItems, selectedId, onSe
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 4, padding: 5 }}>
             {gearItems.map(g => (
               <ItemThumb
-                key={g.id} name={g.name} icon={GEAR_ICON}
+                key={g.id} name={g.name} icon={GEAR_ICON} iconUrl={g.iconUrl}
                 equipState={g.equipState} condition={g.condition}
                 isSelected={selectedId === g.id}
                 onClick={() => onSelect(g.id)}

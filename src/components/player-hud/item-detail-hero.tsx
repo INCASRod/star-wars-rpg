@@ -4,13 +4,14 @@ import { FONT_BODY, FONT_DISPLAY, RADIUS, FS } from '@/lib/tokens'
 interface ItemDetailHeroProps {
   name:           string
   typeTag:        string      // e.g. "Ranged · Light"
-  icon:           string
+  icon:           string      // unicode fallback
+  iconUrl:        string | null  // Oggdude image for icon box
   hardPoints:     number
   hardPointsUsed: number
-  item_image_url: string | null
+  item_image_url: string | null  // GM-uploaded full-art banner
 }
 
-export function ItemDetailHero({ name, typeTag, icon, hardPoints, hardPointsUsed, item_image_url }: ItemDetailHeroProps) {
+export function ItemDetailHero({ name, typeTag, icon, iconUrl, hardPoints, hardPointsUsed, item_image_url }: ItemDetailHeroProps) {
   if (item_image_url) {
     return (
       <div style={{ position: 'relative', height: 80, flexShrink: 0, overflow: 'hidden' }}>
@@ -51,9 +52,17 @@ export function ItemDetailHero({ name, typeTag, icon, hardPoints, hardPointsUsed
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         border: '1px solid var(--hud-gold)', borderRadius: RADIUS.md,
         background: 'radial-gradient(ellipse at 50% 60%, var(--hud-accent-20) 0%, transparent 70%)',
-        fontSize: 28, color: 'var(--hud-gold)', fontFamily: FONT_BODY, // icon is a unicode glyph, not an sw-rpg-icons char
+        overflow: 'hidden',
       }}>
-        {icon}
+        {iconUrl
+          ? <img
+              src={iconUrl} alt="" style={{ width: 44, height: 44, objectFit: 'contain', opacity: 0.9 }}
+              onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; (e.currentTarget.nextSibling as HTMLElement | null)?.style.setProperty('display', 'inline') }}
+            />
+          : null}
+        <span style={{ fontSize: 28, color: 'var(--hud-gold)', fontFamily: FONT_BODY, display: iconUrl ? 'none' : 'inline' }}>
+          {icon}
+        </span>
       </div>
       {/* text stack */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0, flex: 1 }}>

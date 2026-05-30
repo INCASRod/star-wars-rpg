@@ -4,7 +4,8 @@ import type { EquipState, ItemCondition } from '@/lib/types'
 
 interface ItemThumbProps {
   name:       string
-  icon:       string
+  icon:       string       // unicode fallback
+  iconUrl:    string | null
   equipState: EquipState
   condition:  ItemCondition
   isSelected: boolean
@@ -33,7 +34,7 @@ const NAME_COLOR: Record<ItemCondition, string> = {
   destroyed: 'var(--hud-text-faint)',
 }
 
-export function ItemThumb({ name, icon, equipState, condition, isSelected, onClick }: ItemThumbProps) {
+export function ItemThumb({ name, icon, iconUrl, equipState, condition, isSelected, onClick }: ItemThumbProps) {
   const isDestroyed = condition === 'destroyed'
 
   return (
@@ -56,7 +57,14 @@ export function ItemThumb({ name, icon, equipState, condition, isSelected, onCli
         filter: isDestroyed ? 'grayscale(0.8)' : 'none',
         overflow: 'hidden',
       }}>
-        <span style={{ fontSize: 20, color: isSelected ? 'var(--hud-gold)' : 'var(--hud-text-dim)', lineHeight: 1, fontFamily: FONT_BODY }}>
+        {iconUrl
+          ? <img
+              src={iconUrl} alt=""
+              style={{ width: 32, height: 32, objectFit: 'contain', opacity: isDestroyed ? 0.5 : 0.85 }}
+              onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; (e.currentTarget.nextSibling as HTMLElement | null)?.style.setProperty('display', 'inline') }}
+            />
+          : null}
+        <span style={{ fontSize: 20, color: isSelected ? 'var(--hud-gold)' : 'var(--hud-text-dim)', lineHeight: 1, fontFamily: FONT_BODY, display: iconUrl ? 'none' : 'inline' }}>
           {icon}
         </span>
         {/* equip dot */}

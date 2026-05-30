@@ -679,6 +679,7 @@ export function useCharacterData(characterId: string) {
         description: ref?.description ?? null,
         condition:      (VALID_CONDITIONS.has(w.condition ?? '') ? w.condition : 'undamaged') as ItemCondition,
         item_image_url: w.item_image_url ?? null,
+        iconUrl:        w.weapon_key ? `/images/equipment/weapon-${w.weapon_key}.png` : null,
         stowLocation:   w.equip_state === 'stowed' && w.stow_location_id && w.stow_location_type
           ? { id: w.stow_location_id, name: w.stow_location_name ?? '', type: w.stow_location_type }
           : null,
@@ -701,6 +702,7 @@ export function useCharacterData(characterId: string) {
         description: ref?.description ?? null,
         condition:      (VALID_CONDITIONS.has(a.condition ?? '') ? a.condition : 'undamaged') as ItemCondition,
         item_image_url: a.item_image_url ?? null,
+        iconUrl:        a.armor_key ? `/images/equipment/armor-${a.armor_key}.png` : null,
         stowLocation:   a.equip_state === 'stowed' && a.stow_location_id && a.stow_location_type
           ? { id: a.stow_location_id, name: a.stow_location_name ?? '', type: a.stow_location_type }
           : null,
@@ -720,6 +722,7 @@ export function useCharacterData(characterId: string) {
         description: ref?.description ?? null,
         condition:      (VALID_CONDITIONS.has(g.condition ?? '') ? g.condition : 'undamaged') as ItemCondition,
         item_image_url: g.item_image_url ?? null,
+        iconUrl:        g.gear_key ? `/images/equipment/gear-${g.gear_key}.png` : null,
         stowLocation:   g.equip_state === 'stowed' && g.stow_location_id && g.stow_location_type
           ? { id: g.stow_location_id, name: g.stow_location_name ?? '', type: g.stow_location_type }
           : null,
