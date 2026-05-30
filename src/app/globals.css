@@ -878,3 +878,8 @@ i.ffi {
    Replaces onMouseEnter/onMouseLeave inline style mutations. */
 .gm-ref-close-btn:hover { color: var(--hud-text) !important; }
 .gm-ref-tab:hover:not(.gm-ref-tab--active) { color: var(--hud-text) !important; }
+
+/* ── Inventory card panel ──────────────────────────────────────────────────── */
+.inv-thumb:hover { border-color: var(--hud-border-hi) !important; background: var(--hud-accent-10) !important; }
+.inv-thumb-active { border-color: var(--hud-gold) !important; background: var(--hud-accent-10) !important; }
+.inv-equip-btn:hover:not(:disabled) { border-color: var(--hud-accent-border); color: var(--hud-text-dim); }
