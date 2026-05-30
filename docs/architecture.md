@@ -354,7 +354,7 @@ Cleanup via `useEffect` return → `supabase.removeChannel(channel)`.
 
 ### Tier 2 — Feature Panels
 Each panel is a self-contained component accepting pre-computed display data from the parent:
-- `InventoryPanel` — weapons, armor, gear with equip/stow controls
+- `InventoryCardPanel` — master/detail inventory card system (left thumbnail grid + right item detail) for weapons, armor, gear with equip/stow/discard controls; composed of `item-thumb`, `item-thumb-grid`, `item-detail-hero`, `item-condition-track`, `item-quality-list`, `item-detail-panel`, and the shared `stow-location-modal` (exports `StowLocationModal` + `StowPill`); wired via `HudInventoryTab` (replaced the former single-file `InventoryPanel`)
 - `SkillsPanel` — skill list with dice pool popover
 - `TalentsPanel` — talent tree grid per specialization
 - `HudForceTab` — force power tree grid (moved to full panel in `HudLeftRail` as `force-panel`)
