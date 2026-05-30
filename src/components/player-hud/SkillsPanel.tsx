@@ -676,7 +676,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
                     letterSpacing: '0.1em', textTransform: 'uppercase',
                     color: `${color}CC`,
                   }}>
-                    <TickerText text={CHAR_ABBR3[charKey]} isOpen={isOpen} delayMs={120} />
+                    <TickerText text={charKey.charAt(0).toUpperCase() + charKey.slice(1)} isOpen={isOpen} delayMs={120} />
                   </div>
                 </div>
                 {groupSkills.map((skill, idx) => renderSkillRow(skill, color, idx))}
