@@ -883,3 +883,4 @@ i.ffi {
 .inv-thumb:hover { border-color: var(--hud-border-hi) !important; background: var(--hud-accent-10) !important; }
 .inv-thumb-active { border-color: var(--hud-gold) !important; background: var(--hud-accent-10) !important; }
 .inv-equip-btn:hover:not(:disabled) { border-color: var(--hud-accent-border); color: var(--hud-text-dim); }
+.inv-equip-btn-active { border-color: var(--hud-gold) !important; color: var(--hud-gold) !important; background: var(--hud-accent-10) !important; }

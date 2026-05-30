@@ -88,7 +88,7 @@ export function StowLocationModal({
       <div
         onClick={onCancel}
         className="fixed inset-0 cursor-pointer"
-        style={{ zIndex: Z.dialog, background: 'rgba(0,0,0,0.65)' }}
+        style={{ zIndex: Z.dialog, background: 'color-mix(in srgb, black 65%, transparent)' }}
       />
       {/* Modal */}
       <div style={{
@@ -100,7 +100,7 @@ export function StowLocationModal({
         border: '1px solid var(--hud-border-hi)',
         borderRadius: RADIUS.lg,
         padding: 'var(--space-5) 1.375rem',
-        boxShadow: '0 16px 48px rgba(0,0,0,0.75)',
+        boxShadow: '0 16px 48px color-mix(in srgb, black 75%, transparent)',
       }}>
         {/* Header */}
         <div style={{
@@ -142,7 +142,7 @@ export function StowLocationModal({
                 outline: 'none', cursor: 'pointer',
                 marginBottom: '1.125rem',
                 appearance: 'none',
-                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23E03A1E' opacity='0.6'/%3E%3C/svg%3E")`,
+                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888' opacity='0.5'/%3E%3C/svg%3E")`,
                 backgroundRepeat: 'no-repeat',
                 backgroundPosition: 'right 0.625rem center',
                 paddingRight: '1.75rem',
