@@ -42,7 +42,7 @@ export function ItemThumbGrid({ weapons, armorItems, gearItems, selectedId, onSe
       {weapons.length > 0 && (
         <>
           <SectionHead label="Weapons" />
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, padding: 5 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 4, padding: 5 }}>
             {weapons.map(w => (
               <ItemThumb
                 key={w.id} name={w.name} icon={WEAPON_ICON}
@@ -57,7 +57,7 @@ export function ItemThumbGrid({ weapons, armorItems, gearItems, selectedId, onSe
       {armorItems.length > 0 && (
         <>
           <SectionHead label="Armour" />
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, padding: 5 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 4, padding: 5 }}>
             {armorItems.map(a => (
               <ItemThumb
                 key={a.id} name={a.name} icon={ARMOR_ICON}
@@ -72,7 +72,7 @@ export function ItemThumbGrid({ weapons, armorItems, gearItems, selectedId, onSe
       {gearItems.length > 0 && (
         <>
           <SectionHead label="Gear" />
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, padding: 5 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 4, padding: 5 }}>
             {gearItems.map(g => (
               <ItemThumb
                 key={g.id} name={g.name} icon={GEAR_ICON}

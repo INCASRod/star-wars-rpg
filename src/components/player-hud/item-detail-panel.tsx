@@ -6,6 +6,7 @@ import { ItemDetailHero } from './item-detail-hero'
 import { ItemConditionTrack } from './item-condition-track'
 import { ItemQualityList } from './item-quality-list'
 import { StowLocationModal, StowPill } from './stow-location-modal'
+import { stripBBCode } from '@/lib/utils'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -242,8 +243,8 @@ export function ItemDetailPanel({
   }
 
   const BODY_STYLE: React.CSSProperties = {
-    flex: 1, overflowY: 'auto', padding: '10px 12px',
-    display: 'flex', flexDirection: 'column', gap: 12,
+    flex: 1, overflowY: 'auto', padding: '8px 10px',
+    display: 'flex', flexDirection: 'column', gap: 8,
   }
 
   function renderWeapon(w: WpnDisplay) {
@@ -262,7 +263,7 @@ export function ItemDetailPanel({
           <StatBox label="HP"    value={w.hardPoints} color="var(--hud-accent-purple)" />
         </div>
         <div style={BODY_STYLE}>
-          {w.description && <p style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: 'var(--hud-text-faint)', lineHeight: 1.65, margin: 0 }}>{w.description}</p>}
+          {w.description && <p style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: 'var(--hud-text-faint)', lineHeight: 1.5, margin: 0 }}>{stripBBCode(w.description)}</p>}
           <ItemQualityList qualities={w.qualities} refWeaponQualityMap={refWeaponQualityMap} />
           <div><SectionHeader>Condition</SectionHeader><ItemConditionTrack condition={w.condition} /></div>
           <div>
@@ -286,7 +287,7 @@ export function ItemDetailPanel({
           <StatBox label="HP"   value={a.hardPoints} color="var(--hud-accent-purple)" />
         </div>
         <div style={BODY_STYLE}>
-          {a.description && <p style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: 'var(--hud-text-faint)', lineHeight: 1.65, margin: 0 }}>{a.description}</p>}
+          {a.description && <p style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: 'var(--hud-text-faint)', lineHeight: 1.5, margin: 0 }}>{stripBBCode(a.description)}</p>}
           <div><SectionHeader>Condition</SectionHeader><ItemConditionTrack condition={a.condition} /></div>
           <div>
             <SectionHeader>Equip State</SectionHeader>
@@ -307,7 +308,7 @@ export function ItemDetailPanel({
           <StatBox label="ENC" value={g.enc} color="var(--hud-text-dim)" />
         </div>
         <div style={BODY_STYLE}>
-          {g.description && <p style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: 'var(--hud-text-faint)', lineHeight: 1.65, margin: 0 }}>{g.description}</p>}
+          {g.description && <p style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: 'var(--hud-text-faint)', lineHeight: 1.5, margin: 0 }}>{stripBBCode(g.description)}</p>}
           <div><SectionHeader>Condition</SectionHeader><ItemConditionTrack condition={g.condition} /></div>
           <div>
             <SectionHeader>Equip State</SectionHeader>

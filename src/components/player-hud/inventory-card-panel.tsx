@@ -94,9 +94,9 @@ export function InventoryCardPanel({
   const isEmpty  = weapons.length === 0 && armorItems.length === 0 && gearItems.length === 0
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, overflow: 'hidden' }}>
       <EncBar current={encumbranceCurrent} threshold={encumbranceThreshold} />
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
         <ItemThumbGrid
           weapons={weapons} armorItems={armorItems} gearItems={gearItems}
           selectedId={activeId} onSelect={setSelectedId}

@@ -41,7 +41,7 @@ export function ItemThumb({ name, icon, equipState, condition, isSelected, onCli
       onClick={onClick}
       className={`inv-thumb${isSelected ? ' inv-thumb-active' : ''}`}
       style={{
-        width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center',
+        width: '100%', minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center',
         gap: 0, background: 'none', border: '1px solid transparent',
         borderRadius: RADIUS.md, padding: '2px', cursor: 'pointer', outline: 'none',
         opacity: isDestroyed ? 0.55 : 1,
