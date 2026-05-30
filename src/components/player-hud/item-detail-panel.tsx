@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useState, useRef, useLayoutEffect } from 'react'
 import { FONT_BODY, FONT_DISPLAY, RADIUS, FS } from '@/lib/tokens'
 import type { WpnDisplay, ArmDisplay, GearRow, EquipState, StowLocation, StowableAsset, RefWeaponQuality, ItemCondition } from '@/lib/types'
 import { ItemDetailHero } from './item-detail-hero'
@@ -233,8 +233,19 @@ export function ItemDetailPanel({
 }: ItemDetailPanelProps) {
   const [showDiscard, setShowDiscard] = useState(false)
   const [prevId, setPrevId] = useState<string | null>(null)
+  const detailRef = useRef<HTMLDivElement>(null)
   const currentId = selected.item.id
   if (currentId !== prevId) { setShowDiscard(false); setPrevId(currentId) }
+
+  // Set data-ticker-pass gate whenever the selected item changes — mirrors
+  // HudFullPanel's mechanism so TickerText in ItemDetailHero re-animates.
+  useLayoutEffect(() => {
+    const el = detailRef.current
+    if (!el) return
+    el.dataset.tickerPass = 'true'
+    const t = setTimeout(() => { if (detailRef.current) delete detailRef.current.dataset.tickerPass }, 600)
+    return () => clearTimeout(t)
+  }, [currentId])
 
   const STATS_ROW_STYLE: React.CSSProperties = {
     display: 'flex', gap: 4, padding: '6px 10px',
@@ -321,7 +332,7 @@ export function ItemDetailPanel({
   }
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--hud-surface-lo)', overflow: 'hidden' }}>
+    <div ref={detailRef} style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--hud-surface-lo)', overflow: 'hidden' }}>
       {selected.kind === 'weapon' && renderWeapon(selected.item)}
       {selected.kind === 'armor'  && renderArmor(selected.item)}
       {selected.kind === 'gear'   && renderGear(selected.item)}

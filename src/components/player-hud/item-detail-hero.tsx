@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { FONT_BODY, FONT_DISPLAY, RADIUS, FS } from '@/lib/tokens'
+import { TickerText } from '@/components/ui/TickerText'
 
 interface ItemDetailHeroProps {
   name:           string
@@ -25,10 +26,10 @@ export function ItemDetailHero({ name, typeTag, icon, iconUrl, hardPoints, hardP
         }} />
         <div style={{ position: 'absolute', bottom: 8, left: 12 }}>
           <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.overline, color: 'var(--hud-gold)', opacity: 0.6, letterSpacing: '0.1em' }}>
-            {typeTag}
+            <TickerText key={`tag-${name}`} text={typeTag} isOpen={true} />
           </div>
           <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.h4, color: 'var(--hud-text)', fontWeight: 600 }}>
-            {name}
+            <TickerText key={`name-${name}`} text={name} isOpen={true} />
           </div>
         </div>
       </div>
@@ -65,13 +66,13 @@ export function ItemDetailHero({ name, typeTag, icon, iconUrl, hardPoints, hardP
       {/* text stack */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0, flex: 1 }}>
         <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.overline, letterSpacing: '0.1em', color: 'var(--hud-gold)', opacity: 0.6 }}>
-          {typeTag}
+          <TickerText key={`tag-${name}`} text={typeTag} isOpen={true} />
         </div>
         <div style={{
           fontFamily: FONT_DISPLAY, fontSize: FS.h4, color: 'var(--hud-text)', fontWeight: 600,
           lineHeight: 1.15, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         }}>
-          {name}
+          <TickerText key={`name-${name}`} text={name} isOpen={true} />
         </div>
         {hardPoints > 0 && (
           <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)' }}>

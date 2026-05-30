@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { FONT_BODY, RADIUS, FS } from '@/lib/tokens'
+import { createPortal } from 'react-dom'
+import { FONT_BODY, RADIUS, FS, Z, SHADOW } from '@/lib/tokens'
 import type { EquipState, ItemCondition } from '@/lib/types'
 
 interface ItemThumbProps {
@@ -35,14 +36,27 @@ const NAME_COLOR: Record<ItemCondition, string> = {
   destroyed: 'var(--hud-text-faint)',
 }
 
+const EQUIP_LABEL: Record<EquipState, string> = {
+  equipped: 'Equipped',
+  carrying: 'Carried',
+  stowed:   'Stowed',
+}
+
 export function ItemThumb({ name, icon, iconUrl, equipState, condition, isSelected, onClick }: ItemThumbProps) {
   const isDestroyed = condition === 'destroyed'
-  const [iconErr, setIconErr] = useState(false)
+  const [iconErr,  setIconErr]  = useState(false)
+  const [tipPos,   setTipPos]   = useState<{ top: number; left: number } | null>(null)
   useEffect(() => { setIconErr(false) }, [iconUrl])
 
   return (
+    <>
     <button
       onClick={onClick}
+      onMouseEnter={e => {
+        const r = e.currentTarget.getBoundingClientRect()
+        setTipPos({ top: r.top + r.height / 2, left: r.right + 8 })
+      }}
+      onMouseLeave={() => setTipPos(null)}
       className={`inv-thumb${isSelected ? ' inv-thumb-active' : ''}`}
       style={{
         width: '100%', minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -97,5 +111,30 @@ export function ItemThumb({ name, icon, iconUrl, equipState, condition, isSelect
         {name}
       </div>
     </button>
+    {tipPos && createPortal(
+      <div style={{
+        position: 'fixed',
+        top: tipPos.top, left: tipPos.left,
+        transform: 'translateY(-50%)',
+        zIndex: Z.tooltip,
+        background: 'var(--hud-surface-hi)',
+        border: '1px solid var(--hud-border-hi)',
+        borderRadius: RADIUS.md,
+        padding: '4px 8px',
+        pointerEvents: 'none',
+        boxShadow: SHADOW.md,
+        fontFamily: FONT_BODY,
+        fontSize: FS.caption,
+        color: 'var(--hud-text)',
+        whiteSpace: 'nowrap',
+        animation: 'tooltipIn 100ms ease forwards',
+      }}>
+        <span style={{ color: 'var(--hud-text)' }}>{name}</span>
+        <span style={{ color: 'var(--hud-text-faint)', marginLeft: 6 }}>·</span>
+        <span style={{ color: EQUIP_DOT[equipState], marginLeft: 6, fontSize: FS.overline }}>{EQUIP_LABEL[equipState]}</span>
+      </div>,
+      document.body
+    )}
+    </>
   )
 }

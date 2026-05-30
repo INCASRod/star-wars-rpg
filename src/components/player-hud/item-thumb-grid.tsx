@@ -1,6 +1,8 @@
 'use client'
 import { FONT_DISPLAY, FS, Z } from '@/lib/tokens'
 import { ItemThumb } from './item-thumb'
+import { TickerText } from '@/components/ui/TickerText'
+import { useHudPanelContext } from '@/contexts/HudPanelContext'
 import type { WpnDisplay, ArmDisplay, GearRow } from '@/lib/types'
 
 interface ItemThumbGridProps {
@@ -11,7 +13,7 @@ interface ItemThumbGridProps {
   onSelect:   (id: string) => void
 }
 
-function SectionHead({ label }: { label: string }) {
+function SectionHead({ label, isOpen }: { label: string; isOpen: boolean }) {
   return (
     <div style={{
       position: 'sticky', top: 0, zIndex: Z.raised,
@@ -22,7 +24,7 @@ function SectionHead({ label }: { label: string }) {
       borderBottom: '1px solid var(--hud-border)',
       padding: '4px 5px',
     }}>
-      {label}
+      <TickerText text={label} isOpen={isOpen} />
     </div>
   )
 }
@@ -32,6 +34,7 @@ const ARMOR_ICON  = '◈'
 const GEAR_ICON   = '◆'
 
 export function ItemThumbGrid({ weapons, armorItems, gearItems, selectedId, onSelect }: ItemThumbGridProps) {
+  const { isOpen } = useHudPanelContext()
   return (
     <div style={{
       width: 148, flexShrink: 0,
@@ -41,7 +44,7 @@ export function ItemThumbGrid({ weapons, armorItems, gearItems, selectedId, onSe
     }}>
       {weapons.length > 0 && (
         <>
-          <SectionHead label="Weapons" />
+          <SectionHead label="Weapons" isOpen={isOpen} />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 4, padding: 5 }}>
             {weapons.map(w => (
               <ItemThumb
@@ -56,7 +59,7 @@ export function ItemThumbGrid({ weapons, armorItems, gearItems, selectedId, onSe
       )}
       {armorItems.length > 0 && (
         <>
-          <SectionHead label="Armour" />
+          <SectionHead label="Armour" isOpen={isOpen} />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 4, padding: 5 }}>
             {armorItems.map(a => (
               <ItemThumb
@@ -71,7 +74,7 @@ export function ItemThumbGrid({ weapons, armorItems, gearItems, selectedId, onSe
       )}
       {gearItems.length > 0 && (
         <>
-          <SectionHead label="Gear" />
+          <SectionHead label="Gear" isOpen={isOpen} />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 4, padding: 5 }}>
             {gearItems.map(g => (
               <ItemThumb

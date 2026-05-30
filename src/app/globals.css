@@ -880,7 +880,21 @@ i.ffi {
 .gm-ref-tab:hover:not(.gm-ref-tab--active) { color: var(--hud-text) !important; }
 
 /* ── Inventory card panel ──────────────────────────────────────────────────── */
-.inv-thumb:hover { border-color: var(--hud-border-hi) !important; background: var(--hud-accent-10) !important; }
-.inv-thumb-active { border-color: var(--hud-gold) !important; background: var(--hud-accent-10) !important; }
+.inv-thumb {
+  transition: transform 130ms ease, box-shadow 130ms ease,
+              border-color 130ms ease, background 130ms ease;
+}
+.inv-thumb:hover {
+  border-color: var(--hud-border-hi) !important;
+  background: var(--hud-accent-10) !important;
+  transform: scale(1.05);
+  box-shadow: 0 0 6px var(--hud-accent-20);
+}
+.inv-thumb-active {
+  border-color: var(--hud-gold) !important;
+  background: var(--hud-accent-10) !important;
+  transform: scale(1.04);
+  box-shadow: 0 0 0 1px var(--hud-gold), 0 0 10px var(--hud-accent-35), 0 0 2px var(--hud-accent-45);
+}
 .inv-equip-btn:hover:not(:disabled) { border-color: var(--hud-accent-border); color: var(--hud-text-dim); }
 .inv-equip-btn-active { border-color: var(--hud-gold) !important; color: var(--hud-gold) !important; background: var(--hud-accent-10) !important; }
