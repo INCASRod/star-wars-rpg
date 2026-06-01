@@ -492,15 +492,16 @@ function SystemRow({
         ) : isGm && onRefundPurchase ? (
           <button
             onClick={() => onRefundPurchase(roll)}
+            aria-label="Revert purchase and restore XP"
             title={
               meta?.purchase_type === 'talent'
                 ? 'Revert purchase and restore XP — note: may affect adjacent talents in tree'
                 : 'Revert purchase and restore XP'
             }
+            className="cursor-pointer"
             style={{
               background:  'none',
               border:      'none',
-              cursor:      'pointer',
               color:       HUD.textFaint,
               fontFamily:  FONT_BODY,
               fontSize:    FS.sm,
