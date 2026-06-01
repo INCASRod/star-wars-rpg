@@ -128,16 +128,14 @@ function CharacterCard({
       style={{
         position: 'relative',
         overflow: 'hidden',
-        borderRadius: RADIUS.lg,
-        padding: `${SP[3]} ${SP[3]} ${SP[2]}`,
+        borderRadius: '7px',
+        padding: '8px',
         backdropFilter: 'blur(12px)',
         transition: `all ${EASE.default}`,
         animation: `fadeUp 0.5s ${animDelay}s ease both`,
         border: `1px solid ${cardBorder}`,
         background: cardBg,
         cursor: cardCursor,
-        transform: cardTransform,
-        boxShadow: cardShadow,
       }}
       onClick={handleClick}
       onMouseEnter={() => setHovered(true)}
@@ -174,15 +172,15 @@ function CharacterCard({
       )}
 
       {/* Section 1 — CardHeader */}
-      <div style={{ display: 'flex', gap: SP[3], marginBottom: SP[3], alignItems: 'flex-start' }}>
+      <div style={{ display: 'flex', gap: '6px', marginBottom: '5px', alignItems: 'flex-start' }}>
         {/* Avatar */}
         <div style={{
           flexShrink: 0,
-          width: '3.5rem', height: '3.5rem',
+          width: '22px', height: '22px',
           borderRadius: RADIUS.full,
           overflow: 'hidden',
           position: 'relative',
-          border: `2px solid ${avatarBorderColor}`,
+          border: `1px solid ${avatarBorderColor}`,
           boxShadow: avatarShadow,
           background: RAISED,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -192,7 +190,7 @@ function CharacterCard({
             <img src={char.portrait_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           ) : (
             <span style={{
-              fontFamily: FONT_BODY, fontSize: FS.h2,
+              fontFamily: FONT_BODY, fontSize: '8px',
               color: state === 'self' ? HUD.gold : TEXT_SEC,
             }}>
               {char.name.charAt(0)}
@@ -200,10 +198,10 @@ function CharacterCard({
           )}
           {/* Status dot */}
           <div style={{
-            position: 'absolute', bottom: '0.3125rem', right: SP[2],
-            width: '0.75rem', height: '0.75rem',
+            position: 'absolute', bottom: '2px', right: '2px',
+            width: '5px', height: '5px',
             borderRadius: RADIUS.full,
-            border: `2px solid ${BG}`,
+            border: `1px solid ${BG}`,
             background: dotColor,
             animation: dotPulse,
           }} />
@@ -211,30 +209,30 @@ function CharacterCard({
 
         {/* Identity block */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: FONT_BODY, fontSize: FS.h3, fontWeight: 700, color: nameColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: '7.5px', fontWeight: 700, color: nameColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {char.name}
           </div>
-          <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: TEXT_MUT, textTransform: 'uppercase', marginTop: SP[1], whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: '6.5px', color: TEXT_MUT, textTransform: 'uppercase', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {char.career_key} // {char.species_key}
           </div>
           {/* Status badge */}
           <div style={{
-            marginTop: '0.375rem',
-            display: 'inline-flex', alignItems: 'center', gap: '0.3125rem',
+            marginTop: '2px',
+            display: 'inline-flex', alignItems: 'center', gap: '2px',
             border: `1px solid ${state === 'self' ? HUD.gold : TEXT_MUT}`,
             borderRadius: RADIUS.sm,
-            padding: `0.1875rem ${SP[2]}`,
+            padding: '1px 4px',
             background: state === 'self' ? 'var(--hud-surface-lo)' : 'transparent',
           }}>
             {state === 'available' && (
-              <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: TEXT_MUT, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              <span style={{ fontFamily: FONT_BODY, fontSize: '5.5px', color: TEXT_MUT, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                 Unselected
               </span>
             )}
             {state === 'self' && (
               <>
-                <div style={{ width: '0.375rem', height: '0.375rem', borderRadius: RADIUS.full, background: HUD.gold, animation: 'pulse-dot 1.8s ease-in-out infinite' }} />
-                <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.gold, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                <div style={{ width: '4px', height: '4px', borderRadius: RADIUS.full, background: HUD.gold, animation: 'pulse-dot 1.8s ease-in-out infinite' }} />
+                <span style={{ fontFamily: FONT_BODY, fontSize: '5.5px', color: HUD.gold, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                   You · Active
                 </span>
               </>
@@ -246,24 +244,24 @@ function CharacterCard({
       {/* Section 2 — CharacteristicRow */}
       <div style={{
         borderTop: `1px solid ${BORDER}`,
-        paddingTop: '0.625rem',
-        marginTop: SP[1],
+        paddingTop: '3px',
+        marginTop: '3px',
         display: 'grid',
         gridTemplateColumns: 'repeat(6, 1fr)',
-        gap: SP[1],
+        gap: '2px',
       }}>
         {characteristics.map(({ key, label }) => (
           <div key={key} style={{
             background: INPUT_BG,
             border: `1px solid ${BORDER}`,
             borderRadius: RADIUS.sm,
-            padding: '0.3125rem 0.125rem',
+            padding: '2px 1px',
             textAlign: 'center',
           }}>
-            <div style={{ fontFamily: FONT_BODY, fontSize: FS.h3, fontWeight: 700, color: CHAR_COLORS[key] }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: '9px', fontWeight: 700, color: CHAR_COLORS[key] }}>
               {(char as unknown as Record<string, number>)[key]}
             </div>
-            <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: '5.5px', color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               {label}
             </div>
           </div>
@@ -271,20 +269,20 @@ function CharacterCard({
       </div>
 
       {/* Section 3 — DerivedStatsRow */}
-      <div style={{ marginTop: SP[2], display: 'flex', gap: SP[1], flexWrap: 'wrap' }}>
+      <div style={{ marginTop: '3px', display: 'flex', gap: '2px', flexWrap: 'wrap' }}>
         {derived.map(({ label, value }) => (
           <div key={label} style={{
             background: INPUT_BG,
             border: `1px solid ${BORDER}`,
             borderRadius: RADIUS.sm,
-            padding: `${SP[1]} ${SP[2]}`,
-            minWidth: '2.625rem',
+            padding: '2px 4px',
+            minWidth: '2rem',
             textAlign: 'center',
           }}>
-            <div style={{ fontFamily: FONT_BODY, fontSize: FS.h3, fontWeight: 700, color: TEXT }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: '8px', fontWeight: 700, color: TEXT }}>
               {value}
             </div>
-            <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: '5px', color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
               {label}
             </div>
           </div>
@@ -292,17 +290,17 @@ function CharacterCard({
       </div>
 
       {/* Section 4 — VitalsPips */}
-      <div style={{ marginTop: SP[2] }}>
+      <div style={{ marginTop: '3px' }}>
         {/* Wounds */}
-        <div style={{ marginBottom: '0.375rem' }}>
+        <div style={{ marginBottom: '3px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Wounds</span>
-            <span style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT_MUT }}>{char.wound_current}/{char.wound_threshold}</span>
+            <span style={{ fontFamily: FONT_BODY, fontSize: '5.5px', color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.06em', width: '28px' }}>Wounds</span>
+            <span style={{ fontFamily: FONT_BODY, fontSize: '5.5px', color: TEXT_MUT }}>{char.wound_current}/{char.wound_threshold}</span>
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.1875rem', marginTop: SP[1] }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px', marginTop: '2px' }}>
             {Array.from({ length: char.wound_threshold }).map((_, i) => (
               <div key={i} style={{
-                width: '0.5rem', height: '0.5rem', borderRadius: RADIUS.sm,
+                width: '6px', height: '6px', borderRadius: '1px',
                 background: i < char.wound_current ? DANGER : 'transparent',
                 border: `1px solid ${i < char.wound_current ? DANGER : 'color-mix(in srgb, var(--hud-accent) 25%, transparent)'}`,
               }} />
@@ -312,15 +310,15 @@ function CharacterCard({
         {/* Strain */}
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Strain</span>
+            <span style={{ fontFamily: FONT_BODY, fontSize: '5.5px', color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.06em', width: '28px' }}>Strain</span>
             <span style={{
-              fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT_MUT
+              fontFamily: FONT_BODY, fontSize: '5.5px', color: TEXT_MUT
             }}>{char.strain_current}/{char.strain_threshold}</span>
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.1875rem', marginTop: SP[1] }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px', marginTop: '2px' }}>
             {Array.from({ length: char.strain_threshold }).map((_, i) => (
               <div key={i} style={{
-                width: '0.5rem', height: '0.5rem', borderRadius: RADIUS.sm,
+                width: '6px', height: '6px', borderRadius: '1px',
                 background: i < char.strain_current ? WARN : 'transparent',
                 border: `1px solid ${i < char.strain_current ? WARN : 'var(--hud-border)'}`,
               }} />
@@ -635,8 +633,8 @@ export default function Home() {
         <div style={{
           width: '100%',
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
-          gap: SP[3],
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: '8px',
         }}>
           {characters.map((char, index) => {
             const cardState = getCardState(char.id)
