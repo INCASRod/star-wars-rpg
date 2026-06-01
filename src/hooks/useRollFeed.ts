@@ -60,6 +60,16 @@ export function useRollFeed(campaignId: string | null | undefined) {
       }, (payload) => {
         setRolls(prev => [...prev.slice(-49), payload.new as RollEntry])
       })
+      .on('postgres_changes', {
+        event:  'UPDATE',
+        schema: 'public',
+        table:  'roll_log',
+        filter: `campaign_id=eq.${campaignId}`,
+      }, (payload) => {
+        setRolls(prev =>
+          prev.map(e => e.id === (payload.new as RollEntry).id ? (payload.new as RollEntry) : e)
+        )
+      })
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
