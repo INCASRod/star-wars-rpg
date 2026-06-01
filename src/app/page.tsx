@@ -58,19 +58,23 @@ function getSessionKey(): string {
 
 // ─── CharacterCard ────────────────────────────────────────────────────────────
 interface CharacterCardProps {
-  char: Character
-  state: CardState
-  online: boolean
-  animDelay: number
-  onClaim: () => void
-  onDelete: () => void
+  char:            Character
+  state:           CardState
+  online:          boolean
+  animDelay:       number
+  onSelect:        (rect: DOMRect) => void
+  onDelete:        () => void
+  hyperTransform?: string
+  hyperOpacity?:   number
 }
 
 function CharacterCard({
   char, state, online,
-  animDelay, onClaim, onDelete,
+  animDelay, onSelect, onDelete,
+  hyperTransform, hyperOpacity,
 }: CharacterCardProps) {
   const [hovered, setHovered] = useState(false)
+  const cardRef = useRef<HTMLDivElement>(null)
 
   const cardBorder = state === 'self'
     ? BORDER_HI
@@ -120,11 +124,13 @@ function CharacterCard({
   ]
 
   function handleClick() {
-    onClaim()
+    if (!cardRef.current) return
+    onSelect(cardRef.current.getBoundingClientRect())
   }
 
   return (
     <div
+      ref={cardRef}
       className={`char-card hov-lift${hovered && state !== 'self' ? ' char-card--glow' : ''}`}
       style={{
         position: 'relative',
@@ -132,11 +138,15 @@ function CharacterCard({
         borderRadius: '7px',
         padding: '8px',
         backdropFilter: 'blur(12px)',
-        transition: `all ${EASE.default}`,
+        transition: hyperTransform !== undefined
+          ? 'transform 0.35s cubic-bezier(0.4,0,1,1), opacity 0.3s ease 0.1s'
+          : `all ${EASE.default}`,
         animation: `fadeUp 0.5s ${animDelay}s ease both`,
         border: `1px solid ${cardBorder}`,
         background: cardBg,
         cursor: cardCursor,
+        ...(hyperTransform !== undefined ? { transform: hyperTransform } : {}),
+        ...(hyperOpacity !== undefined   ? { opacity: hyperOpacity }    : {}),
       }}
       onClick={handleClick}
       onMouseEnter={() => setHovered(true)}
@@ -347,6 +357,90 @@ function CharacterCard({
   )
 }
 
+// ─── Hyperspace ───────────────────────────────────────────────────────────────
+type HyperspacePhase = 'idle' | 'beat1' | 'beat24' | 'loading'
+
+interface HyperspaceState {
+  phase:    HyperspacePhase
+  charId:   string
+  cardRect: DOMRect | null
+}
+
+function runHyperspaceCanvas(
+  canvas: HTMLCanvasElement,
+  originX: number,
+  originY: number,
+  onComplete: () => void,
+): void {
+  const ctxOrNull = canvas.getContext('2d')
+  if (!ctxOrNull) { onComplete(); return }
+  const ctx: CanvasRenderingContext2D = ctxOrNull
+  const W = canvas.width
+  const H = canvas.height
+  const TOTAL_MS = 900
+
+  const stars = Array.from({ length: 120 }, () => ({
+    angle: Math.random() * Math.PI * 2,
+    speed: 0.3 + Math.random() * 0.7,
+    offX:  (Math.random() - 0.5) * 120,
+    offY:  (Math.random() - 0.5) * 120,
+    color: Math.random() < 0.5
+             ? '#e8dcc0'
+             : Math.random() < 0.6
+               ? '#c8883a'
+               : '#E03020',
+  }))
+
+  let startTime: number | null = null
+
+  function frame(timestamp: number) {
+    if (!startTime) startTime = timestamp
+    const t = Math.min((timestamp - startTime) / TOTAL_MS, 1)
+    ctx.clearRect(0, 0, W, H)
+
+    const alpha = t < 0.15
+      ? t / 0.15
+      : t > 0.75
+        ? 1 - (t - 0.75) / 0.25
+        : 1
+
+    ctx.globalAlpha = alpha * 0.85
+    stars.forEach(star => {
+      const len = Math.pow(t, 0.6) * star.speed * 300
+      const sx  = originX + star.offX
+      const sy  = originY + star.offY
+      ctx.beginPath()
+      ctx.moveTo(sx, sy)
+      ctx.lineTo(sx + Math.cos(star.angle) * len, sy + Math.sin(star.angle) * len)
+      ctx.strokeStyle = star.color
+      ctx.lineWidth   = 0.8 + t * 0.8
+      ctx.stroke()
+    })
+
+    if (t >= 0.45 && t <= 0.72) {
+      const ft     = (t - 0.45) / 0.27
+      const fAlpha = Math.sin(ft * Math.PI) * 0.6
+      const fRad   = 60 + ft * 200
+      const grad   = ctx.createRadialGradient(originX, originY, 0, originX, originY, fRad)
+      grad.addColorStop(0,   `rgba(255,240,200,${fAlpha})`)
+      grad.addColorStop(0.3, `rgba(224,48,32,${fAlpha * 0.6})`)
+      grad.addColorStop(1,   'rgba(0,0,0,0)')
+      ctx.globalAlpha = 1
+      ctx.fillStyle = grad
+      ctx.fillRect(0, 0, W, H)
+    }
+
+    if (t < 1) {
+      requestAnimationFrame(frame)
+    } else {
+      ctx.clearRect(0, 0, W, H)
+      onComplete()
+    }
+  }
+
+  requestAnimationFrame(frame)
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Home() {
   const router = useRouter()
@@ -361,6 +455,9 @@ export default function Home() {
   const [gmPin, setGmPin] = useState('')
   const [sessionMode, setSessionMode] = useState<string>('exploration')
   const [createHovered, setCreateHovered] = useState(false)
+
+  const [hyper, setHyper] = useState<HyperspaceState>({ phase: 'idle', charId: '', cardRect: null })
+  const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const campaignIdRef = useRef<string | null>(null)
 
@@ -459,6 +556,56 @@ export default function Home() {
     })
 
     router.push(`/character/${characterId}${campaignId ? `?campaign=${campaignId}` : ''}`)
+  }
+
+  // ── claimCharacterDB — DB writes only, no router.push ──────────────────────
+  async function claimCharacterDB(characterId: string) {
+    if (!campaignId) return
+    const supabase = createClient()
+    await supabase.from('character_sessions')
+      .delete().eq('session_key', sessionKey).eq('campaign_id', campaignId)
+    await supabase.from('character_sessions')
+      .delete().eq('character_id', characterId).eq('campaign_id', campaignId)
+    await supabase.from('character_sessions').insert({
+      campaign_id:  campaignId,
+      character_id: characterId,
+      session_key:  sessionKey,
+      is_active:    true,
+    })
+  }
+
+  // ── handleCardSelect — orchestrates hyperspace animation ───────────────────
+  function handleCardSelect(charId: string, rect: DOMRect) {
+    if (hyper.phase !== 'idle') return
+
+    const prefersReduced = typeof window !== 'undefined'
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    if (prefersReduced) {
+      void claimCharacter(charId)
+      return
+    }
+
+    void claimCharacterDB(charId)
+
+    setHyper({ phase: 'beat1', charId, cardRect: rect })
+
+    setTimeout(() => {
+      setHyper({ phase: 'beat24', charId, cardRect: rect })
+
+      const canvas = canvasRef.current
+      if (!canvas) return
+
+      canvas.width  = window.innerWidth
+      canvas.height = window.innerHeight
+
+      const cx = rect.left + rect.width  / 2
+      const cy = rect.top  + rect.height / 2
+
+      runHyperspaceCanvas(canvas, cx, cy, () => {
+        setHyper({ phase: 'loading', charId, cardRect: rect })
+      })
+    }, 120)
   }
 
   // ── deleteCharacter ────────────────────────────────────────────────────────
@@ -653,8 +800,25 @@ export default function Home() {
           gap: '8px',
         }}>
           {characters.map((char, index) => {
-            const cardState = getCardState(char.id)
-            const online = isPlayerOnline(char.id)
+            const cardState  = getCardState(char.id)
+            const online     = isPlayerOnline(char.id)
+            const isSelected = hyper.phase !== 'idle' && hyper.charId === char.id
+            const isOther    = hyper.phase !== 'idle' && hyper.charId !== char.id
+
+            let hyperTransform: string | undefined
+            let hyperOpacity:   number | undefined
+
+            if (isSelected) {
+              if (hyper.phase === 'beat1') {
+                hyperTransform = 'scale(0.94)'
+              } else if (hyper.phase === 'beat24') {
+                hyperTransform = 'scaleX(6) scaleY(0.15) translateX(60px)'
+                hyperOpacity   = 0
+              }
+            } else if (isOther && (hyper.phase === 'beat24' || hyper.phase === 'loading')) {
+              hyperOpacity = 0.08
+            }
+
             return (
               <CharacterCard
                 key={char.id}
@@ -662,8 +826,10 @@ export default function Home() {
                 state={cardState}
                 online={online}
                 animDelay={0.15 + index * 0.08}
-                onClaim={() => void claimCharacter(char.id)}
+                onSelect={(rect) => handleCardSelect(char.id, rect)}
                 onDelete={() => void deleteCharacter(char.id, char.name)}
+                hyperTransform={hyperTransform}
+                hyperOpacity={hyperOpacity}
               />
             )
           })}
@@ -777,6 +943,30 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* ── Hyperspace canvas ── */}
+      <canvas
+        ref={canvasRef}
+        style={{
+          position:      'fixed',
+          inset:         0,
+          zIndex:        20,
+          pointerEvents: 'none',
+          display: hyper.phase === 'beat24' || hyper.phase === 'loading' ? 'block' : 'none',
+        }}
+      />
+
+      {/* ── Hyperspace dark overlay ── */}
+      {(hyper.phase === 'beat24' || hyper.phase === 'loading') && (
+        <div style={{
+          position:      'fixed',
+          inset:         0,
+          zIndex:        12,
+          background:    'rgba(10,8,6,0)',
+          animation:     'hyperspaceOverlay 0.7s ease forwards',
+          pointerEvents: 'none',
+        }} />
+      )}
 
       {/* CSS Animations */}
       <style>{`
