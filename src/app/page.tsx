@@ -7,6 +7,7 @@ import { randomUUID } from '@/lib/utils'
 import type { Character } from '@/lib/types'
 import { VersionWatermark } from '@/components/ui/VersionWatermark'
 import { HUD, CHAR_COLOR, FONT_BODY, FS, SP, RADIUS, Z, EASE } from '@/lib/tokens'
+import { useCharacterSelectStore } from '@/store/characterSelectStore'
 
 // ─── Design Tokens ───────────────────────────────────────────────────────────
 const BG        = 'var(--hud-bg)'
@@ -677,6 +678,10 @@ export default function Home() {
   // ── handleCardSelect — orchestrates hyperspace animation ───────────────────
   function handleCardSelect(charId: string, rect: DOMRect) {
     if (hyper.phase !== 'idle') return
+
+    // Write selected character to store before navigation fires
+    const charForStore = characters.find(c => c.id === charId) ?? null
+    useCharacterSelectStore.getState().setSelectedCharacter(charForStore)
 
     const prefersReduced = typeof window !== 'undefined'
       && window.matchMedia('(prefers-reduced-motion: reduce)').matches
