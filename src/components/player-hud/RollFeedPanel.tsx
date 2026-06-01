@@ -4,6 +4,7 @@ import { useState, type ReactNode }                       from 'react'
 import { FONT_BODY, RADIUS, SYM, FS, HUD, type DiceType } from '@/lib/tokens'
 import { DiceFace }                                        from '@/components/dice/DiceFace'
 import type { RollEntry }                                  from '@/hooks/useRollFeed'
+import type { PurchaseMeta }                               from '@/lib/logRoll'
 
 // Alignment / force colours are not in the design token system — they are
 // specific to the roll feed's alignment identity system.
@@ -28,6 +29,7 @@ function classifyRoll(entry: RollEntry): RollCategory {
   if (
     entry.roll_type === 'system' ||
     entry.roll_type === 'Item Award' ||
+    entry.roll_type === 'XP Purchase' ||
     entry.alignment === 'system'
   ) return 'system'
   if (entry.roll_type === 'combat') return 'combat'
@@ -441,10 +443,78 @@ function InitiativeRow({ group }: { group: { rolls: RollEntry[] } }) {
 // ═══════════════════════════════════════════════════════════════════
 const SYSTEM_LONG_THRESHOLD = 60
 
-function SystemRow({ roll }: { roll: RollEntry }) {
+function SystemRow({
+  roll,
+  isGm,
+  onRefundPurchase,
+}: {
+  roll:              RollEntry
+  isGm:             boolean
+  onRefundPurchase?: (entry: RollEntry) => void
+}) {
   const [expanded, setExpanded] = useState(false)
   const label  = roll.roll_label ?? 'System Message'
   const isLong = label.length > SYSTEM_LONG_THRESHOLD
+
+  // ── XP Purchase ───────────────────────────────────────────────────
+  if (roll.roll_type === 'XP Purchase') {
+    const meta       = roll.roll_meta as PurchaseMeta | null
+    const isRefunded = meta?.refunded === true
+    return (
+      <div
+        className="flex items-center"
+        style={{
+          padding:    '3px var(--space-1)',
+          gap:        4,
+          opacity:    isRefunded ? 0.45 : 1,
+          fontFamily: FONT_BODY,
+          fontSize:   FS.overline,
+        }}
+      >
+        <span style={{ color: HUD.textFaint }}>⬆</span>
+        <span style={{ color: HUD.text }}>{roll.character_name}</span>
+        <span style={{ color: HUD.textFaint }}>purchased</span>
+        <span
+          className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap"
+          style={{ color: HUD.text }}
+        >
+          {roll.roll_label}
+        </span>
+        {meta?.xp_cost != null && !isRefunded && (
+          <span style={{ color: HUD.textFaint, whiteSpace: 'nowrap' }}>
+            · {meta.xp_cost}xp
+          </span>
+        )}
+        {isRefunded ? (
+          <span style={{ color: HUD.textFaint, fontStyle: 'italic', whiteSpace: 'nowrap' }}>
+            [REFUNDED]
+          </span>
+        ) : isGm && onRefundPurchase ? (
+          <button
+            onClick={() => onRefundPurchase(roll)}
+            title={
+              meta?.purchase_type === 'talent'
+                ? 'Revert purchase and restore XP — note: may affect adjacent talents in tree'
+                : 'Revert purchase and restore XP'
+            }
+            style={{
+              background:  'none',
+              border:      'none',
+              cursor:      'pointer',
+              color:       HUD.textFaint,
+              fontFamily:  FONT_BODY,
+              fontSize:    FS.sm,
+              padding:     '0 2px',
+              lineHeight:  1,
+              flexShrink:  0,
+            }}
+          >
+            ↺
+          </button>
+        ) : null}
+      </div>
+    )
+  }
 
   if (roll.roll_type === 'Item Award') {
     const splitIdx   = label.indexOf(' awarded to ')
@@ -546,10 +616,12 @@ export function RollFeedPanel({
   rolls,
   ownCharacterId,
   isGm = false,
+  onRefundPurchase,
 }: {
-  rolls:          RollEntry[]
-  ownCharacterId: string
-  isGm?:          boolean
+  rolls:              RollEntry[]
+  ownCharacterId:     string
+  isGm?:             boolean
+  onRefundPurchase?: (entry: RollEntry) => void
 }) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
 
@@ -589,7 +661,14 @@ export function RollFeedPanel({
     const { roll, category } = g
 
     if (category === 'system') {
-      nodes.push(<SystemRow key={roll.id} roll={roll} />)
+      nodes.push(
+        <SystemRow
+          key={roll.id}
+          roll={roll}
+          isGm={isGm}
+          onRefundPurchase={onRefundPurchase}
+        />
+      )
       continue
     }
 
