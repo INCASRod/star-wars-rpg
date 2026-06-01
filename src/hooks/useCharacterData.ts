@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { randomUUID } from '@/lib/utils'
+import { logPurchaseNotification } from '@/lib/logRoll'
 import {
   RANGE_LABELS, ACTIVATION_LABELS, CHARACTERISTIC_ABBR,
 } from '@/lib/types'
@@ -219,6 +220,21 @@ export function useCharacterData(characterId: string) {
       supabase.from('characters').update({ xp_available: newXp }).eq('id', character.id),
       supabase.from('xp_transactions').insert({ character_id: character.id, amount: -cost, reason: `Bought skill rank: ${skillKey} ${newRank}` }),
     ])
+
+    logPurchaseNotification({
+      campaignId:    character.campaign_id,
+      characterId:   character.id,
+      characterName: character.name,
+      label:         `Rank ${newRank} of ${refSkillMap[skillKey]?.name ?? skillKey}`,
+      meta: {
+        purchase_type: 'skill',
+        xp_cost:       cost,
+        refunded:      false,
+        skill_key:     skillKey,
+        prev_rank:     currentRank,
+        new_rank:      newRank,
+      },
+    })
   }
 
   const cycleEquipState = (current: string): 'equipped' | 'carrying' | 'stowed' => {
