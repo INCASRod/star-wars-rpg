@@ -85,9 +85,7 @@ function CharacterCard({
   const cardBg = PANEL
   const cardShadow = state === 'self'
     ? '0 2px 10px rgba(90,40,24,0.18)'
-    : hovered
-      ? '0 4px 12px rgba(90,40,24,0.10)'
-      : 'none'
+    : undefined
 
   const cardCursor = state === 'self' ? 'default' : 'pointer'
   const cardTransform = hovered && state !== 'self' ? 'translateY(-2px)' : 'none'
@@ -145,8 +143,9 @@ function CharacterCard({
         border: `1px solid ${cardBorder}`,
         background: cardBg,
         cursor: cardCursor,
-        ...(hyperTransform !== undefined ? { transform: hyperTransform } : {}),
-        ...(hyperOpacity !== undefined   ? { opacity: hyperOpacity }    : {}),
+        ...(hyperTransform !== undefined ? { transform:  hyperTransform } : {}),
+        ...(hyperOpacity !== undefined   ? { opacity:    hyperOpacity }   : {}),
+        ...(cardShadow                   ? { boxShadow:  cardShadow }     : {}),
       }}
       onClick={handleClick}
       onMouseEnter={() => setHovered(true)}
@@ -443,6 +442,16 @@ function runHyperspaceCanvas(
   return () => cancelAnimationFrame(rafId)
 }
 
+// ─── Loading Messages ─────────────────────────────────────────────────────
+const LOADING_TEXTS = [
+  'Accessing rebel alliance records...',
+  'Syncing holonet profile data...',
+  'Decrypting imperial wanted list...',
+  'Establishing secure channel...',
+  'Verifying rebel clearance codes...',
+  'Loading character dossier...',
+] as const
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Home() {
   const router = useRouter()
@@ -460,15 +469,6 @@ export default function Home() {
 
   const [hyper, setHyper] = useState<HyperspaceState>({ phase: 'idle', charId: '', cardRect: null })
   const [loadingTextIdx, setLoadingTextIdx] = useState(0)
-
-  const LOADING_TEXTS = [
-    'Accessing rebel alliance records...',
-    'Syncing holonet profile data...',
-    'Decrypting imperial wanted list...',
-    'Establishing secure channel...',
-    'Verifying rebel clearance codes...',
-    'Loading character dossier...',
-  ] as const
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const cancelCanvasRef = useRef<(() => void) | null>(null)
@@ -549,17 +549,11 @@ export default function Home() {
     return () => { void supabase.removeChannel(ch) }
   }, [campaignId, sessionKey])
 
-  // ── Cleanup: hyperspace animation ──────────────────────────────────────────
+  // ── Cleanup: hyperspace animation and unmount reset ────────────────────────
   useEffect(() => {
     return () => {
       if (hyperTimeoutRef.current) clearTimeout(hyperTimeoutRef.current)
       cancelCanvasRef.current?.()
-    }
-  }, [])
-
-  // ── Unmount reset: clear hyper state if user navigates back ────────────────
-  useEffect(() => {
-    return () => {
       setHyper({ phase: 'idle', charId: '', cardRect: null })
     }
   }, [])
@@ -572,7 +566,7 @@ export default function Home() {
       setLoadingTextIdx(prev => (prev + 1) % LOADING_TEXTS.length)
     }, 1800)
     return () => clearInterval(id)
-  }, [hyper.phase]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [hyper.phase])
 
   // ── Navigation: after loading phase begins, push to character screen ───────
   useEffect(() => {
@@ -1026,6 +1020,7 @@ export default function Home() {
             position:       'fixed',
             inset:          0,
             zIndex:         22,
+            background:     'rgba(10,8,6,0.92)',
             display:        'flex',
             flexDirection:  'column',
             alignItems:     'center',
