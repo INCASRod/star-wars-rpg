@@ -856,6 +856,18 @@ export function useCharacterData(characterId: string) {
       supabase.from('characters').update({ xp_available: newXp }).eq('id', character.id),
       supabase.from('xp_transactions').insert({ character_id: character.id, amount: -cost, reason: `Bought specialization: ${specKey}` }),
     ])
+    logPurchaseNotification({
+      campaignId:    character.campaign_id,
+      characterId:   character.id,
+      characterName: character.name,
+      label:         `${refSpecMap[specKey]?.name ?? specKey} Specialization`,
+      meta: {
+        purchase_type:      'specialization',
+        xp_cost:            cost,
+        refunded:           false,
+        specialization_key: specKey,
+      },
+    })
     toast.success(`Purchased ${refSpecMap[specKey]?.name || specKey}!`)
   }
 
