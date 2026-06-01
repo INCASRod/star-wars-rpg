@@ -229,10 +229,10 @@ function CharacterCard({
 
         {/* Identity block */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: FONT_BODY, fontSize: '10px', fontWeight: 700, color: nameColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: '12px', fontWeight: 700, color: nameColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {char.name}
           </div>
-          <div style={{ fontFamily: FONT_BODY, fontSize: '8px', color: TEXT_MUT, textTransform: 'uppercase', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: '10px', color: TEXT_MUT, textTransform: 'uppercase', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {char.career_key} // {char.species_key}
           </div>
           {/* Status badge */}
@@ -245,14 +245,14 @@ function CharacterCard({
             background: state === 'self' ? 'var(--hud-surface-lo)' : 'transparent',
           }}>
             {state === 'available' && (
-              <span style={{ fontFamily: FONT_BODY, fontSize: '6.5px', color: TEXT_MUT, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              <span style={{ fontFamily: FONT_BODY, fontSize: '8px', color: TEXT_MUT, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                 Unselected
               </span>
             )}
             {state === 'self' && (
               <>
                 <div style={{ width: '4px', height: '4px', borderRadius: RADIUS.full, background: HUD.gold, animation: 'pulse-dot 1.8s ease-in-out infinite' }} />
-                <span style={{ fontFamily: FONT_BODY, fontSize: '6.5px', color: HUD.gold, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                <span style={{ fontFamily: FONT_BODY, fontSize: '8px', color: HUD.gold, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                   You · Active
                 </span>
               </>
@@ -278,10 +278,10 @@ function CharacterCard({
             padding: '2px 1px',
             textAlign: 'center',
           }}>
-            <div style={{ fontFamily: FONT_BODY, fontSize: '11px', fontWeight: 700, color: CHAR_COLORS[key] }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: '13px', fontWeight: 700, color: CHAR_COLORS[key] }}>
               {(char as unknown as Record<string, number>)[key]}
             </div>
-            <div style={{ fontFamily: FONT_BODY, fontSize: '7px', color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: '8px', color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               {label}
             </div>
           </div>
@@ -299,10 +299,10 @@ function CharacterCard({
             minWidth: '2rem',
             textAlign: 'center',
           }}>
-            <div style={{ fontFamily: FONT_BODY, fontSize: '10px', fontWeight: 700, color: TEXT }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: '12px', fontWeight: 700, color: TEXT }}>
               {value}
             </div>
-            <div style={{ fontFamily: FONT_BODY, fontSize: '6px', color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: '7px', color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
               {label}
             </div>
           </div>
@@ -314,8 +314,8 @@ function CharacterCard({
         {/* Wounds */}
         <div style={{ marginBottom: '3px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontFamily: FONT_BODY, fontSize: '7px', color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.06em', width: '28px' }}>Wounds</span>
-            <span style={{ fontFamily: FONT_BODY, fontSize: '7px', color: TEXT_MUT }}>{char.wound_current}/{char.wound_threshold}</span>
+            <span style={{ fontFamily: FONT_BODY, fontSize: '8px', color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.06em', width: '28px' }}>Wounds</span>
+            <span style={{ fontFamily: FONT_BODY, fontSize: '8px', color: TEXT_MUT }}>{char.wound_current}/{char.wound_threshold}</span>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px', marginTop: '2px' }}>
             {Array.from({ length: char.wound_threshold }).map((_, i) => (
@@ -330,9 +330,9 @@ function CharacterCard({
         {/* Strain */}
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontFamily: FONT_BODY, fontSize: '7px', color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.06em', width: '28px' }}>Strain</span>
+            <span style={{ fontFamily: FONT_BODY, fontSize: '8px', color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.06em', width: '28px' }}>Strain</span>
             <span style={{
-              fontFamily: FONT_BODY, fontSize: '7px', color: TEXT_MUT
+              fontFamily: FONT_BODY, fontSize: '8px', color: TEXT_MUT
             }}>{char.strain_current}/{char.strain_threshold}</span>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px', marginTop: '2px' }}>
@@ -753,7 +753,7 @@ export default function Home() {
             <div style={{
               fontFamily: FONT_BODY,
               fontWeight: 900,
-              fontSize: '18px',
+              fontSize: '13px',
               letterSpacing: '0.4em',
               color: HUD.gold,
               textShadow: '0 0 40px rgba(224,58,30,0.45)',
@@ -764,11 +764,11 @@ export default function Home() {
           </div>
           <div style={{
             fontFamily: FONT_BODY,
-            fontSize: '9px',
+            fontSize: '7px',
             letterSpacing: '0.3em',
             color: TEXT_MUT,
             textTransform: 'uppercase',
-            marginTop: '3px',
+            marginTop: '2px',
             textAlign: 'center',
           }}>
             Star Wars RPG · Campaign Manager
