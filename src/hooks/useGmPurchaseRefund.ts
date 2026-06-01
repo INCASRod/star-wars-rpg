@@ -72,7 +72,12 @@ export function useGmPurchaseRefund() {
       )
     }
 
-    await Promise.all(ops)
+    try {
+      await Promise.all(ops)
+    } catch (err) {
+      console.error('[useGmPurchaseRefund] refund failed:', err)
+      throw err
+    }
   }
 
   return { handleRefundPurchase }

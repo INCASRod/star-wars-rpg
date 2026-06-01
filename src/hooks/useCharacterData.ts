@@ -532,7 +532,15 @@ export function useCharacterData(characterId: string) {
         refunded:      false,
         talent_id:     newId,
         talent_key:    talentKey,
-        stat_delta:    statUpdates as Record<string, number>,
+        stat_delta:    (() => {
+          const ref  = refTalentMap[talentKey]
+          const mods = ref?.modifiers as Record<string, number> | undefined ?? {}
+          const raw: Record<string, number> = {}
+          for (const key of ['wound_threshold', 'strain_threshold', 'soak', 'defense_ranged', 'defense_melee'] as const) {
+            if (mods[key]) raw[key] = mods[key]
+          }
+          return raw
+        })(),
       },
     })
 
