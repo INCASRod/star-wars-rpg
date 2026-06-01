@@ -90,8 +90,8 @@ function CharacterCard({
   const cardCursor = state === 'self' ? 'default' : 'pointer'
   const cardTransform = hovered && state !== 'self' ? 'translateY(-2px)' : 'none'
 
-  const avatarBorderColor = state === 'self' ? HUD.gold : BORDER_MD
-  const avatarShadow = state === 'self' ? '0 0 8px rgba(90,40,24,0.2)' : 'none'
+  const [imgError, setImgError] = useState(false)
+  const showFallback = !char.portrait_url || imgError
 
   const dotColor = state === 'self'
     ? HUD.gold
@@ -112,13 +112,15 @@ function CharacterCard({
     { key: 'presence', label: 'PR' },
   ]
 
-  const derived: Array<{ label: string; value: number | string }> = [
-    { label: 'Soak', value: char.soak },
-    { label: 'Wounds', value: char.wound_threshold },
-    { label: 'Strain', value: char.strain_threshold },
+  const combat = [
+    { label: 'Soak',  value: char.soak },
     { label: 'M.Def', value: char.defense_melee },
     { label: 'R.Def', value: char.defense_ranged },
-    { label: 'XP', value: char.xp_available },
+  ]
+  const resources = [
+    { label: 'W.Thr', value: char.wound_threshold },
+    { label: 'S.Thr', value: char.strain_threshold },
+    { label: 'XP',    value: char.xp_available },
   ]
 
   function handleClick() {
@@ -134,7 +136,8 @@ function CharacterCard({
         position: 'relative',
         overflow: 'hidden',
         borderRadius: '7px',
-        padding: '11px',
+        display: 'flex',
+        flexDirection: 'column',
         backdropFilter: 'blur(12px)',
         transition: hyperTransform !== undefined
           ? 'transform 0.35s cubic-bezier(0.4,0,1,1), opacity 0.3s ease 0.1s'
@@ -151,15 +154,16 @@ function CharacterCard({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Top gradient line */}
+      {/* Top gradient line — unchanged */}
       <div style={{
         position: 'absolute', top: 0, left: 0, right: 0, height: '0.125rem',
         background: `linear-gradient(90deg, transparent, ${HUD.gold}, transparent)`,
         opacity: state === 'self' ? 1 : hovered ? 0.6 : 0,
         transition: `opacity ${EASE.default}`,
+        zIndex: 10,
       }} />
 
-      {/* Delete button */}
+      {/* Delete button — unchanged */}
       {hovered && (
         <button
           onClick={(e) => { e.stopPropagation(); onDelete() }}
@@ -172,7 +176,7 @@ function CharacterCard({
             cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: FS.sm, fontWeight: 700, color: DANGER,
-            transition: EASE.default, zIndex: Z.raised,
+            transition: EASE.default, zIndex: 15,
             fontFamily: FONT_BODY,
           }}
           title="Delete character"
@@ -181,136 +185,191 @@ function CharacterCard({
         </button>
       )}
 
-      {/* Rebel Alliance watermark — fades in on hover via .char-card-watermark CSS */}
-      <div className="char-card-watermark">
+      {/* Rebel watermark — right edge, full card height, bleeds off right */}
+      <div style={{
+        position: 'absolute',
+        top: 0, bottom: 0, right: '-20px',
+        pointerEvents: 'none',
+        zIndex: 4,
+        opacity: hovered ? 1 : 0,
+        transition: 'opacity 0.4s ease 0.08s',
+      }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/images/factions/rebel.png"
           alt=""
-          style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'left center', filter: 'opacity(0.2)' }}
+          style={{ height: '100%', width: 'auto', filter: 'opacity(0.13)' }}
         />
       </div>
 
-      {/* Section 1 — CardHeader */}
-      <div style={{ display: 'flex', gap: '6px', marginBottom: '5px', alignItems: 'flex-start' }}>
-        {/* Avatar */}
+      {/* ── Top section: Zone A (portrait) + Zone B (stats) ── */}
+      <div style={{ display: 'flex', flex: 1 }}>
+
+        {/* ZONE A — Portrait panel */}
         <div style={{
+          width: '95px',
           flexShrink: 0,
-          width: '22px', height: '22px',
-          borderRadius: RADIUS.full,
-          overflow: 'hidden',
           position: 'relative',
-          border: `1px solid ${avatarBorderColor}`,
-          boxShadow: avatarShadow,
-          background: RAISED,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          overflow: 'hidden',
+          borderRight: `1px solid ${BORDER}`,
         }}>
-          {char.portrait_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={char.portrait_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          ) : (
-            <span style={{
-              fontFamily: FONT_BODY, fontSize: '8px',
-              color: state === 'self' ? HUD.gold : TEXT_SEC,
+          {showFallback ? (
+            <div style={{
+              width: '100%', height: '100%', minHeight: '90px',
+              background: 'var(--hud-surface-lo)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: '6px',
             }}>
-              {char.name.charAt(0)}
-            </span>
+              <span style={{ fontFamily: FONT_BODY, fontSize: '8px', color: TEXT_MUT, textAlign: 'center', lineHeight: 1.4 }}>
+                No image uploaded
+              </span>
+            </div>
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={char.portrait_url!}
+              alt=""
+              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center', display: 'block' }}
+              onError={() => setImgError(true)}
+            />
           )}
+
           {/* Status dot */}
           <div style={{
-            position: 'absolute', bottom: '2px', right: '2px',
-            width: '5px', height: '5px',
+            position: 'absolute', top: '5px', left: '5px',
+            width: '6px', height: '6px',
             borderRadius: RADIUS.full,
-            border: `1px solid ${BG}`,
+            border: '1px solid rgba(0,0,0,0.5)',
             background: dotColor,
             animation: dotPulse,
+            zIndex: 5,
           }} />
+
+          {/* Bottom gradient + identity overlay */}
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0,
+            background: 'linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.55) 55%, rgba(0,0,0,0) 100%)',
+            padding: '18px 5px 5px',
+            zIndex: 5,
+          }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: '12px', fontWeight: 700, color: nameColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {char.name}
+            </div>
+            <div style={{ fontFamily: FONT_BODY, fontSize: '8px', color: TEXT_MUT, textTransform: 'uppercase', marginTop: '1px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {char.career_key} // {char.species_key}
+            </div>
+            <div style={{
+              marginTop: '3px',
+              display: 'inline-flex', alignItems: 'center', gap: '2px',
+              border: `1px solid ${state === 'self' ? HUD.gold : TEXT_MUT}`,
+              borderRadius: RADIUS.sm,
+              padding: '1px 4px',
+              background: 'rgba(0,0,0,0.45)',
+            }}>
+              {state === 'available' && (
+                <span style={{ fontFamily: FONT_BODY, fontSize: '8px', color: TEXT_MUT, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                  Unselected
+                </span>
+              )}
+              {state === 'self' && (
+                <>
+                  <div style={{ width: '4px', height: '4px', borderRadius: RADIUS.full, background: HUD.gold, animation: 'pulse-dot 1.8s ease-in-out infinite' }} />
+                  <span style={{ fontFamily: FONT_BODY, fontSize: '8px', color: HUD.gold, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                    You · Active
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Identity block */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: FONT_BODY, fontSize: '12px', fontWeight: 700, color: nameColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {char.name}
+        {/* ZONE B — Stats panel */}
+        <div style={{ flex: 1, padding: '6px 7px', display: 'flex', flexDirection: 'column', gap: '5px', minWidth: 0 }}>
+
+          {/* Characteristics */}
+          <div>
+            <div style={{ fontFamily: FONT_BODY, fontSize: '6px', textTransform: 'uppercase', letterSpacing: '0.1em', color: TEXT_MUT, marginBottom: '2px' }}>
+              Characteristics
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '2px' }}>
+              {characteristics.map(({ key, label }) => (
+                <div key={key} style={{
+                  background: INPUT_BG,
+                  border: `1px solid ${BORDER}`,
+                  borderRadius: RADIUS.sm,
+                  padding: '2px 1px',
+                  textAlign: 'center',
+                }}>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: '13px', fontWeight: 700, color: CHAR_COLORS[key] }}>
+                    {(char as unknown as Record<string, number>)[key]}
+                  </div>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: '8px', color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    {label}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div style={{ fontFamily: FONT_BODY, fontSize: '10px', color: TEXT_MUT, textTransform: 'uppercase', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {char.career_key} // {char.species_key}
+
+          {/* Combat */}
+          <div>
+            <div style={{ fontFamily: FONT_BODY, fontSize: '6px', textTransform: 'uppercase', letterSpacing: '0.1em', color: TEXT_MUT, marginBottom: '2px' }}>
+              Combat
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2px' }}>
+              {combat.map(({ label, value }) => (
+                <div key={label} style={{
+                  background: INPUT_BG,
+                  border: `1px solid ${BORDER}`,
+                  borderRadius: RADIUS.sm,
+                  padding: '2px 4px',
+                  textAlign: 'center',
+                }}>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: '12px', fontWeight: 700, color: TEXT }}>
+                    {value}
+                  </div>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: '7px', color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    {label}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          {/* Status badge */}
-          <div style={{
-            marginTop: '2px',
-            display: 'inline-flex', alignItems: 'center', gap: '2px',
-            border: `1px solid ${state === 'self' ? HUD.gold : TEXT_MUT}`,
-            borderRadius: RADIUS.sm,
-            padding: '1px 4px',
-            background: state === 'self' ? 'var(--hud-surface-lo)' : 'transparent',
-          }}>
-            {state === 'available' && (
-              <span style={{ fontFamily: FONT_BODY, fontSize: '8px', color: TEXT_MUT, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                Unselected
-              </span>
-            )}
-            {state === 'self' && (
-              <>
-                <div style={{ width: '4px', height: '4px', borderRadius: RADIUS.full, background: HUD.gold, animation: 'pulse-dot 1.8s ease-in-out infinite' }} />
-                <span style={{ fontFamily: FONT_BODY, fontSize: '8px', color: HUD.gold, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                  You · Active
-                </span>
-              </>
-            )}
+
+          {/* Resources */}
+          <div>
+            <div style={{ fontFamily: FONT_BODY, fontSize: '6px', textTransform: 'uppercase', letterSpacing: '0.1em', color: TEXT_MUT, marginBottom: '2px' }}>
+              Resources
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2px' }}>
+              {resources.map(({ label, value }) => (
+                <div key={label} style={{
+                  background: INPUT_BG,
+                  border: `1px solid ${BORDER}`,
+                  borderRadius: RADIUS.sm,
+                  padding: '2px 4px',
+                  textAlign: 'center',
+                }}>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: '12px', fontWeight: 700, color: TEXT }}>
+                    {value}
+                  </div>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: '7px', color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    {label}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
+
         </div>
       </div>
 
-      {/* Section 2 — CharacteristicRow */}
+      {/* ZONE C — Pip tracker, full-width bottom strip */}
       <div style={{
         borderTop: `1px solid ${BORDER}`,
-        paddingTop: '3px',
-        marginTop: '3px',
-        display: 'grid',
-        gridTemplateColumns: 'repeat(6, 1fr)',
-        gap: '2px',
+        background: 'var(--hud-surface-lo)',
+        padding: '5px 8px',
       }}>
-        {characteristics.map(({ key, label }) => (
-          <div key={key} style={{
-            background: INPUT_BG,
-            border: `1px solid ${BORDER}`,
-            borderRadius: RADIUS.sm,
-            padding: '2px 1px',
-            textAlign: 'center',
-          }}>
-            <div style={{ fontFamily: FONT_BODY, fontSize: '13px', fontWeight: 700, color: CHAR_COLORS[key] }}>
-              {(char as unknown as Record<string, number>)[key]}
-            </div>
-            <div style={{ fontFamily: FONT_BODY, fontSize: '8px', color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-              {label}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Section 3 — DerivedStatsRow */}
-      <div style={{ marginTop: '3px', display: 'flex', gap: '2px', flexWrap: 'wrap' }}>
-        {derived.map(({ label, value }) => (
-          <div key={label} style={{
-            background: INPUT_BG,
-            border: `1px solid ${BORDER}`,
-            borderRadius: RADIUS.sm,
-            padding: '2px 4px',
-            minWidth: '2rem',
-            textAlign: 'center',
-          }}>
-            <div style={{ fontFamily: FONT_BODY, fontSize: '12px', fontWeight: 700, color: TEXT }}>
-              {value}
-            </div>
-            <div style={{ fontFamily: FONT_BODY, fontSize: '7px', color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              {label}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Section 4 — VitalsPips */}
-      <div style={{ marginTop: '3px' }}>
         {/* Wounds */}
         <div style={{ marginBottom: '3px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -331,9 +390,7 @@ function CharacterCard({
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontFamily: FONT_BODY, fontSize: '8px', color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.06em', width: '28px' }}>Strain</span>
-            <span style={{
-              fontFamily: FONT_BODY, fontSize: '8px', color: TEXT_MUT
-            }}>{char.strain_current}/{char.strain_threshold}</span>
+            <span style={{ fontFamily: FONT_BODY, fontSize: '8px', color: TEXT_MUT }}>{char.strain_current}/{char.strain_threshold}</span>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px', marginTop: '2px' }}>
             {Array.from({ length: char.strain_threshold }).map((_, i) => (
@@ -347,7 +404,7 @@ function CharacterCard({
         </div>
       </div>
 
-      {/* Interactable hint — arrow circle, bottom-right, appears on hover */}
+      {/* Interactable hint */}
       <div className="char-card-hint">
         <div className="char-card-hint-arrow" />
       </div>
@@ -839,7 +896,7 @@ export default function Home() {
         <div style={{
           width: '100%',
           display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))',
           gap: '8px',
         }}>
           {characters.map((char, index) => {
