@@ -371,9 +371,9 @@ function runHyperspaceCanvas(
   originX: number,
   originY: number,
   onComplete: () => void,
-): void {
+): () => void {
   const ctxOrNull = canvas.getContext('2d')
-  if (!ctxOrNull) { onComplete(); return }
+  if (!ctxOrNull) { onComplete(); return () => {} }
   const ctx: CanvasRenderingContext2D = ctxOrNull
   const W = canvas.width
   const H = canvas.height
@@ -392,6 +392,7 @@ function runHyperspaceCanvas(
   }))
 
   let startTime: number | null = null
+  let rafId = 0
 
   function frame(timestamp: number) {
     if (!startTime) startTime = timestamp
@@ -431,14 +432,15 @@ function runHyperspaceCanvas(
     }
 
     if (t < 1) {
-      requestAnimationFrame(frame)
+      rafId = requestAnimationFrame(frame)
     } else {
       ctx.clearRect(0, 0, W, H)
       onComplete()
     }
   }
 
-  requestAnimationFrame(frame)
+  rafId = requestAnimationFrame(frame)
+  return () => cancelAnimationFrame(rafId)
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
@@ -458,6 +460,8 @@ export default function Home() {
 
   const [hyper, setHyper] = useState<HyperspaceState>({ phase: 'idle', charId: '', cardRect: null })
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const cancelCanvasRef = useRef<(() => void) | null>(null)
+  const hyperTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const campaignIdRef = useRef<string | null>(null)
 
@@ -534,6 +538,14 @@ export default function Home() {
     return () => { void supabase.removeChannel(ch) }
   }, [campaignId, sessionKey])
 
+  // ── Cleanup: hyperspace animation ──────────────────────────────────────────
+  useEffect(() => {
+    return () => {
+      if (hyperTimeoutRef.current) clearTimeout(hyperTimeoutRef.current)
+      cancelCanvasRef.current?.()
+    }
+  }, [])
+
   // ── claimCharacter ─────────────────────────────────────────────────────────
   async function claimCharacter(characterId: string) {
     if (!campaignId) return
@@ -590,7 +602,7 @@ export default function Home() {
 
     setHyper({ phase: 'beat1', charId, cardRect: rect })
 
-    setTimeout(() => {
+    hyperTimeoutRef.current = setTimeout(() => {
       setHyper({ phase: 'beat24', charId, cardRect: rect })
 
       const canvas = canvasRef.current
@@ -602,7 +614,7 @@ export default function Home() {
       const cx = rect.left + rect.width  / 2
       const cy = rect.top  + rect.height / 2
 
-      runHyperspaceCanvas(canvas, cx, cy, () => {
+      cancelCanvasRef.current = runHyperspaceCanvas(canvas, cx, cy, () => {
         setHyper({ phase: 'loading', charId, cardRect: rect })
       })
     }, 120)
