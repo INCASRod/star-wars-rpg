@@ -596,22 +596,53 @@ export function useCharacterData(characterId: string) {
     if (character.xp_available < cost) return
     markSelf()
 
+    const newId = randomUUID()
     const newXp = character.xp_available - cost
     setCharacter({ ...character, xp_available: newXp })
     setCharForceAbilities(prev => [...prev, {
-      id: randomUUID(), character_id: character.id,
+      id: newId, character_id: character.id,
       force_power_key: activeForcePowerKey, force_ability_key: abilityKey,
       tree_row: row, tree_col: col, xp_cost: cost,
     }])
 
     await Promise.all([
       supabase.from('character_force_abilities').insert({
-        character_id: character.id, force_power_key: activeForcePowerKey,
-        force_ability_key: abilityKey, tree_row: row, tree_col: col, xp_cost: cost,
+        id:                newId,
+        character_id:      character.id,
+        force_power_key:   activeForcePowerKey,
+        force_ability_key: abilityKey,
+        tree_row:          row,
+        tree_col:          col,
+        xp_cost:           cost,
       }),
       supabase.from('characters').update({ xp_available: newXp }).eq('id', character.id),
       supabase.from('xp_transactions').insert({ character_id: character.id, amount: -cost, reason: `Bought force ability: ${abilityKey}` }),
     ])
+
+    const existingCount = charForceAbilities.filter(
+      a => a.force_ability_key === abilityKey && a.force_power_key === activeForcePowerKey
+    ).length
+    const abilityRank = existingCount + 1
+    const powerName   = refForcePowerMap[activeForcePowerKey]?.name ?? activeForcePowerKey
+    const abilityName = refForceAbilityMap[abilityKey]?.name ?? abilityKey
+    const label       = abilityRank > 1
+      ? `${powerName} — ${abilityName} (Rank ${abilityRank})`
+      : `${powerName} — ${abilityName}`
+
+    logPurchaseNotification({
+      campaignId:    character.campaign_id,
+      characterId:   character.id,
+      characterName: character.name,
+      label,
+      meta: {
+        purchase_type:     'force',
+        xp_cost:           cost,
+        refunded:          false,
+        force_ability_id:  newId,
+        force_power_key:   activeForcePowerKey,
+        force_ability_key: abilityKey,
+      },
+    })
   }
 
   // ── HUD transforms ──────────────────────────────────────────────────────────
