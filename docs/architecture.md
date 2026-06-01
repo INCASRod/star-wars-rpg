@@ -405,9 +405,17 @@ Each panel is a self-contained component accepting pre-computed display data fro
 
 ---
 
+## Stores (`src/store/`)
+
+| File | Purpose |
+|---|---|
+| `characterSelectStore.ts` | Zustand v5 store holding the selected character from the home screen; persists selection across route navigation so the character is available when the character route mounts |
+
+---
+
 ## State Management Pattern
 
-Holocron has **no global state manager** (no Zustand, Redux, or Context). State flows as:
+Holocron uses **minimal global state** — Zustand stores for transient UI selections (e.g., selected character). Primary state flows as:
 
 ```
 Hook (owns DB + realtime) → Page shell (owns display transforms) → Panel (pure display)
