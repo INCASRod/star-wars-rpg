@@ -82,3 +82,55 @@ export function logRoll({
     if (error) console.warn('[logRoll] failed:', error.message)
   })
 }
+
+export interface PurchaseMeta {
+  purchase_type:     'skill' | 'talent' | 'force' | 'specialization'
+  xp_cost:           number
+  refunded:          boolean
+  // skill
+  skill_key?:        string
+  prev_rank?:        number
+  new_rank?:         number
+  // talent
+  talent_id?:        string   // character_talents row UUID — deleted on refund
+  talent_key?:       string
+  stat_delta?:       Record<string, number>  // character stat changes to reverse
+  // force power
+  force_ability_id?: string   // character_force_abilities row UUID — deleted on refund
+  force_power_key?:  string
+  force_ability_key?: string
+  // specialization
+  specialization_key?: string
+}
+
+/** Fire-and-forget. Writes a GM-only system entry to roll_log for an XP purchase. */
+export function logPurchaseNotification({
+  campaignId,
+  characterId,
+  characterName,
+  label,
+  meta,
+}: {
+  campaignId:    string
+  characterId:   string
+  characterName: string
+  label:         string
+  meta:          PurchaseMeta
+}): void {
+  const supabase = createClient()
+  supabase.from('roll_log').insert({
+    campaign_id:    campaignId,
+    character_id:   characterId,
+    character_name: characterName,
+    roll_label:     label,
+    roll_type:      'XP Purchase',
+    alignment:      'system',
+    hidden:         true,
+    is_dm:          false,
+    pool:           { proficiency: 0, ability: 0, boost: 0, challenge: 0, difficulty: 0, setback: 0, force: 0 },
+    result:         { netSuccess: 0, netAdvantage: 0, triumph: 0, despair: 0, succeeded: false },
+    roll_meta:      meta,
+  }).then(({ error }) => {
+    if (error) console.warn('[logPurchaseNotification] failed:', error.message)
+  })
+}
