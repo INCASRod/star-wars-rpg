@@ -516,6 +516,26 @@ export function useCharacterData(characterId: string) {
       supabase.from('xp_transactions').insert({ character_id: character.id, amount: -cost, reason: `Bought talent: ${talentKey} (row ${row})` }),
     ])
 
+    const existingRankCount = talents.filter(t => t.talent_key === talentKey).length
+    const talentRank        = existingRankCount + 1
+    const talentName        = refTalentMap[talentKey]?.name ?? talentKey
+    const label             = talentRank > 1 ? `${talentName} (Rank ${talentRank})` : talentName
+
+    logPurchaseNotification({
+      campaignId:    character.campaign_id,
+      characterId:   character.id,
+      characterName: character.name,
+      label,
+      meta: {
+        purchase_type: 'talent',
+        xp_cost:       cost,
+        refunded:      false,
+        talent_id:     newId,
+        talent_key:    talentKey,
+        stat_delta:    statUpdates as Record<string, number>,
+      },
+    })
+
     return newId
   }
 
