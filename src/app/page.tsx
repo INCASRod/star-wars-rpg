@@ -459,6 +459,17 @@ export default function Home() {
   const [createHovered, setCreateHovered] = useState(false)
 
   const [hyper, setHyper] = useState<HyperspaceState>({ phase: 'idle', charId: '', cardRect: null })
+  const [loadingTextIdx, setLoadingTextIdx] = useState(0)
+
+  const LOADING_TEXTS = [
+    'Accessing rebel alliance records...',
+    'Syncing holonet profile data...',
+    'Decrypting imperial wanted list...',
+    'Establishing secure channel...',
+    'Verifying rebel clearance codes...',
+    'Loading character dossier...',
+  ] as const
+
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const cancelCanvasRef = useRef<(() => void) | null>(null)
   const hyperTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -545,6 +556,32 @@ export default function Home() {
       cancelCanvasRef.current?.()
     }
   }, [])
+
+  // ── Unmount reset: clear hyper state if user navigates back ────────────────
+  useEffect(() => {
+    return () => {
+      setHyper({ phase: 'idle', charId: '', cardRect: null })
+    }
+  }, [])
+
+  // ── Loading text cycling ───────────────────────────────────────────────────
+  useEffect(() => {
+    if (hyper.phase !== 'loading') return
+    setLoadingTextIdx(0)
+    const id = setInterval(() => {
+      setLoadingTextIdx(prev => (prev + 1) % LOADING_TEXTS.length)
+    }, 1800)
+    return () => clearInterval(id)
+  }, [hyper.phase]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Navigation: after loading phase begins, push to character screen ───────
+  useEffect(() => {
+    if (hyper.phase !== 'loading') return
+    const timer = setTimeout(() => {
+      router.push(`/character/${hyper.charId}${campaignId ? `?campaign=${campaignId}` : ''}`)
+    }, 1500)
+    return () => clearTimeout(timer)
+  }, [hyper.phase, hyper.charId, campaignId, router])
 
   // ── claimCharacter ─────────────────────────────────────────────────────────
   async function claimCharacter(characterId: string) {
@@ -979,6 +1016,143 @@ export default function Home() {
           pointerEvents: 'none',
         }} />
       )}
+
+      {/* ── Beat 5: Loading screen ── */}
+      {hyper.phase === 'loading' && (() => {
+        const char = characters.find(c => c.id === hyper.charId)
+        if (!char) return null
+        return (
+          <div style={{
+            position:       'fixed',
+            inset:          0,
+            zIndex:         22,
+            display:        'flex',
+            flexDirection:  'column',
+            alignItems:     'center',
+            justifyContent: 'center',
+            gap:            '16px',
+            animation:      'fadeUp 0.4s ease both',
+          }}>
+            {/* Mini character card */}
+            <div style={{
+              width:          '175px',
+              borderRadius:   '7px',
+              border:         `1px solid color-mix(in srgb, var(--hud-accent) 65%, transparent)`,
+              background:     'var(--hud-surface-hi)',
+              backdropFilter: 'blur(12px)',
+              padding:        '10px',
+              boxShadow:      `0 0 0 1px color-mix(in srgb, var(--hud-accent) 10%, transparent), 0 0 14px color-mix(in srgb, var(--hud-accent) 28%, transparent), 0 0 32px color-mix(in srgb, var(--hud-accent) 8%, transparent)`,
+              animation:      'fadeUp 0.45s cubic-bezier(0.34,1.56,0.64,1) both',
+            }}>
+              {/* Avatar + name */}
+              <div style={{ display: 'flex', gap: '6px', marginBottom: '5px', alignItems: 'center' }}>
+                <div style={{
+                  flexShrink: 0, width: '28px', height: '28px',
+                  borderRadius: '50%', overflow: 'hidden',
+                  border: `1px solid ${HUD.gold}`,
+                  background: 'var(--hud-surface-hi)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  {char.portrait_url
+                    ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={char.portrait_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      )
+                    : (
+                        <span style={{ fontFamily: FONT_BODY, fontSize: '10px', color: HUD.gold }}>
+                          {char.name.charAt(0)}
+                        </span>
+                      )
+                  }
+                </div>
+                <div>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: '9px', fontWeight: 700, color: HUD.gold }}>
+                    {char.name}
+                  </div>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: '7px', color: 'var(--hud-text-faint)', textTransform: 'uppercase' }}>
+                    {char.career_key}
+                  </div>
+                </div>
+              </div>
+              {/* Rebel watermark + characteristics mini-grid */}
+              <div style={{ position: 'relative' }}>
+                <div style={{
+                  position: 'absolute', top: '-4px', left: '-10px',
+                  width: '60px', height: '60px', pointerEvents: 'none', zIndex: 3,
+                }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/images/factions/rebel.png"
+                    alt=""
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'opacity(0.25)' }}
+                  />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: '2px' }}>
+                  {(['brawn','agility','intellect','cunning','willpower','presence'] as const).map(key => (
+                    <div key={key} style={{
+                      background: 'var(--hud-surface-lo)',
+                      border: '1px solid var(--hud-border)',
+                      borderRadius: '2px',
+                      padding: '2px 1px',
+                      textAlign: 'center',
+                    }}>
+                      <div style={{ fontFamily: FONT_BODY, fontSize: '9px', fontWeight: 700, color: CHAR_COLORS[key] }}>
+                        {(char as unknown as Record<string, number>)[key]}
+                      </div>
+                      <div style={{ fontFamily: FONT_BODY, fontSize: '5.5px', color: 'var(--hud-text-faint)', textTransform: 'uppercase' }}>
+                        {key.slice(0, 2).toUpperCase()}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* HOLOCRON wordmark + loading bar + flavour text */}
+            <div style={{ animation: 'fadeUp 0.45s 0.2s cubic-bezier(0.34,1.56,0.64,1) both', textAlign: 'center' }}>
+              <div style={{
+                fontFamily:    FONT_BODY,
+                fontSize:      '13px',
+                letterSpacing: '0.28em',
+                textTransform: 'uppercase',
+                color:         HUD.gold,
+                marginBottom:  '8px',
+              }}>
+                H O L O C R O N
+              </div>
+              {/* Loading bar */}
+              <div style={{
+                width:        '200px',
+                height:       '2px',
+                background:   'rgba(255,255,255,0.08)',
+                borderRadius: '1px',
+                overflow:     'hidden',
+                margin:       '0 auto 8px',
+                position:     'relative',
+              }}>
+                <div style={{
+                  position:   'absolute',
+                  top: 0, left: 0,
+                  width:      '40%',
+                  height:     '100%',
+                  background: `linear-gradient(90deg, transparent, var(--hud-accent), #c8883a, transparent)`,
+                  animation:  'loadingBarSweep 1.4s ease-in-out infinite',
+                }} />
+              </div>
+              {/* Flavour text */}
+              <div style={{
+                fontFamily:    FONT_BODY,
+                fontSize:      '7px',
+                color:         'var(--hud-text-faint)',
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+              }}>
+                {LOADING_TEXTS[loadingTextIdx]}
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* CSS Animations */}
       <style>{`
