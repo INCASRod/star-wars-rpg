@@ -75,7 +75,7 @@ function CharacterCard({
   const cardBorder = state === 'self'
     ? BORDER_HI
     : hovered
-      ? 'rgba(224,48,32,0.65)'
+      ? 'color-mix(in srgb, var(--hud-accent) 65%, transparent)'
       : BORDER
 
   const cardBg = PANEL

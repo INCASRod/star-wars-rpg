@@ -245,8 +245,8 @@
    ═══════════════════════════════════════════════════════════ */
 
 @keyframes charCardGlow {
-  0%, 100% { border-color: rgba(224, 48, 32, 0.30); }
-  50%       { border-color: rgba(224, 48, 32, 0.65); }
+  0%, 100% { border-color: color-mix(in srgb, var(--hud-accent) 30%, transparent); }
+  50%       { border-color: color-mix(in srgb, var(--hud-accent) 65%, transparent); }
 }
 
 .char-card {
@@ -258,9 +258,9 @@
 .char-card:hover {
   transform:  scale(1.04) translateY(-4px);
   box-shadow:
-    0 0 0 1px rgba(224, 48, 32, 0.10),
-    0 0 14px rgba(224, 48, 32, 0.28),
-    0 0 32px rgba(224, 48, 32, 0.08),
+    0 0 0 1px color-mix(in srgb, var(--hud-accent) 10%, transparent),
+    0 0 14px   color-mix(in srgb, var(--hud-accent) 28%, transparent),
+    0 0 32px   color-mix(in srgb, var(--hud-accent)  8%, transparent),
     0 8px 20px rgba(0, 0, 0, 0.60);
 }
 
@@ -299,14 +299,14 @@
 }
 
 .char-card:hover .char-card-hint {
-  border-color: rgba(224, 48, 32, 0.55);
+  border-color: color-mix(in srgb, var(--hud-accent) 55%, transparent);
   opacity: 1;
 }
 
 .char-card-hint-arrow {
   width: 4px; height: 4px;
-  border-right: 1px solid rgba(224, 48, 32, 0.80);
-  border-top:   1px solid rgba(224, 48, 32, 0.80);
+  border-right: 1px solid color-mix(in srgb, var(--hud-accent) 80%, transparent);
+  border-top:   1px solid color-mix(in srgb, var(--hud-accent) 80%, transparent);
   transform: rotate(45deg) translate(-1px, 1px);
 }
 
