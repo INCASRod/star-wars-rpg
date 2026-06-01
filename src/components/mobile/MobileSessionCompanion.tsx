@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useCharacterData } from '@/hooks/useCharacterData'
-import { HolocronLoader } from '@/components/ui/HolocronLoader'
+import { CharacterLoader } from '@/components/ui/CharacterLoader'
 import { MobileHeader } from './MobileHeader'
 import { MobileTabBar, type TabId } from './MobileTabBar'
 import { BottomSheet } from './shared/BottomSheet'
@@ -193,7 +193,7 @@ export function MobileSessionCompanion({ characterId, campaignId }: MobileSessio
         background: BG,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
-        <HolocronLoader />
+        <CharacterLoader />
       </div>
     )
   }

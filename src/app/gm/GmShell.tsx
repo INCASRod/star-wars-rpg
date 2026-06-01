@@ -28,7 +28,7 @@ import { GmReferenceDrawer } from '@/components/gm/GmReferenceDrawer'
 import { InitiativeSetupModal } from '@/components/dm/InitiativeSetupModal'
 import { DestinyGeneratePanel } from '@/components/gm/DestinyGeneratePanel'
 import { DestinyPoolDisplay } from '@/components/destiny/DestinyPoolDisplay'
-import { HolocronLoader } from '@/components/ui/HolocronLoader'
+import { CharacterLoader } from '@/components/ui/CharacterLoader'
 import { Modal } from '@/components/ui/Modal'
 
 import { GmLeftRail, type GmPanelId } from './GmLeftRail'
@@ -249,7 +249,7 @@ export function GmShell() {
   }, [charActions.setCritReqOpenFor, charActions.setCritReqVicious, charActions.setCritReqLethal, charActions.setCritReqGm, charActions.setAddCritOpenFor])
 
   // ── Loading / Error ──────────────────────────────────────────────
-  if (loading) return <HolocronLoader />
+  if (loading) return <CharacterLoader />
   if (error || !campaign) {
     return (
       <div style={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--hud-bg)', gap: 'var(--space-4)' }}>

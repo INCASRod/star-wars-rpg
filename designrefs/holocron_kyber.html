@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HOLOCRON — Kyber Archive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ─── SINGLE CLAMP ─────────────────────────── */
+html { font-size: clamp(12px, 0.833vw, 18px); }
+
+/* ─── TOKEN SCALE ───────────────────────────── */
+:root {
+  --text-xs:   0.688rem;
+  --text-sm:   0.75rem;
+  --text-base: 0.875rem;
+  --text-lg:   1rem;
+  --text-xl:   1.25rem;
+  --text-2xl:  1.625rem;
+  --text-3xl:  2.75rem;
+  --text-hero: clamp(5rem, 9.722vw, 11rem);
+
+  --space-1:  0.25rem;
+  --space-2:  0.5rem;
+  --space-3:  0.75rem;
+  --space-4:  1rem;
+  --space-5:  1.25rem;
+  --space-6:  1.5rem;
+  --space-8:  2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body:    'Space Grotesk', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+
+  /* Kyber Archive colour tokens */
+  --hud-bg:           #0C0E1A;
+  --hud-panel:        #111326;
+  --hud-surface-lo:   #161830;
+  --hud-surface-mid:  #1A1C34;
+  --hud-surface-hi:   #1E2040;
+
+  /* WCAG-lifted text — all AA on their respective surfaces */
+  --hud-text:         #C8D0E8;   /* 7.1:1 on --hud-panel   */
+  --hud-text-dim:     #8A94B0;   /* 4.6:1 on --hud-panel   */
+  --hud-text-faint:   #6A7490;   /* 3.1:1 on --hud-panel — large/decorative only */
+
+  --hud-accent:       #5BBCD8;
+  --hud-accent-10:    rgba(91,188,216,.10);
+  --hud-accent-20:    rgba(91,188,216,.20);
+  --hud-accent-28:    rgba(91,188,216,.28);
+  --hud-accent-38:    rgba(91,188,216,.38);
+  --hud-accent-55:    rgba(91,188,216,.55);
+
+  --hud-border:        rgba(91,188,216,.18);
+  --hud-border-hi:     rgba(91,188,216,.30);
+  --hud-border-strong: rgba(91,188,216,.42);
+
+  --hud-vital-bg:      #070F1C;
+  --hud-vital-text:    #A8D4E8;  /* 5.2:1 on vital-bg */
+  --hud-vital-text-dim:rgba(168,212,232,.70);
+  --hud-vital-sep:     rgba(168,212,232,.22);
+  --hud-vital-wounds:  #E05050;
+  --hud-vital-strain:  #D4A030;
+
+  /* Result colours — all AA on --hud-panel */
+  --result-success:    #4EC87A;  /* 4.6:1 */
+  --result-failure:    #E86060;  /* 4.8:1 */
+  --result-activated:  #B080E8;  /* 4.5:1 */
+
+  /* Section ghost number — decorative, aria-hidden */
+  --section-ghost:     rgba(91,188,216,.09);
+
+  /* Layout */
+  --rail-w:   3.25rem;
+  --topbar-h: 2.25rem;
+  --strip-h:  1.75rem;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--hud-bg);
+  color: var(--hud-text);
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: var(--rail-w) 1fr clamp(11rem, 18vw, 14rem);
+  grid-template-rows: var(--topbar-h) var(--strip-h) 1fr;
+}
+
+/* ─── TOPBAR ─────────────────────────────────── */
+.topbar {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  background: var(--hud-panel);
+  border-bottom: 1px solid var(--hud-border-hi);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-4);
+  gap: var(--space-3);
+}
+
+.logo {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--hud-accent);
+}
+
+.divider-v {
+  width: 1px;
+  height: 1rem;
+  background: var(--hud-border-hi);
+  flex-shrink: 0;
+}
+
+.char-name {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--hud-text);
+}
+
+.char-sub {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--hud-text-dim);
+  letter-spacing: 0.08em;
+  margin-left: var(--space-2);
+}
+
+.topbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.stat-chip {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--hud-text-dim);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.stat-chip .val {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--hud-text);
+}
+
+/* ─── STATUS STRIP ───────────────────────────── */
+.strip {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  background: var(--hud-vital-bg);
+  border-bottom: 1px solid rgba(91,188,216,.14);
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding: 0 var(--space-4);
+}
+
+.vital-group { display: flex; align-items: center; gap: var(--space-1); }
+
+.vital-label {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--hud-vital-text-dim);
+}
+
+.vital-val {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--hud-vital-text);
+}
+
+.vital-bar {
+  width: 3rem;
+  height: 0.1875rem;
+  background: rgba(91,188,216,.1);
+  border-radius: 0.125rem;
+  overflow: hidden;
+}
+
+.vital-fill { height: 100%; border-radius: 0.125rem; }
+.fill-wounds { background: var(--hud-vital-wounds); }
+.fill-strain  { background: var(--hud-vital-strain); }
+
+.strip-sep {
+  width: 1px;
+  height: 0.875rem;
+  background: var(--hud-vital-sep);
+  flex-shrink: 0;
+}
+
+/* ─── LEFT RAIL ──────────────────────────────── */
+.rail {
+  grid-column: 1;
+  grid-row: 3;
+  background: var(--hud-panel);
+  border-right: 1px solid var(--hud-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-2) 0;
+  gap: var(--space-1);
+  overflow-y: auto;
+}
+
+.rail-btn {
+  width: 2.625rem;
+  min-height: 2.625rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1875rem;
+  border-radius: 0.375rem;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.rail-btn:hover {
+  background: var(--hud-accent-10);
+  border-color: var(--hud-accent-20);
+}
+
+.rail-btn.active {
+  background: var(--hud-accent-10);
+  border-color: var(--hud-accent-28);
+}
+
+.rail-btn-icon {
+  font-size: var(--text-lg);
+  color: var(--hud-text-faint);
+  line-height: 1;
+}
+
+.rail-btn.active  .rail-btn-icon,
+.rail-btn.combat  .rail-btn-icon { color: var(--hud-accent); }
+
+.rail-btn-label {
+  font-family: var(--font-body);
+  font-size: 0.5rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--hud-text-faint);
+}
+
+.rail-btn.active .rail-btn-label { color: var(--hud-text-dim); }
+
+.rail-btn.combat {
+  background: var(--hud-accent-10);
+  border-color: var(--hud-accent-20);
+}
+
+.rail-sep {
+  width: 1.5rem;
+  height: 1px;
+  background: var(--hud-border);
+  margin: var(--space-1) 0;
+  flex-shrink: 0;
+}
+
+/* ─── CENTER ─────────────────────────────────── */
+.center {
+  grid-column: 2;
+  grid-row: 3;
+  position: relative;
+  overflow: hidden;
+  background: var(--hud-bg);
+  border-right: 1px solid var(--hud-border);
+}
+
+.map-peek {
+  position: absolute;
+  right: 0; top: 0; bottom: 0;
+  width: 18%;
+  background: #080A14;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.map-peek-label {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--hud-text-faint);
+  transform: rotate(90deg);
+  white-space: nowrap;
+  opacity: 0.5;
+}
+
+/* ─── SLIDE PANEL ────────────────────────────── */
+.panel {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 82%;
+  background: var(--hud-panel);
+  border-right: 1px solid var(--hud-border-hi);
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+}
+
+.panel-header {
+  padding: var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--hud-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.panel-title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--hud-text);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.panel-title-accent { color: var(--hud-accent); }
+
+.panel-close {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--hud-text-dim);
+  cursor: pointer;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--hud-border);
+  border-radius: 0.25rem;
+}
+
+/* ─── CHARACTERISTICS GRID ───────────────────── */
+.char-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--hud-border);
+}
+
+.char-cell {
+  background: var(--hud-accent-10);
+  border: 1px solid var(--hud-accent-20);
+  border-radius: 0.375rem;
+  padding: var(--space-2) var(--space-1) var(--space-1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1875rem;
+}
+
+.char-val {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--hud-text);
+  line-height: 1;
+}
+
+.char-key {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--hud-text-dim);
+}
+
+/* ─── SKILLS BODY ────────────────────────────── */
+.skills-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 var(--space-5) var(--space-4);
+}
+
+.skill-section {
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--hud-text-dim);
+  padding: var(--space-4) 0 var(--space-2);
+  border-bottom: 1px solid var(--hud-border);
+  margin-bottom: var(--space-1);
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.section-num {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--section-ghost);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  user-select: none;
+}
+
+.skill-row {
+  display: flex;
+  align-items: center;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--hud-border);
+  gap: var(--space-3);
+}
+
+.skill-row:last-child { border-bottom: none; }
+
+.skill-name {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: 400;
+  color: var(--hud-text);
+  flex: 1;
+}
+
+.skill-char {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--hud-text-dim);
+  width: 1.75rem;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.skill-dice { display: flex; gap: 0.1875rem; align-items: center; }
+
+.die {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 0.125rem;
+  background: #1E3A28;
+  flex-shrink: 0;
+}
+
+.die.yellow { background: #3A3418; }
+
+.die.career {
+  outline: 1px solid var(--hud-accent);
+  outline-offset: 1px;
+}
+
+.skill-rank {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--hud-text-faint);
+  width: 1rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.skill-rank.ranked { color: var(--hud-text); }
+
+.roll-btn {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--hud-text-dim);
+  border: 1px solid var(--hud-border-hi);
+  border-radius: 0.25rem;
+  padding: 0.1875rem var(--space-2);
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.roll-btn:hover {
+  background: var(--hud-accent-10);
+  border-color: var(--hud-accent-38);
+  color: var(--hud-text);
+}
+
+/* ─── RIGHT COLUMN ───────────────────────────── */
+.right-col {
+  grid-column: 3;
+  grid-row: 3;
+  background: var(--hud-surface-lo);
+  border-left: 2px solid var(--hud-border-strong);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.right-header {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--hud-text-dim);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--hud-border);
+  flex-shrink: 0;
+}
+
+/* Featured roll — Shinkei large-type treatment */
+.featured-roll {
+  padding: var(--space-3) var(--space-3) var(--space-3);
+  border-bottom: 1px solid var(--hud-border-hi);
+  background: var(--hud-surface-hi);
+  flex-shrink: 0;
+}
+
+.featured-actor {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--hud-text-dim);
+  margin-bottom: var(--space-1);
+}
+
+.featured-result {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  margin-bottom: var(--space-1);
+}
+
+.featured-skill {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--hud-text-dim);
+  letter-spacing: 0.06em;
+}
+
+.roll-feed { overflow-y: auto; flex: 1; }
+
+.roll-entry {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--hud-border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.1875rem;
+}
+
+.roll-entry-name {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--hud-text-dim);
+}
+
+.roll-entry-skill {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--hud-text-faint);
+}
+
+.roll-entry-result {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.r-success   { color: var(--result-success); }
+.r-failure   { color: var(--result-failure); }
+.r-activated { color: var(--result-activated); }
+
+/* ─── SCROLLBAR STYLING ──────────────────────── */
+::-webkit-scrollbar { width: 0.25rem; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--hud-border-hi);
+  border-radius: 0.125rem;
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="topbar" role="banner">
+  <div class="logo">Holocron</div>
+  <div class="divider-v" role="separator"></div>
+  <div style="display:flex;align-items:baseline;">
+    <span class="char-name">BX-9R "Bexar"</span>
+    <span class="char-sub">Bounty Hunter · Assassin · Droid</span>
+  </div>
+  <div class="topbar-right">
+    <div class="stat-chip">Destiny <span class="val">◆3 ◇3</span></div>
+    <div class="divider-v" role="separator"></div>
+    <div class="stat-chip">XP <span class="val">20</span></div>
+    <div class="divider-v" role="separator"></div>
+    <div class="stat-chip">Credits <span class="val">2,500</span></div>
+  </div>
+</header>
+
+<!-- STATUS STRIP -->
+<div class="strip" role="region" aria-label="Vital statistics">
+  <div class="vital-group">
+    <span class="vital-label">Wounds</span>
+    <span class="vital-val">0/13</span>
+    <div class="vital-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="13">
+      <div class="vital-fill fill-wounds" style="width:0%"></div>
+    </div>
+  </div>
+  <div class="strip-sep" role="separator"></div>
+  <div class="vital-group">
+    <span class="vital-label">Strain</span>
+    <span class="vital-val">1/12</span>
+    <div class="vital-bar" role="progressbar" aria-valuenow="1" aria-valuemin="0" aria-valuemax="12">
+      <div class="vital-fill fill-strain" style="width:8%"></div>
+    </div>
+  </div>
+  <div class="strip-sep" role="separator"></div>
+  <div class="vital-group">
+    <span class="vital-label">Soak</span>
+    <span class="vital-val">6</span>
+  </div>
+  <div class="strip-sep" role="separator"></div>
+  <div class="vital-group">
+    <span class="vital-label">Mel Def</span>
+    <span class="vital-val">1</span>
+  </div>
+  <div class="strip-sep" role="separator"></div>
+  <div class="vital-group">
+    <span class="vital-label">Rng Def</span>
+    <span class="vital-val">1</span>
+  </div>
+  <div class="strip-sep" role="separator"></div>
+  <div class="vital-group">
+    <span class="vital-label">Enc</span>
+    <span class="vital-val">10/11</span>
+  </div>
+</div>
+
+<!-- LEFT RAIL -->
+<nav class="rail" aria-label="Character sheet navigation">
+  <button class="rail-btn combat" aria-label="Combat Check">
+    <span class="rail-btn-icon" aria-hidden="true">⌖</span>
+    <span class="rail-btn-label">Combat</span>
+  </button>
+  <button class="rail-btn" aria-label="Skill Check">
+    <span class="rail-btn-icon" aria-hidden="true">⬠</span>
+    <span class="rail-btn-label">Skill</span>
+  </button>
+  <div class="rail-sep" role="separator"></div>
+  <button class="rail-btn active" aria-label="Skills panel" aria-pressed="true">
+    <span class="rail-btn-icon" aria-hidden="true">⚙</span>
+    <span class="rail-btn-label">Skills</span>
+  </button>
+  <button class="rail-btn" aria-label="Talents panel">
+    <span class="rail-btn-icon" aria-hidden="true">★</span>
+    <span class="rail-btn-label">Talents</span>
+  </button>
+  <button class="rail-btn" aria-label="Inventory panel">
+    <span class="rail-btn-icon" aria-hidden="true">▣</span>
+    <span class="rail-btn-label">Inv</span>
+  </button>
+  <button class="rail-btn" aria-label="Lore panel">
+    <span class="rail-btn-icon" aria-hidden="true">✦</span>
+    <span class="rail-btn-label">Lore</span>
+  </button>
+  <button class="rail-btn" aria-label="Group sheet">
+    <span class="rail-btn-icon" aria-hidden="true">◎</span>
+    <span class="rail-btn-label">Group</span>
+  </button>
+  <div class="rail-sep" role="separator"></div>
+  <button class="rail-btn" aria-label="Dice roller">
+    <span class="rail-btn-icon" aria-hidden="true">⬡</span>
+    <span class="rail-btn-label">Dice</span>
+  </button>
+</nav>
+
+<!-- CENTER — SKILLS PANEL OPEN -->
+<main class="center" aria-label="Main content area">
+  <div class="map-peek" aria-hidden="true">
+    <span class="map-peek-label">Map active</span>
+  </div>
+
+  <section class="panel" aria-label="Skills panel">
+    <div class="panel-header">
+      <div class="panel-title">
+        <span class="panel-title-accent" aria-hidden="true">≋</span>
+        Skills
+      </div>
+      <button class="panel-close" aria-label="Close skills panel">✕ Close</button>
+    </div>
+
+    <!-- Characteristics -->
+    <div class="char-grid" role="list" aria-label="Characteristics">
+      <div class="char-cell" role="listitem">
+        <span class="char-val">2</span>
+        <span class="char-key">Brawn</span>
+      </div>
+      <div class="char-cell" role="listitem">
+        <span class="char-val">4</span>
+        <span class="char-key">Agil</span>
+      </div>
+      <div class="char-cell" role="listitem">
+        <span class="char-val">2</span>
+        <span class="char-key">Int</span>
+      </div>
+      <div class="char-cell" role="listitem">
+        <span class="char-val">3</span>
+        <span class="char-key">Cun</span>
+      </div>
+      <div class="char-cell" role="listitem">
+        <span class="char-val">2</span>
+        <span class="char-key">Will</span>
+      </div>
+      <div class="char-cell" role="listitem">
+        <span class="char-val">1</span>
+        <span class="char-key">Pres</span>
+      </div>
+    </div>
+
+    <!-- Skills list -->
+    <div class="skills-body" role="region" aria-label="Skills list">
+
+      <div class="skill-section">
+        <span class="section-num" aria-hidden="true">01</span>
+        General
+      </div>
+      <div class="skill-row">
+        <span class="skill-name">Athletics</span>
+        <span class="skill-char">Br</span>
+        <div class="skill-dice" aria-hidden="true"><div class="die"></div><div class="die"></div></div>
+        <span class="skill-rank">0</span>
+        <button class="roll-btn">Roll</button>
+      </div>
+      <div class="skill-row">
+        <span class="skill-name">Coordination</span>
+        <span class="skill-char">Ag</span>
+        <div class="skill-dice" aria-hidden="true"><div class="die"></div><div class="die"></div><div class="die"></div><div class="die"></div></div>
+        <span class="skill-rank">0</span>
+        <button class="roll-btn">Roll</button>
+      </div>
+      <div class="skill-row">
+        <span class="skill-name">Resilience</span>
+        <span class="skill-char">Br</span>
+        <div class="skill-dice" aria-hidden="true"><div class="die"></div><div class="die"></div></div>
+        <span class="skill-rank">0</span>
+        <button class="roll-btn">Roll</button>
+      </div>
+      <div class="skill-row">
+        <span class="skill-name">Stealth</span>
+        <span class="skill-char">Ag</span>
+        <div class="skill-dice" aria-hidden="true"><div class="die yellow career"></div><div class="die yellow"></div><div class="die yellow"></div><div class="die"></div></div>
+        <span class="skill-rank ranked">2</span>
+        <button class="roll-btn">Roll</button>
+      </div>
+      <div class="skill-row">
+        <span class="skill-name">Streetwise</span>
+        <span class="skill-char">Cn</span>
+        <div class="skill-dice" aria-hidden="true"><div class="die yellow career"></div><div class="die"></div><div class="die"></div></div>
+        <span class="skill-rank ranked">1</span>
+        <button class="roll-btn">Roll</button>
+      </div>
+
+      <div class="skill-section">
+        <span class="section-num" aria-hidden="true">02</span>
+        Combat
+      </div>
+      <div class="skill-row">
+        <span class="skill-name">Brawl</span>
+        <span class="skill-char">Br</span>
+        <div class="skill-dice" aria-hidden="true"><div class="die"></div><div class="die"></div></div>
+        <span class="skill-rank">0</span>
+        <button class="roll-btn">Roll</button>
+      </div>
+      <div class="skill-row">
+        <span class="skill-name">Melee</span>
+        <span class="skill-char">Br</span>
+        <div class="skill-dice" aria-hidden="true"><div class="die"></div><div class="die"></div></div>
+        <span class="skill-rank">0</span>
+        <button class="roll-btn">Roll</button>
+      </div>
+      <div class="skill-row">
+        <span class="skill-name">Ranged — Heavy</span>
+        <span class="skill-char">Ag</span>
+        <div class="skill-dice" aria-hidden="true"><div class="die yellow career"></div><div class="die yellow"></div><div class="die yellow"></div><div class="die"></div></div>
+        <span class="skill-rank ranked">3</span>
+        <button class="roll-btn">Roll</button>
+      </div>
+      <div class="skill-row">
+        <span class="skill-name">Ranged — Light</span>
+        <span class="skill-char">Ag</span>
+        <div class="skill-dice" aria-hidden="true"><div class="die yellow career"></div><div class="die yellow"></div><div class="die"></div><div class="die"></div></div>
+        <span class="skill-rank ranked">2</span>
+        <button class="roll-btn">Roll</button>
+      </div>
+
+      <div class="skill-section">
+        <span class="section-num" aria-hidden="true">03</span>
+        Knowledge
+      </div>
+      <div class="skill-row">
+        <span class="skill-name">Core Worlds</span>
+        <span class="skill-char">Int</span>
+        <div class="skill-dice" aria-hidden="true"><div class="die"></div><div class="die"></div></div>
+        <span class="skill-rank">0</span>
+        <button class="roll-btn">Roll</button>
+      </div>
+      <div class="skill-row">
+        <span class="skill-name">Underworld</span>
+        <span class="skill-char">Int</span>
+        <div class="skill-dice" aria-hidden="true"><div class="die yellow career"></div><div class="die"></div><div class="die"></div></div>
+        <span class="skill-rank ranked">1</span>
+        <button class="roll-btn">Roll</button>
+      </div>
+      <div class="skill-row">
+        <span class="skill-name">Xenology</span>
+        <span class="skill-char">Int</span>
+        <div class="skill-dice" aria-hidden="true"><div class="die"></div><div class="die"></div></div>
+        <span class="skill-rank">0</span>
+        <button class="roll-btn">Roll</button>
+      </div>
+
+      <div class="skill-section">
+        <span class="section-num" aria-hidden="true">04</span>
+        Social
+      </div>
+      <div class="skill-row">
+        <span class="skill-name">Charm</span>
+        <span class="skill-char">Pr</span>
+        <div class="skill-dice" aria-hidden="true"><div class="die"></div></div>
+        <span class="skill-rank">0</span>
+        <button class="roll-btn">Roll</button>
+      </div>
+      <div class="skill-row">
+        <span class="skill-name">Coercion</span>
+        <span class="skill-char">Wi</span>
+        <div class="skill-dice" aria-hidden="true"><div class="die"></div><div class="die"></div></div>
+        <span class="skill-rank">0</span>
+        <button class="roll-btn">Roll</button>
+      </div>
+      <div class="skill-row">
+        <span class="skill-name">Deception</span>
+        <span class="skill-char">Cn</span>
+        <div class="skill-dice" aria-hidden="true"><div class="die yellow career"></div><div class="die"></div><div class="die"></div></div>
+        <span class="skill-rank ranked">1</span>
+        <button class="roll-btn">Roll</button>
+      </div>
+      <div class="skill-row">
+        <span class="skill-name">Negotiation</span>
+        <span class="skill-char">Pr</span>
+        <div class="skill-dice" aria-hidden="true"><div class="die"></div></div>
+        <span class="skill-rank">0</span>
+        <button class="roll-btn">Roll</button>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<!-- RIGHT COLUMN — ROLL FEED -->
+<aside class="right-col" aria-label="Roll feed">
+  <div class="right-header">Roll Feed</div>
+
+  <div class="featured-roll" aria-live="polite" aria-atomic="true">
+    <div class="featured-actor">Guy Rando</div>
+    <div class="featured-result r-failure">FAILURE</div>
+    <div class="featured-skill">Vigilance</div>
+  </div>
+
+  <div class="roll-feed" role="log" aria-label="Previous rolls">
+    <div class="roll-entry">
+      <span class="roll-entry-name">Grevi Unduli</span>
+      <span class="roll-entry-skill">Alter · Force</span>
+      <span class="roll-entry-result r-activated">ACTIVATED</span>
+    </div>
+    <div class="roll-entry">
+      <span class="roll-entry-name">BX-9R "Bexar"</span>
+      <span class="roll-entry-skill">Perception</span>
+      <span class="roll-entry-result r-failure">FAILURE</span>
+    </div>
+    <div class="roll-entry">
+      <span class="roll-entry-name">BX-9R "Bexar"</span>
+      <span class="roll-entry-skill">Athletics</span>
+      <span class="roll-entry-result r-success">SUCCESS</span>
+    </div>
+    <div class="roll-entry">
+      <span class="roll-entry-name">Bylethia Ford</span>
+      <span class="roll-entry-skill">Melee</span>
+      <span class="roll-entry-result r-success">SUCCESS</span>
+    </div>
+    <div class="roll-entry">
+      <span class="roll-entry-name">Derek Caabesk</span>
+      <span class="roll-entry-skill">Ranged — Heavy</span>
+      <span class="roll-entry-result r-success">SUCCESS</span>
+    </div>
+    <div class="roll-entry">
+      <span class="roll-entry-name">Zid Hag</span>
+      <span class="roll-entry-skill">Medicine</span>
+      <span class="roll-entry-result r-success">SUCCESS</span>
+    </div>
+    <div class="roll-entry">
+      <span class="roll-entry-name">Guy Rando</span>
+      <span class="roll-entry-skill">Perception</span>
+      <span class="roll-entry-result r-failure">FAILURE</span>
+    </div>
+    <div class="roll-entry">
+      <span class="roll-entry-name">Bylethia Ford</span>
+      <span class="roll-entry-skill">Athletics</span>
+      <span class="roll-entry-result r-success">SUCCESS</span>
+    </div>
+  </div>
+</aside>
+
+</body>
+</html>
