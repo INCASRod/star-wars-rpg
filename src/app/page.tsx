@@ -75,7 +75,7 @@ function CharacterCard({
   const cardBorder = state === 'self'
     ? BORDER_HI
     : hovered
-      ? BORDER_MD
+      ? 'rgba(224,48,32,0.65)'
       : BORDER
 
   const cardBg = PANEL
@@ -125,6 +125,7 @@ function CharacterCard({
 
   return (
     <div
+      className={`char-card hov-lift${hovered && state !== 'self' ? ' char-card--glow' : ''}`}
       style={{
         position: 'relative',
         overflow: 'hidden',
