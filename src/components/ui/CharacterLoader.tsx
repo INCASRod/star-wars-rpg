@@ -242,25 +242,10 @@ export function CharacterLoader() {
         <div style={{ width: '100%', height: '2px', background: 'rgba(255,255,255,0.08)', borderRadius: '1px', overflow: 'hidden', margin: '0 auto 8px', position: 'relative' }}>
           <div style={{ position: 'absolute', top: 0, left: 0, width: '40%', height: '100%', background: 'linear-gradient(90deg, transparent, var(--hud-accent), #c8883a, transparent)', animation: 'loadingBarSweep 1.4s ease-in-out infinite' }} />
         </div>
-        <div key={textIdx} style={{ fontFamily: FONT_BODY, fontSize: '7px', color: TEXT_MUT, letterSpacing: '0.06em', textTransform: 'uppercase', animation: 'cl-text 0.3s ease forwards' }}>
+        <div key={textIdx} role="status" aria-live="polite" style={{ fontFamily: FONT_BODY, fontSize: '7px', color: TEXT_MUT, letterSpacing: '0.06em', textTransform: 'uppercase', animation: 'cl-text 0.3s ease forwards' }}>
           {LOADING_TEXTS[textIdx]}
         </div>
       </div>
-
-      <style>{`
-        @keyframes cl-enter {
-          from { opacity: 0; transform: translateY(16px); }
-          to   { opacity: 1; transform: translateY(0);    }
-        }
-        @keyframes cl-strip {
-          from { opacity: 0; }
-          to   { opacity: 1; }
-        }
-        @keyframes cl-text {
-          from { opacity: 0; transform: translateY(4px); }
-          to   { opacity: 1; transform: translateY(0);   }
-        }
-      `}</style>
     </div>
   )
 }
