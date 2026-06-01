@@ -1,15 +1,15 @@
 'use client'
 
-import { Suspense } from 'react'
+import { Suspense }                   from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
-import { PlayerHUDDesktop } from '@/components/player-hud/PlayerHUDDesktop'
-import { MobileSessionCompanion } from '@/components/mobile/MobileSessionCompanion'
-import { HolocronLoader } from '@/components/ui/HolocronLoader'
-import { useIsMobile } from '@/hooks/useIsMobile'
+import { PlayerHUDDesktop }           from '@/components/player-hud/PlayerHUDDesktop'
+import { MobileSessionCompanion }     from '@/components/mobile/MobileSessionCompanion'
+import { CharacterLoader }            from '@/components/ui/CharacterLoader'
+import { useIsMobile }                from '@/hooks/useIsMobile'
 
 export default function CharacterPage() {
   return (
-    <Suspense fallback={<HolocronLoader />}>
+    <Suspense fallback={<CharacterLoader />}>
       <CharacterPageInner />
     </Suspense>
   )

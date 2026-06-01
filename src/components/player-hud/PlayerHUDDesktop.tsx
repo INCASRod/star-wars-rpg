@@ -34,6 +34,8 @@ import { isDathomiri } from '@/lib/dathomiriUtils'
 import { CombatTransition } from './CombatTransition'
 import type { Character } from '@/lib/types'
 import { HolocronLoader } from '@/components/ui/HolocronLoader'
+import { CharacterLoader }           from '@/components/ui/CharacterLoader'
+import { useCharacterSelectStore }   from '@/store/characterSelectStore'
 import { useSessionMode } from '@/hooks/useSessionMode'
 import { useDestinyPool } from '@/hooks/useDestinyPool'
 import { useStowLocations } from '@/hooks/useStowLocations'
@@ -119,6 +121,13 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         if (error) console.warn('[force_rating write-back] failed:', error.message)
       })
   }, [effectiveStats?.forceRating, character?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Store cleanup on unmount — clears stale character selection so re-selecting works correctly ──
+  useEffect(() => {
+    return () => {
+      useCharacterSelectStore.getState().setSelectedCharacter(null)
+    }
+  }, [])
 
   // ── Session / roll feed ──
   const effectiveCampaignId = campaignId ?? character?.campaign_id ?? null
@@ -388,7 +397,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   }
 
   // ── Loading / Error ──
-  if (loading) return <HolocronLoader />
+  if (loading) return <CharacterLoader />
   if (error || !character) return (
     <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: HUD.bg }}>
       <div style={{ fontFamily: FONT_BODY, fontSize: FS.h4, color: 'var(--state-failure)' }}>{error || 'Character not found'}</div>
