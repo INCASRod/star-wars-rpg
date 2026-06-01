@@ -18,6 +18,7 @@ import { useGmCharacterActions } from '@/hooks/useGmCharacterActions'
 import { useGmDestinyPool } from '@/hooks/useGmDestinyPool'
 import { useRollFeed } from '@/hooks/useRollFeed'
 import { useGmCampaignConflicts, type GmConflictRow } from '@/hooks/useGmCampaignConflicts'
+import { useGmPurchaseRefund } from '@/hooks/useGmPurchaseRefund'
 
 import { GmMapView } from '@/components/gm/GmMapView'
 import { RollFeedPanel } from '@/components/player-hud/RollFeedPanel'
@@ -146,6 +147,8 @@ export function GmShell() {
   } = useGmDestinyPool({ campaignId, campaign, characters, sendToChar })
 
   const rolls = useRollFeed(campaignId)
+
+  const { handleRefundPurchase } = useGmPurchaseRefund()
 
   // ── UI state ────────────────────────────────────────────────────
   const [activePanel,           setActivePanel]           = useState<GmPanelId | null>(null)
@@ -457,7 +460,12 @@ export function GmShell() {
             </span>
           </div>
           <div style={{ flex: 1, overflowY: 'auto' }}>
-            <RollFeedPanel rolls={rolls} ownCharacterId="gm" isGm={true} />
+            <RollFeedPanel
+              rolls={rolls}
+              ownCharacterId="gm"
+              isGm={true}
+              onRefundPurchase={handleRefundPurchase}
+            />
           </div>
         </div>
       </div>
