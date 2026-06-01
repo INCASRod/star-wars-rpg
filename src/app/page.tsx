@@ -172,6 +172,16 @@ function CharacterCard({
         </button>
       )}
 
+      {/* Rebel Alliance watermark — fades in on hover via .char-card-watermark CSS */}
+      <div className="char-card-watermark">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/images/factions/rebel.png"
+          alt=""
+          style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'left center', filter: 'opacity(0.2)' }}
+        />
+      </div>
+
       {/* Section 1 — CardHeader */}
       <div style={{ display: 'flex', gap: '6px', marginBottom: '5px', alignItems: 'flex-start' }}>
         {/* Avatar */}
@@ -326,6 +336,11 @@ function CharacterCard({
             ))}
           </div>
         </div>
+      </div>
+
+      {/* Interactable hint — arrow circle, bottom-right, appears on hover */}
+      <div className="char-card-hint">
+        <div className="char-card-hint-arrow" />
       </div>
 
     </div>
