@@ -663,6 +663,24 @@ export function useCharacterData(characterId: string) {
   const hudSkills = useMemo((): HudSkill[] => {
     if (!character) return []
     const charSkillMap = Object.fromEntries(skills.map(s => [s.skill_key, s]))
+
+    // Species-granted starting ranks: key → rank_start
+    const speciesRankBonus: Record<string, number> = {}
+    for (const sa of speciesAbilities) {
+      if (sa.mechanical_type !== 'skill_rank') continue
+      for (const sk of (sa.affected_skills ?? [])) {
+        speciesRankBonus[sk] = (speciesRankBonus[sk] ?? 0) + (sa.rank_start ?? 0)
+      }
+    }
+
+    // Talent-granted career flags: set of skill keys promoted by purchased talents
+    const talentCareerSkills = new Set<string>()
+    for (const t of talents) {
+      const mods = refTalentMap[t.talent_key]?.modifiers
+      if (!mods?.career_skills) continue
+      for (const sk of mods.career_skills) talentCareerSkills.add(sk)
+    }
+
     return refSkills.map(rs => {
       const cs      = charSkillMap[rs.key]
       const charKey = CHARACTERISTIC_ABBR[rs.characteristic_key]
@@ -670,11 +688,12 @@ export function useCharacterData(characterId: string) {
       return {
         key: rs.key, name: rs.name,
         charKey, charVal,
-        rank: cs?.rank || 0, isCareer: cs?.is_career || false,
+        rank:     (cs?.rank ?? 0) + (speciesRankBonus[rs.key] ?? 0),
+        isCareer: (cs?.is_career ?? false) || talentCareerSkills.has(rs.key),
         type: rs.type,
       }
     }).sort((a, b) => a.name.localeCompare(b.name))
-  }, [character, skills, refSkills])
+  }, [character, skills, refSkills, speciesAbilities, talents, refTalentMap])
 
   const hudTalents = useMemo((): HudTalent[] => {
     const map = new Map<string, HudTalent>()

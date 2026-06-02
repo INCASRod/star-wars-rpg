@@ -41,7 +41,8 @@ const LOADING_TEXTS = [
 ] as const
 
 export function CharacterLoader() {
-  const selectedCharacter = useCharacterSelectStore(s => s.selectedCharacter)
+  // Snapshot at mount — store changes after mount must not erase the card.
+  const [char]     = useState(() => useCharacterSelectStore.getState().selectedCharacter)
   const [textIdx,  setTextIdx]  = useState(0)
   const [imgError, setImgError] = useState(false)
 
@@ -50,9 +51,6 @@ export function CharacterLoader() {
     return () => clearInterval(id)
   }, [])
 
-  useEffect(() => { setImgError(false) }, [selectedCharacter?.id])
-
-  const char         = selectedCharacter
   const showFallback = !char?.portrait_url || imgError
 
   return (

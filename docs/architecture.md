@@ -512,3 +512,7 @@ import { COLOR, HUD, FS, SP, RADIUS, Z, SHADOW, EASE, CHAR_COLOR, DICE_META, SYM
 | 052 | Pointer token cosmetics |
 | 053 | UI theme column on character_sessions (for theme switcher) |
 | 054 | `character_conflicts` — `player_acknowledged` (delivery flag) + `narrative` (body text) |
+| 055 | Item condition tracking |
+| 056 | Roll log update policy |
+| 057 | Delete policies |
+| 058 | `ref_species.special_abilities` — seed `skill_rank` entries for all 80 species with OggDude SkillModifiers; `ref_talents.modifiers` — add `career_skills` array for 9 fixed ChooseCareerSkills talents (Insight, Basic/Tactical/Vehicle/Pilot Combat Training, Secrets of the Jedi/Force, Well Traveled) |

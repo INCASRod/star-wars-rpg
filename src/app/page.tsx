@@ -6,8 +6,9 @@ import { createClient } from '@/lib/supabase/client'
 import { randomUUID } from '@/lib/utils'
 import type { Character } from '@/lib/types'
 import { VersionWatermark } from '@/components/ui/VersionWatermark'
-import { HUD, CHAR_COLOR, FONT_BODY, FS, SP, RADIUS, Z, EASE } from '@/lib/tokens'
+import { HUD, CHAR_COLOR, FONT_BODY, FONT_DISPLAY, FS, SP, RADIUS, Z, EASE } from '@/lib/tokens'
 import { useCharacterSelectStore } from '@/store/characterSelectStore'
+import { TransitionCard } from '@/components/ui/TransitionCard'
 
 // ─── Design Tokens ───────────────────────────────────────────────────────────
 const BG        = 'var(--hud-bg)'
@@ -435,18 +436,28 @@ function runHyperspaceCanvas(
   const W = canvas.width
   const H = canvas.height
   const TOTAL_MS = 900
+  const maxDist   = Math.hypot(W, H)
 
-  const stars = Array.from({ length: 120 }, () => ({
-    angle: Math.random() * Math.PI * 2,
-    speed: 0.3 + Math.random() * 0.7,
-    offX:  (Math.random() - 0.5) * 120,
-    offY:  (Math.random() - 0.5) * 120,
-    color: Math.random() < 0.5
-             ? '#e8dcc0'
-             : Math.random() < 0.6
-               ? '#c8883a'
-               : '#E03020',
-  }))
+  const STAR_COUNT = 200
+  const COLOR_BASES = [
+    'rgba(240,248,255,',  // white-silver
+    'rgba(200,220,255,',  // ice blue
+    'rgba(160,190,255,',  // cool blue
+  ]
+
+  const stars = Array.from({ length: STAR_COUNT }, (_, i) => {
+    const angle = (i / STAR_COUNT) * Math.PI * 2
+                  + (Math.random() - 0.5) * 0.04
+    return {
+      angle,
+      speed:     0.55 + Math.random() * 0.7,
+      width:     Math.random() < 0.25
+                   ? 2 + Math.random() * 5
+                   : 0.4 + Math.random() * 1.2,
+      bright:    0.5 + Math.random() * 0.5,
+      colorBase: COLOR_BASES[Math.floor(Math.random() * COLOR_BASES.length)],
+    }
+  })
 
   let startTime: number | null = null
   let rafId = 0
@@ -462,16 +473,30 @@ function runHyperspaceCanvas(
         ? 1 - (t - 0.75) / 0.25
         : 1
 
-    ctx.globalAlpha = alpha * 0.85
+    const eased = Math.pow(t, 1.5)  // slow-start acceleration
+    ctx.globalAlpha = 1
     stars.forEach(star => {
-      const len = Math.pow(t, 0.6) * star.speed * 300
-      const sx  = originX + star.offX
-      const sy  = originY + star.offY
+      const tipDist  = eased * star.speed * maxDist
+      const tailDist = Math.max(0, tipDist - (20 + eased * 150))
+      if (tipDist < 1) return
+
+      const cos   = Math.cos(star.angle)
+      const sin   = Math.sin(star.angle)
+      const tipX  = originX + cos * tipDist
+      const tipY  = originY + sin * tipDist
+      const tailX = originX + cos * tailDist
+      const tailY = originY + sin * tailDist
+
+      const grad = ctx.createLinearGradient(tailX, tailY, tipX, tipY)
+      const a    = (alpha * 0.85 * star.bright).toFixed(3)
+      grad.addColorStop(0, star.colorBase + '0)')
+      grad.addColorStop(1, star.colorBase + a + ')')
+
       ctx.beginPath()
-      ctx.moveTo(sx, sy)
-      ctx.lineTo(sx + Math.cos(star.angle) * len, sy + Math.sin(star.angle) * len)
-      ctx.strokeStyle = star.color
-      ctx.lineWidth   = 0.8 + t * 0.8
+      ctx.moveTo(tailX, tailY)
+      ctx.lineTo(tipX, tipY)
+      ctx.strokeStyle = grad
+      ctx.lineWidth   = star.width * (0.8 + eased)
       ctx.stroke()
     })
 
@@ -526,11 +551,15 @@ export default function Home() {
   const [createHovered, setCreateHovered] = useState(false)
 
   const [hyper, setHyper] = useState<HyperspaceState>({ phase: 'idle', charId: '', cardRect: null })
+  const [focusCharacter, setFocusCharacter] = useState<Character | null>(null)
   const [loadingTextIdx, setLoadingTextIdx] = useState(0)
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const cancelCanvasRef = useRef<(() => void) | null>(null)
   const hyperTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const videoElRef = useRef<HTMLVideoElement | null>(null)
+  const videoFadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const videoRemoveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const campaignIdRef = useRef<string | null>(null)
 
@@ -607,14 +636,66 @@ export default function Home() {
     return () => { void supabase.removeChannel(ch) }
   }, [campaignId, sessionKey])
 
+  // ── Hyperspace video helpers ───────────────────────────────────────────────
+  function removeHyperspaceVideo() {
+    if (videoFadeTimerRef.current)   { clearTimeout(videoFadeTimerRef.current);   videoFadeTimerRef.current   = null }
+    if (videoRemoveTimerRef.current) { clearTimeout(videoRemoveTimerRef.current); videoRemoveTimerRef.current = null }
+    const v = videoElRef.current
+    if (!v) return
+    v.pause()
+    v.remove()
+    videoElRef.current = null
+  }
+
+  function startHyperspaceVideo() {
+    const v = document.createElement('video')
+    v.src         = '/videos/hyperspace-void.mp4'
+    v.autoplay    = true
+    v.loop        = true
+    v.muted       = true
+    v.playsInline = true
+    v.style.position      = 'fixed'
+    v.style.inset         = '0'
+    v.style.width         = '100%'
+    v.style.height        = '100%'
+    v.style.objectFit     = 'cover'
+    v.style.zIndex        = '21'
+    v.style.pointerEvents = 'none'
+    // Desaturate first, then rotate — reliable blue regardless of source hue
+    v.style.filter        = 'saturate(0.4) brightness(0.75) contrast(1.1) sepia(0.5) hue-rotate(180deg)'
+    v.style.opacity       = '0'
+    v.style.transition    = 'opacity 0.5s ease'
+    document.body.appendChild(v)
+    videoElRef.current = v
+
+    // Fade in on next paint
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => { if (videoElRef.current === v) v.style.opacity = '1' })
+    })
+
+    // Begin fade-out at 4 s
+    videoFadeTimerRef.current = setTimeout(() => {
+      if (videoElRef.current === v) {
+        v.style.transition = 'opacity 0.6s ease'
+        v.style.opacity    = '0'
+      }
+    }, 4000)
+
+    // Remove element after fade completes (4.6 s)
+    videoRemoveTimerRef.current = setTimeout(() => {
+      if (videoElRef.current === v) { v.pause(); v.remove(); videoElRef.current = null }
+    }, 4600)
+  }
+
   // ── Cleanup: hyperspace animation and unmount reset ────────────────────────
   useEffect(() => {
     return () => {
       if (hyperTimeoutRef.current) clearTimeout(hyperTimeoutRef.current)
       cancelCanvasRef.current?.()
+      removeHyperspaceVideo()
       setHyper({ phase: 'idle', charId: '', cardRect: null })
     }
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Loading text cycling ───────────────────────────────────────────────────
   useEffect(() => {
@@ -627,13 +708,16 @@ export default function Home() {
   }, [hyper.phase])
 
   // ── Navigation: after loading phase begins, push to character screen ───────
+  // Timer is 4 600 ms so the video plays in full (4 s) and fades out (600 ms)
+  // before the route transition fires.
   useEffect(() => {
     if (hyper.phase !== 'loading') return
     const timer = setTimeout(() => {
+      removeHyperspaceVideo()
       router.push(`/character/${hyper.charId}${campaignId ? `?campaign=${campaignId}` : ''}`)
-    }, 1500)
+    }, 4600)
     return () => clearTimeout(timer)
-  }, [hyper.phase, hyper.charId, campaignId, router])
+  }, [hyper.phase, hyper.charId, campaignId, router]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── claimCharacter ─────────────────────────────────────────────────────────
   async function claimCharacter(characterId: string) {
@@ -691,6 +775,7 @@ export default function Home() {
       return
     }
 
+    setFocusCharacter(charForStore)
     void claimCharacterDB(charId)
 
     setHyper({ phase: 'beat1', charId, cardRect: rect })
@@ -709,6 +794,7 @@ export default function Home() {
 
       cancelCanvasRef.current = runHyperspaceCanvas(canvas, cx, cy, () => {
         setHyper({ phase: 'loading', charId, cardRect: rect })
+        startHyperspaceVideo()
       })
     }, 120)
   }
@@ -1073,141 +1159,53 @@ export default function Home() {
         }} />
       )}
 
-      {/* ── Beat 5: Loading screen ── */}
-      {hyper.phase === 'loading' && (() => {
-        const char = characters.find(c => c.id === hyper.charId)
-        if (!char) return null
-        return (
-          <div style={{
-            position:       'fixed',
-            inset:          0,
-            zIndex:         22,
-            background:     'rgba(10,8,6,0.92)',
-            display:        'flex',
-            flexDirection:  'column',
-            alignItems:     'center',
-            justifyContent: 'center',
-            gap:            '16px',
-            animation:      'fadeUp 0.4s ease both',
-          }}>
-            {/* Mini character card */}
-            <div style={{
-              width:          '175px',
-              borderRadius:   '7px',
-              border:         `1px solid color-mix(in srgb, var(--hud-accent) 65%, transparent)`,
-              background:     'var(--hud-surface-hi)',
-              backdropFilter: 'blur(12px)',
-              padding:        '10px',
-              boxShadow:      `0 0 0 1px color-mix(in srgb, var(--hud-accent) 10%, transparent), 0 0 14px color-mix(in srgb, var(--hud-accent) 28%, transparent), 0 0 32px color-mix(in srgb, var(--hud-accent) 8%, transparent)`,
-              animation:      'fadeUp 0.45s cubic-bezier(0.34,1.56,0.64,1) both',
-            }}>
-              {/* Avatar + name */}
-              <div style={{ display: 'flex', gap: '6px', marginBottom: '5px', alignItems: 'center' }}>
-                <div style={{
-                  flexShrink: 0, width: '28px', height: '28px',
-                  borderRadius: '50%', overflow: 'hidden',
-                  border: `1px solid ${HUD.gold}`,
-                  background: 'var(--hud-surface-hi)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  {char.portrait_url
-                    ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={char.portrait_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      )
-                    : (
-                        <span style={{ fontFamily: FONT_BODY, fontSize: '10px', color: HUD.gold }}>
-                          {char.name.charAt(0)}
-                        </span>
-                      )
-                  }
-                </div>
-                <div>
-                  <div style={{ fontFamily: FONT_BODY, fontSize: '9px', fontWeight: 700, color: HUD.gold }}>
-                    {char.name}
-                  </div>
-                  <div style={{ fontFamily: FONT_BODY, fontSize: '7px', color: 'var(--hud-text-faint)', textTransform: 'uppercase' }}>
-                    {char.career_key}
-                  </div>
-                </div>
-              </div>
-              {/* Rebel watermark + characteristics mini-grid */}
-              <div style={{ position: 'relative' }}>
-                <div style={{
-                  position: 'absolute', top: '-4px', left: '-10px',
-                  width: '60px', height: '60px', pointerEvents: 'none', zIndex: 3,
-                }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="/images/factions/rebel.png"
-                    alt=""
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'opacity(0.25)' }}
-                  />
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: '2px' }}>
-                  {(['brawn','agility','intellect','cunning','willpower','presence'] as const).map(key => (
-                    <div key={key} style={{
-                      background: 'var(--hud-surface-lo)',
-                      border: '1px solid var(--hud-border)',
-                      borderRadius: '2px',
-                      padding: '2px 1px',
-                      textAlign: 'center',
-                    }}>
-                      <div style={{ fontFamily: FONT_BODY, fontSize: '9px', fontWeight: 700, color: CHAR_COLORS[key] }}>
-                        {(char as unknown as Record<string, number>)[key]}
-                      </div>
-                      <div style={{ fontFamily: FONT_BODY, fontSize: '5.5px', color: 'var(--hud-text-faint)', textTransform: 'uppercase' }}>
-                        {key.slice(0, 2).toUpperCase()}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+      {/* ── Hyperspace focus card + loading strip — visible from card click to post-navigation ── */}
+      {focusCharacter && (() => {
+        // Fly-to-centre: at beat1 place card over the clicked card; on beat24+ spring to centre.
+        const rect = hyper.cardRect
+        const isBeat1 = hyper.phase === 'beat1'
+        let dx = 0, dy = 0
+        if (isBeat1 && rect && typeof window !== 'undefined') {
+          const cx = rect.left + rect.width  / 2
+          const cy = rect.top  + rect.height / 2
+          dx = cx - window.innerWidth  / 2
+          dy = cy - window.innerHeight / 2
+        }
+        const cardTransform  = isBeat1 ? `translate(${dx}px,${dy}px) scale(0.85)` : 'translate(0,0) scale(1)'
+        const cardTransition = isBeat1 ? 'none' : 'transform 0.45s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease'
+        const cardOpacity    = isBeat1 ? 0 : 1
 
-            {/* HOLOCRON wordmark + loading bar + flavour text */}
-            <div style={{ animation: 'fadeUp 0.45s 0.2s cubic-bezier(0.34,1.56,0.64,1) both', textAlign: 'center' }}>
-              <div style={{
-                fontFamily:    FONT_BODY,
-                fontSize:      '13px',
-                letterSpacing: '0.28em',
-                textTransform: 'uppercase',
-                color:         HUD.gold,
-                marginBottom:  '8px',
-              }}>
+        return (
+        <div style={{
+          position:       'fixed',
+          inset:          0,
+          zIndex:         23,
+          background:     'transparent',
+          display:        'flex',
+          flexDirection:  'column',
+          alignItems:     'center',
+          justifyContent: 'center',
+          gap:            '16px',
+          pointerEvents:  'none',
+        }}>
+          <div style={{ transform: cardTransform, transition: cardTransition, opacity: cardOpacity }}>
+            <TransitionCard character={focusCharacter} />
+          </div>
+
+          {hyper.phase === 'loading' && (
+            <div style={{ width: '220px', textAlign: 'center', animation: 'cl-strip 0.4s 0.2s ease both' }}>
+              <div style={{ fontFamily: FONT_DISPLAY, fontSize: '13px', letterSpacing: '0.28em', textTransform: 'uppercase', color: HUD.gold, marginBottom: '8px' }}>
                 H O L O C R O N
               </div>
-              {/* Loading bar */}
-              <div style={{
-                width:        '200px',
-                height:       '2px',
-                background:   'rgba(255,255,255,0.08)',
-                borderRadius: '1px',
-                overflow:     'hidden',
-                margin:       '0 auto 8px',
-                position:     'relative',
-              }}>
-                <div style={{
-                  position:   'absolute',
-                  top: 0, left: 0,
-                  width:      '40%',
-                  height:     '100%',
-                  background: `linear-gradient(90deg, transparent, var(--hud-accent), #c8883a, transparent)`,
-                  animation:  'loadingBarSweep 1.4s ease-in-out infinite',
-                }} />
+              <div style={{ width: '100%', height: '2px', background: 'rgba(255,255,255,0.08)', borderRadius: '1px', overflow: 'hidden', margin: '0 auto 8px', position: 'relative' }}>
+                <div style={{ position: 'absolute', top: 0, left: 0, width: '40%', height: '100%', background: 'linear-gradient(90deg, transparent, var(--hud-accent), #c8883a, transparent)', animation: 'loadingBarSweep 1.4s ease-in-out infinite' }} />
               </div>
-              {/* Flavour text */}
-              <div style={{
-                fontFamily:    FONT_BODY,
-                fontSize:      '7px',
-                color:         'var(--hud-text-faint)',
-                letterSpacing: '0.06em',
-                textTransform: 'uppercase',
-              }}>
+              <div key={loadingTextIdx} role="status" aria-live="polite" style={{ fontFamily: FONT_BODY, fontSize: '7px', color: 'var(--hud-text-faint)', letterSpacing: '0.06em', textTransform: 'uppercase', animation: 'cl-text 0.3s ease forwards' }}>
                 {LOADING_TEXTS[loadingTextIdx]}
               </div>
             </div>
-          </div>
+          )}
+        </div>
         )
       })()}
 

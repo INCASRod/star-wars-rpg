@@ -116,6 +116,8 @@ export interface TalentModifiers {
   force_rating_conditional?: boolean
   /** Skill keys this talent is relevant to — used to surface hints in the skill check popover */
   relevant_skills?: string[]
+  /** Skills permanently promoted to career status when this talent is purchased (ChooseCareerSkills) */
+  career_skills?: string[]
 }
 
 // Structured modifier fields added by migration 017 — populated from OggDude Talents.xml
