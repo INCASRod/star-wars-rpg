@@ -3,7 +3,7 @@
 import { useState, useEffect }         from 'react'
 import { useCharacterSelectStore }     from '@/store/characterSelectStore'
 import {
-  FONT_BODY, FONT_DISPLAY, HUD, Z, RADIUS, CHAR_COLOR,
+  FONT_BODY, FONT_DISPLAY, HUD, Z, RADIUS, CHAR_COLOR, FS, EASE,
 } from '@/lib/tokens'
 
 // Local CSS variable aliases — same values as page.tsx
@@ -117,7 +117,7 @@ export function CharacterLoader() {
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   padding: '6px',
                 }}>
-                  <span style={{ fontFamily: FONT_BODY, fontSize: '8px', color: TEXT_MUT, textAlign: 'center', lineHeight: 1.4 }}>
+                  <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: TEXT_MUT, textAlign: 'center', lineHeight: 1.4 }}>
                     No image uploaded
                   </span>
                 </div>
@@ -136,10 +136,10 @@ export function CharacterLoader() {
                 background: 'linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.55) 55%, rgba(0,0,0,0) 100%)',
                 padding: '18px 5px 5px', zIndex: 5,
               }}>
-                <div style={{ fontFamily: FONT_BODY, fontSize: '12px', fontWeight: 700, color: HUD.gold, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700, color: HUD.gold, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {char.name}
                 </div>
-                <div style={{ fontFamily: FONT_BODY, fontSize: '8px', color: TEXT_MUT, textTransform: 'uppercase', marginTop: '1px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: TEXT_MUT, textTransform: 'uppercase', marginTop: '1px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {char.career_key} // {char.species_key}
                 </div>
               </div>
@@ -147,16 +147,16 @@ export function CharacterLoader() {
 
             <div style={{ flex: 1, padding: '6px 7px', display: 'flex', flexDirection: 'column', gap: '5px', minWidth: 0 }}>
               <div>
-                <div style={{ fontFamily: FONT_BODY, fontSize: '6px', textTransform: 'uppercase', letterSpacing: '0.1em', color: TEXT_MUT, marginBottom: '2px' }}>
+                <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, textTransform: 'uppercase', letterSpacing: '0.1em', color: TEXT_MUT, marginBottom: '2px' }}>
                   Characteristics
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: '2px' }}>
                   {CHAR_KEYS.map(key => (
                     <div key={key} style={{ background: INPUT_BG, border: `1px solid ${BORDER}`, borderRadius: RADIUS.sm, padding: '2px 1px', textAlign: 'center' }}>
-                      <div style={{ fontFamily: FONT_BODY, fontSize: '13px', fontWeight: 700, color: CHAR_COLORS[key] }}>
+                      <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700, color: CHAR_COLORS[key] }}>
                         {(char as unknown as Record<string, number>)[key]}
                       </div>
-                      <div style={{ fontFamily: FONT_BODY, fontSize: '8px', color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                         {CHAR_LABELS[key]}
                       </div>
                     </div>
@@ -165,7 +165,7 @@ export function CharacterLoader() {
               </div>
 
               <div>
-                <div style={{ fontFamily: FONT_BODY, fontSize: '6px', textTransform: 'uppercase', letterSpacing: '0.1em', color: TEXT_MUT, marginBottom: '2px' }}>
+                <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, textTransform: 'uppercase', letterSpacing: '0.1em', color: TEXT_MUT, marginBottom: '2px' }}>
                   Combat
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '2px' }}>
@@ -175,15 +175,15 @@ export function CharacterLoader() {
                     { label: 'R.Def', value: char.defense_ranged },
                   ].map(({ label, value }) => (
                     <div key={label} style={{ background: INPUT_BG, border: `1px solid ${BORDER}`, borderRadius: RADIUS.sm, padding: '2px 4px', textAlign: 'center' }}>
-                      <div style={{ fontFamily: FONT_BODY, fontSize: '12px', fontWeight: 700, color: TEXT }}>{value}</div>
-                      <div style={{ fontFamily: FONT_BODY, fontSize: '7px', color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</div>
+                      <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700, color: TEXT }}>{value}</div>
+                      <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</div>
                     </div>
                   ))}
                 </div>
               </div>
 
               <div>
-                <div style={{ fontFamily: FONT_BODY, fontSize: '6px', textTransform: 'uppercase', letterSpacing: '0.1em', color: TEXT_MUT, marginBottom: '2px' }}>
+                <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, textTransform: 'uppercase', letterSpacing: '0.1em', color: TEXT_MUT, marginBottom: '2px' }}>
                   Resources
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '2px' }}>
@@ -193,8 +193,8 @@ export function CharacterLoader() {
                     { label: 'XP',    value: char.xp_available     },
                   ].map(({ label, value }) => (
                     <div key={label} style={{ background: INPUT_BG, border: `1px solid ${BORDER}`, borderRadius: RADIUS.sm, padding: '2px 4px', textAlign: 'center' }}>
-                      <div style={{ fontFamily: FONT_BODY, fontSize: '12px', fontWeight: 700, color: TEXT }}>{value}</div>
-                      <div style={{ fontFamily: FONT_BODY, fontSize: '7px', color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</div>
+                      <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700, color: TEXT }}>{value}</div>
+                      <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</div>
                     </div>
                   ))}
                 </div>
@@ -205,8 +205,8 @@ export function CharacterLoader() {
           <div style={{ borderTop: `1px solid ${BORDER}`, background: 'var(--hud-surface-lo)', padding: '5px 8px' }}>
             <div style={{ marginBottom: '3px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontFamily: FONT_BODY, fontSize: '8px', color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.06em', width: '28px' }}>Wounds</span>
-                <span style={{ fontFamily: FONT_BODY, fontSize: '8px', color: TEXT_MUT }}>{char.wound_current}/{char.wound_threshold}</span>
+                <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.06em', width: '28px' }}>Wounds</span>
+                <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: TEXT_MUT }}>{char.wound_current}/{char.wound_threshold}</span>
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px', marginTop: '2px' }}>
                 {Array.from({ length: char.wound_threshold }).map((_, i) => (
@@ -216,8 +216,8 @@ export function CharacterLoader() {
             </div>
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontFamily: FONT_BODY, fontSize: '8px', color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.06em', width: '28px' }}>Strain</span>
-                <span style={{ fontFamily: FONT_BODY, fontSize: '8px', color: TEXT_MUT }}>{char.strain_current}/{char.strain_threshold}</span>
+                <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: TEXT_MUT, textTransform: 'uppercase', letterSpacing: '0.06em', width: '28px' }}>Strain</span>
+                <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: TEXT_MUT }}>{char.strain_current}/{char.strain_threshold}</span>
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px', marginTop: '2px' }}>
                 {Array.from({ length: char.strain_threshold }).map((_, i) => (
@@ -234,13 +234,13 @@ export function CharacterLoader() {
         textAlign: 'center',
         animation: char ? 'cl-strip 0.4s 0.2s ease both' : 'cl-strip 0.4s ease both',
       }}>
-        <div style={{ fontFamily: FONT_DISPLAY, fontSize: '13px', letterSpacing: '0.28em', textTransform: 'uppercase', color: HUD.gold, marginBottom: '8px' }}>
+        <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.sm, letterSpacing: '0.28em', textTransform: 'uppercase', color: HUD.gold, marginBottom: '8px' }}>
           H O L O C R O N
         </div>
         <div style={{ width: '100%', height: '2px', background: 'rgba(255,255,255,0.08)', borderRadius: '1px', overflow: 'hidden', margin: '0 auto 8px', position: 'relative' }}>
           <div style={{ position: 'absolute', top: 0, left: 0, width: '40%', height: '100%', background: 'linear-gradient(90deg, transparent, var(--hud-accent), #c8883a, transparent)', animation: 'loadingBarSweep 1.4s ease-in-out infinite' }} />
         </div>
-        <div key={textIdx} role="status" aria-live="polite" style={{ fontFamily: FONT_BODY, fontSize: '7px', color: TEXT_MUT, letterSpacing: '0.06em', textTransform: 'uppercase', animation: 'cl-text 0.3s ease forwards' }}>
+        <div key={textIdx} role="status" aria-live="polite" style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: TEXT_MUT, letterSpacing: '0.06em', textTransform: 'uppercase', animation: `cl-text ${EASE.smooth} forwards` }}>
           {LOADING_TEXTS[textIdx]}
         </div>
       </div>
