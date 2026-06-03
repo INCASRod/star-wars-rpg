@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { C, CHAR_COLOR, CHAR_ABBR3, panelBase, type CharKey } from './design-tokens'
-import { FONT_BODY, FS, RADIUS, Z, EASE } from '@/lib/tokens'
+import { FONT_BODY, FS, RADIUS, Z, EASE, SP } from '@/lib/tokens'
 import { DiceFace } from '@/components/dice/DiceFace'
 import { Tooltip, TipLabel, TipBody, TipDivider } from '@/components/ui/Tooltip'
 import { RichText } from '@/components/ui/RichText'
@@ -223,7 +223,7 @@ function UpgradeButton({ skill, xpAvailable, onClick }: {
           fontSize: FS.sm,
           cursor: canAfford ? 'pointer' : 'not-allowed',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexShrink: 0, transition: '.15s', padding: 0, lineHeight: 1,
+          flexShrink: 0, transition: EASE.quick, padding: 0, lineHeight: 1,
         }}
       >
         +
@@ -297,7 +297,7 @@ function InlineConfirmation({ skill, xpAvailable, onConfirm, onCancel }: {
             color: 'var(--state-failure)', cursor: 'pointer',
             fontFamily: FONT_BODY, fontSize: FS.sm,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: 0, transition: '.15s',
+            padding: 0, transition: EASE.quick,
           }}
         >
           ✗
@@ -311,7 +311,7 @@ function InlineConfirmation({ skill, xpAvailable, onConfirm, onCancel }: {
             color: C.gold, cursor: 'pointer',
             fontFamily: FONT_BODY, fontSize: FS.sm,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: 0, transition: '.15s',
+            padding: 0, transition: EASE.quick,
           }}
         >
           ✓
@@ -463,8 +463,8 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
           ? (!isConfirming ? 'skills-row panel-row-enter' : 'panel-row-enter')
           : (!isConfirming ? 'skills-row' : undefined)}
         style={{
-          display: 'flex', alignItems: 'center', gap: 6,
-          padding: '5px 6px', marginBottom: 2,
+          display: 'flex', alignItems: 'center', gap: SP[1],
+          padding: `${SP[1]} ${SP[2]}`,
           borderRadius: isConfirming ? RADIUS.lg : RADIUS.sm,
           ...(isConfirming ? {
             border: '1px solid color-mix(in srgb, var(--hud-accent) 35%, transparent)',
@@ -474,7 +474,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
             background: 'transparent',
           }),
           cursor: !isConfirming ? 'pointer' : 'default',
-          transition: '.15s',
+          transition: EASE.quick,
           opacity: !isConfirming && !isCombat && isMaxRank ? 0.5 : 1,
         }}
       >
@@ -528,12 +528,17 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
     : 'var(--state-failure)'
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
-      {/* Filter + XP + mode bar */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+      {/* Controls — filter pills | separator | view toggle | XP + mode */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: SP[3],
+        padding: `${SP[1]} 0`,
+        borderBottom: `1px solid var(--hud-border)`,
+      }}>
+        {/* Filter pills */}
+        <div style={{ display: 'flex', gap: 4 }}>
           {(['All', 'Trained', 'Career', 'Has Bonus'] as Filter[]).map(f => {
-            const active  = filter === f
+            const active = filter === f
             return (
               <button
                 key={f}
@@ -541,11 +546,11 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
                 style={{
                   background: active ? `color-mix(in srgb, ${C.gold} 13%, transparent)` : 'transparent',
                   border: `1px solid ${active ? C.gold : C.border}`,
-                  borderRadius: RADIUS.md, padding: '3px 10px',
-                  fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700,
-                  letterSpacing: '0.08em', textTransform: 'uppercase',
+                  borderRadius: RADIUS.sm, padding: `${SP[1]} ${SP[2]}`,
+                  fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
+                  letterSpacing: '0.1em', textTransform: 'uppercase',
                   color: active ? C.gold : C.textDim,
-                  cursor: 'pointer', transition: '.15s',
+                  cursor: 'pointer', transition: EASE.quick,
                 }}
               >
                 {f}
@@ -554,58 +559,49 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
           })}
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {/* Available XP indicator */}
-          <div style={{
-            fontFamily: FONT_BODY,
-            fontSize: FS.caption,
-            color: xpColor,
-          }}>
+        {/* Separator */}
+        <div style={{ width: '1px', height: '0.875rem', flexShrink: 0, background: 'var(--hud-border)' }} />
+
+        {/* View toggle */}
+        <div style={{ display: 'flex', gap: 4 }}>
+          {(['characteristic', 'type'] as GroupView[]).map(v => {
+            const active = groupView === v
+            const label  = v === 'characteristic' ? 'By Characteristic' : 'By Type'
+            return (
+              <button
+                key={v}
+                onClick={() => setGroupView(v)}
+                style={{
+                  background: active ? `color-mix(in srgb, ${C.gold} 13%, transparent)` : 'transparent',
+                  border: `1px solid ${active ? C.gold : C.border}`,
+                  borderRadius: RADIUS.sm, padding: `${SP[1]} ${SP[2]}`,
+                  fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
+                  letterSpacing: '0.1em', textTransform: 'uppercase',
+                  color: active ? C.gold : C.textDim,
+                  cursor: 'pointer', transition: EASE.quick,
+                }}
+              >
+                {label}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* XP indicator + mode badge */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: SP[2], marginLeft: 'auto' }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: xpColor }}>
             {xpAvailable} XP
           </div>
-
-          {/* Mode badge */}
           <div style={{
             fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
             letterSpacing: '0.12em', textTransform: 'uppercase',
             color: C.gold,
             border: '1px solid color-mix(in srgb, var(--hud-accent) 40%, transparent)',
-            borderRadius: RADIUS.sm, padding: '2px 7px',
+            borderRadius: RADIUS.sm, padding: `${SP[1]} ${SP[2]}`,
           }}>
             {isCombat ? 'Click to make a check' : 'Click to Upgrade'}
           </div>
         </div>
-      </div>
-
-      {/* Group view toggle */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{
-          fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
-          letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textDim,
-        }}>
-          View:
-        </span>
-        {(['characteristic', 'type'] as GroupView[]).map(v => {
-          const active = groupView === v
-          const label  = v === 'characteristic' ? 'By Characteristic' : 'By Type'
-          return (
-            <button
-              key={v}
-              onClick={() => setGroupView(v)}
-              style={{
-                background: active ? `color-mix(in srgb, ${C.gold} 13%, transparent)` : 'transparent',
-                border: `1px solid ${active ? C.gold : C.border}`,
-                borderRadius: RADIUS.md, padding: '3px 10px',
-                fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700,
-                letterSpacing: '0.08em', textTransform: 'uppercase',
-                color: active ? C.gold : C.textDim,
-                cursor: 'pointer', transition: '.15s',
-              }}
-            >
-              {label}
-            </button>
-          )
-        })}
       </div>
 
       {/* Legend */}
@@ -665,7 +661,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                   <div style={{
                     width: 28, height: 28, borderRadius: RADIUS.md, flexShrink: 0,
-                    background: `${color}22`, border: `1px solid ${color}55`,
+                    background: `color-mix(in srgb, ${color} 13%, transparent)`, border: `1px solid color-mix(in srgb, ${color} 33%, transparent)`,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontFamily: FONT_BODY, fontSize: FS.h4, fontWeight: 700, color,
                   }}>
@@ -674,7 +670,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
                   <div style={{
                     fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
                     letterSpacing: '0.1em', textTransform: 'uppercase',
-                    color: `${color}CC`,
+                    color: `color-mix(in srgb, ${color} 80%, transparent)`,
                   }}>
                     <TickerText text={charKey.charAt(0).toUpperCase() + charKey.slice(1)} isOpen={isOpen} delayMs={120} />
                   </div>
