@@ -493,6 +493,39 @@ label, caption, .text-secondary {
   border-color: var(--state-failure);
 }
 
+/* Failure/danger icon button — × remove buttons in staging panels */
+.hov-failure-btn {
+  color: color-mix(in srgb, var(--state-failure) 35%, transparent);
+  transition: color var(--ease-quick);
+}
+.hov-failure-btn:hover {
+  color: color-mix(in srgb, var(--state-failure) 85%, transparent);
+}
+
+/* Subtle opacity dim on hover — toggle/icon buttons with no colour change */
+.hov-dim {
+  transition: opacity var(--ease-quick);
+}
+.hov-dim:hover {
+  opacity: 0.7;
+}
+
+/* Adjust-button border accent — reads --adj-accent CSS custom property set per element */
+.adj-btn {
+  transition: border-color var(--ease-quick);
+}
+.adj-btn:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--adj-accent, var(--hud-accent)) 40%, transparent);
+}
+
+/* Slot reassign row — reads --slot-rest-bg and --slot-accent CSS custom properties */
+.slot-row-btn {
+  background: var(--slot-rest-bg, transparent);
+}
+.slot-row-btn:hover:not([data-acted]) {
+  background: color-mix(in srgb, var(--slot-accent, var(--hud-accent)) 9%, transparent);
+}
+
 /* Buy-spec trigger button — dashed gold border fades to full gold on hover */
 .buy-spec-btn {
   color:        color-mix(in srgb, var(--hud-gold) 53%, transparent);

@@ -27,7 +27,7 @@ const BORDER_MD  = 'var(--hud-border-hi)'
 const RED        = COLOR.red          // var(--red)
 const BLUE       = COLOR.blue         // var(--blue)
 const GREEN      = COLOR.green        // var(--green)
-const TEAL       = '#52e0a8'          // no token — keep as-is (used for ✓ Acted indicator)
+const SUCCESS    = 'var(--state-success)'
 const TEXT       = HUD.text
 const TEXT_MUTED = HUD.textDim
 
@@ -619,7 +619,7 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
                   }} />
                 )}
                 {isActed && (
-                  <span style={{ fontSize: '0.6875rem', color: TEAL, flexShrink: 0 }}>✓</span>
+                  <span style={{ fontSize: '0.6875rem', color: SUCCESS, flexShrink: 0 }}>✓</span>
                 )}
 
                 {/* Name + reassigned indicator */}
@@ -669,14 +669,13 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
                   <button
                     onClick={() => void toggleAlignment(slot.id)}
                     title="Toggle alignment"
+                    className="hov-dim"
                     style={{
                       ...smallBtn,
                       width: 'auto', padding: '1px 5px',
                       color: effectiveAlign === 'allied_npc' ? GREEN : RED,
-                      borderColor: effectiveAlign === 'allied_npc' ? `${GREEN}50` : `${RED}50`,
+                      borderColor: effectiveAlign === 'allied_npc' ? 'color-mix(in srgb, var(--green) 31%, transparent)' : 'color-mix(in srgb, var(--red) 31%, transparent)',
                     }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
                   >
                     {effectiveAlign === 'allied_npc' ? '🤝' : '⚔'}
                   </button>
@@ -706,13 +705,12 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
                       setTimeout(() => setRemoveConfirm(p => p?.slotId === slot.id ? null : p), 5000)
                     }}
                     title={`Remove ${displayName}`}
+                    className="hov-failure-btn"
                     style={{
                       background: 'none', border: 'none', cursor: 'pointer',
-                      color: 'rgba(244,67,54,0.4)', fontSize: '1rem', lineHeight: 1,
-                      padding: '1px 4px', borderRadius: RADIUS.sm, transition: `color ${EASE.default}`,
+                      fontSize: '1rem', lineHeight: 1,
+                      padding: '1px 4px', borderRadius: RADIUS.sm,
                     }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(244,67,54,0.85)' }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(244,67,54,0.4)' }}
                   >×</button>
                 ) : <div style={{ width: '1.375rem', flexShrink: 0 }} />}
               </div>
@@ -726,7 +724,7 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
                       background: `${GREEN}0e`, border: `1px solid ${GREEN}40`,
                       borderRadius: RADIUS.sm, padding: `2px 0.4375rem`,
                     }}>
-                      <span style={{ fontFamily: FC, fontSize: FS.caption, color: TEAL, letterSpacing: '0.06em' }}>⚔⚔ SELECTED</span>
+                      <span style={{ fontFamily: FC, fontSize: FS.caption, color: SUCCESS, letterSpacing: '0.06em' }}>⚔⚔ SELECTED</span>
                       <span style={{ fontFamily: FC, fontSize: FS.caption, color: GREEN }}>▸ {p!.active_weapon_name}</span>
                       <span style={{ fontFamily: FC, fontSize: FS.caption, color: `${GREEN}bb` }}>▸ {p!.secondary_weapon_name}</span>
                     </div>
@@ -822,8 +820,8 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
                 {/* Acted badge / Acted + Skip buttons */}
                 {isActed ? (
                   <span style={{
-                    fontFamily: FC, fontSize: FS.label, fontWeight: 700, color: TEAL,
-                    border: `1px solid ${TEAL}50`, borderRadius: RADIUS.sm, padding: `2px 0.4375rem`,
+                    fontFamily: FC, fontSize: FS.label, fontWeight: 700, color: SUCCESS,
+                    border: `1px solid color-mix(in srgb, var(--state-success) 55%, transparent)`, borderRadius: RADIUS.sm, padding: `2px 0.4375rem`,
                     whiteSpace: 'nowrap',
                   }}>✓ Acted</span>
                 ) : isCurrent ? (
@@ -890,15 +888,16 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
                       void handleReassign(slot.characterId, c.id, c.name)
                       setReassignSlotId(null); setReassignAnchor(null)
                     }}
+                    className="slot-row-btn"
+                    data-acted={hasActed ? 'true' : undefined}
                     style={{
                       width: '100%', padding: `${SP[1]} ${SP[3]}`,
-                      background: isActive ? `${BLUE}10` : 'transparent',
+                      '--slot-rest-bg': isActive ? 'color-mix(in srgb, var(--blue) 6%, transparent)' : 'transparent',
+                      '--slot-accent': BLUE,
                       border: 'none', cursor: hasActed ? 'default' : 'pointer',
                       display: 'flex', alignItems: 'center', gap: SP[2],
                       opacity: hasActed ? 0.38 : 1, transition: EASE.default,
-                    }}
-                    onMouseEnter={e => { if (!hasActed) (e.currentTarget as HTMLElement).style.background = `${BLUE}18` }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = isActive ? `${BLUE}10` : 'transparent' }}
+                    } as React.CSSProperties}
                   >
                     <span style={{ fontFamily: FC, fontSize: FS.caption, color: BLUE, width: '0.75rem', flexShrink: 0 }}>
                       {isActive ? '●' : '○'}

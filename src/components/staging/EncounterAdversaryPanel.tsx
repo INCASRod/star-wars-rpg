@@ -424,13 +424,12 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
                     setTimeout(() => setRemoveConfirm(p => p === adv.instanceId ? null : p), 5000)
                   }}
                   title={`Remove ${adv.name}`}
+                  className="hov-failure-btn"
                   style={{
                     background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0,
-                    color: 'rgba(244,67,54,0.35)', fontSize: '0.9375rem', lineHeight: 1,
-                    padding: '2px 5px', borderRadius: RADIUS.sm, transition: `color ${EASE.default}`,
+                    fontSize: '0.9375rem', lineHeight: 1,
+                    padding: '2px 5px', borderRadius: RADIUS.sm,
                   }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(244,67,54,0.85)' }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(244,67,54,0.35)' }}
                 >×</button>
               )}
             </div>
@@ -880,16 +879,15 @@ function AdversaryWoundTracker({
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginTop: SP[1] }}>
         <button onClick={() => onAdjust(-1)} disabled={wounds === 0}
-          style={{ ...btnBase, cursor: wounds === 0 ? 'not-allowed' : 'pointer', color: wounds === 0 ? HUD.textFaint : HUD.text }}
-          onMouseEnter={e => { if (wounds > 0) (e.currentTarget as HTMLElement).style.borderColor = `${accentColor}66` }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--hud-border)' }}
+          className="adj-btn"
+          style={{ ...btnBase, cursor: wounds === 0 ? 'not-allowed' : 'pointer', color: wounds === 0 ? HUD.textFaint : HUD.text, '--adj-accent': accentColor } as React.CSSProperties}
         >−</button>
         <span style={{ flex: 1, textAlign: 'center', fontFamily: FC, fontSize: 'clamp(0.75rem,1.2vw,0.88rem)', color: HUD.text }}>
           {wounds} wound{wounds !== 1 ? 's' : ''}
         </span>
-        <button onClick={() => onAdjust(1)} style={btnBase}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${accentColor}66` }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--hud-border)' }}
+        <button onClick={() => onAdjust(1)}
+          className="adj-btn"
+          style={{ ...btnBase, '--adj-accent': accentColor } as React.CSSProperties}
         >+</button>
       </div>
       {isMinion && groupAlive !== null && (
@@ -949,16 +947,15 @@ function AdversaryWoundTracker({
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginTop: SP[1] }}>
               <button onClick={() => onAdjustStrain(-1)} disabled={strain === 0}
-                style={{ ...btnBase, cursor: strain === 0 ? 'not-allowed' : 'pointer', color: strain === 0 ? HUD.textFaint : HUD.text }}
-                onMouseEnter={e => { if (strain > 0) (e.currentTarget as HTMLElement).style.borderColor = `${AMBER_COLOR}66` }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--hud-border)' }}
+                className="adj-btn"
+                style={{ ...btnBase, cursor: strain === 0 ? 'not-allowed' : 'pointer', color: strain === 0 ? HUD.textFaint : HUD.text, '--adj-accent': AMBER_COLOR } as React.CSSProperties}
               >−</button>
               <span style={{ flex: 1, textAlign: 'center', fontFamily: FC, fontSize: 'clamp(0.75rem,1.2vw,0.88rem)', color: HUD.text }}>
                 {strain} strain
               </span>
-              <button onClick={() => onAdjustStrain(1)} style={btnBase}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${AMBER_COLOR}66` }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--hud-border)' }}
+              <button onClick={() => onAdjustStrain(1)}
+                className="adj-btn"
+                style={{ ...btnBase, '--adj-accent': AMBER_COLOR } as React.CSSProperties}
               >+</button>
             </div>
           </div>
