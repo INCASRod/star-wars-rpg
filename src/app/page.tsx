@@ -850,12 +850,11 @@ export default function Home() {
   return (
     <div style={{
       width: '100vw',
-      minHeight: '100vh',
+      height: '100vh',
       background: BG,
       display: 'flex',
       flexDirection: 'column',
-      alignItems: 'center',
-      overflowX: 'hidden',
+      overflow: 'hidden',
       position: 'relative',
     }}>
       {/* Background: crosshatch SVG */}
@@ -881,114 +880,107 @@ export default function Home() {
       {/* Content column */}
       <div style={{
         position: 'relative', zIndex: Z.raised,
-        width: '100%', maxWidth: '77.5rem',
-        padding: `10px var(--space-5) 16px`,
         display: 'flex', flexDirection: 'column',
-        alignItems: 'center', gap: '8px',
+        flex: 1, overflow: 'hidden',
       }}>
 
         {/* Page Header */}
-        <div style={{ animation: 'fadeDown 0.6s ease both', width: '100%' }}>
-          <div style={{ position: 'relative', textAlign: 'center' }}>
-            <span style={{
-              position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)',
-              fontSize: FS.label, color: GOLD_DIM, letterSpacing: 0,
-            }}>⬡</span>
-            <span style={{
-              position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)',
-              fontSize: FS.label, color: GOLD_DIM, letterSpacing: 0,
-            }}>⬡</span>
-            <div style={{
-              fontFamily: FONT_BODY,
-              fontWeight: 900,
-              fontSize: FS.sm,
-              letterSpacing: '0.4em',
-              color: HUD.gold,
-              textShadow: '0 0 40px rgba(224,58,30,0.45)',
-              display: 'inline-block',
-            }}>
-              HOLOCRON
-            </div>
-          </div>
+        <div style={{
+          height: '3rem',
+          display: 'flex',
+          alignItems: 'center',
+          padding: `0 ${SP[6]}`,
+          borderBottom: `1px solid ${BORDER}`,
+          background: PANEL,
+          flexShrink: 0,
+          animation: 'fadeDown 0.4s ease both',
+        }}>
           <div style={{
-            fontFamily: FONT_BODY,
-            fontSize: FS.overline,
-            letterSpacing: '0.3em',
-            color: TEXT_MUT,
-            textTransform: 'uppercase',
-            marginTop: '2px',
-            textAlign: 'center',
+            display: 'flex', alignItems: 'center', gap: SP[2],
+            fontFamily: FONT_BODY, fontSize: FS.label,
+            fontWeight: 700, letterSpacing: '0.25em',
+            color: HUD.gold,
           }}>
-            Star Wars RPG · Campaign Manager
+            <div style={{
+              width: '0.5rem', height: '0.5rem',
+              background: 'var(--hud-accent)',
+              transform: 'rotate(45deg)',
+              flexShrink: 0,
+            }} />
+            HOLOCRON
           </div>
-          <div style={{
-            marginTop: '2px',
-            height: '1px',
-            background: `linear-gradient(90deg, transparent, ${GOLD_DIM}, transparent)`,
-          }} />
         </div>
 
         {/* Session Status Bar */}
         <div style={{
-          animation: 'fadeDown 0.6s 0.1s ease both',
-          width: '100%',
-          background: PANEL,
-          border: `1px solid ${BORDER}`,
-          borderRadius: RADIUS.lg,
-          backdropFilter: 'blur(12px)',
-          padding: `${SP[2]} ${SP[4]}`,
+          height: '2rem',
           display: 'flex',
-          flexDirection: 'row',
           alignItems: 'center',
-          justifyContent: 'space-between',
+          padding: `0 ${SP[6]}`,
+          gap: SP[6],
+          borderBottom: `1px solid ${BORDER}`,
+          background: `color-mix(in srgb, ${PANEL} 80%, transparent)`,
+          flexShrink: 0,
+          animation: 'fadeDown 0.4s 0.05s ease both',
         }}>
-          {/* Left */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: SP[2] }}>
+          {/* Online indicator */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: SP[1] }}>
             <div style={{
-              width: '0.5rem', height: '0.5rem', borderRadius: RADIUS.full,
+              width: '0.375rem', height: '0.375rem',
+              borderRadius: RADIUS.full,
               background: SUCCESS,
+              boxShadow: `0 0 0.375rem ${SUCCESS}`,
               animation: 'pulse-dot 1.8s ease-in-out infinite',
             }} />
-            <span style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT_SEC }}>
-              {onlineKeys.length} players online · {activeSessions.length} claimed
+            <span style={{
+              fontFamily: FONT_BODY, fontSize: FS.overline,
+              fontWeight: 600, letterSpacing: '0.12em',
+              textTransform: 'uppercase', color: TEXT_SEC,
+              display: 'flex', alignItems: 'center', gap: SP[1],
+            }}>
+              Players online
+              <span style={{ fontFamily: FONT_BODY, color: TEXT }}>
+                {onlineKeys.length}
+              </span>
             </span>
           </div>
 
-          {/* Divider */}
-          <div style={{ width: '1px', height: '1.25rem', background: BORDER_MD, flexShrink: 0, margin: `0 0.75rem` }} />
+          {/* Campaign */}
+          <div style={{
+            fontFamily: FONT_BODY, fontSize: FS.overline,
+            fontWeight: 600, letterSpacing: '0.12em',
+            textTransform: 'uppercase', color: TEXT_SEC,
+            display: 'flex', alignItems: 'center', gap: SP[1],
+          }}>
+            Campaign
+            <span style={{ fontFamily: FONT_BODY, color: TEXT }}>
+              {campaignName}
+            </span>
+          </div>
 
-          {/* Center */}
-          <span style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT_SEC }}>
-            Session · <span style={{ letterSpacing: '0.05em' }}>{sessionMode.toUpperCase()}</span>
-          </span>
-
-          {/* Divider */}
-          <div style={{ width: '1px', height: '1.25rem', background: BORDER_MD, flexShrink: 0, margin: `0 0.75rem` }} />
-
-          {/* Right */}
-          <span style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT_MUT }}>
-            {campaignName}
-          </span>
-        </div>
-
-        {/* Section label */}
-        <div style={{
-          fontFamily: FONT_BODY,
-          fontSize: FS.overline,
-          letterSpacing: '0.28em',
-          textTransform: 'uppercase',
-          color: TEXT_MUT,
-          width: '100%',
-        }}>
-          Select Your Character
+          {/* Session mode */}
+          <div style={{
+            fontFamily: FONT_BODY, fontSize: FS.overline,
+            fontWeight: 600, letterSpacing: '0.12em',
+            textTransform: 'uppercase', color: TEXT_SEC,
+            display: 'flex', alignItems: 'center', gap: SP[1],
+          }}>
+            Session
+            <span style={{ fontFamily: FONT_BODY, color: TEXT }}>
+              {sessionMode.toUpperCase()}
+            </span>
+          </div>
         </div>
 
         {/* Character Grid */}
         <div style={{
-          width: '100%',
+          flex: 1,
+          overflowY: 'auto',
+          padding: SP[6],
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))',
-          gap: '8px',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(17rem, 1fr))',
+          gap: SP[5],
+          alignContent: 'start',
         }}>
           {characters.map((char, index) => {
             const cardState  = getCardState(char.id)
@@ -1026,66 +1018,65 @@ export default function Home() {
           })}
         </div>
 
-        {/* Bottom Actions */}
+        {/* Footer actions bar */}
         <div style={{
-          animation: 'fadeUp 0.5s 0.3s ease both',
+          height: '3.5rem',
           display: 'flex',
-          flexDirection: 'column',
           alignItems: 'center',
-          gap: SP[3],
-          marginTop: SP[2],
-          width: '100%',
-          maxWidth: '22.5rem',
+          padding: `0 ${SP[6]}`,
+          gap: SP[4],
+          borderTop: `1px solid ${BORDER}`,
+          background: PANEL,
+          flexShrink: 0,
+          animation: 'fadeUp 0.4s 0.15s ease both',
         }}>
-          {/* Create character button */}
+          {/* Create New Character */}
           <button
             onClick={() => router.push(`/create?campaign=${campaignId}`)}
-            onMouseEnter={() => setCreateHovered(true)}
-            onMouseLeave={() => setCreateHovered(false)}
+            className="hov-lift"
             style={{
-              background: createHovered ? 'color-mix(in srgb, var(--hud-accent) 20%, transparent)' : 'color-mix(in srgb, var(--hud-accent) 10%, transparent)',
-              boxShadow: createHovered ? '0 0 16px rgba(224,58,30,0.2)' : 'none',
-              border: `1px solid ${BORDER_MD}`,
-              color: HUD.gold,
               fontFamily: FONT_BODY,
-              fontSize: FS.sm,
+              fontSize: FS.overline,
               fontWeight: 700,
-              letterSpacing: '0.1em',
-              padding: `0.625rem 0`,
-              width: '100%',
-              borderRadius: RADIUS.md,
-              cursor: 'pointer',
-              transition: `all ${EASE.default}`,
+              letterSpacing: '0.15em',
               textTransform: 'uppercase',
+              padding: `${SP[2]} ${SP[5]}`,
+              borderRadius: RADIUS.sm,
+              border: `1px solid color-mix(in srgb, ${BORDER_HI} 60%, transparent)`,
+              background: `color-mix(in srgb, var(--hud-accent) 10%, transparent)`,
+              color: TEXT,
+              cursor: 'pointer',
+              transition: `background ${EASE.quick}, border-color ${EASE.quick}, box-shadow ${EASE.quick}, color ${EASE.quick}`,
+              flexShrink: 0,
             }}
           >
             + Create New Character
           </button>
 
-          {/* GM Access */}
+          {/* GM Access — button OR PIN row */}
           {!showGmInput ? (
             <button
               onClick={() => setShowGmInput(true)}
-              className="gm-access-btn"
               style={{
-                background: 'transparent',
-                border: `1px solid ${BORDER}`,
-                color: TEXT_MUT,
                 fontFamily: FONT_BODY,
-                fontSize: FS.sm,
-                letterSpacing: '0.1em',
-                padding: `${SP[2]} 0`,
-                width: '100%',
-                borderRadius: RADIUS.md,
-                cursor: 'pointer',
-                transition: `all ${EASE.default}`,
+                fontSize: FS.overline,
+                fontWeight: 600,
+                letterSpacing: '0.15em',
                 textTransform: 'uppercase',
+                padding: `${SP[2]} ${SP[4]}`,
+                borderRadius: RADIUS.sm,
+                border: `1px solid ${BORDER_HI}`,
+                background: 'transparent',
+                color: TEXT_MUT,
+                cursor: 'pointer',
+                transition: `border-color ${EASE.quick}, color ${EASE.quick}`,
+                flexShrink: 0,
               }}
             >
               GM Access
             </button>
           ) : (
-            <div style={{ display: 'flex', gap: SP[2], width: '100%', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: SP[2], alignItems: 'center' }}>
               <input
                 type="password"
                 maxLength={4}
@@ -1095,42 +1086,63 @@ export default function Home() {
                 onKeyDown={e => e.key === 'Enter' && void handleGmLogin()}
                 autoFocus
                 style={{
-                  flex: 1,
+                  width: '5rem',
                   background: INPUT_BG,
                   border: `1px solid ${BORDER_MD}`,
-                  borderRadius: RADIUS.md,
-                  padding: `${SP[2]} ${SP[3]}`,
-                  fontFamily: FONT_BODY,
+                  borderRadius: RADIUS.sm,
+                  padding: `${SP[1]} ${SP[3]}`,
                   fontSize: FS.sm,
                   color: TEXT,
-                  textAlign: 'center',
                   letterSpacing: '0.3em',
+                  fontFamily: FONT_BODY,
+                  textAlign: 'center',
                   outline: 'none',
                 }}
               />
               <button
                 onClick={() => void handleGmLogin()}
                 style={{
-                  background: 'color-mix(in srgb, var(--hud-accent) 20%, transparent)',
                   border: `1px solid ${BORDER_HI}`,
                   color: HUD.gold,
-                  fontFamily: FONT_BODY,
-                  fontSize: FS.label,
-                  letterSpacing: '0.1em',
-                  padding: `${SP[2]} ${SP[4]}`,
-                  borderRadius: RADIUS.md,
+                  fontSize: FS.overline,
+                  padding: `${SP[1]} ${SP[3]}`,
+                  borderRadius: RADIUS.sm,
+                  background: 'transparent',
                   cursor: 'pointer',
-                  textTransform: 'uppercase',
+                  fontFamily: FONT_BODY,
+                  fontWeight: 600,
                 }}
               >
                 Enter
               </button>
+              <button
+                onClick={() => { setShowGmInput(false); setGmPin('') }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: TEXT_MUT,
+                  fontSize: FS.overline,
+                  cursor: 'pointer',
+                  fontFamily: FONT_BODY,
+                  padding: `0 ${SP[1]}`,
+                }}
+              >
+                ✕
+              </button>
             </div>
           )}
 
-          {/* Footer */}
-          <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: TEXT_MUT, textAlign: 'center' }}>
-            Edge of the Empire // Age of Rebellion // Force and Destiny
+          {/* Spacer */}
+          <div style={{ flex: 1 }} />
+
+          {/* Hint */}
+          <div style={{
+            fontFamily: FONT_BODY,
+            fontSize: FS.overline,
+            color: TEXT_MUT,
+            letterSpacing: '0.1em',
+          }}>
+            Select a character to continue
           </div>
         </div>
       </div>
