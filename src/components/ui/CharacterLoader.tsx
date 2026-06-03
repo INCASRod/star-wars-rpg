@@ -59,7 +59,7 @@ export function CharacterLoader() {
       inset:          0,
       width:          '100vw',
       height:         '100vh',
-      background:     '#0A0806',
+      background:     'var(--hud-bg)',
       zIndex:         Z.modal,
       display:        'flex',
       flexDirection:  'column',
@@ -70,7 +70,7 @@ export function CharacterLoader() {
 
       {char && (
         <div style={{
-          width:          '220px',
+          width:          'clamp(14rem, 18vw, 17rem)',
           borderRadius:   '7px',
           border:         '1px solid color-mix(in srgb, var(--hud-accent) 65%, transparent)',
           background:     'var(--hud-surface-hi)',
@@ -230,7 +230,7 @@ export function CharacterLoader() {
       )}
 
       <div style={{
-        width:     '220px',
+        width:     'clamp(14rem, 18vw, 17rem)',
         textAlign: 'center',
         animation: char ? 'cl-strip 0.4s 0.2s ease both' : 'cl-strip 0.4s ease both',
       }}>

@@ -448,6 +448,11 @@ label, caption, .text-secondary {
   border-color: var(--hud-border-hi);
 }
 
+.hud-skill-row {
+  padding: var(--space-1) var(--space-2);
+  transition: background var(--ease-quick),
+              opacity var(--ease-quick);
+}
 .hud-skill-row:hover {
   background: var(--hud-surface-hi);
   opacity: 1 !important;
@@ -952,18 +957,91 @@ i.ffi {
 .hud-full-panel.open { transform: translateX(0); }
 
 /* ── Weapon / Force power row hover (inside quick drawers) ───── */
+.hud-combat-wpn-row {
+  padding: var(--space-1) var(--space-2);
+  transition: background var(--ease-quick),
+              opacity var(--ease-quick);
+}
 .hud-combat-wpn-row:hover { background: rgba(224,58,30,0.06); }
 
 /* ── SkillsPanel — skill row hover ──────────────────────────────
    Replaces onMouseEnter/onMouseLeave inline style mutation.
    Uses hud-accent at ~5% (0D hex) to match original gold hint. */
+.skills-row {
+  padding: var(--space-1) var(--space-2);
+  transition: background var(--ease-quick),
+              opacity var(--ease-quick);
+}
 .skills-row:hover { background: color-mix(in srgb, var(--hud-accent) 10%, transparent); }
 
 /* ── SkillsPanel — upgrade button hover ─────────────────────────
    Affordable state brightens to accent-20 on hover;
    locked state has no hover since cursor is not-allowed. */
 .skills-upgrade-btn--affordable:hover { background: color-mix(in srgb, var(--hud-accent) 20%, transparent) !important; }
+.hud-force-power-row {
+  padding: var(--space-1) var(--space-2);
+  transition: background var(--ease-quick),
+              opacity var(--ease-quick);
+}
 .hud-force-power-row:hover { background: rgba(144,96,208,0.06); }
+
+/*
+ * .panel-filter-bar
+ * Single-row compact control bar for panel
+ * filter tabs and view toggles.
+ * Established in SkillsPanel — canonical
+ * pattern for all panel filter bars.
+ */
+.panel-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-1) 0;
+  border-bottom: 1px solid var(--hud-border);
+  flex-shrink: 0;
+}
+
+.panel-filter-bar .filter-pill {
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-overline);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--hud-border);
+  background: transparent;
+  color: var(--hud-text-dim);
+  cursor: pointer;
+  transition: background var(--ease-quick),
+              border-color var(--ease-quick),
+              color var(--ease-quick);
+}
+
+.panel-filter-bar .filter-pill:hover {
+  background: color-mix(in srgb,
+    var(--hud-accent) 8%, transparent);
+  border-color: color-mix(in srgb,
+    var(--hud-accent) 35%, transparent);
+  color: var(--hud-text);
+}
+
+.panel-filter-bar .filter-pill.active {
+  background: color-mix(in srgb,
+    var(--hud-gold) 13%, transparent);
+  border-color: var(--hud-gold);
+  color: var(--hud-gold);
+}
+
+.panel-filter-bar .filter-sep {
+  width: 1px;
+  height: 0.875rem;
+  background: var(--hud-border);
+  flex-shrink: 0;
+}
+
+.panel-filter-bar .filter-spacer {
+  flex: 1;
+}
 
 /* ── GmTopBar — lobby button hover ───────────────────────────── */
 .gm-lobby-btn {

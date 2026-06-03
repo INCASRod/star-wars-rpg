@@ -2,12 +2,11 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { C, CHAR_COLOR, CHAR_ABBR3, panelBase, type CharKey } from './design-tokens'
-import { FONT_BODY, FS, RADIUS, Z, EASE, SP } from '@/lib/tokens'
+import { FONT_BODY, FONT_MONO, FS, RADIUS, EASE, SP } from '@/lib/tokens'
 import { DiceFace } from '@/components/dice/DiceFace'
 import { Tooltip, TipLabel, TipBody, TipDivider } from '@/components/ui/Tooltip'
 import { RichText } from '@/components/ui/RichText'
 import { getSkillTip } from '@/lib/tooltips/skillDescriptions'
-import { PanelSearchInput } from '@/components/character/PanelSearchInput'
 import { useHudPanelContext } from '@/contexts/HudPanelContext'
 import { TickerText } from '@/components/ui/TickerText'
 import type { SkillDiceModifier } from '@/lib/derivedStats'
@@ -21,7 +20,6 @@ interface SkillsPanelProps {
   onUpgrade: (skill: HudSkill) => void
   isCombat: boolean
   xpAvailable: number
-  onOpenPopover?: (skill: HudSkill, anchor: DOMRect) => void
   characterId?: string
   /** Dice modifiers from the derived stats engine, keyed by skill key */
   skillModifiers?: Record<string, SkillDiceModifier>
@@ -163,14 +161,15 @@ function PoolPreview({ charVal, rank }: { charVal: number; rank: number }) {
   )
 }
 
-function RankPips({ rank }: { rank: number }) {
+function RankPips({ rank, color, dimColor }: { rank: number; color: string; dimColor: string }) {
   return (
-    <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
+    <div style={{ display: 'flex', gap: SP[1], alignItems: 'center' }}>
       {Array.from({ length: 5 }).map((_, i) => (
         <div key={i} style={{
-          width: 9, height: 9, borderRadius: RADIUS.sm,
-          background: i < rank ? C.gold : 'transparent',
-          border: `1px solid ${i < rank ? C.gold : C.border}`,
+          width: '0.4rem', height: '0.5rem',
+          transform: 'skewX(-12deg)',
+          background: i < rank ? color : 'transparent',
+          border: `1px solid ${i < rank ? color : dimColor}`,
         }} />
       ))}
     </div>
@@ -196,73 +195,6 @@ function getSkillUpgradeCost(currentRank: number, isCareer: boolean): number {
   return isCareer ? 5 * newRank : (5 * newRank) + 5
 }
 
-// ── Upgrade button (left of rank pips) ────────────────────────────────────
-
-function UpgradeButton({ skill, xpAvailable, onClick }: {
-  skill: HudSkill
-  xpAvailable: number
-  onClick: () => void
-}) {
-  const [showTip, setShowTip] = useState(false)
-  const cost = getSkillUpgradeCost(skill.rank, skill.isCareer)
-  const canAfford = xpAvailable >= cost
-
-  return (
-    <div style={{ position: 'relative', flexShrink: 0 }}>
-      <button
-        onClick={(e) => { e.stopPropagation(); if (canAfford) onClick() }}
-        onMouseEnter={() => setShowTip(true)}
-        onMouseLeave={() => setShowTip(false)}
-        className={canAfford ? 'skills-upgrade-btn skills-upgrade-btn--affordable' : 'skills-upgrade-btn skills-upgrade-btn--locked'}
-        style={{
-          width: 28, height: 28, borderRadius: RADIUS.lg,
-          background: canAfford ? 'color-mix(in srgb, var(--hud-accent) 10%, transparent)' : 'var(--hud-surface-lo)',
-          border: `1px solid ${canAfford ? 'color-mix(in srgb, var(--hud-accent) 35%, transparent)' : 'var(--hud-border)'}`,
-          color: canAfford ? C.gold : 'rgba(90,40,24,0.2)',
-          fontFamily: FONT_BODY,
-          fontSize: FS.sm,
-          cursor: canAfford ? 'pointer' : 'not-allowed',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexShrink: 0, transition: EASE.quick, padding: 0, lineHeight: 1,
-        }}
-      >
-        +
-      </button>
-      {showTip && (
-        <div style={{
-          position: 'absolute',
-          bottom: 'calc(100% + 8px)',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: Z.tooltip,
-          background: 'var(--hud-surface-hi)',
-          border: `1px solid var(--hud-border-hi)`,
-          borderRadius: RADIUS.lg,
-          padding: '10px 12px',
-          minWidth: 150,
-          pointerEvents: 'none',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.7)',
-          whiteSpace: 'nowrap',
-        }}>
-          <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.gold, marginBottom: 5 }}>
-            Upgrade to Rank {skill.rank + 1}
-          </div>
-          <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: canAfford ? C.gold : 'var(--state-failure)', marginBottom: 2 }}>
-            Cost: {cost} XP
-          </div>
-          <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: canAfford ? 'var(--hud-text-dim)' : 'var(--state-failure)' }}>
-            Available: {xpAvailable} XP
-          </div>
-          {!canAfford && (
-            <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: 'var(--state-failure)', fontWeight: 700, marginTop: 5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Not enough XP
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
 
 // ── Inline row confirmation ────────────────────────────────────────────────
 
@@ -358,7 +290,7 @@ function SpeciesConditionalBadge({ ability }: { ability: SpeciesAbility }) {
 
 // ── Main panel ─────────────────────────────────────────────────────────────
 
-export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, onOpenPopover, characterId, skillModifiers = {}, speciesAbilities = [], bonusSkillKeys }: SkillsPanelProps) {
+export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, characterId, skillModifiers = {}, speciesAbilities = [], bonusSkillKeys }: SkillsPanelProps) {
   const [filter, setFilter] = useState<Filter>('All')
   const [groupView, setGroupView] = useState<GroupView>('characteristic')
   const [collapsedTypes, setCollapsedTypes] = useState<Set<string>>(
@@ -426,15 +358,11 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
     skills: filtered.filter(s => (s.type ?? 'stGeneral') === typeKey).sort((a, b) => a.name.localeCompare(b.name)),
   })).filter(g => g.skills.length > 0)
 
-  const handleSkillClick = (skill: HudSkill, e?: React.MouseEvent<HTMLElement>) => {
-    if (onOpenPopover && e) {
-      onOpenPopover(skill, e.currentTarget.getBoundingClientRect())
-    } else {
-      onRoll(skill)
-    }
+  const handleSkillClick = (skill: HudSkill) => {
+    startConfirm(skill.key)
   }
 
-  const renderSkillRow = (skill: HudSkill, careerBorderColor: string, staggerIdx?: number) => {
+  const renderSkillRow = (skill: HudSkill, careerBorderColor: string, charColor: string, staggerIdx?: number) => {
     const tip = getSkillTip(skill.name)
     const isMaxRank = skill.rank >= 5
     const isConfirming = confirmingKey === skill.key
@@ -458,7 +386,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
       <div
         key={skill.key}
         data-stagger={staggerIdx !== undefined ? staggerIdx : undefined}
-        onClick={!isConfirming ? (e) => handleSkillClick(skill, e) : undefined}
+        onClick={!isConfirming ? () => handleSkillClick(skill) : undefined}
         className={staggerIdx !== undefined
           ? (!isConfirming ? 'skills-row panel-row-enter' : 'panel-row-enter')
           : (!isConfirming ? 'skills-row' : undefined)}
@@ -502,15 +430,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
               .map((a, i) => <SpeciesConditionalBadge key={i} ability={a} />)
             }
 
-            {!isMaxRank && (
-              <UpgradeButton
-                skill={skill}
-                xpAvailable={xpAvailable}
-                onClick={() => startConfirm(skill.key)}
-              />
-            )}
-
-            <RankPips rank={skill.rank} />
+            <RankPips rank={skill.rank} color={charColor} dimColor={`color-mix(in srgb, ${charColor} 35%, transparent)`} />
             <PoolPreview charVal={skill.charVal} rank={skill.rank} />
             {skillModifiers[skill.key] && (
               <SkillModifierBadges mod={skillModifiers[skill.key]} />
@@ -528,7 +448,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
     : 'var(--state-failure)'
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
       {/* Controls — filter pills | separator | view toggle | XP + mode */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: SP[3],
@@ -587,49 +507,66 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
           })}
         </div>
 
-        {/* XP indicator + mode badge */}
+        {/* XP indicator + mode hint */}
         <div style={{ display: 'flex', alignItems: 'center', gap: SP[2], marginLeft: 'auto' }}>
           <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: xpColor }}>
             {xpAvailable} XP
           </div>
-          <div style={{
-            fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
-            letterSpacing: '0.12em', textTransform: 'uppercase',
-            color: C.gold,
-            border: '1px solid color-mix(in srgb, var(--hud-accent) 40%, transparent)',
-            borderRadius: RADIUS.sm, padding: `${SP[1]} ${SP[2]}`,
+          <span style={{
+            fontFamily: FONT_BODY,
+            fontSize: FS.overline,
+            color: C.textFaint,
+            letterSpacing: '0.08em',
           }}>
-            {isCombat ? 'Click to make a check' : 'Click to Upgrade'}
-          </div>
+            {isCombat ? 'Click a skill to roll' : 'Click a skill to upgrade it'}
+          </span>
         </div>
       </div>
 
-      {/* Legend */}
-      <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <DiceFace type="proficiency" size={14} />
-          <span style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 600, color: 'var(--hud-text-faint)' }}>Proficiency dice</span>
+      {/* Legend + Search — combined compact row */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: SP[3],
+        padding: `${SP[1]} ${SP[3]}`,
+        borderBottom: `1px solid var(--hud-border)`,
+        flexShrink: 0,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: SP[1] }}>
+          <div style={{ width: '0.4rem', height: '0.4rem', borderRadius: '50%', background: 'var(--die-proficiency)', flexShrink: 0 }} />
+          <span style={{ fontSize: FS.overline, color: C.textFaint }}>Proficiency</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <DiceFace type="ability" size={14} />
-          <span style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 600, color: 'var(--hud-text-faint)' }}>Ability dice</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: SP[1] }}>
+          <div style={{ width: '0.4rem', height: '0.4rem', transform: 'rotate(45deg)', background: 'var(--die-ability)', flexShrink: 0 }} />
+          <span style={{ fontSize: FS.overline, color: C.textFaint }}>Ability</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <div style={{ width: 9, height: 9, borderRadius: RADIUS.sm, background: C.gold, border: `1px solid ${C.gold}` }} />
-          <span style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 600, color: 'var(--hud-text-faint)' }}>Skill level</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: SP[1] }}>
+          <div style={{ width: '0.4rem', height: '0.5rem', transform: 'skewX(-12deg)', background: C.gold, flexShrink: 0 }} />
+          <span style={{ fontSize: FS.overline, color: C.textFaint }}>Rank</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <div style={{ width: 2, height: 14, background: `color-mix(in srgb, ${C.gold} 53%, transparent)`, borderRadius: RADIUS.sm }} />
-          <span style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 600, color: 'var(--hud-text-faint)' }}>Career</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: SP[1] }}>
+          <div style={{ width: '0.125rem', height: '0.625rem', background: C.gold, flexShrink: 0 }} />
+          <span style={{ fontSize: FS.overline, color: C.textFaint }}>Career</span>
+        </div>
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: SP[1] }}>
+          <span style={{ fontSize: FS.overline, color: C.textFaint }}>⌕</span>
+          <input
+            type="text"
+            value={skillSearch}
+            onChange={e => setSkillSearch(e.target.value)}
+            placeholder="Search…"
+            style={{
+              background: 'none',
+              border: 'none',
+              outline: 'none',
+              fontFamily: FONT_BODY,
+              fontSize: FS.overline,
+              color: C.textDim,
+              width: '6rem',
+            }}
+          />
         </div>
       </div>
-
-      {/* Search */}
-      <PanelSearchInput
-        value={skillSearch}
-        onChange={setSkillSearch}
-        placeholder="Search skills..."
-      />
 
       {/* No-results message */}
       {(groupView === 'characteristic' ? grouped : groupedByType).length === 0 && searchQuery && (
@@ -649,33 +586,60 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
       {groupView === 'characteristic' && (
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: 10,
+          gridTemplateColumns: '1fr 1fr',
+          gridTemplateRows: '1fr 1fr 1fr',
+          flex: 1,
+          overflow: 'hidden',
+          minHeight: 0,
+          height: '100%',
         }}>
-          {grouped.map(({ charKey, charVal, skills: groupSkills }) => {
+          {grouped.map(({ charKey, charVal, skills: groupSkills }, groupIdx) => {
             const color = CHAR_COLOR[charKey]
+            const charName = charKey.charAt(0).toUpperCase() + charKey.slice(1)
             return (
-              <div key={charKey} style={{ ...panelBase, padding: '10px 10px 6px' }}>
-                <CornerBrackets />
+              <div key={charKey} style={{
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                minHeight: 0,
+                borderRight: groupIdx % 2 === 0 ? `1px solid var(--hud-border)` : undefined,
+                borderBottom: groupIdx < 4 ? `1px solid var(--hud-border)` : undefined,
+              }}>
                 {/* Group header */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                  <div style={{
-                    width: 28, height: 28, borderRadius: RADIUS.md, flexShrink: 0,
-                    background: `color-mix(in srgb, ${color} 13%, transparent)`, border: `1px solid color-mix(in srgb, ${color} 33%, transparent)`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: FONT_BODY, fontSize: FS.h4, fontWeight: 700, color,
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: SP[2],
+                  padding: `${SP[1]} ${SP[2]}`,
+                  borderBottom: `1px solid var(--hud-border)`,
+                  flexShrink: 0,
+                }}>
+                  <span style={{
+                    fontFamily: FONT_MONO,
+                    fontSize: FS.sm,
+                    fontWeight: 700,
+                    color: color,
+                    width: '1rem',
+                    textAlign: 'center',
+                    flexShrink: 0,
                   }}>
                     {charVal}
-                  </div>
-                  <div style={{
-                    fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
-                    letterSpacing: '0.1em', textTransform: 'uppercase',
-                    color: `color-mix(in srgb, ${color} 80%, transparent)`,
+                  </span>
+                  <span style={{
+                    fontSize: FS.overline,
+                    fontWeight: 700,
+                    letterSpacing: '0.15em',
+                    textTransform: 'uppercase',
+                    color: color,
+                    flex: 1,
                   }}>
-                    <TickerText text={charKey.charAt(0).toUpperCase() + charKey.slice(1)} isOpen={isOpen} delayMs={120} />
-                  </div>
+                    {charName}
+                  </span>
                 </div>
-                {groupSkills.map((skill, idx) => renderSkillRow(skill, color, idx))}
+                {/* Skill rows — scrollable if content exceeds cell height */}
+                <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+                  {groupSkills.map((skill, idx) => renderSkillRow(skill, color, color, idx))}
+                </div>
               </div>
             )
           })}
@@ -737,7 +701,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
                 {/* Skill rows */}
                 {!collapsed && (
                   <div style={{ padding: '0 10px 6px' }}>
-                    {groupSkills.map((skill, idx) => renderSkillRow(skill, CHAR_COLOR[skill.charKey], idx))}
+                    {groupSkills.map((skill, idx) => renderSkillRow(skill, CHAR_COLOR[skill.charKey], CHAR_COLOR[skill.charKey], idx))}
                   </div>
                 )}
               </div>

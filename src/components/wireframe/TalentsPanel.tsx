@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { C, FONT_CINZEL, FONT_RAJDHANI, panelBase, FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4, FS_H3 } from '@/components/player-hud/design-tokens'
+import { SP, FONT_BODY, FS, EASE } from '@/lib/tokens'
 import { PanelSearchInput } from '@/components/character/PanelSearchInput'
 import { RichText } from '@/components/ui/RichText'
 
@@ -104,11 +105,11 @@ function TalentCard({ t }: { t: Talent }) {
     <div style={{
       ...panelBase,
       borderLeft: `2px solid ${color}60`,
-      padding: '10px 12px',
+      padding: `${SP[2]} ${SP[3]}`,
       ...(isOOT ? { borderStyle: 'solid', borderColor: `${color}50` } : {}),
     }}>
       {/* Name + badges */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: SP[2], marginBottom: SP[1] }}>
         <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_LABEL, fontWeight: 600, color: C.text, lineHeight: 1.2 }}>
           {t.name}
         </div>
@@ -125,7 +126,7 @@ function TalentCard({ t }: { t: Talent }) {
       </div>
 
       {/* Description */}
-      <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: C.textDim, lineHeight: 1.45 }}>
+      <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_CAPTION, color: C.textDim, lineHeight: 1.45, marginTop: SP[1] }}>
         <RichText text={t.description} />
       </div>
 
@@ -190,38 +191,35 @@ export function TalentsPanel({ liveTalents, characterName, characterId }: Talent
         </div>
       </div>
 
-      {/* ── Tabs (hidden during active search) ── */}
-      {!searchQuery && (
-        <div style={{ display: 'flex', borderBottom: `1px solid ${C.border}`, overflowX: 'auto' }}>
-          {TABS.map(({ key, label, special }) => {
-            const active = tab === key
-            const color = ACTIVATION_COLOR[key]
-            return (
-              <button
-                key={key}
-                onClick={() => setTab(key)}
-                style={{
-                  flex: 1, minWidth: 'fit-content', whiteSpace: 'nowrap',
-                  padding: '7px 10px',
-                  background: active ? `${color}18` : 'transparent',
-                  borderRight: `1px solid ${C.border}`,
-                  borderBottom: active ? `2px solid ${color}` : '2px solid transparent',
-                  cursor: 'pointer', transition: '.15s',
-                  fontFamily: FONT_RAJDHANI, fontWeight: 700, fontSize: FS_OVERLINE,
-                  letterSpacing: '0.1em', textTransform: 'uppercase',
-                  color: active ? color : C.textDim,
-                  ...(special && !active ? { borderBottom: `2px dashed ${color}50` } : {}),
-                }}
-              >
-                {label}
-                <span style={{ marginLeft: 4, opacity: 0.6 }}>({counts[key]})</span>
-              </button>
-            )
-          })}
-        </div>
-      )}
+      {/* ── Tabs (always visible — tab filters even during search) ── */}
+      <div style={{ display: 'flex', borderBottom: `1px solid var(--hud-border)`, flexShrink: 0, overflowX: 'auto' }}>
+        {TABS.map(({ key, label }, idx) => {
+          const active = tab === key
+          const isLast = idx === TABS.length - 1
+          return (
+            <button
+              key={key}
+              onClick={() => setTab(key)}
+              style={{
+                flex: 1, minWidth: 'fit-content', whiteSpace: 'nowrap',
+                padding: `${SP[1]} ${SP[2]}`,
+                background: active ? 'color-mix(in srgb, var(--hud-text-dim) 5%, transparent)' : 'transparent',
+                borderRight: isLast ? 'none' : `1px solid var(--hud-border)`,
+                borderBottom: active ? '2px solid var(--hud-text-dim)' : '2px solid transparent',
+                cursor: 'pointer', transition: EASE.default,
+                fontFamily: FONT_BODY, fontWeight: 700, fontSize: FS.overline,
+                letterSpacing: '0.1em', textTransform: 'uppercase',
+                color: active ? 'var(--hud-text-dim)' : 'var(--hud-text-faint)',
+              }}
+            >
+              {label}
+              <span style={{ marginLeft: 4, opacity: 0.6 }}>({counts[key]})</span>
+            </button>
+          )
+        })}
+      </div>
 
-      <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: SP[2] }}>
 
         {/* ── Search ── */}
         <PanelSearchInput
@@ -262,7 +260,7 @@ export function TalentsPanel({ liveTalents, characterName, characterId }: Talent
             </div>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 8 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(13rem, 1fr))', gap: SP[2] }}>
             {filtered.map(t => <TalentCard key={t.id} t={t} />)}
           </div>
         )}

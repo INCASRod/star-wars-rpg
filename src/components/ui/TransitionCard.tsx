@@ -37,7 +37,7 @@ export function TransitionCard({ character: char }: Props) {
 
   return (
     <div style={{
-      width:          '220px',
+      width:          'clamp(14rem, 18vw, 17rem)',
       borderRadius:   '7px',
       border:         '1px solid color-mix(in srgb, var(--hud-accent) 65%, transparent)',
       background:     'var(--hud-surface-hi)',

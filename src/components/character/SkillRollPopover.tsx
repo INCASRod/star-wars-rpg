@@ -10,7 +10,7 @@ import { DiceFace } from '@/components/dice/DiceFace'
 import { RichText } from '@/components/ui/RichText'
 import { getSkillPool, rollPool, type RollResult } from '@/components/player-hud/dice-engine'
 import type { HudSkill } from '@/components/player-hud/SkillsPanel'
-import { HUD, FONT_BODY, FONT_DISPLAY, FS, RADIUS, Z, EASE } from '@/lib/tokens'
+import { HUD, FONT_BODY, FONT_DISPLAY, FS, RADIUS, SP, Z, EASE } from '@/lib/tokens'
 
 // ── Local tokens ──────────────────────────────────────────────────────────────
 const POP_BG    = 'var(--hud-surface-hi)'
@@ -46,14 +46,14 @@ function AdjBtn({ label, disabled, onClick }: { label: string; disabled: boolean
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        width: 28, height: 28,
+        width: '1.75rem', height: '1.75rem',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         background: 'var(--hud-surface-mid)',
         border: `1px solid ${hovered && !disabled ? 'color-mix(in srgb, var(--hud-accent) 40%, transparent)' : DIM}`,
         borderRadius: RADIUS.lg,
         cursor: disabled ? 'not-allowed' : 'pointer',
         color: disabled ? HUD.textFaint : HUD.text,
-        fontSize: 15,
+        fontSize: FS.sm,
         lineHeight: 1,
         opacity: disabled ? 0.4 : 1,
         transition: `border-color ${EASE.default}`,
@@ -96,6 +96,25 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
   const [challenge,  setChallenge]  = useState(0)
   const [boost,      setBoost]      = useState(0)
   const [setback,    setSetback]    = useState(0)
+
+  const handleUpgradeCheck = () => {
+    if (difficulty + challenge >= 5) return
+    if (difficulty > 0) {
+      setDifficulty(d => d - 1)
+      setChallenge(c => c + 1)
+    } else {
+      setChallenge(c => c + 1)
+    }
+  }
+
+  const handleDowngradeCheck = () => {
+    if (challenge > 0) {
+      setChallenge(c => c - 1)
+      setDifficulty(d => d + 1)
+    } else if (difficulty > 0) {
+      setDifficulty(d => d - 1)
+    }
+  }
 
   // Position state — null = not yet measured (render hidden first)
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
@@ -160,6 +179,12 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
     return                           [setback,    setSetback]
   }
 
+  const getAddDisabled = (key: DiceType): boolean => {
+    if (key === 'difficulty' || key === 'challenge') return difficulty + challenge >= 5
+    if (key === 'boost')   return boost >= 5
+    return setback >= 5
+  }
+
   const isActiveDiffPreset = (dif: number) => difficulty === dif && challenge === 0
 
   const popover = (
@@ -178,47 +203,93 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
         WebkitBackdropFilter: 'blur(20px)',
         // rgba(0,0,0,*) shadow overlay — pre-approved exception
         boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
-        padding: 16,
+        padding: SP[4],
         visibility: pos ? 'visible' : 'hidden',
         opacity: visible ? 1 : 0,
         transform: visible ? 'translateY(0)' : 'translateY(4px)',
-        transition: 'opacity 150ms ease-out, transform 150ms ease-out',
+        transition: `opacity ${EASE.quick}, transform ${EASE.quick}`,
       }}
     >
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 12 }}>
-        <span style={{
-          fontFamily: FONT_DISPLAY,
-          fontSize: 'clamp(0.85rem, 1.5vw, 1rem)',
-          fontWeight: 700,
-          color: HUD.gold,
-        }}>
-          {skill.name}
-        </span>
-        <span style={{ color: 'color-mix(in srgb, var(--hud-accent) 40%, transparent)', fontFamily: FONT_BODY, fontSize: 'clamp(0.7rem, 1.2vw, 0.85rem)' }}>&middot;</span>
-        <span style={{
-          fontFamily: FONT_BODY,
-          fontSize: 'clamp(0.7rem, 1.2vw, 0.85rem)',
-          color: 'color-mix(in srgb, var(--hud-accent) 50%, transparent)',
-        }}>
-          {CHAR_ABBR3[skill.charKey]}
-        </span>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: SP[1], marginBottom: SP[3] }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: SP[1] }}>
+          <span style={{
+            fontFamily: FONT_DISPLAY,
+            fontSize: FS.sm,
+            fontWeight: 700,
+            color: HUD.gold,
+          }}>
+            {skill.name}
+          </span>
+          <span style={{ color: 'color-mix(in srgb, var(--hud-accent) 40%, transparent)', fontFamily: FONT_BODY, fontSize: FS.label }}>&middot;</span>
+          <span style={{
+            fontFamily: FONT_BODY,
+            fontSize: FS.label,
+            color: 'color-mix(in srgb, var(--hud-accent) 50%, transparent)',
+          }}>
+            {CHAR_ABBR3[skill.charKey]}
+          </span>
+        </div>
+        <div style={{ display: 'flex', gap: SP[1] }}>
+          <button
+            onClick={handleUpgradeCheck}
+            disabled={difficulty + challenge >= 5}
+            style={{
+              fontFamily: FONT_BODY,
+              fontSize: FS.overline,
+              fontWeight: 700,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              padding: `${SP[1]} ${SP[2]}`,
+              borderRadius: RADIUS.sm,
+              border: '1px solid color-mix(in srgb, var(--state-dark-fp) 50%, transparent)',
+              background: 'color-mix(in srgb, var(--state-dark-fp) 12%, transparent)',
+              color: 'var(--state-dark-fp)',
+              cursor: difficulty + challenge >= 5 ? 'not-allowed' : 'pointer',
+              opacity: difficulty + challenge >= 5 ? 0.4 : 1,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            ↑ Upgrade
+          </button>
+          <button
+            onClick={handleDowngradeCheck}
+            disabled={difficulty + challenge === 0}
+            style={{
+              fontFamily: FONT_BODY,
+              fontSize: FS.overline,
+              fontWeight: 700,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              padding: `${SP[1]} ${SP[2]}`,
+              borderRadius: RADIUS.sm,
+              border: '1px solid color-mix(in srgb, var(--state-failure) 45%, transparent)',
+              background: 'color-mix(in srgb, var(--state-failure) 10%, transparent)',
+              color: 'var(--state-failure)',
+              cursor: difficulty + challenge === 0 ? 'not-allowed' : 'pointer',
+              opacity: difficulty + challenge === 0 ? 0.4 : 1,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            ↓ Downgrade
+          </button>
+        </div>
       </div>
 
       {/* ── Your Dice ─────────────────────────────────────────────────────── */}
       <SectionLabel text="Your Dice" />
-      <div style={{ marginBottom: 10 }}>
+      <div style={{ marginBottom: SP[2] }}>
         {proficiency === 0 && ability === 0 ? (
           <span style={{
             fontFamily: FONT_BODY,
-            fontSize: 'clamp(0.65rem, 1.1vw, 0.75rem)',
+            fontSize: FS.caption,
             color: HUD.textFaint,
             fontStyle: 'italic',
           }}>
             No dice &mdash; characteristic is 0
           </span>
         ) : (
-          <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: SP[3], alignItems: 'center' }}>
             {proficiency > 0 && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <div style={{ display: 'flex', gap: 3 }}>
@@ -227,7 +298,7 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
                   ))}
                 </div>
                 {/* Proficiency die identity tint — pre-approved exception (die colour) */}
-                <span style={{ fontFamily: FONT_BODY, fontSize: 'clamp(0.58rem, 1vw, 0.68rem)', color: 'rgba(245,197,24,0.65)' }}>
+                <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'rgba(245,197,24,0.65)' }}>
                   PRF
                 </span>
               </div>
@@ -240,7 +311,7 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
                   ))}
                 </div>
                 {/* Ability die identity tint — pre-approved exception (die colour) */}
-                <span style={{ fontFamily: FONT_BODY, fontSize: 'clamp(0.58rem, 1vw, 0.68rem)', color: 'rgba(76,175,80,0.65)' }}>
+                <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'rgba(76,175,80,0.65)' }}>
                   ABL
                 </span>
               </div>
@@ -250,7 +321,7 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
       </div>
 
       {/* ── Difficulty shortcuts ────────────────────────────────────────────── */}
-      <div style={{ overflowX: 'auto', whiteSpace: 'nowrap', marginBottom: 12, paddingBottom: 2 }}>
+      <div style={{ overflowX: 'auto', whiteSpace: 'nowrap', marginBottom: SP[3], paddingBottom: 2 }}>
         {DIFF_PRESETS.map(p => {
           const active = isActiveDiffPreset(p.dif)
           return (
@@ -267,7 +338,7 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
                 borderRadius: RADIUS.md,
                 cursor: 'pointer',
                 fontFamily: FONT_BODY,
-                fontSize: 'clamp(0.55rem, 0.9vw, 0.65rem)',
+                fontSize: FS.overline,
                 fontWeight: 600,
                 letterSpacing: '0.04em',
                 // Active tint tied to difficulty die identity — pre-approved exception
@@ -284,7 +355,7 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
 
       {/* ── Add Dice ──────────────────────────────────────────────────────── */}
       <SectionLabel text="Add Dice" />
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 20px', marginBottom: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 20px', marginBottom: SP[3] }}>
         {ADJ_DICE.map(({ key }) => {
           const [count, setCount] = getAdj(key)
           return (
@@ -293,14 +364,14 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
               <AdjBtn label="-" disabled={count <= 0} onClick={() => setCount(Math.max(0, count - 1))} />
               <span style={{
                 fontFamily: FONT_BODY,
-                fontSize: 'clamp(0.8rem, 1.3vw, 0.95rem)',
+                fontSize: FS.sm,
                 color: HUD.gold,
                 minWidth: 24,
                 textAlign: 'center',
               }}>
                 {count}
               </span>
-              <AdjBtn label="+" disabled={false} onClick={() => setCount(count + 1)} />
+              <AdjBtn label="+" disabled={getAddDisabled(key)} onClick={() => setCount(count + 1)} />
             </div>
           )
         })}
@@ -309,9 +380,9 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
       {/* ── Relevant Talents ─────────────────────────────────────────────── */}
       {talentHints && talentHints.length > 0 && (
         <>
-          <div style={{ height: 1, background: HUD.border, marginBottom: 10 }} />
+          <div style={{ height: 1, background: HUD.border, marginBottom: SP[2] }} />
           <SectionLabel text="Relevant Talents" />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: SP[3] }}>
             {talentHints.map((hint, i) => (
               <div key={i} style={{
                 background: 'var(--hud-surface-lo)',
@@ -319,10 +390,10 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
                 borderRadius: RADIUS.lg,
                 padding: '6px 8px',
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: SP[1] }}>
                   <span style={{
                     fontFamily: FONT_BODY,
-                    fontSize: 'clamp(0.65rem, 1.1vw, 0.75rem)',
+                    fontSize: FS.caption,
                     fontWeight: 700,
                     color: HUD.gold,
                   }}>
@@ -330,7 +401,7 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
                   </span>
                   <span style={{
                     fontFamily: FONT_BODY,
-                    fontSize: 'clamp(0.55rem, 0.9vw, 0.62rem)',
+                    fontSize: FS.overline,
                     fontWeight: 600,
                     letterSpacing: '0.08em',
                     textTransform: 'uppercase',
@@ -344,7 +415,7 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
                   {hint.ranks > 1 && (
                     <span style={{
                       fontFamily: FONT_BODY,
-                      fontSize: 'clamp(0.55rem, 0.9vw, 0.62rem)',
+                      fontSize: FS.overline,
                       fontWeight: 700,
                       letterSpacing: '0.06em',
                       textTransform: 'uppercase',
@@ -360,7 +431,7 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
                 </div>
                 <div style={{
                   fontFamily: FONT_BODY,
-                  fontSize: 'clamp(0.55rem, 0.95vw, 0.65rem)',
+                  fontSize: FS.overline,
                   color: HUD.textDim,
                   lineHeight: 1.45,
                 }}>
@@ -373,24 +444,24 @@ export function SkillRollPopover({ skill, anchor, talentHints, onRoll, onClose }
       )}
 
       {/* ── Divider ──────────────────────────────────────────────────────── */}
-      <div style={{ height: 1, background: HUD.border, marginBottom: 12 }} />
+      <div style={{ height: 1, background: HUD.border, marginBottom: SP[3] }} />
 
       {/* ── Roll button ──────────────────────────────────────────────────── */}
       <button
         onClick={handleRoll}
         style={{
           width: '100%',
-          height: 40,
-          background: `linear-gradient(135deg, ${HUD.gold} 0%, ${HUD.gold} 100%)`,
+          padding: `${SP[2]} 0`,
+          background: 'var(--hud-gold)',
+          color: 'var(--hud-bg)',
           border: 'none',
-          borderRadius: RADIUS.lg,
+          borderRadius: RADIUS.md,
           cursor: 'pointer',
           fontFamily: FONT_DISPLAY,
-          fontSize: 'clamp(0.75rem, 1.3vw, 0.9rem)',
+          fontSize: FS.sm,
           fontWeight: 700,
           textTransform: 'uppercase',
-          letterSpacing: '0.08em',
-          color: 'var(--hud-vital-text)',
+          letterSpacing: '0.12em',
         }}
       >
         Roll
@@ -406,12 +477,12 @@ function SectionLabel({ text }: { text: string }) {
   return (
     <div style={{
       fontFamily: FONT_BODY,
-      fontSize: 'clamp(0.55rem, 1vw, 0.65rem)',
+      fontSize: FS.overline,
       fontWeight: 700,
       textTransform: 'uppercase',
       letterSpacing: '0.1em',
       color: SEC_LABEL,
-      marginBottom: 6,
+      marginBottom: SP[1],
     }}>
       {text}
     </div>

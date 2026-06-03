@@ -518,12 +518,37 @@ function SystemRow({
   }
 
   if (roll.roll_type === 'Item Award') {
+    const isRemoved  = label.includes(' removed from ') || label.includes(' dropped ')
     const splitIdx   = label.indexOf(' awarded to ')
     const itemPart   = splitIdx >= 0 ? label.slice(0, splitIdx) : label
     const recipients = splitIdx >= 0 ? label.slice(splitIdx + ' awarded to '.length) : ''
+    const badgeColor = isRemoved ? '#E03020' : '#4EC87A'
     return (
       <div style={{ padding: '3px var(--space-1)', fontFamily: FONT_BODY, fontSize: FS.overline }}>
-        <span>🎁 </span>
+        <svg
+          width="1em" height="1em"
+          viewBox="0 0 14 14"
+          style={{ display: 'inline-block', verticalAlign: '-0.15em', marginRight: '0.25em' }}
+          aria-hidden="true"
+        >
+          <rect x="1" y="0.5" width="11" height="11" rx="1.5"
+            fill="none" stroke={HUD.gold} strokeWidth="1"/>
+          <rect x="3.5" y="3" width="6" height="6" rx="0.75"
+            fill="none" stroke={HUD.gold} strokeWidth="0.8"/>
+          <circle cx="11" cy="11" r="4.5"
+            fill="var(--hud-bg)" stroke="var(--hud-bg)" strokeWidth="0.5"/>
+          <circle cx="11" cy="11" r="4"
+            fill={isRemoved ? '#2E1A1A' : '#1A2E1A'}
+            stroke={badgeColor} strokeWidth="0.8"/>
+          <line
+            x1="11" y1={isRemoved ? '13.5' : '8.5'}
+            x2="11" y2={isRemoved ? '9' : '13'}
+            stroke={badgeColor} strokeWidth="1.1" strokeLinecap="round"/>
+          <polyline
+            points={isRemoved ? '9,11 11,9 13,11' : '9,11.5 11,13.5 13,11.5'}
+            fill="none" stroke={badgeColor}
+            strokeWidth="1.1" strokeLinejoin="round" strokeLinecap="round"/>
+        </svg>
         <span style={{ color: HUD.gold, fontWeight: 700 }}>{itemPart}</span>
         {recipients && (
           <>

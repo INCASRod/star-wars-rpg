@@ -35,7 +35,6 @@ export function HudSkillsTab({
       onUpgrade={skill => onBuySkill(skill.key, skill.rank, skill.isCareer)}
       isCombat={isCombat}
       xpAvailable={character.xp_available}
-      onOpenPopover={onOpenPopover}
       characterId={character.id}
       skillModifiers={skillModifiers}
       speciesAbilities={speciesAbilities}

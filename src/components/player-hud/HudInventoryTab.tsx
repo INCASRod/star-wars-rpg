@@ -35,7 +35,7 @@ export function HudInventoryTab({
     if (!effectiveCampaignId) return
     supabase.from('roll_log').insert({
       campaign_id: effectiveCampaignId, character_id: characterId,
-      character_name: characterName, roll_label: label, roll_type: 'system',
+      character_name: characterName, roll_label: label, roll_type: 'Item Award',
       pool: { proficiency:0, ability:0, boost:0, challenge:0, difficulty:0, setback:0, force:0 },
       result: { netSuccess:0, netAdvantage:0, triumph:0, despair:0, succeeded:false },
       is_dm: !!isGmMode, hidden: false,

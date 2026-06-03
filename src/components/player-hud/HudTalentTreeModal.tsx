@@ -3,7 +3,7 @@
 import { TalentTree, type TalentTreeNode, type TalentTreeConnection } from '@/components/character/TalentTree'
 import { BuySpecButton } from './BuySpecButton'
 import type { Character, CharacterSpecialization, RefSpecialization, RefTalent } from '@/lib/types'
-import { HUD, FONT_BODY, FONT_DISPLAY, FS, SP, RADIUS, Z } from '@/lib/tokens'
+import { HUD, FONT_BODY, FONT_DISPLAY, FS, SP, RADIUS, Z, EASE } from '@/lib/tokens'
 
 interface HudTalentTreeModalProps {
   open: boolean
@@ -63,6 +63,24 @@ export function HudTalentTreeModal({
             refTalentMap={refTalentMap}
             onBuy={specKey => onBuySpecialization(specKey, setActiveSpecKey)}
           />
+          <div style={{ flex: 1 }} />
+          <button
+            onClick={onClose}
+            style={{
+              fontFamily: FONT_BODY,
+              fontSize: FS.sm,
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: 'var(--hud-text-dim)',
+              padding: `${SP[1]} ${SP[2]}`,
+              borderRadius: RADIUS.sm,
+              lineHeight: 1,
+              transition: `color ${EASE.quick}`,
+            }}
+          >
+            ✕
+          </button>
         </div>
         {talentTreeData ? (
           <TalentTree

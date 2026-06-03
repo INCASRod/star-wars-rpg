@@ -13,10 +13,10 @@ const POOL_CAP = 5
 
 function RankPips({ rank }: { rank: number }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: SP[1], flexShrink: 0 }}>
       {Array.from({ length: rank }).map((_, i) => (
         <div key={i} style={{
-          width: 5, height: 5,
+          width: '0.3125rem', height: '0.3125rem',
           borderRadius: RADIUS.sm,
           background: 'var(--hud-gold)',
           flexShrink: 0,
@@ -34,7 +34,7 @@ function PoolDice({ charVal, rank }: { charVal: number; rank: number }) {
   const ablShown = overflow > 0 ? POOL_CAP - proShown : ability
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: SP[1], flexShrink: 0 }}>
       {Array.from({ length: proShown }).map((_, i) => <DiceFace key={`p${i}`} type="proficiency" size={13} solid />)}
       {Array.from({ length: ablShown }).map((_, i) => <DiceFace key={`a${i}`} type="ability"     size={13} solid />)}
       {overflow > 0 && (
@@ -98,7 +98,7 @@ function SectionHeader({ label, count, dimmed }: { label: string; count: number;
   return (
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '5px 8px 3px',
+      padding: `${SP[1]} ${SP[2]} ${SP[1]}`,
       borderBottom: '1px solid var(--hud-border)',
       flexShrink: 0,
     }}>
@@ -131,7 +131,7 @@ function TrainedRow({ skill, onOpen }: { skill: HudSkill; onOpen: (r: DOMRect) =
       className="hud-skill-row hud-skill-row--trained"
       style={{
         display: 'flex', alignItems: 'center',
-        width: '100%', padding: '5px 8px', gap: 6,
+        width: '100%', padding: `${SP[1]} ${SP[2]}`, gap: SP[1],
         background: 'transparent', border: 'none',
         borderBottom: '1px solid var(--hud-border)',
         cursor: 'pointer', textAlign: 'left',
@@ -160,7 +160,7 @@ function UntrainedRow({ skill, onOpen }: { skill: HudSkill; onOpen: (r: DOMRect)
       className="hud-skill-row hud-skill-row--untrained"
       style={{
         display: 'flex', alignItems: 'center',
-        width: '100%', padding: '3px 8px', gap: 6,
+        width: '100%', padding: `${SP[1]} ${SP[2]}`, gap: SP[1],
         background: 'transparent', border: 'none',
         borderBottom: '1px solid var(--hud-border)',
         cursor: 'pointer', textAlign: 'left',
@@ -233,7 +233,7 @@ export function HudSkillQuickList({ skills, onOpenPopover }: HudSkillQuickListPr
 
         {filtered.length === 0 && (
           <div style={{
-            padding: '16px 8px',
+            padding: `${SP[4]} ${SP[2]}`,
             fontFamily: FONT_BODY, fontSize: FS.label,
             color: 'var(--hud-text-faint)',
             textAlign: 'center',

@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { RichText } from '@/components/ui/RichText'
 import { HUD, FS, FONT_BODY, FONT_DISPLAY, RADIUS, Z, EASE } from '@/lib/tokens'
 import { Modal } from '@/components/ui/Modal'
@@ -774,7 +774,6 @@ export function TalentTree({
 }: TalentTreeProps) {
   const [pendingNode, setPendingNode]       = useState<TalentTreeNode | null>(null)
   const [lockedPreview, setLockedPreview]   = useState<TalentTreeNode | null>(null)
-
   const nodeMap = new Map<string, TalentTreeNode>()
   for (const node of nodes) {
     nodeMap.set(`${node.row}-${node.col}`, node)
@@ -803,36 +802,15 @@ export function TalentTree({
           background: PANEL_BG,
           borderBottom: `1px solid ${BORDER}`,
           padding: '12px 16px',
-          display: 'flex',
-          alignItems: 'center',
           fontWeight: 700,
-          justifyContent: 'space-between',
         }}
       >
-        <div>
-          <div style={{ fontFamily: FR, fontSize: FS.sm, color: HUD.gold, lineHeight: 1.3 }}>
-            {specName}
-          </div>
-          <div style={{ fontFamily: FR, fontSize: FS.label, color: DIM, marginTop: 2 }}>
-            Specialization Tree · {nodes.length} Talents
-          </div>
+        <div style={{ fontFamily: FR, fontSize: FS.sm, color: HUD.gold, lineHeight: 1.3 }}>
+          {specName}
         </div>
-
-        {xpAvailable !== undefined && (
-          <div
-            style={{
-              background: 'var(--hud-surface-lo)',
-              border: `1px solid ${HUD.border}`,
-              borderRadius: RADIUS.sm,
-              padding: '2px 10px',
-              fontFamily: FR,
-              fontSize: FS.label,
-              color: HUD.gold,
-            }}
-          >
-            {xpAvailable} XP
-          </div>
-        )}
+        <div style={{ fontFamily: FR, fontSize: FS.label, color: DIM, marginTop: 2 }}>
+          Specialization Tree · {nodes.length} Talents
+        </div>
       </div>
 
       {/* ── LEGEND ── */}
@@ -922,7 +900,7 @@ export function TalentTree({
           gap: 0,
         }}
       >
-        {/* SVG overlay */}
+        {/* Static connection lines (always visible) */}
         <ConnectionLines connections={connections} nodeMap={nodeMap} />
 
         {/* Nodes */}

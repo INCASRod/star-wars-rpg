@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useRef, memo } from 'react'
 import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
 import { C, FONT_RAJDHANI, FS_SM, FS_CAPTION } from './design-tokens'
-import { HUD, FONT_BODY, FONT_DISPLAY, FS, RADIUS } from '@/lib/tokens'
+import { HUD, FONT_BODY, FONT_DISPLAY, FS, RADIUS, SP } from '@/lib/tokens'
 import { MapCanvas } from '@/components/map/MapCanvas'
 import { InitiativeStrip } from '@/components/player/InitiativeStrip'
 import { HudAdversaryDrawer } from './HudAdversaryDrawer'
@@ -325,15 +325,15 @@ export function HudSessionTab({
         style={{ background: 'var(--hud-surface-lo)', borderRight: '1px solid var(--hud-border-hi)', display: 'flex', flexDirection: 'column' }}
       >
         <div className="flex items-center shrink-0" style={{
-          padding: '0.625rem var(--space-4)', borderBottom: '1px solid var(--hud-border)',
+          padding: `${SP[2]} ${SP[4]}`, borderBottom: '1px solid var(--hud-border)',
           background: 'var(--hud-panel)', gap: 'var(--space-2)',
         }}>
           <span className="flex-1" style={{ fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--hud-gold)' }}>
             ◈ Skill Check
           </span>
-          <button onClick={onCloseQuickPanel} className="cursor-pointer" style={{ background: 'none', border: 'none', color: 'var(--hud-text-dim)', fontSize: 15 }}>✕</button>
+          <button onClick={onCloseQuickPanel} className="cursor-pointer" style={{ background: 'none', border: 'none', color: 'var(--hud-text-dim)', fontSize: FS.sm }}>✕</button>
         </div>
-        <div className="shrink-0" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-1)', padding: '0.625rem' }}>
+        <div className="shrink-0" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-1)', padding: SP[2] }}>
           {([
             { label: 'BRN', value: character.brawn },
             { label: 'AGI', value: character.agility },
@@ -343,15 +343,15 @@ export function HudSessionTab({
             { label: 'PRS', value: character.presence },
           ] as const).map(ch => (
             <div key={ch.label} style={{
-              textAlign: 'center', padding: '0.375rem var(--space-1)',
+              textAlign: 'center', padding: `${SP[1]} ${SP[1]}`,
               background: 'color-mix(in srgb, var(--hud-accent) 6%, transparent)',
               border: '1px solid color-mix(in srgb, var(--hud-accent) 18%, transparent)',
               borderRadius: RADIUS.lg,
             }}>
-              <div style={{ fontFamily: FONT_DISPLAY, fontSize: 'clamp(1rem,1.6vw,1.2rem)', fontWeight: 700, color: 'var(--hud-gold)', lineHeight: 1 }}>
+              <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.h4, fontWeight: 700, color: 'var(--hud-gold)', lineHeight: 1 }}>
                 {ch.value}
               </div>
-              <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.08em', color: 'var(--hud-text-faint)', marginTop: 3, textTransform: 'uppercase' }}>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.08em', color: 'var(--hud-text-faint)', marginTop: SP[1], textTransform: 'uppercase' }}>
                 {ch.label}
               </div>
             </div>

@@ -608,12 +608,9 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
               hudTalents={hudTalents}
               activeSpecKey={activeSpecKey}
               setActiveSpecKey={setActiveSpecKey}
-              talentTreeData={talentTreeData}
-              isGmMode={isGmMode}
-              onPurchaseTalent={handlePurchaseTalent}
-              onRemoveTalent={isGmMode ? handleRemoveTalent : undefined}
+              isCombat={isCombat}
+              setShowTalentTree={setShowTalentTree}
               onBuySpecialization={handleBuySpecialization}
-              onPendingDedication={setPendingDedication}
             />
           </HudFullPanel>
 
@@ -656,6 +653,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
               character={character}
               careerName={careerName}
               speciesName={speciesName}
+              specNames={specNames}
               refSpeciesAll={refSpeciesAll}
               refDutyTypes={refDutyTypes}
               refObligationTypes={refObligationTypes}
