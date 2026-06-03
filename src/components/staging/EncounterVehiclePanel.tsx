@@ -4,7 +4,7 @@ import { useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { CombatEncounter } from '@/lib/combat'
 import type { VehicleInstance } from '@/lib/vehicles'
-import { HUD, FONT_BODY, FS, SP, RADIUS, EASE } from '@/lib/tokens'
+import { HUD, FONT_BODY, FS, SP, RADIUS } from '@/lib/tokens'
 import { useEncounterCombatControls } from '@/hooks/useEncounterCombatControls'
 
 /* ── Design tokens ────────────────────────────────────────── */
