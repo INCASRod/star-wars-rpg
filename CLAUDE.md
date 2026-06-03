@@ -55,9 +55,10 @@ The project uses exactly two UI fonts plus the icon font. Do not add more.
 |---|---|---|---|
 | **Space Grotesk** | `var(--font-display)` | `FONT_DISPLAY` | Logos, stat numerics, display headings |
 | **JetBrains Mono** | `var(--font-body)` | `FONT_BODY` | All other UI text — labels, body, HUD, buttons |
+| **JetBrains Mono** | `var(--font-mono)` | `FONT_MONO` | Numeric/data values — stat blocks, counters, inline code |
 | **sw-rpg-icons** | `var(--font-sw-rpg-icons)` | `FONT_ICONS` | Star Wars RPG dice/result icon font only |
 
-In TypeScript: `import { FONT_DISPLAY, FONT_BODY, FONT, FONT_ICONS } from '@/lib/tokens'`
+In TypeScript: `import { FONT_DISPLAY, FONT_BODY, FONT_MONO, FONT, FONT_ICONS } from '@/lib/tokens'`
 
 `FONT` is an alias for `FONT_BODY` and exists for backward compatibility only.
 
@@ -94,3 +95,74 @@ import { RADIUS } from '@/lib/tokens'
 ### Backward-compat imports
 
 `src/components/player-hud/design-tokens.ts`, `src/components/wireframe/wf-tokens.ts`, and `src/lib/styles.ts` are shims that re-export from `tokens.ts`. Existing imports still work. New code must import directly from `@/lib/tokens`.
+
+---
+
+## Shinkei Enforcement
+
+These rules enforce the Shinkei design system contract. Violations block task completion — fix before marking done.
+
+### Typography
+
+- All font sizes must use `FS.*` tokens from `@/lib/tokens`. Never write `'12px'`, `'0.75rem'`, or any size literal in an inline style.
+- All font families must use `FONT_BODY`, `FONT_DISPLAY`, or `FONT_ICONS`. Never write a font-family name string inline.
+- `FONT_MONO` (`var(--font-mono)`) is JetBrains Mono registered as a distinct semantic variable for numeric/data contexts. Use it for stat values, counters, and inline monospaced figures — not as a general body font.
+
+### Colour discipline
+
+- All colours must come from `HUD.*`, `COLOR.*`, `CHAR_COLOR.*`, or `var(--*)` CSS custom properties. Never write a hex or rgb value inline.
+- Approved exception: `ACCENT_HEX` in SVG `stroke`/`fill` attributes where CSS variables are unsupported. The exception must be accompanied by a comment.
+- All other uses of raw hex or rgb in component files are violations, including inside `linear-gradient()` or `box-shadow` strings.
+
+### Opacity
+
+- Element opacity: use the `opacity` CSS property or `color-mix(in srgb, <token> N%, transparent)`.
+- Background/border opacity: `color-mix(in srgb, var(--hud-accent) 20%, transparent)` is the correct pattern.
+- The `var(--token)HH` two-digit hex suffix pattern is banned — it breaks under theme switching.
+- `var(--hud-accent-10)`, `var(--hud-accent-20)` etc. are banned. Use `color-mix()` instead.
+
+### Theme system
+
+The project has three themes: **Kyber Archive** (default, cyan accent), **Ember Tatooine** (red accent), **neutral**. All accent colours are delivered via `var(--hud-accent)`.
+
+- Never hardcode a theme accent colour — always use `var(--hud-accent)` or `color-mix()` against it.
+- Components must render correctly under all three themes.
+- Never reference `--hud-accent-*` variant tokens — they are internal to the theme layer.
+
+### Sealed namespaces
+
+- `DICE_COLOR`, `SYM_COLOR`, `DICE_META`, `SYM` from `@/lib/tokens` — dice and symbol rendering only. Do not use in layout or general UI components.
+- `FONT_ICONS` / `var(--font-sw-rpg-icons)` — icon font only. Do not set as `fontFamily` on any non-icon element.
+- The sw-rpg-icons font loading in `src/app/layout.tsx` is permanently sealed. Do not add, remove, or reorder font registrations there.
+
+### Transitions and z-index
+
+All transition timing values must use `EASE.*` from `@/lib/tokens` or `var(--ease-*)` from `holo-tokens.css`. Never hardcode `0.2s ease`, `300ms`, or any timing literal in a component.
+
+All z-index values must use `Z.*` from `@/lib/tokens` or `var(--z-*)` from `holo-tokens.css`. Never hardcode a z-index number in a component.
+
+### Audit requirement
+
+Every CC prompt that touches UI must begin with a Step 0 audit phase before any implementation. The audit must:
+1. Confirm the build is currently clean (`npm run build`)
+2. Report any existing violations in the target files
+3. Confirm the exact line numbers and values to be changed
+
+No implementation may begin until Step 0 is reported.
+
+### New component checklist
+
+Before completing any new component or modifying an existing one, verify all of the following. A failing check must be fixed before the task is marked done:
+
+- [ ] Zero hardcoded px/rem/em font sizes in inline styles
+- [ ] Zero hardcoded hex/rgb colours outside approved exceptions
+- [ ] Zero hardcoded z-index numbers
+- [ ] Zero hardcoded transition timing values
+- [ ] Zero hardcoded px spacing except `1px` borders
+- [ ] Fonts are Space Grotesk and JetBrains Mono only
+- [ ] Component works correctly under all three themes
+- [ ] No `var(--token)HH` opacity patterns
+- [ ] No `--hud-accent-*` variant token references
+- [ ] No `onMouseEnter`/`onMouseLeave` style mutations
+- [ ] Hover states handled via CSS classes or `hov-lift`
+- [ ] `docs/architecture.md` updated if any route, hook, table, component, or utility file was added or changed

@@ -18,6 +18,15 @@ const jetbrainsMono = JetBrains_Mono({
   weight: ["300", "400", "500", "600", "700"],
 });
 
+// --font-mono: same typeface as --font-body, registered as a distinct semantic
+// variable for numeric/data contexts (stat blocks, counters, inline code).
+const jetbrainsMonoMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700"],
+});
+
 const swRpgIcons = localFont({
   src: "../../public/fonts/sw-rpg-icons.ttf",
   variable: "--font-sw-rpg-icons",
@@ -42,7 +51,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} ${swRpgIcons.variable}`}>
+    <html lang="en" className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} ${jetbrainsMonoMono.variable} ${swRpgIcons.variable}`}>
       <body className="antialiased">
         {children}
         <Toaster position="top-center" richColors />
