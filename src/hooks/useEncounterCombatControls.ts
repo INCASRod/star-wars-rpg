@@ -29,6 +29,7 @@ export function useEncounterCombatControls({
   campaignId,
   options,
 }: UseEncounterCombatControlsParams) {
+  const { onDefeat, onDisbandSquad } = options ?? {}
 
   const adjustAdversaryWounds = useCallback(async (adv: AdversaryInstance, delta: number) => {
     if (!encounter) return
@@ -68,7 +69,8 @@ export function useEncounterCombatControls({
 
     if (!wasDefeated && result.isDefeated && encounter.id) {
       const msg = result.defeatMessage ?? `${adv.name} — DEFEATED`
-      options?.onDefeat?.(msg)
+      // Caller is responsible for defeat notification UI (e.g. toast); hook handles DB writes.
+      onDefeat?.(msg)
       await supabase.from('combat_log').insert({
         campaign_id:    campaignId,
         encounter_id:   encounter.id,
@@ -78,9 +80,9 @@ export function useEncounterCombatControls({
         result_summary: msg,
         is_visible_to_players: true,
       })
-      if (adv.squad_active) await options?.onDisbandSquad?.(adv.instanceId)
+      if (adv.squad_active) await onDisbandSquad?.(adv.instanceId)
     }
-  }, [encounter, campaignId, saveEncounter, supabase, options]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [encounter, campaignId, saveEncounter, supabase, onDefeat, onDisbandSquad])
 
   const adjustAdversaryStrain = useCallback(async (adv: AdversaryInstance, delta: number) => {
     if (!encounter || adv.type !== 'nemesis') return
@@ -124,7 +126,7 @@ export function useEncounterCombatControls({
         .eq('slot_key', advSlot.id)
         .eq('campaign_id', campaignId)
     }
-  }, [encounter, campaignId, saveEncounter, supabase]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [encounter, campaignId, saveEncounter, supabase])
 
   const adjustHullTrauma = useCallback(async (vehicle: VehicleInstance, delta: number) => {
     if (!encounter) return
@@ -155,7 +157,7 @@ export function useEncounterCombatControls({
         is_visible_to_players: true,
       })
     }
-  }, [encounter, campaignId, saveEncounter, supabase]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [encounter, campaignId, saveEncounter, supabase])
 
   const adjustSystemStrain = useCallback(async (vehicle: VehicleInstance, delta: number) => {
     if (!encounter) return
