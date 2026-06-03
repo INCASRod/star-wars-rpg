@@ -310,6 +310,26 @@
   transform: rotate(45deg) translate(-1px, 1px);
 }
 
+/* ── Tooltip lock animations ─────────────────────────────── */
+@keyframes tooltipLockPulse {
+  0%   { box-shadow: 0 8px 32px rgba(0,0,0,0.85), 0 0 0 0   color-mix(in srgb, var(--hud-accent)  0%, transparent); }
+  50%  { box-shadow: 0 8px 32px rgba(0,0,0,0.85), 0 0 0 2px var(--hud-accent), 0 0 20px color-mix(in srgb, var(--hud-accent) 45%, transparent); }
+  100% { box-shadow: 0 8px 32px rgba(0,0,0,0.85), 0 0 0 1px color-mix(in srgb, var(--hud-accent) 30%, transparent), 0 0 10px color-mix(in srgb, var(--hud-accent) 20%, transparent); }
+}
+
+@keyframes tooltipLockedGlow {
+  0%, 100% { box-shadow: 0 8px 32px rgba(0,0,0,0.85), 0 0 0 1px color-mix(in srgb, var(--hud-accent) 25%, transparent), 0 0  8px color-mix(in srgb, var(--hud-accent) 15%, transparent); }
+  50%       { box-shadow: 0 8px 32px rgba(0,0,0,0.85), 0 0 0 1px color-mix(in srgb, var(--hud-accent) 50%, transparent), 0 0 16px color-mix(in srgb, var(--hud-accent) 30%, transparent); }
+}
+
+.tooltip-lock-pulse {
+  animation: tooltipLockPulse 600ms ease-out forwards;
+}
+
+.tooltip-locked-glow {
+  animation: tooltipLockedGlow 2s ease-in-out infinite;
+}
+
 /* ── Loading bar sweep ───────────────────────────────── */
 @keyframes loadingBarSweep {
   0%   { transform: translateX(-100%); }
