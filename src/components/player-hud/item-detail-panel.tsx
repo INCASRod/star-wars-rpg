@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useRef, useLayoutEffect } from 'react'
-import { FONT_BODY, FONT_DISPLAY, RADIUS, FS } from '@/lib/tokens'
+import { FONT_BODY, FONT_DISPLAY, RADIUS, FS, SP } from '@/lib/tokens'
 import type { WpnDisplay, ArmDisplay, GearRow, EquipState, StowLocation, StowableAsset, RefWeaponQuality, ItemCondition } from '@/lib/types'
 import { ItemDetailHero } from './item-detail-hero'
 import { ItemConditionTrack } from './item-condition-track'
@@ -38,10 +38,10 @@ function StatBox({ label, value, color }: { label: string; value: React.ReactNod
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       background: `color-mix(in srgb, ${color} 8%, transparent)`,
       border: `1px solid color-mix(in srgb, ${color} 22%, transparent)`,
-      borderRadius: RADIUS.md, padding: '3px var(--space-2)', minWidth: '2.5rem',
+      borderRadius: RADIUS.md, padding: `${SP[1]} var(--space-2)`, minWidth: '2.5rem',
     }}>
       <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700, color, lineHeight: 1 }}>{value}</div>
-      <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 2 }}>{label}</div>
+      <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: SP[1] }}>{label}</div>
     </div>
   )
 }
@@ -53,8 +53,8 @@ function SectionHeader({ children }: { children: React.ReactNode }) {
     <div style={{
       fontFamily: FONT_DISPLAY, fontSize: FS.overline, fontWeight: 700,
       letterSpacing: '0.12em', textTransform: 'uppercase',
-      color: 'var(--hud-gold)', marginBottom: 4,
-      borderBottom: '1px solid var(--hud-border)', paddingBottom: 3,
+      color: 'var(--hud-gold)', marginBottom: SP[1],
+      borderBottom: '1px solid var(--hud-border)', paddingBottom: SP[1],
     }}>
       {children}
     </div>
@@ -88,7 +88,7 @@ function EquipButtons({ equipState, condition, stowLocation, stowableAssets, bas
 
   return (
     <div>
-      <div style={{ display: 'flex', gap: 4 }}>
+      <div style={{ display: 'flex', gap: SP[1] }}>
         {EQUIP_STATES.map(s => {
           const isActive   = equipState === s
           const isDisabled = s === 'equipped' && !canEquip
@@ -116,7 +116,7 @@ function EquipButtons({ equipState, condition, stowLocation, stowableAssets, bas
         })}
       </div>
       {equipState === 'stowed' && stowLocation && (
-        <div style={{ marginTop: 6 }}>
+        <div style={{ marginTop: SP[1] }}>
           <StowPill location={stowLocation} />
         </div>
       )}
@@ -163,7 +163,7 @@ function DiscardStrip({ isGm, characterName, onCancel, onConfirm }: {
               marginTop: 'var(--space-1)', width: '100%', boxSizing: 'border-box' as const,
               background: 'var(--hud-surface-lo)', border: '1px solid var(--hud-border)',
               color: 'var(--hud-text)', fontFamily: FONT_BODY, fontSize: FS.overline,
-              padding: '3px var(--space-2)', borderRadius: RADIUS.sm, outline: 'none',
+              padding: `${SP[1]} var(--space-2)`, borderRadius: RADIUS.sm, outline: 'none',
             }}
           />
         )}
@@ -171,7 +171,7 @@ function DiscardStrip({ isGm, characterName, onCancel, onConfirm }: {
       <button
         onClick={onCancel}
         style={{
-          height: '1.625rem', padding: '0 0.625rem', borderRadius: RADIUS.md, cursor: 'pointer',
+          height: '1.625rem', padding: `0 ${SP[2]}`, borderRadius: RADIUS.md, cursor: 'pointer',
           fontFamily: FONT_BODY, fontSize: FS.overline,
           background: 'transparent', border: '1px solid var(--hud-border)', color: 'var(--hud-text-dim)',
           flexShrink: 0,
@@ -180,7 +180,7 @@ function DiscardStrip({ isGm, characterName, onCancel, onConfirm }: {
       <button
         onClick={() => onConfirm(isGm && note.trim() ? note.trim() : undefined)}
         style={{
-          height: '1.625rem', padding: '0 0.625rem', borderRadius: RADIUS.md, cursor: 'pointer',
+          height: '1.625rem', padding: `0 ${SP[2]}`, borderRadius: RADIUS.md, cursor: 'pointer',
           fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
           background: `color-mix(in srgb, ${accent} 9%, transparent)`,
           border: `1px solid color-mix(in srgb, ${accent} 50%, transparent)`,
@@ -248,14 +248,14 @@ export function ItemDetailPanel({
   }, [currentId])
 
   const STATS_ROW_STYLE: React.CSSProperties = {
-    display: 'flex', gap: 4, padding: '6px 10px',
+    display: 'flex', gap: SP[1], padding: `${SP[1]} ${SP[2]}`,
     background: 'var(--hud-surface-hi)', borderBottom: '1px solid var(--hud-border)',
     flexShrink: 0, flexWrap: 'wrap',
   }
 
   const BODY_STYLE: React.CSSProperties = {
-    flex: 1, overflowY: 'auto', padding: '8px 10px',
-    display: 'flex', flexDirection: 'column', gap: 8,
+    flex: 1, overflowY: 'auto', padding: `${SP[2]} ${SP[2]}`,
+    display: 'flex', flexDirection: 'column', gap: SP[2],
   }
 
   function renderWeapon(w: WpnDisplay) {

@@ -1,6 +1,6 @@
 'use client'
 import React, { useState } from 'react'
-import { FONT_BODY, FS, RADIUS } from '@/lib/tokens'
+import { FONT_BODY, FS, RADIUS, SP } from '@/lib/tokens'
 import { ItemThumbGrid } from './item-thumb-grid'
 import { ItemDetailPanel, type SelectedItem } from './item-detail-panel'
 import type {
@@ -50,8 +50,8 @@ function EncBar({ current, threshold }: { current: number; threshold: number }) 
   const pct     = threshold > 0 ? Math.min((current / threshold) * 100, 100) : 0
   const overenc = current > threshold
   return (
-    <div style={{ padding: '6px 10px', borderBottom: '1px solid var(--hud-border)', flexShrink: 0 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+    <div style={{ padding: `${SP[1]} ${SP[2]}`, borderBottom: '1px solid var(--hud-border)', flexShrink: 0 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: SP[1] }}>
         <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--hud-text-dim)' }}>
           Encumbrance
         </span>
@@ -59,7 +59,7 @@ function EncBar({ current, threshold }: { current: number; threshold: number }) 
           {current} / {threshold}
         </span>
       </div>
-      <div style={{ height: 4, background: 'var(--hud-border)', borderRadius: RADIUS.sm, overflow: 'hidden' }}>
+      <div style={{ height: '0.25rem', background: 'var(--hud-border)', borderRadius: RADIUS.sm, overflow: 'hidden' }}>
         <div style={{
           height: '100%', width: `${pct}%`,
           background: overenc

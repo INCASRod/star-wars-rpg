@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { C, panelBase } from './design-tokens'
-import { FONT_BODY, FS, RADIUS } from '@/lib/tokens'
+import { FONT_BODY, FS, RADIUS, EASE, SP } from '@/lib/tokens'
 import { Tooltip, TipLabel, TipBody } from '@/components/ui/Tooltip'
 import { RichText } from '@/components/ui/RichText'
 import { PanelSearchInput } from '@/components/character/PanelSearchInput'
@@ -58,7 +58,7 @@ function DiceHintChips({ hints }: { hints: DiceHints }) {
   if (hints.addSetbacks > 0)    chips.push({ label: `+${hints.addSetbacks > 1 ? hints.addSetbacks : ''}■`, color: 'var(--die-setback)', title: 'Adds Setback die (black)' })
   if (chips.length === 0) return null
   return (
-    <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap', marginTop: 4 }}>
+    <div style={{ display: 'flex', gap: SP[1], flexWrap: 'wrap', marginTop: SP[1] }}>
       {chips.map((c, i) => (
         <span key={i} title={c.title} style={{
           fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
@@ -101,11 +101,11 @@ function TalentCard({ talent }: { talent: HudTalent }) {
   const card = (
     <div style={{
       ...panelBase,
-      padding: '10px 12px',
+      padding: `${SP[2]} ${SP[3]}`,
       borderLeft: `2px solid ${talent.isSpeciesGranted ? SPECIES_COLOR : color}`,
     }}>
       <CornerBrackets />
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: talent.description ? 4 : 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: SP[2], marginBottom: talent.description ? SP[1] : 0 }}>
         <div style={{
           flex: 1,
           fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 600,
@@ -150,7 +150,7 @@ function TalentCard({ talent }: { talent: HudTalent }) {
       {talent.description && (
         <div style={{
           fontFamily: FONT_BODY, fontSize: FS.label, color: C.textDim,
-          lineHeight: 1.5, marginTop: 4,
+          lineHeight: 1.5, marginTop: SP[1],
           maxHeight: '6em', overflow: 'hidden',
         }}>
           <RichText text={talent.description} />
@@ -179,7 +179,7 @@ export function TalentsPanel({ talents, onViewTree, characterId }: TalentsPanelP
     return (
       <div style={{
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        padding: 48, gap: 12,
+        padding: SP[12], gap: SP[3],
       }}>
         <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: C.textFaint }}>
           No talents purchased yet.
@@ -189,7 +189,7 @@ export function TalentsPanel({ talents, onViewTree, characterId }: TalentsPanelP
             onClick={onViewTree}
             style={{
               background: `color-mix(in srgb, ${C.gold} 9%, transparent)`, border: `1px solid ${C.gold}`,
-              borderRadius: RADIUS.md, padding: '8px 20px',
+              borderRadius: RADIUS.md, padding: `${SP[2]} ${SP[5]}`,
               fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 600,
               letterSpacing: '0.1em', color: C.gold, cursor: 'pointer',
             }}
@@ -221,7 +221,7 @@ export function TalentsPanel({ talents, onViewTree, characterId }: TalentsPanelP
   const extra = visibleTalents.filter(t => !listed.has(t.activation))
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: SP[4] }}>
       {onViewTree && (
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <button
@@ -229,9 +229,9 @@ export function TalentsPanel({ talents, onViewTree, characterId }: TalentsPanelP
             className="hov-gold-bg"
             style={{
               background: `color-mix(in srgb, ${C.gold} 7%, transparent)`, border: `1px solid ${C.borderHi}`,
-              borderRadius: RADIUS.md, padding: '5px 14px',
+              borderRadius: RADIUS.md, padding: `${SP[1]} ${SP[3]}`,
               fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 600,
-              letterSpacing: '0.1em', color: C.gold, cursor: 'pointer', transition: '.15s',
+              letterSpacing: '0.1em', color: C.gold, cursor: 'pointer', transition: EASE.quick,
             }}
           >
             TALENT TREE
@@ -254,7 +254,7 @@ export function TalentsPanel({ talents, onViewTree, characterId }: TalentsPanelP
           fontSize: FS.sm,
           color: 'var(--hud-text-faint)',
           fontStyle: 'italic',
-          padding: '16px 0',
+          padding: `${SP[4]} 0`,
         }}>
           No talents matching &ldquo;{talentSearch}&rdquo;
         </div>
@@ -266,7 +266,7 @@ export function TalentsPanel({ talents, onViewTree, characterId }: TalentsPanelP
             fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700,
             letterSpacing: '0.15em', textTransform: 'uppercase',
             color: ACTIVATION_COLORS[activation] ?? C.textDim,
-            marginBottom: 6, paddingBottom: 4,
+            marginBottom: SP[1], paddingBottom: SP[1],
             borderBottom: `1px solid ${C.border}`,
           }}>
             <TickerText text={activation} isOpen={isOpen} delayMs={120} />
@@ -274,7 +274,7 @@ export function TalentsPanel({ talents, onViewTree, characterId }: TalentsPanelP
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: 8,
+            gap: SP[2],
           }}>
             {items.map((t, idx) => (
               <div key={t.key} data-stagger={idx}>
