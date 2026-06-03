@@ -169,6 +169,13 @@
 - Exports the `CombatParticipantRow` interface (moved from `CombatPanel`)
 - Returns: `{ combatParticipants, setCombatParticipants }`
 
+### `useEncounterCombatControls({ encounter, saveEncounter, supabase, campaignId, options? })`
+- Shared hook encapsulating the five combat adjustment functions previously inlined in `EncounterAdversaryPanel` and `EncounterVehiclePanel`
+- Accepts `encounter: CombatEncounter | null`, `saveEncounter`, a Supabase client, `campaignId`, and optional `onDefeat`/`onDisbandSquad` callbacks
+- Exposes: `adjustAdversaryWounds`, `adjustAdversaryStrain`, `adjustGroupSize`, `adjustHullTrauma`, `adjustSystemStrain`
+- Each function updates the encounter JSONB adversaries/vehicles array via `saveEncounter`, syncs `wound_pct` on `map_tokens`, and (for wounds/hull trauma) inserts defeat/disabled entries to `combat_log`
+- No Supabase realtime subscription — stateless computation only
+
 ### `useCombatLog(encounterId)`
 - Owns `combat_log` table state for a single encounter
 - State: `entries: CombatLogEntry[]`
