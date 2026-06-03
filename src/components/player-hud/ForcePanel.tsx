@@ -373,15 +373,12 @@ function ForcePowerCard({
 
   return (
     <div
+      className="force-panel"
       style={{
         ...panelBase,
         padding: 0,
-        border: `1px solid ${FORCE_BLUE_DIM}`,
         overflow: 'hidden',
-        transition: 'border-color var(--ease-default)',
       }}
-      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = FORCE_BLUE }}
-      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = FORCE_BLUE_DIM }}
     >
       {/* Header row — clickable toggle */}
       <div
@@ -571,17 +568,14 @@ export function ForcePanel({
             </div>
             <button
               onClick={onAdd}
-              className="cursor-pointer"
+              className="cursor-pointer force-browse-btn"
               style={{
-                background: FORCE_BLUE_GLOW,
                 border: `1px solid ${FORCE_BLUE_DIM}`,
                 borderRadius: 'var(--radius-md)', padding: 'var(--space-2) var(--space-5)',
                 fontFamily: FONT_RAJDHANI, fontSize: FS_LABEL,
                 fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase',
                 color: FORCE_BLUE,
               }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'color-mix(in srgb, var(--die-force) 24%, transparent)' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = FORCE_BLUE_GLOW }}
             >
               Browse Force Powers
             </button>

@@ -10,7 +10,7 @@ import type {
 } from '@/lib/types'
 import { WeaponDamageDisplay, isMeleeSkill } from '@/components/character/WeaponDamageDisplay'
 import { QualityBadge } from '@/components/character/QualityBadge'
-import { HUD } from '@/lib/tokens'
+import { HUD, FS } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 const GOLD_DIM = 'var(--hud-text-dim)'
@@ -250,7 +250,7 @@ export function GearTab({
                   style={{
                     display: 'block', width: '100%', marginTop: 6,
                     background: 'none', border: 'none', cursor: 'pointer',
-                    color: TEXT_DIM, fontSize: '0.6rem', textAlign: 'center',
+                    color: TEXT_DIM, fontSize: FS.overline, textAlign: 'center',
                     padding: '2px 0',
                   }}
                 >
@@ -327,7 +327,7 @@ export function GearTab({
                   style={{
                     display: 'block', width: '100%', marginTop: 6,
                     background: 'none', border: 'none', cursor: 'pointer',
-                    color: TEXT_DIM, fontSize: '0.6rem', textAlign: 'center',
+                    color: TEXT_DIM, fontSize: FS.overline, textAlign: 'center',
                     padding: '2px 0',
                   }}
                 >
@@ -373,7 +373,7 @@ export function GearTab({
                       onClick={() => toggleExpand(cg.id)}
                       style={{
                         background: 'none', border: 'none', cursor: 'pointer',
-                        color: TEXT_DIM, fontSize: '0.6rem', padding: '0 4px',
+                        color: TEXT_DIM, fontSize: FS.overline, padding: '0 4px',
                       }}
                     >
                       {isExpanded ? '▲' : '▼'}

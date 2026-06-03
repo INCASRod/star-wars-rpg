@@ -104,7 +104,7 @@ function EquipButtons({ equipState, condition, stowLocation, stowableAssets, bas
                 fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 600,
                 textTransform: 'uppercase', letterSpacing: '0.08em',
                 border: '1px solid', transition: 'border-color var(--ease-default), color var(--ease-default)',
-                background: isActive ? 'var(--hud-accent-10)' : 'var(--hud-surface-lo)',
+                background: isActive ? 'color-mix(in srgb, var(--hud-accent) 10%, transparent)' : 'var(--hud-surface-lo)',
                 borderColor: isActive ? 'var(--hud-gold)' : 'var(--hud-border)',
                 color: isActive ? 'var(--hud-gold)' : isDisabled ? 'var(--hud-text-faint)' : 'var(--hud-text-dim)',
                 opacity: isDisabled ? 0.4 : 1,

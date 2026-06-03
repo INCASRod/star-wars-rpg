@@ -68,7 +68,7 @@ export function ItemThumb({ name, icon, iconUrl, equipState, condition, isSelect
       {/* image area */}
       <div style={{
         width: '100%', height: 44, position: 'relative',
-        background: 'radial-gradient(ellipse at 50% 60%, var(--hud-accent-10) 0%, transparent 70%)',
+        background: 'radial-gradient(ellipse at 50% 60%, color-mix(in srgb, var(--hud-accent) 10%, transparent) 0%, transparent 70%)',
         borderRadius: RADIUS.sm,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         filter: isDestroyed ? 'grayscale(0.8)' : 'none',

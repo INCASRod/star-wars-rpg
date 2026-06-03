@@ -96,7 +96,7 @@ export function StagingLeftDrawer({ open, onClose, title, children }: StagingLef
             className="staging-close-btn"
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
-              fontSize: '1.125rem', lineHeight: 1,
+              fontSize: FS.body, lineHeight: 1,
               padding: '0.25rem 0.375rem', borderRadius: RADIUS.md,
               fontFamily: FONT_BODY,
             }}

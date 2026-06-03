@@ -40,7 +40,7 @@ export function ItemDetailHero({ name, typeTag, icon, iconUrl, hardPoints, hardP
     <div style={{
       height: 80, flexShrink: 0,
       display: 'flex', alignItems: 'center', gap: 12, padding: '0 12px',
-      background: 'linear-gradient(110deg, var(--hud-surface-hi) 0%, color-mix(in srgb, var(--hud-surface-hi) 80%, var(--hud-accent-10)) 100%)',
+      background: 'linear-gradient(110deg, var(--hud-surface-hi) 0%, color-mix(in srgb, var(--hud-surface-hi) 80%, color-mix(in srgb, var(--hud-accent) 10%, transparent)) 100%)',
       borderBottom: '1px solid var(--hud-border)',
       position: 'relative', overflow: 'hidden',
     }}>
@@ -55,7 +55,7 @@ export function ItemDetailHero({ name, typeTag, icon, iconUrl, hardPoints, hardP
         width: 58, height: 58, flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         border: '1px solid var(--hud-gold)', borderRadius: RADIUS.md,
-        background: 'radial-gradient(ellipse at 50% 60%, var(--hud-accent-20) 0%, transparent 70%)',
+        background: 'radial-gradient(ellipse at 50% 60%, color-mix(in srgb, var(--hud-accent) 20%, transparent) 0%, transparent 70%)',
         overflow: 'hidden',
       }}>
         {iconUrl && !iconErr

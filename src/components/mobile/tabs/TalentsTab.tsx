@@ -5,7 +5,7 @@ import { ACTIVATION_LABELS } from '@/lib/types'
 import type { CharacterTalent, RefTalent } from '@/lib/types'
 import { RichText } from '@/components/ui/RichText'
 import { stripBBCode } from '@/lib/utils'
-import { HUD } from '@/lib/tokens'
+import { HUD, FS } from '@/lib/tokens'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 const GOLD_DIM  = 'var(--hud-text-faint)'
@@ -138,7 +138,7 @@ export function TalentsTab({ charTalents, refTalentMap }: TalentsTabProps) {
                 }}>
                   {ref.name}
                   {ref.is_ranked && totalRanks > 1 && (
-                    <span style={{ color: GOLD_DIM, fontWeight: 400, marginLeft: 6, fontSize: '0.85em' }}>
+                    <span style={{ color: GOLD_DIM, fontWeight: 400, marginLeft: 6, fontSize: FS.sm }}>
                       ×{totalRanks}
                     </span>
                   )}

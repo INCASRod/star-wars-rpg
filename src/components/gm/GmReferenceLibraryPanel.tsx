@@ -117,7 +117,7 @@ function EmptyState({ message, sub }: { message: string; sub: string }) {
       padding:        '2rem',
       textAlign:      'center',
     }}>
-      <div style={{ fontSize: '1.75rem', opacity: 0.15 }}>⊟</div>
+      <div style={{ fontSize: FS.h3, opacity: 0.15 }}>⊟</div>
       <div style={{
         fontFamily:    FONT_BODY,
         fontSize:      'var(--text-label)',

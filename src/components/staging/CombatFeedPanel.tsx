@@ -308,7 +308,7 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
         padding: `2.5rem ${SP[4]}`, display: 'flex', flexDirection: 'column',
         alignItems: 'center', gap: '0.625rem',
       }}>
-        <div style={{ fontSize: '1.75rem', opacity: 0.3 }}>⚔</div>
+        <div style={{ fontSize: FS.h3, opacity: 0.3 }}>⚔</div>
         <div style={{ fontFamily: FC, fontSize: FS.sm, color: HUD.textDim, textAlign: 'center' }}>
           No active combat encounter.<br />Begin combat from the top bar.
         </div>
@@ -619,7 +619,7 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
                   }} />
                 )}
                 {isActed && (
-                  <span style={{ fontSize: '0.6875rem', color: SUCCESS, flexShrink: 0 }}>✓</span>
+                  <span style={{ fontSize: FS.sm, color: SUCCESS, flexShrink: 0 }}>✓</span>
                 )}
 
                 {/* Name + reassigned indicator */}
@@ -659,7 +659,7 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
                       color: isReassigned ? HUD.gold : HUD.textDim,
                       borderColor: isReassigned ? `color-mix(in srgb, ${HUD.gold} 31%, transparent)` : BORDER_MD,
                       background: isReassigned ? `color-mix(in srgb, ${HUD.gold} 6%, transparent)` : 'transparent',
-                      fontSize: '0.75rem',
+                      fontSize: FS.sm,
                     }}
                   >⇄</button>
                 )}
@@ -708,7 +708,7 @@ export function CombatFeedPanel({ campaignId, characters }: CombatFeedPanelProps
                     className="hov-failure-btn"
                     style={{
                       background: 'none', border: 'none', cursor: 'pointer',
-                      fontSize: '1rem', lineHeight: 1,
+                      fontSize: FS.body, lineHeight: 1,
                       padding: '1px 4px', borderRadius: RADIUS.sm,
                     }}
                   >×</button>

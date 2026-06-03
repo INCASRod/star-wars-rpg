@@ -2,7 +2,7 @@
 
 import React, { useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Z, RADIUS, HUD } from '@/lib/tokens'
+import { Z, RADIUS, HUD, FS } from '@/lib/tokens'
 import { FONT_BODY as FONT } from '@/lib/tokens'
 import type { GmConflictRow } from '@/hooks/useGmCampaignConflicts'
 
@@ -93,7 +93,7 @@ export function GmConflictPip({ conflict, onResolve }: GmConflictPipProps) {
                 position:   'absolute', top: '0.375rem', right: '0.375rem',
                 background: 'none', border: 'none', padding: '0.125rem 0.25rem',
                 cursor:     'pointer', lineHeight: 1,
-                fontFamily: FONT, fontSize: '0.7rem',
+                fontFamily: FONT, fontSize: FS.overline,
                 color:      'rgba(144,96,208,0.5)',
               }}
               aria-label="Close"

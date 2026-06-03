@@ -2,7 +2,7 @@
 
 import { Tooltip, TipLabel, TipBody, TipDivider } from '@/components/ui/Tooltip'
 import { RichText } from '@/components/ui/RichText'
-import { FONT_BODY, RADIUS, EASE } from '@/lib/tokens'
+import { FONT_BODY, RADIUS, EASE, FS } from '@/lib/tokens'
 
 const ENC_WARN = 'var(--state-threat)'
 const ENC_OK   = 'rgba(90,170,224,0.7)'
@@ -77,7 +77,7 @@ export function EncumbranceBar({ current, threshold, brawn, compact = false, lab
         }}>
           {current}/{threshold}
         </span>
-        {over && <span style={{ fontSize: '0.65rem', color: ENC_WARN }}>{warningIcon}</span>}
+        {over && <span style={{ fontSize: FS.overline, color: ENC_WARN }}>{warningIcon}</span>}
       </div>
     )
   }

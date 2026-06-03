@@ -2,7 +2,7 @@
 
 import React, { useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Z, RADIUS, FONT_BODY } from '@/lib/tokens'
+import { Z, RADIUS, FONT_BODY, FS } from '@/lib/tokens'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 export type CritSeverity = 'minor' | 'moderate' | 'serious' | 'grievous'
@@ -131,7 +131,7 @@ export function CriticalInjuryPip({ pip, onHeal }: CriticalInjuryPipProps) {
                 position: 'absolute', top: 6, right: 6,
                 background: 'none', border: 'none', padding: '2px 4px',
                 cursor: 'pointer', lineHeight: 1,
-                fontFamily: FONT_BODY, fontSize: '0.7rem',
+                fontFamily: FONT_BODY, fontSize: FS.overline,
                 color: 'rgba(220,20,60,0.5)',
               }}
               aria-label="Close"

@@ -1,7 +1,7 @@
 'use client'
 
 import { memo } from 'react'
-import { FONT_BODY, RADIUS, EASE } from '@/lib/tokens'
+import { FONT_BODY, RADIUS, EASE, FS } from '@/lib/tokens'
 
 export type RailPanelId =
   | 'combat' | 'force' | 'skill'
@@ -30,7 +30,7 @@ const SYMBOL_STYLE: React.CSSProperties = {
 
 const LABEL_STYLE: React.CSSProperties = {
   fontFamily: FONT_BODY,
-  fontSize: '7px',
+  fontSize: FS.overline,
   fontWeight: 700,
   letterSpacing: '0.05em',
   textTransform: 'uppercase',

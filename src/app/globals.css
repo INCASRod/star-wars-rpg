@@ -555,6 +555,53 @@ label, caption, .text-secondary {
   border-color: var(--spec-row-border-hover, color-mix(in srgb, var(--hud-accent) 15%, transparent));
 }
 
+/* Force power panel — border brightens on hover using die-force colour */
+.force-panel {
+  border: 1px solid color-mix(in srgb, var(--die-force) 35%, transparent);
+  transition: border-color var(--ease-default);
+}
+.force-panel:hover {
+  border-color: var(--die-force);
+}
+
+/* Force browse button — background brightens on hover */
+.force-browse-btn {
+  background: color-mix(in srgb, var(--die-force) 18%, transparent);
+  transition: background var(--ease-default);
+}
+.force-browse-btn:hover {
+  background: color-mix(in srgb, var(--die-force) 24%, transparent);
+}
+
+/* Version watermark — fades in on hover, invisible at rest */
+.version-watermark {
+  opacity: 0.25;
+  transition: opacity var(--ease-quick);
+}
+.version-watermark:hover {
+  opacity: 0.6;
+}
+
+/* Staging toolbar button — reads --tool-accent CSS custom prop per button */
+.staging-tool-btn {
+  background: var(--hud-surface-hi);
+  border: 1px solid var(--hud-border);
+  cursor: pointer;
+  transition: background var(--ease-default), border-color var(--ease-default);
+}
+.staging-tool-btn[data-active] {
+  background: color-mix(in srgb, var(--tool-accent) 8%, transparent);
+  border-color: color-mix(in srgb, var(--tool-accent) 53%, transparent);
+}
+.staging-tool-btn:disabled {
+  border-color: var(--hud-surface-lo);
+  cursor: not-allowed;
+}
+.staging-tool-btn:not(:disabled):not([data-active]):hover {
+  background: color-mix(in srgb, var(--tool-accent) 4%, transparent);
+  border-color: color-mix(in srgb, var(--tool-accent) 27%, transparent);
+}
+
 /* Buy-spec trigger button — dashed gold border fades to full gold on hover */
 .buy-spec-btn {
   color:        color-mix(in srgb, var(--hud-gold) 53%, transparent);

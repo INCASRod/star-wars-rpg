@@ -313,7 +313,7 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
   if (!encounter || adversaries.length === 0) {
     return (
       <div style={{ padding: `2.5rem ${SP[4]}`, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.625rem' }}>
-        <div style={{ fontSize: '1.75rem', opacity: 0.3 }}>◆</div>
+        <div style={{ fontSize: FS.h3, opacity: 0.3 }}>◆</div>
         <div style={{ fontFamily: FC, fontSize: FS.sm, color: TEXT_MUTED, textAlign: 'center' }}>
           No adversaries in this encounter.
         </div>
@@ -330,7 +330,7 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
           background: `${RED}18`, border: `1px solid ${RED}50`, borderRadius: RADIUS.md,
           padding: `${SP[2]} ${SP[3]}`, display: 'flex', alignItems: 'center', gap: SP[2],
         }}>
-          <span style={{ fontSize: '0.875rem' }}>☠</span>
+          <span style={{ fontSize: FS.sm }}>☠</span>
           <span style={{ fontFamily: FC, fontSize: FS.label, color: RED, fontWeight: 700 }}>
             {defeatNotif.message}
           </span>
@@ -427,7 +427,7 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
                   className="hov-failure-btn"
                   style={{
                     background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0,
-                    fontSize: '0.9375rem', lineHeight: 1,
+                    fontSize: FS.sm, lineHeight: 1,
                     padding: '2px 5px', borderRadius: RADIUS.sm,
                   }}
                 >×</button>

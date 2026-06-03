@@ -634,7 +634,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
                             }}
                           >
                             <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: isSelected ? C.gold : C.text, fontWeight: isSelected ? 600 : 400 }}>
-                              {isCustom && <span style={{ color: C.gold, marginRight: 5, fontSize: '0.85em' }}>★</span>}
+                              {isCustom && <span style={{ color: C.gold, marginRight: 5, fontSize: FS_SM }}>★</span>}
                               {itemName}
                             </span>
                             <span style={{ fontFamily: FONT_MONO, fontSize: FS_CAPTION, color: C.textDim, textTransform: 'uppercase', flexShrink: 0 }}>

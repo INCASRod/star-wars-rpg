@@ -726,48 +726,26 @@ const Pill = memo(function Pill({
     ? accentColor
     : DIM
 
-  const bg     = active ? `${accentColor}15` : 'var(--hud-surface-hi)'
-  const border = active
-    ? `1px solid ${accentColor}88`
-    : disabled
-    ? '1px solid var(--hud-surface-lo)'
-    : '1px solid var(--hud-border)'
-
   return (
     <button
       disabled={disabled}
       onClick={onClick}
       title={label}
+      data-active={active ? 'true' : undefined}
+      className="staging-tool-btn"
       style={{
         display:              'flex',
         alignItems:           'center',
         gap:                  SP[2],
         padding:              '0.4375rem 0.875rem',
-        background:           bg,
         backdropFilter:       'blur(14px)',
         WebkitBackdropFilter: 'blur(14px)',
-        border,
         borderRadius:         RADIUS.lg,
-        cursor:               disabled ? 'not-allowed' : 'pointer',
         pointerEvents:        'auto',
         whiteSpace:           'nowrap',
-        transition:           `background ${EASE.default}, border-color ${EASE.default}`,
         boxShadow:            active ? `0 2px 12px rgba(0,0,0,0.5)` : '0 2px 8px rgba(0,0,0,0.35)',
-      }}
-      onMouseEnter={e => {
-        if (!disabled && !active) {
-          const el = e.currentTarget as HTMLElement
-          el.style.background    = `${accentColor}0a`
-          el.style.borderColor   = `${accentColor}44`
-        }
-      }}
-      onMouseLeave={e => {
-        if (!active) {
-          const el = e.currentTarget as HTMLElement
-          el.style.background  = 'var(--hud-surface-hi)'
-          el.style.borderColor = disabled ? 'var(--hud-surface-lo)' : 'var(--hud-border)'
-        }
-      }}
+        '--tool-accent':      accentColor,
+      } as React.CSSProperties}
     >
       <span style={{
         fontSize:   FS.sm,

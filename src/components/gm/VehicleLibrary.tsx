@@ -10,7 +10,7 @@ import { randomUUID } from '@/lib/utils'
 import { toast } from 'sonner'
 import { VehicleDetailPanel } from './VehicleDetailPanel'
 import { VehicleEditor } from './VehicleEditor'
-import { HUD, FONT_BODY, EASE } from '@/lib/tokens'
+import { HUD, FONT_BODY, EASE, FS } from '@/lib/tokens'
 import { Modal } from '@/components/ui/Modal'
 
 /* ── Design tokens ─────────────────────────────────────── */
@@ -396,7 +396,7 @@ function VehicleRow({ vehicle, tokenUrl, isLast, onView, onEdit, onAddToCombat, 
         {tokenUrl ? (
           <img src={tokenUrl} alt={vehicle.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         ) : (
-          <span style={{ fontSize: '1rem' }}>{vehicle.isStarship ? '🚀' : '🚗'}</span>
+          <span style={{ fontSize: FS.body }}>{vehicle.isStarship ? '🚀' : '🚗'}</span>
         )}
       </div>
 
