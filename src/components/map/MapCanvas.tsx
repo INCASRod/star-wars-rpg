@@ -703,7 +703,7 @@ function buildTokenSprite(
   // screen size regardless of how large the token is. Its y position is adjusted
   // so the gap between the ring edge and the label top is always 4 screen pixels.
   const lbl = new px.Text(token.label ?? '', {
-    fontFamily: 'Rajdhani, sans-serif',
+    fontFamily: 'Space Grotesk, sans-serif',
     fontWeight: '700',
     fontSize:   10,
     fill:       0xF0E8C8,

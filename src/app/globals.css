@@ -129,7 +129,7 @@ html, body {
 }
 
 body {
-  font-family: var(--font-body), 'Palanquin', sans-serif;
+  font-family: var(--font-body), sans-serif;
   font-size:   var(--text-body);
   line-height: var(--leading-normal);
   -webkit-font-smoothing: antialiased;
@@ -301,7 +301,7 @@ label, caption, .text-secondary {
 .hud-card:hover::before { opacity: 1; }
 
 .card-hdr {
-  font-family:    var(--font-body), 'Palanquin', sans-serif;
+  font-family:    var(--font-body), sans-serif;
   font-size:      var(--text-caption);
   font-weight:    700;
   letter-spacing: var(--tracking-widest);
@@ -691,7 +691,7 @@ i.ffi {
   vertical-align: middle;
   white-space:    nowrap;
   margin:         0 2px;
-  font-family:    var(--font-body), 'Palanquin', sans-serif;
+  font-family:    var(--font-body), sans-serif;
 }
 /* Dice-pool chips — colors reference CSS vars defined in :root */
 .die.boost      { color: var(--die-boost);      background: color-mix(in srgb, var(--die-boost) 12%, transparent);      border: 1px solid color-mix(in srgb, var(--die-boost) 35%, transparent); }
@@ -886,15 +886,15 @@ i.ffi {
 }
 .inv-thumb:hover {
   border-color: var(--hud-border-hi) !important;
-  background: var(--hud-accent-10) !important;
+  background: color-mix(in srgb, var(--hud-accent) 10%, transparent) !important;
   transform: scale(1.05);
-  box-shadow: 0 0 6px var(--hud-accent-20);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--hud-accent) 20%, transparent);
 }
 .inv-thumb-active {
   border-color: var(--hud-gold) !important;
-  background: var(--hud-accent-10) !important;
+  background: color-mix(in srgb, var(--hud-accent) 10%, transparent) !important;
   transform: scale(1.04);
-  box-shadow: 0 0 0 1px var(--hud-gold), 0 0 10px var(--hud-accent-35), 0 0 2px var(--hud-accent-45);
+  box-shadow: 0 0 0 1px var(--hud-gold), 0 0 10px color-mix(in srgb, var(--hud-accent) 35%, transparent), 0 0 2px color-mix(in srgb, var(--hud-accent) 45%, transparent);
 }
 .inv-equip-btn:hover:not(:disabled) { border-color: var(--hud-accent-border); color: var(--hud-text-dim); }
-.inv-equip-btn-active { border-color: var(--hud-gold) !important; color: var(--hud-gold) !important; background: var(--hud-accent-10) !important; }
+.inv-equip-btn-active { border-color: var(--hud-gold) !important; color: var(--hud-gold) !important; background: color-mix(in srgb, var(--hud-accent) 10%, transparent) !important; }
