@@ -15,6 +15,8 @@ import type { Character } from '@/lib/types'
 import type { CombatEncounter } from '@/lib/combat'
 import { fetchAdversaries, adversaryToInstance } from '@/lib/adversaries'
 import type { AdversaryInstance } from '@/lib/adversaries'
+import type { VehicleInstance } from '@/lib/vehicles'
+import { useEncounterCombatControls } from '@/hooks/useEncounterCombatControls'
 import { HUD, FONT_BODY, EASE, RADIUS } from '@/lib/tokens'
 
 /* ── Design tokens ─────────────────────────────────────── */
@@ -302,6 +304,10 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
   const [contextMenu,      setContextMenu]      = useState<ContextMenuState | null>(null)
   const [tooltipState,     setTooltipState]     = useState<TooltipState | null>(null)
   const isDraggingRef = useRef(false)
+  const [lockedTokenId, setLockedTokenId] = useState<string | null>(null)
+  const [lockedPos,     setLockedPos]     = useState<{ x: number; y: number } | null>(null)
+  const lastTooltipPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
+  const tooltipRef        = useRef<HTMLDivElement | null>(null)
   const encounter = encounterProp as unknown as EncounterRow | null
   const [previewMap,       setPreviewMap]       = useState<ActiveMap | null>(null)
   const { tokenImages: advTokenImages, setTokenImages: setAdvTokenImages } = useAdversaryTokenImages()
@@ -387,15 +393,41 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
     [activeCharacters, onMapCharIds]
   )
 
+  const saveEncounter = useCallback(async (partial: Partial<CombatEncounter>) => {
+    if (!encounter?.id) return
+    await supabase
+      .from('combat_encounters')
+      .update({ ...partial, updated_at: new Date().toISOString() })
+      .eq('id', encounter.id)
+  }, [encounter?.id, supabase]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const {
+    adjustAdversaryWounds,
+    adjustAdversaryStrain,
+    adjustGroupSize,
+    adjustHullTrauma,
+    adjustSystemStrain,
+  } = useEncounterCombatControls({
+    encounter: encounterProp,
+    saveEncounter,
+    supabase,
+    campaignId: campaignId ?? '',
+  })
+
+  const activeTooltipState = useMemo(() => {
+    if (lockedTokenId && lockedPos) return { tokenId: lockedTokenId, x: lockedPos.x, y: lockedPos.y }
+    return tooltipState
+  }, [lockedTokenId, lockedPos, tooltipState])
+
   const tooltipProps = useMemo(() => {
-    if (!tooltipState) return null
-    const token = tokensById.get(tooltipState.tokenId)
+    if (!activeTooltipState) return null
+    const token = tokensById.get(activeTooltipState.tokenId)
     if (!token) return null
 
     if (token.participant_type === 'pc' && token.character_id) {
       const char = characters.find(c => c.id === token.character_id)
       if (char) return {
-        x: tooltipState.x, y: tooltipState.y,
+        x: activeTooltipState.x, y: activeTooltipState.y,
         name: char.name, typeLabel: 'PC', typeColor: HUD.gold,
         characteristics: { brawn: char.brawn, agility: char.agility, intellect: char.intellect, cunning: char.cunning, willpower: char.willpower, presence: char.presence },
         soak: char.soak,
@@ -416,7 +448,7 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
             ? (adv.woundThreshold ?? 0) * adv.groupSize
             : adv.woundThreshold
           return {
-            x: tooltipState.x, y: tooltipState.y,
+            x: activeTooltipState.x, y: activeTooltipState.y,
             name: adv.name ?? token.label ?? '?',
             typeLabel: adv.type.charAt(0).toUpperCase() + adv.type.slice(1),
             typeColor: color,
@@ -429,16 +461,20 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
             minionGroup: adv.type === 'minion' && adv.groupSize != null
               ? { alive: adv.groupRemaining ?? 0, total: adv.groupSize }
               : undefined,
+            adversaryInstance: adv,
           }
         }
       }
       if (slot?.vehicleInstanceId) {
-        const veh = encounter.vehicles.find(v => v.instanceId === slot.vehicleInstanceId)
+        const veh = (encounterProp?.vehicles ?? []).find(v => v.instanceId === slot.vehicleInstanceId)
         if (veh) return {
-          x: tooltipState.x, y: tooltipState.y,
+          x: activeTooltipState.x, y: activeTooltipState.y,
           name: veh.name,
           typeLabel: 'Vehicle',
           typeColor: veh.alignment === 'allied_npc' ? '#4EC87A' : '#E05252',
+          hullTrauma:   { current: veh.hullTraumaCurrent,   max: veh.hullTraumaThreshold },
+          systemStrain: { current: veh.systemStrainCurrent,  max: veh.systemStrainThreshold },
+          vehicleInstance: veh,
         }
       }
     }
@@ -450,7 +486,7 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
       if (cached) {
         const color = cached.type === 'minion' ? '#E05252' : cached.type === 'nemesis' ? '#9060D0' : '#FF9800'
         return {
-          x: tooltipState.x, y: tooltipState.y,
+          x: activeTooltipState.x, y: activeTooltipState.y,
           name: token.label,
           typeLabel: cached.type.charAt(0).toUpperCase() + cached.type.slice(1),
           typeColor: color,
@@ -465,12 +501,30 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
     }
 
     return {
-      x: tooltipState.x, y: tooltipState.y,
+      x: activeTooltipState.x, y: activeTooltipState.y,
       name: token.label ?? '?',
       typeLabel: token.alignment ?? 'token',
       typeColor: HUD.gold,
     }
-  }, [tooltipState, tokensById, characters, encounter, advStatCache])
+  }, [activeTooltipState, tokensById, characters, encounter, advStatCache])
+
+  const lockedAdversary = useMemo<AdversaryInstance | null>(() => {
+    if (!lockedTokenId || !encounterProp) return null
+    const token = tokensById.get(lockedTokenId)
+    if (!token?.slot_key) return null
+    const slot = encounterProp.initiative_slots.find(s => s.id === token.slot_key)
+    if (!slot?.adversaryInstanceId) return null
+    return encounterProp.adversaries.find(a => a.instanceId === slot.adversaryInstanceId) ?? null
+  }, [lockedTokenId, encounterProp, tokensById])
+
+  const lockedVehicle = useMemo<VehicleInstance | null>(() => {
+    if (!lockedTokenId || !encounterProp) return null
+    const token = tokensById.get(lockedTokenId)
+    if (!token?.slot_key) return null
+    const slot = encounterProp.initiative_slots.find(s => s.id === token.slot_key)
+    if (!slot?.vehicleInstanceId) return null
+    return (encounterProp.vehicles ?? []).find(v => v.instanceId === slot.vehicleInstanceId) ?? null
+  }, [lockedTokenId, encounterProp, tokensById])
 
   // NPC slots from active encounter — adversaries live in combat_encounters JSONB, not combat_participants
   const npcSlots = useMemo<NpcDrawerSlot[]>(() => {
@@ -687,12 +741,32 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
 
   const handleTokenHover = useCallback((tokenId: string, screenX: number, screenY: number) => {
     if (isDraggingRef.current) return
+    if (lockedTokenId !== null) return
+    lastTooltipPosRef.current = { x: screenX, y: screenY }
     setTooltipState({ tokenId, x: screenX, y: screenY })
-  }, [])
+  }, [lockedTokenId])
 
   const handleTokenHoverEnd = useCallback(() => {
+    if (lockedTokenId !== null) return
     setTooltipState(null)
+  }, [lockedTokenId])
+
+  const handleTokenHoverLock = useCallback((tokenId: string) => {
+    setLockedTokenId(tokenId)
+    setLockedPos({ x: lastTooltipPosRef.current.x, y: lastTooltipPosRef.current.y })
   }, [])
+
+  useEffect(() => {
+    if (!lockedTokenId) return
+    const handleOutsideClick = (e: PointerEvent) => {
+      if (tooltipRef.current && tooltipRef.current.contains(e.target as Node)) return
+      setLockedTokenId(null)
+      setLockedPos(null)
+      setTooltipState(null)
+    }
+    document.addEventListener('pointerdown', handleOutsideClick)
+    return () => document.removeEventListener('pointerdown', handleOutsideClick)
+  }, [lockedTokenId])
 
   const handleTokenDragStart = useCallback((_tokenId: string) => {
     isDraggingRef.current = true
@@ -735,6 +809,7 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
               onTokenContextMenu={handleTokenContextMenu}
               tokenScale={tokenScale}
               onTokenHover={handleTokenHover}
+              onTokenHoverLock={handleTokenHoverLock}
               onTokenHoverEnd={handleTokenHoverEnd}
               onTokenDragStart={handleTokenDragStart}
               onTokenDragEnd={handleTokenDragEnd}
@@ -1059,9 +1134,20 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
           )
         })()}
 
-        {/* ── Token tooltip (hover) ── */}
-        {mounted && tooltipState && tooltipProps && (
-          <TokenTooltip {...tooltipProps} />
+        {/* ── Token tooltip (hover + locked) ── */}
+        {mounted && (tooltipState || lockedTokenId) && tooltipProps && (
+          <TokenTooltip
+            {...tooltipProps}
+            isLocked={lockedTokenId !== null && lockedTokenId === activeTooltipState?.tokenId}
+            tooltipRef={tooltipRef}
+            adversaryInstance={lockedAdversary ?? undefined}
+            vehicleInstance={lockedVehicle ?? undefined}
+            onAdjustWounds={adjustAdversaryWounds}
+            onAdjustStrain={adjustAdversaryStrain}
+            onAdjustGroupSize={adjustGroupSize}
+            onAdjustHullTrauma={adjustHullTrauma}
+            onAdjustSystemStrain={adjustSystemStrain}
+          />
         )}
 
         {/* ── Token context menu (right-click on canvas token) ── */}
