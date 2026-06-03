@@ -859,7 +859,7 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
                 <span style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: DIM }}>· not live</span>
                 <button
                   onClick={() => setPreviewMap(null)}
-                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: DIM, fontSize: '0.9rem', lineHeight: 1, padding: '0 0.125rem', marginLeft: '0.125rem' }}
+                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: DIM, fontSize: FS_SM, lineHeight: 1, padding: '0 0.125rem', marginLeft: '0.125rem' }}
                 >
                   ✕
                 </button>
@@ -1003,7 +1003,7 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
                   </span>
                   <button
                     onClick={closeDrawer}
-                    style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: DIM, fontSize: '1.1rem', lineHeight: 1, padding: '0.25rem 0.375rem' }}
+                    style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: DIM, fontSize: FS_LABEL, lineHeight: 1, padding: '0.25rem 0.375rem' }}
                   >
                     ✕
                   </button>
@@ -1430,7 +1430,7 @@ const TokenTooltip = memo(function TokenTooltip(p: TokenTooltipData) {
           </div>
           <div style={{ display: 'flex', gap: '0.1875rem' }}>
             {Array.from({ length: p.minionGroup.total }).map((_, i) => (
-              <span key={i} style={{ fontSize: '0.5625rem', color: i < p.minionGroup!.alive ? p.typeColor : 'rgba(255,255,255,0.15)' }}>
+              <span key={i} style={{ fontSize: FS_OVERLINE, color: i < p.minionGroup!.alive ? p.typeColor : 'rgba(255,255,255,0.15)' }}>
                 {i < p.minionGroup!.alive ? '■' : '□'}
               </span>
             ))}
@@ -1527,7 +1527,7 @@ const TokenTooltip = memo(function TokenTooltip(p: TokenTooltipData) {
                     />
                     <div style={{ display: 'flex', gap: '0.1875rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
                       {Array.from({ length: adv.groupSize ?? 0 }).map((_, i) => (
-                        <span key={i} style={{ fontSize: '0.5625rem', color: i < (adv.groupRemaining ?? 0) ? p.typeColor : 'var(--state-failure)' }}>
+                        <span key={i} style={{ fontSize: FS_OVERLINE, color: i < (adv.groupRemaining ?? 0) ? p.typeColor : 'var(--state-failure)' }}>
                           {i < (adv.groupRemaining ?? 0) ? '■' : '×'}
                         </span>
                       ))}
@@ -1596,7 +1596,7 @@ const TokenDrawer = memo(function TokenDrawer({
         </div>
         <button
           onClick={onClose}
-          style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: DIM, fontSize: '1.1rem', lineHeight: 1 }}
+          style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: DIM, fontSize: FS_LABEL, lineHeight: 1 }}
         >
           ×
         </button>
@@ -1625,9 +1625,9 @@ const TokenDrawer = memo(function TokenDrawer({
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
                     {advImg ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={advImg} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: `2px solid ${tokenColor}60` }} />
+                      <img src={advImg} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: `2px solid color-mix(in srgb, ${tokenColor} 38%, transparent)` }} />
                     ) : (
-                      <div style={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, background: `${tokenColor}20`, border: `2px solid ${tokenColor}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FONT_BODY, fontSize: '1rem', fontWeight: 700, color: tokenColor }}>
+                      <div style={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, background: `color-mix(in srgb, ${tokenColor} 12%, transparent)`, border: `2px solid color-mix(in srgb, ${tokenColor} 31%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FONT_BODY, fontSize: FS_H4, fontWeight: 700, color: tokenColor }}>
                         {label.charAt(0).toUpperCase()}
                       </div>
                     )}
@@ -1695,9 +1695,9 @@ const TokenDrawer = memo(function TokenDrawer({
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
                     {p.token_image_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={p.token_image_url} alt="" style={{ width: 40, height: 28, borderRadius: RADIUS.sm, objectFit: 'cover', flexShrink: 0, border: `2px solid ${tokenColor}60` }} />
+                      <img src={p.token_image_url} alt="" style={{ width: 40, height: 28, borderRadius: RADIUS.sm, objectFit: 'cover', flexShrink: 0, border: `2px solid color-mix(in srgb, ${tokenColor} 38%, transparent)` }} />
                     ) : (
-                      <div style={{ width: 40, height: 28, borderRadius: RADIUS.sm, flexShrink: 0, background: `${tokenColor}20`, border: `2px solid ${tokenColor}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FONT_BODY, fontSize: '0.8125rem', fontWeight: 700, color: tokenColor }}>
+                      <div style={{ width: 40, height: 28, borderRadius: RADIUS.sm, flexShrink: 0, background: `color-mix(in srgb, ${tokenColor} 12%, transparent)`, border: `2px solid color-mix(in srgb, ${tokenColor} 31%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FONT_BODY, fontSize: FS_OVERLINE, fontWeight: 700, color: tokenColor }}>
                         {p.name.charAt(0).toUpperCase()}
                       </div>
                     )}
@@ -1749,7 +1749,7 @@ const TokenDrawer = memo(function TokenDrawer({
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={char.portrait_url} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid rgba(150,168,180,0.4)' }} />
                 ) : (
-                  <div style={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, background: 'rgba(150,168,180,0.15)', border: '2px solid rgba(150,168,180,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FONT_BODY, fontSize: '1rem', fontWeight: 700, color: HUD.gold }}>
+                  <div style={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0, background: 'rgba(150,168,180,0.15)', border: '2px solid rgba(150,168,180,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FONT_BODY, fontSize: FS_H4, fontWeight: 700, color: HUD.gold }}>
                     {char.name.charAt(0).toUpperCase()}
                   </div>
                 )}
@@ -1820,7 +1820,7 @@ function LibFolderRow({ label, count, expanded, onToggle, onDelete }: LibFolderR
         cursor: 'pointer', userSelect: 'none', transition: `background ${EASE.quick}`,
       }}
     >
-      <span style={{ color: expanded ? HUD.gold : DIM, fontSize: '0.5625rem', flexShrink: 0, lineHeight: 1 }}>
+      <span style={{ color: expanded ? HUD.gold : DIM, fontSize: FS_OVERLINE, flexShrink: 0, lineHeight: 1 }}>
         {expanded ? '▾' : '▶'}
       </span>
       <span style={{
@@ -1835,7 +1835,7 @@ function LibFolderRow({ label, count, expanded, onToggle, onDelete }: LibFolderR
         <button
           onClick={e => { e.stopPropagation(); onDelete() }}
           title={`Delete ${label}`}
-          style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'rgba(224,80,80,0.55)', fontSize: '0.9375rem', lineHeight: 1, padding: '0 0.125rem', flexShrink: 0, marginLeft: '0.125rem' }}
+          style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'rgba(224,80,80,0.55)', fontSize: FS_SM, lineHeight: 1, padding: '0 0.125rem', flexShrink: 0, marginLeft: '0.125rem' }}
         >×</button>
       )}
     </div>

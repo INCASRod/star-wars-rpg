@@ -238,7 +238,7 @@ export function CharacterLoader() {
           H O L O C R O N
         </div>
         <div style={{ width: '100%', height: '2px', background: 'rgba(255,255,255,0.08)', borderRadius: '1px', overflow: 'hidden', margin: '0 auto 8px', position: 'relative' }}>
-          <div style={{ position: 'absolute', top: 0, left: 0, width: '40%', height: '100%', background: 'linear-gradient(90deg, transparent, var(--hud-accent), #c8883a, transparent)', animation: 'loadingBarSweep 1.4s ease-in-out infinite' }} />
+          <div style={{ position: 'absolute', top: 0, left: 0, width: '40%', height: '100%', background: 'linear-gradient(90deg, transparent, var(--hud-accent), var(--hud-gold), transparent)', animation: 'loadingBarSweep 1.4s ease-in-out infinite' }} />
         </div>
         <div key={textIdx} role="status" aria-live="polite" style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: TEXT_MUT, letterSpacing: '0.06em', textTransform: 'uppercase', animation: `cl-text ${EASE.smooth} forwards` }}>
           {LOADING_TEXTS[textIdx]}
