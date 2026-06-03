@@ -39,13 +39,14 @@ export interface MapCanvasProps {
   onTokenHoverEnd?:    () => void
   onTokenDragStart?:   (tokenId: string) => void
   onTokenDragEnd?:     (tokenId: string) => void
+  onTokenHoverLock?:   (tokenId: string) => void
 }
 
 export const MapCanvas = memo(function MapCanvas({
   mapImageUrl, tokens, isGM, currentCharacterId,
   onTokenMove, gridEnabled, gridSize, onTokenContextMenu,
   tokenScale = 1, initialScale = 1, bottomOverlayRef,
-  onTokenHover, onTokenHoverEnd, onTokenDragStart, onTokenDragEnd,
+  onTokenHover, onTokenHoverEnd, onTokenDragStart, onTokenDragEnd, onTokenHoverLock,
 }: MapCanvasProps) {
   const containerRef       = useRef<HTMLDivElement>(null)
   const appRef             = useRef<InstanceType<typeof import('pixi.js').Application> | null>(null)
@@ -72,6 +73,8 @@ export const MapCanvas = memo(function MapCanvas({
   onTokenDragStartRef.current = onTokenDragStart
   const onTokenDragEndRef   = useRef(onTokenDragEnd)
   onTokenDragEndRef.current  = onTokenDragEnd
+  const onTokenHoverLockRef  = useRef(onTokenHoverLock)
+  onTokenHoverLockRef.current = onTokenHoverLock
 
   // ── Pixi bootstrap ──────────────────────────────────────────
   useEffect(() => {
@@ -120,7 +123,7 @@ export const MapCanvas = memo(function MapCanvas({
         const { tokens: t, isGM: gm, currentCharacterId: cid, tokenScale: ts } = propsRef.current
         syncTokens(
           app, px, t, gm, cid,
-          onTokenMoveRef, onContextRef, onTokenHoverRef, onTokenHoverEndRef, onTokenDragStartRef, onTokenDragEndRef,
+          onTokenMoveRef, onContextRef, onTokenHoverRef, onTokenHoverEndRef, onTokenDragStartRef, onTokenDragEndRef, onTokenHoverLockRef,
           containerRef, tokensRef, mapWRef, mapHRef, mapOffsetXRef, mapOffsetYRef,
           draggingTokenIdRef, ts,
         )
@@ -203,7 +206,7 @@ export const MapCanvas = memo(function MapCanvas({
     prevTokensMapRef.current = new Map(tokens.map(t => [t.id, t]))
     syncTokens(
       app, PIXI, tokens, isGM, currentCharacterId,
-      onTokenMoveRef, onContextRef, onTokenHoverRef, onTokenHoverEndRef, onTokenDragStartRef, onTokenDragEndRef, containerRef, tokensRef,
+      onTokenMoveRef, onContextRef, onTokenHoverRef, onTokenHoverEndRef, onTokenDragStartRef, onTokenDragEndRef, onTokenHoverLockRef, containerRef, tokensRef,
       mapWRef, mapHRef, mapOffsetXRef, mapOffsetYRef,
       draggingTokenIdRef, tokenScale,
     )
@@ -424,6 +427,7 @@ function syncTokens(
   onHoverEndRef:        React.MutableRefObject<(() => void) | undefined>,
   onDragStartRef:       React.MutableRefObject<((id: string) => void) | undefined>,
   onDragEndRef:         React.MutableRefObject<((id: string) => void) | undefined>,
+  onHoverLockRef:       React.MutableRefObject<((id: string) => void) | undefined>,
   containerRef:         React.RefObject<HTMLDivElement | null>,
   tokensRef:            React.MutableRefObject<Map<string, InstanceType<typeof import('pixi.js').Container>>>,
   mapWRef:              React.MutableRefObject<number>,
@@ -473,7 +477,7 @@ function syncTokens(
     const sprite  = buildTokenSprite(
       px, token, canDrag,
       mapW, mapH, offsetX, offsetY,
-      onMoveRef, onContextRef, onHoverRef, onHoverEndRef, onDragStartRef, onDragEndRef, containerRef, draggingTokenIdRef,
+      onMoveRef, onContextRef, onHoverRef, onHoverEndRef, onDragStartRef, onDragEndRef, onHoverLockRef, containerRef, draggingTokenIdRef,
       mapWRef, mapHRef, mapOffsetXRef, mapOffsetYRef,
       tokenScale,
       app.ticker,
@@ -508,6 +512,7 @@ function buildTokenSprite(
   onHoverEndRef:       React.MutableRefObject<(() => void) | undefined>,
   onDragStartRef:      React.MutableRefObject<((id: string) => void) | undefined>,
   onDragEndRef:        React.MutableRefObject<((id: string) => void) | undefined>,
+  onHoverLockRef:      React.MutableRefObject<((id: string) => void) | undefined>,
   containerRef:        React.RefObject<HTMLDivElement | null>,
   draggingTokenIdRef:  React.MutableRefObject<string | null>,
   mapWRef:             React.MutableRefObject<number>,
@@ -747,9 +752,20 @@ function buildTokenSprite(
     onContextRef.current?.(token.id, e.nativeEvent)
   })
 
+  // Per-token hover-lock timer (2 s dwell → onHoverLock fires)
+  let hoverLockTimer: ReturnType<typeof setTimeout> | null = null
+  const clearHoverLockTimer = () => {
+    if (hoverLockTimer) { clearTimeout(hoverLockTimer); hoverLockTimer = null }
+  }
+
   // Hover — fire callback with screen coordinates derived from canvas rect
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(c as any).on('pointerover', (e: { globalX: number; globalY: number }) => {
+    clearHoverLockTimer()
+    hoverLockTimer = setTimeout(() => {
+      hoverLockTimer = null
+      onHoverLockRef.current?.(token.id)
+    }, 2000)
     onTokenPointerOver(c, ticker)
     if (!onHoverRef.current) return
     const rect = containerRef.current?.getBoundingClientRect()
@@ -758,9 +774,12 @@ function buildTokenSprite(
   })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(c as any).on('pointerout', () => {
+    clearHoverLockTimer()
     onHoverEndRef.current?.()
     onTokenPointerOut(c, ticker)
   })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(c as any).on('pointerdown', clearHoverLockTimer)
 
   if (!canDrag) return c
 
