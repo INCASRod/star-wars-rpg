@@ -17,6 +17,7 @@ import type { Character, CharacterSkill } from '@/lib/types'
 import { EMPTY_POOL } from '@/components/player-hud/design-tokens'
 import type { RollResult } from '@/components/player-hud/dice-engine'
 import { HUD, FS, SP, FONT_BODY, RADIUS, Z, EASE, COLOR, CHAR_COLOR } from '@/lib/tokens'
+import { useEncounterCombatControls } from '@/hooks/useEncounterCombatControls'
 
 /* ── Design tokens ────────────────────────────────────────── */
 const FC         = FONT_BODY
@@ -145,94 +146,6 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
       .eq('id', encounter.id)
   }, [encounter?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  /* ── Adversary wound adjustment ──────────────────────────── */
-  const adjustAdversaryWounds = useCallback(async (adv: AdversaryInstance, delta: number) => {
-    if (!encounter) return
-    const currentWounds = adv.woundsCurrent ?? 0
-    const clampedDelta = delta < 0 ? Math.max(delta, -currentWounds) : delta
-    if (clampedDelta === 0 && delta < 0) return
-
-    const wasDefeated = adv.type === 'minion'
-      ? adv.groupRemaining === 0
-      : currentWounds >= adv.woundThreshold
-
-    const result = applyDamageToAdversary({
-      type: adv.type, name: adv.name,
-      woundThreshold: adv.woundThreshold,
-      groupSize: adv.groupSize, groupRemaining: adv.groupRemaining,
-      woundsCurrent: currentWounds,
-    }, clampedDelta)
-
-    const updatedAdversaries = encounter.adversaries.map(a =>
-      a.instanceId !== adv.instanceId ? a
-        : { ...a, woundsCurrent: Math.max(0, result.woundsCurrent), groupRemaining: result.groupRemaining }
-    )
-    await saveEncounter({ adversaries: updatedAdversaries })
-
-    // Sync wound_pct on map token
-    const advSlot = encounter.initiative_slots.find((s: InitiativeSlot) => s.adversaryInstanceId === adv.instanceId)
-    if (advSlot) {
-      const pct = adv.type === 'minion'
-        ? 1 - (result.groupRemaining / Math.max(1, adv.groupSize))
-        : Math.min(1, result.woundsCurrent / Math.max(1, adv.woundThreshold))
-      await supabase.from('map_tokens').update({ wound_pct: pct }).eq('slot_key', advSlot.id).eq('campaign_id', campaignId)
-    }
-
-    if (!wasDefeated && result.isDefeated && encounter.id) {
-      const msg = result.defeatMessage ?? `${adv.name} — DEFEATED`
-      setDefeatNotif({ message: msg })
-      setTimeout(() => setDefeatNotif(null), 5000)
-      await supabase.from('combat_log').insert({
-        campaign_id: campaignId, encounter_id: encounter.id,
-        participant_name: 'SYSTEM', alignment: 'system', roll_type: 'system',
-        result_summary: msg, is_visible_to_players: true,
-      })
-      if (adv.squad_active) await handleDisbandSquad(adv.instanceId)
-    }
-  }, [encounter, campaignId, saveEncounter]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  /* ── Adversary strain adjustment ─────────────────────────── */
-  const adjustAdversaryStrain = useCallback(async (adv: AdversaryInstance, delta: number) => {
-    if (!encounter || adv.type !== 'nemesis') return
-    const strainMax = adv.strainThreshold ?? 0
-    const current   = adv.strainCurrent ?? 0
-    const next      = Math.max(0, Math.min(strainMax > 0 ? strainMax : 999, current + delta))
-    const updated   = encounter.adversaries.map(a =>
-      a.instanceId !== adv.instanceId ? a : { ...a, strainCurrent: next }
-    )
-    await saveEncounter({ adversaries: updated })
-  }, [encounter, saveEncounter])
-
-  /* ── Minion group size adjustment ───────────────────────── */
-  const adjustGroupSize = useCallback(async (adv: AdversaryInstance, delta: number) => {
-    if (!encounter || adv.type !== 'minion') return
-    const newGroupSize = Math.max(1, adv.groupSize + delta)
-    if (newGroupSize === adv.groupSize) return
-
-    let newGroupRemaining: number
-    let newWoundsCurrent: number
-
-    if (delta > 0) {
-      newGroupRemaining = adv.groupRemaining + 1
-      newWoundsCurrent  = adv.woundsCurrent ?? 0
-    } else {
-      newGroupRemaining = Math.min(adv.groupRemaining, newGroupSize)
-      newWoundsCurrent  = Math.min(adv.woundsCurrent ?? 0, adv.woundThreshold * newGroupSize)
-    }
-
-    const updatedAdversaries = encounter.adversaries.map(a =>
-      a.instanceId !== adv.instanceId ? a
-        : { ...a, groupSize: newGroupSize, groupRemaining: newGroupRemaining, woundsCurrent: newWoundsCurrent }
-    )
-    await saveEncounter({ adversaries: updatedAdversaries })
-
-    const advSlot = encounter.initiative_slots.find((s: InitiativeSlot) => s.adversaryInstanceId === adv.instanceId)
-    if (advSlot) {
-      const pct = 1 - (newGroupRemaining / Math.max(1, newGroupSize))
-      await supabase.from('map_tokens').update({ wound_pct: pct }).eq('slot_key', advSlot.id).eq('campaign_id', campaignId)
-    }
-  }, [encounter, campaignId, saveEncounter]) // eslint-disable-line react-hooks/exhaustive-deps
-
   /* ── Update soak override ────────────────────────────────── */
   const updateAdversarySoak = useCallback(async (instanceId: string, newSoak: number) => {
     if (!encounter) return
@@ -340,6 +253,22 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
     }
     await saveEncounter({ adversaries: updatedAdversaries, initiative_slots: updatedSlots })
   }, [encounter, campaignId, saveEncounter]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* ── shared combat controls hook ────────────────────────────────────── */
+  const { adjustAdversaryWounds, adjustAdversaryStrain, adjustGroupSize } =
+    useEncounterCombatControls({
+      encounter,
+      saveEncounter,
+      supabase,
+      campaignId,
+      options: {
+        onDefeat: (msg) => {
+          setDefeatNotif({ message: msg })
+          setTimeout(() => setDefeatNotif(null), 5000)
+        },
+        onDisbandSquad: handleDisbandSquad,
+      },
+    })
 
   /* ── Soak gear parser ────────────────────────────────────── */
   function parseSoakFromGear(gear: AdversaryGear[]): { total: number; sources: string[] } {
