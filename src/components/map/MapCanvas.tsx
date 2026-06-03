@@ -752,20 +752,30 @@ function buildTokenSprite(
     onContextRef.current?.(token.id, e.nativeEvent)
   })
 
-  // Per-token hover-lock timer (2 s dwell → onHoverLock fires)
-  let hoverLockTimer: ReturnType<typeof setTimeout> | null = null
+  // Per-token hover-lock timer (2 s dwell → onHoverLock fires).
+  // hoverOutDebounce absorbs rapid pointerout/pointerover pairs fired by Pixi
+  // when the pointer crosses from the container to an interactive child element
+  // (e.g. the glow ring) without genuinely leaving the token's hit area.
+  let hoverLockTimer:   ReturnType<typeof setTimeout> | null = null
+  let hoverOutDebounce: ReturnType<typeof setTimeout> | null = null
+
   const clearHoverLockTimer = () => {
     if (hoverLockTimer) { clearTimeout(hoverLockTimer); hoverLockTimer = null }
+  }
+  const cancelOutDebounce = () => {
+    if (hoverOutDebounce) { clearTimeout(hoverOutDebounce); hoverOutDebounce = null }
   }
 
   // Hover — fire callback with screen coordinates derived from canvas rect
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(c as any).on('pointerover', (e: { globalX: number; globalY: number }) => {
-    clearHoverLockTimer()
-    hoverLockTimer = setTimeout(() => {
-      hoverLockTimer = null
-      onHoverLockRef.current?.(token.id)
-    }, 2000)
+    cancelOutDebounce()          // re-entering: cancel any pending timer-clear
+    if (!hoverLockTimer) {       // start lock countdown only once per entry
+      hoverLockTimer = setTimeout(() => {
+        hoverLockTimer = null
+        onHoverLockRef.current?.(token.id)
+      }, 2000)
+    }
     onTokenPointerOver(c, ticker)
     if (!onHoverRef.current) return
     const rect = containerRef.current?.getBoundingClientRect()
@@ -774,12 +784,17 @@ function buildTokenSprite(
   })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(c as any).on('pointerout', () => {
-    clearHoverLockTimer()
-    onHoverEndRef.current?.()
-    onTokenPointerOut(c, ticker)
+    // 60 ms debounce: if pointerover fires again within this window (child-bubble),
+    // the cancelOutDebounce() above suppresses the clear and the timer keeps running.
+    hoverOutDebounce = setTimeout(() => {
+      hoverOutDebounce = null
+      clearHoverLockTimer()
+      onHoverEndRef.current?.()
+      onTokenPointerOut(c, ticker)
+    }, 60)
   })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(c as any).on('pointerdown', clearHoverLockTimer)
+  ;(c as any).on('pointerdown', () => { cancelOutDebounce(); clearHoverLockTimer() })
 
   if (!canDrag) return c
 

@@ -1270,29 +1270,82 @@ interface TokenTooltipData {
   wounds?:        { current: number; max: number }
   strain?:        { current: number; max: number }
   minionGroup?:   { alive: number; total: number }
+  // Vehicle health bars (hover read-only + locked controls)
+  hullTrauma?:    { current: number; max: number }
+  systemStrain?:  { current: number; max: number }
+  // Live instances — present when locked, needed for writing controls
+  adversaryInstance?:   AdversaryInstance
+  vehicleInstance?:     VehicleInstance
+  // Lock state
+  isLocked?:            boolean
+  tooltipRef?:          React.RefObject<HTMLDivElement | null>
+  // Control callbacks — only invoked when isLocked
+  onAdjustWounds?:       (adv: AdversaryInstance, delta: number) => void
+  onAdjustStrain?:       (adv: AdversaryInstance, delta: number) => void
+  onAdjustGroupSize?:    (adv: AdversaryInstance, delta: number) => void
+  onAdjustHullTrauma?:   (veh: VehicleInstance, delta: number) => void
+  onAdjustSystemStrain?: (veh: VehicleInstance, delta: number) => void
 }
 
 const TOOLTIP_W = 230
 const CHAR_ABBRS = ['BR', 'AG', 'INT', 'CUN', 'WIL', 'PR'] as const
 const CHAR_KEYS  = ['brawn', 'agility', 'intellect', 'cunning', 'willpower', 'presence'] as const
 
+function ControlRow({
+  label, current, max, onDecrement, onIncrement, decrementDisabled, incrementDisabled,
+}: {
+  label: string; current: number; max: number
+  onDecrement: () => void; onIncrement: () => void
+  decrementDisabled: boolean; incrementDisabled: boolean
+}) {
+  const btnBase: React.CSSProperties = {
+    width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
+    background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
+    borderRadius: RADIUS.sm, fontFamily: FONT_BODY, fontSize: FS_SM,
+    color: TEXT, lineHeight: 1, padding: 0, userSelect: 'none' as const,
+  }
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.25rem' }}>
+      <span style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.06em', textTransform: 'uppercase', flex: 1 }}>{label}</span>
+      <span style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, fontWeight: 700, color: current >= max ? 'var(--state-failure)' : TEXT, minWidth: '2.5rem', textAlign: 'center' }}>{current}/{max}</span>
+      <button onClick={onDecrement} disabled={decrementDisabled} style={{ ...btnBase, cursor: decrementDisabled ? 'not-allowed' : 'pointer', opacity: decrementDisabled ? 0.35 : 1 }}>−</button>
+      <button onClick={onIncrement} disabled={incrementDisabled} style={{ ...btnBase, cursor: incrementDisabled ? 'not-allowed' : 'pointer', opacity: incrementDisabled ? 0.35 : 1 }}>+</button>
+    </div>
+  )
+}
+
 const TokenTooltip = memo(function TokenTooltip(p: TokenTooltipData) {
+  const [isPulsing, setIsPulsing] = useState(false)
+
+  useEffect(() => {
+    if (!p.isLocked) { setIsPulsing(false); return }
+    setIsPulsing(true)
+    const t = setTimeout(() => setIsPulsing(false), 600)
+    return () => clearTimeout(t)
+  }, [p.isLocked])
+
   const vw   = typeof window !== 'undefined' ? window.innerWidth  : 1200
   const vh   = typeof window !== 'undefined' ? window.innerHeight : 800
   const left = Math.max(8, Math.min(p.x + 14, vw - TOOLTIP_W - 8))
   const top  = Math.max(8, Math.min(p.y - 12, vh - 300))
 
+  const animClass = p.isLocked ? (isPulsing ? 'tooltip-lock-pulse' : 'tooltip-locked-glow') : ''
+
   return createPortal(
-    <div style={{
-      position: 'fixed', left, top, width: TOOLTIP_W, zIndex: 'var(--z-tooltip)' as unknown as number,
-      background: PANEL_BG,
-      border: `1px solid ${p.typeColor}44`,
-      borderRadius: RADIUS.lg,
-      boxShadow: `0 8px 32px rgba(0,0,0,0.85), 0 0 0 1px ${p.typeColor}18`,
-      backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-      padding: '0.625rem 0.75rem',
-      pointerEvents: 'none',
-    }}>
+    <div
+      ref={p.tooltipRef}
+      className={animClass}
+      style={{
+        position: 'fixed', left, top, width: TOOLTIP_W, zIndex: 'var(--z-tooltip)' as unknown as number,
+        background: PANEL_BG,
+        border: `1px solid ${p.typeColor}44`,
+        borderRadius: RADIUS.lg,
+        boxShadow: p.isLocked ? undefined : `0 8px 32px rgba(0,0,0,0.85), 0 0 0 1px ${p.typeColor}18`,
+        backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+        padding: '0.625rem 0.75rem',
+        pointerEvents: p.isLocked ? 'auto' : 'none',
+      }}
+    >
       {/* Name + type badge */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginBottom: '0.5rem' }}>
         <div style={{ flex: 1, fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
@@ -1335,8 +1388,8 @@ const TokenTooltip = memo(function TokenTooltip(p: TokenTooltipData) {
         </div>
       )}
 
-      {/* Minion group count */}
-      {p.minionGroup && (
+      {/* Minion group count (hover read-only pips) */}
+      {p.minionGroup && !p.isLocked && (
         <div style={{ marginBottom: '0.375rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.1875rem' }}>
             <span style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Group</span>
@@ -1346,7 +1399,7 @@ const TokenTooltip = memo(function TokenTooltip(p: TokenTooltipData) {
           </div>
           <div style={{ display: 'flex', gap: '0.1875rem' }}>
             {Array.from({ length: p.minionGroup.total }).map((_, i) => (
-              <span key={i} style={{ fontSize: '0.5625rem', color: i < p.minionGroup!.alive ? '#E05252' : 'rgba(255,255,255,0.15)' }}>
+              <span key={i} style={{ fontSize: '0.5625rem', color: i < p.minionGroup!.alive ? p.typeColor : 'rgba(255,255,255,0.15)' }}>
                 {i < p.minionGroup!.alive ? '■' : '□'}
               </span>
             ))}
@@ -1377,6 +1430,105 @@ const TokenTooltip = memo(function TokenTooltip(p: TokenTooltipData) {
           <div style={{ height: '0.25rem', background: 'rgba(255,255,255,0.08)', borderRadius: RADIUS.sm, overflow: 'hidden' }}>
             <div style={{ height: '100%', width: `${Math.min(100, (p.strain.current / Math.max(p.strain.max, 1)) * 100)}%`, background: p.strain.current >= p.strain.max ? 'var(--state-failure)' : 'var(--state-success)', borderRadius: RADIUS.sm }} />
           </div>
+        </div>
+      )}
+
+      {/* Vehicle health bars (hover read-only) */}
+      {p.hullTrauma && !p.isLocked && (
+        <div style={{ marginBottom: p.systemStrain ? 6 : 0 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.1875rem' }}>
+            <span style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Hull Trauma</span>
+            <span style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, fontWeight: 700, color: p.hullTrauma.current >= p.hullTrauma.max ? 'var(--state-failure)' : TEXT }}>{p.hullTrauma.current}/{p.hullTrauma.max}</span>
+          </div>
+          <div style={{ height: '0.25rem', background: 'rgba(255,255,255,0.08)', borderRadius: RADIUS.sm, overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: `${Math.min(100, (p.hullTrauma.current / Math.max(p.hullTrauma.max, 1)) * 100)}%`, background: p.hullTrauma.current >= p.hullTrauma.max ? 'var(--state-failure)' : 'var(--hud-gold)', borderRadius: RADIUS.sm }} />
+          </div>
+        </div>
+      )}
+      {p.systemStrain && !p.isLocked && (
+        <div style={{ marginTop: p.hullTrauma ? 6 : 0 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.1875rem' }}>
+            <span style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Sys Strain</span>
+            <span style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, fontWeight: 700, color: p.systemStrain.current >= p.systemStrain.max ? 'var(--state-failure)' : TEXT }}>{p.systemStrain.current}/{p.systemStrain.max}</span>
+          </div>
+          <div style={{ height: '0.25rem', background: 'rgba(255,255,255,0.08)', borderRadius: RADIUS.sm, overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: `${Math.min(100, (p.systemStrain.current / Math.max(p.systemStrain.max, 1)) * 100)}%`, background: p.systemStrain.current >= p.systemStrain.max ? 'var(--state-failure)' : 'var(--state-success)', borderRadius: RADIUS.sm }} />
+          </div>
+        </div>
+      )}
+
+      {/* ── Locked combat controls ── */}
+      {p.isLocked && (p.adversaryInstance || p.vehicleInstance) && (
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', marginTop: '0.5rem', paddingTop: '0.5rem' }}>
+
+          {p.adversaryInstance && (() => {
+            const adv = p.adversaryInstance!
+            const woundsCurrent = adv.woundsCurrent ?? 0
+            const woundsMax = adv.type === 'minion' && adv.groupSize
+              ? (adv.woundThreshold ?? 0) * adv.groupSize
+              : (adv.woundThreshold ?? 0)
+            return (
+              <>
+                <ControlRow
+                  label="WOUNDS" current={woundsCurrent} max={woundsMax}
+                  onDecrement={() => void p.onAdjustWounds?.(adv, -1)}
+                  onIncrement={() => void p.onAdjustWounds?.(adv, +1)}
+                  decrementDisabled={woundsCurrent <= 0}
+                  incrementDisabled={woundsCurrent >= woundsMax}
+                />
+                {adv.type === 'nemesis' && (
+                  <ControlRow
+                    label="STRAIN" current={adv.strainCurrent ?? 0} max={adv.strainThreshold ?? 0}
+                    onDecrement={() => void p.onAdjustStrain?.(adv, -1)}
+                    onIncrement={() => void p.onAdjustStrain?.(adv, +1)}
+                    decrementDisabled={(adv.strainCurrent ?? 0) <= 0}
+                    incrementDisabled={(adv.strainCurrent ?? 0) >= (adv.strainThreshold ?? 0)}
+                  />
+                )}
+                {adv.type === 'minion' && (
+                  <>
+                    <ControlRow
+                      label="GROUP" current={adv.groupRemaining ?? 0} max={adv.groupSize ?? 0}
+                      onDecrement={() => void p.onAdjustGroupSize?.(adv, -1)}
+                      onIncrement={() => void p.onAdjustGroupSize?.(adv, +1)}
+                      decrementDisabled={(adv.groupSize ?? 0) <= 1}
+                      incrementDisabled={false}
+                    />
+                    <div style={{ display: 'flex', gap: '0.1875rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
+                      {Array.from({ length: adv.groupSize ?? 0 }).map((_, i) => (
+                        <span key={i} style={{ fontSize: '0.5625rem', color: i < (adv.groupRemaining ?? 0) ? p.typeColor : 'var(--state-failure)' }}>
+                          {i < (adv.groupRemaining ?? 0) ? '■' : '×'}
+                        </span>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </>
+            )
+          })()}
+
+          {p.vehicleInstance && (() => {
+            const veh = p.vehicleInstance!
+            return (
+              <>
+                <ControlRow
+                  label="HULL TRAUMA" current={veh.hullTraumaCurrent} max={veh.hullTraumaThreshold}
+                  onDecrement={() => void p.onAdjustHullTrauma?.(veh, -1)}
+                  onIncrement={() => void p.onAdjustHullTrauma?.(veh, +1)}
+                  decrementDisabled={veh.hullTraumaCurrent <= 0}
+                  incrementDisabled={veh.hullTraumaCurrent >= veh.hullTraumaThreshold}
+                />
+                <ControlRow
+                  label="SYS STRAIN" current={veh.systemStrainCurrent} max={veh.systemStrainThreshold}
+                  onDecrement={() => void p.onAdjustSystemStrain?.(veh, -1)}
+                  onIncrement={() => void p.onAdjustSystemStrain?.(veh, +1)}
+                  decrementDisabled={veh.systemStrainCurrent <= 0}
+                  incrementDisabled={veh.systemStrainCurrent >= veh.systemStrainThreshold}
+                />
+              </>
+            )
+          })()}
+
         </div>
       )}
     </div>,
