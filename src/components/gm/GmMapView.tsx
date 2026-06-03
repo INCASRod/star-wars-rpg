@@ -308,6 +308,11 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
   const [lockedPos,     setLockedPos]     = useState<{ x: number; y: number } | null>(null)
   const lastTooltipPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
   const tooltipRef        = useRef<HTMLDivElement | null>(null)
+  // localEncounter mirrors encounterProp but is updated optimistically on every
+  // saveEncounter call so the locked tooltip reflects changes before the Realtime
+  // round-trip completes.
+  const [localEncounter, setLocalEncounter] = useState<CombatEncounter | null>(encounterProp)
+  useEffect(() => { setLocalEncounter(encounterProp) }, [encounterProp])
   const encounter = encounterProp as unknown as EncounterRow | null
   const [previewMap,       setPreviewMap]       = useState<ActiveMap | null>(null)
   const { tokenImages: advTokenImages, setTokenImages: setAdvTokenImages } = useAdversaryTokenImages()
@@ -394,12 +399,13 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
   )
 
   const saveEncounter = useCallback(async (partial: Partial<CombatEncounter>) => {
-    if (!encounter?.id) return
+    if (!encounterProp?.id) return
+    setLocalEncounter(prev => prev ? { ...prev, ...partial } : null)
     await supabase
       .from('combat_encounters')
       .update({ ...partial, updated_at: new Date().toISOString() })
-      .eq('id', encounter.id)
-  }, [encounter?.id, supabase]) // eslint-disable-line react-hooks/exhaustive-deps
+      .eq('id', encounterProp.id)
+  }, [encounterProp?.id, supabase]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const {
     adjustAdversaryWounds,
@@ -509,22 +515,22 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
   }, [activeTooltipState, tokensById, characters, encounter, advStatCache])
 
   const lockedAdversary = useMemo<AdversaryInstance | null>(() => {
-    if (!lockedTokenId || !encounterProp) return null
+    if (!lockedTokenId || !localEncounter) return null
     const token = tokensById.get(lockedTokenId)
     if (!token?.slot_key) return null
-    const slot = encounterProp.initiative_slots.find(s => s.id === token.slot_key)
+    const slot = localEncounter.initiative_slots.find(s => s.id === token.slot_key)
     if (!slot?.adversaryInstanceId) return null
-    return encounterProp.adversaries.find(a => a.instanceId === slot.adversaryInstanceId) ?? null
-  }, [lockedTokenId, encounterProp, tokensById])
+    return localEncounter.adversaries.find(a => a.instanceId === slot.adversaryInstanceId) ?? null
+  }, [lockedTokenId, localEncounter, tokensById])
 
   const lockedVehicle = useMemo<VehicleInstance | null>(() => {
-    if (!lockedTokenId || !encounterProp) return null
+    if (!lockedTokenId || !localEncounter) return null
     const token = tokensById.get(lockedTokenId)
     if (!token?.slot_key) return null
-    const slot = encounterProp.initiative_slots.find(s => s.id === token.slot_key)
+    const slot = localEncounter.initiative_slots.find(s => s.id === token.slot_key)
     if (!slot?.vehicleInstanceId) return null
-    return (encounterProp.vehicles ?? []).find(v => v.instanceId === slot.vehicleInstanceId) ?? null
-  }, [lockedTokenId, encounterProp, tokensById])
+    return (localEncounter.vehicles ?? []).find(v => v.instanceId === slot.vehicleInstanceId) ?? null
+  }, [lockedTokenId, localEncounter, tokensById])
 
   // NPC slots from active encounter — adversaries live in combat_encounters JSONB, not combat_participants
   const npcSlots = useMemo<NpcDrawerSlot[]>(() => {
@@ -755,6 +761,31 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
     setLockedTokenId(tokenId)
     setLockedPos({ x: lastTooltipPosRef.current.x, y: lastTooltipPosRef.current.y })
   }, [])
+
+  const handleRemoveToken = useCallback(async (id: string) => {
+    // Dismiss the locked tooltip if it was open on this token
+    if (id === lockedTokenId) {
+      setLockedTokenId(null); setLockedPos(null); setTooltipState(null)
+    }
+    // If this token is linked to an initiative slot, remove the adversary/vehicle
+    // from the encounter so both map and Enemies/Vehicles panel stay in sync.
+    if (encounterProp) {
+      const token = tokensById.get(id)
+      if (token?.slot_key) {
+        const slot = encounterProp.initiative_slots.find(s => s.id === token.slot_key)
+        if (slot) {
+          const updatedSlots = encounterProp.initiative_slots.filter(s => s.id !== token.slot_key)
+          const partial: Partial<CombatEncounter> = { initiative_slots: updatedSlots }
+          if (slot.adversaryInstanceId)
+            partial.adversaries = encounterProp.adversaries.filter(a => a.instanceId !== slot.adversaryInstanceId)
+          if (slot.vehicleInstanceId)
+            partial.vehicles = (encounterProp.vehicles ?? []).filter(v => v.instanceId !== slot.vehicleInstanceId)
+          await saveEncounter(partial)
+        }
+      }
+    }
+    await removeToken(id)
+  }, [lockedTokenId, encounterProp, tokensById, saveEncounter, removeToken])
 
   useEffect(() => {
     if (!lockedTokenId) return
@@ -1155,7 +1186,7 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
           <TokenContextMenu
             contextMenu={contextMenu}
             onToggleVisibility={toggleVisibility}
-            onRemoveToken={removeToken}
+            onRemoveToken={handleRemoveToken}
             onClose={closeContextMenu}
           />
         )}
@@ -1183,7 +1214,7 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
           onAdvTokenUpload={handleAdvTokenUpload}
           onClearAdvToken={clearAdvToken}
           onToggleVisibility={toggleVisibility}
-          onRemoveToken={removeToken}
+          onRemoveToken={handleRemoveToken}
         />
       )}
 

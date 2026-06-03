@@ -157,12 +157,22 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
   /* ── Remove adversary ────────────────────────────────────── */
   const removeAdversary = useCallback(async (instanceId: string) => {
     if (!encounter) return
-    const adv = encounter.adversaries.find(a => a.instanceId === instanceId)
+    const adv         = encounter.adversaries.find(a => a.instanceId === instanceId)
+    const slotToRemove = encounter.initiative_slots.find(
+      (s: InitiativeSlot) => s.adversaryInstanceId === instanceId
+    )
     const updatedAdversaries = encounter.adversaries.filter(a => a.instanceId !== instanceId)
     const updatedSlots = encounter.initiative_slots.filter(
       (s: InitiativeSlot) => s.adversaryInstanceId !== instanceId
     )
     await saveEncounter({ adversaries: updatedAdversaries, initiative_slots: updatedSlots })
+    // Remove the linked map token so map and Enemies panel stay in sync
+    if (slotToRemove) {
+      await supabase.from('map_tokens')
+        .delete()
+        .eq('slot_key', slotToRemove.id)
+        .eq('campaign_id', campaignId)
+    }
     if (adv && encounter.id) {
       await supabase.from('combat_log').insert({
         campaign_id: campaignId, encounter_id: encounter.id,
