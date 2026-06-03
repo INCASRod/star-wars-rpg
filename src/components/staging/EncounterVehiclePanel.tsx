@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { CombatEncounter } from '@/lib/combat'
 import type { VehicleInstance } from '@/lib/vehicles'
 import { HUD, FONT_BODY, FS, SP, RADIUS, EASE } from '@/lib/tokens'
+import { useEncounterCombatControls } from '@/hooks/useEncounterCombatControls'
 
 /* ── Design tokens ────────────────────────────────────────── */
 const PANEL_BG  = 'var(--hud-surface-mid)'
@@ -39,40 +40,12 @@ export function EncounterVehiclePanel({ campaignId, encounter }: EncounterVehicl
       .eq('id', encounter.id)
   }, [encounter?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  /* ── mutations ───────────────────────────────────────────── */
-  const adjustHullTrauma = useCallback(async (vehicle: VehicleInstance, delta: number) => {
-    if (!encounter) return
-    const next = Math.max(0, Math.min(vehicle.hullTraumaThreshold, vehicle.hullTraumaCurrent + delta))
-    const updated = (encounter.vehicles ?? []).map(v =>
-      v.instanceId !== vehicle.instanceId ? v : { ...v, hullTraumaCurrent: next }
-    )
-    await saveEncounter({ vehicles: updated })
-    // Sync wound_pct on map token
-    const vSlot = encounter.initiative_slots.find(s => s.vehicleInstanceId === vehicle.instanceId)
-    if (vSlot) {
-      const pct = Math.min(1, next / Math.max(1, vehicle.hullTraumaThreshold))
-      await supabase.from('map_tokens').update({ wound_pct: pct }).eq('slot_key', vSlot.id).eq('campaign_id', campaignId)
-    }
-    // Log disable event
-    const wasDisabled = vehicle.hullTraumaCurrent >= vehicle.hullTraumaThreshold
-    if (!wasDisabled && next >= vehicle.hullTraumaThreshold && encounter.id) {
-      await supabase.from('combat_log').insert({
-        campaign_id: campaignId, encounter_id: encounter.id,
-        participant_name: 'SYSTEM', alignment: 'system', roll_type: 'system',
-        result_summary: `${vehicle.name} — DISABLED (Hull Trauma ${next}/${vehicle.hullTraumaThreshold})`,
-        is_visible_to_players: true,
-      })
-    }
-  }, [encounter, campaignId, saveEncounter]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const adjustSystemStrain = useCallback(async (vehicle: VehicleInstance, delta: number) => {
-    if (!encounter) return
-    const next = Math.max(0, Math.min(vehicle.systemStrainThreshold, vehicle.systemStrainCurrent + delta))
-    const updated = (encounter.vehicles ?? []).map(v =>
-      v.instanceId !== vehicle.instanceId ? v : { ...v, systemStrainCurrent: next }
-    )
-    await saveEncounter({ vehicles: updated })
-  }, [encounter, saveEncounter])
+  const { adjustHullTrauma, adjustSystemStrain } = useEncounterCombatControls({
+    encounter,
+    saveEncounter,
+    supabase,
+    campaignId,
+  })
 
   const vehicles = encounter?.vehicles ?? []
 
