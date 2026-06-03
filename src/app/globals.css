@@ -526,6 +526,35 @@ label, caption, .text-secondary {
   background: color-mix(in srgb, var(--slot-accent, var(--hud-accent)) 9%, transparent);
 }
 
+/* Surface-mid background — close and buy buttons in spec selector */
+.hov-surface-mid {
+  background: var(--hud-surface-lo);
+  transition: background var(--ease-quick);
+}
+.hov-surface-mid:hover {
+  background: var(--hud-surface-mid);
+}
+
+/* Accent-tinted subtle background — preview/secondary buttons */
+.hov-accent-subtle {
+  background: color-mix(in srgb, var(--hud-accent) 7%, transparent);
+  transition: background var(--ease-quick);
+}
+.hov-accent-subtle:hover {
+  background: color-mix(in srgb, var(--hud-accent) 14%, transparent);
+}
+
+/* Spec row — reads CSS custom properties set per-row for isCareer-dependent hover */
+.spec-row {
+  background: var(--spec-row-bg-rest, transparent);
+  border: 1px solid var(--spec-row-border-rest, var(--hud-border));
+  transition: border-color var(--ease-quick), background var(--ease-quick);
+}
+.spec-row:hover {
+  background: var(--spec-row-bg-hover, var(--hud-surface-lo));
+  border-color: var(--spec-row-border-hover, color-mix(in srgb, var(--hud-accent) 15%, transparent));
+}
+
 /* Buy-spec trigger button — dashed gold border fades to full gold on hover */
 .buy-spec-btn {
   color:        color-mix(in srgb, var(--hud-gold) 53%, transparent);

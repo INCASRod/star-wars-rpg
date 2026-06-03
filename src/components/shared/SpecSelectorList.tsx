@@ -108,16 +108,14 @@ function SpecTreePreviewModal({ spec, refTalentMap, onClose }: SpecTreePreviewMo
         </div>
         <button
           onClick={close}
+          className="hov-surface-mid"
           style={{
-            background: 'var(--hud-surface-lo)',
             border: `1px solid ${BORDER_HI}`,
             borderRadius: 4, color: HUD.gold,
             fontFamily: FR, fontSize: 'clamp(0.85rem, 1.2vw, 0.95rem)',
             fontWeight: 700, padding: '5px 14px',
-            cursor: 'pointer', transition: 'background 0.15s',
+            cursor: 'pointer',
           }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--hud-surface-mid)' }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--hud-surface-lo)' }}
         >
           ✕
         </button>
@@ -341,18 +339,16 @@ function SpecDetailPanel({ spec, cost, affordable, onBuy, onClose, refTalentMap 
             {refTalentMap && (
               <button
                 onClick={() => setShowTree(true)}
+                className="hov-accent-subtle"
                 style={{
                   marginTop: 16, width: '100%',
-                  background: 'rgba(90,170,224,0.07)',
-                  border: '1px solid rgba(90,170,224,0.3)',
+                  border: '1px solid color-mix(in srgb, var(--hud-accent) 30%, transparent)',
                   borderRadius: 4, padding: '9px',
                   fontFamily: FR, fontSize: 'clamp(0.78rem, 1.05vw, 0.88rem)',
                   fontWeight: 700, letterSpacing: '0.1em',
-                  textTransform: 'uppercase', color: '#7EC8E3',
-                  cursor: 'pointer', transition: 'background 0.15s',
+                  textTransform: 'uppercase', color: 'var(--hud-accent)',
+                  cursor: 'pointer',
                 }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(90,170,224,0.14)' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(90,170,224,0.07)' }}
               >
                 Preview Spec Tree
               </button>
@@ -365,18 +361,16 @@ function SpecDetailPanel({ spec, cost, affordable, onBuy, onClose, refTalentMap 
           <div style={{ padding: '12px 20px', borderTop: `1px solid ${BORDER}` }}>
             <button
               onClick={buy}
+              className="hov-surface-mid"
               style={{
                 width: '100%',
-                background: 'var(--hud-surface-lo)',
                 border: `1px solid color-mix(in srgb, ${HUD.gold} 33%, transparent)`,
                 borderRadius: 4, padding: '10px',
                 fontFamily: FR, fontSize: 'clamp(0.8rem, 1.1vw, 0.9rem)',
                 fontWeight: 700, letterSpacing: '0.12em',
                 textTransform: 'uppercase', color: HUD.gold,
-                cursor: 'pointer', transition: 'background 0.15s',
+                cursor: 'pointer',
               }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--hud-surface-mid)' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--hud-surface-lo)' }}
             >
               Buy Specialization — {cost} XP
             </button>
@@ -479,6 +473,7 @@ export function SpecSelectorList({
           const btn = (
             <button
               onClick={() => setSelectedSpec(spec)}
+              className="spec-row"
               style={{
                 width: '100%',
                 textAlign: 'left',
@@ -486,22 +481,13 @@ export function SpecSelectorList({
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 padding: '10px 12px',
-                background: isCareer ? 'var(--hud-surface-lo)' : 'transparent',
-                border: `1px solid ${isCareer ? `color-mix(in srgb, ${HUD.gold} 19%, transparent)` : BORDER}`,
+                '--spec-row-bg-rest':      isCareer ? 'var(--hud-surface-lo)' : 'transparent',
+                '--spec-row-bg-hover':     isCareer ? 'var(--hud-surface-mid)' : 'var(--hud-surface-lo)',
+                '--spec-row-border-rest':  isCareer ? `color-mix(in srgb, ${HUD.gold} 19%, transparent)` : BORDER,
+                '--spec-row-border-hover': isCareer ? `color-mix(in srgb, ${HUD.gold} 33%, transparent)` : `color-mix(in srgb, ${HUD.gold} 15%, transparent)`,
                 borderRadius: 4,
                 cursor: 'pointer',
-                transition: 'border-color 0.15s, background 0.15s',
-              }}
-              onMouseEnter={e => {
-                const el = e.currentTarget as HTMLElement
-                el.style.background = isCareer ? 'var(--hud-surface-mid)' : 'var(--hud-surface-lo)'
-                el.style.borderColor = isCareer ? `color-mix(in srgb, ${HUD.gold} 33%, transparent)` : `color-mix(in srgb, ${HUD.gold} 15%, transparent)`
-              }}
-              onMouseLeave={e => {
-                const el = e.currentTarget as HTMLElement
-                el.style.background = isCareer ? 'var(--hud-surface-lo)' : 'transparent'
-                el.style.borderColor = isCareer ? `color-mix(in srgb, ${HUD.gold} 19%, transparent)` : BORDER
-              }}
+              } as React.CSSProperties}
             >
               {/* Left: name + badges */}
               <div style={{ minWidth: 0 }}>
