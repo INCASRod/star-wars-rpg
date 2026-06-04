@@ -187,7 +187,10 @@ export const MapCanvas = memo(function MapCanvas({
           }
         }
         if (scaleChanged) {
-          // Only reset scale if not hovering (hover animation manages scale)
+          // Always keep _baseScale in sync so hover-exit returns to the correct scale
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ;(c as any)._baseScale = tokenScale
+          // Only reset visual scale if not hovering (hover animation manages scale)
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           if (!(c as any)._hoverActive) {
             c.scale.set(tokenScale)
@@ -465,6 +468,8 @@ function syncTokens(
         }
         c.scale.set(tokenScale)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(c as any)._baseScale = tokenScale
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ;(c as any).__applyLabelScale?.(tokenScale)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ;(c as any).alpha = (!isGM && !token.is_visible) ? 0 : (isGM && !token.is_visible ? 0.4 : 1)
@@ -485,6 +490,8 @@ function syncTokens(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(sprite as any).__imageUrl = token.token_image_url ?? null
     sprite.scale.set(tokenScale)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(sprite as any)._baseScale = tokenScale
     app.stage.addChild(sprite)
     tokensRef.current.set(token.id, sprite)
     existing.delete(token.id)

@@ -64,7 +64,7 @@ export function DarkSidePipsStep({
         <div>Using {costlyLabel} Force Points requires:</div>
         <div style={{ paddingLeft: 12, display: 'flex', flexDirection: 'column', gap: 3 }}>
           <div>• Flip 1 Destiny Point {destinyFlip}</div>
-          <div>• Suffer <strong style={{ color: accentColor }}>{darkPipsUsed} strain</strong> (1 per pip used)</div>
+          <div>• Suffer <strong style={{ color: accentColor }}>{darkPipsUsed} strain</strong> (1 per <i className="ffi ffi-swrpg-force" aria-hidden="true" /> used)</div>
           {!isFallen && <div>• Gain Conflict (your GM will be notified)</div>}
         </div>
         <div style={{ color: HUD.textDim }}>
@@ -75,7 +75,7 @@ export function DarkSidePipsStep({
       {/* Selector */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <div style={{ fontFamily: "var(--font-body)", fontSize: FS.overline, color: HUD.textFaint, textTransform: 'uppercase', letterSpacing: '0.15em' }}>
-          {isFallen ? 'Light' : 'Dark'} pips to use
+          {isFallen ? 'Light' : 'Dark'} <i className="ffi ffi-swrpg-force" aria-hidden="true" /> to use
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <button
@@ -95,7 +95,7 @@ export function DarkSidePipsStep({
         {darkPipsUsed > 0 && (
           <div style={{ padding: '10px 12px', background: isFallen ? 'rgba(126,200,227,0.06)' : 'rgba(144,96,208,0.08)', border: `1px solid ${isFallen ? 'rgba(126,200,227,0.2)' : 'rgba(144,96,208,0.2)'}`, borderRadius: 6, display: 'flex', flexDirection: 'column', gap: 3 }}>
             <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textDim }}>
-              Using {darkPipsUsed} {costlyLabel} pip{darkPipsUsed !== 1 ? 's' : ''}:
+              Using {darkPipsUsed} {costlyLabel} <i className="ffi ffi-swrpg-force" aria-hidden="true" />:
             </div>
             <div style={{ fontFamily: "var(--font-body)", fontSize: FS.overline, color: HUD.textFaint, display: 'flex', flexDirection: 'column', gap: 2 }}>
               <div>Strain cost:   {darkPipsUsed}</div>

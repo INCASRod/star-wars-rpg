@@ -327,6 +327,13 @@ export interface CharacterForceAbility {
   xp_cost: number
 }
 
+export interface ForceCommitment {
+  power_key:   string
+  power_name:  string
+  effect_name: string
+  dice_count:  number
+}
+
 // ── Campaign & Character Types ──
 
 export interface Campaign {
@@ -395,6 +402,7 @@ export interface Character {
   obligation_custom_name?: string | null
   force_rating?: number
   force_rating_committed?: number
+  force_commitments?: ForceCommitment[]
   is_force_sensitive?: boolean
   morality_configured?: boolean
   is_dark_side_fallen?: boolean

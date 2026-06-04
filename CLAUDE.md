@@ -166,3 +166,107 @@ Before completing any new component or modifying an existing one, verify all of 
 - [ ] No `onMouseEnter`/`onMouseLeave` style mutations
 - [ ] Hover states handled via CSS classes or `hov-lift`
 - [ ] `docs/architecture.md` updated if any route, hook, table, component, or utility file was added or changed
+
+---
+
+## UI Implementation Gate — Mandatory
+
+Before marking ANY UI task complete, CC must run through this checklist in full. If any item fails, fix it before reporting done. Do not report partial completion.
+
+### 1. Token compliance — self-audit
+After writing any JSX, scan every inline style prop in the changed files for:
+
+  □ Font sizes — all use FS.* tokens.
+    Zero raw px, rem, or clamp() values.
+    Exception: pre-approved exceptions with
+    inline comment.
+
+  □ Spacing — all padding, margin, gap use
+    SP[N] or var(--space-*) tokens.
+    Zero raw px or rem values.
+    Exception: 2px minimum touch targets
+    with inline comment.
+
+  □ Colours — all use var(--hud-*),
+    color-mix(), or RADIUS/token constants.
+    Zero raw hex or rgba values.
+    Exception: die-identity and game-mechanic
+    colours with inline comment.
+
+  □ Transitions — all use EASE.* tokens.
+    Zero raw '150ms', '.15s' strings.
+
+  □ Border radius — all use RADIUS.* tokens.
+    Zero raw numbers.
+
+  □ Font family — all use FONT_BODY or
+    FONT_DISPLAY constants.
+    Zero 'var(--font-*)' string literals.
+
+  □ Z-index — all use Z.* tokens.
+    Zero raw numbers.
+
+  □ Hover — no onMouseEnter/onMouseLeave
+    style mutations. CSS classes only.
+
+### 2. Layout compliance — visual check
+After writing any JSX layout:
+
+  □ Compact rows — padding on interactive
+    rows must be SP[1] vertical or 2px
+    minimum. Not SP[2] or larger unless
+    it is a primary action button.
+
+  □ No redundant wrappers — every div
+    must have a clear layout purpose.
+    Remove wrappers that only add spacing
+    without structural function.
+
+  □ Flex/grid discipline — flex children
+    that should truncate have minWidth: 0.
+    Flex children that should not stretch
+    have flexShrink: 0. No unconstrained
+    flex children in tight layouts.
+
+  □ Section labels — FS.overline,
+    letterSpacing 0.15–0.2em, uppercase,
+    var(--hud-text-faint). Not larger.
+
+  □ Primary action buttons — SP[2] vertical
+    padding, FS.sm, full width where
+    appropriate.
+
+  □ Secondary/inline buttons — 2px vertical
+    padding, FS.overline, fit-content width.
+
+### 3. Mockup fidelity — compare before submitting
+If a mockup was provided for this task:
+
+  □ Open the mockup file and the rendered
+    component side by side (or compare the
+    HTML output).
+
+  □ Check each section of the mockup against
+    the implementation:
+    - Header structure matches
+    - Section order matches
+    - Row density matches (not more spacious)
+    - Button sizes match (compact vs primary)
+    - Colour usage matches
+    - Typography hierarchy matches
+
+  □ If any section does not match the mockup,
+    fix it before reporting done. Do not
+    report "done" and leave visual gaps for
+    the next iteration.
+
+### 4. Report format
+When reporting completion, include:
+
+  □ Token compliance: PASS or list violations
+  □ Layout compliance: PASS or list issues
+  □ Mockup fidelity: PASS or list gaps
+  □ Build: ✓ clean
+  □ TypeScript: ✓ zero errors
+
+If any item is not PASS, do not report the task as complete. Fix first, then report.

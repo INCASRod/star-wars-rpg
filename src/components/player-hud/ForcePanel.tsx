@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { C, panelBase } from './design-tokens'
 import { FONT_BODY, EASE, SP, FS, RADIUS } from '@/lib/tokens'
+import type { ForceCommitment } from '@/lib/types'
 import { ForcePowerTree, type ForceTreeNode, type ForceTreeConnection } from '@/components/character/ForcePowerTree'
 import { RichText } from '@/components/ui/RichText'
 import { Tooltip } from '@/components/ui/Tooltip'
@@ -82,6 +83,8 @@ interface ForcePanelProps {
   onViewPower:         (powerKey: string) => void
   onAdd:               () => void
   isFallen?:           boolean
+  commitments?:        ForceCommitment[]
+  onCancelCommit?:     (powerKey: string, effectName: string) => void
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -470,7 +473,13 @@ export function ForcePanel({
   onViewPower,
   onAdd,
   isFallen = false,
+  commitments = [],
+  onCancelCommit,
 }: ForcePanelProps) {
+  const [activeTab, setActiveTab] = useState<'powers' | 'committed'>('powers')
+
+  const totalCommitted = commitments.reduce((sum, c) => sum + c.dice_count, 0)
+
   return (
     <div className="flex flex-col" style={{ gap: 'var(--space-4)' }}>
 
@@ -515,76 +524,201 @@ export function ForcePanel({
       {/* Conflict pips */}
       {conflicts.length > 0 && <ConflictPips conflicts={conflicts} isFallen={isFallen} />}
 
-      {/* Force Powers */}
-      <div>
-        <div className="flex items-center justify-between" style={{
-          marginBottom: SP[2], paddingBottom: SP[1],
-          borderBottom: `1px solid ${C.border}`,
-        }}>
-          <div style={{
-            fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700,
-            letterSpacing: '0.15em', textTransform: 'uppercase',
-            color: C.textDim,
-          }}>
-            Force Powers
-          </div>
-          <button
-            onClick={onAdd}
-            className="hov-gold-bg cursor-pointer"
-            style={{
-              background: 'color-mix(in srgb, var(--hud-accent) 10%, transparent)',
-              border: '1px solid var(--hud-accent-border)',
-              borderRadius: RADIUS.sm, padding: `${SP[1]} ${SP[2]}`,
-              fontFamily: FONT_BODY, fontSize: FS.label,
-              fontWeight: 700, letterSpacing: '0.1em',
-              color: C.gold,
-              transition: 'var(--ease-default)',
-            }}
-          >
-            + Add
-          </button>
-        </div>
+      {/* ── Tab bar: Powers / Committed ──────────────────────────────────────── */}
+      <div style={{
+        display: 'flex',
+        borderBottom: `1px solid ${C.border}`,
+        flexShrink: 0,
+      }}>
+        {(['powers', 'committed'] as const).map((tab, i) => {
+          const isActive = activeTab === tab
+          const label = tab === 'powers'
+            ? 'Powers'
+            : `Committed${commitments.length > 0 ? ` (${commitments.length})` : ''}`
+          return (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              style={{
+                flex: 1,
+                padding: `${SP[1]} ${SP[2]}`,
+                fontFamily: FONT_BODY,
+                fontSize: FS.overline,
+                fontWeight: 700,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                background: 'none',
+                border: 'none',
+                borderRight: i === 0 ? `1px solid ${C.border}` : 'none',
+                borderBottom: isActive
+                  ? '2px solid var(--die-force)'
+                  : '2px solid transparent',
+                color: isActive
+                  ? 'color-mix(in srgb, var(--die-force) 80%, transparent)'
+                  : C.textFaint,
+                cursor: 'pointer',
+                transition: `color ${EASE.quick}, border-bottom-color ${EASE.quick}`,
+                marginBottom: -1,
+              }}
+            >
+              {label}
+            </button>
+          )
+        })}
+      </div>
 
-        {forcePowers.length > 0 ? (
-          <div className="flex flex-col" style={{ gap: 'var(--space-2)' }}>
-            {forcePowers.map((fp, idx) => (
-              <div key={fp.powerKey} data-stagger={idx}>
-                <div className="panel-row-enter">
-                  <ForcePowerCard
-                    fp={fp}
-                    xpAvailable={xpAvailable}
-                    onPurchase={onPurchasePower
-                      ? (abilityKey, row, col, cost) => onPurchasePower(abilityKey, row, col, cost, fp.powerKey)
-                      : undefined
-                    }
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center" style={{ gap: 'var(--space-3)', padding: `${SP[4]} 0` }}>
+      {/* ── Powers tab ───────────────────────────────────────────────────────── */}
+      {activeTab === 'powers' && (
+        <div>
+          <div className="flex items-center justify-between" style={{
+            marginBottom: SP[2], paddingBottom: SP[1],
+            borderBottom: `1px solid ${C.border}`,
+          }}>
             <div style={{
-              fontFamily: FONT_BODY, fontSize: FS.label, color: C.textFaint,
+              fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700,
+              letterSpacing: '0.15em', textTransform: 'uppercase',
+              color: C.textDim,
             }}>
-              No force powers purchased yet.
+              Force Powers
             </div>
             <button
               onClick={onAdd}
-              className="cursor-pointer force-browse-btn"
+              className="hov-gold-bg cursor-pointer"
               style={{
-                border: `1px solid ${FORCE_BLUE_DIM}`,
-                borderRadius: 'var(--radius-md)', padding: 'var(--space-2) var(--space-5)',
+                background: 'color-mix(in srgb, var(--hud-accent) 10%, transparent)',
+                border: '1px solid var(--hud-accent-border)',
+                borderRadius: RADIUS.sm, padding: `${SP[1]} ${SP[2]}`,
                 fontFamily: FONT_BODY, fontSize: FS.label,
-                fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase',
-                color: FORCE_BLUE,
+                fontWeight: 700, letterSpacing: '0.1em',
+                color: C.gold,
+                transition: 'var(--ease-default)',
               }}
             >
-              Browse Force Powers
+              + Add
             </button>
           </div>
-        )}
-      </div>
+
+          {forcePowers.length > 0 ? (
+            <div className="flex flex-col" style={{ gap: 'var(--space-2)' }}>
+              {forcePowers.map((fp, idx) => (
+                <div key={fp.powerKey} data-stagger={idx}>
+                  <div className="panel-row-enter">
+                    <ForcePowerCard
+                      fp={fp}
+                      xpAvailable={xpAvailable}
+                      onPurchase={onPurchasePower
+                        ? (abilityKey, row, col, cost) => onPurchasePower(abilityKey, row, col, cost, fp.powerKey)
+                        : undefined
+                      }
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center" style={{ gap: 'var(--space-3)', padding: `${SP[4]} 0` }}>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: C.textFaint }}>
+                No force powers purchased yet.
+              </div>
+              <button
+                onClick={onAdd}
+                className="cursor-pointer force-browse-btn"
+                style={{
+                  border: `1px solid ${FORCE_BLUE_DIM}`,
+                  borderRadius: 'var(--radius-md)', padding: 'var(--space-2) var(--space-5)',
+                  fontFamily: FONT_BODY, fontSize: FS.label,
+                  fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase',
+                  color: FORCE_BLUE,
+                }}
+              >
+                Browse Force Powers
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Committed tab ────────────────────────────────────────────────────── */}
+      {activeTab === 'committed' && (
+        <div>
+          {commitments.length === 0 ? (
+            <div style={{
+              textAlign: 'center',
+              padding: `${SP[4]} 0`,
+              fontFamily: FONT_BODY, fontSize: FS.caption,
+              color: C.textFaint, fontStyle: 'italic',
+              lineHeight: 1.5,
+            }}>
+              No Force dice committed.{'\n'}Activate ongoing effects during a Force Check to commit dice here.
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: SP[2] }}>
+              {commitments.map(commitment => (
+                <div
+                  key={`${commitment.power_key}-${commitment.effect_name}`}
+                  style={{
+                    background: 'rgba(139,43,226,0.05)', /* Force mechanic colour — pre-approved exception */
+                    border: '1px solid rgba(139,43,226,0.2)', /* Force mechanic colour — pre-approved exception */
+                    borderRadius: RADIUS.md,
+                    padding: `${SP[2]} ${SP[3]}`,
+                  }}
+                >
+                  {/* Row 1: power name · effect name */}
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: SP[2], marginBottom: SP[2] }}>
+                    <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700, color: C.text }}>
+                      {commitment.power_name}
+                    </span>
+                    <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: C.textDim }}>
+                      {commitment.effect_name}
+                    </span>
+                  </div>
+
+                  {/* Row 2: die icons + cancel */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: SP[2] }}>
+                    <div style={{ display: 'flex', gap: SP[1], alignItems: 'center' }}>
+                      {Array.from({ length: commitment.dice_count }).map((_, i) => (
+                        <div key={i} style={{
+                          width: 10, height: 10, borderRadius: '50%',
+                          background: 'rgba(139,43,226,0.7)', /* Force mechanic colour — pre-approved exception */
+                          border: '1px solid rgba(139,43,226,0.9)', /* Force mechanic colour — pre-approved exception */
+                        }} />
+                      ))}
+                      <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'rgba(139,43,226,0.6)' /* Force mechanic colour — pre-approved exception */, marginLeft: SP[1] }}>
+                        {commitment.dice_count} {commitment.dice_count === 1 ? 'die' : 'dice'}
+                      </span>
+                    </div>
+                    {onCancelCommit && (
+                      <button
+                        onClick={() => onCancelCommit(commitment.power_key, commitment.effect_name)}
+                        style={{
+                          fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
+                          padding: `${SP[1]} ${SP[2]}`, borderRadius: RADIUS.sm,
+                          background: 'color-mix(in srgb, var(--hud-accent) 8%, transparent)',
+                          border: '1px solid color-mix(in srgb, var(--hud-accent) 40%, transparent)',
+                          color: 'color-mix(in srgb, var(--hud-accent) 70%, transparent)',
+                          cursor: 'pointer',
+                          transition: `background ${EASE.quick}`,
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {/* Summary note */}
+              <div style={{
+                fontFamily: FONT_BODY, fontSize: FS.overline,
+                color: C.textFaint, fontStyle: 'italic',
+                marginTop: SP[1],
+              }}>
+                {totalCommitted} {totalCommitted === 1 ? 'die' : 'dice'} committed — Force Rating effectively {forceRating - totalCommitted} for checks.
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

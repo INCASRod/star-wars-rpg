@@ -32,12 +32,12 @@ function CornerBrackets() {
 export function Tooltip({
   content, children, placement = 'top', maxWidth = 280, delay = 300,
 }: TooltipProps) {
-  const [visible, setVisible] = useState(false)
-  const [pos, setPos]         = useState<Pos | null>(null)
-  const triggerRef            = useRef<HTMLElement>(null)
-  const tooltipRef            = useRef<HTMLDivElement>(null)
-  const timerRef              = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const [mounted, setMounted] = useState(false)
+  const [visible,  setVisible]  = useState(false)
+  const [pos,      setPos]      = useState<Pos | null>(null)
+  const triggerRef              = useRef<HTMLElement>(null)
+  const tooltipRef              = useRef<HTMLDivElement>(null)
+  const timerRef                = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [mounted,  setMounted]  = useState(false)
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -48,17 +48,21 @@ export function Tooltip({
     let top   = 0, left = 0
     let actualPlacement = placement
 
-    const tw = maxWidth
-    const th = 120 // estimated tooltip height
+    const tw        = maxWidth
+    const spaceAbove = r.top
+    const spaceBelow = window.innerHeight - r.bottom
+    const spaceLeft  = r.left
+    const spaceRight = window.innerWidth - r.right
 
-    if (placement === 'right') {
-      if (r.right + gap + tw > window.innerWidth) actualPlacement = 'left'
-    } else if (placement === 'left') {
-      if (r.left - gap - tw < 0) actualPlacement = 'right'
-    } else if (placement === 'top') {
-      if (r.top - gap - th < 0) actualPlacement = 'bottom'
+    // Flip to the side with more room rather than using a hardcoded height estimate.
+    if (placement === 'top') {
+      if (spaceAbove < spaceBelow) actualPlacement = 'bottom'
+    } else if (placement === 'bottom') {
+      if (spaceBelow < spaceAbove) actualPlacement = 'top'
+    } else if (placement === 'right') {
+      if (spaceRight < tw + gap)   actualPlacement = 'left'
     } else {
-      if (r.bottom + gap + th > window.innerHeight) actualPlacement = 'top'
+      if (spaceLeft  < tw + gap)   actualPlacement = 'right'
     }
 
     if (actualPlacement === 'top') {
@@ -139,6 +143,15 @@ export function Tooltip({
             transform:            getTransform(pos),
             zIndex:               Z.tooltip,
             maxWidth,
+            // Cap height to the available space so the tooltip never clips.
+            // right/left: centred on trigger, so cap at 400px (±200px from anchor).
+            // top/bottom: cap at the space between the anchor and the viewport edge.
+            maxHeight:            (pos.actualPlacement === 'right' || pos.actualPlacement === 'left')
+                                    ? `${Math.min(400, window.innerHeight - 16)}px`
+                                    : pos.actualPlacement === 'top'
+                                    ? `${pos.top - 8}px`
+                                    : `${window.innerHeight - pos.top - 8}px`,
+            overflowY:            'auto',
             background:           BG,
             border:               `1px solid ${BORDER}`,
             borderRadius:         RADIUS.lg,

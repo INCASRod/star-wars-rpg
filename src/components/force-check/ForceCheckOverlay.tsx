@@ -1,35 +1,31 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { FS, HUD, FONT_DISPLAY, FONT_BODY, SP, EASE, RADIUS } from '@/lib/tokens'
 import { createClient } from '@/lib/supabase/client'
-import type { Character } from '@/lib/types'
+import type { Character, ForceCommitment } from '@/lib/types'
 import type { ForceRollResult } from '@/lib/forceRoll'
 import type { ForcePowerDisplay } from '@/components/player-hud/ForcePanel'
-import type { TargetEntry } from './steps/ForceTargetStep'
 import type { AdversaryInstance } from '@/lib/adversaries'
 import { SelectPowerStep } from './steps/SelectPowerStep'
 import { RollForceDiceStep } from './steps/RollForceDiceStep'
 import { DarkSidePipsStep } from './steps/DarkSidePipsStep'
-import { ForceTargetStep } from './steps/ForceTargetStep'
 import { ForceResolveStep } from './steps/ForceResolveStep'
 
 const BG = 'var(--hud-surface-hi)'
 
-type Step = 1 | 2 | 3 | 4 | 5
+type Step = 1 | 2 | 3 | 5
 
 const STEP_LABELS_NORMAL: Record<Step, string> = {
   1: 'Select Power',
   2: 'Roll Force Dice',
   3: 'Dark Side Pips',
-  4: 'Select Target',
   5: 'Resolve',
 }
 const STEP_LABELS_FALLEN: Record<Step, string> = {
   1: 'Select Power',
   2: 'Roll Force Dice',
   3: 'Light Side Temptation',
-  4: 'Select Target',
   5: 'Resolve',
 }
 
@@ -38,8 +34,6 @@ interface ForceCheckState {
   selectedPowerKey: string | null
   forceRoll:        ForceRollResult | null
   darkPipsUsed:     number
-  selectedTargets:  TargetEntry[]
-  targetContext:    'environment' | 'character' | null
   encounterId:      string | null
 }
 
@@ -49,8 +43,6 @@ function makeInitialState(): ForceCheckState {
     selectedPowerKey: null,
     forceRoll:        null,
     darkPipsUsed:     0,
-    selectedTargets:  [],
-    targetContext:    null,
     encounterId:      null,
   }
 }
@@ -78,7 +70,6 @@ export function ForceCheckOverlay({
   forcePowers, isDathomiri, isCombat,
   campaignId, characterId,
   encounterId: propEncounterId,
-  visibleEnemies,
 }: ForceCheckOverlayProps) {
   const [state, setState] = useState<ForceCheckState>(makeInitialState)
   const [busy, setBusy] = useState(false)
@@ -92,10 +83,6 @@ export function ForceCheckOverlay({
   const isFallen = character.is_dark_side_fallen === true
   const STEP_LABELS = isFallen ? STEP_LABELS_FALLEN : STEP_LABELS_NORMAL
 
-  const enemyTargets = useMemo<TargetEntry[]>(() =>
-    (visibleEnemies ?? []).map(a => ({ instanceId: a.instanceId, name: a.name, kind: 'enemy' as const }))
-  , [visibleEnemies])
-
   // Skip step 3 for Dathomiri (all pips free), or when the costly-pip count is 0
   const costlyPipsRolled = isFallen
     ? (state.forceRoll?.totalLight ?? 0)   // fallen: light pips are costly
@@ -104,28 +91,73 @@ export function ForceCheckOverlay({
 
   function getNextStep(s: Step): Step {
     if (s === 1) return 2
-    if (s === 2) return showDarkStep ? 3 : 4
-    if (s === 3) return 4
-    if (s === 4) return 5
+    if (s === 2) return showDarkStep ? 3 : 5
+    if (s === 3) return 5
     return s
   }
 
   function getPrevStep(s: Step): Step {
     if (s === 2) return 1
     if (s === 3) return 2
-    if (s === 4) return showDarkStep ? 3 : 2
-    if (s === 5) return 4
+    if (s === 5) return showDarkStep ? 3 : 2
     return s
   }
 
   const selectedPower = forcePowers.find(p => p.powerKey === state.selectedPowerKey) ?? null
+
+  // ── Commit a Force die to an ongoing effect ───────────────────────────────
+  const handleCommit = async (
+    powerKey: string,
+    powerName: string,
+    effectName: string,
+  ) => {
+    if (!campaignId) return
+    const supabase = createClient()
+    const current: ForceCommitment[] = character.force_commitments ?? []
+    const existing = current.find(
+      c => c.power_key === powerKey && c.effect_name === effectName,
+    )
+    const updated: ForceCommitment[] = existing
+      ? current.map(c =>
+          c.power_key === powerKey && c.effect_name === effectName
+            ? { ...c, dice_count: c.dice_count + 1 }
+            : c,
+        )
+      : [...current, { power_key: powerKey, power_name: powerName, effect_name: effectName, dice_count: 1 }]
+
+    const newCommitted = (character.force_rating_committed ?? 0) + 1
+    await supabase
+      .from('characters')
+      .update({ force_rating_committed: newCommitted, force_commitments: updated })
+      .eq('id', characterId)
+  }
+
+  // ── Record upgrade activation in roll feed ────────────────────────────────
+  const handleUpgradeActivate = (upgradeName: string) => {
+    if (!campaignId) return
+    const supabase = createClient()
+    void supabase.from('roll_log').insert({
+      campaign_id:    campaignId,
+      character_id:   characterId,
+      character_name: character.name,
+      roll_label:     `${selectedPower?.powerName ?? 'Force Power'} — ${upgradeName} activated`,
+      pool: { force: 0, proficiency: 0, ability: 0, boost: 0, challenge: 0, difficulty: 0, setback: 0 },
+      result: { netSuccess: 1, netAdvantage: 0, triumph: 0, despair: 0, succeeded: true },
+      is_dm:              false,
+      hidden:             false,
+      roll_type:          'force',
+      weapon_name:        selectedPower?.powerName ?? '',
+      target_name:        null,
+      alignment:          'player',
+      is_visible_to_players: true,
+    })
+  }
 
   function canAdvance(): boolean {
     switch (state.currentStep) {
       case 1: return state.selectedPowerKey !== null
       case 2: return state.forceRoll !== null
       case 3: return true   // 0 dark pips is a valid choice
-      case 4: return true   // target is optional
       default: return false
     }
   }
@@ -178,10 +210,7 @@ export function ForceCheckOverlay({
 
         const freeFP  = isFallen ? state.forceRoll.totalDark : state.forceRoll.totalLight
         const totalFP = freeFP + state.darkPipsUsed
-        const targetLabel = state.selectedTargets.length > 0
-          ? state.selectedTargets.map(t => t.name).join(', ')
-          : isCombat ? ''
-          : state.targetContext === 'environment' ? 'Environment' : ''
+        const targetLabel = ''
 
         await supabase.from('combat_log').insert({
           campaign_id:           campaignId,
@@ -242,7 +271,7 @@ export function ForceCheckOverlay({
   const handleDone     = () => onClose()
 
   const isResolve  = state.currentStep === 5
-  const totalSteps = isDathomiri ? 4 : 5
+  const totalSteps = isDathomiri ? 3 : 4
 
   // fallen/dark-side Force mechanic colours — pre-approved exception
   const accentColor    = isFallen ? '#8B2BE2'              : 'var(--die-force)'
@@ -253,7 +282,7 @@ export function ForceCheckOverlay({
   const textFaintColor = isFallen ? 'rgba(139,43,226,0.3)' : HUD.textFaint
 
   // ── Visible steps 1-4 (step 3 hidden for Dathomiri) ──────────────────────
-  const visibleSteps = ([1, 2, 3, 4] as Step[]).filter(n => n !== 3 || !isDathomiri)
+  const visibleSteps = ([1, 2, 3] as Step[]).filter(n => n !== 3 || !isDathomiri)
 
   return (
     <div
@@ -312,7 +341,7 @@ export function ForceCheckOverlay({
       </div>
 
       {/* ── Body ─────────────────────────────────────────────────────────────── */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: `${SP[4]} ${SP[3]}`, overscrollBehavior: 'contain' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: `${SP[2]} ${SP[2]}`, overscrollBehavior: 'contain' }}>
 
         {/* Steps 1–4 with active/complete/locked visual treatment */}
         {!isResolve && visibleSteps.map(stepNum => {
@@ -323,7 +352,7 @@ export function ForceCheckOverlay({
             <div
               key={stepNum}
               style={{
-                padding: SP[3],
+                padding: `${SP[2]} ${SP[2]}`,
                 borderLeft: isActive
                   ? `2px solid color-mix(in srgb, var(--die-force) 45%, transparent)`
                   : '2px solid transparent',
@@ -370,6 +399,9 @@ export function ForceCheckOverlay({
                   isDathomiri={isDathomiri}
                   isFallen={isFallen}
                   onRoll={result => setState(s => ({ ...s, forceRoll: result, darkPipsUsed: 0 }))}
+                  selectedPower={selectedPower}
+                  onCommit={handleCommit}
+                  onUpgradeActivate={handleUpgradeActivate}
                 />
               )}
               {isActive && stepNum === 3 && state.forceRoll && (
@@ -379,18 +411,6 @@ export function ForceCheckOverlay({
                   darkPipsUsed={state.darkPipsUsed}
                   onChangeDark={n => setState(s => ({ ...s, darkPipsUsed: n }))}
                   isFallen={isFallen}
-                />
-              )}
-              {isActive && stepNum === 4 && (
-                <ForceTargetStep
-                  isCombat={isCombat}
-                  campaignId={campaignId}
-                  characterId={characterId}
-                  selectedTargets={state.selectedTargets}
-                  targetContext={state.targetContext}
-                  onSelectTargets={targets => setState(s => ({ ...s, selectedTargets: targets }))}
-                  onTargetContext={ctx => setState(s => ({ ...s, targetContext: ctx }))}
-                  encounterEnemies={enemyTargets.length > 0 ? enemyTargets : undefined}
                 />
               )}
             </div>
@@ -404,8 +424,8 @@ export function ForceCheckOverlay({
             powerDesc={selectedPower.description}
             forceRoll={state.forceRoll}
             darkPipsUsed={state.darkPipsUsed}
-            targets={state.selectedTargets}
-            targetContext={state.targetContext}
+            targets={[]}
+            targetContext={null}
             isCombat={isCombat}
             isFallen={isFallen}
             onUseAgain={handleUseAgain}
@@ -469,7 +489,7 @@ export function ForceCheckOverlay({
               transition: `background ${EASE.quick}`,
             }}
           >
-            {busy ? '…' : state.currentStep === 4 ? 'Resolve' : 'Continue'}
+            {busy ? '…' : getNextStep(state.currentStep) === 5 ? 'Resolve' : 'Continue'}
           </button>
         </div>
       )}

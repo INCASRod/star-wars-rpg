@@ -377,6 +377,8 @@ Each panel is a self-contained component accepting pre-computed display data fro
 - `HudFullPanel` — generic slide-in panel wrapper; `position: absolute; width: 82%` inside the centre column div; used for six navigation panels (skills, talents, force-panel, inventory, lore, group); contains a header (symbol + title + close button) and a scrollable body
 - `HudRightColumn` — grid row 3 right panel; contains full-height `RollFeedPanel` (Approach A feed layout with Design B cards for top-2 rolls, compact history rows, initiative notifications, system entries); action buttons moved to `HudStatusStrip`
 - `HudLoreTab` — lore tab content; `CharacterAvatar` at top with portrait upload/delete support; accepts `onPortraitUpload` and `onPortraitDelete` props; portrait was moved here from `HudLeftColumn`
+- `ForcePanel` / `HudForceTab` — Force powers panel with two tabs: **Powers** (power cards + purchase UI) and **Committed** (shows active force die commitments from `characters.force_commitments`; cancel button decrements `force_rating_committed`). `HudForceTab` owns the `handleCancelCommit` write handler.
+- `ForceCheckOverlay` (`src/components/force-check/`) — 4-step drawer for Force power checks. Steps: 1 Select Power → 2 Roll Force Dice (includes pip-spending UI + upgrade activation + "Commit Die" for ongoing effects) → 3 Dark Side Pips (skipped for Dathomiri) → 5 Resolve. Step 4 (Select Target) was removed. Committing a die writes to both `characters.force_rating_committed` and `characters.force_commitments`.
 
 ### GM HUD Sub-components (`src/app/gm/`)
 - `GmLeftRail` — 52px fixed left rail; navigation buttons (◎ Map/gold, ⊞ Tools/blue, ◉ Party/teal, Combat with empire.png faction image/red); utility buttons (⬡ Dice/gold, ▦ Screen/gold, ⊟ Library/blue) below divider; uses `FONT_BODY`, `RADIUS`, `Z.fab` from tokens; Combat button uses empire.png faction image with CSS filter chain
@@ -523,3 +525,4 @@ import { COLOR, HUD, FS, SP, RADIUS, Z, SHADOW, EASE, CHAR_COLOR, DICE_META, SYM
 | 056 | Roll log update policy |
 | 057 | Delete policies |
 | 058 | `ref_species.special_abilities` — seed `skill_rank` entries for all 80 species with OggDude SkillModifiers; `ref_talents.modifiers` — add `career_skills` array for 9 fixed ChooseCareerSkills talents (Insight, Basic/Tactical/Vehicle/Pilot Combat Training, Secrets of the Jedi/Force, Well Traveled) |
+| 059 | `characters.force_commitments JSONB DEFAULT '[]'` — tracks which powers have Force dice committed; shape `[{ power_key, power_name, effect_name, dice_count }]` |
