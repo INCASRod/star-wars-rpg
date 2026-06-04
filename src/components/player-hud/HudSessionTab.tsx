@@ -333,31 +333,6 @@ export function HudSessionTab({
           </span>
           <button onClick={onCloseQuickPanel} className="cursor-pointer" style={{ background: 'none', border: 'none', color: 'var(--hud-text-dim)', fontSize: FS.sm }}>✕</button>
         </div>
-        <div className="shrink-0" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-1)', padding: SP[2] }}>
-          {([
-            { label: 'BRN', value: character.brawn },
-            { label: 'AGI', value: character.agility },
-            { label: 'INT', value: character.intellect },
-            { label: 'CUN', value: character.cunning },
-            { label: 'WIL', value: character.willpower },
-            { label: 'PRS', value: character.presence },
-          ] as const).map(ch => (
-            <div key={ch.label} style={{
-              textAlign: 'center', padding: `${SP[1]} ${SP[1]}`,
-              background: 'color-mix(in srgb, var(--hud-accent) 6%, transparent)',
-              border: '1px solid color-mix(in srgb, var(--hud-accent) 18%, transparent)',
-              borderRadius: RADIUS.lg,
-            }}>
-              <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.h4, fontWeight: 700, color: 'var(--hud-gold)', lineHeight: 1 }}>
-                {ch.value}
-              </div>
-              <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.08em', color: 'var(--hud-text-faint)', marginTop: SP[1], textTransform: 'uppercase' }}>
-                {ch.label}
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="shrink-0" style={{ height: 1, background: 'var(--hud-border)' }} />
         <div className="flex-1 overflow-hidden flex flex-col">
           <HudSkillQuickList skills={hudSkills} onOpenPopover={onOpenSkillPopover} />
         </div>

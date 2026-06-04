@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { FS, HUD, FONT_DISPLAY, FONT_BODY } from '@/lib/tokens'
+import { FS, HUD, FONT_DISPLAY, FONT_BODY, SP, EASE, RADIUS } from '@/lib/tokens'
 import { createClient } from '@/lib/supabase/client'
 import type { Character } from '@/lib/types'
 import type { ForceRollResult } from '@/lib/forceRoll'
@@ -14,12 +14,7 @@ import { DarkSidePipsStep } from './steps/DarkSidePipsStep'
 import { ForceTargetStep } from './steps/ForceTargetStep'
 import { ForceResolveStep } from './steps/ForceResolveStep'
 
-const BG         = 'var(--hud-surface-hi)'
-const FORCE_BLUE = '#7EC8E3'
-const FB_DIM     = 'rgba(126,200,227,0.45)'
-const FB_BD      = 'rgba(126,200,227,0.25)'
-const FB_BAR     = 'rgba(126,200,227,0.6)'
-const TEXT_DIM   = 'var(--hud-text-dim)'
+const BG = 'var(--hud-surface-hi)'
 
 type Step = 1 | 2 | 3 | 4 | 5
 
@@ -140,6 +135,7 @@ export function ForceCheckOverlay({
     if (state.currentStep <= 1 || busy) return
     setState(s => ({ ...s, currentStep: getPrevStep(s.currentStep) }))
   }
+  void goBack // kept for future use; navigation available via completed-step click
 
   const goNext = async () => {
     if (!canAdvance() || busy) return
@@ -245,17 +241,19 @@ export function ForceCheckOverlay({
   const handleUseAgain = () => { setState(makeInitialState()); setBusy(false) }
   const handleDone     = () => onClose()
 
-  const isResolve   = state.currentStep === 5
-  const totalSteps  = isDathomiri ? 4 : 5
-  const accentColor = isFallen ? '#8B2BE2' : FORCE_BLUE
-  const borderColor = isFallen ? 'rgba(139,43,226,0.3)' : 'rgba(126,200,227,0.25)'
-  const barColor    = isFallen ? 'rgba(139,43,226,0.6)' : FB_BAR
-  const dimColor    = isFallen ? 'rgba(139,43,226,0.5)' : FB_DIM
-  const bdColor     = isFallen ? 'rgba(139,43,226,0.15)' : FB_BD
-  // Text colors — use HUD tokens on dark overlay
+  const isResolve  = state.currentStep === 5
+  const totalSteps = isDathomiri ? 4 : 5
+
+  // fallen/dark-side Force mechanic colours — pre-approved exception
+  const accentColor    = isFallen ? '#8B2BE2'              : 'var(--die-force)'
+  const bdColor        = isFallen ? 'rgba(139,43,226,0.15)' : 'color-mix(in srgb, var(--die-force) 25%, transparent)'
+  const barColor       = isFallen ? 'rgba(139,43,226,0.6)' : 'color-mix(in srgb, var(--die-force) 60%, transparent)'
   const textColor      = isFallen ? '#8B2BE2'              : HUD.text
   const textDimColor   = isFallen ? 'rgba(139,43,226,0.5)' : HUD.textDim
   const textFaintColor = isFallen ? 'rgba(139,43,226,0.3)' : HUD.textFaint
+
+  // ── Visible steps 1-4 (step 3 hidden for Dathomiri) ──────────────────────
+  const visibleSteps = ([1, 2, 3, 4] as Step[]).filter(n => n !== 3 || !isDathomiri)
 
   return (
     <div
@@ -264,117 +262,143 @@ export function ForceCheckOverlay({
         background: BG,
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        borderRight: `1px solid ${borderColor}`,
+        borderRight: `1px solid ${bdColor}`,
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
 
-      {/* ── Header ── */}
+      {/* ── Header strip ────────────────────────────────────────────────────── */}
       <div style={{
-        padding: '10px 14px',
-        borderBottom: `1px solid ${bdColor}`,
-        display: 'flex', flexDirection: 'column', gap: 4,
+        display: 'flex',
+        alignItems: 'center',
+        gap: SP[2],
+        padding: `${SP[2]} ${SP[3]}`,
+        borderBottom: `1px solid var(--hud-border)`,
+        background: 'var(--hud-panel)',
         flexShrink: 0,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {/* Back */}
-          <button
-            onClick={goBack}
-            style={{
-              background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px 4px',
-              fontFamily: FONT_BODY, fontSize: FS.caption, color: textDimColor,
-              visibility: (!isResolve && state.currentStep > 1) ? 'visible' : 'hidden',
-            }}
-          >
-            ← Back
-          </button>
-
-          {/* Title */}
-          <div style={{ flex: 1, textAlign: 'center' }}>
-            <div style={{
-              fontFamily: FONT_DISPLAY, fontSize: FS.label, fontWeight: 700,
-              color: textColor, textTransform: 'uppercase', letterSpacing: '0.15em',
-              textShadow: isFallen ? '0 0 12px rgba(139,43,226,0.4)' : 'none',
-            }}>
-              {isFallen ? '☠' : '✦'} Force Check
-            </div>
-            {!isResolve && (
-              <div style={{ fontFamily: 'var(--font-body)', fontSize: FS.overline, color: textDimColor, marginTop: 2 }}>
-                {STEP_LABELS[state.currentStep]}
-              </div>
-            )}
-          </div>
-
-          {/* Close */}
-          <button
-            onClick={onClose}
-            style={{
-              background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px 6px',
-              fontFamily: 'var(--font-body)', fontSize: 15, color: TEXT_DIM,
-            }}
-          >
-            ✕
-          </button>
-        </div>
+        <span style={{
+          color: accentColor,
+          fontSize: FS.sm,
+          lineHeight: 1,
+          flexShrink: 0,
+        }}>
+          {isFallen ? '☠' : '✦'}
+        </span>
+        <span style={{
+          fontFamily: FONT_BODY,
+          fontSize: FS.label,
+          fontWeight: 700,
+          letterSpacing: '0.15em',
+          textTransform: 'uppercase',
+          color: `color-mix(in srgb, ${accentColor} 80%, transparent)`,
+          flex: 1,
+        }}>
+          Force Check
+        </span>
+        <button
+          onClick={onClose}
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            color: 'var(--hud-text-faint)',
+            fontSize: FS.sm,
+            padding: `0 ${SP[1]}`,
+            lineHeight: 1,
+          }}
+        >✕</button>
       </div>
 
-      {/* ── Progress bar ── */}
-      {!isResolve && (
-        <div style={{ height: 4, background: isFallen ? 'rgba(139,43,226,0.1)' : 'rgba(126,200,227,0.1)', flexShrink: 0 }}>
-          <div style={{
-            height: '100%',
-            width: `${(state.currentStep / totalSteps) * 100}%`,
-            background: barColor,
-            transition: 'width 200ms ease',
-          }} />
-        </div>
-      )}
+      {/* ── Body ─────────────────────────────────────────────────────────────── */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: `${SP[4]} ${SP[3]}`, overscrollBehavior: 'contain' }}>
 
-      {/* ── Body ── */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 16px', overscrollBehavior: 'contain' }}>
+        {/* Steps 1–4 with active/complete/locked visual treatment */}
+        {!isResolve && visibleSteps.map(stepNum => {
+          const isActive    = state.currentStep === stepNum
+          const isDone      = state.currentStep > stepNum
+          const isLocked    = state.currentStep < stepNum
+          return (
+            <div
+              key={stepNum}
+              style={{
+                padding: SP[3],
+                borderLeft: isActive
+                  ? `2px solid color-mix(in srgb, var(--die-force) 45%, transparent)`
+                  : '2px solid transparent',
+                background: isActive
+                  ? `color-mix(in srgb, var(--die-force) 4%, transparent)`
+                  : 'transparent',
+                opacity: isDone ? 0.6 : isLocked ? 0.3 : 1,
+                pointerEvents: isLocked ? 'none' as const : undefined,
+                marginBottom: isActive ? SP[2] : 0,
+              }}
+            >
+              {/* Step header label (always shown) */}
+              <div
+                onClick={isDone ? () => setState(s => ({ ...s, currentStep: stepNum })) : undefined}
+                style={{
+                  fontFamily: FONT_BODY,
+                  fontSize: FS.overline,
+                  fontWeight: 700,
+                  letterSpacing: '0.12em',
+                  textTransform: 'uppercase',
+                  color: isActive
+                    ? `color-mix(in srgb, ${accentColor} 80%, transparent)`
+                    : isDone ? HUD.textDim : HUD.textFaint,
+                  marginBottom: isActive ? SP[2] : 0,
+                  cursor: isDone ? 'pointer' : 'default',
+                }}
+              >
+                {STEP_LABELS[stepNum]}{isDone ? ' ✓' : ''}
+              </div>
 
-        {state.currentStep === 1 && (
-          <SelectPowerStep
-            powers={forcePowers}
-            selectedPowerKey={state.selectedPowerKey}
-            onSelect={pk => setState(s => ({ ...s, selectedPowerKey: pk }))}
-          />
-        )}
+              {/* Active step content */}
+              {isActive && stepNum === 1 && (
+                <SelectPowerStep
+                  powers={forcePowers}
+                  selectedPowerKey={state.selectedPowerKey}
+                  onSelect={pk => setState(s => ({ ...s, selectedPowerKey: pk }))}
+                />
+              )}
+              {isActive && stepNum === 2 && (
+                <RollForceDiceStep
+                  forceRating={forceRating}
+                  committedForce={committedForce}
+                  result={state.forceRoll}
+                  isDathomiri={isDathomiri}
+                  isFallen={isFallen}
+                  onRoll={result => setState(s => ({ ...s, forceRoll: result, darkPipsUsed: 0 }))}
+                />
+              )}
+              {isActive && stepNum === 3 && state.forceRoll && (
+                <DarkSidePipsStep
+                  lightPips={isFallen ? state.forceRoll.totalDark : state.forceRoll.totalLight}
+                  darkPips={isFallen ? state.forceRoll.totalLight : state.forceRoll.totalDark}
+                  darkPipsUsed={state.darkPipsUsed}
+                  onChangeDark={n => setState(s => ({ ...s, darkPipsUsed: n }))}
+                  isFallen={isFallen}
+                />
+              )}
+              {isActive && stepNum === 4 && (
+                <ForceTargetStep
+                  isCombat={isCombat}
+                  campaignId={campaignId}
+                  characterId={characterId}
+                  selectedTargets={state.selectedTargets}
+                  targetContext={state.targetContext}
+                  onSelectTargets={targets => setState(s => ({ ...s, selectedTargets: targets }))}
+                  onTargetContext={ctx => setState(s => ({ ...s, targetContext: ctx }))}
+                  encounterEnemies={enemyTargets.length > 0 ? enemyTargets : undefined}
+                />
+              )}
+            </div>
+          )
+        })}
 
-        {state.currentStep === 2 && (
-          <RollForceDiceStep
-            forceRating={forceRating}
-            committedForce={committedForce}
-            result={state.forceRoll}
-            isDathomiri={isDathomiri}
-            isFallen={isFallen}
-            onRoll={result => setState(s => ({ ...s, forceRoll: result, darkPipsUsed: 0 }))}
-          />
-        )}
-
-        {state.currentStep === 3 && state.forceRoll && (
-          <DarkSidePipsStep
-            lightPips={isFallen ? state.forceRoll.totalDark : state.forceRoll.totalLight}
-            darkPips={isFallen ? state.forceRoll.totalLight : state.forceRoll.totalDark}
-            darkPipsUsed={state.darkPipsUsed}
-            onChangeDark={n => setState(s => ({ ...s, darkPipsUsed: n }))}
-            isFallen={isFallen}
-          />
-        )}
-
-        {state.currentStep === 4 && (
-          <ForceTargetStep
-            isCombat={isCombat}
-            campaignId={campaignId}
-            characterId={characterId}
-            selectedTargets={state.selectedTargets}
-            targetContext={state.targetContext}
-            onSelectTargets={targets => setState(s => ({ ...s, selectedTargets: targets }))}
-            onTargetContext={ctx => setState(s => ({ ...s, targetContext: ctx }))}
-            encounterEnemies={enemyTargets.length > 0 ? enemyTargets : undefined}
-          />
-        )}
-
-        {state.currentStep === 5 && state.forceRoll && selectedPower && (
+        {/* Step 5: Resolve — no step styling */}
+        {isResolve && state.forceRoll && selectedPower && (
           <ForceResolveStep
             powerName={selectedPower.powerName}
             powerDesc={selectedPower.description}
@@ -390,25 +414,59 @@ export function ForceCheckOverlay({
         )}
       </div>
 
-      {/* ── Footer (Next/Continue button, steps 1-4) ── */}
+      {/* ── Footer (Next/Continue button, steps 1-4) ─────────────────────────── */}
       {!isResolve && (
-        <div style={{ padding: '12px 16px', borderTop: `1px solid ${bdColor}`, flexShrink: 0 }}>
+        <div style={{ padding: `${SP[2]} ${SP[3]}`, borderTop: `1px solid ${bdColor}`, flexShrink: 0 }}>
+          {/* Progress indicator */}
+          <div style={{
+            display: 'flex',
+            gap: SP[1],
+            justifyContent: 'center',
+            marginBottom: SP[2],
+          }}>
+            {Array.from({ length: totalSteps }).map((_, i) => {
+              const stepN = (i + 1) as Step
+              const isPast    = state.currentStep > stepN
+              const isCurrent = state.currentStep === stepN
+              return (
+                <div key={i} style={{
+                  width: isCurrent ? SP[3] : SP[2],
+                  height: SP[1],
+                  borderRadius: RADIUS.full,
+                  background: isCurrent
+                    ? `color-mix(in srgb, ${accentColor} 80%, transparent)`
+                    : isPast
+                      ? `color-mix(in srgb, ${accentColor} 40%, transparent)`
+                      : `color-mix(in srgb, ${accentColor} 15%, transparent)`,
+                  transition: `width ${EASE.quick}, background ${EASE.quick}`,
+                }} />
+              )
+            })}
+          </div>
+
           <button
             onClick={goNext}
             disabled={!canAdvance() || busy}
             style={{
-              width: '100%', height: 48, borderRadius: 10,
+              width: '100%',
+              padding: `${SP[2]} 0`,
+              borderRadius: RADIUS.md,
               border: 'none',
               cursor: (canAdvance() && !busy) ? 'pointer' : 'not-allowed',
-              fontFamily: FONT_DISPLAY, fontSize: 'clamp(0.85rem, 1.3vw, 1rem)', fontWeight: 700,
-              textTransform: 'uppercase', letterSpacing: '0.1em',
+              fontFamily: FONT_DISPLAY,
+              fontSize: FS.sm,
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
               background: (canAdvance() && !busy)
                 ? isFallen
-                  ? 'linear-gradient(135deg, rgba(139,43,226,0.35), rgba(139,43,226,0.2))'
-                  : 'linear-gradient(135deg, rgba(126,200,227,0.35), rgba(126,200,227,0.2))'
-                : isFallen ? 'rgba(139,43,226,0.06)' : 'rgba(126,200,227,0.06)',
+                  ? `color-mix(in srgb, #8B2BE2 25%, transparent)` /* fallen/dark-side Force mechanic colour — pre-approved exception */
+                  : `color-mix(in srgb, var(--die-force) 20%, transparent)`
+                : isFallen
+                  ? `color-mix(in srgb, #8B2BE2 6%, transparent)` /* fallen/dark-side Force mechanic colour — pre-approved exception */
+                  : `color-mix(in srgb, var(--die-force) 6%, transparent)`,
               color: (canAdvance() && !busy) ? textColor : textFaintColor,
-              transition: 'background 150ms',
+              transition: `background ${EASE.quick}`,
             }}
           >
             {busy ? '…' : state.currentStep === 4 ? 'Resolve' : 'Continue'}

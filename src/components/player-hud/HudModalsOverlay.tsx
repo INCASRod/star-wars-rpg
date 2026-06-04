@@ -264,6 +264,7 @@ export function HudModalsOverlay({
         <SkillRollPopover
           skill={skillPopover.skill}
           anchor={skillPopover.anchor}
+          character={character}
           talentHints={(() => {
             const rankMap = new Map<string, number>()
             for (const t of talents) {

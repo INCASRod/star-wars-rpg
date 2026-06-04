@@ -207,6 +207,15 @@ export const CHAR_ABBR3: Record<CharKey, string> = {
   cunning: 'CUN', willpower: 'WIL', presence: 'PRS',
 }
 
+export const CHAR_FULL: Record<CharKey, string> = {
+  brawn:     'Brawn',
+  agility:   'Agility',
+  intellect: 'Intellect',
+  cunning:   'Cunning',
+  willpower: 'Willpower',
+  presence:  'Presence',
+} as const
+
 export const CHAR_REF_MAP: Record<string, CharKey> = {
   BR: 'brawn', AG: 'agility', INT: 'intellect',
   CUN: 'cunning', WIL: 'willpower', PR: 'presence',

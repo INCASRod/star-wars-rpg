@@ -523,6 +523,14 @@ label, caption, .text-secondary {
   border-color: color-mix(in srgb, var(--adj-accent, var(--hud-accent)) 40%, transparent);
 }
 
+/* AdjBtn in SkillRollPopover */
+.adj-btn-popover {
+  transition: border-color var(--ease-quick);
+}
+.adj-btn-popover:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--hud-accent) 40%, transparent);
+}
+
 /* Slot reassign row — reads --slot-rest-bg and --slot-accent CSS custom properties */
 .slot-row-btn {
   background: var(--slot-rest-bg, transparent);
