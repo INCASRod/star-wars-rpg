@@ -133,39 +133,48 @@ export function Tooltip({
     <>
       {trigger}
       {visible && pos && createPortal(
+        // Outer: owns position + placement transform only — never animated, so the
+        // animation on the inner div cannot override the positioning transform.
         <div
-          ref={tooltipRef}
-          className="holo-tooltip"
           style={{
-            position:             'fixed',
-            top:                  pos.top,
-            left:                 pos.left,
-            transform:            getTransform(pos),
-            zIndex:               Z.tooltip,
+            position:      'fixed',
+            top:           pos.top,
+            left:          pos.left,
+            transform:     getTransform(pos),
+            zIndex:        Z.tooltip,
             maxWidth,
-            // Cap height to the available space so the tooltip never clips.
-            // right/left: centred on trigger, so cap at 400px (±200px from anchor).
-            // top/bottom: cap at the space between the anchor and the viewport edge.
-            maxHeight:            (pos.actualPlacement === 'right' || pos.actualPlacement === 'left')
-                                    ? `${Math.min(400, window.innerHeight - 16)}px`
-                                    : pos.actualPlacement === 'top'
-                                    ? `${pos.top - 8}px`
-                                    : `${window.innerHeight - pos.top - 8}px`,
-            overflowY:            'auto',
-            background:           BG,
-            border:               `1px solid ${BORDER}`,
-            borderRadius:         RADIUS.lg,
-            boxShadow:            `0 8px 32px rgba(0,0,0,0.2), 0 0 0 1px var(--hud-border)`,
-            padding:              `${SP[3]} 0.875rem`,
-            pointerEvents:        'none',
-            animation:            'tooltipIn 0.15s ease forwards',
+            pointerEvents: 'none',
           }}
         >
-          <CornerBrackets />
-          <div style={{ arrow: undefined } as React.CSSProperties}>
-            <div style={arrowStyle(pos)} />
+          {/* Inner: owns visual styles + animation. transform here is safe because
+              the animation's final transform: translateY(0) only affects this layer. */}
+          <div
+            ref={tooltipRef}
+            className="holo-tooltip"
+            style={{
+              // Cap height so the tooltip never clips the viewport edge.
+              // box-sizing: border-box ensures maxHeight includes padding.
+              boxSizing:     'border-box',
+              maxHeight:     (pos.actualPlacement === 'right' || pos.actualPlacement === 'left')
+                               ? `${Math.min(400, window.innerHeight - 16)}px`
+                               : pos.actualPlacement === 'top'
+                               ? `${pos.top - 8}px`
+                               : `${window.innerHeight - pos.top - 8}px`,
+              overflowY:     'auto',
+              background:    BG,
+              border:        `1px solid ${BORDER}`,
+              borderRadius:  RADIUS.lg,
+              boxShadow:     `0 8px 32px rgba(0,0,0,0.2), 0 0 0 1px var(--hud-border)`,
+              padding:       `${SP[3]} 0.875rem`,
+              animation:     'tooltipIn 0.15s ease forwards',
+            }}
+          >
+            <CornerBrackets />
+            <div style={{ arrow: undefined } as React.CSSProperties}>
+              <div style={arrowStyle(pos)} />
+            </div>
+            {content}
           </div>
-          {content}
         </div>,
         document.body
       )}
