@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode }                       from 'react'
 import { FONT_BODY, RADIUS, SYM, FS, HUD, type DiceType } from '@/lib/tokens'
+import { Tooltip, TipBody }                                from '@/components/ui/Tooltip'
 import { DiceFace }                                        from '@/components/dice/DiceFace'
 import type { RollEntry }                                  from '@/hooks/useRollFeed'
 import type { PurchaseMeta }                               from '@/lib/logRoll'
@@ -460,60 +461,74 @@ function SystemRow({
   if (roll.roll_type === 'XP Purchase') {
     const meta       = roll.roll_meta as PurchaseMeta | null
     const isRefunded = meta?.refunded === true
-    return (
-      <div
-        className="flex items-center"
-        style={{
-          padding:    '3px var(--space-1)',
-          gap:        4,
-          opacity:    isRefunded ? 0.45 : 1,
-          fontFamily: FONT_BODY,
-          fontSize:   FS.overline,
-        }}
-      >
-        <span style={{ color: HUD.textFaint }}>⬆</span>
-        <span style={{ color: HUD.text }}>{roll.character_name}</span>
-        <span style={{ color: HUD.textFaint }}>purchased</span>
-        <span
-          className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap"
-          style={{ color: HUD.text }}
-        >
-          {roll.roll_label}
-        </span>
-        {meta?.xp_cost != null && !isRefunded && (
-          <span style={{ color: HUD.textFaint, whiteSpace: 'nowrap' }}>
-            · {meta.xp_cost}xp
+    const tooltipContent = (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+        <TipBody>{label}</TipBody>
+        <TipBody>
+          <span style={{ color: HUD.textFaint }}>
+            {roll.character_name}
+            {meta?.xp_cost != null ? ` · ${meta.xp_cost} XP` : ''}
+            {isRefunded ? ' · REFUNDED' : ''}
           </span>
-        )}
-        {isRefunded ? (
-          <span style={{ color: HUD.textFaint, fontStyle: 'italic', whiteSpace: 'nowrap' }}>
-            [REFUNDED]
-          </span>
-        ) : isGm && onRefundPurchase ? (
-          <button
-            onClick={() => onRefundPurchase(roll)}
-            aria-label="Revert purchase and restore XP"
-            title={
-              meta?.purchase_type === 'talent'
-                ? 'Revert purchase and restore XP — note: may affect adjacent talents in tree'
-                : 'Revert purchase and restore XP'
-            }
-            className="cursor-pointer"
-            style={{
-              background:  'none',
-              border:      'none',
-              color:       HUD.textFaint,
-              fontFamily:  FONT_BODY,
-              fontSize:    FS.sm,
-              padding:     '0 2px',
-              lineHeight:  1,
-              flexShrink:  0,
-            }}
-          >
-            ↺
-          </button>
-        ) : null}
+        </TipBody>
       </div>
+    )
+    return (
+      <Tooltip content={tooltipContent} placement="top" maxWidth={320}>
+        <div
+          className="flex items-center"
+          style={{
+            padding:    '3px var(--space-1)',
+            gap:        4,
+            opacity:    isRefunded ? 0.45 : 1,
+            fontFamily: FONT_BODY,
+            fontSize:   FS.overline,
+          }}
+        >
+          <span style={{ color: HUD.textFaint }}>⬆</span>
+          <span style={{ color: HUD.text }}>{roll.character_name}</span>
+          <span style={{ color: HUD.textFaint }}>purchased</span>
+          <span
+            className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap"
+            style={{ color: HUD.text }}
+          >
+            {label}
+          </span>
+          {meta?.xp_cost != null && !isRefunded && (
+            <span style={{ color: HUD.textFaint, whiteSpace: 'nowrap' }}>
+              · {meta.xp_cost}xp
+            </span>
+          )}
+          {isRefunded ? (
+            <span style={{ color: HUD.textFaint, fontStyle: 'italic', whiteSpace: 'nowrap' }}>
+              [REFUNDED]
+            </span>
+          ) : isGm && onRefundPurchase ? (
+            <button
+              onClick={() => onRefundPurchase(roll)}
+              aria-label="Revert purchase and restore XP"
+              title={
+                meta?.purchase_type === 'talent'
+                  ? 'Revert purchase and restore XP — note: may affect adjacent talents in tree'
+                  : 'Revert purchase and restore XP'
+              }
+              className="cursor-pointer"
+              style={{
+                background:  'none',
+                border:      'none',
+                color:       HUD.textFaint,
+                fontFamily:  FONT_BODY,
+                fontSize:    FS.sm,
+                padding:     '0 2px',
+                lineHeight:  1,
+                flexShrink:  0,
+              }}
+            >
+              ↺
+            </button>
+          ) : null}
+        </div>
+      </Tooltip>
     )
   }
 
