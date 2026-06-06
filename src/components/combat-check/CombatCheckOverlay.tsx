@@ -1,39 +1,21 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, type ReactNode } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { rollPool, type RollResult } from '@/components/player-hud/dice-engine'
 import { type RollMeta } from '@/lib/logRoll'
-import { formatResultSummary, type RangeBand, RANGE_VALUE_MAP, MELEE_SKILL_KEYS } from '@/lib/combatCheckUtils'
+import { formatResultSummary, type RangeBand, RANGE_VALUE_MAP, RANGE_BAND_LABELS, MELEE_SKILL_KEYS } from '@/lib/combatCheckUtils'
 import { checkCriticalEligibility, type CriticalEligibility } from '@/lib/criticalUtils'
 import type { Character, CharacterWeapon, CharacterSkill, RefWeapon, RefSkill, RefWeaponQuality, SpeciesAbility } from '@/lib/types'
 import type { SkillDiceModifier } from '@/lib/derivedStats'
 import type { AdversaryInstance } from '@/lib/adversaries'
 import { AttackTypeStep } from './steps/AttackTypeStep'
 import { WeaponSelectStep } from './steps/WeaponSelectStep'
-import { TargetSelectStep } from './steps/TargetSelectStep'
 import { RangeBandStep } from './steps/RangeBandStep'
 import { DicePoolReviewStep, type ManualAdjustments, EMPTY_ADJUSTMENTS, type DualWieldState } from './steps/DicePoolReviewStep'
 import { DualWieldReviewStep } from './steps/DualWieldReviewStep'
 import { RollResultStep } from './steps/RollResultStep'
-import { HUD, FS, FONT_DISPLAY, FONT_BODY } from '@/lib/tokens'
-
-// ── Design tokens ──────────────────────────────────────────────────────────────
-const BG       = 'var(--hud-surface-hi)'
-const GOLD_DIM = 'var(--hud-text-dim)'
-const GOLD_BD  = 'var(--hud-border)'
-const GOLD_BAR = 'rgba(224,58,30,0.6)'
-const TEXT     = 'var(--hud-text)'
-const TEXT_DIM = 'var(--hud-text-dim)'
-
-// ── Step labels ───────────────────────────────────────────────────────────────
-const STEP_LABELS: Record<number, string> = {
-  1: 'Attack Type',
-  2: 'Weapon',
-  3: 'Target',
-  4: 'Range',
-  5: 'Dice Pool',
-}
+import { HUD, FS, FONT_BODY, SP, EASE, RADIUS } from '@/lib/tokens'
 
 // ── State ─────────────────────────────────────────────────────────────────────
 interface CombatCheckState {
@@ -63,6 +45,63 @@ function makeInitialState(initialAttackType: 'ranged' | 'melee' | null): CombatC
     dualWield:       null,
     dualWieldReview: false,
   }
+}
+
+// ── Accordion step container ──────────────────────────────────────────────────
+function StepContainer({
+  number, label,
+  isActive, isDone, isLocked,
+  doneSummary, children,
+}: {
+  number:       number
+  label:        string
+  isActive:     boolean
+  isDone:       boolean
+  isLocked:     boolean
+  doneSummary?: string | null
+  children?:    ReactNode
+}) {
+  return (
+    <div
+      style={{
+        padding:       isActive ? `${SP[2]} ${SP[2]}` : `${SP[1]} ${SP[2]}`,
+        borderLeft:    isActive
+          ? `2px solid color-mix(in srgb, var(--hud-gold) 45%, transparent)`
+          : '2px solid transparent',
+        background:    isActive
+          ? `color-mix(in srgb, var(--hud-gold) 4%, transparent)`
+          : 'transparent',
+        opacity:       isDone ? 0.6 : isLocked ? 0.3 : 1,
+        pointerEvents: isLocked ? 'none' as const : undefined,
+        marginBottom:  SP[1],
+        borderRadius:  RADIUS.sm,
+        transition:    `opacity ${EASE.quick}`,
+      }}
+    >
+      <div style={{
+        fontFamily:    FONT_BODY,
+        fontSize:      FS.overline,
+        fontWeight:    700,
+        letterSpacing: '0.12em',
+        textTransform: 'uppercase' as const,
+        color:         isActive ? 'var(--hud-gold)' : isDone ? HUD.textDim : HUD.textFaint,
+        marginBottom:  (isActive || (isDone && doneSummary)) ? SP[1] : 0,
+      }}>
+        {number}. {label}{isDone ? ' ✓' : ''}
+      </div>
+      {isDone && doneSummary && (
+        <div style={{
+          fontFamily: FONT_BODY,
+          fontSize:   FS.overline,
+          color:      HUD.textDim,
+          fontStyle:  'italic',
+        }}>
+          {doneSummary}
+        </div>
+      )}
+      {isActive && children}
+    </div>
+  )
 }
 
 // ── Props ─────────────────────────────────────────────────────────────────────
@@ -111,8 +150,11 @@ export function CombatCheckOverlay({
 }: CombatCheckOverlayProps) {
   const { isGmMode, gmTargets, gmAlignment, gmHiddenFromPlayers } = gmOverrides ?? {}
   const [state, setState] = useState<CombatCheckState>(() => makeInitialState(initialAttackType))
+  const [poolForRoll, setPoolForRoll] = useState<Record<string, number>>({})
+
   // Seed encounterId from prop so the combat_log write doesn't need a SELECT
   const seedEncounterId = propEncounterId ?? null
+
   // ── Reset state when overlay opens ─────────────────────────────────────────
   useEffect(() => {
     if (open) {
@@ -214,13 +256,11 @@ export function CombatCheckOverlay({
   }
 
   const handleWeaponSelect = (w: CharacterWeapon | null) => {
-    // Only update local state — DB write happens when the player advances past this step
     setState(s => ({ ...s, selectedWeapon: w, selectedBand: null, dualWield: null, dualWieldReview: false }))
   }
 
   // ── Dual wield handlers ───────────────────────────────────────────────────
   const handleDualWieldSelect = (primary: CharacterWeapon, secondary: CharacterWeapon) => {
-    // Only update local state — DB write happens when the player confirms in DualWieldReviewStep
     setState(s => ({
       ...s,
       dualWield: { enabled: true, primaryWeapon: primary, secondaryWeapon: secondary },
@@ -229,7 +269,6 @@ export function CombatCheckOverlay({
   }
 
   const handleDualWieldSwap = () => {
-    // Only update local state — DB write happens when the player confirms in DualWieldReviewStep
     setState(s => {
       if (!s.dualWield) return s
       return {
@@ -261,7 +300,6 @@ export function CombatCheckOverlay({
     const result = rollPool(pool as Parameters<typeof rollPool>[0])
     setState(s => ({ ...s, rollResult: result }))
 
-    // ── Critical hit eligibility (for roll feed meta) ────────────────────────
     const isMeleeCheck = state.attackType === 'melee' || MELEE_SKILL_KEYS.includes(refWeapon?.skill_key ?? '')
     const rawDmgCheck  = (refWeapon?.damage ?? 0) + (isMeleeCheck ? character.brawn : 0) + Math.max(0, result.net.success)
     const minSoak      = state.selectedTargets.length > 0
@@ -280,7 +318,6 @@ export function CombatCheckOverlay({
       : undefined
     const label = `${state.attackType === 'ranged' ? 'Ranged' : 'Melee'} Attack — ${weaponName}${targetName ? ` vs ${targetName}` : ''}`
 
-    // Fire to roll feed with combat-specific metadata for type-specific card rendering
     onRoll(result, label, pool, {
       rollType:       'combat',
       weaponName,
@@ -295,10 +332,8 @@ export function CombatCheckOverlay({
       critModifier:   critEligibility.totalCritModifier,
     })
 
-    // Write to combat_log if in an encounter
     if (campaignId) {
       const supabase = createClient()
-      // Prefer prop-seeded id → cached state → DB lookup (last resort)
       let encounterId = state.encounterId ?? seedEncounterId
       if (!encounterId) {
         const { data } = await supabase
@@ -332,7 +367,6 @@ export function CombatCheckOverlay({
         is_visible_to_players: isGmMode ? !gmHiddenFromPlayers : true,
       })
 
-      // ── Pending damage: create row(s) per target on a successful hit ─────────
       const netSuccesses = result.net.success
       if (netSuccesses > 0 && state.selectedTargets.length > 0 && encounterId) {
         const isMelee = state.attackType === 'melee' || MELEE_SKILL_KEYS.includes(refWeapon?.skill_key ?? '')
@@ -342,7 +376,6 @@ export function CombatCheckOverlay({
 
         const pendingRows: Record<string, unknown>[] = []
 
-        // Secondary weapon ref for dual wield
         const secRef = state.dualWield?.enabled && state.dualWield.secondaryWeapon.weapon_key !== '__unarmed__'
           ? (refWeaponMap[state.dualWield.secondaryWeapon.weapon_key] ?? null)
           : null
@@ -359,7 +392,6 @@ export function CombatCheckOverlay({
           const netDamage = Math.max(0, rawDamage - soakValue)
           const critPerTarget = checkCriticalEligibility(result, refWeapon, netDamage)
 
-          // Primary hit
           pendingRows.push({
             campaign_id:               campaignId,
             encounter_id:              encounterId,
@@ -379,7 +411,6 @@ export function CombatCheckOverlay({
             crit_triggered_by_triumph: critPerTarget.triggeredByTriumph,
           })
 
-          // Secondary hit (dual wield only)
           if (state.dualWield?.enabled && secRef) {
             const secRaw    = secBase + secBrawn + netSuccesses
             const secNet    = Math.max(0, secRaw - soakValue)
@@ -429,11 +460,11 @@ export function CombatCheckOverlay({
 
   // ── Can advance? ──────────────────────────────────────────────────────────
   function canAdvance(): boolean {
-    if (state.dualWieldReview) return true  // always can Continue from Step 2b
+    if (state.dualWieldReview) return true
     switch (state.currentStep) {
       case 1: return state.attackType !== null
       case 2: return state.selectedWeapon !== null
-      case 3: return true  // target is optional (skip allowed)
+      case 3: return true
       case 4: return state.selectedBand !== null || state.attackType === 'melee'
       default: return false
     }
@@ -445,218 +476,357 @@ export function CombatCheckOverlay({
     ? (refWeaponMap[state.dualWield.secondaryWeapon.weapon_key] ?? null)
     : null
 
-  // ── Step label (with Step 2b support) ─────────────────────────────────────
-  const currentStepLabel = state.dualWieldReview
-    ? 'Dual Wield Review'
-    : (STEP_LABELS[state.currentStep] ?? '')
+  // ── Derived summaries for accordion done states ───────────────────────────
+  const weaponDisplayName = state.selectedWeapon?.id === '__unarmed__'
+    ? 'Unarmed'
+    : (state.selectedWeapon?.custom_name || refWeapon?.name || null)
+  const targetDisplayName = state.selectedTargets.length === 1
+    ? state.selectedTargets[0].name
+    : state.selectedTargets.length > 1
+    ? `${state.selectedTargets.length} targets`
+    : null
+  const step1DoneSummary = [weaponDisplayName, targetDisplayName].filter(Boolean).join(' → ')
+
+  const step2DoneSummary = state.selectedBand
+    ? state.attackType === 'melee'
+      ? `✓ Opposed · ${state.selectedTargets[0]?.name ?? 'Target'}`
+      : `✓ ${RANGE_BAND_LABELS[state.selectedBand]}`
+    : undefined
+
+  const visualStep =
+    state.currentStep <= 3 ? 1 :
+    state.currentStep === 4 ? 2 :
+    3
+
+  const totalDiceForRoll = Object.values(poolForRoll).reduce((s, n) => s + Math.max(0, n), 0)
 
   return (
     <div
       className={`hud-quick-drawer${open ? ' open' : ''}`}
       style={{
-        background: BG,
-        backdropFilter: 'blur(20px)',
+        background:           'var(--hud-surface-hi)',
+        backdropFilter:       'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        borderRight: `1px solid var(--hud-border)`,
+        borderRight:          '1px solid var(--hud-border)',
+        display:              'flex',
+        flexDirection:        'column',
       }}
     >
-      {/* ── Header ── */}
+
+      {/* ── Compact header strip ────────────────────────────────────────────── */}
       <div style={{
-        padding: '10px 14px',
-        borderBottom: `1px solid ${GOLD_BD}`,
-        display: 'flex', flexDirection: 'column', gap: 4,
-        flexShrink: 0,
+        display:      'flex',
+        alignItems:   'center',
+        gap:          SP[2],
+        padding:      `${SP[2]} ${SP[3]}`,
+        borderBottom: '1px solid var(--hud-border)',
+        background:   'var(--hud-panel)',
+        flexShrink:   0,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {/* Back button */}
-          <button
-            onClick={goBack}
-            style={{
-              background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px 4px',
-              fontFamily: FONT_BODY, fontSize: FS.caption, color: GOLD_DIM,
-              visibility: (!isResult && state.currentStep > initialStep) ? 'visible' : 'hidden',
-            }}
-          >
-            ← Back
-          </button>
-
-          {/* Title */}
-          <div style={{ flex: 1, textAlign: 'center' }}>
-            <div style={{
-              fontFamily: FONT_DISPLAY,
-              fontSize: FS.label,
-              fontWeight: 700,
-              color: HUD.gold,
-              textTransform: 'uppercase',
-              letterSpacing: '0.15em',
-            }}>
-              {isResult
-                ? 'Attack Result'
-                : state.dualWield?.enabled
-                ? 'Dual Wield Attack'
-                : state.attackType === 'ranged' ? 'Ranged Attack'
-                : state.attackType === 'melee'  ? 'Melee Attack'
-                : 'Combat Check'}
-            </div>
-            {!isResult && (
-              <div style={{
-                fontFamily: 'var(--font-body)',
-                fontSize: FS.overline,
-                color: GOLD_DIM,
-                marginTop: 2,
-              }}>
-                {state.dualWieldReview
-                  ? `Step 2b of ${totalSteps} — ${currentStepLabel}`
-                  : `Step ${state.currentStep} of ${totalSteps} — ${currentStepLabel}`}
-              </div>
-            )}
-          </div>
-
-          {/* Close button */}
-          <button
-            onClick={handleClose}
-            style={{
-              background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px 6px',
-              fontFamily: 'var(--font-body)', fontSize: 15, color: TEXT_DIM,
-            }}
-          >
-            ✕
-          </button>
-        </div>
+        <span style={{ color: 'var(--hud-text-faint)', fontSize: FS.sm, lineHeight: 1 }}>⌖</span>
+        <span style={{
+          fontFamily:    FONT_BODY,
+          fontSize:      FS.label,
+          fontWeight:    700,
+          letterSpacing: '0.15em',
+          textTransform: 'uppercase' as const,
+          color:         'var(--hud-text)',
+          flex:          1,
+        }}>
+          {isResult ? 'Attack Result' : state.dualWield?.enabled ? 'Dual Wield Attack' : 'Combat Check'}
+        </span>
+        <button
+          onClick={handleClose}
+          style={{
+            background: 'none',
+            border:     'none',
+            cursor:     'pointer',
+            color:      'var(--hud-text-faint)',
+            fontSize:   FS.sm,
+            padding:    `0 ${SP[1]}`,
+            lineHeight: 1,
+          }}
+        >✕</button>
       </div>
 
-      {/* ── Progress bar ── */}
-      {!isResult && (
-        <div style={{ height: 4, background: 'var(--hud-border)', flexShrink: 0 }}>
-          <div style={{
-            height: '100%',
-            width: `${(state.currentStep / totalSteps) * 100}%`,
-            background: GOLD_BAR,
-            transition: 'width 200ms ease',
-          }} />
-        </div>
-      )}
+      {/* ── Body ─────────────────────────────────────────────────────────────── */}
+      <div style={{ flex: 1, overflowY: 'auto', overscrollBehavior: 'contain' }}>
 
-      {/* ── Body ── */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 16px', overscrollBehavior: 'contain' }}>
+        {/* Roll result */}
         {isResult && state.rollResult && (
-          <RollResultStep
-            result={state.rollResult}
-            attackType={state.attackType ?? 'ranged'}
-            weapon={state.selectedWeapon}
-            refWeapon={refWeapon}
-            targets={state.selectedTargets}
-            rangeBand={state.selectedBand}
-            characterBrawn={character.brawn}
-            critEligibility={critEligibility}
-            onRollAgain={handleRollAgain}
-            onNewAttack={handleNewAttack}
-            dualWield={state.dualWield}
-            dualWieldSecondaryRef={secondaryRefWeapon}
-          />
+          <div style={{ padding: `${SP[3]} ${SP[3]}` }}>
+            <RollResultStep
+              result={state.rollResult}
+              attackType={state.attackType ?? 'ranged'}
+              weapon={state.selectedWeapon}
+              refWeapon={refWeapon}
+              targets={state.selectedTargets}
+              rangeBand={state.selectedBand}
+              characterBrawn={character.brawn}
+              critEligibility={critEligibility}
+              onRollAgain={handleRollAgain}
+              onNewAttack={handleNewAttack}
+              dualWield={state.dualWield}
+              dualWieldSecondaryRef={secondaryRefWeapon}
+            />
+          </div>
         )}
 
-        {!isResult && state.currentStep === 1 && (
-          <AttackTypeStep onSelect={handleAttackType} />
+        {/* Dual wield review (step 2b) */}
+        {!isResult && state.dualWieldReview && state.dualWield && (
+          <div style={{ padding: `${SP[3]} ${SP[3]}` }}>
+            <DualWieldReviewStep
+              primaryWeapon={state.dualWield.primaryWeapon}
+              secondaryWeapon={state.dualWield.secondaryWeapon}
+              primaryRef={refWeapon}
+              secondaryRef={secondaryRefWeapon}
+              onSwap={handleDualWieldSwap}
+            />
+          </div>
         )}
 
-        {!isResult && state.currentStep === 2 && !state.dualWieldReview && (
-          <WeaponSelectStep
-            attackType={state.attackType ?? 'ranged'}
-            character={character}
-            weapons={weapons}
-            refWeaponMap={refWeaponMap}
-            refSkillMap={refSkillMap}
-            refWeaponQualityMap={refWeaponQualityMap}
-            charSkills={charSkills}
-            selectedWeapon={state.selectedWeapon}
-            onSelect={handleWeaponSelect}
-            onNext={goNext}
-            isGmMode={isGmMode}
-            onEquipWeapon={handleEquipWeapon}
-            onDualWieldSelect={handleDualWieldSelect}
-          />
-        )}
+        {/* Accordion steps */}
+        {!isResult && !state.dualWieldReview && (
+          <div style={{ padding: `${SP[2]} ${SP[2]}` }}>
 
-        {!isResult && state.currentStep === 2 && state.dualWieldReview && state.dualWield && (
-          <DualWieldReviewStep
-            primaryWeapon={state.dualWield.primaryWeapon}
-            secondaryWeapon={state.dualWield.secondaryWeapon}
-            primaryRef={refWeapon}
-            secondaryRef={secondaryRefWeapon}
-            onSwap={handleDualWieldSwap}
-          />
-        )}
+            {/* Attack Type (only when not preset) */}
+            {!initialAttackType && (
+              <StepContainer
+                number={0}
+                label="Attack Type"
+                isActive={state.currentStep === 1}
+                isDone={state.currentStep > 1}
+                isLocked={false}
+                doneSummary={state.attackType
+                  ? (state.attackType === 'ranged' ? '✓ Ranged' : '✓ Melee')
+                  : undefined}
+              >
+                <AttackTypeStep onSelect={handleAttackType} />
+              </StepContainer>
+            )}
 
-        {!isResult && state.currentStep === 3 && (
-          <TargetSelectStep
-            campaignId={campaignId}
-            attackType={state.attackType ?? 'ranged'}
-            selectedTargets={state.selectedTargets}
-            onSelect={handleTargetSelect}
-            gmTargets={gmTargets}
-            enemies={encounterEnemies}
-          />
-        )}
+            {/* Visual Step 1 — Weapon + Target */}
+            <StepContainer
+              number={1}
+              label="Weapon & Target"
+              isActive={state.currentStep === 2 || state.currentStep === 3}
+              isDone={state.currentStep >= 4}
+              isLocked={state.currentStep < 2}
+              doneSummary={step1DoneSummary || undefined}
+            >
+              {state.currentStep === 2 && (
+                <WeaponSelectStep
+                  attackType={state.attackType ?? 'ranged'}
+                  character={character}
+                  weapons={weapons}
+                  refWeaponMap={refWeaponMap}
+                  refSkillMap={refSkillMap}
+                  refWeaponQualityMap={refWeaponQualityMap}
+                  charSkills={charSkills}
+                  selectedWeapon={state.selectedWeapon}
+                  onSelect={handleWeaponSelect}
+                  onNext={goNext}
+                  isGmMode={isGmMode}
+                  onEquipWeapon={handleEquipWeapon}
+                  onDualWieldSelect={handleDualWieldSelect}
+                />
+              )}
+              {state.currentStep === 3 && (
+                <div>
+                  <div style={{
+                    fontSize:      FS.overline,
+                    fontWeight:    700,
+                    letterSpacing: '0.18em',
+                    textTransform: 'uppercase' as const,
+                    color:         'var(--hud-text-faint)',
+                    marginBottom:  SP[1],
+                    fontFamily:    FONT_BODY,
+                  }}>
+                    Target (optional)
+                  </div>
+                  {(encounterEnemies ?? []).length === 0 && (
+                    <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)', fontStyle: 'italic' }}>
+                      No enemies in encounter — skip to continue.
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: SP[1] }}>
+                    {(encounterEnemies ?? []).map(enemy => {
+                      const selected = state.selectedTargets.some(t => t.instanceId === enemy.instanceId)
+                      return (
+                        <button
+                          key={enemy.instanceId}
+                          onClick={() => handleTargetSelect(
+                            selected
+                              ? state.selectedTargets.filter(t => t.instanceId !== enemy.instanceId)
+                              : [...state.selectedTargets, enemy]
+                          )}
+                          style={{
+                            border:       selected
+                              ? `1px solid color-mix(in srgb, var(--hud-accent) 50%, transparent)`
+                              : `1px solid var(--hud-border)`,
+                            background:   selected
+                              ? `color-mix(in srgb, var(--hud-accent) 10%, transparent)`
+                              : 'transparent',
+                            color:        selected ? 'var(--hud-text)' : 'var(--hud-text-dim)',
+                            padding:      `2px ${SP[2]}`,
+                            fontSize:     FS.overline,
+                            fontWeight:   700,
+                            borderRadius: RADIUS.sm,
+                            cursor:       'pointer',
+                            fontFamily:   FONT_BODY,
+                            transition:   `border-color ${EASE.quick}, background ${EASE.quick}`,
+                          }}
+                        >
+                          {enemy.name}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+            </StepContainer>
 
-        {!isResult && state.currentStep === 4 && state.attackType && (
-          <RangeBandStep
-            attackType={state.attackType}
-            weapon={refWeapon ? { skillKey: refWeapon.skill_key ?? '', refWeapon } : null}
-            selectedBand={state.selectedBand}
-            onSelect={handleBandSelect}
-          />
-        )}
+            {/* Visual Step 2 — Range */}
+            <StepContainer
+              number={2}
+              label={state.attackType === 'melee' ? 'Melee' : 'Range Band'}
+              isActive={state.currentStep === 4}
+              isDone={state.currentStep >= 5}
+              isLocked={state.currentStep < 4}
+              doneSummary={step2DoneSummary}
+            >
+              {state.currentStep === 4 && state.attackType && (
+                <RangeBandStep
+                  attackType={state.attackType}
+                  weapon={refWeapon ? { skillKey: refWeapon.skill_key ?? '', refWeapon } : null}
+                  selectedBand={state.selectedBand}
+                  targets={state.selectedTargets}
+                  onSelect={handleBandSelect}
+                />
+              )}
+            </StepContainer>
 
-        {!isResult && state.currentStep === 5 && (
-          <DicePoolReviewStep
-            attackType={state.attackType ?? 'ranged'}
-            character={character}
-            weapon={state.selectedWeapon}
-            refWeapon={refWeapon}
-            refSkill={refSkill}
-            charSkills={charSkills}
-            targets={state.selectedTargets}
-            rangeBand={state.selectedBand}
-            skillModifiers={skillModifiers}
-            adjustments={state.adjustments}
-            onAdjustChange={handleAdjustChange}
-            onRoll={handleRoll}
-            dualWield={state.dualWield}
-            refWeaponMap={refWeaponMap}
-            refSkillMap={refSkillMap}
-            speciesAbilities={speciesAbilities}
-            speciesName={speciesName}
-          />
+            {/* Visual Step 3 — Dice Pool */}
+            <StepContainer
+              number={3}
+              label="Dice Pool"
+              isActive={state.currentStep === 5}
+              isDone={false}
+              isLocked={state.currentStep < 5}
+            >
+              {state.currentStep === 5 && (
+                <DicePoolReviewStep
+                  attackType={state.attackType ?? 'ranged'}
+                  character={character}
+                  weapon={state.selectedWeapon}
+                  refWeapon={refWeapon}
+                  refSkill={refSkill}
+                  charSkills={charSkills}
+                  targets={state.selectedTargets}
+                  rangeBand={state.selectedBand}
+                  skillModifiers={skillModifiers}
+                  adjustments={state.adjustments}
+                  onAdjustChange={handleAdjustChange}
+                  onPoolChange={setPoolForRoll}
+                  dualWield={state.dualWield}
+                  refWeaponMap={refWeaponMap}
+                  refSkillMap={refSkillMap}
+                  speciesAbilities={speciesAbilities}
+                  speciesName={speciesName}
+                />
+              )}
+            </StepContainer>
+
+            {/* Visual Step 4 — Roll */}
+            <StepContainer
+              number={4}
+              label="Roll"
+              isActive={state.currentStep === 5}
+              isDone={false}
+              isLocked={state.currentStep < 5}
+            >
+              {state.currentStep === 5 && (
+                <button
+                  onClick={() => handleRoll(poolForRoll)}
+                  disabled={totalDiceForRoll === 0}
+                  style={{
+                    width:         '100%',
+                    padding:       `${SP[2]} 0`,
+                    background:    `color-mix(in srgb, var(--hud-accent) 18%, transparent)`,
+                    border:        `1px solid color-mix(in srgb, var(--hud-accent) 45%, transparent)`,
+                    borderRadius:  RADIUS.md,
+                    cursor:        totalDiceForRoll === 0 ? 'not-allowed' : 'pointer',
+                    opacity:       totalDiceForRoll === 0 ? 0.4 : 1,
+                    fontFamily:    FONT_BODY,
+                    fontSize:      FS.sm,
+                    fontWeight:    700,
+                    color:         'var(--hud-text)',
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase' as const,
+                    transition:    `opacity ${EASE.quick}`,
+                  }}
+                >
+                  Roll {totalDiceForRoll} Dice
+                </button>
+              )}
+            </StepContainer>
+
+            {/* Dot progress indicator */}
+            <div style={{
+              display:        'flex',
+              justifyContent: 'center',
+              gap:            SP[1],
+              padding:        `${SP[2]} 0`,
+            }}>
+              {[1, 2, 3, 4].map(n => (
+                <div key={n} style={{
+                  width:        6,
+                  height:       6,
+                  borderRadius: RADIUS.full,
+                  background:   visualStep >= n ? 'var(--hud-gold)' : 'var(--hud-border)',
+                  opacity:      visualStep > n ? 0.5 : visualStep === n ? 1 : 0.3,
+                  transition:   `background ${EASE.quick}, opacity ${EASE.quick}`,
+                }} />
+              ))}
+            </div>
+
+          </div>
         )}
       </div>
 
-      {/* ── Footer (Next button, steps 2-4 and Step 2b) ── */}
+      {/* ── Footer — Next button (steps 2–4 and step 2b) ─────────────────────── */}
       {!isResult && (state.dualWieldReview || (state.currentStep >= 2 && state.currentStep <= 4)) && (
-        <div style={{ padding: '12px 16px', borderTop: `1px solid ${GOLD_BD}`, flexShrink: 0 }}>
+        <div style={{
+          padding:    `${SP[2]} ${SP[3]}`,
+          borderTop:  '1px solid var(--hud-border)',
+          flexShrink: 0,
+        }}>
           <button
             onClick={goNext}
             disabled={!canAdvance()}
             style={{
-              width: '100%', height: 48, borderRadius: 10,
-              border: 'none', cursor: canAdvance() ? 'pointer' : 'not-allowed',
-              fontFamily: FONT_DISPLAY,
-              fontSize: 'clamp(0.85rem, 1.3vw, 1rem)',
-              fontWeight: 700,
-              textTransform: 'uppercase',
+              width:         '100%',
+              padding:       `${SP[2]} 0`,
+              borderRadius:  RADIUS.md,
+              border:        `1px solid color-mix(in srgb, var(--hud-accent) ${canAdvance() ? 45 : 20}%, transparent)`,
+              cursor:        canAdvance() ? 'pointer' : 'not-allowed',
+              fontFamily:    FONT_BODY,
+              fontSize:      FS.label,
+              fontWeight:    700,
+              textTransform: 'uppercase' as const,
               letterSpacing: '0.1em',
-              background: canAdvance()
-                ? 'linear-gradient(135deg, #E03A1E, #A02010)'
-                : 'rgba(224,58,30,0.15)',
-              color: canAdvance() ? 'var(--hud-bg)' : 'var(--hud-text-faint)',
-              transition: 'background 150ms',
+              background:    canAdvance()
+                ? `color-mix(in srgb, var(--hud-accent) 18%, transparent)`
+                : `color-mix(in srgb, var(--hud-accent) 6%, transparent)`,
+              color:         canAdvance() ? 'var(--hud-text)' : 'var(--hud-text-faint)',
+              transition:    `background ${EASE.quick}, border-color ${EASE.quick}`,
             }}
           >
             {state.dualWieldReview
               ? 'Continue →'
               : state.currentStep === 3 && state.selectedTargets.length === 0
               ? 'Skip / Next'
-              : 'Next'}
+              : 'Next →'}
           </button>
         </div>
       )}
