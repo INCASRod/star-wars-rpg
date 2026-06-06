@@ -13,7 +13,7 @@ import {
   getMeleeDifficulty,
   bandIndex,
 } from '@/lib/combatCheckUtils'
-import { HUD, FS, FONT_BODY, SP, EASE, RADIUS, SYM_COLOR } from '@/lib/tokens'
+import { HUD, FS, FONT_BODY, SP, EASE, RADIUS } from '@/lib/tokens'
 
 
 interface RangeBandStepProps {
@@ -62,6 +62,7 @@ function CompactBandPill({
         cursor:       blocked ? 'not-allowed' : 'pointer',
         opacity:      blocked ? 0.35 : 1,
         width:        '100%',
+        overflow:     'hidden',
         textAlign:    'left' as const,
         fontFamily:   FONT_BODY,
         transition:   `border-color ${EASE.quick}, background ${EASE.quick}`,
@@ -93,18 +94,27 @@ function CompactBandPill({
         </div>
       )}
       {blocked && (
-        <span style={{ fontSize: FS.overline, color: SYM_COLOR.failure }}>Out of range</span>
+        <span style={{ fontSize: FS.overline, color: 'var(--state-failure)', whiteSpace: 'nowrap' }}>Out of range</span>
       )}
 
       {/* Right-side note */}
-      <span style={{ marginLeft: 'auto', fontSize: FS.overline, fontStyle: 'italic', flexShrink: 0 }}>
+      <span style={{
+        marginLeft:   'auto',
+        fontSize:     FS.overline,
+        fontStyle:    'italic',
+        overflow:     'hidden',
+        whiteSpace:   'nowrap',
+        textOverflow: 'ellipsis',
+        minWidth:     0,
+        paddingLeft:  SP[1],
+      }}>
         {atMaxRange && (
           <span style={{ color: 'var(--hud-gold)' }}>max range</span>
         )}
         {beyondMax && !atMaxRange && (
           <span style={{ color: 'var(--hud-accent)' }}>{notes[0]}</span>
         )}
-        {!atMaxRange && !beyondMax && notes.length > 0 && (
+        {!blocked && !atMaxRange && !beyondMax && notes.length > 0 && (
           <span style={{ color: 'var(--hud-accent)' }}>{notes.join(' · ')}</span>
         )}
       </span>
