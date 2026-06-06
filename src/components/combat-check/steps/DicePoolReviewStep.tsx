@@ -10,7 +10,7 @@ import {
   getRangedDifficulty, getMeleeDifficulty, RANGE_BAND_LABELS,
   RANGE_VALUE_MAP, CHAR_FIELD_MAP, isRangedSkill,
 } from '@/lib/combatCheckUtils'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 import { HUD, FS, FONT_DISPLAY, FONT_BODY, SP, EASE, RADIUS } from '@/lib/tokens'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
@@ -105,7 +105,7 @@ function DiceRow({ label, types }: { label: string; types: { type: string; count
 
 function AdjustControl({
   label, value, onAdd, onRemove, min = 0,
-}: { label: string; value: number; onAdd: () => void; onRemove: () => void; min?: number }) {
+}: { label: ReactNode; value: number; onAdd: () => void; onRemove: () => void; min?: number }) {
   return (
     <div style={{
       display:       'flex',
@@ -337,17 +337,12 @@ export function DicePoolReviewStep({
   }
 
   function handleDowngradeCheck() {
-    const totalDC = finalDiff + finalChal + adjustments.challengeAdd
-    if (totalDC === 0) return
-    if (adjustments.challengeAdd > 0) {
-      onAdjustChange({ ...adjustments, challengeAdd: adjustments.challengeAdd - 1 })
-    } else if (adjustments.difficultyUpgrades > 0) {
-      onAdjustChange({ ...adjustments, difficultyUpgrades: adjustments.difficultyUpgrades - 1 })
-    } else if (finalDiff > 0) {
-      onAdjustChange({ ...adjustments, difficultyAdd: adjustments.difficultyAdd - 1 })
-    } else {
-      onAdjustChange({ ...adjustments, challengeAdd: adjustments.challengeAdd - 1 })
-    }
+    if (adjustments.challengeAdd <= 0) return
+    onAdjustChange({
+      ...adjustments,
+      challengeAdd:  adjustments.challengeAdd - 1,
+      difficultyAdd: adjustments.difficultyAdd + 1,
+    })
   }
 
   const weaponName = isDualWield && dualWield
@@ -444,7 +439,7 @@ export function DicePoolReviewStep({
       <SectionLabel text="Difficulty" />
       <DiceRow label="Difficulty" types={[
         { type: 'difficulty', count: finalDiff },
-        { type: 'challenge',  count: finalChal },
+        { type: 'challenge',  count: finalChal + adjustments.challengeAdd },
       ]} />
       {isDualWield && (
         <div style={{
@@ -590,7 +585,7 @@ export function DicePoolReviewStep({
         </button>
         <button
           onClick={handleDowngradeCheck}
-          disabled={finalDiff + finalChal + adjustments.challengeAdd === 0}
+          disabled={adjustments.challengeAdd <= 0}
           style={{
             flex:          1,
             padding:       `2px ${SP[2]}`,
@@ -599,8 +594,8 @@ export function DicePoolReviewStep({
             letterSpacing: '0.08em',
             textTransform: 'uppercase' as const,
             borderRadius:  RADIUS.sm,
-            cursor:        finalDiff + finalChal + adjustments.challengeAdd === 0 ? 'not-allowed' : 'pointer',
-            opacity:       finalDiff + finalChal + adjustments.challengeAdd === 0 ? 0.4 : 1,
+            cursor:        adjustments.challengeAdd <= 0 ? 'not-allowed' : 'pointer',
+            opacity:       adjustments.challengeAdd <= 0 ? 0.4 : 1,
             /* pre-approved die-identity exception — purple difficulty */
             border:        `1px solid rgba(123,31,162,0.45)`,
             background:    `rgba(123,31,162,0.1)`,
@@ -614,41 +609,27 @@ export function DicePoolReviewStep({
       </div>
 
       {/* Manual adjustments */}
-      <SectionLabel text="Manual Adjustments (GM Discretion)" />
+      <SectionLabel text="Adjustments" />
       <AdjustControl
-        label="Additional Boost dice"
+        label={<><DiceFace type="boost" size={13} style={{ verticalAlign: 'middle' }} />{' '}Boost</>}
         value={adjustments.boostAdd}
         min={adjFloors.boostAdd}
         onAdd={() => adj('boostAdd', 1)}
         onRemove={() => adj('boostAdd', -1)}
       />
       <AdjustControl
-        label="Additional Setback dice"
+        label={<><DiceFace type="setback" size={13} style={{ verticalAlign: 'middle' }} />{' '}Setback</>}
         value={adjustments.setbackAdd}
         min={adjFloors.setbackAdd}
         onAdd={() => adj('setbackAdd', 1)}
         onRemove={() => adj('setbackAdd', -1)}
       />
       <AdjustControl
-        label="Additional Difficulty dice"
+        label={<><DiceFace type="difficulty" size={13} style={{ verticalAlign: 'middle' }} />{' '}Difficulty</>}
         value={adjustments.difficultyAdd}
         min={adjFloors.difficultyAdd}
         onAdd={() => adj('difficultyAdd', 1)}
         onRemove={() => adj('difficultyAdd', -1)}
-      />
-      <AdjustControl
-        label="Upgrade Ability → Proficiency"
-        value={adjustments.abilityUpgrades}
-        min={adjFloors.abilityUpgrades}
-        onAdd={() => adj('abilityUpgrades', 1)}
-        onRemove={() => adj('abilityUpgrades', -1)}
-      />
-      <AdjustControl
-        label="Upgrade Difficulty → Challenge"
-        value={adjustments.difficultyUpgrades}
-        min={adjFloors.difficultyUpgrades}
-        onAdd={() => adj('difficultyUpgrades', 1)}
-        onRemove={() => adj('difficultyUpgrades', -1)}
       />
     </div>
   )
