@@ -4,12 +4,11 @@ import { useState, useEffect, useCallback, type ReactNode } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { rollPool, type RollResult } from '@/components/player-hud/dice-engine'
 import { type RollMeta } from '@/lib/logRoll'
-import { formatResultSummary, type RangeBand, RANGE_VALUE_MAP, RANGE_BAND_LABELS, MELEE_SKILL_KEYS } from '@/lib/combatCheckUtils'
+import { formatResultSummary, isRangedSkill, type RangeBand, RANGE_VALUE_MAP, RANGE_BAND_LABELS, MELEE_SKILL_KEYS } from '@/lib/combatCheckUtils'
 import { checkCriticalEligibility, type CriticalEligibility } from '@/lib/criticalUtils'
 import type { Character, CharacterWeapon, CharacterSkill, RefWeapon, RefSkill, RefWeaponQuality, SpeciesAbility } from '@/lib/types'
 import type { SkillDiceModifier } from '@/lib/derivedStats'
 import type { AdversaryInstance } from '@/lib/adversaries'
-import { AttackTypeStep } from './steps/AttackTypeStep'
 import { WeaponSelectStep } from './steps/WeaponSelectStep'
 import { RangeBandStep } from './steps/RangeBandStep'
 import { DicePoolReviewStep, type ManualAdjustments, EMPTY_ADJUSTMENTS, type DualWieldState } from './steps/DicePoolReviewStep'
@@ -34,7 +33,7 @@ interface CombatCheckState {
 
 function makeInitialState(initialAttackType: 'ranged' | 'melee' | null): CombatCheckState {
   return {
-    currentStep:     initialAttackType ? 2 : 1,
+    currentStep:     2,
     attackType:      initialAttackType,
     selectedWeapon:  null,
     selectedTargets: [],
@@ -163,8 +162,8 @@ export function CombatCheckOverlay({
   }, [open, initialAttackType])
 
   // ── Derived ────────────────────────────────────────────────────────────────
-  const totalSteps  = state.attackType || state.currentStep > 1 ? 5 : 5
-  const initialStep = initialAttackType ? 2 : 1
+  const totalSteps  = 5
+  const initialStep = 2
   const isResult    = state.rollResult !== null
 
   const refWeapon: RefWeapon | null = state.selectedWeapon && state.selectedWeapon.id !== '__unarmed__'
@@ -215,11 +214,6 @@ export function CombatCheckOverlay({
     setState(s => ({ ...s, currentStep: Math.min(s.currentStep + 1, totalSteps) }))
   }
 
-  // ── Step change handlers ───────────────────────────────────────────────────
-  const handleAttackType = (type: 'ranged' | 'melee') => {
-    setState(s => ({ ...s, attackType: type, currentStep: 2 }))
-  }
-
   // ── Write active weapon to combat_participants (GM view picks this up in real-time) ──
   const writeWeaponToParticipant = useCallback(async (
     primaryName: string | null,
@@ -256,7 +250,16 @@ export function CombatCheckOverlay({
   }
 
   const handleWeaponSelect = (w: CharacterWeapon | null) => {
-    setState(s => ({ ...s, selectedWeapon: w, selectedBand: null, dualWield: null, dualWieldReview: false }))
+    let derivedType = state.attackType
+    if (w && !derivedType) {
+      if (w.id === '__unarmed__') {
+        derivedType = 'melee'
+      } else {
+        const ref = refWeaponMap[w.weapon_key]
+        derivedType = ref?.skill_key ? (isRangedSkill(ref.skill_key) ? 'ranged' : 'melee') : 'ranged'
+      }
+    }
+    setState(s => ({ ...s, selectedWeapon: w, attackType: w ? derivedType : s.attackType, selectedBand: null, dualWield: null, dualWieldReview: false }))
   }
 
   // ── Dual wield handlers ───────────────────────────────────────────────────
@@ -462,8 +465,7 @@ export function CombatCheckOverlay({
   function canAdvance(): boolean {
     if (state.dualWieldReview) return true
     switch (state.currentStep) {
-      case 1: return state.attackType !== null
-      case 2: return state.selectedWeapon !== null
+      case 2: return state.selectedWeapon !== null && state.attackType !== null
       case 3: return true
       case 4: return state.selectedBand !== null || state.attackType === 'melee'
       default: return false
@@ -589,22 +591,6 @@ export function CombatCheckOverlay({
         {!isResult && !state.dualWieldReview && (
           <div style={{ padding: `${SP[2]} ${SP[2]}` }}>
 
-            {/* Attack Type (only when not preset) */}
-            {!initialAttackType && (
-              <StepContainer
-                number={0}
-                label="Attack Type"
-                isActive={state.currentStep === 1}
-                isDone={state.currentStep > 1}
-                isLocked={false}
-                doneSummary={state.attackType
-                  ? (state.attackType === 'ranged' ? '✓ Ranged' : '✓ Melee')
-                  : undefined}
-              >
-                <AttackTypeStep onSelect={handleAttackType} />
-              </StepContainer>
-            )}
-
             {/* Visual Step 1 — Weapon + Target */}
             <StepContainer
               number={1}
@@ -706,7 +692,7 @@ export function CombatCheckOverlay({
               )}
             </StepContainer>
 
-            {/* Visual Step 3 — Dice Pool */}
+            {/* Visual Step 3 — Dice Pool + Roll */}
             <StepContainer
               number={3}
               label="Dice Pool"
@@ -715,59 +701,50 @@ export function CombatCheckOverlay({
               isLocked={state.currentStep < 5}
             >
               {state.currentStep === 5 && (
-                <DicePoolReviewStep
-                  attackType={state.attackType ?? 'ranged'}
-                  character={character}
-                  weapon={state.selectedWeapon}
-                  refWeapon={refWeapon}
-                  refSkill={refSkill}
-                  charSkills={charSkills}
-                  targets={state.selectedTargets}
-                  rangeBand={state.selectedBand}
-                  skillModifiers={skillModifiers}
-                  adjustments={state.adjustments}
-                  onAdjustChange={handleAdjustChange}
-                  onPoolChange={setPoolForRoll}
-                  dualWield={state.dualWield}
-                  refWeaponMap={refWeaponMap}
-                  refSkillMap={refSkillMap}
-                  speciesAbilities={speciesAbilities}
-                  speciesName={speciesName}
-                />
-              )}
-            </StepContainer>
-
-            {/* Visual Step 4 — Roll */}
-            <StepContainer
-              number={4}
-              label="Roll"
-              isActive={state.currentStep === 5}
-              isDone={false}
-              isLocked={state.currentStep < 5}
-            >
-              {state.currentStep === 5 && (
-                <button
-                  onClick={() => handleRoll(poolForRoll)}
-                  disabled={totalDiceForRoll === 0}
-                  style={{
-                    width:         '100%',
-                    padding:       `${SP[2]} 0`,
-                    background:    `color-mix(in srgb, var(--hud-accent) 18%, transparent)`,
-                    border:        `1px solid color-mix(in srgb, var(--hud-accent) 45%, transparent)`,
-                    borderRadius:  RADIUS.md,
-                    cursor:        totalDiceForRoll === 0 ? 'not-allowed' : 'pointer',
-                    opacity:       totalDiceForRoll === 0 ? 0.4 : 1,
-                    fontFamily:    FONT_BODY,
-                    fontSize:      FS.sm,
-                    fontWeight:    700,
-                    color:         'var(--hud-text)',
-                    letterSpacing: '0.12em',
-                    textTransform: 'uppercase' as const,
-                    transition:    `opacity ${EASE.quick}`,
-                  }}
-                >
-                  Roll {totalDiceForRoll} Dice
-                </button>
+                <>
+                  <DicePoolReviewStep
+                    attackType={state.attackType ?? 'ranged'}
+                    character={character}
+                    weapon={state.selectedWeapon}
+                    refWeapon={refWeapon}
+                    refSkill={refSkill}
+                    charSkills={charSkills}
+                    targets={state.selectedTargets}
+                    rangeBand={state.selectedBand}
+                    skillModifiers={skillModifiers}
+                    adjustments={state.adjustments}
+                    onAdjustChange={handleAdjustChange}
+                    onPoolChange={setPoolForRoll}
+                    dualWield={state.dualWield}
+                    refWeaponMap={refWeaponMap}
+                    refSkillMap={refSkillMap}
+                    speciesAbilities={speciesAbilities}
+                    speciesName={speciesName}
+                  />
+                  <button
+                    onClick={() => handleRoll(poolForRoll)}
+                    disabled={totalDiceForRoll === 0}
+                    style={{
+                      width:         '100%',
+                      marginTop:     SP[2],
+                      padding:       `${SP[2]} 0`,
+                      background:    `color-mix(in srgb, var(--hud-accent) 18%, transparent)`,
+                      border:        `1px solid color-mix(in srgb, var(--hud-accent) 45%, transparent)`,
+                      borderRadius:  RADIUS.md,
+                      cursor:        totalDiceForRoll === 0 ? 'not-allowed' : 'pointer',
+                      opacity:       totalDiceForRoll === 0 ? 0.4 : 1,
+                      fontFamily:    FONT_BODY,
+                      fontSize:      FS.sm,
+                      fontWeight:    700,
+                      color:         'var(--hud-text)',
+                      letterSpacing: '0.12em',
+                      textTransform: 'uppercase' as const,
+                      transition:    `opacity ${EASE.quick}`,
+                    }}
+                  >
+                    Roll {totalDiceForRoll} Dice
+                  </button>
+                </>
               )}
             </StepContainer>
 
@@ -778,7 +755,7 @@ export function CombatCheckOverlay({
               gap:            SP[1],
               padding:        `${SP[2]} 0`,
             }}>
-              {[1, 2, 3, 4].map(n => (
+              {[1, 2, 3].map(n => (
                 <div key={n} style={{
                   width:        6,
                   height:       6,

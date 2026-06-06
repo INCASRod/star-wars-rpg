@@ -9,7 +9,7 @@ import { HUD, FS, FONT_BODY, SP, EASE, RADIUS } from '@/lib/tokens'
 const CAUTION = 'color-mix(in srgb, var(--state-caution, #FF9800) 100%, transparent)'
 
 interface WeaponSelectStepProps {
-  attackType:         'ranged' | 'melee'
+  attackType:         'ranged' | 'melee' | null
   character:          Character
   weapons:            CharacterWeapon[]
   refWeaponMap:       Record<string, RefWeapon>
@@ -99,6 +99,7 @@ export function WeaponSelectStep({
   const [equipping, setEquipping] = useState(false)
 
   function weaponMatchesType(w: CharacterWeapon): boolean {
+    if (attackType === null) return true
     const ref = refWeaponMap[w.weapon_key]
     if (!ref?.skill_key) return false
     if (attackType === 'ranged') return isRangedSkill(ref.skill_key)
@@ -223,13 +224,13 @@ export function WeaponSelectStep({
     )
   }
 
-  const hasAnyWeapon = matchingWeapons.length > 0 || attackType === 'melee'
+  const hasAnyWeapon = matchingWeapons.length > 0 || attackType === 'melee' || attackType === null
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
 
-      {/* Unarmed option (melee only) */}
-      {attackType === 'melee' && (
+      {/* Unarmed option (melee or all-weapons view) */}
+      {(attackType === 'melee' || attackType === null) && (
         <>
           <SectionLabel text="Always Available" />
           <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: SP[1], marginBottom: SP[2] }}>
@@ -267,7 +268,7 @@ export function WeaponSelectStep({
           fontSize:   FS.label,
           color:      'var(--hud-text-dim)',
         }}>
-          No {attackType === 'ranged' ? 'ranged' : 'melee'} weapons found.
+          No {attackType === 'ranged' ? 'ranged' : attackType === 'melee' ? 'melee' : ''} weapons found.
           <br />
           Add weapons to your inventory to make combat checks.
         </div>
