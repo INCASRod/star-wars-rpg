@@ -1125,4 +1125,12 @@ i.ffi {
 .map-ctrl-btn--locked:hover {
   background: color-mix(in srgb, var(--hud-accent) 24%, transparent);
 }
+.map-ctrl-btn--icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  width: 22px;
+  height: 22px;
+}
 .inv-equip-btn-active { border-color: var(--hud-gold) !important; color: var(--hud-gold) !important; background: color-mix(in srgb, var(--hud-accent) 10%, transparent) !important; }

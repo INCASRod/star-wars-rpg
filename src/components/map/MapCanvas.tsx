@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useCallback, memo, useState } from 'react'
+import { Lock, LockOpen } from 'lucide-react'
 import { SP, Z } from '@/lib/tokens'
 import type { MapToken } from '@/hooks/useMapTokens'
 import { runMapWipe } from '@/lib/mapWipe'
@@ -253,12 +254,12 @@ export const MapCanvas = memo(function MapCanvas({
           ↺ Reset
         </button>
         <button
-          className={`map-ctrl-btn${isLocked ? ' map-ctrl-btn--locked' : ''}`}
+          className={`map-ctrl-btn map-ctrl-btn--icon${isLocked ? ' map-ctrl-btn--locked' : ''}`}
           style={{ pointerEvents: 'auto' }}
           onClick={toggleLock}
           aria-label={isLocked ? 'Unlock map' : 'Lock map'}
         >
-          {isLocked ? '🔒 Locked' : '🔓 Lock'}
+          {isLocked ? <Lock size={13} strokeWidth={2} /> : <LockOpen size={13} strokeWidth={2} />}
         </button>
       </div>
     </div>
