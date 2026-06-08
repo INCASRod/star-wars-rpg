@@ -102,13 +102,13 @@ export function RollForceDiceStep({
     onRoll(rollForceDice(available))
   }
 
-  function spendPip(upgradeKey: string, upgradeName: string, useDark = false) {
+  function spendPip(upgradeKey: string, upgradeName: string, pipCost: number, useDark = false) {
     if (useDark) {
-      if (darkPipsLeft <= 0) return
-      setDarkPipsLeft(p => p - 1)
+      if (darkPipsLeft < pipCost) return
+      setDarkPipsLeft(p => p - pipCost)
     } else {
-      if (lightPipsLeft <= 0) return
-      setLightPipsLeft(p => p - 1)
+      if (lightPipsLeft < pipCost) return
+      setLightPipsLeft(p => p - pipCost)
     }
     setSpentUpgrades(prev => new Set([...prev, upgradeKey]))
     onUpgradeActivate(upgradeName)
@@ -333,8 +333,8 @@ export function RollForceDiceStep({
               </div>
               {purchasedUpgrades.map(upgrade => {
                 const spent    = spentUpgrades.has(upgrade.key)
-                const canLight = lightPipsLeft > 0
-                const canDark  = darkPipsLeft > 0 && !isDathomiri
+                const canLight = lightPipsLeft >= upgrade.pip_cost
+                const canDark  = darkPipsLeft >= upgrade.pip_cost && !isDathomiri
                 const tipContent = (
                   <>
                     <TipLabel>{upgrade.name}</TipLabel>
@@ -376,7 +376,7 @@ export function RollForceDiceStep({
                       flexShrink: 0,
                       whiteSpace: 'nowrap',
                     }}>
-                      1 <i className="ffi ffi-swrpg-force" aria-hidden="true" />
+                      {upgrade.pip_cost} <i className="ffi ffi-swrpg-force" aria-hidden="true" />
                     </span>
 
                     {spent ? (
@@ -393,7 +393,7 @@ export function RollForceDiceStep({
                     ) : isDathomiri ? (
                       (canLight || canDark) ? (
                         <button
-                          onClick={() => spendPip(upgrade.key, upgrade.name, !canLight && canDark)}
+                          onClick={() => spendPip(upgrade.key, upgrade.name, upgrade.pip_cost, !canLight && canDark)}
                           style={{
                             fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
                             padding: `2px ${SP[2]}`, borderRadius: RADIUS.sm,
@@ -408,7 +408,7 @@ export function RollForceDiceStep({
                       ) : null
                     ) : canLight ? (
                       <button
-                        onClick={() => spendPip(upgrade.key, upgrade.name, false)}
+                        onClick={() => spendPip(upgrade.key, upgrade.name, upgrade.pip_cost, false)}
                         style={{
                           fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
                           padding: `2px ${SP[2]}`, borderRadius: RADIUS.sm,
@@ -422,7 +422,7 @@ export function RollForceDiceStep({
                       </button>
                     ) : canDark ? (
                       <button
-                        onClick={() => spendPip(upgrade.key, upgrade.name, true)}
+                        onClick={() => spendPip(upgrade.key, upgrade.name, upgrade.pip_cost, true)}
                         style={{
                           fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
                           padding: `2px ${SP[2]}`, borderRadius: RADIUS.sm,
