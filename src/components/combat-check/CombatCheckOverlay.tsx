@@ -190,7 +190,9 @@ export function CombatCheckOverlay({
       return
     }
     if (state.currentStep <= initialStep) return
-    setState(s => ({ ...s, currentStep: s.currentStep - 1, rollResult: null }))
+    // Step 3 is collapsed into step 2 — skip it when going back
+    const prevStep = state.currentStep === 4 ? 2 : state.currentStep - 1
+    setState(s => ({ ...s, currentStep: prevStep, rollResult: null }))
   }
 
   const goNext = () => {
@@ -202,7 +204,7 @@ export function CombatCheckOverlay({
         const secondaryName = dw.secondaryWeapon.custom_name || refWeaponMap[dw.secondaryWeapon.weapon_key]?.name || null
         void writeWeaponToParticipant(primaryName, secondaryName, dw.primaryWeapon.weapon_key, dw.secondaryWeapon.weapon_key)
       }
-      setState(s => ({ ...s, dualWieldReview: false, currentStep: 3 }))
+      setState(s => ({ ...s, dualWieldReview: false, currentStep: 4 }))
       return
     }
     // Advancing past the weapon-select step → write to DB
@@ -211,7 +213,8 @@ export function CombatCheckOverlay({
       const name = w.custom_name || refWeaponMap[w.weapon_key]?.name || null
       void writeWeaponToParticipant(name, null, w.weapon_key, null)
     }
-    setState(s => ({ ...s, currentStep: Math.min(s.currentStep + 1, totalSteps) }))
+    // Step 3 is collapsed into step 2 — skip it when advancing
+    setState(s => ({ ...s, currentStep: s.currentStep === 2 ? 4 : Math.min(s.currentStep + 1, totalSteps) }))
   }
 
   // ── Write active weapon to combat_participants (GM view picks this up in real-time) ──
@@ -259,7 +262,7 @@ export function CombatCheckOverlay({
         derivedType = ref?.skill_key ? (isRangedSkill(ref.skill_key) ? 'ranged' : 'melee') : 'ranged'
       }
     }
-    setState(s => ({ ...s, selectedWeapon: w, attackType: w ? derivedType : s.attackType, selectedBand: null, dualWield: null, dualWieldReview: false }))
+    setState(s => ({ ...s, selectedWeapon: w, attackType: w ? derivedType : initialAttackType, selectedBand: null, dualWield: null, dualWieldReview: false }))
   }
 
   // ── Dual wield handlers ───────────────────────────────────────────────────
@@ -595,80 +598,83 @@ export function CombatCheckOverlay({
             <StepContainer
               number={1}
               label="Weapon & Target"
-              isActive={state.currentStep === 2 || state.currentStep === 3}
+              isActive={state.currentStep === 2}
               isDone={state.currentStep >= 4}
               isLocked={state.currentStep < 2}
               doneSummary={step1DoneSummary || undefined}
             >
               {state.currentStep === 2 && (
-                <WeaponSelectStep
-                  attackType={state.attackType ?? 'ranged'}
-                  character={character}
-                  weapons={weapons}
-                  refWeaponMap={refWeaponMap}
-                  refSkillMap={refSkillMap}
-                  refWeaponQualityMap={refWeaponQualityMap}
-                  charSkills={charSkills}
-                  selectedWeapon={state.selectedWeapon}
-                  onSelect={handleWeaponSelect}
-                  onNext={goNext}
-                  isGmMode={isGmMode}
-                  onEquipWeapon={handleEquipWeapon}
-                  onDualWieldSelect={handleDualWieldSelect}
-                />
-              )}
-              {state.currentStep === 3 && (
-                <div>
-                  <div style={{
-                    fontSize:      FS.overline,
-                    fontWeight:    700,
-                    letterSpacing: '0.18em',
-                    textTransform: 'uppercase' as const,
-                    color:         'var(--hud-text-faint)',
-                    marginBottom:  SP[1],
-                    fontFamily:    FONT_BODY,
-                  }}>
-                    Target (optional)
-                  </div>
-                  {(encounterEnemies ?? []).length === 0 && (
-                    <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)', fontStyle: 'italic' }}>
-                      No enemies in encounter — skip to continue.
+                <>
+                  <WeaponSelectStep
+                    attackType={state.attackType}
+                    character={character}
+                    weapons={weapons}
+                    refWeaponMap={refWeaponMap}
+                    refSkillMap={refSkillMap}
+                    refWeaponQualityMap={refWeaponQualityMap}
+                    charSkills={charSkills}
+                    selectedWeapon={state.selectedWeapon}
+                    onSelect={handleWeaponSelect}
+                    onNext={goNext}
+                    isGmMode={isGmMode}
+                    onEquipWeapon={handleEquipWeapon}
+                    onDualWieldSelect={handleDualWieldSelect}
+                  />
+                  {state.selectedWeapon && (
+                    <div style={{ marginTop: SP[2] }}>
+                      <div style={{
+                        fontSize:      FS.overline,
+                        fontWeight:    700,
+                        letterSpacing: '0.18em',
+                        textTransform: 'uppercase' as const,
+                        color:         'var(--hud-text-faint)',
+                        marginBottom:  SP[1],
+                        fontFamily:    FONT_BODY,
+                      }}>
+                        Target (optional)
+                      </div>
+                      {(encounterEnemies ?? []).length === 0 ? (
+                        <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)', fontStyle: 'italic' }}>
+                          No enemies in encounter.
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: SP[1] }}>
+                          {(encounterEnemies ?? []).map(enemy => {
+                            const selected = state.selectedTargets.some(t => t.instanceId === enemy.instanceId)
+                            return (
+                              <button
+                                key={enemy.instanceId}
+                                onClick={() => handleTargetSelect(
+                                  selected
+                                    ? state.selectedTargets.filter(t => t.instanceId !== enemy.instanceId)
+                                    : [...state.selectedTargets, enemy]
+                                )}
+                                style={{
+                                  border:       selected
+                                    ? `1px solid color-mix(in srgb, var(--hud-accent) 50%, transparent)`
+                                    : `1px solid var(--hud-border)`,
+                                  background:   selected
+                                    ? `color-mix(in srgb, var(--hud-accent) 10%, transparent)`
+                                    : 'transparent',
+                                  color:        selected ? 'var(--hud-text)' : 'var(--hud-text-dim)',
+                                  padding:      `2px ${SP[2]}`,
+                                  fontSize:     FS.overline,
+                                  fontWeight:   700,
+                                  borderRadius: RADIUS.sm,
+                                  cursor:       'pointer',
+                                  fontFamily:   FONT_BODY,
+                                  transition:   `border-color ${EASE.quick}, background ${EASE.quick}`,
+                                }}
+                              >
+                                {enemy.name}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      )}
                     </div>
                   )}
-                  <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: SP[1] }}>
-                    {(encounterEnemies ?? []).map(enemy => {
-                      const selected = state.selectedTargets.some(t => t.instanceId === enemy.instanceId)
-                      return (
-                        <button
-                          key={enemy.instanceId}
-                          onClick={() => handleTargetSelect(
-                            selected
-                              ? state.selectedTargets.filter(t => t.instanceId !== enemy.instanceId)
-                              : [...state.selectedTargets, enemy]
-                          )}
-                          style={{
-                            border:       selected
-                              ? `1px solid color-mix(in srgb, var(--hud-accent) 50%, transparent)`
-                              : `1px solid var(--hud-border)`,
-                            background:   selected
-                              ? `color-mix(in srgb, var(--hud-accent) 10%, transparent)`
-                              : 'transparent',
-                            color:        selected ? 'var(--hud-text)' : 'var(--hud-text-dim)',
-                            padding:      `2px ${SP[2]}`,
-                            fontSize:     FS.overline,
-                            fontWeight:   700,
-                            borderRadius: RADIUS.sm,
-                            cursor:       'pointer',
-                            fontFamily:   FONT_BODY,
-                            transition:   `border-color ${EASE.quick}, background ${EASE.quick}`,
-                          }}
-                        >
-                          {enemy.name}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
+                </>
               )}
             </StepContainer>
 
@@ -799,11 +805,7 @@ export function CombatCheckOverlay({
               transition:    `background ${EASE.quick}, border-color ${EASE.quick}`,
             }}
           >
-            {state.dualWieldReview
-              ? 'Continue →'
-              : state.currentStep === 3 && state.selectedTargets.length === 0
-              ? 'Skip / Next'
-              : 'Next →'}
+            {state.dualWieldReview ? 'Continue →' : 'Next →'}
           </button>
         </div>
       )}

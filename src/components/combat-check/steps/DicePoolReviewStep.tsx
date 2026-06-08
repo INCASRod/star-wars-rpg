@@ -332,7 +332,7 @@ export function DicePoolReviewStep({
     if (finalDiff > 0) {
       onAdjustChange({ ...adjustments, difficultyAdd: adjustments.difficultyAdd - 1, challengeAdd: adjustments.challengeAdd + 1 })
     } else {
-      onAdjustChange({ ...adjustments, challengeAdd: adjustments.challengeAdd + 1 })
+      onAdjustChange({ ...adjustments, difficultyAdd: adjustments.difficultyAdd + 1 })
     }
   }
 

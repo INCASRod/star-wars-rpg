@@ -3,7 +3,8 @@
 import { useState, useMemo } from 'react'
 import { DiceFace } from '@/components/dice/DiceFace'
 import { getSkillPool } from './dice-engine'
-import { FONT_BODY, FONT_DISPLAY, FS, RADIUS, SP } from '@/lib/tokens'
+import { FONT_BODY, FONT_DISPLAY, FS, SP } from '@/lib/tokens'
+import { CHAR_COLOR } from './design-tokens'
 import type { HudSkill } from '@/lib/types'
 
 // ── constants ──────────────────────────────────────────────────────────────
@@ -11,14 +12,17 @@ const POOL_CAP = 5
 
 // ── sub-components ─────────────────────────────────────────────────────────
 
-function RankPips({ rank }: { rank: number }) {
+function RankPips({ rank, charKey }: { rank: number; charKey: string }) {
+  const color    = CHAR_COLOR[charKey as keyof typeof CHAR_COLOR] ?? 'var(--hud-text-dim)'
+  const dimColor = `color-mix(in srgb, ${color} 35%, transparent)`
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: SP[1], flexShrink: 0 }}>
-      {Array.from({ length: rank }).map((_, i) => (
+      {Array.from({ length: 5 }).map((_, i) => (
         <div key={i} style={{
-          width: '0.3125rem', height: '0.3125rem',
-          borderRadius: RADIUS.sm,
-          background: 'var(--hud-gold)',
+          width: '0.4rem', height: '0.5rem',
+          transform: 'skewX(-12deg)',
+          background: i < rank ? color : 'transparent',
+          border: `1px solid ${i < rank ? color : dimColor}`,
           flexShrink: 0,
         }} />
       ))}
@@ -148,7 +152,7 @@ function TrainedRow({ skill, onOpen }: { skill: HudSkill; onOpen: (r: DOMRect) =
       }}>
         {skill.name}
       </span>
-      <RankPips rank={skill.rank} />
+      <RankPips rank={skill.rank} charKey={skill.charKey} />
       <PoolDice charVal={skill.charVal} rank={skill.rank} />
     </button>
   )
