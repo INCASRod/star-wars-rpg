@@ -60,8 +60,9 @@ export function SelectPowerStep({ powers, selectedPowerKey, onSelect }: SelectPo
           {purchased.map(p => {
             const selected = p.powerKey === selectedPowerKey
             const expanded = p.powerKey === expandedKey
-            const desc     = p.description ? stripBBCode(p.description) : ''
-            const upgrades = p.abilities.filter(a => a.purchasedRanks > 0)
+            const basicAbility = p.abilities.find(a => a.name.toLowerCase().includes('basic power'))
+            const desc         = basicAbility?.description ? stripBBCode(basicAbility.description) : ''
+            const upgrades     = p.abilities.filter(a => a.purchasedRanks > 0 && !a.name.toLowerCase().includes('basic power'))
 
             return (
               <button
