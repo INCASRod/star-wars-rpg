@@ -163,7 +163,7 @@ export function SelectPowerStep({ powers, selectedPowerKey, onSelect }: SelectPo
                         No upgrades purchased yet.
                       </div>
                     ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' /* minimum row gap — px intentional */ }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: SP[1] }}>
                         {upgrades.map(upgrade => (
                           <Tooltip
                             key={upgrade.key}
@@ -188,7 +188,7 @@ export function SelectPowerStep({ powers, selectedPowerKey, onSelect }: SelectPo
                               border: `1px solid color-mix(in srgb, var(--hud-accent) 10%, transparent)`,
                             }}>
                               <div style={{
-                                width: 5, height: 5, /* decorative dot — px intentional */
+                                width: '5px', height: '5px', /* decorative dot — px intentional */
                                 borderRadius: RADIUS.full,
                                 background: 'var(--hud-accent)',
                                 opacity: 0.7,
