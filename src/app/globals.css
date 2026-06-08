@@ -1092,4 +1092,37 @@ i.ffi {
   box-shadow: 0 0 0 1px var(--hud-gold), 0 0 10px color-mix(in srgb, var(--hud-accent) 35%, transparent), 0 0 2px color-mix(in srgb, var(--hud-accent) 45%, transparent);
 }
 .inv-equip-btn:hover:not(:disabled) { border-color: var(--hud-accent-border); color: var(--hud-text-dim); }
+
+/* ── Map control overlay buttons ─────────────────────────────── */
+.map-ctrl-btn {
+  font-family: var(--font-body), 'JetBrains Mono', monospace;
+  font-size: var(--text-label);
+  color: var(--hud-text-faint);
+  background: color-mix(in srgb, var(--hud-accent) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--hud-accent) 15%, transparent);
+  border-radius: 4px;
+  padding: 2px var(--space-2);
+  cursor: pointer;
+  transition: all var(--ease-quick);
+  line-height: 1.4;
+  white-space: nowrap;
+  user-select: none;
+}
+.map-ctrl-btn:hover {
+  color: var(--hud-text);
+  border-color: color-mix(in srgb, var(--hud-accent) 40%, transparent);
+  background: color-mix(in srgb, var(--hud-accent) 14%, transparent);
+}
+.map-ctrl-btn:focus-visible {
+  outline: 1px solid var(--hud-accent);
+  outline-offset: 1px;
+}
+.map-ctrl-btn--locked {
+  color: var(--hud-accent);
+  background: color-mix(in srgb, var(--hud-accent) 18%, transparent);
+  border-color: color-mix(in srgb, var(--hud-accent) 40%, transparent);
+}
+.map-ctrl-btn--locked:hover {
+  background: color-mix(in srgb, var(--hud-accent) 24%, transparent);
+}
 .inv-equip-btn-active { border-color: var(--hud-gold) !important; color: var(--hud-gold) !important; background: color-mix(in srgb, var(--hud-accent) 10%, transparent) !important; }
