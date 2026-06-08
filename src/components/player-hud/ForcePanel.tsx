@@ -44,6 +44,7 @@ export interface ForceAbilityDisplay {
   purchasedRanks: number   // 0 = not purchased; >0 = number of ranks bought
   totalRanks:     number   // how many times this ability appears in the tree
   cost:           number   // XP cost per rank (first occurrence)
+  pip_cost:       number   // Force pip activation cost
 }
 
 export interface ForcePowerDisplay {

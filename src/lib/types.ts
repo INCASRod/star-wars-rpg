@@ -314,6 +314,7 @@ export interface RefForceAbility {
   name: string
   description?: string
   power_key: string
+  pip_cost?: number
   sources?: unknown
 }
 

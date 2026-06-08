@@ -120,7 +120,7 @@ export function MobileSessionCompanion({ characterId, campaignId }: MobileSessio
             if (existing) { existing.totalRanks++ }
             else {
               const purchased = purchaseCount.get(`${fp.key}:${aKey}`) ?? 0
-              abilityMap.set(aKey, { key: aKey, name: ref.name, description: ref.description, purchasedRanks: purchased, totalRanks: 1, cost })
+              abilityMap.set(aKey, { key: aKey, name: ref.name, description: ref.description, purchasedRanks: purchased, totalRanks: 1, cost, pip_cost: ref.pip_cost ?? 1 })
             }
           }
         }
