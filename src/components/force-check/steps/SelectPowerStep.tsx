@@ -206,6 +206,17 @@ export function SelectPowerStep({ powers, selectedPowerKey, onSelect }: SelectPo
                               }}>
                                 {upgrade.name}
                               </span>
+                              {upgrade.pip_cost > 0 && (
+                                <span style={{
+                                  fontFamily: FONT_BODY,
+                                  fontSize: FS.overline,
+                                  color: 'color-mix(in srgb, var(--die-force) 70%, transparent)',
+                                  flexShrink: 0,
+                                  whiteSpace: 'nowrap',
+                                }}>
+                                  {upgrade.pip_cost} <i className="ffi ffi-swrpg-force" aria-hidden="true" />
+                                </span>
+                              )}
                               <span style={{
                                 fontFamily: FONT_BODY,
                                 fontSize: FS.overline,
