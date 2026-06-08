@@ -13,6 +13,7 @@ interface CharForceAbility {
 interface RefForceAbility {
   name: string
   description?: string | null
+  pip_cost?: number | null
 }
 
 interface RefForcePower {
@@ -105,7 +106,7 @@ export function useForcePowers({ charForceAbilities, refForcePowers, refForceAbi
               existing.totalRanks++
             } else {
               const purchased = purchaseCount.get(`${fp.key}:${aKey}`) ?? 0
-              abilityMap.set(aKey, { key: aKey, name: ref.name, description: ref.description ?? undefined, purchasedRanks: purchased, totalRanks: 1, cost })
+              abilityMap.set(aKey, { key: aKey, name: ref.name, description: ref.description ?? undefined, purchasedRanks: purchased, totalRanks: 1, cost, pip_cost: ref.pip_cost ?? 1 })
             }
           }
         }
