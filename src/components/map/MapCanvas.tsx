@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useRef, useCallback, memo } from 'react'
+import { useEffect, useRef, useCallback, memo, useState } from 'react'
+import { SP, Z } from '@/lib/tokens'
 import type { MapToken } from '@/hooks/useMapTokens'
 import { runMapWipe } from '@/lib/mapWipe'
 import { attachTokenHover, onTokenPointerOver, onTokenPointerOut, destroyTokenHover } from '@/lib/tokenHover'
@@ -50,6 +51,22 @@ export const MapCanvas = memo(function MapCanvas({
 }: MapCanvasProps) {
   const containerRef       = useRef<HTMLDivElement>(null)
   const appRef             = useRef<InstanceType<typeof import('pixi.js').Application> | null>(null)
+
+  const [isLocked, setIsLocked] = useState(false)
+  const isLockedRef = useRef(false)
+
+  const toggleLock = useCallback(() => {
+    isLockedRef.current = !isLockedRef.current
+    setIsLocked(isLockedRef.current)
+  }, [])
+
+  const resetView = useCallback(() => {
+    const app = appRef.current
+    if (!app) return
+    app.stage.scale.set(1)
+    app.stage.x = 0
+    app.stage.y = 0
+  }, [])
   const tokensRef          = useRef<Map<string, InstanceType<typeof import('pixi.js').Container>>>(new Map())
   const draggingTokenIdRef = useRef<string | null>(null)
 
@@ -97,8 +114,8 @@ export const MapCanvas = memo(function MapCanvas({
       appRef.current = app
       app.stage.sortableChildren = true
 
-      setupPan(app)
-      setupZoom(app, containerRef.current)
+      setupPan(app, isLockedRef)
+      setupZoom(app, containerRef.current, isLockedRef)
 
       // Await rebuildMap so map dimensions are set before syncing tokens.
       // The sync effect already fired once (when app was null) and won't
@@ -218,15 +235,38 @@ export const MapCanvas = memo(function MapCanvas({
   useEffect(() => { syncTokensCb() }, [syncTokensCb])
 
   return (
-    <div
-      ref={containerRef}
-      style={{ width: '100%', height: '100%', cursor: 'grab', overflow: 'hidden' }}
-    />
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+      <div
+        ref={containerRef}
+        style={{ width: '100%', height: '100%', cursor: isLocked ? 'default' : 'grab', overflow: 'hidden' }}
+      />
+      <div
+        className="absolute flex"
+        style={{ top: SP[2], right: SP[2], gap: SP[1], zIndex: Z.overlay, pointerEvents: 'none' }}
+      >
+        <button
+          className="map-ctrl-btn"
+          style={{ pointerEvents: 'auto' }}
+          onClick={resetView}
+          aria-label="Reset map view"
+        >
+          ↺ Reset
+        </button>
+        <button
+          className={`map-ctrl-btn${isLocked ? ' map-ctrl-btn--locked' : ''}`}
+          style={{ pointerEvents: 'auto' }}
+          onClick={toggleLock}
+          aria-label={isLocked ? 'Unlock map' : 'Lock map'}
+        >
+          {isLocked ? '🔒 Locked' : '🔓 Lock'}
+        </button>
+      </div>
+    </div>
   )
 })
 
 // ── Pan ──────────────────────────────────────────────────────
-function setupPan(app: InstanceType<typeof import('pixi.js').Application>) {
+function setupPan(app: InstanceType<typeof import('pixi.js').Application>, isLockedRef: React.MutableRefObject<boolean>) {
   let panning    = false
   let panStart   = { x: 0, y: 0 }
   let stageStart = { x: 0, y: 0 }
@@ -237,6 +277,7 @@ function setupPan(app: InstanceType<typeof import('pixi.js').Application>) {
   stage.hitArea   = new (PIXI!.Rectangle)(0, 0, app.screen.width, app.screen.height)
 
   stage.on('pointerdown', (e: { globalX: number; globalY: number; target: { name?: string } }) => {
+    if (isLockedRef.current) return
     const tname = (e.target as { name?: string })?.name ?? ''
     if (tname === '' || tname === 'mapBg' || tname === 'grid') {
       panning    = true
@@ -258,9 +299,11 @@ function setupPan(app: InstanceType<typeof import('pixi.js').Application>) {
 function setupZoom(
   app: InstanceType<typeof import('pixi.js').Application>,
   el: HTMLElement,
+  isLockedRef: React.MutableRefObject<boolean>,
 ) {
   el.addEventListener('wheel', (e) => {
     e.preventDefault()
+    if (isLockedRef.current) return
     const factor   = e.deltaY > 0 ? 0.9 : 1.1
     const newScale = Math.min(4, Math.max(0.25, app.stage.scale.x * factor))
 

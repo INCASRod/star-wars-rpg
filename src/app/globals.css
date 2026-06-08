@@ -1100,7 +1100,7 @@ i.ffi {
   color: var(--hud-text-faint);
   background: color-mix(in srgb, var(--hud-accent) 8%, transparent);
   border: 1px solid color-mix(in srgb, var(--hud-accent) 15%, transparent);
-  border-radius: 4px;
+  border-radius: var(--radius-md);
   padding: 2px var(--space-2);
   cursor: pointer;
   transition: all var(--ease-quick);
