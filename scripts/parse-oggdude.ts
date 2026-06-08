@@ -325,6 +325,7 @@ function parseForceAbilities(forcePowers: { key: string; name: string }[]) {
       description: a.Description || null,
       power_key: powerKey,
       sources: sources.length ? sources : null,
+      pip_cost: Math.max(1, ((a.Description ?? '').match(/\[FP\]/g) ?? []).length),
     }
   })
 }
