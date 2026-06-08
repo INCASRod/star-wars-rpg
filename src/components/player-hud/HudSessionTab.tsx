@@ -350,7 +350,6 @@ export function HudSessionTab({
             gridEnabled={visibleMap.grid_enabled}
             gridSize={visibleMap.grid_size ?? 50}
             tokenScale={visibleMap.token_scale ?? 1}
-            initialScale={0.85}
             bottomOverlayRef={initiativeBarRef}
             onTokenHover={(id, x, y) => setTokenHoverInfo({ tokenId: id, x, y })}
             onTokenHoverEnd={() => setTokenHoverInfo(null)}
