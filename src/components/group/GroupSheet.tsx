@@ -15,6 +15,7 @@ import { TickerText } from '@/components/ui/TickerText'
 import { useHudPanelContext } from '@/contexts/HudPanelContext'
 import { useQuartermaster } from '@/hooks/useQuartermaster'
 import { QuartermasterModal } from '@/components/QuartermasterModal'
+import { RADIUS } from '@/lib/tokens'
 
 const FONT_MONO = 'var(--font-body)'
 
@@ -805,7 +806,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
                   border: qm?.is_open
                     ? `1px solid color-mix(in srgb, var(--state-success) 35%, transparent)`
                     : `1px solid ${C.border}`,
-                  borderRadius: 3,
+                  borderRadius: RADIUS.sm,
                   color: qm?.is_open ? 'var(--state-success)' : C.textDim,
                   fontFamily: FONT_MONO, fontSize: FS_OVERLINE, letterSpacing: '0.1em',
                   cursor: qm?.is_open ? 'pointer' : 'not-allowed',

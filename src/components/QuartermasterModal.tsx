@@ -43,7 +43,7 @@ export function QuartermasterModal({ campaignId, characterName, supabase, onClos
 
   // ── Load active character for this campaign session ─────────────────────────
   const loadCharacter = useCallback(async () => {
-    if (!campaignId) return
+    if (!campaignId || !characterName) return
     // Find the character session for this player's character name
     const { data: sessions } = await supabase
       .from('character_sessions')
@@ -71,34 +71,45 @@ export function QuartermasterModal({ campaignId, characterName, supabase, onClos
 
   // ── Load sell inventory ─────────────────────────────────────────────────────
   const loadSellRows = useCallback(async (charId: string) => {
-    const [wRes, aRes, gRes, rwRes, raRes, rgRes] = await Promise.all([
-      supabase.from('character_weapons').select('id,weapon_key').eq('character_id', charId).eq('is_dropped', false),
-      supabase.from('character_armor').select('id,armor_key').eq('character_id', charId).eq('is_dropped', false),
-      supabase.from('character_gear').select('id,gear_key').eq('character_id', charId).eq('is_dropped', false),
-      supabase.from('ref_weapons').select('key,name,encumbrance,price'),
-      supabase.from('ref_armor').select('key,name,encumbrance,price'),
-      supabase.from('ref_gear').select('key,name,encumbrance,price'),
-    ])
-
     type WInv = { id: string; weapon_key: string }
     type AInv = { id: string; armor_key: string }
     type GInv = { id: string; gear_key: string }
     type Ref  = { key: string; name: string; encumbrance: number; price: number }
+
+    const [wRes, aRes, gRes] = await Promise.all([
+      supabase.from('character_weapons').select('id,weapon_key').eq('character_id', charId).eq('is_dropped', false),
+      supabase.from('character_armor').select('id,armor_key').eq('character_id', charId).eq('is_dropped', false),
+      supabase.from('character_gear').select('id,gear_key').eq('character_id', charId).eq('is_dropped', false),
+    ])
+
+    const wInv = (wRes.data ?? []) as WInv[]
+    const aInv = (aRes.data ?? []) as AInv[]
+    const gInv = (gRes.data ?? []) as GInv[]
+
+    const weaponKeys = wInv.map(r => r.weapon_key)
+    const armorKeys  = aInv.map(r => r.armor_key)
+    const gearKeys   = gInv.map(r => r.gear_key)
+
+    const [rwRes, raRes, rgRes] = await Promise.all([
+      weaponKeys.length ? supabase.from('ref_weapons').select('key,name,encumbrance,price').in('key', weaponKeys) : Promise.resolve({ data: [] }),
+      armorKeys.length  ? supabase.from('ref_armor').select('key,name,encumbrance,price').in('key', armorKeys)   : Promise.resolve({ data: [] }),
+      gearKeys.length   ? supabase.from('ref_gear').select('key,name,encumbrance,price').in('key', gearKeys)     : Promise.resolve({ data: [] }),
+    ])
 
     const rwMap = Object.fromEntries(((rwRes.data ?? []) as Ref[]).map(r => [r.key, r]))
     const raMap = Object.fromEntries(((raRes.data ?? []) as Ref[]).map(r => [r.key, r]))
     const rgMap = Object.fromEntries(((rgRes.data ?? []) as Ref[]).map(r => [r.key, r]))
 
     const rows: SellRow[] = [
-      ...((wRes.data ?? []) as WInv[]).flatMap(r => {
+      ...wInv.flatMap(r => {
         const ref = rwMap[r.weapon_key]
         return ref ? [{ rowId: r.id, rowTable: 'character_weapons' as const, itemKey: r.weapon_key, itemType: 'weapon' as const, name: ref.name, encumbrance: ref.encumbrance, marketValue: ref.price }] : []
       }),
-      ...((aRes.data ?? []) as AInv[]).flatMap(r => {
+      ...aInv.flatMap(r => {
         const ref = raMap[r.armor_key]
         return ref ? [{ rowId: r.id, rowTable: 'character_armor' as const, itemKey: r.armor_key, itemType: 'armor' as const, name: ref.name, encumbrance: ref.encumbrance, marketValue: ref.price }] : []
       }),
-      ...((gRes.data ?? []) as GInv[]).flatMap(r => {
+      ...gInv.flatMap(r => {
         const ref = rgMap[r.gear_key]
         return ref ? [{ rowId: r.id, rowTable: 'character_gear' as const, itemKey: r.gear_key, itemType: 'gear' as const, name: ref.name, encumbrance: ref.encumbrance, marketValue: ref.price }] : []
       }),

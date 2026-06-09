@@ -112,7 +112,18 @@ export function useQuartermaster(
       .insert({ campaign_id: campaignId })
       .select()
       .single()
-    if (error) throw error
+    if (error) {
+      // Unique constraint: row was created concurrently — fetch the existing row
+      const { data: existing, error: fetchErr } = await supabase
+        .from('quartermaster')
+        .select('*')
+        .eq('campaign_id', campaignId)
+        .single()
+      if (fetchErr) throw fetchErr
+      const row = existing as Quartermaster
+      setQm(row)
+      return row
+    }
     const created = data as Quartermaster
     setQm(created)
     return created
@@ -177,6 +188,18 @@ export function useQuartermaster(
     const entry = qmItems.find(i => i.item_key === itemKey && i.item_type === itemType)
     if (!entry || entry.stock <= 0) throw new Error('Out of stock')
 
+    // Decrement stock first with a server-side WHERE stock > 0 guard.
+    // If two players click Buy simultaneously, only one UPDATE returns a row;
+    // the other sees an empty result and aborts before touching inventory.
+    const { data: decremented } = await supabase
+      .from('quartermaster_items')
+      .update({ stock: entry.stock - 1, updated_at: new Date().toISOString() })
+      .eq('id', entry.id)
+      .gt('stock', 0)
+      .select('id')
+
+    if (!decremented || decremented.length === 0) throw new Error('Out of stock')
+
     if (itemType === 'weapon') {
       await supabase.from('character_weapons').insert({
         character_id: characterId, weapon_key: itemKey,
@@ -193,10 +216,6 @@ export function useQuartermaster(
         quantity: 1, is_equipped: false, equip_state: 'carrying', notes: 'Purchased from Quartermaster',
       })
     }
-
-    await supabase.from('quartermaster_items')
-      .update({ stock: entry.stock - 1, updated_at: new Date().toISOString() })
-      .eq('id', entry.id)
 
     const { data: charRow } = await supabase.from('characters').select('credits').eq('id', characterId).single()
     const currentCredits = (charRow as { credits: number } | null)?.credits ?? 0
