@@ -1,12 +1,14 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { ItemEditor, type EditableItem, type ItemType } from './ItemEditor'
 import { LootAwardModal, type AwardableItem } from './LootAwardModal'
 import { VendorSellModal, type VendorItem } from './VendorSellModal'
 import type { Character } from '@/lib/types'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { HUD, FONT_BODY, EASE, FS, RADIUS } from '@/lib/tokens'
+import { HUD, FONT_BODY, EASE, FS, RADIUS, SP, Z, SHADOW } from '@/lib/tokens'
+import { useQuartermaster } from '@/hooks/useQuartermaster'
+import type { QuartermasterItem } from '@/lib/types'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 const GOLD_DIM  = 'rgba(200,170,80,0.5)'
@@ -91,6 +93,13 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
   const [awardingItem,    setAwardingItem]    = useState<DbItem | null>(null)
   const [vendingItem,     setVendingItem]     = useState<DbItem | null>(null)
   const [destroyConfirm,  setDestroyConfirm]  = useState<string | null>(null) // rowId
+
+  // ── Quartermaster ──
+  const { qm, toggleOpen, upsertItem, getQmEntry } = useQuartermaster(supabase, campaignId)
+  const [qmPopoverItem, setQmPopoverItem] = useState<DbItem | null>(null)
+  const [qmStockDraft,  setQmStockDraft]  = useState(1)
+  const [qmPriceDraft,  setQmPriceDraft]  = useState(0)
+  const qmPopoverRef = useRef<HTMLDivElement>(null)
 
   const toggleExpanded = () =>
     setExpanded(prev => {
@@ -308,6 +317,24 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
     loadDropped()
   }
 
+  const openQmPopover = (item: DbItem) => {
+    const existing = getQmEntry(item.key, item.type)
+    setQmStockDraft(existing?.stock ?? 1)
+    setQmPriceDraft(existing?.price_override ?? item.price ?? 0)
+    setQmPopoverItem(item)
+  }
+
+  useEffect(() => {
+    if (!qmPopoverItem) return
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (qmPopoverRef.current && !qmPopoverRef.current.contains(e.target as Node)) {
+        setQmPopoverItem(null)
+      }
+    }
+    document.addEventListener('mousedown', handleOutsideClick)
+    return () => document.removeEventListener('mousedown', handleOutsideClick)
+  }, [qmPopoverItem])
+
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div style={{
@@ -396,6 +423,35 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
                 }}
               >
                 🎲 Loot
+              </button>
+            )}
+
+            {/* QM Open/Closed toggle */}
+            {campaignId && (
+              <button
+                onClick={toggleOpen}
+                className={qm?.is_open ? 'qm-toggle-btn-open' : 'qm-toggle-btn-closed'}
+                style={{
+                  fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
+                  textTransform: 'uppercase', letterSpacing: '0.08em',
+                  padding: `${SP[1]} ${SP[2]}`, borderRadius: RADIUS.sm, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: SP[1],
+                  border: qm?.is_open
+                    ? `1px solid color-mix(in srgb, var(--state-success) 40%, transparent)`
+                    : `1px solid color-mix(in srgb, var(--state-failure) 30%, transparent)`,
+                  color: qm?.is_open ? 'var(--state-success)' : 'var(--state-failure)',
+                  background: qm?.is_open
+                    ? 'color-mix(in srgb, var(--state-success) 10%, transparent)'
+                    : 'color-mix(in srgb, var(--state-failure) 08%, transparent)',
+                  transition: EASE.quick,
+                }}
+              >
+                <span style={{
+                  width: 6, height: 6, borderRadius: RADIUS.full, flexShrink: 0,
+                  background: qm?.is_open ? 'var(--state-success)' : 'var(--state-failure)',
+                  opacity: qm?.is_open ? 1 : 0.5,
+                }} />
+                {qm?.is_open ? 'QM: OPEN' : 'QM: CLOSED'}
               </button>
             )}
 
@@ -526,6 +582,7 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
                       {item.is_custom && item.campaign_id === campaignId && (
                         <button onClick={() => handleDelete(item)} style={actionBtn(RED)}>✕</button>
                       )}
+                      <QmItemButton item={item} getQmEntry={getQmEntry} openQmPopover={openQmPopover} />
                     </div>
                   </div>
 
@@ -597,6 +654,7 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
                     {item.is_custom && item.campaign_id === campaignId && (
                       <button onClick={() => handleDelete(item)} style={actionBtn(RED)}>✕</button>
                     )}
+                    <QmItemButton item={item} getQmEntry={getQmEntry} openQmPopover={openQmPopover} />
                   </div>
                 </div>
               ))}
@@ -775,7 +833,106 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
           sendToChar={sendToChar ?? (() => {})}
         />
       )}
+
+      {/* ── QM item popover ─────────────────────────────────────────────── */}
+      {qmPopoverItem && (
+        <div
+          ref={qmPopoverRef}
+          style={{
+            position: 'fixed', bottom: SP[4], right: SP[4], zIndex: Z.popover,
+            background: HUD.panel, border: `1px solid ${HUD.borderHi}`,
+            borderRadius: RADIUS.lg, padding: SP[3],
+            display: 'flex', flexDirection: 'column', gap: SP[2],
+            minWidth: 260, boxShadow: SHADOW.lg,
+          }}
+        >
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700, color: HUD.gold, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            {getQmEntry(qmPopoverItem.key, qmPopoverItem.type) ? 'Edit QM Entry' : 'Add to Quartermaster'}
+          </div>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.text }}>{qmPopoverItem.name}</div>
+          {getQmEntry(qmPopoverItem.key, qmPopoverItem.type) && (
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint, fontStyle: 'italic' }}>
+              Set stock to 0 to remove from QM
+            </div>
+          )}
+          <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textDim, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Stock qty</span>
+            <input
+              type="number" min={0} value={qmStockDraft}
+              onChange={e => setQmStockDraft(Math.max(0, parseInt(e.target.value, 10) || 0))}
+              style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.text, padding: `${SP[1]} ${SP[2]}`, borderRadius: RADIUS.sm, border: `1px solid ${HUD.border}`, background: 'var(--hud-surface-lo)', width: '100%' }}
+            />
+          </label>
+          <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textDim, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Price per unit (cr)</span>
+            <input
+              type="number" min={0} value={qmPriceDraft}
+              onChange={e => setQmPriceDraft(Math.max(0, parseInt(e.target.value, 10) || 0))}
+              style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.text, padding: `${SP[1]} ${SP[2]}`, borderRadius: RADIUS.sm, border: `1px solid ${HUD.border}`, background: 'var(--hud-surface-lo)', width: '100%' }}
+            />
+          </label>
+          <div style={{ display: 'flex', gap: SP[1], justifyContent: 'flex-end' }}>
+            <button
+              onClick={() => setQmPopoverItem(null)}
+              style={{
+                fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
+                padding: `${SP[1]} ${SP[2]}`, borderRadius: RADIUS.sm, cursor: 'pointer',
+                border: `1px solid ${HUD.border}`, color: HUD.textDim, background: 'transparent',
+              }}
+            >Cancel</button>
+            <button
+              className="qm-confirm-btn"
+              onClick={async () => {
+                await upsertItem(qmPopoverItem.key, qmPopoverItem.type, qmStockDraft, qmPriceDraft)
+                setQmPopoverItem(null)
+              }}
+              style={{
+                fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
+                padding: `${SP[1]} ${SP[2]}`, borderRadius: RADIUS.sm, cursor: 'pointer',
+                border: `1px solid color-mix(in srgb, var(--hud-accent) 40%, transparent)`,
+                color: 'var(--hud-accent)',
+                background: 'color-mix(in srgb, var(--hud-accent) 10%, transparent)',
+                transition: EASE.quick,
+              }}
+            >
+              {getQmEntry(qmPopoverItem.key, qmPopoverItem.type) ? 'Save' : 'Add to QM'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
+  )
+}
+
+// ── QM per-item button ────────────────────────────────────────────────────────
+interface QmItemBtnProps {
+  item: DbItem
+  getQmEntry: (key: string, type: 'weapon' | 'armor' | 'gear') => QuartermasterItem | undefined
+  openQmPopover: (item: DbItem) => void
+}
+
+function QmItemButton({ item, getQmEntry, openQmPopover }: QmItemBtnProps) {
+  const entry = getQmEntry(item.key, item.type)
+  return (
+    <button
+      onClick={() => openQmPopover(item)}
+      className={entry ? 'qm-in-btn' : 'qm-add-btn'}
+      style={{
+        fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
+        textTransform: 'uppercase', letterSpacing: '0.08em',
+        padding: '0.1875rem 0.5rem', borderRadius: RADIUS.sm, cursor: 'pointer',
+        border: entry
+          ? `1px solid color-mix(in srgb, var(--state-success) 40%, transparent)`
+          : `1px solid color-mix(in srgb, var(--hud-accent) 35%, transparent)`,
+        color: entry ? 'var(--state-success)' : 'var(--hud-accent)',
+        background: entry
+          ? 'color-mix(in srgb, var(--state-success) 08%, transparent)'
+          : 'color-mix(in srgb, var(--hud-accent) 06%, transparent)',
+        transition: EASE.quick,
+      }}
+    >
+      {entry ? `✓ QM ×${entry.stock}` : '+ QM'}
+    </button>
   )
 }
 
