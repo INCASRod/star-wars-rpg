@@ -810,7 +810,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
                   fontFamily: FONT_MONO, fontSize: FS_OVERLINE, letterSpacing: '0.1em',
                   cursor: qm?.is_open ? 'pointer' : 'not-allowed',
                   opacity: qm?.is_open ? 1 : 0.5,
-                  transition: 'border-color 120ms ease, background 120ms ease',
+                  transition: 'border-color var(--ease-quick), background var(--ease-quick)',
                 }}
               >
                 {qm?.is_open ? '🛒 QUARTERMASTER' : '🛒 QM CLOSED'}

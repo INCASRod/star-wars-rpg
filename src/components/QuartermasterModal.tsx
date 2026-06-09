@@ -288,7 +288,7 @@ export function QuartermasterModal({ campaignId, characterName, supabase, onClos
                             borderRadius: RADIUS.sm,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                           }}>
-                            <span style={{ fontSize: 20, color: HUD.textDim, fontFamily: FONT_BODY, lineHeight: 1 }}>
+                            <span style={{ fontSize: FS.h4, color: HUD.textDim, fontFamily: FONT_BODY, lineHeight: 1 }}>
                               {groupType === 'weapon' ? '⚔' : groupType === 'armor' ? '◈' : '◆'}
                             </span>
                           </div>
@@ -393,7 +393,7 @@ export function QuartermasterModal({ campaignId, characterName, supabase, onClos
                       borderRadius: RADIUS.sm,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
-                      <span style={{ fontSize: 20, color: HUD.textDim, fontFamily: FONT_BODY, lineHeight: 1 }}>
+                      <span style={{ fontSize: FS.h4, color: HUD.textDim, fontFamily: FONT_BODY, lineHeight: 1 }}>
                         {row.itemType === 'weapon' ? '⚔' : row.itemType === 'armor' ? '◈' : '◆'}
                       </span>
                     </div>
