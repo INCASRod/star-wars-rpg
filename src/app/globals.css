@@ -1134,3 +1134,50 @@ i.ffi {
   height: 22px;
 }
 .inv-equip-btn-active { border-color: var(--hud-gold) !important; color: var(--hud-gold) !important; background: color-mix(in srgb, var(--hud-accent) 10%, transparent) !important; }
+
+/* ── Quartermaster ─────────────────────────────────────────────────────────── */
+
+.qm-toggle-btn-open:hover {
+  border-color: color-mix(in srgb, var(--state-success) 60%, transparent);
+  background: color-mix(in srgb, var(--state-success) 18%, transparent);
+}
+
+.qm-toggle-btn-closed:hover {
+  border-color: color-mix(in srgb, var(--state-failure) 60%, transparent);
+  background: color-mix(in srgb, var(--state-failure) 18%, transparent);
+}
+
+.qm-add-btn:hover {
+  border-color: color-mix(in srgb, var(--hud-accent) 60%, transparent);
+  background: color-mix(in srgb, var(--hud-accent) 18%, transparent);
+}
+
+.qm-in-btn:hover {
+  border-color: color-mix(in srgb, var(--state-success) 60%, transparent);
+  background: color-mix(in srgb, var(--state-success) 18%, transparent);
+}
+
+.qm-confirm-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--hud-accent) 30%, transparent);
+  border-color: color-mix(in srgb, var(--hud-accent) 55%, transparent);
+}
+
+.qm-group-btn:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--state-success) 60%, transparent);
+  background: color-mix(in srgb, var(--state-success) 18%, transparent);
+}
+
+.qm-filter-pill:hover {
+  background: color-mix(in srgb, var(--hud-accent) 12%, transparent);
+  color: var(--hud-text);
+}
+
+.qm-buy-btn:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--hud-accent) 60%, transparent);
+  background: color-mix(in srgb, var(--hud-accent) 22%, transparent);
+}
+
+.qm-sell-btn:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--state-success) 60%, transparent);
+  background: color-mix(in srgb, var(--state-success) 22%, transparent);
+}
