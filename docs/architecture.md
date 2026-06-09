@@ -1,6 +1,6 @@
 # Holocron — Architecture, Routes & Hooks Reference
 
-> Updated 2026-05-20. Read from codebase; update when structure changes.
+> Updated 2026-06-09. Read from codebase; update when structure changes.
 > For full design token and color reference see **[docs/design-system.md](design-system.md)**.
 
 ---
@@ -53,6 +53,13 @@
 - Reads/writes `encounters` + `encounter_tokens` tables
 - Realtime: subscribes to `encounters` channel
 - Used by CombatPanel (GM side) and PlayerHUDDesktop (player side for combat status)
+
+### `useQuartermaster(supabase, campaignId)`
+- Owns all Quartermaster state for a campaign
+- State: `qm: Quartermaster | null`, `qmItems: QuartermasterItem[]`, `buyRows: QmBuyRow[]`, `loading`
+- Exposes: `toggleOpen`, `upsertItem`, `removeItem`, `getQmEntry`, `buyItem`, `sellItem`
+- Realtime: subscribes to `quartermaster` (filtered by `campaign_id`) and `quartermaster_items` channels
+- Used by `GroupSheet` (player QM button) and `QuartermasterModal` (full buy/sell UI)
 
 ### `useDestinyPool(campaignId, characterId, characterName, supabase)`
 - Owns all Destiny Pool state extracted from `PlayerHUDDesktop`
@@ -284,6 +291,8 @@
 - `campaigns` — name, gm_pin, settings JSONB, base_of_operations_name
 - `players` — display_name, is_gm, campaign_id
 - `group_assets` — vehicles, starships, safe houses, NPCs, strategic assets
+- `quartermaster` — One row per campaign. `is_open` controls player access. `sell_pct` is the buy-back rate (default 25%).
+- `quartermaster_items` — Items stocked in the QM. `item_key` + `item_type` identify the ref table row (`ref_weapons`, `ref_armor`, `ref_gear`).
 - `encounters` — is_active, round, current_turn, initiative_order JSONB
 - `encounter_tokens` — slot_key, character_id, adversary_id, vehicle_id, position
 - `loot_awards` — items to be distributed to players
@@ -362,6 +371,7 @@ Cleanup via `useEffect` return → `supabase.removeChannel(channel)`.
 ### Tier 2 — Feature Panels
 Each panel is a self-contained component accepting pre-computed display data from the parent:
 - `InventoryCardPanel` — master/detail inventory card system (left thumbnail grid + right item detail) for weapons, armor, gear with equip/stow/discard controls; composed of `item-thumb`, `item-thumb-grid`, `item-detail-hero`, `item-condition-track`, `item-quality-list`, `item-detail-panel`, and the shared `stow-location-modal` (exports `StowLocationModal` + `StowPill`); wired via `HudInventoryTab` (replaced the former single-file `InventoryPanel`)
+- `QuartermasterModal` (`src/components/QuartermasterModal.tsx`) — Player-facing portal modal for buying and selling equipment with the campaign QM. Two tabs: **Buy** (browse stocked items, filter/search, purchase deducts credits + decrements stock) and **Sell** (inventory list, sell at `sell_pct`% of market value via soft-drop pattern). Loads active character via `character_sessions` → `characters` join. Uses `useQuartermaster` hook for all data and operations.
 - `SkillsPanel` — skill list with dice pool popover
 - `TalentsPanel` — talent tree grid per specialization
 - `HudForceTab` — force power tree grid (moved to full panel in `HudLeftRail` as `force-panel`)
@@ -399,6 +409,7 @@ Each panel is a self-contained component accepting pre-computed display data fro
 - `ThemeSwitcher` (`src/components/player-hud/ThemeSwitcher.tsx`) — HUD theme switcher component; exports `UiTheme` type; renders three theme color swatches (Binary Sunset, Rebel Operative, Kyber Archive); accepts `current` theme and `onChange` callback; fully controlled via props
 - `RollFeedPanel` (`src/components/player-hud/RollFeedPanel.tsx`) — **Approach A feed layout** with state `expandedIds: Set<string>` for expand/collapse UI. Props: `rolls: RollEntry[]`, `ownCharacterId: string`, `isGm?: boolean`. Layout: top 2 most-recent skill/combat/force rolls render as **Design B cards** (tinted header band with alignment colour at 7% opacity + 15% border, character name, roll type, relative time; card body with large outcome word, result symbols, type-specific extras like damage calc or force pips, and dice pips); older rolls collapse to **compact single-line rows** (4px accent dot, character name, type label, outcome abbr, relative time); clicking a collapsed row expands it as a full card in-place; clicking the header band of an expanded history card collapses it (always-expanded top-2 cards have no collapse affordance). Initiative rolls always render as **compact non-expandable notifications** (one-liner with group count if multiple; grouped within 30-second window). System entries are **compact rows** (gear icon + message or award label); long system messages (>60 chars) get an expand toggle. Players never see hidden rolls; GMs see everything.
 - `Modal` (`src/components/ui/Modal.tsx`) — shared portal modal: dark backdrop + blur, ESC key, click-outside dismiss, panel with HUD tokens. Props: `open`, `onClose?`, `maxWidth`, `zIndex`, `borderColor`, `shadow`.
+- `QuartermasterModal` (`src/components/QuartermasterModal.tsx`) — placeholder (Task 7 will replace with full buy/sell UI). Props: `campaignId`, `characterName`, `supabase`, `onClose`. Rendered from `GroupSheet` when `showQm` is true and player clicks the QM button.
 - `TickerText` (`src/components/ui/TickerText.tsx`) — renders a scramble-ticker animation for a text string; wraps `useTicker`; outputs `.ticker-ready` span containing one `.ticker-char` span per character (unsettled chars get `opacity: 0.5`, `aria-hidden`); includes a `.sr-only` span with the full text for screen readers. Props: `text`, `isOpen`, `delayMs?`, `className?`.
 - `RichText` — renders OggDude markup with icon font; accepts optional `style` prop
 - `EquipStateButtons` — equipped/carrying/stowed toggle
