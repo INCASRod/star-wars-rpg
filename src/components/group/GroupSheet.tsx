@@ -13,6 +13,8 @@ import { RichText } from '@/components/ui/RichText'
 import { Modal } from '@/components/ui/Modal'
 import { TickerText } from '@/components/ui/TickerText'
 import { useHudPanelContext } from '@/contexts/HudPanelContext'
+import { useQuartermaster } from '@/hooks/useQuartermaster'
+import { QuartermasterModal } from '@/components/QuartermasterModal'
 
 const FONT_MONO = 'var(--font-body)'
 
@@ -237,6 +239,10 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
 
   // ── Last Alliance Reward edit modal ───────────────────────────────────────
   const [showRewardModal, setShowRewardModal]     = useState(false)
+
+  // ── Quartermaster ──
+  const { qm } = useQuartermaster(supabase, campaignId)
+  const [showQm, setShowQm] = useState(false)
   const [rewardTypeDraft, setRewardTypeDraft]     = useState<'equipment' | 'vehicle' | 'strategic_asset'>('equipment')
   const [rewardDescModalDraft, setRewardDescModalDraft] = useState('')
 
@@ -775,17 +781,41 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
         {/* ── GM badge row ──────────────────────────────────────────────────── */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 'var(--space-3)' }}>
           {!gmUnlocked ? (
-            <button onClick={() => requireGm(() => {})} style={{
-              padding: '2px 10px',
-              background: 'transparent',
-              border: `1px solid ${C.border}`,
-              borderRadius: 3,
-              color: C.textDim,
-              fontFamily: FONT_MONO, fontSize: FS_OVERLINE, letterSpacing: '0.1em',
-              cursor: 'pointer',
-            }}>
-              GM EDIT
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <button onClick={() => requireGm(() => {})} style={{
+                padding: '2px 10px',
+                background: 'transparent',
+                border: `1px solid ${C.border}`,
+                borderRadius: 3,
+                color: C.textDim,
+                fontFamily: FONT_MONO, fontSize: FS_OVERLINE, letterSpacing: '0.1em',
+                cursor: 'pointer',
+              }}>
+                GM EDIT
+              </button>
+              <button
+                onClick={() => setShowQm(true)}
+                disabled={!qm?.is_open}
+                className="qm-group-btn"
+                style={{
+                  padding: '2px 10px',
+                  background: qm?.is_open
+                    ? 'color-mix(in srgb, var(--state-success) 10%, transparent)'
+                    : 'transparent',
+                  border: qm?.is_open
+                    ? `1px solid color-mix(in srgb, var(--state-success) 35%, transparent)`
+                    : `1px solid ${C.border}`,
+                  borderRadius: 3,
+                  color: qm?.is_open ? 'var(--state-success)' : C.textDim,
+                  fontFamily: FONT_MONO, fontSize: FS_OVERLINE, letterSpacing: '0.1em',
+                  cursor: qm?.is_open ? 'pointer' : 'not-allowed',
+                  opacity: qm?.is_open ? 1 : 0.5,
+                  transition: 'border-color 120ms ease, background 120ms ease',
+                }}
+              >
+                {qm?.is_open ? '🛒 QUARTERMASTER' : '🛒 QM CLOSED'}
+              </button>
+            </div>
           ) : (
             <>
               <span style={{ fontFamily: FONT_MONO, fontSize: FS_OVERLINE, color: `color-mix(in srgb, ${C.gold} 60%, transparent)`, letterSpacing: '0.1em' }}>
@@ -1290,6 +1320,15 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
         </div>
       </Modal>
     )}
+
+      {showQm && (
+        <QuartermasterModal
+          campaignId={campaignId}
+          characterName={characterName ?? ''}
+          supabase={supabase}
+          onClose={() => setShowQm(false)}
+        />
+      )}
     </div>
   )
 }
