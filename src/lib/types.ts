@@ -666,3 +666,40 @@ export type ItemCondition =
   | 'major'
   | 'destroyed'
 
+// ── Quartermaster ─────────────────────────────────────────────────────────────
+export interface Quartermaster {
+  id: string
+  campaign_id: string
+  is_open: boolean
+  sell_pct: number
+  created_at: string
+  updated_at: string
+}
+
+export interface QuartermasterItem {
+  id: string
+  quartermaster_id: string
+  item_key: string
+  item_type: 'weapon' | 'armor' | 'gear'
+  stock: number
+  price_override: number
+  created_at: string
+  updated_at: string
+}
+
+// QM item joined with ref data — used by the Buy tab
+export interface QmBuyRow {
+  qmItem: QuartermasterItem
+  name: string
+  rarity: number
+  encumbrance: number
+  price: number
+  damage?: number
+  damage_add?: number | null
+  crit?: number
+  soak?: number
+  soak_bonus?: number | null
+  defense?: number
+  encumbrance_bonus?: number | null
+}
+
