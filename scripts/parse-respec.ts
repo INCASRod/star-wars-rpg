@@ -136,51 +136,104 @@ interface RespecSpecialization {
   talent_tree: TalentTree
 }
 
-async function parseSpecializations(): Promise<RespecSpecialization[]> {
+/** Parse talent rows from a parsed XML Specialization node. */
+function parseTalentRows(s: any, sourceFile: string): TalentTreeRow[] {
+  const rawRows: any[] = s.TalentRows?.[0]?.TalentRow ?? []
+  return rawRows.map((row: any, idx: number) => {
+    const cost = parseInt(text(row.Cost), 10)
+    if (isNaN(cost)) {
+      throw new Error(`NaN cost in file "${sourceFile}", row index ${idx}`)
+    }
+    const talentsNode = row.Talents?.[0]
+    const talents = texts(talentsNode?.Key)
+
+    const rawDirections: any[] = row.Directions?.[0]?.Direction ?? []
+    const directions = rawDirections.map((dir: any) => ({
+      right: isTruthy(dir.Right),
+      down: isTruthy(dir.Down),
+      left: isTruthy(dir.Left),
+      up: isTruthy(dir.Up),
+    }))
+
+    return { index: idx, cost, talents, directions }
+  })
+}
+
+/** Tracks specs that were overridden by versioned files — used for migration 068. */
+export interface VersionedOverride {
+  key: string
+  career_skill_keys: string[]
+  talent_tree: TalentTree
+}
+
+async function parseSpecializations(): Promise<{
+  specs: RespecSpecialization[]
+  versionedOverrides: VersionedOverride[]
+}> {
   const specDir = path.join(DATA_DIR, 'Specializations')
-  const files = fs.readdirSync(specDir)
-    .filter(f => f.endsWith('.xml') && !f.includes('('))
+  const allFiles = fs.readdirSync(specDir).filter(f => f.endsWith('.xml'))
+
+  // ── Pre-pass: build baseName → versioned file path map ───────────────────
+  // Skip files starting with _ (draft duplicates).
+  // Include any .xml file with ( in the name.
+  // Strip version suffix by removing everything from the last space+( onwards.
+  // If multiple versioned files map to the same base name, last alphabetically wins.
+  const versionedFiles = allFiles
+    .filter(f => f.includes('(') && !f.startsWith('_'))
+    .sort()
+
+  const versionedMap = new Map<string, string>() // lowercased baseName → full file path
+  for (const f of versionedFiles) {
+    const baseName = f.replace(/\s*\([^)]*\)\.xml$/, '').trim()
+    versionedMap.set(baseName.toLowerCase(), path.join(specDir, f))
+  }
+
+  // ── Main loop: plain files only ───────────────────────────────────────────
+  const plainFiles = allFiles
+    .filter(f => !f.includes('('))
     .sort()
 
   const results: RespecSpecialization[] = []
-  for (const file of files) {
+  const versionedOverrides: VersionedOverride[] = []
+
+  for (const file of plainFiles) {
     const filePath = path.join(specDir, file)
     const data = await parseXmlFile(filePath)
     const s = data.Specialization
 
+    // Canonical key and name always come from the plain file
     const key = text(s.Key)
     const name = text(s.Name)
     const description = text(s.Description) || null
 
-    // Career skills — CareerSkills contains multiple <Key> children
-    const careerSkillsNode = s.CareerSkills?.[0]
-    const career_skill_keys = texts(careerSkillsNode?.Key)
+    // Check for a versioned override
+    const baseName = file.replace(/\.xml$/, '')
+    const versionedPath = versionedMap.get(baseName.toLowerCase())
 
-    // Parse talent rows
-    const rawRows: any[] = s.TalentRows?.[0]?.TalentRow ?? []
-    const rows: TalentTreeRow[] = rawRows.map((row: any, idx: number) => {
-      const cost = parseInt(text(row.Cost), 10)
-      if (isNaN(cost)) {
-        throw new Error(`NaN cost in file "${file}", row index ${idx}`)
-      }
-      const talentsNode = row.Talents?.[0]
-      const talents = texts(talentsNode?.Key)
+    let career_skill_keys: string[]
+    let rows: TalentTreeRow[]
 
-      const rawDirections: any[] = row.Directions?.[0]?.Direction ?? []
-      const directions = rawDirections.map((dir: any) => ({
-        right: isTruthy(dir.Right),
-        down: isTruthy(dir.Down),
-        left: isTruthy(dir.Left),
-        up: isTruthy(dir.Up),
-      }))
+    if (versionedPath) {
+      // Use the versioned file's talent tree and career skills
+      const vData = await parseXmlFile(versionedPath)
+      const vs = vData.Specialization
 
-      return { index: idx, cost, talents, directions }
-    })
+      const vsCareerSkillsNode = vs.CareerSkills?.[0]
+      career_skill_keys = texts(vsCareerSkillsNode?.Key)
+      rows = parseTalentRows(vs, path.basename(versionedPath))
+
+      versionedOverrides.push({ key, career_skill_keys, talent_tree: { rows } })
+    } else {
+      // Use the plain file's own data
+      const careerSkillsNode = s.CareerSkills?.[0]
+      career_skill_keys = texts(careerSkillsNode?.Key)
+      rows = parseTalentRows(s, file)
+    }
 
     results.push({ key, name, description, career_skill_keys, talent_tree: { rows } })
   }
 
-  return results
+  return { specs: results, versionedOverrides }
 }
 
 // ── Career parser ─────────────────────────────────────────────────────────────
@@ -359,6 +412,33 @@ function buildMigration064(
   return lines.join('\n')
 }
 
+function buildMigration068(overrides: VersionedOverride[]): string {
+  const lines: string[] = []
+
+  lines.push('-- 068_update_respec_spec_trees.sql')
+  lines.push('-- AUTO-GENERATED by scripts/parse-respec.ts — do not edit manually.')
+  lines.push('-- Updates ref_specializations (dataset_source=\'respec\') with talent_tree and')
+  lines.push('-- career_skill_keys from the versioned (Respec X.Y) XML files.')
+  lines.push('')
+
+  // Emit one UPDATE per override, sorted alphabetically by key
+  const sorted = [...overrides].sort((a, b) => a.key.localeCompare(b.key))
+  for (const o of sorted) {
+    const key = sqlStr(o.key)
+    const careerSkillsArr = pgTextArray(o.career_skill_keys)
+    const talentTreeJson = sqlStr(JSON.stringify(o.talent_tree))
+    lines.push(
+      `UPDATE ref_specializations` +
+      ` SET talent_tree = ${talentTreeJson}::jsonb,` +
+      `     career_skill_keys = ${careerSkillsArr}` +
+      ` WHERE key = ${key} AND dataset_source = 'respec';`
+    )
+  }
+  lines.push('')
+
+  return lines.join('\n')
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -373,8 +453,9 @@ async function main() {
   console.log(`  → ${forceAbilities.length} force abilities`)
 
   console.log('  Reading Specializations/*.xml (excluding version-suffix files)...')
-  const specs = await parseSpecializations()
+  const { specs, versionedOverrides } = await parseSpecializations()
   console.log(`  → ${specs.length} specializations`)
+  console.log(`  → Versioned overrides: ${versionedOverrides.length}`)
 
   console.log('  Reading Careers/*.xml...')
   const careers = await parseCareers()
@@ -392,9 +473,15 @@ async function main() {
   fs.writeFileSync(out064, migration064, 'utf-8')
   console.log(`  → Written: ${out064}`)
 
+  const migration068 = buildMigration068(versionedOverrides)
+  const out068 = path.join(MIGRATIONS_DIR, '068_update_respec_spec_trees.sql')
+  fs.writeFileSync(out068, migration068, 'utf-8')
+  console.log(`  → Written: ${out068}`)
+
   console.log('\nDone.')
   console.log(`  Migration 063: ${talents.length} talent INSERTs + ${forceAbilities.length} force ability INSERTs`)
   console.log(`  Migration 064: ${specs.length} spec INSERTs + ${careers.length} career INSERTs`)
+  console.log(`  Migration 068: ${versionedOverrides.length} spec UPDATEs`)
 }
 
 main().catch(err => {
