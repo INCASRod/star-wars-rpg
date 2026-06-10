@@ -410,6 +410,7 @@ Each panel is a self-contained component accepting pre-computed display data fro
 - `AddConflictModal` (`src/components/gm/AddConflictModal.tsx`) — modal for GM to add morality conflicts to Force-sensitive characters; filters character list to force-sensitive only; inserts to `character_conflicts` table with character_id, campaign_id, description, narrative, session_label, is_resolved, player_acknowledged
 - `GmConflictPip` (`src/components/gm/GmConflictPip.tsx`) — read-only 10×10 purple circle pip; wraps `<Tooltip>` with conflict description + session label; used in `GmPartyMiniCard` pip row
 - `GmPartyMiniCard` (`src/app/gm/panels/GmPartyMiniCard.tsx`) — compact character card in the GM party panel; pip row between strain bar and soak shows `CriticalInjuryPip` (with heal confirm) and `GmConflictPip` up to 3 each, with `+N` overflow badge
+- `ArchivedCharactersModal` (`src/app/gm/panels/ArchivedCharactersModal.tsx`) — portal modal listing archived characters for a campaign; fetches lazily on open; provides **Restore** (calls `restoreCharacter`, invokes `onRestored` so `GmShell` can push the char back into active list) and **Delete permanently** (inline single-click confirm, calls `deleteCharacter`); opened via a "View Archived" footer button in `GmPartyPanel`
 - `GmReferenceLibraryPanel` (`src/components/gm/GmReferenceLibraryPanel.tsx`) — searchable read-only reference panel accessed via the ⊟ Library rail button; `'library'` is part of `GmPanelId` and uses the existing left-side slide mechanism at 420px; Talents tab queries `ref_talents` (all rows) on first keystroke and filters client-side by name; Force Powers tab queries `ref_force_powers` + `ref_force_abilities` on first keystroke — matched powers render as purple cards with all their ability rows nested below; abilities matching without a matched parent power render as standalone cards labelled with the parent power name; both tabs show empty state until text is entered
 
 ### Tier 3 — Atoms & Utilities
@@ -511,7 +512,7 @@ import { COLOR, HUD, FS, SP, RADIUS, Z, SHADOW, EASE, CHAR_COLOR, DICE_META, SYM
 | `resolve-weapon.ts` | Resolves a character's weapon key → full weapon display data |
 | `weaponHandedness.ts` | Brawn-linked weapon handedness overrides |
 | `logRoll.ts` | Writes roll results to `roll_log` table |
-| `characters.ts` | Character fetch helpers |
+| `characters.ts` | Character fetch helpers: `archiveCharacter`, `restoreCharacter`, `deleteCharacter` |
 | `equipment-icons.ts` | Maps item categories → icon glyphs |
 | `dutyObligationUtils.ts` | Duty/Obligation roll + trigger helpers |
 | `lightsaberUtils.ts` | Lightsaber crystal bonuses |

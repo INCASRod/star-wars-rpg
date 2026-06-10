@@ -21,3 +21,14 @@ export async function restoreCharacter(characterId: string): Promise<void> {
     .eq('id', characterId)
   if (error) throw new Error(error.message)
 }
+
+/** Permanently delete a character and all related sessions. */
+export async function deleteCharacter(characterId: string): Promise<void> {
+  const supabase = createClient()
+  await supabase.from('character_sessions').delete().eq('character_id', characterId)
+  const { error } = await supabase
+    .from('characters')
+    .delete()
+    .eq('id', characterId)
+  if (error) throw new Error(error.message)
+}

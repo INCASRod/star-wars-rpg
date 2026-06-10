@@ -419,6 +419,7 @@ export function GmShell() {
                 charConflicts={charConflicts}
                 onHealCrit={healCritInjury}
                 onResolveConflict={resolveConflict}
+                onRestored={(char) => setCharacters(prev => [...prev, { ...char, is_archived: false, archived_at: undefined }])}
               />
             )}
             {activePanel === 'combat' && (

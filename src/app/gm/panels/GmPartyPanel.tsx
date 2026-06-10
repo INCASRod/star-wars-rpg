@@ -3,9 +3,10 @@
 import { useState } from 'react'
 import type { Character, RefDutyType, RefObligationType, CharacterCriticalInjury } from '@/lib/types'
 import type { GmConflictRow } from '@/hooks/useGmCampaignConflicts'
-import { FONT_BODY as FONT } from '@/lib/tokens'
+import { FONT_BODY as FONT, FS, SP, RADIUS, HUD } from '@/lib/tokens'
 import { GmPartyMiniCard } from './GmPartyMiniCard'
 import { GmCharacterModal } from './GmCharacterModal'
+import { ArchivedCharactersModal } from './ArchivedCharactersModal'
 import type { GmCharacterCardProps } from '@/components/gm/GmCharacterCard'
 
 type CardCallbacks = Pick<
@@ -33,10 +34,12 @@ export interface GmPartyPanelProps extends CardCallbacks {
   charConflicts:     Record<string, GmConflictRow[]>
   onHealCrit:        (id: string) => void
   onResolveConflict: (id: string) => void
+  onRestored:        (char: Character) => void
 }
 
-export function GmPartyPanel({ campaignId, characters, charCrits, charConflicts, onHealCrit, onResolveConflict, ...cardCallbacks }: GmPartyPanelProps) {
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+export function GmPartyPanel({ campaignId, characters, charCrits, charConflicts, onHealCrit, onResolveConflict, onRestored, ...cardCallbacks }: GmPartyPanelProps) {
+  const [selectedId, setSelectedId]   = useState<string | null>(null)
+  const [archivedOpen, setArchivedOpen] = useState(false)
   const selected = characters.find(c => c.id === selectedId) ?? null
 
   return (
@@ -83,6 +86,30 @@ export function GmPartyPanel({ campaignId, characters, charCrits, charConflicts,
             />
           ))}
         </div>
+
+        {/* Footer */}
+        <div style={{
+          flexShrink: 0,
+          borderTop:  `1px solid ${HUD.border}`,
+          padding:    `${SP[1]} ${SP[3]}`,
+        }}>
+          <button
+            onClick={() => setArchivedOpen(true)}
+            style={{
+              background:    'none',
+              border:        'none',
+              color:         HUD.textDim,
+              fontFamily:    FONT,
+              fontSize:      FS.overline,
+              letterSpacing: '0.15em',
+              textTransform: 'uppercase',
+              cursor:        'pointer',
+              padding:       `2px 0`,
+            }}
+          >
+            View Archived
+          </button>
+        </div>
       </div>
 
       {/* Character modal (portal) */}
@@ -95,6 +122,13 @@ export function GmPartyPanel({ campaignId, characters, charCrits, charConflicts,
           {...cardCallbacks}
         />
       )}
+
+      <ArchivedCharactersModal
+        isOpen={archivedOpen}
+        onClose={() => setArchivedOpen(false)}
+        campaignId={campaignId}
+        onRestored={onRestored}
+      />
     </>
   )
 }
