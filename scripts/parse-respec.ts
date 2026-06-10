@@ -219,6 +219,14 @@ async function parseCareers(): Promise<RespecCareer[]> {
   return results
 }
 
+// ── SQL array helpers ─────────────────────────────────────────────────────────
+
+/** Emit a PostgreSQL text[] array literal: ARRAY['val1', 'val2'] */
+function pgTextArray(values: string[]): string {
+  if (values.length === 0) return "ARRAY[]::text[]"
+  return `ARRAY[${values.map(v => sqlStr(v)).join(', ')}]`
+}
+
 // ── SQL generation ────────────────────────────────────────────────────────────
 
 const RETIRED_TALENT_KEYS = [
@@ -314,11 +322,11 @@ function buildMigration064(
     const key = sqlStr(s.key)
     const name = sqlStr(s.name)
     const desc = sqlEsc(s.description)
-    const careerSkillsJson = sqlStr(JSON.stringify(s.career_skill_keys))
+    const careerSkillsArr = pgTextArray(s.career_skill_keys)
     const talentTreeJson = sqlStr(JSON.stringify(s.talent_tree))
     lines.push(
       `INSERT INTO ref_specializations (key, name, description, career_key, career_skill_keys, talent_tree, dataset_source, is_retired)` +
-      ` VALUES (${key}, ${name}, ${desc}, NULL, ${careerSkillsJson}::jsonb, ${talentTreeJson}::jsonb, 'respec', false)` +
+      ` VALUES (${key}, ${name}, ${desc}, NULL, ${careerSkillsArr}, ${talentTreeJson}::jsonb, 'respec', false)` +
       ` ON CONFLICT (key, dataset_source) DO NOTHING;`
     )
   }
@@ -330,11 +338,11 @@ function buildMigration064(
     const key = sqlStr(c.key)
     const name = sqlStr(c.name)
     const desc = sqlEsc(c.description)
-    const careerSkillsJson = sqlStr(JSON.stringify(c.career_skill_keys))
-    const specializationKeysJson = sqlStr(JSON.stringify(c.specialization_keys))
+    const careerSkillsArr = pgTextArray(c.career_skill_keys)
+    const specializationKeysArr = pgTextArray(c.specialization_keys)
     lines.push(
       `INSERT INTO ref_careers (key, name, description, career_skill_keys, specialization_keys, dataset_source, is_retired)` +
-      ` VALUES (${key}, ${name}, ${desc}, ${careerSkillsJson}::jsonb, ${specializationKeysJson}::jsonb, 'respec', false)` +
+      ` VALUES (${key}, ${name}, ${desc}, ${careerSkillsArr}, ${specializationKeysArr}, 'respec', false)` +
       ` ON CONFLICT (key, dataset_source) DO NOTHING;`
     )
   }
