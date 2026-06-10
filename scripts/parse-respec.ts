@@ -85,12 +85,22 @@ interface RespecForceAbility {
   power_key: string | null
 }
 
+/** Maps XML <Power> display names to the short-code keys used in ref_force_powers. */
+const POWER_KEY_MAP: Record<string, string> = {
+  'Battle Meditation': 'BATMED',
+  'Ebb/Flow':          'EBBFLOW',
+  'Heal/Harm':         'HEALHARM',
+  "Jerserra's Influence": 'JERINF',
+  'Protect/Unleash':   'PROTUNL',
+  "Warde's Foresight": 'WARFOR',
+}
+
 async function parseForceAbilities(): Promise<RespecForceAbility[]> {
   const data = await parseXmlFile(path.join(DATA_DIR, 'Force Abilities.xml'))
   const rawAbilities: any[] = data.ForceAbilities?.ForceAbility ?? []
   return rawAbilities.map((a: any) => {
     const powerName = text(a.Power) || null
-    const power_key = powerName ? powerName.toUpperCase() : null
+    const power_key = powerName ? (POWER_KEY_MAP[powerName] ?? powerName.toUpperCase()) : null
     return {
       key: text(a.Key),
       name: text(a.Name),
