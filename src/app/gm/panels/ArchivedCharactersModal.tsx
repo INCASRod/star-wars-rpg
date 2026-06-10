@@ -15,14 +15,16 @@ interface Props {
 }
 
 export function ArchivedCharactersModal({ isOpen, onClose, campaignId, onRestored }: Props) {
-  const [chars, setChars]         = useState<Character[]>([])
-  const [loading, setLoading]     = useState(false)
-  const [confirmId, setConfirmId] = useState<string | null>(null)
-  const [busyId, setBusyId]       = useState<string | null>(null)
+  const [chars, setChars]           = useState<Character[]>([])
+  const [loading, setLoading]       = useState(false)
+  const [confirmId, setConfirmId]   = useState<string | null>(null)
+  const [busyId, setBusyId]         = useState<string | null>(null)
+  const [fetchError, setFetchError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!isOpen) return
     setLoading(true)
+    setFetchError(null)
     const supabase = createClient()
     supabase
       .from('characters')
@@ -30,11 +32,24 @@ export function ArchivedCharactersModal({ isOpen, onClose, campaignId, onRestore
       .eq('campaign_id', campaignId)
       .eq('is_archived', true)
       .order('archived_at', { ascending: false })
-      .then(({ data }) => {
-        setChars((data as Character[]) ?? [])
+      .then(({ data, error }) => {
+        if (error) {
+          setFetchError('Failed to load archived characters.')
+          console.error(error)
+        } else {
+          setChars((data as Character[]) ?? [])
+        }
         setLoading(false)
       })
   }, [isOpen, campaignId])
+
+  useEffect(() => {
+    if (!isOpen) {
+      setConfirmId(null)
+      setBusyId(null)
+      setFetchError(null)
+    }
+  }, [isOpen])
 
   async function handleRestore(char: Character) {
     setBusyId(char.id)
@@ -42,6 +57,8 @@ export function ArchivedCharactersModal({ isOpen, onClose, campaignId, onRestore
       await restoreCharacter(char.id)
       setChars(prev => prev.filter(c => c.id !== char.id))
       onRestored({ ...char, is_archived: false, archived_at: undefined })
+    } catch (err) {
+      console.error('Failed to restore character:', err)
     } finally {
       setBusyId(null)
     }
@@ -53,6 +70,8 @@ export function ArchivedCharactersModal({ isOpen, onClose, campaignId, onRestore
       await deleteCharacter(id)
       setChars(prev => prev.filter(c => c.id !== id))
       setConfirmId(null)
+    } catch (err) {
+      console.error('Failed to delete character:', err)
     } finally {
       setBusyId(null)
     }
@@ -85,6 +104,7 @@ export function ArchivedCharactersModal({ isOpen, onClose, campaignId, onRestore
         </span>
         <button
           onClick={onClose}
+          aria-label="Close archived characters"
           style={{
             background:   'none',
             border:       'none',
@@ -108,13 +128,19 @@ export function ArchivedCharactersModal({ isOpen, onClose, campaignId, onRestore
           </div>
         )}
 
-        {!loading && chars.length === 0 && (
+        {!loading && fetchError && (
+          <div style={{ textAlign: 'center', padding: SP[4], fontFamily: FONT_BODY, fontSize: FS.sm, color: 'var(--state-failure)' }}>
+            {fetchError}
+          </div>
+        )}
+
+        {!loading && !fetchError && chars.length === 0 && (
           <div style={{ textAlign: 'center', padding: SP[4], fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.textDim }}>
             No archived characters.
           </div>
         )}
 
-        {!loading && chars.map((char, i) => (
+        {!loading && !fetchError && chars.map((char, i) => (
           <div
             key={char.id}
             style={{
@@ -143,8 +169,8 @@ export function ArchivedCharactersModal({ isOpen, onClose, campaignId, onRestore
                   disabled={busyId === char.id}
                   className="arch-btn-cancel"
                   style={{
-                    background:    'rgba(150,168,180,0.06)',
-                    border:        '1px solid rgba(150,168,180,0.2)',
+                    background:    'color-mix(in srgb, var(--hud-text-dim) 8%, transparent)',
+                    border:        '1px solid color-mix(in srgb, var(--hud-text-dim) 18%, transparent)',
                     color:         HUD.textDim,
                     fontFamily:    FONT_BODY,
                     fontSize:      FS.overline,
@@ -161,8 +187,8 @@ export function ArchivedCharactersModal({ isOpen, onClose, campaignId, onRestore
                   disabled={busyId === char.id}
                   className="arch-btn-delete"
                   style={{
-                    background:    'rgba(224,80,80,0.1)',
-                    border:        '1px solid rgba(224,80,80,0.4)',
+                    background:    'color-mix(in srgb, var(--state-failure) 10%, transparent)',
+                    border:        '1px solid color-mix(in srgb, var(--state-failure) 35%, transparent)',
                     color:         'var(--state-failure)',
                     fontFamily:    FONT_BODY,
                     fontSize:      FS.overline,
@@ -183,8 +209,8 @@ export function ArchivedCharactersModal({ isOpen, onClose, campaignId, onRestore
                   disabled={!!busyId}
                   className="arch-btn-restore"
                   style={{
-                    background:    'rgba(150,168,180,0.06)',
-                    border:        '1px solid rgba(150,168,180,0.2)',
+                    background:    'color-mix(in srgb, var(--hud-text-dim) 8%, transparent)',
+                    border:        '1px solid color-mix(in srgb, var(--hud-text-dim) 18%, transparent)',
                     color:         HUD.textDim,
                     fontFamily:    FONT_BODY,
                     fontSize:      FS.overline,
@@ -202,8 +228,8 @@ export function ArchivedCharactersModal({ isOpen, onClose, campaignId, onRestore
                   disabled={!!busyId}
                   className="arch-btn-del-trigger"
                   style={{
-                    background:    'rgba(224,80,80,0.06)',
-                    border:        '1px solid rgba(224,80,80,0.25)',
+                    background:    'color-mix(in srgb, var(--state-failure) 10%, transparent)',
+                    border:        '1px solid color-mix(in srgb, var(--state-failure) 35%, transparent)',
                     color:         'var(--state-failure)',
                     fontFamily:    FONT_BODY,
                     fontSize:      FS.overline,
