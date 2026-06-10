@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { randomUUID } from '@/lib/utils'
 import { logPurchaseNotification } from '@/lib/logRoll'
+import { fetchActiveDataset } from '@/lib/activeDataset'
 import {
   RANGE_LABELS, ACTIVATION_LABELS, CHARACTERISTIC_ABBR,
 } from '@/lib/types'
@@ -58,6 +59,7 @@ export function useCharacterData(characterId: string) {
   const loadCharacter = useCallback(async (silent = false) => {
     if (!silent) setLoading(true)
     try {
+      const ds = await fetchActiveDataset(supabase)
       const [charRes, skillsRes, talentsRes, weaponsRes, armorRes, gearRes, critsRes, specsRes,
         refSkRes, refTalRes, refWpnRes, refArmRes, refGearRes, refCritRes, refSpecRes, refDescRes,
         refCareerRes, refSpeciesRes, forceAbilRes, refFpRes, refFaRes, refWqRes, refAttRes,
@@ -71,18 +73,18 @@ export function useCharacterData(characterId: string) {
         supabase.from('character_critical_injuries').select('*').eq('character_id', characterId).eq('is_healed', false),
         supabase.from('character_specializations').select('*').eq('character_id', characterId),
         supabase.from('ref_skills').select('*'),
-        supabase.from('ref_talents').select('*'),
+        supabase.from('ref_talents').select('*').eq('dataset_source', ds).eq('is_retired', false),
         supabase.from('ref_weapons').select('*'),
         supabase.from('ref_armor').select('*'),
         supabase.from('ref_gear').select('*'),
         supabase.from('ref_critical_injuries').select('*').order('roll_min'),
-        supabase.from('ref_specializations').select('*'),
+        supabase.from('ref_specializations').select('*').eq('dataset_source', ds).eq('is_retired', false),
         supabase.from('ref_item_descriptors').select('*'),
-        supabase.from('ref_careers').select('*'),
+        supabase.from('ref_careers').select('*').eq('dataset_source', ds).eq('is_retired', false),
         supabase.from('ref_species').select('*'),
         supabase.from('character_force_abilities').select('*').eq('character_id', characterId),
         supabase.from('ref_force_powers').select('*'),
-        supabase.from('ref_force_abilities').select('*'),
+        supabase.from('ref_force_abilities').select('*').eq('dataset_source', ds).eq('is_retired', false),
         supabase.from('ref_weapon_qualities').select('*'),
         supabase.from('ref_item_attachments').select('*'),
         supabase.from('ref_obligation_types').select('key, name'),

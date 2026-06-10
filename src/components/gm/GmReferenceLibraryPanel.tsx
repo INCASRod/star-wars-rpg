@@ -4,6 +4,7 @@ import { useState, useMemo, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { RichText } from '@/components/ui/RichText'
 import { FONT_BODY, HUD, RADIUS, EASE, FS } from '@/lib/tokens'
+import { fetchActiveDataset } from '@/lib/activeDataset'
 import { ACTIVATION_LABELS, type RefTalent, type RefForcePower, type RefForceAbility } from '@/lib/types'
 
 // ── Local palette ──────────────────────────────────────────────────────────────
@@ -429,9 +430,12 @@ export function GmReferenceLibraryPanel() {
     setTalentQuery(q)
     if (q && !talentsLoaded && !talentsLoadingRef.current) {
       talentsLoadingRef.current = true
+      const ds = await fetchActiveDataset(supabase)
       const { data } = await supabase
         .from('ref_talents')
         .select('key,name,description,activation,is_ranked')
+        .eq('dataset_source', ds)
+        .eq('is_retired', false)
         .order('name')
       setTalents((data ?? []) as RefTalent[])
       setTalentsLoaded(true)
@@ -443,9 +447,10 @@ export function GmReferenceLibraryPanel() {
     setForceQuery(q)
     if (q && !forceLoaded && !forceLoadingRef.current) {
       forceLoadingRef.current = true
+      const ds = await fetchActiveDataset(supabase)
       const [powersRes, abilitiesRes] = await Promise.all([
         supabase.from('ref_force_powers').select('key,name,description,min_force_rating').order('name'),
-        supabase.from('ref_force_abilities').select('key,name,description,power_key').order('name'),
+        supabase.from('ref_force_abilities').select('key,name,description,power_key').eq('dataset_source', ds).eq('is_retired', false).order('name'),
       ])
       setForcePowers((powersRes.data ?? []) as RefForcePower[])
       setForceAbilities((abilitiesRes.data ?? []) as RefForceAbility[])
