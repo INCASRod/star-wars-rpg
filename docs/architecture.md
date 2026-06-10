@@ -1,6 +1,6 @@
 # Holocron — Architecture, Routes & Hooks Reference
 
-> Updated 2026-06-09. Read from codebase; update when structure changes.
+> Updated 2026-06-10. Read from codebase; update when structure changes.
 > For full design token and color reference see **[docs/design-system.md](design-system.md)**.
 
 ---
@@ -289,6 +289,7 @@
 
 **Campaign & Group**
 - `campaigns` — name, gm_pin, settings JSONB, base_of_operations_name
+- `campaign_settings` — single-row config table. `active_dataset TEXT DEFAULT 'oggdude'` controls which reference dataset (OggDude vs reSpec) is active across the app.
 - `players` — display_name, is_gm, campaign_id
 - `group_assets` — vehicles, starships, safe houses, NPCs, strategic assets
 - `quartermaster` — One row per campaign. `is_open` controls player access. `sell_pct` is the buy-back rate (default 25%).
@@ -306,13 +307,20 @@
 - `map_planets` — planet folder groupings for maps; used to organise map library by location
 
 **Reference Data (read-only)**
-- `ref_species`, `ref_careers`, `ref_specializations`, `ref_talents`
+- `ref_species` — species definitions
+- `ref_careers` — composite PK `(key, dataset_source)`. Added `dataset_source TEXT NOT NULL DEFAULT 'oggdude'` and `is_retired BOOLEAN NOT NULL DEFAULT false` in migration 062.
+- `ref_specializations` — composite PK `(key, dataset_source)`. Same additions as `ref_careers` (migration 062).
+- `ref_talents` — composite PK `(key, dataset_source)`. Same additions as `ref_careers` (migration 062).
 - `ref_skills`, `ref_weapons`, `ref_armor`, `ref_gear`
-- `ref_force_powers`, `ref_force_abilities`
+- `ref_force_powers`
+- `ref_force_abilities` — composite PK `(key, dataset_source)`. Same additions as `ref_careers` (migration 062).
 - `ref_critical_injuries`, `ref_item_attachments`
 - `ref_item_descriptors`, `ref_weapon_qualities`
 - `ref_obligations`, `ref_duties`, `ref_morality`
 - `ref_adversaries`, `ref_vehicles`, `ref_starships`
+
+> **Dropped FK constraints (migration 062):** The following FK constraints were removed when the four ref tables above changed from `key TEXT PRIMARY KEY` to composite `(key, dataset_source)` PKs:
+> `character_talents_talent_key_fkey`, `character_specializations_specialization_key_fkey`, `characters_career_key_fkey`, `ref_specializations_career_key_fkey`.
 
 **Combat Reference**
 - `combat_encounters` — encounter roster + status (separate from `encounters` initiative tracker)
@@ -479,6 +487,7 @@ import { COLOR, HUD, FS, SP, RADIUS, Z, SHADOW, EASE, CHAR_COLOR, DICE_META, SYM
 | File | Purpose |
 |---|---|
 | `types.ts` | All TypeScript interfaces and type aliases |
+| `activeDataset.ts` | Exports `fetchActiveDataset(supabase)` and `resetActiveDatasetCache()`. Reads `campaign_settings.active_dataset` with module-level caching; returns `'respec'` as fallback on failure. |
 | `supabase/client.ts` | Singleton Supabase browser client |
 | `tokens.ts` | Design tokens — colors, fonts, spacing, z-index, radius, shadows |
 | `theme.ts` | Theme management: `ThemeId = 'ember' \| 'kyber' \| 'gm-imperial'`; `getTheme()`, `setTheme()`, `initTheme()` functions; persists selection in localStorage (key: `holocron_theme`); sets `data-theme` attribute on `<html>` for CSS targeting. `gm-imperial` is set directly by `GmShell.tsx` on mount (not via ThemeSwitcher) and removed on unmount. |
@@ -541,3 +550,4 @@ import { COLOR, HUD, FS, SP, RADIUS, Z, SHADOW, EASE, CHAR_COLOR, DICE_META, SYM
 | 057 | Delete policies |
 | 058 | `ref_species.special_abilities` — seed `skill_rank` entries for all 80 species with OggDude SkillModifiers; `ref_talents.modifiers` — add `career_skills` array for 9 fixed ChooseCareerSkills talents (Insight, Basic/Tactical/Vehicle/Pilot Combat Training, Secrets of the Jedi/Force, Well Traveled) |
 | 059 | `characters.force_commitments JSONB DEFAULT '[]'` — tracks which powers have Force dice committed; shape `[{ power_key, power_name, effect_name, dice_count }]` |
+| 062 | reSpec dataset migration: added `campaign_settings` table (`active_dataset TEXT DEFAULT 'oggdude'`); changed PKs on `ref_talents`, `ref_force_abilities`, `ref_specializations`, `ref_careers` from `key TEXT PRIMARY KEY` to composite `(key, dataset_source)` with `dataset_source TEXT NOT NULL DEFAULT 'oggdude'` and `is_retired BOOLEAN NOT NULL DEFAULT false`; dropped FK constraints `character_talents_talent_key_fkey`, `character_specializations_specialization_key_fkey`, `characters_career_key_fkey`, `ref_specializations_career_key_fkey` |
