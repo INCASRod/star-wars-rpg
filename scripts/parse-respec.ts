@@ -110,6 +110,7 @@ interface TalentTreeRow {
     right: boolean
     down: boolean
     left: boolean
+    up: boolean
   }>
 }
 
@@ -129,6 +130,7 @@ async function parseSpecializations(): Promise<RespecSpecialization[]> {
   const specDir = path.join(DATA_DIR, 'Specializations')
   const files = fs.readdirSync(specDir)
     .filter(f => f.endsWith('.xml') && !f.includes('('))
+    .sort()
 
   const results: RespecSpecialization[] = []
   for (const file of files) {
@@ -148,6 +150,9 @@ async function parseSpecializations(): Promise<RespecSpecialization[]> {
     const rawRows: any[] = s.TalentRows?.[0]?.TalentRow ?? []
     const rows: TalentTreeRow[] = rawRows.map((row: any, idx: number) => {
       const cost = parseInt(text(row.Cost), 10)
+      if (isNaN(cost)) {
+        throw new Error(`NaN cost in file "${file}", row index ${idx}`)
+      }
       const talentsNode = row.Talents?.[0]
       const talents = texts(talentsNode?.Key)
 
@@ -156,6 +161,7 @@ async function parseSpecializations(): Promise<RespecSpecialization[]> {
         right: isTruthy(dir.Right),
         down: isTruthy(dir.Down),
         left: isTruthy(dir.Left),
+        up: isTruthy(dir.Up),
       }))
 
       return { index: idx, cost, talents, directions }
@@ -179,7 +185,7 @@ interface RespecCareer {
 
 async function parseCareers(): Promise<RespecCareer[]> {
   const careerDir = path.join(DATA_DIR, 'Careers')
-  const files = fs.readdirSync(careerDir).filter(f => f.endsWith('.xml'))
+  const files = fs.readdirSync(careerDir).filter(f => f.endsWith('.xml')).sort()
 
   const results: RespecCareer[] = []
   for (const file of files) {
@@ -247,7 +253,7 @@ function buildMigration063(
     const key = sqlStr(a.key)
     const name = sqlStr(a.name)
     const desc = sqlEsc(a.description)
-    const powerKey = a.power_key ? sqlStr(a.power_key) : 'NULL'
+    const powerKey = sqlEsc(a.power_key)
     lines.push(
       `INSERT INTO ref_force_abilities (key, name, description, power_key, dataset_source, is_retired, pip_cost, sources)` +
       ` VALUES (${key}, ${name}, ${desc}, ${powerKey}, 'respec', false, 1, NULL)` +
