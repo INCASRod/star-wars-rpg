@@ -23,7 +23,7 @@ export function useQuartermaster(
   const [qm,       setQm]       = useState<Quartermaster | null>(null)
   const [qmItems,  setQmItems]  = useState<QuartermasterItem[]>([])
   const [buyRows,  setBuyRows]  = useState<QmBuyRow[]>([])
-  const [loading,  setLoading]  = useState(false)
+  const [loading,  setLoading]  = useState(!!campaignId)
   const qmRef = useRef<Quartermaster | null>(null)
 
   // keep ref in sync for use in callbacks that close over stale state

@@ -4,7 +4,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { Modal } from '@/components/ui/Modal'
 import { RichText } from '@/components/ui/RichText'
 import { QualityBadge } from '@/components/character/QualityBadge'
-import { useQuartermaster } from '@/hooks/useQuartermaster'
+import type { UseQuartermasterReturn } from '@/hooks/useQuartermaster'
 import type { QmBuyRow, RefWeaponQuality } from '@/lib/types'
 import { HUD, FONT_BODY, FONT_DISPLAY, FS, SP, RADIUS, EASE, Z, SHADOW } from '@/lib/tokens'
 
@@ -49,10 +49,15 @@ interface QuartermasterModalProps {
   characterId?:  string
   supabase:      SupabaseClient
   onClose:       () => void
+  // Pre-fetched from GroupSheet — avoids a double fetch waterfall on open
+  qm:            UseQuartermasterReturn['qm']
+  qmLoading?:    boolean
+  buyRows:       UseQuartermasterReturn['buyRows']
+  buyItem:       UseQuartermasterReturn['buyItem']
+  sellItem:      UseQuartermasterReturn['sellItem']
 }
 
-export function QuartermasterModal({ campaignId, characterName, characterId, supabase, onClose }: QuartermasterModalProps) {
-  const { qm, buyRows, buyItem, sellItem } = useQuartermaster(supabase, campaignId)
+export function QuartermasterModal({ campaignId, characterName, characterId, supabase, onClose, qm, qmLoading, buyRows, buyItem, sellItem }: QuartermasterModalProps) {
 
   const [tab,        setTab]        = useState<Tab>('buy')
   const [typeFilter, setTypeFilter] = useState<'all' | 'weapon' | 'armor' | 'gear'>('all')
@@ -212,15 +217,21 @@ export function QuartermasterModal({ campaignId, characterName, characterId, sup
               fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
               textTransform: 'uppercase', letterSpacing: '0.1em',
               padding: '1px 6px', borderRadius: RADIUS.sm, display: 'inline-block', marginTop: '2px', /* 2px vertical offset aligns pill under title */
-              color: qm?.is_open ? 'var(--state-success)' : 'var(--state-failure)',
-              border: qm?.is_open
-                ? `1px solid color-mix(in srgb, var(--state-success) 35%, transparent)`
-                : `1px solid color-mix(in srgb, var(--state-failure) 30%, transparent)`,
-              background: qm?.is_open
-                ? 'color-mix(in srgb, var(--state-success) 10%, transparent)'
-                : 'color-mix(in srgb, var(--state-failure) 08%, transparent)',
+              color: qmLoading
+                ? HUD.textFaint
+                : qm?.is_open ? 'var(--state-success)' : 'var(--state-failure)',
+              border: qmLoading
+                ? `1px solid color-mix(in srgb, var(--hud-text-faint) 25%, transparent)`
+                : qm?.is_open
+                  ? `1px solid color-mix(in srgb, var(--state-success) 35%, transparent)`
+                  : `1px solid color-mix(in srgb, var(--state-failure) 30%, transparent)`,
+              background: qmLoading
+                ? 'transparent'
+                : qm?.is_open
+                  ? 'color-mix(in srgb, var(--state-success) 10%, transparent)'
+                  : 'color-mix(in srgb, var(--state-failure) 08%, transparent)',
             }}>
-              {qm?.is_open ? 'OPEN' : 'CLOSED'}
+              {qmLoading ? '···' : qm?.is_open ? 'OPEN' : 'CLOSED'}
             </span>
           </div>
           {character && (

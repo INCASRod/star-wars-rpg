@@ -243,7 +243,7 @@ export function GroupSheet({ campaignId, characterName, characterId }: GroupShee
   const [showRewardModal, setShowRewardModal]     = useState(false)
 
   // ── Quartermaster ──
-  const { qm } = useQuartermaster(supabase, campaignId)
+  const { qm, buyRows: qmBuyRows, buyItem: qmBuyItem, sellItem: qmSellItem, loading: qmLoading } = useQuartermaster(supabase, campaignId)
   const [showQm, setShowQm] = useState(false)
   const [rewardTypeDraft, setRewardTypeDraft]     = useState<'equipment' | 'vehicle' | 'strategic_asset'>('equipment')
   const [rewardDescModalDraft, setRewardDescModalDraft] = useState('')
@@ -1330,6 +1330,11 @@ export function GroupSheet({ campaignId, characterName, characterId }: GroupShee
           characterId={characterId}
           supabase={supabase}
           onClose={() => setShowQm(false)}
+          qm={qm}
+          qmLoading={qmLoading}
+          buyRows={qmBuyRows}
+          buyItem={qmBuyItem}
+          sellItem={qmSellItem}
         />
       )}
     </div>
