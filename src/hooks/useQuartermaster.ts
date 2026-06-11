@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Quartermaster, QuartermasterItem, QmBuyRow } from '@/lib/types'
+import type { Quartermaster, QuartermasterItem, QmBuyRow, WeaponQuality } from '@/lib/types'
 
 export interface UseQuartermasterReturn {
   qm: Quartermaster | null
@@ -44,14 +44,14 @@ export function useQuartermaster(
     const gearKeys   = items.filter(i => i.item_type === 'gear').map(i => i.item_key)
 
     const [wRes, aRes, gRes] = await Promise.all([
-      weaponKeys.length ? supabase.from('ref_weapons').select('key,name,rarity,encumbrance,price,damage,damage_add,crit').in('key', weaponKeys) : Promise.resolve({ data: [] }),
-      armorKeys.length  ? supabase.from('ref_armor').select('key,name,rarity,encumbrance,price,soak,soak_bonus,defense').in('key', armorKeys)   : Promise.resolve({ data: [] }),
-      gearKeys.length   ? supabase.from('ref_gear').select('key,name,rarity,encumbrance,price,encumbrance_bonus').in('key', gearKeys)            : Promise.resolve({ data: [] }),
+      weaponKeys.length ? supabase.from('ref_weapons').select('key,name,rarity,encumbrance,price,damage,damage_add,crit,description,skill_key,range_value,hard_points,qualities').in('key', weaponKeys) : Promise.resolve({ data: [] }),
+      armorKeys.length  ? supabase.from('ref_armor').select('key,name,rarity,encumbrance,price,soak,soak_bonus,defense,description').in('key', armorKeys)   : Promise.resolve({ data: [] }),
+      gearKeys.length   ? supabase.from('ref_gear').select('key,name,rarity,encumbrance,price,encumbrance_bonus,description').in('key', gearKeys)            : Promise.resolve({ data: [] }),
     ])
 
-    type WRow = { key: string; name: string; rarity: number; encumbrance: number; price: number; damage: number; damage_add: number | null; crit: number }
-    type ARow = { key: string; name: string; rarity: number; encumbrance: number; price: number; soak: number; soak_bonus: number | null; defense: number }
-    type GRow = { key: string; name: string; rarity: number; encumbrance: number; price: number; encumbrance_bonus: number | null }
+    type WRow = { key: string; name: string; rarity: number; encumbrance: number; price: number; damage: number; damage_add: number | null; crit: number; description: string | null; skill_key: string | null; range_value: string | null; hard_points: number | null; qualities: WeaponQuality[] | null }
+    type ARow = { key: string; name: string; rarity: number; encumbrance: number; price: number; soak: number; soak_bonus: number | null; defense: number; description: string | null }
+    type GRow = { key: string; name: string; rarity: number; encumbrance: number; price: number; encumbrance_bonus: number | null; description: string | null }
 
     const wMap = Object.fromEntries(((wRes.data ?? []) as WRow[]).map(r => [r.key, r]))
     const aMap = Object.fromEntries(((aRes.data ?? []) as ARow[]).map(r => [r.key, r]))
@@ -60,14 +60,14 @@ export function useQuartermaster(
     const buys: QmBuyRow[] = items.flatMap((qi): QmBuyRow[] => {
       if (qi.item_type === 'weapon') {
         const r = wMap[qi.item_key]
-        return r ? [{ qmItem: qi, name: r.name, rarity: r.rarity, encumbrance: r.encumbrance, price: r.price, damage: r.damage, damage_add: r.damage_add, crit: r.crit }] : []
+        return r ? [{ qmItem: qi, name: r.name, rarity: r.rarity, encumbrance: r.encumbrance, price: r.price, description: r.description ?? undefined, damage: r.damage, damage_add: r.damage_add, crit: r.crit, skill_key: r.skill_key ?? undefined, range_value: r.range_value ?? undefined, hard_points: r.hard_points ?? undefined, qualities: r.qualities ?? undefined }] : []
       }
       if (qi.item_type === 'armor') {
         const r = aMap[qi.item_key]
-        return r ? [{ qmItem: qi, name: r.name, rarity: r.rarity, encumbrance: r.encumbrance, price: r.price, soak: r.soak, soak_bonus: r.soak_bonus, defense: r.defense }] : []
+        return r ? [{ qmItem: qi, name: r.name, rarity: r.rarity, encumbrance: r.encumbrance, price: r.price, description: r.description ?? undefined, soak: r.soak, soak_bonus: r.soak_bonus, defense: r.defense }] : []
       }
       const r = gMap[qi.item_key]
-      return r ? [{ qmItem: qi, name: r.name, rarity: r.rarity, encumbrance: r.encumbrance, price: r.price, encumbrance_bonus: r.encumbrance_bonus }] : []
+      return r ? [{ qmItem: qi, name: r.name, rarity: r.rarity, encumbrance: r.encumbrance, price: r.price, description: r.description ?? undefined, encumbrance_bonus: r.encumbrance_bonus }] : []
     })
 
     setBuyRows(buys)
@@ -119,7 +119,7 @@ export function useQuartermaster(
         .select('*')
         .eq('campaign_id', campaignId)
         .single()
-      if (fetchErr) throw fetchErr
+      if (fetchErr) throw new Error(fetchErr.message)
       const row = existing as Quartermaster
       setQm(row)
       return row

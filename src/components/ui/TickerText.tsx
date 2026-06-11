@@ -37,6 +37,49 @@ export function TickerText({ text, isOpen, delayMs, className, parallel, wrap }:
   const { chars } = useTicker(text, isOpen && shouldAnimate, delayMs, parallel ? 0 : undefined)
 
   const rootClass = wrap ? 'ticker-ready-wrap' : 'ticker-ready'
+
+  if (wrap) {
+    // Group chars into word units (no-break) and whitespace (break points).
+    // Each word becomes a single inline-flex flex item in the parent wrap
+    // container, so the browser can only break at whitespace boundaries.
+    type Group = { isWord: boolean; chars: typeof chars }
+    const groups: Group[] = []
+    let current: typeof chars = []
+
+    chars.forEach((char, i) => {
+      if (text[i] === ' ' || text[i] === '\n') {
+        if (current.length) { groups.push({ isWord: true, chars: current }); current = [] }
+        groups.push({ isWord: false, chars: [char] })
+      } else {
+        current.push(char)
+      }
+    })
+    if (current.length) groups.push({ isWord: true, chars: current })
+
+    return (
+      <span ref={spanRef} className={`${rootClass}${className ? ` ${className}` : ''}`}>
+        {groups.map((group, gi) =>
+          group.isWord ? (
+            <span key={gi} style={{ display: 'inline-flex', flexWrap: 'nowrap' }}>
+              {group.chars.map(char => (
+                <span key={char.key} className="ticker-char" style={{ opacity: char.settled ? 1 : 0.5 }} aria-hidden={!char.settled}>
+                  {char.display}
+                </span>
+              ))}
+            </span>
+          ) : (
+            group.chars.map(char => (
+              <span key={char.key} className="ticker-char" style={{ opacity: char.settled ? 1 : 0.5 }} aria-hidden={!char.settled}>
+                {char.display}
+              </span>
+            ))
+          )
+        )}
+        <span className="sr-only">{text}</span>
+      </span>
+    )
+  }
+
   return (
     <span ref={spanRef} className={`${rootClass}${className ? ` ${className}` : ''}`}>
       {chars.map(char => (

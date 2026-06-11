@@ -2,8 +2,28 @@
 import { useState, useEffect, useCallback } from 'react'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { Modal } from '@/components/ui/Modal'
+import { RichText } from '@/components/ui/RichText'
+import { QualityBadge } from '@/components/character/QualityBadge'
 import { useQuartermaster } from '@/hooks/useQuartermaster'
-import { HUD, FONT_BODY, FONT_DISPLAY, FS, SP, RADIUS, EASE, Z } from '@/lib/tokens'
+import type { QmBuyRow, RefWeaponQuality } from '@/lib/types'
+import { HUD, FONT_BODY, FONT_DISPLAY, FS, SP, RADIUS, EASE, Z, SHADOW } from '@/lib/tokens'
+
+const QM_TYPE_COLOR: Record<string, string> = {
+  weapon: 'var(--state-failure)',
+  armor:  'var(--die-force)',
+  gear:   'var(--hud-accent)',
+}
+
+const WEAPON_SKILL_NAME: Record<string, string> = {
+  BRAWL:   'Brawl',
+  MELEE:   'Melee',
+  LTSABER: 'Lightsaber',
+  RANGLT:  'Ranged (Light)',
+  RANGHVY: 'Ranged (Heavy)',
+  GUNN:    'Gunnery',
+  MECH:    'Mechanics',
+  SKUL:    'Skulduggery',
+}
 
 type Tab = 'buy' | 'sell'
 
@@ -38,8 +58,10 @@ export function QuartermasterModal({ campaignId, characterName, supabase, onClos
   const [search,     setSearch]     = useState('')
   const [character,  setCharacter]  = useState<CharacterInfo | null>(null)
   const [sellRows,   setSellRows]   = useState<SellRow[]>([])
-  const [buying,     setBuying]     = useState<string | null>(null)
-  const [selling,    setSelling]    = useState<string | null>(null)
+  const [buying,        setBuying]        = useState<string | null>(null)
+  const [selling,       setSelling]       = useState<string | null>(null)
+  const [viewingRow,    setViewingRow]    = useState<QmBuyRow | null>(null)
+  const [refQualityMap, setRefQualityMap] = useState<Record<string, RefWeaponQuality>>({})
 
   // ── Load active character for this campaign session ─────────────────────────
   const loadCharacter = useCallback(async () => {
@@ -119,6 +141,15 @@ export function QuartermasterModal({ campaignId, characterName, supabase, onClos
 
   useEffect(() => { loadCharacter() }, [loadCharacter])
   useEffect(() => { if (character?.id) loadSellRows(character.id) }, [character?.id, loadSellRows])
+  useEffect(() => {
+    supabase.from('ref_weapon_qualities').select('key,name,description,is_ranked,stat_modifier')
+      .then(({ data }) => {
+        if (!data) return
+        const map: Record<string, RefWeaponQuality> = {}
+        for (const q of data as RefWeaponQuality[]) map[q.key] = q
+        setRefQualityMap(map)
+      })
+  }, [supabase])
 
   // ── Buy ─────────────────────────────────────────────────────────────────────
   const handleBuy = async (itemKey: string, itemType: 'weapon' | 'armor' | 'gear') => {
@@ -344,6 +375,20 @@ export function QuartermasterModal({ campaignId, characterName, supabase, onClos
                             ₡ {r.qmItem.price_override.toLocaleString()}
                           </div>
 
+                          {/* View button */}
+                          <button
+                            onClick={() => setViewingRow(r)}
+                            style={{
+                              fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
+                              textTransform: 'uppercase', letterSpacing: '0.08em',
+                              padding: `${SP[1]} ${SP[2]}`, borderRadius: RADIUS.sm,
+                              cursor: 'pointer', flexShrink: 0,
+                              border: `1px solid ${HUD.border}`,
+                              color: HUD.textDim, background: 'transparent',
+                              transition: EASE.quick,
+                            }}
+                          >View</button>
+
                           {/* Buy button */}
                           <button
                             disabled={disabled}
@@ -469,6 +514,136 @@ export function QuartermasterModal({ campaignId, characterName, supabase, onClos
         </div>
 
       </div>
+
+      {/* ── Item detail popup ───────────────────────────────────────────────── */}
+      {viewingRow && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: Z.popover,
+            background: 'color-mix(in srgb, var(--hud-bg) 75%, transparent)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+          onClick={() => setViewingRow(null)}
+        >
+          <div
+            style={{
+              background: HUD.panel, border: `1px solid ${HUD.borderHi}`,
+              borderRadius: RADIUS.lg, padding: SP[4],
+              width: 'min(480px, 90vw)', maxHeight: '80vh', overflowY: 'auto',
+              boxShadow: SHADOW.lg, display: 'flex', flexDirection: 'column', gap: SP[3],
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: SP[2] }}>
+              <span style={{
+                fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
+                textTransform: 'uppercase', letterSpacing: '0.12em', flexShrink: 0,
+                color: QM_TYPE_COLOR[viewingRow.qmItem.item_type],
+              }}>
+                {viewingRow.qmItem.item_type}
+              </span>
+              <span style={{ fontFamily: FONT_BODY, fontSize: FS.body, fontWeight: 700, color: HUD.text, flex: 1 }}>
+                {viewingRow.name}
+              </span>
+              <button
+                onClick={() => setViewingRow(null)}
+                style={{
+                  fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
+                  textTransform: 'uppercase', letterSpacing: '0.08em',
+                  padding: `${SP[1]} ${SP[2]}`, borderRadius: RADIUS.sm, cursor: 'pointer', flexShrink: 0,
+                  border: `1px solid ${HUD.border}`, color: HUD.textDim, background: 'transparent',
+                }}
+              >✕</button>
+            </div>
+
+            {/* Common stats */}
+            <div style={{
+              display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: `${SP[1]} ${SP[3]}`,
+              paddingBottom: SP[2], borderBottom: `1px solid ${HUD.border}`,
+            }}>
+              {([
+                ['QM Price', `₡ ${viewingRow.qmItem.price_override.toLocaleString()}`],
+                ['Rarity', viewingRow.rarity],
+                ['Encumbrance', viewingRow.encumbrance],
+              ] as [string, string | number][]).map(([label, val]) => (
+                <div key={label}>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textDim, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{label}</div>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.text, fontWeight: 600 }}>{val}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Weapon stats */}
+            {viewingRow.qmItem.item_type === 'weapon' && (
+              <div style={{
+                display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: `${SP[1]} ${SP[3]}`,
+                paddingBottom: SP[2], borderBottom: `1px solid ${HUD.border}`,
+              }}>
+                {([
+                  ['Skill', WEAPON_SKILL_NAME[viewingRow.skill_key ?? ''] ?? viewingRow.skill_key ?? '—'],
+                  ['Damage', viewingRow.damage_add != null ? `Brawn+${viewingRow.damage_add}` : String(viewingRow.damage ?? '—')],
+                  ['Crit', viewingRow.crit ?? '—'],
+                  ['Range', (viewingRow.range_value ?? '—').replace(/^wr/i, '')],
+                  ['Hard Points', viewingRow.hard_points ?? 0],
+                ] as [string, string | number][]).map(([label, val]) => (
+                  <div key={label}>
+                    <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textDim, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{label}</div>
+                    <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.text, fontWeight: 600 }}>{val}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Armor stats */}
+            {viewingRow.qmItem.item_type === 'armor' && (
+              <div style={{
+                display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: `${SP[1]} ${SP[3]}`,
+                paddingBottom: SP[2], borderBottom: `1px solid ${HUD.border}`,
+              }}>
+                {([
+                  ['Soak Bonus', viewingRow.soak_bonus ?? 0],
+                  ['Defense', viewingRow.defense ?? 0],
+                ] as [string, string | number][]).map(([label, val]) => (
+                  <div key={label}>
+                    <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textDim, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{label}</div>
+                    <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.text, fontWeight: 600 }}>{val}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Gear: encumbrance threshold */}
+            {viewingRow.qmItem.item_type === 'gear' && viewingRow.encumbrance_bonus && (
+              <div style={{ paddingBottom: SP[2], borderBottom: `1px solid ${HUD.border}` }}>
+                <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textDim, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Encumbrance threshold bonus</div>
+                <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.text, fontWeight: 600 }}>+{viewingRow.encumbrance_bonus}</div>
+              </div>
+            )}
+
+            {/* Qualities */}
+            {viewingRow.qualities && viewingRow.qualities.length > 0 && (
+              <div>
+                <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textDim, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: SP[1] }}>Qualities</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: SP[1] }}>
+                  {viewingRow.qualities.map(q => (
+                    <QualityBadge key={q.key} quality={q} refQualityMap={refQualityMap} variant="desktop" />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Description */}
+            {viewingRow.description ? (
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.text, lineHeight: 1.6 }}>
+                <RichText text={viewingRow.description} />
+              </div>
+            ) : (
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.textDim, fontStyle: 'italic' }}>No description.</div>
+            )}
+          </div>
+        </div>
+      )}
     </Modal>
   )
 }

@@ -1,8 +1,11 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { ItemEditor, type EditableItem, type ItemType } from './ItemEditor'
 import { LootAwardModal, type AwardableItem } from './LootAwardModal'
+import { RichText } from '@/components/ui/RichText'
+import { QualityBadge } from '@/components/character/QualityBadge'
+import type { RefWeaponQuality } from '@/lib/types'
 import { VendorSellModal, type VendorItem } from './VendorSellModal'
 import type { Character } from '@/lib/types'
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -59,6 +62,17 @@ const TYPE_COLOR: Record<string, string> = {
   gear:   GOLD_DIM,
 }
 
+const WEAPON_SKILL_NAME: Record<string, string> = {
+  BRAWL:   'Brawl',
+  MELEE:   'Melee',
+  LTSABER: 'Lightsaber',
+  RANGLT:  'Ranged (Light)',
+  RANGHVY: 'Ranged (Heavy)',
+  GUNN:    'Gunnery',
+  MECH:    'Mechanics',
+  SKUL:    'Skulduggery',
+}
+
 function relativeTime(iso: string | null): string {
   if (!iso) return '—'
   const diff = Date.now() - new Date(iso).getTime()
@@ -72,7 +86,7 @@ function relativeTime(iso: string | null): string {
 
 export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToChar, onGenerateLoot }: ItemDatabaseTabProps) {
   // ── Items tab state ──
-  const [items,       setItems]       = useState<DbItem[]>([])
+  const [allItems,    setAllItems]    = useState<DbItem[]>([])  // raw DB result, no client filters
   const [loading,     setLoading]     = useState(false)
   const [filterType,  setFilterType]  = useState<FilterType>('all')
   const [filterScope, setFilterScope] = useState<FilterScope>('custom')
@@ -92,6 +106,8 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
   const [awardingDropped, setAwardingDropped] = useState<DroppedItem | null>(null)
   const [awardingItem,    setAwardingItem]    = useState<DbItem | null>(null)
   const [vendingItem,     setVendingItem]     = useState<DbItem | null>(null)
+  const [viewingItem,     setViewingItem]     = useState<DbItem | null>(null)
+  const [refQualityMap,   setRefQualityMap]   = useState<Record<string, RefWeaponQuality>>({})
   const [destroyConfirm,  setDestroyConfirm]  = useState<string | null>(null) // rowId
 
   // ── Quartermaster ──
@@ -108,7 +124,7 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
       return next
     })
 
-  // ── Items tab load ──
+  // ── Items tab load — only reruns when scope/campaign changes, not on search/type ──
   const loadItems = useCallback(async () => {
     if (!campaignId) return
     setLoading(true)
@@ -133,17 +149,33 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
     let all = results.flat() as DbItem[]
 
     if (filterScope === 'custom') all = all.filter(i => i.campaign_id === campaignId)
-    if (filterType !== 'all') all = all.filter(i => i.type === filterType)
-    if (search.trim()) {
-      const q = search.trim().toLowerCase()
-      all = all.filter(i => i.name.toLowerCase().includes(q))
-    }
     all.sort((a, b) => a.name.localeCompare(b.name))
-    setItems(all)
+    setAllItems(all)
     setLoading(false)
-  }, [supabase, campaignId, filterType, filterScope, search])
+  }, [supabase, campaignId, filterScope])
 
   useEffect(() => { if (activeView === 'items') loadItems() }, [loadItems, activeView])
+
+  useEffect(() => {
+    supabase.from('ref_weapon_qualities').select('key,name,description,is_ranked,stat_modifier')
+      .then(({ data }) => {
+        if (!data) return
+        const map: Record<string, RefWeaponQuality> = {}
+        for (const q of data as RefWeaponQuality[]) map[q.key] = q
+        setRefQualityMap(map)
+      })
+  }, [supabase])
+
+  // ── Client-side filter — instant, no DB round-trip ──
+  const items = useMemo(() => {
+    let filtered = allItems
+    if (filterType !== 'all') filtered = filtered.filter(i => i.type === filterType)
+    if (search.trim()) {
+      const q = search.trim().toLowerCase()
+      filtered = filtered.filter(i => i.name.toLowerCase().includes(q))
+    }
+    return filtered
+  }, [allItems, filterType, search])
 
   // ── Dropped tab load ──
   const loadDropped = useCallback(async () => {
@@ -576,8 +608,9 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
                       {characters.length > 0 && filterScope !== 'vendor' && (
                         <button onClick={() => setAwardingItem(item)} style={actionBtn(HUD.gold)}>Award</button>
                       )}
+                      <button onClick={() => setViewingItem(item)} style={actionBtn(DIM)}>View</button>
                       <button onClick={() => openEdit(item)} style={actionBtn(item.is_custom ? HUD.gold : DIM)}>
-                        {item.is_custom ? '✎' : '⊕'}
+                        {item.is_custom ? '✎' : 'Copy'}
                       </button>
                       {item.is_custom && item.campaign_id === campaignId && (
                         <button onClick={() => handleDelete(item)} style={actionBtn(RED)}>✕</button>
@@ -648,8 +681,9 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
                     {characters.length > 0 && filterScope !== 'vendor' && (
                       <button onClick={() => setAwardingItem(item)} style={actionBtn(HUD.gold)}>Award</button>
                     )}
+                    <button onClick={() => setViewingItem(item)} style={actionBtn(DIM)}>View</button>
                     <button onClick={() => openEdit(item)} style={actionBtn(item.is_custom ? HUD.gold : DIM)}>
-                      {item.is_custom ? '✎ Edit' : '⊕ Copy'}
+                      {item.is_custom ? '✎ Edit' : 'Copy'}
                     </button>
                     {item.is_custom && item.campaign_id === campaignId && (
                       <button onClick={() => handleDelete(item)} style={actionBtn(RED)}>✕</button>
@@ -832,6 +866,124 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
           }
           sendToChar={sendToChar ?? (() => {})}
         />
+      )}
+
+      {/* ── Item detail popup ────────────────────────────────────────────── */}
+      {viewingItem && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: Z.modal,
+            background: 'color-mix(in srgb, var(--hud-bg) 75%, transparent)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+          onClick={() => setViewingItem(null)}
+        >
+          <div
+            style={{
+              background: HUD.panel, border: `1px solid ${HUD.borderHi}`,
+              borderRadius: RADIUS.lg, padding: SP[4],
+              width: 'min(480px, 90vw)', maxHeight: '80vh', overflowY: 'auto',
+              boxShadow: SHADOW.lg, display: 'flex', flexDirection: 'column', gap: SP[3],
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* ── Header ── */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: SP[2] }}>
+              <span style={{
+                fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
+                textTransform: 'uppercase', letterSpacing: '0.12em',
+                color: TYPE_COLOR[viewingItem.type], flexShrink: 0,
+              }}>
+                {viewingItem.type}
+              </span>
+              <span style={{ fontFamily: FONT_BODY, fontSize: FS.body, fontWeight: 700, color: HUD.text, flex: 1 }}>
+                {viewingItem.name}
+              </span>
+              <button onClick={() => setViewingItem(null)} style={actionBtn(DIM)}>✕</button>
+            </div>
+
+            {/* ── Common stats ── */}
+            <div style={{
+              display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: `${SP[1]} ${SP[3]}`,
+              paddingBottom: SP[2], borderBottom: `1px solid ${BORDER}`,
+            }}>
+              {[
+                ['Price', `${viewingItem.price ?? '—'} cr`],
+                ['Rarity', viewingItem.rarity ?? '—'],
+                ['Encumbrance', viewingItem.encumbrance ?? '—'],
+              ].map(([label, val]) => (
+                <div key={String(label)}>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: DIM, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{label}</div>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.text, fontWeight: 600 }}>{val}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* ── Type-specific stats ── */}
+            {viewingItem.type === 'weapon' && (
+              <div style={{
+                display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: `${SP[1]} ${SP[3]}`,
+                paddingBottom: SP[2], borderBottom: `1px solid ${BORDER}`,
+              }}>
+                {[
+                  ['Skill', WEAPON_SKILL_NAME[viewingItem.skill_key ?? ''] ?? viewingItem.skill_key ?? '—'],
+                  ['Damage', viewingItem.damage_add != null ? `Brawn+${viewingItem.damage_add}` : String(viewingItem.damage ?? '—')],
+                  ['Crit', viewingItem.crit ?? '—'],
+                  ['Range', (viewingItem.range_value ?? '—').replace(/^wr/i, '')],
+                  ['Hard Points', viewingItem.hard_points ?? 0],
+                ].map(([label, val]) => (
+                  <div key={String(label)}>
+                    <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: DIM, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{label}</div>
+                    <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.text, fontWeight: 600 }}>{val}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {viewingItem.type === 'armor' && (
+              <div style={{
+                display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: `${SP[1]} ${SP[3]}`,
+                paddingBottom: SP[2], borderBottom: `1px solid ${BORDER}`,
+              }}>
+                {[
+                  ['Soak bonus', viewingItem.soak_bonus ?? 0],
+                  ['Defense', viewingItem.defense ?? 0],
+                ].map(([label, val]) => (
+                  <div key={String(label)}>
+                    <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: DIM, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{label}</div>
+                    <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.text, fontWeight: 600 }}>{val}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {viewingItem.type === 'gear' && viewingItem.encumbrance_bonus && (
+              <div style={{ paddingBottom: SP[2], borderBottom: `1px solid ${BORDER}` }}>
+                <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: DIM, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Encumbrance threshold bonus</div>
+                <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.text, fontWeight: 600 }}>+{viewingItem.encumbrance_bonus}</div>
+              </div>
+            )}
+
+            {/* ── Qualities ── */}
+            {viewingItem.qualities && viewingItem.qualities.length > 0 && (
+              <div>
+                <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: DIM, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: SP[1] }}>Qualities</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: SP[1] }}>
+                  {viewingItem.qualities.map(q => (
+                    <QualityBadge key={q.key} quality={q} refQualityMap={refQualityMap} variant="desktop" />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── Description ── */}
+            {viewingItem.description ? (
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.text, lineHeight: 1.6 }}>
+                <RichText text={viewingItem.description} />
+              </div>
+            ) : (
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: DIM, fontStyle: 'italic' }}>No description.</div>
+            )}
+          </div>
+        </div>
       )}
 
       {/* ── QM item popover ─────────────────────────────────────────────── */}

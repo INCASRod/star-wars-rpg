@@ -694,12 +694,20 @@ export interface QmBuyRow {
   rarity: number
   encumbrance: number
   price: number
+  description?: string
+  // Weapon-only
   damage?: number
   damage_add?: number | null
   crit?: number
+  skill_key?: string
+  range_value?: string
+  hard_points?: number
+  qualities?: WeaponQuality[]
+  // Armor-only
   soak?: number
   soak_bonus?: number | null
   defense?: number
+  // Gear-only
   encumbrance_bonus?: number | null
 }
 
