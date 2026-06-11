@@ -192,9 +192,10 @@ function btnStyle(primary: boolean): React.CSSProperties {
 interface GroupSheetProps {
   campaignId: string
   characterName?: string
+  characterId?: string
 }
 
-export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
+export function GroupSheet({ campaignId, characterName, characterId }: GroupSheetProps) {
   const supabase = useMemo(() => createClient(), [])
   const { isOpen } = useHudPanelContext()
 
@@ -1326,6 +1327,7 @@ export function GroupSheet({ campaignId, characterName }: GroupSheetProps) {
         <QuartermasterModal
           campaignId={campaignId}
           characterName={characterName ?? ''}
+          characterId={characterId}
           supabase={supabase}
           onClose={() => setShowQm(false)}
         />

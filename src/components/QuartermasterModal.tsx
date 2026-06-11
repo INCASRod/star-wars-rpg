@@ -46,11 +46,12 @@ interface CharacterInfo {
 interface QuartermasterModalProps {
   campaignId:    string | null
   characterName: string
+  characterId?:  string
   supabase:      SupabaseClient
   onClose:       () => void
 }
 
-export function QuartermasterModal({ campaignId, characterName, supabase, onClose }: QuartermasterModalProps) {
+export function QuartermasterModal({ campaignId, characterName, characterId, supabase, onClose }: QuartermasterModalProps) {
   const { qm, buyRows, buyItem, sellItem } = useQuartermaster(supabase, campaignId)
 
   const [tab,        setTab]        = useState<Tab>('buy')
@@ -65,31 +66,35 @@ export function QuartermasterModal({ campaignId, characterName, supabase, onClos
 
   // ── Load active character for this campaign session ─────────────────────────
   const loadCharacter = useCallback(async () => {
+    // Fast path: load directly by ID when available (avoids dependence on character_sessions)
+    if (characterId) {
+      const { data } = await supabase
+        .from('characters')
+        .select('id,name,credits')
+        .eq('id', characterId)
+        .single()
+      if (data) setCharacter(data as CharacterInfo)
+      return
+    }
+    // Fallback: resolve via character_sessions (requires active session row)
     if (!campaignId || !characterName) return
-    // Find the character session for this player's character name
     const { data: sessions } = await supabase
       .from('character_sessions')
       .select('character_id')
       .eq('campaign_id', campaignId)
       .limit(10)
-
     if (!sessions?.length) return
-
-    // Match by characterName prop if multiple sessions
     const charIds = sessions.map((s: { character_id: string }) => s.character_id)
     const { data: chars } = await supabase
       .from('characters')
       .select('id,name,credits')
       .in('id', charIds)
-
     if (!chars?.length) return
-
     const found = Array.isArray(chars)
       ? chars.find((c: { id: string; name: string; credits: number }) => c.name === characterName) ?? chars[0]
       : null
-
     if (found) setCharacter(found as CharacterInfo)
-  }, [supabase, campaignId, characterName])
+  }, [supabase, campaignId, characterName, characterId])
 
   // ── Load sell inventory ─────────────────────────────────────────────────────
   const loadSellRows = useCallback(async (charId: string) => {
@@ -310,7 +315,8 @@ export function QuartermasterModal({ campaignId, characterName, supabase, onClos
                       const outOfStock = r.qmItem.stock === 0
                       const canAfford  = (character?.credits ?? 0) >= r.qmItem.price_override
                       const isBuying   = buying === `${r.qmItem.item_key}-${r.qmItem.item_type}`
-                      const disabled   = outOfStock || !canAfford || isBuying
+                      const qmClosed   = !qm?.is_open
+                      const disabled   = outOfStock || !canAfford || isBuying || qmClosed
                       return (
                         <div
                           key={r.qmItem.id}

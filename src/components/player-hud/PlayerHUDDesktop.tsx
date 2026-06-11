@@ -666,7 +666,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
 
           <HudFullPanel open={activeFullPanel === 'group'} title="Group Sheet" symbol="◎" onClose={() => setActiveFullPanel(null)}>
             {effectiveCampaignId
-              ? <GroupSheet campaignId={effectiveCampaignId} characterName={character.name} />
+              ? <GroupSheet campaignId={effectiveCampaignId} characterName={character.name} characterId={character.id} />
               : (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, flexDirection: 'column', gap: 12, padding: 40 }}>
                   <div style={{ fontFamily: FONT_BODY, fontSize: FS.h4, color: HUD.textFaint }}>NO CAMPAIGN</div>
