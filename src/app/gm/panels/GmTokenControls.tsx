@@ -98,10 +98,13 @@ export interface GmTokenControlsProps {
   removeToken:     (id: string) => Promise<void>
   toggleVisibility:(id: string, visible: boolean) => Promise<void>
   removeAllTokens: () => Promise<void>
+  onOpenCrawl:     () => void
+  isCrawlActive:   boolean
 }
 
 export function GmTokenControls({
   campaignId, mapId, characters, tokens, addToken, removeToken, toggleVisibility, removeAllTokens,
+  onOpenCrawl, isCrawlActive,
 }: GmTokenControlsProps) {
   const supabase = useMemo(() => createClient(), [])
   const [view, setView] = useState<TokenView>('menu')
@@ -407,21 +410,34 @@ export function GmTokenControls({
         </div>
       </div>
 
-      {/* Remove all */}
+      {/* Remove all + Opening Crawl */}
       <div>
         <div style={sectionHeader}>Actions</div>
-        <button
-          disabled={!mapId || tokens.length === 0}
-          onClick={removeAllTokens}
-          style={{
-            ...tokenBtn,
-            borderColor: 'var(--state-failure)',
-            color:       'var(--state-failure)',
-            opacity:     (!mapId || tokens.length === 0) ? 0.4 : 1,
-          }}
-        >
-          Remove All Tokens
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
+          <button
+            disabled={!mapId || tokens.length === 0}
+            onClick={removeAllTokens}
+            style={{
+              ...tokenBtn,
+              borderColor: 'var(--state-failure)',
+              color:       'var(--state-failure)',
+              opacity:     (!mapId || tokens.length === 0) ? 0.4 : 1,
+            }}
+          >
+            Remove All Tokens
+          </button>
+          <button
+            onClick={onOpenCrawl}
+            style={{
+              ...tokenBtn,
+              color:       isCrawlActive ? 'var(--state-success)' : HUD.gold,
+              borderColor: isCrawlActive ? 'var(--state-success)' : 'var(--hud-border-hi)',
+            }}
+          >
+            <span>✦</span>
+            {isCrawlActive ? 'Opening Crawl — LIVE' : 'Opening Crawl'}
+          </button>
+        </div>
       </div>
     </div>
   )

@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect, useRef, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
 import type { MapToken } from '@/hooks/useMapTokens'
 import type { Character } from '@/lib/types'
 import type { CrawlContent } from '@/hooks/useActiveMap'
 import { GmTokenControls } from './GmTokenControls'
-import { HUD, FONT_BODY, EASE, FS, SP, RADIUS } from '@/lib/tokens'
+import { HUD, FONT_BODY, EASE, FS, SP, RADIUS, Z } from '@/lib/tokens'
 
 const FONT   = FONT_BODY
 const BORDER = 'var(--hud-border)'
@@ -102,6 +103,7 @@ export function GmMapPanel({
   const [crawlBody,       setCrawlBody]       = useState('')
   const [crawlBusy,       setCrawlBusy]       = useState(false)
   const [previousMapId,   setPreviousMapId]   = useState<string | null>(null)
+  const [crawlModalOpen,  setCrawlModalOpen]  = useState(false)
   const crawlEnsuredRef = useRef(false)
 
   const isCrawlActive = crawlMapId !== null && mapId === crawlMapId
@@ -203,84 +205,6 @@ export function GmMapPanel({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto' }}>
 
-      {/* Opening Crawl section */}
-      <div style={{ padding: '0.75rem 0.875rem', flexShrink: 0 }}>
-        <div style={sectionHeader}>Opening Crawl</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: SP[2] }}>
-          <input
-            value={crawlHeading}
-            onChange={e => setCrawlHeading(e.target.value)}
-            placeholder="Heading (e.g. Episode IV)"
-            style={darkInput}
-          />
-          <input
-            value={crawlSubheading}
-            onChange={e => setCrawlSubheading(e.target.value)}
-            placeholder="Sub-heading (e.g. A NEW HOPE)"
-            style={darkInput}
-          />
-          <textarea
-            value={crawlBody}
-            onChange={e => setCrawlBody(e.target.value)}
-            placeholder="Crawl body text…"
-            rows={5}
-            style={{ ...darkInput, resize: 'vertical' }}
-          />
-          <div style={{ display: 'flex', gap: SP[2] }}>
-            <button
-              onClick={() => void handleSaveCrawl()}
-              disabled={crawlBusy || !crawlMapId}
-              style={{
-                flex: 1, padding: `${SP[1]} 0`, borderRadius: RADIUS.md,
-                background: 'var(--hud-surface-lo)', border: `1px solid var(--hud-border-hi)`,
-                color: HUD.text, fontFamily: FONT, fontSize: FS.caption, fontWeight: 700,
-                letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer',
-                opacity: (crawlBusy || !crawlMapId) ? 0.45 : 1,
-                transition: `opacity ${EASE.quick}`,
-              }}
-            >
-              Save Crawl
-            </button>
-            {isCrawlActive ? (
-              <button
-                onClick={() => void handleStopCrawl()}
-                disabled={crawlBusy}
-                style={{
-                  flex: 1, padding: `${SP[1]} 0`, borderRadius: RADIUS.md,
-                  background: `color-mix(in srgb, ${RED} 12%, transparent)`,
-                  border: `1px solid color-mix(in srgb, ${RED} 40%, transparent)`,
-                  color: RED, fontFamily: FONT, fontSize: FS.caption, fontWeight: 700,
-                  letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer',
-                  opacity: crawlBusy ? 0.45 : 1,
-                  transition: `opacity ${EASE.quick}`,
-                }}
-              >
-                Stop Crawl
-              </button>
-            ) : (
-              <button
-                onClick={() => void handlePlayCrawl()}
-                disabled={crawlBusy || !crawlMapId || (!crawlHeading.trim() && !crawlSubheading.trim() && !crawlBody.trim())}
-                style={{
-                  flex: 1, padding: `${SP[1]} 0`, borderRadius: RADIUS.md,
-                  background: `color-mix(in srgb, ${GREEN} 12%, transparent)`,
-                  border: `1px solid color-mix(in srgb, ${GREEN} 40%, transparent)`,
-                  color: GREEN, fontFamily: FONT, fontSize: FS.caption, fontWeight: 700,
-                  letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer',
-                  opacity: (crawlBusy || !crawlMapId || (!crawlHeading.trim() && !crawlSubheading.trim() && !crawlBody.trim())) ? 0.45 : 1,
-                  transition: `opacity ${EASE.quick}`,
-                }}
-              >
-                Play Opening
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Divider */}
-      <div style={{ height: 1, background: BORDER, margin: '0 0.875rem' }} />
-
       {/* Map section */}
       <div style={{ padding: '0.75rem 0.875rem 0', flexShrink: 0 }}>
         <div style={sectionHeader}>Map</div>
@@ -359,8 +283,114 @@ export function GmMapPanel({
           removeToken={removeToken}
           toggleVisibility={toggleVisibility}
           removeAllTokens={removeAllTokens}
+          onOpenCrawl={() => setCrawlModalOpen(true)}
+          isCrawlActive={isCrawlActive}
         />
       </div>
+
+      {/* Opening Crawl modal */}
+      {crawlModalOpen && typeof document !== 'undefined' && createPortal(
+        <div
+          onClick={() => setCrawlModalOpen(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: Z.modal,
+            background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: 'var(--hud-surface-hi)', border: `1px solid ${HUD.borderHi}`,
+              borderRadius: RADIUS.lg, padding: SP[6], width: '100%', maxWidth: 440,
+              display: 'flex', flexDirection: 'column', gap: SP[3],
+              boxShadow: '0 20px 60px rgba(0,0,0,0.8)',
+            }}
+          >
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ fontFamily: FONT, fontSize: FS.h4, fontWeight: 700, color: HUD.gold }}>✦ Opening Crawl</div>
+              <button
+                onClick={() => setCrawlModalOpen(false)}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: HUD.textFaint, fontSize: FS.h4, lineHeight: 1, padding: 0 }}
+              >×</button>
+            </div>
+
+            {/* Form fields */}
+            <input
+              value={crawlHeading}
+              onChange={e => setCrawlHeading(e.target.value)}
+              placeholder="Heading (e.g. Episode IV)"
+              style={darkInput}
+            />
+            <input
+              value={crawlSubheading}
+              onChange={e => setCrawlSubheading(e.target.value)}
+              placeholder="Sub-heading (e.g. A NEW HOPE)"
+              style={darkInput}
+            />
+            <textarea
+              value={crawlBody}
+              onChange={e => setCrawlBody(e.target.value)}
+              placeholder="Crawl body text…"
+              rows={6}
+              style={{ ...darkInput, resize: 'vertical' }}
+            />
+
+            {/* Action buttons */}
+            <div style={{ display: 'flex', gap: SP[2], marginTop: SP[1] }}>
+              <button
+                onClick={() => void handleSaveCrawl()}
+                disabled={crawlBusy || !crawlMapId}
+                style={{
+                  flex: 1, padding: `${SP[2]} 0`, borderRadius: RADIUS.md,
+                  background: 'var(--hud-surface-lo)', border: `1px solid var(--hud-border-hi)`,
+                  color: HUD.text, fontFamily: FONT, fontSize: FS.caption, fontWeight: 700,
+                  letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer',
+                  opacity: (crawlBusy || !crawlMapId) ? 0.45 : 1,
+                  transition: `opacity ${EASE.quick}`,
+                }}
+              >
+                Save Crawl
+              </button>
+              {isCrawlActive ? (
+                <button
+                  onClick={() => void handleStopCrawl()}
+                  disabled={crawlBusy}
+                  style={{
+                    flex: 1, padding: `${SP[2]} 0`, borderRadius: RADIUS.md,
+                    background: `color-mix(in srgb, ${RED} 12%, transparent)`,
+                    border: `1px solid color-mix(in srgb, ${RED} 40%, transparent)`,
+                    color: RED, fontFamily: FONT, fontSize: FS.caption, fontWeight: 700,
+                    letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer',
+                    opacity: crawlBusy ? 0.45 : 1,
+                    transition: `opacity ${EASE.quick}`,
+                  }}
+                >
+                  Stop Crawl
+                </button>
+              ) : (
+                <button
+                  onClick={() => void handlePlayCrawl()}
+                  disabled={crawlBusy || !crawlMapId || (!crawlHeading.trim() && !crawlSubheading.trim() && !crawlBody.trim())}
+                  style={{
+                    flex: 1, padding: `${SP[2]} 0`, borderRadius: RADIUS.md,
+                    background: `color-mix(in srgb, ${GREEN} 12%, transparent)`,
+                    border: `1px solid color-mix(in srgb, ${GREEN} 40%, transparent)`,
+                    color: GREEN, fontFamily: FONT, fontSize: FS.caption, fontWeight: 700,
+                    letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer',
+                    opacity: (crawlBusy || !crawlMapId || (!crawlHeading.trim() && !crawlSubheading.trim() && !crawlBody.trim())) ? 0.45 : 1,
+                    transition: `opacity ${EASE.quick}`,
+                  }}
+                >
+                  Play Opening
+                </button>
+              )}
+            </div>
+          </div>
+        </div>,
+        document.body,
+      )}
     </div>
   )
 }
