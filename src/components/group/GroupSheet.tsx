@@ -15,6 +15,7 @@ import { TickerText } from '@/components/ui/TickerText'
 import { useHudPanelContext } from '@/contexts/HudPanelContext'
 import { useQuartermaster } from '@/hooks/useQuartermaster'
 import { QuartermasterModal } from '@/components/QuartermasterModal'
+import { GroupStorageModal } from '@/components/group/GroupStorageModal'
 import { FONT_BODY, FS, RADIUS, SP } from '@/lib/tokens'
 
 const FONT_MONO = 'var(--font-body)'
@@ -1384,6 +1385,15 @@ export function GroupSheet({ campaignId, characterName, characterId }: GroupShee
           buyRows={qmBuyRows}
           buyItem={qmBuyItem}
           sellItem={qmSellItem}
+        />
+      )}
+
+      {groupStorageAssetId && (
+        <GroupStorageModal
+          assetId={groupStorageAssetId}
+          assetName={groupStorageAssetName}
+          characterId={characterId ?? null}
+          onClose={() => setGroupStorageAssetId(null)}
         />
       )}
     </div>
