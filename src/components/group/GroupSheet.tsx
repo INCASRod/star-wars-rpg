@@ -481,6 +481,14 @@ export function GroupSheet({ campaignId, characterName, characterId }: GroupShee
     setAssets(prev => prev.filter(a => a.id !== id))
   }
 
+  async function toggleAssetGroupStorage(assetId: string, current: boolean) {
+    await supabase
+      .from('group_assets')
+      .update({ is_group_storage: !current })
+      .eq('id', assetId)
+    setViewingAsset(prev => prev ? { ...prev, is_group_storage: !current } : null)
+  }
+
   // ── Derived ────────────────────────────────────────────────────────────────
   const dutyRows       = calcDutyRanges(duties)
   const dutyTotal      = duties.reduce((s, d) => s + (d.duty_value ?? 0), 0)
@@ -744,6 +752,8 @@ export function GroupSheet({ campaignId, characterName, characterId }: GroupShee
           vehicle={viewVehicle}
           loading={libLoading && (viewingAsset.asset_type === 'npc' || viewingAsset.asset_type === 'vehicle' || viewingAsset.asset_type === 'starship')}
           onClose={() => setViewingAsset(null)}
+          gmUnlocked={gmUnlocked}
+          onToggleGroupStorage={() => toggleAssetGroupStorage(viewingAsset.id, viewingAsset.is_group_storage)}
         />
       )}
 
@@ -1483,12 +1493,14 @@ function _VmStat({ label, value, color }: { label: string; value: string | numbe
   )
 }
 
-function AssetViewModal({ asset, adversary, vehicle, loading, onClose }: {
+function AssetViewModal({ asset, adversary, vehicle, loading, onClose, gmUnlocked, onToggleGroupStorage }: {
   asset: GroupAsset
   adversary: (Adversary & { _isCustom?: boolean }) | null
   vehicle: (Vehicle & { _isCustom?: boolean }) | null
   loading: boolean
   onClose: () => void
+  gmUnlocked: boolean
+  onToggleGroupStorage: () => void
 }) {
   const [mounted, setMounted]   = useState(false)
   const [visible, setVisible]   = useState(false)
@@ -1550,6 +1562,22 @@ function AssetViewModal({ asset, adversary, vehicle, loading, onClose }: {
           </div>
           <button onClick={handleClose} style={{ background: 'transparent', border: 'none', color: _VM_DIM, cursor: 'pointer', fontFamily: FONT_CINZEL, fontSize: FS_H4, lineHeight: 1, padding: '0 4px', flexShrink: 0 }}>×</button>
         </div>
+
+        {/* GM: Group Storage toggle — stowable types only */}
+        {gmUnlocked && (asset.asset_type === 'vehicle' || asset.asset_type === 'starship' || asset.asset_type === 'safe_house') && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: SP[2], padding: `${SP[2]} 20px`, borderBottom: `1px solid ${C.border}`, flexShrink: 0 }}>
+            <input
+              id="gs-view-toggle"
+              type="checkbox"
+              checked={asset.is_group_storage}
+              onChange={onToggleGroupStorage}
+              style={{ accentColor: 'var(--hud-gold)', cursor: 'pointer' }}
+            />
+            <label htmlFor="gs-view-toggle" style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.text, cursor: 'pointer' }}>
+              Group Storage — players can view and take items stowed here
+            </label>
+          </div>
+        )}
 
         {/* Body */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 18 }}>
