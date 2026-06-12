@@ -2,13 +2,12 @@
 
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
-import { HUD, FONT_BODY, FONT_DISPLAY, FS, SP, RADIUS, SHADOW, Z } from '@/lib/tokens'
+import { HUD, COLOR, FONT_BODY, FONT_DISPLAY, FS, SP, RADIUS, SHADOW, Z } from '@/lib/tokens'
 import { useGroupStorage, type GroupStorageItem } from '@/hooks/useGroupStorage'
 
-// Die success color is available as a CSS variable
 const TYPE_COLOR: Record<string, string> = {
-  weapon: 'var(--state-failure)',
-  armor:  'var(--die-force)',
+  weapon: COLOR.red,
+  armor:  COLOR.blue,
   gear:   'var(--hud-accent)',
 }
 const TYPE_ICON: Record<string, string> = { weapon: '⚔', armor: '◈', gear: '◆' }
@@ -88,7 +87,7 @@ export function GroupStorageModal({ assetId, assetName, characterId, onClose }: 
             <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700, color: 'var(--hud-gold)', letterSpacing: '0.06em', textTransform: 'uppercase' as const }}>
               Group Storage
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: SP[2], marginTop: 2 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: SP[2], marginTop: SP[1] }}>
               <span style={{ fontFamily: FONT_BODY, fontSize: FS.body, fontWeight: 700, color: HUD.text }}>
                 {assetName}
               </span>
@@ -145,7 +144,7 @@ export function GroupStorageModal({ assetId, assetName, characterId, onClose }: 
                   }}
                 >
                   {/* Type icon */}
-                  <span style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: TYPE_COLOR[item.itemType], flexShrink: 0, width: 16, textAlign: 'center' as const }}>
+                  <span style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: TYPE_COLOR[item.itemType], flexShrink: 0, textAlign: 'center' as const }}>
                     {TYPE_ICON[item.itemType]}
                   </span>
 
@@ -162,7 +161,7 @@ export function GroupStorageModal({ assetId, assetName, characterId, onClose }: 
                         {statSummary(item)}
                       </span>
                     </div>
-                    <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint, marginTop: 1 }}>
+                    <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint }}>
                       Stowed by {item.ownerName}
                     </div>
                   </div>
@@ -186,14 +185,14 @@ export function GroupStorageModal({ assetId, assetName, characterId, onClose }: 
                       <div style={{ display: 'flex', gap: SP[1], alignItems: 'center' }}>
                         <button
                           onClick={() => setTakeQtyDraft(q => Math.max(1, q - 1))}
-                          style={{ background: 'transparent', border: `1px solid ${HUD.border}`, borderRadius: RADIUS.sm, cursor: 'pointer', color: HUD.text, fontFamily: FONT_BODY, fontSize: FS.sm, width: 24, height: 24 }}
+                          style={{ background: 'transparent', border: `1px solid ${HUD.border}`, borderRadius: RADIUS.sm, cursor: 'pointer', color: HUD.text, fontFamily: FONT_BODY, fontSize: FS.sm, padding: `${SP[1]} ${SP[2]}` }}
                         >−</button>
                         <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.text, minWidth: 48, textAlign: 'center' as const }}>
                           {takeQtyDraft} of {item.qty}
                         </span>
                         <button
                           onClick={() => setTakeQtyDraft(q => Math.min(item.qty ?? 1, q + 1))}
-                          style={{ background: 'transparent', border: `1px solid ${HUD.border}`, borderRadius: RADIUS.sm, cursor: 'pointer', color: HUD.text, fontFamily: FONT_BODY, fontSize: FS.sm, width: 24, height: 24 }}
+                          style={{ background: 'transparent', border: `1px solid ${HUD.border}`, borderRadius: RADIUS.sm, cursor: 'pointer', color: HUD.text, fontFamily: FONT_BODY, fontSize: FS.sm, padding: `${SP[1]} ${SP[2]}` }}
                         >+</button>
                         <button
                           onClick={() => {
@@ -218,13 +217,13 @@ export function GroupStorageModal({ assetId, assetName, characterId, onClose }: 
                         onClick={() => handleTakeClick(item)}
                         disabled={!characterId || taking.has(item.id)}
                         style={{
-                          background: 'color-mix(in srgb, var(--die-success) 12%, transparent)',
-                          border: '1px solid color-mix(in srgb, var(--die-success) 40%, transparent)',
+                          background: `color-mix(in srgb, ${COLOR.green} 12%, transparent)`,
+                          border: `1px solid color-mix(in srgb, ${COLOR.green} 40%, transparent)`,
                           borderRadius: RADIUS.sm,
                           cursor: characterId && !taking.has(item.id) ? 'pointer' : 'not-allowed',
                           opacity: !characterId || taking.has(item.id) ? 0.45 : 1,
                           fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
-                          color: 'var(--die-success)', padding: `${SP[1]} ${SP[2]}`,
+                          color: COLOR.green, padding: `${SP[1]} ${SP[2]}`,
                         }}
                       >
                         {taking.has(item.id) ? '…' : 'TAKE'}
