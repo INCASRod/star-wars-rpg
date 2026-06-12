@@ -15,7 +15,7 @@ import { TickerText } from '@/components/ui/TickerText'
 import { useHudPanelContext } from '@/contexts/HudPanelContext'
 import { useQuartermaster } from '@/hooks/useQuartermaster'
 import { QuartermasterModal } from '@/components/QuartermasterModal'
-import { RADIUS, SP } from '@/lib/tokens'
+import { FONT_BODY, RADIUS, SP } from '@/lib/tokens'
 
 const FONT_MONO = 'var(--font-body)'
 
@@ -1885,7 +1885,7 @@ function AssetCard({ asset, canArchive, onArchive, onView, isOpen, onViewStorage
               borderRadius: RADIUS.sm,
               cursor: 'pointer',
               color,
-              fontFamily: FONT_RAJDHANI,
+              fontFamily: FONT_BODY,
               fontSize: FS_CAPTION,
               fontWeight: 600,
               padding: `${SP[1]} ${SP[2]}`,
