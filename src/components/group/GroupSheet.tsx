@@ -58,6 +58,7 @@ interface GroupAsset {
   added_by: string | null
   created_at: string
   is_archived: boolean
+  is_group_storage: boolean
 }
 
 type AssetType = 'npc' | 'vehicle' | 'starship' | 'safe_house' | 'strategic_asset' | 'other'
@@ -68,34 +69,43 @@ interface LastAllianceReward {
   awarded_at: string
 }
 
-// ── Table 9-3 Contribution Rank data (Core Rulebook) ────────────────────────
+// ── Table 9-3 Contribution Rank data (Core Rulebook p.325) ──────────────────
+// Five tiers; a circle lights up only when the rank crosses a tier threshold.
+// Thresholds: tier 1 = 0, tier 2 = 2, tier 3 = 5, tier 4 = 7, tier 5 = 9.
 
-const _R01 = {
+const _T1 = {
   alliance: 'New recruit or untested collaborator, still under suspicion. Access to basic equipment and vehicles. Recruit to corporal rank.',
   empire:   'Faceless Rebel scum. Little intelligence value if captured. Re-education possible, otherwise imprisonment. Not worth the effort to hunt down individuals.',
 }
-const _R23 = {
+const _T2 = {
+  alliance: 'Tested soldier or trusted collaborator. Respected and trusted by the Alliance. Access to better tactical-level equipment and vehicles. Sergeant to warrant officer rank.',
+  empire:   'Minor notoriety. Limited but useful tactical intelligence value if captured. Re-education possible, but unlikely. Execution after interrogation. Use of bounty hunters to capture/eliminate is rare, but possible.',
+}
+const _T3 = {
   alliance: 'Veteran soldier or important collaborator. Very respected by the Alliance. Access to corvette/gunship-level starships and minor strategic intelligence. Lieutenant to captain rank.',
   empire:   'Moderate notoriety. Possible strategic intelligence value. Re-education not possible. Imprisonment and lifelong interrogation standard practice. Use of bounty hunters to capture is an option.',
 }
-const _R46 = {
+const _T4 = {
   alliance: 'Top brass or vital collaborator. Highly respected by the Alliance. Minor but notable political power. Access to corvette/gunship-level starships and sensitive info. Major to colonel rank.',
   empire:   'Major notoriety. Extremely high intelligence value if captured. Use of bounty hunters and Imperial assassins authorized for capture/elimination. No chance of re-education. Failure to report whereabouts considered a severe crime.',
 }
-const _R7P = {
+const _T5 = {
   alliance: 'Member of the Alliance High Command. Immense political power. Extremely revered and respected by allies. Access to capital-grade starships. Commander, general, or admiral ranking.',
   empire:   "The Empire's Most Wanted. Entire fleets used to locate and eliminate. Capture or death key to destruction of the Rebellion. Immense intelligence value. Failure to report whereabouts is considered treason.",
 }
 
 const CONTRIBUTION_RANK_TABLE: Record<number, { alliance: string; empire: string }> = {
-  0: _R01, 1: _R01,
-  2: _R23, 3: _R23,
-  4: _R46, 5: _R46, 6: _R46,
-  7: _R7P, 8: _R7P, 9: _R7P, 10: _R7P,
+  0: _T1, 1: _T1,
+  2: _T2, 3: _T2, 4: _T2,
+  5: _T3, 6: _T3,
+  7: _T4, 8: _T4,
+  9: _T5, 10: _T5,
 }
 
-/** Ranks 7+ are the maximum tier — no further progression text exists. */
-const MAX_CONTRIBUTION_RANK_TIER = 7
+/** Minimum rank required to enter each of the five tiers (index = tier − 1). */
+const RANK_TIER_THRESHOLDS = [0, 2, 5, 7, 9] as const
+
+const MAX_CONTRIBUTION_RANK = 10
 
 // ── Asset badge colours ─────────────────────────────────────────────────────
 
@@ -238,6 +248,10 @@ export function GroupSheet({ campaignId, characterName, characterId }: GroupShee
   const [vehicleLib, setVehicleLib]         = useState<Vehicle[]>([])
   const [libLoading, setLibLoading]         = useState(false)
   const [viewingAsset, setViewingAsset]     = useState<GroupAsset | null>(null)
+  const [assetStorageDraft,     setAssetStorageDraft]     = useState(false)
+  const [groupStorageAssetId,   setGroupStorageAssetId]   = useState<string | null>(null)
+  const [groupStorageAssetName, setGroupStorageAssetName] = useState('')
+  const [groupStorageAssetType, setGroupStorageAssetType] = useState<AssetType>('starship')
 
   // ── Last Alliance Reward edit modal ───────────────────────────────────────
   const [showRewardModal, setShowRewardModal]     = useState(false)
@@ -474,16 +488,18 @@ export function GroupSheet({ campaignId, characterName, characterId }: GroupShee
   const dutyPct     = Math.min(100, dutyTotal)
   const milestone   = dutyTotal >= 100
   const rank        = campaign?.contribution_rank ?? 0
-  const rankData    = CONTRIBUTION_RANK_TABLE[rank] ?? CONTRIBUTION_RANK_TABLE[7]
+  const rankData    = CONTRIBUTION_RANK_TABLE[rank] ?? CONTRIBUTION_RANK_TABLE[MAX_CONTRIBUTION_RANK]
   // Find the next tier boundary — skip ranks that share the same tier object
   const nextRankEntry = (() => {
-    if (rank >= MAX_CONTRIBUTION_RANK_TIER) return null
-    for (let r = rank + 1; r <= MAX_CONTRIBUTION_RANK_TIER; r++) {
+    if (rank >= MAX_CONTRIBUTION_RANK) return null
+    for (let r = rank + 1; r <= MAX_CONTRIBUTION_RANK; r++) {
       const candidate = CONTRIBUTION_RANK_TABLE[r]
       if (candidate && candidate !== rankData) return candidate
     }
     return null
   })()
+  // Number of tier circles to illuminate — advances only at tier thresholds
+  const tierLit = RANK_TIER_THRESHOLDS.filter(t => rank >= t).length
   const rankDesc    = (campaign?.contribution_rank_descriptions as Record<string, string>)?.[String(rank)] ?? null
 
   const filteredAdversaries = useMemo(() => {
@@ -1102,18 +1118,18 @@ export function GroupSheet({ campaignId, characterName, characterId }: GroupShee
           }}>
             {rank}
           </div>
-          {/* Pip row */}
+          {/* Pip row — one pip per tier; lights up when rank crosses that tier's threshold */}
           <div style={{ display: 'flex', gap: 6 }}>
-            {Array.from({ length: 5 }, (_, i) => (
+            {Array.from({ length: RANK_TIER_THRESHOLDS.length }, (_, i) => (
               <div
                 key={i}
                 style={{
                   width: 18, height: 18, borderRadius: '50%',
-                  background: i < rank
+                  background: i < tierLit
                     ? `radial-gradient(circle at 35% 35%, #F5D77A, ${C.gold})`
                     : 'var(--hud-surface-mid)',
-                  border: `1px solid ${i < rank ? C.gold : C.border}`,
-                  boxShadow: i < rank ? `0 0 6px color-mix(in srgb, ${C.gold} 40%, transparent)` : undefined,
+                  border: `1px solid ${i < tierLit ? C.gold : C.border}`,
+                  boxShadow: i < tierLit ? `0 0 6px color-mix(in srgb, ${C.gold} 40%, transparent)` : undefined,
                   transition: 'all 0.2s',
                 }}
               />
