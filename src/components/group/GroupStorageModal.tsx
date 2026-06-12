@@ -187,7 +187,7 @@ export function GroupStorageModal({ assetId, assetName, characterId, onClose }: 
                           onClick={() => setTakeQtyDraft(q => Math.max(1, q - 1))}
                           style={{ background: 'transparent', border: `1px solid ${HUD.border}`, borderRadius: RADIUS.sm, cursor: 'pointer', color: HUD.text, fontFamily: FONT_BODY, fontSize: FS.sm, padding: `${SP[1]} ${SP[2]}` }}
                         >−</button>
-                        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.text, minWidth: 48, textAlign: 'center' as const }}>
+                        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.text, minWidth: SP[12], textAlign: 'center' as const }}>
                           {takeQtyDraft} of {item.qty}
                         </span>
                         <button
