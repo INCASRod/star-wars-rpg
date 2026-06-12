@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { createPortal } from 'react-dom'
-import { FONT_BODY, FONT_DISPLAY, RADIUS, Z } from '@/lib/tokens'
+import { FONT_BODY, FONT_DISPLAY, FS, RADIUS, Z } from '@/lib/tokens'
 import type { StowLocation, StowLocationType, StowableAsset } from '@/lib/types'
 
 // ── Stow location visual config ──────────────────────────────────────────────
@@ -156,7 +156,7 @@ export function StowLocationModal({
               )}
               {stowableAssets.map(a => (
                 <option key={a.id} value={a.id}>
-                  {STOW_ICON[a.type]} {a.name} ({STOW_TYPE_LABEL[a.type as keyof typeof STOW_TYPE_LABEL] ?? a.type})
+                  {STOW_ICON[a.type]} {a.name} ({STOW_TYPE_LABEL[a.type as keyof typeof STOW_TYPE_LABEL] ?? a.type}){a.is_group_storage ? ' [Shared]' : ''}
                 </option>
               ))}
             </select>
@@ -172,12 +172,31 @@ export function StowLocationModal({
                     const a = stowableAssets.find(x => x.id === selected)
                     if (a) loc = { id: a.id, name: a.name, type: a.type }
                   }
+                  const selectedAsset = selected !== BOO_VALUE
+                    ? stowableAssets.find(x => x.id === selected)
+                    : null
                   return loc ? (
                     <div className="flex items-center" style={{ gap: '0.375rem' }}>
                       <span style={{ fontFamily: FONT_BODY, fontSize: 'var(--text-overline)', color: 'var(--hud-text-dim)' }}>
                         Will appear as:
                       </span>
                       <StowPill location={loc} />
+                      {selectedAsset?.is_group_storage && (
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          padding: '1px 0.4375rem',
+                          borderRadius: RADIUS.xl,
+                          background: 'color-mix(in srgb, var(--hud-accent) 9%, transparent)',
+                          border: '1px solid color-mix(in srgb, var(--hud-accent) 27%, transparent)',
+                          fontFamily: FONT_BODY,
+                          fontSize: FS.overline,
+                          color: 'var(--hud-accent)',
+                          letterSpacing: '0.04em',
+                        }}>
+                          📦 Shared
+                        </span>
+                      )}
                     </div>
                   ) : null
                 })()}
