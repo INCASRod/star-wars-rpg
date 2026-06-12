@@ -466,12 +466,14 @@ export function GroupSheet({ campaignId, characterName, characterId }: GroupShee
       asset_type: assetTypeDraft,
       name: assetNameDraft.trim(),
       description: assetDescDraft.trim() || null,
+      is_group_storage: assetStorageDraft,
     }).select().single()
     setShowAddAsset(false)
     setAssetNameDraft('')
     setAssetDescDraft('')
     setAssetTypeDraft('other')
     setAssetSearch('')
+    setAssetStorageDraft(false)
   }
 
   async function archiveAsset(id: string) {
@@ -570,7 +572,7 @@ export function GroupSheet({ campaignId, characterName, characterId }: GroupShee
       {showAddAsset && (() => {
         const useLibrary = assetTypeDraft === 'npc' || assetTypeDraft === 'vehicle' || assetTypeDraft === 'starship'
         const libraryItems = assetTypeDraft === 'npc' ? filteredAdversaries : filteredVehicles
-        const closeModal = () => { setShowAddAsset(false); setAssetSearch(''); setAssetNameDraft(''); setAssetDescDraft(''); setAssetTypeDraft('other') }
+        const closeModal = () => { setShowAddAsset(false); setAssetSearch(''); setAssetNameDraft(''); setAssetDescDraft(''); setAssetTypeDraft('other'); setAssetStorageDraft(false) }
         return (
           <div style={{
             position: 'fixed', inset: 0, zIndex: 200,
@@ -706,6 +708,22 @@ export function GroupSheet({ campaignId, characterName, characterId }: GroupShee
                     style={{ ...inlineInputStyle(), resize: 'vertical' }}
                   />
                 </div>
+
+                {/* Group Storage — only for stowable asset types */}
+                {(assetTypeDraft === 'vehicle' || assetTypeDraft === 'starship' || assetTypeDraft === 'safe_house') && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <input
+                      id="gs-checkbox"
+                      type="checkbox"
+                      checked={assetStorageDraft}
+                      onChange={e => setAssetStorageDraft(e.target.checked)}
+                      style={{ width: 14, height: 14, accentColor: 'var(--hud-gold)', cursor: 'pointer' }}
+                    />
+                    <label htmlFor="gs-checkbox" style={{ ...labelStyle(), marginBottom: 0, cursor: 'pointer' }}>
+                      Group Storage
+                    </label>
+                  </div>
+                )}
               </div>
 
               {/* Footer actions */}
