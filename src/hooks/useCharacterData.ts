@@ -107,7 +107,22 @@ export function useCharacterData(characterId: string) {
       setRefArmor((refArmRes.data as RefArmor[]) || [])
       setRefGear((refGearRes.data as RefGear[]) || [])
       setRefCrits((refCritRes.data as RefCriticalInjury[]) || [])
-      setRefSpecs((refSpecRes.data as RefSpecialization[]) || [])
+
+      // Supplement active-dataset specs with any cross-dataset specs the character
+      // actually owns (e.g. oggdude specs on a respec campaign).
+      let mergedRefSpecs = (refSpecRes.data as RefSpecialization[]) || []
+      const loadedSpecKeys = new Set(mergedRefSpecs.map(s => s.key))
+      const charSpecKeys = ((specsRes.data as CharacterSpecialization[]) || []).map(cs => cs.specialization_key)
+      const missingSpecKeys = charSpecKeys.filter(k => !loadedSpecKeys.has(k))
+      if (missingSpecKeys.length > 0) {
+        const { data: fallbackSpecs } = await supabase
+          .from('ref_specializations')
+          .select('*')
+          .in('key', missingSpecKeys)
+          .eq('is_retired', false)
+        if (fallbackSpecs) mergedRefSpecs = [...mergedRefSpecs, ...(fallbackSpecs as RefSpecialization[])]
+      }
+      setRefSpecs(mergedRefSpecs)
       setRefDescriptors((refDescRes.data as RefItemDescriptor[]) || [])
       setRefCareers((refCareerRes.data as RefCareer[]) || [])
       setRefSpeciesAll((refSpeciesRes.data as RefSpecies[]) || [])
