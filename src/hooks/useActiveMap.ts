@@ -3,6 +3,12 @@
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
+export interface CrawlContent {
+  heading: string
+  subheading: string
+  body: string
+}
+
 export interface ActiveMap {
   id: string
   campaign_id: string
@@ -15,6 +21,8 @@ export interface ActiveMap {
   token_scale: number
   created_at: string
   planet_id: string | null
+  map_type: string
+  crawl_content: CrawlContent | null
 }
 
 /**

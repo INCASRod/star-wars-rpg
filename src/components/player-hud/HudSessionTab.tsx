@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { C, FONT_RAJDHANI, FS_SM, FS_CAPTION } from './design-tokens'
 import { HUD, FONT_BODY, FONT_DISPLAY, FS, RADIUS, SP } from '@/lib/tokens'
 import { MapCanvas } from '@/components/map/MapCanvas'
+import { OpeningCrawlCanvas } from '@/components/map/OpeningCrawlCanvas'
 import { InitiativeStrip } from '@/components/player/InitiativeStrip'
 import { HudAdversaryDrawer } from './HudAdversaryDrawer'
 import { HudSkillQuickList } from './HudSkillQuickList'
@@ -146,7 +147,7 @@ const TokenTooltip = memo(function TokenTooltip(p: TooltipData) {
 interface HudSessionTabProps {
   character:          Character
   campaignId:         string | null
-  visibleMap:         { id: string; image_url: string; grid_enabled: boolean; grid_size?: number; token_scale?: number } | null
+  visibleMap:         { id: string; image_url: string; grid_enabled: boolean; grid_size?: number; token_scale?: number; map_type?: string; crawl_content?: { heading: string; subheading: string; body: string } | null } | null
   visibleMapTokens:   MapToken[]
   onTokenMove:        (tokenId: string, x: number, y: number) => void
   isCombatActive:     boolean
@@ -339,28 +340,31 @@ export function HudSessionTab({
       </div>
 
       {/* Map or placeholder */}
-      {visibleMap
-        ? (
-          <MapCanvas
-            mapImageUrl={visibleMap.image_url}
-            tokens={visibleMapTokens}
-            isGM={false}
-            currentCharacterId={character.id}
-            onTokenMove={onTokenMove}
-            gridEnabled={visibleMap.grid_enabled}
-            gridSize={visibleMap.grid_size ?? 50}
-            tokenScale={visibleMap.token_scale ?? 1}
-            bottomOverlayRef={initiativeBarRef}
-            onTokenHover={(id, x, y) => setTokenHoverInfo({ tokenId: id, x, y })}
-            onTokenHoverEnd={() => setTokenHoverInfo(null)}
-          />
-        )
-        : (
-          <div className="flex items-center justify-center h-full flex-col" style={{ gap: 'var(--space-3)', background: 'var(--hud-bg)' }}>
-            <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.textFaint }}>Waiting for GM to set a map</div>
-          </div>
-        )
-      }
+      {visibleMap?.map_type === 'crawl' ? (
+        <OpeningCrawlCanvas
+          heading={visibleMap.crawl_content?.heading ?? ''}
+          subheading={visibleMap.crawl_content?.subheading ?? ''}
+          body={visibleMap.crawl_content?.body ?? ''}
+        />
+      ) : visibleMap ? (
+        <MapCanvas
+          mapImageUrl={visibleMap.image_url}
+          tokens={visibleMapTokens}
+          isGM={false}
+          currentCharacterId={character.id}
+          onTokenMove={onTokenMove}
+          gridEnabled={visibleMap.grid_enabled}
+          gridSize={visibleMap.grid_size ?? 50}
+          tokenScale={visibleMap.token_scale ?? 1}
+          bottomOverlayRef={initiativeBarRef}
+          onTokenHover={(id, x, y) => setTokenHoverInfo({ tokenId: id, x, y })}
+          onTokenHoverEnd={() => setTokenHoverInfo(null)}
+        />
+      ) : (
+        <div className="flex items-center justify-center h-full flex-col" style={{ gap: 'var(--space-3)', background: 'var(--hud-bg)' }}>
+          <div style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.textFaint }}>Waiting for GM to set a map</div>
+        </div>
+      )}
 
       {/* ── Combat overlays — only when an active encounter exists ── */}
       {isCombatActive && encounter && (

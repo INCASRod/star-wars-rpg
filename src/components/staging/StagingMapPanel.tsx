@@ -1,10 +1,10 @@
 ﻿'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
 import { useMapPlanets, type MapPlanet } from '@/hooks/useMapPlanets'
-import type { ActiveMap } from '@/hooks/useActiveMap'
+import type { ActiveMap, CrawlContent } from '@/hooks/useActiveMap'
 import { HUD, FONT_BODY, FS, SP, RADIUS, Z, EASE } from '@/lib/tokens'
 
 /* ── Design tokens ────────────────────────────────────────── */
@@ -56,11 +56,121 @@ export function StagingMapPanel({ campaignId, allMaps, onDeleteMap }: StagingMap
   const [planetBusy,          setPlanetBusy]          = useState(false)
   const [deletePlanetConfirm, setDeletePlanetConfirm] = useState<string | null>(null)
 
-  // Maps grouped by planet
+  // Opening Crawl state
+  const [crawlMapId,      setCrawlMapId]      = useState<string | null>(null)
+  const [crawlHeading,    setCrawlHeading]    = useState('')
+  const [crawlSubheading, setCrawlSubheading] = useState('')
+  const [crawlBody,       setCrawlBody]       = useState('')
+  const [crawlBusy,       setCrawlBusy]       = useState(false)
+  const [previousMapId,   setPreviousMapId]   = useState<string | null>(null)
+  const crawlEnsuredRef = useRef(false)
+
+  // Derive active map and crawl-active state from allMaps
+  const activeMap    = allMaps.find(m => m.is_active) ?? null
+  const isCrawlActive = activeMap?.map_type === 'crawl'
+
+  // On mount: ensure the crawl map row exists and load its content
+  useEffect(() => {
+    if (!campaignId || crawlEnsuredRef.current) return
+    crawlEnsuredRef.current = true
+    let cancelled = false
+
+    async function ensureCrawlRow() {
+      const { data: rows } = await supabase
+        .from('maps')
+        .select('id, crawl_content')
+        .eq('campaign_id', campaignId)
+        .eq('map_type', 'crawl')
+        .limit(1)
+
+      if (cancelled) return
+
+      if (rows && rows.length > 0) {
+        const row = rows[0]
+        setCrawlMapId(row.id as string)
+        const content = row.crawl_content as CrawlContent | null
+        if (content) {
+          setCrawlHeading(content.heading ?? '')
+          setCrawlSubheading(content.subheading ?? '')
+          setCrawlBody(content.body ?? '')
+        }
+      } else {
+        const { data: inserted } = await supabase
+          .from('maps')
+          .insert({
+            campaign_id:           campaignId,
+            name:                  'Opening Crawl',
+            image_url:             '',
+            grid_enabled:          false,
+            grid_size:             50,
+            is_active:             false,
+            is_visible_to_players: false,
+            map_type:              'crawl',
+            crawl_content:         { heading: '', subheading: '', body: '' },
+          })
+          .select('id')
+          .single()
+        if (!cancelled && inserted) setCrawlMapId(inserted.id as string)
+      }
+    }
+
+    void ensureCrawlRow()
+    return () => { cancelled = true }
+  }, [campaignId, supabase])
+
+  // Crawl handlers
+  async function handleSaveCrawl() {
+    if (!crawlMapId || crawlBusy) return
+    setCrawlBusy(true)
+    await supabase
+      .from('maps')
+      .update({ crawl_content: { heading: crawlHeading, subheading: crawlSubheading, body: crawlBody } })
+      .eq('id', crawlMapId)
+    setCrawlBusy(false)
+  }
+
+  async function handlePlayCrawl() {
+    if (!crawlMapId || crawlBusy) return
+    setCrawlBusy(true)
+    // Save content first
+    await supabase
+      .from('maps')
+      .update({ crawl_content: { heading: crawlHeading, subheading: crawlSubheading, body: crawlBody } })
+      .eq('id', crawlMapId)
+    // Remember what was active before
+    setPreviousMapId(activeMap?.id ?? null)
+    // Activate crawl map (same two-query sequence as handleSetActive)
+    await supabase.from('maps').update({ is_active: false }).eq('campaign_id', campaignId)
+    await supabase.from('maps').update({ is_active: true, is_visible_to_players: true }).eq('id', crawlMapId)
+    setCrawlBusy(false)
+  }
+
+  async function handleStopCrawl() {
+    if (!crawlMapId || crawlBusy) return
+    setCrawlBusy(true)
+    // Hide from players
+    await supabase.from('maps').update({ is_visible_to_players: false }).eq('id', crawlMapId)
+    // Clear all active
+    await supabase.from('maps').update({ is_active: false }).eq('campaign_id', campaignId)
+    // Restore previous map if there was one
+    if (previousMapId) {
+      await supabase.from('maps').update({ is_active: true }).eq('id', previousMapId)
+    }
+    setPreviousMapId(null)
+    setCrawlBusy(false)
+  }
+
+  // Exclude the system crawl row from the regular map library
+  const standardMaps = useMemo(() =>
+    allMaps.filter(m => (m.map_type ?? 'standard') !== 'crawl'),
+    [allMaps],
+  )
+
+  // Maps grouped by planet (crawl row excluded)
   const { mapsByPlanetId, unassignedMaps } = useMemo(() => {
     const byId: Record<string, ActiveMap[]> = {}
     const unassigned: ActiveMap[] = []
-    for (const map of allMaps) {
+    for (const map of standardMaps) {
       if (map.planet_id) {
         byId[map.planet_id] = [...(byId[map.planet_id] ?? []), map]
       } else {
@@ -68,7 +178,7 @@ export function StagingMapPanel({ campaignId, allMaps, onDeleteMap }: StagingMap
       }
     }
     return { mapsByPlanetId: byId, unassignedMaps: unassigned }
-  }, [allMaps])
+  }, [standardMaps])
 
   // Planet search filter (only filters named planet rows; All / Unassigned always shown)
   const filteredPlanets = useMemo(() =>
@@ -268,6 +378,89 @@ export function StagingMapPanel({ campaignId, allMaps, onDeleteMap }: StagingMap
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
 
+      {/* ── Opening Crawl ────────────────────────────────── */}
+      <div style={{
+        padding: `10px 14px`,
+        borderBottom: `1px solid ${BORDER}`,
+        display: 'flex', flexDirection: 'column', gap: SP[2],
+      }}>
+        <div style={{
+          fontFamily: FR, fontSize: FS.overline, fontWeight: 700,
+          letterSpacing: '0.15em', textTransform: 'uppercase', color: DIM,
+        }}>
+          Opening Crawl
+        </div>
+
+        {/* Compose form */}
+        <input
+          value={crawlHeading}
+          onChange={e => setCrawlHeading(e.target.value)}
+          placeholder="Heading (e.g. Episode IV)"
+          style={darkInput}
+        />
+        <input
+          value={crawlSubheading}
+          onChange={e => setCrawlSubheading(e.target.value)}
+          placeholder="Sub-heading (e.g. A NEW HOPE)"
+          style={darkInput}
+        />
+        <textarea
+          value={crawlBody}
+          onChange={e => setCrawlBody(e.target.value)}
+          placeholder="Crawl body text…"
+          rows={5}
+          style={{ ...darkInput, resize: 'vertical' }}
+        />
+
+        {/* Action buttons */}
+        <div style={{ display: 'flex', gap: SP[2] }}>
+          <button
+            onClick={() => void handleSaveCrawl()}
+            disabled={crawlBusy || !crawlMapId}
+            style={{
+              flex: 1, padding: `6px 0`, borderRadius: RADIUS.md,
+              background: 'var(--hud-surface-lo)', border: `1px solid ${BORDER_HI}`,
+              color: TEXT, fontFamily: FR, fontSize: FS.caption, fontWeight: 700,
+              letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer',
+              opacity: (crawlBusy || !crawlMapId) ? 0.45 : 1,
+            }}
+          >
+            Save Crawl
+          </button>
+          {isCrawlActive ? (
+            <button
+              onClick={() => void handleStopCrawl()}
+              disabled={crawlBusy}
+              style={{
+                flex: 1, padding: `6px 0`, borderRadius: RADIUS.md,
+                background: `color-mix(in srgb, ${RED} 12%, transparent)`,
+                border: `1px solid color-mix(in srgb, ${RED} 40%, transparent)`,
+                color: RED, fontFamily: FR, fontSize: FS.caption, fontWeight: 700,
+                letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer',
+                opacity: crawlBusy ? 0.45 : 1,
+              }}
+            >
+              Stop Crawl
+            </button>
+          ) : (
+            <button
+              onClick={() => void handlePlayCrawl()}
+              disabled={crawlBusy || !crawlMapId || (!crawlHeading.trim() && !crawlSubheading.trim() && !crawlBody.trim())}
+              style={{
+                flex: 1, padding: `6px 0`, borderRadius: RADIUS.md,
+                background: `color-mix(in srgb, ${GREEN} 12%, transparent)`,
+                border: `1px solid color-mix(in srgb, ${GREEN} 40%, transparent)`,
+                color: GREEN, fontFamily: FR, fontSize: FS.caption, fontWeight: 700,
+                letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer',
+                opacity: (crawlBusy || !crawlMapId || (!crawlHeading.trim() && !crawlSubheading.trim() && !crawlBody.trim())) ? 0.45 : 1,
+              }}
+            >
+              Play Opening
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* ── Top bar: search + new planet + upload ─────────── */}
       <div style={{
         padding: `10px 14px`,
@@ -339,14 +532,14 @@ export function StagingMapPanel({ campaignId, allMaps, onDeleteMap }: StagingMap
       {/* ── All Maps folder ───────────────────────────────── */}
       <FolderRow
         label="All Maps"
-        count={allMaps.length}
+        count={standardMaps.length}
         expanded={expandedId === 'all'}
         onToggle={() => toggleExpand('all')}
       />
       {expandedId === 'all' && (
-        allMaps.length === 0
+        standardMaps.length === 0
           ? <FolderEmpty label="No maps uploaded yet." />
-          : renderMaps(allMaps)
+          : renderMaps(standardMaps)
       )}
 
       {/* ── Named planet folders ──────────────────────────── */}

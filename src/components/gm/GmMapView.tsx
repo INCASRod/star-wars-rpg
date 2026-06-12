@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { ActiveMap } from '@/hooks/useActiveMap'
 import type { MapToken } from '@/hooks/useMapTokens'
 import { MapCanvas } from '@/components/map/MapCanvas'
+import { OpeningCrawlCanvas } from '@/components/map/OpeningCrawlCanvas'
 import { useMapTokens } from '@/hooks/useMapTokens'
 import { useMapPlanets } from '@/hooks/useMapPlanets'
 import type { MapPlanet } from '@/hooks/useMapPlanets'
@@ -827,7 +828,13 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>
 
         {/* ── Canvas ── */}
-        {(previewMap ?? activeMap) ? (
+        {!previewMap && activeMap?.map_type === 'crawl' ? (
+          <OpeningCrawlCanvas
+            heading={activeMap.crawl_content?.heading ?? ''}
+            subheading={activeMap.crawl_content?.subheading ?? ''}
+            body={activeMap.crawl_content?.body ?? ''}
+          />
+        ) : (previewMap ?? activeMap) ? (
           <>
             <MapCanvas
               mapImageUrl={(previewMap ?? activeMap)!.image_url}
