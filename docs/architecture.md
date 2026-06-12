@@ -291,7 +291,7 @@
 - `campaigns` — name, gm_pin, settings JSONB, base_of_operations_name
 - `campaign_settings` — single-row config table. `active_dataset TEXT DEFAULT 'oggdude'` controls which reference dataset (OggDude vs reSpec) is active across the app.
 - `players` — display_name, is_gm, campaign_id
-- `group_assets` — vehicles, starships, safe houses, NPCs, strategic assets
+- `group_assets` — vehicles, starships, safe houses, NPCs, strategic assets. `is_group_storage BOOLEAN DEFAULT false` (migration 081) flags an asset as a shared storage pool visible to players via "View Storage" UI.
 - `quartermaster` — One row per campaign. `is_open` controls player access. `sell_pct` is the buy-back rate (default 25%).
 - `quartermaster_items` — Items stocked in the QM. `item_key` + `item_type` identify the ref table row (`ref_weapons`, `ref_armor`, `ref_gear`).
 - `encounters` — is_active, round, current_turn, initiative_order JSONB
@@ -551,4 +551,5 @@ import { COLOR, HUD, FS, SP, RADIUS, Z, SHADOW, EASE, CHAR_COLOR, DICE_META, SYM
 | 057 | Delete policies |
 | 058 | `ref_species.special_abilities` — seed `skill_rank` entries for all 80 species with OggDude SkillModifiers; `ref_talents.modifiers` — add `career_skills` array for 9 fixed ChooseCareerSkills talents (Insight, Basic/Tactical/Vehicle/Pilot Combat Training, Secrets of the Jedi/Force, Well Traveled) |
 | 059 | `characters.force_commitments JSONB DEFAULT '[]'` — tracks which powers have Force dice committed; shape `[{ power_key, power_name, effect_name, dice_count }]` |
+| 081 | Group Storage: `group_assets.is_group_storage` boolean column + `take_group_storage_item(p_item_id, p_item_type, p_taker_id, p_take_qty)` SECURITY DEFINER RPC for atomic ownership transfer (full + partial-qty gear split) |
 | 062 | reSpec dataset migration: added `campaign_settings` table (`active_dataset TEXT DEFAULT 'oggdude'`); changed PKs on `ref_talents`, `ref_force_abilities`, `ref_specializations`, `ref_careers` from `key TEXT PRIMARY KEY` to composite `(key, dataset_source)` with `dataset_source TEXT NOT NULL DEFAULT 'oggdude'` and `is_retired BOOLEAN NOT NULL DEFAULT false`; dropped FK constraints `character_talents_talent_key_fkey`, `character_specializations_specialization_key_fkey`, `characters_career_key_fkey`, `ref_specializations_career_key_fkey` |
