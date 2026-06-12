@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
 import type { MapToken } from '@/hooks/useMapTokens'
@@ -102,87 +102,102 @@ export function GmMapPanel({
   const [crawlSubheading, setCrawlSubheading] = useState('')
   const [crawlBody,       setCrawlBody]       = useState('')
   const [crawlBusy,       setCrawlBusy]       = useState(false)
+  const [crawlLoading,    setCrawlLoading]    = useState(false)
   const [previousMapId,   setPreviousMapId]   = useState<string | null>(null)
   const [crawlModalOpen,  setCrawlModalOpen]  = useState(false)
-  const crawlEnsuredRef = useRef(false)
 
   const isCrawlActive = crawlMapId !== null && mapId === crawlMapId
 
-  useEffect(() => {
-    if (!campaignId || crawlEnsuredRef.current) return
-    crawlEnsuredRef.current = true
-    let cancelled = false
+  // Fetch or create the crawl row, returning its id. Safe to call multiple times.
+  async function fetchOrCreateCrawlRow(): Promise<string | null> {
+    if (crawlMapId) return crawlMapId
+    if (!campaignId) return null
 
-    async function ensureCrawlRow() {
-      const { data: rows } = await supabase
-        .from('maps')
-        .select('id, crawl_content')
-        .eq('campaign_id', campaignId)
-        .eq('map_type', 'crawl')
-        .limit(1)
+    const { data: rows } = await supabase
+      .from('maps')
+      .select('id, crawl_content')
+      .eq('campaign_id', campaignId)
+      .eq('map_type', 'crawl')
+      .limit(1)
 
-      if (cancelled) return
-
-      if (rows && rows.length > 0) {
-        const row = rows[0]
-        setCrawlMapId(row.id as string)
-        const content = row.crawl_content as CrawlContent | null
-        if (content) {
-          setCrawlHeading(content.heading ?? '')
-          setCrawlSubheading(content.subheading ?? '')
-          setCrawlBody(content.body ?? '')
-        }
-      } else {
-        const { data: inserted } = await supabase
-          .from('maps')
-          .insert({
-            campaign_id:           campaignId,
-            name:                  'Opening Crawl',
-            image_url:             '',
-            grid_enabled:          false,
-            grid_size:             50,
-            is_active:             false,
-            is_visible_to_players: false,
-            map_type:              'crawl',
-            crawl_content:         { heading: '', subheading: '', body: '' },
-          })
-          .select('id')
-          .single()
-        if (!cancelled && inserted) setCrawlMapId(inserted.id as string)
+    if (rows && rows.length > 0) {
+      const row = rows[0]
+      const content = row.crawl_content as CrawlContent | null
+      if (content) {
+        setCrawlHeading(content.heading ?? '')
+        setCrawlSubheading(content.subheading ?? '')
+        setCrawlBody(content.body ?? '')
       }
+      setCrawlMapId(row.id as string)
+      return row.id as string
     }
 
-    void ensureCrawlRow()
-    return () => { cancelled = true }
-  }, [campaignId, supabase])
+    const { data: inserted } = await supabase
+      .from('maps')
+      .insert({
+        campaign_id:           campaignId,
+        name:                  'Opening Crawl',
+        image_url:             '',
+        grid_enabled:          false,
+        grid_size:             50,
+        is_active:             false,
+        is_visible_to_players: false,
+        map_type:              'crawl',
+        crawl_content:         { heading: '', subheading: '', body: '' },
+      })
+      .select('id')
+      .single()
+
+    if (inserted) {
+      setCrawlMapId(inserted.id as string)
+      return inserted.id as string
+    }
+    return null
+  }
+
+  async function handleOpenCrawl() {
+    if (crawlLoading) return
+    setCrawlLoading(true)
+    await fetchOrCreateCrawlRow()
+    setCrawlLoading(false)
+    setCrawlModalOpen(true)
+  }
 
   async function handleSaveCrawl() {
-    if (!crawlMapId || crawlBusy) return
+    if (crawlBusy) return
     setCrawlBusy(true)
-    await supabase
-      .from('maps')
-      .update({ crawl_content: { heading: crawlHeading, subheading: crawlSubheading, body: crawlBody } })
-      .eq('id', crawlMapId)
+    const id = await fetchOrCreateCrawlRow()
+    if (id) {
+      await supabase
+        .from('maps')
+        .update({ crawl_content: { heading: crawlHeading, subheading: crawlSubheading, body: crawlBody } })
+        .eq('id', id)
+    }
     setCrawlBusy(false)
   }
 
   async function handlePlayCrawl() {
-    if (!crawlMapId || crawlBusy) return
+    if (crawlBusy) return
     setCrawlBusy(true)
-    await supabase
-      .from('maps')
-      .update({ crawl_content: { heading: crawlHeading, subheading: crawlSubheading, body: crawlBody } })
-      .eq('id', crawlMapId)
-    setPreviousMapId(mapId)
-    await supabase.from('maps').update({ is_active: false }).eq('campaign_id', campaignId)
-    await supabase.from('maps').update({ is_active: true, is_visible_to_players: true }).eq('id', crawlMapId)
+    const id = await fetchOrCreateCrawlRow()
+    if (id) {
+      await supabase
+        .from('maps')
+        .update({ crawl_content: { heading: crawlHeading, subheading: crawlSubheading, body: crawlBody } })
+        .eq('id', id)
+      setPreviousMapId(mapId)
+      await supabase.from('maps').update({ is_active: false }).eq('campaign_id', campaignId)
+      await supabase.from('maps').update({ is_active: true, is_visible_to_players: true }).eq('id', id)
+    }
     setCrawlBusy(false)
   }
 
   async function handleStopCrawl() {
-    if (!crawlMapId || crawlBusy) return
+    if (crawlBusy) return
+    const id = crawlMapId ?? await fetchOrCreateCrawlRow()
+    if (!id) return
     setCrawlBusy(true)
-    await supabase.from('maps').update({ is_visible_to_players: false }).eq('id', crawlMapId)
+    await supabase.from('maps').update({ is_visible_to_players: false }).eq('id', id)
     await supabase.from('maps').update({ is_active: false }).eq('campaign_id', campaignId)
     if (previousMapId) {
       await supabase.from('maps').update({ is_active: true }).eq('id', previousMapId)
@@ -283,8 +298,9 @@ export function GmMapPanel({
           removeToken={removeToken}
           toggleVisibility={toggleVisibility}
           removeAllTokens={removeAllTokens}
-          onOpenCrawl={() => setCrawlModalOpen(true)}
+          onOpenCrawl={() => void handleOpenCrawl()}
           isCrawlActive={isCrawlActive}
+          crawlLoading={crawlLoading}
         />
       </div>
 
@@ -341,13 +357,13 @@ export function GmMapPanel({
             <div style={{ display: 'flex', gap: SP[2], marginTop: SP[1] }}>
               <button
                 onClick={() => void handleSaveCrawl()}
-                disabled={crawlBusy || !crawlMapId}
+                disabled={crawlBusy}
                 style={{
                   flex: 1, padding: `${SP[2]} 0`, borderRadius: RADIUS.md,
                   background: 'var(--hud-surface-lo)', border: `1px solid var(--hud-border-hi)`,
                   color: HUD.text, fontFamily: FONT, fontSize: FS.caption, fontWeight: 700,
                   letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer',
-                  opacity: (crawlBusy || !crawlMapId) ? 0.45 : 1,
+                  opacity: crawlBusy ? 0.45 : 1,
                   transition: `opacity ${EASE.quick}`,
                 }}
               >
@@ -372,14 +388,14 @@ export function GmMapPanel({
               ) : (
                 <button
                   onClick={() => void handlePlayCrawl()}
-                  disabled={crawlBusy || !crawlMapId || (!crawlHeading.trim() && !crawlSubheading.trim() && !crawlBody.trim())}
+                  disabled={crawlBusy || (!crawlHeading.trim() && !crawlSubheading.trim() && !crawlBody.trim())}
                   style={{
                     flex: 1, padding: `${SP[2]} 0`, borderRadius: RADIUS.md,
                     background: `color-mix(in srgb, ${GREEN} 12%, transparent)`,
                     border: `1px solid color-mix(in srgb, ${GREEN} 40%, transparent)`,
                     color: GREEN, fontFamily: FONT, fontSize: FS.caption, fontWeight: 700,
                     letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer',
-                    opacity: (crawlBusy || !crawlMapId || (!crawlHeading.trim() && !crawlSubheading.trim() && !crawlBody.trim())) ? 0.45 : 1,
+                    opacity: (crawlBusy || (!crawlHeading.trim() && !crawlSubheading.trim() && !crawlBody.trim())) ? 0.45 : 1,
                     transition: `opacity ${EASE.quick}`,
                   }}
                 >

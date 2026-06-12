@@ -100,11 +100,12 @@ export interface GmTokenControlsProps {
   removeAllTokens: () => Promise<void>
   onOpenCrawl:     () => void
   isCrawlActive:   boolean
+  crawlLoading:    boolean
 }
 
 export function GmTokenControls({
   campaignId, mapId, characters, tokens, addToken, removeToken, toggleVisibility, removeAllTokens,
-  onOpenCrawl, isCrawlActive,
+  onOpenCrawl, isCrawlActive, crawlLoading,
 }: GmTokenControlsProps) {
   const supabase = useMemo(() => createClient(), [])
   const [view, setView] = useState<TokenView>('menu')
@@ -428,14 +429,16 @@ export function GmTokenControls({
           </button>
           <button
             onClick={onOpenCrawl}
+            disabled={crawlLoading}
             style={{
               ...tokenBtn,
-              color:       isCrawlActive ? 'var(--state-success)' : HUD.gold,
+              color:       isCrawlActive ? 'var(--state-success)' : crawlLoading ? 'var(--hud-text-dim)' : HUD.gold,
               borderColor: isCrawlActive ? 'var(--state-success)' : 'var(--hud-border-hi)',
+              opacity:     crawlLoading ? 0.6 : 1,
             }}
           >
             <span>✦</span>
-            {isCrawlActive ? 'Opening Crawl — LIVE' : 'Opening Crawl'}
+            {crawlLoading ? 'Loading…' : isCrawlActive ? 'Opening Crawl — LIVE' : 'Opening Crawl'}
           </button>
         </div>
       </div>
