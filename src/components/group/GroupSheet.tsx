@@ -15,7 +15,7 @@ import { TickerText } from '@/components/ui/TickerText'
 import { useHudPanelContext } from '@/contexts/HudPanelContext'
 import { useQuartermaster } from '@/hooks/useQuartermaster'
 import { QuartermasterModal } from '@/components/QuartermasterModal'
-import { RADIUS } from '@/lib/tokens'
+import { RADIUS, SP } from '@/lib/tokens'
 
 const FONT_MONO = 'var(--font-body)'
 
@@ -711,13 +711,13 @@ export function GroupSheet({ campaignId, characterName, characterId }: GroupShee
 
                 {/* Group Storage — only for stowable asset types */}
                 {(assetTypeDraft === 'vehicle' || assetTypeDraft === 'starship' || assetTypeDraft === 'safe_house') && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: SP[2] }}>
                     <input
                       id="gs-checkbox"
                       type="checkbox"
                       checked={assetStorageDraft}
                       onChange={e => setAssetStorageDraft(e.target.checked)}
-                      style={{ width: 14, height: 14, accentColor: 'var(--hud-gold)', cursor: 'pointer' }}
+                      style={{ accentColor: 'var(--hud-gold)', cursor: 'pointer' }}
                     />
                     <label htmlFor="gs-checkbox" style={{ ...labelStyle(), marginBottom: 0, cursor: 'pointer' }}>
                       Group Storage
