@@ -27,7 +27,7 @@ const T_LOGO_HOLD   = 1500
 const T_LOGO_SHRINK = 3200
 const T_CRAWL_IN    = 300
 const T_CRAWL_DUR   = 70_000
-const T_AUDIO_STOP  = 73_000
+const T_AUDIO_STOP  = 83_000
 
 function easeInOut(t: number): number {
   return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
