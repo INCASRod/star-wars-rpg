@@ -474,6 +474,7 @@ export interface StowableAsset {
   id: string
   name: string
   type: 'vehicle' | 'starship' | 'safe_house'
+  is_group_storage: boolean
 }
 
 export interface CharacterWeapon {

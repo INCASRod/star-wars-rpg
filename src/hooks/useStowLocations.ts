@@ -17,16 +17,17 @@ export function useStowLocations(campaignId: string | null): {
 
     supabase
       .from('group_assets')
-      .select('id, name, asset_type')
+      .select('id, name, asset_type, is_group_storage')
       .eq('campaign_id', campaignId)
       .eq('is_archived', false)
       .in('asset_type', ['vehicle', 'starship', 'safe_house'])
       .order('name', { ascending: true })
       .then(({ data }) => {
         if (data) setStowableAssets(data.map(a => ({
-          id:   a.id,
-          name: a.name,
-          type: a.asset_type as 'vehicle' | 'starship' | 'safe_house',
+          id:               a.id,
+          name:             a.name,
+          type:             a.asset_type as 'vehicle' | 'starship' | 'safe_house',
+          is_group_storage: a.is_group_storage ?? false,
         })))
       })
 
