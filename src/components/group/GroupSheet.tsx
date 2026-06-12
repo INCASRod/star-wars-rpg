@@ -1258,6 +1258,11 @@ export function GroupSheet({ campaignId, characterName, characterId }: GroupShee
                 onView={() => setViewingAsset(asset)}
                 onArchive={() => archiveAsset(asset.id)}
                 isOpen={isOpen}
+                onViewStorage={asset.is_group_storage ? () => {
+                  setGroupStorageAssetId(asset.id)
+                  setGroupStorageAssetName(asset.name)
+                  setGroupStorageAssetType(asset.asset_type)
+                } : undefined}
               />
             ))}
           </div>
@@ -1842,8 +1847,8 @@ function AssetViewModal({ asset, adversary, vehicle, loading, onClose }: {
   )
 }
 
-function AssetCard({ asset, canArchive, onArchive, onView, isOpen }: {
-  asset: GroupAsset; canArchive: boolean; onArchive: () => void; onView: () => void; isOpen: boolean
+function AssetCard({ asset, canArchive, onArchive, onView, isOpen, onViewStorage }: {
+  asset: GroupAsset; canArchive: boolean; onArchive: () => void; onView: () => void; isOpen: boolean; onViewStorage: (() => void) | undefined
 }) {
   const color = ASSET_COLORS[asset.asset_type]
   return (
@@ -1870,6 +1875,26 @@ function AssetCard({ asset, canArchive, onArchive, onView, isOpen }: {
         )}
       </div>
       <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+        {asset.is_group_storage && onViewStorage && (
+          <button
+            onClick={onViewStorage}
+            title="View group storage"
+            style={{
+              background: `color-mix(in srgb, ${color} 10%, transparent)`,
+              border: `1px solid color-mix(in srgb, ${color} 50%, transparent)`,
+              borderRadius: RADIUS.sm,
+              cursor: 'pointer',
+              color,
+              fontFamily: FONT_RAJDHANI,
+              fontSize: FS_CAPTION,
+              fontWeight: 600,
+              padding: `${SP[1]} ${SP[2]}`,
+              whiteSpace: 'nowrap' as const,
+            }}
+          >
+            📦 Storage
+          </button>
+        )}
         <button
           onClick={onView}
           title="View stat block"
