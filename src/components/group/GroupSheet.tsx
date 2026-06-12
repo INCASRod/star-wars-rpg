@@ -15,7 +15,7 @@ import { TickerText } from '@/components/ui/TickerText'
 import { useHudPanelContext } from '@/contexts/HudPanelContext'
 import { useQuartermaster } from '@/hooks/useQuartermaster'
 import { QuartermasterModal } from '@/components/QuartermasterModal'
-import { FONT_BODY, RADIUS, SP } from '@/lib/tokens'
+import { FONT_BODY, FS, RADIUS, SP } from '@/lib/tokens'
 
 const FONT_MONO = 'var(--font-body)'
 
@@ -1573,7 +1573,7 @@ function AssetViewModal({ asset, adversary, vehicle, loading, onClose, gmUnlocke
               onChange={onToggleGroupStorage}
               style={{ accentColor: 'var(--hud-gold)', cursor: 'pointer' }}
             />
-            <label htmlFor="gs-view-toggle" style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.text, cursor: 'pointer' }}>
+            <label htmlFor="gs-view-toggle" style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: C.text, cursor: 'pointer' }}>
               Group Storage — players can view and take items stowed here
             </label>
           </div>
