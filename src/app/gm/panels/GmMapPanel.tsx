@@ -1,14 +1,31 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { MapToken } from '@/hooks/useMapTokens'
 import type { Character } from '@/lib/types'
+import type { CrawlContent } from '@/hooks/useActiveMap'
 import { GmTokenControls } from './GmTokenControls'
-import { HUD, FONT_BODY, EASE, FS, RADIUS } from '@/lib/tokens'
+import { HUD, FONT_BODY, EASE, FS, SP, RADIUS } from '@/lib/tokens'
 
 const FONT   = FONT_BODY
 const BORDER = 'var(--hud-border)'
+
+const GREEN = 'var(--state-success)'
+const RED   = 'var(--state-failure)'
+
+const darkInput: React.CSSProperties = {
+  background:   'var(--hud-surface-lo)',
+  border:       `1px solid var(--hud-border-hi)`,
+  borderRadius: RADIUS.md,
+  color:        HUD.text,
+  fontFamily:   FONT,
+  fontSize:     FS.label,
+  padding:      `${SP[2]} ${SP[2]}`,
+  width:        '100%',
+  boxSizing:    'border-box',
+  outline:      'none',
+}
 
 const sectionHeader: React.CSSProperties = {
   fontFamily:    FONT,
@@ -78,6 +95,100 @@ export function GmMapPanel({
 }: GmMapPanelProps) {
   const supabase = useMemo(() => createClient(), [])
 
+  // ── Opening Crawl state ─────────────────────────────────────────────────
+  const [crawlMapId,      setCrawlMapId]      = useState<string | null>(null)
+  const [crawlHeading,    setCrawlHeading]    = useState('')
+  const [crawlSubheading, setCrawlSubheading] = useState('')
+  const [crawlBody,       setCrawlBody]       = useState('')
+  const [crawlBusy,       setCrawlBusy]       = useState(false)
+  const [previousMapId,   setPreviousMapId]   = useState<string | null>(null)
+  const crawlEnsuredRef = useRef(false)
+
+  const isCrawlActive = crawlMapId !== null && mapId === crawlMapId
+
+  useEffect(() => {
+    if (!campaignId || crawlEnsuredRef.current) return
+    crawlEnsuredRef.current = true
+    let cancelled = false
+
+    async function ensureCrawlRow() {
+      const { data: rows } = await supabase
+        .from('maps')
+        .select('id, crawl_content')
+        .eq('campaign_id', campaignId)
+        .eq('map_type', 'crawl')
+        .limit(1)
+
+      if (cancelled) return
+
+      if (rows && rows.length > 0) {
+        const row = rows[0]
+        setCrawlMapId(row.id as string)
+        const content = row.crawl_content as CrawlContent | null
+        if (content) {
+          setCrawlHeading(content.heading ?? '')
+          setCrawlSubheading(content.subheading ?? '')
+          setCrawlBody(content.body ?? '')
+        }
+      } else {
+        const { data: inserted } = await supabase
+          .from('maps')
+          .insert({
+            campaign_id:           campaignId,
+            name:                  'Opening Crawl',
+            image_url:             '',
+            grid_enabled:          false,
+            grid_size:             50,
+            is_active:             false,
+            is_visible_to_players: false,
+            map_type:              'crawl',
+            crawl_content:         { heading: '', subheading: '', body: '' },
+          })
+          .select('id')
+          .single()
+        if (!cancelled && inserted) setCrawlMapId(inserted.id as string)
+      }
+    }
+
+    void ensureCrawlRow()
+    return () => { cancelled = true }
+  }, [campaignId, supabase])
+
+  async function handleSaveCrawl() {
+    if (!crawlMapId || crawlBusy) return
+    setCrawlBusy(true)
+    await supabase
+      .from('maps')
+      .update({ crawl_content: { heading: crawlHeading, subheading: crawlSubheading, body: crawlBody } })
+      .eq('id', crawlMapId)
+    setCrawlBusy(false)
+  }
+
+  async function handlePlayCrawl() {
+    if (!crawlMapId || crawlBusy) return
+    setCrawlBusy(true)
+    await supabase
+      .from('maps')
+      .update({ crawl_content: { heading: crawlHeading, subheading: crawlSubheading, body: crawlBody } })
+      .eq('id', crawlMapId)
+    setPreviousMapId(mapId)
+    await supabase.from('maps').update({ is_active: false }).eq('campaign_id', campaignId)
+    await supabase.from('maps').update({ is_active: true, is_visible_to_players: true }).eq('id', crawlMapId)
+    setCrawlBusy(false)
+  }
+
+  async function handleStopCrawl() {
+    if (!crawlMapId || crawlBusy) return
+    setCrawlBusy(true)
+    await supabase.from('maps').update({ is_visible_to_players: false }).eq('id', crawlMapId)
+    await supabase.from('maps').update({ is_active: false }).eq('campaign_id', campaignId)
+    if (previousMapId) {
+      await supabase.from('maps').update({ is_active: true }).eq('id', previousMapId)
+    }
+    setPreviousMapId(null)
+    setCrawlBusy(false)
+  }
+
   async function toggleReveal() {
     if (!mapId) return
     await supabase.from('maps').update({ is_visible_to_players: !isMapVisible }).eq('id', mapId)
@@ -91,6 +202,84 @@ export function GmMapPanel({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto' }}>
+
+      {/* Opening Crawl section */}
+      <div style={{ padding: '0.75rem 0.875rem', flexShrink: 0 }}>
+        <div style={sectionHeader}>Opening Crawl</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: SP[2] }}>
+          <input
+            value={crawlHeading}
+            onChange={e => setCrawlHeading(e.target.value)}
+            placeholder="Heading (e.g. Episode IV)"
+            style={darkInput}
+          />
+          <input
+            value={crawlSubheading}
+            onChange={e => setCrawlSubheading(e.target.value)}
+            placeholder="Sub-heading (e.g. A NEW HOPE)"
+            style={darkInput}
+          />
+          <textarea
+            value={crawlBody}
+            onChange={e => setCrawlBody(e.target.value)}
+            placeholder="Crawl body text…"
+            rows={5}
+            style={{ ...darkInput, resize: 'vertical' }}
+          />
+          <div style={{ display: 'flex', gap: SP[2] }}>
+            <button
+              onClick={() => void handleSaveCrawl()}
+              disabled={crawlBusy || !crawlMapId}
+              style={{
+                flex: 1, padding: `${SP[1]} 0`, borderRadius: RADIUS.md,
+                background: 'var(--hud-surface-lo)', border: `1px solid var(--hud-border-hi)`,
+                color: HUD.text, fontFamily: FONT, fontSize: FS.caption, fontWeight: 700,
+                letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer',
+                opacity: (crawlBusy || !crawlMapId) ? 0.45 : 1,
+                transition: `opacity ${EASE.quick}`,
+              }}
+            >
+              Save Crawl
+            </button>
+            {isCrawlActive ? (
+              <button
+                onClick={() => void handleStopCrawl()}
+                disabled={crawlBusy}
+                style={{
+                  flex: 1, padding: `${SP[1]} 0`, borderRadius: RADIUS.md,
+                  background: `color-mix(in srgb, ${RED} 12%, transparent)`,
+                  border: `1px solid color-mix(in srgb, ${RED} 40%, transparent)`,
+                  color: RED, fontFamily: FONT, fontSize: FS.caption, fontWeight: 700,
+                  letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer',
+                  opacity: crawlBusy ? 0.45 : 1,
+                  transition: `opacity ${EASE.quick}`,
+                }}
+              >
+                Stop Crawl
+              </button>
+            ) : (
+              <button
+                onClick={() => void handlePlayCrawl()}
+                disabled={crawlBusy || !crawlMapId || (!crawlHeading.trim() && !crawlSubheading.trim() && !crawlBody.trim())}
+                style={{
+                  flex: 1, padding: `${SP[1]} 0`, borderRadius: RADIUS.md,
+                  background: `color-mix(in srgb, ${GREEN} 12%, transparent)`,
+                  border: `1px solid color-mix(in srgb, ${GREEN} 40%, transparent)`,
+                  color: GREEN, fontFamily: FONT, fontSize: FS.caption, fontWeight: 700,
+                  letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer',
+                  opacity: (crawlBusy || !crawlMapId || (!crawlHeading.trim() && !crawlSubheading.trim() && !crawlBody.trim())) ? 0.45 : 1,
+                  transition: `opacity ${EASE.quick}`,
+                }}
+              >
+                Play Opening
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div style={{ height: 1, background: BORDER, margin: '0 0.875rem' }} />
 
       {/* Map section */}
       <div style={{ padding: '0.75rem 0.875rem 0', flexShrink: 0 }}>
