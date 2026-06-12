@@ -1876,11 +1876,17 @@ function LibMapRow({ map, planets, busy, onLoad, onEdit, onSetActive, onDelete, 
       background: map.is_active ? 'rgba(150,168,180,0.05)' : 'transparent',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={map.image_url} alt={map.name}
-          style={{ width: 36, height: 26, objectFit: 'cover', borderRadius: RADIUS.sm, border: `1px solid ${map.is_active ? BORDER_HI : BORDER}`, flexShrink: 0 }}
-        />
+        {map.image_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={map.image_url} alt={map.name}
+            style={{ width: 36, height: 26, objectFit: 'cover', borderRadius: RADIUS.sm, border: `1px solid ${map.is_active ? BORDER_HI : BORDER}`, flexShrink: 0 }}
+          />
+        ) : (
+          <div style={{ width: 36, height: 26, borderRadius: RADIUS.sm, border: `1px solid ${map.is_active ? BORDER_HI : BORDER}`, flexShrink: 0, background: 'var(--hud-surface-lo)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: 10, color: 'var(--hud-text-faint)' }}>✦</span>
+          </div>
+        )}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: FONT_BODY, fontSize: FS_LABEL, fontWeight: 700, color: map.is_active ? HUD.gold : TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {map.name}
