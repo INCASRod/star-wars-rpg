@@ -33,6 +33,9 @@ BEGIN
         stow_location_name = NULL,
         stow_location_type = NULL
     WHERE id = p_item_id;
+    IF NOT FOUND THEN
+      RAISE EXCEPTION 'Weapon item not found or already taken: %', p_item_id;
+    END IF;
 
   ELSIF p_item_type = 'armor' THEN
     UPDATE character_armor
@@ -42,6 +45,9 @@ BEGIN
         stow_location_name = NULL,
         stow_location_type = NULL
     WHERE id = p_item_id;
+    IF NOT FOUND THEN
+      RAISE EXCEPTION 'Armor item not found or already taken: %', p_item_id;
+    END IF;
 
   ELSIF p_item_type = 'gear' THEN
     SELECT quantity INTO v_qty FROM character_gear WHERE id = p_item_id;

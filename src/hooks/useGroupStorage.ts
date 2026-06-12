@@ -168,12 +168,16 @@ export function useGroupStorage(assetId: string | null) {
     setTaking(prev => new Set(prev).add(itemId))
     try {
       const supabase = createClient()
-      await supabase.rpc('take_group_storage_item', {
+      const { error } = await supabase.rpc('take_group_storage_item', {
         p_item_id:   itemId,
         p_item_type: itemType,
         p_taker_id:  takerId,
         p_take_qty:  qty ?? null,
       })
+      if (error) {
+        console.error('[GroupStorage] take failed:', error.message)
+        return
+      }
       await fetchItems()
     } finally {
       setTaking(prev => { const s = new Set(prev); s.delete(itemId); return s })
