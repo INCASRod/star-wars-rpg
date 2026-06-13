@@ -76,6 +76,7 @@ export function MobileBottomNav({ activeTab, onTabChange, encumbranceWarning }: 
               cursor: 'pointer',
               padding: `${SP[1]} 0`,
               position: 'relative',
+              minHeight: 44,   /* WCAG 2.5.5 minimum touch target */
             }}
           >
             <span style={{

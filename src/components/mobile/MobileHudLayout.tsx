@@ -177,6 +177,7 @@ export function MobileHudLayout({ characterId, campaignId }: MobileHudLayoutProp
         xpAvailable={character.xp_available ?? 0}
         credits={character.credits ?? 0}
         destinyPool={destinyPool}
+        portraitUrl={character.portrait_url ?? null}
       />
 
       <MobileVitalsStrip

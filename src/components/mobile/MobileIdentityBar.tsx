@@ -1,4 +1,5 @@
 'use client'
+import Image from 'next/image'
 import { FONT_DISPLAY, FONT_BODY, FS, SP, RADIUS, HUD } from '@/lib/tokens'
 
 // Destiny pip colours match DestinyPoolDisplay.tsx — change only in sync with that file.
@@ -34,10 +35,11 @@ interface MobileIdentityBarProps {
   xpAvailable: number
   credits: number
   destinyPool: Array<'light' | 'dark'>
+  portraitUrl?: string | null
 }
 
 export function MobileIdentityBar({
-  name, careerKey, specKey, speciesKey, xpAvailable, credits, destinyPool,
+  name, careerKey, specKey, speciesKey, xpAvailable, credits, destinyPool, portraitUrl,
 }: MobileIdentityBarProps) {
   return (
     <div style={{
@@ -52,16 +54,32 @@ export function MobileIdentityBar({
       <div style={{ display: 'flex', alignItems: 'center', gap: SP[2] }}>
         {/* Avatar circle — 40px fixed geometry */}
         <div style={{
-          width: 40, height: 40,
+          width: 40, height: 40,            /* fixed avatar geometry */
           borderRadius: RADIUS.full,
           border: `2px solid var(--hud-accent)`,
-          background: `color-mix(in srgb, var(--hud-accent) 15%, transparent)`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          overflow: 'hidden',
           flexShrink: 0,
-          fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700,
-          color: 'var(--hud-accent)', letterSpacing: '0.06em',
+          position: 'relative',
+          background: `color-mix(in srgb, var(--hud-accent) 15%, transparent)`,
         }}>
-          {initials(name)}
+          {portraitUrl ? (
+            <Image
+              src={portraitUrl}
+              alt={name}
+              fill
+              style={{ objectFit: 'cover' }}
+              sizes="40px"
+            />
+          ) : (
+            <div style={{
+              width: '100%', height: '100%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700,
+              color: 'var(--hud-accent)', letterSpacing: '0.06em',
+            }}>
+              {initials(name)}
+            </div>
+          )}
         </div>
 
         {/* Character meta */}

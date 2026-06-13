@@ -26,6 +26,8 @@ export function MobileRunner({ activeTab, onTabChange }: MobileRunnerProps) {
       padding: `0 ${SP[2]}`,
       gap: SP[1],
       flexShrink: 0,
+      height: 48,
+      alignItems: 'center',
     }}>
       {RUNNER_TABS.map(tab => {
         const isActive  = tab.id === activeTab
@@ -39,7 +41,8 @@ export function MobileRunner({ activeTab, onTabChange }: MobileRunnerProps) {
               flexShrink: 0,
               background: (isFeedTab && isActive) ? 'var(--hud-accent)' : 'transparent',
               border: 'none',
-              borderRadius: (isFeedTab && isActive) ? RADIUS.full : 0,
+              borderRadius: 0,
+              height: 40,
               padding: `${SP[1]} ${SP[2]}`,
               cursor: 'pointer',
               fontFamily: FONT_BODY,
