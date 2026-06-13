@@ -30,7 +30,7 @@ export function MobileHudLayout({ characterId, campaignId }: MobileHudLayoutProp
   const supabase = useMemo(() => createClient(), [])
 
   const {
-    character, skills, talents, weapons, armor, gear,
+    character, talents, weapons, armor, gear,
     charSpecs, speciesAbilities,
     refTalentMap, refArmorMap, refWeaponMap, refGearMap,
     refWeaponQualityMap, refAttachmentMap,
@@ -114,7 +114,7 @@ export function MobileHudLayout({ characterId, campaignId }: MobileHudLayoutProp
   }
 
   // character is guaranteed non-null past the early-return guard above
-  const char = character
+  const char = character! // safe: returned early if character was null
   const es = derivedStats?.effectiveStats
   const woundThreshold  = es?.woundThreshold  ?? character.wound_threshold
   const strainThreshold = es?.strainThreshold ?? character.strain_threshold
