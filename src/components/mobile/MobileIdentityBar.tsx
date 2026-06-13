@@ -75,7 +75,8 @@ export function MobileIdentityBar({
           </div>
           {careerKey && (
             <div style={{
-              fontFamily: FONT_DISPLAY, fontSize: FS.overline,
+              fontFamily: FONT_DISPLAY, /* small-caps identity heading — career as display role, not plain label */
+              fontSize: FS.overline,
               color: 'var(--hud-accent)', fontVariant: 'small-caps',
               letterSpacing: '0.08em',
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
@@ -119,10 +120,10 @@ export function MobileIdentityBar({
 
       {/* ── Destiny tokens row (only when pool is non-empty) ── */}
       {destinyPool.length > 0 && (
-        <div style={{ display: 'flex', gap: '4px' /* pip gap */, alignItems: 'center', paddingLeft: 48 /* avatar 40px + gap SP[2] ≈ 48px */ }}>
+        <div style={{ display: 'flex', gap: '4px' /* pip gap */, alignItems: 'center', paddingLeft: 'calc(40px + var(--space-2))' /* avatar fixed geometry + SP[2] gap */ }}>
           <span style={{
             fontFamily: FONT_BODY, fontSize: FS.overline,
-            color: HUD.textFaint, letterSpacing: '0.1em', marginRight: '2px' /* micro-gap before pips */,
+            color: HUD.textFaint, letterSpacing: '0.1em',
           }}>
             DESTINY
           </span>
