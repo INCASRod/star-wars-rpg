@@ -144,6 +144,7 @@ function calcDutyRanges(rows: CharacterDutyRow[]) {
   const sorted = [...rows].sort((a, b) => b.duty_value - a.duty_value)
   let cursor = 0
   return sorted.map(r => {
+    if (r.duty_value === 0) return { ...r, rangeStart: 0, rangeEnd: 0 }
     const start = cursor + 1
     const end   = cursor + r.duty_value
     cursor = end
