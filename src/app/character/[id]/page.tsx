@@ -3,7 +3,7 @@
 import { Suspense }                   from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { PlayerHUDDesktop }           from '@/components/player-hud/PlayerHUDDesktop'
-import { MobileSessionCompanion }     from '@/components/mobile/MobileSessionCompanion'
+import { MobileHudLayout }            from '@/components/mobile/MobileHudLayout'
 import { CharacterLoader }            from '@/components/ui/CharacterLoader'
 import { useIsMobile }                from '@/hooks/useIsMobile'
 
@@ -25,7 +25,7 @@ function CharacterPageInner() {
 
   if (isMobile) {
     return (
-      <MobileSessionCompanion
+      <MobileHudLayout
         characterId={characterId}
         campaignId={campaignId}
       />
