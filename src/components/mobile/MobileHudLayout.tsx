@@ -35,6 +35,7 @@ export function MobileHudLayout({ characterId, campaignId }: MobileHudLayoutProp
     refTalentMap, refArmorMap, refWeaponMap, refGearMap,
     refWeaponQualityMap, refAttachmentMap,
     forceRating, hudSkills,
+    hudTalents, hudWeapons, hudArmor, hudGear,   // Phase 2 hud-ready arrays
     loading, error,
   } = useCharacterData(characterId)
 
@@ -136,24 +137,45 @@ export function MobileHudLayout({ characterId, campaignId }: MobileHudLayoutProp
           />
         )
       case 'dice':
-        return <MobileDiceScreen preSelectedSkill={diceSkill} />
+        return (
+          <MobileDiceScreen
+            preSelectedSkill={diceSkill}
+            hudSkills={hudSkills}
+            characterId={characterId}
+            characterName={char.name}
+            campaignId={effectiveCampaignId}
+            forceRating={forceRating ?? 0}
+            supabase={supabase}
+          />
+        )
       case 'talents':
-        return <MobileTalentsScreen />
+        return <MobileTalentsScreen hudTalents={hudTalents} />
       case 'items':
-        return <MobileItemsScreen />
+        return (
+          <MobileItemsScreen
+            hudWeapons={hudWeapons}
+            hudArmor={hudArmor}
+            hudGear={hudGear}
+            encCurrent={encStats?.current ?? 0}
+            encThreshold={encStats?.threshold ?? 0}
+            credits={char.credits ?? 0}
+          />
+        )
       case 'group':
-        return <MobileGroupScreen />
+        return (
+          <MobileGroupScreen
+            campaignId={effectiveCampaignId}
+            characterId={characterId}
+            characterName={char.name}
+            destinyPool={destinyPool}
+            supabase={supabase}
+          />
+        )
       default:
         return (
-          <div style={{
-            flex: 1, display: 'flex', alignItems: 'center',
-            justifyContent: 'center', padding: SP[4],
-          }}>
-            <div style={{
-              fontFamily: FONT_BODY, fontSize: FS.overline,
-              color: HUD.textFaint, letterSpacing: '0.1em',
-            }}>
-              COMING NEXT · Phase 2
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: SP[4] }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint, letterSpacing: '0.1em' }}>
+              RUNNER TABS · PHASE 3
             </div>
           </div>
         )

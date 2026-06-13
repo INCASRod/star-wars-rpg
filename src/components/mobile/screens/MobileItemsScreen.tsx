@@ -1,7 +1,16 @@
 'use client'
 import { FONT_DISPLAY, FONT_BODY, FS, SP, HUD } from '@/lib/tokens'
 
-export function MobileItemsScreen() {
+interface MobileItemsScreenProps {
+  hudWeapons: any[]
+  hudArmor: any[]
+  hudGear: any[]
+  encCurrent: number
+  encThreshold: number
+  credits: number
+}
+
+export function MobileItemsScreen(_props: MobileItemsScreenProps) {
   return (
     <div style={{
       flex: 1, display: 'flex', flexDirection: 'column',

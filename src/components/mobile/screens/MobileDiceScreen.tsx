@@ -2,7 +2,13 @@
 import { FONT_DISPLAY, FONT_BODY, FS, SP, HUD } from '@/lib/tokens'
 
 interface MobileDiceScreenProps {
-  preSelectedSkill?: string | null
+  preSelectedSkill: string | null
+  hudSkills: any[]
+  characterId: string
+  characterName: string
+  campaignId: string | null
+  forceRating: number
+  supabase: any
 }
 
 export function MobileDiceScreen({ preSelectedSkill: _ }: MobileDiceScreenProps) {

@@ -1,7 +1,9 @@
 'use client'
 import { FONT_DISPLAY, FONT_BODY, FS, SP, HUD } from '@/lib/tokens'
 
-export function MobileTalentsScreen() {
+interface MobileTalentsScreenProps { hudTalents: any[] }
+
+export function MobileTalentsScreen({ hudTalents: _ }: MobileTalentsScreenProps) {
   return (
     <div style={{
       flex: 1, display: 'flex', flexDirection: 'column',

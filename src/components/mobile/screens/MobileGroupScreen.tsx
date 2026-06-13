@@ -1,7 +1,15 @@
 'use client'
 import { FONT_DISPLAY, FONT_BODY, FS, SP, HUD } from '@/lib/tokens'
 
-export function MobileGroupScreen() {
+interface MobileGroupScreenProps {
+  campaignId: string | null
+  characterId: string
+  characterName: string
+  destinyPool: Array<'light' | 'dark'>
+  supabase: any
+}
+
+export function MobileGroupScreen(_props: MobileGroupScreenProps) {
   return (
     <div style={{
       flex: 1, display: 'flex', flexDirection: 'column',
