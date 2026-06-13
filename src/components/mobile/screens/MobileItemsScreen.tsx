@@ -1,12 +1,12 @@
 'use client'
-import { FONT_DISPLAY, FONT_BODY, FS, HUD } from '@/lib/tokens'
+import { FONT_DISPLAY, FONT_BODY, FS, SP, HUD } from '@/lib/tokens'
 
 export function MobileItemsScreen() {
   return (
     <div style={{
       flex: 1, display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center', gap: 8,
-      padding: '32px 24px',
+      alignItems: 'center', justifyContent: 'center', gap: SP[2],
+      padding: `${SP[8]} ${SP[6]}`,
     }}>
       <div style={{
         fontFamily: FONT_DISPLAY, fontSize: FS.h3, color: HUD.text,
