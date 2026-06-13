@@ -31,6 +31,7 @@ function matchesFilter(t: HudTalent, filter: FilterKey): boolean {
     case 'active':     return t.activation === 'taAction' || t.activation === 'taManeuver'
     case 'incidental': return t.activation === 'taIncidental'
     case 'oot':        return t.activation === 'taIncidentalOOT'
+    default:           return false
   }
 }
 
@@ -215,7 +216,7 @@ export function MobileTalentsScreen({ hudTalents }: MobileTalentsScreenProps) {
                   padding:         `${SP[1]} ${SP[2]}`,
                   background:      'color-mix(in srgb, var(--hud-panel) 80%, transparent)',
                   border:          `1px solid ${HUD.border}`,
-                  borderLeft:      `3px solid ${typeStyle.borderColor}`,
+                  borderLeft:      `3px solid ${typeStyle.borderColor}`,  /* 3px — accent stripe, fixed geometry */
                   borderRadius:    RADIUS.md,
                   cursor:          'pointer',
                   textAlign:       'left',
