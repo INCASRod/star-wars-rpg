@@ -1,5 +1,4 @@
 'use client'
-import Image from 'next/image'
 import { FONT_DISPLAY, FONT_BODY, FS, SP, RADIUS, HUD } from '@/lib/tokens'
 
 // Destiny pip colours match DestinyPoolDisplay.tsx — change only in sync with that file.
@@ -63,12 +62,11 @@ export function MobileIdentityBar({
           background: `color-mix(in srgb, var(--hud-accent) 15%, transparent)`,
         }}>
           {portraitUrl ? (
-            <Image
+            <img
               src={portraitUrl}
               alt={name}
-              fill
-              style={{ objectFit: 'cover' }}
-              sizes="40px"
+              loading="lazy"
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}   /* objectFit via inline on native img — unavoidable for fill behaviour */
             />
           ) : (
             <div style={{
