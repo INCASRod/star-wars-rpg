@@ -1,6 +1,8 @@
 'use client'
 import { FONT_BODY, FS, SP, RADIUS, Z, EASE, HUD } from '@/lib/tokens'
 
+const NAV_BAR_HEIGHT = 60 // fixed nav bar height — matches FAB top:-7 raise calculation
+
 export type NavTab = 'skills' | 'talents' | 'dice' | 'items' | 'group'
 
 interface NavItem { id: NavTab; label: string; icon: string; isFab?: boolean }
@@ -25,7 +27,7 @@ export function MobileBottomNav({ activeTab, onTabChange, encumbranceWarning }: 
       display: 'flex', alignItems: 'center',
       background: 'var(--hud-surface-hi)',
       borderTop: `1px solid var(--hud-border)`,
-      height: 60,
+      height: NAV_BAR_HEIGHT,
       flexShrink: 0,
       position: 'relative',
       zIndex: Z.sticky,
@@ -41,7 +43,7 @@ export function MobileBottomNav({ activeTab, onTabChange, encumbranceWarning }: 
                 aria-label="Open dice roller"
                 style={{
                   position: 'relative',
-                  top: -7,          // intentional FAB raise offset — no token equivalent
+                  top: -7,          // raises FAB above bar: (NAV_BAR_HEIGHT - 52) / 2 + 3 ≈ 7px above centre
                   width: 52, height: 52,  // fixed circle dimensions — intentional exception
                   borderRadius: RADIUS.full,
                   background: 'var(--hud-accent)',
