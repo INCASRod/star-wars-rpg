@@ -255,6 +255,7 @@
 ### `useIsMobile(breakpoint?)`
 - Responsive breakpoint detection via `matchMedia`; defaults to 768px
 - Returns: `boolean`
+- Used by `src/app/character/[id]/page.tsx` to branch between `PlayerHUDDesktop` (≥768px) and `MobileHudLayout` (<768px)
 
 ### `useTicker(text, isOpen, delayMs?)`
 - Drives the character-scramble "ticker" animation for panel headers
@@ -359,6 +360,20 @@ Cleanup via `useEffect` return → `supabase.removeChannel(channel)`.
         │     ├── HudQuickDrawer (combat/force/skill — 260px, position:absolute, slide from left)
         │     └── InitiativeStrip (compact mode, position:absolute bottom:0)
         └── HudFullPanel (skills/talents/force-panel/inventory/lore/group — 82%, position:absolute, slide from left)
+
+`/character/[id]/page.tsx` (mobile branch — `useIsMobile` < 768px)
+  └── `MobileHudLayout`        (full-height flex column — owns all data hooks)
+        ├── `MobileRunner`     (horizontally scrollable top strip: Feed/+Skills/+Talents/Force/Lore; Feed tab glows with accent pill)
+        ├── `MobileIdentityBar`  (avatar initials · name · career key · spec key · XP pill · credits pill · destiny pip row)
+        ├── `MobileVitalsStrip`  (4-column grid: Wounds/Strain/Soak/Def M·R with 2px progress bars)
+        ├── [screen content — flex:1, overflowY:auto]
+        │     ├── `MobileFeedScreen`    — wraps RollFeedPanel; default when runner=feed, no nav override
+        │     ├── `MobileSkillsScreen`  — read-only skill list with char badges, pip tracks, die pool, → roll taps
+        │     ├── `MobileDiceScreen`    — stub (Phase 2); activated by nav=dice or skill tap
+        │     ├── `MobileTalentsScreen` — stub (Phase 2)
+        │     ├── `MobileItemsScreen`   — stub (Phase 2)
+        │     └── `MobileGroupScreen`   — stub (Phase 2)
+        └── `MobileBottomNav`  (Skills · Talents · ⬡ FAB · Items · Group; FAB raised top:-7px with glow)
 
 /gm/page.tsx                    (~3,000+ lines — GOD COMPONENT)
   ├── GmLeftRail                (52px fixed left rail; buttons for map/tools/party/combat; utilities for dice/screen/library)
