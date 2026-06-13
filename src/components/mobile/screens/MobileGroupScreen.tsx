@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { FONT_DISPLAY, FONT_BODY, FS, SP, HUD, RADIUS } from '@/lib/tokens'
 
@@ -82,6 +82,7 @@ export function MobileGroupScreen({
   // ── Data fetch ─────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!campaignId) return
+    let mounted = true
     Promise.all([
       supabase
         .from('campaigns')
@@ -99,10 +100,12 @@ export function MobileGroupScreen({
         .eq('campaign_id', campaignId)
         .eq('is_archived', false),
     ]).then(([camp, duty, asset]) => {
+      if (!mounted) return
       if (camp.data)  setCampaignData(camp.data as CampaignGroupData)
       if (duty.data)  setDuties(duty.data as CharacterDutyRow[])
       if (asset.data) setAssets(asset.data as GroupAsset[])
     })
+    return () => { mounted = false }
   }, [campaignId, supabase])
 
   // ── No campaign guard ──────────────────────────────────────────────────────
@@ -193,28 +196,28 @@ export function MobileGroupScreen({
             </div>
             {/* Data rows */}
             {duties.map(row => (
-              <>
-                <div key={`${row.id}-name`} style={{
+              <React.Fragment key={row.id}>
+                <div style={{
                   fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.text,
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   minWidth: 0,
                 }}>
                   {row.name}
                 </div>
-                <div key={`${row.id}-type`} style={{
+                <div style={{
                   fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.textDim,
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   minWidth: 0,
                 }}>
                   {row.duty_type ?? '—'}
                 </div>
-                <div key={`${row.id}-val`} style={{
+                <div style={{
                   fontFamily: FONT_DISPLAY, fontSize: FS.sm, color: HUD.gold,
                   fontWeight: 700, textAlign: 'right', flexShrink: 0,
                 }}>
                   {row.duty_value}
                 </div>
-              </>
+              </React.Fragment>
             ))}
           </div>
         )}
