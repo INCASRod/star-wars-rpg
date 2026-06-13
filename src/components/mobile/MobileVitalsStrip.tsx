@@ -1,5 +1,5 @@
 'use client'
-import { FONT_DISPLAY, FS, SP, HUD } from '@/lib/tokens'
+import { FONT_BODY, FONT_DISPLAY, FS, SP, HUD, COLOR } from '@/lib/tokens'
 
 const WOUNDS_COLOR = '#E85A2A' /* wounds display — Ember Tatooine exception */
 
@@ -14,9 +14,9 @@ interface VitalCellProps {
 function VitalCell({ label, valueStr, color, current, max }: VitalCellProps) {
   const pct = max > 0 ? Math.min(1, current / max) : 0
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' /* 2px — minimum intra-cell gap */, minWidth: 0 }}>
       <div style={{
-        fontFamily: FONT_DISPLAY, fontSize: FS.overline,
+        fontFamily: FONT_BODY, fontSize: FS.overline,
         letterSpacing: '0.15em', textTransform: 'uppercase', color: HUD.textFaint,
       }}>
         {label}
@@ -68,16 +68,16 @@ export function MobileVitalsStrip({
       />
       <VitalCell
         label="Strain" valueStr={`${strainCurrent}/${strainThreshold}`}
-        color="var(--hud-gold)" current={strainCurrent} max={strainThreshold}
+        color={HUD.gold} current={strainCurrent} max={strainThreshold}
       />
       <VitalCell
         label="Soak" valueStr={String(soak)}
-        color="var(--blue)" current={soak} max={10}
+        color={COLOR.blue} current={soak} max={10}
       />
       {/* Def M·R has no meaningful max so we render without VitalCell progress bar */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' /* 2px — minimum intra-cell gap */, minWidth: 0 }}>
         <div style={{
-          fontFamily: FONT_DISPLAY, fontSize: FS.overline,
+          fontFamily: FONT_BODY, fontSize: FS.overline,
           letterSpacing: '0.15em', textTransform: 'uppercase', color: HUD.textFaint,
         }}>
           Def M·R
