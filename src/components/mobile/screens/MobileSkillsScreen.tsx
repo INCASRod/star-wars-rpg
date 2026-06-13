@@ -5,11 +5,11 @@ import { DiceFace } from '@/components/dice/DiceFace'
 import { getSkillPool } from '@/components/player-hud/dice-engine'
 import type { HudSkill } from '@/lib/types'
 
-// 2-char abbreviations for the characteristic badge (per spec).
-// Different from CHAR_ABBR3 (3-char) — do not replace with that export.
+// Short abbreviations for the characteristic badge — max 2-3 chars, fits FS.overline in 22px badge.
+// Defined locally (per spec); intentionally different from CHAR_ABBR3 in tokens.ts.
 const CHAR_ABBR2: Record<string, string> = {
   brawn:     'Br', agility:   'Ag', cunning:   'Cu',
-  intellect: 'Int', willpower: 'Wi', presence:  'Pr',
+  intellect: 'In', willpower: 'Wi', presence:  'Pr',
 }
 
 // Badge bg tints. Agility uses FFG ability die green (sealed game-mechanic colour).
@@ -40,7 +40,7 @@ function CharBadge({ charKey }: { charKey: string }) {
 
 function PipTrack({ rank }: { rank: number }) {
   return (
-    <div style={{ display: 'flex', gap: '2px' /* pip gap */, alignItems: 'center' }}>
+    <div style={{ display: 'flex', gap: '2px' /* below SP[1] floor — fixed pip geometry */, alignItems: 'center' }}>
       {Array.from({ length: 5 }).map((_, i) => (
         <div key={i} style={{
           width: 7, height: 7, borderRadius: 1, /* fixed pip geometry */
@@ -128,7 +128,7 @@ export function MobileSkillsScreen({ hudSkills, xpAvailable, onRollSkill }: Mobi
               }}
             >
               <CharBadge charKey={skill.charKey} />
-              <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '2px' /* name+pip gap */ }}>
+              <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '2px' /* below SP[1] floor — compact label+pip stack */ }}>
                 <div style={{
                   fontFamily: FONT_BODY, fontSize: FS.sm,
                   color: nameColor, fontWeight: skill.isCareer ? 700 : 400,
@@ -139,7 +139,7 @@ export function MobileSkillsScreen({ hudSkills, xpAvailable, onRollSkill }: Mobi
                 <PipTrack rank={skill.rank} />
               </div>
               {/* Die pool faces */}
-              <div style={{ display: 'flex', gap: '2px' /* die gap */, flexShrink: 0, alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: '2px' /* below SP[1] floor — fixed die geometry */, flexShrink: 0, alignItems: 'center' }}>
                 {Array.from({ length: Math.min(proficiency, 4) }).map((_, i) => (
                   <DiceFace key={`p${i}`} type="proficiency" size={16} />
                 ))}
@@ -150,7 +150,7 @@ export function MobileSkillsScreen({ hudSkills, xpAvailable, onRollSkill }: Mobi
               {/* Roll hint */}
               <span style={{
                 fontFamily: FONT_BODY, fontSize: FS.overline,
-                color: COLOR.blue, letterSpacing: '0.06em', flexShrink: 0,
+                color: COLOR.blue, /* static action blue — mobile roll affordance, not accent-themed */ letterSpacing: '0.06em', flexShrink: 0,
               }}>
                 → roll
               </span>
