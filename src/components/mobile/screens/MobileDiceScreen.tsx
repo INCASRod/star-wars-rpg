@@ -312,6 +312,7 @@ export function MobileDiceScreen({
               key={tab}
               onClick={() => {
                 setCheckType(tab)
+                setSelectedSkillKey(null)
                 setRollResult(null)
                 setForceResult(null)
               }}
