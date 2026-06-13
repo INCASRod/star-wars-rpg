@@ -145,7 +145,6 @@ export function MobileHudLayout({ characterId, campaignId }: MobileHudLayoutProp
             characterName={char.name}
             campaignId={effectiveCampaignId}
             forceRating={forceRating ?? 0}
-            supabase={supabase}
           />
         )
       case 'talents':

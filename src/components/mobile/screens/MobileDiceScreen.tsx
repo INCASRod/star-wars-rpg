@@ -1,7 +1,6 @@
 'use client'
 
-import { useState } from 'react'
-import type { SupabaseClient } from '@supabase/supabase-js'
+import { useState, useCallback, useMemo } from 'react'
 import {
   FONT_DISPLAY, FONT_BODY,
   FS, SP, RADIUS, EASE,
@@ -200,7 +199,6 @@ interface MobileDiceScreenProps {
   characterName:    string
   campaignId:       string | null
   forceRating:      number
-  supabase:         SupabaseClient
 }
 
 // ── Main component ────────────────────────────────────────────────────
@@ -234,19 +232,19 @@ export function MobileDiceScreen({
   const [forceResult, setForceResult] = useState<ForceRollResult | null>(null)
 
   // ── Skill selection ──
-  function selectSkill(skill: HudSkill) {
+  const selectSkill = useCallback((skill: HudSkill) => {
     const { proficiency, ability } = getSkillPool(skill.charVal, skill.rank)
     setSelectedSkillKey(skill.key)
     setPool(prev => ({ ...prev, proficiency, ability }))
-  }
+  }, []) // getSkillPool is a pure imported function — no deps needed
 
   // ── Pool stepper ──
-  function stepPool(key: keyof RegularPool, delta: number) {
+  const stepPool = useCallback((key: keyof RegularPool, delta: number) => {
     setPool(prev => ({ ...prev, [key]: Math.max(0, prev[key] + delta) }))
-  }
+  }, [])
 
   // ── Roll ──
-  function handleRoll() {
+  const handleRoll = useCallback(() => {
     setRollResult(null)
     setForceResult(null)
 
@@ -271,18 +269,17 @@ export function MobileDiceScreen({
         })
       }
     }
-  }
+  }, [checkType, forceDice, pool, campaignId, hudSkills, selectedSkillKey, characterId, characterName])
 
   // ── Derived ──
   const totalPoolSize = Object.values(pool).reduce((a, b) => a + b, 0)
   const canRoll = checkType === 'force' ? forceDice > 0 : totalPoolSize > 0
 
   // Skills shown in each tab
-  const visibleSkills = hudSkills.filter(s =>
-    checkType === 'combat'
-      ? COMBAT_SKILL_KEYS.has(s.key)
-      : !COMBAT_SKILL_KEYS.has(s.key),
-  )
+  const visibleSkills = useMemo(() => {
+    if (checkType === 'combat') return hudSkills.filter(s => COMBAT_SKILL_KEYS.has(s.key))
+    return hudSkills
+  }, [checkType, hudSkills])
 
   // ── Pool preview dice list (max 8 per type) ──
   const previewDice: DiceType[] = []
