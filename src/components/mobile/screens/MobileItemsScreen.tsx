@@ -190,7 +190,7 @@ export function MobileItemsScreen({
         <div style={{
           height: 4,  /* fixed bar geometry — UI affordance constant */
           borderRadius: RADIUS.sm,
-          background: `color-mix(in srgb, ${barColor} 20%, transparent)`,
+          background: `color-mix(in srgb, ${barColor} 20%, transparent)`,  /* DANGER_COLOR in color-mix — wounds/danger sealed exception */
           overflow: 'hidden',
         }}>
           <div style={{
