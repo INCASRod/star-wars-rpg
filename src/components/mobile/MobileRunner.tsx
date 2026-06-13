@@ -1,5 +1,5 @@
 'use client'
-import { FONT_DISPLAY, FS, SP, RADIUS, EASE, HUD } from '@/lib/tokens'
+import { FONT_BODY, FS, SP, RADIUS, EASE, HUD } from '@/lib/tokens'
 
 export type RunnerTab = 'feed' | 'skills-buy' | 'talents-buy' | 'force' | 'lore'
 
@@ -42,7 +42,7 @@ export function MobileRunner({ activeTab, onTabChange }: MobileRunnerProps) {
               borderRadius: (isFeedTab && isActive) ? RADIUS.full : 0,
               padding: `${SP[1]} ${SP[2]}`,
               cursor: 'pointer',
-              fontFamily: FONT_DISPLAY,
+              fontFamily: FONT_BODY,
               fontSize: FS.overline,
               fontWeight: 700,
               letterSpacing: '0.12em',
