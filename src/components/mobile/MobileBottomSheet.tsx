@@ -1,22 +1,31 @@
 'use client'
-import { useEffect }    from 'react'
+import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { SP, Z, EASE, RADIUS } from '@/lib/tokens'
+import { SP, Z, EASE, RADIUS, HUD, FS } from '@/lib/tokens'
 
 interface MobileBottomSheetProps {
   open: boolean
   onClose: () => void
   children: React.ReactNode
-  /** Sheet max height as CSS value. Default: '80dvh' */
-  maxHeight?: string
+  /** Collapsed sheet height. Default: '40dvh' */
+  collapsedHeight?: string
+  /** Expanded sheet height. Default: '70dvh' */
+  expandedHeight?: string
 }
 
-export function MobileBottomSheet({ open, onClose, children, maxHeight = '80dvh' }: MobileBottomSheetProps) {
+export function MobileBottomSheet({ open, onClose, children, collapsedHeight = '40dvh', expandedHeight = '70dvh' }: MobileBottomSheetProps) {
+  const [isExpanded, setIsExpanded] = useState(false)
+
   // Lock body scroll while open
   useEffect(() => {
     if (open) document.body.style.overflow = 'hidden'
     else       document.body.style.overflow = ''
     return () => { document.body.style.overflow = '' }
+  }, [open])
+
+  // Reset expanded state when sheet opens
+  useEffect(() => {
+    if (open) setIsExpanded(false)
   }, [open])
 
   if (!open) return null
@@ -45,7 +54,8 @@ export function MobileBottomSheet({ open, onClose, children, maxHeight = '80dvh'
       <div style={{
         position: 'relative',
         zIndex: Z.modal,
-        maxHeight,
+        maxHeight: isExpanded ? expandedHeight : collapsedHeight,
+        transition: `max-height ${EASE.panel}`,
         overflowY: 'auto',
         overscrollBehavior: 'contain',
         background: 'var(--hud-surface-hi)',
@@ -54,12 +64,26 @@ export function MobileBottomSheet({ open, onClose, children, maxHeight = '80dvh'
         padding: `${SP[2]} ${SP[3]} ${SP[6]}`,
       }}>
         {/* Drag handle — fixed geometry: 36×4px is a UI affordance constant, not a spacing token */}
+        <div
+          onClick={() => setIsExpanded(prev => !prev)}
+          style={{
+            width: 36, height: 4, /* fixed handle geometry */
+            borderRadius: RADIUS.full,
+            background: 'var(--hud-border-hi)',
+            margin: `0 auto ${SP[1]}`,
+            cursor: 'pointer',
+          }}
+        />
+        {/* Chevron hint */}
         <div style={{
-          width: 36, height: 4, /* fixed handle geometry */
-          borderRadius: RADIUS.full,
-          background: 'var(--hud-border-hi)',
-          margin: `0 auto ${SP[2]}`,
-        }} />
+          textAlign: 'center',
+          marginBottom: SP[2],
+          fontSize: FS.overline,
+          color: HUD.textFaint,
+          lineHeight: 1,
+        }}>
+          {isExpanded ? '▲' : '▼'}
+        </div>
         {children}
       </div>
     </div>,

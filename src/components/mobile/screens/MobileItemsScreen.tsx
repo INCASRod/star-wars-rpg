@@ -108,6 +108,18 @@ function ItemDetail({ item }: { item: DetailItem }) {
         <Stat label="Encumbrance" value={w.enc} />
         <Stat label="Skill" value={w.skillName || '—'} />
         {quals && <Stat label="Qualities" value={quals} />}
+        {w.description && (
+          <div style={{
+            fontFamily: FONT_BODY,
+            fontSize: FS.label,
+            color: HUD.textDim,
+            lineHeight: 1.5,
+            paddingTop: SP[2],
+            borderTop: `1px solid var(--hud-border)`,
+          }}>
+            {w.description}
+          </div>
+        )}
       </div>
     )
   }
@@ -123,6 +135,18 @@ function ItemDetail({ item }: { item: DetailItem }) {
         <Stat label="Defense" value={a.defense} />
         <Stat label="Soak Bonus" value={`+${a.soak}`} />
         <Stat label="Encumbrance" value={a.enc} />
+        {a.description && (
+          <div style={{
+            fontFamily: FONT_BODY,
+            fontSize: FS.label,
+            color: HUD.textDim,
+            lineHeight: 1.5,
+            paddingTop: SP[2],
+            borderTop: `1px solid var(--hud-border)`,
+          }}>
+            {a.description}
+          </div>
+        )}
       </div>
     )
   }
@@ -137,6 +161,18 @@ function ItemDetail({ item }: { item: DetailItem }) {
       }}>{g.name}</div>
       <Stat label="Encumbrance" value={g.enc} />
       <Stat label="Quantity" value={g.qty} />
+      {g.description && (
+        <div style={{
+          fontFamily: FONT_BODY,
+          fontSize: FS.label,
+          color: HUD.textDim,
+          lineHeight: 1.5,
+          paddingTop: SP[2],
+          borderTop: `1px solid var(--hud-border)`,
+        }}>
+          {g.description}
+        </div>
+      )}
     </div>
   )
 }
