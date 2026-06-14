@@ -2,13 +2,30 @@
 
 import React, { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { FONT_DISPLAY, FONT_BODY, FS, SP, HUD, RADIUS } from '@/lib/tokens'
+import { FONT_DISPLAY, FONT_BODY, FS, SP, HUD, COLOR, RADIUS } from '@/lib/tokens'
+import { MobileGroupStorageSheet } from './MobileGroupStorageSheet'
 
 // ── Destiny pip sealed exceptions ──────────────────────────────────────────────
 const DESTINY_LIGHT = '#0EA5E9'  /* destiny light — sealed exception */
 const DESTINY_DARK  = '#A845F5'  /* destiny dark — sealed exception */
 const LIGHT_IMG = '/images/factions/LightSymbol.png'
 const DARK_IMG  = '/images/factions/DarkSymbol.png'
+
+// ── Asset type badge metadata ──────────────────────────────────────────────────
+
+const ASSET_TYPE_META: Record<string, { label: string; color: string }> = {
+  strategic_asset: { label: 'STRATEGIC', color: 'var(--die-difficulty)' },
+  starship:        { label: 'STARSHIP',  color: 'var(--hud-accent)' },
+  vehicle:         { label: 'VEHICLE',   color: HUD.gold },
+  safe_house:      { label: 'SAFE HOUSE', color: COLOR.green },
+}
+
+function getAssetTypeMeta(type: string) {
+  return ASSET_TYPE_META[type] ?? {
+    label: type.toUpperCase().replace(/_/g, ' '),
+    color: HUD.textDim,
+  }
+}
 
 // ── Props ──────────────────────────────────────────────────────────────────────
 
@@ -69,15 +86,16 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export function MobileGroupScreen({
   campaignId,
-  // characterId and characterName are accepted for interface compatibility but
-  // not used — group data is campaign-level only in this phase.
+  characterId,
+  // characterName is accepted for interface compatibility but not used.
   destinyPool,
   supabase,
 }: MobileGroupScreenProps) {
   const [campaignData, setCampaignData] = useState<CampaignGroupData | null>(null)
   const [duties, setDuties]             = useState<CharacterDutyRow[]>([])
   const [assets, setAssets]             = useState<GroupAsset[]>([])
-  const [expandedAsset, setExpandedAsset] = useState<string | null>(null)
+  const [expandedAsset, setExpandedAsset]   = useState<string | null>(null)
+  const [storageAsset,  setStorageAsset]    = useState<{ id: string; name: string } | null>(null)
 
   // ── Data fetch ─────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -133,6 +151,7 @@ export function MobileGroupScreen({
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
+    <>
     <div style={{
       flex: 1,
       overflowY: 'auto',
@@ -320,12 +339,25 @@ export function MobileGroupScreen({
                     }}>
                       {asset.name}
                     </span>
-                    <span style={{
-                      fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textDim,
-                      letterSpacing: '0.08em', flexShrink: 0,
-                    }}>
-                      {asset.asset_type}
-                    </span>
+                    {(() => {
+                      const meta = getAssetTypeMeta(asset.asset_type)
+                      return (
+                        <span style={{
+                          fontFamily: FONT_DISPLAY,
+                          fontSize: FS.overline,
+                          color: meta.color,
+                          background: `color-mix(in srgb, ${meta.color} 15%, transparent)`,
+                          border: `1px solid color-mix(in srgb, ${meta.color} 35%, transparent)`,
+                          borderRadius: RADIUS.sm,
+                          padding: `1px ${SP[1]}`, /* 1px vertical — geometry minimum */
+                          textTransform: 'uppercase' as const,
+                          letterSpacing: '0.1em',
+                          flexShrink: 0,
+                        }}>
+                          {meta.label}
+                        </span>
+                      )
+                    })()}
                     {asset.is_group_storage && (
                       <span style={{
                         fontFamily: FONT_BODY, fontSize: FS.overline,
@@ -352,6 +384,28 @@ export function MobileGroupScreen({
                       {asset.description}
                     </div>
                   )}
+
+                  {/* Storage button — shown when expanded and asset is group storage */}
+                  {isExpanded && asset.is_group_storage && (
+                    <button
+                      onClick={e => { e.stopPropagation(); setStorageAsset({ id: asset.id, name: asset.name }) }}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: SP[1],
+                        marginTop: SP[1],
+                        background: `color-mix(in srgb, var(--hud-accent) 12%, transparent)`,
+                        border: `1px solid color-mix(in srgb, var(--hud-accent) 30%, transparent)`,
+                        borderRadius: RADIUS.sm,
+                        padding: `1px ${SP[2]}`, /* 1px vertical — geometry minimum */
+                        cursor: 'pointer',
+                        fontFamily: FONT_BODY,
+                        fontSize: FS.overline,
+                        color: 'var(--hud-accent)',
+                        letterSpacing: '0.08em',
+                      }}
+                    >
+                      📦 Storage
+                    </button>
+                  )}
                 </button>
               )
             })}
@@ -360,5 +414,14 @@ export function MobileGroupScreen({
       </Section>
 
     </div>
+
+    <MobileGroupStorageSheet
+      assetId={storageAsset?.id ?? ''}
+      assetName={storageAsset?.name ?? ''}
+      isOpen={storageAsset !== null}
+      onClose={() => setStorageAsset(null)}
+      takerId={characterId}
+    />
+  </>
   )
 }
