@@ -54,7 +54,41 @@ interface RegularPool {
 // ── Constants ─────────────────────────────────────────────────────────
 const COMBAT_SKILL_KEYS = new Set([
   'brawl', 'melee', 'ranged-light', 'ranged-heavy', 'gunnery', 'lightsaber',
+  'piloting-planetary', 'piloting-space',
 ])
+
+// Short abbreviations for the characteristic badge — matches MobileSkillsScreen.
+// Defined locally per spec; intentionally not imported from sibling component.
+const CHAR_ABBR2: Record<string, string> = {
+  brawn:     'Br', agility:   'Ag', cunning:   'Cu',
+  intellect: 'In', willpower: 'Wi', presence:  'Pr',
+}
+
+// Badge bg tints. Agility uses FFG ability die green (sealed game-mechanic colour).
+const CHAR_BADGE_BG: Record<string, string> = {
+  brawn:     `color-mix(in srgb, var(--hud-accent) 18%, transparent)`,
+  agility:   `color-mix(in srgb, #4A7A30 20%, transparent)`, /* FFG ability die — sealed */
+  cunning:   `color-mix(in srgb, var(--hud-gold) 15%, transparent)`,
+  intellect: `color-mix(in srgb, var(--hud-border) 40%, transparent)`,
+  willpower: `color-mix(in srgb, var(--hud-border) 40%, transparent)`,
+  presence:  `color-mix(in srgb, var(--hud-border) 40%, transparent)`,
+}
+
+function CharBadge({ charKey }: { charKey: string }) {
+  return (
+    <div style={{
+      width: 22, height: 22, /* fixed badge geometry */
+      borderRadius: RADIUS.sm,
+      background: CHAR_BADGE_BG[charKey] ?? `color-mix(in srgb, var(--hud-border) 40%, transparent)`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      flexShrink: 0,
+      fontFamily: FONT_DISPLAY, fontSize: FS.overline, fontWeight: 700,
+      color: HUD.text, letterSpacing: '0.05em',
+    }}>
+      {CHAR_ABBR2[charKey] ?? '?'}
+    </div>
+  )
+}
 
 const STEPPER_CONFIG: Array<{
   key:   keyof RegularPool
@@ -341,13 +375,72 @@ export function MobileDiceScreen({
       {checkType !== 'force' && (
         <div style={{
           display:        'flex',
-          flexWrap:       'wrap',
+          flexWrap:       checkType === 'combat' ? 'nowrap' : 'wrap',
+          flexDirection:  checkType === 'combat' ? 'column' : 'row',
           gap:            SP[1],
           padding:        SP[2],
           borderBottom:   `1px solid var(--hud-border)`,
         }}>
           {visibleSkills.map(skill => {
             const selected = skill.key === selectedSkillKey
+
+            if (checkType === 'combat') {
+              // Rich combat chip: CharBadge + skill name + die pool faces
+              const { proficiency, ability } = getSkillPool(skill.charVal, skill.rank)
+              const profCount = Math.min(proficiency, 4)
+              const abilCount = Math.min(ability, 4)
+              const nameColor = skill.rank === 0
+                ? HUD.textFaint
+                : skill.isCareer
+                  ? 'var(--hud-accent)'
+                  : HUD.text
+
+              return (
+                <button
+                  key={skill.key}
+                  onClick={() => selectSkill(skill)}
+                  style={{
+                    width:        '100%',
+                    display:      'flex',
+                    alignItems:   'center',
+                    gap:          SP[1],
+                    padding:      `2px ${SP[2]}`, /* compact chip */
+                    borderRadius: RADIUS.sm,
+                    background:   selected
+                      ? `color-mix(in srgb, var(--hud-accent) 20%, transparent)`
+                      : 'transparent',
+                    border:       `1px solid ${selected ? 'var(--hud-accent)' : 'var(--hud-border)'}`,
+                    cursor:       'pointer',
+                    transition:   EASE.quick,
+                  }}
+                >
+                  <CharBadge charKey={skill.charKey} />
+                  <span style={{
+                    flex:         1,
+                    fontFamily:   FONT_BODY,
+                    fontSize:     FS.overline,
+                    letterSpacing:'0.08em',
+                    color:        nameColor,
+                    textAlign:    'left',
+                    whiteSpace:   'nowrap',
+                    overflow:     'hidden',
+                    textOverflow: 'ellipsis',
+                  }}>
+                    {skill.name}
+                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '2px' /* tight die faces */, flexShrink: 0 }}>
+                    {Array.from({ length: profCount }).map((_, i) => (
+                      <DiceFace key={`prof-${i}`} type="proficiency" size={16} />
+                    ))}
+                    {Array.from({ length: abilCount }).map((_, i) => (
+                      <DiceFace key={`abil-${i}`} type="ability" size={16} />
+                    ))}
+                  </div>
+                </button>
+              )
+            }
+
+            // Skill mode: plain name chip (unchanged)
             return (
               <button
                 key={skill.key}
