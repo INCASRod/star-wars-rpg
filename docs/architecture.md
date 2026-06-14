@@ -1,6 +1,6 @@
 # Holocron — Architecture, Routes & Hooks Reference
 
-> Updated 2026-06-10. Read from codebase; update when structure changes.
+> Updated 2026-06-14. Read from codebase; update when structure changes.
 > For full design token and color reference see **[docs/design-system.md](design-system.md)**.
 
 ---
@@ -42,6 +42,15 @@
 - Fetches `group_assets` table — vehicles, starships, safe houses, strategic assets, NPCs, other
 - Used by GroupSheet, GM dashboard, and PlayerHUDDesktop (for stow locations)
 - Realtime: subscribes to `group_assets` channel
+
+### `useGroupStorage(assetId)`
+- Fetches stowed inventory for a single `group_assets` record marked `is_group_storage = true`
+- Queries `character_weapons`, `character_armor`, `character_gear` in parallel filtered by `stow_location_id = assetId + equip_state='stowed' + NOT is_dropped`
+- Returns: `{ items: GroupStorageItem[], loading: boolean, taking: Set<string>, takeItem }`
+- `taking` is a `Set<string>` of item IDs currently being taken (per-item spinner)
+- `takeItem(itemId, itemType, takerId, qty?)` → calls `take_group_storage_item` RPC; throws `Error` on failure
+- Realtime: subscribes to INSERT/UPDATE/DELETE on all three item tables filtered by `stow_location_id`
+- Pass `null` to disable fetching (used to pause when storage sheet is closed)
 
 ### `useCampaignPlayers(campaignId)`
 - Fetches all players and their characters for a campaign
@@ -363,17 +372,18 @@ Cleanup via `useEffect` return → `supabase.removeChannel(channel)`.
 
 `/character/[id]/page.tsx` (mobile branch — `useIsMobile` < 768px)
   └── `MobileHudLayout`        (full-height flex column — owns all data hooks)
-        ├── `MobileRunner`     (horizontally scrollable top strip: Feed/+Skills/+Talents/Force/Lore; Feed tab rectangular, strip height 48px)
+        ├── `MobileRunner`     (full-width even tab distribution — 5 tabs each `flex:1`, no scroll; Feed tab rectangular with accent fill, others get bottom-border active indicator; strip height 48px fixed)
         ├── `MobileIdentityBar`  (portrait img with lazy-load + initials fallback · name · career key · spec key · XP pill · credits pill · destiny pip row; props: `portraitUrl?`)
         ├── `MobileVitalsStrip`  (4-column grid: Wounds/Strain/Soak/Def M·R with 2px progress bars)
         ├── [screen content — flex:1, overflowY:auto]
         │     ├── `MobileFeedScreen`    — wraps RollFeedPanel; default when runner=feed, no nav override
         │     ├── `MobileSkillsScreen`  — read-only skill list with char badges, pip tracks, die pool, → roll taps
-        │     ├── `MobileDiceScreen`    — full dice roller; check type bar (Skill/Combat/Force), skill grid with `getSkillPool` auto-calc, 6 pool steppers, pool preview, roll via `rollPool`/`rollForceDice`, result card, fire-and-forget `logRoll`; props: `preSelectedSkill`, `hudSkills`, `characterId`, `characterName`, `campaignId`, `forceRating`
+        │     ├── `MobileDiceScreen`    — full dice roller; check type bar (Skill/Combat/Force), skill grid with `getSkillPool` auto-calc, 6 pool steppers, pool preview, roll via `rollPool`/`rollForceDice`, result card, fire-and-forget `logRoll`; Combat mode shows 8 skills (Brawl, Melee, Ranged-Light, Ranged-Heavy, Gunnery, Piloting-Planetary, Piloting-Space, Lightsaber) as full-width chips with CharBadge (22px) + colored name + DiceFace die pool; props: `preSelectedSkill`, `hudSkills`, `characterId`, `characterName`, `campaignId`, `forceRating`
         │     ├── `MobileTalentsScreen` — talent quick reference; filter strip (All/Passive/Active/Incidental/OOT), type-coloured left-border cards, OOT→Action→Maneuver→Incidental→Passive sort, expand-in-place description; props: `hudTalents`
         │     ├── `MobileItemsScreen`   — inventory screen; enc bar (blue→red when over threshold), weapons/armor/gear sections, tap row → `MobileBottomSheet` detail; props: `hudWeapons`, `hudArmor`, `hudGear`, `encCurrent`, `encThreshold`, `credits`
-        │     └── `MobileGroupScreen`   — group screen; destiny pool display, character_duty table, alliance standing (contribution_rank + descriptions), imperial threat Phase 3 stub, group_assets expand-in-place; props: `campaignId`, `characterId`, `characterName`, `destinyPool`, `supabase`
-        ├── `MobileBottomSheet` — portal slide-up overlay (`createPortal` to `document.body`), used by MobileItemsScreen for item detail; props: `open`, `onClose`, `children`, `maxHeight?`
+        │     ├── `MobileGroupScreen`   — group screen; destiny pool display, character_duty table, alliance standing (contribution_rank + descriptions), imperial threat Phase 3 stub, group_assets expand-in-place with colored type badges (strategic_asset→purple, starship→accent, vehicle→gold, safe_house→green); is_group_storage assets show "📦 Storage" button when expanded → opens `MobileGroupStorageSheet`; props: `campaignId`, `characterId`, `characterName`, `destinyPool`, `supabase`
+        │     └── `MobileGroupStorageSheet` — bottom sheet for group storage assets (`expandedHeight="90dvh"`); consumes `useGroupStorage(assetId)` hook; item rows show TYPE_ICON + name + ownerName + stat summary + TAKE button; single items: TAKE→CONFIRM; stackable gear (qty>1): TAKE→qty stepper→CONFIRM; error state per row; props: `assetId`, `assetName`, `isOpen`, `onClose`, `takerId`
+        ├── `MobileBottomSheet` — portal slide-up overlay (`createPortal` to `document.body`), two-height collapse/expand via drag handle+chevron button; props: `open`, `onClose`, `children`, `collapsedHeight?` (default `'40dvh'`), `expandedHeight?` (default `'70dvh'`); used by `MobileItemsScreen` for item detail (with descriptions) and `MobileGroupStorageSheet` at 60/90dvh
         └── `MobileBottomNav`  (Skills · Talents · ⬡ FAB · Items · Group; FAB raised top:-7px with glow; `minHeight: 44` on non-FAB buttons — WCAG 2.5.5)
 
 #### Mobile HUD — Phase 2 (2026-06-13)
