@@ -381,6 +381,8 @@ export function MobileDiceScreen({
           padding:        SP[2],
           borderBottom:   `1px solid var(--hud-border)`,
         }}>
+          {/* visibleSkills is pre-filtered: combat → COMBAT_SKILL_KEYS only; skill → all.
+              Only the matching branch below ever runs for a given checkType. */}
           {visibleSkills.map(skill => {
             const selected = skill.key === selectedSkillKey
 
@@ -428,7 +430,7 @@ export function MobileDiceScreen({
                   }}>
                     {skill.name}
                   </span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '2px' /* tight die faces */, flexShrink: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '2px' /* below SP[1] floor — fixed die geometry */, flexShrink: 0 }}>
                     {Array.from({ length: profCount }).map((_, i) => (
                       <DiceFace key={`prof-${i}`} type="proficiency" size={16} />
                     ))}
