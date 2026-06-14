@@ -23,10 +23,8 @@ export function MobileBottomSheet({ open, onClose, children, collapsedHeight = '
     return () => { document.body.style.overflow = '' }
   }, [open])
 
-  // Reset expanded state when sheet opens
-  useEffect(() => {
-    if (open) setIsExpanded(false)
-  }, [open])
+  // isExpanded resets automatically on close because component unmounts (open → null guard below).
+  // If this component is ever changed to persist while hidden, add a reset effect here.
 
   if (!open) return null
 
@@ -63,27 +61,35 @@ export function MobileBottomSheet({ open, onClose, children, collapsedHeight = '
         borderRadius: `${RADIUS.xl}px ${RADIUS.xl}px 0 0`,
         padding: `${SP[2]} ${SP[3]} ${SP[6]}`,
       }}>
-        {/* Drag handle — fixed geometry: 36×4px is a UI affordance constant, not a spacing token */}
-        <div
+        {/* Drag handle + chevron — single button so full affordance is keyboard/touch accessible */}
+        <button
           onClick={() => setIsExpanded(prev => !prev)}
+          aria-label={isExpanded ? 'Collapse sheet' : 'Expand sheet'}
+          aria-expanded={isExpanded}
           style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            gap: SP[1],
+            width: '100%',
+            background: 'transparent', border: 'none',
+            cursor: 'pointer',
+            padding: `0 0 ${SP[1]}`,
+          }}
+        >
+          {/* Handle pill — fixed geometry: 36×4px is a UI affordance constant */}
+          <div style={{
             width: 36, height: 4, /* fixed handle geometry */
             borderRadius: RADIUS.full,
             background: 'var(--hud-border-hi)',
-            margin: `0 auto ${SP[1]}`,
-            cursor: 'pointer',
-          }}
-        />
-        {/* Chevron hint */}
-        <div style={{
-          textAlign: 'center',
-          marginBottom: SP[2],
-          fontSize: FS.overline,
-          color: HUD.textFaint,
-          lineHeight: 1,
-        }}>
-          {isExpanded ? '▲' : '▼'}
-        </div>
+          }} />
+          {/* Chevron hint */}
+          <span style={{
+            fontSize: FS.overline,
+            color: HUD.textFaint,
+            lineHeight: 1,
+          }}>
+            {isExpanded ? '▲' : '▼'}
+          </span>
+        </button>
         {children}
       </div>
     </div>,
