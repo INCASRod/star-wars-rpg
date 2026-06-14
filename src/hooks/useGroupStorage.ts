@@ -176,7 +176,7 @@ export function useGroupStorage(assetId: string | null) {
       })
       if (error) {
         console.error('[GroupStorage] take failed:', error.message)
-        return
+        throw new Error(error.message)
       }
       await fetchItems()
     } finally {

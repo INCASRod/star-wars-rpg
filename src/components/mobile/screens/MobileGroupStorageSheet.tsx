@@ -8,7 +8,7 @@ import { COLOR, FONT_BODY, FONT_DISPLAY, FS, HUD, RADIUS, SP } from '@/lib/token
 // ── Props ──────────────────────────────────────────────────────────────────────
 
 interface MobileGroupStorageSheetProps {
-  assetId:   string
+  assetId:   string | null
   assetName: string
   isOpen:    boolean
   onClose:   () => void
@@ -149,6 +149,7 @@ function StorageItemRow({ item, taking, takerId, takeItem }: StorageItemRowProps
           <button
             disabled={isAnyTaking}
             onClick={handleTakeClick}
+            aria-label={`Take ${item.name}`}
             style={{
               padding: `1px ${SP[2]}`, /* 1px vertical — geometry minimum */
               fontFamily: FONT_DISPLAY, fontSize: FS.overline,
@@ -171,6 +172,7 @@ function StorageItemRow({ item, taking, takerId, takeItem }: StorageItemRowProps
                 <button
                   disabled={qty <= 1 || isAnyTaking}
                   onClick={() => setQty(q => Math.max(1, q - 1))}
+                  aria-label={`Decrease quantity, currently ${qty}`}
                   style={{
                     width: 24, height: 24, /* fixed stepper geometry */
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -194,6 +196,7 @@ function StorageItemRow({ item, taking, takerId, takeItem }: StorageItemRowProps
                 <button
                   disabled={qty >= (item.qty ?? 1) || isAnyTaking}
                   onClick={() => setQty(q => Math.min(item.qty ?? 1, q + 1))}
+                  aria-label={`Increase quantity, currently ${qty}`}
                   style={{
                     width: 24, height: 24, /* fixed stepper geometry */
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -215,6 +218,7 @@ function StorageItemRow({ item, taking, takerId, takeItem }: StorageItemRowProps
               <button
                 disabled={isAnyTaking}
                 onClick={handleConfirm}
+                aria-label={`Confirm take ${isStackable ? `${qty}× ` : ''}${item.name}`}
                 style={{
                   padding: `1px ${SP[2]}`, /* 1px vertical — geometry minimum */
                   fontFamily: FONT_DISPLAY, fontSize: FS.overline,
@@ -232,6 +236,7 @@ function StorageItemRow({ item, taking, takerId, takeItem }: StorageItemRowProps
               <button
                 disabled={isAnyTaking}
                 onClick={handleCancel}
+                aria-label="Cancel"
                 style={{
                   background: 'transparent', border: 'none',
                   fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint,

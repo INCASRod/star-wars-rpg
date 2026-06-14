@@ -96,6 +96,7 @@ export function MobileGroupScreen({
   const [assets, setAssets]             = useState<GroupAsset[]>([])
   const [expandedAsset, setExpandedAsset]   = useState<string | null>(null)
   const [storageAsset,  setStorageAsset]    = useState<{ id: string; name: string } | null>(null)
+  const [fetchError, setFetchError]         = useState<string | null>(null)
 
   // ── Data fetch ─────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -119,6 +120,11 @@ export function MobileGroupScreen({
         .eq('is_archived', false),
     ]).then(([camp, duty, asset]) => {
       if (!mounted) return
+      const hasError = [camp, duty, asset].some(r => r.error)
+      if (hasError) {
+        setFetchError('Could not load group data.')
+        return
+      }
       if (camp.data)  setCampaignData(camp.data as CampaignGroupData)
       if (duty.data)  setDuties(duty.data as CharacterDutyRow[])
       if (asset.data) setAssets(asset.data as GroupAsset[])
@@ -138,6 +144,17 @@ export function MobileGroupScreen({
           letterSpacing: '0.08em',
         }}>
           No campaign linked.
+        </div>
+      </div>
+    )
+  }
+
+  // ── Fetch error guard ──────────────────────────────────────────────────────
+  if (fetchError) {
+    return (
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: SP[4] }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: '#E85A2A' /* wounds/danger — sealed exception */ }}>
+          {fetchError}
         </div>
       </div>
     )
@@ -315,9 +332,12 @@ export function MobileGroupScreen({
             {assets.map(asset => {
               const isExpanded = expandedAsset === asset.id
               return (
-                <button
+                <div
                   key={asset.id}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => setExpandedAsset(isExpanded ? null : asset.id)}
+                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpandedAsset(isExpanded ? null : asset.id) } }}
                   style={{
                     display: 'flex', flexDirection: 'column', gap: SP[1],
                     background: `color-mix(in srgb, var(--hud-border) 40%, transparent)`,
@@ -325,8 +345,6 @@ export function MobileGroupScreen({
                     borderRadius: RADIUS.md,
                     padding: SP[2],
                     cursor: 'pointer',
-                    textAlign: 'left',
-                    width: '100%',
                   }}
                 >
                   {/* Asset header row */}
@@ -406,7 +424,7 @@ export function MobileGroupScreen({
                       📦 Storage
                     </button>
                   )}
-                </button>
+                </div>
               )
             })}
           </div>
@@ -416,7 +434,7 @@ export function MobileGroupScreen({
     </div>
 
     <MobileGroupStorageSheet
-      assetId={storageAsset?.id ?? ''}
+      assetId={storageAsset?.id ?? null}
       assetName={storageAsset?.name ?? ''}
       isOpen={storageAsset !== null}
       onClose={() => setStorageAsset(null)}
