@@ -19,12 +19,10 @@ interface MobileRunnerProps {
 export function MobileRunner({ activeTab, onTabChange }: MobileRunnerProps) {
   return (
     <div style={{
-      display: 'flex', overflowX: 'auto', overflowY: 'hidden',
-      scrollbarWidth: 'none',
+      display: 'flex',
+      width: '100%',
       background: 'var(--hud-surface-hi)',
       borderBottom: `1px solid var(--hud-border)`,
-      padding: `0 ${SP[2]}`,
-      gap: SP[1],
       flexShrink: 0,
       height: 48,   /* fixed runner strip height — intentional geometry constant */
       alignItems: 'center',
@@ -38,7 +36,10 @@ export function MobileRunner({ activeTab, onTabChange }: MobileRunnerProps) {
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
             style={{
-              flexShrink: 0,
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               background: (isFeedTab && isActive) ? 'var(--hud-accent)' : 'transparent',
               border: 'none',
               height: 40,   /* fixed tab button height within 48px strip */
@@ -58,6 +59,9 @@ export function MobileRunner({ activeTab, onTabChange }: MobileRunnerProps) {
                 : '2px solid transparent',
               transition: `color ${EASE.quick}, background ${EASE.quick}, box-shadow ${EASE.quick}`,
               whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              borderRadius: 0,
             }}
           >
             {tab.label}

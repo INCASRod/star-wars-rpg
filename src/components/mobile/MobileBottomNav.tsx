@@ -52,7 +52,7 @@ export function MobileBottomNav({ activeTab, onTabChange, encumbranceWarning }: 
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   boxShadow: '0 4px 16px color-mix(in srgb, var(--hud-accent) 50%, transparent)',
                   fontFamily: FONT_BODY,
-                  fontSize: FS.h4,
+                  fontSize: 28, /* fixed FAB icon geometry */
                   color: 'var(--hud-bg)',
                   zIndex: Z.fab,
                 }}
