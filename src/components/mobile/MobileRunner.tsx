@@ -1,5 +1,5 @@
 'use client'
-import { FONT_BODY, FS, SP, RADIUS, EASE, HUD } from '@/lib/tokens'
+import { FONT_BODY, FS, SP, EASE, HUD } from '@/lib/tokens'
 
 export type RunnerTab = 'feed' | 'skills-buy' | 'talents-buy' | 'force' | 'lore'
 
