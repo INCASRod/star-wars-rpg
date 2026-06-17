@@ -188,7 +188,14 @@ function useDrum(encounter: CombatEncounter | null) {
           if (!gone) return prev
           if (gone.kind === 'divider') setLocalRound(r => r + 1)
           const tail: DrumItem = gone.kind === 'slot' ? { ...gone, isActed: true } : gone
-          const list = [...rest, tail]
+          let list = [...rest, tail]
+          // Round boundary: the divider bubbled to the front but the DB has already
+          // set the next slot as active. Skip it immediately so no extra Advance Turn
+          // is needed and the first slot of the new round is never accidentally skipped.
+          if (list[0]?.kind === 'divider') {
+            const [div, ...afterDiv] = list
+            list = [...afterDiv, div]
+          }
           if (enc && list.filter(x => x.kind === 'slot').length < MIN_DRUM - 2) {
             return buildDrum(enc.initiative_slots, enc.current_slot_index ?? 0, enc.round ?? 1)
           }
