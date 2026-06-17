@@ -573,8 +573,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
             />
           </div>
 
-          {/* Full panel / overlay backdrop */}
-          {(activeFullPanel || combatCheckOpen || forceCheckOpen) && (
+          {/* Full panel backdrop — drawers (combatCheck, forceCheck) use their own close button */}
+          {activeFullPanel && (
             <div
               onClick={() => { setActiveFullPanel(null); setCombatCheckOpen(false); setForceCheckOpen(false) }}
               style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100 }}

@@ -555,7 +555,6 @@ export function CombatCheckOverlay({
     <div
       className={`hud-quick-drawer${open ? ' open' : ''}`}
       style={{
-        position:             'relative',
         background:           'var(--hud-surface-hi)',
         backdropFilter:       'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
@@ -622,7 +621,7 @@ export function CombatCheckOverlay({
         return (
           <div style={{
             padding:      `${SP[1]} ${SP[2]}`,
-            background:   'rgba(0,0,0,0.25)',
+            background:   'color-mix(in srgb, black 25%, transparent)',
             borderBottom: '1px solid var(--hud-border)',
             flexShrink:   0,
           }}>
@@ -642,7 +641,7 @@ export function CombatCheckOverlay({
               {Array.from({ length: a }).map((_, i) => <DiceTrayDie key={`abl-${i}`} type="ability" />)}
               {Array.from({ length: b }).map((_, i) => <DiceTrayDie key={`bst-${i}`} type="boost" />)}
               {hasPlayerDice && hasDiffDice && (
-                <div style={{ width: 1, height: 28, background: 'rgba(255,255,255,0.10)', margin: `0 ${SP[1]}`, flexShrink: 0 }} />
+                <div style={{ width: 1, height: 28, background: 'color-mix(in srgb, white 10%, transparent)', margin: `0 ${SP[1]}`, flexShrink: 0 }} />
               )}
               {Array.from({ length: d }).map((_, i) => <DiceTrayDie key={`dif-${i}`} type="difficulty" />)}
               {Array.from({ length: c }).map((_, i) => <DiceTrayDie key={`chl-${i}`} type="challenge" />)}
