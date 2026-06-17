@@ -67,92 +67,104 @@ function makeInitialState(initialAttackType: 'ranged' | 'melee' | null): CombatC
   }
 }
 
-// ── Accordion step container ──────────────────────────────────────────────────
-function StepContainer({
-  number, label,
-  isActive, isDone, isLocked,
-  doneSummary, children,
-}: {
-  number:       number
-  label:        string
-  isActive:     boolean
-  isDone:       boolean
-  isLocked:     boolean
-  doneSummary?: string | null
-  children?:    ReactNode
-}) {
+// ── Flat section header (replaces accordion StepContainer) ───────────────────
+function FlatSection({ number, label, children }: { number: number; label: string; children?: ReactNode }) {
   return (
-    <div
-      style={{
-        padding:       isActive ? `${SP[2]} ${SP[2]}` : `${SP[1]} ${SP[2]}`,
-        borderLeft:    isActive
-          ? `2px solid color-mix(in srgb, var(--hud-gold) 45%, transparent)`
-          : '2px solid transparent',
-        background:    isActive
-          ? `color-mix(in srgb, var(--hud-gold) 4%, transparent)`
-          : 'transparent',
-        opacity:       isDone ? 0.6 : isLocked ? 0.3 : 1,
-        pointerEvents: isLocked ? 'none' as const : undefined,
-        marginBottom:  SP[1],
-        borderRadius:  RADIUS.sm,
-        transition:    `opacity ${EASE.quick}`,
-      }}
-    >
+    <div style={{ marginBottom: SP[2] }}>
       <div style={{
-        display:      'flex',
-        alignItems:   'center',
-        gap:          SP[1],
-        marginBottom: (isActive || (isDone && doneSummary)) ? SP[1] : 0,
+        display:       'flex',
+        alignItems:    'center',
+        gap:           SP[1],
+        marginBottom:  SP[1],
+        paddingBottom: SP[1],
+        borderBottom:  '1px solid var(--hud-border)',
       }}>
-        {/* Step number badge */}
         <div style={{
-          width:           18, /* step badge icon size */
-          height:          18,
-          borderRadius:    RADIUS.full,
-          border:          isActive
-            ? `1px solid color-mix(in srgb, var(--hud-accent) 80%, transparent)`
-            : `1px solid color-mix(in srgb, var(--hud-border) 80%, transparent)`,
-          background:      isActive
-            ? `color-mix(in srgb, var(--hud-accent) 15%, transparent)`
-            : 'transparent',
-          color:           isActive
-            ? 'var(--hud-accent)'
-            : `color-mix(in srgb, var(--hud-text-faint) 60%, transparent)`,
-          fontFamily:      FONT_DISPLAY,
-          fontSize:        FS.overline,
-          display:         'flex',
-          alignItems:      'center',
-          justifyContent:  'center',
-          flexShrink:      0,
-          lineHeight:      1,
+          width:          18,
+          height:         18,
+          borderRadius:   RADIUS.full,
+          border:         `1px solid color-mix(in srgb, var(--hud-accent) 60%, transparent)`,
+          background:     `color-mix(in srgb, var(--hud-accent) 12%, transparent)`,
+          color:          'var(--hud-accent)',
+          fontFamily:     FONT_DISPLAY,
+          fontSize:       FS.overline,
+          display:        'flex',
+          alignItems:     'center',
+          justifyContent: 'center',
+          flexShrink:     0,
+          lineHeight:     1,
         }}>
           {number}
         </div>
-        {/* Step name */}
         <div style={{
           fontFamily:    FONT_DISPLAY,
           fontSize:      FS.overline,
           fontWeight:    700,
-          letterSpacing: '0.28em',
+          letterSpacing: '0.25em',
           textTransform: 'uppercase' as const,
-          color:         isActive ? 'var(--hud-text)' : isDone ? HUD.textDim : HUD.textFaint,
-          opacity:       isActive ? 1 : isDone ? 0.6 : 0.45,
+          color:         'var(--hud-text)',
         }}>
-          {label}{isDone ? ' ✓' : ''}
+          {label}
         </div>
       </div>
-      {isDone && doneSummary && (
-        <div style={{
-          fontFamily: FONT_BODY,
-          fontSize:   FS.overline,
-          color:      HUD.textDim,
-          fontStyle:  'italic',
-        }}>
-          {doneSummary}
-        </div>
-      )}
-      {isActive && children}
+      {children}
     </div>
+  )
+}
+
+// ── Modifier toggle button ─────────────────────────────────────────────────────
+function ModToggle({
+  label, effect, active, disabled = false, polarity = 'positive', onToggle,
+}: {
+  label:     string
+  effect:    string
+  active:    boolean
+  disabled?: boolean
+  polarity?: 'positive' | 'negative'
+  onToggle:  () => void
+}) {
+  const barColor = polarity === 'positive' ? 'var(--hud-gold)' : 'var(--state-failure)'
+  return (
+    <button
+      onClick={onToggle}
+      disabled={disabled}
+      className="cc-mod-toggle"
+      style={{
+        display:       'flex',
+        flexDirection: 'column' as const,
+        gap:           2,
+        padding:       `${SP[1]} ${SP[2]}`,
+        borderLeft:    active
+          ? `2px solid ${barColor}`
+          : `2px solid color-mix(in srgb, var(--hud-border) 70%, transparent)`,
+        borderTop:     '1px solid var(--hud-border)',
+        borderRight:   '1px solid var(--hud-border)',
+        borderBottom:  '1px solid var(--hud-border)',
+        background:    active
+          ? polarity === 'positive'
+            ? `color-mix(in srgb, var(--hud-gold) 8%, transparent)`
+            : `color-mix(in srgb, var(--state-failure) 8%, transparent)`
+          : `color-mix(in srgb, var(--hud-surface-lo) 40%, transparent)`,
+        borderRadius:  RADIUS.sm,
+        cursor:        disabled ? 'not-allowed' as const : 'pointer' as const,
+        opacity:       disabled ? 0.3 : 1,
+        textAlign:     'left' as const,
+        transition:    `border-color ${EASE.quick}, background ${EASE.quick}`,
+        width:         '100%',
+      }}
+    >
+      <span style={{ fontFamily: FONT_DISPLAY, fontSize: FS.label, fontWeight: 700, color: 'var(--hud-text)' }}>
+        {label}
+      </span>
+      <span style={{
+        fontFamily: FONT_BODY,
+        fontSize:   FS.overline,
+        color:      active ? barColor : 'var(--hud-text-dim)',
+        opacity:    active ? 1 : 0.6,
+      }}>
+        {effect}
+      </span>
+    </button>
   )
 }
 
@@ -314,6 +326,13 @@ export function CombatCheckOverlay({
         const ref = refWeaponMap[w.weapon_key]
         derivedType = ref?.skill_key ? (isRangedSkill(ref.skill_key) ? 'ranged' : 'melee') : 'ranged'
       }
+    }
+    // Flat layout has no NEXT button — write to participant DB on weapon select
+    if (w && w.id !== '__unarmed__') {
+      const name = w.custom_name || refWeaponMap[w.weapon_key]?.name || null
+      void writeWeaponToParticipant(name, null, w.weapon_key, null)
+    } else if (!w) {
+      void writeWeaponToParticipant(null, null, null, null)
     }
     setState(s => ({ ...s, selectedWeapon: w, attackType: w ? derivedType : initialAttackType, selectedBand: null, dualWield: null, dualWieldReview: false }))
   }
@@ -517,15 +536,15 @@ export function CombatCheckOverlay({
     setState(makeInitialState(initialAttackType))
   }
 
-  // ── Can advance? ──────────────────────────────────────────────────────────
-  function canAdvance(): boolean {
-    if (state.dualWieldReview) return true
-    switch (state.currentStep) {
-      case 2: return state.selectedWeapon !== null && state.attackType !== null
-      case 3: return true
-      case 4: return state.selectedBand !== null || state.attackType === 'melee'
-      default: return false
+  // ── Dual wield confirm (flat layout — no accordion NEXT) ──────────────────
+  const handleDualWieldContinue = () => {
+    const dw = state.dualWield
+    if (dw) {
+      const primaryName   = dw.primaryWeapon.custom_name   || refWeaponMap[dw.primaryWeapon.weapon_key]?.name   || null
+      const secondaryName = dw.secondaryWeapon.custom_name || refWeaponMap[dw.secondaryWeapon.weapon_key]?.name || null
+      void writeWeaponToParticipant(primaryName, secondaryName, dw.primaryWeapon.weapon_key, dw.secondaryWeapon.weapon_key)
     }
+    setState(s => ({ ...s, dualWieldReview: false }))
   }
 
   // ── Derived: secondary refWeapon (for dual wield result display) ──────────
@@ -534,29 +553,22 @@ export function CombatCheckOverlay({
     ? (refWeaponMap[state.dualWield.secondaryWeapon.weapon_key] ?? null)
     : null
 
-  // ── Derived summaries for accordion done states ───────────────────────────
-  const weaponDisplayName = state.selectedWeapon?.id === '__unarmed__'
-    ? 'Unarmed'
-    : (state.selectedWeapon?.custom_name || refWeapon?.name || null)
-  const targetDisplayName = state.selectedTargets.length === 1
-    ? state.selectedTargets[0].name
-    : state.selectedTargets.length > 1
-    ? `${state.selectedTargets.length} targets`
-    : null
-  const step1DoneSummary = [weaponDisplayName, targetDisplayName].filter(Boolean).join(' → ')
+  // ── Modifier toggle derived state ─────────────────────────────────────────
+  const aimActive    = state.adjustments.boostAdd >= 1
+  const aim2Active   = state.adjustments.boostAdd >= 2
+  const coverActive  = state.adjustments.setbackAdd >= 1
+  const calledActive = state.adjustments.difficultyAdd >= 1
 
-  const step2DoneSummary = state.selectedBand
-    ? state.attackType === 'melee'
-      ? `✓ Opposed · ${state.selectedTargets[0]?.name ?? 'Target'}`
-      : `✓ ${RANGE_BAND_LABELS[state.selectedBand]}`
-    : undefined
+  const toggleAim  = () => handleAdjustChange({ ...state.adjustments, boostAdd: aimActive ? 0 : 1 })
+  const toggleAim2 = () => { if (aimActive) handleAdjustChange({ ...state.adjustments, boostAdd: aim2Active ? 1 : 2 }) }
+  const toggleCover  = () => handleAdjustChange({ ...state.adjustments, setbackAdd: coverActive ? 0 : 1 })
+  const toggleCalled = () => handleAdjustChange({ ...state.adjustments, difficultyAdd: calledActive ? 0 : 1 })
 
-  const visualStep =
-    state.currentStep <= 3 ? 1 :
-    state.currentStep === 4 ? 2 :
-    3
-
+  // ── Total dice and roll readiness ─────────────────────────────────────────
   const totalDiceForRoll = Object.values(poolForRoll).reduce((s, n) => s + Math.max(0, n), 0)
+  const canRoll = state.selectedWeapon !== null &&
+    (state.attackType !== 'ranged' || state.selectedBand !== null) &&
+    totalDiceForRoll > 0
 
   return (
     <div
@@ -659,11 +671,23 @@ export function CombatCheckOverlay({
                 </span>
               )}
             </div>
+            {!hasAny && (
+              <div style={{
+                fontFamily:    FONT_BODY,
+                fontSize:      FS.overline,
+                color:         'var(--hud-text-faint)',
+                opacity:       0.35,
+                marginTop:     SP[1],
+                letterSpacing: '0.06em',
+              }}>
+                Tap modifiers below to build pool
+              </div>
+            )}
           </div>
         )
       })()}
 
-      {/* ── Body ─────────────────────────────────────────────────────────────── */}
+      {/* ── Body ────────────────────────────────────────────────────────────── */}
       <div style={{ flex: 1, overflowY: 'auto', overscrollBehavior: 'contain' }}>
 
         {/* Roll result */}
@@ -686,7 +710,7 @@ export function CombatCheckOverlay({
           </div>
         )}
 
-        {/* Dual wield review (step 2b) */}
+        {/* Dual wield review */}
         {!isResult && state.dualWieldReview && state.dualWield && (
           <div style={{ padding: `${SP[3]} ${SP[3]}` }}>
             <DualWieldReviewStep
@@ -696,234 +720,158 @@ export function CombatCheckOverlay({
               secondaryRef={secondaryRefWeapon}
               onSwap={handleDualWieldSwap}
             />
+            <div style={{ paddingTop: SP[2] }}>
+              <button
+                onClick={handleDualWieldContinue}
+                className="cc-roll-cta"
+                style={{
+                  width:         '100%',
+                  padding:       `${SP[2]} 0`,
+                  clipPath:      'polygon(8px 0%,calc(100% - 8px) 0%,100% 50%,calc(100% - 8px) 100%,8px 100%,0% 50%)',
+                  background:    'var(--hud-accent)',
+                  border:        'none',
+                  cursor:        'pointer',
+                  fontFamily:    FONT_DISPLAY,
+                  fontSize:      FS.sm,
+                  fontWeight:    700,
+                  color:         'color-mix(in srgb, black 80%, transparent)',
+                  letterSpacing: '0.28em',
+                  textTransform: 'uppercase' as const,
+                }}
+              >
+                ⋄ Confirm
+              </button>
+            </div>
           </div>
         )}
 
-        {/* Accordion steps */}
+        {/* ── Flat layout ─────────────────────────────────────────────────── */}
         {!isResult && !state.dualWieldReview && (
           <div style={{ padding: `${SP[2]} ${SP[2]}` }}>
 
-            {/* Visual Step 1 — Weapon + Target */}
-            <StepContainer
-              number={1}
-              label="Weapon & Target"
-              isActive={state.currentStep === 2}
-              isDone={state.currentStep >= 4}
-              isLocked={state.currentStep < 2}
-              doneSummary={step1DoneSummary || undefined}
-            >
-              {state.currentStep === 2 && (
-                <>
-                  <WeaponSelectStep
-                    attackType={state.attackType}
-                    character={character}
-                    weapons={weapons}
-                    refWeaponMap={refWeaponMap}
-                    refSkillMap={refSkillMap}
-                    refWeaponQualityMap={refWeaponQualityMap}
-                    charSkills={charSkills}
-                    selectedWeapon={state.selectedWeapon}
-                    onSelect={handleWeaponSelect}
-                    onNext={goNext}
-                    isGmMode={isGmMode}
-                    onEquipWeapon={handleEquipWeapon}
-                    onDualWieldSelect={handleDualWieldSelect}
-                  />
-                  {state.selectedWeapon && (
-                    <div style={{ marginTop: SP[2] }}>
-                      <div style={{
-                        fontSize:      FS.overline,
-                        fontWeight:    700,
-                        letterSpacing: '0.18em',
-                        textTransform: 'uppercase' as const,
-                        color:         'var(--hud-text-faint)',
-                        marginBottom:  SP[1],
-                        fontFamily:    FONT_BODY,
-                      }}>
-                        Target (optional)
-                      </div>
-                      {(encounterEnemies ?? []).length === 0 ? (
-                        <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)', fontStyle: 'italic' }}>
-                          No enemies in encounter.
-                        </div>
-                      ) : (
-                        <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: SP[1] }}>
-                          {(encounterEnemies ?? []).map(enemy => {
-                            const selected = state.selectedTargets.some(t => t.instanceId === enemy.instanceId)
-                            return (
-                              <button
-                                key={enemy.instanceId}
-                                onClick={() => handleTargetSelect(
-                                  selected
-                                    ? state.selectedTargets.filter(t => t.instanceId !== enemy.instanceId)
-                                    : [...state.selectedTargets, enemy]
-                                )}
-                                style={{
-                                  border:       selected
-                                    ? `1px solid color-mix(in srgb, var(--hud-accent) 50%, transparent)`
-                                    : `1px solid var(--hud-border)`,
-                                  background:   selected
-                                    ? `color-mix(in srgb, var(--hud-accent) 10%, transparent)`
-                                    : 'transparent',
-                                  color:        selected ? 'var(--hud-text)' : 'var(--hud-text-dim)',
-                                  padding:      `2px ${SP[2]}`,
-                                  fontSize:     FS.overline,
-                                  fontWeight:   700,
-                                  borderRadius: RADIUS.sm,
-                                  cursor:       'pointer',
-                                  fontFamily:   FONT_BODY,
-                                  transition:   `border-color ${EASE.quick}, background ${EASE.quick}`,
-                                }}
-                              >
-                                {enemy.name}
-                              </button>
-                            )
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </>
-              )}
-            </StepContainer>
+            {/* ① Weapon */}
+            <FlatSection number={1} label="Weapon">
+              <WeaponSelectStep
+                attackType={state.attackType}
+                character={character}
+                weapons={weapons}
+                refWeaponMap={refWeaponMap}
+                refSkillMap={refSkillMap}
+                refWeaponQualityMap={refWeaponQualityMap}
+                charSkills={charSkills}
+                selectedWeapon={state.selectedWeapon}
+                onSelect={handleWeaponSelect}
+                onNext={() => {}}
+                isGmMode={isGmMode}
+                onEquipWeapon={handleEquipWeapon}
+                onDualWieldSelect={handleDualWieldSelect}
+              />
+            </FlatSection>
 
-            {/* Visual Step 2 — Range */}
-            <StepContainer
-              number={2}
-              label={state.attackType === 'melee' ? 'Melee' : 'Range Band'}
-              isActive={state.currentStep === 4}
-              isDone={state.currentStep >= 5}
-              isLocked={state.currentStep < 4}
-              doneSummary={step2DoneSummary}
-            >
-              {state.currentStep === 4 && state.attackType && (
+            {/* ② Modifiers */}
+            <FlatSection number={2} label="Modifiers">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: SP[1] }}>
+                <ModToggle
+                  label="Aim"
+                  effect="+1 BOOST"
+                  active={aimActive}
+                  polarity="positive"
+                  onToggle={toggleAim}
+                />
+                <ModToggle
+                  label="2nd Aim"
+                  effect="+1 BOOST"
+                  active={aim2Active}
+                  disabled={!aimActive}
+                  polarity="positive"
+                  onToggle={toggleAim2}
+                />
+                <ModToggle
+                  label="Cover"
+                  effect="+1 SETBK"
+                  active={coverActive}
+                  polarity="negative"
+                  onToggle={toggleCover}
+                />
+                <ModToggle
+                  label="Called Shot"
+                  effect="+1 DIFF"
+                  active={calledActive}
+                  polarity="negative"
+                  onToggle={toggleCalled}
+                />
+              </div>
+            </FlatSection>
+
+            {/* ③ Range — ranged attacks only */}
+            {state.attackType === 'ranged' && (
+              <FlatSection number={3} label="Range">
                 <RangeBandStep
-                  attackType={state.attackType}
+                  attackType="ranged"
                   weapon={refWeapon ? { skillKey: refWeapon.skill_key ?? '', refWeapon } : null}
                   selectedBand={state.selectedBand}
                   targets={state.selectedTargets}
                   onSelect={handleBandSelect}
                 />
-              )}
-            </StepContainer>
+              </FlatSection>
+            )}
 
-            {/* Visual Step 3 — Dice Pool + Roll */}
-            <StepContainer
-              number={3}
-              label="Dice Pool"
-              isActive={state.currentStep === 5}
-              isDone={false}
-              isLocked={state.currentStep < 5}
-            >
-              {state.currentStep === 5 && (
-                <>
-                  <DicePoolReviewStep
-                    attackType={state.attackType ?? 'ranged'}
-                    character={character}
-                    weapon={state.selectedWeapon}
-                    refWeapon={refWeapon}
-                    refSkill={refSkill}
-                    charSkills={charSkills}
-                    targets={state.selectedTargets}
-                    rangeBand={state.selectedBand}
-                    skillModifiers={skillModifiers}
-                    adjustments={state.adjustments}
-                    onAdjustChange={handleAdjustChange}
-                    onPoolChange={setPoolForRoll}
-                    dualWield={state.dualWield}
-                    refWeaponMap={refWeaponMap}
-                    refSkillMap={refSkillMap}
-                    speciesAbilities={speciesAbilities}
-                    speciesName={speciesName}
-                  />
-                  <button
-                    onClick={() => handleRoll(poolForRoll)}
-                    disabled={totalDiceForRoll === 0}
-                    className="cc-roll-cta"
-                    style={{
-                      width:         '100%',
-                      marginTop:     SP[2],
-                      padding:       `${SP[2]} 0`,
-                      clipPath:      'polygon(8px 0%,calc(100% - 8px) 0%,100% 50%,calc(100% - 8px) 100%,8px 100%,0% 50%)',
-                      background:    'var(--hud-accent)',
-                      border:        'none',
-                      cursor:        totalDiceForRoll === 0 ? 'not-allowed' : 'pointer',
-                      opacity:       totalDiceForRoll === 0 ? 0.4 : 1,
-                      fontFamily:    FONT_DISPLAY,
-                      fontSize:      FS.sm,
-                      fontWeight:    700,
-                      color:         'color-mix(in srgb, black 85%, transparent)',
-                      letterSpacing: '0.28em',
-                      textTransform: 'uppercase' as const,
-                    }}
-                  >
-                    Roll {totalDiceForRoll} Dice
-                  </button>
-                </>
-              )}
-            </StepContainer>
-
-            {/* Dot progress indicator */}
-            <div style={{
-              display:        'flex',
-              justifyContent: 'center',
-              gap:            SP[1],
-              padding:        `${SP[2]} 0`,
-            }}>
-              {[1, 2, 3].map(n => (
-                <div key={n} style={{
-                  width:        6,
-                  height:       6,
-                  borderRadius: RADIUS.full,
-                  background:   visualStep >= n ? 'var(--hud-gold)' : 'var(--hud-border)',
-                  opacity:      visualStep > n ? 0.5 : visualStep === n ? 1 : 0.3,
-                  transition:   `background ${EASE.quick}, opacity ${EASE.quick}`,
-                }} />
-              ))}
+            {/* Hidden pool calculator — always mounted, drives dice tray */}
+            <div style={{ display: 'none' }}>
+              <DicePoolReviewStep
+                attackType={state.attackType ?? 'ranged'}
+                character={character}
+                weapon={state.selectedWeapon}
+                refWeapon={refWeapon}
+                refSkill={refSkill}
+                charSkills={charSkills}
+                targets={state.selectedTargets}
+                rangeBand={state.selectedBand}
+                skillModifiers={skillModifiers}
+                adjustments={state.adjustments}
+                onAdjustChange={handleAdjustChange}
+                onPoolChange={setPoolForRoll}
+                dualWield={state.dualWield}
+                refWeaponMap={refWeaponMap}
+                refSkillMap={refSkillMap}
+                speciesAbilities={speciesAbilities}
+                speciesName={speciesName}
+              />
             </div>
 
           </div>
         )}
       </div>
 
-      {/* ── Footer — Next button (steps 2–4 and step 2b) ─────────────────────── */}
-      {!isResult && (state.dualWieldReview || (state.currentStep >= 2 && state.currentStep <= 4)) && (
+      {/* ── Roll footer ─────────────────────────────────────────────────────── */}
+      {!isResult && !state.dualWieldReview && (
         <div style={{
-          padding:    `${SP[2]} ${SP[3]}`,
+          padding:    `${SP[2]} ${SP[2]}`,
           borderTop:  '1px solid var(--hud-border)',
           flexShrink: 0,
         }}>
           <button
-            onClick={goNext}
-            disabled={!canAdvance()}
-            className="cc-next-btn"
+            onClick={() => void handleRoll(poolForRoll)}
+            disabled={!canRoll}
+            className="cc-roll-cta"
             style={{
               width:         '100%',
               padding:       `${SP[2]} 0`,
-              clipPath:      canAdvance()
-                ? 'polygon(6px 0%,calc(100% - 6px) 0%,100% 50%,calc(100% - 6px) 100%,6px 100%,0% 50%)'
-                : undefined,
-              borderRadius:  canAdvance() ? 0 : RADIUS.md,
-              border:        canAdvance()
-                ? 'none'
-                : `1px solid color-mix(in srgb, var(--hud-border) 60%, transparent)`,
-              cursor:        canAdvance() ? 'pointer' : 'not-allowed',
+              clipPath:      'polygon(8px 0%,calc(100% - 8px) 0%,100% 50%,calc(100% - 8px) 100%,8px 100%,0% 50%)',
+              background:    canRoll ? 'var(--hud-accent)' : `color-mix(in srgb, var(--hud-surface-lo) 60%, transparent)`,
+              border:        'none',
+              cursor:        canRoll ? 'pointer' : 'not-allowed',
+              opacity:       canRoll ? 1 : 0.4,
               fontFamily:    FONT_DISPLAY,
-              fontSize:      FS.label,
+              fontSize:      FS.sm,
               fontWeight:    700,
+              color:         canRoll ? 'color-mix(in srgb, black 80%, transparent)' : 'var(--hud-text-faint)',
+              letterSpacing: '0.28em',
               textTransform: 'uppercase' as const,
-              letterSpacing: '0.22em',
-              background:    canAdvance()
-                ? 'var(--hud-accent)'
-                : `color-mix(in srgb, var(--hud-surface-lo) 60%, transparent)`,
-              color:         canAdvance()
-                ? 'color-mix(in srgb, black 80%, transparent)'
-                : 'var(--hud-text-faint)',
               transition:    `background ${EASE.quick}, opacity ${EASE.quick}`,
-              opacity:       canAdvance() ? 1 : 0.5,
             }}
           >
-            {state.dualWieldReview ? 'Continue' : 'Next'}
+            ⋄ Roll Dice
           </button>
         </div>
       )}
@@ -932,11 +880,11 @@ export function CombatCheckOverlay({
       <div
         aria-hidden="true"
         style={{
-          position:            'absolute',
-          inset:               0,
-          pointerEvents:       'none',
-          zIndex:              Z.fab,
-          backgroundImage:     'repeating-linear-gradient(0deg,transparent,transparent 2px,color-mix(in srgb,black 3%,transparent) 2px,color-mix(in srgb,black 3%,transparent) 4px)',
+          position:        'absolute',
+          inset:           0,
+          pointerEvents:   'none',
+          zIndex:          Z.fab,
+          backgroundImage: 'repeating-linear-gradient(0deg,transparent,transparent 2px,color-mix(in srgb,black 3%,transparent) 2px,color-mix(in srgb,black 3%,transparent) 4px)',
         }}
       />
     </div>
