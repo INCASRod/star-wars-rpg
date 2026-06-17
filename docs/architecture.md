@@ -14,6 +14,7 @@
 | `/character/[id]` | `page.tsx` | Character sheet (tabbed view) — shell that mounts `PlayerHUDDesktop` |
 | `/gm` | `page.tsx` | GM dashboard — reads `?campaign=` query param (~3,000+ lines — GOD COMPONENT) |
 | `/gm/mapforge` | `page.tsx` | Map Forge — AI image generate → edit flow for campaign maps |
+| `/table` | `page.tsx` | Table Display — full-screen map + initiative strip for in-person sessions; reads `?campaign=` query param; no auth gate; opened from GM Map panel |
 | `/wireframe` | `page.tsx` | Dev prototype page — UI component showcase, not linked in production |
 | `/api/fal` | `route.ts` | POST → fal.ai gpt-image-2 image generation (server-side proxy) |
 | `/api/fal-edit` | `route.ts` | POST → fal.ai gpt-image-2 multi-image edit / inpainting |

@@ -87,6 +87,11 @@ export function InitiativeSetupModal({ campaignId, characters, roster, sendToCha
     Object.fromEntries(roster.map(a => [a.instanceId, { successes: 0, advantages: 0 }]))
   )
 
+  // NPC alignment — defaults to enemy; GM can toggle per adversary
+  const [npcAlignments, setNpcAlignments] = useState<Record<string, 'enemy' | 'allied_npc'>>(() =>
+    Object.fromEntries(roster.map(a => [a.instanceId, 'enemy' as const]))
+  )
+
   // PC skill ranks — prefer prop, fall back to DB fetch
   const [fetchedSkillRanks, setFetchedSkillRanks] = useState<Record<string, { cool: number; vigilance: number }>>({})
   const charSkillRanks = propSkillRanks ?? fetchedSkillRanks
@@ -165,6 +170,7 @@ export function InitiativeSetupModal({ campaignId, characters, roster, sendToCha
       return {
         id: `pc-${c.id}`,
         type: 'pc' as const,
+        alignment: 'player' as const,
         order: i,
         characterId: c.id,
         name: c.name,
@@ -180,6 +186,7 @@ export function InitiativeSetupModal({ campaignId, characters, roster, sendToCha
       return {
         id: `npc-${a.instanceId}`,
         type: 'npc' as const,
+        alignment: (npcAlignments[a.instanceId] ?? 'enemy') as 'enemy' | 'allied_npc',
         order: i,
         adversaryInstanceId: a.instanceId,
         name: a.name,
@@ -198,6 +205,7 @@ export function InitiativeSetupModal({ campaignId, characters, roster, sendToCha
     const finalSlots: InitiativeSlot[] = allSlots.map((s, i) => ({
       id: s.id,
       type: s.type,
+      alignment: s.alignment,
       order: i,
       characterId: s.characterId,
       adversaryInstanceId: s.adversaryInstanceId,
@@ -399,7 +407,7 @@ export function InitiativeSetupModal({ campaignId, characters, roster, sendToCha
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr>
-                    {['Adversary', 'Roll', 'Cool Pool', 'Vigilance Pool', 'Successes', 'Adv', 'Status'].map(h => (
+                    {['Adversary', 'Faction', 'Roll', 'Cool Pool', 'Vigilance Pool', 'Successes', 'Adv', 'Status'].map(h => (
                       <th key={h} style={thStyle}>{h}</th>
                     ))}
                   </tr>
@@ -426,6 +434,30 @@ export function InitiativeSetupModal({ campaignId, characters, roster, sendToCha
                           <div style={{ fontFamily: FM, fontSize: FS_OVERLINE, color: TEXT_MUTED }}>
                             PR {a.characteristics.presence} / WIL {a.characteristics.willpower}
                           </div>
+                        </td>
+                        {/* Faction toggle — enemy or allied NPC */}
+                        <td style={tdStyle}>
+                          {(() => {
+                            const isAlly = (npcAlignments[a.instanceId] ?? 'enemy') === 'allied_npc'
+                            return (
+                              <button
+                                onClick={() => setNpcAlignments(prev => ({
+                                  ...prev,
+                                  [a.instanceId]: isAlly ? 'enemy' : 'allied_npc',
+                                }))}
+                                style={{
+                                  background: isAlly ? 'rgba(60,195,140,.15)' : 'rgba(200,65,55,.15)',
+                                  border: `1px solid ${isAlly ? 'rgba(80,210,155,.5)' : 'rgba(220,80,65,.5)'}`,
+                                  borderRadius: 3, padding: '3px 8px', cursor: 'pointer',
+                                  fontFamily: FM, fontSize: FS_OVERLINE, fontWeight: 700,
+                                  color: isAlly ? 'rgba(80,210,155,.9)' : 'rgba(220,80,65,.9)',
+                                  whiteSpace: 'nowrap' as const,
+                                }}
+                              >
+                                {isAlly ? '◆ Ally' : '◆ Enemy'}
+                              </button>
+                            )
+                          })()}
                         </td>
                         {/* Roll buttons */}
                         <td style={{ ...tdStyle, whiteSpace: 'nowrap' }}>

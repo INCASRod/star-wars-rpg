@@ -109,7 +109,7 @@ export function MobileGroupScreen({
         .eq('id', campaignId)
         .single(),
       supabase
-        .from('character_duty')
+        .from('characters')
         .select('id, name, duty_type, duty_value, is_archived')
         .eq('campaign_id', campaignId)
         .eq('is_archived', false),

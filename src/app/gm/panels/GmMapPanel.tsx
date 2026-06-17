@@ -258,6 +258,15 @@ export function GmMapPanel({
               {isMapVisible ? 'Map visible to players' : 'Map hidden from players'}
             </span>
           </div>
+
+          <div style={controlRow}>
+            <button
+              onClick={() => window.open('/table?campaign=' + campaignId, '_blank')}
+              style={toggleBtn(false)}
+            >
+              ⛶ Table Display
+            </button>
+          </div>
         </div>
       </div>
 

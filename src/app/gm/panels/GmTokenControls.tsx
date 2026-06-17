@@ -8,7 +8,7 @@ import type { Adversary } from '@/lib/adversaries'
 import { adversaryToInstance } from '@/lib/adversaries'
 import type { Vehicle } from '@/lib/vehicles'
 import { vehicleToVehicleInstance } from '@/lib/vehicles'
-import type { CombatEncounter, InitiativeSlot } from '@/lib/combat'
+import type { CombatEncounter } from '@/lib/combat'
 import { AdversaryLibrary } from '@/components/gm/AdversaryLibrary'
 import { VehicleLibrary } from '@/components/gm/VehicleLibrary'
 import { StagingTokenPanel } from '@/components/staging/StagingTokenPanel'
@@ -135,25 +135,11 @@ export function GmTokenControls({
       const enc = await ensureActiveEncounter(supabase, campaignId)
       if (!enc) return
       const instance = adversaryToInstance(adv, adv.type === 'minion' ? 4 : 1)
-      const slotId   = crypto.randomUUID()
-      const slot: InitiativeSlot = {
-        id:                  slotId,
-        type:                'npc',
-        alignment:           alignment === 'allied_npc' ? 'allied_npc' : 'enemy',
-        order:               enc.initiative_slots.length + 1,
-        name:                adv.name,
-        acted:               false,
-        current:             false,
-        successes:           0,
-        advantages:          0,
-        adversaryInstanceId: instance.instanceId,
-      }
+      // Add adversary instance for the Enemies panel — slots are created only after initiative is finalised.
       await supabase.from('combat_encounters').update({
-        adversaries:      [...enc.adversaries, instance],
-        initiative_slots: [...enc.initiative_slots, slot],
-        updated_at:       new Date().toISOString(),
+        adversaries: [...enc.adversaries, instance],
+        updated_at:  new Date().toISOString(),
       }).eq('id', enc.id)
-      await supabase.from('map_tokens').update({ slot_key: slotId }).eq('id', token.id)
       setView('menu')
     },
     [mapId, campaignId, addToken, supabase],
@@ -184,25 +170,11 @@ export function GmTokenControls({
       const enc = await ensureActiveEncounter(supabase, campaignId)
       if (!enc) return
       const instance = vehicleToVehicleInstance(vehicle, alignment, vehicle._tokenImageUrl)
-      const slotId   = crypto.randomUUID()
-      const slot: InitiativeSlot = {
-        id:               slotId,
-        type:             'npc',
-        alignment,
-        order:            enc.initiative_slots.length + 1,
-        name:             vehicle.name,
-        acted:            false,
-        current:          false,
-        successes:        0,
-        advantages:       0,
-        vehicleInstanceId: instance.instanceId,
-      }
+      // Add vehicle instance for the Enemies panel — slots are created only after initiative is finalised.
       await supabase.from('combat_encounters').update({
-        vehicles:         [...(enc.vehicles ?? []), instance],
-        initiative_slots: [...enc.initiative_slots, slot],
-        updated_at:       new Date().toISOString(),
+        vehicles:   [...(enc.vehicles ?? []), instance],
+        updated_at: new Date().toISOString(),
       }).eq('id', enc.id)
-      await supabase.from('map_tokens').update({ slot_key: slotId }).eq('id', token.id)
       setView('menu')
     },
     [mapId, campaignId, addToken, supabase],

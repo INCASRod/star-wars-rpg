@@ -113,19 +113,10 @@ export function useGmSession(params: {
       .order('created_at', { ascending: false })
       .limit(1)
 
-    let enc: CombatEncounter | null = rows && rows.length > 0 ? (rows[0] as CombatEncounter) : null
-    if (!enc) {
-      const { data: created } = await supabase
-        .from('combat_encounters')
-        .insert({
-          campaign_id: campaignId, round: 1, is_active: true, current_slot_index: 0,
-          initiative_type: 'cool', initiative_slots: [], adversaries: [], vehicles: [], log_entries: [],
-        })
-        .select('*')
-        .single()
-      enc = created as CombatEncounter | null
-    }
-    if (!enc) return
+    // Only sync to an existing active encounter — never create one here.
+    // Encounter creation is the responsibility of handleStagingCombatStart.
+    if (!rows || rows.length === 0) return
+    const enc = rows[0] as CombatEncounter
 
     const advTokens = pending.filter(t => t.token_shape !== 'rectangle')
     const vehTokens = pending.filter(t => t.token_shape === 'rectangle')

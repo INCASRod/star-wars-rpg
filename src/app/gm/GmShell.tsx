@@ -38,8 +38,10 @@ import { GmToolsPanel } from './panels/GmToolsPanel'
 import { GmPartyPanel } from './panels/GmPartyPanel'
 import { GmCombatPanel } from './panels/GmCombatPanel'
 import { GmInitiativeDrawer } from './panels/GmInitiativeDrawer'
+import type { GmControls } from './panels/GmInitiativeDrawer'
+import type { Character } from '@/lib/types'
 
-import { HUD, FONT_BODY, Z, EASE, RADIUS } from '@/lib/tokens'
+import { HUD, FONT_BODY, Z, EASE, RADIUS, SP } from '@/lib/tokens'
 
 const FONT = FONT_BODY
 const DIM  = 'var(--hud-text-dim)'
@@ -108,10 +110,9 @@ export function GmShell() {
 
   const {
     sessionMode, combatRound, sessionBusy,
-    stagingEncounter,
+    stagingEncounter, setStagingEncounter,
     stagingInitRoster,
     openStagingCombatModal, handleStagingCombatStart,
-    syncStagingTokensToEncounter,
     endEncounter,
   } = useGmSession({
     campaignId, campaign, activeChars, characters,
@@ -177,12 +178,6 @@ export function GmShell() {
       }
     }
   }, [])
-
-  // Sync encounter slots from placed tokens (idempotent)
-  useEffect(() => {
-    void syncStagingTokensToEncounter()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stagingTokens])
 
   // ── Handlers ────────────────────────────────────────────────────
   function handlePanelToggle(id: GmPanelId) {
@@ -283,6 +278,92 @@ export function GmShell() {
     resolveConflict,
   } = charActions
 
+  // ── Initiative DB helpers (moved from GmInitiativeDrawer) ───────
+  async function gmMoveSlot(index: number, direction: -1 | 1) {
+    if (!stagingEncounter) return
+    const orig   = stagingEncounter.initiative_slots
+    const target = index + direction
+    if (target < 0 || target >= orig.length) return
+    if (orig[index].acted || orig[target].acted) return
+    const slots = [...orig];
+    [slots[index], slots[target]] = [slots[target], slots[index]]
+    const normalised = slots.map((s, idx) => ({ ...s, order: idx + 1 }))
+    let currentIdx = stagingEncounter.current_slot_index ?? 0
+    if (currentIdx === index) currentIdx = target
+    else if (currentIdx === target) currentIdx = index
+    await supabase.from('combat_encounters').update({
+      initiative_slots: normalised, current_slot_index: currentIdx,
+      updated_at: new Date().toISOString(),
+    }).eq('id', stagingEncounter.id)
+  }
+
+  async function gmSwapSlots(slotIdA: string, slotIdB: string) {
+    if (!stagingEncounter) return
+    const orig = stagingEncounter.initiative_slots
+    const idxA = orig.findIndex(s => s.id === slotIdA)
+    const idxB = orig.findIndex(s => s.id === slotIdB)
+    if (idxA === -1 || idxB === -1) return
+    if (orig[idxA].acted || orig[idxB].acted) return
+    const slots = [...orig];
+    [slots[idxA], slots[idxB]] = [slots[idxB], slots[idxA]]
+    const normalised = slots.map((s, idx) => ({ ...s, order: idx + 1 }))
+    let currentIdx = stagingEncounter.current_slot_index ?? 0
+    // Position-based: stay at idxA (whoever lands there becomes current).
+    // Only shift when current was at idxB — it moves to idxA after the swap.
+    if (currentIdx === idxB) currentIdx = idxA
+    await supabase.from('combat_encounters').update({
+      initiative_slots: normalised, current_slot_index: currentIdx,
+      updated_at: new Date().toISOString(),
+    }).eq('id', stagingEncounter.id)
+  }
+
+  async function gmAdvanceTurn() {
+    const enc = stagingEncounter
+    if (!enc) return
+    const slots = enc.initiative_slots
+    if (!slots.length) return
+    const current = enc.current_slot_index ?? 0
+    const acted   = slots.map((s, i) => i === current ? { ...s, acted: true } : s)
+    const allActed = acted.every(s => s.acted)
+    if (allActed) {
+      const reset = acted.map(s => ({ ...s, acted: false, current: false }))
+      reset[0] = { ...reset[0], current: true }
+      const nextRound = (enc.round ?? 1) + 1
+      // Optimistic update — animation starts immediately; Realtime reconciles silently
+      setStagingEncounter({ ...enc, initiative_slots: reset, current_slot_index: 0, round: nextRound })
+      await supabase.from('combat_encounters').update({
+        initiative_slots: reset, current_slot_index: 0,
+        round: nextRound, updated_at: new Date().toISOString(),
+      }).eq('id', enc.id)
+    } else {
+      let next = (current + 1) % slots.length
+      while (acted[next].acted) next = (next + 1) % slots.length
+      const updated = acted.map((s, i) => ({ ...s, current: i === next }))
+      // Optimistic update — animation starts immediately; Realtime reconciles silently
+      setStagingEncounter({ ...enc, initiative_slots: updated, current_slot_index: next })
+      await supabase.from('combat_encounters').update({
+        initiative_slots: updated, current_slot_index: next,
+        updated_at: new Date().toISOString(),
+      }).eq('id', enc.id)
+    }
+  }
+
+  async function gmEndCombat() {
+    if (!stagingEncounter) return
+    await supabase.from('combat_encounters').update({
+      is_active: false, updated_at: new Date().toISOString(),
+    }).eq('id', stagingEncounter.id)
+    setInitiativeOpen(false)
+  }
+
+  const gmControls: GmControls = {
+    onMoveLeft:    i      => void gmMoveSlot(i, -1),
+    onMoveRight:   i      => void gmMoveSlot(i,  1),
+    onSwap:        (a, b) => void gmSwapSlots(a, b),
+    onAdvanceTurn: ()     => void gmAdvanceTurn(),
+    onEndCombat:   ()     => void gmEndCombat(),
+  }
+
   // ── Render ───────────────────────────────────────────────────────
   return (
     <div
@@ -323,6 +404,28 @@ export function GmShell() {
             onStagingRemoveToken={stagingRemoveToken}
             onStagingAddToken={stagingAddToken}
           />
+
+          {/* Initiative drum strip — only visible during an active combat session */}
+          <GmInitiativeDrawer
+            encounter={sessionMode === 'combat' ? stagingEncounter : null}
+            character={{ id: '', name: '' } as unknown as Character}
+            gmControls={gmControls}
+            asOverlay
+            offsetTop="2.5rem"
+          />
+
+          {/* GM advance-turn control — floating bottom-right, only during active combat */}
+          {sessionMode === 'combat' && stagingEncounter?.is_active && (
+            <div style={{
+              position: 'absolute', bottom: SP[3], right: SP[3],
+              zIndex: Z.dropdown,
+              pointerEvents: 'auto',
+            }}>
+              <button className="init-gm-adv" onClick={() => void gmAdvanceTurn()} aria-label="Advance turn">
+                ▶ ADVANCE TURN
+              </button>
+            </div>
+          )}
 
           {/* Sliding panel overlay */}
           <div style={{
@@ -497,15 +600,6 @@ export function GmShell() {
             <button onClick={() => setManualAdjustOpen(true)} style={{ ...btnSmall, height: '1.625rem', padding: '0 0.5rem', flexShrink: 0 }}>✎ Adjust</button>
           </div>
         ) : undefined}
-      />
-
-      {/* Initiative drawer (portal, slides up from bottom) */}
-      <GmInitiativeDrawer
-        encounter={stagingEncounter}
-        characters={activeChars}
-        isOpen={initiativeOpen}
-        onClose={() => setInitiativeOpen(false)}
-        onRecheckInitiative={() => setRecheckInitiativeOpen(true)}
       />
 
       {/* Initiative setup modal */}

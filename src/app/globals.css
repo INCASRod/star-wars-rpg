@@ -838,69 +838,208 @@ i.ffi {
 }
 
 /* ═══════════════════════════════════════════════════════════════ */
-/*  INITIATIVE STRIP — GM reorder / swap controls                  */
+/*  INITIATIVE STRIP v3 — Imperial Dossier Cards                   */
 /* ═══════════════════════════════════════════════════════════════ */
-.init-slot-card { position: relative; }
 
-.init-slot-gm-bar {
+/* YOU badge — positioned top-right of dossier card */
+.init-you-badge {
+  position:       absolute;
+  top:            7px;
+  right:          -2px;
+  font-family:    var(--font-display);
+  font-size:      var(--text-overline);
+  font-weight:    700;
+  line-height:    1.4;
+  background:     var(--hud-gold);
+  color:          var(--hud-bg);
+  padding:        1px 4px;
+  clip-path:      polygon(4px 0%, 100% 0%, 100% 100%, 0% 100%);
+  pointer-events: none;
+  z-index:        1;
+}
+
+/* GM reorder bar — hidden until hover/focus on parent .init-slot-gm */
+.init-gm-bar {
   display:         flex;
   justify-content: center;
   align-items:     center;
   gap:             2px;
   opacity:         0;
   pointer-events:  none;
-  transition:      opacity 0.15s;
+  transition:      opacity var(--ease-default);
 }
-
-/* Show on hover or when a child (e.g. swap button) holds focus */
-.init-slot-card:hover .init-slot-gm-bar,
-.init-slot-card:focus-within .init-slot-gm-bar {
+.init-slot-gm:hover         .init-gm-bar,
+.init-slot-gm:focus-within  .init-gm-bar {
   opacity:        1;
   pointer-events: auto;
 }
 
-.init-slot-gm-bar button {
-  background:    rgba(150, 168, 180, 0.12);
-  border:        1px solid rgba(150, 168, 180, 0.25);
+/* GM reorder arrow buttons */
+.init-gm-ar {
+  width:         17px;
+  height:        13px;
+  background:    color-mix(in srgb, var(--hud-bg) 82%, transparent);
+  border:        1px solid color-mix(in srgb, var(--hud-gold) 45%, transparent);
   border-radius: 2px;
-  color:         var(--hud-text-dim);
+  color:         color-mix(in srgb, var(--hud-gold) 75%, transparent);
   font-family:   var(--font-body);
-  font-size:     11px;
+  font-size:     var(--text-overline);
   line-height:   1;
-  padding:       3px 7px;
+  padding:       0;
   cursor:        pointer;
-  transition:    background 0.1s, border-color 0.1s, color 0.1s;
+  transition:    background var(--ease-quick), border-color var(--ease-quick), color var(--ease-quick);
 }
-
-.init-slot-gm-bar button:hover:not(:disabled) {
-  background:   rgba(150, 168, 180, 0.22);
-  border-color: rgba(150, 168, 180, 0.5);
-  color:        var(--hud-text);
+.init-gm-ar:hover:not(:disabled) {
+  background:   color-mix(in srgb, var(--hud-bg) 92%, transparent);
+  border-color: var(--hud-gold);
+  color:        var(--hud-gold);
 }
-
-.init-slot-gm-bar button:disabled {
-  opacity: 0.25;
+.init-gm-ar:disabled {
+  opacity: 0.2;
   cursor:  not-allowed;
 }
 
-.init-swap-target {
-  background:    transparent;
-  border:        1px solid transparent;
-  border-radius: 3px;
-  color:         var(--hud-text);
-  font-family:   var(--font-body);
-  font-size:     var(--text-caption);
-  font-weight:   600;
-  padding:       4px 8px;
-  cursor:        pointer;
-  text-align:    left;
-  transition:    background 0.1s, border-color 0.1s;
-  width:         100%;
+/* Pass Turn button — player's active slot only */
+.init-pass-btn {
+  font-family:    var(--font-body);
+  font-size:      var(--text-overline);
+  font-weight:    700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color:          var(--hud-accent);
+  background:     color-mix(in srgb, var(--hud-accent) 8%, transparent);
+  border:         1px solid color-mix(in srgb, var(--hud-accent) 30%, transparent);
+  border-radius:  2px;
+  clip-path:      polygon(5px 0%, 100% 0%, calc(100% - 5px) 100%, 0% 100%);
+  padding:        2px 8px;
+  cursor:         pointer;
+  white-space:    nowrap;
+  transition:     background var(--ease-quick), border-color var(--ease-quick);
+}
+.init-pass-btn:hover:not(:disabled) {
+  background:   color-mix(in srgb, var(--hud-accent) 18%, transparent);
+  border-color: color-mix(in srgb, var(--hud-accent) 55%, transparent);
+}
+.init-pass-btn:disabled {
+  opacity: 0.35;
+  cursor:  not-allowed;
 }
 
+/* GM Advance Turn button — parallelogram, gold tint */
+.init-gm-adv {
+  font-family:    var(--font-display);
+  font-size:      var(--text-overline);
+  font-weight:    700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color:          var(--hud-gold);
+  background:     color-mix(in srgb, var(--hud-gold) 9%, transparent);
+  border:         1px solid color-mix(in srgb, var(--hud-gold) 50%, transparent);
+  clip-path:      polygon(5px 0%, 100% 0%, calc(100% - 5px) 100%, 0% 100%);
+  padding:        4px 6px;
+  cursor:         pointer;
+  transition:     background var(--ease-quick), border-color var(--ease-quick);
+}
+.init-gm-adv:hover {
+  background:   color-mix(in srgb, var(--hud-gold) 18%, transparent);
+  border-color: color-mix(in srgb, var(--hud-gold) 80%, transparent);
+}
+
+/* GM End Combat button — parallelogram, failure/red tint */
+.init-gm-end {
+  font-family:    var(--font-display);
+  font-size:      var(--text-overline);
+  font-weight:    700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color:          var(--state-failure);
+  background:     color-mix(in srgb, var(--state-failure) 9%, transparent);
+  border:         1px solid color-mix(in srgb, var(--state-failure) 50%, transparent);
+  clip-path:      polygon(5px 0%, 100% 0%, calc(100% - 5px) 100%, 0% 100%);
+  padding:        4px 6px;
+  cursor:         pointer;
+  transition:     background var(--ease-quick), border-color var(--ease-quick);
+}
+.init-gm-end:hover {
+  background:   color-mix(in srgb, var(--state-failure) 18%, transparent);
+  border-color: color-mix(in srgb, var(--state-failure) 80%, transparent);
+}
+
+/* Swap picker dropdown target buttons */
+.init-swap-target {
+  background:     transparent;
+  border:         1px solid transparent;
+  border-radius:  2px;
+  color:          var(--hud-text);
+  font-family:    var(--font-body);
+  font-size:      var(--text-caption);
+  font-weight:    600;
+  padding:        4px 8px;
+  cursor:         pointer;
+  text-align:     left;
+  width:          100%;
+  transition:     background var(--ease-quick), border-color var(--ease-quick);
+}
 .init-swap-target:hover {
-  background:   rgba(150, 168, 180, 0.12);
-  border-color: rgba(150, 168, 180, 0.3);
+  background:   color-mix(in srgb, var(--hud-text-dim) 12%, transparent);
+  border-color: color-mix(in srgb, var(--hud-text-dim) 30%, transparent);
+}
+
+/* ── Initiative Strip keyframe animations ─────────────────────── */
+@keyframes init-crt-flicker {
+  0%     { opacity: 1; }
+  1%     { opacity: .55; }
+  1.4%   { opacity: .9; }
+  1.8%   { opacity: .6; }
+  2.2%   { opacity: 1; }
+  100%   { opacity: 1; }
+}
+@keyframes init-power-pulse {
+  0%,100% { opacity: 0; }
+  50%     { opacity: .07; }
+}
+@keyframes init-glitch-slice {
+  0%,88%,100% { clip-path: inset(0 0 100% 0); opacity: 0; }
+  89%         { clip-path: inset(30% 0 55% 0); opacity: .7; transform: translateX(-3px); }
+  89.5%       { clip-path: inset(30% 0 55% 0); opacity: .7; transform: translateX(2px); }
+  90%         { clip-path: inset(65% 0 20% 0); opacity: .5; transform: translateX(-1px); }
+  90.5%       { clip-path: inset(0 0 100% 0); opacity: 0; }
+}
+@keyframes init-arc-flash-a {
+  0%   { opacity: 0; }
+  8%   { opacity: .9; }
+  9%   { opacity: .35; }
+  10%  { opacity: .85; }
+  11%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes init-arc-flash-b {
+  0%   { opacity: 0; }
+  22%  { opacity: .75; }
+  23%  { opacity: .2; }
+  24%  { opacity: .7; }
+  25%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes init-arc-flash-c {
+  0%   { opacity: 0; }
+  45%  { opacity: .8; }
+  46%  { opacity: .15; }
+  47%  { opacity: .65; }
+  48%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes init-leak-pulse {
+  0%,100% { opacity: 0; }
+  15%     { opacity: 1; }
+  30%     { opacity: .25; }
+  55%     { opacity: 1; }
+  70%     { opacity: .35; }
+  85%     { opacity: .7; }
+}
+@keyframes init-scan-sweep {
+  from { top: 0%; }
+  to   { top: 105%; }
 }
 
 /* ── Player HUD Left Rail ─────────────────────────────────────── */

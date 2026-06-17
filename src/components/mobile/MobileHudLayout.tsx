@@ -6,9 +6,11 @@ import { useCharacterData }             from '@/hooks/useCharacterData'
 import { useDerivedStats }              from '@/hooks/useDerivedStats'
 import { useRollFeed }                  from '@/hooks/useRollFeed'
 import { useDestinyPool }               from '@/hooks/useDestinyPool'
+import { useCharacterConflicts }        from '@/hooks/useCharacterConflicts'
 import { computeEncumbranceStats }      from '@/lib/derivedStats'
 import { CharacterLoader }              from '@/components/ui/CharacterLoader'
 import { FONT_BODY, FS, SP, HUD }      from '@/lib/tokens'
+import type { ForceCommitment }         from '@/lib/types'
 
 import { MobileRunner, type RunnerTab } from './MobileRunner'
 import { MobileBottomNav, type NavTab } from './MobileBottomNav'
@@ -20,6 +22,10 @@ import { MobileDiceScreen }             from './screens/MobileDiceScreen'
 import { MobileTalentsScreen }          from './screens/MobileTalentsScreen'
 import { MobileItemsScreen }            from './screens/MobileItemsScreen'
 import { MobileGroupScreen }            from './screens/MobileGroupScreen'
+import { MobileTalentsBuyScreen }       from './screens/MobileTalentsBuyScreen' /* Added for mobile Talents tab */
+import { MobileForceScreen }            from './screens/MobileForceScreen'      /* Added for mobile Force tab */
+import { MobileSkillsBuyScreen }        from './screens/MobileSkillsBuyScreen'  /* Added for mobile +Skills runner tab */
+import { MobileLoreScreen }             from './screens/MobileLoreScreen'        /* Added for mobile Lore runner tab */
 
 interface MobileHudLayoutProps {
   characterId: string
@@ -37,6 +43,25 @@ export function MobileHudLayout({ characterId, campaignId }: MobileHudLayoutProp
     forceRating, hudSkills,
     hudTalents, hudWeapons, hudArmor, hudGear,   // Phase 2 hud-ready arrays
     loading, error,
+    /* Added for mobile Force tab */
+    charForceAbilities,
+    refForcePowers,
+    refForceAbilities,
+    refForcePowerMap,
+    refForceAbilityMap,
+    /* Added for mobile Talents tab */
+    refSpecs,
+    refSpecMap,
+    /* Added for mobile Talents/Force purchase handlers */
+    handlePurchaseTalent,
+    handlePurchaseForceAbility,
+    /* Added for mobile +Skills runner tab */
+    handleBuySkill,
+    /* Added for mobile Lore runner tab */
+    refSpeciesAll,
+    refCareers,
+    refObligationTypes,
+    refDutyTypes,
   } = useCharacterData(characterId)
 
   const derivedStats = useDerivedStats({
@@ -55,6 +80,29 @@ export function MobileHudLayout({ characterId, campaignId }: MobileHudLayoutProp
 
   const effectiveCampaignId = campaignId ?? character?.campaign_id ?? null
   const rolls = useRollFeed(effectiveCampaignId)
+
+  /* Added for mobile Force tab — conflict pip display */
+  const { conflicts } = useCharacterConflicts(character?.id, supabase)
+
+  /* Added for mobile Force tab — cancel commit handler (mirrors HudForceTab.handleCancelCommit) */
+  const handleCancelCommit = async (powerKey: string, effectName: string) => {
+    if (!character) return
+    const current: ForceCommitment[] = character.force_commitments ?? []
+    const target = current.find(c => c.power_key === powerKey && c.effect_name === effectName)
+    if (!target) return
+    const updated: ForceCommitment[] = target.dice_count <= 1
+      ? current.filter(c => !(c.power_key === powerKey && c.effect_name === effectName))
+      : current.map(c =>
+          c.power_key === powerKey && c.effect_name === effectName
+            ? { ...c, dice_count: c.dice_count - 1 }
+            : c
+        )
+    const newCommitted = Math.max(0, (character.force_rating_committed ?? 0) - 1)
+    await supabase
+      .from('characters')
+      .update({ force_rating_committed: newCommitted, force_commitments: updated })
+      .eq('id', character.id)
+  }
 
   // Called unconditionally — handles undefined characterName and null campaignId gracefully.
   const { destinyPool } = useDestinyPool(
@@ -124,60 +172,114 @@ export function MobileHudLayout({ characterId, campaignId }: MobileHudLayoutProp
   const defRanged       = es?.defenseRanged   ?? character.defense_ranged
 
   function renderScreen() {
-    const active = navTab ?? (runnerTab === 'feed' ? 'feed' : null)
-    switch (active) {
+    // Nav tab takes priority over runner tab
+    if (navTab) {
+      switch (navTab) {
+        case 'skills':
+          return (
+            <MobileSkillsScreen
+              hudSkills={hudSkills}
+              xpAvailable={char.xp_available ?? 0}
+              onRollSkill={handleSkillRoll}
+            />
+          )
+        case 'dice':
+          return (
+            <MobileDiceScreen
+              preSelectedSkill={diceSkill}
+              hudSkills={hudSkills}
+              characterId={characterId}
+              characterName={char.name}
+              campaignId={effectiveCampaignId}
+              forceRating={forceRating ?? 0}
+            />
+          )
+        case 'talents':
+          return <MobileTalentsScreen hudTalents={hudTalents} />
+        case 'items':
+          return (
+            <MobileItemsScreen
+              hudWeapons={hudWeapons}
+              hudArmor={hudArmor}
+              hudGear={hudGear}
+              encCurrent={encStats?.current ?? 0}
+              encThreshold={encStats?.threshold ?? 0}
+              credits={char.credits ?? 0}
+            />
+          )
+        case 'group':
+          return (
+            <MobileGroupScreen
+              campaignId={effectiveCampaignId}
+              characterId={characterId}
+              characterName={char.name}
+              destinyPool={destinyPool}
+              supabase={supabase}
+            />
+          )
+      }
+    }
+
+    // Runner tab (no nav overlay active)
+    switch (runnerTab) {
       case 'feed':
         return <MobileFeedScreen rolls={rolls} ownCharacterId={characterId} />
-      case 'skills':
+      case 'talents-buy':
         return (
-          <MobileSkillsScreen
-            hudSkills={hudSkills}
+          <MobileTalentsBuyScreen
+            charSpecs={charSpecs}
+            refSpecMap={refSpecMap}
+            talents={talents}
+            refTalentMap={refTalentMap}
             xpAvailable={char.xp_available ?? 0}
-            onRollSkill={handleSkillRoll}
+            onPurchaseTalent={handlePurchaseTalent}
           />
         )
-      case 'dice':
+      case 'force':
         return (
-          <MobileDiceScreen
-            preSelectedSkill={diceSkill}
+          <MobileForceScreen
+            forceRating={forceRating ?? 0}
+            forceRatingCommitted={char.force_rating_committed ?? 0}
+            moralityValue={char.morality_value}
+            moralityConfigured={char.morality_configured}
+            moralityStrengthKey={char.morality_strength_key ?? null}
+            moralityWeaknessKey={char.morality_weakness_key ?? null}
+            isFallen={char.is_dark_side_fallen === true}
+            commitments={char.force_commitments ?? []}
+            charForceAbilities={charForceAbilities}
+            refForcePowers={refForcePowers}
+            refForceAbilityMap={refForceAbilityMap}
+            refForcePowerMap={refForcePowerMap}
+            conflicts={conflicts}
+            xpAvailable={char.xp_available ?? 0}
+            onPurchaseForceAbility={handlePurchaseForceAbility}
+            onCancelCommit={handleCancelCommit}
+          />
+        )
+      case 'skills-buy':
+        return (
+          <MobileSkillsBuyScreen
             hudSkills={hudSkills}
-            characterId={characterId}
-            characterName={char.name}
-            campaignId={effectiveCampaignId}
+            xpAvailable={char.xp_available ?? 0}
+            onBuySkill={handleBuySkill}
+          />
+        )
+      case 'lore':
+        return (
+          <MobileLoreScreen
+            character={char}
+            speciesAbilities={speciesAbilities}
+            refSpeciesAll={refSpeciesAll}
+            refCareers={refCareers}
+            refSpecs={refSpecs}
+            charSpecs={charSpecs}
+            refObligationTypes={refObligationTypes}
+            refDutyTypes={refDutyTypes}
             forceRating={forceRating ?? 0}
           />
         )
-      case 'talents':
-        return <MobileTalentsScreen hudTalents={hudTalents} />
-      case 'items':
-        return (
-          <MobileItemsScreen
-            hudWeapons={hudWeapons}
-            hudArmor={hudArmor}
-            hudGear={hudGear}
-            encCurrent={encStats?.current ?? 0}
-            encThreshold={encStats?.threshold ?? 0}
-            credits={char.credits ?? 0}
-          />
-        )
-      case 'group':
-        return (
-          <MobileGroupScreen
-            campaignId={effectiveCampaignId}
-            characterId={characterId}
-            characterName={char.name}
-            destinyPool={destinyPool}
-            supabase={supabase}
-          />
-        )
       default:
-        return (
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: SP[4] }}>
-            <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint, letterSpacing: '0.1em' }}>
-              RUNNER TABS · PHASE 3
-            </div>
-          </div>
-        )
+        return null
     }
   }
 

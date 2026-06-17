@@ -369,9 +369,8 @@ export function HudSessionTab({
       {/* ── Combat overlays — only when an active encounter exists ── */}
       {isCombatActive && encounter && (
         <div ref={initiativeBarRef} className="absolute" style={{
-          bottom: 0, left: 0, right: 0,
-          background: 'var(--hud-surface-hi)', backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)', zIndex: 'var(--z-drawer)',
+          top: 0, left: 0, right: 0,
+          zIndex: 'var(--z-drawer)',
         }}>
           <InitiativeStrip encounter={encounter} character={character} compact />
         </div>
@@ -379,7 +378,7 @@ export function HudSessionTab({
 
       {/* ── Session drawer trigger button — shown only when not rail-controlled ── */}
       {!isAdversariesControlled && (
-        <div className="absolute flex" style={{ bottom: isCombatActive && encounter ? 90 : 'var(--space-3)', left: 'var(--space-3)', gap: '0.375rem', zIndex: 'var(--z-hud-drawer)' }}>
+        <div className="absolute flex" style={{ bottom: 'var(--space-3)', left: 'var(--space-3)', gap: '0.375rem', zIndex: 'var(--z-hud-drawer)' }}>
           {encounter && encounter.adversaries.some(a => a.revealed) && visibleMapTokens.some(t => t.participant_type === 'adversary') && (
             <button
               onClick={() => setAdversaryDrawerOpen(!adversaryDrawerOpen)}

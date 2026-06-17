@@ -41,7 +41,7 @@ export function CombatTracker({ character, campaignId, talents = [] }: Props) {
   const publicLog = encounter.log_entries.filter(e => !e.dmOnly)
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: HUD.bg, overflow: 'hidden', position: 'relative' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: HUD.bg, overflowX: 'hidden', overflowY: 'visible', position: 'relative' }}>
 
       {/* Background texture */}
       <div style={{
