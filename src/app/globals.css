@@ -1103,6 +1103,32 @@ i.ffi {
 }
 .hud-full-panel.open { transform: translateX(0); }
 
+/* ── Combat Check Overlay — hover states (CSS-only, no inline mutations) ─── */
+.cc-die {
+  transition: transform var(--ease-quick), filter var(--ease-quick);
+  cursor: default;
+  flex-shrink: 0;
+}
+.cc-die:hover { transform: translateY(-2px) scale(1.06); }
+
+.cc-weapon-card {
+  transition: border-color var(--ease-quick), background var(--ease-quick), opacity var(--ease-quick);
+}
+.cc-weapon-card:hover:not(:disabled) { opacity: 1 !important; }
+
+.cc-range-chip {
+  transition: border-color var(--ease-quick), background var(--ease-quick), color var(--ease-quick);
+}
+.cc-range-chip:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--hud-gold) 50%, transparent) !important;
+  color: var(--hud-text) !important;
+  opacity: 1 !important;
+}
+
+.cc-roll-cta { transition: transform var(--ease-quick), opacity var(--ease-quick); }
+.cc-roll-cta:not(:disabled):hover  { transform: scale(1.01); }
+.cc-roll-cta:not(:disabled):active { transform: scale(0.97); }
+
 /* ── Weapon / Force power row hover (inside quick drawers) ───── */
 .hud-combat-wpn-row {
   padding: var(--space-1) var(--space-2);

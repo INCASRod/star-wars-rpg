@@ -4,7 +4,7 @@ import { useState } from 'react'
 import type { CharacterWeapon, RefWeapon, RefSkill, RefWeaponQuality, Character } from '@/lib/types'
 import { isRangedSkill, isMeleeSkill as isMeleeSkillKey } from '@/lib/combatCheckUtils'
 import { canDualWield } from '@/lib/weaponHandedness'
-import { HUD, FS, FONT_BODY, SP, EASE, RADIUS } from '@/lib/tokens'
+import { HUD, FS, FONT_BODY, FONT_DISPLAY, SP, EASE, RADIUS } from '@/lib/tokens'
 
 const CAUTION = 'color-mix(in srgb, var(--state-caution, #FF9800) 100%, transparent)'
 
@@ -127,33 +127,74 @@ export function WeaponSelectStep({
     const name        = isUnarmed ? 'Unarmed / Brawl' : (w.custom_name || ref?.name || 'Weapon')
     const isSelected  = selectedWeapon?.id === w.id
     const showWarning = maneuverWarningFor === w.id
+    const skillTag    = !isUnarmed && ref?.skill_key
+      ? ref.skill_key.replace('RANGLT','RNG-L').replace('RANGHVY','RNG-H').replace('LTSABER','LT-SBR').replace('GUNN','GUNN').replace('BRAWL','BRAWL').replace('MELEE','MELEE')
+      : null
 
     return (
-      <div key={w.id}>
+      <div key={w.id} style={{ width: '100%' }}>
         <button
           onClick={() => {
             if (isStowed && !showWarning) { setManeuverWarningFor(w.id); return }
             if (!isStowed) onSelect(isSelected ? null : w)
           }}
+          className="cc-weapon-card"
           style={{
-            border:       isSelected
-              ? `1px solid color-mix(in srgb, var(--hud-accent) 50%, transparent)`
-              : `1px solid var(--hud-border)`,
+            display:      'flex',
+            flexDirection:'column' as const,
+            gap:          2, /* name–stats gap */
+            width:        '100%',
+            textAlign:    'left' as const,
+            padding:      `${SP[1]} ${SP[2]}`,
+            borderTop:    `1px solid var(--hud-border)`,
+            borderRight:  `1px solid var(--hud-border)`,
+            borderBottom: `1px solid var(--hud-border)`,
+            borderLeft:   isSelected
+              ? `2px solid var(--hud-accent)`
+              : `2px solid transparent`,
             background:   isSelected
-              ? `color-mix(in srgb, var(--hud-accent) 10%, transparent)`
+              ? `color-mix(in srgb, var(--hud-accent) 6%, transparent)`
               : 'transparent',
-            color:        isSelected ? 'var(--hud-text)' : 'var(--hud-text-dim)',
-            padding:      `2px ${SP[2]}`,
-            fontSize:     FS.overline,
-            fontWeight:   700,
             borderRadius: RADIUS.sm,
             cursor:       'pointer',
-            fontFamily:   FONT_BODY,
-            opacity:      isStowed ? 0.65 : 1,
-            transition:   `border-color ${EASE.quick}, background ${EASE.quick}`,
+            opacity:      isSelected ? 1 : (isStowed ? 0.65 : 0.5),
           }}
         >
-          {name}{isStowed ? ' (stowed)' : ''}
+          <span style={{
+            fontFamily: FONT_DISPLAY,
+            fontSize:   FS.label,
+            fontWeight: 700,
+            color:      'var(--hud-text)',
+          }}>
+            {name}{isStowed ? ' (stowed)' : ''}
+          </span>
+          {!isUnarmed && ref && (
+            <span style={{
+              fontFamily: FONT_BODY,
+              fontSize:   FS.overline,
+              color:      'var(--hud-text-dim)',
+              opacity:    0.6,
+            }}>
+              DMG {ref.damage_add != null ? `+${ref.damage_add}` : ref.damage}
+              {ref.crit ? ` · CRIT ${ref.crit}` : ''}
+              {skillTag ? (
+                <>
+                  {' · '}
+                  <span style={{
+                    fontFamily: FONT_DISPLAY,
+                    fontSize:   FS.overline,
+                    fontWeight: 700,
+                    border:     `1px solid color-mix(in srgb, var(--hud-gold) 50%, transparent)`,
+                    padding:    `0 2px`, /* chip inset — 1px border exception context */
+                    clipPath:   'polygon(2px 0%,calc(100% - 2px) 0%,100% 50%,calc(100% - 2px) 100%,2px 100%,0% 50%)',
+                    opacity:    0.9,
+                  }}>
+                    {skillTag}
+                  </span>
+                </>
+              ) : null}
+            </span>
+          )}
         </button>
 
         {/* Stowed equip warning — inline expansion */}
@@ -233,7 +274,7 @@ export function WeaponSelectStep({
       {(attackType === 'melee' || attackType === null) && (
         <>
           <SectionLabel text="Always Available" />
-          <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: SP[1], marginBottom: SP[2] }}>
+          <div style={{ display: 'flex', flexDirection: 'column' as const, gap: SP[1], marginBottom: SP[2] }}>
             {renderWeaponPill(UNARMED_WEAPON as unknown as CharacterWeapon)}
           </div>
         </>
@@ -243,7 +284,7 @@ export function WeaponSelectStep({
       {equipped.length > 0 && (
         <>
           <SectionLabel text="Equipped" />
-          <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: SP[1], marginBottom: SP[2] }}>
+          <div style={{ display: 'flex', flexDirection: 'column' as const, gap: SP[1], marginBottom: SP[2] }}>
             {equipped.map(w => renderWeaponPill(w, false))}
           </div>
         </>
@@ -253,7 +294,7 @@ export function WeaponSelectStep({
       {stowed.length > 0 && (
         <>
           <SectionLabel text="Stowed" />
-          <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: SP[1], marginBottom: SP[2] }}>
+          <div style={{ display: 'flex', flexDirection: 'column' as const, gap: SP[1], marginBottom: SP[2] }}>
             {stowed.map(w => renderWeaponPill(w, true))}
           </div>
         </>

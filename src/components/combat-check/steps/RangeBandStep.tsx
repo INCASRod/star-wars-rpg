@@ -13,7 +13,7 @@ import {
   getMeleeDifficulty,
   bandIndex,
 } from '@/lib/combatCheckUtils'
-import { HUD, FS, FONT_BODY, SP, EASE, RADIUS } from '@/lib/tokens'
+import { HUD, FS, FONT_BODY, FONT_DISPLAY, SP, EASE, RADIUS } from '@/lib/tokens'
 
 
 interface RangeBandStepProps {
@@ -252,36 +252,51 @@ export function RangeBandStep({ attackType, weapon, selectedBand, targets = [], 
     )
   }
 
-  // Ranged
+  // Ranged — horizontal chip strip
   const refW     = weapon?.refWeapon
   const skillKey = weapon?.skillKey ?? 'RANGLT'
   const maxRange = refW?.range_value ? (RANGE_VALUE_MAP[refW.range_value] ?? 'extreme') : 'extreme'
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: SP[1] }}>
-      {RANGE_BAND_ORDER.map(band => {
-        const result      = getRangedDifficulty(band, skillKey, maxRange)
-        const blocked     = result.blocked
-        const label       = RANGE_BAND_LABELS[band]
-        const atMaxRange  = !blocked && bandIndex(band) === bandIndex(maxRange)
-        const beyondMax   = !blocked && bandIndex(band) > bandIndex(maxRange)
+    <div style={{ display: 'flex', flexDirection: 'column', gap: SP[2] }}>
+      {/* Compact horizontal range strip */}
+      <div style={{ display: 'flex' }}>
+        {RANGE_BAND_ORDER.map((band, idx) => {
+          const result   = getRangedDifficulty(band, skillKey, maxRange)
+          const blocked  = result.blocked
+          const selected = selectedBand === band
+          const label    = RANGE_BAND_LABELS[band]
 
-        return (
-          <CompactBandPill
-            key={band}
-            band={band}
-            label={label}
-            difficultyDice={result.difficultyDice}
-            challengeDice={result.challengeDice}
-            notes={result.notes}
-            blocked={blocked}
-            selected={selectedBand === band}
-            atMaxRange={atMaxRange}
-            beyondMax={beyondMax}
-            onSelect={onSelect}
-          />
-        )
-      })}
+          return (
+            <button
+              key={band}
+              onClick={() => !blocked && onSelect(band)}
+              disabled={blocked}
+              className="cc-range-chip"
+              style={{
+                flex:          1,
+                padding:       `${SP[1]} ${SP[1]}`,
+                border:        `1px solid ${selected ? 'var(--hud-gold)' : 'var(--hud-border)'}`,
+                background:    selected ? `color-mix(in srgb, var(--hud-gold) 10%, transparent)` : 'transparent',
+                color:         selected ? 'var(--hud-gold)' : 'var(--hud-text-dim)',
+                opacity:       blocked ? 0.35 : selected ? 1 : 0.6,
+                fontFamily:    FONT_DISPLAY,
+                fontSize:      FS.overline,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase' as const,
+                cursor:        blocked ? 'not-allowed' : 'pointer',
+                borderRadius:  0, /* flat strip edges per design */
+                marginLeft:    idx > 0 ? -1 : 0, /* collapse adjacent 1px borders */
+                position:      'relative' as const,
+                zIndex:        selected ? 1 : 0,
+              }}
+            >
+              {label}
+            </button>
+          )
+        })}
+      </div>
+      {/* Max range note */}
       <div style={{
         fontFamily:   FONT_BODY,
         fontSize:     FS.overline,
@@ -291,7 +306,6 @@ export function RangeBandStep({ attackType, weapon, selectedBand, targets = [], 
         background:   'var(--hud-surface-lo)',
         borderRadius: RADIUS.sm,
         border:       '1px solid var(--hud-border)',
-        marginTop:    SP[1],
       }}>
         Max range: <strong style={{ color: HUD.gold }}>{RANGE_BAND_LABELS[maxRange]}</strong>.
       </div>

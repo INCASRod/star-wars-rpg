@@ -104,15 +104,24 @@ function DiceRow({ label, types }: { label: string; types: { type: string; count
 }
 
 function AdjustControl({
-  label, value, onAdd, onRemove, min = 0,
-}: { label: ReactNode; value: number; onAdd: () => void; onRemove: () => void; min?: number }) {
+  label, value, onAdd, onRemove, min = 0, polarity = 'positive',
+}: { label: ReactNode; value: number; onAdd: () => void; onRemove: () => void; min?: number; polarity?: 'positive' | 'negative' }) {
+  const isActive = value !== 0
+  const barColor = polarity === 'positive' ? 'var(--hud-gold)' : 'var(--state-failure)'
   return (
     <div style={{
-      display:       'flex',
-      alignItems:    'center',
-      justifyContent:'space-between',
-      padding:       `${SP[1]} 0`,
-      borderBottom:  `1px solid var(--hud-border)`,
+      display:        'flex',
+      alignItems:     'center',
+      justifyContent: 'space-between',
+      padding:        `${SP[1]} ${SP[1]} ${SP[1]} ${SP[2]}`,
+      borderBottom:   `1px solid var(--hud-border)`,
+      borderLeft:     isActive ? `2px solid ${barColor}` : `2px solid transparent`,
+      background:     isActive && polarity === 'positive'
+        ? `color-mix(in srgb, var(--hud-gold) 7%, transparent)`
+        : isActive && polarity === 'negative'
+        ? `color-mix(in srgb, var(--state-failure) 7%, transparent)`
+        : 'transparent',
+      transition:     `border-left-color ${EASE.quick}, background ${EASE.quick}`,
     }}>
       <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: TEXT_DIM, flex: 1 }}>
         {label}
@@ -616,6 +625,7 @@ export function DicePoolReviewStep({
         min={adjFloors.boostAdd}
         onAdd={() => adj('boostAdd', 1)}
         onRemove={() => adj('boostAdd', -1)}
+        polarity="positive"
       />
       <AdjustControl
         label={<><DiceFace type="setback" size={13} style={{ verticalAlign: 'middle' }} />{' '}Setback</>}
@@ -623,6 +633,7 @@ export function DicePoolReviewStep({
         min={adjFloors.setbackAdd}
         onAdd={() => adj('setbackAdd', 1)}
         onRemove={() => adj('setbackAdd', -1)}
+        polarity="negative"
       />
       <AdjustControl
         label={<><DiceFace type="difficulty" size={13} style={{ verticalAlign: 'middle' }} />{' '}Difficulty</>}
@@ -630,6 +641,7 @@ export function DicePoolReviewStep({
         min={adjFloors.difficultyAdd}
         onAdd={() => adj('difficultyAdd', 1)}
         onRemove={() => adj('difficultyAdd', -1)}
+        polarity="negative"
       />
     </div>
   )

@@ -14,7 +14,28 @@ import { RangeBandStep } from './steps/RangeBandStep'
 import { DicePoolReviewStep, type ManualAdjustments, EMPTY_ADJUSTMENTS, type DualWieldState } from './steps/DicePoolReviewStep'
 import { DualWieldReviewStep } from './steps/DualWieldReviewStep'
 import { RollResultStep } from './steps/RollResultStep'
-import { HUD, FS, FONT_BODY, SP, EASE, RADIUS } from '@/lib/tokens'
+import { HUD, FS, FONT_BODY, FONT_DISPLAY, SP, EASE, RADIUS, Z, DICE_META } from '@/lib/tokens'
+
+// ── Dice tray constants ────────────────────────────────────────────────────────
+const CLIP_OCTAGON = 'polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 70%,0% 30%)'
+const CLIP_DIAMOND = 'polygon(50% 0%,100% 50%,50% 100%,0% 50%)'
+
+function DiceTrayDie({ type }: { type: keyof typeof DICE_META }) {
+  const meta = DICE_META[type]
+  const sz = meta.shape === 'diamond' ? 30 : 34 /* die icon size */
+  return (
+    <div
+      className="cc-die"
+      style={{
+        width:        sz,
+        height:       sz,
+        background:   meta.color, /* die-identity hex — sealed namespace, Pixi-canvas approved */
+        clipPath:     meta.shape === 'octagon' ? CLIP_OCTAGON : meta.shape === 'diamond' ? CLIP_DIAMOND : undefined,
+        borderRadius: meta.shape === 'rounded' ? RADIUS.sm : undefined,
+      }}
+    />
+  )
+}
 
 // ── State ─────────────────────────────────────────────────────────────────────
 interface CombatCheckState {
@@ -78,15 +99,40 @@ function StepContainer({
       }}
     >
       <div style={{
-        fontFamily:    FONT_BODY,
-        fontSize:      FS.overline,
-        fontWeight:    700,
-        letterSpacing: '0.12em',
-        textTransform: 'uppercase' as const,
-        color:         isActive ? 'var(--hud-gold)' : isDone ? HUD.textDim : HUD.textFaint,
-        marginBottom:  (isActive || (isDone && doneSummary)) ? SP[1] : 0,
+        display:      'flex',
+        alignItems:   'center',
+        gap:          SP[1],
+        marginBottom: (isActive || (isDone && doneSummary)) ? SP[1] : 0,
       }}>
-        {number}. {label}{isDone ? ' ✓' : ''}
+        {/* Step number badge */}
+        <div style={{
+          width:          14, /* step badge icon size */
+          height:         14,
+          borderRadius:   RADIUS.full,
+          border:         `1px solid color-mix(in srgb, var(--hud-accent) 60%, transparent)`,
+          color:          `color-mix(in srgb, var(--hud-accent) 80%, transparent)`,
+          fontFamily:     FONT_DISPLAY,
+          fontSize:       FS.overline,
+          display:        'flex',
+          alignItems:     'center',
+          justifyContent: 'center',
+          flexShrink:     0,
+          lineHeight:     1,
+        }}>
+          {number}
+        </div>
+        {/* Step name */}
+        <div style={{
+          fontFamily:    FONT_DISPLAY,
+          fontSize:      FS.overline,
+          fontWeight:    700,
+          letterSpacing: '0.28em',
+          textTransform: 'uppercase' as const,
+          color:         isActive ? 'var(--hud-text)' : isDone ? HUD.textDim : HUD.textFaint,
+          opacity:       isActive ? 1 : isDone ? 0.6 : 0.45,
+        }}>
+          {label}{isDone ? ' ✓' : ''}
+        </div>
       </div>
       {isDone && doneSummary && (
         <div style={{
@@ -509,6 +555,7 @@ export function CombatCheckOverlay({
     <div
       className={`hud-quick-drawer${open ? ' open' : ''}`}
       style={{
+        position:             'relative',
         background:           'var(--hud-surface-hi)',
         backdropFilter:       'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
@@ -517,6 +564,13 @@ export function CombatCheckOverlay({
         flexDirection:        'column',
       }}
     >
+
+      {/* ── Top-edge accent stripe ──────────────────────────────────────────── */}
+      <div style={{
+        height:     3, /* stripe height */
+        background: 'linear-gradient(90deg, transparent, var(--hud-accent) 30%, var(--hud-gold) 70%, transparent)',
+        flexShrink: 0,
+      }} />
 
       {/* ── Compact header strip ────────────────────────────────────────────── */}
       <div style={{
@@ -553,6 +607,55 @@ export function CombatCheckOverlay({
           }}
         >✕</button>
       </div>
+
+      {/* ── Persistent dice tray ─────────────────────────────────────────────── */}
+      {(() => {
+        const p = poolForRoll.proficiency ?? 0
+        const a = poolForRoll.ability     ?? 0
+        const b = poolForRoll.boost       ?? 0
+        const d = poolForRoll.difficulty  ?? 0
+        const c = poolForRoll.challenge   ?? 0
+        const s = poolForRoll.setback     ?? 0
+        const hasPlayerDice = p + a + b > 0
+        const hasDiffDice   = d + c + s > 0
+        const hasAny        = hasPlayerDice || hasDiffDice
+        return (
+          <div style={{
+            padding:      `${SP[1]} ${SP[2]}`,
+            background:   'rgba(0,0,0,0.25)',
+            borderBottom: '1px solid var(--hud-border)',
+            flexShrink:   0,
+          }}>
+            <div style={{
+              fontFamily:    FONT_DISPLAY,
+              fontSize:      FS.overline,
+              letterSpacing: '0.18em',
+              textTransform: 'uppercase' as const,
+              color:         'var(--hud-text-faint)',
+              opacity:       0.55,
+              marginBottom:  SP[1],
+            }}>
+              Dice Pool
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexWrap: 'wrap' as const }}>
+              {Array.from({ length: p }).map((_, i) => <DiceTrayDie key={`pro-${i}`} type="proficiency" />)}
+              {Array.from({ length: a }).map((_, i) => <DiceTrayDie key={`abl-${i}`} type="ability" />)}
+              {Array.from({ length: b }).map((_, i) => <DiceTrayDie key={`bst-${i}`} type="boost" />)}
+              {hasPlayerDice && hasDiffDice && (
+                <div style={{ width: 1, height: 28, background: 'rgba(255,255,255,0.10)', margin: `0 ${SP[1]}`, flexShrink: 0 }} />
+              )}
+              {Array.from({ length: d }).map((_, i) => <DiceTrayDie key={`dif-${i}`} type="difficulty" />)}
+              {Array.from({ length: c }).map((_, i) => <DiceTrayDie key={`chl-${i}`} type="challenge" />)}
+              {Array.from({ length: s }).map((_, i) => <DiceTrayDie key={`set-${i}`} type="setback" />)}
+              {!hasAny && (
+                <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)', opacity: 0.4 }}>
+                  — —
+                </span>
+              )}
+            </div>
+          </div>
+        )
+      })()}
 
       {/* ── Body ─────────────────────────────────────────────────────────────── */}
       <div style={{ flex: 1, overflowY: 'auto', overscrollBehavior: 'contain' }}>
@@ -730,22 +833,22 @@ export function CombatCheckOverlay({
                   <button
                     onClick={() => handleRoll(poolForRoll)}
                     disabled={totalDiceForRoll === 0}
+                    className="cc-roll-cta"
                     style={{
                       width:         '100%',
                       marginTop:     SP[2],
                       padding:       `${SP[2]} 0`,
-                      background:    `color-mix(in srgb, var(--hud-accent) 18%, transparent)`,
-                      border:        `1px solid color-mix(in srgb, var(--hud-accent) 45%, transparent)`,
-                      borderRadius:  RADIUS.md,
+                      clipPath:      'polygon(8px 0%,calc(100% - 8px) 0%,100% 50%,calc(100% - 8px) 100%,8px 100%,0% 50%)',
+                      background:    'var(--hud-accent)',
+                      border:        'none',
                       cursor:        totalDiceForRoll === 0 ? 'not-allowed' : 'pointer',
                       opacity:       totalDiceForRoll === 0 ? 0.4 : 1,
-                      fontFamily:    FONT_BODY,
+                      fontFamily:    FONT_DISPLAY,
                       fontSize:      FS.sm,
                       fontWeight:    700,
-                      color:         'var(--hud-text)',
-                      letterSpacing: '0.12em',
+                      color:         'color-mix(in srgb, black 85%, transparent)',
+                      letterSpacing: '0.28em',
                       textTransform: 'uppercase' as const,
-                      transition:    `opacity ${EASE.quick}`,
                     }}
                   >
                     Roll {totalDiceForRoll} Dice
@@ -809,6 +912,18 @@ export function CombatCheckOverlay({
           </button>
         </div>
       )}
+
+      {/* ── Scanline overlay ─────────────────────────────────────────────────── */}
+      <div
+        aria-hidden="true"
+        style={{
+          position:            'absolute',
+          inset:               0,
+          pointerEvents:       'none',
+          zIndex:              Z.fab,
+          backgroundImage:     'repeating-linear-gradient(0deg,transparent,transparent 2px,color-mix(in srgb,black 3%,transparent) 2px,color-mix(in srgb,black 3%,transparent) 4px)',
+        }}
+      />
     </div>
   )
 }
