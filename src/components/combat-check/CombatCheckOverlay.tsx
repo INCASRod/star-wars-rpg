@@ -106,18 +106,25 @@ function StepContainer({
       }}>
         {/* Step number badge */}
         <div style={{
-          width:          14, /* step badge icon size */
-          height:         14,
-          borderRadius:   RADIUS.full,
-          border:         `1px solid color-mix(in srgb, var(--hud-accent) 60%, transparent)`,
-          color:          `color-mix(in srgb, var(--hud-accent) 80%, transparent)`,
-          fontFamily:     FONT_DISPLAY,
-          fontSize:       FS.overline,
-          display:        'flex',
-          alignItems:     'center',
-          justifyContent: 'center',
-          flexShrink:     0,
-          lineHeight:     1,
+          width:           18, /* step badge icon size */
+          height:          18,
+          borderRadius:    RADIUS.full,
+          border:          isActive
+            ? `1px solid color-mix(in srgb, var(--hud-accent) 80%, transparent)`
+            : `1px solid color-mix(in srgb, var(--hud-border) 80%, transparent)`,
+          background:      isActive
+            ? `color-mix(in srgb, var(--hud-accent) 15%, transparent)`
+            : 'transparent',
+          color:           isActive
+            ? 'var(--hud-accent)'
+            : `color-mix(in srgb, var(--hud-text-faint) 60%, transparent)`,
+          fontFamily:      FONT_DISPLAY,
+          fontSize:        FS.overline,
+          display:         'flex',
+          alignItems:      'center',
+          justifyContent:  'center',
+          flexShrink:      0,
+          lineHeight:      1,
         }}>
           {number}
         </div>
@@ -889,25 +896,34 @@ export function CombatCheckOverlay({
           <button
             onClick={goNext}
             disabled={!canAdvance()}
+            className="cc-next-btn"
             style={{
               width:         '100%',
               padding:       `${SP[2]} 0`,
-              borderRadius:  RADIUS.md,
-              border:        `1px solid color-mix(in srgb, var(--hud-accent) ${canAdvance() ? 45 : 20}%, transparent)`,
+              clipPath:      canAdvance()
+                ? 'polygon(6px 0%,calc(100% - 6px) 0%,100% 50%,calc(100% - 6px) 100%,6px 100%,0% 50%)'
+                : undefined,
+              borderRadius:  canAdvance() ? 0 : RADIUS.md,
+              border:        canAdvance()
+                ? 'none'
+                : `1px solid color-mix(in srgb, var(--hud-border) 60%, transparent)`,
               cursor:        canAdvance() ? 'pointer' : 'not-allowed',
-              fontFamily:    FONT_BODY,
+              fontFamily:    FONT_DISPLAY,
               fontSize:      FS.label,
               fontWeight:    700,
               textTransform: 'uppercase' as const,
-              letterSpacing: '0.1em',
+              letterSpacing: '0.22em',
               background:    canAdvance()
-                ? `color-mix(in srgb, var(--hud-accent) 18%, transparent)`
-                : `color-mix(in srgb, var(--hud-accent) 6%, transparent)`,
-              color:         canAdvance() ? 'var(--hud-text)' : 'var(--hud-text-faint)',
-              transition:    `background ${EASE.quick}, border-color ${EASE.quick}`,
+                ? 'var(--hud-accent)'
+                : `color-mix(in srgb, var(--hud-surface-lo) 60%, transparent)`,
+              color:         canAdvance()
+                ? 'color-mix(in srgb, black 80%, transparent)'
+                : 'var(--hud-text-faint)',
+              transition:    `background ${EASE.quick}, opacity ${EASE.quick}`,
+              opacity:       canAdvance() ? 1 : 0.5,
             }}
           >
-            {state.dualWieldReview ? 'Continue →' : 'Next →'}
+            {state.dualWieldReview ? 'Continue' : 'Next'}
           </button>
         </div>
       )}

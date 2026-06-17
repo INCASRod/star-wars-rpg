@@ -1128,6 +1128,9 @@ i.ffi {
 .cc-roll-cta { transition: transform var(--ease-quick), opacity var(--ease-quick); }
 .cc-roll-cta:not(:disabled):hover  { transform: scale(1.01); }
 .cc-roll-cta:not(:disabled):active { transform: scale(0.97); }
+.cc-next-btn { transition: transform var(--ease-quick), opacity var(--ease-quick); }
+.cc-next-btn:not(:disabled):hover  { transform: scale(1.01); opacity: 0.9; }
+.cc-next-btn:not(:disabled):active { transform: scale(0.97); }
 
 /* ── Weapon / Force power row hover (inside quick drawers) ───── */
 .hud-combat-wpn-row {

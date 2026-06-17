@@ -151,13 +151,13 @@ export function WeaponSelectStep({
             borderBottom: `1px solid var(--hud-border)`,
             borderLeft:   isSelected
               ? `2px solid var(--hud-accent)`
-              : `2px solid transparent`,
+              : `2px solid color-mix(in srgb, var(--hud-border) 70%, transparent)`,
             background:   isSelected
-              ? `color-mix(in srgb, var(--hud-accent) 6%, transparent)`
-              : 'transparent',
+              ? `color-mix(in srgb, var(--hud-accent) 8%, transparent)`
+              : `color-mix(in srgb, var(--hud-surface-lo) 40%, transparent)`,
             borderRadius: RADIUS.sm,
             cursor:       'pointer',
-            opacity:      isSelected ? 1 : (isStowed ? 0.65 : 0.5),
+            opacity:      isSelected ? 1 : (isStowed ? 0.6 : 0.85),
           }}
         >
           <span style={{
