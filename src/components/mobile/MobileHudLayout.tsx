@@ -26,6 +26,7 @@ import { MobileTalentsBuyScreen }       from './screens/MobileTalentsBuyScreen' 
 import { MobileForceScreen }            from './screens/MobileForceScreen'      /* Added for mobile Force tab */
 import { MobileSkillsBuyScreen }        from './screens/MobileSkillsBuyScreen'  /* Added for mobile +Skills runner tab */
 import { MobileLoreScreen }             from './screens/MobileLoreScreen'        /* Added for mobile Lore runner tab */
+import { MobileDestinySpendSheet }      from './MobileDestinySpendSheet'
 
 interface MobileHudLayoutProps {
   characterId: string
@@ -105,7 +106,7 @@ export function MobileHudLayout({ characterId, campaignId }: MobileHudLayoutProp
   }
 
   // Called unconditionally — handles undefined characterName and null campaignId gracefully.
-  const { destinyPool } = useDestinyPool(
+  const { destinyPool, destinyPoolRecord } = useDestinyPool(
     effectiveCampaignId,
     characterId,
     character?.name,
@@ -120,6 +121,7 @@ export function MobileHudLayout({ characterId, campaignId }: MobileHudLayoutProp
   const [runnerTab, setRunnerTab] = useState<RunnerTab>('feed')
   const [navTab, setNavTab]       = useState<NavTab | null>(null)
   const [diceSkill, setDiceSkill] = useState<string | null>(null)
+  const [destinySpendOpen, setDestinySpendOpen] = useState(false)
 
   function handleNavChange(tab: NavTab) {
     setNavTab(prev => (prev === tab ? null : tab))
@@ -300,6 +302,8 @@ export function MobileHudLayout({ characterId, campaignId }: MobileHudLayoutProp
         xpAvailable={character.xp_available ?? 0}
         credits={character.credits ?? 0}
         destinyPool={destinyPool}
+        destinyPoolRecord={destinyPoolRecord}
+        onSpendDestiny={() => setDestinySpendOpen(true)}
         portraitUrl={character.portrait_url ?? null}
       />
 
@@ -325,6 +329,18 @@ export function MobileHudLayout({ characterId, campaignId }: MobileHudLayoutProp
         onTabChange={handleNavChange}
         encumbranceWarning={encumbranceWarning}
       />
+
+      {destinyPoolRecord && effectiveCampaignId && (
+        <MobileDestinySpendSheet
+          isOpen={destinySpendOpen}
+          onClose={() => setDestinySpendOpen(false)}
+          destinyPoolRecord={destinyPoolRecord}
+          characterName={character?.name ?? ''}
+          characterId={characterId}
+          campaignId={effectiveCampaignId}
+          supabase={supabase}
+        />
+      )}
     </div>
   )
 }
