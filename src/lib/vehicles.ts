@@ -21,6 +21,8 @@ export interface VehicleInstance {
     starboard: number
   }
   weapons:               VehicleWeapon[]
+  abilities?:            VehicleAbility[]
+  description?:          string
   revealed:              boolean
   alignment:             'enemy' | 'allied_npc'
   token_image_url?:      string | null
@@ -315,6 +317,8 @@ export function vehicleToVehicleInstance(
       starboard: v.defStarboard,
     },
     weapons:        v.weapons,
+    abilities:      v.abilities,
+    description:    v.description,
     revealed:       false,
     alignment,
     token_image_url: tokenImageUrl ?? null,
