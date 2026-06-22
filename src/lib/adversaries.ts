@@ -54,7 +54,7 @@ export interface Adversary {
   presence: number
   soak: number
   wound: number         // wound threshold (or wounds per minion)
-  strain?: number       // rivals and nemeses
+  strain?: number       // nemesis only
   defense: number[]     // [melee, ranged]
   skills?: string[]
   skillRanks: Record<string, number>   // { Cool: 4, Vigilance: 2 } — normalized from object or array

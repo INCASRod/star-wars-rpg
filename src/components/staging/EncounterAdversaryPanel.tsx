@@ -931,7 +931,7 @@ function AdversaryWoundTracker({
           >+</button>
         </div>
       )}
-      {(adv.type === 'rival' || adv.type === 'nemesis') && adv.strainThreshold && adv.strainThreshold > 0 && onAdjustStrain && (() => {
+      {adv.type === 'nemesis' && adv.strainThreshold && adv.strainThreshold > 0 && onAdjustStrain && (() => {
         const strain    = adv.strainCurrent ?? 0
         const strainMax = adv.strainThreshold
         const sPct      = strainMax > 0 ? Math.min(1, strain / strainMax) : 0

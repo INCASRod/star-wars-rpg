@@ -323,7 +323,7 @@ export function AdversaryEditor({
         brawn, agility, intellect, cunning, willpower, presence,
         soak: brawn,  // soak = brawn + armor; store brawn as base
         wound_threshold: wt,
-        strain_threshold: (type === 'rival' || type === 'nemesis') && st !== '' ? Number(st) : null,
+        strain_threshold: type === 'nemesis' && st !== '' ? Number(st) : null,
         defense_melee: defMelee, defense_ranged: defRanged,
         skill_ranks: skillRanks,
         characteristic_overrides: characteristicOverridesOut,
@@ -546,7 +546,7 @@ export function AdversaryEditor({
                 />
                 {errors.wt && <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: RED, marginTop: '0.1875rem' }}>{errors.wt}</div>}
               </div>
-              {(type === 'rival' || type === 'nemesis') && (
+              {type === 'nemesis' && (
                 <div>
                   <div style={fieldLabel}>Strain Threshold</div>
                   <input
