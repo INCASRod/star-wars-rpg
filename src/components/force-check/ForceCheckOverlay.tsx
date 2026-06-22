@@ -4,11 +4,13 @@ import { useState, useEffect, useMemo } from 'react'
 import { FS, HUD, FONT_DISPLAY, FONT_BODY, SP, EASE, RADIUS, Z } from '@/lib/tokens'
 import { createClient } from '@/lib/supabase/client'
 import type { Character } from '@/lib/types'
-import type { ForceRollResult } from '@/lib/forceRoll'
+import type { ForceRollResult, ForceDie } from '@/lib/forceRoll'
 import type { ForcePowerDisplay } from '@/components/player-hud/ForcePanel'
 import type { AdversaryInstance } from '@/lib/adversaries'
 import { rollForceDice } from '@/components/player-hud/dice-engine'
 import { RichText } from '@/components/ui/RichText'
+
+type RollPhase = 'idle' | 'tumble' | 'reveal' | 'done'
 
 export interface ForceCheckOverlayProps {
   open:            boolean
@@ -74,6 +76,85 @@ function PipCircle({ spent, dark }: { spent: boolean; dark?: boolean }) {
   )
 }
 
+// ── Force die reveal face ─────────────────────────────────────────────────────
+const OCTAGON_CLIP = 'polygon(28% 0%, 72% 0%, 100% 28%, 100% 72%, 72% 100%, 28% 100%, 0% 72%, 0% 28%)'
+
+function ForceDieRevealFace({
+  die, revealed, index,
+}: {
+  die: ForceDie
+  revealed: boolean
+  index: number
+}) {
+  const empty = die.light === 0 && die.dark === 0
+  return (
+    // Outer: handles bounce (revealed) or tumble (pending) — no clip-path so glow bleeds out
+    <div style={{
+      width: 44, height: 44, /* die cell — px intentional, die-identity display */
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      flexShrink: 0,
+      boxShadow: revealed
+        ? `0 0 10px color-mix(in srgb, var(--hud-accent-purple) 28%, transparent)`
+        : 'none',
+      animation: revealed
+        ? `fco-die-bounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both` /* die-reveal spring — animation timing */
+        : `fco-tumble 0.7s linear infinite`, /* die-tumble — animation timing */
+      animationDelay: revealed ? '0s' : `${index * 0.09}s`, /* stagger tumble start — animation timing */
+    }}>
+      {/* Border layer — full octagon */}
+      <div style={{
+        width: 44, height: 44, /* die border — px intentional */
+        clipPath: OCTAGON_CLIP,
+        background: revealed
+          ? `color-mix(in srgb, var(--hud-accent-purple) 40%, transparent)`
+          : `color-mix(in srgb, var(--hud-accent-purple) 22%, transparent)`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        {/* Fill layer — inset octagon with radial gradient */}
+        <div style={{
+          width: 41, height: 41, /* inset 1.5px — px intentional, die geometry */
+          clipPath: OCTAGON_CLIP,
+          background: revealed
+            ? `radial-gradient(circle at 35% 35%, color-mix(in srgb, var(--hud-accent-purple) 18%, transparent), color-mix(in srgb, var(--hud-accent-purple) 6%, transparent) 70%)`
+            : `color-mix(in srgb, var(--hud-accent-purple) 4%, transparent)`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexDirection: 'column', gap: 3, /* pip gap — px intentional, die geometry */
+        }}>
+          {revealed && (
+            <>
+              {empty && (
+                <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint }}>—</span>
+              )}
+              {die.light > 0 && (
+                <div style={{ display: 'flex', gap: 2 /* pip gap — px intentional */ }}>
+                  {Array.from({ length: die.light }).map((_, i) => (
+                    <div key={i} style={{
+                      width: 7, height: 7, /* light pip — px intentional */
+                      borderRadius: RADIUS.full,
+                      background: `color-mix(in srgb, var(--hud-accent-purple) 55%, white)`,
+                    }} />
+                  ))}
+                </div>
+              )}
+              {die.dark > 0 && (
+                <div style={{ display: 'flex', gap: 2 /* pip gap — px intentional */ }}>
+                  {Array.from({ length: die.dark }).map((_, i) => (
+                    <div key={i} style={{
+                      width: 7, height: 7, /* dark pip — px intentional */
+                      borderRadius: RADIUS.full,
+                      background: `color-mix(in srgb, var(--hud-accent-purple) 85%, black)`,
+                    }} />
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Main overlay ──────────────────────────────────────────────────────────────
 export function ForceCheckOverlay({
   open, onClose,
@@ -88,6 +169,9 @@ export function ForceCheckOverlay({
   const [spentMap, setSpentMap]   = useState<Map<string, boolean>>(new Map())
   const [busy, setBusy]           = useState(false)
   const [expandedDetailKey, setExpandedDetailKey] = useState<string | null>(null)
+  const [rollPhase, setRollPhase]         = useState<RollPhase>('idle')
+  const [pendingRoll, setPendingRoll]     = useState<ForceRollResult | null>(null)
+  const [revealedCount, setRevealedCount] = useState(0)
 
   useEffect(() => {
     if (open) {
@@ -96,6 +180,9 @@ export function ForceCheckOverlay({
       setSpentMap(new Map())
       setBusy(false)
       setExpandedDetailKey(null)
+      setRollPhase('idle')
+      setPendingRoll(null)
+      setRevealedCount(0)
     }
   }, [open])
 
@@ -124,10 +211,41 @@ export function ForceCheckOverlay({
   const lightAvail = lightTotal - lightUsed
   const darkAvail  = darkTotal  - darkUsed
 
-  // ── Roll ──────────────────────────────────────────────────────────────────
-  function handleRoll() {
-    setForceRoll(rollForceDice(available))
+  // ── Roll — 4-phase animation sequence ────────────────────────────────────────
+  function handleRollWithAnimation() {
+    if (rollPhase === 'tumble' || rollPhase === 'reveal' || available === 0) return
+    const result = rollForceDice(available)
+    const diceCount = result.dice.length
+    const TUMBLE_MS = 1500  /* tumble phase duration — animation timing */
+    const PER_DIE_MS = 220  /* per-die reveal interval — animation timing */
+
+    setPendingRoll(result)
+    setForceRoll(null)
     setSpentMap(new Map())
+    setRevealedCount(0)
+    setRollPhase('tumble')
+
+    // Phase 2: switch to reveal mode, start staggered die reveal
+    setTimeout(() => { setRollPhase('reveal') }, TUMBLE_MS)
+    for (let i = 0; i < diceCount; i++) {
+      setTimeout(() => { setRevealedCount(i + 1) }, TUMBLE_MS + (i + 1) * PER_DIE_MS)
+    }
+    // Phase 3 + 4: set result, unlock spend section
+    setTimeout(() => {
+      setForceRoll(result)
+      setPendingRoll(null)
+      setRollPhase('done')
+    }, TUMBLE_MS + diceCount * PER_DIE_MS + 300) /* +300ms for totals fade — animation timing */
+  }
+
+  // ── CTA — rolls if no result yet, commits if roll complete ───────────────────
+  function handleCta() {
+    if (rollPhase === 'tumble' || rollPhase === 'reveal') return
+    if (!forceRoll) {
+      handleRollWithAnimation()
+    } else {
+      handleChannelForce()
+    }
   }
 
   // ── Toggle upgrade spend ──────────────────────────────────────────────────
@@ -203,6 +321,34 @@ export function ForceCheckOverlay({
   }
 
   const canChannel = selPower !== null && forceRoll !== null
+  const isRolling  = rollPhase === 'tumble' || rollPhase === 'reveal'
+  const ctaLabel   = isRolling ? 'Channelling…' : 'Channel the Force'
+  const ctaActive  = !isRolling && !busy && (forceRoll ? canChannel : available > 0)
+
+  const FCO_STYLES = `
+    @keyframes fco-tumble {
+      0%   { transform: rotate(0deg)   scale(1.05); }
+      25%  { transform: rotate(90deg)  scale(0.92); }
+      50%  { transform: rotate(180deg) scale(1.05); }
+      75%  { transform: rotate(270deg) scale(0.92); }
+      100% { transform: rotate(360deg) scale(1.05); }
+    }
+    @keyframes fco-die-bounce {
+      0%   { transform: scale(0) rotate(-15deg); opacity: 0; }
+      55%  { transform: scale(1.15) rotate(4deg);  opacity: 1; }
+      75%  { transform: scale(0.92) rotate(-2deg); opacity: 1; }
+      100% { transform: scale(1)    rotate(0deg);  opacity: 1; }
+    }
+    @keyframes fco-totals-in {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0);   }
+    }
+    @keyframes fco-orb-pulse {
+      0%,100% { box-shadow: 0 0 14px color-mix(in srgb, var(--hud-accent-purple) 30%, transparent); }
+      50%     { box-shadow: 0 0 32px color-mix(in srgb, var(--hud-accent-purple) 65%, transparent),
+                             inset 0 0 14px color-mix(in srgb, var(--hud-accent-purple) 20%, transparent); }
+    }
+  `
 
   return (
     <div
@@ -217,6 +363,8 @@ export function ForceCheckOverlay({
         overflow: 'hidden',
       }}
     >
+      {/* Scoped animation keyframes */}
+      <style dangerouslySetInnerHTML={{ __html: FCO_STYLES }} />
       {/* Top accent stripe */}
       <div style={{
         height: 3, /* decorative stripe — px intentional */
@@ -271,26 +419,31 @@ export function ForceCheckOverlay({
           {/* Orb — clickable to roll */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: SP[1] }}>
             <button
-              onClick={handleRoll}
-              disabled={available === 0}
+              onClick={handleRollWithAnimation}
+              disabled={available === 0 || isRolling}
               style={{
                 width: 76, height: 76, /* Force Die Orb — px intentional, die-identity display */
                 borderRadius: '50%',
                 background: `color-mix(in srgb, black 55%, transparent)`,
-                border: `2px solid color-mix(in srgb, var(--hud-accent-purple) ${available > 0 ? 50 : 20}%, transparent)`,
+                border: isRolling
+                  ? `2px solid color-mix(in srgb, var(--hud-accent-purple) 80%, transparent)`
+                  : `2px solid color-mix(in srgb, var(--hud-accent-purple) ${available > 0 ? 50 : 20}%, transparent)`,
                 boxShadow: forceRoll
                   ? `0 0 24px color-mix(in srgb, var(--hud-accent-purple) 35%, transparent), inset 0 0 12px color-mix(in srgb, var(--hud-accent-purple) 10%, transparent)`
                   : `0 0 14px color-mix(in srgb, var(--hud-accent-purple) 12%, transparent)`,
-                cursor: available > 0 ? 'pointer' : 'default',
+                animation: isRolling ? `fco-orb-pulse 0.9s ease-in-out infinite` : 'none', /* orb pulse — animation timing */
+                cursor: available > 0 && !isRolling ? 'pointer' : 'default',
                 display: 'flex', flexDirection: 'column',
                 alignItems: 'center', justifyContent: 'center',
-                transition: `box-shadow ${EASE.default}, border-color ${EASE.default}`,
+                transition: `border-color ${EASE.default}`,
               }}
             >
               <span style={{
                 fontFamily: FONT_DISPLAY,
                 fontSize: '30px', /* orb count — px intentional, die-identity display size */
                 fontWeight: 900, color: 'white', lineHeight: 1,
+                opacity: isRolling ? 0.25 : 1,
+                transition: `opacity ${EASE.default}`,
               }}>
                 {available}
               </span>
@@ -304,9 +457,28 @@ export function ForceCheckOverlay({
             </div>
           </div>
 
-          {/* Pip result row — shown after rolling */}
-          {forceRoll && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: SP[3] }}>
+          {/* Pip result / animation area */}
+          {isRolling && pendingRoll ? (
+            /* Phase 1 + 2: tumbling silhouettes → staggered reveal */
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              gap: SP[1], flexWrap: 'wrap', padding: `${SP[1]} 0`,
+            }}>
+              {pendingRoll.dice.map((die, idx) => (
+                <ForceDieRevealFace
+                  key={idx}
+                  die={die}
+                  revealed={rollPhase === 'reveal' && idx < revealedCount}
+                  index={idx}
+                />
+              ))}
+            </div>
+          ) : forceRoll ? (
+            /* Phase 3 + 4: pip totals with fade-in */
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: SP[3],
+              animation: `fco-totals-in 0.3s ease both`, /* totals appear — animation timing */
+            }}>
               {/* Light side */}
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: SP[1] }}>
                 <div style={{ display: 'flex', gap: SP[1] }}>
@@ -323,9 +495,7 @@ export function ForceCheckOverlay({
                   textTransform: 'uppercase', letterSpacing: '0.12em',
                 }}>Light</span>
               </div>
-
               <span style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: HUD.textFaint, opacity: 0.4 }}>→</span>
-
               {/* Dark side */}
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: SP[1] }}>
                 <div style={{ display: 'flex', gap: SP[1] }}>
@@ -343,10 +513,8 @@ export function ForceCheckOverlay({
                 }}>Dark</span>
               </div>
             </div>
-          )}
-
-          {/* Pre-roll hint */}
-          {!forceRoll && (
+          ) : (
+            /* Phase 0: pre-roll hint */
             <div style={{
               textAlign: 'center', fontFamily: FONT_BODY, fontSize: FS.overline,
               color: HUD.textFaint, fontStyle: 'italic',
@@ -659,30 +827,30 @@ export function ForceCheckOverlay({
         display: 'flex', flexDirection: 'column', gap: SP[1],
       }}>
         <button
-          onClick={handleChannelForce}
-          disabled={!canChannel || busy}
+          onClick={handleCta}
+          disabled={!ctaActive}
           style={{
             width: '100%',
             padding: `${SP[3]} 0`,
-            clipPath: `polygon(8px 0%, calc(100% - 8px) 0%, 100% 50%, calc(100% - 8px) 100%, 8px 100%, 0% 50%)`, /* decorative clip-path corners — px intentional */
-            border: canChannel && !busy
+            clipPath: `polygon(8px 0%, calc(100% - 8px) 0%, 100% 50%, calc(100% - 8px) 100%, 8px 100%, 0% 50%)`, /* decorative clip-path — px intentional */
+            border: ctaActive
               ? `1px solid color-mix(in srgb, var(--hud-accent-purple) 70%, transparent)`
               : `1px solid color-mix(in srgb, var(--hud-accent-purple) 20%, transparent)`,
-            background: canChannel && !busy
+            background: ctaActive
               ? 'color-mix(in srgb, var(--hud-accent-purple) 15%, transparent)'
               : 'color-mix(in srgb, var(--hud-accent-purple) 5%, transparent)',
-            cursor: canChannel && !busy ? 'pointer' : 'not-allowed',
+            cursor: ctaActive ? 'pointer' : 'not-allowed',
             fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700,
             textTransform: 'uppercase', letterSpacing: '0.18em',
-            color: canChannel && !busy ? 'var(--hud-accent-purple)' : HUD.textFaint,
+            color: ctaActive ? 'var(--hud-accent-purple)' : HUD.textFaint,
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: SP[2],
             transition: `all ${EASE.default}`,
           }}
         >
-          {busy ? '…' : (
+          {isRolling || busy ? ctaLabel : (
             <>
               <span style={{ opacity: 0.7 }}>✦</span>
-              Channel the Force
+              {ctaLabel}
             </>
           )}
         </button>
