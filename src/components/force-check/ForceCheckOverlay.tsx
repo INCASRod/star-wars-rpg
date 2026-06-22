@@ -8,6 +8,7 @@ import type { ForceRollResult } from '@/lib/forceRoll'
 import type { ForcePowerDisplay } from '@/components/player-hud/ForcePanel'
 import type { AdversaryInstance } from '@/lib/adversaries'
 import { rollForceDice } from '@/components/player-hud/dice-engine'
+import { RichText } from '@/components/ui/RichText'
 
 export interface ForceCheckOverlayProps {
   open:            boolean
@@ -86,6 +87,7 @@ export function ForceCheckOverlay({
   // Map<upgradeKey, useDark: boolean>
   const [spentMap, setSpentMap]   = useState<Map<string, boolean>>(new Map())
   const [busy, setBusy]           = useState(false)
+  const [expandedDetailKey, setExpandedDetailKey] = useState<string | null>(null)
 
   useEffect(() => {
     if (open) {
@@ -93,6 +95,7 @@ export function ForceCheckOverlay({
       setForceRoll(null)
       setSpentMap(new Map())
       setBusy(false)
+      setExpandedDetailKey(null)
     }
   }, [open])
 
@@ -382,60 +385,134 @@ export function ForceCheckOverlay({
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: SP[1] }}>
               {purchased.map(p => {
-                const sel = p.powerKey === selectedPowerKey
+                const sel             = p.powerKey === selectedPowerKey
                 const allUpgrades     = p.abilities.filter(a => a.purchasedRanks > 0)
                 const activatedCount  = sel ? allUpgrades.filter(u => spentMap.has(u.key)).length : 0
                 const totalCount      = allUpgrades.length
+                const detailOpen      = expandedDetailKey === p.powerKey
+                const powerDesc       = p.description
+                const upgradeDescs    = allUpgrades.filter(a => a.description)
+                const hasDetail       = !!(powerDesc || upgradeDescs.length > 0)
 
                 return (
-                  <button
-                    key={p.powerKey}
-                    onClick={() => {
-                      setSelectedPowerKey(prev => prev === p.powerKey ? null : p.powerKey)
-                      setSpentMap(new Map())
-                    }}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: SP[2],
-                      padding: `${SP[2]} ${SP[3]}`,
-                      background: sel
-                        ? 'color-mix(in srgb, var(--hud-accent-purple) 8%, transparent)'
-                        : 'color-mix(in srgb, var(--hud-accent-purple) 2%, transparent)',
-                      border: sel
-                        ? `1px solid color-mix(in srgb, var(--hud-accent-purple) 38%, transparent)`
-                        : `1px solid color-mix(in srgb, var(--hud-border) 60%, transparent)`,
-                      borderLeft: sel
-                        ? `2px solid var(--hud-accent-purple)`
-                        : `2px solid transparent`,
-                      borderRadius: RADIUS.md,
-                      cursor: 'pointer', textAlign: 'left',
-                      transition: `all ${EASE.quick}`,
-                    }}
-                  >
-                    <span style={{
-                      color: sel ? 'var(--hud-accent-purple)' : HUD.textDim,
-                      fontSize: FS.label, flexShrink: 0,
-                      transition: `color ${EASE.quick}`,
-                    }}>◇</span>
-                    <span style={{
-                      fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700,
-                      color: HUD.text, flex: 1,
-                    }}>
-                      {p.powerName}
-                    </span>
-                    {/* Upgrade dot indicators */}
-                    <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexShrink: 0 }}> {/* 4px — px intentional, tight dot gap */}
-                      {Array.from({ length: totalCount }).map((_, i) => (
-                        <div key={i} style={{
-                          width: 8, height: 8, /* upgrade dot — px intentional, small indicator */
-                          borderRadius: '50%',
-                          background: i < activatedCount
-                            ? 'var(--hud-accent-purple)'
-                            : 'transparent',
-                          border: `1px solid color-mix(in srgb, var(--hud-accent-purple) ${sel ? 55 : 30}%, transparent)`,
-                        }} />
-                      ))}
+                  <div key={p.powerKey} style={{ display: 'flex', flexDirection: 'column' }}>
+                    {/* Row: selection button + ⓘ info button */}
+                    <div style={{ display: 'flex', alignItems: 'stretch', gap: SP[1] }}>
+                      {/* Selection button */}
+                      <button
+                        onClick={() => {
+                          setSelectedPowerKey(prev => prev === p.powerKey ? null : p.powerKey)
+                          setSpentMap(new Map())
+                        }}
+                        style={{
+                          flex: 1, minWidth: 0,
+                          display: 'flex', alignItems: 'center', gap: SP[2],
+                          padding: `${SP[2]} ${SP[3]}`,
+                          background: sel
+                            ? 'color-mix(in srgb, var(--hud-accent-purple) 8%, transparent)'
+                            : 'color-mix(in srgb, var(--hud-accent-purple) 2%, transparent)',
+                          border: sel
+                            ? `1px solid color-mix(in srgb, var(--hud-accent-purple) 38%, transparent)`
+                            : `1px solid color-mix(in srgb, var(--hud-border) 60%, transparent)`,
+                          borderLeft: sel
+                            ? `2px solid var(--hud-accent-purple)`
+                            : `2px solid transparent`,
+                          borderRadius: RADIUS.md,
+                          cursor: 'pointer', textAlign: 'left',
+                          transition: `all ${EASE.quick}`,
+                        }}
+                      >
+                        <span style={{
+                          color: sel ? 'var(--hud-accent-purple)' : HUD.textDim,
+                          fontSize: FS.label, flexShrink: 0,
+                          transition: `color ${EASE.quick}`,
+                        }}>◇</span>
+                        <span style={{
+                          fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700,
+                          color: HUD.text, flex: 1, minWidth: 0,
+                        }}>
+                          {p.powerName}
+                        </span>
+                        {/* Upgrade dot indicators */}
+                        <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexShrink: 0 }}> {/* 4px — px intentional, tight dot gap */}
+                          {Array.from({ length: totalCount }).map((_, i) => (
+                            <div key={i} style={{
+                              width: 8, height: 8, /* upgrade dot — px intentional, small indicator */
+                              borderRadius: '50%',
+                              background: i < activatedCount
+                                ? 'var(--hud-accent-purple)'
+                                : 'transparent',
+                              border: `1px solid color-mix(in srgb, var(--hud-accent-purple) ${sel ? 55 : 30}%, transparent)`,
+                            }} />
+                          ))}
+                        </div>
+                      </button>
+
+                      {/* ⓘ Info button — only shown when there is description content */}
+                      {hasDetail && (
+                        <button
+                          onClick={e => {
+                            e.stopPropagation()
+                            setExpandedDetailKey(prev => prev === p.powerKey ? null : p.powerKey)
+                          }}
+                          style={{
+                            flexShrink: 0,
+                            background: detailOpen
+                              ? 'color-mix(in srgb, var(--hud-accent-purple) 12%, transparent)'
+                              : 'transparent',
+                            border: `1px solid color-mix(in srgb, var(--hud-border) 60%, transparent)`,
+                            borderRadius: RADIUS.md,
+                            cursor: 'pointer',
+                            padding: `0 ${SP[1]}`,
+                            fontFamily: FONT_BODY, fontSize: FS.sm,
+                            color: detailOpen ? 'var(--hud-accent-purple)' : HUD.textFaint,
+                            transition: `all ${EASE.quick}`,
+                            lineHeight: 1,
+                          }}
+                        >
+                          ⓘ
+                        </button>
+                      )}
                     </div>
-                  </button>
+
+                    {/* Detail panel */}
+                    {detailOpen && (
+                      <div style={{
+                        padding: `${SP[2]} ${SP[3]}`,
+                        background: 'color-mix(in srgb, var(--hud-accent-purple) 4%, transparent)',
+                        border: `1px solid color-mix(in srgb, var(--hud-accent-purple) 20%, transparent)`,
+                        borderTop: 'none',
+                        borderRadius: `0 0 ${RADIUS.md}px ${RADIUS.md}px`,
+                        display: 'flex', flexDirection: 'column', gap: SP[2],
+                      }}>
+                        {powerDesc && (
+                          <div style={{
+                            fontFamily: FONT_BODY, fontSize: FS.caption,
+                            color: HUD.textDim, lineHeight: 1.5,
+                          }}>
+                            <RichText text={powerDesc} />
+                          </div>
+                        )}
+                        {upgradeDescs.map(a => (
+                          <div key={a.key} style={{ display: 'flex', flexDirection: 'column', gap: SP[1] }}>
+                            <span style={{
+                              fontFamily: FONT_DISPLAY, fontSize: FS.overline, fontWeight: 700,
+                              color: 'color-mix(in srgb, var(--hud-accent-purple) 65%, transparent)',
+                              textTransform: 'uppercase', letterSpacing: '0.1em',
+                            }}>
+                              {a.name}
+                            </span>
+                            <div style={{
+                              fontFamily: FONT_BODY, fontSize: FS.caption,
+                              color: HUD.textFaint, lineHeight: 1.45,
+                            }}>
+                              <RichText text={a.description!} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 )
               })}
             </div>
