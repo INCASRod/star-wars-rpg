@@ -477,7 +477,9 @@ export function ForceCheckOverlay({
               {upgrades.map(upgrade => {
                 const spent = spentMap.has(upgrade.key)
                 const useDark = spentMap.get(upgrade.key) ?? false
-                const canAfford = lightAvail >= upgrade.pip_cost || (!isDathomiri && darkAvail >= upgrade.pip_cost)
+                const canAfford = isDathomiri
+                  ? (lightAvail + darkAvail) >= upgrade.pip_cost
+                  : (lightAvail >= upgrade.pip_cost || darkAvail >= upgrade.pip_cost)
                 const isDisabled = !spent && !canAfford
                 // Badge color: show which pool will be used
                 const willUseDark = !spent && lightAvail < upgrade.pip_cost && !isDathomiri
