@@ -1,69 +1,79 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { FS, HUD, FONT_DISPLAY, FONT_BODY, SP, EASE, RADIUS } from '@/lib/tokens'
+import { useState, useEffect, useMemo } from 'react'
+import { FS, HUD, FONT_DISPLAY, FONT_BODY, SP, EASE, RADIUS, Z } from '@/lib/tokens'
 import { createClient } from '@/lib/supabase/client'
-import type { Character, ForceCommitment } from '@/lib/types'
+import type { Character } from '@/lib/types'
 import type { ForceRollResult } from '@/lib/forceRoll'
 import type { ForcePowerDisplay } from '@/components/player-hud/ForcePanel'
 import type { AdversaryInstance } from '@/lib/adversaries'
-import { SelectPowerStep } from './steps/SelectPowerStep'
-import { RollForceDiceStep } from './steps/RollForceDiceStep'
-import { DarkSidePipsStep } from './steps/DarkSidePipsStep'
-import { ForceResolveStep } from './steps/ForceResolveStep'
-
-const BG = 'var(--hud-surface-hi)'
-
-type Step = 1 | 2 | 3 | 5
-
-const STEP_LABELS_NORMAL: Record<Step, string> = {
-  1: 'Select Power',
-  2: 'Roll Force Dice',
-  3: 'Dark Side Pips',
-  5: 'Resolve',
-}
-const STEP_LABELS_FALLEN: Record<Step, string> = {
-  1: 'Select Power',
-  2: 'Roll Force Dice',
-  3: 'Light Side Temptation',
-  5: 'Resolve',
-}
-
-interface ForceCheckState {
-  currentStep:      Step
-  selectedPowerKey: string | null
-  forceRoll:        ForceRollResult | null
-  darkPipsUsed:     number
-  encounterId:      string | null
-}
-
-function makeInitialState(): ForceCheckState {
-  return {
-    currentStep:      1,
-    selectedPowerKey: null,
-    forceRoll:        null,
-    darkPipsUsed:     0,
-    encounterId:      null,
-  }
-}
+import { rollForceDice } from '@/components/player-hud/dice-engine'
 
 export interface ForceCheckOverlayProps {
-  open:           boolean
-  onClose:        () => void
-  character:      Character
-  forceRating:    number
-  committedForce: number
-  forcePowers:    ForcePowerDisplay[]
-  isDathomiri:    boolean
-  isCombat:       boolean
-  campaignId:     string | null
-  characterId:    string
-  /** Pre-fetched active encounter ID — skips the combat_encounters SELECT when writing combat_log */
-  encounterId?:   string | null
-  /** Visible adversary tokens from the map — shown as targets regardless of combat state */
+  open:            boolean
+  onClose:         () => void
+  character:       Character
+  forceRating:     number
+  committedForce:  number
+  forcePowers:     ForcePowerDisplay[]
+  isDathomiri:     boolean
+  isCombat:        boolean
+  campaignId:      string | null
+  characterId:     string
+  encounterId?:    string | null
   visibleEnemies?: AdversaryInstance[]
 }
 
+// ── Section badge ─────────────────────────────────────────────────────────────
+function SectionBadge({ n }: { n: number }) {
+  return (
+    <div style={{
+      width: 18, height: 18, /* section badge — px intentional, fixed indicator */
+      borderRadius: '50%',
+      border: `1px solid color-mix(in srgb, var(--hud-accent-purple) 45%, transparent)`,
+      background: `color-mix(in srgb, var(--hud-accent-purple) 10%, transparent)`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      flexShrink: 0,
+    }}>
+      <span style={{
+        fontFamily: FONT_DISPLAY,
+        fontSize: '10px', /* badge number — px intentional */
+        fontWeight: 700,
+        color: `color-mix(in srgb, var(--hud-accent-purple) 80%, transparent)`,
+        lineHeight: 1,
+      }}>{n}</span>
+    </div>
+  )
+}
+
+// ── Force pip circle ──────────────────────────────────────────────────────────
+function PipCircle({ spent, dark }: { spent: boolean; dark?: boolean }) {
+  return (
+    <div style={{
+      width: 18, height: 18, /* pip circle — px intentional, die-identity display */
+      borderRadius: '50%',
+      border: `1.5px solid color-mix(in srgb, var(--hud-accent-purple) ${spent ? (dark ? 70 : 80) : 30}%, transparent)`,
+      background: spent
+        ? dark
+          ? 'color-mix(in srgb, var(--hud-accent-purple) 90%, black)'
+          : 'color-mix(in srgb, var(--hud-accent-purple) 55%, white)'
+        : 'transparent',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      flexShrink: 0,
+    }}>
+      {spent && (
+        <span style={{
+          fontSize: '9px', /* pip checkmark — px intentional */
+          fontWeight: 700,
+          color: 'color-mix(in srgb, black 75%, transparent)',
+          lineHeight: 1,
+        }}>✓</span>
+      )}
+    </div>
+  )
+}
+
+// ── Main overlay ──────────────────────────────────────────────────────────────
 export function ForceCheckOverlay({
   open, onClose,
   character, forceRating, committedForce,
@@ -71,462 +81,547 @@ export function ForceCheckOverlay({
   campaignId, characterId,
   encounterId: propEncounterId,
 }: ForceCheckOverlayProps) {
-  const [state, setState] = useState<ForceCheckState>(makeInitialState)
-  const [busy, setBusy] = useState(false)
+  const [selectedPowerKey, setSelectedPowerKey] = useState<string | null>(null)
+  const [forceRoll, setForceRoll] = useState<ForceRollResult | null>(null)
+  // Map<upgradeKey, useDark: boolean>
+  const [spentMap, setSpentMap]   = useState<Map<string, boolean>>(new Map())
+  const [busy, setBusy]           = useState(false)
 
-  // ── Reset on open ─────────────────────────────────────────────────────────
   useEffect(() => {
-    if (open) { setState(makeInitialState()); setBusy(false) }
+    if (open) {
+      setSelectedPowerKey(null)
+      setForceRoll(null)
+      setSpentMap(new Map())
+      setBusy(false)
+    }
   }, [open])
 
-  // ── Derived ───────────────────────────────────────────────────────────────
-  const isFallen = character.is_dark_side_fallen === true
-  const STEP_LABELS = isFallen ? STEP_LABELS_FALLEN : STEP_LABELS_NORMAL
+  const isFallen  = character.is_dark_side_fallen === true
+  const available = Math.max(0, forceRating - committedForce)
+  const purchased = useMemo(() => forcePowers.filter(p => p.purchasedCount > 0), [forcePowers])
+  const selPower  = purchased.find(p => p.powerKey === selectedPowerKey) ?? null
 
-  // Skip step 3 for Dathomiri (all pips free), or when the costly-pip count is 0
-  const costlyPipsRolled = isFallen
-    ? (state.forceRoll?.totalLight ?? 0)   // fallen: light pips are costly
-    : (state.forceRoll?.totalDark  ?? 0)   // normal: dark pips are costly
-  const showDarkStep = !isDathomiri && costlyPipsRolled > 0
+  const upgrades = useMemo(() => {
+    if (!selPower) return []
+    return selPower.abilities.filter(a => a.purchasedRanks > 0)
+  }, [selPower])
 
-  function getNextStep(s: Step): Step {
-    if (s === 1) return 2
-    if (s === 2) return showDarkStep ? 3 : 5
-    if (s === 3) return 5
-    return s
+  // ── Pip accounting ────────────────────────────────────────────────────────
+  const { lightUsed, darkUsed } = useMemo(() => {
+    let lU = 0, dU = 0
+    for (const [key, useDark] of spentMap) {
+      const u = upgrades.find(u => u.key === key)
+      if (u) { useDark ? (dU += u.pip_cost) : (lU += u.pip_cost) }
+    }
+    return { lightUsed: lU, darkUsed: dU }
+  }, [spentMap, upgrades])
+
+  const lightTotal = forceRoll?.totalLight ?? 0
+  const darkTotal  = forceRoll?.totalDark  ?? 0
+  const lightAvail = lightTotal - lightUsed
+  const darkAvail  = darkTotal  - darkUsed
+
+  // ── Roll ──────────────────────────────────────────────────────────────────
+  function handleRoll() {
+    setForceRoll(rollForceDice(available))
+    setSpentMap(new Map())
   }
 
-  function getPrevStep(s: Step): Step {
-    if (s === 2) return 1
-    if (s === 3) return 2
-    if (s === 5) return showDarkStep ? 3 : 2
-    return s
-  }
-
-  const selectedPower = forcePowers.find(p => p.powerKey === state.selectedPowerKey) ?? null
-
-  // ── Commit a Force die to an ongoing effect ───────────────────────────────
-  const handleCommit = async (
-    powerKey: string,
-    powerName: string,
-    effectName: string,
-  ) => {
-    if (!campaignId) return
-    const supabase = createClient()
-    const current: ForceCommitment[] = character.force_commitments ?? []
-    const existing = current.find(
-      c => c.power_key === powerKey && c.effect_name === effectName,
-    )
-    const updated: ForceCommitment[] = existing
-      ? current.map(c =>
-          c.power_key === powerKey && c.effect_name === effectName
-            ? { ...c, dice_count: c.dice_count + 1 }
-            : c,
-        )
-      : [...current, { power_key: powerKey, power_name: powerName, effect_name: effectName, dice_count: 1 }]
-
-    const newCommitted = (character.force_rating_committed ?? 0) + 1
-    await supabase
-      .from('characters')
-      .update({ force_rating_committed: newCommitted, force_commitments: updated })
-      .eq('id', characterId)
-  }
-
-  // ── Record upgrade activation in roll feed ────────────────────────────────
-  const handleUpgradeActivate = (upgradeName: string) => {
-    if (!campaignId) return
-    const supabase = createClient()
-    void supabase.from('roll_log').insert({
-      campaign_id:    campaignId,
-      character_id:   characterId,
-      character_name: character.name,
-      roll_label:     `${selectedPower?.powerName ?? 'Force Power'} — ${upgradeName} activated`,
-      pool: { force: 0, proficiency: 0, ability: 0, boost: 0, challenge: 0, difficulty: 0, setback: 0 },
-      result: { netSuccess: 1, netAdvantage: 0, triumph: 0, despair: 0, succeeded: true },
-      is_dm:              false,
-      hidden:             false,
-      roll_type:          'force',
-      weapon_name:        selectedPower?.powerName ?? '',
-      target_name:        null,
-      alignment:          'player',
-      is_visible_to_players: true,
+  // ── Toggle upgrade spend ──────────────────────────────────────────────────
+  function toggleUpgrade(key: string, cost: number) {
+    const currentUpgrades = upgrades
+    const currentRoll     = forceRoll
+    setSpentMap(prev => {
+      const next = new Map(prev)
+      if (next.has(key)) { next.delete(key); return next }
+      // Recalculate availability from prev (stable reference)
+      let lU = 0, dU = 0
+      for (const [k, useDark] of prev) {
+        const u = currentUpgrades.find(u => u.key === k)
+        if (u) { useDark ? (dU += u.pip_cost) : (lU += u.pip_cost) }
+      }
+      const lAvail = (currentRoll?.totalLight ?? 0) - lU
+      const dAvail = (currentRoll?.totalDark  ?? 0) - dU
+      if (lAvail >= cost)                                          { next.set(key, false) }
+      else if (!isDathomiri && dAvail >= cost)                     { next.set(key, true) }
+      else if (isDathomiri && lAvail + dAvail >= cost)             { next.set(key, false) }
+      else                                                          { return prev }
+      return next
     })
   }
 
-  function canAdvance(): boolean {
-    switch (state.currentStep) {
-      case 1: return state.selectedPowerKey !== null
-      case 2: return state.forceRoll !== null
-      case 3: return true   // 0 dark pips is a valid choice
-      default: return false
-    }
-  }
-
-  // ── Navigation ────────────────────────────────────────────────────────────
-  const goBack = () => {
-    if (state.currentStep <= 1 || busy) return
-    setState(s => ({ ...s, currentStep: getPrevStep(s.currentStep) }))
-  }
-  void goBack // kept for future use; navigation available via completed-step click
-
-  const goNext = async () => {
-    if (!canAdvance() || busy) return
+  // ── Channel the Force ─────────────────────────────────────────────────────
+  async function handleChannelForce() {
+    if (!selPower || !forceRoll || busy) return
     setBusy(true)
-
-    const nextStep = getNextStep(state.currentStep)
-    let encounterId = state.encounterId
-
     try {
-      const supabase = campaignId ? createClient() : null
-
-      // Step 3 → 4: notify GM for costly pip use (dark pips for normal chars; light pips for fallen)
-      if (state.currentStep === 3 && state.darkPipsUsed > 0 && supabase && campaignId) {
-        await supabase.from('force_notifications').insert({
-          campaign_id:    campaignId,
-          character_id:   characterId,
-          character_name: character.name,
-          type:           'dark_side_use',
-          dark_pips_used: state.darkPipsUsed,
-          power_name:     selectedPower?.powerName ?? '',
-          strain_cost:    state.darkPipsUsed,
-          status:         'pending',
+      const sb = campaignId ? createClient() : null
+      if (darkUsed > 0 && sb && campaignId) {
+        await sb.from('force_notifications').insert({
+          campaign_id: campaignId, character_id: characterId,
+          character_name: character.name, type: 'dark_side_use',
+          dark_pips_used: darkUsed, power_name: selPower.powerName,
+          strain_cost: darkUsed, status: 'pending',
         })
       }
-
-      // Advancing to step 5: write combat_log entry
-      if (nextStep === 5 && supabase && campaignId && state.forceRoll) {
-        // Prefer prop-seeded id → cached state → DB lookup (last resort)
-        if (!encounterId) encounterId = propEncounterId ?? null
-        if (!encounterId && isCombat) {
-          const { data } = await supabase
-            .from('combat_encounters')
-            .select('id')
-            .eq('campaign_id', campaignId)
-            .eq('is_active', true)
-            .limit(1)
-            .single()
-          encounterId = data?.id ?? null
+      if (sb && campaignId) {
+        let encId: string | null = propEncounterId ?? null
+        if (!encId && isCombat) {
+          const { data } = await sb.from('combat_encounters')
+            .select('id').eq('campaign_id', campaignId)
+            .eq('is_active', true).limit(1).single()
+          encId = data?.id ?? null
         }
-
-        const freeFP  = isFallen ? state.forceRoll.totalDark : state.forceRoll.totalLight
-        const totalFP = freeFP + state.darkPipsUsed
-        const targetLabel = ''
-
-        await supabase.from('combat_log').insert({
-          campaign_id:           campaignId,
-          encounter_id:          encounterId,
-          participant_name:      character.name,
-          alignment:             'player',
-          roll_type:             'force power',
-          weapon_name:           selectedPower?.powerName ?? '',
-          dice_pool:             { force: Math.max(0, forceRating - committedForce) },
-          result: {
-            totalLight:   state.forceRoll.totalLight,
-            totalDark:    state.forceRoll.totalDark,
-            darkPipsUsed: state.darkPipsUsed,
-            totalFP,
-          },
-          result_summary: `Force Power: ${selectedPower?.powerName ?? ''}. ${totalFP} FP${targetLabel ? ` → ${targetLabel}` : ''}`,
+        const freeFP  = isFallen ? forceRoll.totalDark : forceRoll.totalLight
+        const totalFP = freeFP + darkUsed
+        await sb.from('combat_log').insert({
+          campaign_id: campaignId, encounter_id: encId,
+          participant_name: character.name, alignment: 'player',
+          roll_type: 'force power', weapon_name: selPower.powerName,
+          dice_pool: { force: available },
+          result: { totalLight: forceRoll.totalLight, totalDark: forceRoll.totalDark, darkPipsUsed: darkUsed, totalFP },
+          result_summary: `Force Power: ${selPower.powerName}. ${totalFP} FP`,
           is_visible_to_players: true,
         })
-
-        // Write to roll_log so the roll feed and Latest Rolls panel see this roll.
-        // Encoding: netSuccess=totalLight, netAdvantage=totalDark, triumph=darkPipsUsed.
-        // roll_type='force' triggers the ForceCard renderer; ACTIVATED is shown instead of SUCCESS/FAILURE.
-        await supabase.from('roll_log').insert({
-          campaign_id:    campaignId,
-          character_id:   characterId,
+        await sb.from('roll_log').insert({
+          campaign_id: campaignId, character_id: characterId,
           character_name: character.name,
-          roll_label:     selectedPower?.powerName ?? 'Force Power',
-          pool: {
-            force:       Math.max(0, forceRating - committedForce),
-            proficiency: 0, ability: 0, boost: 0,
-            challenge: 0, difficulty: 0, setback: 0,
-          },
-          result: {
-            netSuccess:   state.forceRoll.totalLight,
-            netAdvantage: state.forceRoll.totalDark,
-            triumph:      state.darkPipsUsed,
-            despair:      0,
-            succeeded:    totalFP > 0,
-          },
-          is_dm:              false,
-          hidden:             false,
-          roll_type:          'force',
-          weapon_name:        selectedPower?.powerName ?? '',
-          target_name:        targetLabel || null,
-          alignment:          'player',
-          is_visible_to_players: true,
+          roll_label: selPower.powerName,
+          pool: { force: available, proficiency: 0, ability: 0, boost: 0, challenge: 0, difficulty: 0, setback: 0 },
+          result: { netSuccess: forceRoll.totalLight, netAdvantage: forceRoll.totalDark, triumph: darkUsed, despair: 0, succeeded: totalFP > 0 },
+          is_dm: false, hidden: false, roll_type: 'force',
+          weapon_name: selPower.powerName, target_name: null,
+          alignment: 'player', is_visible_to_players: true,
         })
       }
-    } catch (_e) {
-      // Non-blocking — still advance the step
-    }
-
-    setState(s => ({ ...s, currentStep: nextStep, encounterId }))
+    } catch (_e) { /* non-blocking */ }
     setBusy(false)
+    onClose()
   }
 
-  const handleUseAgain = () => { setState(makeInitialState()); setBusy(false) }
-  const handleDone     = () => onClose()
-
-  const isResolve  = state.currentStep === 5
-  const totalSteps = isDathomiri ? 3 : 4
-
-  // unified purple accent — Force Check has its own identity separate from theme accent
-  const accentColor = 'var(--hud-accent-purple)'
-  const bdColor     = 'color-mix(in srgb, var(--hud-accent-purple) 25%, transparent)'
-
-  // ── Visible steps 1-4 (step 3 hidden for Dathomiri) ──────────────────────
-  const visibleSteps = ([1, 2, 3] as Step[]).filter(n => n !== 3 || !isDathomiri)
+  const canChannel = selPower !== null && forceRoll !== null
 
   return (
     <div
       className={`hud-quick-drawer${open ? ' open' : ''}`}
       style={{
-        background: BG,
+        background: 'var(--hud-surface-hi)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        borderRight: `1px solid ${bdColor}`,
+        borderRight: `1px solid color-mix(in srgb, var(--hud-accent-purple) 25%, transparent)`,
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
       }}
     >
-      {/* Accent stripe — top edge glow */}
+      {/* Top accent stripe */}
       <div style={{
         height: 3, /* decorative stripe — px intentional */
         flexShrink: 0,
         background: `linear-gradient(90deg, transparent, var(--hud-accent-purple) 30%, color-mix(in srgb, var(--hud-accent-purple) 60%, white) 70%, transparent)`,
       }} />
 
-      {/* ── Header strip ────────────────────────────────────────────────────── */}
+      {/* ── Header — centered title ──────────────────────────────────────────── */}
       <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: SP[2],
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        position: 'relative',
         padding: `${SP[2]} ${SP[3]}`,
         borderBottom: `1px solid var(--hud-border)`,
-        background: 'var(--hud-panel)',
-        flexShrink: 0,
+        background: 'var(--hud-panel)', flexShrink: 0,
       }}>
         <span style={{
+          fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700,
+          letterSpacing: '0.2em', textTransform: 'uppercase',
           color: 'var(--hud-accent-purple)',
-          fontSize: FS.sm,
-          lineHeight: 1,
-          flexShrink: 0,
+          display: 'flex', alignItems: 'center', gap: SP[2],
         }}>
-          {isFallen ? '☠' : '✦'}
-        </span>
-        <span style={{
-          fontFamily: FONT_DISPLAY,
-          fontSize: FS.label,
-          fontWeight: 700,
-          letterSpacing: '0.15em',
-          textTransform: 'uppercase',
-          color: 'var(--hud-accent-purple)',
-          flex: 1,
-        }}>
+          <span style={{ opacity: 0.7 }}>✦</span>
           Force Check
         </span>
         <button
           onClick={onClose}
           style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            color: 'var(--hud-text-faint)',
-            fontSize: FS.sm,
-            padding: `0 ${SP[1]}`,
-            lineHeight: 1,
+            position: 'absolute', right: SP[2],
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: HUD.textFaint, fontSize: FS.sm,
+            padding: `0 ${SP[1]}`, lineHeight: 1,
           }}
         >✕</button>
       </div>
 
-      {/* ── Body ─────────────────────────────────────────────────────────────── */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: `${SP[2]} ${SP[2]}`, overscrollBehavior: 'contain' }}>
+      {/* ── Body — scrollable ────────────────────────────────────────────────── */}
+      <div style={{
+        flex: 1, overflowY: 'auto',
+        display: 'flex', flexDirection: 'column',
+        overscrollBehavior: 'contain',
+      }}>
 
-        {/* Steps 1–4 with active/complete/locked visual treatment */}
-        {!isResolve && visibleSteps.map(stepNum => {
-          const isActive    = state.currentStep === stepNum
-          const isDone      = state.currentStep > stepNum
-          const isLocked    = state.currentStep < stepNum
-          return (
-            <div
-              key={stepNum}
-              style={{
-                padding: `${SP[2]} ${SP[2]}`,
-                borderLeft: isActive
-                  ? `2px solid color-mix(in srgb, var(--hud-accent-purple) 45%, transparent)`
-                  : '2px solid transparent',
-                background: isActive
-                  ? `color-mix(in srgb, var(--hud-accent-purple) 4%, transparent)`
-                  : 'transparent',
-                opacity: isDone ? 0.6 : isLocked ? 0.3 : 1,
-                pointerEvents: isLocked ? 'none' as const : undefined,
-                marginBottom: isActive ? SP[2] : 0,
-              }}
-            >
-              {/* Step header label (always shown) */}
-              <div
-                onClick={isDone ? () => setState(s => ({ ...s, currentStep: stepNum })) : undefined}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: SP[2],
-                  marginBottom: isActive ? SP[2] : 0,
-                  cursor: isDone ? 'pointer' : 'default',
-                }}
-              >
-                {/* Step number badge */}
-                <div style={{
-                  width: 14, height: 14, /* step badge — px intentional, small fixed indicator */
-                  borderRadius: '50%',
-                  flexShrink: 0,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: isActive
-                    ? 'color-mix(in srgb, var(--hud-accent-purple) 15%, transparent)'
-                    : 'transparent',
-                  border: `1px solid color-mix(in srgb, var(--hud-accent-purple) ${isActive ? 60 : 30}%, transparent)`,
-                }}>
-                  <span style={{
-                    fontFamily: FONT_DISPLAY,
-                    fontSize: '9px', /* step badge number — px intentional, sub-label size */
-                    fontWeight: 700,
-                    color: `color-mix(in srgb, var(--hud-accent-purple) ${isActive ? 80 : 40}%, transparent)`,
-                    lineHeight: 1,
-                  }}>
-                    {stepNum === 5 ? 4 : stepNum}
-                  </span>
-                </div>
-                <span style={{
-                  fontFamily: FONT_BODY,
-                  fontSize: FS.overline,
-                  fontWeight: 700,
-                  letterSpacing: '0.12em',
-                  textTransform: 'uppercase',
-                  color: isActive
-                    ? `color-mix(in srgb, ${accentColor} 80%, transparent)`
-                    : isDone ? HUD.textDim : HUD.textFaint,
-                }}>
-                  {STEP_LABELS[stepNum]}{isDone ? ' ✓' : ''}
-                </span>
-              </div>
-
-              {/* Active step content */}
-              {isActive && stepNum === 1 && (
-                <SelectPowerStep
-                  powers={forcePowers}
-                  selectedPowerKey={state.selectedPowerKey}
-                  onSelect={pk => setState(s => ({ ...s, selectedPowerKey: pk }))}
-                />
-              )}
-              {isActive && stepNum === 2 && (
-                <RollForceDiceStep
-                  forceRating={forceRating}
-                  committedForce={committedForce}
-                  result={state.forceRoll}
-                  isDathomiri={isDathomiri}
-                  isFallen={isFallen}
-                  onRoll={result => setState(s => ({ ...s, forceRoll: result, darkPipsUsed: 0 }))}
-                  selectedPower={selectedPower}
-                  onCommit={handleCommit}
-                  onUpgradeActivate={handleUpgradeActivate}
-                />
-              )}
-              {isActive && stepNum === 3 && state.forceRoll && (
-                <DarkSidePipsStep
-                  lightPips={isFallen ? state.forceRoll.totalDark : state.forceRoll.totalLight}
-                  darkPips={isFallen ? state.forceRoll.totalLight : state.forceRoll.totalDark}
-                  darkPipsUsed={state.darkPipsUsed}
-                  onChangeDark={n => setState(s => ({ ...s, darkPipsUsed: n }))}
-                  isFallen={isFallen}
-                />
-              )}
-            </div>
-          )
-        })}
-
-        {/* Step 5: Resolve — no step styling */}
-        {isResolve && state.forceRoll && selectedPower && (
-          <ForceResolveStep
-            powerName={selectedPower.powerName}
-            powerDesc={selectedPower.description}
-            forceRoll={state.forceRoll}
-            darkPipsUsed={state.darkPipsUsed}
-            targets={[]}
-            targetContext={null}
-            isCombat={isCombat}
-            isFallen={isFallen}
-            onUseAgain={handleUseAgain}
-            onDone={handleDone}
-          />
-        )}
-      </div>
-
-      {/* ── Footer (Next/Continue button, steps 1-4) ─────────────────────────── */}
-      {!isResolve && (
-        <div style={{ padding: `${SP[2]} ${SP[3]}`, borderTop: `1px solid ${bdColor}`, flexShrink: 0 }}>
-          {/* Progress indicator */}
+        {/* ── Force Pool ─────────────────────────────────────────────────────── */}
+        <div style={{ padding: `${SP[3]} ${SP[3]} ${SP[2]}`, display: 'flex', flexDirection: 'column', gap: SP[2] }}>
           <div style={{
-            display: 'flex',
-            gap: SP[1],
-            justifyContent: 'center',
-            marginBottom: SP[2],
+            fontFamily: FONT_BODY, fontSize: FS.overline,
+            color: HUD.textFaint, textTransform: 'uppercase', letterSpacing: '0.18em',
           }}>
-            {Array.from({ length: totalSteps }).map((_, i) => {
-              const stepN = (i + 1) as Step
-              const isPast    = state.currentStep > stepN
-              const isCurrent = state.currentStep === stepN
-              return (
-                <div key={i} style={{
-                  width: isCurrent ? SP[3] : SP[2],
-                  height: SP[1],
-                  borderRadius: RADIUS.full,
-                  background: isCurrent
-                    ? `color-mix(in srgb, ${accentColor} 80%, transparent)`
-                    : isPast
-                      ? `color-mix(in srgb, ${accentColor} 40%, transparent)`
-                      : `color-mix(in srgb, ${accentColor} 15%, transparent)`,
-                  transition: `width ${EASE.quick}, background ${EASE.quick}`,
-                }} />
-              )
-            })}
+            Force Pool
           </div>
 
-          <button
-            onClick={goNext}
-            disabled={!canAdvance() || busy}
-            style={{
-              width: '100%',
-              padding: `${SP[2]} 0`,
-              clipPath: `polygon(8px 0%, calc(100% - 8px) 0%, 100% 50%, calc(100% - 8px) 100%, 8px 100%, 0% 50%)`, /* decorative clip-path corners — px intentional */
-              border: 'none',
-              cursor: (canAdvance() && !busy) ? 'pointer' : 'not-allowed',
-              fontFamily: FONT_DISPLAY,
-              fontSize: FS.sm,
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
-              background: (canAdvance() && !busy)
-                ? 'var(--hud-accent-purple)'
-                : 'color-mix(in srgb, var(--hud-accent-purple) 20%, transparent)',
-              color: (canAdvance() && !busy) ? 'rgba(0,0,0,0.85)' : HUD.textFaint,
-              transition: `background ${EASE.quick}`,
-            }}
-          >
-            {busy ? '…' : getNextStep(state.currentStep) === 5 ? 'Resolve' : 'Continue'}
-          </button>
-        </div>
-      )}
+          {/* Orb — clickable to roll */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: SP[1] }}>
+            <button
+              onClick={handleRoll}
+              disabled={available === 0}
+              style={{
+                width: 76, height: 76, /* Force Die Orb — px intentional, die-identity display */
+                borderRadius: '50%',
+                background: `color-mix(in srgb, black 55%, transparent)`,
+                border: `2px solid color-mix(in srgb, var(--hud-accent-purple) ${available > 0 ? 50 : 20}%, transparent)`,
+                boxShadow: forceRoll
+                  ? `0 0 24px color-mix(in srgb, var(--hud-accent-purple) 35%, transparent), inset 0 0 12px color-mix(in srgb, var(--hud-accent-purple) 10%, transparent)`
+                  : `0 0 14px color-mix(in srgb, var(--hud-accent-purple) 12%, transparent)`,
+                cursor: available > 0 ? 'pointer' : 'default',
+                display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center',
+                transition: `box-shadow ${EASE.default}, border-color ${EASE.default}`,
+              }}
+            >
+              <span style={{
+                fontFamily: FONT_DISPLAY,
+                fontSize: '30px', /* orb count — px intentional, die-identity display size */
+                fontWeight: 900, color: 'white', lineHeight: 1,
+              }}>
+                {available}
+              </span>
+            </button>
+            <div style={{
+              fontFamily: FONT_DISPLAY, fontSize: FS.overline,
+              color: 'var(--hud-accent-purple)', opacity: 0.55,
+              textTransform: 'uppercase', letterSpacing: '0.15em',
+            }}>
+              Force Dice
+            </div>
+          </div>
 
-      {/* Scanline overlay — decorative CRT texture */}
+          {/* Pip result row — shown after rolling */}
+          {forceRoll && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: SP[3] }}>
+              {/* Light side */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: SP[1] }}>
+                <div style={{ display: 'flex', gap: SP[1] }}>
+                  {Array.from({ length: lightTotal }).map((_, i) => (
+                    <PipCircle key={i} spent={i < lightUsed} dark={false} />
+                  ))}
+                  {lightTotal === 0 && (
+                    <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint }}>—</span>
+                  )}
+                </div>
+                <span style={{
+                  fontFamily: FONT_BODY, fontSize: FS.overline,
+                  color: 'color-mix(in srgb, var(--hud-accent-purple) 55%, transparent)',
+                  textTransform: 'uppercase', letterSpacing: '0.12em',
+                }}>Light</span>
+              </div>
+
+              <span style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: HUD.textFaint, opacity: 0.4 }}>→</span>
+
+              {/* Dark side */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: SP[1] }}>
+                <div style={{ display: 'flex', gap: SP[1] }}>
+                  {Array.from({ length: darkTotal }).map((_, i) => (
+                    <PipCircle key={i} spent={i < darkUsed} dark={true} />
+                  ))}
+                  {darkTotal === 0 && (
+                    <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint }}>—</span>
+                  )}
+                </div>
+                <span style={{
+                  fontFamily: FONT_BODY, fontSize: FS.overline,
+                  color: 'color-mix(in srgb, var(--hud-accent-purple) 40%, transparent)',
+                  textTransform: 'uppercase', letterSpacing: '0.12em',
+                }}>Dark</span>
+              </div>
+            </div>
+          )}
+
+          {/* Pre-roll hint */}
+          {!forceRoll && (
+            <div style={{
+              textAlign: 'center', fontFamily: FONT_BODY, fontSize: FS.overline,
+              color: HUD.textFaint, fontStyle: 'italic',
+            }}>
+              {available > 0 ? 'Tap the orb to roll' : 'No Force dice available'}
+            </div>
+          )}
+
+          {committedForce > 0 && (
+            <div style={{
+              textAlign: 'center', fontFamily: FONT_BODY, fontSize: FS.overline,
+              color: HUD.textFaint, fontStyle: 'italic',
+            }}>
+              {committedForce} die committed to ongoing effects
+            </div>
+          )}
+        </div>
+
+        {/* ── Section divider ───────────────────────────────────────────────── */}
+        <div style={{ height: 1, background: 'color-mix(in srgb, var(--hud-border) 70%, transparent)', margin: `0 ${SP[3]}` }} />
+
+        {/* ── ① Force Power ────────────────────────────────────────────────── */}
+        <div style={{ padding: `${SP[3]} ${SP[3]} ${SP[2]}`, display: 'flex', flexDirection: 'column', gap: SP[2] }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: SP[2] }}>
+            <SectionBadge n={1} />
+            <span style={{
+              fontFamily: FONT_BODY, fontSize: FS.overline,
+              color: HUD.textFaint, textTransform: 'uppercase', letterSpacing: '0.15em',
+            }}>Force Power</span>
+          </div>
+
+          {purchased.length === 0 ? (
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: HUD.textFaint, fontStyle: 'italic', padding: `${SP[2]} 0` }}>
+              No Force powers purchased yet.
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: SP[1] }}>
+              {purchased.map(p => {
+                const sel = p.powerKey === selectedPowerKey
+                const allUpgrades     = p.abilities.filter(a => a.purchasedRanks > 0)
+                const activatedCount  = sel ? allUpgrades.filter(u => spentMap.has(u.key)).length : 0
+                const totalCount      = allUpgrades.length
+
+                return (
+                  <button
+                    key={p.powerKey}
+                    onClick={() => {
+                      setSelectedPowerKey(prev => prev === p.powerKey ? null : p.powerKey)
+                      setSpentMap(new Map())
+                    }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: SP[2],
+                      padding: `${SP[2]} ${SP[3]}`,
+                      background: sel
+                        ? 'color-mix(in srgb, var(--hud-accent-purple) 8%, transparent)'
+                        : 'color-mix(in srgb, var(--hud-accent-purple) 2%, transparent)',
+                      border: sel
+                        ? `1px solid color-mix(in srgb, var(--hud-accent-purple) 38%, transparent)`
+                        : `1px solid color-mix(in srgb, var(--hud-border) 60%, transparent)`,
+                      borderLeft: sel
+                        ? `2px solid var(--hud-accent-purple)`
+                        : `2px solid transparent`,
+                      borderRadius: RADIUS.md,
+                      cursor: 'pointer', textAlign: 'left',
+                      transition: `all ${EASE.quick}`,
+                    }}
+                  >
+                    <span style={{
+                      color: sel ? 'var(--hud-accent-purple)' : HUD.textDim,
+                      fontSize: FS.label, flexShrink: 0,
+                      transition: `color ${EASE.quick}`,
+                    }}>◇</span>
+                    <span style={{
+                      fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700,
+                      color: HUD.text, flex: 1,
+                    }}>
+                      {p.powerName}
+                    </span>
+                    {/* Upgrade dot indicators */}
+                    <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexShrink: 0 }}> {/* 4px — px intentional, tight dot gap */}
+                      {Array.from({ length: totalCount }).map((_, i) => (
+                        <div key={i} style={{
+                          width: 8, height: 8, /* upgrade dot — px intentional, small indicator */
+                          borderRadius: '50%',
+                          background: i < activatedCount
+                            ? 'var(--hud-accent-purple)'
+                            : 'transparent',
+                          border: `1px solid color-mix(in srgb, var(--hud-accent-purple) ${sel ? 55 : 30}%, transparent)`,
+                        }} />
+                      ))}
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* ── Section divider ───────────────────────────────────────────────── */}
+        <div style={{ height: 1, background: 'color-mix(in srgb, var(--hud-border) 70%, transparent)', margin: `0 ${SP[3]}` }} />
+
+        {/* ── ② Spend Pips ─────────────────────────────────────────────────── */}
+        <div style={{ padding: `${SP[3]} ${SP[3]}`, display: 'flex', flexDirection: 'column', gap: SP[2] }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: SP[2] }}>
+            <SectionBadge n={2} />
+            <span style={{
+              fontFamily: FONT_BODY, fontSize: FS.overline,
+              color: HUD.textFaint, textTransform: 'uppercase', letterSpacing: '0.15em',
+            }}>Spend Pips</span>
+          </div>
+
+          {!selPower && (
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint, fontStyle: 'italic', padding: `${SP[1]} 0` }}>
+              Select a Force power above.
+            </div>
+          )}
+          {selPower && !forceRoll && (
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint, fontStyle: 'italic', padding: `${SP[1]} 0` }}>
+              Roll Force dice first.
+            </div>
+          )}
+
+          {selPower && forceRoll && upgrades.length === 0 && (
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint, fontStyle: 'italic', padding: `${SP[1]} 0` }}>
+              No upgrades purchased for this power.
+            </div>
+          )}
+
+          {selPower && forceRoll && upgrades.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: SP[1] }}>
+              {upgrades.map(upgrade => {
+                const spent = spentMap.has(upgrade.key)
+                const useDark = spentMap.get(upgrade.key) ?? false
+                const canAfford = lightAvail >= upgrade.pip_cost || (!isDathomiri && darkAvail >= upgrade.pip_cost)
+                const isDisabled = !spent && !canAfford
+                // Badge color: show which pool will be used
+                const willUseDark = !spent && lightAvail < upgrade.pip_cost && !isDathomiri
+
+                return (
+                  <button
+                    key={upgrade.key}
+                    onClick={() => toggleUpgrade(upgrade.key, upgrade.pip_cost)}
+                    disabled={isDisabled}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: SP[2],
+                      padding: `${SP[2]} ${SP[2]}`,
+                      background: spent
+                        ? 'color-mix(in srgb, var(--hud-accent-purple) 7%, transparent)'
+                        : 'color-mix(in srgb, var(--hud-accent-purple) 2%, transparent)',
+                      border: `1px solid color-mix(in srgb, var(--hud-accent-purple) ${spent ? 30 : isDisabled ? 8 : 14}%, transparent)`,
+                      borderRadius: RADIUS.md,
+                      cursor: isDisabled ? 'not-allowed' : 'pointer',
+                      opacity: isDisabled ? 0.4 : 1,
+                      textAlign: 'left',
+                      transition: `all ${EASE.quick}`,
+                    }}
+                  >
+                    {/* Pip cost badge */}
+                    <div style={{
+                      width: 24, height: 24, /* pip badge — px intentional, fixed indicator */
+                      borderRadius: RADIUS.sm,
+                      background: spent
+                        ? (useDark
+                          ? 'color-mix(in srgb, var(--hud-accent-purple) 60%, black)'
+                          : 'color-mix(in srgb, var(--hud-accent-purple) 50%, white)')
+                        : willUseDark
+                          ? 'color-mix(in srgb, var(--hud-accent-purple) 35%, black)'
+                          : 'color-mix(in srgb, var(--hud-accent-purple) 35%, white)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      flexShrink: 0,
+                    }}>
+                      <span style={{
+                        fontFamily: FONT_DISPLAY,
+                        fontSize: '9px', /* badge label — px intentional */
+                        fontWeight: 700,
+                        color: 'color-mix(in srgb, black 70%, transparent)',
+                        lineHeight: 1,
+                      }}>
+                        {upgrade.pip_cost}{(spent ? useDark : willUseDark) ? 'D' : 'L'}
+                      </span>
+                    </div>
+                    {/* Upgrade name */}
+                    <span style={{
+                      fontFamily: FONT_BODY, fontSize: FS.caption,
+                      color: spent ? HUD.text : isDisabled ? HUD.textFaint : HUD.textDim,
+                      flex: 1, lineHeight: 1.35,
+                      overflow: 'hidden',
+                      display: '-webkit-box' as React.CSSProperties['display'],
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical' as React.CSSProperties['WebkitBoxOrient'],
+                    }}>
+                      {upgrade.name}
+                    </span>
+                    {/* Checkmark */}
+                    {spent && (
+                      <span style={{
+                        fontFamily: FONT_BODY, fontSize: FS.label,
+                        color: 'var(--hud-accent-purple)', flexShrink: 0,
+                      }}>✓</span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Dark side consequence notice */}
+          {darkUsed > 0 && (
+            <div style={{
+              padding: `${SP[1]} ${SP[2]}`,
+              background: 'color-mix(in srgb, var(--hud-accent-purple) 5%, transparent)',
+              border: `1px solid color-mix(in srgb, var(--hud-accent-purple) 20%, transparent)`,
+              borderLeft: `2px solid var(--hud-accent-purple)`,
+              borderRadius: RADIUS.md,
+            }}>
+              <div style={{
+                fontFamily: FONT_BODY, fontSize: FS.overline,
+                color: 'color-mix(in srgb, var(--hud-accent-purple) 70%, transparent)',
+                lineHeight: 1.4,
+              }}>
+                Using {darkUsed} dark pip{darkUsed !== 1 ? 's' : ''}: flip 1 Destiny Point + suffer {darkUsed} strain.
+              </div>
+            </div>
+          )}
+        </div>
+
+      </div>{/* end body */}
+
+      {/* ── Footer ───────────────────────────────────────────────────────────── */}
       <div style={{
-        position: 'absolute',
-        inset: 0,
+        padding: `${SP[2]} ${SP[3]} ${SP[3]}`,
+        borderTop: `1px solid color-mix(in srgb, var(--hud-accent-purple) 18%, transparent)`,
+        flexShrink: 0,
+        display: 'flex', flexDirection: 'column', gap: SP[1],
+      }}>
+        <button
+          onClick={handleChannelForce}
+          disabled={!canChannel || busy}
+          style={{
+            width: '100%',
+            padding: `${SP[3]} 0`,
+            clipPath: `polygon(8px 0%, calc(100% - 8px) 0%, 100% 50%, calc(100% - 8px) 100%, 8px 100%, 0% 50%)`, /* decorative clip-path corners — px intentional */
+            border: canChannel && !busy
+              ? `1px solid color-mix(in srgb, var(--hud-accent-purple) 70%, transparent)`
+              : `1px solid color-mix(in srgb, var(--hud-accent-purple) 20%, transparent)`,
+            background: canChannel && !busy
+              ? 'color-mix(in srgb, var(--hud-accent-purple) 15%, transparent)'
+              : 'color-mix(in srgb, var(--hud-accent-purple) 5%, transparent)',
+            cursor: canChannel && !busy ? 'pointer' : 'not-allowed',
+            fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700,
+            textTransform: 'uppercase', letterSpacing: '0.18em',
+            color: canChannel && !busy ? 'var(--hud-accent-purple)' : HUD.textFaint,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: SP[2],
+            transition: `all ${EASE.default}`,
+          }}
+        >
+          {busy ? '…' : (
+            <>
+              <span style={{ opacity: 0.7 }}>✦</span>
+              Channel the Force
+            </>
+          )}
+        </button>
+        <div style={{
+          textAlign: 'center',
+          fontFamily: FONT_BODY, fontSize: FS.overline,
+          color: HUD.textFaint, textTransform: 'uppercase', letterSpacing: '0.15em',
+        }}>
+          Spending {lightUsed} Light{darkUsed > 0 ? ` · ${darkUsed} Dark` : ' · 0 Dark'}
+        </div>
+      </div>
+
+      {/* Scanline texture overlay */}
+      <div style={{
+        position: 'absolute', inset: 0,
         pointerEvents: 'none',
         backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 2px, color-mix(in srgb, black 3%, transparent) 2px, color-mix(in srgb, black 3%, transparent) 4px)`,
-        zIndex: 1,
+        zIndex: Z.raised,
       }} />
     </div>
   )
