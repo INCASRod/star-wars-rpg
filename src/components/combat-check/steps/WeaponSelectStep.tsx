@@ -8,6 +8,17 @@ import { HUD, FS, FONT_BODY, FONT_DISPLAY, SP, EASE, RADIUS } from '@/lib/tokens
 
 const CAUTION = 'color-mix(in srgb, var(--state-caution, #FF9800) 100%, transparent)'
 
+export interface WeaponManeuvers {
+  aim1:    boolean
+  aim2:    boolean
+  assist:  boolean
+  guarded: boolean
+  onToggleAim1:    () => void
+  onToggleAim2:    () => void
+  onToggleAssist:  () => void
+  onToggleGuarded: () => void
+}
+
 interface WeaponSelectStepProps {
   attackType:         'ranged' | 'melee' | null
   character:          Character
@@ -25,6 +36,8 @@ interface WeaponSelectStepProps {
   onEquipWeapon?:     (weaponId: string, idsToUnequip: string[]) => Promise<void>
   /** Called when player chooses Dual Wield Attack */
   onDualWieldSelect?: (primary: CharacterWeapon, secondary: CharacterWeapon) => void
+  /** Maneuver toggle state and handlers — renders inside selected weapon card */
+  maneuvers?:         WeaponManeuvers
 }
 
 // ── Dual wield detection ──────────────────────────────────────────────────────
@@ -94,6 +107,7 @@ export function WeaponSelectStep({
   isGmMode,
   onEquipWeapon,
   onDualWieldSelect,
+  maneuvers,
 }: WeaponSelectStepProps) {
   const [maneuverWarningFor, setManeuverWarningFor] = useState<string | null>(null)
   const [equipping, setEquipping] = useState(false)
@@ -121,6 +135,9 @@ export function WeaponSelectStep({
     onNext()
   }
 
+  // True when any OTHER weapon is selected (dims unselected cards to 0.40)
+  const hasOtherSelected = selectedWeapon !== null
+
   function renderWeaponPill(w: CharacterWeapon, isStowed = false) {
     const isUnarmed   = (w as typeof UNARMED_WEAPON)._isUnarmed
     const ref         = isUnarmed ? null : refWeaponMap[w.weapon_key]
@@ -129,6 +146,16 @@ export function WeaponSelectStep({
     const showWarning = maneuverWarningFor === w.id
     const skillTag    = !isUnarmed && ref?.skill_key
       ? ref.skill_key.replace('RANGLT','RNG-L').replace('RANGHVY','RNG-H').replace('LTSABER','LT-SBR').replace('GUNN','GUNN').replace('BRAWL','BRAWL').replace('MELEE','MELEE')
+      : null
+
+    const isMeleeWeapon = isUnarmed
+      ? true
+      : ref?.skill_key ? isMeleeSkillKey(ref.skill_key) : false
+
+    // Find dual wield partner for inside-card banner
+    const allEquipped = weapons.filter(ww => ww.equip_state === 'equipped' || ww.is_equipped)
+    const dualPartner = isSelected && onDualWieldSelect
+      ? findDualWieldPartner(w, allEquipped, refWeaponMap)
       : null
 
     return (
@@ -157,7 +184,7 @@ export function WeaponSelectStep({
               : `color-mix(in srgb, var(--hud-surface-lo) 40%, transparent)`,
             borderRadius: RADIUS.sm,
             cursor:       'pointer',
-            opacity:      isSelected ? 1 : (isStowed ? 0.6 : 0.85),
+            opacity:      isSelected ? 1 : (hasOtherSelected ? 0.40 : isStowed ? 0.6 : 0.85),
           }}
         >
           <span style={{
@@ -182,11 +209,11 @@ export function WeaponSelectStep({
                   {' · '}
                   <span style={{
                     fontFamily: FONT_DISPLAY,
-                    fontSize:   FS.overline,
+                    fontSize:   '7px',
                     fontWeight: 700,
-                    border:     `1px solid color-mix(in srgb, var(--hud-gold) 50%, transparent)`,
+                    border:     `1px solid color-mix(in srgb, var(--hud-gold) 40%, transparent)`,
                     padding:    `0 2px`, /* chip inset — 1px border exception context */
-                    clipPath:   'polygon(2px 0%,calc(100% - 2px) 0%,100% 50%,calc(100% - 2px) 100%,2px 100%,0% 50%)',
+                    clipPath:   'polygon(3px 0%,calc(100% - 3px) 0%,100% 50%,calc(100% - 3px) 100%,3px 100%,0% 50%)',
                     opacity:    0.9,
                   }}>
                     {skillTag}
@@ -196,6 +223,142 @@ export function WeaponSelectStep({
             </span>
           )}
         </button>
+
+        {/* Maneuver buttons + dual wield banner — inside selected card only */}
+        {isSelected && maneuvers && (
+          <div style={{
+            borderLeft:   `2px solid var(--hud-accent)`,
+            borderRight:  `1px solid var(--hud-border)`,
+            borderBottom: `1px solid var(--hud-border)`,
+            borderRadius: `0 0 ${RADIUS.sm}px ${RADIUS.sm}px`,
+            background:   `color-mix(in srgb, var(--hud-accent) 4%, transparent)`,
+            padding:      `${SP[1]} ${SP[2]}`,
+            display:      'flex',
+            flexDirection:'column' as const,
+            gap:          SP[1],
+          }}>
+            <div style={{ display: 'flex', gap: SP[1], flexWrap: 'wrap' as const }}>
+              {/* Aim ×1 */}
+              <button
+                onClick={maneuvers.onToggleAim1}
+                className={`cc-mod-toggle${maneuvers.aim1 ? ' cc-mod-toggle--active-pos' : ''}`}
+                style={{
+                  flex:          1,
+                  display:       'flex',
+                  flexDirection: 'column' as const,
+                  gap:           2,
+                  padding:       `${SP[1]} ${SP[1]}`,
+                  borderLeft:    `2px solid color-mix(in srgb, var(--hud-border) 70%, transparent)`,
+                  borderTop:     '1px solid var(--hud-border)',
+                  borderRight:   '1px solid var(--hud-border)',
+                  borderBottom:  '1px solid var(--hud-border)',
+                  background:    `color-mix(in srgb, var(--hud-surface-lo) 40%, transparent)`,
+                  borderRadius:  RADIUS.sm,
+                  cursor:        'pointer',
+                  textAlign:     'left' as const,
+                }}
+              >
+                <span style={{ fontFamily: FONT_DISPLAY, fontSize: FS.label, fontWeight: 700, color: 'var(--hud-text)' }}>Aim</span>
+                <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: maneuvers.aim1 ? 'var(--hud-gold)' : 'var(--hud-text-dim)', opacity: maneuvers.aim1 ? 1 : 0.6 }}>+1 BOOST</span>
+              </button>
+              {/* Aim ×2 */}
+              <button
+                onClick={maneuvers.onToggleAim2}
+                disabled={!maneuvers.aim1}
+                className={`cc-mod-toggle${maneuvers.aim2 ? ' cc-mod-toggle--active-pos' : ''}`}
+                style={{
+                  flex:          1,
+                  display:       'flex',
+                  flexDirection: 'column' as const,
+                  gap:           2,
+                  padding:       `${SP[1]} ${SP[1]}`,
+                  borderLeft:    `2px solid color-mix(in srgb, var(--hud-border) 70%, transparent)`,
+                  borderTop:     '1px solid var(--hud-border)',
+                  borderRight:   '1px solid var(--hud-border)',
+                  borderBottom:  '1px solid var(--hud-border)',
+                  background:    `color-mix(in srgb, var(--hud-surface-lo) 40%, transparent)`,
+                  borderRadius:  RADIUS.sm,
+                  cursor:        maneuvers.aim1 ? 'pointer' : 'not-allowed',
+                  opacity:       maneuvers.aim1 ? 1 : 0.3,
+                  textAlign:     'left' as const,
+                }}
+              >
+                <span style={{ fontFamily: FONT_DISPLAY, fontSize: FS.label, fontWeight: 700, color: 'var(--hud-text)' }}>2nd Aim</span>
+                <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: maneuvers.aim2 ? 'var(--hud-gold)' : 'var(--hud-text-dim)', opacity: maneuvers.aim2 ? 1 : 0.6 }}>+1 BOOST</span>
+              </button>
+              {/* Assist */}
+              <button
+                onClick={maneuvers.onToggleAssist}
+                className={`cc-mod-toggle${maneuvers.assist ? ' cc-mod-toggle--active-pos' : ''}`}
+                style={{
+                  flex:          1,
+                  display:       'flex',
+                  flexDirection: 'column' as const,
+                  gap:           2,
+                  padding:       `${SP[1]} ${SP[1]}`,
+                  borderLeft:    `2px solid color-mix(in srgb, var(--hud-border) 70%, transparent)`,
+                  borderTop:     '1px solid var(--hud-border)',
+                  borderRight:   '1px solid var(--hud-border)',
+                  borderBottom:  '1px solid var(--hud-border)',
+                  background:    `color-mix(in srgb, var(--hud-surface-lo) 40%, transparent)`,
+                  borderRadius:  RADIUS.sm,
+                  cursor:        'pointer',
+                  textAlign:     'left' as const,
+                }}
+              >
+                <span style={{ fontFamily: FONT_DISPLAY, fontSize: FS.label, fontWeight: 700, color: 'var(--hud-text)' }}>Assist</span>
+                <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: maneuvers.assist ? 'var(--hud-gold)' : 'var(--hud-text-dim)', opacity: maneuvers.assist ? 1 : 0.6 }}>+1 BOOST</span>
+              </button>
+              {/* Guarded Stance — melee only */}
+              {isMeleeWeapon && (
+                <button
+                  onClick={maneuvers.onToggleGuarded}
+                  className={`cc-mod-toggle${maneuvers.guarded ? ' cc-mod-toggle--active-neg' : ''}`}
+                  style={{
+                    flex:          1,
+                    display:       'flex',
+                    flexDirection: 'column' as const,
+                    gap:           2,
+                    padding:       `${SP[1]} ${SP[1]}`,
+                    borderLeft:    `2px solid color-mix(in srgb, var(--hud-border) 70%, transparent)`,
+                    borderTop:     '1px solid var(--hud-border)',
+                    borderRight:   '1px solid var(--hud-border)',
+                    borderBottom:  '1px solid var(--hud-border)',
+                    background:    `color-mix(in srgb, var(--hud-surface-lo) 40%, transparent)`,
+                    borderRadius:  RADIUS.sm,
+                    cursor:        'pointer',
+                    textAlign:     'left' as const,
+                  }}
+                >
+                  <span style={{ fontFamily: FONT_DISPLAY, fontSize: FS.label, fontWeight: 700, color: 'var(--hud-text)' }}>Guarded</span>
+                  <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: maneuvers.guarded ? 'var(--state-failure)' : 'var(--hud-text-dim)', opacity: maneuvers.guarded ? 1 : 0.6 }}>+1 SETBK</span>
+                </button>
+              )}
+            </div>
+
+            {/* Dual wield banner — inside card, dashed border */}
+            {dualPartner && (
+              <button
+                onClick={() => onDualWieldSelect!(w, dualPartner)}
+                style={{
+                  border:        `1px dashed color-mix(in srgb, var(--hud-gold) 45%, transparent)`,
+                  background:    `color-mix(in srgb, var(--hud-gold) 6%, transparent)`,
+                  color:         'var(--hud-gold)',
+                  padding:       `${SP[1]} ${SP[2]}`,
+                  fontSize:      FS.overline,
+                  fontWeight:    700,
+                  borderRadius:  RADIUS.sm,
+                  cursor:        'pointer',
+                  fontFamily:    FONT_BODY,
+                  width:         '100%',
+                  textAlign:     'left' as const,
+                }}
+              >
+                ⚔ Dual Wield — {dualPartner.custom_name || refWeaponMap[dualPartner.weapon_key]?.name || 'Secondary'}
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Stowed equip warning — inline expansion */}
         {showWarning && (
@@ -315,35 +478,6 @@ export function WeaponSelectStep({
         </div>
       )}
 
-      {/* Dual Wield compact button */}
-      {(() => {
-        if (!selectedWeapon || !onDualWieldSelect) return null
-        const allEquipped = weapons.filter(w => w.equip_state === 'equipped' || w.is_equipped)
-        const partner     = findDualWieldPartner(selectedWeapon, allEquipped, refWeaponMap)
-        if (!partner) return null
-        return (
-          <div style={{ marginTop: SP[2] }}>
-            <button
-              onClick={() => onDualWieldSelect(selectedWeapon, partner)}
-              style={{
-                border:       `1px solid color-mix(in srgb, var(--hud-gold) 45%, transparent)`,
-                background:   `color-mix(in srgb, var(--hud-gold) 10%, transparent)`,
-                color:        'var(--hud-gold)',
-                padding:      `2px ${SP[2]}`,
-                fontSize:     FS.overline,
-                fontWeight:   700,
-                borderRadius: RADIUS.sm,
-                cursor:       'pointer',
-                fontFamily:   FONT_BODY,
-                transition:   `border-color ${EASE.quick}, background ${EASE.quick}`,
-                width:        'fit-content',
-              }}
-            >
-              ⚔ Dual Wield available
-            </button>
-          </div>
-        )
-      })()}
     </div>
   )
 }

@@ -13,7 +13,11 @@ import {
   getMeleeDifficulty,
   bandIndex,
 } from '@/lib/combatCheckUtils'
-import { HUD, FS, FONT_BODY, FONT_DISPLAY, SP, EASE, RADIUS } from '@/lib/tokens'
+import { HUD, FS, FONT_BODY, FONT_DISPLAY, SP, EASE, RADIUS, DICE_COLOR } from '@/lib/tokens'
+
+// die clip-path geometry — not spacing
+const CLIP_OCT = 'polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 70%,0% 30%)'
+const CLIP_DIA = 'polygon(50% 0%,100% 50%,50% 100%,0% 50%)'
 
 
 interface RangeBandStepProps {
@@ -140,8 +144,8 @@ export function RangeBandStep({ attackType, weapon, selectedBand, targets = [], 
   // For melee, show opposed roll box + range pill(s)
   if (attackType === 'melee') {
     const primaryTarget = targets[0] ?? null
-    const meleeResult   = primaryTarget ? getMeleeDifficulty(primaryTarget) : null
-    const isDefaulted   = meleeResult?.isDefault === true
+    const meleeResult   = getMeleeDifficulty(primaryTarget)
+    const isFallback    = !!meleeResult.fallbackReason
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: SP[2] }}>
@@ -153,7 +157,7 @@ export function RangeBandStep({ attackType, weapon, selectedBand, targets = [], 
             borderRadius: RADIUS.sm,
             padding:      `${SP[2]} ${SP[2]}`,
           }}>
-            {isDefaulted ? (
+            {isFallback ? (
               <>
                 <div style={{
                   fontFamily:   FONT_BODY,
@@ -161,7 +165,7 @@ export function RangeBandStep({ attackType, weapon, selectedBand, targets = [], 
                   color:        'var(--hud-accent)',
                   marginBottom: SP[1],
                 }}>
-                  ⚠ {meleeResult?.defaultNote ?? 'Target Melee skill not found — using rank 0'}
+                  ⚠ {meleeResult.fallbackReason}
                 </div>
                 <div style={{
                   fontFamily: FONT_BODY,
@@ -169,7 +173,7 @@ export function RangeBandStep({ attackType, weapon, selectedBand, targets = [], 
                   color:      'var(--hud-text-faint)',
                   fontStyle:  'italic',
                 }}>
-                  PRF→CHL · ABL→DIF
+                  Set difficulty manually
                 </div>
               </>
             ) : (
@@ -260,7 +264,7 @@ export function RangeBandStep({ attackType, weapon, selectedBand, targets = [], 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: SP[2] }}>
       {/* Compact horizontal range strip */}
-      <div style={{ display: 'flex' }}>
+      <div style={{ display: 'flex', overflow: 'hidden' }}>
         {RANGE_BAND_ORDER.map((band, idx) => {
           const result   = getRangedDifficulty(band, skillKey, maxRange)
           const blocked  = result.blocked
@@ -275,15 +279,16 @@ export function RangeBandStep({ attackType, weapon, selectedBand, targets = [], 
               className="cc-range-chip"
               style={{
                 flex:          1,
-                padding:       `${SP[1]} ${SP[1]}`,
+                minWidth:      0,
+                display:       'flex',
+                flexDirection: 'column' as const,
+                alignItems:    'center',
+                gap:           2,
+                padding:       `${SP[1]} 2px`,
                 border:        `1px solid ${selected ? 'var(--hud-gold)' : 'var(--hud-border)'}`,
                 background:    selected ? `color-mix(in srgb, var(--hud-gold) 10%, transparent)` : 'transparent',
                 color:         selected ? 'var(--hud-gold)' : 'var(--hud-text-dim)',
-                opacity:       blocked ? 0.35 : selected ? 1 : 0.6,
-                fontFamily:    FONT_DISPLAY,
-                fontSize:      FS.overline,
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase' as const,
+                opacity:       blocked ? 0.35 : selected ? 1 : 0.7,
                 cursor:        blocked ? 'not-allowed' : 'pointer',
                 borderRadius:  0, /* flat strip edges per design */
                 marginLeft:    idx > 0 ? -1 : 0, /* collapse adjacent 1px borders */
@@ -291,7 +296,43 @@ export function RangeBandStep({ attackType, weapon, selectedBand, targets = [], 
                 zIndex:        selected ? 1 : 0,
               }}
             >
-              {label}
+              {/* Label */}
+              <span style={{
+                fontFamily:    FONT_DISPLAY,
+                fontSize:      FS.overline,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase' as const,
+                whiteSpace:    'nowrap' as const,
+                overflow:      'hidden',
+                textOverflow:  'ellipsis',
+                maxWidth:      '100%',
+              }}>
+                {label}
+              </span>
+
+              {/* Die pips */}
+              {blocked || (result.difficultyDice === 0 && result.challengeDice === 0) ? (
+                <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, opacity: 0.4 }}>—</span>
+              ) : (
+                <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 1, justifyContent: 'center', maxWidth: 28 }}>
+                  {Array.from({ length: result.challengeDice }).map((_, pi) => (
+                    <div key={`c${pi}`} style={{
+                      width: 6, height: 6, /* die shape px — geometry not spacing */
+                      background: DICE_COLOR.challenge, /* die-identity hex — sealed namespace */
+                      clipPath: CLIP_OCT,
+                      flexShrink: 0,
+                    }} />
+                  ))}
+                  {Array.from({ length: result.difficultyDice }).map((_, pi) => (
+                    <div key={`d${pi}`} style={{
+                      width: 6, height: 6, /* die shape px — geometry not spacing */
+                      background: DICE_COLOR.difficulty, /* die-identity hex — sealed namespace */
+                      clipPath: CLIP_DIA,
+                      flexShrink: 0,
+                    }} />
+                  ))}
+                </div>
+              )}
             </button>
           )
         })}

@@ -91,23 +91,31 @@ export interface MeleeDifficultyResult {
   challengeDice:   number
   targetMeleeRank: number
   targetBrawn:     number
-  isDefault:       boolean
-  defaultNote?:    string
+  /** Set when the result is a fallback (no target, or skill not on record). Player sets difficulty manually. */
+  fallbackReason?: string
 }
 
 export function getMeleeDifficulty(
-  target: AdversaryInstance,
+  target: AdversaryInstance | null,
 ): MeleeDifficultyResult {
+  if (!target) {
+    return {
+      difficultyDice: 0, challengeDice: 0,
+      targetMeleeRank: 0, targetBrawn: 0,
+      fallbackReason: 'No target selected — set difficulty manually',
+    }
+  }
+
   const ranks = target.skillRanks ?? {}
   // skillRanks stores by display name ("Melee") in adversary data
-  let meleeRank: number = ranks['Melee'] ?? ranks['MELEE'] ?? -1
-  let isDefault = false
-  let defaultNote: string | undefined
+  const meleeRank: number = ranks['Melee'] ?? ranks['MELEE'] ?? -1
 
   if (meleeRank < 0) {
-    isDefault = true
-    meleeRank = 0
-    defaultNote = `Melee not listed — defaulting to rank 0`
+    return {
+      difficultyDice: 0, challengeDice: 0,
+      targetMeleeRank: 0, targetBrawn: target.characteristics?.brawn ?? 2,
+      fallbackReason: `${target.name} has no Melee skill on record — set difficulty manually`,
+    }
   }
 
   const brawn = target.characteristics?.brawn ?? 2
@@ -119,8 +127,6 @@ export function getMeleeDifficulty(
     challengeDice:   proficiency,
     targetMeleeRank: meleeRank,
     targetBrawn:     brawn,
-    isDefault,
-    defaultNote,
   }
 }
 

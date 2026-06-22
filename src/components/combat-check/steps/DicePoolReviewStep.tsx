@@ -269,14 +269,9 @@ export function DicePoolReviewStep({
       difficultyDice = result.difficultyDice
       challengeDice  = result.challengeDice
     } else if (attackType === 'melee') {
-      const primaryTarget = targets[0] ?? null
-      if (primaryTarget) {
-        const result = getMeleeDifficulty(primaryTarget)
-        difficultyDice = result.difficultyDice
-        challengeDice  = result.challengeDice
-      } else {
-        difficultyDice = 2
-      }
+      const result = getMeleeDifficulty(targets[0] ?? null)
+      difficultyDice = result.difficultyDice
+      challengeDice  = result.challengeDice
     }
     baseDiff = difficultyDice
     baseChal = challengeDice
@@ -361,19 +356,12 @@ export function DicePoolReviewStep({
 
   // ── Melee difficulty labels (standard mode only) ──────────────────────────
   let meleeDifficultyNote: string | undefined
-  let meleeDiffDefault: string | undefined
-  let meleeRankDefaulted = false
   if (!isDualWield && attackType === 'melee') {
-    const primaryTarget = targets[0] ?? null
-    if (primaryTarget) {
-      const result = getMeleeDifficulty(primaryTarget)
-      meleeDifficultyNote = `Opposed check vs ${primaryTarget.name}'s Melee`
-      if (result.isDefault) {
-        meleeDiffDefault = result.defaultNote
-        meleeRankDefaulted = true
-      }
+    const result = getMeleeDifficulty(targets[0] ?? null)
+    if (result.fallbackReason) {
+      meleeDifficultyNote = result.fallbackReason
     } else {
-      meleeDifficultyNote = 'No target selected — using Average difficulty (2 difficulty dice)'
+      meleeDifficultyNote = `Opposed check vs ${targets[0]?.name}'s Melee`
     }
   }
 
@@ -473,27 +461,6 @@ export function DicePoolReviewStep({
           marginBottom: SP[1],
         }}>
           {meleeDifficultyNote}
-        </div>
-      )}
-      {meleeDiffDefault && (
-        <div style={{
-          fontFamily:   FONT_BODY,
-          fontSize:     FS.overline,
-          color:        'color-mix(in srgb, var(--state-caution, #FF9800) 70%, transparent)', /* default melee rank warning */
-          marginBottom: SP[1],
-        }}>
-          {meleeDiffDefault}
-        </div>
-      )}
-      {meleeRankDefaulted && (
-        <div style={{
-          fontFamily:   FONT_BODY,
-          fontSize:     FS.caption,
-          color:        HUD.textFaint,
-          fontStyle:    'italic',
-          marginBottom: SP[1],
-        }}>
-          Melee: rank 0 (not listed — defaulting to Brawn)
         </div>
       )}
 

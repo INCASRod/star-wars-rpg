@@ -1133,6 +1133,28 @@ i.ffi {
 .cc-next-btn:not(:disabled):active { transform: scale(0.97); }
 .cc-mod-toggle { transition: border-color var(--ease-quick), background var(--ease-quick), opacity var(--ease-quick); }
 .cc-mod-toggle:not(:disabled):hover { opacity: 0.9; }
+.cc-mod-toggle--active-pos {
+  border-left-color: var(--hud-gold) !important;
+  background: color-mix(in srgb, var(--hud-gold) 9%, transparent) !important;
+}
+.cc-mod-toggle--active-neg {
+  border-left-color: var(--state-failure) !important;
+  background: color-mix(in srgb, var(--state-failure) 9%, transparent) !important;
+}
+
+/* ── Skill Check — browse + roll mode hover states ─────────────────── */
+.sc-skill-row { transition: background var(--ease-quick); }
+.sc-skill-row:hover { background: rgba(255,255,255,0.028); }
+.sc-skill-row:hover .sc-accent-bar { opacity: 1 !important; }
+.sc-filter-chip { transition: border-color var(--ease-quick), color var(--ease-quick), background var(--ease-quick), opacity var(--ease-quick); }
+.sc-filter-chip:hover { opacity: 0.85; }
+.sc-back-btn { transition: color var(--ease-quick), border-color var(--ease-quick); }
+.sc-back-btn:hover { color: var(--hud-text) !important; outline-color: var(--hud-border-hi) !important; }
+.sc-diff-btn { transition: border-color var(--ease-quick), background var(--ease-quick), color var(--ease-quick); }
+.sc-diff-btn:hover { opacity: 0.9; }
+.sc-step-btn { transition: background var(--ease-quick), border-color var(--ease-quick), opacity var(--ease-quick); }
+.sc-step-btn:not(:disabled):hover { background: color-mix(in srgb, var(--hud-accent) 15%, transparent); border-color: var(--hud-border-hi); }
+.sc-step-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
 /* ── Weapon / Force power row hover (inside quick drawers) ───── */
 .hud-combat-wpn-row {
