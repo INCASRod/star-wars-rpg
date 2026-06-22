@@ -290,7 +290,6 @@ export function ForceCheckOverlay({
         borderRight: `1px solid ${bdColor}`,
         display: 'flex',
         flexDirection: 'column',
-        position: 'relative',
         overflow: 'hidden',
       }}
     >
