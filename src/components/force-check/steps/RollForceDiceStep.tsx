@@ -26,41 +26,60 @@ interface RollForceDiceStepProps {
   onUpgradeActivate: (upgradeName: string) => void
 }
 
+const OCTAGON = 'polygon(28% 0%, 72% 0%, 100% 28%, 100% 72%, 72% 100%, 28% 100%, 0% 72%, 0% 28%)'
+
 function ForceDieFace({ die }: { die: { light: number; dark: number } }) {
   const empty = die.light === 0 && die.dark === 0
   return (
+    // Outer wrapper: glow that bleeds outside the clip-path (no clip-path here)
     <div style={{
-      width: 44, height: 44, borderRadius: 6, /* decorative die geometry — px intentional */
-      background: 'color-mix(in srgb, var(--hud-accent-purple) 6%, transparent)',
-      border: `1.5px solid color-mix(in srgb, var(--hud-accent-purple) 30%, transparent)`,
+      width: 44, height: 44, /* die cell — px intentional, die-identity display */
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      flexDirection: 'column', gap: 3, flexShrink: 0, /* decorative die geometry — px intentional */
+      flexShrink: 0,
+      boxShadow: `0 0 10px color-mix(in srgb, var(--hud-accent-purple) 22%, transparent)`,
     }}>
-      {empty && (
-        <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint }}>—</span>
-      )}
-      {die.light > 0 && (
-        <div style={{ display: 'flex', gap: 2 /* decorative die geometry — px intentional */ }}>
-          {Array.from({ length: die.light }).map((_, i) => (
-            <div key={i} style={{
-              width: 9, height: 9, borderRadius: '50%', /* decorative die geometry — px intentional */
-              background: LIGHT_COLOR, /* pip identity — pre-approved exception */
-              boxShadow: `0 0 4px ${LIGHT_COLOR}80`,
-            }} />
-          ))}
+      {/* Border layer — full octagon in border colour */}
+      <div style={{
+        width: 44, height: 44, /* die border — px intentional */
+        clipPath: OCTAGON,
+        background: `color-mix(in srgb, var(--hud-accent-purple) 38%, transparent)`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        {/* Fill layer — inset octagon with radial gradient (creates inner-border effect) */}
+        <div style={{
+          width: 41, height: 41, /* inset 1.5px each side — px intentional, die geometry */
+          clipPath: OCTAGON,
+          background: `radial-gradient(circle at 35% 35%, color-mix(in srgb, var(--hud-accent-purple) 18%, transparent), color-mix(in srgb, var(--hud-accent-purple) 6%, transparent) 70%)`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexDirection: 'column', gap: 3, /* die pip gap — px intentional, die geometry */
+        }}>
+          {empty && (
+            <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint }}>—</span>
+          )}
+          {die.light > 0 && (
+            <div style={{ display: 'flex', gap: 2 /* pip gap — px intentional, die geometry */ }}>
+              {Array.from({ length: die.light }).map((_, i) => (
+                <div key={i} style={{
+                  width: 9, height: 9, borderRadius: '50%', /* pip — px intentional */
+                  background: LIGHT_COLOR, /* pip identity — pre-approved exception */
+                  boxShadow: `0 0 4px ${LIGHT_COLOR}80`, /* pip glow — pre-approved exception */
+                }} />
+              ))}
+            </div>
+          )}
+          {die.dark > 0 && (
+            <div style={{ display: 'flex', gap: 2 /* pip gap — px intentional, die geometry */ }}>
+              {Array.from({ length: die.dark }).map((_, i) => (
+                <div key={i} style={{
+                  width: 9, height: 9, borderRadius: '50%', /* pip — px intentional */
+                  background: DARK_COLOR,   /* pip identity — pre-approved exception */
+                  border: `1px solid ${DARK_BORDER}`, /* pip identity — pre-approved exception */
+                }} />
+              ))}
+            </div>
+          )}
         </div>
-      )}
-      {die.dark > 0 && (
-        <div style={{ display: 'flex', gap: 2 /* decorative die geometry — px intentional */ }}>
-          {Array.from({ length: die.dark }).map((_, i) => (
-            <div key={i} style={{
-              width: 9, height: 9, borderRadius: '50%', /* decorative die geometry — px intentional */
-              background: DARK_COLOR, /* pip identity — pre-approved exception */
-              border: `1px solid ${DARK_BORDER}`, /* pip identity — pre-approved exception */
-            }} />
-          ))}
-        </div>
-      )}
+      </div>
     </div>
   )
 }
