@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { FS, HUD, FONT_DISPLAY, FONT_BODY, SP, EASE, RADIUS, Z } from '@/lib/tokens'
 import { createClient } from '@/lib/supabase/client'
 import type { Character } from '@/lib/types'
@@ -173,8 +173,16 @@ export function ForceCheckOverlay({
   const [pendingRoll, setPendingRoll]     = useState<ForceRollResult | null>(null)
   const [revealedCount, setRevealedCount] = useState(0)
 
+  const timerIds = useRef<ReturnType<typeof setTimeout>[]>([])
+
+  function clearTimers() {
+    timerIds.current.forEach(id => clearTimeout(id))
+    timerIds.current = []
+  }
+
   useEffect(() => {
     if (open) {
+      clearTimers()
       setSelectedPowerKey(null)
       setForceRoll(null)
       setSpentMap(new Map())
@@ -183,6 +191,8 @@ export function ForceCheckOverlay({
       setRollPhase('idle')
       setPendingRoll(null)
       setRevealedCount(0)
+    } else {
+      clearTimers()
     }
   }, [open])
 
@@ -226,16 +236,16 @@ export function ForceCheckOverlay({
     setRollPhase('tumble')
 
     // Phase 2: switch to reveal mode, start staggered die reveal
-    setTimeout(() => { setRollPhase('reveal') }, TUMBLE_MS)
+    timerIds.current.push(setTimeout(() => { setRollPhase('reveal') }, TUMBLE_MS))
     for (let i = 0; i < diceCount; i++) {
-      setTimeout(() => { setRevealedCount(i + 1) }, TUMBLE_MS + (i + 1) * PER_DIE_MS)
+      timerIds.current.push(setTimeout(() => { setRevealedCount(i + 1) }, TUMBLE_MS + (i + 1) * PER_DIE_MS))
     }
     // Phase 3 + 4: set result, unlock spend section
-    setTimeout(() => {
+    timerIds.current.push(setTimeout(() => {
       setForceRoll(result)
       setPendingRoll(null)
       setRollPhase('done')
-    }, TUMBLE_MS + diceCount * PER_DIE_MS + 300) /* +300ms for totals fade — animation timing */
+    }, TUMBLE_MS + diceCount * PER_DIE_MS + 300)) /* +300ms for totals fade — animation timing */
   }
 
   // ── CTA — rolls if no result yet, commits if roll complete ───────────────────
@@ -727,7 +737,7 @@ export function ForceCheckOverlay({
                   : (lightAvail >= upgrade.pip_cost || darkAvail >= upgrade.pip_cost)
                 const isDisabled = !spent && !canAfford
                 // Badge color: show which pool will be used
-                const willUseDark = !spent && lightAvail < upgrade.pip_cost && !isDathomiri
+                const willUseDark = !spent && lightAvail < upgrade.pip_cost && darkAvail >= upgrade.pip_cost
 
                 return (
                   <button
