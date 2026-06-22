@@ -9,11 +9,12 @@ interface VitalCellProps {
   color: string
   current: number
   max: number
+  onClick?: () => void
 }
 
-function VitalCell({ label, valueStr, color, current, max }: VitalCellProps) {
+function VitalCell({ label, valueStr, color, current, max, onClick }: VitalCellProps) {
   const pct = max > 0 ? Math.min(1, current / max) : 0
-  return (
+  const inner = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' /* 2px — minimum intra-cell gap */, minWidth: 0 }}>
       <div style={{
         fontFamily: FONT_BODY, fontSize: FS.overline,
@@ -21,7 +22,10 @@ function VitalCell({ label, valueStr, color, current, max }: VitalCellProps) {
       }}>
         {label}
       </div>
-      <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.h4, fontWeight: 700, color }}>
+      <div style={{
+        fontFamily: FONT_DISPLAY, fontSize: FS.h4, fontWeight: 700, color,
+        ...(onClick ? { borderBottom: `1px solid color-mix(in srgb, ${color} 40%, transparent)` } : {}),
+      }}>
         {valueStr}
       </div>
       <div style={{
@@ -37,6 +41,25 @@ function VitalCell({ label, valueStr, color, current, max }: VitalCellProps) {
       </div>
     </div>
   )
+
+  if (onClick) {
+    return (
+      <button
+        onClick={onClick}
+        aria-label={label === 'Wounds' ? 'Adjust wounds' : 'Adjust strain'}
+        style={{
+          background: 'transparent', border: 'none', cursor: 'pointer',
+          padding: 0, textAlign: 'left',
+          minHeight: 44, /* WCAG minimum touch target */
+          display: 'flex', flexDirection: 'column', justifyContent: 'center',
+          minWidth: 0,
+        }}
+      >
+        {inner}
+      </button>
+    )
+  }
+  return inner
 }
 
 interface MobileVitalsStripProps {
@@ -47,12 +70,15 @@ interface MobileVitalsStripProps {
   soak: number
   defMelee: number
   defRanged: number
+  onWoundsTap?: () => void
+  onStrainTap?: () => void
 }
 
 export function MobileVitalsStrip({
   woundCurrent, woundThreshold,
   strainCurrent, strainThreshold,
   soak, defMelee, defRanged,
+  onWoundsTap, onStrainTap,
 }: MobileVitalsStripProps) {
   return (
     <div style={{
@@ -65,10 +91,12 @@ export function MobileVitalsStrip({
       <VitalCell
         label="Wounds" valueStr={`${woundCurrent}/${woundThreshold}`}
         color={WOUNDS_COLOR} current={woundCurrent} max={woundThreshold}
+        onClick={onWoundsTap}
       />
       <VitalCell
         label="Strain" valueStr={`${strainCurrent}/${strainThreshold}`}
         color={HUD.gold} current={strainCurrent} max={strainThreshold}
+        onClick={onStrainTap}
       />
       <VitalCell
         label="Soak" valueStr={String(soak)}

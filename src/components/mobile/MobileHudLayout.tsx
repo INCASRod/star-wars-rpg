@@ -27,6 +27,8 @@ import { MobileForceScreen }            from './screens/MobileForceScreen'      
 import { MobileSkillsBuyScreen }        from './screens/MobileSkillsBuyScreen'  /* Added for mobile +Skills runner tab */
 import { MobileLoreScreen }             from './screens/MobileLoreScreen'        /* Added for mobile Lore runner tab */
 import { MobileDestinySpendSheet }      from './MobileDestinySpendSheet'
+import { BottomSheet }                  from '@/components/mobile/shared/BottomSheet'
+import { WoundsStrainOverlay }          from '@/components/mobile/overlays/WoundsStrainOverlay'
 
 interface MobileHudLayoutProps {
   characterId: string
@@ -64,6 +66,7 @@ export function MobileHudLayout({ characterId, campaignId }: MobileHudLayoutProp
     refObligationTypes,
     refDutyTypes,
     handleSetEquipState,
+    handleVitalChange,
   } = useCharacterData(characterId)
 
   const derivedStats = useDerivedStats({
@@ -123,6 +126,7 @@ export function MobileHudLayout({ characterId, campaignId }: MobileHudLayoutProp
   const [navTab, setNavTab]       = useState<NavTab | null>(null)
   const [diceSkill, setDiceSkill] = useState<string | null>(null)
   const [destinySheetOpen, setDestinySheetOpen] = useState(false)
+  const [vitalsOverlayOpen, setVitalsOverlayOpen] = useState(false)
 
   function handleNavChange(tab: NavTab) {
     setNavTab(prev => (prev === tab ? null : tab))
@@ -318,6 +322,8 @@ export function MobileHudLayout({ characterId, campaignId }: MobileHudLayoutProp
         soak={soakValue}
         defMelee={defMelee}
         defRanged={defRanged}
+        onWoundsTap={() => setVitalsOverlayOpen(true)}
+        onStrainTap={() => setVitalsOverlayOpen(true)}
       />
 
       <div style={{
@@ -343,6 +349,21 @@ export function MobileHudLayout({ characterId, campaignId }: MobileHudLayoutProp
           campaignId={effectiveCampaignId}
           supabase={supabase}
         />
+      )}
+
+      {char && (
+        <BottomSheet
+          open={vitalsOverlayOpen}
+          onClose={() => setVitalsOverlayOpen(false)}
+          maxHeight="60dvh"
+        >
+          <WoundsStrainOverlay
+            character={char}
+            onVitalChange={handleVitalChange}
+            encumbranceCurrent={encStats?.current}
+            encumbranceThreshold={encStats?.threshold}
+          />
+        </BottomSheet>
       )}
     </div>
   )
