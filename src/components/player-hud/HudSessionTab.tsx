@@ -15,6 +15,7 @@ import type { AdversaryInstance } from '@/lib/adversaries'
 import type { MapToken } from '@/hooks/useMapTokens'
 import type { CombatEncounter } from '@/lib/combat'
 import type { Character, WpnDisplay, HudSkill } from '@/lib/types'
+import type { RollResult } from './dice-engine'
 import type { ForcePowerDisplay } from './ForcePanel'
 
 /* ── Tooltip constants ──────────────────────────────────────── */
@@ -157,6 +158,7 @@ interface HudSessionTabProps {
   onCloseQuickPanel?:       () => void
   hudSkills?:               HudSkill[]
   onOpenSkillPopover?:      (skill: HudSkill, anchor: DOMRect) => void
+  onSkillRoll?:             (result: RollResult, label?: string, pool?: Record<string, number>) => void
   // Adversary drawer — externally controlled when rail button is used
   adversariesOpen?:         boolean
   onAdversariesOpenChange?: (open: boolean) => void
@@ -174,6 +176,7 @@ export function HudSessionTab({
   onCloseQuickPanel        = () => {},
   hudSkills                = [],
   onOpenSkillPopover       = () => {},
+  onSkillRoll,
   adversariesOpen:         externalAdversariesOpen,
   onAdversariesOpenChange,
 }: HudSessionTabProps) {
@@ -335,7 +338,7 @@ export function HudSessionTab({
           <button onClick={onCloseQuickPanel} className="cursor-pointer" style={{ background: 'none', border: 'none', color: 'var(--hud-text-dim)', fontSize: FS.sm }}>✕</button>
         </div>
         <div className="flex-1 overflow-hidden flex flex-col">
-          <HudSkillQuickList skills={hudSkills} onOpenPopover={onOpenSkillPopover} />
+          <HudSkillQuickList skills={hudSkills} onOpenPopover={onOpenSkillPopover} onRoll={onSkillRoll} />
         </div>
       </div>
 

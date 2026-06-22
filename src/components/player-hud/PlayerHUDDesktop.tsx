@@ -568,6 +568,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
               onCloseQuickPanel={() => setActiveQuickPanel(null)}
               hudSkills={hudSkills}
               onOpenSkillPopover={(skill, anchor) => setSkillPopover({ skill, anchor })}
+              onSkillRoll={handleRoll}
               adversariesOpen={adversariesOpen}
               onAdversariesOpenChange={setAdversariesOpen}
             />
