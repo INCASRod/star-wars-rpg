@@ -121,7 +121,7 @@ export function MobileHudLayout({ characterId, campaignId }: MobileHudLayoutProp
   const [runnerTab, setRunnerTab] = useState<RunnerTab>('feed')
   const [navTab, setNavTab]       = useState<NavTab | null>(null)
   const [diceSkill, setDiceSkill] = useState<string | null>(null)
-  const [destinySpendOpen, setDestinySpendOpen] = useState(false)
+  const [destinySheetOpen, setDestinySheetOpen] = useState(false)
 
   function handleNavChange(tab: NavTab) {
     setNavTab(prev => (prev === tab ? null : tab))
@@ -207,6 +207,8 @@ export function MobileHudLayout({ characterId, campaignId }: MobileHudLayoutProp
               encCurrent={encStats?.current ?? 0}
               encThreshold={encStats?.threshold ?? 0}
               credits={char.credits ?? 0}
+              campaignId={effectiveCampaignId ?? ''}
+              handleSetEquipState={async () => { /* TODO Task 3: wire real handler */ }}
             />
           )
         case 'group':
@@ -303,7 +305,7 @@ export function MobileHudLayout({ characterId, campaignId }: MobileHudLayoutProp
         credits={character.credits ?? 0}
         destinyPool={destinyPool}
         destinyPoolRecord={destinyPoolRecord}
-        onSpendDestiny={() => setDestinySpendOpen(true)}
+        onSpendDestiny={() => setDestinySheetOpen(true)}
         portraitUrl={character.portrait_url ?? null}
       />
 
@@ -332,8 +334,8 @@ export function MobileHudLayout({ characterId, campaignId }: MobileHudLayoutProp
 
       {destinyPoolRecord && effectiveCampaignId && (
         <MobileDestinySpendSheet
-          isOpen={destinySpendOpen}
-          onClose={() => setDestinySpendOpen(false)}
+          isOpen={destinySheetOpen}
+          onClose={() => setDestinySheetOpen(false)}
           destinyPoolRecord={destinyPoolRecord}
           characterName={character?.name ?? ''}
           characterId={characterId}

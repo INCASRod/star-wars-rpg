@@ -1,8 +1,9 @@
 'use client'
 import React, { useState } from 'react'
 import { FONT_DISPLAY, FONT_BODY, FS, SP, HUD, COLOR, RADIUS } from '@/lib/tokens'
-import type { WpnDisplay, ArmDisplay, GearRow } from '@/lib/types'
+import type { WpnDisplay, ArmDisplay, GearRow, StowLocation } from '@/lib/types'
 import { MobileBottomSheet } from '@/components/mobile/MobileBottomSheet'
+import { MobileStowLocationSheet } from '@/components/mobile/MobileStowLocationSheet'
 
 // ─── Sealed colour exception ──────────────────────────────────────
 const DANGER_COLOR = '#E85A2A'  /* wounds/danger — sealed exception */
@@ -15,6 +16,13 @@ interface MobileItemsScreenProps {
   encCurrent:   number
   encThreshold: number
   credits:      number
+  handleSetEquipState: (
+    id: string,
+    type: 'weapon' | 'armor' | 'gear',
+    state: 'equipped' | 'carrying' | 'stowed',
+    location?: StowLocation | null,
+  ) => Promise<void>
+  campaignId: string
 }
 
 // ─── Detail union type ─────────────────────────────────────────────
@@ -91,7 +99,116 @@ function qualitiesLabel(qualities: WpnDisplay['qualities']): string {
 }
 
 // ─── Item detail panel ─────────────────────────────────────────────
-function ItemDetail({ item }: { item: DetailItem }) {
+function ItemDetail({
+  item,
+  onEquip,
+  onCarry,
+  onStow,
+  loading,
+}: {
+  item: DetailItem
+  onEquip: () => void
+  onCarry: () => void
+  onStow: () => void
+  loading: 'stowed' | 'carrying' | 'equipped' | null
+}) {
+  // Derive shared state from item
+  const equipState = item.kind === 'weapon' ? item.data.equipState
+                   : item.kind === 'armor'  ? item.data.equipState
+                   :                          item.data.equipState
+  const condition  = item.kind === 'weapon' ? item.data.condition
+                   : item.kind === 'armor'  ? item.data.condition
+                   :                          item.data.condition
+  const enc        = item.kind === 'weapon' ? item.data.enc
+                   : item.kind === 'armor'  ? item.data.enc
+                   :                          item.data.enc
+  const equipDisabled = condition === 'major' || condition === 'destroyed'
+  const equipLabel    = item.kind === 'gear' ? '✓ Equip' : '⚔ Equip'
+
+  // Shared button base style
+  const btnBase: React.CSSProperties = {
+    flex: 1,
+    minHeight: 44,  /* WCAG minimum touch target — fixed affordance constant */
+    fontFamily: FONT_DISPLAY,
+    fontSize: FS.overline,
+    textTransform: 'uppercase',
+    letterSpacing: '0.1em',
+    borderRadius: RADIUS.sm,
+    border: '1px solid',
+    cursor: 'pointer',
+  }
+
+  // EquipStateRow — three buttons
+  const equipStateRow = (
+    <div style={{ display: 'flex', gap: SP[1], marginBottom: SP[2] }}>
+      {/* STOW */}
+      <button
+        disabled={loading !== null}
+        onClick={onStow}
+        style={{
+          ...btnBase,
+          background: equipState === 'stowed'
+            ? 'color-mix(in srgb, var(--die-advantage) 15%, transparent)'
+            : 'var(--hud-surface-lo)',
+          borderColor: equipState === 'stowed'
+            ? 'color-mix(in srgb, var(--die-advantage) 50%, transparent)'
+            : 'var(--hud-border)',
+          color: equipState === 'stowed' ? 'var(--die-advantage)' : HUD.textFaint,
+        }}
+      >
+        {loading === 'stowed' ? '…' : '📦 Stow'}
+      </button>
+
+      {/* CARRY */}
+      <button
+        disabled={loading !== null}
+        onClick={onCarry}
+        style={{
+          ...btnBase,
+          background: equipState === 'carrying'
+            ? 'color-mix(in srgb, var(--hud-gold) 15%, transparent)'
+            : 'var(--hud-surface-lo)',
+          borderColor: equipState === 'carrying'
+            ? 'color-mix(in srgb, var(--hud-gold) 50%, transparent)'
+            : 'var(--hud-border)',
+          color: equipState === 'carrying' ? 'var(--hud-gold)' : HUD.textFaint,
+        }}
+      >
+        {loading === 'carrying' ? '…' : '🎒 Carry'}
+      </button>
+
+      {/* EQUIP */}
+      <button
+        disabled={equipDisabled || loading !== null}
+        onClick={onEquip}
+        style={{
+          ...btnBase,
+          background: equipState === 'equipped'
+            ? 'color-mix(in srgb, var(--hud-accent) 15%, transparent)'
+            : 'var(--hud-surface-lo)',
+          borderColor: equipState === 'equipped'
+            ? 'color-mix(in srgb, var(--hud-accent) 50%, transparent)'
+            : 'var(--hud-border)',
+          color: equipState === 'equipped' ? 'var(--hud-accent)' : HUD.textFaint,
+          opacity: (equipDisabled || loading !== null) ? 0.4 : 1,
+          cursor: (equipDisabled || loading !== null) ? 'not-allowed' : 'pointer',
+        }}
+      >
+        {loading === 'equipped' ? '…' : equipLabel}
+      </button>
+    </div>
+  )
+
+  // EncHint — shown when enc > 0
+  const encHint = enc > 0 ? (
+    <div style={{
+      fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint,
+      marginBottom: SP[2], letterSpacing: '0.06em',
+    }}>
+      ENC {enc} ·{item.kind === 'armor' ? ' equipped saves 3 enc' : ` stowing saves ${enc} enc`}
+    </div>
+  ) : null
+
   if (item.kind === 'weapon') {
     const w = item.data
     const dmgLabel = weaponDamageLabel(w)
@@ -102,6 +219,8 @@ function ItemDetail({ item }: { item: DetailItem }) {
           fontFamily: FONT_DISPLAY, fontSize: FS.h4, fontWeight: 700, color: HUD.text,
           marginBottom: SP[2],
         }}>{w.name}</div>
+        {equipStateRow}
+        {encHint}
         <Stat label="Damage" value={dmgLabel} />
         <Stat label="Critical" value={w.crit} />
         <Stat label="Range" value={w.range || '—'} />
@@ -132,6 +251,8 @@ function ItemDetail({ item }: { item: DetailItem }) {
           fontFamily: FONT_DISPLAY, fontSize: FS.h4, fontWeight: 700, color: HUD.text,
           marginBottom: SP[2],
         }}>{a.name}</div>
+        {equipStateRow}
+        {encHint}
         <Stat label="Defense" value={a.defense} />
         <Stat label="Soak Bonus" value={`+${a.soak}`} />
         <Stat label="Encumbrance" value={a.enc} />
@@ -159,6 +280,8 @@ function ItemDetail({ item }: { item: DetailItem }) {
         fontFamily: FONT_DISPLAY, fontSize: FS.h4, fontWeight: 700, color: HUD.text,
         marginBottom: SP[2],
       }}>{g.name}</div>
+      {equipStateRow}
+      {encHint}
       <Stat label="Encumbrance" value={g.enc} />
       <Stat label="Quantity" value={g.qty} />
       {g.description && (
@@ -185,8 +308,13 @@ export function MobileItemsScreen({
   encCurrent,
   encThreshold,
   credits,
+  handleSetEquipState,
+  campaignId,
 }: MobileItemsScreenProps) {
   const [detail, setDetail] = useState<DetailItem | null>(null)
+  const [stowSheetOpen, setStowSheetOpen]     = useState(false)
+  const [pendingStowItem, setPendingStowItem] = useState<{ id: string; type: 'weapon' | 'armor' | 'gear' } | null>(null)
+  const [loadingAction, setLoadingAction]     = useState<'stowed' | 'carrying' | 'equipped' | null>(null)
 
   // Encumbrance bar logic
   const overEnc  = encThreshold > 0 && encCurrent >= encThreshold
@@ -290,8 +418,54 @@ export function MobileItemsScreen({
 
       {/* ── Item detail bottom sheet ── */}
       <MobileBottomSheet open={!!detail} onClose={() => setDetail(null)}>
-        {detail && <ItemDetail item={detail} />}
+        {detail && (
+          <ItemDetail
+            item={detail}
+            loading={loadingAction}
+            onEquip={async () => {
+              setLoadingAction('equipped')
+              try {
+                const type = detail.kind === 'weapon' ? 'weapon' : detail.kind === 'armor' ? 'armor' : 'gear'
+                await handleSetEquipState(detail.data.id, type, 'equipped', null)
+              } finally { setLoadingAction(null) }
+            }}
+            onCarry={async () => {
+              setLoadingAction('carrying')
+              try {
+                const type = detail.kind === 'weapon' ? 'weapon' : detail.kind === 'armor' ? 'armor' : 'gear'
+                await handleSetEquipState(detail.data.id, type, 'carrying', null)
+              } finally { setLoadingAction(null) }
+            }}
+            onStow={() => {
+              const type = detail.kind === 'weapon' ? 'weapon' : detail.kind === 'armor' ? 'armor' : 'gear'
+              setPendingStowItem({ id: detail.data.id, type })
+              setStowSheetOpen(true)
+            }}
+          />
+        )}
       </MobileBottomSheet>
+
+      {/* ── Stow location sheet (portal, layers above item detail sheet) ── */}
+      <MobileStowLocationSheet
+        isOpen={stowSheetOpen}
+        onClose={() => { setStowSheetOpen(false); setPendingStowItem(null) }}
+        onConfirm={async (location) => {
+          if (!pendingStowItem) return
+          setLoadingAction('stowed')
+          try {
+            await handleSetEquipState(pendingStowItem.id, pendingStowItem.type, 'stowed', location)
+            setStowSheetOpen(false)
+            setPendingStowItem(null)
+            setDetail(null)  // close item detail sheet after successful stow
+          } finally { setLoadingAction(null) }
+        }}
+        campaignId={campaignId}
+        itemName={pendingStowItem
+          ? (detail?.kind === 'weapon' ? detail.data.name
+             : detail?.kind === 'armor' ? detail.data.name
+             : detail?.data.name ?? '')
+          : ''}
+      />
     </div>
   )
 }
