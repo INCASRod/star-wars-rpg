@@ -287,9 +287,10 @@ export function MobileSessionCompanion({ characterId, campaignId }: MobileSessio
             refSkillMap={refSkillMap}
             refDescriptorMap={refDescriptorMap}
             refWeaponQualityMap={refWeaponQualityMap}
-            onSetWeaponState={(id, s) => handleSetEquipState(id, 'weapon', s)}
-            onSetArmorState={(id, s) => handleSetEquipState(id, 'armor', s)}
-            onSetGearState={(id, s) => handleSetEquipState(id, 'gear', s)}
+            campaignId={effectiveCampaignId}
+            onSetWeaponState={(id, s, location) => handleSetEquipState(id, 'weapon', s, location)}
+            onSetArmorState={(id, s, location) => handleSetEquipState(id, 'armor', s, location)}
+            onSetGearState={(id, s, location) => handleSetEquipState(id, 'gear', s, location)}
             onDiscardWeapon={id => handleRemoveWeapon(id, 'player')}
             onDiscardArmor={id => handleRemoveEquipment(id, 'armor', 'player')}
             onDiscardGear={id => handleRemoveEquipment(id, 'gear', 'player')}

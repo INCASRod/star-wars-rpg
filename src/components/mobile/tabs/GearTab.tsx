@@ -6,8 +6,9 @@ import { RichText } from '@/components/ui/RichText'
 import { stripBBCode } from '@/lib/utils'
 import type {
   CharacterWeapon, CharacterArmor, CharacterGear,
-  RefWeapon, RefArmor, RefGear, RefSkill, RefItemDescriptor, RefWeaponQuality, EquipState,
+  RefWeapon, RefArmor, RefGear, RefSkill, RefItemDescriptor, RefWeaponQuality, EquipState, StowLocation,
 } from '@/lib/types'
+import { MobileStowLocationSheet } from '@/components/mobile/MobileStowLocationSheet'
 import { WeaponDamageDisplay, isMeleeSkill } from '@/components/character/WeaponDamageDisplay'
 import { QualityBadge } from '@/components/character/QualityBadge'
 import { HUD, FS } from '@/lib/tokens'
@@ -110,9 +111,10 @@ interface GearTabProps {
   refSkillMap: Record<string, RefSkill>
   refDescriptorMap: Record<string, RefItemDescriptor>
   refWeaponQualityMap: Record<string, RefWeaponQuality>
-  onSetWeaponState?: (id: string, state: EquipState) => void
-  onSetArmorState?:  (id: string, state: EquipState) => void
-  onSetGearState?:   (id: string, state: EquipState) => void
+  campaignId?: string | null
+  onSetWeaponState?: (id: string, state: EquipState, location?: StowLocation | null) => void
+  onSetArmorState?:  (id: string, state: EquipState, location?: StowLocation | null) => void
+  onSetGearState?:   (id: string, state: EquipState, location?: StowLocation | null) => void
   onDiscardWeapon?:  (id: string) => void
   onDiscardArmor?:   (id: string) => void
   onDiscardGear?:    (id: string) => void
@@ -121,11 +123,15 @@ interface GearTabProps {
 export function GearTab({
   weapons, armor, gear, brawn,
   refWeaponMap, refArmorMap, refGearMap, refSkillMap, refDescriptorMap, refWeaponQualityMap,
+  campaignId,
   onSetWeaponState, onSetArmorState, onSetGearState,
   onDiscardWeapon, onDiscardArmor, onDiscardGear,
 }: GearTabProps) {
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({})
   const toggleExpand = (id: string) => setExpandedItems(prev => ({ ...prev, [id]: !prev[id] }))
+
+  const [stowSheetOpen, setStowSheetOpen] = useState(false)
+  const [pendingStow, setPendingStow] = useState<{ id: string; type: 'weapon' | 'armor' | 'gear' } | null>(null)
 
   const [confirmingDiscard, setConfirmingDiscard] = useState<{ id: string; type: 'weapon' | 'armor' | 'gear' } | null>(null)
   const discardTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -146,6 +152,31 @@ export function GearTab({
     else if (confirmingDiscard.type === 'armor') onDiscardArmor?.(confirmingDiscard.id)
     else onDiscardGear?.(confirmingDiscard.id)
     setConfirmingDiscard(null)
+  }
+
+  function handleWeaponState(id: string, s: EquipState) {
+    if (s === 'stowed' && campaignId) {
+      setPendingStow({ id, type: 'weapon' })
+      setStowSheetOpen(true)
+    } else {
+      onSetWeaponState?.(id, s)
+    }
+  }
+  function handleArmorState(id: string, s: EquipState) {
+    if (s === 'stowed' && campaignId) {
+      setPendingStow({ id, type: 'armor' })
+      setStowSheetOpen(true)
+    } else {
+      onSetArmorState?.(id, s)
+    }
+  }
+  function handleGearState(id: string, s: EquipState) {
+    if (s === 'stowed' && campaignId) {
+      setPendingStow({ id, type: 'gear' })
+      setStowSheetOpen(true)
+    } else {
+      onSetGearState?.(id, s)
+    }
   }
 
   return (
@@ -181,7 +212,7 @@ export function GearTab({
                   {cw.custom_name || ref.name}
                 </span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <EquipStateButtons equipState={equip} onSet={onSetWeaponState ? (s => onSetWeaponState(cw.id, s)) : undefined} />
+                  <EquipStateButtons equipState={equip} onSet={s => handleWeaponState(cw.id, s)} />
                   {onDiscardWeapon && (
                     <button
                       onClick={() => confirmingDiscard?.id === cw.id ? cancelDiscard() : startDiscard(cw.id, 'weapon')}
@@ -286,7 +317,7 @@ export function GearTab({
                   {ca.custom_name || ref.name}
                 </span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <EquipStateButtons equipState={equip} onSet={onSetArmorState ? (s => onSetArmorState(ca.id, s)) : undefined} />
+                  <EquipStateButtons equipState={equip} onSet={s => handleArmorState(ca.id, s)} />
                   {onDiscardArmor && (
                     <button
                       onClick={() => confirmingDiscard?.id === ca.id ? cancelDiscard() : startDiscard(ca.id, 'armor')}
@@ -411,6 +442,31 @@ export function GearTab({
           )
         })}
       </div>
+
+      {campaignId && (
+        <MobileStowLocationSheet
+          isOpen={stowSheetOpen}
+          onClose={() => { setStowSheetOpen(false); setPendingStow(null) }}
+          onConfirm={(location) => {
+            if (!pendingStow) return
+            if (pendingStow.type === 'weapon') onSetWeaponState?.(pendingStow.id, 'stowed', location)
+            else if (pendingStow.type === 'armor') onSetArmorState?.(pendingStow.id, 'stowed', location)
+            else onSetGearState?.(pendingStow.id, 'stowed', location)
+            setStowSheetOpen(false)
+            setPendingStow(null)
+          }}
+          campaignId={campaignId}
+          itemName={
+            pendingStow
+              ? pendingStow.type === 'weapon'
+                ? (weapons.find(w => w.id === pendingStow.id) && refWeaponMap[weapons.find(w => w.id === pendingStow.id)!.weapon_key]?.name) ?? 'this item'
+                : pendingStow.type === 'armor'
+                  ? (armor.find(a => a.id === pendingStow.id) && refArmorMap[armor.find(a => a.id === pendingStow.id)!.armor_key]?.name) ?? 'this item'
+                  : (gear.find(g => g.id === pendingStow.id) && refGearMap[gear.find(g => g.id === pendingStow.id)!.gear_key]?.name) ?? 'this item'
+              : 'this item'
+          }
+        />
+      )}
     </div>
   )
 }
