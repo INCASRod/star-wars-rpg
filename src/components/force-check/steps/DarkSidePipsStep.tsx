@@ -2,9 +2,6 @@
 
 import { FS, HUD, FONT_DISPLAY, FONT_BODY } from '@/lib/tokens'
 
-const FORCE_BLUE   = '#7EC8E3'
-const DARK_PURPLE  = '#8B2BE2'
-
 interface DarkSidePipsStepProps {
   /** Pips the character has available for free (light for normal, dark for fallen). */
   lightPips:      number
@@ -22,8 +19,8 @@ export function DarkSidePipsStep({
 }: DarkSidePipsStepProps) {
   const totalFP = lightPips + darkPipsUsed
 
-  const accentColor   = isFallen ? FORCE_BLUE : '#E03A1E'
-  const accentMuted   = isFallen ? 'rgba(126,200,227,0.4)' : 'rgba(224,58,30,0.4)'
+  const accentColor   = 'var(--hud-accent-purple)'
+  const accentMuted   = 'color-mix(in srgb, var(--hud-accent-purple) 40%, transparent)'
   const costlyLabel   = isFallen ? 'light side' : 'dark side'
   const freeLabel     = isFallen ? 'dark side' : 'light side'
   const destinyFlip   = isFallen ? 'dark → light' : 'light → dark'
@@ -93,7 +90,7 @@ export function DarkSidePipsStep({
 
         {/* Live cost summary */}
         {darkPipsUsed > 0 && (
-          <div style={{ padding: '10px 12px', background: isFallen ? 'rgba(126,200,227,0.06)' : 'rgba(144,96,208,0.08)', border: `1px solid ${isFallen ? 'rgba(126,200,227,0.2)' : 'rgba(144,96,208,0.2)'}`, borderRadius: 6, display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <div style={{ padding: '10px 12px', background: 'color-mix(in srgb, var(--hud-accent-purple) 5%, transparent)', border: '1px solid color-mix(in srgb, var(--hud-accent-purple) 40%, transparent)', borderLeft: '2px solid var(--hud-accent-purple)', borderRadius: 6, display: 'flex', flexDirection: 'column', gap: 3 }}>
             <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textDim }}>
               Using {darkPipsUsed} {costlyLabel} <i className="ffi ffi-swrpg-force" aria-hidden="true" />:
             </div>
@@ -109,8 +106,8 @@ export function DarkSidePipsStep({
       {/* Decision guidance */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
         {darkPipsUsed > 0 && (
-          <div style={{ padding: '8px 10px', background: isFallen ? 'rgba(126,200,227,0.05)' : 'rgba(224,58,30,0.06)', border: `1px solid ${isFallen ? 'rgba(126,200,227,0.2)' : 'rgba(224,58,30,0.2)'}`, borderRadius: 6 }}>
-            <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: isFallen ? HUD.textDim : 'rgba(224,58,30,0.75)', lineHeight: 1.4 }}>
+          <div style={{ padding: '8px 10px', background: 'color-mix(in srgb, var(--hud-accent-purple) 5%, transparent)', border: '1px solid color-mix(in srgb, var(--hud-accent-purple) 40%, transparent)', borderLeft: '2px solid var(--hud-accent-purple)', borderRadius: 6 }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: 'color-mix(in srgb, var(--hud-accent-purple) 80%, white)', lineHeight: 1.5 }}>
               Remember: suffer {darkPipsUsed} strain and flip 1 Destiny Point when the GM confirms.
             </div>
           </div>

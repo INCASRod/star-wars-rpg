@@ -273,13 +273,9 @@ export function ForceCheckOverlay({
   const isResolve  = state.currentStep === 5
   const totalSteps = isDathomiri ? 3 : 4
 
-  // fallen/dark-side Force mechanic colours — pre-approved exception
-  const accentColor    = isFallen ? '#8B2BE2'              : 'var(--die-force)'
-  const bdColor        = isFallen ? 'rgba(139,43,226,0.15)' : 'color-mix(in srgb, var(--die-force) 25%, transparent)'
-  const barColor       = isFallen ? 'rgba(139,43,226,0.6)' : 'color-mix(in srgb, var(--die-force) 60%, transparent)'
-  const textColor      = isFallen ? '#8B2BE2'              : HUD.text
-  const textDimColor   = isFallen ? 'rgba(139,43,226,0.5)' : HUD.textDim
-  const textFaintColor = isFallen ? 'rgba(139,43,226,0.3)' : HUD.textFaint
+  // unified purple accent — Force Check has its own identity separate from theme accent
+  const accentColor = 'var(--hud-accent-purple)'
+  const bdColor     = 'color-mix(in srgb, var(--hud-accent-purple) 25%, transparent)'
 
   // ── Visible steps 1-4 (step 3 hidden for Dathomiri) ──────────────────────
   const visibleSteps = ([1, 2, 3] as Step[]).filter(n => n !== 3 || !isDathomiri)
@@ -294,8 +290,16 @@ export function ForceCheckOverlay({
         borderRight: `1px solid ${bdColor}`,
         display: 'flex',
         flexDirection: 'column',
+        position: 'relative',
+        overflow: 'hidden',
       }}
     >
+      {/* Accent stripe — top edge glow */}
+      <div style={{
+        height: 3, /* decorative stripe — px intentional */
+        flexShrink: 0,
+        background: `linear-gradient(90deg, transparent, var(--hud-accent-purple) 30%, color-mix(in srgb, var(--hud-accent-purple) 60%, white) 70%, transparent)`,
+      }} />
 
       {/* ── Header strip ────────────────────────────────────────────────────── */}
       <div style={{
@@ -308,7 +312,7 @@ export function ForceCheckOverlay({
         flexShrink: 0,
       }}>
         <span style={{
-          color: accentColor,
+          color: 'var(--hud-accent-purple)',
           fontSize: FS.sm,
           lineHeight: 1,
           flexShrink: 0,
@@ -316,12 +320,12 @@ export function ForceCheckOverlay({
           {isFallen ? '☠' : '✦'}
         </span>
         <span style={{
-          fontFamily: FONT_BODY,
+          fontFamily: FONT_DISPLAY,
           fontSize: FS.label,
           fontWeight: 700,
           letterSpacing: '0.15em',
           textTransform: 'uppercase',
-          color: `color-mix(in srgb, ${accentColor} 80%, transparent)`,
+          color: 'var(--hud-accent-purple)',
           flex: 1,
         }}>
           Force Check
@@ -354,10 +358,10 @@ export function ForceCheckOverlay({
               style={{
                 padding: `${SP[2]} ${SP[2]}`,
                 borderLeft: isActive
-                  ? `2px solid color-mix(in srgb, var(--die-force) 45%, transparent)`
+                  ? `2px solid color-mix(in srgb, var(--hud-accent-purple) 45%, transparent)`
                   : '2px solid transparent',
                 background: isActive
-                  ? `color-mix(in srgb, var(--die-force) 4%, transparent)`
+                  ? `color-mix(in srgb, var(--hud-accent-purple) 4%, transparent)`
                   : 'transparent',
                 opacity: isDone ? 0.6 : isLocked ? 0.3 : 1,
                 pointerEvents: isLocked ? 'none' as const : undefined,
@@ -368,6 +372,35 @@ export function ForceCheckOverlay({
               <div
                 onClick={isDone ? () => setState(s => ({ ...s, currentStep: stepNum })) : undefined}
                 style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: SP[2],
+                  marginBottom: isActive ? SP[2] : 0,
+                  cursor: isDone ? 'pointer' : 'default',
+                }}
+              >
+                {/* Step number badge */}
+                <div style={{
+                  width: 14, height: 14, /* step badge — px intentional, small fixed indicator */
+                  borderRadius: '50%',
+                  flexShrink: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: isActive
+                    ? 'color-mix(in srgb, var(--hud-accent-purple) 15%, transparent)'
+                    : 'transparent',
+                  border: `1px solid color-mix(in srgb, var(--hud-accent-purple) ${isActive ? 60 : 30}%, transparent)`,
+                }}>
+                  <span style={{
+                    fontFamily: FONT_DISPLAY,
+                    fontSize: '9px', /* step badge number — px intentional, sub-label size */
+                    fontWeight: 700,
+                    color: `color-mix(in srgb, var(--hud-accent-purple) ${isActive ? 80 : 40}%, transparent)`,
+                    lineHeight: 1,
+                  }}>
+                    {stepNum === 5 ? 4 : stepNum}
+                  </span>
+                </div>
+                <span style={{
                   fontFamily: FONT_BODY,
                   fontSize: FS.overline,
                   fontWeight: 700,
@@ -376,11 +409,9 @@ export function ForceCheckOverlay({
                   color: isActive
                     ? `color-mix(in srgb, ${accentColor} 80%, transparent)`
                     : isDone ? HUD.textDim : HUD.textFaint,
-                  marginBottom: isActive ? SP[2] : 0,
-                  cursor: isDone ? 'pointer' : 'default',
-                }}
-              >
-                {STEP_LABELS[stepNum]}{isDone ? ' ✓' : ''}
+                }}>
+                  {STEP_LABELS[stepNum]}{isDone ? ' ✓' : ''}
+                </span>
               </div>
 
               {/* Active step content */}
@@ -470,7 +501,7 @@ export function ForceCheckOverlay({
             style={{
               width: '100%',
               padding: `${SP[2]} 0`,
-              borderRadius: RADIUS.md,
+              clipPath: `polygon(8px 0%, calc(100% - 8px) 0%, 100% 50%, calc(100% - 8px) 100%, 8px 100%, 0% 50%)`, /* decorative clip-path corners — px intentional */
               border: 'none',
               cursor: (canAdvance() && !busy) ? 'pointer' : 'not-allowed',
               fontFamily: FONT_DISPLAY,
@@ -479,13 +510,9 @@ export function ForceCheckOverlay({
               textTransform: 'uppercase',
               letterSpacing: '0.1em',
               background: (canAdvance() && !busy)
-                ? isFallen
-                  ? `color-mix(in srgb, #8B2BE2 25%, transparent)` /* fallen/dark-side Force mechanic colour — pre-approved exception */
-                  : `color-mix(in srgb, var(--die-force) 20%, transparent)`
-                : isFallen
-                  ? `color-mix(in srgb, #8B2BE2 6%, transparent)` /* fallen/dark-side Force mechanic colour — pre-approved exception */
-                  : `color-mix(in srgb, var(--die-force) 6%, transparent)`,
-              color: (canAdvance() && !busy) ? textColor : textFaintColor,
+                ? 'var(--hud-accent-purple)'
+                : 'color-mix(in srgb, var(--hud-accent-purple) 20%, transparent)',
+              color: (canAdvance() && !busy) ? 'rgba(0,0,0,0.85)' : HUD.textFaint,
               transition: `background ${EASE.quick}`,
             }}
           >
@@ -493,6 +520,15 @@ export function ForceCheckOverlay({
           </button>
         </div>
       )}
+
+      {/* Scanline overlay — decorative CRT texture */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        pointerEvents: 'none',
+        backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 2px, color-mix(in srgb, black 3%, transparent) 2px, color-mix(in srgb, black 3%, transparent) 4px)`,
+        zIndex: 1,
+      }} />
     </div>
   )
 }

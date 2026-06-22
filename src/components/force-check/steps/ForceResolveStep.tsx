@@ -5,7 +5,7 @@ import type { TargetEntry } from './ForceTargetStep'
 import { stripBBCode } from '@/lib/utils'
 import { FS, HUD, FONT_DISPLAY, FONT_BODY } from '@/lib/tokens'
 
-const FORCE_BLUE  = '#7EC8E3'
+// pip identity colours — pre-approved Force mechanic exceptions
 const LIGHT_COLOR = '#E8E8FF'
 const DARK_COLOR  = 'rgba(80,40,120,0.9)'
 const DARK_BORDER = '#6060A0'
@@ -71,14 +71,14 @@ export function ForceResolveStep({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* Header */}
-      <div style={{ textAlign: 'center', paddingBottom: 12, borderBottom: '1px solid rgba(126,200,227,0.15)' }}>
+      <div style={{ textAlign: 'center', paddingBottom: 12, borderBottom: '1px solid color-mix(in srgb, var(--hud-accent-purple) 15%, transparent)' }}>
         <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700, color: HUD.text, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
           ✦ Force Power Activated
         </div>
       </div>
 
       {/* Summary fields */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '12px 14px', background: 'rgba(126,200,227,0.04)', border: '1px solid rgba(126,200,227,0.12)', borderRadius: 8 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '12px 14px', background: 'color-mix(in srgb, var(--hud-accent-purple) 4%, transparent)', border: '1px solid color-mix(in srgb, var(--hud-accent-purple) 12%, transparent)', borderRadius: 8 }}>
         <Field label="Power">{powerName}</Field>
         <Field label="Force Points">
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
@@ -87,7 +87,7 @@ export function ForceResolveStep({
               : <PipRow light={freePips} dark={0} />
             }
             {costlyUsed > 0 && (
-              <span style={{ color: isFallen ? 'rgba(126,200,227,0.8)' : 'rgba(144,96,208,0.8)', fontSize: FS.caption }}>
+              <span style={{ color: 'color-mix(in srgb, var(--hud-accent-purple) 80%, transparent)', fontSize: FS.caption }}>
                 + {isFallen
                   ? <PipRow light={costlyUsed} dark={0} />
                   : <PipRow light={0} dark={costlyUsed} />
@@ -104,7 +104,7 @@ export function ForceResolveStep({
 
       {/* Power description */}
       {desc && (
-        <div style={{ padding: '10px 12px', background: 'rgba(126,200,227,0.03)', border: '1px solid rgba(126,200,227,0.1)', borderRadius: 6 }}>
+        <div style={{ padding: '10px 12px', background: 'color-mix(in srgb, var(--hud-accent-purple) 3%, transparent)', border: '1px solid color-mix(in srgb, var(--hud-accent-purple) 10%, transparent)', borderRadius: 6 }}>
           <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: HUD.textDim, lineHeight: 1.55 }}>
             {desc}
           </div>
@@ -113,7 +113,7 @@ export function ForceResolveStep({
 
       {/* Consequence reminder */}
       {costlyUsed > 0 && (
-        <div style={{ padding: '8px 12px', background: isFallen ? 'rgba(126,200,227,0.06)' : 'rgba(144,96,208,0.08)', border: `1px solid ${isFallen ? 'rgba(126,200,227,0.22)' : 'rgba(144,96,208,0.22)'}`, borderRadius: 6 }}>
+        <div style={{ padding: '8px 12px', background: 'color-mix(in srgb, var(--hud-accent-purple) 6%, transparent)', border: '1px solid color-mix(in srgb, var(--hud-accent-purple) 22%, transparent)', borderRadius: 6 }}>
           <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textDim, lineHeight: 1.45 }}>
             Reminder: suffer {costlyUsed} strain and flip 1 Destiny Point {destinyFlip}.
           </div>
@@ -126,8 +126,8 @@ export function ForceResolveStep({
           onClick={onUseAgain}
           style={{
             flex: 1, height: 44, borderRadius: 8, cursor: 'pointer',
-            background: 'rgba(126,200,227,0.08)',
-            border: '1px solid rgba(126,200,227,0.3)',
+            background: 'color-mix(in srgb, var(--hud-accent-purple) 8%, transparent)',
+            border: '1px solid color-mix(in srgb, var(--hud-accent-purple) 30%, transparent)',
             fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700,
             letterSpacing: '0.08em', textTransform: 'uppercase', color: HUD.text,
             transition: 'all .15s',

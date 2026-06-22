@@ -72,11 +72,11 @@ export function SelectPowerStep({ powers, selectedPowerKey, onSelect }: SelectPo
                   textAlign: 'left',
                   padding: 0,
                   background: selected
-                    ? 'color-mix(in srgb, var(--hud-accent) 10%, transparent)'
-                    : 'color-mix(in srgb, var(--hud-accent) 4%, transparent)',
+                    ? 'color-mix(in srgb, var(--hud-accent-purple) 10%, transparent)'
+                    : 'color-mix(in srgb, var(--hud-accent-purple) 4%, transparent)',
                   border: selected
-                    ? `2px solid var(--hud-accent)`
-                    : `1px solid color-mix(in srgb, var(--hud-accent) 15%, transparent)`,
+                    ? `2px solid var(--hud-accent-purple)`
+                    : `1px solid color-mix(in srgb, var(--hud-accent-purple) 15%, transparent)`,
                   borderRadius: RADIUS.lg,
                   cursor: 'pointer',
                   transition: `all ${EASE.default}`,
@@ -92,7 +92,7 @@ export function SelectPowerStep({ powers, selectedPowerKey, onSelect }: SelectPo
                   padding: `${SP[3]} ${SP[4]}`,
                 }}>
                   <span style={{
-                    color: 'var(--hud-accent)',
+                    color: 'var(--hud-accent-purple)',
                     opacity: 0.8,
                     fontSize: FS.overline,
                     flexShrink: 0,
@@ -108,7 +108,7 @@ export function SelectPowerStep({ powers, selectedPowerKey, onSelect }: SelectPo
                   </span>
                   <span style={{
                     fontSize: FS.overline,
-                    color: 'var(--hud-accent)',
+                    color: 'var(--hud-accent-purple)',
                     opacity: 0.5,
                     flexShrink: 0,
                     display: 'inline-block',
@@ -122,7 +122,7 @@ export function SelectPowerStep({ powers, selectedPowerKey, onSelect }: SelectPo
                   <div
                     onClick={e => e.stopPropagation()}
                     style={{
-                      borderTop: `1px solid color-mix(in srgb, var(--hud-accent) 12%, transparent)`,
+                      borderTop: `1px solid color-mix(in srgb, var(--hud-accent-purple) 12%, transparent)`,
                       padding: `${SP[2]} ${SP[4]} ${SP[3]}`,
                       display: 'flex',
                       flexDirection: 'column',
@@ -145,7 +145,7 @@ export function SelectPowerStep({ powers, selectedPowerKey, onSelect }: SelectPo
                     <div style={{
                       fontFamily: FONT_BODY,
                       fontSize: FS.overline,
-                      color: 'var(--hud-accent)',
+                      color: 'var(--hud-accent-purple)',
                       textTransform: 'uppercase',
                       letterSpacing: '0.18em',
                       opacity: 0.7,
@@ -185,13 +185,13 @@ export function SelectPowerStep({ powers, selectedPowerKey, onSelect }: SelectPo
                               gap: SP[2],
                               padding: `2px ${SP[2]}`, /* 2px minimum touch target — intentional */
                               borderRadius: RADIUS.md,
-                              background: 'color-mix(in srgb, var(--hud-accent) 6%, transparent)',
-                              border: `1px solid color-mix(in srgb, var(--hud-accent) 10%, transparent)`,
+                              background: 'color-mix(in srgb, var(--hud-accent-purple) 6%, transparent)',
+                              border: `1px solid color-mix(in srgb, var(--hud-accent-purple) 10%, transparent)`,
                             }}>
                               <div style={{
                                 width: '5px', height: '5px', /* decorative dot — px intentional */
                                 borderRadius: RADIUS.full,
-                                background: 'var(--hud-accent)',
+                                background: 'var(--hud-accent-purple)',
                                 opacity: 0.7,
                                 flexShrink: 0,
                               }} />
@@ -211,7 +211,7 @@ export function SelectPowerStep({ powers, selectedPowerKey, onSelect }: SelectPo
                                 <span style={{
                                   fontFamily: FONT_BODY,
                                   fontSize: FS.overline,
-                                  color: 'color-mix(in srgb, var(--die-force) 70%, transparent)',
+                                  color: 'color-mix(in srgb, var(--hud-accent-purple) 70%, transparent)',
                                   flexShrink: 0,
                                   whiteSpace: 'nowrap',
                                 }}>
@@ -221,7 +221,7 @@ export function SelectPowerStep({ powers, selectedPowerKey, onSelect }: SelectPo
                               <span style={{
                                 fontFamily: FONT_BODY,
                                 fontSize: FS.overline,
-                                color: 'var(--hud-accent)',
+                                color: 'var(--hud-accent-purple)',
                                 opacity: 0.6,
                                 flexShrink: 0,
                               }}>

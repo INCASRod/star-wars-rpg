@@ -4,12 +4,11 @@ import { useState, useEffect, useMemo } from 'react'
 import type { ForceRollResult } from '@/lib/forceRoll'
 import type { ForcePowerDisplay } from '@/components/player-hud/ForcePanel'
 import { rollForceDice } from '@/components/player-hud/dice-engine'
-import { DiceFace } from '@/components/dice/DiceFace'
 import { FS, HUD, FONT_DISPLAY, FONT_BODY, SP, EASE, RADIUS } from '@/lib/tokens'
 import { Tooltip, TipLabel, TipBody } from '@/components/ui/Tooltip'
 import { RichText } from '@/components/ui/RichText'
 
-// fallen/dark-side Force mechanic colours — pre-approved exception
+// pip identity colours — pre-approved Force mechanic exceptions (die faces only)
 const LIGHT_COLOR = '#E8E8FF'
 const DARK_COLOR  = 'rgba(80,40,120,0.9)'  /* fallen/dark-side Force mechanic colour — pre-approved exception */
 const DARK_BORDER = '#6060A0'               /* fallen/dark-side Force mechanic colour — pre-approved exception */
@@ -32,8 +31,8 @@ function ForceDieFace({ die }: { die: { light: number; dark: number } }) {
   return (
     <div style={{
       width: 44, height: 44, borderRadius: 6, /* decorative die geometry — px intentional */
-      background: 'color-mix(in srgb, var(--die-force) 6%, transparent)',
-      border: `1.5px solid color-mix(in srgb, var(--die-force) 30%, transparent)`,
+      background: 'color-mix(in srgb, var(--hud-accent-purple) 6%, transparent)',
+      border: `1.5px solid color-mix(in srgb, var(--hud-accent-purple) 30%, transparent)`,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       flexDirection: 'column', gap: 3, flexShrink: 0, /* decorative die geometry — px intentional */
     }}>
@@ -45,7 +44,7 @@ function ForceDieFace({ die }: { die: { light: number; dark: number } }) {
           {Array.from({ length: die.light }).map((_, i) => (
             <div key={i} style={{
               width: 9, height: 9, borderRadius: '50%', /* decorative die geometry — px intentional */
-              background: LIGHT_COLOR, /* fallen/dark-side Force mechanic colour — pre-approved exception */
+              background: LIGHT_COLOR, /* pip identity — pre-approved exception */
               boxShadow: `0 0 4px ${LIGHT_COLOR}80`,
             }} />
           ))}
@@ -56,8 +55,8 @@ function ForceDieFace({ die }: { die: { light: number; dark: number } }) {
           {Array.from({ length: die.dark }).map((_, i) => (
             <div key={i} style={{
               width: 9, height: 9, borderRadius: '50%', /* decorative die geometry — px intentional */
-              background: DARK_COLOR, /* fallen/dark-side Force mechanic colour — pre-approved exception */
-              border: `1px solid ${DARK_BORDER}`, /* fallen/dark-side Force mechanic colour — pre-approved exception */
+              background: DARK_COLOR, /* pip identity — pre-approved exception */
+              border: `1px solid ${DARK_BORDER}`, /* pip identity — pre-approved exception */
             }} />
           ))}
         </div>
@@ -142,11 +141,37 @@ export function RollForceDiceStep({
           </div>
         </div>
 
-        {/* Die icons */}
-        <div style={{ display: 'flex', gap: SP[2], flexWrap: 'wrap' }}>
-          {Array.from({ length: available }).map((_, i) => (
-            <DiceFace key={i} type="force" size={36} active={false} />
-          ))}
+        {/* Force Die Orb */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: SP[3] }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: SP[1] }}>
+            <div style={{
+              width: 52, height: 52, borderRadius: '50%', /* Force Die Orb — px intentional, die-identity display */
+              border: `2px solid color-mix(in srgb, var(--hud-accent-purple) 50%, transparent)`,
+              background: 'rgba(0,0,0,0.40)',
+              boxShadow: `0 0 16px color-mix(in srgb, var(--hud-accent-purple) 20%, transparent)`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <span style={{
+                fontFamily: FONT_DISPLAY,
+                fontSize: '20px', /* Force Die Orb count — px intentional, die-identity display size */
+                fontWeight: 900,
+                color: 'white',
+                lineHeight: 1,
+              }}>
+                {available}
+              </span>
+            </div>
+            <span style={{
+              fontFamily: FONT_DISPLAY,
+              fontSize: FS.overline,
+              opacity: 0.45,
+              color: 'var(--hud-accent-purple)',
+              textTransform: 'uppercase' as const,
+              letterSpacing: '0.15em',
+            }}>
+              FORCE DICE
+            </span>
+          </div>
           {available === 0 && (
             <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: HUD.textFaint, fontStyle: 'italic' }}>
               No Force dice available
@@ -165,11 +190,11 @@ export function RollForceDiceStep({
             padding: `${SP[2]} 0`,
             borderRadius: RADIUS.md,
             background: available > 0
-              ? 'color-mix(in srgb, var(--die-force) 14%, transparent)'
-              : 'color-mix(in srgb, var(--die-force) 4%, transparent)',
+              ? 'color-mix(in srgb, var(--hud-accent-purple) 14%, transparent)'
+              : 'color-mix(in srgb, var(--hud-accent-purple) 4%, transparent)',
             border: available > 0
-              ? `1px solid color-mix(in srgb, var(--die-force) 40%, transparent)`
-              : `1px solid color-mix(in srgb, var(--die-force) 18%, transparent)`,
+              ? `1px solid color-mix(in srgb, var(--hud-accent-purple) 40%, transparent)`
+              : `1px solid color-mix(in srgb, var(--hud-accent-purple) 18%, transparent)`,
             cursor: available > 0 ? 'pointer' : 'not-allowed',
             fontFamily: FONT_DISPLAY,
             fontSize: FS.sm,
@@ -199,71 +224,70 @@ export function RollForceDiceStep({
           </div>
 
           {/* Totals — dark first for fallen characters */}
-          <div style={{ display: 'flex', gap: SP[2], flexDirection: isFallen ? 'row-reverse' : 'row' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: SP[2], flexDirection: isFallen ? 'row-reverse' : 'row' }}>
             {/* Light pip block */}
             <div style={{
               flex: 1, textAlign: 'center', padding: `${SP[2]} ${SP[2]}`,
-              background: 'color-mix(in srgb, var(--die-force) 8%, transparent)',
-              border: `1px solid color-mix(in srgb, var(--die-force) 30%, transparent)`,
+              background: 'color-mix(in srgb, var(--hud-accent-purple) 6%, transparent)',
+              border: `1px solid color-mix(in srgb, var(--hud-accent-purple) 25%, transparent)`,
               borderRadius: RADIUS.md,
             }}>
               <div style={{ display: 'flex', gap: SP[1], justifyContent: 'center', marginBottom: SP[1], flexWrap: 'wrap' }}>
                 {Array.from({ length: result.totalLight }).map((_, i) => (
                   <div key={i} style={{
-                    width: '0.6875rem', height: '0.6875rem', /* pip dot — rem equivalent of 11px */
+                    width: 14, height: 14, /* pip circle — px intentional, die-identity display size */
                     borderRadius: '50%',
                     background: isFallen
                       ? LIGHT_COLOR /* fallen: light pips are costly — pre-approved exception */
-                      : 'color-mix(in srgb, var(--die-force) 80%, transparent)',
-                    boxShadow: isFallen
-                      ? `0 0 4px ${LIGHT_COLOR}`
-                      : `0 0 4px color-mix(in srgb, var(--die-force) 50%, transparent)`,
+                      : 'color-mix(in srgb, var(--hud-accent-purple) 55%, white)',
+                    border: isFallen
+                      ? `1px solid ${LIGHT_COLOR}` /* fallen — pre-approved exception */
+                      : '1px solid var(--hud-accent-purple)',
                   }} />
                 ))}
                 {result.totalLight === 0 && (
-                  <span style={{ fontFamily: FONT_BODY, color: 'color-mix(in srgb, var(--die-force) 20%, transparent)', fontSize: FS.caption }}>—</span>
+                  <span style={{ fontFamily: FONT_BODY, color: 'color-mix(in srgb, var(--hud-accent-purple) 25%, transparent)', fontSize: FS.caption }}>—</span>
                 )}
               </div>
-              <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700, color: isFallen ? LIGHT_COLOR : 'var(--die-force)', lineHeight: 1 }}>
+              <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700, color: isFallen ? LIGHT_COLOR : 'var(--hud-accent-purple)', lineHeight: 1 }}>
                 {result.totalLight}
               </div>
-              <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: `color-mix(in srgb, var(--die-force) 50%, transparent)`, marginTop: SP[1] }}>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: `color-mix(in srgb, var(--hud-accent-purple) 50%, transparent)`, marginTop: SP[1] }}>
                 Light ○{isFallen ? ' (cost)' : ''}
               </div>
             </div>
 
+            {/* Separator */}
+            <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.label, opacity: 0.25, flexShrink: 0 }}>⟷</div>
+
             {/* Dark pip block */}
             <div style={{
               flex: 1, textAlign: 'center', padding: `${SP[2]} ${SP[2]}`,
-              background: isFallen
-                ? 'rgba(139,43,226,0.1)' /* fallen/dark-side Force mechanic colour — pre-approved exception */
-                : 'color-mix(in srgb, var(--state-activated) 6%, transparent)',
-              border: isFallen
-                ? `1px solid rgba(139,43,226,0.35)` /* fallen/dark-side Force mechanic colour — pre-approved exception */
-                : `1px solid color-mix(in srgb, var(--state-activated) 25%, transparent)`,
+              background: 'color-mix(in srgb, var(--hud-accent-purple) 10%, transparent)',
+              border: `1px solid color-mix(in srgb, var(--hud-accent-purple) 30%, transparent)`,
               borderRadius: RADIUS.md,
             }}>
               <div style={{ display: 'flex', gap: SP[1], justifyContent: 'center', marginBottom: SP[1], flexWrap: 'wrap' }}>
                 {Array.from({ length: result.totalDark }).map((_, i) => (
                   <div key={i} style={{
-                    width: '0.6875rem', height: '0.6875rem', /* pip dot — rem equivalent of 11px */
+                    width: 14, height: 14, /* pip circle — px intentional, die-identity display size */
                     borderRadius: '50%',
                     background: isFallen
                       ? '#8B2BE2' /* fallen/dark-side Force mechanic colour — pre-approved exception */
-                      : 'color-mix(in srgb, var(--state-activated) 80%, transparent)',
+                      : 'color-mix(in srgb, var(--hud-accent-purple) 90%, black)',
                     border: isFallen
-                      ? `1px solid rgba(139,43,226,0.8)` /* fallen/dark-side Force mechanic colour — pre-approved exception */
-                      : `1px solid color-mix(in srgb, var(--state-activated) 50%, transparent)`,
+                      ? `1px solid rgba(139,43,226,0.8)` /* fallen — pre-approved exception */
+                      : `1px solid color-mix(in srgb, var(--hud-accent-purple) 70%, black)`,
                   }} />
                 ))}
                 {result.totalDark === 0 && (
-                  <span style={{ fontFamily: FONT_BODY, color: isFallen ? 'rgba(139,43,226,0.3)' /* fallen — pre-approved exception */ : 'color-mix(in srgb, var(--state-activated) 20%, transparent)', fontSize: FS.caption }}>—</span>
+                  <span style={{ fontFamily: FONT_BODY, color: 'color-mix(in srgb, var(--hud-accent-purple) 25%, transparent)', fontSize: FS.caption }}>—</span>
                 )}
               </div>
-              <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700, color: isFallen ? '#8B2BE2' /* fallen — pre-approved exception */ : DARK_BORDER, lineHeight: 1 }}>
+              <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700, color: isFallen ? '#8B2BE2' /* fallen — pre-approved exception */ : 'color-mix(in srgb, var(--hud-accent-purple) 85%, black)', lineHeight: 1 }}>
                 {result.totalDark}
               </div>
-              <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: isFallen ? 'rgba(139,43,226,0.7)' /* fallen — pre-approved exception */ : 'color-mix(in srgb, var(--state-activated) 60%, transparent)', marginTop: SP[1] }}>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: `color-mix(in srgb, var(--hud-accent-purple) 60%, transparent)`, marginTop: SP[1] }}>
                 Dark ●{isFallen ? ' (free)' : ''}
               </div>
             </div>
@@ -275,14 +299,14 @@ export function RollForceDiceStep({
             <div style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: `${SP[1]} ${SP[2]}`,
-              background: 'color-mix(in srgb, var(--die-force) 6%, transparent)',
-              border: '1px solid color-mix(in srgb, var(--die-force) 20%, transparent)',
+              background: 'color-mix(in srgb, var(--hud-accent-purple) 6%, transparent)',
+              border: '1px solid color-mix(in srgb, var(--hud-accent-purple) 20%, transparent)',
               borderRadius: RADIUS.md,
             }}>
               <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textDim }}>
-                Light <i className="ffi ffi-swrpg-force" aria-hidden="true" style={{ color: 'var(--die-force)' }} /> available
+                Light <i className="ffi ffi-swrpg-force" aria-hidden="true" style={{ color: 'var(--hud-accent-purple)' }} /> available
               </span>
-              <span style={{ fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700, color: 'var(--die-force)' }}>
+              <span style={{ fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700, color: 'var(--hud-accent-purple)' }}>
                 {lightPipsLeft}
               </span>
             </div>
@@ -292,14 +316,14 @@ export function RollForceDiceStep({
               <div style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: `${SP[1]} ${SP[2]}`,
-                background: 'rgba(139,43,226,0.06)', /* Force mechanic colour — pre-approved exception */
-                border: '1px solid rgba(139,43,226,0.25)', /* Force mechanic colour — pre-approved exception */
+                background: 'color-mix(in srgb, var(--hud-accent-purple) 8%, transparent)',
+                border: '1px solid color-mix(in srgb, var(--hud-accent-purple) 28%, transparent)',
                 borderRadius: RADIUS.md,
               }}>
                 <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textDim }}>
-                  Dark <i className="ffi ffi-swrpg-force" aria-hidden="true" style={{ color: '#9B6AE8' /* Force mechanic colour — pre-approved exception */ }} /> available
+                  Dark <i className="ffi ffi-swrpg-force" aria-hidden="true" style={{ color: 'color-mix(in srgb, var(--hud-accent-purple) 70%, black)' }} /> available
                 </span>
-                <span style={{ fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700, color: '#9B6AE8' /* Force mechanic colour — pre-approved exception */ }}>
+                <span style={{ fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700, color: 'color-mix(in srgb, var(--hud-accent-purple) 70%, black)' }}>
                   {darkPipsLeft}
                 </span>
               </div>
@@ -307,14 +331,14 @@ export function RollForceDiceStep({
 
             {/* Dark pip warning */}
             {darkPipsLeft > 0 && !isDathomiri && !isFallen && (
-              <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'rgba(139,43,226,0.7)' /* Force mechanic colour — pre-approved exception */, fontStyle: 'italic', lineHeight: 1.4 }}>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'color-mix(in srgb, var(--hud-accent-purple) 70%, transparent)', fontStyle: 'italic', lineHeight: 1.4 }}>
                 Using dark <i className="ffi ffi-swrpg-force" aria-hidden="true" />: flip a Destiny Point + suffer strain equal to <i className="ffi ffi-swrpg-force" aria-hidden="true" /> used.
               </div>
             )}
 
             {/* Dathomiri note */}
             {isDathomiri && (
-              <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'color-mix(in srgb, var(--die-force) 60%, transparent)', fontStyle: 'italic', lineHeight: 1.4 }}>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'color-mix(in srgb, var(--hud-accent-purple) 60%, transparent)', fontStyle: 'italic', lineHeight: 1.4 }}>
                 Dathomiri: Light and Dark <i className="ffi ffi-swrpg-force" aria-hidden="true" /> used freely — no penalty.
               </div>
             )}
@@ -372,7 +396,7 @@ export function RollForceDiceStep({
                     <span style={{
                       fontFamily: FONT_BODY,
                       fontSize: FS.overline,
-                      color: 'color-mix(in srgb, var(--die-force) 60%, transparent)',
+                      color: 'color-mix(in srgb, var(--hud-accent-purple) 60%, transparent)',
                       flexShrink: 0,
                       whiteSpace: 'nowrap',
                     }}>
@@ -383,9 +407,9 @@ export function RollForceDiceStep({
                       <button disabled style={{
                         fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
                         padding: `2px ${SP[2]}`, borderRadius: RADIUS.sm,
-                        background: 'color-mix(in srgb, var(--die-force) 6%, transparent)',
-                        border: '1px solid color-mix(in srgb, var(--die-force) 15%, transparent)',
-                        color: 'color-mix(in srgb, var(--die-force) 40%, transparent)',
+                        background: 'color-mix(in srgb, var(--hud-accent-purple) 6%, transparent)',
+                        border: '1px solid color-mix(in srgb, var(--hud-accent-purple) 15%, transparent)',
+                        color: 'color-mix(in srgb, var(--hud-accent-purple) 40%, transparent)',
                         cursor: 'not-allowed',
                       }}>
                         Spent ✓
@@ -397,9 +421,9 @@ export function RollForceDiceStep({
                           style={{
                             fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
                             padding: `2px ${SP[2]}`, borderRadius: RADIUS.sm,
-                            background: 'color-mix(in srgb, var(--die-force) 12%, transparent)',
-                            border: '1px solid color-mix(in srgb, var(--die-force) 35%, transparent)',
-                            color: 'var(--die-force)', cursor: 'pointer',
+                            background: 'color-mix(in srgb, var(--hud-accent-purple) 12%, transparent)',
+                            border: '1px solid color-mix(in srgb, var(--hud-accent-purple) 35%, transparent)',
+                            color: 'var(--hud-accent-purple)', cursor: 'pointer',
                             transition: `background ${EASE.quick}`,
                           }}
                         >
@@ -412,9 +436,9 @@ export function RollForceDiceStep({
                         style={{
                           fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
                           padding: `2px ${SP[2]}`, borderRadius: RADIUS.sm,
-                          background: 'color-mix(in srgb, var(--die-force) 12%, transparent)',
-                          border: '1px solid color-mix(in srgb, var(--die-force) 35%, transparent)',
-                          color: 'var(--die-force)', cursor: 'pointer',
+                          background: 'color-mix(in srgb, var(--hud-accent-purple) 12%, transparent)',
+                          border: '1px solid color-mix(in srgb, var(--hud-accent-purple) 35%, transparent)',
+                          color: 'var(--hud-accent-purple)', cursor: 'pointer',
                           transition: `background ${EASE.quick}`,
                         }}
                       >
@@ -426,9 +450,9 @@ export function RollForceDiceStep({
                         style={{
                           fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
                           padding: `2px ${SP[2]}`, borderRadius: RADIUS.sm,
-                          background: 'rgba(139,43,226,0.10)', /* Force mechanic colour — pre-approved exception */
-                          border: '1px solid rgba(139,43,226,0.30)', /* Force mechanic colour — pre-approved exception */
-                          color: '#9B6AE8', /* Force mechanic colour — pre-approved exception */
+                          background: 'color-mix(in srgb, var(--hud-accent-purple) 10%, transparent)',
+                          border: '1px solid color-mix(in srgb, var(--hud-accent-purple) 30%, transparent)',
+                          color: 'color-mix(in srgb, var(--hud-accent-purple) 80%, black)',
                           cursor: 'pointer',
                           transition: `background ${EASE.quick}`,
                         }}
@@ -452,14 +476,14 @@ export function RollForceDiceStep({
               {ongoingUpgrades.map(upgrade => (
                 <div key={upgrade.key} style={{
                   padding: `${SP[2]} ${SP[3]}`,
-                  background: 'rgba(139,43,226,0.04)', /* Force mechanic colour — pre-approved exception */
-                  border: '1px solid rgba(139,43,226,0.2)', /* Force mechanic colour — pre-approved exception */
+                  background: 'color-mix(in srgb, var(--hud-accent-purple) 4%, transparent)',
+                  border: '1px solid color-mix(in srgb, var(--hud-accent-purple) 20%, transparent)',
                   borderRadius: RADIUS.md,
                   display: 'flex', flexDirection: 'column', gap: SP[2],
                 }}>
                   <div style={{
                     fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
-                    color: 'rgba(139,43,226,0.7)', /* Force mechanic colour — pre-approved exception */
+                    color: 'color-mix(in srgb, var(--hud-accent-purple) 70%, transparent)',
                     textTransform: 'uppercase', letterSpacing: '0.1em',
                   }}>
                     ⊙ Ongoing Effect
@@ -484,14 +508,14 @@ export function RollForceDiceStep({
                         fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
                         padding: `${SP[1]} ${SP[2]}`, borderRadius: RADIUS.sm,
                         background: available > 0
-                          ? 'rgba(139,43,226,0.12)' /* Force mechanic colour — pre-approved exception */
-                          : 'rgba(139,43,226,0.04)', /* Force mechanic colour — pre-approved exception */
+                          ? 'color-mix(in srgb, var(--hud-accent-purple) 12%, transparent)'
+                          : 'color-mix(in srgb, var(--hud-accent-purple) 4%, transparent)',
                         border: available > 0
-                          ? '1px solid rgba(139,43,226,0.35)' /* Force mechanic colour — pre-approved exception */
-                          : '1px solid rgba(139,43,226,0.12)', /* Force mechanic colour — pre-approved exception */
+                          ? '1px solid color-mix(in srgb, var(--hud-accent-purple) 35%, transparent)'
+                          : '1px solid color-mix(in srgb, var(--hud-accent-purple) 12%, transparent)',
                         color: available > 0
-                          ? 'rgba(139,43,226,0.85)' /* Force mechanic colour — pre-approved exception */
-                          : 'rgba(139,43,226,0.3)', /* Force mechanic colour — pre-approved exception */
+                          ? 'color-mix(in srgb, var(--hud-accent-purple) 85%, transparent)'
+                          : 'color-mix(in srgb, var(--hud-accent-purple) 30%, transparent)',
                         cursor: available > 0 ? 'pointer' : 'not-allowed',
                         transition: `background ${EASE.quick}`,
                       }}
@@ -499,7 +523,7 @@ export function RollForceDiceStep({
                       Commit 1 Die
                     </button>
                     {committedForce > 0 && (
-                      <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'rgba(139,43,226,0.6)' /* Force mechanic colour — pre-approved exception */ }}>
+                      <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'color-mix(in srgb, var(--hud-accent-purple) 60%, transparent)' }}>
                         {committedForce} committed
                       </span>
                     )}
@@ -513,14 +537,14 @@ export function RollForceDiceStep({
           {!isFallen && !isDathomiri && result.totalLight === 0 && (
             <div style={{ padding: `${SP[2]} ${SP[3]}`, background: 'var(--hud-surface-lo)', border: '1px solid var(--hud-border)', borderRadius: RADIUS.md }}>
               <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: 'var(--hud-text-dim)', lineHeight: 1.45 }}>
-                ⚠ No Light Side <i className="ffi ffi-swrpg-force" aria-hidden="true" style={{ color: 'var(--die-force)' }} /> generated. Spend Dark Side <i className="ffi ffi-swrpg-force" aria-hidden="true" style={{ color: '#9B6AE8' /* Force mechanic colour — pre-approved exception */ }} /> to activate — flip a Destiny Point and suffer strain equal to <i className="ffi ffi-swrpg-force" aria-hidden="true" /> used.
+                ⚠ No Light Side <i className="ffi ffi-swrpg-force" aria-hidden="true" style={{ color: 'var(--hud-accent-purple)' }} /> generated. Spend Dark Side <i className="ffi ffi-swrpg-force" aria-hidden="true" style={{ color: 'color-mix(in srgb, var(--hud-accent-purple) 70%, black)' }} /> to activate — flip a Destiny Point and suffer strain equal to <i className="ffi ffi-swrpg-force" aria-hidden="true" /> used.
               </div>
             </div>
           )}
           {isFallen && result.totalDark === 0 && (
             <div style={{ padding: `${SP[2]} ${SP[3]}`, background: 'var(--hud-surface-lo)', border: '1px solid var(--hud-border)', borderRadius: RADIUS.md }}>
               <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: 'var(--hud-text-dim)', lineHeight: 1.45 }}>
-                ⚠ No dark side Force Points generated. The power activates but has no effect. You may still use light side <i className="ffi ffi-swrpg-force" aria-hidden="true" style={{ color: 'var(--die-force)' }} />.
+                ⚠ No dark side Force Points generated. The power activates but has no effect. You may still use light side <i className="ffi ffi-swrpg-force" aria-hidden="true" style={{ color: 'var(--hud-accent-purple)' }} />.
               </div>
             </div>
           )}
@@ -534,8 +558,8 @@ export function RollForceDiceStep({
             </div>
           )}
           {isFallen && result.totalLight > 0 && (
-            <div style={{ padding: `${SP[2]} ${SP[3]}`, background: `color-mix(in srgb, var(--die-force) 5%, transparent)`, border: `1px solid color-mix(in srgb, var(--die-force) 20%, transparent)`, borderRadius: RADIUS.md }}>
-              <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: 'color-mix(in srgb, var(--die-force) 70%, transparent)', fontStyle: 'italic', lineHeight: 1.45 }}>
+            <div style={{ padding: `${SP[2]} ${SP[3]}`, background: `color-mix(in srgb, var(--hud-accent-purple) 5%, transparent)`, border: `1px solid color-mix(in srgb, var(--hud-accent-purple) 20%, transparent)`, borderRadius: RADIUS.md }}>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: 'color-mix(in srgb, var(--hud-accent-purple) 70%, transparent)', fontStyle: 'italic', lineHeight: 1.45 }}>
                 ✦ Light side Force Points available. Using them costs Destiny + strain. See next step.
               </div>
             </div>
