@@ -63,6 +63,7 @@ export function MobileHudLayout({ characterId, campaignId }: MobileHudLayoutProp
     refCareers,
     refObligationTypes,
     refDutyTypes,
+    handleSetEquipState,
   } = useCharacterData(characterId)
 
   const derivedStats = useDerivedStats({
@@ -208,7 +209,7 @@ export function MobileHudLayout({ characterId, campaignId }: MobileHudLayoutProp
               encThreshold={encStats?.threshold ?? 0}
               credits={char.credits ?? 0}
               campaignId={effectiveCampaignId ?? ''}
-              handleSetEquipState={async () => { /* TODO Task 3: wire real handler */ }}
+              handleSetEquipState={handleSetEquipState}
             />
           )
         case 'group':
