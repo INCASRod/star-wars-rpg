@@ -29,6 +29,7 @@ const LABEL: Record<string, string> = {
   threat:      'Threat',
   triumph:     'Triumph',
   despair:     'Despair',
+  fp:          'Force pip',
   light:       'Light side Force pip',
   dark:        'Dark side Force pip',
   boost:       'Boost die',
@@ -114,6 +115,22 @@ export function RichText({ text, className, style }: RichTextProps) {
       if (key in CSS_ICON) {
         nodes.push(
           <i key={ik} className={`ffi ${CSS_ICON[key]}`} aria-hidden="true" title={label} style={INLINE} />
+        )
+        continue
+      }
+
+      if (key === 'fp') {
+        // Neutral Force pip (◑) — left half dark, right half light
+        nodes.push(
+          <i key={ik} className="ffi ffi-swrpg-force" aria-hidden="true" title={label}
+            style={{
+              ...INLINE,
+              background: `linear-gradient(to right, ${FORCE_PIP_COLOR.dark} 50%, ${FORCE_PIP_COLOR.light} 50%)`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}
+          />
         )
         continue
       }

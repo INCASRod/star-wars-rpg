@@ -32,6 +32,8 @@ const KNOWN_KEYS = new Set([
   'success', 'failure', 'advantage', 'threat', 'triumph', 'despair',
   // Force pips (rendered via ffi-swrpg-force with colour override)
   'light', 'dark',
+  // Neutral Force pip — can be spent as light or dark (rendered as half-dark/half-light ◑)
+  'fp',
   // Dice faces (rendered via DiceFace SVG component)
   'boost', 'ability', 'proficiency', 'setback', 'difficulty', 'challenge', 'force',
 ])
@@ -54,7 +56,7 @@ const OGGDUDE_ALIASES: Record<string, string> = {
   'tr':  'triumph',
   'de':  'despair',
   // Force pips
-  'fp':  'light',  // generic force pip
+  'fp':  'fp',     // neutral force pip (either light or dark) — renders as ◑
   'li':  'light',  // light side pip
   'da':  'dark',   // dark side pip (result)
   'dp':  'dark',   // dark side pip (spend)
@@ -74,7 +76,7 @@ const FORMAT_TAG_MAP: Record<string, FormatTag> = {
 const COLON_ALIASES: Record<string, string> = {
   'lightside':  'light',
   'darkside':   'dark',
-  'forcepip':   'light',
+  'forcepip':   'fp',
   'simple':     '(-)',
   'easy':       'difficulty',
   'average':    'difficulty:2',
