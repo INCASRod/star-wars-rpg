@@ -129,9 +129,14 @@ function ForceDieRevealFace({
                 <div style={{ display: 'flex', gap: 2 /* pip gap — px intentional */ }}>
                   {Array.from({ length: die.light }).map((_, i) => (
                     <div key={i} style={{
-                      width: 7, height: 7, /* light pip — px intentional */
+                      width: 8, height: 8, /* light pip — px intentional, die-identity display */
                       borderRadius: RADIUS.full,
-                      background: `color-mix(in srgb, white 65%, var(--hud-accent-purple))`,
+                      background: 'white', /* light-side pip — approved game-mechanic colour */
+                      animationName: 'fco-pip-pulse',
+                      animationDuration: `${1.6 + i * 0.35}s`, /* staggered pulse — animation timing */
+                      animationTimingFunction: 'ease-in-out',
+                      animationIterationCount: 'infinite' as const,
+                      animationDelay: `${i * 0.25}s`, /* stagger — animation timing */
                     }} />
                   ))}
                 </div>
@@ -140,9 +145,14 @@ function ForceDieRevealFace({
                 <div style={{ display: 'flex', gap: 2 /* pip gap — px intentional */ }}>
                   {Array.from({ length: die.dark }).map((_, i) => (
                     <div key={i} style={{
-                      width: 7, height: 7, /* dark pip — px intentional */
+                      width: 8, height: 8, /* dark pip — px intentional, die-identity display */
                       borderRadius: RADIUS.full,
-                      background: `color-mix(in srgb, var(--hud-accent-purple) 25%, black)`,
+                      background: `color-mix(in srgb, black 90%, var(--hud-accent-purple))`, /* dark-side pip */
+                      animationName: 'fco-pip-crackle',
+                      animationDuration: '0.75s', /* crackle interval — animation timing */
+                      animationTimingFunction: 'linear',
+                      animationIterationCount: 'infinite' as const,
+                      animationDelay: `${i * 0.18}s`, /* stagger — animation timing */
                     }} />
                   ))}
                 </div>
@@ -357,6 +367,24 @@ export function ForceCheckOverlay({
       0%,100% { box-shadow: 0 0 14px color-mix(in srgb, var(--hud-accent-purple) 30%, transparent); }
       50%     { box-shadow: 0 0 32px color-mix(in srgb, var(--hud-accent-purple) 65%, transparent),
                              inset 0 0 14px color-mix(in srgb, var(--hud-accent-purple) 20%, transparent); }
+    }
+    @keyframes fco-pip-pulse {
+      0%, 100% { opacity: 0.85;
+                 box-shadow: 0 0 3px 1px white,
+                             0 0 8px color-mix(in srgb, var(--hud-accent-purple) 60%, white); }
+      50%      { opacity: 1;
+                 box-shadow: 0 0 6px 2px white,
+                             0 0 16px white,
+                             0 0 26px color-mix(in srgb, var(--hud-accent-purple) 70%, white); }
+    }
+    @keyframes fco-pip-crackle {
+      0%, 100% { box-shadow: 0 0 1px color-mix(in srgb, var(--hud-accent-purple) 50%, transparent); }
+      20%      { box-shadow:  1px -2px 5px color-mix(in srgb, var(--hud-accent-purple) 95%, white),
+                              0   0   3px color-mix(in srgb, var(--hud-accent-purple) 40%, transparent); }
+      40%      { box-shadow: 0 0 1px color-mix(in srgb, var(--hud-accent-purple) 25%, transparent); }
+      60%      { box-shadow: -2px  1px 5px color-mix(in srgb, var(--hud-accent-purple) 90%, white),
+                              1px  0   3px color-mix(in srgb, var(--hud-accent-purple) 55%, transparent); }
+      80%      { box-shadow: 0 0 1px color-mix(in srgb, var(--hud-accent-purple) 20%, transparent); }
     }
   `
 
