@@ -88,29 +88,27 @@ function ForceDieRevealFace({
 }) {
   const empty = die.light === 0 && die.dark === 0
   return (
-    // Outer: handles bounce (revealed) or tumble (pending) — no clip-path so glow bleeds out
+    // Glow wrapper — no clip-path; filter:drop-shadow follows the octagon child's painted pixels
     <div style={{
-      width: 44, height: 44, /* die cell — px intentional, die-identity display */
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      flexShrink: 0,
-      boxShadow: revealed
-        ? `0 0 10px color-mix(in srgb, var(--hud-accent-purple) 28%, transparent)`
+      display: 'inline-flex', flexShrink: 0,
+      filter: revealed
+        ? `drop-shadow(0 0 7px color-mix(in srgb, var(--hud-accent-purple) 55%, transparent))`
         : 'none',
-      animationName: revealed ? 'fco-die-bounce' : 'fco-tumble',
-      animationDuration: revealed ? '0.4s' : '0.7s', /* animation timing */
-      animationTimingFunction: revealed ? 'cubic-bezier(0.34, 1.56, 0.64, 1)' : 'linear',
-      animationIterationCount: revealed ? 1 : 'infinite' as const,
-      animationFillMode: revealed ? 'both' : 'none',
-      animationDelay: revealed ? '0s' : `${index * 0.09}s`, /* stagger tumble start — animation timing */
     }}>
-      {/* Border layer — full octagon */}
+      {/* Animation + border layer — clipped to octagon; corners are cleanly cut */}
       <div style={{
-        width: 44, height: 44, /* die border — px intentional */
+        width: 44, height: 44, /* die cell — px intentional, die-identity display */
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
         clipPath: OCTAGON_CLIP,
         background: revealed
           ? `color-mix(in srgb, var(--hud-accent-purple) 40%, transparent)`
           : `color-mix(in srgb, var(--hud-accent-purple) 22%, transparent)`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        animationName: revealed ? 'fco-die-bounce' : 'fco-tumble',
+        animationDuration: revealed ? '0.4s' : '0.7s', /* animation timing */
+        animationTimingFunction: revealed ? 'cubic-bezier(0.34, 1.56, 0.64, 1)' : 'linear',
+        animationIterationCount: revealed ? 1 : 'infinite' as const,
+        animationFillMode: revealed ? 'both' : 'none',
+        animationDelay: revealed ? '0s' : `${index * 0.09}s`, /* stagger tumble start — animation timing */
       }}>
         {/* Fill layer — inset octagon with radial gradient */}
         <div style={{
@@ -133,7 +131,7 @@ function ForceDieRevealFace({
                     <div key={i} style={{
                       width: 7, height: 7, /* light pip — px intentional */
                       borderRadius: RADIUS.full,
-                      background: `color-mix(in srgb, var(--hud-accent-purple) 55%, white)`,
+                      background: `color-mix(in srgb, white 65%, var(--hud-accent-purple))`,
                     }} />
                   ))}
                 </div>
@@ -144,7 +142,7 @@ function ForceDieRevealFace({
                     <div key={i} style={{
                       width: 7, height: 7, /* dark pip — px intentional */
                       borderRadius: RADIUS.full,
-                      background: `color-mix(in srgb, var(--hud-accent-purple) 85%, black)`,
+                      background: `color-mix(in srgb, var(--hud-accent-purple) 25%, black)`,
                     }} />
                   ))}
                 </div>
