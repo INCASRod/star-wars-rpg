@@ -96,9 +96,11 @@ function ForceDieRevealFace({
       boxShadow: revealed
         ? `0 0 10px color-mix(in srgb, var(--hud-accent-purple) 28%, transparent)`
         : 'none',
-      animation: revealed
-        ? `fco-die-bounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both` /* die-reveal spring — animation timing */
-        : `fco-tumble 0.7s linear infinite`, /* die-tumble — animation timing */
+      animationName: revealed ? 'fco-die-bounce' : 'fco-tumble',
+      animationDuration: revealed ? '0.4s' : '0.7s', /* animation timing */
+      animationTimingFunction: revealed ? 'cubic-bezier(0.34, 1.56, 0.64, 1)' : 'linear',
+      animationIterationCount: revealed ? 1 : 'infinite' as const,
+      animationFillMode: revealed ? 'both' : 'none',
       animationDelay: revealed ? '0s' : `${index * 0.09}s`, /* stagger tumble start — animation timing */
     }}>
       {/* Border layer — full octagon */}
