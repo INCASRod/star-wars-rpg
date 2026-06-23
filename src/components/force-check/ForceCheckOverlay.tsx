@@ -189,7 +189,8 @@ export function ForceCheckOverlay({
   // Map<upgradeKey, useDark: boolean>
   const [spentMap, setSpentMap]   = useState<Map<string, boolean>>(new Map())
   const [busy, setBusy]           = useState(false)
-  const [expandedDetailKey, setExpandedDetailKey] = useState<string | null>(null)
+  const [expandedDetailKey, setExpandedDetailKey]     = useState<string | null>(null)
+  const [expandedUpgradeKey, setExpandedUpgradeKey]   = useState<string | null>(null)
   const [rollPhase, setRollPhase]         = useState<RollPhase>('idle')
   const [pendingRoll, setPendingRoll]     = useState<ForceRollResult | null>(null)
   const [revealedCount, setRevealedCount] = useState(0)
@@ -209,6 +210,7 @@ export function ForceCheckOverlay({
       setSpentMap(new Map())
       setBusy(false)
       setExpandedDetailKey(null)
+      setExpandedUpgradeKey(null)
       setRollPhase('idle')
       setPendingRoll(null)
       setRevealedCount(0)
@@ -790,69 +792,120 @@ export function ForceCheckOverlay({
                 // Badge color: show which pool will be used
                 const willUseDark = !spent && lightAvail < upgrade.pip_cost && darkAvail >= upgrade.pip_cost
 
+                const upgradeDetailOpen = expandedUpgradeKey === upgrade.key
+
                 return (
-                  <button
-                    key={upgrade.key}
-                    onClick={() => toggleUpgrade(upgrade.key, upgrade.pip_cost)}
-                    disabled={isDisabled}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: SP[2],
-                      padding: `${SP[2]} ${SP[2]}`,
-                      background: spent
-                        ? 'color-mix(in srgb, var(--hud-accent-purple) 7%, transparent)'
-                        : 'color-mix(in srgb, var(--hud-accent-purple) 2%, transparent)',
-                      border: `1px solid color-mix(in srgb, var(--hud-accent-purple) ${spent ? 30 : isDisabled ? 8 : 14}%, transparent)`,
-                      borderRadius: RADIUS.md,
-                      cursor: isDisabled ? 'not-allowed' : 'pointer',
-                      opacity: isDisabled ? 0.4 : 1,
-                      textAlign: 'left',
-                      transition: `all ${EASE.quick}`,
-                    }}
-                  >
-                    {/* Pip cost badge */}
-                    <div style={{
-                      width: 24, height: 24, /* pip badge — px intentional, fixed indicator */
-                      borderRadius: RADIUS.sm,
-                      background: spent
-                        ? (useDark
-                          ? 'color-mix(in srgb, var(--hud-accent-purple) 60%, black)'
-                          : 'color-mix(in srgb, var(--hud-accent-purple) 50%, white)')
-                        : willUseDark
-                          ? 'color-mix(in srgb, var(--hud-accent-purple) 35%, black)'
-                          : 'color-mix(in srgb, var(--hud-accent-purple) 35%, white)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      flexShrink: 0,
-                    }}>
-                      <span style={{
-                        fontFamily: FONT_DISPLAY,
-                        fontSize: '9px', /* badge label — px intentional */
-                        fontWeight: 700,
-                        color: 'color-mix(in srgb, black 70%, transparent)',
-                        lineHeight: 1,
-                      }}>
-                        {upgrade.pip_cost}{(spent ? useDark : willUseDark) ? 'D' : 'L'}
-                      </span>
+                  <div key={upgrade.key} style={{ display: 'flex', flexDirection: 'column' }}>
+                    {/* Row: selection button + optional ⓘ button */}
+                    <div style={{ display: 'flex', alignItems: 'stretch', gap: SP[1] }}>
+                      {/* Selection button */}
+                      <button
+                        onClick={() => toggleUpgrade(upgrade.key, upgrade.pip_cost)}
+                        disabled={isDisabled}
+                        style={{
+                          flex: 1, display: 'flex', alignItems: 'center', gap: SP[2],
+                          padding: `${SP[2]} ${SP[2]}`,
+                          background: spent
+                            ? 'color-mix(in srgb, var(--hud-accent-purple) 7%, transparent)'
+                            : 'color-mix(in srgb, var(--hud-accent-purple) 2%, transparent)',
+                          border: `1px solid color-mix(in srgb, var(--hud-accent-purple) ${spent ? 30 : isDisabled ? 8 : 14}%, transparent)`,
+                          borderRadius: RADIUS.md,
+                          cursor: isDisabled ? 'not-allowed' : 'pointer',
+                          opacity: isDisabled ? 0.4 : 1,
+                          textAlign: 'left',
+                          transition: `all ${EASE.quick}`,
+                        }}
+                      >
+                        {/* Pip cost badge — hidden for free upgrades */}
+                        {upgrade.pip_cost > 0 && (
+                          <div style={{
+                            width: 24, height: 24, /* pip badge — px intentional, fixed indicator */
+                            borderRadius: RADIUS.sm,
+                            background: spent
+                              ? (useDark
+                                ? 'color-mix(in srgb, var(--hud-accent-purple) 60%, black)'
+                                : 'color-mix(in srgb, var(--hud-accent-purple) 50%, white)')
+                              : willUseDark
+                                ? 'color-mix(in srgb, var(--hud-accent-purple) 35%, black)'
+                                : 'color-mix(in srgb, var(--hud-accent-purple) 35%, white)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            flexShrink: 0,
+                          }}>
+                            <span style={{
+                              fontFamily: FONT_DISPLAY,
+                              fontSize: '9px', /* badge label — px intentional */
+                              fontWeight: 700,
+                              color: 'color-mix(in srgb, black 70%, transparent)',
+                              lineHeight: 1,
+                            }}>
+                              {upgrade.pip_cost}{(spent ? useDark : willUseDark) ? 'D' : 'L'}
+                            </span>
+                          </div>
+                        )}
+                        {/* Upgrade name */}
+                        <span style={{
+                          fontFamily: FONT_BODY, fontSize: FS.caption,
+                          color: spent ? HUD.text : isDisabled ? HUD.textFaint : HUD.textDim,
+                          flex: 1, lineHeight: 1.35,
+                          overflow: 'hidden',
+                          display: '-webkit-box' as React.CSSProperties['display'],
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical' as React.CSSProperties['WebkitBoxOrient'],
+                        }}>
+                          {upgrade.name}
+                        </span>
+                        {/* Checkmark */}
+                        {spent && (
+                          <span style={{
+                            fontFamily: FONT_BODY, fontSize: FS.label,
+                            color: 'var(--hud-accent-purple)', flexShrink: 0,
+                          }}>✓</span>
+                        )}
+                      </button>
+                      {/* ⓘ button — only if upgrade has a description */}
+                      {upgrade.description && (
+                        <button
+                          onClick={e => {
+                            e.stopPropagation()
+                            setExpandedUpgradeKey(upgradeDetailOpen ? null : upgrade.key)
+                          }}
+                          style={{
+                            width: 28, /* ⓘ button — px intentional, fixed tap target */
+                            flexShrink: 0,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            background: upgradeDetailOpen
+                              ? 'color-mix(in srgb, var(--hud-accent-purple) 15%, transparent)'
+                              : 'transparent',
+                            border: `1px solid color-mix(in srgb, var(--hud-accent-purple) ${upgradeDetailOpen ? 35 : 14}%, transparent)`,
+                            borderRadius: RADIUS.md,
+                            cursor: 'pointer',
+                            transition: `all ${EASE.quick}`,
+                          }}
+                        >
+                          <span style={{
+                            fontFamily: FONT_BODY, fontSize: FS.overline,
+                            color: upgradeDetailOpen
+                              ? 'var(--hud-accent-purple)'
+                              : HUD.textFaint,
+                          }}>ⓘ</span>
+                        </button>
+                      )}
                     </div>
-                    {/* Upgrade name */}
-                    <span style={{
-                      fontFamily: FONT_BODY, fontSize: FS.caption,
-                      color: spent ? HUD.text : isDisabled ? HUD.textFaint : HUD.textDim,
-                      flex: 1, lineHeight: 1.35,
-                      overflow: 'hidden',
-                      display: '-webkit-box' as React.CSSProperties['display'],
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical' as React.CSSProperties['WebkitBoxOrient'],
-                    }}>
-                      {upgrade.name}
-                    </span>
-                    {/* Checkmark */}
-                    {spent && (
-                      <span style={{
-                        fontFamily: FONT_BODY, fontSize: FS.label,
-                        color: 'var(--hud-accent-purple)', flexShrink: 0,
-                      }}>✓</span>
+                    {/* Expandable detail panel */}
+                    {upgradeDetailOpen && upgrade.description && (
+                      <div style={{
+                        padding: `${SP[2]} ${SP[2]}`,
+                        marginTop: SP[1],
+                        background: 'color-mix(in srgb, var(--hud-accent-purple) 4%, transparent)',
+                        border: `1px solid color-mix(in srgb, var(--hud-accent-purple) 12%, transparent)`,
+                        borderRadius: RADIUS.md,
+                        fontFamily: FONT_BODY, fontSize: FS.caption,
+                        color: HUD.textDim, lineHeight: 1.5,
+                      }}>
+                        <RichText text={upgrade.description} />
+                      </div>
                     )}
-                  </button>
+                  </div>
                 )
               })}
             </div>
