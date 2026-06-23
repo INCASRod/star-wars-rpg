@@ -50,25 +50,36 @@ function SectionBadge({ n }: { n: number }) {
 }
 
 // ── Force pip circle ──────────────────────────────────────────────────────────
-function PipCircle({ spent, dark }: { spent: boolean; dark?: boolean }) {
+function PipCircle({ spent, dark, index = 0 }: { spent: boolean; dark?: boolean; index?: number }) {
   return (
     <div style={{
       width: 18, height: 18, /* pip circle — px intentional, die-identity display */
       borderRadius: '50%',
-      border: `1.5px solid color-mix(in srgb, var(--hud-accent-purple) ${spent ? (dark ? 70 : 80) : 30}%, transparent)`,
+      border: spent
+        ? `1.5px solid color-mix(in srgb, var(--hud-accent-purple) ${dark ? 45 : 65}%, transparent)`
+        : `1.5px solid color-mix(in srgb, var(--hud-accent-purple) 30%, transparent)`,
       background: spent
         ? dark
-          ? 'color-mix(in srgb, var(--hud-accent-purple) 90%, black)'
-          : 'color-mix(in srgb, var(--hud-accent-purple) 55%, white)'
+          ? `color-mix(in srgb, black 90%, var(--hud-accent-purple))` /* dark-side pip */
+          : 'white' /* light-side pip — approved game-mechanic colour */
         : 'transparent',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       flexShrink: 0,
+      animationName: spent ? (dark ? 'fco-pip-crackle' : 'fco-pip-pulse') : 'none',
+      animationDuration: spent
+        ? dark ? '0.75s' : `${1.6 + index * 0.35}s` /* animation timing */
+        : '0s',
+      animationTimingFunction: spent ? (dark ? 'linear' : 'ease-in-out') : 'linear',
+      animationIterationCount: spent ? ('infinite' as const) : 1,
+      animationDelay: spent ? `${index * (dark ? 0.18 : 0.25)}s` : '0s', /* stagger — animation timing */
     }}>
       {spent && (
         <span style={{
           fontSize: '9px', /* pip checkmark — px intentional */
           fontWeight: 700,
-          color: 'color-mix(in srgb, black 75%, transparent)',
+          color: dark
+            ? `color-mix(in srgb, var(--hud-accent-purple) 65%, white)`
+            : `color-mix(in srgb, black 70%, var(--hud-accent-purple))`,
           lineHeight: 1,
         }}>✓</span>
       )}
@@ -532,7 +543,7 @@ export function ForceCheckOverlay({
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: SP[1] }}>
                   <div style={{ display: 'flex', gap: SP[1] }}>
                     {Array.from({ length: lightTotal }).map((_, i) => (
-                      <PipCircle key={i} spent={i < lightUsed} dark={false} />
+                      <PipCircle key={i} spent={i < lightUsed} dark={false} index={i} />
                     ))}
                     {lightTotal === 0 && (
                       <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint }}>—</span>
@@ -549,7 +560,7 @@ export function ForceCheckOverlay({
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: SP[1] }}>
                   <div style={{ display: 'flex', gap: SP[1] }}>
                     {Array.from({ length: darkTotal }).map((_, i) => (
-                      <PipCircle key={i} spent={i < darkUsed} dark={true} />
+                      <PipCircle key={i} spent={i < darkUsed} dark={true} index={i} />
                     ))}
                     {darkTotal === 0 && (
                       <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint }}>—</span>
