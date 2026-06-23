@@ -343,11 +343,17 @@ export function ForceCheckOverlay({
     try {
       const sb = campaignId ? createClient() : null
       if (darkUsed > 0 && sb && campaignId) {
+        const activatedUpgrades = upgrades
+          .filter(u => spentMap.has(u.key))
+          .map(u => ({ name: u.name, fp_cost: u.pip_cost, is_dark: spentMap.get(u.key) ?? false }))
         await sb.from('force_notifications').insert({
           campaign_id: campaignId, character_id: characterId,
-          character_name: character.name, type: 'dark_side_use',
+          character_name: character.name,
+          type: isFallen ? 'dark_side_use' : 'force_use',
           dark_pips_used: darkUsed, power_name: selPower.powerName,
-          strain_cost: darkUsed, status: 'pending',
+          strain_cost: isDathomiri ? 0 : darkUsed,
+          activated_upgrades: activatedUpgrades,
+          status: 'pending',
         })
       }
       if (sb && campaignId) {

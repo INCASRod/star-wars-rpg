@@ -2,29 +2,27 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { FONT_BODY, EASE, RADIUS } from '@/lib/tokens'
+import { FONT_DISPLAY, FONT_BODY, FS, SP, RADIUS, HUD, EASE } from '@/lib/tokens'
+import { RichText } from '@/components/ui/RichText'
 
-// Force identity colours — pre-approved exceptions (light/dark identity)
-const PURPLE     = 'var(--hud-accent-purple)'
-const PURPLE_BD  = 'rgba(144,96,208,0.28)'
-const PURPLE_BG  = 'rgba(144,96,208,0.06)'
-
-// Silver-white palette for fallen characters (light side temptation) — pre-approved
-const SILVER     = 'rgba(220,230,240,0.85)'
-const SILVER_BD  = 'rgba(200,215,230,0.4)'
-const SILVER_BG  = 'rgba(200,215,230,0.05)'
+export interface ActivatedUpgrade {
+  name:    string
+  fp_cost: number
+  is_dark: boolean
+}
 
 export interface ForceNotification {
-  id:             string
-  campaign_id:    string
-  character_id:   string
-  character_name: string
-  type:           'dark_side_use' | 'conflict_pending'
-  dark_pips_used: number | null
-  power_name:     string | null
-  strain_cost:    number | null
-  status:         'pending' | 'acknowledged'
-  created_at:     string
+  id:                  string
+  campaign_id:         string
+  character_id:        string
+  character_name:      string
+  type:                'dark_side_use' | 'conflict_pending' | 'force_use'
+  dark_pips_used:      number | null
+  power_name:          string | null
+  strain_cost:         number | null
+  status:              'pending' | 'acknowledged'
+  created_at:          string
+  activated_upgrades:  ActivatedUpgrade[] | null
 }
 
 interface ForceNotificationCardProps {
@@ -38,7 +36,13 @@ export function ForceNotificationCard({ notification, onAcknowledged, isFallen =
   const [conflictDesc, setConflictDesc] = useState('')
   const [busy, setBusy] = useState(false)
 
-  const timeLabel = new Date(notification.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  const timeLabel      = new Date(notification.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  const upgrades       = notification.activated_upgrades ?? []
+  const darkCount      = notification.dark_pips_used ?? 0
+  const totalFPSpent   = upgrades.reduce((s, u) => s + u.fp_cost, 0)
+  const lightCount     = totalFPSpent - darkCount
+  // Dathomiri proxy: strain_cost === 0 while dark pips were used means no strain suffered
+  const isDathomiriProxy = darkCount > 0 && (notification.strain_cost ?? 0) === 0
 
   async function handleAddConflict() {
     setBusy(true)
@@ -65,65 +69,155 @@ export function ForceNotificationCard({ notification, onAcknowledged, isFallen =
     setBusy(false)
   }
 
-  const cardBg     = isFallen ? SILVER_BG  : PURPLE_BG
-  const cardBorder = isFallen ? SILVER_BD  : PURPLE_BD
-
   return (
     <div style={{
-      padding: '0.875rem 1rem',
-      background: cardBg,
-      border: `1px solid ${cardBorder}`,
+      padding: `${SP[3]} ${SP[3]}`,
+      background: 'color-mix(in srgb, var(--hud-accent-purple) 5%, transparent)',
+      border: `1px solid color-mix(in srgb, var(--hud-accent-purple) 28%, transparent)`,
       borderRadius: RADIUS.lg,
-      display: 'flex', flexDirection: 'column', gap: '0.625rem',
+      display: 'flex', flexDirection: 'column', gap: SP[2],
     }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+
+      {/* ── Header ──────────────────────────────────────────────────── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: SP[2] }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: SP[1], flex: 1, minWidth: 0 }}>
+          <span style={{
+            fontFamily: FONT_BODY, fontSize: FS.overline,
+            color: 'var(--hud-accent-purple)', flexShrink: 0,
+          }}>✦</span>
+          <span style={{
+            fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700,
+            color: HUD.text,
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }}>
+            {notification.character_name}
+          </span>
+          {isFallen && (
+            <span style={{
+              fontFamily: FONT_DISPLAY,
+              fontSize: '6px', /* fallen micro-badge — px intentional */
+              fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase',
+              color: 'color-mix(in srgb, var(--hud-accent-purple) 70%, black)',
+              border: `1px solid color-mix(in srgb, var(--hud-accent-purple) 70%, black)`,
+              borderRadius: RADIUS.sm,
+              padding: `1px ${SP[1]}`, /* micro-badge inset — px intentional */
+              flexShrink: 0,
+            }}>Fallen</span>
+          )}
+        </div>
         <span style={{
-          fontFamily: FONT_BODY, fontSize: 'clamp(0.88rem, 1.4vw, 1.05rem)',
-          fontWeight: 700,
-          color: isFallen ? 'rgba(200,215,230,0.85)' : PURPLE,
+          fontFamily: FONT_BODY, fontSize: FS.overline,
+          color: 'color-mix(in srgb, var(--hud-accent-purple) 40%, transparent)',
+          flexShrink: 0,
         }}>
-          {isFallen ? '✦ Light Side Temptation' : '⚠ Dark Side Used'}
-        </span>
-        <span style={{ fontFamily: FONT_BODY, fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: isFallen ? 'rgba(200,215,230,0.35)' : 'rgba(200,150,255,0.4)' }}>
           {timeLabel}
         </span>
       </div>
 
-      {/* Details */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-        <div style={{ fontFamily: FONT_BODY, fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)', color: 'rgba(232,223,200,0.9)', lineHeight: 1.45 }}>
-          <strong>{notification.character_name}</strong>{' '}
-          {isFallen ? (
-            <>
-              used{' '}
-              <strong style={{ color: 'rgba(200,215,230,0.85)' }}>
-                {notification.dark_pips_used} light pip{(notification.dark_pips_used ?? 0) !== 1 ? 's' : ''}
-              </strong>{' '}
-              to activate <strong>{notification.power_name}</strong>.
-            </>
-          ) : (
-            <>
-              used{' '}
-              <strong style={{ color: PURPLE }}>
-                {notification.dark_pips_used} dark pip{(notification.dark_pips_used ?? 0) !== 1 ? 's' : ''}
-              </strong>{' '}
-              to activate <strong>{notification.power_name}</strong>.
-            </>
-          )}
+      {/* ── Power name ─────────────────────────────────────────────── */}
+      {notification.power_name && (
+        <div style={{
+          padding: `${SP[1]} ${SP[2]}`,
+          background: 'color-mix(in srgb, var(--hud-accent-purple) 5%, transparent)',
+          borderLeft: isFallen
+            ? `2px solid color-mix(in srgb, var(--hud-accent-purple) 80%, black)`
+            : `2px solid var(--hud-accent-purple)`,
+          borderRadius: `0 ${RADIUS.sm} ${RADIUS.sm} 0`,
+        }}>
+          <span style={{
+            fontFamily: FONT_DISPLAY, fontSize: FS.label, fontWeight: 700,
+            color: 'var(--hud-accent-purple)',
+          }}>
+            {notification.power_name}
+          </span>
         </div>
-        <div style={{ fontFamily: FONT_BODY, fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: isFallen ? 'rgba(200,215,230,0.5)' : 'rgba(200,150,255,0.6)' }}>
-          {isFallen
-            ? `Strain: ${notification.strain_cost} · Destiny: 1 dark → light`
-            : `Strain: ${notification.strain_cost} · Destiny: 1 light → dark`
-          }
+      )}
+
+      {/* ── Activated upgrades ──────────────────────────────────────── */}
+      {upgrades.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: SP[1] }}>
+          {upgrades.map((u, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: SP[1] }}>
+              <span style={{
+                fontFamily: FONT_BODY, fontSize: FS.caption,
+                color: 'var(--hud-accent-purple)', opacity: 0.5, flexShrink: 0,
+              }}>◇</span>
+              <span style={{
+                fontFamily: FONT_BODY, fontSize: FS.body, fontWeight: 600,
+                color: HUD.text, flex: 1, lineHeight: 1.3,
+              }}>
+                {u.name}
+              </span>
+              {u.fp_cost > 0 && (
+                <span style={{
+                  fontFamily: FONT_DISPLAY, fontSize: FS.overline, fontWeight: 700,
+                  background: u.is_dark
+                    ? 'color-mix(in srgb, var(--hud-accent-purple) 55%, black)'
+                    : 'color-mix(in srgb, var(--hud-accent-purple) 45%, white)',
+                  color: 'color-mix(in srgb, black 60%, transparent)',
+                  borderRadius: RADIUS.sm,
+                  padding: `1px ${SP[1]}`, /* cost badge — px intentional */
+                  flexShrink: 0,
+                  display: 'inline-flex', alignItems: 'center', gap: '2px', /* badge gap — px intentional */
+                }}>
+                  {u.fp_cost}<RichText text="[fp]" />
+                </span>
+              )}
+            </div>
+          ))}
         </div>
+      )}
+
+      {/* ── Pip spend summary ───────────────────────────────────────── */}
+      <div style={{
+        fontFamily: FONT_DISPLAY, fontSize: FS.overline,
+        color: 'var(--hud-accent-purple)', opacity: 0.7,
+        display: 'flex', alignItems: 'center', gap: SP[1], flexWrap: 'wrap',
+      }}>
+        {lightCount > 0 && (
+          <>
+            <span>{lightCount}</span>
+            <RichText text="[fp]" />
+            <span>Light</span>
+          </>
+        )}
+        {lightCount > 0 && darkCount > 0 && (
+          <span style={{ opacity: 0.5 }}>·</span>
+        )}
+        {darkCount > 0 && (
+          <>
+            <span>{darkCount}</span>
+            <RichText text="[fp]" />
+            <span>Dark</span>
+          </>
+        )}
       </div>
 
-      {/* Conflict description */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-        <div style={{ fontFamily: FONT_BODY, fontSize: 'clamp(0.62rem, 0.95vw, 0.72rem)', color: 'rgba(232,223,200,0.35)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
-          {isFallen ? 'Light Side Conflict description (optional)' : 'Conflict description (optional)'}
+      {/* ── Dark side warning — suppressed for Dathomiri proxy ─────── */}
+      {darkCount > 0 && !isDathomiriProxy && (
+        <div style={{
+          padding: `${SP[1]} ${SP[2]}`,
+          background: 'color-mix(in srgb, var(--hud-accent-purple) 8%, transparent)',
+          border: `1px solid color-mix(in srgb, var(--hud-accent-purple) 30%, transparent)`,
+          borderRadius: RADIUS.md,
+          fontFamily: FONT_BODY, fontSize: FS.overline,
+          color: 'color-mix(in srgb, var(--hud-accent-purple) 80%, white)',
+        }}>
+          {isFallen
+            ? `⚠ Light pips used — ${notification.strain_cost ?? 0} strain suffered`
+            : `⚠ ${notification.strain_cost ?? 0} strain suffered · Destiny Point flipped`
+          }
+        </div>
+      )}
+
+      {/* ── Conflict description ────────────────────────────────────── */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: SP[1] }}>
+        <div style={{
+          fontFamily: FONT_BODY, fontSize: FS.overline,
+          color: 'color-mix(in srgb, var(--hud-accent-purple) 35%, transparent)',
+          textTransform: 'uppercase', letterSpacing: '0.12em',
+        }}>
+          {isFallen ? 'Light Side Conflict (optional)' : 'Conflict description (optional)'}
         </div>
         <input
           type="text"
@@ -134,40 +228,43 @@ export function ForceNotificationCard({ notification, onAcknowledged, isFallen =
           value={conflictDesc}
           onChange={e => setConflictDesc(e.target.value)}
           style={{
-            background: 'rgba(255,255,255,0.04)',
-            border: `1px solid ${isFallen ? 'rgba(200,215,230,0.2)' : 'rgba(200,150,255,0.2)'}`,
-            borderRadius: RADIUS.md, padding: '0.4375rem 0.625rem',
-            fontFamily: FONT_BODY, fontSize: 'clamp(0.82rem, 1.3vw, 0.95rem)',
-            color: 'rgba(232,223,200,0.8)', outline: 'none',
-            width: '100%', boxSizing: 'border-box',
+            background: 'color-mix(in srgb, var(--hud-accent-purple) 4%, transparent)',
+            border: `1px solid color-mix(in srgb, var(--hud-accent-purple) 20%, transparent)`,
+            borderRadius: RADIUS.md,
+            padding: `${SP[1]} ${SP[2]}`,
+            fontFamily: FONT_BODY, fontSize: FS.sm,
+            color: HUD.text, outline: 'none',
+            width: '100%', boxSizing: 'border-box' as const,
           }}
         />
         {isFallen && (
           <div style={{
-            fontFamily: FONT_BODY, fontSize: 'clamp(0.72rem, 1.1vw, 0.85rem)',
-            color: 'rgba(220,230,240,0.5)', fontStyle: 'italic', lineHeight: 1.45,
+            fontFamily: FONT_BODY, fontSize: FS.caption,
+            color: 'color-mix(in srgb, var(--hud-accent-purple) 50%, transparent)',
+            fontStyle: 'italic', lineHeight: 1.4,
           }}>
-            This character has fallen to the Dark Side. Conflict represents light side pull — moments of mercy, compassion, or doubt.
+            Fallen character — conflict represents light side pull.
           </div>
         )}
       </div>
 
-      {/* Actions */}
-      <div style={{ display: 'flex', gap: '0.5rem' }}>
+      {/* ── Actions ─────────────────────────────────────────────────── */}
+      <div style={{ display: 'flex', gap: SP[2] }}>
         <button
           onClick={handleAddConflict}
           disabled={busy}
           style={{
-            flex: 2, height: '2.25rem', borderRadius: RADIUS.lg,
+            flex: 2,
+            height: 36, /* action button — px intentional, fixed tap target */
+            borderRadius: RADIUS.lg,
             cursor: busy ? 'not-allowed' : 'pointer',
-            background: busy ? 'transparent' : isFallen ? 'rgba(200,215,230,0.08)' : 'rgba(144,96,208,0.15)',
-            border: `1px solid ${isFallen ? SILVER_BD : 'rgba(144,96,208,0.4)'}`,
-            fontFamily: FONT_BODY, fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)', fontWeight: 700,
-            letterSpacing: '0.08em',
+            background: busy ? 'transparent' : 'color-mix(in srgb, var(--hud-accent-purple) 15%, transparent)',
+            border: `1px solid color-mix(in srgb, var(--hud-accent-purple) ${busy ? 15 : 40}%, transparent)`,
+            fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700, letterSpacing: '0.08em',
             color: busy
-              ? isFallen ? 'rgba(200,215,230,0.3)' : 'rgba(200,150,255,0.4)'
-              : isFallen ? SILVER : PURPLE,
-            transition: EASE.quick,
+              ? 'color-mix(in srgb, var(--hud-accent-purple) 30%, transparent)'
+              : 'var(--hud-accent-purple)',
+            transition: `all ${EASE.quick}`,
           }}
         >
           + Add Conflict
@@ -176,16 +273,21 @@ export function ForceNotificationCard({ notification, onAcknowledged, isFallen =
           onClick={handleSkip}
           disabled={busy}
           style={{
-            flex: 1, height: '2.25rem', borderRadius: RADIUS.lg,
+            flex: 1,
+            height: 36, /* action button — px intentional, fixed tap target */
+            borderRadius: RADIUS.lg,
             cursor: busy ? 'not-allowed' : 'pointer',
-            background: 'transparent', border: '1px solid rgba(255,255,255,0.1)',
-            fontFamily: FONT_BODY, fontSize: 'clamp(0.78rem, 1.2vw, 0.9rem)',
-            color: 'rgba(232,223,200,0.4)', transition: EASE.quick,
+            background: 'transparent',
+            border: `1px solid color-mix(in srgb, var(--hud-border) 60%, transparent)`,
+            fontFamily: FONT_BODY, fontSize: FS.sm,
+            color: 'color-mix(in srgb, var(--hud-text) 40%, transparent)',
+            transition: `all ${EASE.quick}`,
           }}
         >
           Skip
         </button>
       </div>
+
     </div>
   )
 }

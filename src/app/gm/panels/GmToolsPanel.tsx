@@ -493,7 +493,7 @@ export function GmToolsPanel({
                       <ForceNotificationCard
                         key={n.id}
                         notification={n as never}
-                        isFallen={false}
+                        isFallen={activeChars.find(c => c.id === n.character_id)?.is_dark_side_fallen ?? false}
                         onAcknowledged={id => setForceNotifications(prev => (prev as { id: string }[]).filter(x => x.id !== id) as never)}
                       />
                     ))}
