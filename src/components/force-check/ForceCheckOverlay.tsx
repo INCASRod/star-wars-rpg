@@ -329,7 +329,7 @@ export function ForceCheckOverlay({
       }
     } catch (_e) { /* non-blocking */ }
     setBusy(false)
-    onClose()
+    timerIds.current.push(setTimeout(onClose, 1500)) /* hold result on screen — animation timing */
   }
 
   const canChannel = selPower !== null && forceRoll !== null
@@ -486,43 +486,55 @@ export function ForceCheckOverlay({
               ))}
             </div>
           ) : forceRoll ? (
-            /* Phase 3 + 4: pip totals with fade-in */
-            <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: SP[3],
-              animation: `fco-totals-in 0.3s ease both`, /* totals appear — animation timing */
-            }}>
-              {/* Light side */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: SP[1] }}>
-                <div style={{ display: 'flex', gap: SP[1] }}>
-                  {Array.from({ length: lightTotal }).map((_, i) => (
-                    <PipCircle key={i} spent={i < lightUsed} dark={false} />
-                  ))}
-                  {lightTotal === 0 && (
-                    <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint }}>—</span>
-                  )}
-                </div>
-                <span style={{
-                  fontFamily: FONT_BODY, fontSize: FS.overline,
-                  color: 'color-mix(in srgb, var(--hud-accent-purple) 55%, transparent)',
-                  textTransform: 'uppercase', letterSpacing: '0.12em',
-                }}>Light</span>
+            /* Phase 3 + 4: dice faces (all revealed) + pip totals */
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: SP[2] }}>
+              {/* Dice faces — persist after reveal */}
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                gap: SP[1], flexWrap: 'wrap',
+              }}>
+                {forceRoll.dice.map((die, idx) => (
+                  <ForceDieRevealFace key={idx} die={die} revealed={true} index={idx} />
+                ))}
               </div>
-              <span style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: HUD.textFaint, opacity: 0.4 }}>→</span>
-              {/* Dark side */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: SP[1] }}>
-                <div style={{ display: 'flex', gap: SP[1] }}>
-                  {Array.from({ length: darkTotal }).map((_, i) => (
-                    <PipCircle key={i} spent={i < darkUsed} dark={true} />
-                  ))}
-                  {darkTotal === 0 && (
-                    <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint }}>—</span>
-                  )}
+              {/* Pip totals */}
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: SP[3],
+                animation: `fco-totals-in 0.3s ease both`, /* totals appear — animation timing */
+              }}>
+                {/* Light side */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: SP[1] }}>
+                  <div style={{ display: 'flex', gap: SP[1] }}>
+                    {Array.from({ length: lightTotal }).map((_, i) => (
+                      <PipCircle key={i} spent={i < lightUsed} dark={false} />
+                    ))}
+                    {lightTotal === 0 && (
+                      <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint }}>—</span>
+                    )}
+                  </div>
+                  <span style={{
+                    fontFamily: FONT_BODY, fontSize: FS.overline,
+                    color: 'color-mix(in srgb, var(--hud-accent-purple) 55%, transparent)',
+                    textTransform: 'uppercase', letterSpacing: '0.12em',
+                  }}>Light</span>
                 </div>
-                <span style={{
-                  fontFamily: FONT_BODY, fontSize: FS.overline,
-                  color: 'color-mix(in srgb, var(--hud-accent-purple) 40%, transparent)',
-                  textTransform: 'uppercase', letterSpacing: '0.12em',
-                }}>Dark</span>
+                <span style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: HUD.textFaint, opacity: 0.4 }}>→</span>
+                {/* Dark side */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: SP[1] }}>
+                  <div style={{ display: 'flex', gap: SP[1] }}>
+                    {Array.from({ length: darkTotal }).map((_, i) => (
+                      <PipCircle key={i} spent={i < darkUsed} dark={true} />
+                    ))}
+                    {darkTotal === 0 && (
+                      <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint }}>—</span>
+                    )}
+                  </div>
+                  <span style={{
+                    fontFamily: FONT_BODY, fontSize: FS.overline,
+                    color: 'color-mix(in srgb, var(--hud-accent-purple) 40%, transparent)',
+                    textTransform: 'uppercase', letterSpacing: '0.12em',
+                  }}>Dark</span>
+                </div>
               </div>
             </div>
           ) : (
