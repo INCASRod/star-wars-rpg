@@ -42,19 +42,19 @@ export function useGroupStorage(assetId: string | null) {
       const [wpnRes, armRes, gearRes] = await Promise.all([
         supabase
           .from('character_weapons')
-          .select('id, character_id, weapon_key')
+          .select('id, character_id, weapon_key, custom_name')
           .eq('stow_location_id', assetId)
           .eq('equip_state', 'stowed')
           .not('is_dropped', 'eq', true),
         supabase
           .from('character_armor')
-          .select('id, character_id, armor_key')
+          .select('id, character_id, armor_key, custom_name')
           .eq('stow_location_id', assetId)
           .eq('equip_state', 'stowed')
           .not('is_dropped', 'eq', true),
         supabase
           .from('character_gear')
-          .select('id, character_id, gear_key, quantity')
+          .select('id, character_id, gear_key, quantity, custom_name')
           .eq('stow_location_id', assetId)
           .eq('equip_state', 'stowed')
           .not('is_dropped', 'eq', true),
@@ -87,14 +87,18 @@ export function useGroupStorage(assetId: string | null) {
       const [refWpn, refArm, refGear] = await Promise.all([
         wpnKeys.length > 0
           ? supabase.from('ref_weapons').select('key, name, damage, damage_add, crit, range_value, encumbrance, skill_key, hard_points, description, rarity').in('key', wpnKeys)
-          : Promise.resolve({ data: [] as any[] }),
+          : Promise.resolve({ data: [] as any[], error: null }),
         armKeys.length > 0
           ? supabase.from('ref_armor').select('key, name, soak, defense, encumbrance, description, rarity').in('key', armKeys)
-          : Promise.resolve({ data: [] as any[] }),
+          : Promise.resolve({ data: [] as any[], error: null }),
         gearKeys.length > 0
           ? supabase.from('ref_gear').select('key, name, encumbrance, encumbrance_bonus, description, rarity').in('key', gearKeys)
-          : Promise.resolve({ data: [] as any[] }),
+          : Promise.resolve({ data: [] as any[], error: null }),
       ])
+
+      if (refWpn.error)  console.error('[GroupStorage] ref_weapons lookup failed:', refWpn.error.message)
+      if (refArm.error)  console.error('[GroupStorage] ref_armor lookup failed:', refArm.error.message)
+      if (refGear.error) console.error('[GroupStorage] ref_gear lookup failed:', refGear.error.message)
 
       const wpnMap:  Record<string, any> = Object.fromEntries((refWpn.data  ?? []).map((r: any) => [r.key, r]))
       const armMap:  Record<string, any> = Object.fromEntries((refArm.data  ?? []).map((r: any) => [r.key, r]))
@@ -106,7 +110,7 @@ export function useGroupStorage(assetId: string | null) {
           return {
             id: r.id, itemType: 'weapon' as const,
             ownerCharacterId: r.character_id, ownerName: charMap[r.character_id] ?? 'Unknown',
-            itemKey: r.weapon_key, name: ref.name ?? r.weapon_key,
+            itemKey: r.weapon_key, name: r.custom_name || ref.name || r.weapon_key,
             encumbrance: ref.encumbrance ?? 0, rarity: ref.rarity ?? 0,
             damage: ref.damage, damageAdd: ref.damage_add, crit: ref.crit,
             range: ref.range_value, skillKey: ref.skill_key, hardPoints: ref.hard_points,
@@ -118,7 +122,7 @@ export function useGroupStorage(assetId: string | null) {
           return {
             id: r.id, itemType: 'armor' as const,
             ownerCharacterId: r.character_id, ownerName: charMap[r.character_id] ?? 'Unknown',
-            itemKey: r.armor_key, name: ref.name ?? r.armor_key,
+            itemKey: r.armor_key, name: r.custom_name || ref.name || r.armor_key,
             encumbrance: ref.encumbrance ?? 0, rarity: ref.rarity ?? 0,
             soakBonus: ref.soak ?? 0, defense: ref.defense ?? 0,
             description: ref.description ?? null,
@@ -129,7 +133,7 @@ export function useGroupStorage(assetId: string | null) {
           return {
             id: r.id, itemType: 'gear' as const,
             ownerCharacterId: r.character_id, ownerName: charMap[r.character_id] ?? 'Unknown',
-            itemKey: r.gear_key, name: ref.name ?? r.gear_key,
+            itemKey: r.gear_key, name: r.custom_name || ref.name || r.gear_key,
             encumbrance: ref.encumbrance ?? 0, rarity: ref.rarity ?? 0,
             qty: r.quantity,
             encumbranceBonus: ref.encumbrance_bonus ?? null,
