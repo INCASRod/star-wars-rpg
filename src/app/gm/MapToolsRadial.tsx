@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
 import { useMapPlanets, type MapPlanet } from '@/hooks/useMapPlanets'
 import type { ActiveMap, CrawlContent } from '@/hooks/useActiveMap'
-import { HUD, FONT_BODY, FONT_DISPLAY, FS, SP, Z, RADIUS, EASE } from '@/lib/tokens'
+import { HUD, FONT_BODY, FONT_DISPLAY, FS, SP, Z, RADIUS, EASE, MODAL } from '@/lib/tokens'
 import gsap from 'gsap'
 
 /* ── SVG/geometry constants ─────────────────────────────────── */
@@ -786,7 +786,7 @@ const PANEL_STYLE: React.CSSProperties = {
   borderRadius:         RADIUS.xl,
   backdropFilter:       'blur(20px)',
   WebkitBackdropFilter: 'blur(20px)',
-  boxShadow:            '0 8px 40px rgba(0,0,0,0.7)',
+  boxShadow:            MODAL.shadow,
 }
 
 const POPUP_INPUT: React.CSSProperties = {
@@ -906,7 +906,7 @@ function OpeningCrawlContent({
         rows={5}
         style={{ ...POPUP_INPUT, resize: 'vertical' }}
       />
-      <div style={{ display: 'flex', gap: SP[1], marginTop: 2 }}>
+      <div style={{ display: 'flex', gap: SP[1], marginTop: SP[1] }}>
         <button
           onClick={onSave}
           disabled={crawlBusy || !crawlMapId}
@@ -1057,7 +1057,7 @@ function PanelFolderRow({ label, count, expanded, onToggle, onDelete }: PanelFol
         userSelect:  'none',
       }}
     >
-      <span style={{ color: expanded ? HUD.gold : HUD.textFaint, fontSize: 9, flexShrink: 0, lineHeight: 1 }}>
+      <span style={{ color: expanded ? HUD.gold : HUD.textFaint, fontSize: FS.overline, flexShrink: 0, lineHeight: 1 }}>
         {expanded ? '▾' : '▶'}
       </span>
       <span style={{
@@ -1089,9 +1089,9 @@ function PanelFolderRow({ label, count, expanded, onToggle, onDelete }: PanelFol
             color:       `color-mix(in srgb, ${RED} 55%, transparent)`,
             fontSize:    FS.body,
             lineHeight:  1,
-            padding:     '0 2px',
+            padding:     `0 ${SP[1]}`,
             flexShrink:  0,
-            marginLeft:  2,
+            marginLeft:  SP[1],
           }}
         >&times;</button>
       )}
@@ -1162,15 +1162,15 @@ function PanelMapRow({
           }}>
             {map.name}
             {map.is_active && (
-              <span style={{ marginLeft: 6, fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.gold }}>
+              <span style={{ marginLeft: SP[2], fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.gold }}>
                 &starf; ACTIVE
               </span>
             )}
           </div>
-          <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: DIM, marginTop: 1 }}>
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: DIM }}>
             {map.grid_enabled ? `Grid ${map.grid_size}px` : 'No grid'}
             {map.is_visible_to_players && (
-              <span style={{ marginLeft: 6, color: GREEN }}>&bull; Visible</span>
+              <span style={{ marginLeft: SP[2], color: GREEN }}>&bull; Visible</span>
             )}
           </div>
         </div>
@@ -1222,7 +1222,7 @@ function PanelMapRow({
             color:        map.planet_id ? TEXT : DIM,
             fontFamily:   FONT_BODY,
             fontSize:     FS.caption,
-            padding:      '2px 4px', /* 2px minimum touch target */
+            padding:      `2px ${SP[1]}`, /* 2px minimum touch target */
             flex:         1,
             minWidth:     0,
             cursor:       'pointer',
@@ -1655,7 +1655,7 @@ function PanelMapUploadModal({ campaignId, planets, onClose }: PanelMapUploadMod
         position:       'fixed',
         inset:          0,
         zIndex:         Z.tooltip,
-        background:     'rgba(0,0,0,0.72)',
+        background:     MODAL.backdrop,
         backdropFilter: 'blur(6px)',
         display:        'flex',
         alignItems:     'center',
@@ -1674,7 +1674,7 @@ function PanelMapUploadModal({ campaignId, planets, onClose }: PanelMapUploadMod
           display:       'flex',
           flexDirection: 'column',
           gap:           SP[2],
-          boxShadow:     '0 20px 60px rgba(0,0,0,0.8)',
+          boxShadow:     MODAL.shadow,
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
