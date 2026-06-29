@@ -121,7 +121,7 @@ export function MapToolsRadial({
   /* Position style — default bottom-right; dragged = left/top */
   const posStyle: React.CSSProperties = dragPos
     ? { position: 'absolute', left: dragPos.x, top: dragPos.y, bottom: 'auto', right: 'auto' }
-    : { position: 'absolute', bottom: '1rem',  right: '1rem' }
+    : { position: 'absolute', bottom: '1rem', right: '1rem' } // 1rem widget offset
 
   return (
     <div
@@ -140,7 +140,7 @@ export function MapToolsRadial({
       <canvas
         style={{
           position: 'absolute', inset: 0, width: '100%', height: '100%',
-          zIndex: 0, pointerEvents: 'none', borderRadius: RADIUS.lg,
+          zIndex: Z.base, pointerEvents: 'none', borderRadius: RADIUS.lg,
         }}
       />
 
@@ -149,7 +149,7 @@ export function MapToolsRadial({
         width={SVG_W}
         height={SVG_H}
         viewBox={`0 0 ${SVG_W} ${SVG_H}`}
-        style={{ position: 'absolute', inset: 0, zIndex: 1, overflow: 'visible', pointerEvents: 'none' }}
+        style={{ position: 'absolute', inset: 0, zIndex: Z.raised, overflow: 'visible', pointerEvents: 'none' }}
       >
         {/* Puck */}
         <circle
@@ -183,7 +183,7 @@ export function MapToolsRadial({
           width:        (R_PUCK + 6) * 2,
           height:       (R_PUCK + 6) * 2,
           borderRadius: RADIUS.full,
-          zIndex:       2,
+          zIndex:       Z.raised + 1,
           cursor:       'grab',
           pointerEvents:'auto',
         }}
