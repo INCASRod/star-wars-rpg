@@ -19,6 +19,7 @@ import type { AdversaryInstance } from '@/lib/adversaries'
 import type { VehicleInstance } from '@/lib/vehicles'
 import { useEncounterCombatControls } from '@/hooks/useEncounterCombatControls'
 import { HUD, FONT_BODY, EASE, RADIUS } from '@/lib/tokens'
+import { MapToolsRadial } from '@/app/gm/MapToolsRadial'
 
 /* ── Design tokens ─────────────────────────────────────── */
 const BG  = 'var(--hud-bg)'
@@ -1195,6 +1196,18 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
             onToggleVisibility={toggleVisibility}
             onRemoveToken={handleRemoveToken}
             onClose={closeContextMenu}
+          />
+        )}
+
+        {/* ── MapToolsRadial floating widget (staging only) ── */}
+        {isStagingTab && campaignId && (
+          <MapToolsRadial
+            campaignId={campaignId}
+            allMaps={allMaps.filter(m => (m.map_type ?? 'standard') !== 'crawl')}
+            activeMap={activeMap}
+            onDeleteMap={onDeleteMap}
+            tokenScale={tokenScale}
+            adjustTokenScale={adjustTokenScale}
           />
         )}
       </div>
