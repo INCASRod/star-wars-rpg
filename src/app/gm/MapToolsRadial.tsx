@@ -82,6 +82,12 @@ export function MapToolsRadial({
   /* Arc menu state */
   const [isOpen,    setIsOpen]    = useState(false)
   const [activeArc, setActiveArc] = useState<ArcId | null>(null)
+  const [openPanel, setOpenPanel] = useState<ArcId | null>(null)
+
+  function handleArcPick(id: ArcId) {
+    setOpenPanel(prev => prev === id ? null : id)
+    setIsOpen(false)
+  }
 
   /* Drag handlers */
   const onPuckMouseDown = useCallback((e: React.MouseEvent) => {
@@ -149,8 +155,155 @@ export function MapToolsRadial({
         width={SVG_W}
         height={SVG_H}
         viewBox={`0 0 ${SVG_W} ${SVG_H}`}
-        style={{ position: 'absolute', inset: 0, zIndex: Z.raised, overflow: 'visible', pointerEvents: 'none' }}
+        style={{ position: 'absolute', inset: 0, zIndex: Z.raised, overflow: 'visible' }}
       >
+        {/* ── Always-visible faint construction arc ── */}
+        <path
+          d={arcPath(PUCK_CX, PUCK_CY, R_OUT + 14, R_OUT + 14, 178, 276)}
+          fill="none"
+          stroke={GOLD}        /* approved SVG exception */
+          strokeOpacity={0.04}
+          strokeWidth={0.5}
+          style={{ pointerEvents: 'none' }}
+        />
+
+        {/* ── Rings group (visible only when open) ── */}
+        {isOpen && (
+          <g id="rings" style={{ pointerEvents: 'none' }}>
+            {/* Outer arc border */}
+            <path d={arcPath(PUCK_CX, PUCK_CY, R_OUT + 2, R_OUT + 2, 175, 275)}
+              fill="none" stroke={GOLD} strokeOpacity={0.16} strokeWidth={1.5} />
+            {/* Fade arc */}
+            <path d={arcPath(PUCK_CX, PUCK_CY, R_OUT - 6, R_OUT - 6, 175, 275)}
+              fill="none" stroke={GOLD} strokeOpacity={0.05} strokeWidth={0.5} />
+            {/* Inner arc */}
+            <path d={arcPath(PUCK_CX, PUCK_CY, R_IN - 4, R_IN - 4, 175, 275)}
+              fill="none" stroke={GOLD} strokeOpacity={0.22} strokeWidth={1} />
+            {/* Fade inner arc */}
+            <path d={arcPath(PUCK_CX, PUCK_CY, R_IN - 11, R_IN - 11, 175, 275)}
+              fill="none" stroke={GOLD} strokeOpacity={0.10} strokeWidth={0.5} />
+
+            {/* End ticks at 178° and 272° */}
+            {[178, 272].map(deg => {
+              const p1 = polar(PUCK_CX, PUCK_CY, R_OUT + 1, deg)
+              const p2 = polar(PUCK_CX, PUCK_CY, R_OUT + 9, deg)
+              return <line key={deg} x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y}
+                       stroke={GOLD} strokeOpacity={0.45} strokeWidth={1.2} />
+            })}
+
+            {/* Gap divider ticks at 211° and 247° */}
+            {[211, 247].map(deg => {
+              const p1 = polar(PUCK_CX, PUCK_CY, R_OUT + 2, deg)
+              const p2 = polar(PUCK_CX, PUCK_CY, R_IN - 4, deg)
+              return <line key={deg} x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y}
+                       stroke={GOLD} strokeOpacity={0.28} strokeWidth={0.8} />
+            })}
+
+            {/* Crosshair lines (±14px and ±22px from puck center) */}
+            {[-22, -14, 14, 22].map(d => (
+              <line key={`h${d}`}
+                x1={PUCK_CX + d} y1={PUCK_CY - 1} x2={PUCK_CX + d} y2={PUCK_CY + 1}
+                stroke={GOLD} strokeOpacity={0.30} strokeWidth={0.75} />
+            ))}
+            {[-22, -14, 14, 22].map(d => (
+              <line key={`v${d}`}
+                x1={PUCK_CX - 1} y1={PUCK_CY + d} x2={PUCK_CX + 1} y2={PUCK_CY + d}
+                stroke={GOLD} strokeOpacity={0.30} strokeWidth={0.75} />
+            ))}
+
+            {/* Small centre circle */}
+            <circle cx={PUCK_CX} cy={PUCK_CY} r={4}
+              fill="none" stroke={GOLD} strokeOpacity={0.40} strokeWidth={0.75} />
+          </g>
+        )}
+
+        {/* ── Arc blades (visible only when open) ── */}
+        {isOpen && ARC_DEFS.map(arc => {
+          const midDeg = (arc.startDeg + arc.endDeg) / 2
+          const iconPos = polar(PUCK_CX, PUCK_CY, R_ICON, midDeg)
+          const isActive = activeArc === arc.id
+
+          return (
+            <g key={arc.id} id={`arc-${arc.id}`} style={{ pointerEvents: 'none' }}>
+              {/* Blade fill */}
+              <path
+                d={arcPath(PUCK_CX, PUCK_CY, R_IN, R_OUT, arc.startDeg, arc.endDeg)}
+                fill={GOLD}
+                fillOpacity={isActive ? 0.18 : 0.06}
+                stroke="none"
+              />
+              {/* Outer arc border */}
+              <path
+                d={arcPath(PUCK_CX, PUCK_CY, R_OUT, R_OUT, arc.startDeg, arc.endDeg)}
+                fill="none"
+                stroke={GOLD}
+                strokeOpacity={isActive ? 0.7 : 0.28}
+                strokeWidth={1}
+              />
+              {/* Inner arc border (brightens on hover) */}
+              <path
+                id={`inner-border-${arc.id}`}
+                d={arcPath(PUCK_CX, PUCK_CY, R_IN, R_IN, arc.startDeg, arc.endDeg)}
+                fill="none"
+                stroke={GOLD}
+                strokeOpacity={isActive ? 0.95 : 0.22}
+                strokeWidth={1}
+              />
+              {/* Icon */}
+              <text
+                x={iconPos.x} y={iconPos.y}
+                textAnchor="middle" dominantBaseline="central"
+                fill={GOLD}
+                fillOpacity={isActive ? 1.0 : 0.6}
+                fontSize={10}
+                fontFamily={FONT_BODY}
+              >
+                {arc.icon}
+              </text>
+            </g>
+          )
+        })}
+
+        {/* ── Defs: hover label arc path ── */}
+        <defs>
+          <path
+            id="label-arc-path"
+            d={arcPath(PUCK_CX, PUCK_CY, 52, 52, 182, 272)}
+            fill="none"
+          />
+        </defs>
+
+        {/* ── Hover label (textPath along inner arc) ── */}
+        {isOpen && activeArc !== null && (
+          <text
+            fill={GOLD}
+            fillOpacity={0.88}
+            fontSize={8}
+            fontFamily={FONT_DISPLAY}
+            fontWeight={700}
+            letterSpacing="0.13em"
+            style={{ pointerEvents: 'none' }}
+          >
+            <textPath href="#label-arc-path" startOffset="50%" textAnchor="middle">
+              {ARC_DEFS[activeArc].label}
+            </textPath>
+          </text>
+        )}
+
+        {/* ── Arc hit areas ── */}
+        {isOpen && ARC_DEFS.map(arc => (
+          <path
+            key={`hit-${arc.id}`}
+            d={arcPath(PUCK_CX, PUCK_CY, R_IN - 4, R_OUT + 6, arc.startDeg - 1, arc.endDeg + 1)}
+            fill="transparent"
+            stroke="none"
+            style={{ pointerEvents: 'all', cursor: 'pointer' }}
+            onMouseEnter={() => setActiveArc(arc.id)}
+            onMouseLeave={() => setActiveArc(null)}
+            onClick={() => handleArcPick(arc.id)}
+          />
+        ))}
+
         {/* Puck */}
         <circle
           cx={PUCK_CX} cy={PUCK_CY} r={R_PUCK}
