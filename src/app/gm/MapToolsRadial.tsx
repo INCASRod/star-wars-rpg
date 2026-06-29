@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useMapPlanets, type MapPlanet } from '@/hooks/useMapPlanets'
 import type { ActiveMap, CrawlContent } from '@/hooks/useActiveMap'
 import { HUD, FONT_BODY, FONT_DISPLAY, FS, Z, RADIUS, EASE } from '@/lib/tokens'
+import gsap from 'gsap'
 
 /* ── SVG/geometry constants ─────────────────────────────────── */
 const SVG_W   = 200
@@ -181,6 +182,14 @@ export function MapToolsRadial({
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  /* GSAP element refs */
+  const puckInnerRef  = useRef<SVGCircleElement>(null)
+  const puckIconRef   = useRef<SVGTextElement>(null)
+  const ringsGroupRef = useRef<SVGGElement>(null)
+  const arcGroupRefs  = useRef<(SVGGElement | null)[]>([null, null, null])
+  const labelTextRef  = useRef<SVGTextElement>(null)
+  const hoverTlRefs   = useRef<(gsap.core.Timeline | null)[]>([null, null, null])
+
   /* Drag state — widget position relative to its parent */
   const [dragPos,     setDragPos]     = useState<{ x: number; y: number } | null>(null)
   const dragOffsetRef = useRef<{ ox: number; oy: number } | null>(null)
@@ -191,9 +200,44 @@ export function MapToolsRadial({
   const [activeArc, setActiveArc] = useState<ArcId | null>(null)
   const [openPanel, setOpenPanel] = useState<ArcId | null>(null)
 
+  function handleArcEnter(id: ArcId) {
+    setActiveArc(id)
+    const i = id
+    hoverTlRefs.current[i]?.kill()
+    const el = arcGroupRefs.current[i]
+    if (!el) return
+    const tl = gsap.timeline()
+    hoverTlRefs.current[i] = tl
+    tl.to(el.querySelector('path:first-child'), { fillOpacity: 0.18, duration: 0.16 }, 0)
+    tl.to(el, { scale: 1.04, transformOrigin: `${PUCK_CX}px ${PUCK_CY}px`, duration: 0.2, ease: 'back.out(2)' }, 0)
+    if (labelTextRef.current) tl.to(labelTextRef.current, { fillOpacity: 0.88, duration: 0.18 }, 0)
+  }
+
+  function handleArcLeave(id: ArcId) {
+    setActiveArc(null)
+    const i = id
+    hoverTlRefs.current[i]?.kill()
+    const el = arcGroupRefs.current[i]
+    if (!el) return
+    const tl = gsap.timeline()
+    hoverTlRefs.current[i] = tl
+    tl.to(el.querySelector('path:first-child'), { fillOpacity: 0.06, duration: 0.22 }, 0)
+    tl.to(el, { scale: 1, duration: 0.22 }, 0)
+    if (labelTextRef.current) tl.to(labelTextRef.current, { fillOpacity: 0, duration: 0.14 }, 0)
+  }
+
   function handleArcPick(id: ArcId) {
-    setOpenPanel(prev => prev === id ? null : id)
-    setIsOpen(false)
+    const el = arcGroupRefs.current[id]
+    if (!el) { setOpenPanel(prev => prev === id ? null : id); setIsOpen(false); return }
+
+    // Punch: scale up → down → back, then open panel + close fan
+    gsap.timeline()
+      .to(el, { scale: 1.09, transformOrigin: `${PUCK_CX}px ${PUCK_CY}px`, duration: 0.1, ease: 'power2.out' })
+      .to(el, { scale: 0.88, duration: 0.1, ease: 'power2.in' })
+      .to(el, { scale: 1.0,  duration: 0.08, onComplete: () => {
+        setOpenPanel(prev => prev === id ? null : id)
+        setIsOpen(false)
+      }})
   }
 
   /* Drag handlers */
@@ -230,6 +274,73 @@ export function MapToolsRadial({
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mouseup',   onUp)
   }, [])
+
+  /* Initialize arc/ring elements as hidden on mount */
+  useEffect(() => {
+    arcGroupRefs.current.forEach(el => { if (el) gsap.set(el, { opacity: 0 }) })
+    if (ringsGroupRef.current) gsap.set(ringsGroupRef.current, { opacity: 0 })
+  }, [])
+
+  /* Open/close animation */
+  useEffect(() => {
+    if (isOpen) {
+      // ── Open sequence ──
+      const tl = gsap.timeline()
+
+      // t=0: puck border + icon
+      tl.to(puckInnerRef.current, {
+        attr: { stroke: 'rgba(200,160,48,0.95)', strokeWidth: 2 }, duration: 0.2, ease: 'power2.out',
+      }, 0)
+      tl.to(puckIconRef.current, {
+        rotation: 45, transformOrigin: `${PUCK_CX}px ${PUCK_CY}px`,
+        fill: 'rgba(200,160,48,1.0)', duration: 0.35, ease: 'back.out(2)',
+      }, 0)
+
+      // t=0.04: rings scale in
+      if (ringsGroupRef.current) {
+        gsap.set(ringsGroupRef.current, { opacity: 0, scale: 0.7, transformOrigin: `${PUCK_CX}px ${PUCK_CY}px` })
+        tl.to(ringsGroupRef.current, {
+          opacity: 1, scale: 1, duration: 0.38, ease: 'expo.out',
+        }, 0.04)
+      }
+
+      // t=0.08, 0.16, 0.24: arcs stagger in
+      arcGroupRefs.current.forEach((el, i) => {
+        if (!el) return
+        gsap.set(el, { opacity: 0, scale: 0.55, transformOrigin: `${PUCK_CX}px ${PUCK_CY}px` })
+        tl.to(el, {
+          opacity: 1, scale: 1, duration: 0.42, ease: 'back.out(1.7)',
+        }, 0.08 + i * 0.08)
+      })
+    } else {
+      // ── Close sequence ──
+      const tl = gsap.timeline()
+
+      // Arcs out: reversed order
+      arcGroupRefs.current.slice().reverse().forEach((el, i) => {
+        if (!el) return
+        tl.to(el, {
+          opacity: 0, scale: 0.6,
+          transformOrigin: `${PUCK_CX}px ${PUCK_CY}px`,
+          duration: 0.22, ease: 'power2.in',
+        }, i * 0.055)
+      })
+
+      // Rings out
+      if (ringsGroupRef.current) {
+        tl.to(ringsGroupRef.current, { opacity: 0, duration: 0.2, ease: 'power2.in' }, 0.06)
+      }
+
+      // Puck reset
+      tl.to(puckIconRef.current, {
+        rotation: 0, transformOrigin: `${PUCK_CX}px ${PUCK_CY}px`,
+        fill: 'rgba(200,160,48,0.75)', duration: 0.3, ease: 'back.out(1.6)',
+      }, 0)
+      tl.to(puckInnerRef.current, {
+        attr: { stroke: 'rgba(200,160,48,0.45)', strokeWidth: 1.5 }, duration: 0.2,
+      }, 0)
+    }
+  }, [isOpen]) // eslint-disable-line react-hooks/exhaustive-deps
 
   /* Position style — default bottom-right; dragged = left/top */
   const posStyle: React.CSSProperties = dragPos
@@ -274,9 +385,8 @@ export function MapToolsRadial({
           style={{ pointerEvents: 'none' }}
         />
 
-        {/* ── Rings group (visible only when open) ── */}
-        {isOpen && (
-          <g id="rings" style={{ pointerEvents: 'none' }}>
+        {/* ── Rings group (GSAP-controlled visibility) ── */}
+        <g id="rings" ref={ringsGroupRef} style={{ pointerEvents: 'none' }}>
             {/* Outer arc border */}
             <path d={arcPath(PUCK_CX, PUCK_CY, R_OUT + 2, R_OUT + 2, 175, 275)}
               fill="none" stroke={GOLD} strokeOpacity={0.16} strokeWidth={1.5} />
@@ -321,17 +431,16 @@ export function MapToolsRadial({
             {/* Small centre circle */}
             <circle cx={PUCK_CX} cy={PUCK_CY} r={4}
               fill="none" stroke={GOLD} strokeOpacity={0.40} strokeWidth={0.75} />
-          </g>
-        )}
+        </g>
 
-        {/* ── Arc blades (visible only when open) ── */}
-        {isOpen && ARC_DEFS.map(arc => {
+        {/* ── Arc blades (GSAP-controlled visibility) ── */}
+        {ARC_DEFS.map(arc => {
           const midDeg = (arc.startDeg + arc.endDeg) / 2
           const iconPos = polar(PUCK_CX, PUCK_CY, R_ICON, midDeg)
           const isActive = activeArc === arc.id
 
           return (
-            <g key={arc.id} id={`arc-${arc.id}`} style={{ pointerEvents: 'none' }}>
+            <g key={arc.id} id={`arc-${arc.id}`} ref={el => { arcGroupRefs.current[arc.id] = el }} style={{ pointerEvents: 'none' }}>
               {/* Blade fill */}
               <path
                 d={arcPath(PUCK_CX, PUCK_CY, R_IN, R_OUT, arc.startDeg, arc.endDeg)}
@@ -380,22 +489,21 @@ export function MapToolsRadial({
           />
         </defs>
 
-        {/* ── Hover label (textPath along inner arc) ── */}
-        {isOpen && activeArc !== null && (
-          <text
-            fill={GOLD}
-            fillOpacity={0.88}
-            fontSize={8}
-            fontFamily={FONT_DISPLAY}
-            fontWeight={700}
-            letterSpacing="0.13em"
-            style={{ pointerEvents: 'none' }}
-          >
-            <textPath href="#label-arc-path" startOffset="50%" textAnchor="middle">
-              {ARC_DEFS[activeArc].label}
-            </textPath>
-          </text>
-        )}
+        {/* ── Hover label (GSAP-controlled opacity) ── */}
+        <text
+          ref={labelTextRef}
+          fill={GOLD}
+          fillOpacity={0}
+          fontSize={8}
+          fontFamily={FONT_DISPLAY}
+          fontWeight={700}
+          letterSpacing="0.13em"
+          style={{ pointerEvents: 'none' }}
+        >
+          <textPath href="#label-arc-path" startOffset="50%" textAnchor="middle">
+            {activeArc !== null ? ARC_DEFS[activeArc].label : ''}
+          </textPath>
+        </text>
 
         {/* ── Arc hit areas ── */}
         {isOpen && ARC_DEFS.map(arc => (
@@ -405,14 +513,15 @@ export function MapToolsRadial({
             fill="transparent"
             stroke="none"
             style={{ pointerEvents: 'all', cursor: 'pointer' }}
-            onMouseEnter={() => setActiveArc(arc.id)}
-            onMouseLeave={() => setActiveArc(null)}
+            onMouseEnter={() => handleArcEnter(arc.id)}
+            onMouseLeave={() => handleArcLeave(arc.id)}
             onClick={() => handleArcPick(arc.id)}
           />
         ))}
 
         {/* Puck */}
         <circle
+          ref={puckInnerRef}
           cx={PUCK_CX} cy={PUCK_CY} r={R_PUCK}
           fill={HUD.bg}
           stroke={GOLD}
@@ -421,6 +530,7 @@ export function MapToolsRadial({
         />
         {/* Puck icon — ✦ hamburger */}
         <text
+          ref={puckIconRef}
           x={PUCK_CX} y={PUCK_CY}
           textAnchor="middle" dominantBaseline="central"
           fill={GOLD}
