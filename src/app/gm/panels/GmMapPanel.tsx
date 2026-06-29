@@ -22,6 +22,7 @@ const sectionHeader: React.CSSProperties = {
 
 export interface GmMapPanelProps {
   campaignId:      string
+  mapId?:          string | null
   characters:      Character[]
   tokens:          MapToken[]
   addToken:        (token: Omit<MapToken, 'id' | 'updated_at'>) => Promise<MapToken | null>
@@ -31,7 +32,7 @@ export interface GmMapPanelProps {
 }
 
 export function GmMapPanel({
-  campaignId, characters, tokens, addToken, removeToken, toggleVisibility, removeAllTokens,
+  campaignId, mapId = null, characters, tokens, addToken, removeToken, toggleVisibility, removeAllTokens,
 }: GmMapPanelProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto' }}>
@@ -39,7 +40,7 @@ export function GmMapPanel({
         <div style={{ ...sectionHeader, margin: '0 0.875rem', marginBottom: '0.5rem' }}>Tokens</div>
         <GmTokenControls
           campaignId={campaignId}
-          mapId={null}
+          mapId={mapId}
           characters={characters}
           tokens={tokens}
           addToken={addToken}

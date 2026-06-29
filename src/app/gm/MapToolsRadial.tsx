@@ -29,7 +29,6 @@ type ArcId = 0 | 1 | 2
 
 /* SVG colour exceptions — CSS vars unsupported in SVG stroke/fill attributes */
 const GOLD       = '#C8A030' // approved SVG exception
-const GOLD_DIM   = '#4A3C14' // approved SVG exception
 const GOLD_FAINT = '#C8A030' // approved SVG exception (opacity applied per-element)
 
 /* ── Polar → SVG cartesian ──────────────────────────────────── */

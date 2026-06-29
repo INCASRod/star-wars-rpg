@@ -444,6 +444,7 @@ export function GmShell() {
             {activePanel === 'map' && (
               <GmMapPanel
                 campaignId={campaignId ?? ''}
+                mapId={activeMap?.id ?? null}
                 characters={activeChars}
                 tokens={stagingTokens}
                 addToken={stagingAddToken}
