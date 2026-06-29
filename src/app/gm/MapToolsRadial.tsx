@@ -428,11 +428,13 @@ export function MapToolsRadial({
 
       // t=0: puck border + icon
       tl.to(puckInnerRef.current, {
-        attr: { stroke: 'rgba(200,160,48,0.95)', strokeWidth: 2 }, duration: 0.2, ease: 'power2.out',
+        attr: { stroke: 'rgba(200,160,48,0.95)', strokeWidth: 2 }, // approved SVG exception
+        duration: 0.2, ease: 'power2.out',
       }, 0)
       tl.to(puckIconRef.current, {
         rotation: 45, transformOrigin: `${PUCK_CX}px ${PUCK_CY}px`,
-        fill: 'rgba(200,160,48,1.0)', duration: 0.35, ease: 'back.out(2)',
+        fill: 'rgba(200,160,48,1.0)', // approved SVG exception
+        duration: 0.35, ease: 'back.out(2)',
       }, 0)
 
       // t=0.04: rings scale in
@@ -473,10 +475,12 @@ export function MapToolsRadial({
       // Puck reset
       tl.to(puckIconRef.current, {
         rotation: 0, transformOrigin: `${PUCK_CX}px ${PUCK_CY}px`,
-        fill: 'rgba(200,160,48,0.75)', duration: 0.3, ease: 'back.out(1.6)',
+        fill: 'rgba(200,160,48,0.75)', // approved SVG exception
+        duration: 0.3, ease: 'back.out(1.6)',
       }, 0)
       tl.to(puckInnerRef.current, {
-        attr: { stroke: 'rgba(200,160,48,0.45)', strokeWidth: 1.5 }, duration: 0.2,
+        attr: { stroke: 'rgba(200,160,48,0.45)', strokeWidth: 1.5 }, // approved SVG exception
+        duration: 0.2,
       }, 0)
     }
   }, [isOpen]) // eslint-disable-line react-hooks/exhaustive-deps
