@@ -74,6 +74,113 @@ export function MapToolsRadial({
   const [mounted, setMounted] = useState(false)
   useEffect(() => { setMounted(true) }, [])
 
+  /* Three.js background canvas */
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    // Dynamically import three to avoid SSR issues
+    let renderer: import('three').WebGLRenderer
+    let animId: number
+    let cancelled = false
+
+    import('three').then(THREE => {
+      if (cancelled) return
+
+      renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false })
+      renderer.setSize(SVG_W, SVG_H)
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+
+      const scene  = new THREE.Scene()
+      const camera = new THREE.PerspectiveCamera(60, SVG_W / SVG_H, 0.1, 100)
+      camera.position.set(0, 0, 8)
+
+      /* ── Star field ── */
+      const starCount = 440
+      const positions = new Float32Array(starCount * 3)
+      const sizes     = new Float32Array(starCount)
+      for (let i = 0; i < starCount; i++) {
+        positions[i * 3]     = (Math.random() - 0.5) * 22
+        positions[i * 3 + 1] = (Math.random() - 0.5) * 14
+        positions[i * 3 + 2] = (Math.random() - 0.5) * 8
+        sizes[i] = 1.2 + Math.random() * 1.8
+      }
+      const starGeo = new THREE.BufferGeometry()
+      starGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+      starGeo.setAttribute('size',     new THREE.BufferAttribute(sizes, 1))
+
+      const starMat = new THREE.ShaderMaterial({
+        transparent: true,
+        uniforms: { time: { value: 0 } },
+        vertexShader: `
+          attribute float size;
+          uniform float time;
+          varying float va;
+          void main() {
+            va = 0.4 + 0.6 * sin(time * 0.8 + position.x * 3.0);
+            vec4 mvp = modelViewMatrix * vec4(position, 1.0);
+            gl_PointSize = size * (300.0 / -mvp.z);
+            gl_Position = projectionMatrix * mvp;
+          }
+        `,
+        fragmentShader: `
+          varying float va;
+          void main() {
+            float d = length(gl_PointCoord - 0.5);
+            if (d > 0.5) discard;
+            float a = smoothstep(0.5, 0.0, d) * va;
+            gl_FragColor = vec4(0.784, 0.627, 0.188, a);
+          }
+        `,
+      })
+      const stars = new THREE.Points(starGeo, starMat)
+      scene.add(stars)
+
+      /* ── Wireframe terrain ── */
+      const terrainGeo = new THREE.PlaneGeometry(20, 12, 60, 36)
+      const posArr = terrainGeo.attributes.position.array as Float32Array
+      for (let i = 0; i < posArr.length; i += 3) {
+        posArr[i + 2] = Math.sin(posArr[i] * 0.6) * Math.cos(posArr[i + 1] * 0.8) * 0.18
+                      + (Math.random() - 0.5) * 0.04
+      }
+      terrainGeo.computeVertexNormals()
+      const terrain = new THREE.Mesh(terrainGeo, new THREE.MeshBasicMaterial({
+        color: 0x1a1208, wireframe: true, transparent: true, opacity: 0.18,
+      }))
+      terrain.rotation.x = -Math.PI / 3.2
+      terrain.position.set(0, -2.5, -1)
+      scene.add(terrain)
+
+      /* ── Scan beam ── */
+      const beam = new THREE.Mesh(
+        new THREE.PlaneGeometry(22, 0.012),
+        new THREE.MeshBasicMaterial({ color: 0xc8a030, transparent: true, opacity: 0.18 }),
+      )
+      scene.add(beam)
+
+      /* ── Animate ── */
+      let t = 0
+      function animate() {
+        animId = requestAnimationFrame(animate)
+        t += 0.016
+        starMat.uniforms.time.value = t
+        stars.rotation.z += 0.0003
+        terrain.rotation.z = Math.sin(t * 0.2) * 0.05
+        beam.position.y = 4 - (t * 0.35) % 9
+        renderer.render(scene, camera)
+      }
+      animate()
+    })
+
+    return () => {
+      cancelled = true
+      if (animId) cancelAnimationFrame(animId)
+      if (renderer) renderer.dispose()
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   /* Drag state — widget position relative to its parent */
   const [dragPos,     setDragPos]     = useState<{ x: number; y: number } | null>(null)
   const dragOffsetRef = useRef<{ ox: number; oy: number } | null>(null)
@@ -142,8 +249,8 @@ export function MapToolsRadial({
       }}
     >
       {/* ── Three.js background canvas (z=0) ── */}
-      {/* placeholder — wired in Task 4 */}
       <canvas
+        ref={canvasRef}
         style={{
           position: 'absolute', inset: 0, width: '100%', height: '100%',
           zIndex: Z.base, pointerEvents: 'none', borderRadius: RADIUS.lg,
