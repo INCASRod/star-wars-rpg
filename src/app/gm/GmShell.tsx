@@ -164,7 +164,6 @@ export function GmShell() {
   const [recheckInitiativeOpen, setRecheckInitiativeOpen] = useState(false)
   const [referenceOpen,         setReferenceOpen]         = useState(false)
   const [diceOpen,              setDiceOpen]              = useState(false)
-  const [mapLibraryOpen,        setMapLibraryOpen]        = useState(false)
 
   // Force GM Imperial Steel theme for the entire GM view, including portals
   useEffect(() => {
@@ -182,7 +181,6 @@ export function GmShell() {
   // ── Handlers ────────────────────────────────────────────────────
   function handlePanelToggle(id: GmPanelId) {
     setActivePanel(p => p === id ? null : id)
-    setMapLibraryOpen(false)
   }
 
   const handleToggleVisibility = useCallback(async (id: string, visible: boolean) => {
@@ -396,8 +394,6 @@ export function GmShell() {
             activeMap={activeMap}
             onDeleteMap={removeMap}
             isStagingTab={true}
-            stagingLibraryOpen={mapLibraryOpen}
-            onStagingLibraryClose={() => setMapLibraryOpen(false)}
             stagingTokens={stagingTokens}
             onStagingMoveToken={stagingMoveToken}
             onStagingToggleVisibility={handleToggleVisibility}
@@ -448,10 +444,6 @@ export function GmShell() {
             {activePanel === 'map' && (
               <GmMapPanel
                 campaignId={campaignId ?? ''}
-                mapId={activeMap?.id ?? null}
-                isMapVisible={activeMap?.is_visible_to_players ?? false}
-                tokenScale={activeMap?.token_scale ?? 1.0}
-                onMapsClick={() => setMapLibraryOpen(m => !m)}
                 characters={activeChars}
                 tokens={stagingTokens}
                 addToken={stagingAddToken}

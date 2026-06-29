@@ -273,10 +273,6 @@ export interface GmMapViewProps {
   /** When true, hides the internal floating toolbar (Maps/Upload/Tokens buttons).
    *  The staging tab provides its own pill toolbar instead. */
   isStagingTab?:            boolean
-  /** When isStagingTab is true, controls the map library drawer from outside. */
-  stagingLibraryOpen?:      boolean
-  /** Called when the close button inside the library drawer is clicked (staging only). */
-  onStagingLibraryClose?:   () => void
   /** Shared token state lifted to page level — avoids dual hook instances causing stale canvas. */
   stagingTokens?:              MapToken[]
   onStagingMoveToken?:         (id: string, x: number, y: number) => Promise<void>
@@ -285,7 +281,7 @@ export interface GmMapViewProps {
   onStagingAddToken?:          (token: Omit<MapToken, 'id' | 'updated_at'>) => Promise<MapToken | null>
 }
 
-export function GmMapView({ campaignId, encounter: encounterProp, characters, allMaps, activeMap, onDeleteMap, isStagingTab, stagingLibraryOpen, onStagingLibraryClose, stagingTokens, onStagingMoveToken, onStagingToggleVisibility, onStagingRemoveToken, onStagingAddToken }: GmMapViewProps) {
+export function GmMapView({ campaignId, encounter: encounterProp, characters, allMaps, activeMap, onDeleteMap, isStagingTab, stagingTokens, onStagingMoveToken, onStagingToggleVisibility, onStagingRemoveToken, onStagingAddToken }: GmMapViewProps) {
   const supabase = useMemo(() => createClient(), [])
 
   const router = useRouter()
@@ -962,8 +958,8 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
 
         {/* ── Map library drawer — rendered via portal so it escapes overflow:hidden ── */}
         {mounted && (() => {
-          const isOpen = isStagingTab ? (stagingLibraryOpen ?? false) : libraryOpen
-          const closeDrawer = () => isStagingTab ? onStagingLibraryClose?.() : setLibraryOpen(false)
+          const isOpen = libraryOpen
+          const closeDrawer = () => setLibraryOpen(false)
           return createPortal(
             <>
               {/* Backdrop */}
