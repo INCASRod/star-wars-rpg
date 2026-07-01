@@ -10,6 +10,9 @@ try {
 
 const nextConfig: NextConfig = {
   devIndicators: false,
+  // Turbopack doesn't always execute re-exported side-effects inside pixi.js,
+  // which prevents the WebGL renderer from registering before Application init.
+  transpilePackages: ['pixi.js'],
   env: {
     NEXT_PUBLIC_APP_VERSION: process.env.npm_package_version,
     NEXT_PUBLIC_COMMIT_HASH: commitHash,

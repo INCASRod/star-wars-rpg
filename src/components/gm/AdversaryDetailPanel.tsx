@@ -261,7 +261,7 @@ export function AdversaryDetailPanel({
           <div>
             <SectionHead>Derived Stats</SectionHead>
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <StatBox label="Soak"  value={adv.soak}  />
+              <StatBox label="Soak"  value={adv.soak + (adv.gear ?? []).reduce((s, g) => s + (g.soak ?? 0), 0)}  />
               <StatBox label="WT"    value={adv.wound} />
               {adv.strain != null && <StatBox label="ST" value={adv.strain} />}
               {defense[0] > 0 && <StatBox label="Def M" value={defense[0]} />}

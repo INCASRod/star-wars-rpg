@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRefWeapons } from '@/hooks/useRefWeapons'
 import { useCharacterSkills } from '@/hooks/useCharacterSkills'
@@ -94,6 +94,26 @@ export interface EncounterAdversaryPanelProps {
  */
 export function EncounterAdversaryPanel({ campaignId, encounter, characters }: EncounterAdversaryPanelProps) {
   const supabase = createClient()
+
+  /* ── Library gear soak (fallback for stale instance snapshots) ── */
+  const [libGear, setLibGear] = useState<Record<string, AdversaryGear[]>>({})
+
+  const sourceIdKey = useMemo(
+    () => [...new Set((encounter?.adversaries ?? []).map(a => a.sourceId))].sort().join(','),
+    [encounter?.adversaries]
+  )
+
+  useEffect(() => {
+    const ids = sourceIdKey ? sourceIdKey.split(',') : []
+    if (!ids.length) return
+    supabase.from('ref_adversaries').select('id, gear').in('id', ids)
+      .then(({ data }) => {
+        if (!data) return
+        const map: Record<string, AdversaryGear[]> = {}
+        for (const row of data) map[row.id as string] = (row.gear as AdversaryGear[]) ?? []
+        setLibGear(map)
+      })
+  }, [sourceIdKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── UI state ────────────────────────────────────────────── */
   const [openCards,       setOpenCards]       = useState<Set<string>>(new Set())
@@ -280,14 +300,25 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
     })
 
   /* ── Soak gear parser ────────────────────────────────────── */
-  function parseSoakFromGear(gear: AdversaryGear[]): { total: number; sources: string[] } {
+  function parseSoakFromGear(
+    gear: AdversaryGear[],
+    fallbackGear: AdversaryGear[] = [],
+  ): { total: number; sources: string[] } {
+    const fallbackMap = Object.fromEntries(fallbackGear.map(g => [g.name, g]))
     let total = 0; const sources: string[] = []
     for (const item of gear) {
-      const text = `${item.name} ${item.description ?? ''}`
-      const m = text.match(/\(\+(\d+)\s*soak\)/i)
-      if (m) {
-        const bonus = parseInt(m[1]); total += bonus
-        sources.push(`${item.name.replace(/\s*\(\+\d+\s*soak\)/i, '').trim()} +${bonus}`)
+      const soakVal = item.soak ?? fallbackMap[item.name]?.soak
+      if (soakVal != null && soakVal > 0) {
+        total += soakVal
+        sources.push(`${item.name} +${soakVal}`)
+      } else {
+        // legacy fallback: parse "(+N soak)" from description text
+        const text = `${item.name} ${item.description ?? ''}`
+        const m = text.match(/\(\+(\d+)\s*soak\)/i)
+        if (m) {
+          const bonus = parseInt(m[1]); total += bonus
+          sources.push(`${item.name.replace(/\s*\(\+\d+\s*soak\)/i, '').trim()} +${bonus}`)
+        }
       }
     }
     return { total, sources }
@@ -460,19 +491,19 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
                   ))}
                 </div>
 
-                {/* Derived stats + soak override */}
+                {/* Derived stats + soak */}
                 {(() => {
-                  const gearSoak = parseSoakFromGear(adv.gear ?? [])
-                  const expectedSoak = adv.characteristics.brawn + gearSoak.total
+                  const gearSoak = parseSoakFromGear(adv.gear ?? [], libGear[adv.sourceId] ?? [])
+                  const totalSoak = adv.soak + gearSoak.total
                   return (
                     <>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: SP[1], marginBottom: gearSoak.total > 0 ? SP[1] : SP[2], alignItems: 'flex-start' }}>
-                        {/* Soak — editable */}
+                        {/* Soak — editable (base ±, gear bonus shown in breakdown) */}
                         <div style={{ background: `${WIL_C}15`, border: `1px solid ${WIL_C}40`, borderRadius: RADIUS.sm, padding: `0.1875rem 0.3125rem`, textAlign: 'center', minWidth: '3.25rem' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: SP[1], justifyContent: 'center' }}>
                             <button onClick={e => { e.stopPropagation(); void updateAdversarySoak(adv.instanceId, adv.soak - 1) }}
                               style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px', fontFamily: FC, fontSize: FS.label, color: `${WIL_C}80`, lineHeight: 1 }}>−</button>
-                            <span style={{ fontFamily: FC, fontSize: FS.h4, fontWeight: 700, color: WIL_C, lineHeight: 1 }}>{adv.soak}</span>
+                            <span style={{ fontFamily: FC, fontSize: FS.h4, fontWeight: 700, color: WIL_C, lineHeight: 1 }}>{totalSoak}</span>
                             <button onClick={e => { e.stopPropagation(); void updateAdversarySoak(adv.instanceId, adv.soak + 1) }}
                               style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px', fontFamily: FC, fontSize: FS.label, color: `${WIL_C}80`, lineHeight: 1 }}>+</button>
                           </div>
@@ -491,18 +522,12 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
                           </div>
                         ))}
                       </div>
-                      {/* Soak breakdown */}
+                      {/* Soak breakdown when gear contributes */}
                       {gearSoak.total > 0 && (
-                        <div style={{ marginBottom: SP[2], display: 'flex', alignItems: 'center', gap: '0.375rem', flexWrap: 'wrap' }}>
+                        <div style={{ marginBottom: SP[2] }}>
                           <span style={{ fontFamily: FC, fontSize: FS.overline, color: TEXT_MUTED }}>
-                            Soak: Br {adv.characteristics.brawn} + {gearSoak.sources.join(' + ')} = {expectedSoak}
+                            Soak: Br {adv.characteristics.brawn} + {gearSoak.sources.join(' + ')} = {totalSoak}
                           </span>
-                          {adv.soak !== expectedSoak && (
-                            <button
-                              onClick={e => { e.stopPropagation(); void updateAdversarySoak(adv.instanceId, expectedSoak) }}
-                              style={{ background: `color-mix(in srgb, ${HUD.gold} 8%, transparent)`, border: `1px solid color-mix(in srgb, ${HUD.gold} 31%, transparent)`, borderRadius: RADIUS.sm, padding: '1px 6px', cursor: 'pointer', fontFamily: FC, fontSize: FS.overline, color: HUD.gold }}
-                            >Apply</button>
-                          )}
                         </div>
                       )}
                     </>

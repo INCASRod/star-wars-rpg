@@ -39,6 +39,7 @@ export interface AdversaryGear {
   name: string
   encumbrance: string
   description: string
+  soak?: number
 }
 
 export interface Adversary {

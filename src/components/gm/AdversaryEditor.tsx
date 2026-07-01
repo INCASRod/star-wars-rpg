@@ -131,7 +131,7 @@ const LIGHTSABER_CHAR_OPTIONS: { key: string; label: string }[] = [
 /* ── Skill entry ───────────────────────────────────────── */
 interface SkillEntry { skill: string; rank: number; characteristicOverride?: string }
 interface WeaponEntry { name: string; skillCategory: string; damage: string; range: string; qualities: string }
-interface GearEntry { name: string; encumbrance: string; description: string }
+interface GearEntry { name: string; encumbrance: string; description: string; soak: string }
 interface TalentEntry { name: string; description: string }
 interface AbilityEntry { name: string; description: string }
 
@@ -169,8 +169,8 @@ function fromTemplate(t: Adversary): Partial<{
       qualities: (w.qualities ?? []).join(', '),
     })),
     gear:        (t.gear ?? []).map(g => typeof g === 'string'
-      ? { name: g, encumbrance: '', description: '' }
-      : { name: g.name, encumbrance: g.encumbrance, description: g.description }),
+      ? { name: g, encumbrance: '', description: '', soak: '' }
+      : { name: g.name, encumbrance: g.encumbrance, description: g.description, soak: g.soak != null ? String(g.soak) : '' }),
     talents:     (t.talents ?? []).map(ta => ({ name: ta.name, description: ta.description ?? '' })),
     abilities:   (t.abilities ?? []).map(a => ({ name: a.name, description: a.description })),
     description: t.description ?? '',
@@ -259,7 +259,7 @@ export function AdversaryEditor({
     setWeapons(prev => prev.map((w, j) => j === i ? { ...w, ...patch } : w))
 
   /* ── Gear helpers ────────────────────────────────────── */
-  const addGear = () => setGear(prev => [...prev, { name: '', encumbrance: '', description: '' }])
+  const addGear = () => setGear(prev => [...prev, { name: '', encumbrance: '', description: '', soak: '' }])
   const removeGear = (i: number) => setGear(prev => prev.filter((_, j) => j !== i))
   const updateGear = (i: number, patch: Partial<GearEntry>) =>
     setGear(prev => prev.map((g, j) => j === i ? { ...g, ...patch } : g))
@@ -316,7 +316,10 @@ export function AdversaryEditor({
 
       const gearData: AdversaryGear[] = gear
         .filter(g => g.name.trim())
-        .map(g => ({ name: g.name.trim(), encumbrance: g.encumbrance, description: g.description }))
+        .map(g => ({
+          name: g.name.trim(), encumbrance: g.encumbrance, description: g.description,
+          ...(g.soak !== '' && !isNaN(Number(g.soak)) ? { soak: Number(g.soak) } : {}),
+        }))
 
       const row: Omit<CustomAdversaryRow, 'id'> = {
         name: name.trim(), type,
@@ -746,6 +749,15 @@ export function AdversaryEditor({
                           type="text" placeholder="0"
                           value={g.encumbrance}
                           onChange={e => updateGear(i, { encumbrance: e.target.value })}
+                          style={inputStyle}
+                        />
+                      </div>
+                      <div style={{ width: '3.5rem' }}>
+                        <div style={fieldLabel}>Soak +</div>
+                        <input
+                          type="text" placeholder="0"
+                          value={g.soak}
+                          onChange={e => updateGear(i, { soak: e.target.value })}
                           style={inputStyle}
                         />
                       </div>

@@ -560,7 +560,7 @@ function AdversaryRow({
           <TypeBadge type={adversary.type} />
         </div>
         <div style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: DIM, marginTop: 2 }}>
-          Soak {adversary.soak} · WT {adversary.wound}
+          Soak {adversary.soak + (adversary.gear ?? []).reduce((s, g) => s + (g.soak ?? 0), 0)} · WT {adversary.wound}
           {adversary.type === 'minion' && ' (per minion)'}
         </div>
       </div>

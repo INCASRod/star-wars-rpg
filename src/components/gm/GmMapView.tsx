@@ -16,7 +16,8 @@ import type { Character } from '@/lib/types'
 import type { CombatEncounter } from '@/lib/combat'
 import { fetchAdversaries, adversaryToInstance } from '@/lib/adversaries'
 import type { AdversaryInstance } from '@/lib/adversaries'
-import type { VehicleInstance } from '@/lib/vehicles'
+import { fetchVehicles } from '@/lib/vehicles'
+import type { VehicleInstance, Vehicle } from '@/lib/vehicles'
 import { useEncounterCombatControls } from '@/hooks/useEncounterCombatControls'
 import { HUD, FONT_BODY, EASE, RADIUS } from '@/lib/tokens'
 import { MapToolsRadial } from '@/app/gm/MapToolsRadial'
@@ -317,6 +318,7 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
   const [busy,             setBusy]             = useState(false)
   const [advTokenBusy,     setAdvTokenBusy]     = useState<string | null>(null)
   const [advStatCache,     setAdvStatCache]     = useState<Map<string, AdversaryInstance>>(new Map())
+  const [vehStatCache,     setVehStatCache]     = useState<Map<string, Vehicle>>(new Map())
   // token_scale lives on the maps row; realtime propagates it to all clients automatically
   const tokenScale = activeMap?.token_scale ?? 1.0
 
@@ -361,6 +363,21 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
       setAdvStatCache(cache)
     })()
   }, [tokens]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Pre-load static vehicle stats for rectangle tokens that have no encounter slot.
+  useEffect(() => {
+    const vehicleNames = [...new Set(
+      tokens.filter(t => t.token_shape === 'rectangle' && t.label).map(t => t.label!),
+    )]
+    if (vehicleNames.length === 0) { setVehStatCache(new Map()); return }
+    fetchVehicles().then(allVehicles => {
+      const cache = new Map<string, Vehicle>()
+      for (const v of allVehicles) {
+        if (vehicleNames.includes(v.name)) cache.set(v.name, v)
+      }
+      setVehStatCache(cache)
+    }).catch(console.warn)
+  }, [tokens])
 
   // Which characters/slots are already on the current map
   const onMapCharIds  = useMemo(() => new Set(tokens.map(t => t.character_id).filter(Boolean as unknown as (v: string | null) => v is string)), [tokens])
@@ -476,6 +493,7 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
           name: veh.name,
           typeLabel: 'Vehicle',
           typeColor: veh.alignment === 'allied_npc' ? '#4EC87A' : '#E05252',
+          vehicleStats: { silhouette: veh.silhouette, speed: veh.speed, handling: veh.handling, armor: veh.armor, defense: veh.defense },
           hullTrauma:   { current: veh.hullTraumaCurrent,   max: veh.hullTraumaThreshold },
           systemStrain: { current: veh.systemStrainCurrent,  max: veh.systemStrainThreshold },
           vehicleInstance: veh,
@@ -504,13 +522,27 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
       }
     }
 
+    // Vehicle fallback: rectangle tokens not linked to an encounter slot (pre-combat placement).
+    if (token.token_shape === 'rectangle' && token.label) {
+      const staticVeh = vehStatCache.get(token.label)
+      if (staticVeh) return {
+        x: activeTooltipState.x, y: activeTooltipState.y,
+        name: token.label,
+        typeLabel: 'Vehicle',
+        typeColor: '#E05252',
+        vehicleStats: { silhouette: staticVeh.silhouette, speed: staticVeh.speed, handling: staticVeh.handling, armor: staticVeh.armor, defense: { fore: staticVeh.defFore, aft: staticVeh.defAft, port: staticVeh.defPort, starboard: staticVeh.defStarboard } },
+        hullTrauma:   { current: 0, max: staticVeh.hullTrauma },
+        systemStrain: { current: 0, max: staticVeh.systemStrain },
+      }
+    }
+
     return {
       x: activeTooltipState.x, y: activeTooltipState.y,
       name: token.label ?? '?',
       typeLabel: token.alignment ?? 'token',
       typeColor: HUD.gold,
     }
-  }, [activeTooltipState, tokensById, characters, encounter, advStatCache])
+  }, [activeTooltipState, tokensById, characters, encounter, advStatCache, vehStatCache])
 
   const lockedAdversary = useMemo<AdversaryInstance | null>(() => {
     if (!lockedTokenId || !localEncounter) return null
@@ -1312,11 +1344,14 @@ interface TokenTooltipData {
   typeColor:      string
   characteristics?: { brawn: number; agility: number; intellect: number; cunning: number; willpower: number; presence: number }
   soak?:          number | null
+  soakLabel?:     string
   defMelee?:      number | null
   defRanged?:     number | null
   wounds?:        { current: number; max: number }
   strain?:        { current: number; max: number }
   minionGroup?:   { alive: number; total: number }
+  // Vehicle stat block (replaces characteristics + soak/defense for vehicles)
+  vehicleStats?:  { silhouette: number; speed: number; handling: number; armor: number; defense: { fore: number; aft: number; port: number; starboard: number } }
   // Vehicle health bars (hover read-only + locked controls)
   hullTrauma?:    { current: number; max: number }
   systemStrain?:  { current: number; max: number }
@@ -1411,12 +1446,36 @@ const TokenTooltip = memo(function TokenTooltip(p: TokenTooltipData) {
         </div>
       )}
 
+      {/* Vehicle stat block: SIL / SPD / HDL / ARMOR + defense arcs */}
+      {p.vehicleStats && (() => {
+        const vs = p.vehicleStats!
+        const hdlStr = vs.handling > 0 ? `+${vs.handling}` : String(vs.handling)
+        const topRow = [{ l: 'SIL', v: vs.silhouette }, { l: 'SPD', v: vs.speed }, { l: 'HDL', v: hdlStr }, { l: 'ARMOR', v: vs.armor }]
+        const arcRow = [{ l: 'DEF F', v: vs.defense.fore }, { l: 'DEF A', v: vs.defense.aft }, { l: 'DEF P', v: vs.defense.port }, { l: 'DEF S', v: vs.defense.starboard }]
+        const cell = (l: string, v: string | number, gold = false) => (
+          <div key={l} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px', background: 'rgba(255,255,255,0.04)', borderRadius: RADIUS.sm, padding: '0.25rem 0.125rem' }}>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.04em' }}>{l}</div>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700, color: gold ? HUD.gold : TEXT }}>{v}</div>
+          </div>
+        )
+        return (
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.1875rem', marginBottom: '0.25rem' }}>
+              {topRow.map(({ l, v }) => cell(l, v, true))}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.1875rem', marginBottom: '0.5rem' }}>
+              {arcRow.map(({ l, v }) => cell(l, v))}
+            </div>
+          </>
+        )
+      })()}
+
       {/* Soak + Defense */}
       {(p.soak != null || p.defMelee != null || p.defRanged != null) && (
         <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '0.5rem' }}>
           {p.soak != null && (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.04)', borderRadius: RADIUS.sm, padding: '0.25rem' }}>
-              <div style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.04em' }}>SOAK</div>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.04em' }}>{p.soakLabel ?? 'SOAK'}</div>
               <div style={{ fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700, color: TEXT }}>{p.soak}</div>
             </div>
           )}
@@ -1480,8 +1539,8 @@ const TokenTooltip = memo(function TokenTooltip(p: TokenTooltipData) {
         </div>
       )}
 
-      {/* Vehicle health bars (hover read-only) */}
-      {p.hullTrauma && !p.isLocked && (
+      {/* Vehicle health bars — read-only unless locked AND controls are available */}
+      {p.hullTrauma && (!p.isLocked || !p.vehicleInstance) && (
         <div style={{ marginBottom: p.systemStrain ? 6 : 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.1875rem' }}>
             <span style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Hull Trauma</span>
@@ -1492,7 +1551,7 @@ const TokenTooltip = memo(function TokenTooltip(p: TokenTooltipData) {
           </div>
         </div>
       )}
-      {p.systemStrain && !p.isLocked && (
+      {p.systemStrain && (!p.isLocked || !p.vehicleInstance) && (
         <div style={{ marginTop: p.hullTrauma ? 6 : 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.1875rem' }}>
             <span style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Sys Strain</span>

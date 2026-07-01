@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useCallback, memo, useState } from 'react'
 import { Lock, LockOpen } from 'lucide-react'
-import { SP, Z } from '@/lib/tokens'
+import { SP, Z, FS, FONT_BODY } from '@/lib/tokens'
 import type { MapToken } from '@/hooks/useMapTokens'
 import { runMapWipe } from '@/lib/mapWipe'
 import { attachTokenHover, onTokenPointerOver, onTokenPointerOut, destroyTokenHover } from '@/lib/tokenHover'
@@ -55,6 +55,7 @@ export const MapCanvas = memo(function MapCanvas({
 
   const [isLocked, setIsLocked] = useState(false)
   const isLockedRef = useRef(false)
+  const [webGLError, setWebGLError] = useState(false)
 
   const toggleLock = useCallback(() => {
     isLockedRef.current = !isLockedRef.current
@@ -103,15 +104,57 @@ export const MapCanvas = memo(function MapCanvas({
       if (destroyed || !containerRef.current) return
       PIXI = px
 
-      const app = new px.Application({
-        resizeTo:        containerRef.current,
-        backgroundColor: 0x060D09,
-        antialias:       true,
-        resolution:      window.devicePixelRatio || 1,
-        autoDensity:     true,
-      }) as InstanceType<typeof import('pixi.js').Application>
+      const el = containerRef.current
+      // Use Renderer directly rather than Application — Application calls
+      // autoDetectRenderer internally, which fails under Turbopack because
+      // @pixi/extensions is evaluated in two separate module contexts, leaving
+      // the renderers[] list seen by autoDetectRenderer permanently empty even
+      // when extensions.add(Renderer) is called from our module context.
+      // Constructing Renderer directly bypasses that broken detection path.
+      const renderer = (() => {
+        try {
+          return new px.Renderer({
+            width:           el.clientWidth  || 800,
+            height:          el.clientHeight || 600,
+            backgroundColor: 0x060D09,
+            antialias:       true,
+            resolution:      window.devicePixelRatio || 1,
+            autoDensity:     true,
+          })
+        } catch {
+          setWebGLError(true)
+          return null
+        }
+      })()
+      if (!renderer) return
+      el.appendChild(renderer.view as HTMLCanvasElement)
 
-      containerRef.current.appendChild(app.view as HTMLCanvasElement)
+      const stage  = new px.Container()
+      const ticker = new px.Ticker()
+      // Render at LOW priority (-25) so NORMAL-priority animation callbacks
+      // (hover glow, scale lerp in tokenHover.ts) always run before the frame.
+      ticker.add(() => renderer.render(stage), null, -25)
+      ticker.start()
+
+      // ResizeObserver replaces Application's resizeTo option.
+      const ro = new ResizeObserver(() => {
+        if (!containerRef.current) return
+        renderer.resize(containerRef.current.clientWidth || 800, containerRef.current.clientHeight || 600)
+      })
+      ro.observe(el)
+
+      const app = {
+        renderer, stage, ticker,
+        view:   renderer.view,
+        screen: renderer.screen,
+        destroy(removeView: boolean, opts?: { children?: boolean; texture?: boolean; baseTexture?: boolean }) {
+          ro.disconnect()
+          ticker.destroy()
+          stage.destroy(opts)
+          renderer.destroy(removeView)
+        },
+      } as unknown as InstanceType<typeof import('pixi.js').Application>
+
       appRef.current = app
       app.stage.sortableChildren = true
 
@@ -241,27 +284,41 @@ export const MapCanvas = memo(function MapCanvas({
         ref={containerRef}
         style={{ width: '100%', height: '100%', cursor: isLocked ? 'default' : 'grab', overflow: 'hidden' }}
       />
-      <div
-        className="absolute flex"
-        style={{ top: SP[2], right: SP[2], gap: SP[1], zIndex: Z.overlay, pointerEvents: 'none' }}
-      >
-        <button
-          className="map-ctrl-btn"
-          style={{ pointerEvents: 'auto' }}
-          onClick={resetView}
-          aria-label="Reset map view"
+      {webGLError ? (
+        <div
+          className="absolute inset-0 flex flex-col items-center justify-center gap-2"
+          style={{ zIndex: Z.overlay }}
         >
-          ↺ Reset
-        </button>
-        <button
-          className={`map-ctrl-btn map-ctrl-btn--icon${isLocked ? ' map-ctrl-btn--locked' : ''}`}
-          style={{ pointerEvents: 'auto' }}
-          onClick={toggleLock}
-          aria-label={isLocked ? 'Unlock map' : 'Lock map'}
+          <span style={{ fontSize: FS.sm, fontFamily: FONT_BODY, color: 'var(--hud-text-faint)' }}>
+            Map requires WebGL
+          </span>
+          <span style={{ fontSize: FS.overline, fontFamily: FONT_BODY, color: 'var(--hud-text-faint)', opacity: 0.6 }}>
+            Open in Chrome or Edge to use the map
+          </span>
+        </div>
+      ) : (
+        <div
+          className="absolute flex"
+          style={{ top: SP[2], right: SP[2], gap: SP[1], zIndex: Z.overlay, pointerEvents: 'none' }}
         >
-          {isLocked ? <Lock size={13} strokeWidth={2} /> : <LockOpen size={13} strokeWidth={2} />}
-        </button>
-      </div>
+          <button
+            className="map-ctrl-btn"
+            style={{ pointerEvents: 'auto' }}
+            onClick={resetView}
+            aria-label="Reset map view"
+          >
+            ↺ Reset
+          </button>
+          <button
+            className={`map-ctrl-btn map-ctrl-btn--icon${isLocked ? ' map-ctrl-btn--locked' : ''}`}
+            style={{ pointerEvents: 'auto' }}
+            onClick={toggleLock}
+            aria-label={isLocked ? 'Unlock map' : 'Lock map'}
+          >
+            {isLocked ? <Lock size={13} strokeWidth={2} /> : <LockOpen size={13} strokeWidth={2} />}
+          </button>
+        </div>
+      )}
     </div>
   )
 })

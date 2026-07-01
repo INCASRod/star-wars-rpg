@@ -61,7 +61,7 @@ export function useCharacterData(characterId: string) {
     try {
       const ds = await fetchActiveDataset(supabase)
       const [charRes, skillsRes, talentsRes, weaponsRes, armorRes, gearRes, critsRes, specsRes,
-        refSkRes, refTalRes, refWpnRes, refArmRes, refGearRes, refCritRes, refSpecRes, refDescRes,
+        refSkRes, refTalRes, refTalCustomRes, refWpnRes, refArmRes, refGearRes, refCritRes, refSpecRes, refDescRes,
         refCareerRes, refSpeciesRes, forceAbilRes, refFpRes, refFaRes, refWqRes, refAttRes,
         refOblTypesRes, refDutyTypesRes] = await Promise.all([
         supabase.from('characters').select('*').eq('id', characterId).single(),
@@ -74,6 +74,7 @@ export function useCharacterData(characterId: string) {
         supabase.from('character_specializations').select('*').eq('character_id', characterId),
         supabase.from('ref_skills').select('*'),
         supabase.from('ref_talents').select('*').eq('dataset_source', ds).eq('is_retired', false),
+        supabase.from('ref_talents').select('*').eq('is_custom', true),
         supabase.from('ref_weapons').select('*'),
         supabase.from('ref_armor').select('*'),
         supabase.from('ref_gear').select('*'),
@@ -102,7 +103,10 @@ export function useCharacterData(characterId: string) {
       setCrits((critsRes.data as CharacterCriticalInjury[]) || [])
       setCharSpecs((specsRes.data as CharacterSpecialization[]) || [])
       setRefSkills((refSkRes.data as RefSkill[]) || [])
-      setRefTalents((refTalRes.data as RefTalent[]) || [])
+      const stdTalents  = (refTalRes.data as RefTalent[]) || []
+      const custTalents = (refTalCustomRes.data as RefTalent[]) || []
+      const stdKeys     = new Set(stdTalents.map(t => t.key))
+      setRefTalents([...stdTalents, ...custTalents.filter(t => !stdKeys.has(t.key))])
       setRefWeapons((refWpnRes.data as RefWeapon[]) || [])
       setRefArmor((refArmRes.data as RefArmor[]) || [])
       setRefGear((refGearRes.data as RefGear[]) || [])

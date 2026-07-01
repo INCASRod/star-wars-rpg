@@ -161,9 +161,14 @@ function ResultCount({ label }: { label: string }) {
 // ── Talents tab ────────────────────────────────────────────────────────────────
 
 function TalentCard({ talent }: { talent: RefTalent }) {
+  const [expanded, setExpanded] = useState(false)
+  const hasDesc = !!talent.description
   return (
-    <div style={{ padding: '0.5625rem 0.875rem', borderBottom: `1px solid ${BORDER}` }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4375rem', marginBottom: '0.3125rem' }}>
+    <div
+      style={{ padding: '0.5625rem 0.875rem', borderBottom: `1px solid ${BORDER}`, cursor: hasDesc ? 'pointer' : 'default' }}
+      onClick={() => hasDesc && setExpanded(e => !e)}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4375rem', marginBottom: hasDesc ? '0.3125rem' : 0 }}>
         <span style={{
           fontFamily: FONT_BODY,
           fontSize:   'var(--text-sm)',
@@ -185,9 +190,19 @@ function TalentCard({ talent }: { talent: RefTalent }) {
             Ranked
           </span>
         )}
+        {hasDesc && (
+          <span style={{ fontSize: FS.overline, color: DIM_LO, flexShrink: 0 }}>
+            {expanded ? '▲' : '▼'}
+          </span>
+        )}
       </div>
-      {talent.description && (
-        <div style={{
+      {hasDesc && (
+        <div style={expanded ? {
+          fontFamily: FONT_BODY,
+          fontSize:   'var(--text-caption)',
+          color:      DIM,
+          lineHeight: 1.45,
+        } : {
           fontFamily:        FONT_BODY,
           fontSize:          'var(--text-caption)',
           color:             DIM,
@@ -197,7 +212,7 @@ function TalentCard({ talent }: { talent: RefTalent }) {
           WebkitLineClamp:   2,
           WebkitBoxOrient:   'vertical',
         } as React.CSSProperties}>
-          <RichText text={talent.description} />
+          <RichText text={talent.description!} />
         </div>
       )}
     </div>

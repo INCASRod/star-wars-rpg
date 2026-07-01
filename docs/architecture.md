@@ -109,7 +109,7 @@
 ### `useMapTokens(campaignId, mapId)`
 - Owns `map_tokens` table state for the active combat map
 - State: `tokens: MapToken[]`; each token has position, participant type, label, wound pct, visibility
-- Realtime: subscribes to INSERT/UPDATE/DELETE on `map_tokens`
+- Realtime: subscribes to INSERT/UPDATE/DELETE on `map_tokens` (table has `REPLICA IDENTITY FULL` so DELETE filter on `map_id` works correctly for external deletes by `slot_key`)
 
 ### `useActiveMap(campaignId)`
 - Loads and subscribes to the active map (`is_active = true`) for a campaign from `maps` table

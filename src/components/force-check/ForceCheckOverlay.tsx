@@ -342,10 +342,10 @@ export function ForceCheckOverlay({
     setBusy(true)
     try {
       const sb = campaignId ? createClient() : null
+      const activatedUpgrades = upgrades
+        .filter(u => spentMap.has(u.key))
+        .map(u => ({ name: u.name, fp_cost: u.pip_cost, is_dark: spentMap.get(u.key) ?? false }))
       if (darkUsed > 0 && sb && campaignId) {
-        const activatedUpgrades = upgrades
-          .filter(u => spentMap.has(u.key))
-          .map(u => ({ name: u.name, fp_cost: u.pip_cost, is_dark: spentMap.get(u.key) ?? false }))
         await sb.from('force_notifications').insert({
           campaign_id: campaignId, character_id: characterId,
           character_name: character.name,
@@ -384,6 +384,12 @@ export function ForceCheckOverlay({
           is_dm: false, hidden: false, roll_type: 'force',
           weapon_name: selPower.powerName, target_name: null,
           alignment: 'player', is_visible_to_players: true,
+          roll_meta: {
+            power_name: selPower.powerName,
+            activated_upgrades: activatedUpgrades,
+            dark_pips_used: darkUsed,
+            strain_cost: isDathomiri ? 0 : darkUsed,
+          },
         })
       }
     } catch (_e) { /* non-blocking */ }

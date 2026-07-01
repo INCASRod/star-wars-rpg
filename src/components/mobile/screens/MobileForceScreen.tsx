@@ -7,6 +7,7 @@ import type { ForceTreeNode } from '@/components/character/ForcePowerTree'
 import type { CharacterForceAbility, ForceCommitment, RefForcePower, RefForceAbility } from '@/lib/types'
 import { MobileBottomSheet } from '@/components/mobile/MobileBottomSheet'
 import { FONT_DISPLAY, FONT_BODY, FS, SP, RADIUS, HUD, EASE } from '@/lib/tokens'
+import { RichText } from '@/components/ui/RichText'
 
 // ── Force purple — sealed game-mechanic consistent colour ─────────────────────
 const FORCE_PURPLE     = '#8B5CF6' /* force/purple accent — mobile consistent */
@@ -467,7 +468,7 @@ function ForcePowerCard({
               fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textDim,
               lineHeight: 1.5, marginBottom: SP[2],
             }}>
-              {power.description}
+              <RichText text={power.description} />
             </div>
           )}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' /* compact node list — below SP[1] floor */ }}>
@@ -601,7 +602,7 @@ function AbilityNodeRow({
               fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textDim,
               lineHeight: 1.4, marginBottom: SP[2],
             }}>
-              {node.description}
+              <RichText text={node.description} />
             </div>
           )}
           <div style={{ display: 'flex', gap: SP[2], justifyContent: 'flex-end' }}>

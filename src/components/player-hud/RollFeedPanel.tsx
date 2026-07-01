@@ -1,7 +1,8 @@
 ﻿'use client'
 
 import { useState, type ReactNode }                       from 'react'
-import { FONT_BODY, RADIUS, SYM, FS, HUD, type DiceType } from '@/lib/tokens'
+import { FONT_BODY, FONT_DISPLAY, RADIUS, SP, SYM, FS, HUD, type DiceType } from '@/lib/tokens'
+import { RichText } from '@/components/ui/RichText'
 import { Tooltip, TipBody }                                from '@/components/ui/Tooltip'
 import { DiceFace }                                        from '@/components/dice/DiceFace'
 import type { RollEntry }                                  from '@/hooks/useRollFeed'
@@ -342,8 +343,16 @@ function CombatCard({
   )
 }
 
+// ── ForceRollMeta — shape written into roll_meta for force-type rolls ──
+type ForceRollMeta = {
+  power_name?:         string
+  activated_upgrades?: Array<{ name: string; fp_cost: number; is_dark: boolean }>
+  dark_pips_used?:     number
+  strain_cost?:        number
+}
+
 // ═══════════════════════════════════════════════════════════════════
-// FORCE CARD (Design B)
+// FORCE CARD (v2)
 // ═══════════════════════════════════════════════════════════════════
 function ForceCard({
   roll, isOwn, isGm, onCollapse,
@@ -351,56 +360,117 @@ function ForceCard({
   roll: RollEntry; isOwn: boolean; isGm: boolean; onCollapse?: () => void
 }) {
   const isHidden   = roll.hidden && !isOwn
-  const powerName  = roll.weapon_name || roll.roll_label || 'Force Power'
-  const light      = roll.result.netSuccess
-  const dark       = roll.result.netAdvantage
-  const darkUsed   = roll.result.triumph
-  const forceCount = roll.pool?.force ?? 0
+  const meta       = (roll.roll_meta ?? null) as ForceRollMeta | null
+  const powerName  = meta?.power_name ?? roll.weapon_name ?? roll.roll_label ?? 'Force Power'
+  const activUpgr  = meta?.activated_upgrades ?? []
+  const darkUsed   = meta?.dark_pips_used ?? roll.result.triumph
+  const strainCost = meta?.strain_cost ?? (darkUsed > 0 ? darkUsed : 0)
+  const lightCount = roll.result.netSuccess
+  const PURPLE     = HUD.accentPurple  // var(--hud-accent-purple)
 
   return (
-    <div className="overflow-hidden" style={{ borderRadius: RADIUS.md, border: `1px solid ${FORCE_BLUE}30` }}>
-      {/* Band — force-blue tint */}
+    <div className="overflow-hidden" style={{ borderRadius: RADIUS.md, border: `1px solid color-mix(in srgb, ${PURPLE} 25%, transparent)` }}>
+
+      {/* ── HEADER ROW ───────────────────────────────────────────── */}
       <div
-        style={{ ...bandStyle(FORCE_BLUE), cursor: onCollapse ? 'pointer' : 'default' }}
+        className="flex items-center gap-1.5"
+        style={{
+          padding: '4px 8px', minHeight: 24,
+          background: `color-mix(in srgb, ${PURPLE} 8%, transparent)`,
+          borderBottom: `1px solid color-mix(in srgb, ${PURPLE} 15%, transparent)`,
+          cursor: onCollapse ? 'pointer' : 'default',
+        }}
         onClick={onCollapse}
       >
-        <div className="shrink-0" style={{ width: 5, height: 5, borderRadius: RADIUS.full, background: FORCE_BLUE, boxShadow: `0 0 5px ${FORCE_BLUE}80` }} />
-        <span className="whitespace-nowrap" style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: FORCE_BLUE }}>
+        <span
+          className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap"
+          style={{ fontFamily: FONT_DISPLAY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: HUD.text }}
+        >
           {roll.character_name}
         </span>
-        <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap" style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontStyle: 'italic', color: HUD.textFaint, marginLeft: 4 }}>
-          ✦ {powerName} · Force Power
-        </span>
-        <span className="whitespace-nowrap" style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint, marginLeft: 4 }}>
+        <span style={{ color: PURPLE, fontSize: FS.caption, flexShrink: 0 }}>✦</span>
+        <span className="whitespace-nowrap shrink-0" style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint }}>
           {relativeTime(roll.rolled_at)}
         </span>
       </div>
-      {/* Body */}
-      <div style={{ padding: '7px 9px 6px', background: isOwn ? 'var(--hud-surface-mid)' : HUD.panel }}>
+
+      {/* ── POWER NAME BAR ───────────────────────────────────────── */}
+      <div style={{ borderLeft: `2px solid ${PURPLE}`, background: `color-mix(in srgb, ${PURPLE} 6%, transparent)`, padding: `${SP[1]} ${SP[2]}` }}>
+        <span style={{ fontFamily: FONT_DISPLAY, fontSize: FS.label, fontWeight: 700, color: `color-mix(in srgb, ${PURPLE} 90%, white)` }}>
+          {powerName}
+        </span>
+      </div>
+
+      {/* ── DIVIDER ──────────────────────────────────────────────── */}
+      <div style={{ height: 1, background: `color-mix(in srgb, ${PURPLE} 12%, transparent)` }} />
+
+      {/* ── BODY ─────────────────────────────────────────────────── */}
+      <div style={{ background: isOwn ? 'var(--hud-surface-mid)' : HUD.panel }}>
         {isHidden && !isGm ? (
           <HiddenBadge forGm={false} />
         ) : (
           <>
             {isGm && roll.hidden && <HiddenBadge forGm={true} />}
-            <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 900, color: FORCE_BLUE, marginBottom: 'var(--space-1)' }}>
-              ACTIVATED
-            </div>
-            {(light > 0 || dark > 0) && (
-              <div style={{ marginBottom: 'var(--space-1)' }}>
-                <ForcePips light={light} dark={dark} />
+
+            {/* Activated upgrades list */}
+            {activUpgr.map((u, i) => (
+              <div
+                key={i}
+                className="flex items-center"
+                style={{ gap: 6, padding: `5px ${SP[2]}`, borderBottom: `1px solid color-mix(in srgb, ${PURPLE} 12%, transparent)` }}
+              >
+                <span style={{ color: PURPLE, opacity: 0.5, flexShrink: 0 }}>◇</span>
+                <span
+                  className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap"
+                  style={{ fontFamily: FONT_BODY, fontSize: FS.body, fontWeight: 600, color: HUD.text }}
+                >
+                  {u.name}
+                </span>
+                <span
+                  className="shrink-0"
+                  style={{
+                    background: u.is_dark
+                      ? `color-mix(in srgb, ${PURPLE} 80%, black)`
+                      : `color-mix(in srgb, ${PURPLE} 55%, white)`,
+                    border: `1px solid ${u.is_dark ? `color-mix(in srgb, ${PURPLE} 55%, transparent)` : `color-mix(in srgb, ${PURPLE} 35%, transparent)`}`,
+                    borderRadius: RADIUS.sm, padding: '1px 6px',
+                    fontFamily: FONT_BODY, fontSize: FS.overline,
+                  }}
+                >
+                  <RichText text={'[FP]'.repeat(Math.max(u.fp_cost, 1))} />
+                </span>
               </div>
-            )}
-            <div className="flex items-center flex-wrap" style={{ gap: 6, fontFamily: FONT_BODY, fontSize: FS.caption, marginBottom: 3 }}>
-              {light > 0 && <span style={{ color: FORCE_BLUE }}>{light} Light FP</span>}
-              {dark > 0 && (
-                <>
-                  {light > 0 && <span style={{ color: HUD.textFaint }}>·</span>}
-                  <span style={{ color: FORCE_PURPLE }}>{dark} Dark FP</span>
-                  {darkUsed > 0 && <span style={{ color: FORCE_DARK_USED }}>({darkUsed} used)</span>}
-                </>
+            ))}
+
+            {/* Pip spend summary */}
+            <div className="flex items-center flex-wrap" style={{ gap: SP[1], padding: `${SP[1]} ${SP[2]}` }}>
+              <span style={{ fontFamily: FONT_DISPLAY, fontSize: FS.overline, letterSpacing: '0.15em', textTransform: 'uppercase', color: HUD.textDim }}>
+                Spent
+              </span>
+              {lightCount > 0 && (
+                <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: `color-mix(in srgb, ${PURPLE} 55%, white)` }}>
+                  {lightCount} <RichText text="[FP]" /> Light
+                </span>
+              )}
+              {lightCount > 0 && darkUsed > 0 && <span style={{ color: HUD.textFaint }}>·</span>}
+              {darkUsed > 0 && (
+                <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: `color-mix(in srgb, ${PURPLE} 90%, black)` }}>
+                  {darkUsed} <RichText text="[FP]" /> Dark
+                </span>
               )}
             </div>
-            <ForceDiceRow count={forceCount} />
+
+            {/* Dark side warning — only when dark pips were used and strain was incurred */}
+            {darkUsed > 0 && strainCost > 0 && (
+              <>
+                <div style={{ height: 1, background: `color-mix(in srgb, ${PURPLE} 12%, transparent)` }} />
+                <div style={{ borderLeft: `2px solid color-mix(in srgb, ${PURPLE} 50%, transparent)`, background: `color-mix(in srgb, ${PURPLE} 7%, transparent)`, padding: `${SP[1]} ${SP[2]}` }}>
+                  <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: `color-mix(in srgb, ${PURPLE} 80%, white)` }}>
+                    ⚠ {strainCost} strain suffered · Destiny Point flipped
+                  </span>
+                </div>
+              </>
+            )}
           </>
         )}
       </div>

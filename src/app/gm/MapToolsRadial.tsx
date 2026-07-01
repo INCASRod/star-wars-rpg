@@ -9,10 +9,10 @@ import { HUD, FONT_BODY, FONT_DISPLAY, FS, SP, Z, RADIUS, EASE, MODAL } from '@/
 import gsap from 'gsap'
 
 /* ── SVG/geometry constants ─────────────────────────────────── */
-const SVG_W   = 200
-const SVG_H   = 200
-const PUCK_CX = 180
-const PUCK_CY = 180
+const SVG_W   = 300
+const SVG_H   = 300
+const PUCK_CX = 280
+const PUCK_CY = 280
 const R_PUCK  = 18
 const R_OUT   = 72
 const R_IN    = 46
@@ -74,112 +74,6 @@ export function MapToolsRadial({
   const [mounted, setMounted] = useState(false)
   useEffect(() => { setMounted(true) }, [])
 
-  /* Three.js background canvas */
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    // Dynamically import three to avoid SSR issues
-    let renderer: import('three').WebGLRenderer
-    let animId: number
-    let cancelled = false
-
-    import('three').then(THREE => {
-      if (cancelled) return
-
-      renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false })
-      renderer.setSize(SVG_W, SVG_H)
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-
-      const scene  = new THREE.Scene()
-      const camera = new THREE.PerspectiveCamera(60, SVG_W / SVG_H, 0.1, 100)
-      camera.position.set(0, 0, 8)
-
-      /* ── Star field ── */
-      const starCount = 440
-      const positions = new Float32Array(starCount * 3)
-      const sizes     = new Float32Array(starCount)
-      for (let i = 0; i < starCount; i++) {
-        positions[i * 3]     = (Math.random() - 0.5) * 22
-        positions[i * 3 + 1] = (Math.random() - 0.5) * 14
-        positions[i * 3 + 2] = (Math.random() - 0.5) * 8
-        sizes[i] = 1.2 + Math.random() * 1.8
-      }
-      const starGeo = new THREE.BufferGeometry()
-      starGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-      starGeo.setAttribute('size',     new THREE.BufferAttribute(sizes, 1))
-
-      const starMat = new THREE.ShaderMaterial({
-        transparent: true,
-        uniforms: { time: { value: 0 } },
-        vertexShader: `
-          attribute float size;
-          uniform float time;
-          varying float va;
-          void main() {
-            va = 0.4 + 0.6 * sin(time * 0.8 + position.x * 3.0);
-            vec4 mvp = modelViewMatrix * vec4(position, 1.0);
-            gl_PointSize = size * (300.0 / -mvp.z);
-            gl_Position = projectionMatrix * mvp;
-          }
-        `,
-        fragmentShader: `
-          varying float va;
-          void main() {
-            float d = length(gl_PointCoord - 0.5);
-            if (d > 0.5) discard;
-            float a = smoothstep(0.5, 0.0, d) * va;
-            gl_FragColor = vec4(0.784, 0.627, 0.188, a);
-          }
-        `,
-      })
-      const stars = new THREE.Points(starGeo, starMat)
-      scene.add(stars)
-
-      /* ── Wireframe terrain ── */
-      const terrainGeo = new THREE.PlaneGeometry(20, 12, 60, 36)
-      const posArr = terrainGeo.attributes.position.array as Float32Array
-      for (let i = 0; i < posArr.length; i += 3) {
-        posArr[i + 2] = Math.sin(posArr[i] * 0.6) * Math.cos(posArr[i + 1] * 0.8) * 0.18
-                      + (Math.random() - 0.5) * 0.04
-      }
-      terrainGeo.computeVertexNormals()
-      const terrain = new THREE.Mesh(terrainGeo, new THREE.MeshBasicMaterial({
-        color: 0x1a1208, wireframe: true, transparent: true, opacity: 0.18,
-      }))
-      terrain.rotation.x = -Math.PI / 3.2
-      terrain.position.set(0, -2.5, -1)
-      scene.add(terrain)
-
-      /* ── Scan beam ── */
-      const beam = new THREE.Mesh(
-        new THREE.PlaneGeometry(22, 0.012),
-        new THREE.MeshBasicMaterial({ color: 0xc8a030, transparent: true, opacity: 0.18 }),
-      )
-      scene.add(beam)
-
-      /* ── Animate ── */
-      let t = 0
-      function animate() {
-        animId = requestAnimationFrame(animate)
-        t += 0.016
-        starMat.uniforms.time.value = t
-        stars.rotation.z += 0.0003
-        terrain.rotation.z = Math.sin(t * 0.2) * 0.05
-        beam.position.y = 4 - (t * 0.35) % 9
-        renderer.render(scene, camera)
-      }
-      animate()
-    })
-
-    return () => {
-      cancelled = true
-      if (animId) cancelAnimationFrame(animId)
-      if (renderer) renderer.dispose()
-    }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   /* GSAP element refs */
   const puckInnerRef  = useRef<SVGCircleElement>(null)
@@ -189,8 +83,7 @@ export function MapToolsRadial({
   const labelTextRef  = useRef<SVGTextElement>(null)
   const hoverTlRefs   = useRef<(gsap.core.Timeline | null)[]>([null, null, null])
 
-  /* Drag state — widget position relative to its parent */
-  const [dragPos,     setDragPos]     = useState<{ x: number; y: number } | null>(null)
+  /* Drag state */
   const dragOffsetRef = useRef<{ ox: number; oy: number } | null>(null)
   const widgetRef     = useRef<HTMLDivElement>(null)
 
@@ -365,6 +258,7 @@ export function MapToolsRadial({
   }
 
   function handleArcPick(id: ArcId) {
+    if (labelTextRef.current) gsap.to(labelTextRef.current, { fillOpacity: 0, duration: 0.1 })
     const el = arcGroupRefs.current[id]
     if (!el) { setOpenPanel(prev => prev === id ? null : id); setIsOpen(false); return }
 
@@ -378,31 +272,27 @@ export function MapToolsRadial({
       }})
   }
 
-  /* Drag handlers */
-  const onPuckMouseDown = useCallback((e: React.MouseEvent) => {
+  /* Drag handler — moves widget via bottom/right, no React re-renders */
+  const onDragMouseDown = useCallback((e: React.MouseEvent) => {
     if (e.button !== 0) return
     e.preventDefault()
     const rect = widgetRef.current?.getBoundingClientRect()
     if (!rect) return
-    // Snapshot offset ONCE — do not recalculate on mousemove
-    const parentRect = widgetRef.current?.parentElement?.getBoundingClientRect()
-    if (!parentRect) return
     dragOffsetRef.current = {
       ox: e.clientX - rect.left,
       oy: e.clientY - rect.top,
     }
-    // Capture current absolute position relative to parent
-    const initX = rect.left - parentRect.left
-    const initY = rect.top  - parentRect.top
-    setDragPos({ x: initX, y: initY })
-
     function onMove(me: MouseEvent) {
-      if (!dragOffsetRef.current || !parentRect) return
-      const parentNow = widgetRef.current?.parentElement?.getBoundingClientRect() ?? parentRect
-      setDragPos({
-        x: me.clientX - parentNow.left - dragOffsetRef.current.ox,
-        y: me.clientY - parentNow.top  - dragOffsetRef.current.oy,
-      })
+      if (!dragOffsetRef.current) return
+      const parentNow = widgetRef.current?.parentElement?.getBoundingClientRect()
+      const el        = widgetRef.current
+      if (!parentNow || !el) return
+      const r = parentNow.width  - (me.clientX - parentNow.left) - SVG_W + dragOffsetRef.current.ox
+      const b = parentNow.height - (me.clientY - parentNow.top)  - SVG_H + dragOffsetRef.current.oy
+      el.style.right  = `${Math.max(0, r)}px`
+      el.style.bottom = `${Math.max(0, b)}px`
+      el.style.left   = 'auto'
+      el.style.top    = 'auto'
     }
     function onUp() {
       dragOffsetRef.current = null
@@ -456,6 +346,9 @@ export function MapToolsRadial({
       // ── Close sequence ──
       const tl = gsap.timeline()
 
+      // Label out immediately
+      if (labelTextRef.current) tl.to(labelTextRef.current, { fillOpacity: 0, duration: 0.1 }, 0)
+
       // Arcs out: reversed order
       arcGroupRefs.current.slice().reverse().forEach((el, i) => {
         if (!el) return
@@ -484,32 +377,19 @@ export function MapToolsRadial({
     }
   }, [isOpen]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  /* Position style — default bottom-right; dragged = left/top */
-  const posStyle: React.CSSProperties = dragPos
-    ? { position: 'absolute', left: dragPos.x, top: dragPos.y, bottom: 'auto', right: 'auto' }
-    : { position: 'absolute', bottom: '1rem', right: '1rem' } // 1rem widget offset
-
   return (
     <div
       ref={widgetRef}
       style={{
-        ...posStyle,
-        width:         SVG_W,
-        height:        SVG_H,
-        zIndex:        Z.fab,
-        pointerEvents: 'none',
-        userSelect:    'none',
+        position:   'absolute',
+        bottom:     '24px',
+        right:      '24px',
+        width:      SVG_W,
+        height:     SVG_H,
+        zIndex:     Z.fab,
+        userSelect: 'none',
       }}
     >
-      {/* ── Three.js background canvas (z=0) ── */}
-      <canvas
-        ref={canvasRef}
-        style={{
-          position: 'absolute', inset: 0, width: '100%', height: '100%',
-          zIndex: Z.base, pointerEvents: 'none', borderRadius: RADIUS.lg,
-        }}
-      />
-
       {/* ── SVG: arcs + puck (z=1) ── */}
       <svg
         width={SVG_W}
@@ -622,11 +502,16 @@ export function MapToolsRadial({
           )
         })}
 
-        {/* ── Defs: hover label arc path ── */}
+        {/* ── Defs: hover label arc path — in gap between puck rings and inner arc ── */}
         <defs>
           <path
             id="label-arc-path"
-            d={arcPath(PUCK_CX, PUCK_CY, 52, 52, 182, 272)}
+            d={(() => {
+              const midDeg = activeArc !== null
+                ? (ARC_DEFS[activeArc].startDeg + ARC_DEFS[activeArc].endDeg) / 2
+                : 226
+              return arcPath(PUCK_CX, PUCK_CY, 34, 34, midDeg - 55, midDeg + 55)
+            })()}
             fill="none"
           />
         </defs>
@@ -684,9 +569,8 @@ export function MapToolsRadial({
         </text>
       </svg>
 
-      {/* ── Puck hit area (z=2) — drag + click ── */}
+      {/* ── Puck click target (z=2) — open/close only ── */}
       <div
-        onMouseDown={onPuckMouseDown}
         onClick={() => setIsOpen(o => !o)}
         style={{
           position:     'absolute',
@@ -696,10 +580,37 @@ export function MapToolsRadial({
           height:       (R_PUCK + 6) * 2,
           borderRadius: RADIUS.full,
           zIndex:       Z.raised + 1,
-          cursor:       'grab',
+          cursor:       'pointer',
           pointerEvents:'auto',
         }}
       />
+      {/* ── Drag handle (z=3) — move widget only ── */}
+      <div
+        onMouseDown={onDragMouseDown}
+        style={{
+          position:        'absolute',
+          bottom:          -16,
+          left:            PUCK_CX - R_PUCK - 6,
+          width:           (R_PUCK + 6) * 2,
+          display:         'grid',
+          gridTemplateColumns: 'repeat(4, 3px)',
+          gap:             SP[1],
+          justifyContent:  'center',
+          padding:         SP[1],
+          cursor:          'grab',
+          zIndex:          Z.raised + 2,
+          pointerEvents:   'auto',
+        }}
+      >
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} style={{
+            width:        3,
+            height:       3,
+            borderRadius: RADIUS.full,
+            background:   `color-mix(in srgb, ${HUD.gold} 35%, transparent)`,
+          }} />
+        ))}
+      </div>
 
       {/* ── Popup panels (portals to escape overflow:hidden) ── */}
       {mounted && openPanel !== null && createPortal(

@@ -4,6 +4,7 @@ import { FONT_DISPLAY, FONT_BODY, FS, SP, HUD, COLOR, RADIUS } from '@/lib/token
 import type { WpnDisplay, ArmDisplay, GearRow, StowLocation } from '@/lib/types'
 import { MobileBottomSheet } from '@/components/mobile/MobileBottomSheet'
 import { MobileStowLocationSheet } from '@/components/mobile/MobileStowLocationSheet'
+import { RichText } from '@/components/ui/RichText'
 
 // ─── Sealed colour exception ──────────────────────────────────────
 const DANGER_COLOR = '#E85A2A'  /* wounds/danger — sealed exception */
@@ -236,7 +237,7 @@ function ItemDetail({
             paddingTop: SP[2],
             borderTop: `1px solid var(--hud-border)`,
           }}>
-            {w.description}
+            <RichText text={w.description} />
           </div>
         )}
       </div>
@@ -265,7 +266,7 @@ function ItemDetail({
             paddingTop: SP[2],
             borderTop: `1px solid var(--hud-border)`,
           }}>
-            {a.description}
+            <RichText text={a.description} />
           </div>
         )}
       </div>
@@ -293,7 +294,7 @@ function ItemDetail({
           paddingTop: SP[2],
           borderTop: `1px solid var(--hud-border)`,
         }}>
-          {g.description}
+          <RichText text={g.description} />
         </div>
       )}
     </div>

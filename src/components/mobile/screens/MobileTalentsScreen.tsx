@@ -2,6 +2,7 @@
 import { useMemo, useState } from 'react'
 import { COLOR, EASE, FONT_BODY, FONT_DISPLAY, FS, HUD, RADIUS, SP } from '@/lib/tokens'
 import type { HudTalent } from '@/lib/types'
+import { RichText } from '@/components/ui/RichText'
 
 interface MobileTalentsScreenProps {
   hudTalents: HudTalent[]
@@ -279,7 +280,7 @@ export function MobileTalentsScreen({ hudTalents }: MobileTalentsScreenProps) {
                     lineHeight:  1.5,
                     textAlign:   'left',
                   }}>
-                    {talent.description}
+                    <RichText text={talent.description} />
                   </div>
                 )}
               </button>

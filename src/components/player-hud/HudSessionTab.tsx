@@ -12,6 +12,8 @@ import { HudAdversaryDrawer } from './HudAdversaryDrawer'
 import { HudSkillQuickList } from './HudSkillQuickList'
 import { fetchAdversaries, adversaryToInstance } from '@/lib/adversaries'
 import type { AdversaryInstance } from '@/lib/adversaries'
+import { fetchVehicles } from '@/lib/vehicles'
+import type { Vehicle } from '@/lib/vehicles'
 import type { MapToken } from '@/hooks/useMapTokens'
 import type { CombatEncounter } from '@/lib/combat'
 import type { Character, WpnDisplay, HudSkill } from '@/lib/types'
@@ -29,11 +31,15 @@ interface TooltipData {
   name: string; typeLabel: string; typeColor: string
   characteristics?: { brawn: number; agility: number; intellect: number; cunning: number; willpower: number; presence: number }
   soak?: number | null
+  soakLabel?: string
   defMelee?: number | null
   defRanged?: number | null
   wounds?: { current: number; max: number }
   strain?: { current: number; max: number }
   minionGroup?: { alive: number; total: number }
+  vehicleStats?: { silhouette: number; speed: number; handling: number; armor: number; defense: { fore: number; aft: number; port: number; starboard: number } }
+  hullTrauma?:  { current: number; max: number }
+  systemStrain?: { current: number; max: number }
 }
 
 const TokenTooltip = memo(function TokenTooltip(p: TooltipData) {
@@ -71,12 +77,36 @@ const TokenTooltip = memo(function TokenTooltip(p: TooltipData) {
         </div>
       )}
 
+      {/* Vehicle stat block: SIL / SPD / HDL / ARMOR + defense arcs */}
+      {p.vehicleStats && (() => {
+        const vs = p.vehicleStats!
+        const hdlStr = vs.handling > 0 ? `+${vs.handling}` : String(vs.handling)
+        const topRow = [{ l: 'SIL', v: vs.silhouette }, { l: 'SPD', v: vs.speed }, { l: 'HDL', v: hdlStr }, { l: 'ARMOR', v: vs.armor }]
+        const arcRow = [{ l: 'DEF F', v: vs.defense.fore }, { l: 'DEF A', v: vs.defense.aft }, { l: 'DEF P', v: vs.defense.port }, { l: 'DEF S', v: vs.defense.starboard }]
+        const cell = (l: string, v: string | number, gold = false) => (
+          <div key={l} className="flex flex-col items-center" style={{ gap: 1, background: 'rgba(255,255,255,0.04)', borderRadius: 3, padding: 'var(--space-1) 2px' }}>
+            <div style={{ fontSize: FS_OL, color: 'var(--hud-text-dim)', letterSpacing: '0.04em' }}>{l}</div>
+            <div style={{ fontSize: FS_SM, fontWeight: 700, color: gold ? HUD.gold : 'var(--hud-text)' }}>{v}</div>
+          </div>
+        )
+        return (
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 3, marginBottom: 3 }}>
+              {topRow.map(({ l, v }) => cell(l, v, true))}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 3, marginBottom: 'var(--space-2)' }}>
+              {arcRow.map(({ l, v }) => cell(l, v))}
+            </div>
+          </>
+        )
+      })()}
+
       {/* Soak + Defense */}
       {(p.soak != null || p.defMelee != null || p.defRanged != null) && (
         <div className="flex" style={{ gap: 'var(--space-1)', marginBottom: 'var(--space-2)' }}>
           {p.soak != null && (
             <div className="flex-1 flex flex-col items-center" style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 3, padding: 'var(--space-1)' }}>
-              <div style={{ fontSize: FS_OL, color: 'var(--hud-text-dim)', letterSpacing: '0.04em' }}>SOAK</div>
+              <div style={{ fontSize: FS_OL, color: 'var(--hud-text-dim)', letterSpacing: '0.04em' }}>{p.soakLabel ?? 'SOAK'}</div>
               <div style={{ fontSize: FS_SM, fontWeight: 700, color: 'var(--hud-text)' }}>{p.soak}</div>
             </div>
           )}
@@ -139,6 +169,32 @@ const TokenTooltip = memo(function TokenTooltip(p: TooltipData) {
           </div>
         </div>
       )}
+
+      {/* Hull Trauma bar (vehicles) */}
+      {p.hullTrauma && (
+        <div style={{ marginTop: (p.wounds || p.strain) ? '0.375rem' : 0 }}>
+          <div className="flex justify-between" style={{ marginBottom: 3 }}>
+            <span style={{ fontSize: FS_OL, color: 'var(--hud-text-dim)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Hull Trauma</span>
+            <span style={{ fontSize: FS_OL, fontWeight: 700, color: p.hullTrauma.current >= p.hullTrauma.max ? '#E05050' : 'var(--hud-text)' }}>{p.hullTrauma.current}/{p.hullTrauma.max}</span>
+          </div>
+          <div className="overflow-hidden" style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2 }}>
+            <div style={{ height: '100%', width: `${Math.min(100, (p.hullTrauma.current / Math.max(p.hullTrauma.max, 1)) * 100)}%`, background: p.hullTrauma.current >= p.hullTrauma.max ? '#E05050' : 'var(--hud-gold)', borderRadius: 2 }} />
+          </div>
+        </div>
+      )}
+
+      {/* System Strain bar (vehicles) */}
+      {p.systemStrain && (
+        <div style={{ marginTop: p.hullTrauma ? '0.375rem' : 0 }}>
+          <div className="flex justify-between" style={{ marginBottom: 3 }}>
+            <span style={{ fontSize: FS_OL, color: 'var(--hud-text-dim)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Sys Strain</span>
+            <span style={{ fontSize: FS_OL, fontWeight: 700, color: p.systemStrain.current >= p.systemStrain.max ? '#E05050' : 'var(--hud-text)' }}>{p.systemStrain.current}/{p.systemStrain.max}</span>
+          </div>
+          <div className="overflow-hidden" style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2 }}>
+            <div style={{ height: '100%', width: `${Math.min(100, (p.systemStrain.current / Math.max(p.systemStrain.max, 1)) * 100)}%`, background: p.systemStrain.current >= p.systemStrain.max ? '#E05050' : 'var(--state-success)', borderRadius: 2 }} />
+          </div>
+        </div>
+      )}
     </div>,
     document.body,
   )
@@ -192,6 +248,7 @@ export function HudSessionTab({
   const initiativeBarRef = useRef<HTMLDivElement>(null)
   const [sessionCardCollapsed,  setSessionCardCollapsed]  = useState<Record<string, boolean>>({})
   const [advStatCache,          setAdvStatCache]          = useState<Map<string, AdversaryInstance>>(new Map())
+  const [vehStatCache,          setVehStatCache]          = useState<Map<string, Vehicle>>(new Map())
   const [allChars,              setAllChars]              = useState<Character[]>([character])
 
   // Fetch all campaign characters so we can show PC stat blocks on hover
@@ -225,6 +282,21 @@ export function HudSessionTab({
     })()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibleMapTokens, campaignId])
+
+  // Preload static vehicle stats for rectangle tokens that have no encounter slot
+  useEffect(() => {
+    const vehicleNames = [...new Set(
+      visibleMapTokens.filter(t => t.token_shape === 'rectangle' && t.label).map(t => t.label!),
+    )]
+    if (vehicleNames.length === 0) { setVehStatCache(new Map()); return }
+    fetchVehicles().then(allVehicles => {
+      const cache = new Map<string, Vehicle>()
+      for (const v of allVehicles) {
+        if (vehicleNames.includes(v.name)) cache.set(v.name, v)
+      }
+      setVehStatCache(cache)
+    }).catch(console.warn)
+  }, [visibleMapTokens])
 
   const tokensById = useMemo(() => new Map(visibleMapTokens.map(t => [t.id, t])), [visibleMapTokens])
 
@@ -281,6 +353,9 @@ export function HudSessionTab({
           x: tokenHoverInfo.x, y: tokenHoverInfo.y,
           name: veh.name, typeLabel: 'Vehicle',
           typeColor: veh.alignment === 'allied_npc' ? 'var(--state-success)' : '#E05252',
+          vehicleStats: { silhouette: veh.silhouette, speed: veh.speed, handling: veh.handling, armor: veh.armor, defense: veh.defense },
+          hullTrauma:   { current: veh.hullTraumaCurrent,   max: veh.hullTraumaThreshold },
+          systemStrain: { current: veh.systemStrainCurrent,  max: veh.systemStrainThreshold },
         }
       }
     }
@@ -305,9 +380,23 @@ export function HudSessionTab({
       }
     }
 
+    // Vehicle fallback: rectangle tokens not linked to an encounter slot (pre-combat placement)
+    if (token.token_shape === 'rectangle' && token.label) {
+      const staticVeh = vehStatCache.get(token.label)
+      if (staticVeh) return {
+        x: tokenHoverInfo.x, y: tokenHoverInfo.y,
+        name: token.label,
+        typeLabel: 'Vehicle',
+        typeColor: '#E05252',
+        vehicleStats: { silhouette: staticVeh.silhouette, speed: staticVeh.speed, handling: staticVeh.handling, armor: staticVeh.armor, defense: { fore: staticVeh.defFore, aft: staticVeh.defAft, port: staticVeh.defPort, starboard: staticVeh.defStarboard } },
+        hullTrauma:   { current: 0, max: staticVeh.hullTrauma },
+        systemStrain: { current: 0, max: staticVeh.systemStrain },
+      }
+    }
+
     // Last resort — name + alignment only
     return { x: tokenHoverInfo.x, y: tokenHoverInfo.y, name: token.label ?? '?', typeLabel: token.alignment ?? 'token', typeColor: HUD.gold }
-  }, [tokenHoverInfo, tokensById, allChars, encounter, advStatCache])
+  }, [tokenHoverInfo, tokensById, allChars, encounter, advStatCache, vehStatCache])
 
   return (
     <div className="relative h-full overflow-hidden">
