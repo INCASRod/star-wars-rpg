@@ -41,6 +41,7 @@ interface CharacterDutyRow {
   duty_type: string | null
   duty_custom_name: string | null
   duty_lore: string | null
+  duty_notes: string | null
   duty_value: number
   is_archived: boolean
 }
@@ -336,7 +337,7 @@ export function GroupSheet({ campaignId, characterName, characterId }: GroupShee
         .single(),
       supabase
         .from('characters')
-        .select('id,name,duty_type,duty_custom_name,duty_lore,duty_value,is_archived')
+        .select('id,name,duty_type,duty_custom_name,duty_lore,duty_notes,duty_value,is_archived')
         .eq('campaign_id', campaignId)
         .eq('is_archived', false),
       supabase
@@ -980,7 +981,7 @@ export function GroupSheet({ campaignId, characterName, characterId }: GroupShee
             <tbody>
               {dutyRows.map(row => {
                 const isTop     = row.id === topContributor && row.duty_value > 0
-                const loreText  = row.duty_lore?.trim() || null
+                const loreText  = row.duty_lore?.trim() || row.duty_notes?.trim() || null
                 const isHovered = hoveredDutyChar === row.id
                 return (
                   <tr

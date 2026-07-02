@@ -345,9 +345,9 @@ export function DutyObligationTab({
                       Duty — {resolveDutyName(c, dutyTypes)} ({c.duty_value ?? 0})
                       {c.duty_custom_name && <span title="Custom name set by GM" style={{ fontSize: FS.overline, color: HUD.gold, opacity: 0.7 }}>✎</span>}
                     </div>
-                    {c.duty_lore && (
+                    {(c.duty_lore || c.duty_notes) && (
                       <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textDim, lineHeight: 1.5, fontStyle: 'italic' }}>
-                        {c.duty_lore}
+                        {c.duty_lore || c.duty_notes}
                       </div>
                     )}
                   </div>
@@ -356,9 +356,9 @@ export function DutyObligationTab({
                       Obligation — {resolveObligationName(c, obligationTypes)} ({c.obligation_value ?? 0})
                       {c.obligation_custom_name && <span title="Custom name set by GM" style={{ fontSize: FS.overline, color: HUD.gold, opacity: 0.7 }}>✎</span>}
                     </div>
-                    {c.obligation_lore && (
+                    {(c.obligation_lore || c.obligation_notes) && (
                       <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textDim, lineHeight: 1.5, fontStyle: 'italic' }}>
-                        {c.obligation_lore}
+                        {c.obligation_lore || c.obligation_notes}
                       </div>
                     )}
                   </div>

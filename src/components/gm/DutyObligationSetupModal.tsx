@@ -63,11 +63,11 @@ export function DutyObligationSetupModal({
   const [dutyTypeKey, setDutyTypeKey]           = useState(character.duty_type ?? '')
   const [dutyCustomName, setDutyCustomName]     = useState(character.duty_custom_name ?? '')
   const [dutyValue, setDutyValue]               = useState<number>(character.duty_value ?? 10)
-  const [dutyLore, setDutyLore]                 = useState(character.duty_lore ?? '')
+  const [dutyLore, setDutyLore]                 = useState(character.duty_lore ?? character.duty_notes ?? '')
   const [oblTypeKey, setOblTypeKey]             = useState(character.obligation_type ?? '')
   const [oblCustomName, setOblCustomName]       = useState(character.obligation_custom_name ?? '')
   const [oblValue, setOblValue]                 = useState<number>(character.obligation_value ?? 10)
-  const [oblLore, setOblLore]                   = useState(character.obligation_lore ?? '')
+  const [oblLore, setOblLore]                   = useState(character.obligation_lore ?? character.obligation_notes ?? '')
   const [busy, setBusy]                         = useState(false)
   const [error, setError]                       = useState<string | null>(null)
 
