@@ -192,6 +192,8 @@ export interface RefArmor {
   soak_bonus?: number
   defense_melee?: number
   defense_ranged?: number
+  // Encumbrance threshold bonus when equipped (migration 086)
+  encumbrance_bonus?: number | null
 }
 
 // One element in a ref_item_attachments.base_mods / added_mods array
@@ -708,7 +710,7 @@ export interface QmBuyRow {
   soak?: number
   soak_bonus?: number | null
   defense?: number
-  // Gear-only
+  // Armor/Gear — encumbrance threshold bonus when equipped
   encumbrance_bonus?: number | null
 }
 

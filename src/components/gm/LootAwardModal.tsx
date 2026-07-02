@@ -103,7 +103,7 @@ export function LootAwardModal({
     const loadRefs = async () => {
       const [rw, ra, rg, rq] = await Promise.all([
         supabase.from('ref_weapons').select('key,encumbrance'),
-        supabase.from('ref_armor').select('key,encumbrance'),
+        supabase.from('ref_armor').select('key,encumbrance,encumbrance_bonus'),
         supabase.from('ref_gear').select('key,encumbrance,encumbrance_bonus'),
         supabase.from('ref_weapon_qualities').select('key,name,description,is_ranked,stat_modifier'),
       ])

@@ -174,11 +174,12 @@ export interface EncumbranceStats {
  *   - Stowed items contribute 0 enc
  *   - Equipped armor reduces its enc by 3 (min 0) — wearing bonus
  *   - Storage containers (ref_gear.encumbrance_bonus) increase threshold
+ *   - Worn armor (ref_armor.encumbrance_bonus) increases threshold
  */
 export function computeEncumbranceStats(
   character: Pick<Character, 'encumbrance_threshold'>,
   armor:   CharacterArmor[],
-  refArmorMap:  Record<string, Pick<RefArmor, 'encumbrance'>>,
+  refArmorMap:  Record<string, Pick<RefArmor, 'encumbrance' | 'encumbrance_bonus'>>,
   gear:    CharacterGear[],
   refGearMap:   Record<string, Pick<RefGear, 'encumbrance' | 'encumbrance_bonus'>>,
   weapons: CharacterWeapon[],
@@ -207,14 +208,21 @@ export function computeEncumbranceStats(
     if (state === 'stowed') continue
     current += refWeaponMap[w.weapon_key]?.encumbrance || 0
   }
-  const bonus = gear.reduce((s, g) => {
+  const gearBonus = gear.reduce((s, g) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((g as any).is_dropped) return s
     const state = g.equip_state ?? (g.is_equipped ? 'equipped' : 'carrying')
     const ref = refGearMap[g.gear_key]
     return s + (state === 'equipped' && ref?.encumbrance_bonus ? ref.encumbrance_bonus : 0)
   }, 0)
-  return { current, threshold: character.encumbrance_threshold + bonus }
+  const armorBonus = armor.reduce((s, a) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((a as any).is_dropped) return s
+    const state = a.equip_state ?? (a.is_equipped ? 'equipped' : 'carrying')
+    const ref = refArmorMap[a.armor_key]
+    return s + (state === 'equipped' && ref?.encumbrance_bonus ? ref.encumbrance_bonus : 0)
+  }, 0)
+  return { current, threshold: character.encumbrance_threshold + gearBonus + armorBonus }
 }
 
 // ── Engine ───────────────────────────────────────────────────────────────────

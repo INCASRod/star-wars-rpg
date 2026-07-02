@@ -45,12 +45,12 @@ export function useQuartermaster(
 
     const [wRes, aRes, gRes] = await Promise.all([
       weaponKeys.length ? supabase.from('ref_weapons').select('key,name,rarity,encumbrance,price,damage,damage_add,crit,description,skill_key,range_value,hard_points,qualities').in('key', weaponKeys) : Promise.resolve({ data: [] }),
-      armorKeys.length  ? supabase.from('ref_armor').select('key,name,rarity,encumbrance,price,soak,soak_bonus,defense,description').in('key', armorKeys)   : Promise.resolve({ data: [] }),
+      armorKeys.length  ? supabase.from('ref_armor').select('key,name,rarity,encumbrance,price,soak,soak_bonus,defense,encumbrance_bonus,description').in('key', armorKeys)   : Promise.resolve({ data: [] }),
       gearKeys.length   ? supabase.from('ref_gear').select('key,name,rarity,encumbrance,price,encumbrance_bonus,description').in('key', gearKeys)            : Promise.resolve({ data: [] }),
     ])
 
     type WRow = { key: string; name: string; rarity: number; encumbrance: number; price: number; damage: number; damage_add: number | null; crit: number; description: string | null; skill_key: string | null; range_value: string | null; hard_points: number | null; qualities: WeaponQuality[] | null }
-    type ARow = { key: string; name: string; rarity: number; encumbrance: number; price: number; soak: number; soak_bonus: number | null; defense: number; description: string | null }
+    type ARow = { key: string; name: string; rarity: number; encumbrance: number; price: number; soak: number; soak_bonus: number | null; defense: number; encumbrance_bonus: number | null; description: string | null }
     type GRow = { key: string; name: string; rarity: number; encumbrance: number; price: number; encumbrance_bonus: number | null; description: string | null }
 
     const wMap = Object.fromEntries(((wRes.data ?? []) as WRow[]).map(r => [r.key, r]))
@@ -64,7 +64,7 @@ export function useQuartermaster(
       }
       if (qi.item_type === 'armor') {
         const r = aMap[qi.item_key]
-        return r ? [{ qmItem: qi, name: r.name, rarity: r.rarity, encumbrance: r.encumbrance, price: r.price, description: r.description ?? undefined, soak: r.soak, soak_bonus: r.soak_bonus, defense: r.defense }] : []
+        return r ? [{ qmItem: qi, name: r.name, rarity: r.rarity, encumbrance: r.encumbrance, price: r.price, description: r.description ?? undefined, soak: r.soak, soak_bonus: r.soak_bonus, defense: r.defense, encumbrance_bonus: r.encumbrance_bonus }] : []
       }
       const r = gMap[qi.item_key]
       return r ? [{ qmItem: qi, name: r.name, rarity: r.rarity, encumbrance: r.encumbrance, price: r.price, description: r.description ?? undefined, encumbrance_bonus: r.encumbrance_bonus }] : []

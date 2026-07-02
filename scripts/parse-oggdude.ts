@@ -178,6 +178,21 @@ function parseWeapons() {
   }))
 }
 
+// Sum BaseMods encumbrance-threshold-add mods. Plain ENCTADD uses <Count> as the
+// bonus (e.g. backpacks, hauling harnesses); ENCTADDn (e.g. ENCTADD3) is a fixed
+// +n regardless of Count, per OggDude's mod-key convention (e.g. Katarn armor).
+function parseEncumbranceBonus(baseMods: any): number {
+  let bonus = 0
+  if (baseMods?.Mod) {
+    const mods = ensureArray(baseMods.Mod)
+    for (const m of mods) {
+      if (m.Key === 'ENCTADD') bonus += parseInt(m.Count) || 0
+      else if (/^ENCTADD\d+$/.test(m.Key ?? '')) bonus += parseInt(m.Key.slice('ENCTADD'.length))
+    }
+  }
+  return bonus
+}
+
 // ── Armor ──
 function parseArmor() {
   const data = readXML(path.join(DATA_DIR, 'Armor.xml')) as { Armors: { Armor: unknown[] } }
@@ -191,31 +206,22 @@ function parseArmor() {
     hard_points: parseInt(a.HP) || 0,
     price: parseInt(a.Price) || 0,
     rarity: parseInt(a.Rarity) || 0,
+    encumbrance_bonus: parseEncumbranceBonus(a.BaseMods) || null,
   }))
 }
 
 // ── Gear ──
 function parseGear() {
   const data = readXML(path.join(DATA_DIR, 'Gear.xml')) as { Gears: { Gear: unknown[] } }
-  return ensureArray(data.Gears.Gear).map((g: any) => {
-    // Check BaseMods for ENCTADD (encumbrance threshold add, e.g. backpacks)
-    let encumbrance_bonus = 0
-    if (g.BaseMods?.Mod) {
-      const mods = ensureArray(g.BaseMods.Mod)
-      for (const m of mods) {
-        if (m.Key === 'ENCTADD') encumbrance_bonus += parseInt(m.Count) || 0
-      }
-    }
-    return {
-      key: g.Key,
-      name: g.Name,
-      description: g.Description || null,
-      encumbrance: parseInt(g.Encumbrance) || 0,
-      price: parseInt(g.Price) || 0,
-      rarity: parseInt(g.Rarity) || 0,
-      encumbrance_bonus: encumbrance_bonus || null,
-    }
-  })
+  return ensureArray(data.Gears.Gear).map((g: any) => ({
+    key: g.Key,
+    name: g.Name,
+    description: g.Description || null,
+    encumbrance: parseInt(g.Encumbrance) || 0,
+    price: parseInt(g.Price) || 0,
+    rarity: parseInt(g.Rarity) || 0,
+    encumbrance_bonus: parseEncumbranceBonus(g.BaseMods) || null,
+  }))
 }
 
 // ── Moralities ──

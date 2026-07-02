@@ -139,7 +139,7 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
     const queries = [
       applyScope(supabase.from('ref_weapons').select('key,name,price,rarity,encumbrance,skill_key,damage,damage_add,crit,range_value,hard_points,qualities,description,is_custom,custom_notes,campaign_id'))
         .then((r: { data: unknown[] | null }) => (r.data || []).map((d) => ({ ...(d as Record<string, unknown>), type: 'weapon', _table: 'ref_weapons' as const }))),
-      applyScope(supabase.from('ref_armor').select('key,name,price,rarity,encumbrance,defense,soak,soak_bonus,description,is_custom,custom_notes,campaign_id'))
+      applyScope(supabase.from('ref_armor').select('key,name,price,rarity,encumbrance,encumbrance_bonus,defense,soak,soak_bonus,description,is_custom,custom_notes,campaign_id'))
         .then((r: { data: unknown[] | null }) => (r.data || []).map((d) => ({ ...(d as Record<string, unknown>), type: 'armor', _table: 'ref_armor' as const }))),
       applyScope(supabase.from('ref_gear').select('key,name,price,rarity,encumbrance,encumbrance_bonus,description,is_custom,custom_notes,campaign_id'))
         .then((r: { data: unknown[] | null }) => (r.data || []).map((d) => ({ ...(d as Record<string, unknown>), type: 'gear', _table: 'ref_gear' as const }))),
@@ -627,7 +627,7 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
                   {/* Stats */}
                   <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: DIM }}>
                     {item.type === 'weapon' && `DMG ${item.damage_add != null ? `Brawn+${item.damage_add}` : item.damage} · CRIT ${item.crit} · ENC ${item.encumbrance}`}
-                    {item.type === 'armor'  && `SOAK+${item.soak} · DEF ${item.defense} · ENC ${item.encumbrance}`}
+                    {item.type === 'armor'  && `SOAK+${item.soak} · DEF ${item.defense} · ENC ${item.encumbrance}${item.encumbrance_bonus ? ` (+${item.encumbrance_bonus} thresh)` : ''}`}
                     {item.type === 'gear'   && `ENC ${item.encumbrance}${item.encumbrance_bonus ? ` (+${item.encumbrance_bonus} thresh)` : ''}`}
                   </div>
                 </div>
@@ -955,7 +955,7 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
                 ))}
               </div>
             )}
-            {viewingItem.type === 'gear' && viewingItem.encumbrance_bonus && (
+            {(viewingItem.type === 'gear' || viewingItem.type === 'armor') && viewingItem.encumbrance_bonus && (
               <div style={{ paddingBottom: SP[2], borderBottom: `1px solid ${BORDER}` }}>
                 <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: DIM, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Encumbrance threshold bonus</div>
                 <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.text, fontWeight: 600 }}>+{viewingItem.encumbrance_bonus}</div>

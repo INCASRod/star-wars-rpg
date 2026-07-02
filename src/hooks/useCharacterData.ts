@@ -866,13 +866,19 @@ export function useCharacterData(characterId: string) {
     return sum
   }, [armor, gear, weapons, refArmorMap, refGearMap, refWeaponMap])
 
-  const encumbranceBonus = useMemo(() =>
-    gear.reduce((s, g) => {
+  const encumbranceBonus = useMemo(() => {
+    const gearBonus = gear.reduce((s, g) => {
       const state = g.equip_state ?? (g.is_equipped ? 'equipped' : 'carrying')
       const ref = refGearMap[g.gear_key]
       return s + (state === 'equipped' && ref?.encumbrance_bonus ? ref.encumbrance_bonus : 0)
     }, 0)
-  , [gear, refGearMap])
+    const armorBonus = armor.reduce((s, a) => {
+      const state = a.equip_state ?? (a.is_equipped ? 'equipped' : 'carrying')
+      const ref = refArmorMap[a.armor_key]
+      return s + (state === 'equipped' && ref?.encumbrance_bonus ? ref.encumbrance_bonus : 0)
+    }, 0)
+    return gearBonus + armorBonus
+  }, [gear, refGearMap, armor, refArmorMap])
 
   // ── End HUD transforms ───────────────────────────────────────────────────────
 

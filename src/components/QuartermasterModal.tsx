@@ -630,8 +630,8 @@ export function QuartermasterModal({ campaignId, characterName, characterId, sup
               </div>
             )}
 
-            {/* Gear: encumbrance threshold */}
-            {viewingRow.qmItem.item_type === 'gear' && viewingRow.encumbrance_bonus && (
+            {/* Armor/Gear: encumbrance threshold bonus when equipped */}
+            {(viewingRow.qmItem.item_type === 'gear' || viewingRow.qmItem.item_type === 'armor') && viewingRow.encumbrance_bonus && (
               <div style={{ paddingBottom: SP[2], borderBottom: `1px solid ${HUD.border}` }}>
                 <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textDim, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Encumbrance threshold bonus</div>
                 <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.text, fontWeight: 600 }}>+{viewingRow.encumbrance_bonus}</div>

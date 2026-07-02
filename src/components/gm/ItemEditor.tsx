@@ -157,7 +157,7 @@ function templateStatLine(t: TemplateResult): string {
     const dmg   = t.damage_add != null ? `Brawn+${t.damage_add}` : `${t.damage ?? 0} dmg`
     return `${skill} · ${dmg} · Crit ${t.crit ?? '—'}`
   }
-  if (t.type === 'armor') return `Soak+${t.soak ?? 0} · Def ${t.defense ?? 0} · ENC ${t.encumbrance ?? 0}`
+  if (t.type === 'armor') return `Soak+${t.soak ?? 0} · Def ${t.defense ?? 0} · ENC ${t.encumbrance ?? 0}${t.encumbrance_bonus ? ` (+${t.encumbrance_bonus} thresh)` : ''}`
   return `ENC ${t.encumbrance ?? '—'}${t.encumbrance_bonus ? ` (+${t.encumbrance_bonus} thresh)` : ''}`
 }
 
@@ -283,7 +283,7 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
     const pattern = `%${q.trim()}%`
     const [wRes, aRes, gRes] = await Promise.all([
       supabase.from('ref_weapons').select('key,name,skill_key,damage,damage_add,crit,range_value,hard_points,price,rarity,encumbrance,description,is_custom,qualities').ilike('name', pattern).limit(10),
-      supabase.from('ref_armor').select('key,name,defense,soak,soak_bonus,price,rarity,encumbrance,description,is_custom').ilike('name', pattern).limit(10),
+      supabase.from('ref_armor').select('key,name,defense,soak,soak_bonus,price,rarity,encumbrance,encumbrance_bonus,description,is_custom').ilike('name', pattern).limit(10),
       supabase.from('ref_gear').select('key,name,encumbrance_bonus,price,rarity,encumbrance,description,is_custom').ilike('name', pattern).limit(10),
     ])
     const weapons = ((wRes.data || []) as TemplateResult[]).map(r => ({ ...r, type: 'weapon' as ItemType }))
@@ -325,6 +325,7 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
     if (targetType === 'armor') {
       setDefense(String(t.defense ?? 0))
       setSoak(String(t.soak ?? t.soak_bonus ?? 0))
+      setEncBonus(t.encumbrance_bonus != null ? String(t.encumbrance_bonus) : '')
     }
     if (targetType === 'gear') {
       setEncBonus(t.encumbrance_bonus != null ? String(t.encumbrance_bonus) : '')
@@ -530,12 +531,13 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
       const payload = {
         key,
         ...common,
-        defense:        parseInt(defense) || 0,
-        soak:           parseInt(soak) || 0,
-        soak_bonus:     parseInt(soak) || 0,
-        hard_points:    0,
-        defense_melee:  parseInt(defense) || 0,
-        defense_ranged: parseInt(defense) || 0,
+        defense:           parseInt(defense) || 0,
+        soak:              parseInt(soak) || 0,
+        soak_bonus:        parseInt(soak) || 0,
+        hard_points:       0,
+        defense_melee:     parseInt(defense) || 0,
+        defense_ranged:    parseInt(defense) || 0,
+        encumbrance_bonus: encBonus !== '' ? parseInt(encBonus) || 0 : null,
       }
       if (isEdit && !isOggDude) {
         result = await supabase.from('ref_armor').update(payload).eq('key', item!.key).eq('campaign_id', campaignId)
@@ -575,7 +577,11 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
         range_value: `wr${rangeValue}`,
         qualities,
       }),
-      ...(type === 'armor'  && { defense: parseInt(defense) || 0, soak: parseInt(soak) || 0 }),
+      ...(type === 'armor'  && {
+        defense: parseInt(defense) || 0,
+        soak:    parseInt(soak) || 0,
+        encumbrance_bonus: encBonus !== '' ? (parseInt(encBonus) || null) : null,
+      }),
       ...(type === 'gear'   && { encumbrance_bonus: encBonus !== '' ? (parseInt(encBonus) || null) : null }),
     })
   }
@@ -803,15 +809,20 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
 
           {/* Armor fields */}
           {type === 'armor' && (
-            <div style={{ display: 'flex', gap: '0.625rem' }}>
-              <Field label="Defense"><input type="number" min={0} value={defense} onChange={e => setDefense(e.target.value)} style={{ ...inputStyle, width: '4.375rem' }} /></Field>
-              <Field label="Soak Bonus"><input type="number" min={0} value={soak} onChange={e => setSoak(e.target.value)} style={{ ...inputStyle, width: '4.375rem' }} /></Field>
-            </div>
+            <>
+              <div style={{ display: 'flex', gap: '0.625rem' }}>
+                <Field label="Defense"><input type="number" min={0} value={defense} onChange={e => setDefense(e.target.value)} style={{ ...inputStyle, width: '4.375rem' }} /></Field>
+                <Field label="Soak Bonus"><input type="number" min={0} value={soak} onChange={e => setSoak(e.target.value)} style={{ ...inputStyle, width: '4.375rem' }} /></Field>
+              </div>
+              <Field label="Bonus Encumbrance Threshold (when equipped)">
+                <input type="number" min={0} value={encBonus} onChange={e => setEncBonus(e.target.value)} style={{ ...inputStyle, width: '5rem' }} placeholder="—" />
+              </Field>
+            </>
           )}
 
           {/* Gear fields */}
           {type === 'gear' && (
-            <Field label="Encumbrance Bonus (storage container)">
+            <Field label="Bonus Encumbrance Threshold (storage container, when equipped)">
               <input type="number" min={0} value={encBonus} onChange={e => setEncBonus(e.target.value)} style={{ ...inputStyle, width: '5rem' }} placeholder="—" />
             </Field>
           )}
