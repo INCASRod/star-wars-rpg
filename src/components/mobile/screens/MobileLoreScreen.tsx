@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { isForceUserSensitive } from '@/lib/forceUtils'
+import { resolveDutyName, resolveObligationName } from '@/lib/dutyObligationUtils'
 import { RichText } from '@/components/ui/RichText'
 import { FONT_DISPLAY, FONT_BODY, FS, SP, RADIUS, HUD, EASE } from '@/lib/tokens'
 import type {
@@ -113,16 +114,12 @@ export function MobileLoreScreen({
     .map(cs => refSpecs.find(s => s.key === cs.specialization_key)?.name ?? cs.specialization_key)
     .join(' · ')
 
-  // Duty / Obligation resolved names (with custom name and key fallbacks)
+  // Duty / Obligation resolved names (custom name takes priority over standard type name)
   const dutyResolvedName = character.duty_type
-    ? refDutyTypes.find(d => d.key === character.duty_type)?.name
-      ?? character.duty_custom_name
-      ?? toTitleCase(character.duty_type)
+    ? resolveDutyName(character, refDutyTypes)
     : null
   const obligationResolvedName = character.obligation_type
-    ? refObligationTypes.find(o => o.key === character.obligation_type)?.name
-      ?? character.obligation_custom_name
-      ?? toTitleCase(character.obligation_type)
+    ? resolveObligationName(character, refObligationTypes)
     : null
 
   const motivationText = character.motivation_description

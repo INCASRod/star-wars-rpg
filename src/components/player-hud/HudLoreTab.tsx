@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { isForceUserSensitive } from '@/lib/forceUtils'
+import { resolveDutyName, resolveObligationName } from '@/lib/dutyObligationUtils'
 import { RichText } from '@/components/ui/RichText'
 import { Modal } from '@/components/ui/Modal'
 import { FONT_BODY, FONT_DISPLAY, FONT_MONO, FS, SP, RADIUS, Z, HUD, EASE } from '@/lib/tokens'
@@ -106,15 +107,15 @@ function IdentityCell({ label, value }: { label: string; value: React.ReactNode 
 
 // ─── Pillar — duty or obligation stat column ──────────────────────────────────
 function Pillar({
-  heading, factionLabel, resolvedName, value, side,
-  description,
+  heading, resolvedName, value, side,
+  description, onExpand,
 }: {
   heading: string
-  factionLabel: string
   resolvedName: string | null
   value: number | undefined
   side: 'left' | 'right'
   description: string
+  onExpand: () => void
 }) {
   const isLeft      = side === 'left'
   const bright      = isLeft ? ALLY_BRIGHT : IMP_BRIGHT
@@ -143,21 +144,6 @@ function Pillar({
           ? `linear-gradient(90deg, ${bleedColor} 0%, transparent 100%)`
           : `linear-gradient(270deg, ${bleedColor} 0%, transparent 100%)`,
       }} />
-
-      {/* vertical faction label */}
-      <div style={{
-        position: 'absolute',
-        top: '50%', transform: 'translateY(-50%)',
-        [isLeft ? 'left' : 'right']: SP[1],
-        fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
-        letterSpacing: '0.22em', textTransform: 'uppercase' as const,
-        color: `color-mix(in srgb, ${bright} 35%, transparent)`,
-        writingMode: 'vertical-rl' as const,
-        rotate: isLeft ? '180deg' : '0deg',
-        userSelect: 'none',
-      }}>
-        {factionLabel}
-      </div>
 
       {/* section heading */}
       <div style={{
@@ -223,17 +209,33 @@ function Pillar({
 
           {/* description */}
           {description ? (
-            <div style={{
-              fontFamily: FONT_BODY, fontSize: FS.overline,
-              color: 'var(--hud-text-faint)', lineHeight: 1.5,
-              fontStyle: 'italic', textAlign: 'center',
-              display: '-webkit-box',
-              WebkitLineClamp: 6,
-              WebkitBoxOrient: 'vertical' as const,
-              overflow: 'hidden', position: 'relative',
-            }}>
-              {description}
-            </div>
+            <>
+              <div style={{
+                fontFamily: FONT_BODY, fontSize: FS.overline,
+                color: 'var(--hud-text-faint)', lineHeight: 1.5,
+                fontStyle: 'italic', textAlign: 'center',
+                display: '-webkit-box',
+                WebkitLineClamp: 6,
+                WebkitBoxOrient: 'vertical' as const,
+                overflow: 'hidden', position: 'relative',
+              }}>
+                {description}
+              </div>
+              <button
+                onClick={onExpand}
+                className="lore-pillar-expand-btn"
+                style={{
+                  marginTop: SP[1],
+                  background: 'transparent', border: 'none', cursor: 'pointer',
+                  fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
+                  letterSpacing: '0.12em', textTransform: 'uppercase' as const,
+                  color: bright, opacity: 0.75, position: 'relative',
+                  padding: `2px ${SP[1]}`,
+                }}
+              >
+                Read Full Text →
+              </button>
+            </>
           ) : null}
         </>
       ) : (
@@ -265,6 +267,9 @@ export function HudLoreTab({
   const [editingNotes,     setEditingNotes]     = useState(false)
   const [localBackstory,   handleBackstoryChange] = useDebounced(character.backstory || '', onBackstoryChange)
   const [localNotes,       handleNotesChange]     = useDebounced(character.notes || '', onNotesChange)
+
+  // Duty/Obligation full-text expand
+  const [expandedPillar, setExpandedPillar] = useState<'duty' | 'obligation' | null>(null)
 
   // Portrait
   const [photoOpen,          setPhotoOpen]          = useState(false)
@@ -310,13 +315,11 @@ export function HudLoreTab({
 
   // ── Derived values ─────────────────────────────────────────────────────────
   const dutyResolvedName = character.duty_type
-    ? (refDutyTypes.find(d => d.key === character.duty_type)?.name
-      || character.duty_custom_name || toTitleCase(character.duty_type))
+    ? resolveDutyName(character, refDutyTypes)
     : null
 
   const obligationResolvedName = character.obligation_type
-    ? (refObligationTypes.find(o => o.key === character.obligation_type)?.name
-      || character.obligation_custom_name || toTitleCase(character.obligation_type))
+    ? resolveObligationName(character, refObligationTypes)
     : null
 
   const motivationText        = character.motivation_description || character.obligation_notes || character.duty_notes || ''
@@ -387,6 +390,14 @@ export function HudLoreTab({
         .lore-narrative-scroll::-webkit-scrollbar { width: 3px; }
         .lore-narrative-scroll::-webkit-scrollbar-track { background: transparent; }
         .lore-narrative-scroll::-webkit-scrollbar-thumb { background: rgba(200,170,80,0.3); border-radius: 2px; }
+        .lore-pillar-expand-btn:hover { opacity: 1 !important; text-decoration: underline; }
+        .lore-modal-text {
+          white-space: pre-wrap;
+          font-weight: 300;
+        }
+        .lore-modal-scroll::-webkit-scrollbar { width: 3px; }
+        .lore-modal-scroll::-webkit-scrollbar-track { background: transparent; }
+        .lore-modal-scroll::-webkit-scrollbar-thumb { background: rgba(200,170,80,0.3); border-radius: 2px; }
       `}} />
 
       <div
@@ -540,11 +551,11 @@ export function HudLoreTab({
           {character.duty_obligation_configured ? (
             <Pillar
               heading="Duty"
-              factionLabel="Alliance · Duty"
               resolvedName={dutyResolvedName}
               value={character.duty_value}
               side="left"
               description={dutyDescription}
+              onExpand={() => setExpandedPillar('duty')}
             />
           ) : (
             <div style={{
@@ -799,11 +810,11 @@ export function HudLoreTab({
           {character.duty_obligation_configured ? (
             <Pillar
               heading="Obligation"
-              factionLabel="Imperial · Obligation"
               resolvedName={obligationResolvedName}
               value={character.obligation_value}
               side="right"
               description={obligationDescription}
+              onExpand={() => setExpandedPillar('obligation')}
             />
           ) : (
             <div style={{
@@ -867,6 +878,57 @@ export function HudLoreTab({
                 borderRadius: RADIUS.md, padding: `${SP[1]} ${SP[3]}`,
                 fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700,
                 letterSpacing: '0.08em', textTransform: 'uppercase',
+                color: 'var(--hud-text-dim)', cursor: 'pointer', transition: EASE.default,
+              }}
+            >Close</button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* ═══ DUTY / OBLIGATION FULL-TEXT MODAL ════════════════════════════════ */}
+      <Modal
+        open={!!expandedPillar}
+        onClose={() => setExpandedPillar(null)}
+        maxWidth="min(90vw, 640px)"
+        zIndex={Z.modal}
+        borderColor={expandedPillar === 'duty' ? `rgba(58,140,74,0.4)` : `rgba(196,48,48,0.4)`}
+      >
+        <div style={{ padding: SP[4] }}>
+          <div style={{
+            fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
+            letterSpacing: '0.2em', textTransform: 'uppercase' as const,
+            color: expandedPillar === 'duty' ? ALLY_BRIGHT : IMP_BRIGHT,
+            marginBottom: SP[1],
+          }}>
+            {expandedPillar === 'duty' ? 'Duty' : 'Obligation'}
+          </div>
+          <div style={{
+            fontFamily: FONT_DISPLAY, fontSize: FS.h3, fontWeight: 700,
+            color: 'var(--hud-text)', marginBottom: SP[3],
+          }}>
+            {expandedPillar === 'duty' ? dutyResolvedName : obligationResolvedName}
+            {' · '}
+            {expandedPillar === 'duty' ? character.duty_value : character.obligation_value}/100
+          </div>
+          <div
+            className="lore-modal-scroll lore-modal-text"
+            style={{
+              maxHeight: '60vh', overflowY: 'auto',
+              fontFamily: FONT_BODY, fontSize: FS.sm, lineHeight: 1.7,
+              color: 'var(--hud-text-dim)',
+            }}
+          >
+            {expandedPillar === 'duty' ? dutyDescription : obligationDescription}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: SP[3] }}>
+            <button
+              onClick={() => setExpandedPillar(null)}
+              style={{
+                background: 'var(--hud-surface-mid)',
+                border: `1px solid var(--hud-border)`,
+                borderRadius: RADIUS.md, padding: `${SP[1]} ${SP[3]}`,
+                fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700,
+                letterSpacing: '0.08em', textTransform: 'uppercase' as const,
                 color: 'var(--hud-text-dim)', cursor: 'pointer', transition: EASE.default,
               }}
             >Close</button>
