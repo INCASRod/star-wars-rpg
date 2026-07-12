@@ -111,7 +111,7 @@ export function GmShell() {
   const {
     sessionMode, combatRound, sessionBusy,
     stagingEncounter, setStagingEncounter,
-    stagingInitRoster,
+    stagingInitRoster, stagingVehicleRoster,
     openStagingCombatModal, handleStagingCombatStart,
     endEncounter,
   } = useGmSession({
@@ -601,6 +601,7 @@ export function GmShell() {
           campaignId={campaignId ?? ''}
           characters={activeChars}
           roster={stagingInitRoster}
+          vehicleRoster={stagingVehicleRoster}
           sendToChar={sendToChar}
           onClose={() => setInitiativeSetupOpen(false)}
           onStart={handleStagingCombatStart}
@@ -613,6 +614,7 @@ export function GmShell() {
           campaignId={campaignId ?? ''}
           characters={activeChars}
           roster={stagingEncounter.adversaries}
+          vehicleRoster={stagingEncounter.vehicles}
           sendToChar={sendToChar}
           onClose={() => setRecheckInitiativeOpen(false)}
           onStart={handleRecheckInitiativeStart}

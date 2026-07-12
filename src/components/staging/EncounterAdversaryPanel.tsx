@@ -830,10 +830,12 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
         const gmTargets = [...pcStubs, ...alliedStubs] as AdversaryInstance[]
 
         function handleAdvRoll(result: RollResult, label?: string, pool?: Record<string, number>, meta?: RollMeta) {
+          // Attack rolls are never hidden rolls — visible on the feed regardless of
+          // whether the acting adversary's token is revealed to players on the map.
           logRoll({
             campaignId, characterId: null, characterName: adv.name,
             label, pool: (pool ?? {}) as Parameters<typeof logRoll>[0]['pool'],
-            result, isDM: true, hidden: !adv.revealed,
+            result, isDM: true, hidden: false,
             meta: { ...meta, alignment },
           })
         }
@@ -853,7 +855,7 @@ export function EncounterAdversaryPanel({ campaignId, encounter, characters }: E
             campaignId={campaignId}
             characterId={adv.instanceId}
             onRoll={handleAdvRoll}
-            gmOverrides={{ isGmMode: true, gmTargets, gmAlignment: alignment, gmHiddenFromPlayers: !adv.revealed }}
+            gmOverrides={{ isGmMode: true, gmTargets, gmAlignment: alignment }}
           />
         )
       })()}

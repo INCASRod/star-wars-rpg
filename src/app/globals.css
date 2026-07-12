@@ -985,6 +985,68 @@ i.ffi {
   border-color: color-mix(in srgb, var(--hud-text-dim) 30%, transparent);
 }
 
+/* ═══════════════════════════════════════════════════════════════ */
+/*  INITIATIVE SETUP MODAL — segmented control, plates, board       */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* Step 1 skill-select segmented control — reads --seg-accent per button */
+.iset-seg-btn {
+  background: transparent;
+  transition: background var(--ease-default), border-color var(--ease-default);
+}
+.iset-seg-btn[data-active="true"] {
+  background: color-mix(in srgb, var(--seg-accent, var(--hud-gold)) 16%, transparent);
+}
+.iset-seg-btn:not([data-active="true"]):hover {
+  background: color-mix(in srgb, var(--hud-text-dim) 7%, transparent);
+}
+
+/* Step 2/3 static plate row hover tint */
+.iset-row:hover {
+  background: color-mix(in srgb, var(--hud-text-dim) 5%, transparent);
+}
+
+/* Step 4 board/reserve plate — hover/focus reveals action buttons */
+.iset-plate-actions {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--ease-quick);
+}
+.iset-plate:hover .iset-plate-actions,
+.iset-plate:focus-within .iset-plate-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Duplicate / Bench / Restore icon buttons — reads --act-accent per button */
+.iset-action-btn {
+  background: transparent;
+  transition: background var(--ease-quick), border-color var(--ease-quick), color var(--ease-quick);
+}
+.iset-action-btn:hover {
+  background:   color-mix(in srgb, var(--act-accent, var(--hud-accent)) 16%, transparent);
+  border-color: color-mix(in srgb, var(--act-accent, var(--hud-accent)) 55%, transparent);
+  color:        var(--act-accent, var(--hud-accent));
+}
+
+/* Drag handle */
+.iset-drag-handle {
+  cursor: grab;
+  color: var(--hud-text-faint);
+  transition: color var(--ease-quick);
+}
+.iset-drag-handle:hover { color: var(--hud-text-dim); }
+.iset-drag-handle:active { cursor: grabbing; }
+
+/* Reserve drawer header */
+.iset-reserve-header {
+  cursor: pointer;
+  transition: background var(--ease-quick);
+}
+.iset-reserve-header:hover {
+  background: color-mix(in srgb, var(--hud-text-dim) 6%, transparent);
+}
+
 /* ── Initiative Strip keyframe animations ─────────────────────── */
 @keyframes init-crt-flicker {
   0%     { opacity: 1; }
