@@ -157,6 +157,7 @@ export function GmShell() {
   const [recheckInitiativeOpen, setRecheckInitiativeOpen] = useState(false)
   const [referenceOpen,         setReferenceOpen]         = useState(false)
   const [diceOpen,              setDiceOpen]              = useState(false)
+  const [deckOpen,              setDeckOpen]              = useState(false)
 
   // Force GM Imperial Steel theme for the entire GM view, including portals
   useEffect(() => {
@@ -375,6 +376,8 @@ export function GmShell() {
           onScreenClick={() => setReferenceOpen(r => !r)}
           diceActive={diceOpen}
           screenActive={referenceOpen}
+          deckOpen={deckOpen}
+          onDeckToggle={() => setDeckOpen(o => !o)}
         />
 
         {/* Map area (always rendered as background) */}

@@ -3,7 +3,7 @@
 import { memo } from 'react'
 import { HUD, FONT_BODY, RADIUS, Z, EASE, FS } from '@/lib/tokens'
 
-export type GmPanelId = 'map' | 'tools' | 'party' | 'combat' | 'library'
+export type GmPanelId = 'map' | 'tools' | 'party' | 'library'
 
 interface RailButton {
   id:        GmPanelId
@@ -18,8 +18,7 @@ const BUTTONS: RailButton[] = [
   { id: 'map',    icon: '◉', label: 'Tokens', accent: HUD.gold },
   { id: 'tools',  icon: '⊞', label: 'Tools',  accent: 'var(--die-force)' },
   { id: 'party',  icon: '◉', label: 'Party',  accent: '#4EC8A8' }, // pre-approved: no matching token
-  { id: 'combat', icon: '',  label: 'Enemies', accent: 'var(--state-failure)',
-    imgSrc: '/images/factions/empire.png', imgClass: 'hud-fi hud-fi-empire' },
+  { id: 'library', icon: '⊟', label: 'Library', accent: 'var(--die-force)' },
 ]
 
 interface Props {
@@ -29,10 +28,12 @@ interface Props {
   onScreenClick: () => void
   diceActive:    boolean
   screenActive:  boolean
+  deckOpen:      boolean
+  onDeckToggle:  () => void
 }
 
 export const GmLeftRail = memo(function GmLeftRail({
-  activePanel, onPanelToggle, onDiceClick, onScreenClick, diceActive, screenActive,
+  activePanel, onPanelToggle, onDiceClick, onScreenClick, diceActive, screenActive, deckOpen, onDeckToggle,
 }: Props) {
   return (
     <div style={{
@@ -65,7 +66,15 @@ export const GmLeftRail = memo(function GmLeftRail({
 
       <RailBtn icon="⬡" label="Dice"    active={diceActive}              accent={HUD.gold}              onClick={onDiceClick} />
       <RailBtn icon="▦" label="Screen"  active={screenActive}            accent={HUD.gold}              onClick={onScreenClick} />
-      <RailBtn icon="⊟" label="Library" active={activePanel === 'library'} accent="var(--die-force)"   onClick={() => onPanelToggle('library')} />
+      <RailBtn
+        icon=""
+        label="Enemies"
+        active={deckOpen}
+        accent="var(--state-failure)"
+        imgSrc="/images/factions/empire.png"
+        imgClass="hud-fi hud-fi-empire"
+        onClick={onDeckToggle}
+      />
     </div>
   )
 })
