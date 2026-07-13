@@ -335,6 +335,11 @@ export function EncounterDeck({
           <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
             <div style={{
               display: 'flex', gap: SP[3], padding: `${SP[3]} ${SP[4]}`, height: '100%',
+              // Static right-side gutter so cards never render underneath MapToolsRadial's
+              // default bottom-right 300px-wide widget footprint (right: 24px), which stays
+              // untouched per this plan's scope — 19rem (304px) clears its left edge even at
+              // the radial's default position. Doesn't track the radial if the GM drags it.
+              paddingRight: '19rem',
               overflowX: 'auto', overflowY: 'hidden', alignItems: 'stretch',
             }}>
               {search === '' ? (

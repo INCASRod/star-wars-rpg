@@ -305,6 +305,12 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
   // TEMPORARY — Task 9 standalone-verification stub only. Task 12 replaces this
   // with the real deck-open state threaded down from GmShell/useGmSession.
   const [deckOpenLocal, setDeckOpenLocal] = useState(false)
+  // Counter incremented whenever the map area's height changes (e.g. the
+  // Encounter Deck's open/close animation completes) — passed to MapCanvas
+  // as recentreSignal so it re-runs rebuildMap and recentres the map within
+  // the new visible canvas area.
+  const [recentreSignal, setRecentreSignal] = useState(0)
+  const handleMapAreaResize = useCallback(() => setRecentreSignal(s => s + 1), [])
   const [contextMenu,      setContextMenu]      = useState<ContextMenuState | null>(null)
   const [tooltipState,     setTooltipState]     = useState<TooltipState | null>(null)
   const isDraggingRef = useRef(false)
@@ -816,6 +822,7 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
               onTokenHoverEnd={handleTokenHoverEnd}
               onTokenDragStart={handleTokenDragStart}
               onTokenDragEnd={handleTokenDragEnd}
+              recentreSignal={recentreSignal}
             />
             {previewMap && (
               <div style={{
@@ -1185,6 +1192,7 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
             open={deckOpenLocal}
             onOpenChange={setDeckOpenLocal}
             characters={characters}
+            onMapAreaResize={handleMapAreaResize}
             activeMapId={activeMap?.id ?? null}
           />
         )}

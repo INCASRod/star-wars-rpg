@@ -42,6 +42,10 @@ export interface MapCanvasProps {
   onTokenDragStart?:   (tokenId: string) => void
   onTokenDragEnd?:     (tokenId: string) => void
   onTokenClick?:       (tokenId: string) => void
+  // Counter the parent increments to request a recentre (e.g. after the
+  // Encounter Deck's open/close animation changes the map area's height) —
+  // the ResizeObserver only resizes the renderer, it never recentres the map.
+  recentreSignal?:     number
 }
 
 export const MapCanvas = memo(function MapCanvas({
@@ -49,6 +53,7 @@ export const MapCanvas = memo(function MapCanvas({
   onTokenMove, gridEnabled, gridSize, onTokenContextMenu,
   tokenScale = 1, initialScale = 1, bottomOverlayRef,
   onTokenHover, onTokenHoverEnd, onTokenDragStart, onTokenDragEnd, onTokenClick,
+  recentreSignal,
 }: MapCanvasProps) {
   const containerRef       = useRef<HTMLDivElement>(null)
   const appRef             = useRef<InstanceType<typeof import('pixi.js').Application> | null>(null)
@@ -208,6 +213,17 @@ export const MapCanvas = memo(function MapCanvas({
     if (!app || !PIXI || !mapImageUrl) return
     rebuildMap(app, PIXI, mapImageUrl, gridEnabled, gridSize, mapWRef, mapHRef, mapOffsetXRef, mapOffsetYRef, wipeInProgress)
   }, [mapImageUrl, gridEnabled, gridSize])
+
+  // ── Recentre on demand (e.g. after the Encounter Deck's open/close
+  // animation changes the map area's height) — separate from the
+  // mapImageUrl/gridEnabled/gridSize effect above, which does not fire on
+  // container resize. No wipeInProgress ref is passed here, so this always
+  // takes rebuildMap's plain (non-wipe) redraw path.
+  useEffect(() => {
+    const app = appRef.current
+    if (!app || !PIXI || !mapImageUrl || recentreSignal === undefined) return
+    rebuildMap(app, PIXI, mapImageUrl, gridEnabled, gridSize, mapWRef, mapHRef, mapOffsetXRef, mapOffsetYRef)
+  }, [recentreSignal]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Sync tokens ─────────────────────────────────────────────
   const onTokenMoveRef = useRef(onTokenMove)
