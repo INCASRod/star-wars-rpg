@@ -158,27 +158,6 @@
 - Params include `charCrits`/`setCharCrits` (from `useGmData`) for optimistic pip updates
 - Exposes `healCritInjury(injuryId)` — heals an injury by ID, optimistically removes pip, sends player toast
 
-### `useEncounterData(campaignId)`
-- Owns encounter loading and realtime subscription for `combat_encounters`, extracted from `CombatPanel` to satisfy Single Responsibility
-- State: `encounter`, `roster`, `groupSizes`
-- Exposes all setters so `CombatPanel` handlers can still mutate state directly
-- Realtime: subscribes to `combat_encounters` channel filtered by `campaign_id`
-- Returns: `{ encounter, setEncounter, roster, setRoster, groupSizes, setGroupSizes }`
-
-### `useAdversaryLibrary()`
-- Loads the full adversary roster from `fetchAdversaries()` (OggDude JSON) + `ref_adversaries` (custom DB rows) on mount
-- State: `library`, `libSearch`, `libTypeFilter`, `libSourceFilter`, `libLoading`, `libError`
-- Derived: `filteredLib` — filtered by type, source, and search query (hides all ~500 OggDude entries unless a search or custom filter is active)
-- Returns all state + setters + `filteredLib`; no parameters required
-- Extracted from `CombatPanel` to satisfy Single Responsibility
-
-### `useVehicleLibrary()`
-- Eager-loads vehicle list from `fetchVehicles()` (OggDude JSON) + `ref_vehicles` (custom DB rows) on mount
-- State: `vehicleLibrary`, `vehicleLibLoaded`, `vehicleSearch`, `silhouetteFilter`
-- Derived: `filteredVehicleLib` — memoized, filtered by silhouette and search query
-- Returns all state + setters + `filteredVehicleLib`; no parameters required
-- Extracted from `CombatPanel` to satisfy Single Responsibility; `libraryTab` UI state remains in CombatPanel
-
 ### `useCombatParticipants(campaignId)`
 - Owns `combat_participants` table state keyed by `character_id`
 - State: `combatParticipants: Record<string, CombatParticipantRow>`
