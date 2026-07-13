@@ -36,7 +36,6 @@ import { GmReferenceLibraryPanel } from '@/components/gm/GmReferenceLibraryPanel
 import { GmMapPanel } from './panels/GmMapPanel'
 import { GmToolsPanel } from './panels/GmToolsPanel'
 import { GmPartyPanel } from './panels/GmPartyPanel'
-import { GmCombatPanel } from './panels/GmCombatPanel'
 import { GmInitiativeDrawer } from './panels/GmInitiativeDrawer'
 import type { GmControls } from './panels/GmInitiativeDrawer'
 import type { Character } from '@/lib/types'
@@ -154,12 +153,6 @@ export function GmShell() {
   // ── UI state ────────────────────────────────────────────────────
   const [activePanel,           setActivePanel]           = useState<GmPanelId | null>(null)
   const [initiativeOpen,        setInitiativeOpen]        = useState(false)
-
-  // Persist the last seen encounter so the Enemies panel stays populated after combat ends
-  const [displayEncounter, setDisplayEncounter] = useState<CombatEncounter | null>(null)
-  useEffect(() => {
-    if (stagingEncounter) setDisplayEncounter(stagingEncounter)
-  }, [stagingEncounter])
   const [initiativeSetupOpen,   setInitiativeSetupOpen]   = useState(false)
   const [recheckInitiativeOpen, setRecheckInitiativeOpen] = useState(false)
   const [referenceOpen,         setReferenceOpen]         = useState(false)
@@ -516,14 +509,6 @@ export function GmShell() {
                 onHealCrit={healCritInjury}
                 onResolveConflict={resolveConflict}
                 onRestored={(char) => setCharacters(prev => [...prev, { ...char, is_archived: false, archived_at: undefined }])}
-              />
-            )}
-            {activePanel === 'combat' && (
-              <GmCombatPanel
-                campaignId={campaignId ?? ''}
-                encounter={displayEncounter}
-                characters={activeChars}
-                onStartCombat={handleStartCombat}
               />
             )}
             {activePanel === 'library' && (

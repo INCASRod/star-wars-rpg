@@ -41,8 +41,6 @@ import { CombatLog } from '@/components/combat/CombatLog'
 import { StagingDrawer } from './StagingDrawer'
 import { StagingTokenPanel } from './StagingTokenPanel'
 import { CombatFeedPanel } from './CombatFeedPanel'
-import { EncounterAdversaryPanel } from './EncounterAdversaryPanel'
-import { EncounterVehiclePanel } from './EncounterVehiclePanel'
 import { useEncounterState } from '@/hooks/useEncounterState'
 import { HUD, FONT_BODY, FS, SP, RADIUS, EASE, Z } from '@/lib/tokens'
 
@@ -57,7 +55,7 @@ const RED  = '#E05050'   // pre-approved: combat/danger indicator
 
 /* ── Panel type definitions ───────────────────────────────── */
 type LeftPanelId   = 'adversaries' | 'vehicles' | 'tokens'
-type RightPanelId  = 'combat-feed' | 'enc-adversaries' | 'enc-vehicles'
+type RightPanelId  = 'combat-feed'
 type BottomPanelId = 'combat-log'
 
 interface LeftEntry {
@@ -87,10 +85,7 @@ const LEFT_ENTRIES: LeftEntry[] = [
   { id: 'combat-log',  icon: '≡', label: 'Combat Log',  drawerTitle: 'Combat Log',   side: 'bottom' },
 ]
 
-const RIGHT_ENTRIES: RightEntry[] = [
-  { id: 'enc-adversaries', icon: '◆', label: 'Encounter Adversaries', drawerTitle: 'Encounter Adversaries' },
-  { id: 'enc-vehicles',    icon: '△', label: 'Encounter Vehicles',    drawerTitle: 'Encounter Vehicles'    },
-]
+const RIGHT_ENTRIES: RightEntry[] = []
 
 /* ── Props ────────────────────────────────────────────────── */
 export interface StagingFloatingToolbarProps {
@@ -220,9 +215,7 @@ export function StagingFloatingToolbar({
   )
 
   const rightClickHandlers = useMemo<Record<RightPanelId, () => void>>(() => ({
-    'combat-feed':     () => { setLeftPanel(null); setBottomPanel(null); setRightPanel(p => (p === 'combat-feed'     ? null : 'combat-feed'))     },
-    'enc-adversaries': () => { setLeftPanel(null); setBottomPanel(null); setRightPanel(p => (p === 'enc-adversaries' ? null : 'enc-adversaries')) },
-    'enc-vehicles':    () => { setLeftPanel(null); setBottomPanel(null); setRightPanel(p => (p === 'enc-vehicles'    ? null : 'enc-vehicles'))    },
+    'combat-feed': () => { setLeftPanel(null); setBottomPanel(null); setRightPanel(p => (p === 'combat-feed' ? null : 'combat-feed')) },
   }), [])
 
   function activeForEntry(entry: LeftEntry): boolean {
@@ -553,21 +546,6 @@ export function StagingFloatingToolbar({
           <CombatFeedPanel
             campaignId={campaignId}
             characters={characters}
-          />
-        )}
-
-        {rightPanel === 'enc-adversaries' && (
-          <EncounterAdversaryPanel
-            campaignId={campaignId}
-            encounter={encounter}
-            characters={characters}
-          />
-        )}
-
-        {rightPanel === 'enc-vehicles' && (
-          <EncounterVehiclePanel
-            campaignId={campaignId}
-            encounter={encounter}
           />
         )}
       </StagingDrawer>

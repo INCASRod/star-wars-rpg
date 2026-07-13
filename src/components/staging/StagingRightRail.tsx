@@ -3,8 +3,6 @@
 import { useState } from 'react'
 import type { Character } from '@/lib/types'
 import { StagingDrawer } from './StagingDrawer'
-import { EncounterAdversaryPanel } from './EncounterAdversaryPanel'
-import { EncounterVehiclePanel } from './EncounterVehiclePanel'
 import { useEncounterState } from '@/hooks/useEncounterState'
 import { HUD, FONT_BODY, FS, SP, RADIUS, EASE } from '@/lib/tokens'
 
@@ -100,22 +98,7 @@ export function StagingRightRail({ campaignId, characters, isCombatActive }: Sta
         open={openPanel !== null}
         onClose={() => setOpenPanel(null)}
         title={activeEntry?.drawerTitle ?? ''}
-      >
-        {openPanel === 'adversaries' && (
-          <EncounterAdversaryPanel
-            campaignId={campaignId}
-            encounter={encounter}
-            characters={characters}
-          />
-        )}
-
-        {openPanel === 'vehicles' && (
-          <EncounterVehiclePanel
-            campaignId={campaignId}
-            encounter={encounter}
-          />
-        )}
-      </StagingDrawer>
+      />
     </>
   )
 }
