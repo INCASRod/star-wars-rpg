@@ -280,9 +280,11 @@ export interface GmMapViewProps {
   onStagingToggleVisibility?:  (id: string, visible: boolean) => Promise<void>
   onStagingRemoveToken?:       (id: string) => Promise<void>
   onStagingAddToken?:          (token: Omit<MapToken, 'id' | 'updated_at'>) => Promise<MapToken | null>
+  /** Fired on a genuine tap (not a drag) on a map token — used by the Encounter Deck to focus the corresponding card. */
+  onTokenClick?:               (tokenId: string) => void
 }
 
-export function GmMapView({ campaignId, encounter: encounterProp, characters, allMaps, activeMap, onDeleteMap, isStagingTab, stagingTokens, onStagingMoveToken, onStagingToggleVisibility, onStagingRemoveToken, onStagingAddToken }: GmMapViewProps) {
+export function GmMapView({ campaignId, encounter: encounterProp, characters, allMaps, activeMap, onDeleteMap, isStagingTab, stagingTokens, onStagingMoveToken, onStagingToggleVisibility, onStagingRemoveToken, onStagingAddToken, onTokenClick }: GmMapViewProps) {
   const supabase = useMemo(() => createClient(), [])
 
   const router = useRouter()
@@ -787,10 +789,9 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
     setTooltipState(null)
   }, [lockedTokenId])
 
-  const handleTokenHoverLock = useCallback((tokenId: string) => {
-    setLockedTokenId(tokenId)
-    setLockedPos({ x: lastTooltipPosRef.current.x, y: lastTooltipPosRef.current.y })
-  }, [])
+  const handleTokenClick = useCallback((tokenId: string) => {
+    onTokenClick?.(tokenId)
+  }, [onTokenClick])
 
   const handleRemoveToken = useCallback(async (id: string) => {
     // Dismiss the locked tooltip if it was open on this token
@@ -876,7 +877,7 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
               onTokenContextMenu={handleTokenContextMenu}
               tokenScale={tokenScale}
               onTokenHover={handleTokenHover}
-              onTokenHoverLock={handleTokenHoverLock}
+              onTokenClick={handleTokenClick}
               onTokenHoverEnd={handleTokenHoverEnd}
               onTokenDragStart={handleTokenDragStart}
               onTokenDragEnd={handleTokenDragEnd}

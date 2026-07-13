@@ -41,14 +41,14 @@ export interface MapCanvasProps {
   onTokenHoverEnd?:    () => void
   onTokenDragStart?:   (tokenId: string) => void
   onTokenDragEnd?:     (tokenId: string) => void
-  onTokenHoverLock?:   (tokenId: string) => void
+  onTokenClick?:       (tokenId: string) => void
 }
 
 export const MapCanvas = memo(function MapCanvas({
   mapImageUrl, tokens, isGM, currentCharacterId,
   onTokenMove, gridEnabled, gridSize, onTokenContextMenu,
   tokenScale = 1, initialScale = 1, bottomOverlayRef,
-  onTokenHover, onTokenHoverEnd, onTokenDragStart, onTokenDragEnd, onTokenHoverLock,
+  onTokenHover, onTokenHoverEnd, onTokenDragStart, onTokenDragEnd, onTokenClick,
 }: MapCanvasProps) {
   const containerRef       = useRef<HTMLDivElement>(null)
   const appRef             = useRef<InstanceType<typeof import('pixi.js').Application> | null>(null)
@@ -92,8 +92,8 @@ export const MapCanvas = memo(function MapCanvas({
   onTokenDragStartRef.current = onTokenDragStart
   const onTokenDragEndRef   = useRef(onTokenDragEnd)
   onTokenDragEndRef.current  = onTokenDragEnd
-  const onTokenHoverLockRef  = useRef(onTokenHoverLock)
-  onTokenHoverLockRef.current = onTokenHoverLock
+  const onTokenClickRef     = useRef(onTokenClick)
+  onTokenClickRef.current   = onTokenClick
 
   // ── Pixi bootstrap ──────────────────────────────────────────
   useEffect(() => {
@@ -184,7 +184,7 @@ export const MapCanvas = memo(function MapCanvas({
         const { tokens: t, isGM: gm, currentCharacterId: cid, tokenScale: ts } = propsRef.current
         syncTokens(
           app, px, t, gm, cid,
-          onTokenMoveRef, onContextRef, onTokenHoverRef, onTokenHoverEndRef, onTokenDragStartRef, onTokenDragEndRef, onTokenHoverLockRef,
+          onTokenMoveRef, onContextRef, onTokenHoverRef, onTokenHoverEndRef, onTokenDragStartRef, onTokenDragEndRef, onTokenClickRef,
           containerRef, tokensRef, mapWRef, mapHRef, mapOffsetXRef, mapOffsetYRef,
           draggingTokenIdRef, ts,
         )
@@ -270,7 +270,7 @@ export const MapCanvas = memo(function MapCanvas({
     prevTokensMapRef.current = new Map(tokens.map(t => [t.id, t]))
     syncTokens(
       app, PIXI, tokens, isGM, currentCharacterId,
-      onTokenMoveRef, onContextRef, onTokenHoverRef, onTokenHoverEndRef, onTokenDragStartRef, onTokenDragEndRef, onTokenHoverLockRef, containerRef, tokensRef,
+      onTokenMoveRef, onContextRef, onTokenHoverRef, onTokenHoverEndRef, onTokenDragStartRef, onTokenDragEndRef, onTokenClickRef, containerRef, tokensRef,
       mapWRef, mapHRef, mapOffsetXRef, mapOffsetYRef,
       draggingTokenIdRef, tokenScale,
     )
@@ -531,7 +531,7 @@ function syncTokens(
   onHoverEndRef:        React.MutableRefObject<(() => void) | undefined>,
   onDragStartRef:       React.MutableRefObject<((id: string) => void) | undefined>,
   onDragEndRef:         React.MutableRefObject<((id: string) => void) | undefined>,
-  onHoverLockRef:       React.MutableRefObject<((id: string) => void) | undefined>,
+  onClickRef:           React.MutableRefObject<((id: string) => void) | undefined>,
   containerRef:         React.RefObject<HTMLDivElement | null>,
   tokensRef:            React.MutableRefObject<Map<string, InstanceType<typeof import('pixi.js').Container>>>,
   mapWRef:              React.MutableRefObject<number>,
@@ -583,7 +583,7 @@ function syncTokens(
     const sprite  = buildTokenSprite(
       px, token, canDrag,
       mapW, mapH, offsetX, offsetY,
-      onMoveRef, onContextRef, onHoverRef, onHoverEndRef, onDragStartRef, onDragEndRef, onHoverLockRef, containerRef, draggingTokenIdRef,
+      onMoveRef, onContextRef, onHoverRef, onHoverEndRef, onDragStartRef, onDragEndRef, onClickRef, containerRef, draggingTokenIdRef,
       mapWRef, mapHRef, mapOffsetXRef, mapOffsetYRef,
       tokenScale,
       app.ticker,
@@ -620,7 +620,7 @@ function buildTokenSprite(
   onHoverEndRef:       React.MutableRefObject<(() => void) | undefined>,
   onDragStartRef:      React.MutableRefObject<((id: string) => void) | undefined>,
   onDragEndRef:        React.MutableRefObject<((id: string) => void) | undefined>,
-  onHoverLockRef:      React.MutableRefObject<((id: string) => void) | undefined>,
+  onClickRef:          React.MutableRefObject<((id: string) => void) | undefined>,
   containerRef:        React.RefObject<HTMLDivElement | null>,
   draggingTokenIdRef:  React.MutableRefObject<string | null>,
   mapWRef:             React.MutableRefObject<number>,
@@ -860,30 +860,13 @@ function buildTokenSprite(
     onContextRef.current?.(token.id, e.nativeEvent)
   })
 
-  // Per-token hover-lock timer (2 s dwell → onHoverLock fires).
-  // hoverOutDebounce absorbs rapid pointerout/pointerover pairs fired by Pixi
-  // when the pointer crosses from the container to an interactive child element
-  // (e.g. the glow ring) without genuinely leaving the token's hit area.
-  let hoverLockTimer:   ReturnType<typeof setTimeout> | null = null
-  let hoverOutDebounce: ReturnType<typeof setTimeout> | null = null
-
-  const clearHoverLockTimer = () => {
-    if (hoverLockTimer) { clearTimeout(hoverLockTimer); hoverLockTimer = null }
-  }
-  const cancelOutDebounce = () => {
-    if (hoverOutDebounce) { clearTimeout(hoverOutDebounce); hoverOutDebounce = null }
-  }
-
-  // Hover — fire callback with screen coordinates derived from canvas rect
+  // Hover — fire callback with screen coordinates derived from canvas rect.
+  // No dwell/lock timer — the locked-tooltip mechanic was removed because it
+  // created a document.body-portaled overlay with pointerEvents:'auto' that
+  // silently swallowed pointerdown before Pixi's EventSystem ever saw it,
+  // making the token permanently undraggable until the GM clicked elsewhere.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(c as any).on('pointerover', (e: { globalX: number; globalY: number }) => {
-    cancelOutDebounce()          // re-entering: cancel any pending timer-clear
-    if (!hoverLockTimer) {       // start lock countdown only once per entry
-      hoverLockTimer = setTimeout(() => {
-        hoverLockTimer = null
-        onHoverLockRef.current?.(token.id)
-      }, 2000)
-    }
     onTokenPointerOver(c, ticker)
     if (!onHoverRef.current) return
     const rect = containerRef.current?.getBoundingClientRect()
@@ -892,22 +875,15 @@ function buildTokenSprite(
   })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(c as any).on('pointerout', () => {
-    // 60 ms debounce: if pointerover fires again within this window (child-bubble),
-    // the cancelOutDebounce() above suppresses the clear and the timer keeps running.
-    hoverOutDebounce = setTimeout(() => {
-      hoverOutDebounce = null
-      clearHoverLockTimer()
-      onHoverEndRef.current?.()
-      onTokenPointerOut(c, ticker)
-    }, 60)
+    onHoverEndRef.current?.()
+    onTokenPointerOut(c, ticker)
   })
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(c as any).on('pointerdown', () => { cancelOutDebounce(); clearHoverLockTimer() })
 
   if (!canDrag) return c
 
   let dragging = false
   let offX = 0, offY = 0
+  let downX = 0, downY = 0, moved = false
 
   // ── Stage-level handlers attached/detached per drag ──────────
   // Using the stage (c.parent) for pointermove/pointerup means the token
@@ -918,6 +894,11 @@ function buildTokenSprite(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onStageMove = (e: { globalX: number; globalY: number }) => {
     if (!dragging) return
+    // Total Manhattan movement since pointerdown, in screen pixels — once past
+    // the threshold this is a drag, not a tap, regardless of subsequent movement.
+    if (!moved && (Math.abs(e.globalX - downX) + Math.abs(e.globalY - downY) > 4)) {
+      moved = true
+    }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const local = (c.parent as any).toLocal({ x: e.globalX, y: e.globalY })
     c.x = local.x - offX
@@ -935,14 +916,19 @@ function buildTokenSprite(
     stage.off('pointermove',    onStageMove)
     stage.off('pointerup',      onStageUp)
     stage.off('pointerupoutside', onStageUp)
-    // Use live ref values — captures current map bounds even if canvas resized since build
-    const mW = mapWRef.current
-    const mH = mapHRef.current
-    const ox = mapOffsetXRef.current
-    const oy = mapOffsetYRef.current
-    const nx = Math.max(0, Math.min(1, (c.x - ox) / mW))
-    const ny = Math.max(0, Math.min(1, (c.y - oy) / mH))
-    onMoveRef.current(token.id, nx, ny)
+    if (moved) {
+      // Use live ref values — captures current map bounds even if canvas resized since build
+      const mW = mapWRef.current
+      const mH = mapHRef.current
+      const ox = mapOffsetXRef.current
+      const oy = mapOffsetYRef.current
+      const nx = Math.max(0, Math.min(1, (c.x - ox) / mW))
+      const ny = Math.max(0, Math.min(1, (c.y - oy) / mH))
+      onMoveRef.current(token.id, nx, ny)
+    } else {
+      // Pointer never moved past the threshold — a tap, not a drag.
+      onClickRef.current?.(token.id)
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -951,6 +937,9 @@ function buildTokenSprite(
     dragging = true
     draggingTokenIdRef.current = token.id
     onDragStartRef.current?.(token.id)
+    downX = e.globalX
+    downY = e.globalY
+    moved = false
     // Convert the pointer's canvas-pixel position into stage-local space so
     // offX/offY are in the same coordinate system as c.x/c.y.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
