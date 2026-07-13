@@ -10,7 +10,7 @@ import { HUD, FONT_BODY, FS, SP, RADIUS, EASE } from '@/lib/tokens'
 const DIM  = '#6A8070'
 
 /* ── Panel registry ───────────────────────────────────────── */
-type RightPanelId = 'adversaries' | 'vehicles'
+type RightPanelId = never
 
 interface RailEntry {
   id:          RightPanelId
@@ -19,10 +19,7 @@ interface RailEntry {
   drawerTitle: string
 }
 
-const RAIL_ENTRIES: RailEntry[] = [
-  { id: 'adversaries', icon: '◆', label: 'Adversaries', drawerTitle: 'Encounter Adversaries' },
-  { id: 'vehicles',    icon: '△', label: 'Vehicles',    drawerTitle: 'Encounter Vehicles'    },
-]
+const RAIL_ENTRIES: RailEntry[] = []
 
 /* ── Props ────────────────────────────────────────────────── */
 export interface StagingRightRailProps {
