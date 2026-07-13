@@ -17,8 +17,7 @@ import type { CombatEncounter } from '@/lib/combat'
 import { fetchAdversaries, adversaryToInstance } from '@/lib/adversaries'
 import type { AdversaryInstance } from '@/lib/adversaries'
 import { fetchVehicles } from '@/lib/vehicles'
-import type { VehicleInstance, Vehicle } from '@/lib/vehicles'
-import { useEncounterCombatControls } from '@/hooks/useEncounterCombatControls'
+import type { Vehicle } from '@/lib/vehicles'
 import { HUD, FONT_BODY, EASE, RADIUS } from '@/lib/tokens'
 import { MapToolsRadial } from '@/app/gm/MapToolsRadial'
 
@@ -305,15 +304,7 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
   const [contextMenu,      setContextMenu]      = useState<ContextMenuState | null>(null)
   const [tooltipState,     setTooltipState]     = useState<TooltipState | null>(null)
   const isDraggingRef = useRef(false)
-  const [lockedTokenId, setLockedTokenId] = useState<string | null>(null)
-  const [lockedPos,     setLockedPos]     = useState<{ x: number; y: number } | null>(null)
   const lastTooltipPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
-  const tooltipRef        = useRef<HTMLDivElement | null>(null)
-  // localEncounter mirrors encounterProp but is updated optimistically on every
-  // saveEncounter call so the locked tooltip reflects changes before the Realtime
-  // round-trip completes.
-  const [localEncounter, setLocalEncounter] = useState<CombatEncounter | null>(encounterProp)
-  useEffect(() => { setLocalEncounter(encounterProp) }, [encounterProp])
   const encounter = encounterProp as unknown as EncounterRow | null
   const [previewMap,       setPreviewMap]       = useState<ActiveMap | null>(null)
   const { tokenImages: advTokenImages, setTokenImages: setAdvTokenImages } = useAdversaryTokenImages()
@@ -415,32 +406,7 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
     [activeCharacters, onMapCharIds]
   )
 
-  const saveEncounter = useCallback(async (partial: Partial<CombatEncounter>) => {
-    if (!encounterProp?.id) return
-    setLocalEncounter(prev => prev ? { ...prev, ...partial } : null)
-    await supabase
-      .from('combat_encounters')
-      .update({ ...partial, updated_at: new Date().toISOString() })
-      .eq('id', encounterProp.id)
-  }, [encounterProp?.id, supabase]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const {
-    adjustAdversaryWounds,
-    adjustAdversaryStrain,
-    adjustGroupSize,
-    adjustHullTrauma,
-    adjustSystemStrain,
-  } = useEncounterCombatControls({
-    encounter: encounterProp,
-    saveEncounter,
-    supabase,
-    campaignId: campaignId ?? '',
-  })
-
-  const activeTooltipState = useMemo(() => {
-    if (lockedTokenId && lockedPos) return { tokenId: lockedTokenId, x: lockedPos.x, y: lockedPos.y }
-    return tooltipState
-  }, [lockedTokenId, lockedPos, tooltipState])
+  const activeTooltipState = tooltipState
 
   const tooltipProps = useMemo(() => {
     if (!activeTooltipState) return null
@@ -484,7 +450,6 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
             minionGroup: adv.type === 'minion' && adv.groupSize != null
               ? { alive: adv.groupRemaining ?? 0, total: adv.groupSize }
               : undefined,
-            adversaryInstance: adv,
           }
         }
       }
@@ -498,7 +463,6 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
           vehicleStats: { silhouette: veh.silhouette, speed: veh.speed, handling: veh.handling, armor: veh.armor, defense: veh.defense },
           hullTrauma:   { current: veh.hullTraumaCurrent,   max: veh.hullTraumaThreshold },
           systemStrain: { current: veh.systemStrainCurrent,  max: veh.systemStrainThreshold },
-          vehicleInstance: veh,
         }
       }
     }
@@ -545,24 +509,6 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
       typeColor: HUD.gold,
     }
   }, [activeTooltipState, tokensById, characters, encounter, advStatCache, vehStatCache])
-
-  const lockedAdversary = useMemo<AdversaryInstance | null>(() => {
-    if (!lockedTokenId || !localEncounter) return null
-    const token = tokensById.get(lockedTokenId)
-    if (!token?.slot_key) return null
-    const slot = localEncounter.initiative_slots.find(s => s.id === token.slot_key)
-    if (!slot?.adversaryInstanceId) return null
-    return localEncounter.adversaries.find(a => a.instanceId === slot.adversaryInstanceId) ?? null
-  }, [lockedTokenId, localEncounter, tokensById])
-
-  const lockedVehicle = useMemo<VehicleInstance | null>(() => {
-    if (!lockedTokenId || !localEncounter) return null
-    const token = tokensById.get(lockedTokenId)
-    if (!token?.slot_key) return null
-    const slot = localEncounter.initiative_slots.find(s => s.id === token.slot_key)
-    if (!slot?.vehicleInstanceId) return null
-    return (localEncounter.vehicles ?? []).find(v => v.instanceId === slot.vehicleInstanceId) ?? null
-  }, [lockedTokenId, localEncounter, tokensById])
 
   // NPC slots from active encounter — adversaries live in combat_encounters JSONB, not combat_participants
   const npcSlots = useMemo<NpcDrawerSlot[]>(() => {
@@ -779,25 +725,19 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
 
   const handleTokenHover = useCallback((tokenId: string, screenX: number, screenY: number) => {
     if (isDraggingRef.current) return
-    if (lockedTokenId !== null) return
     lastTooltipPosRef.current = { x: screenX, y: screenY }
     setTooltipState({ tokenId, x: screenX, y: screenY })
-  }, [lockedTokenId])
+  }, [])
 
   const handleTokenHoverEnd = useCallback(() => {
-    if (lockedTokenId !== null) return
     setTooltipState(null)
-  }, [lockedTokenId])
+  }, [])
 
   const handleTokenClick = useCallback((tokenId: string) => {
     onTokenClick?.(tokenId)
   }, [onTokenClick])
 
   const handleRemoveToken = useCallback(async (id: string) => {
-    // Dismiss the locked tooltip if it was open on this token
-    if (id === lockedTokenId) {
-      setLockedTokenId(null); setLockedPos(null); setTooltipState(null)
-    }
     // If this token is linked to an initiative slot, remove the adversary/vehicle
     // from the encounter so both map and Enemies/Vehicles panel stay in sync.
     if (encounterProp) {
@@ -811,24 +751,15 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
             partial.adversaries = encounterProp.adversaries.filter(a => a.instanceId !== slot.adversaryInstanceId)
           if (slot.vehicleInstanceId)
             partial.vehicles = (encounterProp.vehicles ?? []).filter(v => v.instanceId !== slot.vehicleInstanceId)
-          await saveEncounter(partial)
+          await supabase
+            .from('combat_encounters')
+            .update({ ...partial, updated_at: new Date().toISOString() })
+            .eq('id', encounterProp.id)
         }
       }
     }
     await removeToken(id)
-  }, [lockedTokenId, encounterProp, tokensById, saveEncounter, removeToken])
-
-  useEffect(() => {
-    if (!lockedTokenId) return
-    const handleOutsideClick = (e: PointerEvent) => {
-      if (tooltipRef.current && tooltipRef.current.contains(e.target as Node)) return
-      setLockedTokenId(null)
-      setLockedPos(null)
-      setTooltipState(null)
-    }
-    document.addEventListener('pointerdown', handleOutsideClick)
-    return () => document.removeEventListener('pointerdown', handleOutsideClick)
-  }, [lockedTokenId])
+  }, [encounterProp, tokensById, supabase, removeToken])
 
   const handleTokenDragStart = useCallback((_tokenId: string) => {
     isDraggingRef.current = true
@@ -1202,20 +1133,9 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
           )
         })()}
 
-        {/* ── Token tooltip (hover + locked) ── */}
-        {mounted && (tooltipState || lockedTokenId) && tooltipProps && (
-          <TokenTooltip
-            {...tooltipProps}
-            isLocked={lockedTokenId !== null && lockedTokenId === activeTooltipState?.tokenId}
-            tooltipRef={tooltipRef}
-            adversaryInstance={lockedAdversary ?? undefined}
-            vehicleInstance={lockedVehicle ?? undefined}
-            onAdjustWounds={adjustAdversaryWounds}
-            onAdjustStrain={adjustAdversaryStrain}
-            onAdjustGroupSize={adjustGroupSize}
-            onAdjustHullTrauma={adjustHullTrauma}
-            onAdjustSystemStrain={adjustSystemStrain}
-          />
+        {/* ── Token tooltip (hover, read-only) ── */}
+        {mounted && tooltipState && tooltipProps && (
+          <TokenTooltip {...tooltipProps} />
         )}
 
         {/* ── Token context menu (right-click on canvas token) ── */}
@@ -1353,80 +1273,32 @@ interface TokenTooltipData {
   minionGroup?:   { alive: number; total: number }
   // Vehicle stat block (replaces characteristics + soak/defense for vehicles)
   vehicleStats?:  { silhouette: number; speed: number; handling: number; armor: number; defense: { fore: number; aft: number; port: number; starboard: number } }
-  // Vehicle health bars (hover read-only + locked controls)
+  // Vehicle health bars (read-only)
   hullTrauma?:    { current: number; max: number }
   systemStrain?:  { current: number; max: number }
-  // Live instances — present when locked, needed for writing controls
-  adversaryInstance?:   AdversaryInstance
-  vehicleInstance?:     VehicleInstance
-  // Lock state
-  isLocked?:            boolean
-  tooltipRef?:          React.RefObject<HTMLDivElement | null>
-  // Control callbacks — only invoked when isLocked
-  onAdjustWounds?:       (adv: AdversaryInstance, delta: number) => void
-  onAdjustStrain?:       (adv: AdversaryInstance, delta: number) => void
-  onAdjustGroupSize?:    (adv: AdversaryInstance, delta: number) => void
-  onAdjustHullTrauma?:   (veh: VehicleInstance, delta: number) => void
-  onAdjustSystemStrain?: (veh: VehicleInstance, delta: number) => void
 }
 
 const TOOLTIP_W = 230
 const CHAR_ABBRS = ['BR', 'AG', 'INT', 'CUN', 'WIL', 'PR'] as const
 const CHAR_KEYS  = ['brawn', 'agility', 'intellect', 'cunning', 'willpower', 'presence'] as const
 
-function ControlRow({
-  label, current, max, onDecrement, onIncrement, decrementDisabled, incrementDisabled,
-}: {
-  label: string; current: number; max: number
-  onDecrement: () => void; onIncrement: () => void
-  decrementDisabled: boolean; incrementDisabled: boolean
-}) {
-  const btnBase: React.CSSProperties = {
-    width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
-    background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
-    borderRadius: RADIUS.sm, fontFamily: FONT_BODY, fontSize: FS_SM,
-    color: TEXT, lineHeight: 1, padding: 0, userSelect: 'none' as const,
-  }
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.25rem' }}>
-      <span style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.06em', textTransform: 'uppercase', flex: 1 }}>{label}</span>
-      <span style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, fontWeight: 700, color: current >= max ? 'var(--state-failure)' : TEXT, minWidth: '2.5rem', textAlign: 'center' }}>{current}/{max}</span>
-      <button onClick={onDecrement} disabled={decrementDisabled} style={{ ...btnBase, cursor: decrementDisabled ? 'not-allowed' : 'pointer', opacity: decrementDisabled ? 0.35 : 1 }}>−</button>
-      <button onClick={onIncrement} disabled={incrementDisabled} style={{ ...btnBase, cursor: incrementDisabled ? 'not-allowed' : 'pointer', opacity: incrementDisabled ? 0.35 : 1 }}>+</button>
-    </div>
-  )
-}
-
 const TokenTooltip = memo(function TokenTooltip(p: TokenTooltipData) {
-  const [isPulsing, setIsPulsing] = useState(false)
-
-  useEffect(() => {
-    if (!p.isLocked) { setIsPulsing(false); return }
-    setIsPulsing(true)
-    const t = setTimeout(() => setIsPulsing(false), 600)
-    return () => clearTimeout(t)
-  }, [p.isLocked])
-
   const vw   = typeof window !== 'undefined' ? window.innerWidth  : 1200
   const vh   = typeof window !== 'undefined' ? window.innerHeight : 800
   const left = Math.max(8, Math.min(p.x + 14, vw - TOOLTIP_W - 8))
   const top  = Math.max(8, Math.min(p.y - 12, vh - 300))
 
-  const animClass = p.isLocked ? (isPulsing ? 'tooltip-lock-pulse' : 'tooltip-locked-glow') : ''
-
   return createPortal(
     <div
-      ref={p.tooltipRef}
-      className={animClass}
       style={{
         position: 'fixed', left, top, width: TOOLTIP_W, zIndex: 'var(--z-tooltip)' as unknown as number,
         background: PANEL_BG,
         border: `1px solid ${p.typeColor}44`,
         borderRadius: RADIUS.lg,
-        boxShadow: p.isLocked ? undefined : `0 8px 32px rgba(0,0,0,0.85), 0 0 0 1px ${p.typeColor}18`,
+        boxShadow: `0 8px 32px rgba(0,0,0,0.85), 0 0 0 1px ${p.typeColor}18`,
         backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
         padding: '0.625rem 0.75rem',
-        pointerEvents: p.isLocked ? 'auto' : 'none',
+        pointerEvents: 'none',
       }}
     >
       {/* Name + type badge */}
@@ -1496,7 +1368,7 @@ const TokenTooltip = memo(function TokenTooltip(p: TokenTooltipData) {
       )}
 
       {/* Minion group count (hover read-only pips) */}
-      {p.minionGroup && !p.isLocked && (
+      {p.minionGroup && (
         <div style={{ marginBottom: '0.375rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.1875rem' }}>
             <span style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Group</span>
@@ -1540,8 +1412,8 @@ const TokenTooltip = memo(function TokenTooltip(p: TokenTooltipData) {
         </div>
       )}
 
-      {/* Vehicle health bars — read-only unless locked AND controls are available */}
-      {p.hullTrauma && (!p.isLocked || !p.vehicleInstance) && (
+      {/* Vehicle health bars (read-only) */}
+      {p.hullTrauma && (
         <div style={{ marginBottom: p.systemStrain ? 6 : 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.1875rem' }}>
             <span style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Hull Trauma</span>
@@ -1552,7 +1424,7 @@ const TokenTooltip = memo(function TokenTooltip(p: TokenTooltipData) {
           </div>
         </div>
       )}
-      {p.systemStrain && (!p.isLocked || !p.vehicleInstance) && (
+      {p.systemStrain && (
         <div style={{ marginTop: p.hullTrauma ? 6 : 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.1875rem' }}>
             <span style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Sys Strain</span>
@@ -1564,80 +1436,6 @@ const TokenTooltip = memo(function TokenTooltip(p: TokenTooltipData) {
         </div>
       )}
 
-      {/* ── Locked combat controls ── */}
-      {p.isLocked && (p.adversaryInstance || p.vehicleInstance) && (
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', marginTop: '0.5rem', paddingTop: '0.5rem' }}>
-
-          {p.adversaryInstance && (() => {
-            const adv = p.adversaryInstance!
-            const woundsCurrent = adv.woundsCurrent ?? 0
-            const woundsMax = adv.type === 'minion' && adv.groupSize
-              ? (adv.woundThreshold ?? 0) * adv.groupSize
-              : (adv.woundThreshold ?? 0)
-            return (
-              <>
-                <ControlRow
-                  label="WOUNDS" current={woundsCurrent} max={woundsMax}
-                  onDecrement={() => void p.onAdjustWounds?.(adv, -1)}
-                  onIncrement={() => void p.onAdjustWounds?.(adv, +1)}
-                  decrementDisabled={woundsCurrent <= 0}
-                  incrementDisabled={woundsCurrent >= woundsMax}
-                />
-                {adv.type === 'nemesis' && (
-                  <ControlRow
-                    label="STRAIN" current={adv.strainCurrent ?? 0} max={adv.strainThreshold ?? 0}
-                    onDecrement={() => void p.onAdjustStrain?.(adv, -1)}
-                    onIncrement={() => void p.onAdjustStrain?.(adv, +1)}
-                    decrementDisabled={(adv.strainCurrent ?? 0) <= 0}
-                    incrementDisabled={(adv.strainCurrent ?? 0) >= (adv.strainThreshold ?? 0)}
-                  />
-                )}
-                {adv.type === 'minion' && (
-                  <>
-                    <ControlRow
-                      label="GROUP" current={adv.groupRemaining ?? 0} max={adv.groupSize ?? 0}
-                      onDecrement={() => void p.onAdjustGroupSize?.(adv, -1)}
-                      onIncrement={() => void p.onAdjustGroupSize?.(adv, +1)}
-                      decrementDisabled={(adv.groupSize ?? 0) <= 1}
-                      incrementDisabled={false}
-                    />
-                    <div style={{ display: 'flex', gap: '0.1875rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
-                      {Array.from({ length: adv.groupSize ?? 0 }).map((_, i) => (
-                        <span key={i} style={{ fontSize: FS_OVERLINE, color: i < (adv.groupRemaining ?? 0) ? p.typeColor : 'var(--state-failure)' }}>
-                          {i < (adv.groupRemaining ?? 0) ? '■' : '×'}
-                        </span>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </>
-            )
-          })()}
-
-          {p.vehicleInstance && (() => {
-            const veh = p.vehicleInstance!
-            return (
-              <>
-                <ControlRow
-                  label="HULL TRAUMA" current={veh.hullTraumaCurrent} max={veh.hullTraumaThreshold}
-                  onDecrement={() => void p.onAdjustHullTrauma?.(veh, -1)}
-                  onIncrement={() => void p.onAdjustHullTrauma?.(veh, +1)}
-                  decrementDisabled={veh.hullTraumaCurrent <= 0}
-                  incrementDisabled={veh.hullTraumaCurrent >= veh.hullTraumaThreshold}
-                />
-                <ControlRow
-                  label="SYS STRAIN" current={veh.systemStrainCurrent} max={veh.systemStrainThreshold}
-                  onDecrement={() => void p.onAdjustSystemStrain?.(veh, -1)}
-                  onIncrement={() => void p.onAdjustSystemStrain?.(veh, +1)}
-                  decrementDisabled={veh.systemStrainCurrent <= 0}
-                  incrementDisabled={veh.systemStrainCurrent >= veh.systemStrainThreshold}
-                />
-              </>
-            )
-          })()}
-
-        </div>
-      )}
     </div>,
     document.body,
   )

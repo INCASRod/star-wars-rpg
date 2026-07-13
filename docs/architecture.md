@@ -428,7 +428,7 @@ Each panel is a self-contained component accepting pre-computed display data fro
 - `CriticalInjuriesPanel` — injury tracker
 - `CombatPanel` — encounter initiative, token management, dice rolling
 - `GroupSheet` — group asset management
-- `GmMapView` — interactive token map with stat-block hover tooltips and health bars
+- `GmMapView` — interactive token map with read-only stat-block hover tooltips and health bars (hover-only; no click-lock)
 
 ### Player HUD Sub-components (`src/components/player-hud/`)
 - `HudTopBar` — grid row 1; renders the HOLOCRON logo, a portrait chip (avatar thumbnail), character name, and campaign/XP meta; accent colors use CSS vars (`--hud-accent-*`) rather than rgba literals
@@ -448,7 +448,7 @@ Each panel is a self-contained component accepting pre-computed display data fro
 - `GmLeftRail` — 52px fixed left rail; navigation buttons (◉ Tokens/gold [id: 'map'], ⊞ Tools/blue, ◉ Party/teal, Combat with empire.png faction image/red); utility buttons (⬡ Dice/gold, ▦ Screen/gold, ⊟ Library/blue) below divider; uses `FONT_BODY`, `RADIUS`, `Z.fab` from tokens; Combat button uses empire.png faction image with CSS filter chain; the 'map' tab (id: 'map') was renamed to **Tokens** (label: 'Tokens', icon: '◉') in the MapToolsRadial feature — its panel now shows only token management via `GmTokenControls`
 - `GmTopBar` — (mentioned in git status) top navigation bar for GM dashboard
 - `GmShell` — (mentioned in git status) shell layout wrapper for GM interface
-- `GmMapView` — interactive token map with stat-block hover tooltips and health bars; tokens can be click-locked to pin the tooltip open (`lockedTokenId`/`lockedPos` state, outside-click dismiss). When locked on an adversary/vehicle, the tooltip exposes live combat controls (wounds/strain/group-size/hull-trauma/system-strain ±) wired through `useEncounterCombatControls` and a local `saveEncounter` callback that writes `combat_encounters`
+- `GmMapView` — interactive token map with read-only stat-block hover tooltips and health bars (name/type/characteristics/wounds/strain/soak/defense as plain text; `pointerEvents: 'none'` unconditionally, no click-lock/pin mode, no ± combat controls — `useEncounterCombatControls` is not called from this file). `onTokenClick` fires on a genuine tap (not a drag) for the Encounter Deck to focus the corresponding card. `handleRemoveToken` (right-click context-menu remove) does its own minimal, non-optimistic `combat_encounters` write for the initiative-slot cascade-delete.
 - `AddConflictModal` (`src/components/gm/AddConflictModal.tsx`) — modal for GM to add morality conflicts to Force-sensitive characters; filters character list to force-sensitive only; inserts to `character_conflicts` table with character_id, campaign_id, description, narrative, session_label, is_resolved, player_acknowledged
 - `GmConflictPip` (`src/components/gm/GmConflictPip.tsx`) — read-only 10×10 purple circle pip; wraps `<Tooltip>` with conflict description + session label; used in `GmPartyMiniCard` pip row
 - `GmPartyMiniCard` (`src/app/gm/panels/GmPartyMiniCard.tsx`) — compact character card in the GM party panel; pip row between strain bar and soak shows `CriticalInjuryPip` (with heal confirm) and `GmConflictPip` up to 3 each, with `+N` overflow badge
