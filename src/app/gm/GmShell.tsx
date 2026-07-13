@@ -105,6 +105,7 @@ export function GmShell() {
     removeToken: stagingRemoveToken,
     removeAllTokens: stagingRemoveAllTokens,
     addToken: stagingAddToken,
+    updateWoundPct: stagingUpdateWoundPct,
   } = useMapTokens(activeMap?.id ?? null)
 
   const {
@@ -113,6 +114,8 @@ export function GmShell() {
     stagingInitRoster,
     openStagingCombatModal, handleStagingCombatStart,
     endEncounter,
+    markEncounterPending, clearEncounterPending,
+    stagingAddToEncounter,
   } = useGmSession({
     campaignId, campaign, activeChars, characters,
     stagingTokens, activeMapId: activeMap?.id,
@@ -158,6 +161,7 @@ export function GmShell() {
   const [referenceOpen,         setReferenceOpen]         = useState(false)
   const [diceOpen,              setDiceOpen]              = useState(false)
   const [deckOpen,              setDeckOpen]              = useState(false)
+  const [focusedEntityId,       setFocusedEntityId]       = useState<string | null>(null)
 
   // Force GM Imperial Steel theme for the entire GM view, including portals
   useEffect(() => {
@@ -202,6 +206,23 @@ export function GmShell() {
       .update({ adversaries: updatedAdversaries, updated_at: new Date().toISOString() })
       .eq('id', enc.id)
   }, [stagingToggleVisibility, stagingTokens, campaignId, supabase])
+
+  const saveStagingEncounter = useCallback(async (partial: Partial<CombatEncounter>) => {
+    if (!stagingEncounter?.id) return
+    await supabase
+      .from('combat_encounters')
+      .update({ ...partial, updated_at: new Date().toISOString() })
+      .eq('id', stagingEncounter.id)
+  }, [stagingEncounter?.id, supabase])
+
+  const handleTokenClick = useCallback((tokenId: string) => {
+    const token = stagingTokens.find(t => t.id === tokenId)
+    if (!token?.slot_key || !stagingEncounter) return
+    const slot = stagingEncounter.initiative_slots.find(s => s.id === token.slot_key)
+    const instanceId = slot?.adversaryInstanceId ?? slot?.vehicleInstanceId ?? null
+    setFocusedEntityId(instanceId)
+    setDeckOpen(true)
+  }, [stagingTokens, stagingEncounter])
 
   const handleStartCombat = useCallback(async () => {
     await openStagingCombatModal()
@@ -395,6 +416,16 @@ export function GmShell() {
             onStagingToggleVisibility={handleToggleVisibility}
             onStagingRemoveToken={stagingRemoveToken}
             onStagingAddToken={stagingAddToken}
+            onTokenClick={handleTokenClick}
+            deckOpen={deckOpen}
+            onDeckOpenChange={setDeckOpen}
+            focusedEntityId={focusedEntityId}
+            setStagingEncounter={setStagingEncounter}
+            saveStagingEncounter={saveStagingEncounter}
+            updateTokenWoundPct={stagingUpdateWoundPct}
+            markEncounterPending={markEncounterPending}
+            clearEncounterPending={clearEncounterPending}
+            stagingAddToEncounter={stagingAddToEncounter}
           />
 
           {/* Initiative drum strip — only visible during an active combat session */}

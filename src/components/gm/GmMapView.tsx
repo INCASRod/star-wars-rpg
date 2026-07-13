@@ -282,9 +282,25 @@ export interface GmMapViewProps {
   onStagingAddToken?:          (token: Omit<MapToken, 'id' | 'updated_at'>) => Promise<MapToken | null>
   /** Fired on a genuine tap (not a drag) on a map token — used by the Encounter Deck to focus the corresponding card. */
   onTokenClick?:               (tokenId: string) => void
+  /** Encounter Deck open/close state — lifted to GmShell so the left rail button can toggle it. */
+  deckOpen?:                   boolean
+  onDeckOpenChange?:           (open: boolean) => void
+  /** Entity instanceId to highlight in the deck (set by GmShell's onTokenClick resolution). */
+  focusedEntityId?:            string | null
+  setStagingEncounter?:        React.Dispatch<React.SetStateAction<CombatEncounter | null>>
+  saveStagingEncounter?:       (partial: Partial<CombatEncounter>) => Promise<void>
+  updateTokenWoundPct?:        (id: string, wound_pct: number) => Promise<void>
+  markEncounterPending?:       (key: string) => void
+  clearEncounterPending?:      (key: string) => void
+  stagingAddToEncounter?:      (adv: import('@/lib/adversaries').Adversary, alignment: 'enemy' | 'allied_npc') => Promise<void>
 }
 
-export function GmMapView({ campaignId, encounter: encounterProp, characters, allMaps, activeMap, onDeleteMap, isStagingTab, stagingTokens, onStagingMoveToken, onStagingToggleVisibility, onStagingRemoveToken, onStagingAddToken, onTokenClick }: GmMapViewProps) {
+export function GmMapView({
+  campaignId, encounter: encounterProp, characters, allMaps, activeMap, onDeleteMap, isStagingTab,
+  stagingTokens, onStagingMoveToken, onStagingToggleVisibility, onStagingRemoveToken, onStagingAddToken, onTokenClick,
+  deckOpen, onDeckOpenChange, focusedEntityId, setStagingEncounter, saveStagingEncounter,
+  updateTokenWoundPct, markEncounterPending, clearEncounterPending, stagingAddToEncounter,
+}: GmMapViewProps) {
   const supabase = useMemo(() => createClient(), [])
 
   const router = useRouter()
@@ -302,9 +318,6 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
   const [planetBusy,          setPlanetBusy]          = useState(false)
   const [deletePlanetConfirm, setDeletePlanetConfirm] = useState<string | null>(null)
   const [tokenDrawerOpen,  setTokenDrawerOpen]  = useState(false)
-  // TEMPORARY — Task 9 standalone-verification stub only. Task 12 replaces this
-  // with the real deck-open state threaded down from GmShell/useGmSession.
-  const [deckOpenLocal, setDeckOpenLocal] = useState(false)
   // Counter incremented whenever the map area's height changes (e.g. the
   // Encounter Deck's open/close animation completes) — passed to MapCanvas
   // as recentreSignal so it re-runs rebuildMap and recentres the map within
@@ -1171,28 +1184,27 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
           />
         )}
 
-        {/* ── Encounter Deck (staging only) ──
-             TEMPORARY stub wiring for Task 9's standalone shell verification —
-             no-op props stand in for the real encounter/token plumbing until
-             Task 12 replaces this mount with the wired-up version. */}
-        {isStagingTab && (
+        {/* ── Encounter Deck (staging only) ── */}
+        {isStagingTab && setStagingEncounter && saveStagingEncounter && updateTokenWoundPct
+          && markEncounterPending && clearEncounterPending && stagingAddToEncounter && (
           <EncounterDeck
             campaignId={campaignId ?? ''}
             encounter={encounterProp}
-            setEncounter={() => {}}
-            saveEncounter={async () => {}}
+            setEncounter={setStagingEncounter}
+            saveEncounter={saveStagingEncounter}
             tokens={tokens}
             addToken={addToken}
             removeToken={removeToken}
             toggleVisibility={toggleVisibility}
-            updateTokenWoundPct={async () => {}}
-            markPending={() => {}}
-            clearPending={() => {}}
-            stagingAddToEncounter={async () => {}}
-            open={deckOpenLocal}
-            onOpenChange={setDeckOpenLocal}
+            updateTokenWoundPct={updateTokenWoundPct}
+            markPending={markEncounterPending}
+            clearPending={clearEncounterPending}
+            stagingAddToEncounter={stagingAddToEncounter}
+            open={deckOpen ?? false}
+            onOpenChange={onDeckOpenChange ?? (() => {})}
             characters={characters}
             onMapAreaResize={handleMapAreaResize}
+            focusedEntityId={focusedEntityId}
             activeMapId={activeMap?.id ?? null}
           />
         )}
