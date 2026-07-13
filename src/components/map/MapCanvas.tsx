@@ -865,8 +865,22 @@ function buildTokenSprite(
   // created a document.body-portaled overlay with pointerEvents:'auto' that
   // silently swallowed pointerdown before Pixi's EventSystem ever saw it,
   // making the token permanently undraggable until the GM clicked elsewhere.
+  //
+  // hoverOutDebounce is still needed, independent of that removed lock timer:
+  // Pixi fires a spurious pointerout/pointerover pair when the cursor crosses
+  // from the token container onto an interactive child (e.g. the glow ring
+  // Graphics added by attachTokenHover) without truly leaving the token's hit
+  // area. Without absorbing that pair, the plain always-live tooltip driven by
+  // onTokenHover/onTokenHoverEnd flickers hide/show/hide. 60ms matches the
+  // original dwell-lock-era debounce.
+  let hoverOutDebounce: ReturnType<typeof setTimeout> | null = null
+  const cancelOutDebounce = () => {
+    if (hoverOutDebounce) { clearTimeout(hoverOutDebounce); hoverOutDebounce = null }
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(c as any).on('pointerover', (e: { globalX: number; globalY: number }) => {
+    cancelOutDebounce()          // re-entering: suppress the pending hide from a spurious out
     onTokenPointerOver(c, ticker)
     if (!onHoverRef.current) return
     const rect = containerRef.current?.getBoundingClientRect()
@@ -875,7 +889,12 @@ function buildTokenSprite(
   })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(c as any).on('pointerout', () => {
-    onHoverEndRef.current?.()
+    // 60ms debounce: if pointerover fires again within this window (child-bubble
+    // spurious pair), the cancelOutDebounce() above suppresses the hide call.
+    hoverOutDebounce = setTimeout(() => {
+      hoverOutDebounce = null
+      onHoverEndRef.current?.()
+    }, 60)
     onTokenPointerOut(c, ticker)
   })
 
