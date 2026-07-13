@@ -1185,6 +1185,7 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
             open={deckOpenLocal}
             onOpenChange={setDeckOpenLocal}
             characters={characters}
+            activeMapId={activeMap?.id ?? null}
           />
         )}
       </div>

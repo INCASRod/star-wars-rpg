@@ -42,14 +42,13 @@ export interface EncounterDeckProps {
   onMapAreaResize?:    () => void
   focusedEntityId?:    string | null
   /**
-   * Active map id for newly-created tokens. Optional and falls back to
-   * `tokens[0]?.map_id` — the plan called for this to be threaded down from
-   * GmShell's `activeMap?.id` in Task 12's wiring, but Task 9's current mount
-   * in GmMapView.tsx is a TEMPORARY stub (see the comment there) that doesn't
-   * pass it yet. Kept optional here so this task stays scoped to this one
-   * file without breaking that stub's compile.
+   * Active map id for newly-created tokens. Required — falling back to
+   * `tokens[0]?.map_id` here previously created corrupt `map_tokens` rows
+   * (`map_id: ''`) whenever the deck was opened on a map with zero existing
+   * tokens. Every mount (including GmMapView.tsx's Task-9 temporary stub)
+   * must pass the real `activeMap?.id ?? null`.
    */
-  activeMapId?:        string | null
+  activeMapId:         string | null
 }
 
 export function EncounterDeck({
@@ -63,12 +62,13 @@ export function EncounterDeck({
   const bodyRef = useRef<HTMLDivElement | null>(null)
   const [search, setSearch] = useState('')
 
-  // Off-map add candidates (Step 4). AdversaryLibrary's own "Add Token" flow
-  // always creates a token — there's no built-in off-map option inside that
+  // Off-map add candidates. AdversaryLibrary's own "Add Token" flow always
+  // creates a token — there's no built-in off-map option inside that
   // component, and it's out of scope for this task to modify. This is a
   // deliberately minimal, disclosed-scope companion list (OggDude adversaries
-  // only, not custom homebrew) that offers a card-only add next to the
-  // library search results.
+  // only, not custom homebrew) surfaced as a compact trigger next to the
+  // library search results (review follow-up: downsized from a full third
+  // column to a slim single-button-per-row strip — see render below).
   const [offMapCandidates, setOffMapCandidates] = useState<Adversary[]>([])
   useEffect(() => {
     let cancelled = false
@@ -78,8 +78,11 @@ export function EncounterDeck({
   const offMapMatches = useMemo(() => {
     const q = search.toLowerCase().trim()
     if (!q) return []
-    return offMapCandidates.filter(a => a.name.toLowerCase().includes(q)).slice(0, 12)
+    return offMapCandidates.filter(a => a.name.toLowerCase().includes(q)).slice(0, 6)
   }, [offMapCandidates, search])
+  // Shared default alignment for off-map adds — a single small toggle instead
+  // of two full alignment buttons on every row (review follow-up).
+  const [offMapAlignment, setOffMapAlignment] = useState<'enemy' | 'allied_npc'>('enemy')
 
   const { tokenImages: advImages } = useAdversaryTokenImages()
   const { tokenImages: vehImages } = useVehicleTokenImages()
@@ -89,8 +92,6 @@ export function EncounterDeck({
       encounter, setEncounter, saveEncounter,
       supabase, campaignId, tokens, updateTokenWoundPct, markPending, clearPending,
     })
-
-  const effectiveMapId = activeMapId ?? tokens[0]?.map_id ?? ''
 
   const nextAutoName = useCallback((baseName: string, sourceKey: string) => {
     const count = (encounter?.adversaries ?? []).filter(a => a.sourceId === sourceKey).length
@@ -104,6 +105,7 @@ export function EncounterDeck({
     alignment: 'enemy' | 'allied_npc',
   ) => {
     if (!encounter) return
+    if (!activeMapId) { console.warn('[EncounterDeck] no activeMapId; skipping adversary add'); return }
     // adversaryToInstance takes exactly 2 args on this branch — AdversaryInstance
     // carries no `alignment` field of its own. Alignment lives entirely on the
     // matching initiative_slots entry, assigned below on `newSlot`.
@@ -121,20 +123,21 @@ export function EncounterDeck({
       initiative_slots: [...encounter.initiative_slots, newSlot],
     })
     await addToken({
-      map_id: effectiveMapId, campaign_id: campaignId,
+      map_id: activeMapId, campaign_id: campaignId,
       participant_type: 'adversary', character_id: null, participant_id: null,
       slot_key: slotId, label: instance.name,
       alignment: alignment === 'allied_npc' ? 'allied_npc' : adv.type,
       x: 0.5, y: 0.5, is_visible: true, token_size: 1.0, wound_pct: null,
       token_image_url: adv._tokenImageUrl ?? null, token_shape: 'circle',
     })
-  }, [encounter, saveEncounter, addToken, effectiveMapId, campaignId, nextAutoName])
+  }, [encounter, saveEncounter, addToken, activeMapId, campaignId, nextAutoName])
 
   const handleAddVehicle = useCallback(async (
     vehicle: Vehicle & { _isCustom?: boolean; _tokenImageUrl?: string | null },
     alignment: 'enemy' | 'allied_npc',
   ) => {
     if (!encounter) return
+    if (!activeMapId) { console.warn('[EncounterDeck] no activeMapId; skipping vehicle add'); return }
     const instance = vehicleToVehicleInstance(vehicle, alignment, vehicle._tokenImageUrl)
     instance.name = nextAutoName(vehicle.name, vehicle.key)
     const slotId = randomUUID()
@@ -149,13 +152,13 @@ export function EncounterDeck({
       initiative_slots: [...encounter.initiative_slots, newSlot],
     })
     await addToken({
-      map_id: effectiveMapId, campaign_id: campaignId,
+      map_id: activeMapId, campaign_id: campaignId,
       participant_type: 'adversary', character_id: null, participant_id: null,
       slot_key: slotId, label: instance.name, alignment,
       x: 0.5, y: 0.5, is_visible: true, token_size: 1.0, wound_pct: null,
       token_image_url: vehicle._tokenImageUrl ?? null, token_shape: 'rectangle',
     })
-  }, [encounter, saveEncounter, addToken, effectiveMapId, campaignId, nextAutoName])
+  }, [encounter, saveEncounter, addToken, activeMapId, campaignId, nextAutoName])
 
   // ── Off-map add (card only, no token) ───────────────────────────────
   // stagingAddToEncounter only accepts Adversary, not Vehicle (pre-existing
@@ -178,17 +181,18 @@ export function EncounterDeck({
 
   const handleDeploy = useCallback(async (entry: RosterEntry) => {
     if (!encounter) return
+    if (!activeMapId) { console.warn('[EncounterDeck] no activeMapId; skipping deploy'); return }
     const slot = encounter.initiative_slots.find(s =>
       s.adversaryInstanceId === entry.instanceId || s.vehicleInstanceId === entry.instanceId)
     if (!slot) return
     await addToken({
-      map_id: effectiveMapId, campaign_id: campaignId,
+      map_id: activeMapId, campaign_id: campaignId,
       participant_type: 'adversary', character_id: null, participant_id: null,
       slot_key: slot.id, label: entry.name, alignment: entry.alignment,
       x: 0.5, y: 0.5, is_visible: true, token_size: 1.0, wound_pct: null,
       token_image_url: entry.imageUrl, token_shape: entry.kind === 'vehicle' ? 'rectangle' : 'circle',
     })
-  }, [encounter, addToken, effectiveMapId, campaignId])
+  }, [encounter, addToken, activeMapId, campaignId])
 
   const handleRemove = useCallback(async (entry: RosterEntry) => {
     if (!encounter) return
@@ -362,42 +366,53 @@ export function EncounterDeck({
               ) : (
                 <div style={{ display: 'flex', gap: SP[3], flex: 1, minWidth: 0 }}>
                   <div style={{ flex: 1, minWidth: 0, overflowY: 'auto' }}>
-                    <AdversaryLibrary campaignId={campaignId} sessionMode="exploration" onAddToken={handleAddAdversary} mapId={effectiveMapId} />
+                    <AdversaryLibrary campaignId={campaignId} sessionMode="exploration" onAddToken={handleAddAdversary} mapId={activeMapId} />
                   </div>
                   <div style={{ flex: 1, minWidth: 0, overflowY: 'auto' }}>
-                    <VehicleLibrary campaignId={campaignId} sessionMode="exploration" onAddToken={handleAddVehicle} mapId={effectiveMapId} />
+                    <VehicleLibrary campaignId={campaignId} sessionMode="exploration" onAddToken={handleAddVehicle} mapId={activeMapId} />
                   </div>
-                  <div style={{ flex: '0 0 13rem', minWidth: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: SP[1] }}>
-                    <div style={{
-                      fontFamily: FD, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.08em',
-                      textTransform: 'uppercase', color: HUD.gold,
-                    }}>
-                      Off-Map Add
-                    </div>
-                    {offMapMatches.length === 0 ? (
-                      <div style={{ fontSize: FS.caption, color: 'var(--hud-text-faint)' }}>
-                        No matches.
-                      </div>
-                    ) : offMapMatches.map(adv => (
-                      <div key={adv.id} style={{
-                        display: 'flex', alignItems: 'center', gap: SP[1],
-                        border: `1px solid ${BORDER_HI}`, borderRadius: RADIUS.sm,
-                        padding: `${SP[1]} ${SP[1]}`,
-                      }}>
-                        <span style={{
-                          flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                          fontSize: FS.caption, color: HUD.text,
-                        }}>{adv.name}</span>
+                  {/* Off-map add — a slim, visually secondary trigger (not a third
+                      full library column). One compact button per row; alignment
+                      for the add is set once via the small ⚔/🤝 toggle in the
+                      strip header rather than two buttons per row. */}
+                  <div style={{ flex: '0 0 6rem', minWidth: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '2px' /* below the SP floor — compact strip, matches badge convention elsewhere in this file */ }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '2px' }}>
+                      <span style={{
+                        fontFamily: FD, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.06em',
+                        textTransform: 'uppercase', color: 'var(--hud-text-faint)',
+                      }}>Off-map</span>
+                      <span style={{ display: 'flex', gap: '2px' }}>
                         <button
-                          onClick={() => void handleAddOffMap(adv, 'enemy')}
-                          title={`Add ${adv.name} off-map (enemy)`}
-                          style={{ ...smallBtn, color: RED, borderColor: 'color-mix(in srgb, var(--red) 40%, transparent)', flexShrink: 0 }}
+                          onClick={() => setOffMapAlignment('enemy')}
+                          title="Off-map adds default to enemy"
+                          style={{
+                            ...smallBtn, width: '1rem', height: '1rem', fontSize: FS.overline, color: RED,
+                            borderColor: offMapAlignment === 'enemy' ? RED : 'color-mix(in srgb, var(--red) 30%, transparent)',
+                          }}
                         >⚔</button>
                         <button
-                          onClick={() => void handleAddOffMap(adv, 'allied_npc')}
-                          title={`Add ${adv.name} off-map (allied NPC)`}
-                          style={{ ...smallBtn, color: GREEN, borderColor: 'color-mix(in srgb, var(--green) 40%, transparent)', flexShrink: 0 }}
+                          onClick={() => setOffMapAlignment('allied_npc')}
+                          title="Off-map adds default to allied NPC"
+                          style={{
+                            ...smallBtn, width: '1rem', height: '1rem', fontSize: FS.overline, color: GREEN,
+                            borderColor: offMapAlignment === 'allied_npc' ? GREEN : 'color-mix(in srgb, var(--green) 30%, transparent)',
+                          }}
                         >🤝</button>
+                      </span>
+                    </div>
+                    {offMapMatches.length === 0 ? (
+                      <div style={{ fontSize: FS.overline, color: 'var(--hud-text-faint)' }}>—</div>
+                    ) : offMapMatches.map(adv => (
+                      <div key={adv.id} style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                        <button
+                          onClick={() => void handleAddOffMap(adv, offMapAlignment)}
+                          title={`Add ${adv.name} off-map (${offMapAlignment === 'allied_npc' ? 'allied NPC' : 'enemy'})`}
+                          style={{ ...smallBtn, width: '1rem', height: '1rem', fontSize: FS.overline, flexShrink: 0 }}
+                        >+</button>
+                        <span style={{
+                          flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                          fontSize: FS.overline, color: HUD.textDim,
+                        }}>{adv.name}</span>
                       </div>
                     ))}
                   </div>
