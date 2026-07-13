@@ -56,6 +56,14 @@ export function useGmSession(params: {
   // echo of a stale row doesn't clobber a fresher optimistic edit.
   const pendingKeysRef = useRef<Set<string>>(new Set())
 
+  // Tracks the `updated_at` of the most recently APPLIED combat_encounters
+  // row (from initial fetch or realtime). Realtime echoes can arrive out of
+  // order (Supabase Realtime gives no ordering guarantee across events), so
+  // once a write's pending key clears, an older echo arriving late is no
+  // longer protected by pendingKeysRef alone — this ref rejects any incoming
+  // row that isn't strictly newer, independent of pending-key state.
+  const lastAppliedUpdatedAtRef = useRef<string | null>(null)
+
   const markEncounterPending = useCallback((key: string) => {
     pendingKeysRef.current.add(key)
   }, [])
@@ -82,7 +90,10 @@ export function useGmSession(params: {
       .eq('is_active', true)
       .order('created_at', { ascending: false })
       .limit(1)
-      .then(({ data }) => setStagingEncounter(data?.[0] as CombatEncounter ?? null))
+      .then(({ data }) => {
+        setStagingEncounter(data?.[0] as CombatEncounter ?? null)
+        lastAppliedUpdatedAtRef.current = data?.[0]?.updated_at ?? null
+      })
 
     const ch = supabase
       .channel(`staging-encounter-page-${campaignId}`)
@@ -90,6 +101,18 @@ export function useGmSession(params: {
         payload => {
           if (!payload.new) return
           const incoming = payload.new as CombatEncounter
+
+          // Staleness pre-check: reject any incoming row that doesn't
+          // represent forward progress from the last row we actually
+          // applied, regardless of pending-key state. ISO 8601 timestamp
+          // strings compare correctly with plain string comparison. This
+          // catches out-of-order realtime echoes that arrive AFTER their
+          // pending key has already cleared (see comment on the ref above).
+          if (lastAppliedUpdatedAtRef.current && incoming.updated_at <= lastAppliedUpdatedAtRef.current) {
+            return
+          }
+          lastAppliedUpdatedAtRef.current = incoming.updated_at
+
           if (!incoming.is_active) { setStagingEncounter(null); return }
 
           setStagingEncounter(prev => {
