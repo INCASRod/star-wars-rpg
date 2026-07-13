@@ -18,7 +18,6 @@ const BUTTONS: RailButton[] = [
   { id: 'map',    icon: '◉', label: 'Tokens', accent: HUD.gold },
   { id: 'tools',  icon: '⊞', label: 'Tools',  accent: 'var(--die-force)' },
   { id: 'party',  icon: '◉', label: 'Party',  accent: '#4EC8A8' }, // pre-approved: no matching token
-  { id: 'library', icon: '⊟', label: 'Library', accent: 'var(--die-force)' },
 ]
 
 interface Props {
@@ -62,10 +61,6 @@ export const GmLeftRail = memo(function GmLeftRail({
         />
       ))}
 
-      <div style={{ width: '1.75rem', height: 1, background: 'var(--hud-border-hi)', margin: '0.375rem 0' }} />
-
-      <RailBtn icon="⬡" label="Dice"    active={diceActive}              accent={HUD.gold}              onClick={onDiceClick} />
-      <RailBtn icon="▦" label="Screen"  active={screenActive}            accent={HUD.gold}              onClick={onScreenClick} />
       <RailBtn
         icon=""
         label="Enemies"
@@ -75,6 +70,12 @@ export const GmLeftRail = memo(function GmLeftRail({
         imgClass="hud-fi hud-fi-empire"
         onClick={onDeckToggle}
       />
+
+      <div style={{ width: '1.75rem', height: 1, background: 'var(--hud-border-hi)', margin: '0.375rem 0' }} />
+
+      <RailBtn icon="⬡" label="Dice"    active={diceActive}              accent={HUD.gold}              onClick={onDiceClick} />
+      <RailBtn icon="▦" label="Screen"  active={screenActive}            accent={HUD.gold}              onClick={onScreenClick} />
+      <RailBtn icon="⊟" label="Library" active={activePanel === 'library'} accent="var(--die-force)"   onClick={() => onPanelToggle('library')} />
     </div>
   )
 })
