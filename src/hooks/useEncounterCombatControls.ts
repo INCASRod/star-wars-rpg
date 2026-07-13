@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useRef } from 'react'
+import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { applyDamageToAdversary } from '@/lib/damageEngine'
 import type { CombatEncounter, InitiativeSlot } from '@/lib/combat'
@@ -43,7 +44,13 @@ export function useEncounterCombatControls({
     if (existing) clearTimeout(existing)
     const timer = setTimeout(() => {
       debounceTimers.current.delete(key)
-      void writeFn().finally(() => clearPending(key))
+      void writeFn()
+        .catch(err => {
+          const msg = (err as { message?: string })?.message ?? 'Unknown error'
+          console.error(`Encounter write failed [${key}]`, msg, err)
+          toast.error(`Failed to save encounter changes: ${msg}`)
+        })
+        .finally(() => clearPending(key))
     }, WRITE_DEBOUNCE_MS)
     debounceTimers.current.set(key, timer)
   }, [markPending, clearPending])
