@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import type { Character, Campaign } from '@/lib/types'
@@ -27,6 +27,8 @@ export interface UseGmSessionReturn {
   handleStagingCombatStart: (data: Omit<CombatEncounter, 'id' | 'created_at' | 'updated_at'>) => Promise<void>
   stagingAddToEncounter:    (adv: Adversary, alignment: 'enemy' | 'allied_npc', successes?: number, advantages?: number) => Promise<void>
   stagingAddVehicleToEncounter: (vehicle: Vehicle, alignment: 'enemy' | 'allied_npc', successes?: number, advantages?: number) => Promise<void>
+  markEncounterPending:     (key: string) => void
+  clearEncounterPending:    (key: string) => void
 }
 
 export function useGmSession(params: {
@@ -48,6 +50,19 @@ export function useGmSession(params: {
   const [stagingEncounter,     setStagingEncounter]     = useState<CombatEncounter | null>(null)
   const [stagingInitRoster,    setStagingInitRoster]    = useState<AdversaryInstance[]>([])
   const [stagingGroupSizes,    setStagingGroupSizes]    = useState<Record<string, number>>({})
+
+  // Keys (`${instanceId}:${statName}`) with an in-flight debounced local write
+  // from useEncounterCombatControls. Guards the realtime merge below so an
+  // echo of a stale row doesn't clobber a fresher optimistic edit.
+  const pendingKeysRef = useRef<Set<string>>(new Set())
+
+  const markEncounterPending = useCallback((key: string) => {
+    pendingKeysRef.current.add(key)
+  }, [])
+
+  const clearEncounterPending = useCallback((key: string) => {
+    pendingKeysRef.current.delete(key)
+  }, [])
 
   // Initialise from campaign data (called once after first load)
   useEffect(() => {
@@ -73,10 +88,35 @@ export function useGmSession(params: {
       .channel(`staging-encounter-page-${campaignId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'combat_encounters', filter: `campaign_id=eq.${campaignId}` },
         payload => {
-          if (payload.new) {
-            const enc = payload.new as CombatEncounter
-            setStagingEncounter(enc.is_active ? enc : null)
-          }
+          if (!payload.new) return
+          const incoming = payload.new as CombatEncounter
+          if (!incoming.is_active) { setStagingEncounter(null); return }
+
+          setStagingEncounter(prev => {
+            if (!prev || pendingKeysRef.current.size === 0) return incoming
+            // Field-aware merge: for any adversary/vehicle instance with an
+            // in-flight debounced local write (tracked by useEncounterCombatControls
+            // via markEncounterPending), keep the local version of that instance
+            // instead of the incoming row's — otherwise a realtime echo of an
+            // older write (or a concurrent unrelated edit) would stomp a newer,
+            // still-unwritten local optimistic edit. Everything else (initiative
+            // slots, log entries, other untouched instances) takes the incoming row.
+            const hasPending = (instanceId: string) => {
+              for (const key of pendingKeysRef.current) if (key.startsWith(`${instanceId}:`)) return true
+              return false
+            }
+            const mergedAdversaries = incoming.adversaries.map(incomingAdv => {
+              if (!hasPending(incomingAdv.instanceId)) return incomingAdv
+              const localAdv = prev.adversaries.find(a => a.instanceId === incomingAdv.instanceId)
+              return localAdv ?? incomingAdv
+            })
+            const mergedVehicles = (incoming.vehicles ?? []).map(incomingVeh => {
+              if (!hasPending(incomingVeh.instanceId)) return incomingVeh
+              const localVeh = (prev.vehicles ?? []).find(v => v.instanceId === incomingVeh.instanceId)
+              return localVeh ?? incomingVeh
+            })
+            return { ...incoming, adversaries: mergedAdversaries, vehicles: mergedVehicles }
+          })
         })
       .subscribe()
     return () => { supabase.removeChannel(ch) }
@@ -259,5 +299,6 @@ export function useGmSession(params: {
     broadcastCombatState,
     openStagingCombatModal, handleStagingCombatStart,
     stagingAddToEncounter, stagingAddVehicleToEncounter,
+    markEncounterPending, clearEncounterPending,
   }
 }
