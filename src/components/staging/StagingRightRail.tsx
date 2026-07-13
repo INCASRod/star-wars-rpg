@@ -1,9 +1,7 @@
 ﻿'use client'
 
 import { useState } from 'react'
-import type { Character } from '@/lib/types'
 import { StagingDrawer } from './StagingDrawer'
-import { useEncounterState } from '@/hooks/useEncounterState'
 import { HUD, FONT_BODY, FS, SP, RADIUS, EASE } from '@/lib/tokens'
 
 /* ── Design tokens ────────────────────────────────────────── */
@@ -24,7 +22,6 @@ const RAIL_ENTRIES: RailEntry[] = []
 /* ── Props ────────────────────────────────────────────────── */
 export interface StagingRightRailProps {
   campaignId:  string
-  characters:  Character[]
   /** Rail is hidden when false — only shown during active combat */
   isCombatActive: boolean
 }
@@ -33,8 +30,8 @@ export interface StagingRightRailProps {
  * StagingRightRail — permanently-visible vertical icon+label toolbar on the
  * RIGHT side of the staging canvas, visible only when combat is active.
  *
- * Buttons: Adversaries (◆), Vehicles (△)
- * Each opens a right-side drawer (StagingRightDrawer).
+ * Currently disabled: all button entries have been removed (RAIL_ENTRIES is empty).
+ * Drawer infrastructure preserved for future panel additions.
  *
  * z-index stack:
  *   right drawer backdrop  8999
@@ -42,8 +39,7 @@ export interface StagingRightRailProps {
  *   left rail / top bar    9001–9002
  *   this rail              9003  ← above all, always clickable
  */
-export function StagingRightRail({ campaignId, characters, isCombatActive }: StagingRightRailProps) {
-  const { encounter } = useEncounterState(campaignId)
+export function StagingRightRail({ campaignId, isCombatActive }: StagingRightRailProps) {
   const [openPanel, setOpenPanel] = useState<RightPanelId | null>(null)
 
   // Hide rail entirely outside combat
