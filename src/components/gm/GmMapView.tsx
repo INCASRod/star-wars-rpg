@@ -20,6 +20,7 @@ import { fetchVehicles } from '@/lib/vehicles'
 import type { Vehicle } from '@/lib/vehicles'
 import { HUD, FONT_BODY, EASE, RADIUS } from '@/lib/tokens'
 import { MapToolsRadial } from '@/app/gm/MapToolsRadial'
+import { EncounterDeck } from '@/components/gm/EncounterDeck'
 
 /* ── Design tokens ─────────────────────────────────────── */
 const BG  = 'var(--hud-bg)'
@@ -301,6 +302,9 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
   const [planetBusy,          setPlanetBusy]          = useState(false)
   const [deletePlanetConfirm, setDeletePlanetConfirm] = useState<string | null>(null)
   const [tokenDrawerOpen,  setTokenDrawerOpen]  = useState(false)
+  // TEMPORARY — Task 9 standalone-verification stub only. Task 12 replaces this
+  // with the real deck-open state threaded down from GmShell/useGmSession.
+  const [deckOpenLocal, setDeckOpenLocal] = useState(false)
   const [contextMenu,      setContextMenu]      = useState<ContextMenuState | null>(null)
   const [tooltipState,     setTooltipState]     = useState<TooltipState | null>(null)
   const isDraggingRef = useRef(false)
@@ -1157,6 +1161,30 @@ export function GmMapView({ campaignId, encounter: encounterProp, characters, al
             onDeleteMap={onDeleteMap}
             tokenScale={tokenScale}
             adjustTokenScale={adjustTokenScale}
+          />
+        )}
+
+        {/* ── Encounter Deck (staging only) ──
+             TEMPORARY stub wiring for Task 9's standalone shell verification —
+             no-op props stand in for the real encounter/token plumbing until
+             Task 12 replaces this mount with the wired-up version. */}
+        {isStagingTab && (
+          <EncounterDeck
+            campaignId={campaignId ?? ''}
+            encounter={encounterProp}
+            setEncounter={() => {}}
+            saveEncounter={async () => {}}
+            tokens={tokens}
+            addToken={addToken}
+            removeToken={removeToken}
+            toggleVisibility={toggleVisibility}
+            updateTokenWoundPct={async () => {}}
+            markPending={() => {}}
+            clearPending={() => {}}
+            stagingAddToEncounter={async () => {}}
+            open={deckOpenLocal}
+            onOpenChange={setDeckOpenLocal}
+            characters={characters}
           />
         )}
       </div>
