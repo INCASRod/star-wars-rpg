@@ -1373,3 +1373,33 @@ i.ffi {
   border-color: color-mix(in srgb, var(--state-success) 60%, transparent);
   background: color-mix(in srgb, var(--state-success) 22%, transparent);
 }
+
+/* ── EncounterDossier hero control buttons ─────────────────────── */
+.dossier-ctl-btn {
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: var(--space-1) var(--space-2);
+  border-radius: 2px;
+  border: 1px solid var(--hud-border-hi);
+  background: transparent;
+  color: var(--hud-text-dim);
+  cursor: pointer;
+  transition: var(--ease-quick);
+}
+
+.dossier-ctl-btn:hover {
+  color: var(--hud-gold);
+  border-color: var(--hud-gold);
+}
+
+.dossier-ctl-btn:focus-visible {
+  outline: 2px solid var(--hud-gold);
+  outline-offset: 2px;
+}
+
+.dossier-ctl-danger:hover {
+  color: var(--red);
+  border-color: var(--red);
+}

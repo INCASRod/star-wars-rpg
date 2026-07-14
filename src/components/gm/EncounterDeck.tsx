@@ -173,53 +173,28 @@ export function EncounterDeck({
   }, [stagingAddToEncounter])
 
   // ── Bench / Deploy / Remove / Hidden toggle ─────────────────────────
-  const handleBench = useCallback(async (entry: RosterEntry) => {
-    const slot = encounter?.initiative_slots.find(s =>
-      s.adversaryInstanceId === entry.instanceId || s.vehicleInstanceId === entry.instanceId)
-    const tok = slot ? tokens.find(t => t.slot_key === slot.id) : undefined
-    if (tok) await removeToken(tok.id)
-  }, [tokens, encounter, removeToken])
+  // Thin wrappers around the hoisted standalone functions below (exported
+  // so EncounterDossier can call the exact same cascade-delete/bench
+  // semantics rather than reimplementing them).
+  const handleBench = useCallback(
+    (entry: RosterEntry) => benchEntry(entry, { encounter, tokens, removeToken }),
+    [encounter, tokens, removeToken],
+  )
 
-  const handleDeploy = useCallback(async (entry: RosterEntry) => {
-    if (!encounter) return
-    if (!activeMapId) { console.warn('[EncounterDeck] no activeMapId; skipping deploy'); return }
-    const slot = encounter.initiative_slots.find(s =>
-      s.adversaryInstanceId === entry.instanceId || s.vehicleInstanceId === entry.instanceId)
-    if (!slot) return
-    await addToken({
-      map_id: activeMapId, campaign_id: campaignId,
-      participant_type: 'adversary', character_id: null, participant_id: null,
-      slot_key: slot.id, label: entry.name, alignment: entry.alignment,
-      x: 0.5, y: 0.5, is_visible: true, token_size: 1.0, wound_pct: null,
-      token_image_url: entry.imageUrl, token_shape: entry.kind === 'vehicle' ? 'rectangle' : 'circle',
-    })
-  }, [encounter, addToken, activeMapId, campaignId])
+  const handleDeploy = useCallback(
+    (entry: RosterEntry) => deployEntry(entry, { encounter, activeMapId, campaignId, addToken }),
+    [encounter, addToken, activeMapId, campaignId],
+  )
 
-  const handleRemove = useCallback(async (entry: RosterEntry) => {
-    if (!encounter) return
-    const slot = encounter.initiative_slots.find(s =>
-      s.adversaryInstanceId === entry.instanceId || s.vehicleInstanceId === entry.instanceId)
-    if (entry.kind === 'adversary') {
-      const updatedAdversaries = encounter.adversaries.filter(a => a.instanceId !== entry.instanceId)
-      const updatedSlots = encounter.initiative_slots.filter(s => s.adversaryInstanceId !== entry.instanceId)
-      await saveEncounter({ adversaries: updatedAdversaries, initiative_slots: updatedSlots })
-    } else {
-      const updatedVehicles = (encounter.vehicles ?? []).filter(v => v.instanceId !== entry.instanceId)
-      const updatedSlots = encounter.initiative_slots.filter(s => s.vehicleInstanceId !== entry.instanceId)
-      await saveEncounter({ vehicles: updatedVehicles, initiative_slots: updatedSlots })
-    }
-    if (slot) {
-      const tok = tokens.find(t => t.slot_key === slot.id)
-      if (tok) await removeToken(tok.id)
-    }
-  }, [encounter, saveEncounter, tokens, removeToken])
+  const handleRemove = useCallback(
+    (entry: RosterEntry) => removeEntry(entry, { encounter, tokens, saveEncounter, removeToken }),
+    [encounter, saveEncounter, tokens, removeToken],
+  )
 
-  const handleToggleHidden = useCallback(async (entry: RosterEntry) => {
-    const slot = encounter?.initiative_slots.find(s =>
-      s.adversaryInstanceId === entry.instanceId || s.vehicleInstanceId === entry.instanceId)
-    const tok = slot ? tokens.find(t => t.slot_key === slot.id) : undefined
-    if (tok) await toggleVisibility(tok.id, !tok.is_visible)
-  }, [encounter, tokens, toggleVisibility])
+  const handleToggleHidden = useCallback(
+    (entry: RosterEntry) => toggleHiddenEntry(entry, { encounter, tokens, toggleVisibility }),
+    [encounter, tokens, toggleVisibility],
+  )
 
   // GSAP open/close — height + opacity on the body, never display:none toggling
   // (display toggling would skip the transition entirely).
@@ -447,10 +422,12 @@ export interface RosterEntry {
   isOnMap:    boolean
   isHidden:   boolean
   imageUrl:   string | null
+  /** The resolved `map_tokens.id` for this entity's slot, or null when off-map. */
+  tokenId:    string | null
   entity:     AdversaryInstance | VehicleInstance
 }
 
-function buildRoster(
+export function buildRoster(
   encounter: CombatEncounter | null,
   tokens: MapToken[],
   advImages: Record<string, string>,
@@ -483,6 +460,7 @@ function buildRoster(
       isOnMap: !!tok,
       isHidden: tok ? !tok.is_visible : false,
       imageUrl: advImages[a.name] ?? null,
+      tokenId: tok?.id ?? null,
       entity: a,
     }
   })
@@ -496,10 +474,97 @@ function buildRoster(
       isOnMap: !!tok,
       isHidden: tok ? !tok.is_visible : false,
       imageUrl: vehImages[v.sourceId] ?? v.token_image_url ?? null,
+      tokenId: tok?.id ?? null,
       entity: v,
     }
   })
   return [...advEntries, ...vehEntries]
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Bench / Deploy / Remove / Hidden — hoisted standalone functions
+// ═══════════════════════════════════════════════════════════════
+// Exported so EncounterDossier (a sibling component) can reuse the exact
+// same cascade-delete/bench semantics instead of reimplementing them a
+// second time. Each function's `opts` parameter is exactly what the
+// corresponding closure below used to capture from component-local
+// state/props. EncounterDeck's own handleBench/handleDeploy/handleRemove/
+// handleToggleHidden are thin useCallback wrappers around these, so its
+// existing call sites (`onBench={() => void handleBench(entry)}` etc.)
+// are unchanged.
+
+export async function benchEntry(
+  entry: RosterEntry,
+  opts: { encounter: CombatEncounter | null; tokens: MapToken[]; removeToken: (id: string) => Promise<void> },
+) {
+  const { encounter, tokens, removeToken } = opts
+  const slot = encounter?.initiative_slots.find(s =>
+    s.adversaryInstanceId === entry.instanceId || s.vehicleInstanceId === entry.instanceId)
+  const tok = slot ? tokens.find(t => t.slot_key === slot.id) : undefined
+  if (tok) await removeToken(tok.id)
+}
+
+export async function deployEntry(
+  entry: RosterEntry,
+  opts: {
+    encounter: CombatEncounter | null
+    activeMapId: string | null
+    campaignId: string
+    addToken: (token: Omit<MapToken, 'id' | 'updated_at'>) => Promise<MapToken | null>
+  },
+) {
+  const { encounter, activeMapId, campaignId, addToken } = opts
+  if (!encounter) return
+  if (!activeMapId) { console.warn('[EncounterDeck] no activeMapId; skipping deploy'); return }
+  const slot = encounter.initiative_slots.find(s =>
+    s.adversaryInstanceId === entry.instanceId || s.vehicleInstanceId === entry.instanceId)
+  if (!slot) return
+  await addToken({
+    map_id: activeMapId, campaign_id: campaignId,
+    participant_type: 'adversary', character_id: null, participant_id: null,
+    slot_key: slot.id, label: entry.name, alignment: entry.alignment,
+    x: 0.5, y: 0.5, is_visible: true, token_size: 1.0, wound_pct: null,
+    token_image_url: entry.imageUrl, token_shape: entry.kind === 'vehicle' ? 'rectangle' : 'circle',
+  })
+}
+
+export async function removeEntry(
+  entry: RosterEntry,
+  opts: {
+    encounter: CombatEncounter | null
+    tokens: MapToken[]
+    saveEncounter: (partial: Partial<CombatEncounter>) => Promise<void>
+    removeToken: (id: string) => Promise<void>
+  },
+) {
+  const { encounter, tokens, saveEncounter, removeToken } = opts
+  if (!encounter) return
+  const slot = encounter.initiative_slots.find(s =>
+    s.adversaryInstanceId === entry.instanceId || s.vehicleInstanceId === entry.instanceId)
+  if (entry.kind === 'adversary') {
+    const updatedAdversaries = encounter.adversaries.filter(a => a.instanceId !== entry.instanceId)
+    const updatedSlots = encounter.initiative_slots.filter(s => s.adversaryInstanceId !== entry.instanceId)
+    await saveEncounter({ adversaries: updatedAdversaries, initiative_slots: updatedSlots })
+  } else {
+    const updatedVehicles = (encounter.vehicles ?? []).filter(v => v.instanceId !== entry.instanceId)
+    const updatedSlots = encounter.initiative_slots.filter(s => s.vehicleInstanceId !== entry.instanceId)
+    await saveEncounter({ vehicles: updatedVehicles, initiative_slots: updatedSlots })
+  }
+  if (slot) {
+    const tok = tokens.find(t => t.slot_key === slot.id)
+    if (tok) await removeToken(tok.id)
+  }
+}
+
+export async function toggleHiddenEntry(
+  entry: RosterEntry,
+  opts: { encounter: CombatEncounter | null; tokens: MapToken[]; toggleVisibility: (id: string, visible: boolean) => Promise<void> },
+) {
+  const { encounter, tokens, toggleVisibility } = opts
+  const slot = encounter?.initiative_slots.find(s =>
+    s.adversaryInstanceId === entry.instanceId || s.vehicleInstanceId === entry.instanceId)
+  const tok = slot ? tokens.find(t => t.slot_key === slot.id) : undefined
+  if (tok) await toggleVisibility(tok.id, !tok.is_visible)
 }
 
 // ═══════════════════════════════════════════════════════════════

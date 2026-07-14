@@ -20,7 +20,8 @@ import { fetchVehicles } from '@/lib/vehicles'
 import type { Vehicle } from '@/lib/vehicles'
 import { HUD, FONT_BODY, EASE, RADIUS } from '@/lib/tokens'
 import { MapToolsRadial } from '@/app/gm/MapToolsRadial'
-import { EncounterDeck } from '@/components/gm/EncounterDeck'
+import { EncounterDeck, benchEntry, deployEntry, removeEntry } from '@/components/gm/EncounterDeck'
+import { EncounterDossier } from '@/components/gm/EncounterDossier'
 
 /* ── Design tokens ─────────────────────────────────────── */
 const BG  = 'var(--hud-bg)'
@@ -1213,6 +1214,37 @@ export function GmMapView({
             focusedEntityId={focusedEntityId}
             activeMapId={activeMap?.id ?? null}
             onOpenDossier={onOpenDossier}
+          />
+        )}
+
+        {/* ── Encounter Dossier (expanded card view, staging only) ── */}
+        {isStagingTab && setStagingEncounter && saveStagingEncounter && updateTokenWoundPct
+          && markEncounterPending && clearEncounterPending && (
+          <EncounterDossier
+            entityId={dossierEntityId ?? null}
+            sourceRect={dossierSourceRect ?? null}
+            encounter={encounterProp}
+            setEncounter={setStagingEncounter}
+            saveEncounter={saveStagingEncounter}
+            supabase={supabase}
+            campaignId={campaignId ?? ''}
+            tokens={tokens}
+            updateTokenWoundPct={updateTokenWoundPct}
+            markPending={markEncounterPending}
+            clearPending={clearEncounterPending}
+            characters={characters}
+            onClose={() => onCloseDossier?.()}
+            onToggleVisibility={toggleVisibility}
+            onBenchDeploy={entry => {
+              if (entry.isOnMap) {
+                void benchEntry(entry, { encounter: encounterProp, tokens, removeToken })
+              } else {
+                void deployEntry(entry, { encounter: encounterProp, activeMapId: activeMap?.id ?? null, campaignId: campaignId ?? '', addToken })
+              }
+            }}
+            onRemove={entry => {
+              void removeEntry(entry, { encounter: encounterProp, tokens, saveEncounter: saveStagingEncounter, removeToken })
+            }}
           />
         )}
       </div>
