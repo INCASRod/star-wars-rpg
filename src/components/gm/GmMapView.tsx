@@ -281,12 +281,17 @@ export interface GmMapViewProps {
   onStagingRemoveToken?:       (id: string) => Promise<void>
   onStagingAddToken?:          (token: Omit<MapToken, 'id' | 'updated_at'>) => Promise<MapToken | null>
   /** Fired on a genuine tap (not a drag) on a map token — used by the Encounter Deck to focus the corresponding card. */
-  onTokenClick?:               (tokenId: string) => void
+  onTokenClick?:               (tokenId: string, sourceRect: DOMRect) => void
   /** Encounter Deck open/close state — lifted to GmShell so the left rail button can toggle it. */
   deckOpen?:                   boolean
   onDeckOpenChange?:           (open: boolean) => void
   /** Entity instanceId to highlight in the deck (set by GmShell's onTokenClick resolution). */
   focusedEntityId?:            string | null
+  /** Encounter Dossier state — lifted to GmShell, mirrors deckOpen/focusedEntityId. */
+  dossierEntityId?:           string | null
+  dossierSourceRect?:         DOMRect | null
+  onOpenDossier?:              (entityId: string, rect: DOMRect) => void
+  onCloseDossier?:             () => void
   setStagingEncounter?:        React.Dispatch<React.SetStateAction<CombatEncounter | null>>
   saveStagingEncounter?:       (partial: Partial<CombatEncounter>) => Promise<void>
   updateTokenWoundPct?:        (id: string, wound_pct: number) => Promise<void>
@@ -300,6 +305,7 @@ export function GmMapView({
   stagingTokens, onStagingMoveToken, onStagingToggleVisibility, onStagingRemoveToken, onStagingAddToken, onTokenClick,
   deckOpen, onDeckOpenChange, focusedEntityId, setStagingEncounter, saveStagingEncounter,
   updateTokenWoundPct, markEncounterPending, clearEncounterPending, stagingAddToEncounter,
+  dossierEntityId, dossierSourceRect, onOpenDossier, onCloseDossier,
 }: GmMapViewProps) {
   const supabase = useMemo(() => createClient(), [])
 
@@ -756,8 +762,8 @@ export function GmMapView({
     setTooltipState(null)
   }, [])
 
-  const handleTokenClick = useCallback((tokenId: string) => {
-    onTokenClick?.(tokenId)
+  const handleTokenClick = useCallback((tokenId: string, sourceRect: DOMRect) => {
+    onTokenClick?.(tokenId, sourceRect)
   }, [onTokenClick])
 
   const handleRemoveToken = useCallback(async (id: string) => {
@@ -1206,6 +1212,7 @@ export function GmMapView({
             onMapAreaResize={handleMapAreaResize}
             focusedEntityId={focusedEntityId}
             activeMapId={activeMap?.id ?? null}
+            onOpenDossier={onOpenDossier}
           />
         )}
       </div>

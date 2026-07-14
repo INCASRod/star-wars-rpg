@@ -41,6 +41,7 @@ export interface EncounterDeckProps {
   characters:          Character[]
   onMapAreaResize?:    () => void
   focusedEntityId?:    string | null
+  onOpenDossier?:      (entityId: string, rect: DOMRect) => void
   /**
    * Active map id for newly-created tokens. Required — falling back to
    * `tokens[0]?.map_id` here previously created corrupt `map_tokens` rows
@@ -56,7 +57,7 @@ export function EncounterDeck({
   addToken, removeToken, toggleVisibility, updateTokenWoundPct,
   markPending, clearPending, stagingAddToEncounter,
   open, onOpenChange, characters, onMapAreaResize, focusedEntityId,
-  activeMapId,
+  activeMapId, onOpenDossier,
 }: EncounterDeckProps) {
   const supabase = useMemo(() => createClient(), [])
   const bodyRef = useRef<HTMLDivElement | null>(null)
@@ -351,7 +352,7 @@ export function EncounterDeck({
                       key={entry.instanceId}
                       entry={entry}
                       focused={focusedEntityId === entry.instanceId}
-                      onClick={() => { /* Prompt 2: open dossier. This prompt: no-op beyond focus, handled via focusedEntityId prop from GmMapView's onTokenClick */ }}
+                      onClick={rect => onOpenDossier?.(entry.instanceId, rect)}
                       onAdjustWounds={delta => {
                         if (adv) void adjustAdversaryWounds(adv, delta)
                         else if (veh) void adjustHullTrauma(veh, delta)
@@ -521,7 +522,7 @@ function EntityCard({
   onBench, onDeploy, onRemove, onToggleHidden,
 }: {
   entry:    RosterEntry
-  onClick:  () => void
+  onClick:  (sourceRect: DOMRect) => void
   focused:  boolean
   onAdjustWounds:    (delta: number) => void
   onAdjustStrain:    (delta: number) => void
@@ -545,7 +546,7 @@ function EntityCard({
 
   return (
     <div
-      onClick={onClick}
+      onClick={e => onClick(e.currentTarget.getBoundingClientRect())}
       style={{
         flex: '0 0 8rem', display: 'flex', flexDirection: 'column',
         background: PANEL_BG,

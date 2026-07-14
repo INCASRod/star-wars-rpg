@@ -162,6 +162,9 @@ export function GmShell() {
   const [diceOpen,              setDiceOpen]              = useState(false)
   const [deckOpen,              setDeckOpen]              = useState(false)
   const [focusedEntityId,       setFocusedEntityId]       = useState<string | null>(null)
+  const [dossierEntityId,       setDossierEntityId]       = useState<string | null>(null)
+  const [dossierSourceRect,     setDossierSourceRect]     = useState<DOMRect | null>(null)
+  const dossierOpen = dossierEntityId !== null
 
   // Force GM Imperial Steel theme for the entire GM view, including portals
   useEffect(() => {
@@ -215,14 +218,23 @@ export function GmShell() {
       .eq('id', stagingEncounter.id)
   }, [stagingEncounter?.id, supabase])
 
-  const handleTokenClick = useCallback((tokenId: string) => {
+  const handleTokenClick = useCallback((tokenId: string, sourceRect: DOMRect) => {
     const token = stagingTokens.find(t => t.id === tokenId)
     if (!token?.slot_key || !stagingEncounter) return
     const slot = stagingEncounter.initiative_slots.find(s => s.id === token.slot_key)
     const instanceId = slot?.adversaryInstanceId ?? slot?.vehicleInstanceId ?? null
     setFocusedEntityId(instanceId)
     setDeckOpen(true)
+    if (instanceId) {
+      setDossierEntityId(instanceId)
+      setDossierSourceRect(sourceRect)
+    }
   }, [stagingTokens, stagingEncounter])
+
+  const closeDossier = useCallback(() => {
+    setDossierEntityId(null)
+    setDossierSourceRect(null)
+  }, [])
 
   const handleStartCombat = useCallback(async () => {
     await openStagingCombatModal()
@@ -420,6 +432,10 @@ export function GmShell() {
             deckOpen={deckOpen}
             onDeckOpenChange={setDeckOpen}
             focusedEntityId={focusedEntityId}
+            dossierEntityId={dossierEntityId}
+            dossierSourceRect={dossierSourceRect}
+            onOpenDossier={(entityId, rect) => { setDossierEntityId(entityId); setDossierSourceRect(rect) }}
+            onCloseDossier={closeDossier}
             setStagingEncounter={setStagingEncounter}
             saveStagingEncounter={saveStagingEncounter}
             updateTokenWoundPct={stagingUpdateWoundPct}

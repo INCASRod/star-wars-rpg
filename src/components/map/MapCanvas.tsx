@@ -41,7 +41,7 @@ export interface MapCanvasProps {
   onTokenHoverEnd?:    () => void
   onTokenDragStart?:   (tokenId: string) => void
   onTokenDragEnd?:     (tokenId: string) => void
-  onTokenClick?:       (tokenId: string) => void
+  onTokenClick?:       (tokenId: string, sourceRect: DOMRect) => void
   // Counter the parent increments to request a recentre (e.g. after the
   // Encounter Deck's open/close animation changes the map area's height) —
   // the ResizeObserver only resizes the renderer, it never recentres the map.
@@ -547,7 +547,7 @@ function syncTokens(
   onHoverEndRef:        React.MutableRefObject<(() => void) | undefined>,
   onDragStartRef:       React.MutableRefObject<((id: string) => void) | undefined>,
   onDragEndRef:         React.MutableRefObject<((id: string) => void) | undefined>,
-  onClickRef:           React.MutableRefObject<((id: string) => void) | undefined>,
+  onClickRef:           React.MutableRefObject<((id: string, sourceRect: DOMRect) => void) | undefined>,
   containerRef:         React.RefObject<HTMLDivElement | null>,
   tokensRef:            React.MutableRefObject<Map<string, InstanceType<typeof import('pixi.js').Container>>>,
   mapWRef:              React.MutableRefObject<number>,
@@ -636,7 +636,7 @@ function buildTokenSprite(
   onHoverEndRef:       React.MutableRefObject<(() => void) | undefined>,
   onDragStartRef:      React.MutableRefObject<((id: string) => void) | undefined>,
   onDragEndRef:        React.MutableRefObject<((id: string) => void) | undefined>,
-  onClickRef:          React.MutableRefObject<((id: string) => void) | undefined>,
+  onClickRef:          React.MutableRefObject<((id: string, sourceRect: DOMRect) => void) | undefined>,
   containerRef:        React.RefObject<HTMLDivElement | null>,
   draggingTokenIdRef:  React.MutableRefObject<string | null>,
   mapWRef:             React.MutableRefObject<number>,
@@ -962,7 +962,19 @@ function buildTokenSprite(
       onMoveRef.current(token.id, nx, ny)
     } else {
       // Pointer never moved past the threshold — a tap, not a drag.
-      onClickRef.current?.(token.id)
+      const containerRect = containerRef.current?.getBoundingClientRect()
+      if (containerRect && onClickRef.current) {
+        const global = c.getGlobalPosition()
+        const half = (24 * (token.token_size ?? 1)) / 2
+        const rect = new DOMRect(
+          containerRect.left + global.x - half,
+          containerRect.top + global.y - half,
+          half * 2, half * 2,
+        )
+        onClickRef.current(token.id, rect)
+      } else {
+        onClickRef.current?.(token.id, new DOMRect())
+      }
     }
   }
 
