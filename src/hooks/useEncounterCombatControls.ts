@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useRef } from 'react'
+import { useCallback, useRef, useEffect } from 'react'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { applyDamageToAdversary } from '@/lib/damageEngine'
@@ -38,6 +38,28 @@ export function useEncounterCombatControls({
   const { onDefeat, onDisbandSquad } = options ?? {}
   const debounceTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
 
+  // Mirrors `encounter` so every mutator below always reads the truly-latest
+  // value synchronously in plain JS, never via a setState updater. The
+  // previous approach read "the latest state" with a
+  // `setEncounter(prev => { latest = prev; return prev })` trick, which
+  // silently depended on React's undocumented "eager state" bailout
+  // optimization — that optimization only computes the updater synchronously
+  // for the FIRST update dispatched while a fiber is otherwise quiescent. A
+  // fast click burst queues multiple updates before React gets a chance to
+  // re-render, so only the first click in a burst got the eager path; the
+  // rest silently read a stale value and — critically — could skip
+  // `scheduleWrite` entirely (see each mutator's early-return guards below),
+  // leaving an earlier, now-stale debounced write for the same key
+  // uncancelled. It would later fire on its own schedule carrying the
+  // pre-burst value, visibly reverting the displayed number for seconds.
+  // Writing to this ref happens directly and synchronously on every local
+  // optimistic change (see each mutator), independent of React's render
+  // timing, and it stays in sync with externally-driven changes (realtime
+  // merges landing via `setEncounter` from outside this hook) through the
+  // effect below.
+  const encounterRef = useRef(encounter)
+  useEffect(() => { encounterRef.current = encounter }, [encounter])
+
   const scheduleWrite = useCallback((key: string, writeFn: () => Promise<void>) => {
     markPending(key)
     const existing = debounceTimers.current.get(key)
@@ -56,81 +78,60 @@ export function useEncounterCombatControls({
   }, [markPending, clearPending])
 
   const adjustAdversaryWounds = useCallback(async (adv: AdversaryInstance, delta: number) => {
-    if (!encounter) return
+    const prev = encounterRef.current
+    if (!prev) return
+    const live = prev.adversaries.find(a => a.instanceId === adv.instanceId)
+    if (!live) return
 
-    // Everything that reads a MUTABLE field (woundsCurrent, groupRemaining,
-    // groupSize) must happen inside the setEncounter updater, against `prev`
-    // — not against the `adv` closure param — so that two rapid invocations
-    // sharing the same `adv` reference each read the OTHER's already-applied
-    // write instead of both computing from the same stale baseline.
-    let result: ReturnType<typeof applyDamageToAdversary> | null = null
-    let wasDefeated = false
-    let groupSizeAtWrite = adv.groupSize
-    let skipped = false
+    const currentWounds = live.woundsCurrent ?? 0
+    const clampedDelta  = delta < 0 ? Math.max(delta, -currentWounds) : delta
+    if (clampedDelta === 0 && delta < 0) return
 
-    setEncounter(prev => {
-      if (!prev) return prev
-      const live = prev.adversaries.find(a => a.instanceId === adv.instanceId)
-      if (!live) { skipped = true; return prev }
+    const wasDefeated = adv.type === 'minion'
+      ? live.groupRemaining === 0
+      : currentWounds >= adv.woundThreshold
 
-      const currentWounds = live.woundsCurrent ?? 0
-      const clampedDelta  = delta < 0 ? Math.max(delta, -currentWounds) : delta
-      if (clampedDelta === 0 && delta < 0) { skipped = true; return prev }
+    const groupSizeAtWrite = live.groupSize
+    const result = applyDamageToAdversary({
+      type: adv.type, name: adv.name,
+      woundThreshold: adv.woundThreshold,
+      groupSize: live.groupSize, groupRemaining: live.groupRemaining,
+      woundsCurrent: currentWounds,
+    }, clampedDelta)
 
-      wasDefeated = adv.type === 'minion'
-        ? live.groupRemaining === 0
-        : currentWounds >= adv.woundThreshold
+    const next: CombatEncounter = {
+      ...prev,
+      adversaries: prev.adversaries.map(a =>
+        a.instanceId !== adv.instanceId ? a
+          : { ...a, woundsCurrent: Math.max(0, result.woundsCurrent), groupRemaining: result.groupRemaining }
+      ),
+    }
+    encounterRef.current = next
+    setEncounter(next)
 
-      groupSizeAtWrite = live.groupSize
-      result = applyDamageToAdversary({
-        type: adv.type, name: adv.name,
-        woundThreshold: adv.woundThreshold,
-        groupSize: live.groupSize, groupRemaining: live.groupRemaining,
-        woundsCurrent: currentWounds,
-      }, clampedDelta)
-
-      return {
-        ...prev,
-        adversaries: prev.adversaries.map(a =>
-          a.instanceId !== adv.instanceId ? a
-            : { ...a, woundsCurrent: Math.max(0, result!.woundsCurrent), groupRemaining: result!.groupRemaining }
-        ),
-      }
+    scheduleWrite(`${adv.instanceId}:wounds`, async () => {
+      await saveEncounter({ adversaries: encounterRef.current?.adversaries ?? [] })
     })
 
-    if (skipped || !result) return
-    const finalResult = result as ReturnType<typeof applyDamageToAdversary>
-
-    const key = `${adv.instanceId}:wounds`
-    scheduleWrite(key, async () => {
-      // Read the latest encounter via the same functional form at write time —
-      // setEncounter's updater always sees whatever local state accumulated
-      // during the debounce window, not the value captured when this closure
-      // was created.
-      let latestAdversaries: AdversaryInstance[] = []
-      setEncounter(prev => { latestAdversaries = prev?.adversaries ?? []; return prev })
-      await saveEncounter({ adversaries: latestAdversaries })
-    })
-
-    const advSlot = encounter.initiative_slots.find(
+    const advSlot = next.initiative_slots.find(
       (s: InitiativeSlot) => s.adversaryInstanceId === adv.instanceId
     )
     if (advSlot) {
       const tok = tokens.find(t => t.slot_key === advSlot.id)
       if (tok) {
         const pct = adv.type === 'minion'
-          ? 1 - (finalResult.groupRemaining / Math.max(1, groupSizeAtWrite))
-          : Math.min(1, finalResult.woundsCurrent / Math.max(1, adv.woundThreshold))
+          ? 1 - (result.groupRemaining / Math.max(1, groupSizeAtWrite))
+          : Math.min(1, result.woundsCurrent / Math.max(1, adv.woundThreshold))
         void updateTokenWoundPct(tok.id, pct)
       }
     }
 
-    if (!wasDefeated && finalResult.isDefeated && encounter.id) {
-      const msg = finalResult.defeatMessage ?? `${adv.name} — DEFEATED`
+    if (!wasDefeated && result.isDefeated && next.id) {
+      const msg = result.defeatMessage ?? `${adv.name} — DEFEATED`
       onDefeat?.(msg)
       await supabase.from('combat_log').insert({
         campaign_id:    campaignId,
-        encounter_id:   encounter.id,
+        encounter_id:   next.id,
         participant_name: 'SYSTEM',
         alignment:      'system',
         roll_type:      'system',
@@ -139,166 +140,145 @@ export function useEncounterCombatControls({
       })
       if (adv.squad_active) await onDisbandSquad?.(adv.instanceId)
     }
-  }, [encounter, campaignId, saveEncounter, setEncounter, supabase, tokens, updateTokenWoundPct, scheduleWrite, onDefeat, onDisbandSquad])
+  }, [campaignId, saveEncounter, setEncounter, supabase, tokens, updateTokenWoundPct, scheduleWrite, onDefeat, onDisbandSquad])
 
   const adjustAdversaryStrain = useCallback(async (adv: AdversaryInstance, delta: number) => {
-    if (!encounter || adv.type !== 'nemesis') return
+    if (adv.type !== 'nemesis') return
+    const prev = encounterRef.current
+    if (!prev) return
+    const live = prev.adversaries.find(a => a.instanceId === adv.instanceId)
+    if (!live) return
 
-    let skipped = false
+    const strainMax    = adv.strainThreshold ?? 0
+    const current       = live.strainCurrent ?? 0
+    const nextStrain     = Math.max(0, Math.min(strainMax > 0 ? strainMax : 999, current + delta))
 
-    setEncounter(prev => {
-      if (!prev) return prev
-      const live = prev.adversaries.find(a => a.instanceId === adv.instanceId)
-      if (!live) { skipped = true; return prev }
-
-      const strainMax = adv.strainThreshold ?? 0
-      const current   = live.strainCurrent ?? 0
-      const next      = Math.max(0, Math.min(strainMax > 0 ? strainMax : 999, current + delta))
-
-      return { ...prev, adversaries: prev.adversaries.map(a =>
-        a.instanceId !== adv.instanceId ? a : { ...a, strainCurrent: next }
-      ) }
-    })
-
-    if (skipped) return
+    const next: CombatEncounter = {
+      ...prev,
+      adversaries: prev.adversaries.map(a =>
+        a.instanceId !== adv.instanceId ? a : { ...a, strainCurrent: nextStrain }
+      ),
+    }
+    encounterRef.current = next
+    setEncounter(next)
 
     scheduleWrite(`${adv.instanceId}:strain`, async () => {
-      let latest: AdversaryInstance[] = []
-      setEncounter(prev => { latest = prev?.adversaries ?? []; return prev })
-      await saveEncounter({ adversaries: latest })
+      await saveEncounter({ adversaries: encounterRef.current?.adversaries ?? [] })
     })
-  }, [encounter, saveEncounter, setEncounter, scheduleWrite])
+  }, [saveEncounter, setEncounter, scheduleWrite])
 
   const adjustGroupSize = useCallback(async (adv: AdversaryInstance, delta: number) => {
-    if (!encounter || adv.type !== 'minion') return
+    if (adv.type !== 'minion') return
+    const prev = encounterRef.current
+    if (!prev) return
+    const live = prev.adversaries.find(a => a.instanceId === adv.instanceId)
+    if (!live) return
 
-    let newGroupSize = 0
-    let newGroupRemaining = 0
-    let skipped = false
+    const groupSize = Math.max(1, live.groupSize + delta)
+    if (groupSize === live.groupSize) return
 
-    setEncounter(prev => {
-      if (!prev) return prev
-      const live = prev.adversaries.find(a => a.instanceId === adv.instanceId)
-      if (!live) { skipped = true; return prev }
+    let groupRemaining: number
+    let woundsCurrent: number
+    if (delta > 0) {
+      groupRemaining = live.groupRemaining + 1
+      woundsCurrent  = live.woundsCurrent ?? 0
+    } else {
+      groupRemaining = Math.min(live.groupRemaining, groupSize)
+      woundsCurrent  = Math.min(live.woundsCurrent ?? 0, adv.woundThreshold * groupSize)
+    }
 
-      const groupSize = Math.max(1, live.groupSize + delta)
-      if (groupSize === live.groupSize) { skipped = true; return prev }
-
-      let groupRemaining: number
-      let woundsCurrent: number
-      if (delta > 0) {
-        groupRemaining = live.groupRemaining + 1
-        woundsCurrent  = live.woundsCurrent ?? 0
-      } else {
-        groupRemaining = Math.min(live.groupRemaining, groupSize)
-        woundsCurrent  = Math.min(live.woundsCurrent ?? 0, adv.woundThreshold * groupSize)
-      }
-
-      newGroupSize      = groupSize
-      newGroupRemaining = groupRemaining
-
-      return { ...prev, adversaries: prev.adversaries.map(a =>
+    const next: CombatEncounter = {
+      ...prev,
+      adversaries: prev.adversaries.map(a =>
         a.instanceId !== adv.instanceId ? a
           : { ...a, groupSize, groupRemaining, woundsCurrent }
-      ) }
-    })
-
-    if (skipped) return
+      ),
+    }
+    encounterRef.current = next
+    setEncounter(next)
 
     scheduleWrite(`${adv.instanceId}:groupSize`, async () => {
-      let latest: AdversaryInstance[] = []
-      setEncounter(prev => { latest = prev?.adversaries ?? []; return prev })
-      await saveEncounter({ adversaries: latest })
+      await saveEncounter({ adversaries: encounterRef.current?.adversaries ?? [] })
     })
 
-    const advSlot = encounter.initiative_slots.find(
+    const advSlot = next.initiative_slots.find(
       (s: InitiativeSlot) => s.adversaryInstanceId === adv.instanceId
     )
     if (advSlot) {
       const tok = tokens.find(t => t.slot_key === advSlot.id)
       if (tok) {
-        const pct = 1 - (newGroupRemaining / Math.max(1, newGroupSize))
+        const pct = 1 - (groupRemaining / Math.max(1, groupSize))
         void updateTokenWoundPct(tok.id, pct)
       }
     }
-  }, [encounter, saveEncounter, setEncounter, tokens, updateTokenWoundPct, scheduleWrite])
+  }, [saveEncounter, setEncounter, tokens, updateTokenWoundPct, scheduleWrite])
 
   const adjustHullTrauma = useCallback(async (vehicle: VehicleInstance, delta: number) => {
-    if (!encounter) return
+    const prev = encounterRef.current
+    if (!prev) return
+    const live = (prev.vehicles ?? []).find(v => v.instanceId === vehicle.instanceId)
+    if (!live) return
 
-    let next = 0
-    let wasDisabled = false
-    let skipped = false
+    const current      = live.hullTraumaCurrent
+    const wasDisabled   = current >= vehicle.hullTraumaThreshold
+    const nextTrauma     = Math.max(0, Math.min(vehicle.hullTraumaThreshold, current + delta))
 
-    setEncounter(prev => {
-      if (!prev) return prev
-      const live = (prev.vehicles ?? []).find(v => v.instanceId === vehicle.instanceId)
-      if (!live) { skipped = true; return prev }
-
-      const current = live.hullTraumaCurrent
-      wasDisabled = current >= vehicle.hullTraumaThreshold
-      next = Math.max(0, Math.min(vehicle.hullTraumaThreshold, current + delta))
-
-      return { ...prev, vehicles: (prev.vehicles ?? []).map(v =>
-        v.instanceId !== vehicle.instanceId ? v : { ...v, hullTraumaCurrent: next }
-      ) }
-    })
-
-    if (skipped) return
+    const next: CombatEncounter = {
+      ...prev,
+      vehicles: (prev.vehicles ?? []).map(v =>
+        v.instanceId !== vehicle.instanceId ? v : { ...v, hullTraumaCurrent: nextTrauma }
+      ),
+    }
+    encounterRef.current = next
+    setEncounter(next)
 
     scheduleWrite(`${vehicle.instanceId}:hullTrauma`, async () => {
-      let latest: VehicleInstance[] = []
-      setEncounter(prev => { latest = prev?.vehicles ?? []; return prev })
-      await saveEncounter({ vehicles: latest })
+      await saveEncounter({ vehicles: encounterRef.current?.vehicles ?? [] })
     })
 
-    const vSlot = encounter.initiative_slots.find(s => s.vehicleInstanceId === vehicle.instanceId)
+    const vSlot = next.initiative_slots.find(s => s.vehicleInstanceId === vehicle.instanceId)
     if (vSlot) {
       const tok = tokens.find(t => t.slot_key === vSlot.id)
       if (tok) {
-        const pct = Math.min(1, next / Math.max(1, vehicle.hullTraumaThreshold))
+        const pct = Math.min(1, nextTrauma / Math.max(1, vehicle.hullTraumaThreshold))
         void updateTokenWoundPct(tok.id, pct)
       }
     }
 
-    if (!wasDisabled && next >= vehicle.hullTraumaThreshold && encounter.id) {
+    if (!wasDisabled && nextTrauma >= vehicle.hullTraumaThreshold && next.id) {
       await supabase.from('combat_log').insert({
         campaign_id:    campaignId,
-        encounter_id:   encounter.id,
+        encounter_id:   next.id,
         participant_name: 'SYSTEM',
         alignment:      'system',
         roll_type:      'system',
-        result_summary: `${vehicle.name} — DISABLED (Hull Trauma ${next}/${vehicle.hullTraumaThreshold})`,
+        result_summary: `${vehicle.name} — DISABLED (Hull Trauma ${nextTrauma}/${vehicle.hullTraumaThreshold})`,
         is_visible_to_players: true,
       })
     }
-  }, [encounter, campaignId, saveEncounter, setEncounter, supabase, tokens, updateTokenWoundPct, scheduleWrite])
+  }, [campaignId, saveEncounter, setEncounter, supabase, tokens, updateTokenWoundPct, scheduleWrite])
 
   const adjustSystemStrain = useCallback(async (vehicle: VehicleInstance, delta: number) => {
-    if (!encounter) return
+    const prev = encounterRef.current
+    if (!prev) return
+    const live = (prev.vehicles ?? []).find(v => v.instanceId === vehicle.instanceId)
+    if (!live) return
 
-    let skipped = false
+    const nextStrain = Math.max(0, Math.min(vehicle.systemStrainThreshold, live.systemStrainCurrent + delta))
 
-    setEncounter(prev => {
-      if (!prev) return prev
-      const live = (prev.vehicles ?? []).find(v => v.instanceId === vehicle.instanceId)
-      if (!live) { skipped = true; return prev }
-
-      const next = Math.max(0, Math.min(vehicle.systemStrainThreshold, live.systemStrainCurrent + delta))
-
-      return { ...prev, vehicles: (prev.vehicles ?? []).map(v =>
-        v.instanceId !== vehicle.instanceId ? v : { ...v, systemStrainCurrent: next }
-      ) }
-    })
-
-    if (skipped) return
+    const next: CombatEncounter = {
+      ...prev,
+      vehicles: (prev.vehicles ?? []).map(v =>
+        v.instanceId !== vehicle.instanceId ? v : { ...v, systemStrainCurrent: nextStrain }
+      ),
+    }
+    encounterRef.current = next
+    setEncounter(next)
 
     scheduleWrite(`${vehicle.instanceId}:systemStrain`, async () => {
-      let latest: VehicleInstance[] = []
-      setEncounter(prev => { latest = prev?.vehicles ?? []; return prev })
-      await saveEncounter({ vehicles: latest })
+      await saveEncounter({ vehicles: encounterRef.current?.vehicles ?? [] })
     })
-  }, [encounter, saveEncounter, setEncounter, scheduleWrite])
+  }, [saveEncounter, setEncounter, scheduleWrite])
 
   return { adjustAdversaryWounds, adjustAdversaryStrain, adjustGroupSize, adjustHullTrauma, adjustSystemStrain }
 }
