@@ -10,6 +10,7 @@ import type { VehicleInstance } from '@/lib/vehicles'
 import { vehicleWeaponDisplayName, vehicleWeaponStats } from '@/lib/vehicles'
 import { createClient } from '@/lib/supabase/client'
 import { buildRoster, type RosterEntry } from '@/components/gm/EncounterDeck'
+import { CheckConsole } from '@/components/gm/CheckConsole'
 import { useAdversaryTokenImages } from '@/hooks/useAdversaryTokenImages'
 import { useVehicleTokenImages } from '@/hooks/useVehicleTokenImages'
 import { useEncounterCombatControls } from '@/hooks/useEncounterCombatControls'
@@ -65,14 +66,19 @@ export interface EncounterDossierProps {
 
 export function EncounterDossier({
   entityId, sourceRect, encounter, setEncounter, saveEncounter,
-  supabase, campaignId, tokens, updateTokenWoundPct, markPending, clearPending,
-  onClose, onToggleVisibility, onBenchDeploy, onRemove, onAttackWeapon = () => {},
+  supabase, campaignId, tokens, updateTokenWoundPct, markPending, clearPending, characters,
+  onClose, onToggleVisibility, onBenchDeploy, onRemove, onAttackWeapon,
 }: EncounterDossierProps) {
   const { adjustAdversaryWounds, adjustAdversaryStrain, adjustGroupSize, adjustHullTrauma, adjustSystemStrain } =
     useEncounterCombatControls({
       encounter, setEncounter, saveEncounter,
       supabase, campaignId, tokens, updateTokenWoundPct, markPending, clearPending,
     })
+  // Bumped by the weapons list's ATTACK button below — CheckConsole reacts
+  // via a useEffect to force-switch its own tab to Combat. Full weapon
+  // pre-selection logic lands in Task 6; this task only needs the
+  // tab-switch to already work end-to-end for verification.
+  const [attackWeaponSignal, setAttackWeaponSignal] = useState<number | null>(null)
   // Derived from `encounter` directly — EncounterDossier is a sibling of
   // EncounterDeck, not a child, so it re-derives the roster the same way
   // rather than depending on EncounterDeck to hand it a RosterEntry prop.
@@ -303,7 +309,7 @@ export function EncounterDossier({
                     </span>
                     <button
                       className="dossier-attack-btn"
-                      onClick={() => onAttackWeapon(w.key)}
+                      onClick={() => { setAttackWeaponSignal(w.key); onAttackWeapon?.(w.key) }}
                     >⌖ ATTACK</button>
                   </div>
                 ))}
@@ -324,8 +330,14 @@ export function EncounterDossier({
               </div>
             </div>
           </div>
-          {/* Check console column — Tasks 5-6 */}
-          <div id="dossier-check-slot" />
+          {/* Check console column */}
+          <CheckConsole
+            entry={entry}
+            campaignId={campaignId}
+            characters={characters}
+            encounter={encounter}
+            attackWeaponSignal={attackWeaponSignal}
+          />
         </div>
       </div>
     </>

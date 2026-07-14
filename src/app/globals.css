@@ -1466,3 +1466,132 @@ i.ffi {
   outline: 2px solid var(--red);
   outline-offset: 2px;
 }
+
+/* ── CheckConsole (EncounterDossier check-console column) ────────── */
+.cc-tab {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  padding: var(--space-1) 0;
+  border-radius: 2px;
+  border: 1px solid var(--hud-border);
+  background: transparent;
+  color: var(--hud-text-dim);
+  cursor: pointer;
+  transition: var(--ease-quick);
+}
+
+.cc-tab:hover {
+  color: var(--hud-text);
+  border-color: var(--hud-border-hi);
+}
+
+.cc-tab.on {
+  color: var(--hud-gold);
+  border-color: var(--hud-gold);
+  background: color-mix(in srgb, var(--hud-gold) 8%, transparent);
+}
+
+.cc-tab:focus-visible {
+  outline: 2px solid var(--hud-gold);
+  outline-offset: 2px;
+}
+
+.cc-skill-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid transparent;
+  border-radius: 2px;
+  transition: var(--ease-quick);
+  cursor: pointer;
+}
+
+.cc-skill-item:hover {
+  border-color: var(--hud-border-hi);
+  background: var(--hud-surface-lo);
+}
+
+.cc-skill-item.sel {
+  border-color: var(--hud-gold);
+  background: color-mix(in srgb, var(--hud-gold) 8%, transparent);
+}
+
+.cc-skill-item:focus-visible {
+  outline: 2px solid var(--hud-gold);
+  outline-offset: 2px;
+}
+
+.cc-dstep {
+  display: flex;
+  align-items: center;
+  gap: 3px; /* below the SP floor — micro-gap inside a compact stepper chip */
+  background: var(--hud-surface-lo);
+  border: 1px solid var(--hud-border);
+  border-radius: 2px;
+  padding: 2px 4px; /* below the SP floor — compact stepper chip */
+}
+
+.cc-dstep button {
+  width: 16px;
+  height: 16px; /* compact stepper touch target, below the 22px baseline used elsewhere for a 3-up dense grid */
+  font-size: var(--text-overline);
+  color: var(--hud-text-dim);
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--ease-quick);
+}
+
+.cc-dstep button:hover {
+  color: var(--hud-gold);
+}
+
+.cc-dstep button:focus-visible {
+  outline: 2px solid var(--hud-gold);
+  outline-offset: 1px;
+}
+
+.cc-dstep b {
+  font-family: var(--font-display);
+  font-size: var(--text-caption);
+  min-width: 12px;
+  text-align: center;
+  color: var(--hud-text);
+}
+
+.cc-roll-btn {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--hud-bg);
+  background: var(--hud-gold);
+  border: none;
+  border-radius: 2px;
+  padding: var(--space-2) 0;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--ease-quick);
+}
+
+.cc-roll-btn:hover:not(:disabled) {
+  box-shadow: 0 0 18px color-mix(in srgb, var(--hud-gold) 55%, transparent);
+}
+
+.cc-roll-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.cc-roll-btn:focus-visible {
+  outline: 2px solid var(--hud-gold);
+  outline-offset: 2px;
+}
