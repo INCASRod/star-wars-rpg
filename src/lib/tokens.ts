@@ -104,6 +104,7 @@ export const Z = {
   fab:        500,
   deck:         520,   // Encounter Deck handle + collapsed body — above MapToolsRadial
   deckExpanded: 530,   // Encounter Deck expanded rail/search — above the deck's own handle
+  dossier:      540,   // Encounter Dossier (expanded card view) — above the deck's own expanded layer
   toast:      800,
   dialog:     820,
   tooltip:    9999,

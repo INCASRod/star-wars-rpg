@@ -100,6 +100,22 @@ const SKILL_KEY_TO_CHAR: Record<string, string> = {
   'NEG':       'PR',
 }
 
+/**
+ * Effective skill rank for dice-pool purposes. For non-minions this is just
+ * the adversary's recorded rank. For minions, FFG rules derive the group's
+ * effective rank from live squad size (not a stored per-skill number) —
+ * capped by whether the minion group has that skill at all (skills absent
+ * from skillRanks are not group skills for this minion type and stay at 0).
+ * Single source of truth for this formula — used by both the functional
+ * combat-check pool below and the Check Console's bare skill-check pool
+ * (src/components/gm/CheckConsole.tsx) so the two paths can't drift.
+ */
+export function getAdversarySkillRank(adv: AdversaryInstance, skillName: string): number {
+  if (adv.type !== 'minion') return adv.skillRanks[skillName] ?? 0
+  if (!(skillName in adv.skillRanks)) return 0
+  return Math.max(0, (adv.groupRemaining ?? 1) - 1)
+}
+
 // Ranged (Heavy) weapon name fragments — checked before RANGLT to avoid false matches
 const RANGHVY_NAME_FRAGMENTS = [
   'blaster rifle', 'heavy blaster pistol', 'heavy blaster rifle',
@@ -266,10 +282,7 @@ export function adaptAdversaryForCombatCheck(
     if (!skillKey || seenKeys.has(skillKey)) continue
     seenKeys.add(skillKey)
 
-    // For minion groups, effective rank = groupRemaining - 1 (min 0)
-    const effectiveRank = adv.type === 'minion'
-      ? Math.max(0, (adv.groupRemaining ?? 1) - 1)
-      : rank
+    const effectiveRank = getAdversarySkillRank(adv, displayName)
 
     charSkills.push({
       id:           `adv-skill-${adv.instanceId}-${skillKey}`,
