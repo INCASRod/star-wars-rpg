@@ -62,12 +62,17 @@ export interface EncounterDossierProps {
   // check-console column to the Combat tab with that weapon pre-selected.
   // Optional + no-op default so this task doesn't have to touch call sites.
   onAttackWeapon?: (weaponIndex: number) => void
+  // Task 6: fired when the GM opens a Combat Check from CheckConsole.
+  // GmMapView owns the actual combatCheckState (it mounts CombatCheckOverlay
+  // as a map-area sibling — this dossier just closes itself and hands the
+  // selection up). Optional + no-op default, same pattern as onAttackWeapon.
+  onOpenCombatCheck?: (weaponIndex: number, targetId: string) => void
 }
 
 export function EncounterDossier({
   entityId, sourceRect, encounter, setEncounter, saveEncounter,
   supabase, campaignId, tokens, updateTokenWoundPct, markPending, clearPending, characters,
-  onClose, onToggleVisibility, onBenchDeploy, onRemove, onAttackWeapon,
+  onClose, onToggleVisibility, onBenchDeploy, onRemove, onAttackWeapon, onOpenCombatCheck,
 }: EncounterDossierProps) {
   const { adjustAdversaryWounds, adjustAdversaryStrain, adjustGroupSize, adjustHullTrauma, adjustSystemStrain } =
     useEncounterCombatControls({
@@ -337,6 +342,15 @@ export function EncounterDossier({
             characters={characters}
             encounter={encounter}
             attackWeaponSignal={attackWeaponSignal}
+            onOpenCombatCheck={(weaponIndex, targetId) => {
+              // Closing the dossier (rather than leaving it open behind the
+              // overlay) is this plan's documented deviation — CombatCheckOverlay's
+              // .hud-quick-drawer CSS assumes a full-height positioned ancestor,
+              // so it can't dock inline in this narrow column; it mounts as its
+              // own docked overlay at the GmMapView level instead.
+              onOpenCombatCheck?.(weaponIndex, targetId)
+              handleClose()
+            }}
           />
         </div>
       </div>

@@ -10,17 +10,29 @@
 // rollPool / logRoll are called straight from here — CombatCheckOverlay is
 // weapon-shaped and would force an unnecessary weapon-select step.
 //
-// Combat Check tab body is a placeholder — Task 6's job.
+// Combat Check tab (Task 6): a weapon + target picker only. Clicking "OPEN
+// COMBAT CHECK" hands (weaponIndex, targetId) up to onOpenCombatCheck, which
+// EncounterDossier/GmMapView use to mount the real CombatCheckOverlay wizard
+// as its own docked overlay (its .hud-quick-drawer CSS assumes a full-height
+// positioned ancestor — not embeddable inline in this narrow column). Vehicle
+// entries can browse weapons/targets here for reference, but opening the
+// overlay is adversary-only: adaptAdversaryForCombatCheck (the stub-builder
+// CombatCheckOverlay needs) only accepts an AdversaryInstance, and no vehicle
+// equivalent exists anywhere in this codebase (confirmed against the deleted
+// EncounterVehiclePanel, which never mounted CombatCheckOverlay at all — only
+// the deleted EncounterAdversaryPanel did).
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { getSkillPool, rollPool } from '@/components/player-hud/dice-engine'
 import { logRoll } from '@/lib/logRoll'
-import { getAdversarySkillRank } from '@/lib/adversaryAdapter'
-import { CHAR_FIELD_MAP } from '@/lib/combatCheckUtils'
+import { getAdversarySkillRank, charactersToAdversaryStubs, weaponSkillKey } from '@/lib/adversaryAdapter'
+import { CHAR_FIELD_MAP, getMeleeDifficulty, isMeleeSkill } from '@/lib/combatCheckUtils'
+import { vehicleWeaponDisplayName } from '@/lib/vehicles'
 import { DiceFace } from '@/components/dice/DiceFace'
-import type { AdversaryInstance } from '@/lib/adversaries'
+import type { AdversaryInstance, AdversaryWeapon } from '@/lib/adversaries'
+import type { VehicleInstance } from '@/lib/vehicles'
 import type { CombatEncounter } from '@/lib/combat'
 import type { Character } from '@/lib/types'
 import type { RosterEntry } from '@/components/gm/EncounterDeck'
@@ -67,13 +79,16 @@ export interface CheckConsoleProps {
   initialTab?: 'skill' | 'combat'
   /** Bumped by the dossier's Attack button to force-switch to Combat with a weapon pre-selected — see Task 6. */
   attackWeaponSignal?: number | null
+  /** Fired when the GM clicks "OPEN COMBAT CHECK" — EncounterDossier/GmMapView mount the real overlay. */
+  onOpenCombatCheck: (weaponIndex: number, targetId: string) => void
   onRollLogged?: () => void
 }
 
 export function CheckConsole({
-  entry, campaignId, attackWeaponSignal, onRollLogged, initialTab,
+  entry, campaignId, characters, encounter, attackWeaponSignal, onOpenCombatCheck, onRollLogged, initialTab,
 }: CheckConsoleProps) {
   const adv = entry.kind === 'adversary' ? (entry.entity as AdversaryInstance) : null
+  const veh = entry.kind === 'vehicle' ? (entry.entity as VehicleInstance) : null
 
   // Vehicles have no characteristics/skillRanks in the data model — a bare
   // skill check doesn't apply to them, so they always land on Combat.
@@ -81,6 +96,12 @@ export function CheckConsole({
   const [selSkill, setSelSkill] = useState<RefSkill | null>(null)
   const [pool, setPool] = useState<Record<DiceType, number>>(EMPTY_SKILL_POOL)
   const refSkills = useRefSkills()
+
+  // Combat tab — weapon + target picker only. The actual roll happens inside
+  // CombatCheckOverlay, mounted by EncounterDossier/GmMapView once
+  // onOpenCombatCheck fires.
+  const [selWeapon, setSelWeapon] = useState<number | null>(null)
+  const [selTarget, setSelTarget] = useState<string | null>(null)
 
   // Reset whenever the dossier is showing a different entity (or flips
   // between adversary/vehicle) — done in an effect rather than during
@@ -90,13 +111,18 @@ export function CheckConsole({
     setTab(adv ? (initialTab ?? 'skill') : 'combat')
     setSelSkill(null)
     setPool(EMPTY_SKILL_POOL)
+    setSelWeapon(null)
+    setSelTarget(null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entry.instanceId, !!adv])
 
-  // Task 6 wires full weapon pre-selection; this task only needs the
-  // Attack button to already force-switch to the Combat tab end-to-end.
+  // Attack button (dossier weapons list) force-switches to Combat with that
+  // weapon pre-selected.
   useEffect(() => {
-    if (attackWeaponSignal != null) setTab('combat')
+    if (attackWeaponSignal != null) {
+      setTab('combat')
+      setSelWeapon(attackWeaponSignal)
+    }
   }, [attackWeaponSignal])
 
   const selectSkill = (skill: RefSkill) => {
@@ -106,7 +132,44 @@ export function CheckConsole({
     setPool({ ...d, boost: 0, difficulty: 0, challenge: 0, setback: 0, force: 0 })
   }
 
-  const canRoll = tab === 'skill' ? selSkill !== null : false /* Task 6 sets Combat-tab canRoll */
+  // ── Combat tab derivations ──────────────────────────────────────────────
+  const weaponOptions = useMemo(() => {
+    if (veh) {
+      return veh.weapons.map((w, i) => ({
+        index: i,
+        name: `${w.count > 1 ? `${w.count}× ` : ''}${vehicleWeaponDisplayName(w.weaponKey)}${w.turret ? ' (Turret)' : ''}`,
+      }))
+    }
+    return (adv?.weapons ?? []).map((w, i) => ({ index: i, name: w.name }))
+  }, [veh, adv])
+
+  const targetOptions = useMemo(() => {
+    const pcStubs = charactersToAdversaryStubs(characters)
+    const allied = (encounter?.adversaries ?? []).filter(a => {
+      const slot = encounter?.initiative_slots.find(s => s.adversaryInstanceId === a.instanceId)
+      return slot?.alignment === 'allied_npc' && a.instanceId !== entry.instanceId
+    })
+    return [...pcStubs, ...allied].map(t => ({ id: t.instanceId, name: t.name, stub: t }))
+  }, [characters, encounter, entry.instanceId])
+
+  const selTargetStub = targetOptions.find(t => t.id === selTarget)?.stub ?? null
+  const selWeaponObj = selWeapon !== null
+    ? ((veh ? veh.weapons[selWeapon] : adv?.weapons[selWeapon]) ?? null)
+    : null
+  // Vehicle weapons have no melee/ranged skill concept in this codebase (no
+  // vehicle equivalent of adaptAdversaryForCombatCheck exists) — only
+  // adversary weapons get the melee opposed-check preview.
+  const selWeaponIsMelee = !veh && selWeaponObj
+    ? isMeleeSkill(weaponSkillKey(selWeaponObj as AdversaryWeapon))
+    : false
+  const meleeFallback = selWeaponIsMelee ? getMeleeDifficulty(selTargetStub) : null
+
+  const openCombatCheckOverlay = () => {
+    if (selWeapon === null || selTarget === null || veh) return
+    onOpenCombatCheck(selWeapon, selTarget)
+  }
+
+  const canRoll = tab === 'skill' ? selSkill !== null : false /* Combat tab rolls happen inside CombatCheckOverlay */
 
   const doRoll = () => {
     if (tab !== 'skill' || !selSkill || !adv) return
@@ -152,24 +215,61 @@ export function CheckConsole({
           )
         })}
         {tab === 'combat' && (
-          <div style={{ fontFamily: FC, fontSize: FS.overline, color: HUD.textFaint, letterSpacing: '0.08em', padding: SP[2] }}>
-            COMBAT CHECK — coming in a later task
-          </div>
+          <>
+            <div className="dossier-sec-label">Weapon</div>
+            {weaponOptions.map(w => (
+              <div
+                key={w.index}
+                className={`cc-skill-item${selWeapon === w.index ? ' sel' : ''}`}
+                onClick={() => setSelWeapon(w.index)}
+              >
+                <span style={{ flex: 1, minWidth: 0, fontFamily: FC, fontSize: FS.label, color: HUD.text }}>{w.name}</span>
+              </div>
+            ))}
+            <div className="dossier-sec-label">Target</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: SP[1] }}>
+              {targetOptions.map(t => (
+                <button
+                  key={t.id}
+                  className={`cc-tgt${selTarget === t.id ? ' sel' : ''}`}
+                  onClick={() => setSelTarget(t.id)}
+                >{t.name}</button>
+              ))}
+              {targetOptions.length === 0 && (
+                <span style={{ fontFamily: FC, fontSize: FS.overline, color: HUD.textFaint }}>No eligible targets</span>
+              )}
+            </div>
+            {meleeFallback?.fallbackReason && (
+              <div style={{ fontFamily: FC, fontSize: FS.overline, color: HUD.textDim, lineHeight: 1.5 }}>
+                <b style={{ color: HUD.gold }}>⚠</b> {meleeFallback.fallbackReason}
+              </div>
+            )}
+            {veh && (
+              <div style={{ fontFamily: FC, fontSize: FS.overline, color: HUD.textFaint, lineHeight: 1.5 }}>
+                Vehicle combat checks aren&apos;t supported yet — weapon/target selection is for reference only.
+              </div>
+            )}
+            <button
+              className="cc-roll-btn"
+              disabled={selWeapon === null || selTarget === null || !!veh}
+              onClick={openCombatCheckOverlay}
+            >⌖ OPEN COMBAT CHECK</button>
+          </>
         )}
       </div>
 
-      <div style={{ borderTop: `1px solid ${HUD.border}`, padding: SP[3], display: 'flex', flexDirection: 'column', gap: SP[2] }}>
-        <div style={{
-          display: 'flex', flexWrap: 'wrap', gap: 3, minHeight: '1.375rem', alignItems: 'center',
-          padding: SP[2], background: 'color-mix(in srgb, var(--hud-bg) 40%, transparent)',
-          border: `1px solid ${HUD.border}`, borderRadius: RADIUS.sm,
-        }}>
-          {poolEmpty
-            ? <span style={{ fontFamily: FC, fontSize: FS.overline, color: HUD.textFaint, letterSpacing: '0.08em' }}>SELECT A SKILL OR WEAPON</span>
-            : DIE_TYPES.flatMap(k => Array.from({ length: pool[k] }, (_, i) => <DiceFace key={`${k}-${i}`} type={k} size={16} />))
-          }
-        </div>
-        {tab === 'skill' && (
+      {tab === 'skill' && (
+        <div style={{ borderTop: `1px solid ${HUD.border}`, padding: SP[3], display: 'flex', flexDirection: 'column', gap: SP[2] }}>
+          <div style={{
+            display: 'flex', flexWrap: 'wrap', gap: 3, minHeight: '1.375rem', alignItems: 'center',
+            padding: SP[2], background: 'color-mix(in srgb, var(--hud-bg) 40%, transparent)',
+            border: `1px solid ${HUD.border}`, borderRadius: RADIUS.sm,
+          }}>
+            {poolEmpty
+              ? <span style={{ fontFamily: FC, fontSize: FS.overline, color: HUD.textFaint, letterSpacing: '0.08em' }}>SELECT A SKILL</span>
+              : DIE_TYPES.flatMap(k => Array.from({ length: pool[k] }, (_, i) => <DiceFace key={`${k}-${i}`} type={k} size={16} />))
+            }
+          </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: SP[1] }}>
             {DIE_TYPES.map(k => (
               <div key={k} className="cc-dstep">
@@ -180,9 +280,9 @@ export function CheckConsole({
               </div>
             ))}
           </div>
-        )}
-        <button className="cc-roll-btn" disabled={!canRoll} onClick={doRoll}>ROLL — PUBLIC</button>
-      </div>
+          <button className="cc-roll-btn" disabled={!canRoll} onClick={doRoll}>ROLL — PUBLIC</button>
+        </div>
+      )}
     </div>
   )
 }

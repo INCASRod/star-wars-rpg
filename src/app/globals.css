@@ -1595,3 +1595,33 @@ i.ffi {
   outline: 2px solid var(--hud-gold);
   outline-offset: 2px;
 }
+
+.cc-tgt {
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 3px 8px; /* below the SP floor — compact pill chip */
+  border: 1px solid var(--hud-border-hi);
+  border-radius: 10px; /* pill radius — no RADIUS.* token covers this shape (RADIUS.full=50% would ellipsize); CSS can't reference the TS token directly */
+  color: var(--hud-text-dim);
+  background: transparent;
+  cursor: pointer;
+  transition: var(--ease-quick);
+}
+
+.cc-tgt:hover {
+  color: var(--hud-text);
+  border-color: var(--hud-accent-purple);
+}
+
+.cc-tgt.sel {
+  color: var(--hud-accent-purple);
+  border-color: var(--hud-accent-purple);
+  background: color-mix(in srgb, var(--hud-accent-purple) 12%, transparent);
+}
+
+.cc-tgt:focus-visible {
+  outline: 2px solid var(--hud-accent-purple);
+  outline-offset: 2px;
+}

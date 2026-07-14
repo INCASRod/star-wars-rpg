@@ -12,6 +12,7 @@ import { useMapTokens } from '@/hooks/useMapTokens'
 import { useMapPlanets } from '@/hooks/useMapPlanets'
 import type { MapPlanet } from '@/hooks/useMapPlanets'
 import { useAdversaryTokenImages } from '@/hooks/useAdversaryTokenImages'
+import { useVehicleTokenImages } from '@/hooks/useVehicleTokenImages'
 import type { Character } from '@/lib/types'
 import type { CombatEncounter } from '@/lib/combat'
 import { fetchAdversaries, adversaryToInstance } from '@/lib/adversaries'
@@ -20,8 +21,12 @@ import { fetchVehicles } from '@/lib/vehicles'
 import type { Vehicle } from '@/lib/vehicles'
 import { HUD, FONT_BODY, EASE, RADIUS } from '@/lib/tokens'
 import { MapToolsRadial } from '@/app/gm/MapToolsRadial'
-import { EncounterDeck, benchEntry, deployEntry, removeEntry } from '@/components/gm/EncounterDeck'
+import { EncounterDeck, benchEntry, deployEntry, removeEntry, buildRoster } from '@/components/gm/EncounterDeck'
 import { EncounterDossier } from '@/components/gm/EncounterDossier'
+import { CombatCheckOverlay } from '@/components/combat-check/CombatCheckOverlay'
+import { adaptAdversaryForCombatCheck, charactersToAdversaryStubs, weaponSkillKey } from '@/lib/adversaryAdapter'
+import { isMeleeSkill } from '@/lib/combatCheckUtils'
+import { logRoll } from '@/lib/logRoll'
 
 /* ── Design tokens ─────────────────────────────────────── */
 const BG  = 'var(--hud-bg)'
@@ -338,6 +343,13 @@ export function GmMapView({
   const encounter = encounterProp as unknown as EncounterRow | null
   const [previewMap,       setPreviewMap]       = useState<ActiveMap | null>(null)
   const { tokenImages: advTokenImages, setTokenImages: setAdvTokenImages } = useAdversaryTokenImages()
+  const { tokenImages: vehTokenImages } = useVehicleTokenImages()
+  // Combat Check overlay state — owned here (not lifted to GmShell like
+  // dossierEntityId) because CombatCheckOverlay must mount as a MAP-AREA
+  // sibling of EncounterDossier, structurally local to this component's tree.
+  // entityId is the ATTACKING adversary (the dossier entry whose weapon was
+  // selected in CheckConsole's Combat tab) — not the target of the attack.
+  const [combatCheckState, setCombatCheckState] = useState<{ entityId: string, weaponIndex: number, targetId: string } | null>(null)
   const [busy,             setBusy]             = useState(false)
   const [advTokenBusy,     setAdvTokenBusy]     = useState<string | null>(null)
   const [advStatCache,     setAdvStatCache]     = useState<Map<string, AdversaryInstance>>(new Map())
@@ -1245,8 +1257,62 @@ export function GmMapView({
             onRemove={entry => {
               void removeEntry(entry, { encounter: encounterProp, tokens, saveEncounter: saveStagingEncounter, removeToken })
             }}
+            onOpenCombatCheck={(weaponIndex, targetId) => {
+              if (dossierEntityId) setCombatCheckState({ entityId: dossierEntityId, weaponIndex, targetId })
+            }}
           />
         )}
+
+        {/* ── Combat Check overlay (staging only) — mounted as a map-area sibling ── */}
+        {isStagingTab && combatCheckState && campaignId && (() => {
+          const roster = buildRoster(encounterProp, tokens, advTokenImages, vehTokenImages)
+          const attackerEntry = roster.find(r => r.instanceId === combatCheckState.entityId)
+          // Adversary-only: adaptAdversaryForCombatCheck (the stub-builder
+          // CombatCheckOverlay needs) only accepts an AdversaryInstance — no
+          // vehicle equivalent exists in this codebase (CheckConsole's Combat
+          // tab already disables "OPEN COMBAT CHECK" for vehicle entries, so
+          // this branch is a defensive no-op, not a reachable dead end).
+          if (!attackerEntry || attackerEntry.kind !== 'adversary') return null
+          const attackerAdv = attackerEntry.entity as AdversaryInstance
+          const weapon = attackerAdv.weapons[combatCheckState.weaponIndex]
+          if (!weapon) return null
+          const adapted = adaptAdversaryForCombatCheck(attackerAdv, campaignId)
+          const pcStubs = charactersToAdversaryStubs(characters)
+          const allied = (encounterProp?.adversaries ?? []).filter(a => {
+            const slot = encounterProp?.initiative_slots.find(s => s.adversaryInstanceId === a.instanceId)
+            return slot?.alignment === 'allied_npc' && a.instanceId !== attackerAdv.instanceId
+          })
+          const gmTargets = [...pcStubs, ...allied]
+          const initialAttackType = isMeleeSkill(weaponSkillKey(weapon)) ? 'melee' : 'ranged'
+          return (
+            <CombatCheckOverlay
+              key={attackerAdv.instanceId}
+              open={true}
+              initialAttackType={initialAttackType}
+              onClose={() => setCombatCheckState(null)}
+              character={adapted.character}
+              weapons={adapted.charWeapons}
+              charSkills={adapted.charSkills}
+              refWeaponMap={adapted.refWeaponMap}
+              refSkillMap={adapted.refSkillMap}
+              refWeaponQualityMap={{}}
+              skillModifiers={{}}
+              campaignId={campaignId}
+              characterId={attackerAdv.instanceId}
+              onRoll={(result, label, pool, meta) => {
+                // All rolls from this tab/overlay are public — hardcoded
+                // hidden: false, no UI path anywhere in this flow sets it true.
+                logRoll({
+                  campaignId, characterId: null, characterName: attackerAdv.name,
+                  label, pool: (pool ?? {}) as Parameters<typeof logRoll>[0]['pool'],
+                  result, isDM: true, hidden: false,
+                  meta: { ...meta, alignment: attackerEntry.alignment },
+                })
+              }}
+              gmOverrides={{ isGmMode: true, gmTargets, gmAlignment: attackerEntry.alignment }}
+            />
+          )
+        })()}
       </div>
 
       {/* ══ TOKEN STAGING DRAWER (right, 280px) ══ */}

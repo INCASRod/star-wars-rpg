@@ -134,7 +134,15 @@ const BRAWL_FRAGMENTS = [
   'tail', 'stinger', 'horn', 'tusk', 'paw', 'tentacle', 'slam', 'gore',
 ]
 
-function weaponSkillKey(w: AdversaryWeapon): string {
+/**
+ * Classifies an AdversaryWeapon into a SWRPG skill key (MELEE/BRAWL/RANGLT/
+ * RANGHVY/GUNN) from its skillCategory/range/name — AdversaryWeapon carries
+ * no display-name `skill` field to look up via SKILL_NAME_TO_KEY, so this is
+ * the single source of truth for "what skill does this weapon use" (used
+ * internally above, and by CheckConsole.tsx's Combat tab to preview melee
+ * vs. ranged before the combat check overlay opens).
+ */
+export function weaponSkillKey(w: AdversaryWeapon): string {
   const range = (w.range ?? '').toLowerCase()
   const name  = (w.name  ?? '').toLowerCase()
   const cat   = (w.skillCategory ?? '').toLowerCase()
