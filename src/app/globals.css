@@ -1403,3 +1403,66 @@ i.ffi {
   color: var(--red);
   border-color: var(--red);
 }
+
+/* ── EncounterDossier stats column ─────────────────────────────── */
+.dossier-sec-label {
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--hud-gold);
+}
+
+.dossier-step-btn {
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--hud-border-hi);
+  border-radius: 2px;
+  color: var(--hud-text-dim);
+  background: transparent;
+  cursor: pointer;
+  transition: var(--ease-quick);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dossier-step-btn:hover {
+  color: var(--hud-gold);
+  border-color: var(--hud-gold);
+}
+
+.dossier-step-btn:active {
+  transform: scale(0.9);
+}
+
+.dossier-step-btn:focus-visible {
+  outline: 2px solid var(--hud-gold);
+  outline-offset: 2px;
+}
+
+.dossier-attack-btn {
+  flex-shrink: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--red);
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--red) 40%, transparent);
+  border-radius: 2px;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: var(--ease-quick);
+}
+
+.dossier-attack-btn:hover {
+  background: color-mix(in srgb, var(--red) 14%, transparent);
+}
+
+.dossier-attack-btn:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}

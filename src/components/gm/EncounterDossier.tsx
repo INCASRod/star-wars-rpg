@@ -7,11 +7,13 @@ import type { CombatEncounter } from '@/lib/combat'
 import type { MapToken } from '@/hooks/useMapTokens'
 import type { AdversaryInstance } from '@/lib/adversaries'
 import type { VehicleInstance } from '@/lib/vehicles'
+import { vehicleWeaponDisplayName, vehicleWeaponStats } from '@/lib/vehicles'
 import { createClient } from '@/lib/supabase/client'
 import { buildRoster, type RosterEntry } from '@/components/gm/EncounterDeck'
 import { useAdversaryTokenImages } from '@/hooks/useAdversaryTokenImages'
 import { useVehicleTokenImages } from '@/hooks/useVehicleTokenImages'
-import { HUD, FS, SP, FONT_BODY, FONT_DISPLAY, Z, SHADOW, COLOR } from '@/lib/tokens'
+import { useEncounterCombatControls } from '@/hooks/useEncounterCombatControls'
+import { HUD, FS, SP, RADIUS, FONT_BODY, FONT_DISPLAY, Z, SHADOW, COLOR } from '@/lib/tokens'
 
 // NOTE on GSAP Flip: the plan called for `Flip.fit(el, sourceRect, {...})`,
 // but Flip.fit's `toEl` argument is resolved through `ElementState`, which
@@ -33,6 +35,11 @@ const RED = COLOR.red
 const GREEN = COLOR.green
 const PANEL_BG = 'color-mix(in srgb, var(--hud-panel) 92%, transparent)'
 
+const CHAR_ROW: Array<[keyof AdversaryInstance['characteristics'], string]> = [
+  ['brawn', 'BR'], ['agility', 'AG'], ['intellect', 'INT'],
+  ['cunning', 'CUN'], ['willpower', 'WIL'], ['presence', 'PR'],
+]
+
 export interface EncounterDossierProps {
   entityId:      string | null   // null = closed
   sourceRect:    DOMRect | null
@@ -50,12 +57,22 @@ export interface EncounterDossierProps {
   onToggleVisibility: (id: string, visible: boolean) => Promise<void>
   onBenchDeploy: (entry: RosterEntry) => void   // reuses EncounterDeck's hoisted benchEntry/deployEntry
   onRemove:      (entry: RosterEntry) => void   // reuses EncounterDeck's hoisted removeEntry
+  // Wired up by Task 6: clicking a weapon's ATTACK button switches the
+  // check-console column to the Combat tab with that weapon pre-selected.
+  // Optional + no-op default so this task doesn't have to touch call sites.
+  onAttackWeapon?: (weaponIndex: number) => void
 }
 
 export function EncounterDossier({
-  entityId, sourceRect, encounter, tokens,
-  onClose, onToggleVisibility, onBenchDeploy, onRemove,
+  entityId, sourceRect, encounter, setEncounter, saveEncounter,
+  supabase, campaignId, tokens, updateTokenWoundPct, markPending, clearPending,
+  onClose, onToggleVisibility, onBenchDeploy, onRemove, onAttackWeapon = () => {},
 }: EncounterDossierProps) {
+  const { adjustAdversaryWounds, adjustAdversaryStrain, adjustGroupSize, adjustHullTrauma, adjustSystemStrain } =
+    useEncounterCombatControls({
+      encounter, setEncounter, saveEncounter,
+      supabase, campaignId, tokens, updateTokenWoundPct, markPending, clearPending,
+    })
   // Derived from `encounter` directly — EncounterDossier is a sibling of
   // EncounterDeck, not a child, so it re-derives the roster the same way
   // rather than depending on EncounterDeck to hand it a RosterEntry prop.
@@ -116,6 +133,23 @@ export function EncounterDossier({
   if (!rendered || !entry) return null
 
   const accent = entry.alignment === 'allied_npc' ? GREEN : RED
+  const adv = entry.kind === 'adversary' ? (entry.entity as AdversaryInstance) : null
+  const veh = entry.kind === 'vehicle' ? (entry.entity as VehicleInstance) : null
+
+  // Normalize adversary vs. vehicle weapons into a common display shape.
+  // AdversaryWeapon carries name/damage/crit directly; VehicleWeapon only
+  // carries a `weaponKey` that must be resolved against the static
+  // VEHICLE_WEAPON_STATS table via vehicleWeaponStats/vehicleWeaponDisplayName
+  // (confirmed against src/lib/adversaries.ts and src/lib/vehicles.ts —
+  // AdversaryWeapon has no `critical` field, it's `crit`; VehicleWeapon has
+  // no name/damage/critical fields at all).
+  const weaponRows = veh
+    ? veh.weapons.map((w, i) => {
+        const stats = vehicleWeaponStats(w.weaponKey)
+        const name = `${w.count > 1 ? `${w.count}× ` : ''}${vehicleWeaponDisplayName(w.weaponKey)}${w.turret ? ' (Turret)' : ''}`
+        return { key: i, name, damage: stats?.damage ?? '—', crit: stats?.crit }
+      })
+    : (adv?.weapons ?? []).map((w, i) => ({ key: i, name: w.name, damage: w.damage, crit: w.crit }))
 
   return (
     <>
@@ -172,12 +206,155 @@ export function EncounterDossier({
               </div>
             </div>
           </div>
-          {/* Stats column — Task 4 */}
-          <div id="dossier-stats-slot" />
+          {/* Stats column */}
+          <div style={{
+            padding: SP[4], display: 'flex', flexDirection: 'column', gap: SP[4],
+            overflowY: 'auto', maxHeight: '32.5rem', borderRight: `1px solid ${HUD.border}`,
+          }}>
+            {adv && (
+              <div>
+                <div className="dossier-sec-label">Characteristics</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: SP[1], marginTop: SP[1] }}>
+                  {CHAR_ROW.map(([field, label]) => (
+                    <div key={label} style={{
+                      aspectRatio: '1 / 1.05', background: 'var(--hud-surface-hi)', border: `1px solid ${HUD.border}`,
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                      gap: 1, // below the SP floor — micro-gap between stacked number/label inside a compact stat box
+                    }}>
+                      <b style={{ fontFamily: FD, fontSize: FS.h4, color: HUD.text }}>{adv.characteristics[field]}</b>
+                      <span style={{ fontFamily: FC, fontSize: FS.overline, letterSpacing: '0.08em', color: HUD.textFaint, fontWeight: 700 }}>{label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {adv && adv.type === 'minion' && (
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: SP[2], background: 'var(--hud-surface-lo)',
+                border: `1px solid color-mix(in srgb, ${HUD.gold} 30%, transparent)`, borderRadius: RADIUS.sm, padding: `${SP[2]} ${SP[3]}`,
+              }}>
+                <span style={{ flex: 1, fontFamily: FC, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.12em', color: HUD.gold }}>GROUP SIZE</span>
+                <button className="dossier-step-btn" onClick={() => void adjustGroupSize(adv, -1)}>−</button>
+                <b style={{ fontFamily: FD, fontSize: FS.h3, minWidth: '1.875rem', textAlign: 'center' }}>{adv.groupSize}</b>
+                <button className="dossier-step-btn" onClick={() => void adjustGroupSize(adv, 1)}>+</button>
+                <span style={{ fontFamily: FC, fontSize: FS.caption, color: HUD.textFaint }}>
+                  ranks {Math.max(0, adv.groupRemaining - 1)} · alive <b style={{ color: HUD.gold }}>{adv.groupRemaining}</b>
+                </span>
+              </div>
+            )}
+
+            <div>
+              <div className="dossier-sec-label">Vitals</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: SP[3], marginTop: SP[1] }}>
+                <VitalStepper
+                  label={veh ? 'HULL TRAUMA' : 'WOUNDS'}
+                  current={entry.woundsCurrent} max={entry.woundsMax} color={RED}
+                  onAdjust={d => { if (adv) void adjustAdversaryWounds(adv, d); else if (veh) void adjustHullTrauma(veh, d) }}
+                />
+                {(adv?.type === 'nemesis' && adv.strainThreshold !== undefined) || veh ? (
+                  <VitalStepper
+                    label={veh ? 'SYS STRAIN' : 'STRAIN'}
+                    current={veh ? veh.systemStrainCurrent : (adv?.strainCurrent ?? 0)}
+                    max={veh ? veh.systemStrainThreshold : (adv?.strainThreshold ?? 0)}
+                    color="var(--hud-accent)"
+                    onAdjust={d => { if (adv) void adjustAdversaryStrain(adv, d); else if (veh) void adjustSystemStrain(veh, d) }}
+                  />
+                ) : (
+                  <div style={{
+                    background: 'var(--hud-surface-lo)', border: `1px solid ${HUD.border}`, borderRadius: RADIUS.sm,
+                    padding: `${SP[2]} ${SP[3]}`, display: 'flex', alignItems: 'center',
+                  }}>
+                    <span style={{ fontFamily: FC, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.12em', color: HUD.textDim, flex: 1 }}>STRAIN</span>
+                    <span style={{ fontFamily: FC, fontSize: FS.overline, color: HUD.textFaint }}>AS WOUNDS</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <div className="dossier-sec-label">{veh ? 'Vehicle Profile' : 'Defenses'}</div>
+              <div style={{ display: 'flex', gap: SP[2], marginTop: SP[1] }}>
+                {veh ? (
+                  <>
+                    <Derived label="SIL" value={veh.silhouette} /><Derived label="SPEED" value={veh.speed} />
+                    <Derived label="HANDLING" value={`+${veh.handling}`} /><Derived label="ARMOR" value={veh.armor} />
+                  </>
+                ) : adv ? (
+                  <>
+                    <Derived label="SOAK" value={adv.soak} />
+                    <Derived label="M DEF" value={adv.defense.melee} /><Derived label="R DEF" value={adv.defense.ranged} />
+                  </>
+                ) : null}
+              </div>
+            </div>
+
+            <div>
+              <div className="dossier-sec-label">{veh ? 'Armament' : 'Weapons'}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: SP[1], marginTop: SP[1] }}>
+                {weaponRows.map(w => (
+                  <div key={w.key} style={{
+                    display: 'flex', alignItems: 'center', gap: SP[2], background: 'var(--hud-surface-lo)',
+                    border: `1px solid ${HUD.border}`, borderRadius: RADIUS.sm, padding: `${SP[1]} ${SP[2]}`,
+                  }}>
+                    <span style={{ fontFamily: FC, fontSize: FS.label, fontWeight: 700, color: HUD.text, flex: 1, minWidth: 0 }}>{w.name}</span>
+                    <span style={{ fontFamily: FC, fontSize: FS.caption, color: HUD.textDim, flexShrink: 0 }}>
+                      DMG {w.damage}{w.crit !== undefined ? ` · CRIT ${w.crit}` : ''}
+                    </span>
+                    <button
+                      className="dossier-attack-btn"
+                      onClick={() => onAttackWeapon(w.key)}
+                    >⌖ ATTACK</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="dossier-sec-label">Abilities</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: SP[1], marginTop: SP[1] }}>
+                {(veh ? (veh.abilities ?? []) : (adv?.abilities ?? [])).map((a, i) => (
+                  <div key={i} style={{
+                    fontFamily: FC, fontSize: FS.caption, color: HUD.textDim, lineHeight: 1.5,
+                    borderLeft: `2px solid ${HUD.borderHi}`, paddingLeft: SP[2],
+                  }}>
+                    <b style={{ color: HUD.text }}>{a.name}.</b> {a.description}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
           {/* Check console column — Tasks 5-6 */}
           <div id="dossier-check-slot" />
         </div>
       </div>
     </>
+  )
+}
+
+function VitalStepper({ label, current, max, color, onAdjust }: {
+  label: string, current: number, max: number, color: string, onAdjust: (delta: number) => void,
+}) {
+  return (
+    <div style={{
+      background: 'var(--hud-surface-lo)', border: `1px solid ${HUD.border}`, borderRadius: RADIUS.sm,
+      padding: `${SP[2]} ${SP[3]}`, display: 'flex', alignItems: 'center', gap: SP[2],
+    }}>
+      <span style={{ fontFamily: FC, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.12em', color: HUD.textDim, flex: 1 }}>{label}</span>
+      <button className="dossier-step-btn" onClick={() => onAdjust(-1)}>−</button>
+      <span style={{ fontFamily: FD, fontSize: FS.h3, fontWeight: 700, minWidth: '4rem', textAlign: 'center', color }}>
+        {current}<small style={{ fontFamily: FC, fontSize: FS.caption, color: HUD.textFaint, fontWeight: 400 }}>/{max}</small>
+      </span>
+      <button className="dossier-step-btn" onClick={() => onAdjust(1)}>+</button>
+    </div>
+  )
+}
+
+function Derived({ label, value }: { label: string, value: string | number }) {
+  return (
+    <div style={{ flex: 1, textAlign: 'center', background: 'var(--hud-surface-lo)', border: `1px solid ${HUD.border}`, borderRadius: RADIUS.sm, padding: `${SP[1]} ${SP[1]}` }}>
+      <b style={{ fontFamily: FD, fontSize: FS.sm, display: 'block' }}>{value}</b>
+      <span style={{ fontFamily: FC, fontSize: FS.overline, letterSpacing: '0.1em', color: HUD.textFaint, fontWeight: 700 }}>{label}</span>
+    </div>
   )
 }
