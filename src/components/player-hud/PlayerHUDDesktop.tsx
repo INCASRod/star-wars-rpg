@@ -219,8 +219,11 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   // does not show "Combat Active" on player sheets before the GM explicitly starts combat.
   const isCombatActive = isCombat && encounter !== null && encounter.is_active
 
-  const mapTokens = useMapTokens(visibleMap?.id ?? null)
-  const visibleMapTokens = mapTokens.tokens.filter(t => t.is_visible)
+  // visibleOnly: true — server-side is_visible filter (Prompt 11), not just a
+  // client-side hide. See useMapTokens.ts's UseMapTokensOptions doc comment
+  // for the residual RLS gap this doesn't close.
+  const mapTokens = useMapTokens(visibleMap?.id ?? null, { visibleOnly: true })
+  const visibleMapTokens = mapTokens.tokens
 
   // Build the full enemy list from visible adversary tokens, enriched with encounter data.
   // This is passed to both check overlays so target selection works regardless of combat state.

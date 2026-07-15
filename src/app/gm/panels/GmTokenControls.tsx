@@ -135,6 +135,7 @@ export function GmTokenControls({
       const enc = await ensureActiveEncounter(supabase, campaignId)
       if (!enc) return
       const instance = adversaryToInstance(adv, adv.type === 'minion' ? 4 : 1)
+      instance.map_id = mapId
       // Add adversary instance for the Enemies panel — slots are created only after initiative is finalised.
       await supabase.from('combat_encounters').update({
         adversaries: [...enc.adversaries, instance],
@@ -170,6 +171,7 @@ export function GmTokenControls({
       const enc = await ensureActiveEncounter(supabase, campaignId)
       if (!enc) return
       const instance = vehicleToVehicleInstance(vehicle, alignment, vehicle._tokenImageUrl)
+      instance.map_id = mapId
       // Add vehicle instance for the Enemies panel — slots are created only after initiative is finalised.
       await supabase.from('combat_encounters').update({
         vehicles:   [...(enc.vehicles ?? []), instance],

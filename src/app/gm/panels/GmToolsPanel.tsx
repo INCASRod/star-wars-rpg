@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Character, RefDutyType, RefObligationType } from '@/lib/types'
 import { DutyObligationTab } from '@/components/gm/DutyObligationTab'
@@ -11,6 +11,8 @@ import { GmLootModal } from '@/components/gm/GmLootModal'
 import { LootAwardModal } from '@/components/gm/LootAwardModal'
 import { AdversaryEditor } from '@/components/gm/AdversaryEditor'
 import { VehicleEditor } from '@/components/gm/VehicleEditor'
+import { fetchAdversaries, dbRowToAdversary, type Adversary } from '@/lib/adversaries'
+import { fetchVehicles, dbRowToVehicle, type Vehicle } from '@/lib/vehicles'
 import { HUD, COLOR, RADIUS, FONT_BODY as FONT, FS } from '@/lib/tokens'
 import type { useGmLoot } from '@/hooks/useGmLoot'
 import type { useGmAwards } from '@/hooks/useGmAwards'
@@ -127,6 +129,28 @@ export function GmToolsPanel({
 
   const [lootModalOpen, setLootModalOpen] = useState(false)
   const [addConflictOpen, setAddConflictOpen] = useState(false)
+
+  // Template-search candidates for the New Adversary/Vehicle editors — same
+  // oggdude + ref_adversaries/ref_vehicles merge EncounterDeck uses, so the
+  // "Search" field there finds both static and campaign-custom entries.
+  const [allAdversaries, setAllAdversaries] = useState<Adversary[]>([])
+  const [allVehicles, setAllVehicles] = useState<Vehicle[]>([])
+  useEffect(() => {
+    let cancelled = false
+    Promise.all([fetchAdversaries(), supabase.from('ref_adversaries').select('*').order('name')])
+      .then(([oggdude, custom]) => {
+        if (cancelled) return
+        const customAdvs = (custom.data ?? []).map(r => dbRowToAdversary(r as Record<string, unknown>))
+        setAllAdversaries([...oggdude, ...customAdvs])
+      }).catch(() => {})
+    Promise.all([fetchVehicles(), supabase.from('ref_vehicles').select('*').order('name')])
+      .then(([oggdude, custom]) => {
+        if (cancelled) return
+        const customVehs = (custom.data ?? []).map(r => dbRowToVehicle(r as Record<string, unknown>))
+        setAllVehicles([...oggdude, ...customVehs])
+      }).catch(() => {})
+    return () => { cancelled = true }
+  }, [supabase])
 
   const forceSensitiveCharIds = useMemo(
     () => activeChars.filter(c => (c.force_rating ?? 0) > 0).map(c => c.id),
@@ -389,7 +413,7 @@ export function GmToolsPanel({
           <AdversaryEditor
             campaignId={campaignId}
             supabase={supabase}
-            allAdversaries={[]}
+            allAdversaries={allAdversaries}
             onClose={() => setActiveTab('items')}
             onSaved={() => setActiveTab('items')}
           />
@@ -400,6 +424,7 @@ export function GmToolsPanel({
           <VehicleEditor
             campaignId={campaignId}
             supabase={supabase}
+            allVehicles={allVehicles}
             onClose={() => setActiveTab('items')}
             onSaved={() => setActiveTab('items')}
           />

@@ -15,18 +15,10 @@ import { useAdversaryTokenImages } from '@/hooks/useAdversaryTokenImages'
 import { useVehicleTokenImages } from '@/hooks/useVehicleTokenImages'
 import type { Character } from '@/lib/types'
 import type { CombatEncounter } from '@/lib/combat'
-import { fetchAdversaries, adversaryToInstance } from '@/lib/adversaries'
-import type { AdversaryInstance } from '@/lib/adversaries'
-import { fetchVehicles } from '@/lib/vehicles'
-import type { Vehicle } from '@/lib/vehicles'
 import { HUD, FONT_BODY, EASE, RADIUS } from '@/lib/tokens'
 import { MapToolsRadial } from '@/app/gm/MapToolsRadial'
-import { EncounterDeck, benchEntry, deployEntry, removeEntry, buildRoster } from '@/components/gm/EncounterDeck'
+import { EncounterDeck, benchEntry, deployEntry, removeEntry } from '@/components/gm/EncounterDeck'
 import { EncounterDossier } from '@/components/gm/EncounterDossier'
-import { CombatCheckOverlay } from '@/components/combat-check/CombatCheckOverlay'
-import { adaptAdversaryForCombatCheck, charactersToAdversaryStubs, weaponSkillKey } from '@/lib/adversaryAdapter'
-import { isMeleeSkill } from '@/lib/combatCheckUtils'
-import { logRoll } from '@/lib/logRoll'
 
 /* ── Design tokens ─────────────────────────────────────── */
 const BG  = 'var(--hud-bg)'
@@ -343,17 +335,9 @@ export function GmMapView({
   const encounter = encounterProp as unknown as EncounterRow | null
   const [previewMap,       setPreviewMap]       = useState<ActiveMap | null>(null)
   const { tokenImages: advTokenImages, setTokenImages: setAdvTokenImages } = useAdversaryTokenImages()
-  const { tokenImages: vehTokenImages } = useVehicleTokenImages()
-  // Combat Check overlay state — owned here (not lifted to GmShell like
-  // dossierEntityId) because CombatCheckOverlay must mount as a MAP-AREA
-  // sibling of EncounterDossier, structurally local to this component's tree.
-  // entityId is the ATTACKING adversary (the dossier entry whose weapon was
-  // selected in CheckConsole's Combat tab) — not the target of the attack.
-  const [combatCheckState, setCombatCheckState] = useState<{ entityId: string, weaponIndex: number, targetId: string } | null>(null)
+  const { tokenImages: vehTokenImages, setTokenImages: setVehTokenImages } = useVehicleTokenImages()
   const [busy,             setBusy]             = useState(false)
   const [advTokenBusy,     setAdvTokenBusy]     = useState<string | null>(null)
-  const [advStatCache,     setAdvStatCache]     = useState<Map<string, AdversaryInstance>>(new Map())
-  const [vehStatCache,     setVehStatCache]     = useState<Map<string, Vehicle>>(new Map())
   // token_scale lives on the maps row; realtime propagates it to all clients automatically
   const tokenScale = activeMap?.token_scale ?? 1.0
 
@@ -373,46 +357,6 @@ export function GmMapView({
   const addToken        = isStagingTab ? (onStagingAddToken        ?? hookAddToken)        : hookAddToken
 
   useEffect(() => { setMounted(true) }, [])
-
-  // Pre-load base adversary stats for all adversary tokens on the map (keyed by name).
-  // Used by the hover tooltip when tokens aren't linked to a combat encounter slot.
-  useEffect(() => {
-    const names = [...new Set(
-      tokens.filter(t => t.participant_type === 'adversary' && t.label).map(t => t.label!),
-    )]
-    if (names.length === 0) return
-    ;(async () => {
-      const [{ data: globalData }, { data: customData }, staticAdvs] = await Promise.all([
-        supabase.from('ref_adversaries').select('*').in('name', names).is('campaign_id', null),
-        campaignId
-          ? supabase.from('ref_adversaries').select('*').in('name', names).eq('campaign_id', campaignId)
-          : Promise.resolve({ data: [] as unknown[] }),
-        fetchAdversaries(),
-      ])
-      type AdvRow = Parameters<typeof adversaryToInstance>[0]
-      const advMap = new Map<string, AdvRow>()
-      for (const a of staticAdvs) if (names.includes(a.name)) advMap.set(a.name, a)
-      for (const row of [...(globalData ?? []), ...(customData ?? [])]) advMap.set((row as AdvRow).name, row as AdvRow)
-      const cache = new Map<string, AdversaryInstance>()
-      for (const [name, adv] of advMap) cache.set(name, adversaryToInstance(adv, adv.type === 'minion' ? 4 : 1))
-      setAdvStatCache(cache)
-    })()
-  }, [tokens]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Pre-load static vehicle stats for rectangle tokens that have no encounter slot.
-  useEffect(() => {
-    const vehicleNames = [...new Set(
-      tokens.filter(t => t.token_shape === 'rectangle' && t.label).map(t => t.label!),
-    )]
-    if (vehicleNames.length === 0) { setVehStatCache(new Map()); return }
-    fetchVehicles().then(allVehicles => {
-      const cache = new Map<string, Vehicle>()
-      for (const v of allVehicles) {
-        if (vehicleNames.includes(v.name)) cache.set(v.name, v)
-      }
-      setVehStatCache(cache)
-    }).catch(console.warn)
-  }, [tokens])
 
   // Which characters/slots are already on the current map
   const onMapCharIds  = useMemo(() => new Set(tokens.map(t => t.character_id).filter(Boolean as unknown as (v: string | null) => v is string)), [tokens])
@@ -450,6 +394,9 @@ export function GmMapView({
 
   const activeTooltipState = tooltipState
 
+  // NPC/vehicle tooltips removed (Prompt 11) — the Encounter Deck's cards and
+  // the dossier already surface that information, so this hover glance is now
+  // PC-only. PC content/styling below is unchanged from before this prompt.
   const tooltipProps = useMemo(() => {
     if (!activeTooltipState) return null
     const token = tokensById.get(activeTooltipState.tokenId)
@@ -469,88 +416,8 @@ export function GmMapView({
       }
     }
 
-    if (token.slot_key && encounter) {
-      const slot = encounter.initiative_slots.find(s => s.id === token.slot_key)
-      if (slot?.adversaryInstanceId) {
-        const adv = encounter.adversaries.find(a => a.instanceId === slot.adversaryInstanceId)
-        if (adv) {
-          const color = adv.type === 'minion' ? '#E05252' : adv.type === 'nemesis' ? '#9060D0' : '#FF9800'
-          const woundsMax = adv.type === 'minion' && adv.groupSize
-            ? (adv.woundThreshold ?? 0) * adv.groupSize
-            : adv.woundThreshold
-          return {
-            x: activeTooltipState.x, y: activeTooltipState.y,
-            name: adv.name ?? token.label ?? '?',
-            typeLabel: adv.type.charAt(0).toUpperCase() + adv.type.slice(1),
-            typeColor: color,
-            characteristics: adv.characteristics,
-            soak: adv.soak,
-            defMelee: adv.defense?.melee,
-            defRanged: adv.defense?.ranged,
-            wounds: (adv.woundThreshold && woundsMax) ? { current: adv.woundsCurrent ?? 0, max: woundsMax } : undefined,
-            strain: adv.type !== 'minion' && adv.strainThreshold ? { current: adv.strainCurrent ?? 0, max: adv.strainThreshold } : undefined,
-            minionGroup: adv.type === 'minion' && adv.groupSize != null
-              ? { alive: adv.groupRemaining ?? 0, total: adv.groupSize }
-              : undefined,
-          }
-        }
-      }
-      if (slot?.vehicleInstanceId) {
-        const veh = (encounterProp?.vehicles ?? []).find(v => v.instanceId === slot.vehicleInstanceId)
-        if (veh) return {
-          x: activeTooltipState.x, y: activeTooltipState.y,
-          name: veh.name,
-          typeLabel: 'Vehicle',
-          typeColor: veh.alignment === 'allied_npc' ? '#4EC87A' : '#E05252',
-          vehicleStats: { silhouette: veh.silhouette, speed: veh.speed, handling: veh.handling, armor: veh.armor, defense: veh.defense },
-          hullTrauma:   { current: veh.hullTraumaCurrent,   max: veh.hullTraumaThreshold },
-          systemStrain: { current: veh.systemStrainCurrent,  max: veh.systemStrainThreshold },
-        }
-      }
-    }
-
-    // Fallback: look up base stats by name from the pre-loaded adversary cache.
-    // This covers pre-combat tokens that have no slot_key / no active encounter.
-    if (token.participant_type === 'adversary' && token.label) {
-      const cached = advStatCache.get(token.label)
-      if (cached) {
-        const color = cached.type === 'minion' ? '#E05252' : cached.type === 'nemesis' ? '#9060D0' : '#FF9800'
-        return {
-          x: activeTooltipState.x, y: activeTooltipState.y,
-          name: token.label,
-          typeLabel: cached.type.charAt(0).toUpperCase() + cached.type.slice(1),
-          typeColor: color,
-          characteristics: cached.characteristics,
-          soak: cached.soak,
-          defMelee: cached.defense?.melee,
-          defRanged: cached.defense?.ranged,
-          wounds: cached.woundThreshold ? { current: 0, max: cached.woundThreshold } : undefined,
-          strain: cached.type !== 'minion' && cached.strainThreshold ? { current: 0, max: cached.strainThreshold } : undefined,
-        }
-      }
-    }
-
-    // Vehicle fallback: rectangle tokens not linked to an encounter slot (pre-combat placement).
-    if (token.token_shape === 'rectangle' && token.label) {
-      const staticVeh = vehStatCache.get(token.label)
-      if (staticVeh) return {
-        x: activeTooltipState.x, y: activeTooltipState.y,
-        name: token.label,
-        typeLabel: 'Vehicle',
-        typeColor: '#E05252',
-        vehicleStats: { silhouette: staticVeh.silhouette, speed: staticVeh.speed, handling: staticVeh.handling, armor: staticVeh.armor, defense: { fore: staticVeh.defFore, aft: staticVeh.defAft, port: staticVeh.defPort, starboard: staticVeh.defStarboard } },
-        hullTrauma:   { current: 0, max: staticVeh.hullTrauma },
-        systemStrain: { current: 0, max: staticVeh.systemStrain },
-      }
-    }
-
-    return {
-      x: activeTooltipState.x, y: activeTooltipState.y,
-      name: token.label ?? '?',
-      typeLabel: token.alignment ?? 'token',
-      typeColor: HUD.gold,
-    }
-  }, [activeTooltipState, tokensById, characters, encounter, advStatCache, vehStatCache])
+    return null
+  }, [activeTooltipState, tokensById, characters])
 
   // NPC slots from active encounter — adversaries live in combat_encounters JSONB, not combat_participants
   const npcSlots = useMemo<NpcDrawerSlot[]>(() => {
@@ -765,14 +632,30 @@ export function GmMapView({
   const closeTokenDrawer = useCallback(() => setTokenDrawerOpen(false), [])
   const closeContextMenu = useCallback(() => setContextMenu(null), [])
 
+  // Card ↔ token hover glow (Prompt 5). One shared signal, colocated here
+  // since EncounterDeck and MapCanvas are both children of this component —
+  // no need to lift further to GmShell. Card hover sets this directly
+  // (EncounterDeck already resolves the correct map_tokens.id per card via
+  // RosterEntry.tokenId); real token hover sets it too, reusing the
+  // existing handleTokenHover/handleTokenHoverEnd tooltip callbacks rather
+  // than adding a second Pixi-side hover path.
+  const [hoveredTokenId, setHoveredTokenId] = useState<string | null>(null)
+
   const handleTokenHover = useCallback((tokenId: string, screenX: number, screenY: number) => {
     if (isDraggingRef.current) return
     lastTooltipPosRef.current = { x: screenX, y: screenY }
     setTooltipState({ tokenId, x: screenX, y: screenY })
+    setHoveredTokenId(tokenId)
   }, [])
 
-  const handleTokenHoverEnd = useCallback(() => {
-    setTooltipState(null)
+  // tokenId is whichever token this "leaving" event is for — MapCanvas's 60ms
+  // per-token debounce means this can arrive after the pointer has already
+  // landed on a different token, so only clear state if it's still about
+  // that same token; otherwise this is stale and would wipe out the NEW
+  // token's tooltip/glow a moment after it appeared (Prompt 14).
+  const handleTokenHoverEnd = useCallback((tokenId: string) => {
+    setTooltipState(prev => (prev?.tokenId === tokenId ? null : prev))
+    setHoveredTokenId(prev => (prev === tokenId ? null : prev))
   }, [])
 
   const handleTokenClick = useCallback((tokenId: string, sourceRect: DOMRect) => {
@@ -852,6 +735,7 @@ export function GmMapView({
               onTokenHover={handleTokenHover}
               onTokenClick={handleTokenClick}
               onTokenHoverEnd={handleTokenHoverEnd}
+              highlightedTokenId={hoveredTokenId}
               onTokenDragStart={handleTokenDragStart}
               onTokenDragEnd={handleTokenDragEnd}
               recentreSignal={recentreSignal}
@@ -1219,6 +1103,8 @@ export function GmMapView({
             markPending={markEncounterPending}
             clearPending={clearEncounterPending}
             stagingAddToEncounter={stagingAddToEncounter}
+            hoveredTokenId={hoveredTokenId}
+            onHoverToken={setHoveredTokenId}
             open={deckOpen ?? false}
             onOpenChange={onDeckOpenChange ?? (() => {})}
             characters={characters}
@@ -1226,6 +1112,8 @@ export function GmMapView({
             focusedEntityId={focusedEntityId}
             activeMapId={activeMap?.id ?? null}
             onOpenDossier={onOpenDossier}
+            advImages={advTokenImages}
+            vehImages={vehTokenImages}
           />
         )}
 
@@ -1244,75 +1132,30 @@ export function GmMapView({
             updateTokenWoundPct={updateTokenWoundPct}
             markPending={markEncounterPending}
             clearPending={clearEncounterPending}
-            characters={characters}
+            activeMapId={activeMap?.id ?? null}
+            advImages={advTokenImages}
+            vehImages={vehTokenImages}
+            setAdvImages={setAdvTokenImages}
+            setVehImages={setVehTokenImages}
             onClose={() => onCloseDossier?.()}
             onToggleVisibility={toggleVisibility}
             onBenchDeploy={entry => {
               if (entry.isOnMap) {
                 void benchEntry(entry, { encounter: encounterProp, tokens, removeToken })
               } else {
-                void deployEntry(entry, { encounter: encounterProp, activeMapId: activeMap?.id ?? null, campaignId: campaignId ?? '', addToken })
+                void deployEntry(entry, { encounter: encounterProp, activeMapId: activeMap?.id ?? null, campaignId: campaignId ?? '', tokens, addToken })
               }
             }}
             onRemove={entry => {
               void removeEntry(entry, { encounter: encounterProp, tokens, saveEncounter: saveStagingEncounter, removeToken })
             }}
-            onOpenCombatCheck={(weaponIndex, targetId) => {
-              if (dossierEntityId) setCombatCheckState({ entityId: dossierEntityId, weaponIndex, targetId })
-            }}
           />
         )}
 
-        {/* ── Combat Check overlay (staging only) — mounted as a map-area sibling ── */}
-        {isStagingTab && combatCheckState && campaignId && (() => {
-          const roster = buildRoster(encounterProp, tokens, advTokenImages, vehTokenImages)
-          const attackerEntry = roster.find(r => r.instanceId === combatCheckState.entityId)
-          // Adversary-only: adaptAdversaryForCombatCheck (the stub-builder
-          // CombatCheckOverlay needs) only accepts an AdversaryInstance — no
-          // vehicle equivalent exists in this codebase (CheckConsole's Combat
-          // tab already disables "OPEN COMBAT CHECK" for vehicle entries, so
-          // this branch is a defensive no-op, not a reachable dead end).
-          if (!attackerEntry || attackerEntry.kind !== 'adversary') return null
-          const attackerAdv = attackerEntry.entity as AdversaryInstance
-          const weapon = attackerAdv.weapons[combatCheckState.weaponIndex]
-          if (!weapon) return null
-          const adapted = adaptAdversaryForCombatCheck(attackerAdv, campaignId)
-          const pcStubs = charactersToAdversaryStubs(characters)
-          const allied = (encounterProp?.adversaries ?? []).filter(a => {
-            const slot = encounterProp?.initiative_slots.find(s => s.adversaryInstanceId === a.instanceId)
-            return slot?.alignment === 'allied_npc' && a.instanceId !== attackerAdv.instanceId
-          })
-          const gmTargets = [...pcStubs, ...allied]
-          const initialAttackType = isMeleeSkill(weaponSkillKey(weapon)) ? 'melee' : 'ranged'
-          return (
-            <CombatCheckOverlay
-              key={attackerAdv.instanceId}
-              open={true}
-              initialAttackType={initialAttackType}
-              onClose={() => setCombatCheckState(null)}
-              character={adapted.character}
-              weapons={adapted.charWeapons}
-              charSkills={adapted.charSkills}
-              refWeaponMap={adapted.refWeaponMap}
-              refSkillMap={adapted.refSkillMap}
-              refWeaponQualityMap={{}}
-              skillModifiers={{}}
-              campaignId={campaignId}
-              characterId={attackerAdv.instanceId}
-              onRoll={(result, label, pool, meta) => {
-                // All rolls from this tab/overlay are public — hardcoded
-                // hidden: false, no UI path anywhere in this flow sets it true.
-                logRoll({
-                  campaignId, characterId: null, characterName: attackerAdv.name,
-                  label, pool: (pool ?? {}) as Parameters<typeof logRoll>[0]['pool'],
-                  result, isDM: true, hidden: false,
-                  meta: { ...meta, alignment: attackerEntry.alignment },
-                })
-              }}
-              gmOverrides={{ isGmMode: true, gmTargets, gmAlignment: attackerEntry.alignment }}
-            />
-          )
-        })()}
+        {/* Combat Check overlay mount removed here (Prompt 9) — the dossier's
+            Combat Check tab rolls inline now, no more hand-off to
+            CombatCheckOverlay. CombatCheckOverlay itself is untouched and
+            still mounted by PlayerHUDDesktop.tsx for PC-side checks. */}
       </div>
 
       {/* ══ TOKEN STAGING DRAWER (right, 280px) ══ */}
@@ -1424,12 +1267,6 @@ interface TokenTooltipData {
   defRanged?:     number | null
   wounds?:        { current: number; max: number }
   strain?:        { current: number; max: number }
-  minionGroup?:   { alive: number; total: number }
-  // Vehicle stat block (replaces characteristics + soak/defense for vehicles)
-  vehicleStats?:  { silhouette: number; speed: number; handling: number; armor: number; defense: { fore: number; aft: number; port: number; starboard: number } }
-  // Vehicle health bars (read-only)
-  hullTrauma?:    { current: number; max: number }
-  systemStrain?:  { current: number; max: number }
 }
 
 const TOOLTIP_W = 230
@@ -1473,30 +1310,6 @@ const TokenTooltip = memo(function TokenTooltip(p: TokenTooltipData) {
         </div>
       )}
 
-      {/* Vehicle stat block: SIL / SPD / HDL / ARMOR + defense arcs */}
-      {p.vehicleStats && (() => {
-        const vs = p.vehicleStats!
-        const hdlStr = vs.handling > 0 ? `+${vs.handling}` : String(vs.handling)
-        const topRow = [{ l: 'SIL', v: vs.silhouette }, { l: 'SPD', v: vs.speed }, { l: 'HDL', v: hdlStr }, { l: 'ARMOR', v: vs.armor }]
-        const arcRow = [{ l: 'DEF F', v: vs.defense.fore }, { l: 'DEF A', v: vs.defense.aft }, { l: 'DEF P', v: vs.defense.port }, { l: 'DEF S', v: vs.defense.starboard }]
-        const cell = (l: string, v: string | number, gold = false) => (
-          <div key={l} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px', background: 'rgba(255,255,255,0.04)', borderRadius: RADIUS.sm, padding: '0.25rem 0.125rem' }}>
-            <div style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.04em' }}>{l}</div>
-            <div style={{ fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700, color: gold ? HUD.gold : TEXT }}>{v}</div>
-          </div>
-        )
-        return (
-          <>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.1875rem', marginBottom: '0.25rem' }}>
-              {topRow.map(({ l, v }) => cell(l, v, true))}
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.1875rem', marginBottom: '0.5rem' }}>
-              {arcRow.map(({ l, v }) => cell(l, v))}
-            </div>
-          </>
-        )
-      })()}
-
       {/* Soak + Defense */}
       {(p.soak != null || p.defMelee != null || p.defRanged != null) && (
         <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '0.5rem' }}>
@@ -1518,25 +1331,6 @@ const TokenTooltip = memo(function TokenTooltip(p: TokenTooltipData) {
               <div style={{ fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700, color: TEXT }}>{p.defRanged}</div>
             </div>
           )}
-        </div>
-      )}
-
-      {/* Minion group count (hover read-only pips) */}
-      {p.minionGroup && (
-        <div style={{ marginBottom: '0.375rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.1875rem' }}>
-            <span style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Group</span>
-            <span style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, fontWeight: 700, color: p.minionGroup.alive === 0 ? 'var(--state-failure)' : TEXT }}>
-              {p.minionGroup.alive}/{p.minionGroup.total} alive
-            </span>
-          </div>
-          <div style={{ display: 'flex', gap: '0.1875rem' }}>
-            {Array.from({ length: p.minionGroup.total }).map((_, i) => (
-              <span key={i} style={{ fontSize: FS_OVERLINE, color: i < p.minionGroup!.alive ? p.typeColor : 'rgba(255,255,255,0.15)' }}>
-                {i < p.minionGroup!.alive ? '■' : '□'}
-              </span>
-            ))}
-          </div>
         </div>
       )}
 
@@ -1562,30 +1356,6 @@ const TokenTooltip = memo(function TokenTooltip(p: TokenTooltipData) {
           </div>
           <div style={{ height: '0.25rem', background: 'rgba(255,255,255,0.08)', borderRadius: RADIUS.sm, overflow: 'hidden' }}>
             <div style={{ height: '100%', width: `${Math.min(100, (p.strain.current / Math.max(p.strain.max, 1)) * 100)}%`, background: p.strain.current >= p.strain.max ? 'var(--state-failure)' : 'var(--state-success)', borderRadius: RADIUS.sm }} />
-          </div>
-        </div>
-      )}
-
-      {/* Vehicle health bars (read-only) */}
-      {p.hullTrauma && (
-        <div style={{ marginBottom: p.systemStrain ? 6 : 0 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.1875rem' }}>
-            <span style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Hull Trauma</span>
-            <span style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, fontWeight: 700, color: p.hullTrauma.current >= p.hullTrauma.max ? 'var(--state-failure)' : TEXT }}>{p.hullTrauma.current}/{p.hullTrauma.max}</span>
-          </div>
-          <div style={{ height: '0.25rem', background: 'rgba(255,255,255,0.08)', borderRadius: RADIUS.sm, overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: `${Math.min(100, (p.hullTrauma.current / Math.max(p.hullTrauma.max, 1)) * 100)}%`, background: p.hullTrauma.current >= p.hullTrauma.max ? 'var(--state-failure)' : 'var(--hud-gold)', borderRadius: RADIUS.sm }} />
-          </div>
-        </div>
-      )}
-      {p.systemStrain && (
-        <div style={{ marginTop: p.hullTrauma ? 6 : 0 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.1875rem' }}>
-            <span style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, color: DIM, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Sys Strain</span>
-            <span style={{ fontFamily: FONT_BODY, fontSize: FS_OVERLINE, fontWeight: 700, color: p.systemStrain.current >= p.systemStrain.max ? 'var(--state-failure)' : TEXT }}>{p.systemStrain.current}/{p.systemStrain.max}</span>
-          </div>
-          <div style={{ height: '0.25rem', background: 'rgba(255,255,255,0.08)', borderRadius: RADIUS.sm, overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: `${Math.min(100, (p.systemStrain.current / Math.max(p.systemStrain.max, 1)) * 100)}%`, background: p.systemStrain.current >= p.systemStrain.max ? 'var(--state-failure)' : 'var(--state-success)', borderRadius: RADIUS.sm }} />
           </div>
         </div>
       )}

@@ -1,0 +1,22 @@
+-- Map-scope the Encounter Deck roster (Prompt 12).
+--
+-- `adversaries`/`vehicles` are JSONB arrays with no fixed per-element schema,
+-- so there is no column to ALTER — `map_id` is a new optional key on each
+-- array element, added/read entirely in application code
+-- (AdversaryInstance.map_id / VehicleInstance.map_id in src/lib/adversaries.ts
+-- and src/lib/vehicles.ts). This migration exists to record that schema
+-- change for anyone reading the migration history, matching migration 005's
+-- own inline-comment convention for documenting JSONB element shape.
+--
+-- adversaries[] element gains:
+--   map_id: string | null   -- the maps.id this entry was added on; stamped
+--                           -- at add-time, never cleared by benching
+--                           -- (benching only deletes the map_tokens row)
+-- vehicles[] element gains the same map_id field.
+--
+-- NO BACKFILL: confirmed via read-only audit (Prompt 12 Step 0) that the only
+-- currently-active combat_encounters row has empty adversaries/vehicles
+-- arrays — there is no live roster data requiring a map_id value. Historical
+-- (is_active = false) rows are never read as "the current roster" by the
+-- app and are intentionally left with no map_id — they are not migrated.
+select 1;

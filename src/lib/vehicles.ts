@@ -26,12 +26,23 @@ export interface VehicleInstance {
   revealed:              boolean
   alignment:             'enemy' | 'allied_npc'
   token_image_url?:      string | null
+  /** The `maps.id` this entry was added on (Prompt 12) — stamped at add-time,
+   *  authoritative for both on-map and off-map (benched) entries; benching
+   *  only deletes the map_tokens row and must never clear this. */
+  map_id?:               string | null
 }
 
 // ── Canonical stats for OggDude vehicle weapon keys ───────────────────────────
 // Source: AoE Core Rulebook vehicle stat blocks + standard supplement tables.
 // Tractor beams and utility devices have damage 0 (they don't deal hull trauma).
-export interface VehicleWeaponEntry { name: string; damage: number; range: string; crit?: number }
+// skillKey: SWRPG skill key (matches adversaryAdapter.ts's SKILL_KEY_TO_CHAR/
+// SKILL_NAME_TO_KEY_REVERSE keys) that governs firing this weapon. Omitted on
+// every entry below because every vehicle-mounted weapon in this dataset (and
+// in RAW — Piloting governs maneuvering/chases, never weapon fire) uses
+// Gunnery; vehicleWeaponSkillKey() defaults to 'GUNN' so the lookup stays
+// weapon-driven instead of hardcoded in the caller, in case a future entry
+// ever needs to override it.
+export interface VehicleWeaponEntry { name: string; damage: number; range: string; crit?: number; skillKey?: string }
 const VEHICLE_WEAPON_STATS: Record<string, VehicleWeaponEntry> = {
   // Laser cannons
   LASERLT:           { name: 'Light Laser Cannon',           damage: 5,  range: 'Close',   crit: 3 },
@@ -103,6 +114,11 @@ export function vehicleWeaponDisplayName(key: string): string {
 /** Resolve the full stats entry for a vehicle weapon key, or undefined if unknown. */
 export function vehicleWeaponStats(key: string): VehicleWeaponEntry | undefined {
   return VEHICLE_WEAPON_STATS[key]
+}
+
+/** SWRPG skill key that governs firing a vehicle weapon — see VehicleWeaponEntry.skillKey. */
+export function vehicleWeaponSkillKey(key: string): string {
+  return VEHICLE_WEAPON_STATS[key]?.skillKey ?? 'GUNN'
 }
 
 /** All known vehicle weapon entries, sorted by display name — for use in editor dropdowns. */

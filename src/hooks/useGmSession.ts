@@ -278,6 +278,7 @@ export function useGmSession(params: {
     if (!stagingEncounter) return
     const size     = stagingGroupSizes[adv.id] ?? (adv.type === 'minion' ? 4 : 1)
     const instance = adversaryToInstance(adv, size)
+    instance.map_id = activeMapId ?? null
     const slotId   = crypto.randomUUID()
     const newSlot: InitiativeSlot = {
       id: slotId, type: 'npc', alignment,
@@ -291,13 +292,14 @@ export function useGmSession(params: {
       updated_at:       new Date().toISOString(),
     }).eq('id', stagingEncounter.id)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stagingEncounter, stagingGroupSizes])
+  }, [stagingEncounter, stagingGroupSizes, activeMapId])
 
   const stagingAddVehicleToEncounter = useCallback(async (
     vehicle: Vehicle, alignment: 'enemy' | 'allied_npc', successes = 0, advantages = 0
   ) => {
     if (!stagingEncounter) return
     const instance = vehicleToVehicleInstance(vehicle, alignment)
+    instance.map_id = activeMapId ?? null
     const slotId   = crypto.randomUUID()
     const newSlot: InitiativeSlot = {
       id: slotId, type: 'npc', alignment,
@@ -311,7 +313,7 @@ export function useGmSession(params: {
       updated_at:       new Date().toISOString(),
     }).eq('id', stagingEncounter.id)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stagingEncounter])
+  }, [stagingEncounter, activeMapId])
 
   return {
     sessionMode, combatRound, sessionBusy,

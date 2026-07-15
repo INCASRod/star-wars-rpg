@@ -1404,6 +1404,44 @@ i.ffi {
   border-color: var(--red);
 }
 
+/* ── EncounterDossier hero image upload (hover reveal) ─────────── */
+.dossier-hero-upload {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--hud-bg) 55%, transparent);
+  border: none;
+  cursor: pointer;
+  opacity: 0;
+  transition: var(--ease-quick);
+}
+
+.dossier-hero-art:hover .dossier-hero-upload {
+  opacity: 1;
+}
+
+.dossier-hero-upload:disabled {
+  cursor: not-allowed;
+}
+
+.dossier-hero-upload-label {
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: var(--space-2) var(--space-3);
+  border-radius: 2px;
+  border: 1px solid var(--hud-gold);
+  color: var(--hud-gold);
+  background: color-mix(in srgb, var(--hud-bg) 70%, transparent);
+}
+
+.dossier-hero-upload:hover:not(:disabled) .dossier-hero-upload-label {
+  background: color-mix(in srgb, var(--hud-gold) 18%, transparent);
+}
+
 /* ── EncounterDossier stats column ─────────────────────────────── */
 .dossier-sec-label {
   font-family: var(--font-body);
@@ -1465,6 +1503,23 @@ i.ffi {
 .dossier-attack-btn:focus-visible {
   outline: 2px solid var(--red);
   outline-offset: 2px;
+}
+
+/* Encounter Deck — inline library search-result cards (Prompt 3) */
+.lib-result-add:hover {
+  background: color-mix(in srgb, var(--hud-gold) 15%, transparent);
+}
+
+.lib-result-align-enemy:hover {
+  background: color-mix(in srgb, var(--red) 15%, transparent);
+}
+
+.lib-result-align-friend:hover {
+  background: color-mix(in srgb, var(--green) 15%, transparent);
+}
+
+.lib-result-offmap:hover {
+  background: color-mix(in srgb, var(--hud-gold) 15%, transparent);
 }
 
 /* ── CheckConsole (EncounterDossier check-console column) ────────── */
@@ -1625,3 +1680,162 @@ i.ffi {
   outline: 2px solid var(--hud-accent-purple);
   outline-offset: 2px;
 }
+
+/* ── Player Token Tooltip (Prompt 11) ──────────────────────────────────────
+   Portaled to document.body, so it always renders using :root's Ember
+   Tatooine defaults regardless of the player's own chosen HUD theme (a
+   data-theme override lives on PlayerHUDDesktop's own wrapper div, which a
+   body-level portal sits outside of). Static geometry only — all motion is
+   GSAP-driven inline from PlayerTokenTooltip.tsx, not CSS. */
+.ptt-br {
+  position: absolute;
+  width: 10px; height: 10px; /* corner bracket — px intentional, fixed decorative geometry */
+  border: 1.5px solid var(--hud-gold);
+  z-index: 1;
+  opacity: 0.85;
+}
+.ptt-br-tl { top: -3px; left: -3px;  border-right: none;  border-bottom: none; }
+.ptt-br-tr { top: -3px; right: -3px; border-left: none;   border-bottom: none; }
+.ptt-br-bl { bottom: -3px; left: -3px;  border-right: none; border-top: none; }
+.ptt-br-br { bottom: -3px; right: -3px; border-left: none;  border-top: none; }
+
+.ptt-frame {
+  position: relative;
+  background: color-mix(in srgb, var(--hud-panel) 94%, transparent);
+  border: 1px solid var(--hud-border-hi);
+  clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px);
+  overflow: hidden;
+}
+
+.ptt-roleline { height: 2px; }
+
+.ptt-art {
+  position: relative;
+  height: 108px; /* px intentional — fixed portrait geometry, ~65% of card height per mockup */
+  overflow: hidden;
+  background: var(--hud-surface-lo);
+}
+.ptt-art-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ptt-art-fallback {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+}
+.ptt-art::after {
+  content: '';
+  position: absolute; inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--hud-panel) 16%, transparent),
+    transparent 30%, transparent 46%,
+    color-mix(in srgb, var(--hud-panel) 72%, transparent) 82%,
+    color-mix(in srgb, var(--hud-panel) 95%, transparent)
+  );
+}
+.ptt-scan {
+  position: absolute; inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  /* scanline texture — approved game-mechanic/decorative overlay, matches mockup exactly */
+  background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(0,0,0,0.13) 3px 4px);
+}
+.ptt-sweep {
+  position: absolute; left: 0; right: 0;
+  top: -18%; height: 16%; /* holo sweep starting position — px-relative geometry, GSAP-animated */
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, var(--hud-accent) 35%, transparent) 45%,
+    color-mix(in srgb, var(--hud-accent) 75%, white 25%) 50%,
+    color-mix(in srgb, var(--hud-accent) 35%, transparent) 55%,
+    transparent
+  );
+}
+
+.ptt-tag {
+  position: absolute; top: var(--space-1); left: var(--space-1); z-index: 3;
+  max-width: calc(50% - 0.5rem);
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 2px 6px;
+  background: color-mix(in srgb, var(--hud-bg) 82%, transparent);
+  border: 1px solid var(--hud-border-hi);
+  border-radius: 2px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.ptt-ident {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 3;
+  padding: 0 var(--space-2) var(--space-1);
+}
+.ptt-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-body-sm);
+  line-height: 1.15;
+  color: #fff; /* fixed portrait-overlay text — must stay legible over any portrait image, not theme-driven */
+  text-shadow: 0 1px 5px rgba(0,0,0,0.95);
+  letter-spacing: 0.02em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ptt-body {
+  padding: var(--space-2) var(--space-2) var(--space-2);
+  display: flex; flex-direction: column; gap: var(--space-2);
+}
+
+.ptt-vrow { display: flex; flex-direction: column; gap: 3px; }
+.ptt-vrow-top { display: flex; justify-content: space-between; align-items: baseline; }
+.ptt-vrow-lbl {
+  font-size: var(--text-overline);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--hud-text-faint);
+}
+.ptt-vrow-num {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-body-sm);
+  color: var(--hud-text);
+}
+.ptt-vrow-num small { font-size: var(--text-overline); color: var(--hud-text-faint); font-weight: 400; }
+
+.ptt-vbar {
+  height: 4px;
+  background: color-mix(in srgb, black 55%, transparent);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.ptt-vbar i { display: block; height: 100%; border-radius: 2px; }
+.ptt-vbar-wound  { background: var(--state-wounds); }
+.ptt-vbar-strain { background: var(--state-strain); }
+
+.ptt-pips { display: flex; gap: 4px; align-items: center; }
+.ptt-pips-lbl {
+  font-size: var(--text-overline);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--hud-text-faint);
+  margin-right: auto;
+}
+.ptt-pip {
+  width: 9px; height: 11px; /* pip glyph — px intentional, die-identity/roster-style fixed geometry */
+  clip-path: polygon(50% 0, 100% 28%, 100% 100%, 0 100%, 0 28%);
+  background: var(--hud-gold);
+  opacity: 0.95;
+}
+.ptt-pip.dead { background: color-mix(in srgb, var(--hud-gold) 18%, transparent); }
+
+.ptt-notch { position: absolute; left: 50%; width: 12px; height: 7px; z-index: 1; }
+.ptt-notch-above { bottom: -7px; }
+.ptt-notch-below { top: -7px; transform: rotate(180deg); }

@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useEffect, useMemo, useRef, memo } from 'react'
-import { createPortal } from 'react-dom'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { C, FONT_RAJDHANI, FS_SM, FS_CAPTION } from './design-tokens'
-import { HUD, FONT_BODY, FONT_DISPLAY, FS, RADIUS, SP } from '@/lib/tokens'
+import { FONT_BODY, FONT_DISPLAY, FS, RADIUS, SP } from '@/lib/tokens'
 import { MapCanvas } from '@/components/map/MapCanvas'
 import { OpeningCrawlCanvas } from '@/components/map/OpeningCrawlCanvas'
 import { InitiativeStrip } from '@/components/player/InitiativeStrip'
+import { PlayerTokenTooltip, type PlayerTooltipEntity, type PlayerTooltipRole } from '@/components/player/PlayerTokenTooltip'
 import { HudAdversaryDrawer } from './HudAdversaryDrawer'
 import { HudSkillQuickList } from './HudSkillQuickList'
 import { fetchAdversaries, adversaryToInstance } from '@/lib/adversaries'
@@ -19,186 +19,6 @@ import type { CombatEncounter } from '@/lib/combat'
 import type { Character, WpnDisplay, HudSkill } from '@/lib/types'
 import type { RollResult } from './dice-engine'
 import type { ForcePowerDisplay } from './ForcePanel'
-
-/* ── Tooltip constants ──────────────────────────────────────── */
-const TOOLTIP_W  = 230
-const FS_OL      = 'var(--text-overline)'
-const CHAR_ABBRS = ['BR', 'AG', 'INT', 'CUN', 'WIL', 'PR'] as const
-const CHAR_KEYS  = ['brawn', 'agility', 'intellect', 'cunning', 'willpower', 'presence'] as const
-
-interface TooltipData {
-  x: number; y: number
-  name: string; typeLabel: string; typeColor: string
-  characteristics?: { brawn: number; agility: number; intellect: number; cunning: number; willpower: number; presence: number }
-  soak?: number | null
-  soakLabel?: string
-  defMelee?: number | null
-  defRanged?: number | null
-  wounds?: { current: number; max: number }
-  strain?: { current: number; max: number }
-  minionGroup?: { alive: number; total: number }
-  vehicleStats?: { silhouette: number; speed: number; handling: number; armor: number; defense: { fore: number; aft: number; port: number; starboard: number } }
-  hullTrauma?:  { current: number; max: number }
-  systemStrain?: { current: number; max: number }
-}
-
-const TokenTooltip = memo(function TokenTooltip(p: TooltipData) {
-  const vw   = typeof window !== 'undefined' ? window.innerWidth  : 1200
-  const vh   = typeof window !== 'undefined' ? window.innerHeight : 800
-  const left = Math.max(8, Math.min(p.x + 14, vw - TOOLTIP_W - 8))
-  const top  = Math.max(8, Math.min(p.y - 12, vh - 300))
-
-  return createPortal(
-    <div className="pointer-events-none" style={{
-      position: 'fixed', left, top, width: TOOLTIP_W, zIndex: 'var(--z-hud-supreme)',
-      background: 'rgba(6,13,9,0.97)',
-      border: `1px solid ${p.typeColor}44`,
-      borderRadius: '0.375rem',
-      boxShadow: `0 8px 32px rgba(0,0,0,0.85), 0 0 0 1px ${p.typeColor}18`,
-      backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-      padding: '0.625rem var(--space-3)',
-      fontFamily: FONT_RAJDHANI,
-    }}>
-      {/* Name + type badge */}
-      <div className="flex items-center" style={{ gap: '0.375rem', marginBottom: 'var(--space-2)' }}>
-        <div className="flex-1 overflow-hidden whitespace-nowrap" style={{ fontSize: FS_SM, fontWeight: 700, color: 'var(--hud-text)', textOverflow: 'ellipsis' }}>{p.name}</div>
-        <div className="shrink-0" style={{ fontSize: FS_OL, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: p.typeColor, background: `${p.typeColor}18`, border: `1px solid ${p.typeColor}35`, borderRadius: 3, padding: '1px 5px' }}>{p.typeLabel}</div>
-      </div>
-
-      {/* Characteristics grid */}
-      {p.characteristics && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 3, marginBottom: 'var(--space-2)' }}>
-          {CHAR_ABBRS.map((abbr, i) => (
-            <div key={abbr} className="flex flex-col items-center" style={{ gap: 1, background: 'rgba(255,255,255,0.04)', borderRadius: 3, padding: 'var(--space-1) 2px' }}>
-              <div style={{ fontSize: FS_OL, color: 'var(--hud-text-dim)', letterSpacing: '0.04em' }}>{abbr}</div>
-              <div style={{ fontSize: FS_SM, fontWeight: 700, color: HUD.gold }}>{p.characteristics![CHAR_KEYS[i]]}</div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Vehicle stat block: SIL / SPD / HDL / ARMOR + defense arcs */}
-      {p.vehicleStats && (() => {
-        const vs = p.vehicleStats!
-        const hdlStr = vs.handling > 0 ? `+${vs.handling}` : String(vs.handling)
-        const topRow = [{ l: 'SIL', v: vs.silhouette }, { l: 'SPD', v: vs.speed }, { l: 'HDL', v: hdlStr }, { l: 'ARMOR', v: vs.armor }]
-        const arcRow = [{ l: 'DEF F', v: vs.defense.fore }, { l: 'DEF A', v: vs.defense.aft }, { l: 'DEF P', v: vs.defense.port }, { l: 'DEF S', v: vs.defense.starboard }]
-        const cell = (l: string, v: string | number, gold = false) => (
-          <div key={l} className="flex flex-col items-center" style={{ gap: 1, background: 'rgba(255,255,255,0.04)', borderRadius: 3, padding: 'var(--space-1) 2px' }}>
-            <div style={{ fontSize: FS_OL, color: 'var(--hud-text-dim)', letterSpacing: '0.04em' }}>{l}</div>
-            <div style={{ fontSize: FS_SM, fontWeight: 700, color: gold ? HUD.gold : 'var(--hud-text)' }}>{v}</div>
-          </div>
-        )
-        return (
-          <>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 3, marginBottom: 3 }}>
-              {topRow.map(({ l, v }) => cell(l, v, true))}
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 3, marginBottom: 'var(--space-2)' }}>
-              {arcRow.map(({ l, v }) => cell(l, v))}
-            </div>
-          </>
-        )
-      })()}
-
-      {/* Soak + Defense */}
-      {(p.soak != null || p.defMelee != null || p.defRanged != null) && (
-        <div className="flex" style={{ gap: 'var(--space-1)', marginBottom: 'var(--space-2)' }}>
-          {p.soak != null && (
-            <div className="flex-1 flex flex-col items-center" style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 3, padding: 'var(--space-1)' }}>
-              <div style={{ fontSize: FS_OL, color: 'var(--hud-text-dim)', letterSpacing: '0.04em' }}>{p.soakLabel ?? 'SOAK'}</div>
-              <div style={{ fontSize: FS_SM, fontWeight: 700, color: 'var(--hud-text)' }}>{p.soak}</div>
-            </div>
-          )}
-          {p.defMelee != null && (
-            <div className="flex-1 flex flex-col items-center" style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 3, padding: 'var(--space-1)' }}>
-              <div style={{ fontSize: FS_OL, color: 'var(--hud-text-dim)', letterSpacing: '0.04em' }}>DEF M</div>
-              <div style={{ fontSize: FS_SM, fontWeight: 700, color: 'var(--hud-text)' }}>{p.defMelee}</div>
-            </div>
-          )}
-          {p.defRanged != null && (
-            <div className="flex-1 flex flex-col items-center" style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 3, padding: 'var(--space-1)' }}>
-              <div style={{ fontSize: FS_OL, color: 'var(--hud-text-dim)', letterSpacing: '0.04em' }}>DEF R</div>
-              <div style={{ fontSize: FS_SM, fontWeight: 700, color: 'var(--hud-text)' }}>{p.defRanged}</div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Minion group count */}
-      {p.minionGroup && (
-        <div style={{ marginBottom: '0.375rem' }}>
-          <div className="flex justify-between" style={{ marginBottom: 3 }}>
-            <span style={{ fontSize: FS_OL, color: 'var(--hud-text-dim)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Group</span>
-            <span style={{ fontSize: FS_OL, fontWeight: 700, color: p.minionGroup.alive === 0 ? '#E05050' : 'var(--hud-text)' }}>
-              {p.minionGroup.alive}/{p.minionGroup.total} alive
-            </span>
-          </div>
-          <div className="flex" style={{ gap: 3 }}>
-            {Array.from({ length: p.minionGroup.total }).map((_, i) => (
-              <span key={i} style={{ fontSize: 9, color: i < p.minionGroup!.alive ? '#E05252' : 'rgba(255,255,255,0.15)' }}>
-                {i < p.minionGroup!.alive ? '■' : '□'}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Wounds bar */}
-      {p.wounds && (
-        <div style={{ marginBottom: p.strain ? '0.375rem' : 0 }}>
-          <div className="flex justify-between" style={{ marginBottom: 3 }}>
-            <span style={{ fontSize: FS_OL, color: 'var(--hud-text-dim)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Wounds</span>
-            <span style={{ fontSize: FS_OL, fontWeight: 700, color: p.wounds.current >= p.wounds.max ? '#E05050' : 'var(--hud-text)' }}>{p.wounds.current}/{p.wounds.max}</span>
-          </div>
-          <div className="overflow-hidden" style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2 }}>
-            <div style={{ height: '100%', width: `${Math.min(100, (p.wounds.current / Math.max(p.wounds.max, 1)) * 100)}%`, background: p.wounds.current >= p.wounds.max ? '#E05050' : 'var(--hud-gold)', borderRadius: 2 }} />
-          </div>
-        </div>
-      )}
-
-      {/* Strain bar */}
-      {p.strain && (
-        <div style={{ marginTop: p.wounds ? '0.375rem' : 0 }}>
-          <div className="flex justify-between" style={{ marginBottom: 3 }}>
-            <span style={{ fontSize: FS_OL, color: 'var(--hud-text-dim)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Strain</span>
-            <span style={{ fontSize: FS_OL, fontWeight: 700, color: p.strain.current >= p.strain.max ? '#E05050' : 'var(--hud-text)' }}>{p.strain.current}/{p.strain.max}</span>
-          </div>
-          <div className="overflow-hidden" style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2 }}>
-            <div style={{ height: '100%', width: `${Math.min(100, (p.strain.current / Math.max(p.strain.max, 1)) * 100)}%`, background: p.strain.current >= p.strain.max ? '#E05050' : 'var(--state-success)', borderRadius: 2 }} />
-          </div>
-        </div>
-      )}
-
-      {/* Hull Trauma bar (vehicles) */}
-      {p.hullTrauma && (
-        <div style={{ marginTop: (p.wounds || p.strain) ? '0.375rem' : 0 }}>
-          <div className="flex justify-between" style={{ marginBottom: 3 }}>
-            <span style={{ fontSize: FS_OL, color: 'var(--hud-text-dim)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Hull Trauma</span>
-            <span style={{ fontSize: FS_OL, fontWeight: 700, color: p.hullTrauma.current >= p.hullTrauma.max ? '#E05050' : 'var(--hud-text)' }}>{p.hullTrauma.current}/{p.hullTrauma.max}</span>
-          </div>
-          <div className="overflow-hidden" style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2 }}>
-            <div style={{ height: '100%', width: `${Math.min(100, (p.hullTrauma.current / Math.max(p.hullTrauma.max, 1)) * 100)}%`, background: p.hullTrauma.current >= p.hullTrauma.max ? '#E05050' : 'var(--hud-gold)', borderRadius: 2 }} />
-          </div>
-        </div>
-      )}
-
-      {/* System Strain bar (vehicles) */}
-      {p.systemStrain && (
-        <div style={{ marginTop: p.hullTrauma ? '0.375rem' : 0 }}>
-          <div className="flex justify-between" style={{ marginBottom: 3 }}>
-            <span style={{ fontSize: FS_OL, color: 'var(--hud-text-dim)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Sys Strain</span>
-            <span style={{ fontSize: FS_OL, fontWeight: 700, color: p.systemStrain.current >= p.systemStrain.max ? '#E05050' : 'var(--hud-text)' }}>{p.systemStrain.current}/{p.systemStrain.max}</span>
-          </div>
-          <div className="overflow-hidden" style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2 }}>
-            <div style={{ height: '100%', width: `${Math.min(100, (p.systemStrain.current / Math.max(p.systemStrain.max, 1)) * 100)}%`, background: p.systemStrain.current >= p.systemStrain.max ? '#E05050' : 'var(--state-success)', borderRadius: 2 }} />
-          </div>
-        </div>
-      )}
-    </div>,
-    document.body,
-  )
-})
 
 /* ── Component ─────────────────────────────────────────────── */
 interface HudSessionTabProps {
@@ -244,7 +64,7 @@ export function HudSessionTab({
     if (isAdversariesControlled) onAdversariesOpenChange?.(v)
     else setInternalAdversaryDrawerOpen(v)
   }
-  const [tokenHoverInfo,        setTokenHoverInfo]        = useState<{ tokenId: string; x: number; y: number } | null>(null)
+  const [tokenHoverInfo,        setTokenHoverInfo]        = useState<{ tokenId: string; rect: DOMRect } | null>(null)
   const initiativeBarRef = useRef<HTMLDivElement>(null)
   const [sessionCardCollapsed,  setSessionCardCollapsed]  = useState<Record<string, boolean>>({})
   const [advStatCache,          setAdvStatCache]          = useState<Map<string, AdversaryInstance>>(new Map())
@@ -300,7 +120,13 @@ export function HudSessionTab({
 
   const tokensById = useMemo(() => new Map(visibleMapTokens.map(t => [t.id, t])), [visibleMapTokens])
 
-  const tooltipProps = useMemo((): TooltipData | null => {
+  // Prompt 11 — image-first player tooltip. "No soak, no defenses, no
+  // skills, no weapons, no abilities" per the mockup: wounds/strain (or
+  // minion pips, or hull/sys strain for vehicles) only. Portrait is the
+  // token's own token_image_url — the same shared identity image already
+  // drawn on the map disc/rectangle, dossier, and roster card; no separate
+  // image system for this card.
+  const tooltipEntity = useMemo((): PlayerTooltipEntity | null => {
     if (!tokenHoverInfo) return null
     const token = tokensById.get(tokenHoverInfo.tokenId)
     if (!token) return null
@@ -309,39 +135,32 @@ export function HudSessionTab({
     if (token.participant_type === 'pc' && token.character_id) {
       const char = allChars.find(c => c.id === token.character_id)
       if (char) return {
-        x: tokenHoverInfo.x, y: tokenHoverInfo.y,
-        name: char.name, typeLabel: 'PC', typeColor: HUD.gold,
-        characteristics: { brawn: char.brawn, agility: char.agility, intellect: char.intellect, cunning: char.cunning, willpower: char.willpower, presence: char.presence },
-        soak: char.soak,
-        defMelee: char.defense_melee,
-        defRanged: char.defense_ranged,
-        wounds: { current: char.wound_current, max: char.wound_threshold },
-        strain: { current: char.strain_current, max: char.strain_threshold },
+        key: token.id, name: char.name, role: 'pc',
+        imageUrl: token.token_image_url ?? null,
+        wounds: { current: char.wound_current, max: char.wound_threshold, label: 'WOUNDS' },
+        strain: { current: char.strain_current, max: char.strain_threshold, label: 'STRAIN' },
       }
     }
 
-    // Adversary / vehicle linked to an active encounter slot — show live vitals
+    // Adversary / vehicle linked to an active encounter slot — live vitals
     if (token.slot_key && encounter) {
       const slot = encounter.initiative_slots.find(s => s.id === token.slot_key)
       if (slot?.adversaryInstanceId) {
         const adv = encounter.adversaries.find(a => a.instanceId === slot.adversaryInstanceId)
         if (adv) {
-          const color    = adv.type === 'minion' ? '#E05252' : adv.type === 'nemesis' ? 'var(--state-activated)' : '#FF9800'
+          const role: PlayerTooltipRole = slot.alignment === 'allied_npc' ? 'friendly' : 'enemy'
           const woundsMax = adv.type === 'minion' && adv.groupSize
             ? (adv.woundThreshold ?? 0) * adv.groupSize
             : adv.woundThreshold
           return {
-            x: tokenHoverInfo.x, y: tokenHoverInfo.y,
-            name: adv.name ?? token.label ?? '?',
-            typeLabel: adv.type.charAt(0).toUpperCase() + adv.type.slice(1),
-            typeColor: color,
-            characteristics: adv.characteristics,
-            soak: adv.soak,
-            defMelee: adv.defense?.melee,
-            defRanged: adv.defense?.ranged,
-            wounds: (adv.woundThreshold && woundsMax) ? { current: adv.woundsCurrent ?? 0, max: woundsMax } : undefined,
-            strain: adv.type !== 'minion' && adv.strainThreshold ? { current: adv.strainCurrent ?? 0, max: adv.strainThreshold } : undefined,
-            minionGroup: adv.type === 'minion' && adv.groupSize != null
+            key: token.id, name: adv.name ?? token.label ?? '?', role,
+            typeTag: adv.type.toUpperCase(),
+            imageUrl: token.token_image_url ?? null,
+            wounds: { current: adv.woundsCurrent ?? 0, max: woundsMax ?? 0, label: 'WOUNDS' },
+            strain: adv.type !== 'minion' && adv.strainThreshold
+              ? { current: adv.strainCurrent ?? 0, max: adv.strainThreshold, label: 'STRAIN' }
+              : undefined,
+            minionPips: adv.type === 'minion' && adv.groupSize != null
               ? { alive: adv.groupRemaining ?? 0, total: adv.groupSize }
               : undefined,
           }
@@ -350,12 +169,12 @@ export function HudSessionTab({
       if (slot?.vehicleInstanceId) {
         const veh = encounter.vehicles?.find(v => v.instanceId === slot.vehicleInstanceId)
         if (veh) return {
-          x: tokenHoverInfo.x, y: tokenHoverInfo.y,
-          name: veh.name, typeLabel: 'Vehicle',
-          typeColor: veh.alignment === 'allied_npc' ? 'var(--state-success)' : '#E05252',
-          vehicleStats: { silhouette: veh.silhouette, speed: veh.speed, handling: veh.handling, armor: veh.armor, defense: veh.defense },
-          hullTrauma:   { current: veh.hullTraumaCurrent,   max: veh.hullTraumaThreshold },
-          systemStrain: { current: veh.systemStrainCurrent,  max: veh.systemStrainThreshold },
+          key: token.id, name: veh.name,
+          role: veh.alignment === 'allied_npc' ? 'friendly' : 'enemy',
+          typeTag: 'VEHICLE',
+          imageUrl: token.token_image_url ?? null,
+          wounds: { current: veh.hullTraumaCurrent, max: veh.hullTraumaThreshold, label: 'HULL TRAUMA' },
+          strain: { current: veh.systemStrainCurrent, max: veh.systemStrainThreshold, label: 'SYS STRAIN' },
         }
       }
     }
@@ -364,18 +183,18 @@ export function HudSessionTab({
     if (token.participant_type === 'adversary' && token.label) {
       const cached = advStatCache.get(token.label)
       if (cached) {
-        const color = cached.type === 'minion' ? '#E05252' : cached.type === 'nemesis' ? 'var(--state-activated)' : '#FF9800'
+        const role: PlayerTooltipRole = token.alignment === 'allied_npc' ? 'friendly' : 'enemy'
         return {
-          x: tokenHoverInfo.x, y: tokenHoverInfo.y,
-          name: token.label,
-          typeLabel: cached.type.charAt(0).toUpperCase() + cached.type.slice(1),
-          typeColor: color,
-          characteristics: cached.characteristics,
-          soak: cached.soak,
-          defMelee: cached.defense?.melee,
-          defRanged: cached.defense?.ranged,
-          wounds: cached.woundThreshold ? { current: 0, max: cached.woundThreshold } : undefined,
-          strain: cached.type !== 'minion' && cached.strainThreshold ? { current: 0, max: cached.strainThreshold } : undefined,
+          key: token.id, name: token.label, role,
+          typeTag: cached.type.toUpperCase(),
+          imageUrl: token.token_image_url ?? null,
+          wounds: { current: 0, max: cached.woundThreshold ?? 0, label: 'WOUNDS' },
+          strain: cached.type !== 'minion' && cached.strainThreshold
+            ? { current: 0, max: cached.strainThreshold, label: 'STRAIN' }
+            : undefined,
+          minionPips: cached.type === 'minion' && cached.groupSize != null
+            ? { alive: cached.groupRemaining ?? cached.groupSize, total: cached.groupSize }
+            : undefined,
         }
       }
     }
@@ -384,18 +203,22 @@ export function HudSessionTab({
     if (token.token_shape === 'rectangle' && token.label) {
       const staticVeh = vehStatCache.get(token.label)
       if (staticVeh) return {
-        x: tokenHoverInfo.x, y: tokenHoverInfo.y,
-        name: token.label,
-        typeLabel: 'Vehicle',
-        typeColor: '#E05252',
-        vehicleStats: { silhouette: staticVeh.silhouette, speed: staticVeh.speed, handling: staticVeh.handling, armor: staticVeh.armor, defense: { fore: staticVeh.defFore, aft: staticVeh.defAft, port: staticVeh.defPort, starboard: staticVeh.defStarboard } },
-        hullTrauma:   { current: 0, max: staticVeh.hullTrauma },
-        systemStrain: { current: 0, max: staticVeh.systemStrain },
+        key: token.id, name: token.label,
+        role: token.alignment === 'allied_npc' ? 'friendly' : 'enemy',
+        typeTag: 'VEHICLE',
+        imageUrl: token.token_image_url ?? null,
+        wounds: { current: 0, max: staticVeh.hullTrauma, label: 'HULL TRAUMA' },
+        strain: { current: 0, max: staticVeh.systemStrain, label: 'SYS STRAIN' },
       }
     }
 
-    // Last resort — name + alignment only
-    return { x: tokenHoverInfo.x, y: tokenHoverInfo.y, name: token.label ?? '?', typeLabel: token.alignment ?? 'token', typeColor: HUD.gold }
+    // Last resort — name only
+    return {
+      key: token.id, name: token.label ?? '?',
+      role: token.alignment === 'allied_npc' ? 'friendly' : 'enemy',
+      imageUrl: token.token_image_url ?? null,
+      wounds: { current: 0, max: 1, label: 'WOUNDS' },
+    }
   }, [tokenHoverInfo, tokensById, allChars, encounter, advStatCache, vehStatCache])
 
   return (
@@ -449,8 +272,8 @@ export function HudSessionTab({
           gridSize={visibleMap.grid_size ?? 50}
           tokenScale={visibleMap.token_scale ?? 1}
           bottomOverlayRef={initiativeBarRef}
-          onTokenHover={(id, x, y) => setTokenHoverInfo({ tokenId: id, x, y })}
-          onTokenHoverEnd={() => setTokenHoverInfo(null)}
+          onTokenHover={(id, _x, _y, rect) => setTokenHoverInfo({ tokenId: id, rect })}
+          onTokenHoverEnd={(id) => setTokenHoverInfo(prev => (prev?.tokenId === id ? null : prev))}
         />
       ) : (
         <div className="flex items-center justify-center h-full flex-col" style={{ gap: 'var(--space-3)', background: 'var(--hud-bg)' }}>
@@ -499,8 +322,8 @@ export function HudSessionTab({
         />
       )}
 
-      {/* ── Token hover tooltip — portal to body, always shown for visible tokens ── */}
-      {tooltipProps && <TokenTooltip {...tooltipProps} />}
+      {/* ── Token hover tooltip — portal to body, holographic card (Prompt 11) ── */}
+      <PlayerTokenTooltip entity={tooltipEntity} tokenRect={tokenHoverInfo?.rect ?? null} />
     </div>
   )
 }

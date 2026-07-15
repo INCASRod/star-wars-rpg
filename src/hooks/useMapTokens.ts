@@ -24,7 +24,25 @@ export interface MapToken {
   updated_at: string
 }
 
-export function useMapTokens(mapId: string | null) {
+export interface UseMapTokensOptions {
+  /**
+   * Player-facing callers only. Filters is_visible=true server-side on the
+   * initial fetch and drops hidden rows from realtime updates, so a hidden
+   * token's data never sits resident in the client's React state at rest
+   * (Prompt 11 — the prior client-side `.filter(t => t.is_visible)` pattern
+   * pulled every row, hidden included, into state first and only hid it
+   * visually). This does NOT close the underlying gap: map_tokens RLS is
+   * `USING (true)` (032_maps.sql) with no session-aware policy, so Realtime
+   * itself still evaluates that permissive policy and could broadcast a
+   * single hidden-row UPDATE payload over the wire before this filters it
+   * out client-side. Closing that fully needs an RLS policy change — a
+   * migration, out of scope here.
+   */
+  visibleOnly?: boolean
+}
+
+export function useMapTokens(mapId: string | null, options: UseMapTokensOptions = {}) {
+  const { visibleOnly = false } = options
   const supabase = useMemo(() => createClient(), [])
   // Unique suffix per hook instance so multiple callers with the same mapId
   // don't share a Realtime channel on the singleton client — unsubscribing one
@@ -35,11 +53,9 @@ export function useMapTokens(mapId: string | null) {
   useEffect(() => {
     if (!mapId) { setTokens([]); return }
 
-    supabase
-      .from('map_tokens')
-      .select('*')
-      .eq('map_id', mapId)
-      .then(({ data }) => { if (data) setTokens(data as MapToken[]) })
+    let query = supabase.from('map_tokens').select('*').eq('map_id', mapId)
+    if (visibleOnly) query = query.eq('is_visible', true)
+    query.then(({ data }) => { if (data) setTokens(data as MapToken[]) })
 
     const ch = supabase
       .channel(`map-tokens-${mapId}-${instanceId}`)
@@ -50,11 +66,19 @@ export function useMapTokens(mapId: string | null) {
           const { eventType, new: n, old: o } = payload
           setTokens(prev => {
             if (eventType === 'INSERT') {
-            const incoming = n as MapToken
-            return prev.some(t => t.id === incoming.id) ? prev : [...prev, incoming]
-          }
-            if (eventType === 'UPDATE') return prev.map(t =>
-              t.id === (n as MapToken).id ? n as MapToken : t)
+              const incoming = n as MapToken
+              if (visibleOnly && !incoming.is_visible) return prev
+              return prev.some(t => t.id === incoming.id) ? prev : [...prev, incoming]
+            }
+            if (eventType === 'UPDATE') {
+              const incoming = n as MapToken
+              // A token flipping to hidden must disappear entirely for
+              // visibleOnly callers, not just re-render with is_visible:false.
+              if (visibleOnly && !incoming.is_visible) return prev.filter(t => t.id !== incoming.id)
+              return prev.some(t => t.id === incoming.id)
+                ? prev.map(t => t.id === incoming.id ? incoming : t)
+                : (visibleOnly ? [...prev, incoming] : prev)
+            }
             if (eventType === 'DELETE') return prev.filter(t =>
               t.id !== (o as { id: string }).id)
             return prev
@@ -64,7 +88,7 @@ export function useMapTokens(mapId: string | null) {
       .subscribe()
 
     return () => { supabase.removeChannel(ch) }
-  }, [mapId]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [mapId, visibleOnly]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const moveToken = useCallback(async (id: string, x: number, y: number) => {
     // Optimistic update

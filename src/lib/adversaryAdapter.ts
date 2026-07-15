@@ -57,12 +57,23 @@ const SKILL_NAME_TO_KEY: Record<string, string> = {
 }
 
 // Reverse map: skill_key → display name (for building skillRanks from CharacterSkill[])
-const SKILL_NAME_TO_KEY_REVERSE: Record<string, string> = Object.fromEntries(
+// Exported — confirmed via direct query that AdversaryInstance.skillRanks is
+// actually keyed in THIS colon-separated format ("Ranged: Heavy": 1), not
+// ref_skills.name's dash format ("Ranged - Heavy") — a pre-existing naming
+// mismatch between the two. CheckConsole.tsx's Combat Check tab (Prompt 9)
+// needs this exact reverse map to read a weapon's governing-skill rank
+// straight from adv.skillRanks; going through ref_skills.name lookup instead
+// silently returns rank 0 for every compound-name skill (Ranged (Heavy)/
+// (Light), Piloting (Planetary)/(Space)).
+export const SKILL_NAME_TO_KEY_REVERSE: Record<string, string> = Object.fromEntries(
   Object.entries(SKILL_NAME_TO_KEY).map(([name, key]) => [key, name])
 )
 
 // ── Skill key → governing characteristic 2-letter key ────────────────────────
-const SKILL_KEY_TO_CHAR: Record<string, string> = {
+// Exported for the same reason as SKILL_NAME_TO_KEY_REVERSE above — lets
+// CheckConsole.tsx resolve a weapon's characteristic without going through
+// ref_skills.name (see that comment for why that lookup is unreliable here).
+export const SKILL_KEY_TO_CHAR: Record<string, string> = {
   'ATHL':      'BR',
   'BRAWL':     'BR',
   'LTSABER':   'BR',

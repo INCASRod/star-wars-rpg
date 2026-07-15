@@ -17,6 +17,9 @@ After reading docs/architecture.md, keep it up to date. If any task adds, remove
 
 All design tokens live in `src/lib/tokens.ts`. This is the only place where colors, font sizes, spacing, z-index, border-radius, shadows, and transitions are defined. Never define a color, size, or spacing value in a component file.
 
+### Debugging
+For visual/rendering bugs, use the Playwright harness to verify against the running app before proposing a fix; do not fix visual bugs from static analysis alone.
+
 ```ts
 import { COLOR, HUD, FS, SP, RADIUS, Z, SHADOW, EASE, CHAR_COLOR, DICE_META, SYM } from '@/lib/tokens'
 ```

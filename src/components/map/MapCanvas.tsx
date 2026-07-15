@@ -10,6 +10,17 @@ import { attachTokenHover, onTokenPointerOver, onTokenPointerOut, destroyTokenHo
 // Pixi.js v7 — loaded dynamically to avoid SSR issues
 let PIXI: typeof import('pixi.js') | null = null
 
+// ── Prompt 13 diagnostic — OFF by default ───────────────────────────────────
+// Flip to true locally to (1) draw each token's actual hitArea as a magenta
+// translucent overlay directly on the canvas, and (2) console.log the full
+// coordinate-mapping bundle (hitArea local bounds, container.getBounds()
+// global bounds, canvas getBoundingClientRect, devicePixelRatio, renderer
+// resolution/screen size, container clientWidth/Height) on every pointerover.
+// Compare the drawn overlay against the visually rendered token: if the
+// overlay is solid and lines up with the token but hover still misses inside
+// it, the bug is upstream in event/coordinate mapping, not hitArea geometry.
+const DEV_DEBUG_HOVER = false
+
 const BORDER_COLOURS: Record<string, number> = {
   pc:          0xC8AA50,  // gold
   allied_npc:  0x5AAAE0,  // blue
@@ -37,8 +48,19 @@ export interface MapCanvasProps {
   tokenScale?:         number                        // GM-only visual scale multiplier; players always see 1.0
   initialScale?:       number                        // stage zoom applied once on first load (default 1.0)
   bottomOverlayRef?:   React.RefObject<HTMLElement | null>  // ref to element at the bottom; its height shifts the initial vertical centre upward
-  onTokenHover?:       (tokenId: string, screenX: number, screenY: number) => void
-  onTokenHoverEnd?:    () => void
+  // tokenRect is the token's true screen-space bounding box (Pixi container.getBounds()
+  // translated into page coordinates) — screenX/screenY alone is just the raw pointer
+  // entry point, which varies by which edge the cursor crossed first; a true rect is
+  // needed to anchor a tooltip's notch to the token's actual centre (Prompt 11).
+  onTokenHover?:       (tokenId: string, screenX: number, screenY: number, tokenRect: DOMRect) => void
+  // tokenId identifies which token this "leaving" event is for. The 60ms
+  // debounce below (per-token closure) means a hover-end can arrive AFTER
+  // the pointer has already landed on a different token — consumers must
+  // check this id against whatever they currently think is hovered and
+  // treat a mismatch as stale/no-op, not unconditionally clear (Prompt 14 —
+  // this is what made quick hover-hopping between tokens show no tooltip
+  // at all: token A's delayed hide fired after token B's show and wiped it).
+  onTokenHoverEnd?:    (tokenId: string) => void
   onTokenDragStart?:   (tokenId: string) => void
   onTokenDragEnd?:     (tokenId: string) => void
   onTokenClick?:       (tokenId: string, sourceRect: DOMRect) => void
@@ -46,6 +68,11 @@ export interface MapCanvasProps {
   // Encounter Deck's open/close animation changes the map area's height) —
   // the ResizeObserver only resizes the renderer, it never recentres the map.
   recentreSignal?:     number
+  // Token id whose existing hover glow (tokenHover.ts) should be driven
+  // programmatically — e.g. from a deck card hover, not a real pointer
+  // event. Reuses onTokenPointerOver/onTokenPointerOut as-is; no second
+  // glow effect.
+  highlightedTokenId?: string | null
 }
 
 export const MapCanvas = memo(function MapCanvas({
@@ -53,7 +80,7 @@ export const MapCanvas = memo(function MapCanvas({
   onTokenMove, gridEnabled, gridSize, onTokenContextMenu,
   tokenScale = 1, initialScale = 1, bottomOverlayRef,
   onTokenHover, onTokenHoverEnd, onTokenDragStart, onTokenDragEnd, onTokenClick,
-  recentreSignal,
+  recentreSignal, highlightedTokenId,
 }: MapCanvasProps) {
   const containerRef       = useRef<HTMLDivElement>(null)
   const appRef             = useRef<InstanceType<typeof import('pixi.js').Application> | null>(null)
@@ -76,6 +103,28 @@ export const MapCanvas = memo(function MapCanvas({
   }, [])
   const tokensRef          = useRef<Map<string, InstanceType<typeof import('pixi.js').Container>>>(new Map())
   const draggingTokenIdRef = useRef<string | null>(null)
+
+  // Programmatic highlight (Prompt 5 — card hover → token glow). Reuses
+  // onTokenPointerOver/onTokenPointerOut exactly as the real pointer path
+  // does; this effect only tracks which token was highlighted last so it
+  // can be cleared before applying a new one (or on unmount/prop clear),
+  // same "always clear the previous one" shape as the real hover path's
+  // pointerout handler — never depends on a matching pointerout firing.
+  const prevHighlightedRef = useRef<string | null>(null)
+  useEffect(() => {
+    const app = appRef.current
+    if (!app) return
+    const prevId = prevHighlightedRef.current
+    if (prevId && prevId !== highlightedTokenId) {
+      const prevContainer = tokensRef.current.get(prevId)
+      if (prevContainer) onTokenPointerOut(prevContainer, app.ticker)
+    }
+    if (highlightedTokenId) {
+      const container = tokensRef.current.get(highlightedTokenId)
+      if (container) onTokenPointerOver(container, app.ticker)
+    }
+    prevHighlightedRef.current = highlightedTokenId ?? null
+  }, [highlightedTokenId])
 
   const wipeInProgress = useRef(false)
 
@@ -543,8 +592,8 @@ function syncTokens(
   currentCharId:        string | null,
   onMoveRef:            React.MutableRefObject<(id: string, x: number, y: number) => void>,
   onContextRef:         React.MutableRefObject<((id: string, e: MouseEvent) => void) | undefined>,
-  onHoverRef:           React.MutableRefObject<((id: string, x: number, y: number) => void) | undefined>,
-  onHoverEndRef:        React.MutableRefObject<(() => void) | undefined>,
+  onHoverRef:           React.MutableRefObject<((id: string, x: number, y: number, tokenRect: DOMRect) => void) | undefined>,
+  onHoverEndRef:        React.MutableRefObject<((tokenId: string) => void) | undefined>,
   onDragStartRef:       React.MutableRefObject<((id: string) => void) | undefined>,
   onDragEndRef:         React.MutableRefObject<((id: string) => void) | undefined>,
   onClickRef:           React.MutableRefObject<((id: string, sourceRect: DOMRect) => void) | undefined>,
@@ -632,8 +681,8 @@ function buildTokenSprite(
   offsetY:             number,
   onMoveRef:           React.MutableRefObject<(id: string, x: number, y: number) => void>,
   onContextRef:        React.MutableRefObject<((id: string, e: MouseEvent) => void) | undefined>,
-  onHoverRef:          React.MutableRefObject<((id: string, x: number, y: number) => void) | undefined>,
-  onHoverEndRef:       React.MutableRefObject<(() => void) | undefined>,
+  onHoverRef:          React.MutableRefObject<((id: string, x: number, y: number, tokenRect: DOMRect) => void) | undefined>,
+  onHoverEndRef:       React.MutableRefObject<((tokenId: string) => void) | undefined>,
   onDragStartRef:      React.MutableRefObject<((id: string) => void) | undefined>,
   onDragEndRef:        React.MutableRefObject<((id: string) => void) | undefined>,
   onClickRef:          React.MutableRefObject<((id: string, sourceRect: DOMRect) => void) | undefined>,
@@ -850,17 +899,52 @@ function buildTokenSprite(
   const lblGroup = new px.Container()
   lblGroup.addChild(lblBg, lbl)
   lblGroup.zIndex = 4
+  c.addChild(lblGroup) // added BEFORE the first applyLabelScale call below, so getLocalBounds() sees it
 
   // Keeps label at constant screen size and a fixed 4px gap below the ring.
   const applyLabelScale = (s: number) => {
     lblGroup.scale.set(1 / s)
     lblGroup.y = RADIUS + (4 + lblH / 2) / s
+    // Explicit hitArea spanning the disc/rect through the label pill below it —
+    // an explicit hitArea makes Pixi test this one shape for the whole
+    // container instead of hit-testing each child graphic separately, which
+    // was unreliable in practice (hover only fired over the name label, not
+    // the disc itself). Computed from Pixi's own getLocalBounds() rather than
+    // hand-rolled geometry — a manual rect here previously shrank the
+    // hoverable region to near-nothing. Recomputed here (not just at build
+    // time) since this fn also re-runs whenever tokenScale changes without a
+    // full sprite rebuild.
+    const b = c.getLocalBounds()
+    const PAD = 4 // px intentional — small buffer so cursor jitter right at the edge doesn't repeatedly cross the boundary
+    const hx = b.x - PAD, hy = b.y - PAD, hw = b.width + PAD * 2, hh = b.height + PAD * 2
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(c as any).hitArea = new px.Rectangle(hx, hy, hw, hh)
+
+    // Prompt 13 Step 0 diagnostic — draws the ACTUAL hitArea as a visible
+    // overlay so it can be compared against the rendered token. Off by
+    // default (DEV_DEBUG_HOVER = false above); toggle that const to true to
+    // see it. Reuses/redraws a single child rather than stacking a new
+    // Graphics on every rescale.
+    if (DEV_DEBUG_HOVER) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let dbg = (c as any).__debugHitRect as InstanceType<typeof import('pixi.js').Graphics> | undefined
+      if (!dbg) {
+        dbg = new px.Graphics()
+        dbg.zIndex = 999
+        c.addChild(dbg)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(c as any).__debugHitRect = dbg
+      }
+      dbg.clear()
+      dbg.beginFill(0xff00ff, 0.25)
+      dbg.lineStyle(1, 0xff00ff, 1)
+      dbg.drawRect(hx, hy, hw, hh)
+      dbg.endFill()
+    }
   }
   applyLabelScale(tokenScale)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(c as any).__applyLabelScale = applyLabelScale
-
-  c.addChild(lblGroup)
 
   // Position using map image bounds (not canvas bounds)
   c.x = offsetX + token.x * mapW
@@ -901,7 +985,24 @@ function buildTokenSprite(
     if (!onHoverRef.current) return
     const rect = containerRef.current?.getBoundingClientRect()
     if (!rect) return
-    onHoverRef.current(token.id, rect.left + e.globalX, rect.top + e.globalY)
+    // getBounds() is Pixi's own global (renderer-space) bounding box — it already
+    // accounts for stage zoom/pan/scale, so this stays correct at any camera state.
+    const b = (c as any).getBounds()
+    const tokenRect = new DOMRect(rect.left + b.x, rect.top + b.y, b.width, b.height)
+    if (DEV_DEBUG_HOVER) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const ha = (c as any).hitArea
+      // eslint-disable-next-line no-console
+      console.log('[hover-diag]' + JSON.stringify({
+        tokenId: token.id,
+        hitAreaLocal: ha ? { x: ha.x, y: ha.y, w: ha.width, h: ha.height } : null,
+        containerGetBoundsGlobal: { x: b.x, y: b.y, w: b.width, h: b.height },
+        canvasWrapperRect: { left: rect.left, top: rect.top, w: rect.width, h: rect.height },
+        pointerScreen: { x: rect.left + e.globalX, y: rect.top + e.globalY },
+        devicePixelRatio: window.devicePixelRatio,
+      }))
+    }
+    onHoverRef.current(token.id, rect.left + e.globalX, rect.top + e.globalY, tokenRect)
   })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(c as any).on('pointerout', () => {
@@ -909,7 +1010,7 @@ function buildTokenSprite(
     // spurious pair), the cancelOutDebounce() above suppresses the hide call.
     hoverOutDebounce = setTimeout(() => {
       hoverOutDebounce = null
-      onHoverEndRef.current?.()
+      onHoverEndRef.current?.(token.id)
     }, 60)
     onTokenPointerOut(c, ticker)
   })

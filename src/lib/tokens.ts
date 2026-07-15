@@ -121,6 +121,7 @@ export const SHADOW = {
   md: 'var(--shadow-md)',   // 0 4px 12px rgba(0,0,0,0.10)
   lg: 'var(--shadow-lg)',   // 0 8px 24px rgba(0,0,0,0.12)
   dossier: 'var(--shadow-dossier)', // 0 24px 80px rgba(0,0,0,0.7) — large expanded-panel depth (EncounterDossier)
+  tooltip: 'var(--shadow-tooltip)', // 0 10px 26px rgba(0,0,0,0.7) — small floating card depth (PlayerTokenTooltip)
 } as const
 
 // ── Modal layer ──────────────────────────────────────────────────

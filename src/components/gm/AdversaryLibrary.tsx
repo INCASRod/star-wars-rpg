@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAdversaryTokenImages } from '@/hooks/useAdversaryTokenImages'
-import { fetchAdversaries, adversaryToInstance } from '@/lib/adversaries'
+import { fetchAdversaries, adversaryToInstance, dbRowToAdversary } from '@/lib/adversaries'
 import type { Adversary } from '@/lib/adversaries'
 import type { CombatEncounter, InitiativeSlot } from '@/lib/combat'
 import { randomUUID } from '@/lib/utils'
@@ -43,39 +43,6 @@ interface AddCombatState {
   adversary:  Adversary & { _isCustom?: boolean }
   alignment:  'enemy' | 'allied_npc'
   groupSize:  number
-}
-
-/* ── DB row → Adversary ────────────────────────────────── */
-function dbRowToAdversary(row: Record<string, unknown>): Adversary & { _isCustom: true; _dbId: string } {
-  const skillRanks = (row.skill_ranks as Record<string, number>) ?? {}
-  const characteristicOverrides = (row.characteristic_overrides as Record<string, string> | undefined) ?? undefined
-  return {
-    id:          String(row.id),
-    name:        String(row.name),
-    type:        (row.type as 'minion' | 'rival' | 'nemesis'),
-    brawn:       Number(row.brawn ?? 2),
-    agility:     Number(row.agility ?? 2),
-    intellect:   Number(row.intellect ?? 2),
-    cunning:     Number(row.cunning ?? 2),
-    willpower:   Number(row.willpower ?? 2),
-    presence:    Number(row.presence ?? 2),
-    soak:        Number(row.soak ?? 2),
-    wound:       Number(row.wound_threshold ?? 10),
-    strain:      row.strain_threshold != null ? Number(row.strain_threshold) : undefined,
-    defense:     [Number(row.defense_melee ?? 0), Number(row.defense_ranged ?? 0)],
-    skills:      Object.keys(skillRanks),
-    skillRanks,
-    characteristicOverrides: characteristicOverrides && Object.keys(characteristicOverrides).length > 0
-      ? characteristicOverrides
-      : undefined,
-    talents:     (row.talents as Adversary['talents']) ?? [],
-    abilities:   (row.abilities as Adversary['abilities']) ?? [],
-    weapons:     (row.weapons as Adversary['weapons']) ?? [],
-    gear:        (row.gear as Adversary['gear']) ?? [],
-    description: row.description ? String(row.description) : undefined,
-    _isCustom:   true,
-    _dbId:       String(row.id),
-  } as Adversary & { _isCustom: true; _dbId: string }
 }
 
 /* ── Props ─────────────────────────────────────────────── */

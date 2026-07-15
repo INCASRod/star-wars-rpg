@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useMemo } from 'react'
+import { Suspense } from 'react'
 import { useSearchParams }   from 'next/navigation'
 import { useActiveMap }      from '@/hooks/useActiveMap'
 import { useMapTokens }      from '@/hooks/useMapTokens'
@@ -18,10 +18,11 @@ function TableDisplayInner() {
   const campaignId = params.get('campaign')
 
   const { visibleMap }     = useActiveMap(campaignId)
-  const { tokens }         = useMapTokens(visibleMap?.id ?? null)
+  // visibleOnly: true — server-side is_visible filter (Prompt 11), not just a
+  // client-side hide. See useMapTokens.ts's UseMapTokensOptions doc comment
+  // for the residual RLS gap this doesn't close.
+  const { tokens: visibleTokens } = useMapTokens(visibleMap?.id ?? null, { visibleOnly: true })
   const { encounter }      = useEncounterState(campaignId)
-
-  const visibleTokens = useMemo(() => tokens.filter(t => t.is_visible), [tokens])
 
   if (!campaignId) {
     return (

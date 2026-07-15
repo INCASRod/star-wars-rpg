@@ -41,8 +41,11 @@ const FALLBACK: Record<string, { dmg?: number; brawn?: number; range?: string; c
   'vibroblade':              { brawn: 1, range: 'Engaged', crit: 2 },
   'combat vibroblade':       { brawn: 1, range: 'Engaged', crit: 2 },
   'two vibroblades':         { brawn: 1, range: 'Engaged', crit: 2 },
+  'vibroknife':              { brawn: 1, range: 'Engaged', crit: 2 },
   'vibrorapier':             { brawn: 1, range: 'Engaged', crit: 2 },
+  'vibrosword':              { brawn: 2, range: 'Engaged', crit: 2 },
   'vibrosaw':                { brawn: 2, range: 'Engaged', crit: 2 },
+  'vibro-ax':                { brawn: 3, range: 'Engaged', crit: 3 },
   'vibroknucklers':          { brawn: 1, range: 'Engaged', crit: 3 },
   'vibroknuckles':           { brawn: 1, range: 'Engaged', crit: 3 },
   'gaffi stick':             { brawn: 2, range: 'Engaged', crit: 4 },
@@ -102,6 +105,41 @@ const FALLBACK: Record<string, { dmg?: number; brawn?: number; range?: string; c
   'net gun':                       { dmg: 0, range: 'Short'   },
   'optical flare':                 { dmg: 0, range: 'Engaged' },
   'bag of sleeping powder':        { dmg: 0, range: 'Short'   },
+  // OggDude ref_weapons cross-reference (source of truth for named/real-world
+  // weapons — the AoE Core Rulebook only covers its own book's items, not
+  // Clone Wars/EotE/F&D gear that shows up in adversaries.json). Values below
+  // are copied verbatim from ref_weapons rows matched by name.
+  'anti-vehicle mine':             { dmg: 25, range: 'Engaged', crit: 2 },
+  'bolas':                         { dmg: 2,  range: 'Short',   crit: 0 },
+  'brass knuckles':                { brawn: 1, range: 'Engaged', crit: 4 },
+  'built-in blaster pistol':       { dmg: 6,  range: 'Medium',  crit: 3 },
+  'bt x-42 heavy flame projector': { dmg: 10, range: 'Medium',  crit: 2 },
+  'cortosis sword':                { brawn: 2, range: 'Engaged', crit: 3 },
+  'dc-12u beam rifle':             { dmg: 7,  range: 'Medium',  crit: 3 },
+  'dc-15 blaster rifle':           { dmg: 10, range: 'Long',    crit: 3 },
+  'dc-15a blaster carbine':        { dmg: 9,  range: 'Medium',  crit: 3 },
+  'dc-17 blaster pistol':          { dmg: 7,  range: 'Medium',  crit: 3 },
+  'diiro':                         { brawn: 1, range: 'Engaged', crit: 3 },
+  'fusion cutter':                 { brawn: 5, range: 'Engaged', crit: 3 },
+  'heavy repeating blaster':       { dmg: 15, range: 'Long',    crit: 2 },
+  'missile tube':                  { dmg: 20, range: 'Extreme', crit: 2 },
+  'relby-k23 blaster pistol':      { dmg: 6,  range: 'Medium',  crit: 3 },
+  'riot shield':                   { brawn: 0, range: 'Engaged', crit: 6 },
+  'shock gloves':                  { brawn: 0, range: 'Engaged', crit: 5 },
+  'stun baton':                    { brawn: 2, range: 'Engaged', crit: 6 },
+  'stun club':                     { brawn: 3, range: 'Engaged', crit: 2 },
+  'tt24 holdout blaster':          { dmg: 6,  range: 'Medium',  crit: 3 },
+  'tz-97 shock baton':             { brawn: 5, range: 'Engaged', crit: 4 },
+  'z-6 rotary cannon':             { dmg: 12, range: 'Long',    crit: 4 },
+  // Outer Rim db (theouterrim-master/_data/*.yaml) — fallback source for
+  // items not in OggDude's ref_weapons at all (checked there first).
+  'basic lightsaber':              { dmg: 6,  range: 'Engaged', crit: 2 },
+  'heavy hydrospanner':            { brawn: 5, range: 'Engaged', crit: 4 },
+  'hidden razor-dagger':           { brawn: 1, range: 'Engaged', crit: 2 },
+  'micro-grenade launcher':        { dmg: 6,  range: 'Short',   crit: 4 },
+  'net':                           { dmg: 2,  range: 'Short'    },
+  'riot gun':                      { dmg: 7,  range: 'Medium',  crit: 3 },
+  'wizard’s staff':                { brawn: 3, range: 'Engaged', crit: 4 },
   // Vehicle utility weapons (0 damage — tractor beams, tracers)
   // Keyed as lowercase OggDude weaponKey, matched after turret-suffix stripping below
   'tractlt':                       { dmg: 0, range: 'Close'   },

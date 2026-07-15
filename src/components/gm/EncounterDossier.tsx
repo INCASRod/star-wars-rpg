@@ -2,17 +2,17 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, useMemo } from 'react'
 import gsap from 'gsap'
-import type { Character } from '@/lib/types'
+import { toast } from 'sonner'
 import type { CombatEncounter } from '@/lib/combat'
 import type { MapToken } from '@/hooks/useMapTokens'
 import type { AdversaryInstance } from '@/lib/adversaries'
 import type { VehicleInstance } from '@/lib/vehicles'
 import { vehicleWeaponDisplayName, vehicleWeaponStats } from '@/lib/vehicles'
+import { resolveWeapon } from '@/lib/resolve-weapon'
 import { createClient } from '@/lib/supabase/client'
 import { buildRoster, type RosterEntry } from '@/components/gm/EncounterDeck'
 import { CheckConsole } from '@/components/gm/CheckConsole'
-import { useAdversaryTokenImages } from '@/hooks/useAdversaryTokenImages'
-import { useVehicleTokenImages } from '@/hooks/useVehicleTokenImages'
+import { RichText } from '@/components/ui/RichText'
 import { useEncounterCombatControls } from '@/hooks/useEncounterCombatControls'
 import { HUD, FS, SP, RADIUS, FONT_BODY, FONT_DISPLAY, Z, SHADOW, COLOR } from '@/lib/tokens'
 
@@ -53,7 +53,20 @@ export interface EncounterDossierProps {
   updateTokenWoundPct: (id: string, wound_pct: number) => Promise<void>
   markPending:   (key: string) => void
   clearPending:  (key: string) => void
-  characters:    Character[]
+  /** Patches existing map_tokens rows after an image upload — same pattern AdversaryDetailPanel/VehicleDetailPanel use. */
+  activeMapId:   string | null
+  /**
+   * Shared with EncounterDeck via their common parent (GmMapView) — see
+   * EncounterDeck.tsx's EncounterDeckProps.advImages doc comment for why
+   * this can't be a component-local useAdversaryTokenImages()/
+   * useVehicleTokenImages() call: dossier and deck are siblings, and an
+   * image uploaded here must be visible on the deck's roster card without
+   * a page reload.
+   */
+  advImages:     Record<string, string>
+  vehImages:     Record<string, string>
+  setAdvImages:  React.Dispatch<React.SetStateAction<Record<string, string>>>
+  setVehImages:  React.Dispatch<React.SetStateAction<Record<string, string>>>
   onClose:       () => void
   onToggleVisibility: (id: string, visible: boolean) => Promise<void>
   onBenchDeploy: (entry: RosterEntry) => void   // reuses EncounterDeck's hoisted benchEntry/deployEntry
@@ -62,17 +75,13 @@ export interface EncounterDossierProps {
   // check-console column to the Combat tab with that weapon pre-selected.
   // Optional + no-op default so this task doesn't have to touch call sites.
   onAttackWeapon?: (weaponIndex: number) => void
-  // Task 6: fired when the GM opens a Combat Check from CheckConsole.
-  // GmMapView owns the actual combatCheckState (it mounts CombatCheckOverlay
-  // as a map-area sibling — this dossier just closes itself and hands the
-  // selection up). Optional + no-op default, same pattern as onAttackWeapon.
-  onOpenCombatCheck?: (weaponIndex: number, targetId: string) => void
 }
 
 export function EncounterDossier({
   entityId, sourceRect, encounter, setEncounter, saveEncounter,
-  supabase, campaignId, tokens, updateTokenWoundPct, markPending, clearPending, characters,
-  onClose, onToggleVisibility, onBenchDeploy, onRemove, onAttackWeapon, onOpenCombatCheck,
+  supabase, campaignId, tokens, updateTokenWoundPct, markPending, clearPending, activeMapId,
+  advImages, vehImages, setAdvImages, setVehImages,
+  onClose, onToggleVisibility, onBenchDeploy, onRemove, onAttackWeapon,
 }: EncounterDossierProps) {
   const { adjustAdversaryWounds, adjustAdversaryStrain, adjustGroupSize, adjustHullTrauma, adjustSystemStrain } =
     useEncounterCombatControls({
@@ -87,13 +96,65 @@ export function EncounterDossier({
   // Derived from `encounter` directly — EncounterDossier is a sibling of
   // EncounterDeck, not a child, so it re-derives the roster the same way
   // rather than depending on EncounterDeck to hand it a RosterEntry prop.
-  const { tokenImages: advImages } = useAdversaryTokenImages()
-  const { tokenImages: vehImages } = useVehicleTokenImages()
   const roster = useMemo(
-    () => buildRoster(encounter, tokens, advImages, vehImages),
-    [encounter, tokens, advImages, vehImages],
+    () => buildRoster(encounter, tokens, advImages, vehImages, activeMapId),
+    [encounter, tokens, advImages, vehImages, activeMapId],
   )
   const entry = roster.find(r => r.instanceId === entityId) ?? null
+
+  // ── Hero image upload — same storage/write path as AdversaryDetailPanel /
+  // VehicleDetailPanel (src/components/gm/AdversaryDetailPanel.tsx:111-152,
+  // VehicleDetailPanel.tsx:93-133): upload to the 'tokens' bucket, upsert the
+  // name/key-keyed row in adversary_token_images or vehicle_token_images,
+  // then patch this instance's own map_tokens row so the token updates live.
+  // Adversaries key by display name (matches buildRoster's advImages[a.name]
+  // lookup — the same key used to read is used to write, so this exact
+  // instance always resolves correctly even though duplicate-suffixed
+  // instances, e.g. "Stormtrooper 2", have historically never shared an
+  // image with the base name — pre-existing behavior, not changed here).
+  // Vehicles key by sourceId (== library vehicle.key), matching buildRoster's
+  // vehImages[v.sourceId] lookup, which is stable across instance renames.
+  const [uploading, setUploading] = useState(false)
+  const fileRef = useRef<HTMLInputElement>(null)
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !entry) return
+    const kind = entry.kind
+    const vehKey = kind === 'vehicle' ? (entry.entity as VehicleInstance).sourceId : null
+    setUploading(true)
+    try {
+      const ext = file.name.split('.').pop() ?? 'png'
+      const slug = (kind === 'vehicle' ? vehKey! : entry.name).replace(/[^a-z0-9]/gi, '_').toLowerCase()
+      const path = kind === 'vehicle' ? `vehicle-${slug}.${ext}` : `${slug}.${ext}`
+      const { error: upErr } = await supabase.storage.from('tokens').upload(path, file, { upsert: true })
+      if (upErr) throw new Error(upErr.message ?? String(upErr))
+
+      const { data } = supabase.storage.from('tokens').getPublicUrl(path)
+      const urlWithBust = `${data.publicUrl}?t=${Date.now()}`
+
+      if (kind === 'vehicle') {
+        const { error: dbErr } = await supabase.from('vehicle_token_images').upsert({ vehicle_key: vehKey, token_image_url: urlWithBust })
+        if (dbErr) throw new Error(dbErr.message ?? String(dbErr))
+        setVehImages(prev => ({ ...prev, [vehKey!]: urlWithBust }))
+      } else {
+        const { error: dbErr } = await supabase.from('adversary_token_images').upsert({ adversary_key: entry.name, token_image_url: urlWithBust })
+        if (dbErr) throw new Error(dbErr.message ?? String(dbErr))
+        setAdvImages(prev => ({ ...prev, [entry.name]: urlWithBust }))
+      }
+
+      if (activeMapId) {
+        await supabase.from('map_tokens').update({ token_image_url: urlWithBust }).eq('map_id', activeMapId).eq('label', entry.name)
+      }
+      toast.success(`Token image updated for ${entry.name}`)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error('Token upload failed:', msg)
+      toast.error(`Token upload failed: ${msg}`)
+    } finally {
+      setUploading(false)
+      if (fileRef.current) fileRef.current.value = ''
+    }
+  }
 
   // ── FLIP open/close ──────────────────────────────────────────────────
   const dossierRef = useRef<HTMLDivElement>(null)
@@ -160,7 +221,12 @@ export function EncounterDossier({
         const name = `${w.count > 1 ? `${w.count}× ` : ''}${vehicleWeaponDisplayName(w.weaponKey)}${w.turret ? ' (Turret)' : ''}`
         return { key: i, name, damage: stats?.damage ?? '—', crit: stats?.crit }
       })
-    : (adv?.weapons ?? []).map((w, i) => ({ key: i, name: w.name, damage: w.damage, crit: w.crit }))
+    : (adv?.weapons ?? []).map((w, i) => {
+        const { dmg, crit } = resolveWeapon(w, adv!.characteristics.brawn, {})
+        return { key: i, name: w.name, damage: dmg, crit }
+      })
+
+  const abilities = veh ? (veh.abilities ?? []) : (adv?.abilities ?? [])
 
   return (
     <>
@@ -180,7 +246,17 @@ export function EncounterDossier({
           // the `transform` property for the open/close tween and a raw CSS
           // transform string would be overwritten by it.
           position: 'absolute', left: '50%', top: '46%',
-          width: 'min(53.75rem, 92vw)', zIndex: Z.dossier,
+          // % resolves against the map-area div (position:relative, the
+          // nearest positioned ancestor — see GmMapView.tsx's MAP AREA,
+          // flex:1, overflow:hidden), NOT the viewport. The old `92vw` cap
+          // used full-window viewport width, so at narrower windows where
+          // the sidebar rail + Roll Feed panel eat proportionally more
+          // space, the map-area's real width could be less than 92vw —
+          // the dossier then exceeded its actual positioned ancestor and
+          // got silently clipped by that ancestor's overflow:hidden (the
+          // reported "check-console column clipped" bug). calc(100% - 2rem)
+          // bounds against the real container with a small margin instead.
+          width: 'min(53.75rem, calc(100% - 2rem))', zIndex: Z.dossier,
           background: PANEL_BG, border: `1px solid ${HUD.borderHi}`,
           boxShadow: SHADOW.dossier,
         }}
@@ -188,7 +264,7 @@ export function EncounterDossier({
         <div style={{ height: 3, background: accent }} />
         <div style={{ display: 'grid', gridTemplateColumns: '14.75rem 1fr 18.75rem', minHeight: '26.875rem' }}>
           <div style={{ position: 'relative', borderRight: `1px solid ${HUD.border}`, display: 'flex', flexDirection: 'column' }}>
-            <div style={{ flex: 1, position: 'relative', overflow: 'hidden', background: 'var(--hud-surface-lo)' }}>
+            <div className="dossier-hero-art" style={{ flex: 1, position: 'relative', overflow: 'hidden', background: 'var(--hud-surface-lo)' }}>
               {entry.imageUrl
                 ? <img src={entry.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                 : <div style={{
@@ -196,6 +272,18 @@ export function EncounterDossier({
                     fontFamily: FD, fontSize: FS.h1, color: 'var(--hud-text-faint)',
                   }}>{entry.name.charAt(0)}</div>
               }
+              <input
+                ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }}
+                onChange={e => void handleFileChange(e)}
+              />
+              <button
+                className="dossier-hero-upload"
+                style={{ zIndex: Z.raised }}
+                disabled={uploading}
+                onClick={() => fileRef.current?.click()}
+              >
+                <span className="dossier-hero-upload-label">{uploading ? 'UPLOADING…' : '↑ UPLOAD IMAGE'}</span>
+              </button>
             </div>
             <div style={{ padding: SP[3], borderTop: `1px solid ${HUD.border}`, display: 'flex', flexDirection: 'column', gap: SP[1] }}>
               <div style={{ fontFamily: FD, fontSize: FS.h4, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', lineHeight: 1.15 }}>
@@ -257,7 +345,12 @@ export function EncounterDossier({
 
             <div>
               <div className="dossier-sec-label">Vitals</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: SP[3], marginTop: SP[1] }}>
+              {/* Stacked, not side-by-side — VitalStepper's label span is
+                  flex:1 with no minWidth:0, so its intrinsic text width
+                  ("SYS STRAIN") plus two 26px buttons plus the 4rem number
+                  floor doesn't fit a 2-way split of the center column; strain
+                  clipped off the right edge. Full-width rows fix it. */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: SP[2], marginTop: SP[1] }}>
                 <VitalStepper
                   label={veh ? 'HULL TRAUMA' : 'WOUNDS'}
                   current={entry.woundsCurrent} max={entry.woundsMax} color={RED}
@@ -285,11 +378,12 @@ export function EncounterDossier({
 
             <div>
               <div className="dossier-sec-label">{veh ? 'Vehicle Profile' : 'Defenses'}</div>
-              <div style={{ display: 'flex', gap: SP[2], marginTop: SP[1] }}>
+              <div style={{ display: 'flex', gap: SP[2], marginTop: SP[1], flexWrap: 'wrap' }}>
                 {veh ? (
                   <>
                     <Derived label="SIL" value={veh.silhouette} /><Derived label="SPEED" value={veh.speed} />
                     <Derived label="HANDLING" value={`+${veh.handling}`} /><Derived label="ARMOR" value={veh.armor} />
+                    <Derived label="SH" value={`${veh.defense.fore}/${veh.defense.aft}`} />
                   </>
                 ) : adv ? (
                   <>
@@ -305,52 +399,54 @@ export function EncounterDossier({
               <div style={{ display: 'flex', flexDirection: 'column', gap: SP[1], marginTop: SP[1] }}>
                 {weaponRows.map(w => (
                   <div key={w.key} style={{
-                    display: 'flex', alignItems: 'center', gap: SP[2], background: 'var(--hud-surface-lo)',
+                    display: 'flex', flexDirection: 'column', gap: SP[1], background: 'var(--hud-surface-lo)',
                     border: `1px solid ${HUD.border}`, borderRadius: RADIUS.sm, padding: `${SP[1]} ${SP[2]}`,
                   }}>
-                    <span style={{ fontFamily: FC, fontSize: FS.label, fontWeight: 700, color: HUD.text, flex: 1, minWidth: 0 }}>{w.name}</span>
-                    <span style={{ fontFamily: FC, fontSize: FS.caption, color: HUD.textDim, flexShrink: 0 }}>
-                      DMG {w.damage}{w.crit !== undefined ? ` · CRIT ${w.crit}` : ''}
-                    </span>
-                    <button
-                      className="dossier-attack-btn"
-                      onClick={() => { setAttackWeaponSignal(w.key); onAttackWeapon?.(w.key) }}
-                    >⌖ ATTACK</button>
+                    <span style={{ fontFamily: FC, fontSize: FS.label, fontWeight: 700, color: HUD.text }}>{w.name}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: SP[2] }}>
+                      <span style={{ fontFamily: FC, fontSize: FS.caption, color: HUD.textDim, flex: 1, minWidth: 0 }}>
+                        DMG {w.damage}{w.crit !== undefined ? ` · CRIT ${w.crit}` : ''}
+                      </span>
+                      <button
+                        className="dossier-attack-btn"
+                        onClick={() => { setAttackWeaponSignal(w.key); onAttackWeapon?.(w.key) }}
+                      >⌖ ATTACK</button>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
 
+            {/* Abilities — lives in the center column, below Weapons, filling
+                the column's own remaining vertical space (its overflowY:auto
+                lets a long list scroll within the column) rather than as a
+                full-width region below the whole grid. A prior pass moved
+                this to a new full-width bottom panel, which pushed the
+                hero/check-console columns' content up and broke the layout —
+                reverted per direct user correction. */}
             <div>
               <div className="dossier-sec-label">Abilities</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: SP[1], marginTop: SP[1] }}>
-                {(veh ? (veh.abilities ?? []) : (adv?.abilities ?? [])).map((a, i) => (
+                {abilities.length > 0 ? abilities.map((a, i) => (
                   <div key={i} style={{
                     fontFamily: FC, fontSize: FS.caption, color: HUD.textDim, lineHeight: 1.5,
                     borderLeft: `2px solid ${HUD.borderHi}`, paddingLeft: SP[2],
                   }}>
-                    <b style={{ color: HUD.text }}>{a.name}.</b> {a.description}
+                    <b style={{ color: HUD.text }}>{a.name}.</b> <RichText text={a.description} />
                   </div>
-                ))}
+                )) : (
+                  <div style={{ fontFamily: FC, fontSize: FS.caption, color: HUD.textFaint }}>No special abilities</div>
+                )}
               </div>
             </div>
           </div>
-          {/* Check console column */}
+          {/* Check console column — Combat Check rolls inline now (Prompt 9),
+              same as Skill Check; no more CombatCheckOverlay hand-off. */}
           <CheckConsole
             entry={entry}
             campaignId={campaignId}
-            characters={characters}
-            encounter={encounter}
+            roster={roster}
             attackWeaponSignal={attackWeaponSignal}
-            onOpenCombatCheck={(weaponIndex, targetId) => {
-              // Closing the dossier (rather than leaving it open behind the
-              // overlay) is this plan's documented deviation — CombatCheckOverlay's
-              // .hud-quick-drawer CSS assumes a full-height positioned ancestor,
-              // so it can't dock inline in this narrow column; it mounts as its
-              // own docked overlay at the GmMapView level instead.
-              onOpenCombatCheck?.(weaponIndex, targetId)
-              handleClose()
-            }}
           />
         </div>
       </div>
