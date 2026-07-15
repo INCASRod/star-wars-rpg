@@ -646,13 +646,11 @@ function DrumTrack({
             slot.characterId === character.id ||
             activeName === character.name
           )
-          const adv         = slot.adversaryInstanceId
-            ? encounter.adversaries.find(a => a.instanceId === slot.adversaryInstanceId)
-            : null
-          const isRevealed  = adv?.revealed ?? true
-          const displayName = !isPC && !isRevealed ? '???' : activeName
+          // Being on the initiative strip at all means visible to players —
+          // no '???' name/token gating on adversary reveal state here.
+          const displayName = activeName
           const portrait    = isPC && slot.characterId ? (portraits[slot.characterId] ?? null) : null
-          const advToken    = !isPC && (isRevealed || !!gmControls) ? (advTokenImages[slot.name] ?? null) : null
+          const advToken    = !isPC ? (advTokenImages[slot.name] ?? null) : null
           const effectivePortrait = portrait ?? advToken
 
           const showGm    = !!gmControls && !isActed

@@ -285,7 +285,6 @@ export interface CombatCheckOverlayProps {
     isGmMode?:          boolean
     gmTargets?:         AdversaryInstance[]
     gmAlignment?:       string
-    gmHiddenFromPlayers?: boolean
   }
   speciesAbilities?: SpeciesAbility[]
   speciesName?: string
@@ -306,7 +305,7 @@ export function CombatCheckOverlay({
   encounterId: propEncounterId,
   encounterEnemies,
 }: CombatCheckOverlayProps) {
-  const { isGmMode, gmTargets, gmAlignment, gmHiddenFromPlayers } = gmOverrides ?? {}
+  const { isGmMode, gmTargets, gmAlignment } = gmOverrides ?? {}
   const [state, setState] = useState<CombatCheckState>(() => makeInitialState(initialAttackType))
   const [poolForRoll, setPoolForRoll] = useState<Record<string, number>>({})
 
@@ -545,7 +544,9 @@ export function CombatCheckOverlay({
           succeeded:    result.net.success > 0,
         },
         result_summary:        summary,
-        is_visible_to_players: isGmMode ? !gmHiddenFromPlayers : true,
+        // Attack rolls are never hidden rolls — visible on the feed regardless of
+        // whether the acting adversary's token is revealed to players on the map.
+        is_visible_to_players: true,
       })
 
       const netSuccesses = result.net.success

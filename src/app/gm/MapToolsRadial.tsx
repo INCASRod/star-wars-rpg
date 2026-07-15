@@ -20,12 +20,13 @@ const R_ICON  = 59
 
 /* Arc definitions */
 const ARC_DEFS = [
-  { id: 0 as const, startDeg: 182, endDeg: 208, icon: '◫', label: 'MAP LIBRARY'   },
-  { id: 1 as const, startDeg: 213, endDeg: 239, icon: '▶', label: 'OPENING CRAWL' },
-  { id: 2 as const, startDeg: 244, endDeg: 270, icon: '⊕', label: 'TOKEN SCALE'   },
+  { id: 0 as const, startDeg: 178, endDeg: 197, icon: '◫', label: 'MAP LIBRARY'   },
+  { id: 1 as const, startDeg: 203, endDeg: 222, icon: '▶', label: 'OPENING CRAWL' },
+  { id: 2 as const, startDeg: 228, endDeg: 247, icon: '⊕', label: 'TOKEN SCALE'   },
+  { id: 3 as const, startDeg: 253, endDeg: 272, icon: '⛶', label: 'TABLE DISPLAY' },
 ]
 
-type ArcId = 0 | 1 | 2
+type ArcId = 0 | 1 | 2 | 3
 
 /* SVG colour exceptions — CSS vars unsupported in SVG stroke/fill attributes */
 const GOLD       = '#C8A030' // approved SVG exception
@@ -79,9 +80,9 @@ export function MapToolsRadial({
   const puckInnerRef  = useRef<SVGCircleElement>(null)
   const puckIconRef   = useRef<SVGTextElement>(null)
   const ringsGroupRef = useRef<SVGGElement>(null)
-  const arcGroupRefs  = useRef<(SVGGElement | null)[]>([null, null, null])
+  const arcGroupRefs  = useRef<(SVGGElement | null)[]>([null, null, null, null])
   const labelTextRef  = useRef<SVGTextElement>(null)
-  const hoverTlRefs   = useRef<(gsap.core.Timeline | null)[]>([null, null, null])
+  const hoverTlRefs   = useRef<(gsap.core.Timeline | null)[]>([null, null, null, null])
 
   /* Drag state */
   const dragOffsetRef = useRef<{ ox: number; oy: number } | null>(null)
@@ -267,7 +268,11 @@ export function MapToolsRadial({
       .to(el, { scale: 1.09, transformOrigin: `${PUCK_CX}px ${PUCK_CY}px`, duration: 0.1, ease: 'power2.out' })
       .to(el, { scale: 0.88, duration: 0.1, ease: 'power2.in' })
       .to(el, { scale: 1.0,  duration: 0.08, onComplete: () => {
-        setOpenPanel(prev => prev === id ? null : id)
+        if (id === 3) {
+          window.open(`/table?campaign=${campaignId}`, '_blank')
+        } else {
+          setOpenPanel(prev => prev === id ? null : id)
+        }
         setIsOpen(false)
       }})
   }
@@ -430,8 +435,8 @@ export function MapToolsRadial({
                        stroke={GOLD} strokeOpacity={0.45} strokeWidth={1.2} />
             })}
 
-            {/* Gap divider ticks at 211° and 247° */}
-            {[211, 247].map(deg => {
+            {/* Gap divider ticks at 200°, 225° and 250° */}
+            {[200, 225, 250].map(deg => {
               const p1 = polar(PUCK_CX, PUCK_CY, R_OUT + 2, deg)
               const p2 = polar(PUCK_CX, PUCK_CY, R_IN - 4, deg)
               return <line key={deg} x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y}
@@ -509,7 +514,7 @@ export function MapToolsRadial({
             d={(() => {
               const midDeg = activeArc !== null
                 ? (ARC_DEFS[activeArc].startDeg + ARC_DEFS[activeArc].endDeg) / 2
-                : 226
+                : 225
               return arcPath(PUCK_CX, PUCK_CY, 34, 34, midDeg - 55, midDeg + 55)
             })()}
             fill="none"

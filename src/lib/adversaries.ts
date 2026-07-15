@@ -100,6 +100,8 @@ export interface AdversaryInstance {
   woundsCurrent?: number
   strainCurrent?: number
   minionWounds?: number[]
+  /** Disposition assigned at token-add time. Optional — only populated by callers that have it (e.g. openStagingCombatModal). */
+  alignment?: 'enemy' | 'allied_npc'
   // Squad formation fields (rival/nemesis leaders only)
   squad_active?: boolean
   squad_minion_refs?: Array<{ instanceId: string; count: number }>
@@ -293,7 +295,7 @@ export async function fetchAdversaries(): Promise<Adversary[]> {
   return _cache
 }
 
-export function adversaryToInstance(adv: Adversary, groupSize = 4): AdversaryInstance {
+export function adversaryToInstance(adv: Adversary, groupSize = 4, alignment?: 'enemy' | 'allied_npc'): AdversaryInstance {
   return {
     instanceId: `${adv.id}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     sourceId: adv.id,
@@ -302,6 +304,7 @@ export function adversaryToInstance(adv: Adversary, groupSize = 4): AdversaryIns
     groupSize: adv.type === 'minion' ? groupSize : 1,
     groupRemaining: adv.type === 'minion' ? groupSize : 1,
     revealed: false,
+    alignment,
     characteristics: {
       brawn: adv.brawn, agility: adv.agility, intellect: adv.intellect,
       cunning: adv.cunning, willpower: adv.willpower, presence: adv.presence,

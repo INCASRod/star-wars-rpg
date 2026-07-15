@@ -14,7 +14,6 @@ type SkillCheckMode = 'browse' | 'roll'
 // die clip-path geometry — not spacing
 const CLIP_OCT = 'polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 70%,0% 30%)'
 const CLIP_DIA = 'polygon(50% 0%,100% 50%,50% 100%,0% 50%)'
-const SETBACK_DISPLAY = '#6A8A98' /* setback display layer — sealed die-identity hex */
 
 const DIFF_LABELS = ['Simple', 'Easy', 'Average', 'Hard', 'Daunting', 'Formidable'] as const
 // difficulty pip colours — die-identity game-mechanic pre-approved exception
@@ -259,8 +258,8 @@ function BackBar({ skill, onBack }: { skill: HudSkill; onBack: () => void }) {
 
 function DiceTray({ pool }: { pool: Record<string, number> }) {
   const { proficiency = 0, ability = 0, boost = 0, setback = 0, challenge = 0, difficulty = 0 } = pool
-  const hasPlayer = proficiency + ability + boost + setback > 0
-  const hasDiff   = challenge + difficulty > 0
+  const hasPlayer = proficiency + ability + boost > 0
+  const hasDiff   = challenge + difficulty + setback > 0
   const hasAny    = hasPlayer || hasDiff
   return (
     <div style={{
@@ -287,9 +286,6 @@ function DiceTray({ pool }: { pool: Record<string, number> }) {
         {Array.from({ length: boost }).map((_, i) => (
           <div key={`bst${i}`} className="cc-die" style={{ width: 30, height: 30, /* die shape px */ background: DICE_COLOR.boost /* die-identity hex — sealed namespace */, borderRadius: RADIUS.sm }} />
         ))}
-        {Array.from({ length: setback }).map((_, i) => (
-          <div key={`set${i}`} className="cc-die" style={{ width: 30, height: 30, /* die shape px */ background: SETBACK_DISPLAY /* setback display layer — sealed die-identity hex */, borderRadius: RADIUS.sm }} />
-        ))}
         {hasPlayer && hasDiff && (
           <div style={{ width: 1, height: 24, background: 'rgba(255,255,255,0.10)', flexShrink: 0, margin: `0 ${SP[1]}` }} />
         )}
@@ -298,6 +294,9 @@ function DiceTray({ pool }: { pool: Record<string, number> }) {
         ))}
         {Array.from({ length: difficulty }).map((_, i) => (
           <div key={`dif${i}`} className="cc-die" style={{ width: 27, height: 27, /* die shape px */ background: DICE_COLOR.difficulty /* die-identity hex — sealed namespace */, clipPath: CLIP_DIA }} />
+        ))}
+        {Array.from({ length: setback }).map((_, i) => (
+          <div key={`set${i}`} className="cc-die" style={{ width: 30, height: 30, /* die shape px */ background: DICE_COLOR.setback /* die-identity hex — sealed namespace */, borderRadius: RADIUS.sm }} />
         ))}
         {!hasAny && (
           <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)', opacity: 0.4 }}>
@@ -537,10 +536,10 @@ export function HudSkillQuickList({ skills, onOpenPopover: _onOpenPopover, onRol
     if (pool.proficiency) parts.push(`${pool.proficiency}×PROF`)
     if (pool.ability)     parts.push(`${pool.ability}×ABIL`)
     if (pool.boost)       parts.push(`${pool.boost}×BST`)
-    if (pool.setback)     parts.push(`${pool.setback}×SET`)
     const diffParts: string[] = []
     if (pool.challenge)   diffParts.push(`${pool.challenge}×CHL`)
     if (pool.difficulty)  diffParts.push(`${pool.difficulty}×DIF`)
+    if (pool.setback)     diffParts.push(`${pool.setback}×SET`)
     if (selectedDifficulty === 0 && !diffParts.length) diffParts.push('Simple')
     return diffParts.length
       ? `${parts.join(' · ')} vs ${diffParts.join(' · ')}`
@@ -633,13 +632,6 @@ export function HudSkillQuickList({ skills, onOpenPopover: _onOpenPopover, onRol
               onRemove={() => setBoostAdd(v => Math.max(0, v - 1))}
             />
             <RollStepper
-              label="Add Setback"
-              sublabel="+1 black ■ — adverse condition"
-              value={setbackAdd} min={0}
-              onAdd={() => setSetbackAdd(v => v + 1)}
-              onRemove={() => setSetbackAdd(v => Math.max(0, v - 1))}
-            />
-            <RollStepper
               label="Upgrade Skill"
               sublabel="Ability ◆ → Proficiency ✦"
               value={upgradeSkill} min={0} max={upgradeSkillCap}
@@ -650,6 +642,13 @@ export function HudSkillQuickList({ skills, onOpenPopover: _onOpenPopover, onRol
 
             <SectionLabel>Difficulty</SectionLabel>
             <DifficultySelector selected={selectedDifficulty} onSelect={handleDifficultySelect} />
+            <RollStepper
+              label="Add Setback"
+              sublabel="+1 black ■ — adverse condition"
+              value={setbackAdd} min={0}
+              onAdd={() => setSetbackAdd(v => v + 1)}
+              onRemove={() => setSetbackAdd(v => Math.max(0, v - 1))}
+            />
 
             <SectionLabel>Upgrade / Downgrade</SectionLabel>
             <RollStepper
