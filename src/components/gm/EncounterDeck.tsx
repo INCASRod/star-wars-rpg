@@ -836,26 +836,34 @@ function EntityCard({
           border: `1px solid ${BORDER_HI}`, color: entry.alignment === 'allied_npc' ? GREEN : RED,
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         }}>{typeLabel}</span>
-        {/* Group / hidden chip — top-RIGHT, safe inset, mutually exclusive per entity
-            (a minion group always shows its alive count here even if also hidden —
-            matches the approved mockup's own data-driven exclusivity exactly). */}
-        {entry.groupSize !== undefined ? (
-          <span style={{
-            position: 'absolute', top: SP[1], right: SP[1], zIndex: 2, maxWidth: 'calc(50% - 0.5rem)',
-            fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.05em', padding: '2px 6px',
-            background: 'color-mix(in srgb, var(--hud-bg) 82%, transparent)', borderRadius: RADIUS.sm,
-            border: `1px solid color-mix(in srgb, ${HUD.gold} 50%, transparent)`, color: HUD.gold,
-            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-          }}>{aliveCount}/{entry.groupSize}</span>
-        ) : entry.isHidden && entry.isOnMap ? (
-          <span style={{
-            position: 'absolute', top: SP[1], right: SP[1], zIndex: 2, maxWidth: 'calc(50% - 0.5rem)',
-            fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 6px',
-            background: 'color-mix(in srgb, var(--hud-bg) 82%, transparent)', borderRadius: RADIUS.sm,
-            border: `1px solid ${BORDER_HI}`, color: 'var(--hud-text-dim)',
-            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-          }}>◌ HIDDEN</span>
-        ) : null}
+        {/* Group / hidden chips — top-RIGHT, safe inset, stacked (not mutually
+            exclusive): a hidden minion group needs both its alive count AND
+            the HIDDEN tag, or the hidden state silently disappears behind
+            the count. */}
+        {(entry.groupSize !== undefined || (entry.isHidden && entry.isOnMap)) && (
+          <div style={{
+            position: 'absolute', top: SP[1], right: SP[1], zIndex: 2,
+            display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px',
+            maxWidth: 'calc(50% - 0.5rem)',
+          }}>
+            {entry.groupSize !== undefined && (
+              <span style={{
+                fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.05em', padding: '2px 6px',
+                background: 'color-mix(in srgb, var(--hud-bg) 82%, transparent)', borderRadius: RADIUS.sm,
+                border: `1px solid color-mix(in srgb, ${HUD.gold} 50%, transparent)`, color: HUD.gold,
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              }}>{aliveCount}/{entry.groupSize}</span>
+            )}
+            {entry.isHidden && entry.isOnMap && (
+              <span style={{
+                fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 6px',
+                background: 'color-mix(in srgb, var(--hud-bg) 82%, transparent)', borderRadius: RADIUS.sm,
+                border: `1px solid ${BORDER_HI}`, color: 'var(--hud-text-dim)',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              }}>◌ HIDDEN</span>
+            )}
+          </div>
+        )}
         {/* Identity overlay — up to 2 lines, ellipsis, never truncated to 1 line. */}
         <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 2, padding: `0 ${SP[2]} ${SP[1]}` }}>
           <div style={{

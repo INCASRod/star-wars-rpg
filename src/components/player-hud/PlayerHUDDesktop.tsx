@@ -535,10 +535,11 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
             (activeQuickPanel ?? activeFullPanel)
           }
           onPanelToggle={handlePanelToggle}
-          showAdversaries={
-            !!(encounter && encounter.adversaries.some(a => a.revealed) &&
-               visibleMapTokens.some(t => t.participant_type === 'adversary'))
-          }
+          // Player-facing "revealed adversary" rail entry disabled — doesn't
+          // belong in the player view. Left as a hardcoded false (rather than
+          // ripping out showAdversaries/adversariesOpen/HudAdversaryDrawer)
+          // since the underlying reveal mechanic itself is untouched.
+          showAdversaries={false}
         />
 
         {/* ══ CENTER COLUMN ════════════════════════════════════ */}
