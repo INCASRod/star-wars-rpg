@@ -534,6 +534,11 @@ export interface RosterEntry {
   kind:       'adversary' | 'vehicle'
   instanceId: string
   name:       string
+  /** `entity.nickname || name` — the roster card/dossier title should read this,
+   *  not `name` directly, so a GM-set nickname actually shows up. `name` itself
+   *  stays the real identity (image keying, dossier upload path, etc. all key
+   *  off it deliberately unchanged). */
+  displayName: string
   alignment:  'enemy' | 'allied_npc'
   woundsCurrent: number
   woundsMax:     number
@@ -584,13 +589,17 @@ export function buildRoster(
       const tok  = slot ? tokenBySlotKey.get(slot.id) : undefined
       return {
         kind: 'adversary', instanceId: a.instanceId, name: a.name,
+        displayName: a.nickname || a.name,
         alignment: slot?.alignment === 'allied_npc' ? 'allied_npc' : 'enemy',
         woundsCurrent: a.woundsCurrent ?? 0,
         woundsMax: a.type === 'minion' ? a.woundThreshold * a.groupSize : a.woundThreshold,
         groupSize: a.type === 'minion' ? a.groupSize : undefined,
         isOnMap: !!tok,
         isHidden: tok ? !tok.is_visible : false,
-        imageUrl: advImages[a.name] ?? null,
+        // `a.name` carries the `nextAutoName` auto-numbered suffix (" 2", " 3", ...)
+        // for the 2nd+ instance of the same adversary, but `advImages` is keyed by
+        // the base catalog name — strip that exact suffix pattern before falling back.
+        imageUrl: advImages[a.name] ?? advImages[a.name.replace(/ \d+$/, '')] ?? null,
         tokenId: tok?.id ?? null,
         mapId: a.map_id ?? null,
         entity: a,
@@ -603,6 +612,7 @@ export function buildRoster(
       const tok  = slot ? tokenBySlotKey.get(slot.id) : undefined
       return {
         kind: 'vehicle', instanceId: v.instanceId, name: v.name,
+        displayName: v.nickname || v.name,
         alignment: v.alignment,
         woundsCurrent: v.hullTraumaCurrent, woundsMax: v.hullTraumaThreshold,
         isOnMap: !!tok,
@@ -811,7 +821,7 @@ function EntityCard({
           : <div style={{
               width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontFamily: FD, fontSize: FS.h3, color: 'var(--hud-text-faint)',
-            }}>{entry.name.charAt(0)}</div>
+            }}>{entry.displayName.charAt(0)}</div>
         }
         {/* Bottom gradient scrim so the name overlay stays legible on any portrait. */}
         <div style={{
@@ -852,7 +862,7 @@ function EntityCard({
             fontFamily: FD, fontWeight: 700, fontSize: FS.label, letterSpacing: '0.02em', lineHeight: 1.15,
             color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,0.9)',
             overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
-          }}>{entry.name}</div>
+          }}>{entry.displayName}</div>
         </div>
       </div>
       <div style={{ padding: `${SP[2]} ${SP[2]} ${SP[2]}`, display: 'flex', flexDirection: 'column', gap: SP[1] }}>

@@ -106,6 +106,7 @@ export function GmShell() {
     removeAllTokens: stagingRemoveAllTokens,
     addToken: stagingAddToken,
     updateWoundPct: stagingUpdateWoundPct,
+    renameToken: stagingRenameToken,
   } = useMapTokens(activeMap?.id ?? null)
 
   const {
@@ -439,6 +440,7 @@ export function GmShell() {
             setStagingEncounter={setStagingEncounter}
             saveStagingEncounter={saveStagingEncounter}
             updateTokenWoundPct={stagingUpdateWoundPct}
+            renameToken={stagingRenameToken}
             markEncounterPending={markEncounterPending}
             clearEncounterPending={clearEncounterPending}
             stagingAddToEncounter={stagingAddToEncounter}

@@ -137,6 +137,11 @@ export interface VehicleEditorProps {
   allVehicles?: (Vehicle & { _isCustom?: boolean })[]
   onClose:      () => void
   onSaved:      (saved: Vehicle & { _isCustom: true; _dbId: string }) => void
+  /** 'modal' (default) — unchanged behavior for VehicleLibrary's own overlay
+   *  flow. 'inline' — renders the same content in a plain bordered panel with
+   *  no portal/backdrop, for hosts (e.g. GmToolsPanel's Vehicle tab) that
+   *  already provide their own panel chrome and want this to sit inline. */
+  presentation?: 'modal' | 'inline'
 }
 
 /* ════════════════════════════════════════════════════════
@@ -144,6 +149,7 @@ export interface VehicleEditorProps {
    ════════════════════════════════════════════════════════ */
 export function VehicleEditor({
   editId, template, campaignId, supabase, allVehicles = [], onClose, onSaved,
+  presentation = 'modal',
 }: VehicleEditorProps) {
   const [mounted, setMounted] = useState(false)
   useEffect(() => { setMounted(true) }, [])
@@ -341,29 +347,9 @@ export function VehicleEditor({
   const updateAbility = (i: number, field: keyof AbilityEntry, val: string) =>
     setAbilities(prev => prev.map((a, idx) => idx === i ? { ...a, [field]: val } : a))
 
-  /* ── Modal portal ───────────────────────────────────── */
-  const modal = (
+  /* ── Content (shared between modal and inline presentation) ─────── */
+  const content = (
     <>
-      <div
-        onClick={onClose}
-        style={{
-          position: 'fixed', inset: 0,
-          zIndex: 'var(--z-hud-overlay)' as unknown as number,
-          background: 'rgba(0,0,0,0.72)',   // pre-approved: rgba(0,0,0,*) overlay
-          backdropFilter: 'blur(8px)',
-        }}
-      />
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-          zIndex: 'var(--z-hud-combat)' as unknown as number,
-          width: 'min(640px, 96vw)', maxHeight: '90vh',
-          background: HUD.panel, border: `1px solid ${HUD.borderHi}`, borderRadius: RADIUS.lg,
-          display: 'flex', flexDirection: 'column',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.8)',   // pre-approved: rgba(0,0,0,*) shadow
-        }}
-      >
         {/* Header */}
         <div style={{ flexShrink: 0, padding: '1rem 1.5rem', borderBottom: `1px solid ${HUD.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS_H4, fontWeight: 700, color: HUD.gold, letterSpacing: '0.08em' }}>
@@ -794,10 +780,47 @@ export function VehicleEditor({
             </button>
           </div>
         </div>
-      </div>
     </>
   )
 
   if (!mounted) return null
-  return createPortal(modal, document.body)
+
+  if (presentation === 'inline') {
+    return (
+      <div style={{
+        background: HUD.panel, border: `1px solid ${HUD.borderHi}`, borderRadius: RADIUS.lg,
+        display: 'flex', flexDirection: 'column', maxHeight: '80vh', overflow: 'hidden',
+      }}>
+        {content}
+      </div>
+    )
+  }
+
+  return createPortal(
+    <>
+      <div
+        onClick={onClose}
+        style={{
+          position: 'fixed', inset: 0,
+          zIndex: 'var(--z-hud-overlay)' as unknown as number,
+          background: 'rgba(0,0,0,0.72)',   // pre-approved: rgba(0,0,0,*) overlay
+          backdropFilter: 'blur(8px)',
+        }}
+      />
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+          zIndex: 'var(--z-hud-combat)' as unknown as number,
+          width: 'min(640px, 96vw)', maxHeight: '90vh',
+          background: HUD.panel, border: `1px solid ${HUD.borderHi}`, borderRadius: RADIUS.lg,
+          display: 'flex', flexDirection: 'column',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.8)',   // pre-approved: rgba(0,0,0,*) shadow
+        }}
+      >
+        {content}
+      </div>
+    </>,
+    document.body,
+  )
 }

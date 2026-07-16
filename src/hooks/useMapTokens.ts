@@ -126,5 +126,10 @@ export function useMapTokens(mapId: string | null, options: UseMapTokensOptions 
     await supabase.from('map_tokens').update({ wound_pct }).eq('id', id)
   }, [supabase])
 
-  return { tokens, moveToken, toggleVisibility, removeToken, removeAllTokens, addToken, updateWoundPct, supabase }
+  const renameToken = useCallback(async (id: string, label: string) => {
+    setTokens(prev => prev.map(t => t.id === id ? { ...t, label } : t))
+    await supabase.from('map_tokens').update({ label }).eq('id', id)
+  }, [supabase])
+
+  return { tokens, moveToken, toggleVisibility, removeToken, removeAllTokens, addToken, updateWoundPct, renameToken, supabase }
 }

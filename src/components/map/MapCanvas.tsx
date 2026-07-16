@@ -616,10 +616,14 @@ function syncTokens(
 
     if (tokensRef.current.has(token.id)) {
       const c = tokensRef.current.get(token.id)!
-      // If token_image_url changed, destroy and rebuild the sprite so the new
-      // image is displayed (e.g. after uploading a token image for an existing token).
+      // If token_image_url OR label changed, destroy and rebuild the sprite —
+      // e.g. after uploading a token image, or a dossier nickname rename
+      // patching `label` directly. The label `Text`/background-pill geometry
+      // is only ever computed once at build time (buildTokenSprite), so an
+      // in-place `.text` update would leave the pill mis-sized around the new
+      // string; a full rebuild reuses the same already-correct layout math.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if ((c as any).__imageUrl !== (token.token_image_url ?? null)) {
+      if ((c as any).__imageUrl !== (token.token_image_url ?? null) || (c as any).__label !== (token.label ?? null)) {
         destroyTokenHover(c, app.ticker)
         app.stage.removeChild(c)
         c.destroy({ children: true })
@@ -655,6 +659,8 @@ function syncTokens(
     )
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(sprite as any).__imageUrl = token.token_image_url ?? null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(sprite as any).__label = token.label ?? null
     sprite.scale.set(tokenScale)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(sprite as any)._baseScale = tokenScale

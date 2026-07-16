@@ -5,6 +5,10 @@ export interface VehicleInstance {
   instanceId:             string
   sourceId:               string
   name:                   string
+  /** GM-set display override (e.g. drop the auto-numbered " 2"/" 3" suffix) — purely
+   *  cosmetic for the roster card/map token label. `name` stays the real identity used
+   *  everywhere else (roll labels, initiative, image keying). */
+  nickname?:              string
   kind:                   'vehicle'    // discriminator — distinguishes from AdversaryInstance
   silhouette:             number
   speed:                  number

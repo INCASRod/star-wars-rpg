@@ -293,6 +293,7 @@ export interface GmMapViewProps {
   setStagingEncounter?:        React.Dispatch<React.SetStateAction<CombatEncounter | null>>
   saveStagingEncounter?:       (partial: Partial<CombatEncounter>) => Promise<void>
   updateTokenWoundPct?:        (id: string, wound_pct: number) => Promise<void>
+  renameToken?:                (id: string, label: string) => Promise<void>
   markEncounterPending?:       (key: string) => void
   clearEncounterPending?:      (key: string) => void
   stagingAddToEncounter?:      (adv: import('@/lib/adversaries').Adversary, alignment: 'enemy' | 'allied_npc') => Promise<void>
@@ -302,7 +303,7 @@ export function GmMapView({
   campaignId, encounter: encounterProp, characters, allMaps, activeMap, onDeleteMap, isStagingTab,
   stagingTokens, onStagingMoveToken, onStagingToggleVisibility, onStagingRemoveToken, onStagingAddToken, onTokenClick,
   deckOpen, onDeckOpenChange, focusedEntityId, setStagingEncounter, saveStagingEncounter,
-  updateTokenWoundPct, markEncounterPending, clearEncounterPending, stagingAddToEncounter,
+  updateTokenWoundPct, renameToken, markEncounterPending, clearEncounterPending, stagingAddToEncounter,
   dossierEntityId, dossierSourceRect, onOpenDossier, onCloseDossier,
 }: GmMapViewProps) {
   const supabase = useMemo(() => createClient(), [])
@@ -1118,7 +1119,7 @@ export function GmMapView({
         )}
 
         {/* ── Encounter Dossier (expanded card view, staging only) ── */}
-        {isStagingTab && setStagingEncounter && saveStagingEncounter && updateTokenWoundPct
+        {isStagingTab && setStagingEncounter && saveStagingEncounter && updateTokenWoundPct && renameToken
           && markEncounterPending && clearEncounterPending && (
           <EncounterDossier
             entityId={dossierEntityId ?? null}
@@ -1130,6 +1131,7 @@ export function GmMapView({
             campaignId={campaignId ?? ''}
             tokens={tokens}
             updateTokenWoundPct={updateTokenWoundPct}
+            renameToken={renameToken}
             markPending={markEncounterPending}
             clearPending={clearEncounterPending}
             activeMapId={activeMap?.id ?? null}

@@ -51,6 +51,10 @@ export interface EncounterDossierProps {
   campaignId:    string
   tokens:        MapToken[]
   updateTokenWoundPct: (id: string, wound_pct: number) => Promise<void>
+  /** Optimistic-local-state token rename (src/hooks/useMapTokens.ts) — used instead of a
+   *  raw supabase write so a nickname rename shows on the map instantly, not just after
+   *  the next Realtime round-trip/reload (mirrors updateTokenWoundPct's own pattern). */
+  renameToken:   (id: string, label: string) => Promise<void>
   markPending:   (key: string) => void
   clearPending:  (key: string) => void
   /** Patches existing map_tokens rows after an image upload — same pattern AdversaryDetailPanel/VehicleDetailPanel use. */
@@ -79,7 +83,7 @@ export interface EncounterDossierProps {
 
 export function EncounterDossier({
   entityId, sourceRect, encounter, setEncounter, saveEncounter,
-  supabase, campaignId, tokens, updateTokenWoundPct, markPending, clearPending, activeMapId,
+  supabase, campaignId, tokens, updateTokenWoundPct, renameToken, markPending, clearPending, activeMapId,
   advImages, vehImages, setAdvImages, setVehImages,
   onClose, onToggleVisibility, onBenchDeploy, onRemove, onAttackWeapon,
 }: EncounterDossierProps) {
@@ -101,6 +105,38 @@ export function EncounterDossier({
     [encounter, tokens, advImages, vehImages, activeMapId],
   )
   const entry = roster.find(r => r.instanceId === entityId) ?? null
+
+  // ── Nickname (GM-set display override) — purely cosmetic. `entity.name`
+  // (the real identity — image keying, roll labels, initiative) is never
+  // touched; this only patches `nickname` on the encounter's own instance
+  // record, plus `renameToken` (src/hooks/useMapTokens.ts — optimistic local
+  // state + supabase write, same shape as `updateTokenWoundPct`) so the
+  // on-map token's label updates instantly instead of waiting on a Realtime
+  // round-trip/reload.
+  const [renaming, setRenaming] = useState(false)
+  const [draftNickname, setDraftNickname] = useState('')
+  const startRenaming = () => {
+    if (!entry) return
+    setDraftNickname((entry.entity as { nickname?: string }).nickname ?? '')
+    setRenaming(true)
+  }
+  const handleSaveNickname = async () => {
+    if (!entry || !encounter) { setRenaming(false); return }
+    const nickname = draftNickname.trim() || undefined
+    if (entry.kind === 'adversary') {
+      await saveEncounter({
+        adversaries: encounter.adversaries.map(a => a.instanceId === entry.instanceId ? { ...a, nickname } : a),
+      })
+    } else {
+      await saveEncounter({
+        vehicles: (encounter.vehicles ?? []).map(v => v.instanceId === entry.instanceId ? { ...v, nickname } : v),
+      })
+    }
+    if (entry.tokenId) {
+      await renameToken(entry.tokenId, nickname || entry.name)
+    }
+    setRenaming(false)
+  }
 
   // ── Hero image upload — same storage/write path as AdversaryDetailPanel /
   // VehicleDetailPanel (src/components/gm/AdversaryDetailPanel.tsx:111-152,
@@ -270,7 +306,7 @@ export function EncounterDossier({
                 : <div style={{
                     width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontFamily: FD, fontSize: FS.h1, color: 'var(--hud-text-faint)',
-                  }}>{entry.name.charAt(0)}</div>
+                  }}>{entry.displayName.charAt(0)}</div>
               }
               <input
                 ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }}
@@ -286,9 +322,28 @@ export function EncounterDossier({
               </button>
             </div>
             <div style={{ padding: SP[3], borderTop: `1px solid ${HUD.border}`, display: 'flex', flexDirection: 'column', gap: SP[1] }}>
-              <div style={{ fontFamily: FD, fontSize: FS.h4, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', lineHeight: 1.15 }}>
-                {entry.name}
-              </div>
+              {renaming ? (
+                <input
+                  autoFocus
+                  value={draftNickname}
+                  onChange={e => setDraftNickname(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') void handleSaveNickname()
+                    if (e.key === 'Escape') setRenaming(false)
+                  }}
+                  onBlur={() => void handleSaveNickname()}
+                  placeholder={entry.name}
+                  style={{
+                    fontFamily: FD, fontSize: FS.h4, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
+                    lineHeight: 1.15, background: 'var(--hud-surface-hi)', border: `1px solid ${HUD.borderHi}`,
+                    borderRadius: RADIUS.sm, color: HUD.text, padding: `2px ${SP[1]}`, width: '100%',
+                  }}
+                />
+              ) : (
+                <div style={{ fontFamily: FD, fontSize: FS.h4, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', lineHeight: 1.15 }}>
+                  {entry.displayName}
+                </div>
+              )}
               <div style={{ fontFamily: FC, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.16em', color: 'var(--hud-text-faint)' }}>
                 {entry.kind === 'vehicle'
                   ? `VEHICLE · SILHOUETTE ${(entry.entity as VehicleInstance).silhouette}`
@@ -301,6 +356,7 @@ export function EncounterDossier({
                 <button className="dossier-ctl-btn" onClick={() => onBenchDeploy(entry)}>
                   {entry.isOnMap ? '⌖ BENCH' : '⌖ DEPLOY'}
                 </button>
+                <button className="dossier-ctl-btn" onClick={startRenaming}>✎ RENAME</button>
                 <button className="dossier-ctl-btn dossier-ctl-danger" onClick={() => onRemove(entry)}>✕ REMOVE</button>
               </div>
             </div>

@@ -116,6 +116,11 @@ export interface AdversaryEditorProps {
   allAdversaries: Adversary[]
   onClose:      () => void
   onSaved:      (saved: Adversary & { _isCustom: true; _dbId: string }) => void
+  /** 'modal' (default) — unchanged behavior for AdversaryLibrary's own overlay
+   *  flow. 'inline' — renders the same content in a plain bordered panel with
+   *  no portal/backdrop, for hosts (e.g. GmToolsPanel's Adversary tab) that
+   *  already provide their own panel chrome and want this to sit inline. */
+  presentation?: 'modal' | 'inline'
 }
 
 /* ── Characteristic options for Lightsaber override ─────── */
@@ -182,7 +187,7 @@ function fromTemplate(t: Adversary): Partial<{
    ════════════════════════════════════════════════════════ */
 export function AdversaryEditor({
   editId, template, campaignId, supabase, allAdversaries,
-  onClose, onSaved,
+  onClose, onSaved, presentation = 'modal',
 }: AdversaryEditorProps) {
   const [mounted, setMounted] = useState(false)
 
@@ -389,8 +394,8 @@ export function AdversaryEditor({
 
   const isEdit = !!editId
 
-  return (
-    <Modal open onClose={onClose} maxWidth={640}>
+  const content = (
+    <>
         {/* Header */}
         <div style={{
           padding: '1rem 1.25rem', borderBottom: `1px solid ${BORDER}`,
@@ -856,6 +861,16 @@ export function AdversaryEditor({
           </div>
 
         </div>
-    </Modal>
+    </>
   )
+
+  if (presentation === 'inline') {
+    return (
+      <div style={{ border: `1px solid ${BORDER}`, borderRadius: RADIUS.md, background: HUD.panel, overflow: 'hidden' }}>
+        {content}
+      </div>
+    )
+  }
+
+  return <Modal open onClose={onClose} maxWidth={640}>{content}</Modal>
 }

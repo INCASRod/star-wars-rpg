@@ -22,6 +22,12 @@ import type { GmConflictRow } from '@/hooks/useGmCampaignConflicts'
 
 const DIM  = 'var(--hud-text-dim)'
 
+// `Adversary` itself carries no `_isCustom`/`_dbId` fields (unlike `Vehicle`,
+// which declares them optionally) — `dbRowToAdversary` attaches them at
+// runtime, so this local alias is needed to read them back off `allAdversaries`
+// without a cast at every call site.
+type CustomAdversary = Adversary & { _isCustom?: boolean; _dbId?: string }
+
 const fieldLabel: React.CSSProperties = {
   fontFamily:    FONT,
   fontSize:      'var(--text-overline)',
@@ -133,8 +139,20 @@ export function GmToolsPanel({
   // Template-search candidates for the New Adversary/Vehicle editors — same
   // oggdude + ref_adversaries/ref_vehicles merge EncounterDeck uses, so the
   // "Search" field there finds both static and campaign-custom entries.
-  const [allAdversaries, setAllAdversaries] = useState<Adversary[]>([])
+  const [allAdversaries, setAllAdversaries] = useState<CustomAdversary[]>([])
   const [allVehicles, setAllVehicles] = useState<Vehicle[]>([])
+
+  // Add-new vs. edit-existing sub-mode for the Adversary/Vehicle tabs — the
+  // editors already fully support edit mode (`editId`/`template` props), this
+  // just picks a target and feeds them in instead of always mounting blank.
+  const [adversaryMode, setAdversaryMode] = useState<'new' | 'edit'>('new')
+  const [adversaryEditTarget, setAdversaryEditTarget] = useState<CustomAdversary | null>(null)
+  const [adversaryEditSearch, setAdversaryEditSearch] = useState('')
+  const [vehicleMode, setVehicleMode] = useState<'new' | 'edit'>('new')
+  const [vehicleEditTarget, setVehicleEditTarget] = useState<Vehicle | null>(null)
+  const [vehicleEditSearch, setVehicleEditSearch] = useState('')
+  const customAdversaries = useMemo(() => allAdversaries.filter(a => a._isCustom), [allAdversaries])
+  const customVehicles = useMemo(() => allVehicles.filter(v => v._isCustom), [allVehicles])
   useEffect(() => {
     let cancelled = false
     Promise.all([fetchAdversaries(), supabase.from('ref_adversaries').select('*').order('name')])
@@ -408,26 +426,108 @@ export function GmToolsPanel({
           <TalentDatabaseTab campaignId={campaignId} supabase={supabase} characters={activeChars} sendToChar={sendToChar} />
         )}
 
-        {/* ── New Adversary ── */}
+        {/* ── Adversary (Add New / Edit Existing) ── */}
         {activeTab === 'new-adversary' && (
-          <AdversaryEditor
-            campaignId={campaignId}
-            supabase={supabase}
-            allAdversaries={allAdversaries}
-            onClose={() => setActiveTab('items')}
-            onSaved={() => setActiveTab('items')}
-          />
+          <div>
+            <div style={{ display: 'flex', gap: '0.375rem', marginBottom: '0.75rem' }}>
+              {(['new', 'edit'] as const).map(m => (
+                <button key={m} onClick={() => { setAdversaryMode(m); setAdversaryEditTarget(null); setAdversaryEditSearch('') }}
+                  style={{ ...btnSmall, background: adversaryMode === m ? 'var(--hud-surface-hi)' : undefined, color: adversaryMode === m ? HUD.gold : DIM }}>
+                  {m === 'new' ? '+ Add New' : '✎ Edit Existing'}
+                </button>
+              ))}
+            </div>
+
+            {adversaryMode === 'edit' && !adversaryEditTarget && (
+              <div>
+                <input
+                  style={darkInput}
+                  placeholder="Search custom adversaries..."
+                  value={adversaryEditSearch}
+                  onChange={e => setAdversaryEditSearch(e.target.value)}
+                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginTop: '0.5rem', maxHeight: '20rem', overflowY: 'auto' }}>
+                  {customAdversaries.length === 0 && (
+                    <div style={{ ...fieldLabel, textTransform: 'none', letterSpacing: 'normal' }}>No custom adversaries yet.</div>
+                  )}
+                  {customAdversaries
+                    .filter(a => a.name.toLowerCase().includes(adversaryEditSearch.toLowerCase()))
+                    .map(a => (
+                      <button key={a._dbId} onClick={() => setAdversaryEditTarget(a)} className="hov-gold"
+                        style={{ ...btnSmall, textAlign: 'left' }}>
+                        {a.name} <span style={{ color: DIM }}>({a.type})</span>
+                      </button>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {(adversaryMode === 'new' || adversaryEditTarget) && (
+              <AdversaryEditor
+                key={adversaryEditTarget?._dbId ?? 'new'}
+                editId={adversaryEditTarget?._dbId}
+                template={adversaryEditTarget ?? undefined}
+                campaignId={campaignId}
+                supabase={supabase}
+                allAdversaries={allAdversaries}
+                presentation="inline"
+                onClose={() => { setAdversaryMode('new'); setAdversaryEditTarget(null) }}
+                onSaved={() => { setAdversaryMode('new'); setAdversaryEditTarget(null) }}
+              />
+            )}
+          </div>
         )}
 
-        {/* ── New Vehicle ── */}
+        {/* ── Vehicle (Add New / Edit Existing) ── */}
         {activeTab === 'new-vehicle' && (
-          <VehicleEditor
-            campaignId={campaignId}
-            supabase={supabase}
-            allVehicles={allVehicles}
-            onClose={() => setActiveTab('items')}
-            onSaved={() => setActiveTab('items')}
-          />
+          <div>
+            <div style={{ display: 'flex', gap: '0.375rem', marginBottom: '0.75rem' }}>
+              {(['new', 'edit'] as const).map(m => (
+                <button key={m} onClick={() => { setVehicleMode(m); setVehicleEditTarget(null); setVehicleEditSearch('') }}
+                  style={{ ...btnSmall, background: vehicleMode === m ? 'var(--hud-surface-hi)' : undefined, color: vehicleMode === m ? HUD.gold : DIM }}>
+                  {m === 'new' ? '+ Add New' : '✎ Edit Existing'}
+                </button>
+              ))}
+            </div>
+
+            {vehicleMode === 'edit' && !vehicleEditTarget && (
+              <div>
+                <input
+                  style={darkInput}
+                  placeholder="Search custom vehicles..."
+                  value={vehicleEditSearch}
+                  onChange={e => setVehicleEditSearch(e.target.value)}
+                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginTop: '0.5rem', maxHeight: '20rem', overflowY: 'auto' }}>
+                  {customVehicles.length === 0 && (
+                    <div style={{ ...fieldLabel, textTransform: 'none', letterSpacing: 'normal' }}>No custom vehicles yet.</div>
+                  )}
+                  {customVehicles
+                    .filter(v => v.name.toLowerCase().includes(vehicleEditSearch.toLowerCase()))
+                    .map(v => (
+                      <button key={v._dbId} onClick={() => setVehicleEditTarget(v)} className="hov-gold"
+                        style={{ ...btnSmall, textAlign: 'left' }}>
+                        {v.name}
+                      </button>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {(vehicleMode === 'new' || vehicleEditTarget) && (
+              <VehicleEditor
+                key={vehicleEditTarget?._dbId ?? 'new'}
+                editId={vehicleEditTarget?._dbId}
+                template={vehicleEditTarget ?? undefined}
+                campaignId={campaignId}
+                supabase={supabase}
+                allVehicles={allVehicles}
+                presentation="inline"
+                onClose={() => { setVehicleMode('new'); setVehicleEditTarget(null) }}
+                onSaved={() => { setVehicleMode('new'); setVehicleEditTarget(null) }}
+              />
+            )}
+          </div>
         )}
 
         {/* ── Force ── */}
