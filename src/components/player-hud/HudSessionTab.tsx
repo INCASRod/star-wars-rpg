@@ -74,7 +74,7 @@ export function HudSessionTab({
   // Fetch all campaign characters so we can show PC stat blocks on hover
   useEffect(() => {
     if (!campaignId) return
-    supabase.from('characters').select('*').eq('campaign_id', campaignId).eq('is_active', true)
+    supabase.from('characters').select('*').eq('campaign_id', campaignId).eq('is_archived', false)
       .then(({ data }) => { if (data) setAllChars(data as Character[]) })
   }, [campaignId, supabase])
 
