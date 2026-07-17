@@ -189,10 +189,10 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   const [adversariesOpen,  setAdversariesOpen]  = useState(false)
 
   function handlePanelToggle(id: RailPanelId) {
-    if (id === 'dice')        { setDiceOpen(o => !o); return }
-    if (id === 'adversaries') { setAdversariesOpen(o => !o); return }
-    if (id === 'combat') { setCombatCheckOpen(true); setActiveFullPanel(null); setActiveQuickPanel(null); return }
-    if (id === 'force')  { setForceCheckOpen(true);  setActiveFullPanel(null); setActiveQuickPanel(null); return }
+    if (id === 'dice')        { setDiceOpen(o => !o); setCombatCheckOpen(false); setForceCheckOpen(false); return }
+    if (id === 'adversaries') { setAdversariesOpen(o => !o); setCombatCheckOpen(false); setForceCheckOpen(false); return }
+    if (id === 'combat') { setCombatCheckOpen(true); setForceCheckOpen(false); setActiveFullPanel(null); setActiveQuickPanel(null); return }
+    if (id === 'force')  { setForceCheckOpen(true);  setCombatCheckOpen(false); setActiveFullPanel(null); setActiveQuickPanel(null); return }
     if (id === 'skill') {
       setActiveQuickPanel(prev => prev === 'skill' ? null : 'skill')
       setActiveFullPanel(null)

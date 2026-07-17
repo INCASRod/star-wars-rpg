@@ -9,14 +9,15 @@ import { HUD, FONT_BODY, FONT_DISPLAY, FS, SP, Z, RADIUS, EASE, MODAL } from '@/
 import gsap from 'gsap'
 
 /* ── SVG/geometry constants ─────────────────────────────────── */
-const SVG_W   = 300
-const SVG_H   = 300
-const PUCK_CX = 280
-const PUCK_CY = 280
-const R_PUCK  = 18
-const R_OUT   = 72
-const R_IN    = 46
-const R_ICON  = 59
+const SVG_W   = 380
+const SVG_H   = 380
+const PUCK_CX = 356
+const PUCK_CY = 356
+const R_PUCK  = 39
+const R_OUT   = 176
+const R_IN    = 88
+const R_ICON  = 133
+const R_LABEL = 80
 
 /* Arc definitions */
 const ARC_DEFS = [
@@ -28,9 +29,50 @@ const ARC_DEFS = [
 
 type ArcId = 0 | 1 | 2 | 3
 
-/* SVG colour exceptions — CSS vars unsupported in SVG stroke/fill attributes */
-const GOLD       = '#C8A030' // approved SVG exception
-const GOLD_FAINT = '#C8A030' // approved SVG exception (opacity applied per-element)
+/* Derived fan geometry — computed once from ARC_DEFS so adding/removing/
+   reordering arcs needs no changes anywhere these are used. */
+const FAN_START = Math.min(...ARC_DEFS.map(a => a.startDeg))
+const FAN_END   = Math.max(...ARC_DEFS.map(a => a.endDeg))
+const FAN_SPAN  = FAN_END - FAN_START
+
+/* SVG colour exceptions — CSS vars unsupported in SVG stroke/fill attributes.
+   Matches the GM view's Imperial Steel theme (--hud-gold under
+   [data-theme="gm-imperial"], the only theme GmShell ever mounts this
+   widget under) instead of a hardcoded warm gold. */
+const GOLD       = '#8AAFC8' // approved SVG exception — matches --hud-gold (Imperial Steel)
+const GOLD_FAINT = '#8AAFC8' // approved SVG exception (opacity applied per-element)
+
+/* ── GSAP-animated colour strings ──────────────────────────────
+   These are JS values handed to GSAP tween props (fill/stroke as tween
+   *targets*, not static SVG presentation attributes) — CSS custom
+   properties/color-mix() aren't valid GSAP colour interpolation targets,
+   so these are exempt from the token system for the same reason the
+   inline SVG hex exceptions above are. */
+const GOLD_STROKE_HOT   = 'rgba(138,175,200,0.95)'
+const BLADE_FLASH_FILL  = 'rgba(160,200,225,1)'
+const PUCK_SWEEP_STROKE = 'rgba(160,200,225,0.9)'
+const PUCK_RING_OUTER_HOT  = 'rgba(138,175,200,0.6)'
+const PUCK_RING_OUTER_REST = 'rgba(90,120,155,0.28)'
+const PUCK_RING_MID_REST   = 'rgba(90,120,155,0.55)'
+
+/* Blade deploy stagger timing (Fix 3) */
+const BLADE_OPEN_BASE_DELAY = 0.06
+const BLADE_OPEN_STAGGER    = 0.07
+const BLADE_CLOSE_STAGGER   = 0.055
+
+/* Puck hover-sweep geometry (Fix 5) — small local coordinate space inset
+   around the puck div; dasharray shows ~30 units of the ring's arc length. */
+const PUCK_SWEEP_VB     = R_PUCK * 2 + 6
+const PUCK_SWEEP_CENTER = PUCK_SWEEP_VB / 2
+const PUCK_SWEEP_R      = PUCK_SWEEP_CENTER - 2
+const PUCK_SWEEP_CIRC   = 2 * Math.PI * PUCK_SWEEP_R
+const PUCK_SWEEP_DASH   = 30
+const PUCK_SWEEP_GAP    = PUCK_SWEEP_CIRC - PUCK_SWEEP_DASH
+
+/* Hover-label auto-fit + scramble (Fix 6) */
+const LABEL_BASE_FONT_SIZE = 11
+const LABEL_MIN_FONT_SIZE  = 7
+const SCRAMBLE_CHARS       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▪▫◊'
 
 /* ── Polar → SVG cartesian ──────────────────────────────────── */
 function polar(cx: number, cy: number, r: number, deg: number) {
@@ -51,6 +93,20 @@ function arcPath(cx: number, cy: number, r1: number, r2: number, startDeg: numbe
     `A ${r2} ${r2} 0 ${large} 0 ${s2.x} ${s2.y}`,
     'Z',
   ].join(' ')
+}
+
+/* Open single-radius arc (no return leg) — required for <textPath>, where
+   the path's actual length/direction matters. arcPath() above is a closed
+   there-and-back ring shape: fine for a stroked ring (the return leg just
+   overlaps the forward one), but a textPath laid on it treats that return
+   leg as real path length — with r1===r2 it loops the long way back around
+   almost the full circle, and startOffset="50%" lands mid-loop instead of
+   centered on the visible arc. */
+function arcOpenPath(cx: number, cy: number, r: number, startDeg: number, endDeg: number): string {
+  const p1 = polar(cx, cy, r, startDeg)
+  const p2 = polar(cx, cy, r, endDeg)
+  const large = (endDeg - startDeg > 180) ? 1 : 0
+  return `M ${p1.x} ${p1.y} A ${r} ${r} 0 ${large} 1 ${p2.x} ${p2.y}`
 }
 
 /* ── Props ──────────────────────────────────────────────────── */
@@ -77,12 +133,23 @@ export function MapToolsRadial({
 
 
   /* GSAP element refs */
-  const puckInnerRef  = useRef<SVGCircleElement>(null)
-  const puckIconRef   = useRef<SVGTextElement>(null)
-  const ringsGroupRef = useRef<SVGGElement>(null)
-  const arcGroupRefs  = useRef<(SVGGElement | null)[]>([null, null, null, null])
-  const labelTextRef  = useRef<SVGTextElement>(null)
-  const hoverTlRefs   = useRef<(gsap.core.Timeline | null)[]>([null, null, null, null])
+  const puckOuterRef   = useRef<HTMLDivElement>(null)
+  const puckMiddleRef  = useRef<HTMLDivElement>(null)
+  const puckIconRef    = useRef<SVGSVGElement>(null)
+  const ringsGroupRef  = useRef<SVGGElement>(null)
+  const arcGroupRefs   = useRef<(SVGGElement | null)[]>(Array.from({ length: ARC_DEFS.length }, () => null))
+  const overlayRefs    = useRef<(SVGPathElement | null)[]>(Array.from({ length: ARC_DEFS.length }, () => null))
+  const flashRefs      = useRef<(SVGPathElement | null)[]>(Array.from({ length: ARC_DEFS.length }, () => null))
+  const labelTextRef   = useRef<SVGTextElement>(null)
+  const labelPathRef   = useRef<SVGTextPathElement>(null)
+  const hoverTlRefs    = useRef<(gsap.core.Timeline | null)[]>(Array.from({ length: ARC_DEFS.length }, () => null))
+
+  /* Puck hover-sweep */
+  const puckSweepRef   = useRef<SVGCircleElement>(null)
+  const puckSweepTlRef = useRef<gsap.core.Timeline | null>(null)
+
+  /* Label scramble */
+  const labelScrambleRef = useRef<{ cancelled: boolean; raf: number | null }>({ cancelled: true, raf: null })
 
   /* Drag state */
   const dragOffsetRef = useRef<{ ox: number; oy: number } | null>(null)
@@ -232,30 +299,98 @@ export function MapToolsRadial({
     await supabase.from('maps').update({ planet_id: planetId }).eq('id', mapId)
   }
 
+  /* ── Hover label: auto-fit sizing + scramble/settle (Fix 6) ──────── */
+  function fitLabelFontSize(target: string): number {
+    const textEl = labelTextRef.current
+    const pathEl  = labelPathRef.current
+    if (!textEl || !pathEl) return LABEL_BASE_FONT_SIZE
+    textEl.setAttribute('font-size', String(LABEL_BASE_FONT_SIZE))
+    pathEl.textContent = target
+    const measured = textEl.getComputedTextLength()
+    const availableLength = 2 * Math.PI * R_LABEL * (FAN_SPAN / 360)
+    const threshold = availableLength * 0.92
+    const size = measured > threshold ? LABEL_BASE_FONT_SIZE * (threshold / measured) : LABEL_BASE_FONT_SIZE
+    return Math.max(LABEL_MIN_FONT_SIZE, size)
+  }
+
+  function startLabelScramble(target: string) {
+    const state = labelScrambleRef.current
+    state.cancelled = false
+    if (state.raf !== null) { cancelAnimationFrame(state.raf); state.raf = null }
+    let frame = 0
+    const step = () => {
+      if (state.cancelled) return
+      const pathEl = labelPathRef.current
+      if (!pathEl) return
+      let settled = true
+      let out = ''
+      for (let idx = 0; idx < target.length; idx++) {
+        const ch = target[idx]
+        if (ch === ' ') { out += ' '; continue }
+        const settleAt = 3 + idx * 2
+        if (frame >= settleAt) {
+          out += ch
+        } else {
+          settled = false
+          out += SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)]
+        }
+      }
+      pathEl.textContent = out
+      frame += 1
+      state.raf = settled ? null : requestAnimationFrame(step)
+    }
+    step()
+  }
+
+  function cancelLabelScramble() {
+    const state = labelScrambleRef.current
+    state.cancelled = true
+    if (state.raf !== null) { cancelAnimationFrame(state.raf); state.raf = null }
+    if (labelPathRef.current) labelPathRef.current.textContent = ''
+  }
+
   function handleArcEnter(id: ArcId) {
     setActiveArc(id)
     const i = id
     hoverTlRefs.current[i]?.kill()
-    const el = arcGroupRefs.current[i]
-    if (!el) return
+    const el      = arcGroupRefs.current[i]
+    const overlay = overlayRefs.current[i]
     const tl = gsap.timeline()
     hoverTlRefs.current[i] = tl
-    tl.to(el.querySelector('path:first-child'), { fillOpacity: 0.18, duration: 0.16 }, 0)
-    tl.to(el, { scale: 1.04, transformOrigin: `${PUCK_CX}px ${PUCK_CY}px`, duration: 0.2, ease: 'back.out(2)' }, 0)
+    if (overlay) tl.to(overlay, { opacity: 1, duration: 0.16 }, 0)
+    if (el) tl.to(el, { scale: 1.04, transformOrigin: `${PUCK_CX}px ${PUCK_CY}px`, duration: 0.2, ease: 'back.out(2)' }, 0)
     if (labelTextRef.current) tl.to(labelTextRef.current, { fillOpacity: 0.88, duration: 0.18 }, 0)
+
+    const target  = ARC_DEFS[id].label
+    const fitSize = fitLabelFontSize(target)
+    if (labelTextRef.current) labelTextRef.current.setAttribute('font-size', String(fitSize))
+    startLabelScramble(target)
   }
 
   function handleArcLeave(id: ArcId) {
     setActiveArc(null)
     const i = id
     hoverTlRefs.current[i]?.kill()
-    const el = arcGroupRefs.current[i]
-    if (!el) return
+    const el      = arcGroupRefs.current[i]
+    const overlay = overlayRefs.current[i]
     const tl = gsap.timeline()
     hoverTlRefs.current[i] = tl
-    tl.to(el.querySelector('path:first-child'), { fillOpacity: 0.06, duration: 0.22 }, 0)
-    tl.to(el, { scale: 1, duration: 0.22 }, 0)
+    if (overlay) tl.to(overlay, { opacity: 0, duration: 0.22 }, 0)
+    if (el) tl.to(el, { scale: 1, duration: 0.22 }, 0)
     if (labelTextRef.current) tl.to(labelTextRef.current, { fillOpacity: 0, duration: 0.14 }, 0)
+    cancelLabelScramble()
+  }
+
+  /* ── Puck hover light sweep (Fix 5) — single pass, killable ──────── */
+  function handlePuckHoverSweep() {
+    puckSweepTlRef.current?.kill()
+    const el = puckSweepRef.current
+    if (!el) return
+    gsap.set(el, { opacity: 1, rotation: -90, transformOrigin: '50% 50%' })
+    const tl = gsap.timeline()
+    puckSweepTlRef.current = tl
+    tl.to(el, { rotation: 270, duration: 0.42, ease: 'power2.inOut' }, 0)
+    tl.to(el, { opacity: 0, duration: 0.15, ease: 'power1.out' }, 0.27)
   }
 
   function handleArcPick(id: ArcId) {
@@ -320,14 +455,11 @@ export function MapToolsRadial({
       // ── Open sequence ──
       const tl = gsap.timeline()
 
-      // t=0: puck border + icon
-      tl.to(puckInnerRef.current, {
-        attr: { stroke: 'rgba(200,160,48,0.95)', strokeWidth: 2 }, // approved SVG exception
-        duration: 0.2, ease: 'power2.out',
-      }, 0)
+      // t=0: puck rings + icon
+      tl.to(puckMiddleRef.current, { borderColor: GOLD_STROKE_HOT, duration: 0.2, ease: 'power2.out' }, 0)
+      tl.to(puckOuterRef.current, { borderColor: PUCK_RING_OUTER_HOT, duration: 0.2, ease: 'power2.out' }, 0)
       tl.to(puckIconRef.current, {
-        rotation: 45, transformOrigin: `${PUCK_CX}px ${PUCK_CY}px`,
-        fill: 'rgba(200,160,48,1.0)', // approved SVG exception
+        rotation: 45, transformOrigin: '50% 50%',
         duration: 0.35, ease: 'back.out(2)',
       }, 0)
 
@@ -339,13 +471,24 @@ export function MapToolsRadial({
         }, 0.04)
       }
 
-      // t=0.08, 0.16, 0.24: arcs stagger in
-      arcGroupRefs.current.forEach((el, i) => {
+      // Blade deploy — rotation sweep from a common swept-back start angle.
+      // FAN_START is derived from ARC_DEFS, so adding/removing/reordering
+      // arcs needs no changes here.
+      ARC_DEFS.forEach((arc, i) => {
+        const el = arcGroupRefs.current[i]
         if (!el) return
-        gsap.set(el, { opacity: 0, scale: 0.55, transformOrigin: `${PUCK_CX}px ${PUCK_CY}px` })
+        const sweepBack = FAN_START - arc.startDeg - 14
+        gsap.set(el, { opacity: 0, rotation: sweepBack, transformOrigin: `${PUCK_CX}px ${PUCK_CY}px` })
         tl.to(el, {
-          opacity: 1, scale: 1, duration: 0.42, ease: 'back.out(1.7)',
-        }, 0.08 + i * 0.08)
+          opacity: 1, rotation: 0, duration: 0.5, ease: 'back.out(1.15)',
+          onComplete: () => {
+            const flash = flashRefs.current[i]
+            if (!flash) return
+            gsap.timeline()
+              .to(flash, { fillOpacity: 0.22, duration: 0.05 })
+              .to(flash, { fillOpacity: 0, duration: 0.22, ease: 'power2.out' })
+          },
+        }, BLADE_OPEN_BASE_DELAY + i * BLADE_OPEN_STAGGER)
       })
     } else {
       // ── Close sequence ──
@@ -353,15 +496,18 @@ export function MapToolsRadial({
 
       // Label out immediately
       if (labelTextRef.current) tl.to(labelTextRef.current, { fillOpacity: 0, duration: 0.1 }, 0)
+      cancelLabelScramble()
 
-      // Arcs out: reversed order
-      arcGroupRefs.current.slice().reverse().forEach((el, i) => {
+      // Blades out: reverse index order, sweep back to the same start angle
+      ARC_DEFS.slice().reverse().forEach((arc, i) => {
+        const el = arcGroupRefs.current[arc.id]
         if (!el) return
+        const sweepBack = FAN_START - arc.startDeg - 14
         tl.to(el, {
-          opacity: 0, scale: 0.6,
+          opacity: 0, rotation: sweepBack,
           transformOrigin: `${PUCK_CX}px ${PUCK_CY}px`,
-          duration: 0.22, ease: 'power2.in',
-        }, i * 0.055)
+          duration: 0.3, ease: 'power2.in',
+        }, i * BLADE_CLOSE_STAGGER)
       })
 
       // Rings out
@@ -371,16 +517,13 @@ export function MapToolsRadial({
 
       // Puck reset
       tl.to(puckIconRef.current, {
-        rotation: 0, transformOrigin: `${PUCK_CX}px ${PUCK_CY}px`,
-        fill: 'rgba(200,160,48,0.75)', // approved SVG exception
+        rotation: 0, transformOrigin: '50% 50%',
         duration: 0.3, ease: 'back.out(1.6)',
       }, 0)
-      tl.to(puckInnerRef.current, {
-        attr: { stroke: 'rgba(200,160,48,0.45)', strokeWidth: 1.5 }, // approved SVG exception
-        duration: 0.2,
-      }, 0)
+      tl.to(puckMiddleRef.current, { borderColor: PUCK_RING_MID_REST, duration: 0.2 }, 0)
+      tl.to(puckOuterRef.current, { borderColor: PUCK_RING_OUTER_REST, duration: 0.2 }, 0)
     }
-  }, [isOpen]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isOpen])
 
   return (
     <div
@@ -402,6 +545,32 @@ export function MapToolsRadial({
         viewBox={`0 0 ${SVG_W} ${SVG_H}`}
         style={{ position: 'absolute', inset: 0, zIndex: Z.raised, overflow: 'visible' }}
       >
+        {/* ── Defs: blade gradients/shadow + hover label arc path ── */}
+        <defs>
+          {/* Rest-state blade gradient — cold steel, light biased toward the puck */}
+          <radialGradient id="bladeGrad" cx="1" cy="1" r="1.3">
+            <stop offset="0.42" stopColor="rgba(9,11,15,0.97)" />   {/* approved SVG exception */}
+            <stop offset="0.58" stopColor="rgba(24,30,40,0.96)" />  {/* approved SVG exception */}
+            <stop offset="0.72" stopColor="rgba(18,23,30,0.96)" />  {/* approved SVG exception */}
+            <stop offset="0.86" stopColor="rgba(10,13,17,0.97)" />  {/* approved SVG exception */}
+          </radialGradient>
+          {/* Hot-state (hover) blade gradient — crossfaded in via overlay opacity */}
+          <radialGradient id="bladeGradHot" cx="1" cy="1" r="1.3">
+            <stop offset="0.42" stopColor="rgba(14,18,26,0.97)" />  {/* approved SVG exception */}
+            <stop offset="0.58" stopColor="rgba(34,46,62,0.96)" />  {/* approved SVG exception */}
+            <stop offset="0.72" stopColor="rgba(26,34,46,0.96)" />  {/* approved SVG exception */}
+            <stop offset="0.86" stopColor="rgba(14,18,24,0.97)" />  {/* approved SVG exception */}
+          </radialGradient>
+          <filter id="bladeShadow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#000" floodOpacity={0.55} /> {/* approved SVG exception */}
+          </filter>
+          <path
+            id="label-arc-path"
+            d={arcOpenPath(PUCK_CX, PUCK_CY, R_LABEL, FAN_START, FAN_END)}
+            fill="none"
+          />
+        </defs>
+
         {/* ── Always-visible faint construction arc ── */}
         <path
           d={arcPath(PUCK_CX, PUCK_CY, R_OUT + 14, R_OUT + 14, 178, 276)}
@@ -462,19 +631,33 @@ export function MapToolsRadial({
 
         {/* ── Arc blades (GSAP-controlled visibility) ── */}
         {ARC_DEFS.map(arc => {
-          const midDeg = (arc.startDeg + arc.endDeg) / 2
-          const iconPos = polar(PUCK_CX, PUCK_CY, R_ICON, midDeg)
-          const isActive = activeArc === arc.id
+          const midDeg    = (arc.startDeg + arc.endDeg) / 2
+          const iconPos   = polar(PUCK_CX, PUCK_CY, R_ICON, midDeg)
+          const isActive  = activeArc === arc.id
+          const bladeD    = arcPath(PUCK_CX, PUCK_CY, R_IN, R_OUT, arc.startDeg, arc.endDeg)
+          const lightD    = arcPath(PUCK_CX, PUCK_CY, R_IN + 2, R_IN + 2, arc.startDeg + 0.5, arc.endDeg - 0.5)
+          const edgeIn1   = polar(PUCK_CX, PUCK_CY, R_IN,  arc.startDeg)
+          const edgeOut1  = polar(PUCK_CX, PUCK_CY, R_OUT, arc.startDeg)
+          const edgeIn2   = polar(PUCK_CX, PUCK_CY, R_IN,  arc.endDeg)
+          const edgeOut2  = polar(PUCK_CX, PUCK_CY, R_OUT, arc.endDeg)
 
           return (
             <g key={arc.id} id={`arc-${arc.id}`} ref={el => { arcGroupRefs.current[arc.id] = el }} style={{ pointerEvents: 'none' }}>
-              {/* Blade fill */}
+              {/* Base blade fill — rest-state gradient, always fully opaque, lifted via drop shadow */}
+              <path d={bladeD} fill="url(#bladeGrad)" stroke="none" filter="url(#bladeShadow)" />
+              {/* Hover overlay — hot-state gradient, GSAP opacity-tweened crossfade */}
               <path
-                d={arcPath(PUCK_CX, PUCK_CY, R_IN, R_OUT, arc.startDeg, arc.endDeg)}
-                fill={GOLD}
-                fillOpacity={isActive ? 0.18 : 0.06}
+                ref={el => { overlayRefs.current[arc.id] = el }}
+                d={bladeD}
+                fill="url(#bladeGradHot)"
                 stroke="none"
+                opacity={0}
               />
+              {/* Side edge strokes — contained "plate" silhouette */}
+              <line x1={edgeIn1.x} y1={edgeIn1.y} x2={edgeOut1.x} y2={edgeOut1.y}
+                stroke={GOLD} strokeOpacity={0.25} strokeWidth={0.75} />
+              <line x1={edgeIn2.x} y1={edgeIn2.y} x2={edgeOut2.x} y2={edgeOut2.y}
+                stroke={GOLD} strokeOpacity={0.25} strokeWidth={0.75} />
               {/* Outer arc border */}
               <path
                 d={arcPath(PUCK_CX, PUCK_CY, R_OUT, R_OUT, arc.startDeg, arc.endDeg)}
@@ -492,49 +675,44 @@ export function MapToolsRadial({
                 strokeOpacity={isActive ? 0.95 : 0.22}
                 strokeWidth={1}
               />
+              {/* Inner-edge light-catch */}
+              <path d={lightD} fill="none" stroke="rgba(160,200,225,0.28)" strokeWidth={1} /> {/* approved SVG exception */}
               {/* Icon */}
               <text
                 x={iconPos.x} y={iconPos.y}
                 textAnchor="middle" dominantBaseline="central"
                 fill={GOLD}
                 fillOpacity={isActive ? 1.0 : 0.6}
-                fontSize={10}
+                fontSize={24}
                 fontFamily={FONT_BODY}
               >
                 {arc.icon}
               </text>
+              {/* Lock-in flash — punched via fillOpacity on deploy onComplete, above icon, non-interactive */}
+              <path
+                ref={el => { flashRefs.current[arc.id] = el }}
+                d={bladeD}
+                fill={BLADE_FLASH_FILL}
+                fillOpacity={0}
+                stroke="none"
+                style={{ pointerEvents: 'none' }}
+              />
             </g>
           )
         })}
 
-        {/* ── Defs: hover label arc path — in gap between puck rings and inner arc ── */}
-        <defs>
-          <path
-            id="label-arc-path"
-            d={(() => {
-              const midDeg = activeArc !== null
-                ? (ARC_DEFS[activeArc].startDeg + ARC_DEFS[activeArc].endDeg) / 2
-                : 225
-              return arcPath(PUCK_CX, PUCK_CY, 34, 34, midDeg - 55, midDeg + 55)
-            })()}
-            fill="none"
-          />
-        </defs>
-
-        {/* ── Hover label (GSAP-controlled opacity) ── */}
+        {/* ── Hover label (GSAP-controlled opacity) — auto-fit + scramble driven imperatively ── */}
         <text
           ref={labelTextRef}
           fill={GOLD}
           fillOpacity={0}
-          fontSize={8}
+          fontSize={LABEL_BASE_FONT_SIZE}
           fontFamily={FONT_DISPLAY}
           fontWeight={700}
           letterSpacing="0.13em"
           style={{ pointerEvents: 'none' }}
         >
-          <textPath href="#label-arc-path" startOffset="50%" textAnchor="middle">
-            {activeArc !== null ? ARC_DEFS[activeArc].label : ''}
-          </textPath>
+          <textPath ref={labelPathRef} href="#label-arc-path" startOffset="50%" textAnchor="middle" />
         </text>
 
         {/* ── Arc hit areas ── */}
@@ -551,52 +729,89 @@ export function MapToolsRadial({
           />
         ))}
 
-        {/* Puck */}
-        <circle
-          ref={puckInnerRef}
-          cx={PUCK_CX} cy={PUCK_CY} r={R_PUCK}
-          fill={HUD.bg}
-          stroke={GOLD}
-          strokeWidth={1.5}
-          style={{ pointerEvents: 'none' }}
-        />
-        {/* Puck icon — ✦ hamburger */}
-        <text
-          ref={puckIconRef}
-          x={PUCK_CX} y={PUCK_CY}
-          textAnchor="middle" dominantBaseline="central"
-          fill={GOLD}
-          fontSize={10}
-          fontFamily={FONT_BODY}
-          style={{ pointerEvents: 'none' }}
-        >
-          ✦
-        </text>
       </svg>
 
-      {/* ── Puck click target (z=2) — open/close only ── */}
+      {/* ── Puck (z=2) — dial-face DOM widget: open/close + hover light sweep ── */}
       <div
         onClick={() => setIsOpen(o => !o)}
+        onMouseEnter={handlePuckHoverSweep}
         style={{
-          position:     'absolute',
-          left:         PUCK_CX - R_PUCK - 6,
-          top:          PUCK_CY - R_PUCK - 6,
-          width:        (R_PUCK + 6) * 2,
-          height:       (R_PUCK + 6) * 2,
-          borderRadius: RADIUS.full,
-          zIndex:       Z.raised + 1,
-          cursor:       'pointer',
-          pointerEvents:'auto',
+          position:      'absolute',
+          right:         8,
+          bottom:        8,
+          width:         R_PUCK * 2,
+          height:        R_PUCK * 2,
+          zIndex:        Z.raised + 1,
+          cursor:        'pointer',
+          pointerEvents: 'auto',
         }}
-      />
+      >
+        {/* Hover light sweep — single pass on mouseenter, not looping */}
+        <svg
+          viewBox={`0 0 ${PUCK_SWEEP_VB} ${PUCK_SWEEP_VB}`}
+          style={{
+            position: 'absolute', inset: -3,
+            width: `calc(100% + 6px)`, height: `calc(100% + 6px)`,
+            pointerEvents: 'none',
+          }}
+        >
+          <circle
+            ref={puckSweepRef}
+            cx={PUCK_SWEEP_CENTER} cy={PUCK_SWEEP_CENTER} r={PUCK_SWEEP_R}
+            fill="none"
+            stroke={PUCK_SWEEP_STROKE}
+            strokeWidth={1.5}
+            strokeLinecap="round"
+            strokeDasharray={`${PUCK_SWEEP_DASH} ${PUCK_SWEEP_GAP}`}
+            opacity={0}
+          />
+        </svg>
+
+        {/* Outer ring */}
+        <div ref={puckOuterRef} style={{
+          position: 'absolute', inset: 0, borderRadius: RADIUS.full,
+          border: `1px solid ${PUCK_RING_OUTER_REST}`,
+        }} />
+
+        {/* Middle face — gradient + inset/outer shadow, dial-face physicality */}
+        <div ref={puckMiddleRef} style={{
+          position: 'absolute', inset: 7, borderRadius: RADIUS.full,
+          border: `1.5px solid ${PUCK_RING_MID_REST}`,
+          /* approved SVG/CSS exception — static radial gradient + shadow, recoloured cold steel to match Imperial Steel theme */
+          background: 'radial-gradient(circle at 36% 30%, rgba(90,120,155,0.18) 0%, rgba(8,10,13,0.98) 62%, rgba(3,4,6,1) 100%)',
+          boxShadow: 'inset 0 1px 1px rgba(160,200,225,0.12), inset 0 -2px 3px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.45)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1px',
+        }}>
+          {/* Innermost faint ring */}
+          <div style={{
+            position: 'absolute', inset: 14, borderRadius: RADIUS.full,
+            border: '0.5px solid rgba(90,120,155,0.18)', /* approved SVG exception */
+          }} />
+          {/* Icon — stylised map/compass glyph */}
+          <svg ref={puckIconRef} viewBox="0 0 24 24" fill="none" width={22} height={22} style={{ position: 'relative', zIndex: 2 }}>
+            <path d="M3 6.5 L8.5 4 L15.5 6.5 L21 4 V17.5 L15.5 20 L8.5 17.5 L3 20 Z"
+              stroke={GOLD} strokeOpacity={0.9} strokeWidth={1.3} strokeLinejoin="round" />
+            <path d="M8.5 4 V17.5 M15.5 6.5 V20" stroke={GOLD} strokeOpacity={0.45} strokeWidth={1} />
+            <circle cx={12} cy={10.6} r={2.1} stroke={GOLD} strokeWidth={1.3} />
+            <path d="M12 12.7 V15.2" stroke={GOLD} strokeWidth={1.3} strokeLinecap="round" />
+          </svg>
+          <span style={{
+            fontFamily: FONT_DISPLAY, fontSize: FS.overline, fontWeight: 700,
+            letterSpacing: '0.24em', color: 'rgba(138,175,200,0.85)', /* approved SVG exception */
+            position: 'relative', zIndex: 2, lineHeight: 1, marginLeft: '0.24em',
+          }}>
+            MAP
+          </span>
+        </div>
+      </div>
       {/* ── Drag handle (z=3) — move widget only ── */}
       <div
         onMouseDown={onDragMouseDown}
         style={{
           position:        'absolute',
           bottom:          -16,
-          left:            PUCK_CX - R_PUCK - 6,
-          width:           (R_PUCK + 6) * 2,
+          right:           8,
+          width:           R_PUCK * 2,
           display:         'grid',
           gridTemplateColumns: 'repeat(4, 3px)',
           gap:             SP[1],
