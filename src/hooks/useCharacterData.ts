@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { randomUUID } from '@/lib/utils'
 import { logPurchaseNotification } from '@/lib/logRoll'
 import { fetchActiveDataset } from '@/lib/activeDataset'
+import { useCharacterSigAbilities } from '@/hooks/useCharacterSigAbilities'
 import {
   RANGE_LABELS, ACTIVATION_LABELS, CHARACTERISTIC_ABBR,
 } from '@/lib/types'
@@ -606,6 +607,26 @@ export function useCharacterData(characterId: string) {
     ])
   }
 
+  /**
+   * Cancelling the Dedication characteristic-choice prompt reverts the purchase
+   * entirely — the choice is mandatory at time of purchase, so there is no
+   * "resolve it later" state a Dedication row can be left in. Removes the
+   * talent row by its exact id (not by talent_key — Dedication is rankable,
+   * so a character can have more than one row) and refunds the XP.
+   */
+  const handleCancelDedication = async (talentId: string, xpCost: number) => {
+    if (!character) return
+    markSelf()
+    const newXp = character.xp_available + xpCost
+    setCharacter({ ...character, xp_available: newXp })
+    setTalents(prev => prev.filter(t => t.id !== talentId))
+    await Promise.all([
+      supabase.from('character_talents').delete().eq('id', talentId),
+      supabase.from('characters').update({ xp_available: newXp }).eq('id', character.id),
+      supabase.from('xp_transactions').insert({ character_id: character.id, amount: xpCost, reason: 'Dedication cancelled: no characteristic chosen' }),
+    ])
+  }
+
   const handleBackstoryChange = async (newBackstory: string) => {
     if (!character) return
     markSelf()
@@ -925,6 +946,15 @@ export function useCharacterData(characterId: string) {
     toast.success(`Purchased ${refSpecMap[specKey]?.name || specKey}!`)
   }
 
+  const {
+    availableSigAbilities: sigAbilities,
+    lockedAbilities: lockedSigAbilities,
+    purchasedNodes: purchasedSigNodes,
+    hasUnlockedTier5,
+    lockInAbility,
+    purchaseNode: purchaseSigNode,
+  } = useCharacterSigAbilities(characterId, character?.career_key ?? '')
+
   return {
     // State
     character, skills, talents, weapons, armor, gear, crits, charSpecs,
@@ -968,10 +998,18 @@ export function useCharacterData(characterId: string) {
     handleReduceSkill,
     handlePurchaseTalent,
     handleResolveDedication,
+    handleCancelDedication,
     handleCreditSpend,
     handleBackstoryChange,
     handleNotesChange,
     handlePurchaseForceAbility,
     handleBuySpecialization,
+    // Signature abilities
+    sigAbilities,
+    lockedSigAbilities,
+    purchasedSigNodes,
+    hasUnlockedTier5,
+    lockInAbility,
+    purchaseSigNode,
   }
 }

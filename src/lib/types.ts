@@ -462,6 +462,53 @@ export interface CharacterTalent {
   dedication_characteristic?: 'brawn' | 'agility' | 'intellect' | 'cunning' | 'willpower' | 'presence' | null
 }
 
+/** One node in a signature ability tree (ref_sig_ability_nodes row). row_index 0 is the base node. */
+export interface SigAbilityNode {
+  id: string
+  sigAbilityKey: string
+  rowIndex: number
+  colIndex: number
+  colSpan: number
+  nodeKey: string
+  name: string
+  description: string
+  xpCost: number
+  connectUp: boolean
+  connectDown: boolean
+  connectLeft: boolean
+  connectRight: boolean
+}
+
+/** A full signature ability tree for one career (ref_sig_abilities + its nodes). */
+export interface SigAbility {
+  key: string
+  name: string
+  description: string
+  careerKey: string
+  /** Includes the base node (rowIndex 0) alongside every upgrade node. */
+  nodes: SigAbilityNode[]
+}
+
+/** character_sig_ability_nodes row — one purchased node (base or upgrade). */
+export interface CharacterSigAbilityNode {
+  id: string
+  character_id: string
+  sig_ability_key: string
+  node_key: string
+  col_index: number
+  row_index: number
+  xp_cost: number
+  spec_slot: string | null
+  purchased_at: string
+}
+
+/** A signature ability this character has locked in against one of their specialization slots. */
+export interface LockedSigAbility {
+  sigAbilityKey: string
+  specSlot: string
+  purchasedNodeKeys: string[]
+}
+
 export type EquipState = 'equipped' | 'carrying' | 'stowed'
 
 export type StowLocationType = 'vehicle' | 'starship' | 'safe_house' | 'base_of_operations'

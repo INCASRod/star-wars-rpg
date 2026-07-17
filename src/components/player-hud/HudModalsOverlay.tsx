@@ -27,6 +27,7 @@ import type { ForceTreeNode, ForceTreeConnection } from '@/components/character/
 import type {
   Character, CharacterSkill, CharacterTalent, CharacterSpecialization,
   RefSpecialization, RefTalent, SpeciesAbility, RefWeaponQuality,
+  SigAbility, SigAbilityNode, LockedSigAbility, CharacterSigAbilityNode,
 } from '@/lib/types'
 
 interface HudModalsOverlayProps {
@@ -56,6 +57,12 @@ interface HudModalsOverlayProps {
   onPurchaseTalent: (talentKey: string, row: number, col: number, specKey: string) => Promise<string | undefined>
   onRemoveTalent: ((talentId: string, xpCost: number) => void) | undefined
   onBuySpecialization: (specKey: string, setSpecKey: (k: string) => void) => void
+  availableSigAbilities: SigAbility[]
+  lockedSigAbilities: Record<string, LockedSigAbility>
+  purchasedSigNodes: CharacterSigAbilityNode[]
+  hasUnlockedTier5: boolean
+  onLockInSigAbility: (sigAbilityKey: string, specSlot: string) => Promise<void>
+  onPurchaseSigNode: (sigAbilityKey: string, node: SigAbilityNode) => Promise<void>
   showForceTree: boolean
   setShowForceTree: (b: boolean) => void
   allForcePowers: ForcePowerDisplay[]
@@ -99,9 +106,10 @@ interface HudModalsOverlayProps {
   spendCreditsOpen: boolean
   setSpendCreditsOpen: (b: boolean) => void
 
-  pendingDedication: { talentId: string; row: number; col: number; specKey: string } | null
-  setPendingDedication: (d: { talentId: string; row: number; col: number; specKey: string } | null) => void
+  pendingDedication: { talentId: string; row: number; col: number; specKey: string; xpCost: number } | null
+  setPendingDedication: (d: { talentId: string; row: number; col: number; specKey: string; xpCost: number } | null) => void
   onResolveDedication: (talentId: string, charKey: string) => Promise<void>
+  onCancelDedication: (talentId: string, xpCost: number) => Promise<void>
 
   diceOpen?:         boolean
   onDiceOpenChange?: (open: boolean) => void
@@ -113,6 +121,8 @@ export function HudModalsOverlay({
   rollResult, rollLabel, setRollResult,
   showTalentTree, setShowTalentTree, charSpecs, activeSpecKey, setActiveSpecKey,
   talentTreeData, onPurchaseTalent, onRemoveTalent, onBuySpecialization,
+  availableSigAbilities, lockedSigAbilities, purchasedSigNodes, hasUnlockedTier5,
+  onLockInSigAbility, onPurchaseSigNode,
   showForceTree, setShowForceTree, allForcePowers, activePowerKey, setActivePowerKey, forcePowerTreeData, onPurchaseForceAbility,
   gmDialog, setGmDialog,
   gmCritInjuryDialog, setGmCritInjuryDialog,
@@ -126,7 +136,7 @@ export function HudModalsOverlay({
   lootReveal, setLootReveal,
   vendorOffer, setVendorOffer, onCreditSpend,
   spendCreditsOpen, setSpendCreditsOpen,
-  pendingDedication, setPendingDedication, onResolveDedication,
+  pendingDedication, setPendingDedication, onResolveDedication, onCancelDedication,
   diceOpen, onDiceOpenChange,
 }: HudModalsOverlayProps) {
   return (
@@ -151,6 +161,12 @@ export function HudModalsOverlay({
         onRemoveTalent={onRemoveTalent}
         onBuySpecialization={onBuySpecialization}
         onPendingDedication={setPendingDedication}
+        availableSigAbilities={availableSigAbilities}
+        lockedSigAbilities={lockedSigAbilities}
+        purchasedSigNodes={purchasedSigNodes}
+        hasUnlockedTier5={hasUnlockedTier5}
+        onLockInSigAbility={onLockInSigAbility}
+        onPurchaseSigNode={onPurchaseSigNode}
       />
 
       <HudForcePowerTreeModal
@@ -383,7 +399,14 @@ export function HudModalsOverlay({
             setPendingDedication(null)
             await onResolveDedication(talentId, charKey)
           }}
-          onCancel={() => setPendingDedication(null)}
+          onCancel={async () => {
+            // A characteristic choice is mandatory at purchase time — cancelling
+            // reverts the purchase (refund XP, delete the talent row) rather than
+            // leaving an unresolved Dedication row that would need reminding about.
+            const { talentId, xpCost } = pendingDedication
+            setPendingDedication(null)
+            await onCancelDedication(talentId, xpCost)
+          }}
         />,
         document.body,
       )}

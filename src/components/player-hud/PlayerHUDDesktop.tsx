@@ -79,8 +79,9 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     handleVitalChange, handleVitalAdjust, handleSetEquipState,
     handleHealCrit, handlePortraitUpload, handlePortraitDelete,
     handleRemoveWeapon, handleRemoveEquipment, handleRemoveTalent,
-    handlePurchaseTalent, handleResolveDedication, handleCreditSpend, handleBackstoryChange, handleNotesChange,
+    handlePurchaseTalent, handleResolveDedication, handleCancelDedication, handleCreditSpend, handleBackstoryChange, handleNotesChange,
     handlePurchaseForceAbility, handleBuySpecialization, handleBuySkill,
+    sigAbilities, lockedSigAbilities, purchasedSigNodes, hasUnlockedTier5, lockInAbility, purchaseSigNode,
   } = useCharacterData(characterId)
 
 
@@ -278,16 +279,14 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   const conflictSeeded                    = useRef(false)
   const { pendingCritRequest, setPendingCritRequest } = useCriticalInjuryRequest(character?.id, supabase)
   const [pdfGenerating,     setPdfGenerating]         = useState(false)
-  const [pendingDedication, setPendingDedication]     = useState<{ talentId: string; row: number; col: number; specKey: string } | null>(null)
+  // Set only at the moment of purchase (HudTalentTreeModal's onPurchase, for
+  // talentKey === 'DEDI') — the characteristic choice is mandatory at
+  // purchase time. Cancelling reverts the purchase (see onCancelDedication in
+  // HudModalsOverlay / handleCancelDedication in useCharacterData), so there
+  // is no "unresolved" state left over that would need re-prompting on a
+  // later load — deliberately no scan-on-load effect here anymore.
+  const [pendingDedication, setPendingDedication]     = useState<{ talentId: string; row: number; col: number; specKey: string; xpCost: number } | null>(null)
   const [spendCreditsOpen,  setSpendCreditsOpen]      = useState(false)
-
-  // ── Prompt for unresolved Dedication purchases on load ──
-  useEffect(() => {
-    if (!talents.length || pendingDedication) return
-    const u = talents.find(t => t.talent_key === 'DEDI' && !t.dedication_characteristic)
-    if (u) setPendingDedication({ talentId: u.id, row: u.tree_row ?? 4, col: u.tree_col ?? 0, specKey: u.specialization_key ?? '' })
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [talents])
 
   // Seed the conflict queue once on load. Delivery is login-persistent (DB-backed),
   // not realtime — players see new GM-assigned conflicts on their next login.
@@ -750,6 +749,12 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         onPurchaseTalent={handlePurchaseTalent}
         onRemoveTalent={isGmMode ? handleRemoveTalent : undefined}
         onBuySpecialization={handleBuySpecialization}
+        availableSigAbilities={sigAbilities}
+        lockedSigAbilities={lockedSigAbilities}
+        purchasedSigNodes={purchasedSigNodes}
+        hasUnlockedTier5={hasUnlockedTier5}
+        onLockInSigAbility={lockInAbility}
+        onPurchaseSigNode={purchaseSigNode}
         showForceTree={showForceTree}
         setShowForceTree={setShowForceTree}
         allForcePowers={allForcePowers}
@@ -787,6 +792,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         pendingDedication={pendingDedication}
         setPendingDedication={setPendingDedication}
         onResolveDedication={handleResolveDedication}
+        onCancelDedication={handleCancelDedication}
         diceOpen={diceOpen}
         onDiceOpenChange={setDiceOpen}
       />

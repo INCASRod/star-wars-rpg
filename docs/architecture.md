@@ -101,6 +101,15 @@
 - State: `entries: RollEntry[]` — each entry has pool composition + result symbols
 - Realtime: subscribes to INSERT on `roll_log` filtered by `campaign_id`
 
+### `useCharacterSigAbilities(characterId, careerKey)`
+- Signature Abilities Phase 1: owns `ref_sig_abilities`/`ref_sig_ability_nodes` lookup + this character's `character_sig_ability_nodes` purchases
+- Returns: `{ availableSigAbilities: SigAbility[], lockedAbilities: Record<string, LockedSigAbility>, purchasedNodes: CharacterSigAbilityNode[], hasUnlockedTier5: boolean, lockInAbility(sigAbilityKey, specSlot), purchaseNode(sigAbilityKey, node), loading }`
+- `lockedAbilities` is keyed by spec slot (`specialization_key`) — a character can lock a different signature ability under each in-career specialization it owns
+- `hasUnlockedTier5`: true if `character_talents.xp_cost = 25` exists under a specialization in `ref_careers.specialization_keys` for `careerKey`. **Note:** for the `respec` dataset, `ref_specializations.career_key` is always `NULL` (migration 064 seeds it that way) — in-career association must go through `ref_careers.specialization_keys`, not a join on `ref_specializations.career_key`. (`useCharacterData.ts`'s `handleBuySpecialization` still does the `ref_specializations.career_key` join and is therefore always treating specs as out-of-career for respec — pre-existing, unrelated to this feature, not fixed here.)
+- `lockInAbility`/`purchaseNode` are optimistic (local state updates before the Supabase write) and both deduct XP via a read-then-write on `characters.xp_available` (same non-atomic pattern `useCharacterData.ts` uses elsewhere)
+- Realtime: subscribes to INSERT on `character_sig_ability_nodes` filtered by `character_id`
+- Wired into `useCharacterData` (exposed as `sigAbilities`, `lockedSigAbilities`, `purchasedSigNodes`, `hasUnlockedTier5`, `lockInAbility`, `purchaseSigNode`) → threaded through `HudModalsOverlay` → `HudTalentTreeModal`, which renders the browse/locked-in UI below each spec's talent tree
+
 ### `useDerivedStats(input)`
 - Computes derived character stats: soak, encumbrance thresholds, wound/strain thresholds, XP spent, force rating
 - Input: character + talents + armor + weapons + ref data
@@ -277,6 +286,7 @@
 - `character_specializations` — purchased specs, in purchase order
 - `character_force_abilities` — purchased Force power upgrades
 - `character_critical_injuries` — tracked injuries
+- `character_sig_ability_nodes` — Signature Abilities Phase 1: purchased sig-ability tree nodes (base + upgrades). `spec_slot` (migration 090) records which `specialization_key` the ability was locked in against, since a character can lock a different signature ability per in-career spec. No FK on `sig_ability_key` (dataset-keyed, matches migration 062's convention). No RLS (matches every other ref/character-progress table added alongside it).
 - `character_conflicts` — Force-user morality conflict log; `description` = type label; `narrative` = optional body; `player_acknowledged` = false until player dismisses notification
 - `character_sessions` — active session keys (with player's chosen `ui_theme`: 'binary-sunset'|'operative'|'kyber'); cleared on disconnect via `/api/release-session`
 - `critical_injury_requests` — GM-initiated requests for crit injury rolls (status: pending/applied)
@@ -317,6 +327,8 @@
 - `ref_item_descriptors`, `ref_weapon_qualities`
 - `ref_obligations`, `ref_duties`, `ref_morality`
 - `ref_adversaries`, `ref_vehicles`, `ref_starships`
+- `ref_sig_abilities` — Signature Abilities Phase 1 (migration 088). Composite PK `(key, dataset_source)`, `is_retired`, `career_key` (no FK — dataset-keyed, matches migration 062's convention).
+- `ref_sig_ability_nodes` — tree nodes for each `ref_sig_abilities` row: `row_index` 0 = base node (`col_span=4`, spans the full width — OggDude's source XML encodes this by repeating the same node key across all 4 ability slots rather than an explicit span field), `row_index >= 1` = upgrade nodes (4 per row, `col_span=1`). `connect_up/down/left/right` booleans drive the same adjacency-gated purchasability + connector-line pattern as `TalentTree.tsx`/`buildTalentTree.ts`, adapted locally in `HudTalentTreeModal.tsx`.
 
 > **Dropped FK constraints (migration 062):** The following FK constraints were removed when the four ref tables above changed from `key TEXT PRIMARY KEY` to composite `(key, dataset_source)` PKs:
 > `character_talents_talent_key_fkey`, `character_specializations_specialization_key_fkey`, `characters_career_key_fkey`, `ref_specializations_career_key_fkey`.
@@ -593,3 +605,6 @@ import { COLOR, HUD, FS, SP, RADIUS, Z, SHADOW, EASE, CHAR_COLOR, DICE_META, SYM
 | 059 | `characters.force_commitments JSONB DEFAULT '[]'` — tracks which powers have Force dice committed; shape `[{ power_key, power_name, effect_name, dice_count }]` |
 | 081 | Group Storage: `group_assets.is_group_storage` boolean column + `take_group_storage_item(p_item_id, p_item_type, p_taker_id, p_take_qty)` SECURITY DEFINER RPC for atomic ownership transfer (full + partial-qty gear split) |
 | 062 | reSpec dataset migration: added `campaign_settings` table (`active_dataset TEXT DEFAULT 'oggdude'`); changed PKs on `ref_talents`, `ref_force_abilities`, `ref_specializations`, `ref_careers` from `key TEXT PRIMARY KEY` to composite `(key, dataset_source)` with `dataset_source TEXT NOT NULL DEFAULT 'oggdude'` and `is_retired BOOLEAN NOT NULL DEFAULT false`; dropped FK constraints `character_talents_talent_key_fkey`, `character_specializations_specialization_key_fkey`, `characters_career_key_fkey`, `ref_specializations_career_key_fkey` |
+| 088 | Signature Abilities Phase 1: `ref_sig_abilities`, `ref_sig_ability_nodes`, `character_sig_ability_nodes` tables. Renumbered from a spec that assumed 082 was free — `082_crawl_map_type.sql` already existed; confirmed via `list_migrations` that the real floor was 087 + a dated realtime migration. |
+| 089 | Seeds `ref_sig_abilities`/`ref_sig_ability_nodes` (respec) from `oggdude/DataCustom/SigAbilities/*.xml` + `SigAbilityNodes.xml` via `scripts/seed-sig-abilities.ts`. Idempotent — deletes `dataset_source='respec'` rows before reinserting (no unique constraint on `ref_sig_ability_nodes` to `ON CONFLICT` against, since the same `node_key` can legitimately appear at two non-adjacent columns in one row). 37 abilities, 333 nodes. One data anomaly: "Unmatched Teamwork" references career key `CLONE`, which doesn't exist in `ref_careers` (respec) — seeded as-is (no FK to block it), effectively unreachable until/unless that career exists. |
+| 090 | Adds `character_sig_ability_nodes.spec_slot TEXT` — found missing while implementing `useCharacterSigAbilities`; migration 088's version had no column to record which specialization a locked-in signature ability belongs to, and a character can lock a different one per in-career spec. |

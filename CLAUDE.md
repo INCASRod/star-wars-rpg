@@ -9,6 +9,36 @@ After reading docs/architecture.md, keep it up to date. If any task adds, remove
 
 ---
 
+## Dataset Architecture
+
+The project runs a dual-dataset architecture. `campaign_settings.active_dataset` is currently `'respec'`.
+
+**reSpecialized Project** (`dataset_source = 'respec'`) — canonical source for:
+- Talents
+- Force Powers / Force Abilities
+- Specializations
+- Careers
+- Skills
+
+**OggDude** (`dataset_source = 'oggdude'`) — canonical source for:
+- Items (weapons, armor, gear, attachments)
+- NPCs / adversaries
+- Vehicles
+- Everything else not listed above
+
+OggDude rows still exist in the database for the domains reSpec now owns (talents, specializations, careers, force powers) — these are kept as an inactive rollback only. OggDude is **not** the active source for those domains and must not be described as such anywhere in this file.
+
+**Canonical XML source paths:**
+- `respec project data/` (repo root) — canonical XML source for every respec-owned domain above; hardcoded in `scripts/parse-respec.ts` and `scripts/gen-migration-079.ts`
+- `oggdude/DataCustom/` — used only for items and NPCs/adversaries/vehicles
+- `oggdude/DataCustom/SigAbilities/` was the seed source for Signature Abilities (migrations 088–091); the canonical source going forward is `respec project data/SigAbilities/` (corrected in migration 092)
+
+**Migration history** (dates verified against git log, not assumed):
+- 2026-06-10 — migrations 062–067 moved talents, specializations, careers, and force powers/abilities to the reSpec dataset and activated it as `campaign_settings.active_dataset`
+- 2026-07-17 — Signature Abilities (migrations 088–091) were seeded from the wrong source (`oggdude/DataCustom/SigAbilities/`) the same day they were added; migration 092 corrected this to seed from `respec project data/SigAbilities/`
+
+---
+
 ## Design System Rules
 
 **These rules apply to all new and modified code. No exceptions.**
