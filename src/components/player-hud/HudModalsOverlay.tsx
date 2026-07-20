@@ -111,6 +111,10 @@ interface HudModalsOverlayProps {
   onResolveDedication: (talentId: string, charKey: string) => Promise<void>
   onCancelDedication: (talentId: string, xpCost: number) => Promise<void>
 
+  pendingForceRatingOffer: boolean
+  setPendingForceRatingOffer: (b: boolean) => void
+  onPurchaseForceRating: () => Promise<void>
+
   diceOpen?:         boolean
   onDiceOpenChange?: (open: boolean) => void
 }
@@ -137,6 +141,7 @@ export function HudModalsOverlay({
   vendorOffer, setVendorOffer, onCreditSpend,
   spendCreditsOpen, setSpendCreditsOpen,
   pendingDedication, setPendingDedication, onResolveDedication, onCancelDedication,
+  pendingForceRatingOffer, setPendingForceRatingOffer, onPurchaseForceRating,
   diceOpen, onDiceOpenChange,
 }: HudModalsOverlayProps) {
   return (
@@ -409,6 +414,55 @@ export function HudModalsOverlay({
           }}
         />,
         document.body,
+      )}
+
+      {/* Optional, dismissible — unlike Dedication, "Later" does NOT revert the
+          specialization purchase. The Force tab CTA (ForcePanel) is the deferred path. */}
+      {pendingForceRatingOffer && (
+        <div
+          onClick={() => setPendingForceRatingOffer(false)}
+          className="fixed inset-0 flex items-center justify-center"
+          style={{ zIndex: 'var(--z-modal)', background: 'rgba(0,0,0,.75)', backdropFilter: 'blur(6px)', padding: 'var(--space-6)' }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: '420px',
+              background: 'var(--sand)',
+              border: '2px solid var(--die-force)',
+              boxShadow: '0 0 40px color-mix(in srgb, var(--die-force) 25%, transparent), 0 8px 48px rgba(0,0,0,.3)',
+              padding: 'var(--space-8) 1.75rem var(--space-6)', textAlign: 'center',
+            }}
+          >
+            <div style={{ fontFamily: FONT_DISPLAY, fontSize: 'var(--font-2xs)', fontWeight: 700, letterSpacing: '0.2em', color: 'var(--die-force)', marginBottom: 'var(--space-4)', textTransform: 'uppercase' }}>
+              Force Sensitivity Awakens
+            </div>
+            <div style={{ fontFamily: FONT_BODY, fontSize: 'var(--font-md)', color: 'var(--ink)', lineHeight: 1.6, marginBottom: 'var(--space-6)' }}>
+              Gain Force Rating 1 for 10 XP now, or defer and purchase it later from the Force tab.
+            </div>
+            <div className="flex justify-center" style={{ gap: 'var(--space-3)' }}>
+              <button
+                onClick={() => setPendingForceRatingOffer(false)}
+                style={{ background: 'transparent', border: '1px solid var(--hud-border-hi)', padding: 'var(--space-3) 1.5rem', fontFamily: FONT_DISPLAY, fontSize: 'var(--text-label)', fontWeight: 700, letterSpacing: '0.15em', color: 'var(--ink)', cursor: 'pointer' }}
+              >
+                LATER
+              </button>
+              <button
+                onClick={async () => { setPendingForceRatingOffer(false); await onPurchaseForceRating() }}
+                disabled={character.xp_available < 10}
+                style={{
+                  background: character.xp_available < 10 ? 'var(--hud-surface-lo)' : 'var(--die-force)',
+                  border: 'none', padding: 'var(--space-3) 2.5rem',
+                  fontFamily: FONT_DISPLAY, fontSize: 'var(--text-label)', fontWeight: 700, letterSpacing: '0.15em',
+                  color: character.xp_available < 10 ? 'var(--hud-text-faint)' : 'var(--white)',
+                  cursor: character.xp_available < 10 ? 'not-allowed' : 'pointer',
+                }}
+              >
+                GAIN FOR 10 XP
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       <FloatingDiceRollerFAB

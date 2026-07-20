@@ -1,8 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { fetchActiveDataset } from '@/lib/activeDataset'
+import { specPurchaseCost } from '@/hooks/useCharacterData'
 import { HUD, FONT_BODY, FS, RADIUS, Z, panelBase } from '@/lib/tokens'
 import { SpecSelectorList } from '@/components/shared/SpecSelectorList'
+import { isDroid, isClone } from '@/lib/forceEligibility'
 import type { Character, CharacterSpecialization, RefSpecialization, RefTalent } from '@/lib/types'
 
 export function BuySpecButton({
@@ -16,7 +20,30 @@ export function BuySpecButton({
   onBuy: (specKey: string) => void
 }) {
   const [open, setOpen] = useState(false)
+  // ref_specializations.career_key is always NULL for the respec dataset (migration 064) —
+  // in-career association lives on ref_careers.specialization_keys instead. See
+  // useCharacterSigAbilities.ts for the same pattern.
+  const [careerSpecKeys, setCareerSpecKeys] = useState<Set<string>>(new Set())
   const ownedKeys = new Set(charSpecs.map(s => s.specialization_key))
+
+  useEffect(() => {
+    if (!character.career_key) return
+    let cancelled = false
+    ;(async () => {
+      const supabase = createClient()
+      const ds = await fetchActiveDataset(supabase)
+      const { data } = await supabase
+        .from('ref_careers')
+        .select('specialization_keys')
+        .eq('dataset_source', ds)
+        .eq('key', character.career_key)
+        .maybeSingle()
+      if (!cancelled) {
+        setCareerSpecKeys(new Set((data as { specialization_keys: string[] } | null)?.specialization_keys ?? []))
+      }
+    })()
+    return () => { cancelled = true }
+  }, [character.career_key])
 
   if (!open) {
     return (
@@ -90,9 +117,9 @@ export function BuySpecButton({
           borderRadius: RADIUS.md, padding: '8px 10px',
         }}>
           Career specs cost{' '}
-          <span style={{ color: HUD.gold, fontWeight: 700 }}>{charSpecs.length * 10} XP</span>
+          <span style={{ color: HUD.gold, fontWeight: 700 }}>{specPurchaseCost(charSpecs.length, true)} XP</span>
           {' '}· Non-career costs{' '}
-          <span style={{ color: HUD.gold, fontWeight: 700 }}>{(charSpecs.length + 1) * 10} XP</span>
+          <span style={{ color: HUD.gold, fontWeight: 700 }}>{specPurchaseCost(charSpecs.length, false)} XP</span>
           {' '}· Available:{' '}
           <span style={{ color: 'var(--state-success)', fontWeight: 700 }}>{character.xp_available} XP</span>
         </div>
@@ -103,20 +130,20 @@ export function BuySpecButton({
             refSpecs={refSpecs}
             ownedKeys={ownedKeys}
             careerKey={character.career_key}
-            getSpecCost={spec =>
-              spec.career_key === character.career_key
-                ? charSpecs.length * 10
-                : (charSpecs.length + 1) * 10
-            }
+            getSpecCost={spec => specPurchaseCost(charSpecs.length, careerSpecKeys.has(spec.key))}
             canAfford={spec => {
-              const cost = spec.career_key === character.career_key
-                ? charSpecs.length * 10
-                : (charSpecs.length + 1) * 10
+              const cost = specPurchaseCost(charSpecs.length, careerSpecKeys.has(spec.key))
               return character.xp_available >= cost
             }}
             onSelect={spec => { onBuy(spec.key); setOpen(false) }}
             autoFocus
             refTalentMap={refTalentMap}
+            blockedReason={spec => {
+              if (!spec.is_force_sensitive) return null
+              if (isDroid(character)) return 'Droids cannot become Force sensitive'
+              if (isClone(character)) return 'Clones cannot become Force sensitive'
+              return null
+            }}
           />
         </div>
 

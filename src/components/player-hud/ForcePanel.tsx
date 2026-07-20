@@ -86,6 +86,9 @@ interface ForcePanelProps {
   isFallen?:           boolean
   commitments?:        ForceCommitment[]
   onCancelCommit?:     (powerKey: string, effectName: string) => void
+  /** Eligible for Force Rating 1, currently at 0, not yet purchased — shows the buy CTA and locks power browsing. */
+  canGainForceRating?: boolean
+  onPurchaseForceRating?: () => void
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -476,6 +479,8 @@ export function ForcePanel({
   isFallen = false,
   commitments = [],
   onCancelCommit,
+  canGainForceRating = false,
+  onPurchaseForceRating,
 }: ForcePanelProps) {
   const [activeTab, setActiveTab] = useState<'powers' | 'committed'>('powers')
 
@@ -571,58 +576,14 @@ export function ForcePanel({
       {/* ── Powers tab ───────────────────────────────────────────────────────── */}
       {activeTab === 'powers' && (
         <div>
-          <div className="flex items-center justify-between" style={{
-            marginBottom: SP[2], paddingBottom: SP[1],
-            borderBottom: `1px solid ${C.border}`,
-          }}>
-            <div style={{
-              fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700,
-              letterSpacing: '0.15em', textTransform: 'uppercase',
-              color: C.textDim,
-            }}>
-              Force Powers
-            </div>
-            <button
-              onClick={onAdd}
-              className="hov-gold-bg cursor-pointer"
-              style={{
-                background: 'color-mix(in srgb, var(--hud-accent) 10%, transparent)',
-                border: '1px solid var(--hud-accent-border)',
-                borderRadius: RADIUS.sm, padding: `${SP[1]} ${SP[2]}`,
-                fontFamily: FONT_BODY, fontSize: FS.label,
-                fontWeight: 700, letterSpacing: '0.1em',
-                color: C.gold,
-                transition: 'var(--ease-default)',
-              }}
-            >
-              + Add
-            </button>
-          </div>
-
-          {forcePowers.length > 0 ? (
-            <div className="flex flex-col" style={{ gap: 'var(--space-2)' }}>
-              {forcePowers.map((fp, idx) => (
-                <div key={fp.powerKey} data-stagger={idx}>
-                  <div className="panel-row-enter">
-                    <ForcePowerCard
-                      fp={fp}
-                      xpAvailable={xpAvailable}
-                      onPurchase={onPurchasePower
-                        ? (abilityKey, row, col, cost) => onPurchasePower(abilityKey, row, col, cost, fp.powerKey)
-                        : undefined
-                      }
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center" style={{ gap: 'var(--space-3)', padding: `${SP[4]} 0` }}>
-              <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: C.textFaint }}>
-                No force powers purchased yet.
+          {canGainForceRating ? (
+            <div className="flex flex-col items-center justify-center" style={{ gap: 'var(--space-3)', padding: `${SP[5]} 0`, textAlign: 'center' }}>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: C.textDim, lineHeight: 1.5 }}>
+                You are Force sensitive, but have not yet gained a Force Rating.{'\n'}Force powers cannot be purchased until you do.
               </div>
               <button
-                onClick={onAdd}
+                onClick={onPurchaseForceRating}
+                disabled={(xpAvailable ?? 0) < 10}
                 className="cursor-pointer force-browse-btn"
                 style={{
                   border: `1px solid ${FORCE_BLUE_DIM}`,
@@ -630,11 +591,81 @@ export function ForcePanel({
                   fontFamily: FONT_BODY, fontSize: FS.label,
                   fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase',
                   color: FORCE_BLUE,
+                  opacity: (xpAvailable ?? 0) < 10 ? 0.4 : 1,
+                  cursor: (xpAvailable ?? 0) < 10 ? 'not-allowed' : 'pointer',
                 }}
               >
-                Browse Force Powers
+                Gain Force Rating 1 — 10 XP
               </button>
             </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between" style={{
+                marginBottom: SP[2], paddingBottom: SP[1],
+                borderBottom: `1px solid ${C.border}`,
+              }}>
+                <div style={{
+                  fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700,
+                  letterSpacing: '0.15em', textTransform: 'uppercase',
+                  color: C.textDim,
+                }}>
+                  Force Powers
+                </div>
+                <button
+                  onClick={onAdd}
+                  className="hov-gold-bg cursor-pointer"
+                  style={{
+                    background: 'color-mix(in srgb, var(--hud-accent) 10%, transparent)',
+                    border: '1px solid var(--hud-accent-border)',
+                    borderRadius: RADIUS.sm, padding: `${SP[1]} ${SP[2]}`,
+                    fontFamily: FONT_BODY, fontSize: FS.label,
+                    fontWeight: 700, letterSpacing: '0.1em',
+                    color: C.gold,
+                    transition: 'var(--ease-default)',
+                  }}
+                >
+                  + Add
+                </button>
+              </div>
+
+              {forcePowers.length > 0 ? (
+                <div className="flex flex-col" style={{ gap: 'var(--space-2)' }}>
+                  {forcePowers.map((fp, idx) => (
+                    <div key={fp.powerKey} data-stagger={idx}>
+                      <div className="panel-row-enter">
+                        <ForcePowerCard
+                          fp={fp}
+                          xpAvailable={xpAvailable}
+                          onPurchase={onPurchasePower
+                            ? (abilityKey, row, col, cost) => onPurchasePower(abilityKey, row, col, cost, fp.powerKey)
+                            : undefined
+                          }
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center" style={{ gap: 'var(--space-3)', padding: `${SP[4]} 0` }}>
+                  <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: C.textFaint }}>
+                    No force powers purchased yet.
+                  </div>
+                  <button
+                    onClick={onAdd}
+                    className="cursor-pointer force-browse-btn"
+                    style={{
+                      border: `1px solid ${FORCE_BLUE_DIM}`,
+                      borderRadius: 'var(--radius-md)', padding: 'var(--space-2) var(--space-5)',
+                      fontFamily: FONT_BODY, fontSize: FS.label,
+                      fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase',
+                      color: FORCE_BLUE,
+                    }}
+                  >
+                    Browse Force Powers
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}

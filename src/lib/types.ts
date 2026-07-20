@@ -405,6 +405,8 @@ export interface Character {
   obligation_custom_name?: string | null
   force_rating?: number
   force_rating_committed?: number
+  /** True once the player has spent 10 XP to deliberately gain Force Rating 1. */
+  force_rating_purchased?: boolean
   force_commitments?: ForceCommitment[]
   is_force_sensitive?: boolean
   morality_configured?: boolean

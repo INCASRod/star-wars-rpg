@@ -151,12 +151,14 @@ interface SpecDetailPanelProps {
   spec:          RefSpecialization
   cost:          number
   affordable:    boolean
+  blockReason:   string | null
   onBuy:         () => void
   onClose:       () => void
   refTalentMap?: Record<string, RefTalent>
 }
 
-function SpecDetailPanel({ spec, cost, affordable, onBuy, onClose, refTalentMap }: SpecDetailPanelProps) {
+function SpecDetailPanel({ spec, cost, affordable, blockReason, onBuy, onClose, refTalentMap }: SpecDetailPanelProps) {
+  const canBuy = affordable && !blockReason
   const [mounted, setMounted] = useState(false)
   const [visible, setVisible] = useState(false)
   const [showTree, setShowTree] = useState(false)
@@ -270,12 +272,12 @@ function SpecDetailPanel({ spec, cost, affordable, onBuy, onClose, refTalentMap 
             </span>
             <span style={{
               fontFamily: FM, fontSize: 'clamp(0.8rem, 1.1vw, 0.9rem)',
-              color: affordable ? HUD.gold : RED,
+              color: canBuy ? HUD.gold : RED,
               fontWeight: 700,
             }}>
               {cost} XP
             </span>
-            {!affordable && (
+            {!blockReason && !affordable && (
               <span style={{
                 fontFamily: FR, fontSize: 'clamp(0.62rem, 0.82vw, 0.68rem)',
                 color: RED, background: 'rgba(224,80,80,0.08)',
@@ -287,6 +289,21 @@ function SpecDetailPanel({ spec, cost, affordable, onBuy, onClose, refTalentMap 
               </span>
             )}
           </div>
+
+          {/* Blocked reason (e.g. droid/clone cannot take Force-sensitive specs) */}
+          {blockReason && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              marginBottom: 16,
+              background: 'rgba(224,80,80,0.08)',
+              border: '1px solid rgba(224,80,80,0.28)',
+              borderRadius: 4, padding: '8px 12px',
+              fontFamily: FR, fontSize: 'clamp(0.75rem, 1vw, 0.82rem)',
+              color: RED,
+            }}>
+              {blockReason}
+            </div>
+          )}
 
           {/* Career skills */}
           {spec.career_skill_keys?.length > 0 && (
@@ -356,8 +373,8 @@ function SpecDetailPanel({ spec, cost, affordable, onBuy, onClose, refTalentMap 
           </div>
         </div>
 
-        {/* Footer — buy button only when affordable */}
-        {affordable && (
+        {/* Footer — buy button only when affordable and not blocked */}
+        {canBuy && (
           <div style={{ padding: '12px 20px', borderTop: `1px solid ${BORDER}` }}>
             <button
               onClick={buy}
@@ -412,6 +429,8 @@ export interface SpecSelectorListProps {
   autoFocus?: boolean
   /** When provided, enables "Preview Spec Tree" button in the detail panel */
   refTalentMap?: Record<string, RefTalent>
+  /** Return a non-null reason to show a spec as blocked (e.g. droid/clone + Force-sensitive) — disables selection instead of erroring on click */
+  blockedReason?: (spec: RefSpecialization) => string | null
 }
 
 export function SpecSelectorList({
@@ -424,6 +443,7 @@ export function SpecSelectorList({
   searchPlaceholder = 'Search specializations…',
   autoFocus = false,
   refTalentMap,
+  blockedReason,
 }: SpecSelectorListProps) {
   const [search, setSearch] = useState('')
   const [selectedSpec, setSelectedSpec] = useState<RefSpecialization | null>(null)
@@ -469,10 +489,12 @@ export function SpecSelectorList({
           const isCareer  = spec.career_key === careerKey
           const cost      = getSpecCost(spec)
           const affordable = canAfford(spec)
+          const blockReason = blockedReason?.(spec) ?? null
 
           const btn = (
             <button
-              onClick={() => setSelectedSpec(spec)}
+              onClick={() => { if (!blockReason) setSelectedSpec(spec) }}
+              disabled={!!blockReason}
               className="spec-row"
               style={{
                 width: '100%',
@@ -486,7 +508,8 @@ export function SpecSelectorList({
                 '--spec-row-border-rest':  isCareer ? `color-mix(in srgb, ${HUD.gold} 19%, transparent)` : BORDER,
                 '--spec-row-border-hover': isCareer ? `color-mix(in srgb, ${HUD.gold} 33%, transparent)` : `color-mix(in srgb, ${HUD.gold} 15%, transparent)`,
                 borderRadius: 4,
-                cursor: 'pointer',
+                cursor: blockReason ? 'not-allowed' : 'pointer',
+                opacity: blockReason ? 0.45 : 1,
               } as React.CSSProperties}
             >
               {/* Left: name + badges */}
@@ -541,11 +564,11 @@ export function SpecSelectorList({
             </button>
           )
 
-          if (!affordable) {
+          if (blockReason || !affordable) {
             return (
               <Tooltip
                 key={spec.key}
-                content={<TipBody>Cannot afford new spec</TipBody>}
+                content={<TipBody>{blockReason ?? 'Cannot afford new spec'}</TipBody>}
                 placement="top"
                 maxWidth={200}
               >
@@ -580,6 +603,7 @@ export function SpecSelectorList({
           spec={selectedSpec}
           cost={getSpecCost(selectedSpec)}
           affordable={canAfford(selectedSpec)}
+          blockReason={blockedReason?.(selectedSpec) ?? null}
           onBuy={() => { onSelect(selectedSpec); setSelectedSpec(null) }}
           onClose={() => setSelectedSpec(null)}
           refTalentMap={refTalentMap}

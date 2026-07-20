@@ -8,6 +8,8 @@ import { fetchActiveDataset } from '@/lib/activeDataset'
 import { HudCard } from '@/components/ui/HudCard'
 import { stripBBCode } from '@/lib/utils'
 import { SpecSelectorList } from '@/components/shared/SpecSelectorList'
+import { isDroid, isClone } from '@/lib/forceEligibility'
+import { specPurchaseCost } from '@/hooks/useCharacterData'
 import { TalentTree } from '@/components/character/TalentTree'
 import { buildTalentTree } from '@/lib/buildTalentTree'
 import { Z, EASE } from '@/lib/tokens'
@@ -267,6 +269,21 @@ function CreateWizard() {
     return keys
   }, [draft.career, allSpecs])
 
+  // ── In-career specialization keys for the selected career ──
+  // ref_specializations.career_key is always NULL for the respec dataset (migration 064) —
+  // in-career association lives on ref_careers.specialization_keys instead. See
+  // useCharacterSigAbilities.ts for the same pattern.
+  const careerSpecKeySet = useMemo(
+    () => new Set(draft.career?.specialization_keys ?? []),
+    [draft.career],
+  )
+
+  // ── Droid/clone Force-sensitive specialization lockout ─────────────────────
+  const speciesBlocksForce = useMemo(() => {
+    const sp = { species_key: draft.species?.key ?? '' }
+    return isDroid(sp) || isClone(sp)
+  }, [draft.species])
+
   // ── XP calculations ───────────────────────────────────────────────────────
   const baseXp = draft.species?.starting_xp || 0
   const oblXpBonus = (draft.oblXp5 ? 5 : 0) + (draft.oblXp10 ? 10 : 0)
@@ -299,12 +316,11 @@ function CreateWizard() {
   const xpSpentOnAdditionalSpecs = useMemo(() => {
     let total = 0
     draft.additionalSpecs.forEach((spec, idx) => {
-      const totalSpecsAfter = idx + 2 // first spec (free) + this one
-      const isCareerSpec = spec.career_key === draft.career?.key
-      total += isCareerSpec ? 10 * totalSpecsAfter : 10 * totalSpecsAfter + 10
+      const isCareerSpec = careerSpecKeySet.has(spec.key)
+      total += specPurchaseCost(idx + 1, isCareerSpec)
     })
     return total
-  }, [draft.additionalSpecs, draft.career])
+  }, [draft.additionalSpecs, careerSpecKeySet])
 
   const xpSpent = xpSpentOnChars + xpSpentOnSkills + xpSpentOnTalents + xpSpentOnAdditionalSpecs
   const xpRemaining = xpTotal - xpSpent
@@ -340,6 +356,10 @@ function CreateWizard() {
   // ── Character creation handler ────────────────────────────────────────────
   const handleCreate = useCallback(async () => {
     if (!campaignId || !draft.species || !draft.career || !draft.specialization || !draft.name) return
+    if (speciesBlocksForce && allSpecs.some(s => s.is_force_sensitive)) {
+      alert('Droids and clones cannot take Force-sensitive specializations.')
+      return
+    }
     setSaving(true)
     try {
       // Create/find player
@@ -471,7 +491,7 @@ function CreateWizard() {
       setSaving(false)
     }
   }, [
-    campaignId, draft, allSpecs, xpTotal, xpRemaining, xpSpent,
+    campaignId, draft, allSpecs, speciesBlocksForce, xpTotal, xpRemaining, xpSpent,
     xpSpentOnChars, xpSpentOnSkills, xpSpentOnTalents, xpSpentOnAdditionalSpecs,
     oblXpBonus, extraCredits, totalObligation,
     speciesOptionSkills, speciesSkillMods, refSkills,
@@ -857,7 +877,8 @@ function CreateWizard() {
           <SpecStep
             specializations={specializations}
             skillMap={skillMap}
-            careerKey={draft.career?.key || ''}
+            careerSpecKeys={careerSpecKeySet}
+            speciesBlocksForce={speciesBlocksForce}
             selected={draft.specialization}
             freeSpecPicks={draft.freeSpecPicks}
             onSelect={spec => setDraft(p => ({ ...p, specialization: spec, freeSpecPicks: [], talentPicks: [] }))}
@@ -883,6 +904,7 @@ function CreateWizard() {
             careerSkillKeys={careerSkillKeys}
             allSpecs={allSpecs}
             specializations={specializations}
+            speciesBlocksForce={speciesBlocksForce}
             skillMap={skillMap}
             xpTotal={xpTotal}
             baseXp={baseXp}
@@ -1330,12 +1352,13 @@ function CareerStep({
 //  STEP 5: Specialisation
 // ══════════════════════════════════════════════════════════════════════════════
 function SpecStep({
-  specializations, skillMap, careerKey, selected, freeSpecPicks,
+  specializations, skillMap, careerSpecKeys, speciesBlocksForce, selected, freeSpecPicks,
   onSelect, onSpecPickToggle, onConfirm, onBack,
 }: {
   specializations: RefSpecialization[]
   skillMap: Record<string, RefSkill>
-  careerKey: string
+  careerSpecKeys: Set<string>
+  speciesBlocksForce: boolean
   selected: RefSpecialization | null
   freeSpecPicks: string[]
   onSelect: (s: RefSpecialization) => void
@@ -1350,8 +1373,8 @@ function SpecStep({
   const [hoveredSpec, setHoveredSpec] = useState<CreatorTipItem | null>(null)
   const [tipPos, setTipPos] = useState<CreatorTipPos>({ x: 0, y: 0 })
 
-  const careerSpecs = useMemo(() => specializations.filter(s => s.career_key === careerKey), [specializations, careerKey])
-  const otherSpecs = useMemo(() => specializations.filter(s => s.career_key !== careerKey), [specializations, careerKey])
+  const careerSpecs = useMemo(() => specializations.filter(s => careerSpecKeys.has(s.key)), [specializations, careerSpecKeys])
+  const otherSpecs = useMemo(() => specializations.filter(s => !careerSpecKeys.has(s.key)), [specializations, careerSpecKeys])
 
   const filtered = useMemo(() => {
     if (!query) return { career: careerSpecs, other: otherSpecs }
@@ -1374,20 +1397,26 @@ function SpecStep({
 
   const renderSpecItem = (spec: RefSpecialization, isCareer: boolean) => {
     const isSel = selected?.key === spec.key
+    const blocked = !!spec.is_force_sensitive && speciesBlocksForce
     return (
-      <button key={spec.key} onClick={() => { onSelect(spec); setQuery(''); setOpen(false); setHoveredSpec(null) }}
-        style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 0.75rem', background: isSel ? 'color-mix(in srgb, var(--hud-accent) 10%, transparent)' : 'transparent', border: 'none', borderBottom: '1px solid var(--hud-border)', cursor: 'pointer', opacity: isCareer ? 1 : 0.7 }}
+      <button key={spec.key} disabled={blocked}
+        title={blocked ? 'Droids and clones cannot become Force sensitive' : undefined}
+        onClick={() => { if (blocked) return; onSelect(spec); setQuery(''); setOpen(false); setHoveredSpec(null) }}
+        style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 0.75rem', background: isSel ? 'color-mix(in srgb, var(--hud-accent) 10%, transparent)' : 'transparent', border: 'none', borderBottom: '1px solid var(--hud-border)', cursor: blocked ? 'not-allowed' : 'pointer', opacity: blocked ? 0.4 : isCareer ? 1 : 0.7 }}
         onMouseEnter={e => {
-          if (!isSel) e.currentTarget.style.background = 'rgba(224,58,30,.06)'
+          if (!isSel && !blocked) e.currentTarget.style.background = 'rgba(224,58,30,.06)'
           setHoveredSpec({ name: spec.name, description: spec.description, skillKeys: spec.career_skill_keys ?? [], source: spec.source, isForce: spec.is_force_sensitive })
           setTipPos(calcCreatorTipPos(e.currentTarget.getBoundingClientRect()))
         }}
-        onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = 'transparent'; setHoveredSpec(null) }}
+        onMouseLeave={e => { if (!isSel && !blocked) e.currentTarget.style.background = 'transparent'; setHoveredSpec(null) }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
           <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-base)', fontWeight: 700, color: 'var(--hud-text)', letterSpacing: '0.06rem' }}>{spec.name}</span>
-          {spec.is_force_sensitive && (
+          {spec.is_force_sensitive && !blocked && (
             <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-2xs)', fontWeight: 700, color: 'var(--die-force)', background: 'rgba(90,170,224,.08)', border: '1px solid rgba(90,170,224,.3)', padding: '0.04rem 0.35rem' }}>FORCE</span>
+          )}
+          {blocked && (
+            <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-2xs)', fontWeight: 700, color: 'var(--red)', background: 'rgba(224,80,80,.08)', border: '1px solid rgba(224,80,80,.3)', padding: '0.04rem 0.35rem' }}>FORCE — BLOCKED</span>
           )}
           {!isCareer && (
             <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-2xs)', color: 'var(--hud-text-faint)' }}>({sourceToTab(spec.source)})</span>
@@ -1498,7 +1527,7 @@ function SpecStep({
 // ══════════════════════════════════════════════════════════════════════════════
 function XpInvestmentStep({
   draft, setDraft, refSkills, talentMap, careerSkillKeys, allSpecs,
-  specializations, skillMap,
+  specializations, speciesBlocksForce, skillMap,
   xpTotal, baseXp, oblXpBonus, xpSpent, xpRemaining,
   xpSpentOnChars, xpSpentOnSkills, xpSpentOnTalents, xpSpentOnAdditionalSpecs,
   onContinue, onBack,
@@ -1510,6 +1539,7 @@ function XpInvestmentStep({
   careerSkillKeys: Set<string>
   allSpecs: RefSpecialization[]
   specializations: RefSpecialization[]
+  speciesBlocksForce: boolean
   skillMap: Record<string, RefSkill>
   xpTotal: number
   baseXp: number
@@ -1537,6 +1567,14 @@ function XpInvestmentStep({
     draft.additionalSpecs.forEach(a => s.add(a.key))
     return s
   }, [draft.specialization, draft.additionalSpecs])
+
+  // ref_specializations.career_key is always NULL for the respec dataset (migration 064) —
+  // in-career association lives on ref_careers.specialization_keys instead. See
+  // useCharacterSigAbilities.ts for the same pattern.
+  const careerSpecKeySet = useMemo(
+    () => new Set(draft.career?.specialization_keys ?? []),
+    [draft.career],
+  )
 
   const xpColor = xpRemaining < 0 ? 'var(--state-failure)' : xpRemaining < 20 ? 'var(--state-threat)' : 'var(--state-success)'
 
@@ -1718,12 +1756,12 @@ function XpInvestmentStep({
               Purchase additional specialisations with starting XP. Only your first specialisation grants 2 free bonus skill ranks — additional specs add skills to your career list only.
             </p>
             <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-xs)', color: 'var(--hud-text-faint)' }}>
-              Next cost: {(draft.additionalSpecs.length + 2) * 10} XP (career) / {(draft.additionalSpecs.length + 2) * 10 + 10} XP (non-career)
+              Next cost: {specPurchaseCost(draft.additionalSpecs.length + 1, true)} XP (career) / {specPurchaseCost(draft.additionalSpecs.length + 1, false)} XP (non-career)
             </div>
 
             {draft.additionalSpecs.map((spec, idx) => {
-              const isCareerSpec = spec.career_key === draft.career?.key
-              const cost = (idx + 2) * 10 + (isCareerSpec ? 0 : 10)
+              const isCareerSpec = careerSpecKeySet.has(spec.key)
+              const cost = specPurchaseCost(idx + 1, isCareerSpec)
               return (
                 <div key={spec.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--sp-xs) var(--sp-sm)', background: 'rgba(0,0,0,.04)', border: '1px solid var(--hud-border)' }}>
                   <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--hud-text-dim)' }}>
@@ -1743,12 +1781,12 @@ function XpInvestmentStep({
                 ownedKeys={existingKeys}
                 careerKey={draft.career?.key ?? ''}
                 getSpecCost={spec => {
-                  const isCareer = spec.career_key === draft.career?.key
-                  return (draft.additionalSpecs.length + 2) * 10 + (isCareer ? 0 : 10)
+                  const isCareer = careerSpecKeySet.has(spec.key)
+                  return specPurchaseCost(draft.additionalSpecs.length + 1, isCareer)
                 }}
                 canAfford={spec => {
-                  const isCareer = spec.career_key === draft.career?.key
-                  const cost = (draft.additionalSpecs.length + 2) * 10 + (isCareer ? 0 : 10)
+                  const isCareer = careerSpecKeySet.has(spec.key)
+                  const cost = specPurchaseCost(draft.additionalSpecs.length + 1, isCareer)
                   return xpRemaining >= cost
                 }}
                 onSelect={spec => setDraft(p => {
@@ -1756,6 +1794,10 @@ function XpInvestmentStep({
                   return { ...p, additionalSpecs: [...p.additionalSpecs, spec] }
                 })}
                 searchPlaceholder="Search to add a specialisation…"
+                blockedReason={spec => spec.is_force_sensitive && speciesBlocksForce
+                  ? 'Droids and clones cannot become Force sensitive'
+                  : null
+                }
               />
             </div>
           </div>

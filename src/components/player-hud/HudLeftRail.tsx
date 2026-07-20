@@ -10,6 +10,8 @@ export type RailPanelId =
 
 interface HudLeftRailProps {
   isForceUser:      boolean
+  /** Force Rating >= 1 OR eligible-but-unpurchased (see isEligibleForForceRating) — gates the Force nav tab, distinct from isForceUser which gates the Force Check quick action. */
+  canAccessForceTab: boolean
   activePanel:      RailPanelId | null
   onPanelToggle:    (id: RailPanelId) => void
   showAdversaries?: boolean
@@ -72,7 +74,7 @@ const UTILITY_BUTTONS: { id: RailPanelId; symbol: string; label: string; cls: st
 ]
 
 export const HudLeftRail = memo(function HudLeftRail({
-  isForceUser, activePanel, onPanelToggle, showAdversaries = false,
+  isForceUser, canAccessForceTab, activePanel, onPanelToggle, showAdversaries = false,
 }: HudLeftRailProps) {
   return (
     <div style={{
@@ -101,7 +103,7 @@ export const HudLeftRail = memo(function HudLeftRail({
       <div style={{ width: 30, height: 1, background: 'var(--hud-border-hi)', margin: '4px 0', flexShrink: 0 }} />
 
       {NAV_BUTTONS.map(({ id, symbol, imgSrc, imgClass, label, gateForce }) => {
-        if (gateForce && !isForceUser) return null
+        if (gateForce && !canAccessForceTab) return null
         return (
           <button
             key={id}

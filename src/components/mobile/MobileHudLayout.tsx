@@ -43,7 +43,7 @@ export function MobileHudLayout({ characterId, campaignId }: MobileHudLayoutProp
     charSpecs, speciesAbilities,
     refTalentMap, refArmorMap, refWeaponMap, refGearMap,
     refWeaponQualityMap, refAttachmentMap,
-    forceRating, hudSkills,
+    forceRating, careerForceRatingBase, hudSkills,
     hudTalents, hudWeapons, hudArmor, hudGear,   // Phase 2 hud-ready arrays
     loading, error,
     /* Added for mobile Force tab */
@@ -72,6 +72,7 @@ export function MobileHudLayout({ characterId, campaignId }: MobileHudLayoutProp
   const derivedStats = useDerivedStats({
     character: character ?? null,
     forceRatingBase: forceRating,
+    careerForceRatingBase,
     talents,
     refTalentMap,
     armor,

@@ -231,7 +231,8 @@ export function computeEncumbranceStats(
  * Compute all derived stats for a character.
  *
  * @param character          - Raw character row
- * @param forceRatingBase    - Pre-computed base force rating (career + FORCERAT talent)
+ * @param forceRatingBase    - Pre-computed base force rating (career + FORCERAT talent + deliberate purchase) — the additive starting point for effectiveStats.forceRating
+ * @param careerForceRatingBase - Career-only force rating (excludes FORCERAT talent ranks and the deliberate purchase). Used only to gate `force_rating_conditional` talents (e.g. WITCHCRAFT) — those grant their bonus when the character's career doesn't already grant a free Force Rating, and stack independently with FORCERAT/purchased Force Rating.
  * @param characterTalents   - All talents owned by this character
  * @param refTalentMap       - ref_talents keyed by talent key
  * @param equippedArmor      - All armor items (the engine filters to equipped only)
@@ -244,6 +245,7 @@ export function computeEncumbranceStats(
 export function computeDerivedStats(
   character: Character,
   forceRatingBase: number,
+  careerForceRatingBase: number,
   characterTalents: CharacterTalent[],
   refTalentMap: Record<string, RefTalent>,
   equippedArmor: CharacterArmor[],
@@ -367,6 +369,10 @@ export function computeDerivedStats(
 
   // ── Step 4: Talent modifiers ──────────────────────────────────────────────
   for (const talent of characterTalents) {
+    // FORCERAT ranks are already folded into forceRatingBase (useCharacterData's
+    // forceRating memo) — applying its modifiers.force_rating here again would
+    // double-count it.
+    if (talent.talent_key === 'FORCERAT') continue
     const ref = refTalentMap[talent.talent_key]
     if (!ref?.attributes && !ref?.die_modifiers && !ref?.modifiers) continue
 
@@ -402,9 +408,12 @@ export function computeDerivedStats(
       const defRVal   = (m.defense_ranged   ?? 0) * rank
       const woundVal  = (m.wound_threshold  ?? 0) * rank
       const strainVal = (m.strain_threshold ?? 0) * rank
-      // Conditional FR talent (e.g. Witchcraft): only applies if career/spec base is 0
+      // Conditional FR talent (e.g. Witchcraft): only applies if the career doesn't
+      // already grant a free Force Rating. Stacks independently with FORCERAT talent
+      // ranks and the deliberate Force Rating purchase — checked against
+      // careerForceRatingBase (career only), not forceRatingBase (which includes those).
       const rawForceVal = (m.force_rating ?? 0) * rank
-      const forceVal = m.force_rating_conditional && forceRatingBase > 0 ? 0 : rawForceVal
+      const forceVal = m.force_rating_conditional && careerForceRatingBase > 0 ? 0 : rawForceVal
 
       if (soakVal)   { mods.soakBonus           += soakVal;   soakSources.push({ label: ref.name + rankLabel, value: soakVal }) }
       if (defMVal)   { mods.defenseMelee         += defMVal;   defMSources.push({ label: ref.name + rankLabel, value: defMVal }) }
@@ -432,6 +441,8 @@ export function computeDerivedStats(
   // Hutt → Enduring) apply that talent's stat modifiers as if it were purchased.
   for (const sa of speciesAbilities) {
     if (sa.mechanical_type !== 'talent_rank' || !sa.talent_key) continue
+    // Same double-count guard as the owned-talent loop above.
+    if (sa.talent_key === 'FORCERAT') continue
     const ref = refTalentMap[sa.talent_key]
     if (!ref?.modifiers && !ref?.attributes) continue
     const rank = sa.rank_add ?? 1

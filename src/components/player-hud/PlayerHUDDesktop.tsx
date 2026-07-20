@@ -28,6 +28,7 @@ import { type RollResult, type ForceRollResult } from './dice-engine'
 import type { AdversaryInstance } from '@/lib/adversaries'
 import type { HudSkill } from '@/lib/types'
 import { isForceUserSensitive } from '@/lib/forceUtils'
+import { isEligibleForForceRating } from '@/lib/forceEligibility'
 import { CombatCheckOverlay } from '@/components/combat-check/CombatCheckOverlay'
 import { ForceCheckOverlay } from '@/components/force-check/ForceCheckOverlay'
 import { isDathomiri } from '@/lib/dathomiriUtils'
@@ -73,14 +74,14 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     refSkillMap, refTalentMap, refWeaponMap, refArmorMap, refGearMap,
     refSpecMap, refForcePowerMap, refForceAbilityMap, refWeaponQualityMap,
     refAttachmentMap,
-    forceRating, supabase, refSpecs,
+    forceRating, careerForceRatingBase, pendingForceRatingOffer, setPendingForceRatingOffer, supabase, refSpecs,
     speciesAbilities, hudSkills, hudTalents, hudWeapons, hudArmor, hudGear,
     encumbranceCurrent, encumbranceBonus,
     handleVitalChange, handleVitalAdjust, handleSetEquipState,
     handleHealCrit, handlePortraitUpload, handlePortraitDelete,
     handleRemoveWeapon, handleRemoveEquipment, handleRemoveTalent,
     handlePurchaseTalent, handleResolveDedication, handleCancelDedication, handleCreditSpend, handleBackstoryChange, handleNotesChange,
-    handlePurchaseForceAbility, handleBuySpecialization, handleBuySkill,
+    handlePurchaseForceAbility, handlePurchaseForceRating, handleBuySpecialization, handleBuySkill,
     sigAbilities, lockedSigAbilities, purchasedSigNodes, hasUnlockedTier5, lockInAbility, purchaseSigNode,
   } = useCharacterData(characterId)
 
@@ -89,6 +90,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   const derivedStats = useDerivedStats({
     character: character ?? null,
     forceRatingBase: forceRating,
+    careerForceRatingBase,
     talents,
     refTalentMap,
     armor,
@@ -105,22 +107,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
 
   const bonusSkillKeys = useBonusSkillKeys(skillModifiers, talents, refTalentMap, speciesAbilities)
 
-  // ── Write-back force_rating to DB when the engine computes a different value ──
-  // This fires when talents like WITCHCRAFT grant force_rating via the legacy
-  // `modifiers` shape that doesn't update the characters table directly.
-  useEffect(() => {
-    if (!character || !effectiveStats) return
-    const computed = effectiveStats.forceRating
-    if (computed === character.force_rating) return
-    console.log(`[force_rating write-back] ${character.name}: DB=${character.force_rating} → computed=${computed}`)
-    supabase
-      .from('characters')
-      .update({ force_rating: computed })
-      .eq('id', character.id)
-      .then(({ error }) => {
-        if (error) console.warn('[force_rating write-back] failed:', error.message)
-      })
-  }, [effectiveStats?.forceRating, character?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+  // Force-rating cache write-back now lives in useCharacterData (fires for both
+  // desktop and mobile, not just this component) — see derivedForceRating there.
 
   // ── Store cleanup on unmount — clears stale character selection so re-selecting works correctly ──
   useEffect(() => {
@@ -406,6 +394,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   )
 
   const isForceUser = isForceUserSensitive(character, effectiveStats?.forceRating ?? forceRating)
+  const isEligibleForFR = isEligibleForForceRating(character, charSpecs, refSpecMap)
+  const canGainForceRating = isEligibleForFR && forceRating === 0 && !character.force_rating_purchased
   const encThreshold = character.encumbrance_threshold + encumbranceBonus
 
   return (
@@ -526,6 +516,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         {/* ══ LEFT RAIL ═════════════════════════════════════════════════ */}
         <HudLeftRail
           isForceUser={isForceUser}
+          canAccessForceTab={isForceUser || isEligibleForFR}
           activePanel={
             combatCheckOpen ? 'combat' :
             forceCheckOpen  ? 'force'  :
@@ -628,6 +619,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
               onPurchaseForceAbility={handlePurchaseForceAbility}
               onViewPower={(pk) => { setActivePowerKey(pk); setShowForceTree(true) }}
               onAdd={() => { setActivePowerKey(null); setShowForceTree(true) }}
+              canGainForceRating={canGainForceRating}
+              onPurchaseForceRating={handlePurchaseForceRating}
             />
           </HudFullPanel>
 
@@ -793,6 +786,9 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         setPendingDedication={setPendingDedication}
         onResolveDedication={handleResolveDedication}
         onCancelDedication={handleCancelDedication}
+        pendingForceRatingOffer={pendingForceRatingOffer}
+        setPendingForceRatingOffer={setPendingForceRatingOffer}
+        onPurchaseForceRating={handlePurchaseForceRating}
         diceOpen={diceOpen}
         onDiceOpenChange={setDiceOpen}
       />

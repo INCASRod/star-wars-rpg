@@ -13,12 +13,16 @@ interface HudForceTabProps {
   onPurchaseForceAbility: (abilityKey: string, row: number, col: number, cost: number, powerKey: string) => void
   onViewPower: (pk: string) => void
   onAdd: () => void
+  /** Eligible for Force Rating 1, currently at 0, not yet purchased — shows the buy CTA and locks power browsing. */
+  canGainForceRating?: boolean
+  onPurchaseForceRating?: () => void
 }
 
 export function HudForceTab({
   character, forceRating, effectiveStats,
   allForcePowers, conflicts,
   onPurchaseForceAbility, onViewPower, onAdd,
+  canGainForceRating, onPurchaseForceRating,
 }: HudForceTabProps) {
   const handleCancelCommit = async (powerKey: string, effectName: string) => {
     const current: ForceCommitment[] = character.force_commitments ?? []
@@ -62,6 +66,8 @@ export function HudForceTab({
       isFallen={character.is_dark_side_fallen === true}
       commitments={character.force_commitments ?? []}
       onCancelCommit={handleCancelCommit}
+      canGainForceRating={canGainForceRating}
+      onPurchaseForceRating={onPurchaseForceRating}
     />
   )
 }

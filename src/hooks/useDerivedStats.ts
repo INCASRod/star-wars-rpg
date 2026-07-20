@@ -18,6 +18,8 @@ import type {
 interface DerivedStatsInput {
   character: Character | null
   forceRatingBase: number
+  /** Career-only force rating (excludes FORCERAT talent ranks and the deliberate purchase) — see computeDerivedStats JSDoc */
+  careerForceRatingBase: number
   talents: CharacterTalent[]
   refTalentMap: Record<string, RefTalent>
   armor: CharacterArmor[]
@@ -36,6 +38,7 @@ interface DerivedStatsInput {
 export function useDerivedStats({
   character,
   forceRatingBase,
+  careerForceRatingBase,
   talents,
   refTalentMap,
   armor,
@@ -51,6 +54,7 @@ export function useDerivedStats({
     return computeDerivedStats(
       character,
       forceRatingBase,
+      careerForceRatingBase,
       talents,
       refTalentMap,
       armor,
@@ -64,6 +68,7 @@ export function useDerivedStats({
   }, [
     character,
     forceRatingBase,
+    careerForceRatingBase,
     talents,
     refTalentMap,
     armor,

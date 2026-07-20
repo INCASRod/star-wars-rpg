@@ -7,6 +7,8 @@ import { randomUUID } from '@/lib/utils'
 import { logPurchaseNotification } from '@/lib/logRoll'
 import { fetchActiveDataset } from '@/lib/activeDataset'
 import { useCharacterSigAbilities } from '@/hooks/useCharacterSigAbilities'
+import { isDroid, isClone, isEligibleForForceRating } from '@/lib/forceEligibility'
+import { computeDerivedStats } from '@/lib/derivedStats'
 import {
   RANGE_LABELS, ACTIVATION_LABELS, CHARACTERISTIC_ABBR,
 } from '@/lib/types'
@@ -20,6 +22,15 @@ import type {
   RefObligationType, RefDutyType,
   SpeciesAbility, HudSkill, HudTalent, WpnDisplay, ArmDisplay, GearRow, ItemCondition, StowLocationType,
 } from '@/lib/types'
+
+/**
+ * reSpecialized / FFG specialization purchase cost:
+ * 10 × (spec count AFTER this purchase), +10 if not in-career.
+ * `specsOwnedBeforePurchase` must NOT include the specialization being bought.
+ */
+export function specPurchaseCost(specsOwnedBeforePurchase: number, isCareer: boolean): number {
+  return 10 * (specsOwnedBeforePurchase + 1) + (isCareer ? 0 : 10)
+}
 
 export function useCharacterData(characterId: string) {
   // Track self-initiated DB writes so we don't toast our own changes
@@ -54,6 +65,9 @@ export function useCharacterData(characterId: string) {
   const [playerName, setPlayerName] = useState('Player')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  // Optional post-purchase prompt offering the deliberate Force Rating buy —
+  // set right after a Force-sensitive specialization purchase completes.
+  const [pendingForceRatingOffer, setPendingForceRatingOffer] = useState(false)
 
   const supabase = createClient()
 
@@ -179,15 +193,36 @@ export function useCharacterData(characterId: string) {
   const refWeaponQualityMap = useMemo(() => Object.fromEntries(refWeaponQualities.map(q => [q.key, q])), [refWeaponQualities])
   const refAttachmentMap = useMemo(() => Object.fromEntries(refItemAttachments.map(a => [a.key, a])), [refItemAttachments])
 
-  // ── Derive force rating from career, FORCERAT talents, and Force-sensitive specs ──
+  // ── Derive force rating from career, FORCERAT talents, and a deliberate purchase ──
+  // Under reSpec rules, owning a Force-sensitive specialization only makes a
+  // character ELIGIBLE for Force Rating 1 (see isEligibleForForceRating) — it no
+  // longer grants any Force Rating on its own. The player must spend 10 XP via
+  // handlePurchaseForceRating, which sets force_rating_purchased.
+  //
+  // careerForceRatingBase is exposed separately (not folded straight into
+  // forceRating) because computeDerivedStats needs it to gate
+  // `force_rating_conditional` talents like WITCHCRAFT — those grant their
+  // bonus only when the career itself doesn't already grant a free Force
+  // Rating, and stack independently with FORCERAT talent ranks and the
+  // deliberate purchase (both already counted in forceRating below).
+  const careerForceRatingBase = useMemo(() =>
+    refCareers.find(c => c.key === character?.career_key)?.force_rating ?? 0
+  , [refCareers, character?.career_key])
+
   const forceRating = useMemo(() => {
-    const careerBase  = refCareers.find(c => c.key === character?.career_key)?.force_rating ?? 0
-    const talentBonus = talents.filter(t => t.talent_key === 'FORCERAT').reduce((sum, t) => sum + (t.ranks || 1), 0)
-    // Any Force-sensitive specialisation (e.g. FORCESENSITIVEEMERGENT) grants FR 1 at minimum
-    const hasForceSpec = charSpecs.some(cs => refSpecMap[cs.specialization_key]?.is_force_sensitive)
-    const base = careerBase + talentBonus
-    return hasForceSpec ? Math.max(base, 1) : base
-  }, [talents, refCareers, character?.career_key, charSpecs, refSpecMap])
+    const talentBonus    = talents.filter(t => t.talent_key === 'FORCERAT').reduce((sum, t) => sum + (t.ranks || 1), 0)
+    const purchasedBonus = character?.force_rating_purchased ? 1 : 0
+    return careerForceRatingBase + talentBonus + purchasedBonus
+  }, [talents, careerForceRatingBase, character?.force_rating_purchased])
+
+  // ── In-career specialization keys for the character's career ──
+  // ref_specializations.career_key is always NULL for the respec dataset (migration 064) —
+  // in-career association lives on ref_careers.specialization_keys instead. See
+  // useCharacterSigAbilities.ts for the same pattern.
+  const careerSpecKeys = useMemo(() => {
+    const currentCareer = refCareers.find(c => c.key === character?.career_key)
+    return new Set(currentCareer?.specialization_keys ?? [])
+  }, [refCareers, character?.career_key])
 
   // ── Apply talent stat modifiers to character (positive or negative delta) ──
   const applyTalentModifiers = (talentKey: string, direction: 1 | -1) => {
@@ -644,6 +679,10 @@ export function useCharacterData(characterId: string) {
   const handlePurchaseForceAbility = async (abilityKey: string, row: number, col: number, cost: number, activeForcePowerKey: string) => {
     if (!character) return
     if (character.xp_available < cost) return
+    // A character with Force Rating 0 cannot use or benefit from Force powers —
+    // gained a Force-sensitive specialization only makes them eligible, it does
+    // not grant a rating on its own. Enforced here (not just in the UI).
+    if (forceRating < 1) { toast.error('Force Rating 1 required to purchase Force powers'); return }
     markSelf()
 
     const newId = randomUUID()
@@ -695,12 +734,68 @@ export function useCharacterData(characterId: string) {
     })
   }
 
+  /**
+   * Deliberate 10 XP purchase of Force Rating 1, deferrable indefinitely.
+   * Follows the same optimistic-update → DB write → xp_transactions log
+   * pattern as handlePurchaseTalent / handleBuySpecialization.
+   */
+  const handlePurchaseForceRating = async () => {
+    if (!character) return
+    const cost = 10
+    if (character.force_rating_purchased) return
+    if (isDroid(character) || isClone(character)) return
+    if (!isEligibleForForceRating(character, charSpecs, refSpecMap)) return
+    if (character.xp_available < cost) {
+      toast.error(`Not enough XP — need ${cost}, have ${character.xp_available}`)
+      return
+    }
+    markSelf()
+    const newXp = character.xp_available - cost
+    setCharacter({ ...character, xp_available: newXp, force_rating_purchased: true })
+
+    await Promise.all([
+      supabase.from('characters').update({ xp_available: newXp, force_rating_purchased: true }).eq('id', character.id),
+      supabase.from('xp_transactions').insert({ character_id: character.id, amount: -cost, reason: 'Gained Force Rating 1' }),
+    ])
+
+    toast.success('Force Rating 1 gained!')
+  }
+
   // ── HUD transforms ──────────────────────────────────────────────────────────
 
   const speciesAbilities = useMemo((): SpeciesAbility[] => {
     const sp = refSpeciesAll.find(s => s.key === character?.species_key)
     return (sp?.special_abilities ?? []) as SpeciesAbility[]
   }, [refSpeciesAll, character?.species_key])
+
+  // ── Fully-engine-adjusted force rating (career/talent/purchase base + talent
+  // modifier bonuses, e.g. WITCHCRAFT's conditional bonus) — used only to keep
+  // the characters.force_rating cache column in sync (see write-back effect
+  // below). Reuses computeDerivedStats rather than re-deriving the same logic.
+  const derivedForceRating = useMemo(() => {
+    if (!character) return forceRating
+    return computeDerivedStats(
+      character, forceRating, careerForceRatingBase, talents, refTalentMap, armor, refArmorMap, refAttachmentMap,
+      weapons, refWeaponMap, refWeaponQualityMap, speciesAbilities,
+    ).effectiveStats.forceRating
+  }, [character, forceRating, careerForceRatingBase, talents, refTalentMap, armor, refArmorMap, refAttachmentMap, weapons, refWeaponMap, refWeaponQualityMap, speciesAbilities])
+
+  // ── Write-back force_rating to DB whenever the engine computes a different
+  // value — lives here (not in a single UI component) so it fires regardless
+  // of whether the character is viewed via desktop or mobile, keeping GM-side
+  // consumers that read characters.force_rating directly from going stale.
+  useEffect(() => {
+    if (!character) return
+    if (derivedForceRating === character.force_rating) return
+    supabase
+      .from('characters')
+      .update({ force_rating: derivedForceRating })
+      .eq('id', character.id)
+      .then(({ error }) => {
+        if (error) console.warn('[force_rating write-back] failed:', error.message)
+      })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [derivedForceRating, character?.id])
 
   const hudSkills = useMemo((): HudSkill[] => {
     if (!character) return []
@@ -905,10 +1000,15 @@ export function useCharacterData(characterId: string) {
 
   const handleBuySpecialization = async (specKey: string, setActiveSpecKey: (key: string) => void) => {
     if (!character) return
+    const targetSpec = refSpecMap[specKey]
+    if (targetSpec?.is_force_sensitive && (isDroid(character) || isClone(character))) {
+      toast.error(`${isDroid(character) ? 'Droids' : 'Clones'} cannot become Force sensitive`)
+      return
+    }
     markSelf()
-    const isCareer = refSpecs.find(s => s.key === specKey)?.career_key === character.career_key
+    const isCareer = careerSpecKeys.has(specKey)
     const existingCount = charSpecs.length
-    const cost = isCareer ? existingCount * 10 : (existingCount + 1) * 10
+    const cost = specPurchaseCost(existingCount, isCareer)
     if (character.xp_available < cost) {
       toast.error(`Not enough XP — need ${cost}, have ${character.xp_available}`)
       return
@@ -944,6 +1044,12 @@ export function useCharacterData(characterId: string) {
       },
     })
     toast.success(`Purchased ${refSpecMap[specKey]?.name || specKey}!`)
+
+    // Offer the deliberate Force Rating purchase if this spec just made the
+    // character eligible and they haven't already gained/bought it.
+    if (targetSpec?.is_force_sensitive && forceRating === 0 && !character.force_rating_purchased) {
+      setPendingForceRatingOffer(true)
+    }
   }
 
   const {
@@ -969,6 +1075,9 @@ export function useCharacterData(characterId: string) {
     refAttachmentMap,
     // Derived
     forceRating,
+    careerForceRatingBase,
+    pendingForceRatingOffer,
+    setPendingForceRatingOffer,
     // HUD transforms
     speciesAbilities, hudSkills, hudTalents, hudWeapons, hudArmor, hudGear,
     encumbranceCurrent, encumbranceBonus,
@@ -1003,6 +1112,7 @@ export function useCharacterData(characterId: string) {
     handleBackstoryChange,
     handleNotesChange,
     handlePurchaseForceAbility,
+    handlePurchaseForceRating,
     handleBuySpecialization,
     // Signature abilities
     sigAbilities,

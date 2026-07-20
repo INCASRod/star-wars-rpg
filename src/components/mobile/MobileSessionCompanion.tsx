@@ -50,7 +50,7 @@ export function MobileSessionCompanion({ characterId, campaignId }: MobileSessio
     refAttachmentMap,
     charForceAbilities, refForcePowers,
     refForcePowerMap, refForceAbilityMap,
-    forceRating,
+    forceRating, careerForceRatingBase,
     handleVitalChange, handleSetEquipState, handleBuySkill,
     handleRemoveWeapon, handleRemoveEquipment,
     loading, error,
@@ -60,6 +60,7 @@ export function MobileSessionCompanion({ characterId, campaignId }: MobileSessio
   const derivedStats = useDerivedStats({
     character: character ?? null,
     forceRatingBase: forceRating,
+    careerForceRatingBase,
     talents,
     refTalentMap,
     armor,
