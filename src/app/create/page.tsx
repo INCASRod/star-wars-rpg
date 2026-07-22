@@ -1779,7 +1779,7 @@ function XpInvestmentStep({
               <SpecSelectorList
                 refSpecs={specializations}
                 ownedKeys={existingKeys}
-                careerKey={draft.career?.key ?? ''}
+                careerSpecKeys={careerSpecKeySet}
                 getSpecCost={spec => {
                   const isCareer = careerSpecKeySet.has(spec.key)
                   return specPurchaseCost(draft.additionalSpecs.length + 1, isCareer)

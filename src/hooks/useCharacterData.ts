@@ -224,6 +224,20 @@ export function useCharacterData(characterId: string) {
     return new Set(currentCareer?.specialization_keys ?? [])
   }, [refCareers, character?.career_key])
 
+  // Reverse lookup: spec key -> name of a career that claims it in
+  // specialization_keys (first match wins if shared across careers). Used to
+  // label non-owned specs in the spec selector; Universal specs (claimed by
+  // no career) are simply absent from this map.
+  const specKeyToCareerName = useMemo(() => {
+    const map: Record<string, string> = {}
+    for (const career of refCareers) {
+      for (const specKey of career.specialization_keys ?? []) {
+        if (!(specKey in map)) map[specKey] = career.name
+      }
+    }
+    return map
+  }, [refCareers])
+
   // ── Apply talent stat modifiers to character (positive or negative delta) ──
   const applyTalentModifiers = (talentKey: string, direction: 1 | -1) => {
     const ref = refTalentMap[talentKey]
@@ -1076,6 +1090,8 @@ export function useCharacterData(characterId: string) {
     // Derived
     forceRating,
     careerForceRatingBase,
+    careerSpecKeys,
+    specKeyToCareerName,
     pendingForceRatingOffer,
     setPendingForceRatingOffer,
     // HUD transforms

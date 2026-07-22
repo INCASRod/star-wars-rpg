@@ -14,6 +14,8 @@ interface HudTalentsTabProps {
   refSpecMap: Record<string, RefSpecialization>
   refSpecs: RefSpecialization[]
   refTalentMap: Record<string, RefTalent>
+  careerSpecKeys: Set<string>
+  specKeyToCareerName: Record<string, string>
   talents: CharacterTalent[]
   hudTalents: HudTalent[]
   activeSpecKey: string | null
@@ -25,6 +27,7 @@ interface HudTalentsTabProps {
 
 export function HudTalentsTab({
   character, characterId, charSpecs, refSpecMap, refSpecs, refTalentMap,
+  careerSpecKeys, specKeyToCareerName,
   talents, hudTalents, activeSpecKey, setActiveSpecKey,
   isCombat, setShowTalentTree, onBuySpecialization,
 }: HudTalentsTabProps) {
@@ -83,6 +86,8 @@ export function HudTalentsTab({
           refSpecs={refSpecs}
           refSpecMap={refSpecMap}
           refTalentMap={refTalentMap}
+          careerSpecKeys={careerSpecKeys}
+          specKeyToCareerName={specKeyToCareerName}
           onBuy={specKey => onBuySpecialization(specKey, setActiveSpecKey)}
         />
         <div style={{ flex: 1 }} />

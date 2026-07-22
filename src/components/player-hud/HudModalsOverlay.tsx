@@ -43,6 +43,8 @@ interface HudModalsOverlayProps {
   refSpecs: RefSpecialization[]
   refSpecMap: Record<string, RefSpecialization>
   refWeaponQualityMap: Record<string, RefWeaponQuality>
+  careerSpecKeys: Set<string>
+  specKeyToCareerName: Record<string, string>
 
   rollResult: RollResult | null
   rollLabel: string | undefined
@@ -122,6 +124,7 @@ interface HudModalsOverlayProps {
 export function HudModalsOverlay({
   character, skills, talents, refTalentMap, speciesAbilities, forceRating,
   effectiveCampaignId, supabase, isGmMode, refSpecs, refSpecMap, refWeaponQualityMap,
+  careerSpecKeys, specKeyToCareerName,
   rollResult, rollLabel, setRollResult,
   showTalentTree, setShowTalentTree, charSpecs, activeSpecKey, setActiveSpecKey,
   talentTreeData, onPurchaseTalent, onRemoveTalent, onBuySpecialization,
@@ -161,6 +164,8 @@ export function HudModalsOverlay({
         character={character}
         refSpecs={refSpecs}
         refTalentMap={refTalentMap}
+        careerSpecKeys={careerSpecKeys}
+        specKeyToCareerName={specKeyToCareerName}
         isGmMode={isGmMode}
         onPurchaseTalent={onPurchaseTalent}
         onRemoveTalent={onRemoveTalent}

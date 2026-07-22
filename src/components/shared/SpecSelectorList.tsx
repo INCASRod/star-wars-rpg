@@ -152,12 +152,14 @@ interface SpecDetailPanelProps {
   cost:          number
   affordable:    boolean
   blockReason:   string | null
+  isCareer:      boolean
+  careerLabel:   string | null
   onBuy:         () => void
   onClose:       () => void
   refTalentMap?: Record<string, RefTalent>
 }
 
-function SpecDetailPanel({ spec, cost, affordable, blockReason, onBuy, onClose, refTalentMap }: SpecDetailPanelProps) {
+function SpecDetailPanel({ spec, cost, affordable, blockReason, isCareer, careerLabel, onBuy, onClose, refTalentMap }: SpecDetailPanelProps) {
   const canBuy = affordable && !blockReason
   const [mounted, setMounted] = useState(false)
   const [visible, setVisible] = useState(false)
@@ -220,15 +222,17 @@ function SpecDetailPanel({ spec, cost, affordable, blockReason, onBuy, onClose, 
               {spec.name}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 5, flexWrap: 'wrap' }}>
-              <span style={{
-                fontFamily: FR, fontSize: 'clamp(0.65rem, 0.9vw, 0.72rem)',
-                color: HUD.gold, background: `color-mix(in srgb, ${HUD.gold} 7%, transparent)`,
-                border: `1px solid color-mix(in srgb, ${HUD.gold} 19%, transparent)`,
-                borderRadius: 3, padding: '1px 7px',
-                textTransform: 'uppercase', letterSpacing: '0.1em',
-              }}>
-                {spec.career_key}
-              </span>
+              {(isCareer || careerLabel) && (
+                <span style={{
+                  fontFamily: FR, fontSize: 'clamp(0.65rem, 0.9vw, 0.72rem)',
+                  color: HUD.gold, background: `color-mix(in srgb, ${HUD.gold} 7%, transparent)`,
+                  border: `1px solid color-mix(in srgb, ${HUD.gold} 19%, transparent)`,
+                  borderRadius: 3, padding: '1px 7px',
+                  textTransform: 'uppercase', letterSpacing: '0.1em',
+                }}>
+                  {isCareer ? '★ Career' : careerLabel}
+                </span>
+              )}
               {spec.is_force_sensitive && (
                 <span style={{
                   fontFamily: FM, fontSize: 'clamp(0.65rem, 0.9vw, 0.72rem)',
@@ -415,8 +419,10 @@ export interface SpecSelectorListProps {
   refSpecs: RefSpecialization[]
   /** Spec keys already owned/selected; excluded from the list */
   ownedKeys: Set<string>
-  /** Career key used to highlight career specs */
-  careerKey: string
+  /** Spec keys that are in-career for the character's career (from ref_careers.specialization_keys — ref_specializations.career_key is always NULL for the respec dataset) */
+  careerSpecKeys: Set<string>
+  /** For a non-career spec, return the name of a career that claims it (for the chip label), or null for Universal specs that belong to no career */
+  otherCareerName?: (spec: RefSpecialization) => string | null
   /** Return the XP cost for a given spec */
   getSpecCost: (spec: RefSpecialization) => number
   /** Return true when the user can afford this spec */
@@ -436,7 +442,8 @@ export interface SpecSelectorListProps {
 export function SpecSelectorList({
   refSpecs,
   ownedKeys,
-  careerKey,
+  careerSpecKeys,
+  otherCareerName,
   getSpecCost,
   canAfford,
   onSelect,
@@ -451,14 +458,19 @@ export function SpecSelectorList({
   const available = refSpecs
     .filter(s => !ownedKeys.has(s.key) && s.talent_tree?.rows?.length)
     .sort((a, b) => {
-      const ac = a.career_key === careerKey ? 0 : 1
-      const bc = b.career_key === careerKey ? 0 : 1
+      const ac = careerSpecKeys.has(a.key) ? 0 : 1
+      const bc = careerSpecKeys.has(b.key) ? 0 : 1
       return ac !== bc ? ac - bc : a.name.localeCompare(b.name)
     })
 
   const filtered = search
     ? available.filter(s => s.name.toLowerCase().includes(search.toLowerCase()))
     : available
+
+  // Sort already buckets in-career specs first — find where the "other careers"
+  // bucket begins so we can drop a divider there, matching the creation flow's
+  // first-spec picker (src/app/create/page.tsx "OTHER CAREERS" divider).
+  const firstOtherIdx = filtered.findIndex(s => !careerSpecKeys.has(s.key))
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1, minHeight: 0 }}>
@@ -485,11 +497,30 @@ export function SpecSelectorList({
 
       {/* List */}
       <div style={{ overflowY: 'auto', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
-        {filtered.map(spec => {
-          const isCareer  = spec.career_key === careerKey
+        {filtered.map((spec, index) => {
+          const isCareer  = careerSpecKeys.has(spec.key)
+          const careerLabel = isCareer ? null : (otherCareerName?.(spec) ?? null)
           const cost      = getSpecCost(spec)
           const affordable = canAfford(spec)
           const blockReason = blockedReason?.(spec) ?? null
+
+          const divider = index === firstOtherIdx && firstOtherIdx > 0 && (
+            <div key="other-careers-divider" style={{
+              fontFamily: FR,
+              fontSize: 'clamp(0.6rem, 0.85vw, 0.68rem)',
+              fontWeight: 600,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              color: FAINT,
+              background: 'var(--hud-surface-lo)',
+              border: `1px solid ${BORDER}`,
+              borderRadius: 4,
+              padding: '3px 12px',
+              marginTop: 2,
+            }}>
+              Other Careers
+            </div>
+          )
 
           const btn = (
             <button
@@ -527,15 +558,17 @@ export function SpecSelectorList({
                   {spec.name}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
-                  <span style={{
-                    fontFamily: FR,
-                    fontSize: 'clamp(0.65rem, 0.9vw, 0.72rem)',
-                    color: isCareer ? HUD.gold : FAINT,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.1em',
-                  }}>
-                    {isCareer ? '★ Career' : spec.career_key}
-                  </span>
+                  {(isCareer || careerLabel) && (
+                    <span style={{
+                      fontFamily: FR,
+                      fontSize: 'clamp(0.65rem, 0.9vw, 0.72rem)',
+                      color: isCareer ? HUD.gold : FAINT,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.1em',
+                    }}>
+                      {isCareer ? '★ Career' : careerLabel}
+                    </span>
+                  )}
                   {spec.is_force_sensitive && (
                     <span style={{
                       fontFamily: FM,
@@ -565,7 +598,8 @@ export function SpecSelectorList({
           )
 
           if (blockReason || !affordable) {
-            return (
+            return [
+              divider,
               <Tooltip
                 key={spec.key}
                 content={<TipBody>{blockReason ?? 'Cannot afford new spec'}</TipBody>}
@@ -573,16 +607,17 @@ export function SpecSelectorList({
                 maxWidth={200}
               >
                 {btn}
-              </Tooltip>
-            )
+              </Tooltip>,
+            ]
           }
 
-          return (
+          return [
+            divider,
             <div key={spec.key}>
               {btn}
-            </div>
-          )
-        })}
+            </div>,
+          ]
+        }).flat()}
 
         {filtered.length === 0 && (
           <div style={{
@@ -604,6 +639,8 @@ export function SpecSelectorList({
           cost={getSpecCost(selectedSpec)}
           affordable={canAfford(selectedSpec)}
           blockReason={blockedReason?.(selectedSpec) ?? null}
+          isCareer={careerSpecKeys.has(selectedSpec.key)}
+          careerLabel={careerSpecKeys.has(selectedSpec.key) ? null : (otherCareerName?.(selectedSpec) ?? null)}
           onBuy={() => { onSelect(selectedSpec); setSelectedSpec(null) }}
           onClose={() => setSelectedSpec(null)}
           refTalentMap={refTalentMap}

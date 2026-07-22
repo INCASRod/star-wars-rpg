@@ -26,6 +26,8 @@ interface HudTalentTreeModalProps {
   character: Character
   refSpecs: RefSpecialization[]
   refTalentMap: Record<string, RefTalent>
+  careerSpecKeys: Set<string>
+  specKeyToCareerName: Record<string, string>
   isGmMode: boolean
   onPurchaseTalent: (talentKey: string, row: number, col: number, specKey: string) => Promise<string | undefined>
   onRemoveTalent: ((talentId: string, xpCost: number) => void) | undefined
@@ -50,6 +52,8 @@ export function HudTalentTreeModal({
   character,
   refSpecs,
   refTalentMap,
+  careerSpecKeys,
+  specKeyToCareerName,
   isGmMode,
   onPurchaseTalent,
   onRemoveTalent,
@@ -104,6 +108,8 @@ export function HudTalentTreeModal({
             refSpecs={refSpecs}
             refSpecMap={refSpecMap}
             refTalentMap={refTalentMap}
+            careerSpecKeys={careerSpecKeys}
+            specKeyToCareerName={specKeyToCareerName}
             onBuy={specKey => onBuySpecialization(specKey, setActiveSpecKey)}
           />
           {activeSpecKey && !lockedForSlot && (

@@ -74,7 +74,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     refSkillMap, refTalentMap, refWeaponMap, refArmorMap, refGearMap,
     refSpecMap, refForcePowerMap, refForceAbilityMap, refWeaponQualityMap,
     refAttachmentMap,
-    forceRating, careerForceRatingBase, pendingForceRatingOffer, setPendingForceRatingOffer, supabase, refSpecs,
+    forceRating, careerForceRatingBase, careerSpecKeys, specKeyToCareerName, pendingForceRatingOffer, setPendingForceRatingOffer, supabase, refSpecs,
     speciesAbilities, hudSkills, hudTalents, hudWeapons, hudArmor, hudGear,
     encumbranceCurrent, encumbranceBonus,
     handleVitalChange, handleVitalAdjust, handleSetEquipState,
@@ -599,6 +599,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
               refSpecMap={refSpecMap}
               refSpecs={refSpecs}
               refTalentMap={refTalentMap}
+              careerSpecKeys={careerSpecKeys}
+              specKeyToCareerName={specKeyToCareerName}
               talents={talents}
               hudTalents={hudTalents}
               activeSpecKey={activeSpecKey}
@@ -730,6 +732,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         refSpecs={refSpecs}
         refSpecMap={refSpecMap}
         refWeaponQualityMap={refWeaponQualityMap}
+        careerSpecKeys={careerSpecKeys}
+        specKeyToCareerName={specKeyToCareerName}
         rollResult={rollResult}
         rollLabel={rollLabel}
         setRollResult={setRollResult}
