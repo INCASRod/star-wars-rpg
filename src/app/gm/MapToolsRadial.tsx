@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { createPortal } from 'react-dom'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useMapPlanets, type MapPlanet } from '@/hooks/useMapPlanets'
 import type { ActiveMap, CrawlContent } from '@/hooks/useActiveMap'
@@ -1492,8 +1493,16 @@ function MapLibraryContent({
   onSetActiveMap, onToggleVisible, onDeleteMap,
   onCreatePlanet, onDeletePlanet, onAssignPlanet,
 }: MapLibraryContentProps) {
+  const router = useRouter()
+
   function toggleExpand(id: string | 'all' | 'unassigned') {
     setExpandedId(expandedId === id ? null : id)
+  }
+
+  function goToMapForge() {
+    // Wipe any stale draft before navigating so MapForge always opens clean
+    try { localStorage.removeItem(`mapforge_draft_${campaignId}`) } catch { /* ignore */ }
+    router.push(`/gm/mapforge?campaign=${campaignId}`)
   }
 
   return (
@@ -1592,6 +1601,25 @@ function MapLibraryContent({
               }}
             >&#8593; Upload Map</button>
           </div>
+        )}
+        {!newPlanetOpen && (
+          <button
+            onClick={goToMapForge}
+            style={{
+              width:         '100%',
+              padding:       `${SP[1]} 0`,
+              borderRadius:  RADIUS.md,
+              background:    'var(--hud-surface-lo)',
+              border:        `1px solid ${HUD.border}`,
+              color:         HUD.gold,
+              fontFamily:    FONT_BODY,
+              fontSize:      FS.caption,
+              fontWeight:    700,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              cursor:        'pointer',
+            }}
+          >&#9670; Generate Map</button>
         )}
       </div>
 
