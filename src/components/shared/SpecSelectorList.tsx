@@ -602,7 +602,7 @@ export function SpecSelectorList({
               divider,
               <Tooltip
                 key={spec.key}
-                content={<TipBody>{blockReason ?? 'Cannot afford new spec'}</TipBody>}
+                content={<TipBody>{blockReason ?? 'Click to preview'}</TipBody>}
                 placement="top"
                 maxWidth={200}
               >

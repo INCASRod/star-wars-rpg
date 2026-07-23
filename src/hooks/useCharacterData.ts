@@ -128,7 +128,10 @@ export function useCharacterData(characterId: string) {
       setRefCrits((refCritRes.data as RefCriticalInjury[]) || [])
 
       // Supplement active-dataset specs with any cross-dataset specs the character
-      // actually owns (e.g. oggdude specs on a respec campaign).
+      // actually owns (e.g. oggdude specs on a respec campaign), OR any specs the
+      // character owns that have since been retired. Retirement means "cannot be
+      // newly selected" — it must never drop an owned spec out of refSpecMap, so
+      // this fallback deliberately does NOT filter on is_retired.
       let mergedRefSpecs = (refSpecRes.data as RefSpecialization[]) || []
       const loadedSpecKeys = new Set(mergedRefSpecs.map(s => s.key))
       const charSpecKeys = ((specsRes.data as CharacterSpecialization[]) || []).map(cs => cs.specialization_key)
@@ -138,7 +141,6 @@ export function useCharacterData(characterId: string) {
           .from('ref_specializations')
           .select('*')
           .in('key', missingSpecKeys)
-          .eq('is_retired', false)
         if (fallbackSpecs) mergedRefSpecs = [...mergedRefSpecs, ...(fallbackSpecs as RefSpecialization[])]
       }
       setRefSpecs(mergedRefSpecs)
