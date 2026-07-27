@@ -1,14 +1,17 @@
 'use client'
 
-import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
+import { useEffect, useState, useCallback, useMemo, useRef, type Dispatch, type SetStateAction } from 'react'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { randomUUID } from '@/lib/utils'
 import { logPurchaseNotification } from '@/lib/logRoll'
 import { fetchActiveDataset } from '@/lib/activeDataset'
+import { getRefData } from '@/lib/refDataCache'
 import { useCharacterSigAbilities } from '@/hooks/useCharacterSigAbilities'
 import { isDroid, isClone, isEligibleForForceRating } from '@/lib/forceEligibility'
-import { computeDerivedStats } from '@/lib/derivedStats'
+import { computeDerivedStats, countOwnedRanks } from '@/lib/derivedStats'
+import { computeCareerSkillKeys, persistCareerSkills } from '@/lib/characters'
 import {
   RANGE_LABELS, ACTIVATION_LABELS, CHARACTERISTIC_ABBR,
 } from '@/lib/types'
@@ -22,6 +25,274 @@ import type {
   RefObligationType, RefDutyType,
   SpeciesAbility, HudSkill, HudTalent, WpnDisplay, ArmDisplay, GearRow, ItemCondition, StowLocationType,
 } from '@/lib/types'
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SHARED MUTATION LOGIC — extracted to standalone functions (Prompt 7a) so the
+// lean useTalentSurfaceData hook can reuse the exact same purchase/XP-race-safe
+// logic instead of duplicating it (duplicated purchase logic is how the XP-race
+// bug happened in the first place). useCharacterData's own handlers below are
+// now thin closures that supply their own state/setters via a deps bag; every
+// existing consumer (PlayerHUDDesktop, etc.) is unaffected — same call
+// signatures, same behaviour, same return values.
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** Pure — no closure over hook state. Both useCharacterData and useTalentSurfaceData call this identically. */
+export function applyTalentModifiers(
+  character: Character,
+  refTalentMap: Record<string, RefTalent>,
+  talentKey: string,
+  direction: 1 | -1,
+): Record<string, number> {
+  const ref = refTalentMap[talentKey]
+  if (!ref?.modifiers) return {}
+  const mods = ref.modifiers
+  const updates: Record<string, number> = {}
+  if (mods.wound_threshold) updates.wound_threshold = character.wound_threshold + mods.wound_threshold * direction
+  if (mods.strain_threshold) updates.strain_threshold = character.strain_threshold + mods.strain_threshold * direction
+  if (mods.soak) updates.soak = character.soak + mods.soak * direction
+  if (mods.defense_ranged) updates.defense_ranged = character.defense_ranged + mods.defense_ranged * direction
+  if (mods.defense_melee) updates.defense_melee = character.defense_melee + mods.defense_melee * direction
+  return updates
+}
+
+export interface TalentMutationDeps {
+  character: Character
+  talents: CharacterTalent[]
+  refTalentMap: Record<string, RefTalent>
+  supabase: SupabaseClient
+  setCharacter: (c: Character) => void
+  setTalents: Dispatch<SetStateAction<CharacterTalent[]>>
+}
+
+export async function purchaseTalent(
+  deps: TalentMutationDeps,
+  talentKey: string, row: number, col: number, activeSpecKey: string,
+): Promise<string | undefined> {
+  const { character, talents, refTalentMap, supabase, setCharacter, setTalents } = deps
+  const cost = (row + 1) * 5
+  if (character.xp_available < cost) return
+
+  const statUpdates = applyTalentModifiers(character, refTalentMap, talentKey, 1)
+  const optimisticXp = character.xp_available - cost
+  const newId = randomUUID()
+  const talentRow = {
+    id: newId, character_id: character.id, talent_key: talentKey,
+    specialization_key: activeSpecKey, tree_row: row, tree_col: col, ranks: 1, xp_cost: cost,
+  }
+  setCharacter({ ...character, xp_available: optimisticXp, ...statUpdates })
+  setTalents(prev => [...prev, talentRow])
+
+  // XP-race fix: re-read xp_available immediately before persisting — same
+  // fresh-read pattern as lockInAbility/purchaseNode (useCharacterSigAbilities.ts)
+  // — so two near-simultaneous editors (GM + player) can't both spend the
+  // same XP. If the fresh value can no longer afford it, roll back the
+  // optimistic update instead of persisting an overspend.
+  const { data: charRow } = await supabase.from('characters').select('xp_available').eq('id', character.id).single()
+  const freshXp = charRow?.xp_available ?? character.xp_available
+  if (freshXp < cost) {
+    setCharacter({ ...character, xp_available: freshXp })
+    setTalents(prev => prev.filter(t => t.id !== newId))
+    toast.error(`Not enough XP — need ${cost}, have ${freshXp}`)
+    return
+  }
+  const newXp = freshXp - cost
+
+  await Promise.all([
+    supabase.from('character_talents').insert(talentRow),
+    supabase.from('characters').update({ xp_available: newXp, ...statUpdates }).eq('id', character.id),
+    supabase.from('xp_transactions').insert({ character_id: character.id, amount: -cost, reason: `Bought talent: ${talentKey} (row ${row})` }),
+  ])
+
+  const existingRankCount = countOwnedRanks(talents, t => t.talent_key === talentKey)
+  const talentRank        = existingRankCount + 1
+  const talentName        = refTalentMap[talentKey]?.name ?? talentKey
+  const label              = talentRank > 1 ? `${talentName} (Rank ${talentRank})` : talentName
+
+  logPurchaseNotification({
+    campaignId:    character.campaign_id,
+    characterId:   character.id,
+    characterName: character.name,
+    label,
+    meta: {
+      purchase_type: 'talent',
+      xp_cost:       cost,
+      refunded:      false,
+      talent_id:     newId,
+      talent_key:    talentKey,
+      stat_delta:    (() => {
+        const ref  = refTalentMap[talentKey]
+        const mods = ref?.modifiers as Record<string, number> | undefined ?? {}
+        const raw: Record<string, number> = {}
+        for (const key of ['wound_threshold', 'strain_threshold', 'soak', 'defense_ranged', 'defense_melee'] as const) {
+          if (mods[key]) raw[key] = mods[key]
+        }
+        return raw
+      })(),
+    },
+  })
+
+  return newId
+}
+
+export async function removeTalent(deps: TalentMutationDeps, talentId: string, xpCost: number): Promise<void> {
+  const { character, talents, refTalentMap, supabase, setCharacter, setTalents } = deps
+  const ct = talents.find(t => t.talent_key === talentId)
+  if (!ct) return
+  const statUpdates = applyTalentModifiers(character, refTalentMap, talentId, -1)
+  const newXp = character.xp_available + xpCost
+  setCharacter({ ...character, xp_available: newXp, ...statUpdates })
+  setTalents(prev => prev.filter(t => t.id !== ct.id))
+  await Promise.all([
+    supabase.from('character_talents').delete().eq('id', ct.id),
+    supabase.from('characters').update({ xp_available: newXp, ...statUpdates }).eq('id', character.id),
+    supabase.from('xp_transactions').insert({ character_id: character.id, amount: xpCost, reason: `GM refund: removed talent ${talentId}` }),
+  ])
+}
+
+/** Save the characteristic chosen for a Dedication purchase and apply the +1. */
+export async function resolveDedication(deps: TalentMutationDeps, talentId: string, charKey: string): Promise<void> {
+  const { character, supabase, setCharacter, setTalents } = deps
+  const current = (character[charKey as keyof typeof character] as number) ?? 2
+  const newVal = Math.min(current + 1, 6)
+  setCharacter({ ...character, [charKey]: newVal })
+  setTalents(prev => prev.map(t => t.id === talentId ? { ...t, dedication_characteristic: charKey as CharacterTalent['dedication_characteristic'] } : t))
+  await Promise.all([
+    supabase.from('character_talents').update({ dedication_characteristic: charKey }).eq('id', talentId),
+    supabase.from('characters').update({ [charKey]: newVal }).eq('id', character.id),
+  ])
+}
+
+/**
+ * Cancelling the Dedication characteristic-choice prompt reverts the purchase
+ * entirely — the choice is mandatory at time of purchase, so there is no
+ * "resolve it later" state a Dedication row can be left in. Removes the
+ * talent row by its exact id (not by talent_key — Dedication is rankable,
+ * so a character can have more than one row) and refunds the XP.
+ */
+export async function cancelDedication(deps: TalentMutationDeps, talentId: string, xpCost: number): Promise<void> {
+  const { character, supabase, setCharacter, setTalents } = deps
+  const newXp = character.xp_available + xpCost
+  setCharacter({ ...character, xp_available: newXp })
+  setTalents(prev => prev.filter(t => t.id !== talentId))
+  await Promise.all([
+    supabase.from('character_talents').delete().eq('id', talentId),
+    supabase.from('characters').update({ xp_available: newXp }).eq('id', character.id),
+    supabase.from('xp_transactions').insert({ character_id: character.id, amount: xpCost, reason: 'Dedication cancelled: no characteristic chosen' }),
+  ])
+}
+
+export interface BuySpecializationDeps {
+  character: Character
+  charSpecs: CharacterSpecialization[]
+  refSpecMap: Record<string, RefSpecialization>
+  refCareers: RefCareer[]
+  refSkills: RefSkill[]
+  careerSpecKeys: Set<string>
+  forceRating: number
+  supabase: SupabaseClient
+  setCharacter: (c: Character) => void
+  setCharSpecs: Dispatch<SetStateAction<CharacterSpecialization[]>>
+  setPendingForceRatingOffer: (b: boolean) => void
+  /** Optional — useCharacterData keeps its local `skills` (character_skills) state in sync for HUD display; useTalentSurfaceData doesn't track that table at all (never rendered on the talents route) and omits this. The DB write (persistCareerSkills) always happens regardless. */
+  setSkills?: Dispatch<SetStateAction<CharacterSkill[]>>
+}
+
+export interface SpecPurchaseResult {
+  specKey: string
+  specName: string
+  /** Skill keys newly granted as career skills by this purchase — the set
+      difference established in the career-skill-union prompt: any skill that
+      was ALREADY a career skill (starting spec, or a previously purchased
+      one) is excluded, even if this new spec also claims it. Caller maps
+      these to display names (this function has no refSkillMap need beyond
+      the keys already required for persistCareerSkills). */
+  newlyGrantedSkillKeys: string[]
+}
+
+export async function buySpecialization(
+  deps: BuySpecializationDeps,
+  specKey: string,
+  setActiveSpecKey: (key: string) => void,
+): Promise<SpecPurchaseResult | undefined> {
+  const {
+    character, charSpecs, refSpecMap, refCareers, refSkills, careerSpecKeys, forceRating,
+    supabase, setCharacter, setCharSpecs, setPendingForceRatingOffer, setSkills,
+  } = deps
+  const targetSpec = refSpecMap[specKey]
+  if (targetSpec?.is_force_sensitive && (isDroid(character) || isClone(character))) {
+    toast.error(`${isDroid(character) ? 'Droids' : 'Clones'} cannot become Force sensitive`)
+    return
+  }
+  const isCareer = careerSpecKeys.has(specKey)
+  const existingCount = charSpecs.length
+  const cost = specPurchaseCost(existingCount, isCareer)
+  if (character.xp_available < cost) {
+    toast.error(`Not enough XP — need ${cost}, have ${character.xp_available}`)
+    return
+  }
+
+  const newXp = character.xp_available - cost
+  setCharacter({ ...character, xp_available: newXp })
+  const newSpec: CharacterSpecialization = {
+    id: randomUUID(), character_id: character.id,
+    specialization_key: specKey, is_starting: false, purchase_order: existingCount,
+  }
+  setCharSpecs(prev => [...prev, newSpec])
+  setActiveSpecKey(specKey)
+
+  await Promise.all([
+    supabase.from('character_specializations').insert({
+      character_id: character.id, specialization_key: specKey,
+      is_starting: false, purchase_order: existingCount,
+    }),
+    supabase.from('characters').update({ xp_available: newXp }).eq('id', character.id),
+    supabase.from('xp_transactions').insert({ character_id: character.id, amount: -cost, reason: `Bought specialization: ${specKey}` }),
+  ])
+
+  // Resync career-skill status: this spec's career_skill_keys now count as
+  // career skills for the character, unioned with every other owned spec.
+  const careerRef = refCareers.find(c => c.key === character.career_key)
+  const ownedSpecRefs = [...charSpecs, newSpec]
+    .map(s => refSpecMap[s.specialization_key])
+    .filter((s): s is RefSpecialization => !!s)
+
+  // Career-skill diff (Prompt 9's spec celebration) — computed purely/locally,
+  // no extra DB round-trip: "before" is the union WITHOUT the new spec,
+  // "after" is the union WITH it. Both calls are the exact same pure function
+  // persistCareerSkills already uses internally, just called here directly so
+  // the diff doesn't have to wait on (or duplicate) the DB write below.
+  const beforeSpecRefs = charSpecs.map(s => refSpecMap[s.specialization_key]).filter((s): s is RefSpecialization => !!s)
+  const beforeUnion = computeCareerSkillKeys(careerRef?.career_skill_keys, beforeSpecRefs)
+  const afterUnion = computeCareerSkillKeys(careerRef?.career_skill_keys, ownedSpecRefs)
+  const newlyGrantedSkillKeys = [...afterUnion].filter(k => !beforeUnion.has(k))
+
+  const unionKeys = await persistCareerSkills(
+    character.id, careerRef?.career_skill_keys, ownedSpecRefs, refSkills.map(s => s.key),
+  )
+  setSkills?.(prev => prev.map(s => ({ ...s, is_career: unionKeys.has(s.skill_key) })))
+
+  logPurchaseNotification({
+    campaignId:    character.campaign_id,
+    characterId:   character.id,
+    characterName: character.name,
+    label:         `${refSpecMap[specKey]?.name ?? specKey} Specialization`,
+    meta: {
+      purchase_type:      'specialization',
+      xp_cost:            cost,
+      refunded:           false,
+      specialization_key: specKey,
+    },
+  })
+  toast.success(`Purchased ${refSpecMap[specKey]?.name || specKey}!`)
+
+  // Offer the deliberate Force Rating purchase if this spec just made the
+  // character eligible and they haven't already gained/bought it.
+  if (targetSpec?.is_force_sensitive && forceRating === 0 && !character.force_rating_purchased) {
+    setPendingForceRatingOffer(true)
+  }
+
+  return { specKey, specName: refSpecMap[specKey]?.name ?? specKey, newlyGrantedSkillKeys }
+}
 
 /**
  * reSpecialized / FFG specialization purchase cost:
@@ -75,36 +346,39 @@ export function useCharacterData(characterId: string) {
     if (!silent) setLoading(true)
     try {
       const ds = await fetchActiveDataset(supabase)
-      const [charRes, skillsRes, talentsRes, weaponsRes, armorRes, gearRes, critsRes, specsRes,
-        refSkRes, refTalRes, refTalCustomRes, refWpnRes, refArmRes, refGearRes, refCritRes, refSpecRes, refDescRes,
-        refCareerRes, refSpeciesRes, forceAbilRes, refFpRes, refFaRes, refWqRes, refAttRes,
-        refOblTypesRes, refDutyTypesRes] = await Promise.all([
-        supabase.from('characters').select('*').eq('id', characterId).single(),
-        supabase.from('character_skills').select('*').eq('character_id', characterId),
-        supabase.from('character_talents').select('*').eq('character_id', characterId),
-        supabase.from('character_weapons').select('*').eq('character_id', characterId).eq('is_dropped', false),
-        supabase.from('character_armor').select('*').eq('character_id', characterId).eq('is_dropped', false),
-        supabase.from('character_gear').select('*').eq('character_id', characterId).eq('is_dropped', false),
-        supabase.from('character_critical_injuries').select('*').eq('character_id', characterId).eq('is_healed', false),
-        supabase.from('character_specializations').select('*').eq('character_id', characterId),
-        supabase.from('ref_skills').select('*'),
-        supabase.from('ref_talents').select('*').eq('dataset_source', ds).eq('is_retired', false),
-        supabase.from('ref_talents').select('*').eq('is_custom', true),
-        supabase.from('ref_weapons').select('*'),
-        supabase.from('ref_armor').select('*'),
-        supabase.from('ref_gear').select('*'),
-        supabase.from('ref_critical_injuries').select('*').order('roll_min'),
-        supabase.from('ref_specializations').select('*').eq('dataset_source', ds).eq('is_retired', false),
-        supabase.from('ref_item_descriptors').select('*'),
-        supabase.from('ref_careers').select('*').eq('dataset_source', ds).eq('is_retired', false),
-        supabase.from('ref_species').select('*'),
-        supabase.from('character_force_abilities').select('*').eq('character_id', characterId),
-        supabase.from('ref_force_powers').select('*'),
-        supabase.from('ref_force_abilities').select('*').eq('dataset_source', ds).eq('is_retired', false),
-        supabase.from('ref_weapon_qualities').select('*'),
-        supabase.from('ref_item_attachments').select('*'),
-        supabase.from('ref_obligation_types').select('key, name'),
-        supabase.from('ref_duty_types').select('key, name'),
+      // ref_skills/ref_talents/ref_specializations/ref_careers are static per
+      // dataset — shared cache (Prompt 7c) instead of re-fetching them on every
+      // character mount. Fires alongside (not before/after) the character-specific
+      // batch below, so cold-cache timing is unchanged; a warm cache resolves
+      // this leg instantly and fires zero ref queries.
+      const [refData, [charRes, skillsRes, talentsRes, weaponsRes, armorRes, gearRes, critsRes, specsRes,
+        refWpnRes, refArmRes, refGearRes, refCritRes, refDescRes,
+        refSpeciesRes, forceAbilRes, refFpRes, refFaRes, refWqRes, refAttRes,
+        refOblTypesRes, refDutyTypesRes]] = await Promise.all([
+        getRefData(ds),
+        Promise.all([
+          supabase.from('characters').select('*').eq('id', characterId).single(),
+          supabase.from('character_skills').select('*').eq('character_id', characterId),
+          supabase.from('character_talents').select('*').eq('character_id', characterId),
+          supabase.from('character_weapons').select('*').eq('character_id', characterId).eq('is_dropped', false),
+          supabase.from('character_armor').select('*').eq('character_id', characterId).eq('is_dropped', false),
+          supabase.from('character_gear').select('*').eq('character_id', characterId).eq('is_dropped', false),
+          supabase.from('character_critical_injuries').select('*').eq('character_id', characterId).eq('is_healed', false),
+          supabase.from('character_specializations').select('*').eq('character_id', characterId),
+          supabase.from('ref_weapons').select('*'),
+          supabase.from('ref_armor').select('*'),
+          supabase.from('ref_gear').select('*'),
+          supabase.from('ref_critical_injuries').select('*').order('roll_min'),
+          supabase.from('ref_item_descriptors').select('*'),
+          supabase.from('ref_species').select('*'),
+          supabase.from('character_force_abilities').select('*').eq('character_id', characterId),
+          supabase.from('ref_force_powers').select('*'),
+          supabase.from('ref_force_abilities').select('*').eq('dataset_source', ds).eq('is_retired', false),
+          supabase.from('ref_weapon_qualities').select('*'),
+          supabase.from('ref_item_attachments').select('*'),
+          supabase.from('ref_obligation_types').select('key, name'),
+          supabase.from('ref_duty_types').select('key, name'),
+        ]),
       ])
 
       if (charRes.error) throw new Error(charRes.error.message)
@@ -116,12 +390,11 @@ export function useCharacterData(characterId: string) {
       setArmor((armorRes.data as CharacterArmor[]) || [])
       setGear((gearRes.data as CharacterGear[]) || [])
       setCrits((critsRes.data as CharacterCriticalInjury[]) || [])
-      setCharSpecs((specsRes.data as CharacterSpecialization[]) || [])
-      setRefSkills((refSkRes.data as RefSkill[]) || [])
-      const stdTalents  = (refTalRes.data as RefTalent[]) || []
-      const custTalents = (refTalCustomRes.data as RefTalent[]) || []
-      const stdKeys     = new Set(stdTalents.map(t => t.key))
-      setRefTalents([...stdTalents, ...custTalents.filter(t => !stdKeys.has(t.key))])
+      // No ORDER BY on the query above — sort here so tab order (talents surface,
+      // HudTalentsTab) is deterministic instead of whatever order Postgres returns.
+      setCharSpecs(((specsRes.data as CharacterSpecialization[]) || []).slice().sort((a, b) => a.purchase_order - b.purchase_order))
+      setRefSkills(refData.refSkills)
+      setRefTalents(refData.refTalents)
       setRefWeapons((refWpnRes.data as RefWeapon[]) || [])
       setRefArmor((refArmRes.data as RefArmor[]) || [])
       setRefGear((refGearRes.data as RefGear[]) || [])
@@ -131,8 +404,9 @@ export function useCharacterData(characterId: string) {
       // actually owns (e.g. oggdude specs on a respec campaign), OR any specs the
       // character owns that have since been retired. Retirement means "cannot be
       // newly selected" — it must never drop an owned spec out of refSpecMap, so
-      // this fallback deliberately does NOT filter on is_retired.
-      let mergedRefSpecs = (refSpecRes.data as RefSpecialization[]) || []
+      // this fallback deliberately does NOT filter on is_retired. Character-specific,
+      // so it stays outside the shared cache — see refDataCache.ts's header comment.
+      let mergedRefSpecs = refData.refSpecializations
       const loadedSpecKeys = new Set(mergedRefSpecs.map(s => s.key))
       const charSpecKeys = ((specsRes.data as CharacterSpecialization[]) || []).map(cs => cs.specialization_key)
       const missingSpecKeys = charSpecKeys.filter(k => !loadedSpecKeys.has(k))
@@ -145,7 +419,7 @@ export function useCharacterData(characterId: string) {
       }
       setRefSpecs(mergedRefSpecs)
       setRefDescriptors((refDescRes.data as RefItemDescriptor[]) || [])
-      setRefCareers((refCareerRes.data as RefCareer[]) || [])
+      setRefCareers(refData.refCareers)
       setRefSpeciesAll((refSpeciesRes.data as RefSpecies[]) || [])
       setCharForceAbilities((forceAbilRes.data as CharacterForceAbility[]) || [])
       setRefForcePowers((refFpRes.data as RefForcePower[]) || [])
@@ -212,7 +486,7 @@ export function useCharacterData(characterId: string) {
   , [refCareers, character?.career_key])
 
   const forceRating = useMemo(() => {
-    const talentBonus    = talents.filter(t => t.talent_key === 'FORCERAT').reduce((sum, t) => sum + (t.ranks || 1), 0)
+    const talentBonus    = countOwnedRanks(talents, t => t.talent_key === 'FORCERAT', t => t.ranks || 1)
     const purchasedBonus = character?.force_rating_purchased ? 1 : 0
     return careerForceRatingBase + talentBonus + purchasedBonus
   }, [talents, careerForceRatingBase, character?.force_rating_purchased])
@@ -240,19 +514,12 @@ export function useCharacterData(characterId: string) {
     return map
   }, [refCareers])
 
-  // ── Apply talent stat modifiers to character (positive or negative delta) ──
-  const applyTalentModifiers = (talentKey: string, direction: 1 | -1) => {
-    const ref = refTalentMap[talentKey]
-    if (!ref?.modifiers || !character) return {}
-    const mods = ref.modifiers
-    const updates: Record<string, number> = {}
-    if (mods.wound_threshold) updates.wound_threshold = character.wound_threshold + mods.wound_threshold * direction
-    if (mods.strain_threshold) updates.strain_threshold = character.strain_threshold + mods.strain_threshold * direction
-    if (mods.soak) updates.soak = character.soak + mods.soak * direction
-    if (mods.defense_ranged) updates.defense_ranged = character.defense_ranged + mods.defense_ranged * direction
-    if (mods.defense_melee) updates.defense_melee = character.defense_melee + mods.defense_melee * direction
-    return updates
-  }
+  // Mutation deps bag — passed to the shared standalone mutation functions
+  // (defined at module scope above) so their logic runs identically here and
+  // in useTalentSurfaceData, with no duplication.
+  const talentMutationDeps = (): TalentMutationDeps => ({
+    character: character!, talents, refTalentMap, supabase, setCharacter, setTalents,
+  })
 
   // ═══════════════════════════════════════
   // MUTATION HANDLERS
@@ -536,17 +803,7 @@ export function useCharacterData(characterId: string) {
   const handleRemoveTalent = async (talentId: string, xpCost: number) => {
     if (!character) return
     markSelf()
-    const ct = talents.find(t => t.talent_key === talentId)
-    if (!ct) return
-    const statUpdates = applyTalentModifiers(talentId, -1)
-    const newXp = character.xp_available + xpCost
-    setCharacter({ ...character, xp_available: newXp, ...statUpdates })
-    setTalents(prev => prev.filter(t => t.id !== ct.id))
-    await Promise.all([
-      supabase.from('character_talents').delete().eq('id', ct.id),
-      supabase.from('characters').update({ xp_available: newXp, ...statUpdates }).eq('id', character.id),
-      supabase.from('xp_transactions').insert({ character_id: character.id, amount: xpCost, reason: `GM refund: removed talent ${talentId}` }),
-    ])
+    await removeTalent(talentMutationDeps(), talentId, xpCost)
   }
 
   const handleReduceSkill = async (skillKey: string, currentRank: number, isCareer: boolean) => {
@@ -567,57 +824,7 @@ export function useCharacterData(characterId: string) {
   const handlePurchaseTalent = async (talentKey: string, row: number, col: number, activeSpecKey: string) => {
     if (!character) return
     markSelf()
-    const cost = (row + 1) * 5
-    if (character.xp_available < cost) return
-
-    const statUpdates = applyTalentModifiers(talentKey, 1)
-    const newXp = character.xp_available - cost
-    const newId = randomUUID()
-    setCharacter({ ...character, xp_available: newXp, ...statUpdates })
-    setTalents(prev => [...prev, {
-      id: newId, character_id: character.id, talent_key: talentKey,
-      specialization_key: activeSpecKey, tree_row: row, tree_col: col, ranks: 1, xp_cost: cost,
-    }])
-
-    await Promise.all([
-      supabase.from('character_talents').insert({
-        id: newId,
-        character_id: character.id, talent_key: talentKey,
-        specialization_key: activeSpecKey, tree_row: row, tree_col: col, ranks: 1, xp_cost: cost,
-      }),
-      supabase.from('characters').update({ xp_available: newXp, ...statUpdates }).eq('id', character.id),
-      supabase.from('xp_transactions').insert({ character_id: character.id, amount: -cost, reason: `Bought talent: ${talentKey} (row ${row})` }),
-    ])
-
-    const existingRankCount = talents.filter(t => t.talent_key === talentKey).length
-    const talentRank        = existingRankCount + 1
-    const talentName        = refTalentMap[talentKey]?.name ?? talentKey
-    const label             = talentRank > 1 ? `${talentName} (Rank ${talentRank})` : talentName
-
-    logPurchaseNotification({
-      campaignId:    character.campaign_id,
-      characterId:   character.id,
-      characterName: character.name,
-      label,
-      meta: {
-        purchase_type: 'talent',
-        xp_cost:       cost,
-        refunded:      false,
-        talent_id:     newId,
-        talent_key:    talentKey,
-        stat_delta:    (() => {
-          const ref  = refTalentMap[talentKey]
-          const mods = ref?.modifiers as Record<string, number> | undefined ?? {}
-          const raw: Record<string, number> = {}
-          for (const key of ['wound_threshold', 'strain_threshold', 'soak', 'defense_ranged', 'defense_melee'] as const) {
-            if (mods[key]) raw[key] = mods[key]
-          }
-          return raw
-        })(),
-      },
-    })
-
-    return newId
+    return purchaseTalent(talentMutationDeps(), talentKey, row, col, activeSpecKey)
   }
 
   /** Deduct credits and log the spend to the roll feed. */
@@ -648,14 +855,7 @@ export function useCharacterData(characterId: string) {
   const handleResolveDedication = async (talentId: string, charKey: string) => {
     if (!character) return
     markSelf()
-    const current = (character[charKey as keyof typeof character] as number) ?? 2
-    const newVal = Math.min(current + 1, 6)
-    setCharacter({ ...character, [charKey]: newVal })
-    setTalents(prev => prev.map(t => t.id === talentId ? { ...t, dedication_characteristic: charKey as CharacterTalent['dedication_characteristic'] } : t))
-    await Promise.all([
-      supabase.from('character_talents').update({ dedication_characteristic: charKey }).eq('id', talentId),
-      supabase.from('characters').update({ [charKey]: newVal }).eq('id', character.id),
-    ])
+    await resolveDedication(talentMutationDeps(), talentId, charKey)
   }
 
   /**
@@ -668,14 +868,7 @@ export function useCharacterData(characterId: string) {
   const handleCancelDedication = async (talentId: string, xpCost: number) => {
     if (!character) return
     markSelf()
-    const newXp = character.xp_available + xpCost
-    setCharacter({ ...character, xp_available: newXp })
-    setTalents(prev => prev.filter(t => t.id !== talentId))
-    await Promise.all([
-      supabase.from('character_talents').delete().eq('id', talentId),
-      supabase.from('characters').update({ xp_available: newXp }).eq('id', character.id),
-      supabase.from('xp_transactions').insert({ character_id: character.id, amount: xpCost, reason: 'Dedication cancelled: no characteristic chosen' }),
-    ])
+    await cancelDedication(talentMutationDeps(), talentId, xpCost)
   }
 
   const handleBackstoryChange = async (newBackstory: string) => {
@@ -702,13 +895,25 @@ export function useCharacterData(characterId: string) {
     markSelf()
 
     const newId = randomUUID()
-    const newXp = character.xp_available - cost
-    setCharacter({ ...character, xp_available: newXp })
-    setCharForceAbilities(prev => [...prev, {
+    const optimisticXp = character.xp_available - cost
+    const forceAbilityRow = {
       id: newId, character_id: character.id,
       force_power_key: activeForcePowerKey, force_ability_key: abilityKey,
       tree_row: row, tree_col: col, xp_cost: cost,
-    }])
+    }
+    setCharacter({ ...character, xp_available: optimisticXp })
+    setCharForceAbilities(prev => [...prev, forceAbilityRow])
+
+    // XP-race fix — same fresh-read-before-write pattern as handlePurchaseTalent.
+    const { data: charRow } = await supabase.from('characters').select('xp_available').eq('id', character.id).single()
+    const freshXp = charRow?.xp_available ?? character.xp_available
+    if (freshXp < cost) {
+      setCharacter({ ...character, xp_available: freshXp })
+      setCharForceAbilities(prev => prev.filter(a => a.id !== newId))
+      toast.error(`Not enough XP — need ${cost}, have ${freshXp}`)
+      return
+    }
+    const newXp = freshXp - cost
 
     await Promise.all([
       supabase.from('character_force_abilities').insert({
@@ -724,9 +929,10 @@ export function useCharacterData(characterId: string) {
       supabase.from('xp_transactions').insert({ character_id: character.id, amount: -cost, reason: `Bought force ability: ${abilityKey}` }),
     ])
 
-    const existingCount = charForceAbilities.filter(
-      a => a.force_ability_key === abilityKey && a.force_power_key === activeForcePowerKey
-    ).length
+    const existingCount = countOwnedRanks(
+      charForceAbilities,
+      a => a.force_ability_key === abilityKey && a.force_power_key === activeForcePowerKey,
+    )
     const abilityRank = existingCount + 1
     const powerName   = refForcePowerMap[activeForcePowerKey]?.name ?? activeForcePowerKey
     const abilityName = refForceAbilityMap[abilityKey]?.name ?? abilityKey
@@ -1016,56 +1222,11 @@ export function useCharacterData(characterId: string) {
 
   const handleBuySpecialization = async (specKey: string, setActiveSpecKey: (key: string) => void) => {
     if (!character) return
-    const targetSpec = refSpecMap[specKey]
-    if (targetSpec?.is_force_sensitive && (isDroid(character) || isClone(character))) {
-      toast.error(`${isDroid(character) ? 'Droids' : 'Clones'} cannot become Force sensitive`)
-      return
-    }
     markSelf()
-    const isCareer = careerSpecKeys.has(specKey)
-    const existingCount = charSpecs.length
-    const cost = specPurchaseCost(existingCount, isCareer)
-    if (character.xp_available < cost) {
-      toast.error(`Not enough XP — need ${cost}, have ${character.xp_available}`)
-      return
-    }
-
-    const newXp = character.xp_available - cost
-    setCharacter({ ...character, xp_available: newXp })
-    const newSpec: CharacterSpecialization = {
-      id: randomUUID(), character_id: character.id,
-      specialization_key: specKey, is_starting: false, purchase_order: existingCount,
-    }
-    setCharSpecs(prev => [...prev, newSpec])
-    setActiveSpecKey(specKey)
-
-    await Promise.all([
-      supabase.from('character_specializations').insert({
-        character_id: character.id, specialization_key: specKey,
-        is_starting: false, purchase_order: existingCount,
-      }),
-      supabase.from('characters').update({ xp_available: newXp }).eq('id', character.id),
-      supabase.from('xp_transactions').insert({ character_id: character.id, amount: -cost, reason: `Bought specialization: ${specKey}` }),
-    ])
-    logPurchaseNotification({
-      campaignId:    character.campaign_id,
-      characterId:   character.id,
-      characterName: character.name,
-      label:         `${refSpecMap[specKey]?.name ?? specKey} Specialization`,
-      meta: {
-        purchase_type:      'specialization',
-        xp_cost:            cost,
-        refunded:           false,
-        specialization_key: specKey,
-      },
-    })
-    toast.success(`Purchased ${refSpecMap[specKey]?.name || specKey}!`)
-
-    // Offer the deliberate Force Rating purchase if this spec just made the
-    // character eligible and they haven't already gained/bought it.
-    if (targetSpec?.is_force_sensitive && forceRating === 0 && !character.force_rating_purchased) {
-      setPendingForceRatingOffer(true)
-    }
+    return buySpecialization({
+      character, charSpecs, refSpecMap, refCareers, refSkills, careerSpecKeys, forceRating,
+      supabase, setCharacter, setCharSpecs, setPendingForceRatingOffer, setSkills,
+    }, specKey, setActiveSpecKey)
   }
 
   const {

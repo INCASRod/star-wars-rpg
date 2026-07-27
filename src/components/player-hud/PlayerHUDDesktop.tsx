@@ -49,7 +49,6 @@ import { useActiveMap } from '@/hooks/useActiveMap'
 import { useMapTokens } from '@/hooks/useMapTokens'
 import { useEncounterState } from '@/hooks/useEncounterState'
 import { generateCharacterSheetPDF } from '@/lib/characterSheetPDF'
-import { buildTalentTree as _buildTalentTree } from '@/lib/buildTalentTree'
 import { GroupSheet } from '@/components/group/GroupSheet'
 import { type UiTheme } from './ThemeSwitcher'
 
@@ -79,10 +78,9 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     encumbranceCurrent, encumbranceBonus,
     handleVitalChange, handleVitalAdjust, handleSetEquipState,
     handleHealCrit, handlePortraitUpload, handlePortraitDelete,
-    handleRemoveWeapon, handleRemoveEquipment, handleRemoveTalent,
-    handlePurchaseTalent, handleResolveDedication, handleCancelDedication, handleCreditSpend, handleBackstoryChange, handleNotesChange,
+    handleRemoveWeapon, handleRemoveEquipment,
+    handleCreditSpend, handleBackstoryChange, handleNotesChange,
     handlePurchaseForceAbility, handlePurchaseForceRating, handleBuySpecialization, handleBuySkill,
-    sigAbilities, lockedSigAbilities, purchasedSigNodes, hasUnlockedTier5, lockInAbility, purchaseSigNode,
   } = useCharacterData(characterId)
 
 
@@ -253,7 +251,6 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   }, [visibleMapTokens, encounter])
   const [rollResult, setRollResult]             = useState<RollResult | null>(null)
   const [rollLabel, setRollLabel]               = useState<string | undefined>()
-  const [showTalentTree, setShowTalentTree]     = useState(false)
   const [activeSpecKey, setActiveSpecKey]       = useState<string | null>(null)
   const [showForceTree, setShowForceTree]       = useState(false)
   const [activePowerKey, setActivePowerKey]     = useState<string | null>(null)
@@ -267,13 +264,10 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   const conflictSeeded                    = useRef(false)
   const { pendingCritRequest, setPendingCritRequest } = useCriticalInjuryRequest(character?.id, supabase)
   const [pdfGenerating,     setPdfGenerating]         = useState(false)
-  // Set only at the moment of purchase (HudTalentTreeModal's onPurchase, for
-  // talentKey === 'DEDI') — the characteristic choice is mandatory at
-  // purchase time. Cancelling reverts the purchase (see onCancelDedication in
-  // HudModalsOverlay / handleCancelDedication in useCharacterData), so there
-  // is no "unresolved" state left over that would need re-prompting on a
-  // later load — deliberately no scan-on-load effect here anymore.
-  const [pendingDedication, setPendingDedication]     = useState<{ talentId: string; row: number; col: number; specKey: string; xpCost: number } | null>(null)
+  // Dedication's characteristic-choice prompt (DEDI talent purchase) now lives
+  // entirely on the /character/[id]/talents route (Prompt 6b) — that's the
+  // only place talents are purchased for a live character now, so this
+  // component no longer owns any pendingDedication state.
   const [spendCreditsOpen,  setSpendCreditsOpen]      = useState(false)
 
   // Seed the conflict queue once on load. Delivery is login-persistent (DB-backed),
@@ -364,16 +358,9 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   // ── Force powers ──
   const { allForcePowers, buildForcePowerTree } = useForcePowers({ charForceAbilities, refForcePowers, refForceAbilityMap, refForcePowerMap })
 
-  // ── Talent tree building ──
-  function buildTalentTree(specKey: string) {
-    const refSpec = refSpecMap[specKey]
-    if (!refSpec) return null
-    const purchasedSet = new Set(talents.filter(t => t.specialization_key === specKey).map(t => `${t.tree_row}-${t.tree_col}`))
-    return _buildTalentTree(refSpec, refTalentMap, purchasedSet)
-  }
-
-  const effectiveSpecKey = activeSpecKey || charSpecs[0]?.specialization_key || null
-  const talentTreeData = useMemo(() => effectiveSpecKey ? buildTalentTree(effectiveSpecKey) : null, [effectiveSpecKey, charSpecs, refSpecMap, refTalentMap, talents])
+  // ── Talent tree building — moved to buildCharacterTalentTree (shared with
+  // the /character/[id]/talents route, Prompt 6b); PlayerHUDDesktop itself no
+  // longer renders a talent tree, so it no longer needs the built data.
   const forcePowerTreeData = useMemo(() => activePowerKey ? buildForcePowerTree(activePowerKey) : null, [activePowerKey, buildForcePowerTree])
 
   // ── Roll handler ──
@@ -606,7 +593,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
               activeSpecKey={activeSpecKey}
               setActiveSpecKey={setActiveSpecKey}
               isCombat={isCombat}
-              setShowTalentTree={setShowTalentTree}
+              isGmMode={isGmMode}
               onBuySpecialization={handleBuySpecialization}
             />
           </HudFullPanel>
@@ -729,29 +716,10 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         effectiveCampaignId={effectiveCampaignId}
         supabase={supabase}
         isGmMode={isGmMode}
-        refSpecs={refSpecs}
-        refSpecMap={refSpecMap}
         refWeaponQualityMap={refWeaponQualityMap}
-        careerSpecKeys={careerSpecKeys}
-        specKeyToCareerName={specKeyToCareerName}
         rollResult={rollResult}
         rollLabel={rollLabel}
         setRollResult={setRollResult}
-        showTalentTree={showTalentTree}
-        setShowTalentTree={setShowTalentTree}
-        charSpecs={charSpecs}
-        activeSpecKey={activeSpecKey}
-        setActiveSpecKey={setActiveSpecKey}
-        talentTreeData={talentTreeData}
-        onPurchaseTalent={handlePurchaseTalent}
-        onRemoveTalent={isGmMode ? handleRemoveTalent : undefined}
-        onBuySpecialization={handleBuySpecialization}
-        availableSigAbilities={sigAbilities}
-        lockedSigAbilities={lockedSigAbilities}
-        purchasedSigNodes={purchasedSigNodes}
-        hasUnlockedTier5={hasUnlockedTier5}
-        onLockInSigAbility={lockInAbility}
-        onPurchaseSigNode={purchaseSigNode}
         showForceTree={showForceTree}
         setShowForceTree={setShowForceTree}
         allForcePowers={allForcePowers}
@@ -786,10 +754,6 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         onCreditSpend={handleCreditSpend}
         spendCreditsOpen={spendCreditsOpen}
         setSpendCreditsOpen={setSpendCreditsOpen}
-        pendingDedication={pendingDedication}
-        setPendingDedication={setPendingDedication}
-        onResolveDedication={handleResolveDedication}
-        onCancelDedication={handleCancelDedication}
         pendingForceRatingOffer={pendingForceRatingOffer}
         setPendingForceRatingOffer={setPendingForceRatingOffer}
         onPurchaseForceRating={handlePurchaseForceRating}

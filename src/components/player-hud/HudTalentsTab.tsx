@@ -1,8 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { BuySpecButton } from './BuySpecButton'
 import { TalentsPanel as WfTalentsPanel } from '@/components/wireframe/TalentsPanel'
+import { createClient } from '@/lib/supabase/client'
+import { fetchActiveDataset } from '@/lib/activeDataset'
+import { warmRefDataCache } from '@/lib/refDataCache'
 import { FS, SP, RADIUS, EASE, FONT_BODY, HUD, Z } from '@/lib/tokens'
 import type { Character, CharacterSpecialization, CharacterTalent, RefSpecialization, RefTalent } from '@/lib/types'
 import type { HudTalent } from './TalentsPanel'
@@ -21,7 +25,7 @@ interface HudTalentsTabProps {
   activeSpecKey: string | null
   setActiveSpecKey: (k: string) => void
   isCombat: boolean
-  setShowTalentTree: (b: boolean) => void
+  isGmMode?: boolean
   onBuySpecialization: (specKey: string, setSpecKey: (k: string) => void) => void
 }
 
@@ -29,12 +33,30 @@ export function HudTalentsTab({
   character, characterId, charSpecs, refSpecMap, refSpecs, refTalentMap,
   careerSpecKeys, specKeyToCareerName,
   talents, hudTalents, activeSpecKey, setActiveSpecKey,
-  isCombat, setShowTalentTree, onBuySpecialization,
+  isCombat, isGmMode, onBuySpecialization,
 }: HudTalentsTabProps) {
+  const router = useRouter()
   const [tooltipVisible, setTooltipVisibleState] = useState<Record<string, boolean>>({})
 
   function setTooltipVisible(key: string, visible: boolean) {
     setTooltipVisibleState(prev => ({ ...prev, [key]: visible }))
+  }
+
+  // Warms the shared ref-data cache (Prompt 7c) on hover/focus intent, before
+  // the user actually clicks through to /character/[id]/talents. In practice
+  // this route is only reachable via this exact button, and by the time it's
+  // visible/hoverable useCharacterData has already loaded (and cached) the
+  // same ref tables — so this is belt-and-braces, not the primary fix; it
+  // matters only if that entry-point assumption ever changes. Fire-and-forget:
+  // never throws into the UI, never blocks the hover/focus interaction.
+  // Idempotent via a local guard (skips even constructing a client on repeat
+  // hovers) on top of fetchActiveDataset's and the ref cache's own dedup.
+  const prefetchedRef = useRef(false)
+  function prefetchTalentSurfaceRefData() {
+    if (prefetchedRef.current) return
+    prefetchedRef.current = true
+    const supabase = createClient()
+    fetchActiveDataset(supabase).then(warmRefDataCache).catch(() => {})
   }
 
   return (
@@ -163,8 +185,15 @@ export function HudTalentsTab({
               >
                 <button
                   onClick={!isCombat
-                    ? () => { setActiveSpecKey(specKey); setShowTalentTree(true) }
+                    ? () => {
+                        setActiveSpecKey(specKey)
+                        const qs = new URLSearchParams({ spec: specKey })
+                        if (isGmMode) qs.set('gm', '1')
+                        router.push(`/character/${characterId}/talents?${qs.toString()}`)
+                      }
                     : undefined}
+                  onMouseEnter={!isCombat ? prefetchTalentSurfaceRefData : undefined}
+                  onFocus={!isCombat ? prefetchTalentSurfaceRefData : undefined}
                   disabled={isCombat}
                   style={{
                     fontFamily: FONT_BODY,

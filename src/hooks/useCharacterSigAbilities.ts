@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { fetchActiveDataset } from '@/lib/activeDataset'
+import { getRefData } from '@/lib/refDataCache'
 import { randomUUID } from '@/lib/utils'
 import type { SigAbility, SigAbilityNode, LockedSigAbility, CharacterSigAbilityNode } from '@/lib/types'
 
@@ -43,7 +44,13 @@ export function useCharacterSigAbilities(characterId: string, careerKey: string)
     const supabase = createClient()
     const ds = await fetchActiveDataset(supabase)
 
-    const [abilitiesRes, purchasedRes, charSpecsRes, careerRes] = await Promise.all([
+    // ref_careers comes from the shared cache (Prompt 7c) instead of its own
+    // narrow query — a warm cache serves this instantly, no network request.
+    // ref_specializations.career_key is always NULL for the respec dataset
+    // (migration 064) — in-career association lives on ref_careers.specialization_keys
+    // instead, so look the career up directly rather than joining the other way.
+    const [refData, abilitiesRes, purchasedRes, charSpecsRes] = await Promise.all([
+      getRefData(ds),
       supabase
         .from('ref_sig_abilities')
         .select('*')
@@ -58,23 +65,33 @@ export function useCharacterSigAbilities(characterId: string, careerKey: string)
         .from('character_specializations')
         .select('specialization_key')
         .eq('character_id', characterId),
-      // ref_specializations.career_key is always NULL for the respec dataset
-      // (migration 064) — in-career association lives on ref_careers.specialization_keys
-      // instead, so look the career up directly rather than joining the other way.
-      supabase
-        .from('ref_careers')
-        .select('specialization_keys')
-        .eq('dataset_source', ds)
-        .eq('key', careerKey)
-        .maybeSingle(),
     ])
 
     const abilities: RefSigAbilityRow[] = abilitiesRes.data ?? []
     const abilityKeys = abilities.map(a => a.key)
 
-    const nodesRes = abilityKeys.length > 0
-      ? await supabase.from('ref_sig_ability_nodes').select('*').eq('dataset_source', ds).in('sig_ability_key', abilityKeys)
-      : { data: [] as RefSigAbilityNodeRow[] }
+    // hasUnlockedTier5's inputs (charSpecsRes/careerSpecKeys) already resolved
+    // above — this query has no dependency on abilities/nodes, so it runs
+    // concurrently with the nodes query below instead of waiting behind it
+    // (Prompt 7a: this was a sequential-by-accident hop, not a genuine
+    // dependency).
+    const specKeys = (charSpecsRes.data ?? []).map((s: { specialization_key: string }) => s.specialization_key)
+    const careerSpecKeys = new Set<string>(refData.refCareers.find(c => c.key === careerKey)?.specialization_keys ?? [])
+    const inCareerKeys = specKeys.filter(k => careerSpecKeys.has(k))
+
+    const [nodesRes, tier5CountRes] = await Promise.all([
+      abilityKeys.length > 0
+        ? supabase.from('ref_sig_ability_nodes').select('*').eq('dataset_source', ds).in('sig_ability_key', abilityKeys)
+        : Promise.resolve({ data: [] as RefSigAbilityNodeRow[] }),
+      inCareerKeys.length > 0
+        ? supabase
+            .from('character_talents')
+            .select('id', { count: 'exact', head: true })
+            .eq('character_id', characterId)
+            .eq('xp_cost', TIER_5_XP_COST)
+            .in('specialization_key', inCareerKeys)
+        : Promise.resolve({ count: 0 }),
+    ])
 
     const nodesByAbility = new Map<string, SigAbilityNode[]>()
     for (const n of (nodesRes.data ?? []) as RefSigAbilityNodeRow[]) {
@@ -107,23 +124,7 @@ export function useCharacterSigAbilities(characterId: string, careerKey: string)
     })))
 
     setPurchasedNodes(purchasedRes.data ?? [])
-
-    // hasUnlockedTier5: any xp_cost=25 character_talents row under an in-career specialization.
-    const specKeys = (charSpecsRes.data ?? []).map((s: { specialization_key: string }) => s.specialization_key)
-    const careerSpecKeys = new Set<string>((careerRes.data as { specialization_keys: string[] } | null)?.specialization_keys ?? [])
-    const inCareerKeys = specKeys.filter(k => careerSpecKeys.has(k))
-
-    if (inCareerKeys.length > 0) {
-      const { count } = await supabase
-        .from('character_talents')
-        .select('id', { count: 'exact', head: true })
-        .eq('character_id', characterId)
-        .eq('xp_cost', TIER_5_XP_COST)
-        .in('specialization_key', inCareerKeys)
-      setHasUnlockedTier5((count ?? 0) > 0)
-    } else {
-      setHasUnlockedTier5(false)
-    }
+    setHasUnlockedTier5(((tier5CountRes as { count: number | null }).count ?? 0) > 0)
 
     setLoading(false)
   }, [characterId, careerKey])

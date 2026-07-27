@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { C, panelBase } from './design-tokens'
-import { FONT_BODY, FS, RADIUS, EASE, SP } from '@/lib/tokens'
+import { FONT_BODY, FS, RADIUS, EASE, SP, ACTIVATION_COLOR } from '@/lib/tokens'
 import { Tooltip, TipLabel, TipBody } from '@/components/ui/Tooltip'
 import { RichText } from '@/components/ui/RichText'
 import { PanelSearchInput } from '@/components/character/PanelSearchInput'
@@ -16,14 +16,6 @@ interface TalentsPanelProps {
   talents: HudTalent[]
   onViewTree?: () => void
   characterId?: string
-}
-
-const ACTIVATION_COLORS: Record<string, string> = {
-  Passive: C.textDim,
-  Incidental: 'var(--die-boost)',
-  'Incidental (OOT)': 'var(--die-boost)',
-  Maneuver: 'var(--die-ability)',
-  Action: 'var(--die-threat)',
 }
 
 const ACTIVATION_ORDER = ['Passive', 'Incidental', 'Incidental (OOT)', 'Maneuver', 'Action']
@@ -88,7 +80,7 @@ function CornerBrackets() {
 
 function TalentCard({ talent }: { talent: HudTalent }) {
   const { isOpen } = useHudPanelContext()
-  const color = ACTIVATION_COLORS[talent.activation] ?? C.textDim
+  const color = ACTIVATION_COLOR[talent.activation] ?? C.textDim
   const hints = parseDiceHints(talent.description)
 
   const tooltipContent = talent.description ? (
@@ -265,7 +257,7 @@ export function TalentsPanel({ talents, onViewTree, characterId }: TalentsPanelP
           <div style={{
             fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700,
             letterSpacing: '0.15em', textTransform: 'uppercase',
-            color: ACTIVATION_COLORS[activation] ?? C.textDim,
+            color: ACTIVATION_COLOR[activation] ?? C.textDim,
             marginBottom: SP[1], paddingBottom: SP[1],
             borderBottom: `1px solid ${C.border}`,
           }}>

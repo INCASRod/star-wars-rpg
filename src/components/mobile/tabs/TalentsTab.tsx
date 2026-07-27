@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { ACTIVATION_LABELS } from '@/lib/types'
 import type { CharacterTalent, RefTalent } from '@/lib/types'
+import { countOwnedRanks } from '@/lib/derivedStats'
 import { RichText } from '@/components/ui/RichText'
 import { stripBBCode } from '@/lib/utils'
 import { HUD, FS } from '@/lib/tokens'
@@ -107,7 +108,7 @@ export function TalentsTab({ charTalents, refTalentMap }: TalentsTabProps) {
           const isExpanded = !!expanded[ref.key]
           const activationLabel = ACTIVATION_LABELS[ref.activation] ?? ref.activation
           const activationColor = ACTIVATION_COLOR[ref.activation] ?? 'var(--hud-text-faint)'
-          const totalRanks = (Array.isArray(charTalents) ? charTalents : []).filter(t => t.talent_key === ref.key).reduce((s, t) => s + (t.ranks || 1), 0)
+          const totalRanks = countOwnedRanks(Array.isArray(charTalents) ? charTalents : [], t => t.talent_key === ref.key, t => t.ranks || 1)
           const summary = stripBBCode(ref.description ?? '').slice(0, 80)
           const truncated = (ref.description ?? '').length > 80
 

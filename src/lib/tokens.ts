@@ -184,13 +184,68 @@ export const HUD = {
   bg:           'var(--hud-bg)',
   panel:        'var(--hud-panel)',
   panelBg:      'var(--hud-panel)',  // alias — prefer .panel in new code
+  surfaceLo:    'var(--hud-surface-lo)',
+  surfaceMid:   'var(--hud-surface-mid)',
+  surfaceHi:    'var(--hud-surface-hi)',
   border:       'var(--hud-border)',
   borderHi:     'var(--hud-border-hi)',
+  borderStrong: 'var(--hud-border-strong)',
   text:         'var(--hud-text)',
   textDim:      'var(--hud-text-dim)',
   textFaint:    'var(--hud-text-faint)',
   gold:         'var(--hud-gold)',
+  accent:       'var(--hud-accent)',
+  accentHi:     'var(--hud-accent-hi)',
   accentPurple: 'var(--hud-accent-purple)',
+} as const
+
+// ── Talent tree — plaque, glow, link tokens ────────────────────────
+// Reference CSS custom properties defined in state-tokens.css (both
+// theme blocks). Used by the FFG-style talent/signature-ability tree
+// renderer and its purchase-flow chrome.
+export const PLAQUE = {
+  body:       'var(--plaque-body)',
+  edge:       'var(--plaque-edge)',
+  edgeOwned:  'var(--plaque-edge-owned)',
+  sheen:      'var(--plaque-sheen)',
+  // Owned-plate treatment — gold family in Ember, cyan family in Kyber
+  // (aliases --hud-gold per-theme); dark plate-text (aliases --plaque-body);
+  // available-state accent (aliases --hud-accent), deliberately a different
+  // hue from the plate so "owned" and "available" never look like the same
+  // signal.
+  plate:      'var(--plaque-plate)',
+  plateText:  'var(--plaque-plate-text)',
+  availAccent: 'var(--plaque-avail-accent)',
+} as const
+
+export const ACTIVATION_TOKEN = {
+  active:            { bg: 'var(--activation-active)',      text: 'var(--activation-active-text)' },
+  passive:           { bg: 'var(--activation-passive)',     text: 'var(--activation-passive-text)' },
+  maneuver:          { bg: 'var(--activation-maneuver)',    text: 'var(--activation-maneuver-text)' },
+  incidental:        { bg: 'var(--activation-incidental)',  text: 'var(--activation-incidental-text)' },
+} as const
+
+// Flat activation-label → colour lookup, shared by TalentTree, TalentsPanel,
+// and TalentsCard. Keyed by the human labels from ACTIVATION_LABELS
+// (src/lib/types.ts) — 'Incidental' and 'Incidental (OOT)' intentionally
+// share one colour, matching how all three prior local maps treated them.
+export const ACTIVATION_COLOR: Record<string, string> = {
+  'Passive':          ACTIVATION_TOKEN.passive.bg,
+  'Action':           ACTIVATION_TOKEN.active.bg,
+  'Maneuver':         ACTIVATION_TOKEN.maneuver.bg,
+  'Incidental':       ACTIVATION_TOKEN.incidental.bg,
+  'Incidental (OOT)': ACTIVATION_TOKEN.incidental.bg,
+} as const
+
+export const GLOW = {
+  hud:        'var(--hud-glow)',
+  path:       'var(--path-glow)',
+  forceSpark: 'var(--force-spark)',
+} as const
+
+export const LINK_BAR = {
+  rest:   'var(--link-bar)',
+  active: 'var(--link-bar-active)',
 } as const
 
 // ── Characteristic colors ────────────────────────────────────────

@@ -740,10 +740,10 @@ const smallBtn: React.CSSProperties = {
 // touches constantly) plus a read-only Soak/Defence/Strain chip row.
 // Reveal/Hide, Bench/Deploy, Remove, strain editing, and group-size editing
 // all moved to the dossier (Prompt 2 already has all of them — confirmed
-// before writing this, not duplicated here). Off-map status is no longer
-// shown on this card at all (the mockup's top-right slot is exclusively
-// group-count-or-hidden, per its own data-driven ternary) — a real,
-// deliberate information reduction, flagged in this prompt's report.
+// before writing this, not duplicated here). The top-right slot stacks
+// group-count, then HIDDEN or OFF-MAP (mutually exclusive with each other,
+// not with group-count) — OFF-MAP was dropped here as a deliberate
+// reduction and later restored to the same slot HIDDEN uses.
 function EntityCard({
   entry, onClick, focused, highlighted, onHoverStart, onHoverEnd, onAdjustWounds,
 }: {
@@ -836,11 +836,13 @@ function EntityCard({
           border: `1px solid ${BORDER_HI}`, color: entry.alignment === 'allied_npc' ? GREEN : RED,
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         }}>{typeLabel}</span>
-        {/* Group / hidden chips — top-RIGHT, safe inset, stacked (not mutually
-            exclusive): a hidden minion group needs both its alive count AND
-            the HIDDEN tag, or the hidden state silently disappears behind
-            the count. */}
-        {(entry.groupSize !== undefined || (entry.isHidden && entry.isOnMap)) && (
+        {/* Group / hidden / off-map chips — top-RIGHT, safe inset, stacked (not
+            mutually exclusive with group count): a hidden minion group needs
+            both its alive count AND the HIDDEN tag, or the hidden state
+            silently disappears behind the count. HIDDEN and OFF-MAP are
+            themselves mutually exclusive — isHidden only applies to a token
+            on the map, off-map entries have no token at all. */}
+        {(entry.groupSize !== undefined || (entry.isHidden && entry.isOnMap) || !entry.isOnMap) && (
           <div style={{
             position: 'absolute', top: SP[1], right: SP[1], zIndex: 2,
             display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px',
@@ -861,6 +863,14 @@ function EntityCard({
                 border: `1px solid ${BORDER_HI}`, color: 'var(--hud-text-dim)',
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               }}>◌ HIDDEN</span>
+            )}
+            {!entry.isOnMap && (
+              <span style={{
+                fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 6px',
+                background: 'color-mix(in srgb, var(--hud-bg) 82%, transparent)', borderRadius: RADIUS.sm,
+                border: `1px solid color-mix(in srgb, ${HUD.gold} 50%, transparent)`, color: HUD.gold,
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              }}>OFF-MAP</span>
             )}
           </div>
         )}

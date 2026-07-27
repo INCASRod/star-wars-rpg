@@ -182,13 +182,12 @@ function HiddenBadge({ forGm }: { forGm: boolean }) {
 
 // ── Design B: header band style helper ─────────────────────────────
 // ac must be a 6-digit hex string — appending 2-digit alpha hex works.
+// Two-line band: line 1 (name + timestamp) is its own flex row inside,
+// line 2 (the check/weapon label) sits beneath it — see SkillCard/CombatCard.
 function bandStyle(ac: string) {
   return {
     background:   `${ac}12`,
     borderBottom: `1px solid ${ac}26`,
-    display:      'flex',
-    alignItems:   'center',
-    gap:          6,
     padding:      '5px 9px',
   }
 }
@@ -206,23 +205,25 @@ function SkillCard({
 
   return (
     <div className="overflow-hidden" style={{ borderRadius: RADIUS.md, border: `1px solid ${ac}30` }}>
-      {/* Band */}
+      {/* Band — line 1: dot + name + timestamp, line 2: check/skill label */}
       <div
         style={{ ...bandStyle(ac), cursor: onCollapse ? 'pointer' : 'default' }}
         onClick={onCollapse}
       >
-        <div className="shrink-0" style={{ width: 5, height: 5, borderRadius: RADIUS.full, background: ac, boxShadow: `0 0 5px ${ac}80` }} />
-        <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap" style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: nameColor(roll, isOwn) }}>
-          {roll.character_name}
-        </span>
-        {roll.roll_label && (
-          <span className="overflow-hidden text-ellipsis whitespace-nowrap" style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontStyle: 'italic', color: HUD.textFaint, maxWidth: 120 }}>
-            {roll.roll_label}
+        <div className="flex items-center" style={{ gap: 6 }}>
+          <div className="shrink-0" style={{ width: 5, height: 5, borderRadius: RADIUS.full, background: ac, boxShadow: `0 0 5px ${ac}80` }} />
+          <span className="flex-1" style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: nameColor(roll, isOwn) }}>
+            {roll.character_name}
           </span>
+          <span className="whitespace-nowrap" style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint, marginLeft: 4 }}>
+            {relativeTime(roll.rolled_at)}
+          </span>
+        </div>
+        {roll.roll_label && (
+          <div className="overflow-hidden text-ellipsis whitespace-nowrap" style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontStyle: 'italic', color: HUD.textFaint, marginTop: 2 }}>
+            {roll.roll_label}
+          </div>
         )}
-        <span className="whitespace-nowrap" style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint, marginLeft: 4 }}>
-          {relativeTime(roll.rolled_at)}
-        </span>
       </div>
       {/* Body */}
       <div style={{ padding: '7px 9px 6px', background: isOwn ? 'var(--hud-surface-mid)' : HUD.panel }}>
@@ -287,21 +288,23 @@ function CombatCard({
 
   return (
     <div className="overflow-hidden" style={{ borderRadius: RADIUS.md, border: `1px solid ${ac}30` }}>
-      {/* Band */}
+      {/* Band — line 1: dot + name + timestamp, line 2: weapon/target label */}
       <div
         style={{ ...bandStyle(ac), cursor: onCollapse ? 'pointer' : 'default' }}
         onClick={onCollapse}
       >
-        <div className="shrink-0" style={{ width: 5, height: 5, borderRadius: RADIUS.full, background: ac, boxShadow: `0 0 5px ${ac}80` }} />
-        <span className="whitespace-nowrap" style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: nameColor(roll, isOwn) }}>
-          {roll.character_name}
-        </span>
-        <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap" style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontStyle: 'italic', color: HUD.textFaint, marginLeft: 4 }}>
+        <div className="flex items-center" style={{ gap: 6 }}>
+          <div className="shrink-0" style={{ width: 5, height: 5, borderRadius: RADIUS.full, background: ac, boxShadow: `0 0 5px ${ac}80` }} />
+          <span className="flex-1" style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: nameColor(roll, isOwn) }}>
+            {roll.character_name}
+          </span>
+          <span className="whitespace-nowrap" style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint, marginLeft: 4 }}>
+            {relativeTime(roll.rolled_at)}
+          </span>
+        </div>
+        <div className="overflow-hidden text-ellipsis whitespace-nowrap" style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontStyle: 'italic', color: HUD.textFaint, marginTop: 2 }}>
           {bandLabel}
-        </span>
-        <span className="whitespace-nowrap" style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint, marginLeft: 4 }}>
-          {relativeTime(roll.rolled_at)}
-        </span>
+        </div>
       </div>
       {/* Body */}
       <div style={{ padding: '7px 9px 6px', background: isOwn ? 'var(--hud-surface-mid)' : HUD.panel }}>

@@ -1,0 +1,395 @@
+/* ═══════════════════════════════════════════════════════════════════
+   TalentTree.module.css — FFG-style notched "plaque" talent nodes.
+
+   Scope (Prompt 3): node appearance + state styling only. Connector
+   lines, popovers, path highlighting, and entrance/purchase animation
+   are later prompts and are untouched here.
+
+   Every colour below is a var(--*) from state-tokens.css (both the
+   Ember and Kyber theme blocks define the plaque, activation, glow,
+   and force-spark tokens this file reads). There is no
+   --radius-* CSS custom property anywhere in the codebase (RADIUS.* in
+   tokens.ts is TS-only, with no CSS var conduit) — the 2px/4px literals
+   below match RADIUS.sm/md's numeric values verbatim since there is
+   nothing else to reference from a plain CSS file.
+
+   Prompt 4 adds .linkBar/.linkBarActive — imported cross-file by both
+   TalentTree.tsx and TalentSurface.tsx (via useConnectorLayout) so
+   the spec tree and signature ability tree share one connector look
+   instead of duplicating it.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Connector bars (measured-DOM, see useConnectorLayout) ─────────── */
+
+.linkBar,
+.linkBarActive {
+  position: absolute;
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.linkBar {
+  background: var(--link-bar);
+}
+
+.linkBarActive {
+  background: var(--link-bar-active);
+  box-shadow: 0 0 8px var(--hud-glow);
+}
+
+.plaque {
+  --notch: 10px;
+  position: absolute;
+  /* Matches the grid cell wrapper's own padding:10 (TalentTree.tsx) — an
+     absolutely positioned child's containing block is the ancestor's
+     padding BOX, not its content box, so the wrapper's padding has zero
+     effect on this element's own sizing; inset must restate it explicitly
+     to leave a real gap between adjacent plaques (Prompt 4's connector
+     bars measure that gap and collapse to zero length without this). */
+  inset: 10px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--plaque-body);
+  border: 1px solid var(--plaque-edge);
+  clip-path: polygon(
+    var(--notch) 0, calc(100% - var(--notch)) 0,
+    100% var(--notch), 100% calc(100% - var(--notch)),
+    calc(100% - var(--notch)) 100%, var(--notch) 100%,
+    0 calc(100% - var(--notch)), 0 var(--notch)
+  );
+  transition:
+    transform var(--ease-spring),
+    border-color var(--ease-default),
+    box-shadow var(--ease-default),
+    opacity var(--ease-default),
+    filter var(--ease-default);
+}
+
+/* Overhead-light sheen: bright top edge fading to a darker bottom shade,
+   so the plaque reads as a lit physical object rather than a flat swatch. */
+.plaque::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    var(--plaque-sheen) 0%,
+    transparent 32%,
+    transparent 68%,
+    color-mix(in srgb, var(--hud-bg) 70%, transparent) 100%
+  );
+}
+
+/* Cursor-follow radial light — the one sanctioned dynamic style write
+   (--mx/--my set from onMouseMove in TalentTree.tsx). Hidden until hover. */
+.plaque::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    140px circle at var(--mx, 50%) var(--my, 50%),
+    color-mix(in srgb, var(--hud-gold) 16%, transparent),
+    transparent 65%
+  );
+  transition: opacity var(--ease-quick);
+}
+.plaque:hover::after {
+  opacity: 1;
+}
+
+/* Owned plate (owned-plate treatment): the gold-tinted cursor sheen from
+   the base ::after reads as low-contrast gold-on-gold in Ember and
+   mismatched gold-on-cyan in Kyber — both themes' plates read better with a
+   dark cursor highlight instead, using the plate's own dark text colour. */
+.owned::after {
+  background: radial-gradient(
+    140px circle at var(--mx, 50%) var(--my, 50%),
+    color-mix(in srgb, var(--plaque-plate-text) 18%, transparent),
+    transparent 65%
+  );
+}
+
+/* The base ::before sheen darkens toward --hud-bg at the bottom edge — correct
+   on a dark plaque, but a visible dark smudge across a bright plate. Owned
+   gets a lighter, top-only highlight instead, no bottom-darkening. */
+.owned::before {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, white 14%, transparent) 0%,
+    transparent 42%
+  );
+}
+
+/* ── Clickable / state modifiers ─────────────────────────────────── */
+
+.reachable,
+.locked {
+  cursor: pointer;
+}
+
+/* Available (owned-plate treatment, Step 3): accent border + soft outer
+   glow so purchasable nodes draw the eye — distinct from both the owned
+   plate and the locked dimming. */
+.reachable {
+  opacity: 1;
+  border-color: var(--plaque-avail-accent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--plaque-avail-accent) 45%, transparent);
+}
+
+/* Locked (owned-plate treatment, Step 3): pushed further back than before
+   (was opacity 0.45 / saturate 0.55) so the three tiers separate cleanly —
+   owned plate is bright, available is accent-lit, locked recedes. */
+.locked {
+  opacity: 0.28;
+  filter: saturate(0.35);
+}
+.locked:hover {
+  opacity: 0.6;
+  filter: saturate(0.55);
+}
+
+/* Owned plate (owned-plate treatment): large-area luminance is the ownership
+   signal — body inverts to a solid plate colour instead of a border/glow
+   hint. Header keeps its own activation colours untouched (see .header
+   below); only the body plate + border change here. */
+.owned {
+  background: var(--plaque-plate);
+  border-color: var(--plaque-plate);
+  box-shadow: 0 0 14px var(--hud-glow), inset 0 1px 0 color-mix(in srgb, white 25%, transparent);
+}
+
+.owned .body {
+  /* Slightly reduced alpha (88%) on the description text only — full-opacity
+     dark-on-plate measured at 8.25:1 (Ember) / 8.61:1 (Kyber), comfortably
+     over WCAG AA with room to soften; the name/header and rank label stay at
+     full --plaque-plate-text for maximum legibility. */
+  color: color-mix(in srgb, var(--plaque-plate-text) 88%, transparent);
+}
+
+/* ── Header bar ───────────────────────────────────────────────────── */
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  flex-shrink: 0;
+}
+
+/* --header-bg carries each activation's own background hue forward so
+   .tickMark (owned plaques only) can "knock out" in that colour regardless
+   of which activation type it is, without four separate override rules. */
+.headerActive {
+  background: var(--activation-active);
+  color: var(--activation-active-text);
+  --header-bg: var(--activation-active);
+}
+.headerPassive {
+  background: var(--activation-passive);
+  color: var(--activation-passive-text);
+  --header-bg: var(--activation-passive);
+}
+.headerManeuver {
+  background: var(--activation-maneuver);
+  color: var(--activation-maneuver-text);
+  --header-bg: var(--activation-maneuver);
+}
+.headerIncidental {
+  background: var(--activation-incidental);
+  color: var(--activation-incidental-text);
+  --header-bg: var(--activation-incidental);
+}
+
+/* Owned plate (owned-plate treatment): dark separator so the header reads
+   as sitting ON the plate rather than bleeding into it. Activation
+   background/text colours above are otherwise completely untouched. */
+.owned .header {
+  border-bottom: 2px solid var(--plaque-plate-text);
+}
+
+/* Filled tick box at the head of the header — faithful to the printed FFG
+   sheet's checkbox. Box fill uses currentColor (the header's own foreground,
+   set by whichever headerXxx class is active); the tick glyph is "knocked
+   out" using that header's own background colour via --header-bg. */
+.tickBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  border-radius: 2px;
+  background: currentColor;
+}
+.tickMark {
+  font-size: 9px;
+  line-height: 1;
+  color: var(--header-bg);
+}
+
+.name {
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.forceGlyph {
+  flex-shrink: 0;
+  font-size: var(--text-label);
+  color: var(--force-spark);
+  text-shadow: 0 0 4px var(--force-spark), 0 0 8px color-mix(in srgb, var(--force-spark) 55%, transparent);
+}
+
+/* ── Body ─────────────────────────────────────────────────────────── */
+
+.body {
+  flex: 1;
+  min-height: 0;
+  padding: var(--space-1) var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--text-label);
+  line-height: 1.4;
+  color: var(--hud-text-dim);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Un-clamp on hover — the raised plaque (see .plaque:hover below) grows
+   past its resting box, so the full text overlays neighbours instead of
+   needing an inner scrollbar. */
+.plaque:hover .body {
+  -webkit-line-clamp: unset;
+  overflow: visible;
+}
+
+/* ── Foot ─────────────────────────────────────────────────────────── */
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1);
+  padding: 2px var(--space-2) var(--space-1);
+  flex-shrink: 0;
+}
+
+/* Owned foot (owned-plate treatment): cost is gone, only Rank:+pips remain —
+   right-align the reclaimed space rather than letting a single flex child
+   default to the start under space-between. */
+.footEnd {
+  justify-content: flex-end;
+}
+
+.cost {
+  font-family: var(--font-display);
+  font-size: var(--text-overline);
+  font-weight: 700;
+  color: var(--hud-gold);
+}
+
+/* Available (owned-plate treatment, Step 3): cost in the accent colour at
+   increased weight so actionable nodes draw the eye. */
+.reachable .cost {
+  color: var(--plaque-avail-accent);
+  font-weight: 800;
+}
+
+.rankLabel {
+  font-family: var(--font-display);
+  font-size: var(--text-overline);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--plaque-plate-text);
+}
+
+.pips {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.pip {
+  /* 12px (owned-plate treatment) — was 6px; one diamond = one rank, the
+     label explains it so no empty-slot ceiling is needed. */
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  background: var(--hud-gold);
+}
+
+.owned .pip {
+  background: var(--plaque-plate-text);
+}
+
+/* ── GM remove button ─────────────────────────────────────────────── */
+
+.removeBtn {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  width: 16px;
+  height: 16px;
+  z-index: 2;
+  border-radius: 2px; /* RADIUS.sm — see file header note on missing --radius-* vars */
+  border: 1px solid color-mix(in srgb, var(--state-failure) 50%, transparent);
+  background: color-mix(in srgb, var(--state-failure) 12%, transparent);
+  color: var(--state-failure);
+  font-size: var(--text-overline);
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+/* ── Raised-layer hover ───────────────────────────────────────────────
+   Absolute + inset:0 at rest already matches the pre-redesign footprint
+   exactly (the parent grid cell in TalentTree.tsx is unchanged: still
+   position:relative with 10px padding). On hover we release `bottom` so
+   height goes intrinsic (room for the un-clamped body text) and scale up
+   slightly — both are transform/position changes on an element already
+   outside layout flow, so sibling grid cells never move. ─────────────── */
+.plaque:hover {
+  transform: scale(1.05);
+  z-index: var(--z-raised);
+  bottom: auto;
+  min-height: 100%;
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--hud-bg) 80%, transparent), 0 0 0 1px var(--plaque-edge-owned);
+}
+
+/* Each grid cell wrapper (TalentTree.tsx) is already its own stacking
+   context (position:relative + inline z-index), so raising the plaque's
+   own z-index alone cannot paint it above a *sibling* cell's content —
+   the cell itself needs raising too. :has() bumps only the cell that
+   currently contains a hovered plaque; !important is required since the
+   cell's z-index is set inline in TalentTree.tsx (higher specificity than
+   a plain class rule) and this is the one deliberate override of it. */
+.cell:has(.plaque:hover) {
+  z-index: var(--z-raised) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plaque {
+    transition: border-color var(--ease-default), box-shadow var(--ease-default),
+      opacity var(--ease-default), filter var(--ease-default);
+  }
+  .plaque:hover {
+    transform: none;
+  }
+}

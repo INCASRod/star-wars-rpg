@@ -24,6 +24,24 @@ import type {
   SpeciesAbility,
 } from './types'
 
+// ── Owned-rank derivation ──────────────────────────────────────────────────────
+
+/**
+ * Sum of ranks matching a predicate across a set of purchase records
+ * (character_talents, character_force_abilities, etc.) — shared so every call
+ * site deriving an owned rank/count total (Force Rating, purchase-notification
+ * labels, rank pips) filters the same way instead of re-implementing
+ * filter+reduce inline. Defaults to counting matching rows (ranksOf → 1) for
+ * record types with no per-row `ranks` column.
+ */
+export function countOwnedRanks<T>(
+  records: T[],
+  matches: (record: T) => boolean,
+  ranksOf: (record: T) => number = () => 1,
+): number {
+  return records.reduce((sum, r) => matches(r) ? sum + ranksOf(r) : sum, 0)
+}
+
 // ── Weapon attachment helpers ─────────────────────────────────────────────────
 
 function isAttModArray(v: unknown): v is AttachmentModEntry[] {

@@ -14,7 +14,7 @@ import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { RichText } from '@/components/ui/RichText'
 import { Tooltip, TipBody } from '@/components/ui/Tooltip'
-import { TalentTree } from '@/components/character/TalentTree'
+import { TalentSurface } from '@/components/character/TalentSurface'
 import { buildTalentTree } from '@/lib/buildTalentTree'
 import type { RefSpecialization, RefTalent } from '@/lib/types'
 import { HUD } from '@/lib/tokens'
@@ -121,24 +121,15 @@ function SpecTreePreviewModal({ spec, refTalentMap, onClose }: SpecTreePreviewMo
         </button>
       </div>
 
-      {/* Scrollable tree body */}
+      {/* Scrollable tree body — read-only preview of an unowned spec: no
+          purchase, no BuySpecButton, no sig section (a spec you don't own has
+          no locked/purchased signature-ability state to show). */}
       <div style={{ flex: 1, overflowY: 'auto', padding: 'clamp(12px, 2vw, 24px)' }}>
-        {treeData ? (
-          <TalentTree
-            specName={treeData.specName}
-            nodes={treeData.nodes}
-            connections={treeData.connections}
-            previewMode
-          />
-        ) : (
-          <div style={{
-            textAlign: 'center', padding: '48px 0',
-            fontFamily: FR, fontSize: 'clamp(0.8rem, 1.1vw, 0.9rem)',
-            color: DIM,
-          }}>
-            No talent tree data available for this specialization.
-          </div>
-        )}
+        <TalentSurface
+          activeSpecKey={spec.key}
+          talentTreeData={treeData}
+          previewMode
+        />
       </div>
     </div>,
     document.body,

@@ -1,0 +1,119 @@
+/* TalentSurface — route-level holotable dressing (mega header, vertical rail,
+   atmosphere) shared with src/app/character/[id]/talents/page.tsx. */
+
+/* ── Route holotable dressing ─────────────────────────────────────────── */
+
+.routeShell {
+  position: relative;
+}
+
+.atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.atmosphereGlow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 15% 0%, color-mix(in srgb, var(--hud-accent) 16%, transparent), transparent 60%),
+    radial-gradient(ellipse 70% 50% at 100% 100%, color-mix(in srgb, var(--hud-gold) 8%, transparent), transparent 65%);
+}
+
+.atmosphereVignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 75% 75% at 50% 45%, transparent 45%, color-mix(in srgb, var(--hud-bg) 70%, black) 100%);
+}
+
+.atmosphereGrain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.header {
+  position: relative;
+  z-index: 1;
+}
+
+.careerLine {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.careerLineRule {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, var(--hud-accent), transparent);
+}
+
+.megaTitle {
+  font-family: var(--font-display), 'Space Grotesk', sans-serif;
+  text-transform: uppercase;
+  font-weight: 700;
+  line-height: 1;
+  font-size: clamp(2.5rem, 3rem + 5vw, 9.375rem);
+  background: linear-gradient(to bottom, var(--hud-text), var(--hud-text-faint));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 4px 32px var(--hud-glow);
+  margin: 0;
+}
+
+.ghostWatermark {
+  position: absolute;
+  right: -0.05em;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+  font-family: var(--font-display), 'Space Grotesk', sans-serif;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: clamp(6rem, 4rem + 14vw, 22rem);
+  color: var(--hud-text);
+  opacity: 0.035;
+  white-space: nowrap;
+}
+
+.rail {
+  position: relative;
+  z-index: 1;
+  width: 13rem;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.railEntry {
+  text-align: left;
+  background: none;
+  border: none;
+  border-left: 2px solid transparent;
+  cursor: pointer;
+  font-family: var(--font-body), 'Space Grotesk', sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color var(--ease-quick), border-color var(--ease-quick), background var(--ease-quick);
+}
+
+.railEntry:hover {
+  background: color-mix(in srgb, var(--hud-accent) 6%, transparent);
+}
+
+.railEntryActive {
+  border-left-color: var(--hud-gold);
+  background: color-mix(in srgb, var(--hud-accent) 10%, transparent);
+  box-shadow: inset 0 0 12px color-mix(in srgb, var(--hud-glow) 60%, transparent);
+}

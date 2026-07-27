@@ -116,6 +116,45 @@
   --hud-vital-strain:   #E8A020;
 
   --hud-section-ghost: rgba(224, 48, 32, 0.09);
+
+  /* ── Talent tree — plaque surfaces ──────────────────────────── */
+  --plaque-body:              #0C0906;
+  --plaque-edge:               rgba(200, 162, 78, 0.22);
+  --plaque-edge-owned:         #DCBE6E;
+  --plaque-sheen:              rgba(255, 255, 255, 0.05);
+
+  /* ── Talent tree — owned-state plate (added, owned-plate treatment) ──
+     --plaque-plate reuses --hud-gold's per-theme identity (gold in Ember,
+     cyan in Kyber) rather than a new literal, so it can never drift out of
+     harmony with the theme. --plaque-plate-text reuses --plaque-body (each
+     theme's own near-black) as the inversion's dark foreground — contrast
+     verified 8.25:1 (Ember) / 8.61:1 (Kyber) against --plaque-plate, both
+     comfortably over WCAG AA's 4.5:1. --plaque-avail-accent reuses
+     --hud-accent (red in Ember, indigo in Kyber) — deliberately a different
+     hue from the plate so "owned" and "available" never read as the same
+     signal. */
+  --plaque-plate:              var(--hud-gold);
+  --plaque-plate-text:         var(--plaque-body);
+  --plaque-avail-accent:       var(--hud-accent);
+
+  /* ── Talent tree — activation headers ───────────────────────── */
+  --activation-active:         #C8182E;
+  --activation-active-text:    #FCE4E0;
+  --activation-passive:        #A89478;
+  --activation-passive-text:   #221A10;
+  --activation-maneuver:       #D88A2E;
+  --activation-maneuver-text:  #281604;
+  --activation-incidental:     #4EC87A;
+  --activation-incidental-text: #0A2414;
+
+  /* ── Talent tree — glow & path ───────────────────────────────── */
+  --hud-glow:                  rgba(224, 48, 32, 0.35);
+  --path-glow:                 #4EE8C8;
+  --force-spark:               #9060D0;
+
+  /* ── Talent tree — link bars ──────────────────────────────────── */
+  --link-bar:                  rgba(176, 48, 32, 0.22);
+  --link-bar-active:           rgba(224, 48, 32, 0.65);
 }
 
 /* ── Ember Tatooine — default combat-check-btn ─────────────── */
@@ -165,6 +204,8 @@
   --hud-text-faint:    #485070;
 
   --hud-gold:          #5BBCD8;
+  --hud-accent:        #5B6FE0;
+  --hud-accent-hi:     #7C8CF0;
   --hud-accent-10:     rgba(91,188,216,.10);
   --hud-accent-20:     rgba(91,188,216,.20);
   --hud-accent-25:     rgba(91,188,216,.25);
@@ -187,6 +228,37 @@
   --hud-vital-sep:     rgba(128,204,232,.18);
   --hud-vital-wounds:  #D84030;
   --hud-vital-strain:  #C89830;
+
+  /* ── Talent tree — plaque surfaces ──────────────────────────── */
+  --plaque-body:              #0E1024;
+  --plaque-edge:               rgba(91,188,216,.22);
+  --plaque-edge-owned:         #7DD8F0;
+  --plaque-sheen:              rgba(255,255,255,.05);
+
+  /* ── Talent tree — owned-state plate (added, owned-plate treatment) ──
+     See the matching Ember comment for the full rationale. */
+  --plaque-plate:              var(--hud-gold);
+  --plaque-plate-text:         var(--plaque-body);
+  --plaque-avail-accent:       var(--hud-accent);
+
+  /* ── Talent tree — activation headers ───────────────────────── */
+  --activation-active:         #2FA8D8;
+  --activation-active-text:    #E0F4FC;
+  --activation-passive:        #7888A8;
+  --activation-passive-text:   #10141F;
+  --activation-maneuver:       #A050D8;
+  --activation-maneuver-text:  #26102C;
+  --activation-incidental:     #3AC0A0;
+  --activation-incidental-text: #04201A;
+
+  /* ── Talent tree — glow & path ───────────────────────────────── */
+  --hud-glow:                  rgba(91,111,224,.35);
+  --path-glow:                 #F0B848;
+  --force-spark:               #9060D0;
+
+  /* ── Talent tree — link bars ──────────────────────────────────── */
+  --link-bar:                  rgba(91,188,216,.22);
+  --link-bar-active:           rgba(91,111,224,.65);
 }
 
 [data-theme="kyber"] .combat-check-btn {

@@ -457,8 +457,12 @@ export function GmMapView({
   async function setActive(mapId: string) {
     if (!campaignId || busy) return
     setBusy(true)
-    await supabase.from('maps').update({ is_active: false }).eq('campaign_id', campaignId)
-    await supabase.from('maps').update({ is_active: true }).eq('id', mapId)
+    // Single atomic RPC (migration 097) — two separate .update() calls would each
+    // commit independently, exposing a real zero-active-maps gap to every realtime
+    // subscriber (including this GM's own useActiveMap channel). That gap unmounts
+    // MapCanvas and remounts it fresh for the new map, which skips the "had a
+    // previous map" check gating the Pixi wipe transition (src/lib/mapWipe.ts).
+    await supabase.rpc('set_active_map', { p_campaign_id: campaignId, p_map_id: mapId })
     setBusy(false)
   }
 

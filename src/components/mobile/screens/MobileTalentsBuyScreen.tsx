@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { buildTalentTree } from '@/lib/buildTalentTree'
+import { countOwnedRanks } from '@/lib/derivedStats'
 import type { TalentTreeNode } from '@/components/character/TalentTree'
 import type { CharacterSpecialization, CharacterTalent, RefSpecialization, RefTalent } from '@/lib/types'
 import { FONT_DISPLAY, FONT_BODY, FS, SP, RADIUS, HUD } from '@/lib/tokens'
@@ -14,8 +15,6 @@ const ACTIVATION_DOT: Record<string, string> = {
   Incidental:     '#4A7A30', /* FFG ability die — sealed */
   'Out of Turn':  '#4A7A30', /* FFG ability die — sealed */
 }
-
-const TIER_COST = [5, 10, 15, 20, 25] as const
 
 type ConfirmState = { talentKey: string; row: number; col: number } | null
 
@@ -65,7 +64,7 @@ export function MobileTalentsBuyScreen({
         .filter(t => t.specialization_key === activeSpecKey)
         .map(t => `${t.tree_row ?? 0}-${t.tree_col ?? 0}`)
     )
-    return buildTalentTree(spec, refTalentMap, purchasedSet)?.nodes ?? []
+    return buildTalentTree(spec, refTalentMap, purchasedSet, talents)?.nodes ?? []
   }, [activeSpecKey, refSpecMap, talents, refTalentMap])
 
   // XP display colour — accent >20, gold 1-20, danger red 0
@@ -181,7 +180,7 @@ export function MobileTalentsBuyScreen({
           </div>
         ) : (
           tierNodes.map((nodes, row) => {
-            const cost = TIER_COST[row]
+            const cost = nodes[0]?.cost ?? (row + 1) * 5
             const purchasedInTier = nodes.filter(n => n.purchased).length
             const isCollapsed = collapsedTiers.has(row)
 
@@ -223,7 +222,7 @@ export function MobileTalentsBuyScreen({
                         confirming.row === node.row &&
                         confirming.col === node.col
                       )
-                      const rankCount = talents.filter(t => t.talent_key === node.talentKey).length
+                      const rankCount = countOwnedRanks(talents, t => t.talent_key === node.talentKey)
                       return (
                         <TalentNodeCard
                           key={nodeKey}

@@ -1,14 +1,11 @@
 'use client'
 
-import { createPortal } from 'react-dom'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { DiceModal } from './DiceModal'
-import { HudTalentTreeModal } from './HudTalentTreeModal'
 import { HudForcePowerTreeModal } from './HudForcePowerTreeModal'
 import { ForceRollModal } from './ForceRollModal'
 import { InitiativeRollModal } from './InitiativeRollModal'
 import { HudSpendCreditsModal } from './HudSpendCreditsModal'
-import { DedicationModal } from './DedicationModal'
 import { FloatingDiceRollerFAB } from './FloatingDiceRollerFAB'
 import { VendorPurchaseDialog, type VendorOffer } from './VendorPurchaseDialog'
 import { SkillRollPopover } from '@/components/character/SkillRollPopover'
@@ -22,12 +19,10 @@ import { FONT_DISPLAY, FONT_BODY } from '@/lib/tokens'
 import type { ForceRollResult } from './dice-engine'
 import type { HudSkill } from './SkillsPanel'
 import type { ForcePowerDisplay } from './ForcePanel'
-import type { TalentTreeNode, TalentTreeConnection } from '@/components/character/TalentTree'
 import type { ForceTreeNode, ForceTreeConnection } from '@/components/character/ForcePowerTree'
 import type {
-  Character, CharacterSkill, CharacterTalent, CharacterSpecialization,
-  RefSpecialization, RefTalent, SpeciesAbility, RefWeaponQuality,
-  SigAbility, SigAbilityNode, LockedSigAbility, CharacterSigAbilityNode,
+  Character, CharacterSkill, CharacterTalent,
+  RefTalent, SpeciesAbility, RefWeaponQuality,
 } from '@/lib/types'
 
 interface HudModalsOverlayProps {
@@ -40,31 +35,12 @@ interface HudModalsOverlayProps {
   effectiveCampaignId: string | null
   supabase: SupabaseClient
   isGmMode: boolean
-  refSpecs: RefSpecialization[]
-  refSpecMap: Record<string, RefSpecialization>
   refWeaponQualityMap: Record<string, RefWeaponQuality>
-  careerSpecKeys: Set<string>
-  specKeyToCareerName: Record<string, string>
 
   rollResult: RollResult | null
   rollLabel: string | undefined
   setRollResult: (r: RollResult | null) => void
 
-  showTalentTree: boolean
-  setShowTalentTree: (b: boolean) => void
-  charSpecs: CharacterSpecialization[]
-  activeSpecKey: string | null
-  setActiveSpecKey: (k: string) => void
-  talentTreeData: { specName: string; nodes: TalentTreeNode[]; connections: TalentTreeConnection[] } | null
-  onPurchaseTalent: (talentKey: string, row: number, col: number, specKey: string) => Promise<string | undefined>
-  onRemoveTalent: ((talentId: string, xpCost: number) => void) | undefined
-  onBuySpecialization: (specKey: string, setSpecKey: (k: string) => void) => void
-  availableSigAbilities: SigAbility[]
-  lockedSigAbilities: Record<string, LockedSigAbility>
-  purchasedSigNodes: CharacterSigAbilityNode[]
-  hasUnlockedTier5: boolean
-  onLockInSigAbility: (sigAbilityKey: string, specSlot: string) => Promise<void>
-  onPurchaseSigNode: (sigAbilityKey: string, node: SigAbilityNode) => Promise<void>
   showForceTree: boolean
   setShowForceTree: (b: boolean) => void
   allForcePowers: ForcePowerDisplay[]
@@ -108,11 +84,6 @@ interface HudModalsOverlayProps {
   spendCreditsOpen: boolean
   setSpendCreditsOpen: (b: boolean) => void
 
-  pendingDedication: { talentId: string; row: number; col: number; specKey: string; xpCost: number } | null
-  setPendingDedication: (d: { talentId: string; row: number; col: number; specKey: string; xpCost: number } | null) => void
-  onResolveDedication: (talentId: string, charKey: string) => Promise<void>
-  onCancelDedication: (talentId: string, xpCost: number) => Promise<void>
-
   pendingForceRatingOffer: boolean
   setPendingForceRatingOffer: (b: boolean) => void
   onPurchaseForceRating: () => Promise<void>
@@ -123,13 +94,8 @@ interface HudModalsOverlayProps {
 
 export function HudModalsOverlay({
   character, skills, talents, refTalentMap, speciesAbilities, forceRating,
-  effectiveCampaignId, supabase, isGmMode, refSpecs, refSpecMap, refWeaponQualityMap,
-  careerSpecKeys, specKeyToCareerName,
+  effectiveCampaignId, supabase, isGmMode, refWeaponQualityMap,
   rollResult, rollLabel, setRollResult,
-  showTalentTree, setShowTalentTree, charSpecs, activeSpecKey, setActiveSpecKey,
-  talentTreeData, onPurchaseTalent, onRemoveTalent, onBuySpecialization,
-  availableSigAbilities, lockedSigAbilities, purchasedSigNodes, hasUnlockedTier5,
-  onLockInSigAbility, onPurchaseSigNode,
   showForceTree, setShowForceTree, allForcePowers, activePowerKey, setActivePowerKey, forcePowerTreeData, onPurchaseForceAbility,
   gmDialog, setGmDialog,
   gmCritInjuryDialog, setGmCritInjuryDialog,
@@ -143,7 +109,6 @@ export function HudModalsOverlay({
   lootReveal, setLootReveal,
   vendorOffer, setVendorOffer, onCreditSpend,
   spendCreditsOpen, setSpendCreditsOpen,
-  pendingDedication, setPendingDedication, onResolveDedication, onCancelDedication,
   pendingForceRatingOffer, setPendingForceRatingOffer, onPurchaseForceRating,
   diceOpen, onDiceOpenChange,
 }: HudModalsOverlayProps) {
@@ -152,32 +117,6 @@ export function HudModalsOverlay({
       {rollResult && (
         <DiceModal result={rollResult} skillName={rollLabel} onDismiss={() => setRollResult(null)} />
       )}
-
-      <HudTalentTreeModal
-        open={showTalentTree}
-        onClose={() => setShowTalentTree(false)}
-        charSpecs={charSpecs}
-        refSpecMap={refSpecMap}
-        activeSpecKey={activeSpecKey}
-        setActiveSpecKey={setActiveSpecKey}
-        talentTreeData={talentTreeData}
-        character={character}
-        refSpecs={refSpecs}
-        refTalentMap={refTalentMap}
-        careerSpecKeys={careerSpecKeys}
-        specKeyToCareerName={specKeyToCareerName}
-        isGmMode={isGmMode}
-        onPurchaseTalent={onPurchaseTalent}
-        onRemoveTalent={onRemoveTalent}
-        onBuySpecialization={onBuySpecialization}
-        onPendingDedication={setPendingDedication}
-        availableSigAbilities={availableSigAbilities}
-        lockedSigAbilities={lockedSigAbilities}
-        purchasedSigNodes={purchasedSigNodes}
-        hasUnlockedTier5={hasUnlockedTier5}
-        onLockInSigAbility={onLockInSigAbility}
-        onPurchaseSigNode={onPurchaseSigNode}
-      />
 
       <HudForcePowerTreeModal
         open={showForceTree}
@@ -400,26 +339,6 @@ export function HudModalsOverlay({
           await onCreditSpend(amount, effectiveCampaignId!)
         }}
       />
-
-      {pendingDedication && typeof document !== 'undefined' && createPortal(
-        <DedicationModal
-          character={character}
-          onConfirm={async (charKey) => {
-            const { talentId } = pendingDedication
-            setPendingDedication(null)
-            await onResolveDedication(talentId, charKey)
-          }}
-          onCancel={async () => {
-            // A characteristic choice is mandatory at purchase time — cancelling
-            // reverts the purchase (refund XP, delete the talent row) rather than
-            // leaving an unresolved Dedication row that would need reminding about.
-            const { talentId, xpCost } = pendingDedication
-            setPendingDedication(null)
-            await onCancelDedication(talentId, xpCost)
-          }}
-        />,
-        document.body,
-      )}
 
       {/* Optional, dismissible — unlike Dedication, "Later" does NOT revert the
           specialization purchase. The Force tab CTA (ForcePanel) is the deferred path. */}

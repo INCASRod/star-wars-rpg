@@ -10,7 +10,8 @@ import { stripBBCode } from '@/lib/utils'
 import { SpecSelectorList } from '@/components/shared/SpecSelectorList'
 import { isDroid, isClone } from '@/lib/forceEligibility'
 import { specPurchaseCost } from '@/hooks/useCharacterData'
-import { TalentTree } from '@/components/character/TalentTree'
+import { computeCareerSkillKeys } from '@/lib/characters'
+import { TalentSurface } from '@/components/character/TalentSurface'
 import { buildTalentTree } from '@/lib/buildTalentTree'
 import { Z, EASE } from '@/lib/tokens'
 import type {
@@ -23,7 +24,6 @@ const STEPS = [
   'Background', 'Obligation', 'Duty', 'Species',
   'Career', 'Specialisation', 'XP Investment', 'Motivation', 'Review',
 ]
-const ROW_COSTS = [5, 10, 15, 20, 25]
 const CHAR_KEYS = ['brawn', 'agility', 'intellect', 'cunning', 'willpower', 'presence'] as const
 const CHAR_SHORT: Record<typeof CHAR_KEYS[number], string> = {
   brawn: 'Br', agility: 'Ag', intellect: 'Int', cunning: 'Cun', willpower: 'Wil', presence: 'Pr',
@@ -262,12 +262,10 @@ function CreateWizard() {
   }, [draft.specialization, draft.additionalSpecs])
 
   // ── Career skill keys (career + all specs) ────────────────────────────────
-  const careerSkillKeys = useMemo(() => {
-    const keys = new Set<string>()
-    draft.career?.career_skill_keys?.forEach(k => keys.add(k))
-    allSpecs.forEach(s => s.career_skill_keys?.forEach(k => keys.add(k)))
-    return keys
-  }, [draft.career, allSpecs])
+  const careerSkillKeys = useMemo(
+    () => computeCareerSkillKeys(draft.career?.career_skill_keys, allSpecs),
+    [draft.career, allSpecs],
+  )
 
   // ── In-career specialization keys for the selected career ──
   // ref_specializations.career_key is always NULL for the respec dataset (migration 064) —
@@ -450,9 +448,7 @@ function CreateWizard() {
       await supabase.from('character_specializations').insert(specInserts)
 
       // Skills
-      const allCareerSkillKeys = new Set<string>()
-      draft.career?.career_skill_keys?.forEach(k => allCareerSkillKeys.add(k))
-      allSpecs.forEach(s => s.career_skill_keys?.forEach(k => allCareerSkillKeys.add(k)))
+      const allCareerSkillKeys = computeCareerSkillKeys(draft.career?.career_skill_keys, allSpecs)
       const skillInserts = refSkills.map(sk => ({
         character_id: char.id,
         skill_key: sk.key,
@@ -1837,14 +1833,13 @@ function XpInvestmentStep({
               const treeData = buildTalentTree(activeTalentSpec, talentMap, purchasedSet)
               if (!treeData) return null
               return (
-                <TalentTree
-                  specName={treeData.specName}
-                  nodes={treeData.nodes}
-                  connections={treeData.connections}
+                <TalentSurface
+                  activeSpecKey={specKey}
+                  talentTreeData={treeData}
                   xpAvailable={xpRemaining}
                   isGmMode
-                  onPurchase={(talentKey, row, col) => {
-                    const cost = ROW_COSTS[row]
+                  onPurchaseTalent={(talentKey, row, col) => {
+                    const cost = activeTalentSpec.talent_tree.rows.find(r => r.index === row)?.cost ?? (row + 1) * 5
                     setDraft(p => {
                       if (p.talentPicks.some(t => t.specKey === specKey && t.row === row && t.col === col)) return p
                       if (xpRemaining < cost) return p

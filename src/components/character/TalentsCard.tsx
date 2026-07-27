@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { HUD, FS, SP, RADIUS, EASE, FONT_DISPLAY, FONT_BODY } from '@/lib/tokens'
+import { HUD, FS, SP, RADIUS, EASE, FONT_DISPLAY, FONT_BODY, ACTIVATION_COLOR } from '@/lib/tokens'
 import { HudCard } from '../ui/HudCard'
 import { removeBtnStyle as baseRemoveBtnStyle } from '@/lib/styles'
 
@@ -10,14 +10,6 @@ export interface TalentDisplay {
   activation: string // 'Passive', 'Maneuver', etc.
   id?: string
   xpCost?: number
-}
-
-const ACTIVATION_COLORS: Record<string, string> = {
-  Passive: 'var(--blue)',
-  Action: 'var(--red)',
-  Maneuver: 'var(--amber)',
-  Incidental: 'var(--green)',
-  'Incidental (OOT)': 'var(--green)',
 }
 
 const removeBtnStyle: React.CSSProperties = { ...baseRemoveBtnStyle, marginLeft: 4 }
@@ -55,7 +47,7 @@ export function TalentsCard({ talents, animClass = 'ar d4', onOpenTree, collapsi
               <div style={{ fontWeight: 600, color: HUD.text }}>{tal.name}</div>
               <div style={{
                 fontFamily: FONT_BODY, fontSize: FS.overline,
-                fontWeight: 600, color: ACTIVATION_COLORS[tal.activation] || HUD.textDim, letterSpacing: '0.06rem',
+                fontWeight: 600, color: ACTIVATION_COLOR[tal.activation] || HUD.textDim, letterSpacing: '0.06rem',
               }}>
                 {tal.activation}
               </div>

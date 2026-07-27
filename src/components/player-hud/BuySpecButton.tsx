@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { specPurchaseCost } from '@/hooks/useCharacterData'
 import { HUD, FONT_BODY, FS, RADIUS, Z, panelBase } from '@/lib/tokens'
 import { SpecSelectorList } from '@/components/shared/SpecSelectorList'
@@ -48,7 +49,16 @@ export function BuySpecButton({
     )
   }
 
-  return (
+  // Portalled to document.body (Prompt 7b, Defect 3) — same pattern as
+  // TalentDossier.tsx. Not strictly required to fix the reported symptom
+  // today (no ancestor currently breaks position:fixed's viewport-relative
+  // containing block — the parallax tilt wrapper that used to, via its
+  // `transform`, was removed in Prompt 6d), but portalling removes the
+  // dependency on that assumption holding forever: any future transform/
+  // filter/will-change on an ancestor would silently reintroduce this bug
+  // for an in-place-rendered fixed panel, but not for one already living
+  // outside the component tree entirely.
+  return createPortal(
     <div
       onClick={() => setOpen(false)}
       style={{
@@ -146,6 +156,7 @@ export function BuySpecButton({
           Cancel
         </button>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

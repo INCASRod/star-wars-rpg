@@ -270,8 +270,9 @@ export function MapToolsRadial({
 
   async function handleSetActiveMap(mapId: string) {
     if (mapBusy) return; setMapBusy(true)
-    await supabase.from('maps').update({ is_active: false }).eq('campaign_id', campaignId)
-    await supabase.from('maps').update({ is_active: true }).eq('id', mapId)
+    // Single atomic RPC (migration 097) — see GmMapView.setActive for why two
+    // separate .update() calls break the map wipe transition.
+    await supabase.rpc('set_active_map', { p_campaign_id: campaignId, p_map_id: mapId })
     setMapBusy(false)
   }
 
