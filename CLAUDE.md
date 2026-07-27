@@ -29,13 +29,18 @@ The project runs a dual-dataset architecture. `campaign_settings.active_dataset`
 OggDude rows still exist in the database for the domains reSpec now owns (talents, specializations, careers, force powers) — these are kept as an inactive rollback only. OggDude is **not** the active source for those domains and must not be described as such anywhere in this file.
 
 **Canonical XML source paths:**
-- `respec project data/` (repo root) — canonical XML source for every respec-owned domain above; hardcoded in `scripts/parse-respec.ts` and `scripts/gen-migration-079.ts`
+- `respec project data/` (repo root) — canonical XML source for every respec-owned domain above; read by `scripts/update-respec-snapshot.ts` (standing refresh tool) and, historically, by `scripts/parse-respec.ts` and `scripts/gen-migration-079.ts`
 - `oggdude/DataCustom/` — used only for items and NPCs/adversaries/vehicles
 - `oggdude/DataCustom/SigAbilities/` was the seed source for Signature Abilities (migrations 088–091); the canonical source going forward is `respec project data/SigAbilities/` (corrected in migration 092)
 
 **Migration history** (dates verified against git log, not assumed):
 - 2026-06-10 — migrations 062–067 moved talents, specializations, careers, and force powers/abilities to the reSpec dataset and activated it as `campaign_settings.active_dataset`
 - 2026-07-17 — Signature Abilities (migrations 088–091) were seeded from the wrong source (`oggdude/DataCustom/SigAbilities/`) the same day they were added; migration 092 corrected this to seed from `respec project data/SigAbilities/`
+- 2026-07-27 — migration 100 applied the Jun/Jul 2026 reSpec snapshot drop: new force powers (Commune, Psychometry) and their ability pips, new/updated Consular-career specializations (Sage, Healer, Ascetic, Arbiter, Teacher, Niman Disciple), and wording/value corrections to existing respec talents and force abilities. Purely additive — no rows removed, no `is_retired`/`is_force_sensitive`/`career_key` flags touched, no character data affected.
+
+**reSpec dataset refresh tooling:**
+- `scripts/update-respec-snapshot.ts` is the standing tool for all future reSpec dataset drops. Usage: `npx tsx scripts/update-respec-snapshot.ts --migration <N>` — writes `supabase/migrations/<N>_respec_snapshot_update.sql` (refuses to overwrite an existing file at that path; never guess or reuse a migration number, always pick the next free one). Emits `ON CONFLICT ... DO UPDATE` so wording/value corrections land on existing rows, not just new keys, and resolves force-ability `power_key` from the parsed Force Powers XML key set rather than a name-transform. Deliberately does not touch `is_retired`, `is_force_sensitive`, or `career_key` on upsert — those are owned by later, more specific migrations layered on top of the seed.
+- `scripts/parse-respec.ts` and `scripts/gen-migration-079.ts` are superseded for refresh work (insert-only, write to fixed already-applied migration filenames) — retained for historical reference only. Do not run them expecting a fresh migration; they will overwrite their original output files in place.
 
 ---
 
