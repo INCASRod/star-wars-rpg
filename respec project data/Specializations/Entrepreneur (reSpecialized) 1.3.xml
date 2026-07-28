@@ -1,0 +1,173 @@
+<?xml version="1.0"?>
+<Specialization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>ENTREPRE1.2</Key>
+  <Name>Entrepreneur (reSpecialized) 1.3</Name>
+  <Description>[H4]Entrepreneur (reSpecialized)[h4]
+[B]ENTREPRENEUR—SECURING THE PURSE[b][BR]
+[B]At a Glance[b][BR]
+The entrepreneur is a shrewd and competent business-person, using money to make money and solve problems.[BR]
+[B]All-in or Hybrid?[b][BR]
+ Hybrid ⅓ Making Money, ⅓ Credits-Related Social Utility, ⅙ Credit-Related General Utility, ⅙  General Utility[BR]
+[B]What Should it be the Best At?[b][BR]
+Making Money[BR]
+Using Money to Solve Problems[BR]
+[B]What should it be just “good” at?[b][BR]
+Trading[BR]
+Positive Sociality[BR]
+[B]Specs for Comparison / Inspiration[b][BR]
+[I]Trader[i][BR]
+[I]Republic Representative[i][BR]
+[I]Arbiter[i][BR]
+[B]Media Touchstones[b][BR]
+Davo Sculdun (Andor)[BR]
+Luthen Rael (Andor)[BR]
+Lando Calrissian (Episode V:Empire Strikes Back)[BR]</Description>
+  <Source>reSpecialized Project</Source>
+  <Custom>AddedItem</Custom>
+  <CareerSkills>
+    <Key>DISC</Key>
+    <Key>EDU</Key>
+    <Key>NEG</Key>
+    <Key>UND</Key>
+  </CareerSkills>
+  <TalentRows>
+    <TalentRow>
+      <Cost>5</Cost>
+      <Talents>
+        <Key>LEVER</Key>
+        <Key>TOUGH</Key>
+        <Key>GREASE</Key>
+        <Key>SOUNDINV</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction />
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction />
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>10</Cost>
+      <Talents>
+        <Key>HIREHELP</Key>
+        <Key>BARGHUNT</Key>
+        <Key>GRIT</Key>
+        <Key>SOUNDINV</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>15</Cost>
+      <Talents>
+        <Key>HIRHELIMP</Key>
+        <Key>NOBFOOL</Key>
+        <Key>BOUGHT</Key>
+        <Key>SOUINVIMP</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>20</Cost>
+      <Talents>
+        <Key>GREASE</Key>
+        <Key>SOUNDINV</Key>
+        <Key>MASMERC</Key>
+        <Key>LEVER</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>25</Cost>
+      <Talents>
+        <Key>HIRHELSUP</Key>
+        <Key>DEDI</Key>
+        <Key>BACKROOM</Key>
+        <Key>GREPALIMP</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+  </TalentRows>
+  <AddlCareerSkills>
+    <Type />
+  </AddlCareerSkills>
+</Specialization>

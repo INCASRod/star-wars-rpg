@@ -1,0 +1,176 @@
+<?xml version="1.0"?>
+<Specialization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>MERCSOLRES</Key>
+  <Name>Mercenary Soldier (reSpecialized) 1.21</Name>
+  <Description>[H4]Mercenary Soldier (Respec 1.21)[h4]
+[B]MERCENARY SOLDIER - DIRTY DEEDS DONE DIRT CHEAP[b][BR]
+[B]At a Glance[b][BR]
+The Mercenary Soldier is the leadership-oriented hired gun, the head of a merc band, or the tactical lead on a covert op. They are extremely effective combatants, and even better at managing small-scale skirmishes.[BR]
+[B]All-in or Hybrid?[b][BR]
+½ Leadership, ½ Ranged Combat[BR]
+[B]What Should it be the Best At?[b][BR]
+Leading bands of “irregulars”[BR]
+[B]What should it be just “good” at?[b][BR]
+Ranged Combat[BR]
+[B]Specs for Comparison / Inspiration[b][BR]
+[I]Commando[i]
+[I]Warleader[i]
+[I]Tactician[i]
+[I]Clone Lieutenant[i]
+[I]Clone Soldier[i]
+[I]Retired Clone Trooper[i]
+[B]Media Touchstones[b][BR]
+Barney Ross (The Expendables)[BR]
+CT-9901 “Hunter” (The Bad Batch)[BR]
+Rick Flag Sr (Creature Commandos)[BR]
+Zaeed Massani (Mass Effect)[BR]
+[I]updated 12/11/2025[i]</Description>
+  <Source>reSpecialized Project</Source>
+  <Custom>AddedItem</Custom>
+  <CareerSkills>
+    <Key>DISC</Key>
+    <Key>GUNN</Key>
+    <Key>LEAD</Key>
+    <Key>RANGHVY</Key>
+  </CareerSkills>
+  <TalentRows>
+    <TalentRow>
+      <Cost>5</Cost>
+      <Talents>
+        <Key>GRIT</Key>
+        <Key>STRONG</Key>
+        <Key>COM</Key>
+        <Key>BOLSTER</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction />
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction />
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>10</Cost>
+      <Talents>
+        <Key>DYNFIRE</Key>
+        <Key>FLDCOMM</Key>
+        <Key>SIDESTEP</Key>
+        <Key>BOLSTER</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>15</Cost>
+      <Talents>
+        <Key>PERSTARGET</Key>
+        <Key>CONF</Key>
+        <Key>TOUGH</Key>
+        <Key>BOLSTIMP</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>20</Cost>
+      <Talents>
+        <Key>PERTARIMP</Key>
+        <Key>COM</Key>
+        <Key>NODIE</Key>
+        <Key>FOLLOWMYLEAD</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>25</Cost>
+      <Talents>
+        <Key>KILLCONFIRMED</Key>
+        <Key>FLDCOMMIMP</Key>
+        <Key>COORDASS</Key>
+        <Key>DEDI</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+  </TalentRows>
+  <AddlCareerSkills>
+    <Type />
+  </AddlCareerSkills>
+</Specialization>

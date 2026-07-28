@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<Vehicle xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>SHEATHIPEDE-CLASSTRANSPORTSHUTTLE</Key>
+  <Name>Sheathipede-Class Transport Shuttle</Name>
+  <Description>[H3]Sheathipede-Class Transport Shuttle[h3]
+A product of Haor Chall Engineering, the Sheathipede-class shuttle was a short -range transport shuttle, commonly used by the Trade Federation and the Confederacy of Independent Systems during the Clone Wars. It was primarily utilized to ferry passengers across a planet's surface, or between an orbiting starship and the surface.
+[P]The vessel is notable for a large topside fin. which enables it to bank quickly, and its curved. pincer-like landing gear, which gives it a somewhat insectile appearance. The passenger cabin is entered via an egress hatchway at the rear of the shuttle.
+[P]The Sheathipede has a somewhat smaller interior than the more common modern shuttles, only having room for a dozen individuals including the crew. This factor. along with the lack of armaments, has led the shuttle to be replaced by newer options. such as the Lambda-class. The Sheathipede is fairly well -armored, though, and built to withstand punishment, so it still can be found in use where such traits are valued.
+</Description>
+  <Source Page="62">Unlimited Power</Source>
+  <Custom>AddedItem</Custom>
+  <Type>Shuttle</Type>
+  <Categories>
+    <Category>Starship</Category>
+    <Category>Non-Fighter Starship</Category>
+  </Categories>
+  <HP>2</HP>
+  <Price>120000</Price>
+  <Rarity>6</Rarity>
+  <HyperdrivePrimary>1</HyperdrivePrimary>
+  <HyperdriveBackup>10</HyperdriveBackup>
+  <NaviComputer>true</NaviComputer>
+  <SensorRangeValue>srNone</SensorRangeValue>
+  <Crew>One pilot. one co-pilot. one comms operator, and one engineer.</Crew>
+  <Consumables>Two months</Consumables>
+  <Silhouette>4</Silhouette>
+  <Speed>3</Speed>
+  <Handling>1</Handling>
+  <DefFore>1</DefFore>
+  <DefAft>1</DefAft>
+  <Armor>4</Armor>
+  <HullTrauma>25</HullTrauma>
+  <SystemStrain>15</SystemStrain>
+  <Starship>true</Starship>
+  <SensorRange>No Sensors</SensorRange>
+</Vehicle>

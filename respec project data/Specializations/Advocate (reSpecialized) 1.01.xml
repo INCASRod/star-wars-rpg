@@ -1,0 +1,176 @@
+<?xml version="1.0"?>
+<Specialization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>ADVOCATERES</Key>
+  <Name>Advocate (reSpecialized) 1.01</Name>
+  <Description>[H4]Advocate (reSpecialized)[h4]
+[B]ADVOCATE—PITHY DESCRIPTION[b][BR]
+[B]At a Glance[b][BR]
+The Advocate is a phenomenal social combat-oriented character, operating as the party support, or a take-down artist in equal measure.[BR]
+[B]All-in or Hybrid?[b][BR]
+½ Buffing Mentor-oriented character ¼ Cunning Social Manipulator ¼ Vicious Social Duelist.[BR]
+[B]What Should it be the Best At?[b][BR]
+Social Support[BR]
+Social Dueling, Especially Defense as Offensive[BR]
+[B]What should it be just “good” at?[b][BR]
+Being Charming[BR]
+Negotiation[BR]
+[B]Specs for Comparison / Inspiration[b][BR]
+[I]Politico[i](Any social character that cares about more than one social skill will start to look pretty similar. The Politico is kind of a self-contained mover and shaker, whereas the Advocate is more of “side-kick” in social settings, though grossly powerful otherwise)[BR]
+[I]Makashi Duelist[i](The focus on turning flubbed attacks into powerful turnabout is a pretty similar thing to Makashi dueling. A great social defense makes for a solid social offense).
+Prophet (The prophet is closer to the Politico, making it a solid primary social character, but with a forcey lean. It does end up being a serious force multiplier with some of its talents, and it does have Twisted Words.)[BR]
+[I]Advisor[i](Unfortunately, the Advisor is pretty bleh pile of stuff, but the skills and vibes are pretty similar)[BR]
+[B]Media Touchstones[b][BR]
+Mas Amedda (Episode 1: The Phantom Menace)
+Nute Gunray (Episode 1: The Phantom Menace)
+Donnel Udina (Mass Effect)
+Miles Edgeworth (Ace Attorney)[BR]</Description>
+  <Source>reSpecialized Project</Source>
+  <Custom>AddedItem</Custom>
+  <CareerSkills>
+    <Key>COERC</Key>
+    <Key>DECEP</Key>
+    <Key>NEG</Key>
+    <Key>VIGIL</Key>
+  </CareerSkills>
+  <TalentRows>
+    <TalentRow>
+      <Cost>5</Cost>
+      <Talents>
+        <Key>PLAUSDEN</Key>
+        <Key>NOBFOOL</Key>
+        <Key>GRIT</Key>
+        <Key>CONF</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction />
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>10</Cost>
+      <Talents>
+        <Key>DISCREDIT</Key>
+        <Key>PLAUSDEN</Key>
+        <Key>NOBFOOL</Key>
+        <Key>SUPPEVI</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>15</Cost>
+      <Talents>
+        <Key>GRIT</Key>
+        <Key>CLEAROOM</Key>
+        <Key>READROOM</Key>
+        <Key>ENCWORD</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>20</Cost>
+      <Talents>
+        <Key>TWISTWORD</Key>
+        <Key>CONTPLAN</Key>
+        <Key>SETTONE</Key>
+        <Key>SUPPEVI</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>25</Cost>
+      <Talents>
+        <Key>BLACKMAIL</Key>
+        <Key>INTERJECT</Key>
+        <Key>DEDI</Key>
+        <Key>KINGMAKE</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+  </TalentRows>
+  <AddlCareerSkills>
+    <Type />
+  </AddlCareerSkills>
+</Specialization>

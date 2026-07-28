@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<Species xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>ARKAN</Key>
+  <Name>Arkanian</Name>
+  <Description>    [H4]Arkanian[h4]
+Cold, calculatng, and absolutely certain of their natural superiority to other species in the galaxy, the white-haired Arkanians are recognized across countless star systems for both their advanced bioengineering and their massive egos. This near-human species has been a part of galactic society for thousands of years and in that time has elevated genetic engineering from a science to an art form. Countless centuries of medical experimentation and efforts to stay on the cutting edge of biotechnology led the Arkanians to develop laboratory-created genetic offshoots of their own people; they regard these offshoots as lesser shadows of themselves or even slaves. Arkanians do not see themselves as brutal or ruthless because of this. They believe they are simply a pragmatic society, doing what is necessary to build upon generations of scientific knowledge in an effort to achieve absolute genetic perfection.
+[P]
+[B]Physiology:[b] Arkanians resemble humans in most respects, save for their pale white eyes, and fingers that end in claw like nails of the same coloring. Both of these features are a point of pride to Arkanians, who see them as signs of genetic purity. Arkanians are tall and lean, with chiseled features and well-defined muscles. Hair color varies, with white being the most common. Arkanians are long-lived compared to humans; most live for at least a century and spend over fifty years of their life in a state of prime health. This is seen as further proof of both their inherent superiority and their mastery of genetic science. Arkanians have keen vision and are capable of seeing into the infrared spectrum, though this has led to visual sensitivity that requires them t wear polarized lenses or blinders in certain environments.
+[P]
+Arkanian Offshoots are bred in great variety as living experiments, though such beings are not regarded as "true Arkanians." They typically live a brief life of servitude to their pure-blooded masters, with no hope of being regarded as anything more than a slave or pet.
+[P]
+[B]Society:[b] The people of Arkania live in a rigid caste system. Thse whose blood shows itself to be pure are held in veneration, while members of the species showing any signs of weakness or flaws are looked down upon. In addition to maintaining physical perfection, Arkanians are well versed in academic and scientific matters, with a particular focus in medicine and genetics. Perhaps due to their natural arrogance, Arkanians expect subservience and respect from outsiders. Non-Arkanians need to recognize Arkanian superiority.
+[P]
+[B]Homeworld:[b] A vast, icy tundra covers most of the Arkanian homeworld of Arkania. Ceaseless howling winds buffet the surface, mkaing life upon it almost impossible. Instead, Arkanians live deep underground in vast networks of tunnels and caves. Heat is drawn from the panet's core and filtered through these caverns, which provide all the modern amenities to those Arkanians worthy enough to recieve them. Vast mines supply  beautiful and valuable diamonds, sought by wealthy nobles and aristocrats from across the galaxy. These mines are tended to by Arkanian Offshoots and other lesser beings, while pure Arkanians tend to matters of scientific advancement.
+[P]
+There are a handful of surface settlements on Arkania, though they are enclosed to seal out environmental hazards. Many of these cities host the great estates of particularly wealthy Arkanian diamond traders, as well as bazaars and marketplaces where everything from sparkling diamonds to cutting-edge technology can be purchased.
+[P]
+[B]Language:[b] Arkanians have long spoken a native language of the same name. Arkanians learn Basic in order to communicate with the galaxy at large, and it is expected that all Arkanians speak this language with perfect fluency by childhood.
+[P]
+[B]Peception of the Force:[b] Arkanians who show strength in the Force often take an analytical view of the matter, seeking to investigate and experiment with it in order to achieve a perfect understanding. The Jedi Order had a surprising number of Arkanian Knights and Masters before its fall, many of whom slowly came to realize that the perfection of life lay not in science alone, but in understanding the Force and compassion alongside more concrete observations. This led many Force-sensitive Arkanians to adopt what seems to be an atypical approach when encountering other species-treating them with kindness and respect. In truth, they are simply seeking a new kind of Arkanian perfection.
+
+[H4]A Question of Morality[h4]
+Arkanian pride, though certainly inflated, is not without some merit. Arkanians are masters of genetic technology and bioengineering. In addition to mastering cutting-edge techniques of sentient breeding, their advancements have led to some of the galaxy's most effective biological weapons-all of which they are willing to sell to the highest bidder.
+[P]
+This arrogant pragmatism has led to the perception that Arkanians have no moral qualms with their technology being sold to nefarious clients and being used in galactic atrocities. However, a significant minority of the Arkanian people do hold a great moral objection to their advancements being used to commit such horrible crimes. These Arkanians hold to the belief that once physiological and technological perfection has been achieved, one must also achieve moral perfection to become the perfect being.</Description>
+  <Source>Unofficial Species Menagerie</Source>
+  <Custom>DescOnly</Custom>
+  <StartingChars>
+    <Brawn>2</Brawn>
+    <Agility>2</Agility>
+    <Intellect>3</Intellect>
+    <Cunning>2</Cunning>
+    <Willpower>2</Willpower>
+    <Presence>1</Presence>
+  </StartingChars>
+  <StartingAttrs>
+    <WoundThreshold>10</WoundThreshold>
+    <StrainThreshold>10</StrainThreshold>
+    <Experience>100</Experience>
+  </StartingAttrs>
+  <SkillModifiers>
+    <SkillModifier>
+      <Key>COERC</Key>
+      <RankStart>1</RankStart>
+      <RankLimit>2</RankLimit>
+    </SkillModifier>
+  </SkillModifiers>
+  <OptionChoices>
+    <OptionChoice>
+      <Key>ARKANOC</Key>
+      <Name>Knowledge</Name>
+      <Options>
+        <Option>
+          <Key>ARKANOC1</Key>
+          <Name>Intellectual</Name>
+          <Description>Arkanians receive a [BOOST]
+          when making all knowledge skill checks.</Description>
+          <DieModifiers>
+            <DieModifier>
+              <SkillType>Knowledge</SkillType>
+              <BoostCount>1</BoostCount>
+            </DieModifier>
+          </DieModifiers>
+        </Option>
+      </Options>
+    </OptionChoice>
+  </OptionChoices>
+</Species>

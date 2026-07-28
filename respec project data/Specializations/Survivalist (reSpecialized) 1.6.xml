@@ -1,0 +1,170 @@
+<?xml version="1.0"?>
+<Specialization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>SURVIVALIST1.3</Key>
+  <Name>Survivalist (reSpecialized) 1.6</Name>
+  <Description>[H4]Survivalist (reSpecialized)[h4]
+[B]SURVIVALIST—MASTER OF THE WILD[b][BR]
+[B]At a Glance[b][BR]
+A rugged, self sufficient, primal Hunter and killer of sentients. Good at going for the throat when the opportunity presents itself.[BR]
+[B]All-in or Hybrid?[b][BR]
+½ Rugged Outlander &amp; Survivalist ½ Hunter and Killer.[BR]
+[B]What Should it be the Best At?[b][BR]
+Tracking Sentients and Killing Them[BR]
+[B]What should it be just “good” at?[b][BR]
+Being fairly hardy and hard to land meaningful hits on[BR]
+Using knowledge and craftiness to become stronger[BR]
+[B]Specs for Comparison / Inspiration[b][BR]
+[I]Big Game Hunter[i][BR]
+[I]Trailblazer[i][BR]
+[B]Media Touchstones[b][BR]
+Zuckuss (Episode V: The Empire Strikes Back)[BR]
+John Rambo (Rambo: First Blood)[BR]
+Daryl Dixon (The Walking Dead)[BR]
+updated 12/10/2025
+</Description>
+  <Source>reSpecialized Project</Source>
+  <Custom>AddedItem</Custom>
+  <CareerSkills>
+    <Key>PERC</Key>
+    <Key>RESIL</Key>
+    <Key>SURV</Key>
+    <Key>XEN</Key>
+  </CareerSkills>
+  <TalentRows>
+    <TalentRow>
+      <Cost>5</Cost>
+      <Talents>
+        <Key>OUTDOOR</Key>
+        <Key>EXTRACK</Key>
+        <Key>NATUCAMO</Key>
+        <Key>GATHERER</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction />
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>10</Cost>
+      <Talents>
+        <Key>TOUGH</Key>
+        <Key>GRIT</Key>
+        <Key>EXPTRAIMP</Key>
+        <Key>SWIFT</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>15</Cost>
+      <Talents>
+        <Key>BLO</Key>
+        <Key>KNOWPREY</Key>
+        <Key>NOISSAFE</Key>
+        <Key>OUTDOOR</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>20</Cost>
+      <Talents>
+        <Key>TOUGH</Key>
+        <Key>BLOIMP</Key>
+        <Key>EXTRACK</Key>
+        <Key>LANDPROV</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>25</Cost>
+      <Talents>
+        <Key>HEROICRES</Key>
+        <Key>SOFTSP</Key>
+        <Key>DEDI</Key>
+        <Key>NOSAFIMP</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+        </Direction>
+      </Directions>
+    </TalentRow>
+  </TalentRows>
+  <AddlCareerSkills>
+    <Type />
+  </AddlCareerSkills>
+</Specialization>

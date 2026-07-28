@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<Vehicle xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>YX225GAVW</Key>
+  <Name>TX-225 GAVw "Occupier" Combat Assault Tank</Name>
+  <Description>[H3]TX-225 GAVw "Occupier" Combat Assault Tank[h3]
+Rothana Heavy Engineering's TX-225 GAVw assault tanks are the Imperial Army's premier light urban combat vehicles.  These rugged vehicles can be found in mechanized infantry divisions and the Imperial Stormtrooper Corps, where they fill a much-needed support and patrol role in the Empire's order of battle.  Typically deployed in occupied cities and Imperial military facilities rather than on the front lines, they are a common sight in urban centers with high amounts of unrest.  Remarkably versatile, Occupiers are able to fight, provide supporting fire, and carry troops and cargo with equal ease.
+[P]Small and simple, these vehicles are roughly the size of a heavy speeder truck.  They have an armored, wedge-shaped forward crew compartment that holds the three-person crew in extremely cramped conditions.  Aft of the crew compartment is a long, flat truck bed that can carry light cargoes or a squad of troopers.  Thanks to their tracks and responsive drivetrain, these tanks can stop, turn, and maneuver in incredibly tight quarters.  Heavily armed for vehicles of their class, GAVw tanks carry a pair of light blaster cannons mounted forward in the reinforced bow and twinned medium lasers mounted on port and starboard sponsons.  In addition, a light repeating blaster can be mounted on a pintle near the main access hatch for anti-infantry and light anti-vehicle use in tight quarters.</Description>
+  <Source Page="122">Dawn of Rebellion</Source>
+  <Custom>AddedItem</Custom>
+  <Type>Armored Transport</Type>
+  <Categories>
+    <Category>Tracked Vehicle</Category>
+    <Category>Land Vehicle</Category>
+  </Categories>
+  <HP>2</HP>
+  <Price>45000</Price>
+  <Rarity>6</Rarity>
+  <Restricted>true</Restricted>
+  <WeaponModifiers>
+    <WeaponModifier>
+      <UnarmedName>Pintle-mounted light repeating blaster</UnarmedName>
+      <SkillKey>RANGHVY</SkillKey>
+      <Damage>11</Damage>
+      <Crit>3</Crit>
+      <Qualities>
+        <Quality>
+          <Key>AUTOFIRE</Key>
+        </Quality>
+        <Quality>
+          <Key>PIERCE</Key>
+          <Count>1</Count>
+        </Quality>
+      </Qualities>
+      <VehicleWeaponProperties>
+        <FiringArcs>
+          <Fore>true</Fore>
+          <Aft>true</Aft>
+          <Port>true</Port>
+          <Starboard>true</Starboard>
+          <Dorsal>true</Dorsal>
+        </FiringArcs>
+      </VehicleWeaponProperties>
+      <VehicleWeaponCount>1</VehicleWeaponCount>
+      <RangeValue>wrLong</RangeValue>
+      <Range>Long</Range>
+    </WeaponModifier>
+  </WeaponModifiers>
+  <Crew>One vehicle commander, one driver, one gunner</Crew>
+  <EncumbranceCapacity>35</EncumbranceCapacity>
+  <Silhouette>3</Silhouette>
+  <Speed>2</Speed>
+  <Handling>-1</Handling>
+  <Armor>3</Armor>
+  <HullTrauma>20</HullTrauma>
+  <SystemStrain>22</SystemStrain>
+  <VehicleWeapons>
+    <VehicleWeapon>
+      <FiringArcs>
+        <Fore>true</Fore>
+      </FiringArcs>
+      <Location>Starboard</Location>
+      <Qualities>
+        <Quality>
+          <Key>LINKED</Key>
+          <Count>1</Count>
+        </Quality>
+      </Qualities>
+      <Key>LASERMED</Key>
+    </VehicleWeapon>
+    <VehicleWeapon>
+      <FiringArcs>
+        <Fore>true</Fore>
+      </FiringArcs>
+      <Location>Port</Location>
+      <Qualities>
+        <Quality>
+          <Key>LINKED</Key>
+          <Count>1</Count>
+        </Quality>
+      </Qualities>
+      <Key>LASERMED</Key>
+    </VehicleWeapon>
+    <VehicleWeapon>
+      <FiringArcs>
+        <Fore>true</Fore>
+      </FiringArcs>
+      <Location>Forward</Location>
+      <Qualities>
+        <Quality>
+          <Key>LINKED</Key>
+          <Count>1</Count>
+        </Quality>
+      </Qualities>
+      <Key>BLASTCANLT</Key>
+    </VehicleWeapon>
+  </VehicleWeapons>
+  <SensorRange>Close</SensorRange>
+</Vehicle>

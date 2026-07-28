@@ -1,0 +1,178 @@
+<?xml version="1.0"?>
+<Specialization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>HOTSHOT1.0</Key>
+  <Name>Hotshot (reSpecialized) 1.0</Name>
+  <Description>[H4]Hotshot (Respec1.0)[h4]
+[B]HOT SHOT - NEED FOR SPEED[b][BR]
+[B]At a Glance[b][BR]
+The Hotshot is the human embodiment of “brightest stars burn fastest,” - The Hotshot is meant to be flashy, effective, and most importantly, risk-oriented. They will take down the bad guy or die trying, or both. They have the highest highs and the lowest lows of all Pilots, and excel when they’re on a hot streak.[BR]
+[B]All-in or Hybrid?[b][BR]
+½ at mastering piloting a craft, ¼  at using said craft to blast the enemy to little pieces, ¼ Tempting Fate[BR]
+[B]What Should it be the Best At?[b][BR]
+Piloting, they should outclass nearly every other pilot in the game in raw skill.[BR]
+Taking risks to defeat the enemy.[BR]
+[B]What should it be just “good” at?[b][BR]
+General flying[BR]
+High-speed antics[BR]
+Keeping their cool in high-stress situations[BR]
+[B]Specs for Comparison / Inspiration[b][BR]
+[I]Blockade Runner[i](Generally as evasive, but only because of significant skill difference and not because of talents that make them harder to hit)[BR]
+[I]Racer[i](All about going fast and being effective. Racers are all going fast and avoiding certain death, not about ensuring others’ certain death)[BR]
+[B]Media Touchstones[b][BR]
+Luke Skywalker[BR]
+Wedge Antilles[BR]
+Anakin Skywalker (minus force stuff)[BR]
+Jeff “Joker” Moreau (Mass Effect)[BR]
+[I]updated 12/11/2025[i]
+
+</Description>
+  <Source>reSpecialized Project</Source>
+  <Custom>AddedItem</Custom>
+  <CareerSkills>
+    <Key>COOL</Key>
+    <Key>COORD</Key>
+    <Key>PILOTPL</Key>
+    <Key>PILOTSP</Key>
+  </CareerSkills>
+  <TalentRows>
+    <TalentRow>
+      <Cost>5</Cost>
+      <Talents>
+        <Key>SHORTCUT</Key>
+        <Key>HIGHGTRAIN</Key>
+        <Key>SKILLJOCK</Key>
+        <Key>GRIT</Key>
+      </Talents>
+      <Directions>
+        <Direction />
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>10</Cost>
+      <Talents>
+        <Key>SECCHANCE</Key>
+        <Key>GRIT</Key>
+        <Key>SHORTCUT</Key>
+        <Key>HIGHGTRAIN</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>15</Cost>
+      <Talents>
+        <Key>DEAD</Key>
+        <Key>HIGHGTRAIN</Key>
+        <Key>KOITURN</Key>
+        <Key>GRIT</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>20</Cost>
+      <Talents>
+        <Key>SECCHANCE</Key>
+        <Key>CORSEND</Key>
+        <Key>INTENSPRE</Key>
+        <Key>MANUOVER</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>25</Cost>
+      <Talents>
+        <Key>DEADIMP</Key>
+        <Key>CORSENDIMP</Key>
+        <Key>DEDI</Key>
+        <Key>SHOWBOAT</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+  </TalentRows>
+  <AddlCareerSkills>
+    <Type />
+  </AddlCareerSkills>
+</Specialization>

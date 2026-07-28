@@ -464,7 +464,7 @@ export function GmReferenceLibraryPanel() {
       forceLoadingRef.current = true
       const ds = await fetchActiveDataset(supabase)
       const [powersRes, abilitiesRes] = await Promise.all([
-        supabase.from('ref_force_powers').select('key,name,description,min_force_rating').order('name'),
+        supabase.from('ref_force_powers').select('key,name,description,min_force_rating').eq('dataset_source', ds).eq('is_retired', false).order('name'),
         supabase.from('ref_force_abilities').select('key,name,description,power_key').eq('dataset_source', ds).eq('is_retired', false).order('name'),
       ])
       setForcePowers((powersRes.data ?? []) as RefForcePower[])

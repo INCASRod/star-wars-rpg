@@ -1,0 +1,174 @@
+<?xml version="1.0"?>
+<Specialization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>WINGMATE1.0</Key>
+  <Name>Wingmate (reSpecialized) 1.02</Name>
+  <Description>[H4]Wingmate (Respec 1.0)[h4]
+[B]WINGMATE—Pilot Replacement[b][BR]
+[B]At a Glance[b][BR]
+The Wingmate is the ultimate flying support tree. They keep their head on a swivel to make sure their allies are prepared for danger and ready for the next sortie.[BR]
+[B]All-in or Hybrid?[b][BR]
+⅔  Piloting Generalist ⅓ Space Piloting Support[b][BR]
+[B]What Should it be the Best At?[b][BR]
+Defending allies in space combat[BR]
+[B]What should it be just “good” at?[b][BR]
+Piloting Space Generalist[BR]
+Dogfighting[BR]
+Initiative[BR]
+[B]Specs for Comparison / Inspiration[b][BR]
+[I]Pilot (RAW)[i](The Wingmate maintains many of its core elements, but doesn't go to the same extremes with all of them, specially top speed and damage output)[BR]
+[I]Vanguard[i](Generally the idea of a “initiative"-forward bodyguard, but less emphasis on personal tankiness.)[BR]
+[I]Bodyguard[i](Very similar, using vigilance instead of perception)[BR]
+[B]Media Touchstones[b][BR]
+Wedge Antilles (A New Hope)[BR]
+Coran Horn (Rogue Squadron Books)[BR]</Description>
+  <Source>reSpecialized Project</Source>
+  <Custom>AddedItem</Custom>
+  <CareerSkills>
+    <Key>CHARM</Key>
+    <Key>GUNN</Key>
+    <Key>PILOTSP</Key>
+    <Key>VIGIL</Key>
+  </CareerSkills>
+  <TalentRows>
+    <TalentRow>
+      <Cost>5</Cost>
+      <Talents>
+        <Key>GRIT</Key>
+        <Key>GALMAP</Key>
+        <Key>SKILLJOCK</Key>
+        <Key>ENCWORD</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>10</Cost>
+      <Talents>
+        <Key>FULLTH</Key>
+        <Key>DEFDRI</Key>
+        <Key>SITAWARE</Key>
+        <Key>LIGHMOOD</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>15</Cost>
+      <Talents>
+        <Key>SKILLJOCK</Key>
+        <Key>GRIT</Key>
+        <Key>MATHSPEE</Key>
+        <Key>CORESLIP</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>20</Cost>
+      <Talents>
+        <Key>FULLTHIMP</Key>
+        <Key>DEAD</Key>
+        <Key>TRICK</Key>
+        <Key>CORSLIIMP</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>25</Cost>
+      <Talents>
+        <Key>DEDI</Key>
+        <Key>BRI</Key>
+        <Key>MASPIL</Key>
+        <Key>BREOFF</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+  </TalentRows>
+  <AddlCareerSkills>
+    <Type />
+  </AddlCareerSkills>
+</Specialization>

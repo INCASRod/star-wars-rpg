@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<Species xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>MELITTOS</Key>
+  <Name>REMOVE Melittos</Name>
+  <Description>REMOVE</Description>
+  <Source Page="21">Cyphers and Masks</Source>
+  <Custom>AddedItem</Custom>
+  <StartingChars>
+    <Brawn>3</Brawn>
+    <Agility>2</Agility>
+    <Intellect>2</Intellect>
+    <Cunning>2</Cunning>
+    <Willpower>1</Willpower>
+    <Presence>2</Presence>
+  </StartingChars>
+  <StartingAttrs>
+    <WoundThreshold>9</WoundThreshold>
+    <StrainThreshold>11</StrainThreshold>
+    <Experience>100</Experience>
+  </StartingAttrs>
+  <SkillModifiers>
+    <SkillModifier>
+      <Key>PERC</Key>
+      <RankStart>1</RankStart>
+    </SkillModifier>
+  </SkillModifiers>
+  <OptionChoices>
+    <OptionChoice>
+      <Key>MELITTOSCH1</Key>
+      <Name>Sightless Vision</Name>
+      <Options>
+        <Option>
+          <Key>MELITTOSCH1OP1</Key>
+          <Name>Sightless Vision</Name>
+          <Description>Melittos can perceive their surroundings without needing light, and they never suffer penalties on combat or Perception checks due to darkness or other environmental factors that affect vision.</Description>
+        </Option>
+      </Options>
+    </OptionChoice>
+    <OptionChoice>
+      <Key>MELITTOSCH2</Key>
+      <Name>Reliant on Toxins</Name>
+      <Options>
+        <Option>
+          <Key>MELITTOSCH2OP1</Key>
+          <Name>Reliant on Toxins</Name>
+          <Description>Melittos require the toxins of their native atmosphere to live; offworld, they gain free special respirators to emulate the conditions of their homeworld. They treat standard planetary air compisition as corrosive atmosphere with rating 6 (see page 288 of the [B]Age of Rebellion[b] Core Rulebook).</Description>
+        </Option>
+      </Options>
+    </OptionChoice>
+  </OptionChoices>
+</Species>

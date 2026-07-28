@@ -1,0 +1,177 @@
+<?xml version="1.0"?>
+<Specialization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>DEMOLITIONRES</Key>
+  <Name>Demolitionist (reSpecialized) 1.2</Name>
+  <Description>[H4]Demolitionist (reSpecialized)[h4]
+[B]DEMOLITIONIST - NEVER STOP BLOWING UP[b][BR]
+[B]At a Glance[b][BR]
+The Demolitionist is the specialist - the safecracker, the trapmaker, the walking stick of dynamite. They often fulfil technical roles on the team, but whatever they do, they do it with a bang.[BR]
+[B]All-in or Hybrid?[b][BR]
+⅘  Explosives and associated Utility, ⅕ unrelated technical utilityBR]
+[B]What Should it be the Best At?[b][BR]
+Explosives as a Tool, Explosives as Weapons[BR]
+[B]What should it be just “good” at?[b][BR]
+Skullduggery[BR]
+Mechanics[BR]
+Technical Tasks[BR]
+[B]Specs for Comparison / Inspiration[b][BR]
+[I]Sapper[i][BR]
+[I]Heavy[i][BR]
+[I]Saboteur[i][BR]
+[B]Media Touchstones[b][BR]
+Heist Movie Safecrackers[BR]
+Ank Parako (Star Wars Outlaws)[BR]
+Bomb Voyage (The Incredibles)[BR]
+Vinny Santorini (Atlantis: The Lost Empire)[BR]
+The Evil Midnight Bomber What Bombs at Midnight (The Tick)[BR]
+Updated 12/10/2025</Description>
+  <Source>reSpecialized Project</Source>
+  <Custom>AddedItem</Custom>
+  <CareerSkills>
+    <Key>COMP</Key>
+    <Key>COOL</Key>
+    <Key>MECH</Key>
+    <Key>SKUL</Key>
+  </CareerSkills>
+  <TalentRows>
+    <TalentRow>
+      <Cost>5</Cost>
+      <Talents>
+        <Key>STEADYNERVES</Key>
+        <Key>GRIT</Key>
+        <Key>PWRBLST</Key>
+        <Key>TOUGH</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction />
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>10</Cost>
+      <Talents>
+        <Key>IMPDET</Key>
+        <Key>HITTHEDECK</Key>
+        <Key>STEADYNERVES</Key>
+        <Key>STRONG</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>15</Cost>
+      <Talents>
+        <Key>INVENT</Key>
+        <Key>HITTHEDECKIMP</Key>
+        <Key>ENDUR</Key>
+        <Key>PWRBLST</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>20</Cost>
+      <Talents>
+        <Key>IMPDETIMP</Key>
+        <Key>STENERIMP</Key>
+        <Key>GRIT</Key>
+        <Key>MASGREN</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>25</Cost>
+      <Talents>
+        <Key>IMPDETSUP</Key>
+        <Key>EXPLOSIVESURPRISE</Key>
+        <Key>DEDI</Key>
+        <Key>MAKIDOOR</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+  </TalentRows>
+  <AddlCareerSkills>
+    <Type />
+  </AddlCareerSkills>
+</Specialization>

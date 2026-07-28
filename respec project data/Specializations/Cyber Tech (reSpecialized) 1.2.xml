@@ -1,0 +1,175 @@
+<?xml version="1.0"?>
+<Specialization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>CYBTECRES</Key>
+  <Name>Cyber Tech (reSpecialized) 1.2</Name>
+  <Description>[H4]Cyber Tech (reSpecialized)[h4]
+[B]CYBER TECH—IMPROVING ON ORGANIC[b][BR]
+[B]At a Glance[b][BR]
+The cyberneticist is an interesting combination of healer and technician, usually culminating in a self-sufficient, highly specialized fusion of sentient and durasteel.[BR]
+[B]All-in or Hybrid?[b][BR]
+⅖ Cybernetics and crafting-oriented tech, ⅖ Individual cybernetics and superiority, ⅕ Medicine and Surgery[BR]
+[B]What Should it be the Best At?[b][BR]
+Crafting Cybernetics[BR]
+Installing Cybernetics[BR]
+Wielding Cybernetics[BR]
+Super-Sentient Feats of Excellence[BR]
+[B]What should it be just “good” at?[b][BR]
+Medicine[BR]
+General Tech[BR]
+[B]Specs for Comparison / Inspiration[b][BR]
+[I]Shipwright[i](Focus on Crafting, but less all-in than the Shipwright happens to be)[BR]
+[I]Alchemist[i](Medical-focused crafting spec, with a rough split between crafting and medicine. Pretty analogous)[BR]
+[I]Modder[i](Strangely, it feels similar because the Cyber builds one thing, usually themselves, into a weapon to surpass metal gear. Much like the modder does a gun or their whip)[BR]
+[B]Media Touchstones[b][BR]
+Thundercat (Book of Boba Fett)[BR]
+Cornelius Evazan from Mos Eisley (and at least 12 other systems) (Episode IV: A New Hope)[BR]
+Viktor Vector (Cyberpunk 2077)[BR]
+Updated 12/10/2025</Description>
+  <Source>reSpecialized Project</Source>
+  <Custom>AddedItem</Custom>
+  <CareerSkills>
+    <Key>ATHL</Key>
+    <Key>MECH</Key>
+    <Key>MED</Key>
+    <Key>VIGIL</Key>
+  </CareerSkills>
+  <TalentRows>
+    <TalentRow>
+      <Cost>5</Cost>
+      <Talents>
+        <Key>TOUGH</Key>
+        <Key>CYBERNETICIST</Key>
+        <Key>MOREMACH</Key>
+        <Key>ENGREDUN</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction />
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>10</Cost>
+      <Talents>
+        <Key>STROFLES</Key>
+        <Key>SURG</Key>
+        <Key>OVERCHARGE</Key>
+        <Key>ENERGTRANS</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>15</Cost>
+      <Talents>
+        <Key>MOREMACH</Key>
+        <Key>EYEDET</Key>
+        <Key>GRIT</Key>
+        <Key>ENERSIPH</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>20</Cost>
+      <Talents>
+        <Key>STRFLEIMP</Key>
+        <Key>MASTCYBE</Key>
+        <Key>MACMANIMP</Key>
+        <Key>MOREMACH</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>25</Cost>
+      <Talents>
+        <Key>STRFLESUP</Key>
+        <Key>DEDI</Key>
+        <Key>OVERCHARGEIMP</Key>
+        <Key>OVERCHARGESUP</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+        </Direction>
+      </Directions>
+    </TalentRow>
+  </TalentRows>
+  <AddlCareerSkills>
+    <Type />
+  </AddlCareerSkills>
+</Specialization>

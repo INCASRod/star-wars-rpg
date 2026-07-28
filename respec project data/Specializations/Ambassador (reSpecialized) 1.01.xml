@@ -1,0 +1,178 @@
+<?xml version="1.0"?>
+<Specialization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>AMBASSADORRES</Key>
+  <Name>Ambassador (reSpecialized) 1.01</Name>
+  <Description>[H4]Ambassador (reSpecialized)[h4]
+[B]AMBASSADOR—PITHY DESCRIPTION[b][BR]
+[B]At a Glance[b][BR]
+The ambassador is the “all positive, classic diplomat" character. They are charming, shrewd, and knowledgeable. Also skillful orators, the ambassador uses the motivations of would-be allies to win them to their cause[BR]
+[B]All-in or Hybrid?[b][BR]
+⅓ General Charm (and Leadership) ⅓ Negotiation ⅙ Social Defense ⅙ Charm as a Tool
+[BR]
+[B]What Should it be the Best At?[b][BR]
+Making and using friends for the greater good of their government[BR]
+Being Charming[BR]
+[B]What should it be just “good” at?[b][BR]
+Leadership[BR]
+Being hard to Rattle[BR] 
+Negotiation[BR]
+[B]Specs for Comparison / Inspiration[b][BR]
+[I]Republic Representative[i](The Rep-Rep is more a pure negotiator, much more like the Arbiter in that sense. Ambassador has to be an equal opportunity schmoozer)[BR]
+[I]Senator[i](Senator is structured much more like Politico, playing into Deception and Negotiation than a pure charming character. It dipping its toe into leadership and mass combat is more of a nod to the Senator’s role.).
+[I]Arbiter[i](Pure Negotiation. With some odd enforcer abilities. The big difference is that of a mediator vs an interested party).
+[I]Charmer[i](Probably the closest in overall social structure, using all the tools of Presence to win friends and allies).
+[B]Media Touchstones[b][BR]
+Leia Organa (Star Wars: Rebels)[BR]
+Bail Organa (Star Wars: Rebels)[BR]
+Padme Amidala (Star Wars: Clone Wars)[BR]
+Londo Mollari (Babylon 5)[BR]
+Delenn (Babylon 5)[BR]
+[I]updated 12/10/2025[i]</Description>
+  <Source>reSpecialized Project</Source>
+  <Custom>AddedItem</Custom>
+  <CareerSkills>
+    <Key>CHARM</Key>
+    <Key>CORE</Key>
+    <Key>DISC</Key>
+    <Key>NEG</Key>
+  </CareerSkills>
+  <TalentRows>
+    <TalentRow>
+      <Cost>5</Cost>
+      <Talents>
+        <Key>CONF</Key>
+        <Key>CONGENIAL</Key>
+        <Key>GRIT</Key>
+        <Key>SAVVY</Key>
+      </Talents>
+      <Directions>
+        <Direction />
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>10</Cost>
+      <Talents>
+        <Key>INSPRHET</Key>
+        <Key>RESPKIND</Key>
+        <Key>NOBFOOL</Key>
+        <Key>GRIT</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>15</Cost>
+      <Talents>
+        <Key>KILL</Key>
+        <Key>INTENSPRE</Key>
+        <Key>ESCACLAU</Key>
+        <Key>CONGENIAL</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>20</Cost>
+      <Talents>
+        <Key>INSPRHET</Key>
+        <Key>ACALLAID</Key>
+        <Key>WORKLIKECHARM</Key>
+        <Key>CONCOPT</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>25</Cost>
+      <Talents>
+        <Key>INSPRHETIMP</Key>
+        <Key>DEDI</Key>
+        <Key>GREAGOOD</Key>
+        <Key>UNITPEOP</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+  </TalentRows>
+  <AddlCareerSkills>
+    <Type />
+  </AddlCareerSkills>
+</Specialization>

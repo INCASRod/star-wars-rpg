@@ -1,0 +1,178 @@
+<?xml version="1.0"?>
+<Specialization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>OUTLAWTECHRES</Key>
+  <Name>Outlaw Tech (reSpecialized) 1.2</Name>
+  <Description>[H4]Outlaw Tech (reSpecialized)[h4]
+[B]OUTLAW TECH[b][BR]
+[B]At a Glance[b][BR]
+In a shell nut, the Outlaw Tech is a jack of all technical prowess, with a focus on shady or otherwise dangerous aftermarket modifications, and it's very adept at navigating the criminal underworld to get them.[BR]
+[B]All-in or Hybrid?[b][BR]
+⅓ Tech generalist, ⅓ “Dangerous Improvement", ⅓ Underworld Fixing[BR]
+[B]What Should it be the Best At?[b][BR]
+Pushing weapons and gear in unexpected directions, often dangerously directions[BR]
+Securing Materials and equipment for these illegal and nefarious purposes[BR]
+[B]What should it be just “good” at?[b][BR]
+Mechanics, generally[BR]
+Underworld fixing[BR]
+[B]Specs for Comparison / Inspiration[b][BR]
+[I]Scoundrel[i](Has a bit of the underworld fixxer in common, but otherwise kind of the the generalist vibe)[BR]
+[I]Mechanic[i](Both have significant overlap in terms of mechanic generalist, but mechanic cares more about ship-based stuff))[BR]
+[I]Scavenger[i] (Cares about pushing stuff to their limit, but unlike the OT, cares about “stuff being broken” and that being a core of the gameplay loop)[BR]
+[B]Media Touchstones[b][BR]
+Jinx (League of Legends: Arcane)[BR]
+Tali'Zorah vas Normandy (Mass Effect)[BR]
+MacGyver (MacGyver)[BR]
+B.A. Baracus (The A-Team)[BR]
+Updated 12/10/2025</Description>
+  <Source>reSpecialized Project</Source>
+  <Custom>AddedItem</Custom>
+  <CareerSkills>
+    <Key>EDU</Key>
+    <Key>MECH</Key>
+    <Key>SW</Key>
+    <Key>UND</Key>
+  </CareerSkills>
+  <TalentRows>
+    <TalentRow>
+      <Cost>5</Cost>
+      <Talents>
+        <Key>FINETUN</Key>
+        <Key>INVENT</Key>
+        <Key>UTINNI</Key>
+        <Key>STRSMART</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction />
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>10</Cost>
+      <Talents>
+        <Key>EXCEEDSPEC</Key>
+        <Key>CREATDES</Key>
+        <Key>SOLREP</Key>
+        <Key>FRLOW</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>15</Cost>
+      <Talents>
+        <Key>GRIT</Key>
+        <Key>CREATDES</Key>
+        <Key>CONT</Key>
+        <Key>MAKEDANG</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>20</Cost>
+      <Talents>
+        <Key>EXCEEDSPECIMP</Key>
+        <Key>TOUGH</Key>
+        <Key>INVENT</Key>
+        <Key>TALKTALK</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>25</Cost>
+      <Talents>
+        <Key>EXCEEDSPECSUP</Key>
+        <Key>DEDI</Key>
+        <Key>JULINE</Key>
+        <Key>MAKDANIMP</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+  </TalentRows>
+  <AddlCareerSkills>
+    <Type />
+  </AddlCareerSkills>
+</Specialization>

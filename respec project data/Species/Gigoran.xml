@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<Species xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>GIGORAN</Key>
+  <Name>Gigoran</Name>
+  <Description>[H4]Gigoran[h4]
+Gigorians are massive, burly primates with long, pale fur.  Often sold into slavery, Gigorians remain peaceful as long as they are with family.  However, should their kin ever be threatened, there is no sacrifice too great or foe too terrifying to stop Gigorians from trying to help.  Their huge form and powerful musculature allow them to carry weapons larger than many humans.  Those Gigorians who wield them delight in the massive firepower they can project against their foes.
+[P][B]Physiology:[b] Well over two meters of sinew and fur each, Gigorians are often mistaken for Wookiees or wampas.  Their long, flowing hair is typically a pale shade of white, cream, gold, or even blue.  their long torso and arms are at odds with their relatively short, stumpy legs.  Nevertheless, their limbs are thick and powerful, ending in massive paws.  The hair atop their head often grows long, sometimes obscuring their dark eyes, and it tends to come in blackish streaks.
+
+[P]Gigorians have an abridged chin, making their face appear short and wide.  Many wear small, rectangular breathing masks to aid in respiration in warmer climates, with chest mounted devices to better adjust local atmospheres to their respiratory systems.
+[P][B]Society:[b] Despite their imposing nature, Gigorians are gentle and affectionate unless pushed to violence.  They live in deep caves in the snowy mountains of Gigor, organized into home-clans of about fifty individuals, each led by its most skilled hunter.  Home-clans rarely live close enough to each other to interact.  when they do interact, the occasion is often marked with month-long feasts and weddings to promote genetic diversity.  Gigorians live a simple existence hunting icetrompers in the mountain valleys and gathering edible berries, mosses, and molds from their home caves.  Gigorians are curious to a fault, making them easy marks for unscrupulous offworlders.
+[P]Offworld, Gigorians are interested in everything around them.  They are particularly compelled by any shiny bit of technology and can stare at random blinking lights for hours.  Pack instinct draws Gigorians towards friendly beings, to whom they offer their strength in exchange for camaraderie.  Gigorians quickly accept allies, eventually defending them as if they were family.
+[P][B]Homeworld:[b] Despite the fact that slavers often sold them in the Mytaranor sector as Wookiees, Gigorians are a distinctly separate species from Gigor, a frigid planet in the Outer rim's Tynquay sector.  The snow-covered world is a rocky and mountainous place where only the hardiest specimens of life survive for long.  The caves that riddle he mountains are home to Gigorians, jexxel cats, and snow shredder bats.  Deep within many caves, hot springs enable edible molds and mushrooms to thrive.  The Valleys between mountains are filled with hardy shrubs, mosses, and coniferous trees, providing an ecosystem for rodent-like ice scrabblers, giant icetrompers, and even jakobeasts.
+[P][B]Language:[b] A confounding mixture of creaks, groans, grunts, whistles and chirps make up the Gigorians' native language, which gives most protocol droids fits.  However, many Gigorians learn to speak or at least understand Gigorians if taken off their homeworld.
+
+[P][B]Life under the Empire:[b] Most Gigorians away from their homeworld live in slavery or on the run.  Those with family often find a way to resume their peaceful, simple lifestyle.  Vengeance tends to consume those separated from their home-clan, driving them to lives of violence as mercenaries, resistance fighters, or bounty hunters.  Others flail for purpose until they make friends and grow close enough to consider them family.  Gigorians who do so are apt to let their adopted family take the lead, often into work as smugglers, entrepreneurs, con artists, or the like.
+
+[H4]That's No Wookiee[h4]
+Early surveys of Gigor listed it as uninhabited; Gigorans went undiscovered by the Republic until a Weequay pirate in hiding stumbled across the lumbering natives. Sensing opportunity, the pirate captain tricked and entire home-clan into slavery, selling them to an Imperial labor camp as rare "Snow Wookiees." Other slavers duplicated his ploy, and since Gigoran home-clans rarely interact, they continued to fall for it. Eventually, the Empire caught on and deployed a garrison to Gigor. Imperials enslave entire home-clans daily, shipping them to Imperial construction projects across the galaxy.</Description>
+  <Source Page="94">Dawn of Rebellion</Source>
+  <Custom>AddedItem</Custom>
+  <StartingChars>
+    <Brawn>3</Brawn>
+    <Agility>2</Agility>
+    <Intellect>1</Intellect>
+    <Cunning>2</Cunning>
+    <Willpower>2</Willpower>
+    <Presence>2</Presence>
+  </StartingChars>
+  <StartingAttrs>
+    <WoundThreshold>12</WoundThreshold>
+    <StrainThreshold>10</StrainThreshold>
+    <Experience>100</Experience>
+  </StartingAttrs>
+  <SkillModifiers>
+    <SkillModifier>
+      <Key>BRAWL</Key>
+      <RankStart>1</RankStart>
+    </SkillModifier>
+  </SkillModifiers>
+  <OptionChoices>
+    <OptionChoice>
+      <Key>GIGORANCH1</Key>
+      <Name>Cold</Name>
+      <Options>
+        <Option>
+          <Key>GIGORANCH1OP1</Key>
+          <Name>Adapted to the Cold</Name>
+          <Description>Gigorians remove [SETBACK] imposed due to cold or snow-filled conditions</Description>
+        </Option>
+      </Options>
+    </OptionChoice>
+    <OptionChoice>
+      <Key>GIGORANCH2</Key>
+      <Name>Low-Tech</Name>
+      <Options>
+        <Option>
+          <Key>GIGORANCH2OP1</Key>
+          <Name>Low-Tech</Name>
+          <Description>Gigorians upgrade the difficulty of mechanics cheks involving advanced technology once.</Description>
+        </Option>
+      </Options>
+    </OptionChoice>
+  </OptionChoices>
+</Species>

@@ -1,0 +1,173 @@
+<?xml version="1.0"?>
+<Specialization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>SQUADLEADERRES</Key>
+  <Name>Squadron Leader (reSpecialized) 1.0</Name>
+  <Description>[H4]Squadron Leader (reSpecialized)[h4]
+[B]SQUADRON LEADER—”WAIT FOR MY SIGNAL”[b][BR]
+[B]At a Glance[b][BR]
+The Squadron Leader is the tip of the spear, the first to call the attack, the retreat, evasive maneuvers, etc. [BR]
+They make the call when there's a shot to be made.[BR]
+[B]All-in or Hybrid?[b][BR]
+½  Leadership ½ Squad-Based piloting[BR]
+[B]What Should it be the Best At?[b][BR]
+Squad Based Piloting[BR]
+[B]What should it be just “good” at?[b][BR]
+Armed Conflict[BR]
+Piloting[BR]
+Dogfighting[BR]
+[B]Specs for Comparison / Inspiration[b][BR]
+[I]Wingmate[i](Definitely a party-focused pilot, but a good bit different. The Wingmate covers for their allies, whereas the Leader managers the action economy)[BR]
+[I]Warden[i](The Warden is a defensive coercion character, which is pretty close. Obviously the Warden is more of a martial artist)[BR]
+[I]Instructor[i](The Ground-level version of the Wingmate, all about managing the action economy)[BR]
+[I]Merc Soldier[i](definitely the “warrior who leads", which is about where the Squadron lives)[BR]
+[B]Media Touchstones[b][BR]
+Garvin Dreis “Red Leader” (ANH)[BR]
+Wedge Antilles (ESB and ROTJ)[BR]
+Antoc Merrick (Rogue One)[BR]</Description>
+  <Source>reSpecialized Project</Source>
+  <Custom>AddedItem</Custom>
+  <CareerSkills>
+    <Key>GUNN</Key>
+    <Key>MECH</Key>
+    <Key>PILOTPL</Key>
+    <Key>PILOTSP</Key>
+  </CareerSkills>
+  <TalentRows>
+    <TalentRow>
+      <Cost>5</Cost>
+      <Talents>
+        <Key>GRIT</Key>
+        <Key>CONF</Key>
+        <Key>COM</Key>
+        <Key>DEFDRI</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction />
+        <Direction />
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>10</Cost>
+      <Talents>
+        <Key>FLDCOMM</Key>
+        <Key>CONF</Key>
+        <Key>SITAWARE</Key>
+        <Key>GRIT</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>15</Cost>
+      <Talents>
+        <Key>COM</Key>
+        <Key>FORMONME</Key>
+        <Key>FULLSTOP</Key>
+        <Key>ATTADELT</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>20</Cost>
+      <Talents>
+        <Key>FLDCOMMIMP</Key>
+        <Key>MASLEAD</Key>
+        <Key>TRICK</Key>
+        <Key>DEFDRI</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>25</Cost>
+      <Talents>
+        <Key>WINGCOMM</Key>
+        <Key>MAKITCOU</Key>
+        <Key>DEDI</Key>
+        <Key>BRI</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+  </TalentRows>
+  <AddlCareerSkills>
+    <Type />
+  </AddlCareerSkills>
+</Specialization>

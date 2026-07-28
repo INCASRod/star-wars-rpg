@@ -1,0 +1,176 @@
+<?xml version="1.0"?>
+<Specialization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>HEAVYRES</Key>
+  <Name>Heavy (reSpecialized) 1.2</Name>
+  <Description>[H4]Heavy (reSpecialized)[h4]
+[B]HEAVY - WALL OF MEAT AND BULLETS[b][BR]
+[B]At a Glance[b][BR]
+The Heavy lays down the heavy fire, heavy armament, and does it while being a veritable wall of meat.[BR]
+They are by far, the highest raw damage output of all Hired Guns, but probably every.[BR]
+[B]All-in or Hybrid?[b][BR]
+½ Tank, ½ Spank. Very little utility outside of that.[BR]
+[B]What Should it be the Best At?[b][BR]
+Using heavy weaponry (mostly blasters)[BR]
+Carrying Heavy Things[BR]
+Soaking Damage[BR]
+[B]What should it be just “good” at?[b][BR]
+Ship-based Combat[BR]
+[B]Specs for Comparison / Inspiration[b][BR]
+[I]Gunner[i](Less about taking out ships larger than their own/whittling them down. More about generic firepower superiority.)[BR]
+[I]Rigger[i](Applies personal tankiness, rather than shipboard tankiness)[BR]
+[I]Vanguard[i](More about being an unmoving personal mortar than a “stick and move” dodge tank.)[BR]
+[B]Media Touchstones[b][BR]
+CT-782 “Hevy” (The Clone Wars)[BR]
+Paz Vizsla (The Mandalorian)[BR]
+Baze Malbus (Rogue One)[BR]
+Wrecker (The Bad Batch)[BR]
+Wrex (Mass Effect)[BR]
+Updated 12/10/2025</Description>
+  <Source>reSpecialized Project</Source>
+  <Custom>AddedItem</Custom>
+  <CareerSkills>
+    <Key>GUNN</Key>
+    <Key>PERC</Key>
+    <Key>RANGHVY</Key>
+    <Key>RESIL</Key>
+  </CareerSkills>
+  <TalentRows>
+    <TalentRow>
+      <Cost>5</Cost>
+      <Talents>
+        <Key>SUPPRFIRE</Key>
+        <Key>BURLY</Key>
+        <Key>TOUGH</Key>
+        <Key>DURA</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction />
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>10</Cost>
+      <Talents>
+        <Key>BOLSTER</Key>
+        <Key>LOCK&amp;LOAD</Key>
+        <Key>SIDESTEP</Key>
+        <Key>GRIT</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>15</Cost>
+      <Talents>
+        <Key>WHEREITHURTS</Key>
+        <Key>SUPPRFIRE</Key>
+        <Key>DURA</Key>
+        <Key>BURLY</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>20</Cost>
+      <Talents>
+        <Key>BOLSTER</Key>
+        <Key>TOUGH</Key>
+        <Key>OVERKILL</Key>
+        <Key>TOUGH</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>25</Cost>
+      <Talents>
+        <Key>RAINDEATH</Key>
+        <Key>SUPFIRIMP</Key>
+        <Key>DEDI</Key>
+        <Key>HEROICRES</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+  </TalentRows>
+  <AddlCareerSkills>
+    <Type />
+  </AddlCareerSkills>
+</Specialization>

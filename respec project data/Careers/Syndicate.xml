@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<Career xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>SYNDICATE</Key>
+  <Name>Syndicate</Name>
+  <Description>The Syndicate is the catch-all for anyone belonging to a criminal syndicate, whether that is a ruthless street brawler gang controlling turf, an empire of spicers and slavers, or even a clandestine order of assassins for hire.
+[P][B]What are the 3 pillars of the Career?[b]
+[P]Social Subterfuge &amp; Dominance
+[P]Enterprise
+[P]Underworld Mastery</Description>
+  <Source>reSpecialized Project</Source>
+  <Custom>AddedItem</Custom>
+  <CareerSkills>
+    <Key>COERC</Key>
+    <Key>COOL</Key>
+    <Key>DECEP</Key>
+    <Key>PERC</Key>
+    <Key>RANGLT</Key>
+    <Key>SKUL</Key>
+    <Key>SW</Key>
+    <Key>UND</Key>
+  </CareerSkills>
+  <Specializations>
+    <Key>CYBERSOLDIER</Key>
+    <Key>MAJORDOMO</Key>
+    <Key>OVERSEER</Key>
+    <Key>PITFIGHTER</Key>
+    <Key>POISONERSPEC</Key>
+    <Key>SPICEDEALER</Key>
+  </Specializations>
+  <Attributes />
+  <FreeRanks>4</FreeRanks>
+</Career>

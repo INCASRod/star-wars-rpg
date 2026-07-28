@@ -1,0 +1,177 @@
+<?xml version="1.0"?>
+<Specialization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>GADGET1.4</Key>
+  <Name>Gadgeteer (reSpecialized) 1.51</Name>
+  <Description>[H4]Gadgeteer (reSpecialized)[h4]
+[B]GADGETEER—CONNOISSEUR OF TECH[b][BR]
+[B]At a Glance[b][BR]
+Gadgeteers are masters of weapons and equipment used in the process of tracking, capturing, and eliminating their targets.[BR]
+[B]All-in or Hybrid?[b][BR]
+40% Weapon-agnostic Combat, 40% technologist, 20% imposing figure[BR]
+[B]What Should it be the Best At?[b][BR]
+Using a wide variety of weapons and excelling equally with all of them[BR]
+Making on-the-fly adjustment to armament.[BR]
+[B]What should it be just “good” at?[b][BR]
+Being Imposing[BR]
+General Mechanics[BR]
+[B]Specs for Comparison / Inspiration[b][BR]
+[I]Outlaw Tech[i][BR]
+[I]Modder[i][BR]
+[I]Armorer[i][BR]
+[I[Enforcer[i][BR]
+[I]Vanguard[i][BR]
+[B]Media Touchstones[b][BR]
+Boba Fett (Episode V: Empire Strikes Back)[BR]
+Cad Bane (The Clone Wars)[BR]
+Din Djarin (The Mandalorian)[BR]
+Jango Fett (Episode II: Attack of the Clones)[BR]
+</Description>
+  <Source>reSpecialized Project</Source>
+  <Custom>AddedItem</Custom>
+  <CareerSkills>
+    <Key>BRAWL</Key>
+    <Key>COERC</Key>
+    <Key>MECH</Key>
+    <Key>RANGLT</Key>
+  </CareerSkills>
+  <TalentRows>
+    <TalentRow>
+      <Cost>5</Cost>
+      <Talents>
+        <Key>TOUGH</Key>
+        <Key>INTIM</Key>
+        <Key>HOTSWAP</Key>
+        <Key>GEARHD</Key>
+      </Talents>
+      <Directions>
+        <Direction />
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction />
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>10</Cost>
+      <Talents>
+        <Key>ARM</Key>
+        <Key>QUICKDR</Key>
+        <Key>MASOFARM</Key>
+        <Key>ALWAPREP</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>15</Cost>
+      <Talents>
+        <Key>TOUGH</Key>
+        <Key>INTIM</Key>
+        <Key>STEADYAIM</Key>
+        <Key>MASARMIMP</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>20</Cost>
+      <Talents>
+        <Key>TARGACQU</Key>
+        <Key>TARACQIMP</Key>
+        <Key>TINK</Key>
+        <Key>HOTSWAP</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>25</Cost>
+      <Talents>
+        <Key>ARMIMP</Key>
+        <Key>CRIPV</Key>
+        <Key>DEDI</Key>
+        <Key>MASARMSUP</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+  </TalentRows>
+  <AddlCareerSkills>
+    <Type />
+  </AddlCareerSkills>
+</Specialization>

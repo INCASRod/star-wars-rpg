@@ -372,7 +372,7 @@ export function useCharacterData(characterId: string) {
           supabase.from('ref_item_descriptors').select('*'),
           supabase.from('ref_species').select('*'),
           supabase.from('character_force_abilities').select('*').eq('character_id', characterId),
-          supabase.from('ref_force_powers').select('*'),
+          supabase.from('ref_force_powers').select('*').eq('dataset_source', ds).eq('is_retired', false),
           supabase.from('ref_force_abilities').select('*').eq('dataset_source', ds).eq('is_retired', false),
           supabase.from('ref_weapon_qualities').select('*'),
           supabase.from('ref_item_attachments').select('*'),

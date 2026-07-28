@@ -1,0 +1,169 @@
+<?xml version="1.0"?>
+<Specialization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>BIGGAMEHRES</Key>
+  <Name>Big-Game Hunter (reSpecialized) 1.3</Name>
+  <Description>[H4]Big-Game Hunter (reSpecialized)[h4]
+[B]BIG-GAME HUNTER—KILLS BEASTS, WILL TRAVEL[b][BR]
+[B]At a Glance[b][BR]
+The Big Game Hunter is a hunter of beasts and master of their environment, and are exceptional marksman, and serves as useful guides in survival situations.[BR]
+[B]All-in or Hybrid?[b][BR]
+2/3 Beast-Related Combat, 1/3 Survivalism &amp; Related Utility[BR]
+[B]What Should it be the Best At?[b][BR]
+Killing Big and Dangerous Creatures[BR]
+[B]What should it be just “good” at?[b][BR]
+Sniping and Ranged Heavy Marksmanship[BR]
+Survivalism[BR]
+[B]Specs for Comparison / Inspiration[b][BR]
+[I]Hunter[i][BR]
+[I]Scholar[i][BR]
+[I]Survivalist[i][BR]
+[B]Media Touchstones[b][BR]
+Qyzen Fess (Star Wars: The Old Republic)[BR]
+Updated 12/10/2025</Description>
+  <Source>reSpecialized Project</Source>
+  <Custom>AddedItem</Custom>
+  <CareerSkills>
+    <Key>RANGHVY</Key>
+    <Key>STEAL</Key>
+    <Key>SURV</Key>
+    <Key>XEN</Key>
+  </CareerSkills>
+  <TalentRows>
+    <TalentRow>
+      <Cost>5</Cost>
+      <Talents>
+        <Key>STALK</Key>
+        <Key>EXHANDLER</Key>
+        <Key>HUNT</Key>
+        <Key>GATHERER</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction />
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction />
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>10</Cost>
+      <Talents>
+        <Key>SWIFT</Key>
+        <Key>HUNTERQUARRY</Key>
+        <Key>TOUGH</Key>
+        <Key>CUNNSNARE</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>15</Cost>
+      <Talents>
+        <Key>FROMSHAD</Key>
+        <Key>HUNTQIMP</Key>
+        <Key>HUNT</Key>
+        <Key>OUTDOOR</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>20</Cost>
+      <Talents>
+        <Key>HUNTSUP</Key>
+        <Key>GRIT</Key>
+        <Key>HUNTIMP</Key>
+        <Key>CONF</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>25</Cost>
+      <Talents>
+        <Key>DEDI</Key>
+        <Key>BRNGITDWN</Key>
+        <Key>SUPREF</Key>
+        <Key>KNOWPREY</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+  </TalentRows>
+  <AddlCareerSkills>
+    <Type />
+  </AddlCareerSkills>
+</Specialization>

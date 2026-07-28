@@ -1,0 +1,175 @@
+<?xml version="1.0"?>
+<Specialization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>MARAUDERRES</Key>
+  <Name>Marauder (reSpecialized) 1.2</Name>
+  <Description>[H4]Marauder (reSpecialized)[h4]
+[B]MARAUDER - LIVING BEAT STICK[b][BR]
+[B]At a Glance[b][BR]
+The Marauder is the master of hand to hand combat, king of killing, dishes out pain and shrugs it off in turn. If Star Wars has a Barbarian, it would be the Marauder.[BR]
+[B]All-in or Hybrid?[b][BR]
+4/5 Beats, 1/5 any other utility.[BR]
+[B]What Should it be the Best At?[b][BR]
+Beating face, and shrugging off damage[BR]
+Actively killing and incapacitating[BR]
+[B]What should it be just “good” at?[b][BR]
+Any specific kind of combat[BR]
+Survival[BR]
+Coercion[BR]
+[B]Specs for Comparison / Inspiration[b][BR]
+[I]Colossus[i](Utilizing some of the survivability tools without going that hard on being literally unkillable.)[BR]
+[I]Shi-cho Knight[i](Pulling from some of the “generalist fighter” aspects.)[BR]
+[I]Executioner[i](Executioner)[BR]
+[B]Media Touchstones[b][BR]
+Black Krrsantan (Book of Boba Fett)[BR]
+Drax (Guardians of the Galaxy)[BR]
+Rama (The Raid 2)[BR]
+Grog (Vox Machina)[BR]
+Updated 12/10/2025</Description>
+  <Source>reSpecialized Project</Source>
+  <Custom>AddedItem</Custom>
+  <CareerSkills>
+    <Key>COERC</Key>
+    <Key>MELEE</Key>
+    <Key>RESIL</Key>
+    <Key>SURV</Key>
+  </CareerSkills>
+  <TalentRows>
+    <TalentRow>
+      <Cost>5</Cost>
+      <Talents>
+        <Key>INTIM</Key>
+        <Key>TOUGH</Key>
+        <Key>LETHALBL</Key>
+        <Key>FERSTR</Key>
+      </Talents>
+      <Directions>
+        <Direction />
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>10</Cost>
+      <Talents>
+        <Key>TOUGH</Key>
+        <Key>DEFSTA</Key>
+        <Key>FERSTR</Key>
+        <Key>BLOOLUST</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>15</Cost>
+      <Talents>
+        <Key>JUGGERNAUT</Key>
+        <Key>LETHALBL</Key>
+        <Key>BLOOLUST</Key>
+        <Key>KILLERINSTINCT</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>20</Cost>
+      <Talents>
+        <Key>TOUGH</Key>
+        <Key>UNYIELD</Key>
+        <Key>ENDUR</Key>
+        <Key>FERSTR</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>25</Cost>
+      <Talents>
+        <Key>TOUGHIMP</Key>
+        <Key>SAVARESP</Key>
+        <Key>DEDI</Key>
+        <Key>KILORKILL</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+  </TalentRows>
+  <AddlCareerSkills>
+    <Type />
+  </AddlCareerSkills>
+</Specialization>

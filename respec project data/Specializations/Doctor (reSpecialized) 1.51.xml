@@ -1,0 +1,176 @@
+<?xml version="1.0"?>
+<Specialization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>DOCRES12</Key>
+  <Name>Doctor (reSpecialized) 1.51</Name>
+  <Description>[H4]Doctor (reSpecialized)[h4]
+
+[B]DOCTOR—DO NO HARM[b][BR]
+[B]At a Glance[b][BR]
+Doctors are the masters of conventional Medicine and healing. They also represent an education, sophistication, and moral purity that is lost on most in the outer reaches and in the underworld.[BR]
+[B]All-in or Hybrid?[b][BR]
+ 1/2 Healing, 1/8 Buffing, 3/8 General Non-Combat &amp; Knowledge Utility[BR]
+[B]What Should it be the Best At?[b][BR]
+Raw Healing Output[BR]
+Healing In Proper Medical Environments[BR]
+[B]What should it be just “good” at?[b][BR]
+Battlefield Medicine[BR]
+Incentivizing Peaceful Solutions[BR]
+Knowledge-Based Utility[BR]
+Medical-Based Buffs[BR]
+[B]Specs for Comparison / Inspiration[b][BR]
+[I]Medic[i](Should be better at critical injury management, and emergency stim usage, and combat).[BR]
+[I]Healer[i](Should be better at holistic healing, and Force protection. Probably the closest thing to a side grade to doctor).[BR]
+[I]Alchemist[i](Should be better at making medicine, obviously with Force influence, but worse at raw healing).[BR]
+[B]Media Touchstones[b][BR]
+Simon Tam (Firefly)[BR]
+Leonard McCoy (Star Trek)[BR]
+Dr. Franklin (Babylon 5)[BR] 
+Julian Bashir (Star Trek: Deep Space 9)[BR]
+“Doc” Kimble (Star Wars: The Old Republic)[BR]
+Updated 12/11/2025
+</Description>
+  <Source>reSpecialized Project</Source>
+  <Custom>AddedItem</Custom>
+  <CareerSkills>
+    <Key>COOL</Key>
+    <Key>EDU</Key>
+    <Key>MED</Key>
+    <Key>RESIL</Key>
+  </CareerSkills>
+  <TalentRows>
+    <TalentRow>
+      <Cost>5</Cost>
+      <Talents>
+        <Key>GRIT</Key>
+        <Key>SURG</Key>
+        <Key>STIMAP</Key>
+        <Key>TOUGH</Key>
+      </Talents>
+      <Directions>
+        <Direction />
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction />
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>10</Cost>
+      <Talents>
+        <Key>VOIREA</Key>
+        <Key>GRIT</Key>
+        <Key>PHYSICIAN</Key>
+        <Key>HEALSELF</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>15</Cost>
+      <Talents>
+        <Key>DRSORD</Key>
+        <Key>SURG</Key>
+        <Key>STIMAPIMP</Key>
+        <Key>PRECON</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>20</Cost>
+      <Talents>
+        <Key>GRIT</Key>
+        <Key>IMPSURG</Key>
+        <Key>SURG</Key>
+        <Key>INTENSFOC</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>25</Cost>
+      <Talents>
+        <Key>DONOHA</Key>
+        <Key>DEDI</Key>
+        <Key>STIMAPSUP</Key>
+        <Key>ANAT</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+  </TalentRows>
+  <AddlCareerSkills>
+    <Type />
+  </AddlCareerSkills>
+</Specialization>

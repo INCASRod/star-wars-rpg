@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<Vehicle xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>USERVEHICLE3</Key>
+  <Name>Shriv's A-A5 Heavy Speeder Truck</Name>
+  <Description>
+      [H3]Trast A-A5 Heavy Speeder Truck[h3]
+
+Built by Trast Heavy Transports, the A-A5 is a popular vehicle among the Outer Rim Territories. Built to haul heavy bulk cargo long distances over rough terrain, the lumbering A-A5 has a stiff and rugged hull equipped with hardened systems that can shrug off even the heaviest abuse. In addition, armor add-ons can make it all but impervious to small-arms fire. The vehicle is separated into two main compartments: the crew compartment and the cargo compartment. The cargo compartment is capacious and features a number of tie-downs, latches, and other cargo management apparatuses that keep the cargo safe and secure. When not hauling cargo, fold-out benches in the cargo hold can be deployed to carry up to twenty-five sentients, albeit in cramped and uncomfortable conditions. </Description>
+  <Source Page="250">Edge of the Empire Core Rulebook</Source>
+  <Custom>AddedItem</Custom>
+  <BuiltInAttachments>
+    <Key>REVENGVEH</Key>
+  </BuiltInAttachments>
+  <Type>Speeder Truck</Type>
+  <Categories>
+    <Category>Land Vehicle</Category>
+  </Categories>
+  <HP>6</HP>
+  <Price>10000</Price>
+  <Rarity>2</Rarity>
+  <UniqueItem>true</UniqueItem>
+  <MaxAltitude>3 meters</MaxAltitude>
+  <SensorRangeValue>srNone</SensorRangeValue>
+  <Crew>One Pilot, Two Co-Pilots</Crew>
+  <EncumbranceCapacity>220</EncumbranceCapacity>
+  <Passengers>25</Passengers>
+  <Silhouette>3</Silhouette>
+  <Speed>3</Speed>
+  <Armor>2</Armor>
+  <HullTrauma>10</HullTrauma>
+  <SystemStrain>12</SystemStrain>
+  <SensorRange>No Sensors</SensorRange>
+</Vehicle>

@@ -1,0 +1,174 @@
+<?xml version="1.0"?>
+<Specialization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>SCHOLAR1.21</Key>
+  <Name>Scholar (reSpecialized) 1.3</Name>
+  <Description>[H4]Scholar (reSpecialized)[h4]
+[B]SCHOLAR—THE GIFT OF KNOWLEDGE[b][BR]
+[B]At a Glance[b][BR]
+The Scholar turns knowing things into doing things, understand enough broad subject matter to help their colleagues during difficult situations, and comes in clutch with a valuable factoid.[BR]
+[B]All-in or Hybrid?[b][BR]
+All-in on Knowledge[BR]
+Slight niche concerning being good at learning[BR]
+Slight niche concerning noticing things[BR]
+[B]What Should it be the Best At?[b][BR]
+Knowing things and leveraging that into general utility &amp; support[BR]
+[B]What should it be just “good” at?[b][BR]
+Learning New Things[BR]
+[B]Specs for Comparison / Inspiration[b][BR]
+[I]Doctor[i] (No Real overlap aside from subject matter expertise, and Voice of Reason)[BR]
+[IScientist[i] (All in on Intelligence, but split between knowledge and mechanics)[BR]
+[I]Sage[i](Knowledge and Force Powers split)[BR]
+[B]Media Touchstones[b][BR]
+Eno Cordova (Jedi Survivor)[BR]
+Jocasta Nu (Episode II: Attack of the Clones)[BR]
+Lor San Tekka (Episode VII: The Force Awakens)[BR]</Description>
+  <Source>reSpecialized Project</Source>
+  <Custom>AddedItem</Custom>
+  <CareerSkills>
+    <Key>OUT</Key>
+    <Key>PERC</Key>
+    <Key>UND</Key>
+    <Key>XEN</Key>
+  </CareerSkills>
+  <TalentRows>
+    <TalentRow>
+      <Cost>5</Cost>
+      <Talents>
+        <Key>ASTUOBSE</Key>
+        <Key>RESEARCH</Key>
+        <Key>WELLROUND</Key>
+        <Key>QUICSTUD</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction />
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>10</Cost>
+      <Talents>
+        <Key>KEENEYED</Key>
+        <Key>GRIT</Key>
+        <Key>CONF</Key>
+        <Key>TOUGH</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>15</Cost>
+      <Talents>
+        <Key>RESEARCH</Key>
+        <Key>VOIREA</Key>
+        <Key>VALFACT</Key>
+        <Key>QUICSTUD</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>20</Cost>
+      <Talents>
+        <Key>ASTUOBSE</Key>
+        <Key>INTENSFOC</Key>
+        <Key>RESEARCH</Key>
+        <Key>RESEARCHIMP</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>25</Cost>
+      <Talents>
+        <Key>ASTOBSIMP</Key>
+        <Key>DEDI</Key>
+        <Key>AUTHSUBJ</Key>
+        <Key>STRGEN</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+  </TalentRows>
+  <AddlCareerSkills>
+    <Type />
+  </AddlCareerSkills>
+</Specialization>

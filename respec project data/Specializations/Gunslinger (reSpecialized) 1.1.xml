@@ -1,0 +1,177 @@
+<?xml version="1.0"?>
+<Specialization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>GUNRE</Key>
+  <Name>Gunslinger (reSpecialized) 1.1</Name>
+  <Description>[H4]Gunslinger (reSpecialized)[h4]
+
+[B]GUNSLINGER—DOUBLE-TAP[b][BR]
+[B]At a Glance[b][BR]
+The most skilled small-arms combatants. The fastest draw, the deadest shot. They can take down an army of sleemos before they can even blink.[BR]
+[B]All-in or Hybrid?[b][BR]
+¾ Ranged Light and “Small Arms Efficacy”, ⅛Outlaw Vibes, ⅛ Initiative Monkey skills”[BR]
+[B]What Should it be the Best At?[b][BR]
+Ranged Light[BR]
+Two-Weapon Fighting[BR]
+[B]What should it be just “good” at?[b][BR]
+Initiative[BR]
+Being Intimidating[BR]
+[B]Specs for Comparison / Inspiration[b][BR]
+[I]Marshall[i](They are mirrors of one another. Marshall is an off-face that can shoot. Gunslinger is a killer who looks mean)[BR]
+[I]Warleader[i](Only share overlap in their ranged light focus, but aren’t “damage” oriented)[BR]
+[I]Death Watch Warrior[i](Less focused on movement, but they will have a similar emphasis on death-dealing)[BR]
+[I]Bodyguard[i](Mostly worried about protection and retaliation, but a similar focus on one-handed weapons)[BR]
+[B]Media Touchstones[b][BR]
+Cobb Vanth (The Mandalorian)[BR]
+Tobias Beckett (Solo: A Star Wars Story)[BR]
+Cad Bane[BR]
+Zoe Washburne (Firefly)[BR]
+[I]Updated 12/10/2025[i]
+
+
+</Description>
+  <Source>reSpecialized Project</Source>
+  <Custom>AddedItem</Custom>
+  <CareerSkills>
+    <Key>COERC</Key>
+    <Key>COOL</Key>
+    <Key>OUT</Key>
+    <Key>RANGLT</Key>
+  </CareerSkills>
+  <TalentRows>
+    <TalentRow>
+      <Cost>5</Cost>
+      <Talents>
+        <Key>GRIT</Key>
+        <Key>PLAUSDEN</Key>
+        <Key>RAPREA</Key>
+        <Key>QUICKDR</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction />
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>10</Cost>
+      <Talents>
+        <Key>SIDESTEP</Key>
+        <Key>TRSH</Key>
+        <Key>QUICKST</Key>
+        <Key>QUICKDRIMP</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>15</Cost>
+      <Talents>
+        <Key>TOUGH</Key>
+        <Key>RAPREA</Key>
+        <Key>SORRYMESS</Key>
+        <Key>GRIT</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>20</Cost>
+      <Talents>
+        <Key>SIDESTEP</Key>
+        <Key>SHFR</Key>
+        <Key>QUICKST</Key>
+        <Key>SPITFIRE</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>25</Cost>
+      <Talents>
+        <Key>ASQULA</Key>
+        <Key>DEDI</Key>
+        <Key>GUNSBLAZING</Key>
+        <Key>SPITIMP</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+        </Direction>
+      </Directions>
+    </TalentRow>
+  </TalentRows>
+  <AddlCareerSkills>
+    <Type />
+  </AddlCareerSkills>
+</Specialization>

@@ -1,0 +1,168 @@
+<?xml version="1.0"?>
+<Specialization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>USERSPECIAL1</Key>
+  <Name>Gambler (reSpecialized) 1.1</Name>
+  <Description>[H4]Gambler (reSpecialized)[h4]
+
+[B]At a Glance[b][BR]
+The Gambler is the risk-taker, the card-shark, the character in any group that’s willing to put it all on red for a big win.[BR]
+[B]All-in or Hybrid?[b][BR]
+½ Generic gambling-related dice futzing, ½ actual gambler, slight of hand, and deceptive elements[BR]
+[B]What Should it be the Best At?[b][BR]
+Deception and Sleight of Hand[BR]
+Gambling[BR]
+Going Big and paying off (not in Ships)[BR]
+[B]What should it be just “good” at?[b][BR] 
+Computers[BR]
+Initiative/Cool[BR]
+[B]Specs for Comparison / Inspiration[b][BR]
+[I]Thief[i] (Mostly the sleight of hand stuff)[BR]
+[I]Scoundrel[i] (generic Smuggler stuff)[BR]
+[I]Hotshot[i] (pushing your luck mechanics)[BR]
+[B]Media Touchstones[b][BR]
+Lando Calrissian[BR]
+James Bond (Casino Royale)[BR]
+</Description>
+  <Source>reSpecialized Project</Source>
+  <Custom>AddedItem</Custom>
+  <CareerSkills>
+    <Key>COMP</Key>
+    <Key>COOL</Key>
+    <Key>DECEP</Key>
+    <Key>SKUL</Key>
+  </CareerSkills>
+  <TalentRows>
+    <TalentRow>
+      <Cost>5</Cost>
+      <Talents>
+        <Key>AGAODD</Key>
+        <Key>CONV</Key>
+        <Key>UPANTE</Key>
+        <Key>SWIND</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction />
+        <Direction />
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>10</Cost>
+      <Talents>
+        <Key>GRIT</Key>
+        <Key>TOUGH</Key>
+        <Key>DEDI</Key>
+        <Key>RAISTAIMP</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>15</Cost>
+      <Talents>
+        <Key>SECCHANCE</Key>
+        <Key>UPANTE</Key>
+        <Key>MAKITINT</Key>
+        <Key>CONV</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>20</Cost>
+      <Talents>
+        <Key>AGAODD</Key>
+        <Key>SECCHANCE</Key>
+        <Key>FORTFAVORBOLD</Key>
+        <Key>REVFOR</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>25</Cost>
+      <Talents>
+        <Key>RAISSTAK</Key>
+        <Key>CLEVERSOLN</Key>
+        <Key>MAKLUCK</Key>
+        <Key>SECCHANCE</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+  </TalentRows>
+  <AddlCareerSkills>
+    <Type />
+  </AddlCareerSkills>
+</Specialization>

@@ -85,10 +85,12 @@ export function useForcePowers({ charForceAbilities, refForcePowers, refForceAbi
   }, [charForceAbilities, refForcePowerMap, refForceAbilityMap])
 
   const allForcePowers = useMemo((): ForcePowerDisplay[] => {
-    const purchaseCount = new Map<string, number>()
+    // Ability keys get renamed across reSpec snapshot reseeds (e.g. migration 102),
+    // but a character's purchase is permanently anchored to its tree position — match
+    // on (power, row, col), the same way buildForcePowerTree does, not on the key.
+    const purchasedPositions = new Set<string>()
     for (const a of charForceAbilities) {
-      const k = `${a.force_power_key}:${a.force_ability_key}`
-      purchaseCount.set(k, (purchaseCount.get(k) ?? 0) + 1)
+      purchasedPositions.add(`${a.force_power_key}:${a.tree_row}-${a.tree_col}`)
     }
     return refForcePowers
       .filter(fp => fp.ability_tree?.rows?.length)
@@ -101,12 +103,13 @@ export function useForcePowers({ charForceAbilities, refForcePowers, refForceAbi
             if (!aKey || cost === 0) continue
             const ref = refForceAbilityMap[aKey]
             if (!ref) continue
+            const isPurchased = purchasedPositions.has(`${fp.key}:${row.index}-${col}`)
             const existing = abilityMap.get(aKey)
             if (existing) {
               existing.totalRanks++
+              if (isPurchased) existing.purchasedRanks++
             } else {
-              const purchased = purchaseCount.get(`${fp.key}:${aKey}`) ?? 0
-              abilityMap.set(aKey, { key: aKey, name: ref.name, description: ref.description ?? undefined, purchasedRanks: purchased, totalRanks: 1, cost, pip_cost: ref.pip_cost ?? 1 })
+              abilityMap.set(aKey, { key: aKey, name: ref.name, description: ref.description ?? undefined, purchasedRanks: isPurchased ? 1 : 0, totalRanks: 1, cost, pip_cost: ref.pip_cost ?? 1 })
             }
           }
         }

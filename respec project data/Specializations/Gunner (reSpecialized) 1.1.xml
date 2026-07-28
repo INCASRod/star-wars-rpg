@@ -1,0 +1,169 @@
+<?xml version="1.0"?>
+<Specialization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>GUNNER1.0</Key>
+  <Name>Gunner (reSpecialized) 1.1</Name>
+  <Description>[H4]Gunner (reSpecialized)[h4]
+[B]GUNNER—PITHY DESCRIPTION[b][BR]
+[B]At a Glance[b][BR]
+The Gunner should be the expert at using vehicle based weaponry to tackle the opponents whether it be the main gun of a tank, the turret of a starfighter, or a capital ship turbolaser.[BR]
+[B]All-in or Hybrid?[b][BR]
+⅓ using heavy and Gunnery weapons as a precision “space sniper", ⅓ using gunnery weapons as a bombastic " heavy”, ⅓ being Tanky, but not armored..[BR]
+[B]What Should it be the Best At?[b][BR]
+Gunnery. These guys should be able to bullseye a womp rat without a targeting computer.[BR]
+Bombing runs. The Gunner should be the best combat bomber.[BR]
+[B]What should it be just “good” at?[b][BR]
+Ranged Heavy and other “heavy weapons” outside of a ship[BR]
+Being tanky[BR]
+[B]Specs for Comparison / Inspiration[b][BR]
+[I]Racer[i](Should be the inverse with Racer being mostly about movement and using the vehicle itself offensively, the Gunner should be all about weapons and barely any actual piloting or driving)[BR]
+[I]Heavy[i](The Gunner should be more about specific ship combat and less about personal-scale combat.)[BR]
+[I]Rigger[i](Treats their vehicle like a character, where this tree treats the party mascot like a vehicle. Similarities in tone)[BR]
+[B]Media Touchstones[b][BR]
+Any scenes with the Falcon’s gunner positions; Tobias Beckett, Han, Luke, Finn etc[BR]
+Baze Malbus (Rogue One)[BR]
+Wrecker (The Bad Batch)[BR]</Description>
+  <Source>reSpecialized Project</Source>
+  <Custom>AddedItem</Custom>
+  <CareerSkills>
+    <Key>DISC</Key>
+    <Key>GUNN</Key>
+    <Key>RANGHVY</Key>
+    <Key>RESIL</Key>
+  </CareerSkills>
+  <TalentRows>
+    <TalentRow>
+      <Cost>5</Cost>
+      <Talents>
+        <Key>OVERDEF</Key>
+        <Key>BOLSTER</Key>
+        <Key>TOUGH</Key>
+        <Key>BURLY</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction />
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction />
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>10</Cost>
+      <Talents>
+        <Key>GRIT</Key>
+        <Key>FIRESUP</Key>
+        <Key>BOLSTER</Key>
+        <Key>DURA</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>15</Cost>
+      <Talents>
+        <Key>OVERDEF</Key>
+        <Key>DEPSHOT</Key>
+        <Key>TRIGDISC</Key>
+        <Key>TOUGH</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>20</Cost>
+      <Talents>
+        <Key>TIMESPLITTER</Key>
+        <Key>WEAPFREE</Key>
+        <Key>SUSTFIRE</Key>
+        <Key>ENDUR</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>25</Cost>
+      <Talents>
+        <Key>MASTMISS</Key>
+        <Key>DEDI</Key>
+        <Key>ONEINAMIL</Key>
+        <Key>EXHPORT</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+        </Direction>
+      </Directions>
+    </TalentRow>
+  </TalentRows>
+  <AddlCareerSkills>
+    <Type />
+  </AddlCareerSkills>
+</Specialization>

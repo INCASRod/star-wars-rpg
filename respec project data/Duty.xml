@@ -1,0 +1,673 @@
+<?xml version="1.0"?>
+<Duties xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Duty>
+    <Key>COMBATVICTORY</Key>
+    <Name>Combat Victory</Name>
+    <Description>
+    [H4]Combat Victory[h4]
+[B]Age of Rebellion Core Rulebook - Generic:[b][BR]
+The Player Character is driven to show that the Alliance can hold its own against Imperial forces in any troop vs. troop engagement. He wants to engage the Empire's military—their best, whenever possible—and provide more victories for the Alliance to tout to the galaxy as proof it can ultimately win the war. This means daring raids, excellent tactics, and acquiring the best firepower possible.
+
+[P][B]Lead by Example - Commanders:[b][BR]
+Not only is victory in battle necessary to the continued success of the Rebel Alliance, but it is also a measuring stick by which Commanders are judged against their peers. Commanders must lead their troops successfully for them to win, and troops' failures on the battlefield are inevitably linked to their Commander's failure to lead them.
+
+[P][B]Forged in Battle - Soldiers:[b][BR]
+The PC wants to prove that the Rebellion's armed forces can defeat the Empire in head-to-head battles, and frequently pushes to launch devastating raids, ambushes, and strikes. This PC believes the only path to victory is through combat, and that the rebels are more than a match for the Empire any time, on any battlefield, under any condition.
+
+[P][B]Imperials:[b][BR]
+The Player Character is driven to bring the fight to the Rebel Alliance wherever it can, seeking to
+prove their merit in troop vs. troop combat. Hunting down and engaging Rebellion military - their ‘best’, if such exists -
+feeds the New Order’s morale, and sends the clear message that the Alliance is doomed to fail. This entails raiding
+suspected bases, bold tactics, and acquiring the latest in military hardware to get the job done.</Description>
+    <Sources>
+      <Source Page="47">Age of Rebellion Core Rulebook</Source>
+      <Source>The New Order Duty Chart</Source>
+    </Sources>
+    <Custom>CustomItem</Custom>
+  </Duty>
+  <Duty>
+    <Key>COUNTERINTELLIGENCE</Key>
+    <Name>Counter Intelligence</Name>
+    <Description>
+    [H4]Counter Intelligence[h4]
+[B]Age of Rebellion Core Rulebook - Generic:[b][BR]
+The PC knows that the survival of the Alliance depends upon its ability to hide from the Empire and avoid complete destruction at the hands of its overwhelming military superiority. To this end, he wants to hunt down and eliminate enemy agents and threats, feed false information to Imperial intelligence networks, and cover the movements of all Alliance assets from observation and reporting.
+
+[P][B]Desperate Allies - Diplomats:[b][BR]
+The Rebel Alliance rarely operates in the open. The rest of the time, the Player Character recognizes the importance of maintaining a low profile. Whether by locating clandestine meeting points, by fabricating cover stories for suspicious activities, or by finding people willing to turn a blind eye to a Rebel presence, the PC's goal is to keep the Empire oblivious.
+
+[P][B]Imperials:[b][BR]
+The PC knows that the strength of the Empire is based on a solid foundation of secure information
+transfer. They are equally aware of the threat posed by Rebel agents, and the disastrous consequences of letting military
+strategies, plans, and communiques fall into Alliance hands. To prevent this, they want to hunt down and eliminate any trace of
+Rebel agents and threats, as well as feeding false information to set up traps and disguise potential raids.</Description>
+    <Sources>
+      <Source Page="47">Age of Rebellion Core Rulebook</Source>
+      <Source>The New Order Duty Chart</Source>
+    </Sources>
+    <Custom>CustomItem</Custom>
+  </Duty>
+  <Duty>
+    <Key>INTELLIGENCE</Key>
+    <Name>Intelligence</Name>
+    <Description>
+    [H4]Intelligence[h4]
+[B]Age of Rebellion Core Rulebook - Generic:[b][BR]
+The PC knows that every victory hinges on knowing as much about the Empire's military might and other assets as possible. He is driven to gather any and all potentially useful data, wishing to locate vital and vulnerable targets for Rebellion forces to strike at. He not only wants to know what the Imperial military factions are up to, but also the state of technological research, economic policies, and other aspects of Imperial strength.
+
+[P][B]Stay on Target - Aces:[b][BR]
+knows that ever victory hinges on having as much information as possible about the Empire's military disposition and assets. He is driven to gather information on the Empire whenever possible. Sometimes, this means something as bold as volunteering for a dangerous recon mission, but it also might just mean making one last pass over a target after a daring raid so the onboard astromech can record the enemy response.
+
+[P][B]Lead by Example - Commanders:[b][BR]
+Commanders who focus on intelligence-gathering seek to take as many prisoners as possible, and they expect their troops to keep an eye out for sources of information that can be used against the enemy. They take great interest in interrogating captured foes, often doing the work themselves to ensure that every salient detail is pinpointed and exploited. This micromanagement can be detrimental, however, as it has the potential to distract Commanders from their other duties. Likewise, their methods as interrogators can shape others' perception of both their units and themselves.
+
+[P][B]Desperate Allies - Diplomats:[b][BR]
+When collecting sensitive and valuable information, the Alliance rarely has the luxury of verifying it before taking the risk of action. Instead, the party supplying the intelligence must be trusted. Conversely, the one supplying the intelligence must trust that the information will not be used against him. The PC specilizes in finding contacts who can be trusted, building their trust in the Rebel Alliance, and maintaining that trust.
+
+[P][B]Forged in Battle - Soldiers:[b][BR]
+Knowledge is power, and this PC wants to know everything about the Empire. This Soldier seeks information at every opportunity, copying Imperial datacores, setting up surveillance cams, or capturing enemy droids for intel. The key to survival is avoiding the Empire where it is strong, hitting hard where it is weak, and seeing the difference between the two.
+
+[P][B]Imperials:[b][BR]
+The PC is aware that detecting and rooting our Rebellion assets and bases is more vital than having the
+military muscle to act. They are driven to gather any and all potentially useful information on suspected Rebel
+movements, information transfers, in the hopes of locating a target for the Empire’s mighty military to strike. They also
+hope to root out any known political allies, so that they might curtail any sympathies entering the public space.</Description>
+    <Sources>
+      <Source Page="47">Age of Rebellion Core Rulebook</Source>
+      <Source>The New Order Duty Chart</Source>
+    </Sources>
+    <Custom>CustomItem</Custom>
+  </Duty>
+  <Duty>
+    <Key>INTERNALSECURITY</Key>
+    <Name>Internal Security</Name>
+    <Description>
+    [H4]Internal Security[h4]
+[B]Age of Rebellion Core Rulebook - Generic:[b][BR]
+The most dangerous threat to the Alliance comes from within its own ranks. Any Rebel soldier, operative, or ally could be an insidious threat waiting to take an action at a critical moment to bring entire operations crashing down, costing lives and assets. Knowing that vigilance against these threats is the truest form of devotion to the cause of the Alliance, the PC watches for any and all signs of betrayal.
+
+[P][B]Lead by Example - Commanders:[b][BR]
+These Commanders are fastidious about ensuring the loyalty of their troops, weeding out threats to their units from within, and punishing infractions. Success in this endeavor ensures that their troops are ready for anything, without any fear of betrayal or weakness. If they are too harsh or openly suspicious of their own, Commanders can adversely affect the morale of their troops, causing them to be overly cautious of their own actions lest they be seen as liabilities to their leader's command.
+
+[P][B]Desperate Allies - Diplomats:[b][BR]
+The Rebellion must deal with the potential for betrayal by allies as well as by internal operatives. A Rebel-friendly equipment vendor disclosing his customer registry could be just as damaging as a Rebel operative going rogue. The PC seeks to validate the trust placed in Alliance members and allies.
+
+[P][B]Forged in Battle - Soldiers:[b][BR]
+Of all the military branches in the Alliance, its army sees the most new recuits. The need for troops is too great and resources too thin to properly vet the loyalty of every recruit. This PC knows that one Imperial spy can potentiall bring the entire movement down, and eyes all comrades-in-arms with suspicion, regardless of individual history or deeds.
+
+[P][B][I]Imperials:[i][b]  Since the adoption of the New Order, the greatest threat to the established galactic community has
+been dissent from within. Be it a planetary governor, or a collective organisation, the Empire is vigilant and decisive
+when dealing with potential internal threats to Peace and Order. The PC with this obligation is ever vigilant, wary for
+dissenters, turncoats, separatists, and traitors.
+[P]
+[B]Cyphers and Masks - Spy:[b][BR]
+Deceivers know their own kind. PCs with this Duty focus on protecting the Alliance from moles, double agents, and traitors. They also help maintain safety by ensuring that strongholds, outpost, and safe houses remain undetected by the Empire. This sometimes includes ensuring that supply lines for these locations are maintained and kept secret.</Description>
+    <Source>Age of Rebellion Core Rulebook</Source>
+    <Custom>DescOnly</Custom>
+  </Duty>
+  <Duty>
+    <Key>PERSONNEL</Key>
+    <Name>Personnel</Name>
+    <Description>
+    [H4]Personnel[h4]
+[B]Age of Rebellion Core Rulebook - Generic:[b][BR]
+More than machines, credits, or information, the people of the Alliance are the most important and vital assets there are, and the Player Character knows this. He is devoted to seeing to their safety, well-being, and capacity for success. No one should ever be left behind; the most successful missions might not achieve every goal, but they are successful nonetheless when no one dies.
+
+[P][B]Stay on Target - Aces:[b][BR]
+While arms, equipment, and vehicles are vital to the Rebellion, they are worthless without brave Rebels willing to take them into battle against the Empire. This PC knows that the safety of his fellow Rebels is the best long-term strategy for victory against the Empire, and it is the spirit of brotherhood that keeps him invested in the fight. Aces with the Personnel Duty might voluenteer for dangerous escort missions, emergency evacuations, or close air support in heavy fire zones. This PC refuses to leave anyone behind, and is often the first to volunteer to sacrifice himself if it means the rest of his team can safely escape.
+
+[P][B]Desperate Allies - Diplomats:[b][BR]
+To make his unit function at its best, the PC builds discipline and skill among Rebel groups. The PC sees to it that the rookie pilot learns from the seasoned veteran, the tactician has time to study formations, and the communications officer has the latest codes.
+
+[P][B]Forged in Battle - Soldiers:[b][BR]
+The PC epitomizes the military mantra of "no one left behind," dragging wounded comrades to safety and striving to get everyone home. This PC puts the lives of fellow Alliance personnel over everything, including the mission.
+
+[P][B]Imperials:[b][BR]
+Star Destroyers cannot command themselves, and the polished white armour of a Storm Trooper is worthless
+without a body in it. The Player Character is well aware of the need of maintaining proper training, morale, and discipline within
+the Empire’s troops, and the importance of loyal men. They are devoted to seeing to these aspects of the Empire’s rank and file.
+Excellence is paramount, and a mission is only done well, when it meets the highest of expectations.</Description>
+    <Sources>
+      <Source Page="47">Age of Rebellion Core Rulebook</Source>
+      <Source>The New Order Duty Chart</Source>
+    </Sources>
+    <Custom>CustomItem</Custom>
+  </Duty>
+  <Duty>
+    <Key>POLITICALSUPPORT</Key>
+    <Name>Political Support</Name>
+    <Description>
+    [H4]Political Support[h4]
+[B]Age of Rebellion Core Rulebook - Generic:[b][BR]
+Every blaster, starfighter, and thermal detonator in the galaxy is useless without the political will to truly challenge and overthrow Palpatine and his New Order. The Player Character understands this all too well and is determined to see to it that as many factions, systems, and sectors as possible come to the side—and the aid—of the Alliance against the Empire.
+
+[P][B]Lead by Example - Commanders:[b][BR]
+Gaining support from political entities is this Commander's objective. Whether a politician or merely a guerilla fighter who desires to gain the support of a subjugated populace, this Commander sees political support as an efficient means of gaining victory on a grassroots level. More than conquering hearts and minds, this Commander seeks to actively help local populations as much in their day-to-day lives as in their efforts to resist their oppression. Such Commanders expect their troops to respect the indigenous peoples and attempt to keep collateral damage to a minimum.
+
+[P][B]Desperate Allies - Diplomats:[b][BR]
+The PC sees that for the Rebellion to grow beyond a small insurrection to become a credible threat to the Empire, the opinion of the populace must favor the Rebellion. In addition to brokering deals with the locals, the PC is a master publicist, making the life of the Rebels seem glorious, righteous, and exciting. Additionally, the PC voices grievances for the Empire's injustice, increasing unrest with the life of servitude that the Empire forces upon its citizens.</Description>
+    <Source>Age of Rebellion Core Rulebook</Source>
+    <Custom>DescOnly</Custom>
+  </Duty>
+  <Duty>
+    <Key>RECRUITING</Key>
+    <Name>Recruiting</Name>
+    <Description>
+    [H4]Recruiting[h4]
+[B]Age of Rebellion Core Rulebook - Generic:[b][BR]
+Every engagement with the Empire is a war of attrition, and that is a war the Rebellion simply cannot win. Nonetheless, more people must be found to serve, and they are needed in every capacity. Not only does the Alliance military need more soldiers and pilots, it needs more technicians, engineers, mechanics, scientists, doctors, slicers. and just about every other kind of worker. This Player Character understands the risks of recruitment, as well as the needs, and is constantly on the lookout for allies who are both talented and trustworthy.
+
+[P][B]Stay on Target - Aces:[b][BR]
+The Rebellion cannot survive without a steady influx of new personnnel, and Rebel Aces are the proverbial poster-children of the movement. This PC is always thinking of ways to bring talented beings to the cause, and is always on the lookout for potential recruits. This might mean going to backwater races and speaking with contestants, or freeing Imperial prisoners and convincing them to join up.
+
+[P][B]Lead by Example - Commanders:[b][BR]
+Whether it's to replace losses or merely to bolster their ranks, these Commanders seek to engage like-minded individuals and convince them that their best contribution to the war effort can be made within the Rebel Alliance. Such Commanders are always on the lookout for new prospects, though care must be taken to vet candidates appropriately, as the Empire is a cunning foe with spies and operatives everywhere.
+
+[P][B]Desperate Allies - Diplomats:[b][BR]
+The Alliance always needs more loyal members, buy not everyone can become a full-time operative. The PC accepts the complicated circumstances of those who might be sympathetic to the Rebellion, seeks them out, and works within their limits to obtain as much help as possible. The PC ensures that the Rebels are present and ready to help their friends, and prompts those friends to return the favor. If a few such associates pledge full allefiance to the Alliance along the way, so much the better.
+
+[P][B]Forged in Battle - Soldiers:[b][BR]
+Some Soldiers believe that if they just had a few more brave warriors, they could escalate their war with the Empire, selecting targets more damaging to the Imperial war effort. PCs with the Recruiting Duty always look to turn anyone into rebel sympathizers, and sympathizers into fellow members of the Alliance.
+
+[P][B]Imperials:[b][BR]
+Loyal agents are hard to come by, in particular when faced with a growing Rebellion force. Despite the
+propaganda released by the Alliance, the Empire continues to find those who are eager to support the New Order, fear
+upsetting the status quo, or believe they have more to gain with the Empire, than scrounging on the fringe. Sometimes,
+these individuals require convincing. The PC understands this need, and is constantly vigilant for valuable assets.</Description>
+    <Sources>
+      <Source Page="47">Age of Rebellion Core Rulebook</Source>
+      <Source>The New Order Duty Chart</Source>
+    </Sources>
+    <Custom>CustomItem</Custom>
+  </Duty>
+  <Duty>
+    <Key>RESOURCEACQUISITION</Key>
+    <Name>Resource Acquisition</Name>
+    <Description>
+    [H4]Resource Acquisition[h4]
+[B]Age of Rebellion Core Rulebook - Generic:[b][BR]
+There are never enough supplies to fully support those fighting against the juggernaut that is the Empire, and this PC knows it very well. He is determined to seek out new sources of raw materials, food, clothing, weapons, armor, and equipment of all kinds. One spare crate of medpacs can save quite a few lives, and a handful of comlinks can mean the difference between success and failure on a mission. He will trade, beg, borrow, and steal anything for the cause.
+
+[P][B]Stay on Target - Aces:[b][BR]
+Many Rebel strikes consist of launching a suprise attack, blasting every Imperial in sight, and then jumping out again. This PC knows that if there is a way to steal the Imperial assets instead of just destroying them, it makes for a much bigger Alliance victory. This PC is also always on the lookout for potential Rebel sympathizers who might not be ready to openly join the Rebellion, but ar able to secretly funnel supplies and equipment to the cause.
+
+[P][B]Lead by Example - Commanders:[b][BR]
+These Commanders know that proper equipment is also an essential component to victory, and the Alliance is always in short supply when it comes to weapons, rations, and other goods. With each battle their troops fight, these Commanders look for opportunities to enrich the supplies available to their troops and their auxiliaries. They take time to schedule raids on sources of Imperial equipment when possible, though they must be careful not to chase every carrot the Empire danles in front of them, in order to avoid falling into traps.
+
+[P][B]Desperate Allies - Diplomats:[b][BR]
+The PC knows the importance of being properly supplied, as well as the value of being able to count on supply. Acquiring assets is only the beginning. The better trick is knowing what material is in short supply, where to find that material, and how to acquire it. Sometimes a single pair of welding goggles is more useful than a dozen blasters, and sometimes a single blaster is more useful than all the goggles in the galaxy. The PC forges alliances that can provide equipment and also deliver it where it is needed.
+
+[P][B]Forged in Battle - Soldiers:[b][BR]
+The Rebel Alliance is always in desperate need of materiel in the fight against the Empire. Bacta, blaster gas, and ration bricks win wars. This PC is always searching for sources of the raw materials, food, clothing, weapons, armor, and other equipment the Alliance needs to continue the fight.
+
+[P][B][I]Imperials:[i][b]  Feeding the ever growing juggernaut that is the Empire is not easy. The military consumes a
+great amount of resources and credits to fund their great warships, feed their extensive armies, and keep fighters in the
+air. The PC is aware of this need, and is determined to seek out Corporations and organisations that might be willing, or
+convinced, to lend or sell their good exclusively to the Empire.
+[P]
+[B]Cyphers and Masks - Spy:[b][BR]
+Blasters and bacta are important for survival, but Spies with this Duty endeavour to acquire other resources to aid the Alliance. These include enemy uniforms, Imperial credentials, and other tools of deception. Spies with this Duty are certainly glad to acquire medical supplies, weapons, and other necessities, but their skillset allows them to obtain equipment more suited to subtle missions.</Description>
+    <Source>Age of Rebellion Core Rulebook</Source>
+    <Custom>DescOnly</Custom>
+  </Duty>
+  <Duty>
+    <Key>SABOTAGE</Key>
+    <Name>Sabotage</Name>
+    <Description>
+    [H4]Sabotage[h4]
+[B]Age of Rebellion Core Rulebook - Generic:[b][BR]
+The largest and most powerful military force in the history of the galaxy is also the most vulnerable to acts of destruction and asset denial. The character is focused on disrupting Imperial operations in any way possible, whether it's the manufacture of weapons, troop movements, supply shipments, banking systems, or any other key operation, in order to make the Empire act more slowly and less capably. Truly showy acts of destruction also work to erode a population's will to support the Empire, or so the PC often believes (though the Alliance expressly forbids actual acts of terrorism).
+
+[P][B]Stay on Target - Aces:[b][BR]
+This PC realizes that every Imperial asset destroyed is one that can't later be used against the Rebellion or innocent civilians. The overall strategy of the Rebellion relies on sabotage and raids, and this PC is fully committed to this plan of action. Whether or not to take another pass to hit one last secondary objective or target of opportunity is not even a question for this PC. Imperial troops without food, blaster gas, or supplies are easy pickings for the Rebels, and this PC aims to make the Empire as weak as possible.
+
+[P][B]Desperate Allies - Diplomats:[b][BR]
+Just as accomplishing a mission hinges on more than just equipment and assets, disrupting an enemy mission can take on many forms as well. The PC sows discord in the Empire's ranks, possibly posing as an officer and giving conflicting orders, confusing and disrupting communications channels, or even simply spreading rumors. The greatest triumph comes when a little bit of interference makes the Empire defeat itself.
+
+[P][B]Forged in Battle - Soldiers:[b][BR]
+If the Rebellion can't take something, denying the Empire its use is the next best thing. This PC knows that Imperial forces are dependent on secure supply lines and storage depots, and destroying or disrupting any link in the supply chain wreaks havoc with the effectiveness of Imperial troops.</Description>
+    <Source>Age of Rebellion Core Rulebook</Source>
+    <Custom>DescOnly</Custom>
+  </Duty>
+  <Duty>
+    <Key>SPACESUPERIORITY</Key>
+    <Name>Space Superiority</Name>
+    <Description>
+    [H4]Space Superiority[h4]
+[B]Age of Rebellion Core Rulebook - Generic:[b][BR]
+As the Combat Victory-driven PC feels about troop conflicts, so this Player Character feels about ship-to-ship combat and naval engagements. To him, the war will ultimately be decided in the stars, and what the Alliance lacks in sheer numbers, it more than makes up for in the quality and tenacity of its pilots. Every single space battle is an opportunity to show the rest of the galaxy that the Alliance not only can win the war, but is destined to do so.
+
+[P][B]Stay on Target - Aces:[b][BR]
+This PC is dedicated to taking out enemy starfighters, turrets, capital ships, and platforms. He knows that if the Rebels can showcase their strength in space combat, it could sway entire systems to their cause.
+
+[P][B]Lead by Example - Commanders:[b][BR]
+Though planetary engagements are important to the overall war effort, space and air superiority are both crucial to the success of the troops on the ground. Whether these Commanders command a capital ship, a wing of fighter craft, or a ground-pounding infantry unit, they seek to ensure that the Rebel Alliance controls the skies as well as the stars.
+
+[P][B]Imperials:[b][BR]
+As the Combat Victory-driven PC feels about troop conflicts, so this Player Character feels about
+ship-to-ship combat and naval engagements. To them, the war will ultimately be decided in the stars, and the might of
+an Imperial Star Destroyer is nothing to balk at. Every battle is an opportunity to demonstrate to the galaxy that the
+Empire cannot be stopped by a handful of mismatched starfighters.</Description>
+    <Sources>
+      <Source Page="47">Age of Rebellion Core Rulebook</Source>
+      <Source>The New Order Duty Chart</Source>
+    </Sources>
+    <Custom>CustomItem</Custom>
+  </Duty>
+  <Duty>
+    <Key>TECHPROCUREMENT</Key>
+    <Name>Tech Procurement</Name>
+    <Description>
+    [H4]Tech Procurement[h4]
+[B]Age of Rebellion Core Rulebook - Generic:[b][BR]There is no more prolific or productive time for technological developments than during a war, and this one is no exception. This Player Character sees the true opportunity for Alliance victory in the hands of scientists, engineers, and technicians. Not only can they get the most performance from existing machines and resources, but they can design and develop new ships, weapons, medical techniques, and equipment that can provide the vital edge necessary to survive against the Empire's might. The way this PC sees it, stealing the best developments of the Empire is a crucial way to even the odds.
+
+[P][B]Lead by Example - Commanders:[b][BR]
+These Commanders ask for ingenuity and innovation from their troops. Even if their units aren't gifted with state-of-the-art weapons, they expect them to use what they have to the best of their ability, and to make improvements where they can in order to improve their situation. These Commanders are often more concerned with subordinates who are technologically or mechanically inclined, leaning on them to provide an extra edge for the rest of their unit.
+
+[P][B]Desperate Allies - Diplomats:[b][BR]
+Technology can be capricious. Some advances are as concrete as a new astromech droid, while others are as conceptual as a new fleet formation. The PC seeks both equipment and ideas that are innovative and advanced, finding ways to incorporate them into Rebel operations. He observes the constant flux and evolution to discover the ideal use for new items as well as novel uses for old technologies.
+
+[P][B]Imperials:[b][BR]
+There is no more prolific or productive time for technological developments than during a war, and
+this one is no exception. This Player Character sees the true opportunity for Imperial victory in the hands of the
+scientists, engineers, and technicians that create and develop the Empire's vast array of new military technologies, from
+the Death Star to the TIE Interceptor. Despite their advances, Rebel agents are rarely more than a step behind, and as
+such the PC is dead set on keeping their technological edge, and obtaining the brightest minds and newest advances for
+their beloved Empire.</Description>
+    <Sources>
+      <Source Page="47">Age of Rebellion Core Rulebook</Source>
+      <Source>The New Order Duty Chart</Source>
+    </Sources>
+    <Custom>CustomItem</Custom>
+  </Duty>
+  <Duty>
+    <Key>SUPPORT</Key>
+    <Name>Support</Name>
+    <Description>
+    [H4]Support[h4]
+[B]Age of Rebellion Core Rulebook - Generic:[b][BR]
+Individually, the lone agents of the Alliance don't stand a chance against the combined might of the Galactic Empire. Only by working together can they hope to achieve a victory in this civil war. This PC is devoted to helping fellow Rebels fulfill their Duties by providing whatever assistance they need. Although he might not get the same amount of reward or recognition as the people he is helping, the PC has many more opportunities than his fellows to fulfill his Duty to the Rebellion.
+
+[P][B]Stay on Target - Aces:[b][BR]
+The Rebel Alliance succeeds because of teamwork. From a vehicle, Aces are able to support missions by providing escort, mission insertion and extraction, sensor data, communications, and more. This PC is devoted to helping his fellow Rebels achieve their Duties by providing whatever assistance they need. Although he may not get the same amount of reward or recognition as the people he is helping, the PC has many more opportunities than his allies do to fulfill his Duty to the Rebellion.
+
+[P][B]Lead by Example - Commanders:[b][BR]
+These Commander's biggest assets are the troops who serve in their unit. They believe that by supporting their troops, they can increase the combat effectiveness of their unit and ensure that trust and morale are properly maintained. These Commanders must be approachable, even by the lowliest private, and they must be willing to learn what drives their troops--their thoughts, fears, desires, and goals, both as individuals and as Rebels. By helping their people achieve their goals, they make their units stronger and better able to meet the challenges posed by the Imperial war machine.
+
+[P][B]Desperate Allies - Diplomats:[b][BR]
+Often, Rebel cells are ragtag groups with diverse backgrounds and allefiances, making a little internal conflict inevitable. When tensions flare and the group splinters, nobody accomplishes their objectives. The PC seeks to foster cohesion and cooperation, soothing bruised egos and reigning in other Rebel's wild impulses. As long as the party is operating in unison, the PC is doing his job.
+
+[P][B]Forged in Battle - Soldiers:[b][BR]
+No soldier stands alone, and this PC focuses on standing beside comrades-in-arms. Only while working in unison can the rebel hope to dent the seemingly invulnerable Galactic Empire. Although this PC might not be as recognized or awarded honors as often as those he helps, his contribution is every bit as vital whiel helping other PCs pursue their Duties.
+
+[P][B]Imperials:[b][BR]
+Boots on the ground, the Player Character believes that getting their hands dirty and helping the troops and
+officers on the front line is the best way to further the goals of the New Order. The praise of Officers and Moffs often
+follows them, as they offer whatever assistance they can to the Empire’s best, completing vital missions and gaining
+ground and prestige for the Imperial’s rank and file.</Description>
+    <Sources>
+      <Source Page="47">Age of Rebellion Core Rulebook</Source>
+      <Source>The New Order Duty Chart</Source>
+    </Sources>
+    <Custom>CustomItem</Custom>
+  </Duty>
+  <Duty>
+    <Key>AIRSUP</Key>
+    <Name>Air Superiority</Name>
+    <Description>
+      [H4]Air Superiority[h4]
+[B]Stay on Target - Aces:[b][BR]
+The Player Character knows that keeping the skies clear of enemies is often a deciding factor in achieving victory. PCs that pilot starfighters and airspeeders, operate ground-based anti-air emplacements, or even hold the reigns of a flying beast are all dedicated to providing close air support and top cover for ground forces, and denying the enemy the same advantage.</Description>
+    <Source>Stay on Target</Source>
+    <Custom>DescOnly</Custom>
+  </Duty>
+  <Duty>
+    <Key>GROUNDSUP</Key>
+    <Name>Ground Superiority</Name>
+    <Description>
+      [H4]Ground Superiority[h4]
+[B]Stay on Target - Aces:[b][BR]
+No matter how good air support might be, battles are eventually decided on the ground. This PC knows that taking out enemy infantry and armor in combat from turrets, armored walkers and speeders, mechanized cavalry, and even traditional, mounted cavalry is what holds the line and wins the day. This PC is always on the lookout for key enemy ground assets to disable and destroy.</Description>
+    <Source>Stay on Target</Source>
+    <Custom>DescOnly</Custom>
+  </Duty>
+  <Duty>
+    <Key>PLACHUNT</Key>
+    <Name>Placard Hunter</Name>
+    <Description>
+      [H4]Placard Hunter[h4]
+[B]Stay on Target - Aces:[b][BR]
+This PC seeks out the most skilled and famous Imperials on the battlefield, and takes them out head on. These duels are often recorded and released on shadowfeeds as a part of Rebel propaganda efforts to showcase how vulnerable the Empire is to Rebel assaults. Whether the PC sees this Duty as a means of testing himself or a way to help larger Rebel efforts, he is likely to be seen abandoning his mission objectives if a tempting enough target is fleeing the scene.
+
+[P][B]Forged in Battle - Soldiers:[b][BR]
+This PC knows that without effective leadership, the rank and file troops of the Empire are easily dispatched. In any fight, the Soldier seeks to eliminate the highest-ranking officers on the battlefield. At worst, the remaining enemies fight in a much less coordinated fashion, but sometimes such losses cause the foe to retreat.</Description>
+    <Source>Stay on Target</Source>
+    <Custom>DescOnly</Custom>
+  </Duty>
+  <Duty>
+    <Key>TECHSUPERIORITY</Key>
+    <Name>Tech Superiority</Name>
+    <Description>
+      [H4]Tech Superiority[h4]
+[B]Stay on Target - Aces:[b][BR]
+As a stick jockey, this PC knows that while having the best-trained crew is the most important thing, having that crew on the best combat platforms is a very close second. If not for Rebels focused on maintaining tech superiority, the Alliance never would have acquired X-wings, or created the A-wing or B-wing starfighters. These PCs are always looking to bring new designs, schematics, and the engineers that create them back to base.</Description>
+    <Source>Stay on Target</Source>
+    <Custom>DescOnly</Custom>
+  </Duty>
+  <Duty>
+    <Key>COMMFAC</Key>
+    <Name>Communication Facilitation</Name>
+    <Description>
+      [H4]Communication Facilitation[h4]
+[B]Desperate Allies - Diplomats:[b][BR]
+The Rebel Alliance is a scattered, often inconsistent organization. Alliance Command occasionally gathers the fleet for big, critical strikes, but usually individual Rebel cells work independently. The PC acts as an intermediary between leadership and other Rebel cells, ensuring that his group is coordinated with others, preventing accidental collisions.</Description>
+    <Source>Desperate Allies</Source>
+    <Custom>DescOnly</Custom>
+  </Duty>
+  <Duty>
+    <Key>OPPLAN</Key>
+    <Name>Operation Planning</Name>
+    <Description>
+      [H4]Operation Planning[h4]
+[B]Desperate Allies - Diplomats:[b][BR]
+Efficient use of resources is a key to the success of the Rebel Alliance. Rebel strikes must be carefully organized to be as effective as possible, while consuming minimal supplies. The Rebellion can tolerate few losses. The PC recognizes this and takes it upon himself to ensure that each mission is engineered for success, with nothing forgotten or wasted.</Description>
+    <Source>Desperate Allies</Source>
+    <Custom>DescOnly</Custom>
+  </Duty>
+  <Duty>
+    <Key>REBELBASE</Key>
+    <Name>Rebel Base</Name>
+    <Description>
+      [H4]Rebel Base[h4]
+If a campaign is centered around a Rebel Base, then, at the GM’s discretion, one or more of the characters may choose to have a Rebel Base be his Duty. This Duty behaves much like any other, and the GM can use the following as guidance for how to reflect it in the story. If multiple characters choose to have this be their Duty (or one of them, anyway), the GM should consider condensing it into a group Duty. A group Duty is tracked cumulatively. Whenever a group Duty triggers, it counts as triggering for all characters who share in it.
+Generally, when one or more characters' Rebel Base Duty triggers, the narrative events should relate to that facility and its inhabitants. [P]At times, this could be relatively mundane. The bonus to the PCs’ wound thresholds might come from the base staff recognizing their hard work or even doing something special to make the team more at home. Alternatively, when it triggers, it might mean that the story focuses on the base itself in some way. Perhaps the base comes under attack, for instance, and the PCs’ increased wound thresholds represent their desire to protect their home. Much like any other Duty, a Rebel Base Duty provides the GM with plenty of narrative hooks.
+[P]Alternatively or in addition to any narrative ramifications, the GM can use the Rebel Base Duty triggering to offer the PCs chances to upgrade their stronghold. If the PCs are at the base, this could mean that an opportunity comes to them. Perhaps a smuggler reaches the base, offering to trade various important supplies for protection from bounty hunters, or a group of fresh recruits arrives and the PCs must train them to work as support staff and soldiers on the base. If this Duty triggers while the PCs are off-base, it might mean that they runs across a unique chance to improve the base, recruit a new staff member, or get much-needed supplies. At the GM’s discretion, when the Rebel base Duty triggers, the GM can offer the PCs an opportunity to acquire one of the base upgrades found on pages 88-89 without paying the normal price in credits for it.</Description>
+    <Source>Desperate Allies</Source>
+    <Custom>DescOnly</Custom>
+  </Duty>
+  <Duty>
+    <Key>LOSSPREV</Key>
+    <Name>Loss Prevention</Name>
+    <Description>
+      [H4]Loss Prevention[h4]
+[B]Lead by Example - Commanders:[b][BR]
+Ensuring that their troops are as safe as possible under battlefield conditions is these Commanders' primary concern. They never send their troops into hopeless situations in which defeat is certain, preferring instead to preserve their unit’s strength for meaningful battles if sacrifices must be made. If taken too far, this ideology can result in weak commanding officers who lose ground because they aren’t even willing to try. They may gain a reputation for cowardice, which harms both discipline and their own chances for advancement.</Description>
+    <Source Page="17">Lead by Example</Source>
+    <Custom>DescOnly</Custom>
+  </Duty>
+  <Duty>
+    <Key>CAMAR</Key>
+    <Name>Camaraderie</Name>
+    <Description>
+      [H4]Camaraderie[h4]
+[B]Lead by Example - Commanders:[b][BR]Each fighting unit is a family of sorts, and this is equally true within the ranks of the Alliance military. These Commanders seek to bring the troops together in a way that fosters trust, respect, and pride. By fostering the bonds that develop between comrades in combat, Commanders are able to strengthen morale and drive their people to fight harder and better than other, similar units. Unfortunately, camaraderie can have unfortunate results—alienation from fellow units, instances of hazing and initiation within the ranks, and overconfidence in the face of overwhelming odds.</Description>
+    <Source Page="17">Lead by Example</Source>
+    <Custom>DescOnly</Custom>
+  </Duty>
+  <Duty>
+    <Key>ENEMYDEMOR</Key>
+    <Name>Enemy Demoralization</Name>
+    <Description>
+      [H4]Enemy Demoralization[h4]
+[B]Lead by Example - Commanders:[b][BR]
+Undermining enemies' psychological ability to wage war is just as important as defeating them in battle. Commanders realize this, and do their best to ensure that the Empire suffers every defeat on a psychological level. By fostering a unit's notoriety, a Commanders can ensure that that its reputation precedes it among the enemy, thereby weakening the enemy’s resolve before a fight even begins. Once a battle is won, a Commander must ensure that the enemy knows it’s been soundly beaten, though the Commander must take care not to resort to the Empire's brand of brutality.</Description>
+    <Source Page="17">Lead by Example</Source>
+    <Custom>DescOnly</Custom>
+  </Duty>
+  <Duty>
+    <Key>CLEARSKIES</Key>
+    <Name>Clear Skies</Name>
+    <Description>
+      [H4]Clear Skies[h4]
+[B]Forged in Battle - Soldiers:[b][BR]
+This PC recognizes the danger that infantry units face from enemy air power.  a pair of TIE fighters can turn certain victory on the ground into disaster.  This PC always has a plan to take out enemy air support, whether through the judicious use of portable launchers, jammers, camouflage, concealing terrain, or even anti-air emplacement weapons.</Description>
+    <Source Page="17">Forged in Battle</Source>
+    <Custom>DescOnly</Custom>
+  </Duty>
+  <Duty>
+    <Key>MORALE</Key>
+    <Name>Morale</Name>
+    <Description>
+      [H4]Morale[h4]
+[B]Forged in Battle - Soldiers:[b][BR]
+While the troops of the Rebel Alliance know their cause to be just, the hopeless odds stacked against them can be demoralizing.  This PC knows that to have any hope of victory, the freedom fighters have to keep their spirits up, and works to help with this via well-timed jokes or inspirational gestures such as flying the Rebellion's insignia on the battlefield.</Description>
+    <Source Page="17">Forged in Battle</Source>
+    <Custom>DescOnly</Custom>
+  </Duty>
+  <Duty>
+    <Key>PSYCHWAR</Key>
+    <Name>Psychological Warfare</Name>
+    <Description>
+      [H4]Psychological Warfare[h4]
+[B]Forged in Battle - Soldiers:[b][BR]
+While Imperial stormtroopers might appear fearless and disciplined, others within the Imperial Army and Officer Corps aren't as willing to die for the Emperor.  some PCs recognize that it is possible to intimidate, confuse, or frighten an enemy to gain an advantage in an engagement, or avoid one altogether.
+[P]
+[B]Cyphers and Masks - Spy:[b][BR]
+Fear is not only the purview of the Empire. PCs with this Duty attempt to spread fear among enemy forces in an effort to weaken morale and destroy the discipline that is the hallmark of the Imperial Army and Navy. They also regularly combat Imperial propaganda and look within the ranks of the Empire itself for personnel who might easily be swayed into joining the Rebellion.</Description>
+    <Sources>
+      <Source Page="17">Forged in Battle</Source>
+      <Source Page="17">Cyphers and Masks</Source>
+    </Sources>
+    <Custom>CustomItem</Custom>
+  </Duty>
+  <Duty>
+    <Key>NOFEAR</Key>
+    <Name>Fear</Name>
+    <Description>[H4]Fear[h4]
+[B]Imperials:[b][BR]
+Every blaster, every starfighter, and thermal detonator in the hands of the Empire doesn't compare to the overwhelming force that is a proper demonstration of power. Many in the Empire insisted that fear would best demonstrate the Empire's enemies that the will of the New Order cannot be denied, and that compliance is far healthier decision over rebellion. Wherever the Player Character goes, they are certain that the strength of the Empire is demonstrated properly to those who might have forgotten.</Description>
+    <Source>The New Order Duty Chart</Source>
+    <Custom>AddedItem</Custom>
+  </Duty>
+  <Duty>
+    <Key>NOPROPAGANDA</Key>
+    <Name>Propaganda</Name>
+    <Description>[H4]Propaganda[h4]
+[B]Imperials:[b][BR]
+Prone to acts of sabotage and wanton destruction, the Rebel Alliance is talented in the disruption of everyday life. To many of the inhabitants of Imperial worlds, these attacks are often damaging to the local communities, and to the lives of innocent civilians. The Player Character is determined to expose the Rebellion as the insurgents and terrorists they really are, and demonstrate Imperial capacity to protect the peop;e.</Description>
+    <Source>The New Order Duty Chart</Source>
+    <Custom>AddedItem</Custom>
+  </Duty>
+  <Duty>
+    <Key>CHEMBIO</Key>
+    <Name>Chemical/Biological Analysis</Name>
+    <Description>
+      [H4]Chemical/Biological Analysis[h4]
+[B]Fully Operational - Engineer:[b][BR]
+The Player Character identifies enviromental problems from sources biological (alien flora and faunea, viruses, bacteria) or chemical (toxic gases, poisons, heavy metals in the soil).  The Engineer understands that enviroments can damage delicate machinery, make it sieze up, or cause it to perform under spec.  The enviroment can also affect the construction and destruction of structures, and harm or hinder soldiers who have to march through the terrain.</Description>
+    <Source Page="17">Fully Operational</Source>
+    <Custom>DescOnly</Custom>
+  </Duty>
+  <Duty>
+    <Key>CIVOUT</Key>
+    <Name>Civilian Outreach</Name>
+    <Description>
+      [H4]Civilian Outreach[h4]
+[B]Fully Operational - Engineer:[b][BR]
+The PC believes that the Alliance fights for the civilians. That includes spearheading urban repair as well as communicating With the local population to coordinate and establish supply agreements and recruit new trainee mechanics. The Engineer's work. doesn't change, merely the focus. Sometimes, Engineers integrate themselves with the civilian populace to provide technological resources, work with them in resisting the Empire, or prevent civilians from receiving retribution due to Alliance actions.</Description>
+    <Source Page="17">Fully Operational</Source>
+    <Custom>DescOnly</Custom>
+  </Duty>
+  <Duty>
+    <Key>DISREL</Key>
+    <Name>Disaster Relief</Name>
+    <Description>
+      [H4]Disaster Relief[h4]
+[B]Fully Operational - Engineer:[b][BR]
+While similar to Civilian Outreach, Disaster Relief involves procuring and delivering medical supplies, food, water, and temporary shelters after natural or artificial disasters. 
+This PC destroys fallen buildings to clear areas for traffic and repairs buildings to provide safe places to congregate. 
+Ground vehicles, ships, and droids need to be repaired or repurposed to handle rubble and tight urban environments. These Engineers try to help get civilians' lives back to normal.</Description>
+    <Source Page="17">Fully Operational</Source>
+    <Custom>DescOnly</Custom>
+  </Duty>
+  <Duty>
+    <Key>ENVMANIP</Key>
+    <Name>Environmental Manipulation</Name>
+    <Description>
+      [H4]Environmental Manipulation[h4]
+[B]Fully Operational - Engineer:[b][BR]
+These PCs use their skills to alter the environment to clear the way or obstruct passage. This includes constructing and destroying bridges, burrowing around natural and artificial obstructions, and improving or impeding movement. These Engineers also manipulate the environment of outer space, exciting the ions in a nebula to provide sensor cover or harnessing the electromagnetic core of an asteroid to protect a fleet from a solar flare.</Description>
+    <Source Page="17">Fully Operational</Source>
+    <Custom>DescOnly</Custom>
+  </Duty>
+  <Duty>
+    <Key>FIELDTRAIN</Key>
+    <Name>Field Training</Name>
+    <Description>
+      [H4]Field Training[h4]
+[B]Fully Operational - Engineer:[b][BR]
+The PC trains new Engineers and rank-and-file soldiers to use new and old specialty equipment. Some bases schedule classes and provide classroom space so that Engineers can become full-time instructors. Most Alliance outposts don't have these luxuries, however, so Engineers teach by training in the field. Field training includes teaching civilians with potential, either to assist their own communities or to serve as contracted help for the Alliance.</Description>
+    <Source Page="17">Fully Operational</Source>
+    <Custom>DescOnly</Custom>
+  </Duty>
+  <Duty>
+    <Key>MUNITIONS</Key>
+    <Name>Munitions</Name>
+    <Description>
+      [H4]Munitions[h4]
+[B]Fully Operational - Engineer:[b][BR]
+This includes the maintenance and use of ammunition and weapons that should detonate at the appropriate time, or at least shouldn't do so while within the soldier's gun or vehicle.  Work with munitions also includes placing minefields, disarming explosives, and setting explosives to destroy environmental obstacles or enemy fortifications. Those who work with vehicles, starships, or droids often modify the machines to handle and use specialized munitions.</Description>
+    <Source Page="17">Fully Operational</Source>
+    <Custom>DescOnly</Custom>
+  </Duty>
+  <Duty>
+    <Key>RANDD</Key>
+    <Name>Research and Development</Name>
+    <Description>
+      [H4]Research and Development[h4]
+[B]Fully Operational - Engineer:[b][BR]
+Engineers also partake in research and development for technologies and other applied solutions. Necessity is the parent of invention, and every situation, enemy, and environment creates new necessities.  Research can include stealing technology from the enemy or finding it in a ruin. These characters set aside time and resources to keep their base evolving, growing, and learning: that knowledge can also be passed on to other Engineers at other bases.</Description>
+    <Source Page="17">Fully Operational</Source>
+    <Custom>DescOnly</Custom>
+  </Duty>
+  <Duty>
+    <Key>SURVEYENEMY</Key>
+    <Name>Surveying the Enemy</Name>
+    <Description>
+      [H4]Surveying the Enemy[h4]
+[B]Fully Operational - Engineer:[b][BR]
+This PC focuses on the technical aspects of scouting, the gathering of geographical knowledge, and the mapping of data via the use of sensors, drones, droids, and satellites. This includes constructing physical and electronic camouflage to hide a Rebel base and any vehicle movements from Empire scouts. More destructive methods include eliminating similar enemy systems with electromagnetic devices, damaging probes or satellites, and providing snipers and anti-aircraft ordnance data useful in targeting enemy units.</Description>
+    <Source Page="17">Fully Operational</Source>
+    <Custom>DescOnly</Custom>
+  </Duty>
+  <Duty>
+    <Key>SIEGEENG</Key>
+    <Name>Siege Engineering</Name>
+    <Description>
+      [H4]Siege Engineering[h4]
+[B]Fully Operational - Engineer:[b][BR]
+Engineers often set up and build defensive fortifications (bunkers, trenches, and walls), artillery (gun towers, and weapon reinforcements), and orbital defense platforms (ground attack satellites, anti-ship satellites, and orbital flak). Natural formations such as caves, ancient temples., canyons, and even asteroid fields can form the basis of an outpost.  This PC emphasizes the importance of this kind of constructive support in warfare.</Description>
+    <Source Page="17">Fully Operational</Source>
+    <Custom>DescOnly</Custom>
+  </Duty>
+  <Duty>
+    <Key>TESTING</Key>
+    <Name>Testing</Name>
+    <Description>
+      [H4]Testing[h4]
+[B]Fully Operational - Engineer:[b][BR]
+The Alliance often must procure new supplies and technologies from less-than-reputable sources. This PC tests first and tests often. The moment an Engineer neglects safety checks, a device become a dangerous uncertainty. Stolen Imperial technology also carries the risk of sabotage. This PC tests researched technologies and methodologies in controlled labs, during live-fire exercises, and in the middle of battle.</Description>
+    <Source Page="17">Fully Operational</Source>
+    <Custom>DescOnly</Custom>
+  </Duty>
+  <Duty>
+    <Key>TRANSPORT</Key>
+    <Name>Transportation</Name>
+    <Description>
+      [H4]Transportation[h4]
+[B]Fully Operational - Engineer:[b][BR]This PC takes on the responsibility of establishing protected routes to and from a base and the front lines. The Alliance uses a wide variety of transports, ranging from swift airspeeders, agile corvettes, and blocky freighters to slow, wheeled haulers and even pack animals. The character might also recruit private or public civilian transportation organizations. While an army marches on its stomach, this PC would rather it rode instead.</Description>
+    <Source Page="17">Fully Operational</Source>
+    <Custom>DescOnly</Custom>
+  </Duty>
+  <Duty>
+    <Key>RESCUEREC</Key>
+    <Name>Rescue and Recovery/Evac</Name>
+    <Description>
+      [H4]Rescue and Recovery/Evac[h4]
+[B]Fully Operational - Engineer:[b][BR]
+This PC prepares and plans the logistics and execution of rescue operations of both civilians and military personnel. While similar to the Transportation Duty, this work includes defense training, medical support, survival training, observation, and rapid deployment operations. These Engineers live and die by their comms: they need to communicate exactly where they and their personnel are and where they need to be at a moment's notice.</Description>
+    <Source Page="17">Fully Operational</Source>
+    <Custom>DescOnly</Custom>
+  </Duty>
+  <Duty>
+    <Key>SPYCOMMUNICATIONS</Key>
+    <Name>Communications</Name>
+    <Description>[H4]Communications[h4]
+[B]Cyphers and Masks - Spy:[b][BR]
+Player Characters with this Duty understand that the Empire maintains its stranglehold on the galaxy via strong communications network. Whether working locally or across the galaxy, they specialize in deciphering Imperial communications as well as in encrypting and concealing Rebel transmissions. Often these PCs are on the forefront of innovative communication methods, such as using special patterns on fabrics to alert agents of enemy activities or inserting code words into Imperial broadcasts to pass secret messages to sleeper agents.</Description>
+    <Source Page="17">Cyphers and Masks</Source>
+    <Custom>AddedItem</Custom>
+  </Duty>
+  <Duty>
+    <Key>SPYANTIISBEFFORTS</Key>
+    <Name>Anti-ISB Efforts</Name>
+    <Description>[H4]Anti-ISB Efforts[h4]
+[B]Cyphers and Masks - Spy:[b][BR]
+The Empire has a vast information network headed by the Imperial Security Bureau, or ISB. Characters with this Duty focus their efforts on undermining this network with actions that specifically target the ISB, such as feeding false information to its known moles, recovering captured prisoners from ISB detention cells, developing profilers of ISB agents, and ensuring that the hated agency spends its resources chasing dead end leads.</Description>
+    <Source Page="17">Cyphers and Masks</Source>
+    <Custom>AddedItem</Custom>
+  </Duty>
+  <Duty>
+    <Key>SPYCOUNTERMEASURES</Key>
+    <Name>Countermeasures</Name>
+    <Description>[H4]Countermeasures[h4]
+[B]Cyphers and Masks - Spy:[b][BR]
+Characters with this Duty serve as cryptographers, secure communications specialists, and data manipulators. Whether spreading false transmissions across subspace or the HoloNet, crafting new electronic protection to keep Rebel data secure, or slicing into Imperial transmissions and data vaults, they are phantoms in the code, capable of weaving digital misdirection while ensuring Rebel electronics remain secure.</Description>
+    <Source Page="17">Cyphers and Masks</Source>
+    <Custom>AddedItem</Custom>
+  </Duty>
+  <Duty>
+    <Key>SPYDOUBLEAGENTRECRUITMENT</Key>
+    <Name>Double Agent Recruitment</Name>
+    <Description>[H4]Double Agent Recruitment[h4]
+[B]Cyphers and Masks - Spy:[b][BR]
+PCs selecting this Duty focus on turning Imperial personnel–especially its spies–into Rebellion assets. By playing on the sentiments of those who remain idealistic about the betterment of the galaxy, they gain valuable insight from individuals in positions of trust within the Empire. When that fails, tactics such as blackmail, extortion, and other coercive efforts may be necessary in these desperate times.</Description>
+    <Source Page="17">Cyphers and Masks</Source>
+    <Custom>AddedItem</Custom>
+  </Duty>
+  <Duty>
+    <Key>SPYDROIDRETASKING</Key>
+    <Name>Droid Retasking</Name>
+    <Description>[H4]Droid Retasking[h4]
+[B]Cyphers and Masks - Spy:[b][BR]
+While the Empire seems to have an infinite number of organic beings in its service, droids also play a critical role in almost all Imperial operations. PCs with this Duty focus their efforts on disabling and reprogramming these droids to gather intelligence or even setting them against their imperial masters. By attacking this vulnerable and often overlooked Imperial resource, such PCs provide vital aid to the Rebel Alliance.</Description>
+    <Source Page="17">Cyphers and Masks</Source>
+    <Custom>AddedItem</Custom>
+  </Duty>
+  <Duty>
+    <Key>SPYINTERROGATIONRESISTANCE</Key>
+    <Name>Interrogation Resistance</Name>
+    <Description>[H4]Interrogation Resistance[h4]
+[B]Cyphers and Masks - Spy:[b][BR]
+Even the most skilled Rebel agent can be captured and subjected to Imperial interrogation. PCs with this Duty specialize in ensuring that they and their fellow Rebels have the physical and mental fortitude to endure interrogation. They also work to ensure that information critical to the Alliance is compartmentalized and secure, so that agents who are unable to resist Imperial questioning don't compromise the entire Rebellion.</Description>
+    <Source Page="17">Cyphers and Masks</Source>
+    <Custom>AddedItem</Custom>
+  </Duty>
+  <Duty>
+    <Key>SPYLEGENDCRAFTING</Key>
+    <Name>Legend Crafting</Name>
+    <Description>[H4]Legend Crafting[h4]
+[B]Cyphers and Masks - Spy:[b][BR]
+PCs selecting this Duty work to create fictitous histories and evidence to back up an infiltrating Spy's cover identity. Known as legends, these false histories help Spies assume a cover identity that becomes a fully realized person and can be easily presented to others. These efforts usually also include planting falsified information or doctored holos into Imperial databases, so that anyone researching the Spy's cover identity will find a host of data that corroborates the legend, enough to pass rigorous examination.</Description>
+    <Source Page="17">Cyphers and Masks</Source>
+    <Custom>AddedItem</Custom>
+  </Duty>
+  <Duty>
+    <Key>SPYTACTICALINSIGHT</Key>
+    <Name>Tactical Insight</Name>
+    <Description>[H4]Tactical Insight[h4]
+[B]Cyphers and Masks - Spy:[b][BR]
+Wars are sometimes won beforea battle is ever fought. These PCs specialize in gathering information on Imperial military tactics and using these secrets to exploit weakness in the Empire's deployment plans and combat strategies. They also attempt to undermine Imperial tactics by planting false intelligence in Imperial battlefield reports or allowing fabricated reports on Rebel troop movements to "fall into enemy hands."</Description>
+    <Source Page="17">Cyphers and Masks</Source>
+    <Custom>AddedItem</Custom>
+  </Duty>
+  <Duty>
+    <Key>SPYWETWORK</Key>
+    <Name>Wetwork</Name>
+    <Description>[H4]Wetwork[h4]
+[B]Cyphers and Masks - Spy:[b][BR]
+PCs with this Duty know that sometimes questionable, if not downright immoral, acts must be committed in the name of the greater good. The quiet death of a single key individual, after all, can save many lives or keep important secrets buried for good. They're willing to do the unthinkable for the cause, and eliminate or assassinate critical Imperial personnel to prevent or undo a greater evil.</Description>
+    <Source Page="17">Cyphers and Masks</Source>
+    <Custom>AddedItem</Custom>
+  </Duty>
+</Duties>

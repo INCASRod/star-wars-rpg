@@ -1,0 +1,173 @@
+<?xml version="1.0"?>
+<Specialization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>GROUNDSUPP1.0</Key>
+  <Name>Ground Support (reSpecialized) 1.0</Name>
+  <Description>[H4]Ground Support (reSpecialized)[h4]
+[B]GROUND SUPPORT—(Driver Replacement)[b][BR]
+[B]At a Glance[b][BR]
+The Ground Support is the armor, land, and airspeeder pilot that flies in to force multiply, save the day, and otherwise route enemy armor. They’re not afraid to get deep into enemy territory and push through to the other side.[BR]
+[B]All-in or Hybrid?[b][BR]
+½ General Driving w/ Defensive Focus ¼  Tank as Offensive Power ¼ Perception and Force Multiplier [BR]
+[B]What Should it be the Best At?[b][BR]
+Driving bulkier, worse handling vehicles, both on the ground and in space[BR]
+Driving under Poor Conditions[BR]
+Support of Ground operatives[BR]
+[B]What should it be just “good” at?[b][BR]
+General Piloting[BR]
+Navigation in space and on land[BR]
+[B]Specs for Comparison / Inspiration[b][BR]
+[I]Bodyguard[i](A much more personal-scale combatant that transitions to defensive land vehicles. More about being tanky and supporting infantry while inside the vehicle.)[BR]
+[I]Clone Pilot[i](the clone pilot is more about troop transport directly than anything else, but leans into the RAW pilot Direction.)[BR]
+[I]Gunner[i](Less about raw output than the Gunner, more about a holistic land pilot during mixed combat.)[BR]
+[B]Media Touchstones[b][BR]
+Bodhi (Rogue One)[BR]
+</Description>
+  <Source>reSpecialized Project</Source>
+  <Custom>AddedItem</Custom>
+  <CareerSkills>
+    <Key>GUNN</Key>
+    <Key>MECH</Key>
+    <Key>PERC</Key>
+    <Key>PILOTPL</Key>
+  </CareerSkills>
+  <TalentRows>
+    <TalentRow>
+      <Cost>5</Cost>
+      <Talents>
+        <Key>KEENEYED</Key>
+        <Key>GRIT</Key>
+        <Key>LETSRIDE</Key>
+        <Key>FULLTH</Key>
+      </Talents>
+      <Directions>
+        <Direction />
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction />
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>10</Cost>
+      <Talents>
+        <Key>DEFDRI</Key>
+        <Key>FIRESUP</Key>
+        <Key>ALLTERDRIV</Key>
+        <Key>SKILLJOCK</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>15</Cost>
+      <Talents>
+        <Key>GRIT</Key>
+        <Key>FIRSUPIMP</Key>
+        <Key>GEARHD</Key>
+        <Key>FINETUN</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>20</Cost>
+      <Talents>
+        <Key>DEFDRI</Key>
+        <Key>COMBARMS</Key>
+        <Key>FULLSTOP</Key>
+        <Key>FULLTHIMP</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>25</Cost>
+      <Talents>
+        <Key>ATTVEC</Key>
+        <Key>CRASHTHRO</Key>
+        <Key>MASDRIV</Key>
+        <Key>DEDI</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+  </TalentRows>
+  <AddlCareerSkills>
+    <Type />
+  </AddlCareerSkills>
+</Specialization>

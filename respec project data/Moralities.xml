@@ -1,0 +1,2110 @@
+<?xml version="1.0"?>
+<Moralities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Morality>
+    <Key>ENTHUSIASM</Key>
+    <Name>Enthusiasm</Name>
+    <Description>
+      [H4]Enthusiasm (Strength)[h4]
+[B]Force and Destiny Core Rulebook - Generic:[b][BR]
+The character is always ready to try something new, and he approaches all of his tasks, even mundane ones, with excitement. He's not one to overthink a situation, lest he miss a great new opportunity.
+
+[P][B]Savage Spirits - Seekers:[b][BR]Life experiences are to be eagerly embraced. The character is always open to exploring new areas, meeting new people, and attempting new tasks, lest the PC miss out on something.</Description>
+    <Source Page="50">Force and Destiny Core Rulebook</Source>
+    <Custom>CustomItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>RECKLESSNESS</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+        <WeakKey>
+        </WeakKey>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+        <WeakKey>DISARRAY</WeakKey>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>MERCY</Key>
+    <Name>Mercy</Name>
+    <Description>
+      [H4]Mercy (Strength)[h4]
+[B]Force and Destiny Core Rulebook - Generic:[b][BR]
+The character shows mercy toward his foes, dealing with them fairly and honorably. He can spare the defenseless, will help a helpless enemy, and generally does not abuse a position of strength.
+
+[P][B]Keeping the Peace - Guardians:[b][BR]
+The character cannot help but give others a second chance. He never strikes first, and provides every opportunity for an opponent to back down.
+
+[P][B]Disciples of Harmony - Consulars:[b][BR]
+All creatures deserve a second chance so that they might learn from their mistakes. The character is willing to lay down his weapon and offer that chance to former enemies who seek peace and enlightenment.
+
+[P][B]Endless Vigil - Sentinels:[b][BR]
+Transgressions happen all the time. This character has taken a higher path, giving people another chance to be better. Punishment for every transgression only means everyone ends up in chains.</Description>
+    <Source Page="50">Force and Destiny Core Rulebook</Source>
+    <Custom>CustomItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>APATHY</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+        <WeakKey>NAIVETE</WeakKey>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+        <WeakKey>WEARINESS</WeakKey>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+        <WeakKey>NAIVETE</WeakKey>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>CURIOSITY</Key>
+    <Name>Curiosity</Name>
+    <Description>
+      [H4]Curiosity (Strength)[h4]
+[B]Force and Destiny Core Rulebook - Generic:[b][BR]
+The character is driven to learn new things, to seek out and discover new information, and to expand his knowledge and understanding of those things that interest him.
+
+[P][B]Savage Spirits - Seekers:[b][BR]
+The galaxy is filled with wonders, and the goal of any sentient should be to explore and expand understanding of everything it presents. The character is always interested in learning new things and visiting new locations.
+
+[P][B]Disciples of Harmony - Consulars:[b][BR]
+The search for knowledge never ends, and the character is driven to discover all that the galaxy has to offer. Understanding all things and all beings drives the character to seek out wisdom wherever it may be found.</Description>
+    <Source Page="50">Force and Destiny Core Rulebook</Source>
+    <Custom>CustomItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>OBSESSION</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+        <WeakKey>
+        </WeakKey>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>AMBITION</Key>
+    <Name>Ambition</Name>
+    <Description>
+      [H4]Ambition (Strength)[h4]
+[B]Force and Destiny Core Rulebook - Generic:[b][BR]
+An ambitious character sets a lofty goal for himself and then strives to accomplish it. The harder the task, the more willing the character is to take it on, and the greater the triumph when he finally succeeds.
+
+[P][B]Keeping the Peace - Guardians:[b][BR]
+The character has a vision for the future, and that goal drives him to tirelessly accomplish feats in the pursuit of his dream. Setbacks to his objectives are transitory, for he has the drive necessary to overcome any obstacle or trial.
+
+[P][B]Savage Spirits - Seekers:[b][BR]
+The character has got goals, some of which might take years to achieve. With each accomplishment there is another step towards an ultimate reward and the satisfaction of attainment.
+
+[P][B]Disciples of Harmony - Consulars:[b][BR]
+The character is undaunted in his endevours, always seeking to bring peace to the galaxy. Such characters recognize that even though their lofty goals are all but impossible, they must ceaselessly continue their efforts.</Description>
+    <Source Page="50">Force and Destiny Core Rulebook</Source>
+    <Custom>CustomItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>GREED</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+        <WeakKey>IMPATIENCE</WeakKey>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+        <WeakKey>COLDHEART</WeakKey>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+        <WeakKey>IMPATIENCE</WeakKey>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>ANGER</Key>
+    <Name>Anger</Name>
+    <Description>
+      [H4]Anger (Weakness)[h4]
+[B]Force and Destiny Core Rulebook - Generic:[b][BR]
+Hot blood, however, can easily lead to hot tempers. The character is quick to anger, and what he cannot deal with face-to-face can often frustrate him to the point of rage.</Description>
+    <Source>Force and Destiny Core Rulebook</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>JEALOUSY</Key>
+    <Name>Jealousy</Name>
+    <Description>
+      [H4]Jealousy (Weakness)[h4]
+[B]Force and Destiny Core Rulebook - Generic:[b][BR]
+Love, if not given selflessly, can quickly turn to jealousy. The character's personality Lends toward envy if his love is not reciprocated, or sometimes he simply envies others' accomplishments or possessions.
+
+[P][B]Keeping the Peace - Guardians:[b][BR]
+At times, the character is so enamored that he cannot stand to see the object of his love rely upon anyone else.
+
+[P][B]Savage Spirits - Seekers:[b][BR]
+Love can become twisted, especially when one party does not feel it as paroperly reciprocated. The character becomes insecure and resentful, lashing out at any percieved rivals.
+
+[P][B]Disciples of Harmony - Consulars:[b][BR]
+At times, the character is so devoted that he cannot stand to see the subject of his love turn to others. This can lead to envy or a lack of appreciation.</Description>
+    <Source>Force and Destiny Core Rulebook</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>FEAR</Key>
+    <Name>Fear</Name>
+    <Description>
+      [H4]Fear (Weakness)[h4]
+[B]Force and Destiny Core Rulebook - Generic:[b][BR]
+The line between caution and fear is a thin one. Sometimes the character spends too much time concerned about the potential problems of a situation to act in that situation at all. At other times, his caution causes him to flee when danger presents itself, through bolder action might reap real rewards.
+
+[P][B]Savage Spirits - Seekers:[b][BR]
+Excessive caution can easily become lost to fear. The PC becomes consumed with the potential dangerous outcomes of decisions and actively seeks to avoid or even actively flee conflict of any kind.
+
+[P][B]Endless Vigil - Sentinels:[b][BR]
+While fear often forces a person into inaction, it can also propel a character into an ill-advised action. Letting fear guide one's actions means never preparing, never giving forethought.
+
+[P][B]Knights of Fate - Warriors:[b][BR]Having seen too many battles and too much bloodshed, the character is painfully aware of the possibility of failure, defeat, or death. This can make the character slow to act, or even unwilling to act at all.
+
+[P][B]Unlimited Power - Mystics:[b][BR]
+So much can go wrong.  the Force is in a precarious balance.  Perhaps it's best to let a little suffering go unimpeded now, so the future can be more certain.  Perhaps this is safe, unless that future never comes.</Description>
+    <Source>Force and Destiny Core Rulebook</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>RECKLESSNESS</Key>
+    <Name>Recklessness</Name>
+    <Description>
+      [H4]Recklessness (Weakness)[h4]
+[B]Force and Destiny Core Rulebook - Generic:[b][BR]
+Of course, a little thought can go a long way towards saving someone from a major mistake, which this character may find out to his sorrow on more than one occasion. Reckless behavior can leave him in dangerous situations or at the mercy of more calculating individuals.
+
+[P][B]Keeping the Peace - Guardians:[b][BR]
+The character's zeal for protecting others often comes at the cost of protecting himself. The character sometimes neglects to consider his own well being as a priority, and suffers the consequences.
+
+[P][B]Savage Spirits - Seekers:[b][BR]
+While bravery is admirable, refusing to properly analyze a situation before acting is not. The character often leaps to act when more forethought would lead to other, more prudent decisions.
+
+[P][B]Knights of Fate - Warriors:[b][BR]
+The character is too sure of success and is heedless of personal or others' safety, rushing headfirst into danger and taking risks that might jeopardize a mission.</Description>
+    <Sources>
+      <Source Page="50">Force and Destiny Core Rulebook</Source>
+      <Source Page="16">Knights of Fate</Source>
+    </Sources>
+    <Custom>CustomItem</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>HATRED</Key>
+    <Name>Hatred</Name>
+    <Description>
+      [H4]Hatred (Weakness)[h4]
+[B]Force and Destiny Core Rulebook - Generic:[b][BR]
+The galaxy can be a cruel and heartless place, compassion can quickly turn to hatred of the individuals or situations that, cause others to suffer. When a character's mind rolls with simmering hatred, that hatred may be all too slow to fade.
+
+[P][B]Keeping the Peace - Guardians:[b][BR]
+The character gives no quarter to those who inflict suffering on others, he quickly adopts the bitterness of the tormented souls he helps, even to the point of clouding his vision as to the true severity of the offense.
+
+[P][B]Disciples of Harmony - Consulars:[b][BR]
+Those who have no capacity for compassion deserve none for themselves. The character is quick to mercilessly dispatch beings whi breed suffering, not considering whether such beings can be saved themselves.
+
+[P][B]Endless Vigil - Sentinels:[b][BR]
+Seeing so much suffering causes the character to differenciate between the good people who deserve help and the bad who deserve hate. Having clearly identified the bad, the character can now blame them for the suffering.</Description>
+    <Source>Force and Destiny Core Rulebook</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>APATHY</Key>
+    <Name>Weakness</Name>
+    <Description>
+      [H4]Weakness (Weakness)[h4]
+[B]Force and Destiny Core Rulebook - Generic:[b][BR]
+There is a fine line between showing mercy to one's foes and letting evil fester because one does not want to engage with it. The character may let bad things happen simply because it is too hard to deal with them.</Description>
+    <Source>Force and Destiny Core Rulebook</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>OBSESSION</Key>
+    <Name>Obsession</Name>
+    <Description>
+      [H4]Obsession (Weakness)[h4]
+[B]Force and Destiny Core Rulebook - Generic:[b][BR]
+Sometimes, interest in something can turn to obsession if not tempered with reason. The character can slip into an obsessive state about his need to discover information, accomplish a goal, or even defeat a rival, and he may ignore all else until success is his.
+
+[P][B]Keeping the Peace - Guardians:[b][BR]
+The character sometimes becomes oblivious to the larger picture, focusing on one thing at a time to the total exclusion of others. Those tasks he does not do fully he does not do at all.
+
+[P][B]Savage Spirits - Seekers:[b][BR]
+Inqusitiveness about new things leads to new intense examinations of a single subject or item. The character often turns an interest into an obsession to the exclusion of all else, and the object of obsession drives the PC's existance.
+
+[P][B]Disciples of Harmony - Consulars:[b][BR]
+The character can become fixated on a particular area of knowledge and cast aside prudence and patience in a self-serving desire to achieve ultimate enlightenment.
+
+[P][B]Knights of Fate - Warriors:[b][BR]
+The character has a tendency to focus on one  thing to the exclusion of all else and fails to see the bigger picture. The character has no regard for personal safety and neglects the safety of others.</Description>
+    <Sources>
+      <Source Page="50">Force and Destiny Core Rulebook</Source>
+      <Source Page="16">Knights of Fate</Source>
+    </Sources>
+    <Custom>CustomItem</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>ARROGANCE</Key>
+    <Name>Arrogance</Name>
+    <Description>
+      [H4]Arrogance (Weakness)[h4]
+[B]Force and Destiny Core Rulebook - Generic:[b][BR]
+Pride, among all emotions, is perhaps the easiest to fall to a darker form. Arrogance mirrors pride, but satisfaction in one's accomplishments is replaced with contempt for others failings. It is not enough to succeed: the character also expects all others to fail.
+
+[P][B]Keeping the Peace - Guardians:[b][BR]
+The character is so preoccupied with his own accomplishments that he fails to acknowledge those of others. At his worst, he belittles their attempts as inferior to his own.
+
+[P][B]Savage Spirits - Seekers:[b][BR]
+A lifetime of independent successful actions breeds a smug and egotistical outlook in the character. None are as able as the PC, and this overconfidence can easily lead to catastrophe.
+
+[P][B]Disciples of Harmony - Consulars:[b][BR]
+The character's role and accomplishments are something he feels must be recognized by those around him. Such characters often fail to acknowledge the beings who came before them and belittle those who arew not part of their quest.
+
+[P][B]Endless Vigil - Sentinels:[b][BR]By making oneself the pinnacle of achievement, all others fall short. Soon, no one is worthy of the character's time or consideration.
+
+[P][B]Knights of Fate - Warriors:[b][BR]
+The character believes in their own superiority, and so underestimates foes and friends alike. Prone to forgetting personal flaws. this character makes mistakes, failing to consider the possibility of failure.
+
+[P][B]Unlimited Power - Mystics:[b][BR]
+By tapping into the Cosmic Force, Mystics can control tremendous amounts of power. This may deceive Mystics into believing they are gods.</Description>
+    <Sources>
+      <Source Page="50">Force and Destiny Core Rulebook</Source>
+      <Source Page="16">Knights of Fate</Source>
+    </Sources>
+    <Custom>CustomItem</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>COLDNESS</Key>
+    <Name>Coldness</Name>
+    <Description>
+      [H4]Coldness (Weakness)[h4]
+[B]Force and Destiny Core Rulebook - Generic:[b][BR]
+Self-reliance can slip into isolation if one is not careful. A cold character doesn't just desire to rely only on himself, but has nothing but disinterest for anyone else If they can't help themselves, why should he aid them?
+
+[P][B]Keeping the Peace - Guardians:[b][BR]The character has such disdain for those who submit to the will of others that he cannot relate to them. When asked for his opinion, he rejects the opportunity to share, feeling that the other party should reach his own conclusion.
+
+[P][B]Unlimited Power - Mystics:[b][BR]
+Mystics have a special vulnerability to removing themselves from mortal emotions and concerns. A single life has no significance to the Force, and so these Mystics turn cold to the world.</Description>
+    <Source>Force and Destiny Core Rulebook</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>GREED</Key>
+    <Name>Greed</Name>
+    <Description>
+      [H4]Greed (Weakness)[h4]
+[B]Force and Destiny Core Rulebook - Generic:[b][BR]
+An ambitious character is only as selfless as his goals. Those who strive For worldly pleasures, whether power, wealth, or personal comforts, can quickly find their ambition turning to simple greed.</Description>
+    <Source>Force and Destiny Core Rulebook</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>CRUELTY</Key>
+    <Name>Cruelty</Name>
+    <Description>
+      [H4]Cruelty (Weakness)[h4]
+[B]Force and Destiny Core Rulebook - Generic:[b][BR]
+All too often, the cruel use justice to excuse their actions. If one stops himself from tempering justice with empathy and understanding, he can inflict great harm on others and feel justified doing it. Eventually, he can grow to revel in the suffering of others, even as he deludes himself Into thinking he makes the "just" choice.
+
+[P][B]Keeping the Peace - Guardians:[b][BR]The character has a tendency to retaliate excessively, trying to make the perpetrators of evil get what they "deserve," even when vindictive justice merely creates more misery and feeds the ongoing cycle of retribution.
+
+[P][B]Endless Vigil - Sentinels:[b][BR]This character not only serves as a self-appointed judge and executioner but also starts to believe that influcting pain is a fitting punishment. How else are the wicked supposed to learn?</Description>
+    <Source>Force and Destiny Core Rulebook</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>OBSTINATENESS</Key>
+    <Name>Obstinance</Name>
+    <Description>
+      [H4]Obstinance (Weakness)[h4]
+[B]Force and Destiny Core Rulebook - Generic:[b][BR]
+Disciplined characters may fall into the trap of simple stubbornness if they are not careful. An obstinate character often refuses to consider any course of action other than the one he chooses, unwilling to accept that someone else may have conceived of a better option.
+
+[P][B]Unlimited Power - Mystics:[b][BR]
+Trust in the Force sometimes turns dark and becomes a denial that other people, especially those who aren't experienced in the ways of the Force, can ever have knowledge or feelings more relevant , more important, or better-suited to a situation than the Mystic's.
+
+[B]Savage Spirits - Seekers:[b][BR]
+Firm convictions can mask an excessively stubborn nature that pushes aside any hesitation about or reflection upon a desired goal. The PC's mind never changes once committed even in light of contradictory evidence.
+[P]
+[B]Knights of Fate - Warriors:[b][BR]
+Once this character has become determined about something or formed an opinion, no one can dissuade or reason with them, This character believes that to change one's mind or one's cause is to show weakness, even if a situation has altered or become hopeless.</Description>
+    <Sources>
+      <Source Page="50">Force and Destiny Core Rulebook</Source>
+      <Source>Unlimited Power</Source>
+      <Source>Knights of Fate</Source>
+      <Source>Savage Spirits</Source>
+    </Sources>
+    <Custom>CustomItem</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>INTOLERANCE</Key>
+    <Name>Intolerance</Name>
+    <Description>
+      [H4]Intolerance (Weakness)[h4]
+[B]Keeping the Peace - Guardians:[b][BR]
+A strict adherence to the rules means that the character is unwilling to adapt even when extenuating circumstances should provide an exception. His code keeps him from pursuing his own desires, and perhaps even what he believes is just. 
+
+[P][B]Disciples of Harmony - Consular:[b][BR] The character has little respect for those who are indulgent or complain about the difficulties they face. There is little place in the character's heart for those who constantly dwell upon their own difficulties.</Description>
+    <Source>Keeping the Peace</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>NAIVETE</Key>
+    <Name>REMOVE Naïveté</Name>
+    <Description>REMOVE</Description>
+    <Sources>
+      <Source Page="17">Keeping the Peace</Source>
+      <Source Page="16">Knights of Fate</Source>
+    </Sources>
+    <Custom>CustomItem</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>IMPATIENCE</Key>
+    <Name>Impatience</Name>
+    <Description>
+      [H4]Impatience (Weakness)[h4]
+[B]Keeping the Peace - Guardians:[b][BR]
+The many great things that the character wants to achieve are not all possible in one lifetime, so the character sometimes makes compromises in order to achieve more. His need for immediate achievement might even prove self-destructive, interfering with his long-term goals.
+[P]
+[B]Disciples of Harmony:[b] In their zeal, these characters often do not recognize that the results of their efforts can take years or even decades to come to fruition. When results are not forthcoming, they can become bitter or disillusioned with their own ideals.</Description>
+    <Source>Keeping the Peace</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>CONSISTENCY</Key>
+    <Name>Consistency</Name>
+    <Description>
+      [H4]Consistency (Strength)[h4]
+[B]Keeping the Peace - Guardians:[b][BR]
+The character can be counted on to do the things the same way every time. Whether its a  morning cup of caf or a routine security scan, he is punctual and dependable, and strange circumstances or bad luck do not weaken his commitment.</Description>
+    <Source Page="17">Keeping the Peace</Source>
+    <Custom>CustomItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>OBSTINATENESS</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>INDECISION</Key>
+    <Name>Indecision</Name>
+    <Description>
+      [H4]Indecision (Weakness)[h4]
+[B]Keeping the Peace - Guardians:[b][BR]
+The desire to be ready for anything means that the character's preparations are cumbersome. When faced with unknowns, he may become paralyzed with uncertainty at all the possibilities he must account for.
+[P]
+[B]Disciples of Harmony:[b] The character can sometimes spend far too long considering a matter, unable to find the confidence necessary to make a hard choice. Faced with a situation that demands immediate reaction, the character is unable to make any choice at all.</Description>
+    <Source>Keeping the Peace</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>DOGMATIC</Key>
+    <Name>Dogmatic</Name>
+    <Description>
+      [H4]Dogmatic (Weakness)[h4]
+[B]Endless Vigil - Sentinels:[b][BR]
+When pressed or emotionally burned out, this character falls back on rigid edicts instead of context. It takes emotional energy to grasp all points of view, and sometimes there isn't time.</Description>
+    <Source Page="17">Endless Vigil</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>VANITY</Key>
+    <Name>Vanity</Name>
+    <Description>
+      [H4]Vanity (Weakness)[h4]
+[B]Endless Vigil - Sentinels:[b][BR]
+The character turns self-deference into false modesty, denigrating himself and expecting others to bolster his ego. A twisted passive-aggressiveness can emerge in which the character demends recognition for this modesty.
+
+[P][B]Knights of Fate - Warriors:[b][BR]
+The character is more concerned with appearing to do the right thing ensuring an outcome that benefits everyone. Believing themselves to be a hero, the character wants to prove this to others and to receive praise for these efforts.
+
+[P][B]Unlimited Power:[b] The Mystic turns self-deference Into false modesty, denigrating themselves and expecting others to bolster their ego. A twisted passive-aggressiveness can emerge, in which the Mystic demands recognition for this modesty.</Description>
+    <Sources>
+      <Source Page="17">Endless Vigil</Source>
+      <Source Page="16">Knights of Fate</Source>
+    </Sources>
+    <Custom>CustomItem</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>GUARDED</Key>
+    <Name>Guardedness</Name>
+    <Description>
+      [H4]Guardedness (Weakness)[h4]
+[B]Endless Vigil - Sentinels:[b][BR]
+The character has been betrayed one too many times and refuses to allow it to happen again. Why expect better of a person when there is no reward for doing so?</Description>
+    <Source Page="17">Endless Vigil</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>WEARINESS</Key>
+    <Name>Weariness</Name>
+    <Description>
+      [H4]Weariness (Weakness)[h4]
+[B]Endless Vigil - Sentinels:[b][BR]
+Even a saint can burn out. It's not that people don't deserve help or a second chance, it's that there is always another. And another. And another. Soon this tide becomes faceless and even suffering becomes abstract.</Description>
+    <Source Page="17">Endless Vigil</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>SPITE</Key>
+    <Name>Spite</Name>
+    <Description>
+      [H4]Spite (Weakness)[h4]
+[B]Endless Vigil - Sentinels:[b][BR]
+The character deliberately tries to upset or hurt those beneath him. Indulgence in this pettieness comes easily as these individuals deserve contempt.</Description>
+    <Source Page="17">Endless Vigil</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>EMPATHY</Key>
+    <Name>Empathy</Name>
+    <Description>
+      [H4]Empathy (Strength)[h4]
+[B]Savage Spirits - Seekers:[b][BR]
+The character easily understands and even feels the emotions of those nearby, even then they are guarding their true feelings. Knowing how their actions affect others the character is careful to treat others with kindness and dignity.</Description>
+    <Source Page="17">Savage Spirits</Source>
+    <Custom>CustomItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>VENGEANCE</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+        <WeakKey>
+        </WeakKey>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>CONDEMN</Key>
+    <Name>Condemnation</Name>
+    <Description>
+      [H4]Condemnation (Weakness)[h4]
+[B]Endless Vigil - Sentinels:[b][BR]
+The character inisists on a standard that no one can bear. This includes the condemnation of the self, punishing oneself for transgressions imagined or actual.</Description>
+    <Source Page="17">Endless Vigil</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>ALIENATION</Key>
+    <Name>Alienation</Name>
+    <Description>
+      [H4]Alienation (Weakness)[h4]
+[B]Endless Vigil - Sentinels:[b][BR]
+With too many people and too many problems, the character gets overwhelmed and withdraws. The city continues on, ignoring any one person. Why not let time take care of the problem?</Description>
+    <Source Page="17">Endless Vigil</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>CLOSEDMIND</Key>
+    <Name>Closed-mindedness</Name>
+    <Description>
+      [H4]Closed-mindedness (Weakness)[h4]
+[B]Savage Spirits - Seekers:[b][BR]
+Studious discipline, however,can bring about intolerance and disregard for outside input. When deciding a course of action, the character often refuses any outside ideas that might deviate from internal viewpoints.</Description>
+    <Source Page="17">Savage Spirits</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>ASSERTIVENESS</Key>
+    <Name>Assertiveness</Name>
+    <Description>
+      [H4]Assertiveness (Strength)[h4]
+[P][B]Savage Spirits - Seekers:[b][BR] In all things, the character is quite determined and steadfast. No matter the situation, the PC shows no hint of idleness or weakness in speeh or action, only firm conviction.</Description>
+    <Source Page="17">Savage Spirits</Source>
+    <Custom>CustomItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>OBSTINACY</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>DEFIANCE</Key>
+    <Name>Defiance</Name>
+    <Description>
+      [H4]Defiance (Weakness)[h4]
+[B]Endless Vigil - Sentinels:[b][BR]
+The character mistakes defiance for bravery. This merely serves to cause tension and trouble for others, while generating a false sense of personal satisfaction.</Description>
+    <Source Page="17">Endless Vigil</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>COLDHEART</Key>
+    <Name>Cold-Heartedness</Name>
+    <Description>
+      [H4]Cold-heartedness (Weakness)[h4]
+[B]Savage Spirits - Seekers:[b][BR]
+The drive needed to reach these goals can make the character set aside any concepts of compassion. Only the PC's own personal goals matter, with little care if any others are broken and cast aside as he rises.</Description>
+    <Source Page="17">Savage Spirits</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>OBSTINACY</Key>
+    <Name>REMOVE Obstinacy</Name>
+    <Description>REMOVE</Description>
+    <Source Page="17">Savage Spirits</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>DISDAIN</Key>
+    <Name>Disdain</Name>
+    <Description>
+      [H4]Disdain (Weakness)[h4]
+[B]Savage Spirits - Seekers:[b][BR]
+Pride in one's self turns dark, and the character views others with utter contempt and scorn. None are worthy of the PC's company, they seem to exist only stand in the way.</Description>
+    <Source Page="17">Savage Spirits</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>DISARRAY</Key>
+    <Name>Disarray</Name>
+    <Description>
+      [H4]Disarray (Weakness)[h4]
+[B]Savage Spirits - Seekers:[b][BR]
+In a rush of enthusiastic energy, there is little attempt to truly appreciate or master any one item. The character is easily diverted whenever a new attraction appears, often leaving tasks incomplete or threats unresolved.</Description>
+    <Source Page="17">Savage Spirits</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>VENGEANCE</Key>
+    <Name>Vengeance</Name>
+    <Description>
+      [H4]Vengeance (Weakness)[h4]
+[B]Savage Spirits - Seekers:[b][BR]
+Caring overly for others, especially victims, can lead the character to desire revenge against those who made them suffer. Only when such targets are tracked down and brought low can balance be restored.</Description>
+    <Source Page="17">Savage Spirits</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>FRUGAL</Key>
+    <Name>Frugality</Name>
+    <Description>
+      [H4]Frugality (Strength)[h4]
+[B]Endless Vigil - Sentinels:[b][BR]
+There is strength inliving a simple life, not just in eschewing possessions but also in keeping relationships simple, so as not to be distracted from the bigger picture.</Description>
+    <Source Page="17">Endless Vigil</Source>
+    <Custom>CustomItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>CONDEMN</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>WONDER</Key>
+    <Name>Wonder</Name>
+    <Description>
+      [H4]Wonder (Strength)[h4]
+[B]Endless Vigil - Sentinels:[b][BR]
+In a city, every day provides a new adventure. This keeps the character connected, always learning, and alive. The city teaches the character to remain open to new experiences as it surprises daily.</Description>
+    <Source Page="17">Endless Vigil</Source>
+    <Custom>CustomItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>ALIENATION</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>RIGHT</Key>
+    <Name>Righteousness</Name>
+    <Description>
+      [H4]Righteousness (Strength)[h4]
+[B]Endless Vigil - Sentinels:[b][BR]
+The character takes anger and instead of suppressing it, uses it to fuel work. Pushing harder allows him to advocate for those who can't do so for themselves.</Description>
+    <Source Page="17">Endless Vigil</Source>
+    <Custom>CustomItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>SPITE</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>TRUST</Key>
+    <Name>Trust</Name>
+    <Description>
+      [H4]Trust (Strength)[h4]
+[B]Endless Vigil - Sentinels:[b][BR]
+This character believes in giving everyone the benefit of the doubt. The good that comes from trusting others builds communities and provides emotional support.</Description>
+    <Source Page="17">Endless Vigil</Source>
+    <Custom>CustomItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>GUARDED</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>MALLEAB</Key>
+    <Name>Malleability</Name>
+    <Description>
+      [H4]Malleability (Strength)[h4]
+[B]Endless Vigil - Sentinels:[b][BR]
+This character is morally and ethically flexible and judges situations and others based on reletive circumstance for the good of the community rather than on a strict legal code.</Description>
+    <Source Page="17">Endless Vigil</Source>
+    <Custom>CustomItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>DOGMATIC</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>MERCILESSNESS</Key>
+    <Name>Mercilessness</Name>
+    <Description>
+      [H4]Mercilessness (Weakness)[h4]
+[B]Savage Spirits - Seekers:[b][BR]
+The quest for justice can turn the character away from concepts of pity or remorse. The PC is concerned only with laws or a personal code, no matter the situation or mitigating factors.</Description>
+    <Source Page="17">Savage Spirits</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>MYSTICSORROW</Key>
+    <Name>REMOVE Sorrow</Name>
+    <Description>REMOVE</Description>
+    <Source Page="17">Unlimited Power</Source>
+    <Custom>AddedItem</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>MYSTICEGOISM</Key>
+    <Name>REMOVE Egoism</Name>
+    <Description>REMOVE</Description>
+    <Source Page="17">Unlimited Power</Source>
+    <Custom>AddedItem</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>MYSTICCONFUSION</Key>
+    <Name>REMOVE Confusion</Name>
+    <Description>REMOVE</Description>
+    <Source Page="17">Unlimited Power</Source>
+    <Custom>AddedItem</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>MYSTICWORTHLESSNESS</Key>
+    <Name>REMOVE Worthlessness</Name>
+    <Description>REMOVE</Description>
+    <Source Page="17">Unlimited Power</Source>
+    <Custom>AddedItem</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>MYSTICRIGID</Key>
+    <Name>REMOVE Rigid</Name>
+    <Description>REMOVE</Description>
+    <Source Page="17">Unlimited Power</Source>
+    <Custom>AddedItem</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>MYSTICANTIPATHY</Key>
+    <Name>Antipathy</Name>
+    <Description>[H4]Antipathy (Weakness)[h4]
+[B]Unlimited Power - Mystics:[b][BR]
+Unlike Coldness, this Mystic still has emotional engagements, but simply doesn't understand the magnitude of pain. This kind of insensitivity ignores the fact that pain, even when fleeting, ripples harm throughout time and space.</Description>
+    <Source Page="17">Unlimited Power</Source>
+    <Custom>AddedItem</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>MYSTICDEMANDING</Key>
+    <Name>REMOVE Demanding</Name>
+    <Description>[H4]Demanding (Weakness)[h4]
+[B]Unlimited Power - Mystics:[b][BR]
+Sometimes over-protectiveness turns into controlling behavior. How else to save someone than to prevent them from making mistakes? This behavior treats people as smaller, less than even a pet, requiring constant control.</Description>
+    <Source Page="17">Unlimited Power</Source>
+    <Custom>AddedItem</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>REASON</Key>
+    <Name>Reason</Name>
+    <Description>
+      [H4]Reason (Strength)[h4]
+[B]Disciples of Harmony - Consulars:[b][BR]
+The character is able to look at situations objectively, and observe the natural state of things without being influenced by strong emotions.</Description>
+    <Source Page="15">Disciples of Harmony</Source>
+    <Custom>CustomItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>APATHYW</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>CLEVER</Key>
+    <Name>Cleverness</Name>
+    <Description>
+      [H4]Cleverness (Strength)[h4]
+[B]Disciples of Harmony - Consulars:[b][BR]
+By observing beings and situations in an unorthodox manner, the character gains a new and unique understanding. This allows the character to approach problems from an unexpected angle and produce original solutions.</Description>
+    <Source Page="15">Disciples of Harmony</Source>
+    <Custom>CustomItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>SOPH</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>PATIENT</Key>
+    <Name>Patience</Name>
+    <Description>
+      [H4]Patience (Strength)[h4]
+[B]Disciples of Harmony - Consulars:[b][BR]
+The character faces delay and obstruction with a calm mind, recognizing that in time all things will reveal themselves as the Force wills it. The character keeps a steady mind in even the most frustrating circumstances.
+    </Description>
+    <Source Page="15">Disciples of Harmony</Source>
+    <Custom>CustomItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>CONDES</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>CHARITY</Key>
+    <Name>Charity</Name>
+    <Description>
+      [H4]Charity (Strength)[h4]
+[B]Disciples of Harmony - Consulars:[b][BR]
+The character gives endlessly, both in counsel and of his own possessions, without any thought of reward. By providing to those who are less fortunate than herself, she is able to bring harmony and ease the burdens of others.</Description>
+    <Source Page="15">Disciples of Harmony</Source>
+    <Custom>CustomItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>MARTYR</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>APATHYW</Key>
+    <Name>Apathy</Name>
+    <Description>
+      [H4]Apathy (Weakness)[h4]
+[B]Disciples of Harmony - Consulars:[b][BR]
+The character's skills at detached observation can often lead to a cold pragmatism in which the emotional cost is not taken into consideration.</Description>
+    <Source Page="15">Disciples of Harmony</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>SOPH</Key>
+    <Name>Sophism</Name>
+    <Description>
+      [H4]Sophism (Weakness)[h4]
+[B]Disciples of Harmony - Consulars:[b][BR]
+The character's unique perspective can lead to the assmption that those who do not share the character's insight are somehow less enlightened and should be reminded of that.</Description>
+    <Source Page="15">Disciples of Harmony</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>CONDES</Key>
+    <Name>Condescension</Name>
+    <Description>
+      [H4]Condescension (Weakness)[h4]
+[B]Disciples of Harmony - Consulars:[b][BR]
+The character often treats less patient bengs like children and dsmisses their concerns. As a result, the character may overlook valuable insight from friends and allies.
+    </Description>
+    <Source Page="15">Disciples of Harmony</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>MARTYR</Key>
+    <Name>Martyrdom</Name>
+    <Description>
+      [H4]Martyrdom (Weakness)[h4]
+[B]Disciples of Harmony - Consulars:[b][BR]
+The character gets frustrated when others do not recognize the sacrafices she has made. Such characters see those they have aided as ungrateful, or worse, unworthy of the things they have been given.</Description>
+    <Source Page="15">Disciples of Harmony</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>CONFORMITY</Key>
+    <Name>Conformity</Name>
+    <Description>[H4]Conformity (Weakness)[h4]
+[B]Knights of Fate - Warriors:[b][BR]
+When working with others, this character has a tendency to value the group above all else, seeing the opinions of outsiders as less important. The character also forgets to trust personal instincts, preferring fit in with the group rather than voice a differing opinion.</Description>
+    <Source Page="16">Knights of Fate</Source>
+    <Custom>AddedItem</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>JUDGING</Key>
+    <Name>Judging</Name>
+    <Description>[H4]Judging (Weakness)[h4]
+[B]Knights of Fate - Warriors:[b][BR]
+Believeing they have a right to pass judgement on others, this character expects their personal morals and rules to apply wherever they go. Refusing to show mercy to those who have not shown mercy to others, whatever the circumstances, the character makes them pay.</Description>
+    <Source Page="16">Knights of Fate</Source>
+    <Custom>AddedItem</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>HESITANCY</Key>
+    <Name>Hesitancy</Name>
+    <Description>[H4]Hesitancy (Weakness)[h4]
+[B]Knights of Fate - Warriors:[b][BR]
+The character is inclined to be too careful, overthinking and second-guessing even when immediate action is called for.</Description>
+    <Source Page="16">Knights of Fate</Source>
+    <Custom>AddedItem</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>DESPERATION</Key>
+    <Name>Desperation</Name>
+    <Description>[H4]Desperation (Weakness)[h4]
+[B]Knights of Fate - Warriors:[b][BR]
+The character cares so much for the plights of others that emotions cloud the character's mind. When surrounded by suffering, the character forgets to stay alert, loses the will to act, or behaves impulsively.</Description>
+    <Source Page="16">Knights of Fate</Source>
+    <Custom>AddedItem</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>REPRESSION</Key>
+    <Name>Repression</Name>
+    <Description>[H4]Repression (Weakness)[h4]
+[B]Knights of Fate - Warriors:[b][BR]
+The character considers relaxation and leisure activities superfluous or harmful and expects everyone to be just as disciplined. They look down on those who do not likewise work ceaselessly to better themselves and fight for change.
+</Description>
+    <Source Page="16">Knights of Fate</Source>
+    <Custom>AddedItem</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>CAUTION</Key>
+    <Name>Caution</Name>
+    <Description>
+      [H4]Caution (Strength)[h4]
+[B]Force and Destiny Core Rulebook - Generic:[b][BR]
+The character possesses commendable prudence, willing to always look before he leaps into a new situation. His forward-thinking ways may have saved his fellows from dangerous situations on numerous occasions.
+
+[P][B]Keeping the Peace - Guardians:[b][BR]The character is meticulously careful and ready for danger at all times. Nothing escapes his notice, and he always has an exit plan for every situation prepared in advance.
+
+[P][B]Savage Spirits - Seekers:[b][BR]
+The character gives care and attention to every decision, judging all aspects of a situation before undertaking any action. By thinking ahead, the PC avoids many poor outcomes.
+
+[P][B]Disciples of Harmony - Consulars:[b][BR]
+By being wary and observing all the variables of a situation, the character is able to make an informed decision. By considering his actions, the character can make the most effective choice.
+
+[P][B]Endless Vigil - Sentinels:[b][BR]
+The character understands that those caught in a conflict are the most vulnerable. Being reckless only serves those in power, who have the time and resources to develop counter-plans.
+
+[P][B]Knights of Fate - Warriors:[b][BR]
+The character is willing to face danger but is realistic about the outcome, avoiding fights that are unlikely to end well or that might put bystanders in danger.
+
+[P][B]Unlimited Power - Mystics:[b][BR]
+The Cosmic Force moves in a span of eons.  Pushing too hard usually requires turning to the dark side of the Force.  That desire, that fear, is the reason for the fall.  Best to move carefully and let the Force move at its own pace.</Description>
+    <Source Page="50">Force and Destiny Core Rulebook</Source>
+    <Custom>CustomItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>FEAR</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+        <WeakKey>INDECISION</WeakKey>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+        <WeakKey>INDECISION</WeakKey>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>BRAVERY</Key>
+    <Name>Bravery</Name>
+    <Description>
+      [H4]Bravery (Strength)[h4]
+[B]Force and Destiny Core Rulebook - Generic:[b][BR]
+The characters bravery is quite remarkable. Whether facing down a charging rancor or racing into a burning building to save innocents, he is always willing to take risks to help others.
+
+[P][B]Keeping the Peace - Guardians:[b][BR]The character places the well-being of others as his utmost priority. He faces incredible odds without a second thought and never backs down from a challenge.
+
+[P][B]Savage Spirits - Seekers:[b][BR]
+When action is needed, there is no hesitation despite the dangers. The character puts aside any fears before acting, whether navigating a ship through hazardous routes or engaging in combat against formidable foes.
+
+[P][B]Endless Vigil - Sentinels:[b][BR]
+The character either defies fear or respects it, using it as a guide. Fear means opportunity for action, and bravery comes from taking the risks that others will not.
+
+[P][B]Knights of Fate - Warriors:[b][BR]
+The character may face the possibility of death and defeat, but fights on regardless and shows no fear.</Description>
+    <Source Page="50">Force and Destiny Core Rulebook</Source>
+    <Custom>CustomItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>ANGER</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+        <WeakKey>RECKLESSNESS</WeakKey>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+        <WeakKey>RECKLESSNESS</WeakKey>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+        <WeakKey>DEFIANCE</WeakKey>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+        <WeakKey>RECKLESSNESS</WeakKey>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>LOVE</Key>
+    <Name>Love</Name>
+    <Description>
+      [H4]Love (Strength)[h4]
+[B]Force and Destiny Core Rulebook - Generic:[b][BR]
+The character has an open heart. While he may hold a special place in his heart for his companions or a significant other, he tends to genuinely like most individuals he meets. His love for others can make him charming and affable, and exceedingly tolerant.
+
+[P][B]Keeping the Peace - Guardians:[b][BR]
+The character has a deep, abiding affection for someone or something, and the passion and happiness it brings out in him is infectious.
+
+[P][B]Savage Spirits - Seekers:[b][BR]
+The character is open to love and can cherish the happiness of others. An open heart greatly aids the PC when interacting with others and can lead to strong emotional bonds.
+
+[P][B]Disciples of Harmony - Consulars:[b][BR]
+The character has a gentle and kindly affection for someone or some group. This unwavering dedication is an inspiration to those around the character.</Description>
+    <Source Page="50">Force and Destiny Core Rulebook</Source>
+    <Custom>CustomItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>JEALOUSY</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>COMPASSION</Key>
+    <Name>Compassion</Name>
+    <Description>
+      [H4]Compassion (Strength)[h4]
+[B]Force and Destiny Core Rulebook - Generic:[b][BR]
+The character cares about the tribulations others face, and wants to help those he comes across. His compassion may lead to self-sacrifice in order to aid those who need it.
+
+[P][B]Keeping the Peace - Guardians:[b][BR]
+The character is never blind to the needs of others, and actively volunteers his help whenever the opportunity arises. He keeps no privilege to himself, but gladly shares his every blessing with those less fortunate.
+
+[P][B]Disciples of Harmony - Consulars:[b][BR]
+All beings are important in the FOrce, and the character never hesitates to offer aid to those who are in need. The desire to alleviate suffering is paramount to the character.
+
+[P][B]Endless Vigil - Sentinels:[b][BR]
+This character takes the time to engage with the troubles of a stranger (and there are so many). This can range from offering a willing ear to providing clothing and other support.
+
+[P][B]Unlimited Power - Mystics:[b][BR]
+Mystic Compassion is different, representing a universal compassion, a love for all life, from the lowly worm to the most noble of philosophers.  All beings belong with the Force and all deserve to know its peace.</Description>
+    <Source Page="50">Force and Destiny Core Rulebook</Source>
+    <Custom>CustomItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>HATRED</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+        <WeakKey>MYSTICSORROW</WeakKey>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>PRIDE</Key>
+    <Name>Pride</Name>
+    <Description>
+      [H4]Pride (Strength)[h4]
+[B]Force and Destiny Core Rulebook - Generic:[b][BR]
+Pride can be a powerful emotion, and can push a character to impressive feats of personal accomplishment. He strives to be the best and to lake pleasure in his skills.
+
+[P][B]Keeping the Peace - Guardians:[b][BR]
+The character sees his own legacy and impact on the world as paramount, so he takes care that his actions will have positive long-term effects.
+
+[P][B]Savage Spirits - Seekers:[b][BR]
+The character is rightfully proud of hard-earned abilities and accomplishments. Many years have likely been spent in training, study, and meditation, few can say they are the PC's equal.
+
+[P][B]Disciples of Harmony - Consulars:[b][BR]
+The character takes strength from bringing peace and enlightenment to the galaxy and recognizing that those efforts are not in vain. Such characters see themselves as valuable in their role as peacekeepers during these dark times.
+
+[P][B]Endless Vigil - Sentinels:[b][BR]This character might take pride in personal accomplishments, but definitely takes pride in the work of others and of the community. When a community succeeds, it justifies the character's efforts.
+
+[P][B]Unlimited Power - Mystics:[b][BR]
+While pride might seem dangerous, this is a pride in being part of something bigger, with a greater purpose. Prideful Mystics know they can make a change for the better.</Description>
+    <Source Page="50">Force and Destiny Core Rulebook</Source>
+    <Custom>CustomItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>ARROGANCE</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+        <WeakKey>DISDAIN</WeakKey>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>INDEPENDENCE</Key>
+    <Name>Independence</Name>
+    <Description>
+      [H4]Independence (Strength)[h4]
+[B]Force and Destiny Core Rulebook - Generic:[b][BR]
+The character believes in relying on himself. He does not count on others to perform tasks for him, instead, he ensures he can handle any situation he encounters. He refuses to be a burden on others.
+
+[P][B]Keeping the Peace - Guardians:[b][BR]
+The character operates on his own internal sense of justice, without falling into a pack mentality of letting others make decisions for him. He always applies his principles as he sees fit, which leads him to find both good and bad where others might not.
+
+[P][B]Savage Spirits - Seekers:[b][BR]
+Self-reliance is the watchword, for depending on others is a sign of weakness. Often refusing aid, the character never counts on others when an action can be performed personally.
+
+[P][B]Unlimited Power - Mystics:[b][BR]
+With trust in the Force comes an independence and a lack of reliance on other people, This isn't a bad trait; these Mystics may still enjoy the company of others, but their happiness doesn't require others to act or think in a certain way. This allows Mystics to appreciate a person for who they are.</Description>
+    <Source Page="50">Force and Destiny Core Rulebook</Source>
+    <Custom>CustomItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>COLDNESS</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+        <WeakKey>ARROGANCE</WeakKey>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+        <WeakKey>OBSTINATENESS</WeakKey>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>JUSTICE</Key>
+    <Name>Justice</Name>
+    <Description>
+      [H4]Justice (Strength)[h4]
+[B]Force and Destiny Core Rulebook - Generic:[b][BR]
+The character strives for just and deliberate actions in his life, and in his interactions with others. He attempts to make the objectively right choice every time, knowing that justice is more likely to guarantee positive outcomes than sympathy or other emotional displays.
+
+[P][B]Keeping the Peace - Guardians:[b][BR]
+The character is confident in making the decisions that he knows are right, whether or not they are in line with society's moral values. He recognizes how appropriate rewards and punishments affect all sentients' behavior in the long term.
+
+[P][B]Savage Spirits - Seekers:[b][BR]
+The character lives to see wrongdoers punished and their deeds undone. Seeking to make things right regardless of the situation or obstacles the character often acts as arbiter of a personal code.
+
+[P][B]Endless Vigil - Sentinels:[b][BR]
+A strong sense of right and wrong means the character's focus becomes sharp and intense when a wrong is identified. Correcting a wrong brings a strong sense of satisfaction.
+
+[P][B]Knights of Fate - Warriors:[b][BR]
+The character feels responsible for punishing the wicked and saving, or avenging, the good. This character likes to work on the right side of local laws, where possible.</Description>
+    <Source Page="50">Force and Destiny Core Rulebook</Source>
+    <Custom>CustomItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>CRUELTY</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+        <WeakKey>MERCILESSNESS</WeakKey>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+        <WeakKey>JUDGING</WeakKey>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>DISCIPLINE</Key>
+    <Name>Discipline</Name>
+    <Description>
+      [H4]Discipline (Strength)[h4]
+[B]Force and Destiny Core Rulebook - Generic:[b][BR]
+Rigorous mental and physical discipline comes naturally to the character. He does not make choices rashly, and every action is precise and selected. Those who think they can goad the character into making foolish choices are sorely mistaken.
+
+[P][B]Keeping the Peace - Guardians:[b][BR]
+The character has superb self-control and believes in principles and rules above all else. He is adept at removing his own biases from the decision-making process, and thus he very rarely acts rashly or in a selfish manner.
+
+[P][B]Savage Spirits - Seekers:[b][BR]
+The character is focused on internal mental and physical regimens. Few decisions or actions are made without thought. Such is the PC's control that these are rarely made in haste or for poor reasons.
+
+[P][B]Disciples of Harmony - Consulars:[b][BR]
+Self-mastery is key in all things for the character. Emotions and desires must be recognized and controlled, preventing rash and reckless acts that might inadvertently endanger those she is trying to help.
+
+[P][B]Knights of Fate - Warriors:[b][BR]
+The character has extraordinary self-control and focus, and sets a good example to others. This character's skills and reflexes are sharp from constant training and practice.
+
+[P][B]Unlimited Power - Mystics:[b][BR]
+Mystics especially need discipline to keep from being overwhelmed by the Force.  Some Mystics want to be overwhelmed and lose themselves. The Force provides so much peace and understanding, but the Mystic must focus so the physical world can receive this insight.</Description>
+    <Source Page="50">Force and Destiny Core Rulebook</Source>
+    <Custom>CustomItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>OBSTINATENESS</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+        <WeakKey>INTOLERANCE</WeakKey>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+        <WeakKey>CLOSEDMIND</WeakKey>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+        <WeakKey>INTOLERANCE</WeakKey>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+        <WeakKey>REPRESSION</WeakKey>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+        <WeakKey>COLDNESS</WeakKey>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>MODESTY</Key>
+    <Name>Modesty</Name>
+    <Description>
+      [H4]Modesty (Strength)[h4]
+[B]Endless Vigil - Sentinels:[b][BR]
+The character eschews credit and thanks. After all, anyone can do this work. This attitude ensures discpline and focus to the task at hand and thus helping others and reducing suffering.
+
+[P][B]Unlimited Power:[b] Mystics eschew credit and thanks. After all, anyone can do this work. This attitude ensures discipline and focus to the task at hand, and thus the Mystics focus on helping others and reducing suffering.</Description>
+    <Source Page="17">Endless Vigil</Source>
+    <Custom>CustomItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>VANITY</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>DEDICATION</Key>
+    <Name>Dedication</Name>
+    <Description>
+      [H4]Dedication (Strength)[h4]
+[B]Keeping the Peace - Guardians:[b][BR]
+The character does not do things halfway. He takes every responsibility to its end and he commits his full power to everything he does.
+
+[P][B]Knights of Fate - Warriors:[b][BR]
+The character remains focused on current duties, training, or the job at hand. Possibly loyal to a cause or creed, the character is willing to sacrifice their life itself for those beliefs, if that is necessary.</Description>
+    <Sources>
+      <Source Page="17">Keeping the Peace</Source>
+      <Source Page="16">Knights of Fate</Source>
+    </Sources>
+    <Custom>CustomItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>OBSESSION</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>CONFIDENCE</Key>
+    <Name>Confidence</Name>
+    <Description>[H4]Confidence (Strength)[h4]
+[B]Knights of Fate - Warriors:[b][BR]
+The character believes in their own abilities, knowing exactly what is possible on a personal level. and refuses to be intimidated. This character also places faith in trusted friends.</Description>
+    <Source Page="16">Knights of Fate</Source>
+    <Custom>AddedItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>ARROGANCE</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>CAMARADERIE</Key>
+    <Name>Camaraderie</Name>
+    <Description>[H4]Camaraderie (Strength)[h4]
+[B]Knights of Fate - Warriors:[b][BR]
+The character works well as part of a team whether leading or following, remaining loyal to comrades no matter what The character is quick to recognize the strengths and weaknesses of others and works to ensure the group stays together and functions effectively.</Description>
+    <Source Page="16">Knights of Fate</Source>
+    <Custom>AddedItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>CONFORMITY</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>CONVICTION</Key>
+    <Name>Conviction</Name>
+    <Description>[H4]Conviction (Strength)[h4]
+[B]Knights of Fate - Warriors:[b][BR]
+The character makes quick decisions and sees them through without hesitating. Believing in personal action and the ability to achieve one's goals, this character never gives up on a task.</Description>
+    <Source Page="16">Knights of Fate</Source>
+    <Custom>AddedItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>OBSTINACY</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>HONOR</Key>
+    <Name>Honor</Name>
+    <Description>[H4]Honor (Strength)[h4]
+[B]Knights of Fate - Warriors:[b][BR]
+The character has a personal moral code, and never crosses the line it delineates. Others learn to respect the character's principles, but for this character, it is personal honor that matters, not what others think.</Description>
+    <Source Page="16">Knights of Fate</Source>
+    <Custom>AddedItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>VANITY</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>CONSIDERATION</Key>
+    <Name>Consideration</Name>
+    <Description>[H4]Consideration (Strength)[h4]
+[B]Knights of Fate - Warriors:[b][BR]
+The character does not act before being sure of all the facts or assessing an opponent's strengths and weaknesses. This character always considers the consequences of personal actions.</Description>
+    <Source Page="16">Knights of Fate</Source>
+    <Custom>AddedItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>HESITANCY</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>SYMPATHY</Key>
+    <Name>Sympathy</Name>
+    <Description>[H4]Sympathy (Strength)[h4]
+[B]Knights of Fate - Warriors:[b][BR]
+The character genuinely feels for others, sharing their pain and so acting to reduce it, showing mercy and compassion.</Description>
+    <Source Page="16">Knights of Fate</Source>
+    <Custom>AddedItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>DESPERATION</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>IDEALISM</Key>
+    <Name>Idealism</Name>
+    <Description>[H4]Idealism (Strength)[h4]
+[B]Knights of Fate - Warriors:[b][BR]
+The character believes the galaxy is fundamentally good, and fights to keep it so. This character knows that even partial successes and minor victories help to make the galaxy a better place for all.</Description>
+    <Source Page="16">Knights of Fate</Source>
+    <Custom>AddedItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>NAIVETE</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Unlimited Power</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>MYSTICCERTAINTY</Key>
+    <Name>REMOVE Certainty</Name>
+    <Description>REMOVE</Description>
+    <Source Page="17">Unlimited Power</Source>
+    <Custom>AddedItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>MYSTICEGOISM</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>MYSTICCLARITY</Key>
+    <Name>REMOVE Clarity</Name>
+    <Description>REMOVE</Description>
+    <Source Page="17">Unlimited Power</Source>
+    <Custom>AddedItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>MYSTICCONFUSION</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>MYSTICHUMILITY</Key>
+    <Name>REMOVE Humility</Name>
+    <Description>REMOVE</Description>
+    <Source Page="17">Unlimited Power</Source>
+    <Custom>AddedItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>MYSTICWORTHLESSNESS</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>MYSTICWELLNESS</Key>
+    <Name>REMOVE Wellness</Name>
+    <Description>REMOVE</Description>
+    <Source Page="17">Unlimited Power</Source>
+    <Custom>AddedItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>MYSTICRIGID</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>MYSTICJOY</Key>
+    <Name>REMOVE Joy</Name>
+    <Description>REMOVE</Description>
+    <Source Page="17">Unlimited Power</Source>
+    <Custom>AddedItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>MYSTICANTIPATHY</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>MYSTICFONDNESS</Key>
+    <Name>REMOVE Fondness</Name>
+    <Description>REMOVE</Description>
+    <Source Page="17">Unlimited Power</Source>
+    <Custom>AddedItem</Custom>
+    <Type>Strength</Type>
+    <WeakKey>MYSTICDEMANDING</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>DEMANDING</Key>
+    <Name>Demanding</Name>
+    <Description>      [H4]Demanding (Weakness)[h4]
+Sometimes over-protectiveness turns into controlling behavior. How else to save someone than to prevent them from making mistakes? This behavior treats people as smaller, less than even a pet, requiring constant control.</Description>
+    <Source Page="17">Unlimited Power</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>EGOISM</Key>
+    <Name>Egoism</Name>
+    <Description>      [H4]Egoism (Weakness)[h4]
+Confidence can turn into recklessness or stubbornness. When Mystics think themselves invulnerable or correct at all times, they think the Force revolves around them.  This egoism may cause a Mystic to make a fatal error and bring others to harm.</Description>
+    <Source Page="17">Unlimited Power</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>CERTAINTY</Key>
+    <Name>Certainty</Name>
+    <Description>
+      [H4]Certainty (Strength)[h4]
+This doesn't simply cover confidence or positivity, but also an unshakable faith of the Force. The Mystic dives into conflict without hesitation, for there is no conflict, only the Force ebbing and flowing. revolves around them.</Description>
+    <Source Page="17">Unlimited Power</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Strength</Type>
+    <WeakKey>EGOISM</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>CLARITY</Key>
+    <Name>Clarity</Name>
+    <Description>
+      [H4]Clarity (Strength)[h4]
+Certainty relies on faith. Clarity relies on knowledge. These Mystics know without a doubt that the path they walk is the right one and can communicate it to others without misunderstanding. 
+    </Description>
+    <Source Page="17">Unlimited Power</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Strength</Type>
+    <WeakKey>CONFUSION</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>CONFUSION</Key>
+    <Name>Confusion</Name>
+    <Description>      [H4]Confusion (Weakness)[h4]
+With visions come possibilities. The future isn't set in stone, but a river that can flow in one direction or another. When Mystics delve deep into the future, they may become paralyzed by the myriad of possibilities.
+    </Description>
+    <Source Page="17">Unlimited Power</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>FONDNESS</Key>
+    <Name>Fondness</Name>
+    <Description>      [H4]Fondness (Strength)[h4]
+This Mystic has a kind of mentor-like love, the good feeling that comes with guiding and helping people.  This feeling should be unconditional; they wish their students to grow, change, and surpass their teachings.
+    </Description>
+    <Source Page="17">Unlimited Power</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Strength</Type>
+    <WeakKey>DEMANDING</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>HUMILITY</Key>
+    <Name>Humility</Name>
+    <Description>      [H4]Humility (Strength)[h4]
+The Force is so much bigger than any one individual, and Mystics know they are merely drops in the pond. This frees them to act when needed without fear that they are taking on too much.</Description>
+    <Source Page="17">Unlimited Power</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Strength</Type>
+    <WeakKey>WORTHLESSNESS</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>JOY</Key>
+    <Name>Joy</Name>
+    <Description>[H4]Joy (Strength)[h4]
+
+Despite, or because of, Mystics' ability to see into the past and the future, some learn to enjoy the beauty of the moment, person, or place in front of them, Each instance is unique, even in the timelessness of the Cosmic Force.</Description>
+    <Source Page="17">Unlimited Power</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Strength</Type>
+    <WeakKey>ANTIPATHY</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>NAIVETY</Key>
+    <Name>Naivety</Name>
+    <Description>      [H4]Naïveté (Weakness)[h4]
+[B]Keeping the Peace - Guardians:[b][BR]
+Cunning foes take advantage of the characters generosity, trying his patience as they try to get away with as much as they can. The PC's inability to identify false contrition sometimes lets crafty villains off the hook.
+
+[P][B]Disciples of Harmony - Consulars:[b][BR]
+The character only sees the good in all beings and can easily be influenced by a cunning foe. This can lead to bitterness, betrayal, and terrible consequences for a seeingly noble act.
+
+[P][B]Knights of Fate - Warriors:[b][BR]
+The character has a vision of what the galaxy and its inhabitants should be like and sometimes sees according to wish rather than reality. They are too trusting.</Description>
+    <Sources>
+      <Source Page="16">Knights of Fate</Source>
+      <Source Page="16">Disciples of Harmony</Source>
+      <Source Page="17">Keeping the Peace</Source>
+    </Sources>
+    <Custom>CustomItem</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>RIGID</Key>
+    <Name>Rigid</Name>
+    <Description>[H4]Rigid (Weakness)[h4]
+
+Knowing one's place sometimes means becoming complacent, becoming unable to change, grow, or  conceive of a better way. They think the way things are should always be the same.</Description>
+    <Source Page="17">Unlimited Power</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>SORROW</Key>
+    <Name>Sorrow</Name>
+    <Description>[H4]Sorrow (Weakness)[h4]
+
+The galaxy is a big place, and with so many people suffering, it can overwhelm a mystic.  How can a single person help anyone else when there is so much unhappiness?  The Mystic lets sorrow paralyze, or worse, affect their use of the Force.</Description>
+    <Source Page="17">Unlimited Power</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+  <Morality>
+    <Key>WELLNESS</Key>
+    <Name>Wellness</Name>
+    <Description>      [H4]Wellness (Strength)[h4]
+The Mystic gains a form of happiness and satisfaction in good works and knowing one's place in the community. They work. which is good; they depend on others. which is good; and they prosper, which is good.
+    </Description>
+    <Source Page="17">Unlimited Power</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Strength</Type>
+    <WeakKey>RIGID</WeakKey>
+    <Pairs>
+      <MoralityPair>
+        <Name>Keeping the Peace</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Savage Spirits</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Endless Vigil</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Disciples of Harmony</Name>
+      </MoralityPair>
+      <MoralityPair>
+        <Name>Knights of Fate</Name>
+      </MoralityPair>
+    </Pairs>
+  </Morality>
+  <Morality>
+    <Key>WORTHLESSNESS</Key>
+    <Name>Worthlessness</Name>
+    <Description>      [H4]Worthlessness (Weakness)[h4]
+Knowing oneself to be insignificant in the light of the Force can overwhelm anyone, and a Mystic more so. The Force always has a purpose and a place for everyone, but Mystics may feel their actions are useless.
+    </Description>
+    <Source Page="17">Unlimited Power</Source>
+    <Custom>DescOnly</Custom>
+    <Type>Weakness</Type>
+  </Morality>
+</Moralities>

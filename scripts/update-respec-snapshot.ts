@@ -234,13 +234,37 @@ async function parseCareers(): Promise<RespecCareer[]> {
 }
 
 // ── Force Power parser (NEW — parse-respec.ts never handled this directory) ───
-// Groups files by their internal <Key> (not filename), since filenames are
-// inconsistent (e.g. "Commune 1.0.xml" vs "Commune (reSpecialized) 1.0.xml"
-// both contain <Key>COMMUNE</Key>). Per key, prefers a file whose name marks
-// it as the reSpec revision ("reSpecialized"/"Respec"); ties broken by
-// alphabetically-last filename (same tie-break rule parse-respec.ts documents
-// for specs — numeric version suffixes like 1.0/1.1/1.31 happen to sort
-// correctly as strings too).
+// CORRECTED (post-migration-100 fix): groups files by CONCEPT (normalized
+// display name, via normalizePowerName — declared below, hoisted for this use)
+// rather than by literal internal <Key>. The literal-key grouping used through
+// migration 100 was the root cause of the "two Alters" bug: a ReSpecialized
+// source file frequently carries a DIFFERENT internal key than its plain
+// predecessor (USERFP1 for Alter, IMBUERE for Imbue, BATTLEMEDRE for Battle
+// Meditation, etc.) — keying by literal <Key> silently produced two live rows
+// per concept instead of one. Per CONFIRMED RULE: only the ReSpecialized/Respec
+// -tagged file is ever canonical; there is never more than one live row per
+// concept. Ties among multiple ReSpecialized files for one concept are broken
+// by alphabetically-last filename (numeric version suffixes like 1.0/1.1/1.31
+// happen to sort correctly as strings too, same convention as the spec parser).
+//
+// The DB key written for a concept is the SHARED/ORIGINAL key already used by
+// existing ref_force_abilities.power_key values when a plain (non-tagged)
+// variant exists for that concept — never the ReSpecialized file's own
+// internal key when it diverges. Concepts with no plain predecessor in this
+// source tree (Commune, Insight, Psychometry, Valor/Horrify) keep the
+// ReSpecialized file's own key (sanitized if it contains characters invalid
+// in a bare identifier, e.g. "VALOR/HORRIFY" -> "VALORHORRIFY").
+//
+// Conjure is a deliberate exception to "plain variant wins on key": respec's
+// source tree has no plain Conjure.xml, only "Conjure (reSpecialized).xml"
+// (key CONJURERE) — confirmed the bare CONJURE key's only respec-side
+// referencers (9 ability rows: CONJUREBASICPOWER, CONJURECONTROL, etc.) do not
+// appear anywhere in the current Force Abilities.xml, i.e. they're stale
+// leftovers from an earlier, superseded tree layout, not live content. CONJURE
+// therefore stays purely an oggdude-dataset key; respec's live Conjure power
+// is correctly CONJURERE (falls out of the "no predecessor" branch below with
+// zero special-casing needed) and the 9 stale ability rows are retired
+// separately in the migration, not merged.
 
 interface ForcePowerRow {
   index: number
@@ -290,6 +314,22 @@ function isRespecTagged(fileName: string): boolean {
   return /respecialized|respec/i.test(fileName)
 }
 
+/** Concepts with no file in this session's respec source tree at all — no
+ * ReSpecialized redesign exists for them, but respec-dataset ability rows
+ * still reference them (via LIVE_CONFIRMED_POWER_FALLBACK name resolution).
+ * Content is sourced straight from the oggdude original (same tree either
+ * dataset), since that's the only source that exists. Confirmed live via
+ * Supabase MCP on 2026-07-27 — not a guess; extend only after the same check. */
+const NO_RESPEC_FILE_OGGDUDE_FALLBACK: Record<string, string> = {
+  JERINF: "Jerserra's Influence.xml",
+}
+
+/** Strips characters that are valid in FFG source data but not safe as a bare
+ * SQL/app identifier (only "VALOR/HORRIFY" needs this today). */
+function sanitizeKey(key: string): string {
+  return key.replace(/[^A-Za-z0-9_]/g, '')
+}
+
 interface ParsedForcePower {
   key: string
   name: string
@@ -297,6 +337,21 @@ interface ParsedForcePower {
   rows: ForcePowerRow[]
   canonicalFile: string
   allFiles: ForcePowerFile[] // every file variant that resolved to this key — used for power_key name resolution
+}
+
+/** Concept-grouping name mismatches confirmed by manual review, not
+ * auto-fuzzy-matched: the plain "Imbue.xml" file is named just "Imbue" while
+ * every respec-tagged variant is named "Imbue/Exhaust (...)" (its correct
+ * dual-purpose FFG name) — normalizePowerName alone can't unify these since
+ * the words themselves differ, not just tags/version numbers. Left-hand side
+ * must already be run through normalizePowerName(). */
+const CONCEPT_GROUP_ALIASES: Record<string, string> = {
+  'imbue/exhaust': 'imbue',
+}
+
+function conceptGroupKey(rawName: string): string {
+  const normalized = normalizePowerName(rawName)
+  return CONCEPT_GROUP_ALIASES[normalized] ?? normalized
 }
 
 async function parseForcePowers(): Promise<ParsedForcePower[]> {
@@ -308,23 +363,54 @@ async function parseForcePowers(): Promise<ParsedForcePower[]> {
     parsed.push(await parseForcePowerFile(path.join(dir, f)))
   }
 
-  const byKey = new Map<string, ForcePowerFile[]>()
+  // Group by CONCEPT (normalized name, with manual alias overrides for known
+  // mismatches), not literal <Key> — see header comment.
+  const byConcept = new Map<string, ForcePowerFile[]>()
   for (const p of parsed) {
-    if (!byKey.has(p.key)) byKey.set(p.key, [])
-    byKey.get(p.key)!.push(p)
+    const concept = conceptGroupKey(p.name)
+    if (!byConcept.has(concept)) byConcept.set(concept, [])
+    byConcept.get(concept)!.push(p)
   }
 
   const result: ParsedForcePower[] = []
-  for (const [key, variants] of byKey) {
+  for (const variants of byConcept.values()) {
     const respecVariants = variants.filter(v => isRespecTagged(v.fileName)).sort((a, b) => a.fileName.localeCompare(b.fileName))
+    const plainVariants = variants.filter(v => !isRespecTagged(v.fileName))
     const canonical = respecVariants.length > 0 ? respecVariants[respecVariants.length - 1] : variants[0]
+
+    // Shared/original key wins when a plain predecessor exists for this
+    // concept (e.g. ALTER, not USERFP1) — even though its content is
+    // discarded in favor of the ReSpecialized file. No plain predecessor
+    // (Commune, Insight, Psychometry, Valor/Horrify, Conjure) -> keep the
+    // canonical file's own key, sanitized if needed.
+    const dbKey = plainVariants.length > 0 ? plainVariants[0].key : sanitizeKey(canonical.key)
+
     result.push({
-      key,
+      key: dbKey,
       name: canonical.name,
       description: canonical.description,
       rows: canonical.rows,
       canonicalFile: canonical.fileName,
       allFiles: variants,
+    })
+  }
+
+  // Concepts with zero files in respec's source tree but with live
+  // respec-dataset ability referencers — pull content straight from oggdude.
+  for (const [key, oggdudeFile] of Object.entries(NO_RESPEC_FILE_OGGDUDE_FALLBACK)) {
+    const oggdudePath = path.join(__dirname, '..', 'oggdude', 'DataCustom', 'Force Powers', oggdudeFile)
+    if (!fs.existsSync(oggdudePath)) {
+      console.warn(`WARNING: fallback source missing for ${key}: ${oggdudePath}`)
+      continue
+    }
+    const parsed = await parseForcePowerFile(oggdudePath)
+    result.push({
+      key,
+      name: parsed.name,
+      description: parsed.description,
+      rows: parsed.rows,
+      canonicalFile: oggdudeFile + ' (oggdude fallback, no respec redesign exists)',
+      allFiles: [parsed],
     })
   }
 
@@ -498,15 +584,15 @@ function buildCareersSql(careers: RespecCareer[]): string[] {
 
 function buildForcePowersSql(powers: ParsedForcePower[]): string[] {
   const lines: string[] = []
-  lines.push('-- ref_force_powers — upsert keyed on (key) only, table has no dataset_source column')
-  lines.push('-- Shared with oggdude-keyed abilities where the power key already existed (e.g. MOVE, ALTER):')
-  lines.push('-- updating this row affects both datasets, since there is only one row per power key.')
+  lines.push('-- ref_force_powers (respec) — requires the dataset_source/is_retired columns and')
+  lines.push('-- composite (key, dataset_source) PK added in the companion schema migration to')
+  lines.push('-- run first. One row per concept, tagged respec — never shared with the oggdude row.')
   for (const p of powers) {
     const tree = `'${JSON.stringify({ rows: p.rows }).replace(/'/g, "''")}'::jsonb`
     lines.push(
-      `INSERT INTO ref_force_powers (key, name, description, min_force_rating, sources, ability_tree)` +
-      ` VALUES (${sqlStr(p.key)}, ${sqlStr(p.name)}, ${sqlEsc(p.description)}, 1, NULL, ${tree})` +
-      ` ON CONFLICT (key) DO UPDATE SET` +
+      `INSERT INTO ref_force_powers (key, name, description, min_force_rating, sources, ability_tree, dataset_source, is_retired)` +
+      ` VALUES (${sqlStr(p.key)}, ${sqlStr(p.name)}, ${sqlEsc(p.description)}, 1, NULL, ${tree}, 'respec', false)` +
+      ` ON CONFLICT (key, dataset_source) DO UPDATE SET` +
       ` name = EXCLUDED.name, description = EXCLUDED.description, ability_tree = EXCLUDED.ability_tree;`
     )
   }

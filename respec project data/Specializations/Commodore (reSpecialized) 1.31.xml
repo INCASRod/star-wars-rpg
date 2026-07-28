@@ -1,0 +1,172 @@
+<?xml version="1.0"?>
+<Specialization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>COMMODORERES</Key>
+  <Name>Commodore (reSpecialized) 1.31</Name>
+  <Description>[H4]Commodore (reSpecialized)[h4]
+[B]COMMODORE—CAPITOL COMMAND[b][BR]
+[B]At a Glance[b][BR]
+The Commodore is a bit of a misnomer, as the title would presume a literal command or rank. In reality, Commodore covers the full gamut of command, tactical, and technical positions that would find themself stationed on the bridge or command deck of a capital ship. The Commodore is the captain, the helmsman, or the technical officer, potentially all three.[BR]
+[B]All-in or Hybrid?[b][BR]
+¼ Generic “Capital Ship Leadership” ⅛ Damage Management (Education) ⅛ Systems Management (Computers) ⅛ Navigation (Outer Rim &amp; Astrogation) ¼ Astrogation (Duh)[b][BR]
+[B]What Should it be the Best At?[b][BR]
+Helming and Command of Capital Ships[BR]
+[B]What should it be just “good” at?[b][BR]
+Leadership[BR]
+General Computers &amp; Knowledge[BR]
+[B]Specs for Comparison / Inspiration[b][BR]
+[I]Tactician[i](The Tactician is a Operational-level army leader, so they are obviously more about managing planetary warfare and infantry/armor)[BR]
+[I]Ship Captain[i](Ship Captains are more about their ship, and generally are about trade, social skills, and bolstering the party passively. The Commodore is more of a technical role in addition to being a leader.)[BR]
+[I]Republic Navy Officer[i](The Republic Navy Officer is a little more aggressive than the Commodore, who is a more balanced, utility oriented leader)[BR]
+[B]Media Touchstones[b][BR]
+Admiral Ackbar (Episode VI: Return of the Jedi)[BR]
+Admiral Raddus (Rogue One)[BR]
+Captain John Sheridan (Babylon 5)[BR]
+Commander Susan Ivonova (Babylon 5)[BR]
+Admiral Adama (Battlestar Galactica)[BR]</Description>
+  <Source>reSpecialized Project</Source>
+  <Custom>AddedItem</Custom>
+  <CareerSkills>
+    <Key>ASTRO</Key>
+    <Key>COMP</Key>
+    <Key>EDU</Key>
+    <Key>OUT</Key>
+  </CareerSkills>
+  <TalentRows>
+    <TalentRow>
+      <Cost>5</Cost>
+      <Talents>
+        <Key>RESEARCH</Key>
+        <Key>GALMAP</Key>
+        <Key>FLAGSHIP</Key>
+        <Key>COM</Key>
+      </Talents>
+      <Directions>
+        <Direction />
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction />
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>10</Cost>
+      <Talents>
+        <Key>UNDERADA</Key>
+        <Key>FLANSPEE</Key>
+        <Key>COMMPRES</Key>
+        <Key>GRIT</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>15</Cost>
+      <Talents>
+        <Key>GRIT</Key>
+        <Key>MASSTAR</Key>
+        <Key>FIRECON</Key>
+        <Key>PORTCALL</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>20</Cost>
+      <Talents>
+        <Key>EMERBULK</Key>
+        <Key>RECKREPO</Key>
+        <Key>COM</Key>
+        <Key>FLASHIIMP</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>25</Cost>
+      <Talents>
+        <Key>RECREPIMP</Key>
+        <Key>HYPASSAULT</Key>
+        <Key>DEDI</Key>
+        <Key>TAKEFEW</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+        </Direction>
+      </Directions>
+    </TalentRow>
+  </TalentRows>
+  <AddlCareerSkills>
+    <Type />
+  </AddlCareerSkills>
+</Specialization>

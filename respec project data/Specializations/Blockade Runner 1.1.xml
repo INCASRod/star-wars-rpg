@@ -1,0 +1,165 @@
+<?xml version="1.0"?>
+<Specialization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>BLORUN</Key>
+  <Name>Blockade Runner 1.1</Name>
+  <Description>[H4]Blockade Runner[h4]
+[B]At a Glance[b]
+[BR]The Blockade runner is the pilot that can outrun anything, avoid detection, and generally makes it impossible to be pinned down, or worse, impounded.
+[P][B]All-in or Hybrid?[b]
+[BR]½ Generic, defensive-leaning Pilot, ¼ Navigator w/ a Focus on Obfuscation, and ¼ Convincing authorities things are “above board”
+[P][B]What Should it be the Best At?[b]
+[BR]Piloting Defensively
+[P][B]What should it be just “good” at?[b]
+[BR]Astrogation, 
+Social
+[P][B]Specs for Comparison / Inspiration[b]
+[BR]Pilot (Raw),
+Navigator,
+Ship Captain
+[P][B]Media Touchstones[b]
+[BR]Han Solo
+[BR]Kay Vess (Star Wars Outlaws)
+[BR]Booster Terrik
+[BR]Hoban “Wash” Washbourne  (Firefly)
+</Description>
+  <Source>reSpecialized Project</Source>
+  <Custom>AddedItem</Custom>
+  <CareerSkills>
+    <Key>ASTRO</Key>
+    <Key>GUNN</Key>
+    <Key>PILOTPL</Key>
+    <Key>PILOTSP</Key>
+  </CareerSkills>
+  <TalentRows>
+    <TalentRow>
+      <Cost>5</Cost>
+      <Talents>
+        <Key>FULLTH</Key>
+        <Key>SKILLJOCK</Key>
+        <Key>GALMAP</Key>
+        <Key>LETSRIDE</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction />
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction />
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>10</Cost>
+      <Talents>
+        <Key>SKILLJOCK</Key>
+        <Key>TRICK</Key>
+        <Key>GRIT</Key>
+        <Key>GREASE</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>15</Cost>
+      <Talents>
+        <Key>FULLTHIMP</Key>
+        <Key>MUSTSPEC</Key>
+        <Key>STRSMART</Key>
+        <Key>WRETHIVE</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>20</Cost>
+      <Talents>
+        <Key>GRIT</Key>
+        <Key>FULLTHSUP</Key>
+        <Key>DEFDRI</Key>
+        <Key>FLYCASUAL</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>25</Cost>
+      <Talents>
+        <Key>MASPIL</Key>
+        <Key>DEDI</Key>
+        <Key>BRI</Key>
+        <Key>CARGDROP</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+        </Direction>
+      </Directions>
+    </TalentRow>
+  </TalentRows>
+  <AddlCareerSkills>
+    <Type />
+  </AddlCareerSkills>
+</Specialization>

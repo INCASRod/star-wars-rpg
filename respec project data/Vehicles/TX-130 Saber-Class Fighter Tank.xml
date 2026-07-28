@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<Vehicle xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>TX130SABER</Key>
+  <Name>TX-130 Saber-Class Fighter Tank</Name>
+  <Description>[H3]TX-130 [I]Saber[i] -Class Fighter Tank[h3]
+The TX-130 is a light, quick-strike repulsortank first deployed by the Grand Army of the Republic as an anti-infantry and escort tank. Produced for the GAR by Rothana Heavy Engineering, the [I]Saber[i] was designed to provide fire support for infantry formations and to engage light enemy armor. Remarkably quick and nimble for an armored fighting vehicle, the TX-130 was sometimes compared to the Delta-7 Aethersprite-class starfighter due to its ability to get quickly into a fight, hit hard, and escape without a scratch. GAR and Jedi commanders used these fast little tanks to frightening effect during the Clone Wars, and more than one clone trooper unit was saved by the timely arrival of a squadron.
+
+[P][I]Saber[i] fighter tanks mount a versatile mix of energy weapons and ordnance launchers, which gives their commanders quite a bit of tactical flexibility. Their primary weapons are a pair of fire-linked heavy laser cannons mounted to the tank's hull. Although they have a fixed-forward firing arc, they can easily be brought[ to bear on any target, thanks to the [I]Saber[i]'s agility. A smaller support weapon—either a twin medium laser cannon or a powerful Taim &amp; Bak beam cannon— is mounted in a turret atop the vehicle, and rapid-fire ordnance launchers are mounted in each of the tank's sponsons for anti-armor and antifortification work. To ensure their survivability in combat, [I]Sabers[i] are covered in lightweight ablative armor, which can shrug off most lighter anti-vehicle weapons, and have a quick-cycling shield generator.
+
+[P]The [I]Saber[i]'s mix of speed and firepower made it extremely popular among tank crews and clone troopers throughout the Clone Wars. Many of these tanks are still in service today, in the Imperial Army, verious Rebel cells, and even some mercenary companies. As is the case with many old GAR fighting vehicles. TX-130s are in high demand among Rebel commanders, and the Alliance is always looking to expand its inventory of both operational tanks and salvage hulls.</Description>
+  <Source Page="54">Knights of Fate</Source>
+  <Custom>AddedItem</Custom>
+  <Type>Repulsor Tank</Type>
+  <Categories>
+    <Category>Land Vehicle</Category>
+  </Categories>
+  <HP>2</HP>
+  <Price>85000</Price>
+  <Rarity>6</Rarity>
+  <Restricted>true</Restricted>
+  <MaxAltitude>10 meters</MaxAltitude>
+  <SensorRangeValue>srMedium</SensorRangeValue>
+  <Crew>One pilot, one co-pilot, one gunner, one vehicle commander, one astromech droid (optional).</Crew>
+  <EncumbranceCapacity>20</EncumbranceCapacity>
+  <Passengers>2</Passengers>
+  <Silhouette>3</Silhouette>
+  <Speed>4</Speed>
+  <Handling>1</Handling>
+  <DefFore>1</DefFore>
+  <DefAft>1</DefAft>
+  <Armor>2</Armor>
+  <HullTrauma>20</HullTrauma>
+  <SystemStrain>17</SystemStrain>
+  <VehicleWeapons>
+    <VehicleWeapon>
+      <FiringArcs>
+        <Fore>true</Fore>
+        <Aft>true</Aft>
+        <Port>true</Port>
+        <Starboard>true</Starboard>
+      </FiringArcs>
+      <Turret>true</Turret>
+      <Qualities>
+        <Quality>
+          <Key>LINKED</Key>
+          <Count>1</Count>
+        </Quality>
+      </Qualities>
+      <Key>LASERMED</Key>
+    </VehicleWeapon>
+    <VehicleWeapon>
+      <FiringArcs>
+        <Fore>true</Fore>
+      </FiringArcs>
+      <Location>Hull</Location>
+      <Qualities>
+        <Quality>
+          <Key>LINKED</Key>
+          <Count>1</Count>
+        </Quality>
+      </Qualities>
+      <Key>LASERHVY</Key>
+    </VehicleWeapon>
+    <VehicleWeapon>
+      <FiringArcs>
+        <Fore>true</Fore>
+      </FiringArcs>
+      <Qualities>
+        <Quality>
+          <Key>LINKED</Key>
+          <Count>1</Count>
+        </Quality>
+      </Qualities>
+      <Key>CML</Key>
+    </VehicleWeapon>
+  </VehicleWeapons>
+  <SensorRange>Medium</SensorRange>
+</Vehicle>

@@ -1,0 +1,177 @@
+<?xml version="1.0"?>
+<Specialization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>PROPAGANDARES</Key>
+  <Name>Propagandist (reSpecialized) 1.01</Name>
+  <Description>[H4]Propagandist (reSpecialized)[h4]
+[B]PROPAGANDIST—PITHY DESCRIPTION[b][BR]
+[B]At a Glance[b][BR]
+The propagandist is the covert mass communication specialist. They are the master of disseminating information and putting truths and lies to their best respective truths. They function as a storyteller in a galaxy full of War Stories.[BR]
+[B]All-in or Hybrid?[b][BR]
+⅓ Group-based Deception ⅓ Group Based Charm ⅓ Knowledge &amp; Perception Utility [BR]
+[B]What Should it be the Best At?[b][BR]
+Twisting broad narratives to influence populations and groups.[BR]
+Playing up the benefits of the Rebellion for people.[BR]
+Appearing impartial as an agent of a military unit.[BR]
+[B]What should it be just “good” at?[b][BR]
+Being charming[BR]
+Being Deceptive[BR]
+[B]Specs for Comparison / Inspiration[b][BR]
+[I]Agitator[i](Have a similar vibe of being something of an agitator in the Imperial sense, but more focused on spreading a message than specifically working and enervating a Rebel cell)[BR]
+[I]Politico[i](The major overlap is their shared interest in controlling narratives and pulling strings, but the Politico does so for personal gain and on a much smaller scale, whereas the Propagandist tries to sway entire groups of people).
+[I]Agitator[i](Have a similar vibe of being something of an agitator in the Imperial sense, but more focused on spreading a message than specifically working and enervating a Rebel cell).[BR]
+[B]Media Touchstones[b][BR]
+Nemik (Andor)[BR]
+Diana Allers (Mass Effect 3)[BR]
+Joo Dee (Avatar The Last Airbender)[BR]
+updated 12/10/2025</Description>
+  <Source>reSpecialized Project</Source>
+  <Custom>AddedItem</Custom>
+  <CareerSkills>
+    <Key>CHARM</Key>
+    <Key>DECEP</Key>
+    <Key>PERC</Key>
+    <Key>WARF</Key>
+  </CareerSkills>
+  <TalentRows>
+    <TalentRow>
+      <Cost>5</Cost>
+      <Talents>
+        <Key>GRIT</Key>
+        <Key>POSSPIN</Key>
+        <Key>INKNOW</Key>
+        <Key>PLAUSDEN</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>10</Cost>
+      <Talents>
+        <Key>SHIFNARR</Key>
+        <Key>POSSPINIMP</Key>
+        <Key>GRIT</Key>
+        <Key>CUTQUEST</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>15</Cost>
+      <Talents>
+        <Key>POSSPIN</Key>
+        <Key>CONF</Key>
+        <Key>WARIDEA</Key>
+        <Key>INFORM</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>20</Cost>
+      <Talents>
+        <Key>SHINARIMP</Key>
+        <Key>SHINARSUP</Key>
+        <Key>INKNOW</Key>
+        <Key>FINDSTOR</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>25</Cost>
+      <Talents>
+        <Key>DEDI</Key>
+        <Key>HEROEMBE</Key>
+        <Key>INKNOWIMP</Key>
+        <Key>MARTYRDO</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+  </TalentRows>
+  <AddlCareerSkills>
+    <Type />
+  </AddlCareerSkills>
+</Specialization>

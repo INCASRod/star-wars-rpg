@@ -1,0 +1,167 @@
+<?xml version="1.0"?>
+<Specialization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>SHIPRE10</Key>
+  <Name>Shipwright (reSpecialized) 1.0</Name>
+  <Description>[H4]SHIPWRIGHT (reSpecialized)[h4][BR]
+[B]At a Glance[b][BR]
+The Shipwright is the craftiest crafter in the game, and on top of getting the most out of developing new ships, they also can eke the most out of their designs in structured encounter[BR]
+[B]All-in or Hybrid?[b][BR]
+¼  Ship-Improvement In Encounters ¼  Crafting Focus ¼  Anti-Ship Gunnery ¼ Ship Repair[BR]
+[B]What Should it be the Best At?[b][BR]
+Building and Situationally-Improving Starships[BR]
+[B]What should it be just “good” at?[b][BR]
+Piloting Gunnery Knowing Stuff[BR]
+[B]Specs for Comparison / Inspiration[b][BR]
+[I]Droid Tech[i](Heavily invested in Crafting, but the goal is completely different. It invests in talents that leverage multi-step crafts the same way).[BR]
+[I]Rigger[i](TImproves ships passively rather than actively. Also doesn’t “make” ships).[BR]
+[IMechanic[i](The Mechanic is more about protecting the ship, which isn’t the priority of the shipwright. But they both dedicate a few slots to repairing the ship).[BR]
+[B]Media Touchstones[b][BR]
+Quarie (Star Wars: Rebels)[BR]
+Frankie (One Piece)[BR]</Description>
+  <Source>reSpecialized Project</Source>
+  <Custom>AddedItem</Custom>
+  <CareerSkills>
+    <Key>EDU</Key>
+    <Key>GUNN</Key>
+    <Key>MECH</Key>
+    <Key>PILOTSP</Key>
+  </CareerSkills>
+  <TalentRows>
+    <TalentRow>
+      <Cost>5</Cost>
+      <Talents>
+        <Key>DOCKEXP</Key>
+        <Key>EYEDET</Key>
+        <Key>SOLREP</Key>
+        <Key>CREATDES</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction />
+        <Direction />
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>10</Cost>
+      <Talents>
+        <Key>SOLREP</Key>
+        <Key>DOCKEXP</Key>
+        <Key>CREATDES</Key>
+        <Key>GRIT</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>15</Cost>
+      <Talents>
+        <Key>KNOWSCH</Key>
+        <Key>EYEDET</Key>
+        <Key>SMARTHAND</Key>
+        <Key>DEPSHOT</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>20</Cost>
+      <Talents>
+        <Key>HIDFEA</Key>
+        <Key>PUSHSPEC</Key>
+        <Key>FINETUN</Key>
+        <Key>CREATDES</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>25</Cost>
+      <Talents>
+        <Key>DEDI</Key>
+        <Key>MASTART</Key>
+        <Key>OVBATT</Key>
+        <Key>EXHPORT</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+  </TalentRows>
+  <AddlCareerSkills>
+    <Type />
+  </AddlCareerSkills>
+</Specialization>

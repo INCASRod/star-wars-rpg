@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<Vehicle xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>TAGGEDUSTCRAWLER</Key>
+  <Name>Tagge Dustcrawler</Name>
+  <Description>[H3]Tagge Dustcrawler[h3]
+Designed by the House of Tagge for mining operations on airless moons and large asteroids, the Dustcrawler is a connected train of six-wheeled hauling vehic les. The standard configuration features three connected cars, each with six large independently-articulated knobbed wheels. The wheels offer excellent traction in the fine dust of most lunar surfaces (which often causes venting and overheating problems for landspeeders), and the independent suspension of each wheel enables the Dustcrawler to traverse al1 manner of difficult terrain,
+[P]The Dustcrawler can be customized for either cargo-hauling or personnel transport. For example, the resort at the Kaelen Drift, where visitors enjoy the sights of the light from the system's twin suns coruscating through the belt of crystalline shards, uses Dustcrawlers on its tours of the larger asteroids.
+</Description>
+  <Source Page="60">Unlimited Power</Source>
+  <Custom>AddedItem</Custom>
+  <Type>Groundcar</Type>
+  <Categories>
+    <Category>Land Vehicle</Category>
+    <Category>Wheeled Vehicle</Category>
+  </Categories>
+  <HP>6</HP>
+  <Price>60000</Price>
+  <Rarity>5</Rarity>
+  <BaseMods>
+    <Mod>
+      <Count>1</Count>
+      <MiscDesc>[B]Expandable:[b] The standard duscrawler is three cars long, but the vehicle is modular, with additional cars able to be connected with ease (which increase the vehicle's silhouette, encumberance capacity, passenger capacity, and hard points, see page 60 of [I]Unlimited Power[i]).</MiscDesc>
+    </Mod>
+  </BaseMods>
+  <Crew>One pilot, one co-pilot</Crew>
+  <EncumbranceCapacity>300</EncumbranceCapacity>
+  <Passengers>30</Passengers>
+  <Silhouette>4</Silhouette>
+  <Speed>2</Speed>
+  <Handling>-3</Handling>
+  <Armor>4</Armor>
+  <HullTrauma>35</HullTrauma>
+  <SystemStrain>30</SystemStrain>
+  <SensorRange>Close</SensorRange>
+</Vehicle>

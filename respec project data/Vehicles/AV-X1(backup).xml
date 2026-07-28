@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<Vehicle xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>USERVEHICLE1</Key>
+  <Name>AV-X1(backup)</Name>
+  <Description>Assembled by Stoker Bix
+Frame crafting got Elegant Design (sil -1)
+Hull crafting got Layerd Plating  (+1 Armor) and +1 Hard Point
+2 HP used by Sleek Carapace</Description>
+  <Source>User Data</Source>
+  <Custom>AddedItem</Custom>
+  <BuiltInAttachments>
+    <Key>CRAFTHULLSLEEK</Key>
+  </BuiltInAttachments>
+  <Type>Landspeeder</Type>
+  <Categories>
+    <Category>Land Vehicle</Category>
+  </Categories>
+  <HP>7</HP>
+  <Rarity>5</Rarity>
+  <MaxAltitude>20m</MaxAltitude>
+  <SensorRangeValue>srNone</SensorRangeValue>
+  <EncumbranceCapacity>5</EncumbranceCapacity>
+  <Passengers>1</Passengers>
+  <Silhouette>1</Silhouette>
+  <Handling>1</Handling>
+  <DefAft>1</DefAft>
+  <Armor>1</Armor>
+  <HullTrauma>6</HullTrauma>
+  <SinglePilot>true</SinglePilot>
+  <SensorRange>No Sensors</SensorRange>
+</Vehicle>

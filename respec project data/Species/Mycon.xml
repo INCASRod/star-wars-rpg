@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<Species xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>MYCON</Key>
+  <Name>Mycon</Name>
+  <Description>[H4]Mycon[h4]
+Mushroom People
+Mycons are smaller than average and count as silhouette 0. 
+They count as plants</Description>
+  <Source>User Data</Source>
+  <Custom>AddedItem</Custom>
+  <StartingChars>
+    <Brawn>1</Brawn>
+    <Agility>1</Agility>
+    <Intellect>2</Intellect>
+    <Cunning>2</Cunning>
+    <Willpower>3</Willpower>
+    <Presence>3</Presence>
+  </StartingChars>
+  <StartingAttrs>
+    <WoundThreshold>9</WoundThreshold>
+    <StrainThreshold>12</StrainThreshold>
+    <Experience>80</Experience>
+    <ForceRating>1</ForceRating>
+  </StartingAttrs>
+  <TalentModifiers>
+    <TalentModifier>
+      <Key>ENDUR</Key>
+      <RankAdd>2</RankAdd>
+    </TalentModifier>
+  </TalentModifiers>
+  <CyberneticsAdjust>-6</CyberneticsAdjust>
+</Species>

@@ -1,0 +1,611 @@
+<?xml version="1.0"?>
+<Obligations xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Obligation>
+    <Key>UNFINBUS</Key>
+    <Name>Unfinished Business</Name>
+    <Description>      [H4]Unfinished Business[h4]
+[B]Special Modifications - Technicians:[b][BR]
+The PC is working on a long-tem project such as a complex computer program or a light freighter refit. It may be personal or commisioned work. While long breaks may be acceptable, the Obligation cannot be totally fulfilled until the unfinished business is complete and it weighs heavily on the PC's mind whenever the character chooses to postpone working on it for any reason.</Description>
+    <Source Page="18">Special Modifications</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>CONTRACT</Key>
+    <Name>Contract</Name>
+    <Description>      [H4]Contract[h4]
+[B]Special Modifications - Technicians:[b][BR]
+The PC has a pressing contract to fulfill, whether it is legally binding or an informal deal. The contract may be for providing, installing or repairing technical items, or on call services. Fulfilling terms of the contract reduces the character's obligation, while putting them off or incurring expenses for the sake of fulfilling the contract might increase it.
+
+[P][B]No Disintegrations - Bounty Hunters:[b][BR]
+A powerful and strict contract binds the character to a specific employer. This could be a crime boss, an Imperial courtier, or a wealthy corporate CEO. Whoever holds the character's contract has nearly total control over the character's future career. All bounties are furnished by the contract holder, and deviating from the terms of the contract can lead to a number of potentially harsh fines and punishments.</Description>
+    <Source Page="18">Special Modifications</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>FAILEDREP</Key>
+    <Name>Failed Installation/Repair</Name>
+    <Description>      [H4]Failed Installation/Repair[h4]
+[B]Special Modifications - Technicians:[b][BR]
+A botched modification, installation, or repair job has publicly damaged the character's repuation and rendered teh device, droid or vehicle inoperable. The PC must take action to restore the damaged item, and find a way to socially engineer a return to good standing in the public eye.</Description>
+    <Source Page="18">Special Modifications</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>CREW</Key>
+    <Name>Crew</Name>
+    <Description>      [H4]Crew[h4]
+[B]Special Modifications - Technicians:[b][BR]
+The PC has an Obligation to keep a work crew or ship's complement safe, healthy and in work. Whether or not the PC usually travels with the work crew, this character serves as a mediator between the crew and outside individuals. The PC migth owe the debt due from a time the crew saved the PC's career or even life through hard work and sacrifice.</Description>
+    <Source Page="18">Special Modifications</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>FAME</Key>
+    <Name>Fame</Name>
+    <Description>      [H4]Fame[h4]
+[B]No Disintegrations - Bounty Hunters:[b][BR]
+The character's reputation casts a long shadow. Perhaps the PC took a famous and difficult abounty, or owns a recognizable and deadly ship, or has beaten another well-known hunter to the punch in the past. Whatever the case, it is hard for the character to move unnoticed throughout the galaxy. This makes covert operations more difficult, but also means that informants are more likely to spill what they know whent he PC arrives.</Description>
+    <Source Page="19">No Disintegrations</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>RULEBREAKER</Key>
+    <Name>Rule Breaker</Name>
+    <Description>      [H4]Rule Breaker[h4]
+[B]No Disintegrations - Bounty Hunters:[b][BR]
+Either the character very publicly and flagrantly broke one of the rules laid down in the bounty hunter's code, or everyone wrongly believes she did. Whatever the case, this breach of the rules of the code affects the character's personal and professional life in a very real way. Contracts dry up, colleagues refuse to speak to or help the character, or the character is treated in a condescending or irritatingly sympathetic manner.</Description>
+    <Source Page="19">No Disintegrations</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>KEEPERFAITH</Key>
+    <Name>Keeper of the Faith</Name>
+    <Description>      [H4]Keeper of the Faith[h4]
+[B]No Disintegrations - Bounty Hunters:[b][BR]
+Much to many other freelancers' amusement, this character has sworn to faithfully uphold both the spirit and the letter of some code of honor. The PC believes very strongly in these edicts and adheres to them with an almost religious fervor. The character never knowingly breaks any of the rules laid down in the code, and may turn on colleagues who do so.</Description>
+    <Source Page="19">No Disintegrations</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>THRILLSEEK</Key>
+    <Name>Thrill Seeker</Name>
+    <Description>      [H4]Thrill Seeker[h4]
+[B]No Disintegrations - Bounty Hunters:[b][BR]
+Some people are addicted to alcohol or chems, others to gambling or other seedy vices. This character, however, is a confirmed adrenaline junkie, and chooses bountoes not by their challenge or price, but by how exciting or dangerous they are. Avoiding the Obligation—perhaps by being a responsible business operator and considering every job's cost benefit analysis—results in an almost immediate case of excitement withdrawal. when inactive, the character is edgy, moody, easily distracted, and generally unpleasant to be around.</Description>
+    <Source Page="19">No Disintegrations</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>VIGILANTE</Key>
+    <Name>Vigilante</Name>
+    <Description>      [H4]Vigilante[h4]
+[B]No Disintegrations - Bounty Hunters:[b][BR]
+The character has seen the wheels of justice grind up the innocent and let the guilty walk free. The character has sworn to take the law—or a version of it, at any rate—and bring  justice to those who deserve it. When taking on contracts, this character tends to pursue the most hardened criminals.</Description>
+    <Source Page="19">No Disintegrations</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>SCORE</Key>
+    <Name>A Score to Settle</Name>
+    <Description>      [H4]A Score to Settle[h4]
+[B]Dangerous Covenants - Hired Guns:[b][BR]
+The character has always been rough-and-tumble, but somewhere along the way someone wronged him, and he never forgets a debt, real or imagined. This could be as simple as someone promising him backup who then disappeared or someone bad-mouthing him in front of a prospective client. Now, the character is always looking for ways to even the score.</Description>
+    <Source Page="17">Dangerous Covenants</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>ADD</Key>
+    <Name>Addiction</Name>
+    <Description>      [H4]Addiction[h4]
+[B]Edge of the Empire Core Rulebook - Generic:[b][BR]
+The character has a strong addiction he must keep feeding. Whether it's a physical addiction to stims, dust, or alcohol, or a mental addiction such as gambling, law-breaking, or priceless antiques, the character devotes a lot of time, energy, and resources to pursuing or obtaining the object of his addiction. Avoiding this Obligation has an almost immediate result - withdrawal. The exact nature depends on the addiction, but the character finds it increasingly difficult to concentrate on even mundane tasks, often reflected in the GM adding anywhere from [SE] to [SE][SE][SE] to skill checks.
+[P]
+Avoiding this Obligation has an almost immediate result - withdrawal. The exact nature depends on the addiction, but the character finds it increasingly difficult to concentrate on even mundane tasks, often reflected in the GM adding anywhere from [SE] to [SE][SE][SE] to skill checks.
+
+[P][B]Enter the Unknown - Explorers:[b][BR]For [B]Explorers[b], this is often thought of in terms of a substance of some kind or a compulsion to act in a destructive
+manor (as with gambling). For example, the [B]Trader[b] may have an addiction to "the Deal," always needing to make
+arrangements and work the numbers. A [B]Big-Game Hunter[b] may be addicted to "the Hunt," never happy unless he's
+on the ground, weapon in hand, on the trail of something. [B]Drivers[b] are often adrenaline junkies, addicted to speed
+and performance from their machines. Obsession is another way to portray some of these concepts. </Description>
+    <Source Page="39">Edge of the Empire Core Rulebook</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>ADRENALINE</Key>
+    <Name>Adrenaline Rush</Name>
+    <Description>      [H4]Adrenaline Rush[h4]
+[B]Dangerous Covenants - Hired Guns:[b][BR]
+The character is addicted to the rush of adrenaline he gets from battle. It was this character flaw that cost hi his position at the upper levels of society. Now he must feed the addiction or the results turn ugly indeed. The character cannot back down from a fight of any kind, and often goes in search of conflict when things get too tame for his tastes. Should the character go an entire session without combat of some kind, the GM may add a penalty of [SE] to any skill checks in the next session (or until the character gets a chance to fight).</Description>
+    <Source Page="17">Dangerous Covenants</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>ANTAG</Key>
+    <Name>Antagonist</Name>
+    <Description>      [H4]Antagonist[h4]
+[B]Fly Casual - Smugglers:[b][BR]
+Not all Smugglers are Charmers, and given the contacts a Smuggler makes in his line of work, it's easy for him to insult the wrong person, group, or even species. This doesn't always lead to Bounty, however, since not everyone can afford the credits required for an official bounty. In these cases, the Smuggler just lives with the knowledge that certain parties in the galaxy would make his life very difficult if given the chance.</Description>
+    <Source Page="17">Fly Casual</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>BADREP</Key>
+    <Name>Bad Reputation</Name>
+    <Description>      [H4]Bad Reputation[h4]
+[B]Fly Casual - Smugglers:[b][BR]
+Whether deserved or not, some Smugglers find themselves with a reputation for being untrustworthy or difficult to deal with. This can make finding jobs a struggle. Since the best way to reduce this Obligation is to successfully complete contracts, proving himself reliable again, the Smuggler might find himself having to take the least desirable jobs for a while. Once he's repaired his reputation, he will be able to pick and choose again.</Description>
+    <Source Page="17">Fly Casual</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>BASE</Key>
+    <Name>Base of Operation</Name>
+    <Description>      [H4]Base of Operation[h4]
+[B]Group Obligation:[b] When the base of operations Obligation triggers, the narrative events should relate to the base of operations. This could be
+as simple as unexpected bills or an afternoon of repairing moisture vaporators on the South Ridge. Alternatively, it could involve a rampaging gundark breaking into the pastureland or a rival mining baron deciding to execute a hostile takeover of the PCs' land. The GM is free to make the narrative effects of the Obligation triggering minimally invasive, if it would distract from an important ongoing plotline, or an unexpected and major issue for the PCs to deal with immediately and personally.</Description>
+    <Source Page="82">Far Horizons</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>BET</Key>
+    <Name>Betrayal</Name>
+    <Description>      [H4]Betrayal[h4]
+[B]Edge of the Empire Core Rulebook - Generic:[b][BR]
+This Obligation can work in one of two ways: either the character is the target of a deep and personal betrayal, or the character is the one who betrayed others. Whether it's as simple as a betrayed confidence or broken promise or as serious as treason or mutiny, the betrayal eats away at the character and affects his everyday life. The target of the betrayal may seek answers, compensation, or simply revenge.
+[P][B]Enter the Unknown - Explorers:[b][BR] 
+As an Obligation, Betrayal tends to work in the direction of the character having betrayed someone and
+having to either avoid the consequences for it or having to somehow pay for his sin (Motivation works better for a
+character who has been betrayed). An [B]Explorer[b] may have taken up the career to travel far away from those he betrayed.
+Alternatively, he may have double-crossed on a deal of some kind or tried to get away with selling important information
+to one too many sources. [B]Fringers, Traders, Scouts[b], and [B]Archaeologists[b] are especially prone to the latter.
+[P][B]Dangerous Covenants - Hired Gun:[b][BR] 
+For [B]Hired Gun's[b], the character could come from a culture where military service is seen as a righteous calling, and is only
+pursued for noble ends. The people who trained him do not look fondly upon his mercenary career path. Efforts
+to correct this might range from representatives trying to convince him to stop to assassins sent to end his sullying
+their name once and for all. Here, the [B]Hired Gun[b] has committed the perceived betrayal, and since his career
+choice is what's at stake, squaring this Obligation can prove very tricky.
+[P][B]Fly Casual - Smuggler:[b][BR] 
+Given the nature of his job, a [B]Smuggler[b] might find himself a victim of betrayal or a betrayer himself. If the victim, a Smuggler may seek vengeance on those who crossed him. If it was the Smuggler who let a fellow criminal down, then he must make amends somehow. In minor cases, a simple apology may be all that's needed. In extreme cases, the betrayed party might need rescuing from the spice mines of Kessel or somewhere equally unpleasant.
+[P][B]No Disintegrations - Bounty Hunter:[b][BR] 
+[B]Bounty Hunter[b]: In the course of the job, the character has either suffered some kind of deep personal betrayal at the hands of another bounty hunter, or is in the perpetrator of such a betrayal. The betrayal affects the character's day to day life, whether through physical reminders, emotional scars, or some combination of the two. If the character was the betrayer, the victim may come looking for answers, compensation, or revenge at any moment.</Description>
+    <Sources>
+      <Source Page="39">Edge of the Empire Core Rulebook</Source>
+      <Source Page="17">Fly Casual</Source>
+    </Sources>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>BLA</Key>
+    <Name>Blackmail</Name>
+    <Description>      [H4]Blackmail[h4]
+[B]Edge of the Empire Core Rulebook - Generic:[b][BR]
+Someone has discovered one of the PC's dirty secrets and is using that knowledge for some sort of gain. To make matters worse, the blackmailer possesses evidence that could possibly leak out - a holovid, bank records, a weapon used during a crime, and so on. In order to keep the secret safe, the character must do what he is told, although the blackmailer is savvy enough to keep the demand simple enough to maintain the blackmail for as long as possible, generally demanding money or favors.
+
+[P][B]Enter the Unknown - Explorers:[b][BR]
+An ancient custom that seems never to lose its power to make people act against their will. For an [B]Explorer[b], there are many interesting and creative ways it may apply. A [B]Trader[b] may have a history of skimmed profits to hide. An [B]Archaeologist[b] may have once plagiarized someone's findings for a presentation to secure
+funding. A [B]Big-Game Hunter[b] may have once killed someone on a hunt, never knowing someone else recorded the
+incident. A [B]Driver[b] may have fudged the data on a particular machine he was hired to test, only to have a number of
+deaths result from his faulty information. Such incidents can weigh heavily on the mind and heart of a being.
+
+[P][B]Special Modifications - Technicians:[b][BR] 
+[B]Technicians:[b] Someone has discovered one of the PC's dirty secrets through slicing or other technical means. The blackmailer has possession of evidence damaging to the PC's business, family, or organization. The evidence is most likely stolen technical data, such as eletronic records, holovid recordings, sensor data, maintenance records, secret computer codes, or similar tech-related items. To keep the secret safe, the PC must keep the blackmailer happy, possibly through payments or granting favors. The blackmailer is cunning enough to maintain just enough of a threat to keep benefitting from the situation, but not so much that the PC decides to allow the release of the evidence or hunt the blackmailer to permanently put an end to the danger the information poses.
+
+[P][B]No Disintegrations - Bounty Hunters:[b][BR] 
+[B]Bounty Hunter:[b] Some group or individual has dirt on the character, and is using it to the greatest advantage possible. Perhaps she killed another hunter and claimed the bounty, or maybe she is operating in the Core Worlds without the required Imperial Peace-Keeping Certificate. Whatever the case may be, the blackmailer wields an inordinate amount of power over the character. However this power is leveraged—money, favors, services rendered—the character is subject to the blackmailer's moods and whims, lest the dirty secret become common knowledge.</Description>
+    <Source Page="39">Edge of the Empire Core Rulebook</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>BOU</Key>
+    <Name>Bounty</Name>
+    <Description>      [H4]Bounty[h4]
+[B]Edge of the Empire Core Rulebook - Generic:[b][BR]
+For some reason, the character has a price on his head. This may be in the form of a legal warrent or a contract by criminals, collection agencies, or even someone who felt his honor violated in some way. What he did to earn this is up to his background, and the severity of his actions can be based on the size of his Obligation.
+
+[P][B]Far Horizons - Colonists:[b][BR]
+The bounty may only be issued locally, without the
+weight of the Empire behind it. These bounties are technically illegal, and attract ruthlessly competent hunters
+independent of any guild or government. By changing their identity and hiding out in some obscure backwater colony
+world, Colonists with this Obligation can avoid detection for years. However, the level of violence these individuals can
+bring upon their town when the truly skilled bounty hunters finally track them down can endanger the whole colony.
+
+[P][B]Enter the Unknown - Explorers:[b][BR]
+A Bounty on one's head is a powerful agitator for driving action. Many of the infractions described under
+Blackmail could well result in a Bounty being offered for an [B]Explorer[b]. Other circumstances for which a Bounty
+might be placed on an Explorer include the following: a [B]Fringer[b] being in the wrong place at the wrong time; a
+[B]Trader[b] failing in just the wrong delivery to just the wrong official; an [B]Archaeologist[b] trespassing across the wrong
+lands; a [B]Driver[b] swiping the wrong hot swoop; and so on.
+
+[P][B]Dangerous Covenants - Hired Guns:[b][BR]
+Somewhere in the galaxy is a target that the Hired Gun
+failed to kill, and he is still out there, victimizing the innocent or bragging about his survival. The character must
+deal with this being, whether because the escaped target may be a danger to him, or that he feels obligated to
+bring in the one that got away.
+
+[P][B]Fly Casual - Smugglers:[b][BR]
+Many [B]Smugglers[b] earn a bounty on their heads at some point. The size of the bounty depends on the size of the Obligation, as does the nature of the bounty. A large bounty promised by a Hutt is likely to put the Smuggler in much greater peril than a similar price offered for bringing him in to face charges on some backwater planet.
+
+[P][B]Special Modifcations - Technicians:[b][BR]
+The PC has an active bounty, earned during an attempt to expose the workings of a criminal or corrupt organization. The PC might have acquired evidence of the organization's misdeeds from databanks through slicing or other technical skulduggery and then attempted to take the information public, whether this meant presenting it to the authorities or broadcasting it via pirated HoloNet feed. The character's background and specialization can both provide additional ideas as to the reason for the bounty.</Description>
+    <Sources>
+      <Source Page="39">Edge of the Empire Core Rulebook</Source>
+      <Source Page="17">Far Horizons</Source>
+      <Source Page="17">Fly Casual</Source>
+    </Sources>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>COLLATERAL</Key>
+    <Name>Collateral Accountability</Name>
+    <Description>      [H4]Collateral Accountability[h4]
+[B]Dangerous Covenants - Hired Guns:[b][BR]
+In pursuit of a past contract, the character was careless. He accidentally destroyed the prized possession of some major underground figure or killed someone important to that person. Now the figure holds it over the characters head. Ambiguous threats and demands for repayment have become near-constant in this character's life, as the underground figure refuses to let him forget his responsibility. He has a financial blood price or other compensation he could pay, but it is astronomical. Until it is paid off, however, the guilt and fear are ever-present. If this Obligation is triggered, the character can suffer [SETBACK] to some or all skill checks during the session (at the GMs discretion) due to the burdon on his nerves.</Description>
+    <Source Page="17">Dangerous Covenants</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>CONTRACTED</Key>
+    <Name>Contracted</Name>
+    <Description>      [H4]Contracted[h4]
+[B]Far Horizons - Colonists:[b][BR]
+The Colonist has entered into a long-term contract with a corporation or government related to his
+work at a colony. In many cases, these contracts are how colonists pay their passage to the new world—a form of
+indentured servitude. Colonists might be contracted to provide bookkeeping, labor, or any other number of services.
+Failure to live up to a contract can result in financial penalties, imprisonment, deportation, or earning a bounty.</Description>
+    <Source Page="17">Far Horizons</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>CRI</Key>
+    <Name>Criminal</Name>
+    <Description>      [H4]Criminal[h4]
+[B]Edge of the Empire Core Rulebook - Generic:[b][BR]
+The character has a criminal record, or what accused of a crime (prehaps one he didn't even commit), and is somehow embroiled in the legal system. Obligation may be settled by paying ongoing legal costs, making attempts to bury evidence, or efforts to prove his innocence.
+
+[P][B]Enter the Unknown - Explorers:[b][BR]
+This usually means the character is in the employ of, or seriously indebted to, a crime lord or illicit
+organization of some kind. [B]Explorers[b] working in the Rim often discover their best—and sometimes only -
+opportunities to employ their skills are by working with one o r more criminal groups. Unfortunately, this usually
+places them in trouble with whatever law-enforcement officials there are in the area, their only protection being
+those same criminal contacts. Such relationships can become vicious circles that are impossible to break. Consider
+the [B]Scout[b] who is wanted for too many trips to interdicted planets or the [B]Driver[b] who only avoids incarceration for
+grand theft because of the influence his criminal employer has with local security forces.
+
+[P][B]Fly Casual - Smugglers:[b][BR]
+[B]Smugglers[b] are by nature criminal, but some manage to stay off authorities' radars better than others. It's only a problem if a Smuggler gains a criminal record. This Obligation may involve avoiding a particular system where the character has a criminal record or hiding his involvement in a crime big enough to interest the authorities. In the event that the criminal record is undeserved, the Smuggler might work to expose the real perpetrator.
+
+[P][B]Special Modifcations - Technicians:[b][BR]
+The character has a criminal record or is accused of a crime (rightly or wrongly), most likely for using technology illegally or providing the means for another to do so. Though the PC is not currently in custody, there are outstanding warrents for the PC's arrest. The PC might seek to settle this Obligation by paying ongoing legal costs or fines, burying evidence or convincingly demonstrating innocence on the matter.
+
+[P][B]No Disintegrations - Bounty Hunters:[b][BR]
+The character has been accused of committing a crime during the collection of a legal bounty. This could be anything from stealing a speeder in order to chase a fleeing fugitive, or interference with bonded law enforcement to killing innocents during a shootout. Whatever the case, the constant threat of discovery and incarceration hovers over the character. Whether the accusations are true is irrelevant: the character has been accused and there is an outstanding warrant that makes the PC an appealing target to other bounty hunters.</Description>
+    <Sources>
+      <Source Page="39">Edge of the Empire Core Rulebook</Source>
+      <Source Page="17">Fly Casual</Source>
+    </Sources>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>DEBT</Key>
+    <Name>Debt</Name>
+    <Description>      [H4]Debt[h4]
+[B]Edge of the Empire Core Rulebook - Generic:[b][BR]
+The character owes someone a great deal, whether that debt consists of money or something else. Perhaps the PC has a huge gambling debt to a Hutt, is indebted to the Czerka Corporation for his starship, owes a wealthy family for patronage, or has some other serious financial obligation. To make matters worse, depending on who owns the debt, even fully paying it off might not get the character completely off the hook - if the character can get that money, he can surely get more.
+
+[P][B]Far Horizons - Colonists:[b][BR]
+Aside from the running debt most [B]Colonists[b] have at the local cantina, unforeseen financial setbacks are a
+regular part of life on a newly colonized world. All the expensive lessons for dealing with restless natives, flora,
+fauna, or environmental conditions on that particular planet have yet to be learned. Most times, the only way to
+stay afloat is by going to the deepest pockets in town and begging for a loan.
+
+[P][B]Enter the Unknown - Explorers:[b][BR]
+A [B]Trader[b] may well be up to his eyeballs in debt thanks to too many failed shipments, while an [B]Archaeologist[b]
+may have risked everything on a find he still can't track down. A [B]Big-Game Hunter[b] may have a great kit for the
+hunt, but he borrowed to the hilt to get it. and a [B]Driver[b] may have the hottest speeder in the quadrant yet owe
+thousands of credits to the local sharks for all the mods he's made.
+
+[P][B]Dangerous Covenants - Hired Guns:[b][BR]
+Maintaining equipment, staying current with technology, and keeping weapons charged or fully loaded
+is not easy. Without these things, the [B]Hired Gun[b] has no hope of employment. The character found himself
+grounded without sufficient funds to prepare for a job and had to borrow money from an underworld figure. That
+outstanding debt now chases him from job to job. As the PC is unable to pay in credits, the debtor demands
+services as payment, often at the most inopportune times. The Hired Gun can reduce this Obligation by
+performing services for his debtor, but at the GM's discretion can also increase his Obligation for money (never
+more than once per session, and for a few thousand credits per point of Obligation increase).
+
+[P][B]Fly Casual - Smugglers:[b][BR]
+Being a [B]Smuggler[b] offers little security, but acquiring a ship and keeping it functioning costs a lot of credits. In order to stay in business, debts may be necessary. The Smuggler has to resolve the mall eventually, and some lenders are less lenient than others. If ignored, this Obligation will only get more and more pressing.
+
+[P][B]Special Modifications - Technicians:[b][BR]
+The PC owes someone a great deal, whether in money, goods, or services. The character may owe this group or individual for loans used to pay for training, but new equipment, or start a business. Paying off the debt may be difficult due to the sheer credits value in question, as a result of the constant accrual of interest that must be paid off, or because of both. The debt might even extend beyond financial obligation, especially if the PC also has a personal relatioship with the lender.
+
+[P][B]No Disintegrations - Bounty Hunters:[b][BR]
+The character owes quite a bit of money to one or more individuals. This could be money owed to a shipyard for some expensive modifications done to the character's ship on credit, funds put forth by a patron who backed the character's entry into the bounty hunters' guild and expects to be repaid or services rendered.</Description>
+    <Sources>
+      <Source Page="39">Edge of the Empire Core Rulebook</Source>
+      <Source Page="17">Far Horizons</Source>
+      <Source Page="17">Fly Casual</Source>
+    </Sources>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>DISGRACED</Key>
+    <Name>Disgraced</Name>
+    <Description>      [H4]Disgraced[h4]
+[B]Far Horizons - Colonists:[b][BR]
+The Colonist did something shameful, often some social taboo that isn't quite illegal. The shame and sideways glances from peers have forced the Colonist to seek a new life where he can start over free of embarrassment. The isolation of some colonies and cultures makes for some strange taboos not observed by the rest of the galaxy. Thus the taboo can be something terrible, or something as benign as drinking from a public fountain or showing a bare but innocuous body part.</Description>
+    <Source Page="17">Far Horizons</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>DUT</Key>
+    <Name>Dutybound</Name>
+    <Description>      [H4]Dutybound:[h4]
+[B]Edge of the Empire Core Rulebook - Generic:[b][BR]
+The PC has a deep sense of duty that he feels compelled to fulfill, such as military service, making good on a contract, or following some sort of thieves' code. Unlike the Oath Obligation (see below), a Dutybound character has some legal or ritualistic bind to an organization or cause making it extremely difficult or detrimental if he fails to live up to that commitment.
+
+[P][B]Dangerous Covenants - Hired Guns:[b][BR]
+The [B]Hired Gun[b] was once saved from certain death, or an unfulfilled contract, by someone he would never have expected to aid him. He knows that debt is due someday and he's going to have to save someone in turn. This focuses the Dutybound Obligation on the Hired Gun's stock-in-trade: fighting and killing.</Description>
+    <Source Page="39">Edge of the Empire Core Rulebook</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>EXILED</Key>
+    <Name>Exiled</Name>
+    <Description>      [H4]Exiled[h4]
+[B]Far Horizons - Colonists:[b][BR]
+Going up against politically connected members of the Galactic Empire is a good way to become exiled from the most civilized of the Core Worlds. The Colonist is not allowed to set foot in the Core, or any Imperial-controlled worlds, but is desperate to remove the stain on his reputation. While possible, the smallest misstep can be disastrous, setting progress back months or even years. There is also the trouble of bureaucracy and last minute deadlines that can draw the character away.</Description>
+    <Source Page="17">Far Horizons</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>FAM</Key>
+    <Name>Family</Name>
+    <Description>      [H4]Family[h4]
+[B]Edge of the Empire Core Rulebook - Generic:[b][BR]
+The character has deep ties with his family that require a great deal of time and attention. This could include providing care for or assistance to siblings or parents, the management of an inheritance, trust, or family business, or simply mediating between squabbling family members.
+
+[P][B]Far Horizons - Colonists:[b][BR]
+[B]Colonists[b] often book passage to a colony world to start life anew for themselves and their families. For
+these individuals, making certain their family is safe, healthy, and provided for trumps all other concerns. A comm
+from home is just as likely to inspire as it is to devastate a Colonist riding herd away from the homestead. Some
+Colonists have already lost members of their family, and instead are beholden to a final promise, be it to keep the
+ranch going or take on the role of family protector.
+
+[P][B]Enter the Unknown - Explorers:[b][BR]
+Ties of kinship can exert an incredible pull on most beings, perhaps even serving as the main reason
+someone chooses the life of an [B]Explorer[b]—to get away from domineering parents or other powerful relatives. There
+are times, however, when an Explorer may be doing what he does for his family and not despite them. Perhaps
+a [B]Fringer[b] sees wandering the Rim as a way to return his family to some kind of prominence after a terrible fall.
+Maybe the lifelong search of an [B]Archaeologist[b] revolves around the ancient homelands of his people. Meanwhile, a
+[B]Big-Game Hunter[b] may follow in his father's footsteps, determined to exceed the old man's accomplishments.
+
+[P][B]Dangerous Covenants - Hired Guns:[b][BR]
+The character has struggled out of the slime pits at the very bottom of galactic society with an almost
+pathological frenzy to escape everything from his past. And yet, some residual family obligation still remains.
+Maybe it is a younger brother or sister, or maybe a parent or close friend, but someone still cares for the [B]Hired
+Gun[b], and he still cares for that person, no matter how much he wishes he did not. If some enemy or creditor were
+to discover these ties, they could easily be used against the character, and fear of this is a constant worry.
+
+[P][B]Fly Casual - Smugglers:[b][BR]
+A family is a particular burden for a [B]Smuggler[b]. Prehaps they live on a planet that rarely recieves the basic necessities through legitimate trade, and so they rely on the Smuggler to bring them important but inexpensive cargo. Or prehaps the Smuggler himself has brought them misfortune, and a local crime lord holds them ransom to ensure the Smuggler's good behavior. The Smuggler could continue to follow the crime lord's instructions or negate the Obligation by liberating his kin.
+
+[P][B]Special Modifications - Technicians:[b][BR]
+The character's family demands great deal of time and attention, not just emotionally but also in some technical capacity. The PC might be the only member of the family able to take care of vital machinery that sustains the family's livelihood, food, water, or even air supply, if they can live on a space station or in a hostile planetary environment. Though performing routine maintenance can help keep this Obligation in check, the PC must seek to engineer a long term solution - one that does not require constant personal intervention - to remove this Obligation completely.
+
+[P][B]No Disintegrations - Bounty Hunters:[b][BR]
+This hunter's holds an incredible influence over the character. Perhaps the PC comes from a long line of bounty hunters, whose honor must be upheld. Alternately, the bounty hunter could also be supporting a struggling family, and is always eager to pick up contracts to send money home.</Description>
+    <Sources>
+      <Source Page="39">Edge of the Empire Core Rulebook</Source>
+      <Source Page="17">Far Horizons</Source>
+      <Source Page="17">Fly Casual</Source>
+    </Sources>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>FAV</Key>
+    <Name>Favor</Name>
+    <Description>      [H4]Favor[h4]
+[B]Edge of the Empire Core Rulebook - Generic:[b][BR]
+The PC owes a big favor. Perhaps officials looked the other way when he smuggled in goods, or a friend got him out of prison. Regardless, the favors are stacking up, and soon he's going to be asked to pay them back or return the favor. This favor may be called in a little at a time, prolonging the Obligation.
+
+[P][B]Far Horizons - Colonists:[b][BR]
+A colony often begins life as a small community of a few thousand or even just a few hundred individuals.
+When the only sentient life on an entire planet is that sparse, everyone depends on each other and favors are as
+valuable as credits. Thirty fellow [B]Colonists[b] might have helped to build a school in town for a Scholar for nothing
+more than a hot meal, some warm caf, and a favor. This might mean helping get the herd in the pen before a storm,
+loaning credits, or any number of other odd jobs.
+
+[P][B]Enter the Unknown - Explorers:[b][BR]
+Some say that favors are what truly drives the galaxy; many will happily provide enormous assets and
+support, all for the simple price to be named later, often at the worst times. A [B]Scout[b] in the middle of a vital mission
+for some local rebels is suddenly called on to deliver the location of their base. An [B]Archaeologist[b] in the midst of
+celebrating his greatest discovery ever is informed that he now must bury that discovery and never speak of it
+again. A [B]Driver[b], about to race against the best in the sector, is coerced into losing the race to "clear the books."
+
+[P][B]Dangerous Covenants - Hired Guns:[b][BR]
+Favors are often an obligation in a [B]Hired Gun's[b] past. Many start their careers with either a mentor or a
+sponsor, and owe that person for their support. In the case of the mentor, the Hired Gun might be more than
+willing to repay past support with a favor now that he's made it in the galaxy. Other sponsors, however, might
+have been less altruistic about supporting the Hired Gun's career. The favors they call in could be something the
+Hired Gun finds unsavory or even morally wrong.
+
+[P][B]Fly Casual - Smugglers:[b][BR]
+The [B]Smuggler[b] owes a favor to a person or organization. Favors are much-used currency among Smugglers, and the character may well owe favors to more than one party, prehaps even parties in competition with each other. The nature of the favor determines how to resolve it, and this is up to the player and GM to decide. Depending on to whom the Smuggler owes the favor, the player may need to deal with this Obligation sooner rather than later.
+
+[P][B]Special Modifications - Technicians:[b][BR]
+The character owes someone a big favor. Perhaps a government agent looked the other way after catching the character slicing corporate computers. Perhaps a fellow Technician faked a malfunction or loss of data to cover for a failure on the PC's part. The magnitude of the favor is connected to the amount of Obligation. The Obligation could take an extended amount of time to clear, as it might be reduced by many small actions.
+
+[P][B]No Disintegrations - Bounty Hunters:[b][BR]
+The character owes a favor to someone in a position of power. However this favor came about, whether personally or professionally, repayment of that favor is coming due with interest. This favor may be called in all at once, or a little at a timne, prolonging the character's Obligation.</Description>
+    <Sources>
+      <Source Page="39">Edge of the Empire Core Rulebook</Source>
+      <Source Page="17">Far Horizons</Source>
+      <Source Page="17">Fly Casual</Source>
+    </Sources>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>FERV</Key>
+    <Name>Fervor</Name>
+    <Description>      [H4]Fervor[h4]
+[B]Enter the Unknown - Explorers:[b][BR]
+The character is possessed of a powerful drive to act based on religious or spiritual beliefs. As an Obligation, Fervor means that he cannot resist acting in accordance with his beliefs and teachings. He may even have those who support him in some way (thus explaining the resources he potentially attains due to the Obligation), further exhorting him to follow "the Way" they all revere. Consider the Archaeologist who seeks temples dedicated to a lost god or the Big-Game Hunter who truly believes that it his divine destiny to eradicate "monsters" throughout the galaxy.</Description>
+    <Source Page="19">Enter the Unknown</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>FRONTIER</Key>
+    <Name>Frontier Justice</Name>
+    <Description>      [H4]Pacifist[h4]
+[B]Far Horizons - Colonists:[b][BR]
+This Colonist abhors violence, either out of a sense of morality or cowardice. Witnessing a violent act can incense or fluster a character so much that he is unable to think straight or control his shaking hands, or simply disgust him to the point that he can't interact with his fellows. If this obligation triggers and the PC participates in a violent act, the GM may add [SE] to any skill checks he makes for the remainder of the session. (This may be avoided through good roleplaying on the player's part, such as having his character always try to talk his way out of a fight, and if he's forced to do battle, only use weapons that stun or incapacitate his opponents).</Description>
+    <Source Page="17">Far Horizons</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>HIGHRISK</Key>
+    <Name>High Risk</Name>
+    <Description>      [H4]High Risk[h4]
+[B]Fly Casual - Smugglers:[b][BR]
+The Smuggler just can't help it, he has to take the most dangerous jobs and play for the highest stakes. He is a victim of his own pride, and his ego often lands him in trouble. This Smuggler has something to prove and, when challenged, he cannot help but take the opportunity to display his bravery, even if this puts himself and his party in harm's way.</Description>
+    <Source Page="17">Fly Casual</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>NOTORIETY</Key>
+    <Name>Notoriety</Name>
+    <Description>      [H4]Notoriety[h4]
+[B]Fly Casual - Smugglers:[b][BR]
+If a Smuggler has Notoriety Obligation, then he will be unable to travel incognito, as his face or name may be recognized. This makes any jobs he takes on harder, if not impossible, to complete. This Obligation is only likely to apply in certain sectors, and the extent of its influence determines the size of the Obligation. The Smuggler's own behavior might have caused this, or another party may have maliciously spread information about him. If the latter, the Obligation could be reduced by tracking down the person responsible and stopping him. Of the former, the Smuggler may have to avoid the affected area long enough that the locals forget him, or he might significantly change his appearance or name to avoid recognition.</Description>
+    <Source Page="17">Fly Casual</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>OATH</Key>
+    <Name>Oath</Name>
+    <Description>      [H4]Oath[h4]
+[B]Edge of the Empire Core Rulebook - Generic:[b][BR]
+The character has sword some sort of oath that dictates his thoughts and actions, shaping his moral view of the world. This could be an oath to a deity, a way of living (such as the Jedi Code), or a willingness to sacrifice for the betterment of some group or cause. Whatever the case, the Oath should be both serious and make life difficult in some ways for the character. It is a personal and deep undertaking, possibly without a truly obtainable end goal in sight. Characters who do not live up to this oath face an internal and moral struggle.
+
+[P][B]Dangerous Covenants - Hired Guns:[b][BR]
+The oath a [B]Hired Gun[b] makes is likely something to do with a mission he must complete or his own code of
+honor. He might have sworn to finish some violent and incredibly risky undertaking, or he could have promised to
+uphold a set of rules of conduct in warfare that are hard to follow.</Description>
+    <Source Page="39">Edge of the Empire Core Rulebook</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>OBS</Key>
+    <Name>Obsession</Name>
+    <Description>      [H4]Obsession[h4]
+[B]Edge of the Empire Core Rulebook - Generic:[b][BR]
+The PC has some unhealthy obsession that tends to interfere in his life, whether with a celebrity, a region, a political movement, a cultural icon, or some other facet of society or life. He must pursue this, possibly to the detriment of his health, finances, or well-being. A character with this Obligation tends to get along well with others that share his interest, but is looked at with pity, amusement, or even a bit of fear from others who don't understand.
+
+[P][B]Enter the Unknown - Explorers:[b][BR]
+Similar to Addiction in some ways, at least at the psychological level—it's easy to see how many [B]Explorers[b]
+are driven by an Obsession of some kind to push far out into the Rim in pursuit of an all-consuming goal. Consider the
+Trader who can never acquire enough wealth or the [B]Scout[b] who must categorize every planet in a given sector. What
+of the [B]Big-Game Hunter[b], determined to once and for all take out a creature believed long extinct or even mythical? A
+[B]Driver[b] obsessed with going ever faster may truly bring himself to untold ruin—even death—for his Obsession.
+
+[P][B]Special Modifications - Technicians:[b][BR]
+The PC has an unhealthy obsession with technology, droids, or computers that constantly interferes with efforts to live a normal life. Whether it is repairing a prized droid, designed the next great piece of cybernetic technology, or inventing a device that defines the era, the character has continual need to pursue this interest. Accomplishing significant tasks to further this goal helps to reduce the character's Obligation.</Description>
+    <Source Page="39">Edge of the Empire Core Rulebook</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>PACIFIST</Key>
+    <Name>Pacifist</Name>
+    <Description>      [H4]Pacifist[h4]
+[B]Far Horizons - Colonists:[b][BR]
+This Colonist abhors violence, either out of a sense of morality or cowardice. Witnessing a violent act can incense or fluster a character so much that he is unable to think straight or control his shaking hands, or simply disgust him to the point that he can't interact with his fellows. If this obligation triggers and the PC participates in a violent act, the GM may add [SE] to any skill checks he makes for the remainder of the session. (This may be avoided through good roleplaying on the player's part, such as having his character always try to talk his way out of a fight, and if he's forced to do battle, only use weapons that stun or incapacitate his opponents).</Description>
+    <Source Page="17">Far Horizons</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>PHILAND</Key>
+    <Name>Philanderer</Name>
+    <Description>      [H4]Philanderer[h4]
+[B]Far Horizons - Colonists:[b][BR]
+Colonies tend to be small places, and if a being gets around, word about it has a tendency to follow close behind. This Colonist has no shortage of scorned lovers still furious over his or her never committing. Former flames have a habit of showing up at the worst moment, or causing delays when the chrono is ticking. The worst is when two or more flings team up to make life miserable for a serial seducer, or when spouses find out and decide the Colonist is deserving of punishment. Nothing is off limits, as all is fair in love and war.</Description>
+    <Source Page="17">Far Horizons</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>RESP</Key>
+    <Name>Responsibility</Name>
+    <Description>      [H4]Responsibility[h4]
+[B]Edge of the Empire Core Rulebook - Generic:[b][BR]
+A character with the Responsibility Obligation feels a strong sense of accountability or relationship to a person, place, or thing (a responsibility to kin falls under Family Obligation described above). This could include a strong connection to a mentor, a strong desire to care for orphans in a given location, or taking on the needs of an under-represented minority.
+
+[P][B]Far Horizons - Colonists:[b][BR]
+[B]Colonists[b], especially those founding a new colony, each have a responsibility to the rest of their
+fellow settlers. A character who is the only doctor on an entire planet cannot simply leave. Even going away for a
+month could result in dozens of preventable deaths. A moisture farmer's nephew might have a responsibility to
+keep condensers in the South Range operating, and runaway droids or not, if the units aren't working by midday,
+there will be hell to pay. The colony only has a chance of survival if everyone does his part.
+
+[P][B]Dangerous Covenants - Hired Guns:[b][BR]
+Some say (with good reason) that [B]Hired Guns[b] should not make friends. A personal relation of the
+character is another Hired Gun or similar career, and not a very good one. The character helped him once, and he
+is out there in the wider galaxy fumbling around, causing trouble for himself and others. Because of that one act
+of kindness, he might call upon the character to help him at any time.
+
+[P][B]Special Modifications - Technicians:[b][BR]
+The character feels a strong sense of accountability to or responsibility for a person, place, or thing. It might be to a business, social group, political movement, group of friends, or individual from the PC's past. The character might feel responsibility toward a mentor or an apprentice, laking care of major tasks that help fulfill this responsibility reduces the character's Obligation.</Description>
+    <Sources>
+      <Source Page="39">Edge of the Empire Core Rulebook</Source>
+      <Source Page="17">Far Horizons</Source>
+    </Sources>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>SERVITUDE</Key>
+    <Name>Servitude</Name>
+    <Description>      [H4]Servitude[h4]
+[B]Fly Casual - Smugglers:[b][BR]
+Although the Smuggler might act like he's his own boss, he is actually the property of another and must either hand over any earnings or evade his owner entirely. The Smuggler could deal with this Obligation by earning enough credits to buy his freedom, or he could kill or otherwise remove his master.</Description>
+    <Source Page="17">Fly Casual</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>SPON</Key>
+    <Name>Sponsorship</Name>
+    <Description>      [H4]Sponsorship[h4]
+[B]Enter the Unknown - Explorers:[b][BR]
+This represents a legitimate faction that has placed a great deal of resources in the hands of the character (or a team) for some established purpose. For many Explorers, it is the most common Obligation they will incur. It could be a mercantile consortium that sponsors a Trader in order to open up trade with a new planet or civilization or an Imperial agency sponsoring a Scout to investigate a newly discovered star and its planets. Archeologists are frequently sponsored by academies or other scholastically minded organizations for their expeditions, and Big-Game Hunters may well be spnsored by a conservation group to thin a particular population of beasts...or sponsored by less savory firms to completely eradicate a particular life-form.</Description>
+    <Source Page="19">Enter the Unknown</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>PRICENAME</Key>
+    <Name>The Price of a Name</Name>
+    <Description>      [H4]The Price of a Name[h4]
+[B]Dangerous Covenants - Hired Guns:[b][BR]
+The character claimed to be someone else, taking credit for his accomplishments in a past negotiation in the hopes of a higher payday. The wronged party, either the person impersonated or the hiring party, is now angry. This enemy might respond by chasing down the character, spreading news of the duplicity, or demanding restitution to his reputation or his credit account.</Description>
+    <Source Page="17">Dangerous Covenants</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>UNDERCONTRACT</Key>
+    <Name>Under Contract</Name>
+    <Description>      [H4]Under Contract[h4]
+[B]Fly Casual - Smugglers:[b][BR]
+The Smuggler is under contract to obtain rare goods, transport volatile cargo, or provide difficult services. He can only put this off for so long. This Obligation is similar to Debt, but it allows the player and the GM a wider range of possibilities when determining the nature of the contract.</Description>
+    <Source Page="17">Fly Casual</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+  <Obligation>
+    <Key>WITNESS</Key>
+    <Name>Witness Protection</Name>
+    <Description>      [H4]Witness Protection[h4]
+[B]Far Horizons - Colonists:[b][BR]
+Some Colonists never would have chosen life on a distant backwater, but authorities have deemed
+it necessary to hide them in the witness protection program. The Colonist is being hunted by the Hutt Cartels, Black Sun,
+the Tenloss Syndicate, or some other galactic-scale criminal organization as a material witness. The Colonist was given a
+new identity and sent to an obscure planet to safely await trial, but the syndicate won't stop looking for him.</Description>
+    <Source Page="17">Far Horizons</Source>
+    <Custom>DescOnly</Custom>
+  </Obligation>
+</Obligations>

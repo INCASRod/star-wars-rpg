@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<Vehicle xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>QSINGALVEHICLE</Key>
+  <Name>Q-Signal Messenger Drone Vehicle Profile</Name>
+  <Description>[H3]Q-Signal Messenger Drone Vehicle Profile[h3]
+[B]The Q-Signal Messenger Drone's Droid Profile can be found in the gear section.[b]
+[P]
+The Q-Signal Messenger Drone from Incom is unlike anything on the market today. Essentially a stripped down starfighter piloted by a savant-level droid brain the Q-Signal drone is designed to deliver encrypted data and physical specimens through hyperspace to predetermined coordinates. Little more than a space-going dead drop facilitator, the single-minded droid brain that controls the vehicle knowns nothing more than its current whereabouts and whatever hyperspace coordinates are programmed into its limited memory navicomputer. Both Imperial and Alliance intelligence agencies use Q-Signal drones in large numbers. They are commonly found aboard patrol and picket ships, but most military starships carry one or two aboard.
+[P]
+To use a Q-Signal drone, an agent simply loads data or cargo aboard the vessel and feeds hyperspace coordinates into the navicomputer. The Q-Signal is then pushed out of a hangar bay or launched from a fighter catapult into space, where it jumps away to make its delivery. When a Q-Signal arrives at its destination, it falls into a low-power mode to wait for pickup. While powered down, the droid keeps itself on station with automated thrusters and a simple passive sensor system. Once it is retrieved and its data or cargo removed, its memory is wiped and it is either put in storage aboard the receiving vessel to await another run or returned to its sender.
+[P]
+The Q-Signal droid brain and its associated courier systems are housed in a small, dagger-shaped vessel roughly half the size of an average starfighter. Covered in sensor-absorbing stealth materials and painted in dull matte colors, the Q-Signal is nearly impossible to see against a starfield with the naked eye and hard to find with sensors. The vehicle carries no weapons, sensors, or comms array, and it has no propulsion system save for its hyperdrive and a small set of ion thrusters to slow its reentry into realspace and to keep its station while awaiting pickup.</Description>
+  <Source Page="53">Cyphers and Masks</Source>
+  <Custom>AddedItem</Custom>
+  <Type>Airborne Creature</Type>
+  <Categories />
+  <HP>1</HP>
+  <Price>12000</Price>
+  <Rarity>5</Rarity>
+  <BaseMods>
+    <Mod>
+      <Count>1</Count>
+      <MiscDesc>The difficulty of checks made to detect the vessel is upgraded twice. If the vessel did not move in the previous round, also add [SE] [SE] to the check.</MiscDesc>
+    </Mod>
+  </BaseMods>
+  <HyperdrivePrimary>2</HyperdrivePrimary>
+  <SensorRangeValue>srNone</SensorRangeValue>
+  <EncumbranceCapacity>10</EncumbranceCapacity>
+  <Silhouette>2</Silhouette>
+  <Armor>2</Armor>
+  <HullTrauma>15</HullTrauma>
+  <SystemStrain>10</SystemStrain>
+  <SensorRange>No Sensors</SensorRange>
+</Vehicle>

@@ -1,0 +1,176 @@
+<?xml version="1.0"?>
+<Specialization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Key>TRADERRES</Key>
+  <Name>Trader (reSpecialized) 1.3</Name>
+  <Description>[H4]Trader (reSpecialized)[h4]
+[B]TRADER—THE ART OF THE DEAL[b][BR]
+[B]At a Glance[b][BR]
+The Trader is the consummate communicator and pitch-man. They can make a deal as easily as they can breathe.They are Shrewd, capable, and a little bit untrustworthy.[BR]
+[B]All-in or Hybrid?[b][BR]
+Hybrid, ⅓ general utility related to criminality and “knowing people” being well-traveled, and ⅔ about trading and salesmanship, extending that to more general utility.[BR]
+[B]What Should it be the Best At?[b][BR]
+Trading, especially physical goods[BR]
+[B]What should it be just “good” at?[b][BR]
+General Negotiating[BR]
+Underworld Maneuvering[BR]
+Social Defense[BR]
+[B]Specs for Comparison / Inspiration[b][BR]
+[I]Entrepreneur[i][BR]
+[I]Scavenger[i][BR]
+[B]Media Touchstones[b][BR]
+Badger (Firefly)[BR]
+Watto (TPM)[BR]
+Quark (DS9)[BR]
+Updated 12/10/2025</Description>
+  <Source>reSpecialized Project</Source>
+  <Custom>AddedItem</Custom>
+  <CareerSkills>
+    <Key>CORE</Key>
+    <Key>DECEP</Key>
+    <Key>NEG</Key>
+    <Key>UND</Key>
+  </CareerSkills>
+  <TalentRows>
+    <TalentRow>
+      <Cost>5</Cost>
+      <Talents>
+        <Key>GRIT</Key>
+        <Key>WHEEL</Key>
+        <Key>BARGHUNT</Key>
+        <Key>CONV</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+        <Direction />
+        <Direction>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>10</Cost>
+      <Talents>
+        <Key>CONGENIAL</Key>
+        <Key>MARKCONN</Key>
+        <Key>BOUGHT</Key>
+        <Key>WHEEL</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>15</Cost>
+      <Talents>
+        <Key>NOBFOOL</Key>
+        <Key>TOUGH</Key>
+        <Key>SOMEREAL</Key>
+        <Key>ITSASTEA</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>20</Cost>
+      <Talents>
+        <Key>WHEEL</Key>
+        <Key>MARCONIMP</Key>
+        <Key>BARGHUNT</Key>
+        <Key>ITSABARG</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+          <Down>true</Down>
+        </Direction>
+      </Directions>
+    </TalentRow>
+    <TalentRow>
+      <Cost>25</Cost>
+      <Talents>
+        <Key>WHE&amp;DEAIMP</Key>
+        <Key>MARCONSUP</Key>
+        <Key>DEDI</Key>
+        <Key>MASMERC</Key>
+      </Talents>
+      <Directions>
+        <Direction>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Right>true</Right>
+          <Up>true</Up>
+        </Direction>
+        <Direction>
+          <Left>true</Left>
+          <Up>true</Up>
+        </Direction>
+      </Directions>
+    </TalentRow>
+  </TalentRows>
+  <AddlCareerSkills>
+    <Type />
+  </AddlCareerSkills>
+</Specialization>
