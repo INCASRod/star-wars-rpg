@@ -252,8 +252,6 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   const [rollResult, setRollResult]             = useState<RollResult | null>(null)
   const [rollLabel, setRollLabel]               = useState<string | undefined>()
   const [activeSpecKey, setActiveSpecKey]       = useState<string | null>(null)
-  const [showForceTree, setShowForceTree]       = useState(false)
-  const [activePowerKey, setActivePowerKey]     = useState<string | null>(null)
   const [forceRollResult, setForceRollResult]   = useState<ForceRollResult | null>(null)
   const [skillPopover, setSkillPopover]         = useState<{ skill: HudSkill; anchor: DOMRect } | null>(null)
   const [combatCheckOpen, setCombatCheckOpen]         = useState(false)
@@ -355,13 +353,10 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     refSpeciesAll.find(s => s.key === character?.species_key)?.name || character?.species_key || ''
   , [refSpeciesAll, character])
 
-  // ── Force powers ──
-  const { allForcePowers, buildForcePowerTree } = useForcePowers({ charForceAbilities, refForcePowers, refForceAbilityMap, refForcePowerMap })
-
-  // ── Talent tree building — moved to buildCharacterTalentTree (shared with
-  // the /character/[id]/talents route, Prompt 6b); PlayerHUDDesktop itself no
-  // longer renders a talent tree, so it no longer needs the built data.
-  const forcePowerTreeData = useMemo(() => activePowerKey ? buildForcePowerTree(activePowerKey) : null, [activePowerKey, buildForcePowerTree])
+  // ── Force powers — ForcePanel still renders each owned power's tree inline
+  // (unchanged, F1/F2); the browse-full-tree MODAL this used to also feed is
+  // retired (Prompt F3) in favour of the /character/[id]/talents rail.
+  const { allForcePowers } = useForcePowers({ charForceAbilities, refForcePowers, refForceAbilityMap, refForcePowerMap })
 
   // ── Roll handler ──
   const handleRoll = (result: RollResult, label?: string, pool?: Record<string, number>, meta?: RollMeta) => {
@@ -606,8 +601,17 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
               allForcePowers={allForcePowers}
               conflicts={conflicts}
               onPurchaseForceAbility={handlePurchaseForceAbility}
-              onViewPower={(pk) => { setActivePowerKey(pk); setShowForceTree(true) }}
-              onAdd={() => { setActivePowerKey(null); setShowForceTree(true) }}
+              // onViewPower is dead code inside ForcePanel (never invoked —
+              // owned powers are viewed via ForcePanel's own inline expand,
+              // unchanged); kept as a no-op only because ForcePanel's shared
+              // prop interface (used by mobile too) still requires it.
+              onViewPower={() => {}}
+              // "+ Add" used to open the now-retired HudForcePowerTreeModal
+              // (browse-all-powers tab list) — that surface now lives on the
+              // /character/[id]/talents rail's own "+ New Force Power" entry
+              // (Prompt F3), matching how the Talents nav already redirects
+              // there instead of rendering an in-sheet tree.
+              onAdd={() => router.push(`/character/${character.id}/talents${isGmMode ? '?gm=1' : ''}`)}
               canGainForceRating={canGainForceRating}
               onPurchaseForceRating={handlePurchaseForceRating}
             />
@@ -720,13 +724,6 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         rollResult={rollResult}
         rollLabel={rollLabel}
         setRollResult={setRollResult}
-        showForceTree={showForceTree}
-        setShowForceTree={setShowForceTree}
-        allForcePowers={allForcePowers}
-        activePowerKey={activePowerKey}
-        setActivePowerKey={setActivePowerKey}
-        forcePowerTreeData={forcePowerTreeData}
-        onPurchaseForceAbility={handlePurchaseForceAbility}
         gmDialog={gmDialog}
         setGmDialog={setGmDialog}
         gmCritInjuryDialog={gmCritInjuryDialog}

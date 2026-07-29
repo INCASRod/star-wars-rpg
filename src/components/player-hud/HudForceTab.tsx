@@ -10,7 +10,7 @@ interface HudForceTabProps {
   effectiveStats?: EffectiveStats | null
   allForcePowers: ForcePowerDisplay[]
   conflicts: ConflictEntry[]
-  onPurchaseForceAbility: (abilityKey: string, row: number, col: number, cost: number, powerKey: string) => void
+  onPurchaseForceAbility: (abilityKey: string, row: number, col: number, cost: number, powerKey: string) => Promise<string | undefined> | void
   onViewPower: (pk: string) => void
   onAdd: () => void
   /** Eligible for Force Rating 1, currently at 0, not yet purchased — shows the buy CTA and locks power browsing. */

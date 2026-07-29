@@ -80,7 +80,7 @@ interface ForcePanelProps {
   forcePowers:         ForcePowerDisplay[]
   conflicts?:          ConflictEntry[]
   xpAvailable?:        number
-  onPurchasePower?:    (abilityKey: string, row: number, col: number, cost: number, powerKey: string) => void
+  onPurchasePower?:    (abilityKey: string, row: number, col: number, cost: number, powerKey: string) => Promise<string | undefined> | void
   onViewPower:         (powerKey: string) => void
   onAdd:               () => void
   isFallen?:           boolean
@@ -370,10 +370,12 @@ function ForcePowerCard({
   fp,
   xpAvailable,
   onPurchase,
+  forceRating,
 }: {
   fp: ForcePowerDisplay
   xpAvailable?: number
-  onPurchase?: (abilityKey: string, row: number, col: number, cost: number) => void
+  onPurchase?: (abilityKey: string, row: number, col: number, cost: number) => Promise<string | undefined> | void
+  forceRating: number
 }) {
   const { isOpen } = useHudPanelContext()
   const [expanded, setExpanded] = useState(false)
@@ -453,6 +455,7 @@ function ForcePowerCard({
               totalCount={fp.totalCount}
               xpAvailable={xpAvailable}
               onPurchase={onPurchase}
+              forceRating={forceRating}
             />
           )}
         </div>
@@ -636,6 +639,7 @@ export function ForcePanel({
                         <ForcePowerCard
                           fp={fp}
                           xpAvailable={xpAvailable}
+                          forceRating={forceRating}
                           onPurchase={onPurchasePower
                             ? (abilityKey, row, col, cost) => onPurchasePower(abilityKey, row, col, cost, fp.powerKey)
                             : undefined

@@ -2,7 +2,6 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { DiceModal } from './DiceModal'
-import { HudForcePowerTreeModal } from './HudForcePowerTreeModal'
 import { ForceRollModal } from './ForceRollModal'
 import { InitiativeRollModal } from './InitiativeRollModal'
 import { HudSpendCreditsModal } from './HudSpendCreditsModal'
@@ -18,8 +17,6 @@ import type { RollResult } from './dice-engine'
 import { FONT_DISPLAY, FONT_BODY } from '@/lib/tokens'
 import type { ForceRollResult } from './dice-engine'
 import type { HudSkill } from './SkillsPanel'
-import type { ForcePowerDisplay } from './ForcePanel'
-import type { ForceTreeNode, ForceTreeConnection } from '@/components/character/ForcePowerTree'
 import type {
   Character, CharacterSkill, CharacterTalent,
   RefTalent, SpeciesAbility, RefWeaponQuality,
@@ -40,14 +37,6 @@ interface HudModalsOverlayProps {
   rollResult: RollResult | null
   rollLabel: string | undefined
   setRollResult: (r: RollResult | null) => void
-
-  showForceTree: boolean
-  setShowForceTree: (b: boolean) => void
-  allForcePowers: ForcePowerDisplay[]
-  activePowerKey: string | null
-  setActivePowerKey: (k: string | null) => void
-  forcePowerTreeData: { powerName: string; nodes: ForceTreeNode[]; connections: ForceTreeConnection[]; purchasedCount: number; totalCount: number } | null
-  onPurchaseForceAbility: (abilityKey: string, row: number, col: number, cost: number, powerKey: string) => void
 
   gmDialog: string | null
   setGmDialog: (s: string | null) => void
@@ -96,7 +85,6 @@ export function HudModalsOverlay({
   character, skills, talents, refTalentMap, speciesAbilities, forceRating,
   effectiveCampaignId, supabase, isGmMode, refWeaponQualityMap,
   rollResult, rollLabel, setRollResult,
-  showForceTree, setShowForceTree, allForcePowers, activePowerKey, setActivePowerKey, forcePowerTreeData, onPurchaseForceAbility,
   gmDialog, setGmDialog,
   gmCritInjuryDialog, setGmCritInjuryDialog,
   forceRollResult, setForceRollResult,
@@ -117,17 +105,6 @@ export function HudModalsOverlay({
       {rollResult && (
         <DiceModal result={rollResult} skillName={rollLabel} onDismiss={() => setRollResult(null)} />
       )}
-
-      <HudForcePowerTreeModal
-        open={showForceTree}
-        onClose={() => setShowForceTree(false)}
-        allForcePowers={allForcePowers}
-        activePowerKey={activePowerKey}
-        setActivePowerKey={setActivePowerKey}
-        forcePowerTreeData={forcePowerTreeData}
-        xpAvailable={character.xp_available}
-        onPurchaseForceAbility={onPurchaseForceAbility}
-      />
 
       {gmDialog && (
         <div onClick={() => setGmDialog(null)} className="fixed inset-0 flex items-center justify-center" style={{ zIndex: 'var(--z-modal)', background: 'rgba(0,0,0,.5)', backdropFilter: 'blur(6px)', padding: 'var(--space-6)' }}>

@@ -153,7 +153,7 @@ export function MobileSessionCompanion({ characterId, campaignId }: MobileSessio
                   if (dir.down) canPurchase = canPurchase || purchasedSet.has(`${row.index + 1}-${col}`)
                 }
               }
-              treeNodes.push({ abilityKey: aKey, name: ref?.name || aKey, description: ref?.description, row: row.index, col, span, cost, purchased: isPurchased, canPurchase })
+              treeNodes.push({ abilityKey: aKey, name: ref?.name || aKey, description: ref?.description, row: row.index, col, span, cost, purchased: isPurchased, canPurchase, ownedRank: 0, totalRanks: 0 })
               if (span > 0) {
                 if (dir.right && col < 3) treeConnections.push({ fromRow: row.index, fromCol: col, toRow: row.index, toCol: col + 1 })
                 if (dir.down) treeConnections.push({ fromRow: row.index, fromCol: col, toRow: row.index + 1, toCol: col })

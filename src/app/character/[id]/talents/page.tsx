@@ -10,11 +10,12 @@ import { buildCharacterTalentTree } from '@/lib/buildTalentTree'
 import { computeCareerSkillKeys } from '@/lib/characters'
 import { specPurchaseCost } from '@/hooks/useCharacterData'
 import { TalentSurface } from '@/components/character/TalentSurface'
+import { ForcePowerTree } from '@/components/character/ForcePowerTree'
 import { PurchaseCeremony, type SpecCeremonyPayload } from '@/components/character/PurchaseCeremony'
 import { BuySpecButton } from '@/components/player-hud/BuySpecButton'
 import { DedicationModal } from '@/components/player-hud/DedicationModal'
 import { CharacterLoader } from '@/components/ui/CharacterLoader'
-import { HUD, FONT_BODY, FONT_DISPLAY, FS, SP, RADIUS } from '@/lib/tokens'
+import { HUD, FONT_BODY, FONT_DISPLAY, FS, SP, RADIUS, Z } from '@/lib/tokens'
 import { type UiTheme } from '@/components/player-hud/ThemeSwitcher'
 import styles from '@/components/character/TalentSurface.module.css'
 
@@ -42,16 +43,23 @@ function TalentsPageInner() {
     supabase, handlePurchaseTalent, handleRemoveTalent, handleBuySpecialization,
     handleResolveDedication, handleCancelDedication,
     sigAbilities, lockedSigAbilities, purchasedSigNodes, hasUnlockedTier5, lockInAbility, purchaseSigNode, sigLoading,
+    forceRating, allForcePowers, buildForcePowerTree, refForcePowerMap: refForcePowerMapForce,
+    powerBrowseList, forceReady, handlePurchaseForceAbility, ensurePowerLoaded,
   } = useTalentSurfaceData(characterId)
 
   const [activeSpecKey, setActiveSpecKey] = useState<string | null>(specParam)
   const [pendingDedication, setPendingDedication] = useState<{ talentId: string; row: number; col: number; specKey: string; xpCost: number } | null>(null)
-  // Which destination the rail has selected (Prompt 7b, Defect 1) — the main
-  // content area shows exactly one of these, never both. Independent of
-  // activeSpecKey: switching to 'sig' and back to 'tree' must not lose or
-  // change which spec is active, so this is its own piece of state, not
-  // derived from activeSpecKey.
-  const [contentView, setContentView] = useState<'tree' | 'sig'>('tree')
+  // Which destination the rail has selected (Prompt 7b, Defect 1; extended to
+  // 'force' in Prompt F3) — the main content area shows exactly one of these,
+  // never more than one. Independent of activeSpecKey/activeForcePowerKey:
+  // switching between destinations must never lose or change which spec/power
+  // is active, so this is its own piece of state, not derived from either.
+  const [contentView, setContentView] = useState<'tree' | 'sig' | 'force'>('tree')
+  const [activeForcePowerKey, setActiveForcePowerKey] = useState<string | null>(null)
+  // "+ New Force Power" browse list (Prompt F3) — same self-contained
+  // open/closed pattern as BuySpecButton, not a route/contentView change until
+  // an actual power is picked from it.
+  const [showForceBrowse, setShowForceBrowse] = useState(false)
 
   // Loader suppression (Prompt 7c) — with ref data cache-backed, the shell
   // batch is now just 2-3 small character-specific queries and a warm cache
@@ -127,6 +135,12 @@ function TalentsPageInner() {
 
   const careerRef = refCareers.find(c => c.key === character?.career_key)
   const activeSpecRef = effectiveSpecKey ? refSpecMap[effectiveSpecKey] : undefined
+  const activeForcePower = activeForcePowerKey ? allForcePowers.find(fp => fp.powerKey === activeForcePowerKey) : undefined
+  const activeForcePowerRef = activeForcePowerKey ? refForcePowerMapForce[activeForcePowerKey] : undefined
+  const forcePowerTreeData = useMemo(
+    () => activeForcePowerKey ? buildForcePowerTree(activeForcePowerKey) : null,
+    [activeForcePowerKey, buildForcePowerTree],
+  )
 
   const careerSkillNames = useMemo(() => {
     if (!careerRef) return []
@@ -183,12 +197,21 @@ function TalentsPageInner() {
             )}
 
             <h1 ref={megaTitleRef} className={styles.megaTitle}>
-              {contentView === 'sig' ? 'Signature Abilities' : (activeSpecRef?.name ?? talentTreeData?.specName ?? 'Talents')}
+              {contentView === 'sig' ? 'Signature Abilities'
+                : contentView === 'force' ? (activeForcePower?.powerName ?? 'Force Powers')
+                : (activeSpecRef?.name ?? talentTreeData?.specName ?? 'Talents')}
             </h1>
 
             {careerRef && <span ref={ghostWatermarkRef} className={styles.ghostWatermark}>{careerRef.name}</span>}
 
-            {careerSkillNames.length > 0 && (
+            {contentView === 'force' && activeForcePowerRef?.min_force_rating ? (
+              <div ref={metaRowRef} style={{ marginTop: SP[3] }}>
+                <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: forceRating >= activeForcePowerRef.min_force_rating ? HUD.textDim : 'var(--state-failure)' }}>
+                  <span style={{ color: HUD.textFaint, textTransform: 'uppercase', letterSpacing: '0.1em', marginRight: SP[2] }}>Requires</span>
+                  Force Rating {activeForcePowerRef.min_force_rating}
+                </div>
+              </div>
+            ) : careerSkillNames.length > 0 && (
               <div ref={metaRowRef} style={{ marginTop: SP[3] }}>
                 <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: HUD.textDim, maxWidth: '32rem' }}>
                   <span style={{ color: HUD.textFaint, textTransform: 'uppercase', letterSpacing: '0.1em', marginRight: SP[2] }}>Career Skills</span>
@@ -272,6 +295,47 @@ function TalentsPageInner() {
               </button>
             </>
           )}
+
+          {/* Force powers (Prompt F3) — one rail entry per owned power, same
+              pattern as spec entries; real owned counts for both test
+              characters are 2 and 4, well within a flat list (25 respec
+              powers exist total, but only owned ones ever appear here). */}
+          {(allForcePowers.length > 0 || forceReady) && (
+            <>
+              <div style={{ borderTop: `1px solid ${HUD.border}`, margin: `${SP[2]} ${SP[4]}` }} />
+              {allForcePowers.map(fp => {
+                const isActive = contentView === 'force' && activeForcePowerKey === fp.powerKey
+                return (
+                  <button
+                    key={fp.powerKey}
+                    title={fp.powerName}
+                    onClick={() => { setActiveForcePowerKey(fp.powerKey); setContentView('force') }}
+                    className={`${styles.railEntry} ${isActive ? styles.railEntryActive : ''}`}
+                    style={{ padding: `${SP[2]} ${SP[4]}`, fontSize: FS.sm, fontWeight: isActive ? 700 : 500, letterSpacing: '0.04em', color: isActive ? HUD.gold : HUD.textDim }}
+                  >
+                    {fp.powerName}
+                    <span style={{ display: 'block', fontSize: FS.overline, color: HUD.textFaint, letterSpacing: '0.1em' }}>
+                      {fp.purchasedCount}/{fp.totalCount}
+                    </span>
+                  </button>
+                )
+              })}
+
+              <div style={{ padding: `${SP[2]} ${SP[4]}` }}>
+                <button
+                  onClick={() => setShowForceBrowse(true)}
+                  style={{
+                    background: 'rgba(224,58,30,0.06)', border: '1px dashed var(--hud-border-hi)',
+                    borderRadius: RADIUS.md, padding: '5px 12px', cursor: 'pointer',
+                    fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700, letterSpacing: '0.12em',
+                    color: HUD.textDim,
+                  }}
+                >
+                  + NEW FORCE POWER
+                </button>
+              </div>
+            </>
+          )}
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: SP[4], position: 'relative' }}>
@@ -280,28 +344,92 @@ function TalentsPageInner() {
               Failed to load talent tree: {treeError}
             </div>
           )}
-          <TalentSurface
-            activeSpecKey={effectiveSpecKey}
-            talentTreeData={talentTreeData}
-            treeLoading={!treeReady}
-            contentView={contentView}
-            xpAvailable={character.xp_available}
-            isGmMode={isGmMode}
-            onPurchaseTalent={handlePurchaseTalent}
-            onRemoveTalent={isGmMode ? handleRemoveTalent : undefined}
-            onPendingDedication={setPendingDedication}
-            sig={{
-              availableSigAbilities: sigAbilities,
-              lockedSigAbilities,
-              purchasedSigNodes,
-              hasUnlockedTier5,
-              onLockInSigAbility: lockInAbility,
-              onPurchaseSigNode: purchaseSigNode,
-              loading: sigLoading,
-            }}
-          />
+          {contentView === 'force' ? (
+            forcePowerTreeData ? (
+              <ForcePowerTree
+                powerName={forcePowerTreeData.powerName}
+                nodes={forcePowerTreeData.nodes}
+                connections={forcePowerTreeData.connections}
+                purchasedCount={forcePowerTreeData.purchasedCount}
+                totalCount={forcePowerTreeData.totalCount}
+                xpAvailable={character.xp_available}
+                onPurchase={(abilityKey, row, col, cost) => handlePurchaseForceAbility(abilityKey, row, col, cost, activeForcePowerKey!)}
+                forceRating={forceRating}
+              />
+            ) : (
+              <div style={{ textAlign: 'center', padding: SP[6], fontFamily: FONT_BODY, fontSize: FS.label, color: HUD.textFaint }}>
+                Select a Force power from the rail, or start a new one.
+              </div>
+            )
+          ) : (
+            <TalentSurface
+              activeSpecKey={effectiveSpecKey}
+              talentTreeData={talentTreeData}
+              treeLoading={!treeReady}
+              contentView={contentView}
+              xpAvailable={character.xp_available}
+              isGmMode={isGmMode}
+              onPurchaseTalent={handlePurchaseTalent}
+              onRemoveTalent={isGmMode ? handleRemoveTalent : undefined}
+              onPendingDedication={setPendingDedication}
+              sig={{
+                availableSigAbilities: sigAbilities,
+                lockedSigAbilities,
+                purchasedSigNodes,
+                hasUnlockedTier5,
+                onLockInSigAbility: lockInAbility,
+                onPurchaseSigNode: purchaseSigNode,
+                loading: sigLoading,
+              }}
+            />
+          )}
         </div>
       </div>
+
+      {/* "+ New Force Power" browse list (Prompt F3) — portalled, same pattern
+          as BuySpecButton's SpecSelectorList, listing all 25 powers (minus
+          already-owned ones, which already have their own rail entry) using
+          the lightweight name/min_force_rating-only fetch. */}
+      {showForceBrowse && typeof document !== 'undefined' && createPortal(
+        <div
+          onClick={() => setShowForceBrowse(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: Z.modal, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: SP[4] }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ width: '100%', maxWidth: '28rem', maxHeight: '70vh', overflowY: 'auto', background: 'var(--hud-surface-hi)', border: `1px solid ${HUD.borderHi}`, borderRadius: RADIUS.lg, padding: SP[3] }}
+          >
+            <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700, letterSpacing: '0.1em', color: HUD.gold, marginBottom: SP[2] }}>
+              START A NEW FORCE POWER
+            </div>
+            {powerBrowseList
+              .filter(p => !allForcePowers.some(fp => fp.powerKey === p.key))
+              .map(p => (
+                <button
+                  key={p.key}
+                  onClick={() => {
+                    ensurePowerLoaded(p.key)
+                    setActiveForcePowerKey(p.key)
+                    setContentView('force')
+                    setShowForceBrowse(false)
+                  }}
+                  style={{
+                    display: 'block', width: '100%', textAlign: 'left',
+                    padding: `${SP[2]} ${SP[3]}`, marginBottom: 2,
+                    background: 'transparent', border: 'none', borderRadius: RADIUS.sm,
+                    cursor: 'pointer', fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.text,
+                  }}
+                >
+                  {p.name}
+                  {p.min_force_rating > 1 && (
+                    <span style={{ marginLeft: SP[2], fontSize: FS.overline, color: HUD.textFaint }}>FR {p.min_force_rating}+</span>
+                  )}
+                </button>
+              ))}
+          </div>
+        </div>,
+        document.body,
+      )}
 
       {pendingDedication && typeof document !== 'undefined' && createPortal(
         <DedicationModal

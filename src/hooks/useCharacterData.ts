@@ -149,6 +149,101 @@ export async function removeTalent(deps: TalentMutationDeps, talentId: string, x
   ])
 }
 
+export interface ForceAbilityMutationDeps {
+  character: Character
+  charForceAbilities: CharacterForceAbility[]
+  forceRating: number
+  refForcePowerMap: Record<string, RefForcePower>
+  refForceAbilityMap: Record<string, RefForceAbility>
+  supabase: SupabaseClient
+  setCharacter: (c: Character) => void
+  setCharForceAbilities: Dispatch<SetStateAction<CharacterForceAbility[]>>
+}
+
+/** Extracted (Prompt F3) so /character/[id]/talents' lean hook can call the
+ * exact same XP-race-safe purchase logic PlayerHUDDesktop's ForcePanel already
+ * uses, rather than a second implementation. markSelf() (realtime-echo
+ * suppression) stays the CALLER's responsibility, same as purchaseTalent. */
+/** Returns the new character_force_abilities row id on success, undefined on
+ * any failure/refusal (insufficient XP, Force Rating gate, XP-race loss) —
+ * same success-signal contract as purchaseTalent, which is what lets a
+ * caller (ForcePowerTree, Prompt F4) gate its purchase ceremony on a truthy
+ * result instead of a second success flag. */
+export async function purchaseForceAbility(
+  deps: ForceAbilityMutationDeps,
+  abilityKey: string, row: number, col: number, cost: number, activeForcePowerKey: string,
+): Promise<string | undefined> {
+  const { character, charForceAbilities, forceRating, refForcePowerMap, refForceAbilityMap, supabase, setCharacter, setCharForceAbilities } = deps
+  if (character.xp_available < cost) return
+  // A character with Force Rating 0 cannot use or benefit from Force powers —
+  // gained a Force-sensitive specialization only makes them eligible, it does
+  // not grant a rating on its own. Enforced here (not just in the UI).
+  if (forceRating < 1) { toast.error('Force Rating 1 required to purchase Force powers'); return }
+
+  const newId = randomUUID()
+  const optimisticXp = character.xp_available - cost
+  const forceAbilityRow = {
+    id: newId, character_id: character.id,
+    force_power_key: activeForcePowerKey, force_ability_key: abilityKey,
+    tree_row: row, tree_col: col, xp_cost: cost,
+  }
+  setCharacter({ ...character, xp_available: optimisticXp })
+  setCharForceAbilities(prev => [...prev, forceAbilityRow])
+
+  // XP-race fix — same fresh-read-before-write pattern as purchaseTalent.
+  const { data: charRow } = await supabase.from('characters').select('xp_available').eq('id', character.id).single()
+  const freshXp = charRow?.xp_available ?? character.xp_available
+  if (freshXp < cost) {
+    setCharacter({ ...character, xp_available: freshXp })
+    setCharForceAbilities(prev => prev.filter(a => a.id !== newId))
+    toast.error(`Not enough XP — need ${cost}, have ${freshXp}`)
+    return
+  }
+  const newXp = freshXp - cost
+
+  await Promise.all([
+    supabase.from('character_force_abilities').insert({
+      id:                newId,
+      character_id:      character.id,
+      force_power_key:   activeForcePowerKey,
+      force_ability_key: abilityKey,
+      tree_row:          row,
+      tree_col:          col,
+      xp_cost:           cost,
+    }),
+    supabase.from('characters').update({ xp_available: newXp }).eq('id', character.id),
+    supabase.from('xp_transactions').insert({ character_id: character.id, amount: -cost, reason: `Bought force ability: ${abilityKey}` }),
+  ])
+
+  const existingCount = countOwnedRanks(
+    charForceAbilities,
+    a => a.force_ability_key === abilityKey && a.force_power_key === activeForcePowerKey,
+  )
+  const abilityRank = existingCount + 1
+  const powerName   = refForcePowerMap[activeForcePowerKey]?.name ?? activeForcePowerKey
+  const abilityName = refForceAbilityMap[abilityKey]?.name ?? abilityKey
+  const label       = abilityRank > 1
+    ? `${powerName} — ${abilityName} (Rank ${abilityRank})`
+    : `${powerName} — ${abilityName}`
+
+  logPurchaseNotification({
+    campaignId:    character.campaign_id,
+    characterId:   character.id,
+    characterName: character.name,
+    label,
+    meta: {
+      purchase_type:     'force',
+      xp_cost:           cost,
+      refunded:          false,
+      force_ability_id:  newId,
+      force_power_key:   activeForcePowerKey,
+      force_ability_key: abilityKey,
+    },
+  })
+
+  return newId
+}
+
 /** Save the characteristic chosen for a Dedication purchase and apply the +1. */
 export async function resolveDedication(deps: TalentMutationDeps, talentId: string, charKey: string): Promise<void> {
   const { character, supabase, setCharacter, setTalents } = deps
@@ -887,73 +982,11 @@ export function useCharacterData(characterId: string) {
 
   const handlePurchaseForceAbility = async (abilityKey: string, row: number, col: number, cost: number, activeForcePowerKey: string) => {
     if (!character) return
-    if (character.xp_available < cost) return
-    // A character with Force Rating 0 cannot use or benefit from Force powers —
-    // gained a Force-sensitive specialization only makes them eligible, it does
-    // not grant a rating on its own. Enforced here (not just in the UI).
-    if (forceRating < 1) { toast.error('Force Rating 1 required to purchase Force powers'); return }
     markSelf()
-
-    const newId = randomUUID()
-    const optimisticXp = character.xp_available - cost
-    const forceAbilityRow = {
-      id: newId, character_id: character.id,
-      force_power_key: activeForcePowerKey, force_ability_key: abilityKey,
-      tree_row: row, tree_col: col, xp_cost: cost,
-    }
-    setCharacter({ ...character, xp_available: optimisticXp })
-    setCharForceAbilities(prev => [...prev, forceAbilityRow])
-
-    // XP-race fix — same fresh-read-before-write pattern as handlePurchaseTalent.
-    const { data: charRow } = await supabase.from('characters').select('xp_available').eq('id', character.id).single()
-    const freshXp = charRow?.xp_available ?? character.xp_available
-    if (freshXp < cost) {
-      setCharacter({ ...character, xp_available: freshXp })
-      setCharForceAbilities(prev => prev.filter(a => a.id !== newId))
-      toast.error(`Not enough XP — need ${cost}, have ${freshXp}`)
-      return
-    }
-    const newXp = freshXp - cost
-
-    await Promise.all([
-      supabase.from('character_force_abilities').insert({
-        id:                newId,
-        character_id:      character.id,
-        force_power_key:   activeForcePowerKey,
-        force_ability_key: abilityKey,
-        tree_row:          row,
-        tree_col:          col,
-        xp_cost:           cost,
-      }),
-      supabase.from('characters').update({ xp_available: newXp }).eq('id', character.id),
-      supabase.from('xp_transactions').insert({ character_id: character.id, amount: -cost, reason: `Bought force ability: ${abilityKey}` }),
-    ])
-
-    const existingCount = countOwnedRanks(
-      charForceAbilities,
-      a => a.force_ability_key === abilityKey && a.force_power_key === activeForcePowerKey,
+    return purchaseForceAbility(
+      { character, charForceAbilities, forceRating, refForcePowerMap, refForceAbilityMap, supabase, setCharacter, setCharForceAbilities },
+      abilityKey, row, col, cost, activeForcePowerKey,
     )
-    const abilityRank = existingCount + 1
-    const powerName   = refForcePowerMap[activeForcePowerKey]?.name ?? activeForcePowerKey
-    const abilityName = refForceAbilityMap[abilityKey]?.name ?? abilityKey
-    const label       = abilityRank > 1
-      ? `${powerName} — ${abilityName} (Rank ${abilityRank})`
-      : `${powerName} — ${abilityName}`
-
-    logPurchaseNotification({
-      campaignId:    character.campaign_id,
-      characterId:   character.id,
-      characterName: character.name,
-      label,
-      meta: {
-        purchase_type:     'force',
-        xp_cost:           cost,
-        refunded:          false,
-        force_ability_id:  newId,
-        force_power_key:   activeForcePowerKey,
-        force_ability_key: abilityKey,
-      },
-    })
   }
 
   /**

@@ -51,7 +51,7 @@ interface MobileForceScreenProps {
   refForcePowerMap:     Record<string, RefForcePower>
   conflicts:            ConflictEntry[]
   xpAvailable:          number
-  onPurchaseForceAbility: (abilityKey: string, row: number, col: number, cost: number, powerKey: string) => Promise<void>
+  onPurchaseForceAbility: (abilityKey: string, row: number, col: number, cost: number, powerKey: string) => Promise<string | undefined>
   onCancelCommit:       (powerKey: string, effectName: string) => Promise<void>
 }
 

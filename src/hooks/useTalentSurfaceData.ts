@@ -5,14 +5,17 @@ import { createClient } from '@/lib/supabase/client'
 import { fetchActiveDataset } from '@/lib/activeDataset'
 import { getRefData } from '@/lib/refDataCache'
 import { useCharacterSigAbilities } from '@/hooks/useCharacterSigAbilities'
+import { useForcePowers } from '@/hooks/useForcePowers'
 import { countOwnedRanks } from '@/lib/derivedStats'
 import {
   purchaseTalent, removeTalent, resolveDedication, cancelDedication, buySpecialization,
-  type TalentMutationDeps,
+  purchaseForceAbility,
+  type TalentMutationDeps, type ForceAbilityMutationDeps,
 } from '@/hooks/useCharacterData'
 import type {
   Character, CharacterTalent, CharacterSpecialization,
   RefSkill, RefTalent, RefSpecialization, RefCareer,
+  CharacterForceAbility, RefForcePower, RefForceAbility,
 } from '@/lib/types'
 
 /**
@@ -54,6 +57,32 @@ export function useTalentSurfaceData(characterId: string) {
   const [treeError, setTreeError] = useState<string | null>(null)
 
   const [pendingForceRatingOffer, setPendingForceRatingOffer] = useState(false)
+
+  // ── Force powers (Prompt F3) — independent third batch, same shape as sig:
+  // never gates shellReady/treeReady, paints its own loading state. Scoped to
+  // avoid the load-time regression a naive "fetch everything" would cause:
+  // ref_force_powers/ref_force_abilities are NOT part of the shared
+  // refDataCache (unlike specs/talents/careers/skills) because they're not
+  // needed by every character — most characters on this route never open the
+  // Force destination at all. `refForcePowersOwned`/`refForceAbilitiesOwned`
+  // are scoped to just the powers this character actually owns (2-4 rows for
+  // both real test characters, never all 25) — full ability_tree detail only
+  // for those. `powerBrowseList` is a separate, deliberately lightweight
+  // fetch (key/name/min_force_rating only, no ability_tree JSONB) covering
+  // all 25 powers, for the "start a new Force power" affordance — the same
+  // browse set the old HudForcePowerTreeModal's tab list drew from.
+  const [charForceAbilities, setCharForceAbilities] = useState<CharacterForceAbility[]>([])
+  const [refForcePowersOwned, setRefForcePowersOwned] = useState<RefForcePower[]>([])
+  const [refForceAbilitiesOwned, setRefForceAbilitiesOwned] = useState<RefForceAbility[]>([])
+  const [powerBrowseList, setPowerBrowseList] = useState<{ key: string; name: string; min_force_rating: number }[]>([])
+  const [forceReady, setForceReady] = useState(false)
+  const [forceError, setForceError] = useState<string | null>(null)
+  // Powers explicitly opened from the "start a new Force power" browse list —
+  // not yet owned, but the player has selected one and needs to see its base
+  // power/cost to make the first purchase. Merged with the owned-key set on
+  // every loadForce() call (below) so a later realtime refetch never drops it
+  // back out mid-session.
+  const [extraLoadedPowerKeys, setExtraLoadedPowerKeys] = useState<string[]>([])
 
   const supabase = useMemo(() => createClient(), [])
 
@@ -114,22 +143,74 @@ export function useTalentSurfaceData(characterId: string) {
     setTreeReady(true)
   }, [characterId, supabase])
 
-  // Both batches fire together — neither awaits the other.
+  const loadForce = useCallback(async () => {
+    try {
+      const ds = await fetchActiveDataset(supabase)
+      // character_force_abilities is cheap regardless (per-character rows) —
+      // fetched first so the two ref queries below can be scoped to only the
+      // power keys this character actually owns, never all 25.
+      const forceAbilRes = await supabase.from('character_force_abilities').select('*').eq('character_id', characterId)
+      const ownedAbilities = (forceAbilRes.data as CharacterForceAbility[]) || []
+      // Merged with extraLoadedPowerKeys (browse-list selections not yet
+      // owned) so this refetch — including the one the realtime subscription
+      // below fires on every unrelated purchase — never drops a still-unowned
+      // but explicitly-opened power back out of scope.
+      const scopeKeys = [...new Set([...ownedAbilities.map(a => a.force_power_key), ...extraLoadedPowerKeys])]
+
+      const [powersRes, abilitiesRes, browseRes] = await Promise.all([
+        scopeKeys.length > 0
+          ? supabase.from('ref_force_powers').select('*').eq('dataset_source', ds).eq('is_retired', false).in('key', scopeKeys)
+          : Promise.resolve({ data: [] as RefForcePower[] }),
+        scopeKeys.length > 0
+          ? supabase.from('ref_force_abilities').select('*').eq('dataset_source', ds).eq('is_retired', false).in('power_key', scopeKeys)
+          : Promise.resolve({ data: [] as RefForceAbility[] }),
+        // Lightweight — no ability_tree column — for the "start a new Force
+        // power" browse list, which legitimately needs all 25, not just owned.
+        supabase.from('ref_force_powers').select('key,name,min_force_rating').eq('dataset_source', ds).eq('is_retired', false),
+      ])
+
+      setCharForceAbilities(ownedAbilities)
+      setRefForcePowersOwned((powersRes.data as RefForcePower[]) || [])
+      setRefForceAbilitiesOwned((abilitiesRes.data as RefForceAbility[]) || [])
+      setPowerBrowseList(((browseRes.data as { key: string; name: string; min_force_rating: number }[]) || []).sort((a, b) => a.name.localeCompare(b.name)))
+    } catch (err: unknown) {
+      setForceError(err instanceof Error ? err.message : String(err))
+    }
+    setForceReady(true)
+  }, [characterId, supabase, extraLoadedPowerKeys])
+
+  /** Called when the rail's "start a new Force power" list selects a power
+   * that isn't owned yet — a no-op if it's already in scope (owned or
+   * previously ensured), otherwise triggers one extra loadForce() re-fetch
+   * scoped to include it. */
+  const ensurePowerLoaded = useCallback((powerKey: string) => {
+    setExtraLoadedPowerKeys(prev => prev.includes(powerKey) ? prev : [...prev, powerKey])
+  }, [])
+
+  // Three batches fire together on mount — none awaits the others (same
+  // contract as shell/tree). Split into two effects (not one shared
+  // dependency array) because loadForce's identity changes whenever
+  // ensurePowerLoaded adds a browse-list selection — bundling shell/tree into
+  // that same effect would needlessly re-fetch them every time a new Force
+  // power is opened, not just once on mount.
   useEffect(() => { loadShell(); loadTree() }, [loadShell, loadTree])
+  useEffect(() => { loadForce() }, [loadForce])
 
   // ── Realtime — only the tables this route actually renders. Weapons/armor/
-  // gear/crits/force-abilities are deliberately not subscribed here; this
-  // route never fetches or displays them (PlayerHUDDesktop's useCharacterData
-  // still subscribes to those, unaffected by this hook).
+  // gear/crits are deliberately not subscribed here; this route never fetches
+  // or displays them (PlayerHUDDesktop's useCharacterData still subscribes to
+  // those, unaffected by this hook). character_force_abilities IS subscribed
+  // (Prompt F3) — this route now renders Force power trees too.
   useEffect(() => {
     const channel = supabase
       .channel(`talent-surface-${characterId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'characters', filter: `id=eq.${characterId}` }, () => loadShell())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'character_talents', filter: `character_id=eq.${characterId}` }, () => loadTree())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'character_specializations', filter: `character_id=eq.${characterId}` }, () => loadShell())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'character_force_abilities', filter: `character_id=eq.${characterId}` }, () => loadForce())
       .subscribe()
     return () => { supabase.removeChannel(channel) }
-  }, [characterId, supabase, loadShell, loadTree])
+  }, [characterId, supabase, loadShell, loadTree, loadForce])
 
   const refSpecMap = useMemo(() => Object.fromEntries(refSpecs.map(s => [s.key, s])), [refSpecs])
   const refTalentMap = useMemo(() => Object.fromEntries(refTalents.map(t => [t.key, t])), [refTalents])
@@ -192,6 +273,25 @@ export function useTalentSurfaceData(characterId: string) {
     }, specKey, setActiveSpecKey)
   }
 
+  // ── Force powers (Prompt F3) ──
+  const refForcePowerMap = useMemo(() => Object.fromEntries(refForcePowersOwned.map(fp => [fp.key, fp])), [refForcePowersOwned])
+  const refForceAbilityMap = useMemo(() => Object.fromEntries(refForceAbilitiesOwned.map(fa => [fa.key, fa])), [refForceAbilitiesOwned])
+  // allForcePowers, scoped to refForcePowersOwned, naturally contains only the
+  // powers this character owns — the exact same hook ForcePanel.tsx already
+  // uses, not a reimplementation.
+  const { allForcePowers, buildForcePowerTree } = useForcePowers({
+    charForceAbilities, refForcePowers: refForcePowersOwned, refForceAbilityMap, refForcePowerMap,
+  })
+
+  const handlePurchaseForceAbility = async (abilityKey: string, row: number, col: number, cost: number, activeForcePowerKey: string) => {
+    if (!character) return
+    const deps: ForceAbilityMutationDeps = {
+      character, charForceAbilities, forceRating, refForcePowerMap, refForceAbilityMap,
+      supabase, setCharacter, setCharForceAbilities,
+    }
+    return purchaseForceAbility(deps, abilityKey, row, col, cost, activeForcePowerKey)
+  }
+
   const {
     availableSigAbilities: sigAbilities,
     lockedAbilities: lockedSigAbilities,
@@ -219,5 +319,9 @@ export function useTalentSurfaceData(characterId: string) {
     // Signature abilities
     sigAbilities, lockedSigAbilities, purchasedSigNodes, hasUnlockedTier5,
     lockInAbility, purchaseSigNode, sigLoading,
+    // Force powers (Prompt F3) — forceRating is the SAME value
+    // handleBuySpecialization above already uses; no second source of truth.
+    forceRating, allForcePowers, buildForcePowerTree, refForcePowerMap,
+    powerBrowseList, forceReady, forceError, handlePurchaseForceAbility, ensurePowerLoaded,
   }
 }

@@ -1,0 +1,25 @@
+/* ═══════════════════════════════════════════════════════════════════
+   ForcePowerTree.module.css — Prompt F1.
+
+   Plaque body/foot/pips/connector-bar styling all reuse
+   TalentTree.module.css's classes directly (imported alongside this file
+   in ForcePowerTree.tsx) — Force power nodes have no Active/Passive/
+   Maneuver/Incidental split to justify HEADER_CLASS's four activation
+   variants, so this file supplies exactly one thing that genuinely
+   differs: a plain neutral header band using existing generic HUD tokens
+   (not an activation token, and not a new colour — no genuine visual-
+   identity gap was found for Force powers, see F1 audit §f/g).
+   ═══════════════════════════════════════════════════════════════════ */
+
+.headerForce {
+  background: var(--hud-surface-mid);
+  color: var(--hud-gold);
+}
+
+.owned .headerForce {
+  /* Owned plate already gets its own dark separator from
+     TalentTree.module.css's `.owned .header` rule — this variant only
+     needs to stop inheriting the neutral band's own background so the
+     plate colour reads through underneath it. */
+  background: transparent;
+}

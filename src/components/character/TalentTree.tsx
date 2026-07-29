@@ -165,8 +165,8 @@ const HEADER_CLASS: Record<string, string> = {
   'Incidental (OOT)': styles.headerIncidental,
 }
 
-/** Cursor-follow sheen — writes --mx/--my directly via ref, no React state (avoids a re-render per mousemove). rAF-throttled. */
-function useCursorSheen() {
+/** Cursor-follow sheen — writes --mx/--my directly via ref, no React state (avoids a re-render per mousemove). rAF-throttled. Exported so ForcePowerTree.tsx can reuse it instead of duplicating (Prompt F1). */
+export function useCursorSheen() {
   const rafRef = useRef<number | null>(null)
   return (e: React.MouseEvent<HTMLDivElement>) => {
     const el = e.currentTarget

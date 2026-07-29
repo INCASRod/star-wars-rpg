@@ -49,8 +49,25 @@ export interface SpecCeremonyPayload {
   newSkillNames: string[]
 }
 
+/** Force Prompt F4 — same lift/drain/burst/stamp/return grammar as
+ * TalentCeremonyPayload, minus the activation-token colouring (Force
+ * abilities have no activation concept). `powerName` is shown under the
+ * ability name since a player may own several Force powers at once — the
+ * plain ability name alone wouldn't say which tree it belongs to.
+ * `rankLabel` is set only for a multi-purchase node's 2nd+ position
+ * (e.g. JERINFRANGE, WARFORDURATION) — omitted for single-position abilities. */
+export interface ForceCeremonyPayload {
+  kind: 'force'
+  name: string
+  powerName: string
+  cost: number
+  rankLabel?: string
+  /** The real plaque's rect at the moment of purchase — same contract as TalentCeremonyPayload.sourceRect. */
+  sourceRect: { top: number; left: number; width: number; height: number } | null
+}
+
 export interface PurchaseCeremonyProps {
-  payload: TalentCeremonyPayload | SpecCeremonyPayload
+  payload: TalentCeremonyPayload | SpecCeremonyPayload | ForceCeremonyPayload
   xpBefore: number
   xpAfter: number
   reducedMotion: boolean
@@ -100,7 +117,7 @@ export function PurchaseCeremony({ payload, xpBefore, xpAfter, reducedMotion, on
 
     tl.to(backdrop, { opacity: 1, duration: 0.15 })
 
-    if (payload.kind === 'talent' && payload.sourceRect) {
+    if ((payload.kind === 'talent' || payload.kind === 'force') && payload.sourceRect) {
       tl.set(card, {
         top: payload.sourceRect.top, left: payload.sourceRect.left,
         width: payload.sourceRect.width, height: payload.sourceRect.height,
@@ -111,7 +128,7 @@ export function PurchaseCeremony({ payload, xpBefore, xpAfter, reducedMotion, on
       tl.fromTo(card, { opacity: 0, scale: 0.8, ...centerVars }, { opacity: 1, scale: 1, ...centerVars, duration: 0.3, ease: 'back.out(1.6)' }, '<')
     }
 
-    if (payload.kind === 'talent') {
+    if (payload.kind === 'talent' || payload.kind === 'force') {
       // XP drains down to its new value while the burst + stamp land.
       if (xpCounterRef.current) {
         const counter = { val: xpBefore }
@@ -177,8 +194,8 @@ export function PurchaseCeremony({ payload, xpBefore, xpAfter, reducedMotion, on
         onClick={e => e.stopPropagation()}
         style={{
           position: 'absolute',
-          background: payload.kind === 'talent' ? payload.activationBg : 'var(--hud-surface-hi)',
-          border: `1px solid ${payload.kind === 'talent' ? payload.activationBg : 'var(--plaque-avail-accent)'}`,
+          background: payload.kind === 'talent' ? payload.activationBg : payload.kind === 'force' ? 'color-mix(in srgb, var(--die-force) 20%, var(--hud-surface-hi))' : 'var(--hud-surface-hi)',
+          border: `1px solid ${payload.kind === 'talent' ? payload.activationBg : payload.kind === 'force' ? 'var(--die-force)' : 'var(--plaque-avail-accent)'}`,
           borderRadius: RADIUS.lg,
           boxShadow: SHADOW.dossier,
           overflow: 'hidden',
@@ -201,6 +218,36 @@ export function PurchaseCeremony({ payload, xpBefore, xpAfter, reducedMotion, on
               style={{
                 position: 'absolute', inset: 0, pointerEvents: 'none',
                 background: 'radial-gradient(circle, color-mix(in srgb, var(--hud-gold) 55%, transparent) 0%, transparent 70%)',
+                opacity: 0,
+              }}
+            />
+            <div
+              ref={stampRef}
+              style={{
+                position: 'absolute', bottom: 10, right: 14, opacity: 0,
+                fontFamily: FONT_DISPLAY, fontSize: FS.h3, fontWeight: 700, letterSpacing: '0.1em',
+                color: 'var(--hud-gold)', textShadow: '0 0 12px color-mix(in srgb, var(--hud-gold) 70%, transparent)',
+              }}
+            >
+              ACQUIRED
+            </div>
+          </>
+        ) : payload.kind === 'force' ? (
+          <>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700, letterSpacing: '0.06em', color: 'var(--die-force)', textTransform: 'uppercase' }}>
+              {payload.name}
+            </div>
+            <div style={{ marginTop: 2, fontFamily: FONT_BODY, fontSize: FS.overline, letterSpacing: '0.08em', textTransform: 'uppercase', color: HUD.textFaint }}>
+              {payload.powerName}{payload.rankLabel ? ` · ${payload.rankLabel}` : ''}
+            </div>
+            <div style={{ marginTop: SP[2], fontFamily: FONT_DISPLAY, fontSize: FS.h2, fontWeight: 700, color: 'var(--die-force)' }}>
+              −<span ref={xpCounterRef}>{xpBefore}</span> XP
+            </div>
+            <div
+              ref={burstRef}
+              style={{
+                position: 'absolute', inset: 0, pointerEvents: 'none',
+                background: 'radial-gradient(circle, color-mix(in srgb, var(--die-force) 55%, transparent) 0%, transparent 70%)',
                 opacity: 0,
               }}
             />
