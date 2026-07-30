@@ -4,9 +4,10 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import gsap from 'gsap'
 import { C, panelBase } from './design-tokens'
-import { FONT_BODY, FONT_DISPLAY, SP, FS, RADIUS, Z, EASE } from '@/lib/tokens'
+import { FONT_BODY, FONT_DISPLAY, SP, FS, RADIUS, Z, EASE, HUD } from '@/lib/tokens'
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
 import { useHudPanelContext } from '@/contexts/HudPanelContext'
+import { PresenceSmoke, KOTOR_RED_CSS, KOTOR_BLUE_CSS, NEUTRAL_SMOKE_CSS } from './PresenceSmoke'
 
 // ── Force Presence — player-facing Balance Point track (Prompt B) ────────────
 //
@@ -45,13 +46,24 @@ function stateWordFor(lightPoints: number, darkPoints: number): string {
   return 'Balanced'
 }
 
-// violet ↔ gold ↔ cyan, driven by (light - dark) / 10 — computed once per
-// render from props (not a continuous JS tween: color-mix() strings aren't
-// numerically tweenable), assigned to a single CSS custom property so every
-// consumer (border, corner ticks, state word) reads the same value and moves
+// Single canonical axis in [-1, 1] — every consumer in this file (accent
+// colour, mote drift, and now PresenceSmoke) reads this same value rather
+// than each recomputing (light-dark)/10 independently. The clamp is
+// defensive only: pipStates' own model (dark pips fill from index 0, light
+// pips from the top, neutral fills whatever's left) makes darkPoints +
+// lightPoints <= 10 an existing invariant, so axis is already always within
+// [-1, 1] in practice — this doesn't change any existing value, only gives
+// PresenceSmoke a single source to share instead of a second calculation.
+function axisFor(lightPoints: number, darkPoints: number): number {
+  return Math.max(-1, Math.min(1, (lightPoints - darkPoints) / 10))
+}
+
+// violet ↔ gold ↔ cyan, driven by axis — computed once per render from props
+// (not a continuous JS tween: color-mix() strings aren't numerically
+// tweenable), assigned to a single CSS custom property so every consumer
+// (border, corner ticks, state word) reads the same value and moves
 // together, per the spec.
-function accentColorFor(lightPoints: number, darkPoints: number): string {
-  const axis = Math.max(-1, Math.min(1, (lightPoints - darkPoints) / 10))
+function accentColorFor(axis: number): string {
   const t = Math.abs(axis)
   const toward = axis >= 0 ? LIGHT_CYAN : DARK_VIOLET
   return `color-mix(in srgb, ${GOLD} ${Math.round((1 - t) * 100)}%, ${toward} ${Math.round(t * 100)}%)`
@@ -86,10 +98,16 @@ function AxisCornerBrackets({ color }: { color: string }) {
   )
 }
 
-function pipFill(state: PipState): { background: string; boxShadow: string } {
-  if (state === 'dark')  return { background: 'color-mix(in srgb, black 85%, transparent)', boxShadow: `0 0 4px ${DARK_VIOLET}` }
-  if (state === 'light') return { background: 'color-mix(in srgb, white 92%, transparent)', boxShadow: `0 0 5px ${LIGHT_CYAN}` }
-  return { background: 'transparent', boxShadow: 'none' }
+// Dark pip contrast fix (Step 2): the violet boxShadow glow is the identity
+// — unchanged — but a void-black fill against this card's near-black panel
+// tone can still read as a hole with no edge at rest, especially during the
+// ambient breathing tween's low point (0 0 1px, see the ambient-life effect
+// below). A hairline neutral rim gives it a constant legibility floor that
+// never depends on the violet glow's current animated intensity.
+function pipFill(state: PipState): { background: string; boxShadow: string; border: string } {
+  if (state === 'dark')  return { background: 'color-mix(in srgb, black 85%, transparent)', boxShadow: `0 0 4px ${DARK_VIOLET}`, border: `1px solid color-mix(in srgb, ${C.textFaint} 30%, transparent)` }
+  if (state === 'light') return { background: 'color-mix(in srgb, white 92%, transparent)', boxShadow: `0 0 5px ${LIGHT_CYAN}`, border: 'none' }
+  return { background: 'transparent', boxShadow: 'none', border: 'none' }
 }
 
 function Pip({
@@ -112,7 +130,7 @@ function Pip({
       style={{
         width: 18, height: 18, borderRadius: RADIUS.full, cursor: 'pointer', flexShrink: 0,
         position: 'relative', overflow: 'hidden',
-        background: fill.background, boxShadow: fill.boxShadow,
+        background: fill.background, boxShadow: fill.boxShadow, border: fill.border,
       }}
     >
       {pipState === 'neutral' && (
@@ -278,7 +296,8 @@ export function ForcePresenceCard({
     [lightPoints, darkPoints],
   )
   const stateWord = stateWordFor(lightPoints, darkPoints)
-  const accentColor = accentColorFor(lightPoints, darkPoints)
+  const axis = axisFor(lightPoints, darkPoints)
+  const accentColor = accentColorFor(axis)
 
   // ── Threshold ceremony — fires ONLY on the transition edge, including for
   // GM-driven writes arriving via the existing characters realtime
@@ -336,7 +355,6 @@ export function ForcePresenceCard({
     const container = moteContainerRef.current
     const motes: HTMLElement[] = []
     if (container) {
-      const axis = (lightPoints - darkPoints) / 10
       const dir = axis >= 0 ? 1 : -1
       const strength = Math.min(1, Math.abs(axis))
       for (let i = 0; i < 10; i++) {
@@ -366,7 +384,7 @@ export function ForcePresenceCard({
       tweenedEls.forEach(el => { gsap.killTweensOf(el); gsap.set(el, { clearProps: 'boxShadow' }) })
       motes.forEach(m => { gsap.killTweensOf(m); m.remove() })
     }
-  }, [prefersReducedMotion, isOpen, pipStates, lightPoints, darkPoints])
+  }, [prefersReducedMotion, isOpen, pipStates, lightPoints, darkPoints, axis])
 
   const handleChoose = (toState: PipState) => {
     if (!chooser || !onFlipBalancePoint) { setChooser(null); return }
@@ -404,7 +422,33 @@ export function ForcePresenceCard({
     <div style={{
       ...panelBase, padding: 'var(--space-3) var(--space-4)', position: 'relative', overflow: 'hidden',
       borderColor: accentColor, transition: `border-color ${EASE.smooth}`,
+      // Step 2 contrast fix — one surface tone lighter than panelBase's
+      // default (HUD.panel, the darkest tier) so void-black Dark pips read
+      // against it at rest without relying on the smoke layer for contrast,
+      // plus a soft radial lift centred on the pip scale's own band (~62%
+      // down the card) so that's where the extra headroom concentrates
+      // rather than lightening the whole card evenly. Existing tokens only.
+      background: `radial-gradient(ellipse 70% 45% at 50% 62%, color-mix(in srgb, ${HUD.surfaceHi} 55%, transparent) 0%, transparent 75%), ${HUD.surfaceLo}`,
     }}>
+      {prefersReducedMotion ? (
+        // Reduced motion — no Three canvas at all. A static, extremely
+        // subtle axis-tinted wash keeps the alignment colour cue without any
+        // animation; same axis value, same KOTOR colours, CSS only.
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute', inset: 0, pointerEvents: 'none',
+            background: `radial-gradient(ellipse 80% 50% at 50% 55%, color-mix(in srgb, ${axis === 0 ? NEUTRAL_SMOKE_CSS : axis > 0 ? KOTOR_BLUE_CSS : KOTOR_RED_CSS} ${Math.round(Math.abs(axis) * 10 + 4)}%, transparent) 0%, transparent 70%)`,
+          }}
+        />
+      ) : isOpen ? (
+        // Mount/unmount IS the pause mechanism here — same effect as the
+        // mote layer's own `if (prefersReducedMotion || !isOpen) return`
+        // early-out: closing the Force tab unmounts this, running its full
+        // cleanup (renderer.dispose(), etc.) rather than merely hiding a
+        // still-rendering canvas; reopening remounts and recreates it fresh.
+        <PresenceSmoke axis={axis} surge={ceremony} />
+      ) : null}
       <div ref={moteContainerRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }} />
       <div
         ref={ceremonyOverlayRef}
