@@ -334,7 +334,7 @@ export function EncounterDossier({
                   onBlur={() => void handleSaveNickname()}
                   placeholder={entry.name}
                   style={{
-                    fontFamily: FD, fontSize: FS.h4, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
+                    fontFamily: FD, fontSize: FS.h4, fontWeight: 700, letterSpacing: '0.05em',
                     lineHeight: 1.15, background: 'var(--hud-surface-hi)', border: `1px solid ${HUD.borderHi}`,
                     borderRadius: RADIUS.sm, color: HUD.text, padding: `2px ${SP[1]}`, width: '100%',
                   }}

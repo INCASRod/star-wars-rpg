@@ -12,6 +12,7 @@ import { EquipmentImage } from '@/components/ui/EquipmentImage'
 import { DestinyRollModal } from '@/components/destiny/DestinyRollModal'
 import { DestinySpendConfirmModal } from '@/components/destiny/DestinySpendConfirmModal'
 import { DestinyGMFlash, DestinyConsideringBanner } from '@/components/destiny/DestinyGMFlash'
+import { PresenceFlash } from './PresenceFlash'
 import type { DestinyPoolRecord } from '@/components/destiny/DestinyPoolDisplay'
 import type { RollResult } from './dice-engine'
 import { FONT_DISPLAY, FONT_BODY } from '@/lib/tokens'
@@ -63,6 +64,10 @@ interface HudModalsOverlayProps {
   setDestinyGmFlash: (f: { prevLight: number; prevDark: number; newLight: number; newDark: number } | null) => void
   destinyConsidering: string | null
   setDestinyConsidering: (s: string | null) => void
+  conflictFlash: boolean
+  setConflictFlash: (b: boolean) => void
+  tranquilityFlash: boolean
+  setTranquilityFlash: (b: boolean) => void
 
   lootReveal: Record<string, unknown> | null
   setLootReveal: (r: Record<string, unknown> | null) => void
@@ -94,6 +99,8 @@ export function HudModalsOverlay({
   destinySpendOpen, setDestinySpendOpen, destinyPoolRecord,
   destinyGmFlash, setDestinyGmFlash,
   destinyConsidering, setDestinyConsidering,
+  conflictFlash, setConflictFlash,
+  tranquilityFlash, setTranquilityFlash,
   lootReveal, setLootReveal,
   vendorOffer, setVendorOffer, onCreditSpend,
   spendCreditsOpen, setSpendCreditsOpen,
@@ -274,6 +281,14 @@ export function HudModalsOverlay({
 
       {destinyConsidering && (
         <DestinyConsideringBanner characterName={destinyConsidering} onDismiss={() => setDestinyConsidering(null)} />
+      )}
+
+      {conflictFlash && (
+        <PresenceFlash variant="conflict" onDismiss={() => setConflictFlash(false)} />
+      )}
+
+      {tranquilityFlash && (
+        <PresenceFlash variant="tranquility" onDismiss={() => setTranquilityFlash(false)} />
       )}
 
       {lootReveal && (() => {

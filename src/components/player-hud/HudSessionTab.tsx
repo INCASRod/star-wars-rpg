@@ -153,7 +153,7 @@ export function HudSessionTab({
             ? (adv.woundThreshold ?? 0) * adv.groupSize
             : adv.woundThreshold
           return {
-            key: token.id, name: adv.name ?? token.label ?? '?', role,
+            key: token.id, name: adv.nickname || adv.name || token.label || '?', role,
             typeTag: adv.type.toUpperCase(),
             imageUrl: token.token_image_url ?? null,
             wounds: { current: adv.woundsCurrent ?? 0, max: woundsMax ?? 0, label: 'WOUNDS' },
@@ -169,7 +169,7 @@ export function HudSessionTab({
       if (slot?.vehicleInstanceId) {
         const veh = encounter.vehicles?.find(v => v.instanceId === slot.vehicleInstanceId)
         if (veh) return {
-          key: token.id, name: veh.name,
+          key: token.id, name: veh.nickname || veh.name,
           role: veh.alignment === 'allied_npc' ? 'friendly' : 'enemy',
           typeTag: 'VEHICLE',
           imageUrl: token.token_image_url ?? null,

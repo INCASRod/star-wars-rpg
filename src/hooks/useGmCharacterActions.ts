@@ -6,6 +6,13 @@ import { archiveCharacter, restoreCharacter } from '@/lib/characters'
 import type { Character, CriticalInjuryRequest, RefCriticalInjury, CharacterCriticalInjury } from '@/lib/types'
 import type { RefMorality } from './useGmData'
 import type { GmConflictRow } from './useGmCampaignConflicts'
+import { computeBalancePointFlip, fetchFreshBalancePoints, type BalancePointState } from '@/lib/forceUtils'
+
+export interface ConsolidatePreviewRow {
+  characterId: string
+  characterName: string
+  instruction: string
+}
 export interface MoralitySetupState {
   id: string; name: string
   score: number
@@ -64,6 +71,15 @@ export interface UseGmCharacterActionsReturn {
   adjustObligation: (charId: string, delta: number) => Promise<void>
   adjustDuty:       (charId: string, delta: number) => Promise<void>
   adjustMorality:   (charId: string, delta: number) => Promise<void>
+  // Force Presence (Prompt C)
+  awardConflict:        (charId: string) => Promise<void>
+  awardTranquility:     (charId: string) => Promise<void>
+  gmFlipBalancePoint:   (charId: string, fromState: BalancePointState, toState: BalancePointState) => Promise<void>
+  consolidatePreview:   ConsolidatePreviewRow[] | null
+  computeConsolidatePreview: () => void
+  dismissConsolidatePreview: () => void
+  confirmConsolidate:   () => Promise<void>
+  consolidateBusy:      boolean
   handleBulkOD:     () => Promise<void>
   handleIndividualOD: () => Promise<void>
   // Morality setup
@@ -219,6 +235,75 @@ export function useGmCharacterActions(params: {
     setCharacters(prev => prev.map(c => c.id === charId ? { ...c, morality_value: next } : c))
     notify(charId, 'toast', `Morality ${delta > 0 ? 'increased' : 'decreased'} by ${Math.abs(delta)}`)
   }, [characters, setCharacters, notify, supabase])
+
+  // ── Force Presence (Prompt C) — GM award/correction/consolidate ──────────
+  // Deliberately NOT adjustMorality's blind-write pattern (reads local state,
+  // no re-fetch) — the prompt requires fresh-read-then-write here, same
+  // shape as ForcePresenceCard's own player-side flip (Prompt B).
+  const awardCounter = useCallback(async (charId: string, field: 'session_conflict' | 'session_tranquility', broadcastType: 'conflict-awarded' | 'tranquility-awarded') => {
+    const char = characters.find(c => c.id === charId)
+    if (!char) return
+    const { data } = await supabase.from('characters').select(field).eq('id', charId).single()
+    const fresh = ((data as Record<string, number> | null)?.[field]) ?? (char[field] ?? 0)
+    const next = fresh + 1
+    await supabase.from('characters').update({ [field]: next }).eq('id', charId)
+    setCharacters(prev => prev.map(c => c.id === charId ? { ...c, [field]: next } : c))
+    // Broadcast is a notification only — independent of the DB write above.
+    // If sending fails, the write still stands; the player's own realtime
+    // subscription (Prompt B) reflects the counter change regardless.
+    sendToChar(charId, { type: broadcastType })
+  }, [characters, setCharacters, sendToChar, supabase])
+
+  const awardConflict    = useCallback((charId: string) => awardCounter(charId, 'session_conflict', 'conflict-awarded'), [awardCounter])
+  const awardTranquility = useCallback((charId: string) => awardCounter(charId, 'session_tranquility', 'tranquility-awarded'), [awardCounter])
+
+  // Backup correction path for the Balance scale itself — same guard/fresh-
+  // fetch as the player's own flip (forceUtils.ts's computeBalancePointFlip/
+  // fetchFreshBalancePoints), just targeting an arbitrary roster character
+  // instead of "the logged-in player's own" character.
+  const gmFlipBalancePoint = useCallback(async (charId: string, fromState: BalancePointState, toState: BalancePointState) => {
+    const char = characters.find(c => c.id === charId)
+    if (!char) return
+    const fresh = await fetchFreshBalancePoints(supabase, charId, { light: char.light_points ?? 0, dark: char.dark_points ?? 0 })
+    const result = computeBalancePointFlip(fromState, toState, fresh.light, fresh.dark)
+    if (!result) return
+    await supabase.from('characters').update({ light_points: result.light, dark_points: result.dark }).eq('id', charId)
+    setCharacters(prev => prev.map(c => c.id === charId ? { ...c, light_points: result.light, dark_points: result.dark } : c))
+  }, [characters, setCharacters, supabase])
+
+  // Consolidate — GM-only readout, never sent to players. Preview is
+  // disposable: computed into local state, only written on explicit confirm.
+  const [consolidatePreview, setConsolidatePreview] = useState<ConsolidatePreviewRow[] | null>(null)
+  const [consolidateBusy, setConsolidateBusy] = useState(false)
+
+  const computeConsolidatePreview = useCallback(() => {
+    const roster = activeChars.filter(c => (c.force_rating ?? 0) > 0)
+    setConsolidatePreview(roster.map(c => {
+      const conflict = c.session_conflict ?? 0
+      const tranquility = c.session_tranquility ?? 0
+      let instruction = 'No change'
+      if (conflict > tranquility) instruction = 'Flip one Neutral-or-Light point to Dark'
+      else if (tranquility > conflict) instruction = 'Flip one Neutral-to-Light, OR one Dark-to-Neutral (player\'s choice)'
+      return { characterId: c.id, characterName: c.name, instruction }
+    }))
+  }, [activeChars])
+
+  const dismissConsolidatePreview = useCallback(() => setConsolidatePreview(null), [])
+
+  const confirmConsolidate = useCallback(async () => {
+    if (!consolidatePreview) return
+    setConsolidateBusy(true)
+    try {
+      const ids = consolidatePreview.map(r => r.characterId)
+      await Promise.all(ids.map(id =>
+        supabase.from('characters').update({ session_conflict: 0, session_tranquility: 0 }).eq('id', id),
+      ))
+      setCharacters(prev => prev.map(c => ids.includes(c.id) ? { ...c, session_conflict: 0, session_tranquility: 0 } : c))
+      flash(`Consolidated session Conflict/Tranquility for ${ids.length} character${ids.length === 1 ? '' : 's'}`)
+      setConsolidatePreview(null)
+    } catch (err: unknown) { flashError(err instanceof Error ? err.message : String(err)) }
+    setConsolidateBusy(false)
+  }, [consolidatePreview, setCharacters, supabase, flash, flashError])
 
   const getODValue = (c: Character, type: 'obligation' | 'duty') =>
     type === 'obligation' ? (c.obligation_value || 0) : (c.duty_value || 0)
@@ -548,6 +633,8 @@ export function useGmCharacterActions(params: {
     addWound, healWounds, addStrain, healStrain,
     odMode, setOdMode, odType, setOdType, odAmount, setOdAmount, odTarget, setOdTarget, odBusy,
     adjustObligation, adjustDuty, adjustMorality, handleBulkOD, handleIndividualOD,
+    awardConflict, awardTranquility, gmFlipBalancePoint,
+    consolidatePreview, computeConsolidatePreview, dismissConsolidatePreview, confirmConsolidate, consolidateBusy,
     moralitySetup, setMoralitySetup, moralityBusy, openMoralitySetup, handleMoralitySave,
     archiveConfirm, setArchiveConfirm, archiveBusy, archiveOpen, setArchiveOpen,
     handleArchive, handleRestore,

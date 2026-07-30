@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { RichText } from '@/components/ui/RichText'
 import { FONT_BODY, HUD, RADIUS, EASE, FS } from '@/lib/tokens'
 import { fetchActiveDataset } from '@/lib/activeDataset'
+import { fetchAllRows } from '@/lib/fetchAllRows'
 import { ACTIVATION_LABELS, type RefTalent, type RefForcePower, type RefForceAbility } from '@/lib/types'
 
 // ── Local palette ──────────────────────────────────────────────────────────────
@@ -446,13 +447,18 @@ export function GmReferenceLibraryPanel() {
     if (q && !talentsLoaded && !talentsLoadingRef.current) {
       talentsLoadingRef.current = true
       const ds = await fetchActiveDataset(supabase)
-      const { data } = await supabase
-        .from('ref_talents')
-        .select('key,name,description,activation,is_ranked')
-        .eq('dataset_source', ds)
-        .eq('is_retired', false)
-        .order('name')
-      setTalents((data ?? []) as RefTalent[])
+      // ref_talents (respec, non-retired) is 1170+ rows — past PostgREST's
+      // default 1000-row cap — so it's paginated. See fetchAllRows.ts.
+      const data = await fetchAllRows<Pick<RefTalent, 'key' | 'name' | 'description' | 'activation' | 'is_ranked'>>((from, to) =>
+        supabase
+          .from('ref_talents')
+          .select('key,name,description,activation,is_ranked')
+          .eq('dataset_source', ds)
+          .eq('is_retired', false)
+          .order('name')
+          .range(from, to),
+      )
+      setTalents(data as RefTalent[])
       setTalentsLoaded(true)
       talentsLoadingRef.current = false
     }

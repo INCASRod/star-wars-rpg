@@ -77,6 +77,7 @@ export function GmShell() {
     rolledCritRequests, setRolledCritRequests,
     forceNotifications, setForceNotifications,
     handleCharacterUpdated,
+    moralitySystem, moralitySystemError,
   } = useGmData(campaignId)
 
   const { notify, sendToChar, broadcastAll } = useGmBroadcast(characters)
@@ -512,6 +513,8 @@ export function GmShell() {
                 loot={loot}
                 sendToChar={sendToChar}
                 conflicts={conflicts}
+                moralitySystem={moralitySystem}
+                moralitySystemError={moralitySystemError}
               />
             )}
             {activePanel === 'party' && (

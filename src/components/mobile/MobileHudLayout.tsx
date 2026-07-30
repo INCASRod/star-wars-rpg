@@ -10,6 +10,8 @@ import { useCharacterConflicts }        from '@/hooks/useCharacterConflicts'
 import { computeEncumbranceStats }      from '@/lib/derivedStats'
 import { CharacterLoader }              from '@/components/ui/CharacterLoader'
 import { FONT_BODY, FS, SP, HUD }      from '@/lib/tokens'
+import { fetchFreshCommitState }        from '@/lib/forceUtils'
+import { logPurchaseNotification }      from '@/lib/logRoll'
 import type { ForceCommitment }         from '@/lib/types'
 
 import { MobileRunner, type RunnerTab } from './MobileRunner'
@@ -90,24 +92,40 @@ export function MobileHudLayout({ characterId, campaignId }: MobileHudLayoutProp
   /* Added for mobile Force tab — conflict pip display */
   const { conflicts } = useCharacterConflicts(character?.id, supabase)
 
-  /* Added for mobile Force tab — cancel commit handler (mirrors HudForceTab.handleCancelCommit) */
+  /* Added for mobile Force tab — cancel commit handler (mirrors HudForceTab.handleCancelCommit).
+   * Fresh-fetch + GM notification brought to parity with desktop — previously
+   * wrote straight from the local character prop with no re-read and no
+   * notification, which let a released die go invisible to the GM. */
   const handleCancelCommit = async (powerKey: string, effectName: string) => {
     if (!character) return
-    const current: ForceCommitment[] = character.force_commitments ?? []
-    const target = current.find(c => c.power_key === powerKey && c.effect_name === effectName)
+    const { committed, commitments } = await fetchFreshCommitState(supabase, character.id, {
+      committed: character.force_rating_committed ?? 0,
+      commitments: character.force_commitments ?? [],
+    })
+    const target = commitments.find(c => c.power_key === powerKey && c.effect_name === effectName)
     if (!target) return
     const updated: ForceCommitment[] = target.dice_count <= 1
-      ? current.filter(c => !(c.power_key === powerKey && c.effect_name === effectName))
-      : current.map(c =>
+      ? commitments.filter(c => !(c.power_key === powerKey && c.effect_name === effectName))
+      : commitments.map(c =>
           c.power_key === powerKey && c.effect_name === effectName
             ? { ...c, dice_count: c.dice_count - 1 }
             : c
         )
-    const newCommitted = Math.max(0, (character.force_rating_committed ?? 0) - 1)
+    const newCommitted = Math.max(0, committed - 1)
     await supabase
       .from('characters')
       .update({ force_rating_committed: newCommitted, force_commitments: updated })
       .eq('id', character.id)
+
+    if (character.campaign_id) {
+      logPurchaseNotification({
+        campaignId: character.campaign_id,
+        characterId: character.id,
+        characterName: character.name,
+        label: `${character.name} released 1 Force die from ${target.power_name} — ${target.effect_name}`,
+        meta: { purchase_type: 'force', xp_cost: 0, refunded: false, force_power_key: powerKey, force_ability_key: target.ability_key },
+      })
+    }
   }
 
   // Called unconditionally — handles undefined characterName and null campaignId gracefully.

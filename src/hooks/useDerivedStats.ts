@@ -29,6 +29,8 @@ interface DerivedStatsInput {
   refWeaponMap?: Record<string, RefWeapon>
   refWeaponQualityMap?: Record<string, RefWeaponQuality>
   speciesAbilities?: SpeciesAbility[]
+  /** campaign_settings.morality_system — defaults 'vanilla' (byte-identical to pre-Force-Presence behaviour) when omitted, so mobile call sites that don't thread it stay unaffected. */
+  moralitySystem?: 'vanilla' | 'force_presence'
 }
 
 /**
@@ -48,6 +50,7 @@ export function useDerivedStats({
   refWeaponMap = {},
   refWeaponQualityMap = {},
   speciesAbilities = [],
+  moralitySystem = 'vanilla',
 }: DerivedStatsInput): DerivedStatsResult | null {
   return useMemo(() => {
     if (!character) return null
@@ -64,6 +67,7 @@ export function useDerivedStats({
       refWeaponMap,
       refWeaponQualityMap,
       speciesAbilities,
+      moralitySystem,
     )
   }, [
     character,
@@ -78,5 +82,6 @@ export function useDerivedStats({
     refWeaponMap,
     refWeaponQualityMap,
     speciesAbilities,
+    moralitySystem,
   ])
 }

@@ -9,11 +9,17 @@ interface HudFullPanelProps {
   open:     boolean
   title:    string
   symbol:   string
+  /** Optional image icon (e.g. a faction emblem) to render in place of
+   * `symbol` in the header. Same slot, same size — when absent, the header
+   * renders exactly as it did before this prop existed (falls back to
+   * `symbol`). Unused by any caller today; ForcePanel wiring is a separate,
+   * later prompt. */
+  iconSrc?: string
   onClose:  () => void
   children: React.ReactNode
 }
 
-export function HudFullPanel({ open, title, symbol, onClose, children }: HudFullPanelProps) {
+export function HudFullPanel({ open, title, symbol, iconSrc, onClose, children }: HudFullPanelProps) {
   const rootRef = useRef<HTMLDivElement>(null)
 
   // Set data-ticker-pass="true" on the root div whenever the panel opens.
@@ -50,7 +56,15 @@ export function HudFullPanel({ open, title, symbol, onClose, children }: HudFull
         display: 'flex', alignItems: 'center', gap: 8,
         flexShrink: 0,
       }}>
-        <span style={{ fontSize: 14, lineHeight: 1 }}>{symbol}</span>
+        {iconSrc
+          // .hud-fi-jedi — same per-theme tint filter the left-rail Force nav
+          // button already applies to this same jedi.webp asset
+          // (HudLeftRail.tsx / state-tokens.css). Hardcoded rather than a new
+          // prop since iconSrc has exactly one caller today (the Force
+          // panel); a second image caller would need this parameterized.
+          ? <img src={iconSrc} alt="" aria-hidden className="hud-fi-jedi" style={{ width: 14, height: 14, objectFit: 'contain', flexShrink: 0 }} />
+          : <span style={{ fontSize: 14, lineHeight: 1 }}>{symbol}</span>
+        }
         <span style={{
           fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700,
           letterSpacing: '0.15em', textTransform: 'uppercase',

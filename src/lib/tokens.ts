@@ -52,6 +52,11 @@ export const FONT_ICONS   = 'var(--font-sw-rpg-icons)'
 // All values reference CSS custom properties defined in globals.css.
 // Never use hardcoded px or rem in components — use these constants.
 export const FS = {
+  // --text-hero existed in holo-tokens.css but was dead (defined, zero
+  // consumers, sized 22→32px — nowhere near hero-numeral scale). Reused its
+  // name/redefined its value rather than adding a differently-named token,
+  // since nothing was reading the old value. Every other step is untouched.
+  hero:    'var(--text-hero)',     // 64→96px — display/hero stat numerals only
   display: 'var(--text-display)',  // 36→80px
   h1:      'var(--text-h1)',       // 28→56px
   h2:      'var(--text-h2)',       // 22→40px

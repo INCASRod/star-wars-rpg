@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/client'
+import { fetchAllRows } from '@/lib/fetchAllRows'
 import type { RefSkill, RefTalent, RefSpecialization, RefCareer } from '@/lib/types'
 
 /**
@@ -43,15 +44,19 @@ const inFlight = new Map<string, Promise<RefDataSet>>()
 
 async function fetchRefData(dataset: string): Promise<RefDataSet> {
   const supabase = createClient()
-  const [skillsRes, talStdRes, talCustRes, specRes, careerRes] = await Promise.all([
+  // ref_talents (respec, non-retired) is 1170+ rows — past PostgREST's
+  // default 1000-row cap — so it's paginated via fetchAllRows; every other
+  // query here stays well under that threshold. See fetchAllRows.ts.
+  const [skillsRes, stdTalents, talCustRes, specRes, careerRes] = await Promise.all([
     supabase.from('ref_skills').select('*'),
-    supabase.from('ref_talents').select('*').eq('dataset_source', dataset).eq('is_retired', false),
+    fetchAllRows<RefTalent>((from, to) =>
+      supabase.from('ref_talents').select('*').eq('dataset_source', dataset).eq('is_retired', false).range(from, to),
+    ),
     supabase.from('ref_talents').select('*').eq('is_custom', true),
     supabase.from('ref_specializations').select('*').eq('dataset_source', dataset).eq('is_retired', false),
     supabase.from('ref_careers').select('*').eq('dataset_source', dataset).eq('is_retired', false),
   ])
 
-  const stdTalents  = (talStdRes.data as RefTalent[]) || []
   const custTalents = (talCustRes.data as RefTalent[]) || []
   const stdKeys     = new Set(stdTalents.map(t => t.key))
 

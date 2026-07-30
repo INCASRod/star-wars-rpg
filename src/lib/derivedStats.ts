@@ -273,6 +273,7 @@ export function computeDerivedStats(
   refWeaponMap: Record<string, RefWeapon> = {},
   refWeaponQualityMap: Record<string, RefWeaponQuality> = {},
   speciesAbilities: SpeciesAbility[] = [],
+  moralitySystem: 'vanilla' | 'force_presence' = 'vanilla',
 ): DerivedStatsResult {
 
   const mods: CharacterModifiers = {
@@ -505,6 +506,38 @@ export function computeDerivedStats(
   woundSources.unshift({ label: 'Base', value: trueWoundBase })
   strainSources.unshift({ label: 'Base', value: trueStrainBase })
 
+  // ── Force Presence threshold modifiers (Prompt B) ─────────────────────────
+  // Deliberately NOT folded into mods.woundThresholdBonus/strainThresholdBonus
+  // above: those two accumulate bonuses that are permanently written back to
+  // character.wound_threshold/strain_threshold by applyTalentModifiers
+  // (useCharacterData.ts) — effectiveStats below reads those DB columns
+  // directly, not `mods`, so anything added only to `mods` would never reach
+  // effectiveStats at all (and would corrupt the trueWoundBase/trueStrainBase
+  // subtraction above, which assumes `mods` mirrors exactly what's already
+  // baked into the DB column). Force Presence bonuses are purely derived and
+  // must never be written back, so they get their own additive term, applied
+  // directly at the effectiveStats assembly below, with their own tooltip
+  // source entries appended (not unshifted into "Base").
+  //
+  // 7+7 > 10 (characters_balance_points_check, migration 095) makes both
+  // thresholds simultaneously impossible — no precedence logic needed.
+  let forcePresenceWoundBonus = 0
+  let forcePresenceStrainBonus = 0
+  if (moralitySystem === 'force_presence') {
+    const lightPoints = character.light_points ?? 0
+    const darkPoints   = character.dark_points  ?? 0
+    if (darkPoints >= 7) {
+      forcePresenceWoundBonus  += 2
+      forcePresenceStrainBonus -= 2
+      woundSources.push({ label: 'Fallen to the Dark Side', value: 2 })
+      strainSources.push({ label: 'Fallen to the Dark Side', value: -2 })
+    }
+    if (lightPoints >= 7) {
+      forcePresenceStrainBonus += 2
+      strainSources.push({ label: 'Light Side Paragon', value: 2 })
+    }
+  }
+
   // ── Step 5: Assemble effective stats ─────────────────────────────────────
   const effectiveStats: EffectiveStats = {
     soak:            character.brawn + mods.soakBonus,
@@ -512,8 +545,9 @@ export function computeDerivedStats(
     defenseRanged:   mods.defenseRanged,
     // wound/strain talent bonuses (GRIT, TOUGH) are stored directly on the character row
     // via applyTalentModifiers — do NOT add them again here to avoid double-counting.
-    woundThreshold:  character.wound_threshold,
-    strainThreshold: character.strain_threshold,
+    // Force Presence bonuses are the one exception: purely derived, added here only.
+    woundThreshold:  character.wound_threshold  + forcePresenceWoundBonus,
+    strainThreshold: character.strain_threshold + forcePresenceStrainBonus,
     forceRating:     forceRatingBase            + mods.forceRatingBonus,
   }
 

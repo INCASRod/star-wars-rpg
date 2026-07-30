@@ -66,6 +66,11 @@ export interface ForcePowerTreeProps {
    * server-side with a toast; the dossier now explains it proactively
    * (locked-with-reason) instead of only failing after a click (F2). */
   forceRating: number
+  /** Read-only preview: every node shown as available (readable), no purchase
+   * flow, no energy trace, no ceremony — mirrors TalentTree's previewMode
+   * exactly, for browsing an unowned power's full tree before buying its
+   * base ability. */
+  previewMode?: boolean
 }
 
 const COLS = 4
@@ -153,13 +158,14 @@ export function buildForceEnergyGraph(
 }
 
 function Plaque({
-  node, onClickNode, cellKey, onHoverLocked,
+  node, onClickNode, cellKey, onHoverLocked, previewMode,
 }: {
   node: ForceTreeNode
   onClickNode: (node: ForceTreeNode) => void
   cellKey: string
   /** Energy trace (Prompt F4) — only ever called for genuinely locked nodes (not owned, not purchasable), mirroring TalentTree's onHoverLocked. */
   onHoverLocked?: (cellKey: string, hovering: boolean) => void
+  previewMode?: boolean
 }) {
   const nodeRef = useRef<HTMLDivElement>(null)
   const handleMouseMove = useCursorSheen()
@@ -204,7 +210,7 @@ function Plaque({
     )
   }
 
-  if (node.canPurchase) {
+  if (previewMode || node.canPurchase) {
     return (
       <div className={`${styles.plaque} ${styles.reachable}`} {...commonProps}>
         <div className={`${styles.header} ${forceStyles.headerForce}`}>
@@ -243,7 +249,7 @@ function Plaque({
 /* ═══════════════════════════════════════════════════════ */
 
 export function ForcePowerTree({
-  powerName, nodes, connections, onPurchase, xpAvailable, purchasedCount, totalCount, forceRating,
+  powerName, nodes, connections, onPurchase, xpAvailable, purchasedCount, totalCount, forceRating, previewMode,
 }: ForcePowerTreeProps) {
   const [selectedNode, setSelectedNode] = useState<ForceTreeNode | null>(null)
   const gridRef = useRef<HTMLDivElement>(null)
@@ -367,6 +373,15 @@ export function ForcePowerTree({
         kind: 'owned',
         rankLabel: isMultiRank ? `Ranks owned: ${n.ownedRank}` : undefined,
         rank: isMultiRank ? n.ownedRank : undefined,
+      }
+    }
+
+    if (previewMode) {
+      return {
+        kind: 'locked',
+        reasonIcon: '👁',
+        reasonTitle: 'Power Preview — read-only',
+        reasonText: 'This is a read-only preview of the Force power tree.',
       }
     }
 
@@ -560,6 +575,7 @@ export function ForcePowerTree({
                   node={node}
                   onClickNode={n => setSelectedNode(n)}
                   cellKey={forceCellKeyFor(row, col)}
+                  previewMode={previewMode}
                   onHoverLocked={(key, hovering) => {
                     // Same mouseenter(new)/mouseleave(old) race guard as
                     // TalentTree.tsx — only clear if the leaving node is still

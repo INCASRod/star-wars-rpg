@@ -1,7 +1,7 @@
 'use client'
 import { useMemo, useCallback } from 'react'
 import type { ForcePowerDisplay } from '@/components/player-hud/ForcePanel'
-import { buildForceCellKeyMap, type ForceTreeNode, type ForceTreeConnection } from '@/components/character/ForcePowerTree'
+import { buildForceCellKeyMap, forceCellKey, type ForceTreeNode, type ForceTreeConnection } from '@/components/character/ForcePowerTree'
 
 interface CharForceAbility {
   force_power_key: string
@@ -68,11 +68,65 @@ export function useForcePowers({ charForceAbilities, refForcePowers, refForceAbi
         const dir = dirs[col] || {}
         nodes.push({ abilityKey: aKey, name: ref?.name || aKey, description: ref?.description ?? undefined, row: row.index, col, span, cost, purchased: isPurchased, canPurchase: false, ownedRank: 0, totalRanks: 0 })
         if (span > 0) {
-          if (dir.right && col < 3) connections.push({ fromRow: row.index, fromCol: col, toRow: row.index, toCol: col + 1 })
-          if (dir.down) connections.push({ fromRow: row.index, fromCol: col, toRow: row.index + 1, toCol: col })
+          // A span>1 node's own "right" flag means "connects to whatever sits
+          // PAST this node's own width" (col + span), not literally col + 1 —
+          // col + 1 for e.g. a span-2 node lands on that same node's own
+          // span-covered continuation column, which buildForceCellKeyMap
+          // resolves back to this node's own key, producing a degenerate
+          // self-loop connection (fromRow/fromCol === toRow/toCol after
+          // resolution). useConnectorLayout then measures the same DOM
+          // element as both endpoints, drawing one giant bar spanning that
+          // element's own full width instead of a real connector — live-
+          // confirmed via a saved snapshot of Bylethia's Commune tree
+          // (COMMANDCREATURE and COMMUNEMASTERY, both span-2 with
+          // directions.right === true, producing bars "2-1>2-1"/"4-1>4-1" at
+          // 786px wide). span1 nodes are unaffected (col + span === col + 1).
+          // Scoped to the owning column only (span > 0) — a covered
+          // continuation column's own `right` flag, when present, is a
+          // redundant restatement of the same edge the owner already emits
+          // (both ultimately resolve to the same neighbour), so reading it
+          // too would only produce a harmless-but-sloppy duplicate bar.
+          const rightCol = col + span
+          if (dir.right && rightCol < 4) connections.push({ fromRow: row.index, fromCol: col, toRow: row.index, toCol: rightCol })
         }
+        // `down` is read from EVERY column, owning or covered — unlike
+        // `right`, a span>1 node's covered continuation columns can each
+        // carry their OWN independent down:true flag representing a
+        // genuinely DIFFERENT child below that column, not a restatement of
+        // the owner's own edge. Commune's real data confirms this: the
+        // span-4 base has down:true on col 0 (-> Natural Attunement) AND on
+        // col 3, a covered continuation column (-> Empowered Survival) — two
+        // real, distinct children. Gating this read by `span > 0` (as it was
+        // alongside `right` above) silently dropped every edge whose flag
+        // lived on a covered column, which is exactly why only one of the
+        // base's two real children — and only one of Command Creature's two
+        // real parents — ever rendered a connector bar. No span arithmetic
+        // is needed here (unlike `right`): the target column is read
+        // literally as `col`, and downstream cellKeyMap resolution already
+        // maps it to whichever node actually owns that position.
+        if (dir.down) connections.push({ fromRow: row.index, fromCol: col, toRow: row.index + 1, toCol: col })
       }
     }
+
+    // Resolve every connection's endpoints through the same span-ownership
+    // map canPurchase (below) and the renderer already use, then dedupe on
+    // the resolved (from, to) pair — reading `down` from every column above
+    // makes a redundant restatement of the same edge possible in principle
+    // (two covered columns of one wide node both pointing at the same
+    // resolved child), and this is cheap, defensive insurance against ever
+    // reintroducing a self-loop (fromKey === toKey) the same way the
+    // `right`-direction bug did.
+    const ownerKeyMap = buildForceCellKeyMap(nodes)
+    const seenEdges = new Set<string>()
+    const dedupedConnections = connections.filter(c => {
+      const fromKey = forceCellKey(ownerKeyMap, c.fromRow, c.fromCol)
+      const toKey = forceCellKey(ownerKeyMap, c.toRow, c.toCol)
+      if (fromKey === toKey) return false
+      const edgeId = `${fromKey}>${toKey}`
+      if (seenEdges.has(edgeId)) return false
+      seenEdges.add(edgeId)
+      return true
+    })
 
     // Pass 2: canPurchase. A span>1 node (e.g. the row-0 base, span 4) is only
     // ever recorded as purchased at its OWNING column — an adjacency check
@@ -82,8 +136,8 @@ export function useForcePowers({ charForceAbilities, refForcePowers, refForceAbi
     // resolution ForcePowerTree.tsx's connector/plaque rendering already
     // relies on (buildForceCellKeyMap) — one shared source of truth for
     // "what column does this position actually belong to," not a second
-    // parallel implementation.
-    const ownerKeyMap = buildForceCellKeyMap(nodes)
+    // parallel implementation. Reuses the `ownerKeyMap` already computed
+    // above for the connection dedupe pass, rather than rebuilding it.
     const isPurchasedAt = (row: number, col: number) =>
       purchasedSet.has(ownerKeyMap.get(`${row}-${col}`) ?? `${row}-${col}`)
 
@@ -99,9 +153,18 @@ export function useForcePowers({ charForceAbilities, refForcePowers, refForceAbi
         let canPurchase = false
         if (row.index === 0) canPurchase = true
         else {
+          // Same span-vs-col+1 issue as the connections builder above: for a
+          // span>1 node, "right" means "past this node's own width"
+          // (col + span), not col + 1 — col + 1 falls on this node's own
+          // span-covered continuation column, which resolves back to this
+          // node's own key via ownerKeyMap. Since this branch only runs for
+          // an unpurchased node, that self-check always reads false — not a
+          // wrong TRUE, but a silently dead check that should have been
+          // testing the real right neighbor's purchased state.
+          const rightCol = col + node.span
           if (dir.up) canPurchase = canPurchase || isPurchasedAt(row.index - 1, col)
           if (dir.left && col > 0) canPurchase = canPurchase || isPurchasedAt(row.index, col - 1)
-          if (dir.right && col < 3) canPurchase = canPurchase || isPurchasedAt(row.index, col + 1)
+          if (dir.right && rightCol < 4) canPurchase = canPurchase || isPurchasedAt(row.index, rightCol)
           if (dir.down) canPurchase = canPurchase || isPurchasedAt(row.index + 1, col)
         }
         node.canPurchase = canPurchase
@@ -127,7 +190,7 @@ export function useForcePowers({ charForceAbilities, refForcePowers, refForceAbi
       n.ownedRank = ownedByKey.get(n.abilityKey) ?? 0
     }
 
-    return { powerName: refPower.name, nodes, connections, purchasedCount: displayNodes.filter(n => n.purchased).length, totalCount: displayNodes.filter(n => n.cost > 0).length }
+    return { powerName: refPower.name, nodes, connections: dedupedConnections, purchasedCount: displayNodes.filter(n => n.purchased).length, totalCount: displayNodes.filter(n => n.cost > 0).length }
   }, [charForceAbilities, refForcePowerMap, refForceAbilityMap])
 
   const allForcePowers = useMemo((): ForcePowerDisplay[] => {

@@ -331,10 +331,17 @@ export interface CharacterForceAbility {
 }
 
 export interface ForceCommitment {
-  power_key:   string
-  power_name:  string
-  effect_name: string
-  dice_count:  number
+  power_key:    string
+  power_name:   string
+  effect_name:  string
+  dice_count:   number
+  /** ref_force_abilities.key — links this commitment to the specific
+   * ability record instead of only the free-text power_name/effect_name.
+   * Optional (not required): force_commitments is an existing jsonb array
+   * that may already contain rows from prior manual/test data written
+   * before this field existed, and those are not backfilled — a required
+   * field would be a false compile-time promise about real runtime data. */
+  ability_key?: string
 }
 
 // ── Campaign & Character Types ──
@@ -413,6 +420,11 @@ export interface Character {
   is_dark_side_fallen?: boolean
   dark_side_fallen_at?: string
   redeemed_at?: string
+  /** Force Presence (migration 095) — active only when campaign_settings.morality_system === 'force_presence'. 10 total Balance Points; Neutral is derived as 10 - light_points - dark_points, never stored. */
+  light_points?: number
+  dark_points?: number
+  session_conflict?: number
+  session_tranquility?: number
   // Character Creator v2 fields
   obligation_configured?: boolean
   extra_xp_from_obligation?: number

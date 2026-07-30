@@ -98,16 +98,48 @@ async function parseTalents(): Promise<RespecTalent[]> {
   }))
 }
 
-// ── Specialization parser (copied verbatim from parse-respec.ts) ──────────────
-// NOTE: the versioned-override base-name regex below is carried over unchanged
-// from parse-respec.ts. It only strips a trailing "(Tag).xml" pattern — for
-// filenames of the form "Name (Tag) X.Y.xml" (a version number after the
-// parenthetical, e.g. "Marshal (reSpecialized) 1.3.xml") the regex does not
-// match and the override silently fails to apply, falling back to the plain
-// file. This is a pre-existing quirk already baked into the current respec
-// dataset via migrations 064/068 — reproduced here deliberately so specs that
-// already seeded correctly continue to upsert to the same values, not
-// different ones. Flagged in the audit report, not fixed here.
+// ── Specialization parser ──────────────────────────────────────────────────
+// FIXED (post-migration-100 investigation): the original base-name regex
+// (carried over from parse-respec.ts) only stripped a trailing "(Tag).xml"
+// pattern — for the common filename shape "Name (Tag) X.Y.xml" (a version
+// number after the parenthetical, e.g. "Marshal (reSpecialized) 1.3.xml") it
+// silently failed to match, so the override was never found and the tool fell
+// back to the plain/oggdude-derived file. This affected 78 of 86 versioned
+// spec files and is exactly what reverted migrations 068/074's hand-corrected
+// talent trees when migration 100 ran. The regex below strips an optional
+// trailing version number too, and when multiple versioned files exist for
+// one concept (e.g. Marshal has three), the highest version number wins —
+// compared numerically, not lexically, so "1.10" still outranks "1.9".
+//
+// ALSO FIXED: 4 concepts (Archeologist, Field Agent, Ground Support, Wingmate)
+// have no plain predecessor file at all, so the loop used to skip them
+// entirely (it only ever iterated plainFiles). It now also processes
+// versioned-only concepts. Archeologist already has a real oggdude-side
+// concept (key ARCHEOLOGIST) — SHARED_KEY_FOR_NO_PLAIN_PREDECESSOR maps it to
+// that, matching the same "shared key wins" rule the Force Power parser uses.
+// Field Agent / Ground Support / Wingmate have no oggdude predecessor at all;
+// their versioned file's own <Key> is used, sanitized by stripping a trailing
+// version-number fragment that was baked into the XML's <Key> field itself
+// (e.g. "WINGMATE1.0" -> "WINGMATE").
+//
+// keyAliasMap (returned alongside specs) records EVERY raw <Key> seen across
+// every spec XML file — plain and versioned — mapped to that concept's final
+// canonical key. This is what let career XML files reference a spec by its
+// versioned file's raw internal key (e.g. Diplomat.xml lists "AGITATORRES",
+// the raw <Key> inside "Agitator (reSpecialized) 1.01.xml") instead of the
+// canonical key — parseCareers() below translates through this map so
+// specialization_keys always ends up pointing at real ref_specializations
+// rows.
+const SHARED_KEY_FOR_NO_PLAIN_PREDECESSOR: Record<string, string> = {
+  archeologist: 'ARCHEOLOGIST',
+}
+
+/** Strips a trailing version-number fragment baked into an internal <Key>
+ * value with no real predecessor to borrow a clean key from (e.g.
+ * "WINGMATE1.0" -> "WINGMATE", "GROUNDSUPP1.0" -> "GROUNDSUPP"). */
+function sanitizeStandaloneKey(key: string): string {
+  return key.replace(/[\d.]+$/, '')
+}
 
 interface TalentTreeRow {
   index: number
@@ -150,23 +182,46 @@ function parseTalentRows(s: any, sourceFile: string): TalentTreeRow[] {
   })
 }
 
-async function parseSpecializations(): Promise<{ specs: RespecSpecialization[] }> {
+/** Numeric version comparison ("1.10" > "1.9") — string comparison alone
+ * would get this backwards. Missing/non-numeric segments compare as 0. */
+function compareVersions(a: string, b: string): number {
+  const pa = a.split('.').map(n => parseInt(n, 10) || 0)
+  const pb = b.split('.').map(n => parseInt(n, 10) || 0)
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const diff = (pa[i] ?? 0) - (pb[i] ?? 0)
+    if (diff !== 0) return diff
+  }
+  return 0
+}
+
+async function parseSpecializations(): Promise<{ specs: RespecSpecialization[]; keyAliasMap: Map<string, string> }> {
   const specDir = path.join(DATA_DIR, 'Specializations')
   const allFiles = fs.readdirSync(specDir).filter(f => f.endsWith('.xml'))
 
   const versionedFiles = allFiles.filter(f => f.includes('(') && !f.startsWith('_')).sort()
 
-  const versionedMap = new Map<string, string>()
+  // Base name strips the tag AND an optional trailing version number. A file
+  // with no version suffix is treated as version "0" so any numbered override
+  // for the same concept always outranks it.
+  const versionedMap = new Map<string, { file: string; version: string }>()
   for (const f of versionedFiles) {
-    const baseName = f.replace(/\s*\([^)]*\)\.xml$/, '').trim()
-    versionedMap.set(baseName.toLowerCase(), path.join(specDir, f))
+    const baseName = f.replace(/\s*\([^)]*\)(?:\s+[\d.]+)?\.xml$/i, '').trim()
+    const versionMatch = f.match(/\)\s+([\d.]+)\.xml$/i)
+    const version = versionMatch ? versionMatch[1] : '0'
+    const key = baseName.toLowerCase()
+    const existing = versionedMap.get(key)
+    if (!existing || compareVersions(version, existing.version) > 0) {
+      versionedMap.set(key, { file: path.join(specDir, f), version })
+    }
   }
 
-  const plainFiles = allFiles.filter(f => !f.includes('(')).sort()
+  const plainFiles = allFiles.filter(f => !f.includes('('))
+  const plainBaseNames = new Set(plainFiles.map(f => f.replace(/\.xml$/, '').toLowerCase()))
 
   const results: RespecSpecialization[] = []
+  const keyAliasMap = new Map<string, string>()
 
-  for (const file of plainFiles) {
+  for (const file of plainFiles.sort()) {
     const filePath = path.join(specDir, file)
     const data = await parseXmlFile(filePath)
     const s = data.Specialization
@@ -174,19 +229,21 @@ async function parseSpecializations(): Promise<{ specs: RespecSpecialization[] }
     const key = text(s.Key)
     const name = text(s.Name)
     const description = text(s.Description) || null
+    keyAliasMap.set(key, key)
 
     const baseName = file.replace(/\.xml$/, '')
-    const versionedPath = versionedMap.get(baseName.toLowerCase())
+    const versioned = versionedMap.get(baseName.toLowerCase())
 
     let career_skill_keys: string[]
     let rows: TalentTreeRow[]
 
-    if (versionedPath) {
-      const vData = await parseXmlFile(versionedPath)
+    if (versioned) {
+      const vData = await parseXmlFile(versioned.file)
       const vs = vData.Specialization
       const vsCareerSkillsNode = vs.CareerSkills?.[0]
       career_skill_keys = texts(vsCareerSkillsNode?.Key)
-      rows = parseTalentRows(vs, path.basename(versionedPath))
+      rows = parseTalentRows(vs, path.basename(versioned.file))
+      keyAliasMap.set(text(vs.Key), key)
     } else {
       const careerSkillsNode = s.CareerSkills?.[0]
       career_skill_keys = texts(careerSkillsNode?.Key)
@@ -196,7 +253,29 @@ async function parseSpecializations(): Promise<{ specs: RespecSpecialization[] }
     results.push({ key, name, description, career_skill_keys, talent_tree: { rows } })
   }
 
-  return { specs: results }
+  // Versioned-only concepts — no plain predecessor file exists at all, so the
+  // loop above never visits them. Processed separately, keyed by canonical
+  // key resolution rather than a plain file's own <Key>.
+  for (const [baseNameLower, versioned] of versionedMap) {
+    if (plainBaseNames.has(baseNameLower)) continue // already handled above
+
+    const vData = await parseXmlFile(versioned.file)
+    const vs = vData.Specialization
+    const rawKey = text(vs.Key)
+    const key = SHARED_KEY_FOR_NO_PLAIN_PREDECESSOR[baseNameLower] ?? sanitizeStandaloneKey(rawKey)
+    // Name has no clean-file source to fall back on here — strip the same
+    // "(Tag) X.Y" cruft the filename carries, since <Name> mirrors it verbatim.
+    const name = text(vs.Name).replace(/\s*\([^)]*\)(?:\s+[\d.]+)?\s*$/i, '').trim()
+    const description = text(vs.Description) || null
+    const careerSkillsNode = vs.CareerSkills?.[0]
+    const career_skill_keys = texts(careerSkillsNode?.Key)
+    const rows = parseTalentRows(vs, path.basename(versioned.file))
+
+    keyAliasMap.set(rawKey, key)
+    results.push({ key, name, description, career_skill_keys, talent_tree: { rows } })
+  }
+
+  return { specs: results, keyAliasMap }
 }
 
 // ── Career parser (copied verbatim from parse-respec.ts) ──────────────────────
@@ -209,11 +288,25 @@ interface RespecCareer {
   specialization_keys: string[]
 }
 
-async function parseCareers(): Promise<RespecCareer[]> {
+/**
+ * Career XML files list each specialization by whatever <Key> that spec's own
+ * source file happens to carry — frequently a versioned override's raw
+ * internal key (e.g. Diplomat.xml lists "AGITATORRES", the literal <Key>
+ * inside "Agitator (reSpecialized) 1.01.xml") rather than the canonical key
+ * that concept resolves to. `keyAliasMap` (built in parseSpecializations)
+ * translates every entry through to its canonical key; entries that still
+ * don't match any real spec after translation are returned in `unresolved`
+ * for the caller to report rather than silently keeping a dangling reference
+ * — a dangling key here means a career-eligible spec silently sorts as
+ * "other career" and costs more XP than it should, or (if it also doesn't
+ * exist as ANY spec) can never be selected at all.
+ */
+async function parseCareers(keyAliasMap: Map<string, string>, validSpecKeys: Set<string>): Promise<{ careers: RespecCareer[]; unresolved: Array<{ career: string; key: string }> }> {
   const careerDir = path.join(DATA_DIR, 'Careers')
   const files = fs.readdirSync(careerDir).filter(f => f.endsWith('.xml')).sort()
 
   const results: RespecCareer[] = []
+  const unresolved: Array<{ career: string; key: string }> = []
   for (const file of files) {
     const filePath = path.join(careerDir, file)
     const data = await parseXmlFile(filePath)
@@ -225,12 +318,17 @@ async function parseCareers(): Promise<RespecCareer[]> {
     const careerSkillsNode = c.CareerSkills?.[0]
     const career_skill_keys = texts(careerSkillsNode?.Key)
     const specializationsNode = c.Specializations?.[0]
-    const specialization_keys = texts(specializationsNode?.Key)
+    const rawSpecializationKeys = texts(specializationsNode?.Key)
+    const specialization_keys = rawSpecializationKeys.map(rawKey => {
+      const resolved = keyAliasMap.get(rawKey) ?? rawKey
+      if (!validSpecKeys.has(resolved)) unresolved.push({ career: key, key: rawKey })
+      return resolved
+    })
 
     results.push({ key, name, description, career_skill_keys, specialization_keys })
   }
 
-  return results
+  return { careers: results, unresolved }
 }
 
 // ── Force Power parser (NEW — parse-respec.ts never handled this directory) ───
@@ -387,7 +485,7 @@ async function parseForcePowers(): Promise<ParsedForcePower[]> {
 
     result.push({
       key: dbKey,
-      name: canonical.name,
+      name: cleanDisplayName(canonical.name),
       description: canonical.description,
       rows: canonical.rows,
       canonicalFile: canonical.fileName,
@@ -441,6 +539,23 @@ function normalizePowerName(raw: string): string {
     .toLowerCase()
 }
 
+/** Same cruft-stripping as normalizePowerName, but casing-preserving — for
+ * the actual stored/displayed name rather than concept-matching. Fixes the
+ * same class of bug migrations 104/107 hand-patched once (strip the
+ * "(reSpecialized) N.N" suffix from ref_force_powers/ref_force_abilities
+ * names): those were one-off DB patches with no parser-level fix, so the very
+ * next run of this standing tool (migration 109) silently regenerated the
+ * dirty names straight from the XML's own <Name> field and clobbered them
+ * again. Applying this in the parser itself, not as a follow-up migration,
+ * is what actually stops it recurring on every future snapshot refresh. */
+function cleanDisplayName(raw: string): string {
+  return raw
+    .replace(/\s*\((?:reSpecialized|Respec)\)\s*/gi, ' ') // tag can appear mid-string, not just trailing
+    .replace(/\s+[\d]+(?:\.[\d]+)*\s*$/, '')               // trailing version number left dangling after tag removal
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 /** Powers whose display name is referenced by pip <Power> tags but which have
  * no corresponding file under "Force Powers/" (no XML source to parse tree
  * data from — these rows are not touched by this script at all). Confirmed
@@ -481,7 +596,7 @@ async function parseForceAbilities(
 
   for (const a of rawAbilities) {
     const key = text(a.Key)
-    const name = text(a.Name)
+    const name = cleanDisplayName(text(a.Name))
     const description = text(a.Description) || null
     const rawPowerName = text(a.Power) || ''
     const normalized = normalizePowerName(rawPowerName)
@@ -616,11 +731,16 @@ async function main() {
   const talents = await parseTalents()
   console.log(`  Talents.xml -> ${talents.length} talents`)
 
-  const { specs } = await parseSpecializations()
+  const { specs, keyAliasMap } = await parseSpecializations()
   console.log(`  Specializations/*.xml -> ${specs.length} specializations`)
 
-  const careers = await parseCareers()
+  const validSpecKeys = new Set(specs.map(s => s.key))
+  const { careers, unresolved: unresolvedCareerSpecKeys } = await parseCareers(keyAliasMap, validSpecKeys)
   console.log(`  Careers/*.xml -> ${careers.length} careers`)
+  if (unresolvedCareerSpecKeys.length > 0) {
+    console.log(`\nWARNING: ${unresolvedCareerSpecKeys.length} career specialization_keys entries could not be resolved to a real spec and were left as-is:`)
+    for (const { career, key } of unresolvedCareerSpecKeys) console.log(`  ${career}: ${key}`)
+  }
 
   const forcePowers = await parseForcePowers()
   console.log(`  Force Powers/*.xml -> ${forcePowers.length} unique force power keys`)

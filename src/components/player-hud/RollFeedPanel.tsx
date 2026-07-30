@@ -1,7 +1,7 @@
 ﻿'use client'
 
 import { useState, type ReactNode }                       from 'react'
-import { FONT_BODY, FONT_DISPLAY, RADIUS, SP, SYM, FS, HUD, type DiceType } from '@/lib/tokens'
+import { FONT_BODY, FONT_DISPLAY, RADIUS, SP, SYM, FS, HUD, DICE_COLOR, type DiceType } from '@/lib/tokens'
 import { RichText } from '@/components/ui/RichText'
 import { Tooltip, TipBody }                                from '@/components/ui/Tooltip'
 import { DiceFace }                                        from '@/components/dice/DiceFace'
@@ -352,6 +352,39 @@ type ForceRollMeta = {
   activated_upgrades?: Array<{ name: string; fp_cost: number; is_dark: boolean }>
   dark_pips_used?:     number
   strain_cost?:        number
+  /** Per-die results, in roll order. Absent on rolls logged before this field
+   *  existed — those rows simply render no dice row, never a fabricated one. */
+  dice_results?:       Array<{ light: number; dark: number }>
+}
+
+// ── Force die results row — one bordered cluster per die rolled, in roll
+// order. A blank die renders as a faint dash inside its own cluster rather
+// than being omitted, so the count of clusters always matches dice rolled. ──
+function ForceDieResultsRow({ dice }: { dice: Array<{ light: number; dark: number }> }) {
+  if (dice.length === 0) return null
+  return (
+    <div className="flex flex-wrap items-center" style={{ gap: SP[1], padding: `${SP[1]} ${SP[2]}` }}>
+      {dice.map((d, i) => {
+        const blank = d.light === 0 && d.dark === 0
+        return (
+          <div
+            key={i}
+            className="flex items-center justify-center shrink-0"
+            style={{
+              padding: SP[1],
+              borderRadius: RADIUS.sm,
+              border: `1px solid color-mix(in srgb, ${DICE_COLOR.force} 22%, transparent)`,
+              background: `color-mix(in srgb, ${DICE_COLOR.force} 8%, transparent)`,
+            }}
+          >
+            {blank
+              ? <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint }}>–</span>
+              : <RichText text={'[light]'.repeat(d.light) + '[dark]'.repeat(d.dark)} />}
+          </div>
+        )
+      })}
+    </div>
+  )
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -368,7 +401,7 @@ function ForceCard({
   const activUpgr  = meta?.activated_upgrades ?? []
   const darkUsed   = meta?.dark_pips_used ?? roll.result.triumph
   const strainCost = meta?.strain_cost ?? (darkUsed > 0 ? darkUsed : 0)
-  const lightCount = roll.result.netSuccess
+  const diceResults = meta?.dice_results ?? []
   const PURPLE     = HUD.accentPurple  // var(--hud-accent-purple)
 
   return (
@@ -415,53 +448,32 @@ function ForceCard({
           <>
             {isGm && roll.hidden && <HiddenBadge forGm={true} />}
 
-            {/* Activated upgrades list */}
-            {activUpgr.map((u, i) => (
-              <div
-                key={i}
-                className="flex items-center"
-                style={{ gap: 6, padding: `5px ${SP[2]}`, borderBottom: `1px solid color-mix(in srgb, ${PURPLE} 12%, transparent)` }}
-              >
-                <span style={{ color: PURPLE, opacity: 0.5, flexShrink: 0 }}>◇</span>
-                <span
-                  className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap"
-                  style={{ fontFamily: FONT_BODY, fontSize: FS.body, fontWeight: 600, color: HUD.text }}
-                >
-                  {u.name}
-                </span>
-                <span
-                  className="shrink-0"
-                  style={{
-                    background: u.is_dark
-                      ? `color-mix(in srgb, ${PURPLE} 80%, black)`
-                      : `color-mix(in srgb, ${PURPLE} 55%, white)`,
-                    border: `1px solid ${u.is_dark ? `color-mix(in srgb, ${PURPLE} 55%, transparent)` : `color-mix(in srgb, ${PURPLE} 35%, transparent)`}`,
-                    borderRadius: RADIUS.sm, padding: '1px 6px',
-                    fontFamily: FONT_BODY, fontSize: FS.overline,
-                  }}
-                >
-                  <RichText text={'[FP]'.repeat(Math.max(u.fp_cost, 1))} />
-                </span>
-              </div>
-            ))}
+            {/* Dice results — one cluster per Force die rolled, in roll order */}
+            <ForceDieResultsRow dice={diceResults} />
 
-            {/* Pip spend summary */}
-            <div className="flex items-center flex-wrap" style={{ gap: SP[1], padding: `${SP[1]} ${SP[2]}` }}>
-              <span style={{ fontFamily: FONT_DISPLAY, fontSize: FS.overline, letterSpacing: '0.15em', textTransform: 'uppercase', color: HUD.textDim }}>
-                Spent
-              </span>
-              {lightCount > 0 && (
-                <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: `color-mix(in srgb, ${PURPLE} 55%, white)` }}>
-                  {lightCount} <RichText text="[FP]" /> Light
-                </span>
-              )}
-              {lightCount > 0 && darkUsed > 0 && <span style={{ color: HUD.textFaint }}>·</span>}
-              {darkUsed > 0 && (
-                <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: `color-mix(in srgb, ${PURPLE} 90%, black)` }}>
-                  {darkUsed} <RichText text="[FP]" /> Dark
-                </span>
-              )}
-            </div>
+            {/* Spent upgrades — only rendered when at least one was chosen */}
+            {activUpgr.length > 0 && (
+              <div style={{ padding: `${SP[1]} ${SP[2]}` }}>
+                <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.overline, letterSpacing: '0.15em', textTransform: 'uppercase', color: HUD.textDim, marginBottom: SP[1] }}>
+                  Spent
+                </div>
+                <div className="flex flex-wrap" style={{ gap: SP[1] }}>
+                  {activUpgr.map((u, i) => (
+                    <span
+                      key={i}
+                      style={{
+                        fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.text,
+                        padding: `${SP[1]} ${SP[2]}`, borderRadius: RADIUS.sm,
+                        background: `color-mix(in srgb, ${PURPLE} 10%, transparent)`,
+                        border: `1px solid color-mix(in srgb, ${PURPLE} 25%, transparent)`,
+                      }}
+                    >
+                      {u.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Dark side warning — only when dark pips were used and strain was incurred */}
             {darkUsed > 0 && strainCost > 0 && (

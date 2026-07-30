@@ -68,6 +68,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   const {
     character, skills, talents, weapons, armor, gear, crits, charSpecs,
     charForceAbilities, playerName, loading, error,
+    moralitySystem, moralitySystemError, handleFlipBalancePoint,
     refSkills, refCrits, refCareers, refSpeciesAll, refForcePowers,
     refObligationTypes, refDutyTypes,
     refSkillMap, refTalentMap, refWeaponMap, refArmorMap, refGearMap,
@@ -98,6 +99,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     refWeaponMap,
     refWeaponQualityMap,
     speciesAbilities,
+    moralitySystem: moralitySystem ?? 'vanilla',
   })
   const effectiveStats = derivedStats?.effectiveStats
   const skillModifiers = derivedStats?.modifiers.skillModifiers ?? {}
@@ -146,6 +148,13 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     destinyConsidering, setDestinyConsidering,
   } = useDestinyPool(effectiveCampaignId, characterId, character?.name, supabase)
 
+  // Force Presence GM-award overlays (Prompt C) — plain local booleans,
+  // matching the simplest existing precedent for a callback-driven,
+  // no-payload "something happened" flash (no dedicated pool-style hook
+  // needed, unlike destinyGmFlash which carries pool-count data).
+  const [conflictFlash, setConflictFlash] = useState(false)
+  const [tranquilityFlash, setTranquilityFlash] = useState(false)
+
   // Broadcast override — GM pushes combat state directly for instant delivery
   const {
     broadcastSession, broadcastTransition,
@@ -161,6 +170,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     sessionMode: dbMode,
     onDestinyRollRequest: setDestinyRollRequest,
     onDestinyGmFlash:     setDestinyGmFlash,
+    onConflictAwarded:    () => setConflictFlash(true),
+    onTranquilityAwarded: () => setTranquilityFlash(true),
   })
   const sessionMode = broadcastSession?.mode ?? dbMode
   const combatRound = broadcastSession?.round ?? dbRound
@@ -593,7 +604,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
             />
           </HudFullPanel>
 
-          <HudFullPanel open={activeFullPanel === 'force-panel'} title="Force" symbol="✦" onClose={() => setActiveFullPanel(null)}>
+          <HudFullPanel open={activeFullPanel === 'force-panel'} title="Force" symbol="✦" iconSrc="/images/factions/jedi.webp" onClose={() => setActiveFullPanel(null)}>
             <HudForceTab
               character={character}
               forceRating={forceRating}
@@ -614,6 +625,9 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
               onAdd={() => router.push(`/character/${character.id}/talents${isGmMode ? '?gm=1' : ''}`)}
               canGainForceRating={canGainForceRating}
               onPurchaseForceRating={handlePurchaseForceRating}
+              moralitySystem={moralitySystem}
+              moralitySystemError={moralitySystemError}
+              onFlipBalancePoint={handleFlipBalancePoint}
             />
           </HudFullPanel>
 
@@ -744,6 +758,10 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         setDestinyGmFlash={setDestinyGmFlash}
         destinyConsidering={destinyConsidering}
         setDestinyConsidering={setDestinyConsidering}
+        conflictFlash={conflictFlash}
+        setConflictFlash={setConflictFlash}
+        tranquilityFlash={tranquilityFlash}
+        setTranquilityFlash={setTranquilityFlash}
         lootReveal={lootReveal}
         setLootReveal={setLootReveal}
         vendorOffer={vendorOffer}

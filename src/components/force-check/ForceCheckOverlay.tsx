@@ -390,6 +390,10 @@ export function ForceCheckOverlay({
             activated_upgrades: activatedUpgrades,
             dark_pips_used: darkSpent,
             strain_cost: isDathomiri ? 0 : darkSpent,
+            // Per-die results, in roll order — feeds the roll feed's dice
+            // results row. Never derive/split this from totalLight/totalDark;
+            // it must always come straight from the actual roll.
+            dice_results: forceRoll.dice,
           },
         })
       }

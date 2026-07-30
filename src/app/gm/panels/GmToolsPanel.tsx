@@ -19,6 +19,8 @@ import type { useGmAwards } from '@/hooks/useGmAwards'
 import type { useGmCharacterActions } from '@/hooks/useGmCharacterActions'
 import { AddConflictModal } from '@/components/gm/AddConflictModal'
 import type { GmConflictRow } from '@/hooks/useGmCampaignConflicts'
+import { ForcePresenceGmPanel } from '@/components/gm/ForcePresenceGmPanel'
+import type { MoralitySystem } from '@/lib/moralitySystem'
 
 const DIM  = 'var(--hud-text-dim)'
 
@@ -100,12 +102,15 @@ export interface GmToolsPanelProps {
   loot:        ReturnType<typeof useGmLoot>
   sendToChar:  (charId: string, payload: Record<string, unknown>) => void
   conflicts:   GmConflictRow[]
+  moralitySystem?: MoralitySystem | null
+  moralitySystemError?: string | null
 }
 
 export function GmToolsPanel({
   campaignId, activeChars, dutyTypes, obligationTypes,
   forceNotifications, setForceNotifications, handleCharacterUpdated,
   awards, charActions, loot, sendToChar, conflicts,
+  moralitySystem, moralitySystemError,
 }: GmToolsPanelProps) {
   const supabase = useMemo(() => createClient(), [])
   const [activeTab, setActiveTab] = useState<ToolsTab>('xp')
@@ -125,6 +130,8 @@ export function GmToolsPanel({
     odMode, setOdMode, odType, setOdType, odAmount, setOdAmount, odTarget, setOdTarget, odBusy,
     handleBulkOD, handleIndividualOD,
     adjustMorality,
+    awardConflict, awardTranquility, gmFlipBalancePoint,
+    consolidatePreview, computeConsolidatePreview, dismissConsolidatePreview, confirmConsolidate, consolidateBusy,
   } = charActions
 
   const {
@@ -534,71 +541,102 @@ export function GmToolsPanel({
         {activeTab === 'force' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
 
-            {/* ── Morality ── */}
-            {hasForceSensitive && (
-              <div>
-                <div style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--hud-text-faint)', marginBottom: '0.5rem' }}>
-                  Morality
+            {/* Force Presence swap point — conditional REPLACEMENT, not an
+                addition: 'force_presence' fully replaces the Morality block +
+                Add Conflict button below, it does not render alongside them.
+                A fetch failure renders neither, matching ForcePanel.tsx's own
+                moralitySystemError handling (Prompt B) — never a silent
+                default to either system. */}
+            {moralitySystemError ? (
+              <div style={{ textAlign: 'center', padding: '12px 0' }}>
+                <div style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: COLOR.red }}>
+                  Presence system unavailable
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {activeChars
-                    .filter(c => (c.force_rating ?? 0) > 0)
-                    .map(c => {
-                      const val = c.morality_value ?? 50
-                      const isLight = val >= 50
-                      return (
-                        <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          {/* Name */}
-                          <span style={{ flex: 1, fontFamily: FONT, fontSize: 'var(--text-sm)', color: 'var(--hud-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {c.name}
-                          </span>
-                          {/* Gradient bar */}
-                          <div style={{ position: 'relative', width: '4rem', height: '0.3125rem', borderRadius: RADIUS.full, background: 'linear-gradient(to right, #E05050, #C8AA50 40%, #4CAF50 60%, #5AAAE0)', flexShrink: 0 }}>
-                            <div style={{ position: 'absolute', top: '-0.25rem', left: `${val}%`, transform: 'translateX(-50%)', width: '0.125rem', height: '0.8125rem', background: '#fff', borderRadius: RADIUS.sm, boxShadow: '0 0 4px rgba(255,255,255,0.5)' }} />
-                          </div>
-                          {/* Numeric value */}
-                          <span style={{ fontFamily: FONT, fontSize: 'var(--text-caption)', fontWeight: 700, color: isLight ? COLOR.blue : COLOR.red, width: '1.375rem', textAlign: 'right', flexShrink: 0 }}>
-                            {val}
-                          </span>
-                          {/* − button */}
-                          <button
-                            onClick={() => adjustMorality(c.id, -1)}
-                            style={{ width: '1.25rem', height: '1.25rem', borderRadius: RADIUS.sm, border: `1px solid rgba(224,80,80,0.4)`, background: 'rgba(224,80,80,0.10)', color: COLOR.red, fontSize: FS.h4, cursor: 'pointer', padding: 0, lineHeight: 1 }}
-                          >−</button>
-                          {/* + button */}
-                          <button
-                            onClick={() => adjustMorality(c.id, 1)}
-                            style={{ width: '1.25rem', height: '1.25rem', borderRadius: RADIUS.sm, border: `1px solid rgba(90,170,224,0.4)`, background: 'rgba(90,170,224,0.10)', color: COLOR.blue, fontSize: FS.h4, cursor: 'pointer', padding: 0, lineHeight: 1 }}
-                          >+</button>
-                        </div>
-                      )
-                    })}
+                <div style={{ fontFamily: FONT, fontSize: 'var(--text-caption)', color: DIM, marginTop: '0.25rem' }}>
+                  {moralitySystemError}
                 </div>
               </div>
-            )}
+            ) : moralitySystem === 'force_presence' ? (
+              <ForcePresenceGmPanel
+                roster={activeChars.filter(c => (c.force_rating ?? 0) > 0)}
+                onAwardConflict={awardConflict}
+                onAwardTranquility={awardTranquility}
+                onGmFlip={gmFlipBalancePoint}
+                consolidatePreview={consolidatePreview}
+                onComputeConsolidatePreview={computeConsolidatePreview}
+                onDismissConsolidatePreview={dismissConsolidatePreview}
+                onConfirmConsolidate={confirmConsolidate}
+                consolidateBusy={consolidateBusy}
+              />
+            ) : (
+              <>
+                {/* ── Morality ── */}
+                {hasForceSensitive && (
+                  <div>
+                    <div style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--hud-text-faint)', marginBottom: '0.5rem' }}>
+                      Morality
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      {activeChars
+                        .filter(c => (c.force_rating ?? 0) > 0)
+                        .map(c => {
+                          const val = c.morality_value ?? 50
+                          const isLight = val >= 50
+                          return (
+                            <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              {/* Name */}
+                              <span style={{ flex: 1, fontFamily: FONT, fontSize: 'var(--text-sm)', color: 'var(--hud-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {c.name}
+                              </span>
+                              {/* Gradient bar */}
+                              <div style={{ position: 'relative', width: '4rem', height: '0.3125rem', borderRadius: RADIUS.full, background: 'linear-gradient(to right, #E05050, #C8AA50 40%, #4CAF50 60%, #5AAAE0)', flexShrink: 0 }}>
+                                <div style={{ position: 'absolute', top: '-0.25rem', left: `${val}%`, transform: 'translateX(-50%)', width: '0.125rem', height: '0.8125rem', background: '#fff', borderRadius: RADIUS.sm, boxShadow: '0 0 4px rgba(255,255,255,0.5)' }} />
+                              </div>
+                              {/* Numeric value */}
+                              <span style={{ fontFamily: FONT, fontSize: 'var(--text-caption)', fontWeight: 700, color: isLight ? COLOR.blue : COLOR.red, width: '1.375rem', textAlign: 'right', flexShrink: 0 }}>
+                                {val}
+                              </span>
+                              {/* − button */}
+                              <button
+                                onClick={() => adjustMorality(c.id, -1)}
+                                style={{ width: '1.25rem', height: '1.25rem', borderRadius: RADIUS.sm, border: `1px solid rgba(224,80,80,0.4)`, background: 'rgba(224,80,80,0.10)', color: COLOR.red, fontSize: FS.h4, cursor: 'pointer', padding: 0, lineHeight: 1 }}
+                              >−</button>
+                              {/* + button */}
+                              <button
+                                onClick={() => adjustMorality(c.id, 1)}
+                                style={{ width: '1.25rem', height: '1.25rem', borderRadius: RADIUS.sm, border: `1px solid rgba(90,170,224,0.4)`, background: 'rgba(90,170,224,0.10)', color: COLOR.blue, fontSize: FS.h4, cursor: 'pointer', padding: 0, lineHeight: 1 }}
+                              >+</button>
+                            </div>
+                          )
+                        })}
+                    </div>
+                  </div>
+                )}
 
-            {/* Add Conflict button */}
-            <button
-              onClick={() => setAddConflictOpen(true)}
-              disabled={!hasForceSensitive}
-              title={hasForceSensitive ? undefined : 'No force-sensitive characters in this campaign'}
-              style={{
-                width:         '100%',
-                height:        '2.25rem',
-                borderRadius:  RADIUS.sm,
-                background:    hasForceSensitive ? 'rgba(144,96,208,0.12)' : 'transparent',
-                border:        '1px solid rgba(144,96,208,0.35)',
-                fontFamily:    FONT,
-                fontSize:      'var(--text-caption)',
-                fontWeight:    700,
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                color:         hasForceSensitive ? 'var(--hud-accent-purple)' : 'rgba(144,96,208,0.3)',
-                cursor:        hasForceSensitive ? 'pointer' : 'not-allowed',
-              }}
-            >
-              + Add Conflict
-            </button>
+                {/* Add Conflict button */}
+                <button
+                  onClick={() => setAddConflictOpen(true)}
+                  disabled={!hasForceSensitive}
+                  title={hasForceSensitive ? undefined : 'No force-sensitive characters in this campaign'}
+                  style={{
+                    width:         '100%',
+                    height:        '2.25rem',
+                    borderRadius:  RADIUS.sm,
+                    background:    hasForceSensitive ? 'rgba(144,96,208,0.12)' : 'transparent',
+                    border:        '1px solid rgba(144,96,208,0.35)',
+                    fontFamily:    FONT,
+                    fontSize:      'var(--text-caption)',
+                    fontWeight:    700,
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    color:         hasForceSensitive ? 'var(--hud-accent-purple)' : 'rgba(144,96,208,0.3)',
+                    cursor:        hasForceSensitive ? 'pointer' : 'not-allowed',
+                  }}
+                >
+                  + Add Conflict
+                </button>
+              </>
+            )}
 
             {/* Force notifications section */}
             <div>

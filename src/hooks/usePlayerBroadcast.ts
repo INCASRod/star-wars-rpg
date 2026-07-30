@@ -19,6 +19,12 @@ interface PlayerBroadcastOptions {
   sessionMode: 'combat' | 'exploration'
   onDestinyRollRequest: (payload: { poolId: string }) => void
   onDestinyGmFlash: (payload: DestinyGMFlashPayload) => void
+  /** Force Presence (Prompt C) — visual-only notifications, fired once per
+   * GM award press. Neither reads nor needs session_conflict/tranquility
+   * values; independent of ForcePresenceCard's own separate local reaction
+   * (Prompt B) to the counter changing via its own realtime subscription. */
+  onConflictAwarded?: () => void
+  onTranquilityAwarded?: () => void
 }
 
 interface BroadcastSessionState {
@@ -33,6 +39,8 @@ export function usePlayerBroadcast({
   sessionMode,
   onDestinyRollRequest,
   onDestinyGmFlash,
+  onConflictAwarded,
+  onTranquilityAwarded,
 }: PlayerBroadcastOptions) {
   const router = useRouter()
   const sessionModeRef = useRef(sessionMode)
@@ -91,6 +99,10 @@ export function usePlayerBroadcast({
             newLight:  payload.newLightCount  as number,
             newDark:   payload.newDarkCount   as number,
           })
+        } else if (payload.type === 'conflict-awarded') {
+          onConflictAwarded?.()
+        } else if (payload.type === 'tranquility-awarded') {
+          onTranquilityAwarded?.()
         } else if (payload.type === 'vendor-purchase-offer') {
           setVendorOffer(payload as unknown as VendorOffer)
         } else if (payload.type === 'force-logout') {

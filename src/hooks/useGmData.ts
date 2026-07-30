@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Character, Campaign, RefDutyType, RefObligationType, CriticalInjuryRequest, RefCriticalInjury, CharacterCriticalInjury } from '@/lib/types'
 import type { ForceNotification } from '@/components/gm/ForceNotificationCard'
+import { fetchMoralitySystem, type MoralitySystem } from '@/lib/moralitySystem'
 
 export interface RefMorality {
   key: string
@@ -40,6 +41,8 @@ export interface UseGmDataReturn {
   setForceNotifications:   React.Dispatch<React.SetStateAction<ForceNotification[]>>
   handleCharacterUpdated:  (id: string, updates: Partial<Character>) => void
   loadData:                (silent?: boolean) => Promise<void>
+  moralitySystem:          MoralitySystem | null
+  moralitySystemError:     string | null
 }
 
 export function useGmData(campaignId: string | null): UseGmDataReturn {
@@ -62,6 +65,8 @@ export function useGmData(campaignId: string | null): UseGmDataReturn {
   const [activeSessions,       setActiveSessions]       = useState<Record<string, string>>({})
   const [rolledCritRequests,   setRolledCritRequests]   = useState<CriticalInjuryRequest[]>([])
   const [forceNotifications,   setForceNotifications]   = useState<ForceNotification[]>([])
+  const [moralitySystem,       setMoralitySystem]       = useState<MoralitySystem | null>(null)
+  const [moralitySystemError,  setMoralitySystemError]  = useState<string | null>(null)
 
   const activeChars   = useMemo(() => characters.filter(c => !c.is_archived), [characters])
   const archivedChars = useMemo(() => characters.filter(c =>  c.is_archived), [characters])
@@ -76,7 +81,25 @@ export function useGmData(campaignId: string | null): UseGmDataReturn {
     try {
       await supabase.auth.getSession()
 
-      const [campRes, charRes, playerRes, sessRes, dutyTypesRes, oblTypesRes, moralityRes] = await Promise.all([
+      // Force Presence system selector — fetch-once convention established
+      // by useCharacterData.ts (Prompt B): fires in parallel with the main
+      // roster batch, self-contained try/catch so a failure surfaces as a
+      // visible, distinguishable error rather than aborting GM data load
+      // (which doesn't depend on it) or silently defaulting to either system.
+      const moralitySystemPromise = (async () => {
+        try {
+          const ms = await fetchMoralitySystem(supabase)
+          setMoralitySystem(ms)
+          setMoralitySystemError(null)
+        } catch (err) {
+          console.error('[useGmData] fetchMoralitySystem failed:', err)
+          setMoralitySystemError(err instanceof Error ? err.message : String(err))
+          setMoralitySystem(null)
+        }
+      })()
+
+      const [, campRes, charRes, playerRes, sessRes, dutyTypesRes, oblTypesRes, moralityRes] = await Promise.all([
+        moralitySystemPromise,
         supabase.from('campaigns').select('*').eq('id', campaignId).single(),
         supabase.from('characters').select('*').eq('campaign_id', campaignId).eq('is_archived', false),
         supabase.from('players').select('id, display_name').eq('campaign_id', campaignId).eq('is_gm', false),
@@ -242,5 +265,6 @@ export function useGmData(campaignId: string | null): UseGmDataReturn {
     rolledCritRequests, setRolledCritRequests,
     forceNotifications, setForceNotifications,
     handleCharacterUpdated, loadData,
+    moralitySystem, moralitySystemError,
   }
 }

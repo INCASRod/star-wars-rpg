@@ -11,7 +11,8 @@ import { computeCareerSkillKeys } from '@/lib/characters'
 import { specPurchaseCost } from '@/hooks/useCharacterData'
 import { TalentSurface } from '@/components/character/TalentSurface'
 import { ForcePowerTree } from '@/components/character/ForcePowerTree'
-import { PurchaseCeremony, type SpecCeremonyPayload } from '@/components/character/PurchaseCeremony'
+import { PurchaseCeremony, type SpecCeremonyPayload, type ForceCeremonyPayload } from '@/components/character/PurchaseCeremony'
+import { ForcePowerSelectorList } from '@/components/shared/ForcePowerSelectorList'
 import { BuySpecButton } from '@/components/player-hud/BuySpecButton'
 import { DedicationModal } from '@/components/player-hud/DedicationModal'
 import { CharacterLoader } from '@/components/ui/CharacterLoader'
@@ -100,6 +101,10 @@ function TalentsPageInner() {
 
   // ── Spec purchase celebration (Prompt 9) ──
   const [specCeremony, setSpecCeremony] = useState<{ payload: SpecCeremonyPayload; xpBefore: number; xpAfter: number } | null>(null)
+
+  // ── New Force power base-purchase celebration — same truthy-result-gated
+  // ceremony contract as every other purchase ceremony in this file/ForcePowerTree.
+  const [forceBaseCeremony, setForceBaseCeremony] = useState<{ payload: ForceCeremonyPayload; xpBefore: number; xpAfter: number } | null>(null)
 
   // ── Per-character theme — same lookup PlayerHUDDesktop does (character_sessions.ui_theme),
   // never hardcoded (see src/app/table/page.tsx's data-theme="kyber" for the pattern this must NOT follow).
@@ -386,46 +391,91 @@ function TalentsPageInner() {
         </div>
       </div>
 
-      {/* "+ New Force Power" browse list (Prompt F3) — portalled, same pattern
-          as BuySpecButton's SpecSelectorList, listing all 25 powers (minus
-          already-owned ones, which already have their own rail entry) using
-          the lightweight name/min_force_rating-only fetch. */}
+      {/* "+ New Force Power" browse list — portalled, mirrors BuySpecButton's
+          shell exactly (header names the real action, XP banner, shared
+          selector list, Cancel). Selecting a row is browsing only — it opens
+          a detail panel (description + cost + "Preview Power Tree") rather
+          than an instant purchase; the base power is only bought when the
+          player hits the panel's own "Purchase Base Power" button. */}
       {showForceBrowse && typeof document !== 'undefined' && createPortal(
         <div
           onClick={() => setShowForceBrowse(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: Z.modal, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: SP[4] }}
+          style={{ position: 'fixed', inset: 0, zIndex: Z.modal, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: SP[4] }}
         >
           <div
             onClick={e => e.stopPropagation()}
-            style={{ width: '100%', maxWidth: '28rem', maxHeight: '70vh', overflowY: 'auto', background: 'var(--hud-surface-hi)', border: `1px solid ${HUD.borderHi}`, borderRadius: RADIUS.lg, padding: SP[3] }}
+            style={{
+              background: 'var(--hud-surface-hi)',
+              border: `1px solid color-mix(in srgb, ${HUD.gold} 25%, transparent)`,
+              boxShadow: '0 16px 48px rgba(0,0,0,0.8), 0 0 0 1px color-mix(in srgb, var(--hud-gold) 8%, transparent)',
+              borderRadius: RADIUS.lg,
+              padding: '20px 20px 16px',
+              width: '100%', maxWidth: '28rem', maxHeight: '80vh',
+              display: 'flex', flexDirection: 'column', gap: 12,
+            }}
           >
-            <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700, letterSpacing: '0.1em', color: HUD.gold, marginBottom: SP[2] }}>
-              START A NEW FORCE POWER
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: HUD.gold }}>
+                Purchase New Force Power
+              </div>
+              <button
+                onClick={() => setShowForceBrowse(false)}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: FONT_BODY, fontSize: FS.h4, color: HUD.textDim, lineHeight: 1, padding: '0 4px' }}
+              >×</button>
             </div>
-            {powerBrowseList
-              .filter(p => !allForcePowers.some(fp => fp.powerKey === p.key))
-              .map(p => (
-                <button
-                  key={p.key}
-                  onClick={() => {
-                    ensurePowerLoaded(p.key)
-                    setActiveForcePowerKey(p.key)
-                    setContentView('force')
-                    setShowForceBrowse(false)
-                  }}
-                  style={{
-                    display: 'block', width: '100%', textAlign: 'left',
-                    padding: `${SP[2]} ${SP[3]}`, marginBottom: 2,
-                    background: 'transparent', border: 'none', borderRadius: RADIUS.sm,
-                    cursor: 'pointer', fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.text,
-                  }}
-                >
-                  {p.name}
-                  {p.min_force_rating > 1 && (
-                    <span style={{ marginLeft: SP[2], fontSize: FS.overline, color: HUD.textFaint }}>FR {p.min_force_rating}+</span>
-                  )}
-                </button>
-              ))}
+
+            {/* XP info */}
+            <div style={{
+              fontFamily: FONT_BODY, fontSize: FS.label, color: HUD.textDim, lineHeight: 1.5,
+              background: 'var(--hud-surface-lo)', border: `1px solid ${HUD.border}`,
+              borderRadius: RADIUS.md, padding: '8px 10px',
+            }}>
+              Select a power to preview its full tree and description before buying —{' '}
+              <span style={{ color: HUD.gold, fontWeight: 700 }}>{character.xp_available} XP</span> available.
+            </div>
+
+            {/* Power search + list (shared component) */}
+            <div style={{ overflowY: 'auto', flex: 1 }}>
+              <ForcePowerSelectorList
+                powerBrowseList={powerBrowseList}
+                ownedKeys={new Set(allForcePowers.map(fp => fp.powerKey))}
+                refForcePowerMap={refForcePowerMapForce}
+                buildForcePowerTree={buildForcePowerTree}
+                onEnsureLoaded={ensurePowerLoaded}
+                xpAvailable={character.xp_available}
+                forceRating={forceRating}
+                autoFocus
+                onBuy={async entry => {
+                  const tree = buildForcePowerTree(entry.key)
+                  const baseNode = tree?.nodes.find(n => n.row === 0 && n.col === 0)
+                  if (!baseNode) return
+                  const xpBefore = character.xp_available
+                  const result = await handlePurchaseForceAbility(baseNode.abilityKey, 0, 0, baseNode.cost, entry.key)
+                  if (!result) return // failure already toast.error'd — no ceremony, no navigation
+                  setActiveForcePowerKey(entry.key)
+                  setContentView('force')
+                  setShowForceBrowse(false)
+                  setForceBaseCeremony({
+                    payload: { kind: 'force', name: baseNode.name, powerName: entry.name, cost: baseNode.cost, sourceRect: null },
+                    xpBefore, xpAfter: xpBefore - baseNode.cost,
+                  })
+                }}
+              />
+            </div>
+
+            {/* Cancel */}
+            <button
+              onClick={() => setShowForceBrowse(false)}
+              className="hov-danger"
+              style={{
+                background: 'transparent', border: `1px solid ${HUD.border}`, borderRadius: RADIUS.md,
+                padding: '7px', fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700,
+                letterSpacing: '0.1em', textTransform: 'uppercase', color: HUD.textDim, cursor: 'pointer',
+              }}
+            >
+              Cancel
+            </button>
           </div>
         </div>,
         document.body,
@@ -455,6 +505,16 @@ function TalentsPageInner() {
           xpAfter={specCeremony.xpAfter}
           reducedMotion={prefersReducedMotion}
           onDone={() => setSpecCeremony(null)}
+        />
+      )}
+
+      {forceBaseCeremony && (
+        <PurchaseCeremony
+          payload={forceBaseCeremony.payload}
+          xpBefore={forceBaseCeremony.xpBefore}
+          xpAfter={forceBaseCeremony.xpAfter}
+          reducedMotion={prefersReducedMotion}
+          onDone={() => setForceBaseCeremony(null)}
         />
       )}
     </div>

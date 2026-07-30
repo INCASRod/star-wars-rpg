@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { fetchActiveDataset } from '@/lib/activeDataset'
+import { fetchAllRows } from '@/lib/fetchAllRows'
 import { HudCard } from '@/components/ui/HudCard'
 import { stripBBCode } from '@/lib/utils'
 import { SpecSelectorList } from '@/components/shared/SpecSelectorList'
@@ -219,12 +220,16 @@ function CreateWizard() {
     if (!campaignId) return
     async function load() {
       const ds = await fetchActiveDataset(supabase)
-      const [spRes, carRes, specRes, skRes, talRes, oblRes, dutRes, motRes, smRes, pcRes] = await Promise.all([
+      const [spRes, carRes, specRes, skRes, talRows, oblRes, dutRes, motRes, smRes, pcRes] = await Promise.all([
         supabase.from('ref_species').select('*').order('name'),
         supabase.from('ref_careers').select('*').eq('dataset_source', ds).eq('is_retired', false).order('name'),
         supabase.from('ref_specializations').select('*').eq('dataset_source', ds).eq('is_retired', false).order('name'),
         supabase.from('ref_skills').select('*').order('name'),
-        supabase.from('ref_talents').select('*').eq('dataset_source', ds).eq('is_retired', false).order('name'),
+        // ref_talents (respec, non-retired) is 1170+ rows — past PostgREST's
+        // default 1000-row cap — so it's paginated. See fetchAllRows.ts.
+        fetchAllRows<RefTalent>((from, to) =>
+          supabase.from('ref_talents').select('*').eq('dataset_source', ds).eq('is_retired', false).order('name').range(from, to),
+        ),
         supabase.from('ref_obligation_types').select('key,name,description').order('name'),
         supabase.from('ref_duty_types').select('key,name,description').order('name'),
         supabase.from('ref_motivations').select('*').order('name'),
@@ -235,7 +240,7 @@ function CreateWizard() {
       setCareers((carRes.data as RefCareer[]) || [])
       setSpecializations((specRes.data as RefSpecialization[]) || [])
       setRefSkills((skRes.data as RefSkill[]) || [])
-      setRefTalents((talRes.data as RefTalent[]) || [])
+      setRefTalents(talRows)
       setObligationTypes(oblRes.data || [])
       setDutyTypes(dutRes.data || [])
       setMotivations((motRes.data as RefMotivation[]) || [])

@@ -6,12 +6,13 @@ import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { randomUUID } from '@/lib/utils'
 import { logPurchaseNotification } from '@/lib/logRoll'
-import { fetchActiveDataset } from '@/lib/activeDataset'
-import { getRefData } from '@/lib/refDataCache'
 import { useCharacterSigAbilities } from '@/hooks/useCharacterSigAbilities'
 import { isDroid, isClone, isEligibleForForceRating } from '@/lib/forceEligibility'
 import { computeDerivedStats, countOwnedRanks } from '@/lib/derivedStats'
 import { computeCareerSkillKeys, persistCareerSkills } from '@/lib/characters'
+import type { MoralitySystem } from '@/lib/moralitySystem'
+import { fetchCharacterDataBatch, consumeCharacterDataPrefetch } from '@/lib/characterDataPrefetch'
+import { computeBalancePointFlip, fetchFreshBalancePoints, type BalancePointState } from '@/lib/forceUtils'
 import {
   RANGE_LABELS, ACTIVATION_LABELS, CHARACTERISTIC_ABBR,
 } from '@/lib/types'
@@ -431,6 +432,8 @@ export function useCharacterData(characterId: string) {
   const [playerName, setPlayerName] = useState('Player')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [moralitySystem, setMoralitySystem] = useState<MoralitySystem | null>(null)
+  const [moralitySystemError, setMoralitySystemError] = useState<string | null>(null)
   // Optional post-purchase prompt offering the deliberate Force Rating buy —
   // set right after a Force-sensitive specialization purchase completes.
   const [pendingForceRatingOffer, setPendingForceRatingOffer] = useState(false)
@@ -440,41 +443,25 @@ export function useCharacterData(characterId: string) {
   const loadCharacter = useCallback(async (silent = false) => {
     if (!silent) setLoading(true)
     try {
-      const ds = await fetchActiveDataset(supabase)
-      // ref_skills/ref_talents/ref_specializations/ref_careers are static per
-      // dataset — shared cache (Prompt 7c) instead of re-fetching them on every
-      // character mount. Fires alongside (not before/after) the character-specific
-      // batch below, so cold-cache timing is unchanged; a warm cache resolves
-      // this leg instantly and fires zero ref queries.
-      const [refData, [charRes, skillsRes, talentsRes, weaponsRes, armorRes, gearRes, critsRes, specsRes,
+      // Prompt A — the character-selection screen fires this exact query
+      // batch off (src/lib/characterDataPrefetch.ts) the instant the card is
+      // clicked, well before the hyperspace animation finishes and this hook
+      // mounts. consumeCharacterDataPrefetch() claims that already-in-flight
+      // (or already-settled) result on a cache hit; a cache miss — direct URL
+      // entry, refresh, back-navigation, or a realtime-triggered silent
+      // reload — falls through to firing the same batch fresh, unchanged from
+      // pre-Prompt-A behaviour. Either way this is the ONLY place this batch
+      // is fetched — never both.
+      const {
+        moralitySystem: ms, moralitySystemError: msErr, refData,
+        charRes, skillsRes, talentsRes, weaponsRes, armorRes, gearRes, critsRes, specsRes,
         refWpnRes, refArmRes, refGearRes, refCritRes, refDescRes,
         refSpeciesRes, forceAbilRes, refFpRes, refFaRes, refWqRes, refAttRes,
-        refOblTypesRes, refDutyTypesRes]] = await Promise.all([
-        getRefData(ds),
-        Promise.all([
-          supabase.from('characters').select('*').eq('id', characterId).single(),
-          supabase.from('character_skills').select('*').eq('character_id', characterId),
-          supabase.from('character_talents').select('*').eq('character_id', characterId),
-          supabase.from('character_weapons').select('*').eq('character_id', characterId).eq('is_dropped', false),
-          supabase.from('character_armor').select('*').eq('character_id', characterId).eq('is_dropped', false),
-          supabase.from('character_gear').select('*').eq('character_id', characterId).eq('is_dropped', false),
-          supabase.from('character_critical_injuries').select('*').eq('character_id', characterId).eq('is_healed', false),
-          supabase.from('character_specializations').select('*').eq('character_id', characterId),
-          supabase.from('ref_weapons').select('*'),
-          supabase.from('ref_armor').select('*'),
-          supabase.from('ref_gear').select('*'),
-          supabase.from('ref_critical_injuries').select('*').order('roll_min'),
-          supabase.from('ref_item_descriptors').select('*'),
-          supabase.from('ref_species').select('*'),
-          supabase.from('character_force_abilities').select('*').eq('character_id', characterId),
-          supabase.from('ref_force_powers').select('*').eq('dataset_source', ds).eq('is_retired', false),
-          supabase.from('ref_force_abilities').select('*').eq('dataset_source', ds).eq('is_retired', false),
-          supabase.from('ref_weapon_qualities').select('*'),
-          supabase.from('ref_item_attachments').select('*'),
-          supabase.from('ref_obligation_types').select('key, name'),
-          supabase.from('ref_duty_types').select('key, name'),
-        ]),
-      ])
+        refOblTypesRes, refDutyTypesRes,
+      } = await (consumeCharacterDataPrefetch(characterId) ?? fetchCharacterDataBatch(characterId))
+
+      setMoralitySystem(ms)
+      setMoralitySystemError(msErr)
 
       if (charRes.error) throw new Error(charRes.error.message)
 
@@ -845,6 +832,32 @@ export function useCharacterData(characterId: string) {
     const dbField = field === 'strength' ? 'morality_strength_key' : 'morality_weakness_key'
     setCharacter({ ...character, [dbField]: value })
     await supabase.from('characters').update({ [dbField]: value }).eq('id', character.id)
+  }
+
+  /** Force Presence (Prompt B) — flips one Balance Point between states.
+   * Pips aren't individually stored; only the two counts are. "Flipping a
+   * pip" is really "move one point along a valid transition": neutral↔light,
+   * neutral↔dark, light→dark (direct). dark→light is NOT valid — a Dark pip
+   * only offers Neutral (matches the chooser spec: Dark pip → Neutral above
+   * only). Fresh-fetch-then-write, same pattern as fetchFreshCommitState/
+   * purchaseTalent — re-reads the two columns immediately before computing
+   * the update, since a later GM correction path will write these same
+   * columns. Never gated by/awaited on the caller's flip animation. */
+  const handleFlipBalancePoint = async (
+    fromState: BalancePointState,
+    toState: BalancePointState,
+  ) => {
+    if (!character) return
+    markSelf()
+    const fresh = await fetchFreshBalancePoints(supabase, character.id, {
+      light: character.light_points ?? 0,
+      dark: character.dark_points ?? 0,
+    })
+    const result = computeBalancePointFlip(fromState, toState, fresh.light, fresh.dark)
+    if (!result) return // not a valid transition, or would exceed the 10-point cap
+
+    setCharacter({ ...character, light_points: result.light, dark_points: result.dark })
+    await supabase.from('characters').update({ light_points: result.light, dark_points: result.dark }).eq('id', character.id)
   }
 
   const handleObligationChange = async (field: 'type' | 'value', val: string | number) => {
@@ -1275,6 +1288,7 @@ export function useCharacterData(characterId: string) {
     // State
     character, skills, talents, weapons, armor, gear, crits, charSpecs,
     charForceAbilities, playerName, loading, error,
+    moralitySystem, moralitySystemError,
     // Ref data
     refSkills, refTalents, refWeapons, refArmor, refGear, refCrits, refSpecs,
     refDescriptors, refCareers, refSpeciesAll, refForcePowers, refForceAbilities, refWeaponQualities,
@@ -1311,6 +1325,7 @@ export function useCharacterData(characterId: string) {
     handleDefenseChange,
     handleMoralityChange,
     handleMoralityKeyChange,
+    handleFlipBalancePoint,
     handleObligationChange,
     handleDutyChange,
     handleRemoveWeapon,

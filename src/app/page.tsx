@@ -9,6 +9,7 @@ import { VersionWatermark } from '@/components/ui/VersionWatermark'
 import { HUD, CHAR_COLOR, FONT_BODY, FONT_DISPLAY, FS, SP, RADIUS, Z, EASE } from '@/lib/tokens'
 import { useCharacterSelectStore } from '@/store/characterSelectStore'
 import { TransitionCard } from '@/components/ui/TransitionCard'
+import { prefetchCharacterData } from '@/lib/characterDataPrefetch'
 
 // ─── Design Tokens ───────────────────────────────────────────────────────────
 const BG        = 'var(--hud-bg)'
@@ -762,6 +763,12 @@ export default function Home() {
   // ── handleCardSelect — orchestrates hyperspace animation ───────────────────
   function handleCardSelect(charId: string, rect: DOMRect) {
     if (hyper.phase !== 'idle') return
+
+    // Prompt A — fire the sheet's cold-load query batch now, not after the
+    // ~5.6s hyperspace animation finishes. Fire-and-forget: never throws,
+    // never blocks/delays the animation below, and useCharacterData's own
+    // loadCharacter() is the only thing that ever consumes it.
+    prefetchCharacterData(charId)
 
     // Write selected character to store before navigation fires
     const charForStore = characters.find(c => c.id === charId) ?? null
