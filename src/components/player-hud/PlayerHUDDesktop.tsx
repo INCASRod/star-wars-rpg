@@ -584,18 +584,22 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
             />
           </HudFullPanel>
 
-          <HudFullPanel open={activeFullPanel === 'talents'} title="Talents" symbol="◆" onClose={() => setActiveFullPanel(null)}>
+          <HudFullPanel open={activeFullPanel === 'talents'} title="Talents" symbol="★" onClose={() => setActiveFullPanel(null)}>
             <HudTalentsTab
               character={character}
               characterId={characterId}
+              careerName={careerName}
+              speciesName={speciesName}
               charSpecs={charSpecs}
               refSpecMap={refSpecMap}
               refSpecs={refSpecs}
               refTalentMap={refTalentMap}
+              refSkillMap={refSkillMap}
               careerSpecKeys={careerSpecKeys}
               specKeyToCareerName={specKeyToCareerName}
               talents={talents}
               hudTalents={hudTalents}
+              speciesAbilities={speciesAbilities}
               activeSpecKey={activeSpecKey}
               setActiveSpecKey={setActiveSpecKey}
               isCombat={isCombat}

@@ -13,6 +13,7 @@ import { TalentSurface } from '@/components/character/TalentSurface'
 import { ForcePowerTree } from '@/components/character/ForcePowerTree'
 import { PurchaseCeremony, type SpecCeremonyPayload, type ForceCeremonyPayload } from '@/components/character/PurchaseCeremony'
 import { ForcePowerSelectorList } from '@/components/shared/ForcePowerSelectorList'
+import { LegendGroupLabel } from '@/components/character/TalentTree'
 import { BuySpecButton } from '@/components/player-hud/BuySpecButton'
 import { DedicationModal } from '@/components/player-hud/DedicationModal'
 import { CharacterLoader } from '@/components/ui/CharacterLoader'
@@ -243,6 +244,10 @@ function TalentsPageInner() {
       {/* ── Rail + content ── */}
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative', zIndex: 1 }}>
         <div className={styles.rail} style={{ borderRight: `1px solid ${HUD.border}`, padding: `${SP[3]} 0` }}>
+          <div style={{ padding: `0 ${SP[4]} ${SP[2]}` }}>
+            <LegendGroupLabel>Talents</LegendGroupLabel>
+          </div>
+
           {charSpecs.map(cs => {
             const isActive = contentView === 'tree' && effectiveSpecKey === cs.specialization_key
             return (
@@ -308,6 +313,9 @@ function TalentsPageInner() {
           {(allForcePowers.length > 0 || forceReady) && (
             <>
               <div style={{ borderTop: `1px solid ${HUD.border}`, margin: `${SP[2]} ${SP[4]}` }} />
+              <div style={{ padding: `0 ${SP[4]} ${SP[2]}` }}>
+                <LegendGroupLabel>Force Powers</LegendGroupLabel>
+              </div>
               {allForcePowers.map(fp => {
                 const isActive = contentView === 'force' && activeForcePowerKey === fp.powerKey
                 return (
@@ -319,9 +327,6 @@ function TalentsPageInner() {
                     style={{ padding: `${SP[2]} ${SP[4]}`, fontSize: FS.sm, fontWeight: isActive ? 700 : 500, letterSpacing: '0.04em', color: isActive ? HUD.gold : HUD.textDim }}
                   >
                     {fp.powerName}
-                    <span style={{ display: 'block', fontSize: FS.overline, color: HUD.textFaint, letterSpacing: '0.1em' }}>
-                      {fp.purchasedCount}/{fp.totalCount}
-                    </span>
                   </button>
                 )
               })}

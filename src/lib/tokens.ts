@@ -343,6 +343,43 @@ export interface SymbolMeta {
   label: string
 }
 
+// ── Talent activation identity colors ────────────────────────────
+// SEALED — fixed identity colors, theme-independent, same convention as
+// DICE_COLOR above. Activation type is identity encoding (a Maneuver must
+// read identically in Ember Tatooine and Kyber Archive), so unlike most of
+// the app these five deliberately do NOT resolve to --hud-* theme tokens.
+// Previously Passive/Action rode --hud-text-dim/--hud-gold (which vary per
+// theme) while Incidental/Maneuver/OOT were hardcoded hex inline in
+// wireframe/TalentsPanel.tsx — that inconsistency is what sealing these
+// fixes. Values preserve the visual identity already established by that
+// inline hex (Incidental/Maneuver/OOT) and approximate the neutral/default
+// look of the formerly-tokenized pair (Passive/Action), not any one theme's
+// current value. Distinct from the pre-existing ACTIVATION_TOKEN map above
+// (theme-tokenized, 4 keys, no OOT) — that one belongs to the talents
+// ROUTE's own TalentTree.tsx and is untouched by this namespace.
+export const TALENT_ACTIVATION_COLOR = {
+  passive:    '#8593A0',
+  incidental: '#5AAAE0',
+  maneuver:   '#4EC87A',
+  action:     '#D8A544',
+  oot:        '#D87060',
+} as const
+
+export type TalentActivationKey = keyof typeof TALENT_ACTIVATION_COLOR
+
+export interface TalentActivationMeta {
+  color: string
+  label: string
+}
+
+export const TALENT_ACTIVATION_META: Record<TalentActivationKey, TalentActivationMeta> = {
+  passive:    { color: TALENT_ACTIVATION_COLOR.passive,    label: 'Passive' },
+  incidental: { color: TALENT_ACTIVATION_COLOR.incidental, label: 'Incidental' },
+  maneuver:   { color: TALENT_ACTIVATION_COLOR.maneuver,   label: 'Maneuver' },
+  action:     { color: TALENT_ACTIVATION_COLOR.action,     label: 'Action' },
+  oot:        { color: TALENT_ACTIVATION_COLOR.oot,        label: 'Out of Turn' },
+}
+
 export const SYM: Record<SymbolKey, SymbolMeta> = {
   S: { icon: 'swrpg-success',   color: SYM_COLOR.success,   label: 'Success' },
   F: { icon: 'swrpg-failure',   color: SYM_COLOR.failure,   label: 'Failure' },
