@@ -227,7 +227,14 @@ async function parseSpecializations(): Promise<{ specs: RespecSpecialization[]; 
     const s = data.Specialization
 
     const key = text(s.Key)
-    const name = text(s.Name)
+    // Some concepts (Blockade Runner, Archivist, Pit Fighter, 12 more) have
+    // no "(reSpecialized)" parenthetical at all — their filename/source
+    // <Name> is bare "Name X.Y" (e.g. "Blockade Runner 1.1"), so they land
+    // in plainFiles (no "(" to match on) rather than versionedMap, and their
+    // dirty trailing version number was never stripped by anything.
+    // cleanDisplayName's trailing-version strip is unconditional (not
+    // gated on a tag match), so it fixes this case too.
+    const name = cleanDisplayName(text(s.Name))
     const description = text(s.Description) || null
     keyAliasMap.set(key, key)
 
@@ -264,8 +271,11 @@ async function parseSpecializations(): Promise<{ specs: RespecSpecialization[]; 
     const rawKey = text(vs.Key)
     const key = SHARED_KEY_FOR_NO_PLAIN_PREDECESSOR[baseNameLower] ?? sanitizeStandaloneKey(rawKey)
     // Name has no clean-file source to fall back on here — strip the same
-    // "(Tag) X.Y" cruft the filename carries, since <Name> mirrors it verbatim.
-    const name = text(vs.Name).replace(/\s*\([^)]*\)(?:\s+[\d.]+)?\s*$/i, '').trim()
+    // cruft the filename carries, since <Name> mirrors it verbatim. Reuses
+    // the same helper as ref_force_powers/ref_force_abilities (below) rather
+    // than a parallel regex, so this and the plain-file branch above always
+    // treat dirty names identically.
+    const name = cleanDisplayName(text(vs.Name))
     const description = text(vs.Description) || null
     const careerSkillsNode = vs.CareerSkills?.[0]
     const career_skill_keys = texts(careerSkillsNode?.Key)
