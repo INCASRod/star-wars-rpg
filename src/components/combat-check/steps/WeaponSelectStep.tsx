@@ -122,7 +122,7 @@ export function WeaponSelectStep({
 
   const matchingWeapons = weapons.filter(weaponMatchesType)
   const equipped = matchingWeapons.filter(w => w.equip_state === 'equipped' || w.is_equipped)
-  const stowed   = matchingWeapons.filter(w => w.equip_state !== 'equipped' && !w.is_equipped)
+  const carried  = matchingWeapons.filter(w => w.equip_state === 'carrying' && !w.is_equipped)
 
   async function equipWeapon(w: CharacterWeapon) {
     if (!onEquipWeapon) return
@@ -193,7 +193,7 @@ export function WeaponSelectStep({
             fontWeight: 700,
             color:      'var(--hud-text)',
           }}>
-            {name}{isStowed ? ' (stowed)' : ''}
+            {name}{isStowed ? ' (carried)' : ''}
           </span>
           {!isUnarmed && ref && (
             <span style={{
@@ -428,7 +428,7 @@ export function WeaponSelectStep({
     )
   }
 
-  const hasAnyWeapon = matchingWeapons.length > 0 || attackType === 'melee' || attackType === null
+  const hasAnyWeapon = equipped.length > 0 || carried.length > 0 || attackType === 'melee' || attackType === null
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -453,12 +453,12 @@ export function WeaponSelectStep({
         </>
       )}
 
-      {/* Stowed weapons */}
-      {stowed.length > 0 && (
+      {/* Carried weapons — not readied, require a maneuver to draw before use */}
+      {carried.length > 0 && (
         <>
-          <SectionLabel text="Stowed" />
+          <SectionLabel text="Carried" />
           <div style={{ display: 'flex', flexDirection: 'column' as const, gap: SP[1], marginBottom: SP[2] }}>
-            {stowed.map(w => renderWeaponPill(w, true))}
+            {carried.map(w => renderWeaponPill(w, true))}
           </div>
         </>
       )}
