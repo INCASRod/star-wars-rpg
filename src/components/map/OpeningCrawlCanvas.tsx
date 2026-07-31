@@ -1,9 +1,15 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { FONT_BODY, FONT_DISPLAY } from '@/lib/tokens'
+import * as THREE from 'three'
+import gsap from 'gsap'
 
-// StarJediOutline is a local cinematic font used only in this component.
+// Scoped cinematic fonts — this component is a cinematic surface, not a UI
+// surface, so it deliberately does NOT use FONT_BODY/FONT_DISPLAY from
+// @/lib/tokens (the app's sealed two-UI-font system). StarJediOutline (logo)
+// and NewsCycleCrawl (everything else) are component-local @font-face
+// declarations, used nowhere else in the app — the same carve-out pattern
+// StarJediOutline already established here, now extended to a second face.
 const FONT_FACE_CSS = `
   @font-face {
     font-family: 'StarJediOutline';
@@ -11,27 +17,41 @@ const FONT_FACE_CSS = `
     font-weight: normal;
     font-style: normal;
   }
+  @font-face {
+    font-family: 'NewsCycleCrawl';
+    src: url('/fonts/News_Cycle/NewsCycle-Bold.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+  }
 `
+const FONT_LOGO  = "'StarJediOutline'"
+const FONT_CRAWL = "'NewsCycleCrawl'"
 
 // Cinematic colour — exact Star Wars crawl yellow; not a UI token.
 const CRAWL_GOLD = '#ffe84d'
 // Intro text blue — exact match for the classic "A long time ago" treatment.
 const INTRO_BLUE = '#5a7fa8'
 
-// Phase timing (ms)
-const T_INTRO_IN    = 800
-const T_INTRO_HOLD  = 2500
-const T_INTRO_OUT   = 800
-const T_LOGO_IN     = 600
-const T_LOGO_HOLD   = 1500
-const T_LOGO_SHRINK = 3200
-const T_CRAWL_IN    = 300
-const T_CRAWL_DUR   = 70_000
-const T_AUDIO_STOP  = 83_000
+// ── Timeline durations (seconds) — Prompt 2 target schedule ────────────────
+const D_INTRO_IN     = 0.8
+const D_INTRO_HOLD    = 2.0
+const D_INTRO_OUT     = 0.6
+const D_LOGO_IN       = 0.5
+const D_LOGO_HOLD     = 1.0
+const D_LOGO_SHRINK   = 3.2
+const LOGO_MIN_SCALE  = 0.035
+const D_CRAWL_STAGE_IN = 0.3
+const D_CRAWL_SCROLL  = 70
 
-function easeInOut(t: number): number {
-  return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
-}
+// Absolute start times, derived from the durations above so the schedule
+// stays internally consistent if any duration is retuned later.
+const LOGO_FADE_IN_AT = D_INTRO_IN + D_INTRO_HOLD + D_INTRO_OUT           // 3.2 — overlaps the tail of the intro fade-out
+const LOGO_SHRINK_AT  = LOGO_FADE_IN_AT + D_LOGO_IN + D_LOGO_HOLD         // 4.7
+const CRAWL_START_AT  = LOGO_SHRINK_AT + D_LOGO_SHRINK * 0.5             // 6.3 — crawl enters at roughly half-shrink, not after the logo finishes
+
+// Audio hard-stop — 83s, confirmed as the real existing value (the "73
+// seconds" figure in earlier prose was a stale restatement; withdrawn).
+const T_AUDIO_STOP = 83_000
 
 interface Props {
   heading: string
@@ -39,170 +59,255 @@ interface Props {
   body: string
 }
 
+// ── Deterministic LCG (Numerical Recipes constants) — same recurrence the
+// old 2D starfield used (`(i*9301+49297) % 233280`), adapted into a proper
+// sequential generator (chained state) since the three.js field now needs
+// several pseudo-random values per star (position, depth, brightness, tint)
+// rather than just two (x, y). Same seed -> identical field every play.
+function makeLcg(seed: number) {
+  let s = seed
+  return () => {
+    s = (s * 9301 + 49297) % 233280
+    return s / 233280
+  }
+}
+
+const STARFIELD_SEED = 20260616
+
+// Layered like TalentsPanel's HeroConstellation (near/far THREE.Points
+// layers) — extended to three depth bands so size (via per-layer material
+// size + perspective sizeAttenuation) and brightness (via per-vertex vertex
+// colours) both vary continuously rather than reading as uniform dots.
+// Sizes are the same order of magnitude as HeroConstellation's own proven
+// values (0.04/0.06 at a comparable camera-distance range) — an earlier
+// pass at 0.55-2.1 was 10-50x too large: under sizeAttenuation, PointsMaterial
+// renders points as flat-shaded SQUARES (no default circular sprite texture),
+// so oversized points rendered as giant overlapping tiles instead of dots,
+// confirmed by direct canvas pixel readback in testing.
+const STAR_LAYERS = [
+  { count: 3192, zMin: -60, zMax: -22, size: 0.02, lumMin: 0.12, lumMax: 0.40 },
+  { count: 840,  zMin: -22, zMax: -8,  size: 0.05, lumMin: 0.40, lumMax: 0.72 },
+  { count: 168,  zMin: -8,  zMax: -3,  size: 0.10, lumMin: 0.75, lumMax: 1.00 },
+] as const
+
+function clamp(v: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, v))
+}
+
 export function OpeningCrawlCanvas({ heading, subheading, body }: Props) {
-  const containerRef   = useRef<HTMLDivElement>(null)
-  const canvasRef      = useRef<HTMLCanvasElement>(null)
-  const introRef       = useRef<HTMLDivElement>(null)
-  const logoRef        = useRef<HTMLDivElement>(null)
-  const crawlStageRef  = useRef<HTMLDivElement>(null)
-  const crawlTrackRef  = useRef<HTMLDivElement>(null)
-  const audioRef       = useRef<HTMLAudioElement | null>(null)
-  const rafRef         = useRef<number>(0)
+  const containerRef      = useRef<HTMLDivElement>(null)
+  const starfieldMountRef = useRef<HTMLDivElement>(null)
+  const introRef          = useRef<HTMLDivElement>(null)
+  const logoRef           = useRef<HTMLDivElement>(null)
+  const crawlStageRef     = useRef<HTMLDivElement>(null)
+  const crawlTrackRef     = useRef<HTMLDivElement>(null)
 
-  const [showLogo,  setShowLogo]  = useState(false)
-  const [showCrawl, setShowCrawl] = useState(false)
+  const audioRef            = useRef<HTMLAudioElement | null>(null)
+  const audioPlayPromiseRef = useRef<Promise<void> | null>(null)
+  const audioTeardownRef    = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // ── Starfield (drawn once; deterministic LCG — no random) ───────────────
+  const [containerWidth, setContainerWidth] = useState(0)
+
+  // ── Container-relative typography (Prompt 4) — plain React state, wholly
+  // independent of the GSAP timeline below (which never touches font-size).
+  // A resize only updates these numbers; it never restarts the timeline.
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-    const w = canvas.offsetWidth  || window.innerWidth
-    const h = canvas.offsetHeight || window.innerHeight
-    canvas.width  = w
-    canvas.height = h
-    ctx.fillStyle = '#000'
-    ctx.fillRect(0, 0, w, h)
-    for (let i = 0; i < 180; i++) {
-      const x     = ((i * 9301 + 49297) % 233280) / 233280 * w
-      const y     = ((i * 49297 + 233280) % 9301)  / 9301  * h
-      const r     = i % 7 === 0 ? 1.5 : i % 3 === 0 ? 1.2 : 0.7
-      const alpha = 0.4 + (i % 5) * 0.12
-      ctx.fillStyle = `rgba(255,255,255,${alpha})`
-      ctx.beginPath()
-      ctx.arc(x, y, r, 0, Math.PI * 2)
-      ctx.fill()
+    const container = containerRef.current
+    if (!container) return
+    const ro = new ResizeObserver(entries => {
+      const w = entries[0]?.contentRect.width
+      if (w) setContainerWidth(w)
+    })
+    ro.observe(container)
+    return () => ro.disconnect()
+  }, [])
+
+  const bodyFS    = clamp(containerWidth * 0.026, 11, 26)
+  const headingFS = clamp(containerWidth * 0.020, 9, 20)
+  const titleFS   = clamp(containerWidth * 0.042, 16, 42)
+  const introFS   = clamp(containerWidth * 0.022, 11, 22)
+  const logoFS    = clamp(containerWidth * 0.13, 44, 130)
+
+  // ── Starfield — three.js, STATIC (Prompt 2). Rendered once at setup and
+  // again on resize; no animation loop, no rotation, no twinkle. Disposal
+  // sequence matches PresenceSmoke.tsx/HeroConstellation verbatim.
+  useEffect(() => {
+    const mount = starfieldMountRef.current
+    if (!mount) return
+
+    // alpha:true (not opaque) — matches PresenceSmoke.tsx/HeroConstellation's
+    // established config exactly. The container's own CSS `background:'#000'`
+    // (root div, above) is what provides the opaque black backdrop; an
+    // opaque-context request here is the one config difference from every
+    // other three.js usage in this codebase and was reproducibly failing
+    // context creation in testing ("Canvas has an existing context of a
+    // different type") — switching to alpha:true (and dropping the redundant
+    // scene.background, which the other two components also don't set)
+    // resolved it.
+    // preserveDrawingBuffer:true is load-bearing here, unlike PresenceSmoke/
+    // HeroConstellation — those two run a continuous renderer.setAnimationLoop
+    // every frame, so the default (cleared-after-compositor-swap) buffer gets
+    // refreshed constantly and it never matters. This starfield deliberately
+    // renders ONCE (static field, no loop) — without this flag the canvas
+    // goes blank shortly after that single render, since WebGL's default
+    // behaviour clears the drawing buffer once the compositor has swapped it.
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'low-power', preserveDrawingBuffer: true })
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
+    mount.appendChild(renderer.domElement)
+
+    const scene = new THREE.Scene()
+    const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 100)
+    camera.position.z = 0
+
+    const rand = makeLcg(STARFIELD_SEED)
+    const layers = STAR_LAYERS.map(def => {
+      const positions = new Float32Array(def.count * 3)
+      const colors    = new Float32Array(def.count * 3)
+      for (let i = 0; i < def.count; i++) {
+        const z       = def.zMin + rand() * (def.zMax - def.zMin)
+        const spreadY = Math.abs(z) * 0.62
+        const spreadX = spreadY * 2.6 // generous — covers wide/ultrawide map-area aspect ratios
+        positions[i * 3]     = (rand() - 0.5) * 2 * spreadX
+        positions[i * 3 + 1] = (rand() - 0.5) * 2 * spreadY
+        positions[i * 3 + 2] = z
+
+        const lum      = def.lumMin + rand() * (def.lumMax - def.lumMin)
+        const tintRoll = rand()
+        let r = lum, b = lum
+        const g = lum
+        if (tintRoll < 0.12)      { b = Math.min(1, b + 0.08); r = Math.max(0, r - 0.03) } // faint cool
+        else if (tintRoll > 0.92) { r = Math.min(1, r + 0.07); b = Math.max(0, b - 0.04) } // faint warm
+        colors[i * 3] = r; colors[i * 3 + 1] = g; colors[i * 3 + 2] = b
+      }
+      const geometry = new THREE.BufferGeometry()
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3))
+      const material = new THREE.PointsMaterial({
+        size: def.size, vertexColors: true, sizeAttenuation: true,
+        transparent: true, depthWrite: false,
+      })
+      const points = new THREE.Points(geometry, material)
+      scene.add(points)
+      return { points, geometry, material }
+    })
+
+    const render = () => renderer.render(scene, camera)
+
+    const resize = () => {
+      const w = mount.clientWidth || 1
+      const h = mount.clientHeight || 1
+      renderer.setSize(w, h, false)
+      camera.aspect = w / h
+      camera.updateProjectionMatrix()
+      render() // static field — resize must re-render explicitly, there is no loop to pick it up
+    }
+    resize()
+
+    const ro = new ResizeObserver(resize)
+    ro.observe(mount)
+
+    return () => {
+      ro.disconnect()
+      layers.forEach(({ geometry, material }) => { geometry.dispose(); material.dispose() })
+      renderer.dispose()
+      renderer.domElement.remove()
     }
   }, [])
 
-  // ── Audio ───────────────────────────────────────────────────────────────
+  // ── Audio (Prompt 1) — StrictMode-safe. The teardown a cleanup would
+  // normally run synchronously is instead deferred one tick; if the effect
+  // re-fires immediately after (StrictMode's dev-only phantom
+  // mount->cleanup->remount), the pending teardown is cancelled and the SAME
+  // Audio element is reused instead of a second one being constructed — so
+  // under StrictMode this creates exactly one Audio, issues exactly one
+  // .play() call, and never pauses/restarts it mid-flight. A genuine unmount
+  // has no following remount to cancel the deferred teardown, so it fires
+  // for real on the next tick. The teardown always awaits the captured
+  // .play() promise before pausing, so a late-resolving play can never
+  // outlive (and audibly blip past) its own pause.
   useEffect(() => {
-    const audio = new Audio('/sounds/star-wars-theme-song.mp3')
-    audio.volume = 0.85
-    audioRef.current = audio
-    void audio.play().catch(() => { /* autoplay may be blocked by browser policy */ })
+    if (!audioRef.current) {
+      const audio = new Audio('/sounds/star-wars-theme-song.mp3')
+      audio.volume = 0.85
+      audioRef.current = audio
+      audioPlayPromiseRef.current = audio.play().catch(() => { /* autoplay may be blocked by browser policy */ })
+    } else if (audioTeardownRef.current) {
+      clearTimeout(audioTeardownRef.current)
+      audioTeardownRef.current = null
+    }
 
     const stopTimer = setTimeout(() => {
-      if (audioRef.current) {
-        audioRef.current.pause()
-        audioRef.current.src = ''
-        audioRef.current = null
-      }
+      const audio = audioRef.current
+      if (!audio) return
+      const finish = () => { audio.pause(); audio.src = ''; audioRef.current = null }
+      const p = audioPlayPromiseRef.current
+      if (p) p.then(finish).catch(finish)
+      else finish()
     }, T_AUDIO_STOP)
 
     return () => {
       clearTimeout(stopTimer)
-      if (audioRef.current) {
-        audioRef.current.pause()
-        audioRef.current.src = ''
-        audioRef.current = null
-      }
+      audioTeardownRef.current = setTimeout(() => {
+        const audio = audioRef.current
+        if (!audio) return
+        const finish = () => { audio.pause(); audio.src = ''; audioRef.current = null }
+        const p = audioPlayPromiseRef.current
+        if (p) p.then(finish).catch(finish)
+        else finish()
+      }, 0)
     }
   }, [])
 
-  // ── Main sequence ───────────────────────────────────────────────────────
+  // ── Master GSAP timeline (Prompt 3) — replaces the old setTimeout/RAF
+  // chain entirely. Track start position is measured against the CONTAINER
+  // (not the viewport) after fonts are ready, so the track is guaranteed
+  // fully below the visible bottom edge before playback begins (Prompt 5).
   useEffect(() => {
-    const timers: ReturnType<typeof setTimeout>[] = []
-    const schedule = (fn: () => void, delay: number) => {
-      const id = setTimeout(fn, delay)
-      timers.push(id)
-    }
+    const container  = containerRef.current
+    const intro       = introRef.current
+    const logo         = logoRef.current
+    const crawlStage  = crawlStageRef.current
+    const track        = crawlTrackRef.current
+    if (!container || !intro || !logo || !crawlStage || !track) return
 
-    // Phase 1 — Intro text
-    schedule(() => {
-      const el = introRef.current
-      if (!el) return
-      el.style.transition = `opacity ${T_INTRO_IN}ms ease`
-      requestAnimationFrame(() => { if (el) el.style.opacity = '1' })
-    }, 50)
+    let cancelled = false
+    let tl: gsap.core.Timeline | null = null
 
-    schedule(() => {
-      const el = introRef.current
-      if (!el) return
-      el.style.transition = `opacity ${T_INTRO_OUT}ms ease`
-      el.style.opacity = '0'
-    }, 50 + T_INTRO_IN + T_INTRO_HOLD)
+    gsap.set(intro, { opacity: 0 })
+    gsap.set(logo, { opacity: 0, scale: 1 })
+    gsap.set(crawlStage, { opacity: 0 })
 
-    // Phase 2 — Logo (starts after intro fully fades)
-    const logoAt = 50 + T_INTRO_IN + T_INTRO_HOLD + T_INTRO_OUT
-
-    schedule(() => setShowLogo(true), logoAt)
-
-    schedule(() => {
-      const el = logoRef.current
-      if (!el) return
-      el.style.transition = `opacity ${T_LOGO_IN}ms ease`
-      requestAnimationFrame(() => { if (el) el.style.opacity = '1' })
-    }, logoAt + 50)
-
-    // Logo shrink via RAF
-    schedule(() => {
-      const el = logoRef.current
-      if (!el) return
-      el.style.transition = '' // hand off to RAF
-      const start          = performance.now()
-      const fadeThreshold  = T_LOGO_SHRINK * 0.85
-
-      function animateLogo(now: number) {
-        const elapsed = now - start
-        const p       = Math.min(elapsed / T_LOGO_SHRINK, 1)
-        const ep      = easeInOut(p)
-        el!.style.transform = `scale(${1 - (1 - 0.04) * ep})`
-
-        const fadeElapsed = elapsed - fadeThreshold
-        if (fadeElapsed > 0) {
-          const fp = fadeElapsed / (T_LOGO_SHRINK * 0.15)
-          el!.style.opacity = String(Math.max(0, 1 - fp))
-        }
-
-        if (p < 1) {
-          rafRef.current = requestAnimationFrame(animateLogo)
-        } else {
-          setShowLogo(false)
-        }
+    async function setup() {
+      if (typeof document !== 'undefined' && document.fonts) {
+        try {
+          await Promise.race([
+            document.fonts.ready,
+            new Promise(resolve => setTimeout(resolve, 2000)), // timeout fallback — a stuck font load must not block the sequence forever
+          ])
+        } catch { /* proceed with whatever metrics are available */ }
       }
-      rafRef.current = requestAnimationFrame(animateLogo)
-    }, logoAt + 50 + T_LOGO_IN + T_LOGO_HOLD)
-
-    // Phase 3 — Crawl (starts ~150ms after logo fully shrinks)
-    const crawlAt = logoAt + 50 + T_LOGO_IN + T_LOGO_HOLD + T_LOGO_SHRINK + 150
-
-    schedule(() => setShowCrawl(true), crawlAt)
-
-    schedule(() => {
-      const stage = crawlStageRef.current
-      if (!stage) return
-      stage.style.transition = `opacity ${T_CRAWL_IN}ms ease`
-      requestAnimationFrame(() => { if (stage) stage.style.opacity = '1' })
-    }, crawlAt + 50)
-
-    // Crawl scroll via RAF
-    schedule(() => {
-      const container = containerRef.current
-      const track     = crawlTrackRef.current
-      if (!container || !track) return
+      if (cancelled || !container || !track) return
 
       const vh          = container.offsetHeight
       const trackH      = track.offsetHeight
       const startBottom = -(trackH + vh * 0.1)
-      const endBottom   = vh * 1.8
+      const endBottom    = vh * 1.8
+      gsap.set(track, { bottom: startBottom })
 
-      track.style.bottom = `${startBottom}px`
-
-      const start = performance.now()
-      function animateCrawl(now: number) {
-        const elapsed = now - start
-        const p       = Math.min(elapsed / T_CRAWL_DUR, 1)
-        if (track) track.style.bottom = `${startBottom + (endBottom - startBottom) * p}px`
-        if (p < 1) rafRef.current = requestAnimationFrame(animateCrawl)
-      }
-      rafRef.current = requestAnimationFrame(animateCrawl)
-    }, crawlAt + 50 + T_CRAWL_IN + 50)
+      tl = gsap.timeline()
+      tl.to(intro, { opacity: 1, duration: D_INTRO_IN, ease: 'power1.inOut' }, 0)
+        .to(intro, { opacity: 0, duration: D_INTRO_OUT, ease: 'power1.inOut' }, D_INTRO_IN + D_INTRO_HOLD)
+        .to(logo, { opacity: 1, duration: D_LOGO_IN, ease: 'power1.inOut' }, LOGO_FADE_IN_AT)
+        .to(logo, { scale: LOGO_MIN_SCALE, duration: D_LOGO_SHRINK, ease: 'power2.inOut' }, LOGO_SHRINK_AT)
+        .to(logo, { opacity: 0, duration: D_LOGO_SHRINK * 0.2, ease: 'power1.in' }, LOGO_SHRINK_AT + D_LOGO_SHRINK * 0.8)
+        .to(crawlStage, { opacity: 1, duration: D_CRAWL_STAGE_IN, ease: 'power1.inOut' }, CRAWL_START_AT)
+        .to(track, { bottom: endBottom, duration: D_CRAWL_SCROLL, ease: 'none' }, CRAWL_START_AT)
+    }
+    void setup()
 
     return () => {
-      timers.forEach(clearTimeout)
-      cancelAnimationFrame(rafRef.current)
+      cancelled = true
+      tl?.kill()
     }
   }, [])
 
@@ -214,11 +319,8 @@ export function OpeningCrawlCanvas({ heading, subheading, body }: Props) {
     >
       <style>{FONT_FACE_CSS}</style>
 
-      {/* Starfield */}
-      <canvas
-        ref={canvasRef}
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
-      />
+      {/* Starfield — three.js canvas mounts here */}
+      <div ref={starfieldMountRef} style={{ position: 'absolute', inset: 0 }} />
 
       {/* Phase 1 — Intro text */}
       <div
@@ -226,9 +328,9 @@ export function OpeningCrawlCanvas({ heading, subheading, body }: Props) {
         style={{
           position: 'absolute', inset: 0, zIndex: 1,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontFamily: FONT_DISPLAY,
+          fontFamily: FONT_CRAWL,
           fontStyle: 'italic',
-          fontSize: '15px', // cinematic fixed size — not a UI element
+          fontSize: `${introFS}px`,
           color: INTRO_BLUE,
           opacity: 0,
         }}
@@ -237,109 +339,106 @@ export function OpeningCrawlCanvas({ heading, subheading, body }: Props) {
       </div>
 
       {/* Phase 2 — STAR / WARS logo */}
-      {showLogo && (
-        <div
-          ref={logoRef}
-          style={{
-            position: 'absolute', inset: 0, zIndex: 2,
-            display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center',
-            fontFamily: "'StarJediOutline'",
-            fontSize: '88px', // cinematic fixed size — not a UI element
-            lineHeight: 1.05,
-            color: CRAWL_GOLD,
-            textAlign: 'center',
-            transformOrigin: '50% 50%',
-            opacity: 0,
-          }}
-        >
-          <div>STAR</div>
-          <div>WARS</div>
-        </div>
-      )}
+      <div
+        ref={logoRef}
+        style={{
+          position: 'absolute', inset: 0, zIndex: 2,
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          fontFamily: FONT_LOGO,
+          fontSize: `${logoFS}px`,
+          lineHeight: 1.05,
+          color: CRAWL_GOLD,
+          textAlign: 'center',
+          transformOrigin: '50% 50%',
+          opacity: 0,
+        }}
+      >
+        <div>STAR</div>
+        <div>WARS</div>
+      </div>
 
       {/* Phase 3 — Crawl stage */}
-      {showCrawl && (
-        <div
-          ref={crawlStageRef}
-          style={{ position: 'absolute', inset: 0, zIndex: 3, overflow: 'hidden', opacity: 0 }}
-        >
-          {/* Top fade — masks text as it disappears into the distance */}
-          <div style={{
-            position: 'absolute', top: 0, left: 0, right: 0,
-            height: '38%',
-            background: 'linear-gradient(to bottom, #000 25%, transparent)',
-            zIndex: 2, pointerEvents: 'none',
-          }} />
+      <div
+        ref={crawlStageRef}
+        style={{ position: 'absolute', inset: 0, zIndex: 3, overflow: 'hidden', opacity: 0 }}
+      >
+        {/* Top fade — masks text as it disappears into the distance */}
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0,
+          height: '40%',
+          background: 'linear-gradient(to bottom, #000 28%, transparent)',
+          zIndex: 2, pointerEvents: 'none',
+        }} />
 
-          {/* Perspective stage */}
-          <div style={{
-            position: 'absolute', inset: 0,
-            perspective: '280px',
-            perspectiveOrigin: '50% 18%',
-          }}>
-            {/* Crawl track — position animated by RAF */}
-            <div
-              ref={crawlTrackRef}
-              style={{
-                position: 'absolute',
-                bottom: 0,
-                left: '50%',
-                transform: 'translateX(-50%) rotateX(28deg)',
-                transformOrigin: '50% 100%',
-                width: '58%',
-                textAlign: 'justify',
-              }}
-            >
-              {/* Episode heading */}
-              <div style={{
-                fontFamily: FONT_BODY,
-                fontSize: '13px', // cinematic fixed size — not a UI element
-                letterSpacing: '0.3em',
-                textTransform: 'uppercase',
-                textAlign: 'center',
-                color: CRAWL_GOLD,
-                marginBottom: '1.5em',
-              }}>
-                {heading}
-              </div>
+        {/* Perspective stage */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          perspective: '280px',
+          perspectiveOrigin: '50% 18%',
+        }}>
+          {/* Crawl track — position animated by the master timeline */}
+          <div
+            ref={crawlTrackRef}
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: '50%',
+              transform: 'translateX(-50%) rotateX(28deg)',
+              transformOrigin: '50% 100%',
+              width: '62%',
+              textAlign: 'justify',
+            }}
+          >
+            {/* Episode heading */}
+            <div style={{
+              fontFamily: FONT_CRAWL,
+              fontSize: `${headingFS}px`,
+              letterSpacing: '0.3em',
+              textTransform: 'uppercase',
+              textAlign: 'center',
+              color: CRAWL_GOLD,
+              marginBottom: '1.5em',
+            }}>
+              {heading}
+            </div>
 
-              {/* Episode title */}
-              <div style={{
-                fontFamily: FONT_DISPLAY,
-                fontSize: '21px', // cinematic fixed size — not a UI element
-                fontWeight: 700,
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                textAlign: 'center',
-                color: CRAWL_GOLD,
-                marginBottom: '1.5em',
-              }}>
-                {subheading}
-              </div>
+            {/* Episode title — same face as everything else, differentiated by size/letterspacing only */}
+            <div style={{
+              fontFamily: FONT_CRAWL,
+              fontSize: `${titleFS}px`,
+              fontWeight: 700,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              textAlign: 'center',
+              color: CRAWL_GOLD,
+              marginBottom: '1.5em',
+            }}>
+              {subheading}
+            </div>
 
-              {/* Body crawl text */}
-              <div style={{
-                fontFamily: FONT_DISPLAY,
-                fontSize: '14px', // cinematic fixed size — not a UI element
-                lineHeight: 1.85,
-                color: CRAWL_GOLD,
-                whiteSpace: 'pre-wrap',
-              }}>
-                {body}
-              </div>
+            {/* Body crawl text */}
+            <div style={{
+              fontFamily: FONT_CRAWL,
+              fontSize: `${bodyFS}px`,
+              lineHeight: 1.85,
+              color: CRAWL_GOLD,
+              whiteSpace: 'pre-wrap',
+            }}>
+              {body}
             </div>
           </div>
-
-          {/* Bottom fade — masks text entering from below */}
-          <div style={{
-            position: 'absolute', bottom: 0, left: 0, right: 0,
-            height: '18%',
-            background: 'linear-gradient(to top, #000 40%, transparent)',
-            zIndex: 2, pointerEvents: 'none',
-          }} />
         </div>
-      )}
+
+        {/* Bottom fade — masks text entering from below; tuned taller/more opaque
+            at its base than the original so entry reads as emergence, not pop-in */}
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0,
+          height: '24%',
+          background: 'linear-gradient(to top, #000 48%, transparent)',
+          zIndex: 2, pointerEvents: 'none',
+        }} />
+      </div>
     </div>
   )
 }

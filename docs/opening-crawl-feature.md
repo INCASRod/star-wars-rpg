@@ -267,7 +267,7 @@ Replace all `allMaps` references in folder renders with `standardMaps`. The `all
 3. GM can compose heading/subheading/body and Save; values persist on reload.
 4. GM pressing Play Opening activates the crawl map; players immediately see `OpeningCrawlCanvas` in the viewport slot.
 5. Crawl plays in full: intro text → STAR/WARS logo shrink → perspective crawl scrolling up.
-6. Audio begins at sequence start and hard-stops at 73 seconds.
+6. Audio begins at sequence start and hard-stops at 83 seconds.
 7. GM pressing Stop Crawl restores the previously active map for GM and players; tokens reappear.
 8. If no map was active before Play, Stop Crawl leaves all maps inactive and players see the "Waiting for GM" placeholder.
 9. Existing map switching, Pixi.js rendering, and all sealed namespaces (`DICE_COLOR`, `SYM_COLOR`, dice CSS classes, `sw-rpg-icons`, `FONT_ICONS`) are unaffected.
