@@ -6,10 +6,9 @@ import { toast } from 'sonner'
 import type { Character, Campaign } from '@/lib/types'
 import type { CombatEncounter, InitiativeSlot } from '@/lib/combat'
 import type { AdversaryInstance, Adversary } from '@/lib/adversaries'
-import type { Vehicle, VehicleInstance } from '@/lib/vehicles'
+import type { VehicleInstance } from '@/lib/vehicles'
 import type { MapToken } from '@/hooks/useMapTokens'
-import { adversaryToInstance, fetchAdversaries } from '@/lib/adversaries'
-import { vehicleToVehicleInstance, fetchVehicles, dbRowToVehicle } from '@/lib/vehicles'
+import { adversaryToInstance } from '@/lib/adversaries'
 
 export interface UseGmSessionReturn {
   sessionMode:              'exploration' | 'combat'
@@ -171,62 +170,24 @@ export function useGmSession(params: {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [campaignId, broadcastCombatState])
 
+  // Builds the Begin Combat roster straight from the encounter itself —
+  // `stagingEncounter.adversaries`/`.vehicles` are already the correct
+  // AdversaryInstance[]/VehicleInstance[] shape InitiativeSetupModal wants
+  // (same data the Recheck-initiative modal hands it directly, see
+  // GmShell.tsx). Filtering by `map_id` mirrors EncounterDeck's `buildRoster`
+  // exactly, so map scoping (Prompt 12) and off-map/benched entities (no
+  // token yet, but still map_id-stamped) both carry over for free. This
+  // replaces a prior implementation that rebuilt a roster from `stagingTokens`
+  // by matching each token's label against the ref catalog's exact `name` —
+  // that silently dropped any entry whose token label didn't match verbatim,
+  // which is every auto-numbered duplicate (minion groups, 2nd+ spawns of the
+  // same adversary/vehicle) and any custom-nicknamed token, while requiring a
+  // placed token at all (excluding off-map entries outright).
   const openStagingCombatModal = useCallback(async () => {
-    const advTokens = stagingTokens.filter(
-      t => t.participant_type === 'adversary' && t.token_shape !== 'rectangle' && !!t.label
-    )
-    let roster: AdversaryInstance[] = []
-    if (advTokens.length > 0) {
-      const names = [...new Set(advTokens.map(t => t.label!))]
-      const [{ data: globalData }, { data: customData }, staticAdvs] = await Promise.all([
-        supabase.from('ref_adversaries').select('*').in('name', names).is('campaign_id', null),
-        supabase.from('ref_adversaries').select('*').in('name', names).eq('campaign_id', campaignId ?? ''),
-        fetchAdversaries(),
-      ])
-      const advMap = new Map<string, Adversary>()
-      for (const a of staticAdvs) if (names.includes(a.name)) advMap.set(a.name, a)
-      for (const row of [...(globalData ?? []), ...(customData ?? [])]) advMap.set((row as Adversary).name, row as Adversary)
-      roster = advTokens
-        .map(t => {
-          const a = advMap.get(t.label!)
-          if (!a) return null
-          return adversaryToInstance(a, a.type === 'minion' ? 4 : 1, t.alignment === 'allied_npc' ? 'allied_npc' : 'enemy')
-        })
-        .filter((x): x is AdversaryInstance => x !== null)
-    }
-    setStagingInitRoster(roster)
-
-    // Vehicle roster — parallel to the adversary roster above, kept separate
-    // (vehicles are never merged into stagingInitRoster).
-    const vehTokens = stagingTokens.filter(
-      t => t.participant_type === 'adversary' && t.token_shape === 'rectangle' && !!t.label
-    )
-    let vehicleRoster: VehicleInstance[] = []
-    if (vehTokens.length > 0) {
-      const names = [...new Set(vehTokens.map(t => t.label!))]
-      const { data: customRows } = await supabase.from('ref_vehicles').select('*').in('name', names)
-      const vehMap = new Map<string, Vehicle>()
-      for (const row of (customRows ?? [])) {
-        const v = dbRowToVehicle(row as Record<string, unknown>)
-        vehMap.set(v.name, v)
-      }
-      const missingNames = names.filter(n => !vehMap.has(n))
-      if (missingNames.length > 0) {
-        const all = await fetchVehicles()
-        for (const v of all) if (missingNames.includes(v.name)) vehMap.set(v.name, v)
-      }
-      vehicleRoster = vehTokens
-        .map(t => {
-          const v = vehMap.get(t.label!)
-          if (!v) return null
-          return vehicleToVehicleInstance(v, t.alignment === 'allied_npc' ? 'allied_npc' : 'enemy', t.token_image_url)
-        })
-        .filter((x): x is VehicleInstance => x !== null)
-    }
-    setStagingVehicleRoster(vehicleRoster)
+    setStagingInitRoster((stagingEncounter?.adversaries ?? []).filter(a => a.map_id === activeMapId))
+    setStagingVehicleRoster((stagingEncounter?.vehicles ?? []).filter(v => v.map_id === activeMapId))
     // Caller opens the modal by setting activeModal = 'staging-init'
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [campaignId, stagingTokens])
+  }, [stagingEncounter, activeMapId])
 
   const handleStagingCombatStart = useCallback(async (
     encounterData: Omit<CombatEncounter, 'id' | 'created_at' | 'updated_at'>
