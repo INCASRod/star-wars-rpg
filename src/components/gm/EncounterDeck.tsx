@@ -94,6 +94,88 @@ export function EncounterDeck({
   const bodyRef = useRef<HTMLDivElement | null>(null)
   const [search, setSearch] = useState('')
 
+  // ── Roster rail drag-to-scroll (Prompt 16) ──────────────────────────────
+  // CSS overflow-x:auto on the rail already scrolls correctly at the DOM
+  // level (verified live: scrollWidth grows with card count, scrollLeft
+  // clamps correctly) — the actual gap was that nothing let a plain-mouse GM
+  // move that scroll position: horizontal trackpad wheel already worked
+  // natively, but vertical wheel (what a normal mouse sends) did nothing,
+  // and there was no drag. Below restores both. Threshold/click-vs-drag
+  // approach mirrors MapCanvas's token drag handling (Prompt 1): a Manhattan
+  // distance check on the pointer, not a target-type special-case — a real
+  // click never moves the mouse, so it resolves correctly even over the
+  // wound +/- buttons without any extra logic there.
+  const railRef = useRef<HTMLDivElement | null>(null)
+  const railDragRef = useRef<{
+    moved: boolean; startX: number; startScrollLeft: number
+    lastX: number; lastT: number; velocity: number
+  } | null>(null)
+  const suppressNextClickRef = useRef(false)
+
+  const handleRailMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const el = railRef.current
+    if (!el || e.button !== 0) return
+    gsap.killTweensOf(el) // stop any in-flight inertia glide before grabbing
+    const now = Date.now()
+    railDragRef.current = {
+      moved: false, startX: e.clientX, startScrollLeft: el.scrollLeft,
+      lastX: e.clientX, lastT: now, velocity: 0,
+    }
+    const onMove = (ev: MouseEvent) => {
+      const drag = railDragRef.current
+      if (!drag || !el) return
+      const dx = ev.clientX - drag.startX
+      if (!drag.moved && Math.abs(dx) > 4) drag.moved = true
+      if (drag.moved) el.scrollLeft = drag.startScrollLeft - dx
+      const now2 = Date.now()
+      const dt = now2 - drag.lastT
+      if (dt > 0) drag.velocity = (ev.clientX - drag.lastX) / dt
+      drag.lastX = ev.clientX
+      drag.lastT = now2
+    }
+    const onUp = () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+      el.style.cursor = 'grab'
+      const drag = railDragRef.current
+      railDragRef.current = null
+      if (!drag?.moved) return
+      suppressNextClickRef.current = true
+      // Inertia — project a short continuation of the release velocity, then
+      // glide there with easing, clamped to the scrollable range so it can
+      // never fling past the first/last card.
+      const maxScroll = el.scrollWidth - el.clientWidth
+      const projected = el.scrollLeft - drag.velocity * 180
+      const target = Math.max(0, Math.min(maxScroll, projected))
+      gsap.to(el, { scrollLeft: target, duration: 0.6, ease: 'power3.out', overwrite: 'auto' })
+    }
+    el.style.cursor = 'grabbing'
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }, [])
+
+  // Vertical wheel (plain mouse) → horizontal scroll. Trackpad horizontal
+  // wheel (deltaX already dominant) is left untouched — the browser already
+  // scrolls the rail natively for that case.
+  const handleRailWheel = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
+    const el = railRef.current
+    if (!el || Math.abs(e.deltaX) >= Math.abs(e.deltaY)) return
+    el.scrollLeft += e.deltaY
+    e.preventDefault()
+  }, [])
+
+  // Capture-phase click suppressor — a drag ends with a native click firing
+  // on whatever card is under the pointer; this swallows exactly that one
+  // click (stopping propagation before it reaches the card's own onClick)
+  // without affecting any click that wasn't preceded by a drag.
+  const handleRailClickCapture = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (suppressNextClickRef.current) {
+      suppressNextClickRef.current = false
+      e.stopPropagation()
+      e.preventDefault()
+    }
+  }, [])
+
   // Adversary/vehicle ref-data candidates, fetched once via the same
   // reusable fetchAdversaries()/fetchVehicles() exports AdversaryLibrary and
   // VehicleLibrary themselves already use, PLUS each one's custom-DB row set
@@ -375,39 +457,44 @@ export function EncounterDeck({
           </div>
 
           <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
-            <div style={{
-              display: 'flex', gap: SP[3],
-              height: '100%',
-              // Explicit per-side padding (not shorthand `padding` + a longhand
-              // override — React warns when both are set on the same element,
-              // since the shorthand silently sets paddingRight too and the two
-              // fight over which wins on rerender).
-              //
-              // Small top padding (was symmetric SP[3]/SP[3]) — the search-bar
-              // panel above was tightened, so this no longer needs to add its
-              // own gap on top of that; the bottom gets MORE than before
-              // instead, so cards read as sitting comfortably inside the deck
-              // body rather than flush against its bottom edge.
-              paddingTop: SP[1],
-              paddingLeft: SP[4],
-              paddingBottom: SP[4],
-              // Static right-side gutter so ROSTER cards never render underneath
-              // MapToolsRadial's default bottom-right 300px-wide widget footprint
-              // (right: 24px) — 19rem (304px) clears its left edge even at the
-              // radial's default position. Doesn't track the radial if the GM
-              // drags it. Search results don't reserve this — search is a brief,
-              // focused interaction, and the deck should use its full width while
-              // it's open rather than leave a permanent dead strip (the radial
-              // being briefly covered during a search is an acceptable tradeoff).
-              paddingRight: search === '' ? '19rem' : SP[4],
-              // alignItems:'flex-start' (not 'stretch') — stretch was forcing
-              // every roster card to match this row's cross-axis size, which
-              // silently shrank the portrait (no explicit flexShrink:0 there
-              // either) whenever the row's available height was less than the
-              // card's natural content height. flex-start lets cards render at
-              // their true natural size instead.
-              overflowX: 'auto', overflowY: 'hidden', alignItems: 'flex-start',
-            }}>
+            <div
+              ref={railRef}
+              onMouseDown={handleRailMouseDown}
+              onWheel={handleRailWheel}
+              onClickCapture={handleRailClickCapture}
+              style={{
+                display: 'flex', flexWrap: 'nowrap', gap: SP[3],
+                height: '100%', cursor: 'grab',
+                // Explicit per-side padding (not shorthand `padding` + a longhand
+                // override — React warns when both are set on the same element,
+                // since the shorthand silently sets paddingRight too and the two
+                // fight over which wins on rerender).
+                //
+                // Small top padding (was symmetric SP[3]/SP[3]) — the search-bar
+                // panel above was tightened, so this no longer needs to add its
+                // own gap on top of that; the bottom gets MORE than before
+                // instead, so cards read as sitting comfortably inside the deck
+                // body rather than flush against its bottom edge.
+                paddingTop: SP[1],
+                paddingLeft: SP[4],
+                paddingBottom: SP[4],
+                // Static right-side gutter so ROSTER cards never render underneath
+                // MapToolsRadial's default bottom-right 300px-wide widget footprint
+                // (right: 24px) — 19rem (304px) clears its left edge even at the
+                // radial's default position. Doesn't track the radial if the GM
+                // drags it. Search results don't reserve this — search is a brief,
+                // focused interaction, and the deck should use its full width while
+                // it's open rather than leave a permanent dead strip (the radial
+                // being briefly covered during a search is an acceptable tradeoff).
+                paddingRight: search === '' ? '19rem' : SP[4],
+                // alignItems:'flex-start' (not 'stretch') — stretch was forcing
+                // every roster card to match this row's cross-axis size, which
+                // silently shrank the portrait (no explicit flexShrink:0 there
+                // either) whenever the row's available height was less than the
+                // card's natural content height. flex-start lets cards render at
+                // their true natural size instead.
+                overflowX: 'auto', overflowY: 'hidden', alignItems: 'flex-start',
+              }}>
               {search === '' ? (
                 buildRoster(encounter, tokens, advImages, vehImages, activeMapId).map(entry => {
                   const adv = entry.kind === 'adversary' ? (entry.entity as AdversaryInstance) : null
@@ -787,6 +874,30 @@ function EntityCard({
 
   const stop = (fn: () => void) => (e: React.MouseEvent) => { e.stopPropagation(); fn() }
 
+  // Hover lift (Prompt 16) — transform + filter only, never boxShadow/border,
+  // so this can never fight the `lit` (focused/highlighted) styling above,
+  // which is Prompt 5's card↔token glow linkage and must stay fully
+  // independent. overwrite:'auto' on both tweens is what keeps rapid pointer
+  // sweeps across many cards from stuttering — each new tween kills any
+  // still-running one on this exact card before starting, so enter/leave
+  // pairs firing faster than the animation can never queue up or fight.
+  const cardRef = useRef<HTMLDivElement | null>(null)
+  const handleMouseEnter = () => {
+    onHoverStart?.()
+    if (cardRef.current) {
+      gsap.to(cardRef.current, {
+        y: -4, filter: `drop-shadow(0 6px 10px color-mix(in srgb, ${accent} 35%, transparent))`,
+        duration: 0.18, ease: 'power2.out', overwrite: 'auto',
+      })
+    }
+  }
+  const handleMouseLeave = () => {
+    onHoverEnd?.()
+    if (cardRef.current) {
+      gsap.to(cardRef.current, { y: 0, filter: 'none', duration: 0.2, ease: 'power2.out', overwrite: 'auto' })
+    }
+  }
+
   const chipStyle: React.CSSProperties = {
     flex: '0 0 auto', textAlign: 'center', fontSize: FS.overline, fontWeight: 700,
     letterSpacing: '0.02em', padding: `2px ${SP[1]}`, borderRadius: RADIUS.sm,
@@ -796,16 +907,20 @@ function EntityCard({
 
   return (
     <div
+      ref={cardRef}
       onClick={e => onClick(e.currentTarget.getBoundingClientRect())}
-      onMouseEnter={onHoverStart}
-      onMouseLeave={onHoverEnd}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       style={{
         flex: '0 0 10.75rem', display: 'flex', flexDirection: 'column',
         background: PANEL_BG,
         border: `1px solid ${lit ? HUD.gold : `color-mix(in srgb, ${accent} 45%, ${BORDER_HI})`}`,
         clipPath: CHAMFER, cursor: 'pointer', overflow: 'hidden', position: 'relative',
         boxShadow: lit ? `0 0 16px color-mix(in srgb, ${HUD.gold} 35%, transparent)` : 'none',
-        transition: `border-color ${EASE.quick}, transform ${EASE.default}`,
+        // transform is GSAP-owned (hover lift, below) — a CSS transition on it
+        // here would fight GSAP's per-frame updates frame-by-frame. border-color
+        // still transitions via CSS since that one's purely React-state-driven.
+        transition: `border-color ${EASE.quick}`,
       }}
     >
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: accent, zIndex: 1 }} />
