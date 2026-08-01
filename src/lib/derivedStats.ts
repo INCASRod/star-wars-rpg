@@ -161,6 +161,8 @@ export interface EffectiveStats {
 export interface StatSource {
   label: string
   value: number
+  /** Optional origin tag, set at push sites — additive, does not affect any computed value. */
+  kind?: 'item' | 'attachment' | 'talent' | 'species' | 'base'
 }
 
 export interface DerivedStatsResult {
@@ -287,7 +289,7 @@ export function computeDerivedStats(
   }
 
   // ── Breakdown source arrays for tooltip display ───────────────────────────
-  const soakSources: StatSource[]    = [{ label: 'Brawn', value: character.brawn }]
+  const soakSources: StatSource[]    = [{ label: 'Brawn', value: character.brawn, kind: 'base' }]
   const defMSources: StatSource[]    = []
   const defRSources: StatSource[]    = []
   // Base entries are deferred — talent loop adds to woundThresholdBonus / strainThresholdBonus,
@@ -313,15 +315,15 @@ export function computeDerivedStats(
 
     if (soakB > 0) {
       mods.soakBonus += soakB
-      soakSources.push({ label, value: soakB })
+      soakSources.push({ label, value: soakB, kind: 'item' })
     }
     if (defM > 0) {
       mods.defenseMelee += defM
-      defMSources.push({ label, value: defM })
+      defMSources.push({ label, value: defM, kind: 'item' })
     }
     if (defR > 0) {
       mods.defenseRanged += defR
-      defRSources.push({ label, value: defR })
+      defRSources.push({ label, value: defR, kind: 'item' })
     }
   }
 
@@ -341,19 +343,19 @@ export function computeDerivedStats(
         for (const entry of ref.base_mods) {
           if (!entry.key || !entry.count) continue
           const n = entry.count
-          if (entry.key === 'SOAKADD')    { mods.soakBonus           += n; soakSources.push({ label: ref.name, value: n }) }
-          if (entry.key === 'DEFADD')     { mods.defenseMelee += n; mods.defenseRanged += n; defMSources.push({ label: ref.name, value: n }); defRSources.push({ label: ref.name, value: n }) }
-          if (entry.key === 'STRAINADD')  { mods.strainThresholdBonus += n; strainSources.push({ label: ref.name, value: n }) }
-          if (entry.key === 'WOUNDADD')   { mods.woundThresholdBonus  += n; woundSources.push({ label: ref.name, value: n }) }
+          if (entry.key === 'SOAKADD')    { mods.soakBonus           += n; soakSources.push({ label: ref.name, value: n, kind: 'attachment' }) }
+          if (entry.key === 'DEFADD')     { mods.defenseMelee += n; mods.defenseRanged += n; defMSources.push({ label: ref.name, value: n, kind: 'attachment' }); defRSources.push({ label: ref.name, value: n, kind: 'attachment' }) }
+          if (entry.key === 'STRAINADD')  { mods.strainThresholdBonus += n; strainSources.push({ label: ref.name, value: n, kind: 'attachment' }) }
+          if (entry.key === 'WOUNDADD')   { mods.woundThresholdBonus  += n; woundSources.push({ label: ref.name, value: n, kind: 'attachment' }) }
         }
       } else {
         // Legacy flat-object format
         const m = ref.base_mods
-        if (m.soakAdd)            { mods.soakBonus           += m.soakAdd;            soakSources.push({ label: ref.name, value: m.soakAdd }) }
-        if (m.defenseMeleeAdd)    { mods.defenseMelee         += m.defenseMeleeAdd;    defMSources.push({ label: ref.name, value: m.defenseMeleeAdd }) }
-        if (m.defenseRangedAdd)   { mods.defenseRanged        += m.defenseRangedAdd;   defRSources.push({ label: ref.name, value: m.defenseRangedAdd }) }
-        if (m.woundThresholdAdd)  { mods.woundThresholdBonus  += m.woundThresholdAdd;  woundSources.push({ label: ref.name, value: m.woundThresholdAdd }) }
-        if (m.strainThresholdAdd) { mods.strainThresholdBonus += m.strainThresholdAdd; strainSources.push({ label: ref.name, value: m.strainThresholdAdd }) }
+        if (m.soakAdd)            { mods.soakBonus           += m.soakAdd;            soakSources.push({ label: ref.name, value: m.soakAdd, kind: 'attachment' }) }
+        if (m.defenseMeleeAdd)    { mods.defenseMelee         += m.defenseMeleeAdd;    defMSources.push({ label: ref.name, value: m.defenseMeleeAdd, kind: 'attachment' }) }
+        if (m.defenseRangedAdd)   { mods.defenseRanged        += m.defenseRangedAdd;   defRSources.push({ label: ref.name, value: m.defenseRangedAdd, kind: 'attachment' }) }
+        if (m.woundThresholdAdd)  { mods.woundThresholdBonus  += m.woundThresholdAdd;  woundSources.push({ label: ref.name, value: m.woundThresholdAdd, kind: 'attachment' }) }
+        if (m.strainThresholdAdd) { mods.strainThresholdBonus += m.strainThresholdAdd; strainSources.push({ label: ref.name, value: m.strainThresholdAdd, kind: 'attachment' }) }
       }
     }
   }
@@ -373,12 +375,12 @@ export function computeDerivedStats(
       if (sm.defenseMelee) {
         const val = sm.defenseMelee * count
         mods.defenseMelee += val
-        defMSources.push({ label: `${weaponLabel} (${refQ.name} ${count})`, value: val })
+        defMSources.push({ label: `${weaponLabel} (${refQ.name} ${count})`, value: val, kind: 'item' })
       }
       if (sm.defenseRanged) {
         const val = sm.defenseRanged * count
         mods.defenseRanged += val
-        defRSources.push({ label: `${weaponLabel} (${refQ.name} ${count})`, value: val })
+        defRSources.push({ label: `${weaponLabel} (${refQ.name} ${count})`, value: val, kind: 'item' })
       }
     }
   }
@@ -413,11 +415,11 @@ export function computeDerivedStats(
       const strainVal = (a.strainThreshold  ?? 0) * rank
       const forceVal  = (a.forceRating      ?? 0) * rank
 
-      if (soakVal)   { mods.soakBonus           += soakVal;   soakSources.push({ label: ref.name + rankLabel, value: soakVal }) }
-      if (defMVal)   { mods.defenseMelee         += defMVal;   defMSources.push({ label: ref.name + rankLabel, value: defMVal }) }
-      if (defRVal)   { mods.defenseRanged        += defRVal;   defRSources.push({ label: ref.name + rankLabel, value: defRVal }) }
-      if (woundVal)  { mods.woundThresholdBonus  += woundVal;  woundSources.push({ label: ref.name + rankLabel, value: woundVal }) }
-      if (strainVal) { mods.strainThresholdBonus += strainVal; strainSources.push({ label: ref.name + rankLabel, value: strainVal }) }
+      if (soakVal)   { mods.soakBonus           += soakVal;   soakSources.push({ label: ref.name + rankLabel, value: soakVal, kind: 'talent' }) }
+      if (defMVal)   { mods.defenseMelee         += defMVal;   defMSources.push({ label: ref.name + rankLabel, value: defMVal, kind: 'talent' }) }
+      if (defRVal)   { mods.defenseRanged        += defRVal;   defRSources.push({ label: ref.name + rankLabel, value: defRVal, kind: 'talent' }) }
+      if (woundVal)  { mods.woundThresholdBonus  += woundVal;  woundSources.push({ label: ref.name + rankLabel, value: woundVal, kind: 'talent' }) }
+      if (strainVal) { mods.strainThresholdBonus += strainVal; strainSources.push({ label: ref.name + rankLabel, value: strainVal, kind: 'talent' }) }
       if (forceVal)  { mods.forceRatingBonus     += forceVal;  forceSources.push({ label: ref.name + rankLabel, value: forceVal }) }
     } else if (ref.modifiers) {
       // Legacy modifiers shape (snake_case) — used by some OggDude-imported talents
@@ -434,11 +436,11 @@ export function computeDerivedStats(
       const rawForceVal = (m.force_rating ?? 0) * rank
       const forceVal = m.force_rating_conditional && careerForceRatingBase > 0 ? 0 : rawForceVal
 
-      if (soakVal)   { mods.soakBonus           += soakVal;   soakSources.push({ label: ref.name + rankLabel, value: soakVal }) }
-      if (defMVal)   { mods.defenseMelee         += defMVal;   defMSources.push({ label: ref.name + rankLabel, value: defMVal }) }
-      if (defRVal)   { mods.defenseRanged        += defRVal;   defRSources.push({ label: ref.name + rankLabel, value: defRVal }) }
-      if (woundVal)  { mods.woundThresholdBonus  += woundVal;  woundSources.push({ label: ref.name + rankLabel, value: woundVal }) }
-      if (strainVal) { mods.strainThresholdBonus += strainVal; strainSources.push({ label: ref.name + rankLabel, value: strainVal }) }
+      if (soakVal)   { mods.soakBonus           += soakVal;   soakSources.push({ label: ref.name + rankLabel, value: soakVal, kind: 'talent' }) }
+      if (defMVal)   { mods.defenseMelee         += defMVal;   defMSources.push({ label: ref.name + rankLabel, value: defMVal, kind: 'talent' }) }
+      if (defRVal)   { mods.defenseRanged        += defRVal;   defRSources.push({ label: ref.name + rankLabel, value: defRVal, kind: 'talent' }) }
+      if (woundVal)  { mods.woundThresholdBonus  += woundVal;  woundSources.push({ label: ref.name + rankLabel, value: woundVal, kind: 'talent' }) }
+      if (strainVal) { mods.strainThresholdBonus += strainVal; strainSources.push({ label: ref.name + rankLabel, value: strainVal, kind: 'talent' }) }
       if (forceVal)  { mods.forceRatingBonus     += forceVal;  forceSources.push({ label: ref.name + rankLabel, value: forceVal }) }
     }
 
@@ -474,11 +476,11 @@ export function computeDerivedStats(
       const woundVal  = (a.woundThreshold  ?? 0) * rank
       const strainVal = (a.strainThreshold ?? 0) * rank
       const forceVal  = (a.forceRating     ?? 0) * rank
-      if (soakVal)   { mods.soakBonus           += soakVal;   soakSources.push({ label: ref.name + rankLabel, value: soakVal }) }
-      if (defMVal)   { mods.defenseMelee         += defMVal;   defMSources.push({ label: ref.name + rankLabel, value: defMVal }) }
-      if (defRVal)   { mods.defenseRanged        += defRVal;   defRSources.push({ label: ref.name + rankLabel, value: defRVal }) }
-      if (woundVal)  { mods.woundThresholdBonus  += woundVal;  woundSources.push({ label: ref.name + rankLabel, value: woundVal }) }
-      if (strainVal) { mods.strainThresholdBonus += strainVal; strainSources.push({ label: ref.name + rankLabel, value: strainVal }) }
+      if (soakVal)   { mods.soakBonus           += soakVal;   soakSources.push({ label: ref.name + rankLabel, value: soakVal, kind: 'species' }) }
+      if (defMVal)   { mods.defenseMelee         += defMVal;   defMSources.push({ label: ref.name + rankLabel, value: defMVal, kind: 'species' }) }
+      if (defRVal)   { mods.defenseRanged        += defRVal;   defRSources.push({ label: ref.name + rankLabel, value: defRVal, kind: 'species' }) }
+      if (woundVal)  { mods.woundThresholdBonus  += woundVal;  woundSources.push({ label: ref.name + rankLabel, value: woundVal, kind: 'species' }) }
+      if (strainVal) { mods.strainThresholdBonus += strainVal; strainSources.push({ label: ref.name + rankLabel, value: strainVal, kind: 'species' }) }
       if (forceVal)  { mods.forceRatingBonus     += forceVal;  forceSources.push({ label: ref.name + rankLabel, value: forceVal }) }
     } else if (ref.modifiers) {
       const m = ref.modifiers
@@ -489,11 +491,11 @@ export function computeDerivedStats(
       const strainVal = (m.strain_threshold ?? 0) * rank
       const rawForceVal = (m.force_rating ?? 0) * rank
       const forceVal = m.force_rating_conditional && forceRatingBase > 0 ? 0 : rawForceVal
-      if (soakVal)   { mods.soakBonus           += soakVal;   soakSources.push({ label: ref.name + rankLabel, value: soakVal }) }
-      if (defMVal)   { mods.defenseMelee         += defMVal;   defMSources.push({ label: ref.name + rankLabel, value: defMVal }) }
-      if (defRVal)   { mods.defenseRanged        += defRVal;   defRSources.push({ label: ref.name + rankLabel, value: defRVal }) }
-      if (woundVal)  { mods.woundThresholdBonus  += woundVal;  woundSources.push({ label: ref.name + rankLabel, value: woundVal }) }
-      if (strainVal) { mods.strainThresholdBonus += strainVal; strainSources.push({ label: ref.name + rankLabel, value: strainVal }) }
+      if (soakVal)   { mods.soakBonus           += soakVal;   soakSources.push({ label: ref.name + rankLabel, value: soakVal, kind: 'species' }) }
+      if (defMVal)   { mods.defenseMelee         += defMVal;   defMSources.push({ label: ref.name + rankLabel, value: defMVal, kind: 'species' }) }
+      if (defRVal)   { mods.defenseRanged        += defRVal;   defRSources.push({ label: ref.name + rankLabel, value: defRVal, kind: 'species' }) }
+      if (woundVal)  { mods.woundThresholdBonus  += woundVal;  woundSources.push({ label: ref.name + rankLabel, value: woundVal, kind: 'species' }) }
+      if (strainVal) { mods.strainThresholdBonus += strainVal; strainSources.push({ label: ref.name + rankLabel, value: strainVal, kind: 'species' }) }
       if (forceVal)  { mods.forceRatingBonus     += forceVal;  forceSources.push({ label: ref.name + rankLabel, value: forceVal }) }
     }
   }
@@ -503,8 +505,8 @@ export function computeDerivedStats(
   // Subtract accumulated bonuses to recover the original species/career base for the tooltip.
   const trueWoundBase  = character.wound_threshold  - mods.woundThresholdBonus
   const trueStrainBase = character.strain_threshold - mods.strainThresholdBonus
-  woundSources.unshift({ label: 'Base', value: trueWoundBase })
-  strainSources.unshift({ label: 'Base', value: trueStrainBase })
+  woundSources.unshift({ label: 'Base', value: trueWoundBase, kind: 'base' })
+  strainSources.unshift({ label: 'Base', value: trueStrainBase, kind: 'base' })
 
   // ── Force Presence threshold modifiers (Prompt B) ─────────────────────────
   // Deliberately NOT folded into mods.woundThresholdBonus/strainThresholdBonus

@@ -8,7 +8,7 @@ import { randomUUID } from '@/lib/utils'
 import { logPurchaseNotification } from '@/lib/logRoll'
 import { useCharacterSigAbilities } from '@/hooks/useCharacterSigAbilities'
 import { isDroid, isClone, isEligibleForForceRating } from '@/lib/forceEligibility'
-import { computeDerivedStats, countOwnedRanks } from '@/lib/derivedStats'
+import { computeDerivedStats, countOwnedRanks, type StatSource } from '@/lib/derivedStats'
 import { computeCareerSkillKeys, persistCareerSkills } from '@/lib/characters'
 import type { MoralitySystem } from '@/lib/moralitySystem'
 import { fetchCharacterDataBatch, consumeCharacterDataPrefetch } from '@/lib/characterDataPrefetch'
@@ -679,20 +679,26 @@ export function useCharacterData(characterId: string) {
     type: 'weapon' | 'armor' | 'gear',
     state: EquipState,
     location?: import('@/lib/types').StowLocation | null,
+    // Body anchor for an EQUIPPED item — unrelated to `location` above (which
+    // records where a STOWED item physically lives). Never overloads it.
+    equipSlot?: import('@/lib/types').EquipSlot | null,
   ) => {
     markSelf()
     const locFields = state === 'stowed' && location
       ? { stow_location_id: location.id, stow_location_name: location.name, stow_location_type: location.type }
       : { stow_location_id: null, stow_location_name: null, stow_location_type: null }
+    // equip_slot only ever holds a value while equipped — leaving 'equipped'
+    // (to carrying/stowed) always clears it so a stale anchor can't linger.
+    const slotField = state === 'equipped' ? { equip_slot: equipSlot ?? null } : { equip_slot: null }
     if (type === 'weapon') {
-      setWeapons(prev => prev.map(x => x.id === id ? { ...x, equip_state: state, is_equipped: state === 'equipped', ...locFields } : x))
-      await supabase.from('character_weapons').update({ equip_state: state, is_equipped: state === 'equipped', ...locFields }).eq('id', id)
+      setWeapons(prev => prev.map(x => x.id === id ? { ...x, equip_state: state, is_equipped: state === 'equipped', ...locFields, ...slotField } : x))
+      await supabase.from('character_weapons').update({ equip_state: state, is_equipped: state === 'equipped', ...locFields, ...slotField }).eq('id', id)
     } else if (type === 'armor') {
-      setArmor(prev => prev.map(x => x.id === id ? { ...x, equip_state: state, is_equipped: state === 'equipped', ...locFields } : x))
-      await supabase.from('character_armor').update({ equip_state: state, is_equipped: state === 'equipped', ...locFields }).eq('id', id)
+      setArmor(prev => prev.map(x => x.id === id ? { ...x, equip_state: state, is_equipped: state === 'equipped', ...locFields, ...slotField } : x))
+      await supabase.from('character_armor').update({ equip_state: state, is_equipped: state === 'equipped', ...locFields, ...slotField }).eq('id', id)
     } else {
-      setGear(prev => prev.map(x => x.id === id ? { ...x, equip_state: state, is_equipped: state === 'equipped', ...locFields } : x))
-      await supabase.from('character_gear').update({ equip_state: state, is_equipped: state === 'equipped', ...locFields }).eq('id', id)
+      setGear(prev => prev.map(x => x.id === id ? { ...x, equip_state: state, is_equipped: state === 'equipped', ...locFields, ...slotField } : x))
+      await supabase.from('character_gear').update({ equip_state: state, is_equipped: state === 'equipped', ...locFields, ...slotField }).eq('id', id)
     }
   }
 
@@ -1264,6 +1270,29 @@ export function useCharacterData(characterId: string) {
     return gearBonus + armorBonus
   }, [gear, refGearMap, armor, refArmorMap])
 
+  // Pure addition alongside encumbranceBonus above — same inclusion condition
+  // (equipped + non-zero encumbrance_bonus) and same values, just labelled per
+  // item so the desktop panel's Equipped Effects block can attribute threshold
+  // to the item that granted it. Does not change encumbranceBonus itself.
+  const encumbranceBonusSources = useMemo((): StatSource[] => {
+    const sources: StatSource[] = []
+    for (const g of gear) {
+      const state = g.equip_state ?? (g.is_equipped ? 'equipped' : 'carrying')
+      const ref = refGearMap[g.gear_key]
+      if (state === 'equipped' && ref?.encumbrance_bonus) {
+        sources.push({ label: g.custom_name || ref.name || g.gear_key, value: ref.encumbrance_bonus })
+      }
+    }
+    for (const a of armor) {
+      const state = a.equip_state ?? (a.is_equipped ? 'equipped' : 'carrying')
+      const ref = refArmorMap[a.armor_key]
+      if (state === 'equipped' && ref?.encumbrance_bonus) {
+        sources.push({ label: a.custom_name || ref.name || a.armor_key, value: ref.encumbrance_bonus })
+      }
+    }
+    return sources
+  }, [gear, refGearMap, armor, refArmorMap])
+
   // ── End HUD transforms ───────────────────────────────────────────────────────
 
   const handleBuySpecialization = async (specKey: string, setActiveSpecKey: (key: string) => void) => {
@@ -1306,7 +1335,7 @@ export function useCharacterData(characterId: string) {
     setPendingForceRatingOffer,
     // HUD transforms
     speciesAbilities, hudSkills, hudTalents, hudWeapons, hudArmor, hudGear,
-    encumbranceCurrent, encumbranceBonus,
+    encumbranceCurrent, encumbranceBonus, encumbranceBonusSources,
     // Supabase client (for broadcast listener in page)
     supabase,
     // Mutations

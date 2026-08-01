@@ -525,6 +525,15 @@ export interface LockedSigAbility {
 
 export type EquipState = 'equipped' | 'carrying' | 'stowed'
 
+// Body anchor for an EQUIPPED item — distinct from StowLocation below, which
+// records where a STOWED item physically lives (base of operations, group
+// storage, etc). An item is either stowed at a location OR equipped at an
+// anchor; the two concepts never share a column, type, or variable name.
+// Anchors are deliberately non-exclusive and non-exhaustive: any item may
+// attach to any anchor, and any number of items may share one anchor. Do not
+// add uniqueness/capacity/type-validation logic — that openness is by design.
+export type EquipSlot = 'head' | 'body' | 'waist' | 'legs' | 'main' | 'off' | 'back' | 'arms'
+
 export type StowLocationType = 'vehicle' | 'starship' | 'safe_house' | 'base_of_operations'
 
 export interface StowLocation {
@@ -547,6 +556,7 @@ export interface CharacterWeapon {
   custom_name?: string
   is_equipped: boolean      // legacy — use equip_state
   equip_state: EquipState
+  equip_slot?: EquipSlot | null   // body anchor when equipped — separate from stow_location_*
   attachments: unknown[]
   notes?: string
   condition?:      string | null
@@ -567,6 +577,7 @@ export interface CharacterArmor {
   custom_name?: string
   is_equipped: boolean      // legacy — use equip_state
   equip_state: EquipState
+  equip_slot?: EquipSlot | null   // body anchor when equipped — separate from stow_location_*
   attachments: unknown[]
   notes?: string
   condition?:      string | null
@@ -584,6 +595,7 @@ export interface CharacterGear {
   quantity: number
   is_equipped: boolean      // legacy — use equip_state
   equip_state: EquipState
+  equip_slot?: EquipSlot | null   // body anchor when equipped — separate from stow_location_*
   notes?: string
   condition?:      string | null
   item_image_url?: string | null
