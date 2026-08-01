@@ -18,13 +18,21 @@ const FONT_FACE_CSS = `
     font-style: normal;
   }
   @font-face {
+    font-family: 'StarJediSolid';
+    src: url('/fonts/Starjedi.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+  }
+  @font-face {
     font-family: 'NewsCycleCrawl';
     src: url('/fonts/News_Cycle/NewsCycle-Bold.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
   }
 `
-const FONT_LOGO  = "'StarJediOutline'"
+// StarJediOutline is hollow letterforms — kept declared (unused) since the
+// film logo needs a solid fill, not an outline. StarJediSolid is that solid face.
+const FONT_LOGO  = "'StarJediSolid'"
 const FONT_CRAWL = "'NewsCycleCrawl'"
 
 // Cinematic colour — exact Star Wars crawl yellow; not a UI token.
@@ -41,7 +49,7 @@ const D_LOGO_HOLD     = 1.0
 const D_LOGO_SHRINK   = 3.2
 const LOGO_MIN_SCALE  = 0.035
 const D_CRAWL_STAGE_IN = 0.3
-const D_CRAWL_SCROLL  = 70
+const D_CRAWL_SCROLL  = 84 // 70 * 1.2 — slowed 20%, text was scrolling too fast
 
 // Absolute start times, derived from the durations above so the schedule
 // stays internally consistent if any duration is retuned later.
@@ -74,6 +82,29 @@ function makeLcg(seed: number) {
 
 const STARFIELD_SEED = 20260616
 
+// Soft circular sprite for star points — PointsMaterial with no map/alphaMap
+// renders flat-shaded squares (confirmed by direct pixel readback, see below).
+// Tight core + fast falloff so points read as pinpoints with a subtle glow,
+// not fuzzy blobs.
+function makeStarSprite(): THREE.CanvasTexture {
+  const size = 64
+  const canvas = document.createElement('canvas')
+  canvas.width = size
+  canvas.height = size
+  const ctx = canvas.getContext('2d')!
+  const c = size / 2
+  const gradient = ctx.createRadialGradient(c, c, 0, c, c, c)
+  gradient.addColorStop(0,    'rgba(255,255,255,1)')
+  gradient.addColorStop(0.2,  'rgba(255,255,255,0.85)')
+  gradient.addColorStop(0.5,  'rgba(255,255,255,0.18)')
+  gradient.addColorStop(1,    'rgba(255,255,255,0)')
+  ctx.fillStyle = gradient
+  ctx.fillRect(0, 0, size, size)
+  const texture = new THREE.CanvasTexture(canvas)
+  texture.needsUpdate = true
+  return texture
+}
+
 // Layered like TalentsPanel's HeroConstellation (near/far THREE.Points
 // layers) — extended to three depth bands so size (via per-layer material
 // size + perspective sizeAttenuation) and brightness (via per-vertex vertex
@@ -85,13 +116,47 @@ const STARFIELD_SEED = 20260616
 // so oversized points rendered as giant overlapping tiles instead of dots,
 // confirmed by direct canvas pixel readback in testing.
 const STAR_LAYERS = [
-  { count: 3192, zMin: -60, zMax: -22, size: 0.02, lumMin: 0.12, lumMax: 0.40 },
-  { count: 840,  zMin: -22, zMax: -8,  size: 0.05, lumMin: 0.40, lumMax: 0.72 },
-  { count: 168,  zMin: -8,  zMax: -3,  size: 0.10, lumMin: 0.75, lumMax: 1.00 },
+  { count: 3192, zMin: -60, zMax: -22, size: 0.025, lumMin: 0.08, lumMax: 0.35 },
+  { count: 840,  zMin: -22, zMax: -8,  size: 0.045, lumMin: 0.30, lumMax: 0.68 },
+  { count: 70,   zMin: -8,  zMax: -3,  size: 0.07,  lumMin: 0.70, lumMax: 1.00 },
 ] as const
 
 function clamp(v: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, v))
+}
+
+// ── Crawl perspective-plane geometry ────────────────────────────────────────
+// The crawl stage projects the track through a fixed perspective(280px) +
+// rotateX(28deg) on the "Perspective stage" wrapper (below) — these constants
+// must match those two CSS values exactly. Animating the track's `bottom`
+// (pre-transform layout space) makes content project near the vanishing
+// point instead of entering from the screen's bottom edge, since a flat-space
+// offset doesn't correspond linearly to a projected-screen offset once
+// perspective divide is in play. The fix animates translateY INSIDE the
+// transform chain (translateX(-50%) rotateX(28deg) translateY(Ypx)) — because
+// CSS composes transform functions right-to-left, translateY is applied to
+// the point before rotateX, so the shift itself gets rotated into the tilted
+// plane rather than sliding the whole projected image up/down the screen.
+//
+// solveTranslateY inverts that same composition: given the track's rotation
+// origin sits at the container's bottom edge (transform-origin: 50% 100%,
+// track positioned bottom:0), a point at local offset `yRel` from that origin
+// (yRel = pointLocalY - trackHeight) projects to container-relative screen Y:
+//   screenY = originY + (yRel + Y)*cos(a) / (1 - (yRel + Y)*sin(a) / P)  [+ perspective-origin term]
+// This solves that equation for Y given a desired screenY target. Verified
+// against a standalone rendered-DOM probe (not just derived) before landing.
+const CRAWL_PERSPECTIVE_PX     = 280
+const CRAWL_ROTATE_X_DEG       = 28
+const CRAWL_PERSPECTIVE_ORIGIN_Y_FRAC = 0.18
+const CRAWL_ROTATE_X_RAD = CRAWL_ROTATE_X_DEG * Math.PI / 180
+const CRAWL_COS_RX = Math.cos(CRAWL_ROTATE_X_RAD)
+const CRAWL_SIN_RX = Math.sin(CRAWL_ROTATE_X_RAD)
+
+function solveCrawlTranslateY(containerH: number, yRel: number, targetScreenY: number): number {
+  const perspOriginY = containerH * CRAWL_PERSPECTIVE_ORIGIN_Y_FRAC
+  const k = (targetScreenY - containerH) /
+    (CRAWL_COS_RX + (targetScreenY - perspOriginY) * CRAWL_SIN_RX / CRAWL_PERSPECTIVE_PX)
+  return k - yRel
 }
 
 export function OpeningCrawlCanvas({ heading, subheading, body }: Props) {
@@ -122,11 +187,11 @@ export function OpeningCrawlCanvas({ heading, subheading, body }: Props) {
     return () => ro.disconnect()
   }, [])
 
-  const bodyFS    = clamp(containerWidth * 0.026, 11, 26)
-  const headingFS = clamp(containerWidth * 0.020, 9, 20)
-  const titleFS   = clamp(containerWidth * 0.042, 16, 42)
-  const introFS   = clamp(containerWidth * 0.022, 11, 22)
-  const logoFS    = clamp(containerWidth * 0.13, 44, 130)
+  const bodyFS    = clamp(containerWidth * 0.026, 11, 48)
+  const headingFS = clamp(containerWidth * 0.020, 9, 38)
+  const titleFS   = clamp(containerWidth * 0.042, 16, 78)
+  const introFS   = clamp(containerWidth * 0.022, 11, 40)
+  const logoFS    = clamp(containerWidth * 0.13, 44, 240)
 
   // ── Starfield — three.js, STATIC (Prompt 2). Rendered once at setup and
   // again on resize; no animation loop, no rotation, no twinkle. Disposal
@@ -159,6 +224,8 @@ export function OpeningCrawlCanvas({ heading, subheading, body }: Props) {
     const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 100)
     camera.position.z = 0
 
+    const starTexture = makeStarSprite()
+
     const rand = makeLcg(STARFIELD_SEED)
     const layers = STAR_LAYERS.map(def => {
       const positions = new Float32Array(def.count * 3)
@@ -171,7 +238,9 @@ export function OpeningCrawlCanvas({ heading, subheading, body }: Props) {
         positions[i * 3 + 1] = (rand() - 0.5) * 2 * spreadY
         positions[i * 3 + 2] = z
 
-        const lum      = def.lumMin + rand() * (def.lumMax - def.lumMin)
+        // Power-curve bias toward lumMin — most stars in a layer read as dim,
+        // only a minority near rand()=1 approach the layer's bright ceiling.
+        const lum      = def.lumMin + Math.pow(rand(), 1.6) * (def.lumMax - def.lumMin)
         const tintRoll = rand()
         let r = lum, b = lum
         const g = lum
@@ -184,7 +253,8 @@ export function OpeningCrawlCanvas({ heading, subheading, body }: Props) {
       geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3))
       const material = new THREE.PointsMaterial({
         size: def.size, vertexColors: true, sizeAttenuation: true,
-        transparent: true, depthWrite: false,
+        map: starTexture, transparent: true, depthWrite: false,
+        blending: THREE.AdditiveBlending,
       })
       const points = new THREE.Points(geometry, material)
       scene.add(points)
@@ -209,6 +279,7 @@ export function OpeningCrawlCanvas({ heading, subheading, body }: Props) {
     return () => {
       ro.disconnect()
       layers.forEach(({ geometry, material }) => { geometry.dispose(); material.dispose() })
+      starTexture.dispose()
       renderer.dispose()
       renderer.domElement.remove()
     }
@@ -288,11 +359,29 @@ export function OpeningCrawlCanvas({ heading, subheading, body }: Props) {
       }
       if (cancelled || !container || !track) return
 
-      const vh          = container.offsetHeight
-      const trackH      = track.offsetHeight
-      const startBottom = -(trackH + vh * 0.1)
-      const endBottom    = vh * 1.8
-      gsap.set(track, { bottom: startBottom })
+      // Track's rotation origin (transform-origin: 50% 100%, track positioned
+      // bottom:0) sits at the container's own bottom edge. `startY` targets a
+      // point at the TOP of the track box (yRel = -trackH, where the episode
+      // heading lives — the first, topmost content) landing 1.5x the
+      // container height down (comfortably below the visible frame, with a
+      // fixed safety margin below the perspective-projection's positive-side
+      // singularity regardless of container size). `endY` targets the
+      // track's own BOTTOM edge (yRel = 0 — at or after every real line of
+      // text, so it's the last point to clear) landing 150px above the top
+      // edge (comfortably within the projection's reachable range, which is
+      // asymptotically bounded on the negative side).
+      const vh     = container.offsetHeight
+      const trackH = track.offsetHeight
+      const startY = solveCrawlTranslateY(vh, -trackH, vh * 1.5)
+      const endY   = solveCrawlTranslateY(vh, 0, -150)
+
+      const applyTranslateY = (y: number) => {
+        track.style.transform = `translateX(-50%) rotateX(${CRAWL_ROTATE_X_DEG}deg) translateY(${y}px)`
+      }
+      gsap.set(track, { bottom: 0 })
+      applyTranslateY(startY)
+
+      const crawlY = { y: startY }
 
       tl = gsap.timeline()
       tl.to(intro, { opacity: 1, duration: D_INTRO_IN, ease: 'power1.inOut' }, 0)
@@ -301,7 +390,10 @@ export function OpeningCrawlCanvas({ heading, subheading, body }: Props) {
         .to(logo, { scale: LOGO_MIN_SCALE, duration: D_LOGO_SHRINK, ease: 'power2.inOut' }, LOGO_SHRINK_AT)
         .to(logo, { opacity: 0, duration: D_LOGO_SHRINK * 0.2, ease: 'power1.in' }, LOGO_SHRINK_AT + D_LOGO_SHRINK * 0.8)
         .to(crawlStage, { opacity: 1, duration: D_CRAWL_STAGE_IN, ease: 'power1.inOut' }, CRAWL_START_AT)
-        .to(track, { bottom: endBottom, duration: D_CRAWL_SCROLL, ease: 'none' }, CRAWL_START_AT)
+        .to(crawlY, {
+          y: endY, duration: D_CRAWL_SCROLL, ease: 'none',
+          onUpdate: () => applyTranslateY(crawlY.y),
+        }, CRAWL_START_AT)
     }
     void setup()
 
@@ -374,8 +466,8 @@ export function OpeningCrawlCanvas({ heading, subheading, body }: Props) {
         {/* Perspective stage */}
         <div style={{
           position: 'absolute', inset: 0,
-          perspective: '280px',
-          perspectiveOrigin: '50% 18%',
+          perspective: `${CRAWL_PERSPECTIVE_PX}px`,
+          perspectiveOrigin: `50% ${CRAWL_PERSPECTIVE_ORIGIN_Y_FRAC * 100}%`,
         }}>
           {/* Crawl track — position animated by the master timeline */}
           <div
@@ -384,7 +476,11 @@ export function OpeningCrawlCanvas({ heading, subheading, body }: Props) {
               position: 'absolute',
               bottom: 0,
               left: '50%',
-              transform: 'translateX(-50%) rotateX(28deg)',
+              // translateY is overwritten imperatively by the master timeline
+              // (see the GSAP effect) — translateY must stay last in this
+              // list so it composes inside the rotated plane, not the flat
+              // screen axis.
+              transform: `translateX(-50%) rotateX(${CRAWL_ROTATE_X_DEG}deg) translateY(0px)`,
               transformOrigin: '50% 100%',
               width: '62%',
               textAlign: 'justify',
