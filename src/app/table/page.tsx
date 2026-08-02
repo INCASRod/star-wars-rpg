@@ -5,6 +5,7 @@ import { useSearchParams }   from 'next/navigation'
 import { useActiveMap }      from '@/hooks/useActiveMap'
 import { useMapTokens }      from '@/hooks/useMapTokens'
 import { useEncounterState } from '@/hooks/useEncounterState'
+import { useSessionMode }    from '@/hooks/useSessionMode'
 import { MapCanvas }         from '@/components/map/MapCanvas'
 import { InitiativeStrip }   from '@/components/player/InitiativeStrip'
 import { FONT_BODY, FS, HUD } from '@/lib/tokens'
@@ -23,6 +24,7 @@ function TableDisplayInner() {
   // for the residual RLS gap this doesn't close.
   const { tokens: visibleTokens } = useMapTokens(visibleMap?.id ?? null, { visibleOnly: true })
   const { encounter }      = useEncounterState(campaignId)
+  const { mode: sessionMode } = useSessionMode(campaignId)
 
   if (!campaignId) {
     return (
@@ -78,7 +80,13 @@ function TableDisplayInner() {
         </div>
       )}
 
-      {encounter?.is_active && (
+      {/* Gate on sessionMode, not just encounter.is_active — a staging
+          encounter (is_active=true, session still exploration) exists as
+          soon as the GM starts placing adversary tokens, before combat is
+          formally started. See StagingFloatingToolbar.tsx's
+          ensureActiveEncounter comment and PlayerHUDDesktop's isCombatActive
+          for the same gate on the player side. */}
+      {sessionMode === 'combat' && encounter?.is_active && (
         <InitiativeStrip
           encounter={encounter}
           character={STUB_CHARACTER}
