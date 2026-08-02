@@ -1896,8 +1896,49 @@ i.ffi {
   background: var(--hud-gold);
   opacity: 0.95;
 }
-.ptt-pip.dead { background: color-mix(in srgb, var(--hud-gold) 18%, transparent); }
+.ptt-pip.dead { background: color-mix(in srgb, var(--hud-gold) 18%, transparent); position: relative; }
+
+/* micro skull stamped directly on a dead pip, while the squad still has survivors (Prompt 19 Part D) */
+.ptt-pip-skull {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.ptt-pip-skull svg { width: 86%; height: 86%; opacity: 0.9; }
 
 .ptt-notch { position: absolute; left: 50%; width: 12px; height: 7px; z-index: 1; }
 .ptt-notch-above { bottom: -7px; }
 .ptt-notch-below { top: -7px; transform: rotate(180deg); }
+
+/* ── Defeated state (Prompt 19) ────────────────────────────────────────────
+   Purely a rendering toggle driven by `.ptt-dead` — no new data; see
+   PlayerTooltipEntity.defeated / HudSessionTab.tsx's derivation. Mirrors the
+   token's own desaturate+skull treatment in MapCanvas.tsx (Pixi layer) so
+   the two never visually disagree. */
+.ptt-frame.ptt-dead .ptt-art-img,
+.ptt-frame.ptt-dead .ptt-art-fallback {
+  filter: grayscale(0.85) brightness(0.55);
+}
+.ptt-skull-wm {
+  position: absolute; inset: 0; z-index: 3;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.ptt-skull-svg {
+  width: 56%; height: 56%;
+  opacity: 0.75;
+  filter: drop-shadow(0 2px 5px rgba(0,0,0,0.95));
+}
+.ptt-defeated-tag {
+  position: absolute; top: var(--space-1); right: var(--space-1); z-index: 4;
+  padding: 2px 6px;
+  background: color-mix(in srgb, var(--state-wounds) 40%, var(--hud-bg));
+  border: 1px solid color-mix(in srgb, var(--state-wounds) 60%, transparent);
+  border-radius: 2px;
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: color-mix(in srgb, var(--state-wounds) 45%, white);
+}
+.ptt-frame.ptt-dead .ptt-name { color: var(--hud-text-dim); }
+.ptt-frame.ptt-dead .ptt-vbar i { opacity: 0.4; }

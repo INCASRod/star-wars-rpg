@@ -2,10 +2,12 @@
 
 import { useEffect, useRef, useCallback, memo, useState } from 'react'
 import { Lock, LockOpen } from 'lucide-react'
+import gsap from 'gsap'
 import { SP, Z, FS, FONT_BODY } from '@/lib/tokens'
 import type { MapToken } from '@/hooks/useMapTokens'
 import { runMapWipe } from '@/lib/mapWipe'
 import { attachTokenHover, onTokenPointerOver, onTokenPointerOut, destroyTokenHover } from '@/lib/tokenHover'
+import { skullSvgMarkup, SKULL_BONE_HEX, SKULL_HOLE_HEX } from '@/lib/skullGlyph'
 
 // Pixi.js v7 — loaded dynamically to avoid SSR issues
 let PIXI: typeof import('pixi.js') | null = null
@@ -34,6 +36,29 @@ const POINTER_COLOURS: Record<string, number> = {
   pointer_green:  0x22c55e,
   pointer_red:    0xef4444,
   pointer_orange: 0xf97316,
+}
+
+// ── Defeated-marker skull texture (Prompt 19) ────────────────────────────
+// Loaded once per session and cached module-scope — every defeated token
+// shares the same Texture instance. Rasterized from the SAME path data
+// SkullGlyph.tsx renders as DOM/SVG (@/lib/skullGlyph), so the map token and
+// the player tooltip never draw visually different skulls; this path takes
+// static hex colors instead of CSS vars because Pixi's canvas can't read
+// custom properties (same reason BORDER_COLOURS/wound-arc colors above are
+// raw hex, not tokens.ts imports).
+let skullTexturePromise: Promise<InstanceType<typeof import('pixi.js').Texture>> | null = null
+function loadSkullTexture(px: typeof import('pixi.js')): Promise<InstanceType<typeof import('pixi.js').Texture>> {
+  if (!skullTexturePromise) {
+    const svg = skullSvgMarkup(SKULL_BONE_HEX, SKULL_HOLE_HEX)
+    const dataUri = `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
+    skullTexturePromise = new Promise((resolve, reject) => {
+      const img = new Image()
+      img.onload  = () => resolve(px.Texture.from(img))
+      img.onerror = reject
+      img.src = dataUri
+    })
+  }
+  return skullTexturePromise
 }
 
 export interface MapCanvasProps {
@@ -305,12 +330,16 @@ export const MapCanvas = memo(function MapCanvas({
       for (const token of tokens) {
         const c = tokensRef.current.get(token.id)
         if (!c) continue
+        const p = prevMap.get(token.id)!
         if (draggingTokenIdRef.current !== token.id) {
-          const p = prevMap.get(token.id)!
           if (token.x !== p.x || token.y !== p.y) {
             c.x = mapOffsetXRef.current + token.x * mapWRef.current
             c.y = mapOffsetYRef.current + token.y * mapHRef.current
           }
+        }
+        if (token.wound_pct !== p.wound_pct) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ;(c as any).__applyWoundState?.(token.wound_pct ?? null, true)
         }
         if (scaleChanged) {
           // Always keep _baseScale in sync so hover-exit returns to the correct scale
@@ -643,6 +672,8 @@ function syncTokens(
         ;(c as any).__applyLabelScale?.(tokenScale)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ;(c as any).alpha = (!isGM && !token.is_visible) ? 0 : (isGM && !token.is_visible ? 0.4 : 1)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(c as any).__applyWoundState?.(token.wound_pct ?? null, true)
         existing.delete(token.id)
         continue
       }
@@ -831,6 +862,12 @@ function buildTokenSprite(
 
   attachTokenHover(c, px, colour, ticker, SIZE, isRect)
 
+  // Art nodes that get desaturated when the token is defeated (Prompt 19,
+  // Part B) — the ring/arc/label/skull are handled separately below, only
+  // the portrait/fallback-initial art itself gets grayscale+dim treatment.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const artFilterTargets: any[] = []
+
   if (token.token_image_url) {
     const mask = new px.Graphics()
     mask.beginFill(0xffffff)
@@ -849,6 +886,7 @@ function buildTokenSprite(
     sprite.zIndex  = 1
     mask.zIndex    = 1
     c.addChild(mask, sprite)
+    artFilterTargets.push(sprite)
   } else {
     const bg = new px.Graphics()
     bg.beginFill(colour, 0.2)
@@ -867,15 +905,118 @@ function buildTokenSprite(
     initial.anchor.set(0.5)
     initial.zIndex = 2
     c.addChild(bg, initial)
+    artFilterTargets.push(bg, initial)
   }
 
-  if (token.wound_pct && token.wound_pct > 0) {
-    const arc = new px.Graphics()
-    arc.lineStyle(2, 0xe05252, 0.85)
-    arc.arc(0, 0, RADIUS + 3, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * token.wound_pct)
-    arc.zIndex = 3
-    c.addChild(arc)
+  // Wound arc — a persistent Graphics node (not a one-shot draw) so it can be
+  // redrawn in place as wound_pct changes without rebuilding the whole
+  // token; see __applyWoundState below and its call sites in syncTokens.
+  const arc = new px.Graphics()
+  arc.zIndex = 3
+  c.addChild(arc)
+
+  // ── Defeated marker (Prompt 19, Part B) — skull watermark + shadow ──────
+  // Adversary/vehicle tokens only (participant_type === 'adversary' covers
+  // both — vehicles are stored as adversary-type rectangle tokens, see
+  // useGmSession.ts's stagingTokens filter). Purely derived from wound_pct,
+  // which is itself already derived (no new column) — see
+  // useEncounterCombatControls.ts's adjustAdversaryWounds/adjustHullTrauma.
+  const isDefeatable = token.participant_type === 'adversary'
+  const skullSize = RADIUS * 2 * 0.62 // ~60-66% of token diameter per mockup
+  // Both sprites start on Texture.EMPTY (a 0×0 texture) with no explicit
+  // width/height — Sprite's width/height setters divide by the texture's
+  // orig size to derive scale, so setting them against a 0×0 texture
+  // produces an Infinity scale (confirmed live: rendered as a giant black
+  // blob covering much of the map). Size is only ever set in the .then()
+  // below, once a real (non-zero) texture is actually assigned — until
+  // then the sprites stay their natural 0×0, invisible regardless of
+  // alpha/visible.
+  const skullShadow = new px.Sprite(px.Texture.EMPTY)
+  skullShadow.anchor.set(0.5)
+  skullShadow.tint    = 0x000000 // cheap flat drop-shadow silhouette — no @pixi/filter-drop-shadow dependency
+  skullShadow.x = 1; skullShadow.y = 2
+  skullShadow.zIndex = 4
+  skullShadow.alpha = 0
+  skullShadow.visible = false
+  const skullSprite = new px.Sprite(px.Texture.EMPTY)
+  skullSprite.anchor.set(0.5)
+  skullSprite.zIndex = 5
+  skullSprite.alpha = 0
+  skullSprite.visible = false
+  c.addChild(skullShadow, skullSprite)
+  // The resting scale that renders the skull at `skullSize` — computed once
+  // the real texture (a known 64×64, see skullGlyph.ts) is assigned, since
+  // deriving it from Texture.EMPTY's 0×0 orig size would divide by zero.
+  // Every scale write below (steady-state and the GSAP flash) multiplies
+  // this baseline rather than calling `.scale.set()` with a bare 0-1ish
+  // factor, which would otherwise render the skull at raw texture pixels
+  // (64px) instead of the intended token-relative size.
+  let skullBaseScale = 0
+  if (isDefeatable) {
+    loadSkullTexture(px).then(tex => {
+      skullSprite.texture = tex
+      skullShadow.texture = tex
+      skullBaseScale = skullSize / tex.width
+      // Texture arrived after the entity was already shown as defeated —
+      // apply the now-known base scale immediately instead of waiting for
+      // the next wound update.
+      if (lastDefeated) {
+        skullSprite.scale.set(skullBaseScale)
+        skullShadow.scale.set(skullBaseScale)
+      }
+    })
   }
+
+  const desatFilter = new px.ColorMatrixFilter()
+  desatFilter.desaturate()
+  desatFilter.brightness(0.55, true)
+
+  let lastDefeated: boolean | undefined
+  let skullTween: gsap.core.Tween | null = null
+  const applyWoundState = (woundPct: number | null, animate: boolean) => {
+    const defeated = isDefeatable && typeof woundPct === 'number' && woundPct >= 1
+
+    arc.clear()
+    if (woundPct && woundPct > 0) {
+      arc.lineStyle(2, 0xe05252, defeated ? 0.35 : 0.85)
+      arc.arc(0, 0, RADIUS + 3, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * woundPct)
+    }
+
+    for (const n of artFilterTargets) n.filters = defeated ? [desatFilter] : null
+    ring.alpha = defeated ? 0.5 : 1 // softened alignment-color border, per mockup
+
+    const justDefeated = defeated && lastDefeated === false
+    if (defeated) {
+      skullSprite.visible = true
+      skullShadow.visible = true
+      if (animate && justDefeated && skullBaseScale > 0) {
+        skullTween?.kill()
+        const state = { s: 1.6, o: 0 }
+        skullTween = gsap.to(state, {
+          s: 1, o: 1, duration: 0.35, ease: 'power3.out',
+          onUpdate: () => {
+            skullSprite.scale.set(skullBaseScale * state.s)
+            skullShadow.scale.set(skullBaseScale * state.s)
+            skullSprite.alpha  = 0.82 * state.o
+            skullShadow.alpha  = 0.45 * state.o
+          },
+        })
+      } else {
+        skullTween?.kill()
+        if (skullBaseScale > 0) { skullSprite.scale.set(skullBaseScale); skullShadow.scale.set(skullBaseScale) }
+        skullSprite.alpha = 0.82; skullShadow.alpha = 0.45
+      }
+    } else {
+      skullTween?.kill()
+      skullSprite.visible = false
+      skullShadow.visible = false
+      skullSprite.alpha = 0; skullShadow.alpha = 0
+    }
+    lastDefeated = defeated
+  }
+  applyWoundState(token.wound_pct ?? null, false)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(c as any).__applyWoundState = applyWoundState
 
   // Label — crisp text on a solid pill background for readability against any map.
   // The label group is counter-scaled by 1/tokenScale so text stays at a fixed

@@ -22,6 +22,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import gsap from 'gsap'
 import { Z, COLOR, HUD } from '@/lib/tokens'
+import { SkullGlyph } from '@/components/shared/SkullGlyph'
 
 const CARD_W       = 168 // px intentional — fixed floating-card width, matches mockup exactly
 const TOP_MARGIN   = 54  // px intentional — top-bar clearance for the above/below room check
@@ -42,6 +43,14 @@ export interface PlayerTooltipEntity {
   strain?:    { current: number; max: number; label: string }
   /** Mutually exclusive with strain — minion groups show alive/dead pips instead. */
   minionPips?: { alive: number; total: number }
+  /**
+   * Prompt 19 — purely derived, never a separate DB flag: adversaries/
+   * rivals/nemeses (wounds ≥ threshold), vehicles (hull trauma ≥ threshold),
+   * minion groups (alive === 0, i.e. the whole squad is wiped — individual
+   * minion deaths short of that show a per-pip skull instead, not this).
+   * Always false for PCs. See HudSessionTab.tsx's tooltipEntity derivation.
+   */
+  defeated:   boolean
 }
 
 const ROLE_COLOR: Record<PlayerTooltipRole, string> = {
@@ -65,7 +74,14 @@ export function PlayerTokenTooltip({ entity, tokenRect }: PlayerTokenTooltipProp
   const frameRef = useRef<HTMLDivElement>(null)
   const sweepRef = useRef<HTMLDivElement>(null)
   const notchRef = useRef<HTMLDivElement>(null)
+  const skullRef = useRef<HTMLDivElement>(null)
   const tlRef    = useRef<gsap.core.Timeline | null>(null)
+  // Tracks the last-rendered `defeated` value for the CURRENTLY shown token
+  // (reset on every fresh mount below) — lets the DOM effect tell "was
+  // already defeated, just repositioning" apart from "just crossed the
+  // threshold this render," so the skull's entrance flash (Part C) only
+  // plays on a genuine live transition, not on every reposition tick.
+  const prevDefeatedRef = useRef(false)
 
   // Content is React state (drives JSX); position/flip/animation are direct
   // DOM writes in a layout effect (mirrors the mockup's own showTip/hideTip,
@@ -150,8 +166,18 @@ export function PlayerTokenTooltip({ entity, tokenRect }: PlayerTokenTooltipProp
       gsap.set(wrap, { opacity: 1, scale: 1, y: 0 })
       if (frame) gsap.set(frame, { clipPath: 'inset(0 0 0% 0)' })
       if (sweep) gsap.set(sweep, { opacity: 0 })
+      // Same token, live wound update — flash the skull only on the actual
+      // alive→defeated crossing. The reverse (healed back above threshold)
+      // needs no animation: it's just CSS `.ptt-dead` no longer applying.
+      if (displayEntity.defeated && !prevDefeatedRef.current && skullRef.current) {
+        gsap.fromTo(skullRef.current, { scale: 1.6, opacity: 0 }, { scale: 1, opacity: 0.75, duration: 0.38, ease: 'power3.out' })
+      }
+      prevDefeatedRef.current = displayEntity.defeated
       return
     }
+
+    // Fresh token — no transition to detect yet, just record the baseline.
+    prevDefeatedRef.current = displayEntity.defeated
 
     tlRef.current?.kill() // never let a rapid re-hover onto a DIFFERENT token stack on an in-flight timeline
     // FORMATION: scale-up from token + vertical clip reveal + scan sweep + settle flicker
@@ -186,7 +212,7 @@ export function PlayerTokenTooltip({ entity, tokenRect }: PlayerTokenTooltipProp
       <span className="ptt-br ptt-br-tr" />
       <span className="ptt-br ptt-br-bl" />
       <span className="ptt-br ptt-br-br" />
-      <div ref={frameRef} className="ptt-frame">
+      <div ref={frameRef} className={`ptt-frame${e.defeated ? ' ptt-dead' : ''}`}>
         <div className="ptt-roleline" style={{ background: roleColor }} />
         <div className="ptt-art">
           {e.imageUrl
@@ -202,7 +228,13 @@ export function PlayerTokenTooltip({ entity, tokenRect }: PlayerTokenTooltipProp
           }
           <div className="ptt-scan" />
           <div ref={sweepRef} className="ptt-sweep" />
+          {e.defeated && (
+            <div ref={skullRef} className="ptt-skull-wm">
+              <SkullGlyph className="ptt-skull-svg" />
+            </div>
+          )}
           {e.typeTag && <span className="ptt-tag" style={{ color: roleColor }}>{e.typeTag}</span>}
+          {e.defeated && <span className="ptt-defeated-tag">☠ DEFEATED</span>}
           <div className="ptt-ident">
             <div className="ptt-name">{e.name}</div>
           </div>
@@ -212,9 +244,22 @@ export function PlayerTokenTooltip({ entity, tokenRect }: PlayerTokenTooltipProp
           {e.minionPips ? (
             <div className="ptt-pips">
               <span className="ptt-pips-lbl">SQUAD</span>
-              {Array.from({ length: e.minionPips.total }, (_, i) => (
-                <span key={i} className={`ptt-pip${i < e.minionPips!.alive ? '' : ' dead'}`} />
-              ))}
+              {Array.from({ length: e.minionPips.total }, (_, i) => {
+                const alive = i < e.minionPips!.alive
+                // Escalation rule (Part D): once the whole squad is wiped
+                // (e.defeated), per-pip skulls give way to the one big
+                // watermark above — dead pips go back to plain dimmed.
+                const showPipSkull = !alive && !e.defeated
+                return (
+                  <span key={i} className={`ptt-pip${alive ? '' : ' dead'}`}>
+                    {showPipSkull && (
+                      <span className="ptt-pip-skull">
+                        <SkullGlyph fill="var(--hud-text-faint)" hole="var(--hud-bg)" />
+                      </span>
+                    )}
+                  </span>
+                )
+              })}
             </div>
           ) : e.strain ? (
             <VitalRow label={e.strain.label} current={e.strain.current} max={e.strain.max} kind="strain" />

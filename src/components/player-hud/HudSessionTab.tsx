@@ -139,6 +139,7 @@ export function HudSessionTab({
         imageUrl: token.token_image_url ?? null,
         wounds: { current: char.wound_current, max: char.wound_threshold, label: 'WOUNDS' },
         strain: { current: char.strain_current, max: char.strain_threshold, label: 'STRAIN' },
+        defeated: false, // Prompt 19 scope — defeated markers apply to adversaries/vehicles only, never PCs
       }
     }
 
@@ -152,6 +153,15 @@ export function HudSessionTab({
           const woundsMax = adv.type === 'minion' && adv.groupSize
             ? (adv.woundThreshold ?? 0) * adv.groupSize
             : adv.woundThreshold
+          // Prompt 19 — minion groups escalate to the full watermark only
+          // once every minion is down (groupRemaining === 0); a rival/
+          // nemesis is defeated once wounds reach its threshold. Both are
+          // purely derived from the same live encounter data as `wounds`
+          // above — same damageEngine.ts rule as applyDamageToAdversary's
+          // `isDefeated`, just re-read here instead of stored separately.
+          const defeated = adv.type === 'minion'
+            ? (adv.groupRemaining ?? 0) === 0
+            : (adv.woundsCurrent ?? 0) >= (adv.woundThreshold ?? Infinity)
           return {
             key: token.id, name: adv.nickname || adv.name || token.label || '?', role,
             typeTag: adv.type.toUpperCase(),
@@ -163,6 +173,7 @@ export function HudSessionTab({
             minionPips: adv.type === 'minion' && adv.groupSize != null
               ? { alive: adv.groupRemaining ?? 0, total: adv.groupSize }
               : undefined,
+            defeated,
           }
         }
       }
@@ -175,6 +186,7 @@ export function HudSessionTab({
           imageUrl: token.token_image_url ?? null,
           wounds: { current: veh.hullTraumaCurrent, max: veh.hullTraumaThreshold, label: 'HULL TRAUMA' },
           strain: { current: veh.systemStrainCurrent, max: veh.systemStrainThreshold, label: 'SYS STRAIN' },
+          defeated: veh.hullTraumaCurrent >= veh.hullTraumaThreshold,
         }
       }
     }
@@ -195,6 +207,7 @@ export function HudSessionTab({
           minionPips: cached.type === 'minion' && cached.groupSize != null
             ? { alive: cached.groupRemaining ?? cached.groupSize, total: cached.groupSize }
             : undefined,
+          defeated: false, // no encounter slot yet — pre-combat placeholder, always full health
         }
       }
     }
@@ -209,6 +222,7 @@ export function HudSessionTab({
         imageUrl: token.token_image_url ?? null,
         wounds: { current: 0, max: staticVeh.hullTrauma, label: 'HULL TRAUMA' },
         strain: { current: 0, max: staticVeh.systemStrain, label: 'SYS STRAIN' },
+        defeated: false,
       }
     }
 
@@ -218,6 +232,7 @@ export function HudSessionTab({
       role: token.alignment === 'allied_npc' ? 'friendly' : 'enemy',
       imageUrl: token.token_image_url ?? null,
       wounds: { current: 0, max: 1, label: 'WOUNDS' },
+      defeated: false,
     }
   }, [tokenHoverInfo, tokensById, allChars, encounter, advStatCache, vehStatCache])
 
