@@ -6,6 +6,9 @@ import type { Character } from '@/lib/types'
 import type { CombatEncounter, InitiativeSlot } from '@/lib/combat'
 import { adversaryToInstance, fetchAdversaries, dbRowToAdversary, type Adversary, type AdversaryInstance } from '@/lib/adversaries'
 import { vehicleToVehicleInstance, fetchVehicles, dbRowToVehicle, type Vehicle, type VehicleInstance } from '@/lib/vehicles'
+import { useRefLibraryRefresh } from '@/lib/refLibraryEvents'
+import { ensureEncounterForMap } from '@/lib/encounters'
+import { toast } from 'sonner'
 import type { MapToken } from '@/hooks/useMapTokens'
 import { useEncounterCombatControls } from '@/hooks/useEncounterCombatControls'
 import { createClient } from '@/lib/supabase/client'
@@ -186,6 +189,8 @@ export function EncounterDeck({
   // GM-created custom adversaries/vehicles never appeared in this search.
   const [offMapCandidates, setOffMapCandidates] = useState<Adversary[]>([])
   const [vehicleCandidates, setVehicleCandidates] = useState<Vehicle[]>([])
+  // Re-fetch when the GM saves a custom adversary/vehicle elsewhere in the app.
+  const refLibraryTick = useRefLibraryRefresh()
   useEffect(() => {
     let cancelled = false
     Promise.all([fetchAdversaries(), supabase.from('ref_adversaries').select('*').order('name')])
@@ -201,7 +206,7 @@ export function EncounterDeck({
         setVehicleCandidates([...oggdude, ...customVehs])
       }).catch(() => {})
     return () => { cancelled = true }
-  }, [supabase])
+  }, [supabase, refLibraryTick])
   // Shared default alignment for the "OFF-MAP" popup button — one small
   // toggle instead of a per-card sub-choice.
   const [offMapAlignment, setOffMapAlignment] = useState<'enemy' | 'allied_npc'>('enemy')
@@ -249,8 +254,12 @@ export function EncounterDeck({
     adv: Adversary & { _isCustom?: boolean; _tokenImageUrl?: string | null },
     alignment: 'enemy' | 'allied_npc',
   ) => {
-    if (!encounter) return
-    if (!activeMapId) { console.warn('[EncounterDeck] no activeMapId; skipping adversary add'); return }
+    if (!activeMapId) { toast.error('No active map — open a map before adding to the encounter.'); return }
+    // The deck is created on demand (migration 115): adding no longer requires
+    // combat to have been started, and a missing encounter is no longer a
+    // silent early return.
+    const deck = encounter ?? await ensureEncounterForMap(supabase, campaignId, activeMapId)
+    if (!deck) { toast.error('Could not open the encounter for this map.'); return }
     // adversaryToInstance takes exactly 2 args on this branch — AdversaryInstance
     // carries no `alignment` field of its own. Alignment lives entirely on the
     // matching initiative_slots entry, assigned below on `newSlot`.
@@ -260,14 +269,19 @@ export function EncounterDeck({
     const slotId = randomUUID()
     const newSlot: InitiativeSlot = {
       id: slotId, type: 'npc', alignment,
-      order: encounter.initiative_slots.length + 1,
+      order: (deck.initiative_slots?.length ?? 0) + 1,
       name: instance.name, acted: false, current: false, successes: 0, advantages: 0,
       adversaryInstanceId: instance.instanceId,
     }
-    await saveEncounter({
-      adversaries: [...encounter.adversaries, instance],
-      initiative_slots: [...encounter.initiative_slots, newSlot],
-    })
+    // Writes through the resolved deck id rather than saveEncounter(), which
+    // targets the already-loaded `stagingEncounter` and would be a no-op on the
+    // deck we just created for this map.
+    const { error } = await supabase.from('combat_encounters').update({
+      adversaries: [...(deck.adversaries ?? []), instance],
+      initiative_slots: [...(deck.initiative_slots ?? []), newSlot],
+      updated_at: new Date().toISOString(),
+    }).eq('id', deck.id)
+    if (error) { toast.error(`Could not add ${adv.name}: ${error.message}`); return }
     const pos = spawnPosition(tokens.filter(t => t.map_id === activeMapId).length)
     await addToken({
       map_id: activeMapId, campaign_id: campaignId,
@@ -277,14 +291,16 @@ export function EncounterDeck({
       x: pos.x, y: pos.y, is_visible: true, token_size: 1.0, wound_pct: null,
       token_image_url: advImages[adv.name] ?? adv._tokenImageUrl ?? null, token_shape: 'circle',
     })
-  }, [encounter, saveEncounter, addToken, activeMapId, campaignId, nextAutoName, advImages, tokens])
+    toast.success(`${instance.name} added to the encounter.`)
+  }, [encounter, supabase, addToken, activeMapId, campaignId, nextAutoName, advImages, tokens])
 
   const handleAddVehicle = useCallback(async (
     vehicle: Vehicle & { _isCustom?: boolean; _tokenImageUrl?: string | null },
     alignment: 'enemy' | 'allied_npc',
   ) => {
-    if (!encounter) return
-    if (!activeMapId) { console.warn('[EncounterDeck] no activeMapId; skipping vehicle add'); return }
+    if (!activeMapId) { toast.error('No active map — open a map before adding to the encounter.'); return }
+    const deck = encounter ?? await ensureEncounterForMap(supabase, campaignId, activeMapId)
+    if (!deck) { toast.error('Could not open the encounter for this map.'); return }
     const resolvedImageUrl = vehImages[vehicle.key] ?? vehicle._tokenImageUrl ?? null
     const instance = vehicleToVehicleInstance(vehicle, alignment, resolvedImageUrl)
     instance.name = nextAutoName(vehicle.name, vehicle.key)
@@ -292,14 +308,16 @@ export function EncounterDeck({
     const slotId = randomUUID()
     const newSlot: InitiativeSlot = {
       id: slotId, type: 'npc', alignment,
-      order: encounter.initiative_slots.length + 1,
+      order: (deck.initiative_slots?.length ?? 0) + 1,
       name: instance.name, acted: false, current: false, successes: 0, advantages: 0,
       vehicleInstanceId: instance.instanceId,
     }
-    await saveEncounter({
-      vehicles: [...(encounter.vehicles ?? []), instance],
-      initiative_slots: [...encounter.initiative_slots, newSlot],
-    })
+    const { error } = await supabase.from('combat_encounters').update({
+      vehicles: [...(deck.vehicles ?? []), instance],
+      initiative_slots: [...(deck.initiative_slots ?? []), newSlot],
+      updated_at: new Date().toISOString(),
+    }).eq('id', deck.id)
+    if (error) { toast.error(`Could not add ${vehicle.name}: ${error.message}`); return }
     const pos = spawnPosition(tokens.filter(t => t.map_id === activeMapId).length)
     await addToken({
       map_id: activeMapId, campaign_id: campaignId,
@@ -308,7 +326,8 @@ export function EncounterDeck({
       x: pos.x, y: pos.y, is_visible: true, token_size: 1.0, wound_pct: null,
       token_image_url: resolvedImageUrl, token_shape: 'rectangle',
     })
-  }, [encounter, saveEncounter, addToken, activeMapId, campaignId, nextAutoName, vehImages, tokens])
+    toast.success(`${instance.name} added to the encounter.`)
+  }, [encounter, supabase, addToken, activeMapId, campaignId, nextAutoName, vehImages, tokens])
 
   // ── Off-map add (card only, no token) ───────────────────────────────
   // stagingAddToEncounter only accepts Adversary, not Vehicle (pre-existing

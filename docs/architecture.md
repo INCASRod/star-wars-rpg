@@ -176,6 +176,8 @@
 - Owns combat session state: session mode transition, staging encounter, adversary/vehicle instances
 - State: `sessionMode`, `combatRound`, `sessionBusy`, `stagingEncounter`, `stagingInitRoster`, `stagingVehicleRoster`, etc.
 - Coordinates mode transitions between exploration and combat; triggers encounter creation in Supabase
+- **Encounters are per-map and permanent (migration 115).** `stagingEncounter` is loaded by `(campaign_id, map_id)` on the active map, not by `is_active`, so switching maps swaps decks and the deck exists with or without combat. `is_active` now means only "combat is live on this row": `handleStagingCombatStart` sets it (updating the map's existing deck rather than inserting a row, merging the setup modal's edited rosters over the deck's by `instanceId` so entries left out of initiative survive as non-combatants), and `endEncounter` clears it plus `round`/`current_slot_index`/per-slot `acted`+`current`. `endEncounter` no longer deactivates the row or nulls `map_tokens.slot_key` campaign-wide — that pair was what emptied every map's deck and permanently unlinked surviving tokens from their instances when combat ended. Initiative slots carry no state between fights; Begin Combat regenerates them wholesale.
+- `stagingAddToEncounter` (off-map add) creates the map's deck on demand via `ensureEncounterForMap` and toasts on success/failure, instead of silently early-returning when no combat had ever been started
 - `stagingEncounter`/`setStagingEncounter` is the sole canonical `combat_encounters` subscription for the whole GM view (the old `useEncounterData` hook it might have overlapped with was dead code and has been deleted)
 - Exposes `markEncounterPending`/`clearEncounterPending` — tracked in a `pendingKeysRef` set of `instanceId:stat` keys with an in-flight debounced write from `useEncounterCombatControls`
 - Realtime merge is field-aware: incoming `combat_encounters` rows are staleness-checked against the last-applied `updated_at` (rejects out-of-order echoes), then merged per-instance — any adversary/vehicle instance with a pending key keeps its local (optimistic) version instead of the incoming row's, while everything else (initiative slots, other instances) takes the incoming row
@@ -355,7 +357,7 @@
 > `character_talents_talent_key_fkey`, `character_specializations_specialization_key_fkey`, `characters_career_key_fkey`, `ref_specializations_career_key_fkey`.
 
 **Combat Reference**
-- `combat_encounters` — encounter roster + status (separate from `encounters` initiative tracker)
+- `combat_encounters` — one persistent encounter deck per `(campaign_id, map_id)` (unique index, `map_id` added in migration 115); holds the roster (`adversaries`/`vehicles` JSONB), `initiative_slots`, and combat status. `is_active` = combat is live on this row, NOT row existence. Separate from the `encounters` initiative tracker.
 - `combat_participants` — per-character combat state (wounds, strain, weapon display)
 - `combat_log` — timestamped combat event entries for a single encounter
 - `adversary_token_images` — custom portrait/token images for adversary entries
@@ -585,8 +587,10 @@ import { COLOR, HUD, FS, SP, RADIUS, Z, SHADOW, EASE, CHAR_COLOR, DICE_META, SYM
 | `characterSheetPDF.ts` | jsPDF-based character sheet PDF export |
 | `derivedStats.ts` | Stat computation helpers (soak, encumbrance, XP, force rating) |
 | `combatCheckUtils.ts` | Dice pool assembly, combat check helpers |
-| `adversaries.ts` | OggDude adversary JSON types + `fetchAdversaries()` |
+| `adversaries.ts` | OggDude adversary JSON types + `fetchAdversaries()`. **`Adversary.soak` is always the FINAL soak** — OggDude's `derived.soak` already includes armour, and `AdversaryEditor` totals Brawn + every gear `soak` on save (migration 116). Never add gear soak on top of it at a read site. |
 | `vehicles.ts` | OggDude vehicle JSON types + `fetchVehicles()`; `vehicleWeaponSkillKey(key)` resolves the SWRPG skill key that governs firing a vehicle weapon (per-entry `VehicleWeaponEntry.skillKey`, defaults to `'GUNN'` — used by `CheckConsole.tsx`'s vehicle crew step) |
+| `encounters.ts` | `ensureEncounterForMap(supabase, campaignId, mapId)` / `fetchEncounterForMap(...)` — the map's persistent encounter deck, created lazily on first add (migration 115). Replaces three near-identical `ensureActiveEncounter` copies (StagingFloatingToolbar, GmTokenControls, and inline selects in AdversaryLibrary/VehicleLibrary) that keyed on `is_active = true`. Handles the unique-index race on concurrent first-adds by re-reading. Callers: `useGmSession`, `EncounterDeck`, `GmTokenControls`, `StagingFloatingToolbar`, `AdversaryLibrary`, `VehicleLibrary`, `GmShell` (read-only). |
+| `refLibraryEvents.ts` | Cross-component refresh bus for the custom ref libraries (`ref_adversaries` / `ref_vehicles`). `emitRefLibraryUpdated(kind)` is called by `AdversaryEditor`/`VehicleEditor` after a successful write; `useRefLibraryRefresh(kind?)` returns a counter consumers put in their fetch effect's dep array. Consumers: `GmToolsPanel`, `EncounterDeck` (inline search), `AdversaryLibrary`, `VehicleLibrary`. Window `CustomEvent` based — no provider needed, works across the separate trees that each fetch these tables independently. |
 | `combat.ts` | `CombatEncounter`, `InitiativeSlot` types + encounter helpers |
 | `damageEngine.ts` | Damage calculation: base + modifiers + qualities → final damage |
 | `dice.ts` | Dice pool types and roll result types |

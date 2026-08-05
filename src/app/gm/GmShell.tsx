@@ -12,6 +12,7 @@ import { useActiveMap } from '@/hooks/useActiveMap'
 import { useMapTokens } from '@/hooks/useMapTokens'
 import { useGmSession } from '@/hooks/useGmSession'
 import type { CombatEncounter } from '@/lib/combat'
+import { fetchEncounterForMap } from '@/lib/encounters'
 import { useGmAwards } from '@/hooks/useGmAwards'
 import { useGmLoot } from '@/hooks/useGmLoot'
 import { useGmCharacterActions } from '@/hooks/useGmCharacterActions'
@@ -191,15 +192,10 @@ export function GmShell() {
     if (!campaignId) return
     const token = stagingTokens.find(t => t.id === id)
     if (!token?.slot_key) return
-    const { data: rows } = await supabase
-      .from('combat_encounters')
-      .select('*')
-      .eq('campaign_id', campaignId)
-      .eq('is_active', true)
-      .order('created_at', { ascending: false })
-      .limit(1)
-    if (!rows || rows.length === 0) return
-    const enc = rows[0]
+    // This map's deck (migration 115) — not "whichever row has combat live".
+    if (!token.map_id) return
+    const enc = await fetchEncounterForMap(supabase, campaignId, token.map_id)
+    if (!enc) return
     const slot = (enc.initiative_slots as { id: string; adversaryInstanceId?: string }[])
       ?.find(s => s.id === token.slot_key)
     if (!slot?.adversaryInstanceId) return

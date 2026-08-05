@@ -6,6 +6,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Vehicle, VehicleAbility } from '@/lib/vehicles'
 import { vehicleWeaponStats, ALL_VEHICLE_WEAPONS } from '@/lib/vehicles'
 import { toast } from 'sonner'
+import { emitRefLibraryUpdated } from '@/lib/refLibraryEvents'
 import { HUD, FONT_DISPLAY, FONT_BODY, FONT_MONO, RADIUS } from '@/lib/tokens'
 
 /* ── Design tokens ─────────────────────────────────────────────── */
@@ -319,6 +320,8 @@ export function VehicleEditor({
         _isCustom: true,
         _dbId:     savedId!,
       }
+      toast.success(`${name} ${editId ? 'updated' : 'saved'}`)
+      emitRefLibraryUpdated('vehicle')
       onSaved(saved)
     } catch (err) {
       // Supabase PostgrestError has non-enumerable props — extract them explicitly

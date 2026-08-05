@@ -8,7 +8,7 @@ import type { Adversary } from '@/lib/adversaries'
 import { adversaryToInstance } from '@/lib/adversaries'
 import type { Vehicle } from '@/lib/vehicles'
 import { vehicleToVehicleInstance } from '@/lib/vehicles'
-import type { CombatEncounter } from '@/lib/combat'
+import { ensureEncounterForMap } from '@/lib/encounters'
 import { AdversaryLibrary } from '@/components/gm/AdversaryLibrary'
 import { VehicleLibrary } from '@/components/gm/VehicleLibrary'
 import { StagingTokenPanel } from '@/components/staging/StagingTokenPanel'
@@ -46,38 +46,6 @@ const tokenBtn: React.CSSProperties = {
   color:         'var(--hud-text)',
   textAlign:     'left',
   transition:    `background ${EASE.quick}, border-color ${EASE.quick}`,
-}
-
-/* ── Encounter helper (mirrors StagingFloatingToolbar.ensureActiveEncounter) ── */
-async function ensureActiveEncounter(
-  supabase: ReturnType<typeof createClient>,
-  campaignId: string,
-): Promise<CombatEncounter | null> {
-  const { data: rows } = await supabase
-    .from('combat_encounters')
-    .select('*')
-    .eq('campaign_id', campaignId)
-    .eq('is_active', true)
-    .order('created_at', { ascending: false })
-    .limit(1)
-  if (rows && rows.length > 0) return rows[0] as CombatEncounter
-
-  const { data: created } = await supabase
-    .from('combat_encounters')
-    .insert({
-      campaign_id:        campaignId,
-      round:              1,
-      is_active:          true,
-      current_slot_index: 0,
-      initiative_type:    'cool',
-      initiative_slots:   [],
-      adversaries:        [],
-      vehicles:           [],
-      log_entries:        [],
-    })
-    .select('*')
-    .single()
-  return created as CombatEncounter | null
 }
 
 /* ── Pointer token definitions ── */
@@ -132,7 +100,7 @@ export function GmTokenControls({
         token_shape:      'circle',
       })
       if (!token) return
-      const enc = await ensureActiveEncounter(supabase, campaignId)
+      const enc = await ensureEncounterForMap(supabase, campaignId, mapId)
       if (!enc) return
       const instance = adversaryToInstance(adv, adv.type === 'minion' ? 4 : 1)
       instance.map_id = mapId
@@ -168,7 +136,7 @@ export function GmTokenControls({
         token_shape:      'rectangle',
       })
       if (!token) return
-      const enc = await ensureActiveEncounter(supabase, campaignId)
+      const enc = await ensureEncounterForMap(supabase, campaignId, mapId)
       if (!enc) return
       const instance = vehicleToVehicleInstance(vehicle, alignment, vehicle._tokenImageUrl)
       instance.map_id = mapId

@@ -9,6 +9,7 @@ import type { AdversaryInstance, Adversary } from '@/lib/adversaries'
 import type { VehicleInstance } from '@/lib/vehicles'
 import type { MapToken } from '@/hooks/useMapTokens'
 import { adversaryToInstance } from '@/lib/adversaries'
+import { ensureEncounterForMap } from '@/lib/encounters'
 
 export interface UseGmSessionReturn {
   sessionMode:              'exploration' | 'combat'
@@ -81,19 +82,21 @@ export function useGmSession(params: {
     if (c.combat_round) setCombatRound(c.combat_round)
   }, [campaign])
 
-  // Staging encounter subscription
+  // Encounter deck subscription — one persistent row per map (migration 115).
+  // Keyed on the active map, not on `is_active`: the deck exists and loads
+  // whether or not combat is live, and switching maps swaps decks.
   useEffect(() => {
     if (!campaignId) return
+    if (!activeMapId) { setStagingEncounter(null); lastAppliedUpdatedAtRef.current = null; return }
     supabase
       .from('combat_encounters')
       .select('*')
       .eq('campaign_id', campaignId)
-      .eq('is_active', true)
-      .order('created_at', { ascending: false })
-      .limit(1)
+      .eq('map_id', activeMapId)
+      .maybeSingle()
       .then(({ data }) => {
-        setStagingEncounter(data?.[0] as CombatEncounter ?? null)
-        lastAppliedUpdatedAtRef.current = data?.[0]?.updated_at ?? null
+        setStagingEncounter((data as CombatEncounter) ?? null)
+        lastAppliedUpdatedAtRef.current = (data as CombatEncounter)?.updated_at ?? null
       })
 
     const ch = supabase
@@ -114,7 +117,11 @@ export function useGmSession(params: {
           }
           lastAppliedUpdatedAtRef.current = incoming.updated_at
 
-          if (!incoming.is_active) { setStagingEncounter(null); return }
+          // Only this map's deck. `is_active` is no longer a row-existence
+          // flag (migration 115) — an encounter with combat ended is still the
+          // live deck, so nulling state on !is_active would empty the deck the
+          // moment combat ends, which is exactly the old bug.
+          if (incoming.map_id !== activeMapId) return
 
           setStagingEncounter(prev => {
             if (!prev || pendingKeysRef.current.size === 0) return incoming
@@ -145,7 +152,7 @@ export function useGmSession(params: {
       .subscribe()
     return () => { supabase.removeChannel(ch) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [campaignId])
+  }, [campaignId, activeMapId])
 
   const broadcastCombatState = useCallback((mode: 'combat' | 'exploration', round: number) => {
     for (const c of characters) {
@@ -156,19 +163,35 @@ export function useGmSession(params: {
   const endEncounter = useCallback(async () => {
     if (!campaignId) return
     setSessionBusy(true)
+    // Ends the COMBAT PHASE only (migration 115). The encounter deck itself —
+    // adversaries, vehicles, their tokens and the token↔instance `slot_key`
+    // links — survives into exploration and stays loaded with its map.
+    // Previously this also flipped `is_active = false` on the row (emptying the
+    // deck for every map) and nulled `map_tokens.slot_key` campaign-wide
+    // (permanently detaching every surviving token from its instance).
+    //
+    // Initiative slots do not persist outside combat — Begin Combat regenerates
+    // them wholesale — but they are kept here rather than cleared so tokens
+    // placed during this fight keep resolving their instance until then; the
+    // per-slot combat state is reset instead.
+    const clearedSlots = (stagingEncounter?.initiative_slots ?? []).map(s => ({
+      ...s, acted: false, current: false,
+    }))
     await Promise.all([
       supabase.from('campaigns').update({ session_mode: 'exploration', combat_round: 0, mode_changed_at: new Date().toISOString() }).eq('id', campaignId),
-      supabase.from('combat_encounters').update({ is_active: false, updated_at: new Date().toISOString() }).eq('campaign_id', campaignId).eq('is_active', true),
-      supabase.from('map_tokens').update({ slot_key: null }).eq('campaign_id', campaignId).not('slot_key', 'is', null),
+      supabase.from('combat_encounters').update({
+        is_active: false, round: 1, current_slot_index: 0,
+        initiative_slots: clearedSlots,
+        updated_at: new Date().toISOString(),
+      }).eq('campaign_id', campaignId).eq('is_active', true),
     ])
     setSessionMode('exploration')
     setCombatRound(1)
-    setStagingEncounter(null)
     broadcastCombatState('exploration', 0)
     setSessionBusy(false)
-    toast('Encounter ended — exploration mode.')
+    toast('Combat ended — deck kept, exploration mode.')
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [campaignId, broadcastCombatState])
+  }, [campaignId, broadcastCombatState, stagingEncounter])
 
   // Builds the Begin Combat roster straight from the encounter itself —
   // `stagingEncounter.adversaries`/`.vehicles` are already the correct
@@ -193,19 +216,38 @@ export function useGmSession(params: {
     encounterData: Omit<CombatEncounter, 'id' | 'created_at' | 'updated_at'>
   ) => {
     if (!campaignId) return
+    if (!activeMapId) { toast.error('No active map — cannot start combat.'); return }
     setSessionBusy(true)
 
-    // Deactivate any staging encounter created during token placement so we
-    // don't leave orphaned is_active=true rows alongside the new combat one.
-    await supabase
-      .from('combat_encounters')
-      .update({ is_active: false, updated_at: new Date().toISOString() })
-      .eq('campaign_id', campaignId)
-      .eq('is_active', true)
+    // Combat runs on the active map's existing deck (migration 115) — this no
+    // longer inserts a row, so the adversaries/vehicles staged before combat
+    // are the ones that fight. Initiative slots are regenerated wholesale from
+    // the setup modal every Begin Combat; they carry no state between fights.
+    const deck = await ensureEncounterForMap(supabase, campaignId, activeMapId)
+    if (!deck) { setSessionBusy(false); toast.error('Could not open the encounter for this map.'); return }
 
+    // Merge rather than replace the rosters: the setup modal only ever sees
+    // this map's entries and may have edited them (group sizes), but the deck
+    // also holds entries the GM left out of the initiative order — those stay
+    // on the deck as non-combatants instead of being wiped by the modal's
+    // narrower list.
+    const mergeById = <T extends { instanceId: string }>(deckRows: T[], modalRows: T[]): T[] => {
+      const edited = new Map(modalRows.map(r => [r.instanceId, r]))
+      const merged = deckRows.map(r => edited.get(r.instanceId) ?? r)
+      const known = new Set(deckRows.map(r => r.instanceId))
+      return [...merged, ...modalRows.filter(r => !known.has(r.instanceId))]
+    }
     const { data } = await supabase
       .from('combat_encounters')
-      .upsert({ ...encounterData, campaign_id: campaignId })
+      .update({
+        ...encounterData,
+        // Never let the modal's payload move the deck off its map.
+        map_id: activeMapId,
+        adversaries: mergeById(deck.adversaries ?? [], encounterData.adversaries ?? []),
+        vehicles:    mergeById(deck.vehicles ?? [], encounterData.vehicles ?? []),
+        is_active: true, updated_at: new Date().toISOString(),
+      })
+      .eq('id', deck.id)
       .select()
       .single()
     if (!data) { setSessionBusy(false); return }
@@ -291,24 +333,32 @@ export function useGmSession(params: {
   const stagingAddToEncounter = useCallback(async (
     adv: Adversary, alignment: 'enemy' | 'allied_npc', successes = 0, advantages = 0
   ) => {
-    if (!stagingEncounter) return
+    if (!campaignId) return
+    if (!activeMapId) { toast.error('No active map — open a map before adding to the encounter.'); return }
+    // Creates this map's deck on first add rather than bailing when combat has
+    // never been started (migration 115) — the silent early return here was why
+    // off-map adds from the Encounter Deck did nothing at all.
+    const enc = await ensureEncounterForMap(supabase, campaignId, activeMapId)
+    if (!enc) { toast.error('Could not open the encounter for this map.'); return }
     const size     = stagingGroupSizes[adv.id] ?? (adv.type === 'minion' ? 4 : 1)
     const instance = adversaryToInstance(adv, size)
-    instance.map_id = activeMapId ?? null
+    instance.map_id = activeMapId
     const slotId   = crypto.randomUUID()
     const newSlot: InitiativeSlot = {
       id: slotId, type: 'npc', alignment,
-      order: stagingEncounter.initiative_slots.length + 1,
+      order: (enc.initiative_slots?.length ?? 0) + 1,
       name: adv.name, acted: false, current: false, successes, advantages,
       adversaryInstanceId: instance.instanceId,
     }
-    await supabase.from('combat_encounters').update({
-      adversaries:      [...stagingEncounter.adversaries, instance],
-      initiative_slots: [...stagingEncounter.initiative_slots, newSlot],
+    const { error } = await supabase.from('combat_encounters').update({
+      adversaries:      [...(enc.adversaries ?? []), instance],
+      initiative_slots: [...(enc.initiative_slots ?? []), newSlot],
       updated_at:       new Date().toISOString(),
-    }).eq('id', stagingEncounter.id)
+    }).eq('id', enc.id)
+    if (error) { toast.error(`Could not add ${adv.name}: ${error.message}`); return }
+    toast.success(`${adv.name} added off-map.`)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stagingEncounter, stagingGroupSizes, activeMapId])
+  }, [campaignId, stagingGroupSizes, activeMapId])
 
   return {
     sessionMode, combatRound, sessionBusy,

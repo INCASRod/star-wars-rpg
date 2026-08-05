@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useVehicleTokenImages } from '@/hooks/useVehicleTokenImages'
 import { fetchVehicles, vehicleToInstance, dbRowToVehicle } from '@/lib/vehicles'
+import { useRefLibraryRefresh } from '@/lib/refLibraryEvents'
+import { ensureEncounterForMap } from '@/lib/encounters'
 import type { Vehicle } from '@/lib/vehicles'
 import type { CombatEncounter, InitiativeSlot } from '@/lib/combat'
 import { randomUUID } from '@/lib/utils'
@@ -90,6 +92,8 @@ export function VehicleLibrary({ campaignId, sessionMode, onAddToken, mapId }: V
   const [addTokenPending, setAddTokenPending] = useState<(Vehicle & { _isCustom?: boolean }) | null>(null)
 
   /* ── Load ────────────────────────────────────────────── */
+  // Re-runs when an editor anywhere saves a custom vehicle.
+  const refLibraryTick = useRefLibraryRefresh('vehicle')
   useEffect(() => {
     let cancelled = false
     const load = async () => {
@@ -107,7 +111,7 @@ export function VehicleLibrary({ campaignId, sessionMode, onAddToken, mapId }: V
     }
     void load()
     return () => { cancelled = true }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [refLibraryTick]) // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── Combined list ───────────────────────────────────── */
   const allVehicles = useMemo((): (Vehicle & { _isCustom?: boolean })[] => [...oggdude, ...custom], [oggdude, custom])
@@ -181,13 +185,11 @@ export function VehicleLibrary({ campaignId, sessionMode, onAddToken, mapId }: V
     if (!addConfirm) return
     setAddBusy(true)
     try {
-      const { data: encounters } = await supabase
-        .from('combat_encounters').select('*')
-        .eq('campaign_id', campaignId).eq('is_active', true)
-        .order('created_at', { ascending: false }).limit(1)
-
-      const enc = encounters?.[0] as CombatEncounter | undefined
-      if (!enc) { toast.error('No active encounter found.'); setAddConfirm(null); return }
+      // Per-map deck, created on demand (migration 115) — no longer requires
+      // combat to be live.
+      if (!mapId) { toast.error('No active map — open a map first.'); setAddConfirm(null); return }
+      const enc = await ensureEncounterForMap(supabase, campaignId, mapId)
+      if (!enc) { toast.error('Could not open the encounter for this map.'); setAddConfirm(null); return }
 
       const instance = vehicleToInstance(addConfirm.vehicle)
       const newSlot: InitiativeSlot = {
@@ -209,7 +211,7 @@ export function VehicleLibrary({ campaignId, sessionMode, onAddToken, mapId }: V
         updated_at:       new Date().toISOString(),
       }).eq('id', enc.id)
 
-      toast.success(`${addConfirm.vehicle.name} added to combat.`)
+      toast.success(`${addConfirm.vehicle.name} added to the encounter.`)
       setAddConfirm(null)
     } catch (err) {
       console.error('Add to combat failed', err)

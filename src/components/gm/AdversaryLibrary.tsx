@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAdversaryTokenImages } from '@/hooks/useAdversaryTokenImages'
 import { fetchAdversaries, adversaryToInstance, dbRowToAdversary } from '@/lib/adversaries'
+import { useRefLibraryRefresh } from '@/lib/refLibraryEvents'
+import { ensureEncounterForMap } from '@/lib/encounters'
 import type { Adversary } from '@/lib/adversaries'
 import type { CombatEncounter, InitiativeSlot } from '@/lib/combat'
 import { randomUUID } from '@/lib/utils'
@@ -141,6 +143,8 @@ export function AdversaryLibrary({ campaignId, sessionMode, onAddToken, mapId }:
   const [addTokenPending,   setAddTokenPending]    = useState<(Adversary & { _isCustom?: boolean }) | null>(null)
 
   /* ── Load data ───────────────────────────────────────── */
+  // Re-runs when an editor anywhere saves a custom adversary.
+  const refLibraryTick = useRefLibraryRefresh('adversary')
   useEffect(() => {
     let cancelled = false
 
@@ -165,7 +169,7 @@ export function AdversaryLibrary({ campaignId, sessionMode, onAddToken, mapId }:
 
     void load()
     return () => { cancelled = true }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [refLibraryTick]) // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── Combined + filtered list ────────────────────────── */
   const allAdversaries = useMemo((): (Adversary & { _isCustom?: boolean })[] => {
@@ -255,18 +259,16 @@ export function AdversaryLibrary({ campaignId, sessionMode, onAddToken, mapId }:
     if (!addConfirm) return
     setAddBusy(true)
     try {
-      // Load active encounter
-      const { data: encounters } = await supabase
-        .from('combat_encounters')
-        .select('*')
-        .eq('campaign_id', campaignId)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false })
-        .limit(1)
-
-      const enc = encounters?.[0] as CombatEncounter | undefined
+      // Per-map deck, created on demand (migration 115) — no longer requires
+      // combat to be live.
+      if (!mapId) {
+        toast.error('No active map — open a map first.')
+        setAddConfirm(null)
+        return
+      }
+      const enc = await ensureEncounterForMap(supabase, campaignId, mapId)
       if (!enc) {
-        toast.error('No active encounter found.')
+        toast.error('Could not open the encounter for this map.')
         setAddConfirm(null)
         return
       }
@@ -291,7 +293,7 @@ export function AdversaryLibrary({ campaignId, sessionMode, onAddToken, mapId }:
         updated_at:       new Date().toISOString(),
       }).eq('id', enc.id)
 
-      toast.success(`${addConfirm.adversary.name} added to combat.`)
+      toast.success(`${addConfirm.adversary.name} added to the encounter.`)
       setAddConfirm(null)
     } catch (err) {
       console.error('Add to combat failed', err)
@@ -527,7 +529,8 @@ function AdversaryRow({
           <TypeBadge type={adversary.type} />
         </div>
         <div style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: DIM, marginTop: 2 }}>
-          Soak {adversary.soak + (adversary.gear ?? []).reduce((s, g) => s + (g.soak ?? 0), 0)} · WT {adversary.wound}
+          {/* `soak` is the final total already — see AdversaryEditor's save. */}
+          Soak {adversary.soak} · WT {adversary.wound}
           {adversary.type === 'minion' && ' (per minion)'}
         </div>
       </div>

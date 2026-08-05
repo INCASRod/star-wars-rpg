@@ -519,6 +519,9 @@ export function InitiativeSetupModal({ campaignId, characters, roster, vehicleRo
 
     const encounter: Omit<CombatEncounter, 'id' | 'created_at' | 'updated_at'> = {
       campaign_id: campaignId,
+      // The map binding is owned by the deck row itself (migration 115) —
+      // handleStagingCombatStart overwrites this with the active map id.
+      map_id: null,
       round: 1,
       is_active: true,
       current_slot_index: 0,

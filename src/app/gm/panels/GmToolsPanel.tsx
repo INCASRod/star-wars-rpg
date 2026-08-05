@@ -12,6 +12,7 @@ import { LootAwardModal } from '@/components/gm/LootAwardModal'
 import { AdversaryEditor } from '@/components/gm/AdversaryEditor'
 import { VehicleEditor } from '@/components/gm/VehicleEditor'
 import { fetchAdversaries, dbRowToAdversary, type Adversary } from '@/lib/adversaries'
+import { useRefLibraryRefresh } from '@/lib/refLibraryEvents'
 import { fetchVehicles, dbRowToVehicle, type Vehicle } from '@/lib/vehicles'
 import { HUD, COLOR, RADIUS, FONT_BODY as FONT, FS } from '@/lib/tokens'
 import type { useGmLoot } from '@/hooks/useGmLoot'
@@ -158,6 +159,9 @@ export function GmToolsPanel({
   const [vehicleMode, setVehicleMode] = useState<'new' | 'edit'>('new')
   const [vehicleEditTarget, setVehicleEditTarget] = useState<Vehicle | null>(null)
   const [vehicleEditSearch, setVehicleEditSearch] = useState('')
+  // Re-fetch the template/edit lists as soon as an editor saves, so a newly
+  // created adversary/vehicle is immediately selectable under "Edit Existing".
+  const refLibraryTick = useRefLibraryRefresh()
   const customAdversaries = useMemo(() => allAdversaries.filter(a => a._isCustom), [allAdversaries])
   const customVehicles = useMemo(() => allVehicles.filter(v => v._isCustom), [allVehicles])
   useEffect(() => {
@@ -175,7 +179,7 @@ export function GmToolsPanel({
         setAllVehicles([...oggdude, ...customVehs])
       }).catch(() => {})
     return () => { cancelled = true }
-  }, [supabase])
+  }, [supabase, refLibraryTick])
 
   const forceSensitiveCharIds = useMemo(
     () => activeChars.filter(c => (c.force_rating ?? 0) > 0).map(c => c.id),

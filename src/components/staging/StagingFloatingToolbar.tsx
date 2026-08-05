@@ -34,7 +34,7 @@ import type { Adversary } from '@/lib/adversaries'
 import { adversaryToInstance } from '@/lib/adversaries'
 import type { Vehicle } from '@/lib/vehicles'
 import { vehicleToVehicleInstance } from '@/lib/vehicles'
-import type { CombatEncounter } from '@/lib/combat'
+import { ensureEncounterForMap } from '@/lib/encounters'
 import { AdversaryLibrary } from '@/components/gm/AdversaryLibrary'
 import { VehicleLibrary } from '@/components/gm/VehicleLibrary'
 import { CombatLog } from '@/components/combat/CombatLog'
@@ -107,40 +107,8 @@ export interface StagingFloatingToolbarProps {
 }
 
 /* ── Encounter helpers ────────────────────────────────────── */
-// Returns the active encounter, creating a staging one if none exists yet.
-// Creating with is_active:true is intentional — GM panels need it to show adversaries.
-// Players are shielded from "Combat Active" UI by the isCombat sessionMode gate in
-// PlayerHUDDesktop, so this does not prematurely activate combat for them.
-async function ensureActiveEncounter(
-  supabase: ReturnType<typeof createClient>,
-  campaignId: string,
-): Promise<CombatEncounter | null> {
-  const { data: rows } = await supabase
-    .from('combat_encounters')
-    .select('*')
-    .eq('campaign_id', campaignId)
-    .eq('is_active', true)
-    .order('created_at', { ascending: false })
-    .limit(1)
-  if (rows && rows.length > 0) return rows[0] as CombatEncounter
-
-  const { data: created } = await supabase
-    .from('combat_encounters')
-    .insert({
-      campaign_id:        campaignId,
-      round:              1,
-      is_active:          true,
-      current_slot_index: 0,
-      initiative_type:    'cool',
-      initiative_slots:   [],
-      adversaries:        [],
-      vehicles:           [],
-      log_entries:        [],
-    })
-    .select('*')
-    .single()
-  return created as CombatEncounter | null
-}
+// Encounter-deck lookup/creation now lives in `@/lib/encounters` and is keyed on
+// (campaign_id, map_id) instead of `is_active` — see migration 115.
 
 export function StagingFloatingToolbar({
   campaignId,
@@ -252,7 +220,7 @@ export function StagingFloatingToolbar({
       })
       if (!token) return
 
-      const enc = await ensureActiveEncounter(supabase, campaignId)
+      const enc = await ensureEncounterForMap(supabase, campaignId, mapId)
       if (!enc) return
 
       const instance = adversaryToInstance(adv, adv.type === 'minion' ? 4 : 1)
@@ -288,7 +256,7 @@ export function StagingFloatingToolbar({
       })
       if (!token) return
 
-      const enc = await ensureActiveEncounter(supabase, campaignId)
+      const enc = await ensureEncounterForMap(supabase, campaignId, mapId)
       if (!enc) return
 
       const instance = vehicleToVehicleInstance(vehicle, alignment, vehicle._tokenImageUrl)

@@ -261,7 +261,10 @@ export function AdversaryDetailPanel({
           <div>
             <SectionHead>Derived Stats</SectionHead>
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <StatBox label="Soak"  value={adv.soak + (adv.gear ?? []).reduce((s, g) => s + (g.soak ?? 0), 0)}  />
+              {/* `adv.soak` is already the final total (brawn + gear soak), the
+                  same convention OggDude's derived.soak uses — adding gear soak
+                  again here double-counted armour. */}
+              <StatBox label="Soak"  value={adv.soak}  />
               <StatBox label="WT"    value={adv.wound} />
               {adv.strain != null && <StatBox label="ST" value={adv.strain} />}
               {defense[0] > 0 && <StatBox label="Def M" value={defense[0]} />}

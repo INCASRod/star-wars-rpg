@@ -538,6 +538,10 @@ export function MapToolsRadial({
         height:     SVG_H,
         zIndex:     Z.fab,
         userSelect: 'none',
+        // Wrapper + SVG root are a 380x380 transparent box over the map canvas —
+        // both hit-test their full rect and swallowed every click in that region.
+        // Interactive children (puck, arc hit paths) opt back in explicitly.
+        pointerEvents: 'none',
       }}
     >
       {/* ── SVG: arcs + puck (z=1) ── */}
@@ -545,7 +549,7 @@ export function MapToolsRadial({
         width={SVG_W}
         height={SVG_H}
         viewBox={`0 0 ${SVG_W} ${SVG_H}`}
-        style={{ position: 'absolute', inset: 0, zIndex: Z.raised, overflow: 'visible' }}
+        style={{ position: 'absolute', inset: 0, zIndex: Z.raised, overflow: 'visible', pointerEvents: 'none' }}
       >
         {/* ── Defs: blade gradients/shadow + hover label arc path ── */}
         <defs>

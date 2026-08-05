@@ -5,6 +5,7 @@ import { Modal } from '@/components/ui/Modal'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Adversary, AdversaryWeapon, AdversaryTalent, AdversaryGear } from '@/lib/adversaries'
 import { toast } from 'sonner'
+import { emitRefLibraryUpdated } from '@/lib/refLibraryEvents'
 import { HUD, FONT_BODY, RADIUS, Z } from '@/lib/tokens'
 
 /* ── Design tokens ─────────────────────────────────────── */
@@ -326,10 +327,18 @@ export function AdversaryEditor({
           ...(g.soak !== '' && !isNaN(Number(g.soak)) ? { soak: Number(g.soak) } : {}),
         }))
 
+      // `soak` is the FINAL soak, exactly like OggDude's `derived.soak` — brawn
+      // plus every gear "Soak +" entry. It used to store bare brawn on the
+      // theory that gear would be added "at runtime", but only two read sites
+      // ever did that (the library card and the detail panel); the Encounter
+      // Deck card, dossier, initiative instances and combat damage resolution
+      // all read `soak` raw, so armour was silently worth nothing in play.
+      const gearSoakTotal = gearData.reduce((sum, g) => sum + (g.soak ?? 0), 0)
+
       const row: Omit<CustomAdversaryRow, 'id'> = {
         name: name.trim(), type,
         brawn, agility, intellect, cunning, willpower, presence,
-        soak: brawn,  // soak = brawn + armor; store brawn as base
+        soak: brawn + gearSoakTotal,
         wound_threshold: wt,
         strain_threshold: type === 'nemesis' && st !== '' ? Number(st) : null,
         defense_melee: defMelee, defense_ranged: defRanged,
@@ -380,6 +389,8 @@ export function AdversaryEditor({
         _dbId:      savedId,
       }
 
+      toast.success(`${row.name} ${editId ? 'updated' : 'saved'}`)
+      emitRefLibraryUpdated('adversary')
       onSaved(saved)
     } catch (err) {
       const msg = (err as { message?: string })?.message ?? 'Unknown error'
@@ -583,7 +594,7 @@ export function AdversaryEditor({
               </div>
             </div>
             <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, marginTop: '0.375rem' }}>
-              Soak = Brawn + armor (computed at runtime).
+              Soak = Brawn + every gear “Soak +” value, totalled on save.
             </div>
           </div>
 

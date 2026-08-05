@@ -33,6 +33,12 @@ export interface LogEntry {
 export interface CombatEncounter {
   id: string
   campaign_id: string
+  /**
+   * Map this encounter deck belongs to (migration 115). One persistent row per
+   * (campaign_id, map_id), created lazily by `ensureEncounterForMap`. Nullable
+   * only because pre-115 rows were campaign-wide; every row created now has it.
+   */
+  map_id: string | null
   round: number
   is_active: boolean
   current_slot_index: number
