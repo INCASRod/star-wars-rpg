@@ -817,7 +817,9 @@ i.ffi {
 }
 /* Dice-pool chips — colors reference CSS vars defined in :root */
 .die.boost      { color: var(--die-boost);      background: color-mix(in srgb, var(--die-boost) 12%, transparent);      border: 1px solid color-mix(in srgb, var(--die-boost) 35%, transparent); }
-.die.setback    { color: var(--die-setback);    background: color-mix(in srgb, var(--die-setback) 12%, transparent);    border: 1px solid color-mix(in srgb, var(--die-setback) 35%, transparent); }
+/* Setback: black body, light grey ink + edge — the only die whose fill and text
+   colours differ, so it can't be read as a second boost die. */
+.die.setback    { color: var(--die-setback);    background: var(--die-setback-fill);                                    border: 1px solid color-mix(in srgb, var(--die-setback) 55%, transparent); }
 .die.difficulty { color: var(--die-difficulty); background: color-mix(in srgb, var(--die-difficulty) 12%, transparent); border: 1px solid color-mix(in srgb, var(--die-difficulty) 35%, transparent); }
 .die.challenge  { color: var(--die-challenge);  background: color-mix(in srgb, var(--die-challenge) 12%, transparent);  border: 1px solid color-mix(in srgb, var(--die-challenge) 35%, transparent); }
 .die.force      { color: var(--die-force);      background: color-mix(in srgb, var(--die-force) 12%, transparent);      border: 1px solid color-mix(in srgb, var(--die-force) 35%, transparent); }

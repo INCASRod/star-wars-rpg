@@ -10,7 +10,8 @@ import { RANGE_BAND_LABELS, isRangedSkill } from '@/lib/combatCheckUtils'
 import type { CriticalEligibility } from '@/lib/criticalUtils'
 import { checkCriticalEligibility } from '@/lib/criticalUtils'
 import type { DualWieldState } from './DicePoolReviewStep'
-import { HUD, FS, FONT_DISPLAY, FONT_BODY, SYM_COLOR } from '@/lib/tokens'
+import { HUD, FS, FONT_DISPLAY, FONT_BODY, SYM_COLOR, SP, RADIUS, DICE_COLOR } from '@/lib/tokens'
+import { RichText } from '@/components/ui/RichText'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const GOLD_DIM  = 'var(--hud-text-faint)'
@@ -254,6 +255,43 @@ export function RollResultStep({
           <DieChip key={i} die={die} />
         ))}
       </div>
+
+      {/* Force dice — light/dark pips are a separate currency from S/F/A/H */}
+      {(result.force?.dice.length ?? 0) > 0 && (
+        <>
+          <div style={{
+            fontFamily: FONT_DISPLAY,
+            fontSize: FS.overline,
+            color: GOLD_DIM,
+            textTransform: 'uppercase',
+            letterSpacing: '0.12em',
+            marginBottom: 8,
+          }}>
+            Force dice
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: SP[1], marginBottom: 20 }}>
+            {result.force!.dice.map((d, i) => {
+              const blank = d.light === 0 && d.dark === 0
+              return (
+                <div
+                  key={i}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                    padding: SP[1],
+                    borderRadius: RADIUS.sm,
+                    border: `1px solid color-mix(in srgb, ${DICE_COLOR.force} 22%, transparent)`,
+                    background: `color-mix(in srgb, ${DICE_COLOR.force} 8%, transparent)`,
+                  }}
+                >
+                  {blank
+                    ? <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: GOLD_DIM }}>–</span>
+                    : <RichText text={'[light]'.repeat(d.light) + '[dark]'.repeat(d.dark)} />}
+                </div>
+              )
+            })}
+          </div>
+        </>
+      )}
 
       {/* Critical hit notifications */}
       {isDualWield && succeeded ? (

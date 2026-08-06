@@ -46,7 +46,12 @@
   /* ── Die / Symbol chip colors ───────────────────────────────── */
   /* Immutable — used by .die.* CSS classes; never change between themes. */
   --die-boost:       #70C8E8;
-  --die-setback:     #A0A0A0;
+  /* Setback is a BLACK die: --die-setback is its ink/edge (a light grey, so it
+     stays legible on the dark HUD), --die-setback-fill is the die body itself.
+     Every other die's chip tints its background from its own colour; setback is
+     the one die whose body colour can't double as its text colour. */
+  --die-setback:     #B8C4CC;
+  --die-setback-fill:#0D0F12;
   --die-ability:     #4EC87A;
   --die-proficiency: #C8A020;
   --die-difficulty:  #B070D8;

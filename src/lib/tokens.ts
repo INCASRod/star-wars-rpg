@@ -294,9 +294,28 @@ export const DICE_COLOR = {
   boost:       '#1A78A0',
   challenge:   '#C62828',
   difficulty:  '#7B1FA2',
-  setback:     '#455A64',
+  // Setback is a BLACK die. It was '#455A64' (blue-grey), close enough to
+  // boost's '#1A78A0' that the two were indistinguishable at chip size.
+  // Black needs an outline to stay visible on the dark HUD — see DICE_OUTLINE.
+  setback:     '#0D0F12',
   force:       '#FFFFFF',
 } as const
+
+/**
+ * Edge colour for each die. Identical to the fill for every die whose fill is
+ * already legible against the HUD background; setback (black) gets a light
+ * grey edge so it reads as a distinct die rather than a hole in the panel.
+ * Use this for strokes/borders wherever a die is drawn as a solid shape.
+ */
+export const DICE_OUTLINE: Record<DiceType, string> = {
+  proficiency: DICE_COLOR.proficiency,
+  ability:     DICE_COLOR.ability,
+  boost:       DICE_COLOR.boost,
+  challenge:   DICE_COLOR.challenge,
+  difficulty:  DICE_COLOR.difficulty,
+  setback:     '#B8C4CC',
+  force:       DICE_COLOR.force,
+}
 
 export type DiceType = 'proficiency' | 'ability' | 'boost' | 'challenge' | 'difficulty' | 'setback' | 'force'
 

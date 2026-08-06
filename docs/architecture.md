@@ -557,6 +557,8 @@ Hook (owns DB + realtime) → Page shell (owns display transforms) → Panel (pu
 import { COLOR, HUD, FS, SP, RADIUS, Z, SHADOW, EASE, CHAR_COLOR, DICE_META, SYM } from '@/lib/tokens'
 ```
 
+**Dice identity colours**: `DICE_COLOR` (fill) and `DICE_OUTLINE` (edge) in `tokens.ts` are the single source of truth — `components/dice/DiceFace.tsx` re-exports `DICE_COLOR` as `DICE_COLORS` rather than keeping its own copy (that duplicate is how setback drifted to a blue-grey indistinguishable from boost). Setback is the one die whose fill (`#0D0F12`, black) cannot double as its ink: it takes the light grey `DICE_OUTLINE.setback` for strokes/borders, and the `.die.setback` chip in `globals.css` pairs `--die-setback-fill` (body) with `--die-setback` (ink/edge). Any solid-shape die chip must draw the outline or the black die disappears against the HUD.
+
 **CSS custom properties**: `src/app/globals.css` defines `--color-gold`, `--font-rajdhani`, etc. using `clamp()` for fluid scaling.
 
 **Theme-aware semantic CSS variables**: New opacity stops for HUD colors enable theme overrides via `[data-theme]` selectors without component changes:

@@ -24,12 +24,13 @@ export interface ManualAdjustments {
   setbackAdd:         number
   difficultyAdd:      number
   challengeAdd:       number  // direct challenge-die adjustments (upgrade/downgrade buttons)
+  forceAdd:           number  // Force dice added to the check (Force talents/powers)
   abilityUpgrades:    number
   difficultyUpgrades: number
 }
 
 export const EMPTY_ADJUSTMENTS: ManualAdjustments = {
-  boostAdd: 0, setbackAdd: 0, difficultyAdd: 0, challengeAdd: 0,
+  boostAdd: 0, setbackAdd: 0, difficultyAdd: 0, challengeAdd: 0, forceAdd: 0,
   abilityUpgrades: 0, difficultyUpgrades: 0,
 }
 
@@ -277,9 +278,14 @@ export function DicePoolReviewStep({
     baseChal = challengeDice
   }
 
-  // Apply ability upgrades
+  // Apply ability upgrades — AoE Core p.24 "Upgrading Dice": each upgrade turns
+  // an Ability die into a Proficiency die; if none remain, one Ability die is
+  // ADDED first and the next upgrade converts it. Net effect for N upgrades
+  // against A available: Proficiency +N, Ability -min(N, A). Previously the
+  // upgrade count was clamped to the available dice, so upgrading past the
+  // pool's ability dice silently did nothing.
   const upgrades = Math.min(adjustments.abilityUpgrades, baseAbl)
-  const finalPro = baseProf + upgrades
+  const finalPro = baseProf + adjustments.abilityUpgrades
   const finalAbl = baseAbl - upgrades
 
   // Talent bonuses (use primary skill key for dual wield)
@@ -288,15 +294,24 @@ export function DicePoolReviewStep({
   const talentBoost    = talentMod?.boostAdd ?? 0
   const talentSbRemove = talentMod?.setbackRemove ?? 0
 
-  // Apply difficulty upgrades
+  // Apply difficulty upgrades — same rule, mirrored (AoE Core p.24, "Upgrade
+  // Versus Increase"): "if a player needs to upgrade Difficulty dice into
+  // Challenge dice but there are no more Difficulty dice remaining … First, one
+  // additional Difficulty die is added; then if any more upgrades remain, the
+  // Difficulty die is upgraded into a Challenge die."
+  //
+  // So N upgrades against D available difficulty dice always yield Challenge
+  // +N, with Difficulty reduced by min(N, D) — never a no-op. Note upgrading is
+  // NOT the same as increasing difficulty; that's the separate "Adjust
+  // Difficulty" stepper, which adds/removes Difficulty dice outright.
   let finalDiff: number, finalChal: number
+  const diffUpgrades = adjustments.difficultyUpgrades
   if (isDualWield) {
-    const diffUpgrades = Math.min(adjustments.difficultyUpgrades, baseDiff)
-    finalDiff = baseDiff - diffUpgrades
+    finalDiff = baseDiff - Math.min(diffUpgrades, baseDiff)
     finalChal = diffUpgrades
   } else {
-    const diffUpgrades = Math.min(adjustments.difficultyUpgrades, baseDiff)
-    finalDiff = baseDiff - diffUpgrades + adjustments.difficultyAdd
+    const availableDiff = Math.max(0, baseDiff + adjustments.difficultyAdd)
+    finalDiff = availableDiff - Math.min(diffUpgrades, availableDiff)
     finalChal = baseChal + diffUpgrades
   }
 
@@ -309,20 +324,21 @@ export function DicePoolReviewStep({
     difficulty:  finalDiff,
     challenge:   finalChal + adjustments.challengeAdd,
     setback:     netSetback,
-    force:       0,
+    force:       adjustments.forceAdd,
   }
 
   // Emit pool to parent (CombatCheckOverlay renders the Roll button)
-  const { proficiency, ability, boost, difficulty, challenge, setback } = finalPool
+  const { proficiency, ability, boost, difficulty, challenge, setback, force } = finalPool
   useEffect(() => {
-    onPoolChange?.({ proficiency, ability, boost, difficulty, challenge, setback, force: 0 })
-  }, [onPoolChange, proficiency, ability, boost, difficulty, challenge, setback])
+    onPoolChange?.({ proficiency, ability, boost, difficulty, challenge, setback, force })
+  }, [onPoolChange, proficiency, ability, boost, difficulty, challenge, setback, force])
 
   const adjFloors: Record<keyof ManualAdjustments, number> = {
     boostAdd:           -talentBoost,
     setbackAdd:         0,
     difficultyAdd:      -(baseDiff),
     challengeAdd:       -(baseChal),
+    forceAdd:           0,
     abilityUpgrades:    0,
     difficultyUpgrades: 0,
   }
@@ -410,6 +426,9 @@ export function DicePoolReviewStep({
       ]} />
       {(talentBoost + adjustments.boostAdd) > 0 && (
         <DiceRow label="Bonus" types={[{ type: 'boost', count: talentBoost + adjustments.boostAdd }]} />
+      )}
+      {adjustments.forceAdd > 0 && (
+        <DiceRow label="Force" types={[{ type: 'force', count: adjustments.forceAdd }]} />
       )}
       {talentMod?.sources && talentMod.sources.length > 0 && (
         <div style={{
@@ -601,6 +620,14 @@ export function DicePoolReviewStep({
         onAdd={() => adj('setbackAdd', 1)}
         onRemove={() => adj('setbackAdd', -1)}
         polarity="negative"
+      />
+      <AdjustControl
+        label={<><DiceFace type="force" size={13} style={{ verticalAlign: 'middle' }} />{' '}Force</>}
+        value={adjustments.forceAdd}
+        min={adjFloors.forceAdd}
+        onAdd={() => adj('forceAdd', 1)}
+        onRemove={() => adj('forceAdd', -1)}
+        polarity="positive"
       />
       <AdjustControl
         label={<><DiceFace type="difficulty" size={13} style={{ verticalAlign: 'middle' }} />{' '}Difficulty</>}

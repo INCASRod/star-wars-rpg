@@ -63,18 +63,25 @@ export function logRoll({
   if (meta?.rangeBand)  payload.range_band  = meta.rangeBand
   if (meta?.alignment)  payload.alignment   = meta.alignment
 
+  // Force dice rolled as part of a skill/combat pool — stored in the same
+  // `dice_results` shape the Force card already uses, so every card type can
+  // render per-die light/dark pips from one field.
+  const forceDice = result.force?.dice ?? []
+
   if (
     meta?.weaponDamage != null || meta?.weaponDamageAdd != null || meta?.characterBrawn != null ||
-    meta?.attackType || meta?.critEligible != null || meta?.critRating != null || meta?.critModifier != null
+    meta?.attackType || meta?.critEligible != null || meta?.critRating != null || meta?.critModifier != null ||
+    forceDice.length > 0
   ) {
     payload.roll_meta = {
-      ...(meta.weaponDamage    != null ? { weaponDamage:    meta.weaponDamage }    : {}),
-      ...(meta.weaponDamageAdd != null ? { weaponDamageAdd: meta.weaponDamageAdd } : {}),
-      ...(meta.characterBrawn  != null ? { characterBrawn:  meta.characterBrawn }  : {}),
-      ...(meta.attackType              ? { attackType:      meta.attackType }      : {}),
-      ...(meta.critEligible    != null ? { critEligible:    meta.critEligible }    : {}),
-      ...(meta.critRating      != null ? { critRating:      meta.critRating }      : {}),
-      ...(meta.critModifier    != null ? { critModifier:    meta.critModifier }    : {}),
+      ...(forceDice.length > 0 ? { dice_results: forceDice } : {}),
+      ...(meta?.weaponDamage    != null ? { weaponDamage:    meta.weaponDamage }    : {}),
+      ...(meta?.weaponDamageAdd != null ? { weaponDamageAdd: meta.weaponDamageAdd } : {}),
+      ...(meta?.characterBrawn  != null ? { characterBrawn:  meta.characterBrawn }  : {}),
+      ...(meta?.attackType              ? { attackType:      meta.attackType }      : {}),
+      ...(meta?.critEligible    != null ? { critEligible:    meta.critEligible }    : {}),
+      ...(meta?.critRating      != null ? { critRating:      meta.critRating }      : {}),
+      ...(meta?.critModifier    != null ? { critModifier:    meta.critModifier }    : {}),
     }
   }
 

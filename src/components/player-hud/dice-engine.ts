@@ -33,6 +33,9 @@ export interface NetResult {
 export interface RollResult {
   dice: DieResult[]
   net:  NetResult
+  /** Present only when the pool contained Force dice. Light/dark pips are not
+   *  folded into `net` — they are a separate currency (AoE Core p.286). */
+  force?: ForceRollResult
 }
 
 function rollOneDie(type: DiceType): DieResult {
@@ -45,10 +48,16 @@ function rollOneDie(type: DiceType): DieResult {
 export function rollPool(pool: Record<DiceType, number>): RollResult {
   const dice: DieResult[] = []
   for (const [type, count] of Object.entries(pool) as [DiceType, number][]) {
+    // Force dice have their own face set and their own light/dark currency —
+    // rolled below via rollForceDice(), never mixed into the S/F/A/H tally.
+    if (type === 'force') continue
     for (let i = 0; i < count; i++) {
       dice.push(rollOneDie(type))
     }
   }
+
+  const forceCount = pool.force ?? 0
+  const force = forceCount > 0 ? rollForceDice(forceCount) : undefined
 
   let S = 0, F = 0, A = 0, H = 0, T = 0, D = 0
   for (const die of dice) {
@@ -71,6 +80,7 @@ export function rollPool(pool: Record<DiceType, number>): RollResult {
       triumph:   T,
       despair:   D,
     },
+    ...(force ? { force } : {}),
   }
 }
 

@@ -93,6 +93,7 @@ const ADJ_DICE: { key: DiceType }[] = [
   { key: 'challenge'  },
   { key: 'boost'      },
   { key: 'setback'    },
+  { key: 'force'      },
 ]
 
 // ── Characteristics grid config ───────────────────────────────────────────────
@@ -166,6 +167,7 @@ export function SkillRollPopover({ skill, anchor, character, talentHints, onRoll
   const [challenge,  setChallenge]  = useState(0)
   const [boost,      setBoost]      = useState(0)
   const [setback,    setSetback]    = useState(0)
+  const [force,      setForce]      = useState(0)
 
   const handleUpgradeCheck = () => {
     if (difficulty + challenge >= 5) return
@@ -247,8 +249,7 @@ export function SkillRollPopover({ skill, anchor, character, talentHints, onRoll
   const handleRoll = () => {
     const pool: Record<DiceType, number> = {
       proficiency, ability,
-      difficulty, challenge, boost, setback,
-      force: 0,
+      difficulty, challenge, boost, setback, force,
     }
     onRoll(rollPool(pool), skill.name, pool)
   }
@@ -258,18 +259,20 @@ export function SkillRollPopover({ skill, anchor, character, talentHints, onRoll
     if (key === 'difficulty') return [difficulty, setDifficulty]
     if (key === 'challenge')  return [challenge,  setChallenge]
     if (key === 'boost')      return [boost,      setBoost]
+    if (key === 'force')      return [force,      setForce]
     return                           [setback,    setSetback]
   }
 
   const getAddDisabled = (key: DiceType): boolean => {
     if (key === 'difficulty' || key === 'challenge') return difficulty + challenge >= 5
     if (key === 'boost')   return boost >= 5
+    if (key === 'force')   return force >= 5
     return setback >= 5
   }
 
   const isActiveDiffPreset = (dif: number) => difficulty === dif && challenge === 0
 
-  const totalDice = proficiency + ability + boost + difficulty + challenge + setback
+  const totalDice = proficiency + ability + boost + difficulty + challenge + setback + force
 
   const popover = (
     <div

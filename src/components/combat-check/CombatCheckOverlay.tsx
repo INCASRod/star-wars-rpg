@@ -14,7 +14,7 @@ import { RangeBandStep } from './steps/RangeBandStep'
 import { DicePoolReviewStep, type ManualAdjustments, EMPTY_ADJUSTMENTS, type DualWieldState } from './steps/DicePoolReviewStep'
 import { DualWieldReviewStep } from './steps/DualWieldReviewStep'
 import { RollResultStep } from './steps/RollResultStep'
-import { HUD, FS, FONT_BODY, FONT_DISPLAY, SP, EASE, RADIUS, Z, DICE_META, DICE_COLOR } from '@/lib/tokens'
+import { HUD, FS, FONT_BODY, FONT_DISPLAY, SP, EASE, RADIUS, Z, DICE_META, DICE_COLOR, DICE_OUTLINE } from '@/lib/tokens'
 
 // ── Dice tray constants ────────────────────────────────────────────────────────
 const CLIP_OCTAGON = 'polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 70%,0% 30%)'
@@ -173,9 +173,12 @@ const CLIP_OCT = 'polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 7
 const CLIP_DIA = 'polygon(50% 0%,100% 50%,50% 100%,0% 50%)'
 
 function DssStepper({
-  dieColor, dieShape, label, sublabel, value, min = 0, onAdd, onRemove, polarity = 'positive',
+  dieColor, dieEdge, dieShape, label, sublabel, value, min = 0, onAdd, onRemove, polarity = 'positive',
 }: {
   dieColor:   string
+  /** Outline colour — required for the black setback die, which would otherwise
+   *  render as an invisible hole in the panel. Defaults to the fill. */
+  dieEdge?:   string
   dieShape:   'octagon' | 'diamond' | 'rounded'
   label:      string
   sublabel?:  string
@@ -210,6 +213,10 @@ function DssStepper({
           height:       sz,
           flexShrink:   0,
           background:   dieColor, /* die-identity hex — sealed namespace */
+          /* Octagon/diamond chips are clip-pathed, which would crop a border —
+             only the rounded chips (boost/setback) carry the outline. */
+          border:       dieShape === 'rounded' && dieEdge ? `1px solid ${dieEdge}` : undefined,
+          boxShadow:    dieShape !== 'rounded' && dieEdge ? `0 0 0 1px ${dieEdge}` : undefined,
           borderRadius: dieShape === 'rounded' ? RADIUS.sm : undefined,
           clipPath:     dieShape === 'octagon' ? CLIP_OCT : dieShape === 'diamond' ? CLIP_DIA : undefined,
         }} />
@@ -686,8 +693,11 @@ export function CombatCheckOverlay({
     const floors: Partial<Record<keyof ManualAdjustments, number>> = {
       boostAdd:           0,
       setbackAdd:         0,
-      difficultyAdd:      -10,
+      // Difficulty removal is bounded by the live pool at the call site
+      // (see the "Adjust Difficulty" stepper's `min`), not by a magic number.
+      difficultyAdd:      -99,
       challengeAdd:       0,
+      forceAdd:           0,
       abilityUpgrades:    0,
       difficultyUpgrades: 0,
     }
@@ -764,7 +774,8 @@ export function CombatCheckOverlay({
         const d = poolForRoll.difficulty  ?? 0
         const c = poolForRoll.challenge   ?? 0
         const s = poolForRoll.setback     ?? 0
-        const hasPlayerDice = p + a + b > 0
+        const f = poolForRoll.force       ?? 0
+        const hasPlayerDice = p + a + b + f > 0
         const hasDiffDice   = d + c + s > 0
         const hasAny        = hasPlayerDice || hasDiffDice
         return (
@@ -789,6 +800,7 @@ export function CombatCheckOverlay({
               {Array.from({ length: p }).map((_, i) => <DiceTrayDie key={`pro-${i}`} type="proficiency" />)}
               {Array.from({ length: a }).map((_, i) => <DiceTrayDie key={`abl-${i}`} type="ability" />)}
               {Array.from({ length: b }).map((_, i) => <DiceTrayDie key={`bst-${i}`} type="boost" />)}
+              {Array.from({ length: f }).map((_, i) => <DiceTrayDie key={`frc-${i}`} type="force" />)}
               {hasPlayerDice && hasDiffDice && (
                 <div style={{ width: 1, height: 28, background: 'color-mix(in srgb, white 10%, transparent)', margin: `0 ${SP[1]}`, flexShrink: 0 }} />
               )}
@@ -992,6 +1004,7 @@ export function CombatCheckOverlay({
                   />
                   <DssStepper
                     dieColor={DICE_COLOR.setback}
+                    dieEdge={DICE_OUTLINE.setback}
                     dieShape="rounded"
                     label="Add Setback"
                     value={state.adjustments.setbackAdd}
@@ -1014,21 +1027,36 @@ export function CombatCheckOverlay({
                   <DssStepper
                     dieColor={DICE_COLOR.challenge}
                     dieShape="octagon"
-                    label="Upgrade Diff"
-                    sublabel="Diff → Challenge"
+                    label="Upgrade Difficulty"
+                    sublabel="Difficulty → Challenge"
                     value={state.adjustments.difficultyUpgrades}
                     min={0}
                     onAdd={() => dssAdj('difficultyUpgrades', 1)}
                     onRemove={() => dssAdj('difficultyUpgrades', -1)}
                     polarity="negative"
                   />
+                  <DssStepper
+                    dieColor={DICE_COLOR.force}
+                    dieEdge={DICE_OUTLINE.force}
+                    dieShape="octagon"
+                    label="Add Force"
+                    value={state.adjustments.forceAdd}
+                    min={0}
+                    onAdd={() => dssAdj('forceAdd', 1)}
+                    onRemove={() => dssAdj('forceAdd', -1)}
+                    polarity="positive"
+                  />
                   <div style={{ gridColumn: '1 / -1' }}>
                     <DssStepper
                       dieColor={DICE_COLOR.difficulty}
                       dieShape="diamond"
-                      label="Add Difficulty"
+                      label="Adjust Difficulty"
+                      sublabel="Add / remove difficulty dice"
                       value={state.adjustments.difficultyAdd}
-                      min={-10}
+                      /* Floor tracks the live pool: removal stops once the pool
+                         has no difficulty dice left, instead of running down to
+                         an arbitrary -10 that silently did nothing. */
+                      min={state.adjustments.difficultyAdd - (poolForRoll.difficulty ?? 0)}
                       onAdd={() => dssAdj('difficultyAdd', 1)}
                       onRemove={() => dssAdj('difficultyAdd', -1)}
                       polarity="negative"

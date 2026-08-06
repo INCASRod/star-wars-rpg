@@ -25,6 +25,12 @@ const COL_FAIL   = '#C04040'   // red for failure
 // ── Roll classification ─────────────────────────────────────────────
 type RollCategory = 'skill' | 'combat' | 'force' | 'initiative' | 'system'
 
+function nonForcePoolSize(pool: RollEntry['pool'] | null | undefined): number {
+  if (!pool) return 0
+  return (Object.entries(pool) as [DiceType, number][])
+    .reduce((sum, [type, n]) => type === 'force' ? sum : sum + (n ?? 0), 0)
+}
+
 function classifyRoll(entry: RollEntry): RollCategory {
   if (entry.roll_type === 'force')      return 'force'
   if (entry.roll_type === 'initiative') return 'initiative'
@@ -35,8 +41,11 @@ function classifyRoll(entry: RollEntry): RollCategory {
     entry.alignment === 'system'
   ) return 'system'
   if (entry.roll_type === 'combat') return 'combat'
-  if ((entry.pool?.force ?? 0) > 0) return 'force'
   if (entry.roll_label?.match(/^(Ranged|Melee) Attack/)) return 'combat'
+  // Force-only pool (no skill/difficulty dice) — legacy force rolls logged
+  // before roll_type existed. A skill or combat pool that merely *includes*
+  // Force dice stays a skill/combat card and renders its pips inline.
+  if ((entry.pool?.force ?? 0) > 0 && nonForcePoolSize(entry.pool) === 0) return 'force'
   return 'skill'
 }
 
@@ -111,7 +120,13 @@ function ForcePips({ light, dark }: { light: number; dark: number }) {
 }
 
 // ── Dice pool rows ──────────────────────────────────────────────────
-const POOL_ORDER: DiceType[] = ['proficiency', 'ability', 'boost', 'challenge', 'difficulty', 'setback']
+const POOL_ORDER: DiceType[] = ['proficiency', 'ability', 'boost', 'challenge', 'difficulty', 'setback', 'force']
+
+/** Per-die Force results attached to any roll (skill, combat, or force). */
+function forceDiceOf(roll: RollEntry): Array<{ light: number; dark: number }> {
+  const meta = (roll.roll_meta ?? null) as { dice_results?: Array<{ light: number; dark: number }> } | null
+  return meta?.dice_results ?? []
+}
 
 function DicePoolRow({ pool }: { pool: Record<DiceType, number> }) {
   const dice: DiceType[] = []
@@ -239,6 +254,7 @@ function SkillCard({
               <ResultSymbols result={roll.result} />
             </div>
             <DicePoolRow pool={roll.pool} />
+            <ForceDieResultsRow dice={forceDiceOf(roll)} />
           </>
         )}
       </div>
@@ -339,6 +355,7 @@ function CombatCard({
               </div>
             )}
             <DicePoolRow pool={roll.pool} />
+            <ForceDieResultsRow dice={forceDiceOf(roll)} />
           </>
         )}
       </div>

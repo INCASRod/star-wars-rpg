@@ -2,15 +2,11 @@
 
 import type { DiceType } from '@/components/player-hud/design-tokens'
 
-export const DICE_COLORS: Record<DiceType, string> = {
-  proficiency: '#C8961A',
-  ability:     '#4A7A30',
-  boost:       '#1A78A0',
-  challenge:   '#C62828',
-  difficulty:  '#7B1FA2',
-  setback:     '#455A64',
-  force:       '#FFFFFF',
-}
+// Re-exported from the single source of truth in tokens.ts — this file used to
+// carry its own copy of the palette, which is how setback drifted to a
+// blue-grey that read as a second boost die.
+export { DICE_COLOR as DICE_COLORS } from '@/lib/tokens'
+import { DICE_COLOR, DICE_OUTLINE } from '@/lib/tokens'
 
 // Rounded octagon for Proficiency / Challenge (physical d12 shape)
 const OCTAGON_PATH =
@@ -34,9 +30,10 @@ interface DiceFaceProps {
 }
 
 export function DiceFace({ type, size = 32, active = true, dimmed = false, solid = false, style }: DiceFaceProps) {
-  const color  = DICE_COLORS[type]
+  const color  = DICE_COLOR[type]
+  const edge   = DICE_OUTLINE[type]
   const fill   = solid ? color : (active ? `${color}28` : `${color}0E`)
-  const stroke = active ? color : `${color}70`
+  const stroke = active ? edge : `${edge}70`
   const sw     = size < 16 ? 1 : 1.5
 
   let shape: React.ReactNode
