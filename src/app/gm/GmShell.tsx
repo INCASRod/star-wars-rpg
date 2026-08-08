@@ -42,6 +42,7 @@ import type { GmControls } from './panels/GmInitiativeDrawer'
 import type { Character } from '@/lib/types'
 
 import { HUD, FONT_BODY, Z, EASE, RADIUS, SP } from '@/lib/tokens'
+import { NumberField } from '@/components/ui/NumberField'
 
 const FONT = FONT_BODY
 const DIM  = 'var(--hud-text-dim)'
@@ -614,11 +615,18 @@ export function GmShell() {
         onInitiativeOrder={() => setInitiativeOpen(o => !o)}
         initiativeOpen={initiativeOpen}
         onLobby={() => router.push('/')}
-        destinySlot={destinyPoolRecord ? (
+        /* Always rendered — when there is no active pool the GM still needs
+           Generate/Adjust to get one back. Gating the whole slot on
+           destinyPoolRecord left no route to a pool once one was cleared. */
+        destinySlot={(
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
             <span style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', color: 'var(--die-force)', letterSpacing: '0.1em', textTransform: 'uppercase', flexShrink: 0 }}>Destiny</span>
-            <DestinyPoolDisplay poolRecord={destinyPoolRecord} isGm={true} onClickDark={handleGmSpendDark} compact />
-            {gmSpendConfirm && (
+            {destinyPoolRecord ? (
+              <DestinyPoolDisplay poolRecord={destinyPoolRecord} isGm={true} onClickDark={handleGmSpendDark} compact />
+            ) : (
+              <span style={{ fontFamily: FONT, fontSize: 'var(--text-caption)', color: DIM, fontStyle: 'italic', flexShrink: 0 }}>no pool</span>
+            )}
+            {gmSpendConfirm && destinyPoolRecord && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', padding: '0.125rem 0.375rem', background: 'rgba(139,43,226,0.12)', border: '1px solid rgba(139,43,226,0.35)', borderRadius: RADIUS.md }}>
                 <span style={{ fontFamily: FONT, fontSize: 'var(--text-caption)', color: 'var(--hud-accent-purple)' }}>Spend dark?</span>
                 <button onClick={handleGmSpendDark} style={{ ...btnSmall, padding: '1px 6px', color: 'var(--hud-accent-purple)', border: '1px solid rgba(139,43,226,0.4)' }}>Spend</button>
@@ -628,7 +636,7 @@ export function GmShell() {
             <button onClick={() => setDestinyGenerateOpen(true)} style={{ ...btnSmall, height: '1.625rem', padding: '0 0.5rem', color: HUD.gold, border: '1px solid var(--hud-border-hi)', flexShrink: 0 }}>◈ Generate</button>
             <button onClick={() => setManualAdjustOpen(true)} style={{ ...btnSmall, height: '1.625rem', padding: '0 0.5rem', flexShrink: 0 }}>✎ Adjust</button>
           </div>
-        ) : undefined}
+        )}
       />
 
       {/* Initiative setup modal */}
@@ -639,6 +647,8 @@ export function GmShell() {
           roster={stagingInitRoster}
           vehicleRoster={stagingVehicleRoster}
           sendToChar={sendToChar}
+          tokens={stagingTokens}
+          encounterSlots={stagingEncounter?.initiative_slots}
           onClose={() => setInitiativeSetupOpen(false)}
           onStart={handleStagingCombatStart}
         />
@@ -652,6 +662,8 @@ export function GmShell() {
           roster={stagingEncounter.adversaries}
           vehicleRoster={stagingEncounter.vehicles}
           sendToChar={sendToChar}
+          tokens={stagingTokens}
+          encounterSlots={stagingEncounter.initiative_slots}
           onClose={() => setRecheckInitiativeOpen(false)}
           onStart={handleRecheckInitiativeStart}
         />
@@ -670,7 +682,7 @@ export function GmShell() {
               <div style={{ marginBottom: '0.875rem' }}>
                 <div style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(150,168,180,0.5)', marginBottom: '0.25rem' }}>Morality Score</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
-                  <input type="number" min={1} max={100} value={moralitySetup.score}
+                  <NumberField min={1} max={100} value={moralitySetup.score}
                     onChange={e => setMoralitySetup(s => s && ({ ...s, score: parseInt(e.target.value) || 50 }))}
                     style={{ ...darkInput, width: '4.375rem' }} />
                   <span style={{ fontFamily: FONT, fontSize: 'var(--text-h4)', fontWeight: 700, color: scoreColor }}>{mv}</span>

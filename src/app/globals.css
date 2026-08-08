@@ -1003,9 +1003,81 @@ i.ffi {
   background: color-mix(in srgb, var(--hud-text-dim) 7%, transparent);
 }
 
-/* Step 2/3 static plate row hover tint */
+/* ── NumberField (src/components/ui/NumberField.tsx) ──────────── */
+/* Suppress native spinner chrome — the ▴/▾ stack replaces it in the same spot */
+.numfield-input::-webkit-outer-spin-button,
+.numfield-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+.numfield-input {
+  -moz-appearance: textfield;   /* Firefox has no spin-button pseudo-element */
+  appearance: textfield;
+}
+.numfield-chev {
+  cursor: pointer;
+  color: var(--hud-text-faint);
+  transition: color var(--ease-quick), background var(--ease-quick);
+}
+.numfield-chev:hover:not(:disabled) {
+  color: var(--hud-gold);
+  background: color-mix(in srgb, var(--hud-gold) 16%, transparent);
+}
+.numfield-chev:active:not(:disabled) {
+  background: color-mix(in srgb, var(--hud-gold) 28%, transparent);
+}
+.numfield-chev:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+/* Keep the stack quiet until the field is engaged, like the native spinner */
+.numfield-chevrons { opacity: 0.55; transition: opacity var(--ease-quick); }
+.numfield:hover .numfield-chevrons,
+.numfield:focus-within .numfield-chevrons { opacity: 1; }
+
+/* Player / adversary / vehicle card hover tint */
 .iset-row:hover {
   background: color-mix(in srgb, var(--hud-text-dim) 5%, transparent);
+}
+
+/* Ghost buttons — Request Rolls, Roll All Visible, per-row Roll */
+.iset-ghost-btn {
+  background: color-mix(in srgb, var(--hud-gold) 9%, transparent);
+  border: 1px solid var(--hud-border-hi);
+  transition: background var(--ease-quick), border-color var(--ease-quick);
+}
+.iset-ghost-btn:hover:not(:disabled) {
+  background:   color-mix(in srgb, var(--hud-gold) 20%, transparent);
+  border-color: color-mix(in srgb, var(--hud-gold) 60%, transparent);
+}
+.iset-ghost-btn:disabled { cursor: default; }
+
+/* Disposition toggle wrapper — the RoleTag inside carries all the styling */
+.iset-bare-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  line-height: 0;
+}
+
+/* Successes / Advantages entry */
+.iset-num-input:focus {
+  border-color: color-mix(in srgb, var(--hud-gold) 70%, transparent);
+}
+/* A live value came from the player's own submission — pulse once on arrival */
+.iset-num-input[data-live="true"] {
+  background: color-mix(in srgb, var(--state-success) 10%, transparent);
+}
+
+/* Per-row skill override */
+.iset-skill-select {
+  transition: border-color var(--ease-quick), color var(--ease-quick);
+}
+.iset-skill-select:hover,
+.iset-skill-select:focus-visible {
+  border-color: color-mix(in srgb, var(--hud-gold) 60%, transparent);
+  color: var(--hud-gold);
 }
 
 /* Step 4 board/reserve plate — hover/focus reveals action buttons */
@@ -1944,3 +2016,127 @@ i.ffi {
 }
 .ptt-frame.ptt-dead .ptt-name { color: var(--hud-text-dim); }
 .ptt-frame.ptt-dead .ptt-vbar i { opacity: 0.4; }
+
+/* ── Notifications ("Alerts") button + pending-action drawer ─────────────────
+   All hover/pulse/rotation state lives here as CSS — no inline style mutation
+   and no onMouseEnter handlers. Three button tiers: inert (zero pending),
+   .is-active (pending, none blocking), .is-blocking (any blocking). */
+
+.notif-btn {
+  position: relative;
+  display: flex; align-items: center; gap: var(--space-2);
+  padding: 3px 10px;
+  background: transparent;
+  border: 1px solid var(--hud-border-hi);
+  border-radius: 4px;
+  color: var(--hud-text-faint);
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: default;
+  transition: color var(--ease-default), border-color var(--ease-default), background var(--ease-default);
+}
+.notif-btn .notif-icon { width: 14px; height: 14px; flex: none; }
+.notif-btn .notif-icon path {
+  fill: none; stroke: currentColor;
+  stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;
+}
+.notif-btn .notif-badge {
+  min-width: 16px; height: 16px; padding: 0 4px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 9999px;
+  background: var(--hud-accent); color: var(--hud-bg);
+  font-size: var(--text-overline); font-weight: 700; letter-spacing: 0;
+}
+
+.notif-btn.is-active {
+  color: var(--hud-text);
+  border-color: color-mix(in srgb, var(--hud-accent) 55%, transparent);
+  background: color-mix(in srgb, var(--hud-accent) 12%, transparent);
+  cursor: pointer;
+}
+.notif-btn.is-active:hover { background: color-mix(in srgb, var(--hud-accent) 20%, transparent); }
+
+.notif-btn.is-blocking {
+  color: var(--hud-text);
+  border-color: var(--hud-accent);
+  background: color-mix(in srgb, var(--hud-accent) 20%, transparent);
+  cursor: pointer;
+}
+.notif-btn.is-blocking:hover { background: color-mix(in srgb, var(--hud-accent) 28%, transparent); }
+
+/* Pulse is an absolutely-positioned pseudo-element: it can never affect the
+   top bar's layout or height, however far it scales. */
+.notif-btn.is-blocking.is-pulsing::after {
+  content: '';
+  position: absolute; inset: -1px;
+  border-radius: 4px;
+  border: 1px solid var(--hud-accent);
+  pointer-events: none;
+  animation: notifBlockPulse 1.6s ease-out infinite;
+}
+@keyframes notifBlockPulse {
+  0%   { opacity: 0.9; transform: scale(1); }
+  70%  { opacity: 0;   transform: scale(1.18); }
+  100% { opacity: 0;   transform: scale(1.18); }
+}
+/* Belt and braces — the component also gates .is-pulsing on the hook. */
+@media (prefers-reduced-motion: reduce) {
+  .notif-btn.is-blocking.is-pulsing::after { animation: none; display: none; }
+}
+
+/* ── Drawer ─────────────────────────────────────────────────────────────────
+   Grid sibling, not an overlay: no position:fixed, no portal. The wrapper is
+   the height-spring target (GSAP animates it); never give it an inline
+   position — inline wins specificity and breaks containment. */
+.pa-drawer-wrap { overflow: hidden; }
+.pa-drawer {
+  background: linear-gradient(180deg, var(--hud-panel), color-mix(in srgb, var(--hud-panel) 60%, var(--hud-bg)));
+  border-bottom: 1px solid var(--hud-border-hi);
+}
+.pa-drawer-close {
+  margin-left: auto;
+  background: none;
+  border: 1px solid var(--hud-border-hi);
+  border-radius: 4px;
+  color: var(--hud-text-dim);
+  font-family: var(--font-body);
+  font-size: var(--text-caption);
+  cursor: pointer;
+  transition: color var(--ease-quick), border-color var(--ease-quick);
+}
+.pa-drawer-close:hover { color: var(--hud-text); border-color: var(--hud-text-dim); }
+
+/* ── Action card ────────────────────────────────────────────────────────── */
+.pa-card {
+  border: 1px solid var(--hud-border-hi);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--hud-surface-lo) 80%, transparent);
+  overflow: hidden;
+}
+.pa-card.is-blocking { border-color: color-mix(in srgb, var(--hud-accent) 55%, var(--hud-border-hi)); }
+.pa-card-row {
+  position: relative;
+  display: flex; align-items: center; gap: var(--space-4);
+  width: 100%;
+  background: none; border: none; text-align: left;
+  cursor: pointer; user-select: none;
+  transition: background var(--ease-quick);
+}
+.pa-card-row:hover { background: color-mix(in srgb, var(--hud-accent) 6%, transparent); }
+.pa-card.is-blocking .pa-card-row::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: var(--hud-accent);
+}
+.pa-card-chev {
+  flex: none;
+  color: var(--hud-text-faint);
+  transition: transform var(--ease-default);
+}
+.pa-card.is-open .pa-card-chev { transform: rotate(90deg); }
+.pa-card-body { overflow: hidden; }

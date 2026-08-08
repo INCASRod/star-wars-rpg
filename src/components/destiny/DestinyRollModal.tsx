@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { rollForceDice } from '@/lib/forceRoll'
 import { Modal } from '@/components/ui/Modal'
+import { NumberField } from '@/components/ui/NumberField'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { HUD } from '@/lib/tokens'
 
@@ -199,8 +200,8 @@ export function DestinyRollModal({
                 <span style={{ fontFamily: FONT_R, fontSize: FS_OVER, fontWeight: 700, color: LIGHT_CLR, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
                   Light pips ○
                 </span>
-                <input
-                  type="number" min={0} max={5}
+                <NumberField
+                  min={0} max={5}
                   value={manualLight}
                   onChange={e => setManualLight(Math.min(5, Math.max(0, parseInt(e.target.value) || 0)))}
                   style={{
@@ -215,8 +216,8 @@ export function DestinyRollModal({
                 <span style={{ fontFamily: FONT_R, fontSize: FS_OVER, fontWeight: 700, color: DARK_CLR, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
                   Dark pips ●
                 </span>
-                <input
-                  type="number" min={0} max={5}
+                <NumberField
+                  min={0} max={5}
                   value={manualDark}
                   onChange={e => setManualDark(Math.min(5, Math.max(0, parseInt(e.target.value) || 0)))}
                   style={{

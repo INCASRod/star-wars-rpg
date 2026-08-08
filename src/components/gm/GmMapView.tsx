@@ -19,6 +19,7 @@ import { HUD, FONT_BODY, EASE, RADIUS } from '@/lib/tokens'
 import { MapToolsRadial } from '@/app/gm/MapToolsRadial'
 import { EncounterDeck, benchEntry, deployEntry, removeEntry } from '@/components/gm/EncounterDeck'
 import { EncounterDossier } from '@/components/gm/EncounterDossier'
+import { NumberField } from '@/components/ui/NumberField'
 
 /* ── Design tokens ─────────────────────────────────────── */
 const BG  = 'var(--hud-bg)'
@@ -244,7 +245,7 @@ function UploadModal({ campaignId, planets, onClose, onSaved }: { campaignId: st
           {gridEnabled && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginLeft: 'auto' }}>
               <span style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: DIM }}>Cell size (px)</span>
-              <input type="number" value={gridSize} onChange={e => setGridSize(Math.max(10, Number(e.target.value)))} style={{ ...darkInput, width: 64, textAlign: 'center' }} />
+              <NumberField value={gridSize} onChange={e => setGridSize(Math.max(10, Number(e.target.value)))} style={{ ...darkInput, width: 64, textAlign: 'center' }} />
             </div>
           )}
         </div>

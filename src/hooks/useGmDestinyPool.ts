@@ -37,11 +37,15 @@ export function useGmDestinyPool(params: {
       .channel(`destiny-pool-gm-${campaignId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'destiny_pool', filter: `campaign_id=eq.${campaignId}` },
         (payload) => {
-          const row = payload.new as DestinyPoolRecord
-          if (row.is_active) {
+          const row = payload.new as DestinyPoolRecord | null
+          // Functional update — this callback is registered once (deps:
+          // [campaignId]) so any destinyPoolRecord read from the closure is
+          // the mount-time value, which made deactivation silently not clear.
+          if (row?.is_active) {
             setDestinyPoolRecord(row)
-          } else if (destinyPoolRecord?.id === row.id) {
-            setDestinyPoolRecord(null)
+          } else {
+            const goneId = row?.id ?? (payload.old as { id?: string } | null)?.id
+            setDestinyPoolRecord(prev => prev && prev.id === goneId ? null : prev)
           }
         }
       )
@@ -90,7 +94,7 @@ export function useGmDestinyPool(params: {
         .select('id')
         .eq('campaign_id', campaignId)
         .eq('is_active', true)
-        .single()
+        .maybeSingle()
       if (existing) {
         await supabase.from('destiny_pool')
           .update({ light_count: manualLight, dark_count: manualDark })

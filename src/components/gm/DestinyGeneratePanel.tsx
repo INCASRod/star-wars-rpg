@@ -20,7 +20,14 @@ const FS_LABEL  = 'var(--text-label)'
 const FS_SM     = 'var(--text-sm)'
 const FS_H4     = 'var(--text-h4)'
 
-type RollStatus = { status: 'waiting' | 'rolled'; lightRolled: number; darkRolled: number }
+type RollStatus = {
+  status:      'waiting' | 'rolled'
+  lightRolled: number
+  darkRolled:  number
+  /** GM overrode this player's pips by hand — incoming realtime rows must not
+   *  clobber it, and finalisePool writes it back as the canonical roll. */
+  edited?:     boolean
+}
 
 interface DestinyGeneratePanelProps {
   campaignId:    string
@@ -31,6 +38,25 @@ interface DestinyGeneratePanelProps {
   sendToChar:    (charId: string, payload: Record<string, unknown>) => void
   onClose:       () => void
   onGenerated:   (pool: DestinyPoolRecord) => void
+}
+
+/** Compact −/value/+ control for one side's pips on one player's roll. */
+function PipStepper({
+  color, mask, value, onAdd, onSub,
+}: { color: string; mask: string; value: number; onAdd: () => void; onSub: () => void }) {
+  const btn = {
+    fontFamily: FONT_BODY, fontSize: FS_CAP, lineHeight: 1,
+    padding: '1px 5px', borderRadius: 3, cursor: 'pointer',
+    background: 'transparent', border: `1px solid ${HUD.border}`, color,
+  } as const
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+      <span style={{ display: 'inline-block', width: 10, height: 10, flexShrink: 0, WebkitMask: `url('${mask}') center/contain no-repeat`, mask: `url('${mask}') center/contain no-repeat`, background: color }} />
+      <button onClick={onSub} disabled={value <= 0} style={{ ...btn, opacity: value <= 0 ? 0.3 : 1, cursor: value <= 0 ? 'not-allowed' : 'pointer' }}>−</button>
+      <span style={{ fontFamily: FONT_BODY, fontSize: FS_CAP, color, minWidth: 12, textAlign: 'center' }}>{value}</span>
+      <button onClick={onAdd} style={btn}>+</button>
+    </span>
+  )
 }
 
 export function DestinyGeneratePanel({
@@ -55,10 +81,14 @@ export function DestinyGeneratePanel({
         { event: 'INSERT', schema: 'public', table: 'destiny_pool_rolls', filter: `pool_id=eq.${poolRow.id}` },
         (payload) => {
           const row = payload.new as { character_id: string; light_rolled: number; dark_rolled: number }
-          setRollStatuses(prev => ({
-            ...prev,
-            [row.character_id]: { status: 'rolled', lightRolled: row.light_rolled, darkRolled: row.dark_rolled },
-          }))
+          setRollStatuses(prev => {
+            // A late-arriving player roll must not silently undo a GM edit.
+            if (prev[row.character_id]?.edited) return prev
+            return {
+              ...prev,
+              [row.character_id]: { status: 'rolled', lightRolled: row.light_rolled, darkRolled: row.dark_rolled },
+            }
+          })
         }
       )
       .subscribe()
@@ -67,21 +97,82 @@ export function DestinyGeneratePanel({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [poolRow?.id])
 
-  // When all players have rolled, activate the pool
-  useEffect(() => {
-    if (phase !== 'rolling' || !poolRow || characters.length === 0) return
-    const allRolled = characters.every(c => rollStatuses[c.id]?.status === 'rolled')
-    if (!allRolled) return
+  /** GM adjusts one player's pips by hand. Local only — nothing is written
+   *  until finalisePool reconciles, so a burst of +/- clicks can't race the
+   *  DB and a cancelled generation leaves no trace. */
+  const adjustRoll = (charId: string, side: 'light' | 'dark', delta: number) => {
+    setRollStatuses(prev => {
+      const cur = prev[charId] ?? { status: 'waiting' as const, lightRolled: 0, darkRolled: 0 }
+      const next = {
+        ...cur,
+        status:      'rolled' as const,
+        edited:      true,
+        lightRolled: side === 'light' ? Math.max(0, cur.lightRolled + delta) : cur.lightRolled,
+        darkRolled:  side === 'dark'  ? Math.max(0, cur.darkRolled  + delta) : cur.darkRolled,
+      }
+      return { ...prev, [charId]: next }
+    })
+  }
 
-    const finalise = async () => {
-      // Deactivate old pool if any
+  /** Swap the pending pool in for the active one. Called automatically once
+   *  every player has rolled, and manually by the GM when someone never does
+   *  — a missing roll must not be able to strand the pool forever. */
+  const finalisePool = async () => {
+    if (!poolRow || busy) return
+    setBusy(true)
+    try {
+      // Deactivate old pool only now — keeping it active until this moment
+      // means the GM and players never lose sight of the current pool while
+      // waiting on rolls.
       if (activePool?.id && activePool.id !== poolRow.id) {
         await supabase.from('destiny_pool').update({ is_active: false }).eq('id', activePool.id)
       }
-      // Activate new pool
+
+      // ── Reconcile rolls ──────────────────────────────────────────────────
+      // Persist every GM edit as that player's canonical roll row, then set
+      // the pool counts absolutely from the merged set rather than trusting
+      // the running increments each player's own submit wrote. Re-reading the
+      // table first means a realtime event this panel happened to miss still
+      // counts.
+      const { data: dbRolls } = await supabase
+        .from('destiny_pool_rolls')
+        .select('character_id, light_rolled, dark_rolled')
+        .eq('pool_id', poolRow.id)
+
+      const merged = new Map<string, { light: number; dark: number }>()
+      for (const r of (dbRolls ?? []) as Array<{ character_id: string; light_rolled: number; dark_rolled: number }>) {
+        if (r.character_id) merged.set(r.character_id, { light: r.light_rolled, dark: r.dark_rolled })
+      }
+      for (const c of characters) {
+        const s = rollStatuses[c.id]
+        if (!s || s.status !== 'rolled') continue
+        // GM edits win over whatever the player submitted.
+        if (s.edited || !merged.has(c.id)) {
+          merged.set(c.id, { light: s.lightRolled, dark: s.darkRolled })
+        }
+      }
+
+      for (const c of characters) {
+        const s = rollStatuses[c.id]
+        if (!s?.edited) continue
+        await supabase.from('destiny_pool_rolls').delete().eq('pool_id', poolRow.id).eq('character_id', c.id)
+        await supabase.from('destiny_pool_rolls').insert({
+          campaign_id:    campaignId,
+          pool_id:        poolRow.id,
+          character_id:   c.id,
+          character_name: c.name,
+          light_rolled:   s.lightRolled,
+          dark_rolled:    s.darkRolled,
+          die_result:     { gm_edited: true },
+        })
+      }
+
+      let lightSum = 0, darkSum = 0
+      for (const v of merged.values()) { lightSum += v.light; darkSum += v.dark }
+
       const { data } = await supabase
         .from('destiny_pool')
-        .update({ is_active: true })
+        .update({ is_active: true, light_count: lightSum, dark_count: darkSum })
         .eq('id', poolRow.id)
         .select()
         .single()
@@ -91,19 +182,59 @@ export function DestinyGeneratePanel({
         setPoolRow(updated)
         onGenerated(updated)
       }
+      // Any player still holding the roll modal loses it — the pool is closed.
+      for (const c of characters) {
+        if (rollStatuses[c.id]?.status !== 'rolled') {
+          sendToChar(c.id, { type: 'destiny-roll-cancel', poolId: poolRow.id })
+        }
+      }
       setPhase('complete')
+    } finally {
+      setBusy(false)
     }
-    void finalise()
+  }
+
+  /** Abort a pending generation: bin the inactive pool row and its rolls,
+   *  release every player's modal, and leave the previous pool untouched. */
+  const cancelGeneration = async () => {
+    if (busy) return
+    setBusy(true)
+    try {
+      if (poolRow) {
+        for (const c of characters) {
+          sendToChar(c.id, { type: 'destiny-roll-cancel', poolId: poolRow.id })
+        }
+        await supabase.from('destiny_pool_rolls').delete().eq('pool_id', poolRow.id)
+        await supabase.from('destiny_pool').delete().eq('id', poolRow.id)
+      }
+      setPoolRow(null)
+      setRollStatuses({})
+      setPhase('setup')
+    } finally {
+      setBusy(false)
+      onClose()
+    }
+  }
+
+  // When all players have rolled, activate the pool
+  useEffect(() => {
+    if (phase !== 'rolling' || !poolRow || characters.length === 0) return
+    const allRolled = characters.every(c => rollStatuses[c.id]?.status === 'rolled')
+    if (!allRolled) return
+    // Once the GM has hand-edited anything, stop auto-activating — an edit
+    // marks that player 'rolled', which would otherwise slam the panel shut
+    // mid-edit. From then on it activates only on the explicit button.
+    if (Object.values(rollStatuses).some(s => s.edited)) return
+    void finalisePool()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rollStatuses, phase, characters.length])
 
   const handleSendRollRequest = async () => {
     setBusy(true)
     try {
-      // Deactivate any existing active pool
-      if (activePool?.id) {
-        await supabase.from('destiny_pool').update({ is_active: false }).eq('id', activePool.id)
-      }
+      // The existing pool stays active until the new one is finalised (see
+      // finalisePool) — deactivating it here left the GM with no destiny
+      // display, and no way back to one, whenever a player never rolled.
 
       // Create new pool row (inactive until all players roll)
       const { data: newPool } = await supabase
@@ -155,7 +286,7 @@ export function DestinyGeneratePanel({
   const modal = (
     <Modal
       open
-      onClose={phase === 'complete' ? onClose : undefined}
+      onClose={phase === 'rolling' ? undefined : onClose}
       maxWidth={540}
     >
         {/* Header */}
@@ -248,16 +379,25 @@ export function DestinyGeneratePanel({
                   <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', padding: 'clamp(5px, 0.8vh, 7px) 0.625rem', background: rolled ? 'rgba(78,200,122,0.05)' : 'rgba(0,0,0,0.2)', border: `1px solid ${rolled ? 'rgba(78,200,122,0.2)' : BORDER}`, borderRadius: 4 }}>
                     <span style={{ width: 7, height: 7, borderRadius: '50%', background: rolled ? GREEN : HUD.borderHi, flexShrink: 0 }} />
                     <span style={{ fontFamily: FONT_BODY, fontSize: FS_LABEL, color: rolled ? TEXT : DIM, flex: 1 }}>{c.name}</span>
-                    {rolled ? (
-                      <span style={{ fontFamily: FONT_BODY, fontSize: FS_CAP, color: GREEN, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                        ✓ rolled
-                        {s.lightRolled > 0 && <span style={{ color: LIGHT_CLR, display: 'inline-flex', alignItems: 'center', gap: 2 }}><span style={{ display: 'inline-block', width: 10, height: 10, flexShrink: 0, WebkitMask: `url('/images/factions/LightSymbol.png') center/contain no-repeat`, mask: `url('/images/factions/LightSymbol.png') center/contain no-repeat`, background: LIGHT_CLR }} />{s.lightRolled}</span>}
-                        {s.darkRolled > 0  && <span style={{ color: DARK_CLR,  display: 'inline-flex', alignItems: 'center', gap: 2 }}><span style={{ display: 'inline-block', width: 10, height: 10, flexShrink: 0, WebkitMask: `url('/images/factions/DarkSymbol.png') center/contain no-repeat`,  mask: `url('/images/factions/DarkSymbol.png') center/contain no-repeat`,  background: DARK_CLR  }} />{s.darkRolled}</span>}
-                        {s.lightRolled === 0 && s.darkRolled === 0 && <span style={{ color: DIM }}> —</span>}
-                      </span>
-                    ) : (
-                      <span style={{ fontFamily: FONT_BODY, fontSize: FS_CAP, color: DIM }}>⬜ waiting</span>
-                    )}
+                    <span style={{ fontFamily: FONT_BODY, fontSize: FS_CAP, color: rolled ? GREEN : DIM, flexShrink: 0 }}>
+                      {s?.edited ? '✎ GM' : rolled ? '✓ rolled' : '⬜ waiting'}
+                    </span>
+                    {/* GM pip editors — usable whether or not the player rolled,
+                        so a no-show never blocks the pool. */}
+                    <PipStepper
+                      color={LIGHT_CLR}
+                      mask="/images/factions/LightSymbol.png"
+                      value={s?.lightRolled ?? 0}
+                      onAdd={() => adjustRoll(c.id, 'light', 1)}
+                      onSub={() => adjustRoll(c.id, 'light', -1)}
+                    />
+                    <PipStepper
+                      color={DARK_CLR}
+                      mask="/images/factions/DarkSymbol.png"
+                      value={s?.darkRolled ?? 0}
+                      onAdd={() => adjustRoll(c.id, 'dark', 1)}
+                      onSub={() => adjustRoll(c.id, 'dark', -1)}
+                    />
                   </div>
                 )
               })}
@@ -309,11 +449,25 @@ export function DestinyGeneratePanel({
               {busy ? 'Creating…' : 'Send Roll Request to All Players'}
             </button>
           </>)}
-          {phase === 'rolling' && (
-            <div style={{ fontFamily: FONT_BODY, fontSize: FS_CAP, color: DIM, fontStyle: 'italic', alignSelf: 'center' }}>
-              Pool activates automatically when all players roll
+          {phase === 'rolling' && (<>
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS_CAP, color: DIM, fontStyle: 'italic', alignSelf: 'center', marginRight: 'auto' }}>
+              Activates automatically once all players roll
             </div>
-          )}
+            <button
+              onClick={cancelGeneration}
+              disabled={busy}
+              style={{ fontFamily: FONT_BODY, fontSize: FS_CAP, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', padding: 'clamp(6px, 1vh, 9px) 0.875rem', borderRadius: 4, cursor: busy ? 'wait' : 'pointer', background: 'transparent', border: `1px solid ${BORDER}`, color: DIM, opacity: busy ? 0.4 : 1 }}
+            >
+              Cancel &amp; Reset
+            </button>
+            <button
+              onClick={finalisePool}
+              disabled={busy}
+              style={{ fontFamily: FONT_BODY, fontSize: FS_CAP, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', padding: 'clamp(6px, 1vh, 9px) 1.125rem', borderRadius: 4, cursor: busy ? 'wait' : 'pointer', background: 'rgba(200,170,80,0.15)', border: `1px solid ${HUD.border}`, color: HUD.gold, opacity: busy ? 0.4 : 1 }}
+            >
+              {busy ? '…' : `Activate Now (${rolledCount}/${totalPlayers})`}
+            </button>
+          </>)}
           {phase === 'complete' && (
             <button onClick={onClose} style={{ fontFamily: FONT_BODY, fontSize: FS_CAP, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', padding: 'clamp(6px, 1vh, 9px) 1.125rem', borderRadius: 4, cursor: 'pointer', background: 'rgba(200,170,80,0.15)', border: `1px solid ${HUD.border}`, color: HUD.gold }}>
               Done

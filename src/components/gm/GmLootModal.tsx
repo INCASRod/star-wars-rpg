@@ -6,6 +6,7 @@ import type { Character } from '@/lib/types'
 import type { UseGmLootReturn, LootItem } from '@/hooks/useGmLoot'
 import { HUD, FONT_BODY, RADIUS, Z, panelBase as _panelBase } from '@/lib/tokens'
 import { rarityColor, rarityLabel } from '@/lib/styles'
+import { NumberField } from '@/components/ui/NumberField'
 
 /* ── Design tokens ── */
 const FC = FONT_BODY
@@ -224,11 +225,11 @@ export function GmLootModal({
         <div style={rowFlexWrap}>
           <div>
             <div style={{ ...fieldLabel, marginBottom: 6 }}>RARITY MIN</div>
-            <input type="number" min={0} max={10} value={lootRarityMin} onChange={e => setLootRarityMin(Number(e.target.value))} style={{ ...darkInputNarrow, width: '64px' }} />
+            <NumberField min={0} max={10} value={lootRarityMin} onChange={e => setLootRarityMin(Number(e.target.value))} style={{ ...darkInputNarrow, width: '64px' }} />
           </div>
           <div>
             <div style={{ ...fieldLabel, marginBottom: 6 }}>RARITY MAX</div>
-            <input type="number" min={0} max={10} value={lootRarityMax} onChange={e => setLootRarityMax(Number(e.target.value))} style={{ ...darkInputNarrow, width: '64px' }} />
+            <NumberField min={0} max={10} value={lootRarityMax} onChange={e => setLootRarityMax(Number(e.target.value))} style={{ ...darkInputNarrow, width: '64px' }} />
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ ...fieldLabel, marginBottom: 6 }}>NAME SEARCH</div>

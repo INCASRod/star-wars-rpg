@@ -10,6 +10,7 @@ import type { VehicleInstance } from '@/lib/vehicles'
 import type { MapToken } from '@/hooks/useMapTokens'
 import { adversaryToInstance } from '@/lib/adversaries'
 import { ensureEncounterForMap } from '@/lib/encounters'
+import { cancelPendingActionsByType } from '@/hooks/useGmBroadcast'
 
 export interface UseGmSessionReturn {
   sessionMode:              'exploration' | 'combat'
@@ -185,13 +186,24 @@ export function useGmSession(params: {
         updated_at: new Date().toISOString(),
       }).eq('campaign_id', campaignId).eq('is_active', true),
     ])
+    // Defensive sweep for any initiative request still outstanding. The setup
+    // modal cancels its own on close and on Lock Order & Start, but a GM whose
+    // tab crashed mid-setup leaves rows behind that nothing else clears — and
+    // they would resurface in the player's queue next session.
+    //
+    // Scoped to the campaign, not a setup session: this runs long after the
+    // modal (and its source_ref) is gone, so the campaign is the only scope
+    // available here.
+    for (const c of characters) sendToChar(c.id, { type: 'initiative-cancel' })
+    await cancelPendingActionsByType(campaignId, 'initiative')
+
     setSessionMode('exploration')
     setCombatRound(1)
     broadcastCombatState('exploration', 0)
     setSessionBusy(false)
     toast('Combat ended — deck kept, exploration mode.')
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [campaignId, broadcastCombatState, stagingEncounter])
+  }, [campaignId, broadcastCombatState, stagingEncounter, characters, sendToChar])
 
   // Builds the Begin Combat roster straight from the encounter itself —
   // `stagingEncounter.adversaries`/`.vehicles` are already the correct

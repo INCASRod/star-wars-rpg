@@ -8,6 +8,7 @@ import { vehicleWeaponStats, ALL_VEHICLE_WEAPONS } from '@/lib/vehicles'
 import { toast } from 'sonner'
 import { emitRefLibraryUpdated } from '@/lib/refLibraryEvents'
 import { HUD, FONT_DISPLAY, FONT_BODY, FONT_MONO, RADIUS } from '@/lib/tokens'
+import { NumberField } from '@/components/ui/NumberField'
 
 /* ── Design tokens ─────────────────────────────────────────────── */
 const FS_OVERLINE = 'var(--text-overline)'
@@ -471,7 +472,7 @@ export function VehicleEditor({
               {([['Silhouette', silhouette, setSilhouette], ['Speed', speed, setSpeed], ['Handling', handling, setHandling]] as [string, number, (n: number) => void][]).map(([label, val, setter]) => (
                 <div key={label}>
                   <div style={fieldLabel}>{label}</div>
-                  <input type="number" value={val} onChange={e => ni(e.target.value, setter)} style={numInput} min={label === 'Handling' ? -5 : 0} max={label === 'Silhouette' ? 10 : 20} />
+                  <NumberField value={val} onChange={e => ni(e.target.value, setter)} style={numInput} min={label === 'Handling' ? -5 : 0} max={label === 'Silhouette' ? 10 : 20} />
                 </div>
               ))}
             </div>
@@ -484,7 +485,7 @@ export function VehicleEditor({
               {([['Armor', armor, setArmor], ['Hull Trauma', hullTrauma, setHullTrauma], ['Sys. Strain', systemStrain, setSystemStrain]] as [string, number, (n: number) => void][]).map(([label, val, setter]) => (
                 <div key={label}>
                   <div style={fieldLabel}>{label}</div>
-                  <input type="number" value={val} onChange={e => ni(e.target.value, setter)} style={numInput} min={0} />
+                  <NumberField value={val} onChange={e => ni(e.target.value, setter)} style={numInput} min={0} />
                 </div>
               ))}
             </div>
@@ -497,7 +498,7 @@ export function VehicleEditor({
               {([['Fore', defFore, setDefFore], ['Aft', defAft, setDefAft], ['Port', defPort, setDefPort], ['Stbd', defStarboard, setDefStarboard]] as [string, number, (n: number) => void][]).map(([label, val, setter]) => (
                 <div key={label}>
                   <div style={fieldLabel}>{label}</div>
-                  <input type="number" value={val} onChange={e => ni(e.target.value, setter)} style={numInput} min={0} max={5} />
+                  <NumberField value={val} onChange={e => ni(e.target.value, setter)} style={numInput} min={0} max={5} />
                 </div>
               ))}
             </div>
@@ -513,11 +514,11 @@ export function VehicleEditor({
               </div>
               <div>
                 <div style={fieldLabel}>Passengers</div>
-                <input type="number" value={passengers} onChange={e => ni(e.target.value, setPassengers)} style={numInput} min={0} />
+                <NumberField value={passengers} onChange={e => ni(e.target.value, setPassengers)} style={numInput} min={0} />
               </div>
               <div>
                 <div style={fieldLabel}>Cargo (enc.)</div>
-                <input type="number" value={encCap} onChange={e => ni(e.target.value, setEncCap)} style={numInput} min={0} />
+                <NumberField value={encCap} onChange={e => ni(e.target.value, setEncCap)} style={numInput} min={0} />
               </div>
               <div style={{ gridColumn: '1/-1' }}>
                 <div style={fieldLabel}>Consumables</div>
@@ -533,8 +534,7 @@ export function VehicleEditor({
               <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
                 <div>
                   <div style={fieldLabel}>Primary Class</div>
-                  <input
-                    type="number"
+                  <NumberField
                     value={hyperdrivePrimary ?? ''}
                     onChange={e => setHyperdrivePrimary(e.target.value === '' ? null : parseInt(e.target.value) || 1)}
                     style={numInput}
@@ -544,8 +544,7 @@ export function VehicleEditor({
                 </div>
                 <div>
                   <div style={fieldLabel}>Backup Class</div>
-                  <input
-                    type="number"
+                  <NumberField
                     value={hyperdriveBackup ?? ''}
                     onChange={e => setHyperdriveBackup(e.target.value === '' ? null : parseInt(e.target.value) || 1)}
                     style={numInput}
@@ -583,8 +582,7 @@ export function VehicleEditor({
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
               <div>
                 <div style={fieldLabel}>Hard Points</div>
-                <input
-                  type="number"
+                <NumberField
                   value={hardPoints ?? ''}
                   onChange={e => setHardPoints(e.target.value === '' ? null : parseInt(e.target.value) || 0)}
                   style={numInput}
@@ -594,8 +592,7 @@ export function VehicleEditor({
               </div>
               <div>
                 <div style={fieldLabel}>Massive</div>
-                <input
-                  type="number"
+                <NumberField
                   value={massiveValue ?? ''}
                   onChange={e => setMassiveValue(e.target.value === '' ? null : parseInt(e.target.value) || 0)}
                   style={numInput}
@@ -658,7 +655,7 @@ export function VehicleEditor({
                       </div>
                       <div>
                         <div style={fieldLabel}>Count</div>
-                        <input type="number" value={w.count} onChange={e => updateWeapon(i, 'count', parseInt(e.target.value) || 1)} style={numInput} min={1} />
+                        <NumberField value={w.count} onChange={e => updateWeapon(i, 'count', parseInt(e.target.value) || 1)} style={numInput} min={1} />
                       </div>
                       <label style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: HUD.textDim, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.375rem', paddingBottom: '0.125rem', whiteSpace: 'nowrap' }}>
                         <input type="checkbox" checked={w.turret} onChange={e => updateWeapon(i, 'turret', e.target.checked)} style={{ accentColor: HUD.gold }} />

@@ -21,6 +21,12 @@ export interface ModalProps {
   backdrop?:          string
   /** Override the panel background. Default: HUD.panel. */
   panelBackground?:   string
+  /**
+   * Full-screen panel: the scrim loses its padding and the panel fills the
+   * viewport with no max-width, no rounded corners and no drop shadow.
+   * Default false — every existing caller keeps the centred-card behaviour.
+   */
+  fullScreen?:        boolean
 }
 
 // Module-scope — never recreated on render.
@@ -46,6 +52,7 @@ export function Modal({
   shadow,
   backdrop,
   panelBackground,
+  fullScreen = false,
 }: ModalProps) {
   useEffect(() => {
     if (!open || !onClose) return
@@ -57,17 +64,18 @@ export function Modal({
   if (!open) return null
 
   return createPortal(
-    <div style={{ ...BACKDROP, zIndex, background: backdrop ?? MODAL.backdrop }} onClick={onClose}>
+    <div style={{ ...BACKDROP, zIndex, background: backdrop ?? MODAL.backdrop, padding: fullScreen ? 0 : BACKDROP.padding }} onClick={onClose}>
       <div
         style={{
           width:        '100%',
-          maxWidth,
-          maxHeight:    '90vh',
+          maxWidth:     fullScreen ? 'none' : maxWidth,
+          height:       fullScreen ? '100%' : undefined,
+          maxHeight:    fullScreen ? '100%' : '90vh',
           overflowY:    'auto',
           background:   panelBackground ?? HUD.panel,
-          border:       `1px solid ${borderColor ?? HUD.borderHi}`,
-          borderRadius: RADIUS.xl,
-          boxShadow:    shadow ?? MODAL.shadow,
+          border:       fullScreen ? 'none' : `1px solid ${borderColor ?? HUD.borderHi}`,
+          borderRadius: fullScreen ? 0 : RADIUS.xl,
+          boxShadow:    fullScreen ? 'none' : (shadow ?? MODAL.shadow),
         }}
         onClick={e => e.stopPropagation()}
       >

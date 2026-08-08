@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { HUD, FONT_BODY, FS, RADIUS, Z } from '@/lib/tokens'
+import { NumberField } from '@/components/ui/NumberField'
 
 interface HudSpendCreditsModalProps {
   open: boolean
@@ -45,8 +46,7 @@ export function HudSpendCreditsModal({ open, onClose, credits, onConfirm }: HudS
           Available: <span style={{ color: HUD.text, fontWeight: 600 }}>{credits.toLocaleString()}</span>
         </div>
         <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: HUD.textDim, letterSpacing: '0.08em', marginBottom: 6 }}>HOW MUCH DO YOU WANT TO SPEND?</div>
-        <input
-          type="number"
+        <NumberField
           min={1}
           max={credits}
           value={spendAmount}

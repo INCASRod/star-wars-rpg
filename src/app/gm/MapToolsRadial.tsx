@@ -8,6 +8,7 @@ import { useMapPlanets, type MapPlanet } from '@/hooks/useMapPlanets'
 import type { ActiveMap, CrawlContent } from '@/hooks/useActiveMap'
 import { HUD, FONT_BODY, FONT_DISPLAY, FS, SP, Z, RADIUS, EASE, MODAL } from '@/lib/tokens'
 import gsap from 'gsap'
+import { NumberField } from '@/components/ui/NumberField'
 
 /* ── SVG/geometry constants ─────────────────────────────────── */
 const SVG_W   = 380
@@ -1884,8 +1885,8 @@ function PanelMapUploadModal({ campaignId, planets, onClose }: PanelMapUploadMod
           {gridEnabled && (
             <div style={{ display: 'flex', alignItems: 'center', gap: SP[1], marginLeft: 'auto' }}>
               <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint }}>Cell size (px)</span>
-              <input
-                type="number" value={gridSize}
+              <NumberField
+                value={gridSize}
                 onChange={e => setGridSize(Math.max(10, Number(e.target.value)))}
                 style={{ ...POPUP_INPUT, width: 64, textAlign: 'center' }}
               />

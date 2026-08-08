@@ -17,6 +17,7 @@ import { useQuartermaster } from '@/hooks/useQuartermaster'
 import { QuartermasterModal } from '@/components/QuartermasterModal'
 import { GroupStorageModal } from '@/components/group/GroupStorageModal'
 import { FONT_BODY, FS, RADIUS, SP } from '@/lib/tokens'
+import { NumberField } from '@/components/ui/NumberField'
 
 const FONT_MONO = 'var(--font-body)'
 
@@ -1047,9 +1048,8 @@ export function GroupSheet({ campaignId, characterName, characterId }: GroupShee
                     </td>
                     <td style={tdStyle()}>
                       {editingDutyChar === row.id ? (
-                        <input
+                        <NumberField
                           autoFocus
-                          type="number"
                           min={0}
                           value={dutyEditDraft}
                           onChange={e => setDutyEditDraft(e.target.value)}

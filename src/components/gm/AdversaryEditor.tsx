@@ -7,6 +7,7 @@ import type { Adversary, AdversaryWeapon, AdversaryTalent, AdversaryGear } from 
 import { toast } from 'sonner'
 import { emitRefLibraryUpdated } from '@/lib/refLibraryEvents'
 import { HUD, FONT_BODY, RADIUS, Z } from '@/lib/tokens'
+import { NumberField } from '@/components/ui/NumberField'
 
 /* ── Design tokens ─────────────────────────────────────── */
 const FC       = FONT_BODY
@@ -541,8 +542,8 @@ export function AdversaryEditor({
               ] as [string, number, (v: number) => void][]).map(([label, val, setter]) => (
                 <div key={label} style={{ textAlign: 'center' }}>
                   <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, marginBottom: '0.25rem' }}>{label}</div>
-                  <input
-                    type="number" min={1} max={6}
+                  <NumberField
+                    min={1} max={6}
                     value={val}
                     onChange={e => setter(Math.min(6, Math.max(1, Number(e.target.value))))}
                     style={numInput}
@@ -558,8 +559,8 @@ export function AdversaryEditor({
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
               <div>
                 <div style={fieldLabel}>Wound Threshold *</div>
-                <input
-                  type="number" min={1} value={wt}
+                <NumberField
+                  min={1} value={wt}
                   onChange={e => setWt(Number(e.target.value))}
                   style={{ ...numInput, width: '5rem', borderColor: errors.wt ? RED : BORDER }}
                 />
@@ -568,8 +569,8 @@ export function AdversaryEditor({
               {type === 'nemesis' && (
                 <div>
                   <div style={fieldLabel}>Strain Threshold</div>
-                  <input
-                    type="number" min={1}
+                  <NumberField
+                    min={1}
                     value={st === '' ? '' : st}
                     onChange={e => setSt(e.target.value === '' ? '' : Number(e.target.value))}
                     style={{ ...numInput, width: '5rem' }}
@@ -578,16 +579,16 @@ export function AdversaryEditor({
               )}
               <div>
                 <div style={fieldLabel}>Def Melee</div>
-                <input
-                  type="number" min={0} max={4} value={defMelee}
+                <NumberField
+                  min={0} max={4} value={defMelee}
                   onChange={e => setDefMelee(Number(e.target.value))}
                   style={{ ...numInput, width: '4.5rem' }}
                 />
               </div>
               <div>
                 <div style={fieldLabel}>Def Ranged</div>
-                <input
-                  type="number" min={0} max={4} value={defRanged}
+                <NumberField
+                  min={0} max={4} value={defRanged}
                   onChange={e => setDefRanged(Number(e.target.value))}
                   style={{ ...numInput, width: '4.5rem' }}
                 />
@@ -620,8 +621,8 @@ export function AdversaryEditor({
                         {ALL_SKILLS.map(sk => <option key={sk} value={sk}>{sk}</option>)}
                       </select>
                       <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM, whiteSpace: 'nowrap' }}>Rank</div>
-                      <input
-                        type="number" min={1} max={5}
+                      <NumberField
+                        min={1} max={5}
                         value={s.rank}
                         onChange={e => updateSkill(i, { rank: Math.min(5, Math.max(1, Number(e.target.value))) })}
                         style={{ ...numInput, width: '3.5rem' }}

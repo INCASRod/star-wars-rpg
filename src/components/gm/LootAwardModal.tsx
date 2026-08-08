@@ -8,6 +8,7 @@ import { computeEncumbranceStats } from '@/lib/derivedStats'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { QualityBadge } from '@/components/character/QualityBadge'
 import { HUD, FONT_BODY, FONT_MONO, RADIUS, EASE, FS } from '@/lib/tokens'
+import { NumberField } from '@/components/ui/NumberField'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 // Pre-approved exceptions kept:
@@ -250,8 +251,8 @@ export function LootAwardModal({
         {item.type === 'gear' && !fixedQuantity && (
           <div style={{ marginBottom: '1rem' }}>
             <div style={fieldLabel}>Quantity</div>
-            <input
-              type="number" min={1} max={99}
+            <NumberField
+              min={1} max={99}
               value={quantity}
               onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
               style={inputStyle}

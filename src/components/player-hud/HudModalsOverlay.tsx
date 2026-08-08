@@ -15,6 +15,7 @@ import { DestinyGMFlash, DestinyConsideringBanner } from '@/components/destiny/D
 import { PresenceFlash } from './PresenceFlash'
 import type { DestinyPoolRecord } from '@/components/destiny/DestinyPoolDisplay'
 import type { RollResult } from './dice-engine'
+import type { PendingAction } from '@/hooks/usePendingActions'
 import { FONT_DISPLAY, FONT_BODY } from '@/lib/tokens'
 import type { ForceRollResult } from './dice-engine'
 import type { HudSkill } from './SkillsPanel'
@@ -26,6 +27,9 @@ import type {
 interface HudModalsOverlayProps {
   character: Character
   skills: CharacterSkill[]
+  /** Full skill catalog with ranks + linked characteristic — powers the
+   *  initiative skill override (non-combat skills only). */
+  hudSkills?: HudSkill[]
   talents: CharacterTalent[]
   refTalentMap: Record<string, RefTalent>
   speciesAbilities: SpeciesAbility[]
@@ -48,8 +52,12 @@ interface HudModalsOverlayProps {
   forceRollResult: ForceRollResult | null
   setForceRollResult: (r: ForceRollResult | null) => void
 
-  initRoll: { type: 'vigilance' | 'cool'; campaignId: string } | null
-  setInitRoll: (r: { type: 'vigilance' | 'cool'; campaignId: string } | null) => void
+  initRoll: { type: 'vigilance' | 'cool'; campaignId: string; skillKey?: string } | null
+  setInitRoll: (r: { type: 'vigilance' | 'cool'; campaignId: string; skillKey?: string } | null) => void
+  /** The single usePendingActions instance lives in PlayerHUDDesktop — a second
+   *  one here would collide on the same Realtime channel topic. */
+  initiativePendingRow: PendingAction | null
+  resolvePendingAction: (id: string, resultPayload?: Record<string, unknown>) => Promise<void>
 
   skillPopover: { skill: HudSkill; anchor: DOMRect } | null
   setSkillPopover: (p: { skill: HudSkill; anchor: DOMRect } | null) => void
@@ -94,6 +102,8 @@ export function HudModalsOverlay({
   gmCritInjuryDialog, setGmCritInjuryDialog,
   forceRollResult, setForceRollResult,
   initRoll, setInitRoll,
+  initiativePendingRow, resolvePendingAction,
+  hudSkills,
   skillPopover, setSkillPopover, onRoll,
   destinyRollRequest, setDestinyRollRequest,
   destinySpendOpen, setDestinySpendOpen, destinyPoolRecord,
@@ -202,9 +212,13 @@ export function HudModalsOverlay({
         <InitiativeRollModal
           character={character}
           skills={skills}
+          hudSkills={hudSkills}
+          requestedSkillKey={initRoll.skillKey}
           initiativeType={initRoll.type}
           campaignId={initRoll.campaignId}
           forceRating={forceRating}
+          pendingRow={initiativePendingRow}
+          resolvePendingAction={resolvePendingAction}
           onClose={() => setInitRoll(null)}
         />
       )}

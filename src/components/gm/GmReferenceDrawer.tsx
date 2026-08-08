@@ -34,6 +34,7 @@ import {
 } from '@/lib/gmScreenData'
 import { RichText } from '@/components/ui/RichText'
 import { HUD, FONT_BODY, EASE, FS, RADIUS } from '@/lib/tokens'
+import { NumberField } from '@/components/ui/NumberField'
 
 // ── Design tokens ─────────────────────────────────────────────
 const FC  = FONT_BODY
@@ -311,8 +312,7 @@ function InjuriesTab() {
         border: `1px solid ${BORDER_HI}`,
       }}>
         <span style={{ fontFamily: FC, fontSize: FS_CAPTION, color: DIM, flexShrink: 0 }}>Roll lookup:</span>
-        <input
-          type="number"
+        <NumberField
           min={1}
           max={200}
           value={rollInput}
@@ -450,8 +450,7 @@ function VehiclesTab() {
         border: `1px solid ${BORDER_HI}`,
       }}>
         <span style={{ fontFamily: FC, fontSize: FS_CAPTION, color: DIM, flexShrink: 0 }}>Roll lookup:</span>
-        <input
-          type="number"
+        <NumberField
           min={1}
           max={200}
           value={rollInput}

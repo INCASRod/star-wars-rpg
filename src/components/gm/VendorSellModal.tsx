@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Modal } from '@/components/ui/Modal'
 import type { Character } from '@/lib/types'
 import { HUD, FONT_BODY, RADIUS } from '@/lib/tokens'
+import { NumberField } from '@/components/ui/NumberField'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 const GOLD_DIM  = 'rgba(200,170,80,0.5)'
@@ -90,8 +91,8 @@ export function VendorSellModal({ item, characters, campaignId: _cid, onSend, on
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', marginBottom: '0.875rem' }}>
           <div style={{ flex: 1 }}>
             <div style={fieldLabel}>Price per item (cr)</div>
-            <input
-              type="number" min={0}
+            <NumberField
+              min={0}
               value={price}
               onChange={e => setPrice(e.target.value)}
               style={{ ...darkInput, width: '100%' }}
@@ -105,8 +106,8 @@ export function VendorSellModal({ item, characters, campaignId: _cid, onSend, on
           </div>
           <div style={{ width: '4.5rem' }}>
             <div style={fieldLabel}>Qty</div>
-            <input
-              type="number" min={1} max={99}
+            <NumberField
+              min={1} max={99}
               value={quantity}
               onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
               style={{ ...darkInput, width: '100%' }}

@@ -13,6 +13,7 @@ import type {
 import { QualityBadge } from '@/components/character/QualityBadge'
 import { RichText } from '@/components/ui/RichText'
 import { HUD, FONT_BODY, EASE, RADIUS, Z } from '@/lib/tokens'
+import { NumberField } from '@/components/ui/NumberField'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 const GOLD_DIM  = 'rgba(200,170,80,0.5)'
@@ -777,9 +778,9 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
 
           {/* Common fields */}
           <div style={{ display: 'flex', gap: '0.625rem' }}>
-            <Field label="Price"><input type="number" min={0} value={price} onChange={e => setPrice(e.target.value)} style={{ ...inputStyle, width: '5rem' }} /></Field>
-            <Field label="Rarity"><input type="number" min={0} max={10} value={rarity} onChange={e => setRarity(e.target.value)} style={{ ...inputStyle, width: '3.75rem' }} /></Field>
-            <Field label="Encumbrance"><input type="number" min={0} value={encumbrance} onChange={e => setEncumbrance(e.target.value)} style={{ ...inputStyle, width: '3.75rem' }} /></Field>
+            <Field label="Price"><NumberField min={0} value={price} onChange={e => setPrice(e.target.value)} style={{ ...inputStyle, width: '5rem' }} /></Field>
+            <Field label="Rarity"><NumberField min={0} max={10} value={rarity} onChange={e => setRarity(e.target.value)} style={{ ...inputStyle, width: '3.75rem' }} /></Field>
+            <Field label="Encumbrance"><NumberField min={0} value={encumbrance} onChange={e => setEncumbrance(e.target.value)} style={{ ...inputStyle, width: '3.75rem' }} /></Field>
           </div>
 
           {/* Weapon fields */}
@@ -798,12 +799,12 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
             </div>
             <div style={{ display: 'flex', gap: '0.625rem' }}>
               {['MELEE', 'BRAWL', 'LTSABER'].includes(skillKey) ? (
-                <Field label="Damage (Brawn+)"><input type="number" min={0} value={damageAdd} onChange={e => setDamageAdd(e.target.value)} style={{ ...inputStyle, width: '4.375rem' }} placeholder="0" /></Field>
+                <Field label="Damage (Brawn+)"><NumberField min={0} value={damageAdd} onChange={e => setDamageAdd(e.target.value)} style={{ ...inputStyle, width: '4.375rem' }} placeholder="0" /></Field>
               ) : (
-                <Field label="Damage"><input type="number" min={0} value={damage} onChange={e => setDamage(e.target.value)} style={{ ...inputStyle, width: '4.375rem' }} /></Field>
+                <Field label="Damage"><NumberField min={0} value={damage} onChange={e => setDamage(e.target.value)} style={{ ...inputStyle, width: '4.375rem' }} /></Field>
               )}
-              <Field label="Crit"><input type="number" min={1} value={crit} onChange={e => setCrit(e.target.value)} style={{ ...inputStyle, width: '3.75rem' }} /></Field>
-              <Field label="Hard Points"><input type="number" min={0} value={hardPoints} onChange={e => setHardPoints(e.target.value)} style={{ ...inputStyle, width: '3.75rem' }} /></Field>
+              <Field label="Crit"><NumberField min={1} value={crit} onChange={e => setCrit(e.target.value)} style={{ ...inputStyle, width: '3.75rem' }} /></Field>
+              <Field label="Hard Points"><NumberField min={0} value={hardPoints} onChange={e => setHardPoints(e.target.value)} style={{ ...inputStyle, width: '3.75rem' }} /></Field>
             </div>
           </>}
 
@@ -811,11 +812,11 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
           {type === 'armor' && (
             <>
               <div style={{ display: 'flex', gap: '0.625rem' }}>
-                <Field label="Defense"><input type="number" min={0} value={defense} onChange={e => setDefense(e.target.value)} style={{ ...inputStyle, width: '4.375rem' }} /></Field>
-                <Field label="Soak Bonus"><input type="number" min={0} value={soak} onChange={e => setSoak(e.target.value)} style={{ ...inputStyle, width: '4.375rem' }} /></Field>
+                <Field label="Defense"><NumberField min={0} value={defense} onChange={e => setDefense(e.target.value)} style={{ ...inputStyle, width: '4.375rem' }} /></Field>
+                <Field label="Soak Bonus"><NumberField min={0} value={soak} onChange={e => setSoak(e.target.value)} style={{ ...inputStyle, width: '4.375rem' }} /></Field>
               </div>
               <Field label="Bonus Encumbrance Threshold (when equipped)">
-                <input type="number" min={0} value={encBonus} onChange={e => setEncBonus(e.target.value)} style={{ ...inputStyle, width: '5rem' }} placeholder="—" />
+                <NumberField min={0} value={encBonus} onChange={e => setEncBonus(e.target.value)} style={{ ...inputStyle, width: '5rem' }} placeholder="—" />
               </Field>
             </>
           )}
@@ -823,7 +824,7 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
           {/* Gear fields */}
           {type === 'gear' && (
             <Field label="Bonus Encumbrance Threshold (storage container, when equipped)">
-              <input type="number" min={0} value={encBonus} onChange={e => setEncBonus(e.target.value)} style={{ ...inputStyle, width: '5rem' }} placeholder="—" />
+              <NumberField min={0} value={encBonus} onChange={e => setEncBonus(e.target.value)} style={{ ...inputStyle, width: '5rem' }} placeholder="—" />
             </Field>
           )}
 
@@ -1288,8 +1289,7 @@ function QualityRow({
         {displayName}
       </span>
       {isRanked ? (
-        <input
-          type="number"
+        <NumberField
           min={1}
           max={6}
           value={count}

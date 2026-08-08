@@ -22,6 +22,7 @@ import { AddConflictModal } from '@/components/gm/AddConflictModal'
 import type { GmConflictRow } from '@/hooks/useGmCampaignConflicts'
 import { ForcePresenceGmPanel } from '@/components/gm/ForcePresenceGmPanel'
 import type { MoralitySystem } from '@/lib/moralitySystem'
+import { NumberField } from '@/components/ui/NumberField'
 
 const DIM  = 'var(--hud-text-dim)'
 
@@ -266,7 +267,7 @@ export function GmToolsPanel({
               )}
               <div>
                 <div style={fieldLabel}>Amount</div>
-                <input type="number" placeholder="0" value={xpAmount} onChange={e => setXpAmount(e.target.value)} style={{ ...darkInput, width: '5rem' }} />
+                <NumberField placeholder="0" value={xpAmount} onChange={e => setXpAmount(e.target.value)} style={{ ...darkInput, width: '5rem' }} />
               </div>
               <div>
                 <div style={fieldLabel}>Reason</div>
@@ -336,7 +337,7 @@ export function GmToolsPanel({
               )}
               <div>
                 <div style={fieldLabel}>{creditsMode === 'group' ? 'Amount per Character' : 'Amount'}</div>
-                <input type="number" placeholder="0" value={creditsAmount} onChange={e => setCreditsAmount(e.target.value)} style={{ ...darkInput, width: '6.25rem' }} />
+                <NumberField placeholder="0" value={creditsAmount} onChange={e => setCreditsAmount(e.target.value)} style={{ ...darkInput, width: '6.25rem' }} />
               </div>
               <button onClick={creditsMode === 'group' ? handleBulkCredits : handleIndividualCredits}
                 disabled={creditsBusy || !creditsAmount || (creditsMode === 'individual' && !creditsTarget)}
@@ -397,7 +398,7 @@ export function GmToolsPanel({
               )}
               <div>
                 <div style={fieldLabel}>Amount (+/−)</div>
-                <input type="number" placeholder="0" value={odAmount} onChange={e => setOdAmount(e.target.value)} style={{ ...darkInput, width: '5rem' }} />
+                <NumberField placeholder="0" value={odAmount} onChange={e => setOdAmount(e.target.value)} style={{ ...darkInput, width: '5rem' }} />
               </div>
               <button onClick={odMode === 'group' ? handleBulkOD : handleIndividualOD}
                 disabled={odBusy || !odAmount || (odMode === 'individual' && !odTarget)}

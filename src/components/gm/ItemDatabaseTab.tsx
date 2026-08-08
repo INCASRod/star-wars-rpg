@@ -12,6 +12,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { HUD, FONT_BODY, EASE, FS, RADIUS, SP, Z, SHADOW } from '@/lib/tokens'
 import { useQuartermaster } from '@/hooks/useQuartermaster'
 import type { QuartermasterItem } from '@/lib/types'
+import { NumberField } from '@/components/ui/NumberField'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 const GOLD_DIM  = 'rgba(200,170,80,0.5)'
@@ -1009,16 +1010,16 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
           )}
           <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
             <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textDim, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Stock qty</span>
-            <input
-              type="number" min={0} value={qmStockDraft}
+            <NumberField
+              min={0} value={qmStockDraft}
               onChange={e => setQmStockDraft(Math.max(0, parseInt(e.target.value, 10) || 0))}
               style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.text, padding: `${SP[1]} ${SP[2]}`, borderRadius: RADIUS.sm, border: `1px solid ${HUD.border}`, background: 'var(--hud-surface-lo)', width: '100%' }}
             />
           </label>
           <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
             <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textDim, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Price per unit (cr)</span>
-            <input
-              type="number" min={0} value={qmPriceDraft}
+            <NumberField
+              min={0} value={qmPriceDraft}
               onChange={e => setQmPriceDraft(Math.max(0, parseInt(e.target.value, 10) || 0))}
               style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.text, padding: `${SP[1]} ${SP[2]}`, borderRadius: RADIUS.sm, border: `1px solid ${HUD.border}`, background: 'var(--hud-surface-lo)', width: '100%' }}
             />

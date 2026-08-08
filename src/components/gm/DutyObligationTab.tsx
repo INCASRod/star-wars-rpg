@@ -7,6 +7,7 @@ import { DutyObligationSetupModal } from './DutyObligationSetupModal'
 import { SessionRollSimulator } from './SessionRollSimulator'
 import { resolveDutyName, resolveObligationName } from '@/lib/dutyObligationUtils'
 import { HUD, FONT_BODY, RADIUS, EASE, FS } from '@/lib/tokens'
+import { NumberField } from '@/components/ui/NumberField'
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 // Pre-approved: rgba(0,0,0,*) overlays kept as-is per exception rules.
@@ -71,8 +72,7 @@ function InlineValue({ value, characterId, field, color, onUpdated }: InlineValu
 
   if (editing) {
     return (
-      <input
-        type="number"
+      <NumberField
         value={local}
         autoFocus
         onChange={e => setLocal(e.target.value)}

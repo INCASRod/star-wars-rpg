@@ -17,7 +17,8 @@ interface PlayerBroadcastOptions {
   campaignId: string | null
   supabase: SupabaseClient
   sessionMode: 'combat' | 'exploration'
-  onDestinyRollRequest: (payload: { poolId: string }) => void
+  /** null clears a pending request — sent when the GM cancels generation */
+  onDestinyRollRequest: (payload: { poolId: string } | null) => void
   onDestinyGmFlash: (payload: DestinyGMFlashPayload) => void
   /** Force Presence (Prompt C) — visual-only notifications, fired once per
    * GM award press. Neither reads nor needs session_conflict/tranquility
@@ -52,7 +53,9 @@ export function usePlayerBroadcast({
   const [gmCritInjuryDialog, setGmCritInjuryDialog] = useState<{ name: string; severity: string; description: string } | null>(null)
   const [lootReveal, setLootReveal] = useState<Record<string, unknown> | null>(null)
   const [vendorOffer, setVendorOffer] = useState<VendorOffer | null>(null)
-  const [initRoll, setInitRoll] = useState<{ type: 'cool' | 'vigilance'; campaignId: string } | null>(null)
+  // skillKey carries the GM's per-row skill assignment for this request; absent
+  // means "use the Cool/Vigilance default for `type`".
+  const [initRoll, setInitRoll] = useState<{ type: 'cool' | 'vigilance'; campaignId: string; skillKey?: string } | null>(null)
   const campaignIdRef = useRef(campaignId)
   campaignIdRef.current = campaignId
 
@@ -84,9 +87,23 @@ export function usePlayerBroadcast({
           setLootReveal(null)
         } else if (payload.type === 'initiative-request') {
           const cid = campaignIdRef.current
-          if (cid) setInitRoll({ type: payload.initiativeType as 'cool' | 'vigilance', campaignId: cid })
+          if (cid) setInitRoll({
+            type: payload.initiativeType as 'cool' | 'vigilance',
+            campaignId: cid,
+            skillKey: payload.skillKey as string | undefined,
+          })
+        } else if (payload.type === 'initiative-cancel') {
+          // GM abandoned setup, locked the order, or ended the encounter — the
+          // result channel's only subscriber is gone, so a submission from here
+          // would vanish. Drop the roll modal. Needs its own branch: the
+          // catch-all below would render this as a generic dialog with an
+          // undefined message, i.e. a blank modal.
+          setInitRoll(null)
         } else if (payload.type === 'destiny-roll-request') {
           onDestinyRollRequest({ poolId: payload.poolId as string })
+        } else if (payload.type === 'destiny-roll-cancel') {
+          // GM aborted generation — drop the mandatory roll modal
+          onDestinyRollRequest(null)
         } else if (payload.type === 'destiny-gm-spent') {
           try {
             const audio = new Audio('/sounds/laughing.mp3')

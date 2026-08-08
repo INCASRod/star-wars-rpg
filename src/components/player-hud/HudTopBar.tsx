@@ -1,10 +1,11 @@
 ﻿'use client'
 
 import { useState } from 'react'
-import { HUD, FONT_DISPLAY, FONT_BODY, FS, SP, RADIUS, Z, EASE } from '@/lib/tokens'
+import { HUD, FONT_DISPLAY, FS, SP, RADIUS, Z, EASE } from '@/lib/tokens'
 import { DestinyPoolDisplay, type DestinyPoolRecord } from '@/components/destiny/DestinyPoolDisplay'
 import type { Character } from '@/lib/types'
 import { ThemeSwitcher, type UiTheme } from './ThemeSwitcher'
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
 
 interface HudTopBarProps {
   character: Character
@@ -13,11 +14,14 @@ interface HudTopBarProps {
   speciesName: string
   isCombat: boolean
   combatRound: number
-  pdfGenerating: boolean
   destinyPoolRecord: DestinyPoolRecord | null
   onSpendDestinyOpen: () => void
   onSpendCreditsOpen: () => void
-  onDownloadPDF: () => void
+  /** Unresolved pending_actions for this character (migration 117). */
+  alertCount: number
+  alertBlockingCount: number
+  alertsOpen: boolean
+  onToggleAlerts: () => void
   onLogout: () => void
   uiTheme: UiTheme
   onThemeChange: (theme: UiTheme) => void
@@ -30,17 +34,19 @@ export function HudTopBar({
   speciesName,
   isCombat,
   combatRound,
-  pdfGenerating,
   destinyPoolRecord,
   onSpendDestinyOpen,
   onSpendCreditsOpen,
-  onDownloadPDF,
+  alertCount,
+  alertBlockingCount,
+  alertsOpen,
+  onToggleAlerts,
   onLogout,
   uiTheme,
   onThemeChange,
 }: HudTopBarProps) {
+  const prefersReducedMotion = usePrefersReducedMotion()
   const [creditsHovered, setCreditsHovered] = useState(false)
-  const [printHovered,   setPrintHovered]   = useState(false)
   const [logoutHovered,  setLogoutHovered]  = useState(false)
 
   return (
@@ -137,30 +143,21 @@ export function HudTopBar({
         </button>
       </div>
       <div style={{ width: 1, height: 28, background: HUD.border }} />
-      {/* Print Sheet */}
+      {/* Alerts — pending player decisions (fills the slot Print Sheet vacated) */}
       <button
-        onClick={onDownloadPDF}
-        disabled={pdfGenerating}
-        title="Download printable character sheet PDF"
-        style={{
-          fontFamily: FONT_BODY,
-          fontSize: 'clamp(0.55rem, 0.8vw, 0.65rem)',
-          letterSpacing: '0.08em',
-          textTransform: 'uppercase',
-          color: pdfGenerating ? HUD.textFaint : printHovered ? HUD.gold : 'color-mix(in srgb, var(--hud-accent) 60%, transparent)',
-          background: 'transparent',
-          border: printHovered && !pdfGenerating ? '1px solid color-mix(in srgb, var(--hud-accent) 50%, transparent)' : '1px solid color-mix(in srgb, var(--hud-accent) 25%, transparent)',
-          borderRadius: RADIUS.md,
-          padding: '3px 9px',
-          cursor: pdfGenerating ? 'wait' : 'pointer',
-          whiteSpace: 'nowrap',
-          transition: `color ${EASE.default}, border-color ${EASE.default}`,
-          flexShrink: 0,
-        }}
-        onMouseEnter={() => setPrintHovered(true)}
-        onMouseLeave={() => setPrintHovered(false)}
+        onClick={alertCount > 0 ? onToggleAlerts : undefined}
+        disabled={alertCount === 0}
+        aria-label="Pending actions"
+        aria-expanded={alertsOpen}
+        className={`notif-btn${alertCount === 0 ? '' : alertBlockingCount > 0 ? ' is-blocking' : ' is-active'}${alertBlockingCount > 0 && !prefersReducedMotion ? ' is-pulsing' : ''}`}
+        title={alertCount === 0 ? 'Nothing awaiting your decision' : `${alertCount} awaiting · ${alertBlockingCount} blocking`}
       >
-        {pdfGenerating ? 'Generating…' : '⬇ Print Sheet'}
+        <svg className="notif-icon" viewBox="0 0 24 24" aria-hidden>
+          <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+          <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+        </svg>
+        <span>Alerts</span>
+        {alertCount > 0 && <span className="notif-badge">{alertCount}</span>}
       </button>
       <div style={{ width: 1, height: 28, background: HUD.border }} />
       {/* Theme switcher */}

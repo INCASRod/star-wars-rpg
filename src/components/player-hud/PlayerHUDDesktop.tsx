@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCharacterData } from '@/hooks/useCharacterData'
 import { Modal } from '@/components/ui/Modal'
@@ -13,6 +13,9 @@ import { HudFullPanel } from './HudFullPanel'
 import { HudTalentsTab } from './HudTalentsTab'
 import { HudSessionTab } from './HudSessionTab'
 import { HudModalsOverlay } from './HudModalsOverlay'
+import { HudNotificationsDrawer, useBlockingAutoOpen } from './HudNotificationsDrawer'
+import { InitiativeRollBody } from './InitiativeRollModal'
+import { usePendingActions } from '@/hooks/usePendingActions'
 import { HudForceTab } from './HudForceTab'
 import { HudInventoryTab } from './HudInventoryTab'
 import { HudLoreTab } from './HudLoreTab'
@@ -48,7 +51,6 @@ import { CriticalInjuryModal } from '@/components/character/CriticalInjuryModal'
 import { useActiveMap } from '@/hooks/useActiveMap'
 import { useMapTokens } from '@/hooks/useMapTokens'
 import { useEncounterState } from '@/hooks/useEncounterState'
-import { generateCharacterSheetPDF } from '@/lib/characterSheetPDF'
 import { GroupSheet } from '@/components/group/GroupSheet'
 import { type UiTheme } from './ThemeSwitcher'
 
@@ -66,12 +68,12 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
 
   // ── Data ──
   const {
-    character, skills, talents, weapons, armor, gear, crits, charSpecs,
-    charForceAbilities, playerName, loading, error,
+    character, skills, talents, weapons, armor, crits, charSpecs,
+    charForceAbilities, loading, error,
     moralitySystem, moralitySystemError, handleFlipBalancePoint,
-    refSkills, refCrits, refCareers, refSpeciesAll, refForcePowers,
+    refCrits, refCareers, refSpeciesAll, refForcePowers,
     refObligationTypes, refDutyTypes,
-    refSkillMap, refTalentMap, refWeaponMap, refArmorMap, refGearMap,
+    refSkillMap, refTalentMap, refWeaponMap, refArmorMap,
     refSpecMap, refForcePowerMap, refForceAbilityMap, refWeaponQualityMap,
     refAttachmentMap,
     forceRating, careerForceRatingBase, careerSpecKeys, specKeyToCareerName, pendingForceRatingOffer, setPendingForceRatingOffer, supabase, refSpecs,
@@ -272,7 +274,14 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   const [ackBusy,       setAckBusy]       = useState(false)
   const conflictSeeded                    = useRef(false)
   const { pendingCritRequest, setPendingCritRequest } = useCriticalInjuryRequest(character?.id, supabase)
-  const [pdfGenerating,     setPdfGenerating]         = useState(false)
+  // Pending-action queue (migration 117) — drives the Alerts button + drawer.
+  const { actions: pendingActions, count: alertCount, blockingCount: alertBlockingCount,
+          resolve: resolvePendingAction } = usePendingActions(character?.id, supabase)
+  // Derived once from the single hook instance and handed to BOTH initiative
+  // hosts (drawer card + popup), so they always agree and only one Realtime
+  // channel exists for this topic.
+  const initiativePendingRow = pendingActions.find(a => a.action_type === 'initiative') ?? null
+  const [alertsOpen, setAlertsOpen] = useState(false)
   // Dedication's characteristic-choice prompt (DEDI talent purchase) now lives
   // entirely on the /character/[id]/talents route (Prompt 6b) — that's the
   // only place talents are purchased for a live character now, so this
@@ -308,14 +317,6 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
       })
   }, [characterId]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── PDF download ──
-  async function handleDownloadPDF() {
-    if (!character) return
-    setPdfGenerating(true)
-    await generateCharacterSheetPDF({ character, playerName, careerName, speciesName, specNames, skills, refSkills, refSkillMap, talents, refTalentMap, weapons, refWeaponMap, refWeaponQualityMap, armor, refArmorMap, gear, refGearMap, crits, refSpecMap, effectiveStats: effectiveStats ?? null }).catch(err => console.error('[PDF generation failed]', err))
-    setPdfGenerating(false)
-  }
-
   // ── Logout ──
   async function handleLogout() {
     const sessionKey = typeof window !== 'undefined' ? localStorage.getItem('holocron_session_key') : null
@@ -324,6 +325,34 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     }
     router.push('/')
   }
+
+  // Blocking arrival auto-opens the drawer once per action id. Never a hard
+  // lock — the rest of the HUD stays usable, since resolving a blocking action
+  // often means checking a talent or a threshold first.
+  useBlockingAutoOpen(pendingActions, useCallback(() => setAlertsOpen(true), []))
+
+  /** Renders the shared InitiativeRollBody inline inside the drawer card — the
+   *  same component the popup hosts under `Modal`, not a second copy. No
+   *  `onSubmitted`: resolution removes the row and the card exits over
+   *  Realtime, so there is nothing to close. No `onCancel`: collapsing the
+   *  card is the cancel affordance here. */
+  const renderInitiativeBody = useCallback((a: { payload: Record<string, unknown> }) => {
+    if (!character || !effectiveCampaignId) return null
+    const p = a.payload as { initiativeType?: string; skillKey?: string }
+    return (
+      <InitiativeRollBody
+        character={character}
+        skills={skills}
+        hudSkills={hudSkills}
+        forceRating={forceRating}
+        campaignId={effectiveCampaignId}
+        initiativeType={p.initiativeType === 'cool' ? 'cool' : 'vigilance'}
+        requestedSkillKey={p.skillKey}
+        pendingRow={initiativePendingRow}
+        resolvePendingAction={resolvePendingAction}
+      />
+    )
+  }, [character, skills, hudSkills, forceRating, effectiveCampaignId, initiativePendingRow, resolvePendingAction])
 
   async function acknowledgeConflict(id: string) {
     setAckBusy(true)
@@ -469,7 +498,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         position: 'relative', zIndex: 1,
         display: 'grid',
         gridTemplateColumns: '72px 1fr clamp(200px,18%,260px)',
-        gridTemplateRows: 'auto auto 1fr',
+        gridTemplateRows: 'auto auto auto 1fr',
         height: '100vh',
       }}>
 
@@ -481,15 +510,28 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
           speciesName={speciesName}
           isCombat={isCombat}
           combatRound={combatRound}
-          pdfGenerating={pdfGenerating}
           destinyPoolRecord={destinyPoolRecord}
           onSpendDestinyOpen={() => setDestinySpendOpen(true)}
           onSpendCreditsOpen={() => setSpendCreditsOpen(true)}
-          onDownloadPDF={handleDownloadPDF}
+          alertCount={alertCount}
+          alertBlockingCount={alertBlockingCount}
+          alertsOpen={alertsOpen}
+          onToggleAlerts={() => setAlertsOpen(o => !o)}
           onLogout={handleLogout}
           uiTheme={uiTheme}
           onThemeChange={handleThemeChange}
         />
+
+        {/* ══ ALERTS DRAWER — grid sibling, pushes content (never an overlay) ══ */}
+        <div style={{ gridColumn: '1 / -1' }}>
+          <HudNotificationsDrawer
+            open={alertsOpen}
+            actions={pendingActions}
+            blockingCount={alertBlockingCount}
+            onClose={() => setAlertsOpen(false)}
+            renderInitiativeBody={renderInitiativeBody}
+          />
+        </div>
 
         {/* ══ STATUS STRIP ═════════════════════════════════════ */}
         <HudStatusStrip
@@ -731,6 +773,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
       <HudModalsOverlay
         character={character}
         skills={skills}
+        hudSkills={hudSkills}
         talents={talents}
         refTalentMap={refTalentMap}
         speciesAbilities={speciesAbilities}
@@ -749,6 +792,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
         forceRollResult={forceRollResult}
         setForceRollResult={setForceRollResult}
         initRoll={initRoll}
+        initiativePendingRow={initiativePendingRow}
+        resolvePendingAction={resolvePendingAction}
         setInitRoll={setInitRoll}
         skillPopover={skillPopover}
         setSkillPopover={setSkillPopover}
