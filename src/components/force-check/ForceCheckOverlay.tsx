@@ -1,15 +1,18 @@
 'use client'
 
-import { useState, useEffect, useMemo, useRef } from 'react'
-import { FS, HUD, FONT_DISPLAY, FONT_BODY, SP, EASE, RADIUS, Z } from '@/lib/tokens'
+import { useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
+import gsap from 'gsap'
+import { FS, FONT_BODY, SP, RADIUS, MODAL } from '@/lib/tokens'
 import { createClient } from '@/lib/supabase/client'
+import { Modal } from '@/components/ui/Modal'
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
+import { igniteModalOpen, igniteModalClose, IGNITE_EXIT_MS } from '@/lib/utils'
 import type { Character } from '@/lib/types'
-import type { ForceRollResult, ForceDie } from '@/lib/forceRoll'
+import type { ForceRollResult } from '@/lib/forceRoll'
 import type { ForcePowerDisplay } from '@/components/player-hud/ForcePanel'
 import type { AdversaryInstance } from '@/lib/adversaries'
 import { rollForceDice } from '@/components/player-hud/dice-engine'
 import { RichText } from '@/components/ui/RichText'
-import { ForceDescriptionPanel } from '@/components/force-check/ForceDescriptionPanel'
 
 type RollPhase = 'idle' | 'tumble' | 'reveal' | 'done'
 
@@ -28,175 +31,90 @@ export interface ForceCheckOverlayProps {
   visibleEnemies?: AdversaryInstance[]
 }
 
-// ── Section badge ─────────────────────────────────────────────────────────────
-function SectionBadge({ n }: { n: number }) {
-  return (
-    <div style={{
-      width: 18, height: 18, /* section badge — px intentional, fixed indicator */
-      borderRadius: '50%',
-      border: `1px solid color-mix(in srgb, var(--hud-accent-purple) 45%, transparent)`,
-      background: `color-mix(in srgb, var(--hud-accent-purple) 10%, transparent)`,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      flexShrink: 0,
-    }}>
-      <span style={{
-        fontFamily: FONT_DISPLAY,
-        fontSize: '10px', /* badge number — px intentional */
-        fontWeight: 700,
-        color: `color-mix(in srgb, var(--hud-accent-purple) 80%, transparent)`,
-        lineHeight: 1,
-      }}>{n}</span>
-    </div>
-  )
+// ── Force Point identity ──────────────────────────────────────────────────────
+// One entry per point the roll produced. `kind` + `idx` together are the point's
+// stable identity: `idx` is its index WITHIN its own kind, which is exactly what
+// `lightSpentIdx` / `darkSpentIdx` have always meant, so those sets can still be
+// derived from an allocation map without changing their semantics.
+// `dieIndex` is what the flight animation needs — the die that produced it.
+interface ForcePoint {
+  kind:     'light' | 'dark'
+  idx:      number
+  dieIndex: number
 }
 
-// ── Step rail chip ────────────────────────────────────────────────────────────
-type StepState = 'active' | 'done' | 'upcoming'
+const pointId = (p: ForcePoint) => `${p.kind}-${p.idx}`
 
-function StepChip({ n, label, state }: { n: number; label: string; state: StepState }) {
-  const opacity = state === 'active' ? 1 : state === 'done' ? 0.65 : 0.35
-  const filled  = state !== 'upcoming'
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: SP[1], opacity, transition: `opacity ${EASE.default}` }}>
-      <div style={{
-        width: 16, height: 16, /* step circle — px intentional, fixed indicator */
-        borderRadius: '50%',
-        border: `1.5px solid var(--hud-accent-purple)`,
-        background: filled ? 'var(--hud-accent-purple)' : 'transparent',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexShrink: 0,
-      }}>
-        <span style={{
-          fontFamily: FONT_DISPLAY, fontSize: '9px', /* step number — px intentional */
-          fontWeight: 700, lineHeight: 1,
-          color: filled ? 'color-mix(in srgb, black 70%, transparent)' : 'var(--hud-accent-purple)',
-        }}>{n}</span>
-      </div>
-      <span style={{
-        fontFamily: FONT_DISPLAY, fontSize: FS.overline, fontWeight: 700,
-        letterSpacing: '0.1em', textTransform: 'uppercase',
-        color: 'var(--hud-accent-purple)',
-      }}>{label}</span>
-    </div>
-  )
-}
+// ── Flight tuning ─────────────────────────────────────────────────────────────
+const FLY_MS      = 550   /* per-flyer travel — animation timing */
+const FLY_STAGGER = 120   /* nominal gap between flyers — animation timing */
+const FLY_WINDOW  = 840   /* total stagger budget; the gap compresses past ~7
+                             points so a Force rating of 5+ does not drag —
+                             the individual flight length never shortens */
 
-// ── Manual pip tracker — tap-to-tick scratchpad, purely a counter ──────────────
-function TrackerPip({ dark, spent, onClick }: { dark: boolean; spent: boolean; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="fco-tracker-pip"
-      style={{
-        width: 20, height: 20, /* tracker pip — px intentional, tappable die-identity indicator */
-        borderRadius: '50%',
-        border: `1.5px solid color-mix(in srgb, var(--hud-accent-purple) ${dark ? 70 : 45}%, transparent)`,
-        background: dark
-          ? `color-mix(in srgb, var(--hud-accent-purple) 70%, black)` /* deeper purple — dark pip */
-          : `color-mix(in srgb, var(--hud-accent-purple) 35%, white)`, /* light-purple — light pip */
-        opacity: spent ? 0.32 : 1,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexShrink: 0, cursor: 'pointer',
-        transition: `opacity ${EASE.quick}, transform ${EASE.quick}`,
-      }}
-    >
-      {spent && (
-        <span style={{
-          fontSize: '10px', /* pip checkmark — px intentional */
-          fontWeight: 700,
-          color: dark ? 'white' : 'black',
-          lineHeight: 1,
-        }}>✓</span>
-      )}
-    </button>
-  )
-}
-
-// ── Force die reveal face ─────────────────────────────────────────────────────
-const OCTAGON_CLIP = 'polygon(28% 0%, 72% 0%, 100% 28%, 100% 72%, 72% 100%, 28% 100%, 0% 72%, 0% 28%)'
-
-function ForceDieRevealFace({
-  die, revealed, index,
-}: {
-  die: ForceDie
-  revealed: boolean
-  index: number
+// ── Stage header ──────────────────────────────────────────────────────────────
+// Module scope: a component declared inside the panel body would be a new type
+// on every render.
+function StageHead({ n, name, summary, done }: {
+  n: number; name: string; summary?: string; done: boolean
 }) {
-  const empty = die.light === 0 && die.dark === 0
   return (
-    // Glow wrapper — no clip-path; filter:drop-shadow follows the octagon child's painted pixels
-    <div style={{
-      display: 'inline-flex', flexShrink: 0,
-      filter: revealed
-        ? `drop-shadow(0 0 7px color-mix(in srgb, var(--hud-accent-purple) 55%, transparent))`
-        : 'none',
-    }}>
-      {/* Animation + border layer — clipped to octagon; corners are cleanly cut */}
-      <div style={{
-        width: 44, height: 44, /* die cell — px intentional, die-identity display */
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        clipPath: OCTAGON_CLIP,
-        background: revealed
-          ? `color-mix(in srgb, var(--hud-accent-purple) 40%, transparent)`
-          : `color-mix(in srgb, var(--hud-accent-purple) 22%, transparent)`,
-        animationName: revealed ? 'fco-die-bounce' : 'fco-tumble',
-        animationDuration: revealed ? '0.4s' : '0.7s', /* animation timing */
-        animationTimingFunction: revealed ? 'cubic-bezier(0.34, 1.56, 0.64, 1)' : 'linear',
-        animationIterationCount: revealed ? 1 : 'infinite' as const,
-        animationFillMode: revealed ? 'both' : 'none',
-        animationDelay: revealed ? '0s' : `${index * 0.09}s`, /* stagger tumble start — animation timing */
-      }}>
-        {/* Fill layer — inset octagon with radial gradient */}
-        <div style={{
-          width: 41, height: 41, /* inset 1.5px — px intentional, die geometry */
-          clipPath: OCTAGON_CLIP,
-          background: revealed
-            ? `radial-gradient(circle at 35% 35%, color-mix(in srgb, var(--hud-accent-purple) 18%, transparent), color-mix(in srgb, var(--hud-accent-purple) 6%, transparent) 70%)`
-            : `color-mix(in srgb, var(--hud-accent-purple) 4%, transparent)`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexDirection: 'column', gap: 3, /* pip gap — px intentional, die geometry */
-        }}>
-          {revealed && (
-            <>
-              {empty && (
-                <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint }}>—</span>
-              )}
-              {die.light > 0 && (
-                <div style={{ display: 'flex', gap: 2 /* pip gap — px intentional */ }}>
-                  {Array.from({ length: die.light }).map((_, i) => (
-                    <div key={i} style={{
-                      width: 8, height: 8, /* light pip — px intentional, die-identity display */
-                      borderRadius: RADIUS.full,
-                      background: 'white', /* light-side pip — approved game-mechanic colour */
-                      animationName: 'fco-pip-pulse',
-                      animationDuration: `${1.6 + i * 0.35}s`, /* staggered pulse — animation timing */
-                      animationTimingFunction: 'ease-in-out',
-                      animationIterationCount: 'infinite' as const,
-                      animationDelay: `${i * 0.25}s`, /* stagger — animation timing */
-                    }} />
-                  ))}
-                </div>
-              )}
-              {die.dark > 0 && (
-                <div style={{ display: 'flex', gap: 2 /* pip gap — px intentional */ }}>
-                  {Array.from({ length: die.dark }).map((_, i) => (
-                    <div key={i} style={{
-                      width: 8, height: 8, /* dark pip — px intentional, die-identity display */
-                      borderRadius: RADIUS.full,
-                      background: `color-mix(in srgb, black 90%, var(--hud-accent-purple))`, /* dark-side pip */
-                      animationName: 'fco-pip-crackle',
-                      animationDuration: '0.75s', /* crackle interval — animation timing */
-                      animationTimingFunction: 'linear',
-                      animationIterationCount: 'infinite' as const,
-                      animationDelay: `${i * 0.18}s`, /* stagger — animation timing */
-                    }} />
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      </div>
+    <div className="fc-stage-head">
+      <span className="fc-stage-num">{done ? '✓' : n}</span>
+      <span className="fc-stage-name">{name}</span>
+      {summary && <span className="fc-stage-summary">{summary}</span>}
+    </div>
+  )
+}
+
+// ── One Force die ─────────────────────────────────────────────────────────────
+// Face-down "?" before the roll, tumbling with cycling faces during it, then
+// frozen showing its ACTUAL result — including a visible blank when the die
+// produced nothing.
+function ForceDieFace({
+  light, dark, state, cycleFace, dieRef,
+}: {
+  light: number
+  dark: number
+  state: 'facedown' | 'tumbling' | 'settled'
+  cycleFace: number
+  dieRef?: (el: HTMLDivElement | null) => void
+}) {
+  const cls = `fc-fdie${state === 'tumbling' ? ' is-tumbling' : ''}${state === 'settled' ? ' is-settled' : ''}`
+  let inner: React.ReactNode
+  if (state === 'facedown') {
+    inner = <span className="fc-fdie-blank">?</span>
+  } else if (state === 'tumbling') {
+    // Faces cycle while the die is in the air — deliberately NOT the real
+    // result, which is only revealed on settle.
+    const faces = [
+      <span key="b" className="fc-fdie-blank">·</span>,
+      <span key="l" className="fc-fdie-face"><span className="fc-fp is-light">✦</span></span>,
+      <span key="d" className="fc-fdie-face"><span className="fc-fp is-dark">✧</span></span>,
+      <span key="q" className="fc-fdie-blank">?</span>,
+    ]
+    inner = faces[cycleFace % faces.length]
+  } else if (light === 0 && dark === 0) {
+    inner = <span className="fc-fdie-blank">—</span>
+  } else {
+    inner = (
+      <span className="fc-fdie-face">
+        {Array.from({ length: light }).map((_, i) => (
+          <span key={`l${i}`} className="fc-fp is-light" data-fp="light">✦</span>
+        ))}
+        {Array.from({ length: dark }).map((_, i) => (
+          <span key={`d${i}`} className="fc-fp is-dark" data-fp="dark">✧</span>
+        ))}
+      </span>
+    )
+  }
+  // The glow wrapper is structural, not decorative: `.fc-fdie` is clipped to an
+  // octagon and a clip-path clips box-shadow away, so the halo has to be a
+  // drop-shadow on a parent. The ref stays on the die itself — the flight
+  // measures its origin from the die's own pips.
+  return (
+    <div className="fc-fdie-glow">
+      <div className={cls} ref={dieRef}>{inner}</div>
     </div>
   )
 }
@@ -212,16 +130,32 @@ export function ForceCheckOverlay({
   const [selectedPowerKey, setSelectedPowerKey] = useState<string | null>(null)
   const [forceRoll, setForceRoll] = useState<ForceRollResult | null>(null)
   const [activatedKeys, setActivatedKeys] = useState<Set<string>>(new Set())
-  const [lightSpentIdx, setLightSpentIdx] = useState<Set<number>>(new Set())
-  const [darkSpentIdx, setDarkSpentIdx]   = useState<Set<number>>(new Set())
   const [busy, setBusy]           = useState(false)
-  const [descPanelOpen, setDescPanelOpen] = useState(false)
   const [rollPhase, setRollPhase]         = useState<RollPhase>('idle')
   const [pendingRoll, setPendingRoll]     = useState<ForceRollResult | null>(null)
   const [revealedCount, setRevealedCount] = useState(0)
 
+  // ── Allocation model ────────────────────────────────────────────────────────
+  // `alloc` is the source of truth: which points sit on which upgrade. An
+  // upgrade accepts ANY number of points — there is no per-effect cap, because
+  // `pip_cost` is a text-derived heuristic that must never gate or validate.
+  const [alloc, setAlloc]   = useState<Record<string, ForcePoint[]>>({})
+  const [armed, setArmed]   = useState<ForcePoint | null>(null)
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
+  const [powerDescOpen, setPowerDescOpen] = useState(false)
+  const [landedIds, setLandedIds] = useState<Set<string>>(new Set())
+  const [cycleFace, setCycleFace] = useState(0)
+
   const timerIds = useRef<ReturnType<typeof setTimeout>[]>([])
-  const drawerRef = useRef<HTMLDivElement>(null)
+  const prefersReducedMotion = usePrefersReducedMotion()
+  const shellRef  = useRef<HTMLDivElement>(null)
+  const scrimRef  = useRef<HTMLDivElement>(null)
+  const pulseRef  = useRef<HTMLDivElement>(null)
+  const bankRef   = useRef<HTMLDivElement>(null)
+  const dieRefs   = useRef<(HTMLDivElement | null)[]>([])
+  const igniteTlRef = useRef<gsap.core.Timeline | null>(null)
+  const flyTlRef    = useRef<gsap.core.Timeline | null>(null)
+  const flyNodesRef = useRef<HTMLElement[]>([])
 
   function clearTimers() {
     timerIds.current.forEach(id => clearTimeout(id))
@@ -234,10 +168,12 @@ export function ForceCheckOverlay({
       setSelectedPowerKey(null)
       setForceRoll(null)
       setActivatedKeys(new Set())
-      setLightSpentIdx(new Set())
-      setDarkSpentIdx(new Set())
+      setAlloc({})
+      setArmed(null)
+      setExpanded(new Set())
+      setPowerDescOpen(false)
+      setLandedIds(new Set())
       setBusy(false)
-      setDescPanelOpen(false)
       setRollPhase('idle')
       setPendingRoll(null)
       setRevealedCount(0)
@@ -259,20 +195,46 @@ export function ForceCheckOverlay({
   const basicUpgrade     = useMemo(() => upgrades.find(u => u.key.toUpperCase().endsWith('BASIC')) ?? null, [upgrades])
   const nonBasicUpgrades = useMemo(() => upgrades.filter(u => !u.key.toUpperCase().endsWith('BASIC')), [upgrades])
 
-  // ── Step orchestration — ① Power → ② Channel → ③ Spend ───────────────────
-  const activeStep = !selectedPowerKey ? 1 : !forceRoll ? 2 : 3
-  const stepState = (n: number): StepState => n < activeStep ? 'done' : n === activeStep ? 'active' : 'upcoming'
+  // ── Points produced by the roll, each tagged with its originating die ────────
+  const points = useMemo<ForcePoint[]>(() => {
+    if (!forceRoll) return []
+    const out: ForcePoint[] = []
+    let li = 0, di = 0
+    forceRoll.dice.forEach((d, dieIndex) => {
+      for (let i = 0; i < d.light; i++) out.push({ kind: 'light', idx: li++, dieIndex })
+      for (let i = 0; i < d.dark;  i++) out.push({ kind: 'dark',  idx: di++, dieIndex })
+    })
+    return out
+  }, [forceRoll])
+
+  const placedIds = useMemo(() => {
+    const s = new Set<string>()
+    for (const list of Object.values(alloc)) for (const p of list) s.add(pointId(p))
+    return s
+  }, [alloc])
+
+  // ── Derived spent-index sets ────────────────────────────────────────────────
+  // These preserve the ORIGINAL semantics exactly — a set of per-kind indices
+  // marked spent — so `handleChannelForce`'s payload is unchanged. The
+  // allocation map is simply a richer store that these are projected from.
+  const lightSpentIdx = useMemo(
+    () => new Set(Object.values(alloc).flat().filter(p => p.kind === 'light').map(p => p.idx)),
+    [alloc]
+  )
+  const darkSpentIdx = useMemo(
+    () => new Set(Object.values(alloc).flat().filter(p => p.kind === 'dark').map(p => p.idx)),
+    [alloc]
+  )
 
   const lightTotal = forceRoll?.totalLight ?? 0
   const darkTotal  = forceRoll?.totalDark  ?? 0
   const lightSpent = lightSpentIdx.size
   const darkSpent  = darkSpentIdx.size
 
-  const activatedUpgradeList = useMemo(
-    () => nonBasicUpgrades.filter(u => activatedKeys.has(u.key)),
-    [nonBasicUpgrades, activatedKeys]
+  const blankCount = useMemo(
+    () => (forceRoll?.dice ?? []).filter(d => d.light === 0 && d.dark === 0).length,
+    [forceRoll]
   )
-  const noSpendableFP = forceRoll !== null && lightTotal === 0 && darkTotal === 0
 
   // ── Roll — 4-phase animation sequence ────────────────────────────────────────
   function handleRollWithAnimation() {
@@ -285,8 +247,9 @@ export function ForceCheckOverlay({
     setPendingRoll(result)
     setForceRoll(null)
     setActivatedKeys(new Set())
-    setLightSpentIdx(new Set())
-    setDarkSpentIdx(new Set())
+    setAlloc({})
+    setArmed(null)
+    setLandedIds(new Set())
     setRevealedCount(0)
     setRollPhase('tumble')
 
@@ -318,22 +281,6 @@ export function ForceCheckOverlay({
     setActivatedKeys(prev => {
       const next = new Set(prev)
       next.has(key) ? next.delete(key) : next.add(key)
-      return next
-    })
-  }
-
-  // ── Manual pip tracker — tap to mark a rolled pip as spent ────────────────
-  function toggleLightPip(i: number) {
-    setLightSpentIdx(prev => {
-      const next = new Set(prev)
-      next.has(i) ? next.delete(i) : next.add(i)
-      return next
-    })
-  }
-  function toggleDarkPip(i: number) {
-    setDarkSpentIdx(prev => {
-      const next = new Set(prev)
-      next.has(i) ? next.delete(i) : next.add(i)
       return next
     })
   }
@@ -402,556 +349,250 @@ export function ForceCheckOverlay({
     timerIds.current.push(setTimeout(onClose, 1500)) /* hold result on screen — animation timing */
   }
 
+  // ── Spend interactions ──────────────────────────────────────────────────────
+  // Nothing armed  → tap toggles the effect active. An active effect with NO
+  //                  points is valid (passives, condition-only effects).
+  // Point armed    → tap places the point there and activates the row.
+  function handleRowTap(key: string) {
+    if (armed) {
+      const id = pointId(armed)
+      if (placedIds.has(id)) { setArmed(null); return }   // already placed — no double-count
+      setAlloc(prev => ({ ...prev, [key]: [...(prev[key] ?? []), armed] }))
+      setActivatedKeys(prev => new Set(prev).add(key))
+      setArmed(null)
+      return
+    }
+    // A row holding points cannot be toggled off; return the points first.
+    if (activatedKeys.has(key) && (alloc[key]?.length ?? 0) > 0) return
+    toggleUpgradeActive(key)
+  }
+
+  function handleChipTap(key: string, chipIndex: number) {
+    setAlloc(prev => {
+      const list = prev[key] ?? []
+      return { ...prev, [key]: list.filter((_, i) => i !== chipIndex) }
+    })
+  }
+
+  function handleTokenTap(p: ForcePoint) {
+    const id = pointId(p)
+    if (placedIds.has(id)) return
+    setArmed(prev => (prev && pointId(prev) === id ? null : p))
+  }
+
   const canChannel = selPower !== null && forceRoll !== null
   const isRolling  = rollPhase === 'tumble' || rollPhase === 'reveal'
-  const ctaLabel   = isRolling ? 'Channelling…' : forceRoll ? 'Activate Power' : 'Channel the Force'
-  const ctaActive  = !isRolling && !busy && (forceRoll ? canChannel : available > 0)
 
-  const FCO_STYLES = `
-    @keyframes fco-tumble {
-      0%   { transform: rotate(0deg)   scale(1.05); }
-      25%  { transform: rotate(90deg)  scale(0.92); }
-      50%  { transform: rotate(180deg) scale(1.05); }
-      75%  { transform: rotate(270deg) scale(0.92); }
-      100% { transform: rotate(360deg) scale(1.05); }
+  // ── Modal ignition ──────────────────────────────────────────────────────────
+  // Consumes the documented convention (docs/architecture.md → "Modal
+  // ignition"); timings live there and are not re-derived here.
+  useEffect(() => {
+    igniteTlRef.current?.kill()
+    const targets = {
+      inner:  shellRef.current,
+      scrim:  scrimRef.current,
+      pulse:  pulseRef.current,
+      origin: typeof document !== 'undefined'
+        ? document.querySelector('.hud-rail-btn-force')
+        : null,
+      // Per-check accent identity — this console flares purple. Read through
+      // the scoped properties so the console and its flare cannot disagree.
+      accent: 'var(--check-accent)',
+      glow:   'var(--check-glow)',
+      restShadow: MODAL.shadow,
+      reducedMotion: prefersReducedMotion,
     }
-    @keyframes fco-die-bounce {
-      0%   { transform: scale(0) rotate(-15deg); opacity: 0; }
-      55%  { transform: scale(1.15) rotate(4deg);  opacity: 1; }
-      75%  { transform: scale(0.92) rotate(-2deg); opacity: 1; }
-      100% { transform: scale(1)    rotate(0deg);  opacity: 1; }
+    igniteTlRef.current = open ? igniteModalOpen(targets) : igniteModalClose(targets)
+    return () => { igniteTlRef.current?.kill() }
+  }, [open, prefersReducedMotion])
+
+  // ── Face cycling during the tumble ──────────────────────────────────────────
+  useEffect(() => {
+    if (rollPhase !== 'tumble' || prefersReducedMotion) return
+    const iv = setInterval(() => setCycleFace(c => c + 1), 80) /* face cycle — animation timing */
+    return () => clearInterval(iv)
+  }, [rollPhase, prefersReducedMotion])
+
+  // ── The flight ──────────────────────────────────────────────────────────────
+  // Each Force Point flies from the die that produced it into the bank at the
+  // head of column 3, making the roll → currency causation visible.
+  //
+  // PURELY DECORATIVE. `points` already exists the moment `forceRoll` is set, so
+  // every point is armable and spendable immediately; this only controls when
+  // each bank token becomes VISIBLE. Nothing downstream waits on it.
+  //
+  // `useLayoutEffect` with `open` in the deps: Modal renders its children only
+  // while open, so the die and bank refs are null until the console is actually
+  // on screen.
+  useLayoutEffect(() => {
+    flyTlRef.current?.kill()
+    flyNodesRef.current.forEach(n => n.remove())
+    flyNodesRef.current = []
+
+    if (!open || !forceRoll) return
+    if (!points.length) { setLandedIds(new Set()); return }
+
+    // Reduced motion: no flight, points appear in the bank immediately.
+    if (prefersReducedMotion) {
+      setLandedIds(new Set(points.map(pointId)))
+      return
     }
-    @keyframes fco-totals-in {
-      from { opacity: 0; transform: translateY(4px); }
-      to   { opacity: 1; transform: translateY(0);   }
+
+    const bank = bankRef.current
+    if (!bank) { setLandedIds(new Set(points.map(pointId))); return }
+    const bankRect = bank.getBoundingClientRect()
+
+    // Compress the GAP, never the individual flight, so a Force rating of 5+
+    // does not turn into a queue.
+    const stagger = Math.min(FLY_STAGGER, FLY_WINDOW / points.length)
+
+    const tl = gsap.timeline()
+    points.forEach((p, i) => {
+      const die = dieRefs.current[p.dieIndex]
+      // Prefer the exact pip on the die face; fall back to the die itself.
+      const pips = die?.querySelectorAll<HTMLElement>(`[data-fp="${p.kind}"]`)
+      const sameKindBefore = points.slice(0, i).filter(q => q.dieIndex === p.dieIndex && q.kind === p.kind).length
+      const src = pips?.[sameKindBefore] ?? die
+      const from = (src ?? bank).getBoundingClientRect()
+
+      const fl = document.createElement('div')
+      fl.className = `fc-fly fc-fp is-${p.kind}`
+      fl.textContent = p.kind === 'light' ? '✦' : '✧'
+      document.body.appendChild(fl)
+      flyNodesRef.current.push(fl)
+
+      const id = pointId(p)
+      tl.fromTo(fl,
+        { left: from.left, top: from.top, opacity: 1 },
+        {
+          left: bankRect.left + bankRect.width * 0.4,
+          top:  bankRect.top + bankRect.height / 2 - 14,
+          duration: FLY_MS / 1000,
+          ease: 'power2.inOut',
+          onComplete: () => {
+            fl.remove()
+            flyNodesRef.current = flyNodesRef.current.filter(n => n !== fl)
+            setLandedIds(prev => new Set(prev).add(id))
+          },
+        },
+        i * (stagger / 1000))
+    })
+    flyTlRef.current = tl
+
+    return () => {
+      tl.kill()
+      flyNodesRef.current.forEach(n => n.remove())
+      flyNodesRef.current = []
     }
-    @keyframes fco-orb-pulse {
-      0%,100% { box-shadow: 0 0 14px color-mix(in srgb, var(--hud-accent-purple) 30%, transparent); }
-      50%     { box-shadow: 0 0 32px color-mix(in srgb, var(--hud-accent-purple) 65%, transparent),
-                             inset 0 0 14px color-mix(in srgb, var(--hud-accent-purple) 20%, transparent); }
-    }
-    @keyframes fco-pip-pulse {
-      0%, 100% { opacity: 0.85;
-                 box-shadow: 0 0 3px 1px white,
-                             0 0 8px color-mix(in srgb, var(--hud-accent-purple) 60%, white); }
-      50%      { opacity: 1;
-                 box-shadow: 0 0 6px 2px white,
-                             0 0 16px white,
-                             0 0 26px color-mix(in srgb, var(--hud-accent-purple) 70%, white); }
-    }
-    @keyframes fco-pip-crackle {
-      0%, 100% { box-shadow: 0 0 1px color-mix(in srgb, var(--hud-accent-purple) 50%, transparent); }
-      20%      { box-shadow:  1px -2px 5px color-mix(in srgb, var(--hud-accent-purple) 95%, white),
-                              0   0   3px color-mix(in srgb, var(--hud-accent-purple) 40%, transparent); }
-      40%      { box-shadow: 0 0 1px color-mix(in srgb, var(--hud-accent-purple) 25%, transparent); }
-      60%      { box-shadow: -2px  1px 5px color-mix(in srgb, var(--hud-accent-purple) 90%, white),
-                              1px  0   3px color-mix(in srgb, var(--hud-accent-purple) 55%, transparent); }
-      80%      { box-shadow: 0 0 1px color-mix(in srgb, var(--hud-accent-purple) 20%, transparent); }
-    }
-    @keyframes fco-basic-glow {
-      0%, 100% { box-shadow: 0 0 6px color-mix(in srgb, var(--hud-accent-purple) 30%, transparent); }
-      50%      { box-shadow: 0 0 18px color-mix(in srgb, var(--hud-accent-purple) 65%, transparent),
-                             inset 0 0 8px color-mix(in srgb, var(--hud-accent-purple) 10%, transparent); }
-    }
-    .fco-tracker-pip:hover { transform: scale(1.12); }
-  `
+    // prefersReducedMotion is false on first render — must be a dependency.
+  }, [open, forceRoll, points, prefersReducedMotion])
+
+  // ── Derived copy ────────────────────────────────────────────────────────────
+  const activeCount = useMemo(
+    () => nonBasicUpgrades.filter(u => activatedKeys.has(u.key)).length,
+    [nonBasicUpgrades, activatedKeys]
+  )
+  const bankRemaining = points.length - placedIds.size
+
+  const statusText = !selPower
+    ? 'Choose the Force power you are using this turn'
+    : !forceRoll
+      ? `Roll your Force dice to generate Force Points`
+      : darkSpent > 0
+        ? `Dark side: flip a Destiny token and take ${darkSpent} Conflict — resolve with your GM`
+        : activeCount > 0
+          ? 'Ready to commit'
+          : 'Activate your power\'s effects and place your Force Points'
+
+  const stage1Done = !!selPower
+  const stage2Done = !!forceRoll
+
+  const rowsToRender = useMemo(() => {
+    const rows: { key: string; name: string; description?: string; basic: boolean }[] = []
+    if (basicUpgrade) rows.push({ key: basicUpgrade.key, name: basicUpgrade.name, description: basicUpgrade.description, basic: true })
+    for (const u of nonBasicUpgrades) rows.push({ key: u.key, name: u.name, description: u.description, basic: false })
+    return rows
+  }, [basicUpgrade, nonBasicUpgrades])
 
   return (
-    <div
-      ref={drawerRef}
-      className={`hud-quick-drawer${open ? ' open' : ''}`}
-      style={{
-        background: 'var(--hud-surface-hi)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        borderRight: `1px solid color-mix(in srgb, var(--hud-accent-purple) 25%, transparent)`,
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-      }}
+    <Modal
+      open={open}
+      onClose={onClose}
+      maxWidth="min(1180px, calc(100vw - 48px))"
+      panelBackground="var(--hud-surface-hi)"
+      scrimRef={scrimRef}
+      scrimClassName="fc-scrim-ignite"
+      portalExtra={<div ref={pulseRef} className="fc-pulse is-check-force" aria-hidden />}
+      exitMs={IGNITE_EXIT_MS}
     >
-      {/* Scoped animation keyframes */}
-      <style dangerouslySetInnerHTML={{ __html: FCO_STYLES }} />
-      {/* Top accent stripe */}
-      <div style={{
-        height: 3, /* decorative stripe — px intentional */
-        flexShrink: 0,
-        background: `linear-gradient(90deg, transparent, var(--hud-accent-purple) 30%, color-mix(in srgb, var(--hud-accent-purple) 60%, white) 70%, transparent)`,
-      }} />
+    <div className="cc-modal is-check-force" ref={shellRef}>
 
-      {/* ── Header — centered title ──────────────────────────────────────────── */}
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        position: 'relative',
+      {/* Two-tone top edge — this console's own accent LEADS, the theme's trails. */}
+      <div style={{ height: 3, background: 'linear-gradient(90deg, transparent, var(--check-accent) 30%, var(--check-accent-alt) 70%, transparent)', flexShrink: 0 }} />
+
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      <div data-ignite-stagger style={{
+        display: 'flex', alignItems: 'center', gap: SP[2],
         padding: `${SP[2]} ${SP[3]}`,
-        borderBottom: `1px solid var(--hud-border)`,
+        borderBottom: '1px solid var(--hud-border)',
         background: 'var(--hud-panel)', flexShrink: 0,
       }}>
+        <span style={{ color: 'var(--hud-text-faint)', fontSize: FS.sm, lineHeight: 1 }}>≋</span>
         <span style={{
-          fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700,
-          letterSpacing: '0.2em', textTransform: 'uppercase',
-          color: 'var(--hud-accent-purple)',
-          display: 'flex', alignItems: 'center', gap: SP[2],
-        }}>
-          <span style={{ opacity: 0.7 }}>✦</span>
-          Force Check
-        </span>
-        <button
-          onClick={onClose}
-          style={{
-            position: 'absolute', right: SP[2],
-            background: 'none', border: 'none', cursor: 'pointer',
-            color: HUD.textFaint, fontSize: FS.sm,
-            padding: `0 ${SP[1]}`, lineHeight: 1,
-          }}
-        >✕</button>
+          fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700,
+          letterSpacing: '0.15em', textTransform: 'uppercase' as const,
+          color: 'var(--hud-text)', flex: 1,
+        }}>Force Check</span>
+        <button onClick={onClose} style={{
+          background: 'none', border: 'none', cursor: 'pointer',
+          color: 'var(--hud-text-faint)', fontSize: FS.sm, padding: `0 ${SP[1]}`, lineHeight: 1,
+        }}>✕</button>
       </div>
 
-      {/* ── Step rail ────────────────────────────────────────────────────────── */}
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: `${SP[2]} ${SP[3]}`,
-        borderBottom: `1px solid var(--hud-border)`,
-        background: 'var(--hud-panel)', flexShrink: 0,
-      }}>
-        <StepChip n={1} label="Power" state={stepState(1)} />
-        <StepChip n={2} label="Channel" state={stepState(2)} />
-        <StepChip n={3} label="Spend" state={stepState(3)} />
-      </div>
+      {/* ── Body: three columns ────────────────────────────────────────────── */}
+      <div className="fc-console-body" style={{ flex: 1, overflowY: 'auto', overscrollBehavior: 'contain' }}>
+        <div className="fc-cols is-force">
 
-      {/* ── Body — scrollable ────────────────────────────────────────────────── */}
-      <div style={{
-        flex: 1, overflowY: 'auto',
-        display: 'flex', flexDirection: 'column',
-        overscrollBehavior: 'contain',
-      }}>
-
-        {/* ── ① Force Power ────────────────────────────────────────────────── */}
-        <div style={{ padding: `${SP[3]} ${SP[3]} ${SP[2]}`, display: 'flex', flexDirection: 'column', gap: SP[2] }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: SP[2] }}>
-            <SectionBadge n={1} />
-            <span style={{
-              fontFamily: FONT_BODY, fontSize: FS.overline,
-              color: HUD.textFaint, textTransform: 'uppercase', letterSpacing: '0.15em',
-            }}>Force Power</span>
-          </div>
-
-          {purchased.length === 0 ? (
-            <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: HUD.textFaint, fontStyle: 'italic', padding: `${SP[2]} 0` }}>
-              No Force powers purchased yet.
+          {/* ── 1 — Power ──────────────────────────────────────────────────── */}
+          <div data-ignite-stagger className={`fc-col${!stage1Done ? ' is-active' : ''}${stage1Done ? ' is-done' : ''}`}>
+            <div style={{ padding: `${SP[3]} ${SP[3]} ${SP[2]}` }}>
+              <StageHead n={1} name="Power" done={stage1Done} summary={selPower?.powerName} />
             </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: SP[1] }}>
-              {purchased.map(p => {
-                const sel             = p.powerKey === selectedPowerKey
-                const allUpgrades     = p.abilities.filter(a => a.purchasedRanks > 0)
-                const activatedCount  = sel ? allUpgrades.filter(u => activatedKeys.has(u.key)).length : 0
-                const totalCount      = allUpgrades.length
-                const hasDetail       = !!(p.description || allUpgrades.some(a => a.description))
-
-                return (
-                  <div key={p.powerKey} style={{ display: 'flex', alignItems: 'stretch', gap: SP[1] }}>
-                    {/* Selection button */}
-                    <button
-                      onClick={() => {
-                        setSelectedPowerKey(prev => prev === p.powerKey ? null : p.powerKey)
-                        setActivatedKeys(new Set())
-                        setLightSpentIdx(new Set())
-                        setDarkSpentIdx(new Set())
-                      }}
-                      style={{
-                        flex: 1, minWidth: 0,
-                        display: 'flex', alignItems: 'center', gap: SP[2],
-                        padding: `${SP[2]} ${SP[3]}`,
-                        background: sel
-                          ? 'color-mix(in srgb, var(--hud-accent-purple) 8%, transparent)'
-                          : 'color-mix(in srgb, var(--hud-accent-purple) 2%, transparent)',
-                        border: sel
-                          ? `1px solid color-mix(in srgb, var(--hud-accent-purple) 38%, transparent)`
-                          : `1px solid color-mix(in srgb, var(--hud-border) 60%, transparent)`,
-                        borderLeft: sel
-                          ? `2px solid var(--hud-accent-purple)`
-                          : `2px solid transparent`,
-                        borderRadius: RADIUS.md,
-                        cursor: 'pointer', textAlign: 'left',
-                        transition: `all ${EASE.quick}`,
-                      }}
-                    >
-                      <span style={{
-                        color: sel ? 'var(--hud-accent-purple)' : HUD.textDim,
-                        fontSize: FS.label, flexShrink: 0,
-                        transition: `color ${EASE.quick}`,
-                      }}>◇</span>
-                      <span style={{
-                        fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700,
-                        color: HUD.text, flex: 1, minWidth: 0,
-                      }}>
-                        {p.powerName}
-                      </span>
-                      {/* Upgrade dot indicators */}
-                      <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexShrink: 0 }}> {/* 4px — px intentional, tight dot gap */}
-                        {Array.from({ length: totalCount }).map((_, i) => (
-                          <div key={i} style={{
-                            width: 8, height: 8, /* upgrade dot — px intentional, small indicator */
-                            borderRadius: '50%',
-                            background: i < activatedCount
-                              ? 'var(--hud-accent-purple)'
-                              : 'transparent',
-                            border: `1px solid color-mix(in srgb, var(--hud-accent-purple) ${sel ? 55 : 30}%, transparent)`,
-                          }} />
-                        ))}
-                      </div>
-                    </button>
-
-                    {/* ⓘ Info button — opens the Force Description panel */}
-                    {hasDetail && (
-                      <button
-                        onClick={e => {
-                          e.stopPropagation()
-                          setDescPanelOpen(true)
-                        }}
-                        style={{
-                          flexShrink: 0,
-                          background: 'transparent',
-                          border: `1px solid color-mix(in srgb, var(--hud-border) 60%, transparent)`,
-                          borderRadius: RADIUS.md,
-                          cursor: 'pointer',
-                          padding: `0 ${SP[1]}`,
-                          fontFamily: FONT_BODY, fontSize: FS.sm,
-                          color: HUD.textFaint,
-                          transition: `all ${EASE.quick}`,
-                          lineHeight: 1,
-                        }}
-                      >
-                        ⓘ
-                      </button>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* ── Section divider ───────────────────────────────────────────────── */}
-        <div style={{ height: 1, background: 'color-mix(in srgb, var(--hud-border) 70%, transparent)', margin: `0 ${SP[3]}` }} />
-
-        {/* ── ② Channel the Force ──────────────────────────────────────────── */}
-        <div style={{ padding: `${SP[3]} ${SP[3]} ${SP[2]}`, display: 'flex', flexDirection: 'column', gap: SP[2] }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: SP[2] }}>
-            <SectionBadge n={2} />
-            <span style={{
-              fontFamily: FONT_BODY, fontSize: FS.overline,
-              color: HUD.textFaint, textTransform: 'uppercase', letterSpacing: '0.15em',
-            }}>Channel the Force</span>
-          </div>
-
-          {/* Orb — clickable to roll */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: SP[1] }}>
-            <button
-              onClick={handleRollWithAnimation}
-              disabled={available === 0 || isRolling}
-              style={{
-                width: 76, height: 76, /* Force Die Orb — px intentional, die-identity display */
-                borderRadius: '50%',
-                background: `color-mix(in srgb, black 55%, transparent)`,
-                border: isRolling
-                  ? `2px solid color-mix(in srgb, var(--hud-accent-purple) 80%, transparent)`
-                  : `2px solid color-mix(in srgb, var(--hud-accent-purple) ${available > 0 ? 50 : 20}%, transparent)`,
-                boxShadow: forceRoll
-                  ? `0 0 24px color-mix(in srgb, var(--hud-accent-purple) 35%, transparent), inset 0 0 12px color-mix(in srgb, var(--hud-accent-purple) 10%, transparent)`
-                  : `0 0 14px color-mix(in srgb, var(--hud-accent-purple) 12%, transparent)`,
-                animation: isRolling ? `fco-orb-pulse 0.9s ease-in-out infinite` : 'none', /* orb pulse — animation timing */
-                cursor: available > 0 && !isRolling ? 'pointer' : 'default',
-                display: 'flex', flexDirection: 'column',
-                alignItems: 'center', justifyContent: 'center',
-                transition: `border-color ${EASE.default}`,
-              }}
-            >
-              <span style={{
-                fontFamily: FONT_DISPLAY,
-                fontSize: '30px', /* orb count — px intentional, die-identity display size */
-                fontWeight: 900, color: 'white', lineHeight: 1,
-                opacity: isRolling ? 0.25 : 1,
-                transition: `opacity ${EASE.default}`,
-              }}>
-                {available}
-              </span>
-            </button>
-            <div style={{
-              fontFamily: FONT_DISPLAY, fontSize: FS.overline,
-              color: 'var(--hud-accent-purple)', opacity: 0.55,
-              textTransform: 'uppercase', letterSpacing: '0.15em',
-            }}>
-              Force Dice
-            </div>
-          </div>
-
-          {/* Pip result / animation area */}
-          {isRolling && pendingRoll ? (
-            /* Phase 1 + 2: tumbling silhouettes → staggered reveal */
-            <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              gap: SP[1], flexWrap: 'wrap', padding: `${SP[1]} 0`,
-            }}>
-              {pendingRoll.dice.map((die, idx) => (
-                <ForceDieRevealFace
-                  key={idx}
-                  die={die}
-                  revealed={rollPhase === 'reveal' && idx < revealedCount}
-                  index={idx}
-                />
-              ))}
-            </div>
-          ) : forceRoll ? (
-            /* Phase 3 + 4: dice faces (all revealed) + pip totals */
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: SP[2] }}>
-              {/* Dice faces — persist after reveal */}
-              <div style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                gap: SP[1], flexWrap: 'wrap',
-              }}>
-                {forceRoll.dice.map((die, idx) => (
-                  <ForceDieRevealFace key={idx} die={die} revealed={true} index={idx} />
-                ))}
-              </div>
-              {/* Manual pip tracker — tap to mark a rolled pip as spent; purely a counter, no gating */}
-              <div style={{
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: SP[2],
-                animation: `fco-totals-in 0.3s ease both`, /* totals appear — animation timing */
-              }}>
-                <span style={{
-                  fontFamily: FONT_DISPLAY, fontSize: '9px', /* hint — px intentional, tiny label */
-                  color: HUD.textFaint, opacity: 0.6,
-                  textTransform: 'uppercase', letterSpacing: '0.1em',
-                }}>Tap a pip to mark it spent</span>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center', gap: SP[4] }}>
-                  {/* Light group */}
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: SP[1] }}>
-                    <div style={{ display: 'flex', gap: SP[1], flexWrap: 'wrap', justifyContent: 'center' }}>
-                      {Array.from({ length: lightTotal }).map((_, i) => (
-                        <TrackerPip key={i} dark={false} spent={lightSpentIdx.has(i)} onClick={() => toggleLightPip(i)} />
-                      ))}
-                      {lightTotal === 0 && (
-                        <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint }}>—</span>
-                      )}
-                    </div>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: SP[1] }}>
-                      <RichText text="[fp]" />
-                      <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'color-mix(in srgb, var(--hud-accent-purple) 55%, transparent)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>Light</span>
-                      <span style={{ fontFamily: FONT_DISPLAY, fontSize: FS.overline, fontWeight: 700, color: HUD.text }}>{lightSpent}/{lightTotal}</span>
-                    </span>
-                  </div>
-                  {/* Dark group */}
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: SP[1] }}>
-                    <div style={{ display: 'flex', gap: SP[1], flexWrap: 'wrap', justifyContent: 'center' }}>
-                      {Array.from({ length: darkTotal }).map((_, i) => (
-                        <TrackerPip key={i} dark={true} spent={darkSpentIdx.has(i)} onClick={() => toggleDarkPip(i)} />
-                      ))}
-                      {darkTotal === 0 && (
-                        <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint }}>—</span>
-                      )}
-                    </div>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: SP[1] }}>
-                      <RichText text="[fp]" />
-                      <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'color-mix(in srgb, var(--hud-accent-purple) 40%, transparent)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>Dark</span>
-                      <span style={{ fontFamily: FONT_DISPLAY, fontSize: FS.overline, fontWeight: 700, color: HUD.text }}>{darkSpent}/{darkTotal}</span>
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            /* Phase 0: pre-roll hint */
-            <div style={{
-              textAlign: 'center', fontFamily: FONT_BODY, fontSize: FS.overline,
-              color: HUD.textFaint, fontStyle: 'italic',
-            }}>
-              {available > 0 ? 'Tap the orb to roll' : 'No Force dice available'}
-            </div>
-          )}
-
-          {committedForce > 0 && (
-            <div style={{
-              textAlign: 'center', fontFamily: FONT_BODY, fontSize: FS.overline,
-              color: HUD.textFaint, fontStyle: 'italic',
-            }}>
-              {committedForce} die committed to ongoing effects
-            </div>
-          )}
-        </div>
-
-        {/* ── Section divider ───────────────────────────────────────────────── */}
-        <div style={{ height: 1, background: 'color-mix(in srgb, var(--hud-border) 70%, transparent)', margin: `0 ${SP[3]}` }} />
-
-        {/* ── ③ Spend [FP] ─────────────────────────────────────────────────── */}
-        <div style={{
-          padding: `${SP[3]} ${SP[3]}`, display: 'flex', flexDirection: 'column', gap: SP[2],
-          opacity: forceRoll ? 1 : 0.4,
-          pointerEvents: forceRoll ? 'auto' : 'none',
-          transition: `opacity ${EASE.default}`,
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: SP[2] }}>
-            <SectionBadge n={3} />
-            <span style={{
-              fontFamily: FONT_BODY, fontSize: FS.overline,
-              color: HUD.textFaint, textTransform: 'uppercase', letterSpacing: '0.15em',
-            }}>Spend <RichText text="[fp]" /></span>
-          </div>
-
-          {!selPower && (
-            <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint, fontStyle: 'italic', padding: `${SP[1]} 0` }}>
-              Select a Force power above.
-            </div>
-          )}
-          {selPower && !forceRoll && (
-            <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint, fontStyle: 'italic', padding: `${SP[1]} 0` }}>
-              Roll Force dice first.
-            </div>
-          )}
-
-          {selPower && forceRoll && noSpendableFP && (
-            <div style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: SP[2],
-              padding: `${SP[3]} 0`, textAlign: 'center',
-            }}>
-              <span style={{ fontSize: FS.h4, color: HUD.textFaint, opacity: 0.6 }}>⊘</span>
-              <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint, fontStyle: 'italic' }}>
-                No Force points available to spend.
-              </div>
-              <div style={{ display: 'flex', gap: SP[2] }}>
-                <button
-                  onClick={handleRollWithAnimation}
-                  style={{
-                    padding: `2px ${SP[3]}`, /* secondary button — 2px minimum touch target, px intentional */
-                    background: 'color-mix(in srgb, var(--hud-accent-purple) 10%, transparent)',
-                    border: `1px solid color-mix(in srgb, var(--hud-accent-purple) 40%, transparent)`,
-                    borderRadius: RADIUS.md, cursor: 'pointer',
-                    fontFamily: FONT_BODY, fontSize: FS.overline, textTransform: 'uppercase', letterSpacing: '0.12em',
-                    color: 'var(--hud-accent-purple)',
-                  }}
-                >Re-roll</button>
-                <button
-                  onClick={onClose}
-                  style={{
-                    padding: `2px ${SP[3]}`, /* secondary button — 2px minimum touch target, px intentional */
-                    background: 'transparent',
-                    border: `1px solid color-mix(in srgb, var(--hud-border) 60%, transparent)`,
-                    borderRadius: RADIUS.md, cursor: 'pointer',
-                    fontFamily: FONT_BODY, fontSize: FS.overline, textTransform: 'uppercase', letterSpacing: '0.12em',
-                    color: HUD.textFaint,
-                  }}
-                >Close</button>
-              </div>
-            </div>
-          )}
-
-          {selPower && forceRoll && !noSpendableFP && upgrades.length === 0 && (
-            <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint, fontStyle: 'italic', padding: `${SP[1]} 0` }}>
-              No upgrades purchased for this power.
-            </div>
-          )}
-
-          {selPower && forceRoll && !noSpendableFP && upgrades.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: SP[2] }}>
-              {/* ── Basic power — always active, no cost, no toggle ──────────── */}
-              {basicUpgrade && (
-                <div style={{
-                  width: '100%',
-                  padding: `${SP[2]} ${SP[2]}`,
-                  background: 'color-mix(in srgb, var(--hud-accent-purple) 12%, transparent)',
-                  border: `1px solid color-mix(in srgb, var(--hud-accent-purple) 45%, transparent)`,
-                  borderRadius: RADIUS.md,
-                  display: 'flex', alignItems: 'center', gap: SP[2],
-                  animationName: 'fco-basic-glow',
-                  animationDuration: '2.5s', /* basic power glow — animation timing */
-                  animationTimingFunction: 'ease-in-out',
-                  animationIterationCount: 'infinite' as const,
-                }}>
-                  <span style={{
-                    fontFamily: FONT_BODY, fontSize: FS.caption,
-                    color: HUD.text, flex: 1, lineHeight: 1.3,
-                  }}>
-                    {basicUpgrade.name}
-                  </span>
-                  <span style={{
-                    fontFamily: FONT_DISPLAY, fontSize: FS.overline, fontWeight: 700,
-                    letterSpacing: '0.12em', textTransform: 'uppercase' as const,
-                    color: 'var(--hud-accent-purple)', opacity: 0.55,
-                    flexShrink: 0,
-                  }}>
-                    Basic Power
-                  </span>
-                </div>
-              )}
-
-              {/* ── Additional upgrades — freely toggleable, no cost/gating ──── */}
-              {nonBasicUpgrades.length > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: SP[1] }}>
-                  {nonBasicUpgrades.map(upgrade => {
-                    const active = activatedKeys.has(upgrade.key)
-
+            <div className="fc-col-body">
+              <div className="fc-guide">Choose the Force power you&rsquo;re using this turn.</div>
+              {purchased.length === 0 ? (
+                <div className="fc-bank-empty">No Force powers purchased yet.</div>
+              ) : (
+                <div className="fc-pow-list">
+                  {purchased.map(p => {
+                    const sel = p.powerKey === selectedPowerKey
                     return (
-                      <div key={upgrade.key} style={{ display: 'flex', alignItems: 'stretch', gap: SP[1] }}>
-                        {/* Toggle button */}
+                      <div key={p.powerKey}>
                         <button
-                          onClick={() => toggleUpgradeActive(upgrade.key)}
-                          style={{
-                            flex: 1, display: 'flex', alignItems: 'center', gap: SP[2],
-                            padding: `${SP[2]} ${SP[2]}`,
-                            background: active
-                              ? 'color-mix(in srgb, var(--hud-accent-purple) 7%, transparent)'
-                              : 'color-mix(in srgb, var(--hud-accent-purple) 2%, transparent)',
-                            border: `1px solid color-mix(in srgb, var(--hud-accent-purple) ${active ? 30 : 14}%, transparent)`,
-                            borderLeft: active
-                              ? `2px solid var(--hud-accent-purple)`
-                              : `2px solid transparent`,
-                            borderRadius: RADIUS.md,
-                            cursor: 'pointer',
-                            textAlign: 'left',
-                            transition: `all ${EASE.quick}`,
+                          type="button"
+                          className={`fc-pow-row${sel ? ' is-selected' : ''}`}
+                          onClick={() => {
+                            setSelectedPowerKey(prev => prev === p.powerKey ? null : p.powerKey)
+                            setActivatedKeys(new Set())
+                            setAlloc({})
+                            setArmed(null)
+                            setPowerDescOpen(false)
                           }}
                         >
-                          {/* Upgrade name */}
-                          <span style={{
-                            fontFamily: FONT_BODY, fontSize: FS.caption,
-                            color: active ? HUD.text : HUD.textDim,
-                            flex: 1, lineHeight: 1.35,
-                            overflow: 'hidden',
-                            display: '-webkit-box' as React.CSSProperties['display'],
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical' as React.CSSProperties['WebkitBoxOrient'],
-                          }}>
-                            {upgrade.name}
-                          </span>
-                          {/* Checkmark */}
-                          {active && (
-                            <span style={{
-                              fontFamily: FONT_BODY, fontSize: FS.label,
-                              color: 'var(--hud-accent-purple)', flexShrink: 0,
-                            }}>✓</span>
-                          )}
+                          <span className="fc-pow-name">{p.powerName}</span>
+                          {/* Plain count, not the old unexplained dot row. */}
+                          <span className="fc-pow-count">{p.purchasedCount} / {p.totalCount} upgrades</span>
                         </button>
-                        {/* ⓘ button — opens the Force Description panel */}
-                        {upgrade.description && (
-                          <button
-                            onClick={e => {
-                              e.stopPropagation()
-                              setDescPanelOpen(true)
-                            }}
-                            style={{
-                              width: 28, /* ⓘ button — px intentional, fixed tap target */
-                              flexShrink: 0,
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              background: 'transparent',
-                              border: `1px solid color-mix(in srgb, var(--hud-accent-purple) 14%, transparent)`,
-                              borderRadius: RADIUS.md,
-                              cursor: 'pointer',
-                              transition: `all ${EASE.quick}`,
-                            }}
-                          >
-                            <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint }}>ⓘ</span>
-                          </button>
+                        {sel && p.description && (
+                          <>
+                            <div className={`fc-pow-desc${powerDescOpen ? '' : ' is-clamped'}`}>
+                              <RichText text={p.description} />
+                            </div>
+                            <button type="button" className="fc-fx-exp"
+                              onClick={() => setPowerDescOpen(v => !v)}>
+                              {powerDescOpen ? 'Less' : 'More'}
+                            </button>
+                          </>
                         )}
                       </div>
                     )
@@ -959,91 +600,186 @@ export function ForceCheckOverlay({
                 </div>
               )}
             </div>
-          )}
+          </div>
 
-          {/* Dark side consequence notice */}
-          {darkSpent > 0 && (
-            <div style={{
-              padding: `${SP[1]} ${SP[2]}`,
-              background: 'color-mix(in srgb, var(--hud-accent-purple) 5%, transparent)',
-              border: `1px solid color-mix(in srgb, var(--hud-accent-purple) 20%, transparent)`,
-              borderLeft: `2px solid var(--hud-accent-purple)`,
-              borderRadius: RADIUS.md,
-            }}>
-              <div style={{
-                fontFamily: FONT_BODY, fontSize: FS.overline,
-                color: 'color-mix(in srgb, var(--hud-accent-purple) 70%, transparent)',
-                lineHeight: 1.4,
-              }}>
-                Using {darkSpent} dark pip{darkSpent !== 1 ? 's' : ''}: flip 1 Destiny Point + suffer {darkSpent} strain.
+          {/* ── 2 — Roll Force Dice ────────────────────────────────────────── */}
+          <div data-ignite-stagger className={`fc-col${stage1Done && !stage2Done ? ' is-active' : ''}${stage2Done ? ' is-done' : ''}${!stage1Done ? ' is-locked' : ''}`}>
+            <div style={{ padding: `${SP[3]} ${SP[3]} ${SP[2]}` }}>
+              <StageHead
+                n={2} name="Roll Force Dice" done={stage2Done}
+                summary={forceRoll ? `${lightTotal} Light · ${darkTotal} Dark` : undefined}
+              />
+            </div>
+            <div className="fc-col-body">
+              {/* Plain mechanics, in game terms — deliberately not "channel",
+                  which is theme and explains nothing. */}
+              <div className="fc-guide">
+                Your Force Rating gives you <b>{available} Force {available === 1 ? 'die' : 'dice'}</b>.
+                {' '}Rolling them generates the <b>Force Points</b> you&rsquo;ll spend on your power&rsquo;s effects.
+              </div>
+              <div className="fc-dice-zone">
+                <div className="fc-fdice">
+                  {(forceRoll?.dice ?? pendingRoll?.dice ?? Array.from({ length: available }, () => ({ light: 0, dark: 0 }))).map((d, i) => {
+                    const settled = !!forceRoll || (rollPhase === 'reveal' && i < revealedCount)
+                    const state: 'facedown' | 'tumbling' | 'settled' =
+                      settled ? 'settled' : isRolling ? 'tumbling' : 'facedown'
+                    return (
+                      <ForceDieFace
+                        key={i}
+                        light={d.light} dark={d.dark}
+                        state={state}
+                        cycleFace={cycleFace + i}
+                        dieRef={el => { dieRefs.current[i] = el }}
+                      />
+                    )
+                  })}
+                </div>
+                {!forceRoll && (
+                  <button
+                    type="button"
+                    className="fc-fbtn"
+                    onClick={handleRollWithAnimation}
+                    disabled={available === 0 || isRolling || !stage1Done}
+                  >
+                    ◈ {isRolling ? 'Rolling…' : `Roll ${available} Force ${available === 1 ? 'Die' : 'Dice'}`}
+                  </button>
+                )}
+                <div className="fc-dice-sum">
+                  {forceRoll ? (
+                    <>Rolled <b>{lightTotal} Light</b> · <b>{darkTotal} Dark</b>{blankCount > 0 ? ` · ${blankCount} blank` : ''}</>
+                  ) : available === 0 ? 'No Force dice available' : ''}
+                </div>
+                {committedForce > 0 && (
+                  <div className="fc-bank-empty">{committedForce} die committed to ongoing effects</div>
+                )}
               </div>
             </div>
-          )}
-        </div>
+          </div>
 
-      </div>{/* end body */}
+          {/* ── 3 — Spend ──────────────────────────────────────────────────── */}
+          <div data-ignite-stagger className={`fc-col${stage2Done ? ' is-active' : ''}${!stage2Done ? ' is-locked' : ''}`}>
+            <div style={{ padding: `${SP[3]} ${SP[3]} ${SP[2]}` }}>
+              <StageHead n={3} name="Spend" done={activeCount > 0} />
+            </div>
+            <div className="fc-col-body">
+              {/* The bank sits at the HEAD of this column, directly above the
+                  effects it pays for, and stays put while they scroll. */}
+              <div className="fc-bank" ref={bankRef}>
+                <span className="fc-bank-lbl">Force<br />Points</span>
+                <div className="fc-bank-toks">
+                  {points.length === 0 ? (
+                    <span className="fc-bank-empty">Roll your Force dice first</span>
+                  ) : points.map(p => {
+                    const id = pointId(p)
+                    const used = placedIds.has(id)
+                    const landed = landedIds.has(id)
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        className={`fc-fp fc-fptok is-${p.kind}${used ? ' is-used' : ''}${armed && pointId(armed) === id ? ' is-armed' : ''}${landed ? ' is-pop' : ' is-landing'}`}
+                        onClick={() => handleTokenTap(p)}
+                        title={p.kind === 'light' ? 'Light Force Point' : 'Dark Force Point'}
+                      >
+                        {p.kind === 'light' ? '✦' : '✧'}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+              <div className="fc-bank-hint">
+                {!forceRoll ? '' : armed
+                  ? <><b>Point in hand</b> — tap an effect to place it</>
+                  : bankRemaining > 0
+                    ? 'Tap a point, then tap an effect to spend it there'
+                    : points.length > 0 ? 'All points spent' : 'No Force Points generated'}
+              </div>
 
-      {/* ── Footer ───────────────────────────────────────────────────────────── */}
-      <div style={{
-        padding: `${SP[2]} ${SP[3]} ${SP[3]}`,
-        borderTop: `1px solid color-mix(in srgb, var(--hud-accent-purple) 18%, transparent)`,
-        flexShrink: 0,
-        display: 'flex', flexDirection: 'column', gap: SP[1],
-      }}>
-        <button
-          onClick={handleCta}
-          disabled={!ctaActive}
-          style={{
-            width: '100%',
-            padding: `${SP[3]} 0`,
-            clipPath: `polygon(8px 0%, calc(100% - 8px) 0%, 100% 50%, calc(100% - 8px) 100%, 8px 100%, 0% 50%)`, /* decorative clip-path — px intentional */
-            border: ctaActive
-              ? `1px solid color-mix(in srgb, var(--hud-accent-purple) 70%, transparent)`
-              : `1px solid color-mix(in srgb, var(--hud-accent-purple) 20%, transparent)`,
-            background: ctaActive
-              ? `color-mix(in srgb, var(--hud-accent-purple) ${forceRoll ? 24 : 15}%, transparent)`
-              : 'color-mix(in srgb, var(--hud-accent-purple) 5%, transparent)',
-            cursor: ctaActive ? 'pointer' : 'not-allowed',
-            fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700,
-            textTransform: 'uppercase', letterSpacing: '0.18em',
-            color: ctaActive ? 'var(--hud-accent-purple)' : HUD.textFaint,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: SP[2],
-            transition: `all ${EASE.default}`,
-          }}
-        >
-          {isRolling || busy ? ctaLabel : (
-            <>
-              <span style={{ opacity: 0.7 }}>✦</span>
-              {ctaLabel}
-            </>
-          )}
-        </button>
-        <div style={{
-          textAlign: 'center',
-          fontFamily: FONT_BODY, fontSize: FS.overline,
-          color: HUD.textFaint, textTransform: 'uppercase', letterSpacing: '0.15em',
-        }}>
-          Spending {lightSpent} Light{darkSpent > 0 ? ` · ${darkSpent} Dark` : ' · 0 Dark'}
+              {rowsToRender.length === 0 ? (
+                <div className="fc-bank-empty">No upgrades purchased for this power.</div>
+              ) : (
+                <div className="fc-fx-scroll">
+                  {rowsToRender.map(row => {
+                    const on      = row.basic || activatedKeys.has(row.key)
+                    const chips   = alloc[row.key] ?? []
+                    const hasDark = chips.some(c => c.kind === 'dark')
+                    const isExp   = expanded.has(row.key)
+                    return (
+                      <div
+                        key={row.key}
+                        className={`fc-fx-row${row.basic ? ' is-basic' : ''}${on ? ' is-on' : ''}${hasDark ? ' has-dark' : ''}${armed ? ' is-target' : ''}${isExp ? ' is-expanded' : ''}`}
+                      >
+                        <div className="fc-fx-head" role="button" tabIndex={0}
+                          onClick={() => handleRowTap(row.key)}
+                          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleRowTap(row.key) } }}
+                        >
+                          <span className="fc-fx-check">✓</span>
+                          <span className="fc-fx-body">
+                            <span className="fc-fx-name">{row.name}</span>
+                            {row.description && (
+                              <span className="fc-fx-desc"><RichText text={row.description} /></span>
+                            )}
+                          </span>
+                          {row.description && (
+                            <button type="button" className="fc-fx-exp"
+                              onClick={e => {
+                                e.stopPropagation()
+                                setExpanded(prev => {
+                                  const next = new Set(prev)
+                                  next.has(row.key) ? next.delete(row.key) : next.add(row.key)
+                                  return next
+                                })
+                              }}
+                            >{isExp ? 'Less' : 'More'}</button>
+                          )}
+                        </div>
+                        {on && (
+                          <div className="fc-fx-slots">
+                            {chips.length === 0 ? (
+                              <span className="fc-fx-free">Active — no points spent</span>
+                            ) : chips.map((c, ci) => (
+                              <button
+                                key={`${pointId(c)}-${ci}`}
+                                type="button"
+                                className={`fc-fp fc-fx-chip is-${c.kind}`}
+                                title="Return this point to the bank"
+                                onClick={e => { e.stopPropagation(); handleChipTap(row.key, ci) }}
+                              >
+                                {c.kind === 'light' ? '✦' : '✧'}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Scanline texture overlay */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        pointerEvents: 'none',
-        backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 2px, color-mix(in srgb, black 3%, transparent) 2px, color-mix(in srgb, black 3%, transparent) 4px)`,
-        zIndex: Z.raised,
-      }} />
+      {/* ── Footer ─────────────────────────────────────────────────────────── */}
+      <div className="fc-roll-bar fc-roll-footer" data-ignite-stagger>
+        <div className={`fc-roll-sub${darkSpent > 0 ? ' is-warn' : ''}`}>{statusText}</div>
+        <button
+          type="button"
+          onClick={handleCta}
+          disabled={!canChannel || busy}
+          className={`fc-roll-btn${canChannel && !busy ? ' is-armed' : ''}`}
+        >
+          ✦ Commit — {lightSpent} Light · {darkSpent} Dark
+        </button>
+      </div>
 
-      {/* Force Description panel — portaled to document.body, anchored to the drawer's right edge */}
-      <ForceDescriptionPanel
-        open={descPanelOpen}
-        onClose={() => setDescPanelOpen(false)}
-        power={selPower}
-        basicUpgrade={basicUpgrade}
-        activatedUpgrades={activatedUpgradeList}
-        anchorRef={drawerRef}
-      />
+      {/* Scanline texture overlay */}
+      <div aria-hidden="true" style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        backgroundImage: 'repeating-linear-gradient(0deg,transparent,transparent 2px,color-mix(in srgb,black 3%,transparent) 2px,color-mix(in srgb,black 3%,transparent) 4px)',
+        borderRadius: RADIUS.xl,
+      }} />
     </div>
+    </Modal>
   )
 }

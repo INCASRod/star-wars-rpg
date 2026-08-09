@@ -154,7 +154,7 @@ function optionsFor(fromState: PipState): { toState: PipState; label: string; pl
 
 // Portaled to document.body — panelBase's backdropFilter makes every card its
 // own containing block for position:fixed descendants (confirmed, Step 0(e)),
-// same reason ForceDescriptionPanel.tsx/PurchaseCeremony.tsx already portal.
+// same reason PurchaseCeremony.tsx already portals.
 // Scrim + options live in the SAME portal so neither can end up in a lower
 // stacking context than the other (the mockup's exact bug).
 function BalanceChooser({

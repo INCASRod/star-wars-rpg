@@ -1179,16 +1179,32 @@ i.ffi {
 }
 
 /* ── Player HUD Left Rail ─────────────────────────────────────── */
+/* Per-check accent identity, rail side: each check button wears the accent of
+   the console it opens, so the button and the ignition flare that answers it
+   agree in colour. Tint only — the rail's sizing, spacing, layout and hover
+   BEHAVIOUR all live on the shared .hud-rail-btn base and are untouched.
+   The raw rgba values these replace were theme-blind hand-mixes of the same
+   colours (224,58,30 ≈ Ember --hud-accent; 200,170,80 ≈ --hud-gold), so they
+   stayed red/gold in Kyber while the console they opened went blue/cyan. */
 .hud-rail-btn-combat:hover,
-.hud-rail-btn-combat.active { background: rgba(224,58,30,0.12); border-color: rgba(224,58,30,0.35); }
+.hud-rail-btn-combat.active {
+  background:   color-mix(in srgb, var(--hud-accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--hud-accent) 35%, transparent);
+}
 .hud-rail-btn-combat.active .hud-rail-label { color: var(--hud-accent); }
 
 .hud-rail-btn-force:hover,
-.hud-rail-btn-force.active { background: rgba(144,96,208,0.12); border-color: rgba(144,96,208,0.35); }
+.hud-rail-btn-force.active {
+  background:   color-mix(in srgb, var(--hud-accent-purple) 12%, transparent);
+  border-color: color-mix(in srgb, var(--hud-accent-purple) 35%, transparent);
+}
 .hud-rail-btn-force.active .hud-rail-label { color: var(--hud-accent-purple); }
 
 .hud-rail-btn-skill:hover,
-.hud-rail-btn-skill.active { background: rgba(200,170,80,0.12); border-color: rgba(200,170,80,0.35); }
+.hud-rail-btn-skill.active {
+  background:   color-mix(in srgb, var(--hud-gold) 12%, transparent);
+  border-color: color-mix(in srgb, var(--hud-gold) 35%, transparent);
+}
 .hud-rail-btn-skill.active .hud-rail-label { color: var(--hud-gold); }
 
 .hud-rail-btn-nav:hover { background: rgba(150,168,180,0.08); border-color: rgba(150,168,180,0.20); }
@@ -1207,10 +1223,15 @@ i.ffi {
 /* Default theme: Ember Tatooine — see state-tokens.css for overrides */
 
 /* ── Rail symbol colours ── */
-/* Force Check symbol — blue across all themes */
-.hud-rail-btn-force .hud-rail-symbol  { color: var(--die-force); }
-/* Combat Check symbol — red */
-.hud-rail-btn-combat .hud-rail-symbol { color: rgba(224,80,80,0.80); }
+/* Force Check symbol — the console's own purple identity. Was `var(--die-force)`:
+   a sealed FFG dice token doing UI duty, flagged in the per-check accent work
+   and corrected here alongside the Force console itself. */
+.hud-rail-btn-force .hud-rail-symbol  { color: color-mix(in srgb, var(--hud-accent-purple) 85%, transparent); }
+/* Combat Check symbol — the theme's native accent, this check's identity */
+.hud-rail-btn-combat .hud-rail-symbol { color: color-mix(in srgb, var(--hud-accent) 80%, transparent); }
+/* Skill Check symbol — gold, matching its console and its gold ignition flare.
+   Previously had no rule at all and fell through to the shared base colour. */
+.hud-rail-btn-skill .hud-rail-symbol  { color: color-mix(in srgb, var(--hud-gold) 85%, transparent); }
 
 /* Adversaries button — red hover/active, red symbol */
 .hud-rail-btn-adversaries:hover,
@@ -2140,3 +2161,1320 @@ i.ffi {
 }
 .pa-card.is-open .pa-card-chev { transform: rotate(90deg); }
 .pa-card-body { overflow: hidden; }
+
+/* ── Focus console ───────────────────────────────────────────────────────────
+   Shared design language for the check panels (Combat first; Skill and Force
+   adopt the same classes later). Prefixed .fc-* so the three panels reuse one
+   stylesheet rather than three near-copies. All colour comes from --hud-*
+   tokens; die-identity colours are applied inline at the call site, commented. */
+
+/* ── Per-check accent identity ───────────────────────────────────────────────
+   The three check consoles SHARE ONE SKELETON AND WEAR THEIR OWN ACCENT. The
+   layout similarity is deliberate — a player who learns one check has learned
+   all three — so only the identity surfaces recolour, via four inherited custom
+   properties set once on the console root:
+
+     --check-accent     the check's own accent; every identity .fc-* consumes it
+     --check-accent-alt the second stop of the top-edge gradient
+     --check-glow       ignition flare / hot-border glow
+     --check-highlight  the SECONDARY highlight that used to be a fixed gold.
+                        Combat keeps gold; Skill cannot, because gold is its
+                        primary accent there and the two would collapse into one
+                        colour, so Skill remaps it to plain text colour.
+
+   Assignments — Combat: the theme's native accent (this is the baseline, and it
+   resolves byte-identically to the pre-scoping values). Skill: --hud-gold, which
+   is already theme-aware (#C8A24E Ember / #5BBCD8 Kyber / #8AAFC8 gm-imperial),
+   so no new global token was needed. Force: purple, reserved — add
+   `.cc-modal.is-check-force` / `.fc-pulse.is-check-force` mapping --check-accent
+   to var(--hud-accent-purple) and nothing else changes.
+
+   Every consumer writes `var(--check-accent, var(--hud-accent))` so an unscoped
+   .fc-* element still resolves to the theme accent on its own.
+
+   `.fc-pulse` carries the same modifier because Modal renders the pulse and the
+   scrim as SIBLINGS of .cc-modal inside the portal, not descendants — it cannot
+   inherit the console root's scope. */
+.cc-modal,
+.fc-pulse {
+  --check-accent:     var(--hud-accent);
+  --check-accent-alt: var(--hud-gold);
+  --check-glow:       var(--hud-glow);
+  --check-highlight:  var(--hud-gold);
+}
+.cc-modal.is-check-skill,
+.fc-pulse.is-check-skill {
+  --check-accent:     var(--hud-gold);
+  --check-accent-alt: var(--hud-accent);
+  /* color-mix, not a hex-opacity suffix — the glow has to follow the theme's
+     gold, and --hud-glow is a baked rgba tied to the native accent. */
+  --check-glow:       color-mix(in srgb, var(--hud-gold) 35%, transparent);
+  --check-highlight:  var(--hud-text);
+}
+/* Force Check — purple. `--hud-accent-purple` is theme-invariant (#9060D0 in
+   both :root and kyber), which is deliberate: the Force reads as the Force
+   whichever theme the player is running. `--check-highlight` stays gold — gold
+   is not this console's accent, so the secondary highlight needs no remap. */
+.cc-modal.is-check-force,
+.fc-pulse.is-check-force {
+  --check-accent:     var(--hud-accent-purple);
+  --check-accent-alt: var(--hud-accent);
+  --check-glow:       color-mix(in srgb, var(--hud-accent-purple) 35%, transparent);
+  --check-highlight:  var(--hud-gold);
+}
+
+/* Hero dice tray — sticky at the top of the panel body */
+.fc-tray {
+  position: sticky; top: 0; z-index: 2;
+  padding: var(--space-2) var(--space-3);
+  background: linear-gradient(180deg, var(--hud-surface-mid), var(--hud-panel));
+  border-bottom: 1px solid var(--hud-border);
+  flex-shrink: 0;
+}
+.fc-tray-label {
+  display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2);
+  font-family: var(--font-display);
+  font-size: var(--text-overline);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--hud-text-faint);
+  margin-bottom: var(--space-1);
+}
+.fc-tray-skill { color: var(--check-accent, var(--hud-accent)); }
+.fc-tray-dice {
+  display: flex; align-items: center; flex-wrap: wrap;
+  gap: 3px; /* die gutter — geometry, not layout spacing */
+  min-height: 30px;
+}
+.fc-tray-empty {
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  color: var(--hud-text-faint);
+  opacity: 0.45;
+  font-style: italic;
+}
+.fc-tray-divider {
+  width: 1px; height: 26px; flex: none;
+  margin: 0 var(--space-1);
+  background: var(--hud-border-hi);
+}
+/* Pulse fires on any pool change. Decorative only — never gates a write. */
+.fc-tray-pulse { animation: fcTrayPulse 600ms ease-out; }
+@keyframes fcTrayPulse {
+  0%   { box-shadow: inset 0 0 26px color-mix(in srgb, var(--check-accent, var(--hud-accent)) 45%, transparent); }
+  100% { box-shadow: inset 0 0 0 transparent; }
+}
+
+/* Flying die — portalled to document.body to escape the panel's
+   backdrop-filter containing block. */
+.fc-fly { position: fixed; z-index: var(--z-tooltip); pointer-events: none; }
+
+/* ── Stage rail ───────────────────────────────────────────────────────────── */
+.fc-stage {
+  border: 1px solid var(--hud-border);
+  border-radius: 8px;
+  background: var(--hud-panel);
+  overflow: hidden;
+  transition: border-color var(--ease-default), box-shadow var(--ease-default), opacity var(--ease-default);
+}
+.fc-stage.is-active {
+  border-color: var(--check-accent, var(--hud-accent));
+  box-shadow: 0 0 18px color-mix(in srgb, var(--check-accent, var(--hud-accent)) 16%, transparent);
+  background: var(--hud-surface-mid);
+}
+.fc-stage.is-locked { opacity: 0.38; pointer-events: none; }
+.fc-stage-head {
+  display: flex; align-items: center; gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  background: none; border: none;
+  cursor: pointer; user-select: none; text-align: left;
+  font-family: var(--font-body);
+}
+.fc-stage.is-locked .fc-stage-head { cursor: default; }
+.fc-stage-num {
+  width: 20px; height: 20px; flex: none;
+  border-radius: 9999px;
+  border: 1.5px solid var(--hud-text-dim);
+  display: grid; place-items: center;
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  font-weight: 700;
+  color: var(--hud-text-dim);
+  transition: background var(--ease-default), border-color var(--ease-default), color var(--ease-default);
+}
+.fc-stage.is-active .fc-stage-num { border-color: var(--check-accent, var(--hud-accent)); color: var(--check-accent, var(--hud-accent)); }
+.fc-stage.is-done   .fc-stage-num { background: var(--check-accent, var(--hud-accent)); border-color: var(--check-accent, var(--hud-accent)); color: var(--hud-bg); }
+.fc-stage-name {
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--hud-text);
+}
+.fc-stage.is-active .fc-stage-name { color: var(--check-accent, var(--hud-accent)); }
+.fc-stage-summary {
+  margin-left: auto;
+  max-width: 55%;
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  color: var(--hud-text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* ── Weapon chip + picker ─────────────────────────────────────────────────── */
+.fc-chip {
+  display: flex; align-items: center; gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  background: var(--hud-surface-lo);
+  border: 1px solid var(--hud-border-hi);
+  border-radius: 8px;
+  cursor: pointer; text-align: left;
+  font-family: var(--font-body);
+  transition: border-color var(--ease-quick), background var(--ease-quick);
+}
+.fc-chip:hover { border-color: var(--check-accent, var(--hud-accent)); }
+.fc-chip-icon {
+  width: 30px; height: 30px; flex: none;
+  border-radius: 4px;
+  display: grid; place-items: center;
+  background: color-mix(in srgb, var(--check-accent, var(--hud-accent)) 12%, transparent);
+  border: 1px solid var(--hud-border-hi);
+  color: var(--check-accent, var(--hud-accent));
+  font-size: var(--text-body);
+}
+.fc-chip-meta {
+  display: block; min-width: 0; flex: 1; }
+.fc-chip-name {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--text-body-sm);
+  font-weight: 700;
+  color: var(--hud-text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.fc-chip-stats {
+  display: block;
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--hud-text-dim);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.fc-chip-swap {
+  margin-left: auto; flex: none;
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--check-accent, var(--hud-accent));
+}
+
+/* Capped-height scroll region — roughly four rows — with a bottom fade mask. */
+.fc-picker {
+  margin-top: var(--space-1);
+  border: 1px solid var(--hud-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--hud-panel);
+}
+.fc-picker-scroll {
+  max-height: 216px; /* ~4 rows at 54px — capped-height picker per design */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-mask-image: linear-gradient(180deg, black calc(100% - 28px), transparent 100%);
+  mask-image: linear-gradient(180deg, black calc(100% - 28px), transparent 100%);
+}
+.fc-picker-row {
+  display: flex; align-items: center; gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--hud-border);
+  cursor: pointer; text-align: left;
+  font-family: var(--font-body);
+  transition: background var(--ease-quick);
+}
+.fc-picker-row:last-child { border-bottom: none; }
+.fc-picker-row:hover { background: color-mix(in srgb, var(--check-accent, var(--hud-accent)) 8%, transparent); }
+.fc-picker-row.is-selected {
+  background: color-mix(in srgb, var(--check-accent, var(--hud-accent)) 12%, transparent);
+  box-shadow: inset 3px 0 0 var(--check-accent, var(--hud-accent));
+}
+.fc-picker-group {
+  padding: var(--space-1) var(--space-3);
+  background: var(--hud-surface-lo);
+  border-bottom: 1px solid var(--hud-border);
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--hud-text-faint);
+}
+
+/* ── Dual wield slots ─────────────────────────────────────────────────────── */
+.fc-dw-toggle {
+  display: flex; align-items: center; gap: var(--space-2);
+  margin-top: var(--space-2);
+  background: none; border: none; padding: 0;
+  cursor: pointer; user-select: none;
+  font-family: var(--font-body);
+  font-size: var(--text-caption);
+  color: var(--hud-text-dim);
+}
+.fc-dw-toggle.is-on { color: var(--hud-text); }
+.fc-dw-box {
+  width: 15px; height: 15px; flex: none;
+  border: 1.5px solid var(--hud-text-dim);
+  border-radius: 3px;
+  display: grid; place-items: center;
+  font-size: var(--text-overline);
+  color: transparent;
+  transition: background var(--ease-quick), border-color var(--ease-quick), color var(--ease-quick);
+}
+.fc-dw-toggle.is-on .fc-dw-box {
+  background: var(--check-accent, var(--hud-accent));
+  border-color: var(--check-accent, var(--hud-accent));
+  color: var(--hud-bg);
+}
+.fc-dw-slots {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: var(--space-1);
+  align-items: stretch;
+  margin-top: var(--space-2);
+}
+.fc-dw-slot {
+  border: 1px dashed var(--hud-border-hi);
+  border-radius: 8px;
+  padding: var(--space-2);
+  text-align: center;
+  background: none;
+  font-family: var(--font-body);
+  cursor: pointer;
+  min-width: 0;
+}
+.fc-dw-slot.is-filled { border-style: solid; background: var(--hud-surface-lo); }
+.fc-dw-slot-label {
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--check-accent, var(--hud-accent));
+  margin-bottom: 2px;
+}
+.fc-dw-slot-weap {
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  font-weight: 700;
+  color: var(--hud-text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.fc-dw-slot-hint {
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  color: var(--hud-text-dim);
+}
+.fc-dw-link { display: grid; place-items: center; color: var(--check-accent, var(--hud-accent)); font-size: var(--text-body); }
+.fc-dw-rule {
+  margin-top: var(--space-1);
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  color: var(--hud-text-dim);
+  text-align: center;
+  line-height: 1.5;
+}
+.fc-dw-rule b { color: var(--check-accent, var(--hud-accent)); }
+
+/* ── Range segmented track ────────────────────────────────────────────────── */
+.fc-range-track { display: flex; gap: 2px; }
+.fc-range-opt {
+  flex: 1; min-width: 0;
+  padding: var(--space-2) 2px;
+  border: 1px solid var(--hud-border);
+  border-radius: 4px;
+  background: none;
+  color: var(--hud-text-dim);
+  font-family: var(--font-body);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color var(--ease-quick), background var(--ease-quick), color var(--ease-quick);
+}
+.fc-range-opt:hover:not(:disabled) { border-color: var(--check-accent, var(--hud-accent)); }
+.fc-range-opt.is-selected {
+  border-color: var(--check-accent, var(--hud-accent));
+  color: var(--hud-text);
+  background: color-mix(in srgb, var(--check-accent, var(--hud-accent)) 12%, transparent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--check-accent, var(--hud-accent)) 14%, transparent);
+}
+.fc-range-opt:disabled { opacity: 0.3; cursor: not-allowed; }
+.fc-range-name {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--text-overline);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.fc-range-pips {
+  display: flex; justify-content: center; flex-wrap: wrap;
+  gap: 2px; margin-top: var(--space-1); min-height: 8px;
+}
+.fc-range-dash { font-family: var(--font-body); font-size: var(--text-overline); opacity: 0.4; }
+.fc-note {
+  margin-top: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  background: var(--hud-surface-lo);
+  border: 1px solid var(--hud-border);
+  border-radius: 2px;
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  color: var(--hud-text-dim);
+  line-height: 1.4;
+}
+.fc-note b { color: var(--check-highlight, var(--hud-gold)); }
+
+/* ── Dice steppers ────────────────────────────────────────────────────────── */
+/* auto-fit rather than a viewport media query: this panel is a ~270px drawer
+   even on a wide desktop, so the column count has to follow the CONTAINER's
+   width, not the window's. Two columns inside a ~340px stage column, one when narrower. */
+.fc-dice-grid {
+  display: grid;
+  /* min() keeps the 150px floor from exceeding a narrower container, which
+     is what forced the two columns to overflow this ~250px drawer. */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+  gap: var(--space-1);
+}
+/* Two rows inside one cell: label on top, controls beneath and right-aligned.
+   Side-by-side crushed the label to an ellipsis in this ~250px drawer. */
+.fc-dstep {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--hud-border);
+  border-radius: 4px;
+  min-width: 0;
+}
+.fc-dstep > .fc-dstep-meta { flex: 1 1 60px; }
+.fc-dstep > .fc-stepbtn:first-of-type { margin-left: auto; }
+.fc-dstep.is-upgrade { border-color: color-mix(in srgb, var(--check-accent, var(--hud-accent)) 35%, var(--hud-border)); }
+.fc-dstep-meta { flex: 1; min-width: 0; }
+.fc-dstep-name {
+  display: block;
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--hud-text-dim);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.fc-dstep-sub {
+  display: block;
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  color: var(--hud-text-faint);
+  opacity: 0.75;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.fc-dstep-count {
+  font-family: var(--font-body);
+  font-size: var(--text-caption);
+  font-weight: 700;
+  color: var(--check-highlight, var(--hud-gold));
+  min-width: 18px; text-align: center;
+}
+.fc-stepbtn {
+  width: 22px; height: 22px; flex: none;
+  border: 1px solid var(--hud-border);
+  border-radius: 2px;
+  background: none;
+  color: var(--hud-text-faint);
+  font-family: var(--font-body);
+  font-size: var(--text-label);
+  line-height: 1;
+  display: grid; place-items: center;
+  cursor: pointer;
+  transition: border-color var(--ease-quick), color var(--ease-quick), background var(--ease-quick);
+}
+.fc-stepbtn:hover:not(:disabled) { border-color: var(--check-accent, var(--hud-accent)); color: var(--check-accent, var(--hud-accent)); }
+.fc-stepbtn:disabled { opacity: 0.3; cursor: not-allowed; }
+.fc-stepbtn.is-add { background: color-mix(in srgb, var(--check-accent, var(--hud-accent)) 10%, transparent); color: var(--check-highlight, var(--hud-gold)); }
+/* On the two upgrade rows the minus is an explicit "undo the upgrade", not a
+   generic decrement, so it is labelled and tinted differently. */
+.fc-stepbtn.is-downgrade {
+  width: auto; min-width: 22px; padding: 0 4px;
+  font-size: var(--text-overline);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.fc-stepbtn.is-downgrade:hover:not(:disabled) { border-color: var(--check-highlight, var(--hud-gold)); color: var(--check-highlight, var(--hud-gold)); }
+
+/* ── Roll CTA ─────────────────────────────────────────────────────────────── */
+.fc-roll-bar { padding: var(--space-2); border-top: 1px solid var(--hud-border); flex-shrink: 0; }
+.fc-roll-btn {
+  position: relative; overflow: hidden;
+  width: 100%;
+  padding: var(--space-2) 0;
+  border: 1px solid var(--hud-border-hi);
+  border-radius: 8px;
+  background: var(--hud-surface-lo);
+  color: var(--hud-text-faint);
+  font-family: var(--font-display);
+  font-size: var(--text-body-sm);
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  cursor: not-allowed;
+  transition: background var(--ease-default), color var(--ease-default), border-color var(--ease-default), box-shadow var(--ease-default);
+}
+.fc-roll-btn.is-armed {
+  background: var(--check-accent, var(--hud-accent));
+  border-color: var(--check-accent, var(--hud-accent));
+  color: var(--hud-bg);
+  cursor: pointer;
+  box-shadow: 0 0 26px color-mix(in srgb, var(--check-accent, var(--hud-accent)) 40%, transparent);
+}
+.fc-roll-btn.is-armed::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(105deg, transparent 40%, color-mix(in srgb, white 35%, transparent) 50%, transparent 60%);
+  animation: fcSheen 2.4s infinite;
+}
+@keyframes fcSheen {
+  0%        { transform: translateX(-100%); }
+  60%, 100% { transform: translateX(100%); }
+}
+.fc-roll-sub {
+  margin-top: var(--space-1);
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  color: var(--hud-text-dim);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fc-tray-pulse { animation: none; }
+  .fc-roll-btn.is-armed::after { animation: none; }
+}
+
+/* Maneuver / modifier button row (Aim, 2nd Aim, Assist, Guarded) */
+.fc-mod-row { display: flex; gap: var(--space-1); margin-top: var(--space-2); flex-wrap: wrap; }
+.fc-mod-btn {
+  flex: 1; min-width: 0;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--hud-border);
+  border-radius: 4px;
+  background: none;
+  color: var(--hud-text-dim);
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color var(--ease-quick), color var(--ease-quick), background var(--ease-quick);
+}
+.fc-mod-btn small { display: block; margin-top: 2px; opacity: 0.7; }
+.fc-mod-btn:hover:not(:disabled) { border-color: var(--check-accent, var(--hud-accent)); color: var(--hud-text); }
+.fc-mod-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.fc-mod-btn.is-on {
+  border-color: var(--check-accent, var(--hud-accent));
+  color: var(--check-accent, var(--hud-accent));
+  background: color-mix(in srgb, var(--check-accent, var(--hud-accent)) 10%, transparent);
+}
+/* Guarded adds a Setback — negative, so it reads in the failure colour. */
+.fc-mod-btn.is-on.is-neg {
+  border-color: var(--state-failure);
+  color: var(--state-failure);
+  background: color-mix(in srgb, var(--state-failure) 10%, transparent);
+}
+.fc-note b { display: block; color: var(--check-highlight, var(--hud-gold)); margin-bottom: 2px; }
+
+/* Combat Check modal shell. Sits inside the shared Modal panel; min() keeps it
+   at or under the panel's own 90vh so there is never a double scrollbar. */
+.cc-modal {
+  display: flex;
+  flex-direction: column;
+  max-height: min(90vh, calc(100vh - 64px));
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Modal ignition ──────────────────────────────────────────────────────────
+   Shared open/close choreography for the check panels — see igniteModalOpen /
+   igniteModalClose in src/lib/utils.ts. GSAP drives opacity/scale/position;
+   these classes only establish the resting geometry. */
+
+/* Scrim starts transparent so the open timeline can fade it in. GSAP owns
+   opacity from the first frame; without this the scrim would flash at full
+   strength for one paint before the timeline runs. */
+.fc-scrim-ignite { opacity: 0; }
+
+/* Radial ripple. Lives inside the portal as a sibling of the panel, above the
+   scrim and below the modal — never appended to document.body per open. */
+.fc-pulse {
+  position: fixed;
+  width: 20px; height: 20px;
+  border-radius: 9999px;
+  border: 2px solid var(--check-accent, var(--hud-accent));
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Belt and braces — the helper also skips the pulse entirely. */
+  .fc-pulse { display: none; }
+}
+
+/* ── Focus console: horizontal three-column form ─────────────────────────────
+   Replaces the vertical stage rail. The whole check fits one screen: tray strip
+   on top, three side-by-side stage columns, roll footer beneath. This is the
+   convention Skill Check and Force Check inherit.
+
+   Sequencing is what makes the panel readable, so it survives the layout change
+   intact — locked columns stay visibly dimmed and genuinely inert, the active
+   column lifts, and completed columns collapse to a header summary. */
+
+/* Container for the column query. Deliberately a container query, not a
+   viewport breakpoint: the panel is a modal whose width is its own business. */
+.fc-console-body { container-type: inline-size; }
+
+.fc-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: stretch;
+}
+@container (max-width: 900px) {
+  .fc-cols { grid-template-columns: 1fr; }
+  .fc-col { border-right: none; border-bottom: 1px solid var(--hud-border); }
+  .fc-col:last-child { border-bottom: none; }
+}
+
+.fc-col {
+  position: relative;
+  min-height: 340px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--hud-border);
+  transition: background var(--ease-default), opacity var(--ease-default);
+}
+.fc-col:last-child { border-right: none; }
+
+/* Locked: visible so the player can see what is coming, inert so it cannot
+   compete for attention or be clicked into.
+   `filter: opacity()` rather than the `opacity` property on purpose — the
+   ignition content stagger writes an inline `opacity: 1` on these same columns
+   (they are the stagger targets), and an inline style beats a class. filter is
+   an independent channel, so the two never fight. */
+.fc-col.is-locked { filter: opacity(0.3); pointer-events: none; }
+
+.fc-col.is-active { background: var(--hud-surface-mid); }
+/* Accent underline along the active column's bottom edge. */
+.fc-col.is-active::after {
+  content: '';
+  position: absolute; left: 0; right: 0; bottom: 0;
+  height: 2px;
+  background: var(--check-accent, var(--hud-accent));
+  box-shadow: 0 0 12px color-mix(in srgb, var(--check-accent, var(--hud-accent)) 60%, transparent);
+  pointer-events: none;
+}
+
+.fc-col-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--space-3) var(--space-3);
+}
+
+/* Column 1: the picker takes the column's spare height rather than the
+   four-row cap the vertical form needed, and its section headers stick. */
+.fc-col .fc-picker { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+.fc-col .fc-picker-scroll { max-height: none; flex: 1; }
+.fc-col .fc-picker-group { position: sticky; top: 0; z-index: 1; }
+/* Modifier row pinned to the bottom of the column. */
+.fc-col .fc-mod-row { margin-top: auto; }
+
+/* Column 3: with a full column to work in, the two upgrade rows stop being a
+   cramped ±  and read as label / sublabel / explicit Undo button. */
+/* The two upgrade rows span the stepper grid: they carry a label, a sublabel
+   and an explicit Undo button, which a half-width cell truncates. */
+.fc-dstep.is-upgrade {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas:
+    "swatch meta  count"
+    "undo   undo  add";
+  gap: var(--space-1);
+  align-items: center;
+}
+.fc-dstep.is-upgrade > :first-child { grid-area: swatch; }
+.fc-dstep.is-upgrade > .fc-dstep-meta { grid-area: meta; flex: initial; }
+.fc-dstep.is-upgrade > .fc-dstep-count { grid-area: count; }
+.fc-dstep.is-upgrade > .fc-stepbtn.is-downgrade {
+  grid-area: undo;
+  justify-self: start;
+  width: auto;
+  height: 22px;
+  padding: 0 var(--space-2);
+}
+.fc-dstep.is-upgrade > .fc-stepbtn.is-add { grid-area: add; justify-self: end; }
+
+/* ── Tray as a full-width strip ─────────────────────────────────────────── */
+/* No longer sticky — nothing scrolls past it in the horizontal layout. */
+.fc-tray.fc-tray-strip {
+  position: static;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+.fc-tray.fc-tray-strip .fc-tray-label {
+  margin-bottom: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  flex: none;
+}
+.fc-tray.fc-tray-strip .fc-tray-dice { flex: 1; min-width: 0; }
+
+/* ── Roll footer bar ────────────────────────────────────────────────────── */
+.fc-roll-bar.fc-roll-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+}
+.fc-roll-bar.fc-roll-footer .fc-roll-sub { margin-top: 0; text-align: left; flex: 1; min-width: 0; }
+.fc-roll-bar.fc-roll-footer .fc-roll-btn { width: auto; min-width: 220px; padding: var(--space-2) var(--space-5); }
+@container (max-width: 900px) {
+  .fc-roll-bar.fc-roll-footer { flex-direction: column; align-items: stretch; }
+  .fc-roll-bar.fc-roll-footer .fc-roll-sub { text-align: center; }
+  .fc-roll-bar.fc-roll-footer .fc-roll-btn { width: 100%; }
+}
+
+/* ── Focus console: two-phase form (Skill Check) ─────────────────────────────
+   A documented alternative to the three-column form. Skill selection needs the
+   full 1180px — six characteristic columns, every skill visible — and the two
+   remaining decisions do not, so the body morphs between two phases instead of
+   sitting in three permanent columns. Tray, footer, ignition and state language
+   are shared with the three-column form. */
+
+/* `.fc-phases` is the GSAP height-spring wrapper (TalentsPanel's `AnimatedDrawer`
+   is the codebase precedent: measure, tween to the measured height). It carries
+   an explicit inline height at all times because BOTH phases are out of flow —
+   see below. It is never the positioned anchor for anything; the phases are. */
+.fc-phases { position: relative; overflow: hidden; }
+.fc-phase { padding: var(--space-3) var(--space-4) var(--space-4); }
+/* Both phases occupy the same box so the crossfade has nothing to reflow.
+   Deliberately NOT `inset: 0`: a bottom-anchored phase is stretched to the
+   wrapper's current height, so `scrollHeight`/`offsetHeight` would report the
+   wrapper back to us instead of the phase's own content height and the spring
+   could never shrink. Top-anchored + auto height makes each phase measurable. */
+.fc-phase-abs { position: absolute; top: 0; left: 0; right: 0; overflow-y: auto; }
+.fc-phase-hidden { opacity: 0; pointer-events: none; }
+
+/* Phase header row: numbered label + filter input */
+.fc-phase-top { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3); }
+.fc-phase-name {
+  display: flex; align-items: center; gap: var(--space-2);
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--check-accent, var(--hud-accent));
+  flex: none;
+}
+.fc-filter {
+  flex: 1; max-width: 320px;
+  padding: var(--space-1) var(--space-2);
+  background: var(--hud-bg);
+  border: 1px solid var(--hud-border-hi);
+  border-radius: 4px;
+  color: var(--hud-text);
+  font-family: var(--font-body);
+  font-size: var(--text-caption);
+}
+.fc-filter::placeholder { color: var(--hud-text-dim); }
+.fc-filter:focus {
+  outline: none;
+  border-color: var(--check-accent, var(--hud-accent));
+  box-shadow: 0 0 12px color-mix(in srgb, var(--check-accent, var(--hud-accent)) 20%, transparent);
+}
+
+/* ── Phase 1: six characteristic columns ─────────────────────────────────── */
+.fc-char-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--space-2); }
+@container (max-width: 900px) { .fc-char-grid { grid-template-columns: repeat(3, 1fr); } }
+@container (max-width: 560px) { .fc-char-grid { grid-template-columns: repeat(2, 1fr); } }
+.fc-char-col { min-width: 0; }
+.fc-char-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: var(--space-1);
+  padding-bottom: var(--space-1);
+  margin-bottom: var(--space-1);
+  border-bottom: 1px solid var(--hud-border-hi);
+}
+.fc-char-name {
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--check-accent, var(--hud-accent));
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.fc-char-val { font-family: var(--font-display); font-size: var(--text-body-sm); font-weight: 700; color: var(--hud-text); }
+
+.fc-sk-tile {
+  display: block; width: 100%;
+  margin-bottom: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--hud-border);
+  border-radius: 4px;
+  background: none;
+  color: var(--hud-text-dim);
+  font-family: var(--font-body);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--ease-quick), color var(--ease-quick), background var(--ease-quick);
+}
+.fc-sk-tile:hover {
+  border-color: var(--check-accent, var(--hud-accent));
+  color: var(--hud-text);
+  background: color-mix(in srgb, var(--check-accent, var(--hud-accent)) 10%, transparent);
+}
+/* Trained reads brighter; untrained is quieter but fully selectable — 0 ranks
+   is a valid check that rolls the characteristic. */
+.fc-sk-tile.is-trained { color: var(--hud-text); }
+/* Filter miss: dimmed AND inert. filter:opacity() not the opacity property, so
+   a GSAP stagger writing inline opacity can never fight it. */
+.fc-sk-tile.is-dim { filter: opacity(0.18); pointer-events: none; }
+.fc-sk-name {
+  display: block;
+  font-size: var(--text-overline);
+  line-height: 1.3;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.fc-sk-pips { display: flex; gap: 2px; margin-top: 3px; }
+.fc-sk-pips i {
+  width: 6px; height: 6px; /* pip geometry, not spacing */
+  transform: rotate(45deg);
+  flex: none;
+}
+.fc-sk-pips i.is-empty { background: none; box-shadow: inset 0 0 0 1px var(--hud-text-dim); opacity: 0.4; }
+
+/* ── Phase 2: selected-skill chip + two panels ───────────────────────────── */
+.fc-p2-top { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3); }
+.fc-skill-chip {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-1) var(--space-3);
+  background: var(--hud-surface-mid);
+  border: 1px solid var(--check-accent, var(--hud-accent));
+  border-radius: 4px;
+  box-shadow: inset 3px 0 0 var(--check-accent, var(--hud-accent));
+  cursor: pointer;
+  font-family: var(--font-body);
+  text-align: left;
+}
+.fc-skill-chip-n { font-family: var(--font-display); font-size: var(--text-body-sm); font-weight: 700; color: var(--hud-text); }
+.fc-skill-chip-s {
+  font-size: var(--text-overline);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--hud-text-dim);
+}
+.fc-skill-chip-swap {
+  margin-left: var(--space-2);
+  font-size: var(--text-overline);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--check-accent, var(--hud-accent));
+}
+
+/* Adjust Pool gets the WIDER column, Difficulty the narrower: Difficulty is six
+   flat buttons in a 3x2 grid and needs very little width, while each stepper is
+   swatch + label + − + count + + on one row. Reversed, the steppers wrapped the
+   `+` onto its own line and a one-row control cost three. */
+/* `align-items: start`, not the grid default `stretch`: the two panels have
+   genuinely different content heights, and stretching drew the shorter one
+   (Difficulty) as a tall box with ~230px of empty space under its last row. */
+.fc-p2-cols { display: grid; grid-template-columns: 1fr 1.3fr; gap: var(--space-3); align-items: start; }
+@container (max-width: 900px) { .fc-p2-cols { grid-template-columns: 1fr; } }
+
+.fc-panel {
+  position: relative;
+  border: 1px solid var(--hud-border);
+  border-radius: 8px;
+  padding: var(--space-3);
+  transition: border-color var(--ease-default), background var(--ease-default);
+}
+.fc-panel.is-active {
+  border-color: var(--check-accent, var(--hud-accent));
+  background: var(--hud-surface-mid);
+  box-shadow: 0 0 0 1px var(--check-accent, var(--hud-accent)), 0 0 24px color-mix(in srgb, var(--check-accent, var(--hud-accent)) 14%, transparent);
+}
+/* Same lock treatment as the three-column form, and for the same reason:
+   filter:opacity() is an independent channel from the inline opacity GSAP
+   writes during the phase-2 stagger. Using the opacity property here is the
+   exact conflict that bit the Combat Check columns. */
+.fc-panel.is-locked { filter: opacity(0.35); pointer-events: none; }
+.fc-panel-head { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); }
+.fc-panel-sum {
+  margin-left: auto;
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  color: var(--hud-text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 50%;
+}
+
+/* Difficulty: 3x2 grid of levels.
+   Vertical padding is one step, not two: the tile holds a single overline label
+   and a diamond row, and the taller box left the 3x2 grid far deeper than the
+   content warranted. Type scale is unchanged — only the padding shrank. */
+.fc-diff-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-1); }
+.fc-diff-opt {
+  padding: var(--space-1);
+  border: 1px solid var(--hud-border);
+  border-radius: 4px;
+  background: none;
+  color: var(--hud-text-dim);
+  font-family: var(--font-body);
+  text-align: center;
+  cursor: pointer;
+  min-width: 0;
+  transition: border-color var(--ease-quick), background var(--ease-quick), color var(--ease-quick);
+}
+.fc-diff-opt:hover { border-color: var(--check-accent, var(--hud-accent)); }
+.fc-diff-opt.is-selected {
+  border-color: var(--check-accent, var(--hud-accent));
+  color: var(--hud-text);
+  background: color-mix(in srgb, var(--check-accent, var(--hud-accent)) 12%, transparent);
+}
+.fc-diff-name {
+  display: block;
+  font-size: var(--text-overline);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.fc-diff-pips { display: flex; justify-content: center; gap: 3px; margin-top: var(--space-1); min-height: 8px; }
+.fc-diff-pips i { width: 7px; height: 7px; transform: rotate(45deg); flex: none; /* pip geometry */ }
+.fc-diff-dash { font-family: var(--font-body); font-size: var(--text-overline); opacity: 0.45; }
+
+/* Adjust Pool's stepper grid is pinned to two columns here rather than left to
+   the shared `auto-fit, minmax(150px, 1fr)` rule: on the widened column auto-fit
+   resolves to three ~197px cells, which is enough to fit but narrow enough that
+   `Difficulty` + `Add / remove` ellipsise. Two cells keep every stepper's label,
+   −, count and + on one row with room to spare. The Combat Check's own
+   `.fc-dice-grid` (a ~250px drawer) is untouched. */
+.fc-p2-cols .fc-dice-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+
+/* ── Focus console: Force Check ──────────────────────────────────────────────
+   Third adopter of the horizontal three-column form. Shares the shell, the
+   `.fc-col*` scaffolding, the stage heads, the footer and the ignition with
+   Combat and Skill; everything below is what only this check needs.
+
+   The redesign it implements came out of player testing, which found three
+   things broken: rolled points sat at the top while spending happened at the
+   bottom (currency disconnected from the shop); step 2 was an unexplained orb
+   labelled "channel the Force" (theme, not mechanics); and nothing visibly
+   connected the roll to the points that appeared. So: the dice ARE step 2, the
+   bank sits at the HEAD of step 3 directly above the effects it pays for, and
+   each point physically flies from the die that produced it into the bank. */
+
+/* Slightly wider spend column — it carries the bank plus a scrolling list. */
+.fc-cols.is-force { grid-template-columns: 1fr 1.05fr 1.25fr; }
+@container (max-width: 900px) { .fc-cols.is-force { grid-template-columns: 1fr; } }
+
+/* One line of plain-mechanics guidance per column. */
+.fc-guide {
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  color: var(--hud-text-dim);
+  line-height: 1.6;
+  flex: none;
+  margin-bottom: var(--space-2);
+}
+.fc-guide b { color: var(--hud-text); font-weight: 700; }
+
+/* ── Column 1: powers ─────────────────────────────────────────────────────── */
+.fc-pow-list { display: flex; flex-direction: column; gap: var(--space-2); min-height: 0; overflow-y: auto; }
+.fc-pow-row {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--hud-border);
+  border-radius: 6px;
+  background: none;
+  cursor: pointer; text-align: left;
+  font-family: var(--font-body);
+  display: flex; align-items: center; gap: var(--space-3);
+  transition: border-color var(--ease-quick), background var(--ease-quick), box-shadow var(--ease-quick);
+}
+.fc-pow-row:hover { border-color: var(--check-accent, var(--hud-accent)); }
+.fc-pow-row.is-selected {
+  border-color: var(--check-accent, var(--hud-accent));
+  background: color-mix(in srgb, var(--check-accent, var(--hud-accent)) 12%, transparent);
+  box-shadow: inset 3px 0 0 var(--check-accent, var(--hud-accent));
+}
+.fc-pow-name {
+  font-family: var(--font-display);
+  font-size: var(--text-body-sm);
+  font-weight: 600;
+  color: var(--hud-text);
+  min-width: 0; flex: 1;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+/* Replaces the old purchased/total dot row, which was unexplained and read as
+   noise. A plain count says the same thing and can be read at a glance. */
+.fc-pow-count {
+  flex: none;
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  color: var(--hud-text-dim);
+  white-space: nowrap;
+}
+/* The power's own rules text, on the selected row. This is where
+   ForceDescriptionPanel's power blurb went when that panel was retired. */
+.fc-pow-desc {
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  color: var(--hud-text-dim);
+  line-height: 1.55;
+  padding: var(--space-2) var(--space-3) 0;
+}
+.fc-pow-desc.is-clamped {
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* ── Column 2: the dice ───────────────────────────────────────────────────── */
+.fc-dice-zone {
+  display: flex; flex-direction: column; align-items: center;
+  gap: var(--space-4); flex: 1; justify-content: center;
+}
+.fc-fdice { display: flex; gap: var(--space-3); flex-wrap: wrap; justify-content: center; }
+/* The white FFG Force die with its cyan glow. `--die-force` IS the correct
+   token here — this is a rendered die face, the sealed namespace's actual
+   purpose, unlike the rail symbol that was misusing it for UI chrome.
+
+   THE FORCE DIE IS AN OCTAGON. `DICE_META.force.shape === 'octagon'` is the
+   canonical rule and every other renderer in the app already honours it
+   (`CLIP_OCT` in CombatCheckOverlay / HudSkillQuickList / RangeBandStep, and the
+   Pixi die layer). A `border-radius` square is wrong no matter how it is
+   cornered — see the dice-shape rule in docs/architecture.md.
+
+   The glow lives on a WRAPPER: `clip-path` clips `box-shadow` away entirely, so
+   the halo has to be a `filter: drop-shadow` on a parent, which follows the
+   child's painted pixels around the octagon instead of a rectangle. */
+.fc-fdie-glow {
+  display: inline-flex; flex: none;
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--die-force) 55%, transparent))
+          drop-shadow(0 3px 6px color-mix(in srgb, black 55%, transparent));
+}
+.fc-fdie {
+  width: 56px; height: 56px; flex: none; /* die geometry */
+  clip-path: polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 70%,0% 30%); /* octagon — Force die identity */
+  background: white; /* die-identity — the FFG Force die is white */
+  position: relative;
+  /* Inner rim only. The outer halo is the wrapper's drop-shadow above; an outer
+     box-shadow here would be clipped to nothing by the clip-path. */
+  box-shadow: inset 0 0 10px color-mix(in srgb, var(--die-force) 30%, transparent);
+  display: grid; place-items: center;
+}
+.fc-fdie-face { display: flex; gap: 3px; align-items: center; } /* pip gutter — geometry */
+.fc-fdie-blank {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: 700;
+  color: color-mix(in srgb, black 35%, white); /* on the white die face */
+}
+/* A Force Point, wherever it appears: on a die face, in the bank, in flight, or
+   as a chip on an effect row. Light and dark are game-mechanic identities. */
+.fc-fp {
+  display: inline-grid; place-items: center;
+  width: 20px; height: 20px; flex: none; /* point geometry */
+  border-radius: 50%;
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  font-weight: 700;
+  line-height: 1;
+}
+.fc-fp.is-light {
+  background: #f4ecd8; /* light-side point — approved game-mechanic colour */
+  color: #111111;      /* light-side point — approved game-mechanic colour */
+  border: 1px solid color-mix(in srgb, #f4ecd8 60%, black);
+  box-shadow: 0 0 8px color-mix(in srgb, white 50%, transparent);
+}
+.fc-fp.is-dark {
+  background: color-mix(in srgb, black 88%, var(--hud-accent-purple)); /* dark-side point */
+  color: var(--hud-accent-purple);
+  border: 1px solid var(--hud-accent-purple);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--hud-accent-purple) 40%, transparent);
+}
+.fc-fdie.is-tumbling { animation: fcDieTumble 0.42s linear infinite; }
+@keyframes fcDieTumble {
+  0%   { transform: rotate(0deg)   translateY(0)     scale(1); }
+  25%  { transform: rotate(90deg)  translateY(-8px)  scale(0.94); }
+  50%  { transform: rotate(180deg) translateY(0)     scale(1); }
+  75%  { transform: rotate(270deg) translateY(-8px)  scale(0.94); }
+  100% { transform: rotate(360deg) translateY(0)     scale(1); }
+}
+.fc-fdie.is-settled { animation: fcDieSettle 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+@keyframes fcDieSettle {
+  from { transform: scale(1.14); }
+  to   { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fc-fdie.is-tumbling, .fc-fdie.is-settled { animation: none; }
+}
+.fc-fbtn {
+  padding: var(--space-2) var(--space-5);
+  font-family: var(--font-display);
+  font-size: var(--text-body-sm);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  border-radius: 8px;
+  border: 1px solid var(--check-accent, var(--hud-accent));
+  background: color-mix(in srgb, var(--check-accent, var(--hud-accent)) 12%, transparent);
+  color: var(--check-accent, var(--hud-accent));
+  cursor: pointer;
+  transition: box-shadow var(--ease-default), opacity var(--ease-default);
+}
+.fc-fbtn:hover:not(:disabled) { box-shadow: 0 0 20px var(--check-glow, var(--hud-glow)); }
+.fc-fbtn:disabled { opacity: 0.3; cursor: not-allowed; }
+.fc-dice-sum {
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  color: var(--hud-text-dim);
+  text-align: center;
+  min-height: 16px; /* reserves the line so settling doesn't shift the column */
+}
+.fc-dice-sum b { color: var(--hud-text); }
+
+/* ── Column 3: bank + effects ─────────────────────────────────────────────── */
+/* The bank sits at the HEAD of the column and STAYS THERE while the effects
+   scroll beneath it. `flex: none` alone was not enough: which element actually
+   scrolls depends on how tall the list is. With a short list the column fits and
+   `.fc-console-body` scrolls the whole console; with a long one `.fc-fx-scroll`
+   scrolls internally. `position: sticky` pins the bank in BOTH cases — it holds
+   at the top of whichever scrollport is in play, inside its own column. It needs
+   an opaque backdrop, since the accent wash over it is translucent and rows
+   would otherwise read through. */
+.fc-bank {
+  flex: none;
+  position: sticky;
+  top: 0;
+  z-index: var(--z-raised);
+  border: 1px solid var(--check-accent, var(--hud-accent));
+  border-radius: 6px;
+  padding: var(--space-2) var(--space-3);
+  /* Two layers: the accent wash over an OPAQUE surface. A bare color-mix would
+     let the scrolling rows read straight through the pinned bank. */
+  background:
+    linear-gradient(color-mix(in srgb, var(--check-accent, var(--hud-accent)) 12%, transparent),
+                    color-mix(in srgb, var(--check-accent, var(--hud-accent)) 12%, transparent)),
+    var(--hud-surface-hi);
+  display: flex; align-items: center; gap: var(--space-3);
+  min-height: 54px;
+}
+.fc-bank-lbl {
+  flex: none;
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--check-accent, var(--hud-accent));
+  line-height: 1.5;
+}
+.fc-bank-toks { display: flex; gap: var(--space-2); flex-wrap: wrap; flex: 1; min-width: 0; align-items: center; }
+.fc-bank-empty {
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  color: var(--hud-text-faint);
+  font-style: italic;
+}
+.fc-bank-hint {
+  flex: none;
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  color: var(--hud-text-dim);
+  font-style: italic;
+  min-height: 14px; /* reserves the line — the hint text swaps as points arm */
+  margin: var(--space-1) 0;
+}
+.fc-bank-hint b { color: var(--check-accent, var(--hud-accent)); font-style: normal; }
+/* A bank token is a tappable .fc-fp. */
+.fc-fptok {
+  width: 28px; height: 28px; /* token geometry */
+  border: none; cursor: pointer; padding: 0;
+  position: relative;
+  transition: transform var(--ease-quick), opacity var(--ease-quick);
+}
+.fc-fptok.is-landing { visibility: hidden; }
+.fc-fptok:hover:not(.is-used) { transform: translateY(-3px); }
+.fc-fptok.is-armed { transform: translateY(-4px) scale(1.1); }
+/* Orbiting dashed ring marks the point currently in hand. */
+.fc-fptok.is-armed::after {
+  content: '';
+  position: absolute; inset: -4px;
+  border-radius: 50%;
+  border: 2px dashed var(--check-accent, var(--hud-accent));
+  animation: fcTokSpin 6s linear infinite;
+}
+@keyframes fcTokSpin { to { transform: rotate(360deg); } }
+.fc-fptok.is-used { opacity: 0.18; pointer-events: none; box-shadow: none; }
+.fc-fptok.is-pop { animation: fcTokPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+@keyframes fcTokPop { from { transform: scale(1.4); } to { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) {
+  .fc-fptok.is-armed::after { animation: none; }
+  .fc-fptok.is-pop { animation: none; }
+}
+
+.fc-fx-scroll {
+  flex: 1; min-height: 0; overflow-y: auto;
+  display: flex; flex-direction: column; gap: var(--space-2);
+  padding-right: var(--space-1);
+}
+.fc-fx-row {
+  flex: none;
+  border: 1px solid var(--hud-border);
+  border-radius: 6px;
+  transition: border-color var(--ease-quick), background var(--ease-quick), box-shadow var(--ease-quick);
+}
+.fc-fx-row.is-basic { background: var(--hud-surface-mid); }
+.fc-fx-row.is-on {
+  border-color: var(--check-accent, var(--hud-accent));
+  background: color-mix(in srgb, var(--check-accent, var(--hud-accent)) 12%, transparent);
+  box-shadow: inset 3px 0 0 var(--check-accent, var(--hud-accent));
+}
+/* A row holding a dark point takes the challenge-red edge — the FFG challenge
+   die colour, used here as the game's own dark-side warning. */
+.fc-fx-row.is-on.has-dark {
+  border-color: var(--die-challenge);
+  box-shadow: inset 3px 0 0 var(--die-challenge);
+}
+/* A point is in hand: every row is a legal destination. */
+.fc-fx-row.is-target {
+  border-style: dashed;
+  border-color: var(--check-accent, var(--hud-accent));
+  cursor: pointer;
+  animation: fcRowTarget 1.6s ease-in-out infinite;
+}
+@keyframes fcRowTarget {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--check-accent, var(--hud-accent)) 30%, transparent); }
+  50%      { box-shadow: 0 0 0 5px transparent; }
+}
+@media (prefers-reduced-motion: reduce) { .fc-fx-row.is-target { animation: none; } }
+.fc-fx-head {
+  width: 100%;
+  display: flex; align-items: flex-start; gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: none; border: none;
+  font-family: var(--font-body);
+  text-align: left;
+  cursor: pointer;
+}
+.fc-fx-row.is-basic .fc-fx-head { cursor: default; }
+.fc-fx-check {
+  width: 16px; height: 16px; flex: none; /* checkbox geometry */
+  border: 1.5px solid var(--hud-text-dim);
+  border-radius: 4px;
+  display: grid; place-items: center;
+  font-size: var(--text-overline);
+  color: transparent;
+  margin-top: 2px; /* optical alignment to the name's cap height */
+  transition: background var(--ease-quick), border-color var(--ease-quick), color var(--ease-quick);
+}
+.fc-fx-row.is-on .fc-fx-check {
+  background: var(--check-accent, var(--hud-accent));
+  border-color: var(--check-accent, var(--hud-accent));
+  color: var(--hud-bg);
+}
+.fc-fx-row.is-on.has-dark .fc-fx-check {
+  background: var(--die-challenge);
+  border-color: var(--die-challenge);
+  color: white; /* on the challenge-red fill */
+}
+.fc-fx-body { min-width: 0; flex: 1; }
+.fc-fx-name {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  font-weight: 600;
+  color: var(--hud-text);
+}
+/* The upgrade's rules text, inline. This is what retired ForceDescriptionPanel:
+   the text now lives on the row it describes instead of in a side panel that
+   could not even tell which item had been tapped. */
+.fc-fx-desc {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  color: var(--hud-text-dim);
+  line-height: 1.55;
+  margin-top: 2px; /* hairline gap under the name — geometry */
+}
+.fc-fx-row.is-expanded .fc-fx-desc {
+  display: block;
+  -webkit-line-clamp: unset;
+  color: var(--hud-text);
+}
+.fc-fx-exp {
+  flex: none;
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--check-accent, var(--hud-accent));
+  background: none; border: none;
+  cursor: pointer;
+  padding: 1px 3px; /* hairline hit padding — geometry */
+}
+/* Placed points. Any number per row: there is no per-effect cap, because
+   pip_cost is a text-derived heuristic and must never gate. */
+.fc-fx-slots {
+  display: flex; align-items: center; gap: var(--space-1);
+  padding: 0 var(--space-3) var(--space-2) 30px; /* aligns under the name, past the checkbox */
+  flex-wrap: wrap;
+}
+.fc-fx-slots:empty { display: none; }
+.fc-fx-chip {
+  width: 20px; height: 20px; /* chip geometry */
+  border: none; padding: 0;
+  cursor: pointer;
+  animation: fcChipIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.fc-fx-chip:hover { opacity: 0.55; }
+@keyframes fcChipIn { from { transform: scale(0); } to { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .fc-fx-chip { animation: none; } }
+.fc-fx-free {
+  font-family: var(--font-body);
+  font-size: var(--text-overline);
+  color: var(--hud-text-dim);
+  font-style: italic;
+}
+/* Advisory only — no automation hangs off this. */
+.fc-roll-sub.is-warn { color: var(--die-challenge); }
+
+
+

@@ -46,17 +46,37 @@ const POINTER_COLOURS: Record<string, number> = {
 // static hex colors instead of CSS vars because Pixi's canvas can't read
 // custom properties (same reason BORDER_COLOURS/wound-arc colors above are
 // raw hex, not tokens.ts imports).
-let skullTexturePromise: Promise<InstanceType<typeof import('pixi.js').Texture>> | null = null
-function loadSkullTexture(px: typeof import('pixi.js')): Promise<InstanceType<typeof import('pixi.js').Texture>> {
+//
+// CACHE INVALIDATION: the module-scope cache outlives the component, but the
+// unmount cleanup calls `app.destroy(..., { texture: true })`, which destroys
+// every texture the app owns — including this shared one. Handing the destroyed
+// Texture back on the next mount throws
+// `can't access property "width", this._texture.orig is null` from Sprite's
+// width getter (open the Session map, close it, reopen it with a defeated token
+// on the board). `releaseSkullTexture()` is called from the unmount cleanup;
+// the synchronous `destroyed` check below guards any other destroy path.
+type PixiTexture = InstanceType<typeof import('pixi.js').Texture>
+let skullTexture: PixiTexture | null = null
+let skullTexturePromise: Promise<PixiTexture> | null = null
+
+/** Drop the cached skull texture so the next mount rebuilds it. */
+function releaseSkullTexture() {
+  skullTexture = null
+  skullTexturePromise = null
+}
+
+function loadSkullTexture(px: typeof import('pixi.js')): Promise<PixiTexture> {
+  if (skullTexture && (skullTexture as { destroyed?: boolean }).destroyed) releaseSkullTexture()
+  if (skullTexture) return Promise.resolve(skullTexture)
   if (!skullTexturePromise) {
     const svg = skullSvgMarkup(SKULL_BONE_HEX, SKULL_HOLE_HEX)
     const dataUri = `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
-    skullTexturePromise = new Promise((resolve, reject) => {
+    skullTexturePromise = new Promise<PixiTexture>((resolve, reject) => {
       const img = new Image()
       img.onload  = () => resolve(px.Texture.from(img))
       img.onerror = reject
       img.src = dataUri
-    })
+    }).then(t => { skullTexture = t; return t })
   }
   return skullTexturePromise
 }
@@ -274,7 +294,10 @@ export const MapCanvas = memo(function MapCanvas({
       destroyed = true
       const app = appRef.current
       if (app) {
+        // Destroys every texture the app owns, the shared skull included —
+        // so the module-scope cache must be dropped in step with it.
         app.destroy(true, { children: true, texture: true })
+        releaseSkullTexture()
         appRef.current = null
       }
       tokensRef.current.clear()

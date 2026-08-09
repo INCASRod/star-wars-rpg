@@ -9,7 +9,6 @@ import { OpeningCrawlCanvas } from '@/components/map/OpeningCrawlCanvas'
 import { InitiativeStrip } from '@/components/player/InitiativeStrip'
 import { PlayerTokenTooltip, type PlayerTooltipEntity, type PlayerTooltipRole } from '@/components/player/PlayerTokenTooltip'
 import { HudAdversaryDrawer } from './HudAdversaryDrawer'
-import { HudSkillQuickList } from './HudSkillQuickList'
 import { fetchAdversaries, adversaryToInstance } from '@/lib/adversaries'
 import type { AdversaryInstance } from '@/lib/adversaries'
 import { fetchVehicles } from '@/lib/vehicles'
@@ -30,10 +29,7 @@ interface HudSessionTabProps {
   isCombatActive:     boolean
   encounter:          CombatEncounter | null
   // Quick drawer props
-  activeQuickPanel?:        'skill' | null
-  onCloseQuickPanel?:       () => void
   hudSkills?:               HudSkill[]
-  onOpenSkillPopover?:      (skill: HudSkill, anchor: DOMRect) => void
   onSkillRoll?:             (result: RollResult, label?: string, pool?: Record<string, number>) => void
   // Adversary drawer — externally controlled when rail button is used
   adversariesOpen?:         boolean
@@ -48,10 +44,7 @@ export function HudSessionTab({
   onTokenMove,
   isCombatActive,
   encounter,
-  activeQuickPanel         = null,
-  onCloseQuickPanel        = () => {},
   hudSkills                = [],
-  onOpenSkillPopover       = () => {},
   onSkillRoll,
   adversariesOpen:         externalAdversariesOpen,
   onAdversariesOpenChange,
@@ -238,36 +231,9 @@ export function HudSessionTab({
 
   return (
     <div className="relative h-full overflow-hidden">
-      {/* ── Quick drawer backdrop ── */}
-      {activeQuickPanel && (
-        <div
-          onClick={onCloseQuickPanel}
-          className="absolute inset-0"
-          style={{
-            background: 'rgba(0,0,0,0.45)',
-            zIndex: 'var(--z-panel)',
-          }}
-        />
-      )}
-
-      {/* ── Skill Check quick drawer ── */}
-      <div
-        className={`hud-quick-drawer${activeQuickPanel === 'skill' ? ' open' : ''}`}
-        style={{ background: 'var(--hud-surface-lo)', borderRight: '1px solid var(--hud-border-hi)', display: 'flex', flexDirection: 'column' }}
-      >
-        <div className="flex items-center shrink-0" style={{
-          padding: `${SP[2]} ${SP[4]}`, borderBottom: '1px solid var(--hud-border)',
-          background: 'var(--hud-panel)', gap: 'var(--space-2)',
-        }}>
-          <span className="flex-1" style={{ fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--hud-gold)' }}>
-            ◈ Skill Check
-          </span>
-          <button onClick={onCloseQuickPanel} className="cursor-pointer" style={{ background: 'none', border: 'none', color: 'var(--hud-text-dim)', fontSize: FS.sm }}>✕</button>
-        </div>
-        <div className="flex-1 overflow-hidden flex flex-col">
-          <HudSkillQuickList skills={hudSkills} onOpenPopover={onOpenSkillPopover} onRoll={onSkillRoll} />
-        </div>
-      </div>
+      {/* Skill Check is no longer a drawer — it is a centred modal mounted by
+          PlayerHUDDesktop, matching the Combat Check console. The old
+          `.hud-quick-drawer` host and its backdrop are gone. */}
 
       {/* Map or placeholder */}
       {visibleMap?.map_type === 'crawl' ? (

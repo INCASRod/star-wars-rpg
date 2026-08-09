@@ -1,11 +1,13 @@
 'use client'
 
-import { useState, useEffect, useCallback, type ReactNode } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import gsap from 'gsap'
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
 import { createClient } from '@/lib/supabase/client'
 import { rollPool, type RollResult } from '@/components/player-hud/dice-engine'
 import { type RollMeta } from '@/lib/logRoll'
-import { formatResultSummary, isRangedSkill, getMeleeDifficulty, type RangeBand, RANGE_VALUE_MAP, RANGE_BAND_LABELS, MELEE_SKILL_KEYS } from '@/lib/combatCheckUtils'
-import { checkCriticalEligibility, type CriticalEligibility } from '@/lib/criticalUtils'
+import { formatResultSummary, isRangedSkill, getMeleeDifficulty, type RangeBand, RANGE_BAND_LABELS, MELEE_SKILL_KEYS } from '@/lib/combatCheckUtils'
+import { checkCriticalEligibility } from '@/lib/criticalUtils'
 import type { Character, CharacterWeapon, CharacterSkill, RefWeapon, RefSkill, RefWeaponQuality, SpeciesAbility } from '@/lib/types'
 import type { SkillDiceModifier } from '@/lib/derivedStats'
 import type { AdversaryInstance } from '@/lib/adversaries'
@@ -14,7 +16,9 @@ import { RangeBandStep } from './steps/RangeBandStep'
 import { DicePoolReviewStep, type ManualAdjustments, EMPTY_ADJUSTMENTS, type DualWieldState } from './steps/DicePoolReviewStep'
 import { DualWieldReviewStep } from './steps/DualWieldReviewStep'
 import { RollResultStep } from './steps/RollResultStep'
-import { HUD, FS, FONT_BODY, FONT_DISPLAY, SP, EASE, RADIUS, Z, DICE_META, DICE_COLOR, DICE_OUTLINE } from '@/lib/tokens'
+import { FS, FONT_BODY, SP, RADIUS, Z, MODAL, DICE_META, DICE_COLOR, DICE_OUTLINE } from '@/lib/tokens'
+import { Modal } from '@/components/ui/Modal'
+import { igniteModalOpen, igniteModalClose, IGNITE_EXIT_MS } from '@/lib/utils'
 
 // ── Dice tray constants ────────────────────────────────────────────────────────
 const CLIP_OCTAGON = 'polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 70%,0% 30%)'
@@ -68,204 +72,82 @@ function makeInitialState(initialAttackType: 'ranged' | 'melee' | null): CombatC
 }
 
 // ── Flat section header (replaces accordion StepContainer) ───────────────────
-function FlatSection({ number, label, children }: { number: number; label: string; children?: ReactNode }) {
-  return (
-    <div style={{ marginBottom: SP[2] }}>
-      <div style={{
-        display:       'flex',
-        alignItems:    'center',
-        gap:           SP[1],
-        marginBottom:  SP[1],
-        paddingBottom: SP[1],
-        borderBottom:  '1px solid var(--hud-border)',
-      }}>
-        <div style={{
-          width:          18,
-          height:         18,
-          borderRadius:   RADIUS.full,
-          border:         `1px solid color-mix(in srgb, var(--hud-accent) 60%, transparent)`,
-          background:     `color-mix(in srgb, var(--hud-accent) 12%, transparent)`,
-          color:          'var(--hud-accent)',
-          fontFamily:     FONT_DISPLAY,
-          fontSize:       FS.overline,
-          display:        'flex',
-          alignItems:     'center',
-          justifyContent: 'center',
-          flexShrink:     0,
-          lineHeight:     1,
-        }}>
-          {number}
-        </div>
-        <div style={{
-          fontFamily:    FONT_DISPLAY,
-          fontSize:      FS.overline,
-          fontWeight:    700,
-          letterSpacing: '0.25em',
-          textTransform: 'uppercase' as const,
-          color:         'var(--hud-text)',
-        }}>
-          {label}
-        </div>
-      </div>
-      {children}
-    </div>
-  )
-}
-
-// ── Modifier toggle button ─────────────────────────────────────────────────────
-function ModToggle({
-  label, effect, active, disabled = false, polarity = 'positive', onToggle,
-}: {
-  label:     string
-  effect:    string
-  active:    boolean
-  disabled?: boolean
-  polarity?: 'positive' | 'negative'
-  onToggle:  () => void
-}) {
-  const barColor = polarity === 'positive' ? 'var(--hud-gold)' : 'var(--state-failure)'
-  return (
-    <button
-      onClick={onToggle}
-      disabled={disabled}
-      className="cc-mod-toggle"
-      style={{
-        display:       'flex',
-        flexDirection: 'column' as const,
-        gap:           2,
-        padding:       `${SP[1]} ${SP[2]}`,
-        borderLeft:    active
-          ? `2px solid ${barColor}`
-          : `2px solid color-mix(in srgb, var(--hud-border) 70%, transparent)`,
-        borderTop:     '1px solid var(--hud-border)',
-        borderRight:   '1px solid var(--hud-border)',
-        borderBottom:  '1px solid var(--hud-border)',
-        background:    active
-          ? polarity === 'positive'
-            ? `color-mix(in srgb, var(--hud-gold) 8%, transparent)`
-            : `color-mix(in srgb, var(--state-failure) 8%, transparent)`
-          : `color-mix(in srgb, var(--hud-surface-lo) 40%, transparent)`,
-        borderRadius:  RADIUS.sm,
-        cursor:        disabled ? 'not-allowed' as const : 'pointer' as const,
-        opacity:       disabled ? 0.3 : 1,
-        textAlign:     'left' as const,
-        transition:    `border-color ${EASE.quick}, background ${EASE.quick}`,
-        width:         '100%',
-      }}
-    >
-      <span style={{ fontFamily: FONT_DISPLAY, fontSize: FS.label, fontWeight: 700, color: 'var(--hud-text)' }}>
-        {label}
-      </span>
-      <span style={{
-        fontFamily: FONT_BODY,
-        fontSize:   FS.overline,
-        color:      active ? barColor : 'var(--hud-text-dim)',
-        opacity:    active ? 1 : 0.6,
-      }}>
-        {effect}
-      </span>
-    </button>
-  )
-}
-
-// ── DSS Stepper — Dice Selection Stage control (− val +) ─────────────────────
-const CLIP_OCT = 'polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 70%,0% 30%)'
-const CLIP_DIA = 'polygon(50% 0%,100% 50%,50% 100%,0% 50%)'
-
-function DssStepper({
-  dieColor, dieEdge, dieShape, label, sublabel, value, min = 0, onAdd, onRemove, polarity = 'positive',
+// ── Focus-console dice stepper ───────────────────────────────────────────────
+// One row of the Adjust Pool grid. On the two upgrade rows the minus is an
+// explicit "undo the upgrade" rather than a generic decrement, and is disabled
+// (a no-op) at zero.
+function FcStepper({
+  dieColor, dieEdge, dieShape, name, sub, value, onAdd, onRemove, canRemove,
+  isUpgrade = false, downgradeLabel,
 }: {
   dieColor:   string
-  /** Outline colour — required for the black setback die, which would otherwise
-   *  render as an invisible hole in the panel. Defaults to the fill. */
   dieEdge?:   string
   dieShape:   'octagon' | 'diamond' | 'rounded'
-  label:      string
-  sublabel?:  string
+  name:       string
+  sub?:       string
   value:      number
-  min?:       number
   onAdd:      () => void
   onRemove:   () => void
-  polarity:   'positive' | 'negative'
+  canRemove:  boolean
+  isUpgrade?: boolean
+  downgradeLabel?: string
 }) {
-  const isActive = value !== 0
-  const barColor = polarity === 'positive' ? 'var(--hud-gold)' : 'var(--state-failure)'
-  const sz = dieShape === 'diamond' ? 14 : 12
+  const sz = dieShape === 'diamond' ? 15 : 16 /* die glyph size — geometry, not spacing */
   return (
-    <div style={{
-      display:        'flex',
-      alignItems:     'center',
-      justifyContent: 'space-between',
-      padding:        `${SP[1]} ${SP[1]} ${SP[1]} ${SP[2]}`,
-      borderBottom:   '1px solid var(--hud-border)',
-      borderLeft:     isActive ? `2px solid ${barColor}` : '2px solid transparent',
-      background:     isActive && polarity === 'positive'
-        ? 'color-mix(in srgb, var(--hud-gold) 6%, transparent)'
-        : isActive && polarity === 'negative'
-        ? 'color-mix(in srgb, var(--state-failure) 6%, transparent)'
-        : 'transparent',
-      transition:     `border-left-color ${EASE.quick}, background ${EASE.quick}`,
-      minWidth:       0, /* grid child: allow shrink below content size */
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: SP[1], flex: 1, minWidth: 0 }}>
-        <div style={{
-          width:        sz,
-          height:       sz,
-          flexShrink:   0,
-          background:   dieColor, /* die-identity hex — sealed namespace */
-          /* Octagon/diamond chips are clip-pathed, which would crop a border —
-             only the rounded chips (boost/setback) carry the outline. */
-          border:       dieShape === 'rounded' && dieEdge ? `1px solid ${dieEdge}` : undefined,
-          boxShadow:    dieShape !== 'rounded' && dieEdge ? `0 0 0 1px ${dieEdge}` : undefined,
-          borderRadius: dieShape === 'rounded' ? RADIUS.sm : undefined,
-          clipPath:     dieShape === 'octagon' ? CLIP_OCT : dieShape === 'diamond' ? CLIP_DIA : undefined,
-        }} />
-        <div style={{ minWidth: 0, overflow: 'hidden' }}>
-          <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-dim)', lineHeight: 1.2, whiteSpace: 'nowrap' as const }}>{label}</div>
-          {sublabel && <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)', opacity: 0.7, lineHeight: 1 }}>{sublabel}</div>}
-        </div>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: SP[1], flexShrink: 0 }}>
-        <button
-          onClick={onRemove}
-          disabled={value <= min}
-          style={{
-            width: '1.5rem', height: '1.5rem', flexShrink: 0,
-            borderRadius: RADIUS.sm,
-            cursor:       value <= min ? 'not-allowed' : 'pointer',
-            background:   'transparent',
-            border:       '1px solid var(--hud-border)',
-            fontFamily:   FONT_BODY,
-            fontSize:     FS.label,
-            color:        value <= min ? 'var(--hud-border-hi)' : 'var(--hud-text-faint)',
-            display:      'flex', alignItems: 'center', justifyContent: 'center',
-          }}
-        >−</button>
-        <span style={{
-          fontFamily: FONT_BODY,
-          fontSize:   FS.caption,
-          color:      value < 0 ? 'var(--hud-accent)' : HUD.gold,
-          minWidth:   '1.25rem',
-          textAlign:  'center' as const,
-        }}>
-          {value > 0 ? `+${value}` : value === 0 ? '0' : `${value}`}
-        </span>
-        <button
-          onClick={onAdd}
-          style={{
-            width: '1.5rem', height: '1.5rem', flexShrink: 0,
-            borderRadius: RADIUS.sm,
-            cursor:       'pointer',
-            background:   'color-mix(in srgb, var(--hud-accent) 10%, transparent)',
-            border:       '1px solid var(--hud-border)',
-            fontFamily:   FONT_BODY,
-            fontSize:     FS.label,
-            color:        HUD.gold,
-            display:      'flex', alignItems: 'center', justifyContent: 'center',
-          }}
-        >+</button>
-      </div>
+    <div className={`fc-dstep${isUpgrade ? ' is-upgrade' : ''}`}>
+      <span style={{
+        width:        sz,
+        height:       sz,
+        flexShrink:   0,
+        background:   dieColor, /* die-identity hex — sealed namespace */
+        border:       dieShape === 'rounded' && dieEdge ? `1px solid ${dieEdge}` : undefined,
+        boxShadow:    dieShape !== 'rounded' && dieEdge ? `0 0 0 1px ${dieEdge}` : undefined,
+        borderRadius: dieShape === 'rounded' ? RADIUS.sm : undefined,
+        clipPath:     dieShape === 'octagon' ? CLIP_OCTAGON : dieShape === 'diamond' ? CLIP_DIAMOND : undefined,
+      }} />
+      <span className="fc-dstep-meta">
+        <span className="fc-dstep-name">{name}</span>
+        {sub && <span className="fc-dstep-sub">{sub}</span>}
+      </span>
+      <button
+        type="button"
+        className={`fc-stepbtn${downgradeLabel ? ' is-downgrade' : ''}`}
+        onClick={onRemove}
+        disabled={!canRemove}
+        title={downgradeLabel ?? `Remove ${name}`}
+      >
+        {downgradeLabel ? `↓ ${downgradeLabel}` : '−'}
+      </button>
+      <span className="fc-dstep-count">{value}</span>
+      <button
+        type="button"
+        className="fc-stepbtn is-add"
+        onClick={onAdd}
+        title={isUpgrade ? `Upgrade — ${name}` : `Add ${name}`}
+      >
+        {isUpgrade ? '↑' : '+'}
+      </button>
     </div>
+  )
+}
+
+// ── Stage header ─────────────────────────────────────────────────────────────
+// Module scope on purpose: a component declared inside the panel body would be
+// a new type on every render.
+function StageHead({ n, name, summary, done, locked, openStage, onOpen }: {
+  n: number; name: string; summary?: string; done: boolean; locked: boolean
+  openStage: number; onOpen: (n: number) => void
+}) {
+  return (
+    <button
+      type="button"
+      className="fc-stage-head"
+      onClick={() => { if (!locked) onOpen(n) }}
+    >
+      <span className="fc-stage-num">{done ? '✓' : n}</span>
+      <span className="fc-stage-name">{name}</span>
+      {done && summary && openStage !== n && <span className="fc-stage-summary">{summary}</span>}
+    </button>
   )
 }
 
@@ -320,6 +202,18 @@ export function CombatCheckOverlay({
   const [aimBoosts,    setAimBoosts]    = useState(0)    // 0, 1, or 2
   const [assistActive, setAssistActive] = useState(false)
   const [guardedActive, setGuardedActive] = useState(false)
+
+  // ── Presentational state (focus-console redesign) ──────────────────────
+  // Which stage is visually expanded. Purely a view concern — `currentStep`
+  // and every other CombatCheckState field keep their existing semantics.
+  const [openStage, setOpenStage] = useState(1)
+  const prefersReducedMotion = usePrefersReducedMotion()
+  const trayRef  = useRef<HTMLDivElement>(null)
+  const shellRef = useRef<HTMLDivElement>(null)
+  const scrimRef = useRef<HTMLDivElement>(null)
+  const pulseRef = useRef<HTMLDivElement>(null)
+  const igniteTlRef = useRef<gsap.core.Timeline | null>(null)
+  const s2Ref   = useRef<HTMLDivElement>(null)
 
   // Seed encounterId from prop so the combat_log write doesn't need a SELECT
   const seedEncounterId = propEncounterId ?? null
@@ -427,13 +321,14 @@ export function CombatCheckOverlay({
 
   const handleWeaponSelect = (w: CharacterWeapon | null) => {
     let derivedType = state.attackType
-    if (w && !derivedType) {
-      if (w.id === '__unarmed__') {
-        derivedType = 'melee'
-      } else {
-        const ref = refWeaponMap[w.weapon_key]
-        derivedType = ref?.skill_key ? (isRangedSkill(ref.skill_key) ? 'ranged' : 'melee') : 'ranged'
-      }
+    // Unarmed is always melee, even when a ranged weapon was selected first —
+    // the picker now offers it under every attack type, so this can no longer
+    // rely on `attackType` still being null.
+    if (w && w.id === '__unarmed__') {
+      derivedType = 'melee'
+    } else if (w && !derivedType) {
+      const ref = refWeaponMap[w.weapon_key]
+      derivedType = ref?.skill_key ? (isRangedSkill(ref.skill_key) ? 'ranged' : 'melee') : 'ranged'
     }
     // Flat layout has no NEXT button — write to participant DB on weapon select
     if (w && w.id !== '__unarmed__') {
@@ -679,8 +574,17 @@ export function CombatCheckOverlay({
   }
 
   // ── Melee opponent resistance (reads encounterEnemies, no target selection step) ──
-  const primaryTarget = (encounterEnemies ?? gmTargets ?? [])[0] ?? null
+  // Player-selected melee opponent wins; otherwise the encounter's first
+  // enemy; otherwise null, which getMeleeDifficulty reports as the
+  // "set difficulty manually" fallback.
+  const primaryTarget = state.selectedTargets[0] ?? (encounterEnemies ?? gmTargets ?? [])[0] ?? null
   const meleeResult   = state.attackType === 'melee' ? getMeleeDifficulty(primaryTarget) : null
+
+  // Enemy adversaries in the current encounter — the melee opponent choices.
+  // Allied NPCs are never valid melee targets here.
+  const meleeOpponents = (encounterEnemies ?? gmTargets ?? []).filter(
+    a => (a.alignment ?? 'enemy') === 'enemy',
+  )
 
   // ── Total dice and roll readiness ─────────────────────────────────────────
   const totalDiceForRoll = Object.values(poolForRoll).reduce((s, n) => s + Math.max(0, n), 0)
@@ -710,28 +614,130 @@ export function CombatCheckOverlay({
     }))
   }
 
+  // ── Stage rail (presentation only) ─────────────────────────────────────────
+  // A view over the existing state — `currentStep` and every other field on
+  // CombatCheckState keep their meaning and their writers untouched.
+  const stage1Done = state.selectedWeapon !== null
+  const stage2Done = state.attackType === 'ranged'
+    ? state.selectedBand !== null
+    : state.selectedTargets.length > 0 || meleeOpponents.length === 0
+  const rangeApplies = state.attackType === 'ranged'
+
+  // ── Modal ignition ────────────────────────────────────────────────────────
+  // Canonical pattern (see docs/architecture.md): refs to inner wrappers, one
+  // effect building a GSAP timeline, `() => tl.kill()` on cleanup, an early
+  // `gsap.set` short-circuit for reduced motion, and `prefersReducedMotion` in
+  // the dependency array because it is false on the first render.
+  //
+  // Decorative only. `open` has already flipped by the time this runs; `Modal`'s
+  // `exitMs` merely holds the DOM long enough for the close to be seen.
+  useEffect(() => {
+    // Kill any in-flight timeline first, so spamming the trigger can never
+    // leave the panel mid-scale or half-faded.
+    igniteTlRef.current?.kill()
+
+    const targets = {
+      inner:  shellRef.current,
+      scrim:  scrimRef.current,
+      pulse:  pulseRef.current,
+      // Origin is resolved at open time from the rail button's own class —
+      // no ref threaded through HudLeftRail. Missing node ⇒ viewport centre.
+      origin: typeof document !== 'undefined'
+        ? document.querySelector('.hud-rail-btn-combat')
+        : null,
+      accent: 'var(--hud-accent)',
+      glow:   'var(--hud-glow)',
+      restShadow: MODAL.shadow,
+      reducedMotion: prefersReducedMotion,
+    }
+    igniteTlRef.current = open ? igniteModalOpen(targets) : igniteModalClose(targets)
+
+    return () => { igniteTlRef.current?.kill() }
+  }, [open, prefersReducedMotion])
+
+  // Tray pulse + flying die on any pool change. Decorative: the pool state has
+  // already been written by the time this runs.
+  const poolSignature = `${poolForRoll.proficiency ?? 0}-${poolForRoll.ability ?? 0}-${poolForRoll.boost ?? 0}-${poolForRoll.force ?? 0}-${poolForRoll.difficulty ?? 0}-${poolForRoll.challenge ?? 0}-${poolForRoll.setback ?? 0}`
+  const prevSignature = useRef(poolSignature)
+  useEffect(() => {
+    if (prevSignature.current === poolSignature) return
+    prevSignature.current = poolSignature
+    if (prefersReducedMotion) return
+    const tray = trayRef.current
+    if (!tray) return
+    tray.classList.remove('fc-tray-pulse')
+    // Force reflow so the animation restarts on consecutive changes.
+    void tray.offsetWidth
+    tray.classList.add('fc-tray-pulse')
+    // prefersReducedMotion is false on first render and flips in an effect, so
+    // it has to be a dependency rather than a captured closure value.
+  }, [poolSignature, prefersReducedMotion])
+
+  // Column 2 rebuilds when the weapon type flips (Range track <-> Opponent
+  // list). Stagger its children in so the swap reads as a deliberate change
+  // rather than a flicker. Inner wrapper only; skipped under reduced motion.
+  useEffect(() => {
+    const el = s2Ref.current
+    if (!el) return
+    const kids = el.children
+    if (!kids.length) return
+    if (prefersReducedMotion) { gsap.set(kids, { opacity: 1, y: 0 }); return }
+    const tw = gsap.fromTo(kids, { opacity: 0, y: 8 },
+      { opacity: 1, y: 0, duration: 0.22, stagger: 0.04, ease: 'power2.out' })
+    return () => { tw.kill() }
+    // prefersReducedMotion is false on first render — must be a dependency.
+  }, [rangeApplies, prefersReducedMotion])
+
+
+  const weaponSummary = state.selectedWeapon
+    ? (state.selectedWeapon.id === '__unarmed__'
+        ? 'Unarmed / Brawl'
+        : (state.selectedWeapon.custom_name || refWeapon?.name || 'Weapon'))
+    : ''
+  const rangeSummary = state.selectedBand ? RANGE_BAND_LABELS[state.selectedBand] : ''
+  const adjustCount = state.adjustments.boostAdd + state.adjustments.setbackAdd +
+    state.adjustments.forceAdd + state.adjustments.abilityUpgrades +
+    state.adjustments.difficultyUpgrades + Math.abs(state.adjustments.difficultyAdd)
+  const rollBlockedBy = !state.selectedWeapon
+    ? 'Choose a weapon to arm the roll'
+    : (rangeApplies && !state.selectedBand)
+      ? 'Choose a range band to arm the roll'
+      : totalDiceForRoll === 0
+        ? 'Pool is empty'
+        : 'Pool locked in — may the Force be with you'
+
   return (
-    <div
-      className={`hud-quick-drawer${open ? ' open' : ''}`}
-      style={{
-        background:           'var(--hud-surface-hi)',
-        backdropFilter:       'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        borderRight:          '1px solid var(--hud-border)',
-        display:              'flex',
-        flexDirection:        'column',
-      }}
+    // Centred modal, portalled to document.body by `Modal`. The portal is
+    // required, not cosmetic: the old `.hud-quick-drawer` root carried
+    // `backdrop-filter`, which creates a containing block for `position: fixed`
+    // descendants and would anchor the overlay to the drawer on Safari.
+    // Reuses the app's shared Modal shell (scrim, Escape, scrim-click close,
+    // z-index) rather than a bespoke one — note it has no focus trap or scroll
+    // lock, matching every other modal in the app.
+    <Modal
+      open={open}
+      onClose={handleClose}
+      maxWidth="min(1180px, calc(100vw - 48px))"
+      panelBackground="var(--hud-surface-hi)"
+      scrimRef={scrimRef}
+      scrimClassName="fc-scrim-ignite"
+      portalExtra={<div ref={pulseRef} className="fc-pulse" aria-hidden />}
+      exitMs={IGNITE_EXIT_MS}
     >
+    <div className="cc-modal" ref={shellRef}>
 
       {/* ── Top-edge accent stripe ──────────────────────────────────────────── */}
       <div style={{
         height:     3, /* stripe height */
-        background: 'linear-gradient(90deg, transparent, var(--hud-accent) 30%, var(--hud-gold) 70%, transparent)',
+        /* Per-check accent identity — Combat is the baseline, so --check-accent
+           and --check-accent-alt resolve to exactly the --hud-accent / --hud-gold
+           this line named before. Same pixels, now on the shared mechanism. */
+        background: 'linear-gradient(90deg, transparent, var(--check-accent) 30%, var(--check-accent-alt) 70%, transparent)',
         flexShrink: 0,
       }} />
 
       {/* ── Compact header strip ────────────────────────────────────────────── */}
-      <div style={{
+      <div data-ignite-stagger style={{
         display:      'flex',
         alignItems:   'center',
         gap:          SP[2],
@@ -766,71 +772,42 @@ export function CombatCheckOverlay({
         >✕</button>
       </div>
 
-      {/* ── Persistent dice tray ─────────────────────────────────────────────── */}
-      {(() => {
-        const p = poolForRoll.proficiency ?? 0
-        const a = poolForRoll.ability     ?? 0
-        const b = poolForRoll.boost       ?? 0
-        const d = poolForRoll.difficulty  ?? 0
-        const c = poolForRoll.challenge   ?? 0
-        const s = poolForRoll.setback     ?? 0
-        const f = poolForRoll.force       ?? 0
-        const hasPlayerDice = p + a + b + f > 0
-        const hasDiffDice   = d + c + s > 0
-        const hasAny        = hasPlayerDice || hasDiffDice
-        return (
-          <div style={{
-            padding:      `${SP[1]} ${SP[2]}`,
-            background:   'color-mix(in srgb, black 25%, transparent)',
-            borderBottom: '1px solid var(--hud-border)',
-            flexShrink:   0,
-          }}>
-            <div style={{
-              fontFamily:    FONT_DISPLAY,
-              fontSize:      FS.overline,
-              letterSpacing: '0.18em',
-              textTransform: 'uppercase' as const,
-              color:         'var(--hud-text-faint)',
-              opacity:       0.55,
-              marginBottom:  SP[1],
-            }}>
-              Dice Pool
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexWrap: 'wrap' as const }}>
-              {Array.from({ length: p }).map((_, i) => <DiceTrayDie key={`pro-${i}`} type="proficiency" />)}
-              {Array.from({ length: a }).map((_, i) => <DiceTrayDie key={`abl-${i}`} type="ability" />)}
-              {Array.from({ length: b }).map((_, i) => <DiceTrayDie key={`bst-${i}`} type="boost" />)}
-              {Array.from({ length: f }).map((_, i) => <DiceTrayDie key={`frc-${i}`} type="force" />)}
-              {hasPlayerDice && hasDiffDice && (
-                <div style={{ width: 1, height: 28, background: 'color-mix(in srgb, white 10%, transparent)', margin: `0 ${SP[1]}`, flexShrink: 0 }} />
-              )}
-              {Array.from({ length: d }).map((_, i) => <DiceTrayDie key={`dif-${i}`} type="difficulty" />)}
-              {Array.from({ length: c }).map((_, i) => <DiceTrayDie key={`chl-${i}`} type="challenge" />)}
-              {Array.from({ length: s }).map((_, i) => <DiceTrayDie key={`set-${i}`} type="setback" />)}
-              {!hasAny && (
-                <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)', opacity: 0.4 }}>
-                  — —
-                </span>
-              )}
-            </div>
-            {!hasAny && (
-              <div style={{
-                fontFamily:    FONT_BODY,
-                fontSize:      FS.overline,
-                color:         'var(--hud-text-faint)',
-                opacity:       0.35,
-                marginTop:     SP[1],
-                letterSpacing: '0.06em',
-              }}>
-                Tap modifiers below to build pool
-              </div>
-            )}
-          </div>
-        )
-      })()}
-
       {/* ── Body ────────────────────────────────────────────────────────────── */}
-      <div style={{ flex: 1, overflowY: 'auto', overscrollBehavior: 'contain' }}>
+      <div className="fc-console-body" style={{ flex: 1, overflowY: 'auto', overscrollBehavior: 'contain' }}>
+
+        {/* ── Hero dice tray — sticky, above the stage rail ─────────────────── */}
+        {!isResult && (() => {
+          const p = poolForRoll.proficiency ?? 0
+          const a = poolForRoll.ability     ?? 0
+          const b = poolForRoll.boost       ?? 0
+          const d = poolForRoll.difficulty  ?? 0
+          const c = poolForRoll.challenge   ?? 0
+          const s = poolForRoll.setback     ?? 0
+          const f = poolForRoll.force       ?? 0
+          const hasPos = p + a + b + f > 0
+          const hasNeg = d + c + s > 0
+          return (
+            <div className="fc-tray fc-tray-strip" data-ignite-stagger ref={trayRef}>
+              <div className="fc-tray-label">
+                <span>Dice Pool</span>
+                {refSkill?.name && <span className="fc-tray-skill">{refSkill.name}</span>}
+              </div>
+              <div className="fc-tray-dice">
+                {Array.from({ length: p }).map((_, i) => <DiceTrayDie key={`pro-${i}`} type="proficiency" />)}
+                {Array.from({ length: a }).map((_, i) => <DiceTrayDie key={`abl-${i}`} type="ability" />)}
+                {Array.from({ length: b }).map((_, i) => <DiceTrayDie key={`bst-${i}`} type="boost" />)}
+                {Array.from({ length: f }).map((_, i) => <DiceTrayDie key={`frc-${i}`} type="force" />)}
+                {hasPos && hasNeg && <span className="fc-tray-divider" />}
+                {Array.from({ length: d }).map((_, i) => <DiceTrayDie key={`dif-${i}`} type="difficulty" />)}
+                {Array.from({ length: c }).map((_, i) => <DiceTrayDie key={`chl-${i}`} type="challenge" />)}
+                {Array.from({ length: s }).map((_, i) => <DiceTrayDie key={`set-${i}`} type="setback" />)}
+                {!hasPos && !hasNeg && (
+                  <span className="fc-tray-empty">Select a weapon to begin</span>
+                )}
+              </div>
+            </div>
+          )
+        })()}
 
         {/* Roll result */}
         {isResult && state.rollResult && (
@@ -852,221 +829,251 @@ export function CombatCheckOverlay({
           </div>
         )}
 
-        {/* Dual wield review */}
-        {!isResult && state.dualWieldReview && state.dualWield && (
-          <div style={{ padding: `${SP[3]} ${SP[3]}` }}>
-            <DualWieldReviewStep
-              primaryWeapon={state.dualWield.primaryWeapon}
-              secondaryWeapon={state.dualWield.secondaryWeapon}
-              primaryRef={refWeapon}
-              secondaryRef={secondaryRefWeapon}
-              onSwap={handleDualWieldSwap}
-            />
-            <div style={{ paddingTop: SP[2] }}>
-              <button
-                onClick={handleDualWieldContinue}
-                className="cc-roll-cta"
-                style={{
-                  width:         '100%',
-                  padding:       `${SP[2]} 0`,
-                  clipPath:      'polygon(8px 0%,calc(100% - 8px) 0%,100% 50%,calc(100% - 8px) 100%,8px 100%,0% 50%)',
-                  background:    'var(--hud-accent)',
-                  border:        'none',
-                  cursor:        'pointer',
-                  fontFamily:    FONT_DISPLAY,
-                  fontSize:      FS.sm,
-                  fontWeight:    700,
-                  color:         'color-mix(in srgb, black 80%, transparent)',
-                  letterSpacing: '0.28em',
-                  textTransform: 'uppercase' as const,
-                }}
-              >
-                ⋄ Confirm
-              </button>
+        {/* ── Stage rail ───────────────────────────────────────────────────── */}
+        {!isResult && (
+          <div className="fc-cols">
+
+            {/* ── 1 · Weapon ─────────────────────────────────────────────── */}
+            <div data-ignite-stagger className={`fc-col${openStage === 1 ? ' is-active' : ''}${stage1Done ? ' is-done' : ''}`}>
+              <StageHead openStage={openStage} onOpen={setOpenStage} n={1} name="Weapon" summary={weaponSummary} done={stage1Done} locked={false} />
+              <div className="fc-col-body">
+                  {/* Dual-wield review keeps its place in the flow — it just
+                      renders inside stage 1 instead of replacing the panel. */}
+                  {state.dualWieldReview && state.dualWield ? (
+                    <>
+                      <DualWieldReviewStep
+                        primaryWeapon={state.dualWield.primaryWeapon}
+                        secondaryWeapon={state.dualWield.secondaryWeapon}
+                        primaryRef={refWeapon}
+                        secondaryRef={secondaryRefWeapon}
+                        onSwap={handleDualWieldSwap}
+                      />
+                      <button
+                        type="button"
+                        className="fc-roll-btn is-armed"
+                        onClick={handleDualWieldContinue}
+                        style={{ marginTop: SP[2] }}
+                      >
+                        ⋄ Confirm
+                      </button>
+                    </>
+                  ) : (
+                    <WeaponSelectStep
+                      attackType={state.attackType}
+                      character={character}
+                      weapons={weapons}
+                      refWeaponMap={refWeaponMap}
+                      refSkillMap={refSkillMap}
+                      refWeaponQualityMap={refWeaponQualityMap}
+                      charSkills={charSkills}
+                      selectedWeapon={state.selectedWeapon}
+                      /* Composed at the call site so the auto-advance never
+                         touches handleWeaponSelect itself. */
+                      onSelect={w => {
+                        handleWeaponSelect(w)
+                        if (!w) { setOpenStage(1); return }
+                        const wr = w.id === '__unarmed__' ? null : refWeaponMap[w.weapon_key]
+                        const ranged = wr?.skill_key ? isRangedSkill(wr.skill_key) : false
+                        setOpenStage(ranged ? 2 : 3)
+                      }}
+                      onNext={() => {}}
+                      isGmMode={isGmMode}
+                      onEquipWeapon={handleEquipWeapon}
+                      onDualWieldSelect={handleDualWieldSelect}
+                      maneuvers={{
+                        aim1:    aimBoosts >= 1,
+                        aim2:    aimBoosts >= 2,
+                        assist:  assistActive,
+                        guarded: guardedActive,
+                        onToggleAim1:    toggleAim1,
+                        onToggleAim2:    toggleAim2,
+                        onToggleAssist:  toggleAssist,
+                        onToggleGuarded: toggleGuarded,
+                      } satisfies WeaponManeuvers}
+                    />
+                  )}
+              </div>
             </div>
-          </div>
-        )}
 
-        {/* ── Flat layout ─────────────────────────────────────────────────── */}
-        {!isResult && !state.dualWieldReview && (
-          <div style={{ padding: `${SP[2]} ${SP[2]}` }}>
-
-            {/* ① Weapon — maneuver buttons render inside selected card */}
-            <FlatSection number={1} label="Weapon">
-              <WeaponSelectStep
-                attackType={state.attackType}
-                character={character}
-                weapons={weapons}
-                refWeaponMap={refWeaponMap}
-                refSkillMap={refSkillMap}
-                refWeaponQualityMap={refWeaponQualityMap}
-                charSkills={charSkills}
-                selectedWeapon={state.selectedWeapon}
-                onSelect={handleWeaponSelect}
-                onNext={() => {}}
-                isGmMode={isGmMode}
-                onEquipWeapon={handleEquipWeapon}
-                onDualWieldSelect={handleDualWieldSelect}
-                maneuvers={{
-                  aim1:    aimBoosts >= 1,
-                  aim2:    aimBoosts >= 2,
-                  assist:  assistActive,
-                  guarded: guardedActive,
-                  onToggleAim1:    toggleAim1,
-                  onToggleAim2:    toggleAim2,
-                  onToggleAssist:  toggleAssist,
-                  onToggleGuarded: toggleGuarded,
-                } satisfies WeaponManeuvers}
+            {/* ── 2 · Range (ranged) / Opponent Resistance (melee) ───────── */}
+            <div data-ignite-stagger className={`fc-col${openStage === 2 ? ' is-active' : ''}${stage1Done && stage2Done ? ' is-done' : ''}${!stage1Done ? ' is-locked' : ''}`}>
+              <StageHead
+                openStage={openStage}
+                onOpen={setOpenStage}
+                n={2}
+                name={rangeApplies ? 'Range' : 'Opponent'}
+                summary={rangeApplies ? rangeSummary : (primaryTarget?.name ?? 'Manual difficulty')}
+                done={stage1Done && stage2Done}
+                locked={!stage1Done}
               />
-            </FlatSection>
-
-            {/* ② Opponent Resistance — melee only */}
-            {state.attackType === 'melee' && (
-              <FlatSection number={2} label="Opponent Resistance">
-                {meleeResult?.fallbackReason ? (
-                  <div style={{
-                    fontFamily: FONT_BODY,
-                    fontSize:   FS.overline,
-                    color:      'var(--hud-text-faint)',
-                    fontStyle:  'italic',
-                    lineHeight: 1.5,
-                    padding:    `${SP[1]} 0`,
-                  }}>
-                    {meleeResult.fallbackReason}
-                  </div>
-                ) : meleeResult && primaryTarget ? (
-                  <div style={{ display: 'flex', flexDirection: 'column' as const, gap: SP[1] }}>
-                    <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-dim)', letterSpacing: '0.06em' }}>
-                      <span style={{ color: 'var(--hud-text)', fontWeight: 700 }}>{primaryTarget.name}</span>
-                      {' · '}
-                      <span style={{ fontFamily: FONT_DISPLAY, fontSize: FS.overline, letterSpacing: '0.15em' }}>
-                        MELEE {meleeResult.targetMeleeRank > 0 ? `rank ${meleeResult.targetMeleeRank}` : ''}
-                      </span>
+              <div className="fc-col-body" ref={s2Ref}>
+                  {rangeApplies ? (
+                    <RangeBandStep
+                      attackType="ranged"
+                      weapon={refWeapon ? { skillKey: refWeapon.skill_key ?? '', refWeapon } : null}
+                      selectedBand={state.selectedBand}
+                      targets={state.selectedTargets}
+                      onSelect={b => { handleBandSelect(b); setOpenStage(3) }}
+                    />
+                  ) : meleeOpponents.length > 0 ? (
+                    <>
+                      {/* Enemy adversaries in this encounter. Allied NPCs are
+                          never offered as melee targets. */}
+                      <div className="fc-picker">
+                        <div className="fc-picker-scroll">
+                          {meleeOpponents.map(opp => (
+                            <button
+                              key={opp.instanceId}
+                              type="button"
+                              className={`fc-picker-row${primaryTarget?.instanceId === opp.instanceId ? ' is-selected' : ''}`}
+                              onClick={() => handleTargetSelect([opp])}
+                            >
+                              <span className="fc-chip-icon">⌖</span>
+                              <span className="fc-chip-meta">
+                                <span className="fc-chip-name">{opp.name}</span>
+                                <span className="fc-chip-stats">
+                                  {opp.type?.toUpperCase() ?? 'ADVERSARY'}
+                                  {` · Soak ${opp.soak ?? 0}`}
+                                </span>
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      {/* An opponent with no Melee rank on record also needs a
+                          hand-entered difficulty, not just an empty encounter. */}
+                      {meleeResult?.fallbackReason ? (
+                        <>
+                          <div className="fc-note">{meleeResult.fallbackReason}</div>
+                          <div className="fc-dice-grid">
+                            <FcStepper
+                              dieColor={DICE_COLOR.difficulty} dieShape="diamond"
+                              name="Difficulty" sub="Set manually"
+                              value={state.adjustments.difficultyAdd}
+                              onAdd={() => dssAdj('difficultyAdd', 1)}
+                              onRemove={() => dssAdj('difficultyAdd', -1)}
+                              canRemove={(poolForRoll.difficulty ?? 0) > 0}
+                            />
+                          </div>
+                        </>
+                      ) : meleeResult && primaryTarget ? (
+                        <div className="fc-note">
+                          <b>{primaryTarget.name}</b>
+                          {`Opposed: Melee ${meleeResult.targetMeleeRank} · Brawn ${meleeResult.targetBrawn}`}
+                          {` → ${meleeResult.difficultyDice} difficulty`}
+                          {meleeResult.challengeDice > 0 ? `, ${meleeResult.challengeDice} challenge` : ''}
+                        </div>
+                      ) : null}
+                    </>
+                  ) : meleeResult?.fallbackReason ? (
+                    /* No enemy adversary in the encounter — enter the
+                       difficulty by hand instead. */
+                    <>
+                      <div className="fc-note">{meleeResult.fallbackReason}</div>
+                      <div className="fc-dice-grid">
+                        <FcStepper
+                          dieColor={DICE_COLOR.difficulty} dieShape="diamond"
+                          name="Difficulty" sub="Set manually"
+                          value={state.adjustments.difficultyAdd}
+                          onAdd={() => dssAdj('difficultyAdd', 1)}
+                          onRemove={() => dssAdj('difficultyAdd', -1)}
+                          canRemove={(poolForRoll.difficulty ?? 0) > 0}
+                        />
+                      </div>
+                    </>
+                  ) : meleeResult && primaryTarget ? (
+                    <div>
+                      <div className="fc-dstep-name">
+                        {primaryTarget.name}
+                        {meleeResult.targetMeleeRank > 0 ? ` · Melee rank ${meleeResult.targetMeleeRank}` : ''}
+                      </div>
+                      <div className="fc-range-pips" style={{ justifyContent: 'flex-start' }}>
+                        {Array.from({ length: meleeResult.challengeDice }).map((_, i) => (
+                          <i key={`chl-${i}`} style={{
+                            width: 18, height: 18, flexShrink: 0, /* die geometry, not spacing */
+                            background: DICE_COLOR.challenge, /* die-identity hex — sealed namespace */
+                            clipPath: CLIP_OCTAGON,
+                          }} />
+                        ))}
+                        {Array.from({ length: meleeResult.difficultyDice }).map((_, i) => (
+                          <i key={`dif-${i}`} style={{
+                            width: 16, height: 16, flexShrink: 0, /* die geometry, not spacing */
+                            background: DICE_COLOR.difficulty, /* die-identity hex — sealed namespace */
+                            clipPath: CLIP_DIAMOND,
+                          }} />
+                        ))}
+                        {meleeResult.challengeDice === 0 && meleeResult.difficultyDice === 0 && (
+                          <span className="fc-range-dash">—</span>
+                        )}
+                      </div>
                     </div>
-                    <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap' as const }}>
-                      {Array.from({ length: meleeResult.challengeDice }).map((_, i) => (
-                        <div key={`chl-${i}`} style={{
-                          width: 22, height: 22, flexShrink: 0,
-                          background: DICE_COLOR.challenge, /* die-identity hex — sealed namespace */
-                          clipPath: 'polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 70%,0% 30%)',
-                        }} />
-                      ))}
-                      {Array.from({ length: meleeResult.difficultyDice }).map((_, i) => (
-                        <div key={`dif-${i}`} style={{
-                          width: 20, height: 20, flexShrink: 0,
-                          background: DICE_COLOR.difficulty, /* die-identity hex — sealed namespace */
-                          clipPath: 'polygon(50% 0%,100% 50%,50% 100%,0% 50%)',
-                        }} />
-                      ))}
-                      {meleeResult.challengeDice === 0 && meleeResult.difficultyDice === 0 && (
-                        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)', opacity: 0.5 }}>—</span>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)', fontStyle: 'italic' }}>
-                    No active encounter enemy
-                  </div>
-                )}
-              </FlatSection>
-            )}
+                  ) : (
+                    <div className="fc-note">No active encounter enemy</div>
+                  )}
+              </div>
+            </div>
 
-            {/* ② Range — ranged attacks only */}
-            {state.attackType === 'ranged' && (
-              <FlatSection number={2} label="Range">
-                <RangeBandStep
-                  attackType="ranged"
-                  weapon={refWeapon ? { skillKey: refWeapon.skill_key ?? '', refWeapon } : null}
-                  selectedBand={state.selectedBand}
-                  targets={state.selectedTargets}
-                  onSelect={handleBandSelect}
-                />
-              </FlatSection>
-            )}
-
-            {/* ③ Dice Selection Stage — dims until weapon selected */}
-            <FlatSection number={3} label="Dice Selection">
-              <div style={{
-                opacity:       state.selectedWeapon ? 1 : 0.30,
-                pointerEvents: state.selectedWeapon ? 'auto' : 'none' as const,
-                transition:    `opacity ${EASE.quick}`,
-              }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: SP[1] }}>
-                  <DssStepper
-                    dieColor={DICE_COLOR.boost}
-                    dieShape="rounded"
-                    label="Add Boost"
-                    value={state.adjustments.boostAdd}
-                    min={0}
-                    onAdd={() => dssAdj('boostAdd', 1)}
-                    onRemove={() => dssAdj('boostAdd', -1)}
-                    polarity="positive"
-                  />
-                  <DssStepper
-                    dieColor={DICE_COLOR.setback}
-                    dieEdge={DICE_OUTLINE.setback}
-                    dieShape="rounded"
-                    label="Add Setback"
-                    value={state.adjustments.setbackAdd}
-                    min={0}
-                    onAdd={() => dssAdj('setbackAdd', 1)}
-                    onRemove={() => dssAdj('setbackAdd', -1)}
-                    polarity="negative"
-                  />
-                  <DssStepper
-                    dieColor={DICE_COLOR.proficiency}
-                    dieShape="octagon"
-                    label="Upgrade Skill"
-                    sublabel="Ability → Prof"
-                    value={state.adjustments.abilityUpgrades}
-                    min={0}
-                    onAdd={() => dssAdj('abilityUpgrades', 1)}
-                    onRemove={() => dssAdj('abilityUpgrades', -1)}
-                    polarity="positive"
-                  />
-                  <DssStepper
-                    dieColor={DICE_COLOR.challenge}
-                    dieShape="octagon"
-                    label="Upgrade Difficulty"
-                    sublabel="Difficulty → Challenge"
-                    value={state.adjustments.difficultyUpgrades}
-                    min={0}
-                    onAdd={() => dssAdj('difficultyUpgrades', 1)}
-                    onRemove={() => dssAdj('difficultyUpgrades', -1)}
-                    polarity="negative"
-                  />
-                  <DssStepper
-                    dieColor={DICE_COLOR.force}
-                    dieEdge={DICE_OUTLINE.force}
-                    dieShape="octagon"
-                    label="Add Force"
-                    value={state.adjustments.forceAdd}
-                    min={0}
-                    onAdd={() => dssAdj('forceAdd', 1)}
-                    onRemove={() => dssAdj('forceAdd', -1)}
-                    polarity="positive"
-                  />
-                  <div style={{ gridColumn: '1 / -1' }}>
-                    <DssStepper
-                      dieColor={DICE_COLOR.difficulty}
-                      dieShape="diamond"
-                      label="Adjust Difficulty"
-                      sublabel="Add / remove difficulty dice"
+            {/* ── 3 · Adjust Pool ────────────────────────────────────────── */}
+            <div data-ignite-stagger className={`fc-col${openStage === 3 ? ' is-active' : ''}${!stage1Done ? ' is-locked' : ''}`}>
+              <StageHead
+                openStage={openStage}
+                onOpen={setOpenStage}
+                n={3}
+                name="Adjust Pool"
+                summary={adjustCount > 0 ? `${adjustCount} adjustment${adjustCount === 1 ? '' : 's'}` : ''}
+                done={adjustCount > 0}
+                locked={!stage1Done}
+              />
+              <div className="fc-col-body">
+                  <div className="fc-dice-grid">
+                    <FcStepper
+                      dieColor={DICE_COLOR.boost} dieShape="rounded"
+                      name="Boost" value={state.adjustments.boostAdd}
+                      onAdd={() => dssAdj('boostAdd', 1)} onRemove={() => dssAdj('boostAdd', -1)}
+                      canRemove={state.adjustments.boostAdd > 0}
+                    />
+                    <FcStepper
+                      dieColor={DICE_COLOR.setback} dieEdge={DICE_OUTLINE.setback} dieShape="rounded"
+                      name="Setback" value={state.adjustments.setbackAdd}
+                      onAdd={() => dssAdj('setbackAdd', 1)} onRemove={() => dssAdj('setbackAdd', -1)}
+                      canRemove={state.adjustments.setbackAdd > 0}
+                    />
+                    <FcStepper
+                      dieColor={DICE_COLOR.force} dieEdge={DICE_OUTLINE.force} dieShape="octagon"
+                      name="Force" value={state.adjustments.forceAdd}
+                      onAdd={() => dssAdj('forceAdd', 1)} onRemove={() => dssAdj('forceAdd', -1)}
+                      canRemove={state.adjustments.forceAdd > 0}
+                    />
+                    <FcStepper
+                      dieColor={DICE_COLOR.difficulty} dieShape="diamond"
+                      name="Difficulty" sub="Add / remove"
                       value={state.adjustments.difficultyAdd}
-                      /* Floor tracks the live pool: removal stops once the pool
-                         has no difficulty dice left, instead of running down to
-                         an arbitrary -10 that silently did nothing. */
-                      min={state.adjustments.difficultyAdd - (poolForRoll.difficulty ?? 0)}
-                      onAdd={() => dssAdj('difficultyAdd', 1)}
-                      onRemove={() => dssAdj('difficultyAdd', -1)}
-                      polarity="negative"
+                      onAdd={() => dssAdj('difficultyAdd', 1)} onRemove={() => dssAdj('difficultyAdd', -1)}
+                      canRemove={(poolForRoll.difficulty ?? 0) > 0}
+                    />
+                    {/* Upgrade rows: the − is an explicit downgrade, labelled as
+                        such, and is a no-op at zero via `canRemove`. */}
+                    <FcStepper
+                      dieColor={DICE_COLOR.proficiency} dieShape="octagon"
+                      name="Upgrade Skill" sub="Ability → Prof"
+                      value={state.adjustments.abilityUpgrades}
+                      onAdd={() => dssAdj('abilityUpgrades', 1)} onRemove={() => dssAdj('abilityUpgrades', -1)}
+                      canRemove={state.adjustments.abilityUpgrades > 0}
+                      isUpgrade downgradeLabel="Undo"
+                    />
+                    <FcStepper
+                      dieColor={DICE_COLOR.challenge} dieShape="octagon"
+                      name="Upgrade Diff" sub="Diff → Challenge"
+                      value={state.adjustments.difficultyUpgrades}
+                      onAdd={() => dssAdj('difficultyUpgrades', 1)} onRemove={() => dssAdj('difficultyUpgrades', -1)}
+                      canRemove={state.adjustments.difficultyUpgrades > 0}
+                      isUpgrade downgradeLabel="Undo"
                     />
                   </div>
-                </div>
               </div>
-            </FlatSection>
+            </div>
 
-            {/* Hidden pool calculator — always mounted, drives dice tray */}
+            {/* Headless pool calculator — drives the tray and the roll pool. */}
             <div style={{ display: 'none' }}>
               <DicePoolReviewStep
                 attackType={state.attackType ?? 'ranged'}
@@ -1095,31 +1102,13 @@ export function CombatCheckOverlay({
 
       {/* ── Roll footer ─────────────────────────────────────────────────────── */}
       {!isResult && !state.dualWieldReview && (
-        <div style={{
-          padding:    `${SP[2]} ${SP[2]}`,
-          borderTop:  '1px solid var(--hud-border)',
-          flexShrink: 0,
-        }}>
+        <div className="fc-roll-bar fc-roll-footer" data-ignite-stagger>
+          <div className="fc-roll-sub">{rollBlockedBy}</div>
           <button
+            type="button"
             onClick={() => void handleRoll(poolForRoll)}
             disabled={!canRoll}
-            className="cc-roll-cta"
-            style={{
-              width:         '100%',
-              padding:       `${SP[2]} 0`,
-              clipPath:      'polygon(8px 0%,calc(100% - 8px) 0%,100% 50%,calc(100% - 8px) 100%,8px 100%,0% 50%)',
-              background:    canRoll ? 'var(--hud-accent)' : `color-mix(in srgb, var(--hud-surface-lo) 60%, transparent)`,
-              border:        'none',
-              cursor:        canRoll ? 'pointer' : 'not-allowed',
-              opacity:       canRoll ? 1 : 0.4,
-              fontFamily:    FONT_DISPLAY,
-              fontSize:      FS.sm,
-              fontWeight:    700,
-              color:         canRoll ? 'color-mix(in srgb, black 80%, transparent)' : 'var(--hud-text-faint)',
-              letterSpacing: '0.28em',
-              textTransform: 'uppercase' as const,
-              transition:    `background ${EASE.quick}, opacity ${EASE.quick}`,
-            }}
+            className={`fc-roll-btn${canRoll ? ' is-armed' : ''}`}
           >
             ⋄ Roll Dice
           </button>
@@ -1138,5 +1127,6 @@ export function CombatCheckOverlay({
         }}
       />
     </div>
+    </Modal>
   )
 }

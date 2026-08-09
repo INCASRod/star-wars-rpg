@@ -1,12 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { CharacterWeapon, RefWeapon, RefSkill, RefWeaponQuality, Character } from '@/lib/types'
 import { isRangedSkill, isMeleeSkill as isMeleeSkillKey } from '@/lib/combatCheckUtils'
 import { canDualWield } from '@/lib/weaponHandedness'
-import { HUD, FS, FONT_BODY, FONT_DISPLAY, SP, EASE, RADIUS } from '@/lib/tokens'
-
-const CAUTION = 'color-mix(in srgb, var(--state-caution, #FF9800) 100%, transparent)'
 
 export interface WeaponManeuvers {
   aim1:    boolean
@@ -41,43 +38,43 @@ interface WeaponSelectStepProps {
 }
 
 // ── Dual wield detection ──────────────────────────────────────────────────────
-function findDualWieldPartner(
+/**
+ * Every equipped weapon eligible as an off-hand for `selectedWeapon`.
+ *
+ * Exclusion is by **instance id**, never by weapon type or key — a character
+ * carrying two of the same blaster can wield both, and each instance is offered
+ * separately. Previously this returned a partner only when exactly one
+ * candidate existed, so anyone with two or more eligible off-hands could not
+ * dual wield at all.
+ *
+ * Unarmed is never dual-wieldable in either direction: not as an off-hand, and
+ * selecting it as primary offers no dual wield. (The `refWeaponMap` lookup
+ * already misses for `__unarmed__`, but that is incidental — the sentinel check
+ * is explicit so adding a ref row later cannot silently enable it.)
+ *
+ * Every other eligibility condition is unchanged: same ranged/melee class, and
+ * both weapons passing `canDualWield`.
+ */
+function findDualWieldCandidates(
   selectedWeapon: CharacterWeapon,
   allEquippedWeapons: CharacterWeapon[],
   refWeaponMap: Record<string, RefWeapon>,
-): CharacterWeapon | null {
+): CharacterWeapon[] {
+  if (selectedWeapon.weapon_key === '__unarmed__' || selectedWeapon.id === '__unarmed__') return []
   const selectedRef = refWeaponMap[selectedWeapon.weapon_key]
-  if (!selectedRef) return null
-  if (!canDualWield({ skill_key: selectedRef.skill_key, weapon_key: selectedWeapon.weapon_key, is_one_handed_override: selectedWeapon.is_one_handed_override, is_two_handed_override: selectedWeapon.is_two_handed_override })) return null
+  if (!selectedRef) return []
+  if (!canDualWield({ skill_key: selectedRef.skill_key, weapon_key: selectedWeapon.weapon_key, is_one_handed_override: selectedWeapon.is_one_handed_override, is_two_handed_override: selectedWeapon.is_two_handed_override })) return []
 
   const selectedIsRanged = isRangedSkill(selectedRef.skill_key)
-  const candidates = allEquippedWeapons
+  return allEquippedWeapons
     .filter(w => w.id !== selectedWeapon.id)
+    .filter(w => w.weapon_key !== '__unarmed__' && w.id !== '__unarmed__')
     .filter(w => {
       const ref = refWeaponMap[w.weapon_key]
       if (!ref) return false
       if (isRangedSkill(ref.skill_key) !== selectedIsRanged) return false
       return canDualWield({ skill_key: ref.skill_key, weapon_key: w.weapon_key, is_one_handed_override: w.is_one_handed_override, is_two_handed_override: w.is_two_handed_override })
     })
-
-  if (candidates.length !== 1) return null
-  return candidates[0]
-}
-
-function SectionLabel({ text }: { text: string }) {
-  return (
-    <div style={{
-      fontFamily:    FONT_BODY,
-      fontSize:      FS.overline,
-      fontWeight:    700,
-      color:         'var(--hud-text-faint)',
-      textTransform: 'uppercase' as const,
-      letterSpacing: '0.18em',
-      marginBottom:  SP[1],
-    }}>
-      {text}
-    </div>
-  )
 }
 
 /** Fake weapon entry for Unarmed/Brawl */
@@ -91,6 +88,45 @@ const UNARMED_WEAPON: CharacterWeapon & { _isUnarmed: true } = {
   attachments: [],
   notes: '',
   _isUnarmed: true,
+}
+
+/** Weapon stat line — shared by the chip and every picker row. */
+function statLineFor(w: CharacterWeapon | null, refWeaponMap: Record<string, RefWeapon>): string {
+  if (!w) return 'No weapon selected'
+  if (w.id === '__unarmed__') return 'Brawl · DMG Brawn · CRIT 5'
+  const ref = refWeaponMap[w.weapon_key]
+  if (!ref) return '—'
+  const dmg   = ref.damage_add != null ? `DMG +${ref.damage_add}` : `DMG ${ref.damage}`
+  const crit  = ref.crit ? ` · CRIT ${ref.crit}` : ''
+  const skill = ref.skill_key ? ` · ${ref.skill_key}` : ''
+  return `${dmg}${crit}${skill}`
+}
+
+/** Module scope — a component declared inside the step body would be a new
+ *  type on every render. */
+function PickerRow({ w, isStowed, selected, onPick, refWeaponMap }: {
+  w: CharacterWeapon; isStowed: boolean; selected: boolean; onPick: () => void
+  refWeaponMap: Record<string, RefWeapon>
+}) {
+  const unarmed = w.id === '__unarmed__'
+  const ref     = unarmed ? null : refWeaponMap[w.weapon_key]
+  const label   = unarmed ? 'Unarmed / Brawl' : (w.custom_name || ref?.name || 'Weapon')
+  return (
+    <button
+      type="button"
+      data-selected={selected ? 'true' : 'false'}
+      className={`fc-picker-row${selected ? ' is-selected' : ''}`}
+      onClick={onPick}
+    >
+      {/* Same crosshair placeholder treatment for every row — a proper icon
+          pass is planned separately. */}
+      <span className="fc-chip-icon">⌖</span>
+      <span className="fc-chip-meta">
+        <span className="fc-chip-name">{label}{isStowed ? ' (carried)' : ''}</span>
+        <span className="fc-chip-stats">{statLineFor(w, refWeaponMap)}</span>
+      </span>
+    </button>
+  )
 }
 
 export function WeaponSelectStep({
@@ -111,6 +147,8 @@ export function WeaponSelectStep({
 }: WeaponSelectStepProps) {
   const [maneuverWarningFor, setManeuverWarningFor] = useState<string | null>(null)
   const [equipping, setEquipping] = useState(false)
+  /** Presentational only — which off-hand the player picked in the slot UI. */
+  const [offHandId, setOffHandId] = useState<string | null>(null)
 
   function weaponMatchesType(w: CharacterWeapon): boolean {
     if (attackType === null) return true
@@ -135,349 +173,242 @@ export function WeaponSelectStep({
     onNext()
   }
 
-  // True when any OTHER weapon is selected (dims unselected cards to 0.40)
-  const hasOtherSelected = selectedWeapon !== null
-
-  function renderWeaponPill(w: CharacterWeapon, isStowed = false) {
-    const isUnarmed   = (w as typeof UNARMED_WEAPON)._isUnarmed
-    const ref         = isUnarmed ? null : refWeaponMap[w.weapon_key]
-    const name        = isUnarmed ? 'Unarmed / Brawl' : (w.custom_name || ref?.name || 'Weapon')
-    const isSelected  = selectedWeapon?.id === w.id
-    const showWarning = maneuverWarningFor === w.id
-    const skillTag    = !isUnarmed && ref?.skill_key
-      ? ref.skill_key.replace('RANGLT','RNG-L').replace('RANGHVY','RNG-H').replace('LTSABER','LT-SBR').replace('GUNN','GUNN').replace('BRAWL','BRAWL').replace('MELEE','MELEE')
-      : null
-
-    const isMeleeWeapon = isUnarmed
-      ? true
-      : ref?.skill_key ? isMeleeSkillKey(ref.skill_key) : false
-
-    // Find dual wield partner for inside-card banner
-    const allEquipped = weapons.filter(ww => ww.equip_state === 'equipped' || ww.is_equipped)
-    const dualPartner = isSelected && onDualWieldSelect
-      ? findDualWieldPartner(w, allEquipped, refWeaponMap)
-      : null
-
-    return (
-      <div key={w.id} style={{ width: '100%' }}>
-        <button
-          onClick={() => {
-            if (isStowed && !showWarning) { setManeuverWarningFor(w.id); return }
-            if (!isStowed) onSelect(isSelected ? null : w)
-          }}
-          className="cc-weapon-card"
-          style={{
-            display:      'flex',
-            flexDirection:'column' as const,
-            gap:          2, /* name–stats gap */
-            width:        '100%',
-            textAlign:    'left' as const,
-            padding:      `${SP[1]} ${SP[2]}`,
-            borderTop:    `1px solid var(--hud-border)`,
-            borderRight:  `1px solid var(--hud-border)`,
-            borderBottom: `1px solid var(--hud-border)`,
-            borderLeft:   isSelected
-              ? `2px solid var(--hud-accent)`
-              : `2px solid color-mix(in srgb, var(--hud-border) 70%, transparent)`,
-            background:   isSelected
-              ? `color-mix(in srgb, var(--hud-accent) 8%, transparent)`
-              : `color-mix(in srgb, var(--hud-surface-lo) 40%, transparent)`,
-            borderRadius: RADIUS.sm,
-            cursor:       'pointer',
-            opacity:      isSelected ? 1 : (hasOtherSelected ? 0.40 : isStowed ? 0.6 : 0.85),
-          }}
-        >
-          <span style={{
-            fontFamily: FONT_DISPLAY,
-            fontSize:   FS.label,
-            fontWeight: 700,
-            color:      'var(--hud-text)',
-          }}>
-            {name}{isStowed ? ' (carried)' : ''}
-          </span>
-          {!isUnarmed && ref && (
-            <span style={{
-              fontFamily: FONT_BODY,
-              fontSize:   FS.overline,
-              color:      'var(--hud-text-dim)',
-              opacity:    0.6,
-            }}>
-              DMG {ref.damage_add != null ? `+${ref.damage_add}` : ref.damage}
-              {ref.crit ? ` · CRIT ${ref.crit}` : ''}
-              {skillTag ? (
-                <>
-                  {' · '}
-                  <span style={{
-                    fontFamily: FONT_DISPLAY,
-                    fontSize:   '7px',
-                    fontWeight: 700,
-                    border:     `1px solid color-mix(in srgb, var(--hud-gold) 40%, transparent)`,
-                    padding:    `0 2px`, /* chip inset — 1px border exception context */
-                    clipPath:   'polygon(3px 0%,calc(100% - 3px) 0%,100% 50%,calc(100% - 3px) 100%,3px 100%,0% 50%)',
-                    opacity:    0.9,
-                  }}>
-                    {skillTag}
-                  </span>
-                </>
-              ) : null}
-            </span>
-          )}
-        </button>
-
-        {/* Maneuver buttons + dual wield banner — inside selected card only */}
-        {isSelected && maneuvers && (
-          <div style={{
-            borderLeft:   `2px solid var(--hud-accent)`,
-            borderRight:  `1px solid var(--hud-border)`,
-            borderBottom: `1px solid var(--hud-border)`,
-            borderRadius: `0 0 ${RADIUS.sm}px ${RADIUS.sm}px`,
-            background:   `color-mix(in srgb, var(--hud-accent) 4%, transparent)`,
-            padding:      `${SP[1]} ${SP[2]}`,
-            display:      'flex',
-            flexDirection:'column' as const,
-            gap:          SP[1],
-          }}>
-            <div style={{ display: 'flex', gap: SP[1], flexWrap: 'wrap' as const }}>
-              {/* Aim ×1 */}
-              <button
-                onClick={maneuvers.onToggleAim1}
-                className={`cc-mod-toggle${maneuvers.aim1 ? ' cc-mod-toggle--active-pos' : ''}`}
-                style={{
-                  flex:          1,
-                  display:       'flex',
-                  flexDirection: 'column' as const,
-                  gap:           2,
-                  padding:       `${SP[1]} ${SP[1]}`,
-                  borderLeft:    `2px solid color-mix(in srgb, var(--hud-border) 70%, transparent)`,
-                  borderTop:     '1px solid var(--hud-border)',
-                  borderRight:   '1px solid var(--hud-border)',
-                  borderBottom:  '1px solid var(--hud-border)',
-                  background:    `color-mix(in srgb, var(--hud-surface-lo) 40%, transparent)`,
-                  borderRadius:  RADIUS.sm,
-                  cursor:        'pointer',
-                  textAlign:     'left' as const,
-                }}
-              >
-                <span style={{ fontFamily: FONT_DISPLAY, fontSize: FS.label, fontWeight: 700, color: 'var(--hud-text)' }}>Aim</span>
-                <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: maneuvers.aim1 ? 'var(--hud-gold)' : 'var(--hud-text-dim)', opacity: maneuvers.aim1 ? 1 : 0.6 }}>+1 BOOST</span>
-              </button>
-              {/* Aim ×2 */}
-              <button
-                onClick={maneuvers.onToggleAim2}
-                disabled={!maneuvers.aim1}
-                className={`cc-mod-toggle${maneuvers.aim2 ? ' cc-mod-toggle--active-pos' : ''}`}
-                style={{
-                  flex:          1,
-                  display:       'flex',
-                  flexDirection: 'column' as const,
-                  gap:           2,
-                  padding:       `${SP[1]} ${SP[1]}`,
-                  borderLeft:    `2px solid color-mix(in srgb, var(--hud-border) 70%, transparent)`,
-                  borderTop:     '1px solid var(--hud-border)',
-                  borderRight:   '1px solid var(--hud-border)',
-                  borderBottom:  '1px solid var(--hud-border)',
-                  background:    `color-mix(in srgb, var(--hud-surface-lo) 40%, transparent)`,
-                  borderRadius:  RADIUS.sm,
-                  cursor:        maneuvers.aim1 ? 'pointer' : 'not-allowed',
-                  opacity:       maneuvers.aim1 ? 1 : 0.3,
-                  textAlign:     'left' as const,
-                }}
-              >
-                <span style={{ fontFamily: FONT_DISPLAY, fontSize: FS.label, fontWeight: 700, color: 'var(--hud-text)' }}>2nd Aim</span>
-                <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: maneuvers.aim2 ? 'var(--hud-gold)' : 'var(--hud-text-dim)', opacity: maneuvers.aim2 ? 1 : 0.6 }}>+1 BOOST</span>
-              </button>
-              {/* Assist */}
-              <button
-                onClick={maneuvers.onToggleAssist}
-                className={`cc-mod-toggle${maneuvers.assist ? ' cc-mod-toggle--active-pos' : ''}`}
-                style={{
-                  flex:          1,
-                  display:       'flex',
-                  flexDirection: 'column' as const,
-                  gap:           2,
-                  padding:       `${SP[1]} ${SP[1]}`,
-                  borderLeft:    `2px solid color-mix(in srgb, var(--hud-border) 70%, transparent)`,
-                  borderTop:     '1px solid var(--hud-border)',
-                  borderRight:   '1px solid var(--hud-border)',
-                  borderBottom:  '1px solid var(--hud-border)',
-                  background:    `color-mix(in srgb, var(--hud-surface-lo) 40%, transparent)`,
-                  borderRadius:  RADIUS.sm,
-                  cursor:        'pointer',
-                  textAlign:     'left' as const,
-                }}
-              >
-                <span style={{ fontFamily: FONT_DISPLAY, fontSize: FS.label, fontWeight: 700, color: 'var(--hud-text)' }}>Assist</span>
-                <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: maneuvers.assist ? 'var(--hud-gold)' : 'var(--hud-text-dim)', opacity: maneuvers.assist ? 1 : 0.6 }}>+1 BOOST</span>
-              </button>
-              {/* Guarded Stance — melee only */}
-              {isMeleeWeapon && (
-                <button
-                  onClick={maneuvers.onToggleGuarded}
-                  className={`cc-mod-toggle${maneuvers.guarded ? ' cc-mod-toggle--active-neg' : ''}`}
-                  style={{
-                    flex:          1,
-                    display:       'flex',
-                    flexDirection: 'column' as const,
-                    gap:           2,
-                    padding:       `${SP[1]} ${SP[1]}`,
-                    borderLeft:    `2px solid color-mix(in srgb, var(--hud-border) 70%, transparent)`,
-                    borderTop:     '1px solid var(--hud-border)',
-                    borderRight:   '1px solid var(--hud-border)',
-                    borderBottom:  '1px solid var(--hud-border)',
-                    background:    `color-mix(in srgb, var(--hud-surface-lo) 40%, transparent)`,
-                    borderRadius:  RADIUS.sm,
-                    cursor:        'pointer',
-                    textAlign:     'left' as const,
-                  }}
-                >
-                  <span style={{ fontFamily: FONT_DISPLAY, fontSize: FS.label, fontWeight: 700, color: 'var(--hud-text)' }}>Guarded</span>
-                  <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: maneuvers.guarded ? 'var(--state-failure)' : 'var(--hud-text-dim)', opacity: maneuvers.guarded ? 1 : 0.6 }}>+1 SETBK</span>
-                </button>
-              )}
-            </div>
-
-            {/* Dual wield banner — inside card, dashed border */}
-            {dualPartner && (
-              <button
-                onClick={() => onDualWieldSelect!(w, dualPartner)}
-                style={{
-                  border:        `1px dashed color-mix(in srgb, var(--hud-gold) 45%, transparent)`,
-                  background:    `color-mix(in srgb, var(--hud-gold) 6%, transparent)`,
-                  color:         'var(--hud-gold)',
-                  padding:       `${SP[1]} ${SP[2]}`,
-                  fontSize:      FS.overline,
-                  fontWeight:    700,
-                  borderRadius:  RADIUS.sm,
-                  cursor:        'pointer',
-                  fontFamily:    FONT_BODY,
-                  width:         '100%',
-                  textAlign:     'left' as const,
-                }}
-              >
-                ⚔ Dual Wield — {dualPartner.custom_name || refWeaponMap[dualPartner.weapon_key]?.name || 'Secondary'}
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Stowed equip warning — inline expansion */}
-        {showWarning && (
-          <div style={{
-            background:   `color-mix(in srgb, var(--state-caution, #FF9800) 6%, transparent)`,
-            border:       `1px solid color-mix(in srgb, var(--state-caution, #FF9800) 50%, transparent)`,
-            borderRadius: RADIUS.md,
-            padding:      `${SP[2]} ${SP[2]}`,
-            marginTop:    SP[1],
-          }}>
-            <div style={{
-              fontFamily:   FONT_BODY,
-              fontSize:     FS.overline,
-              color:        CAUTION,
-              marginBottom: SP[1],
-              fontWeight:   700,
-            }}>
-              ⚠ Equipping costs a Maneuver
-            </div>
-            <div style={{
-              fontFamily:   FONT_BODY,
-              fontSize:     FS.overline,
-              color:        'var(--hud-text-dim)',
-              marginBottom: SP[2],
-              lineHeight:   1.4,
-            }}>
-              Equipping <strong style={{ color: 'var(--hud-text)' }}>{name}</strong> will use one of your maneuvers this turn.
-            </div>
-            <div style={{ display: 'flex', gap: SP[1] }}>
-              <button
-                onClick={() => setManeuverWarningFor(null)}
-                style={{
-                  flex:         1,
-                  padding:      `2px ${SP[2]}`,
-                  background:   'transparent',
-                  border:       '1px solid var(--hud-border)',
-                  borderRadius: RADIUS.sm,
-                  cursor:       'pointer',
-                  fontFamily:   FONT_BODY,
-                  fontSize:     FS.overline,
-                  color:        'var(--hud-text-dim)',
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => equipWeapon(w)}
-                disabled={equipping}
-                style={{
-                  flex:         2,
-                  padding:      `2px ${SP[2]}`,
-                  background:   `color-mix(in srgb, var(--hud-gold) 10%, transparent)`,
-                  border:       `1px solid color-mix(in srgb, var(--hud-gold) 38%, transparent)`,
-                  borderRadius: RADIUS.sm,
-                  cursor:       equipping ? 'wait' : 'pointer',
-                  fontFamily:   FONT_BODY,
-                  fontSize:     FS.overline,
-                  color:        'var(--hud-gold)',
-                }}
-              >
-                {equipping ? 'Equipping…' : 'Equip & Continue'}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    )
-  }
-
   const hasAnyWeapon = equipped.length > 0 || carried.length > 0 || attackType === 'melee' || attackType === null
 
+  const isMeleeSel = selectedWeapon
+    ? (selectedWeapon.id === '__unarmed__'
+        ? true
+        : (refWeaponMap[selectedWeapon.weapon_key]?.skill_key ? isMeleeSkillKey(refWeaponMap[selectedWeapon.weapon_key]!.skill_key) : false))
+    : false
+
+  // ── Presentational state (focus-console redesign) ─────────────────────────
+  // Which picker is open. No mechanical meaning — the weapon itself still lives
+  // in CombatCheckOverlay's `selectedWeapon`.
+  const [pickerOpen, setPickerOpen]   = useState<null | 'primary' | 'offhand'>(null)
+  const [dwOn, setDwOn]               = useState(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  const isUnarmedSel = selectedWeapon?.id === '__unarmed__'
+  const selRef       = selectedWeapon && !isUnarmedSel ? refWeaponMap[selectedWeapon.weapon_key] : null
+  const selName      = !selectedWeapon
+    ? 'Choose a weapon'
+    : isUnarmedSel ? 'Unarmed / Brawl' : (selectedWeapon.custom_name || selRef?.name || 'Weapon')
+
+
+  // Off-hand candidates come straight from the 1a eligibility function — the
+  // picker is a presentation of that list, never its own filter.
+  const allEquipped     = weapons.filter(ww => ww.equip_state === 'equipped' || ww.is_equipped)
+  const dualCandidates  = selectedWeapon && onDualWieldSelect
+    ? findDualWieldCandidates(selectedWeapon, allEquipped, refWeaponMap)
+    : []
+  const offHand         = selectedWeapon && dwOn ? dualCandidates.find(c => c.id === offHandId) ?? null : null
+
+  // Scroll the current selection into view whenever a picker opens.
+  useEffect(() => {
+    if (!pickerOpen) return
+    const el = scrollRef.current?.querySelector('[data-selected="true"]')
+    if (el) (el as HTMLElement).scrollIntoView({ block: 'nearest' })
+  }, [pickerOpen])
+
+  function choosePrimary(w: CharacterWeapon, isStowed: boolean) {
+    if (isStowed) { setManeuverWarningFor(w.id); return }
+    setPickerOpen(null)
+    onSelect(selectedWeapon?.id === w.id ? null : w)
+  }
+
+  function chooseOffHand(c: CharacterWeapon) {
+    setPickerOpen(null)
+    setOffHandId(c.id)
+    // Existing handler, existing flow — this still routes into dualWieldReview.
+    onDualWieldSelect!(selectedWeapon!, c)
+  }
+
+  // Unarmed is a permanent final row — always offered, never filtered out,
+  // including under a ranged attack type (picking it flips the check to
+  // melee in handleWeaponSelect).
+  const showUnarmed = true
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
+    <div>
+      {/* ── Current weapon chip ─────────────────────────────────────────────── */}
+      <button
+        type="button"
+        className="fc-chip"
+        onClick={() => setPickerOpen(pickerOpen === 'primary' ? null : 'primary')}
+      >
+        <span className="fc-chip-icon">⌖</span>
+        <span className="fc-chip-meta">
+          <span className="fc-chip-name">{selName}</span>
+          <span className="fc-chip-stats">{statLineFor(selectedWeapon, refWeaponMap)}</span>
+        </span>
+        <span className="fc-chip-swap">{pickerOpen === 'primary' ? 'Close ▴' : 'Swap ▾'}</span>
+      </button>
 
-      {/* Unarmed option (melee or all-weapons view) */}
-      {(attackType === 'melee' || attackType === null) && (
-        <>
-          <SectionLabel text="Always Available" />
-          <div style={{ display: 'flex', flexDirection: 'column' as const, gap: SP[1], marginBottom: SP[2] }}>
-            {renderWeaponPill(UNARMED_WEAPON as unknown as CharacterWeapon)}
+      {/* ── Picker — same component for primary and off-hand ────────────────── */}
+      {pickerOpen && (
+        <div className="fc-picker">
+          <div className="fc-picker-scroll" ref={scrollRef}>
+            {pickerOpen === 'offhand' ? (
+              dualCandidates.length > 0 ? (
+                <>
+                  <div className="fc-picker-group">Eligible Off-Hand</div>
+                  {dualCandidates.map(c => (
+                    <PickerRow
+                      key={c.id}
+                      refWeaponMap={refWeaponMap}
+                      w={c}
+                      isStowed={false}
+                      selected={offHandId === c.id}
+                      onPick={() => chooseOffHand(c)}
+                    />
+                  ))}
+                </>
+              ) : (
+                <div className="fc-picker-group">No eligible off-hand weapon</div>
+              )
+            ) : (
+              <>
+                {/* Section order is 1a's: Equipped → Carried → Always Available. */}
+                {equipped.length > 0 && <div className="fc-picker-group">Equipped</div>}
+                {equipped.map(w => (
+                  <PickerRow key={w.id} refWeaponMap={refWeaponMap} w={w} isStowed={false}
+                    selected={selectedWeapon?.id === w.id}
+                    onPick={() => choosePrimary(w, false)} />
+                ))}
+                {carried.length > 0 && <div className="fc-picker-group">Carried</div>}
+                {carried.map(w => (
+                  <PickerRow key={w.id} refWeaponMap={refWeaponMap} w={w} isStowed
+                    selected={selectedWeapon?.id === w.id}
+                    onPick={() => choosePrimary(w, true)} />
+                ))}
+                {showUnarmed && <div className="fc-picker-group">Always Available</div>}
+                {showUnarmed && (
+                  <PickerRow
+                    refWeaponMap={refWeaponMap}
+                    w={UNARMED_WEAPON as unknown as CharacterWeapon}
+                    isStowed={false}
+                    selected={isUnarmedSel}
+                    onPick={() => choosePrimary(UNARMED_WEAPON as unknown as CharacterWeapon, false)}
+                  />
+                )}
+              </>
+            )}
           </div>
+        </div>
+      )}
+
+      {/* ── Stowed equip warning — unchanged flow, restyled shell ───────────── */}
+      {maneuverWarningFor && (() => {
+        const w = carried.find(c => c.id === maneuverWarningFor)
+        if (!w) return null
+        const nm = w.custom_name || refWeaponMap[w.weapon_key]?.name || 'Weapon'
+        return (
+          <div className="fc-note" role="alert">
+            <b>⚠ Equipping costs a Maneuver</b>
+            <div>Equipping {nm} will use one of your maneuvers this turn.</div>
+            <div className="fc-mod-row">
+              <button type="button" className="fc-mod-btn" onClick={() => setManeuverWarningFor(null)}>
+                Cancel
+              </button>
+              <button type="button" className="fc-mod-btn is-on" disabled={equipping}
+                onClick={() => void equipWeapon(w)}>
+                {equipping ? 'Equipping…' : 'Equip'}
+              </button>
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* ── Two-Weapon Attack ───────────────────────────────────────────────── */}
+      {selectedWeapon && onDualWieldSelect && dualCandidates.length > 0 && (
+        <>
+          <button
+            type="button"
+            className={`fc-dw-toggle${dwOn ? ' is-on' : ''}`}
+            onClick={() => { setDwOn(v => !v); setPickerOpen(null) }}
+          >
+            <span className="fc-dw-box">✓</span> Two-Weapon Attack
+          </button>
+
+          {dwOn && (
+            <>
+              <div className="fc-dw-slots">
+                <div className="fc-dw-slot is-filled">
+                  <div className="fc-dw-slot-label">Primary</div>
+                  <div className="fc-dw-slot-weap">{selName}</div>
+                </div>
+                <div className="fc-dw-link" aria-hidden>⇄</div>
+                <button
+                  type="button"
+                  className={`fc-dw-slot${offHand ? ' is-filled' : ''}`}
+                  onClick={() => setPickerOpen(pickerOpen === 'offhand' ? null : 'offhand')}
+                >
+                  <div className="fc-dw-slot-label">Off-Hand</div>
+                  {offHand
+                    ? <div className="fc-dw-slot-weap">{offHand.custom_name || refWeaponMap[offHand.weapon_key]?.name || 'Secondary'}</div>
+                    : <div className="fc-dw-slot-hint">Tap to choose</div>}
+                </button>
+              </div>
+              {/* Rule text lifted verbatim from DualWieldReviewStep — not invented. */}
+              <div className="fc-dw-rule">
+                Combined check uses lower skill rank and lower characteristic.{' '}
+                {offHand
+                  ? (refWeaponMap[selectedWeapon.weapon_key]?.skill_key === refWeaponMap[offHand.weapon_key]?.skill_key
+                      ? <>Difficulty <b>+1</b> (same skill).</>
+                      : <>Difficulty <b>+2</b> (different skills).</>)
+                  : <>Difficulty <b>+1</b> same skill, <b>+2</b> different skills.</>}
+                <br />
+                Primary hits on success; secondary hits by spending <b>2 Advantage</b> or <b>Triumph</b>.
+              </div>
+            </>
+          )}
         </>
       )}
 
-      {/* Equipped weapons */}
-      {equipped.length > 0 && (
-        <>
-          <SectionLabel text="Equipped" />
-          <div style={{ display: 'flex', flexDirection: 'column' as const, gap: SP[1], marginBottom: SP[2] }}>
-            {equipped.map(w => renderWeaponPill(w, false))}
-          </div>
-        </>
-      )}
-
-      {/* Carried weapons — not readied, require a maneuver to draw before use */}
-      {carried.length > 0 && (
-        <>
-          <SectionLabel text="Carried" />
-          <div style={{ display: 'flex', flexDirection: 'column' as const, gap: SP[1], marginBottom: SP[2] }}>
-            {carried.map(w => renderWeaponPill(w, true))}
-          </div>
-        </>
+      {/* ── Maneuvers — existing handlers and enable conditions, restyled ───── */}
+      {selectedWeapon && maneuvers && (
+        <div className="fc-mod-row">
+          <button
+            type="button"
+            className={`fc-mod-btn${maneuvers.aim1 ? ' is-on' : ''}`}
+            onClick={maneuvers.onToggleAim1}
+          >
+            Aim<small>+1 Boost</small>
+          </button>
+          <button
+            type="button"
+            className={`fc-mod-btn${maneuvers.aim2 ? ' is-on' : ''}`}
+            onClick={maneuvers.onToggleAim2}
+            disabled={!maneuvers.aim1}
+          >
+            2nd Aim<small>+1 Boost</small>
+          </button>
+          <button
+            type="button"
+            className={`fc-mod-btn${maneuvers.assist ? ' is-on' : ''}`}
+            onClick={maneuvers.onToggleAssist}
+          >
+            Assist<small>+1 Boost</small>
+          </button>
+          {isMeleeSel && (
+            <button
+              type="button"
+              className={`fc-mod-btn${maneuvers.guarded ? ' is-on is-neg' : ''}`}
+              onClick={maneuvers.onToggleGuarded}
+            >
+              Guarded<small>+1 Setback</small>
+            </button>
+          )}
+        </div>
       )}
 
       {/* Empty state */}
       {!hasAnyWeapon && (
-        <div style={{
-          padding:    `${SP[4]} ${SP[4]}`,
-          textAlign:  'center',
-          fontFamily: FONT_BODY,
-          fontSize:   FS.label,
-          color:      'var(--hud-text-dim)',
-        }}>
+        <div className="fc-note">
           No {attackType === 'ranged' ? 'ranged' : attackType === 'melee' ? 'melee' : ''} weapons found.
-          <br />
           Add weapons to your inventory to make combat checks.
         </div>
       )}
-
     </div>
   )
 }

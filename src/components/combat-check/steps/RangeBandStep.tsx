@@ -56,12 +56,12 @@ function CompactBandPill({
         padding:      `2px ${SP[2]}`,
         borderRadius: RADIUS.sm,
         border:       selected
-          ? `1px solid color-mix(in srgb, var(--hud-gold) 45%, transparent)`
+          ? `1px solid color-mix(in srgb, var(--check-highlight, var(--hud-gold)) 45%, transparent)`
           : isHighlight
-          ? `1px solid color-mix(in srgb, var(--hud-accent) 35%, transparent)`
+          ? `1px solid color-mix(in srgb, var(--check-accent, var(--hud-accent)) 35%, transparent)`
           : '1px solid var(--hud-border)',
         background:   selected
-          ? `color-mix(in srgb, var(--hud-gold) 8%, transparent)`
+          ? `color-mix(in srgb, var(--check-highlight, var(--hud-gold)) 8%, transparent)`
           : 'transparent',
         cursor:       blocked ? 'not-allowed' : 'pointer',
         opacity:      blocked ? 0.35 : 1,
@@ -77,7 +77,7 @@ function CompactBandPill({
       <span style={{
         fontSize:  FS.overline,
         fontWeight: 700,
-        color:     blocked ? 'var(--hud-text-faint)' : selected ? 'var(--hud-gold)' : 'var(--hud-text)',
+        color:     blocked ? 'var(--hud-text-faint)' : selected ? 'var(--check-highlight, var(--hud-gold))' : 'var(--hud-text)',
         minWidth:  '3.5rem',
       }}>
         {label}
@@ -113,13 +113,13 @@ function CompactBandPill({
         paddingLeft:  SP[1],
       }}>
         {atMaxRange && (
-          <span style={{ color: 'var(--hud-gold)' }}>max range</span>
+          <span style={{ color: 'var(--check-highlight, var(--hud-gold))' }}>max range</span>
         )}
         {beyondMax && !atMaxRange && (
-          <span style={{ color: 'var(--hud-accent)' }}>{notes[0]}</span>
+          <span style={{ color: 'var(--check-accent, var(--hud-accent))' }}>{notes[0]}</span>
         )}
         {!blocked && !atMaxRange && !beyondMax && notes.length > 0 && (
-          <span style={{ color: 'var(--hud-accent)' }}>{notes.join(' · ')}</span>
+          <span style={{ color: 'var(--check-accent, var(--hud-accent))' }}>{notes.join(' · ')}</span>
         )}
       </span>
     </button>
@@ -162,7 +162,7 @@ export function RangeBandStep({ attackType, weapon, selectedBand, targets = [], 
                 <div style={{
                   fontFamily:   FONT_BODY,
                   fontSize:     FS.overline,
-                  color:        'var(--hud-accent)',
+                  color:        'var(--check-accent, var(--hud-accent))',
                   marginBottom: SP[1],
                 }}>
                   ⚠ {meleeResult.fallbackReason}
@@ -256,99 +256,56 @@ export function RangeBandStep({ attackType, weapon, selectedBand, targets = [], 
     )
   }
 
-  // Ranged — horizontal chip strip
+  // Ranged — segmented track (focus-console redesign; logic unchanged)
   const refW     = weapon?.refWeapon
   const skillKey = weapon?.skillKey ?? 'RANGLT'
   const maxRange = refW?.range_value ? (RANGE_VALUE_MAP[refW.range_value] ?? 'extreme') : 'extreme'
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: SP[2] }}>
-      {/* Compact horizontal range strip */}
-      <div style={{ display: 'flex', overflow: 'hidden' }}>
-        {RANGE_BAND_ORDER.map((band, idx) => {
+    <div>
+      <div className="fc-range-track">
+        {RANGE_BAND_ORDER.map(band => {
           const result   = getRangedDifficulty(band, skillKey, maxRange)
           const blocked  = result.blocked
           const selected = selectedBand === band
-          const label    = RANGE_BAND_LABELS[band]
 
           return (
             <button
               key={band}
+              type="button"
               onClick={() => !blocked && onSelect(band)}
               disabled={blocked}
-              className="cc-range-chip"
-              style={{
-                flex:          1,
-                minWidth:      0,
-                display:       'flex',
-                flexDirection: 'column' as const,
-                alignItems:    'center',
-                gap:           2,
-                padding:       `${SP[1]} 2px`,
-                border:        `1px solid ${selected ? 'var(--hud-gold)' : 'var(--hud-border)'}`,
-                background:    selected ? `color-mix(in srgb, var(--hud-gold) 10%, transparent)` : 'transparent',
-                color:         selected ? 'var(--hud-gold)' : 'var(--hud-text-dim)',
-                opacity:       blocked ? 0.35 : selected ? 1 : 0.7,
-                cursor:        blocked ? 'not-allowed' : 'pointer',
-                borderRadius:  0, /* flat strip edges per design */
-                marginLeft:    idx > 0 ? -1 : 0, /* collapse adjacent 1px borders */
-                position:      'relative' as const,
-                zIndex:        selected ? 1 : 0,
-              }}
+              className={`fc-range-opt${selected ? ' is-selected' : ''}`}
             >
-              {/* Label */}
-              <span style={{
-                fontFamily:    FONT_DISPLAY,
-                fontSize:      FS.overline,
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase' as const,
-                whiteSpace:    'nowrap' as const,
-                overflow:      'hidden',
-                textOverflow:  'ellipsis',
-                maxWidth:      '100%',
-              }}>
-                {label}
+              <span className="fc-range-name">{RANGE_BAND_LABELS[band]}</span>
+              <span className="fc-range-pips">
+                {blocked || (result.difficultyDice === 0 && result.challengeDice === 0) ? (
+                  <span className="fc-range-dash">—</span>
+                ) : (
+                  <>
+                    {Array.from({ length: result.challengeDice }).map((_, pi) => (
+                      <i key={`c${pi}`} style={{
+                        width: 7, height: 7, flexShrink: 0, /* die geometry, not spacing */
+                        background: DICE_COLOR.challenge, /* die-identity hex — sealed namespace */
+                        clipPath: CLIP_OCT,
+                      }} />
+                    ))}
+                    {Array.from({ length: result.difficultyDice }).map((_, pi) => (
+                      <i key={`d${pi}`} style={{
+                        width: 7, height: 7, flexShrink: 0, /* die geometry, not spacing */
+                        background: DICE_COLOR.difficulty, /* die-identity hex — sealed namespace */
+                        clipPath: CLIP_DIA,
+                      }} />
+                    ))}
+                  </>
+                )}
               </span>
-
-              {/* Die pips */}
-              {blocked || (result.difficultyDice === 0 && result.challengeDice === 0) ? (
-                <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, opacity: 0.4 }}>—</span>
-              ) : (
-                <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 1, justifyContent: 'center', maxWidth: 28 }}>
-                  {Array.from({ length: result.challengeDice }).map((_, pi) => (
-                    <div key={`c${pi}`} style={{
-                      width: 6, height: 6, /* die shape px — geometry not spacing */
-                      background: DICE_COLOR.challenge, /* die-identity hex — sealed namespace */
-                      clipPath: CLIP_OCT,
-                      flexShrink: 0,
-                    }} />
-                  ))}
-                  {Array.from({ length: result.difficultyDice }).map((_, pi) => (
-                    <div key={`d${pi}`} style={{
-                      width: 6, height: 6, /* die shape px — geometry not spacing */
-                      background: DICE_COLOR.difficulty, /* die-identity hex — sealed namespace */
-                      clipPath: CLIP_DIA,
-                      flexShrink: 0,
-                    }} />
-                  ))}
-                </div>
-              )}
             </button>
           )
         })}
       </div>
-      {/* Max range note */}
-      <div style={{
-        fontFamily:   FONT_BODY,
-        fontSize:     FS.overline,
-        color:        'var(--hud-text-dim)',
-        lineHeight:   1.4,
-        padding:      `${SP[1]} ${SP[2]}`,
-        background:   'var(--hud-surface-lo)',
-        borderRadius: RADIUS.sm,
-        border:       '1px solid var(--hud-border)',
-      }}>
-        Max range: <strong style={{ color: HUD.gold }}>{RANGE_BAND_LABELS[maxRange]}</strong>.
+      <div className="fc-note">
+        Max range: <b>{RANGE_BAND_LABELS[maxRange]}</b>.
       </div>
     </div>
   )

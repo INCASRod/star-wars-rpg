@@ -91,7 +91,7 @@ export interface ForcePowerDisplay {
   totalCount:      number
   abilities:       ForceAbilityDisplay[]
   // Still populated by useForcePowers.ts and read by other consumers
-  // (ForceCheckOverlay, ForceDescriptionPanel) — this panel no longer
+  // (ForceCheckOverlay) — this panel no longer
   // renders an inline <ForcePowerTree> (Prompt: quick-glance hub, purchases
   // now happen exclusively via the full-screen route), but the type shape
   // itself is unchanged so it stays valid everywhere else it's used.

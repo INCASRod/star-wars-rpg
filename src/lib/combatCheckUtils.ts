@@ -91,7 +91,7 @@ export interface MeleeDifficultyResult {
   challengeDice:   number
   targetMeleeRank: number
   targetBrawn:     number
-  /** Set when the result is a fallback (no target, or skill not on record). Player sets difficulty manually. */
+  /** Set only when there is no target at all. Player sets difficulty manually. */
   fallbackReason?: string
 }
 
@@ -107,16 +107,19 @@ export function getMeleeDifficulty(
   }
 
   const ranks = target.skillRanks ?? {}
-  // skillRanks stores by display name ("Melee") in adversary data
-  const meleeRank: number = ranks['Melee'] ?? ranks['MELEE'] ?? -1
-
-  if (meleeRank < 0) {
-    return {
-      difficultyDice: 0, challengeDice: 0,
-      targetMeleeRank: 0, targetBrawn: target.characteristics?.brawn ?? 2,
-      fallbackReason: `${target.name} has no Melee skill on record — set difficulty manually`,
-    }
-  }
+  // skillRanks stores by display name ("Melee") in adversary data, and it is a
+  // SPARSE map — only skills with at least one rank are present.
+  //
+  // An absent key therefore means "0 ranks", NOT "this creature has no Melee
+  // skill". Every character has every skill; with 0 ranks you simply roll the
+  // linked characteristic. Defaulting to -1 and bailing out treated most
+  // adversaries (5 of 9 in live encounter data) as unattackable in melee and
+  // pushed the player to enter a difficulty by hand.
+  //
+  // With rank 0 the maths below already produces the correct FFG result:
+  // proficiency = min(brawn, 0) = 0, ability = |brawn - 0| = brawn — i.e. an
+  // unskilled Brawn 2 defender opposes with 2 difficulty and 0 challenge dice.
+  const meleeRank: number = ranks['Melee'] ?? ranks['MELEE'] ?? 0
 
   const brawn = target.characteristics?.brawn ?? 2
   const proficiency = Math.min(brawn, meleeRank)

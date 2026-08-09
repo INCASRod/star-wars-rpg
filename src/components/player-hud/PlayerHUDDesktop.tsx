@@ -12,6 +12,7 @@ import { HudLeftRail, type RailPanelId } from './HudLeftRail'
 import { HudFullPanel } from './HudFullPanel'
 import { HudTalentsTab } from './HudTalentsTab'
 import { HudSessionTab } from './HudSessionTab'
+import { HudSkillQuickList } from './HudSkillQuickList'
 import { HudModalsOverlay } from './HudModalsOverlay'
 import { HudNotificationsDrawer, useBlockingAutoOpen } from './HudNotificationsDrawer'
 import { InitiativeRollBody } from './InitiativeRollModal'
@@ -593,10 +594,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
               onTokenMove={mapTokens.moveToken}
               isCombatActive={isCombatActive}
               encounter={encounter}
-              activeQuickPanel={activeQuickPanel}
-              onCloseQuickPanel={() => setActiveQuickPanel(null)}
               hudSkills={hudSkills}
-              onOpenSkillPopover={(skill, anchor) => setSkillPopover({ skill, anchor })}
               onSkillRoll={handleRoll}
               adversariesOpen={adversariesOpen}
               onAdversariesOpenChange={setAdversariesOpen}
@@ -745,6 +743,14 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
             speciesName={speciesName}
             encounterId={encounter?.id ?? null}
             encounterEnemies={visibleEnemies}
+          />
+          {/* Skill Check console — centred modal, same shell and ignition as
+              Combat Check (it was a 240px quick drawer before this redesign). */}
+          <HudSkillQuickList
+            open={activeQuickPanel === 'skill'}
+            onClose={() => setActiveQuickPanel(null)}
+            skills={hudSkills}
+            onRoll={handleRoll}
           />
           <ForceCheckOverlay
             open={forceCheckOpen}
