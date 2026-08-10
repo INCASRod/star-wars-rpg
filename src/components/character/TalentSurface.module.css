@@ -37,42 +37,142 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
+/* ── COMMAND BAR ────────────────────────────────────────────────────────
+   Replaced the ~300px mega header. The route's point is the tree; the
+   chrome above it is now an instrument strip, not a title card. Two rows,
+   ~90px total. Row 2 owns the full width precisely so career skills can
+   never share a flex line with anything else — that sharing is what
+   truncated skills at narrow widths in the reviewed mockup. */
+
 .header {
   position: relative;
   z-index: 1;
+  border-bottom: 1px solid var(--hud-border);
 }
 
-.careerLine {
+.cmdRow1 {
   display: flex;
   align-items: center;
   gap: var(--space-3);
 }
 
-.careerLineRule {
+.cmdIdentity {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  min-width: 0;          /* lets the title ellipsise rather than push the bar wider */
   flex: 1;
+}
+
+.cmdSep {
+  width: 1px;
+  align-self: stretch;
+  flex-shrink: 0;
+  background: linear-gradient(to bottom, transparent, var(--hud-border-hi), transparent);
+}
+
+.careerLine {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.careerLineRule {
+  width: var(--space-6);
   height: 1px;
   background: linear-gradient(to right, var(--hud-accent), transparent);
 }
 
+/* Same gradient/display treatment the mega title carried — only the scale
+   changed, so the identity reads as the same object, just demoted. */
 .megaTitle {
   font-family: var(--font-display), 'Space Grotesk', sans-serif;
   text-transform: uppercase;
   font-weight: 700;
-  line-height: 1;
-  font-size: clamp(2.5rem, 3rem + 5vw, 9.375rem);
+  line-height: 1.1;
+  font-size: var(--text-h3);
   background: linear-gradient(to bottom, var(--hud-text), var(--hud-text-faint));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   text-shadow: 0 4px 32px var(--hud-glow);
   margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
+/* XP as a bordered instrument: value large, label beneath it. */
+.xpInstrument {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  /* 2px vertical is deliberate and minimal — the instrument is the tallest
+     thing in Row 1, so its padding is what sets the whole bar's height. */
+  padding: 2px var(--space-2);
+  line-height: 1.1;
+  background: color-mix(in srgb, var(--hud-gold) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--hud-gold) 40%, transparent);
+  border-radius: var(--radius-sm);
+}
+
+.xpValue {
+  font-family: var(--font-display), 'Space Grotesk', sans-serif;
+  font-size: var(--text-h4);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--hud-gold);
+}
+
+.xpLabel {
+  font-family: var(--font-body), 'Space Grotesk', sans-serif;
+  font-size: var(--text-overline);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--hud-text-faint);
+  white-space: nowrap;
+}
+
+/* Row 2 — full-width, wraps freely, NEVER clamped. No max-width, no
+   -webkit-line-clamp, no ellipsis: the longest real string in the dataset
+   is Technician + Retired Clone Trooper at 13 skills / 180 chars, which
+   wraps to a second line at 1280 and fits one line at 1920. */
+.cmdSkillsRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-top: 2px;
+}
+
+.cmdSkillsLabel {
+  flex-shrink: 0;
+  font-family: var(--font-body), 'Space Grotesk', sans-serif;
+  font-size: var(--text-overline);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--hud-text-faint);
+}
+
+.cmdSkillsValue {
+  font-family: var(--font-body), 'Space Grotesk', sans-serif;
+  font-size: var(--text-label);
+  line-height: 1.5;
+  color: var(--hud-text-dim);
+  min-width: 0;
+}
+
+/* ── Ghost watermark — now lives in the tree stage, behind the plaques, so
+   the atmosphere serves the tree instead of competing with the title. */
 .ghostWatermark {
   position: absolute;
-  right: -0.05em;
-  top: 50%;
-  transform: translateY(-50%);
+  right: var(--space-4);
+  top: var(--space-2);
   z-index: 0;
   pointer-events: none;
   user-select: none;
@@ -85,10 +185,12 @@
   white-space: nowrap;
 }
 
+/* ── RAIL — promoted from recessive list to console ─────────────────── */
+
 .rail {
   position: relative;
   z-index: 1;
-  width: 13rem;
+  width: 13.625rem;      /* 218px */
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -96,12 +198,13 @@
 }
 
 .railEntry {
+  position: relative;
   text-align: left;
   background: none;
   border: none;
   border-left: 2px solid transparent;
   cursor: pointer;
-  font-family: var(--font-body), 'Space Grotesk', sans-serif;
+  font-family: var(--font-display), 'Space Grotesk', sans-serif;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -112,8 +215,44 @@
   background: color-mix(in srgb, var(--hud-accent) 6%, transparent);
 }
 
+/* Active entry reads as a lit console channel: glowing accent edge bar +
+   accent-tinted bed. The edge bar is the ::before so the 2px border-left
+   stays available as the inactive baseline and nothing reflows on switch. */
 .railEntryActive {
-  border-left-color: var(--hud-gold);
-  background: color-mix(in srgb, var(--hud-accent) 10%, transparent);
+  border-left-color: transparent;
+  background: color-mix(in srgb, var(--hud-accent) 12%, transparent);
   box-shadow: inset 0 0 12px color-mix(in srgb, var(--hud-glow) 60%, transparent);
+}
+
+.railEntryActive::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--hud-gold);
+  box-shadow: 0 0 8px var(--hud-gold), 0 0 16px color-mix(in srgb, var(--hud-gold) 50%, transparent);
+}
+
+/* Both "+ NEW" affordances read as ghosts in their own group. */
+.railGhostBtn {
+  width: 100%;
+  text-align: left;
+  background: color-mix(in srgb, var(--hud-accent) 6%, transparent);
+  border: 1px dashed var(--hud-border-hi);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: var(--font-body), 'Space Grotesk', sans-serif;
+  font-size: var(--text-overline);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--hud-text-dim);
+  padding: var(--space-1) var(--space-2);
+  transition: color var(--ease-quick), border-color var(--ease-quick), background var(--ease-quick);
+}
+
+.railGhostBtn:hover {
+  border-color: var(--hud-gold);
+  color: var(--hud-gold);
 }

@@ -108,12 +108,15 @@ export function TalentSurface({
     <div className={flashActive ? 'sig-lockin-flash' : undefined}>
       {contentView === 'tree' ? (
         // marginBottom reserves room for a bottom-row plaque's hover expansion
-        // (Prompt 7b, Defect 2) — 160px live-measured against the tallest
-        // real description (max hovered plaque height 288.1px vs a 140px
-        // resting cell = 148.1px overshoot); applied uniformly across the
-        // loading/real/empty states so swapping between them causes no
+        // (Prompt 7b, Defect 2). RE-MEASURED for the tree-first pass, not
+        // scaled from the old number: with the 158px resting plaque (was
+        // 140px), the worst real bottom-row talent is cell 4-1, whose
+        // un-clamped body at scale(1.05) resolves to 363px — a 205px
+        // overshoot (was 148.1px). 220 keeps roughly the same headroom margin
+        // the original 160 had over its own 148.1. Applied uniformly across
+        // the loading/real/empty states so swapping between them causes no
         // layout shift (same principle as the skeleton's own height, 7a).
-        <div style={{ marginBottom: 160 }}>
+        <div style={{ marginBottom: 220 }}>
           {talentTreeData ? (
             <TalentTree
               specName={talentTreeData.specName}
@@ -177,10 +180,12 @@ export function TalentSurface({
    PROGRESSIVE-PAINT LOADING SKELETONS (Prompt 7a)
    ══════════════════════════════════════════════════════════════════ */
 
-/** Sized to match TalentTree's real rendered box (header + legend + 5×160px
-    grid rows — same raw dimensions TalentTree.tsx itself uses; 908px
-    confirmed via live getBoundingClientRect measurement, not estimated) so
-    swapping this out for the real tree causes zero layout shift. */
+/** Sized to match TalentTree's real rendered box (header + legend + the grid:
+    5×178px rows + 4×44px row gaps — same raw dimensions TalentTree.tsx itself
+    uses) so swapping this out for the real tree causes zero layout shift.
+    1192px re-measured via live getBoundingClientRect after the tree-first
+    resize (was 908px against the old 160px rows) — not estimated, and not
+    derived arithmetically, since the header and legend contribute too. */
 function TreeLoadingSkeleton() {
   return (
     <div
@@ -188,7 +193,7 @@ function TreeLoadingSkeleton() {
         background: HUD.bg,
         border: `1px solid ${HUD.border}`,
         borderRadius: RADIUS.lg,
-        minHeight: 908,
+        minHeight: 1192,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

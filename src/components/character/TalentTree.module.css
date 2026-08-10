@@ -233,7 +233,10 @@
 
 .name {
   font-family: var(--font-display);
-  font-size: var(--text-label);
+  /* Scaled with the plaque (tree-first pass): header steps up to the 12→14px
+     token while .body stays on 11→13px, keeping the header/body hierarchy the
+     smaller plaque already had. */
+  font-size: var(--text-body-sm);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -246,13 +249,29 @@
 
 .forceGlyph {
   flex-shrink: 0;
-  font-size: var(--text-label);
+  font-size: var(--text-body-sm);
   color: var(--force-spark);
   text-shadow: 0 0 4px var(--force-spark), 0 0 8px color-mix(in srgb, var(--force-spark) 55%, transparent);
 }
 
 /* ── Body ─────────────────────────────────────────────────────────── */
 
+/* The clamp lives on the INNER span, not on .body — this is load-bearing and
+   must not be "simplified" back.
+
+   `.body`'s only direct child is RichText's single wrapping <span>.
+   `-webkit-box` lays out CHILDREN as boxes, so with exactly one child box
+   there is nothing for `-webkit-line-clamp` to cut at: the declaration
+   computes (Chromium blockifies it to `display: flow-root`) but never bounds
+   the height. Live-measured on the Scout tree with the clamp on .body:
+   Bolster scrollHeight 194 vs clientHeight 106 — text hard-clipped mid-word by
+   `overflow: hidden`, no ellipsis. Short descriptions merely never reached the
+   ceiling, which is why some plaques looked correct and others cut mid-word;
+   nothing was ever actually clamping. Moving the clamp onto the span — which
+   directly contains the text nodes and RichText's inline glyphs — makes it
+   real: every long description resolves to exactly 4 line boxes.
+   Standard `line-clamp` was tested here and does NOT work (the box simply grew
+   to fit all content), so the -webkit- form is required. */
 .body {
   flex: 1;
   min-height: 0;
@@ -261,16 +280,28 @@
   font-size: var(--text-label);
   line-height: 1.4;
   color: var(--hud-text-dim);
+  display: block;
+  overflow: hidden;
+}
+
+.body > span {
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
 /* Un-clamp on hover — the raised plaque (see .plaque:hover below) grows
    past its resting box, so the full text overlays neighbours instead of
-   needing an inner scrollbar. */
+   needing an inner scrollbar. The release has to target the span now that the
+   clamp lives there; `display: block` is what actually drops the -webkit-box
+   line-boxing, `-webkit-line-clamp: unset` alone would not. */
 .plaque:hover .body {
+  overflow: visible;
+}
+
+.plaque:hover .body > span {
+  display: block;
   -webkit-line-clamp: unset;
   overflow: visible;
 }

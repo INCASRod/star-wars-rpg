@@ -30,7 +30,13 @@ const ACTIVATION_TOKEN_BY_LABEL: Record<string, { bg: string; text: string }> = 
 // FC (formerly var(--font-body)) and FR (formerly var(--font-body)) unified.
 const FR = FONT_BODY
 
-const BG        = HUD.bg
+// The tree card's own surface. Indirected through a custom property so the
+// talents route can set `--tree-card-bg: transparent` on its scroll stage and
+// let the ghost watermark behind the card show through the plaques. Every
+// other mount (preview modal, creator) never sets the variable and therefore
+// keeps the original opaque HUD.bg — no prop, no behaviour change, nothing for
+// those surfaces to regress.
+const BG        = `var(--tree-card-bg, ${HUD.bg})`
 const DIM       = HUD.textDim
 const FAINT     = HUD.textFaint
 const BORDER    = HUD.border
@@ -644,8 +650,18 @@ export function TalentTree({
           overflow: 'visible',
           display: 'grid',
           gridTemplateColumns: 'repeat(4, 1fr)',
-          gridTemplateRows: 'repeat(5, 160px)',
-          gap: 0,
+          // Row height, not a plaque property: .plaque is `position:absolute;
+          // inset:10px` inside its cell, so the resting plaque is always
+          // rowHeight − 20. 178px yields the ~158px plaque this pass calls for
+          // (was 160 → 140). Connector bars and the energy-trace chip both
+          // measure live rects under a ResizeObserver, so they re-derive from
+          // this automatically — but the hover-reserve in TalentSurface.tsx is
+          // a literal and had to be re-measured by hand.
+          gridTemplateRows: 'repeat(5, 178px)',
+          // Visual gap between plaques = grid gap + 2×inset(10). 36/44 here
+          // gives the ~56px column / ~64px row separation the design asks for.
+          columnGap: 36,
+          rowGap: 44,
         }}
       >
         {/* Measured-DOM connector bars — behind plaques (Z.base < Z.raised) */}

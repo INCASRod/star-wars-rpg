@@ -3423,10 +3423,13 @@ i.ffi {
 /* The upgrade's rules text, inline. This is what retired ForceDescriptionPanel:
    the text now lives on the row it describes instead of in a side panel that
    could not even tell which item had been tapped. */
+/* Clamp lives on the inner span, same reason as TalentTree.module.css's
+   `.body > span` — this element's only child is RichText's wrapping <span>,
+   and `-webkit-line-clamp` cannot split a single child box, so the clamp on
+   the parent never bound anything. It was measured inert: scrollHeight 270 vs
+   clientHeight 32 on a real Commune upgrade row. */
 .fc-fx-desc {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  display: block;
   overflow: hidden;
   font-family: var(--font-body);
   font-size: var(--text-overline);
@@ -3434,10 +3437,21 @@ i.ffi {
   line-height: 1.55;
   margin-top: 2px; /* hairline gap under the name — geometry */
 }
+.fc-fx-desc > span {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+/* Expanded release must target the span now that the clamp lives there. */
 .fc-fx-row.is-expanded .fc-fx-desc {
+  overflow: visible;
+  color: var(--hud-text);
+}
+.fc-fx-row.is-expanded .fc-fx-desc > span {
   display: block;
   -webkit-line-clamp: unset;
-  color: var(--hud-text);
+  overflow: visible;
 }
 .fc-fx-exp {
   flex: none;

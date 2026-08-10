@@ -189,13 +189,15 @@ function TalentsPageInner() {
         <div className={styles.atmosphereGrain} />
       </div>
 
-      {/* ── Mega header ── */}
-      <div className={styles.header} style={{ padding: `${SP[4]} ${SP[6]} ${SP[3]}`, flexShrink: 0, overflow: 'hidden' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-          <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
+      {/* ── Command bar ── two rows, ~90px. Row 2 is its own full-width line
+           so the career-skills list never shares a flex row with anything
+           that could squeeze it; it wraps and is never truncated. */}
+      <div className={styles.header} style={{ padding: `${SP[1]} ${SP[4]}`, flexShrink: 0 }}>
+        <div className={styles.cmdRow1}>
+          <div className={styles.cmdIdentity}>
             {careerRef && (
-              <div ref={careerLineRef} className={styles.careerLine} style={{ marginBottom: SP[2] }}>
-                <span style={{ fontFamily: FONT_DISPLAY, fontSize: FS.label, fontWeight: 700, letterSpacing: '0.3em', textTransform: 'uppercase', color: HUD.accent, whiteSpace: 'nowrap' }}>
+              <div ref={careerLineRef} className={styles.careerLine}>
+                <span style={{ fontFamily: FONT_DISPLAY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.3em', textTransform: 'uppercase', color: HUD.accent, whiteSpace: 'nowrap' }}>
                   {careerRef.name}
                 </span>
                 <span className={styles.careerLineRule} />
@@ -207,38 +209,36 @@ function TalentsPageInner() {
                 : contentView === 'force' ? (activeForcePower?.powerName ?? 'Force Powers')
                 : (activeSpecRef?.name ?? talentTreeData?.specName ?? 'Talents')}
             </h1>
-
-            {careerRef && <span ref={ghostWatermarkRef} className={styles.ghostWatermark}>{careerRef.name}</span>}
-
-            {contentView === 'force' && activeForcePowerRef?.min_force_rating ? (
-              <div ref={metaRowRef} style={{ marginTop: SP[3] }}>
-                <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: forceRating >= activeForcePowerRef.min_force_rating ? HUD.textDim : 'var(--state-failure)' }}>
-                  <span style={{ color: HUD.textFaint, textTransform: 'uppercase', letterSpacing: '0.1em', marginRight: SP[2] }}>Requires</span>
-                  Force Rating {activeForcePowerRef.min_force_rating}
-                </div>
-              </div>
-            ) : careerSkillNames.length > 0 && (
-              <div ref={metaRowRef} style={{ marginTop: SP[3] }}>
-                <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: HUD.textDim, maxWidth: '32rem' }}>
-                  <span style={{ color: HUD.textFaint, textTransform: 'uppercase', letterSpacing: '0.1em', marginRight: SP[2] }}>Career Skills</span>
-                  {careerSkillNames.join(' · ')}
-                </div>
-              </div>
-            )}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: SP[3], flexShrink: 0, marginLeft: SP[4] }}>
-            <div style={{ background: 'color-mix(in srgb, var(--hud-gold) 10%, transparent)', border: `1px solid color-mix(in srgb, var(--hud-gold) 40%, transparent)`, padding: `${SP[2]} ${SP[4]}`, fontFamily: FONT_DISPLAY, fontSize: FS.label, fontWeight: 700, letterSpacing: '0.1em', color: HUD.gold, whiteSpace: 'nowrap' }}>
-              {character.xp_available} XP
-            </div>
-            <button
-              onClick={handleExit}
-              style={{ background: 'var(--hud-surface-lo)', border: `1px solid ${HUD.borderHi}`, padding: `${SP[2]} ${SP[6]}`, fontFamily: FONT_DISPLAY, fontSize: FS.label, fontWeight: 600, letterSpacing: '0.15em', color: HUD.textDim, cursor: 'pointer', whiteSpace: 'nowrap' }}
-            >
-              ← EXIT
-            </button>
+          <div className={styles.cmdSep} />
+
+          <div className={styles.xpInstrument}>
+            <span className={styles.xpValue}>{character.xp_available}</span>
+            <span className={styles.xpLabel}>XP Avail</span>
           </div>
+
+          <button
+            onClick={handleExit}
+            style={{ background: 'var(--hud-surface-lo)', border: `1px solid ${HUD.borderHi}`, padding: `${SP[1]} ${SP[4]}`, fontFamily: FONT_DISPLAY, fontSize: FS.overline, fontWeight: 600, letterSpacing: '0.15em', color: HUD.textDim, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}
+          >
+            ← EXIT
+          </button>
         </div>
+
+        {contentView === 'force' && activeForcePowerRef?.min_force_rating ? (
+          <div ref={metaRowRef} className={styles.cmdSkillsRow}>
+            <span className={styles.cmdSkillsLabel}>Requires</span>
+            <span className={styles.cmdSkillsValue} style={{ color: forceRating >= activeForcePowerRef.min_force_rating ? HUD.textDim : 'var(--state-failure)' }}>
+              Force Rating {activeForcePowerRef.min_force_rating}
+            </span>
+          </div>
+        ) : careerSkillNames.length > 0 && (
+          <div ref={metaRowRef} className={styles.cmdSkillsRow}>
+            <span className={styles.cmdSkillsLabel}>Career Skills</span>
+            <span className={styles.cmdSkillsValue}>{careerSkillNames.join(' · ')}</span>
+          </div>
+        )}
       </div>
 
       {/* ── Rail + content ── */}
@@ -256,7 +256,7 @@ function TalentsPageInner() {
                 title={refSpecMap[cs.specialization_key]?.name || cs.specialization_key}
                 onClick={() => { setActiveSpecKey(cs.specialization_key); setContentView('tree') }}
                 className={`${styles.railEntry} ${isActive ? styles.railEntryActive : ''}`}
-                style={{ padding: `${SP[2]} ${SP[4]}`, fontSize: FS.sm, fontWeight: isActive ? 700 : 500, letterSpacing: '0.04em', color: isActive ? HUD.gold : HUD.textDim }}
+                style={{ padding: `${SP[1]} ${SP[3]}`, fontSize: FS.sm, fontWeight: isActive ? 700 : 500, letterSpacing: '0.04em', color: isActive ? HUD.gold : HUD.textDim }}
               >
                 {refSpecMap[cs.specialization_key]?.name || cs.specialization_key}
                 {cs.is_starting && (
@@ -266,7 +266,7 @@ function TalentsPageInner() {
             )
           })}
 
-          <div style={{ padding: `${SP[2]} ${SP[4]}` }}>
+          <div style={{ padding: `${SP[1]} ${SP[3]}` }}>
             <BuySpecButton
               character={character}
               charSpecs={charSpecs}
@@ -299,7 +299,7 @@ function TalentsPageInner() {
               <button
                 onClick={() => setContentView('sig')}
                 className={`${styles.railEntry} ${contentView === 'sig' ? styles.railEntryActive : ''}`}
-                style={{ padding: `${SP[2]} ${SP[4]}`, fontSize: FS.sm, fontWeight: contentView === 'sig' ? 700 : 600, letterSpacing: '0.04em', color: 'var(--die-boost)' }}
+                style={{ padding: `${SP[1]} ${SP[3]}`, fontSize: FS.sm, fontWeight: contentView === 'sig' ? 700 : 600, letterSpacing: '0.04em', color: 'var(--die-boost)' }}
               >
                 ◈ Signature Abilities
               </button>
@@ -324,23 +324,15 @@ function TalentsPageInner() {
                     title={fp.powerName}
                     onClick={() => { setActiveForcePowerKey(fp.powerKey); setContentView('force') }}
                     className={`${styles.railEntry} ${isActive ? styles.railEntryActive : ''}`}
-                    style={{ padding: `${SP[2]} ${SP[4]}`, fontSize: FS.sm, fontWeight: isActive ? 700 : 500, letterSpacing: '0.04em', color: isActive ? HUD.gold : HUD.textDim }}
+                    style={{ padding: `${SP[1]} ${SP[3]}`, fontSize: FS.sm, fontWeight: isActive ? 700 : 500, letterSpacing: '0.04em', color: isActive ? HUD.gold : HUD.textDim }}
                   >
-                    {fp.powerName}
+                    ✦ {fp.powerName}
                   </button>
                 )
               })}
 
-              <div style={{ padding: `${SP[2]} ${SP[4]}` }}>
-                <button
-                  onClick={() => setShowForceBrowse(true)}
-                  style={{
-                    background: 'rgba(224,58,30,0.06)', border: '1px dashed var(--hud-border-hi)',
-                    borderRadius: RADIUS.md, padding: '5px 12px', cursor: 'pointer',
-                    fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700, letterSpacing: '0.12em',
-                    color: HUD.textDim,
-                  }}
-                >
+              <div style={{ padding: `${SP[1]} ${SP[3]}` }}>
+                <button onClick={() => setShowForceBrowse(true)} className={styles.railGhostBtn}>
                   + NEW FORCE POWER
                 </button>
               </div>
@@ -348,7 +340,17 @@ function TalentsPageInner() {
           )}
         </div>
 
-        <div style={{ flex: 1, overflowY: 'auto', padding: SP[4], position: 'relative' }}>
+        {/* `--tree-card-bg: transparent` lets the ghost watermark below show
+            through TalentTree's own card surface. Only this mount sets it;
+            preview/creator keep the opaque default (see TalentTree.tsx). */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: SP[4], position: 'relative', ['--tree-card-bg' as string]: 'transparent' } as React.CSSProperties}>
+          {/* Ghost watermark — moved out of the header into the tree stage so
+              the atmosphere sits behind the plaques instead of competing with
+              the title. pointer-events:none and z-index 0 (below the tree,
+              which the rail/stage wrapper raises to 1) via .ghostWatermark. */}
+          {careerRef && contentView !== 'force' && (
+            <span ref={ghostWatermarkRef} className={styles.ghostWatermark}>{careerRef.name}</span>
+          )}
           {contentView === 'tree' && treeError && (
             <div style={{ marginBottom: SP[3], padding: SP[3], border: '1px solid var(--state-failure)', borderRadius: RADIUS.md, color: 'var(--state-failure)', fontFamily: FONT_BODY, fontSize: FS.sm }}>
               Failed to load talent tree: {treeError}
