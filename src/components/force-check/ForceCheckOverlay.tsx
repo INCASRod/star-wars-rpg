@@ -192,8 +192,15 @@ export function ForceCheckOverlay({
     return selPower.abilities.filter(a => a.purchasedRanks > 0)
   }, [selPower])
 
-  const basicUpgrade     = useMemo(() => upgrades.find(u => u.key.toUpperCase().endsWith('BASIC')) ?? null, [upgrades])
-  const nonBasicUpgrades = useMemo(() => upgrades.filter(u => !u.key.toUpperCase().endsWith('BASIC')), [upgrades])
+  // The base power is identified structurally, by the key the power's own tree
+  // puts at row 0 — NOT by a name/key suffix. `basicUpgrade` renders as the
+  // non-toggleable base row and is excluded from `activated_upgrades` on
+  // commit; Force Points may still be allocated onto it, since allocation is
+  // not activation. basicAbilityKey is null for a power with no ability_tree,
+  // in which case nothing is treated as basic and every row stays toggleable.
+  const basicKey         = selPower?.basicAbilityKey ?? null
+  const basicUpgrade     = useMemo(() => (basicKey ? upgrades.find(u => u.key === basicKey) ?? null : null), [upgrades, basicKey])
+  const nonBasicUpgrades = useMemo(() => upgrades.filter(u => u.key !== basicKey), [upgrades, basicKey])
 
   // ── Points produced by the roll, each tagged with its originating die ────────
   const points = useMemo<ForcePoint[]>(() => {

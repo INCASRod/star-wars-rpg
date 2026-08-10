@@ -167,6 +167,10 @@ export function MobileSessionCompanion({ characterId, campaignId }: MobileSessio
         return {
           powerKey: fp.key, powerName: fp.name, description: fp.description,
           purchasedCount, totalCount, abilities,
+          // See useForcePowers.ts — same structural rule, duplicated because
+          // this component builds ForcePowerDisplay itself instead of using the
+          // hook.
+          basicAbilityKey: fp.ability_tree?.rows?.[0]?.abilities?.[0] ?? null,
           treeNodes, treeConnections,
         }
       })

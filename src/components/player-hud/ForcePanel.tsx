@@ -90,6 +90,16 @@ export interface ForcePowerDisplay {
   purchasedCount:  number
   totalCount:      number
   abilities:       ForceAbilityDisplay[]
+  // The power's own base ability — the row-0, full-span node you buy to own the
+  // power at all, as opposed to a purchased upgrade. Resolved structurally from
+  // ability_tree.rows[0].abilities[0], never from the key string: the real keys
+  // are inconsistent across both datasets (COMMUNEBP, MOVEBARESPEC, SEEKBPRE,
+  // PROTUNBARE, ...), so the old `key.endsWith('BASIC')` test matched only 3 of
+  // the 25 active-dataset powers and let the other 22 render their base power as
+  // a toggleable upgrade AND record it in activated_upgrades on commit.
+  // null when the power has no ability_tree — consumers must treat that as
+  // "no basic identified" rather than assuming a key exists.
+  basicAbilityKey: string | null
   // Still populated by useForcePowers.ts and read by other consumers
   // (ForceCheckOverlay) — this panel no longer
   // renders an inline <ForcePowerTree> (Prompt: quick-glance hub, purchases

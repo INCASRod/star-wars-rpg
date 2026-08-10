@@ -229,6 +229,11 @@ export function useForcePowers({ charForceAbilities, refForcePowers, refForceAbi
         return {
           powerKey: fp.key, powerName: fp.name, description: fp.description ?? undefined,
           purchasedCount, totalCount, abilities,
+          // Row 0 column 0 is the base-power node in every tree in both
+          // datasets (verified: 25/25 respec, 44/44 oggdude — row 0 holds a
+          // single distinct ability across its whole span, and that key is
+          // never reused in any later row).
+          basicAbilityKey: fp.ability_tree?.rows?.[0]?.abilities?.[0] ?? null,
           treeNodes: treeData?.nodes ?? [],
           treeConnections: treeData?.connections ?? [],
         }
