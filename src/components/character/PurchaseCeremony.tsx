@@ -1,9 +1,11 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import gsap from 'gsap'
 import { HUD, FONT_BODY, FONT_DISPLAY, FS, SP, RADIUS, Z, SHADOW } from '@/lib/tokens'
+import { FORCE_HEADER_BG, FORCE_HEADER_TEXT, type HandCard } from '@/components/player-hud/HandOverlay'
+import { TalentsRouteHandReveal } from './TalentsRouteHandReveal'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PurchaseCeremony — shared portal/backdrop/skip/reduced-motion shell for both
@@ -39,6 +41,8 @@ export interface TalentCeremonyPayload {
   isForceTalent: boolean
   /** The real plaque's rect at the moment of purchase — the replica card animates from and back to this. Null if unavailable (e.g. sig base node with no easily-measured rect) — falls back to centre-only. */
   sourceRect: { top: number; left: number; width: number; height: number } | null
+  /** True when this purchase lands in the player's hand (active talent / Force base power) rather than staying on the plaque grid. Card exits into the ephemeral hand-reveal (H4b) instead of reversing back to sourceRect. */
+  handBound?: boolean
 }
 
 export interface SpecCeremonyPayload {
@@ -64,6 +68,8 @@ export interface ForceCeremonyPayload {
   rankLabel?: string
   /** The real plaque's rect at the moment of purchase — same contract as TalentCeremonyPayload.sourceRect. */
   sourceRect: { top: number; left: number; width: number; height: number } | null
+  /** True when this purchase lands in the player's hand (Force base power) rather than staying on the plaque grid. Card exits toward the hand instead of reversing back to sourceRect. */
+  handBound?: boolean
 }
 
 export interface PurchaseCeremonyProps {
@@ -84,12 +90,36 @@ export function PurchaseCeremony({ payload, xpBefore, xpAfter, reducedMotion, on
   const stampRef = useRef<HTMLDivElement>(null)
   const burstRef = useRef<HTMLDivElement>(null)
   const doneRef = useRef(false)
+  // Ephemeral hand-reveal (H4b) — only rendered/measured for handBound
+  // payloads. handSlotWrapRef is the reveal/withdraw target (the whole
+  // strip); handCardSlotRef is the single card slot whose rect is the
+  // ceremony card's real destination.
+  const handSlotWrapRef = useRef<HTMLDivElement>(null)
+  const handCardSlotRef = useRef<HTMLDivElement>(null)
 
   const finish = () => {
     if (doneRef.current) return
     doneRef.current = true
     onDone()
   }
+
+  const isHandBound = (payload.kind === 'talent' || payload.kind === 'force') && !!payload.handBound
+  const handCard: HandCard | null = useMemo(() => {
+    if (!isHandBound) return null
+    if (payload.kind === 'talent') {
+      return {
+        key: 'ceremony-hand-preview', kind: 'talent', talentKey: null, name: payload.name,
+        activationLabel: '', headerBg: payload.activationBg, headerText: payload.activationText,
+        specLabel: null, isForceTalent: payload.isForceTalent, rank: 0, isRanked: false,
+      }
+    }
+    return {
+      key: 'ceremony-hand-preview', kind: 'force', talentKey: null, name: payload.name,
+      activationLabel: 'Force Power', headerBg: FORCE_HEADER_BG, headerText: FORCE_HEADER_TEXT,
+      specLabel: payload.powerName, isForceTalent: true, rank: 0, isRanked: false,
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isHandBound, payload])
 
   useEffect(() => {
     doneRef.current = false
@@ -106,16 +136,28 @@ export function PurchaseCeremony({ payload, xpBefore, xpAfter, reducedMotion, on
       // be read.
       gsap.set(backdrop, { opacity: 1 })
       gsap.set(card, { opacity: 1, x: 0, y: 0, scale: 1, top: '50%', left: '50%', width: CARD_CENTER_WIDTH, height: 'auto', xPercent: -50, yPercent: -50 })
+      // No fly — the ephemeral hand (if any) simply shows already holding
+      // the card's settled state; it unmounts with the rest of the ceremony.
+      if (handSlotWrapRef.current) gsap.set(handSlotWrapRef.current, { opacity: 1, y: 0 })
       if (xpCounterRef.current) xpCounterRef.current.textContent = String(xpAfter)
       const holdMs = payload.kind === 'spec' ? Math.min(4000, 1500 + payload.newSkillNames.length * 250) : 1200
       const t = setTimeout(finish, holdMs)
       return () => clearTimeout(t)
     }
 
+    // Reveal the ephemeral hand BEFORE the timeline starts (a real rect must
+    // exist at tween-start, never appearing mid-flight) — measured here,
+    // synchronously, off the already-committed DOM from this render.
+    const handSlot = handSlotWrapRef.current
+    const handCardEl = handCardSlotRef.current
+    const handRect = isHandBound && handCardEl ? handCardEl.getBoundingClientRect() : null
+    if (handSlot) gsap.set(handSlot, { opacity: 0, y: 60 })
+
     const tl = gsap.timeline({ onComplete: finish })
     const centerVars = { top: '50%', left: '50%', xPercent: -50, yPercent: -50, width: CARD_CENTER_WIDTH, height: payload.kind === 'spec' ? 'auto' : CARD_CENTER_HEIGHT }
 
     tl.to(backdrop, { opacity: 1, duration: 0.15 })
+    if (handSlot) tl.to(handSlot, { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' }, '<')
 
     if ((payload.kind === 'talent' || payload.kind === 'force') && payload.sourceRect) {
       tl.set(card, {
@@ -145,8 +187,31 @@ export function PurchaseCeremony({ payload, xpBefore, xpAfter, reducedMotion, on
         // Impact shake on the card itself.
         tl.to(card, { x: '+=4', duration: 0.05, yoyo: true, repeat: 3, ease: 'power1.inOut' }, '<')
       }
-      tl.to({}, { duration: payload.sourceRect ? 0.4 : 0.6 }) // hold
-      if (payload.sourceRect) {
+      tl.to({}, { duration: payload.handBound || payload.sourceRect ? 0.4 : 0.6 }) // hold
+      if (payload.handBound) {
+        // Sent to hand — card shrinks and settles into the ephemeral hand's
+        // real card slot (H4b: the destination is now a real, measured
+        // rect, not a directional cue toward '96%').
+        tl.to(stampRef.current, { opacity: 0, duration: 0.12 })
+        if (burstRef.current) tl.set(burstRef.current, { opacity: 0 })
+        if (handRect) {
+          tl.to(card, {
+            top: handRect.top, left: handRect.left,
+            width: handRect.width, height: handRect.height,
+            xPercent: 0, yPercent: 0, scale: 1, opacity: 0,
+            duration: 0.35, ease: 'power2.in',
+          })
+        } else {
+          tl.to(card, {
+            top: '96%', left: '50%', xPercent: -50, yPercent: -50,
+            width: CARD_CENTER_WIDTH * 0.4, height: 'auto', scale: 0.4, opacity: 0,
+            duration: 0.35, ease: 'power2.in',
+          })
+        }
+        // Withdraw the ephemeral hand together with the ceremony's own
+        // fade-out beat below — no second, independent timer.
+        if (handSlot) tl.to(handSlot, { opacity: 0, y: 60, duration: 0.3, ease: 'power2.in' }, '<')
+      } else if (payload.sourceRect) {
         tl.to(stampRef.current, { opacity: 0, duration: 0.12 })
         if (burstRef.current) tl.set(burstRef.current, { opacity: 0 })
         tl.to(card, {
@@ -189,6 +254,16 @@ export function PurchaseCeremony({ payload, xpBefore, xpAfter, reducedMotion, on
         cursor: 'pointer',
       }}
     >
+      {/* Ephemeral hand reveal (H4b) — mounted only for hand-bound payloads,
+          for the duration of this ceremony. Rendered before the flying
+          card below so the card visibly settles ON TOP of it (DOM order =
+          paint order at equal stacking). */}
+      {handCard && (
+        <div ref={handSlotWrapRef} style={{ position: 'fixed', inset: 0, pointerEvents: 'none' }}>
+          <TalentsRouteHandReveal ref={handCardSlotRef} card={handCard} />
+        </div>
+      )}
+
       <div
         ref={cardRef}
         onClick={e => e.stopPropagation()}

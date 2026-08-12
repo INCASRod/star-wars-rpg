@@ -168,6 +168,11 @@ export interface CombatCheckOverlayProps {
   characterId:        string
 
   onRoll: (result: RollResult, label?: string, pool?: Record<string, number>, meta?: RollMeta) => void
+  /** Fires with the active weapon's skill key whenever it changes, and with
+      null when the overlay closes or has no weapon selected (H5 — lets the
+      parent drive check-time hand-card glow without this component knowing
+      about the hand at all). */
+  onActiveSkillChange?: (skillKey: string | null) => void
 
   /** Group all GM-specific overrides — extend this object rather than adding top-level props */
   gmOverrides?: {
@@ -189,6 +194,7 @@ export function CombatCheckOverlay({
   character, weapons, charSkills,
   refWeaponMap, refSkillMap, refWeaponQualityMap,
   skillModifiers, campaignId, characterId, onRoll,
+  onActiveSkillChange,
   gmOverrides,
   speciesAbilities = [], speciesName,
   encounterId: propEncounterId,
@@ -237,6 +243,16 @@ export function CombatCheckOverlay({
     ? (refWeaponMap[state.selectedWeapon.weapon_key] ?? null)
     : null
   const refSkill: RefSkill | null = refWeapon?.skill_key ? (refSkillMap[refWeapon.skill_key] ?? null) : null
+
+  // H5 — surface the active skill (or null when closed/no weapon) to the
+  // parent. Unarmed has no RefWeapon row (refSkill resolves null for it, per
+  // the refWeapon derivation above) — it always rolls Brawl, hardcoded the
+  // same way its own label ("Unarmed / Brawl") and pool-building logic do.
+  const isUnarmed = state.selectedWeapon?.id === '__unarmed__'
+  const activeSkillKey = isUnarmed ? 'BRAWL' : (refSkill?.key ?? null)
+  useEffect(() => {
+    onActiveSkillChange?.(open ? activeSkillKey : null)
+  }, [open, activeSkillKey, onActiveSkillChange])
 
   // ── Derived crit eligibility (not state — pure function of existing state) ──
   const critEligibility = (() => {

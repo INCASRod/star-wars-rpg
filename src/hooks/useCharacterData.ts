@@ -10,6 +10,7 @@ import { useCharacterSigAbilities } from '@/hooks/useCharacterSigAbilities'
 import { isDroid, isClone, isEligibleForForceRating } from '@/lib/forceEligibility'
 import { computeDerivedStats, countOwnedRanks, type StatSource } from '@/lib/derivedStats'
 import { computeCareerSkillKeys, persistCareerSkills } from '@/lib/characters'
+import { fetchActiveDataset } from '@/lib/activeDataset'
 import type { MoralitySystem } from '@/lib/moralitySystem'
 import { fetchCharacterDataBatch, consumeCharacterDataPrefetch } from '@/lib/characterDataPrefetch'
 import { computeBalancePointFlip, fetchFreshBalancePoints, type BalancePointState } from '@/lib/forceUtils'
@@ -386,6 +387,40 @@ export async function buySpecialization(
   if (targetSpec?.is_force_sensitive && forceRating === 0 && !character.force_rating_purchased) {
     setPendingForceRatingOffer(true)
   }
+
+  // Talent -> skill mapping authoring surface (H1): fires strictly AFTER the
+  // purchase has fully completed above — never awaited, so it cannot add
+  // latency or a failure path to the purchase itself. Reports (console only,
+  // GM-facing; no UI surface exists yet — see H1's report for why
+  // pending_actions was rejected as the wrong shape for this) which of the
+  // newly-owned spec's talents have never been reviewed for skill relevance
+  // (talent_skill_relevance_authored — presence = reviewed, independent of
+  // whether that review produced 0, 1, or several actual skill rows in
+  // talent_skill_relevance; see 119_talent_skill_relevance.sql).
+  void (async () => {
+    try {
+      const talentKeys = [...new Set(targetSpec?.talent_tree?.rows.flatMap(r => r.talents) ?? [])]
+      if (talentKeys.length === 0) return
+      const dataset = await fetchActiveDataset(supabase)
+      const { data: authored, error } = await supabase
+        .from('talent_skill_relevance_authored')
+        .select('talent_key')
+        .eq('dataset_source', dataset)
+        .in('talent_key', talentKeys)
+      if (error) throw error
+      const authoredKeys = new Set((authored ?? []).map(r => r.talent_key as string))
+      const unmapped = talentKeys.filter(k => !authoredKeys.has(k))
+      if (unmapped.length > 0) {
+        console.warn(
+          `[talent-skill-mapping] ${refSpecMap[specKey]?.name ?? specKey} (${dataset}) has ${unmapped.length} unreviewed talent(s) for skill relevance:`,
+          unmapped,
+        )
+      }
+    } catch (e) {
+      // Informational only — never surfaces to the player, never affects the purchase.
+      console.warn('[talent-skill-mapping] unmapped-talent check failed', e)
+    }
+  })()
 
   return { specKey, specName: refSpecMap[specKey]?.name ?? specKey, newlyGrantedSkillKeys }
 }

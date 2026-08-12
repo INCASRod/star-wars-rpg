@@ -29,6 +29,12 @@ export interface ForceCheckOverlayProps {
   characterId:     string
   encounterId?:    string | null
   visibleEnemies?: AdversaryInstance[]
+  /** H7 — "Play Power" shortcut from the hand's Force-power focus view.
+      Seeds `selectedPowerKey` on open only; omitted (undefined) reproduces
+      today's exact no-preselection behaviour — the normal rail entry point
+      passes nothing. Everything after open (pool, allocation, roll) is
+      identical to picking the same power by hand. */
+  initialPowerKey?: string | null
 }
 
 // ── Force Point identity ──────────────────────────────────────────────────────
@@ -126,6 +132,7 @@ export function ForceCheckOverlay({
   forcePowers, isDathomiri, isCombat,
   campaignId, characterId,
   encounterId: propEncounterId,
+  initialPowerKey,
 }: ForceCheckOverlayProps) {
   const [selectedPowerKey, setSelectedPowerKey] = useState<string | null>(null)
   const [forceRoll, setForceRoll] = useState<ForceRollResult | null>(null)
@@ -165,7 +172,7 @@ export function ForceCheckOverlay({
   useEffect(() => {
     if (open) {
       clearTimers()
-      setSelectedPowerKey(null)
+      setSelectedPowerKey(initialPowerKey ?? null)
       setForceRoll(null)
       setActivatedKeys(new Set())
       setAlloc({})
@@ -180,7 +187,7 @@ export function ForceCheckOverlay({
     } else {
       clearTimers()
     }
-  }, [open])
+  }, [open]) // eslint-disable-line react-hooks/exhaustive-deps -- initialPowerKey deliberately read only at the open-transition instant, not a re-seed trigger of its own
 
   const isFallen  = character.is_dark_side_fallen === true
   const available = Math.max(0, forceRating - committedForce)
@@ -495,9 +502,14 @@ export function ForceCheckOverlay({
   }, [open, forceRoll, points, prefersReducedMotion])
 
   // ── Derived copy ────────────────────────────────────────────────────────────
+  // Includes the basic power now that it needs real activation too (see the
+  // rowsToRender loop below) — a check where the ONLY thing activated is the
+  // base power (e.g. spending a pip on Heal/Harm's own heal) must still read
+  // "Ready to commit," not stall on "Spend" forever because only
+  // nonBasicUpgrades was ever counted.
   const activeCount = useMemo(
-    () => nonBasicUpgrades.filter(u => activatedKeys.has(u.key)).length,
-    [nonBasicUpgrades, activatedKeys]
+    () => upgrades.filter(u => activatedKeys.has(u.key)).length,
+    [upgrades, activatedKeys]
   )
   const bankRemaining = points.length - placedIds.size
 
@@ -707,7 +719,17 @@ export function ForceCheckOverlay({
               ) : (
                 <div className="fc-fx-scroll">
                   {rowsToRender.map(row => {
-                    const on      = row.basic || activatedKeys.has(row.key)
+                    // The base power is identity, not a free grant — it still
+                    // needs a pip spent (or a manual toggle for a genuinely
+                    // free application) to activate, same as any upgrade, and
+                    // can be activated more than once by placing more than one
+                    // point on it (e.g. Heal/Harm's base ability: each ◐ heals
+                    // again). It used to force `on` unconditionally here,
+                    // which showed it pre-activated before the roll even
+                    // happened — wrong, and reported as such. `row.basic` now
+                    // only affects styling/exclusion-from-the-write-payload,
+                    // never activation state.
+                    const on      = activatedKeys.has(row.key)
                     const chips   = alloc[row.key] ?? []
                     const hasDark = chips.some(c => c.kind === 'dark')
                     const isExp   = expanded.has(row.key)

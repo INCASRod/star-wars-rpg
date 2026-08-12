@@ -3391,7 +3391,11 @@ i.ffi {
   text-align: left;
   cursor: pointer;
 }
-.fc-fx-row.is-basic .fc-fx-head { cursor: default; }
+/* Basic-power row is a real, tappable effect like any other — it must be
+   activated with a point (or toggled free) same as an upgrade, and can take
+   more than one point. Previously forced cursor:default here to match the
+   old "always active" JS state; that state is gone, so this must not make
+   the row look non-interactive. */
 .fc-fx-check {
   width: 16px; height: 16px; flex: none; /* checkbox geometry */
   border: 1.5px solid var(--hud-text-dim);

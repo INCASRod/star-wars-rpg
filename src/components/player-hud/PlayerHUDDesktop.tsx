@@ -49,6 +49,8 @@ import { useSessionRollState, getWoundThresholdBonus } from '@/hooks/useSessionR
 import { SessionStatusBanner } from '@/components/player/SessionStatusBanner'
 import { useDerivedStats } from '@/hooks/useDerivedStats'
 import { CriticalInjuryModal } from '@/components/character/CriticalInjuryModal'
+import { HandOverlay } from '@/components/player-hud/HandOverlay'
+import { useHandState } from '@/hooks/useHandState'
 import { useActiveMap } from '@/hooks/useActiveMap'
 import { useMapTokens } from '@/hooks/useMapTokens'
 import { useEncounterState } from '@/hooks/useEncounterState'
@@ -87,6 +89,16 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     handlePurchaseForceAbility, handlePurchaseForceRating, handleBuySpecialization, handleBuySkill,
   } = useCharacterData(characterId)
 
+  // ── Hand-of-cards state (H2/H3) — lifted here (was internal to HandOverlay)
+  // so the left rail's tuck toggle can read/set it too, same shape as
+  // activeCheckSkillKey's existing cross-component threading (H5). ──
+  const { tucked: handTucked, discardedKeys, cardOrder, discardCard, returnCard, toggleTucked, reorderCards } = useHandState(characterId, supabase)
+
+  // ── Deck-stack anchor — the center/map column's own DOM node. HandOverlay
+  // mounts as a viewport-level sibling outside this grid, so its deck/discard
+  // corners can't reach the map panel via plain CSS; a ResizeObserver on this
+  // ref is what lets them track it (see docs/architecture.md's H-series note).
+  const mapPanelRef = useRef<HTMLDivElement>(null)
 
   // ── Derived stats engine ──
   const derivedStats = useDerivedStats({
@@ -193,7 +205,9 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     if (id === 'dice')        { setDiceOpen(o => !o); setCombatCheckOpen(false); setForceCheckOpen(false); return }
     if (id === 'adversaries') { setAdversariesOpen(o => !o); setCombatCheckOpen(false); setForceCheckOpen(false); return }
     if (id === 'combat') { setCombatCheckOpen(true); setForceCheckOpen(false); setActiveFullPanel(null); setActiveQuickPanel(null); return }
-    if (id === 'force')  { setForceCheckOpen(true);  setCombatCheckOpen(false); setActiveFullPanel(null); setActiveQuickPanel(null); return }
+    // Normal entry point — no pre-selection, regardless of any prior Play
+    // Power use (H7's own state must not leak into the next manual open).
+    if (id === 'force')  { setInitialForcePowerKey(null); setForceCheckOpen(true);  setCombatCheckOpen(false); setActiveFullPanel(null); setActiveQuickPanel(null); return }
     if (id === 'skill') {
       setActiveQuickPanel(prev => prev === 'skill' ? null : 'skill')
       setActiveFullPanel(null)
@@ -269,7 +283,27 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   const [forceRollResult, setForceRollResult]   = useState<ForceRollResult | null>(null)
   const [skillPopover, setSkillPopover]         = useState<{ skill: HudSkill; anchor: DOMRect } | null>(null)
   const [combatCheckOpen, setCombatCheckOpen]         = useState(false)
+  // H5 — active check skill. Three surfaces can make a skill "active": the
+  // Skills tab's quick-roll popover (skillPopover, already local state),
+  // the rail's Skill Check console (HudSkillQuickList — its `selected` skill
+  // was local-only until this callback), and Combat Check's derived weapon
+  // skill. Mutually exclusive in practice via handlePanelToggle, but the
+  // derivation doesn't rely on that — first non-null wins.
+  const [quickSkillActiveKey, setQuickSkillActiveKey] = useState<string | null>(null)
+  const [combatActiveSkillKey, setCombatActiveSkillKey] = useState<string | null>(null)
+  const activeCheckSkillKey = skillPopover?.skill.key ?? quickSkillActiveKey ?? combatActiveSkillKey ?? null
   const [forceCheckOpen,  setForceCheckOpen]          = useState(false)
+  // H7 — "Play Power" shortcut from the hand's Force-power focus view. Seeds
+  // ForceCheckOverlay's own selection state on open only (its reset-on-open
+  // effect reads this); not re-read afterward, so no need to clear it back.
+  const [initialForcePowerKey, setInitialForcePowerKey] = useState<string | null>(null)
+  const handlePlayPower = (powerKey: string) => {
+    setInitialForcePowerKey(powerKey)
+    setForceCheckOpen(true)
+    setCombatCheckOpen(false)
+    setActiveFullPanel(null)
+    setActiveQuickPanel(null)
+  }
   const { conflicts, pendingConflicts } = useCharacterConflicts(character?.id, supabase)
   const [conflictQueue, setConflictQueue] = useState<ConflictEntry[]>([])
   const [ackBusy,       setAckBusy]       = useState(false)
@@ -429,6 +463,31 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
       <BackgroundEffects />
       <CombatTransition pending={transitionPending} prevMode={prevMode} />
 
+      {/* Player-facing hand of cards (H2) — active talents + owned Force base
+          powers as floating cards. Player-only: the GM view of this same
+          component tree (isGmMode) never renders it. */}
+      {!isGmMode && (
+        <HandOverlay
+          characterId={character.id}
+          supabase={supabase}
+          talents={talents}
+          hudTalents={hudTalents}
+          refTalentMap={refTalentMap}
+          refSpecMap={refSpecMap}
+          allForcePowers={allForcePowers}
+          refForcePowerMap={refForcePowerMap}
+          activeCheckSkillKey={activeCheckSkillKey}
+          tucked={handTucked}
+          discardedKeys={discardedKeys}
+          discardCard={discardCard}
+          returnCard={returnCard}
+          cardOrder={cardOrder}
+          reorderCards={reorderCards}
+          mapPanelRef={mapPanelRef}
+          onPlayPower={handlePlayPower}
+        />
+      )}
+
       {/* Critical Injury Roll Modal — shown when GM sends a crit request */}
       {pendingCritRequest && (
         <CriticalInjuryModal
@@ -566,15 +625,20 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
           // ripping out showAdversaries/adversariesOpen/HudAdversaryDrawer)
           // since the underlying reveal mechanic itself is untouched.
           showAdversaries={false}
+          handTucked={isGmMode ? undefined : handTucked}
+          onToggleHand={isGmMode ? undefined : toggleTucked}
         />
 
-        {/* ══ CENTER COLUMN ════════════════════════════════════ */}
-        <div style={{
-          display: 'flex', flexDirection: 'column',
-          borderRight: `1px solid ${HUD.border}`,
-          overflow: 'hidden',
-          position: 'relative',
-        }}>
+        {/* ══ CENTER COLUMN (map panel) ══════════════════════════ */}
+        <div
+          ref={mapPanelRef}
+          style={{
+            display: 'flex', flexDirection: 'column',
+            borderRight: `1px solid ${HUD.border}`,
+            overflow: 'hidden',
+            position: 'relative',
+          }}
+        >
           {/* Session Status Banner — always shown */}
           <SessionStatusBanner
             sessionRollState={sessionRollState}
@@ -739,6 +803,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
             campaignId={effectiveCampaignId}
             characterId={character.id}
             onRoll={handleRoll}
+            onActiveSkillChange={setCombatActiveSkillKey}
             speciesAbilities={speciesAbilities}
             speciesName={speciesName}
             encounterId={encounter?.id ?? null}
@@ -751,6 +816,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
             onClose={() => setActiveQuickPanel(null)}
             skills={hudSkills}
             onRoll={handleRoll}
+            onActiveSkillChange={setQuickSkillActiveKey}
           />
           <ForceCheckOverlay
             open={forceCheckOpen}
@@ -765,6 +831,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
             characterId={character.id}
             encounterId={encounter?.id ?? null}
             visibleEnemies={visibleEnemies}
+            initialPowerKey={initialForcePowerKey}
           />
         </div>
 

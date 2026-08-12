@@ -464,7 +464,7 @@ function TalentsPageInner() {
                   setContentView('force')
                   setShowForceBrowse(false)
                   setForceBaseCeremony({
-                    payload: { kind: 'force', name: baseNode.name, powerName: entry.name, cost: baseNode.cost, sourceRect: null },
+                    payload: { kind: 'force', name: baseNode.name, powerName: entry.name, cost: baseNode.cost, sourceRect: null, handBound: true },
                     xpBefore, xpAfter: xpBefore - baseNode.cost,
                   })
                 }}

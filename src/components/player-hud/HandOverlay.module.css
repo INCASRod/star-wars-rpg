@@ -1,0 +1,451 @@
+/* HandOverlay — player-facing hand of cards (H2). Card silhouette, fan zone
+   and tuck mechanics ported from the reviewed talent-hand-v3.html mockup:
+   172x238 card, notched-corner clip-path, arc fan (rotation/height offset
+   scaled by distance from center), hover lift, tuck slides the fan down to a
+   peeking edge. Dynamic per-card transforms (fan position, hover lift) are
+   GSAP-driven from HandOverlay.tsx — this file owns only what's static:
+   silhouette, colour, structure. No drag/reorder/discard classes carried over
+   from the mockup; those are H3+. */
+
+.handZone {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: -26px;
+  height: 250px;
+  /* z-index is NOT set here — CSS modules can't reference tokens.ts, and this
+     value must come from the real Z.* system, not a hand-copied literal that
+     could drift. Set as an inline style from Z.popover in HandOverlay.tsx —
+     see that file for the full reasoning (H2 originally used Z.overlay/100,
+     "below modals"; corrected here because the hand must stay reachable
+     DURING a Force/Skill/Combat check, not hidden beneath it). */
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  pointer-events: none;
+  /* --ease-panel is this project's "drawer/panel slide" timing token — the
+     same semantic category as the tuck motion, so reused rather than
+     hardcoding the mockup's bespoke 0.55s duration (CLAUDE.md: transition
+     timing must come from an EASE token, never a literal duration). */
+  transition: transform var(--ease-panel);
+}
+
+.handZoneTucked {
+  transform: translateY(196px);
+}
+
+.hand {
+  position: relative;
+  width: min(880px, 88vw);
+  height: 100%;
+  pointer-events: none;
+}
+
+.card {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 172px;
+  height: 238px;
+  margin-left: -86px;
+  pointer-events: auto;
+  /* Grab affordance — cards ARE draggable (reorder H8, discard H3), so the
+     default arrow cursor read as non-interactive. `.dragging` (set/cleared
+     imperatively in HandOverlay.tsx's pointerdown/up, matching the existing
+     el.style.zIndex convention there — not React state, to avoid a
+     re-render per drag start/end) swaps to `grabbing`. Scoped to `.card`
+     itself, not `.gridCard` (passive/discard grid tiles aren't draggable —
+     see that class's own override) or any focus-view card (a different
+     class entirely, untouched). `user-select: none` stops the drag gesture
+     from highlighting body text mid-drag (screenshot-confirmed regression);
+     click-to-focus is unaffected — that's a pointerup branch keyed on
+     movement distance, not a native selection/click distinction. */
+  cursor: grab;
+  user-select: none;
+  transform-origin: 50% 118%;
+  clip-path: polygon(
+    13px 0, calc(100% - 13px) 0, 100% 11px, 100% calc(100% - 11px),
+    calc(100% - 13px) 100%, 13px 100%, 0 calc(100% - 11px), 0 11px
+  );
+  background: linear-gradient(168deg, var(--plaque-body), color-mix(in srgb, var(--plaque-body) 80%, black));
+  border: 1px solid var(--plaque-edge);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.85);
+  will-change: transform;
+}
+
+.card.dragging {
+  cursor: grabbing;
+}
+
+.card.forceCard {
+  border-color: color-mix(in srgb, var(--hud-accent-purple) 50%, transparent);
+}
+
+/* ── Check-time glow (H5) — this talent maps to the active Skill/Combat
+   Check's skill. State (border + shadow) is always visible; the ::after
+   pulse layer is the only ANIMATED portion, and it's gated static under
+   prefers-reduced-motion (only opacity keyframe suppressed — state stays). */
+.card.relevant {
+  border-color: var(--hud-gold);
+  box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.85), 0 0 22px -4px var(--hud-glow);
+}
+
+.card.relevant::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  clip-path: inherit;
+  z-index: 4;
+  box-shadow: inset 0 0 18px 2px var(--hud-glow);
+  animation: glowPulse 1.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card.relevant::after {
+    animation: none;
+    opacity: 0.8;
+  }
+}
+
+/* Inner bevel sheen — matches the plaque's own ::before sheen convention. */
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  clip-path: inherit;
+  z-index: 3;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 18px 30px -20px rgba(255, 255, 255, 0.16),
+    inset 0 -16px 26px -20px rgba(0, 0, 0, 0.6);
+}
+
+.cardHeader {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-label);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  clip-path: polygon(10px 0, 100% 0, 100% 100%, 0 100%, 0 8px);
+}
+
+.cardHeader .forceGlyph {
+  margin-left: auto;
+  color: var(--force-spark);
+  font-size: var(--text-body-sm);
+  text-shadow: 0 0 8px var(--force-spark);
+}
+
+.cardMeta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  /* Wraps instead of overlapping: at the card's 172px width, a long
+     activation label ("Incidental (OOT)") plus a long spec name
+     ("Nightsister") can exceed the available width combined — live-measured
+     overflow, confirmed via computed rects (typeRect.right === specRect.left,
+     zero gap, text rendering edge to edge). flex-wrap lets .cardSpec drop to
+     its own line instead of overlapping .cardType. */
+  flex-wrap: wrap;
+  row-gap: 2px;
+  padding: var(--space-2) var(--space-3) 0;
+}
+
+.cardType {
+  font-family: var(--font-display);
+  font-size: var(--text-overline);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--hud-text-faint);
+}
+
+.cardSpec {
+  font-family: var(--font-display);
+  font-size: var(--text-overline);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--hud-gold);
+  opacity: 0.75;
+}
+
+.cardBody {
+  flex: 1;
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-body-sm);
+  line-height: 1.5;
+  color: var(--hud-text-dim);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+}
+
+/* Clamp lives on the RichText span, not this element — same reason as
+   TalentTree.module.css's .body > span: -webkit-line-clamp needs a single
+   child box to cut at, and .cardBody's only child is RichText's own wrapping
+   span. See that file's comment for the full live-measured explanation. */
+.cardBody > span {
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 var(--space-3) var(--space-3);
+  min-height: 26px;
+}
+
+.ranks {
+  display: flex;
+  gap: 3px;
+}
+
+/* Phoenix rank pip — approximated mask path validated in the reviewed
+   mockups (talent-hand-v2/v3.html), ported verbatim pending a final asset. */
+.phoenix {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  background: var(--hud-accent);
+  -webkit-mask: var(--phx-mask) center / contain no-repeat;
+  mask: var(--phx-mask) center / contain no-repeat;
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--hud-accent) 60%, transparent));
+}
+
+/* ── Deck corner (passive-deck trigger) — anchored to the MAP PANEL's
+   bottom-left corner, not the viewport (left/bottom are set inline from a
+   ResizeObserver-measured rect in HandOverlay.tsx — see that file). Own
+   corner, independent of the fan's width, so it never collides with fan
+   cards at any hand size. Hidden entirely while tucked. ── */
+.deckCorner {
+  position: fixed;
+  pointer-events: none;
+}
+
+.deckCorner > * {
+  pointer-events: auto;
+}
+
+/* ── Discard corner — map panel's bottom-right corner (inline right/bottom,
+   same as .deckCorner). Tuck control now lives in the left rail, not here. ── */
+.discardCorner {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  pointer-events: none;
+}
+
+.discardCorner > * {
+  pointer-events: auto;
+}
+
+/* ── Deck stack (passive deck trigger + discard pile) — stacked-card icon,
+   ported from the reviewed mockup's .deckstack. Two offset back cards plus a
+   face card carrying the count. ── */
+.deckStack {
+  position: relative;
+  width: 84px;
+  height: 108px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.deckStackCard1,
+.deckStackCard2,
+.deckStackFace {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(
+    8px 0, calc(100% - 8px) 0, 100% 7px, 100% calc(100% - 7px),
+    calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 7px), 0 7px
+  );
+  background: linear-gradient(168deg, var(--plaque-body), color-mix(in srgb, var(--plaque-body) 78%, black));
+  border: 1px solid var(--plaque-edge);
+  transition: border-color var(--ease-quick);
+}
+
+.deckStackCard1 {
+  transform: translate(-5px, 4px) rotate(-4deg);
+  opacity: 0.7;
+}
+
+.deckStackCard2 {
+  transform: translate(-2px, 2px) rotate(-2deg);
+  opacity: 0.85;
+}
+
+.deckStackFace {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+}
+
+.deckStack:hover .deckStackFace {
+  border-color: var(--hud-gold);
+}
+
+.deckStackN {
+  font-family: var(--font-display);
+  font-size: var(--text-h4);
+  font-weight: 700;
+  color: var(--hud-gold);
+}
+
+.deckStackL {
+  font-family: var(--font-display);
+  font-size: var(--text-overline);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--hud-text-faint);
+}
+
+/* Discard pile — dashed border per the reviewed mockup, distinguishing "shelf"
+   from "browse" at a glance. */
+.discardCard {
+  border-style: dashed;
+  border-color: var(--hud-border-hi);
+}
+
+.discardStack .deckStackN {
+  color: var(--hud-text-dim);
+}
+
+.discardStackHover .deckStackFace {
+  border-color: var(--force-spark);
+  border-style: dashed;
+  box-shadow: 0 0 24px -6px var(--force-spark);
+}
+
+/* ── Grid overlay — shared by the passive deck viewer and the discard
+   viewer. z-index set inline from Z.popover, matching every other element
+   this component renders. ── */
+.gridBackdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  padding: var(--space-6);
+}
+
+.gridPanel {
+  position: relative;
+  /* min-width, not just max-width — without it the panel shrinks to fit a
+     single 172px card column (justify-content:center on .grid only centers
+     columns WITHIN the container's existing width, it can't widen the
+     container), which also starved .gridTitle of room and drove it into
+     .gridClose. Live-caught via screenshot, not assumed. */
+  min-width: min(600px, 90vw);
+  max-height: 80vh;
+  max-width: 90vw;
+  overflow-y: auto;
+  padding: var(--space-8) var(--space-4) var(--space-4);
+}
+
+.gridTitle {
+  position: absolute;
+  top: var(--space-2);
+  left: 0;
+  right: 0;
+  text-align: center;
+  /* Reserves room for .gridClose (sits top-right, ~100px wide) on the right
+     side only, so a long title (the discard view's) can't grow into it
+     regardless of panel width — the min-width fix on .gridPanel above
+     resolves the common case, this is the belt-and-braces for narrow
+     viewports where 600px still isn't enough room for both. */
+  padding: 0 var(--space-16) 0 0;
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--hud-text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gridClose {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: none;
+  border: 1px solid var(--hud-border-hi);
+  color: var(--hud-text-dim);
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.gridEmpty {
+  padding: var(--space-12);
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  color: var(--hud-text-faint);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 172px);
+  gap: var(--space-4);
+  justify-content: center;
+}
+
+/* Grid-mounted cards are laid out by CSS grid, not the fan's absolute/GSAP
+   positioning — override the fan-only geometry so they sit in-flow. */
+.gridCard {
+  position: relative;
+  left: auto;
+  bottom: auto;
+  margin-left: 0;
+  transform: none !important;
+  cursor: default;
+  user-select: text;
+}
+
+.takeback {
+  position: absolute;
+  inset: auto var(--space-2) var(--space-2) var(--space-2);
+  font-family: var(--font-display);
+  font-size: var(--text-overline);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--hud-gold);
+  border: 1px solid color-mix(in srgb, var(--hud-gold) 45%, transparent);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1);
+  text-align: center;
+  cursor: pointer;
+  background: var(--hud-surface-lo);
+  opacity: 0;
+  transition: opacity var(--ease-quick);
+}
+
+.gridCard:hover .takeback {
+  opacity: 1;
+}

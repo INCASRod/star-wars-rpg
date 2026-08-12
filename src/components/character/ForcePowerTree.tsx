@@ -434,6 +434,7 @@ export function ForcePowerTree({
             kind: 'force', name: n.name, powerName, cost: n.cost,
             rankLabel: isMultiRank ? `Rank ${n.ownedRank + 1} of ${n.totalRanks}` : undefined,
             sourceRect,
+            handBound: n.row === 0 && n.col === 0,
           },
           xpBefore, xpAfter: xpBefore - n.cost,
         })
