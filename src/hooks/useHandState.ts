@@ -40,6 +40,8 @@ export function useHandState(characterId: string | undefined, supabase: Supabase
 
   const discardedRef = useRef<string[]>([])
   const orderRef = useRef<string[]>([])
+  const [handPlacedKeys, setHandPlacedKeysState] = useState<string[]>([])
+  const handPlacedRef = useRef<string[]>([])
   const queueRef = useRef<Promise<unknown>>(Promise.resolve())
 
   useEffect(() => {
@@ -47,7 +49,7 @@ export function useHandState(characterId: string | undefined, supabase: Supabase
     let cancelled = false
     supabase
       .from('character_hand_state')
-      .select('is_tucked, discarded_keys, card_order')
+      .select('is_tucked, discarded_keys, card_order, hand_placed_keys')
       .eq('character_id', characterId)
       .maybeSingle()
       .then(({ data }) => {
@@ -59,6 +61,9 @@ export function useHandState(characterId: string | undefined, supabase: Supabase
         const order = Array.isArray(data?.card_order) ? (data.card_order as string[]) : []
         orderRef.current = order
         setCardOrderState(order)
+        const placed = Array.isArray(data?.hand_placed_keys) ? (data.hand_placed_keys as string[]) : []
+        handPlacedRef.current = placed
+        setHandPlacedKeysState(placed)
         setLoaded(true)
       })
     return () => { cancelled = true }
@@ -95,6 +100,29 @@ export function useHandState(characterId: string | undefined, supabase: Supabase
   }
   function returnCard(key: string) {
     commitDiscardedKeys(prev => prev.filter(k => k !== key))
+  }
+
+  function commitHandPlacedKeys(mutate: (prev: string[]) => string[]) {
+    if (!characterId) return
+    const next = mutate(handPlacedRef.current)
+    handPlacedRef.current = next
+    setHandPlacedKeysState(next)
+
+    queueRef.current = queueRef.current.then(async () => {
+      await supabase
+        .from('character_hand_state')
+        .upsert(
+          { character_id: characterId, hand_placed_keys: handPlacedRef.current, updated_at: new Date().toISOString() },
+          { onConflict: 'character_id' },
+        )
+    })
+  }
+
+  function placeCard(key: string) {
+    commitHandPlacedKeys(prev => (prev.includes(key) ? prev : [...prev, key]))
+  }
+  function unplaceCard(key: string) {
+    commitHandPlacedKeys(prev => prev.filter(k => k !== key))
   }
 
   // Rail-toggle-driven tuck state — deliberate/discoverable now that it lives
@@ -135,5 +163,5 @@ export function useHandState(characterId: string | undefined, supabase: Supabase
     })
   }
 
-  return { tucked, discardedKeys, cardOrder, loaded, discardCard, returnCard, toggleTucked, reorderCards }
+  return { tucked, discardedKeys, cardOrder, handPlacedKeys, loaded, discardCard, returnCard, toggleTucked, reorderCards, placeCard, unplaceCard }
 }
