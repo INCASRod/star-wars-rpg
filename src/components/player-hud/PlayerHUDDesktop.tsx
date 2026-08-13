@@ -92,7 +92,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   // ── Hand-of-cards state (H2/H3) — lifted here (was internal to HandOverlay)
   // so the left rail's tuck toggle can read/set it too, same shape as
   // activeCheckSkillKey's existing cross-component threading (H5). ──
-  const { tucked: handTucked, discardedKeys, cardOrder, discardCard, returnCard, toggleTucked, reorderCards } = useHandState(characterId, supabase)
+  const { tucked: handTucked, discardedKeys, cardOrder, handPlacedKeys, discardCard, returnCard, toggleTucked, reorderCards, placeCard, unplaceCard } = useHandState(characterId, supabase)
 
   // ── Deck-stack anchor — the center/map column's own DOM node. HandOverlay
   // mounts as a viewport-level sibling outside this grid, so its deck/discard
@@ -483,6 +483,9 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
           returnCard={returnCard}
           cardOrder={cardOrder}
           reorderCards={reorderCards}
+          handPlacedKeys={handPlacedKeys}
+          placeCard={placeCard}
+          unplaceCard={unplaceCard}
           mapPanelRef={mapPanelRef}
           onPlayPower={handlePlayPower}
         />
