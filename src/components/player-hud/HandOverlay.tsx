@@ -91,6 +91,12 @@ export interface HandCard {
   isForceTalent:   boolean
   rank:            number
   isRanked:        boolean
+  /** True only for a passive talent the player has placed into the fan
+      (hand_placed_keys). Optional/undefined everywhere else — PurchaseCeremony
+      and TalentsRouteHandReveal construct HandCard objects directly and don't
+      need to set this. Drives the discard-drop branch: dropping a placed
+      passive on the discard corner un-places it instead of discarding it. */
+  isPlacedPassive?: boolean
 }
 
 // Force-power header colour — no ACTIVATION_TOKEN entry exists for it (that
@@ -135,6 +141,11 @@ interface HandOverlayProps {
       pixel of live-shuffle. */
   cardOrder:       string[]
   reorderCards:    (next: string[]) => void
+  /** Passive talents currently placed into the fan by the player (this
+      prompt) — disjoint from discardedKeys. */
+  handPlacedKeys:  string[]
+  placeCard:       (key: string) => void
+  unplaceCard:     (key: string) => void
   /** Map panel's DOM node — deck/discard corners anchor to its bounds via
       ResizeObserver rather than the viewport, so they clear the roll feed
       and stay put through notifications-drawer resizes (see the design
@@ -164,6 +175,7 @@ export function HandOverlay({
   characterId, supabase, talents, hudTalents, refTalentMap, refSpecMap, allForcePowers, refForcePowerMap,
   activeCheckSkillKey = null,
   tucked, discardedKeys, discardCard, returnCard, cardOrder, reorderCards, mapPanelRef, onPlayPower,
+  handPlacedKeys, placeCard, unplaceCard,
 }: HandOverlayProps) {
   // H5 — check-time glow. Set-membership check per card (a talent can map to
   // more than one skill); Force cards (talentKey === null) never match.
@@ -251,9 +263,26 @@ export function HandOverlay({
     () => hudTalents.filter(ht => ht.activation !== 'Passive').map(buildTalentCard),
     [hudTalents, refTalentMap, talents, refSpecMap], // eslint-disable-line react-hooks/exhaustive-deps
   )
-  const passiveCards = useMemo(
+  const handPlacedSet = useMemo(() => new Set(handPlacedKeys), [handPlacedKeys])
+  // All owned passives, regardless of placement — the single source both the
+  // grid list and the placed-in-fan list below derive from, so a card is
+  // never independently out of sync between the two.
+  const allPassiveCards = useMemo(
     () => hudTalents.filter(ht => ht.activation === 'Passive').map(buildTalentCard),
     [hudTalents, refTalentMap, talents, refSpecMap], // eslint-disable-line react-hooks/exhaustive-deps
+  )
+  // Grid list: only passives NOT currently placed in the fan — mirrors how
+  // discardedCards already excludes anything back in the fan (mutually
+  // exclusive membership).
+  const passiveCards = useMemo(
+    () => allPassiveCards.filter(c => !handPlacedSet.has(c.key)),
+    [allPassiveCards, handPlacedSet],
+  )
+  const placedPassiveCards = useMemo(
+    () => allPassiveCards
+      .filter(c => handPlacedSet.has(c.key))
+      .map(c => ({ ...c, isPlacedPassive: true })),
+    [allPassiveCards, handPlacedSet],
   )
 
   // Force power base nodes only. basicAbilityKey is the structural base-node
@@ -291,7 +320,10 @@ export function HandOverlay({
   // ones; Force cards prefixed `force_<powerKey>`). That scheme already
   // disambiguates talent vs Force power on read, so discarded_keys entries
   // need no further tagging — confirmed in Step 0, not a new decision.
-  const ownedCards = useMemo(() => [...activeTalentCards, ...forceCards], [activeTalentCards, forceCards])
+  const ownedCards = useMemo(
+    () => [...activeTalentCards, ...forceCards, ...placedPassiveCards],
+    [activeTalentCards, forceCards, placedPassiveCards],
+  )
   const focusTalentCard = focusTalentKey ? ownedCards.find(c => c.key === focusTalentKey) ?? null : null
   const discardedSet = useMemo(() => new Set(discardedKeys), [discardedKeys])
   const fanCards = useMemo(() => ownedCards.filter(c => !discardedSet.has(c.key)), [ownedCards, discardedSet])
@@ -523,9 +555,14 @@ export function HandOverlay({
       // matches the optimistic-then-persist model from useHandState: local
       // fan membership updates the instant the DB write is queued, not after
       // it resolves (same shape as useMapTokens' removeToken, H0's audit).
+      // `droppedCard` is looked up before the animation starts since
+      // `ownedCards` will have already re-rendered without this card's
+      // discarded/unplaced state by the time `onComplete` fires — same
+      // reasoning the existing code already relies on for `key` itself.
+      const droppedCard = ownedCards.find(c => c.key === key)
       gsap.to(el, {
         scale: 0.4, opacity: 0, duration: 0.3, ease: 'power2.in',
-        onComplete: () => discardCard(key),
+        onComplete: () => (droppedCard?.isPlacedPassive ? unplaceCard(key) : discardCard(key)),
       })
       // H8 — discard wins hit-test precedence; drop any live reorder preview
       // unpersisted (orderedFanCards naturally excludes the discarded key
