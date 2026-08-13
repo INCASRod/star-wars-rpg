@@ -202,13 +202,16 @@
   margin-top: var(--space-1);
 }
 
+/* Jedi order glyph — real asset (public/images/factions/jedi.webp), masked.
+   Force-power upgrade node, not a faction rank pip — keeps the Force theme's
+   purple tint (--hud-accent-purple), only the silhouette changes. */
 .pip {
   width: 10px;
   height: 10px;
   flex: 0 0 auto;
   background: var(--hud-accent-purple);
-  -webkit-mask: var(--phx-mask) center / contain no-repeat;
-  mask: var(--phx-mask) center / contain no-repeat;
+  -webkit-mask: var(--jedi-mask) center / contain no-repeat;
+  mask: var(--jedi-mask) center / contain no-repeat;
 }
 
 .closeBtn {

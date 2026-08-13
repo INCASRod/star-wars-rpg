@@ -14,11 +14,6 @@ import { TalentFocusView } from './TalentFocusView'
 import { ForceNameplateField } from './ForceNameplateField'
 import styles from './HandOverlay.module.css'
 
-// Phoenix rank-pip mask — approximated path from the reviewed mockups
-// (talent-hand-v2/v3.html), ported verbatim pending a final asset from design.
-const PHOENIX_MASK =
-  `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 4 L60 22 Q56 26 56 32 Q73 30 84 44 Q92 55 90 70 Q80 94 50 97 Q20 94 10 70 Q8 55 16 44 Q27 30 44 32 Q44 26 40 22 Z M50 40 Q38 40 32 50 Q27 59 30 70 Q36 82 50 84 Q64 82 70 70 Q73 59 68 50 Q62 40 50 40 Z'/%3E%3C/svg%3E")`
-
 // Card geometry (172x238, fan spread/rotation math) is ported 1:1 from
 // talent-hand-v3.html and lives in HandOverlay.module.css (fixed dimensions)
 // plus the fan-layout effect below (spread/rotation, computed once per hand
@@ -170,10 +165,6 @@ export function HandOverlay({
   activeCheckSkillKey = null,
   tucked, discardedKeys, discardCard, returnCard, cardOrder, reorderCards, mapPanelRef, onPlayPower,
 }: HandOverlayProps) {
-  useEffect(() => {
-    document.documentElement.style.setProperty('--phx-mask', PHOENIX_MASK)
-  }, [])
-
   // H5 — check-time glow. Set-membership check per card (a talent can map to
   // more than one skill); Force cards (talentKey === null) never match.
   const talentSkillMap = useTalentSkillRelevance(supabase)

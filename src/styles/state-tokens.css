@@ -64,6 +64,19 @@
   --die-despair:     #C04040;
   --die-forcepip:    #E8E8FF;
 
+  /* ── Faction identity colors ────────────────────────────────── */
+  /* Immutable — faction identity, not theme decoration. Same value in every
+     theme (like the die and state colors above), so a faction glyph reads
+     identically regardless of the active HUD theme. */
+  --faction-rebel-red: #C0392B;
+
+  /* ── Faction / order glyph masks ────────────────────────────── */
+  /* Real raster assets (public/images/factions/), used as CSS mask-image on
+     rank-pip / lattice-node glyphs. Theme-agnostic — same silhouette in every
+     theme, only the tinting color (above) or --hud-accent-purple varies. */
+  --rebel-mask: url('/images/factions/rebel.png');
+  --jedi-mask:  url('/images/factions/jedi.webp');
+
   /* ── Game-state outcome colors ──────────────────────────────── */
   /* Theme-agnostic result/outcome colors for roll displays.      */
   --state-success:   #4EC87A;

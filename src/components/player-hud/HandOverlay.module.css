@@ -213,16 +213,17 @@
   gap: 3px;
 }
 
-/* Phoenix rank pip — approximated mask path validated in the reviewed
-   mockups (talent-hand-v2/v3.html), ported verbatim pending a final asset. */
+/* Rebel starbird rank pip — real asset (public/images/factions/rebel.png),
+   masked and tinted rebel red. Faction identity, not theme decoration — same
+   color in every theme, see --faction-rebel-red in state-tokens.css. */
 .phoenix {
   width: 14px;
   height: 14px;
   flex: 0 0 auto;
-  background: var(--hud-accent);
-  -webkit-mask: var(--phx-mask) center / contain no-repeat;
-  mask: var(--phx-mask) center / contain no-repeat;
-  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--hud-accent) 60%, transparent));
+  background: var(--faction-rebel-red);
+  -webkit-mask: var(--rebel-mask) center / contain no-repeat;
+  mask: var(--rebel-mask) center / contain no-repeat;
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--faction-rebel-red) 60%, transparent));
 }
 
 /* ── Deck corner (passive-deck trigger) — anchored to the MAP PANEL's
