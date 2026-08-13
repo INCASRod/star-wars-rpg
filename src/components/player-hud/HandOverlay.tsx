@@ -540,6 +540,19 @@ export function HandOverlay({
       }
     }
   }
+  // Shared click-to-focus resolver — used by the fan's own click-vs-drag
+  // pointerup handler AND by CardGridOverlay's grid cards (passive + discard
+  // piles), so there's exactly one place that knows how to open a card's
+  // focus view.
+  function openFocusFor(key: string) {
+    const card = ownedCards.find(c => c.key === key) ?? allPassiveCards.find(c => c.key === key)
+    if (card?.kind === 'force') {
+      const powerKey = card.key.slice('force_'.length)
+      setFocusPowerKey(powerKey)
+    } else if (card?.kind === 'talent') {
+      setFocusTalentKey(card.key)
+    }
+  }
   function handleCardPointerUp(e: ReactPointerEvent<HTMLDivElement>, key: string) {
     const drag = dragRef.current
     dragRef.current = null
@@ -595,13 +608,7 @@ export function HandOverlay({
       // A tap with no movement is a click. Force cards open H6's focus view;
       // talent cards now open this prompt's lattice-less TalentFocusView —
       // both give full un-clamped text, matching each card kind's own shape.
-      const card = ownedCards.find(c => c.key === key)
-      if (card?.kind === 'force') {
-        const powerKey = card.key.slice('force_'.length)
-        setFocusPowerKey(powerKey)
-      } else if (card?.kind === 'talent') {
-        setFocusTalentKey(card.key)
-      }
+      openFocusFor(key)
     }
   }
 
@@ -712,6 +719,9 @@ export function HandOverlay({
           cards={passiveCards}
           emptyText="No passive talents owned."
           onClose={() => setShowPassives(false)}
+          actionLabel="→ Place in Hand"
+          onAction={key => placeCard(key)}
+          onCardClick={openFocusFor}
         />
       )}
 
@@ -726,7 +736,9 @@ export function HandOverlay({
           cards={discardedCards}
           emptyText="No talents discarded."
           onClose={() => setShowDiscard(false)}
-          onReturn={key => returnCard(key)}
+          actionLabel="↑ Return to hand"
+          onAction={key => returnCard(key)}
+          onCardClick={openFocusFor}
         />
       )}
 
@@ -778,16 +790,19 @@ export function CardFace({ card }: { card: HandCard }) {
 }
 
 // ── Shared grid overlay — passive deck viewer AND discard viewer both mount
-// this; `onReturn` presence is the only behavioural difference (discard gets
-// a "return to hand" action, passive view is pure read-only). ──
+// this; `actionLabel`/`onAction` presence is the only behavioural difference
+// (each grid gets its own action — place in hand vs. return to hand). Every
+// card, in both grids, opens its focus view via `onCardClick`. ──
 function CardGridOverlay({
-  title, cards, emptyText, onClose, onReturn,
+  title, cards, emptyText, onClose, actionLabel, onAction, onCardClick,
 }: {
   title: string
   cards: HandCard[]
   emptyText: string
   onClose: () => void
-  onReturn?: (key: string) => void
+  actionLabel?: string
+  onAction?: (key: string) => void
+  onCardClick: (key: string) => void
 }) {
   return (
     <div className={styles.gridBackdrop} style={{ zIndex: Z.popover }} onClick={onClose}>
@@ -799,11 +814,19 @@ function CardGridOverlay({
         ) : (
           <div className={styles.grid}>
             {cards.map(c => (
-              <div key={c.key} className={`${styles.card} ${styles.gridCard} ${c.kind === 'force' ? styles.forceCard : ''}`}>
+              <div
+                key={c.key}
+                className={`${styles.card} ${styles.gridCard} ${c.kind === 'force' ? styles.forceCard : ''}`}
+                onClick={() => onCardClick(c.key)}
+              >
                 <CardFace card={c} />
-                {onReturn && (
-                  <button type="button" className={styles.takeback} onClick={() => onReturn(c.key)}>
-                    ↑ Return to hand
+                {onAction && actionLabel && (
+                  <button
+                    type="button"
+                    className={styles.takeback}
+                    onClick={e => { e.stopPropagation(); onAction(c.key) }}
+                  >
+                    {actionLabel}
                   </button>
                 )}
               </div>
