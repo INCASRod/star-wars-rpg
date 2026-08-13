@@ -324,7 +324,7 @@ export function HandOverlay({
     () => [...activeTalentCards, ...forceCards, ...placedPassiveCards],
     [activeTalentCards, forceCards, placedPassiveCards],
   )
-  const focusTalentCard = focusTalentKey ? ownedCards.find(c => c.key === focusTalentKey) ?? null : null
+  const focusTalentCard = focusTalentKey ? (ownedCards.find(c => c.key === focusTalentKey) ?? allPassiveCards.find(c => c.key === focusTalentKey)) ?? null : null
   const discardedSet = useMemo(() => new Set(discardedKeys), [discardedKeys])
   const fanCards = useMemo(() => ownedCards.filter(c => !discardedSet.has(c.key)), [ownedCards, discardedSet])
   const discardedCards = useMemo(() => ownedCards.filter(c => discardedSet.has(c.key)), [ownedCards, discardedSet])
