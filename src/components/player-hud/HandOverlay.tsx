@@ -817,7 +817,21 @@ function CardGridOverlay({
               <div
                 key={c.key}
                 className={`${styles.card} ${styles.gridCard} ${c.kind === 'force' ? styles.forceCard : ''}`}
-                onClick={() => onCardClick(c.key)}
+                role="button"
+                tabIndex={0}
+                onClick={() => {
+                  // Ignore clicks that are actually the mouseup of a text
+                  // selection drag inside the card's description — .gridCard
+                  // deliberately keeps user-select: text.
+                  if (window.getSelection()?.toString()) return
+                  onCardClick(c.key)
+                }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    if (e.key === ' ') e.preventDefault()
+                    onCardClick(c.key)
+                  }
+                }}
               >
                 <CardFace card={c} />
                 {onAction && actionLabel && (

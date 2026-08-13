@@ -425,7 +425,7 @@
   bottom: auto;
   margin-left: 0;
   transform: none !important;
-  cursor: default;
+  cursor: pointer;
   user-select: text;
 }
 
