@@ -96,6 +96,21 @@ function AssignModal({ talent, characters, supabase, onClose, sendToChar }: Assi
   const [selectedId, setSelectedId] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [holders, setHolders] = useState<{ character_id: string }[]>([])
+  const [loadingHolders, setLoadingHolders] = useState(true)
+  const [removingId, setRemovingId] = useState<string | null>(null)
+
+  const loadHolders = useCallback(async () => {
+    setLoadingHolders(true)
+    const { data } = await supabase
+      .from('character_talents')
+      .select('character_id')
+      .eq('talent_key', talent.key)
+    setHolders((data as { character_id: string }[]) ?? [])
+    setLoadingHolders(false)
+  }, [supabase, talent.key])
+
+  useEffect(() => { loadHolders() }, [loadHolders])
 
   const handleAssign = async () => {
     if (!selectedId) return
@@ -118,32 +133,94 @@ function AssignModal({ talent, characters, supabase, onClose, sendToChar }: Assi
         message: `You received the talent: ${talent.name}!`,
       })
     }
+    setSelectedId('')
     setBusy(false)
-    onClose()
+    loadHolders()
   }
+
+  const handleRemove = async (characterId: string) => {
+    setRemovingId(characterId)
+    setError('')
+    const { error: err } = await supabase
+      .from('character_talents')
+      .delete()
+      .eq('character_id', characterId)
+      .eq('talent_key', talent.key)
+    if (err) {
+      setError(err.message)
+      setRemovingId(null)
+      return
+    }
+    if (sendToChar) {
+      sendToChar(characterId, {
+        type:    'dialog',
+        message: `The talent "${talent.name}" was removed from your sheet.`,
+      })
+    }
+    setHolders(prev => prev.filter(h => h.character_id !== characterId))
+    setRemovingId(null)
+  }
+
+  const assignableCharacters = characters.filter(c => !holders.some(h => h.character_id === c.id))
 
   return (
     <Modal open onClose={onClose} maxWidth={448}>
       <div style={{ padding: '1.5rem' }}>
         <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700, color: TEXT, marginBottom: '0.25rem' }}>
-          Assign: {talent.name}
+          Manage: {talent.name}
         </div>
         <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: DIM, marginBottom: '1.125rem' }}>
-          Select a character to receive this talent.
+          Assign this talent to a character, or remove it from a character who already has it.
+        </div>
+
+        {/* Currently holding */}
+        <div style={{ marginBottom: '1.125rem' }}>
+          <div style={fieldLabel}>Characters With This Talent</div>
+          {loadingHolders ? (
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: DIM, padding: '0.375rem 0' }}>Loading…</div>
+          ) : holders.length === 0 ? (
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: DIM, fontStyle: 'italic', padding: '0.375rem 0' }}>
+              No character currently has this talent.
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
+              {holders.map(h => {
+                const char = characters.find(c => c.id === h.character_id)
+                return (
+                  <div key={h.character_id} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    background: 'rgba(255,255,255,0.03)', border: `1px solid ${BORDER}`,
+                    borderRadius: RADIUS.sm, padding: '0.375rem 0.625rem',
+                  }}>
+                    <span style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT }}>
+                      {char?.name ?? h.character_id}
+                    </span>
+                    <button
+                      onClick={() => handleRemove(h.character_id)}
+                      disabled={removingId === h.character_id}
+                      style={{ ...actionBtn(RED), opacity: removingId === h.character_id ? 0.4 : 1 }}
+                    >
+                      {removingId === h.character_id ? 'Removing…' : '✕ Remove'}
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
 
         <div style={{ marginBottom: '1rem' }}>
-          <div style={fieldLabel}>Character</div>
+          <div style={fieldLabel}>Assign To</div>
           <select value={selectedId} onChange={e => setSelectedId(e.target.value)} style={{ ...darkInput, width: '100%' }}>
             <option value="">Select character…</option>
-            {characters.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            {assignableCharacters.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </div>
 
         {error && <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: RED, marginBottom: '0.5rem' }}>⚠ {error}</div>}
 
         <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-          <button onClick={onClose} style={btnSecondary}>Cancel</button>
+          <button onClick={onClose} style={btnSecondary}>Close</button>
           <button
             onClick={handleAssign}
             disabled={!selectedId || busy}
@@ -487,7 +564,7 @@ export function TalentDatabaseTab({ campaignId, supabase, characters = [], sendT
                   {!isDeleting ? (
                     <div style={{ display: 'flex', gap: '0.25rem', flexShrink: 0 }}>
                       {characters.length > 0 && (
-                        <button onClick={() => setAssigning(t)} style={actionBtn(GREEN)}>Assign</button>
+                        <button onClick={() => setAssigning(t)} style={actionBtn(GREEN)}>Manage</button>
                       )}
                       <button onClick={() => openEdit(t)} style={actionBtn(HUD.gold)}>✎ Edit</button>
                       <button onClick={() => setDeleteConfirm(t.key)} style={actionBtn(RED)}>✕</button>

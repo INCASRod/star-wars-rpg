@@ -446,7 +446,7 @@ export function MobileSessionCompanion({ characterId, campaignId }: MobileSessio
           character={character}
           onVitalChange={handleVitalChange}
           woundBonus={woundBonus}
-          encumbranceCurrent={encStats?.current}
+          encumbranceCurrent={encStats?.load}
           encumbranceThreshold={encStats?.threshold}
         />
       </BottomSheet>

@@ -1,25 +1,45 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { FONT_BODY, FONT_DISPLAY, RADIUS, FS, SP } from '@/lib/tokens'
+import { FONT_BODY, FONT_DISPLAY, FS, SP } from '@/lib/tokens'
 import { TickerText } from '@/components/ui/TickerText'
+import { ItemReadoutPlate } from '@/components/shared/ItemReadoutPlate'
 
 interface ItemDetailHeroProps {
   name:           string
   typeTag:        string      // e.g. "Ranged · Light"
-  icon:           string      // unicode fallback
-  iconUrl:        string | null  // Oggdude image for icon box
-  hardPoints:     number
-  hardPointsUsed: number
-  item_image_url: string | null  // GM-uploaded full-art banner
+  iconUrl:        string | null  // resolver output — always a real path (exact, donor, or fallback glyph), never null in practice
+  itemTable:      'weapon' | 'armor' | 'gear'
+  refKey:         string | null
+  categories?:    string[]
+  // GM-uploaded full-art banner. Per-character-instance override that
+  // OUTRANKS the resolver's iconUrl entirely when present and loads
+  // successfully — see the precedence note below.
+  item_image_url: string | null
 }
 
-export function ItemDetailHero({ name, typeTag, icon, iconUrl, hardPoints, hardPointsUsed, item_image_url }: ItemDetailHeroProps) {
-  const [iconErr, setIconErr] = useState(false)
-  useEffect(() => { setIconErr(false) }, [iconUrl])
-  if (item_image_url) {
+/**
+ * Prompt 3 rebuild (item-detail-panel-v3.html): the hero is now purely the
+ * art zone — REF designation + category tags live INSIDE it via
+ * ItemReadoutPlate's new 'hero' size variant, per the mockup's `.hero .ref`
+ * / `.hero .cat` overlay. Name, type tag, and status pills moved OUT into
+ * item-detail-panel.tsx's own identity block below the hero (the mockup's
+ * separate `.ident` section) — this component no longer renders them.
+ *
+ * Precedence: item_image_url (a per-character-instance GM upload) always
+ * wins over the resolver's iconUrl when it is set AND loads successfully.
+ * If it 404s/fails, `bannerErr` demotes it and this component falls through
+ * to the resolver's plate instead of a browser broken-image icon -- there
+ * is no third option, item_image_url is either the whole banner or it's
+ * treated as absent.
+ */
+export function ItemDetailHero({ name, typeTag, iconUrl, itemTable, refKey, categories, item_image_url }: ItemDetailHeroProps) {
+  const [bannerErr, setBannerErr] = useState(false)
+  useEffect(() => { setBannerErr(false) }, [item_image_url])
+
+  if (item_image_url && !bannerErr) {
     return (
-      <div style={{ position: 'relative', height: '5rem', flexShrink: 0, overflow: 'hidden' }}>
-        <img src={item_image_url} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      <div style={{ position: 'relative', height: '14.375rem', flexShrink: 0, overflow: 'hidden' }}>
+        <img src={item_image_url} alt={name} onError={() => setBannerErr(true)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         <div style={{
           position: 'absolute', inset: 0,
           background: 'linear-gradient(to top, color-mix(in srgb, black 75%, transparent) 0%, transparent 60%)',
@@ -28,9 +48,6 @@ export function ItemDetailHero({ name, typeTag, icon, iconUrl, hardPoints, hardP
           <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.overline, color: 'var(--hud-gold)', opacity: 0.6, letterSpacing: '0.1em' }}>
             <TickerText key={`tag-${name}`} text={typeTag} isOpen={true} />
           </div>
-          <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.h4, color: 'var(--hud-text)', fontWeight: 600 }}>
-            <TickerText key={`name-${name}`} text={name} isOpen={true} />
-          </div>
         </div>
       </div>
     )
@@ -38,46 +55,16 @@ export function ItemDetailHero({ name, typeTag, icon, iconUrl, hardPoints, hardP
 
   return (
     <div style={{
-      height: '5rem', flexShrink: 0,
-      display: 'flex', alignItems: 'center', gap: SP[3], padding: `0 ${SP[3]}`,
-      background: 'linear-gradient(110deg, var(--hud-surface-hi) 0%, color-mix(in srgb, var(--hud-surface-hi) 80%, color-mix(in srgb, var(--hud-accent) 10%, transparent)) 100%)',
+      position: 'relative', height: '14.375rem', flexShrink: 0,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
       borderBottom: '1px solid var(--hud-border)',
-      position: 'relative', overflow: 'hidden',
+      background:
+        'radial-gradient(ellipse at 50% 45%, color-mix(in srgb, var(--hud-gold) 10%, transparent), transparent 70%),' +
+        'linear-gradient(160deg, var(--hud-surface-hi), var(--hud-surface-lo))',
     }}>
-      {/* top-right corner bracket accent */}
-      <div style={{
-        /* decorative bracket — px intentional */ position: 'absolute', top: SP[1], right: SP[2], width: 14, height: 14,
-        borderTop: '1.5px solid var(--hud-gold)', borderRight: '1.5px solid var(--hud-gold)',
-        opacity: 0.35, pointerEvents: 'none',
-      }} />
-      {/* icon box */}
-      <div style={{
-        width: '3.625rem', height: '3.625rem', flexShrink: 0,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        border: '1px solid var(--hud-gold)', borderRadius: RADIUS.md,
-        background: 'radial-gradient(ellipse at 50% 60%, color-mix(in srgb, var(--hud-accent) 20%, transparent) 0%, transparent 70%)',
-        overflow: 'hidden',
-      }}>
-        {iconUrl && !iconErr
-          ? <img src={iconUrl} alt="" style={{ width: '2.75rem', height: '2.75rem', objectFit: 'contain', opacity: 0.9 }} onError={() => setIconErr(true)} />
-          : <span style={{ /* emoji fallback — raw px required, FS tokens are CSS var strings not valid here */ fontSize: 28, color: 'var(--hud-gold)', fontFamily: FONT_BODY }}>{icon}</span>
-        }
-      </div>
-      {/* text stack */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: SP[1], minWidth: 0, flex: 1 }}>
-        <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS.overline, letterSpacing: '0.1em', color: 'var(--hud-gold)', opacity: 0.6 }}>
-          <TickerText key={`tag-${name}`} text={typeTag} isOpen={true} />
-        </div>
-        <div style={{
-          fontFamily: FONT_DISPLAY, fontSize: FS.h4, color: 'var(--hud-text)', fontWeight: 600,
-          lineHeight: 1.15, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-        }}>
-          <TickerText key={`name-${name}`} text={name} isOpen={true} />
-        </div>
-        {hardPoints > 0 && (
-          <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)' }}>
-            Hard Points {hardPointsUsed} / {hardPoints} used
-          </div>
+      <div style={{ position: 'absolute', inset: SP[2] }}>
+        {iconUrl && (
+          <ItemReadoutPlate iconUrl={iconUrl} table={itemTable} refKey={refKey} categories={categories} alt={name} size="hero" />
         )}
       </div>
     </div>

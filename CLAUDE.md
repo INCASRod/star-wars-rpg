@@ -7,6 +7,19 @@ Always read these items before doing any work.
 
 After reading docs/architecture.md, keep it up to date. If any task adds, removes, or renames a route, hook, table, component, or utility file, update docs/architecture.md to reflect the change before closing the task.
 
+## Browser Verification (Playwright)
+
+Playwright IS available in this environment via `npx`, not as an MCP tool — ToolSearch will not find it, and its absence there does not mean no browser tool exists. Use it directly for visual/rendering verification instead of concluding none is available.
+
+It runs from an npx cache dir, not a project dependency, so plain `node script.js` can't resolve `require('playwright')`. Find the cache path once per session and pass it via `NODE_PATH`:
+
+```
+find "$LOCALAPPDATA/npm-cache/_npx" -maxdepth 3 -iname "playwright" 2>/dev/null
+NODE_PATH="<that path>/node_modules" node script.js
+```
+
+Write the script to `scratch/`, screenshot into `scratch/`, and delete both when done — don't leave verification artifacts in the tree.
+
 ---
 
 ## Dataset Architecture

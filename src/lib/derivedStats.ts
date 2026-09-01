@@ -181,68 +181,217 @@ export interface DerivedStatsResult {
 
 // ── Encumbrance ──────────────────────────────────────────────────────────────
 
+/**
+ * Machine-readable reason a per-item cost/gain was suppressed by the worn-
+ * rules exclusivity checks (Prompt 2, Task 3). Display copy is composed by
+ * the UI from this enum — never stored as text here.
+ */
+export type EncumbranceSuppressReason =
+  | 'anchor_occupied_armor'    // a 2nd+ equipped armor suit on the same worn_anchor: pays full enc, no −3 reduction
+  | 'anchor_occupied_capacity' // a 2nd+ equipped bonus item on the same worn_anchor: grants +0 threshold
+
+export interface EncumbranceItemResult {
+  /** Encumbrance this item actually contributes to load (0 if stowed). */
+  cost: number
+  /** Threshold bonus this item actually grants (0 if none, not equipped, or suppressed). */
+  gain: number
+  reason: EncumbranceSuppressReason | null
+  suppressed: boolean
+}
+
+export interface EncumbranceSource {
+  id: string
+  label: string
+  /** For a suppressed capacity source, the bonus that was DENIED (not counted in wornCapacity).
+   *  For a suppressed load source, the full (undiscounted) cost actually charged. */
+  value: number
+  reason: EncumbranceSuppressReason | null
+  suppressed: boolean
+  /** Which character_* table this item's id belongs to — lets a UI re-run
+   *  the simulation for exactly this item without a separate lookup. */
+  type: 'weapon' | 'armor' | 'gear'
+}
+
 export interface EncumbranceStats {
-  /** Total encumbrance from all carried/equipped items */
-  current: number
-  /** 5 + brawn base + storage container bonuses */
+  /** 5 + Brawn */
+  base: number
+  /** Sum of granted (non-suppressed) encumbrance_bonus from equipped items */
+  wornCapacity: number
+  /** Sum of encumbrance actually contributed by carried/equipped items */
+  load: number
+  /** base + wornCapacity */
   threshold: number
+  /** threshold + Brawn — encumbered by >= Brawn loses the free maneuver (RAW) */
+  cliff: number
+  /** Per-item result keyed by character_{weapons,armor,gear}.id */
+  perItem: Record<string, EncumbranceItemResult>
+  /** One entry per equipped item with a ref encumbrance_bonus, granted or suppressed */
+  capacitySources: EncumbranceSource[]
+  /** One entry per item contributing load (carried or equipped, cost > 0) */
+  loadSources: EncumbranceSource[]
+}
+
+function itemState(x: { equip_state?: string; is_equipped: boolean }): string {
+  return x.equip_state ?? (x.is_equipped ? 'equipped' : 'carrying')
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function isDropped(x: any): boolean {
+  return !!x?.is_dropped
+}
+
+/** Deterministic "first" within an anchor group — by item id (no equipped-at
+ *  timestamp exists in the schema; ordering by id keeps the ledger stable
+ *  across re-renders instead of flickering on array order). */
+function sortById<T extends { id: string }>(items: T[]): T[] {
+  return items.slice().sort((a, b) => a.id.localeCompare(b.id))
 }
 
 /**
- * Compute encumbrance current + threshold for a character.
- * Rules:
- *   - Stowed items contribute 0 enc
- *   - Equipped armor reduces its enc by 3 (min 0) — wearing bonus
- *   - Storage containers (ref_gear.encumbrance_bonus) increase threshold
- *   - Worn armor (ref_armor.encumbrance_bonus) increases threshold
+ * Compute encumbrance load/threshold/cliff for a character, with the two
+ * worn-rules exclusivity checks (Prompt 2, Task 3):
+ *   Rule A — equipped armor reduces its OWN encumbrance by 3 (floor 0), but
+ *            only the first equipped suit per worn_anchor; a 2nd on the same
+ *            anchor pays full cost (reason 'anchor_occupied_armor'). Armor
+ *            with no worn_anchor always gets the reduction, no exclusivity.
+ *   Rule B — encumbrance_bonus counts only when equipped AND first on its
+ *            worn_anchor; duplicates grant +0 (reason 'anchor_occupied_capacity')
+ *            and still cost their own encumbrance. Bonus items with no
+ *            worn_anchor always count, no exclusivity.
+ * Both rules WARN, never block — the item stays equipped either way.
+ * Pure: no Supabase calls, no React, no hooks.
  */
 export function computeEncumbranceStats(
-  character: Pick<Character, 'encumbrance_threshold'>,
+  character: Pick<Character, 'brawn'>,
   armor:   CharacterArmor[],
-  refArmorMap:  Record<string, Pick<RefArmor, 'encumbrance' | 'encumbrance_bonus'>>,
+  refArmorMap:  Record<string, Pick<RefArmor, 'name' | 'encumbrance' | 'encumbrance_bonus' | 'worn_anchor'>>,
   gear:    CharacterGear[],
-  refGearMap:   Record<string, Pick<RefGear, 'encumbrance' | 'encumbrance_bonus'>>,
+  refGearMap:   Record<string, Pick<RefGear, 'name' | 'encumbrance' | 'encumbrance_bonus' | 'worn_anchor'>>,
   weapons: CharacterWeapon[],
-  refWeaponMap: Record<string, Pick<RefWeapon, 'encumbrance'>>,
+  refWeaponMap: Record<string, Pick<RefWeapon, 'name' | 'encumbrance'>>,
 ): EncumbranceStats {
-  let current = 0
-  for (const a of armor) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((a as any).is_dropped) continue
-    const state = a.equip_state ?? (a.is_equipped ? 'equipped' : 'carrying')
-    if (state === 'stowed') continue
-    const enc = refArmorMap[a.armor_key]?.encumbrance || 0
-    current += state === 'equipped' ? Math.max(0, enc - 3) : enc
+  const perItem: Record<string, EncumbranceItemResult> = {}
+  const capacitySources: EncumbranceSource[] = []
+  const loadSources: EncumbranceSource[] = []
+
+  const liveArmor = armor.filter(a => !isDropped(a))
+  const liveGear  = gear.filter(g => !isDropped(g))
+  const liveWeapons = weapons.filter(w => !isDropped(w))
+
+  // ── Rule A: first equipped armor suit per worn_anchor gets the −3 reduction ──
+  const equippedArmorByAnchor = new Map<string, CharacterArmor[]>()
+  for (const a of liveArmor) {
+    if (itemState(a) !== 'equipped') continue
+    const anchor = refArmorMap[a.armor_key]?.worn_anchor
+    if (!anchor) continue
+    equippedArmorByAnchor.set(anchor, [...(equippedArmorByAnchor.get(anchor) ?? []), a])
   }
-  for (const g of gear) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((g as any).is_dropped) continue
-    const state = g.equip_state ?? (g.is_equipped ? 'equipped' : 'carrying')
-    if (state === 'stowed') continue
-    current += (refGearMap[g.gear_key]?.encumbrance || 0) * (g.quantity || 1)
+  const armorReductionWinnerIds = new Set<string>()
+  for (const group of equippedArmorByAnchor.values()) {
+    armorReductionWinnerIds.add(sortById(group)[0].id)
   }
-  for (const w of weapons) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((w as any).is_dropped) continue
-    const state = w.equip_state ?? (w.is_equipped ? 'equipped' : 'carrying')
-    if (state === 'stowed') continue
-    current += refWeaponMap[w.weapon_key]?.encumbrance || 0
-  }
-  const gearBonus = gear.reduce((s, g) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((g as any).is_dropped) return s
-    const state = g.equip_state ?? (g.is_equipped ? 'equipped' : 'carrying')
-    const ref = refGearMap[g.gear_key]
-    return s + (state === 'equipped' && ref?.encumbrance_bonus ? ref.encumbrance_bonus : 0)
-  }, 0)
-  const armorBonus = armor.reduce((s, a) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((a as any).is_dropped) return s
-    const state = a.equip_state ?? (a.is_equipped ? 'equipped' : 'carrying')
+
+  // ── Rule B: first equipped bonus item per worn_anchor grants its bonus ──
+  type BonusCarrier = { id: string; anchor: string }
+  const equippedBonusByAnchor = new Map<string, BonusCarrier[]>()
+  for (const a of liveArmor) {
+    if (itemState(a) !== 'equipped') continue
     const ref = refArmorMap[a.armor_key]
-    return s + (state === 'equipped' && ref?.encumbrance_bonus ? ref.encumbrance_bonus : 0)
-  }, 0)
-  return { current, threshold: character.encumbrance_threshold + gearBonus + armorBonus }
+    if (!ref?.encumbrance_bonus || !ref.worn_anchor) continue
+    equippedBonusByAnchor.set(ref.worn_anchor, [...(equippedBonusByAnchor.get(ref.worn_anchor) ?? []), { id: a.id, anchor: ref.worn_anchor }])
+  }
+  for (const g of liveGear) {
+    if (itemState(g) !== 'equipped') continue
+    const ref = refGearMap[g.gear_key]
+    if (!ref?.encumbrance_bonus || !ref.worn_anchor) continue
+    equippedBonusByAnchor.set(ref.worn_anchor, [...(equippedBonusByAnchor.get(ref.worn_anchor) ?? []), { id: g.id, anchor: ref.worn_anchor }])
+  }
+  const bonusWinnerIds = new Set<string>()
+  for (const group of equippedBonusByAnchor.values()) {
+    bonusWinnerIds.add(sortById(group)[0].id)
+  }
+
+  let load = 0
+  let wornCapacity = 0
+
+  for (const a of liveArmor) {
+    const state = itemState(a)
+    const ref = refArmorMap[a.armor_key]
+    const enc = ref?.encumbrance || 0
+    const label = a.custom_name || ref?.name || a.armor_key
+
+    let cost = 0
+    let costReason: EncumbranceSuppressReason | null = null
+    if (state !== 'stowed') {
+      if (state === 'equipped') {
+        const anchor = ref?.worn_anchor
+        const getsReduction = !anchor || armorReductionWinnerIds.has(a.id)
+        cost = getsReduction ? Math.max(0, enc - 3) : enc
+        if (anchor && !getsReduction) costReason = 'anchor_occupied_armor'
+      } else {
+        cost = enc
+      }
+      load += cost
+      loadSources.push({ id: a.id, label, value: cost, reason: costReason, suppressed: costReason !== null, type: 'armor' })
+    }
+
+    let gain = 0
+    let gainReason: EncumbranceSuppressReason | null = null
+    if (state === 'equipped' && ref?.encumbrance_bonus) {
+      const winner = !ref.worn_anchor || bonusWinnerIds.has(a.id)
+      gain = winner ? ref.encumbrance_bonus : 0
+      if (!winner) gainReason = 'anchor_occupied_capacity'
+      wornCapacity += gain
+      capacitySources.push({ id: a.id, label, value: winner ? gain : ref.encumbrance_bonus, reason: gainReason, suppressed: !winner, type: 'armor' })
+    }
+
+    perItem[a.id] = { cost, gain, reason: costReason ?? gainReason, suppressed: costReason !== null || gainReason !== null }
+  }
+
+  for (const g of liveGear) {
+    const state = itemState(g)
+    const ref = refGearMap[g.gear_key]
+    const enc = (ref?.encumbrance || 0) * (g.quantity || 1)
+    const label = g.custom_name || ref?.name || g.gear_key
+
+    let cost = 0
+    if (state !== 'stowed') {
+      cost = enc
+      load += cost
+      loadSources.push({ id: g.id, label, value: cost, reason: null, suppressed: false, type: 'gear' })
+    }
+
+    let gain = 0
+    let gainReason: EncumbranceSuppressReason | null = null
+    if (state === 'equipped' && ref?.encumbrance_bonus) {
+      const winner = !ref.worn_anchor || bonusWinnerIds.has(g.id)
+      gain = winner ? ref.encumbrance_bonus : 0
+      if (!winner) gainReason = 'anchor_occupied_capacity'
+      wornCapacity += gain
+      capacitySources.push({ id: g.id, label, value: winner ? gain : ref.encumbrance_bonus, reason: gainReason, suppressed: !winner, type: 'gear' })
+    }
+
+    perItem[g.id] = { cost, gain, reason: gainReason, suppressed: gainReason !== null }
+  }
+
+  for (const w of liveWeapons) {
+    const state = itemState(w)
+    const ref = refWeaponMap[w.weapon_key]
+    const label = w.custom_name || ref?.name || w.weapon_key
+    let cost = 0
+    if (state !== 'stowed') {
+      cost = ref?.encumbrance || 0
+      load += cost
+      loadSources.push({ id: w.id, label, value: cost, reason: null, suppressed: false, type: 'weapon' })
+    }
+    perItem[w.id] = { cost, gain: 0, reason: null, suppressed: false }
+  }
+
+  const base = 5 + character.brawn
+  const threshold = base + wornCapacity
+  const cliff = threshold + character.brawn
+
+  return { base, wornCapacity, load, threshold, cliff, perItem, capacitySources, loadSources }
 }
 
 // ── Engine ───────────────────────────────────────────────────────────────────

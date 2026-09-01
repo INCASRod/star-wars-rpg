@@ -4,6 +4,8 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { Modal } from '@/components/ui/Modal'
 import { RichText } from '@/components/ui/RichText'
 import { QualityBadge } from '@/components/character/QualityBadge'
+import { ItemReadoutPlate } from '@/components/shared/ItemReadoutPlate'
+import { useItemIconContext } from '@/hooks/useItemIconContext'
 import type { UseQuartermasterReturn } from '@/hooks/useQuartermaster'
 import type { QmBuyRow, RefWeaponQuality } from '@/lib/types'
 import { HUD, FONT_BODY, FONT_DISPLAY, FS, SP, RADIUS, EASE, Z, SHADOW } from '@/lib/tokens'
@@ -35,6 +37,7 @@ interface SellRow {
   name:     string
   encumbrance: number
   marketValue: number
+  categories?: string[]
 }
 
 interface CharacterInfo {
@@ -68,6 +71,7 @@ export function QuartermasterModal({ campaignId, characterName, characterId, sup
   const [selling,       setSelling]       = useState<string | null>(null)
   const [viewingRow,    setViewingRow]    = useState<QmBuyRow | null>(null)
   const [refQualityMap, setRefQualityMap] = useState<Record<string, RefWeaponQuality>>({})
+  const { resolveIcon } = useItemIconContext(supabase, campaignId)
 
   // ── Load active character for this campaign session ─────────────────────────
   const loadCharacter = useCallback(async () => {
@@ -106,7 +110,7 @@ export function QuartermasterModal({ campaignId, characterName, characterId, sup
     type WInv = { id: string; weapon_key: string }
     type AInv = { id: string; armor_key: string }
     type GInv = { id: string; gear_key: string }
-    type Ref  = { key: string; name: string; encumbrance: number; price: number }
+    type Ref  = { key: string; name: string; encumbrance: number; price: number; categories: string[] | null }
 
     const [wRes, aRes, gRes] = await Promise.all([
       supabase.from('character_weapons').select('id,weapon_key').eq('character_id', charId).eq('is_dropped', false),
@@ -123,9 +127,9 @@ export function QuartermasterModal({ campaignId, characterName, characterId, sup
     const gearKeys   = gInv.map(r => r.gear_key)
 
     const [rwRes, raRes, rgRes] = await Promise.all([
-      weaponKeys.length ? supabase.from('ref_weapons').select('key,name,encumbrance,price').in('key', weaponKeys) : Promise.resolve({ data: [] }),
-      armorKeys.length  ? supabase.from('ref_armor').select('key,name,encumbrance,price').in('key', armorKeys)   : Promise.resolve({ data: [] }),
-      gearKeys.length   ? supabase.from('ref_gear').select('key,name,encumbrance,price').in('key', gearKeys)     : Promise.resolve({ data: [] }),
+      weaponKeys.length ? supabase.from('ref_weapons').select('key,name,encumbrance,price,categories').in('key', weaponKeys) : Promise.resolve({ data: [] }),
+      armorKeys.length  ? supabase.from('ref_armor').select('key,name,encumbrance,price,categories').in('key', armorKeys)   : Promise.resolve({ data: [] }),
+      gearKeys.length   ? supabase.from('ref_gear').select('key,name,encumbrance,price,categories').in('key', gearKeys)     : Promise.resolve({ data: [] }),
     ])
 
     const rwMap = Object.fromEntries(((rwRes.data ?? []) as Ref[]).map(r => [r.key, r]))
@@ -135,15 +139,15 @@ export function QuartermasterModal({ campaignId, characterName, characterId, sup
     const rows: SellRow[] = [
       ...wInv.flatMap(r => {
         const ref = rwMap[r.weapon_key]
-        return ref ? [{ rowId: r.id, rowTable: 'character_weapons' as const, itemKey: r.weapon_key, itemType: 'weapon' as const, name: ref.name, encumbrance: ref.encumbrance, marketValue: ref.price }] : []
+        return ref ? [{ rowId: r.id, rowTable: 'character_weapons' as const, itemKey: r.weapon_key, itemType: 'weapon' as const, name: ref.name, encumbrance: ref.encumbrance, marketValue: ref.price, categories: ref.categories ?? undefined }] : []
       }),
       ...aInv.flatMap(r => {
         const ref = raMap[r.armor_key]
-        return ref ? [{ rowId: r.id, rowTable: 'character_armor' as const, itemKey: r.armor_key, itemType: 'armor' as const, name: ref.name, encumbrance: ref.encumbrance, marketValue: ref.price }] : []
+        return ref ? [{ rowId: r.id, rowTable: 'character_armor' as const, itemKey: r.armor_key, itemType: 'armor' as const, name: ref.name, encumbrance: ref.encumbrance, marketValue: ref.price, categories: ref.categories ?? undefined }] : []
       }),
       ...gInv.flatMap(r => {
         const ref = rgMap[r.gear_key]
-        return ref ? [{ rowId: r.id, rowTable: 'character_gear' as const, itemKey: r.gear_key, itemType: 'gear' as const, name: ref.name, encumbrance: ref.encumbrance, marketValue: ref.price }] : []
+        return ref ? [{ rowId: r.id, rowTable: 'character_gear' as const, itemKey: r.gear_key, itemType: 'gear' as const, name: ref.name, encumbrance: ref.encumbrance, marketValue: ref.price, categories: ref.categories ?? undefined }] : []
       }),
     ]
     setSellRows(rows)
@@ -347,9 +351,10 @@ export function QuartermasterModal({ campaignId, characterName, characterId, sup
                             borderRadius: RADIUS.sm,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                           }}>
-                            <span style={{ fontSize: FS.h4, color: HUD.textDim, fontFamily: FONT_BODY, lineHeight: 1 }}>
-                              {groupType === 'weapon' ? '⚔' : groupType === 'armor' ? '◈' : '◆'}
-                            </span>
+                            {(() => {
+                              const res = resolveIcon(groupType, r.qmItem.item_key, r.categories)
+                              return res && <ItemReadoutPlate iconUrl={res.path} table={groupType} alt={r.name} size="row" />
+                            })()}
                           </div>
 
                           {/* Info */}
@@ -466,9 +471,10 @@ export function QuartermasterModal({ campaignId, characterName, characterId, sup
                       borderRadius: RADIUS.sm,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
-                      <span style={{ fontSize: FS.h4, color: HUD.textDim, fontFamily: FONT_BODY, lineHeight: 1 }}>
-                        {row.itemType === 'weapon' ? '⚔' : row.itemType === 'armor' ? '◈' : '◆'}
-                      </span>
+                      {(() => {
+                        const res = resolveIcon(row.itemType, row.itemKey, row.categories)
+                        return res && <ItemReadoutPlate iconUrl={res.path} table={row.itemType} alt={row.name} size="row" />
+                      })()}
                     </div>
 
                     {/* Info */}

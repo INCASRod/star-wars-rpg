@@ -139,7 +139,7 @@ export function MobileHudLayout({ characterId, campaignId }: MobileHudLayoutProp
   const encStats = character
     ? computeEncumbranceStats(character, armor, refArmorMap, gear, refGearMap, weapons, refWeaponMap)
     : null
-  const encumbranceWarning = !!encStats && encStats.current >= encStats.threshold * 0.9
+  const encumbranceWarning = !!encStats && encStats.load >= encStats.threshold * 0.9
 
   const [runnerTab, setRunnerTab] = useState<RunnerTab>('feed')
   const [navTab, setNavTab]       = useState<NavTab | null>(null)
@@ -228,7 +228,7 @@ export function MobileHudLayout({ characterId, campaignId }: MobileHudLayoutProp
               hudWeapons={hudWeapons}
               hudArmor={hudArmor}
               hudGear={hudGear}
-              encCurrent={encStats?.current ?? 0}
+              encCurrent={encStats?.load ?? 0}
               encThreshold={encStats?.threshold ?? 0}
               credits={char.credits ?? 0}
               campaignId={effectiveCampaignId ?? ''}
@@ -379,7 +379,7 @@ export function MobileHudLayout({ characterId, campaignId }: MobileHudLayoutProp
           <WoundsStrainOverlay
             character={char}
             onVitalChange={handleVitalChange}
-            encumbranceCurrent={encStats?.current}
+            encumbranceCurrent={encStats?.load}
             encumbranceThreshold={encStats?.threshold}
           />
         </BottomSheet>

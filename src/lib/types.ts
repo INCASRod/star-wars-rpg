@@ -159,6 +159,11 @@ export interface RefWeapon {
   key: string
   name: string
   description?: string
+  // Mechanical/flavour split of `description` (migration 124) — nullable,
+  // effect_text NULL means "no effect statement" (a valid state, never
+  // guessed), not "not yet backfilled".
+  effect_text?: string | null
+  lore_text?: string | null
   skill_key: string
   damage: number
   damage_add?: number
@@ -182,6 +187,8 @@ export interface RefArmor {
   key: string
   name: string
   description?: string
+  effect_text?: string | null
+  lore_text?: string | null
   defense: number
   soak: number
   encumbrance: number
@@ -194,6 +201,13 @@ export interface RefArmor {
   defense_ranged?: number
   // Encumbrance threshold bonus when equipped (migration 086)
   encumbrance_bonus?: number | null
+  // Category tags backfilled from Armor.xml's <Categories> (migration 122)
+  categories?: string[]
+  // Catalogue-level body anchor for the worn-rules exclusivity checks in
+  // computeEncumbranceStats() (migration 125). Populated only for the 8
+  // encumbrance_bonus > 0 armor rows — null elsewhere, meaning no exclusivity
+  // check applies to that row.
+  worn_anchor?: string | null
 }
 
 // One element in a ref_item_attachments.base_mods / added_mods array
@@ -240,10 +254,31 @@ export interface RefGear {
   key: string
   name: string
   description?: string
+  effect_text?: string | null
+  lore_text?: string | null
   encumbrance: number
   price: number
   rarity: number
   encumbrance_bonus?: number | null
+  // Category tag backfilled from Gear.xml's <Type> (migration 122)
+  categories?: string[]
+  // Catalogue-level body anchor for the worn-rules exclusivity checks in
+  // computeEncumbranceStats() (migration 125). Populated only for the 10
+  // encumbrance_bonus > 0 gear rows — null elsewhere, meaning no exclusivity
+  // check applies to that row.
+  worn_anchor?: string | null
+}
+
+// Campaign-scoped GM-pinned catalogue image (migration 123) — feeds
+// itemIconResolver's override rung.
+export interface ItemIconOverride {
+  id:          string
+  campaign_id: string
+  item_table:  'weapon' | 'armor' | 'gear'
+  item_key:    string
+  image_key:   string
+  set_by:      string | null
+  created_at:  string
 }
 
 export interface RefMorality {
@@ -700,10 +735,14 @@ export interface WpnDisplay {
   equipState:    EquipState
   skillName:     string
   description?:  string | null
+  effectText?:   string | null
+  loreText?:     string | null
   stowLocation?: StowLocation | null
   condition:      ItemCondition
   item_image_url: string | null
   iconUrl:        string | null
+  refKey:         string | null
+  categories?:    string[]
 }
 
 export interface ArmDisplay {
@@ -716,10 +755,14 @@ export interface ArmDisplay {
   rarity:        number
   equipState:    EquipState
   description?:  string | null
+  effectText?:   string | null
+  loreText?:     string | null
   stowLocation?: StowLocation | null
   condition:      ItemCondition
   item_image_url: string | null
   iconUrl:        string | null
+  refKey:         string | null
+  categories?:    string[]
 }
 
 export interface GearRow {
@@ -729,10 +772,14 @@ export interface GearRow {
   enc:           number
   equipState:    EquipState
   description?:  string | null
+  effectText?:   string | null
+  loreText?:     string | null
   stowLocation?: StowLocation | null
   condition:      ItemCondition
   item_image_url: string | null
   iconUrl:        string | null
+  refKey:         string | null
+  categories?:    string[]
 }
 
 export type ItemCondition =
@@ -785,5 +832,6 @@ export interface QmBuyRow {
   defense?: number
   // Armor/Gear — encumbrance threshold bonus when equipped
   encumbrance_bonus?: number | null
+  categories?: string[]
 }
 

@@ -5,6 +5,8 @@ import type { WpnDisplay, ArmDisplay, GearRow, StowLocation } from '@/lib/types'
 import { MobileBottomSheet } from '@/components/mobile/MobileBottomSheet'
 import { MobileStowLocationSheet } from '@/components/mobile/MobileStowLocationSheet'
 import { RichText } from '@/components/ui/RichText'
+import { ItemReadoutPlate } from '@/components/shared/ItemReadoutPlate'
+import type { ItemTable } from '@/lib/itemIconResolver'
 
 // ─── Sealed colour exception ──────────────────────────────────────
 const DANGER_COLOR = '#E85A2A'  /* wounds/danger — sealed exception */
@@ -51,19 +53,25 @@ function SectionHeader({ title, count }: { title: string; count: number }) {
   )
 }
 
-function ItemRow({ label, subLabel, onClick }: { label: string; subLabel: string; onClick: () => void }) {
+function ItemRow({ label, subLabel, onClick, iconUrl, table }: { label: string; subLabel: string; onClick: () => void; iconUrl?: string | null; table?: ItemTable }) {
   return (
     <button onClick={onClick} style={{
-      display: 'flex', flexDirection: 'column', gap: '2px',  /* compact row — below SP[1] floor */
+      display: 'flex', alignItems: 'center', gap: SP[2],
       width: '100%', textAlign: 'left',
       padding: `${SP[1]} ${SP[2]}`,
       background: 'transparent', border: 'none',
       borderBottom: `1px solid var(--hud-border)`,
       cursor: 'pointer', minHeight: 44,  /* WCAG minimum */
-      justifyContent: 'center',
     }}>
-      <span style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.text }}>{label}</span>
-      <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint, letterSpacing: '0.06em' }}>{subLabel}</span>
+      {iconUrl && table && (
+        <div style={{ width: '1.75rem', height: '1.75rem', flexShrink: 0 }}>
+          <ItemReadoutPlate iconUrl={iconUrl} table={table} alt={label} size="row" />
+        </div>
+      )}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 /* compact row — below SP[1] floor */ }}>
+        <span style={{ fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.text }}>{label}</span>
+        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint, letterSpacing: '0.06em' }}>{subLabel}</span>
+      </div>
     </button>
   )
 }
@@ -383,6 +391,8 @@ export function MobileItemsScreen({
               key={w.id}
               label={w.name}
               subLabel={subLabel}
+              iconUrl={w.iconUrl}
+              table="weapon"
               onClick={() => setDetail({ kind: 'weapon', data: w })}
             />
           )
@@ -397,6 +407,8 @@ export function MobileItemsScreen({
               key={a.id}
               label={a.name}
               subLabel={subLabel}
+              iconUrl={a.iconUrl}
+              table="armor"
               onClick={() => setDetail({ kind: 'armor', data: a })}
             />
           )
@@ -411,6 +423,8 @@ export function MobileItemsScreen({
               key={g.id}
               label={g.name}
               subLabel={subLabel}
+              iconUrl={g.iconUrl}
+              table="gear"
               onClick={() => setDetail({ kind: 'gear', data: g })}
             />
           )

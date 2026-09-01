@@ -13,6 +13,9 @@ import { HUD, FONT_BODY, EASE, FS, RADIUS, SP, Z, SHADOW } from '@/lib/tokens'
 import { useQuartermaster } from '@/hooks/useQuartermaster'
 import type { QuartermasterItem } from '@/lib/types'
 import { NumberField } from '@/components/ui/NumberField'
+import { ItemReadoutPlate } from '@/components/shared/ItemReadoutPlate'
+import { IconPicker } from '@/components/shared/IconPicker'
+import { useItemIconContext } from '@/hooks/useItemIconContext'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 const GOLD_DIM  = 'rgba(200,170,80,0.5)'
@@ -113,6 +116,9 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
 
   // ── Quartermaster ──
   const { qm, toggleOpen, upsertItem, getQmEntry } = useQuartermaster(supabase, campaignId)
+  const { resolveIcon, catalogEntries, refetch: refetchIconOverrides } = useItemIconContext(supabase, campaignId)
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const [pickerBusy, setPickerBusy] = useState(false)
   const [qmPopoverItem, setQmPopoverItem] = useState<DbItem | null>(null)
   const [qmStockDraft,  setQmStockDraft]  = useState(1)
   const [qmPriceDraft,  setQmPriceDraft]  = useState(0)
@@ -138,11 +144,11 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
     }
 
     const queries = [
-      applyScope(supabase.from('ref_weapons').select('key,name,price,rarity,encumbrance,skill_key,damage,damage_add,crit,range_value,hard_points,qualities,description,is_custom,custom_notes,campaign_id'))
+      applyScope(supabase.from('ref_weapons').select('key,name,price,rarity,encumbrance,skill_key,damage,damage_add,crit,range_value,hard_points,qualities,description,is_custom,custom_notes,campaign_id,categories'))
         .then((r: { data: unknown[] | null }) => (r.data || []).map((d) => ({ ...(d as Record<string, unknown>), type: 'weapon', _table: 'ref_weapons' as const }))),
-      applyScope(supabase.from('ref_armor').select('key,name,price,rarity,encumbrance,encumbrance_bonus,defense,soak,soak_bonus,description,is_custom,custom_notes,campaign_id'))
+      applyScope(supabase.from('ref_armor').select('key,name,price,rarity,encumbrance,encumbrance_bonus,defense,soak,soak_bonus,description,is_custom,custom_notes,campaign_id,categories'))
         .then((r: { data: unknown[] | null }) => (r.data || []).map((d) => ({ ...(d as Record<string, unknown>), type: 'armor', _table: 'ref_armor' as const }))),
-      applyScope(supabase.from('ref_gear').select('key,name,price,rarity,encumbrance,encumbrance_bonus,description,is_custom,custom_notes,campaign_id'))
+      applyScope(supabase.from('ref_gear').select('key,name,price,rarity,encumbrance,encumbrance_bonus,description,is_custom,custom_notes,campaign_id,categories'))
         .then((r: { data: unknown[] | null }) => (r.data || []).map((d) => ({ ...(d as Record<string, unknown>), type: 'gear', _table: 'ref_gear' as const }))),
     ]
 
@@ -166,6 +172,34 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
         setRefQualityMap(map)
       })
   }, [supabase])
+
+  // ── Icon override write/reset — campaign-scoped, only affects the viewed item ──
+  const handlePickIcon = async (imageKey: string) => {
+    if (!campaignId || !viewingItem) return
+    setPickerBusy(true)
+    const table = viewingItem.type
+    await supabase.from('item_icon_overrides')
+      .upsert(
+        { campaign_id: campaignId, item_table: table, item_key: viewingItem.key, image_key: imageKey },
+        { onConflict: 'campaign_id,item_table,item_key' },
+      )
+    await refetchIconOverrides()
+    setPickerBusy(false)
+    setPickerOpen(false)
+  }
+
+  const handleResetIcon = async () => {
+    if (!campaignId || !viewingItem) return
+    setPickerBusy(true)
+    await supabase.from('item_icon_overrides')
+      .delete()
+      .eq('campaign_id', campaignId)
+      .eq('item_table', viewingItem.type)
+      .eq('item_key', viewingItem.key)
+    await refetchIconOverrides()
+    setPickerBusy(false)
+    setPickerOpen(false)
+  }
 
   // ── Client-side filter — instant, no DB round-trip ──
   const items = useMemo(() => {
@@ -620,9 +654,19 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
                     </div>
                   </div>
 
-                  {/* Name */}
-                  <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT, fontWeight: 600, lineHeight: 1.2 }}>
-                    {item.name}
+                  {/* Name + thumbnail */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    {(() => {
+                      const res = resolveIcon(item.type, item.key, item.categories)
+                      return res && (
+                        <div style={{ width: '1.5rem', height: '1.5rem', flexShrink: 0 }}>
+                          <ItemReadoutPlate iconUrl={res.path} table={item.type} alt={item.name} size="row" />
+                        </div>
+                      )
+                    })()}
+                    <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: TEXT, fontWeight: 600, lineHeight: 1.2, minWidth: 0 }}>
+                      {item.name}
+                    </div>
                   </div>
 
                   {/* Stats */}
@@ -648,6 +692,16 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
                     borderRadius: RADIUS.sm,
                   }}
                 >
+                  {/* Thumbnail */}
+                  {(() => {
+                    const res = resolveIcon(item.type, item.key, item.categories)
+                    return res && (
+                      <div style={{ width: '1.25rem', height: '1.25rem', flexShrink: 0 }}>
+                        <ItemReadoutPlate iconUrl={res.path} table={item.type} alt={item.name} size="row" />
+                      </div>
+                    )
+                  })()}
+
                   {/* Type badge */}
                   <span style={{
                     fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
@@ -836,6 +890,7 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
             type: awardingItem.type,
             encumbrance: awardingItem.encumbrance ?? 0,
             qualities: awardingItem.qualities,
+            categories: awardingItem.categories,
           } as AwardableItem}
           characters={characters}
           campaignId={campaignId}
@@ -890,6 +945,18 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
           >
             {/* ── Header ── */}
             <div style={{ display: 'flex', alignItems: 'center', gap: SP[2] }}>
+              {(() => {
+                const res = resolveIcon(viewingItem.type, viewingItem.key, viewingItem.categories)
+                return res && (
+                  <button
+                    onClick={() => setPickerOpen(true)}
+                    title="Change icon"
+                    style={{ width: '3rem', height: '3rem', flexShrink: 0, padding: 0, background: 'transparent', border: 'none', cursor: 'pointer' }}
+                  >
+                    <ItemReadoutPlate iconUrl={res.path} table={viewingItem.type} refKey={viewingItem.key} categories={viewingItem.categories} alt={viewingItem.name} size="detail" />
+                  </button>
+                )
+              })()}
               <span style={{
                 fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
                 textTransform: 'uppercase', letterSpacing: '0.12em',
@@ -900,8 +967,22 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
               <span style={{ fontFamily: FONT_BODY, fontSize: FS.body, fontWeight: 700, color: HUD.text, flex: 1 }}>
                 {viewingItem.name}
               </span>
+              <button onClick={() => setPickerOpen(true)} style={actionBtn(HUD.gold)}>Icon</button>
               <button onClick={() => setViewingItem(null)} style={actionBtn(DIM)}>✕</button>
             </div>
+
+            {pickerOpen && viewingItem && (
+              <IconPicker
+                table={viewingItem.type}
+                itemName={viewingItem.name}
+                catalog={catalogEntries(viewingItem.type)}
+                currentResolution={resolveIcon(viewingItem.type, viewingItem.key, viewingItem.categories)}
+                onSelect={handlePickIcon}
+                onReset={handleResetIcon}
+                onClose={() => setPickerOpen(false)}
+                busy={pickerBusy}
+              />
+            )}
 
             {/* ── Common stats ── */}
             <div style={{

@@ -48,6 +48,7 @@ import { logRoll, type RollMeta } from '@/lib/logRoll'
 import { useSessionRollState, getWoundThresholdBonus } from '@/hooks/useSessionRollState'
 import { SessionStatusBanner } from '@/components/player/SessionStatusBanner'
 import { useDerivedStats } from '@/hooks/useDerivedStats'
+import { computeEncumbranceStats, type EncumbranceStats } from '@/lib/derivedStats'
 import { CriticalInjuryModal } from '@/components/character/CriticalInjuryModal'
 import { HandOverlay } from '@/components/player-hud/HandOverlay'
 import { useHandState } from '@/hooks/useHandState'
@@ -71,17 +72,17 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
 
   // ── Data ──
   const {
-    character, skills, talents, weapons, armor, crits, charSpecs,
+    character, skills, talents, weapons, armor, gear, crits, charSpecs,
     charForceAbilities, loading, error,
     moralitySystem, moralitySystemError, handleFlipBalancePoint,
     refCrits, refCareers, refSpeciesAll, refForcePowers,
     refObligationTypes, refDutyTypes,
-    refSkillMap, refTalentMap, refWeaponMap, refArmorMap,
+    refSkillMap, refTalentMap, refWeaponMap, refArmorMap, refGearMap,
     refSpecMap, refForcePowerMap, refForceAbilityMap, refWeaponQualityMap,
     refAttachmentMap,
     forceRating, careerForceRatingBase, careerSpecKeys, specKeyToCareerName, pendingForceRatingOffer, setPendingForceRatingOffer, supabase, refSpecs,
     speciesAbilities, hudSkills, hudTalents, hudWeapons, hudArmor, hudGear,
-    encumbranceCurrent, encumbranceBonus,
+    encumbranceCurrent, encumbranceThreshold, encumbranceStats,
     handleVitalChange, handleVitalAdjust, handleSetEquipState,
     handleHealCrit, handlePortraitUpload, handlePortraitDelete,
     handleRemoveWeapon, handleRemoveEquipment,
@@ -442,6 +443,40 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     }
   }
 
+  // Ledger hero live preview (Prompt 2 Task 5; rewired Prompt 3 Task 1 to
+  // manifest-row hover; rewired again Prompt 6 Task 2 to the state segmented
+  // control). Moves ONE item to an explicit target equip state and
+  // recomputes via the SAME pure function everything else uses — no
+  // parallel maths. Hover-only: never writes, never touches local state.
+  // Hovering "Stowed"/"Carried"/"Equipped" in the item detail panel's state
+  // control previews moving the selected item to THAT state — the button
+  // label states the simulation, so the Ledger needs no explanatory copy.
+  // The Ledger's own band-row hover still calls this too, simulating
+  // 'stowed' for an already-equipped/carried contributor ("what if I
+  // dropped this") — same function, just a fixed target instead of a
+  // caller-chosen one.
+  //
+  // MUST be declared before the loading/error early returns below — every
+  // hook in this component must run on every render regardless of loading
+  // state, or React's hook-order invariant breaks (caught live: this hook
+  // used to sit after the early returns, so it silently didn't run while
+  // `loading` was true, then ran on the next render once data arrived,
+  // shifting every hook after it by one and triggering React's "change in
+  // the order of Hooks" error).
+  const simulateEncumbrance = useCallback((
+    itemId: string, itemType: 'weapon' | 'armor' | 'gear', targetState: 'stowed' | 'carrying' | 'equipped',
+  ): EncumbranceStats | null => {
+    if (!character) return null
+    const moveTo = <T extends { id: string; is_equipped: boolean; equip_state?: string }>(list: T[]): T[] =>
+      list.map(x => x.id === itemId ? { ...x, equip_state: targetState, is_equipped: targetState === 'equipped' } : x)
+    return computeEncumbranceStats(
+      character,
+      itemType === 'armor' ? moveTo(armor) : armor, refArmorMap,
+      itemType === 'gear' ? moveTo(gear) : gear, refGearMap,
+      itemType === 'weapon' ? moveTo(weapons) : weapons, refWeaponMap,
+    )
+  }, [character, armor, gear, weapons, refArmorMap, refGearMap, refWeaponMap])
+
   // ── Loading / Error ──
   if (loading) return <CharacterLoader />
   if (error || !character) return (
@@ -453,7 +488,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   const isForceUser = isForceUserSensitive(character, effectiveStats?.forceRating ?? forceRating)
   const isEligibleForFR = isEligibleForForceRating(character, charSpecs, refSpecMap)
   const canGainForceRating = isEligibleForFR && forceRating === 0 && !character.force_rating_purchased
-  const encThreshold = character.encumbrance_threshold + encumbranceBonus
+  const encThreshold = encumbranceThreshold
 
   return (
     <div
@@ -465,8 +500,16 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
 
       {/* Player-facing hand of cards (H2) — active talents + owned Force base
           powers as floating cards. Player-only: the GM view of this same
-          component tree (isGmMode) never renders it. */}
-      {!isGmMode && (
+          component tree (isGmMode) never renders it. Unmounted entirely
+          (not just tucked) while any full-screen tab is open (Skills,
+          Talents, Force, Inventory, Lore, Group) — tucking alone still left
+          the cards mounted underneath, which is fine for a slide-in drawer
+          but wrong for a full-panel tab that covers the same screen space.
+          Combat/Skill/Force CHECK overlays are a separate state
+          (combatCheckOpen/forceCheckOpen/activeQuickPanel), not
+          activeFullPanel, so they're untouched by this gate — the hand
+          stays reachable during a check by design. */}
+      {!isGmMode && activeFullPanel === null && (
         <HandOverlay
           characterId={character.id}
           supabase={supabase}
@@ -603,7 +646,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
           engineBreakdown={engineBreakdown}
           woundBonus={woundBonus}
           encumbranceCurrent={encumbranceCurrent}
-          encumbranceBonus={encumbranceBonus}
+          encumbranceThreshold={encThreshold}
           crits={crits}
           forceRating={forceRating}
           isCombat={isCombat}
@@ -749,6 +792,9 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
               hudGear={hudGear}
               encumbranceCurrent={encumbranceCurrent}
               encThreshold={encThreshold}
+              encumbranceStats={encumbranceStats}
+              brawn={character.brawn}
+              onSimulate={simulateEncumbrance}
               refWeaponQualityMap={refWeaponQualityMap}
               isGmMode={isGmMode}
               characterName={character.name}

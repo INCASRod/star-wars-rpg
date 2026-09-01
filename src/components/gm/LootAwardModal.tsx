@@ -9,6 +9,8 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { QualityBadge } from '@/components/character/QualityBadge'
 import { HUD, FONT_BODY, FONT_MONO, RADIUS, EASE, FS } from '@/lib/tokens'
 import { NumberField } from '@/components/ui/NumberField'
+import { ItemReadoutPlate } from '@/components/shared/ItemReadoutPlate'
+import { useItemIconContext } from '@/hooks/useItemIconContext'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 // Pre-approved exceptions kept:
@@ -34,6 +36,7 @@ export interface AwardableItem {
   type:        'weapon' | 'armor' | 'gear'
   encumbrance: number
   qualities?:  { key: string; count?: number | null }[]
+  categories?: string[]
 }
 
 interface CharInventory {
@@ -78,6 +81,9 @@ export function LootAwardModal({
   const [refArmorMap,    setRefArmorMap]    = useState<Record<string, RefArmor>>({})
   const [refGearMap,     setRefGearMap]     = useState<Record<string, RefGear>>({})
   const [refQualityMap,  setRefQualityMap]  = useState<Record<string, RefWeaponQuality>>({})
+
+  const { resolveIcon } = useItemIconContext(supabase, campaignId)
+  const iconRes = resolveIcon(item.type, item.key, item.categories)
 
   // Load inventories + ref maps on open
   useEffect(() => {
@@ -141,7 +147,7 @@ export function LootAwardModal({
         c, inv.armor, refArmorMap, inv.gear, refGearMap, inv.weapons, refWeaponMap,
       )
       const addedEnc = item.encumbrance * (item.type === 'gear' ? quantity : 1)
-      map[c.id] = { ...stats, afterCurrent: stats.current + addedEnc }
+      map[c.id] = { current: stats.load, threshold: stats.threshold, afterCurrent: stats.load + addedEnc }
     }
     return map
   }, [loadingInv, characters, inventories, refWeaponMap, refArmorMap, refGearMap, item, quantity])
@@ -225,7 +231,13 @@ export function LootAwardModal({
       <div style={{ padding: '1.5rem' }}>
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.125rem' }}>
-          <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+            {iconRes && (
+              <div style={{ width: '1.75rem', height: '1.75rem', flexShrink: 0 }}>
+                <ItemReadoutPlate iconUrl={iconRes.path} table={item.type} alt={item.name} size="row" />
+              </div>
+            )}
+            <div>
             <div style={{ fontFamily: FONT_BODY, fontSize: FS_SM, fontWeight: 700, color: HUD.text, letterSpacing: '0.05em' }}>
               {item.name}
             </div>
@@ -239,6 +251,7 @@ export function LootAwardModal({
                 ))}
               </div>
             )}
+            </div>
           </div>
           <button
             onClick={onClose}

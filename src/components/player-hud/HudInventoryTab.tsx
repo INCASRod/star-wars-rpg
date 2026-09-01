@@ -2,6 +2,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { InventoryCardPanel } from './inventory-card-panel'
 import type { WpnDisplay, ArmDisplay, GearRow, StowableAsset, StowLocation, EquipState } from '@/lib/types'
+import type { EncumbranceStats } from '@/lib/derivedStats'
 
 interface HudInventoryTabProps {
   hudWeapons:            WpnDisplay[]
@@ -9,6 +10,9 @@ interface HudInventoryTabProps {
   hudGear:               GearRow[]
   encumbranceCurrent:    number
   encThreshold:          number
+  encumbranceStats:      EncumbranceStats | null
+  brawn:                 number
+  onSimulate:            (itemId: string, itemType: 'weapon' | 'armor' | 'gear', targetState: EquipState) => EncumbranceStats | null
   refWeaponQualityMap:   Record<string, any>
   isGmMode:              boolean
   characterName:         string
@@ -25,6 +29,7 @@ interface HudInventoryTabProps {
 export function HudInventoryTab({
   hudWeapons, hudArmor, hudGear,
   encumbranceCurrent, encThreshold,
+  encumbranceStats, brawn, onSimulate,
   refWeaponQualityMap,
   isGmMode, characterName, characterId,
   stowableAssets, baseOfOperationsName,
@@ -49,6 +54,9 @@ export function HudInventoryTab({
       gearItems={hudGear}
       encumbranceCurrent={encumbranceCurrent}
       encumbranceThreshold={encThreshold}
+      encumbranceStats={encumbranceStats}
+      brawn={brawn}
+      onSimulate={onSimulate}
       refWeaponQualityMap={refWeaponQualityMap}
       stowableAssets={stowableAssets}
       baseOfOperationsName={baseOfOperationsName}

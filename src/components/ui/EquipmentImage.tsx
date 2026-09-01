@@ -1,31 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { resolveFallbackIcon } from '@/lib/equipment-icons'
-
-// Lazy-load manifest once
-let manifestCache: Record<string, Record<string, string | null>> | null = null
-let manifestPromise: Promise<Record<string, Record<string, string | null>>> | null = null
-
-function loadManifest() {
-  if (manifestCache) return Promise.resolve(manifestCache)
-  if (manifestPromise) return manifestPromise
-  manifestPromise = fetch('/images/manifest.json')
-    .then(r => r.json())
-    .then(data => { manifestCache = data; return data })
-    .catch(() => {
-      manifestCache = { weapons: {}, armor: {}, gear: {}, species: {} }
-      return manifestCache
-    })
-  return manifestPromise
-}
-
-const TYPE_TO_SECTION: Record<string, string> = {
-  weapon: 'weapons',
-  armor: 'armor',
-  gear: 'gear',
-  species: 'species',
-}
+import { useState, useEffect, useMemo } from 'react'
+import manifest from '../../../public/images/manifest.json'
+import { createIconResolverContext, resolveItemIcon, type ItemTable } from '@/lib/itemIconResolver'
 
 const SIZE_REM: Record<string, string> = {
   sm: '1.5rem',
@@ -37,43 +14,37 @@ interface EquipmentImageProps {
   itemKey: string
   itemType: 'weapon' | 'armor' | 'gear' | 'species'
   categories?: string[]
-  gearType?: string
   size?: 'sm' | 'md' | 'lg'
   className?: string
   style?: React.CSSProperties
 }
 
+const EMPTY_OVERRIDES = new Map<string, string>()
+
+/**
+ * Thin wrapper over itemIconResolver for the legacy surfaces that predate
+ * the Player HUD Inventory tab's ItemThumb/ItemDetailHero (GmLootModal,
+ * VendorPurchaseDialog, WeaponsCard/EquipmentCard/InventoryContent character
+ * sheet views, HudModalsOverlay's loot flash). These call sites only ever
+ * have ONE item's own categories in hand, not the full ref-table catalog or
+ * a campaign's overrides, so only rungs 1 (skipped — no overrides available
+ * here) and 2 (exact) can ever resolve; category-donor rungs 3/4 require
+ * sibling-item data this component doesn't have and fall through to rung 5
+ * (fallback glyph) same as before, just via the shared resolver instead of
+ * the old manifest+generic-SVG duplicate path.
+ */
 export function EquipmentImage({
   itemKey,
   itemType,
   categories,
-  gearType,
   size = 'md',
   className,
   style,
 }: EquipmentImageProps) {
-  const [imageSrc, setImageSrc] = useState<string | null>(null)
-  const [useFallback, setUseFallback] = useState(false)
-  const [loaded, setLoaded] = useState(false)
+  const [imgErr, setImgErr] = useState(false)
+  useEffect(() => { setImgErr(false) }, [itemKey, itemType])
 
   const px = SIZE_REM[size]
-
-  useEffect(() => {
-    let cancelled = false
-    loadManifest().then(manifest => {
-      if (cancelled) return
-      const section = TYPE_TO_SECTION[itemType]
-      const path = manifest[section]?.[itemKey]
-      if (path) {
-        setImageSrc(path)
-      } else {
-        setUseFallback(true)
-      }
-      setLoaded(true)
-    })
-    return () => { cancelled = true }
-  }, [itemKey, itemType])
-
   const containerStyle: React.CSSProperties = {
     width: px,
     height: px,
@@ -85,46 +56,40 @@ export function EquipmentImage({
     ...style,
   }
 
-  // Not loaded yet — empty placeholder
-  if (!loaded) {
-    return <div style={containerStyle} className={className} />
-  }
-
-  // Has OggDude PNG image
-  if (imageSrc && !useFallback) {
+  if (itemType === 'species') {
+    const path = (manifest.species as Record<string, string | null>)[itemKey]
+    if (!path || imgErr) return <div style={containerStyle} className={className} />
     return (
       <div style={containerStyle} className={className}>
-        <img
-          src={imageSrc}
-          alt=""
-          onError={() => setUseFallback(true)}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'contain',
-          }}
-        />
+        <img src={path} alt="" onError={() => setImgErr(true)} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
       </div>
     )
   }
 
-  // Fallback SVG — render as <img> with currentColor via CSS filter
-  if (itemType === 'species') {
-    // No fallback for species — show empty
-    return <div style={containerStyle} className={className} />
-  }
+  const table = itemType as ItemTable
+  // eslint-disable-next-line react-hooks/rules-of-hooks -- itemType is a stable prop across a given call site, not a conditional hook call in practice
+  const resolution = useMemo(() => {
+    const ctx = createIconResolverContext(EMPTY_OVERRIDES, {
+      weapon: table === 'weapon' ? { [itemKey]: categories } : {},
+      armor:  table === 'armor'  ? { [itemKey]: categories } : {},
+      gear:   table === 'gear'   ? { [itemKey]: categories } : {},
+    })
+    return resolveItemIcon(ctx, table, itemKey, categories)
+  }, [table, itemKey, categories])
 
-  const fallbackName = resolveFallbackIcon(itemType, categories, gearType)
+  const fallbackPath = `/images/equipment/_fallback-${table}.png`
+  const isFallback = resolution.rung === 'fallback' || imgErr
   return (
     <div style={containerStyle} className={className}>
       <img
-        src={`/images/fallback/${fallbackName}.svg`}
+        src={imgErr ? fallbackPath : resolution.path}
         alt=""
+        onError={() => setImgErr(true)}
         style={{
           width: '100%',
           height: '100%',
           objectFit: 'contain',
-          opacity: 0.6,
+          opacity: isFallback ? 0.6 : 1,
         }}
       />
     </div>

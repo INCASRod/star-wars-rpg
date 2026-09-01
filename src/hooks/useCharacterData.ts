@@ -8,7 +8,7 @@ import { randomUUID } from '@/lib/utils'
 import { logPurchaseNotification } from '@/lib/logRoll'
 import { useCharacterSigAbilities } from '@/hooks/useCharacterSigAbilities'
 import { isDroid, isClone, isEligibleForForceRating } from '@/lib/forceEligibility'
-import { computeDerivedStats, countOwnedRanks, type StatSource } from '@/lib/derivedStats'
+import { computeDerivedStats, countOwnedRanks, computeEncumbranceStats } from '@/lib/derivedStats'
 import { computeCareerSkillKeys, persistCareerSkills } from '@/lib/characters'
 import { fetchActiveDataset } from '@/lib/activeDataset'
 import type { MoralitySystem } from '@/lib/moralitySystem'
@@ -26,7 +26,9 @@ import type {
   RefWeaponQuality, RefItemAttachment, EquipState,
   RefObligationType, RefDutyType,
   SpeciesAbility, HudSkill, HudTalent, WpnDisplay, ArmDisplay, GearRow, ItemCondition, StowLocationType,
+  ItemIconOverride,
 } from '@/lib/types'
+import { createIconResolverContext, resolveItemIcon, type ItemTable } from '@/lib/itemIconResolver'
 
 // ═══════════════════════════════════════════════════════════════════════════
 // SHARED MUTATION LOGIC — extracted to standalone functions (Prompt 7a) so the
@@ -439,6 +441,22 @@ export function useCharacterData(characterId: string) {
   const selfMutatingRef = useRef(false)
   const markSelf = () => { selfMutatingRef.current = true; setTimeout(() => { selfMutatingRef.current = false }, 2000) }
 
+  // Per-row write queue for the equip_state write path (Prompt 2, Task 4).
+  // React state is not a synchronous mutex — hover-preview plus rapid
+  // equip/carry/stow toggling on the same row can fire handleSetEquipState
+  // (or the toggle handlers) again before the previous write's fresh read
+  // has landed. Chaining onto the same row's prior promise (never onto a
+  // different row's) serializes writes per-item without blocking unrelated
+  // rows, and each step's "fresh" read only ever needs to wait for writes
+  // this queue itself issued, not for a full component re-render.
+  const equipWriteQueueRef = useRef<Map<string, Promise<unknown>>>(new Map())
+  const enqueueRowWrite = <T,>(id: string, fn: () => Promise<T>): Promise<T> => {
+    const prior = equipWriteQueueRef.current.get(id) ?? Promise.resolve()
+    const settled = prior.then(fn, fn)
+    equipWriteQueueRef.current.set(id, settled.catch(() => {}))
+    return settled
+  }
+
   const [character, setCharacter] = useState<Character | null>(null)
   const [skills, setSkills] = useState<CharacterSkill[]>([])
   const [talents, setTalents] = useState<CharacterTalent[]>([])
@@ -464,6 +482,7 @@ export function useCharacterData(characterId: string) {
   const [refItemAttachments, setRefItemAttachments] = useState<RefItemAttachment[]>([])
   const [refObligationTypes, setRefObligationTypes] = useState<RefObligationType[]>([])
   const [refDutyTypes, setRefDutyTypes] = useState<RefDutyType[]>([])
+  const [itemIconOverrides, setItemIconOverrides] = useState<ItemIconOverride[]>([])
   const [playerName, setPlayerName] = useState('Player')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -492,7 +511,7 @@ export function useCharacterData(characterId: string) {
         charRes, skillsRes, talentsRes, weaponsRes, armorRes, gearRes, critsRes, specsRes,
         refWpnRes, refArmRes, refGearRes, refCritRes, refDescRes,
         refSpeciesRes, forceAbilRes, refFpRes, refFaRes, refWqRes, refAttRes,
-        refOblTypesRes, refDutyTypesRes,
+        refOblTypesRes, refDutyTypesRes, itemIconOverridesRes,
       } = await (consumeCharacterDataPrefetch(characterId) ?? fetchCharacterDataBatch(characterId))
 
       setMoralitySystem(ms)
@@ -516,6 +535,7 @@ export function useCharacterData(characterId: string) {
       setRefArmor((refArmRes.data as RefArmor[]) || [])
       setRefGear((refGearRes.data as RefGear[]) || [])
       setRefCrits((refCritRes.data as RefCriticalInjury[]) || [])
+      setItemIconOverrides((itemIconOverridesRes.data as ItemIconOverride[]) || [])
 
       // Supplement active-dataset specs with any cross-dataset specs the character
       // actually owns (e.g. oggdude specs on a respec campaign), OR any specs the
@@ -579,6 +599,30 @@ export function useCharacterData(characterId: string) {
   const refWeaponMap = useMemo(() => Object.fromEntries(refWeapons.map(w => [w.key, w])), [refWeapons])
   const refArmorMap = useMemo(() => Object.fromEntries(refArmor.map(a => [a.key, a])), [refArmor])
   const refGearMap = useMemo(() => Object.fromEntries(refGear.map(g => [g.key, g])), [refGear])
+
+  // ── Icon resolver context ──
+  // Overrides scoped to this character's campaign (item_icon_overrides is
+  // fetched unfiltered — see characterDataPrefetch.ts).
+  const iconOverridesMap = useMemo(() => {
+    const map = new Map<string, string>()
+    if (!character?.campaign_id) return map
+    for (const o of itemIconOverrides) {
+      if (o.campaign_id !== character.campaign_id) continue
+      map.set(`${o.item_table}:${o.item_key}`, o.image_key)
+    }
+    return map
+  }, [itemIconOverrides, character?.campaign_id])
+
+  const iconResolverCtx = useMemo(() => createIconResolverContext(iconOverridesMap, {
+    weapon: Object.fromEntries(refWeapons.map(w => [w.key, w.categories])),
+    armor:  Object.fromEntries(refArmor.map(a => [a.key, a.categories])),
+    gear:   Object.fromEntries(refGear.map(g => [g.key, g.categories])),
+  }), [iconOverridesMap, refWeapons, refArmor, refGear])
+
+  const resolveIconUrl = useCallback((table: ItemTable, key: string | null | undefined, categories?: string[]): string | null => {
+    if (!key) return null
+    return resolveItemIcon(iconResolverCtx, table, key, categories).path
+  }, [iconResolverCtx])
   const refSpecMap = useMemo(() => Object.fromEntries(refSpecs.map(s => [s.key, s])), [refSpecs])
   const refDescriptorMap = useMemo(() => Object.fromEntries(refDescriptors.map(d => [d.key, d])), [refDescriptors])
   const refForcePowerMap = useMemo(() => Object.fromEntries(refForcePowers.map(fp => [fp.key, fp])), [refForcePowers])
@@ -700,16 +744,18 @@ export function useCharacterData(characterId: string) {
     return 'equipped'
   }
 
-  const handleToggleWeaponEquipped = async (id: string) => {
-    const w = weapons.find(w => w.id === id)
-    if (!w) return
+  const handleToggleWeaponEquipped = (id: string) => {
     markSelf()
-    const next = cycleEquipState(w.equip_state ?? (w.is_equipped ? 'equipped' : 'carrying'))
-    setWeapons(prev => prev.map(x => x.id === id ? { ...x, equip_state: next, is_equipped: next === 'equipped' } : x))
-    await supabase.from('character_weapons').update({ equip_state: next, is_equipped: next === 'equipped' }).eq('id', id)
+    return enqueueRowWrite(id, async () => {
+      const { data: fresh } = await supabase.from('character_weapons').select('equip_state, is_equipped').eq('id', id).single()
+      if (!fresh) return
+      const next = cycleEquipState(fresh.equip_state ?? (fresh.is_equipped ? 'equipped' : 'carrying'))
+      await supabase.from('character_weapons').update({ equip_state: next, is_equipped: next === 'equipped' }).eq('id', id)
+      setWeapons(prev => prev.map(x => x.id === id ? { ...x, equip_state: next, is_equipped: next === 'equipped' } : x))
+    })
   }
 
-  const handleSetEquipState = async (
+  const handleSetEquipState = (
     id: string,
     type: 'weapon' | 'armor' | 'gear',
     state: EquipState,
@@ -725,39 +771,54 @@ export function useCharacterData(characterId: string) {
     // equip_slot only ever holds a value while equipped — leaving 'equipped'
     // (to carrying/stowed) always clears it so a stale anchor can't linger.
     const slotField = state === 'equipped' ? { equip_slot: equipSlot ?? null } : { equip_slot: null }
-    if (type === 'weapon') {
-      setWeapons(prev => prev.map(x => x.id === id ? { ...x, equip_state: state, is_equipped: state === 'equipped', ...locFields, ...slotField } : x))
-      await supabase.from('character_weapons').update({ equip_state: state, is_equipped: state === 'equipped', ...locFields, ...slotField }).eq('id', id)
-    } else if (type === 'armor') {
-      setArmor(prev => prev.map(x => x.id === id ? { ...x, equip_state: state, is_equipped: state === 'equipped', ...locFields, ...slotField } : x))
-      await supabase.from('character_armor').update({ equip_state: state, is_equipped: state === 'equipped', ...locFields, ...slotField }).eq('id', id)
-    } else {
-      setGear(prev => prev.map(x => x.id === id ? { ...x, equip_state: state, is_equipped: state === 'equipped', ...locFields, ...slotField } : x))
-      await supabase.from('character_gear').update({ equip_state: state, is_equipped: state === 'equipped', ...locFields, ...slotField }).eq('id', id)
-    }
+    const patch = { equip_state: state, is_equipped: state === 'equipped', ...locFields, ...slotField }
+
+    return enqueueRowWrite(id, async () => {
+      // `state` is caller-supplied, not derived from the row — the fresh
+      // read here guards against writing over a row a concurrent action
+      // (queued just ahead of this one on the same id) already dropped.
+      if (type === 'weapon') {
+        const { data: fresh } = await supabase.from('character_weapons').select('id').eq('id', id).maybeSingle()
+        if (!fresh) return
+        await supabase.from('character_weapons').update(patch).eq('id', id)
+        setWeapons(prev => prev.map(x => x.id === id ? { ...x, ...patch } : x))
+      } else if (type === 'armor') {
+        const { data: fresh } = await supabase.from('character_armor').select('id').eq('id', id).maybeSingle()
+        if (!fresh) return
+        await supabase.from('character_armor').update(patch).eq('id', id)
+        setArmor(prev => prev.map(x => x.id === id ? { ...x, ...patch } : x))
+      } else {
+        const { data: fresh } = await supabase.from('character_gear').select('id').eq('id', id).maybeSingle()
+        if (!fresh) return
+        await supabase.from('character_gear').update(patch).eq('id', id)
+        setGear(prev => prev.map(x => x.id === id ? { ...x, ...patch } : x))
+      }
+    })
   }
 
-  const handleToggleEquippedById = async (id: string, type: 'weapon' | 'armor' | 'gear') => {
+  const handleToggleEquippedById = (id: string, type: 'weapon' | 'armor' | 'gear') => {
     markSelf()
-    if (type === 'weapon') {
-      const w = weapons.find(w => w.id === id)
-      if (!w) return
-      const next = cycleEquipState(w.equip_state ?? (w.is_equipped ? 'equipped' : 'carrying'))
-      setWeapons(prev => prev.map(x => x.id === id ? { ...x, equip_state: next, is_equipped: next === 'equipped' } : x))
-      await supabase.from('character_weapons').update({ equip_state: next, is_equipped: next === 'equipped' }).eq('id', id)
-    } else if (type === 'armor') {
-      const a = armor.find(a => a.id === id)
-      if (!a) return
-      const next = cycleEquipState(a.equip_state ?? (a.is_equipped ? 'equipped' : 'carrying'))
-      setArmor(prev => prev.map(x => x.id === id ? { ...x, equip_state: next, is_equipped: next === 'equipped' } : x))
-      await supabase.from('character_armor').update({ equip_state: next, is_equipped: next === 'equipped' }).eq('id', id)
-    } else {
-      const g = gear.find(g => g.id === id)
-      if (!g) return
-      const next = cycleEquipState(g.equip_state ?? (g.is_equipped ? 'equipped' : 'carrying'))
-      setGear(prev => prev.map(x => x.id === id ? { ...x, equip_state: next, is_equipped: next === 'equipped' } : x))
-      await supabase.from('character_gear').update({ equip_state: next, is_equipped: next === 'equipped' }).eq('id', id)
-    }
+    return enqueueRowWrite(id, async () => {
+      if (type === 'weapon') {
+        const { data: fresh } = await supabase.from('character_weapons').select('equip_state, is_equipped').eq('id', id).single()
+        if (!fresh) return
+        const next = cycleEquipState(fresh.equip_state ?? (fresh.is_equipped ? 'equipped' : 'carrying'))
+        await supabase.from('character_weapons').update({ equip_state: next, is_equipped: next === 'equipped' }).eq('id', id)
+        setWeapons(prev => prev.map(x => x.id === id ? { ...x, equip_state: next, is_equipped: next === 'equipped' } : x))
+      } else if (type === 'armor') {
+        const { data: fresh } = await supabase.from('character_armor').select('equip_state, is_equipped').eq('id', id).single()
+        if (!fresh) return
+        const next = cycleEquipState(fresh.equip_state ?? (fresh.is_equipped ? 'equipped' : 'carrying'))
+        await supabase.from('character_armor').update({ equip_state: next, is_equipped: next === 'equipped' }).eq('id', id)
+        setArmor(prev => prev.map(x => x.id === id ? { ...x, equip_state: next, is_equipped: next === 'equipped' } : x))
+      } else {
+        const { data: fresh } = await supabase.from('character_gear').select('equip_state, is_equipped').eq('id', id).single()
+        if (!fresh) return
+        const next = cycleEquipState(fresh.equip_state ?? (fresh.is_equipped ? 'equipped' : 'carrying'))
+        await supabase.from('character_gear').update({ equip_state: next, is_equipped: next === 'equipped' }).eq('id', id)
+        setGear(prev => prev.map(x => x.id === id ? { ...x, equip_state: next, is_equipped: next === 'equipped' } : x))
+      }
+    })
   }
 
   const handleRollCrit = async () => {
@@ -1217,15 +1278,19 @@ export function useCharacterData(characterId: string) {
         equipState:  w.equip_state ?? (w.is_equipped ? 'equipped' : 'carrying'),
         skillName:   ref?.skill_key ? refSkillMap[ref.skill_key]?.name || '' : '',
         description: ref?.description ?? null,
+        effectText:  ref?.effect_text ?? null,
+        loreText:    ref?.lore_text ?? null,
         condition:      (VALID_CONDITIONS.has(w.condition ?? '') ? w.condition : 'undamaged') as ItemCondition,
         item_image_url: w.item_image_url ?? null,
-        iconUrl:        w.weapon_key ? `/images/equipment/weapon-${w.weapon_key}.png` : null,
+        iconUrl:        resolveIconUrl('weapon', w.weapon_key, ref?.categories),
+        refKey:         w.weapon_key ?? null,
+        categories:     ref?.categories,
         stowLocation:   w.equip_state === 'stowed' && w.stow_location_id && w.stow_location_type
           ? { id: w.stow_location_id, name: w.stow_location_name ?? '', type: w.stow_location_type }
           : null,
       }
     })
-  , [weapons, refWeaponMap, refSkillMap, character?.brawn])
+  , [weapons, refWeaponMap, refSkillMap, character?.brawn, resolveIconUrl])
 
   const hudArmor = useMemo((): ArmDisplay[] =>
     armor.map(a => {
@@ -1240,15 +1305,19 @@ export function useCharacterData(characterId: string) {
         rarity:      ref?.rarity || 0,
         equipState:  a.equip_state ?? (a.is_equipped ? 'equipped' : 'carrying'),
         description: ref?.description ?? null,
+        effectText:  ref?.effect_text ?? null,
+        loreText:    ref?.lore_text ?? null,
         condition:      (VALID_CONDITIONS.has(a.condition ?? '') ? a.condition : 'undamaged') as ItemCondition,
         item_image_url: a.item_image_url ?? null,
-        iconUrl:        a.armor_key ? `/images/equipment/armor-${a.armor_key}.png` : null,
+        iconUrl:        resolveIconUrl('armor', a.armor_key, ref?.categories),
+        refKey:         a.armor_key ?? null,
+        categories:     ref?.categories,
         stowLocation:   a.equip_state === 'stowed' && a.stow_location_id && a.stow_location_type
           ? { id: a.stow_location_id, name: a.stow_location_name ?? '', type: a.stow_location_type }
           : null,
       }
     })
-  , [armor, refArmorMap])
+  , [armor, refArmorMap, resolveIconUrl])
 
   const hudGear = useMemo((): GearRow[] =>
     gear.map(g => {
@@ -1260,73 +1329,32 @@ export function useCharacterData(characterId: string) {
         enc:         ref?.encumbrance || 0,
         equipState:  g.equip_state ?? (g.is_equipped ? 'equipped' : 'carrying'),
         description: ref?.description ?? null,
+        effectText:  ref?.effect_text ?? null,
+        loreText:    ref?.lore_text ?? null,
         condition:      (VALID_CONDITIONS.has(g.condition ?? '') ? g.condition : 'undamaged') as ItemCondition,
         item_image_url: g.item_image_url ?? null,
-        iconUrl:        g.gear_key ? `/images/equipment/gear-${g.gear_key}.png` : null,
+        iconUrl:        resolveIconUrl('gear', g.gear_key, ref?.categories),
+        refKey:         g.gear_key ?? null,
+        categories:     ref?.categories,
         stowLocation:   g.equip_state === 'stowed' && g.stow_location_id && g.stow_location_type
           ? { id: g.stow_location_id, name: g.stow_location_name ?? '', type: g.stow_location_type }
           : null,
       }
     })
-  , [gear, refGearMap])
+  , [gear, refGearMap, resolveIconUrl])
 
-  const encumbranceCurrent = useMemo(() => {
-    let sum = 0
-    for (const a of armor) {
-      const state = a.equip_state ?? (a.is_equipped ? 'equipped' : 'carrying')
-      if (state === 'stowed') continue
-      const enc = refArmorMap[a.armor_key]?.encumbrance || 0
-      sum += state === 'equipped' ? Math.max(0, enc - 3) : enc
-    }
-    for (const g of gear) {
-      const state = g.equip_state ?? (g.is_equipped ? 'equipped' : 'carrying')
-      if (state === 'stowed') continue
-      sum += refGearMap[g.gear_key]?.encumbrance || 0
-    }
-    for (const w of weapons) {
-      const state = w.equip_state ?? (w.is_equipped ? 'equipped' : 'carrying')
-      if (state === 'stowed') continue
-      sum += refWeaponMap[w.weapon_key]?.encumbrance || 0
-    }
-    return sum
-  }, [armor, gear, weapons, refArmorMap, refGearMap, refWeaponMap])
-
-  const encumbranceBonus = useMemo(() => {
-    const gearBonus = gear.reduce((s, g) => {
-      const state = g.equip_state ?? (g.is_equipped ? 'equipped' : 'carrying')
-      const ref = refGearMap[g.gear_key]
-      return s + (state === 'equipped' && ref?.encumbrance_bonus ? ref.encumbrance_bonus : 0)
-    }, 0)
-    const armorBonus = armor.reduce((s, a) => {
-      const state = a.equip_state ?? (a.is_equipped ? 'equipped' : 'carrying')
-      const ref = refArmorMap[a.armor_key]
-      return s + (state === 'equipped' && ref?.encumbrance_bonus ? ref.encumbrance_bonus : 0)
-    }, 0)
-    return gearBonus + armorBonus
-  }, [gear, refGearMap, armor, refArmorMap])
-
-  // Pure addition alongside encumbranceBonus above — same inclusion condition
-  // (equipped + non-zero encumbrance_bonus) and same values, just labelled per
-  // item so the desktop panel's Equipped Effects block can attribute threshold
-  // to the item that granted it. Does not change encumbranceBonus itself.
-  const encumbranceBonusSources = useMemo((): StatSource[] => {
-    const sources: StatSource[] = []
-    for (const g of gear) {
-      const state = g.equip_state ?? (g.is_equipped ? 'equipped' : 'carrying')
-      const ref = refGearMap[g.gear_key]
-      if (state === 'equipped' && ref?.encumbrance_bonus) {
-        sources.push({ label: g.custom_name || ref.name || g.gear_key, value: ref.encumbrance_bonus })
-      }
-    }
-    for (const a of armor) {
-      const state = a.equip_state ?? (a.is_equipped ? 'equipped' : 'carrying')
-      const ref = refArmorMap[a.armor_key]
-      if (state === 'equipped' && ref?.encumbrance_bonus) {
-        sources.push({ label: a.custom_name || ref.name || a.armor_key, value: ref.encumbrance_bonus })
-      }
-    }
-    return sources
-  }, [gear, refGearMap, armor, refArmorMap])
+  // Single source of truth — see computeEncumbranceStats() in derivedStats.ts
+  // for the worn-rules exclusivity checks (Prompt 2, Task 3). Superseded here:
+  // the three separate useMemos that used to live in this hook (encumbranceCurrent,
+  // encumbranceBonus, encumbranceBonusSources) — encumbranceBonusSources'
+  // per-item attribution now lives in encumbranceStats.capacitySources, with
+  // suppressed/reason fidelity that array never had.
+  const encumbranceStats = useMemo(
+    () => character ? computeEncumbranceStats(character, armor, refArmorMap, gear, refGearMap, weapons, refWeaponMap) : null,
+    [character, armor, gear, weapons, refArmorMap, refGearMap, refWeaponMap],
+  )
+  const encumbranceCurrent   = encumbranceStats?.load ?? 0
+  const encumbranceThreshold = encumbranceStats?.threshold ?? 0
 
   // ── End HUD transforms ───────────────────────────────────────────────────────
 
@@ -1370,7 +1398,7 @@ export function useCharacterData(characterId: string) {
     setPendingForceRatingOffer,
     // HUD transforms
     speciesAbilities, hudSkills, hudTalents, hudWeapons, hudArmor, hudGear,
-    encumbranceCurrent, encumbranceBonus, encumbranceBonusSources,
+    encumbranceCurrent, encumbranceThreshold, encumbranceStats,
     // Supabase client (for broadcast listener in page)
     supabase,
     // Mutations

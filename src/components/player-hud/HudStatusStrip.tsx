@@ -20,7 +20,7 @@ interface HudStatusStripProps {
   } | undefined
   woundBonus: number
   encumbranceCurrent: number
-  encumbranceBonus: number
+  encumbranceThreshold: number
   crits: Array<{ id: string; severity: string; custom_name?: string | null; description?: string | null; roll_result?: number | null; session_label?: string | null }>
   forceRating: number
   isCombat: boolean
@@ -96,7 +96,7 @@ function VitalTooltip({ breakdown, top, left }: VitalTooltipProps) {
 
 export function HudStatusStrip({
   character, effectiveStats, engineBreakdown, woundBonus,
-  encumbranceCurrent, encumbranceBonus, crits,
+  encumbranceCurrent, encumbranceThreshold, crits,
   forceRating, isCombat,
   onVitalAdjust, onHealCrit,
 }: HudStatusStripProps) {
@@ -114,7 +114,7 @@ export function HudStatusStrip({
   const sPct = sThreshold > 0 ? Math.min((sCurrent / sThreshold) * 100, 100) : 0
   const wOver = wCurrent >= wThreshold + woundBonus
   const sOver = sCurrent >= sThreshold
-  const encThreshold = character.encumbrance_threshold + encumbranceBonus
+  const encThreshold = encumbranceThreshold
 
   const woundBreakdown  = groupSources(engineBreakdown?.woundThreshold  ?? [])
   const strainBreakdown = groupSources(engineBreakdown?.strainThreshold ?? [])

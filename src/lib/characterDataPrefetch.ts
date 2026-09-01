@@ -50,7 +50,7 @@ async function fetchCharacterDataBatch(characterId: string) {
   const [refData, [charRes, skillsRes, talentsRes, weaponsRes, armorRes, gearRes, critsRes, specsRes,
     refWpnRes, refArmRes, refGearRes, refCritRes, refDescRes,
     refSpeciesRes, forceAbilRes, refFpRes, refFaRes, refWqRes, refAttRes,
-    refOblTypesRes, refDutyTypesRes]] = await Promise.all([
+    refOblTypesRes, refDutyTypesRes, itemIconOverridesRes]] = await Promise.all([
     getRefData(ds),
     Promise.all([
       supabase.from('characters').select('*').eq('id', characterId).single(),
@@ -74,6 +74,13 @@ async function fetchCharacterDataBatch(characterId: string) {
       supabase.from('ref_item_attachments').select('*'),
       supabase.from('ref_obligation_types').select('key, name'),
       supabase.from('ref_duty_types').select('key, name'),
+      // The Archive Prompt 2: campaign-scoped GM icon overrides feeding
+      // itemIconResolver's rung 1. Unfiltered (like the ref_* tables above) --
+      // this table is small and the character's campaign_id isn't known yet
+      // at this point in the batch (it's on charRes, resolved in the same
+      // Promise.all) -- useCharacterData.ts filters to character.campaign_id
+      // when building the resolver's override map.
+      supabase.from('item_icon_overrides').select('*'),
     ]),
   ])
 
@@ -83,7 +90,7 @@ async function fetchCharacterDataBatch(characterId: string) {
     charRes, skillsRes, talentsRes, weaponsRes, armorRes, gearRes, critsRes, specsRes,
     refWpnRes, refArmRes, refGearRes, refCritRes, refDescRes,
     refSpeciesRes, forceAbilRes, refFpRes, refFaRes, refWqRes, refAttRes,
-    refOblTypesRes, refDutyTypesRes,
+    refOblTypesRes, refDutyTypesRes, itemIconOverridesRes,
   }
 }
 

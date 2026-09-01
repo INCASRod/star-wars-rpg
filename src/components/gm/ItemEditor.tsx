@@ -14,6 +14,9 @@ import { QualityBadge } from '@/components/character/QualityBadge'
 import { RichText } from '@/components/ui/RichText'
 import { HUD, FONT_BODY, EASE, RADIUS, Z } from '@/lib/tokens'
 import { NumberField } from '@/components/ui/NumberField'
+import { ItemReadoutPlate } from '@/components/shared/ItemReadoutPlate'
+import { IconPicker } from '@/components/shared/IconPicker'
+import { useItemIconContext } from '@/hooks/useItemIconContext'
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 const GOLD_DIM  = 'rgba(200,170,80,0.5)'
@@ -48,6 +51,8 @@ export interface EditableItem {
   rarity?: number
   encumbrance?: number
   description?: string
+  effect_text?: string
+  lore_text?: string
   // weapon
   skill_key?: string
   damage?: number
@@ -62,6 +67,7 @@ export interface EditableItem {
   soak_bonus?: number
   // gear
   encumbrance_bonus?: number | null
+  categories?: string[]
 }
 
 // Template search result — superset of EditableItem fields we care about
@@ -126,6 +132,20 @@ function modLabel(entry: AttachmentModEntry): string | null {
 
 function isModArray(v: unknown): v is AttachmentModEntry[] {
   return Array.isArray(v)
+}
+
+// Composes the legacy `description` column from the two split fields so
+// every surface still reading `description` (WeaponsCard, QuartermasterModal,
+// ItemDatabaseTab, etc. -- none of them know about the split yet) keeps
+// working unchanged for custom items. Deliberate backward-compatibility,
+// not redundancy -- effect_text/lore_text are the source of truth going
+// forward, description is a derived, joined view of them.
+function composeDescription(loreText: string, effectText: string): string {
+  const lore = loreText.trim()
+  const effect = effectText.trim()
+  if (!effect) return lore
+  if (!lore) return effect
+  return `${lore}[P]${effect}`
 }
 
 const SKILL_OPTIONS = [
@@ -199,8 +219,14 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
   const [price,       setPrice]       = useState(String(item?.price ?? 0))
   const [rarity,      setRarity]      = useState(String(item?.rarity ?? 0))
   const [encumbrance, setEncumbrance] = useState(String(item?.encumbrance ?? 1))
-  const [description, setDescription] = useState(item?.description ?? '')
-  const [descPreview, setDescPreview] = useState(false)
+  // effect_text/lore_text populate the two fields when present; an old
+  // custom item with only `description` (never edited since the split)
+  // loads its whole text into Description with Effect left empty.
+  const hasSplitFields = item?.effect_text != null || item?.lore_text != null
+  const [effectText,  setEffectText]  = useState(hasSplitFields ? (item?.effect_text ?? '') : '')
+  const [loreText,    setLoreText]    = useState(hasSplitFields ? (item?.lore_text ?? '') : (item?.description ?? ''))
+  const [effectPreview, setEffectPreview] = useState(false)
+  const [lorePreview,   setLorePreview]   = useState(false)
   const [customNotes, setCustomNotes] = useState(item?.custom_notes ?? '')
   // weapon
   const [skillKey,    setSkillKey]    = useState(item?.skill_key ?? 'MELEE')
@@ -218,6 +244,37 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
   const [busy,    setBusy]    = useState(false)
   const [error,   setError]   = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
+
+  const { resolveIcon, catalogEntries, refetch: refetchIconOverrides } = useItemIconContext(supabase, campaignId)
+  const iconRes = item ? resolveIcon(item.type, item.key, item.categories) : null
+  const [pickerOpen,     setPickerOpen]     = useState(false)
+  const [pendingIconKey, setPendingIconKey] = useState<string | null>(null)
+  const [pickerBusy,     setPickerBusy]     = useState(false)
+  const pendingIconRes = pendingIconKey ? resolveIcon(type, pendingIconKey) : null
+
+  // Editing an existing ref row -- write the override immediately (same as
+  // ItemDatabaseTab's View popup). Creating a new item -- defer to
+  // `pendingIconKey`/`pendingIconRes`; handleSave writes the override once
+  // the new row's key exists.
+  const handlePickIconEdit = async (imageKey: string) => {
+    if (!item) return
+    setPickerBusy(true)
+    await supabase.from('item_icon_overrides')
+      .upsert({ campaign_id: campaignId, item_table: item.type, item_key: item.key, image_key: imageKey }, { onConflict: 'campaign_id,item_table,item_key' })
+    await refetchIconOverrides()
+    setPickerBusy(false)
+    setPickerOpen(false)
+  }
+  const handleResetIconEdit = async () => {
+    if (!item) return
+    setPickerBusy(true)
+    await supabase.from('item_icon_overrides')
+      .delete()
+      .eq('campaign_id', campaignId).eq('item_table', item.type).eq('item_key', item.key)
+    await refetchIconOverrides()
+    setPickerBusy(false)
+    setPickerOpen(false)
+  }
 
   useEffect(() => { requestAnimationFrame(() => setMounted(true)) }, [])
 
@@ -283,9 +340,9 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
     setSearchBusy(true)
     const pattern = `%${q.trim()}%`
     const [wRes, aRes, gRes] = await Promise.all([
-      supabase.from('ref_weapons').select('key,name,skill_key,damage,damage_add,crit,range_value,hard_points,price,rarity,encumbrance,description,is_custom,qualities').ilike('name', pattern).limit(10),
-      supabase.from('ref_armor').select('key,name,defense,soak,soak_bonus,price,rarity,encumbrance,encumbrance_bonus,description,is_custom').ilike('name', pattern).limit(10),
-      supabase.from('ref_gear').select('key,name,encumbrance_bonus,price,rarity,encumbrance,description,is_custom').ilike('name', pattern).limit(10),
+      supabase.from('ref_weapons').select('key,name,skill_key,damage,damage_add,crit,range_value,hard_points,price,rarity,encumbrance,description,effect_text,lore_text,is_custom,qualities').ilike('name', pattern).limit(10),
+      supabase.from('ref_armor').select('key,name,defense,soak,soak_bonus,price,rarity,encumbrance,encumbrance_bonus,description,effect_text,lore_text,is_custom').ilike('name', pattern).limit(10),
+      supabase.from('ref_gear').select('key,name,encumbrance_bonus,price,rarity,encumbrance,description,effect_text,lore_text,is_custom').ilike('name', pattern).limit(10),
     ])
     const weapons = ((wRes.data || []) as TemplateResult[]).map(r => ({ ...r, type: 'weapon' as ItemType }))
     const armors  = ((aRes.data || []) as TemplateResult[]).map(r => ({ ...r, type: 'armor' as ItemType }))
@@ -307,12 +364,18 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
     return () => { if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current) }
   }, [searchQuery, template, isNew, doSearch])
 
+  const applyTemplateDescriptionFields = (t: TemplateResult) => {
+    const split = t.effect_text != null || t.lore_text != null
+    setEffectText(split ? (t.effect_text ?? '') : '')
+    setLoreText(split ? (t.lore_text ?? '') : (t.description ?? ''))
+  }
+
   const applyTemplateFields = (t: TemplateResult, targetType: ItemType) => {
     setName(t.name)
     setPrice(String(t.price ?? 0))
     setRarity(String(t.rarity ?? 0))
     setEncumbrance(String(t.encumbrance ?? 1))
-    setDescription(t.description ?? '')
+    applyTemplateDescriptionFields(t)
     setCustomNotes('')
     if (targetType === 'weapon') {
       setSkillKey(t.skill_key ?? 'MELEE')
@@ -344,7 +407,7 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
       setPrice(String(t.price ?? 0))
       setRarity(String(t.rarity ?? 0))
       setEncumbrance(String(t.encumbrance ?? 1))
-      setDescription(t.description ?? '')
+      applyTemplateDescriptionFields(t)
       setCustomNotes('')
       setTypeMismatch(t.type)
     } else {
@@ -361,7 +424,7 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
   const doActualClear = () => {
     setTemplate(null); setSearchQuery(''); setTypeMismatch(null); setClearConfirm(false)
     setSearchResults([])
-    setName(''); setPrice('0'); setRarity('0'); setEncumbrance('1'); setDescription(''); setCustomNotes('')
+    setName(''); setPrice('0'); setRarity('0'); setEncumbrance('1'); setEffectText(''); setLoreText(''); setCustomNotes('')
     setSkillKey('MELEE'); setDamage('0'); setDamageAdd(''); setCrit('3'); setRangeValue('Engaged'); setHardPoints('0')
     setDefense('0'); setSoak('0'); setEncBonus('')
     setQualities([]); setAttachments([])
@@ -501,7 +564,12 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
       price:        parseInt(price) || 0,
       rarity:       parseInt(rarity) || 0,
       encumbrance:  parseInt(encumbrance) || 0,
-      description:  description || null,
+      // description is derived from effect_text/lore_text for backward
+      // compatibility (see composeDescription) -- surfaces that haven't
+      // been migrated to the split fields yet keep working unchanged.
+      description:  composeDescription(loreText, effectText) || null,
+      effect_text:  effectText.trim() || null,
+      lore_text:    loreText.trim() || null,
       is_custom:    true,
       custom_notes: customNotes || null,
       campaign_id:  campaignId,
@@ -559,6 +627,16 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
     }
 
     if (result.error) { setError(result.error.message); setBusy(false); return }
+
+    // New item with a picked icon -- the ref row now exists under `key`, so
+    // the override can finally be written (item_icon_overrides needs a real
+    // item_key to reference; it couldn't exist before this insert succeeded).
+    if ((isNew || isOggDude) && pendingIconKey) {
+      await supabase.from('item_icon_overrides')
+        .upsert({ campaign_id: campaignId, item_table: type, item_key: key, image_key: pendingIconKey }, { onConflict: 'campaign_id,item_table,item_key' })
+      await refetchIconOverrides()
+    }
+
     setBusy(false)
     onSaved({
       key, type,
@@ -567,6 +645,8 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
       rarity:       common.rarity,
       encumbrance:  common.encumbrance,
       description:  common.description ?? undefined,
+      effect_text:  common.effect_text ?? undefined,
+      lore_text:    common.lore_text ?? undefined,
       is_custom:    true,
       custom_notes: common.custom_notes ?? undefined,
       campaign_id:  common.campaign_id,
@@ -639,13 +719,50 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
           position: 'sticky', top: 0, background: 'rgba(6,13,9,0.98)', zIndex: Z.raised,
           borderRadius: `${RADIUS.xl}px ${RADIUS.xl}px 0 0`,
         }}>
-          <div style={{ fontFamily: FONT_C, fontSize: FS_SM, fontWeight: 700, color: HUD.gold, letterSpacing: '0.08em' }}>
-            {isNew ? 'New Custom Item' : isOggDude ? 'Create Custom Copy' : `Edit ${item!.name}`}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', minWidth: 0 }}>
+            {!isNew && item && iconRes && (
+              <button
+                onClick={() => setPickerOpen(true)}
+                title="Change icon"
+                style={{ width: '1.75rem', height: '1.75rem', flexShrink: 0, padding: 0, background: 'transparent', border: 'none', cursor: 'pointer' }}
+              >
+                <ItemReadoutPlate iconUrl={iconRes.path} table={item.type} alt={item.name} size="row" />
+              </button>
+            )}
+            {isNew && pendingIconRes && (
+              <div style={{ width: '1.75rem', height: '1.75rem', flexShrink: 0 }}>
+                <ItemReadoutPlate iconUrl={pendingIconRes.path} table={type} alt={name} size="row" />
+              </div>
+            )}
+            <div style={{ fontFamily: FONT_C, fontSize: FS_SM, fontWeight: 700, color: HUD.gold, letterSpacing: '0.08em' }}>
+              {isNew ? 'New Custom Item' : isOggDude ? 'Create Custom Copy' : `Edit ${item!.name}`}
+            </div>
           </div>
-          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: DIM, cursor: 'pointer', fontFamily: FONT_C, fontSize: FS_SM }}>
-            ✕
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            {isNew && (
+              <button onClick={() => setPickerOpen(true)} style={{ background: 'transparent', border: `1px solid ${GOLD_BD}`, borderRadius: RADIUS.sm, color: HUD.gold, cursor: 'pointer', fontFamily: FONT_C, fontSize: FS_CAP, padding: '0.1875rem 0.5rem' }}>
+                {pendingIconKey ? 'Change Icon' : 'Choose Icon'}
+              </button>
+            )}
+            <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: DIM, cursor: 'pointer', fontFamily: FONT_C, fontSize: FS_SM }}>
+              ✕
+            </button>
+          </div>
         </div>
+
+        {pickerOpen && (
+          <IconPicker
+            table={type}
+            itemName={name || 'New Item'}
+            catalog={catalogEntries(type)}
+            currentResolution={isNew ? pendingIconRes : iconRes}
+            onSelect={isNew ? (key => { setPendingIconKey(key); setPickerOpen(false) }) : handlePickIconEdit}
+            onReset={isNew ? (() => { setPendingIconKey(null); setPickerOpen(false) }) : handleResetIconEdit}
+            onClose={() => setPickerOpen(false)}
+            busy={pickerBusy}
+            resetDisabled={isNew ? !pendingIconKey : undefined}
+          />
+        )}
 
         {/* OggDude warning */}
         {isOggDude && (
@@ -1180,32 +1297,68 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
             </div>
           )}
 
-          {/* Description */}
+          {/* Effect (mechanical text) */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+              <span style={fieldLabel}>Effect</span>
+              <button
+                onClick={() => setEffectPreview(p => !p)}
+                style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: effectPreview ? HUD.gold : DIM, background: 'transparent', border: 'none', cursor: 'pointer', padding: '0.125rem 0.375rem', letterSpacing: '0.05em' }}
+              >
+                {effectPreview ? 'Edit' : 'Preview'}
+              </button>
+            </div>
+            {effectPreview ? (
+              <div style={{
+                background: 'rgba(255,255,255,0.03)', border: `1px solid ${BORDER}`,
+                borderRadius: RADIUS.md, padding: '0.625rem 0.75rem',
+                fontFamily: FONT_C, fontSize: FS_LABEL, color: TEXT, lineHeight: 1.5, minHeight: '3.5rem',
+              }}>
+                {effectText.trim()
+                  ? <RichText text={effectText} />
+                  : <span style={{ color: DIM, fontStyle: 'italic' }}>No effect text.</span>
+                }
+              </div>
+            ) : (
+              <textarea
+                value={effectText}
+                onChange={e => setEffectText(e.target.value)}
+                rows={3}
+                style={{ ...inputStyle, width: '100%', resize: 'vertical', fontFamily: FONT_C, fontSize: FS_LABEL }}
+                placeholder="Rules text -- what this item does in play. Optional."
+              />
+            )}
+            <div style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: DIM, marginTop: '0.25rem' }}>
+              Supports RichText markup: [advantage], [success], [triumph], [boost:N], etc.
+            </div>
+          </div>
+
+          {/* Description (flavour text) */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
               <span style={fieldLabel}>Description</span>
               <button
-                onClick={() => setDescPreview(p => !p)}
-                style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: descPreview ? HUD.gold : DIM, background: 'transparent', border: 'none', cursor: 'pointer', padding: '0.125rem 0.375rem', letterSpacing: '0.05em' }}
+                onClick={() => setLorePreview(p => !p)}
+                style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: lorePreview ? HUD.gold : DIM, background: 'transparent', border: 'none', cursor: 'pointer', padding: '0.125rem 0.375rem', letterSpacing: '0.05em' }}
               >
-                {descPreview ? 'Edit' : 'Preview'}
+                {lorePreview ? 'Edit' : 'Preview'}
               </button>
             </div>
-            {descPreview ? (
+            {lorePreview ? (
               <div style={{
                 background: 'rgba(255,255,255,0.03)', border: `1px solid ${BORDER}`,
                 borderRadius: RADIUS.md, padding: '0.625rem 0.75rem',
                 fontFamily: FONT_C, fontSize: FS_LABEL, color: TEXT, lineHeight: 1.5, minHeight: '5rem',
               }}>
-                {description.trim()
-                  ? <RichText text={description} />
+                {loreText.trim()
+                  ? <RichText text={loreText} />
                   : <span style={{ color: DIM, fontStyle: 'italic' }}>No description.</span>
                 }
               </div>
             ) : (
               <textarea
-                value={description}
-                onChange={e => setDescription(e.target.value)}
+                value={loreText}
+                onChange={e => setLoreText(e.target.value)}
                 rows={4}
                 style={{ ...inputStyle, width: '100%', resize: 'vertical', fontFamily: FONT_C, fontSize: FS_LABEL }}
                 placeholder="Flavor text / item description"

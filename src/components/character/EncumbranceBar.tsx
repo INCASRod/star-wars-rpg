@@ -5,7 +5,7 @@ import { RichText } from '@/components/ui/RichText'
 import { FONT_BODY, RADIUS, EASE, FS } from '@/lib/tokens'
 
 const ENC_WARN = 'var(--state-threat)'
-const ENC_OK   = 'rgba(90,170,224,0.7)'
+const ENC_OK   = 'var(--die-force)'
 
 interface EncumbranceBarProps {
   current: number
