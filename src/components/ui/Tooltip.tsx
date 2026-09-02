@@ -209,3 +209,50 @@ export function TipBody({ children }: { children: React.ReactNode }) {
 export function TipDivider() {
   return <div style={{ height: '1px', background: 'var(--hud-border)', margin: `${SP[2]} 0` }} />
 }
+
+// ── Shared RichText shortcode reference popover ─────────────────────
+// One-line accurate summary + hoverable reference, replacing the old
+// "e.g. [advantage], [success], [triumph], [boost:N]" helper text that
+// implied those examples were an exhaustive/self-evident set. The full
+// authoritative list lives in docs/richtext-shortcodes.md — this renders
+// the same content inline via the existing Tooltip primitive rather than
+// a new popover component.
+export function ShortcodeHelp() {
+  return (
+    <Tooltip
+      placement="top"
+      maxWidth={320}
+      content={
+        <>
+          <TipLabel>RichText shortcodes</TipLabel>
+          <TipBody>
+            Dice: [bo] [se] [di] [ch] [fo] [pr] [ab] (or full words, e.g.
+            [boost]). Results: [su] [fa] [ad] [th] [tr] [de]. Count: [key:N],
+            e.g. [difficulty:3]. Format: [B]..[b] bold, [I]..[i] italic
+            (lowercase [b] closes bold — it is not boost). Tiers:
+            :hard: :average: etc. — colon-delimited, not [hard]. Upgrade:
+            :hard+N:. [d] and [hard] are not valid.
+          </TipBody>
+          <TipDivider />
+          <TipBody>Full reference: docs/richtext-shortcodes.md</TipBody>
+        </>
+      }
+    >
+      <button
+        type="button"
+        aria-label="RichText shortcode reference"
+        style={{
+          fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.gold,
+          background: 'transparent', border: `1px solid var(--hud-border)`,
+          borderRadius: '50%', width: '1.1rem', height: '1.1rem', lineHeight: 1,
+          cursor: 'pointer', padding: 0,
+        }}
+      >
+        ?
+      </button>
+    </Tooltip>
+  )
+}
+
+export const SHORTCODE_HELPER_LINE =
+  'Dice/result shortcodes ([bo], [boost:N], :hard:, etc.) — see reference'

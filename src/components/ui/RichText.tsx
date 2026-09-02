@@ -86,6 +86,26 @@ export function RichText({ text, className, style }: RichTextProps) {
   const segments = parseSymbols(text)
   const nodes: React.ReactNode[] = []
 
+  // Buffers a run of consecutive dice/symbol icons (no text or formatting
+  // segment interrupting them) so a multi-die expansion — [difficulty:3],
+  // or a :tier+N: upgrade that splits into adjacent [difficulty:N][challenge:N]
+  // segments — renders as one unbreakable unit instead of risking a line
+  // wrap mid-group. A single icon is pushed unwrapped so unchanged existing
+  // markup ([BO], [B]...[b], etc.) renders byte-identical to before.
+  let iconGroup: React.ReactNode[] = []
+  let groupKey: string | null = null
+
+  function flushIconGroup() {
+    if (iconGroup.length === 0) return
+    if (iconGroup.length > 1) {
+      nodes.push(<span key={`grp-${groupKey}`} className="richtext-dice-group">{iconGroup}</span>)
+    } else {
+      nodes.push(iconGroup[0])
+    }
+    iconGroup = []
+    groupKey = null
+  }
+
   // Formatting state tracked across segments
   let isBold    = false
   let isItalic  = false
@@ -96,6 +116,7 @@ export function RichText({ text, className, style }: RichTextProps) {
     const k   = String(i)
 
     if (seg.type === 'text') {
+      flushIconGroup()
       const hasFormat = isBold || isItalic || heading > 0
       if (!hasFormat) {
         nodes.push(seg.value)
@@ -109,7 +130,18 @@ export function RichText({ text, className, style }: RichTextProps) {
       continue
     }
 
+    if (seg.type === 'unknown') {
+      flushIconGroup()
+      nodes.push(
+        <span key={k} className="richtext-unknown-chip" title={`Unrecognised shortcode: ${seg.raw}`}>
+          {seg.raw}
+        </span>
+      )
+      continue
+    }
+
     if (seg.type === 'format') {
+      flushIconGroup()
       switch (seg.tag) {
         case 'bold-open':    isBold   = true;  break
         case 'bold-close':   isBold   = false; break
@@ -132,6 +164,7 @@ export function RichText({ text, className, style }: RichTextProps) {
     // seg.type === 'symbol'
     const { key, count } = seg
     const label = LABEL[key] ?? key
+    if (groupKey === null) groupKey = k
 
     for (let iconIdx = 0; iconIdx < count; iconIdx++) {
       const ik = `${k}-${iconIdx}`
@@ -146,7 +179,7 @@ export function RichText({ text, className, style }: RichTextProps) {
         // silhouette on a near-black square). Fixed by applying the existing
         // sealed SYM_COLOR value explicitly, stopping the inheritance — not by
         // changing SYM_COLOR itself or the chip colour.
-        nodes.push(
+        iconGroup.push(
           <i key={ik} className={`ffi ${CSS_ICON[key]}`} aria-hidden="true" title={label}
             style={{ ...INLINE, ...GLYPH_CHIP, color: SYM_COLOR[key as keyof typeof SYM_COLOR] }} />
         )
@@ -158,7 +191,7 @@ export function RichText({ text, className, style }: RichTextProps) {
         // uses box-shadow rather than `background` specifically so it doesn't
         // collide with this element's own `background` (the gradient the pip
         // is drawn from via background-clip: text, below).
-        nodes.push(
+        iconGroup.push(
           <i key={ik} className="ffi ffi-swrpg-force" aria-hidden="true" title={label}
             style={{
               ...INLINE,
@@ -174,7 +207,7 @@ export function RichText({ text, className, style }: RichTextProps) {
       }
 
       if (key in FORCE_PIP_COLOR) {
-        nodes.push(
+        iconGroup.push(
           <i key={ik} className="ffi ffi-swrpg-force" aria-hidden="true" title={label}
             style={{ ...INLINE, ...GLYPH_CHIP, color: FORCE_PIP_COLOR[key] }} />
         )
@@ -182,7 +215,7 @@ export function RichText({ text, className, style }: RichTextProps) {
       }
 
       if (DICE_FACE_KEYS.has(key)) {
-        nodes.push(
+        iconGroup.push(
           <span key={ik} aria-hidden="true" title={label} style={{ ...INLINE, display: 'inline-block', ...GLYPH_CHIP }}>
             <DiceFace type={key as DiceType} size={14} style={{ verticalAlign: 'middle' }} />
           </span>
@@ -190,6 +223,8 @@ export function RichText({ text, className, style }: RichTextProps) {
       }
     }
   }
+
+  flushIconGroup()
 
   return (
     <span className={className} style={style}>

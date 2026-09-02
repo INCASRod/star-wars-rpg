@@ -821,6 +821,35 @@ i.ffi {
 /*  OGGDUDE MARKUP — Inline Dice / Symbol Chips                    */
 /*  Used in talent & force-power description text                  */
 /* ═══════════════════════════════════════════════════════════════ */
+/* A run of 2+ consecutive dice/symbol glyphs from one RichText expansion
+   ([difficulty:3], or a :tier+N: upgrade split across adjacent bracket
+   tokens) — kept as one unbreakable unit so it can't wrap mid-group.
+   display:inline-block + white-space:nowrap only; no padding/margin, so it
+   cannot alter baseline alignment or spacing versus the unwrapped glyphs
+   it replaces. */
+.richtext-dice-group {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+/* Unrecognised [key:N] shortcode — flags a likely authoring typo (e.g.
+   [d:3] meant as difficulty) instead of silently printing literal bracket
+   text. Only tokens written WITH a :N count suffix reach this; count-less
+   unknown tokens ([Engaged], [Short], etc.) are legitimate prose elsewhere
+   in the dataset and are never chipped — see parseSymbols.ts. */
+.richtext-unknown-chip {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 0.85em;
+  font-weight: 700;
+  color: var(--red);
+  border: 1px solid var(--red);
+  border-radius: 3px;
+  padding: 0 4px;
+  line-height: 1.5;
+  vertical-align: middle;
+  white-space: nowrap;
+}
 .die {
   display:        inline-block;
   padding:        0px 5px;

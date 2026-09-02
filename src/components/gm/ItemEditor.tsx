@@ -12,6 +12,7 @@ import type {
 } from '@/lib/types'
 import { QualityBadge } from '@/components/character/QualityBadge'
 import { RichText } from '@/components/ui/RichText'
+import { ShortcodeHelp, SHORTCODE_HELPER_LINE } from '@/components/ui/Tooltip'
 import { HUD, FONT_BODY, EASE, RADIUS, Z } from '@/lib/tokens'
 import { NumberField } from '@/components/ui/NumberField'
 import { ItemReadoutPlate } from '@/components/shared/ItemReadoutPlate'
@@ -1328,8 +1329,9 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
                 placeholder="Rules text -- what this item does in play. Optional."
               />
             )}
-            <div style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: DIM, marginTop: '0.25rem' }}>
-              Supports RichText markup: [advantage], [success], [triumph], [boost:N], etc.
+            <div style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: DIM, marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+              {SHORTCODE_HELPER_LINE}
+              <ShortcodeHelp />
             </div>
           </div>
 
@@ -1364,8 +1366,9 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
                 placeholder="Flavor text / item description"
               />
             )}
-            <div style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: DIM, marginTop: '0.25rem' }}>
-              Supports RichText markup: [advantage], [success], [triumph], [boost:N], etc.
+            <div style={{ fontFamily: FONT_M, fontSize: FS_OVER, color: DIM, marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+              {SHORTCODE_HELPER_LINE}
+              <ShortcodeHelp />
             </div>
           </div>
 

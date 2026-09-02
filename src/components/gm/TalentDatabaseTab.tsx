@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { Modal } from '@/components/ui/Modal'
 import { RichText } from '@/components/ui/RichText'
+import { ShortcodeHelp, SHORTCODE_HELPER_LINE } from '@/components/ui/Tooltip'
 import type { Character } from '@/lib/types'
 import { ACTIVATION_LABELS } from '@/lib/types'
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -415,8 +416,9 @@ function EditorPanel({ talent, campaignId, supabase, onSaved, onClose }: EditorP
                 style={{ ...darkInput, width: '100%', resize: 'vertical', fontFamily: FONT_BODY, fontSize: FS.label }}
               />
             )}
-            <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: DIM, marginTop: '0.25rem' }}>
-              Supports RichText markup: [advantage], [success], [triumph], [boost:N], etc.
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: DIM, marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+              {SHORTCODE_HELPER_LINE}
+              <ShortcodeHelp />
             </div>
           </div>
 

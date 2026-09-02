@@ -25,7 +25,15 @@ export type FormatTag =
   | 'paragraph'
   | 'linebreak'
 export type FormatSegment = { type: 'format'; tag: FormatTag }
-export type ParsedSegment = TextSegment | SymbolSegment | FormatSegment
+// An unrecognised bracket token written with a count suffix, e.g. [d:3].
+// The `:N` form only appears in deliberate shortcode authoring — prose never
+// writes "[Word:3]" — so this is the one bracket shape safe to flag as a
+// likely typo rather than pass through as literal text. A count-less
+// unrecognised token like [Engaged] or [Short] is real prose (range bands,
+// price symbols) elsewhere in the dataset and must NOT be flagged; those
+// keep falling through to plain TextSegment below.
+export type UnknownSegment = { type: 'unknown'; raw: string }
+export type ParsedSegment = TextSegment | SymbolSegment | FormatSegment | UnknownSegment
 
 const KNOWN_KEYS = new Set([
   // Result symbols (rendered via ffi-swrpg-* CSS classes)
@@ -85,8 +93,60 @@ const COLON_ALIASES: Record<string, string> = {
   'formidable': 'difficulty:5',
 }
 
+// Base difficulty-die count for each difficulty tier — used by the :tier+N:
+// upgrade syntax below. Kept separate from COLON_ALIASES (which maps to
+// finished bracket strings) because upgrades need the raw integer to run
+// the FFG upgrade algorithm against.
+const TIER_BASE_DIFFICULTY: Record<string, number> = {
+  simple:     0,
+  easy:       1,
+  average:    2,
+  hard:       3,
+  daunting:   4,
+  formidable: 5,
+}
+
+// FFG RAW upgrade: convert the lowest remaining difficulty die to a
+// challenge die; once none remain, add a difficulty die instead. Repeats
+// per upgrade. Positive-side (ability -> proficiency) upgrades are out of
+// scope — this only ever produces {difficulty, challenge}.
+export function upgradeDifficulty(base: number, n: number): { difficulty: number; challenge: number } {
+  let difficulty = base
+  let challenge = 0
+  for (let i = 0; i < n; i++) {
+    if (difficulty > 0) {
+      difficulty -= 1
+      challenge += 1
+    } else {
+      difficulty += 1
+    }
+  }
+  return { difficulty, challenge }
+}
+
+function tierBracket(difficulty: number, challenge: number): string {
+  const parts: string[] = []
+  if (difficulty > 0) parts.push(`[difficulty:${difficulty}]`)
+  if (challenge > 0)  parts.push(`[challenge:${challenge}]`)
+  return parts.join('')
+}
+
+// :tier+N: upgrade syntax. The tier name is matched against a fixed
+// alternation of the six known tiers only — a stray "word+digits" pattern
+// elsewhere in prose (e.g. "cost+2" is not itself colon-delimited, and even
+// colon-delimited prose like ":something+2:" won't match unless "something"
+// is literally one of these six words) cannot trigger this.
+const TIER_UPGRADE_RE = /:(simple|easy|average|hard|daunting|formidable)\+(\d+):/gi
+
 function expandColonCodes(text: string): string {
-  return text.replace(/:([a-z_]+):/g, (match, key) => {
+  const withUpgrades = text.replace(TIER_UPGRADE_RE, (_match, tier: string, nStr: string) => {
+    const base = TIER_BASE_DIFFICULTY[tier.toLowerCase()]
+    const n    = Math.max(1, parseInt(nStr, 10))
+    const { difficulty, challenge } = upgradeDifficulty(base, n)
+    return tierBracket(difficulty, challenge)
+  })
+
+  return withUpgrades.replace(/:([a-z_]+):/g, (match, key) => {
     const lower = key.toLowerCase()
     if (lower in COLON_ALIASES) {
       const mapped = COLON_ALIASES[lower]
@@ -127,6 +187,12 @@ export function parseSymbols(text: string): ParsedSegment[] {
 
       if (KNOWN_KEYS.has(key)) {
         segments.push({ type: 'symbol', key, count })
+      } else if (match[2] !== undefined) {
+        // Unrecognised key written with an explicit :N count — only real
+        // shortcode authoring uses this shape (a typo'd key name, e.g.
+        // [d:3] meant as difficulty). Flag it instead of silently printing
+        // the literal bracket text.
+        segments.push({ type: 'unknown', raw: match[0] })
       } else {
         segments.push({ type: 'text', value: match[0] })
       }
