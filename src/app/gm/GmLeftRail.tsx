@@ -3,7 +3,7 @@
 import { memo } from 'react'
 import { HUD, FONT_BODY, RADIUS, Z, EASE, FS } from '@/lib/tokens'
 
-export type GmPanelId = 'map' | 'tools' | 'party' | 'library'
+export type GmPanelId = 'map' | 'tools' | 'party' | 'library' | 'market'
 
 interface RailButton {
   id:        GmPanelId
@@ -18,6 +18,7 @@ const BUTTONS: RailButton[] = [
   { id: 'map',    icon: '◉', label: 'Tokens', accent: HUD.gold },
   { id: 'tools',  icon: '⊞', label: 'Tools',  accent: 'var(--die-force)' },
   { id: 'party',  icon: '◉', label: 'Party',  accent: '#4EC8A8' }, // pre-approved: no matching token
+  { id: 'market', icon: '⌂', label: 'Market', accent: HUD.gold },
 ]
 
 interface Props {

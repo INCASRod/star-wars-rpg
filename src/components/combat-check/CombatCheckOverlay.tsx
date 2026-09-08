@@ -6,7 +6,7 @@ import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
 import { createClient } from '@/lib/supabase/client'
 import { rollPool, type RollResult } from '@/components/player-hud/dice-engine'
 import { type RollMeta } from '@/lib/logRoll'
-import { formatResultSummary, isRangedSkill, getMeleeDifficulty, type RangeBand, RANGE_BAND_LABELS, MELEE_SKILL_KEYS } from '@/lib/combatCheckUtils'
+import { formatResultSummary, isRangedSkill, getMeleeDifficulty, mergeManeuverAdjustments, totalPoolDice, type RangeBand, RANGE_BAND_LABELS, MELEE_SKILL_KEYS } from '@/lib/combatCheckUtils'
 import { checkCriticalEligibility } from '@/lib/criticalUtils'
 import type { Character, CharacterWeapon, CharacterSkill, RefWeapon, RefSkill, RefWeaponQuality, SpeciesAbility } from '@/lib/types'
 import type { SkillDiceModifier } from '@/lib/derivedStats'
@@ -255,6 +255,11 @@ export function CombatCheckOverlay({
   }, [open, activeSkillKey, onActiveSkillChange])
 
   // ── Derived crit eligibility (not state — pure function of existing state) ──
+  // Pre-commit BEST-CASE gate only: uses min(soak) across all selected targets
+  // and omits refWeapon.damage_add. Deliberately distinct from the
+  // authoritative per-target damage math below (in the pendingRows loops),
+  // which uses each target's own soak and includes damage_add. Do not unify —
+  // this only drives the badge shown before the roll is committed.
   const critEligibility = (() => {
     if (!state.rollResult) return null
     const isMelee  = state.attackType === 'melee' || MELEE_SKILL_KEYS.includes(refWeapon?.skill_key ?? '')
@@ -583,11 +588,9 @@ export function CombatCheckOverlay({
   const toggleGuarded = () => setGuardedActive(v => !v)
 
   // ── Effective adjustments: merge maneuver boosts/setbacks into ManualAdjustments ──
-  const effectiveAdjustments: ManualAdjustments = {
-    ...state.adjustments,
-    boostAdd:   state.adjustments.boostAdd + aimBoosts + (assistActive ? 1 : 0),
-    setbackAdd: state.adjustments.setbackAdd + (guardedActive ? 1 : 0),
-  }
+  const effectiveAdjustments: ManualAdjustments = mergeManeuverAdjustments(
+    state.adjustments, aimBoosts, assistActive, guardedActive,
+  )
 
   // ── Melee opponent resistance (reads encounterEnemies, no target selection step) ──
   // Player-selected melee opponent wins; otherwise the encounter's first
@@ -603,7 +606,7 @@ export function CombatCheckOverlay({
   )
 
   // ── Total dice and roll readiness ─────────────────────────────────────────
-  const totalDiceForRoll = Object.values(poolForRoll).reduce((s, n) => s + Math.max(0, n), 0)
+  const totalDiceForRoll = totalPoolDice(poolForRoll)
   const canRoll = state.selectedWeapon !== null &&
     (state.attackType !== 'ranged' || state.selectedBand !== null) &&
     totalDiceForRoll > 0

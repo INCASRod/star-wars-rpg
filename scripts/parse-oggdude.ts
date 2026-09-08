@@ -153,6 +153,16 @@ function parseTalents() {
   })
 }
 
+// A duplicate sibling tag in the source XML (e.g. Gear.xml's DATABRBO has
+// <Restricted>true</Restricted> written twice inside one <Gear> block —
+// confirmed a source typo, not a parser bug) makes fast-xml-parser return an
+// array instead of a scalar for that field. Treat "any element true" as true
+// rather than silently failing the `=== 'true'` check and dropping the item.
+function isRestricted(v: unknown): boolean {
+  if (Array.isArray(v)) return v.some(isRestricted)
+  return v === 'true' || v === true
+}
+
 // ── Weapons ──
 function parseWeapons() {
   const data = readXML(path.join(DATA_DIR, 'Weapons.xml')) as { Weapons: { Weapon: unknown[] } }
@@ -169,7 +179,7 @@ function parseWeapons() {
     hard_points: parseInt(w.HP) || 0,
     price: parseInt(w.Price) || 0,
     rarity: parseInt(w.Rarity) || 0,
-    restricted: w.Restricted === 'true' || w.Restricted === true || false,
+    restricted: isRestricted(w.Restricted),
     qualities: ensureArray(w.Qualities?.Quality).map((q: any) => ({
       key: q.Key,
       count: parseInt(q.Count) || null,
@@ -206,6 +216,7 @@ function parseArmor() {
     hard_points: parseInt(a.HP) || 0,
     price: parseInt(a.Price) || 0,
     rarity: parseInt(a.Rarity) || 0,
+    restricted: isRestricted(a.Restricted),
     encumbrance_bonus: parseEncumbranceBonus(a.BaseMods) || null,
   }))
 }
@@ -220,6 +231,7 @@ function parseGear() {
     encumbrance: parseInt(g.Encumbrance) || 0,
     price: parseInt(g.Price) || 0,
     rarity: parseInt(g.Rarity) || 0,
+    restricted: isRestricted(g.Restricted),
     encumbrance_bonus: parseEncumbranceBonus(g.BaseMods) || null,
   }))
 }

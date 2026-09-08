@@ -5,7 +5,7 @@ import gsap from 'gsap'
 import { Modal } from '@/components/ui/Modal'
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
 import { igniteModalOpen, igniteModalClose, IGNITE_EXIT_MS } from '@/lib/utils'
-import { rollPool, type RollResult } from './dice-engine'
+import { rollPool, buildSkillCheckPool, type RollResult } from './dice-engine'
 import { CHAR_FULL, DICE_COLOR, DICE_OUTLINE, DICE_META, MODAL, FONT_BODY, FONT_DISPLAY, FS, SP, RADIUS, Z } from '@/lib/tokens'
 import type { HudSkill } from '@/lib/types'
 
@@ -227,8 +227,10 @@ export function HudSkillQuickList({ open, onClose, skills, onRoll, onActiveSkill
   const [boostAdd,           setBoostAdd]           = useState(0)
   const [setbackAdd,         setSetbackAdd]         = useState(0)
   const [upgradeSkill,       setUpgradeSkill]       = useState(0)
-  const [selectedDifficulty, setSelectedDifficulty] = useState(2) // Average
+  const [baseDifficulty,     setBaseDifficulty]     = useState(2) // Average
+  const [difficultyAdd,      setDifficultyAdd]      = useState(0)
   const [diffUpgrades,       setDiffUpgrades]       = useState(0)
+  const selectedDifficulty = Math.max(0, baseDifficulty + difficultyAdd)
   const [forceAdd,           setForceAdd]           = useState(0)
 
   // ── Browse: group skills by characteristic ────────────────────────────
@@ -260,14 +262,17 @@ export function HudSkillQuickList({ open, onClose, skills, onRoll, onActiveSkill
     // (Discipline 3 / Willpower 2 rolled 2 dice instead of 3). Rank 0 is
     // unaffected: proficiency 0, ability = charVal, i.e. untrained rolls the
     // characteristic, which was always correct.
-    const effRank     = selected.rank + upgradeSkill
-    const proficiency = Math.min(selected.charVal, effRank)
-    const ability     = Math.abs(selected.charVal - effRank)
-    const baseDiff    = selectedDifficulty
-    const challenge   = Math.min(diffUpgrades, baseDiff)
-    const difficulty  = baseDiff - challenge
-    return { proficiency, ability, boost: boostAdd, setback: setbackAdd, challenge, difficulty, force: forceAdd }
-  }, [selected, boostAdd, setbackAdd, upgradeSkill, selectedDifficulty, diffUpgrades, forceAdd])
+    return buildSkillCheckPool({
+      charVal:        selected.charVal,
+      rank:           selected.rank,
+      upgradeSkill,
+      boostAdd,
+      setbackAdd,
+      forceAdd,
+      baseDifficulty: selectedDifficulty,
+      diffUpgrades,
+    })
+  }, [selected, boostAdd, setbackAdd, upgradeSkill, baseDifficulty, difficultyAdd, diffUpgrades, forceAdd])
 
   // Upgrades convert ability dice to proficiency, so the cap is however many
   // ability dice the base pool has: max(char, rank) - min(char, rank).
@@ -279,7 +284,7 @@ export function HudSkillQuickList({ open, onClose, skills, onRoll, onActiveSkill
   const selectSkill = (skill: HudSkill) => {
     setSelected(skill)
     setBoostAdd(0); setSetbackAdd(0); setUpgradeSkill(0)
-    setSelectedDifficulty(2); setDiffUpgrades(0); setForceAdd(0)
+    setBaseDifficulty(2); setDifficultyAdd(0); setDiffUpgrades(0); setForceAdd(0)
     setDifficultyChosen(false)
     setMode('roll')
   }
@@ -289,9 +294,18 @@ export function HudSkillQuickList({ open, onClose, skills, onRoll, onActiveSkill
     setSelected(null)
   }
 
+  // Selecting a new ladder rung resets the +/- delta and any diff→challenge
+  // upgrades — same reset contract as before when the two were one field.
   const handleDifficultySelect = (v: number) => {
-    setSelectedDifficulty(v)
+    setBaseDifficulty(v)
+    setDifficultyAdd(0)
     setDiffUpgrades(0)
+  }
+
+  // The +/- stepper only moves the delta; the chosen ladder rung is untouched.
+  // Floor mirrors the combat panel's adjFloors.difficultyAdd = -(baseDiff).
+  const handleDifficultyAdd = (delta: number) => {
+    setDifficultyAdd(v => Math.max(-baseDifficulty, v + delta))
   }
 
   // Presentational: has the player made an explicit difficulty choice yet?
@@ -567,9 +581,13 @@ export function HudSkillQuickList({ open, onClose, skills, onRoll, onActiveSkill
                     <div className="fc-panel-head">
                       <span className="fc-stage-num">2</span>
                       <span className="fc-stage-name">Difficulty</span>
-                      {difficultyChosen && <span className="fc-panel-sum">{DIFF_LABELS[selectedDifficulty]}</span>}
+                      {difficultyChosen && (
+                        <span className="fc-panel-sum">
+                          {DIFF_LABELS[baseDifficulty]}{difficultyAdd !== 0 ? ` (${difficultyAdd > 0 ? '+' : ''}${difficultyAdd})` : ''}
+                        </span>
+                      )}
                     </div>
-                    <DifficultySelector selected={selectedDifficulty} onSelect={handleDifficultySelectAndAdvance} />
+                    <DifficultySelector selected={baseDifficulty} onSelect={handleDifficultySelectAndAdvance} />
                   </div>
 
                   {/* Adjust Pool — locked until a difficulty is chosen */}
@@ -586,10 +604,10 @@ export function HudSkillQuickList({ open, onClose, skills, onRoll, onActiveSkill
                         value={setbackAdd} onAdd={() => setSetbackAdd(v => v + 1)}
                         onRemove={() => setSetbackAdd(v => Math.max(0, v - 1))} canRemove={setbackAdd > 0} />
                       <SkillStepper dieColor={DICE_COLOR.difficulty} dieShape="diamond" name="Difficulty"
-                        sub="Add / remove"
-                        value={selectedDifficulty} onAdd={() => handleDifficultySelect(Math.min(5, selectedDifficulty + 1))}
-                        onRemove={() => handleDifficultySelect(Math.max(0, selectedDifficulty - 1))}
-                        canRemove={selectedDifficulty > 0} />
+                        sub={`${difficultyAdd > 0 ? '+' : ''}${difficultyAdd} vs ${DIFF_LABELS[baseDifficulty]}`}
+                        value={selectedDifficulty} onAdd={() => handleDifficultyAdd(1)}
+                        onRemove={() => handleDifficultyAdd(-1)}
+                        canRemove={difficultyAdd > -baseDifficulty} />
                       <SkillStepper dieColor={DICE_COLOR.force} dieShape="octagon" name="Force"
                         value={forceAdd} onAdd={() => setForceAdd(v => v + 1)}
                         onRemove={() => setForceAdd(v => Math.max(0, v - 1))} canRemove={forceAdd > 0} />

@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from 'react'
 import type { CharacterWeapon, RefWeapon, RefSkill, RefWeaponQuality, Character } from '@/lib/types'
 import { isRangedSkill, isMeleeSkill as isMeleeSkillKey } from '@/lib/combatCheckUtils'
 import { canDualWield } from '@/lib/weaponHandedness'
+import { QualityBadge } from '@/components/character/QualityBadge'
+import { SP } from '@/lib/tokens'
 
 export interface WeaponManeuvers {
   aim1:    boolean
@@ -102,15 +104,38 @@ function statLineFor(w: CharacterWeapon | null, refWeaponMap: Record<string, Ref
   return `${dmg}${crit}${skill}`
 }
 
+/** `STAGGER` sits in `ref_weapon_qualities` because the source dataset flags
+ *  it as a quality, but it's actually a mechanical condition inflicted by
+ *  Concussive, not a weapon quality in its own right — it also has an empty
+ *  description. Never render it as a quality chip. */
+const NON_QUALITY_KEYS = new Set(['STAGGER'])
+
+/** Qualities worth rendering for a weapon: present in the ref map, not a
+ *  disguised condition (see `NON_QUALITY_KEYS`), and carrying real
+ *  description text to show in the tooltip. `ref.qualities` is normally an
+ *  array but at least one row (BARADIUMCHRG) stores `{}` instead of `[]` —
+ *  same `Array.isArray` guard as `criticalUtils.ts`/`derivedStats.ts`. */
+function displayableQualities(
+  ref: RefWeapon | null | undefined,
+  refWeaponQualityMap: Record<string, RefWeaponQuality>,
+): { key: string; count?: number }[] {
+  if (!ref || !Array.isArray(ref.qualities)) return []
+  return ref.qualities.filter(q =>
+    !NON_QUALITY_KEYS.has(q.key) && !!refWeaponQualityMap[q.key]?.description,
+  )
+}
+
 /** Module scope — a component declared inside the step body would be a new
  *  type on every render. */
-function PickerRow({ w, isStowed, selected, onPick, refWeaponMap }: {
+function PickerRow({ w, isStowed, selected, onPick, refWeaponMap, refWeaponQualityMap }: {
   w: CharacterWeapon; isStowed: boolean; selected: boolean; onPick: () => void
   refWeaponMap: Record<string, RefWeapon>
+  refWeaponQualityMap: Record<string, RefWeaponQuality>
 }) {
-  const unarmed = w.id === '__unarmed__'
-  const ref     = unarmed ? null : refWeaponMap[w.weapon_key]
-  const label   = unarmed ? 'Unarmed / Brawl' : (w.custom_name || ref?.name || 'Weapon')
+  const unarmed    = w.id === '__unarmed__'
+  const ref        = unarmed ? null : refWeaponMap[w.weapon_key]
+  const label      = unarmed ? 'Unarmed / Brawl' : (w.custom_name || ref?.name || 'Weapon')
+  const qualities  = displayableQualities(ref, refWeaponQualityMap)
   return (
     <button
       type="button"
@@ -124,6 +149,13 @@ function PickerRow({ w, isStowed, selected, onPick, refWeaponMap }: {
       <span className="fc-chip-meta">
         <span className="fc-chip-name">{label}{isStowed ? ' (carried)' : ''}</span>
         <span className="fc-chip-stats">{statLineFor(w, refWeaponMap)}</span>
+        {qualities.length > 0 && (
+          <span className="fc-chip-qualities" style={{ display: 'flex', flexWrap: 'wrap', gap: SP[1] }}>
+            {qualities.map(q => (
+              <QualityBadge key={q.key} quality={q} refQualityMap={refWeaponQualityMap} variant="desktop" />
+            ))}
+          </span>
+        )}
       </span>
     </button>
   )
@@ -256,6 +288,7 @@ export function WeaponSelectStep({
                     <PickerRow
                       key={c.id}
                       refWeaponMap={refWeaponMap}
+                      refWeaponQualityMap={refWeaponQualityMap}
                       w={c}
                       isStowed={false}
                       selected={offHandId === c.id}
@@ -271,13 +304,13 @@ export function WeaponSelectStep({
                 {/* Section order is 1a's: Equipped → Carried → Always Available. */}
                 {equipped.length > 0 && <div className="fc-picker-group">Equipped</div>}
                 {equipped.map(w => (
-                  <PickerRow key={w.id} refWeaponMap={refWeaponMap} w={w} isStowed={false}
+                  <PickerRow key={w.id} refWeaponMap={refWeaponMap} refWeaponQualityMap={refWeaponQualityMap} w={w} isStowed={false}
                     selected={selectedWeapon?.id === w.id}
                     onPick={() => choosePrimary(w, false)} />
                 ))}
                 {carried.length > 0 && <div className="fc-picker-group">Carried</div>}
                 {carried.map(w => (
-                  <PickerRow key={w.id} refWeaponMap={refWeaponMap} w={w} isStowed
+                  <PickerRow key={w.id} refWeaponMap={refWeaponMap} refWeaponQualityMap={refWeaponQualityMap} w={w} isStowed
                     selected={selectedWeapon?.id === w.id}
                     onPick={() => choosePrimary(w, true)} />
                 ))}
@@ -285,6 +318,7 @@ export function WeaponSelectStep({
                 {showUnarmed && (
                   <PickerRow
                     refWeaponMap={refWeaponMap}
+                    refWeaponQualityMap={refWeaponQualityMap}
                     w={UNARMED_WEAPON as unknown as CharacterWeapon}
                     isStowed={false}
                     selected={isUnarmedSel}

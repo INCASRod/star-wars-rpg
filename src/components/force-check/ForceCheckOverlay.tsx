@@ -11,7 +11,7 @@ import type { Character } from '@/lib/types'
 import type { ForceRollResult } from '@/lib/forceRoll'
 import type { ForcePowerDisplay } from '@/components/player-hud/ForcePanel'
 import type { AdversaryInstance } from '@/lib/adversaries'
-import { rollForceDice } from '@/components/player-hud/dice-engine'
+import { rollForceDice, getAvailableForceDice } from '@/components/player-hud/dice-engine'
 import { RichText } from '@/components/ui/RichText'
 
 type RollPhase = 'idle' | 'tumble' | 'reveal' | 'done'
@@ -190,7 +190,7 @@ export function ForceCheckOverlay({
   }, [open]) // eslint-disable-line react-hooks/exhaustive-deps -- initialPowerKey deliberately read only at the open-transition instant, not a re-seed trigger of its own
 
   const isFallen  = character.is_dark_side_fallen === true
-  const available = Math.max(0, forceRating - committedForce)
+  const available = getAvailableForceDice(forceRating, committedForce)
   const purchased = useMemo(() => forcePowers.filter(p => p.purchasedCount > 0), [forcePowers])
   const selPower  = purchased.find(p => p.powerKey === selectedPowerKey) ?? null
 

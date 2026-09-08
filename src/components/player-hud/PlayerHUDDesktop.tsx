@@ -17,6 +17,7 @@ import { HudModalsOverlay } from './HudModalsOverlay'
 import { HudNotificationsDrawer, useBlockingAutoOpen } from './HudNotificationsDrawer'
 import { InitiativeRollBody } from './InitiativeRollModal'
 import { usePendingActions } from '@/hooks/usePendingActions'
+import { MarketStorefront } from './MarketStorefront'
 import { HudForceTab } from './HudForceTab'
 import { HudInventoryTab } from './HudInventoryTab'
 import { HudLoreTab } from './HudLoreTab'
@@ -317,7 +318,41 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   // hosts (drawer card + popup), so they always agree and only one Realtime
   // channel exists for this topic.
   const initiativePendingRow = pendingActions.find(a => a.action_type === 'initiative') ?? null
+  const vendorOfferPendingRow = pendingActions.find(a => a.action_type === 'vendor_offer') ?? null
   const [alertsOpen, setAlertsOpen] = useState(false)
+
+  // Market storefront — dismiss is purely local state, never resolves the
+  // pending action (see docs/architecture.md's usePendingActions entry:
+  // there is no "dismissed" status in the schema, and resolving would drop
+  // the row permanently, making it unrecallable). The row itself only ever
+  // leaves 'pending' when the GM closes the merchant
+  // (cancelPendingActionsByType in GmMarketPanel's Open-to-Players toggle).
+  const [storefrontOpen, setStorefrontOpen] = useState(false)
+  const seenVendorOfferIds = useRef<Set<string>>(new Set())
+  useEffect(() => {
+    if (!vendorOfferPendingRow) return
+    if (seenVendorOfferIds.current.has(vendorOfferPendingRow.id)) return
+    seenVendorOfferIds.current.add(vendorOfferPendingRow.id)
+    setStorefrontOpen(true)
+  }, [vendorOfferPendingRow])
+  // The row disappearing (GM closed the merchant) must close the storefront
+  // too, not just stop it from auto-reopening.
+  useEffect(() => {
+    if (!vendorOfferPendingRow) setStorefrontOpen(false)
+  }, [vendorOfferPendingRow])
+
+  const renderVendorOfferBody = useCallback(() => (
+    <button
+      onClick={() => setStorefrontOpen(true)}
+      style={{
+        fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase',
+        background: HUD.gold, color: HUD.bg, border: 'none', borderRadius: RADIUS.sm,
+        padding: '0.5rem 1rem', cursor: 'pointer',
+      }}
+    >
+      Open Storefront
+    </button>
+  ), [])
   // Dedication's characteristic-choice prompt (DEDI talent purchase) now lives
   // entirely on the /character/[id]/talents route (Prompt 6b) — that's the
   // only place talents are purchased for a live character now, so this
@@ -636,8 +671,17 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
             blockingCount={alertBlockingCount}
             onClose={() => setAlertsOpen(false)}
             renderInitiativeBody={renderInitiativeBody}
+            renderVendorOfferBody={renderVendorOfferBody}
           />
         </div>
+
+        {storefrontOpen && vendorOfferPendingRow && character && effectiveCampaignId && (
+          <MarketStorefront
+            campaignId={effectiveCampaignId}
+            credits={character.credits}
+            onClose={() => setStorefrontOpen(false)}
+          />
+        )}
 
         {/* ══ STATUS STRIP ═════════════════════════════════════ */}
         <HudStatusStrip

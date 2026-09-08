@@ -359,3 +359,37 @@
 [data-theme="gm-imperial"] .hud-fi-jedi {
   filter: brightness(1.2) saturate(0.5) opacity(0.80);
 }
+
+/* ═══════════════════════════════════════════════════════════════ */
+/*  MOBILE SHELL — legibility-first Ember Tatooine variant          */
+/*  Scoped to [data-mobile-shell] (the mobile shell root), never    */
+/*  swapped by [data-theme]/ThemeSwitcher — mobile always renders   */
+/*  this fixed palette regardless of the player's desktop theme     */
+/*  choice. Values are new; no existing --hud-* value above is      */
+/*  changed by this block. Surfaces are lifted well off pure black  */
+/*  and text/border contrast is deliberately higher than desktop's  */
+/*  --hud-* set (see docs/architecture.md's Mobile Shell entry for  */
+/*  the computed contrast ratios this was tuned against).           */
+/* ═══════════════════════════════════════════════════════════════ */
+[data-mobile-shell] {
+  --hud-mobile-bg:           #1C1512;
+  --hud-mobile-panel:        #241A14;
+  --hud-mobile-surface:      #2C201A;
+
+  --hud-mobile-border:       rgba(224, 120, 80, 0.35);
+  --hud-mobile-border-hi:    rgba(224, 120, 80, 0.55);
+
+  --hud-mobile-text:         #F5EDE3;  /* body text — ~15.5:1 on --hud-mobile-bg */
+  --hud-mobile-text-dim:     #C9B8A8;  /* secondary text — ~9.4:1 on --hud-mobile-bg */
+  --hud-mobile-text-faint:   #9C8672;  /* tertiary/inert only, no contrast requirement */
+
+  --hud-mobile-gold:         #E8B858;
+  --hud-mobile-accent:       #FF6B3D;
+  --hud-mobile-accent-hi:    #FF8A5C;
+
+  /* Added for the Abilities destination (Mobile Rebuild 2/7) — per-type
+     identity colours for the search surface's type bars: Force (purple)
+     and Signature Ability (teal). Skills/Talents reuse gold/accent above. */
+  --hud-mobile-force:        #A876E0;
+  --hud-mobile-sig:          #2FBFA8;
+}

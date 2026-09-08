@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { SP, Z, EASE, RADIUS, HUD, FS } from '@/lib/tokens'
 
 interface MobileBottomSheetProps {
   open: boolean
@@ -11,9 +10,17 @@ interface MobileBottomSheetProps {
   collapsedHeight?: string
   /** Expanded sheet height. Default: '70dvh' */
   expandedHeight?: string
+  /**
+   * Optional fixed footer, rendered outside the scrollable body — e.g. a
+   * close control + a (possibly disabled) primary action. When present,
+   * `children` scrolls in `.m-sheet-body` and the footer never moves.
+   */
+  footer?: React.ReactNode
 }
 
-export function MobileBottomSheet({ open, onClose, children, collapsedHeight = '40dvh', expandedHeight = '70dvh' }: MobileBottomSheetProps) {
+export function MobileBottomSheet({
+  open, onClose, children, collapsedHeight = '40dvh', expandedHeight = '70dvh', footer,
+}: MobileBottomSheetProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
   // Lock body scroll while open
@@ -29,68 +36,37 @@ export function MobileBottomSheet({ open, onClose, children, collapsedHeight = '
   if (!open) return null
 
   return createPortal(
-    <div
-      role="dialog"
-      aria-modal="true"
-      style={{
-        position: 'fixed', inset: 0,
-        zIndex: Z.modal,
-        display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
-      }}
-    >
-      {/* Backdrop */}
-      <div
-        onClick={onClose}
-        style={{
-          position: 'absolute', inset: 0,
-          background: 'color-mix(in srgb, var(--hud-bg) 70%, transparent)',
-          cursor: 'pointer',
-        }}
-      />
+    // `data-mobile-shell` is re-declared here (not just on the shell root)
+    // because this portals to document.body, outside the shell's own DOM
+    // subtree — the [data-mobile-shell] CSS custom properties otherwise
+    // wouldn't inherit into a sibling-of-body portal.
+    <div role="dialog" aria-modal="true" className="m-sheet-root" data-mobile-shell="">
+      <div className="m-sheet-backdrop" onClick={onClose} />
 
-      {/* Sheet */}
-      <div style={{
-        position: 'relative',
-        zIndex: Z.modal,
-        maxHeight: isExpanded ? expandedHeight : collapsedHeight,
-        transition: `max-height ${EASE.panel}`,
-        overflowY: 'auto',
-        overscrollBehavior: 'contain',
-        background: 'var(--hud-surface-hi)',
-        borderTop: `1px solid var(--hud-border)`,
-        borderRadius: `${RADIUS.xl}px ${RADIUS.xl}px 0 0`,
-        padding: `${SP[2]} ${SP[3]} ${SP[6]}`,
-      }}>
+      <div
+        className="m-sheet-panel"
+        // max-height is a live prop value ('40dvh'/'85dvh'/etc) — no
+        // CSS-class equivalent, documented inline style exception. `position`
+        // is never set here — it lives on `.m-sheet-panel` in
+        // mobile-shell.css, per the standing rule against inline `position`
+        // on drawer/overlay wrappers.
+        style={{ maxHeight: isExpanded ? expandedHeight : collapsedHeight }}
+      >
         {/* Drag handle + chevron — single button so full affordance is keyboard/touch accessible */}
         <button
+          type="button"
+          className="m-sheet-handle-btn"
           onClick={() => setIsExpanded(prev => !prev)}
           aria-label={isExpanded ? 'Collapse sheet' : 'Expand sheet'}
           aria-expanded={isExpanded}
-          style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center',
-            gap: SP[1],
-            width: '100%',
-            background: 'transparent', border: 'none',
-            cursor: 'pointer',
-            padding: `0 0 ${SP[1]}`,
-          }}
         >
-          {/* Handle pill — fixed geometry: 36×4px is a UI affordance constant */}
-          <div style={{
-            width: 36, height: 4, /* fixed handle geometry */
-            borderRadius: RADIUS.full,
-            background: 'var(--hud-border-hi)',
-          }} />
-          {/* Chevron hint */}
-          <span style={{
-            fontSize: FS.overline,
-            color: HUD.textFaint,
-            lineHeight: 1,
-          }}>
-            {isExpanded ? '▲' : '▼'}
-          </span>
+          <span className="m-sheet-handle-pip" />
+          <span className="m-sheet-handle-chevron">{isExpanded ? '▲' : '▼'}</span>
         </button>
-        {children}
+
+        <div className="m-sheet-body">{children}</div>
+
+        {footer && <div className="m-sheet-footer">{footer}</div>}
       </div>
     </div>,
     document.body,

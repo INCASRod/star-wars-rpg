@@ -5,7 +5,7 @@
 // pool assembly, and result formatting.
 // ═══════════════════════════════════════════════════════════════════════════
 
-import type { RollResult } from '@/components/player-hud/dice-engine'
+import { getSkillPool, type RollResult } from '@/components/player-hud/dice-engine'
 import type { AdversaryInstance } from '@/lib/adversaries'
 
 // ── Range band types ──────────────────────────────────────────────────────────
@@ -131,6 +131,78 @@ export function getMeleeDifficulty(
     targetMeleeRank: meleeRank,
     targetBrawn:     brawn,
   }
+}
+
+// ── Dual-wield pool and penalty ─────────────────────────────────────────────────
+// AoE Core p.204: two-weapon combined check uses the LOWER of the two
+// weapons' skill ranks and the LOWER of their linked characteristics, and
+// suffers +1 difficulty (same skill) or +2 (different skills). No range-based
+// challenge dice apply in dual wield — only the max of the two weapons'
+// range-band difficulty dice feeds the base before the same/different penalty.
+
+export interface DualWieldPoolResult {
+  proficiency: number
+  ability:     number
+  /** Base range difficulty (max of the two weapons) plus the same/different-skill penalty. */
+  difficulty:  number
+  sameSkill:   boolean
+}
+
+export function getDualWieldPool(
+  primarySkillKey:         string,
+  secondarySkillKey:       string,
+  primaryCharVal:          number,
+  secondaryCharVal:        number,
+  primarySkillRank:        number,
+  secondarySkillRank:      number,
+  rangeBand:               RangeBand | null,
+  primaryWeaponMaxRange:   RangeBand,
+  secondaryWeaponMaxRange: RangeBand,
+): DualWieldPoolResult {
+  const usedSkillRank = Math.min(primarySkillRank, secondarySkillRank)
+  const usedChar      = Math.min(primaryCharVal, secondaryCharVal)
+  const { proficiency, ability } = getSkillPool(usedChar, usedSkillRank)
+
+  const primaryDiff   = rangeBand ? getRangedDifficulty(rangeBand, primarySkillKey,   primaryWeaponMaxRange).difficultyDice   : 0
+  const secondaryDiff = rangeBand ? getRangedDifficulty(rangeBand, secondarySkillKey, secondaryWeaponMaxRange).difficultyDice : 0
+  const baseDifficulty = Math.max(primaryDiff, secondaryDiff)
+
+  const sameSkill  = primarySkillKey === secondarySkillKey
+  const difficulty = baseDifficulty + (sameSkill ? 1 : 2)
+
+  return { proficiency, ability, difficulty, sameSkill }
+}
+
+// ── Maneuver modifier merge ──────────────────────────────────────────────────
+// Combat Check's maneuver toggles (Aim x2, Assist, Guarded) are separate local
+// state from ManualAdjustments so the DSS steppers stay independent — this
+// merges them into one adjustments object before it's fed to the pool review.
+export interface ManualAdjustmentsLike {
+  boostAdd:           number
+  setbackAdd:         number
+  difficultyAdd:      number
+  challengeAdd:       number
+  forceAdd:           number
+  abilityUpgrades:    number
+  difficultyUpgrades: number
+}
+
+export function mergeManeuverAdjustments<T extends ManualAdjustmentsLike>(
+  adjustments:   T,
+  aimBoosts:     number,
+  assistActive:  boolean,
+  guardedActive: boolean,
+): T {
+  return {
+    ...adjustments,
+    boostAdd:   adjustments.boostAdd + aimBoosts + (assistActive ? 1 : 0),
+    setbackAdd: adjustments.setbackAdd + (guardedActive ? 1 : 0),
+  }
+}
+
+/** Total dice count across a roll pool, ignoring negative/undefined entries. */
+export function totalPoolDice(pool: Record<string, number>): number {
+  return Object.values(pool).reduce((s, n) => s + Math.max(0, n ?? 0), 0)
 }
 
 // ── Skill type helpers ────────────────────────────────────────────────────────

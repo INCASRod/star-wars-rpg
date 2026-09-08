@@ -402,7 +402,10 @@ export function EncounterDeck({
     <div style={{
       position: 'absolute', left: 0, right: 0, bottom: 0,
       display: 'flex', flexDirection: 'column',
-      zIndex: Z.deck, pointerEvents: 'none',
+      // Below Z.dropdown (GM rail panels) so an open panel always wins —
+      // deckExpanded (below) only orders this deck's own button-vs-body
+      // stacking and is unaffected by this value.
+      zIndex: Z.sticky, pointerEvents: 'none',
     }}>
       <button
         onClick={() => onOpenChange(!open)}

@@ -96,6 +96,134 @@ export function poolSize(pool: Record<DiceType, number>): number {
   return Object.values(pool).reduce((a, b) => a + b, 0)
 }
 
+export interface SkillCheckPoolParams {
+  charVal:        number
+  rank:           number
+  upgradeSkill:   number  // ability->proficiency upgrades applied on top of rank
+  boostAdd:       number
+  setbackAdd:     number
+  forceAdd:       number
+  baseDifficulty: number
+  diffUpgrades:   number  // difficulty->challenge upgrades
+}
+
+/**
+ * Upgrade N ability dice into proficiency dice (AoE Core, "Upgrading More
+ * Dice Than Available"). Each upgrade converts one ability die into a
+ * proficiency die; if none remain, the upgrade instead ADDS an ability die
+ * and is consumed doing so — only a SUBSEQUENT upgrade converts that newly
+ * added die. Difficulty and non-integer counts are guarded to 0.
+ */
+export function upgradeAbility(
+  proficiency: number, ability: number, upgrades: number,
+): { proficiency: number; ability: number } {
+  const n = Math.max(0, Math.floor(upgrades))
+  for (let i = 0; i < n; i++) {
+    if (ability > 0) { ability -= 1; proficiency += 1 }
+    else               { ability += 1 }
+  }
+  return { proficiency, ability }
+}
+
+/**
+ * Upgrade N difficulty dice into challenge dice. Same rule as
+ * `upgradeAbility`, mirrored per GM ruling: each upgrade converts one
+ * difficulty die into a challenge die; if none remain, the upgrade instead
+ * ADDS a difficulty die and is consumed doing so.
+ */
+export function upgradeDifficulty(
+  difficulty: number, challenge: number, upgrades: number,
+): { difficulty: number; challenge: number } {
+  const n = Math.max(0, Math.floor(upgrades))
+  for (let i = 0; i < n; i++) {
+    if (difficulty > 0) { difficulty -= 1; challenge += 1 }
+    else                  { difficulty += 1 }
+  }
+  return { difficulty, challenge }
+}
+
+/** Shared manual-adjustment shape for both the Skill Check and Combat Check
+ *  panels. Declared here (not in a component file) so both panels — and
+ *  `applyModifiers` itself — import the same type. */
+export interface ManualAdjustments {
+  boostAdd:           number
+  setbackAdd:         number
+  difficultyAdd:      number
+  challengeAdd:       number  // direct challenge-die adjustments (upgrade/downgrade buttons)
+  forceAdd:           number  // Force dice added to the check (Force talents/powers)
+  abilityUpgrades:    number
+  difficultyUpgrades: number
+}
+
+export const EMPTY_ADJUSTMENTS: ManualAdjustments = {
+  boostAdd: 0, setbackAdd: 0, difficultyAdd: 0, challengeAdd: 0, forceAdd: 0,
+  abilityUpgrades: 0, difficultyUpgrades: 0,
+}
+
+/** Combat-only extras that don't apply to a bare skill check. */
+export interface ApplyModifiersExtras {
+  talentBoost?:        number
+  talentSetbackRemove?: number
+}
+
+/**
+ * Apply a ManualAdjustments delta to a derived base pool, in rulebook order:
+ * add step (difficultyAdd on top of base difficulty) THEN upgrade step
+ * (upgradeAbility / upgradeDifficulty), then flat boost/setback/challenge/
+ * force additions. Never returns a negative count for any die type.
+ */
+export function applyModifiers(
+  basePool: { proficiency: number; ability: number; difficulty: number; challenge: number },
+  adjustments: ManualAdjustments,
+  extras?: ApplyModifiersExtras,
+): Record<DiceType, number> {
+  const { proficiency: finalPro, ability: finalAbl } = upgradeAbility(
+    basePool.proficiency, basePool.ability, adjustments.abilityUpgrades,
+  )
+
+  const availableDiff = Math.max(0, basePool.difficulty + adjustments.difficultyAdd)
+  const { difficulty: finalDiff, challenge: finalChalFromUpgrade } = upgradeDifficulty(
+    availableDiff, basePool.challenge, adjustments.difficultyUpgrades,
+  )
+
+  const talentBoost    = extras?.talentBoost ?? 0
+  const talentSbRemove = extras?.talentSetbackRemove ?? 0
+  const netSetback     = Math.max(0, adjustments.setbackAdd - talentSbRemove)
+
+  return {
+    proficiency: finalPro,
+    ability:     finalAbl,
+    boost:       Math.max(0, talentBoost + adjustments.boostAdd),
+    difficulty:  finalDiff,
+    challenge:   Math.max(0, finalChalFromUpgrade + adjustments.challengeAdd),
+    setback:     netSetback,
+    force:       Math.max(0, adjustments.forceAdd),
+  } as Record<DiceType, number>
+}
+
+/** Full skill-check pool composition: proficiency/ability via getSkillPool
+ *  on the TRUE rank, then applyModifiers() for adds/upgrades/boost/setback/
+ *  force. Thin wrapper — `applyModifiers` does the actual work. */
+export function buildSkillCheckPool(params: SkillCheckPoolParams): Record<DiceType, number> {
+  const { charVal, rank, upgradeSkill, boostAdd, setbackAdd, forceAdd, baseDifficulty, diffUpgrades } = params
+  const base = getSkillPool(charVal, rank)
+  return applyModifiers(
+    { proficiency: base.proficiency, ability: base.ability, difficulty: baseDifficulty, challenge: 0 },
+    {
+      ...EMPTY_ADJUSTMENTS,
+      boostAdd, setbackAdd, forceAdd,
+      abilityUpgrades: upgradeSkill,
+      difficultyUpgrades: diffUpgrades,
+    },
+  )
+}
+
+/** Force dice available for a check: Force Rating minus dice already
+ *  committed to ongoing effects, never negative. */
+export function getAvailableForceDice(forceRating: number, committedForce: number): number {
+  return Math.max(0, forceRating - committedForce)
+}
+
 // ── Force Dice ──────────────────────────────────────────────────
 // Official FFG Force Die (d12): L = light side ○, K = dark side ●
 // Blank: 1 face | 1-dark: 6 faces | 2-dark: 2 faces | 1-light: 2 faces | 2-light: 1 face

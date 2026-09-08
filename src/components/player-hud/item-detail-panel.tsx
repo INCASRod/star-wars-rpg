@@ -26,14 +26,19 @@ interface ItemDetailPanelProps {
   onHoverState?:         (id: string | null, type: 'weapon' | 'armor' | 'gear', targetState?: EquipState) => void
   stowableAssets?:       StowableAsset[]
   baseOfOperationsName?: string | null
-  onSetWeaponState:      (id: string, state: EquipState, location?: StowLocation | null) => void
-  onSetArmorState:       (id: string, state: EquipState, location?: StowLocation | null) => void
-  onSetGearState:        (id: string, state: EquipState, location?: StowLocation | null) => void
+  onSetWeaponState?:     (id: string, state: EquipState, location?: StowLocation | null) => void
+  onSetArmorState?:      (id: string, state: EquipState, location?: StowLocation | null) => void
+  onSetGearState?:       (id: string, state: EquipState, location?: StowLocation | null) => void
   onDiscardWeapon?:      (id: string, note?: string) => void
   onDiscardArmor?:       (id: string, note?: string) => void
   onDiscardGear?:        (id: string, note?: string) => void
   isGmMode?:             boolean
   characterName?:        string
+  // Inspect-only mode (Market "inspect before you buy"): hides the equip/
+  // stow/discard footer and the Encumbrance tab (both assume the character
+  // owns the item — see docs/architecture.md). Defaults to false so every
+  // existing Inventory caller is unaffected.
+  readOnly?:             boolean
 }
 
 // ── Stat box ─────────────────────────────────────────────────────────────────
@@ -105,10 +110,10 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: 'lore', label: 'Lore' },
 ]
 
-function TabBar({ active, onChange }: { active: TabKey; onChange: (t: TabKey) => void }) {
+function TabBar({ tabs, active, onChange }: { tabs: typeof TABS; active: TabKey; onChange: (t: TabKey) => void }) {
   return (
     <div style={{ display: 'flex', borderTop: '1px solid var(--hud-border)', borderBottom: '1px solid var(--hud-border)' }}>
-      {TABS.map(t => (
+      {tabs.map(t => (
         <button
           key={t.key}
           onClick={() => onChange(t.key)}
@@ -348,14 +353,16 @@ export function ItemDetailPanel({
   stowableAssets, baseOfOperationsName,
   onSetWeaponState, onSetArmorState, onSetGearState,
   onDiscardWeapon, onDiscardArmor, onDiscardGear,
-  isGmMode, characterName,
+  isGmMode, characterName, readOnly = false,
 }: ItemDetailPanelProps) {
+  const tabs = readOnly ? TABS.filter(t => t.key !== 'enc') : TABS
+  const defaultTab: TabKey = readOnly ? 'mods' : 'enc'
   const [showDiscard, setShowDiscard] = useState(false)
-  const [activeTab, setActiveTab] = useState<TabKey>('enc')
+  const [activeTab, setActiveTab] = useState<TabKey>(defaultTab)
   const [prevId, setPrevId] = useState<string | null>(null)
   const detailRef = useRef<HTMLDivElement>(null)
   const currentId = selected.item.id
-  if (currentId !== prevId) { setShowDiscard(false); setActiveTab('enc'); setPrevId(currentId) }
+  if (currentId !== prevId) { setShowDiscard(false); setActiveTab(defaultTab); setPrevId(currentId) }
 
   // Set data-ticker-pass gate whenever the selected item changes — mirrors
   // HudFullPanel's mechanism so TickerText in ItemDetailHero re-animates.
@@ -416,9 +423,9 @@ export function ItemDetailPanel({
   }) {
     return (
       <>
-        <TabBar active={activeTab} onChange={setActiveTab} />
+        <TabBar tabs={tabs} active={activeTab} onChange={setActiveTab} />
         <div style={{ padding: `${SP[2]} ${SP[2]}` }}>
-          {activeTab === 'enc' && <EncumbranceTab item={item} isArmor={isArmor} encumbranceStats={encumbranceStats} />}
+          {activeTab === 'enc' && !readOnly && <EncumbranceTab item={item} isArmor={isArmor} encumbranceStats={encumbranceStats} />}
           {activeTab === 'mods' && <ModsTab hardPoints={hardPoints} hardPointsUsed={hardPointsUsed} />}
           {activeTab === 'lore' && (
             loreText && loreText.trim()
@@ -533,14 +540,14 @@ export function ItemDetailPanel({
   function renderFooter(): React.ReactNode {
     if (selected.kind === 'weapon') {
       const w = selected.item
-      return <Footer equipState={w.equipState} condition={w.condition} stowLocation={w.stowLocation} name={w.name} itemId={w.id} itemType="weapon" onSet={(s, loc) => onSetWeaponState(w.id, s, loc)} onDiscard={onDiscardWeapon} />
+      return <Footer equipState={w.equipState} condition={w.condition} stowLocation={w.stowLocation} name={w.name} itemId={w.id} itemType="weapon" onSet={(s, loc) => onSetWeaponState?.(w.id, s, loc)} onDiscard={onDiscardWeapon} />
     }
     if (selected.kind === 'armor') {
       const a = selected.item
-      return <Footer equipState={a.equipState} condition={a.condition} stowLocation={a.stowLocation} name={a.name} itemId={a.id} itemType="armor" onSet={(s, loc) => onSetArmorState(a.id, s, loc)} onDiscard={onDiscardArmor} />
+      return <Footer equipState={a.equipState} condition={a.condition} stowLocation={a.stowLocation} name={a.name} itemId={a.id} itemType="armor" onSet={(s, loc) => onSetArmorState?.(a.id, s, loc)} onDiscard={onDiscardArmor} />
     }
     const g = selected.item
-    return <Footer equipState={g.equipState} condition={g.condition} stowLocation={g.stowLocation} name={g.name} itemId={g.id} itemType="gear" onSet={(s, loc) => onSetGearState(g.id, s, loc)} onDiscard={onDiscardGear} />
+    return <Footer equipState={g.equipState} condition={g.condition} stowLocation={g.stowLocation} name={g.name} itemId={g.id} itemType="gear" onSet={(s, loc) => onSetGearState?.(g.id, s, loc)} onDiscard={onDiscardGear} />
   }
 
   return (
@@ -557,7 +564,7 @@ export function ItemDetailPanel({
       <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
         {renderScrollBody(selected.kind)}
       </div>
-      {renderFooter()}
+      {!readOnly && renderFooter()}
     </div>
   )
 }

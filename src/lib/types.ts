@@ -195,6 +195,10 @@ export interface RefArmor {
   hard_points: number
   price: number
   rarity: number
+  // Backfilled from oggdude/DataCustom/Armor.xml's <Restricted> (migration
+  // 128) — parse-oggdude.ts's parseArmor() never read this field until then,
+  // a seeder gap (ref_weapons has always had it).
+  restricted: boolean
   // Structured fields from migration 018 — seeded from Armor.xml
   soak_bonus?: number
   defense_melee?: number
@@ -259,6 +263,9 @@ export interface RefGear {
   encumbrance: number
   price: number
   rarity: number
+  // Backfilled from oggdude/DataCustom/Gear.xml's <Restricted> (migration
+  // 128) — see RefArmor.restricted's doc comment for why this was missing.
+  restricted: boolean
   encumbrance_bonus?: number | null
   // Category tag backfilled from Gear.xml's <Type> (migration 122)
   categories?: string[]

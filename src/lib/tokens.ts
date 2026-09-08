@@ -204,6 +204,44 @@ export const HUD = {
   accentPurple: 'var(--hud-accent-purple)',
 } as const
 
+// ── Mobile shell — legibility-first Ember Tatooine variant ─────────
+// New tokens, additive only — desktop's HUD.* above is untouched.
+// CSS side lives in state-tokens.css under [data-mobile-shell], a
+// fixed palette that does NOT respond to [data-theme]/ThemeSwitcher —
+// mobile always renders this regardless of the player's desktop
+// theme choice. See that block's own comment for contrast evidence.
+export const HUD_MOBILE = {
+  bg:         'var(--hud-mobile-bg)',
+  panel:      'var(--hud-mobile-panel)',
+  surface:    'var(--hud-mobile-surface)',
+  border:     'var(--hud-mobile-border)',
+  borderHi:   'var(--hud-mobile-border-hi)',
+  text:       'var(--hud-mobile-text)',
+  textDim:    'var(--hud-mobile-text-dim)',
+  textFaint:  'var(--hud-mobile-text-faint)',
+  gold:       'var(--hud-mobile-gold)',
+  accent:     'var(--hud-mobile-accent)',
+  accentHi:   'var(--hud-mobile-accent-hi)',
+  // Added for the Abilities destination (Mobile Rebuild 2/7) — search
+  // surface type-bar identity colours.
+  force:      'var(--hud-mobile-force)',
+  sig:        'var(--hud-mobile-sig)',
+} as const
+
+// Minimum interactive-element size for the mobile shell (legibility
+// requirement, not a spacing-scale value — fixed geometry like
+// RADIUS.full, not a clamp()). Use for width/height/minWidth/minHeight
+// on every mobile tap target.
+export const MOBILE_TAP_MIN = 48
+
+// Theme-sensitive vital colours (already defined per-theme in
+// state-tokens.css as --hud-vital-wounds/--hud-vital-strain; not
+// previously exported to tokens.ts). New export, no CSS value changed.
+export const VITAL = {
+  wounds: 'var(--hud-vital-wounds)',
+  strain: 'var(--hud-vital-strain)',
+} as const
+
 // ── Talent tree — plaque, glow, link tokens ────────────────────────
 // Reference CSS custom properties defined in state-tokens.css (both
 // theme blocks). Used by the FFG-style talent/signature-ability tree

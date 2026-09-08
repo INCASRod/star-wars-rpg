@@ -1,32 +1,22 @@
 'use client'
 
-import { getSkillPool } from '@/components/player-hud/dice-engine'
+import { getSkillPool, applyModifiers } from '@/components/player-hud/dice-engine'
 import type { Character, CharacterWeapon, CharacterSkill, RefWeapon, RefSkill, SpeciesAbility } from '@/lib/types'
 import type { AdversaryInstance } from '@/lib/adversaries'
 import type { SkillDiceModifier } from '@/lib/derivedStats'
-import type { RangeBand } from '@/lib/combatCheckUtils'
+import type { RangeBand, DualWieldPoolResult } from '@/lib/combatCheckUtils'
 import {
-  getRangedDifficulty, getMeleeDifficulty,
+  getRangedDifficulty, getMeleeDifficulty, getDualWieldPool,
   RANGE_VALUE_MAP, CHAR_FIELD_MAP,
 } from '@/lib/combatCheckUtils'
 import { useEffect } from 'react'
 
-
-
-export interface ManualAdjustments {
-  boostAdd:           number
-  setbackAdd:         number
-  difficultyAdd:      number
-  challengeAdd:       number  // direct challenge-die adjustments (upgrade/downgrade buttons)
-  forceAdd:           number  // Force dice added to the check (Force talents/powers)
-  abilityUpgrades:    number
-  difficultyUpgrades: number
-}
-
-export const EMPTY_ADJUSTMENTS: ManualAdjustments = {
-  boostAdd: 0, setbackAdd: 0, difficultyAdd: 0, challengeAdd: 0, forceAdd: 0,
-  abilityUpgrades: 0, difficultyUpgrades: 0,
-}
+// Re-exported so existing `import type { ManualAdjustments } from
+// '.../DicePoolReviewStep'` call sites keep working — the type now lives in
+// dice-engine.ts so both panels (and applyModifiers) share one declaration.
+import type { ManualAdjustments } from '@/components/player-hud/dice-engine'
+export type { ManualAdjustments } from '@/components/player-hud/dice-engine'
+export { EMPTY_ADJUSTMENTS } from '@/components/player-hud/dice-engine'
 
 export interface DualWieldState {
   enabled:         boolean
@@ -77,16 +67,10 @@ export function DicePoolReviewStep({
   // ── Dual wield pool calculation ───────────────────────────────────────────
   let dwPrimarySkillKey    = ''
   let dwSecondarySkillKey  = ''
-  let dwUsedSkillRank      = 0
-  let dwUsedChar           = 0
-  let dwBaseDifficulty     = 0
+  let dwPool: DualWieldPoolResult | null = null
   let dwPenaltyLabel       = ''
   let dwPrimarySkillLabel  = ''
   let dwSecondarySkillLabel = ''
-  let dwPrimarySkillRank   = 0
-  let dwSecondarySkillRank = 0
-  let dwPrimaryCharVal     = 0
-  let dwSecondaryCharVal   = 0
 
   if (isDualWield && dualWield && refWeaponMap && refSkillMap) {
     const primaryRef   = refWeaponMap[dualWield.primaryWeapon.weapon_key]
@@ -101,24 +85,23 @@ export function DicePoolReviewStep({
     const primaryCharKey   = primarySkillRef?.characteristic_key ?? ''
     const secondaryCharKey = secondarySkillRef?.characteristic_key ?? ''
 
-    dwPrimaryCharVal   = primaryCharKey   ? ((character[CHAR_FIELD_MAP[primaryCharKey]   as keyof Character] as number) ?? 0) : 0
-    dwSecondaryCharVal = secondaryCharKey ? ((character[CHAR_FIELD_MAP[secondaryCharKey] as keyof Character] as number) ?? 0) : 0
+    const dwPrimaryCharVal   = primaryCharKey   ? ((character[CHAR_FIELD_MAP[primaryCharKey]   as keyof Character] as number) ?? 0) : 0
+    const dwSecondaryCharVal = secondaryCharKey ? ((character[CHAR_FIELD_MAP[secondaryCharKey] as keyof Character] as number) ?? 0) : 0
 
-    dwPrimarySkillRank   = charSkills.find(s => s.skill_key === dwPrimarySkillKey)?.rank   ?? 0
-    dwSecondarySkillRank = charSkills.find(s => s.skill_key === dwSecondarySkillKey)?.rank ?? 0
-
-    dwUsedSkillRank = Math.min(dwPrimarySkillRank, dwSecondarySkillRank)
-    dwUsedChar      = Math.min(dwPrimaryCharVal,   dwSecondaryCharVal)
+    const dwPrimarySkillRank   = charSkills.find(s => s.skill_key === dwPrimarySkillKey)?.rank   ?? 0
+    const dwSecondarySkillRank = charSkills.find(s => s.skill_key === dwSecondarySkillKey)?.rank ?? 0
 
     const primaryWeaponMaxRange   = primaryRef?.range_value   ? (RANGE_VALUE_MAP[primaryRef.range_value]   ?? 'extreme') : 'extreme'
     const secondaryWeaponMaxRange = secondaryRef?.range_value ? (RANGE_VALUE_MAP[secondaryRef.range_value] ?? 'extreme') : 'extreme'
 
-    const primaryDiff   = rangeBand ? getRangedDifficulty(rangeBand, dwPrimarySkillKey,   primaryWeaponMaxRange)   : { difficultyDice: 0 }
-    const secondaryDiff = rangeBand ? getRangedDifficulty(rangeBand, dwSecondarySkillKey, secondaryWeaponMaxRange) : { difficultyDice: 0 }
-    dwBaseDifficulty = Math.max(primaryDiff.difficultyDice, secondaryDiff.difficultyDice)
+    dwPool = getDualWieldPool(
+      dwPrimarySkillKey, dwSecondarySkillKey,
+      dwPrimaryCharVal, dwSecondaryCharVal,
+      dwPrimarySkillRank, dwSecondarySkillRank,
+      rangeBand, primaryWeaponMaxRange, secondaryWeaponMaxRange,
+    )
 
-    const sameSkill = dwPrimarySkillKey === dwSecondarySkillKey
-    dwPenaltyLabel  = sameSkill
+    dwPenaltyLabel  = dwPool.sameSkill
       ? `+1 difficulty (same skill: ${primarySkillRef?.name ?? dwPrimarySkillKey})`
       : '+2 difficulty (different skills)'
 
@@ -129,13 +112,13 @@ export function DicePoolReviewStep({
   // ── Final pool values ─────────────────────────────────────────────────────
   let baseProf: number, baseAbl: number, baseDiff: number, baseChal: number
 
-  if (isDualWield) {
-    const { proficiency, ability } = getSkillPool(dwUsedChar, dwUsedSkillRank)
-    const sameSkill = dwPrimarySkillKey === dwSecondarySkillKey
-    baseDiff = dwBaseDifficulty + (sameSkill ? 1 : 2) + adjustments.difficultyAdd
+  if (isDualWield && dwPool) {
+    // difficultyAdd is applied uniformly below via applyModifiers — do not
+    // fold it into baseDiff here, or it would be applied twice.
+    baseDiff = dwPool.difficulty
     baseChal = 0
-    baseProf = proficiency
-    baseAbl  = ability
+    baseProf = dwPool.proficiency
+    baseAbl  = dwPool.ability
   } else {
     baseProf = stdPro
     baseAbl  = stdAbl
@@ -156,54 +139,19 @@ export function DicePoolReviewStep({
     baseChal = challengeDice
   }
 
-  // Apply ability upgrades — AoE Core p.24 "Upgrading Dice": each upgrade turns
-  // an Ability die into a Proficiency die; if none remain, one Ability die is
-  // ADDED first and the next upgrade converts it. Net effect for N upgrades
-  // against A available: Proficiency +N, Ability -min(N, A). Previously the
-  // upgrade count was clamped to the available dice, so upgrading past the
-  // pool's ability dice silently did nothing.
-  const upgrades = Math.min(adjustments.abilityUpgrades, baseAbl)
-  const finalPro = baseProf + adjustments.abilityUpgrades
-  const finalAbl = baseAbl - upgrades
-
   // Talent bonuses (use primary skill key for dual wield)
   const activeSk       = isDualWield ? dwPrimarySkillKey : skillKey
   const talentMod: SkillDiceModifier | undefined = skillModifiers[activeSk]
   const talentBoost    = talentMod?.boostAdd ?? 0
   const talentSbRemove = talentMod?.setbackRemove ?? 0
 
-  // Apply difficulty upgrades — same rule, mirrored (AoE Core p.24, "Upgrade
-  // Versus Increase"): "if a player needs to upgrade Difficulty dice into
-  // Challenge dice but there are no more Difficulty dice remaining … First, one
-  // additional Difficulty die is added; then if any more upgrades remain, the
-  // Difficulty die is upgraded into a Challenge die."
-  //
-  // So N upgrades against D available difficulty dice always yield Challenge
-  // +N, with Difficulty reduced by min(N, D) — never a no-op. Note upgrading is
-  // NOT the same as increasing difficulty; that's the separate "Adjust
-  // Difficulty" stepper, which adds/removes Difficulty dice outright.
-  let finalDiff: number, finalChal: number
-  const diffUpgrades = adjustments.difficultyUpgrades
-  if (isDualWield) {
-    finalDiff = baseDiff - Math.min(diffUpgrades, baseDiff)
-    finalChal = diffUpgrades
-  } else {
-    const availableDiff = Math.max(0, baseDiff + adjustments.difficultyAdd)
-    finalDiff = availableDiff - Math.min(diffUpgrades, availableDiff)
-    finalChal = baseChal + diffUpgrades
-  }
-
-  const netSetback = Math.max(0, adjustments.setbackAdd - talentSbRemove)
-
-  const finalPool = {
-    proficiency: finalPro,
-    ability:     finalAbl,
-    boost:       talentBoost + adjustments.boostAdd,
-    difficulty:  finalDiff,
-    challenge:   finalChal + adjustments.challengeAdd,
-    setback:     netSetback,
-    force:       adjustments.forceAdd,
-  }
+  // Add step (difficultyAdd) then upgrade step (upgradeAbility/upgradeDifficulty),
+  // then flat boost/setback/challenge/force additions — see applyModifiers.
+  const finalPool = applyModifiers(
+    { proficiency: baseProf, ability: baseAbl, difficulty: baseDiff, challenge: baseChal },
+    adjustments,
+    { talentBoost, talentSetbackRemove: talentSbRemove },
+  )
 
   // Emit pool to parent (CombatCheckOverlay renders the Roll button)
   const { proficiency, ability, boost, difficulty, challenge, setback, force } = finalPool

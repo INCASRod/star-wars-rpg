@@ -102,12 +102,16 @@ function SpringBox({ open, children }: { open: boolean; children: React.ReactNod
 // only and does not need the character/skills/forceRating bundle threaded
 // through it. Every other type is an honest placeholder — no fake controls,
 // no simulated resolve.
-function CardBody({ action, renderInitiativeBody }: {
+function CardBody({ action, renderInitiativeBody, renderVendorOfferBody }: {
   action: PendingAction
   renderInitiativeBody: (a: PendingAction) => React.ReactNode
+  renderVendorOfferBody?: (a: PendingAction) => React.ReactNode
 }) {
   if (action.action_type === 'initiative') {
     return <>{renderInitiativeBody(action)}</>
+  }
+  if (action.action_type === 'vendor_offer' && renderVendorOfferBody) {
+    return <>{renderVendorOfferBody(action)}</>
   }
 
   return (
@@ -123,9 +127,10 @@ function CardBody({ action, renderInitiativeBody }: {
 }
 
 // ── Action card ───────────────────────────────────────────────────────────────
-function ActionCard({ action, renderInitiativeBody }: {
+function ActionCard({ action, renderInitiativeBody, renderVendorOfferBody }: {
   action: PendingAction
   renderInitiativeBody: (a: PendingAction) => React.ReactNode
+  renderVendorOfferBody?: (a: PendingAction) => React.ReactNode
 }) {
   const [open, setOpen] = useState(false)
   const meta = TYPE_META[action.action_type]
@@ -173,7 +178,7 @@ function ActionCard({ action, renderInitiativeBody }: {
       <SpringBox open={open}>
         <div className="pa-card-body">
           <div style={{ borderTop: '1px solid var(--hud-border)', padding: SP[3] }}>
-            <CardBody action={action} renderInitiativeBody={renderInitiativeBody} />
+            <CardBody action={action} renderInitiativeBody={renderInitiativeBody} renderVendorOfferBody={renderVendorOfferBody} />
           </div>
         </div>
       </SpringBox>
@@ -189,10 +194,12 @@ interface HudNotificationsDrawerProps {
   onClose:          () => void
   /** Supplied by the host so the card can render the shared InitiativeRollBody inline. */
   renderInitiativeBody: (a: PendingAction) => React.ReactNode
+  /** Supplied by the host to reopen the Market storefront from a 'vendor_offer' card. */
+  renderVendorOfferBody?: (a: PendingAction) => React.ReactNode
 }
 
 export function HudNotificationsDrawer({
-  open, actions, blockingCount, onClose, renderInitiativeBody,
+  open, actions, blockingCount, onClose, renderInitiativeBody, renderVendorOfferBody,
 }: HudNotificationsDrawerProps) {
   const count = actions.length
 
@@ -234,7 +241,7 @@ export function HudNotificationsDrawer({
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: SP[2] }}>
             {actions.map(a => (
-              <ActionCard key={a.id} action={a} renderInitiativeBody={renderInitiativeBody} />
+              <ActionCard key={a.id} action={a} renderInitiativeBody={renderInitiativeBody} renderVendorOfferBody={renderVendorOfferBody} />
             ))}
           </div>
         )}

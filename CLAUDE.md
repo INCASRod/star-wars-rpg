@@ -59,6 +59,12 @@ OggDude rows still exist in the database for the domains reSpec now owns (talent
 
 ---
 
+## Game Rule Changes
+
+- **2026-09-06 — dice upgrade math corrected (GM-approved behaviour change).** Skill Check and Combat Check panels previously implemented "upgrade ability→proficiency" and "upgrade difficulty→challenge" with two different, and both incorrect, algorithms. Both now use `upgradeAbility`/`upgradeDifficulty` (`src/components/player-hud/dice-engine.ts`), which follow AoE Core's "Upgrading More Dice Than Available" rule: each upgrade converts one die of the source type; if none remain, it instead adds one die of the source type and is consumed doing so. **Roll outputs for checks with upgrades exceeding available dice will differ from pre-2026-09-06 sessions.** See `docs/architecture.md`'s `dice-engine.ts`/`combatCheckUtils.ts` entries for detail.
+
+---
+
 ## Design System Rules
 
 **These rules apply to all new and modified code. No exceptions.**

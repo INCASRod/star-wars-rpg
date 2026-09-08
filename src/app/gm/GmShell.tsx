@@ -34,6 +34,7 @@ import { Modal } from '@/components/ui/Modal'
 
 import { GmLeftRail, type GmPanelId } from './GmLeftRail'
 import { GmReferenceLibraryPanel } from '@/components/gm/GmReferenceLibraryPanel'
+import { GmMarketPanel } from './panels/GmMarketPanel'
 import { GmMapPanel } from './panels/GmMapPanel'
 import { GmToolsPanel } from './panels/GmToolsPanel'
 import { GmPartyPanel } from './panels/GmPartyPanel'
@@ -185,7 +186,11 @@ export function GmShell() {
 
   // ── Handlers ────────────────────────────────────────────────────
   function handlePanelToggle(id: GmPanelId) {
-    setActivePanel(p => p === id ? null : id)
+    const next = activePanel === id ? null : id
+    // Opening a rail panel always closes the Encounter Deck — the reverse
+    // (deck toggle) never touches activePanel, see onDeckToggle below.
+    if (next !== null) setDeckOpen(false)
+    setActivePanel(next)
   }
 
   const handleToggleVisibility = useCallback(async (id: string, visible: boolean) => {
@@ -472,7 +477,15 @@ export function GmShell() {
             top:        0,
             left:       0,
             bottom:     0,
-            width:      activePanel === 'tools' ? '35rem' : activePanel === 'library' ? '26.25rem' : '22.5rem',
+            // Market is a focus surface, deliberately the widest GM rail panel
+            // by a wide margin — calc() relative to this container (the map
+            // area, itself flex:1 between the 3.25rem rail and the 16.25rem
+            // Roll Feed rail) rather than a hardcoded px/rem guess, so it
+            // self-derives at any viewport: always leaves a 10rem strip of
+            // map visible, never able to reach the Roll Feed since it can't
+            // exceed this container's own width (clipped by its overflow:
+            // hidden) even if it tried.
+            width:      activePanel === 'market' ? 'calc(100% - 10rem)' : activePanel === 'tools' ? '35rem' : activePanel === 'library' ? '26.25rem' : '22.5rem',
             background: 'var(--hud-panel)',
             borderRight:'1px solid var(--hud-border-hi)',
             boxShadow:  '4px 0 24px rgba(0,0,0,0.5)',
@@ -565,6 +578,9 @@ export function GmShell() {
             )}
             {activePanel === 'library' && (
               <GmReferenceLibraryPanel />
+            )}
+            {activePanel === 'market' && (
+              <GmMarketPanel campaignId={campaignId ?? ''} activeChars={activeChars} broadcastAll={broadcastAll} />
             )}
           </div>
         </div>
