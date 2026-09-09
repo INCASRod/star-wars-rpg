@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom'
 import manifest from '../../../public/images/manifest.json'
 import { ItemReadoutPlate } from '@/components/shared/ItemReadoutPlate'
 import type { ItemTable, IconResolution, IconRung } from '@/lib/itemIconResolver'
-import { FONT_BODY, HUD, FS, SP, RADIUS, Z, EASE } from '@/lib/tokens'
+import { FONT_BODY, HUD, COLOR, FS, SP, RADIUS, Z, EASE } from '@/lib/tokens'
 
 const SECTION: Record<ItemTable, keyof typeof manifest> = { weapon: 'weapons', armor: 'armor', gear: 'gear' }
 const TOP_LEVEL = new Set(['Ranged', 'Melee'])
@@ -27,8 +27,10 @@ interface IconPickerProps {
   /** Every item in this table (key, name, categories) — used to browse/search/filter. Caller already has this list loaded for the surface it's opening from. */
   catalog: CatalogEntry[]
   currentResolution: IconResolution | null
-  onSelect: (imageKey: string) => void
-  onReset: () => void
+  /** Fires only on explicit Save (grid click just stages a candidate into the preview). Returns whether the write succeeded — the picker closes on true, stays open with the selection intact and shows `error` on false. */
+  onSelect: (imageKey: string) => Promise<boolean>
+  /** Reset commits immediately (unambiguous, reversible) — same success-gated close as onSelect. */
+  onReset: () => Promise<boolean>
   onClose: () => void
   busy?: boolean
   /** Disables the reset action -- e.g. nothing to reset yet (new item, no pick made). Defaults to `currentResolution?.rung !== 'override'` when omitted. */
@@ -46,6 +48,9 @@ function pathToKey(table: ItemTable, path: string): string | null {
 export function IconPicker({ table, itemName, catalog, currentResolution, onSelect, onReset, onClose, busy, resetDisabled }: IconPickerProps) {
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
+  const [stagedKey, setStagedKey] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const section = manifest[SECTION[table]] as Record<string, string | null>
   const nameByKey = useMemo(() => Object.fromEntries(catalog.map(c => [c.key, c.name])), [catalog])
@@ -80,6 +85,29 @@ export function IconPicker({ table, itemName, catalog, currentResolution, onSele
     ? (nameByKey[currentKey] ?? currentKey)
     : null
 
+  const stagedPath = stagedKey ? section[stagedKey] ?? null : null
+  const canSave = stagedKey !== null && stagedKey !== currentKey
+  const busyEffective = !!busy || saving
+
+  const handleSave = async () => {
+    if (!stagedKey || !canSave) return
+    setSaving(true)
+    setError(null)
+    const ok = await onSelect(stagedKey)
+    setSaving(false)
+    if (ok) onClose()
+    else setError('Save failed — try again.')
+  }
+
+  const handleReset = async () => {
+    setSaving(true)
+    setError(null)
+    const ok = await onReset()
+    setSaving(false)
+    if (ok) onClose()
+    else setError('Reset failed — try again.')
+  }
+
   return createPortal(
     <div
       style={{ position: 'fixed', inset: 0, zIndex: Z.modal, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: SP[3] }}
@@ -89,7 +117,7 @@ export function IconPicker({ table, itemName, catalog, currentResolution, onSele
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          position: 'relative', width: 'min(640px, 92vw)', maxHeight: '85vh',
+          position: 'relative', width: 'min(880px, 94vw)', maxHeight: '85vh',
           display: 'flex', flexDirection: 'column',
           background: HUD.panel, border: `1px solid ${HUD.borderHi}`, borderRadius: RADIUS.lg,
           boxShadow: '0 16px 48px color-mix(in srgb, black 70%, transparent)',
@@ -119,10 +147,10 @@ export function IconPicker({ table, itemName, catalog, currentResolution, onSele
               }}
             />
             {(() => {
-              const disabled = busy || (resetDisabled ?? currentResolution?.rung !== 'override')
+              const disabled = busyEffective || (resetDisabled ?? currentResolution?.rung !== 'override')
               return (
                 <button
-                  onClick={onReset}
+                  onClick={handleReset}
                   disabled={disabled}
                   style={{
                     fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
@@ -144,50 +172,148 @@ export function IconPicker({ table, itemName, catalog, currentResolution, onSele
           </div>
         </div>
 
-        {/* Grid */}
+        {/* Body — grid + preview pane side by side */}
+        <div style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+          {/* Grid */}
+          <div style={{
+            flex: 1, overflowY: 'auto', padding: SP[3],
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(4.5rem, 1fr))', gap: SP[2], alignContent: 'start',
+          }}>
+            {filtered.map(key => {
+              const path = section[key]!
+              const isCurrent = key === currentKey
+              const isStaged = key === stagedKey
+              return (
+                <button
+                  key={key}
+                  onClick={() => { setStagedKey(key); setError(null) }}
+                  disabled={busyEffective}
+                  title={nameByKey[key] ?? key}
+                  style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: SP[1],
+                    padding: SP[1], borderRadius: RADIUS.sm,
+                    border: `1px solid ${isStaged ? HUD.gold : isCurrent ? HUD.borderHi : HUD.border}`,
+                    background: isStaged ? 'color-mix(in srgb, var(--hud-gold) 15%, transparent)' : isCurrent ? 'color-mix(in srgb, var(--hud-gold) 6%, transparent)' : 'transparent',
+                    cursor: busyEffective ? 'not-allowed' : 'pointer',
+                    transition: EASE.quick,
+                  }}
+                >
+                  <div style={{ width: '2.5rem', height: '2.5rem' }}>
+                    <ItemReadoutPlate iconUrl={path} table={table} alt={nameByKey[key] ?? key} size="row" />
+                  </div>
+                  <span style={{
+                    fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint,
+                    textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%',
+                  }}>
+                    {nameByKey[key] ?? key}
+                  </span>
+                </button>
+              )
+            })}
+            {filtered.length === 0 && (
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.textDim, padding: SP[4] }}>
+                No images match.
+              </div>
+            )}
+          </div>
+
+          {/* Preview pane */}
+          <div style={{
+            width: '14rem', flexShrink: 0, borderLeft: `1px solid ${HUD.border}`,
+            padding: SP[3], display: 'flex', flexDirection: 'column', gap: SP[3], overflowY: 'auto',
+          }}>
+            <PreviewSlot
+              label="Current"
+              table={table}
+              path={currentResolution?.path ?? null}
+              name={currentKey ? (nameByKey[currentKey] ?? currentKey) : null}
+              rungLabel={currentRungLabel}
+            />
+            <PreviewSlot
+              label="Selected"
+              table={table}
+              path={stagedPath}
+              name={stagedKey ? (nameByKey[stagedKey] ?? stagedKey) : null}
+              rungLabel={stagedKey ? 'Pinned by GM (pending save)' : null}
+              empty={!stagedKey}
+            />
+          </div>
+        </div>
+
+        {/* Footer — explicit Save/Cancel */}
         <div style={{
-          overflowY: 'auto', padding: SP[3],
-          display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(4.5rem, 1fr))', gap: SP[2],
+          padding: SP[3], borderTop: `1px solid ${HUD.border}`,
+          display: 'flex', flexDirection: 'column', gap: SP[2],
         }}>
-          {filtered.map(key => {
-            const path = section[key]!
-            const isCurrent = key === currentKey
-            return (
-              <button
-                key={key}
-                onClick={() => onSelect(key)}
-                disabled={busy}
-                title={nameByKey[key] ?? key}
-                style={{
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: SP[1],
-                  padding: SP[1], borderRadius: RADIUS.sm,
-                  border: `1px solid ${isCurrent ? HUD.gold : HUD.border}`,
-                  background: isCurrent ? 'color-mix(in srgb, var(--hud-gold) 10%, transparent)' : 'transparent',
-                  cursor: busy ? 'not-allowed' : 'pointer',
-                  transition: EASE.quick,
-                }}
-              >
-                <div style={{ width: '2.5rem', height: '2.5rem' }}>
-                  <ItemReadoutPlate iconUrl={path} table={table} alt={nameByKey[key] ?? key} size="row" />
-                </div>
-                <span style={{
-                  fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint,
-                  textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%',
-                }}>
-                  {nameByKey[key] ?? key}
-                </span>
-              </button>
-            )
-          })}
-          {filtered.length === 0 && (
-            <div style={{ gridColumn: '1 / -1', textAlign: 'center', fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.textDim, padding: SP[4] }}>
-              No images match.
+          {error && (
+            <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: COLOR.red }}>
+              {error}
             </div>
           )}
+          <div style={{ display: 'flex', gap: SP[2], justifyContent: 'flex-end' }}>
+            <button
+              onClick={onClose}
+              disabled={saving}
+              style={{
+                fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700,
+                padding: `${SP[1]} ${SP[3]}`, borderRadius: RADIUS.sm,
+                border: `1px solid ${HUD.border}`, background: 'transparent', color: HUD.textDim,
+                cursor: saving ? 'not-allowed' : 'pointer',
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={!canSave || busyEffective}
+              style={{
+                fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700,
+                padding: `${SP[1]} ${SP[3]}`, borderRadius: RADIUS.sm,
+                border: `1px solid ${HUD.gold}`,
+                background: canSave && !busyEffective ? 'color-mix(in srgb, var(--hud-gold) 20%, transparent)' : 'transparent',
+                color: HUD.gold,
+                cursor: !canSave || busyEffective ? 'not-allowed' : 'pointer',
+                opacity: !canSave || busyEffective ? 0.4 : 1,
+              }}
+            >
+              {saving ? 'Saving…' : 'Save'}
+            </button>
+          </div>
         </div>
       </div>
     </div>,
     document.body,
+  )
+}
+
+function PreviewSlot({ label, table, path, name, rungLabel, empty }: { label: string; table: ItemTable; path: string | null; name: string | null; rungLabel: string | null; empty?: boolean }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: SP[1] }}>
+      <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: HUD.textFaint }}>
+        {label}
+      </span>
+      <div style={{ width: '6.5rem', height: '6.5rem' }}>
+        {path && !empty
+          ? <ItemReadoutPlate iconUrl={path} table={table} alt={name ?? undefined} size="detail" />
+          : (
+            <div style={{
+              width: '100%', height: '100%', borderRadius: RADIUS.md,
+              border: `1px dashed ${HUD.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.textFaint, textAlign: 'center', padding: SP[1],
+            }}>
+              None selected
+            </div>
+          )}
+      </div>
+      <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: HUD.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {name ?? '—'}
+      </span>
+      {rungLabel && (
+        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textFaint }}>
+          {rungLabel}
+        </span>
+      )}
+    </div>
   )
 }
 

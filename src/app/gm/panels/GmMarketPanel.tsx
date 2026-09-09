@@ -327,17 +327,17 @@ export function GmMarketPanel({ campaignId, activeChars, broadcastAll }: {
       })
   }, [supabaseForIcons])
 
-  const handlePickIcon = useCallback(async (imageKey: string) => {
-    if (!campaignId || !viewingLine) return
+  const handlePickIcon = useCallback(async (imageKey: string): Promise<boolean> => {
+    if (!campaignId || !viewingLine) return false
     setPickerBusy(true)
-    await supabaseForIcons.from('item_icon_overrides')
+    const { error } = await supabaseForIcons.from('item_icon_overrides')
       .upsert(
         { campaign_id: campaignId, item_table: viewingLine.item_table, item_key: viewingLine.ref_key, image_key: imageKey },
         { onConflict: 'campaign_id,item_table,item_key' },
       )
-    await refetchIconOverrides()
+    if (!error) await refetchIconOverrides()
     setPickerBusy(false)
-    setPickerOpen(false)
+    return !error
   }, [campaignId, viewingLine, supabaseForIcons, refetchIconOverrides])
 
   // Open to Players toggle — the only place this panel creates or cancels
@@ -365,17 +365,17 @@ export function GmMarketPanel({ campaignId, activeChars, broadcastAll }: {
     }
   }, [merchant, activeChars, campaignId, broadcastAll, setOpenToPlayers])
 
-  const handleResetIcon = useCallback(async () => {
-    if (!campaignId || !viewingLine) return
+  const handleResetIcon = useCallback(async (): Promise<boolean> => {
+    if (!campaignId || !viewingLine) return false
     setPickerBusy(true)
-    await supabaseForIcons.from('item_icon_overrides')
+    const { error } = await supabaseForIcons.from('item_icon_overrides')
       .delete()
       .eq('campaign_id', campaignId)
       .eq('item_table', viewingLine.item_table)
       .eq('item_key', viewingLine.ref_key)
-    await refetchIconOverrides()
+    if (!error) await refetchIconOverrides()
     setPickerBusy(false)
-    setPickerOpen(false)
+    return !error
   }, [campaignId, viewingLine, supabaseForIcons, refetchIconOverrides])
 
   const [name, setName]           = useState("Vosk's Sundries")

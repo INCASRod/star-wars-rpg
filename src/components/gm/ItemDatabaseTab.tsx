@@ -161,31 +161,33 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
   }, [supabase])
 
   // ── Icon override write/reset — campaign-scoped, only affects the viewed item ──
-  const handlePickIcon = async (imageKey: string) => {
-    if (!campaignId || !viewingItem) return
+  // Return success/failure so IconPicker can gate its own close on the result
+  // (Save/Reset stay open with the staged selection intact on write failure).
+  const handlePickIcon = async (imageKey: string): Promise<boolean> => {
+    if (!campaignId || !viewingItem) return false
     setPickerBusy(true)
     const table = viewingItem.type
-    await supabase.from('item_icon_overrides')
+    const { error } = await supabase.from('item_icon_overrides')
       .upsert(
         { campaign_id: campaignId, item_table: table, item_key: viewingItem.key, image_key: imageKey },
         { onConflict: 'campaign_id,item_table,item_key' },
       )
-    await refetchIconOverrides()
+    if (!error) await refetchIconOverrides()
     setPickerBusy(false)
-    setPickerOpen(false)
+    return !error
   }
 
-  const handleResetIcon = async () => {
-    if (!campaignId || !viewingItem) return
+  const handleResetIcon = async (): Promise<boolean> => {
+    if (!campaignId || !viewingItem) return false
     setPickerBusy(true)
-    await supabase.from('item_icon_overrides')
+    const { error } = await supabase.from('item_icon_overrides')
       .delete()
       .eq('campaign_id', campaignId)
       .eq('item_table', viewingItem.type)
       .eq('item_key', viewingItem.key)
-    await refetchIconOverrides()
+    if (!error) await refetchIconOverrides()
     setPickerBusy(false)
-    setPickerOpen(false)
+    return !error
   }
 
   // ── Client-side filter — instant, no DB round-trip ──

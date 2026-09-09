@@ -257,24 +257,24 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
   // ItemDatabaseTab's View popup). Creating a new item -- defer to
   // `pendingIconKey`/`pendingIconRes`; handleSave writes the override once
   // the new row's key exists.
-  const handlePickIconEdit = async (imageKey: string) => {
-    if (!item) return
+  const handlePickIconEdit = async (imageKey: string): Promise<boolean> => {
+    if (!item) return false
     setPickerBusy(true)
-    await supabase.from('item_icon_overrides')
+    const { error } = await supabase.from('item_icon_overrides')
       .upsert({ campaign_id: campaignId, item_table: item.type, item_key: item.key, image_key: imageKey }, { onConflict: 'campaign_id,item_table,item_key' })
-    await refetchIconOverrides()
+    if (!error) await refetchIconOverrides()
     setPickerBusy(false)
-    setPickerOpen(false)
+    return !error
   }
-  const handleResetIconEdit = async () => {
-    if (!item) return
+  const handleResetIconEdit = async (): Promise<boolean> => {
+    if (!item) return false
     setPickerBusy(true)
-    await supabase.from('item_icon_overrides')
+    const { error } = await supabase.from('item_icon_overrides')
       .delete()
       .eq('campaign_id', campaignId).eq('item_table', item.type).eq('item_key', item.key)
-    await refetchIconOverrides()
+    if (!error) await refetchIconOverrides()
     setPickerBusy(false)
-    setPickerOpen(false)
+    return !error
   }
 
   useEffect(() => { requestAnimationFrame(() => setMounted(true)) }, [])
@@ -757,8 +757,8 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
             itemName={name || 'New Item'}
             catalog={catalogEntries(type)}
             currentResolution={isNew ? pendingIconRes : iconRes}
-            onSelect={isNew ? (key => { setPendingIconKey(key); setPickerOpen(false) }) : handlePickIconEdit}
-            onReset={isNew ? (() => { setPendingIconKey(null); setPickerOpen(false) }) : handleResetIconEdit}
+            onSelect={isNew ? (async key => { setPendingIconKey(key); return true }) : handlePickIconEdit}
+            onReset={isNew ? (async () => { setPendingIconKey(null); return true }) : handleResetIconEdit}
             onClose={() => setPickerOpen(false)}
             busy={pickerBusy}
             resetDisabled={isNew ? !pendingIconKey : undefined}

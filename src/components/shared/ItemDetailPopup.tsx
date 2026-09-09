@@ -61,8 +61,8 @@ export interface ItemDetailPopupProps {
   pickerOpen?:     boolean
   setPickerOpen?:  (open: boolean) => void
   pickerBusy?:     boolean
-  onPickIcon?:     (imageKey: string) => void
-  onResetIcon?:    () => void
+  onPickIcon?:     (imageKey: string) => Promise<boolean>
+  onResetIcon?:    () => Promise<boolean>
   refQualityMap:  Record<string, RefWeaponQuality>
 }
 
