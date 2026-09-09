@@ -3,13 +3,24 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Quartermaster, QuartermasterItem, QmBuyRow, WeaponQuality } from '@/lib/types'
 
+// upsertItem's write is guarded on the caller's last-seen stock value (the
+// row is the unit of concurrency — see useQuartermaster.ts's upsertItem doc
+// comment). 'conflict' means the guard matched zero rows: someone else
+// changed stock since the caller last read it. 'error' is a genuine write
+// failure (network, DB). Distinguished so the UI can tell "someone bought
+// one" apart from "the write failed" and react differently to each.
+export type UpsertItemResult =
+  | { ok: true }
+  | { ok: false; reason: 'conflict'; currentStock: number }
+  | { ok: false; reason: 'error'; message: string }
+
 export interface UseQuartermasterReturn {
   qm: Quartermaster | null
   qmItems: QuartermasterItem[]
   buyRows: QmBuyRow[]
   loading: boolean
   toggleOpen: () => Promise<void>
-  upsertItem: (itemKey: string, itemType: 'weapon' | 'armor' | 'gear', stock: number, priceOverride: number) => Promise<void>
+  upsertItem: (itemKey: string, itemType: 'weapon' | 'armor' | 'gear', stock: number, priceOverride: number, expectedStock: number) => Promise<UpsertItemResult>
   removeItem: (itemKey: string, itemType: 'weapon' | 'armor' | 'gear') => Promise<void>
   getQmEntry: (itemKey: string, itemType: 'weapon' | 'armor' | 'gear') => QuartermasterItem | undefined
   buyItem: (characterId: string, itemKey: string, itemType: 'weapon' | 'armor' | 'gear') => Promise<void>
@@ -89,7 +100,7 @@ export function useQuartermaster(
     setLoading(false)
   }, [supabase, campaignId, loadItems])
 
-  // ── Realtime subscription ───────────────────────────────────────────────────
+  // ── Realtime subscription — quartermaster row ───────────────────────────────
   useEffect(() => {
     if (!campaignId) return
     loadQm()
@@ -97,11 +108,29 @@ export function useQuartermaster(
       .channel(`qm-${campaignId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'quartermaster', filter: `campaign_id=eq.${campaignId}` },
         () => loadQm())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'quartermaster_items' },
-        () => { if (qmRef.current?.id) loadItems(qmRef.current.id) })
       .subscribe()
     return () => { supabase.removeChannel(ch) }
   }, [campaignId]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Realtime subscription — quartermaster_items ─────────────────────────────
+  // Separate effect, keyed on qm?.id rather than campaignId: quartermaster_items
+  // has no campaign_id column of its own (only quartermaster_id), and that id
+  // isn't known until loadQm() resolves — can't be filtered at the same time
+  // the campaign-scoped channel above is built. Previously subscribed with no
+  // filter at all, so every client received every campaign's QM item changes
+  // and discarded them locally; this scopes the subscription server-side
+  // instead. No subscription exists yet for a brand-new campaign with no QM
+  // row — nothing to filter on, and no items exist yet either.
+  useEffect(() => {
+    const qmId = qm?.id
+    if (!qmId) return
+    const ch = supabase
+      .channel(`qm-items-${qmId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'quartermaster_items', filter: `quartermaster_id=eq.${qmId}` },
+        () => loadItems(qmId))
+      .subscribe()
+    return () => { supabase.removeChannel(ch) }
+  }, [qm?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Ensure QM row exists ────────────────────────────────────────────────────
   const ensureQm = useCallback(async (): Promise<Quartermaster> => {
@@ -141,32 +170,67 @@ export function useQuartermaster(
   }, [ensureQm, supabase])
 
   // ── Upsert QM item ──────────────────────────────────────────────────────────
+  // Guarded on `expectedStock` — the stock value the caller last saw (e.g. when
+  // a GM's edit popover opened). The row is the unit of concurrency here: a
+  // purchase (buyItem's own conditional decrement) can land between the caller
+  // reading stock and this write, and an unguarded UPDATE would silently
+  // overwrite that purchase — including on a price-only edit, since the row it
+  // was read from is equally stale either way. Existing-row update and the
+  // zero-stock delete both carry `.eq('stock', expectedStock)`; a new insert
+  // has no prior row to race against, so expectedStock is unused there.
+  // Zero rows matched is NOT a thrown error — it's a distinguishable 'conflict'
+  // result (see UpsertItemResult) so the caller can tell "someone bought one"
+  // apart from "the write failed."
   const upsertItem = useCallback(async (
     itemKey: string,
     itemType: 'weapon' | 'armor' | 'gear',
     stock: number,
     priceOverride: number,
-  ) => {
+    expectedStock: number,
+  ): Promise<UpsertItemResult> => {
     const row = await ensureQm()
     const existing = qmItems.find(i => i.item_key === itemKey && i.item_type === itemType)
+
     if (existing) {
-      if (stock === 0) {
-        await supabase.from('quartermaster_items').delete().eq('id', existing.id)
-      } else {
-        await supabase.from('quartermaster_items')
-          .update({ stock, price_override: priceOverride, updated_at: new Date().toISOString() })
-          .eq('id', existing.id)
+      const { data, error } = stock === 0
+        ? await supabase.from('quartermaster_items')
+            .delete()
+            .eq('id', existing.id)
+            .eq('stock', expectedStock)
+            .select('id')
+        : await supabase.from('quartermaster_items')
+            .update({ stock, price_override: priceOverride, updated_at: new Date().toISOString() })
+            .eq('id', existing.id)
+            .eq('stock', expectedStock)
+            .select('id')
+
+      if (error) {
+        await loadItems(row.id)
+        return { ok: false, reason: 'error', message: error.message }
+      }
+      if (!data || data.length === 0) {
+        // Guard matched zero rows: stock moved since expectedStock was read.
+        // Refetch to hand the caller the current value for a "reload" action.
+        const { data: fresh } = await supabase.from('quartermaster_items').select('stock').eq('id', existing.id).maybeSingle()
+        await loadItems(row.id)
+        return { ok: false, reason: 'conflict', currentStock: (fresh as { stock: number } | null)?.stock ?? 0 }
       }
     } else if (stock > 0) {
-      await supabase.from('quartermaster_items').insert({
+      const { error } = await supabase.from('quartermaster_items').insert({
         quartermaster_id: row.id,
         item_key: itemKey,
         item_type: itemType,
         stock,
         price_override: priceOverride,
       })
+      if (error) {
+        await loadItems(row.id)
+        return { ok: false, reason: 'error', message: error.message }
+      }
     }
+
     await loadItems(row.id)
+    return { ok: true }
   }, [ensureQm, supabase, qmItems, loadItems])
 
   // ── Remove QM item ──────────────────────────────────────────────────────────
@@ -187,6 +251,23 @@ export function useQuartermaster(
   const buyItem = useCallback(async (characterId: string, itemKey: string, itemType: 'weapon' | 'armor' | 'gear') => {
     const entry = qmItems.find(i => i.item_key === itemKey && i.item_type === itemType)
     if (!entry || entry.stock <= 0) throw new Error('Out of stock')
+
+    // is_open was previously enforced only by disabling the Buy button — a
+    // client calling buyItem directly could purchase from a closed QM. This
+    // is a fresh read against the live `quartermaster` row (not the client's
+    // cached `qm` state), immediately before the decrement, rather than an
+    // RPC/migration: quartermaster_items carries no is_open column of its own,
+    // so there's no way to fold this into the same conditional UPDATE the way
+    // the stock guard below does. It narrows the window to "checked, then
+    // decremented" instead of "never checked" — not fully atomic against a
+    // GM closing the QM in that exact instant, but that's the ceiling without
+    // an RPC, which is out of scope for this prompt.
+    const { data: qmRow } = await supabase
+      .from('quartermaster')
+      .select('is_open')
+      .eq('id', entry.quartermaster_id)
+      .single()
+    if (!qmRow || !(qmRow as { is_open: boolean }).is_open) throw new Error('Quartermaster is closed')
 
     // Decrement stock first with a server-side WHERE stock > 0 guard.
     // If two players click Buy simultaneously, only one UPDATE returns a row;

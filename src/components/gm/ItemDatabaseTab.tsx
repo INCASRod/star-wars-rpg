@@ -109,6 +109,13 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
   const [qmPopoverItem, setQmPopoverItem] = useState<DbItem | null>(null)
   const [qmStockDraft,  setQmStockDraft]  = useState(1)
   const [qmPriceDraft,  setQmPriceDraft]  = useState(0)
+  // Immutable snapshot of stock at popover-open time — the guard value sent
+  // to upsertItem. Never mutated by the GM editing qmStockDraft; only Reload
+  // (on a conflict) or a fresh openQmPopover() call re-snapshots it.
+  const [qmExpectedStock, setQmExpectedStock] = useState(0)
+  const [qmSaving,   setQmSaving]   = useState(false)
+  const [qmSaveError, setQmSaveError] = useState<string | null>(null)
+  const [qmConflictStock, setQmConflictStock] = useState<number | null>(null)
   const qmPopoverRef = useRef<HTMLDivElement>(null)
 
   const toggleExpanded = () =>
@@ -377,6 +384,9 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
     const existing = getQmEntry(item.key, item.type)
     setQmStockDraft(existing?.stock ?? 1)
     setQmPriceDraft(existing?.price_override ?? item.price ?? 0)
+    setQmExpectedStock(existing?.stock ?? 0)
+    setQmSaveError(null)
+    setQmConflictStock(null)
     setQmPopoverItem(item)
   }
 
@@ -950,6 +960,41 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
               Set stock to 0 to remove from QM
             </div>
           )}
+          {qmConflictStock !== null && (
+            <div style={{
+              display: 'flex', flexDirection: 'column', gap: SP[1],
+              padding: SP[2], borderRadius: RADIUS.sm,
+              border: `1px solid color-mix(in srgb, var(--state-failure) 35%, transparent)`,
+              background: 'color-mix(in srgb, var(--state-failure) 08%, transparent)',
+            }}>
+              <span style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: 'var(--state-failure)' }}>
+                Stock changed underneath you — someone bought or edited this while the popover was open. Current stock is {qmConflictStock}.
+              </span>
+              <button
+                onClick={() => {
+                  setQmStockDraft(qmConflictStock)
+                  setQmExpectedStock(qmConflictStock)
+                  setQmConflictStock(null)
+                }}
+                style={{
+                  fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
+                  padding: `${SP[1]} ${SP[2]}`, borderRadius: RADIUS.sm, cursor: 'pointer', alignSelf: 'flex-start',
+                  border: `1px solid color-mix(in srgb, var(--state-failure) 40%, transparent)`,
+                  color: 'var(--state-failure)', background: 'transparent',
+                }}
+              >Reload current value</button>
+            </div>
+          )}
+          {qmSaveError && (
+            <div style={{
+              fontFamily: FONT_BODY, fontSize: FS.caption, color: 'var(--state-failure)',
+              padding: SP[2], borderRadius: RADIUS.sm,
+              border: `1px solid color-mix(in srgb, var(--state-failure) 35%, transparent)`,
+              background: 'color-mix(in srgb, var(--state-failure) 08%, transparent)',
+            }}>
+              Save failed: {qmSaveError}
+            </div>
+          )}
           <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
             <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textDim, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Stock qty</span>
             <NumberField
@@ -969,28 +1014,40 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
           <div style={{ display: 'flex', gap: SP[1], justifyContent: 'flex-end' }}>
             <button
               onClick={() => setQmPopoverItem(null)}
+              disabled={qmSaving}
               style={{
                 fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
-                padding: `${SP[1]} ${SP[2]}`, borderRadius: RADIUS.sm, cursor: 'pointer',
+                padding: `${SP[1]} ${SP[2]}`, borderRadius: RADIUS.sm, cursor: qmSaving ? 'not-allowed' : 'pointer',
                 border: `1px solid ${HUD.border}`, color: HUD.textDim, background: 'transparent',
               }}
             >Cancel</button>
             <button
               className="qm-confirm-btn"
+              disabled={qmSaving}
               onClick={async () => {
-                await upsertItem(qmPopoverItem.key, qmPopoverItem.type, qmStockDraft, qmPriceDraft)
-                setQmPopoverItem(null)
+                setQmSaving(true)
+                setQmSaveError(null)
+                const result = await upsertItem(qmPopoverItem.key, qmPopoverItem.type, qmStockDraft, qmPriceDraft, qmExpectedStock)
+                setQmSaving(false)
+                if (result.ok) {
+                  setQmPopoverItem(null)
+                } else if (result.reason === 'conflict') {
+                  setQmConflictStock(result.currentStock)
+                } else {
+                  setQmSaveError(result.message)
+                }
               }}
               style={{
                 fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
-                padding: `${SP[1]} ${SP[2]}`, borderRadius: RADIUS.sm, cursor: 'pointer',
+                padding: `${SP[1]} ${SP[2]}`, borderRadius: RADIUS.sm, cursor: qmSaving ? 'not-allowed' : 'pointer',
                 border: `1px solid color-mix(in srgb, var(--hud-accent) 40%, transparent)`,
                 color: 'var(--hud-accent)',
                 background: 'color-mix(in srgb, var(--hud-accent) 10%, transparent)',
                 transition: EASE.quick,
+                opacity: qmSaving ? 0.6 : 1,
               }}
             >
-              {getQmEntry(qmPopoverItem.key, qmPopoverItem.type) ? 'Save' : 'Add to QM'}
+              {qmSaving ? 'Saving…' : getQmEntry(qmPopoverItem.key, qmPopoverItem.type) ? 'Save' : 'Add to QM'}
             </button>
           </div>
         </div>

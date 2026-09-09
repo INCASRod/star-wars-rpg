@@ -10,9 +10,11 @@ import {
   generateStock, type CatalogueItem, type MarketArchetype, type MarketScale, type MarketLegality,
 } from '@/lib/marketGenerator'
 import { useMarketMerchant, type DbStockLine } from '@/hooks/useMarketMerchant'
+import { useQuartermaster } from '@/hooks/useQuartermaster'
 import type { MarketTier } from '@/lib/marketSnapshot'
 import { useItemIconContext } from '@/hooks/useItemIconContext'
 import { ItemDetailPopup } from '@/components/shared/ItemDetailPopup'
+import { GmQuartermasterTab } from './GmQuartermasterTab'
 import type { EditableItem } from '@/components/gm/ItemEditor'
 import type { RefWeaponQuality, Character } from '@/lib/types'
 import { createPendingAction, cancelPendingActionsByType, type UseGmBroadcastReturn } from '@/hooks/useGmBroadcast'
@@ -313,6 +315,15 @@ export function GmMarketPanel({ campaignId, activeChars, broadcastAll }: {
   // ItemEditor, LootAwardModal each hold their own).
   const supabaseForIcons = useMemo(() => createClient(), [])
   const { resolveIcon, catalogEntries, refetch: refetchIconOverrides } = useItemIconContext(supabaseForIcons, campaignId)
+
+  // Quartermaster tab's data — lifted here (not inside GmQuartermasterTab)
+  // since the header's QM open/closed pill needs `qm.is_open` regardless of
+  // which tab is active. Reuses supabaseForIcons rather than a third client.
+  // One instance for the whole panel; safe alongside GroupSheet's own
+  // separate instance — different route, never mounted in the same tree
+  // (see docs/architecture.md's GmQuartermasterTab entry for why that's
+  // safe despite createClient() being a per-tab Realtime-client singleton).
+  const qmData = useQuartermaster(supabaseForIcons, campaignId)
   const [viewingLine, setViewingLine] = useState<DbStockLine | null>(null)
   const [pickerOpen, setPickerOpen]   = useState(false)
   const [pickerBusy, setPickerBusy]   = useState(false)
@@ -377,6 +388,10 @@ export function GmMarketPanel({ campaignId, activeChars, broadcastAll }: {
     setPickerBusy(false)
     return !error
   }, [campaignId, viewingLine, supabaseForIcons, refetchIconOverrides])
+
+  // Tab is local to this panel, not a GmPanelId/activePanel entry — the
+  // Quartermaster tab is a view inside the Market panel, not a new rail item.
+  const [tab, setTab] = useState<'merch' | 'qm'>('merch')
 
   const [name, setName]           = useState("Vosk's Sundries")
   const [locationMod, setLocationMod] = useState(0)
@@ -460,17 +475,52 @@ export function GmMarketPanel({ campaignId, activeChars, broadcastAll }: {
         <h2 style={{ fontFamily: FONT_DISPLAY, fontSize: FS.label, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: TEXT, margin: 0 }}>
           Market
         </h2>
+        <div style={{ display: 'flex', gap: '2px' }}>
+          {(['merch', 'qm'] as const).map(t => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              style={{
+                fontFamily: FONT_BODY, fontSize: FS.overline, letterSpacing: '0.16em', textTransform: 'uppercase',
+                background: tab === t ? GOLD : 'transparent', color: tab === t ? 'var(--hud-bg)' : DIM,
+                border: `1px solid ${tab === t ? GOLD : BORDER}`, borderRadius: RADIUS.sm,
+                padding: '0.4375rem 1rem', cursor: 'pointer', fontWeight: tab === t ? 700 : 500,
+                transition: `background ${EASE.quick}, color ${EASE.quick}, border-color ${EASE.quick}`,
+              }}
+            >
+              {t === 'merch' ? 'Merchant' : 'Quartermaster'}
+            </button>
+          ))}
+        </div>
         <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, letterSpacing: '0.16em', color: DIM_LO, textTransform: 'uppercase' }}>
-          {merchant ? `${merchant.name} · ${LOCATIONS.find(l => l.modifier === merchant.location_modifier)?.label ?? ''}` : 'no merchant'}
+          {tab === 'merch'
+            ? (merchant ? `${merchant.name} · ${LOCATIONS.find(l => l.modifier === merchant.location_modifier)?.label ?? ''}` : 'no merchant')
+            : `${qmData.qmItems.length} lines`}
         </span>
-        {merchant?.is_open_to_players && (
-          <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.375rem', fontFamily: FONT_BODY, fontSize: FS.overline, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--state-success)' }}>
-            <span style={{ width: '0.375rem', height: '0.375rem', borderRadius: '50%', background: 'var(--state-success)', boxShadow: '0 0 6px var(--state-success)' }} />
-            open to players
+        <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: SP[3] }}>
+          {tab === 'merch' && merchant?.is_open_to_players && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontFamily: FONT_BODY, fontSize: FS.overline, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--state-success)' }}>
+              <span style={{ width: '0.375rem', height: '0.375rem', borderRadius: '50%', background: 'var(--state-success)', boxShadow: '0 0 6px var(--state-success)' }} />
+              open to players
+            </span>
+          )}
+          <span style={{
+            display: 'flex', alignItems: 'center', gap: '0.375rem', fontFamily: FONT_BODY, fontSize: FS.overline,
+            letterSpacing: '0.16em', textTransform: 'uppercase',
+            color: qmData.qm?.is_open ? 'var(--state-success)' : DIM_LO,
+          }}>
+            <span style={{
+              width: '0.375rem', height: '0.375rem', borderRadius: '50%',
+              background: qmData.qm?.is_open ? 'var(--state-success)' : DIM_LO,
+              boxShadow: qmData.qm?.is_open ? '0 0 6px var(--state-success)' : 'none',
+            }} />
+            QM {qmData.qm?.is_open ? 'Open' : 'Closed'}
           </span>
-        )}
+        </span>
       </div>
 
+      {tab === 'merch' ? (
+      <>
       {/* Body — two columns, each scrolls independently */}
       <div style={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: 'minmax(18.75rem, 0.72fr) minmax(26.875rem, 1.28fr)' }}>
 
@@ -557,6 +607,20 @@ export function GmMarketPanel({ campaignId, activeChars, broadcastAll }: {
           {merchant?.is_open_to_players ? 'Close to Players' : 'Open to Players'}
         </Btn>
       </div>
+      </>
+      ) : (
+        <GmQuartermasterTab
+          campaignId={campaignId}
+          supabase={supabaseForIcons}
+          qmData={qmData}
+          catalogue={catalogue}
+          details={details}
+          resolveIcon={resolveIcon}
+          catalogEntries={catalogEntries}
+          refetchIconOverrides={refetchIconOverrides}
+          refQualityMap={refQualityMap}
+        />
+      )}
 
       {/* Read/inspect + icon-override popup — same shared component ItemDatabaseTab
           uses, portaled to document.body so it escapes this panel's own
