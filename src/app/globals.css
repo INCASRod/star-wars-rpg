@@ -3628,5 +3628,27 @@ i.ffi {
 .gm-dossier-chip.force { border-color: color-mix(in srgb, var(--die-force) 30%, transparent); }
 .gm-dossier-chip.force b { color: var(--die-force); }
 
+.gm-dossier-statepill {
+  font-family: var(--font-body);
+  font-size: var(--text-overline); font-weight: 700; letter-spacing: 0.08em;
+  padding: var(--space-1) var(--space-2); border-radius: var(--radius-sm);
+  cursor: pointer; border: 1px solid; min-width: 4.125rem; text-align: center;
+  background: none;
+  transition: filter var(--ease-quick);
+}
+.gm-dossier-statepill:hover { filter: brightness(1.35); }
+.gm-dossier-statepill.equipped { color: var(--state-success); border-color: color-mix(in srgb, var(--state-success) 50%, transparent); background: color-mix(in srgb, var(--state-success) 7%, transparent); }
+.gm-dossier-statepill.carrying { color: var(--hud-accent); border-color: color-mix(in srgb, var(--hud-accent) 45%, transparent); }
+.gm-dossier-statepill.stowed { color: var(--hud-text-faint); border-color: var(--hud-border-hi); }
+
+.gm-dossier-dropbtn {
+  width: 1.25rem; height: 1.25rem; border-radius: var(--radius-sm);
+  border: 1px solid transparent; background: none;
+  color: var(--hud-text-faint); font-size: var(--text-xs);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: color var(--ease-quick), border-color var(--ease-quick);
+}
+.gm-dossier-dropbtn:hover { color: var(--hud-vital-wounds); border-color: color-mix(in srgb, var(--hud-vital-wounds) 50%, transparent); }
+
 
 

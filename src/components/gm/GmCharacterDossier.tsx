@@ -32,6 +32,9 @@ export function GmCharacterDossier({ character, campaignId, mapId, tokens, addTo
     character: liveChar, loading,
     handleVitalAdjust,
     forceRating,
+    hudWeapons, hudArmor, hudGear,
+    encumbranceCurrent, encumbranceThreshold, encumbranceStats,
+    handleToggleEquippedById, handleRemoveWeapon, handleRemoveEquipment,
   } = useCharacterData(character.id)
 
   if (!mounted) return null
@@ -130,7 +133,34 @@ export function GmCharacterDossier({ character, campaignId, mapId, tokens, addTo
               </div>
             </div>
 
-            {/* Inventory section — added in Task 4 */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: SP[2] }}>
+                <span className="gm-dossier-slabel">Inventory</span>
+                <EncReadout current={encumbranceCurrent} threshold={encumbranceThreshold} cliff={encumbranceStats?.cliff ?? encumbranceThreshold} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: SP[1], marginTop: SP[2] }}>
+                {hudWeapons.map(w => (
+                  <InvRow key={w.id} name={w.name} enc={w.enc} equipState={w.equipState}
+                    onCycle={() => handleToggleEquippedById(w.id, 'weapon')}
+                    onDrop={() => handleRemoveWeapon(w.id)} />
+                ))}
+                {hudArmor.map(a => (
+                  <InvRow key={a.id} name={a.name} enc={a.enc} equipState={a.equipState}
+                    onCycle={() => handleToggleEquippedById(a.id, 'armor')}
+                    onDrop={() => handleRemoveEquipment(a.id, 'armor')} />
+                ))}
+                {hudGear.map(g => (
+                  <InvRow key={g.id} name={g.name} enc={g.enc} equipState={g.equipState}
+                    onCycle={() => handleToggleEquippedById(g.id, 'gear')}
+                    onDrop={() => handleRemoveEquipment(g.id, 'gear')} />
+                ))}
+                {hudWeapons.length + hudArmor.length + hudGear.length === 0 && (
+                  <div style={{ fontFamily: FONT, fontSize: FS.overline, color: HUD.textFaint, letterSpacing: '0.1em', padding: `${SP[1]} 0.125rem` }}>
+                    INVENTORY EMPTY
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Check console — added in Task 5 */}
@@ -160,6 +190,41 @@ function Chip({ value, label, force }: { value: number; label: string; force?: b
     <div className={force ? 'gm-dossier-chip force' : 'gm-dossier-chip'}>
       <b>{value}</b>
       <span>{label}</span>
+    </div>
+  )
+}
+
+const EQUIP_LABEL: Record<string, string> = { equipped: 'EQUIPPED', carrying: 'CARRIED', stowed: 'STOWED' }
+
+function EncReadout({ current, threshold, cliff }: { current: number; threshold: number; cliff: number }) {
+  const over = current - threshold
+  const tone = current >= cliff ? 'immobile' : over > 0 ? 'over' : 'plain'
+  const color = tone === 'immobile' ? 'var(--hud-vital-wounds)' : tone === 'over' ? 'var(--state-threat)' : 'var(--hud-text-dim)'
+  return (
+    <span style={{ display: 'flex', alignItems: 'baseline', gap: SP[1], whiteSpace: 'nowrap' }}>
+      <span style={{ fontFamily: FONT, fontSize: FS.overline, color: HUD.textFaint }}>ENC</span>
+      <span style={{ fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700, color }}>{current} / {threshold}</span>
+      {tone === 'over' && (
+        <span style={{ fontFamily: FONT, fontSize: FS.overline, letterSpacing: '0.08em', padding: `1px ${SP[1]}`, borderRadius: RADIUS.sm, border: `1px solid color-mix(in srgb, ${color} 45%, transparent)`, color }}>
+          −{over} PENALTY
+        </span>
+      )}
+      {tone === 'immobile' && (
+        <span style={{ fontFamily: FONT, fontSize: FS.overline, letterSpacing: '0.08em', padding: `1px ${SP[1]}`, borderRadius: RADIUS.sm, border: `1px solid color-mix(in srgb, ${color} 50%, transparent)`, color }}>
+          IMMOBILE
+        </span>
+      )}
+    </span>
+  )
+}
+
+function InvRow({ name, enc, equipState, onCycle, onDrop }: { name: string; enc: number; equipState: string; onCycle: () => void; onDrop: () => void }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: SP[2], background: 'var(--hud-surface-lo)', border: '1px solid var(--hud-border)', borderRadius: RADIUS.sm, padding: `${SP[1]} ${SP[2]}` }}>
+      <span style={{ fontFamily: FONT, fontSize: FS.caption, color: HUD.text, flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</span>
+      <span style={{ fontFamily: FONT, fontSize: FS.overline, color: HUD.textFaint, fontWeight: 700, minWidth: '1.875rem', textAlign: 'right' }}>{enc}</span>
+      <button className={`gm-dossier-statepill ${equipState}`} onClick={onCycle}>{EQUIP_LABEL[equipState] ?? equipState.toUpperCase()}</button>
+      <button className="gm-dossier-dropbtn" onClick={onDrop} title="Drop / trash">✕</button>
     </div>
   )
 }
