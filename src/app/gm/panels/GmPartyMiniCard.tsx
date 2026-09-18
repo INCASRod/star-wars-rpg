@@ -1,173 +1,102 @@
 'use client'
 
-import type { Character, CharacterCriticalInjury } from '@/lib/types'
-import { HUD, FONT_BODY as FONT, FS, EASE, RADIUS } from '@/lib/tokens'
-import { CriticalInjuryPip, type CritPip } from '@/components/character/CriticalInjuryPip'
-import { GmConflictPip } from '@/components/gm/GmConflictPip'
-import { Tooltip } from '@/components/ui/Tooltip'
-import type { GmConflictRow } from '@/hooks/useGmCampaignConflicts'
-
+import type { Character } from '@/lib/types'
+import type { MouseEvent } from 'react'
+import { HUD, FONT_BODY as FONT, FS, EASE, RADIUS, SP } from '@/lib/tokens'
 
 interface Props {
-  character:          Character
-  onAddWound:         (id: string) => void
-  onHealWound:        (id: string) => void
-  onAddStrain:        (id: string) => void
-  onHealStrain:       (id: string) => void
-  onClick:            () => void
-  crits?:             CharacterCriticalInjury[]
-  conflicts?:         GmConflictRow[]
-  onHealCrit?:        (id: string) => void
-  onResolveConflict?: (id: string) => void
+  character: Character
+  onMap:     boolean
+  critCount: number
+  onClick:   (e: MouseEvent<HTMLDivElement>) => void
 }
 
-function OverflowBadge({ color, count, items }: { color: string; count: number; items: string[] }) {
-  return (
-    <Tooltip
-      content={
-        <div style={{ fontFamily: FONT, fontSize: FS.caption, lineHeight: 1.5 }}>
-          {items.map((item, i) => <div key={i}>{item}</div>)}
-        </div>
-      }
-      placement="top"
-      maxWidth={180}
-    >
-      <span style={{
-        fontFamily: FONT,
-        fontSize: 'var(--text-caption)',
-        color,
-        fontWeight: 700,
-        cursor: 'default',
-        flexShrink: 0,
-      }}>
-        +{count}
-      </span>
-    </Tooltip>
-  )
-}
-
-export function GmPartyMiniCard({ character: c, onAddWound, onHealWound, onAddStrain, onHealStrain, onClick, crits, conflicts, onHealCrit, onResolveConflict }: Props) {
-  const wPct     = Math.min(100, (c.wound_current / c.wound_threshold) * 100)
-  const sPct     = Math.min(100, (c.strain_current / c.strain_threshold) * 100)
-  const isDown   = c.wound_current >= c.wound_threshold
-  const isHurt   = !isDown && wPct >= 50
-  const leftBdr  = isDown ? 'var(--hud-vital-wounds)' : 'transparent'
-
-  const stepBtn: React.CSSProperties = {
-    width:          '1.125rem',
-    height:         '1.125rem',
-    background:     'rgba(0,0,0,0.3)',
-    border:         '1px solid var(--hud-border-hi)',
-    borderRadius:   RADIUS.sm,
-    cursor:         'pointer',
-    color:          'var(--hud-text-dim)',
-    fontSize:       'var(--text-caption)',
-    fontFamily:     FONT,
-    display:        'flex',
-    alignItems:     'center',
-    justifyContent: 'center',
-    flexShrink:     0,
-  }
+export function GmPartyMiniCard({ character: c, onMap, critCount, onClick }: Props) {
+  const wPct   = Math.min(100, (c.wound_current / c.wound_threshold) * 100)
+  const sPct   = Math.min(100, (c.strain_current / c.strain_threshold) * 100)
+  const isDown = c.wound_current >= c.wound_threshold
 
   return (
     <div
-      style={{
-        background:  'var(--hud-surface-mid)',
-        border:      `1px solid var(--hud-border-hi)`,
-        borderLeft:  `3px solid ${leftBdr}`,
-        borderRadius: RADIUS.md,
-        padding:     '0.5rem 0.625rem',
-        cursor:      'pointer',
-        transition:  `background ${EASE.quick}`,
-        boxShadow:   isDown ? '0 0 8px rgba(192,64,64,0.2)' : undefined,
-      }}
+      className="hov-lift"
       onClick={onClick}
+      style={{
+        display:      'flex',
+        alignItems:   'stretch',
+        height:       '4.625rem',
+        background:   'var(--hud-surface-mid)',
+        border:       '1px solid var(--hud-border-hi)',
+        borderLeft:   '3px solid var(--hud-accent-purple)',
+        borderRadius: RADIUS.md,
+        overflow:     'hidden',
+        cursor:       'pointer',
+        transition:   `border-color ${EASE.quick}`,
+        position:     'relative',
+      }}
     >
-      {/* Name + species/career */}
-      <div style={{ marginBottom: '0.375rem' }}>
-        <div style={{ fontFamily: FONT, fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--hud-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+      {/* Portrait */}
+      <div style={{ width: '4.625rem', flexShrink: 0, background: 'var(--hud-surface-lo)', position: 'relative', overflow: 'hidden' }}>
+        {c.portrait_url && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={c.portrait_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        )}
+      </div>
+
+      {/* Identity + bars */}
+      <div style={{ flex: 1, minWidth: 0, padding: `${SP[2]} ${SP[2]}`, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: SP[1] }}>
+        <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: FS.sm, color: HUD.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {c.name}
         </div>
-        <div style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', color: 'var(--hud-text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '0.0625rem' }}>
+        <div style={{ fontFamily: FONT, fontSize: FS.overline, color: HUD.textFaint, textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {c.species_key} · {c.career_key}
         </div>
-      </div>
-
-      {/* Wounds */}
-      <div style={{ marginBottom: '0.25rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.1875rem' }}>
-          <span style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', color: 'var(--hud-vital-wounds)', fontWeight: 700, flex: 1 }}>W</span>
-          <span style={{ fontFamily: FONT, fontSize: 'var(--text-caption)', color: isDown ? 'var(--hud-vital-wounds)' : 'var(--hud-text)', fontWeight: 700 }}>
-            {c.wound_current}<span style={{ color: 'var(--hud-text-dim)' }}>/{c.wound_threshold}</span>
-          </span>
-          <button onClick={e => { e.stopPropagation(); onHealWound(c.id) }} style={stepBtn}>−</button>
-          <button onClick={e => { e.stopPropagation(); onAddWound(c.id) }} style={stepBtn}>+</button>
-        </div>
-        <div style={{ height: '0.1875rem', background: 'var(--hud-surface-lo)', borderRadius: RADIUS.sm, overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${wPct}%`, background: isDown ? 'var(--hud-vital-wounds)' : isHurt ? 'var(--hud-vital-strain)' : HUD.gold, borderRadius: RADIUS.sm, transition: `width ${EASE.smooth}` }} />
-        </div>
-      </div>
-
-      {/* Strain */}
-      <div style={{ marginBottom: '0.25rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.1875rem' }}>
-          <span style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', color: 'var(--die-force)', fontWeight: 700, flex: 1 }}>S</span>
-          <span style={{ fontFamily: FONT, fontSize: 'var(--text-caption)', color: 'var(--hud-text)', fontWeight: 700 }}>
-            {c.strain_current}<span style={{ color: 'var(--hud-text-dim)' }}>/{c.strain_threshold}</span>
-          </span>
-          <button onClick={e => { e.stopPropagation(); onHealStrain(c.id) }} style={stepBtn}>−</button>
-          <button onClick={e => { e.stopPropagation(); onAddStrain(c.id) }} style={stepBtn}>+</button>
-        </div>
-        <div style={{ height: '0.1875rem', background: 'var(--hud-surface-lo)', borderRadius: RADIUS.sm, overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${sPct}%`, background: sPct >= 100 ? 'var(--hud-vital-wounds)' : 'var(--die-force)', borderRadius: RADIUS.sm, transition: `width ${EASE.smooth}` }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1875rem', marginTop: '0.125rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: SP[1] }}>
+            <span style={{ fontFamily: FONT, fontSize: FS.overline, fontWeight: 700, color: 'var(--hud-vital-wounds)', width: '0.5rem' }}>W</span>
+            <span style={{ flex: 1, height: '3.5px', background: 'var(--hud-surface-lo)', borderRadius: RADIUS.sm, overflow: 'hidden' }}>
+              <span style={{ display: 'block', height: '100%', width: `${wPct}%`, background: isDown ? 'var(--hud-vital-wounds)' : HUD.gold, borderRadius: RADIUS.sm }} />
+            </span>
+            <span style={{ fontFamily: FONT, fontSize: FS.caption, color: HUD.text, minWidth: '2.25rem', textAlign: 'right' }}>
+              {c.wound_current}<span style={{ color: HUD.textFaint }}>/{c.wound_threshold}</span>
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: SP[1] }}>
+            <span style={{ fontFamily: FONT, fontSize: FS.overline, fontWeight: 700, color: 'var(--die-force)', width: '0.5rem' }}>S</span>
+            <span style={{ flex: 1, height: '3.5px', background: 'var(--hud-surface-lo)', borderRadius: RADIUS.sm, overflow: 'hidden' }}>
+              <span style={{ display: 'block', height: '100%', width: `${sPct}%`, background: sPct >= 100 ? 'var(--hud-vital-wounds)' : 'var(--die-force)', borderRadius: RADIUS.sm }} />
+            </span>
+            <span style={{ fontFamily: FONT, fontSize: FS.caption, color: HUD.text, minWidth: '2.25rem', textAlign: 'right' }}>
+              {c.strain_current}<span style={{ color: HUD.textFaint }}>/{c.strain_threshold}</span>
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Pip row: injuries left, conflicts right — hidden when both empty */}
-      {((crits?.length ?? 0) > 0 || (conflicts?.length ?? 0) > 0) && (
-        <div
-          onClick={e => e.stopPropagation()}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.3125rem', marginBottom: '0.375rem', marginTop: '0.25rem' }}
-        >
-          {/* Injury pips (max 3) */}
-          {crits?.slice(0, 3).map(inj => {
-            const pip: CritPip = {
-              id:           inj.id,
-              severity:     inj.severity,
-              name:         inj.custom_name ?? 'Critical Injury',
-              description:  inj.description,
-              sessionLabel: inj.session_label ?? undefined,
-              rollResult:   inj.roll_result,
-            }
-            return <CriticalInjuryPip key={inj.id} pip={pip} onHeal={onHealCrit} />
-          })}
-          {crits && crits.length > 3 && (
-            <OverflowBadge
-              color="var(--state-failure)"
-              count={crits.length - 3}
-              items={crits.slice(3).map(inj => inj.custom_name ?? 'Critical Injury')}
-            />
-          )}
-          {/* Flex spacer */}
-          <div style={{ flex: 1 }} />
-          {/* Conflict pips (max 3) */}
-          {conflicts?.slice(0, 3).map(con => (
-            <GmConflictPip key={con.id} conflict={con} onResolve={onResolveConflict} />
-          ))}
-          {conflicts && conflicts.length > 3 && (
-            <OverflowBadge
-              color="var(--hud-accent-purple)"
-              count={conflicts.length - 3}
-              items={conflicts.slice(3).map(con => con.description ?? 'Conflict')}
-            />
-          )}
-        </div>
+      {/* Crit badge */}
+      {critCount > 0 && (
+        <span style={{
+          position: 'absolute', top: SP[1], right: '1.75rem',
+          fontFamily: FONT, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.06em',
+          color: HUD.text, background: 'var(--state-failure)', borderRadius: RADIUS.sm,
+          padding: '0.09375rem 0.3125rem',
+        }}>
+          CRIT{critCount > 1 ? ` ×${critCount}` : ''}
+        </span>
       )}
 
-      {/* Soak */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <span style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', color: 'var(--hud-text-dim)' }}>Soak </span>
-        <span style={{ fontFamily: FONT, fontSize: 'var(--text-overline)', fontWeight: 700, color: HUD.gold, marginLeft: '0.25rem' }}>{c.soak}</span>
+      {/* Status rail */}
+      <div style={{
+        width: '1.625rem', flexShrink: 0, display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center', gap: SP[1],
+        borderLeft: '1px solid var(--hud-border)', background: 'var(--hud-surface-lo)',
+      }}>
+        <span
+          className={onMap ? 'gm-party-tokdot on' : 'gm-party-tokdot'}
+          title={onMap ? 'Token on map' : 'No token on map'}
+        />
+        {c.is_force_sensitive && (
+          <span className="gm-party-forcedot" title="Force-sensitive" />
+        )}
       </div>
     </div>
   )

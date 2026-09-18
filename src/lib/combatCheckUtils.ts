@@ -35,6 +35,20 @@ export function bandIndex(band: RangeBand): number {
   return RANGE_BAND_ORDER.indexOf(band)
 }
 
+// ── Unarmed profile — shared between CheckConsole (adversary) and ──────────
+// PcCheckConsole (PC) Combat Check tabs. AoE Core Rulebook, Unarmed Combat,
+// p.224: Brawl, damage = Brawn, Engaged, Crit 5, Disorient 1 + Knockdown.
+// `skillKey: 'BRAWL'` matches CheckConsole.tsx's existing inline synthetic
+// entry (line ~216) — not the ref_skills short code.
+export const UNARMED_PROFILE = {
+  name:      'Unarmed',
+  skillKey:  'BRAWL',
+  skillName: 'Brawl',
+  crit:      5,
+  range:     'Engaged',
+  qualities: [{ key: 'DISORIENT', count: 1 }, { key: 'KNOCKDOWN', count: null }] as { key: string; count: number | null }[],
+}
+
 // ── Ranged difficulty ─────────────────────────────────────────────────────────
 
 export interface RangedDifficultyResult {
