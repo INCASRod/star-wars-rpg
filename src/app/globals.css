@@ -3650,5 +3650,31 @@ i.ffi {
 }
 .gm-dossier-dropbtn:hover { color: var(--hud-vital-wounds); border-color: color-mix(in srgb, var(--hud-vital-wounds) 50%, transparent); }
 
+.gm-cc-tab {
+  flex: 1; font-family: var(--font-body); font-size: var(--text-overline); font-weight: 700;
+  letter-spacing: 0.1em; padding: var(--space-2) 0; border-radius: var(--radius-sm);
+  border: 1px solid var(--hud-border); color: var(--hud-text-dim); background: none; cursor: pointer;
+  transition: color var(--ease-quick), border-color var(--ease-quick), background var(--ease-quick);
+}
+.gm-cc-tab.on { color: var(--hud-gold); border-color: var(--hud-gold); background: color-mix(in srgb, var(--hud-gold) 7%, transparent); }
+.gm-cc-tab:disabled { opacity: 0.4; cursor: not-allowed; }
 
+.gm-cc-row {
+  display: flex; align-items: center; gap: 6px; padding: 5px 6px;
+  border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer;
+  transition: border-color var(--ease-quick), background var(--ease-quick);
+}
+.gm-cc-row:hover { border-color: var(--hud-border-hi); background: var(--hud-surface-lo); }
+.gm-cc-row.sel { border-color: var(--hud-gold); background: color-mix(in srgb, var(--hud-gold) 7%, transparent); }
+.gm-cc-row .n { font-size: var(--text-overline); color: var(--hud-text); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gm-cc-row .c { font-size: var(--text-overline); color: var(--hud-text-faint); letter-spacing: 0.05em; }
+.gm-cc-row .pool { font-size: var(--text-overline); color: var(--hud-text-faint); }
+
+.gm-cc-rollbtn {
+  font-family: var(--font-display); font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.2em;
+  color: var(--hud-bg); background: var(--hud-gold); border: none; border-radius: var(--radius-sm);
+  padding: var(--space-2) 0; cursor: pointer; transition: box-shadow var(--ease-quick);
+}
+.gm-cc-rollbtn:hover { box-shadow: 0 0 18px color-mix(in srgb, var(--hud-gold) 50%, transparent); }
+.gm-cc-rollbtn:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
 

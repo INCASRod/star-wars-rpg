@@ -6,6 +6,7 @@ import { useCharacterData } from '@/hooks/useCharacterData'
 import type { Character } from '@/lib/types'
 import type { MapToken } from '@/hooks/useMapTokens'
 import { HUD, FONT_BODY as FONT, FONT_DISPLAY, FS, SP, RADIUS, Z } from '@/lib/tokens'
+import { PcCheckConsole } from './PcCheckConsole'
 
 export interface GmCharacterDossierProps {
   character:   Character
@@ -32,7 +33,7 @@ export function GmCharacterDossier({ character, campaignId, mapId, tokens, addTo
     character: liveChar, loading,
     handleVitalAdjust,
     forceRating,
-    hudWeapons, hudArmor, hudGear,
+    hudSkills, hudWeapons, hudArmor, hudGear,
     encumbranceCurrent, encumbranceThreshold, encumbranceStats,
     handleToggleEquippedById, handleRemoveWeapon, handleRemoveEquipment,
   } = useCharacterData(character.id)
@@ -163,8 +164,15 @@ export function GmCharacterDossier({ character, campaignId, mapId, tokens, addTo
             </div>
           </div>
 
-          {/* Check console — added in Task 5 */}
-          <div style={{ borderLeft: '1px solid var(--hud-border)', background: 'color-mix(in srgb, var(--hud-bg) 25%, transparent)' }} />
+          {/* Check console */}
+          <div style={{ borderLeft: '1px solid var(--hud-border)', background: 'color-mix(in srgb, var(--hud-bg) 25%, transparent)' }}>
+            <PcCheckConsole
+              character={c}
+              campaignId={campaignId}
+              hudSkills={hudSkills}
+              forceRating={forceRating ?? 0}
+            />
+          </div>
         </div>
       </div>
     </>,
