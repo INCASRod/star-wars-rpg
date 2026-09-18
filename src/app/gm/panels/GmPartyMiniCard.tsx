@@ -52,7 +52,7 @@ export function GmPartyMiniCard({ character: c, onMap, critCount, onClick }: Pro
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1875rem', marginTop: '0.125rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: SP[1] }}>
-            <span style={{ fontFamily: FONT, fontSize: '7px', fontWeight: 700, color: 'var(--hud-vital-wounds)', width: '0.5rem' }}>W</span>
+            <span style={{ fontFamily: FONT, fontSize: FS.overline, fontWeight: 700, color: 'var(--hud-vital-wounds)', width: '0.5rem' }}>W</span>
             <span style={{ flex: 1, height: '3.5px', background: 'var(--hud-surface-lo)', borderRadius: RADIUS.sm, overflow: 'hidden' }}>
               <span style={{ display: 'block', height: '100%', width: `${wPct}%`, background: isDown ? 'var(--hud-vital-wounds)' : HUD.gold, borderRadius: RADIUS.sm }} />
             </span>
@@ -61,7 +61,7 @@ export function GmPartyMiniCard({ character: c, onMap, critCount, onClick }: Pro
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: SP[1] }}>
-            <span style={{ fontFamily: FONT, fontSize: '7px', fontWeight: 700, color: 'var(--die-force)', width: '0.5rem' }}>S</span>
+            <span style={{ fontFamily: FONT, fontSize: FS.overline, fontWeight: 700, color: 'var(--die-force)', width: '0.5rem' }}>S</span>
             <span style={{ flex: 1, height: '3.5px', background: 'var(--hud-surface-lo)', borderRadius: RADIUS.sm, overflow: 'hidden' }}>
               <span style={{ display: 'block', height: '100%', width: `${sPct}%`, background: sPct >= 100 ? 'var(--hud-vital-wounds)' : 'var(--die-force)', borderRadius: RADIUS.sm }} />
             </span>
@@ -76,8 +76,8 @@ export function GmPartyMiniCard({ character: c, onMap, critCount, onClick }: Pro
       {critCount > 0 && (
         <span style={{
           position: 'absolute', top: SP[1], right: '1.75rem',
-          fontFamily: FONT, fontSize: '7.5px', fontWeight: 700, letterSpacing: '0.06em',
-          color: '#fff', background: 'var(--state-failure)', borderRadius: RADIUS.sm,
+          fontFamily: FONT, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.06em',
+          color: HUD.text, background: 'var(--state-failure)', borderRadius: RADIUS.sm,
           padding: '0.09375rem 0.3125rem',
         }}>
           CRIT{critCount > 1 ? ` ×${critCount}` : ''}

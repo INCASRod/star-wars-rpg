@@ -6,6 +6,7 @@
 // the props below are intentionally not a closed/final list.
 
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { getSkillPool, rollPool } from '@/components/player-hud/dice-engine'
 import type { DiceType } from '@/components/player-hud/design-tokens'
 import { logRoll } from '@/lib/logRoll'
@@ -68,6 +69,14 @@ export function PcCheckConsole({ character, campaignId, hudSkills, hudWeapons, f
     setPool(p => ({ ...p, [key]: Math.max(0, p[key] + delta) }))
   }
 
+  // logRoll is fire-and-forget — it writes to roll_log internally via a
+  // `.then` that only console.warns on failure, so without this the GM
+  // believes a roll reached the public feed when it silently didn't.
+  // CheckConsole.tsx (adversary console) has no error handling of its own to
+  // reuse, so this uses logRoll's new optional `onError` hook to surface a
+  // toast instead.
+  const onLogRollError = () => toast.error('Roll failed to log')
+
   function roll() {
     const skill = hudSkills.find(s => s.key === selectedSkillKey)
     if (!skill) return
@@ -82,6 +91,7 @@ export function PcCheckConsole({ character, campaignId, hudSkills, hudWeapons, f
       isDM: true,
       hidden: false,
       meta: { rollType: 'skill' },
+      onError: onLogRollError,
     })
   }
 
@@ -98,6 +108,7 @@ export function PcCheckConsole({ character, campaignId, hudSkills, hudWeapons, f
       isDM: true,
       hidden: false,
       meta: { rollType: 'combat' },
+      onError: onLogRollError,
     })
   }
 
@@ -119,17 +130,20 @@ export function PcCheckConsole({ character, campaignId, hudSkills, hudWeapons, f
       </div>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: SP[2], display: 'flex', flexDirection: 'column', gap: '1px' }}>
-        {tab === 'skill' && hudSkills.map(skill => (
-          <div
-            key={skill.key}
-            className={selectedSkillKey === skill.key ? 'gm-cc-row sel' : 'gm-cc-row'}
-            onClick={() => selectSkill(skill)}
-          >
-            <span className="n">{skill.name}</span>
-            <span className="c">{skill.charKey}</span>
-            <span className="pool">{skill.rank}</span>
-          </div>
-        ))}
+        {tab === 'skill' && hudSkills.map(skill => {
+          const { ability, proficiency } = getSkillPool(skill.charVal, skill.rank)
+          return (
+            <div
+              key={skill.key}
+              className={selectedSkillKey === skill.key ? 'gm-cc-row sel' : 'gm-cc-row'}
+              onClick={() => selectSkill(skill)}
+            >
+              <span className="n">{skill.name}</span>
+              <span className="c">{skill.charKey}</span>
+              <span className="pool">{proficiency + ability}</span>
+            </div>
+          )
+        })}
         {tab === 'combat' && combatList.map(w => {
           const { ability, proficiency } = poolForCombatSkill(w.skillName)
           return (

@@ -31,12 +31,16 @@ export interface RollLogEntry {
   meta?:               RollMeta
 }
 
-/** Fire-and-forget — does not block the caller */
+/**
+ * Fire-and-forget — does not block the caller. Optional `onError` lets a
+ * caller surface a UI-level failure (e.g. a toast) for the otherwise-silent
+ * console.warn below, without turning this into an awaitable call.
+ */
 export function logRoll({
   campaignId, characterId, characterName,
   label, pool, result, isDM = false, hidden = false,
-  meta,
-}: RollLogEntry): void {
+  meta, onError,
+}: RollLogEntry & { onError?: (message: string) => void }): void {
   const supabase = createClient()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -86,7 +90,10 @@ export function logRoll({
   }
 
   supabase.from('roll_log').insert(payload).then(({ error }) => {
-    if (error) console.warn('[logRoll] failed:', error.message)
+    if (error) {
+      console.warn('[logRoll] failed:', error.message)
+      onError?.(error.message)
+    }
   })
 }
 

@@ -285,7 +285,6 @@ export function GmShell() {
 
   // ── Destructure charActions for GmPartyPanel callbacks ──────────
   const {
-    addWound, healWounds, addStrain, healStrain,
     adjustObligation, adjustDuty, adjustMorality,
     openMoralitySetup,
     moralitySetup, setMoralitySetup, moralityBusy, handleMoralitySave,
@@ -544,10 +543,6 @@ export function GmShell() {
                 critReqLethal={critReqLethal}
                 critReqGm={critReqGm}
                 critReqBusy={critReqBusy}
-                onAddWound={id => addWound(id, 1)}
-                onHealWounds={id => healWounds(id, 1)}
-                onAddStrain={id => addStrain(id, 1)}
-                onHealStrain={id => healStrain(id, 1)}
                 onAdjustObligation={adjustObligation}
                 onAdjustDuty={adjustDuty}
                 onAdjustMorality={adjustMorality}

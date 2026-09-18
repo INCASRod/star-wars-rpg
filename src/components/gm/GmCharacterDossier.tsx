@@ -1,7 +1,7 @@
 'use client'
 
 import { createPortal } from 'react-dom'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { useCharacterData } from '@/hooks/useCharacterData'
 import type { Character } from '@/lib/types'
@@ -31,14 +31,46 @@ export function GmCharacterDossier({ character, campaignId, mapId, tokens, addTo
   useEffect(() => { setMounted(true) }, [])
   const dossierRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
+  // useLayoutEffect (not useEffect) — runs synchronously before paint, so the
+  // first painted frame already shows the element transformed to originRect's
+  // position/scale (no one-frame flash at full size first). Mirrors
+  // EncounterDossier.tsx's FLIP-open pattern.
+  useLayoutEffect(() => {
     if (!dossierRef.current || !originRect) return
-    const dr = dossierRef.current.getBoundingClientRect()
-    gsap.fromTo(dossierRef.current,
+    const el = dossierRef.current
+    // Lock in the element's natural centered position via GSAP-tracked
+    // xPercent/yPercent instead of a CSS `transform: translate(-50%,-50%)`
+    // string — GSAP owns `transform` for this tween and would otherwise
+    // clobber the CSS centering once it writes x/y, leaving the dossier
+    // mis-positioned after the animation settles.
+    gsap.set(el, { xPercent: -50, yPercent: -50 })
+    const dr = el.getBoundingClientRect()
+    gsap.fromTo(el,
       { x: originRect.left + originRect.width / 2 - (dr.left + dr.width / 2), y: originRect.top + originRect.height / 2 - (dr.top + dr.height / 2), scale: 0.16, opacity: 0.35 },
       { x: 0, y: 0, scale: 1, opacity: 1, duration: 0.45, ease: 'power3.out' })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [originRect, mounted])
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') handleClose()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  function handleClose() {
+    const el = dossierRef.current
+    if (!el || !originRect) { onClose(); return }
+    const dr = el.getBoundingClientRect()
+    gsap.to(el, {
+      x: originRect.left + originRect.width / 2 - (dr.left + dr.width / 2),
+      y: originRect.top + originRect.height / 2 - (dr.top + dr.height / 2),
+      scale: 0.16, opacity: 0, duration: 0.28, ease: 'power2.in',
+      onComplete: onClose,
+    })
+  }
 
   const {
     character: liveChar, loading,
@@ -74,9 +106,11 @@ export function GmCharacterDossier({ character, campaignId, mapId, tokens, addTo
 
   return createPortal(
     <>
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'color-mix(in srgb, var(--hud-bg) 72%, transparent)', backdropFilter: 'blur(3px)', zIndex: Z.backdrop }} />
+      <div onClick={handleClose} style={{ position: 'fixed', inset: 0, background: 'color-mix(in srgb, var(--hud-bg) 72%, transparent)', backdropFilter: 'blur(3px)', zIndex: Z.backdrop }} />
       <div ref={dossierRef} style={{
-        position: 'fixed', left: '50%', top: '50%', transform: 'translate(-50%,-50%)',
+        // No CSS `transform: translate(-50%,-50%)` here — the useLayoutEffect
+        // above sets xPercent/yPercent via GSAP instead (see EncounterDossier.tsx).
+        position: 'fixed', left: '50%', top: '50%',
         zIndex: Z.modal, width: 'min(58.75rem, 96vw)',
         background: 'var(--hud-panel)', border: '1px solid var(--hud-border-hi)',
         boxShadow: '0 26px 90px color-mix(in srgb, var(--hud-bg) 75%, transparent)',

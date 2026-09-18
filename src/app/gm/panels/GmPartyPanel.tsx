@@ -16,7 +16,6 @@ type CardCallbacks = Pick<
   | 'players' | 'obligationTypes' | 'dutyTypes'
   | 'charActiveCritCounts' | 'critReqOpenFor'
   | 'critReqVicious' | 'critReqLethal' | 'critReqGm' | 'critReqBusy'
-  | 'onAddWound' | 'onHealWounds' | 'onAddStrain' | 'onHealStrain'
   | 'onAdjustObligation' | 'onAdjustDuty' | 'onAdjustMorality'
   | 'onMoralitySetup' | 'onFallenConfirm' | 'onArchiveConfirm'
   | 'onCritOpen' | 'onCritClose'
