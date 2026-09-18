@@ -79,15 +79,9 @@ export function GmPartyPanel({ campaignId, characters, charCrits, charConflicts,
             <GmPartyMiniCard
               key={c.id}
               character={c}
-              onAddWound={cardCallbacks.onAddWound}
-              onHealWound={cardCallbacks.onHealWounds}
-              onAddStrain={cardCallbacks.onAddStrain}
-              onHealStrain={cardCallbacks.onHealStrain}
+              onMap={tokens.some(t => t.character_id === c.id)}
+              critCount={cardCallbacks.charActiveCritCounts?.[c.id] ?? 0}
               onClick={() => setSelectedId(c.id)}
-              crits={charCrits[c.id] ?? []}
-              conflicts={charConflicts[c.id] ?? []}
-              onHealCrit={onHealCrit}
-              onResolveConflict={onResolveConflict}
             />
           ))}
         </div>

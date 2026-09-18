@@ -3543,5 +3543,27 @@ i.ffi {
 /* Advisory only — no automation hangs off this. */
 .fc-roll-sub.is-warn { color: var(--die-challenge); }
 
+/* Party panel status rail dots */
+.gm-party-tokdot {
+  width: 0.5625rem;
+  height: 0.5625rem;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--hud-text-faint);
+  display: block;
+}
+.gm-party-tokdot.on {
+  background: var(--state-success);
+  border-color: var(--state-success);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--state-success) 60%, transparent);
+}
+.gm-party-forcedot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--radius-full);
+  background: var(--hud-accent-purple);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--hud-accent-purple) 55%, transparent);
+  display: block;
+}
+
 
 
