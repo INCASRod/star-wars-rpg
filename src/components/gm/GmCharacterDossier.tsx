@@ -59,12 +59,12 @@ export function GmCharacterDossier({ character, campaignId, mapId, tokens, addTo
 
   return createPortal(
     <>
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(4,6,9,0.72)', backdropFilter: 'blur(3px)', zIndex: Z.backdrop }} />
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'color-mix(in srgb, var(--hud-bg) 72%, transparent)', backdropFilter: 'blur(3px)', zIndex: Z.backdrop }} />
       <div style={{
         position: 'fixed', left: '50%', top: '50%', transform: 'translate(-50%,-50%)',
         zIndex: Z.modal, width: 'min(58.75rem, 96vw)',
         background: 'var(--hud-panel)', border: '1px solid var(--hud-border-hi)',
-        boxShadow: '0 26px 90px rgba(0,0,0,0.75)',
+        boxShadow: '0 26px 90px color-mix(in srgb, var(--hud-bg) 75%, transparent)',
       }}>
         <div style={{ height: '3px', background: 'var(--hud-accent-purple)' }} />
         <div style={{ display: 'grid', gridTemplateColumns: '14rem 1fr 18.75rem', minHeight: '32.5rem' }}>
@@ -134,7 +134,7 @@ export function GmCharacterDossier({ character, campaignId, mapId, tokens, addTo
           </div>
 
           {/* Check console — added in Task 5 */}
-          <div style={{ borderLeft: '1px solid var(--hud-border)', background: 'rgba(0,0,0,0.25)' }} />
+          <div style={{ borderLeft: '1px solid var(--hud-border)', background: 'color-mix(in srgb, var(--hud-bg) 25%, transparent)' }} />
         </div>
       </div>
     </>,
