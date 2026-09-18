@@ -6,7 +6,7 @@ import type { GmConflictRow } from '@/hooks/useGmCampaignConflicts'
 import type { MapToken } from '@/hooks/useMapTokens'
 import { FONT_BODY as FONT, FS, SP, RADIUS, HUD } from '@/lib/tokens'
 import { GmPartyMiniCard } from './GmPartyMiniCard'
-import { GmCharacterModal } from './GmCharacterModal'
+import { GmCharacterDossier } from '@/components/gm/GmCharacterDossier'
 import { ArchivedCharactersModal } from './ArchivedCharactersModal'
 import type { GmCharacterCardProps } from '@/components/gm/GmCharacterCard'
 
@@ -111,14 +111,17 @@ export function GmPartyPanel({ campaignId, characters, charCrits, charConflicts,
         </div>
       </div>
 
-      {/* Character modal (portal) */}
+      {/* Character dossier (portal) */}
       {selected && (
-        <GmCharacterModal
-          isOpen={!!selected}
-          onClose={() => setSelectedId(null)}
-          c={selected}
+        <GmCharacterDossier
+          character={selected}
           campaignId={campaignId}
-          {...cardCallbacks}
+          mapId={mapId}
+          tokens={tokens}
+          addToken={addToken}
+          removeToken={removeToken}
+          onArchive={payload => { cardCallbacks.onArchiveConfirm(payload); setSelectedId(null) }}
+          onClose={() => setSelectedId(null)}
         />
       )}
 
