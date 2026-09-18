@@ -170,6 +170,7 @@ export function GmCharacterDossier({ character, campaignId, mapId, tokens, addTo
               character={c}
               campaignId={campaignId}
               hudSkills={hudSkills}
+              hudWeapons={hudWeapons}
               forceRating={forceRating ?? 0}
             />
           </div>
