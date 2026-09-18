@@ -1,13 +1,14 @@
 'use client'
 
 import type { Character } from '@/lib/types'
+import type { MouseEvent } from 'react'
 import { HUD, FONT_BODY as FONT, FS, EASE, RADIUS, SP } from '@/lib/tokens'
 
 interface Props {
   character: Character
   onMap:     boolean
   critCount: number
-  onClick:   () => void
+  onClick:   (e: MouseEvent<HTMLDivElement>) => void
 }
 
 export function GmPartyMiniCard({ character: c, onMap, critCount, onClick }: Props) {

@@ -1,7 +1,8 @@
 'use client'
 
 import { createPortal } from 'react-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import gsap from 'gsap'
 import { useCharacterData } from '@/hooks/useCharacterData'
 import type { Character } from '@/lib/types'
 import type { MapToken } from '@/hooks/useMapTokens'
@@ -25,9 +26,19 @@ const CHAR_ROW: Array<[keyof Character, string]> = [
   ['cunning', 'CUN'], ['willpower', 'WIL'], ['presence', 'PR'],
 ]
 
-export function GmCharacterDossier({ character, campaignId, mapId, tokens, addToken, removeToken, onArchive, onClose }: GmCharacterDossierProps) {
+export function GmCharacterDossier({ character, campaignId, mapId, tokens, addToken, removeToken, onArchive, onClose, originRect }: GmCharacterDossierProps) {
   const [mounted, setMounted] = useState(false)
   useEffect(() => { setMounted(true) }, [])
+  const dossierRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!dossierRef.current || !originRect) return
+    const dr = dossierRef.current.getBoundingClientRect()
+    gsap.fromTo(dossierRef.current,
+      { x: originRect.left + originRect.width / 2 - (dr.left + dr.width / 2), y: originRect.top + originRect.height / 2 - (dr.top + dr.height / 2), scale: 0.16, opacity: 0.35 },
+      { x: 0, y: 0, scale: 1, opacity: 1, duration: 0.45, ease: 'power3.out' })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [originRect, mounted])
 
   const {
     character: liveChar, loading,
@@ -64,7 +75,7 @@ export function GmCharacterDossier({ character, campaignId, mapId, tokens, addTo
   return createPortal(
     <>
       <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'color-mix(in srgb, var(--hud-bg) 72%, transparent)', backdropFilter: 'blur(3px)', zIndex: Z.backdrop }} />
-      <div style={{
+      <div ref={dossierRef} style={{
         position: 'fixed', left: '50%', top: '50%', transform: 'translate(-50%,-50%)',
         zIndex: Z.modal, width: 'min(58.75rem, 96vw)',
         background: 'var(--hud-panel)', border: '1px solid var(--hud-border-hi)',
