@@ -3568,7 +3568,7 @@ i.ffi {
 /* Party panel bulk token controls (Task 7) */
 .gm-party-bulkbtn {
   flex: 1; display: flex; align-items: center; justify-content: center; gap: var(--space-1);
-  font-family: var(--font-body); font-size: 9px; font-weight: 700; letter-spacing: 0.12em;
+  font-family: var(--font-body); font-size: var(--text-overline); font-weight: 700; letter-spacing: 0.12em;
   padding: var(--space-2) 0; border-radius: var(--radius-sm);
   border: 1px solid var(--hud-border-hi); color: var(--hud-text-dim); background: none; cursor: pointer;
   transition: color var(--ease-quick), border-color var(--ease-quick), background var(--ease-quick);
