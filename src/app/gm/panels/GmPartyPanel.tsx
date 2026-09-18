@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import type { Character, RefDutyType, RefObligationType, CharacterCriticalInjury } from '@/lib/types'
 import type { GmConflictRow } from '@/hooks/useGmCampaignConflicts'
+import type { MapToken } from '@/hooks/useMapTokens'
 import { FONT_BODY as FONT, FS, SP, RADIUS, HUD } from '@/lib/tokens'
 import { GmPartyMiniCard } from './GmPartyMiniCard'
 import { GmCharacterModal } from './GmCharacterModal'
@@ -35,9 +36,13 @@ export interface GmPartyPanelProps extends CardCallbacks {
   onHealCrit:        (id: string) => void
   onResolveConflict: (id: string) => void
   onRestored:        (char: Character) => void
+  mapId:             string | null
+  tokens:            MapToken[]
+  addToken:          (token: Omit<MapToken, 'id' | 'updated_at'>) => Promise<MapToken | null>
+  removeToken:       (id: string) => Promise<void>
 }
 
-export function GmPartyPanel({ campaignId, characters, charCrits, charConflicts, onHealCrit, onResolveConflict, onRestored, ...cardCallbacks }: GmPartyPanelProps) {
+export function GmPartyPanel({ campaignId, characters, charCrits, charConflicts, onHealCrit, onResolveConflict, onRestored, mapId, tokens, addToken, removeToken, ...cardCallbacks }: GmPartyPanelProps) {
   const [selectedId, setSelectedId]   = useState<string | null>(null)
   const [archivedOpen, setArchivedOpen] = useState(false)
   const selected = characters.find(c => c.id === selectedId) ?? null

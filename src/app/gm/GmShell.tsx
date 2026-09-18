@@ -531,6 +531,10 @@ export function GmShell() {
               <GmPartyPanel
                 campaignId={campaignId ?? ''}
                 characters={activeChars}
+                mapId={activeMap?.id ?? null}
+                tokens={stagingTokens}
+                addToken={stagingAddToken}
+                removeToken={stagingRemoveToken}
                 players={players}
                 obligationTypes={obligationTypes}
                 dutyTypes={dutyTypes}
