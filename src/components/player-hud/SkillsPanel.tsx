@@ -162,9 +162,12 @@ function PoolPreview({ charVal, rank }: { charVal: number; rank: number }) {
 }
 
 function RankPips({ rank, color, dimColor }: { rank: number; color: string; dimColor: string }) {
+  // 5 is the normal purchase ceiling, but a cybernetic implant can push a rank
+  // to SKILL_MAX (6) — grow the track rather than clipping the last pip.
+  const slots = Math.max(5, rank)
   return (
     <div style={{ display: 'flex', gap: SP[1], alignItems: 'center' }}>
-      {Array.from({ length: 5 }).map((_, i) => (
+      {Array.from({ length: slots }).map((_, i) => (
         <div key={i} style={{
           width: '0.4rem', height: '0.5rem',
           transform: 'skewX(-12deg)',
@@ -350,6 +353,10 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
   const grouped = CHAR_ORDER.map(charKey => ({
     charKey,
     charVal: filtered.find(s => s.charKey === charKey)?.charVal ?? 0,
+    // Every HudSkill under one characteristic carries the same layered
+    // charVal/bonus (they all read the same character column), so the first
+    // one is representative.
+    cyberBonus: filtered.find(s => s.charKey === charKey)?.cyberneticCharBonus ?? 0,
     skills: filtered.filter(s => s.charKey === charKey).sort((a, b) => a.name.localeCompare(b.name)),
   })).filter(g => g.skills.length > 0)
 
@@ -593,7 +600,7 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
           minHeight: 0,
           height: '100%',
         }}>
-          {grouped.map(({ charKey, charVal, skills: groupSkills }, groupIdx) => {
+          {grouped.map(({ charKey, charVal, cyberBonus, skills: groupSkills }, groupIdx) => {
             const color = CHAR_COLOR[charKey]
             const charName = charKey.charAt(0).toUpperCase() + charKey.slice(1)
             return (
@@ -625,6 +632,27 @@ export function SkillsPanel({ skills, onRoll, onUpgrade, isCombat, xpAvailable, 
                   }}>
                     {charVal}
                   </span>
+                  {cyberBonus > 0 && (
+                    // Same Tooltip + TipLabel/TipBody attribution pattern the
+                    // dice-modifier indicators above already use — no new
+                    // bonus-display idiom is introduced here.
+                    <Tooltip
+                      content={<>
+                        <TipLabel>Cybernetic implant</TipLabel>
+                        <TipDivider />
+                        <TipBody>{`base ${charVal - cyberBonus} + cybernetic +${cyberBonus} = ${charVal}`}</TipBody>
+                      </>}
+                      placement="top"
+                      maxWidth={220}
+                    >
+                      <span style={{
+                        fontFamily: FONT_MONO, fontSize: FS.overline, fontWeight: 700,
+                        color: 'var(--hud-gold)', cursor: 'default', flexShrink: 0,
+                      }}>
+                        +{cyberBonus}
+                      </span>
+                    </Tooltip>
+                  )}
                   <span style={{
                     fontSize: FS.overline,
                     fontWeight: 700,

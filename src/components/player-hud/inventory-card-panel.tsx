@@ -8,8 +8,10 @@ import { ItemDetailPanel, type SelectedItem } from './item-detail-panel'
 import type {
   WpnDisplay, ArmDisplay, GearRow,
   EquipState, RefWeaponQuality, StowLocation, StowableAsset,
+  RefItemAttachment, RefItemDescriptor,
 } from '@/lib/types'
-import type { EncumbranceStats, EncumbranceSuppressReason } from '@/lib/derivedStats'
+import { isModItem } from '@/lib/itemCategories'
+import type { EncumbranceStats, EncumbranceSuppressReason, CyberneticsResult } from '@/lib/derivedStats'
 
 interface InventoryCardPanelProps {
   weapons:               WpnDisplay[]
@@ -31,6 +33,15 @@ interface InventoryCardPanelProps {
   onDiscardGear?:        (id: string, note?: string) => void
   isGmMode?:             boolean
   characterName?:        string
+  // ── Mods (migration 134) ──
+  refAttachmentMap?:     Record<string, RefItemAttachment>
+  refDescriptorMap?:     Record<string, RefItemDescriptor>
+  onInstallMod?:         (inventoryRowId: string, targetKind: 'weapon' | 'armor', targetItemId: string) => Promise<{ ok: boolean; warnings: string[] }>
+  onUninstallMod?:       (targetKind: 'weapon' | 'armor', targetItemId: string, attachmentInstanceId: string) => Promise<{ ok: boolean }>
+  // ── Cybernetics (migration 136) ──
+  cybernetics?:           CyberneticsResult | null
+  onInstallCybernetic?:   (gearRowId: string) => Promise<{ ok: boolean; warnings: string[] }>
+  onUninstallCybernetic?: (gearRowId: string) => Promise<{ ok: boolean }>
 }
 
 function resolveSelected(
@@ -429,7 +440,12 @@ export function InventoryCardPanel({
   onSetWeaponState, onSetArmorState, onSetGearState,
   onDiscardWeapon, onDiscardArmor, onDiscardGear,
   isGmMode, characterName,
+  refAttachmentMap, refDescriptorMap, onInstallMod, onUninstallMod,
+  cybernetics, onInstallCybernetic, onUninstallCybernetic,
 }: InventoryCardPanelProps) {
+  // Loose mods the character is carrying — derived from the gear rows this
+  // panel already has, so the Mods tab needs no second query.
+  const looseMods = gearItems.filter(g => isModItem(g.categories))
   const [selectedId, setSelectedId] = useState<string | null>(() =>
     defaultId(weapons, armorItems, gearItems)
   )
@@ -477,6 +493,8 @@ export function InventoryCardPanel({
           weapons={weapons} armorItems={armorItems} gearItems={gearItems}
           selectedId={activeId} onSelect={setSelectedId}
           encumbranceStats={encumbranceStats}
+          cybernetics={cybernetics}
+          onUninstallCybernetic={onUninstallCybernetic}
         />
         {isEmpty ? (
           <div style={{
@@ -502,6 +520,13 @@ export function InventoryCardPanel({
             onDiscardGear={onDiscardGear}
             isGmMode={isGmMode}
             characterName={characterName}
+            refAttachmentMap={refAttachmentMap}
+            refDescriptorMap={refDescriptorMap}
+            looseMods={looseMods}
+            onInstallMod={onInstallMod}
+            onUninstallMod={onUninstallMod}
+            onInstallCybernetic={onInstallCybernetic}
+            onUninstallCybernetic={onUninstallCybernetic}
           />
         ) : null}
       </div>

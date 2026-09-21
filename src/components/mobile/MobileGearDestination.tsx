@@ -5,13 +5,26 @@ import type {
   CharacterWeapon, CharacterArmor, CharacterGear,
   RefWeapon, RefArmor, RefGear, RefWeaponQuality, RefSkill,
   EquipState, EquipSlot, StowLocation, StowLocationType,
+  RefItemAttachment, RefItemDescriptor,
 } from '@/lib/types'
-import type { EncumbranceStats } from '@/lib/derivedStats'
+import type { EncumbranceStats, CyberneticsResult } from '@/lib/derivedStats'
+import { isInstalledCybernetic } from '@/lib/derivedStats'
 import { displayableQualities } from './MobileWeaponStep'
 import { MobileItemDetailSheet, type GearItem } from './MobileItemDetailSheet'
+import { isModItem, isCyberneticItem } from '@/lib/itemCategories'
 
 const STATE_ORDER: EquipState[] = ['equipped', 'carrying', 'stowed']
 const STATE_LABEL: Record<EquipState, string> = { equipped: 'Equipped', carrying: 'Carried', stowed: 'Stowed' }
+
+// MOD / CYBERNETIC join the existing equip-state chip row rather than getting
+// a second control (migration 134). They're a different axis, but the row is
+// single-select and the two axes are never combined in practice — a player
+// picking "Mod" wants every mod they carry, in whatever state.
+type GearFilter = EquipState | 'all' | 'mod' | 'cybernetic'
+const FILTER_ORDER: GearFilter[] = ['all', ...STATE_ORDER, 'mod', 'cybernetic']
+const FILTER_LABEL: Record<GearFilter, string> = {
+  ...STATE_LABEL, all: 'All', mod: 'Mod', cybernetic: 'Cybernetic',
+}
 
 export interface MobileGearDestinationProps {
   weapons: CharacterWeapon[]
@@ -31,15 +44,27 @@ export interface MobileGearDestinationProps {
   onSetEquipState: (id: string, type: 'weapon' | 'armor' | 'gear', state: EquipState, location?: StowLocation | null, equipSlot?: EquipSlot | null) => void
   onDropWeapon: (id: string) => void
   onDropEquipment: (id: string, type: 'armor' | 'gear') => void
+  // ── Mods / cybernetics (migrations 134, 136) ──
+  refAttachmentMap?: Record<string, RefItemAttachment>
+  refDescriptorMap?: Record<string, RefItemDescriptor>
+  /** Installed-implant roster + cap counters from the derived stats engine. */
+  cybernetics?: CyberneticsResult | null
+  onInstallMod?: (inventoryRowId: string, targetKind: 'weapon' | 'armor', targetItemId: string) => Promise<{ ok: boolean; warnings: string[] }>
+  onUninstallMod?: (targetKind: 'weapon' | 'armor', targetItemId: string, attachmentInstanceId: string) => Promise<{ ok: boolean }>
+  onInstallCybernetic?: (gearRowId: string) => Promise<{ ok: boolean; warnings: string[] }>
+  onUninstallCybernetic?: (gearRowId: string) => Promise<{ ok: boolean }>
 }
 
 export function MobileGearDestination({
   weapons, armor, gear, refWeaponMap, refArmorMap, refGearMap, refWeaponQualityMap, refSkillMap,
   iconUrlByItemId, itemImageUrlByItemId, encumbranceStats, credits, brawn, campaignId,
   onSetEquipState, onDropWeapon, onDropEquipment,
+  refAttachmentMap = {}, refDescriptorMap = {}, cybernetics,
+  onInstallMod, onUninstallMod, onInstallCybernetic, onUninstallCybernetic,
 }: MobileGearDestinationProps) {
   const [query, setQuery] = useState('')
-  const [filter, setFilter] = useState<EquipState | 'all'>('all')
+  const [cyberBusyId, setCyberBusyId] = useState<string | null>(null)
+  const [filter, setFilter] = useState<GearFilter>('all')
   const [ledgerExpanded, setLedgerExpanded] = useState(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
@@ -60,8 +85,11 @@ export function MobileGearDestination({
         baseEnc: ref?.encumbrance ?? 0,
         rarity: ref?.rarity ?? 0, price: ref?.price ?? 0, hardPoints: ref?.hard_points ?? 0,
         attachmentsCount: Array.isArray(w.attachments) ? w.attachments.length : 0,
+        attachments: Array.isArray(w.attachments) ? w.attachments : [],
+        skillKey: ref?.skill_key ?? null,
         description: ref?.description ?? null, effectText: ref?.effect_text ?? null, loreText: ref?.lore_text ?? null,
         wornAnchor: null,
+        categories: ref?.categories,
         weaponStats: ref ? {
           damage: ref.damage_add != null ? `+${ref.damage_add}` : `${ref.damage}`,
           crit: ref.crit, range: ref.range_value ?? '',
@@ -85,8 +113,10 @@ export function MobileGearDestination({
         baseEnc: ref?.encumbrance ?? 0,
         rarity: ref?.rarity ?? 0, price: ref?.price ?? 0, hardPoints: ref?.hard_points ?? 0,
         attachmentsCount: Array.isArray(a.attachments) ? a.attachments.length : 0,
+        attachments: Array.isArray(a.attachments) ? a.attachments : [],
         description: ref?.description ?? null, effectText: ref?.effect_text ?? null, loreText: ref?.lore_text ?? null,
         wornAnchor: ref?.worn_anchor ?? null,
+        categories: ref?.categories,
         armorStats: ref ? { soak: ref.soak, defense: ref.defense } : undefined,
       })
     }
@@ -107,6 +137,8 @@ export function MobileGearDestination({
         attachmentsCount: 0,
         description: ref?.description ?? null, effectText: ref?.effect_text ?? null, loreText: null,
         wornAnchor: ref?.worn_anchor ?? null,
+        categories: ref?.categories,
+        isInstalledCybernetic: isInstalledCybernetic(g, ref),
       })
     }
     return out
@@ -114,13 +146,17 @@ export function MobileGearDestination({
 
   const q = query.trim().toLowerCase()
   const searchFiltered = q ? items.filter(i => i.name.toLowerCase().includes(q)) : items
-  const counts: Record<EquipState | 'all', number> = {
-    all: searchFiltered.length,
-    equipped: searchFiltered.filter(i => i.equipState === 'equipped').length,
-    carrying: searchFiltered.filter(i => i.equipState === 'carrying').length,
-    stowed: searchFiltered.filter(i => i.equipState === 'stowed').length,
+  const matchesFilter = (i: GearItem, f: GearFilter): boolean => {
+    if (f === 'all') return true
+    if (f === 'mod') return isModItem(i.categories)
+    if (f === 'cybernetic') return !isModItem(i.categories) && isCyberneticItem(i.categories)
+    return i.equipState === f
   }
-  const visible = filter === 'all' ? searchFiltered : searchFiltered.filter(i => i.equipState === filter)
+  const counts = FILTER_ORDER.reduce((acc, f) => {
+    acc[f] = searchFiltered.filter(i => matchesFilter(i, f)).length
+    return acc
+  }, {} as Record<GearFilter, number>)
+  const visible = searchFiltered.filter(i => matchesFilter(i, filter))
   const selected = items.find(i => i.id === selectedId) ?? null
 
   const es = encumbranceStats
@@ -170,6 +206,52 @@ export function MobileGearDestination({
         )}
       </div>
 
+      {/* ── Part A2 — Cybernetics anchor ──────────────────────────────────
+          Same content and behaviour as the desktop anchor section
+          (item-thumb-grid.tsx's CyberneticsAnchor): used/cap, the installed
+          roster, an Uninstall per row, and an over-cap warning that never
+          blocks anything. Built from the existing m-ledger* classes — the
+          over-cap line reuses m-ledger-penalty, which is already this
+          surface's warning style (see the encumbrance ledger above). */}
+      {cybernetics && (
+        <div className="m-ledger">
+          <div className="m-ledger-top">
+            <span>
+              <span className={`m-ledger-current${cybernetics.overCap ? ' is-over' : ''}`}>
+                {cybernetics.implantsUsed}/{cybernetics.implantCap}
+              </span>
+              <span className="m-ledger-current-label">Implants</span>
+            </span>
+          </div>
+          {cybernetics.overCap && (
+            <div className="m-ledger-penalty">
+              Over the implant cap by {cybernetics.implantsUsed - cybernetics.implantCap}. Exceeding the cap is allowed but has consequences.
+            </div>
+          )}
+          <div className="m-ledger-rows">
+            {cybernetics.installed.length === 0 ? (
+              <div className="m-ledger-row"><span>No implants installed.</span><span /></div>
+            ) : cybernetics.installed.map(imp => (
+              <div key={imp.id} className="m-ledger-row">
+                <span>{imp.label}{!imp.countsTowardCap ? ' · no slot' : ''}</span>
+                {onUninstallCybernetic && (
+                  <button
+                    type="button" className="m-chip" disabled={cyberBusyId !== null}
+                    onClick={async () => {
+                      setCyberBusyId(imp.id)
+                      await onUninstallCybernetic(imp.id)
+                      setCyberBusyId(null)
+                    }}
+                  >
+                    Uninstall
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ── Part B — Item list ───────────────────────────────────────────── */}
       <div className="m-search-sticky">
         <input
@@ -177,9 +259,9 @@ export function MobileGearDestination({
           value={query} onChange={e => setQuery(e.target.value)} aria-label="Search gear"
         />
         <div className="m-chip-row">
-          {(['all', ...STATE_ORDER] as (EquipState | 'all')[]).map(f => (
+          {FILTER_ORDER.map(f => (
             <button key={f} type="button" className={`m-chip${filter === f ? ' is-active' : ''}`} onClick={() => setFilter(f)}>
-              {f === 'all' ? 'All' : STATE_LABEL[f]} <span className="m-chip-count">{counts[f]}</span>
+              {FILTER_LABEL[f]} <span className="m-chip-count">{counts[f]}</span>
             </button>
           ))}
         </div>
@@ -240,6 +322,13 @@ export function MobileGearDestination({
         onSetEquipState={onSetEquipState}
         onDropWeapon={onDropWeapon}
         onDropEquipment={onDropEquipment}
+        refAttachmentMap={refAttachmentMap}
+        refDescriptorMap={refDescriptorMap}
+        looseMods={items.filter(i => i.type === 'gear' && isModItem(i.categories))}
+        onInstallMod={onInstallMod}
+        onUninstallMod={onUninstallMod}
+        onInstallCybernetic={onInstallCybernetic}
+        onUninstallCybernetic={onUninstallCybernetic}
       />
     </div>
   )

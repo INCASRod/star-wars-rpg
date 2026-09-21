@@ -56,6 +56,8 @@ export function MobileShell({ characterId, campaignId }: MobileShellProps) {
     character, talents, weapons, armor, gear, speciesAbilities,
     skills, refSkillMap,
     refTalentMap, refArmorMap, refGearMap, refWeaponMap, refWeaponQualityMap, refAttachmentMap,
+    refDescriptorMap, refCyberneticEffects, skillRankMap,
+    installMod, uninstallMod, installCybernetic, uninstallCybernetic,
     forceRating, careerForceRatingBase,
     refCareers, refSpeciesAll, charSpecs, refSpecMap,
     hudSkills, hudTalents, hudWeapons, hudArmor, hudGear,
@@ -86,7 +88,12 @@ export function MobileShell({ characterId, campaignId }: MobileShellProps) {
     refWeaponMap,
     refWeaponQualityMap,
     speciesAbilities,
+    gear,
+    refGearMap,
+    cyberneticEffects: refCyberneticEffects,
+    skillRanks: skillRankMap,
   })
+  const cybernetics = derivedStats?.cybernetics ?? null
 
   // Single instance, passed down — a second usePendingActions on the same
   // characterId would open a second Realtime channel on the same topic
@@ -210,6 +217,13 @@ export function MobileShell({ characterId, campaignId }: MobileShellProps) {
                 onSetEquipState={handleSetEquipState}
                 onDropWeapon={id => void handleRemoveWeapon(id)}
                 onDropEquipment={(id, type) => void handleRemoveEquipment(id, type)}
+                refAttachmentMap={refAttachmentMap}
+                refDescriptorMap={refDescriptorMap}
+                cybernetics={cybernetics}
+                onInstallMod={installMod}
+                onUninstallMod={uninstallMod}
+                onInstallCybernetic={installCybernetic}
+                onUninstallCybernetic={uninstallCybernetic}
               />
             ) : dest === 'party' ? (
               <MobilePartyDestination

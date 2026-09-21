@@ -20,6 +20,18 @@ NODE_PATH="<that path>/node_modules" node script.js
 
 Write the script to `scratch/`, screenshot into `scratch/`, and delete both when done — don't leave verification artifacts in the tree.
 
+## Runbook: production renders unstyled after a CSS-adding deploy
+
+**Symptom:** production UI renders unstyled or partially unstyled for a feature whose classes are new in this deploy, while local dev and a clean local `next build` render it correctly.
+
+**Check:** fetch the deployed CSS bundle(s) referenced by the affected page and search for the specific class families the feature introduced. List the matched class names, don't count matches — `grep -c` is misleading on minified CSS (often one giant line), so a low or zero count can be a false signal either way.
+
+**Fix:** redeploy cache-cold (`vercel --force`, or clear the build cache in the dashboard). No code or config change needed — confirmed 2026-09-19 on the GM party dossier rules (`.gm-dossier-*`/`.gm-party-*`/`.gm-cc-*`): stale Vercel build cache shipped a bundle missing those rules; a cache-cold rebuild alone fixed it.
+
+**Standing habit:** after any deploy that adds new CSS rules, spot-check the affected surface in production before considering it shipped.
+
+**Unconfirmed:** the mechanism — why a stale cache would drop rules present in source — is not known. This is a documented manual workaround, not an automated guard, because automating a cache-bust on an unconfirmed trigger risks failing silently next time the trigger differs. If this recurs, escalate to either an automated cache-bust guard or a Vercel/Turbopack platform bug report, referencing this entry.
+
 ---
 
 ## Dataset Architecture
@@ -61,7 +73,28 @@ OggDude rows still exist in the database for the domains reSpec now owns (talent
 
 ## Game Rule Changes
 
+- **2026-09-17 — mod install/uninstall goes through RPCs only.** `install_mod` / `uninstall_mod` (migration 134) are the only sanctioned write path for `character_weapons.attachments` / `character_armor.attachments` — never `.update()` those jsonb columns from the client. Install is never blocked: hard-point overflow and category mismatch come back as non-blocking `warnings`.
+
 - **2026-09-06 — dice upgrade math corrected (GM-approved behaviour change).** Skill Check and Combat Check panels previously implemented "upgrade ability→proficiency" and "upgrade difficulty→challenge" with two different, and both incorrect, algorithms. Both now use `upgradeAbility`/`upgradeDifficulty` (`src/components/player-hud/dice-engine.ts`), which follow AoE Core's "Upgrading More Dice Than Available" rule: each upgrade converts one die of the source type; if none remain, it instead adds one die of the source type and is consumed doing so. **Roll outputs for checks with upgrades exceeding available dice will differ from pre-2026-09-06 sessions.** See `docs/architecture.md`'s `dice-engine.ts`/`combatCheckUtils.ts` entries for detail.
+
+---
+
+## Cybernetics (migration 135 — The Archive, Phase 2)
+
+- **`ref_cybernetic_effects`** is the structured-effect table for cybernetic implants: one row per discrete effect, 47 rows covering all 42 `'Cybernetics'`-tagged `ref_gear` rows. Columns `gear_key`, `effect_type` (`characteristic`/`skill`/`talent`/`soak`/`defense`/`wound_threshold`/`strain_threshold`/`text`), `target`, `value`, `counts_toward_cap`, `stack_group`, `needs_review`, `notes`. Reads are anon+authenticated; writes are GM-only. Full schema in `docs/architecture.md`.
+- **Installed vs owned.** `ref_gear.worn_anchor = 'cybernetics'` marks a catalogue row installable (6th anchor value — `worn_anchor` is free TEXT, no ALTER needed). `character_gear.equip_slot = 'cybernetics'` marks a character's copy surgically installed. **Installed** = `equip_state = 'equipped' AND equip_slot = 'cybernetics' AND is_dropped = false`, spelled once as `isInstalledCybernetic()` in `src/lib/derivedStats.ts`. Never re-derive it inline — dropping and selling are soft deletes here, so omitting `is_dropped` silently keeps sold implants active.
+- **Implant cap:** `(species_key === 'DROID' ? 6 : Brawn) + 2 if BIOFEEDREG installed + 1 per MOREMACH rank`. `implantsUsed` counts installed implants with `counts_toward_cap`. Over-cap is a warning, never a block — `install_cybernetic()` returns it in `warnings[]` and the UI never disables Install.
+- `computeCyberneticEffects()` clamps characteristics at 7 and skills at 6 (`CHARACTERISTIC_MAX`/`SKILL_MAX`). This is the app's only characteristic/skill ceiling enforcement; there was none before. `stack_group` members apply once. `text`/`needs_review` effects are never applied mechanically.
+- `MOREMACH` is the only talent affecting the implant cap. `CYBERNETICIST`, `STROFLES`, `STRFLESUP` and `MASTCYBE` do **not** change any characteristic or skill maximum (verified 2026-09-17 against `ref_talents`).
+- **Marketplace fix:** `ARCHETYPES.tech` in `src/lib/marketGenerator.ts` now carries `TAG_MOD` + `TAG_CYBERNETIC` (imported from `itemCategories.ts`, never respelled). Before this no archetype named `'Mod'` at all, so the 212 mod rows could never be rolled into stock.
+- **Dropped:** `character_weapon_attachments` and `character_armor_attachments` (dead since migration 031, 0 rows, zero references). `character_weapons.attachments` / `character_armor.attachments` jsonb remain the live attachment store.
+### Phase 2b (migration 136 — install lifecycle + render-time layer)
+
+- **`install_cybernetic(p_character_id, p_gear_row_id)` / `uninstall_cybernetic(...)`** (migration 136) are the ONLY sanctioned path into and out of the installed state. Same contract as `install_mod`/`uninstall_mod`: `SECURITY INVOKER`, one transaction, `FOR UPDATE` on the owned `character_gear` row, `GRANT EXECUTE TO authenticated`. **No client may `.update()` `equip_slot = 'cybernetics'` directly** — go through `installCybernetic`/`uninstallCybernetic` in `useCharacterData.ts`. Uninstall returns the row to `equip_slot = null` / `equip_state = 'carrying'` and **never deletes** it.
+- **Only two `RAISE EXCEPTION`s** on a valid, owned implant: a Biofeedback Regulator on a droid, and a second Biofeedback Regulator. Everything else — over-cap, same-`stack_group` duplicate, mismatched limb model (`cyberarm_v` next to `cyberarm_vi`) — is a non-blocking `warnings text[]`. The cap formula is duplicated in SQL deliberately so the server's number matches the sheet's; **if one changes, change both** (`install_cybernetic` ↔ `computeCyberneticEffects`).
+- **The cybernetic layer is render-time and is NEVER written back to `characters.<characteristic>`.** `computeDerivedStats()` calls `computeCyberneticEffects()` and wraps each characteristic in `statLayer(base, bonus)` → `{ base, cyberneticBonus, effective, label }`, where `label` is ready-made attribution copy (`"base 6 + cybernetic +1 = 7"`). `useCharacterData` memoises the same pure call for `hudSkills`. Clamping happens in exactly ONE place — inside `computeCyberneticEffects` — so every consumer is a plain add.
+- **KNOWN ISSUE, not fixed (report-only):** the two write sites that persist characteristics disagree with each other and with the stated rules cap of 5. `handleCharacteristicChange` (XP purchase, `useCharacterData.ts`) clamps at **7**: `Math.max(0, Math.min(current + delta, 7))`. `resolveDedication` (Dedication talent) clamps at **6**: `Math.min(current + 1, 6)`. Both write straight to the `characters` table, so a player can currently raise a characteristic well above 5 through either path. Deliberately left alone — do not "fix" without a GM decision.
+- **Mod-effect key labels:** `MOD_KEY_LABEL` in `src/lib/itemCategories.ts` is the fallback tier between `ref_item_descriptors` and printing the raw key, resolved via `modKeyLabel(key, descName)`. Audited against live data: all 38 mod-effect keys with no descriptor row are mapped, so **zero keys currently fall through**. A future unmapped key renders raw and logs exactly once via `warnUnresolvedModKey()`.
 
 ---
 

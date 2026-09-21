@@ -274,6 +274,36 @@ export interface RefGear {
   // encumbrance_bonus > 0 gear rows — null elsewhere, meaning no exclusivity
   // check applies to that row.
   worn_anchor?: string | null
+  // MOD catalogue rows only (migration 134) — the ref_item_attachments row
+  // this mod was seeded from, carrying hp_required/base_mods/category_limits.
+  // Null on every non-mod gear row. See src/lib/itemCategories.ts.
+  attachment_key?: string | null
+}
+
+// ── Cybernetic implant effects (migration 135) ───────────────────────────────
+// One row per discrete mechanical effect of a 'Cybernetics'-tagged ref_gear
+// row; an implant with two effects (e.g. CYEYE's +1 Vigilance and +1
+// Perception) has two rows. Applied by computeCyberneticEffects() in
+// src/lib/derivedStats.ts.
+export type CyberneticEffectType =
+  | 'characteristic' | 'skill' | 'talent' | 'soak' | 'defense'
+  | 'wound_threshold' | 'strain_threshold' | 'text'
+
+export interface RefCyberneticEffect {
+  id: string
+  gear_key: string
+  effect_type: CyberneticEffectType
+  /** Characteristic key (BRAWN/AGILITY/…), ref_skills.key, or ref_talents.key. Null otherwise. */
+  target: string | null
+  /** Flat bonus; granted rank count for 'talent'. Null on most 'text' rows. */
+  value: number | null
+  /** false for prosthetic replacements and the Biofeedback Regulator (RAW). */
+  counts_toward_cap: boolean
+  /** Effects sharing a stack_group apply once, however many copies are installed. */
+  stack_group: string | null
+  /** true = situational/narrative, surfaced as rules text and NOT applied mechanically. */
+  needs_review: boolean
+  notes: string | null
 }
 
 // Campaign-scoped GM-pinned catalogue image (migration 123) — feeds
@@ -457,7 +487,6 @@ export interface Character {
   /** True once the player has spent 10 XP to deliberately gain Force Rating 1. */
   force_rating_purchased?: boolean
   force_commitments?: ForceCommitment[]
-  is_force_sensitive?: boolean
   morality_configured?: boolean
   is_dark_side_fallen?: boolean
   dark_side_fallen_at?: string
@@ -574,7 +603,12 @@ export type EquipState = 'equipped' | 'carrying' | 'stowed'
 // Anchors are deliberately non-exclusive and non-exhaustive: any item may
 // attach to any anchor, and any number of items may share one anchor. Do not
 // add uniqueness/capacity/type-validation logic — that openness is by design.
-export type EquipSlot = 'head' | 'body' | 'waist' | 'legs' | 'main' | 'off' | 'back' | 'arms'
+// 'cybernetics' (migration 135) is not a wearable body location like the rest
+// — it marks a cybernetic implant as SURGICALLY INSTALLED, as opposed to a
+// boxed one the character merely owns. `equip_state === 'equipped' &&
+// equip_slot === 'cybernetics'` is the single definition of "installed"; see
+// CYBERNETIC_ANCHOR / isInstalledCybernetic in src/lib/derivedStats.ts.
+export type EquipSlot = 'head' | 'body' | 'waist' | 'legs' | 'main' | 'off' | 'back' | 'arms' | 'cybernetics'
 
 export type StowLocationType = 'vehicle' | 'starship' | 'safe_house' | 'base_of_operations'
 
@@ -715,10 +749,16 @@ export interface HudSkill {
   key:      string
   name:     string
   charKey:  CharacteristicKey
+  /** Stored characteristic PLUS any render-time cybernetic bonus (already clamped to 7). */
   charVal:  number
+  /** Stored rank (+ species start) PLUS any render-time cybernetic bonus (already clamped to 6). */
   rank:     number
   isCareer: boolean
   type?:    'stGeneral' | 'stCombat' | 'stKnowledge'
+  /** How much of `charVal` came from installed implants — display attribution only. */
+  cyberneticCharBonus?:  number
+  /** How much of `rank` came from installed implants — display attribution only. */
+  cyberneticSkillBonus?: number
 }
 
 export interface HudTalent {
@@ -750,6 +790,10 @@ export interface WpnDisplay {
   iconUrl:        string | null
   refKey:         string | null
   categories?:    string[]
+  /** ref_weapons.skill_key — 'LTSABER' is the only lightsaber signal (migration 134). */
+  skillKey?:      string | null
+  /** Installed mods, straight off character_weapons.attachments (jsonb). */
+  attachments?:   unknown[]
 }
 
 export interface ArmDisplay {
@@ -770,6 +814,9 @@ export interface ArmDisplay {
   iconUrl:        string | null
   refKey:         string | null
   categories?:    string[]
+  wornAnchor?:    string | null
+  /** Installed mods, straight off character_armor.attachments (jsonb). */
+  attachments?:   unknown[]
 }
 
 export interface GearRow {
@@ -787,6 +834,10 @@ export interface GearRow {
   iconUrl:        string | null
   refKey:         string | null
   categories?:    string[]
+  wornAnchor?:    string | null
+  /** True only for a cybernetic implant this character has surgically installed
+   *  (character_gear.equip_slot = 'cybernetics'), not one they merely carry. */
+  isInstalledCybernetic?: boolean
 }
 
 export type ItemCondition =

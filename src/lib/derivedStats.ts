@@ -19,6 +19,7 @@ import type {
   RefWeapon,
   RefWeaponQuality,
   RefItemAttachment,
+  RefCyberneticEffect,
   AttachmentModEntry,
   WeaponQuality,
   SpeciesAbility,
@@ -165,6 +166,26 @@ export interface StatSource {
   kind?: 'item' | 'attachment' | 'talent' | 'species' | 'base'
 }
 
+/**
+ * One characteristic's or skill's render-time layering: the value stored on
+ * the character row, plus whatever installed cybernetics add on top.
+ *
+ * `base` is ALREADY fully resolved through XP purchase and Dedication — both
+ * of those write straight to `characters.<field>` at purchase time. The
+ * cybernetic layer is the one that is NEVER written back: it is recomputed
+ * every render from the installed implants.
+ */
+export interface StatLayer {
+  /** characters.<field> / character_skills.rank as stored. */
+  base: number
+  /** Amount installed cybernetics actually add, already clamped. */
+  cyberneticBonus: number
+  /** base + cyberneticBonus. */
+  effective: number
+  /** Ready-made attribution copy, e.g. "base 6 + cybernetic +1 = 7". */
+  label: string
+}
+
 export interface DerivedStatsResult {
   effectiveStats: EffectiveStats
   modifiers: CharacterModifiers
@@ -176,6 +197,220 @@ export interface DerivedStatsResult {
     woundThreshold: StatSource[]
     strainThreshold: StatSource[]
     forceRating: StatSource[]
+  }
+  /** Installed-implant roster, cap/usage counters and raw bonus maps. */
+  cybernetics: CyberneticsResult
+  /** Keyed BRAWN/AGILITY/INTELLECT/CUNNING/WILLPOWER/PRESENCE. */
+  characteristics: Record<string, StatLayer>
+  /** Keyed by ref_skills.key — only skills an implant touches get an entry. */
+  skillLayers: Record<string, StatLayer>
+}
+
+/** Compose one StatLayer. The clamp already happened in
+ *  computeCyberneticEffects — this only adds, deliberately, so the ceiling
+ *  lives in exactly one place. */
+function statLayer(base: number, cyberneticBonus: number): StatLayer {
+  const effective = base + cyberneticBonus
+  return {
+    base, cyberneticBonus, effective,
+    label: cyberneticBonus > 0
+      ? `base ${base} + cybernetic +${cyberneticBonus} = ${effective}`
+      : `base ${base}`,
+  }
+}
+
+// ── Cybernetics (migration 135) ──────────────────────────────────────────────
+
+/**
+ * The `character_gear.equip_slot` value marking an implant as surgically
+ * INSTALLED, and the `ref_gear.worn_anchor` value marking a catalogue row as
+ * an implant. Deliberately the same string in both places — see migration
+ * 135's header for why `equip_slot` was reused instead of a new column.
+ */
+export const CYBERNETIC_ANCHOR = 'cybernetics'
+
+/** RAW ceilings. A cybernetic bonus can never push a stat past these. */
+export const CHARACTERISTIC_MAX = 7
+export const SKILL_MAX = 6
+
+/** Implant cap for a droid, which does not use Brawn (EotE CRB p.173). */
+const DROID_IMPLANT_CAP = 6
+
+/** The only two implant-cap modifiers in the game. See migration 135's header. */
+const BIOFEEDBACK_REGULATOR_KEY = 'BIOFEEDREG'
+const MORE_MACHINE_TALENT_KEY   = 'MOREMACH'
+
+/**
+ * Installed = equipped, not dropped, and sitting in the cybernetics slot.
+ * Dropping and selling are SOFT deletes in this schema (the row survives with
+ * is_dropped = true and its old equip_state intact), so the is_dropped check
+ * is load-bearing, not defensive — without it a sold implant keeps applying.
+ */
+export function isInstalledCybernetic(
+  gear: Pick<CharacterGear, 'equip_state' | 'is_equipped' | 'equip_slot'> & { is_dropped?: boolean },
+  ref: Pick<RefGear, 'worn_anchor'> | undefined,
+): boolean {
+  if (!ref || ref.worn_anchor !== CYBERNETIC_ANCHOR) return false
+  if (isDropped(gear)) return false
+  if (itemState(gear) !== 'equipped') return false
+  return gear.equip_slot === CYBERNETIC_ANCHOR
+}
+
+export interface InstalledCybernetic {
+  /** character_gear.id */
+  id: string
+  gearKey: string
+  label: string
+  countsTowardCap: boolean
+}
+
+export interface CyberneticsResult {
+  installed: InstalledCybernetic[]
+  /** (droid ? 6 : Brawn) + Biofeedback Regulator + More Machine Than Man ranks */
+  implantCap: number
+  /** Count of installed implants whose effects are counts_toward_cap. */
+  implantsUsed: number
+  /** True when implantsUsed exceeds implantCap — a WARNING, never a block. */
+  overCap: boolean
+  /** Keyed by characteristic key (BRAWN, AGILITY, …), already clamped to CHARACTERISTIC_MAX. */
+  characteristicBonuses: Record<string, number>
+  /** Keyed by ref_skills.key, already clamped to SKILL_MAX. */
+  skillBonuses: Record<string, number>
+  /** Talent ranks granted by implants, keyed by ref_talents.key. */
+  talentGrants: Record<string, number>
+  soakBonus: number
+  defenseBonus: number
+  woundThresholdBonus: number
+  strainThresholdBonus: number
+  /** needs_review / narrative effects, for rules-text display only. */
+  textEffects: { gearKey: string; label: string; notes: string | null }[]
+  /** Per-stat attribution lines, same shape the stat tooltips already consume. */
+  sources: StatSource[]
+}
+
+/**
+ * Apply every installed implant's structured effects.
+ *
+ * Clamping: bonuses are clamped against the character's CURRENT value, so the
+ * returned characteristic/skill bonus is the amount that actually lands, not
+ * the amount RAW would grant — a Brawn 7 character installing Mod II
+ * cyberlegs gets +0, not +1 with the overflow hidden downstream.
+ *
+ * Stacking: effects sharing a `stack_group` apply ONCE no matter how many
+ * copies are installed (RAW: "the modifiers from both arms do not stack";
+ * cyberlegs are bought as a pair for a single bonus).
+ *
+ * Pure: no Supabase calls, no React, no hooks.
+ */
+export function computeCyberneticEffects(
+  character: Pick<Character, 'brawn' | 'agility' | 'intellect' | 'cunning' | 'willpower' | 'presence' | 'species_key'>,
+  gear: CharacterGear[],
+  refGearMap: Record<string, Pick<RefGear, 'name' | 'worn_anchor'>>,
+  effects: RefCyberneticEffect[],
+  characterTalents: Pick<CharacterTalent, 'talent_key' | 'ranks'>[] = [],
+  skillRanks: Record<string, number> = {},
+): CyberneticsResult {
+  const effectsByKey = new Map<string, RefCyberneticEffect[]>()
+  for (const e of effects) {
+    effectsByKey.set(e.gear_key, [...(effectsByKey.get(e.gear_key) ?? []), e])
+  }
+
+  const installed: InstalledCybernetic[] = []
+  for (const g of gear) {
+    const ref = refGearMap[g.gear_key]
+    if (!isInstalledCybernetic(g, ref)) continue
+    const rows = effectsByKey.get(g.gear_key) ?? []
+    installed.push({
+      id: g.id,
+      gearKey: g.gear_key,
+      label: g.custom_name || ref?.name || g.gear_key,
+      // An implant with no seeded effect rows at all still occupies a slot.
+      countsTowardCap: rows.length === 0 || rows.some(r => r.counts_toward_cap),
+    })
+  }
+
+  // ── Implant cap ───────────────────────────────────────────────────────────
+  const isDroid = character.species_key === 'DROID'
+  let implantCap = isDroid ? DROID_IMPLANT_CAP : character.brawn
+  if (installed.some(i => i.gearKey === BIOFEEDBACK_REGULATOR_KEY)) {
+    const bio = (effectsByKey.get(BIOFEEDBACK_REGULATOR_KEY) ?? []).find(e => e.value != null)
+    implantCap += bio?.value ?? 2
+  }
+  implantCap += countOwnedRanks(
+    characterTalents,
+    t => t.talent_key === MORE_MACHINE_TALENT_KEY,
+    t => t.ranks ?? 1,
+  )
+
+  const implantsUsed = installed.filter(i => i.countsTowardCap).length
+
+  // ── Effects ───────────────────────────────────────────────────────────────
+  const characteristicBonuses: Record<string, number> = {}
+  const skillBonuses: Record<string, number> = {}
+  const talentGrants: Record<string, number> = {}
+  const textEffects: CyberneticsResult['textEffects'] = []
+  const sources: StatSource[] = []
+  let soakBonus = 0
+  let defenseBonus = 0
+  let woundThresholdBonus = 0
+  let strainThresholdBonus = 0
+
+  const baseCharacteristic: Record<string, number> = {
+    BRAWN: character.brawn, AGILITY: character.agility, INTELLECT: character.intellect,
+    CUNNING: character.cunning, WILLPOWER: character.willpower, PRESENCE: character.presence,
+  }
+
+  const spentStackGroups = new Set<string>()
+
+  for (const item of installed) {
+    for (const e of effectsByKey.get(item.gearKey) ?? []) {
+      if (e.effect_type === 'text' || e.needs_review) {
+        textEffects.push({ gearKey: item.gearKey, label: item.label, notes: e.notes })
+        continue
+      }
+      if (e.stack_group) {
+        if (spentStackGroups.has(e.stack_group)) continue
+        spentStackGroups.add(e.stack_group)
+      }
+      const n = e.value ?? 0
+      if (!n) continue
+
+      switch (e.effect_type) {
+        case 'characteristic': {
+          if (!e.target) break
+          const current = (baseCharacteristic[e.target] ?? 0) + (characteristicBonuses[e.target] ?? 0)
+          const applied = Math.max(0, Math.min(n, CHARACTERISTIC_MAX - current))
+          if (!applied) break
+          characteristicBonuses[e.target] = (characteristicBonuses[e.target] ?? 0) + applied
+          sources.push({ label: item.label, value: applied, kind: 'item' })
+          break
+        }
+        case 'skill': {
+          if (!e.target) break
+          const current = (skillRanks[e.target] ?? 0) + (skillBonuses[e.target] ?? 0)
+          const applied = Math.max(0, Math.min(n, SKILL_MAX - current))
+          if (!applied) break
+          skillBonuses[e.target] = (skillBonuses[e.target] ?? 0) + applied
+          sources.push({ label: item.label, value: applied, kind: 'item' })
+          break
+        }
+        case 'talent':
+          if (!e.target) break
+          talentGrants[e.target] = (talentGrants[e.target] ?? 0) + n
+          break
+        case 'soak':             soakBonus            += n; sources.push({ label: item.label, value: n, kind: 'item' }); break
+        case 'defense':          defenseBonus         += n; sources.push({ label: item.label, value: n, kind: 'item' }); break
+        case 'wound_threshold':  woundThresholdBonus  += n; sources.push({ label: item.label, value: n, kind: 'item' }); break
+        case 'strain_threshold': strainThresholdBonus += n; sources.push({ label: item.label, value: n, kind: 'item' }); break
+      }
+    }
+  }
+
+  return {
+    installed, implantCap, implantsUsed, overCap: implantsUsed > implantCap,
+    characteristicBonuses, skillBonuses, talentGrants,
+    soakBonus, defenseBonus, woundThresholdBonus, strainThresholdBonus,
+    textEffects, sources,
   }
 }
 
@@ -351,11 +586,22 @@ export function computeEncumbranceStats(
   for (const g of liveGear) {
     const state = itemState(g)
     const ref = refGearMap[g.gear_key]
+    // NULL-encumbrance rule (migration 134): MOD and CYBERNETIC catalogue rows
+    // are seeded with `encumbrance = NULL` — a loose mod weighs nothing. The
+    // `|| 0` below is that rule, and this is the ONLY place it is applied.
+    // Do NOT scatter `?? 0` fallbacks at call sites; every encumbrance number
+    // the app shows comes out of this function.
     const enc = (ref?.encumbrance || 0) * (g.quantity || 1)
     const label = g.custom_name || ref?.name || g.gear_key
 
+    // Installed cybernetics are inside the character, not carried on them —
+    // they contribute no load and appear in no load source list. (Every
+    // seeded Cybernetics row happens to be encumbrance 0 today, so this is
+    // belt-and-braces against a future custom implant with a weight.)
+    const installedCybernetic = isInstalledCybernetic(g, ref)
+
     let cost = 0
-    if (state !== 'stowed') {
+    if (state !== 'stowed' && !installedCybernetic) {
       cost = enc
       load += cost
       loadSources.push({ id: g.id, label, value: cost, reason: null, suppressed: false, type: 'gear' })
@@ -425,6 +671,14 @@ export function computeDerivedStats(
   refWeaponQualityMap: Record<string, RefWeaponQuality> = {},
   speciesAbilities: SpeciesAbility[] = [],
   moralitySystem: 'vanilla' | 'force_presence' = 'vanilla',
+  // ── Cybernetics layer (migration 135/136) ───────────────────────────────
+  // Optional so every existing call site keeps working unchanged: with no
+  // gear/effects the layer computes an empty CyberneticsResult and adds zero
+  // to everything.
+  characterGear: CharacterGear[] = [],
+  refGearMap: Record<string, RefGear> = {},
+  cyberneticEffects: RefCyberneticEffect[] = [],
+  skillRanks: Record<string, number> = {},
 ): DerivedStatsResult {
 
   const mods: CharacterModifiers = {
@@ -689,22 +943,79 @@ export function computeDerivedStats(
     }
   }
 
+  // ── Step 4c: Cybernetics — RENDER-TIME ONLY ──────────────────────────────
+  // computeCyberneticEffects() is passed the character's CURRENT (already
+  // XP- and Dedication-resolved) characteristic values and skill ranks as the
+  // base, and clamps each bonus against them (CHARACTERISTIC_MAX = 7,
+  // SKILL_MAX = 6). Nothing here is ever written back to characters.* or
+  // character_skills.* — unlike GRIT/TOUGH (applyTalentModifiers) and
+  // Dedication (resolveDedication), which persist at purchase time. An
+  // implant can be uninstalled, so its contribution has to be derived.
+  const cybernetics = computeCyberneticEffects(
+    character, characterGear, refGearMap, cyberneticEffects, characterTalents, skillRanks,
+  )
+
+  const characteristics: Record<string, StatLayer> = {
+    BRAWN:     statLayer(character.brawn,     cybernetics.characteristicBonuses.BRAWN     ?? 0),
+    AGILITY:   statLayer(character.agility,   cybernetics.characteristicBonuses.AGILITY   ?? 0),
+    INTELLECT: statLayer(character.intellect, cybernetics.characteristicBonuses.INTELLECT ?? 0),
+    CUNNING:   statLayer(character.cunning,   cybernetics.characteristicBonuses.CUNNING   ?? 0),
+    WILLPOWER: statLayer(character.willpower, cybernetics.characteristicBonuses.WILLPOWER ?? 0),
+    PRESENCE:  statLayer(character.presence,  cybernetics.characteristicBonuses.PRESENCE  ?? 0),
+  }
+
+  const skillLayers: Record<string, StatLayer> = {}
+  for (const [skillKey, bonus] of Object.entries(cybernetics.skillBonuses)) {
+    skillLayers[skillKey] = statLayer(skillRanks[skillKey] ?? 0, bonus)
+  }
+
+  // Implant soak/defense/threshold bonuses join the same accumulators the
+  // armour and talent loops feed, with their own breakdown lines, so the
+  // existing stat tooltips explain them without a second display path.
+  // (cybernetics.sources carries the per-implant characteristic/skill
+  // attribution lines; those are surfaced through characteristics/skillLayers
+  // above, not through `mods`.)
+  if (characteristics.BRAWN.cyberneticBonus) {
+    soakSources.push({ label: 'Cybernetics (Brawn)', value: characteristics.BRAWN.cyberneticBonus, kind: 'item' })
+  }
+  if (cybernetics.soakBonus) {
+    mods.soakBonus += cybernetics.soakBonus
+    soakSources.push({ label: 'Cybernetics', value: cybernetics.soakBonus, kind: 'item' })
+  }
+  if (cybernetics.defenseBonus) {
+    mods.defenseMelee  += cybernetics.defenseBonus
+    mods.defenseRanged += cybernetics.defenseBonus
+    defMSources.push({ label: 'Cybernetics', value: cybernetics.defenseBonus, kind: 'item' })
+    defRSources.push({ label: 'Cybernetics', value: cybernetics.defenseBonus, kind: 'item' })
+  }
+  if (cybernetics.woundThresholdBonus)  woundSources.push({ label: 'Cybernetics', value: cybernetics.woundThresholdBonus, kind: 'item' })
+  if (cybernetics.strainThresholdBonus) strainSources.push({ label: 'Cybernetics', value: cybernetics.strainThresholdBonus, kind: 'item' })
+
   // ── Step 5: Assemble effective stats ─────────────────────────────────────
   const effectiveStats: EffectiveStats = {
-    soak:            character.brawn + mods.soakBonus,
+    // Soak is Brawn-derived, so a Brawn-raising implant raises soak too —
+    // characteristics.BRAWN.effective, never the raw column.
+    soak:            characteristics.BRAWN.effective + mods.soakBonus,
     defenseMelee:    mods.defenseMelee,
     defenseRanged:   mods.defenseRanged,
     // wound/strain talent bonuses (GRIT, TOUGH) are stored directly on the character row
     // via applyTalentModifiers — do NOT add them again here to avoid double-counting.
     // Force Presence bonuses are the one exception: purely derived, added here only.
-    woundThreshold:  character.wound_threshold  + forcePresenceWoundBonus,
-    strainThreshold: character.strain_threshold + forcePresenceStrainBonus,
+    // Cybernetic threshold bonuses are purely derived (same reasoning as the
+    // Force Presence terms directly above) and so are added here only, never
+    // folded into mods.woundThresholdBonus/strainThresholdBonus — those two
+    // mirror what applyTalentModifiers already baked into the DB column.
+    woundThreshold:  character.wound_threshold  + forcePresenceWoundBonus  + cybernetics.woundThresholdBonus,
+    strainThreshold: character.strain_threshold + forcePresenceStrainBonus + cybernetics.strainThresholdBonus,
     forceRating:     forceRatingBase            + mods.forceRatingBonus,
   }
 
   return {
     effectiveStats,
     modifiers: mods,
+    cybernetics,
+    characteristics,
+    skillLayers,
     breakdown: {
       soak:            soakSources,
       defenseMelee:    defMSources,

@@ -50,7 +50,7 @@ async function fetchCharacterDataBatch(characterId: string) {
   const [refData, [charRes, skillsRes, talentsRes, weaponsRes, armorRes, gearRes, critsRes, specsRes,
     refWpnRes, refArmRes, refGearRes, refCritRes, refDescRes,
     refSpeciesRes, forceAbilRes, refFpRes, refFaRes, refWqRes, refAttRes,
-    refOblTypesRes, refDutyTypesRes, itemIconOverridesRes]] = await Promise.all([
+    refOblTypesRes, refDutyTypesRes, itemIconOverridesRes, refCybEffectsRes]] = await Promise.all([
     getRefData(ds),
     Promise.all([
       supabase.from('characters').select('*').eq('id', characterId).single(),
@@ -81,6 +81,9 @@ async function fetchCharacterDataBatch(characterId: string) {
       // Promise.all) -- useCharacterData.ts filters to character.campaign_id
       // when building the resolver's override map.
       supabase.from('item_icon_overrides').select('*'),
+      // Cybernetic implant effects (migration 135). Global reference data,
+      // unfiltered like the other ref_* tables — 47 rows.
+      supabase.from('ref_cybernetic_effects').select('*'),
     ]),
   ])
 
@@ -90,7 +93,7 @@ async function fetchCharacterDataBatch(characterId: string) {
     charRes, skillsRes, talentsRes, weaponsRes, armorRes, gearRes, critsRes, specsRes,
     refWpnRes, refArmRes, refGearRes, refCritRes, refDescRes,
     refSpeciesRes, forceAbilRes, refFpRes, refFaRes, refWqRes, refAttRes,
-    refOblTypesRes, refDutyTypesRes, itemIconOverridesRes,
+    refOblTypesRes, refDutyTypesRes, itemIconOverridesRes, refCybEffectsRes,
   }
 }
 

@@ -244,7 +244,7 @@ export function MobileSheetDestination({
           there's nothing else to show (a non-Force-sensitive character). ── */}
       <div className="m-sheet-banner" ref={bannerRef}>
         <div className="m-sheet-banner-glow" aria-hidden="true" />
-        {character.is_force_sensitive && (
+        {forceRating > 0 && (
           <div className="m-sheet-tags">
             <span className="m-sheet-tag is-force">Force {forceRating}</span>
           </div>

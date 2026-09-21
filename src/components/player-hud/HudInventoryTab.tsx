@@ -1,8 +1,8 @@
 'use client'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { InventoryCardPanel } from './inventory-card-panel'
-import type { WpnDisplay, ArmDisplay, GearRow, StowableAsset, StowLocation, EquipState } from '@/lib/types'
-import type { EncumbranceStats } from '@/lib/derivedStats'
+import type { WpnDisplay, ArmDisplay, GearRow, StowableAsset, StowLocation, EquipState, RefItemAttachment, RefItemDescriptor } from '@/lib/types'
+import type { EncumbranceStats, CyberneticsResult } from '@/lib/derivedStats'
 
 interface HudInventoryTabProps {
   hudWeapons:            WpnDisplay[]
@@ -24,6 +24,15 @@ interface HudInventoryTabProps {
   onSetEquipState:       (id: string, type: 'weapon' | 'armor' | 'gear', state: EquipState, location?: StowLocation | null) => void
   onRemoveWeapon:        (id: string, mode: 'gm' | 'player', note?: string) => void
   onRemoveEquipment:     (id: string, type: 'armor' | 'gear', mode: 'gm' | 'player', note?: string) => void
+  // ── Mods (migration 134) ──
+  refAttachmentMap?:     Record<string, RefItemAttachment>
+  refDescriptorMap?:     Record<string, RefItemDescriptor>
+  onInstallMod?:         (inventoryRowId: string, targetKind: 'weapon' | 'armor', targetItemId: string) => Promise<{ ok: boolean; warnings: string[] }>
+  onUninstallMod?:       (targetKind: 'weapon' | 'armor', targetItemId: string, attachmentInstanceId: string) => Promise<{ ok: boolean }>
+  // ── Cybernetics (migration 136) ──
+  cybernetics?:           CyberneticsResult | null
+  onInstallCybernetic?:   (gearRowId: string) => Promise<{ ok: boolean; warnings: string[] }>
+  onUninstallCybernetic?: (gearRowId: string) => Promise<{ ok: boolean }>
 }
 
 export function HudInventoryTab({
@@ -35,6 +44,8 @@ export function HudInventoryTab({
   stowableAssets, baseOfOperationsName,
   effectiveCampaignId, supabase,
   onSetEquipState, onRemoveWeapon, onRemoveEquipment,
+  refAttachmentMap, refDescriptorMap, onInstallMod, onUninstallMod,
+  cybernetics, onInstallCybernetic, onUninstallCybernetic,
 }: HudInventoryTabProps) {
   function logItemDiscard(label: string) {
     if (!effectiveCampaignId) return
@@ -80,6 +91,13 @@ export function HudInventoryTab({
       }}
       isGmMode={isGmMode}
       characterName={characterName}
+      refAttachmentMap={refAttachmentMap}
+      refDescriptorMap={refDescriptorMap}
+      onInstallMod={onInstallMod}
+      onUninstallMod={onUninstallMod}
+      cybernetics={cybernetics}
+      onInstallCybernetic={onInstallCybernetic}
+      onUninstallCybernetic={onUninstallCybernetic}
     />
   )
 }

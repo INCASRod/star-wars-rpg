@@ -1,10 +1,12 @@
 'use client'
-import { FONT_BODY, FONT_DISPLAY, FS, RADIUS, SP, Z } from '@/lib/tokens'
+import { useState } from 'react'
+import { FONT_BODY, FONT_DISPLAY, FS, RADIUS, SP, Z, EASE } from '@/lib/tokens'
+import { isModItem, isCyberneticItem, itemCategoryLabel } from '@/lib/itemCategories'
 import { ItemReadoutPlate } from '@/components/shared/ItemReadoutPlate'
 import { TickerText } from '@/components/ui/TickerText'
 import { useHudPanelContext } from '@/contexts/HudPanelContext'
 import type { WpnDisplay, ArmDisplay, GearRow, EquipState, ItemCondition } from '@/lib/types'
-import type { EncumbranceStats } from '@/lib/derivedStats'
+import type { EncumbranceStats, CyberneticsResult } from '@/lib/derivedStats'
 
 interface ItemThumbGridProps {
   weapons:    WpnDisplay[]
@@ -13,6 +15,103 @@ interface ItemThumbGridProps {
   selectedId: string | null
   onSelect:   (id: string) => void
   encumbranceStats: EncumbranceStats | null
+  /** Installed-implant roster + cap counters from the derived stats engine. */
+  cybernetics?: CyberneticsResult | null
+  onUninstallCybernetic?: (gearRowId: string) => Promise<{ ok: boolean }>
+}
+
+// ── Cybernetics anchor section (migration 135/136) ───────────────────────────
+// The cybernetics "anchor" is not a worn slot like body/back/waist — it is a
+// capacity, so this section leads with `used / cap` rather than a single
+// occupant. Over cap is a WARNING, never a block: the numerals turn
+// var(--state-threat) exactly as ModsTab's hard-point counter does when a mod
+// overruns its hard points, and the note below uses the same
+// var(--hud-vital-wounds) ⚠ line as EncumbranceTab's anchor-occupied note.
+// No new warning style is introduced here.
+function CyberneticsAnchor({ cybernetics, onUninstall, onSelect, selectedId }: {
+  cybernetics: CyberneticsResult
+  onUninstall?: (gearRowId: string) => Promise<{ ok: boolean }>
+  onSelect: (id: string) => void
+  selectedId: string | null
+}) {
+  const [busyId, setBusyId] = useState<string | null>(null)
+  const { implantsUsed, implantCap, overCap, installed } = cybernetics
+
+  async function handleUninstall(id: string) {
+    if (!onUninstall || busyId) return
+    setBusyId(id)
+    await onUninstall(id)
+    setBusyId(null)
+  }
+
+  return (
+    <div style={{ padding: SP[1] }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: `${SP[1]} ${SP[1]}` }}>
+        <span style={{
+          fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
+          letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--hud-text-faint)',
+        }}>
+          Implant Capacity
+        </span>
+        <span style={{
+          fontFamily: FONT_DISPLAY, fontSize: FS.sm, fontWeight: 700,
+          color: overCap ? 'var(--state-threat)' : 'var(--hud-text-dim)',
+        }}>
+          {implantsUsed} / {implantCap}
+        </span>
+      </div>
+      {overCap && (
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: 'var(--hud-vital-wounds)', padding: `${SP[1]} ${SP[1]}` }}>
+          ⚠ Over the implant cap by {implantsUsed - implantCap}. Exceeding the cap is allowed but has consequences.
+        </div>
+      )}
+      {installed.length === 0 ? (
+        <p style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: 'var(--hud-text-faint)', fontStyle: 'italic', margin: 0, padding: SP[1] }}>
+          No implants installed.
+        </p>
+      ) : installed.map(imp => (
+        <div
+          key={imp.id}
+          style={{
+            display: 'flex', alignItems: 'center', gap: SP[2],
+            padding: `${SP[1]} ${SP[1]}`, borderBottom: '1px solid var(--hud-border)',
+            background: selectedId === imp.id ? 'color-mix(in srgb, var(--hud-gold) 8%, transparent)' : 'transparent',
+          }}
+        >
+          <button
+            onClick={() => onSelect(imp.id)}
+            style={{
+              flex: 1, minWidth: 0, textAlign: 'left', background: 'transparent', border: 0, padding: 0,
+              cursor: 'pointer', fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700,
+              color: 'var(--hud-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            }}
+          >
+            {imp.label}
+            {!imp.countsTowardCap && (
+              <span style={{ color: 'var(--hud-text-faint)', fontWeight: 400 }}> · no slot</span>
+            )}
+          </button>
+          {onUninstall && (
+            <button
+              onClick={() => handleUninstall(imp.id)}
+              disabled={busyId !== null}
+              style={{
+                // 2px vertical — secondary/inline button density per the UI gate.
+                flexShrink: 0, fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
+                letterSpacing: '0.12em', textTransform: 'uppercase',
+                padding: `2px ${SP[2]}`, borderRadius: RADIUS.sm,
+                cursor: busyId !== null ? 'wait' : 'pointer',
+                background: 'transparent', border: '1px solid var(--hud-border-hi)', color: 'var(--hud-gold)',
+                opacity: busyId !== null ? 0.4 : 1,
+              }}
+            >
+              Uninstall
+            </button>
+          )}
+        </div>
+      ))}
+    </div>
+  )
 }
 
 function SectionHead({ label, isOpen }: { label: string; isOpen: boolean }) {
@@ -93,6 +192,7 @@ interface ManifestRowProps {
   equipState: EquipState
   condition: ItemCondition
   category?: string
+  wornAnchor?: string | null
   isSelected: boolean
   onClick: () => void
   encumbranceStats: EncumbranceStats | null
@@ -104,7 +204,7 @@ interface ManifestRowProps {
 // explaining what was being previewed. The trigger moved to the item detail
 // panel's state segmented control, where the button hovered IS the target
 // state being simulated.
-function ManifestRow({ id, name, table, iconUrl, equipState, condition, category, isSelected, onClick, encumbranceStats }: ManifestRowProps) {
+function ManifestRow({ id, name, table, iconUrl, equipState, condition, category, wornAnchor, isSelected, onClick, encumbranceStats }: ManifestRowProps) {
   const eq = EQUIP_COLOR[equipState]
   return (
     <button
@@ -131,6 +231,7 @@ function ManifestRow({ id, name, table, iconUrl, equipState, condition, category
         <span style={{ display: 'flex', gap: SP[1], flexWrap: 'wrap', fontFamily: FONT_BODY, fontSize: FS.overline, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
           <span style={{ color: eq, fontWeight: 700 }}>{EQUIP_LABEL[equipState]}</span>
           {category && <span style={{ color: 'var(--hud-text-faint)' }}>{category}</span>}
+          {wornAnchor && <span style={{ color: 'var(--hud-text-faint)' }}>{wornAnchor[0].toUpperCase() + wornAnchor.slice(1)}</span>}
           <span style={{ color: CONDITION_COLOR[condition] }}>{CONDITION_LABEL[condition]}</span>
         </span>
       </div>
@@ -139,19 +240,111 @@ function ManifestRow({ id, name, table, iconUrl, equipState, condition, category
   )
 }
 
-export function ItemThumbGrid({ weapons, armorItems, gearItems, selectedId, onSelect, encumbranceStats }: ItemThumbGridProps) {
+// ── Category filter (migration 134) ──────────────────────────────────────────
+// MOD and CYBERNETIC are tag readings over ordinary gear rows, so they sit in
+// the same chip row as the three table categories rather than in a second
+// control. 'all' is the default — nothing is hidden unless a chip is picked.
+type CategoryFilter = 'all' | 'weapon' | 'armor' | 'gear' | 'mod' | 'cybernetic'
+const CATEGORY_FILTERS: { key: CategoryFilter; label: string }[] = [
+  { key: 'all',        label: 'All' },
+  { key: 'weapon',     label: 'Weapons' },
+  { key: 'armor',      label: 'Armour' },
+  { key: 'gear',       label: 'Gear' },
+  { key: 'mod',        label: 'Mod' },
+  { key: 'cybernetic', label: 'Cybernetic' },
+]
+
+function CategoryChips({ active, counts, onChange }: {
+  active: CategoryFilter
+  counts: Record<CategoryFilter, number>
+  onChange: (f: CategoryFilter) => void
+}) {
+  return (
+    <div style={{
+      position: 'sticky', top: 0, zIndex: Z.sticky,
+      display: 'flex', flexWrap: 'wrap', gap: SP[1],
+      padding: `${SP[1]} ${SP[2]}`,
+      background: 'var(--hud-surface-hi)',
+      borderBottom: '1px solid var(--hud-border)',
+    }}>
+      {CATEGORY_FILTERS.map(f => {
+        const isActive = active === f.key
+        return (
+          <button
+            key={f.key}
+            onClick={() => onChange(f.key)}
+            disabled={counts[f.key] === 0 && f.key !== 'all'}
+            style={{
+              // 2px vertical — inline chip density per the UI gate.
+              fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: isActive ? 700 : 500,
+              letterSpacing: '0.12em', textTransform: 'uppercase',
+              padding: `2px ${SP[2]}`, borderRadius: RADIUS.sm, cursor: 'pointer',
+              background: isActive ? 'var(--hud-gold)' : 'transparent',
+              color: isActive ? 'var(--hud-surface-lo)' : 'var(--hud-text-dim)',
+              border: `1px solid ${isActive ? 'var(--hud-gold)' : 'var(--hud-border-hi)'}`,
+              opacity: counts[f.key] === 0 && f.key !== 'all' ? 0.35 : 1,
+              transition: `background ${EASE.quick}, color ${EASE.quick}, border-color ${EASE.quick}`,
+            }}
+          >
+            {f.label} {counts[f.key]}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+export function ItemThumbGrid({ weapons, armorItems, gearItems, selectedId, onSelect, encumbranceStats, cybernetics, onUninstallCybernetic }: ItemThumbGridProps) {
   const { isOpen } = useHudPanelContext()
+  const [filter, setFilter] = useState<CategoryFilter>('all')
+
+  // Gear splits three ways by tag: plain gear, mods, cybernetics. A row is
+  // never counted twice — isModItem wins over isCyberneticItem, matching
+  // itemCategoryLabel()'s own precedence.
+  const modGear    = gearItems.filter(g => isModItem(g.categories))
+  const cyberGear  = gearItems.filter(g => !isModItem(g.categories) && isCyberneticItem(g.categories))
+  const plainGear  = gearItems.filter(g => !isModItem(g.categories) && !isCyberneticItem(g.categories))
+
+  const counts: Record<CategoryFilter, number> = {
+    all:        weapons.length + armorItems.length + gearItems.length,
+    weapon:     weapons.length,
+    armor:      armorItems.length,
+    gear:       plainGear.length,
+    mod:        modGear.length,
+    cybernetic: cyberGear.length,
+  }
+
+  const showWeapons = filter === 'all' || filter === 'weapon' ? weapons : []
+  const showArmor   = filter === 'all' || filter === 'armor'  ? armorItems : []
+  const showGear =
+    filter === 'all'        ? gearItems :
+    filter === 'gear'       ? plainGear :
+    filter === 'mod'        ? modGear   :
+    filter === 'cybernetic' ? cyberGear : []
+
   return (
     <div style={{
       overflowY: 'auto', overflowX: 'hidden',
       background: 'var(--hud-surface-hi)',
       borderRight: '1px solid var(--hud-border)',
     }}>
-      {weapons.length > 0 && (
+      <CategoryChips active={filter} counts={counts} onChange={setFilter} />
+      {cybernetics && (filter === 'all' || filter === 'cybernetic') && (
+        <>
+          <SectionHead label="Cybernetics" isOpen={isOpen} />
+          <CyberneticsAnchor
+            cybernetics={cybernetics}
+            onUninstall={onUninstallCybernetic}
+            onSelect={onSelect}
+            selectedId={selectedId}
+          />
+        </>
+      )}
+      {showWeapons.length > 0 && (
         <>
           <SectionHead label="Weapons" isOpen={isOpen} />
           <div style={{ padding: SP[1] }}>
-            {weapons.map(w => (
+            {showWeapons.map(w => (
               <ManifestRow
                 key={w.id} id={w.id} name={w.name} table="weapon" iconUrl={w.iconUrl}
                 equipState={w.equipState} condition={w.condition} category={w.categories?.[0]}
@@ -163,14 +356,15 @@ export function ItemThumbGrid({ weapons, armorItems, gearItems, selectedId, onSe
           </div>
         </>
       )}
-      {armorItems.length > 0 && (
+      {showArmor.length > 0 && (
         <>
           <SectionHead label="Armour" isOpen={isOpen} />
           <div style={{ padding: SP[1] }}>
-            {armorItems.map(a => (
+            {showArmor.map(a => (
               <ManifestRow
                 key={a.id} id={a.id} name={a.name} table="armor" iconUrl={a.iconUrl}
                 equipState={a.equipState} condition={a.condition} category={a.categories?.[0]}
+                wornAnchor={a.wornAnchor}
                 isSelected={selectedId === a.id}
                 onClick={() => onSelect(a.id)}
                 encumbranceStats={encumbranceStats}
@@ -179,14 +373,18 @@ export function ItemThumbGrid({ weapons, armorItems, gearItems, selectedId, onSe
           </div>
         </>
       )}
-      {gearItems.length > 0 && (
+      {showGear.length > 0 && (
         <>
-          <SectionHead label="Gear" isOpen={isOpen} />
+          <SectionHead label={filter === 'mod' ? 'Mods' : filter === 'cybernetic' ? 'Cybernetics' : 'Gear'} isOpen={isOpen} />
           <div style={{ padding: SP[1] }}>
-            {gearItems.map(g => (
+            {showGear.map(g => (
               <ManifestRow
                 key={g.id} id={g.id} name={g.name} table="gear" iconUrl={g.iconUrl}
-                equipState={g.equipState} condition={g.condition} category={g.categories?.[0]}
+                equipState={g.equipState} condition={g.condition}
+                // MOD/CYBERNETIC outrank the raw first tag on the sub-line —
+                // "Mod" alone reads as noise next to the item name.
+                category={itemCategoryLabel('gear', g.categories) === 'GEAR' ? g.categories?.[0] : itemCategoryLabel('gear', g.categories)}
+                wornAnchor={g.wornAnchor}
                 isSelected={selectedId === g.id}
                 onClick={() => onSelect(g.id)}
                 encumbranceStats={encumbranceStats}

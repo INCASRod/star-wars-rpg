@@ -140,9 +140,9 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
     const queries = [
       applyScope(supabase.from('ref_weapons').select('key,name,price,rarity,encumbrance,skill_key,damage,damage_add,crit,range_value,hard_points,qualities,description,is_custom,custom_notes,campaign_id,categories'))
         .then((r: { data: unknown[] | null }) => (r.data || []).map((d) => ({ ...(d as Record<string, unknown>), type: 'weapon', _table: 'ref_weapons' as const }))),
-      applyScope(supabase.from('ref_armor').select('key,name,price,rarity,encumbrance,encumbrance_bonus,defense,soak,soak_bonus,description,is_custom,custom_notes,campaign_id,categories'))
+      applyScope(supabase.from('ref_armor').select('key,name,price,rarity,encumbrance,encumbrance_bonus,defense,soak,soak_bonus,description,is_custom,custom_notes,campaign_id,categories,worn_anchor'))
         .then((r: { data: unknown[] | null }) => (r.data || []).map((d) => ({ ...(d as Record<string, unknown>), type: 'armor', _table: 'ref_armor' as const }))),
-      applyScope(supabase.from('ref_gear').select('key,name,price,rarity,encumbrance,encumbrance_bonus,description,is_custom,custom_notes,campaign_id,categories'))
+      applyScope(supabase.from('ref_gear').select('key,name,price,rarity,encumbrance,encumbrance_bonus,description,is_custom,custom_notes,campaign_id,categories,worn_anchor'))
         .then((r: { data: unknown[] | null }) => (r.data || []).map((d) => ({ ...(d as Record<string, unknown>), type: 'gear', _table: 'ref_gear' as const }))),
     ]
 
@@ -303,6 +303,17 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
   const openEdit = (item: DbItem) => {
     setEditorItem(item)
     setEditorOpen(true)
+  }
+
+  // worn_anchor is global — this row is shared by every character in every
+  // campaign, not scoped to campaignId. See migration 132 for the RLS
+  // policy gating this write to GM users; no per-character override exists
+  // (considered and rejected, Prompt 10 Task 2).
+  const handleAnchorChange = async (item: DbItem, value: string) => {
+    const worn_anchor = value === '' ? null : value
+    const { error } = await supabase.from(item._table).update({ worn_anchor }).eq('key', item.key)
+    if (error) { console.warn('[worn_anchor update]', error.message); return }
+    setAllItems(prev => prev.map(i => i.key === item.key && i._table === item._table ? { ...i, worn_anchor } : i))
   }
 
   const handleDelete = async (item: DbItem) => {
@@ -650,6 +661,7 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
                         <button onClick={() => handleDelete(item)} style={actionBtn(RED)}>✕</button>
                       )}
                       <QmItemButton item={item} getQmEntry={getQmEntry} openQmPopover={openQmPopover} />
+                      <AnchorSelect item={item} onChange={handleAnchorChange} />
                     </div>
                   </div>
 
@@ -743,6 +755,7 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
                       <button onClick={() => handleDelete(item)} style={actionBtn(RED)}>✕</button>
                     )}
                     <QmItemButton item={item} getQmEntry={getQmEntry} openQmPopover={openQmPopover} />
+                    <AnchorSelect item={item} onChange={handleAnchorChange} />
                   </div>
                 </div>
               ))}
@@ -1085,6 +1098,43 @@ function QmItemButton({ item, getQmEntry, openQmPopover }: QmItemBtnProps) {
     >
       {entry ? `✓ QM ×${entry.stock}` : '+ QM'}
     </button>
+  )
+}
+
+// ── Worn-anchor override (Prompt 10, Task 2) ──────────────────────────────────
+// Global write — this changes the REF row read by every character in every
+// campaign, never a per-character ruling (rejected in favor of this GM-only
+// global override). Constrained selector, never free text: a mistyped anchor
+// silently breaks the worn-rules exclusivity checks in derivedStats.ts.
+const ANCHOR_OPTIONS: { value: string; label: string }[] = [
+  { value: '',        label: 'None' },
+  { value: 'body',    label: 'Body' },
+  { value: 'rig',     label: 'Rig' },
+  { value: 'back',    label: 'Back' },
+  { value: 'shoulder', label: 'Shoulder' },
+  { value: 'waist',   label: 'Waist' },
+  // Migration 135 — not a worn location but an INSTALLED one. Set on all 42
+  // 'Cybernetics' ref_gear rows; it is what makes a row eligible to be
+  // installed into a character's cybernetics slot. See derivedStats.ts's
+  // CYBERNETIC_ANCHOR.
+  { value: 'cybernetics', label: 'Cybernetics (implant)' },
+]
+
+function AnchorSelect({ item, onChange }: { item: DbItem; onChange: (item: DbItem, value: string) => void }) {
+  if (item.type === 'weapon') return null
+  return (
+    <select
+      value={item.worn_anchor ?? ''}
+      onChange={e => onChange(item, e.target.value)}
+      title="Worn-rules anchor — global, affects every campaign"
+      style={{
+        fontFamily: FONT_BODY, fontSize: FS.caption, color: DIM,
+        background: 'var(--hud-surface-lo)', border: `1px solid ${BORDER}`,
+        borderRadius: RADIUS.sm, padding: `1px ${SP[1]}` /* 1px min touch-target vertical padding — matches actionBtn's own 0.1875rem convention in this file */, cursor: 'pointer',
+      }}
+    >
+      {ANCHOR_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+    </select>
   )
 }
 

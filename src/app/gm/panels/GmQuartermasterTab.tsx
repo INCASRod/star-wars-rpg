@@ -4,13 +4,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { NumberField } from '@/components/ui/NumberField'
 import { ItemDetailPopup } from '@/components/shared/ItemDetailPopup'
-import { FONT_BODY, HUD, RADIUS, EASE, FS, SP } from '@/lib/tokens'
+import { FONT_BODY, HUD, RADIUS, EASE, FS, SP, Z } from '@/lib/tokens'
 import type { UseQuartermasterReturn } from '@/hooks/useQuartermaster'
 import type { CatalogueItem } from '@/lib/marketGenerator'
 import type { EditableItem } from '@/components/gm/ItemEditor'
 import type { IconCatalogEntry } from '@/hooks/useItemIconContext'
 import type { ItemTable, IconResolution } from '@/lib/itemIconResolver'
 import type { RefWeaponQuality, QuartermasterItem } from '@/lib/types'
+import { itemCategoryLabel } from '@/lib/itemCategories'
 
 const BORDER    = HUD.border
 const BORDER_HI = HUD.borderHi
@@ -266,7 +267,7 @@ export function GmQuartermasterTab({
         />
         {resultsOpen && results.length > 0 && (
           <div style={{
-            position: 'absolute', left: SP[5], right: SP[5], top: 'calc(100% - 1px)', zIndex: 20,
+            position: 'absolute', left: SP[5], right: SP[5], top: 'calc(100% - 1px)', zIndex: Z.dropdown,
             background: HUD.surfaceHi, border: `1px solid ${BORDER_HI}`, borderRadius: `0 0 ${RADIUS.sm} ${RADIUS.sm}`,
             maxHeight: '17.5rem', overflowY: 'auto',
           }}>
@@ -282,7 +283,15 @@ export function GmQuartermasterTab({
                   }}
                   className="qm-result-row"
                 >
-                  <span style={{ fontSize: FS.overline, letterSpacing: '0.12em', textTransform: 'uppercase', color: DIM_LO, width: '3rem', flexShrink: 0 }}>{c.table}</span>
+                  {/* MOD / CYBERNETIC rows ARE ref_gear rows — they arrive
+                      through the same catalogue query with no change to it.
+                      Only the label is category-aware, so the GM isn't shown
+                      212 attachments all labelled "gear". Vehicle-type
+                      attachments never reach here: migration 134 seeds MOD
+                      catalogue rows from Weapon/Armor attachment types only. */}
+                  <span style={{ fontSize: FS.overline, letterSpacing: '0.12em', textTransform: 'uppercase', color: DIM_LO, width: '5.5rem', flexShrink: 0 }}>
+                    {itemCategoryLabel(c.table, c.categories)}
+                  </span>
                   <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</span>
                   {inStock && (
                     <span style={{ fontSize: FS.overline, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--hud-vital-strain, #E8A020)', flexShrink: 0 }}>

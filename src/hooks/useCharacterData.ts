@@ -8,7 +8,7 @@ import { randomUUID } from '@/lib/utils'
 import { logPurchaseNotification } from '@/lib/logRoll'
 import { useCharacterSigAbilities } from '@/hooks/useCharacterSigAbilities'
 import { isDroid, isClone, isEligibleForForceRating } from '@/lib/forceEligibility'
-import { computeDerivedStats, countOwnedRanks, computeEncumbranceStats } from '@/lib/derivedStats'
+import { computeDerivedStats, countOwnedRanks, computeEncumbranceStats, computeCyberneticEffects, isInstalledCybernetic } from '@/lib/derivedStats'
 import { computeCareerSkillKeys, persistCareerSkills } from '@/lib/characters'
 import { fetchActiveDataset } from '@/lib/activeDataset'
 import type { MoralitySystem } from '@/lib/moralitySystem'
@@ -26,7 +26,7 @@ import type {
   RefWeaponQuality, RefItemAttachment, EquipState,
   RefObligationType, RefDutyType,
   SpeciesAbility, HudSkill, HudTalent, WpnDisplay, ArmDisplay, GearRow, ItemCondition, StowLocationType,
-  ItemIconOverride,
+  ItemIconOverride, RefCyberneticEffect,
 } from '@/lib/types'
 import { createIconResolverContext, resolveItemIcon, type ItemTable } from '@/lib/itemIconResolver'
 
@@ -483,6 +483,7 @@ export function useCharacterData(characterId: string) {
   const [refObligationTypes, setRefObligationTypes] = useState<RefObligationType[]>([])
   const [refDutyTypes, setRefDutyTypes] = useState<RefDutyType[]>([])
   const [itemIconOverrides, setItemIconOverrides] = useState<ItemIconOverride[]>([])
+  const [refCyberneticEffects, setRefCyberneticEffects] = useState<RefCyberneticEffect[]>([])
   const [playerName, setPlayerName] = useState('Player')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -511,7 +512,7 @@ export function useCharacterData(characterId: string) {
         charRes, skillsRes, talentsRes, weaponsRes, armorRes, gearRes, critsRes, specsRes,
         refWpnRes, refArmRes, refGearRes, refCritRes, refDescRes,
         refSpeciesRes, forceAbilRes, refFpRes, refFaRes, refWqRes, refAttRes,
-        refOblTypesRes, refDutyTypesRes, itemIconOverridesRes,
+        refOblTypesRes, refDutyTypesRes, itemIconOverridesRes, refCybEffectsRes,
       } = await (consumeCharacterDataPrefetch(characterId) ?? fetchCharacterDataBatch(characterId))
 
       setMoralitySystem(ms)
@@ -565,6 +566,7 @@ export function useCharacterData(characterId: string) {
       setRefItemAttachments((refAttRes.data as RefItemAttachment[]) || [])
       setRefObligationTypes((refOblTypesRes.data as RefObligationType[]) || [])
       setRefDutyTypes((refDutyTypesRes.data as RefDutyType[]) || [])
+      setRefCyberneticEffects((refCybEffectsRes.data as RefCyberneticEffect[]) || [])
 
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : String(err))
@@ -819,6 +821,107 @@ export function useCharacterData(characterId: string) {
         setGear(prev => prev.map(x => x.id === id ? { ...x, equip_state: next, is_equipped: next === 'equipped' } : x))
       }
     })
+  }
+
+  // ── Mod install / uninstall (migration 134) ─────────────────────────────────
+  // These two RPCs are the ONLY sanctioned path for mutating
+  // character_weapons.attachments / character_armor.attachments. Never write
+  // that jsonb from the client directly — the RPC owns consuming/restoring the
+  // loose character_gear row in the same transaction, and a client-side
+  // read-modify-write of the array would lose a concurrent install.
+  // Both are SECURITY INVOKER, so RLS still applies. Errors are raised
+  // server-side (bad target, wrong mod subtype) and surfaced as a toast here;
+  // non-blocking `warnings` are returned to the caller to render.
+
+  const installMod = async (
+    inventoryRowId: string,
+    targetKind: 'weapon' | 'armor',
+    targetItemId: string,
+  ): Promise<{ ok: boolean; warnings: string[]; error?: string }> => {
+    if (!character) return { ok: false, warnings: [], error: 'No character loaded' }
+    markSelf()
+    const { data, error } = await supabase.rpc('install_mod', {
+      p_character_id:     character.id,
+      p_inventory_row_id: inventoryRowId,
+      p_target_kind:      targetKind,
+      p_target_item_id:   targetItemId,
+    })
+    if (error) {
+      toast.error(error.message)
+      return { ok: false, warnings: [], error: error.message }
+    }
+    const warnings = Array.isArray((data as { warnings?: unknown })?.warnings)
+      ? ((data as { warnings: unknown[] }).warnings.filter(w => typeof w === 'string') as string[])
+      : []
+    await loadCharacter(true)
+    return { ok: true, warnings }
+  }
+
+  const uninstallMod = async (
+    targetKind: 'weapon' | 'armor',
+    targetItemId: string,
+    attachmentInstanceId: string,
+  ): Promise<{ ok: boolean; error?: string }> => {
+    if (!character) return { ok: false, error: 'No character loaded' }
+    markSelf()
+    const { error } = await supabase.rpc('uninstall_mod', {
+      p_character_id:           character.id,
+      p_target_kind:            targetKind,
+      p_target_item_id:         targetItemId,
+      p_attachment_instance_id: attachmentInstanceId,
+    })
+    if (error) {
+      toast.error(error.message)
+      return { ok: false, error: error.message }
+    }
+    await loadCharacter(true)
+    return { ok: true }
+  }
+
+  // ── Cybernetic install / uninstall (migration 136) ──────────────────────────
+  // Same contract as installMod/uninstallMod above and for the same reason:
+  // these two RPCs are the ONLY sanctioned path for writing
+  // character_gear.equip_slot = 'cybernetics'. Never `.update()` that column
+  // from the client — the RPC owns the RAW hard rules (no Biofeedback
+  // Regulator on a droid, one per character) and the non-blocking warnings
+  // (over the implant cap, mismatched/duplicate limb models), and a client
+  // write would silently skip all of them.
+
+  const installCybernetic = async (
+    gearRowId: string,
+  ): Promise<{ ok: boolean; warnings: string[]; error?: string }> => {
+    if (!character) return { ok: false, warnings: [], error: 'No character loaded' }
+    markSelf()
+    const { data, error } = await supabase.rpc('install_cybernetic', {
+      p_character_id: character.id,
+      p_gear_row_id:  gearRowId,
+    })
+    if (error) {
+      toast.error(error.message)
+      return { ok: false, warnings: [], error: error.message }
+    }
+    const warnings = Array.isArray((data as { warnings?: unknown })?.warnings)
+      ? ((data as { warnings: unknown[] }).warnings.filter(w => typeof w === 'string') as string[])
+      : []
+    await loadCharacter(true)
+    return { ok: true, warnings }
+  }
+
+  const uninstallCybernetic = async (
+    gearRowId: string,
+  ): Promise<{ ok: boolean; error?: string }> => {
+    if (!character) return { ok: false, error: 'No character loaded' }
+    markSelf()
+    const { error } = await supabase.rpc('uninstall_cybernetic', {
+      p_character_id: character.id,
+      p_gear_row_id:  gearRowId,
+    })
+    if (error) {
+      toast.error(error.message)
+      return { ok: false, error: error.message }
+    }
+    await loadCharacter(true)
+    return { ok: true }
   }
 
   const handleRollCrit = async () => {
@@ -1150,6 +1253,28 @@ export function useCharacterData(characterId: string) {
     ).effectiveStats.forceRating
   }, [character, forceRating, careerForceRatingBase, talents, refTalentMap, armor, refArmorMap, refAttachmentMap, weapons, refWeaponMap, refWeaponQualityMap, speciesAbilities])
 
+  // ── Cybernetics (migration 135/136) — RENDER-TIME ONLY ────────────────────
+  // Stored character_skills.rank, the base the implant skill bonuses clamp
+  // against. Species starting ranks are deliberately excluded here: they are a
+  // hudSkills display concern, and including them would make the SKILL_MAX
+  // clamp disagree with computeDerivedStats, which is fed this same map.
+  const skillRankMap = useMemo(
+    () => Object.fromEntries(skills.map(s => [s.skill_key, s.rank ?? 0])),
+    [skills],
+  )
+
+  // computeCyberneticEffects is pure, so calling it here AND inside
+  // computeDerivedStats with identical inputs yields identical output — this
+  // memo exists so hudSkills can layer the bonus without the hook having to
+  // hold a full DerivedStatsResult (PlayerHUDDesktop/MobileShell own that,
+  // via useDerivedStats).
+  const cybernetics = useMemo(
+    () => character
+      ? computeCyberneticEffects(character, gear, refGearMap, refCyberneticEffects, talents, skillRankMap)
+      : null,
+    [character, gear, refGearMap, refCyberneticEffects, talents, skillRankMap],
+  )
+
   // ── Write-back force_rating to DB whenever the engine computes a different
   // value — lives here (not in a single UI component) so it fires regardless
   // of whether the character is viewed via desktop or mobile, keeping GM-side
@@ -1191,16 +1316,27 @@ export function useCharacterData(characterId: string) {
     return refSkills.map(rs => {
       const cs      = charSkillMap[rs.key]
       const charKey = CHARACTERISTIC_ABBR[rs.characteristic_key]
-      const charVal = (character[charKey as keyof Character] as number) || 0
+      const storedChar = (character[charKey as keyof Character] as number) || 0
+      const storedRank = (cs?.rank ?? 0) + (speciesRankBonus[rs.key] ?? 0)
+      // Render-time cybernetic layer. Both bonuses are already clamped
+      // (CHARACTERISTIC_MAX / SKILL_MAX) inside computeCyberneticEffects, so
+      // this is a plain add — the ceiling is not re-applied here.
+      // ref_skills.characteristic_key is the short form ('BR'/'AG'/'INT'…);
+      // ref_cybernetic_effects.target is the long one ('BRAWN'/'AGILITY'…),
+      // which is exactly CHARACTERISTIC_ABBR's value upper-cased.
+      const charBonus  = cybernetics?.characteristicBonuses[charKey.toUpperCase()] ?? 0
+      const skillBonus = cybernetics?.skillBonuses[rs.key] ?? 0
       return {
         key: rs.key, name: rs.name,
-        charKey, charVal,
-        rank:     (cs?.rank ?? 0) + (speciesRankBonus[rs.key] ?? 0),
+        charKey, charVal: storedChar + charBonus,
+        rank:     storedRank + skillBonus,
         isCareer: (cs?.is_career ?? false) || talentCareerSkills.has(rs.key),
         type: rs.type,
+        cyberneticCharBonus:  charBonus  || undefined,
+        cyberneticSkillBonus: skillBonus || undefined,
       }
     }).sort((a, b) => a.name.localeCompare(b.name))
-  }, [character, skills, refSkills, speciesAbilities, talents, refTalentMap])
+  }, [character, skills, refSkills, speciesAbilities, talents, refTalentMap, cybernetics])
 
   const hudTalents = useMemo((): HudTalent[] => {
     const map = new Map<string, HudTalent>()
@@ -1285,6 +1421,8 @@ export function useCharacterData(characterId: string) {
         iconUrl:        resolveIconUrl('weapon', w.weapon_key, ref?.categories),
         refKey:         w.weapon_key ?? null,
         categories:     ref?.categories,
+        skillKey:       ref?.skill_key ?? null,
+        attachments:    Array.isArray(w.attachments) ? w.attachments : [],
         stowLocation:   w.equip_state === 'stowed' && w.stow_location_id && w.stow_location_type
           ? { id: w.stow_location_id, name: w.stow_location_name ?? '', type: w.stow_location_type }
           : null,
@@ -1312,6 +1450,8 @@ export function useCharacterData(characterId: string) {
         iconUrl:        resolveIconUrl('armor', a.armor_key, ref?.categories),
         refKey:         a.armor_key ?? null,
         categories:     ref?.categories,
+        wornAnchor:     ref?.worn_anchor ?? null,
+        attachments:    Array.isArray(a.attachments) ? a.attachments : [],
         stowLocation:   a.equip_state === 'stowed' && a.stow_location_id && a.stow_location_type
           ? { id: a.stow_location_id, name: a.stow_location_name ?? '', type: a.stow_location_type }
           : null,
@@ -1336,6 +1476,10 @@ export function useCharacterData(characterId: string) {
         iconUrl:        resolveIconUrl('gear', g.gear_key, ref?.categories),
         refKey:         g.gear_key ?? null,
         categories:     ref?.categories,
+        wornAnchor:     ref?.worn_anchor ?? null,
+        // The one signal that separates a surgically INSTALLED implant from a
+        // boxed one the character is merely carrying — see isInstalledCybernetic.
+        isInstalledCybernetic: isInstalledCybernetic(g, ref ?? undefined),
         stowLocation:   g.equip_state === 'stowed' && g.stow_location_id && g.stow_location_type
           ? { id: g.stow_location_id, name: g.stow_location_name ?? '', type: g.stow_location_type }
           : null,
@@ -1389,7 +1533,10 @@ export function useCharacterData(characterId: string) {
     refSkillMap, refTalentMap, refWeaponMap, refArmorMap, refGearMap,
     refSpecMap, refDescriptorMap, refForcePowerMap, refForceAbilityMap, refWeaponQualityMap,
     refAttachmentMap,
+    refCyberneticEffects,
     // Derived
+    cybernetics,
+    skillRankMap,
     forceRating,
     careerForceRatingBase,
     careerSpecKeys,
@@ -1408,6 +1555,10 @@ export function useCharacterData(characterId: string) {
     handleToggleWeaponEquipped,
     handleToggleEquippedById,
     handleSetEquipState,
+    installMod,
+    uninstallMod,
+    installCybernetic,
+    uninstallCybernetic,
     handleRollCrit,
     handleHealCrit,
     handlePortraitUpload,

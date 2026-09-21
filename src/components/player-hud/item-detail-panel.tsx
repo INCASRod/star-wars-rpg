@@ -1,7 +1,11 @@
 'use client'
 import React, { useState, useRef, useLayoutEffect } from 'react'
 import { FONT_BODY, FONT_DISPLAY, RADIUS, FS, SP } from '@/lib/tokens'
-import type { WpnDisplay, ArmDisplay, GearRow, EquipState, StowLocation, StowableAsset, RefWeaponQuality, ItemCondition } from '@/lib/types'
+import type {
+  WpnDisplay, ArmDisplay, GearRow, EquipState, StowLocation, StowableAsset,
+  RefWeaponQuality, ItemCondition, RefItemAttachment, RefItemDescriptor, AttachmentModEntry,
+} from '@/lib/types'
+import { modSubtype, modFitsTarget, parseInstalledAttachments, warnUnresolvedModKey, itemCategoryLabel, modKeyLabel } from '@/lib/itemCategories'
 import type { EncumbranceStats } from '@/lib/derivedStats'
 import { ItemDetailHero } from './item-detail-hero'
 import { ItemQualityList } from './item-quality-list'
@@ -39,6 +43,23 @@ interface ItemDetailPanelProps {
   // owns the item — see docs/architecture.md). Defaults to false so every
   // existing Inventory caller is unaffected.
   readOnly?:             boolean
+  // ── Mods tab (migration 134) ──
+  // All optional so the Market's inspect-only caller needs no new wiring: an
+  // empty attachment map just renders the tab's existing empty state.
+  refAttachmentMap?:     Record<string, RefItemAttachment>
+  refDescriptorMap?:     Record<string, RefItemDescriptor>
+  /** The character's loose MOD/CYBERNETIC gear rows, already filtered by the caller. */
+  looseMods?:            GearRow[]
+  onInstallMod?:         (inventoryRowId: string, targetKind: 'weapon' | 'armor', targetItemId: string) => Promise<{ ok: boolean; warnings: string[] }>
+  onUninstallMod?:       (targetKind: 'weapon' | 'armor', targetItemId: string, attachmentInstanceId: string) => Promise<{ ok: boolean }>
+  // ── Cybernetics (migration 136) ──
+  onInstallCybernetic?:   (gearRowId: string) => Promise<{ ok: boolean; warnings: string[] }>
+  onUninstallCybernetic?: (gearRowId: string) => Promise<{ ok: boolean }>
+}
+
+/** 'CYBERNETIC' -> 'Cybernetic'. The type-tag pills are sentence-cased here. */
+function titleCase(s: string): string {
+  return s.charAt(0) + s.slice(1).toLowerCase()
 }
 
 // ── Stat box ─────────────────────────────────────────────────────────────────
@@ -154,7 +175,7 @@ function reasonNote(reason: 'anchor_occupied_armor' | 'anchor_occupied_capacity'
 }
 
 function EncumbranceTab({ item, isArmor, encumbranceStats }: {
-  item: { id: string; enc: number }
+  item: { id: string; enc: number; wornAnchor?: string | null }
   isArmor: boolean
   encumbranceStats: EncumbranceStats | null
 }) {
@@ -168,6 +189,11 @@ function EncumbranceTab({ item, isArmor, encumbranceStats }: {
 
   return (
     <div>
+      <EncumbranceLedgerRow
+        label="Anchor"
+        value={item.wornAnchor ? item.wornAnchor[0].toUpperCase() + item.wornAnchor.slice(1) : 'None'}
+        tone={item.wornAnchor ? undefined : 'dim'}
+      />
       <EncumbranceLedgerRow label="Base encumbrance" value={item.enc} />
       {wornReduction && <EncumbranceLedgerRow label="Worn reduction" value="−3" tone="dim" />}
       {perItem.gain > 0 && <EncumbranceLedgerRow label="Threshold granted (worn)" value={`+${perItem.gain}`} tone="gain" />}
@@ -189,28 +215,251 @@ function EncumbranceTab({ item, isArmor, encumbranceStats }: {
 
 // ── Mods tab ─────────────────────────────────────────────────────────────────
 
-function ModsTab({ hardPoints, hardPointsUsed }: { hardPoints: number; hardPointsUsed: number }) {
-  if (hardPoints <= 0) {
-    return <p style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: 'var(--hud-text-faint)', fontStyle: 'italic' }}>No hard points. This item cannot take attachments.</p>
+// Renders one ref_item_attachments.base_mods array as a single line of copy.
+// Each entry is {key, count, misc_desc}: free-text entries print their
+// misc_desc verbatim, keyed entries resolve through ref_item_descriptors.
+// 38 of the mod-effect keys have no descriptor row; MOD_KEY_LABEL in
+// itemCategories.ts names all of them. Anything still unmapped prints the raw
+// key and logs ONCE per key (warnUnresolvedModKey dedupes across renders).
+function baseModsText(
+  mods: RefItemAttachment['base_mods'],
+  refDescriptorMap: Record<string, RefItemDescriptor>,
+): string {
+  if (!Array.isArray(mods)) return ''
+  const parts: string[] = []
+  for (const m of mods as AttachmentModEntry[]) {
+    if (m?.misc_desc && m.misc_desc.trim()) { parts.push(m.misc_desc.trim()); continue }
+    if (!m?.key) continue
+    // Tiered: descriptor row -> MOD_KEY_LABEL -> raw key (+ one warn per key).
+    const label = modKeyLabel(m.key, refDescriptorMap[m.key]?.name)
+    parts.push(m.count && m.count > 1 ? `${label} ${m.count}` : label)
   }
+  return parts.join(' · ')
+}
+
+function ModRow({ name, hp, detail, actionLabel, onAction, busy }: {
+  name: string; hp: number; detail: string
+  actionLabel: string; onAction: () => void; busy: boolean
+}) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'flex-start', gap: SP[2],
+      padding: `${SP[1]} 0`, borderBottom: '1px solid var(--hud-border)',
+    }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700, color: 'var(--hud-text)' }}>
+          {name}
+          <span style={{ color: 'var(--hud-text-faint)', fontWeight: 400 }}> · {hp} HP</span>
+        </div>
+        {detail && (
+          <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-dim)', lineHeight: 1.5 }}>
+            <RichText text={detail} />
+          </div>
+        )}
+      </div>
+      <button
+        onClick={onAction}
+        disabled={busy}
+        style={{
+          // 2px vertical — secondary/inline button density per the UI gate.
+          flexShrink: 0, fontFamily: FONT_BODY, fontSize: FS.overline, fontWeight: 700,
+          letterSpacing: '0.12em', textTransform: 'uppercase',
+          padding: `2px ${SP[2]}`, borderRadius: RADIUS.sm, cursor: busy ? 'wait' : 'pointer',
+          background: 'transparent', border: '1px solid var(--hud-border-hi)', color: 'var(--hud-gold)',
+          opacity: busy ? 0.4 : 1,
+        }}
+      >
+        {actionLabel}
+      </button>
+    </div>
+  )
+}
+
+interface ModsTabProps {
+  hardPoints:       number
+  targetKind:       'weapon' | 'armor' | 'gear'
+  targetItemId:     string
+  skillKey?:        string | null
+  attachments?:     unknown[]
+  looseMods:        GearRow[]
+  refAttachmentMap: Record<string, RefItemAttachment>
+  refDescriptorMap: Record<string, RefItemDescriptor>
+  onInstallMod?:    (inventoryRowId: string, targetKind: 'weapon' | 'armor', targetItemId: string) => Promise<{ ok: boolean; warnings: string[] }>
+  onUninstallMod?:  (targetKind: 'weapon' | 'armor', targetItemId: string, attachmentInstanceId: string) => Promise<{ ok: boolean }>
+  readOnly?:        boolean
+  // ── Cybernetics (migration 136) ──
+  /** Non-null only when the selected item is a CYBERNETIC gear row. */
+  cybernetic?: { installed: boolean } | null
+  onInstallCybernetic?:   (gearRowId: string) => Promise<{ ok: boolean; warnings: string[] }>
+  onUninstallCybernetic?: (gearRowId: string) => Promise<{ ok: boolean }>
+}
+
+function ModsTab({
+  hardPoints, targetKind, targetItemId, skillKey, attachments,
+  looseMods, refAttachmentMap, refDescriptorMap,
+  onInstallMod, onUninstallMod, readOnly,
+  cybernetic, onInstallCybernetic, onUninstallCybernetic,
+}: ModsTabProps) {
+  const [busy, setBusy] = useState(false)
+  const [warnings, setWarnings] = useState<string[]>([])
+
+  async function handleCyberAction() {
+    if (busy) return
+    setBusy(true)
+    if (cybernetic?.installed) {
+      await onUninstallCybernetic?.(targetItemId)
+      setWarnings([])
+    } else {
+      const res = await onInstallCybernetic?.(targetItemId)
+      setWarnings(res?.ok ? res.warnings : [])
+    }
+    setBusy(false)
+  }
+
+  // A cybernetic implant is surgically installed into the CHARACTER, not
+  // attached to another item — so this tab becomes the implant's own
+  // install/extract control instead of a hard-point ledger.
+  if (targetKind === 'gear' && cybernetic) {
+    return (
+      <div>
+        <SectionHeader>Implant</SectionHeader>
+        <p style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: 'var(--hud-text-dim)', margin: 0, lineHeight: 1.6 }}>
+          {cybernetic.installed
+            ? 'Surgically installed. Its effects are applied to this character’s sheet.'
+            : 'Carried, not installed. Install it to apply its effects.'}
+        </p>
+        {/* Non-blocking warnings from the last install_cybernetic call.
+            Install is NEVER disabled for these — same rule as install_mod. */}
+        {warnings.map((w, i) => (
+          <div key={i} style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: 'var(--hud-vital-wounds)', padding: `${SP[1]} 0` }}>
+            ⚠ {w}
+          </div>
+        ))}
+        {!readOnly && (onInstallCybernetic || onUninstallCybernetic) && (
+          <button
+            onClick={handleCyberAction}
+            disabled={busy}
+            style={{
+              marginTop: SP[2], width: '100%',
+              fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700,
+              letterSpacing: '0.12em', textTransform: 'uppercase',
+              padding: `${SP[2]} ${SP[2]}`, borderRadius: RADIUS.sm,
+              cursor: busy ? 'wait' : 'pointer',
+              background: 'transparent', border: '1px solid var(--hud-border-hi)', color: 'var(--hud-gold)',
+              opacity: busy ? 0.4 : 1,
+            }}
+          >
+            {cybernetic.installed ? 'Uninstall' : 'Install'}
+          </button>
+        )}
+      </div>
+    )
+  }
+
+  // Gear takes no attachments at all — mods target weapons and armour only.
+  if (targetKind === 'gear') {
+    return <p style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: 'var(--hud-text-faint)', fontStyle: 'italic' }}>Gear cannot take attachments.</p>
+  }
+
+  const installed = parseInstalledAttachments(attachments)
+  // Real hard-point usage — the sum of hp_required over what is actually
+  // installed. Replaces the hardcoded 0 this tab shipped with.
+  const hardPointsUsed = installed.reduce((sum, e) => sum + (refAttachmentMap[e.key]?.hp_required ?? 0), 0)
+  const overCapacity = hardPointsUsed > hardPoints
+
+  const available = readOnly ? [] : looseMods.filter(g =>
+    modFitsTarget(modSubtype(g.categories), targetKind, skillKey),
+  )
+
+  async function handleInstall(rowId: string) {
+    if (!onInstallMod || busy) return
+    setBusy(true)
+    const res = await onInstallMod(rowId, targetKind as 'weapon' | 'armor', targetItemId)
+    setWarnings(res.ok ? res.warnings : [])
+    setBusy(false)
+  }
+
+  async function handleUninstall(instanceId: string) {
+    if (!onUninstallMod || busy) return
+    setBusy(true)
+    await onUninstallMod(targetKind as 'weapon' | 'armor', targetItemId, instanceId)
+    setWarnings([])
+    setBusy(false)
+  }
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: SP[1] }}>
         <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-faint)', letterSpacing: '0.14em', textTransform: 'uppercase' }}>Hard Points</span>
-        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: 'var(--hud-text-dim)' }}>{hardPointsUsed} / {hardPoints}</span>
+        <span style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: overCapacity ? 'var(--state-threat)' : 'var(--hud-text-dim)' }}>
+          {hardPointsUsed} / {hardPoints}
+        </span>
       </div>
-      <div style={{ display: 'flex', gap: 3, marginBottom: SP[1] }}>
-        {Array.from({ length: hardPoints }, (_, i) => (
-          <span key={i} style={{
-            width: 14, height: 8, borderRadius: 1,
-            border: '1px solid var(--hud-border-hi)',
-            background: i < hardPointsUsed ? 'color-mix(in srgb, var(--hud-gold) 45%, transparent)' : 'transparent',
-          }} />
-        ))}
-      </div>
-      <p style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: 'var(--hud-text-faint)', fontStyle: 'italic', margin: 0 }}>
-        No attachments installed.
-      </p>
+      {hardPoints > 0 && (
+        <div style={{ display: 'flex', gap: '2px', marginBottom: SP[2] }}>
+          {Array.from({ length: hardPoints }, (_, i) => (
+            <span key={i} style={{
+              width: '0.875rem', height: '0.5rem', borderRadius: RADIUS.sm,
+              border: '1px solid var(--hud-border-hi)',
+              background: i < hardPointsUsed ? 'color-mix(in srgb, var(--hud-gold) 45%, transparent)' : 'transparent',
+            }} />
+          ))}
+        </div>
+      )}
+
+      {/* Non-blocking warnings from the last install_mod call. Install is
+          NEVER disabled for these — the table is the witness (spec). Styled
+          to match EncumbranceTab's own over-limit note. */}
+      {warnings.length > 0 && warnings.map((w, i) => (
+        <div key={i} style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: 'var(--hud-vital-wounds)', padding: `${SP[1]} 0` }}>
+          ⚠ {w}
+        </div>
+      ))}
+
+      <SectionHeader>Installed</SectionHeader>
+      {installed.length === 0 ? (
+        <p style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: 'var(--hud-text-faint)', fontStyle: 'italic', margin: 0 }}>
+          No attachments installed.
+        </p>
+      ) : installed.map((entry, i) => {
+        const ref = refAttachmentMap[entry.key]
+        if (!ref) warnUnresolvedModKey(entry.key)
+        return (
+          <ModRow
+            key={entry.instance_id ?? `${entry.key}-${i}`}
+            name={ref?.name ?? entry.key}
+            hp={ref?.hp_required ?? 0}
+            detail={baseModsText(ref?.base_mods, refDescriptorMap)}
+            actionLabel="Uninstall"
+            busy={busy || !entry.instance_id}
+            onAction={() => entry.instance_id && handleUninstall(entry.instance_id)}
+          />
+        )
+      })}
+
+      {!readOnly && (
+        <div style={{ marginTop: SP[3] }}>
+          <SectionHeader>Available from inventory</SectionHeader>
+          {available.length === 0 ? (
+            <p style={{ fontFamily: FONT_BODY, fontSize: FS.caption, color: 'var(--hud-text-faint)', fontStyle: 'italic', margin: 0 }}>
+              No compatible mods carried.
+            </p>
+          ) : available.map(g => {
+            const ref = g.refKey ? refAttachmentMap[g.refKey] : undefined
+            return (
+              <ModRow
+                key={g.id}
+                name={g.name}
+                hp={ref?.hp_required ?? 0}
+                detail={baseModsText(ref?.base_mods, refDescriptorMap)}
+                actionLabel="Install"
+                busy={busy}
+                onAction={() => handleInstall(g.id)}
+              />
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
@@ -354,6 +603,9 @@ export function ItemDetailPanel({
   onSetWeaponState, onSetArmorState, onSetGearState,
   onDiscardWeapon, onDiscardArmor, onDiscardGear,
   isGmMode, characterName, readOnly = false,
+  refAttachmentMap = {}, refDescriptorMap = {}, looseMods = [],
+  onInstallMod, onUninstallMod,
+  onInstallCybernetic, onUninstallCybernetic,
 }: ItemDetailPanelProps) {
   const tabs = readOnly ? TABS.filter(t => t.key !== 'enc') : TABS
   const defaultTab: TabKey = readOnly ? 'mods' : 'enc'
@@ -417,16 +669,37 @@ export function ItemDetailPanel({
   // single scroll region below (see the root return), alongside the hero/
   // identity/stats/effect block, so the tab content isn't the only thing
   // that can scroll — everything above it can too when it doesn't fit.
-  function TabsBody({ isArmor, hardPoints, hardPointsUsed, loreText, item }: {
-    isArmor: boolean; hardPoints: number; hardPointsUsed: number; loreText?: string | null
-    item: { id: string; enc: number }
+  function TabsBody({ isArmor, hardPoints, loreText, item, targetKind, skillKey, attachments, cybernetic }: {
+    isArmor: boolean; hardPoints: number; loreText?: string | null
+    item: { id: string; enc: number; wornAnchor?: string | null }
+    targetKind: 'weapon' | 'armor' | 'gear'
+    skillKey?: string | null
+    attachments?: unknown[]
+    cybernetic?: { installed: boolean } | null
   }) {
     return (
       <>
         <TabBar tabs={tabs} active={activeTab} onChange={setActiveTab} />
         <div style={{ padding: `${SP[2]} ${SP[2]}` }}>
           {activeTab === 'enc' && !readOnly && <EncumbranceTab item={item} isArmor={isArmor} encumbranceStats={encumbranceStats} />}
-          {activeTab === 'mods' && <ModsTab hardPoints={hardPoints} hardPointsUsed={hardPointsUsed} />}
+          {activeTab === 'mods' && (
+            <ModsTab
+              hardPoints={hardPoints}
+              targetKind={targetKind}
+              targetItemId={item.id}
+              skillKey={skillKey}
+              attachments={attachments}
+              looseMods={looseMods}
+              refAttachmentMap={refAttachmentMap}
+              refDescriptorMap={refDescriptorMap}
+              onInstallMod={onInstallMod}
+              onUninstallMod={onUninstallMod}
+              readOnly={readOnly}
+              cybernetic={cybernetic}
+              onInstallCybernetic={onInstallCybernetic}
+              onUninstallCybernetic={onUninstallCybernetic}
+            />
+          )}
           {activeTab === 'lore' && (
             loreText && loreText.trim()
               ? <div style={{ fontFamily: FONT_BODY, fontSize: FS.label, color: 'var(--hud-text-dim)', lineHeight: 1.85 }}><RichText text={loreText} /></div>
@@ -501,7 +774,7 @@ export function ItemDetailPanel({
             )}
           </div>
           <EffectBlock effectText={w.effectText} />
-          <TabsBody isArmor={false} hardPoints={w.hardPoints} hardPointsUsed={0} loreText={w.loreText} item={{ id: w.id, enc: w.enc }} />
+          <TabsBody isArmor={false} hardPoints={w.hardPoints} loreText={w.loreText} item={{ id: w.id, enc: w.enc }} targetKind="weapon" skillKey={w.skillKey} attachments={w.attachments} />
         </>
       )
     }
@@ -518,21 +791,31 @@ export function ItemDetailPanel({
             <StatBox label="HP"   value={a.hardPoints} color="var(--hud-accent-purple)" />
           </div>
           <EffectBlock effectText={a.effectText} />
-          <TabsBody isArmor hardPoints={a.hardPoints} hardPointsUsed={0} loreText={a.loreText} item={{ id: a.id, enc: a.enc }} />
+          <TabsBody isArmor hardPoints={a.hardPoints} loreText={a.loreText} item={{ id: a.id, enc: a.enc, wornAnchor: a.wornAnchor }} targetKind="armor" attachments={a.attachments} />
         </>
       )
     }
     const g = (selected as { kind: 'gear'; item: GearRow }).item
+    // MOD / CYBERNETIC rows are ordinary ref_gear rows — labelling them
+    // "Gear" here is exactly the confusion the category label exists to
+    // prevent. Single source: itemCategoryLabel() in @/lib/itemCategories.
+    const gearTag = titleCase(itemCategoryLabel('gear', g.categories))
     return (
       <>
-        <ItemDetailHero name={g.name} typeTag="Gear" iconUrl={g.iconUrl} itemTable="gear" refKey={g.refKey} categories={g.categories} item_image_url={g.item_image_url} />
-        <IdentityBlock name={g.name} typeTag="Gear" state={g.equipState} condition={g.condition} />
+        <ItemDetailHero name={g.name} typeTag={gearTag} iconUrl={g.iconUrl} itemTable="gear" refKey={g.refKey} categories={g.categories} item_image_url={g.item_image_url} />
+        <IdentityBlock name={g.name} typeTag={gearTag} state={g.equipState} condition={g.condition} />
         <div style={STATS_ROW_STYLE}>
           <StatBox label="QTY" value={g.qty} color="var(--hud-gold)" />
           <StatBox label="ENC" value={g.enc} color="var(--hud-text-dim)" />
         </div>
         <EffectBlock effectText={g.effectText} />
-        <TabsBody isArmor={false} hardPoints={0} hardPointsUsed={0} loreText={g.loreText} item={{ id: g.id, enc: g.enc }} />
+        <TabsBody
+          isArmor={false} hardPoints={0} loreText={g.loreText}
+          item={{ id: g.id, enc: g.enc, wornAnchor: g.wornAnchor }} targetKind="gear"
+          cybernetic={itemCategoryLabel('gear', g.categories) === 'CYBERNETIC'
+            ? { installed: !!g.isInstalledCybernetic }
+            : null}
+        />
       </>
     )
   }

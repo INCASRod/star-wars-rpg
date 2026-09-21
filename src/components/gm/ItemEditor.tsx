@@ -69,6 +69,8 @@ export interface EditableItem {
   // gear
   encumbrance_bonus?: number | null
   categories?: string[]
+  // armor/gear — worn-rules exclusivity anchor (Prompt 10). Not weapon.
+  worn_anchor?: string | null
 }
 
 // Template search result — superset of EditableItem fields we care about

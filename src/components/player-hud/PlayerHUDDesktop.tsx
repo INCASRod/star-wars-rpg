@@ -80,7 +80,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     refObligationTypes, refDutyTypes,
     refSkillMap, refTalentMap, refWeaponMap, refArmorMap, refGearMap,
     refSpecMap, refForcePowerMap, refForceAbilityMap, refWeaponQualityMap,
-    refAttachmentMap,
+    refAttachmentMap, refDescriptorMap, refCyberneticEffects, skillRankMap,
+    installMod, uninstallMod, installCybernetic, uninstallCybernetic,
     forceRating, careerForceRatingBase, careerSpecKeys, specKeyToCareerName, pendingForceRatingOffer, setPendingForceRatingOffer, supabase, refSpecs,
     speciesAbilities, hudSkills, hudTalents, hudWeapons, hudArmor, hudGear,
     encumbranceCurrent, encumbranceThreshold, encumbranceStats,
@@ -117,7 +118,12 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
     refWeaponQualityMap,
     speciesAbilities,
     moralitySystem: moralitySystem ?? 'vanilla',
+    gear,
+    refGearMap,
+    cyberneticEffects: refCyberneticEffects,
+    skillRanks: skillRankMap,
   })
+  const cybernetics = derivedStats?.cybernetics ?? null
   const effectiveStats = derivedStats?.effectiveStats
   const skillModifiers = derivedStats?.modifiers.skillModifiers ?? {}
   const engineBreakdown = derivedStats?.breakdown
@@ -850,6 +856,13 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
               onSetEquipState={handleSetEquipState}
               onRemoveWeapon={handleRemoveWeapon}
               onRemoveEquipment={handleRemoveEquipment}
+              refAttachmentMap={refAttachmentMap}
+              refDescriptorMap={refDescriptorMap}
+              onInstallMod={installMod}
+              onUninstallMod={uninstallMod}
+              cybernetics={cybernetics}
+              onInstallCybernetic={installCybernetic}
+              onUninstallCybernetic={uninstallCybernetic}
             />
           </HudFullPanel>
 
