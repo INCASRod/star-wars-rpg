@@ -3678,7 +3678,7 @@ i.ffi {
 .gm-cc-row:hover { border-color: var(--hud-border-hi); background: var(--hud-surface-lo); }
 .gm-cc-row.sel { border-color: var(--hud-gold); background: color-mix(in srgb, var(--hud-gold) 7%, transparent); }
 .gm-cc-row .n { font-size: var(--text-overline); color: var(--hud-text); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.gm-cc-row .c { font-size: var(--text-overline); color: var(--hud-text-faint); letter-spacing: 0.05em; }
+.gm-cc-row .c { font-size: var(--text-overline); color: var(--hud-text-faint); letter-spacing: 0.05em; flex-shrink: 0; white-space: nowrap; }
 .gm-cc-row .pool { font-size: var(--text-overline); color: var(--hud-text-faint); }
 
 .gm-cc-rollbtn {

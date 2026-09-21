@@ -105,8 +105,16 @@ export function useMapTokens(mapId: string | null, options: UseMapTokensOptions 
   }, [supabase])
 
   const removeToken = useCallback(async (id: string) => {
-    setTokens(prev => prev.filter(t => t.id !== id))
-    await supabase.from('map_tokens').delete().eq('id', id)
+    let removed: MapToken | undefined
+    setTokens(prev => {
+      removed = prev.find(t => t.id === id)
+      return prev.filter(t => t.id !== id)
+    })
+    const { error } = await supabase.from('map_tokens').delete().eq('id', id)
+    if (error) {
+      if (removed) setTokens(prev => prev.some(t => t.id === id) ? prev : [...prev, removed!])
+      throw error
+    }
   }, [supabase])
 
   const removeAllTokens = useCallback(async () => {

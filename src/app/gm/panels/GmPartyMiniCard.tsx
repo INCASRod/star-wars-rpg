@@ -43,14 +43,14 @@ export function GmPartyMiniCard({ character: c, onMap, critCount, onClick }: Pro
       </div>
 
       {/* Identity + bars */}
-      <div style={{ flex: 1, minWidth: 0, padding: `${SP[2]} ${SP[2]}`, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: SP[1] }}>
-        <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: FS.sm, color: HUD.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+      <div style={{ flex: 1, minWidth: 0, padding: `0.25rem ${SP[2]}`, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '0.125rem' }}>
+        <div style={{ flexShrink: 0, lineHeight: 1.2, fontFamily: FONT, fontWeight: 700, fontSize: FS.sm, color: HUD.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {c.name}
         </div>
-        <div style={{ fontFamily: FONT, fontSize: FS.overline, color: HUD.textFaint, textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <div style={{ flexShrink: 0, lineHeight: 1.2, fontFamily: FONT, fontSize: FS.overline, color: HUD.textFaint, textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {c.species_key} · {c.career_key}
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1875rem', marginTop: '0.125rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1875rem', lineHeight: 1.2 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: SP[1] }}>
             <span style={{ fontFamily: FONT, fontSize: FS.overline, fontWeight: 700, color: 'var(--hud-vital-wounds)', width: '0.5rem' }}>W</span>
             <span style={{ flex: 1, height: '3.5px', background: 'var(--hud-surface-lo)', borderRadius: RADIUS.sm, overflow: 'hidden' }}>
@@ -94,7 +94,7 @@ export function GmPartyMiniCard({ character: c, onMap, critCount, onClick }: Pro
           className={onMap ? 'gm-party-tokdot on' : 'gm-party-tokdot'}
           title={onMap ? 'Token on map' : 'No token on map'}
         />
-        {c.is_force_sensitive && (
+        {(c.force_rating ?? 0) > 0 && (
           <span className="gm-party-forcedot" title="Force-sensitive" />
         )}
       </div>

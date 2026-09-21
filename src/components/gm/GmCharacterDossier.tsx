@@ -21,6 +21,10 @@ export interface GmCharacterDossierProps {
   originRect?: DOMRect | null
 }
 
+// Shared cap for the centre and console columns so the grid row is bounded by
+// the viewport too (a bare 40rem overran short windows). Mirrors EncounterDossier's capped columns.
+const COL_MAX = 'min(40rem, calc(100vh - 6rem))'
+
 const CHAR_ROW: Array<[keyof Character, string]> = [
   ['brawn', 'BR'], ['agility', 'AG'], ['intellect', 'INT'],
   ['cunning', 'CUN'], ['willpower', 'WIL'], ['presence', 'PR'],
@@ -86,7 +90,6 @@ export function GmCharacterDossier({ character, campaignId, mapId, tokens, addTo
   // null/undefined until that load resolves (see `loading`), so fall back
   // to the prop-passed character to avoid a blank dossier on first paint.
   const c = liveChar ?? character
-  void loading
   const existingToken = tokens.find(t => t.character_id === c.id)
   const onMap = !!existingToken
 
@@ -132,7 +135,7 @@ export function GmCharacterDossier({ character, campaignId, mapId, tokens, addTo
               </div>
               <div style={{ fontFamily: FONT, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.14em', color: HUD.textFaint, textTransform: 'uppercase' }}>
                 {c.species_key} · {c.career_key}
-                {c.is_force_sensitive && <span style={{ color: 'var(--die-force)' }}> · ◆ FORCE FR {forceRating}</span>}
+                {!loading && (forceRating ?? 0) > 0 && <span style={{ color: 'var(--die-force)' }}> · ◆ FORCE FR {forceRating}</span>}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: SP[1], marginTop: SP[1] }}>
                 <button className="gm-dossier-ctlbtn" onClick={toggleToken}>
@@ -146,7 +149,7 @@ export function GmCharacterDossier({ character, campaignId, mapId, tokens, addTo
           </div>
 
           {/* Centre column */}
-          <div style={{ padding: SP[3], display: 'flex', flexDirection: 'column', gap: SP[4], overflowY: 'auto', maxHeight: '40rem' }}>
+          <div style={{ padding: SP[3], display: 'flex', flexDirection: 'column', gap: SP[4], overflowY: 'auto', maxHeight: COL_MAX }}>
             <div>
               <span className="gm-dossier-slabel">Characteristics</span>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: SP[2], marginTop: SP[2] }}>
@@ -175,49 +178,61 @@ export function GmCharacterDossier({ character, campaignId, mapId, tokens, addTo
                 <Chip value={c.soak} label="SOAK" />
                 <Chip value={c.defense_melee} label="M DEF" />
                 <Chip value={c.defense_ranged} label="R DEF" />
-                {c.is_force_sensitive && <Chip value={forceRating ?? 0} label="FORCE" force />}
+                {!loading && (forceRating ?? 0) > 0 && <Chip value={forceRating ?? 0} label="FORCE" force />}
               </div>
             </div>
 
             <div>
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: SP[2] }}>
                 <span className="gm-dossier-slabel">Inventory</span>
-                <EncReadout current={encumbranceCurrent} threshold={encumbranceThreshold} cliff={encumbranceStats?.cliff ?? encumbranceThreshold} />
+                {!loading && <EncReadout current={encumbranceCurrent} threshold={encumbranceThreshold} cliff={encumbranceStats?.cliff ?? encumbranceThreshold} />}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: SP[1], marginTop: SP[2] }}>
-                {hudWeapons.map(w => (
-                  <InvRow key={w.id} name={w.name} enc={w.enc} equipState={w.equipState}
-                    onCycle={() => handleToggleEquippedById(w.id, 'weapon')}
-                    onDrop={() => handleRemoveWeapon(w.id)} />
-                ))}
-                {hudArmor.map(a => (
-                  <InvRow key={a.id} name={a.name} enc={a.enc} equipState={a.equipState}
-                    onCycle={() => handleToggleEquippedById(a.id, 'armor')}
-                    onDrop={() => handleRemoveEquipment(a.id, 'armor')} />
-                ))}
-                {hudGear.map(g => (
-                  <InvRow key={g.id} name={g.name} enc={g.enc} equipState={g.equipState}
-                    onCycle={() => handleToggleEquippedById(g.id, 'gear')}
-                    onDrop={() => handleRemoveEquipment(g.id, 'gear')} />
-                ))}
-                {hudWeapons.length + hudArmor.length + hudGear.length === 0 && (
-                  <div style={{ fontFamily: FONT, fontSize: FS.overline, color: HUD.textFaint, letterSpacing: '0.1em', padding: `${SP[1]} 0.125rem` }}>
-                    INVENTORY EMPTY
-                  </div>
+                {loading ? (
+                  <LoadingRow label="LOADING INVENTORY…" />
+                ) : (
+                  <>
+                    {hudWeapons.map(w => (
+                      <InvRow key={w.id} name={w.name} enc={w.enc} equipState={w.equipState}
+                        onCycle={() => handleToggleEquippedById(w.id, 'weapon')}
+                        onDrop={() => handleRemoveWeapon(w.id)} />
+                    ))}
+                    {hudArmor.map(a => (
+                      <InvRow key={a.id} name={a.name} enc={a.enc} equipState={a.equipState}
+                        onCycle={() => handleToggleEquippedById(a.id, 'armor')}
+                        onDrop={() => handleRemoveEquipment(a.id, 'armor')} />
+                    ))}
+                    {hudGear.map(g => (
+                      <InvRow key={g.id} name={g.name} enc={g.enc} equipState={g.equipState}
+                        onCycle={() => handleToggleEquippedById(g.id, 'gear')}
+                        onDrop={() => handleRemoveEquipment(g.id, 'gear')} />
+                    ))}
+                    {hudWeapons.length + hudArmor.length + hudGear.length === 0 && (
+                      <div style={{ fontFamily: FONT, fontSize: FS.overline, color: HUD.textFaint, letterSpacing: '0.1em', padding: `${SP[1]} 0.125rem` }}>
+                        INVENTORY EMPTY
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
           </div>
 
           {/* Check console */}
-          <div style={{ borderLeft: '1px solid var(--hud-border)', background: 'color-mix(in srgb, var(--hud-bg) 25%, transparent)' }}>
-            <PcCheckConsole
-              character={c}
-              campaignId={campaignId}
-              hudSkills={hudSkills}
-              hudWeapons={hudWeapons}
-              forceRating={forceRating ?? 0}
-            />
+          <div style={{ borderLeft: '1px solid var(--hud-border)', background: 'color-mix(in srgb, var(--hud-bg) 25%, transparent)', display: 'flex', flexDirection: 'column', minHeight: 0, maxHeight: COL_MAX, overflow: 'hidden' }}>
+            {loading ? (
+              <div style={{ padding: SP[3] }}>
+                <LoadingRow label="LOADING CHECK CONSOLE…" />
+              </div>
+            ) : (
+              <PcCheckConsole
+                character={c}
+                campaignId={campaignId}
+                hudSkills={hudSkills}
+                hudWeapons={hudWeapons}
+                forceRating={forceRating ?? 0}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -269,6 +284,20 @@ function EncReadout({ current, threshold, cliff }: { current: number; threshold:
         </span>
       )}
     </span>
+  )
+}
+
+// Unmistakably a pending-fetch state, not a real (possibly-empty) reading —
+// distinct copy, icon and color from "INVENTORY EMPTY" so a GM never mistakes
+// one for the other. See CLAUDE.md's Item 2 note on GmCharacterDossier's
+// hook-only values (encumbranceStats/hudWeapons/hudArmor/hudGear/forceRating)
+// having no prop-level fallback: this gate is what stands in during the gap.
+function LoadingRow({ label }: { label: string }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: SP[2], fontFamily: FONT, fontSize: FS.overline, color: 'var(--hud-accent)', letterSpacing: '0.1em', padding: `${SP[1]} 0.125rem` }}>
+      <span aria-hidden="true">◌</span>
+      {label}
+    </div>
   )
 }
 

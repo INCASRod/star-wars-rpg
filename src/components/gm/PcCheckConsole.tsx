@@ -10,6 +10,7 @@ import { toast } from 'sonner'
 import { getSkillPool, rollPool } from '@/components/player-hud/dice-engine'
 import type { DiceType } from '@/components/player-hud/design-tokens'
 import { logRoll } from '@/lib/logRoll'
+import { DiceFace } from '@/components/dice/DiceFace'
 import { UNARMED_PROFILE } from '@/lib/combatCheckUtils'
 import type { Character, HudSkill, WpnDisplay } from '@/lib/types'
 import { FONT_BODY as FONT, FONT_DISPLAY, FS, SP, RADIUS, HUD } from '@/lib/tokens'
@@ -30,6 +31,16 @@ interface CombatOption {
   skillName: string
   damage:    number
   crit:      number
+}
+
+// Same glyph treatment as the adversary CheckConsole: proficiency octagons first, then ability diamonds.
+function PoolGlyphs({ proficiency, ability }: { proficiency: number; ability: number }) {
+  return (
+    <span style={{ flexShrink: 0, display: 'flex', gap: 2 }}>
+      {Array.from({ length: proficiency }, (_, i) => <DiceFace key={`p${i}`} type="proficiency" size={14} />)}
+      {Array.from({ length: ability }, (_, i) => <DiceFace key={`a${i}`} type="ability" size={14} />)}
+    </span>
+  )
 }
 
 const GRID_DICE: DiceType[] = ['ability', 'proficiency', 'boost', 'difficulty', 'challenge', 'setback']
@@ -123,13 +134,13 @@ export function PcCheckConsole({ character, campaignId, hudSkills, hudWeapons, f
   const canRoll = tab === 'skill' ? (totalDice > 0 && !!selectedSkillKey) : (totalDice > 0 && !!selectedWeapon)
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
       <div style={{ display: 'flex', gap: SP[1], padding: SP[2], borderBottom: '1px solid var(--hud-border)' }}>
         <button className={tab === 'skill' ? 'gm-cc-tab on' : 'gm-cc-tab'} onClick={() => setTab('skill')}>SKILL CHECK</button>
         <button className={tab === 'combat' ? 'gm-cc-tab on' : 'gm-cc-tab'} onClick={() => setTab('combat')}>COMBAT CHECK</button>
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: SP[2], display: 'flex', flexDirection: 'column', gap: '1px' }}>
+      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: SP[2], display: 'flex', flexDirection: 'column', gap: '1px' }}>
         {tab === 'skill' && hudSkills.map(skill => {
           const { ability, proficiency } = getSkillPool(skill.charVal, skill.rank)
           return (
@@ -140,7 +151,7 @@ export function PcCheckConsole({ character, campaignId, hudSkills, hudWeapons, f
             >
               <span className="n">{skill.name}</span>
               <span className="c">{skill.charKey}</span>
-              <span className="pool">{proficiency + ability}</span>
+              <PoolGlyphs proficiency={proficiency} ability={ability} />
             </div>
           )
         })}
@@ -154,7 +165,7 @@ export function PcCheckConsole({ character, campaignId, hudSkills, hudWeapons, f
             >
               <span className="n">{w.name}</span>
               <span className="c">DMG {w.damage} · C{w.crit}</span>
-              <span className="pool">{proficiency + ability}</span>
+              <PoolGlyphs proficiency={proficiency} ability={ability} />
             </div>
           )
         })}
@@ -164,14 +175,16 @@ export function PcCheckConsole({ character, campaignId, hudSkills, hudWeapons, f
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: SP[1] }}>
           {GRID_DICE.map(k => (
             <div key={k} style={{ display: 'flex', alignItems: 'center', gap: '3px', background: 'var(--hud-surface-lo)', border: '1px solid var(--hud-border)', borderRadius: RADIUS.sm, padding: '2px 3px' }}>
+              <DiceFace type={k} size={14} />
               <button className="gm-dossier-stepbtn" onClick={() => adjustDie(k, -1)}>−</button>
               <b style={{ fontFamily: FONT, fontSize: FS.overline, minWidth: '11px', textAlign: 'center' }}>{pool[k]}</b>
               <button className="gm-dossier-stepbtn" onClick={() => adjustDie(k, 1)}>＋</button>
             </div>
           ))}
         </div>
-        {character.is_force_sensitive && (
+        {forceRating > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: SP[2], background: 'color-mix(in srgb, var(--die-force) 5%, transparent)', border: '1px solid color-mix(in srgb, var(--die-force) 28%, transparent)', borderRadius: RADIUS.sm, padding: `5px ${SP[2]}` }}>
+            <DiceFace type="force" size={14} />
             <span style={{ fontFamily: FONT, fontSize: FS.overline, fontWeight: 700, letterSpacing: '0.1em', color: 'var(--die-force)', flex: 1 }}>
               FORCE DICE <span style={{ fontSize: FS.overline, color: HUD.textFaint }}>(FR {forceRating})</span>
             </span>

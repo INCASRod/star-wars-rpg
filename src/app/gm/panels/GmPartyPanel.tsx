@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
+import { toast } from 'sonner'
 import type { Character, RefDutyType, RefObligationType, CharacterCriticalInjury } from '@/lib/types'
 import type { GmConflictRow } from '@/hooks/useGmCampaignConflicts'
 import type { MapToken } from '@/hooks/useMapTokens'
@@ -51,9 +52,13 @@ export function GmPartyPanel({ campaignId, characters, charCrits, charConflicts,
 
   useEffect(() => {
     if (!cardListRef.current) return
-    gsap.from(cardListRef.current.children, {
-      x: -18, opacity: 0, stagger: 0.055, duration: 0.4, ease: 'power3.out',
-    })
+    // fromTo (not from): from() reads the current inline values as its end
+    // state, so a StrictMode re-run mid-tween would freeze cards at partial opacity.
+    const cards = Array.from(cardListRef.current.children)
+    const tween = gsap.fromTo(cards,
+      { x: -18, opacity: 0 },
+      { x: 0, opacity: 1, stagger: 0.055, duration: 0.4, ease: 'power3.out', overwrite: 'auto', clearProps: 'transform,opacity' })
+    return () => { tween.kill(); gsap.set(cards, { clearProps: 'transform,opacity' }) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [characters.length])
 
@@ -65,25 +70,38 @@ export function GmPartyPanel({ campaignId, characters, charCrits, charConflicts,
 
   async function placeAllPCs() {
     if (!mapId) return
+    const failures: string[] = []
     for (const c of characters) {
       if (tokens.some(t => t.character_id === c.id)) continue
-      await addToken({
-        map_id: mapId, campaign_id: campaignId, participant_type: 'pc',
-        character_id: c.id, participant_id: null, slot_key: null,
-        label: c.name, alignment: 'pc', x: 0.5, y: 0.5,
-        is_visible: true, token_size: 1.0, wound_pct: null,
-        token_image_url: c.portrait_url ?? null, token_shape: 'circle',
-      })
+      try {
+        const result = await addToken({
+          map_id: mapId, campaign_id: campaignId, participant_type: 'pc',
+          character_id: c.id, participant_id: null, slot_key: null,
+          label: c.name, alignment: 'pc', x: 0.5, y: 0.5,
+          is_visible: true, token_size: 1.0, wound_pct: null,
+          token_image_url: c.portrait_url ?? null, token_shape: 'circle',
+        })
+        if (!result) failures.push(c.name)
+      } catch {
+        failures.push(c.name)
+      }
     }
     pulseTokenDots()
+    if (failures.length) toast.error(`Failed to place: ${failures.join(', ')}`)
   }
 
   async function removeAllPCs() {
     const pcTokens = tokens.filter(t => t.participant_type === 'pc' && characters.some(c => c.id === t.character_id))
+    const failures: string[] = []
     for (const t of pcTokens) {
-      await removeToken(t.id)
+      try {
+        await removeToken(t.id)
+      } catch {
+        failures.push(t.label ?? t.id)
+      }
     }
     pulseTokenDots()
+    if (failures.length) toast.error(`Failed to remove: ${failures.join(', ')}`)
   }
 
   return (
