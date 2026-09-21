@@ -3,6 +3,7 @@
 import { createPortal } from 'react-dom'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
+import { useRouter } from 'next/navigation'
 import { useCharacterData } from '@/hooks/useCharacterData'
 import type { Character } from '@/lib/types'
 import type { MapToken } from '@/hooks/useMapTokens'
@@ -31,6 +32,7 @@ const CHAR_ROW: Array<[keyof Character, string]> = [
 ]
 
 export function GmCharacterDossier({ character, campaignId, mapId, tokens, addToken, removeToken, onArchive, onClose, originRect }: GmCharacterDossierProps) {
+  const router = useRouter()
   const [mounted, setMounted] = useState(false)
   useEffect(() => { setMounted(true) }, [])
   const dossierRef = useRef<HTMLDivElement>(null)
@@ -140,6 +142,9 @@ export function GmCharacterDossier({ character, campaignId, mapId, tokens, addTo
               <div style={{ display: 'flex', flexDirection: 'column', gap: SP[1], marginTop: SP[1] }}>
                 <button className="gm-dossier-ctlbtn" onClick={toggleToken}>
                   {onMap ? '⌖ REMOVE FROM MAP' : '◈ ADD TO MAP'}
+                </button>
+                <button className="gm-dossier-ctlbtn" onClick={() => router.push(`/character/${c.id}?gm=1&campaign=${campaignId}`)}>
+                  ◧ OPEN CHARACTER SHEET
                 </button>
                 <button className="gm-dossier-ctlbtn" onClick={() => onArchive({ id: c.id, name: c.name })}>
                   ▤ ARCHIVE CHARACTER
