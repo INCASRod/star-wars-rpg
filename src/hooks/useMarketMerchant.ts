@@ -201,6 +201,15 @@ export function useMarketMerchant(campaignId: string | null) {
     mutateStock(stock => stock.filter(l => l.ref_key !== refKey)),
   [campaignId]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // GM Replace — swaps one line in place: same position, line count
+  // unchanged. Read-fresh-then-write via mutateStock, so this is atomic with
+  // every other queued mutation on the row; the caller (GmMarketPanel) is
+  // responsible for guarding against a second click firing before the first
+  // queued write lands.
+  const replaceLine = useCallback((refKey: string, replacement: GeneratedStockLine) =>
+    mutateStock(stock => stock.map(l => l.ref_key === refKey ? toDbLine(replacement) : l)),
+  [campaignId]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const setOpenToPlayers = useCallback((open: boolean) => {
     return queueWrite(async () => {
       if (!campaignId) return
@@ -294,7 +303,7 @@ export function useMarketMerchant(campaignId: string | null) {
 
   return {
     merchant, loading, error,
-    rollStock, toggleReveal, revealTier, cycleTier, setLinePrice, deleteLine, setOpenToPlayers,
+    rollStock, toggleReveal, revealTier, cycleTier, setLinePrice, deleteLine, replaceLine, setOpenToPlayers,
     downloadSnapshot, parseSnapshotFile, restoreSnapshot,
   }
 }

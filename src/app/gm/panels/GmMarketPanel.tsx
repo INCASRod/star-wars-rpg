@@ -1,14 +1,19 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { Settings } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { RichText } from '@/components/ui/RichText'
 import { NumberField } from '@/components/ui/NumberField'
-import { FONT_BODY, FONT_DISPLAY, HUD, RADIUS, EASE, FS, SP } from '@/lib/tokens'
+import { FONT_BODY, FONT_DISPLAY, HUD, RADIUS, EASE, FS, SP, Z } from '@/lib/tokens'
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
 import {
   LOCATIONS, SCALES, ARCHETYPES, rarityToDifficultyLabel,
-  generateStock, type CatalogueItem, type MarketArchetype, type MarketScale, type MarketLegality,
+  generateStock, drawReplacementLine, SUB_DRAW_CAP, SUB_DRAW_ARCHETYPES,
+  type CatalogueItem, type MarketArchetype, type MarketScale, type MarketLegality,
 } from '@/lib/marketGenerator'
+import { isModItem, isCyberneticItem } from '@/lib/itemCategories'
 import { useMarketMerchant, type DbStockLine } from '@/hooks/useMarketMerchant'
 import { useQuartermaster } from '@/hooks/useQuartermaster'
 import type { MarketTier } from '@/lib/marketSnapshot'
@@ -168,39 +173,168 @@ function Btn({ children, onClick, ghost, disabled }: { children: React.ReactNode
   )
 }
 
+// ── Row actions menu (cog dropdown) ─────────────────────────────────────────
+// Portaled + anchor-measured, same established pattern as SkillRollPopover.tsx
+// (mount-time useLayoutEffect measure → position → fade in via a `visible`
+// flag) — reused rather than inventing a second popover mechanism. Portaling
+// to document.body is what keeps it from being clipped by the stock list's
+// own `overflow-y: auto` scroll container.
+interface RowMenuItem {
+  key: string
+  label: string
+  disabled?: boolean
+  onSelect: () => void
+}
+
+function RowActionsMenu({ anchorEl, onClose, items }: {
+  anchorEl: HTMLElement
+  onClose: () => void
+  items: RowMenuItem[]
+}) {
+  const menuRef = useRef<HTMLDivElement>(null)
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
+  const [visible, setVisible] = useState(false)
+  const [focusIndex, setFocusIndex] = useState(0)
+  const reducedMotion = usePrefersReducedMotion()
+  const itemRefs = useRef<(HTMLButtonElement | null)[]>([])
+
+  useLayoutEffect(() => {
+    const el = menuRef.current
+    if (!el) return
+    const anchor = anchorEl.getBoundingClientRect()
+    const MARGIN = 4
+    const h = el.offsetHeight
+    const w = el.offsetWidth
+    const spaceBelow = window.innerHeight - anchor.bottom - MARGIN
+    const spaceAbove = anchor.top - MARGIN
+    // Opens downward by default; flips upward only when there isn't room below.
+    const top = spaceBelow >= h || spaceBelow >= spaceAbove
+      ? anchor.bottom + MARGIN
+      : anchor.top - h - MARGIN
+    const left = Math.min(anchor.right - w, window.innerWidth - w - MARGIN)
+    setPos({ top: Math.max(MARGIN, top), left: Math.max(MARGIN, left) })
+    requestAnimationFrame(() => setVisible(true))
+    itemRefs.current[0]?.focus()
+  }, [anchorEl])
+
+  useEffect(() => {
+    const onMouseDown = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) onClose()
+    }
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { e.stopPropagation(); onClose(); return }
+      if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        setFocusIndex(i => { const next = Math.min(i + 1, items.length - 1); itemRefs.current[next]?.focus(); return next })
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        setFocusIndex(i => { const next = Math.max(i - 1, 0); itemRefs.current[next]?.focus(); return next })
+      }
+    }
+    document.addEventListener('mousedown', onMouseDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', onMouseDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [onClose, items.length])
+
+  return createPortal(
+    <div
+      ref={menuRef}
+      role="menu"
+      aria-label="Line actions"
+      style={{
+        position: 'fixed',
+        top: pos?.top ?? -9999, left: pos?.left ?? -9999,
+        zIndex: Z.dropdown,
+        minWidth: '8rem',
+        background: 'var(--hud-surface-hi)', border: `1px solid ${BORDER_HI}`, borderRadius: RADIUS.md,
+        padding: '0.25rem', display: 'flex', flexDirection: 'column', gap: '0.125rem',
+        boxShadow: '0 0.5rem 1.5rem color-mix(in srgb, black 40%, transparent)',
+        opacity: reducedMotion ? 1 : (visible ? 1 : 0),
+        transform: reducedMotion ? 'none' : `translateY(${visible ? 0 : -4}px)`,
+        transition: reducedMotion ? 'none' : `opacity ${EASE.quick}, transform ${EASE.quick}`,
+      }}
+    >
+      {items.map((item, i) => (
+        <button
+          key={item.key}
+          ref={el => { itemRefs.current[i] = el }}
+          role="menuitem"
+          disabled={item.disabled}
+          onClick={() => { item.onSelect(); onClose() }}
+          onFocus={() => setFocusIndex(i)}
+          style={{
+            fontFamily: FONT_BODY, fontSize: FS.label, textAlign: 'left',
+            background: 'transparent', color: item.disabled ? DIM_LO : TEXT, border: 'none',
+            borderRadius: RADIUS.sm, padding: '0.375rem 0.5rem', cursor: item.disabled ? 'not-allowed' : 'pointer',
+            opacity: item.disabled ? 0.5 : 1,
+          }}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>,
+    document.body,
+  )
+}
+
 // ── Stock row ────────────────────────────────────────────────────────────────
 
-function StockRow({ line, onView, onToggleReveal, onCycleTier, onDelete, onPriceChange }: {
+function StockRow({ line, onView, onToggleReveal, onCycleTier, onDelete, onPriceChange, onReplace, replacing, menuOpen, onMenuOpenChange }: {
   line: DbStockLine
   onView: () => void
   onToggleReveal: () => void
   onCycleTier: () => void
   onDelete: () => void
   onPriceChange: (price: number) => void
+  onReplace: () => void
+  replacing: boolean
+  menuOpen: boolean
+  onMenuOpenChange: (open: boolean) => void
 }) {
   const [priceDraft, setPriceDraft] = useState(String(line.price))
   useEffect(() => { setPriceDraft(String(line.price)) }, [line.price])
+  const cogRef = useRef<HTMLButtonElement>(null)
+
+  const menuItems: RowMenuItem[] = [
+    ...(line.tier !== 'open'
+      ? [{ key: 'reveal', label: line.revealed ? 'Hide' : 'Reveal', onSelect: onToggleReveal }]
+      : []),
+    { key: 'tier', label: 'Tier', onSelect: onCycleTier },
+    { key: 'replace', label: replacing ? 'Replacing…' : 'Replace', disabled: replacing, onSelect: onReplace },
+  ]
+
+  const closeMenu = useCallback(() => {
+    onMenuOpenChange(false)
+    cogRef.current?.focus()
+  }, [onMenuOpenChange])
 
   return (
     <div style={{
-      display: 'flex', alignItems: 'center', gap: SP[3], padding: '0.5625rem 1.25rem',
+      display: 'grid', gridTemplateColumns: '3.125rem minmax(0, 1fr) 4.875rem 6.25rem 6.75rem',
+      alignItems: 'center', gap: SP[3], padding: '0.5625rem 1.25rem',
       borderTop: '1px solid color-mix(in srgb, var(--hud-accent) 6%, transparent)',
       background: line.revealed ? 'color-mix(in srgb, var(--state-success) 6%, transparent)' : 'transparent',
       fontFamily: FONT_BODY, fontSize: FS.label,
     }}>
-      <span style={{ fontSize: FS.overline, letterSpacing: '0.12em', textTransform: 'uppercase', color: DIM_LO, width: '3.125rem', flexShrink: 0 }}>
+      <span style={{ fontSize: FS.overline, letterSpacing: '0.12em', textTransform: 'uppercase', color: DIM_LO, overflow: 'hidden' }}>
         {line.item_table}
       </span>
-      {/* Only column that grows — sensible min so it never collapses to nothing on an extreme name. */}
+      {/* Only column that can shrink — grid track (not flex minWidth) so it
+          truncates properly instead of forcing the row wider than its
+          container, which is what let the action buttons overlap the price
+          field at narrower viewports. */}
       <span
         title={line.name}
-        style={{ flex: 1, minWidth: '10rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: TEXT }}
+        style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: TEXT }}
       >
         {line.name}
         {line.restricted && <span style={{ color: 'var(--state-failure)', fontWeight: 700, marginLeft: '0.3125rem' }}>R</span>}
         {line.revealed && <span style={{ fontSize: FS.overline, color: 'var(--state-success)', textTransform: 'uppercase', letterSpacing: '0.12em', marginLeft: '0.5rem' }}>▸ revealed</span>}
       </span>
-      <span style={{ fontSize: FS.overline, color: DIM, width: '4.875rem', flexShrink: 0 }}>
+      <span style={{ fontSize: FS.overline, color: DIM, overflow: 'hidden' }}>
         {line.base_rarity} → <b style={{ color: TEXT }}>{line.modified_rarity}</b>
       </span>
       <NumberField
@@ -208,19 +342,28 @@ function StockRow({ line, onView, onToggleReveal, onCycleTier, onDelete, onPrice
         onChange={e => setPriceDraft(e.target.value)}
         onBlur={() => { const n = Number(priceDraft); if (Number.isFinite(n) && n !== line.price) onPriceChange(n) }}
         style={{
-          width: '5rem', textAlign: 'right', flexShrink: 0, fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700,
+          width: '5rem', textAlign: 'right', fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700,
           color: GOLD, background: 'transparent', border: `1px solid ${BORDER}`, borderRadius: RADIUS.sm, padding: '0.25rem 0.375rem', outline: 'none',
         }}
-        wrapperStyle={{ flexShrink: 0 }}
+        wrapperStyle={{ justifySelf: 'end' }}
       />
-      <div style={{ display: 'flex', gap: '0.25rem', width: '10rem', justifyContent: 'flex-end', flexShrink: 0 }}>
+      <div style={{ display: 'flex', gap: '0.25rem', justifyContent: 'flex-end' }}>
         <button onClick={onView} style={smallBtnStyle()}>View</button>
-        {line.tier !== 'open' && (
-          <button onClick={onToggleReveal} style={smallBtnStyle()}>{line.revealed ? 'Hide' : 'Reveal'}</button>
-        )}
-        <button onClick={onCycleTier} style={smallBtnStyle()}>Tier</button>
+        <button
+          ref={cogRef}
+          onClick={() => onMenuOpenChange(!menuOpen)}
+          aria-label="Line actions"
+          aria-haspopup="menu"
+          aria-expanded={menuOpen}
+          style={smallBtnStyle()}
+        >
+          <Settings size={11} strokeWidth={2} aria-hidden="true" />
+        </button>
         <button onClick={onDelete} style={smallBtnStyle('var(--state-failure)')}>✕</button>
       </div>
+      {menuOpen && cogRef.current && (
+        <RowActionsMenu anchorEl={cogRef.current} onClose={closeMenu} items={menuItems} />
+      )}
     </div>
   )
 }
@@ -230,12 +373,13 @@ function smallBtnStyle(hoverColor?: string): React.CSSProperties {
     fontFamily: FONT_BODY, fontSize: FS.overline, letterSpacing: '0.1em', textTransform: 'uppercase',
     background: 'transparent', color: hoverColor ?? DIM_LO, border: `1px solid ${BORDER}`,
     borderRadius: RADIUS.sm, padding: '0.1875rem 0.4375rem', cursor: 'pointer',
+    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
   }
 }
 
 // ── Tier section ─────────────────────────────────────────────────────────────
 
-function TierSection({ tier, lines, locationModifier, onRevealTier, onView, onToggleReveal, onCycleTier, onDelete, onPriceChange }: {
+function TierSection({ tier, lines, locationModifier, onRevealTier, onView, onToggleReveal, onCycleTier, onDelete, onPriceChange, onReplace, replacingKey, openMenuKey, onMenuOpenChange }: {
   tier: MarketTier
   lines: DbStockLine[]
   locationModifier: number
@@ -245,6 +389,10 @@ function TierSection({ tier, lines, locationModifier, onRevealTier, onView, onTo
   onCycleTier: (refKey: string) => void
   onDelete: (refKey: string) => void
   onPriceChange: (refKey: string, price: number) => void
+  onReplace: (refKey: string) => void
+  replacingKey: string | null
+  openMenuKey: string | null
+  onMenuOpenChange: (refKey: string, open: boolean) => void
 }) {
   if (lines.length === 0 && tier === 'open') return null
   const meta = TIER_META[tier]
@@ -289,6 +437,10 @@ function TierSection({ tier, lines, locationModifier, onRevealTier, onView, onTo
             onCycleTier={() => onCycleTier(line.ref_key)}
             onDelete={() => onDelete(line.ref_key)}
             onPriceChange={p => onPriceChange(line.ref_key, p)}
+            onReplace={() => onReplace(line.ref_key)}
+            replacing={replacingKey === line.ref_key}
+            menuOpen={openMenuKey === line.ref_key}
+            onMenuOpenChange={open => onMenuOpenChange(line.ref_key, open)}
           />
         ))
       )}
@@ -305,9 +457,11 @@ export function GmMarketPanel({ campaignId, activeChars, broadcastAll }: {
 }) {
   const { catalogue, details } = useCatalogue()
   const {
-    merchant, loading, rollStock, toggleReveal, revealTier, cycleTier, setLinePrice, deleteLine, setOpenToPlayers,
+    merchant, loading, rollStock, toggleReveal, revealTier, cycleTier, setLinePrice, deleteLine, replaceLine, setOpenToPlayers,
     downloadSnapshot, parseSnapshotFile, restoreSnapshot,
   } = useMarketMerchant(campaignId)
+  const [replacingKey, setReplacingKey] = useState<string | null>(null)
+  const [openMenuKey, setOpenMenuKey] = useState<string | null>(null)
 
   // Read/inspect + icon-override-only popup shared with ItemDatabaseTab's
   // Items tab — reused, not forked. Own useItemIconContext instance, same
@@ -434,6 +588,45 @@ export function GmMarketPanel({ campaignId, activeChars, broadcastAll }: {
     await rollStock({ name, locationModifier: locationMod, archetype, scale, legality, seed, stock })
     setStatus(`Rolled ${stock.length} lines · seed ${seed}`)
   }, [catalogue, locationMod, archetype, scale, legality, name, rollStock])
+
+  // GM Replace — swaps one stock line for a fresh draw from the same
+  // archetype's eligible pool (main-draw ∪ sub-draw), respecting the mod/
+  // cyber cap: a stall already at SUB_DRAW_CAP mod/cyber lines can't gain
+  // another unless the line being replaced IS one (which frees the slot).
+  // Archetypes with no sub-draw config (general/black/junk) never offer a
+  // mod/cyber replacement, mirroring Roll Stock's 0% mod share for them.
+  const handleReplace = useCallback(async (refKey: string) => {
+    if (!catalogue || !merchant || replacingKey) return
+    const line = merchant.stock.find(l => l.ref_key === refKey)
+    if (!line) return
+    setReplacingKey(refKey)
+    try {
+      const archetypeKey = merchant.archetype as MarketArchetype
+      const hasSubDraw = archetypeKey in SUB_DRAW_ARCHETYPES
+      const isModCyberLine = (l: DbStockLine) => {
+        const d = details.get(`${l.item_table}:${l.ref_key}`)
+        return !!d && (isModItem(d.categories) || isCyberneticItem(d.categories))
+      }
+      const modCyberCount = merchant.stock.filter(isModCyberLine).length
+      const atCap = modCyberCount >= SUB_DRAW_CAP
+      const allowModCyber = hasSubDraw && (!atCap || isModCyberLine(line))
+      const excludeKeys = merchant.stock.map(l => l.ref_key)
+      const seed = Math.floor(Math.random() * 2 ** 31)
+      const replacement = drawReplacementLine({
+        catalogue, locationModifier: merchant.location_modifier,
+        archetype: archetypeKey, scale: merchant.scale as MarketScale, legality: merchant.legality as MarketLegality,
+        excludeKeys, allowModCyber, seed,
+      })
+      if (!replacement) {
+        setStatus('No eligible replacement — every matching item this stall could stock is already here.')
+        return
+      }
+      await replaceLine(refKey, replacement)
+      setStatus(`Replaced "${line.name}" with "${replacement.name}"`)
+    } finally {
+      setReplacingKey(null)
+    }
+  }, [catalogue, merchant, details, replacingKey, replaceLine])
 
   const handleDownload = useCallback(() => {
     downloadSnapshot()
@@ -580,6 +773,10 @@ export function GmMarketPanel({ campaignId, activeChars, broadcastAll }: {
                   onCycleTier={cycleTier}
                   onDelete={deleteLine}
                   onPriceChange={setLinePrice}
+                  onReplace={refKey => void handleReplace(refKey)}
+                  replacingKey={replacingKey}
+                  openMenuKey={openMenuKey}
+                  onMenuOpenChange={(refKey, open) => setOpenMenuKey(open ? refKey : null)}
                 />
               ))
             )}
