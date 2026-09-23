@@ -8,6 +8,8 @@ import { toast } from 'sonner'
 import { emitRefLibraryUpdated } from '@/lib/refLibraryEvents'
 import { HUD, FONT_BODY, RADIUS, Z } from '@/lib/tokens'
 import { NumberField } from '@/components/ui/NumberField'
+import { RichText } from '@/components/ui/RichText'
+import { importConsoleAdversary, type ImportReport } from '@/lib/importConsoleAdversary'
 
 /* ── Design tokens ─────────────────────────────────────── */
 const FC       = FONT_BODY
@@ -72,7 +74,7 @@ const sectionHead: React.CSSProperties = {
 }
 
 /* ── All SWRPG skill names (AoE Core Rulebook Table 3-1) ── */
-const ALL_SKILLS = [
+export const ALL_SKILLS = [
   'Astrogation','Athletics','Brawl','Charm','Coercion','Computers',
   'Cool','Coordination','Deception','Discipline',
   'Gunnery','Knowledge: Core Worlds','Knowledge: Education','Knowledge: Lore',
@@ -137,7 +139,7 @@ const LIGHTSABER_CHAR_OPTIONS: { key: string; label: string }[] = [
 
 /* ── Skill entry ───────────────────────────────────────── */
 interface SkillEntry { skill: string; rank: number; characteristicOverride?: string }
-interface WeaponEntry { name: string; skillCategory: string; damage: string; range: string; qualities: string }
+interface WeaponEntry { name: string; skillCategory: string; damage: string; range: string; qualities: string; crit: string }
 interface GearEntry { name: string; encumbrance: string; description: string; soak: string }
 interface TalentEntry { name: string; description: string }
 interface AbilityEntry { name: string; description: string }
@@ -174,6 +176,7 @@ function fromTemplate(t: Adversary): Partial<{
       name: w.name, skillCategory: w.skillCategory ?? '',
       damage: String(w.damage), range: w.range,
       qualities: (w.qualities ?? []).join(', '),
+      crit: w.crit != null ? String(w.crit) : '',
     })),
     gear:        (t.gear ?? []).map(g => typeof g === 'string'
       ? { name: g, encumbrance: '', description: '', soak: '' }
@@ -225,6 +228,13 @@ export function AdversaryEditor({
   const [description, setDescription] = useState(init.description ?? '')
   const [customNotes, setCustomNotes] = useState('')
 
+  /* ── Console import ───────────────────────────────────── */
+  const [importOpen, setImportOpen]   = useState(false)
+  const [importText, setImportText]   = useState('')
+  const [importError, setImportError] = useState<string | null>(null)
+  const [importReport, setImportReport] = useState<ImportReport | null>(null)
+  const [importDupeWarning, setImportDupeWarning] = useState<string | null>(null)
+
   /* ── Validation errors ───────────────────────────────── */
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -250,6 +260,36 @@ export function AdversaryEditor({
     setTmplSelected(adv); setTmplSearch(''); setErrors({})
   }
 
+  /* ── Console import ───────────────────────────────────── */
+  const handleImport = () => {
+    const result = importConsoleAdversary(importText, ALL_SKILLS)
+    if (!result.ok) {
+      setImportError(result.error)
+      return
+    }
+    setImportError(null)
+    const { formValues, report } = result
+    setName(formValues.name); setType(formValues.type)
+    setBrawn(formValues.brawn); setAgility(formValues.agility)
+    setIntellect(formValues.intellect); setCunning(formValues.cunning)
+    setWillpower(formValues.willpower); setPresence(formValues.presence)
+    setWt(formValues.wt); setSt(formValues.st)
+    setDefMelee(formValues.defMelee); setDefRanged(formValues.defRanged)
+    setSkills(formValues.skills)
+    setWeapons(formValues.weapons)
+    setGear(formValues.gear)
+    setTalents(formValues.talents)
+    setAbilities(formValues.abilities)
+    setDescription(formValues.description)
+    setTmplSelected(null); setTmplSearch('')
+    setErrors({})
+    setImportReport(report)
+    const dupe = allAdversaries.find(a => a._isCustom && a.name.toLowerCase() === formValues.name.toLowerCase())
+    setImportDupeWarning(dupe ? `A custom adversary named "${formValues.name}" already exists in this campaign.` : null)
+    setImportOpen(false)
+    setImportText('')
+  }
+
   /* ── Mount guard for portal ─────────────────────────── */
   useEffect(() => { requestAnimationFrame(() => setMounted(true)) }, [])
 
@@ -260,7 +300,7 @@ export function AdversaryEditor({
     setSkills(prev => prev.map((s, j) => j === i ? { ...s, ...patch } : s))
 
   /* ── Weapon helpers ──────────────────────────────────── */
-  const addWeapon = () => setWeapons(prev => [...prev, { name: '', skillCategory: '', damage: '0', range: 'Short', qualities: '' }])
+  const addWeapon = () => setWeapons(prev => [...prev, { name: '', skillCategory: '', damage: '0', range: 'Short', qualities: '', crit: '' }])
   const removeWeapon = (i: number) => setWeapons(prev => prev.filter((_, j) => j !== i))
   const updateWeapon = (i: number, patch: Partial<WeaponEntry>) =>
     setWeapons(prev => prev.map((w, j) => j === i ? { ...w, ...patch } : w))
@@ -311,6 +351,7 @@ export function AdversaryEditor({
           damage:        isNaN(Number(w.damage)) ? w.damage : Number(w.damage),
           range:         w.range,
           qualities:     w.qualities ? w.qualities.split(',').map(q => q.trim()).filter(Boolean) : undefined,
+          ...(w.crit !== '' && !isNaN(Number(w.crit)) ? { crit: Number(w.crit) } : {}),
         }))
 
       const talentsData: AdversaryTalent[] = talents
@@ -416,10 +457,71 @@ export function AdversaryEditor({
           <div style={{ fontFamily: FC, fontSize: FS_H4, fontWeight: 700, color: HUD.gold, letterSpacing: '0.1em' }}>
             {isEdit ? 'Edit Adversary' : 'New Adversary'}
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: DIM, cursor: 'pointer', fontSize: FS_H4 }}>×</button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+            {!isEdit && (
+              <button onClick={() => { setImportOpen(o => !o); setImportError(null) }} style={btnSmall}>
+                Import from console
+              </button>
+            )}
+            <button onClick={onClose} style={{ background: 'none', border: 'none', color: DIM, cursor: 'pointer', fontSize: FS_H4 }}>×</button>
+          </div>
         </div>
 
         <div style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', maxHeight: '80vh', overflowY: 'auto' }}>
+
+          {/* Console import paste panel */}
+          {importOpen && (
+            <div style={{
+              background: RAISED, border: `1px solid ${BORDER_HI}`, borderRadius: RADIUS.md,
+              padding: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem',
+            }}>
+              <div style={fieldLabel}>Paste console export (lor-console/adversary@1)</div>
+              <textarea
+                placeholder="Paste the JSON copied from &quot;Copy for Archive&quot;…"
+                value={importText}
+                onChange={e => setImportText(e.target.value)}
+                rows={6}
+                style={{ ...inputStyle, resize: 'vertical', fontFamily: FR, lineHeight: 1.5 }}
+              />
+              {importError && (
+                <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: RED }}>{importError}</div>
+              )}
+              <div style={{ display: 'flex', gap: '0.625rem', justifyContent: 'flex-end' }}>
+                <button onClick={() => { setImportOpen(false); setImportText(''); setImportError(null) }} style={btnSmall}>Cancel</button>
+                <button onClick={handleImport} style={btnPrimary}>Import</button>
+              </div>
+            </div>
+          )}
+
+          {/* Import review banner */}
+          {importReport && (
+            <div style={{
+              background: 'rgba(200,170,80,0.08)', border: `1px solid ${GOLD_DIM}`,
+              borderRadius: RADIUS.md, padding: '0.625rem 0.875rem',
+              display: 'flex', flexDirection: 'column', gap: '0.375rem',
+            }}>
+              <div style={{ fontFamily: FR, fontSize: FS_SM, color: HUD.gold, fontWeight: 700 }}>
+                Imported from {importReport.docTitle ?? 'console export'}. Review flagged fields, then save.
+              </div>
+              {importDupeWarning && (
+                <div style={{ fontFamily: FR, fontSize: FS_CAPTION, color: 'var(--state-threat)' }}>
+                  ⚠ {importDupeWarning}
+                </div>
+              )}
+              {importReport.flags.length > 0 && (
+                <ul style={{ margin: 0, paddingLeft: '1.125rem', display: 'flex', flexDirection: 'column', gap: '0.1875rem' }}>
+                  {importReport.flags.map((f, i) => (
+                    <li key={i} style={{ fontFamily: FR, fontSize: FS_CAPTION, color: DIM }}>
+                      <RichText text={f.message} />
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <button onClick={() => { setImportReport(null); setImportDupeWarning(null) }} style={{ ...btnSmall, alignSelf: 'flex-end' }}>
+                Dismiss
+              </button>
+            </div>
+          )}
 
           {/* OggDude copy warning */}
           {isOggDudeCopy && (
@@ -705,6 +807,20 @@ export function AdversaryEditor({
                           type="text" placeholder="8"
                           value={w.damage}
                           onChange={e => updateWeapon(i, { damage: e.target.value })}
+                          style={inputStyle}
+                        />
+                      </div>
+                      <div style={{ width: '3.5rem' }}>
+                        <div style={fieldLabel}>Crit</div>
+                        <input
+                          type="text" placeholder="—" inputMode="numeric"
+                          value={w.crit}
+                          onChange={e => {
+                            const v = e.target.value.trim()
+                            if (v === '' || (/^\d+$/.test(v) && Number(v) >= 1 && Number(v) <= 6)) {
+                              updateWeapon(i, { crit: v })
+                            }
+                          }}
                           style={inputStyle}
                         />
                       </div>

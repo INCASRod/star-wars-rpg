@@ -79,6 +79,12 @@ OggDude rows still exist in the database for the domains reSpec now owns (talent
 
 ---
 
+## Console Adversary Import (`src/lib/importConsoleAdversary.ts`)
+
+- Parses "Copy for Archive" blocks (`lor-console/adversary@1`) from the external Legacy of Rebellion console into `AdversaryEditor.tsx`'s form state. GM-only paste panel, never auto-saves.
+- **Soak reconciliation**: console soak is always final. If `block.soak > brawn + Σgear.soak` (e.g. droid/natural toughness with no armor line), the parser adds a synthetic `"Natural soak (console)"` gear entry carrying the difference, flagged in the review banner. If the console soak is *lower* than brawn+armor, armor is never stripped to force a match — only flagged. Defence (`defense_melee`/`defense_ranged`) needed no such logic: those columns are direct writes in `AdversaryEditor`, never gear-derived.
+- **Weapon Critical rating (fixed 2026-09-23).** `WeaponEntry` (`AdversaryEditor.tsx`) now has a `crit: string` field, a Crit input beside Damage, matching `AdversaryWeapon.crit?: number`. Real consumers: `EncounterDossier.tsx`, `CheckConsole.tsx` (both via `resolveWeapon`/`AdversaryWeapon`). `GmReferenceDrawer.tsx`'s `w.crit` is NOT a consumer of custom-adversary data — it reads a static catalogue table, unrelated. Importer writes `crit` directly, no longer folds it into qualities. A one-off backfill script (anon-key REST, scratch-only, dry-run then apply) migrated the 9 pre-existing custom-adversary weapons that had "Critical N"/"Crit N" typed into qualities text — cleanly removed the quality entry, set `crit`. Re-run confirmed idempotent (0 changes).
+
 ## Cybernetics (migration 135 — The Archive, Phase 2)
 
 - **`ref_cybernetic_effects`** is the structured-effect table for cybernetic implants: one row per discrete effect, 47 rows covering all 42 `'Cybernetics'`-tagged `ref_gear` rows. Columns `gear_key`, `effect_type` (`characteristic`/`skill`/`talent`/`soak`/`defense`/`wound_threshold`/`strain_threshold`/`text`), `target`, `value`, `counts_toward_cap`, `stack_group`, `needs_review`, `notes`. Reads are anon+authenticated; writes are GM-only. Full schema in `docs/architecture.md`.
