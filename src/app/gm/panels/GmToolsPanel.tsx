@@ -23,6 +23,7 @@ import type { GmConflictRow } from '@/hooks/useGmCampaignConflicts'
 import { ForcePresenceGmPanel } from '@/components/gm/ForcePresenceGmPanel'
 import type { MoralitySystem } from '@/lib/moralitySystem'
 import { NumberField } from '@/components/ui/NumberField'
+import { toast } from 'sonner'
 
 const DIM  = 'var(--hud-text-dim)'
 
@@ -160,6 +161,8 @@ export function GmToolsPanel({
   const [vehicleMode, setVehicleMode] = useState<'new' | 'edit'>('new')
   const [vehicleEditTarget, setVehicleEditTarget] = useState<Vehicle | null>(null)
   const [vehicleEditSearch, setVehicleEditSearch] = useState('')
+  const [adversaryDeleteTarget, setAdversaryDeleteTarget] = useState<CustomAdversary | null>(null)
+  const [adversaryDeleteBusy, setAdversaryDeleteBusy] = useState(false)
   // Re-fetch the template/edit lists as soon as an editor saves, so a newly
   // created adversary/vehicle is immediately selectable under "Edit Existing".
   const refLibraryTick = useRefLibraryRefresh()
@@ -193,6 +196,37 @@ export function GmToolsPanel({
   )
 
   const hasForceSensitive = forceSensitiveCharIds.length > 0
+
+  const confirmDeleteAdversary = async () => {
+    if (!adversaryDeleteTarget?._dbId) return
+    setAdversaryDeleteBusy(true)
+    try {
+      const { data, error } = await supabase
+        .from('ref_adversaries')
+        .delete()
+        .eq('id', adversaryDeleteTarget._dbId)
+        .eq('campaign_id', campaignId)
+        .eq('is_custom', true)
+        .select('id')
+
+      if (error || !data || data.length === 0) {
+        toast.error(`Could not delete "${adversaryDeleteTarget.name}".`)
+        return
+      }
+
+      setAllAdversaries(prev => prev.filter(a => a._dbId !== adversaryDeleteTarget._dbId))
+      if (adversaryEditTarget?._dbId === adversaryDeleteTarget._dbId) {
+        setAdversaryEditTarget(null)
+      }
+      toast.success(`"${adversaryDeleteTarget.name}" deleted.`)
+      setAdversaryDeleteTarget(null)
+    } catch (err) {
+      console.error('Delete adversary failed', err)
+      toast.error(`Could not delete "${adversaryDeleteTarget.name}".`)
+    } finally {
+      setAdversaryDeleteBusy(false)
+    }
+  }
 
   const pending = (forceNotifications as { status: string }[]).filter(n => n.status === 'pending')
 
@@ -465,12 +499,40 @@ export function GmToolsPanel({
                   {customAdversaries
                     .filter(a => a.name.toLowerCase().includes(adversaryEditSearch.toLowerCase()))
                     .map(a => (
-                      <button key={a._dbId} onClick={() => setAdversaryEditTarget(a)} className="hov-gold"
-                        style={{ ...btnSmall, textAlign: 'left' }}>
-                        {a.name} <span style={{ color: DIM }}>({a.type})</span>
-                      </button>
+                      <div key={a._dbId} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <button onClick={() => setAdversaryEditTarget(a)} className="hov-gold"
+                          style={{ ...btnSmall, textAlign: 'left', flex: 1 }}>
+                          {a.name} <span style={{ color: DIM }}>({a.type})</span>
+                        </button>
+                        <button
+                          onClick={e => { e.stopPropagation(); setAdversaryDeleteTarget(a) }}
+                          className="hov-red-bg"
+                          aria-label={`Delete ${a.name}`}
+                          style={{ ...btnSmall, color: DIM, padding: '0.25rem 0.5rem', flexShrink: 0 }}
+                        >
+                          ✕
+                        </button>
+                      </div>
                     ))}
                 </div>
+
+                {adversaryDeleteTarget && (
+                  <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'var(--hud-surface-mid)', border: '1px solid var(--hud-border-hi)', borderRadius: RADIUS.md }}>
+                    <div style={{ fontFamily: FONT, fontSize: 'var(--text-sm)', color: 'var(--hud-text)', marginBottom: '0.5rem' }}>
+                      Delete <span style={{ fontWeight: 700 }}>{adversaryDeleteTarget.name}</span> permanently? This can&rsquo;t be undone.
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button onClick={() => setAdversaryDeleteTarget(null)} disabled={adversaryDeleteBusy} style={btnSmall}>Cancel</button>
+                      <button
+                        onClick={confirmDeleteAdversary}
+                        disabled={adversaryDeleteBusy}
+                        style={{ ...btnPrimary, color: 'var(--state-failure)', opacity: adversaryDeleteBusy ? 0.6 : 1 }}
+                      >
+                        {adversaryDeleteBusy ? 'Deleting…' : 'Delete'}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
