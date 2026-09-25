@@ -54,3 +54,6 @@ next-env.d.ts
 
 # Superpowers brainstorm sessions
 .superpowers/
+
+# local campaign data exports (e.g. Console .lor.json) — must never be committed
+/private/
