@@ -893,3 +893,48 @@ export interface QmBuyRow {
   categories?: string[]
 }
 
+// ── Console data layer (migration 137) ────────────────────────────────────────
+// Storage for the external campaign Console's JSON export. No route,
+// component, or hook consumes these yet (data-layer-only prompt) —
+// scripts/console-import.ts is the sole writer for now.
+export type ConsoleRecordKind =
+  | 'arcs' | 'threads' | 'sessions' | 'codex' | 'planets' | 'links' | 'tags'
+
+// A single typed block inside a Console document's `blocks` array. `t` is the
+// block type discriminant; `x` (text), `r` (rows of cells, e.g. a table) and
+// `rows` (label/value pairs) are the shapes seen in the source export so far
+// — kept optional and open-ended (`[k: string]: unknown`) since the Console's
+// block vocabulary is externally defined and not exhaustively known here.
+export interface ConsoleBlock {
+  id: string
+  t: string
+  x?: string
+  r?: string[][]
+  rows?: { l: string; v: string }[]
+  [k: string]: unknown
+}
+
+export interface ConsoleCampaignState {
+  campaign_id: string
+  data: Record<string, unknown>
+  updated_at: string
+}
+
+export interface ConsoleDocument {
+  campaign_id: string
+  id: string
+  title: string | null
+  folder: string | null
+  blocks: ConsoleBlock[]
+  data: Record<string, unknown>
+  updated_at: string
+}
+
+export interface ConsoleRecord {
+  campaign_id: string
+  kind: ConsoleRecordKind
+  id: string
+  data: Record<string, unknown>
+  updated_at: string
+}
+
