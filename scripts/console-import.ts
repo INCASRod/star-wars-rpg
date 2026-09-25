@@ -50,6 +50,37 @@ function fail(msg: string): never {
   process.exit(1)
 }
 
+// ── Deep, key-order-insensitive comparison ───────────────────────────────────
+// Object keys are sorted recursively at every level before comparing. Array
+// ORDER is never touched — block order and block-id sequence are meaningful
+// data, only object key order is an artefact of JSON serialisation.
+export function canonicalize(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(canonicalize)
+  if (value && typeof value === 'object') {
+    const obj = value as Record<string, unknown>
+    return Object.keys(obj)
+      .sort()
+      .reduce((acc: Record<string, unknown>, k) => {
+        acc[k] = canonicalize(obj[k])
+        return acc
+      }, {})
+  }
+  return value
+}
+
+export function deepEqualCanonical(a: unknown, b: unknown): boolean {
+  return JSON.stringify(canonicalize(a)) === JSON.stringify(canonicalize(b))
+}
+
+export function diffCanonical(a: unknown, b: unknown): string {
+  return [
+    'expected (canonical):',
+    JSON.stringify(canonicalize(a), null, 2),
+    'actual (canonical):',
+    JSON.stringify(canonicalize(b), null, 2),
+  ].join('\n')
+}
+
 if (!FILE) fail('--file <path to .lor.json> is required')
 if (!CAMPAIGN_ID) fail('--campaign <uuid> is required')
 if (!UUID_RE.test(CAMPAIGN_ID!)) fail(`--campaign value "${CAMPAIGN_ID}" is not a uuid`)
@@ -244,14 +275,18 @@ async function verify() {
     .eq('campaign_id', CAMPAIGN_ID)
     .maybeSingle()
   const campaignPass = !campaignReadErr && !!campaignRow &&
-    JSON.stringify(campaignRow.data) === JSON.stringify(parsed.campaign)
+    deepEqualCanonical(campaignRow.data, parsed.campaign)
   results.push({
     collection: 'campaign',
     expected: 1,
     actual: campaignRow ? 1 : 0,
     pass: campaignPass,
-    note: campaignReadErr ? campaignReadErr.message : campaignPass ? 'content matches' : 'content mismatch',
+    note: campaignReadErr ? campaignReadErr.message : campaignPass ? 'content matches' : 'content mismatch (see diff below)',
   })
+  if (!campaignPass && campaignRow) {
+    console.error('\ncampaign content mismatch — canonical diff:')
+    console.error(diffCanonical(parsed.campaign, campaignRow.data))
+  }
   if (!campaignPass) anyFail = true
 
   const { data: docRows, error: docReadErr } = await supabase
