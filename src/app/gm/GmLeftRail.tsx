@@ -30,10 +30,11 @@ interface Props {
   screenActive:  boolean
   deckOpen:      boolean
   onDeckToggle:  () => void
+  campaignId?:   string | null
 }
 
 export const GmLeftRail = memo(function GmLeftRail({
-  activePanel, onPanelToggle, onDiceClick, onScreenClick, diceActive, screenActive, deckOpen, onDeckToggle,
+  activePanel, onPanelToggle, onDiceClick, onScreenClick, diceActive, screenActive, deckOpen, onDeckToggle, campaignId,
 }: Props) {
   return (
     <div style={{
@@ -77,6 +78,39 @@ export const GmLeftRail = memo(function GmLeftRail({
       <RailBtn icon="⬡" label="Dice"    active={diceActive}              accent={HUD.gold}              onClick={onDiceClick} />
       <RailBtn icon="▦" label="Screen"  active={screenActive}            accent={HUD.gold}              onClick={onScreenClick} />
       <RailBtn icon="⊟" label="Library" active={activePanel === 'library'} accent="var(--die-force)"   onClick={() => onPanelToggle('library')} />
+
+      <div style={{ width: '1.75rem', height: 1, background: 'var(--hud-border-hi)', margin: '0.375rem 0' }} />
+
+      {/* Leaves the page — opens the standalone Console tab. Intentionally the
+          only rail item that is an outbound link rather than an in-place panel. */}
+      <a
+        href={`/gm/console${campaignId ? `?campaign=${campaignId}` : ''}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Console (opens in new tab)"
+        className="console-rail-link"
+        style={{
+          width:          '2.5rem',
+          height:         '2.75rem',
+          display:        'flex',
+          flexDirection:  'column',
+          alignItems:     'center',
+          justifyContent: 'center',
+          gap:            '0.1875rem',
+          textDecoration: 'none',
+        }}
+      >
+        <span style={{ fontSize: FS.h4, lineHeight: 1, color: 'var(--hud-text-dim)' }}>↗</span>
+        <span style={{
+          fontFamily:    FONT_BODY,
+          fontSize:      'var(--text-overline)',
+          fontWeight:    700,
+          letterSpacing: '0.05em',
+          textTransform: 'uppercase',
+          color:         'var(--hud-text-dim)',
+          lineHeight:    1,
+        }}>Console</span>
+      </a>
     </div>
   )
 })

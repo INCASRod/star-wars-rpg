@@ -18,7 +18,9 @@
  * will, rather than a privileged DATABASE_URL/service-role connection.
  *
  * The `body` field on documents is a derived plain-text duplicate of `blocks`
- * and is deliberately stripped before storage (never written to `data`).
+ * and is stripped before storage ONLY when `blocks` is a non-empty array. For a
+ * document with no blocks, `body` is the sole copy of the content (the console
+ * converts it to blocks on first open), so it is preserved in `data`.
  */
 
 import * as fs from 'fs'
@@ -175,13 +177,17 @@ interface DocPlan {
 
 const docPlans: DocPlan[] = parsed.docs.map((d) => {
   const { id, title, folder, blocks, body, ...rest } = d
+  // Conditional strip — see file header. Do NOT "tidy" into an unconditional
+  // strip: for blockless docs (e.g. d-story) `body` is the only copy.
+  const hasBlocks = Array.isArray(blocks) && blocks.length > 0
+  const data = hasBlocks || body === undefined ? rest : { ...rest, body }
   return {
     id,
     title: title ?? null,
     folder: folder ?? null,
     blocks: Array.isArray(blocks) ? blocks : [],
-    data: rest, // body intentionally excluded
-    droppedBody: body !== undefined,
+    data,
+    droppedBody: hasBlocks && body !== undefined,
   }
 })
 

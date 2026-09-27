@@ -414,6 +414,7 @@ export function GmShell() {
           screenActive={referenceOpen}
           deckOpen={deckOpen}
           onDeckToggle={() => setDeckOpen(o => !o)}
+          campaignId={campaignId}
         />
 
         {/* Map area (always rendered as background) */}
