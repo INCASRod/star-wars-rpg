@@ -30,6 +30,7 @@ var Node = require('@tiptap/core').Node
 var Extension = require('@tiptap/core').Extension
 var canSplit = require('@tiptap/pm/transform').canSplit
 var cardNodeView = require('./card-nodeview.js')
+var searchPlugin = require('./search.js').searchPlugin
 
 /* Every block-level node blocksToDoc() emits carries exactly these four. */
 var BLOCK_ATTRS = {
@@ -199,6 +200,11 @@ var SplitResetBlockId = Extension.create({
   },
 })
 
+var ConsoleSearch = Extension.create({
+  name: 'consoleSearch',
+  addProseMirrorPlugins: function () { return [searchPlugin()] },
+})
+
 module.exports = {
   extensions: [
     Document,
@@ -221,5 +227,6 @@ module.exports = {
     Card,
     UnknownBlock,
     SplitResetBlockId,
+    ConsoleSearch,
   ],
 }

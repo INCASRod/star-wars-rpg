@@ -24,7 +24,12 @@ export function ConsoleHost({ campaignId }: Props) {
     const bridge = new ConsoleBridge(supabase, campaignId, iframe.contentWindow as Window)
     // Attach BEFORE setting src so the child's "hello" is never missed.
     bridge.attach()
-    iframe.src = '/console/index.html'
+    // Forward the whole query string (?campaign=, ?tiptap=1, ?doc=<id>, ...) so
+    // the vendored file's own location.search carries it directly. Before this,
+    // the iframe's src had no query string at all, so the ?tiptap=1 flag check
+    // had to read window.parent.location.search instead -- workable for one
+    // flag, but not a pattern worth repeating for ?doc=/?block= too.
+    iframe.src = '/console/index.html' + window.location.search
 
     return () => bridge.teardown()
   }, [campaignId])

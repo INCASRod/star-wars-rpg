@@ -400,6 +400,13 @@ var EDITION="archive";
 var VIEWS=[["situation","Situation"],["arcs","Arcs"],["threads","Threads"],["sessions","Sessions"],["planets","Planets"],["codex","Codex"],["documents","Documents"]];
 var GC={thriller:"--g-thriller",tragedy:"--g-tragedy",spirit:"--g-spirit",heist:"--g-heist",war:"--g-war",comedy:"--g-comedy"};
 var DB=null,SAMPLE=null,DL=null,RO=false,cur="situation",openDoc=null;
+/* which document (if any) currently has a live TipTap mount, and its container
+   -- lets rDocs() tell "still showing the same document, leave it alone" apart
+   from "a real reason to rebuild" (switching documents, or an unrelated
+   collection's snapshot forcing an unconditional render() -- see subscribe()'s
+   `if(!(k==="docs"&&openDoc))render();` guard, which only ever exempted docs). */
+var TTMOUNT=null;
+var DEEPLINK_DONE=false;
 /* Nothing may be written until the collection it belongs to has been loaded from the
    database at least once. The console boots with placeholder documents in memory and
    replaces them when the first snapshot lands; an edit made in that window would write
@@ -759,7 +766,24 @@ function buildNav(){
   b.onclick=function(){go(v[0]);};n.appendChild(b);
  });
 }
-function go(v){cur=v;if(v!=="documents")openDoc=null;
+/* D1/D2/D4: ?doc=<id> opens a document straight away, now that the wrapper
+   forwards the whole query string into the iframe's own location.search
+   (see ConsoleHost.tsx) -- no more window.parent reach-around. Runs once,
+   the first time the docs collection snapshot lands (not on every later
+   snapshot, or navigating away and the docs collection refreshing again
+   would silently reopen the link). An id that doesn't exist in S.docs still
+   navigates to the document list rather than leaving the GM on whatever
+   view loaded first, or a blank screen. */
+function tryDeepLinkDoc(){
+ if(DEEPLINK_DONE)return;
+ var m=/(?:^|[?&])doc=([^&]+)/.exec(location.search);
+ if(!m)return;
+ DEEPLINK_DONE=true;
+ var id=decodeURIComponent(m[1]);
+ openDoc=S.docs.some(function(x){return x.id===id;})?id:null;
+ go("documents");
+}
+function go(v){cur=v;if(v!=="documents"){openDoc=null;if(TTMOUNT){ttUnmount();var vd=document.getElementById("v-documents");if(vd)vd.innerHTML="";}}
  VIEWS.forEach(function(x){document.getElementById("v-"+x[0]).classList.toggle("on",x[0]===v);});
  buildNav();render();window.scrollTo({top:0});}
 
@@ -1626,28 +1650,57 @@ function blockHTML(b){
   default:return '<div class="b-p" data-e="1">'+x+'</div>';
  }
 }
+function ttUnmount(){
+ if(window.unmountConsoleEditor)window.unmountConsoleEditor();
+ TTMOUNT=null;
+}
 function rDocs(){
+ var tiptapOn=/(?:^|[?&])tiptap=1(?:&|$)/.test(location.search);
+ if(openDoc&&tiptapOn&&TTMOUNT&&TTMOUNT.docId===openDoc&&document.getElementById("tiptap-mount")){
+  /* Already showing this exact document -- an unrelated collection's snapshot
+     (arcs/threads/sessions/codex/planets/links/tags all call render()
+     unconditionally; only docs was ever exempted) must not tear down a live
+     edit session over this. Leave the DOM, the Editor instance and the
+     scroll position exactly as they are. */
+  return;
+ }
+ if(TTMOUNT&&TTMOUNT.docId!==openDoc)ttUnmount(); /* switching documents (or closing one): destroy the old instance first */
  var v=document.getElementById("v-documents");v.innerHTML="";
  if(openDoc){
-  if(/(?:^|[?&])tiptap=1(?:&|$)/.test((function(){try{return window.parent.location.search;}catch(e){return location.search;}})())){
+  if(tiptapOn){
    var tm=el('<div id="tiptap-mount"></div>');v.appendChild(tm);
    var odid=openDoc;
    (function wait(){
     if(!hydrated("docs")){tm.textContent="Waiting for documents to finish loading…";setTimeout(wait,150);return;}
     var ttd=S.docs.filter(function(x){return x.id===odid;})[0];
-    if(!ttd||!window.mountConsoleEditor)return;
+    if(!ttd||!window.mountConsoleEditor){
+     /* D4: an unknown/deleted doc id fails gracefully to the document list. */
+     openDoc=null;render();
+     return;
+    }
     /* stable per-open-document commit function, reused across every edit so
        schedule()'s own fn===fn identity check debounces correctly instead of
        queuing a fresh 700ms timer on every keystroke (see PEND in schedule()). */
     var ttcommit=function(){saveDoc(ttd);};
-    window.mountConsoleEditor(tm,ttd,{onChange:function(blocks){
-     ttd.blocks=window.dedupeBlockIds?window.dedupeBlockIds(blocks):blocks;
-     schedule(ttcommit);
-    },onArchiveExport:function(block,docRow,onCopied){
-     var txt=JSON.stringify(archiveJSON(block,docRow),null,2);
-     var fallback=function(){archiveShowJSON(txt);};
-     try{if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(onCopied,fallback);else fallback();}catch(err){fallback();}
-    }});
+    window.mountConsoleEditor(tm,ttd,{
+     onChange:function(blocks){
+      ttd.blocks=window.dedupeBlockIds?window.dedupeBlockIds(blocks):blocks;
+      schedule(ttcommit);
+     },
+     onArchiveExport:function(block,docRow,onCopied){
+      var txt=JSON.stringify(archiveJSON(block,docRow),null,2);
+      var fallback=function(){archiveShowJSON(txt);};
+      try{if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(onCopied,fallback);else fallback();}catch(err){fallback();}
+     },
+     onBack:function(){
+      openDoc=null;ttUnmount();render();
+      try{
+       var u=new URL(location.href);u.searchParams.delete("doc");
+       history.replaceState(null,"",u.pathname+u.search);
+      }catch(e){}
+     },
+    });
+    TTMOUNT={docId:odid,el:tm};
    })();
    return;
   }
@@ -2406,6 +2459,7 @@ function subscribe(){
     if(k==="docs"&&o.blocks&&o.blocks.length)o.body=docBody(o);
     return o;});
    mark(k);
+   if(k==="docs")tryDeepLinkDoc();
    buildNav();
    if(!(k==="docs"&&openDoc))render();
   },function(){});

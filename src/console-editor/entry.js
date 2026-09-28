@@ -6,5 +6,7 @@
    code or a reference to any save path -- see mount.js and
    scripts/console-block-ids.js. The index.html patch is what calls saveDoc,
    through the console's own existing schedule()/flushAll() debounce. */
-window.mountConsoleEditor = require('./mount.js').mountConsoleEditor
+var mount = require('./mount.js')
+window.mountConsoleEditor = mount.mountConsoleEditor
+window.unmountConsoleEditor = mount.unmountConsoleEditor
 window.dedupeBlockIds = require('../../scripts/console-block-ids.js').dedupeBlockIds
