@@ -29,6 +29,7 @@ var TableCell = require('@tiptap/extension-table-cell').TableCell
 var Node = require('@tiptap/core').Node
 var Extension = require('@tiptap/core').Extension
 var canSplit = require('@tiptap/pm/transform').canSplit
+var cardNodeView = require('./card-nodeview.js')
 
 /* Every block-level node blocksToDoc() emits carries exactly these four. */
 var BLOCK_ATTRS = {
@@ -113,8 +114,14 @@ var NpcCard = Node.create({
   },
   parseHTML: function () { return [{ tag: 'div[data-block="npcCard"]' }] },
   renderHTML: function (props) {
+    /* fallback for contexts with no live NodeView (clipboard/export paths
+       that call generateHTML outside a mounted editor); the mounted editor
+       itself always uses createNpcNodeView below. */
     var name = (props.node && props.node.attrs && props.node.attrs.name) || 'Untitled NPC'
     return ['div', { 'data-block': 'npcCard', class: 'ph-card' }, 'NPC — ' + name]
+  },
+  addNodeView: function () {
+    return function (props) { return cardNodeView.createNpcNodeView(props) }
   },
 })
 var Card = Node.create({
@@ -129,10 +136,14 @@ var Card = Node.create({
   },
   parseHTML: function () { return [{ tag: 'div[data-block="card"]' }] },
   renderHTML: function (props) {
+    /* fallback only -- see note on npcCard above. */
     var a = (props.node && props.node.attrs) || {}
     var name = (a.data && a.data.name) || 'Untitled'
     return ['div', { 'data-block': 'card', class: 'ph-card' },
       (a.kind || '').toUpperCase() + ' — ' + name]
+  },
+  addNodeView: function () {
+    return function (props) { return cardNodeView.createCardNodeView(props) }
   },
 })
 

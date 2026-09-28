@@ -1643,6 +1643,10 @@ function rDocs(){
     window.mountConsoleEditor(tm,ttd,{onChange:function(blocks){
      ttd.blocks=window.dedupeBlockIds?window.dedupeBlockIds(blocks):blocks;
      schedule(ttcommit);
+    },onArchiveExport:function(block,docRow,onCopied){
+     var txt=JSON.stringify(archiveJSON(block,docRow),null,2);
+     var fallback=function(){archiveShowJSON(txt);};
+     try{if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(onCopied,fallback);else fallback();}catch(err){fallback();}
     }});
    })();
    return;
