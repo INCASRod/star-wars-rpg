@@ -1,20 +1,31 @@
-/* mountConsoleEditor -- step 3: bare, READ-ONLY TipTap mount.
+/* mountConsoleEditor -- step 4: editing enabled for stock node types.
    ------------------------------------------------------------------
-   Deliberately incapable of writing: editable:false is passed to the
-   TipTap Editor constructor, and nothing in this file (or schema.js) imports,
-   calls, or references saveDoc, save(), stashDraft, or any other write path
-   from the vendored console. There is no code path from here back into the
-   database -- not commented out, not behind a flag. That is not a
-   configuration choice to be flipped later in this file; the write path
-   doesn't exist here at all yet.
+   The bundle stays pure: this file contains no persistence code and no
+   reference to any save path (saveDoc, save(), stashDraft, schedule,
+   flushAll -- none of them are reachable from here, since they are private
+   to the vendored file's own closure). All this does is call opts.onChange
+   with the blocks array from docToBlocks on every edit; the index.html patch
+   is what supplies that callback and does the actual saving, through the
+   console's own existing saveDoc / schedule() debounce. Grep this whole
+   directory for "saveDoc" or "schedule(" -- there is nothing to find.
+
+   editable is true so paragraph/heading/blockquote/bulletList/listItem/
+   table/hardBreak can be typed in; the placeholder nodes (callout, read,
+   div, pb, npc, card, unknownBlock) stay non-editable simply because they
+   are schema atoms with no editable content -- there is no cursor position
+   inside an atom's content to type into, editable:true or not. Their attrs
+   (including a card's whole `data` payload) are never touched by anything
+   in this file: onChange only ever reads docToBlocks' output, which passes
+   every attr straight through rebuild() in console-blocks-doc.js.
 
    blocksToDoc/docToBlocks come from scripts/console-blocks-doc.js, unmodified
-   -- that file is the tested contract and this mount only ever calls
-   blocksToDoc (never docToBlocks; there is nothing to write back yet). */
+   -- that file is the tested contract. */
 
 var Editor = require('@tiptap/core').Editor
 var schema = require('./schema.js')
-var blocksToDoc = require('../../scripts/console-blocks-doc.js').blocksToDoc
+var blocksDoc = require('../../scripts/console-blocks-doc.js')
+var blocksToDoc = blocksDoc.blocksToDoc
+var docToBlocks = blocksDoc.docToBlocks
 
 var STYLE_ID = 'console-editor-placeholder-style'
 var CSS =
@@ -45,8 +56,11 @@ var current = null /* the live Editor instance, if any -- destroyed before a re-
 
 /* container: the element to mount into. docRow: the console's own {id, title,
    folder, blocks, ...} object for the open document (S.docs entry), or a
-   falsy value if it isn't available yet. */
-function mountConsoleEditor(container, docRow) {
+   falsy value if it isn't available yet. opts.onChange(blocks), if given, is
+   called with the plain blocks array (docToBlocks' output, nothing else)
+   after every edit -- never on the initial mount itself. */
+function mountConsoleEditor(container, docRow, opts) {
+  opts = opts || {}
   ensureStyle()
   if (current) { try { current.destroy() } catch (e) {} current = null }
   container.innerHTML = ''
@@ -69,7 +83,17 @@ function mountConsoleEditor(container, docRow) {
     element: container,
     extensions: schema.extensions,
     content: doc,
-    editable: false,
+    editable: true,
+    onUpdate: function (props) {
+      if (typeof opts.onChange !== 'function') return
+      var blocks
+      try {
+        blocks = docToBlocks(props.editor.getJSON())
+      } catch (e) {
+        return /* malformed doc mid-edit is not this file's problem to solve; nothing is saved */
+      }
+      opts.onChange(blocks)
+    },
   })
   return current
 }

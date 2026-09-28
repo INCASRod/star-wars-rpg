@@ -1634,7 +1634,16 @@ function rDocs(){
    var odid=openDoc;
    (function wait(){
     if(!hydrated("docs")){tm.textContent="Waiting for documents to finish loading…";setTimeout(wait,150);return;}
-    if(window.mountConsoleEditor)window.mountConsoleEditor(tm,S.docs.filter(function(x){return x.id===odid;})[0]);
+    var ttd=S.docs.filter(function(x){return x.id===odid;})[0];
+    if(!ttd||!window.mountConsoleEditor)return;
+    /* stable per-open-document commit function, reused across every edit so
+       schedule()'s own fn===fn identity check debounces correctly instead of
+       queuing a fresh 700ms timer on every keystroke (see PEND in schedule()). */
+    var ttcommit=function(){saveDoc(ttd);};
+    window.mountConsoleEditor(tm,ttd,{onChange:function(blocks){
+     ttd.blocks=window.dedupeBlockIds?window.dedupeBlockIds(blocks):blocks;
+     schedule(ttcommit);
+    }});
    })();
    return;
   }

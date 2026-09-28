@@ -27,6 +27,8 @@ var TableRow = require('@tiptap/extension-table-row').TableRow
 var TableHeader = require('@tiptap/extension-table-header').TableHeader
 var TableCell = require('@tiptap/extension-table-cell').TableCell
 var Node = require('@tiptap/core').Node
+var Extension = require('@tiptap/core').Extension
+var canSplit = require('@tiptap/pm/transform').canSplit
 
 /* Every block-level node blocksToDoc() emits carries exactly these four. */
 var BLOCK_ATTRS = {
@@ -149,6 +151,43 @@ var UnknownBlock = Node.create({
   },
 })
 
+/* ---- step 4: the duplicate-block-id hazard ------------------------------
+   Pressing Enter mid-paragraph (or mid-heading) splits that node; ProseMirror's
+   default split copies the original node's attrs onto both halves, so the new
+   half inherits the same blockId as the block it was split from. Only
+   top-level nodes ($from.depth === 1) carry blockId at all -- paragraphs
+   inside a blockquote, list item or table cell carry no such attr (see
+   blocksToDoc: only the OUTER blockquote/bulletList/table node gets attrs()),
+   so this only needs to guard the direct doc children, paragraph and heading.
+
+   This is (a) of the two-part fix scripts/console-block-ids.js's dedupeBlockIds
+   is (b): resetting attrs here means a cleanly split node becomes a proper new
+   block on its own (docToBlocks mints it a real id), so the safety net rarely
+   has to fire; but paste can still duplicate an id, which is exactly why the
+   safety net exists regardless of this. */
+var SplitResetBlockId = Extension.create({
+  name: 'splitResetBlockId',
+  addKeyboardShortcuts: function () {
+    return {
+      Enter: function (props) {
+        var editor = props.editor
+        var state = editor.state
+        var sel = state.selection
+        if (!sel.empty) return false
+        var $from = sel.$from
+        if ($from.depth !== 1) return false /* not a direct child of doc -- leave to default handling */
+        var parent = $from.parent
+        if (!parent || !parent.attrs || !('blockId' in parent.attrs)) return false
+        if (!canSplit(state.doc, $from.pos)) return false
+        var resetAttrs = { blockId: null, cont: false, keys: null, extra: null }
+        var tr = state.tr.split($from.pos, 1, [{ type: parent.type, attrs: resetAttrs }])
+        editor.view.dispatch(tr.scrollIntoView())
+        return true
+      },
+    }
+  },
+})
+
 module.exports = {
   extensions: [
     Document,
@@ -170,5 +209,6 @@ module.exports = {
     NpcCard,
     Card,
     UnknownBlock,
+    SplitResetBlockId,
   ],
 }
