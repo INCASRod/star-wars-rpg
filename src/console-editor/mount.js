@@ -37,8 +37,23 @@ var CSS =
   '.tt-toolbar button{font-family:Consolas,monospace;font-size:11px;letter-spacing:.05em;text-transform:uppercase;background:none;border:1px solid #C9A84C;color:#8B1A1A;padding:5px 10px;border-radius:3px;cursor:pointer}' +
   '.tt-toolbar button:hover{background:rgba(201,168,76,.14)}' +
   '.tt-toolbar button.on{background:#8B1A1A;color:#FBF8F1}' +
+  /* D1 root cause (found re-measuring after pagination removal): .tt-outline
+     was position:sticky inside a flex row (align-items:flex-start). Sticky
+     does NOT remove an element from normal flow -- it still contributes its
+     full, UNCLIPPED intrinsic content height to the flex row's own layout
+     sizing, even though max-height+overflow-y:auto correctly clip what's
+     drawn. Measured directly: toggling the outline open grew
+     document.documentElement.scrollHeight by 10,936px on the (570-block)
+     clone, which is exactly what produced the earlier ~1% "return to prior
+     scroll position" drift -- the page briefly became far taller than
+     before, so a scrollY value captured pre-toggle no longer means the same
+     place post-toggle. Fixed by taking the outline fully out of flow with
+     position:fixed (viewport-relative, zero contribution to document height,
+     by construction) instead of asking sticky to behave like something it
+     never claimed to be. */
   '.tt-body{display:flex;align-items:flex-start}' +
-  '.tt-outline{width:280px;flex:0 0 280px;border-right:1px solid #DDD2BC;background:#FEFCF7;padding:10px;position:sticky;top:45px;max-height:calc(100vh - 45px);overflow-y:auto}' +
+  '.tt-outline{width:280px;flex:0 0 280px;border-right:1px solid #DDD2BC;background:#FEFCF7;padding:10px;position:fixed;top:45px;left:0;max-height:calc(100vh - 45px);overflow-y:auto;z-index:4}' +
+  '.tt-editor-pane.tt-outline-open{margin-left:280px}' +
   '.tt-outline-filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #EFE8D8}' +
   '.tt-outline-filters label{font-family:Consolas,monospace;font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:#8B7F6B;display:flex;align-items:center;gap:3px;cursor:pointer}' +
   '.tt-outline-entry{display:block;width:100%;text-align:left;background:none;border:none;padding:5px 6px;font-size:12px;color:#22252B;cursor:pointer;border-radius:3px;line-height:1.35}' +
@@ -124,6 +139,36 @@ function saveFilters(f) {
 var current = null /* the live Editor instance, if any -- destroyed before a re-mount */
 var outlineDebounceTimer = null
 
+/* D1 fix, continued. Opening/closing the outline genuinely changes the
+   editor pane's width (280px sidebar), which reflows and re-wraps text,
+   which changes total document height -- confirmed directly: toggling the
+   outline on the 570-block clone grew .ProseMirror's own offsetHeight by
+   ~10,662px, nothing to do with the outline element's own layout. A raw
+   pixel scrollY is therefore NEVER a stable "return to where I was" across
+   an outline open/close, by construction -- no CSS fix changes that, since
+   the content itself is genuinely a different height afterward. The stable
+   unit is a BLOCK, not a pixel offset: topBlockId() finds whichever
+   top-level block is nearest the current viewport top, remembered before a
+   jump so a "Back" control can return to that same block via
+   scrollToBlockId() (identity-based, immune to any reflow) rather than to a
+   coordinate that may no longer mean the same place. */
+function topBlockId(editor) {
+  /* nearest to viewport CENTER, matching scrollToBlockId's own
+     scrollIntoView({block:'center'}) -- using "nearest to top" here while
+     restoring via "center" would remember the wrong block relative to what
+     actually ends up centered again. */
+  var mid = window.innerHeight / 2
+  var best = null, bestDist = Infinity
+  editor.state.doc.forEach(function (node, offset) {
+    if (!node.attrs || !node.attrs.blockId) return
+    var dom = editor.view.nodeDOM(offset)
+    if (!dom || !dom.getBoundingClientRect) return
+    var dist = Math.abs(dom.getBoundingClientRect().top - mid)
+    if (dist < bestDist) { bestDist = dist; best = node.attrs.blockId }
+  })
+  return best
+}
+
 function scrollToBlockId(editorPane, editor, blockId) {
   var target = null
   editor.state.doc.forEach(function (node, offset) {
@@ -138,7 +183,7 @@ function scrollToBlockId(editorPane, editor, blockId) {
   return true
 }
 
-function renderOutline(outlineListEl, editor, filters, editorPane) {
+function renderOutline(outlineListEl, editor, filters, editorPane, onBeforeJump) {
   var entries = outlineMod.buildOutline(editor.state.doc)
   outlineListEl.innerHTML = ''
   entries.forEach(function (e) {
@@ -154,7 +199,9 @@ function renderOutline(outlineListEl, editor, filters, editorPane) {
     btn.appendChild(kindSpan)
     btn.appendChild(labelDiv)
     btn.addEventListener('click', function () {
-      if (e.blockId) scrollToBlockId(editorPane, editor, e.blockId)
+      if (!e.blockId) return
+      if (typeof onBeforeJump === 'function') onBeforeJump()
+      scrollToBlockId(editorPane, editor, e.blockId)
     })
     outlineListEl.appendChild(btn)
   })
@@ -204,9 +251,27 @@ function mountConsoleEditor(container, docRow, opts) {
   var backBtn = document.createElement('button'); backBtn.type = 'button'; backBtn.textContent = '← All documents'
   var outlineBtn = document.createElement('button'); outlineBtn.type = 'button'; outlineBtn.textContent = 'Outline'
   var searchBtn = document.createElement('button'); searchBtn.type = 'button'; searchBtn.textContent = 'Search'
-  toolbar.appendChild(backBtn); toolbar.appendChild(outlineBtn); toolbar.appendChild(searchBtn)
+  var exportBtn = document.createElement('button'); exportBtn.type = 'button'; exportBtn.textContent = 'Export to Word'
+  var backToPositionBtn = document.createElement('button'); backToPositionBtn.type = 'button'; backToPositionBtn.textContent = '↑ Back to where you were'; backToPositionBtn.hidden = true
+  toolbar.appendChild(backBtn); toolbar.appendChild(outlineBtn); toolbar.appendChild(searchBtn); toolbar.appendChild(exportBtn); toolbar.appendChild(backToPositionBtn)
   if (typeof opts.onBack === 'function') backBtn.addEventListener('click', opts.onBack)
   else backBtn.style.display = 'none'
+  /* exportWord(d, btn) is the console's own, unmodified -- reads the block
+     array directly, never reimplemented here (same one-copy-called-through-
+     a-hook pattern as onArchiveExport). This is now the ONLY UI path to it:
+     the old editor's #dword button (docEditor, deleted) was previously the
+     sole caller. */
+  if (typeof opts.onExportWord === 'function') exportBtn.addEventListener('click', function () { opts.onExportWord(docRow, exportBtn) })
+  else exportBtn.style.display = 'none'
+  var rememberedBlockId = null
+  function rememberPosition() {
+    rememberedBlockId = topBlockId(current)
+    if (rememberedBlockId) backToPositionBtn.hidden = false
+  }
+  backToPositionBtn.addEventListener('click', function () {
+    if (rememberedBlockId) scrollToBlockId(editorPane, current, rememberedBlockId)
+    backToPositionBtn.hidden = true
+  })
 
   var searchBar = document.createElement('div'); searchBar.className = 'tt-search-bar'; searchBar.hidden = true
   var searchInput = document.createElement('input'); searchInput.type = 'text'; searchInput.placeholder = 'Search this document…'
@@ -237,7 +302,7 @@ function mountConsoleEditor(container, docRow, opts) {
     cb.addEventListener('change', function () {
       filters[key] = cb.checked
       saveFilters(filters)
-      renderOutline(outlineList, current, filters, editorPane)
+      renderOutline(outlineList, current, filters, editorPane, rememberPosition)
     })
     lab.appendChild(cb)
     lab.appendChild(document.createTextNode(label))
@@ -247,7 +312,8 @@ function mountConsoleEditor(container, docRow, opts) {
   outlineBtn.addEventListener('click', function () {
     outlinePane.hidden = !outlinePane.hidden
     outlineBtn.classList.toggle('on', !outlinePane.hidden)
-    if (!outlinePane.hidden) renderOutline(outlineList, current, filters, editorPane)
+    editorPane.classList.toggle('tt-outline-open', !outlinePane.hidden)
+    if (!outlinePane.hidden) renderOutline(outlineList, current, filters, editorPane, rememberPosition)
   })
 
   var searchController = null
@@ -287,13 +353,13 @@ function mountConsoleEditor(container, docRow, opts) {
       }
       /* B4: outline reflects edits, but rebuilds on the same 700ms cadence as
          the save debounce rather than on every keystroke. */
-      if (!outlinePane.hidden) scheduleOutlineRebuild(function () { renderOutline(outlineList, current, filters, editorPane) })
+      if (!outlinePane.hidden) scheduleOutlineRebuild(function () { renderOutline(outlineList, current, filters, editorPane, rememberPosition) })
     },
   })
 
   searchController = searchMod.createSearchController(current)
 
-  if (!outlinePane.hidden) renderOutline(outlineList, current, filters, editorPane)
+  if (!outlinePane.hidden) renderOutline(outlineList, current, filters, editorPane, rememberPosition)
 
   /* D3: ?block=<id> lands on a specific block, falling naturally out of the
      same scrollToBlockId the outline itself uses. Own frame's location.search
