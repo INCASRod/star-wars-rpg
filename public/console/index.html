@@ -395,7 +395,7 @@ button.tg.has:hover{background:color-mix(in srgb,var(--c) 26%,transparent);box-s
 <script>
 (function(){
 "use strict";
-var BUILD="2026-09-26.1";try{window.LORBUILD=BUILD;}catch(e){}
+var BUILD="2026-09-27.1";try{window.LORBUILD=BUILD;}catch(e){}
 var EDITION="archive";
 var VIEWS=[["situation","Situation"],["arcs","Arcs"],["threads","Threads"],["sessions","Sessions"],["planets","Planets"],["codex","Codex"],["documents","Documents"]];
 var GC={thriller:"--g-thriller",tragedy:"--g-tragedy",spirit:"--g-spirit",heist:"--g-heist",war:"--g-war",comedy:"--g-comedy"};
@@ -1577,6 +1577,22 @@ function archiveShowJSON(txt){
  o.querySelector("button").onclick=function(){o.remove();};
  o.onclick=function(e){if(e.target===o)o.remove();};
  document.body.appendChild(o);ta.focus();ta.select();}
+/* innerText returns the RENDERED text, so a field styled text-transform:uppercase
+   (.b-h1, and every card's .np-l label and .st-h .cl class field) came back uppercased
+   and that uppercase was written to the database -- silently rewriting the GM's own
+   capitalisation on every edit. textContent would fix the case and break everything
+   else: it drops the line breaks innerText gives us, which multi-paragraph body text,
+   GM notes, read-aloud blocks and card values all depend on. So read innerText with the
+   transform switched off for the length of the read, then put the style back exactly as
+   it was found. */
+function edText(n){
+ var had=n.style.textTransform;
+ n.style.textTransform="none";
+ var v=n.innerText;
+ if(had)n.style.textTransform=had;
+ else n.style.removeProperty("text-transform");
+ return v;
+}
 function blockHTML(b){
  var x=nl(b.x||"");
  switch(b.t){
@@ -1869,7 +1885,7 @@ function docEditor(v){
       td.contentEditable="true";td.setAttribute("spellcheck","false");
       var tcommit=function(){
        var ri=td.parentNode.rowIndex,ci2=td.cellIndex;
-       var v=td.innerText.replace(/\n{3,}/g,"\n\n").trim();
+       var v=edText(td).replace(/\n{3,}/g,"\n\n").trim();
        if(b.r&&b.r[ri]&&b.r[ri][ci2]!==v){b.r[ri][ci2]=v;saveDoc(d);}
       };
       td.addEventListener("blur",tcommit);
@@ -1885,14 +1901,14 @@ function docEditor(v){
       Array.prototype.forEach.call(w.querySelectorAll("[data-stat-f]"),function(fld){
        var key=fld.dataset.statF;
        fld.contentEditable="true";fld.setAttribute("spellcheck","false");
-       var scommit=function(){var v=fld.innerText.trim();if(b[key]!==v){b[key]=v;saveDoc(d);}};
+       var scommit=function(){var v=edText(fld).trim();if(b[key]!==v){b[key]=v;saveDoc(d);}};
        fld.addEventListener("blur",scommit);
        fld.addEventListener("input",function(){schedule(scommit);});
       });
       Array.prototype.forEach.call(w.querySelectorAll("[data-stat-c]"),function(fld){
        var key=fld.dataset.statC,store=fld.dataset.statS||"ch";
        fld.contentEditable="true";fld.setAttribute("spellcheck","false");
-       var ccommit=function(){var v=fld.innerText.trim();b[store]=b[store]||{};if(b[store][key]!==v){b[store][key]=v;saveDoc(d);}};
+       var ccommit=function(){var v=edText(fld).trim();b[store]=b[store]||{};if(b[store][key]!==v){b[store][key]=v;saveDoc(d);}};
        fld.addEventListener("blur",ccommit);
        fld.addEventListener("input",function(){schedule(ccommit);});
       });
@@ -1900,7 +1916,7 @@ function docEditor(v){
      var nmEl=w.querySelector('[data-npc-name="1"]');
      if(nmEl){
       nmEl.contentEditable="true";nmEl.setAttribute("spellcheck","false");
-      var ncommit=function(){var v=nmEl.innerText.trim();if(v!==b.name){b.name=v;saveDoc(d);}};
+      var ncommit=function(){var v=edText(nmEl).trim();if(v!==b.name){b.name=v;saveDoc(d);}};
       nmEl.addEventListener("blur",ncommit);
       nmEl.addEventListener("input",function(){schedule(ncommit);});
      }
@@ -1911,7 +1927,7 @@ function docEditor(v){
        var fld=pair[0],key=pair[1];if(!fld)return;
        fld.contentEditable="true";fld.setAttribute("spellcheck","false");
        var rcommit=function(){
-        var v=key==="l"?fld.innerText.trim():fld.innerText.replace(/\n{3,}/g,"\n\n").trim();
+        var v=key==="l"?edText(fld).trim():edText(fld).replace(/\n{3,}/g,"\n\n").trim();
         if(b.rows&&b.rows[ri]&&b.rows[ri][key]!==v){b.rows[ri][key]=v;saveDoc(d);}
        };
        fld.addEventListener("blur",rcommit);
@@ -1929,7 +1945,7 @@ function docEditor(v){
    if(t&&DMODE==="edit"&&!RO){
     t.contentEditable="true";t.setAttribute("spellcheck","false");
     var commit=function(){
-     var val=b.t==="list"?Array.prototype.map.call(t.children,function(c){return c.textContent.trim();}).filter(Boolean).join("\n"):t.innerText.replace(/\n{3,}/g,"\n\n").trim();
+     var val=b.t==="list"?Array.prototype.map.call(t.children,function(c){return c.textContent.trim();}).filter(Boolean).join("\n"):edText(t).replace(/\n{3,}/g,"\n\n").trim();
      if(val===b.x)return;b.x=val;saveDoc(d);buildOutline();
     };
     t.addEventListener("blur",commit);
