@@ -1,4 +1,4 @@
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Spectral:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap"><script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Spectral:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap"><script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script><script src="editor.bundle.js"></script>
 <title>Legacy of Rebellion Console</title>
 <style>
 :root{
@@ -1628,7 +1628,18 @@ function blockHTML(b){
 }
 function rDocs(){
  var v=document.getElementById("v-documents");v.innerHTML="";
- if(openDoc){return docEditor(v);}
+ if(openDoc){
+  if(/(?:^|[?&])tiptap=1(?:&|$)/.test((function(){try{return window.parent.location.search;}catch(e){return location.search;}})())){
+   var tm=el('<div id="tiptap-mount"></div>');v.appendChild(tm);
+   var odid=openDoc;
+   (function wait(){
+    if(!hydrated("docs")){tm.textContent="Waiting for documents to finish loading…";setTimeout(wait,150);return;}
+    if(window.mountConsoleEditor)window.mountConsoleEditor(tm,S.docs.filter(function(x){return x.id===odid;})[0]);
+   })();
+   return;
+  }
+  return docEditor(v);
+ }
  v.appendChild(el('<div class="vhead"><div><div class="eyebrow">The campaign in writing</div><h2>Documents</h2><p>The documents live here now. Edit them in place, and export to Word only when you need a file to print or hand over.</p></div></div>'));
  v.appendChild(el('<div class="note">Word files cannot be stored inside the console, so these hold the text itself. That is the point: one copy, edited here, with Drive kept as the archive of finished modules rather than the place the campaign lives.</div>'));
  var folders={};
