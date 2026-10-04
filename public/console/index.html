@@ -331,7 +331,7 @@ var BUILD="2026-09-28.1";try{window.LORBUILD=BUILD;}catch(e){}
 var EDITION="archive";
 var VIEWS=[["situation","Situation"],["arcs","Arcs"],["threads","Threads"],["sessions","Sessions"],["planets","Planets"],["codex","Codex"],["documents","Documents"]];
 var GC={thriller:"--g-thriller",tragedy:"--g-tragedy",spirit:"--g-spirit",heist:"--g-heist",war:"--g-war",comedy:"--g-comedy"};
-var DB=null,SAMPLE=null,DL=null,RO=false,cur="situation",openDoc=null;
+var DB=null,SAMPLE=null,DL=null,RO=false,cur="situation",openDoc=null,INGEST_HOLD=false,INGEST_EL=null,RENDER_PENDING=false;
 /* which document (if any) currently has a live TipTap mount, and its container
    -- lets rDocs() tell "still showing the same document, leave it alone" apart
    from "a real reason to rebuild" (switching documents, or an unrelated
@@ -1106,6 +1106,9 @@ function ingest(text,st,props,btn){
  if(text.length<80){st.textContent="Paste the recap first.";return;}
  if(!SAMPLE){st.textContent="Claude is not available in this view.";return;}
  btn.disabled=true;st.textContent="reading…";setSync("reading recap","busy");props.innerHTML="";
+ /* hold re-renders while a recap is being read or its proposals are on screen: a snapshot
+    would rebuild this view and wipe the box. Released on apply, discard, error or nothing. */
+ INGEST_EL=props;INGEST_HOLD=true;
  var ctx={
   threads:S.threads.filter(function(t){return t.status!=="resolved";}).map(function(t){return{id:t.id,title:t.title};}),
   arcs:S.arcs.map(function(a){return{id:a.id,name:a.name,beats:(a.beats||[]).map(function(b,i){return{i:i,t:b.t,done:!!b.d};})};}),
@@ -1156,7 +1159,7 @@ function ingest(text,st,props,btn){
    if(S.codex.some(function(x){return x.name.toLowerCase()===String(c.name).toLowerCase();}))return;
    P.push({k:"New codex · "+(c.kind||"npc"),t:c.name,n:c.note||"",f:function(){
     var o={id:uid(),name:c.name,kind:c.kind||"npc",note:c.note||"",stat:{}};S.codex.push(o);save("codex",o.id,o);}});});
-  if(!P.length){st.textContent="Nothing to change.";return;}
+  if(!P.length){st.textContent="Nothing to change.";releaseIngest();return;}
   st.textContent=P.length+" proposed";
   props.innerHTML="";
   P.forEach(function(p,i){
@@ -1166,11 +1169,11 @@ function ingest(text,st,props,btn){
   apply.children[0].onclick=function(){
    Array.prototype.forEach.call(props.querySelectorAll(".prop"),function(d){
     if(d.querySelector("input").checked)P[+d.dataset.i].f();});
-   props.innerHTML="";st.textContent="applied";setTimeout(render,350);};
-  apply.children[1].onclick=function(){props.innerHTML="";st.textContent="";};
+   props.innerHTML="";st.textContent="applied";releaseIngest();setTimeout(render,350);};
+  apply.children[1].onclick=function(){props.innerHTML="";st.textContent="";releaseIngest();};
   props.appendChild(apply);
  }).catch(function(e){
-  btn.disabled=false;setSync("live","live");
+  btn.disabled=false;setSync("live","live");releaseIngest();
   st.textContent=(e&&e.code==="not_granted")?"Claude access not granted here.":"Could not read that — try again.";
  });
 }
@@ -2001,6 +2004,17 @@ document.getElementById("build").textContent="build "+BUILD+" \u00b7 "+EDITION;
  };
  PARENT.postMessage({lor:1,evt:"hello"},ORIGIN);
 })();
+/* Snapshot-driven render. Skipped while a recap ingest is open (the hold is tied to the
+   specific #props element, so navigating away and back drops it) and for snapshots whose
+   content is unchanged (initial hydration echoes, echoes of our own saves). */
+function ingestHeld(){return INGEST_HOLD&&!!INGEST_EL&&INGEST_EL.isConnected&&cur==="sessions";}
+function releaseIngest(){INGEST_HOLD=false;INGEST_EL=null;if(RENDER_PENDING){RENDER_PENDING=false;render();}}
+function softRender(){if(ingestHeld()){RENDER_PENDING=true;return;}render();}
+function stable(x){
+ if(Array.isArray(x))return "["+x.map(stable).join(",")+"]";
+ if(x&&typeof x==="object")return "{"+Object.keys(x).sort().map(function(k){return JSON.stringify(k)+":"+stable(x[k]);}).join(",")+"}";
+ return JSON.stringify(x);
+}
 function subscribe(){
  var need=["campaign","arcs","threads","sessions","codex","planets","links","docs","tags"];
  function mark(k){
@@ -2010,19 +2024,22 @@ function subscribe(){
   if(!RO)setSync("live","live");
  }
  DB.doc("campaign/state").onSnapshot(function(s){
-  if(s.exists){S.campaign=dclone(s.data());if(cur==="situation")render();}
+  if(s.exists){var nc=dclone(s.data());if(stable(nc)!==stable(S.campaign)){S.campaign=nc;if(cur==="situation")softRender();}}
   mark("campaign");
  },function(){});
  ["arcs","threads","sessions","codex","planets","links","docs","tags"].forEach(function(k){
   DB.collection(k).onSnapshot(function(q){
-   S[k]=q.docs.map(function(d){
+   var nx=q.docs.map(function(d){
     var o=dclone(d.data())||{};o.id=d.id;
     if(k==="docs"&&o.blocks&&o.blocks.length)o.body=docBody(o);
     return o;});
+   var same=hydrated(k)&&stable(nx)===stable(S[k]);
+   S[k]=nx;
    mark(k);
    if(k==="docs")tryDeepLinkDoc();
+   if(same)return;
    buildNav();
-   if(!(k==="docs"&&openDoc))render();
+   if(!(k==="docs"&&openDoc))softRender();
   },function(){});
  });
 }
