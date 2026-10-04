@@ -635,7 +635,7 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
       {/* GM mode overlays */}
       {isGmMode && (
         <>
-          <button onClick={() => router.push(`/gm?campaign=${campaignId}`)} style={{ position: 'fixed', top: 8, left: 8, zIndex: 200, background: HUD.gold, border: 'none', padding: '6px 14px', fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700, letterSpacing: '0.1em', color: HUD.bg, cursor: 'pointer' }}>← GM</button>
+          <button onClick={() => router.push(effectiveCampaignId ? `/gm?campaign=${effectiveCampaignId}` : '/gm')} style={{ position: 'fixed', top: 8, left: 8, zIndex: 200, background: HUD.gold, border: 'none', padding: '6px 14px', fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700, letterSpacing: '0.1em', color: HUD.bg, cursor: 'pointer' }}>← GM</button>
           <div style={{ position: 'fixed', top: 8, right: 8, zIndex: 200, border: `2px solid ${HUD.gold}`, padding: '3px 12px', fontFamily: FONT_BODY, fontSize: FS.caption, fontWeight: 700, letterSpacing: '0.15em', color: HUD.gold }}>GM MODE</div>
         </>
       )}
