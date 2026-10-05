@@ -21,7 +21,9 @@
    3. Everything read out of the bridge is frozen, so nothing here mutates its input.
 */
 
-var CARD_KINDS = { stat: 1, vehicle: 1, planet: 1 };
+/* single source of truth for block types: src/console-editor/block-types.js */
+var CARD_KINDS = {};
+require("../src/console-editor/block-types.js").CARD_KINDS.forEach(function (k) { CARD_KINDS[k] = 1; });
 
 /* Key order is part of the contract, so rebuild objects in the order recorded rather
    than in the order this code happens to assign. */

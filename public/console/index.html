@@ -327,7 +327,7 @@ button.tg.has:hover{background:color-mix(in srgb,var(--c) 26%,transparent);box-s
 <script>
 (function(){
 "use strict";
-var BUILD="2026-09-28.1";try{window.LORBUILD=BUILD;}catch(e){}
+var BUILD="2026-10-05.2";try{window.LORBUILD=BUILD;}catch(e){}
 var EDITION="archive";
 var VIEWS=[["situation","Situation"],["arcs","Arcs"],["threads","Threads"],["sessions","Sessions"],["planets","Planets"],["codex","Codex"],["documents","Documents"]];
 var GC={thriller:"--g-thriller",tragedy:"--g-tragedy",spirit:"--g-spirit",heist:"--g-heist",war:"--g-war",comedy:"--g-comedy"};
@@ -483,9 +483,9 @@ function runWrites(items,note,label){
  return step();
 }
 /* An exported document carries a plain-text "body" alongside its blocks, purely so the
-   export is readable on its own. The database has a 256 KiB per-document ceiling, and for
-   a large document that duplicated body is enough on its own to push the write over it, so
-   the upload loses that one document while every other record goes in. saveDoc has stripped
+   export is readable on its own. That duplicated body doubles a large document's stored size
+   (the old 256 KiB ceiling was the artifact platform's and is obsolete; saveDoc's DOCLIMIT
+   is the guard now), so it is dead weight that can push the write over that limit. saveDoc has stripped
    the derived body since the Ghost fix; the importer never did. It does now. */
 function impBody(coll,d){
  if(coll!=="docs"||!d||!d.blocks||!d.blocks.length)return d;
@@ -550,23 +550,526 @@ function importState(file,note){
  r.onerror=function(){xnote("Could not read that file.");};
  r.readAsText(file);
 }
+/* ---------------- patch upload (spec: docs/console-patch-format.md) ----------------
+   Nothing is touched unless the file names it, nothing is written until the GM has seen
+   a diff and confirmed, and documents change by block operations, never by a whole
+   blocks array. The core (applyDocOps, docPlans, validatePatch, planPatch) is pure: no
+   DOM, no DB, only (parsed file, S, env) in and a list of problems / a plan out, so it
+   is tested directly by scripts/console-patch.test.js. Everything below it that writes
+   goes through save(), saveDoc() and del() -- never DB.doc().set() -- so the conditional
+   body strip, the size guard and the failure banner all still apply. */
+var LASTERR=null;
+function byId(arr,id){for(var i=0;i<(arr||[]).length;i++)if(arr[i].id===id)return arr[i];return null;}
+function withId(b,id){var o={id:id},k;for(k in b)if(k!=="id")o[k]=b[k];return o;}
+function blockText(b){
+ if(!b)return "";
+ var s=b.x!=null?b.x:b.name!=null?b.name:(b.r&&b.r[0]?b.r[0].join(" | "):"");
+ s=String(s).replace(/\s+/g," ").trim();
+ return s.length>60?s.slice(0,60)+"…":s;
+}
+/* Stored size, estimated exactly as saveDoc's guard does (body dropped when blocks exist). */
+function docStoredSize(d,overhead){
+ var p=Object.assign({},d);delete p.__fresh;
+ if(p.blocks&&p.blocks.length)delete p.body;
+ var s=JSON.stringify(p),n;
+ try{n=new TextEncoder().encode(s).length;}catch(e){n=s.length;}
+ return Math.round(n*(overhead||DOCOVERHEAD));
+}
+/* Applies a doc entry's ops, in order, to a COPY of the block array. Earlier ops are
+   visible to later ones. Returns {blocks,lines} or {error}; never mutates `base`. */
+function applyDocOps(base,ops,newId,types){
+ var w=base.slice(),lines=[],i;
+ function ix(id){for(var k=0;k<w.length;k++)if(w[k].id===id)return k;return -1;}
+ function fail(i,m){return {error:"op "+(i+1)+(ops[i]&&ops[i].op?" ("+ops[i].op+")":"")+": "+m};}
+ function mk(b,what){
+  if(!b||typeof b!=="object"||Array.isArray(b))return {error:what+" must be a block object"};
+  if(types.indexOf(b.t)<0)return {error:what+" has block type "+JSON.stringify(b.t)+", which is not one of: "+types.join(", ")};
+  if(b.id!==undefined&&(typeof b.id!=="string"||!b.id))return {error:what+" has an id that is not a non-empty string"};
+  return {block:dclone(b)};
+ }
+ function place(i,list){
+  if(!Array.isArray(list)||!list.length)return fail(i,"\"blocks\" must be a non-empty array");
+  var out=[],seen={},j,r,c,id;
+  for(j=0;j<list.length;j++){
+   r=mk(list[j],"block "+(j+1));if(r.error)return fail(i,r.error);
+   c=r.block;
+   if(c.id!==undefined){
+    if(ix(c.id)>=0||seen[c.id])return fail(i,"inserted block id "+JSON.stringify(c.id)+" already exists in this document");
+   }else{do{id=newId();}while(ix(id)>=0||seen[id]);c=withId(c,id);}
+   seen[c.id]=1;out.push(c);
+  }
+  return {blocks:out};
+ }
+ function need(i,o){
+  if(typeof o.block!=="string"||!o.block)return fail(i,"needs a \"block\" id");
+  var k=ix(o.block);
+  if(k<0)return fail(i,"block "+JSON.stringify(o.block)+" is not in the document at this point");
+  return {k:k};
+ }
+ for(i=0;i<ops.length;i++){
+  var o=ops[i],k,r,t,old;
+  if(!o||typeof o!=="object"||Array.isArray(o))return fail(i,"is not an object");
+  switch(o.op){
+   case "replace":
+    t=need(i,o);if(t.error)return t;
+    if(o.with===undefined)return fail(i,"needs \"with\"");
+    if(o.with&&o.with.id!==undefined&&o.with.id!==o.block)return fail(i,"\"with.id\" ("+JSON.stringify(o.with.id)+") must equal \"block\" ("+JSON.stringify(o.block)+") or be left out");
+    r=mk(o.with,"\"with\"");if(r.error)return fail(i,r.error);
+    r.block=withId(r.block,o.block);
+    w[t.k]=r.block;
+    lines.push({op:"replace",block:o.block,t:r.block.t,text:blockText(r.block)});
+    break;
+   case "insertAfter":case "insertBefore":
+    t=need(i,o);if(t.error)return t;
+    r=place(i,o.blocks);if(r.error)return r;
+    Array.prototype.splice.apply(w,[o.op==="insertAfter"?t.k+1:t.k,0].concat(r.blocks));
+    lines.push({op:o.op,block:o.block,t:r.blocks[0].t,text:blockText(r.blocks[0]),n:r.blocks.length});
+    break;
+   case "append":
+    r=place(i,o.blocks);if(r.error)return r;
+    Array.prototype.push.apply(w,r.blocks);
+    lines.push({op:"append",block:"",t:r.blocks[0].t,text:blockText(r.blocks[0]),n:r.blocks.length});
+    break;
+   case "delete":
+    t=need(i,o);if(t.error)return t;
+    old=w.splice(t.k,1)[0];
+    lines.push({op:"delete",block:o.block,t:old.t,text:blockText(old)});
+    break;
+   case "move":
+    t=need(i,o);if(t.error)return t;
+    if((o.after===undefined)===(o.before===undefined))return fail(i,"needs exactly one of \"after\" / \"before\"");
+    var tid=o.after!==undefined?o.after:o.before;
+    if(typeof tid!=="string"||!tid)return fail(i,"\"after\"/\"before\" must be a block id");
+    if(tid===o.block)return fail(i,"cannot move a block relative to itself");
+    if(ix(tid)<0)return fail(i,"block "+JSON.stringify(tid)+" is not in the document at this point");
+    old=w.splice(t.k,1)[0];
+    k=ix(tid);
+    w.splice(o.after!==undefined?k+1:k,0,old);
+    lines.push({op:"move",block:o.block,t:old.t,text:blockText(old),to:(o.after!==undefined?"after ":"before ")+tid});
+    break;
+   default:
+    return fail(i,"unknown op "+JSON.stringify(o.op)+" (expected replace, insertAfter, insertBefore, append, delete or move)");
+  }
+ }
+ return {blocks:w,lines:lines};
+}
+/* Per-document results for p.docs. Used by validatePatch (stub ids) and by apply (real ids). */
+function docPlans(p,S,env,newId){
+ var plans=[],P=[],seen={};
+ if(p.docs===undefined)return {plans:plans,problems:P};
+ if(!Array.isArray(p.docs)){P.push("\"docs\" must be an array of document entries");return {plans:plans,problems:P};}
+ p.docs.forEach(function(e,n){
+  var at="docs entry "+(n+1),id,d,has,base,seeded=false,r,after,sz;
+  if(!e||typeof e!=="object"||Array.isArray(e)){P.push(at+" is not an object");return;}
+  id=e.id;
+  if(typeof id!=="string"||!id){P.push(at+" has no id");return;}
+  at="document "+JSON.stringify(id);
+  if("blocks" in e){P.push(at+" carries a \"blocks\" key. A patch never replaces a whole blocks array: use \"ops\" (replace, insertAfter, insertBefore, append, delete, move) so only the named blocks can change.");return;}
+  if(seen[id]){P.push(at+" appears twice in \"docs\"; put all of its ops in one entry");return;}
+  seen[id]=1;
+  d=byId(S.docs,id);
+  if(!d){P.push(at+" does not exist in this campaign. Creating a new document by patch is not supported in this version.");return;}
+  if(env.open.indexOf(id)>=0){P.push(at+" (“"+(d.title||id)+"”) is open in the editor. Close it and upload the patch again, so an autosave cannot write over the result.");return;}
+  if(!Array.isArray(e.ops)||!e.ops.length){P.push(at+" needs a non-empty \"ops\" array");return;}
+  if(e.seedFromBody!==undefined&&typeof e.seedFromBody!=="boolean"){P.push(at+": \"seedFromBody\" must be true or false");return;}
+  has=!!(d.blocks&&d.blocks.length);
+  if(has){
+   if(e.seedFromBody){P.push(at+" already has "+d.blocks.length+" blocks; \"seedFromBody\" applies only to a document that is still just body text");return;}
+   base=d.blocks;
+  }else{
+   if(e.seedFromBody!==true){P.push(at+" (“"+(d.title||id)+"”) has no blocks: its text lives entirely in its body. Block operations are refused so it is not silently restructured. To convert it deliberately, add \"seedFromBody\": true to this docs entry.");return;}
+   base=env.seed(d.body);seeded=true;
+  }
+  r=applyDocOps(base,e.ops,newId,env.types);
+  if(r.error){P.push(at+", "+r.error);return;}
+  if(!r.blocks.length){P.push(at+": the ops would leave the document with no blocks");return;}
+  after=Object.assign({},d,{blocks:r.blocks});
+  sz=docStoredSize(after,env.overhead);
+  if(sz>env.limit){P.push(at+" would be about "+Math.round(sz/1024)+" KB stored, over the "+Math.round(env.limit/1024)+" KB limit");return;}
+  plans.push({id:id,title:d.title||id,before:has?d.blocks.length:0,after:r.blocks.length,lines:r.lines,
+   seeded:seeded,seedCount:seeded?base.length:0,seedFrom:seeded?String(d.body||"").length:0,doc:after,bytes:sz});
+ });
+ return {plans:plans,problems:P};
+}
+var PATCH_TOP={lor:1,patch:1,id:1,created:1,note:1,campaign:1,upsert:1,"delete":1,docs:1};
+/* Pure. Returns a list of problems (empty = valid). env: {types,open,limit,overhead,seed}. */
+function validatePatch(p,S,env){
+ var P=[],k,i,list,seen;
+ if(!p||typeof p!=="object"||Array.isArray(p))return ["The file is not a JSON object."];
+ if(!env||!env.types)return ["The editor's block-type list did not load, so block types cannot be checked. Reload the console and try again."];
+ if(p.lor!==1)P.push("\"lor\" must be 1");
+ if(p.patch!==1)P.push("\"patch\" must be 1");
+ if(typeof p.id!=="string"||!p.id.trim())P.push("\"id\" is required and must be a non-empty string");
+ for(k in p)if(!Object.prototype.hasOwnProperty.call(PATCH_TOP,k))
+  P.push("unknown top-level key "+JSON.stringify(k)+" (allowed: lor, patch, id, created, note, campaign, upsert, delete, docs)");
+ if(p.campaign!==undefined&&(!p.campaign||typeof p.campaign!=="object"||Array.isArray(p.campaign)))
+  P.push("\"campaign\" must be the complete campaign state object");
+ var ups={};
+ if(p.upsert!==undefined){
+  if(!p.upsert||typeof p.upsert!=="object"||Array.isArray(p.upsert))P.push("\"upsert\" must be an object keyed by collection");
+  else for(k in p.upsert){
+   if(k==="docs"){P.push("\"docs\" is not allowed under \"upsert\": documents are changed only through block operations in the top-level \"docs\" list (and a new document cannot be created by patch)");continue;}
+   if(COLLS.indexOf(k)<0){P.push("unknown collection "+JSON.stringify(k)+" under \"upsert\" (allowed: arcs, threads, sessions, codex, planets, links, tags)");continue;}
+   list=p.upsert[k];
+   if(!Array.isArray(list)){P.push("upsert."+k+" must be an array of complete records");continue;}
+   seen={};ups[k]=seen;
+   for(i=0;i<list.length;i++){
+    var rec=list[i];
+    if(!rec||typeof rec!=="object"||Array.isArray(rec)){P.push("upsert."+k+"["+i+"] is not a record object");continue;}
+    if(typeof rec.id!=="string"||!rec.id){P.push("upsert."+k+"["+i+"] has no id (every record must carry one)");continue;}
+    if(seen[rec.id])P.push("upsert."+k+" names "+JSON.stringify(rec.id)+" twice");
+    seen[rec.id]=1;
+   }
+  }
+ }
+ var docEntries={};
+ if(Array.isArray(p.docs))p.docs.forEach(function(e){if(e&&typeof e.id==="string")docEntries[e.id]=1;});
+ if(p["delete"]!==undefined){
+  if(!p["delete"]||typeof p["delete"]!=="object"||Array.isArray(p["delete"]))P.push("\"delete\" must be an object keyed by collection");
+  else for(k in p["delete"]){
+   if(COLLS.indexOf(k)<0){P.push("unknown collection "+JSON.stringify(k)+" under \"delete\" (allowed: "+COLLS.join(", ")+")");continue;}
+   list=p["delete"][k];
+   if(!Array.isArray(list)){P.push("delete."+k+" must be an array");continue;}
+   for(i=0;i<list.length;i++){
+    var ent=list[i],did,cur;
+    if(k==="docs"){
+     if(!ent||typeof ent!=="object"||typeof ent.id!=="string"||typeof ent.title!=="string"){P.push("delete.docs["+i+"] must be {\"id\": ..., \"title\": <the document's exact current title>}: deleting a whole document needs its title as confirmation");continue;}
+     did=ent.id;cur=byId(S.docs,did);
+     if(!cur){P.push("delete.docs names "+JSON.stringify(did)+", which does not exist");continue;}
+     if(ent.title!==cur.title){P.push("delete.docs "+JSON.stringify(did)+": the title given ("+JSON.stringify(ent.title)+") does not match the document's current title ("+JSON.stringify(cur.title)+"), so it is not deleted");continue;}
+     if(docEntries[did])P.push("document "+JSON.stringify(did)+" is both edited in \"docs\" and deleted in \"delete.docs\"");
+     if(env.open.indexOf(did)>=0)P.push("document "+JSON.stringify(did)+" is open in the editor; close it before deleting it");
+    }else{
+     if(typeof ent!=="string"||!ent){P.push("delete."+k+"["+i+"] must be a record id string");continue;}
+     if(!byId(S[k],ent)){P.push("delete."+k+" names "+JSON.stringify(ent)+", which does not exist");continue;}
+     if(ups[k]&&ups[k][ent])P.push(k+" "+JSON.stringify(ent)+" is both upserted and deleted in the same patch");
+    }
+   }
+  }
+ }
+ var dp=docPlans(p,S,env,(function(){var n=0;return function(){return "~v"+(++n);};})());
+ return P.concat(dp.problems);
+}
+function recLabel(r){return (r&&(r.title||r.name||r.label))||(r&&r.id)||"";}
+function changedFields(a,b){
+ var out=[],seen={},k;
+ for(k in a)seen[k]=1;
+ for(k in b)seen[k]=1;
+ for(k in seen){
+  if(k==="appliedPatches")continue;
+  if(stable(a[k])!==stable(b[k])){
+   out.push(Array.isArray(a[k])&&Array.isArray(b[k])&&a[k].length!==b[k].length?k+" ("+a[k].length+" → "+b[k].length+")":k);
+  }
+ }
+ return out;
+}
+/* Pure. Assumes validatePatch returned []. */
+function planPatch(p,S,env,newId){
+ var plan={id:p.id,created:p.created||"",note:p.note||"",recs:[],campaign:null,dels:[],docs:[],
+  written:0,deleted:0,docsChanged:0,unchanged:0,applied:null};
+ var ap=(S.campaign&&S.campaign.appliedPatches)||[];
+ for(var i=0;i<ap.length;i++)if(ap[i].id===p.id)plan.applied=ap[i];
+ COLLS.forEach(function(k){
+  ((p.upsert&&p.upsert[k])||[]).forEach(function(r){
+   var cur=byId(S[k],r.id),row={coll:k,id:r.id,label:recLabel(r)};
+   if(!cur){row.status="add";plan.written++;}
+   else{
+    row.fields=changedFields(cur,r);
+    if(!row.fields.length){row.status="same";plan.unchanged++;}
+    else{row.status="change";plan.written++;}
+   }
+   plan.recs.push(row);
+  });
+ });
+ if(p.campaign){
+  var cf=changedFields(S.campaign||{},p.campaign);
+  plan.campaign={fields:cf,status:cf.length?"change":"same"};
+  if(cf.length)plan.written++;else plan.unchanged++;
+ }
+ COLLS.forEach(function(k){
+  ((p["delete"]&&p["delete"][k])||[]).forEach(function(e){
+   var id=k==="docs"?e.id:e,cur=byId(S[k],id);
+   plan.dels.push({coll:k,id:id,label:recLabel(cur)||id});plan.deleted++;
+  });
+ });
+ var dp=docPlans(p,S,env,newId);
+ plan.docs=dp.plans;plan.docsChanged=dp.plans.length;
+ return plan;
+}
+/* ---- patch upload: UI, preview, sequenced apply ---- */
+var PATCHSTATE=null;
+/* parseBlocks assigns random bid() ids, which is right for the editor and wrong here:
+   validation and apply seed independently, so random ids make the preview's ids differ
+   from what is written, and a patch cannot seed and then reference what it seeded.
+   Document order gives stable ids for both. A blockless document has no existing ids to
+   collide with, and place() still checks every inserted id against the working array. */
+function seedBlocksForPatch(body){
+ return parseBlocks(body).map(function(b,i){return withId(b,"s"+(i+1));});
+}
+function patchEnv(){
+ var t=null;try{t=window.LOR_BLOCK_TYPES||null;}catch(e){}
+ return {types:t,open:openDoc?[openDoc]:[],limit:DOCLIMIT,overhead:DOCOVERHEAD,seed:seedBlocksForPatch};
+}
+/* Which collections a patch writes to. campaign is always included: the patch record is
+   written to it last. Tolerates a malformed file (validation reports that, not this). Used
+   by the preview gate AND the apply gate so the two cannot drift. */
+function patchTouches(p){
+ var t=["campaign"];
+ if(!p||typeof p!=="object")return t;
+ COLLS.forEach(function(k){
+  var u=p.upsert&&typeof p.upsert==="object"?p.upsert[k]:null;
+  var d=p["delete"]&&typeof p["delete"]==="object"?p["delete"][k]:null;
+  if((Array.isArray(u)&&u.length)||(Array.isArray(d)&&d.length))t.push(k);
+ });
+ if(Array.isArray(p.docs)&&p.docs.length&&t.indexOf("docs")<0)t.push("docs");
+ return t;
+}
+/* A short signature of what a plan will do, so apply can tell the plan the GM approved
+   from the one the current state now produces. */
+function planSig(plan){
+ return JSON.stringify([plan.written,plan.deleted,plan.docsChanged,plan.unchanged,
+  plan.docs.map(function(d){return [d.id,d.before,d.after];}),
+  plan.recs.map(function(r){return [r.coll,r.id,r.status];})]);
+}
+var PATCHWAIT=null;
+function stampWhen(s){return String(s||"").replace("T"," ").slice(0,19)+" UTC";}
+function patchPlanEl(plan){
+ var M="font-family:var(--f-mono);font-size:10px;letter-spacing:.06em",h="",c;
+ h+='<div style="border:1px solid var(--line2);border-radius:4px;padding:14px 16px;margin-top:14px;background:var(--panel)">';
+ h+='<div style="'+M+';letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-bottom:8px">Patch preview — nothing is written until you apply</div>';
+ h+='<div style="font-size:14px;color:var(--ink)"><b>'+esc(plan.id)+'</b>'+(plan.created?' <span style="'+M+';color:var(--faint)">· '+esc(plan.created)+'</span>':'')+'</div>';
+ if(plan.note)h+='<div style="font-size:13px;color:var(--ink2);margin-top:4px;line-height:1.55">'+nl(plan.note)+'</div>';
+ if(plan.applied)h+='<div style="margin-top:10px;padding:8px 10px;border:1px solid var(--accent);border-radius:3px;font-size:12.5px;color:var(--accent)">This patch id was already applied on '+esc(stampWhen(plan.applied.when))+'. Applying it again needs an explicit override.</div>';
+ h+='<div style="font-size:15px;color:var(--ink);margin:14px 0 4px"><b>'+plan.written+' record'+(plan.written===1?'':'s')+' written, '+plan.deleted+' deleted, '+plan.docsChanged+' document'+(plan.docsChanged===1?'':'s')+' changed</b>'
+  +(plan.unchanged?' <span style="'+M+';color:var(--faint)">('+plan.unchanged+' identical, skipped)</span>':'')+'</div>';
+ if(plan.campaign){
+  h+='<div style="'+M+';margin-top:12px;color:var(--faint)">CAMPAIGN STATE</div><div style="font-size:12.5px;color:var(--ink2)">'
+   +(plan.campaign.status==="same"?'identical, skipped':'changed: '+esc(plan.campaign.fields.join(", ")))+'</div>';
+ }
+ var byColl={};
+ plan.recs.forEach(function(r){(byColl[r.coll]=byColl[r.coll]||[]).push(r);});
+ COLLS.forEach(function(k){
+  var rs=byColl[k];if(!rs)return;
+  h+='<div style="'+M+';margin-top:12px;color:var(--faint);text-transform:uppercase">'+esc(k)+'</div>';
+  rs.forEach(function(r){
+   var tag=r.status==="add"?'<b style="color:#6E9B7A">ADD</b>':r.status==="change"?'<b style="color:#C9A84C">CHANGE</b>':'<span style="color:var(--faint)">same</span>';
+   h+='<div style="font-size:12.5px;color:var(--ink2);line-height:1.6">'+tag+' <span style="'+M+'">'+esc(r.id)+'</span> '+esc(r.label&&r.label!==r.id?"— "+r.label:"")
+    +(r.status==="change"?' <span style="color:var(--faint)">· '+esc(r.fields.join(", "))+'</span>':'')+'</div>';
+  });
+ });
+ if(plan.dels.length){
+  h+='<div style="margin-top:14px;padding:10px 12px;border:1px solid var(--accent);border-radius:3px;background:rgba(160,40,40,.10)">'
+   +'<div style="'+M+';letter-spacing:.14em;color:var(--accent)">⚠ DELETES '+plan.dels.length+' — applied last</div>';
+  plan.dels.forEach(function(d){h+='<div style="font-size:12.5px;color:var(--ink)"><b>'+esc(d.coll)+'</b> <span style="'+M+'">'+esc(d.id)+'</span> — '+esc(d.label)+'</div>';});
+  h+='</div>';
+ }
+ plan.docs.forEach(function(d){
+  h+='<div style="margin-top:14px"><div style="'+M+';color:var(--faint);text-transform:uppercase">Document</div>'
+   +'<div style="font-size:13.5px;color:var(--ink)"><b>'+esc(d.title)+'</b> <span style="'+M+';color:var(--faint)">'+esc(d.id)+'</span></div>';
+  if(d.seeded)h+='<div style="margin:6px 0;padding:8px 10px;border:1px solid var(--accent);border-radius:3px;font-size:12.5px;color:var(--accent);line-height:1.55">'
+   +'⚠ Converts this document from body text ('+d.seedFrom+' characters) to '+d.seedCount+' blocks using the heuristic importer, THEN applies the ops. Review the result in the editor afterwards.</div>';
+  d.lines.forEach(function(l){
+   h+='<div style="font-size:12.5px;color:var(--ink2);line-height:1.6"><span style="'+M+';color:#C9A84C">'+esc(l.op)+'</span> '
+    +(l.block?'<span style="'+M+'">'+esc(l.block)+'</span> ':'')+'<span style="'+M+';color:var(--faint)">['+esc(l.t)+(l.n>1?' ×'+l.n:'')+']</span> '
+    +(l.to?'<span style="color:var(--faint)">'+esc(l.to)+'</span> ':'')+esc(l.text)+'</div>';
+  });
+  h+='<div style="'+M+';color:var(--faint);margin-top:3px">blocks: '+d.before+' → '+d.after+' · about '+Math.round(d.bytes/1024)+' KB stored</div></div>';
+ });
+ c=el(h+'</div>');
+ return c;
+}
+function patchProblemsEl(problems){
+ var h='<div style="border:1px solid var(--accent);border-radius:4px;padding:14px 16px;margin-top:14px;background:rgba(160,40,40,.08)">'
+  +'<div style="font-family:var(--f-mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:8px">Patch refused — nothing was written</div>'
+  +'<div style="font-size:13.5px;color:var(--ink);line-height:1.6"><b>'+esc(problems[0])+'</b></div>';
+ if(problems.length>1){
+  h+='<div style="font-size:12.5px;color:var(--ink2);margin-top:8px;line-height:1.6">Also:</div>';
+  problems.slice(1,12).forEach(function(m){h+='<div style="font-size:12.5px;color:var(--ink2);line-height:1.6">• '+esc(m)+'</div>';});
+  if(problems.length>12)h+='<div style="font-size:12.5px;color:var(--faint)">…and '+(problems.length-12)+' more</div>';
+ }
+ return el(h+'<div class="add" style="margin-top:12px"><button type="button" class="btn">Dismiss</button></div></div>');
+}
+/* (Re)draws the patch area from PATCHSTATE. Called when a file is loaded and whenever the
+   panel is rebuilt by a snapshot render, so a re-render can never lose a preview. It
+   revalidates against the CURRENT state each time. */
+function drawPatch(host){
+ host.innerHTML="";
+ var st=PATCHSTATE;if(!st)return;
+ if(st.applying){host.appendChild(el('<div style="margin-top:14px;font-size:13px;color:var(--ink2)">Applying patch '+esc(st.p.id)+'… (see the note above for progress)</div>'));return;}
+ /* Before the snapshots land S holds seed placeholders (d-formos with no blocks and a
+    stub body), and a diff computed against them is fiction. Wait, do not validate. */
+ var waiting=patchTouches(st.p).filter(function(c){return !hydrated(c);});
+ if(waiting.length){
+  host.appendChild(el('<div style="margin-top:14px;font-size:13px;color:var(--ink2);line-height:1.6">Still loading the campaign from the database ('+esc(waiting.join(", "))+'). The preview will appear here as soon as it has \u2014 nothing is wrong and nothing has been written.</div>'));
+  if(!PATCHWAIT)PATCHWAIT=setTimeout(function(){PATCHWAIT=null;if(host.isConnected)drawPatch(host);},200);
+  return;
+ }
+ var env=patchEnv(),problems=validatePatch(st.p,S,env);
+ if(problems.length){
+  var pe=patchProblemsEl(problems);
+  pe.querySelector("button").onclick=function(){PATCHSTATE=null;drawPatch(host);xnote("");};
+  host.appendChild(pe);return;
+ }
+ var plan=planPatch(st.p,S,env,function(){return "~p"+Math.random().toString(36).slice(2,8);});
+ st.sig=planSig(plan);
+ var box=patchPlanEl(plan);
+ var row=el('<div class="add" style="margin-top:14px"><button type="button" class="btn p">'+(plan.applied?'Apply anyway…':'Apply patch')+'</button><button type="button" class="btn">Cancel</button></div>');
+ var bs=row.querySelectorAll("button");
+ bs[1].onclick=function(){PATCHSTATE=null;drawPatch(host);xnote("Patch cancelled — nothing was written.");};
+ bs[0].onclick=function(){
+  function afterDup(){
+   if(plan.deleted){
+    var names=plan.dels.slice(0,5).map(function(d){return d.coll+" "+d.id+" ("+d.label+")";}).join("; ")+(plan.dels.length>5?"; and "+(plan.dels.length-5)+" more":"");
+    askDelete("Delete "+plan.deleted+" item"+(plan.deleted===1?"":"s")+"?",
+     "This patch deletes: "+names+". Deletes run last and cannot be undone.",
+     function(){commitPatch(host);},{lab:"Confirm deletions",yes:"Delete and apply"});
+   }else commitPatch(host);
+  }
+  if(plan.applied)askDelete("Apply this patch again?","Patch "+plan.id+" was already applied on "+stampWhen(plan.applied.when)+". Applying it a second time can duplicate inserted content.",afterDup,{lab:"Already applied",yes:"Apply anyway"});
+  else afterDup();
+ };
+ box.appendChild(row);
+ host.appendChild(box);
+}
+function importPatch(file,nt){
+ if(RO){nt.textContent="Read-only.";return;}
+ var r=new FileReader();
+ r.onload=function(){
+  var p;try{p=JSON.parse(r.result);}catch(e){xnote("That file is not readable JSON.");return;}
+  /* a legacy full-state snapshot is never applied from here */
+  if(p&&typeof p==="object"&&!Array.isArray(p)&&p.lor===1&&p.patch===undefined){
+   PATCHSTATE=null;var h0=document.getElementById("patchhost");if(h0)drawPatch(h0);
+   xnote("That is a full-state file, not a patch. Use “Restore from backup file” below to load it — it replaces everything.");
+   var d0=document.getElementById("restoredet");if(d0)d0.open=true;
+   return;
+  }
+  flushAll();
+  PATCHSTATE={p:p,applying:false};
+  xnote("");
+  var h=document.getElementById("patchhost");if(h)drawPatch(h);
+ };
+ r.onerror=function(){xnote("Could not read that file.");};
+ r.readAsText(file);
+}
+/* One step at a time. save()/saveDoc()/del() resolve true/false and leave the reason in
+   LASTERR, so a refusal (not loaded, no database) is told apart from a failed write. The
+   same two codes runWrites retries are retried here. */
+function patchStep(st,n){
+ LASTERR=null;
+ return st.run().then(function(ok){
+  if(ok)return true;
+  var code=(LASTERR&&LASTERR.code)||"error";
+  if(n<3&&(code==="resource_exhausted"||code==="unavailable"))
+   return wait(350*Math.pow(2,n)+Math.floor(Math.random()*250)).then(function(){return patchStep(st,n+1);});
+  st.code=code;return false;
+ });
+}
+function runPatchSteps(steps,label){
+ var i=0,failed=[],total=steps.length;
+ function next(){
+  if(i>=total)return Promise.resolve(failed);
+  var st=steps[i++];
+  return patchStep(st,0).then(function(ok){
+   if(!ok)failed.push({label:st.label,code:st.code,step:st});
+   if(i%4===0||i===total)xnote((label||"applying")+" "+i+" of "+total+"…");
+   return next();
+  });
+ }
+ return next();
+}
+function failWhy(f){return f.label+" ("+(f.code==="not_loaded"||f.code==="no_database"?"refused: "+(f.code==="not_loaded"?"not loaded yet":"no database"):"write failed: "+f.code)+")";}
+function commitPatch(host){
+ var st=PATCHSTATE;if(!st)return;
+ flushAll();
+ var p=st.p,env=patchEnv(),problems=validatePatch(p,S,env);
+ if(problems.length){drawPatch(host);return;}
+ if(RO||!DB){xnote("Refused: this copy is read-only or has no database.");return;}
+ /* hydration gate: refuse rather than write over a record we have not read */
+ var touched=patchTouches(p);
+ for(var i=0;i<touched.length;i++)if(!hydrated(touched[i])){
+  setSync("LOADING","bad");
+  xnote("Refused: "+touched[i]+" has not finished loading from the database. Nothing was written — wait for the header to read live, then apply again.");
+  return;
+ }
+ var plan=planPatch(p,S,env,bid);
+ /* what is about to be written must be what the GM approved */
+ if(st.sig&&planSig(plan)!==st.sig){
+  xnote("The campaign changed after the preview was drawn. Nothing was written \u2014 review the new preview and apply again.");
+  drawPatch(host);return;
+ }
+ var dp={plans:plan.docs};
+ var steps1=[],steps2=[],steps3=[];
+ var priorApplied=((S.campaign&&S.campaign.appliedPatches)||[]).slice();
+ plan.recs.forEach(function(r){
+  if(r.status==="same")return;
+  var body=byId(p.upsert[r.coll],r.id);
+  steps1.push({label:r.coll+" "+r.id,run:function(){return save(r.coll,r.id,body);}});
+ });
+ if(p.campaign&&plan.campaign.status==="change"){
+  steps1.push({label:"campaign position",run:function(){
+   var c=dclone(p.campaign);delete c.appliedPatches;if(priorApplied.length)c.appliedPatches=priorApplied;return save("campaign","state",c);}});
+ }
+ dp.plans.forEach(function(d){
+  steps1.push({label:"document "+d.id,run:function(){return saveDoc(dclone(d.doc));}});
+ });
+ plan.dels.forEach(function(d){
+  steps2.push({label:"delete "+d.coll+" "+d.id,run:function(){return del(d.coll,d.id);}});
+ });
+ steps3.push({label:"patch record",run:function(){
+  var list=(((S.campaign&&S.campaign.appliedPatches)||[]).filter(function(a){return a.id!==p.id;})).concat([{id:p.id,when:new Date().toISOString()}]).slice(-50);
+  var base=dclone(p.campaign&&plan.campaign.status==="change"?p.campaign:(S.campaign||{}));
+  base.appliedPatches=list;
+  return save("campaign","state",base);}});
+ st.applying=true;drawPatch(host);
+ var records=plan.written,docsN=dp.plans.length,deletedN=plan.deleted;
+ function finish(){
+  PATCHSTATE=null;var h=document.getElementById("patchhost");if(h)drawPatch(h);
+  xnote("Patch "+p.id+" applied: "+records+" record"+(records===1?"":"s")+", "+docsN+" document"+(docsN===1?"":"s")+(deletedN?", "+deletedN+" deleted":"")+".");
+ }
+ function runPhases(phases){
+  if(!phases.length){finish();return;}
+  runPatchSteps(phases[0],"applying").then(function(failed){
+   if(!failed.length){runPhases(phases.slice(1));return;}
+   var rest=phases.slice(1);
+   xnote(failed.length+" step"+(failed.length>1?"s":"")+" failed — later phases (deletes, patch record) were not run");
+   PATCHSTATE=null;var h=document.getElementById("patchhost");if(h)h.innerHTML="";
+   askDelete("⚠ "+failed.length+" step"+(failed.length>1?"s":"")+" did not complete",
+    "These did not: "+failed.slice(0,6).map(failWhy).join("; ")+(failed.length>6?"; and "+(failed.length-6)+" more":"")+
+    ". Nothing after them was run, so no deletes happened and the patch is not recorded as applied. Retry them now?",
+    function(){st.applying=true;PATCHSTATE=st;var hh=document.getElementById("patchhost");if(hh)drawPatch(hh);runPhases([failed.map(function(f){return f.step;})].concat(rest));},{lab:"Patch incomplete",yes:"Retry"});
+  });
+ }
+ runPhases([steps1,steps2,steps3].filter(function(a){return a.length;}));
+}
 function transferPanel(){
- var d=el('<details class="tagmgr" style="margin-top:26px"><summary><span>Backup &amp; offline copy</span><span style="color:var(--faint)">'+COLLS.reduce(function(m,k){return m+S[k].length;},0)+' records</span></summary><div class="bd" style="padding:16px"></div></details>');
+ var d=el('<details class="tagmgr" style="margin-top:26px"><summary><span>Backup &amp; patches</span><span style="color:var(--faint)">'+COLLS.reduce(function(m,k){return m+S[k].length;},0)+' records</span></summary><div class="bd" style="padding:16px"></div></details>');
  var bd=d.querySelector(".bd");
- d.open=XOPEN;
+ d.open=XOPEN||!!PATCHSTATE;
  d.addEventListener("toggle",function(){XOPEN=d.open;});
- bd.appendChild(el('<p style="font-size:13px;color:var(--ink2);line-height:1.65;margin:0 0 16px">Download the whole campaign as a single file — every thread, arc, session, codex entry, planet and document. Load it into the offline console to run a session without a connection, then bring it back here.</p>'));
- var row=el('<div class="add" style="align-items:center;flex-wrap:wrap"><button type="button" class="btn p">Download state</button><button type="button" class="btn gmonly">Upload and replace</button><input type="file" accept=".json,application/json" hidden><span class="nt" id="lornote" style="font-family:var(--f-mono);font-size:10px;color:var(--faint)"></span></div>');
+ bd.appendChild(el('<p style="font-size:13px;color:var(--ink2);line-height:1.65;margin:0 0 16px"><b>Download state</b> saves the whole campaign as one file — every thread, arc, session, codex entry, planet and document — as a backup, for the offline console, or as the source to compose a patch from. <b>Upload patch</b> applies a small patch file that names only what changed: nothing is touched unless the file names it, and you see a diff and confirm before anything is written.</p>'));
+ var row=el('<div class="add" style="align-items:center;flex-wrap:wrap"><button type="button" class="btn p">Download state</button><button type="button" class="btn gmonly">Upload patch</button><input type="file" accept=".json,application/json" hidden><span class="nt" id="lornote" style="font-family:var(--f-mono);font-size:10px;color:var(--faint)"></span></div>');
  var bs=row.querySelectorAll("button"),fi=row.querySelector("input"),nt=row.querySelector(".nt");
+ nt.textContent=XNOTE;
  bs[0].onclick=function(){exportState(bs[0],nt);};
  bs[1].onclick=function(){if(RO){nt.textContent="Read-only.";return;}fi.value="";fi.click();};
- fi.onchange=function(){if(fi.files&&fi.files[0])importState(fi.files[0],nt);};
+ fi.onchange=function(){if(fi.files&&fi.files[0])importPatch(fi.files[0],nt);};
  bd.appendChild(row);
-  bd.appendChild(el('<p style="font-family:var(--f-mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin:16px 0 0">This console is build '+BUILD+'. An offline copy built from a different version will say so when you upload its file.</p>'));
- bd.appendChild(el('<p style="font-size:12px;color:var(--muted);line-height:1.6;margin:10px 0 0">Uploading replaces everything. The current state is downloaded as a backup first, and you get one confirmation before anything is written.</p>'));
+ var host=el('<div id="patchhost"></div>');
+ bd.appendChild(host);
+ drawPatch(host);
+ var rs=el('<details id="restoredet" style="margin-top:22px;border-top:1px solid var(--line2);padding-top:14px"><summary style="cursor:pointer;font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)">Restore from backup file — destructive</summary><div class="rsb" style="padding-top:12px"></div></details>');
+ var rb=rs.querySelector(".rsb");
+ rb.appendChild(el('<p style="font-size:12.5px;color:var(--ink2);line-height:1.6;margin:0 0 12px">For restoring a snapshot, not for updates. Uploading here <b>replaces everything</b>: any record not in the file is deleted. The current state is downloaded as a backup first, and you get one confirmation before anything is written.</p>'));
+ var row2=el('<div class="add" style="align-items:center;flex-wrap:wrap"><button type="button" class="btn gmonly">Restore from file…</button><input type="file" accept=".json,application/json" hidden></div>');
+ var b2=row2.querySelector("button"),fi2=row2.querySelector("input");
+ b2.onclick=function(){if(RO){nt.textContent="Read-only.";return;}fi2.value="";fi2.click();};
+ fi2.onchange=function(){if(fi2.files&&fi2.files[0])importState(fi2.files[0],nt);};
+ rb.appendChild(row2);
+ bd.appendChild(rs);
+ bd.appendChild(el('<p style="font-family:var(--f-mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin:16px 0 0">This console is build '+BUILD+'. An offline copy built from a different version will say so when you restore its file.</p>'));
  return d;
 }
-function askDelete(title,detail,onYes){
+function askDelete(title,detail,onYes,opts){
  var a=document.getElementById("askbox");
  if(!a){a=el('<div class="ask" id="askbox"><div class="card"><div class="lab">Delete permanently</div><h4></h4><p></p><div class="row2"><button type="button" class="btn" data-no>Cancel</button><button type="button" class="btn d" data-yes>Delete</button></div></div></div>');document.body.appendChild(a);
   a.addEventListener("click",function(e){if(e.target===a)close();});
@@ -575,6 +1078,8 @@ function askDelete(title,detail,onYes){
  a.querySelector("h4").textContent=title;
  a.querySelector("p").textContent=detail||"This cannot be undone.";
  var yes=a.querySelector("[data-yes]"),no=a.querySelector("[data-no]");
+ a.querySelector(".lab").textContent=(opts&&opts.lab)||"Delete permanently";
+ yes.textContent=(opts&&opts.yes)||"Delete";
  yes.onclick=function(){close();onYes();};
  no.onclick=close;
  a.classList.add("on");
@@ -627,21 +1132,26 @@ function save(c,id,b){
     like it worked while nothing left the browser. That is the silent data-loss case:
     the screen updates, the console says nothing, and the change is gone on reload. */
  if(!DB){
-  SAVEBAD={path:c+"/"+id,code:"no_database",when:new Date()};banner();setSync("NOT SAVING","bad");
-  return Promise.resolve();
+  SAVEBAD={path:c+"/"+id,code:"no_database",when:new Date()};LASTERR=SAVEBAD;banner();setSync("NOT SAVING","bad");
+  return Promise.resolve(false);
  }
  /* hydration gate: refuse rather than overwrite something we have not read yet */
  if(!hydrated(c)){
-  SAVEBAD={path:c+"/"+id,code:"not_loaded",when:new Date()};banner();setSync("LOADING","bad");
-  return Promise.resolve();
+  SAVEBAD={path:c+"/"+id,code:"not_loaded",when:new Date()};LASTERR=SAVEBAD;banner();setSync("LOADING","bad");
+  return Promise.resolve(false);
  }
+ /* Resolves true when the write landed and false when it was refused or failed -- never
+    rejects. The reason is in LASTERR (and SAVEBAD, for the banner). Existing callers
+    ignore the value; the patch sequencer reads it. */
  return DB.doc(c+"/"+id).set(b).then(function(){
   if(SAVEBAD&&SAVEBAD.path===c+"/"+id){SAVEBAD=null;banner();}
+  return true;
  },function(e){
   var code=(e&&e.code)||"error";
-  SAVEBAD={path:c+"/"+id,code:code,when:new Date()};
+  SAVEBAD={path:c+"/"+id,code:code,when:new Date()};LASTERR=SAVEBAD;
   if(code==="invalid_argument"){RO=true;applyRO();setSync("read only","ro");}
   banner();
+  return false;
  });
 }
 /* A save that fails must be impossible to miss. The old code returned a resolved
@@ -664,9 +1174,11 @@ function banner(){
   : "The last write to "+SAVEBAD.path+" failed ("+SAVEBAD.code+"). Your text is kept in this browser.";
 }
 function del(c,id){
- if(!DB){SAVEBAD={path:c+"/"+id,code:"no_database",when:new Date()};banner();setSync("NOT SAVING","bad");return Promise.resolve();}
- if(RO)return Promise.resolve();
- return DB.doc(c+"/"+id).delete().catch(function(){});}
+ if(!DB){SAVEBAD={path:c+"/"+id,code:"no_database",when:new Date()};LASTERR=SAVEBAD;banner();setSync("NOT SAVING","bad");return Promise.resolve(false);}
+ if(RO){LASTERR={path:c+"/"+id,code:"read_only"};return Promise.resolve(false);}
+ /* resolves true/false like save(); a failed delete stays silent on screen as before */
+ return DB.doc(c+"/"+id).delete().then(function(){return true;},function(e){
+  LASTERR={path:c+"/"+id,code:(e&&e.code)||"error"};return false;});}
 function applyRO(){document.querySelector(".shell").setAttribute("data-can-edit",RO?"0":"1");
  /* [data-e] are the document block editors; they were left typeable when RO
     flipped, which is how an hour of edits went into a page that saved nothing. */
@@ -1406,7 +1918,8 @@ function clock(){var d=new Date();return String(d.getHours()).padStart(2,"0")+":
 /* The plain text of a document, used for search and word count. It is derived from
    the blocks, so it is rebuilt in memory on load and after every edit and is NEVER
    stored: persisting it doubled the size of every document and pushed the long ones
-   past the database's 256 KB ceiling. */
+   toward the DOCLIMIT guard (the 256 KB figure this once quoted was the artifact
+   platform's and has been obsolete since the Postgres migration). */
 function docBody(d){
  return (d.blocks||[]).map(function(b){
    if(b.t==="pb")return "";
@@ -1431,21 +1944,21 @@ function saveDoc(d){
  /* body is derived from blocks, so it is only safe to drop when blocks actually exist.
     A legacy document that still lives entirely in its body field keeps it. */
  if(payload.blocks&&payload.blocks.length)delete payload.body;
- var size=0;try{size=new Blob([JSON.stringify(payload)]).size;}catch(e){size=JSON.stringify(payload).length;}
- var est=Math.round(size*DOCOVERHEAD);
+ var est=docStoredSize(payload,DOCOVERHEAD);
  if(est>DOCLIMIT){
-  SAVEBAD={path:"docs/"+d.id,code:"too_large",when:new Date()};banner();setSaveState("bad","TOO LARGE — NOT SAVED");
+  SAVEBAD={path:"docs/"+d.id,code:"too_large",when:new Date()};LASTERR=SAVEBAD;banner();setSaveState("bad","TOO LARGE — NOT SAVED");
   askDelete("This document is too big to save",
    "\u201c"+d.title+"\u201d comes to about "+Math.round(est/1024)+" KB stored, and the limit is "+Math.round(DOCLIMIT/1024)+" KB. Your edit is held in this browser and nothing is lost, but it cannot be saved until the document is split or shortened. Export to Word now so you have a copy?",
    function(){exportWord(d,{});});
-  return;
+  return Promise.resolve(false);
  }
  setSaveState("saving","saving\u2026");
  /* clear only on THIS document's own success — another document still
     failing must not keep this one's draft alive */
- save("docs",d.id,payload).then(function(){
+ return save("docs",d.id,payload).then(function(ok){
   if(!SAVEBAD||SAVEBAD.path!=="docs/"+d.id){clearDraft(d.id);setSaveState("saved","saved "+clock());}
   else setSaveState("bad","NOT SAVED");
+  return ok===true;
  });
 }
 /* ---------------- Archive export: one stat block -> JSON for The Archive's Adversary creator ----------------
