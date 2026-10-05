@@ -327,7 +327,7 @@ button.tg.has:hover{background:color-mix(in srgb,var(--c) 26%,transparent);box-s
 <script>
 (function(){
 "use strict";
-var BUILD="2026-10-05.2";try{window.LORBUILD=BUILD;}catch(e){}
+var BUILD="2026-10-05.3";try{window.LORBUILD=BUILD;}catch(e){}
 var EDITION="archive";
 var VIEWS=[["situation","Situation"],["arcs","Arcs"],["threads","Threads"],["sessions","Sessions"],["planets","Planets"],["codex","Codex"],["documents","Documents"]];
 var GC={thriller:"--g-thriller",tragedy:"--g-tragedy",spirit:"--g-spirit",heist:"--g-heist",war:"--g-war",comedy:"--g-comedy"};
@@ -2470,18 +2470,6 @@ document.getElementById("build").textContent="build "+BUILD+" \u00b7 "+EDITION;
   }
   if(m.evt==="ready"){
    DB=API;
-   /* SAMPLE was the artifact platform's model API, used only by the session-recap
-      ingest. It now rides the same bridge as the database: the parent frame holds the
-      key and calls the server route. ingest() expects a resolved object and reads
-      e.code on failure, so the server's codes pass straight through. */
-   SAMPLE={json:function(prompt,opts){
-    return send("ai",{prompt:String(prompt||""),tier:(opts&&opts.modelTier)||"complex"})
-     .then(function(r){
-      if(r&&typeof r==="object")return r;
-      try{return JSON.parse(String(r));}
-      catch(e){var err=new Error("unreadable model response");err.code="bad_json";throw err;}
-     });
-   }};
    if(m.readOnly){RO=true;setSync("read only","ro");applyRO();}
    else setSync("loading");
    subscribe();

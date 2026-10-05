@@ -21,10 +21,8 @@ function isRecordKind(k: string): k is RecordKind {
 interface InMsg {
   lor: 1
   id?: number
-  op?: 'get' | 'set' | 'del' | 'list' | 'watchDoc' | 'watchColl' | 'ai'
+  op?: 'get' | 'set' | 'del' | 'list' | 'watchDoc' | 'watchColl'
   path?: string
-  prompt?: string
-  tier?: string
   coll?: string
   limit?: number
   body?: Record<string, unknown>
@@ -70,10 +68,6 @@ export class ConsoleBridge {
   private debounceTimers = new Map<string, ReturnType<typeof setTimeout>>()
   private onMessage = (e: MessageEvent) => this.handleMessage(e)
   private helloReceived = false
-  /** Reported to the console in the `ready` event; `ai` refuses while true. Nothing flips it today. */
-  private readOnly = false
-  /** One `ai` call at a time. */
-  private aiInFlight = false
 
   constructor(supabase: SupabaseClient, campaignId: string, target: Window) {
     this.supabase = supabase
@@ -106,7 +100,7 @@ export class ConsoleBridge {
     if (m.evt === 'hello') {
       if (this.helloReceived) return
       this.helloReceived = true
-      this.post({ lor: 1, evt: 'ready', readOnly: this.readOnly })
+      this.post({ lor: 1, evt: 'ready', readOnly: false })
       return
     }
 
@@ -148,10 +142,6 @@ export class ConsoleBridge {
           this.post({ lor: 1, id, ok: true, result: true })
           return
         }
-        case 'ai': {
-          await this.ai(id, m)
-          return
-        }
         default:
           this.post({ lor: 1, id, ok: false, code: 'invalid_argument', message: `unknown op ${op}` })
       }
@@ -159,35 +149,6 @@ export class ConsoleBridge {
       const code = (err as { code?: string })?.code ?? 'unavailable'
       const message = err instanceof Error ? err.message : String(err)
       this.post({ lor: 1, id, ok: false, code, message })
-    }
-  }
-
-  // ---- model call ----
-
-  /** One-shot: never retried or queued here. The server route holds the key. */
-  private async ai(id: number, m: InMsg) {
-    if (this.readOnly) {
-      this.post({ lor: 1, id, ok: false, code: 'read_only', message: 'console is read-only' })
-      return
-    }
-    if (this.aiInFlight) {
-      this.post({ lor: 1, id, ok: false, code: 'busy', message: 'an AI request is already in progress' })
-      return
-    }
-    this.aiInFlight = true
-    try {
-      const res = await fetch('/api/gm/console/ai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: m.prompt, tier: m.tier, campaignId: this.campaignId }),
-      })
-      const out = await res.json() as { ok: boolean; result?: unknown; code?: string; message?: string }
-      if (out.ok) this.post({ lor: 1, id, ok: true, result: out.result })
-      else this.post({ lor: 1, id, ok: false, code: out.code ?? 'upstream', message: out.message ?? 'AI request failed' })
-    } catch (err) {
-      this.post({ lor: 1, id, ok: false, code: 'unavailable', message: err instanceof Error ? err.message : String(err) })
-    } finally {
-      this.aiInFlight = false
     }
   }
 
