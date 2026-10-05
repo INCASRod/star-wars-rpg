@@ -244,6 +244,10 @@ function createNpcNodeView(props) {
 
     var header = document.createElement('div')
     header.className = 'np-h'
+    /* the old renderer's "NPC" tag; static, outside the editable name span, so it is never read back */
+    var tagEl = document.createElement('span')
+    tagEl.className = 'cl'; tagEl.contentEditable = 'false'; tagEl.textContent = 'NPC'
+    header.appendChild(tagEl)
     var nmEl = document.createElement('span')
     nmEl.className = 'nm'; nmEl.contentEditable = 'true'; nmEl.spellcheck = false
     nmEl.innerHTML = esc(a.name || 'Untitled NPC')

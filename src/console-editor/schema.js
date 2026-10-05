@@ -49,7 +49,21 @@ function withBlockAttrs(more) {
 
 /* ---- stock nodes, extended only to carry the four contract attrs -------- */
 
-var ParagraphExt = Paragraph.extend({ addAttributes: function () { return withBlockAttrs() } })
+/* `cont` marks the second half of one "a\n\nb" block. It never rendered; it now emits
+   data-cont (display only -- parseHTML ignores it, nothing reads it back) so CSS can draw
+   the blank line the old renderer drew between the halves. */
+var ParagraphExt = Paragraph.extend({
+  addAttributes: function () {
+    return withBlockAttrs({
+      cont: {
+        default: false,
+        rendered: true,
+        parseHTML: function () { return false },
+        renderHTML: function (attrs) { return attrs.cont ? { 'data-cont': '1' } : {} },
+      },
+    })
+  },
+})
 var HeadingExt = Heading.configure({ levels: [1, 2, 3] }).extend({
   addAttributes: function () {
     return withBlockAttrs({ level: { default: 1, rendered: false } })
@@ -96,7 +110,7 @@ var PageBreak = Node.create({
   atom: true,
   addAttributes: function () { return withBlockAttrs() },
   parseHTML: function () { return [{ tag: 'div[data-block="pageBreak"]' }] },
-  renderHTML: function () { return ['div', { 'data-block': 'pageBreak', class: 'ph-pagebreak' }, 'PAGE BREAK'] },
+  renderHTML: function () { return ['div', { 'data-block': 'pageBreak', class: 'ph-pagebreak' }, ['span', {}, 'Page break']] },
 })
 
 /* ---- placeholder nodes: npc / card (stat, vehicle, planet) --------------

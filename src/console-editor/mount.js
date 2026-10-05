@@ -24,96 +24,103 @@ var outlineMod = require('./outline.js')
 var searchMod = require('./search.js')
 
 var STYLE_ID = 'console-editor-placeholder-style'
-var CSS =
-  /* This console is a naturally page-scrolling app -- no ancestor establishes
-     a fixed viewport height (checked: .tiptap-mount's own parents all render
-     at full content height, matching the vendored file's own layout model).
-     A height:100%/flex-column shell with internal overflow:auto panes would
-     silently never scroll (scrollHeight===clientHeight forever, verified),
-     so the toolbar sticks against WINDOW scroll and the outline gets its own
-     sticky+scrolling sidebar instead of a shell-level split. */
-  '.tiptap-mount{font-family:Georgia,serif;color:#1A1A1A}' +
-  '.tt-toolbar{display:flex;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid #DDD2BC;background:#FBF8F1;position:sticky;top:0;z-index:5;font-family:Consolas,monospace;font-size:11px}' +
-  '.tt-toolbar button{font-family:Consolas,monospace;font-size:11px;letter-spacing:.05em;text-transform:uppercase;background:none;border:1px solid #C9A84C;color:#8B1A1A;padding:5px 10px;border-radius:3px;cursor:pointer}' +
-  '.tt-toolbar button:hover{background:rgba(201,168,76,.14)}' +
-  '.tt-toolbar button.on{background:#8B1A1A;color:#FBF8F1}' +
-  /* D1 root cause (found re-measuring after pagination removal): .tt-outline
-     was position:sticky inside a flex row (align-items:flex-start). Sticky
-     does NOT remove an element from normal flow -- it still contributes its
-     full, UNCLIPPED intrinsic content height to the flex row's own layout
-     sizing, even though max-height+overflow-y:auto correctly clip what's
-     drawn. Measured directly: toggling the outline open grew
-     document.documentElement.scrollHeight by 10,936px on the (570-block)
-     clone, which is exactly what produced the earlier ~1% "return to prior
-     scroll position" drift -- the page briefly became far taller than
-     before, so a scrollY value captured pre-toggle no longer means the same
-     place post-toggle. Fixed by taking the outline fully out of flow with
-     position:fixed (viewport-relative, zero contribution to document height,
-     by construction) instead of asking sticky to behave like something it
-     never claimed to be. */
-  '.tt-body{display:flex;align-items:flex-start}' +
-  '.tt-outline{width:280px;flex:0 0 280px;border-right:1px solid #DDD2BC;background:#FEFCF7;padding:10px;position:fixed;top:45px;left:0;max-height:calc(100vh - 45px);overflow-y:auto;z-index:4}' +
-  '.tt-editor-pane.tt-outline-open{margin-left:280px}' +
-  '.tt-outline-filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #EFE8D8}' +
-  '.tt-outline-filters label{font-family:Consolas,monospace;font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:#8B7F6B;display:flex;align-items:center;gap:3px;cursor:pointer}' +
-  '.tt-outline-entry{display:block;width:100%;text-align:left;background:none;border:none;padding:5px 6px;font-size:12px;color:#22252B;cursor:pointer;border-radius:3px;line-height:1.35}' +
-  '.tt-outline-entry:hover{background:rgba(201,168,76,.14)}' +
-  '.tt-outline-entry .kind{display:block;font-family:Consolas,monospace;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:#8B1A1A;opacity:.75}' +
-  '.tt-outline-entry.lvl-2{padding-left:16px}' +
-  '.tt-outline-entry.lvl-3{padding-left:28px}' +
-  '.tt-search-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid #DDD2BC;background:#FFF8E1;font-family:Consolas,monospace;font-size:12px}' +
-  '.tt-search-bar input{flex:1;padding:5px 8px;border:1px solid #C9A84C;border-radius:3px;font-family:Consolas,monospace;font-size:12px}' +
-  '.tt-search-bar button{background:none;border:1px solid #C9A84C;border-radius:3px;padding:4px 9px;cursor:pointer}' +
-  '.tt-editor-pane{flex:1;padding:16px;max-width:900px;margin:0 auto;min-width:0}' +
-  '.search-hl{background:#FFE58A}' +
-  '.search-hl-current{background:#FFB347}' +
-  '.tt-block-flash{animation:tt-flash 1.4s ease-out}' +
-  '@keyframes tt-flash{0%{background:#FFE58A}100%{background:transparent}}' +
-  '.ProseMirror{outline:none}' +
-  '.tt-editor-pane h1{font-size:1.6em;margin:0.6em 0 0.3em}' +
-  '.tt-editor-pane h2{font-size:1.3em;margin:0.6em 0 0.3em}' +
-  '.tt-editor-pane h3{font-size:1.1em;margin:0.6em 0 0.3em}' +
-  '.tt-editor-pane blockquote{border-left:2px solid #C9A84C;margin:0.8em 0;padding-left:12px;font-style:italic}' +
-  '.tt-editor-pane table{border-collapse:collapse;margin:0.8em 0}' +
-  '.tt-editor-pane td,.tt-editor-pane th{border:1px solid #999;padding:4px 8px}' +
-  '.tt-editor-pane .ph-callout,.tt-editor-pane .ph-read{border:1px dashed #8B1A1A;margin:0.8em 0;padding:8px 10px}' +
-  '.tt-editor-pane .ph-callout-label,.tt-editor-pane .ph-read-label{font-size:0.7em;letter-spacing:0.15em;color:#8B1A1A;margin-bottom:4px}' +
-  '.tt-editor-pane .ph-ornament{text-align:center;color:#A79C86;margin:1em 0}' +
-  '.tt-editor-pane .ph-pagebreak{text-align:center;font-size:0.7em;letter-spacing:0.2em;color:#A79C86;border-top:1px dashed #A79C86;border-bottom:1px dashed #A79C86;padding:4px 0;margin:1em 0}' +
-  '.tt-editor-pane .ph-unknown{border:1px dashed red;color:red;padding:6px 8px;margin:0.8em 0;font-family:Consolas,monospace;font-size:0.8em}' +
-  '.tt-editor-pane .b-npc,.tt-editor-pane .b-card{border:1px solid #C9A84C;border-radius:4px;margin:20px 0;overflow:hidden;background:#FEFCF7}' +
-  '.tt-editor-pane .b-npc{border-color:#DDD2BC}' +
-  '.tt-editor-pane .b-vehicle{border-color:#4E7C99}' +
-  '.tt-editor-pane .b-planet{border-color:#6E9B7A}' +
-  '.tt-editor-pane .b-planet .st-h{background:#1E2A22}' +
-  '.tt-editor-pane .b-planet .st-h .cl{color:#9BD0AA}' +
-  '.tt-editor-pane .b-planet .np-l{color:#2E5B3C}' +
-  '.tt-editor-pane .b-npc .np-h,.tt-editor-pane .b-card .st-h{background:#2A2118;color:#FBF8F1;padding:9px 16px;display:flex;align-items:baseline;gap:12px}' +
-  '.tt-editor-pane .b-npc .np-h{background:#8B1A1A}' +
-  '.tt-editor-pane .b-npc .np-h .nm,.tt-editor-pane .b-card .st-h .nm{font-family:Cinzel,Georgia,serif;font-weight:600;font-size:12.5pt;flex:1;outline:none}' +
-  '.tt-editor-pane .b-card .st-h .cl{font-family:Consolas,monospace;font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:#C9A84C;flex:0 0 auto;outline:none}' +
-  '.tt-editor-pane .b-card .st-ch{display:flex;border-bottom:1px solid #EFE8D8}' +
-  '.tt-editor-pane .b-card .st-ch+.st-ch{background:#F7F1E4}' +
-  '.tt-editor-pane .b-card .st-c{flex:1;text-align:center;padding:8px 4px;border-right:1px solid #EFE8D8;min-width:0}' +
-  '.tt-editor-pane .b-card .st-c:last-child{border-right:none}' +
-  '.tt-editor-pane .b-card .st-c .k{font-family:Consolas,monospace;font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:#8B7F6B;margin-bottom:3px}' +
-  '.tt-editor-pane .b-card .st-c .v{font-family:Cinzel,Georgia,serif;font-size:15pt;font-weight:600;color:#8B1A1A;outline:none;line-height:1.1}' +
-  '.tt-editor-pane .np-rows{padding:2px 16px 6px}' +
-  '.tt-editor-pane .np-rows.grid{display:grid;grid-template-columns:1fr 1fr;column-gap:22px}' +
-  '.tt-editor-pane .np-rows.grid .np-row{padding:7px 0}' +
-  '.tt-editor-pane .np-rows.grid .np-l{flex:0 0 92px}' +
-  '.tt-editor-pane .np-rows.grid .np-v{font-size:10.5pt}' +
-  '.tt-editor-pane .np-row{display:flex;gap:14px;padding:9px 0;border-bottom:1px solid #EFE8D8;align-items:flex-start}' +
-  '.tt-editor-pane .np-row:last-child{border-bottom:none}' +
-  '.tt-editor-pane .b-card .np-l{flex:0 0 110px}' +
-  '.tt-editor-pane .b-npc .np-l{flex:0 0 150px}' +
-  '.tt-editor-pane .np-l{font-family:Consolas,monospace;font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:#8B1A1A;padding-top:2px;outline:none}' +
-  '.tt-editor-pane .np-v{flex:1;font-size:11pt;line-height:1.55;color:#22252B;outline:none;min-width:0}' +
-  '.tt-editor-pane .np-rm{display:inline-block;flex:0 0 auto;background:none;border:none;color:#A79C86;cursor:pointer;font-size:14px;padding:0 4px}' +
-  '.tt-editor-pane .np-add{display:inline-block;margin:2px 16px 12px;font-family:Consolas,monospace;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:#8B1A1A;background:none;border:1px dashed #C9A84C;padding:6px 10px;cursor:pointer;border-radius:3px}' +
-  '.tt-editor-pane .arch-copy{margin-left:auto;align-self:center;flex:0 0 auto;font-family:Consolas,monospace;font-size:8px;letter-spacing:.16em;text-transform:uppercase;background:none;border:1px solid rgba(201,168,76,.45);color:#C9A84C;padding:4px 8px;border-radius:2px;cursor:pointer}' +
-  '.tt-editor-pane .arch-copy:hover{background:rgba(201,168,76,.14);color:#FBF8F1}' +
-  '.tt-editor-pane .arch-copy.ok{border-color:#9BD0AA;color:#9BD0AA}'
+/* Presentation. The old paginated editor drew every block on a cream .page sheet using
+   .b-h1/.b-p/... classes; step 7 deleted both the sheet and those rules, which left dark
+   ink (#22252B etc.) on the app's near-black ground. The rules below are the old ones,
+   restored from 07fa86a and re-aimed at the nodes TipTap actually renders, inside ONE
+   continuous fixed-width paper column (.tt-editor-pane). No page division, no fixed
+   height. The card rules (the card and np/st/arch-copy classes) are NOT repeated here: the
+   vendored file's unscoped globals already style the card NodeViews with the right
+   fonts (var(--f-mono)); only what editing adds (always-visible "add field", hover-only
+   remove) is overridden at the end.
+
+   Layout note: the outline is a COLUMN of .tt-body (a grid), not a layer over the app, so
+   it can never cover the left rail and needs no offset that depends on the rail width. The
+   paper is a fixed 794px, so opening the outline cannot re-wrap a single paragraph (the
+   cause of the ~10.9k px height change the scroll-anchor code compensates for). The
+   stage scrolls horizontally rather than squeezing the paper on a narrow window. */
+var PAPER = '.tt-editor-pane'
+var PM = PAPER + ' .ProseMirror > '
+var CSS = [
+  '.tiptap-mount{font-family:Georgia,serif;color:#1A1A1A}',
+  '.tt-toolbar{display:flex;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid #DDD2BC;background:#FBF8F1;position:sticky;top:0;z-index:5;font-family:Consolas,monospace;font-size:11px}',
+  '.tt-toolbar button{font-family:Consolas,monospace;font-size:11px;letter-spacing:.05em;text-transform:uppercase;background:none;border:1px solid #C9A84C;color:#8B1A1A;padding:5px 10px;border-radius:3px;cursor:pointer}',
+  '.tt-toolbar button:hover{background:rgba(201,168,76,.14)}',
+  '.tt-toolbar button.on{background:#8B1A1A;color:#FBF8F1}',
+  /* shell: [outline column] [stage]. Outline is in flow; sticky only pins it while scrolling. */
+  '.tt-body{display:grid;grid-template-columns:minmax(0,1fr);align-items:start}',
+  '.tt-body.tt-has-outline{grid-template-columns:260px minmax(0,1fr)}',
+  '.tt-outline{box-sizing:border-box;border-right:1px solid #DDD2BC;background:#FEFCF7;padding:10px;position:sticky;top:var(--tt-toolbar-h,46px);align-self:start;max-height:calc(100vh - var(--tt-toolbar-h,46px));overflow-y:auto}',
+  '.tt-outline[hidden],.tt-search-bar[hidden]{display:none}',
+  '.tt-outline-filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #EFE8D8}',
+  '.tt-outline-filters label{font-family:Consolas,monospace;font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:#8B7F6B;display:flex;align-items:center;gap:3px;cursor:pointer}',
+  '.tt-outline-entry{display:block;width:100%;text-align:left;background:none;border:none;padding:5px 6px;font-size:12px;color:#22252B;cursor:pointer;border-radius:3px;line-height:1.35}',
+  '.tt-outline-entry:hover{background:rgba(201,168,76,.14)}',
+  '.tt-outline-entry .kind{display:block;font-family:Consolas,monospace;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:#8B1A1A;opacity:.75}',
+  '.tt-outline-entry.lvl-2{padding-left:16px}',
+  '.tt-outline-entry.lvl-3{padding-left:28px}',
+  '.tt-search-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid #DDD2BC;background:#FFF8E1;font-family:Consolas,monospace;font-size:12px}',
+  '.tt-search-bar input{flex:1;padding:5px 8px;border:1px solid #C9A84C;border-radius:3px;font-family:Consolas,monospace;font-size:12px}',
+  '.tt-search-bar button{background:none;border:1px solid #C9A84C;border-radius:3px;padding:4px 9px;cursor:pointer}',
+  '.search-hl{background:#FFE58A}',
+  '.search-hl-current{background:#FFB347}',
+  '.tt-block-flash{animation:tt-flash 1.4s ease-out}',
+  '@keyframes tt-flash{0%{background:#FFE58A}100%{background:transparent}}',
+
+  /* the paper: one long cream sheet, fixed width, centred in the stage */
+  '.tt-stage{background:#0A0C0F;padding:24px 10px 60px;overflow-x:auto;min-width:0}',
+  PAPER + '{box-sizing:border-box;width:794px;margin:0 auto;padding:64px 88px 96px;background:#FBF8F1;color:#1A1A1A;font-family:var(--f-body,Georgia,serif);font-weight:300;box-shadow:0 3px 22px rgba(0,0,0,.55);position:relative}',
+  PAPER + ' .ProseMirror{outline:none}',
+  '.ProseMirror-selectednode{outline:2px solid #C9A84C;outline-offset:5px}',
+
+  /* h1 / h2 / h3 / p / quote -- the old .b-h1 .b-h2 .b-h3 .b-p .b-quote */
+  PM + 'h1{font-family:var(--f-display,Cinzel,Georgia,serif);font-size:15pt;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#FBF8F1;background:#8B1A1A;padding:9px 16px;margin:30px 0 16px}',
+  PM + 'h2{font-family:var(--f-display,Cinzel,Georgia,serif);font-size:14.5pt;font-weight:600;color:#8B1A1A;letter-spacing:.02em;margin:26px 0 10px;padding-bottom:6px;border-bottom:1px solid #C9A84C}',
+  PM + 'h3{font-family:var(--f-display,Cinzel,Georgia,serif);font-size:12pt;font-weight:600;color:#8B1A1A;margin:20px 0 6px}',
+  PM + 'p{font-size:11.5pt;line-height:1.62;margin:0 0 11px;color:#22252B}',
+  /* a continuation paragraph is the second half of one "a\n\nb" block, which the old renderer
+     drew as a blank line, not a paragraph margin */
+  PM + 'p[data-cont]{margin-top:1.62em}',
+  PM + 'blockquote{font-size:13pt;line-height:1.5;font-style:italic;color:#4A4034;border-left:2px solid #C9A84C;padding:4px 0 4px 20px;margin:20px 0}',
+  PM + 'blockquote > p{margin:0;font-size:inherit;line-height:inherit;color:inherit}',
+  PM + 'blockquote > p + p{margin-top:1.5em}',
+
+  /* callout / read-aloud -- the old .b-callout .b-read with their .cl label */
+  PM + '.ph-callout{background:#FFF8E1;border-left:3px solid #8B1A1A;padding:15px 18px;margin:20px 0;font-size:11pt;line-height:1.58;color:#2A2620}',
+  PM + '.ph-read{background:#F0EADD;border:1px solid #DDD2BC;padding:16px 19px;margin:20px 0;font-size:11.5pt;line-height:1.6;font-style:italic;color:#2A2620}',
+  PAPER + ' .ph-callout-label,' + PAPER + ' .ph-read-label{font-family:var(--f-mono,Consolas,monospace);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:#8B1A1A;font-style:normal;margin-bottom:8px}',
+  PAPER + ' .ph-read-label{margin-bottom:9px}',
+  PAPER + ' .ph-callout-body > p,' + PAPER + ' .ph-read-body > p{margin:0;font-size:inherit;line-height:inherit;color:inherit}',
+  PAPER + ' .ph-callout-body > p + p,' + PAPER + ' .ph-read-body > p + p{margin-top:1.58em}',
+
+  /* list -- the old .b-list: gold square bullets, not discs */
+  PM + 'ul{list-style:none;font-size:11.5pt;line-height:1.6;margin:0 0 11px;padding-left:22px;color:#22252B}',
+  PM + 'ul > li{margin-bottom:5px;position:relative}',
+  PM + 'ul > li::before{content:"";position:absolute;left:-14px;top:.62em;width:4px;height:4px;background:#C9A84C}',
+  PM + 'ul > li > p{margin:0;font-size:inherit;line-height:inherit;color:inherit}',
+
+  /* table -- the old .b-table (the first row, a TipTap header row, is the red band) */
+  PM + 'table, ' + PM + '.tableWrapper > table{width:100%;border-collapse:collapse;margin:16px 0;font-size:10.5pt;line-height:1.45}',
+  PAPER + ' .ProseMirror table td,' + PAPER + ' .ProseMirror table th{border:1px solid #DDD2BC;padding:7px 10px;vertical-align:top;text-align:left;color:#22252B;font-weight:inherit}',
+  PAPER + ' .ProseMirror table th{background:#8B1A1A;color:#FBF8F1;font-family:Cinzel,Georgia,serif;font-weight:600;font-size:9.5pt;letter-spacing:.04em}',
+  PAPER + ' .ProseMirror table tr:nth-child(even):not(:first-child) td{background:#F3EDE0}',
+  PAPER + ' .ProseMirror table td > p,' + PAPER + ' .ProseMirror table th > p{margin:0;font-size:inherit;line-height:inherit;color:inherit}',
+  PAPER + ' .ProseMirror table td > p + p,' + PAPER + ' .ProseMirror table th > p + p{margin-top:1.45em}',
+
+  /* ornament (div) and page break (pb) -- the old .b-div and .b-pb, kept as visible rules */
+  PM + '.ph-ornament{height:1px;background:#DDD2BC;margin:26px 0;position:relative;font-size:0;color:transparent;text-align:left}',
+  PM + '.ph-ornament::after{content:"\\25C6";position:absolute;left:50%;top:-9px;transform:translateX(-50%);background:#FBF8F1;padding:0 10px;color:#C9A84C;font-size:9px;line-height:1.6}',
+  PM + '.ph-pagebreak{border-top:1px dashed #C7BCA4;margin:18px 0;text-align:center;height:0;font-size:0}',
+  PM + '.ph-pagebreak > span{font-family:var(--f-mono,Consolas,monospace);font-size:8px;letter-spacing:.2em;color:#B3A78E;background:#FBF8F1;padding:0 9px;position:relative;top:-6px;text-transform:uppercase}',
+  PM + '.ph-unknown{border:1px dashed red;color:red;padding:6px 8px;margin:.8em 0;font-family:Consolas,monospace;font-size:.8em}',
+
+  /* cards: unscoped globals in index.html do the styling; these two are what live editing
+     changes about them (the old UI showed the remove button on row hover and the add
+     button in edit mode, which is now always) */
+  PAPER + ' .np-rm{display:none}',
+  PAPER + ' .np-row:hover .np-rm{display:inline-block}',
+  PAPER + ' .np-add{display:inline-block}',
+].join('\n')
 
 function ensureStyle() {
   if (document.getElementById(STYLE_ID)) return
@@ -282,16 +289,21 @@ function mountConsoleEditor(container, docRow, opts) {
   searchBar.appendChild(searchInput); searchBar.appendChild(searchCount); searchBar.appendChild(searchPrev); searchBar.appendChild(searchNext); searchBar.appendChild(searchClose)
 
   var body = document.createElement('div'); body.className = 'tt-body'
+  var stage = document.createElement('div'); stage.className = 'tt-stage'
   var outlinePane = document.createElement('div'); outlinePane.className = 'tt-outline'; outlinePane.hidden = true
   var filtersEl = document.createElement('div'); filtersEl.className = 'tt-outline-filters'
   var outlineList = document.createElement('div'); outlineList.className = 'tt-outline-list'
   outlinePane.appendChild(filtersEl); outlinePane.appendChild(outlineList)
   var editorPane = document.createElement('div'); editorPane.className = 'tt-editor-pane'
-  body.appendChild(outlinePane); body.appendChild(editorPane)
+  stage.appendChild(editorPane)
+  body.appendChild(outlinePane); body.appendChild(stage)
 
   container.appendChild(toolbar)
   container.appendChild(searchBar)
   container.appendChild(body)
+  /* the outline pins just under the (sticky) toolbar, whatever height it wraps to */
+  function syncToolbarHeight() { body.style.setProperty('--tt-toolbar-h', toolbar.offsetHeight + 'px') }
+  syncToolbarHeight()
 
   var filters = loadFilters()
   var FILTER_KEYS = [['heading', 'Headings'], ['card', 'Cards'], ['callout', 'GM Notes'], ['read', 'Read-Aloud'], ['table', 'Tables']]
@@ -312,7 +324,8 @@ function mountConsoleEditor(container, docRow, opts) {
   outlineBtn.addEventListener('click', function () {
     outlinePane.hidden = !outlinePane.hidden
     outlineBtn.classList.toggle('on', !outlinePane.hidden)
-    editorPane.classList.toggle('tt-outline-open', !outlinePane.hidden)
+    body.classList.toggle('tt-has-outline', !outlinePane.hidden)
+    syncToolbarHeight()
     if (!outlinePane.hidden) renderOutline(outlineList, current, filters, editorPane, rememberPosition)
   })
 
