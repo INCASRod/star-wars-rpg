@@ -235,7 +235,7 @@ async function parseSpecializations(): Promise<{ specs: RespecSpecialization[]; 
     // cleanDisplayName's trailing-version strip is unconditional (not
     // gated on a tag match), so it fixes this case too.
     const name = cleanDisplayName(text(s.Name))
-    const description = text(s.Description) || null
+    let description = text(s.Description) || null
     keyAliasMap.set(key, key)
 
     const baseName = file.replace(/\.xml$/, '')
@@ -247,6 +247,10 @@ async function parseSpecializations(): Promise<{ specs: RespecSpecialization[]; 
     if (versioned) {
       const vData = await parseXmlFile(versioned.file)
       const vs = vData.Specialization
+      // The plain file's description is the OggDude stub ("Please see page N of
+      // the X Sourcebook"). The reSpec override carries the real write-up, so it
+      // wins whenever it has one — same as the tree and career skills below.
+      description = text(vs.Description) || description
       const vsCareerSkillsNode = vs.CareerSkills?.[0]
       career_skill_keys = texts(vsCareerSkillsNode?.Key)
       rows = parseTalentRows(vs, path.basename(versioned.file))
