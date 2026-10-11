@@ -327,7 +327,7 @@ button.tg.has:hover{background:color-mix(in srgb,var(--c) 26%,transparent);box-s
 <script>
 (function(){
 "use strict";
-var BUILD="2026-10-05.3";try{window.LORBUILD=BUILD;}catch(e){}
+var BUILD="2026-10-12.1";try{window.LORBUILD=BUILD;}catch(e){}
 var EDITION="archive";
 var VIEWS=[["situation","Situation"],["arcs","Arcs"],["threads","Threads"],["sessions","Sessions"],["planets","Planets"],["codex","Codex"],["documents","Documents"]];
 var GC={thriller:"--g-thriller",tragedy:"--g-tragedy",spirit:"--g-spirit",heist:"--g-heist",war:"--g-war",comedy:"--g-comedy"};
@@ -2031,6 +2031,30 @@ function archiveJSON(b,d){
   equipment:archEquipment(eq),equipmentRaw:eq,
   extraRows:rows.filter(function(r){return core.indexOf(String(r.l||"").trim().toLowerCase())<0&&String(r.v||"").trim();}).map(function(r){return {label:String(r.l).trim(),value:String(r.v).trim()};})
  };}
+/* ---------------- Archive export: one vehicle card -> JSON for The Archive's Vehicle creator ----------------
+   Contract: format "lor-console/vehicle@1". Same rules as the adversary export above: raw text is kept beside
+   every parsed field, nothing here is saved, and the importer (src/lib/importConsoleVehicle.ts) owns all the
+   interpretation of the prose rows (hyperdrive, weapons, ...). Only the numbers in the two strips are parsed here. */
+function archVNum(v){var m=String(v==null?"":v).replace(/[\u2212\u2012\u2013]/g,"-").match(/-?\d+/);return m?parseInt(m[0],10):null;}
+function archiveVehicleJSON(b,d){
+ var vs=b.vs||{},vd=b.vd||{},rows=b.rows||[],tierRaw=String(b.tier||"").trim();
+ var get=function(l){var r=rows.filter(function(x){return String(x.l||"").trim().toLowerCase()===l;})[0];return r?String(r.v||"").trim():"";};
+ var core=["sensor range","crew","passengers","encumbrance","consumables","hyperdrive","navicomputer","weapons"];
+ var wraw=get("weapons");
+ return {
+  format:"lor-console/vehicle@1",
+  exportedAt:new Date().toISOString(),
+  source:{docId:d&&d.id||null,docTitle:d&&d.title||null,blockId:b.id||null},
+  name:String(b.name||"").trim(),
+  classRaw:tierRaw||null,
+  silhouette:archVNum(vs.sil),speed:archVNum(vs.spd),handling:archVNum(vs.hnd),
+  defense:{fore:archVNum(vd.dfore),aft:archVNum(vd.daft)},
+  armor:archVNum(vd.arm),hull:archVNum(vd.htt),strain:archVNum(vd.sst),
+  sensorRange:get("sensor range"),crew:get("crew"),passengers:get("passengers"),encumbrance:get("encumbrance"),
+  consumables:get("consumables"),hyperdrive:get("hyperdrive"),navicomputer:get("navicomputer"),
+  weapons:archSplitTop(archNone(wraw),function(s,i){return s[i]===",";}).map(function(t){return {raw:t.replace(/\.\s*$/,"")};}),weaponsRaw:wraw,
+  extraRows:rows.filter(function(r){return core.indexOf(String(r.l||"").trim().toLowerCase())<0&&String(r.v||"").trim();}).map(function(r){return {label:String(r.l).trim(),value:String(r.v).trim()};})
+ };}
 function archiveCopyBtn(w,b,d){
  var h=w.querySelector(".st-h");if(!h||h.querySelector(".arch-copy"))return;
  var btn=el('<button type="button" class="arch-copy gmonly" title="Copy this stat block as JSON for The Archive\u2019s Adversary creator">Copy for Archive</button>');
@@ -2099,7 +2123,7 @@ function rDocs(){
      schedule(ttcommit);
     },
     onArchiveExport:function(block,docRow,onCopied){
-     var txt=JSON.stringify(archiveJSON(block,docRow),null,2);
+     var txt=JSON.stringify(block&&block.t==="vehicle"?archiveVehicleJSON(block,docRow):archiveJSON(block,docRow),null,2);
      var fallback=function(){archiveShowJSON(txt);};
      try{if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(onCopied,fallback);else fallback();}catch(err){fallback();}
     },

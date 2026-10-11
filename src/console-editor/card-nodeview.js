@@ -189,16 +189,18 @@ function createCardNodeView(props) {
     })
     dom.appendChild(addBtn)
 
-    if (kind === 'stat' && hooks.onArchiveExport) {
+    if ((kind === 'stat' || kind === 'vehicle') && hooks.onArchiveExport) {
       var copyBtn = document.createElement('button')
       copyBtn.type = 'button'; copyBtn.className = 'arch-copy gmonly'
-      copyBtn.title = "Copy this stat block as JSON for The Archive’s Adversary creator"
+      copyBtn.title = kind === 'vehicle'
+        ? "Copy this vehicle as JSON for The Archive’s Vehicle creator"
+        : "Copy this stat block as JSON for The Archive’s Adversary creator"
       copyBtn.textContent = 'Copy for Archive'
       copyBtn.addEventListener('mousedown', function (e) { e.stopPropagation() })
       copyBtn.addEventListener('click', function (e) {
         e.preventDefault(); e.stopPropagation()
         var d = liveData()
-        hooks.onArchiveExport(Object.assign({ id: props.node.attrs.blockId, t: 'stat' }, d), function () {
+        hooks.onArchiveExport(Object.assign({ id: props.node.attrs.blockId, t: kind }, d), function () {
           copyBtn.textContent = 'Copied'; copyBtn.classList.add('ok')
           setTimeout(function () { copyBtn.textContent = 'Copy for Archive'; copyBtn.classList.remove('ok') }, 1600)
         })

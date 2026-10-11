@@ -5,6 +5,8 @@ import { createPortal } from 'react-dom'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Vehicle, VehicleAbility } from '@/lib/vehicles'
 import { vehicleWeaponStats, ALL_VEHICLE_WEAPONS } from '@/lib/vehicles'
+import { importConsoleVehicle } from '@/lib/importConsoleVehicle'
+import type { ImportReport } from '@/lib/importConsoleAdversary'
 import { toast } from 'sonner'
 import { emitRefLibraryUpdated } from '@/lib/refLibraryEvents'
 import { HUD, FONT_DISPLAY, FONT_BODY, FONT_MONO, RADIUS } from '@/lib/tokens'
@@ -39,6 +41,11 @@ const btnSmall: React.CSSProperties = {
   color: HUD.textDim, fontFamily: FONT_BODY, fontSize: FS_CAPTION,
   padding: '0.25rem 0.625rem', borderRadius: RADIUS.sm, cursor: 'pointer',
 }
+const btnPrimary: React.CSSProperties = {
+  background: 'var(--hud-gold-subtle)', border: '1px solid var(--hud-gold-40)',
+  color: HUD.gold, fontFamily: FONT_BODY, fontSize: FS_CAPTION, fontWeight: 700,
+  padding: '0.25rem 0.625rem', borderRadius: RADIUS.sm, cursor: 'pointer',
+}
 const btnDanger: React.CSSProperties = {
   background: 'transparent', border: `1px solid color-mix(in srgb, var(--state-failure) 30%, transparent)`,
   color: 'var(--state-failure)', fontFamily: FONT_BODY, fontSize: FS_CAPTION,
@@ -52,6 +59,8 @@ const VEHICLE_TYPES = [
   'Capital Ship', 'Corvette', 'Frigate', 'Cruiser',
   'Shuttle', 'Transport', 'Other',
 ]
+/** The VEHICLE_TYPES the editor treats as starships (type select + console import). */
+const STARSHIP_TYPES = ['Starfighter', 'Light Freighter', 'Heavy Freighter', 'Capital Ship', 'Corvette', 'Frigate', 'Cruiser', 'Shuttle', 'Transport']
 
 interface AbilityEntry { name: string; description: string }
 interface WeaponEntry  {
@@ -202,6 +211,13 @@ export function VehicleEditor({
   const [saveError, setSaveError] = useState<string | null>(null)
   const [errors,    setErrors]    = useState<Record<string, string>>({})
 
+  /* ── Console import ──────────────────────────────────── */
+  const [importOpen,   setImportOpen]   = useState(false)
+  const [importText,   setImportText]   = useState('')
+  const [importError,  setImportError]  = useState<string | null>(null)
+  const [importReport, setImportReport] = useState<ImportReport | null>(null)
+  const [importDupeWarning, setImportDupeWarning] = useState<string | null>(null)
+
   /* ── Apply template ──────────────────────────────────── */
   const applyTemplate = (v: Vehicle & { _isCustom?: boolean }) => {
     const d = fromVehicle(v)
@@ -234,6 +250,32 @@ export function VehicleEditor({
     setDescription(d.description ?? '')
     setTmplSelected(v)
     setTmplSearch('')
+  }
+
+  /* ── Console import ──────────────────────────────────── */
+  // Fills the form from a pasted "Copy for Archive" vehicle block. Never saves: the GM reviews the flagged fields, then saves.
+  const handleImport = () => {
+    const result = importConsoleVehicle(importText, {
+      vehicleTypes: VEHICLE_TYPES, starshipTypes: STARSHIP_TYPES, weaponCatalogue: ALL_VEHICLE_WEAPONS,
+    })
+    if (!result.ok) { setImportError(result.error); return }
+    setImportError(null)
+    const { formValues: v, report } = result
+    setName(v.name); setType(v.type); setIsStarship(v.isStarship)
+    setSilhouette(v.silhouette); setSpeed(v.speed); setHandling(v.handling)
+    setDefFore(v.defFore); setDefAft(v.defAft); setDefPort(v.defPort); setDefStarboard(v.defStarboard)
+    setArmor(v.armor); setHullTrauma(v.hullTrauma); setSystemStrain(v.systemStrain)
+    setCrew(v.crew); setPassengers(v.passengers); setEncCap(v.encumbranceCapacity); setConsumables(v.consumables)
+    setHyperdrivePrimary(v.hyperdrivePrimary); setHyperdriveBackup(v.hyperdriveBackup)
+    setNaviComputer(v.naviComputer); setSensorRange(v.sensorRange); setMaxAltitude(v.maxAltitude)
+    setMassiveValue(v.massiveValue); setHardPoints(v.hardPoints)
+    setAbilities(v.abilities); setWeapons(v.weapons); setDescription(v.description)
+    setTmplSelected(null); setTmplSearch(''); setErrors({})
+    setImportReport(report)
+    const dupe = allVehicles.find(x => x._isCustom && x.name.toLowerCase() === v.name.toLowerCase())
+    setImportDupeWarning(dupe ? `A custom vehicle named "${v.name}" already exists in this campaign.` : null)
+    setImportOpen(false)
+    setImportText('')
   }
 
   const ni = (v: string, setter: (n: number) => void) =>
@@ -359,11 +401,70 @@ export function VehicleEditor({
           <div style={{ fontFamily: FONT_DISPLAY, fontSize: FS_H4, fontWeight: 700, color: HUD.gold, letterSpacing: '0.08em' }}>
             {editId ? 'Edit Vehicle' : 'New Vehicle'}
           </div>
-          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: HUD.textDim, cursor: 'pointer', fontFamily: FONT_BODY, fontSize: FS_H4, lineHeight: 1 }}>×</button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+            {!isEdit && (
+              <button onClick={() => { setImportOpen(o => !o); setImportError(null) }} style={btnSmall}>
+                Import from console
+              </button>
+            )}
+            <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: HUD.textDim, cursor: 'pointer', fontFamily: FONT_BODY, fontSize: FS_H4, lineHeight: 1 }}>×</button>
+          </div>
         </div>
 
         {/* Body */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+
+          {/* Console import paste panel */}
+          {importOpen && (
+            <div style={{
+              background: 'var(--hud-surface-lo)', border: `1px solid ${HUD.borderHi}`, borderRadius: RADIUS.md,
+              padding: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem',
+            }}>
+              <div style={fieldLabel}>Paste console export (lor-console/vehicle@1)</div>
+              <textarea
+                placeholder={'Paste the JSON copied from "Copy for Archive" on a console vehicle card…'}
+                value={importText}
+                onChange={e => setImportText(e.target.value)}
+                rows={6}
+                style={{ ...inputStyle, resize: 'vertical', fontFamily: FONT_MONO, lineHeight: 1.5 }}
+              />
+              {importError && (
+                <div style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: 'var(--state-failure)' }}>{importError}</div>
+              )}
+              <div style={{ display: 'flex', gap: '0.625rem', justifyContent: 'flex-end' }}>
+                <button onClick={() => { setImportOpen(false); setImportText(''); setImportError(null) }} style={btnSmall}>Cancel</button>
+                <button onClick={handleImport} style={btnPrimary}>Import</button>
+              </div>
+            </div>
+          )}
+
+          {/* Import review banner */}
+          {importReport && (
+            <div style={{
+              background: 'var(--hud-gold-subtle)', border: '1px solid var(--hud-gold-40)',
+              borderRadius: RADIUS.md, padding: '0.625rem 0.875rem',
+              display: 'flex', flexDirection: 'column', gap: '0.375rem',
+            }}>
+              <div style={{ fontFamily: FONT_BODY, fontSize: FS_SM, color: HUD.gold, fontWeight: 700 }}>
+                Imported from {importReport.docTitle ?? 'console export'}. Review flagged fields, then save.
+              </div>
+              {importDupeWarning && (
+                <div style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: 'var(--state-threat)' }}>
+                  ⚠ {importDupeWarning}
+                </div>
+              )}
+              {importReport.flags.length > 0 && (
+                <ul style={{ margin: 0, paddingLeft: '1.125rem', display: 'flex', flexDirection: 'column', gap: '0.1875rem' }}>
+                  {importReport.flags.map((f, i) => (
+                    <li key={i} style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: HUD.textDim }}>{f.message}</li>
+                  ))}
+                </ul>
+              )}
+              <button onClick={() => { setImportReport(null); setImportDupeWarning(null) }} style={{ ...btnSmall, alignSelf: 'flex-end' }}>
+                Dismiss
+              </button>
+            </div>
+          )}
 
           {/* Template search (only for new vehicles) */}
           {!isEdit && (
@@ -446,7 +547,7 @@ export function VehicleEditor({
                 <div style={fieldLabel}>Type</div>
                 <select
                   value={type}
-                  onChange={e => { setType(e.target.value); setIsStarship(['Starfighter','Light Freighter','Heavy Freighter','Capital Ship','Corvette','Frigate','Cruiser','Shuttle','Transport'].includes(e.target.value)) }}
+                  onChange={e => { setType(e.target.value); setIsStarship(STARSHIP_TYPES.includes(e.target.value)) }}
                   style={{ ...inputStyle, cursor: 'pointer' }}
                 >
                   {VEHICLE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
