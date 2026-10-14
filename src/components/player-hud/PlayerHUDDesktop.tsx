@@ -28,6 +28,7 @@ import { useCriticalInjuryRequest } from '@/hooks/useCriticalInjuryRequest'
 import { usePlayerBroadcast } from '@/hooks/usePlayerBroadcast'
 import { useCharacterConflicts } from '@/hooks/useCharacterConflicts'
 import { useForcePowers } from '@/hooks/useForcePowers'
+import { useCareerPowerKeys } from '@/hooks/useCareerPowerKeys'
 import { useBonusSkillKeys } from '@/hooks/useBonusSkillKeys'
 import { type RollResult, type ForceRollResult } from './dice-engine'
 import type { AdversaryInstance } from '@/lib/adversaries'
@@ -473,7 +474,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   // ── Force powers — ForcePanel still renders each owned power's tree inline
   // (unchanged, F1/F2); the browse-full-tree MODAL this used to also feed is
   // retired (Prompt F3) in favour of the /character/[id]/talents rail.
-  const { allForcePowers } = useForcePowers({ charForceAbilities, refForcePowers, refForceAbilityMap, refForcePowerMap })
+  const careerPowerKeys = useCareerPowerKeys(supabase, character?.career_key, charSpecs.map(cs => cs.specialization_key))
+  const { allForcePowers } = useForcePowers({ charForceAbilities, refForcePowers, refForceAbilityMap, refForcePowerMap, careerPowerKeys })
 
   // ── Roll handler ──
   const handleRoll = (result: RollResult, label?: string, pool?: Record<string, number>, meta?: RollMeta) => {

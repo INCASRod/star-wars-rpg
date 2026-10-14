@@ -15,6 +15,8 @@ import { computeCareerSkillKeys } from '@/lib/characters'
 import { TalentSurface } from '@/components/character/TalentSurface'
 import { buildTalentTree } from '@/lib/buildTalentTree'
 import { Z, EASE } from '@/lib/tokens'
+import { fetchCareerPowerRows, powersFor, type CareerPowerRow } from '@/lib/careerPowers'
+import { ForcePowersStep, type ForcePowerChoice } from '@/components/create/ForcePowersStep'
 import type {
   RefSpecies, RefCareer, RefSpecialization, RefSkill, RefTalent,
   RefMotivation, RefSpecificMotivation,
@@ -23,7 +25,7 @@ import type {
 // ── Step definitions ─────────────────────────────────────────────────────────
 const STEPS = [
   'Background', 'Obligation', 'Duty', 'Species',
-  'Career', 'Specialisation', 'XP Investment', 'Motivation', 'Review',
+  'Career', 'Specialisation', 'Force Powers', 'XP Investment', 'Motivation', 'Review',
 ]
 const CHAR_KEYS = ['brawn', 'agility', 'intellect', 'cunning', 'willpower', 'presence'] as const
 const CHAR_SHORT: Record<typeof CHAR_KEYS[number], string> = {
@@ -78,6 +80,12 @@ function parseBB(html: string): string {
 // ── Draft types ───────────────────────────────────────────────────────────────
 interface TalentPick { key: string; specKey: string; row: number; col: number; cost: number }
 
+interface ForcePowerRef {
+  key: string
+  name: string
+  ability_tree: { rows?: { index: number; abilities: string[]; directions?: { up?: boolean }[]; costs?: number[] }[] } | null
+}
+
 interface CharacterDraft {
   // Step 0: Background
   name: string
@@ -104,7 +112,11 @@ interface CharacterDraft {
   specialization: RefSpecialization | null
   freeSpecPicks: string[]     // 2 picks from spec bonus skills
   additionalSpecs: RefSpecialization[]
-  // Step 6: XP Investment (characteristics from species base, modified here)
+  // Step 6: Force Powers (free Basic Powers — primer v2.1; '' = not chosen)
+  careerPowerPick: string
+  bonusPowerPick: string
+  powerUpgradePick: string    // `${row}-${col}` of the free upgrade when both picks match
+  // Step 7: XP Investment (characteristics from species base, modified here)
   brawn: number
   agility: number
   intellect: number
@@ -113,7 +125,7 @@ interface CharacterDraft {
   presence: number
   skillRanks: Record<string, number>  // XP-purchased ranks (beyond free)
   talentPicks: TalentPick[]
-  // Step 7: Motivation
+  // Step 8: Motivation
   motivationType: string
   motivationSpecific: string
   motivationDesc: string
@@ -126,6 +138,7 @@ const DEFAULT_DRAFT: CharacterDraft = {
   species: null, speciesOptionKey: '',
   career: null, freeCareerPicks: [],
   specialization: null, freeSpecPicks: [], additionalSpecs: [],
+  careerPowerPick: '', bonusPowerPick: '', powerUpgradePick: '',
   brawn: 2, agility: 2, intellect: 2, cunning: 2, willpower: 2, presence: 2,
   skillRanks: {}, talentPicks: [],
   motivationType: '', motivationSpecific: '', motivationDesc: '',
@@ -215,12 +228,15 @@ function CreateWizard() {
   const [dutyTypes, setDutyTypes] = useState<{ key: string; name: string; description?: string }[]>([])
   const [motivations, setMotivations] = useState<RefMotivation[]>([])
   const [specificMotivations, setSpecificMotivations] = useState<RefSpecificMotivation[]>([])
+  const [careerPowerRows, setCareerPowerRows] = useState<CareerPowerRow[]>([])
+  const [forcePowerRefs, setForcePowerRefs] = useState<ForcePowerRef[]>([])
+  const [forceAbilityNames, setForceAbilityNames] = useState<Record<string, string>>({})
 
   useEffect(() => {
     if (!campaignId) return
     async function load() {
       const ds = await fetchActiveDataset(supabase)
-      const [spRes, carRes, specRes, skRes, talRows, oblRes, dutRes, motRes, smRes, pcRes] = await Promise.all([
+      const [spRes, carRes, specRes, skRes, talRows, oblRes, dutRes, motRes, smRes, pcRes, cpRows, fpRes, faRows] = await Promise.all([
         supabase.from('ref_species').select('*').order('name'),
         supabase.from('ref_careers').select('*').eq('dataset_source', ds).eq('is_retired', false).order('name'),
         supabase.from('ref_specializations').select('*').eq('dataset_source', ds).eq('is_retired', false).order('name'),
@@ -235,6 +251,11 @@ function CreateWizard() {
         supabase.from('ref_motivations').select('*').order('name'),
         supabase.from('ref_specific_motivations').select('*').order('name'),
         supabase.from('characters').select('id', { count: 'exact' }).eq('campaign_id', campaignId).eq('is_archived', false),
+        fetchCareerPowerRows(supabase),
+        supabase.from('ref_force_powers').select('key,name,ability_tree').eq('dataset_source', ds).eq('is_retired', false),
+        fetchAllRows<{ key: string; name: string }>((from, to) =>
+          supabase.from('ref_force_abilities').select('key,name').eq('dataset_source', ds).range(from, to),
+        ),
       ])
       setSpecies((spRes.data as RefSpecies[]) || [])
       setCareers((carRes.data as RefCareer[]) || [])
@@ -245,6 +266,9 @@ function CreateWizard() {
       setDutyTypes(dutRes.data || [])
       setMotivations((motRes.data as RefMotivation[]) || [])
       setSpecificMotivations((smRes.data as RefSpecificMotivation[]) || [])
+      setCareerPowerRows(cpRows)
+      setForcePowerRefs((fpRes.data as ForcePowerRef[]) || [])
+      setForceAbilityNames(Object.fromEntries(faRows.map(a => [a.key, a.name])))
       const pc = pcRes.count || 4
       setPlayerCount(pc)
       setLoading(false)
@@ -286,6 +310,50 @@ function CreateWizard() {
     const sp = { species_key: draft.species?.key ?? '' }
     return isDroid(sp) || isClone(sp)
   }, [draft.species])
+
+  // ── Free Force Powers (primer v2.1) ───────────────────────────────────────
+  const forcePowerRefMap = useMemo(() => Object.fromEntries(forcePowerRefs.map(f => [f.key, f])), [forcePowerRefs])
+  const toPowerChoice = useCallback((key: string): ForcePowerChoice | null => {
+    const ref = forcePowerRefMap[key]
+    if (!ref) return null
+    const rows = ref.ability_tree?.rows ?? []
+    const basicKey = rows[0]?.abilities?.[0] ?? null
+    // Accessible upgrade = a row-1 node linked up to the Basic Power. Row 1 is never Mastery.
+    const row1 = rows.find(r => r.index === 1)
+    const seen = new Set<string>()
+    const upgrades = (row1?.abilities ?? []).flatMap((aKey, col) => {
+      if (!aKey || (row1?.costs?.[col] ?? 0) <= 0 || !row1?.directions?.[col]?.up || seen.has(aKey)) return []
+      seen.add(aKey)
+      return [{ row: 1, col, key: aKey, name: forceAbilityNames[aKey] ?? aKey }]
+    })
+    return { key, name: ref.name, basicKey, upgrades }
+  }, [forcePowerRefMap, forceAbilityNames])
+  const careerPowerChoices = useMemo(
+    () => powersFor(careerPowerRows, 'career', draft.career?.key).map(toPowerChoice).filter((c): c is ForcePowerChoice => !!c),
+    [careerPowerRows, draft.career, toPowerChoice],
+  )
+  const bonusPowerChoices = useMemo(
+    () => powersFor(careerPowerRows, 'specialization', draft.specialization?.key).map(toPowerChoice).filter((c): c is ForcePowerChoice => !!c),
+    [careerPowerRows, draft.specialization, toPowerChoice],
+  )
+  // Step 6 only exists for careers that have Career Powers (Force careers); droids/clones never see it.
+  const hasPowerStep = !speciesBlocksForce && careerPowerChoices.length > 0
+
+  const forceSummary = useMemo(() => {
+    const lines: string[] = []
+    if (!speciesBlocksForce && allSpecs.some(sp => sp.is_force_sensitive)) lines.push('Force Rating 1 (free — Force-sensitive specialization)')
+    if (hasPowerStep) {
+      const nm = (k: string) => forcePowerRefMap[k]?.name ?? k
+      if (draft.careerPowerPick) lines.push(`${nm(draft.careerPowerPick)} Basic Power (Career Power)`)
+      if (draft.bonusPowerPick) lines.push(`${nm(draft.bonusPowerPick)} Basic Power (Bonus Career Power)`)
+      if (draft.powerUpgradePick) {
+        const [r, c] = draft.powerUpgradePick.split('-').map(Number)
+        const upKey = forcePowerRefMap[draft.careerPowerPick]?.ability_tree?.rows?.find(x => x.index === r)?.abilities?.[c]
+        if (upKey) lines.push(`${nm(draft.careerPowerPick)} — ${forceAbilityNames[upKey] ?? upKey} (free upgrade)`)
+      }
+    }
+    return lines
+  }, [speciesBlocksForce, allSpecs, hasPowerStep, draft.careerPowerPick, draft.bonusPowerPick, draft.powerUpgradePick, forcePowerRefMap, forceAbilityNames])
 
   // ── XP calculations ───────────────────────────────────────────────────────
   const baseXp = draft.species?.starting_xp || 0
@@ -403,6 +471,9 @@ function CreateWizard() {
         .insert({
           campaign_id: campaignId,
           player_id: playerId,
+          // Primer v2.1: picking a Force-sensitive (Force Star) specialization at creation grants
+          // Force Rating 1 free. Droids/clones are locked out above.
+          force_rating_purchased: !speciesBlocksForce && allSpecs.some(sp => sp.is_force_sensitive),
           name: draft.name,
           species_key: draft.species.key,
           career_key: draft.career.key,
@@ -452,6 +523,28 @@ function CreateWizard() {
       }))
       await supabase.from('character_specializations').insert(specInserts)
 
+      // Free Basic Powers (+ one free upgrade if both picks are the same power) — 0 XP.
+      if (hasPowerStep && draft.careerPowerPick) {
+        const freeAbilities: { force_power_key: string; force_ability_key: string; tree_row: number; tree_col: number }[] = []
+        const addBasic = (powerKey: string) => {
+          const basic = forcePowerRefMap[powerKey]?.ability_tree?.rows?.[0]?.abilities?.[0]
+          if (basic && !freeAbilities.some(a => a.force_power_key === powerKey && a.tree_row === 0))
+            freeAbilities.push({ force_power_key: powerKey, force_ability_key: basic, tree_row: 0, tree_col: 0 })
+        }
+        addBasic(draft.careerPowerPick)
+        if (draft.bonusPowerPick) addBasic(draft.bonusPowerPick)
+        if (draft.powerUpgradePick && draft.careerPowerPick === draft.bonusPowerPick) {
+          const [r, c] = draft.powerUpgradePick.split('-').map(Number)
+          const upKey = forcePowerRefMap[draft.careerPowerPick]?.ability_tree?.rows?.find(x => x.index === r)?.abilities?.[c]
+          if (upKey) freeAbilities.push({ force_power_key: draft.careerPowerPick, force_ability_key: upKey, tree_row: r, tree_col: c })
+        }
+        if (freeAbilities.length > 0) {
+          await supabase.from('character_force_abilities').insert(
+            freeAbilities.map(a => ({ ...a, character_id: char.id, xp_cost: 0 })),
+          )
+        }
+      }
+
       // Skills
       const allCareerSkillKeys = computeCareerSkillKeys(draft.career?.career_skill_keys, allSpecs)
       const skillInserts = refSkills.map(sk => ({
@@ -492,7 +585,7 @@ function CreateWizard() {
       setSaving(false)
     }
   }, [
-    campaignId, draft, allSpecs, speciesBlocksForce, xpTotal, xpRemaining, xpSpent,
+    campaignId, draft, allSpecs, speciesBlocksForce, hasPowerStep, forcePowerRefMap, xpTotal, xpRemaining, xpSpent,
     xpSpentOnChars, xpSpentOnSkills, xpSpentOnTalents, xpSpentOnAdditionalSpecs,
     oblXpBonus, extraCredits, totalObligation,
     speciesOptionSkills, speciesSkillMods, refSkills,
@@ -500,8 +593,15 @@ function CreateWizard() {
   ])
 
   // ── Shared step nav helpers ───────────────────────────────────────────────
-  const goNext = () => setStep(s => Math.min(s + 1, STEPS.length - 1))
-  const goPrev = () => setStep(s => Math.max(s - 1, 0))
+  const FORCE_STEP = 6
+  const goNext = () => setStep(s => {
+    const n = Math.min(s + 1, STEPS.length - 1)
+    return n === FORCE_STEP && !hasPowerStep ? n + 1 : n
+  })
+  const goPrev = () => setStep(s => {
+    const n = Math.max(s - 1, 0)
+    return n === FORCE_STEP && !hasPowerStep ? n - 1 : n
+  })
 
   // ── Guards ────────────────────────────────────────────────────────────────
   if (!campaignId) {
@@ -551,7 +651,7 @@ function CreateWizard() {
 
         {/* ── Step tabs ── */}
         <div style={{ display: 'flex', gap: 'var(--sp-xs)', justifyContent: 'center', marginTop: 'var(--sp-md)', flexWrap: 'wrap' }}>
-          {STEPS.map((s, i) => (
+          {STEPS.map((s, i) => i === FORCE_STEP && !hasPowerStep ? null : (
             <button
               key={s}
               onClick={() => { if (i < step) setStep(i) }}
@@ -860,7 +960,7 @@ function CreateWizard() {
             skillMap={skillMap}
             selected={draft.career}
             freeCareerPicks={draft.freeCareerPicks}
-            onSelect={car => setDraft(p => ({ ...p, career: car, freeCareerPicks: [], specialization: null, freeSpecPicks: [], additionalSpecs: [] }))}
+            onSelect={car => setDraft(p => ({ ...p, career: car, freeCareerPicks: [], specialization: null, freeSpecPicks: [], additionalSpecs: [], careerPowerPick: '', bonusPowerPick: '', powerUpgradePick: '' }))}
             onPickToggle={(skillKey) => setDraft(p => {
               const picks = [...p.freeCareerPicks]
               const idx = picks.indexOf(skillKey)
@@ -882,7 +982,7 @@ function CreateWizard() {
             speciesBlocksForce={speciesBlocksForce}
             selected={draft.specialization}
             freeSpecPicks={draft.freeSpecPicks}
-            onSelect={spec => setDraft(p => ({ ...p, specialization: spec, freeSpecPicks: [], talentPicks: [] }))}
+            onSelect={spec => setDraft(p => ({ ...p, specialization: spec, freeSpecPicks: [], talentPicks: [], bonusPowerPick: '', powerUpgradePick: '' }))}
             onSpecPickToggle={(skillKey) => setDraft(p => {
               const picks = [...p.freeSpecPicks]
               const idx = picks.indexOf(skillKey)
@@ -895,8 +995,26 @@ function CreateWizard() {
           />
         )}
 
-        {/* ═══ STEP 6: XP Investment ═══════════════════════════════════════ */}
+        {/* ═══ STEP 6: Force Powers ═════════════════════════════════════════ */}
         {step === 6 && draft.career && draft.specialization && (
+          <ForcePowersStep
+            careerName={draft.career.name}
+            specName={draft.specialization.name}
+            careerChoices={careerPowerChoices}
+            bonusChoices={bonusPowerChoices}
+            careerPick={draft.careerPowerPick}
+            bonusPick={draft.bonusPowerPick}
+            upgradePick={draft.powerUpgradePick}
+            onCareerPick={k => setDraft(p => ({ ...p, careerPowerPick: k, powerUpgradePick: '' }))}
+            onBonusPick={k => setDraft(p => ({ ...p, bonusPowerPick: k, powerUpgradePick: '' }))}
+            onUpgradePick={pos => setDraft(p => ({ ...p, powerUpgradePick: pos }))}
+            onConfirm={goNext}
+            onBack={goPrev}
+          />
+        )}
+
+        {/* ═══ STEP 7: XP Investment ═══════════════════════════════════════ */}
+        {step === 7 && draft.career && draft.specialization && (
           <XpInvestmentStep
             draft={draft}
             setDraft={setDraft}
@@ -921,8 +1039,8 @@ function CreateWizard() {
           />
         )}
 
-        {/* ═══ STEP 7: Motivation ══════════════════════════════════════════ */}
-        {step === 7 && (
+        {/* ═══ STEP 8: Motivation ══════════════════════════════════════════ */}
+        {step === 8 && (
           <MotivationStep
             motivations={motivations}
             specificMotivations={specificMotivations}
@@ -936,8 +1054,8 @@ function CreateWizard() {
           />
         )}
 
-        {/* ═══ STEP 8: Review / Confirm ════════════════════════════════════ */}
-        {step === 8 && (
+        {/* ═══ STEP 9: Review / Confirm ════════════════════════════════════ */}
+        {step === 9 && (
           <ReviewStep
             draft={draft}
             skillMap={skillMap}
@@ -951,6 +1069,7 @@ function CreateWizard() {
             xpSpentOnSkills={xpSpentOnSkills}
             xpSpentOnTalents={xpSpentOnTalents}
             xpSpentOnAdditionalSpecs={xpSpentOnAdditionalSpecs}
+            forceSummary={forceSummary}
             startingObligation={startingObligation}
             totalObligation={totalObligation}
             oblXpBonus={oblXpBonus}
@@ -1524,7 +1643,7 @@ function SpecStep({
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-//  STEP 6: XP Investment
+//  STEP 7: XP Investment
 // ══════════════════════════════════════════════════════════════════════════════
 function XpInvestmentStep({
   draft, setDraft, refSkills, talentMap, careerSkillKeys, allSpecs,
@@ -1880,7 +1999,7 @@ function XpInvestmentStep({
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-//  STEP 7: Motivation
+//  STEP 8: Motivation
 // ══════════════════════════════════════════════════════════════════════════════
 function MotivationStep({
   motivations, specificMotivations, selectedType, selectedSpecific, motivationDesc,
@@ -1994,12 +2113,12 @@ function MotivationStep({
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-//  STEP 8: Review / Confirm
+//  STEP 9: Review / Confirm
 // ══════════════════════════════════════════════════════════════════════════════
 function ReviewStep({
   draft, skillMap, talentMap, allSpecs, careerSkillKeys,
   xpTotal, xpSpent, xpRemaining, xpSpentOnChars, xpSpentOnSkills, xpSpentOnTalents, xpSpentOnAdditionalSpecs,
-  startingObligation, totalObligation, oblXpBonus, extraCredits,
+  forceSummary, startingObligation, totalObligation, oblXpBonus, extraCredits,
   saving, onBack, onCreate,
 }: {
   draft: CharacterDraft
@@ -2014,6 +2133,7 @@ function ReviewStep({
   xpSpentOnSkills: number
   xpSpentOnTalents: number
   xpSpentOnAdditionalSpecs: number
+  forceSummary: string[]
   startingObligation: number
   totalObligation: number
   oblXpBonus: number
@@ -2075,6 +2195,18 @@ function ReviewStep({
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
               {[...draft.freeCareerPicks, ...draft.freeSpecPicks].map((sk, i) => (
                 <span key={`${sk}-${i}`} style={S.skillPill(true)}>{skillMap[sk]?.name || sk}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Force */}
+        {forceSummary.length > 0 && (
+          <div>
+            <div style={{ ...S.labelXs, marginBottom: '0.4rem' }}>FORCE</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              {forceSummary.map(l => (
+                <span key={l} style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-sm)', color: 'var(--hud-text)' }}>{l}</span>
               ))}
             </div>
           </div>

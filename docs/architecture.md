@@ -318,6 +318,8 @@
 ### `useForcePowers(characterId, supabase)`
 - Loads and structures force power trees for a character from `character_force_abilities`
 - Returns tree data consumed by `ForcePowerTree` component and `allForcePowers` (`ForcePowerDisplay[]`) consumed by `ForcePanel`
+- **Mentor discount (primer v2.1):** optional `careerPowerKeys: Set<string>` param. For every power in the set, the Basic Power node (tree row 0, col 0) costs `MENTOR_DISCOUNT` (5 XP, `src/lib/careerPowers.ts`) less — applied to both `buildForcePowerTree`'s node `cost` and `allForcePowers`' ability `cost`, so every purchase surface and the stored `xp_cost` inherit it. `canPurchase` still reads the raw tree cost. Callers (`PlayerHUDDesktop`, `MobileShell`, `useTalentSurfaceData`) get the set from `useCareerPowerKeys`. Live-verified on Senna Lorne: Move/Manipulate 5 XP (Career / Archivist Bonus), Enhance 10 XP, Heal/Harm 10 XP (base 15, Healer Bonus).
+- `useCareerPowerKeys(supabase, careerKey, specKeys)` (`src/hooks/useCareerPowerKeys.ts`) — Career Power set for a character: the career's two powers + each owned spec's Bonus Career Powers, from `ref_career_powers` (fetched once per page load via `fetchCareerPowerRows` in `src/lib/careerPowers.ts`, which also exports `MENTOR_DISCOUNT`, `powersFor`, `deriveCareerPowerKeys`).
 - `buildForcePowerTree`'s per-node `canPurchase` (Pass 2) resolves span-covered adjacency via `buildForceCellKeyMap` (`ForcePowerTree.tsx`, Prompt F1/F3) — `ForcePowerTree.tsx`'s own `buildForceEnergyGraph` (Prompt F4) reuses that exact same map to build the energy-trace graph, not a second resolution mechanism
 - Connector-bar edge builder had two bugs, fixed: a self-loop (RIGHT-direction edge used `col+1` instead of `col+span`) and missing edges (an overly-broad `span > 0` gate incorrectly applied to `dir.down` reads, not just `dir.right`); a dedup pass (`buildForceCellKeyMap` + `Set`) now strips any residual self-loop/duplicate edge after `connections` is built
 - `allForcePowers` also sets `basicAbilityKey` (`ability_tree.rows[0].abilities[0] ?? null`) — the structural identifier for a power's base node, replacing `ForceCheckOverlay`'s old `endsWith('BASIC')` key heuristic; see the `ForceCheckOverlay` section for the audit behind it
@@ -353,6 +355,7 @@
 - `character_talents` — purchased talents with tree position + xp_cost
 - `character_specializations` — purchased specs, in purchase order
 - `character_force_abilities` — purchased Force power upgrades
+- `ref_career_powers` — reSpecialized Primer v2.1 Career Powers / Bonus Career Powers (migration 143). One row per `(scope, scope_key, power_key)`; `scope` = `'career'` (`ref_careers.key`) or `'specialization'` (`ref_specializations.key`); `power_key` = respec `ref_force_powers.key`. PADAWAN / MASTER are stored as `power_key NULL` + `any_power_count` (1 / 2) for the "any Force Power" cases. Consumed by `src/lib/careerPowers.ts` → `useCareerPowerKeys` (Mentor discount) and the creation wizard's Force Powers step. Not seeded (no respec spec row yet): Lancer, Shaman, Reclaimer, Trickster, Champion, Slayer, Temple Guardian, Wayseeker. `STEELHAND`/`JUYO` (the keys `ref_careers.specialization_keys` points at) are seeded alongside their `STEELHANDADEPT`/`JUYOBERSERKER` twins. Reads anon+authenticated; writes GM-only.
 - `character_critical_injuries` — tracked injuries
 - `character_sig_ability_nodes` — Signature Abilities Phase 1: purchased sig-ability tree nodes (base + upgrades). `spec_slot` (migration 090) records which `specialization_key` the ability was locked in against, since a character can lock a different signature ability per in-career spec. No FK on `sig_ability_key` (dataset-keyed, matches migration 062's convention). No RLS (matches every other ref/character-progress table added alongside it).
 - `character_conflicts` — Force-user morality conflict log; `description` = type label; `narrative` = optional body; `player_acknowledged` = false until player dismisses notification
@@ -656,7 +659,10 @@ Enables the three in-play XP spends on mobile — talent tree nodes (including s
   └── NPC/Vehicle editors
 
 /create/page.tsx
-  └── Character creator wizard (inline — no sub-component shell)
+  └── Character creator wizard (inline — no sub-component shell, except `components/create/ForcePowersStep.tsx`)
+      Steps: Background, Obligation, Duty, Species, Career, Specialisation, **Force Powers**, XP Investment, Motivation, Review.
+      Force Powers (step 6, primer v2.1) is skipped (tab hidden, `goNext`/`goPrev` jump over it) unless the career has Career Powers in `ref_career_powers` and the species isn't droid/clone. Picks: one Career Power + one Bonus Career Power (from the starting spec) → their Basic Powers inserted into `character_force_abilities` at `xp_cost = 0`; if both picks are the same power, one free accessible (row-1, `up`-linked) upgrade is also chosen. PADAWAN/MASTER "any power" picks are NOT handled (spec has no named Bonus Career Powers → only the career pick is offered).
+      `handleCreate` also sets `characters.force_rating_purchased = true` (free Force Rating 1) when any chosen spec has `is_force_sensitive` and the species isn't droid/clone. Review step shows a FORCE summary. Free grants write no `xp_transactions` row.
 
 /gm/mapforge/page.tsx
   └── Map Forge (inline — generate → edit flow)

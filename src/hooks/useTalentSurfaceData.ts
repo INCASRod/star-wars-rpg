@@ -6,6 +6,7 @@ import { fetchActiveDataset } from '@/lib/activeDataset'
 import { getRefData } from '@/lib/refDataCache'
 import { useCharacterSigAbilities } from '@/hooks/useCharacterSigAbilities'
 import { useForcePowers } from '@/hooks/useForcePowers'
+import { useCareerPowerKeys } from '@/hooks/useCareerPowerKeys'
 import { countOwnedRanks } from '@/lib/derivedStats'
 import {
   purchaseTalent, removeTalent, resolveDedication, cancelDedication, buySpecialization,
@@ -279,8 +280,9 @@ export function useTalentSurfaceData(characterId: string) {
   // allForcePowers, scoped to refForcePowersOwned, naturally contains only the
   // powers this character owns — the exact same hook ForcePanel.tsx already
   // uses, not a reimplementation.
+  const careerPowerKeys = useCareerPowerKeys(supabase, character?.career_key, charSpecs.map(cs => cs.specialization_key))
   const { allForcePowers, buildForcePowerTree } = useForcePowers({
-    charForceAbilities, refForcePowers: refForcePowersOwned, refForceAbilityMap, refForcePowerMap,
+    charForceAbilities, refForcePowers: refForcePowersOwned, refForceAbilityMap, refForcePowerMap, careerPowerKeys,
   })
 
   const handlePurchaseForceAbility = async (abilityKey: string, row: number, col: number, cost: number, activeForcePowerKey: string) => {

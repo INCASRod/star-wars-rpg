@@ -1,6 +1,7 @@
 'use client'
 import { useMemo, useCallback } from 'react'
 import type { ForcePowerDisplay } from '@/components/player-hud/ForcePanel'
+import { MENTOR_DISCOUNT } from '@/lib/careerPowers'
 import { buildForceCellKeyMap, forceCellKey, type ForceTreeNode, type ForceTreeConnection } from '@/components/character/ForcePowerTree'
 
 interface CharForceAbility {
@@ -36,9 +37,16 @@ interface UseForcePowersParams {
   refForcePowers: RefForcePower[]
   refForceAbilityMap: Record<string, RefForceAbility>
   refForcePowerMap: Record<string, RefForcePower>
+  /** Powers that are Career Powers for this character — their Basic Power
+   * (tree row 0, col 0) costs MENTOR_DISCOUNT less. Omitted = no discount. */
+  careerPowerKeys?: Set<string>
 }
 
-export function useForcePowers({ charForceAbilities, refForcePowers, refForceAbilityMap, refForcePowerMap }: UseForcePowersParams) {
+/** Basic Power node of a tree is always row 0, col 0 (see allForcePowers). */
+const mentorDiscountedCost = (cost: number, isCareerPower: boolean, row: number, col: number) =>
+  isCareerPower && row === 0 && col === 0 && cost > 0 ? Math.max(0, cost - MENTOR_DISCOUNT) : cost
+
+export function useForcePowers({ charForceAbilities, refForcePowers, refForceAbilityMap, refForcePowerMap, careerPowerKeys }: UseForcePowersParams) {
   const buildForcePowerTree = useCallback((powerKey: string): {
     powerName: string
     nodes: ForceTreeNode[]
@@ -63,7 +71,7 @@ export function useForcePowers({ charForceAbilities, refForcePowers, refForceAbi
         const aKey = abilities[col]
         const ref  = refForceAbilityMap[aKey]
         const span = spans[col] ?? 1
-        const cost = costs[col] ?? 0
+        const cost = mentorDiscountedCost(costs[col] ?? 0, !!careerPowerKeys?.has(powerKey), row.index, col)
         const isPurchased = purchasedSet.has(`${row.index}-${col}`)
         const dir = dirs[col] || {}
         nodes.push({ abilityKey: aKey, name: ref?.name || aKey, description: ref?.description ?? undefined, row: row.index, col, span, cost, purchased: isPurchased, canPurchase: false, ownedRank: 0, totalRanks: 0 })
@@ -191,7 +199,7 @@ export function useForcePowers({ charForceAbilities, refForcePowers, refForceAbi
     }
 
     return { powerName: refPower.name, nodes, connections: dedupedConnections, purchasedCount: displayNodes.filter(n => n.purchased).length, totalCount: displayNodes.filter(n => n.cost > 0).length }
-  }, [charForceAbilities, refForcePowerMap, refForceAbilityMap])
+  }, [charForceAbilities, refForcePowerMap, refForceAbilityMap, careerPowerKeys])
 
   const allForcePowers = useMemo((): ForcePowerDisplay[] => {
     // Ability keys get renamed across reSpec snapshot reseeds (e.g. migration 102),
@@ -208,8 +216,9 @@ export function useForcePowers({ charForceAbilities, refForcePowers, refForceAbi
         for (const row of (fp.ability_tree?.rows ?? [])) {
           for (let col = 0; col < (row.abilities || []).length; col++) {
             const aKey = row.abilities[col]
-            const cost = (row.costs || [])[col] ?? 0
-            if (!aKey || cost === 0) continue
+            const rawCost = (row.costs || [])[col] ?? 0
+            if (!aKey || rawCost === 0) continue
+            const cost = mentorDiscountedCost(rawCost, !!careerPowerKeys?.has(fp.key), row.index, col)
             const ref = refForceAbilityMap[aKey]
             if (!ref) continue
             const isPurchased = purchasedPositions.has(`${fp.key}:${row.index}-${col}`)
@@ -243,7 +252,7 @@ export function useForcePowers({ charForceAbilities, refForcePowers, refForceAbi
         if (a.purchasedCount === 0 && b.purchasedCount > 0) return 1
         return a.powerName.localeCompare(b.powerName)
       })
-  }, [charForceAbilities, refForcePowers, refForceAbilityMap, buildForcePowerTree])
+  }, [charForceAbilities, refForcePowers, refForceAbilityMap, buildForcePowerTree, careerPowerKeys])
 
   return { allForcePowers, buildForcePowerTree }
 }

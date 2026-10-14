@@ -6,6 +6,7 @@ import { useCharacterData }        from '@/hooks/useCharacterData'
 import { useDerivedStats }         from '@/hooks/useDerivedStats'
 import { usePendingActions }       from '@/hooks/usePendingActions'
 import { useForcePowers }          from '@/hooks/useForcePowers'
+import { useCareerPowerKeys }       from '@/hooks/useCareerPowerKeys'
 import { useEncounterState }       from '@/hooks/useEncounterState'
 import { useRollFeed }             from '@/hooks/useRollFeed'
 import { useDestinyPool }          from '@/hooks/useDestinyPool'
@@ -73,7 +74,8 @@ export function MobileShell({ characterId, campaignId }: MobileShellProps) {
     loading, error,
   } = useCharacterData(characterId)
 
-  const { allForcePowers } = useForcePowers({ charForceAbilities, refForcePowers, refForceAbilityMap, refForcePowerMap })
+  const careerPowerKeys = useCareerPowerKeys(supabase, character?.career_key, charSpecs.map(cs => cs.specialization_key))
+  const { allForcePowers } = useForcePowers({ charForceAbilities, refForcePowers, refForceAbilityMap, refForcePowerMap, careerPowerKeys })
 
   const derivedStats = useDerivedStats({
     character: character ?? null,
