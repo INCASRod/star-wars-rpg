@@ -39,6 +39,10 @@ export function useDestinyPool(
   // Keep a stable ref to campaignId for use in the spend callback
   const campaignIdRef = useRef(campaignId)
   useEffect(() => { campaignIdRef.current = campaignId }, [campaignId])
+  // The broadcast handlers below are registered once per campaign, so a bare
+  // `characterName` there can be stale (undefined before the character loads).
+  const characterNameRef = useRef(characterName)
+  useEffect(() => { characterNameRef.current = characterName }, [characterName])
 
   // ── Load pool on mount ──
   useEffect(() => {
@@ -75,6 +79,13 @@ export function useDestinyPool(
         if (payload.characterId === characterId) return // own spend, skip
         const who  = payload.characterName as string
         const side = payload.tokenType === 'light' ? '○ Light' : '● Dark'
+        if (payload.tokenType === 'light') {
+          try {
+            const audio = new Audio('/sounds/light-side-destiny.mp3')
+            audio.volume = 0.7
+            audio.play().catch(() => {})
+          } catch (_) {}
+        }
         import('sonner').then(m => m.toast.info(`${who} spent a ${side} Side destiny point`))
       })
       .subscribe()
@@ -114,6 +125,13 @@ export function useDestinyPool(
         setDestinyConsidering(null)
         const who  = payload.characterName as string
         const side = payload.side === 'light' ? '○ Light' : '● Dark'
+        if (payload.side === 'light' && who !== characterNameRef.current) {
+          try {
+            const audio = new Audio('/sounds/light-side-destiny.mp3')
+            audio.volume = 0.7
+            audio.play().catch(() => {})
+          } catch (_) {}
+        }
         import('sonner').then(m => m.toast.info(`${who} spent a ${side} Side destiny point`))
       })
       .subscribe()

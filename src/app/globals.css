@@ -2026,7 +2026,7 @@ i.ffi {
 .ptt-vbar-wound  { background: var(--state-wounds); }
 .ptt-vbar-strain { background: var(--state-strain); }
 
-.ptt-pips { display: flex; gap: 4px; align-items: center; }
+.ptt-pips { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; } /* no cap on squad size - wraps instead of clipping */
 .ptt-pips-lbl {
   font-size: var(--text-overline);
   font-weight: 700;

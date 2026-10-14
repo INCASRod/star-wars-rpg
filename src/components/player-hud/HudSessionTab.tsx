@@ -9,9 +9,9 @@ import { OpeningCrawlCanvas } from '@/components/map/OpeningCrawlCanvas'
 import { InitiativeStrip } from '@/components/player/InitiativeStrip'
 import { PlayerTokenTooltip, type PlayerTooltipEntity, type PlayerTooltipRole } from '@/components/player/PlayerTokenTooltip'
 import { HudAdversaryDrawer } from './HudAdversaryDrawer'
-import { fetchAdversaries, adversaryToInstance } from '@/lib/adversaries'
+import { useMapDeck } from '@/hooks/useMapDeck'
+import { loadAdversaryBaseStats, loadVehicleBaseStats, findDeckInstance } from '@/lib/mapTokenBaseStats'
 import type { AdversaryInstance } from '@/lib/adversaries'
-import { fetchVehicles } from '@/lib/vehicles'
 import type { Vehicle } from '@/lib/vehicles'
 import type { MapToken } from '@/hooks/useMapTokens'
 import type { CombatEncounter } from '@/lib/combat'
@@ -77,22 +77,7 @@ export function HudSessionTab({
       visibleMapTokens.filter(t => t.participant_type === 'adversary' && t.label).map(t => t.label!),
     )]
     if (names.length === 0) return
-    ;(async () => {
-      const [{ data: globalData }, { data: customData }, staticAdvs] = await Promise.all([
-        supabase.from('ref_adversaries').select('*').in('name', names).is('campaign_id', null),
-        campaignId
-          ? supabase.from('ref_adversaries').select('*').in('name', names).eq('campaign_id', campaignId)
-          : Promise.resolve({ data: [] as unknown[] }),
-        fetchAdversaries(),
-      ])
-      type AdvRow = Parameters<typeof adversaryToInstance>[0]
-      const advMap = new Map<string, AdvRow>()
-      for (const a of staticAdvs) if (names.includes(a.name)) advMap.set(a.name, a as AdvRow)
-      for (const row of [...(globalData ?? []), ...(customData ?? [])]) advMap.set((row as AdvRow).name, row as AdvRow)
-      const cache = new Map<string, AdversaryInstance>()
-      for (const [name, adv] of advMap) cache.set(name, adversaryToInstance(adv, adv.type === 'minion' ? 4 : 1))
-      setAdvStatCache(cache)
-    })()
+    loadAdversaryBaseStats(supabase, campaignId, names).then(setAdvStatCache).catch(console.warn)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibleMapTokens, campaignId])
 
@@ -102,14 +87,13 @@ export function HudSessionTab({
       visibleMapTokens.filter(t => t.token_shape === 'rectangle' && t.label).map(t => t.label!),
     )]
     if (vehicleNames.length === 0) { setVehStatCache(new Map()); return }
-    fetchVehicles().then(allVehicles => {
-      const cache = new Map<string, Vehicle>()
-      for (const v of allVehicles) {
-        if (vehicleNames.includes(v.name)) cache.set(v.name, v)
-      }
-      setVehStatCache(cache)
-    }).catch(console.warn)
-  }, [visibleMapTokens])
+    loadVehicleBaseStats(supabase, campaignId, vehicleNames).then(setVehStatCache).catch(console.warn)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibleMapTokens, campaignId])
+
+  // Map's own deck, live before combat too - `encounter` is null until Begin Combat.
+  const mapDeck = useMapDeck(campaignId, visibleMap?.id ?? null)
+  const deck = mapDeck ?? encounter
 
   const tokensById = useMemo(() => new Map(visibleMapTokens.map(t => [t.id, t])), [visibleMapTokens])
 
@@ -136,11 +120,11 @@ export function HudSessionTab({
       }
     }
 
-    // Adversary / vehicle linked to an active encounter slot — live vitals
-    if (token.slot_key && encounter) {
-      const slot = encounter.initiative_slots.find(s => s.id === token.slot_key)
+    // Adversary / vehicle linked to an active deck slot — live vitals
+    if (token.slot_key && deck) {
+      const slot = deck.initiative_slots.find(s => s.id === token.slot_key)
       if (slot?.adversaryInstanceId) {
-        const adv = encounter.adversaries.find(a => a.instanceId === slot.adversaryInstanceId)
+        const adv = deck.adversaries.find(a => a.instanceId === slot.adversaryInstanceId)
         if (adv) {
           const role: PlayerTooltipRole = slot.alignment === 'allied_npc' ? 'friendly' : 'enemy'
           const woundsMax = adv.type === 'minion' && adv.groupSize
@@ -149,7 +133,7 @@ export function HudSessionTab({
           // Prompt 19 — minion groups escalate to the full watermark only
           // once every minion is down (groupRemaining === 0); a rival/
           // nemesis is defeated once wounds reach its threshold. Both are
-          // purely derived from the same live encounter data as `wounds`
+          // purely derived from the same live deck data as `wounds`
           // above — same damageEngine.ts rule as applyDamageToAdversary's
           // `isDefeated`, just re-read here instead of stored separately.
           const defeated = adv.type === 'minion'
@@ -171,7 +155,7 @@ export function HudSessionTab({
         }
       }
       if (slot?.vehicleInstanceId) {
-        const veh = encounter.vehicles?.find(v => v.instanceId === slot.vehicleInstanceId)
+        const veh = deck.vehicles?.find(v => v.instanceId === slot.vehicleInstanceId)
         if (veh) return {
           key: token.id, name: veh.nickname || veh.name,
           role: veh.alignment === 'allied_npc' ? 'friendly' : 'enemy',
@@ -184,28 +168,30 @@ export function HudSessionTab({
       }
     }
 
-    // Adversary with no encounter slot — fall back to base stats from ref_adversaries cache
+    // Adversary with no deck slot — fall back to base stats from ref_adversaries cache
     if (token.participant_type === 'adversary' && token.label) {
       const cached = advStatCache.get(token.label)
       if (cached) {
         const role: PlayerTooltipRole = token.alignment === 'allied_npc' ? 'friendly' : 'enemy'
+        // Squad size is the deck instance's, not the library default — no match, no pips.
+        const squad = findDeckInstance(deck?.adversaries, token.label, token.map_id)
         return {
           key: token.id, name: token.label, role,
           typeTag: cached.type.toUpperCase(),
           imageUrl: token.token_image_url ?? null,
-          wounds: { current: 0, max: cached.woundThreshold ?? 0, label: 'WOUNDS' },
+          wounds: { current: squad?.woundsCurrent ?? 0, max: (cached.woundThreshold ?? 0) * (cached.type === 'minion' ? squad?.groupSize ?? 1 : 1), label: 'WOUNDS' },
           strain: cached.type !== 'minion' && cached.strainThreshold
-            ? { current: 0, max: cached.strainThreshold, label: 'STRAIN' }
+            ? { current: squad?.strainCurrent ?? 0, max: cached.strainThreshold, label: 'STRAIN' }
             : undefined,
-          minionPips: cached.type === 'minion' && cached.groupSize != null
-            ? { alive: cached.groupRemaining ?? cached.groupSize, total: cached.groupSize }
+          minionPips: squad && cached.type === 'minion'
+            ? { alive: squad.groupRemaining, total: squad.groupSize }
             : undefined,
-          defeated: false, // no encounter slot yet — pre-combat placeholder, always full health
+          defeated: false, // no deck slot yet — pre-combat placeholder, always full health
         }
       }
     }
 
-    // Vehicle fallback: rectangle tokens not linked to an encounter slot (pre-combat placement)
+    // Vehicle fallback: rectangle tokens not linked to an deck slot (pre-combat placement)
     if (token.token_shape === 'rectangle' && token.label) {
       const staticVeh = vehStatCache.get(token.label)
       if (staticVeh) return {
@@ -227,7 +213,7 @@ export function HudSessionTab({
       wounds: { current: 0, max: 1, label: 'WOUNDS' },
       defeated: false,
     }
-  }, [tokenHoverInfo, tokensById, allChars, encounter, advStatCache, vehStatCache])
+  }, [tokenHoverInfo, tokensById, allChars, deck, advStatCache, vehStatCache])
 
   return (
     <div className="relative h-full overflow-hidden">
