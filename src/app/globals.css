@@ -3706,3 +3706,100 @@ i.ffi {
 }
 .console-rail-link:focus-visible { outline: 2px solid var(--hud-accent); outline-offset: 2px; }
 
+
+/* ═══════════════════════════════════════════════════════════════ */
+/*  TOKEN GEOMETRY INSPECTOR (src/components/gm/TokenGeometryInspector.tsx) */
+/*  GM-only floating panel; left/top are set at runtime (anchor + drag).     */
+/* ═══════════════════════════════════════════════════════════════ */
+.tgi {
+  position: fixed;
+  z-index: var(--z-dialog);
+  width: 19rem;
+  background: var(--hud-panel);
+  border: 1px solid color-mix(in srgb, var(--hud-accent) 35%, transparent);
+  box-shadow: var(--shadow-tooltip);
+  font-family: var(--font-body), monospace;
+  color: var(--hud-text);
+}
+.tgi-hdr {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border-bottom: 1px solid var(--hud-border);
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+.tgi-hdr:active { cursor: grabbing; }
+.tgi-hdr .eyebrow { color: var(--hud-text-faint); }
+.tgi-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-caption);
+  color: var(--hud-text-dim);
+}
+.tgi-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2);
+}
+.tgi-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.tgi-lbl {
+  font-size: var(--text-caption);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--hud-text-dim);
+}
+.tgi-input {
+  width: 5.5rem;
+  padding: 2px var(--space-4) 2px var(--space-1);
+  background: var(--hud-bg);
+  border: 1px solid var(--hud-border);
+  color: var(--hud-text);
+  font-family: var(--font-mono), monospace;
+  font-size: var(--text-label);
+  text-align: right;
+  transition: border-color var(--ease-quick);
+}
+.tgi-input:focus-visible { outline: 2px solid var(--hud-accent); outline-offset: 1px; border-color: var(--hud-accent); }
+.tgi-rot { display: flex; align-items: center; gap: var(--space-1); }
+.tgi-btn {
+  padding: 2px var(--space-1);
+  background: color-mix(in srgb, var(--hud-gold) 9%, transparent);
+  border: 1px solid var(--hud-border-hi);
+  color: var(--hud-text);
+  font-family: var(--font-body), monospace;
+  font-size: var(--text-overline);
+  cursor: pointer;
+  transition: background var(--ease-quick), border-color var(--ease-quick);
+}
+.tgi-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--hud-gold) 20%, transparent);
+  border-color: color-mix(in srgb, var(--hud-gold) 60%, transparent);
+}
+.tgi-btn:focus-visible { outline: 2px solid var(--hud-accent); outline-offset: 2px; }
+.tgi-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.tgi-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+.tgi-hint {
+  font-size: var(--text-overline);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--hud-text-faint);
+}

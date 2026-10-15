@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { ActiveMap } from '@/hooks/useActiveMap'
-import type { MapToken } from '@/hooks/useMapTokens'
+import type { MapToken, TokenGeometryPatch } from '@/hooks/useMapTokens'
 import { MapCanvas } from '@/components/map/MapCanvas'
 import { OpeningCrawlCanvas } from '@/components/map/OpeningCrawlCanvas'
 import { useMapTokens } from '@/hooks/useMapTokens'
@@ -20,6 +20,7 @@ import { MapToolsRadial } from '@/app/gm/MapToolsRadial'
 import { EncounterDeck, benchEntry, deployEntry, removeEntry } from '@/components/gm/EncounterDeck'
 import { EncounterDossier } from '@/components/gm/EncounterDossier'
 import { NumberField } from '@/components/ui/NumberField'
+import { TokenGeometryInspector } from '@/components/gm/TokenGeometryInspector'
 
 /* ── Design tokens ─────────────────────────────────────── */
 const BG  = 'var(--hud-bg)'
@@ -156,6 +157,10 @@ interface ContextMenuState {
   x:         number
   y:         number
   isVisible: boolean
+  /** Vehicle token (rectangle, not a pointer) — offers "Resize / rotate". */
+  canResize: boolean
+  /** Token footprint in page coordinates, for anchoring the inspector. */
+  tokenRect: DOMRect
 }
 
 interface TooltipState {
@@ -279,6 +284,8 @@ export interface GmMapViewProps {
   onStagingToggleVisibility?:  (id: string, visible: boolean) => Promise<void>
   onStagingRemoveToken?:       (id: string) => Promise<void>
   onStagingAddToken?:          (token: Omit<MapToken, 'id' | 'updated_at'>) => Promise<MapToken | null>
+  onStagingUpdateGeometry?:    (id: string, geo: TokenGeometryPatch) => Promise<void>
+  onStagingPreviewGeometry?:   (id: string, geo: TokenGeometryPatch | null) => void
   /** Fired on a genuine tap (not a drag) on a map token — used by the Encounter Deck to focus the corresponding card. */
   onTokenClick?:               (tokenId: string, sourceRect: DOMRect) => void
   /** Encounter Deck open/close state — lifted to GmShell so the left rail button can toggle it. */
@@ -302,7 +309,7 @@ export interface GmMapViewProps {
 
 export function GmMapView({
   campaignId, encounter: encounterProp, characters, allMaps, activeMap, onDeleteMap, isStagingTab,
-  stagingTokens, onStagingMoveToken, onStagingToggleVisibility, onStagingRemoveToken, onStagingAddToken, onTokenClick,
+  stagingTokens, onStagingMoveToken, onStagingToggleVisibility, onStagingRemoveToken, onStagingAddToken, onStagingUpdateGeometry, onStagingPreviewGeometry, onTokenClick,
   deckOpen, onDeckOpenChange, focusedEntityId, setStagingEncounter, saveStagingEncounter,
   updateTokenWoundPct, renameToken, markEncounterPending, clearEncounterPending, stagingAddToEncounter,
   dossierEntityId, dossierSourceRect, onOpenDossier, onCloseDossier,
@@ -351,12 +358,14 @@ export function GmMapView({
   }, [activeMap, supabase])
 
   // When staging tab passes its own token state, use it — avoids dual subscriptions causing stale canvas
-  const { tokens: hookTokens, moveToken: hookMoveToken, toggleVisibility: hookToggleVisibility, removeToken: hookRemoveToken, addToken: hookAddToken } = useMapTokens(isStagingTab ? null : (activeMap?.id ?? null))
+  const { tokens: hookTokens, moveToken: hookMoveToken, toggleVisibility: hookToggleVisibility, removeToken: hookRemoveToken, addToken: hookAddToken, updateTokenGeometry: hookUpdateGeometry, previewTokenGeometry: hookPreviewGeometry } = useMapTokens(isStagingTab ? null : (activeMap?.id ?? null))
   const tokens          = isStagingTab ? (stagingTokens ?? [])           : hookTokens
   const moveToken       = isStagingTab ? (onStagingMoveToken       ?? hookMoveToken)       : hookMoveToken
   const toggleVisibility = isStagingTab ? (onStagingToggleVisibility ?? hookToggleVisibility) : hookToggleVisibility
   const removeToken     = isStagingTab ? (onStagingRemoveToken     ?? hookRemoveToken)     : hookRemoveToken
   const addToken        = isStagingTab ? (onStagingAddToken        ?? hookAddToken)        : hookAddToken
+  const updateGeometry  = isStagingTab ? (onStagingUpdateGeometry  ?? hookUpdateGeometry)  : hookUpdateGeometry
+  const previewGeometry  = isStagingTab ? (onStagingPreviewGeometry ?? hookPreviewGeometry) : hookPreviewGeometry
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -629,14 +638,20 @@ export function GmMapView({
     setAdvTokenImages(prev => { const n = { ...prev }; delete n[adversaryKey]; return n })
   }, [supabase, setAdvTokenImages])
 
-  const handleTokenContextMenu = useCallback((tokenId: string, e: MouseEvent) => {
+  const handleTokenContextMenu = useCallback((tokenId: string, e: MouseEvent, tokenRect: DOMRect) => {
     e.preventDefault()
     const token = tokensById.get(tokenId)
-    setContextMenu({ tokenId, x: e.clientX, y: e.clientY, isVisible: token?.is_visible ?? true })
+    const canResize = !!token && token.token_shape === 'rectangle' && !token.token_type?.startsWith('pointer_')
+    setContextMenu({ tokenId, x: e.clientX, y: e.clientY, isVisible: token?.is_visible ?? true, canResize, tokenRect })
   }, [tokensById])
 
   const closeTokenDrawer = useCallback(() => setTokenDrawerOpen(false), [])
   const closeContextMenu = useCallback(() => setContextMenu(null), [])
+
+  // Geometry inspector (vehicle tokens only) — opened from the token context menu.
+  const [geometryTarget, setGeometryTarget] = useState<{ tokenId: string; rect: DOMRect } | null>(null)
+  const closeGeometry = useCallback(() => setGeometryTarget(null), [])
+  const geometryToken = geometryTarget ? tokensById.get(geometryTarget.tokenId) ?? null : null
 
   // Card ↔ token hover glow (Prompt 5). One shared signal, colocated here
   // since EncounterDeck and MapCanvas are both children of this component —
@@ -1077,7 +1092,20 @@ export function GmMapView({
             contextMenu={contextMenu}
             onToggleVisibility={toggleVisibility}
             onRemoveToken={handleRemoveToken}
+            onResize={() => { setGeometryTarget({ tokenId: contextMenu.tokenId, rect: contextMenu.tokenRect }); closeContextMenu() }}
             onClose={closeContextMenu}
+          />
+        )}
+
+        {/* ── Token geometry inspector (GM only, vehicle tokens) ── */}
+        {mounted && geometryTarget && geometryToken && (
+          <TokenGeometryInspector
+            key={geometryTarget.tokenId}
+            token={geometryToken}
+            anchor={geometryTarget.rect}
+            onPreview={previewGeometry}
+            onCommit={updateGeometry}
+            onClose={closeGeometry}
           />
         )}
 
@@ -1205,10 +1233,11 @@ interface TokenContextMenuProps {
   contextMenu:        ContextMenuState
   onToggleVisibility: (id: string, visible: boolean) => Promise<void>
   onRemoveToken:      (id: string) => Promise<void>
+  onResize:           () => void
   onClose:            () => void
 }
 
-const TokenContextMenu = memo(function TokenContextMenu({ contextMenu, onToggleVisibility, onRemoveToken, onClose }: TokenContextMenuProps) {
+const TokenContextMenu = memo(function TokenContextMenu({ contextMenu, onToggleVisibility, onRemoveToken, onResize, onClose }: TokenContextMenuProps) {
   return (
     <div
       onClick={e => e.stopPropagation()}
@@ -1226,6 +1255,15 @@ const TokenContextMenu = memo(function TokenContextMenu({ contextMenu, onToggleV
       >
         {contextMenu.isVisible ? '◉ Hide from players' : '◉ Show to players'}
       </button>
+      {contextMenu.canResize && (
+        <button
+          onClick={onResize}
+          className="hov-gold-bg"
+          style={{ display: 'block', width: '100%', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', padding: '0.5625rem 0.875rem', fontFamily: FONT_BODY, fontSize: FS_LABEL, color: TEXT, borderBottom: `1px solid ${BORDER}` }}
+        >
+          ⤢ Resize / rotate
+        </button>
+      )}
       <button
         onClick={async () => { await onRemoveToken(contextMenu.tokenId); onClose() }}
         className="hov-red-bg"

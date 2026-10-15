@@ -90,7 +90,8 @@ export interface MapCanvasProps {
   onTokenMove:         (id: string, x: number, y: number) => void
   gridEnabled:         boolean
   gridSize:            number
-  onTokenContextMenu?: (tokenId: string, e: MouseEvent) => void
+  // tokenRect is the token's footprint in page coordinates (rotation-aware, see tokenScreenRect) — lets a GM panel anchor beside the token.
+  onTokenContextMenu?: (tokenId: string, e: MouseEvent, tokenRect: DOMRect) => void
   tokenScale?:         number                        // GM-only visual scale multiplier; players always see 1.0
   initialScale?:       number                        // stage zoom applied once on first load (default 1.0)
   bottomOverlayRef?:   React.RefObject<HTMLElement | null>  // ref to element at the bottom; its height shifts the initial vertical centre upward
@@ -645,7 +646,7 @@ function syncTokens(
   isGM:                 boolean,
   currentCharId:        string | null,
   onMoveRef:            React.MutableRefObject<(id: string, x: number, y: number) => void>,
-  onContextRef:         React.MutableRefObject<((id: string, e: MouseEvent) => void) | undefined>,
+  onContextRef:         React.MutableRefObject<((id: string, e: MouseEvent, tokenRect: DOMRect) => void) | undefined>,
   onHoverRef:           React.MutableRefObject<((id: string, x: number, y: number, tokenRect: DOMRect) => void) | undefined>,
   onHoverEndRef:        React.MutableRefObject<((tokenId: string) => void) | undefined>,
   onDragStartRef:       React.MutableRefObject<((id: string) => void) | undefined>,
@@ -796,7 +797,7 @@ function buildTokenSprite(
   offsetX:             number,
   offsetY:             number,
   onMoveRef:           React.MutableRefObject<(id: string, x: number, y: number) => void>,
-  onContextRef:        React.MutableRefObject<((id: string, e: MouseEvent) => void) | undefined>,
+  onContextRef:        React.MutableRefObject<((id: string, e: MouseEvent, tokenRect: DOMRect) => void) | undefined>,
   onHoverRef:          React.MutableRefObject<((id: string, x: number, y: number, tokenRect: DOMRect) => void) | undefined>,
   onHoverEndRef:       React.MutableRefObject<((tokenId: string) => void) | undefined>,
   onDragStartRef:      React.MutableRefObject<((id: string) => void) | undefined>,
@@ -1284,7 +1285,8 @@ function buildTokenSprite(
   ;(c as any).cursor = canDrag ? 'pointer' : 'default'
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(c as any).on('rightclick', (e: { nativeEvent: MouseEvent }) => {
-    onContextRef.current?.(token.id, e.nativeEvent)
+    const canvasRect = containerRef.current?.getBoundingClientRect()
+    onContextRef.current?.(token.id, e.nativeEvent, canvasRect ? tokenScreenRect(c, canvasRect, false) : new DOMRect(e.nativeEvent.clientX, e.nativeEvent.clientY, 0, 0))
   })
 
   // Hover — fire callback with screen coordinates derived from canvas rect.

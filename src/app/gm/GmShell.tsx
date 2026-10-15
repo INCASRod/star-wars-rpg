@@ -111,6 +111,8 @@ export function GmShell() {
     addToken: stagingAddToken,
     updateWoundPct: stagingUpdateWoundPct,
     renameToken: stagingRenameToken,
+    updateTokenGeometry: stagingUpdateGeometry,
+    previewTokenGeometry: stagingPreviewGeometry,
   } = useMapTokens(activeMap?.id ?? null)
 
   const {
@@ -432,6 +434,8 @@ export function GmShell() {
             onStagingToggleVisibility={handleToggleVisibility}
             onStagingRemoveToken={stagingRemoveToken}
             onStagingAddToken={stagingAddToken}
+            onStagingUpdateGeometry={stagingUpdateGeometry}
+            onStagingPreviewGeometry={stagingPreviewGeometry}
             onTokenClick={handleTokenClick}
             deckOpen={deckOpen}
             onDeckOpenChange={setDeckOpen}
