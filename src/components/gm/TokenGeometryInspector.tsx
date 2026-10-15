@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import { NumberField } from '@/components/ui/NumberField'
 import type { MapToken, TokenGeometryPatch } from '@/hooks/useMapTokens'
 import { RADIUS } from '@/lib/tokens'
+import { tokenHandleState } from '@/lib/tokenHandleState'
 
 /**
  * GM-only floating inspector for one vehicle token's per-placement geometry
@@ -42,9 +43,16 @@ interface Props {
   onPreview: (id: string, geo: TokenGeometryPatch | null) => void
   onCommit:  (id: string, geo: TokenGeometryPatch) => void | Promise<void>
   onClose:   () => void
+  /**
+   * A commit that came from the on-canvas handles (Phase C), not from this
+   * panel. `seq` bumps per commit so the same values twice still register.
+   * It only refreshes what counts as "last saved" (Escape target, change
+   * detection) — the fields themselves already follow the token live.
+   */
+  externalCommit?: { seq: number; geo: TokenGeometryPatch } | null
 }
 
-export function TokenGeometryInspector({ token, anchor, onPreview, onCommit, onClose }: Props) {
+export function TokenGeometryInspector({ token, anchor, onPreview, onCommit, onClose, externalCommit }: Props) {
   const base = token.token_size ?? 1
   const savedRef = useRef<TokenGeometryPatch>({
     token_w: token.token_w ?? null,
@@ -118,14 +126,36 @@ export function TokenGeometryInspector({ token, anchor, onPreview, onCommit, onC
     void onCommit(token.id, g)
   }
 
+  // Follow the token while a handle drag (or anything else) moves it: when the
+  // token's geometry no longer matches what the fields resolve to, refresh the
+  // fields. Typing never trips this — the preview it sends equals resolve().
+  useEffect(() => {
+    const cur: TokenGeometryPatch = { token_w: token.token_w ?? null, token_h: token.token_h ?? null, token_rot: token.token_rot ?? 0 }
+    if (sameEffective(cur, resolve(draft.current))) return
+    draft.current = { w: String(cur.token_w ?? base), h: String(cur.token_h ?? base), rot: String(cur.token_rot) }
+    setW(draft.current.w); setH(draft.current.h); setRot(draft.current.rot)
+  }, [token.token_w, token.token_h, token.token_rot, base, resolve, sameEffective])
+
+  // A handle commit became the new "last saved".
+  const lastSeq = useRef(externalCommit?.seq ?? 0)
+  useEffect(() => {
+    if (!externalCommit || externalCommit.seq === lastSeq.current) return
+    lastSeq.current = externalCommit.seq
+    savedRef.current = externalCommit.geo
+    setIsDefault(false)
+  }, [externalCommit])
+
   // Escape reverts + closes; a press outside commits pending drafts then closes.
+  // While a handle drag is running Escape belongs to the drag (it restores the
+  // pre-drag geometry), and a press on a handle is not "outside".
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return
+      if (e.key !== 'Escape' || tokenHandleState.dragging) return
       e.stopPropagation()
       cancel()
     }
     const onDown = (e: PointerEvent) => {
+      if (tokenHandleState.dragging || tokenHandleState.hitTest?.(e.clientX, e.clientY)) return
       if (panelRef.current?.contains(e.target as Node)) return
       commit()
       cancelled.current = true

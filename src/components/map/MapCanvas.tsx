@@ -6,7 +6,9 @@ import gsap from 'gsap'
 import { SP, Z, FS, FONT_BODY } from '@/lib/tokens'
 import type { MapToken } from '@/hooks/useMapTokens'
 import { runMapWipe } from '@/lib/mapWipe'
-import { resolveTokenGeometry, tokenGeometryKey, type TokenGeometry } from '@/lib/tokenGeometry'
+import { resolveTokenGeometry, tokenGeometryKey, TOKEN_BASE_PX, type TokenGeometry } from '@/lib/tokenGeometry'
+import { tokenHandleState } from '@/lib/tokenHandleState'
+import type { TokenGeometryPatch } from '@/hooks/useMapTokens'
 import { attachTokenHover, redrawTokenGlow, onTokenPointerOver, onTokenPointerOut, destroyTokenHover } from '@/lib/tokenHover'
 import { skullSvgMarkup, SKULL_BONE_HEX, SKULL_HOLE_HEX } from '@/lib/skullGlyph'
 
@@ -120,6 +122,14 @@ export interface MapCanvasProps {
   // event. Reuses onTokenPointerOver/onTokenPointerOut as-is; no second
   // glow effect.
   highlightedTokenId?: string | null
+  // GM only: while set, that (vehicle) token shows resize/rotate handles and
+  // its drags feed these callbacks — live `onPreview` (local only, no write),
+  // then ONE `onCommit` on release. Null/undefined = no handles anywhere.
+  geometryEdit?: {
+    tokenId:   string
+    onPreview: (geo: TokenGeometryPatch) => void
+    onCommit:  (geo: TokenGeometryPatch) => void
+  } | null
 }
 
 export const MapCanvas = memo(function MapCanvas({
@@ -127,7 +137,7 @@ export const MapCanvas = memo(function MapCanvas({
   onTokenMove, gridEnabled, gridSize, onTokenContextMenu,
   tokenScale = 1, initialScale = 1, bottomOverlayRef,
   onTokenHover, onTokenHoverEnd, onTokenDragStart, onTokenDragEnd, onTokenClick,
-  recentreSignal, highlightedTokenId,
+  recentreSignal, highlightedTokenId, geometryEdit,
 }: MapCanvasProps) {
   const containerRef       = useRef<HTMLDivElement>(null)
   const appRef             = useRef<InstanceType<typeof import('pixi.js').Application> | null>(null)
@@ -397,6 +407,26 @@ export const MapCanvas = memo(function MapCanvas({
   }, [tokens, isGM, currentCharacterId, tokenScale])
 
   useEffect(() => { syncTokensCb() }, [syncTokensCb])
+
+  // ── GM geometry handles (Phase C) ───────────────────────────
+  // Handles live inside the token container (so they rotate with it). The
+  // callbacks are read through a ref so a changing handler identity never
+  // re-applies them mid-drag. Re-runs on `tokens` because a rebuilt token
+  // (new container) must pick the handles back up. GM-only by prop AND by the
+  // isGM check here.
+  const geometryEditRef = useRef(geometryEdit)
+  geometryEditRef.current = geometryEdit
+  const editTokenId = isGM ? (geometryEdit?.tokenId ?? null) : null
+  useEffect(() => {
+    const api = {
+      onPreview: (g: TokenGeometryPatch) => geometryEditRef.current?.onPreview(g),
+      onCommit:  (g: TokenGeometryPatch) => geometryEditRef.current?.onCommit(g),
+    }
+    for (const [id, c] of tokensRef.current) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(c as any).__setHandles?.(id === editTokenId ? api : null)
+    }
+  }, [editTokenId, tokens])
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -732,6 +762,20 @@ function syncTokens(
     if (c) { destroyTokenHover(c, app.ticker); app.stage.removeChild(c); c.destroy({ children: true }) }
     tokensRef.current.delete(staleId)
   }
+}
+
+// Reads the live Kyber Archive accent (`--hud-accent`) off the canvas wrapper so
+// the handles follow the theme; Pixi needs a number, not a CSS variable.
+// 0xffffff is only the fallback if the variable can't be parsed.
+function readAccentColour(el: Element | null): number {
+  const raw = el ? getComputedStyle(el).getPropertyValue('--hud-accent').trim() : ''
+  let m = /^#([0-9a-f]{6})$/i.exec(raw)
+  if (m) return parseInt(m[1], 16)
+  m = /^#([0-9a-f]{3})$/i.exec(raw)
+  if (m) { const [r, g, b] = m[1].split('').map(ch => parseInt(ch + ch, 16)); return (r << 16) | (g << 8) | b }
+  const rgb = /rgba?\((\d+)[ ,]+(\d+)[ ,]+(\d+)/.exec(raw)
+  if (rgb) return (Number(rgb[1]) << 16) | (Number(rgb[2]) << 8) | Number(rgb[3])
+  return 0xffffff
 }
 
 // ── Geometry sync ────────────────────────────────────────────
@@ -1202,6 +1246,13 @@ function buildTokenSprite(
   // name pill is deliberately outside it (eventMode 'none' above): long names
   // used to steal clicks from neighbouring tokens.
   let curScale = tokenScale
+  // Handle state (Phase C) — declared before layoutLabelAndHit, which widens
+  // the hit area while handles are showing (Pixi prunes a container's children
+  // that fall outside its hitArea, so handles outside the footprint would
+  // otherwise be unreachable) and re-lays the handles out.
+  let handlesActive = false
+  let handleExtentPx = 0 // local-space outset needed to reach every handle + the knob
+  let layoutHandles: () => void = () => {}
   const layoutLabelAndHit = () => {
     const s = curScale
     lblGroup.scale.set(1 / s)
@@ -1213,10 +1264,13 @@ function buildTokenSprite(
     lblGroup.y = D * cos
 
     const PAD = 4 // px intentional — small buffer so cursor jitter right at the edge doesn't repeatedly cross the boundary
+    layoutHandles()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(c as any).hitArea = isRect
-      ? new px.Rectangle(-fw / 2 - PAD, -fh / 2 - PAD, fw + PAD * 2, fh + PAD * 2)
-      : new px.Circle(0, 0, fw / 2 + PAD)
+    ;(c as any).hitArea = handlesActive
+      ? new px.Rectangle(-fw / 2 - handleExtentPx, -fh / 2 - handleExtentPx, fw + handleExtentPx * 2, fh + handleExtentPx * 2)
+      : isRect
+        ? new px.Rectangle(-fw / 2 - PAD, -fh / 2 - PAD, fw + PAD * 2, fh + PAD * 2)
+        : new px.Circle(0, 0, fw / 2 + PAD)
 
     // Prompt 13 Step 0 diagnostic — draws the ACTUAL hitArea as a visible
     // overlay so it can be compared against the rendered token. Off by
@@ -1273,6 +1327,266 @@ function buildTokenSprite(
   ;(c as any).__footprint = { w: fw, h: fh }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(c as any).__lblGroup = lblGroup
+
+  // ── GM resize / rotate handles (Phase C) ─────────────────────────────
+  // Only rectangle (vehicle) tokens ever build handles, and only while the
+  // GM inspector is open for this token (MapCanvas `geometryEdit`). Handles
+  // are children of the token container, so they rotate with it; each is
+  // counter-scaled by 1 / (stage scale x token scale) so it stays a constant
+  // screen size at any zoom (a ticker re-lays them out when zoom changes).
+  // All drag maths run in the token's LOCAL space (`c.toLocal`), which already
+  // includes rotation, so a token rotated 30 degrees resizes along its own axes.
+  // Resize is centred (x/y never change, so no position write); sizes snap to
+  // 0.25 squares unless Alt is held; rotation is always free.
+  if (isRect) {
+    const HANDLE_PX = 10      // handle square, screen px
+    const HANDLE_HIT_PX = 16  // grab target, screen px
+    const KNOB_R_PX = 6
+    const STEM_PX = 22
+    const MIN_SQ = 0.25, MAX_SQ = 20, SNAP_SQ = 0.25
+    type HandleApi = { onPreview: (g: TokenGeometryPatch) => void; onCommit: (g: TokenGeometryPatch) => void }
+    type HandleDef = { nx: number; ny: number; g: InstanceType<typeof import('pixi.js').Graphics> }
+
+    let api: HandleApi | null = null
+    let layer: InstanceType<typeof import('pixi.js').Container> | null = null
+    let outline: InstanceType<typeof import('pixi.js').Graphics> | null = null
+    let knobBox: InstanceType<typeof import('pixi.js').Container> | null = null
+    let handleDefs: HandleDef[] = []
+    let accent = 0xffffff
+    let lastU = 0
+    let tickerFn: (() => void) | null = null
+    let cancelActiveDrag: (() => void) | null = null
+
+    /** Local units per screen pixel: 1 / (stage scale x token base scale). */
+    const unit = () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const stageScale = (c.parent as any)?.scale?.x ?? 1
+      return 1 / (stageScale * curScale)
+    }
+    const cursorFor = (nx: number, ny: number) => {
+      const deg = (Math.atan2(ny, nx) * 180) / Math.PI + (fRot * 180) / Math.PI
+      const bucket = Math.round((((deg % 180) + 180) % 180) / 45) % 4
+      return ['ew-resize', 'nwse-resize', 'ns-resize', 'nesw-resize'][bucket]
+    }
+
+    layoutHandles = () => {
+      if (!handlesActive || !layer || !outline || !knobBox) return
+      const u = unit()
+      lastU = u
+      handleExtentPx = (HANDLE_HIT_PX / 2 + 4) * u
+      outline.clear()
+      outline.lineStyle(1.5 * u, accent, 0.9)
+      outline.drawRect(-fw / 2, -fh / 2, fw, fh)
+      for (const h of handleDefs) {
+        h.g.position.set((h.nx * fw) / 2, (h.ny * fh) / 2)
+        h.g.scale.set(u)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(h.g as any).cursor = cursorFor(h.nx, h.ny)
+      }
+      knobBox.position.set(0, -fh / 2)
+      knobBox.scale.set(u)
+      // The knob sits above the top edge, past the generic outset.
+      handleExtentPx = Math.max(handleExtentPx, (STEM_PX + KNOB_R_PX + 6) * u)
+    }
+
+    /** Applies a geometry directly to this token (smooth drag) and keeps the sync key in step. */
+    const applyLive = (g: TokenGeometryPatch) => {
+      const r = resolveTokenGeometry({ token_size: 1, token_w: g.token_w, token_h: g.token_h, token_rot: g.token_rot, token_shape: 'rectangle' })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(c as any).__geomKey = tokenGeometryKey(r)
+      applyGeometry(r)
+    }
+
+    const round2 = (n: number) => Math.round(n * 100) / 100
+    const clampSq = (n: number) => Math.min(MAX_SQ, Math.max(MIN_SQ, n))
+    const normDeg = (n: number) => ((Math.round(n) % 360) + 360) % 360
+
+    const beginDrag = (
+      kind: 'edge' | 'corner' | 'rot',
+      nx: number, ny: number,
+      e: { stopPropagation: () => void; globalX: number; globalY: number },
+    ) => {
+      e.stopPropagation()
+      if (!api || tokenHandleState.dragging) return
+      const sink = api
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const stage = c.parent as any
+      const start: TokenGeometryPatch = { token_w: fw / TOKEN_BASE_PX, token_h: fh / TOKEN_BASE_PX, token_rot: normDeg((fRot * 180) / Math.PI) }
+      const halfDiag0 = Math.hypot(fw / 2, fh / 2)
+      const ang = (gx: number, gy: number) => {
+        const p = stage.toLocal({ x: gx, y: gy })
+        return Math.atan2(p.y - c.y, p.x - c.x)
+      }
+      const rotAtDown = ang(e.globalX, e.globalY)
+      const rot0Deg = (fRot * 180) / Math.PI
+      let latest: TokenGeometryPatch = start
+      let changed = false
+      tokenHandleState.dragging = true
+      if (kind === 'rot') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const kg = knobBox?.children[1] as any
+        if (kg) kg.cursor = 'grabbing'
+      }
+
+      const snap = (v: number, alt: boolean) => (alt ? round2(v) : Math.round(v / SNAP_SQ) * SNAP_SQ)
+
+      const onMove = (ev: { globalX: number; globalY: number; altKey?: boolean }) => {
+        const alt = !!ev.altKey
+        let next: TokenGeometryPatch
+        if (kind === 'rot') {
+          const delta = ((ang(ev.globalX, ev.globalY) - rotAtDown) * 180) / Math.PI
+          next = { token_w: start.token_w, token_h: start.token_h, token_rot: normDeg(rot0Deg + delta) }
+        } else {
+          const l = c.toLocal({ x: ev.globalX, y: ev.globalY })
+          if (kind === 'edge') {
+            if (nx !== 0) next = { token_w: clampSq(snap((2 * Math.abs(l.x)) / TOKEN_BASE_PX, alt)), token_h: start.token_h, token_rot: start.token_rot }
+            else          next = { token_w: start.token_w, token_h: clampSq(snap((2 * Math.abs(l.y)) / TOKEN_BASE_PX, alt)), token_rot: start.token_rot }
+          } else {
+            // Uniform scale from the centre; the longer side is the one that snaps.
+            const w0 = start.token_w as number, h0 = start.token_h as number
+            let sc = Math.hypot(l.x, l.y) / halfDiag0
+            sc = Math.min(Math.min(MAX_SQ / w0, MAX_SQ / h0), Math.max(Math.max(MIN_SQ / w0, MIN_SQ / h0), sc))
+            if (w0 >= h0) { const w = clampSq(snap(w0 * sc, alt)); sc = w / w0 } else { const h = clampSq(snap(h0 * sc, alt)); sc = h / h0 }
+            next = { token_w: clampSq(round2(w0 * sc)), token_h: clampSq(round2(h0 * sc)), token_rot: start.token_rot }
+          }
+        }
+        latest = next
+        changed = next.token_w !== start.token_w || next.token_h !== start.token_h || next.token_rot !== start.token_rot
+        applyLive(next)
+        sink.onPreview(next)
+      }
+      const detach = () => {
+        stage.off('pointermove', onMove)
+        stage.off('pointerup', onUp)
+        stage.off('pointerupoutside', onUp)
+        document.removeEventListener('keydown', onKey, true)
+        tokenHandleState.dragging = false
+        cancelActiveDrag = null
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const kg = knobBox?.children[1] as any
+        if (kg) kg.cursor = 'grab'
+      }
+      const onUp = () => {
+        detach()
+        if (changed) sink.onCommit(latest)
+      }
+      // Escape cancels the drag: pre-drag geometry restored, nothing written.
+      const onKey = (ev: KeyboardEvent) => {
+        if (ev.key !== 'Escape') return
+        ev.stopPropagation()
+        ev.preventDefault()
+        detach()
+        applyLive(start)
+        sink.onPreview(start)
+      }
+      cancelActiveDrag = () => { detach(); applyLive(start); sink.onPreview(start) }
+      stage.on('pointermove', onMove)
+      stage.on('pointerup', onUp)
+      stage.on('pointerupoutside', onUp)
+      document.addEventListener('keydown', onKey, true)
+    }
+
+    const build = () => {
+      layer = new px.Container()
+      layer.zIndex = 60
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(layer as any).eventMode = 'passive'
+      outline = new px.Graphics()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(outline as any).eventMode = 'none'
+      layer.addChild(outline)
+
+      const hoverFlags = (g: InstanceType<typeof import('pixi.js').Graphics>) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(g as any).eventMode = 'static'
+      }
+
+      const spots: Array<[number, number, 'edge' | 'corner']> = [
+        [1, 0, 'edge'], [-1, 0, 'edge'], [0, 1, 'edge'], [0, -1, 'edge'],
+        [1, 1, 'corner'], [1, -1, 'corner'], [-1, 1, 'corner'], [-1, -1, 'corner'],
+      ]
+      handleDefs = spots.map(([nx, ny, kind]) => {
+        const g = new px.Graphics()
+        g.beginFill(accent, 0.95)
+        g.lineStyle(1, accent, 1)
+        g.drawRect(-HANDLE_PX / 2, -HANDLE_PX / 2, HANDLE_PX, HANDLE_PX)
+        g.endFill()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(g as any).hitArea = new px.Rectangle(-HANDLE_HIT_PX / 2, -HANDLE_HIT_PX / 2, HANDLE_HIT_PX, HANDLE_HIT_PX)
+        hoverFlags(g)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(g as any).on('pointerdown', (e: any) => beginDrag(kind, nx, ny, e))
+        layer!.addChild(g)
+        return { nx, ny, g }
+      })
+
+      knobBox = new px.Container()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(knobBox as any).eventMode = 'passive'
+      const stem = new px.Graphics()
+      stem.lineStyle(1.5, accent, 0.9)
+      stem.moveTo(0, 0); stem.lineTo(0, -STEM_PX)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(stem as any).eventMode = 'none'
+      const knob = new px.Graphics()
+      knob.beginFill(accent, 0.95)
+      knob.lineStyle(1, accent, 1)
+      knob.drawCircle(0, -STEM_PX, KNOB_R_PX)
+      knob.endFill()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(knob as any).hitArea = new px.Circle(0, -STEM_PX, HANDLE_HIT_PX / 2)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(knob as any).cursor = 'grab'
+      hoverFlags(knob)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(knob as any).on('pointerdown', (e: any) => beginDrag('rot', 0, -1, e))
+      knobBox.addChild(stem, knob)
+      layer.addChild(knobBox)
+      c.addChild(layer)
+    }
+
+    const teardown = () => {
+      cancelActiveDrag?.()
+      tokenHandleState.hitTest = null
+      if (tickerFn) { ticker.remove(tickerFn); tickerFn = null }
+      if (layer) { c.removeChild(layer); layer.destroy({ children: true }); layer = null }
+      outline = null; knobBox = null; handleDefs = []
+      handlesActive = false
+      handleExtentPx = 0
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(c as any)._noHoverLift = false
+      layoutLabelAndHit()
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(c as any).__setHandles = (next: HandleApi | null) => {
+      if (!next) { if (handlesActive) teardown(); api = null; return }
+      api = next
+      if (handlesActive) return
+      accent = readAccentColour(containerRef.current)
+      handlesActive = true
+      // Direct hit test for the inspector's click-outside check: page point -> token-local
+      // space (rotation included), then against each handle's grab square / the knob circle.
+      tokenHandleState.hitTest = (clientX: number, clientY: number) => {
+        const rect = containerRef.current?.getBoundingClientRect()
+        if (!rect || !handlesActive) return false
+        const l = c.toLocal({ x: clientX - rect.left, y: clientY - rect.top })
+        const half = (HANDLE_HIT_PX / 2) * unit()
+        if (handleDefs.some(h => Math.abs(l.x - (h.nx * fw) / 2) <= half && Math.abs(l.y - (h.ny * fh) / 2) <= half)) return true
+        return Math.hypot(l.x, l.y - (-fh / 2 - STEM_PX * unit())) <= half
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(c as any)._noHoverLift = true
+      build()
+      layoutLabelAndHit()
+      // Zoom changes the stage scale without touching any token - follow it.
+      tickerFn = () => {
+        if (c.destroyed) { ticker.remove(tickerFn!); return }
+        if (Math.abs(unit() - lastU) > 1e-6) layoutLabelAndHit()
+      }
+      ticker.add(tickerFn)
+    }
+  }
 
   // Position using map image bounds (not canvas bounds)
   c.x = offsetX + token.x * mapW

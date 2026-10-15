@@ -118,7 +118,9 @@ export function onTokenPointerOver(
     // Lerp scale toward baseScale * 1.08
     const baseScale    = container._baseScale ?? 1.0
     const currentScale = container.scale?.x ?? baseScale
-    const targetScale  = baseScale * 1.08
+    // GM resize handles (MapCanvas, Phase C) set `_noHoverLift` so the token keeps its
+    // true size while being resized - otherwise drag maths would read an 8%-inflated token.
+    const targetScale  = baseScale * (container._noHoverLift ? 1.0 : 1.08)
     const nextScale    = lerp(currentScale, targetScale, 0.18)
     container.scale?.set(nextScale)
 

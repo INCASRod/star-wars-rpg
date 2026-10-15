@@ -652,6 +652,18 @@ export function GmMapView({
   const [geometryTarget, setGeometryTarget] = useState<{ tokenId: string; rect: DOMRect } | null>(null)
   const closeGeometry = useCallback(() => setGeometryTarget(null), [])
   const geometryToken = geometryTarget ? tokensById.get(geometryTarget.tokenId) ?? null : null
+  // On-canvas handles (MapCanvas `geometryEdit`) exist only while the inspector is open for this token.
+  // A handle commit is forwarded to the inspector via `handleCommit` so its "last saved" stays correct.
+  const [handleCommit, setHandleCommit] = useState<{ seq: number; geo: TokenGeometryPatch } | null>(null)
+  const geometryTokenId = geometryToken?.id ?? null
+  const geometryEdit = useMemo(() => geometryTokenId ? {
+    tokenId:   geometryTokenId,
+    onPreview: (geo: TokenGeometryPatch) => previewGeometry(geometryTokenId, geo),
+    onCommit:  (geo: TokenGeometryPatch) => {
+      void updateGeometry(geometryTokenId, geo)
+      setHandleCommit(prev => ({ seq: (prev?.seq ?? 0) + 1, geo }))
+    },
+  } : null, [geometryTokenId, previewGeometry, updateGeometry])
 
   // Card ↔ token hover glow (Prompt 5). One shared signal, colocated here
   // since EncounterDeck and MapCanvas are both children of this component —
@@ -752,6 +764,7 @@ export function GmMapView({
               gridEnabled={(previewMap ?? activeMap)!.grid_enabled}
               gridSize={(previewMap ?? activeMap)!.grid_size ?? 50}
               onTokenContextMenu={handleTokenContextMenu}
+              geometryEdit={geometryEdit}
               tokenScale={tokenScale}
               onTokenHover={handleTokenHover}
               onTokenClick={handleTokenClick}
@@ -1106,6 +1119,7 @@ export function GmMapView({
             onPreview={previewGeometry}
             onCommit={updateGeometry}
             onClose={closeGeometry}
+            externalCommit={handleCommit}
           />
         )}
 
