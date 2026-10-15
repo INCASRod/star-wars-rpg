@@ -327,7 +327,7 @@ button.tg.has:hover{background:color-mix(in srgb,var(--c) 26%,transparent);box-s
 <script>
 (function(){
 "use strict";
-var BUILD="2026-10-12.1";try{window.LORBUILD=BUILD;}catch(e){}
+var BUILD="2026-10-15.1";try{window.LORBUILD=BUILD;}catch(e){}
 var EDITION="archive";
 var VIEWS=[["situation","Situation"],["arcs","Arcs"],["threads","Threads"],["sessions","Sessions"],["planets","Planets"],["codex","Codex"],["documents","Documents"]];
 var GC={thriller:"--g-thriller",tragedy:"--g-tragedy",spirit:"--g-spirit",heist:"--g-heist",war:"--g-war",comedy:"--g-comedy"};
@@ -2142,6 +2142,26 @@ function rDocs(){
  }
  v.appendChild(el('<div class="vhead"><div><div class="eyebrow">The campaign in writing</div><h2>Documents</h2><p>The documents live here now. Edit them in place, and export to Word only when you need a file to print or hand over.</p></div></div>'));
  v.appendChild(el('<div class="note">Word files cannot be stored inside the console, so these hold the text itself. That is the point: one copy, edited here, with Drive kept as the archive of finished modules rather than the place the campaign lives.</div>'));
+ /* New document (GM only). Documents cannot be created by patch (see docs/console-patch-format.md),
+    so this is the one way to add one: title + folder, saved through saveDoc() like any edit, then opened. */
+ var addDoc=el('<div class="add gmonly" style="align-items:center"><input class="gr" id="newdoc-title" placeholder="New document title…" maxlength="160"><input id="newdoc-folder" list="newdoc-folders" placeholder="Folder" maxlength="60" style="width:170px"><datalist id="newdoc-folders"></datalist><button type="button" class="btn p">+ New document</button></div>');
+ var fl=addDoc.querySelector("datalist"),seenF={};
+ S.docs.forEach(function(d){var f=d.folder||"Other";if(!seenF[f]){seenF[f]=1;var o=document.createElement("option");o.value=f;fl.appendChild(o);}});
+ var tIn=addDoc.querySelector("#newdoc-title"),fIn=addDoc.querySelector("#newdoc-folder");
+ function doNewDoc(){
+  var t=tIn.value.trim();
+  if(!t){tIn.focus();return;}
+  if(!hydrated("docs")){xnote("Documents are still loading. Try again in a moment.");return;}
+  var d={id:"d-"+uid(),title:t,folder:fIn.value.trim()||"Other",updated:new Date().toISOString(),body:"",blocks:[{id:bid(),t:"p",x:""}]};
+  S.docs.push(d);
+  saveDoc(d).then(function(ok){
+   if(!ok){S.docs=S.docs.filter(function(y){return y.id!==d.id;});clearDraft(d.id);render();return;}
+   openDoc=d.id;render();
+  });
+ }
+ addDoc.querySelector("button").onclick=doNewDoc;
+ tIn.addEventListener("keydown",function(e){if(e.key==="Enter")doNewDoc();});
+ v.appendChild(addDoc);
  var folders={};
  S.docs.forEach(function(d){(folders[d.folder||"Other"]=folders[d.folder||"Other"]||[]).push(d);});
  Object.keys(folders).forEach(function(f){
