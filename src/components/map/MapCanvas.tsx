@@ -6,7 +6,8 @@ import gsap from 'gsap'
 import { SP, Z, FS, FONT_BODY } from '@/lib/tokens'
 import type { MapToken } from '@/hooks/useMapTokens'
 import { runMapWipe } from '@/lib/mapWipe'
-import { attachTokenHover, onTokenPointerOver, onTokenPointerOut, destroyTokenHover } from '@/lib/tokenHover'
+import { resolveTokenGeometry, tokenGeometryKey, type TokenGeometry } from '@/lib/tokenGeometry'
+import { attachTokenHover, redrawTokenGlow, onTokenPointerOver, onTokenPointerOut, destroyTokenHover } from '@/lib/tokenHover'
 import { skullSvgMarkup, SKULL_BONE_HEX, SKULL_HOLE_HEX } from '@/lib/skullGlyph'
 
 // Pixi.js v7 — loaded dynamically to avoid SSR issues
@@ -364,6 +365,7 @@ export const MapCanvas = memo(function MapCanvas({
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ;(c as any).__applyWoundState?.(token.wound_pct ?? null, true)
         }
+        syncTokenGeometry(c, token, draggingTokenIdRef.current)
         if (scaleChanged) {
           // Always keep _baseScale in sync so hover-exit returns to the correct scale
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -688,6 +690,7 @@ function syncTokens(
           c.x = offsetX + token.x * mapW
           c.y = offsetY + token.y * mapH
         }
+        syncTokenGeometry(c, token, draggingTokenIdRef.current)
         c.scale.set(tokenScale)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ;(c as any)._baseScale = tokenScale
@@ -728,6 +731,59 @@ function syncTokens(
     if (c) { destroyTokenHover(c, app.ticker); app.stage.removeChild(c); c.destroy({ children: true }) }
     tokensRef.current.delete(staleId)
   }
+}
+
+// ── Geometry sync ────────────────────────────────────────────
+// Applies a changed footprint (token_w / token_h / token_rot / token_size) to an
+// already-built token in place. Skipped while that token is being dragged (same
+// guard as position — the drop's optimistic update triggers another sync that
+// then applies it). Pointer tokens never register __applyGeometry, so they are
+// untouched.
+function syncTokenGeometry(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  c: any,
+  token: MapToken,
+  draggingId: string | null,
+) {
+  if (typeof c.__applyGeometry !== 'function' || draggingId === token.id) return
+  const g = resolveTokenGeometry(token)
+  const key = tokenGeometryKey(g)
+  if (c.__geomKey === key) return
+  c.__geomKey = key
+  c.__applyGeometry(g)
+}
+
+// Screen-space (page) rect for a token, for tooltip / dossier anchoring.
+// A rotated token's getBounds() is an axis-aligned box that drifts well past
+// the hull, so this transforms the four footprint corners by the container's
+// world matrix instead (stage zoom/pan, token scale, hover lift and rotation
+// all included). `withLabel` unions the nameplate so a tooltip placed below
+// the token clears it, as the old getBounds()-based rect did.
+function tokenScreenRect(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  c: any,
+  canvasRect: DOMRect,
+  withLabel: boolean,
+): DOMRect {
+  const fp = c.__footprint as { w: number; h: number } | undefined
+  if (!fp) {
+    const b = c.getBounds()
+    return new DOMRect(canvasRect.left + b.x, canvasRect.top + b.y, b.width, b.height)
+  }
+  const wt = c.worldTransform
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+  for (const [lx, ly] of [[-fp.w / 2, -fp.h / 2], [fp.w / 2, -fp.h / 2], [fp.w / 2, fp.h / 2], [-fp.w / 2, fp.h / 2]]) {
+    const gx = wt.a * lx + wt.c * ly + wt.tx
+    const gy = wt.b * lx + wt.d * ly + wt.ty
+    minX = Math.min(minX, gx); maxX = Math.max(maxX, gx)
+    minY = Math.min(minY, gy); maxY = Math.max(maxY, gy)
+  }
+  if (withLabel && c.__lblGroup) {
+    const lb = c.__lblGroup.getBounds()
+    minX = Math.min(minX, lb.x); maxX = Math.max(maxX, lb.x + lb.width)
+    minY = Math.min(minY, lb.y); maxY = Math.max(maxY, lb.y + lb.height)
+  }
+  return new DOMRect(canvasRect.left + minX, canvasRect.top + minY, maxX - minX, maxY - minY)
 }
 
 // ── Build a single token container ───────────────────────────
@@ -862,8 +918,14 @@ function buildTokenSprite(
     return c
   }
 
-  const SIZE   = 24 * (token.token_size ?? 1)
-  const RADIUS = SIZE / 2
+  // ONE footprint drives every shape below (ring, hover glow, mask, art fit,
+  // wound arc, skull, label offset, hit area). `fw`/`fh` are mutable so
+  // `applyGeometry` can re-run the same draw functions in place when
+  // token_w / token_h / token_rot change — no rebuild, hover + label survive.
+  const geo    = resolveTokenGeometry(token)
+  let fw       = geo.w
+  let fh       = geo.h
+  let fRot     = geo.rotRad
   const colour = BORDER_COLOURS[token.alignment ?? 'pc'] ?? 0xffffff
   const isRect = token.token_shape === 'rectangle'
 
@@ -872,59 +934,86 @@ function buildTokenSprite(
   ;(c as any).name = `token-${token.id}`
   c.zIndex = 10
   c.sortableChildren = true
+  c.rotation = fRot
 
   const ring = new px.Graphics()
-  ring.lineStyle(2, colour, 1)
-  if (isRect) {
-    ring.drawRoundedRect(-SIZE / 2 - 1, -SIZE / 2 - 1, SIZE + 2, SIZE + 2, 4)
-  } else {
-    ring.drawCircle(0, 0, RADIUS + 1)
+  const drawRing = () => {
+    ring.clear()
+    ring.lineStyle(2, colour, 1)
+    if (isRect) {
+      ring.drawRoundedRect(-fw / 2 - 1, -fh / 2 - 1, fw + 2, fh + 2, 4)
+    } else {
+      ring.drawCircle(0, 0, fw / 2 + 1)
+    }
   }
+  drawRing()
   ring.zIndex = 2
   c.addChild(ring)
 
-  attachTokenHover(c, px, colour, ticker, SIZE, isRect)
+  attachTokenHover(c, px, colour, ticker, fw, isRect, fh)
 
   // Art nodes that get desaturated when the token is defeated (Prompt 19,
   // Part B) — the ring/arc/label/skull are handled separately below, only
   // the portrait/fallback-initial art itself gets grayscale+dim treatment.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const artFilterTargets: any[] = []
+  let redrawArt: () => void
 
   if (token.token_image_url) {
     const mask = new px.Graphics()
-    mask.beginFill(0xffffff)
-    if (isRect) {
-      mask.drawRect(-SIZE / 2, -SIZE / 2, SIZE, SIZE)
-    } else {
-      mask.drawCircle(0, 0, RADIUS)
+    const sprite = px.Sprite.from(token.token_image_url)
+    // Rectangles aspect-FIT the art inside the footprint (contain, centred —
+    // the mask is the footprint). Circles keep their legacy stretch-to-fill:
+    // portraits are square and the circle is the crop.
+    const fitSprite = () => {
+      if (!isRect) { sprite.width = fw; sprite.height = fh; return }
+      const o = sprite.texture.orig
+      if (!sprite.texture.valid || !o.width || !o.height) return
+      sprite.scale.set(Math.min(fw / o.width, fh / o.height))
     }
-    mask.endFill()
-
-    const sprite   = px.Sprite.from(token.token_image_url)
-    sprite.width   = SIZE
-    sprite.height  = SIZE
+    redrawArt = () => {
+      mask.clear()
+      mask.beginFill(0xffffff)
+      if (isRect) {
+        mask.drawRect(-fw / 2, -fh / 2, fw, fh)
+      } else {
+        mask.drawCircle(0, 0, fw / 2)
+      }
+      mask.endFill()
+      fitSprite()
+    }
     sprite.anchor.set(0.5)
     sprite.mask    = mask
     sprite.zIndex  = 1
     mask.zIndex    = 1
+    redrawArt()
+    if (isRect) {
+      // Texture may still be loading — fit again once its real size is known.
+      const tex = sprite.texture
+      tex.on('update', fitSprite)
+      sprite.on('destroyed', () => tex.off('update', fitSprite))
+    }
     c.addChild(mask, sprite)
     artFilterTargets.push(sprite)
   } else {
     const bg = new px.Graphics()
-    bg.beginFill(colour, 0.2)
-    if (isRect) {
-      bg.drawRect(-SIZE / 2, -SIZE / 2, SIZE, SIZE)
-    } else {
-      bg.drawCircle(0, 0, RADIUS)
-    }
-    bg.endFill()
-    bg.zIndex = 1
-
     const initial = new px.Text(
       (token.label ?? '?')[0].toUpperCase(),
-      { fontFamily: 'Cinzel, serif', fontSize: Math.round(RADIUS * 0.85), fill: colour },
+      { fontFamily: 'Cinzel, serif', fontSize: Math.round(Math.min(fw, fh) / 2 * 0.85), fill: colour },
     )
+    redrawArt = () => {
+      bg.clear()
+      bg.beginFill(colour, 0.2)
+      if (isRect) {
+        bg.drawRect(-fw / 2, -fh / 2, fw, fh)
+      } else {
+        bg.drawCircle(0, 0, fw / 2)
+      }
+      bg.endFill()
+      initial.style.fontSize = Math.round(Math.min(fw, fh) / 2 * 0.85)
+    }
+    redrawArt()
+    bg.zIndex = 1
     initial.anchor.set(0.5)
     initial.zIndex = 2
     c.addChild(bg, initial)
@@ -945,7 +1034,7 @@ function buildTokenSprite(
   // which is itself already derived (no new column) — see
   // useEncounterCombatControls.ts's adjustAdversaryWounds/adjustHullTrauma.
   const isDefeatable = token.participant_type === 'adversary'
-  const skullSize = RADIUS * 2 * 0.62 // ~60-66% of token diameter per mockup
+  let skullSize = Math.min(fw, fh) * 0.62 // ~60-66% of the footprint's short edge per mockup
   // Both sprites start on Texture.EMPTY (a 0×0 texture) with no explicit
   // width/height — Sprite's width/height setters divide by the texture's
   // orig size to derive scale, so setting them against a 0×0 texture
@@ -995,15 +1084,38 @@ function buildTokenSprite(
   desatFilter.brightness(0.55, true)
 
   let lastDefeated: boolean | undefined
+  let lastWoundPct: number | null = null
+  // Square footprints (and every circle) keep the original ring-hugging arc.
+  // A non-square rectangle traces its perimeter clockwise from top-centre
+  // instead — a circle sized to either axis would miss or overshoot the hull.
+  const drawWoundArc = (woundPct: number | null, defeated: boolean) => {
+    arc.clear()
+    if (!woundPct || woundPct <= 0) return
+    arc.lineStyle(2, 0xe05252, defeated ? 0.35 : 0.85)
+    if (!isRect || Math.abs(fw - fh) < 0.5) {
+      arc.arc(0, 0, fw / 2 + 3, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * woundPct)
+      return
+    }
+    const hw = fw / 2 + 3, hh = fh / 2 + 3
+    const pts: Array<[number, number]> = [[0, -hh], [hw, -hh], [hw, hh], [-hw, hh], [-hw, -hh], [0, -hh]]
+    let total = 0
+    for (let i = 1; i < pts.length; i++) total += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1])
+    let remaining = total * Math.min(woundPct, 1)
+    arc.moveTo(pts[0][0], pts[0][1])
+    for (let i = 1; i < pts.length && remaining > 0; i++) {
+      const [x0, y0] = pts[i - 1], [x1, y1] = pts[i]
+      const len = Math.hypot(x1 - x0, y1 - y0)
+      const t = Math.min(1, remaining / len)
+      arc.lineTo(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t)
+      remaining -= len
+    }
+  }
   let skullTween: gsap.core.Tween | null = null
   const applyWoundState = (woundPct: number | null, animate: boolean) => {
     const defeated = isDefeatable && typeof woundPct === 'number' && woundPct >= 1
 
-    arc.clear()
-    if (woundPct && woundPct > 0) {
-      arc.lineStyle(2, 0xe05252, defeated ? 0.35 : 0.85)
-      arc.arc(0, 0, RADIUS + 3, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * woundPct)
-    }
+    lastWoundPct = woundPct
+    drawWoundArc(woundPct, defeated)
 
     for (const n of artFilterTargets) n.filters = defeated ? [desatFilter] : null
     ring.alpha = defeated ? 0.5 : 1 // softened alignment-color border, per mockup
@@ -1071,31 +1183,39 @@ function buildTokenSprite(
   lblGroup.zIndex = 4
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(lblGroup as any).eventMode = 'none' // name pill never takes pointer events
-  c.addChild(lblGroup) // added BEFORE the first applyLabelScale call below, so getLocalBounds() sees it
+  c.addChild(lblGroup)
 
-  // Keeps label at constant screen size and a fixed 4px gap below the ring.
-  const applyLabelScale = (s: number) => {
+  // Lays out everything that depends on BOTH the token scale and the footprint:
+  // the label's counter-scale + position, and the hit area.
+  //
+  // Label: the container may be rotated, but the nameplate must stay upright
+  // and sit just below the footprint on screen. The footprint's rotated
+  // half-height is the distance down to its lowest edge; converting the
+  // screen-space offset (0, D) back into the container's rotated local space
+  // gives (D·sin, D·cos), and the group is counter-rotated by -rotation.
+  // Unrotated, this reduces to the old `RADIUS + gap` (fh/2 + gap).
+  //
+  // Hit area: footprint + a small PAD, in local space — Pixi v7 inverse-
+  // transforms the pointer through the container's world matrix before testing
+  // a hitArea, so a rotated rectangle hit-tests correctly with no polygon. The
+  // name pill is deliberately outside it (eventMode 'none' above): long names
+  // used to steal clicks from neighbouring tokens.
+  let curScale = tokenScale
+  const layoutLabelAndHit = () => {
+    const s = curScale
     lblGroup.scale.set(1 / s)
-    lblGroup.y = RADIUS + (4 + lblH / 2) / s
-    // Explicit hitArea spanning the disc/rect only (not the label pill below it) —
-    // an explicit hitArea makes Pixi test this one shape for the whole
-    // container instead of hit-testing each child graphic separately, which
-    // was unreliable in practice (hover only fired over the name label, not
-    // the disc itself). Computed from Pixi's own getLocalBounds() rather than
-    // hand-rolled geometry — a manual rect here previously shrank the
-    // hoverable region to near-nothing. Recomputed here (not just at build
-    // time) since this fn also re-runs whenever tokenScale changes without a
-    // full sprite rebuild.
-    // The name pill is excluded: long names stretch far past the disc, and
-    // overlapping pills of nearby tokens used to steal clicks from the discs
-    // beneath them. Only the disc/rect is hoverable and selectable.
-    lblGroup.visible = false
-    const b = c.getLocalBounds()
-    lblGroup.visible = true
+    const sin = Math.sin(fRot), cos = Math.cos(fRot)
+    const halfScreenH = Math.abs((fw / 2) * sin) + Math.abs((fh / 2) * cos)
+    const D = halfScreenH + (4 + lblH / 2) / s
+    lblGroup.rotation = -fRot
+    lblGroup.x = D * sin
+    lblGroup.y = D * cos
+
     const PAD = 4 // px intentional — small buffer so cursor jitter right at the edge doesn't repeatedly cross the boundary
-    const hx = b.x - PAD, hy = b.y - PAD, hw = b.width + PAD * 2, hh = b.height + PAD * 2
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(c as any).hitArea = new px.Rectangle(hx, hy, hw, hh)
+    ;(c as any).hitArea = isRect
+      ? new px.Rectangle(-fw / 2 - PAD, -fh / 2 - PAD, fw + PAD * 2, fh + PAD * 2)
+      : new px.Circle(0, 0, fw / 2 + PAD)
 
     // Prompt 13 Step 0 diagnostic — draws the ACTUAL hitArea as a visible
     // overlay so it can be compared against the rendered token. Off by
@@ -1115,13 +1235,43 @@ function buildTokenSprite(
       dbg.clear()
       dbg.beginFill(0xff00ff, 0.25)
       dbg.lineStyle(1, 0xff00ff, 1)
-      dbg.drawRect(hx, hy, hw, hh)
+      if (isRect) dbg.drawRect(-fw / 2 - PAD, -fh / 2 - PAD, fw + PAD * 2, fh + PAD * 2)
+      else dbg.drawCircle(0, 0, fw / 2 + PAD)
       dbg.endFill()
     }
   }
-  applyLabelScale(tokenScale)
+  const applyLabelScale = (s: number) => { curScale = s; layoutLabelAndHit() }
+  layoutLabelAndHit()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(c as any).__applyLabelScale = applyLabelScale
+
+  // Re-draws every footprint-dependent node in place for new token_w /
+  // token_h / token_rot (or token_size). Nothing is destroyed, so the hover
+  // glow/animation state, the label Text and the wound/skull state survive.
+  const applyGeometry = (g: TokenGeometry) => {
+    fw = g.w; fh = g.h; fRot = g.rotRad
+    c.rotation = fRot
+    drawRing()
+    redrawArt()
+    redrawTokenGlow(c, colour, fw, fh, isRect)
+    drawWoundArc(lastWoundPct, lastDefeated === true)
+    skullSize = Math.min(fw, fh) * 0.62
+    if (skullBaseScale > 0) {
+      skullBaseScale = skullSize / skullSprite.texture.width
+      if (lastDefeated) { skullSprite.scale.set(skullBaseScale); skullShadow.scale.set(skullBaseScale) }
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(c as any).__footprint = { w: fw, h: fh }
+    layoutLabelAndHit()
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(c as any).__applyGeometry = applyGeometry
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(c as any).__geomKey = tokenGeometryKey(geo)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(c as any).__footprint = { w: fw, h: fh }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(c as any).__lblGroup = lblGroup
 
   // Position using map image bounds (not canvas bounds)
   c.x = offsetX + token.x * mapW
@@ -1164,8 +1314,7 @@ function buildTokenSprite(
     if (!rect) return
     // getBounds() is Pixi's own global (renderer-space) bounding box — it already
     // accounts for stage zoom/pan/scale, so this stays correct at any camera state.
-    const b = (c as any).getBounds()
-    const tokenRect = new DOMRect(rect.left + b.x, rect.top + b.y, b.width, b.height)
+    const tokenRect = tokenScreenRect(c, rect, true)
     if (DEV_DEBUG_HOVER) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const ha = (c as any).hitArea
@@ -1173,7 +1322,7 @@ function buildTokenSprite(
       console.log('[hover-diag]' + JSON.stringify({
         tokenId: token.id,
         hitAreaLocal: ha ? { x: ha.x, y: ha.y, w: ha.width, h: ha.height } : null,
-        containerGetBoundsGlobal: { x: b.x, y: b.y, w: b.width, h: b.height },
+        tokenRect: { x: tokenRect.x, y: tokenRect.y, w: tokenRect.width, h: tokenRect.height },
         canvasWrapperRect: { left: rect.left, top: rect.top, w: rect.width, h: rect.height },
         pointerScreen: { x: rect.left + e.globalX, y: rect.top + e.globalY },
         devicePixelRatio: window.devicePixelRatio,
@@ -1242,13 +1391,7 @@ function buildTokenSprite(
       // Pointer never moved past the threshold — a tap, not a drag.
       const containerRect = containerRef.current?.getBoundingClientRect()
       if (containerRect && onClickRef.current) {
-        const global = c.getGlobalPosition()
-        const half = (24 * (token.token_size ?? 1)) / 2
-        const rect = new DOMRect(
-          containerRect.left + global.x - half,
-          containerRect.top + global.y - half,
-          half * 2, half * 2,
-        )
+        const rect = tokenScreenRect(c, containerRect, false)
         onClickRef.current(token.id, rect)
       } else {
         onClickRef.current?.(token.id, new DOMRect())

@@ -20,6 +20,11 @@ export interface MapToken {
   wound_pct: number | null
   token_image_url: string | null
   token_shape: 'circle' | 'rectangle'
+  /** Per-placement footprint, base units (1.0 = 24px). Null = fall back to token_size. See lib/tokenGeometry.ts. */
+  token_w?: number | null
+  token_h?: number | null
+  /** Degrees, clockwise. */
+  token_rot?: number
   token_type?: string | null
   updated_at: string
 }

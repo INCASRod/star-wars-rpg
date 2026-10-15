@@ -21,27 +21,21 @@ function lerp(a: number, b: number, t: number): number {
 
 // ── Attach glow ring to a token container ─────────────────────
 
-export function attachTokenHover(
-  container:  AnyContainer,
-  px:         PixiNS,
-  colour:     number,
-  ticker:     AnyTicker,
-  size:       number,
-  isRect:     boolean,
+/** (Re)draws the glow ring to a w × h footprint. Circles use `w` as the diameter. */
+function drawGlow(
+  glowRing: AnyContainer,
+  colour:   number,
+  w:        number,
+  h:        number,
+  isRect:   boolean,
 ): void {
-  const radius     = size / 2
-  const glowRadius = radius + 4
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const glowRing = new (px.Graphics as any)()
-  glowRing.name   = 'glowRing'
-  glowRing.alpha  = 0
-  glowRing.zIndex = 1
+  const glowRadius = w / 2 + 4
+  glowRing.clear()
 
   // Inner ring — brighter, thinner
   glowRing.lineStyle(3, colour, 0.7)
   if (isRect) {
-    glowRing.drawRoundedRect(-radius - 4, -radius - 4, size + 8, size + 8, 4)
+    glowRing.drawRoundedRect(-w / 2 - 4, -h / 2 - 4, w + 8, h + 8, 4)
   } else {
     glowRing.drawCircle(0, 0, glowRadius)
   }
@@ -49,10 +43,39 @@ export function attachTokenHover(
   // Outer halo — dimmer, thicker
   glowRing.lineStyle(6, colour, 0.15)
   if (isRect) {
-    glowRing.drawRoundedRect(-radius - 7, -radius - 7, size + 14, size + 14, 6)
+    glowRing.drawRoundedRect(-w / 2 - 7, -h / 2 - 7, w + 14, h + 14, 6)
   } else {
     glowRing.drawCircle(0, 0, glowRadius + 3)
   }
+}
+
+/** Redraws an already-attached glow ring after the token's footprint changed. */
+export function redrawTokenGlow(
+  container: AnyContainer,
+  colour:    number,
+  w:         number,
+  h:         number,
+  isRect:    boolean,
+): void {
+  const glowRing = container.getChildByName('glowRing')
+  if (glowRing) drawGlow(glowRing, colour, w, h, isRect)
+}
+
+export function attachTokenHover(
+  container:  AnyContainer,
+  px:         PixiNS,
+  colour:     number,
+  ticker:     AnyTicker,
+  size:       number,
+  isRect:     boolean,
+  height:     number = size,
+): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const glowRing = new (px.Graphics as any)()
+  glowRing.name   = 'glowRing'
+  glowRing.alpha  = 0
+  glowRing.zIndex = 1
+  drawGlow(glowRing, colour, size, height, isRect)
 
   container.sortableChildren = true
   container.addChild(glowRing)

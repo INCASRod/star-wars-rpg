@@ -92,6 +92,13 @@ OggDude rows still exist in the database for the domains reSpec now owns (talent
 - Port/Starboard defence do not exist on the console card; they import as 0 and are always flagged.
 
 ## Cybernetics (migration 135 — The Archive, Phase 2)
+## Map Token Geometry (migration 145, `src/lib/tokenGeometry.ts`)
+
+- `map_tokens.token_w` / `token_h` (float, NULL) and `token_rot` (float, NOT NULL DEFAULT 0, degrees clockwise) size and turn ONE token placement on ONE map. Units are base units, **1.0 = 24px**, the same as `token_size`; `maps.token_scale` still multiplies everything, so a per-token change can never affect another token or the map.
+- **Fallback rule:** NULL `token_w`/`token_h` fall back to `token_size` (default 1.0), so a row with no geometry renders as before. `token_size` keeps its meaning. Circle tokens stay circular (`min(w,h)` on both axes); rectangles (vehicles) use the full w × h. Pointer tokens (`token_type pointer_*`) ignore all three fields.
+- **One footprint.** `resolveTokenGeometry()` is the only place the footprint is derived. Ring, hover glow, mask, art fit, wound arc, skull, label offset and hit area all read it — never re-derive geometry from `SIZE`/`RADIUS`. Rectangle art is aspect-FIT inside the footprint (this fixed the old stretch-to-square of vehicle art); a vehicle with non-square art and no geometry therefore renders un-squashed, not "identical to before" — that is the intended bug fix.
+- Phase A is data + render only: there is no write helper or GM UI yet, so set the columns by hand. Changes apply in place through `syncTokenGeometry()` (no token rebuild) and arrive on players/mobile via the existing `map_id` realtime channel.
+
 
 - **`ref_cybernetic_effects`** is the structured-effect table for cybernetic implants: one row per discrete effect, 47 rows covering all 42 `'Cybernetics'`-tagged `ref_gear` rows. Columns `gear_key`, `effect_type` (`characteristic`/`skill`/`talent`/`soak`/`defense`/`wound_threshold`/`strain_threshold`/`text`), `target`, `value`, `counts_toward_cap`, `stack_group`, `needs_review`, `notes`. Reads are anon+authenticated; writes are GM-only. Full schema in `docs/architecture.md`.
 - **Installed vs owned.** `ref_gear.worn_anchor = 'cybernetics'` marks a catalogue row installable (6th anchor value — `worn_anchor` is free TEXT, no ALTER needed). `character_gear.equip_slot = 'cybernetics'` marks a character's copy surgically installed. **Installed** = `equip_state = 'equipped' AND equip_slot = 'cybernetics' AND is_dropped = false`, spelled once as `isInstalledCybernetic()` in `src/lib/derivedStats.ts`. Never re-derive it inline — dropping and selling are soft deletes here, so omitting `is_dropped` silently keeps sold implants active.
