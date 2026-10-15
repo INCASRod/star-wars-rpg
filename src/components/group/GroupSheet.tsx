@@ -1795,8 +1795,8 @@ function AssetViewModal({ asset, adversary, vehicle, loading, onClose, gmUnlocke
                     <_VmSection>Weapons</_VmSection>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                       {v.weapons.map((w, i) => {
-                        const stats = vehicleWeaponStats(w.weaponKey)
-                        const displayName = vehicleWeaponDisplayName(w.weaponKey)
+                        const stats = vehicleWeaponStats(w)
+                        const displayName = vehicleWeaponDisplayName(w)
                         const arcParts = [
                           w.firingArcs.fore      && 'Fore',
                           w.firingArcs.aft       && 'Aft',

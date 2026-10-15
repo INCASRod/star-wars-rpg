@@ -253,8 +253,8 @@ export function EncounterDossier({
   // no name/damage/critical fields at all).
   const weaponRows = veh
     ? veh.weapons.map((w, i) => {
-        const stats = vehicleWeaponStats(w.weaponKey)
-        const name = `${w.count > 1 ? `${w.count}× ` : ''}${vehicleWeaponDisplayName(w.weaponKey)}${w.turret ? ' (Turret)' : ''}`
+        const stats = vehicleWeaponStats(w)
+        const name = `${w.count > 1 ? `${w.count}× ` : ''}${vehicleWeaponDisplayName(w)}${w.turret ? ' (Turret)' : ''}`
         return { key: i, name, damage: stats?.damage ?? '—', crit: stats?.crit }
       })
     : (adv?.weapons ?? []).map((w, i) => {

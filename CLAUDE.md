@@ -88,7 +88,8 @@ OggDude rows still exist in the database for the domains reSpec now owns (talent
 ## Console Vehicle Import (`src/lib/importConsoleVehicle.ts`)
 
 - Parses "Copy for Archive" blocks from the console's vehicle cards (`lor-console/vehicle@1`, emitted by `archiveVehicleJSON` in `public/console/index.html`) into `VehicleEditor.tsx`'s form state. Same GM-only paste panel / review banner / never-auto-saves contract as the adversary import.
-- **Weapons are linked to a catalogue `weaponKey` only when the name AND the printed Damage/Critical/Range all agree** with `vehicles.ts`'s `VEHICLE_WEAPON_STATS`. Vehicle weapons resolve their stats from that catalogue alone (unknown key = damage 0 in combat), so a mismatch is never silently linked: the row is added with no weapon selected, flagged, and the console line is kept in Description. Do not "improve" this by guessing the nearest weapon.
+- **Weapons are linked to a catalogue `weaponKey` only when the name AND the printed Damage/Critical/Range all agree** with `vehicles.ts`'s `VEHICLE_WEAPON_STATS`. Anything else is imported as a **custom weapon** (`weaponKey: 'CUSTOM'` + `custom: { name, damage, range, crit? }`) carrying exactly the printed stats, flagged in the review banner. Never guess the nearest catalogue weapon: a catalogue key silently changes the damage.
+- **Custom vehicle weapons.** `VehicleWeapon.custom` (`vehicles.ts`) holds a GM-defined weapon's own stats; `weaponKey` is `CUSTOM_WEAPON_KEY`. `vehicleWeaponStats` / `vehicleWeaponDisplayName` / `vehicleWeaponSkillKey` accept either a bare catalogue key or the whole weapon object, and every consumer passes the weapon (`w`), not `w.weaponKey` — a new consumer that passes `w.weaponKey` would silently show a custom weapon as damage 0.
 - Port/Starboard defence do not exist on the console card; they import as 0 and are always flagged.
 
 ## Cybernetics (migration 135 — The Archive, Phase 2)

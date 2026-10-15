@@ -307,8 +307,8 @@ export function VehicleDetailPanel({
               <SectionHead>Weapons</SectionHead>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
                 {v.weapons.map((w, i) => {
-                  const stats = vehicleWeaponStats(w.weaponKey)
-                  const displayName = vehicleWeaponDisplayName(w.weaponKey)
+                  const stats = vehicleWeaponStats(w)
+                  const displayName = vehicleWeaponDisplayName(w)
                   const arcParts = [
                     w.firingArcs.fore      && 'Fore',
                     w.firingArcs.aft       && 'Aft',

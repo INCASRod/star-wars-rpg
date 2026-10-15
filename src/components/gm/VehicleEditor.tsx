@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Vehicle, VehicleAbility } from '@/lib/vehicles'
-import { vehicleWeaponStats, ALL_VEHICLE_WEAPONS } from '@/lib/vehicles'
+import { vehicleWeaponStats, ALL_VEHICLE_WEAPONS, CUSTOM_WEAPON_KEY } from '@/lib/vehicles'
 import { importConsoleVehicle } from '@/lib/importConsoleVehicle'
 import type { ImportReport } from '@/lib/importConsoleAdversary'
 import { toast } from 'sonner'
@@ -64,7 +64,12 @@ const STARSHIP_TYPES = ['Starfighter', 'Light Freighter', 'Heavy Freighter', 'Ca
 
 interface AbilityEntry { name: string; description: string }
 interface WeaponEntry  {
+  /** Catalogue key, or CUSTOM_WEAPON_KEY — then the custom* fields below are the weapon's own stats. */
   weaponKey:    string
+  customName?:   string
+  customDamage?: number
+  customCrit?:   number | null
+  customRange?:  string
   count:        number
   turret:       boolean
   location:     string
@@ -94,6 +99,8 @@ function arcVal(w: WeaponEntry, field: keyof WeaponEntry, defaultVal: boolean): 
 }
 
 const SENSOR_RANGES = ['Close', 'Short', 'Medium', 'Long', 'Extreme']
+/** Same band names the catalogue weapons use (VEHICLE_WEAPON_STATS.range). */
+const WEAPON_RANGES = SENSOR_RANGES
 
 function fromVehicle(v: Vehicle) {
   return {
@@ -124,6 +131,10 @@ function fromVehicle(v: Vehicle) {
     abilities:   (v.abilities ?? []).map(a => ({ name: a.name, description: a.description })),
     weapons:     v.weapons.map(w => ({
       weaponKey:     w.weaponKey,
+      customName:    w.custom?.name   ?? '',
+      customDamage:  w.custom?.damage ?? 0,
+      customCrit:    w.custom?.crit   ?? null as number | null,
+      customRange:   w.custom?.range  ?? 'Close',
       count:         w.count,
       turret:        w.turret,
       location:      w.location,
@@ -292,6 +303,13 @@ export function VehicleEditor({
     try {
       const parsedWeapons = weapons.map(w => ({
         weaponKey:  w.weaponKey,
+        // a custom weapon carries its own stats; any other weapon resolves them from the catalogue by key
+        ...(w.weaponKey === CUSTOM_WEAPON_KEY ? { custom: {
+          name:   (w.customName ?? '').trim() || 'Custom weapon',
+          damage: w.customDamage ?? 0,
+          range:  w.customRange || 'Close',
+          ...(w.customCrit != null ? { crit: w.customCrit } : {}),
+        } } : {}),
         count:      w.count,
         turret:     w.turret,
         location:   w.location,
@@ -747,6 +765,7 @@ export function VehicleEditor({
                           style={{ ...inputStyle, cursor: 'pointer' }}
                         >
                           <option value="">— select weapon —</option>
+                          <option value={CUSTOM_WEAPON_KEY}>✎ Custom weapon…</option>
                           {ALL_VEHICLE_WEAPONS.map(v => (
                             <option key={v.key} value={v.key}>
                               {v.key} — {v.name}
@@ -764,8 +783,49 @@ export function VehicleEditor({
                       </label>
                     </div>
 
+                    {/* Custom weapon: the GM types the stats in */}
+                    {w.weaponKey === CUSTOM_WEAPON_KEY ? (
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.5rem' }}>
+                        <div>
+                          <div style={fieldLabel}>Name</div>
+                          <input
+                            value={w.customName ?? ''}
+                            onChange={e => updateWeapon(i, 'customName', e.target.value)}
+                            style={inputStyle}
+                            placeholder="e.g. Twin heavy laser cannons"
+                          />
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+                          <div>
+                            <div style={fieldLabel}>Damage</div>
+                            <NumberField value={w.customDamage ?? 0} onChange={e => updateWeapon(i, 'customDamage', parseInt(e.target.value) || 0)} style={numInput} min={0} />
+                          </div>
+                          <div>
+                            <div style={fieldLabel}>Crit</div>
+                            <NumberField
+                              value={w.customCrit ?? ''}
+                              onChange={e => updateWeapon(i, 'customCrit', e.target.value === '' ? null : parseInt(e.target.value) || 0)}
+                              style={numInput}
+                              min={0}
+                              placeholder="—"
+                            />
+                          </div>
+                          <div>
+                            <div style={fieldLabel}>Range</div>
+                            <select
+                              value={w.customRange ?? 'Close'}
+                              onChange={e => updateWeapon(i, 'customRange', e.target.value)}
+                              style={{ ...inputStyle, width: 120, cursor: 'pointer' }}
+                            >
+                              {WEAPON_RANGES.map(r => <option key={r} value={r}>{r}</option>)}
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    ) : null}
+
                     {/* Stats preview — shown when key resolves */}
-                    {stats ? (
+                    {w.weaponKey === CUSTOM_WEAPON_KEY ? null : stats ? (
                       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                         <span style={{ fontFamily: FONT_BODY, fontSize: FS_CAPTION, color: HUD.textDim, letterSpacing: '0.06em' }}>
                           {stats.name}

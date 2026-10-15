@@ -263,8 +263,8 @@ export function VehicleCardList({
                   <div style={{ marginTop: '0.375rem' }}>
                     <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: TEXT_MUTED, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Weapons</div>
                     {v.weapons.map((w, i) => {
-                      const displayName = vehicleWeaponDisplayName(w.weaponKey)
-                      const stats       = vehicleWeaponStats(w.weaponKey)
+                      const displayName = vehicleWeaponDisplayName(w)
+                      const stats       = vehicleWeaponStats(w)
                       const count  = w.count > 1 ? `${w.count}× ` : ''
                       const turret = w.turret ? ' (Turret)' : ''
                       const dmgStr = stats ? ` — DMG ${stats.damage} — ${stats.range}${stats.crit ? ` — Crit ${stats.crit}` : ''}` : ''

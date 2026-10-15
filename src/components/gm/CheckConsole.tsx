@@ -187,11 +187,11 @@ export function CheckConsole({
       // Crew" step below), never the vehicle itself — the weapon's own
       // skillKey just says WHICH skill that crew member needs.
       return veh.weapons.map((w, i) => {
-        const stats = vehicleWeaponStats(w.weaponKey)
+        const stats = vehicleWeaponStats(w)
         return {
           index: i,
-          name: `${w.count > 1 ? `${w.count}× ` : ''}${vehicleWeaponDisplayName(w.weaponKey)}${w.turret ? ' (Turret)' : ''}`,
-          skillKey: vehicleWeaponSkillKey(w.weaponKey),
+          name: `${w.count > 1 ? `${w.count}× ` : ''}${vehicleWeaponDisplayName(w)}${w.turret ? ' (Turret)' : ''}`,
+          skillKey: vehicleWeaponSkillKey(w),
           damage: stats?.damage ?? '—',
           crit: stats?.crit,
           range: stats?.range ?? '—',

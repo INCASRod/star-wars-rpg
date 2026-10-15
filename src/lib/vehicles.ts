@@ -110,19 +110,27 @@ const VEHICLE_WEAPON_STATS: Record<string, VehicleWeaponEntry> = {
   XX23TRACER:        { name: 'XX-23 S-Thread Tracer',        damage: 0,  range: 'Medium' },
 }
 
-/** Resolve the display name for a vehicle weapon key, falling back to the raw key. */
-export function vehicleWeaponDisplayName(key: string): string {
-  return VEHICLE_WEAPON_STATS[key]?.name ?? key
+/** `weaponKey` of a GM-defined weapon whose Name/Damage/Crit/Range live on the weapon itself (`VehicleWeapon.custom`)
+ *  instead of in VEHICLE_WEAPON_STATS. */
+export const CUSTOM_WEAPON_KEY = 'CUSTOM'
+
+/** What the stats helpers accept: a bare catalogue key, or a whole weapon (so a custom weapon's own stats win). */
+export type VehicleWeaponRef = string | { weaponKey: string; custom?: VehicleWeaponEntry }
+
+/** Resolve the display name for a vehicle weapon (catalogue key or custom weapon), falling back to the raw key. */
+export function vehicleWeaponDisplayName(ref: VehicleWeaponRef): string {
+  return vehicleWeaponStats(ref)?.name ?? (typeof ref === 'string' ? ref : ref.weaponKey)
 }
 
-/** Resolve the full stats entry for a vehicle weapon key, or undefined if unknown. */
-export function vehicleWeaponStats(key: string): VehicleWeaponEntry | undefined {
-  return VEHICLE_WEAPON_STATS[key]
+/** Resolve the full stats entry for a vehicle weapon (catalogue key or custom weapon), or undefined if unknown. */
+export function vehicleWeaponStats(ref: VehicleWeaponRef): VehicleWeaponEntry | undefined {
+  if (typeof ref !== 'string' && ref.custom) return ref.custom
+  return VEHICLE_WEAPON_STATS[typeof ref === 'string' ? ref : ref.weaponKey]
 }
 
 /** SWRPG skill key that governs firing a vehicle weapon — see VehicleWeaponEntry.skillKey. */
-export function vehicleWeaponSkillKey(key: string): string {
-  return VEHICLE_WEAPON_STATS[key]?.skillKey ?? 'GUNN'
+export function vehicleWeaponSkillKey(ref: VehicleWeaponRef): string {
+  return vehicleWeaponStats(ref)?.skillKey ?? 'GUNN'
 }
 
 /** All known vehicle weapon entries, sorted by display name — for use in editor dropdowns. */
@@ -146,7 +154,10 @@ export interface VehicleFiringArcs {
 }
 
 export interface VehicleWeapon {
+  /** Catalogue key into VEHICLE_WEAPON_STATS, or CUSTOM_WEAPON_KEY when `custom` carries the stats. */
   weaponKey:   string
+  /** GM-defined weapon stats. Present only when weaponKey === CUSTOM_WEAPON_KEY. */
+  custom?:     VehicleWeaponEntry
   count:       number
   turret:      boolean
   location:    string
@@ -292,7 +303,7 @@ export function vehicleToInstance(v: Vehicle): AdversaryInstance & { _isVehicle:
       ...(v.abilities ?? []),
     ],
     weapons: v.weapons.map(w => {
-      const stats = VEHICLE_WEAPON_STATS[w.weaponKey]
+      const stats = vehicleWeaponStats(w)
       const displayName = stats?.name ?? w.weaponKey
       return {
         name:      `${w.count > 1 ? `${w.count}× ` : ''}${displayName}${w.turret ? ' (Turret)' : ''}`,

@@ -8,6 +8,7 @@
  * have lost something.
  */
 import type { ImportReport, ImportReportFlag } from './importConsoleAdversary'
+import { CUSTOM_WEAPON_KEY } from './vehicles'
 
 export interface ConsoleVehicleBlock {
   format: string
@@ -36,7 +37,12 @@ export interface ConsoleVehicleBlock {
 
 /* ── Form-value shapes — mirror VehicleEditor's local entry types ───────── */
 export interface ImportedVehicleWeapon {
+  /** Catalogue key, or CUSTOM_WEAPON_KEY with the custom* fields carrying the console's printed stats. */
   weaponKey: string
+  customName: string
+  customDamage: number
+  customCrit: number | null
+  customRange: string
   count: number
   turret: boolean
   location: string
@@ -87,6 +93,7 @@ export interface ImportConsoleVehicleContext {
 }
 
 const SENSOR_RANGES = ['Close', 'Short', 'Medium', 'Long', 'Extreme']
+const WEAPON_RANGES = SENSOR_RANGES
 const KNOWN_QUALITY_KEYS = ['LINKED', 'LIMITEDAMMO', 'BREACH', 'SLOWFIRING', 'BLAST', 'GUIDED', 'ACCURATE', 'TRACTOR', 'ION']
 const STARSHIP_WORDS = /\b(star\s?ship|spacecraft|ship|starfighter|fighter|freighter|frigate|corvette|cruiser|shuttle|destroyer)\b/i
 const COUNT_WORDS: Record<string, number> = {
@@ -131,6 +138,15 @@ function weaponCoreName(name: string): string {
     .replace(/\s+/g, ' ').trim()
   s = s.replace(/s$/, '')                       // cannons → cannon, launchers → launcher
   return s
+}
+
+/** Name for a custom weapon: the printed name without the count words (the Count field carries those), first letter capitalised. */
+function customWeaponName(name: string): string {
+  const s = name
+    .replace(/\bx\s*\d+\b|\b\d+\s*x\b/gi, ' ')
+    .replace(/^\s*(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+)\b/i, ' ')
+    .replace(/\s+/g, ' ').trim()
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : name
 }
 
 function parseQualities(parts: string[], flags: ImportReportFlag[], weaponName: string): string {
@@ -267,7 +283,6 @@ export function importConsoleVehicle(pasted: string, ctx: ImportConsoleVehicleCo
 
   /* ── Weapons ───────────────────────────────────────────────────────── */
   const weapons: ImportedVehicleWeapon[] = []
-  const unmatched: string[] = []
   const items = (block.weapons?.length ? block.weapons : []).map(w => str(w?.raw)).filter(Boolean)
   for (const raw of items) {
     const m = raw.match(/^(.*?)\s*\(([\s\S]*)\)\s*$/)
@@ -292,19 +307,25 @@ export function importConsoleVehicle(pasted: string, ctx: ImportConsoleVehicleCo
     const statsAgree = (c: (typeof sameName)[number]) =>
       (damage == null || c.damage === damage) && (crit == null || c.crit === crit) && (!range || c.range.toLowerCase() === range.toLowerCase())
     const hit = sameName.find(statsAgree)
+    // no catalogue weapon with these stats → a CUSTOM weapon carrying exactly what the console printed
+    const customRange = WEAPON_RANGES.find(r => r.toLowerCase() === range.toLowerCase()) ?? 'Close'
     if (!hit) {
       const stats = [damage != null ? `Damage ${damage}` : null, crit != null ? `Critical ${crit}` : null, range ? `Range ${range}` : null].filter(Boolean).join(', ')
       const why = sameName.length
-        ? `its name matches ${sameName[0].name} (Damage ${sameName[0].damage}, Critical ${sameName[0].crit ?? '–'}, Range ${sameName[0].range}) but the stats differ`
+        ? `its name matches ${sameName[0].name} (Damage ${sameName[0].damage}, Critical ${sameName[0].crit ?? '–'}, Range ${sameName[0].range}) but the printed stats differ`
         : 'it is not in the vehicle weapon catalogue'
-      flags.push({
-        field: 'weapons',
-        message: `Weapon "${name}" (${stats || 'no stats'}) not linked: ${why}. Row added with no weapon selected — pick one or ✕ Remove it; the full console line is in Description.`,
-      })
-      unmatched.push(raw)
+      flags.push({ field: 'weapons', message: `Weapon "${name}" (${stats || 'no stats'}) imported as a CUSTOM weapon: ${why}.` })
+      if (damage == null) flags.push({ field: 'weapons', message: `Weapon "${name}" has no Damage in the block — set to 0. Fill it in.` })
+      if (!WEAPON_RANGES.some(r => r.toLowerCase() === range.toLowerCase())) {
+        flags.push({ field: 'weapons', message: `Weapon "${name}" range "${range || '(none)'}" is not Close/Short/Medium/Long/Extreme — set to Close. Verify.` })
+      }
     }
     weapons.push({
-      weaponKey: hit?.key ?? '',
+      weaponKey: hit?.key ?? CUSTOM_WEAPON_KEY,
+      customName: hit ? '' : customWeaponName(name),
+      customDamage: hit ? 0 : damage ?? 0,
+      customCrit: hit ? null : crit,
+      customRange: hit ? 'Close' : customRange,
       count: parseCount(name),
       turret: /turret/i.test(name),
       location: '',
@@ -313,7 +334,6 @@ export function importConsoleVehicle(pasted: string, ctx: ImportConsoleVehicleCo
       arcStarboard: arcs ? arcs.arcStarboard : false, arcDorsal: arcs ? arcs.arcDorsal : false, arcVentral: arcs ? arcs.arcVentral : false,
     })
   }
-  if (unmatched.length) notes.push(`Weapons not linked to the catalogue (console):\n${unmatched.map(u => `• ${u}`).join('\n')}`)
   if (!items.length && str(block.weaponsRaw) && !isNone(str(block.weaponsRaw))) {
     flags.push({ field: 'weapons', message: 'Weapons row present but could not be split into weapons — full text saved in Description.' })
     notes.push(`Weapons (console): ${str(block.weaponsRaw)}`)
