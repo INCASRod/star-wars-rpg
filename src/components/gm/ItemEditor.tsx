@@ -151,6 +151,18 @@ function composeDescription(loreText: string, effectText: string): string {
   return `${lore}[P]${effect}`
 }
 
+// Inverse of composeDescription for a row that has no split fields (an item
+// never saved since the split, or one whose list query dropped them): the
+// effect is whatever follows the LAST [P], the lore is everything before it.
+// Only used when BOTH effect_text and lore_text are null -- a row with either
+// set is trusted as split.
+function splitLegacyDescription(description: string | null | undefined): { lore: string; effect: string } {
+  const d = description ?? ''
+  const i = d.lastIndexOf('[P]')
+  if (i === -1) return { lore: d, effect: '' }
+  return { lore: d.slice(0, i).trim(), effect: d.slice(i + 3).trim() }
+}
+
 const SKILL_OPTIONS = [
   { key: 'BRAWL',   label: 'Brawl (BR)' },
   { key: 'MELEE',   label: 'Melee (BR)' },
@@ -224,7 +236,7 @@ export function ItemEditor({ item, defaultType = 'weapon', campaignId, supabase,
   const [encumbrance, setEncumbrance] = useState(String(item?.encumbrance ?? 1))
   // effect_text/lore_text populate the two fields when present; an old
   // custom item with only `description` (never edited since the split)
-  // loads its whole text into Description with Effect left empty.
+  // is split at its last [P] (see splitLegacyDescription).
   const hasSplitFields = item?.effect_text != null || item?.lore_text != null
   const [effectText,  setEffectText]  = useState(hasSplitFields ? (item?.effect_text ?? '') : '')
   const [loreText,    setLoreText]    = useState(hasSplitFields ? (item?.lore_text ?? '') : (item?.description ?? ''))

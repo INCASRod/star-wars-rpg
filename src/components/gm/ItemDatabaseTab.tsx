@@ -138,11 +138,11 @@ export function ItemDatabaseTab({ campaignId, supabase, characters = [], sendToC
     }
 
     const queries = [
-      applyScope(supabase.from('ref_weapons').select('key,name,price,rarity,encumbrance,skill_key,damage,damage_add,crit,range_value,hard_points,qualities,description,is_custom,custom_notes,campaign_id,categories'))
+      applyScope(supabase.from('ref_weapons').select('key,name,price,rarity,encumbrance,skill_key,damage,damage_add,crit,range_value,hard_points,qualities,description,effect_text,lore_text,is_custom,custom_notes,campaign_id,categories'))
         .then((r: { data: unknown[] | null }) => (r.data || []).map((d) => ({ ...(d as Record<string, unknown>), type: 'weapon', _table: 'ref_weapons' as const }))),
-      applyScope(supabase.from('ref_armor').select('key,name,price,rarity,encumbrance,encumbrance_bonus,defense,soak,soak_bonus,description,is_custom,custom_notes,campaign_id,categories,worn_anchor'))
+      applyScope(supabase.from('ref_armor').select('key,name,price,rarity,encumbrance,encumbrance_bonus,defense,soak,soak_bonus,description,effect_text,lore_text,is_custom,custom_notes,campaign_id,categories,worn_anchor'))
         .then((r: { data: unknown[] | null }) => (r.data || []).map((d) => ({ ...(d as Record<string, unknown>), type: 'armor', _table: 'ref_armor' as const }))),
-      applyScope(supabase.from('ref_gear').select('key,name,price,rarity,encumbrance,encumbrance_bonus,description,is_custom,custom_notes,campaign_id,categories,worn_anchor'))
+      applyScope(supabase.from('ref_gear').select('key,name,price,rarity,encumbrance,encumbrance_bonus,description,effect_text,lore_text,is_custom,custom_notes,campaign_id,categories,worn_anchor'))
         .then((r: { data: unknown[] | null }) => (r.data || []).map((d) => ({ ...(d as Record<string, unknown>), type: 'gear', _table: 'ref_gear' as const }))),
     ]
 
