@@ -210,6 +210,7 @@ export const MapCanvas = memo(function MapCanvas({
   useEffect(() => {
     if (!containerRef.current) return
     let destroyed = false
+    let cleanupContextMenu: (() => void) | null = null
 
     import('pixi.js').then(async (px) => {
       if (destroyed || !containerRef.current) return
@@ -271,6 +272,10 @@ export const MapCanvas = memo(function MapCanvas({
 
       setupPan(app, isLockedRef)
       setupZoom(app, containerRef.current, isLockedRef)
+      // GM right-click on a token opens our own menu - suppress the browser's.
+      const blockBrowserMenu = (ev: Event) => { if (propsRef.current.isGM) ev.preventDefault() }
+      containerRef.current.addEventListener('contextmenu', blockBrowserMenu)
+      cleanupContextMenu = () => containerRef.current?.removeEventListener('contextmenu', blockBrowserMenu)
 
       // Await rebuildMap so map dimensions are set before syncing tokens.
       // The sync effect already fired once (when app was null) and won't
@@ -304,6 +309,7 @@ export const MapCanvas = memo(function MapCanvas({
 
     return () => {
       destroyed = true
+      cleanupContextMenu?.()
       const app = appRef.current
       if (app) {
         // Destroys every texture the app owns, the shared skull included —
@@ -943,7 +949,9 @@ function buildTokenSprite(
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(c as any).on('pointerdown', (e: { stopPropagation: () => void; globalX: number; globalY: number }) => {
+    ;(c as any).on('pointerdown', (e: { stopPropagation: () => void; globalX: number; globalY: number; button?: number }) => {
+    // Primary button only: a right/middle press must not start a drag or count as a tap (which opened the dossier).
+    if (e.button !== undefined && e.button !== 0) return
       e.stopPropagation()
       dragging = true
       draggingTokenIdRef.current = token.id
@@ -1716,7 +1724,9 @@ function buildTokenSprite(
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(c as any).on('pointerdown', (e: { stopPropagation: () => void; globalX: number; globalY: number }) => {
+  ;(c as any).on('pointerdown', (e: { stopPropagation: () => void; globalX: number; globalY: number; button?: number }) => {
+    // Primary button only: a right/middle press must not start a drag or count as a tap (which opened the dossier).
+    if (e.button !== undefined && e.button !== 0) return
     e.stopPropagation()
     dragging = true
     draggingTokenIdRef.current = token.id
