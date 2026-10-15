@@ -595,6 +595,14 @@ function SlotCard({
   )
 }
 
+/**
+ * Token image for an adversary slot. `adversary_token_images` is keyed by the library name, but duplicates added
+ * to an encounter are renamed "<name> 2", "<name> 3"... — so try the exact name, then the name without that suffix.
+ */
+function adversaryTokenImage(images: Record<string, string>, slotName: string): string | null {
+  return images[slotName] ?? images[slotName.replace(/\s+\d+$/, '')] ?? null
+}
+
 // ── Shared drum track JSX ────────────────────────────────────────
 interface DrumTrackProps {
   drumItems:       DrumItem[]
@@ -650,7 +658,7 @@ function DrumTrack({
           // no '???' name/token gating on adversary reveal state here.
           const displayName = activeName
           const portrait    = isPC && slot.characterId ? (portraits[slot.characterId] ?? null) : null
-          const advToken    = !isPC ? (advTokenImages[slot.name] ?? null) : null
+          const advToken    = !isPC ? adversaryTokenImage(advTokenImages, slot.name) : null
           const effectivePortrait = portrait ?? advToken
 
           const showGm    = !!gmControls && !isActed
