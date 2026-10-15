@@ -1069,13 +1069,15 @@ function buildTokenSprite(
   const lblGroup = new px.Container()
   lblGroup.addChild(lblBg, lbl)
   lblGroup.zIndex = 4
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(lblGroup as any).eventMode = 'none' // name pill never takes pointer events
   c.addChild(lblGroup) // added BEFORE the first applyLabelScale call below, so getLocalBounds() sees it
 
   // Keeps label at constant screen size and a fixed 4px gap below the ring.
   const applyLabelScale = (s: number) => {
     lblGroup.scale.set(1 / s)
     lblGroup.y = RADIUS + (4 + lblH / 2) / s
-    // Explicit hitArea spanning the disc/rect through the label pill below it —
+    // Explicit hitArea spanning the disc/rect only (not the label pill below it) —
     // an explicit hitArea makes Pixi test this one shape for the whole
     // container instead of hit-testing each child graphic separately, which
     // was unreliable in practice (hover only fired over the name label, not
@@ -1084,7 +1086,12 @@ function buildTokenSprite(
     // hoverable region to near-nothing. Recomputed here (not just at build
     // time) since this fn also re-runs whenever tokenScale changes without a
     // full sprite rebuild.
+    // The name pill is excluded: long names stretch far past the disc, and
+    // overlapping pills of nearby tokens used to steal clicks from the discs
+    // beneath them. Only the disc/rect is hoverable and selectable.
+    lblGroup.visible = false
     const b = c.getLocalBounds()
+    lblGroup.visible = true
     const PAD = 4 // px intentional — small buffer so cursor jitter right at the edge doesn't repeatedly cross the boundary
     const hx = b.x - PAD, hy = b.y - PAD, hw = b.width + PAD * 2, hh = b.height + PAD * 2
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
