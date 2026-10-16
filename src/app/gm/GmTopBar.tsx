@@ -172,22 +172,27 @@ export const GmTopBar = memo(function GmTopBar({
       {onMapReset && onMapToggleLock && (
         <>
           <Divider />
-          <button onClick={onMapReset} aria-label="Reset map view" className="gm-lobby-btn" style={MAP_BTN}>↺ Reset</button>
+          <span style={MAP_LABEL}>Map</span>
+          <button onClick={onMapReset} aria-label="Reset map view" title="Reset map view" className="gm-lobby-btn" style={{ ...MAP_BTN, textTransform: 'uppercase' }}>↺ Reset</button>
           <button
             onClick={onMapToggleLock}
             aria-label={mapLocked ? 'Unlock map' : 'Lock map'}
+            title={mapLocked ? 'Unlock map' : 'Lock map'}
             aria-pressed={mapLocked}
             className="gm-lobby-btn"
             style={{
               ...MAP_BTN,
               display:     'flex',
               alignItems:  'center',
+              gap:         'var(--space-1)',
+              textTransform: 'uppercase',
               color:       mapLocked ? 'var(--hud-accent)' : MAP_BTN.color,
               background:  mapLocked ? 'color-mix(in srgb, var(--hud-accent) 18%, transparent)' : MAP_BTN.background,
               borderColor: mapLocked ? 'color-mix(in srgb, var(--hud-accent) 40%, transparent)' : 'var(--hud-border)',
             }}
           >
             {mapLocked ? <Lock size={13} strokeWidth={2} /> : <LockOpen size={13} strokeWidth={2} />}
+            {mapLocked ? 'Locked' : 'Unlocked'}
           </button>
         </>
       )}
@@ -206,6 +211,17 @@ const MAP_BTN: React.CSSProperties = {
   color:         'var(--hud-text-dim)',
   cursor:        'pointer',
   letterSpacing: '0.06em',
+  flexShrink:    0,
+}
+
+const MAP_LABEL: React.CSSProperties = {
+  fontFamily:    FONT,
+  fontSize:      'var(--text-overline)',
+  fontWeight:    700,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  color:         'var(--hud-text-faint)',
+  whiteSpace:    'nowrap',
   flexShrink:    0,
 }
 

@@ -329,11 +329,12 @@ export function MobileMapDestination({ open, onClose, character, campaignId, enc
             onLockChange={setMapLocked}
           />
           <div className="absolute flex" style={{ top: 'var(--space-2)', right: 'var(--space-2)', gap: 'var(--space-1)', zIndex: 'var(--z-overlay)' }}>
-            <button className="map-ctrl-btn" onClick={() => mapHandleRef.current?.resetView()} aria-label="Reset map view">↺ Reset</button>
+            <button className="map-ctrl-btn" onClick={() => mapHandleRef.current?.resetView()} aria-label="Reset map view" title="Reset map view">↺ Reset</button>
             <button
               className={`map-ctrl-btn map-ctrl-btn--icon${mapLocked ? ' map-ctrl-btn--locked' : ''}`}
               onClick={() => mapHandleRef.current?.toggleLock()}
               aria-label={mapLocked ? 'Unlock map' : 'Lock map'}
+              title={mapLocked ? 'Unlock map' : 'Lock map'}
               aria-pressed={mapLocked}
             >
               {mapLocked ? <Lock size={13} strokeWidth={2} /> : <LockOpen size={13} strokeWidth={2} />}

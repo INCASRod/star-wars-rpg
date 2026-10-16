@@ -263,25 +263,31 @@ export function HudStatusStrip({
       {mapControls && (
         <>
           <div style={DIVIDER} />
+          <span style={LABEL_S}>Map</span>
           <button
             style={{ ...CTRL_BTN, width: 'auto', padding: `0 ${SP[2]}`, letterSpacing: '0.1em', textTransform: 'uppercase' }}
             onClick={mapControls.onReset}
             aria-label="Reset map view"
+            title="Reset map view"
           >
             ↺ Reset
           </button>
           <button
             style={{
               ...CTRL_BTN,
+              width: 'auto', padding: `0 ${SP[2]}`, gap: SP[1],
+              letterSpacing: '0.1em', textTransform: 'uppercase', whiteSpace: 'nowrap',
               color:       mapControls.locked ? 'var(--hud-accent)' : CTRL_BTN.color,
               borderColor: mapControls.locked ? 'var(--hud-accent)' : 'var(--hud-vital-sep)',
               background:  mapControls.locked ? 'color-mix(in srgb, var(--hud-accent) 18%, transparent)' : CTRL_BTN.background,
             }}
             onClick={mapControls.onToggleLock}
             aria-label={mapControls.locked ? 'Unlock map' : 'Lock map'}
+            title={mapControls.locked ? 'Unlock map' : 'Lock map'}
             aria-pressed={mapControls.locked}
           >
             {mapControls.locked ? <Lock size={12} strokeWidth={2} /> : <LockOpen size={12} strokeWidth={2} />}
+            {mapControls.locked ? 'Locked' : 'Unlocked'}
           </button>
         </>
       )}
