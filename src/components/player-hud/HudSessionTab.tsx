@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { C, FONT_RAJDHANI, FS_SM, FS_CAPTION } from './design-tokens'
 import { FONT_BODY, FONT_DISPLAY, FS, RADIUS, SP } from '@/lib/tokens'
-import { MapCanvas } from '@/components/map/MapCanvas'
+import { MapCanvas, type MapCanvasHandle } from '@/components/map/MapCanvas'
 import { OpeningCrawlCanvas } from '@/components/map/OpeningCrawlCanvas'
 import { InitiativeStrip } from '@/components/player/InitiativeStrip'
 import { PlayerTokenTooltip, type PlayerTooltipEntity, type PlayerTooltipRole } from '@/components/player/PlayerTokenTooltip'
@@ -34,6 +34,9 @@ interface HudSessionTabProps {
   // Adversary drawer — externally controlled when rail button is used
   adversariesOpen?:         boolean
   onAdversariesOpenChange?: (open: boolean) => void
+  // Reset/Lock handle + lock-state callback for the vitals bar (the map no longer draws them)
+  mapHandleRef?:            React.Ref<MapCanvasHandle>
+  onMapLockChange?:         (locked: boolean) => void
 }
 
 export function HudSessionTab({
@@ -48,6 +51,7 @@ export function HudSessionTab({
   onSkillRoll,
   adversariesOpen:         externalAdversariesOpen,
   onAdversariesOpenChange,
+  mapHandleRef, onMapLockChange,
 }: HudSessionTabProps) {
   const isAdversariesControlled = externalAdversariesOpen !== undefined
   const supabase = useMemo(() => createClient(), [])
@@ -241,6 +245,8 @@ export function HudSessionTab({
           bottomOverlayRef={initiativeBarRef}
           onTokenHover={(id, _x, _y, rect) => setTokenHoverInfo({ tokenId: id, rect })}
           onTokenHoverEnd={(id) => setTokenHoverInfo(prev => (prev?.tokenId === id ? null : prev))}
+          handleRef={mapHandleRef}
+          onLockChange={onMapLockChange}
         />
       ) : (
         <div className="flex items-center justify-center h-full flex-col" style={{ gap: 'var(--space-3)', background: 'var(--hud-bg)' }}>
@@ -251,7 +257,7 @@ export function HudSessionTab({
       {/* ── Combat overlays — only when an active encounter exists ── */}
       {isCombatActive && encounter && (
         <div ref={initiativeBarRef} className="absolute" style={{
-          top: 0, left: 0, right: 0,
+          top: 0, left: 0, right: 0, maxHeight: '25%',
           zIndex: 'var(--z-drawer)',
         }}>
           <InitiativeStrip encounter={encounter} character={character} compact />

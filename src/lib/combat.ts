@@ -51,6 +51,41 @@ export interface CombatEncounter {
   updated_at: string
 }
 
+/**
+ * Is this slot's combatant defeated? Derived only — nothing is stored, nothing is written,
+ * and the slot itself is never deleted: a healed or mis-clicked combatant simply stops being defeated.
+ *
+ * Matches the token skull, damageEngine and the player tooltip: reaching the threshold is defeated (>=).
+ *  - PC: never.
+ *  - Minion group: no one left (groupRemaining === 0).
+ *  - Rival / Nemesis: wounds >= threshold, or (strain threshold set and strain >= it).
+ *  - Vehicle: hull trauma >= threshold.
+ * Missing data is never defeated.
+ */
+export function isSlotDefeated(
+  slot: InitiativeSlot,
+  encounter: Pick<CombatEncounter, 'adversaries' | 'vehicles'>,
+): boolean {
+  if (slot.type === 'pc') return false
+
+  if (slot.adversaryInstanceId) {
+    const a = (encounter.adversaries ?? []).find(x => x.instanceId === slot.adversaryInstanceId)
+    if (!a) return false
+    if (a.type === 'minion') return typeof a.groupRemaining === 'number' && a.groupRemaining === 0
+    if (typeof a.woundsCurrent === 'number' && typeof a.woundThreshold === 'number' && a.woundsCurrent >= a.woundThreshold) return true
+    if (typeof a.strainThreshold === 'number' && typeof a.strainCurrent === 'number' && a.strainCurrent >= a.strainThreshold) return true
+    return false
+  }
+
+  if (slot.vehicleInstanceId) {
+    const v = (encounter.vehicles ?? []).find(x => x.instanceId === slot.vehicleInstanceId)
+    if (!v) return false
+    return typeof v.hullTraumaCurrent === 'number' && typeof v.hullTraumaThreshold === 'number' && v.hullTraumaCurrent >= v.hullTraumaThreshold
+  }
+
+  return false
+}
+
 /** Sort initiative slots per AoE rulebook rules */
 export function sortInitiative(
   slots: Array<InitiativeSlot & { pending?: boolean }>

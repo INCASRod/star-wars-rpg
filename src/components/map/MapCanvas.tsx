@@ -1,9 +1,8 @@
 'use client'
 
-import { useEffect, useRef, useCallback, memo, useState } from 'react'
-import { Lock, LockOpen } from 'lucide-react'
+import { useEffect, useRef, useCallback, useImperativeHandle, memo, useState } from 'react'
 import gsap from 'gsap'
-import { SP, Z, FS, FONT_BODY } from '@/lib/tokens'
+import { Z, FS, FONT_BODY } from '@/lib/tokens'
 import type { MapToken } from '@/hooks/useMapTokens'
 import { runMapWipe } from '@/lib/mapWipe'
 import { resolveTokenGeometry, tokenGeometryKey, TOKEN_BASE_PX, type TokenGeometry } from '@/lib/tokenGeometry'
@@ -130,6 +129,15 @@ export interface MapCanvasProps {
     onPreview: (geo: TokenGeometryPatch) => void
     onCommit:  (geo: TokenGeometryPatch) => void
   } | null
+  /** Imperative surface for Reset / Lock, which no longer draw on the map — the host renders its own buttons. */
+  handleRef?:    React.Ref<MapCanvasHandle>
+  /** Fires with the lock flag on mount and on every toggle, so a host button can show its pressed state. */
+  onLockChange?: (locked: boolean) => void
+}
+
+export interface MapCanvasHandle {
+  resetView:  () => void
+  toggleLock: () => void
 }
 
 export const MapCanvas = memo(function MapCanvas({
@@ -137,7 +145,7 @@ export const MapCanvas = memo(function MapCanvas({
   onTokenMove, gridEnabled, gridSize, onTokenContextMenu,
   tokenScale = 1, initialScale = 1, bottomOverlayRef,
   onTokenHover, onTokenHoverEnd, onTokenDragStart, onTokenDragEnd, onTokenClick,
-  recentreSignal, highlightedTokenId, geometryEdit,
+  recentreSignal, highlightedTokenId, geometryEdit, handleRef, onLockChange,
 }: MapCanvasProps) {
   const containerRef       = useRef<HTMLDivElement>(null)
   const appRef             = useRef<InstanceType<typeof import('pixi.js').Application> | null>(null)
@@ -158,6 +166,11 @@ export const MapCanvas = memo(function MapCanvas({
     app.stage.x = 0
     app.stage.y = 0
   }, [])
+
+  useImperativeHandle(handleRef, () => ({ resetView, toggleLock }), [resetView, toggleLock])
+  const onLockChangeRef = useRef(onLockChange)
+  onLockChangeRef.current = onLockChange
+  useEffect(() => { onLockChangeRef.current?.(isLocked) }, [isLocked])
   const tokensRef          = useRef<Map<string, InstanceType<typeof import('pixi.js').Container>>>(new Map())
   const draggingTokenIdRef = useRef<string | null>(null)
 
@@ -452,29 +465,7 @@ export const MapCanvas = memo(function MapCanvas({
             Open in Chrome or Edge to use the map
           </span>
         </div>
-      ) : (
-        <div
-          className="absolute flex"
-          style={{ top: SP[2], right: SP[2], gap: SP[1], zIndex: Z.overlay, pointerEvents: 'none' }}
-        >
-          <button
-            className="map-ctrl-btn"
-            style={{ pointerEvents: 'auto' }}
-            onClick={resetView}
-            aria-label="Reset map view"
-          >
-            ↺ Reset
-          </button>
-          <button
-            className={`map-ctrl-btn map-ctrl-btn--icon${isLocked ? ' map-ctrl-btn--locked' : ''}`}
-            style={{ pointerEvents: 'auto' }}
-            onClick={toggleLock}
-            aria-label={isLocked ? 'Unlock map' : 'Lock map'}
-          >
-            {isLocked ? <Lock size={13} strokeWidth={2} /> : <LockOpen size={13} strokeWidth={2} />}
-          </button>
-        </div>
-      )}
+      ) : null}
     </div>
   )
 })

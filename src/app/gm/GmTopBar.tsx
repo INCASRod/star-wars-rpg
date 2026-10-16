@@ -1,6 +1,7 @@
 'use client'
 
 import { memo } from 'react'
+import { Lock, LockOpen } from 'lucide-react'
 import { HUD, FONT_DISPLAY, FONT_BODY, RADIUS } from '@/lib/tokens'
 
 const FONT = FONT_BODY
@@ -15,6 +16,10 @@ export interface GmTopBarProps {
   onInitiativeOrder:  () => void
   initiativeOpen:     boolean
   onLobby:            () => void
+  /** Map view controls (Reset / Lock) — far right. Omitted = not rendered. */
+  mapLocked?:         boolean
+  onMapReset?:        () => void
+  onMapToggleLock?:   () => void
   /** Destiny pool content — rendered between the combat toggle and the Lobby button */
   destinySlot?:       React.ReactNode
 }
@@ -23,6 +28,7 @@ export const GmTopBar = memo(function GmTopBar({
   campaignName,
   sessionMode, sessionBusy, combatRound,
   onBeginCombat, onEndCombat, onInitiativeOrder, initiativeOpen, onLobby,
+  mapLocked = false, onMapReset, onMapToggleLock,
   destinySlot,
 }: GmTopBarProps) {
   const isCombat = sessionMode === 'combat'
@@ -161,9 +167,47 @@ export const GmTopBar = memo(function GmTopBar({
       >
         ← Lobby
       </button>
+
+      {/* ── Far right: map view controls ───────────────────── */}
+      {onMapReset && onMapToggleLock && (
+        <>
+          <Divider />
+          <button onClick={onMapReset} aria-label="Reset map view" className="gm-lobby-btn" style={MAP_BTN}>↺ Reset</button>
+          <button
+            onClick={onMapToggleLock}
+            aria-label={mapLocked ? 'Unlock map' : 'Lock map'}
+            aria-pressed={mapLocked}
+            className="gm-lobby-btn"
+            style={{
+              ...MAP_BTN,
+              display:     'flex',
+              alignItems:  'center',
+              color:       mapLocked ? 'var(--hud-accent)' : MAP_BTN.color,
+              background:  mapLocked ? 'color-mix(in srgb, var(--hud-accent) 18%, transparent)' : MAP_BTN.background,
+              borderColor: mapLocked ? 'color-mix(in srgb, var(--hud-accent) 40%, transparent)' : 'var(--hud-border)',
+            }}
+          >
+            {mapLocked ? <Lock size={13} strokeWidth={2} /> : <LockOpen size={13} strokeWidth={2} />}
+          </button>
+        </>
+      )}
     </div>
   )
 })
+
+// Same look as the Lobby button beside it.
+const MAP_BTN: React.CSSProperties = {
+  background:    'transparent',
+  border:        '1px solid var(--hud-border)',
+  borderRadius:  RADIUS.sm,
+  padding:       '0.25rem 0.75rem',
+  fontFamily:    FONT,
+  fontSize:      'var(--text-caption)',
+  color:         'var(--hud-text-dim)',
+  cursor:        'pointer',
+  letterSpacing: '0.06em',
+  flexShrink:    0,
+}
 
 function Divider() {
   return <div style={{ width: 1, height: '1.25rem', background: 'var(--hud-border-hi)', flexShrink: 0 }} />

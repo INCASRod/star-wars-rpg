@@ -1,12 +1,13 @@
 'use client'
 
-import { Suspense } from 'react'
+import { Suspense, useRef, useState } from 'react'
+import { Lock, LockOpen } from 'lucide-react'
 import { useSearchParams }   from 'next/navigation'
 import { useActiveMap }      from '@/hooks/useActiveMap'
 import { useMapTokens }      from '@/hooks/useMapTokens'
 import { useEncounterState } from '@/hooks/useEncounterState'
 import { useSessionMode }    from '@/hooks/useSessionMode'
-import { MapCanvas }         from '@/components/map/MapCanvas'
+import { MapCanvas, type MapCanvasHandle } from '@/components/map/MapCanvas'
 import { InitiativeStrip }   from '@/components/player/InitiativeStrip'
 import { FONT_BODY, FS, HUD } from '@/lib/tokens'
 import type { Character }    from '@/lib/types'
@@ -25,6 +26,10 @@ function TableDisplayInner() {
   const { tokens: visibleTokens } = useMapTokens(visibleMap?.id ?? null, { visibleOnly: true })
   const { encounter }      = useEncounterState(campaignId)
   const { mode: sessionMode } = useSessionMode(campaignId)
+  // No vitals/top bar on the table display, so Reset/Lock keep a home of their own (bottom-right,
+  // clear of the strip that is now flush with the top edge).
+  const mapHandleRef = useRef<MapCanvasHandle>(null)
+  const [mapLocked, setMapLocked] = useState(false)
 
   if (!campaignId) {
     return (
@@ -69,6 +74,8 @@ function TableDisplayInner() {
           gridEnabled={visibleMap.grid_enabled}
           gridSize={visibleMap.grid_size ?? 50}
           tokenScale={visibleMap.token_scale ?? 1}
+          handleRef={mapHandleRef}
+          onLockChange={setMapLocked}
         />
       ) : (
         <div style={{
@@ -77,6 +84,20 @@ function TableDisplayInner() {
           fontFamily: FONT_BODY, fontSize: FS.sm, color: HUD.textFaint,
         }}>
           No active map.
+        </div>
+      )}
+
+      {visibleMap && (
+        <div className="absolute flex" style={{ bottom: 'var(--space-2)', right: 'var(--space-2)', gap: 'var(--space-1)', zIndex: 'var(--z-overlay)' }}>
+          <button className="map-ctrl-btn" onClick={() => mapHandleRef.current?.resetView()} aria-label="Reset map view">↺ Reset</button>
+          <button
+            className={`map-ctrl-btn map-ctrl-btn--icon${mapLocked ? ' map-ctrl-btn--locked' : ''}`}
+            onClick={() => mapHandleRef.current?.toggleLock()}
+            aria-label={mapLocked ? 'Unlock map' : 'Lock map'}
+            aria-pressed={mapLocked}
+          >
+            {mapLocked ? <Lock size={13} strokeWidth={2} /> : <LockOpen size={13} strokeWidth={2} />}
+          </button>
         </div>
       )}
 
@@ -91,7 +112,7 @@ function TableDisplayInner() {
           encounter={encounter}
           character={STUB_CHARACTER}
           asOverlay={true}
-          offsetTop="100px"
+          offsetTop="0"
         />
       )}
     </div>

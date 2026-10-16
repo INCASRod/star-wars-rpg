@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { ActiveMap } from '@/hooks/useActiveMap'
 import type { MapToken, TokenGeometryPatch } from '@/hooks/useMapTokens'
-import { MapCanvas } from '@/components/map/MapCanvas'
+import { MapCanvas, type MapCanvasHandle } from '@/components/map/MapCanvas'
 import { OpeningCrawlCanvas } from '@/components/map/OpeningCrawlCanvas'
 import { useMapTokens } from '@/hooks/useMapTokens'
 import { useMapPlanets } from '@/hooks/useMapPlanets'
@@ -293,6 +293,9 @@ export interface GmMapViewProps {
   onDeckOpenChange?:           (open: boolean) => void
   /** Entity instanceId to highlight in the deck (set by GmShell's onTokenClick resolution). */
   focusedEntityId?:            string | null
+  /** Reset/Lock handle + lock-state callback for the GM top bar (the map no longer draws them). */
+  mapHandleRef?:               React.Ref<MapCanvasHandle>
+  onMapLockChange?:            (locked: boolean) => void
   /** Encounter Dossier state — lifted to GmShell, mirrors deckOpen/focusedEntityId. */
   dossierEntityId?:           string | null
   dossierSourceRect?:         DOMRect | null
@@ -310,7 +313,7 @@ export interface GmMapViewProps {
 export function GmMapView({
   campaignId, encounter: encounterProp, characters, allMaps, activeMap, onDeleteMap, isStagingTab,
   stagingTokens, onStagingMoveToken, onStagingToggleVisibility, onStagingRemoveToken, onStagingAddToken, onStagingUpdateGeometry, onStagingPreviewGeometry, onTokenClick,
-  deckOpen, onDeckOpenChange, focusedEntityId, setStagingEncounter, saveStagingEncounter,
+  deckOpen, onDeckOpenChange, focusedEntityId, mapHandleRef, onMapLockChange, setStagingEncounter, saveStagingEncounter,
   updateTokenWoundPct, renameToken, markEncounterPending, clearEncounterPending, stagingAddToEncounter,
   dossierEntityId, dossierSourceRect, onOpenDossier, onCloseDossier,
 }: GmMapViewProps) {
@@ -773,6 +776,8 @@ export function GmMapView({
               onTokenDragStart={handleTokenDragStart}
               onTokenDragEnd={handleTokenDragEnd}
               recentreSignal={recentreSignal}
+              handleRef={mapHandleRef}
+              onLockChange={onMapLockChange}
             />
             {previewMap && (
               <div style={{

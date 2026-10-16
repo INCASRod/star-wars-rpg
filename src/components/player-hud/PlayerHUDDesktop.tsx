@@ -24,6 +24,7 @@ import { HudLoreTab } from './HudLoreTab'
 import { HudSkillsTab } from './HudSkillsTab'
 import { HudRightColumn } from './HudRightColumn'
 import { HudStatusStrip } from './HudStatusStrip'
+import type { MapCanvasHandle } from '@/components/map/MapCanvas'
 import { useCriticalInjuryRequest } from '@/hooks/useCriticalInjuryRequest'
 import { usePlayerBroadcast } from '@/hooks/usePlayerBroadcast'
 import { useCharacterConflicts } from '@/hooks/useCharacterConflicts'
@@ -209,6 +210,9 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
   const [activeFullPanel,  setActiveFullPanel]  = useState<'skills' | 'talents' | 'force-panel' | 'inventory' | 'lore' | 'group' | null>(null)
   const [diceOpen,         setDiceOpen]         = useState(false)
   const [adversariesOpen,  setAdversariesOpen]  = useState(false)
+  // Reset/Lock live in the vitals bar now; the map exposes them through this handle.
+  const mapHandleRef = useRef<MapCanvasHandle>(null)
+  const [mapLocked, setMapLocked] = useState(false)
 
   function handlePanelToggle(id: RailPanelId) {
     if (id === 'dice')        { setDiceOpen(o => !o); setCombatCheckOpen(false); setForceCheckOpen(false); return }
@@ -704,6 +708,11 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
           isCombat={isCombat}
           onVitalAdjust={handleVitalAdjust}
           onHealCrit={handleHealCrit}
+          mapControls={{
+            locked: mapLocked,
+            onReset: () => mapHandleRef.current?.resetView(),
+            onToggleLock: () => mapHandleRef.current?.toggleLock(),
+          }}
         />
 
         {/* ══ LEFT RAIL ═════════════════════════════════════════════════ */}
@@ -760,6 +769,8 @@ export function PlayerHUDDesktop({ characterId, isGmMode = false, campaignId }: 
               onSkillRoll={handleRoll}
               adversariesOpen={adversariesOpen}
               onAdversariesOpenChange={setAdversariesOpen}
+              mapHandleRef={mapHandleRef}
+              onMapLockChange={setMapLocked}
             />
           </div>
 

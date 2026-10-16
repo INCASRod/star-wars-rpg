@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -11,8 +11,9 @@ import { useGmBroadcast } from '@/hooks/useGmBroadcast'
 import { useActiveMap } from '@/hooks/useActiveMap'
 import { useMapTokens } from '@/hooks/useMapTokens'
 import { useGmSession } from '@/hooks/useGmSession'
-import type { CombatEncounter } from '@/lib/combat'
+import { isSlotDefeated, type CombatEncounter } from '@/lib/combat'
 import { fetchEncounterForMap } from '@/lib/encounters'
+import type { MapCanvasHandle } from '@/components/map/MapCanvas'
 import { useGmAwards } from '@/hooks/useGmAwards'
 import { useGmLoot } from '@/hooks/useGmLoot'
 import { useGmCharacterActions } from '@/hooks/useGmCharacterActions'
@@ -38,7 +39,7 @@ import { GmMarketPanel } from './panels/GmMarketPanel'
 import { GmMapPanel } from './panels/GmMapPanel'
 import { GmToolsPanel } from './panels/GmToolsPanel'
 import { GmPartyPanel } from './panels/GmPartyPanel'
-import { GmInitiativeDrawer } from './panels/GmInitiativeDrawer'
+import { GmInitiativeDrawer, STRIP_H_GM } from './panels/GmInitiativeDrawer'
 import type { GmControls } from './panels/GmInitiativeDrawer'
 import type { Character } from '@/lib/types'
 
@@ -168,6 +169,11 @@ export function GmShell() {
   const [referenceOpen,         setReferenceOpen]         = useState(false)
   const [diceOpen,              setDiceOpen]              = useState(false)
   const [deckOpen,              setDeckOpen]              = useState(false)
+  // Reset/Lock live in the top bar now; the map exposes them through this handle.
+  const mapHandleRef = useRef<MapCanvasHandle>(null)
+  const [mapLocked, setMapLocked] = useState(false)
+  const handleMapReset      = useCallback(() => mapHandleRef.current?.resetView(), [])
+  const handleMapToggleLock = useCallback(() => mapHandleRef.current?.toggleLock(), [])
   const [focusedEntityId,       setFocusedEntityId]       = useState<string | null>(null)
   const [dossierEntityId,       setDossierEntityId]       = useState<string | null>(null)
   const [dossierSourceRect,     setDossierSourceRect]     = useState<DOMRect | null>(null)
@@ -312,7 +318,9 @@ export function GmShell() {
   async function gmMoveSlot(index: number, direction: -1 | 1) {
     if (!stagingEncounter) return
     const orig   = stagingEncounter.initiative_slots
-    const target = index + direction
+    // Defeated slots are hidden on the strip, so the visible neighbour is the nearest live one.
+    let target = index + direction
+    while (target >= 0 && target < orig.length && isSlotDefeated(orig[target], stagingEncounter)) target += direction
     if (target < 0 || target >= orig.length) return
     if (orig[index].acted || orig[target].acted) return
     const slots = [...orig];
@@ -354,20 +362,24 @@ export function GmShell() {
     if (!slots.length) return
     const current = enc.current_slot_index ?? 0
     const acted   = slots.map((s, i) => i === current ? { ...s, acted: true } : s)
-    const allActed = acted.every(s => s.acted)
+    // Defeated NPCs sit out: they are never chosen as the next turn, and "everyone has acted"
+    // ignores them. Their slots stay in the array (indexes unchanged) and come back if healed.
+    const defeated = acted.map(s => isSlotDefeated(s, enc))
+    const allActed = acted.every((s, i) => s.acted || defeated[i])
     if (allActed) {
       const reset = acted.map(s => ({ ...s, acted: false, current: false }))
-      reset[0] = { ...reset[0], current: true }
+      const firstLive = Math.max(0, defeated.findIndex(d => !d))   // all defeated (no PCs): fall back to slot 0
+      reset[firstLive] = { ...reset[firstLive], current: true }
       const nextRound = (enc.round ?? 1) + 1
       // Optimistic update — animation starts immediately; Realtime reconciles silently
-      setStagingEncounter({ ...enc, initiative_slots: reset, current_slot_index: 0, round: nextRound })
+      setStagingEncounter({ ...enc, initiative_slots: reset, current_slot_index: firstLive, round: nextRound })
       await supabase.from('combat_encounters').update({
-        initiative_slots: reset, current_slot_index: 0,
+        initiative_slots: reset, current_slot_index: firstLive,
         round: nextRound, updated_at: new Date().toISOString(),
       }).eq('id', enc.id)
     } else {
       let next = (current + 1) % slots.length
-      while (acted[next].acted) next = (next + 1) % slots.length
+      while (acted[next].acted || defeated[next]) next = (next + 1) % slots.length
       const updated = acted.map((s, i) => ({ ...s, current: i === next }))
       // Optimistic update — animation starts immediately; Realtime reconciles silently
       setStagingEncounter({ ...enc, initiative_slots: updated, current_slot_index: next })
@@ -429,6 +441,8 @@ export function GmShell() {
             activeMap={activeMap}
             onDeleteMap={removeMap}
             isStagingTab={true}
+            mapHandleRef={mapHandleRef}
+            onMapLockChange={setMapLocked}
             stagingTokens={stagingTokens}
             onStagingMoveToken={stagingMoveToken}
             onStagingToggleVisibility={handleToggleVisibility}
@@ -459,13 +473,12 @@ export function GmShell() {
             character={{ id: '', name: '' } as unknown as Character}
             gmControls={gmControls}
             asOverlay
-            offsetTop="2.5rem"
           />
 
           {/* GM advance-turn control — floating bottom-right, only during active combat */}
           {sessionMode === 'combat' && stagingEncounter?.is_active && (
             <div style={{
-              position: 'absolute', bottom: SP[3], right: SP[3],
+              position: 'absolute', top: STRIP_H_GM + 8, right: SP[3],
               zIndex: Z.dropdown,
               pointerEvents: 'auto',
             }}>
@@ -635,6 +648,9 @@ export function GmShell() {
         onInitiativeOrder={() => setInitiativeOpen(o => !o)}
         initiativeOpen={initiativeOpen}
         onLobby={() => router.push('/')}
+        mapLocked={mapLocked}
+        onMapReset={handleMapReset}
+        onMapToggleLock={handleMapToggleLock}
         /* Always rendered — when there is no active pool the GM still needs
            Generate/Adjust to get one back. Gating the whole slot on
            destinyPoolRecord left no route to a pool once one was cleared. */

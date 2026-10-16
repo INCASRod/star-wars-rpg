@@ -19,6 +19,16 @@
   --gold-glow: rgba(200,162,78,.22);
   --gold-glow-s: rgba(200,162,78,.45);
 
+  /* ── Tier / allegiance identity ──────────────────────────────
+     Shared across all themes. Mirrors the map-token ring colours in
+     MapCanvas.tsx BORDER_COLOURS (Pixi takes numeric hex, so it keeps its
+     own copy) — change both together. Used by the initiative strip cards. */
+  --tier-minion:  #E05252;
+  --tier-rival:   #FF9800;
+  --tier-nemesis: #9060D0;
+  --tier-allied:  #5AAAE0;
+  --tier-pc:      #C8AA50;
+
   --blue:      #2B5DAE;
   --blue-l:    #5B8FE0;
   --blue-pale: #DCE8F8;

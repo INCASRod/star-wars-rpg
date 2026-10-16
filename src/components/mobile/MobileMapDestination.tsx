@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
-import { MapCanvas } from '@/components/map/MapCanvas'
+import { MapCanvas, type MapCanvasHandle } from '@/components/map/MapCanvas'
+import { Lock, LockOpen } from 'lucide-react'
 import { OpeningCrawlCanvas } from '@/components/map/OpeningCrawlCanvas'
 import { PlayerTokenTooltip, type PlayerTooltipEntity, type PlayerTooltipRole } from '@/components/player/PlayerTokenTooltip'
 import { useActiveMap } from '@/hooks/useActiveMap'
@@ -180,6 +181,9 @@ export function MobileMapDestination({ open, onClose, character, campaignId, enc
 
   // Map's own deck, live before combat too - `encounter` is null until Begin Combat.
   const mapDeck = useMapDeck(campaignId, visibleMap?.id ?? null)
+  // Reset/Lock no longer draw inside MapCanvas; mobile has no vitals bar, so it keeps them top-right here.
+  const mapHandleRef = useRef<MapCanvasHandle>(null)
+  const [mapLocked, setMapLocked] = useState(false)
   const deck = mapDeck ?? encounter
 
   const tokensById = useMemo(() => new Map(visibleMapTokens.map(t => [t.id, t])), [visibleMapTokens])
@@ -321,7 +325,20 @@ export function MobileMapDestination({ open, onClose, character, campaignId, enc
             gridSize={visibleMap.grid_size ?? 50}
             tokenScale={visibleMap.token_scale ?? 1}
             onTokenHover={(id, _x, _y, rect) => showTooltip(id, rect)}
+            handleRef={mapHandleRef}
+            onLockChange={setMapLocked}
           />
+          <div className="absolute flex" style={{ top: 'var(--space-2)', right: 'var(--space-2)', gap: 'var(--space-1)', zIndex: 'var(--z-overlay)' }}>
+            <button className="map-ctrl-btn" onClick={() => mapHandleRef.current?.resetView()} aria-label="Reset map view">↺ Reset</button>
+            <button
+              className={`map-ctrl-btn map-ctrl-btn--icon${mapLocked ? ' map-ctrl-btn--locked' : ''}`}
+              onClick={() => mapHandleRef.current?.toggleLock()}
+              aria-label={mapLocked ? 'Unlock map' : 'Lock map'}
+              aria-pressed={mapLocked}
+            >
+              {mapLocked ? <Lock size={13} strokeWidth={2} /> : <LockOpen size={13} strokeWidth={2} />}
+            </button>
+          </div>
         </div>
       ) : (
         <div className="m-placeholder">

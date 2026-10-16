@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Lock, LockOpen } from 'lucide-react'
 import { createPortal } from 'react-dom'
 import { HUD, FONT_BODY, FS, RADIUS, SHADOW, SP, Z } from '@/lib/tokens'
 import { CriticalInjuryPips, type CritPip } from '@/components/character/CriticalInjuryPip'
@@ -26,6 +27,8 @@ interface HudStatusStripProps {
   isCombat: boolean
   onVitalAdjust: (field: 'wound_current' | 'strain_current', delta: number) => Promise<void>
   onHealCrit: (id: string) => void
+  /** Map view controls (Reset / Lock), far right. Omitted = not rendered. */
+  mapControls?: { locked: boolean; onReset: () => void; onToggleLock: () => void }
 }
 
 function groupSources(sources: { label: string; value: number }[]): { label: string; value: number }[] {
@@ -98,7 +101,7 @@ export function HudStatusStrip({
   character, effectiveStats, engineBreakdown, woundBonus,
   encumbranceCurrent, encumbranceThreshold, crits,
   forceRating, isCombat,
-  onVitalAdjust, onHealCrit,
+  onVitalAdjust, onHealCrit, mapControls,
 }: HudStatusStripProps) {
   const [woundTipPos,  setWoundTipPos]  = useState<{ top: number; left: number } | null>(null)
   const [strainTipPos, setStrainTipPos] = useState<{ top: number; left: number } | null>(null)
@@ -255,6 +258,33 @@ export function HudStatusStrip({
 
       {/* Spacer */}
       <div style={{ flex: 1 }} />
+
+      {/* MAP VIEW — Reset / Lock, far right (the map no longer draws them) */}
+      {mapControls && (
+        <>
+          <div style={DIVIDER} />
+          <button
+            style={{ ...CTRL_BTN, width: 'auto', padding: `0 ${SP[2]}`, letterSpacing: '0.1em', textTransform: 'uppercase' }}
+            onClick={mapControls.onReset}
+            aria-label="Reset map view"
+          >
+            ↺ Reset
+          </button>
+          <button
+            style={{
+              ...CTRL_BTN,
+              color:       mapControls.locked ? 'var(--hud-accent)' : CTRL_BTN.color,
+              borderColor: mapControls.locked ? 'var(--hud-accent)' : 'var(--hud-vital-sep)',
+              background:  mapControls.locked ? 'color-mix(in srgb, var(--hud-accent) 18%, transparent)' : CTRL_BTN.background,
+            }}
+            onClick={mapControls.onToggleLock}
+            aria-label={mapControls.locked ? 'Unlock map' : 'Lock map'}
+            aria-pressed={mapControls.locked}
+          >
+            {mapControls.locked ? <Lock size={12} strokeWidth={2} /> : <LockOpen size={12} strokeWidth={2} />}
+          </button>
+        </>
+      )}
     </div>
   )
 }

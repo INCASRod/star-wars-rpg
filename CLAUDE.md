@@ -7,6 +7,12 @@ Always read these items before doing any work.
 
 After reading docs/architecture.md, keep it up to date. If any task adds, removes, or renames a route, hook, table, component, or utility file, update docs/architecture.md to reflect the change before closing the task.
 
+## Standing Rules
+
+Prompts live in `C:\Projects\Holocron\Prompts`. Follow `Prompts/WORKFLOW.md`: run only READY prompts, respect each prompt's blast radius, and add a changelog entry to the feature folder's `changelog.md` after every prompt.
+
+Do not run active or live audits when a new feature or changelog is complete. Rodrigo will open a new Claude instance fully dedicated to auditing, and that instance will have explicit permission from him to run an audit.
+
 ## Browser Verification (Playwright)
 
 Playwright IS available in this environment via `npx`, not as an MCP tool — ToolSearch will not find it, and its absence there does not mean no browser tool exists. Use it directly for visual/rendering verification instead of concluding none is available.
