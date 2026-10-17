@@ -11,6 +11,7 @@ import { isSlotDefeated, type CombatEncounter, type InitiativeSlot } from '@/lib
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
 import type { AdversaryInstance } from '@/lib/adversaries'
 import type { VehicleInstance } from '@/lib/vehicles'
+import type { MapToken } from '@/hooks/useMapTokens'
 import { Z, EASE } from '@/lib/tokens'
 
 // ── Locally scoped Z value — do not add to Z token map ──
@@ -32,6 +33,8 @@ const MIN_DRUM      = 14   // minimum rendered drum items
 export const STRIP_H_GM = 181  // 10 + 132 + 24 + 6 + 8 + 1                    (was 158)
 const STRIP_H_PL        = 161  // 10 + 132 + 10 + 8 + 1                         (was 115)
 
+const NO_TOKENS: StripToken[] = []
+
 export interface GmControls {
   onMoveLeft:    (index: number) => void
   onMoveRight:   (index: number) => void
@@ -52,6 +55,25 @@ export interface InitiativeStripProps {
   asOverlay?:  boolean
   /** Vertical offset from top of viewport (only used when asOverlay=true). */
   offsetTop?:  string
+  /** Map tokens, for the card <-> token hover link. Omit and the link is off. */
+  tokens?:         StripToken[]
+  /** The token currently hovered on the map or lit from a card. Owned by the parent view. */
+  hoveredTokenId?: string | null
+  onHoverToken?:   (tokenId: string | null) => void
+}
+
+export type StripToken = Pick<MapToken, 'id' | 'slot_key' | 'participant_type' | 'character_id'>
+
+/**
+ * The one map token a strip card stands for, or null. NPC / vehicle: `slot_key === slot.id`, the same
+ * join EncounterDeck's buildRoster uses. PC: tokens carry no slot_key, so match the character.
+ */
+export function tokenIdForSlot(slot: InitiativeSlot, tokens: StripToken[]): string | null {
+  if (slot.type === 'pc') {
+    if (!slot.characterId) return null
+    return tokens.find(t => t.participant_type === 'pc' && t.character_id === slot.characterId)?.id ?? null
+  }
+  return tokens.find(t => t.slot_key === slot.id)?.id ?? null
 }
 
 // ── Drum queue types ─────────────────────────────────────────────
@@ -287,11 +309,15 @@ interface SlotCardProps {
   hasSwapTgts:  boolean
   canPass:      boolean
   onSwapOpen:   (slotId: string, e: React.MouseEvent<HTMLButtonElement>) => void
+  /** The map token this card links to, if any, and whether it is currently lit. */
+  tokenId:      string | null
+  lit:          boolean
+  onHoverCard:  (tokenId: string, on: boolean) => void
 }
 
 function SlotCard({
   outerRef, slot, slotIndex, role, identity, isYou, displayName, portrait, staggerMs, visible,
-  gmControls, canLeft, canRight, hasSwapTgts, canPass, onSwapOpen,
+  gmControls, canLeft, canRight, hasSwapTgts, canPass, onSwapOpen, tokenId, lit, onHoverCard,
 }: SlotCardProps) {
   const isDone   = role === 'done'
   const isActive = role === 'active'
@@ -304,6 +330,7 @@ function SlotCard({
     visible   ? 'is-in'        : '',
     isActive  ? 'is-active'    : '',
     isDone    ? 'is-done'      : '',
+    lit       ? 'is-lit'       : '',
   ].filter(Boolean).join(' ')
 
   return (
@@ -311,6 +338,12 @@ function SlotCard({
       ref={outerRef}
       className={slotClass}
       style={{ '--stagger': `${staggerMs}ms` } as React.CSSProperties}
+      data-token-id={tokenId ?? undefined}
+      tabIndex={tokenId ? 0 : undefined}
+      onMouseEnter={tokenId ? () => onHoverCard(tokenId, true) : undefined}
+      onMouseLeave={tokenId ? () => onHoverCard(tokenId, false) : undefined}
+      onFocus={tokenId ? () => onHoverCard(tokenId, true) : undefined}
+      onBlur={tokenId ? () => onHoverCard(tokenId, false) : undefined}
     >
       <div className={`init-card init-card--${identity.tone}`}>
         <div className="init-card__plate">
@@ -409,12 +442,15 @@ interface DrumTrackProps {
   visible:         boolean
   onSwapOpen:      (slotId: string, e: React.MouseEvent<HTMLButtonElement>) => void
   onAdvanceTurn:   () => void
+  tokens:          StripToken[]
+  hoveredTokenId:  string | null
+  onHoverCard:     (tokenId: string, on: boolean) => void
 }
 
 function DrumTrack({
   drumItems, trackRef, firstRef, encounter, character,
   slotAssignments, portraits, advTokenImages, gmControls,
-  visible, onSwapOpen,
+  visible, onSwapOpen, tokens, hoveredTokenId, onHoverCard,
 }: DrumTrackProps) {
   const slots   = encounter.initiative_slots
 
@@ -490,6 +526,8 @@ function DrumTrack({
           // Stagger entrance animation — 30ms per drum position is a UI physics constant
           const staggerMs = idx * 30
 
+          const tokenId = tokenIdForSlot(slot, tokens)
+
           return (
             <div key={`${slot.id}-${idx}`} className="init-item">
               <SlotCard
@@ -509,6 +547,9 @@ function DrumTrack({
                 hasSwapTgts={swapTgts.length > 0}
                 canPass={canPass}
                 onSwapOpen={onSwapOpen}
+                tokenId={tokenId}
+                lit={!!tokenId && tokenId === hoveredTokenId}
+                onHoverCard={onHoverCard}
               />
               {/* Connector dash */}
               {idx < drumItems.length - 1 && (
@@ -546,6 +587,7 @@ function RoundBlock({ round, remaining, yourTurn }: {
 export function InitiativeStrip({
   encounter, character, gmControls,
   asOverlay = false, offsetTop = '0',
+  tokens, hoveredTokenId = null, onHoverToken,
 }: InitiativeStripProps) {
   const supabase = useMemo(() => createClient(), [])
 
@@ -587,6 +629,32 @@ export function InitiativeStrip({
 
   // ── Drum queue ───────────────────────────────────────────────────
   const { drumItems, localRound, trackRef, firstRef, viewportRef } = useDrum(encounter)
+
+  // ── Card <-> token hover link ────────────────────────────────────
+  // A card sets the shared hovered id; leaving clears it only if it is still that card's own,
+  // so a fast move onto another card or a map token is never wiped by the stale leave.
+  const reducedMotion = usePrefersReducedMotion()
+  const hoveredRef    = useRef(hoveredTokenId)
+  useEffect(() => { hoveredRef.current = hoveredTokenId }, [hoveredTokenId])
+  const fromCardRef   = useRef<string | null>(null)
+  const hoverCard = useCallback((tokenId: string, on: boolean) => {
+    if (!onHoverToken) return
+    if (on) { fromCardRef.current = tokenId; onHoverToken(tokenId) }
+    else if (hoveredRef.current === tokenId) { fromCardRef.current = null; onHoverToken(null) }
+  }, [onHoverToken])
+
+  // A map token hover whose card is off-screen scrolls the strip to it. Never scrolls back on leave.
+  useEffect(() => {
+    if (!hoveredTokenId || fromCardRef.current === hoveredTokenId) return
+    const vp = viewportRef.current
+    const el = vp?.querySelector<HTMLElement>(`[data-token-id="${CSS.escape(hoveredTokenId)}"]`)
+    if (!vp || !el) return
+    const v = vp.getBoundingClientRect()
+    const r = el.getBoundingClientRect()
+    if (r.left >= v.left && r.right <= v.right) return
+    const left = r.left < v.left ? vp.scrollLeft - (v.left - r.left) : vp.scrollLeft + (r.right - v.right)
+    vp.scrollTo({ left, behavior: reducedMotion ? 'auto' : 'smooth' })
+  }, [hoveredTokenId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Swap picker ──────────────────────────────────────────────────
   const [swapAnchor, setSwapAnchor] = useState<{ slotId: string; top: number; left: number } | null>(null)
@@ -692,6 +760,9 @@ export function InitiativeStrip({
     gmControls, visible,
     onSwapOpen:    openSwapPicker,
     onAdvanceTurn: () => void advanceTurnInternal(),
+    tokens:        tokens ?? NO_TOKENS,
+    hoveredTokenId,
+    onHoverCard:   hoverCard,
   }
 
   // ── Swap / pass picker portal ────────────────────────────────────

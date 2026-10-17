@@ -62,6 +62,8 @@ export function HudSessionTab({
     else setInternalAdversaryDrawerOpen(v)
   }
   const [tokenHoverInfo,        setTokenHoverInfo]        = useState<{ tokenId: string; rect: DOMRect } | null>(null)
+  // Card <-> token hover link, shared by the map and the initiative strip.
+  const [hoveredTokenId,        setHoveredTokenId]        = useState<string | null>(null)
   const initiativeBarRef = useRef<HTMLDivElement>(null)
   const [sessionCardCollapsed,  setSessionCardCollapsed]  = useState<Record<string, boolean>>({})
   const [advStatCache,          setAdvStatCache]          = useState<Map<string, AdversaryInstance>>(new Map())
@@ -243,8 +245,9 @@ export function HudSessionTab({
           gridSize={visibleMap.grid_size ?? 50}
           tokenScale={visibleMap.token_scale ?? 1}
           bottomOverlayRef={initiativeBarRef}
-          onTokenHover={(id, _x, _y, rect) => setTokenHoverInfo({ tokenId: id, rect })}
-          onTokenHoverEnd={(id) => setTokenHoverInfo(prev => (prev?.tokenId === id ? null : prev))}
+          highlightedTokenId={hoveredTokenId}
+          onTokenHover={(id, _x, _y, rect) => { setTokenHoverInfo({ tokenId: id, rect }); setHoveredTokenId(id) }}
+          onTokenHoverEnd={(id) => { setTokenHoverInfo(prev => (prev?.tokenId === id ? null : prev)); setHoveredTokenId(prev => (prev === id ? null : prev)) }}
           handleRef={mapHandleRef}
           onLockChange={onMapLockChange}
         />
@@ -260,7 +263,7 @@ export function HudSessionTab({
           top: 0, left: 0, right: 0, maxHeight: '25%',
           zIndex: 'var(--z-drawer)',
         }}>
-          <InitiativeStrip encounter={encounter} character={character} compact />
+          <InitiativeStrip encounter={encounter} character={character} compact tokens={visibleMapTokens} hoveredTokenId={hoveredTokenId} onHoverToken={setHoveredTokenId} />
         </div>
       )}
 

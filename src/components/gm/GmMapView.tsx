@@ -296,6 +296,9 @@ export interface GmMapViewProps {
   /** Reset/Lock handle + lock-state callback for the GM top bar (the map no longer draws them). */
   mapHandleRef?:               React.Ref<MapCanvasHandle>
   onMapLockChange?:            (locked: boolean) => void
+  /** Optional controlled hover link (GmShell owns it so the initiative strip shares it). Falls back to internal state. */
+  hoveredTokenId?:             string | null
+  onHoveredTokenIdChange?:     (tokenId: string | null) => void
   /** Encounter Dossier state — lifted to GmShell, mirrors deckOpen/focusedEntityId. */
   dossierEntityId?:           string | null
   dossierSourceRect?:         DOMRect | null
@@ -313,7 +316,7 @@ export interface GmMapViewProps {
 export function GmMapView({
   campaignId, encounter: encounterProp, characters, allMaps, activeMap, onDeleteMap, isStagingTab,
   stagingTokens, onStagingMoveToken, onStagingToggleVisibility, onStagingRemoveToken, onStagingAddToken, onStagingUpdateGeometry, onStagingPreviewGeometry, onTokenClick,
-  deckOpen, onDeckOpenChange, focusedEntityId, mapHandleRef, onMapLockChange, setStagingEncounter, saveStagingEncounter,
+  deckOpen, onDeckOpenChange, focusedEntityId, mapHandleRef, onMapLockChange, hoveredTokenId: hoveredTokenIdProp, onHoveredTokenIdChange, setStagingEncounter, saveStagingEncounter,
   updateTokenWoundPct, renameToken, markEncounterPending, clearEncounterPending, stagingAddToEncounter,
   dossierEntityId, dossierSourceRect, onOpenDossier, onCloseDossier,
 }: GmMapViewProps) {
@@ -675,14 +678,21 @@ export function GmMapView({
   // RosterEntry.tokenId); real token hover sets it too, reusing the
   // existing handleTokenHover/handleTokenHoverEnd tooltip callbacks rather
   // than adding a second Pixi-side hover path.
-  const [hoveredTokenId, setHoveredTokenId] = useState<string | null>(null)
+  const [internalHoveredId, setInternalHoveredId] = useState<string | null>(null)
+  const hoveredTokenId = hoveredTokenIdProp !== undefined ? hoveredTokenIdProp : internalHoveredId
+  const hoveredIdRef = useRef(hoveredTokenId)
+  useEffect(() => { hoveredIdRef.current = hoveredTokenId }, [hoveredTokenId])
+  const setHoveredTokenId = useCallback((id: string | null) => {
+    if (onHoveredTokenIdChange) onHoveredTokenIdChange(id)
+    else setInternalHoveredId(id)
+  }, [onHoveredTokenIdChange])
 
   const handleTokenHover = useCallback((tokenId: string, screenX: number, screenY: number) => {
     if (isDraggingRef.current) return
     lastTooltipPosRef.current = { x: screenX, y: screenY }
     setTooltipState({ tokenId, x: screenX, y: screenY })
     setHoveredTokenId(tokenId)
-  }, [])
+  }, [setHoveredTokenId])
 
   // tokenId is whichever token this "leaving" event is for — MapCanvas's 60ms
   // per-token debounce means this can arrive after the pointer has already
@@ -691,8 +701,8 @@ export function GmMapView({
   // token's tooltip/glow a moment after it appeared (Prompt 14).
   const handleTokenHoverEnd = useCallback((tokenId: string) => {
     setTooltipState(prev => (prev?.tokenId === tokenId ? null : prev))
-    setHoveredTokenId(prev => (prev === tokenId ? null : prev))
-  }, [])
+    if (hoveredIdRef.current === tokenId) setHoveredTokenId(null)
+  }, [setHoveredTokenId])
 
   const handleTokenClick = useCallback((tokenId: string, sourceRect: DOMRect) => {
     onTokenClick?.(tokenId, sourceRect)

@@ -292,41 +292,56 @@ export function useGmSession(params: {
       is_visible_to_players: true,
     })
 
-    const npcSlots = enc.initiative_slots.filter(s => s.type === 'npc' && s.adversaryInstanceId)
-    const instanceToName = new Map(enc.adversaries.map(a => [a.instanceId, a.name]))
-    const slotsByName = new Map<string, string[]>()
-    for (const slot of npcSlots) {
-      const name = instanceToName.get(slot.adversaryInstanceId!) ?? ''
-      slotsByName.set(name, [...(slotsByName.get(name) ?? []), slot.id])
+    // Re-link each token to its NEW initiative slot. Begin Combat regenerates
+    // every slot id (`npc-<instanceId>`), so a token's old slot_key goes stale.
+    // Link by instance first: the deck's previous slots say which instance the
+    // token's old slot_key stood for, and the new slots say where that instance
+    // now lives. Matching by label is only a fallback for tokens that cannot be
+    // resolved that way — a renamed token or a duplicate name used to be left
+    // pointing at a slot that no longer exists, which orphaned it: no strip
+    // card lights it, and removing the card leaves the token on the board.
+    const slotInstance = (s: { adversaryInstanceId?: string; vehicleInstanceId?: string }) =>
+      s.adversaryInstanceId ?? s.vehicleInstanceId
+    const oldSlotToInstance = new Map<string, string>()
+    for (const s of deck.initiative_slots ?? []) {
+      const iid = slotInstance(s)
+      if (iid) oldSlotToInstance.set(s.id, iid)
     }
+    const instanceToNewSlot = new Map<string, string>()
+    for (const s of enc.initiative_slots) {
+      const iid = slotInstance(s)
+      if (iid && s.type === 'npc') instanceToNewSlot.set(iid, s.id)
+    }
+    const newSlotIds = new Set(instanceToNewSlot.values())
     const usedSlots = new Set<string>()
-    for (const token of stagingTokens.filter(
-      t => t.participant_type === 'adversary' && t.token_shape !== 'rectangle' && !!t.label
-    )) {
-      const available = (slotsByName.get(token.label!) ?? []).find(id => !usedSlots.has(id))
-      if (!available) continue
-      usedSlots.add(available)
-      await supabase.from('map_tokens').update({ slot_key: available }).eq('id', token.id)
+    const unlinked: typeof stagingTokens = []
+    for (const token of stagingTokens.filter(t => t.participant_type === 'adversary')) {
+      if (token.slot_key && newSlotIds.has(token.slot_key)) { usedSlots.add(token.slot_key); continue }
+      const iid = token.slot_key ? oldSlotToInstance.get(token.slot_key) : undefined
+      const target = iid ? instanceToNewSlot.get(iid) : undefined
+      if (target && !usedSlots.has(target)) {
+        usedSlots.add(target)
+        await supabase.from('map_tokens').update({ slot_key: target }).eq('id', token.id)
+      } else if (token.label) {
+        unlinked.push(token)
+      }
     }
 
-    // Vehicle tokens (rectangle shape) — wire slot_key for vehicles the GM
-    // gave their own initiative slot. Vehicles left off the order (no slot)
-    // simply keep slot_key null, same as any unrolled adversary.
-    const vehicleSlots = enc.initiative_slots.filter(s => s.type === 'npc' && s.vehicleInstanceId)
-    const vehicleInstanceToName = new Map((enc.vehicles ?? []).map(v => [v.instanceId, v.name]))
-    const vehicleSlotsByName = new Map<string, string[]>()
-    for (const slot of vehicleSlots) {
-      const name = vehicleInstanceToName.get(slot.vehicleInstanceId!) ?? ''
-      vehicleSlotsByName.set(name, [...(vehicleSlotsByName.get(name) ?? []), slot.id])
-    }
-    const usedVehicleSlots = new Set<string>()
-    for (const token of stagingTokens.filter(
-      t => t.participant_type === 'adversary' && t.token_shape === 'rectangle' && !!t.label
-    )) {
-      const available = (vehicleSlotsByName.get(token.label!) ?? []).find(id => !usedVehicleSlots.has(id))
+    // Fallback: exact-name match for whatever the instance link could not place.
+    const instanceNames = new Map<string, string>([
+      ...enc.adversaries.map(a => [a.instanceId, a.name] as const),
+      ...(enc.vehicles ?? []).map(v => [v.instanceId, v.name] as const),
+    ])
+    const slotName = (s: { adversaryInstanceId?: string; vehicleInstanceId?: string }) =>
+      instanceNames.get(slotInstance(s) ?? '') ?? ''
+    for (const token of unlinked) {
+      const wantVehicle = token.token_shape === 'rectangle'
+      const available = enc.initiative_slots.find(s =>
+        s.type === 'npc' && !!(wantVehicle ? s.vehicleInstanceId : s.adversaryInstanceId)
+        && !usedSlots.has(s.id) && slotName(s) === token.label)
       if (!available) continue
-      usedVehicleSlots.add(available)
-      await supabase.from('map_tokens').update({ slot_key: available }).eq('id', token.id)
+      usedSlots.add(available.id)
+      await supabase.from('map_tokens').update({ slot_key: available.id }).eq('id', token.id)
     }
 
     const round = 1

@@ -172,6 +172,8 @@ export function GmShell() {
   // Reset/Lock live in the top bar now; the map exposes them through this handle.
   const mapHandleRef = useRef<MapCanvasHandle>(null)
   const [mapLocked, setMapLocked] = useState(false)
+  // Card <-> token hover link: one id shared by the map, the encounter deck and the initiative strip.
+  const [hoveredTokenId, setHoveredTokenId] = useState<string | null>(null)
   const handleMapReset      = useCallback(() => mapHandleRef.current?.resetView(), [])
   const handleMapToggleLock = useCallback(() => mapHandleRef.current?.toggleLock(), [])
   const [focusedEntityId,       setFocusedEntityId]       = useState<string | null>(null)
@@ -443,6 +445,8 @@ export function GmShell() {
             isStagingTab={true}
             mapHandleRef={mapHandleRef}
             onMapLockChange={setMapLocked}
+            hoveredTokenId={hoveredTokenId}
+            onHoveredTokenIdChange={setHoveredTokenId}
             stagingTokens={stagingTokens}
             onStagingMoveToken={stagingMoveToken}
             onStagingToggleVisibility={handleToggleVisibility}
@@ -473,6 +477,9 @@ export function GmShell() {
             character={{ id: '', name: '' } as unknown as Character}
             gmControls={gmControls}
             asOverlay
+            tokens={stagingTokens}
+            hoveredTokenId={hoveredTokenId}
+            onHoverToken={setHoveredTokenId}
           />
 
           {/* GM advance-turn control — floating bottom-right, only during active combat */}
