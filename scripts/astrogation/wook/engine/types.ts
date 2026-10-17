@@ -37,6 +37,8 @@ export interface Stop {
   region: string | null
   sector: string | null
   uncharted: boolean
+  /** a temporary point on a lane edge where a ship leaves the lane for an off-lane planet (name: "<route> near <planet>") */
+  dropoff?: boolean
 }
 
 export interface Leg {
@@ -69,16 +71,31 @@ export interface Hazard {
 }
 
 export interface DifficultyResult {
+  /** base + minor lane + distance, before the Formidable cap */
   raw: number
-  laneTerm: number
+  minorTerm: number
   distanceTerm: number
-  unchartedTerm: number
-  /** name for min(raw, formidableAt) */
-  difficulty: string
+  /** upgrades from off-lane share */
+  offUpgrades: number
+  /** upgrades from an uncharted (pin) endpoint */
+  unchartedUpgrades: number
   /** upgrades from raw above Formidable */
-  upgrades: number
+  excessUpgrades: number
   /** upgrades from hazards, reported separately */
   hazardUpgrades: number
   hazards: Hazard[]
+  /** every upgrade: off-lane + uncharted + excess + hazard */
   totalUpgrades: number
+  /** final pool after applying the upgrades */
+  pool: { purple: number; red: number }
+  /** name for the dice count (purple + red) */
+  difficulty: string
+}
+
+/** The lanes route plus, when the lanes are >= CONFIG.shortcutRatio x the straight line, a direct off-lane jump. */
+export interface Plan {
+  primary: RouteResult
+  shortcut?: RouteResult
+  /** lanes length / straight-line distance between the two endpoints */
+  ratio: number
 }

@@ -1,7 +1,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
-import { difficulty, route, bandOf, CONFIG } from './index'
-import type { Endpoint, Graph, Hazard } from './types'
+import { difficulty, plan, bandOf, CONFIG } from './index'
+import type { Endpoint, Graph, Hazard, RouteResult } from './types'
 
 const DATA = path.resolve(__dirname, '..', '..', '..', '..', 'data', 'astrogation')
 
@@ -38,6 +38,7 @@ export const TRIPS: Trip[] = [
   { n: 9, label: 'Corellia - Nal Hutta', from: 'Corellia', to: 'Nal Hutta' },
   { n: 10, label: 'Coruscant - pin (Unknown Regions)', from: 'Coruscant', to: UNKNOWN_PIN },
   { n: 11, label: 'Vardos (no lane) - Coruscant', from: 'Vardos', to: 'Coruscant' },
+  { n: 12, label: 'Coruscant - Aargau', from: 'Coruscant', to: 'Aargau' },
 ]
 
 export function endpoint(graph: Graph, e: TripEnd): Endpoint {
@@ -47,8 +48,13 @@ export function endpoint(graph: Graph, e: TripEnd): Endpoint {
   return { id: hits[0].id }
 }
 
+export function evaluate(r: RouteResult, hazards: Hazard[]) {
+  const band = bandOf(r)
+  return { route: r, difficulty: difficulty(r, hazards), band, bandName: CONFIG.bands[band].name, time: CONFIG.bands[band].time }
+}
+
+/** The lanes route and, at >= CONFIG.shortcutRatio x the straight line, the direct jump; both with their difficulty. */
 export function runTrip(graph: Graph, hazards: Hazard[], t: Trip) {
-  const r = route(graph, endpoint(graph, t.from), endpoint(graph, t.to))
-  const d = difficulty(r, hazards)
-  return { trip: t, route: r, difficulty: d, band: bandOf(r), bandName: CONFIG.bands[bandOf(r)].name, time: CONFIG.bands[bandOf(r)].time }
+  const p = plan(graph, endpoint(graph, t.from), endpoint(graph, t.to))
+  return { trip: t, ratio: p.ratio, primary: evaluate(p.primary, hazards), shortcut: p.shortcut ? evaluate(p.shortcut, hazards) : null }
 }

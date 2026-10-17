@@ -29,34 +29,47 @@ export function bandOf(r: RouteResult, config: Config = CONFIG): number {
 }
 
 /**
- * Difficulty per brief update 2. Base Simple (0). Lane term from the route's composition, distance term from the band, +2 for an uncharted
- * endpoint. Raw above Formidable (5) = Formidable plus (raw - 5) upgrades, no cap. Hazard upgrades (a hazard system that is a stop, endpoints
- * included) are added on top and reported separately.
+ * Route sets difficulty (purple dice), risk sets upgrades (red). Difficulty = base + minor lane + distance band; off-lane legs add none.
+ * Upgrades: off-lane share of length, an uncharted pin endpoint, difficulty above Formidable, and hazards (reported separately).
+ * Each upgrade turns a purple die red; with none left it adds a purple die instead (AoE "Upgrading More Dice Than Available").
  */
 export function difficulty(route: RouteResult, hazards: Hazard[], config: Config = CONFIG): DifficultyResult {
   const d = config.difficulty
   const s = route.share
-  let laneTerm: number
-  if (s.off <= 0) laneTerm = s.minor > 0 ? d.lane.anyMinor : d.lane.allMajor
-  else if (s.off < d.offQuarter) laneTerm = d.lane.offUnderQuarter
-  else if (s.off <= d.offTwoThirds) laneTerm = d.lane.offQuarterToTwoThirds
-  else laneTerm = d.lane.offOverTwoThirds
+  const minorTerm = s.minor > 0 ? d.minorLane : 0
   const distanceTerm = d.distance[bandOf(route, config)]
-  const unchartedTerm = route.uncharted ? d.uncharted : 0
-  const raw = d.base + laneTerm + distanceTerm + unchartedTerm
+  const raw = d.base + minorTerm + distanceTerm
+  let offUpgrades = 0
+  if (s.off > 0) {
+    offUpgrades = s.off < d.offQuarter ? d.offUpgrades.underQuarter : s.off <= d.offTwoThirds ? d.offUpgrades.quarterToTwoThirds : d.offUpgrades.overTwoThirds
+  }
+  const unchartedUpgrades = route.uncharted ? d.unchartedUpgrades : 0
+  const excessUpgrades = Math.max(0, raw - d.formidableAt)
   const onRoute = new Set(route.stops.map(x => x.id))
   const hit = hazards.filter(h => onRoute.has(h.system))
   const hazardUpgrades = hit.reduce((t, h) => t + h.upgrades, 0)
-  const upgrades = Math.max(0, raw - d.formidableAt)
+  const totalUpgrades = offUpgrades + unchartedUpgrades + excessUpgrades + hazardUpgrades
+  let purple = Math.min(raw, d.formidableAt)
+  let red = 0
+  for (let i = 0; i < totalUpgrades; i++) {
+    if (purple > 0) {
+      purple -= 1
+      red += 1
+    } else {
+      purple += 1
+    }
+  }
   return {
     raw,
-    laneTerm,
+    minorTerm,
     distanceTerm,
-    unchartedTerm,
-    difficulty: d.names[Math.min(raw, d.formidableAt)],
-    upgrades,
+    offUpgrades,
+    unchartedUpgrades,
+    excessUpgrades,
     hazardUpgrades,
     hazards: hit,
-    totalUpgrades: upgrades + hazardUpgrades,
+    totalUpgrades,
+    pool: { purple, red },
+    difficulty: d.names[Math.min(purple + red, d.formidableAt)],
   }
 }

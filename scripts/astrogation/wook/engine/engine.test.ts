@@ -1,7 +1,7 @@
 /** npx tsx --test scripts/astrogation/wook/engine/engine.test.ts */
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { CONFIG, difficulty, route, travelBand } from './index'
+import { CONFIG, difficulty, plan, route, travelBand } from './index'
 import type { Graph, GraphNode, RouteResult } from './types'
 import { TRIPS, loadGraph, loadHazards, runTrip } from './trips'
 
@@ -56,14 +56,32 @@ describe('route: lanes first', () => {
     assert.ok(Math.abs(r.share.off - 40 / 140) < 1e-9)
   })
 
-  it('an endpoint on no lane gets an off-lane leg to the NEAREST lane planet that makes the trip possible', () => {
+  it('an endpoint on no lane drops off the nearest point of a lane edge, not the nearest lane planet', () => {
     const graph = g(
       [node('A', 0, 0), node('B', 100, 0), node('X', 90, 30, 'Core Worlds', null, false)],
       [['A', 'B', 'major']],
     )
     const r = route(graph, { id: 'A' }, { id: 'X' })
-    assert.deepEqual(r.stops.map(s => s.id), ['A', 'B', 'X'])
-    assert.equal(r.legs[1].kind, 'off')
+    assert.deepEqual(r.stops.map(s => s.name), ['A', 'A-B near B', 'X'])
+    assert.equal(r.stops[1].dropoff, true)
+    assert.deepEqual(r.legs.map(l => l.kind), ['lane', 'off'])
+    assert.ok(Math.abs(r.legs[0].lengthPx - 90) < 1e-9)
+    assert.ok(Math.abs(r.legs[1].lengthPx - 30) < 1e-9)
+    assert.ok(Math.abs(r.share.major - 0.75) < 1e-9)
+  })
+
+  it('splitting an edge keeps route and class on both halves, and never mutates the graph', () => {
+    const graph = g(
+      [node('A', 0, 0), node('B', 100, 0), node('X', 50, 20, 'Core Worlds', null, false), node('Y', 60, -20, 'Core Worlds', null, false)],
+      [['A', 'B', 'minor']],
+    )
+    const before = JSON.stringify(graph)
+    const r = route(graph, { id: 'X' }, { id: 'A' })
+    assert.deepEqual(r.legs.map(l => [l.kind, l.route ?? null, l.class ?? null]), [['off', null, null], ['lane', 'A-B', 'minor']])
+    assert.equal(JSON.stringify(graph), before)
+    const both = route(graph, { id: 'X' }, { id: 'Y' })
+    assert.equal(both.found, true)
+    assert.equal(JSON.stringify(graph), before)
   })
 
   it('a pin works the same way and is flagged uncharted', () => {
@@ -91,6 +109,28 @@ describe('route: lanes first', () => {
   })
 })
 
+describe('plan: risky shortcut', () => {
+  it('lanes at least 3x the straight line also offer a direct off-lane jump', () => {
+    const graph = g([node('A', 0, 0), node('B', 10, 0), node('C', 5, 100)], [['A', 'C', 'minor'], ['C', 'B', 'minor']])
+    const p = plan(graph, { id: 'A' }, { id: 'B' })
+    assert.ok(p.ratio >= CONFIG.shortcutRatio)
+    assert.ok(p.shortcut)
+    assert.equal(p.shortcut!.share.off, 1)
+    assert.ok(Math.abs(p.shortcut!.lengthPx - 10) < 1e-9)
+    assert.deepEqual(p.primary.stops.map(s => s.id), ['A', 'C', 'B'])
+  })
+  it('lanes under 3x the straight line offer no shortcut', () => {
+    const graph = g([node('A', 0, 0), node('B', 100, 0), node('C', 50, 30)], [['A', 'C', 'minor'], ['C', 'B', 'minor']])
+    const p = plan(graph, { id: 'A' }, { id: 'B' })
+    assert.ok(p.ratio < CONFIG.shortcutRatio)
+    assert.equal(p.shortcut, undefined)
+  })
+  it('the trigger ratio comes from CONFIG', () => {
+    const graph = g([node('A', 0, 0), node('B', 100, 0), node('C', 50, 30)], [['A', 'C', 'minor'], ['C', 'B', 'minor']])
+    assert.ok(plan(graph, { id: 'A' }, { id: 'B' }, { ...CONFIG, shortcutRatio: 1.1 }).shortcut)
+  })
+})
+
 describe('travelBand (Table 7-14)', () => {
   it('within a sector / within a region / between regions / across the galaxy / pin', () => {
     assert.equal(travelBand({ region: 'Core Worlds', sector: 'Corusca' }, { region: 'Core Worlds', sector: 'Corusca' }), 0)
@@ -102,38 +142,62 @@ describe('travelBand (Table 7-14)', () => {
   })
 })
 
-describe('difficulty (base Simple)', () => {
+describe('difficulty (route sets purple, risk sets red)', () => {
   const none: never[] = []
-  it('all major + within a sector = Simple', () => {
-    const d = difficulty(fake({ major: 1, minor: 0, off: 0 }, false, 'Core Worlds', 'S'), none)
+  const pool = (r: RouteResult, hz: Parameters<typeof difficulty>[1] = none) => difficulty(r, hz)
+  it('all major + within a sector = Simple, no dice', () => {
+    const d = pool(fake({ major: 1, minor: 0, off: 0 }, false, 'Core Worlds', 'S'))
     assert.equal(d.raw, 0)
     assert.equal(d.difficulty, 'Simple')
+    assert.deepEqual(d.pool, { purple: 0, red: 0 })
   })
-  it('all major + within a region = Easy', () => {
-    const d = difficulty(fake({ major: 1, minor: 0, off: 0 }, false, 'Core Worlds', 'S', { region: 'Core Worlds', sector: 'T' }), none)
-    assert.equal(d.raw, 1)
+  it('all major + within a region = Easy (1 purple, 0 red)', () => {
+    const d = pool(fake({ major: 1, minor: 0, off: 0 }, false, 'Core Worlds', 'S', { region: 'Core Worlds', sector: 'T' }))
+    assert.equal(d.difficulty, 'Easy')
+    assert.deepEqual(d.pool, { purple: 1, red: 0 })
+  })
+  it('any minor leg adds 1 difficulty', () => {
+    assert.equal(pool(fake({ major: 0.5, minor: 0.5, off: 0 }, false, 'Core Worlds', 'S')).minorTerm, 1)
+    assert.equal(pool(fake({ major: 1, minor: 0, off: 0 }, false, 'Core Worlds', 'S')).minorTerm, 0)
+  })
+  it('off-lane legs add NO difficulty, only upgrades: up to 1/4 +1, 1/4 to 2/3 +2, over 2/3 +3', () => {
+    const o = (off: number) => pool(fake({ major: 1 - off, minor: 0, off }, false, 'Core Worlds', 'S'))
+    for (const off of [0.1, 0.3, 0.8]) assert.equal(o(off).raw, 0)
+    assert.equal(o(0).offUpgrades, 0)
+    assert.equal(o(0.1).offUpgrades, 1)
+    assert.equal(o(0.3).offUpgrades, 2)
+    assert.equal(o(0.5).offUpgrades, 2)
+    assert.equal(o(0.8).offUpgrades, 3)
+  })
+  it('an upgrade with no purple die adds one: Simple + 1 upgrade = Easy (1 purple, 0 red)', () => {
+    const d = pool(fake({ major: 0.9, minor: 0, off: 0.1 }, false, 'Core Worlds', 'S'))
+    assert.deepEqual(d.pool, { purple: 1, red: 0 })
     assert.equal(d.difficulty, 'Easy')
   })
-  it('lane terms: any minor +1, off < 1/4 +2, 1/4 to 2/3 +3, over 2/3 +4', () => {
-    const lane = (s: RouteResult['share']) => difficulty(fake(s, false, 'Core Worlds', 'S'), none).laneTerm
-    assert.equal(lane({ major: 0.5, minor: 0.5, off: 0 }), 1)
-    assert.equal(lane({ major: 0.8, minor: 0.1, off: 0.1 }), 2)
-    assert.equal(lane({ major: 0.5, minor: 0.2, off: 0.3 }), 3)
-    assert.equal(lane({ major: 0.5, minor: 0, off: 0.25 + 0.25 }), 3)
-    assert.equal(lane({ major: 0, minor: 0.2, off: 0.8 }), 4)
+  it('an upgrade on an existing purple die turns it red: Easy + 1 = 0 purple, 1 red', () => {
+    const d = pool(fake({ major: 0.9, minor: 0, off: 0.1 }, false, 'Core Worlds', 'S', { region: 'Core Worlds', sector: 'T' }))
+    assert.deepEqual(d.pool, { purple: 0, red: 1 })
   })
-  it('uncharted +2; raw above 5 becomes upgrades with no cap', () => {
-    const d = difficulty(fake({ major: 0, minor: 0.1, off: 0.9 }, true), none)
-    // 0 + 4 (off > 2/3) + 3 (pin = across) + 2 (uncharted) = 9
-    assert.equal(d.raw, 9)
+  it('uncharted pin endpoint = +1 upgrade, not difficulty', () => {
+    const d = pool(fake({ major: 0.1, minor: 0, off: 0.9 }, true))
+    // pin = across (3 purple); off > 2/3 = +3 upgrades; uncharted +1 = 4 upgrades: 3 purple -> red, then the 4th adds a purple
+    assert.equal(d.raw, 3)
+    assert.equal(d.offUpgrades, 3)
+    assert.equal(d.unchartedUpgrades, 1)
+    assert.deepEqual(d.pool, { purple: 1, red: 3 })
+  })
+  it('difficulty above Formidable converts the excess to upgrades, no cap', () => {
+    const cfg = { ...CONFIG, difficulty: { ...CONFIG.difficulty, base: 4 } }
+    const d = difficulty(fake({ major: 1, minor: 0, off: 0 }, true), none, cfg) // 4 + 3 (pin = across) = 7
+    assert.equal(d.raw, 7)
+    assert.equal(d.excessUpgrades, 2)
     assert.equal(d.difficulty, 'Formidable')
-    assert.equal(d.upgrades, 4)
   })
   it('hazard upgrades are added on top and reported separately', () => {
     const r = fake({ major: 0, minor: 1, off: 0 })
     r.stops[1].id = 'kessel-t-10'
-    const d = difficulty(r, [{ system: 'kessel-t-10', upgrades: 2, note: 'Kessel' }])
-    assert.equal(d.upgrades, 0)
+    const d = pool(r, [{ system: 'kessel-t-10', upgrades: 2, note: 'Kessel' }])
+    assert.equal(d.offUpgrades, 0)
     assert.equal(d.hazardUpgrades, 2)
     assert.equal(d.totalUpgrades, 2)
   })
@@ -149,51 +213,76 @@ describe('expected trips (real graph)', () => {
   const graph = loadGraph()
   const hazards = loadHazards()
   const by = (n: number) => runTrip(graph, hazards, TRIPS.find(t => t.n === n)!)
+  const names = (n: number) => by(n).primary.route.stops.map(s => s.name).join(' > ')
 
-  it('1. Coruscant - Corellia: all major, within region, Easy, 0 upgrades', () => {
+  it('1. Coruscant - Corellia: all major, within region, Easy (1 purple, 0 red), no shortcut offered', () => {
     const x = by(1)
-    assert.equal(x.route.share.major, 1)
-    assert.equal(x.bandName, 'within a region')
-    assert.equal(x.difficulty.difficulty, 'Easy')
-    assert.equal(x.difficulty.totalUpgrades, 0)
+    assert.equal(x.primary.route.share.major, 1)
+    assert.equal(x.primary.bandName, 'within a region')
+    assert.equal(x.primary.difficulty.difficulty, 'Easy')
+    assert.deepEqual(x.primary.difficulty.pool, { purple: 1, red: 0 })
+    assert.equal(x.shortcut, null)
   })
-  it('2. Coruscant - Fedalle: lanes only, no detour via Corellia', () => {
+  it('2. Coruscant - Fedalle: the lanes route is unchanged (via Corellia) AND a shortcut is offered', () => {
     const x = by(2)
-    assert.equal(x.route.share.off, 0)
-    assert.ok(!x.route.stops.some(s => s.name === 'Corellia'), `route runs ${x.route.stops.map(s => s.name).join(' > ')}`)
+    assert.equal(x.primary.route.share.off, 0)
+    assert.ok(x.primary.route.stops.some(s => s.name === 'Corellia'))
+    assert.ok(x.shortcut)
+    console.log(`  [2] primary ${x.primary.difficulty.difficulty} ${JSON.stringify(x.primary.difficulty.pool)}; shortcut ${x.shortcut!.difficulty.difficulty} ${JSON.stringify(x.shortcut!.difficulty.pool)} (${Math.round(x.shortcut!.route.lengthPx)} px vs ${Math.round(x.primary.route.lengthPx)} px)`)
   })
   it('3. Coruscant - Ord Mantell: lanes only', () => {
-    assert.equal(by(3).route.share.off, 0)
+    assert.equal(by(3).primary.route.share.off, 0)
   })
-  it('4. Kessel - Formos: Kessel Run, minor, +2 hazard upgrades', () => {
+  it('4. Kessel - Formos: minor, +2 hazard upgrades, Kessel Run (may continue via Oba Diah)', () => {
     const x = by(4)
-    assert.deepEqual(x.route.routesUsed, ['Kessel Run'])
-    assert.equal(x.route.share.minor, 1)
-    assert.equal(x.difficulty.hazardUpgrades, 2)
+    assert.ok(x.primary.route.routesUsed.includes('Kessel Run'))
+    assert.equal(x.primary.route.share.minor, 1)
+    assert.equal(x.primary.difficulty.hazardUpgrades, 2)
   })
   it('5. Ryloth - Tatooine: Corellian Skip Run, minor', () => {
     const x = by(5)
-    assert.deepEqual(x.route.routesUsed, ['Corellian Skip Run'])
-    assert.equal(x.route.share.minor, 1)
+    assert.deepEqual(x.primary.route.routesUsed, ['Corellian Skip Run'])
+    assert.equal(x.primary.route.share.minor, 1)
   })
-  it('6. Ryloth - Arkanis: Corellian Run, all major', () => {
+  it('6. Ryloth - Arkanis: mostly major, may go via Christophsis', () => {
     const x = by(6)
-    assert.deepEqual(x.route.routesUsed, ['Corellian Run'])
-    assert.equal(x.route.share.major, 1)
+    assert.ok(x.primary.route.routesUsed.includes('Corellian Run'))
+    assert.ok(x.primary.route.share.major >= 0.5, `major ${x.primary.route.share.major}`)
   })
   it('7-9. Brentaal - Corsin, Bandomeer - Daiyu, Corellia - Nal Hutta: a route is found (report only)', () => {
-    for (const n of [7, 8, 9]) assert.equal(by(n).route.found, true)
+    for (const n of [7, 8, 9]) assert.equal(by(n).primary.route.found, true)
   })
-  it('10. Coruscant - pin in the Unknown Regions: uncharted, across, upgrades', () => {
+  it('10. Coruscant - pin in the Unknown Regions: uncharted, across, red dice from off-lane + uncharted', () => {
     const x = by(10)
-    assert.equal(x.route.uncharted, true)
-    assert.equal(x.bandName, 'across the galaxy')
-    assert.ok(x.difficulty.raw > CONFIG.difficulty.formidableAt, `raw ${x.difficulty.raw}`)
+    const d = x.primary.difficulty
+    assert.equal(x.primary.route.uncharted, true)
+    assert.equal(x.primary.bandName, 'across the galaxy')
+    assert.ok(d.offUpgrades >= 1)
+    assert.equal(d.unchartedUpgrades, 1)
+    assert.ok(d.pool.red >= 2, `red ${d.pool.red}`)
   })
-  it('11. a Core planet on no lane (Vardos) - Coruscant: off-lane leg to the nearest lane planet', () => {
+  it('11. Vardos (no lane) - Coruscant: short off-lane drop onto the lane beside it, not the 12-stop trek', () => {
     const x = by(11)
+    const r = x.primary.route
     assert.equal(graph.nodes.find(n => n.name === 'Vardos')!.on_lane, false)
-    assert.ok(x.route.legs.some(l => l.kind === 'off'))
-    assert.ok(x.route.share.off > 0)
+    const offs = r.legs.filter(l => l.kind === 'off')
+    assert.equal(offs.length, 1)
+    assert.ok(r.share.off < 0.1, `off ${r.share.off}`)
+    assert.ok(r.stops.length <= 5, names(11))
+    assert.ok(r.stops.some(s => s.dropoff))
+    console.log(`  [11] ${Math.round(r.lengthPx)} px, off ${Math.round(r.share.off * 1000) / 10}%: ${names(11)}`)
+  })
+  it('12. Coruscant - Aargau: >= 80% major, a short off-lane leg, no trek via other planets', () => {
+    const x = by(12)
+    const r = x.primary.route
+    console.log(`  [12] Aargau on_lane=${graph.nodes.find(n => n.name === 'Aargau')!.on_lane}; ${names(12)}; major ${Math.round(r.share.major * 100)}% off ${Math.round(r.share.off * 100)}%`)
+    assert.ok(r.share.major >= 0.8, `major ${r.share.major}`)
+    assert.ok(r.share.off > 0 && r.share.off < 0.25, `off ${r.share.off}`)
+    assert.ok(r.stops.length <= 4, names(12))
+  })
+  it('12b. Coruscant - Aargau = Easy (1 purple, 0 red)', () => {
+    const d = by(12).primary.difficulty
+    assert.equal(d.difficulty, 'Easy')
+    assert.deepEqual(d.pool, { purple: 1, red: 0 })
   })
 })

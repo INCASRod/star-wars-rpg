@@ -6,24 +6,29 @@ export const CONFIG = {
   /** Lane cost per pixel of edge length. Lanes first: this only matters after off-lane distance is minimised. */
   laneWeight: { major: 1, minor: 3 },
 
-  /** Difficulty (brief, update 2). Raw = base + lane term + distance term + uncharted term. */
+  /** Drop-off: an endpoint on no lane leaves the nearest K lane edges at the closest point on each (Dijkstra picks one). */
+  dropoffEdges: 3,
+
+  /** When the lanes-only route is at least this many times the straight-line distance, a direct (risky) jump is also offered. */
+  shortcutRatio: 3,
+
+  /**
+   * Route sets DIFFICULTY (purple), risk sets UPGRADES (red). Difficulty = base + minorLane + distance; off-lane legs add no difficulty.
+   * An upgrade turns a purple die red; with no purple die left it adds one instead (AoE "Upgrading More Dice Than Available").
+   */
   difficulty: {
     base: 0,
-    lane: {
-      allMajor: 0,
-      anyMinor: 1,
-      offUnderQuarter: 2,
-      offQuarterToTwoThirds: 3,
-      offOverTwoThirds: 4,
-    },
-    /** off-lane share thresholds (of route length) */
-    offQuarter: 0.25,
-    offTwoThirds: 2 / 3,
+    /** +1 if any leg is on a minor lane */
+    minorLane: 1,
     /** +0 within sector, +1 within region, +2 between regions, +3 across the galaxy */
     distance: [0, 1, 2, 3],
+    /** off-lane share of route length: any up to offQuarter, up to offTwoThirds, above that */
+    offQuarter: 0.25,
+    offTwoThirds: 2 / 3,
+    offUpgrades: { underQuarter: 1, quarterToTwoThirds: 2, overTwoThirds: 3 },
     /** an endpoint that is a pin (uncharted) */
-    uncharted: 2,
-    /** raw 0..5 name the difficulty; above this, the excess becomes upgrades (no cap) */
+    unchartedUpgrades: 1,
+    /** difficulty above this count becomes upgrades instead (no cap) */
     formidableAt: 5,
     names: ['Simple', 'Easy', 'Average', 'Hard', 'Daunting', 'Formidable'],
   },
