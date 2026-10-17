@@ -1,7 +1,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
-import { difficulty, plan, bandOf, CONFIG } from './index'
-import type { Endpoint, Graph, Hazard, RouteResult } from './types'
+import { difficulty, plan, bandOf, CONFIG } from '../../../../src/lib/astrogation'
+import type { Endpoint, Graph, Hazard, RouteResult } from '../../../../src/lib/astrogation/types'
 
 const DATA = path.resolve(__dirname, '..', '..', '..', '..', 'data', 'astrogation')
 
