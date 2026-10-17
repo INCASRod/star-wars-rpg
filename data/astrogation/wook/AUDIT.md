@@ -6,14 +6,14 @@ Positions: the DK named planets (`systems.json`, precision "dot"). Nothing else 
 **Deviation from the prompt:** the category "Hyperspace routes" does not exist on Wookieepedia. The crawl used `Hyperlanes`, `Super-hyperroutes` and `Hyperlanes by region` plus every subcategory (depth 3): 33 categories, 389 articles.
 
 ## Routes
-- Articles / routes found: 389 (canon 124, Legends 265, unflagged 0)
-- With an infobox: 351; lead/section links only: 38
-- Routes with >= 2 matched stops: 163 (canon 72, Legends 91)
-- Matched stops per route: min 0, median 1, max 30; over routes with >= 2: min 2, median 3, max 30
-- Stop provenance (matched stops): infobox 776, lead 52, section 12; matched by display 449, title 391
+- Articles found: 389 (canon 124, Legends 265); distinct routes after canon-first selection: 310
+- Edition used among routes with >= 2 matched stops: canon 79, Legends 44
+- Routes with >= 2 matched stops: 123
+- Matched stops per route: min 0, median 1.0, max 31; over routes with >= 2: min 2, median 3, max 31
+- Stop provenance (matched stops): infobox 558, lead 49, section 11; matched by display 191, title+suffix 49, display+suffix 11, title 367
 
 ## DK planets on a route
-- On at least one route: 342 of 704 (49%). On none: 362.
+- On at least one route: 336 of 704 (48%). On none: 368.
 
 ## Seed check (`private/major_routes_wookieepedia.json`, the five majors)
 
@@ -22,26 +22,19 @@ The seed lists stops from the 6,752-system JSON; only 704 of those worlds have a
 | Route | Edition | Stops now | Seed stops | In both | Seed stop WITH a DK dot, not matched | Seed stop with no DK dot |
 |---|---|---|---|---|---|---|
 | Perlemian Trade Route | canon | 13 | 17 | 5 | Brentaal, Carida, Corulag, Ossus | 8 |
-| Perlemian Trade Route | legends | 15 | 17 | 6 | Brentaal, Carida, Felucia | 8 |
 | Corellian Run | canon | 16 | 45 | 13 | Arkanis, Wrea | 30 |
-| Corellian Run | legends | 17 | 45 | 13 | Allanteen, Tinnel | 30 |
 | Corellian Trade Spine | canon | 17 | 8 | 4 | Devaron | 3 |
-| Corellian Trade Spine | legends | 11 | 8 | 4 | Devaron | 3 |
 | Rimma Trade Route | canon | 13 | 6 | 3 | Abregado, Dagobah | 1 |
-| Rimma Trade Route | legends | 12 | 6 | 2 | Abregado, Dagobah, Kal'Shebbol | 1 |
-| Hydian Way | canon | 30 | 17 | 7 | Brentaal, Derra, Imynusoph, Polis Massa, Rendili, Subterrel, Taris | 3 |
-| Hydian Way | legends | 23 | 17 | 9 | Brentaal, Derra, Polis Massa, Rendili, Subterrel | 3 |
+| Hydian Way | canon | 31 | 17 | 8 | Brentaal, Derra, Polis Massa, Rendili, Subterrel, Taris | 3 |
 
 ## Unmatched Wookieepedia names (top 50 by number of routes naming them)
 
-Infobox stop fields only (endpoints, transitpoints, otherobjects, stellar): 1429 distinct unmatched names. Counting lead and section links as well there are 2737, but those are mostly generic links ("planet", "hyperspace route", region names), so they are not ranked.
+Infobox stop fields only (endpoints, transitpoints, otherobjects, stellar): 1375 distinct unmatched names. Counting lead and section links as well there are 2644, but those are mostly generic links ("planet", "hyperspace route", region names), so they are not ranked.
 
 | Routes | Name |
 |---|---|
 | 4 | Feriae Junction/Legends |
 | 4 | Etti IV/Legends |
-| 4 | Dac/Legends |
-| 4 | Coruscant system |
 | 4 | Abregado-rae/Legends |
 | 3 | Xorth |
 | 3 | Vergill system/Legends |
@@ -49,7 +42,6 @@ Infobox stop fields only (endpoints, transitpoints, otherobjects, stellar): 1429
 | 3 | Tallaan |
 | 3 | Metellos/Legends |
 | 3 | Maw Nebulae |
-| 3 | Korriban/Legends |
 | 3 | Kassido |
 | 3 | Junkfort system |
 | 3 | Junkfort Station |
@@ -59,7 +51,6 @@ Infobox stop fields only (endpoints, transitpoints, otherobjects, stellar): 1429
 | 3 | Dravione |
 | 3 | Derellium |
 | 3 | Darkknell/Legends |
-| 3 | Clak'dor VII/Legends |
 | 3 | Cerea/Legends |
 | 3 | Cerea |
 | 3 | Caluula/Legends |
@@ -88,40 +79,45 @@ Infobox stop fields only (endpoints, transitpoints, otherobjects, stellar): 1429
 | 2 | Torina |
 | 2 | Tinallis |
 | 2 | Tierell |
+| 2 | Teth/Legends |
+| 2 | Teth |
+| 2 | Terr'skiar |
+| 2 | Tenupe |
 
-## Near-misses (NOT applied)
+## Suffix rule (C2 decision 1)
 
-Infobox targets that equal a DK name once `/Legends`, ` system`, ` (planet)` or ` (system)` is stripped. The prompt allows exact or redirect matches only, so none of these are in `routes.json`. 41 DK planets would gain 49 route memberships if Rodrigo approves a suffix rule. Examples: Bardotta, Borleias, Botor, Byblos, Chardaan, Coruscant, Daalang, Dantooine, Dressel, Duro, Empress Teta, Eriadu, Farstine, Giju, Imynusoph, Kashyyyk, Kessel, Kitel Phard, Lannik, Leritor, Malachor, Malastare, N'zoth, Nexus Ortai, Obroa-skai, Oseon, Rishi, Rorak, Rothana, Saleucami, Sharlissia, Skynara, Svivren, Taanab, Tangrene, Trellen, Umbara, Virgillia, Vondarc, Zardossa Stix.
+Stripping `/Legends`, ` system`, ` (planet)`, ` (system)` before the exact/redirect match added 60 stop memberships on 50 DK planets in the selected routes. Examples: Mon Cala (4), Moraband (3), Oseon (3), Chandrila (2), Clak'dor (2), Coruscant (2), Anoat (1), Bespin (1), Leritor (1), Nexus Ortai (1), Dressel (1), Lannik (1), Tangrene (1), Abregado (1), Malastare (1), Vondarc (1), Farstine (1), Skynara (1), Svivren (1), Rorak (1), Kitel Phard (1), Zardossa Stix (1), Bardotta (1), Giju (1), Kashyyyk (1).
 
 ## Suspicious hops (> 600 px between consecutive ordered stops)
 
-8 routes:
+9 routes:
 
 - Overic Griplink (canon, 4 stops): Coruscant to Quermia 1295 px
+- Unidentified hyperlane (canon, 2 stops): Eiram to Hetzal 1235 px
+- Daragon Trail (legends, 2 stops): Empress Teta to Moraband 1170 px
 - Kessel Run (canon, 3 stops): Savareen to Kessel 1058 px
 - Rycar's Run (legends, 5 stops): Kashyyyk to Kiffex 915 px; Kiffex to Tatooine 943 px
-- Askar Trace (legends, 4 stops): Utapau to Leritor 868 px
+- Askar Trace (legends, 5 stops): Utapau to Leritor 868 px
 - Sanctuary Pipeline (canon, 2 stops): Endor to Sullust 742 px
-- Sanctuary Pipeline (legends, 2 stops): Endor to Sullust 742 px
 - Silvestri Trace (legends, 2 stops): Sullust to Endor 742 px
 - Burke's Trailing (canon, 4 stops): Ord Mantell to Jedha 701 px
 
 ## Connectivity (all routes, canon + Legends)
-- Edges: 591 (157 on majors). Planets with a lane: 328. Components: 3; largest 323 planets (98% of planets with a lane); next [3, 2].
+- Edges: 423 (85 on majors). Planets with a lane: 321. Components: 5; largest 311 planets (97% of planets with a lane); next [3, 3, 2, 2].
 
 | Pair | Connected | Hops (major hops) | Routes used |
 |---|---|---|---|
 | Coruscant - Corellia | yes | 1 (1) | Corellian Run |
-| Coruscant - Fedalle | yes | 7 (7) | Corellian Run, Hydian Way |
-| Coruscant - Ord Mantell | yes | 16 (13) | Corellian Run, Hydian Way, Braxant Run, Celanon Spur |
-| Ryloth - Arkanis | yes | 1 (1) | Corellian Run |
-| Kessel - Formos | yes | 1 (0) | Kessel Run |
+| Coruscant - Fedalle | yes | 11 (11) | Corellian Run, Hydian Way |
+| Coruscant - Ord Mantell | yes | 24 (21) | Corellian Run, Hydian Way, Celanon Spur |
+| Ryloth - Arkanis | yes | 2 (1) | Corellian Run, Old Corellian Run |
+| Kessel - Formos | yes | 2 (0) | Pabol Sleheyron |
 | Ryloth - Tatooine | yes | 1 (0) | Corellian Skip Run |
 
 Rodrigo's checks (what the data says, nothing forced):
 - Coruscant - Corellia: 1 hop(s), 1 on a major, 100% major; via Coruscant > Corellia; routes Corellian Run.
-- Coruscant - Fedalle: 7 hop(s), 7 on a major, 100% major; via Coruscant > Corellia > Nubia > Loronar > Byblos > Denon > Exodeen > Fedalle; routes Corellian Run, Hydian Way.
-- Coruscant - Ord Mantell: 16 hop(s), 13 on a major, 81% major; via Coruscant > Corellia > Nubia > Loronar > Byblos > Denon > Exodeen > Fedalle > Skako > Uviuy Exen > Bogden > Corsin > Otor's Hub > Bandomeer > Agamar > Ithor > Ord Mantell; routes Corellian Run, Hydian Way, Braxant Run, Celanon Spur.
-- Ryloth - Arkanis: 1 hop(s), 1 on a major, 100% major; via Ryloth > Arkanis; routes Corellian Run.
-- Kessel - Formos: 1 hop(s), 0 on a major, 0% major; via Kessel > Formos; routes Kessel Run.
+- Coruscant - Fedalle: 11 hop(s), 11 on a major, 100% major; via Coruscant > Corellia > Tinnel > Loronar > Byblos > Abednedo > Denon > Candovant > Korbori > Suntilla > Exodeen > Fedalle; routes Corellian Run, Hydian Way.
+- Coruscant - Ord Mantell: 24 hop(s), 21 on a major, 87% major; via Coruscant > Corellia > Tinnel > Loronar > Byblos > Abednedo > Denon > Candovant > Korbori > Suntilla > Exodeen > Fedalle > Skako > Uviuy Exen > Hevurion > Bogden > Mikkia > Corsin > Otor's Hub > Bandomeer > Botajef > Celanon > Ajan Kloss > Aleen > Ord Mantell; routes Corellian Run, Hydian Way, Celanon Spur.
+- Ryloth - Arkanis: 2 hop(s), 1 on a major, 50% major; via Ryloth > Christophsis > Arkanis; routes Corellian Run, Old Corellian Run.
+- Kessel - Formos: 2 hop(s), 0 on a major, 0% major; via Kessel > Honoghr > Formos; routes Pabol Sleheyron.
 - Ryloth - Tatooine: 1 hop(s), 0 on a major, 0% major; via Ryloth > Tatooine; routes Corellian Skip Run.

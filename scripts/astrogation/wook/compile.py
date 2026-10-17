@@ -7,10 +7,13 @@
   match     stop name -> DK named planet (systems.json, precision "dot"). EXACT or ALIAS only, no fuzzy matching:
               title    the link target and the DK name are the same Wookieepedia page (after redirects)
               display  the link's display text equals the DK name exactly
+            Before either test the suffixes "/Legends", " system", " (planet)", " (system)" are stripped from the Wookieepedia name too (C2, Rodrigo's
+            decision 1): the exact form is tried first, the stripped form second. Still no fuzzy matching.
             An ambiguous DK name (two dots) is never matched. Everything unmatched is listed.
+  select    ONE route per name (C2 decision 2): the canon article when it has >= 2 matched stops, otherwise the Legends article; edition_used is recorded.
   order     nearest-neighbour chain from one extreme end through the matched stops' DK pixel coordinates, then 2-opt on the open path.
   class     the five majors (Perlemian, Corellian Run, Corellian Trade Spine, Rimma, Hydian Way) = major, all else minor.
-Writes data/astrogation/wook/{routes.json, AUDIT.md, preview.png, aliases.json}.
+Writes data/astrogation/wook/{routes.json, graph.json, AUDIT.md, preview.png, aliases.json}.
 """
 import collections
 import heapq
@@ -200,7 +203,20 @@ def main():
         if n.endswith(', The'):
             v.append('The ' + n[:-5])
         return v
-    want = {t for a in arts for t, _, _ in a['raw_stops']} | {v for n in dk_names for v in dk_title_variants(n)}
+    SUFFIXES = ('/Legends', ' system', ' (planet)', ' (system)')
+
+    def strip_suffix(t):
+        for suf in SUFFIXES:
+            if t.endswith(suf):
+                return t[:-len(suf)]
+        return t
+
+    def forms(t):
+        """the exact name first, then its suffix-stripped form (when different)"""
+        u = strip_suffix(t)
+        return [(t, 'exact')] + ([(u, 'suffix')] if u != t else [])
+
+    want = {f for a in arts for t, d, _ in a['raw_stops'] for x in (t, d) for f, _ in forms(x)} | {v for n in dk_names for v in dk_title_variants(n)}
     print(len(want), 'titles to resolve')
     canon = resolve(sorted(want), os.path.join(WOOK, 'aliases.json'))
     dk_by_canon = collections.defaultdict(set)
@@ -211,25 +227,30 @@ def main():
                 dk_by_canon[c].add(n)
 
     def match(target, display):
-        """-> (DK name or None, kind or reason)"""
-        c = canon.get(target)
-        names = set()
-        kind = None
-        if c and c in dk_by_canon:
-            names, kind = dk_by_canon[c], 'title'
-        elif display in dk_names:
-            names, kind = {display}, 'display'
-        if not names:
-            return None, 'no DK planet'
-        if len(names) > 1:
-            return None, 'ambiguous name'
-        n = next(iter(names))
-        if len(dk_names[n]) > 1:
-            return None, 'two DK dots share the name'
-        return n, kind
+        """-> (DK name or None, kind or reason). Per form (exact, then suffix-stripped): same page after redirects ('title'), else display text equals
+        the DK name ('display'). The kind carries '+suffix' when the stripped form was needed."""
+        reason = 'no DK planet'
+        for (tt, how), (dd, _) in zip(forms(target), forms(display) if len(forms(display)) == len(forms(target)) else [(display, 'exact')] * len(forms(target))):
+            c = canon.get(tt)
+            names, kind = set(), None
+            if c and c in dk_by_canon:
+                names, kind = dk_by_canon[c], 'title'
+            elif dd in dk_names:
+                names, kind = {dd}, 'display'
+            if not names:
+                continue
+            if len(names) > 1:
+                reason = 'ambiguous name'
+                continue
+            n = next(iter(names))
+            if len(dk_names[n]) > 1:
+                reason = 'two DK dots share the name'
+                continue
+            return n, kind + ('+suffix' if how == 'suffix' else '')
+        return None, reason
 
     # ---- build routes
-    routes, unmatched, unmatched_ib = [], collections.defaultdict(set), collections.defaultdict(set)
+    routes_all, unmatched, unmatched_ib = [], collections.defaultdict(set), collections.defaultdict(set)
     for a in arts:
         seen, stops = set(), []
         for t, d, src in a['raw_stops']:
@@ -247,14 +268,30 @@ def main():
         order = order_stops([s['px'] for s in stops]) if len(stops) >= 2 else list(range(len(stops)))
         ordered = [stops[k] for k in order]
         hops = [float(np.hypot(*(np.array(ordered[k]['px']) - np.array(ordered[k + 1]['px'])))) for k in range(len(ordered) - 1)]
-        routes.append({'route': a['route'], 'title': a['title'], 'edition': a['edition'], 'class': 'major' if a['route'] in MAJORS else 'minor',
+        routes_all.append({'route': a['route'], 'title': a['title'], 'edition': a['edition'], 'class': 'major' if a['route'] in MAJORS else 'minor',
                        'matched_stops': len(ordered), 'stops': [{k: v for k, v in s.items() if k != 'px'} | {'px': [round(v, 1) for v in s['px']]} for s in ordered],
                        'unmatched': sorted({t for t, d, _ in a['raw_stops'] if match(t, d)[0] is None}),
                        'hops_px': [round(h, 1) for h in hops], 'max_hop_px': round(max(hops), 1) if hops else 0.0,
                        'suspicious_long_hops': [{'from': ordered[k]['name'], 'to': ordered[k + 1]['name'], 'px': round(h, 1)} for k, h in enumerate(hops) if h > LONG_HOP_PX],
                        'has_infobox': a['has_infobox'], 'source_url': a['url'], 'revision_id': a['revid'], 'revision_timestamp': a['timestamp'], 'licence': 'CC BY-SA 3.0'})
+    # ---- canon first, Legends fills gaps: each route appears ONCE
+    by_name = collections.defaultdict(dict)
+    for r in routes_all:
+        by_name[r['route']][r['edition']] = r
+    routes = []
+    for name, eds in by_name.items():
+        canon_r, leg_r = eds.get('canon'), eds.get('legends')
+        if canon_r and canon_r['matched_stops'] >= 2:
+            used, why = canon_r, 'canon has >= 2 matched stops'
+        elif leg_r and leg_r['matched_stops'] >= 2:
+            used, why = leg_r, ('canon article has %d matched stops' % canon_r['matched_stops'] if canon_r else 'Legends-only route')
+        else:
+            used, why = (canon_r or leg_r), 'neither edition has >= 2 matched stops'
+        routes.append({**used, 'edition_used': used['edition'], 'edition_reason': why, 'editions_available': sorted(eds),
+                       'canon_matched_stops': canon_r['matched_stops'] if canon_r else None, 'legends_matched_stops': leg_r['matched_stops'] if leg_r else None})
+    routes.sort(key=lambda r: r['route'])
     json.dump({'meta': {'generated_from': 'data/astrogation/wook/raw (Wookieepedia, CC BY-SA 3.0; see raw/SOURCES.md)', 'dk_planets': len(dk),
-                        'majors': MAJORS, 'long_hop_px': LONG_HOP_PX}, 'routes': routes},
+                        'majors': MAJORS, 'long_hop_px': LONG_HOP_PX, 'rule': 'one route per name; canon article if >= 2 matched stops, else Legends'}, 'routes': routes},
               open(os.path.join(WOOK, 'routes.json'), 'w', encoding='utf-8'), indent=1, ensure_ascii=False)
 
     # ---- seed check: the five majors vs private/major_routes_wookieepedia.json
@@ -278,6 +315,16 @@ def main():
                 E.append((r['stops'][k]['id'], r['stops'][k + 1]['id'], r['class'], r['route'], r['edition']))
         return E
     E = edge_list(routes)
+    ly_per_px = json.load(open(os.path.join(ROOT, 'data', 'astrogation', 'regions.json'), encoding='utf-8'))['meta']['ly_per_px']
+    pxy = {s['id']: (s['px'], s['py']) for s in dk}
+    on_ids = {n for e in E for n in e[:2]}
+    graph = {'meta': {'units': 'x, y are DK map pixels (4000x4000); gx, gy are galactic light-years (Coruscant = 0, 0); length_px is in pixels',
+                      'ly_per_px': ly_per_px, 'source': 'routes.json (Wookieepedia, CC BY-SA 3.0) over the DK named planets', 'rule': 'one route per name, canon first'},
+             'nodes': [{'id': s['id'], 'name': s['name'], 'x': s['px'], 'y': s['py'], 'gx': s['x'], 'gy': s['y'], 'region': s['region'], 'sector': s['sector'],
+                        'on_lane': s['id'] in on_ids} for s in dk],
+             'edges': [{'a': a, 'b': b, 'route': rn, 'class': cl, 'length_px': round(float(np.hypot(pxy[a][0] - pxy[b][0], pxy[a][1] - pxy[b][1])), 1)}
+                       for a, b, cl, rn, ed in E]}
+    json.dump(graph, open(os.path.join(WOOK, 'graph.json'), 'w', encoding='utf-8'), indent=0, ensure_ascii=False)
     adj = collections.defaultdict(list)
     for a, b, cl, rn, ed in E:
         adj[a].append((b, cl, rn))
@@ -334,7 +381,8 @@ def main():
             pair_rows.append((a, b, {'hops': len(p), 'major_hops': mj, 'routes': list(dict.fromkeys(e[3] for e in p)), 'via': [id2name[e[1]] for e in p]}))
 
     # ---- stats
-    ed_count = collections.Counter(r['edition'] for r in routes)
+    ed_count = collections.Counter(r['edition'] for r in routes_all)
+    used_count = collections.Counter(r['edition_used'] for r in routes if r['matched_stops'] >= 2)
     ge2 = [r for r in routes if r['matched_stops'] >= 2]
     st = [r['matched_stops'] for r in routes]
     on = {s['id'] for r in routes for s in r['stops']}
@@ -350,9 +398,9 @@ def main():
          '**Deviation from the prompt:** the category "Hyperspace routes" does not exist on Wookieepedia. The crawl used `Hyperlanes`, `Super-hyperroutes` and '
          '`Hyperlanes by region` plus every subcategory (depth 3): 33 categories, 389 articles.', '',
          '## Routes',
-         f"- Articles / routes found: {len(routes)} (canon {ed_count['canon']}, Legends {ed_count['legends']}, unflagged {ed_count['unflagged']})",
-         f"- With an infobox: {sum(r['has_infobox'] for r in routes)}; lead/section links only: {sum(not r['has_infobox'] for r in routes)}",
-         f"- Routes with >= 2 matched stops: {len(ge2)} (canon {sum(r['edition'] == 'canon' for r in ge2)}, Legends {sum(r['edition'] == 'legends' for r in ge2)})",
+         f"- Articles found: {len(routes_all)} (canon {ed_count['canon']}, Legends {ed_count['legends']}); distinct routes after canon-first selection: {len(routes)}",
+         f"- Edition used among routes with >= 2 matched stops: canon {used_count['canon']}, Legends {used_count['legends']}",
+         f"- Routes with >= 2 matched stops: {len(ge2)}",
          f"- Matched stops per route: min {min(st)}, median {statistics.median(st)}, max {max(st)}; over routes with >= 2: min {min(r['matched_stops'] for r in ge2)}, median {statistics.median(r['matched_stops'] for r in ge2)}, max {max(r['matched_stops'] for r in ge2)}",
          f"- Stop provenance (matched stops): " + ', '.join(f'{k} {v}' for k, v in stop_src.most_common()) + '; matched by ' + ', '.join(f'{k} {v}' for k, v in matched_by.items()),
          '', '## DK planets on a route',
@@ -367,21 +415,10 @@ def main():
           f'Counting lead and section links as well there are {len(unmatched)}, but those are mostly generic links ("planet", "hyperspace route", region names), so they are not ranked.', '',
           '| Routes | Name |', '|---|---|']
     L += [f'| {n} | {t} |' for n, t in un_rank]
-    # near-misses: NOT applied (the rule is exact or alias only). A target that equals a DK name once a suffix is stripped.
-    def stripped(t):
-        for suf in ('/Legends', ' system', ' (planet)', ' (system)', ' sector'):
-            if t.endswith(suf):
-                t = t[:-len(suf)]
-        return t
-    near = collections.defaultdict(set)
-    for t, rts in unmatched_ib.items():
-        u = stripped(t)
-        if u != t and u in dk_names and len(dk_names[u]) == 1:
-            near[u] |= rts
-    pl_total = len({(r, u) for u, rts in near.items() for r in rts})
-    L += ['', '## Near-misses (NOT applied)', '',
-          'Infobox targets that equal a DK name once `/Legends`, ` system`, ` (planet)` or ` (system)` is stripped. The prompt allows exact or redirect matches only, so none of these are in `routes.json`. '
-          f'{len(near)} DK planets would gain {pl_total} route memberships if Rodrigo approves a suffix rule. Examples: ' + ', '.join(sorted(near)[:40]) + '.']
+    gained = collections.Counter(s['name'] for r in routes for s in r['stops'] if s['matched_by'].endswith('+suffix'))
+    L += ['', '## Suffix rule (C2 decision 1)', '',
+          f"Stripping `/Legends`, ` system`, ` (planet)`, ` (system)` before the exact/redirect match added {sum(gained.values())} stop memberships on {len(gained)} DK planets "
+          f"in the selected routes. Examples: " + ', '.join(f'{n} ({c})' for n, c in gained.most_common(25)) + '.']
     L += ['', f'## Suspicious hops (> {LONG_HOP_PX} px between consecutive ordered stops)', '', f'{len(sus)} routes:', '']
     for r in sorted(sus, key=lambda r: -r['max_hop_px']):
         L.append(f"- {r['route']} ({r['edition']}, {r['matched_stops']} stops): " + '; '.join(f"{h['from']} to {h['to']} {h['px']:.0f} px" for h in r['suspicious_long_hops']))

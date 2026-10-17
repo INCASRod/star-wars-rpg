@@ -1,0 +1,10717 @@
+{
+"meta": {
+"units": "x, y are DK map pixels (4000x4000); gx, gy are galactic light-years (Coruscant = 0, 0); length_px is in pixels",
+"ly_per_px": 34.3441,
+"source": "routes.json (Wookieepedia, CC BY-SA 3.0) over the DK named planets",
+"rule": "one route per name, canon first"
+},
+"nodes": [
+{
+"id": "aakaash-m-5",
+"name": "Aakaash",
+"x": 2085.1,
+"y": 1381.5,
+"gx": 5462.1,
+"gy": 23431.6,
+"region": "Outer Rim Territories",
+"sector": "Oplovis",
+"on_lane": false
+},
+{
+"id": "aargau-l-10",
+"name": "Aargau",
+"x": 2002.6,
+"y": 2069.5,
+"gx": 2628.3,
+"gy": -196.0,
+"region": "Core Worlds",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "ab-dalis-r-17",
+"name": "Ab Dalis",
+"x": 2934.0,
+"y": 3197.5,
+"gx": 34616.5,
+"gy": -38937.3,
+"region": "Outer Rim Territories",
+"sector": "Gaulus",
+"on_lane": true
+},
+{
+"id": "abednedo-n-12",
+"name": "Abednedo",
+"x": 2234.4,
+"y": 2495.4,
+"gx": 10589.4,
+"gy": -14822.2,
+"region": "Colonies",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "abregado-k-13",
+"name": "Abregado",
+"x": 1922.5,
+"y": 2529.4,
+"gx": -121.4,
+"gy": -15990.1,
+"region": "Core Worlds",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "actlyon-k-19",
+"name": "Actlyon",
+"x": 1887.4,
+"y": 3399.3,
+"gx": -1326.8,
+"gy": -45866.1,
+"region": "Outer Rim Territories",
+"sector": "Jjannex",
+"on_lane": true
+},
+{
+"id": "adelphi-p-17",
+"name": "Adelphi",
+"x": 2651.0,
+"y": 3158.4,
+"gx": 24896.7,
+"gy": -37593.4,
+"region": "Outer Rim Territories",
+"sector": "Kibilini",
+"on_lane": false
+},
+{
+"id": "aduba-u-11",
+"name": "Aduba",
+"x": 3292.7,
+"y": 2234.5,
+"gx": 46938.2,
+"gy": -5862.8,
+"region": "Outer Rim Territories",
+"sector": "Bheriz",
+"on_lane": true
+},
+{
+"id": "adumar-j-6",
+"name": "Adumar",
+"x": 1649.3,
+"y": 1537.1,
+"gx": -9503.2,
+"gy": 18090.2,
+"region": "Wild Space",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "agamar-m-5",
+"name": "Agamar",
+"x": 2138.9,
+"y": 1455.3,
+"gx": 7311.6,
+"gy": 20899.9,
+"region": "Outer Rim Territories",
+"sector": "Lahara",
+"on_lane": true
+},
+{
+"id": "agaris-g-14",
+"name": "Agaris",
+"x": 1308.5,
+"y": 2722.5,
+"gx": -21209.6,
+"gy": -22623.9,
+"region": "Wild Space",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "ahch-to-f-13",
+"name": "Ahch-To",
+"x": 1155.4,
+"y": 2545.7,
+"gx": -26466.7,
+"gy": -16548.9,
+"region": "Unknown Regions",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "ajan-kloss-l-5",
+"name": "Ajan Kloss",
+"x": 2030.2,
+"y": 1468.5,
+"gx": 3576.6,
+"gy": 20446.0,
+"region": "Outer Rim Territories",
+"sector": "Cademimu",
+"on_lane": true
+},
+{
+"id": "akiva-o-6",
+"name": "Akiva",
+"x": 2472.3,
+"y": 1585.3,
+"gx": 18759.2,
+"gy": 16433.0,
+"region": "Outer Rim Territories",
+"sector": "Meerian",
+"on_lane": false
+},
+{
+"id": "aldhani-m-6",
+"name": "Aldhani",
+"x": 2123.1,
+"y": 1521.6,
+"gx": 6768.8,
+"gy": 18621.3,
+"region": "Outer Rim Territories",
+"sector": "Cademimu",
+"on_lane": false
+},
+{
+"id": "aleen-l-7",
+"name": "Aleen",
+"x": 2005.0,
+"y": 1662.1,
+"gx": 2712.4,
+"gy": 13795.2,
+"region": "Mid Rim",
+"sector": "Bright Jewel",
+"on_lane": true
+},
+{
+"id": "allanteen-o-14",
+"name": "Allanteen",
+"x": 2395.7,
+"y": 2667.0,
+"gx": 16128.8,
+"gy": -20716.5,
+"region": "Expansion Region",
+"sector": "Tynna",
+"on_lane": true
+},
+{
+"id": "alpinn-n-4",
+"name": "Alpinn",
+"x": 2283.9,
+"y": 1281.9,
+"gx": 12291.5,
+"gy": 26855.2,
+"region": "Outer Rim Territories",
+"sector": "Kanz",
+"on_lane": true
+},
+{
+"id": "alvadorjia-l-15",
+"name": "Alvadorjia",
+"x": 1945.2,
+"y": 2871.4,
+"gx": 658.7,
+"gy": -27737.1,
+"region": "Expansion Region",
+"sector": "Andirma",
+"on_lane": false
+},
+{
+"id": "amaxine-station-j-19",
+"name": "Amaxine Station",
+"x": 1640.7,
+"y": 3414.6,
+"gx": -9798.6,
+"gy": -46390.9,
+"region": "Outer Rim Territories",
+"sector": "Tunka",
+"on_lane": false
+},
+{
+"id": "anaxes-r-7",
+"name": "Anaxes",
+"x": 2863.4,
+"y": 1666.9,
+"gx": 32191.8,
+"gy": 13631.9,
+"region": "Outer Rim Territories",
+"sector": "Antemeridian",
+"on_lane": true
+},
+{
+"id": "ando-q-15",
+"name": "Ando",
+"x": 2694.7,
+"y": 2936.4,
+"gx": 26399.8,
+"gy": -29969.8,
+"region": "Mid Rim",
+"sector": "Lambda",
+"on_lane": true
+},
+{
+"id": "anoat-k-18",
+"name": "Anoat",
+"x": 1861.7,
+"y": 3326.1,
+"gx": -2210.1,
+"gy": -43354.1,
+"region": "Outer Rim Territories",
+"sector": "Javin (Anoat)",
+"on_lane": true
+},
+{
+"id": "ansion-i-6",
+"name": "Ansion",
+"x": 1625.5,
+"y": 1627.6,
+"gx": -10322.8,
+"gy": 14980.3,
+"region": "Mid Rim",
+"sector": "Churnis",
+"on_lane": true
+},
+{
+"id": "antar-n-12",
+"name": "Antar",
+"x": 2340.5,
+"y": 2372.1,
+"gx": 14234.6,
+"gy": -10588.8,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "anzat-r-7",
+"name": "Anzat",
+"x": 2916.0,
+"y": 1762.2,
+"gx": 33999.0,
+"gy": 10357.1,
+"region": "Mid Rim",
+"sector": "Bryx",
+"on_lane": false
+},
+{
+"id": "anzell-r-7",
+"name": "Anzell",
+"x": 2865.1,
+"y": 1742.4,
+"gx": 32249.6,
+"gy": 11039.3,
+"region": "Mid Rim",
+"sector": "Bryx",
+"on_lane": false
+},
+{
+"id": "aq-vetina-m-4",
+"name": "Aq Vetina",
+"x": 2086.8,
+"y": 1324.0,
+"gx": 5520.2,
+"gy": 25408.3,
+"region": "Outer Rim Territories",
+"sector": "Relgim",
+"on_lane": false
+},
+{
+"id": "arcana-m-5",
+"name": "Arcana",
+"x": 2213.5,
+"y": 1441.3,
+"gx": 9873.1,
+"gy": 21379.3,
+"region": "Outer Rim Territories",
+"sector": "Lahara",
+"on_lane": false
+},
+{
+"id": "ardennia-k-6",
+"name": "Ardennia",
+"x": 1856.0,
+"y": 1509.2,
+"gx": -2405.6,
+"gy": 19048.2,
+"region": "Outer Rim Territories",
+"sector": "Fath",
+"on_lane": true
+},
+{
+"id": "aridus-o-14",
+"name": "Aridus",
+"x": 2460.4,
+"y": 2685.9,
+"gx": 18353.4,
+"gy": -21367.1,
+"region": "Expansion Region",
+"sector": "Narvath",
+"on_lane": true
+},
+{
+"id": "arkanis-r-17",
+"name": "Arkanis",
+"x": 2815.2,
+"y": 3099.9,
+"gx": 30537.3,
+"gy": -35583.1,
+"region": "Outer Rim Territories",
+"sector": "Arkanis",
+"on_lane": true
+},
+{
+"id": "arkax-station-m-14",
+"name": "Arkax Station",
+"x": 2148.7,
+"y": 2782.3,
+"gx": 7645.5,
+"gy": -24675.7,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "arvala-s-15",
+"name": "Arvala",
+"x": 3066.9,
+"y": 2924.3,
+"gx": 39180.6,
+"gy": -29554.6,
+"region": "Outer Rim Territories",
+"sector": "Sevetta",
+"on_lane": false
+},
+{
+"id": "askaj-m-20",
+"name": "Askaj",
+"x": 2106.2,
+"y": 3615.6,
+"gx": 6185.8,
+"gy": -53293.8,
+"region": "Outer Rim Territories",
+"sector": "Cegul",
+"on_lane": false
+},
+{
+"id": "askkto-fen-p-19",
+"name": "Askkto-Fen",
+"x": 2638.8,
+"y": 3523.5,
+"gx": 24477.5,
+"gy": -50131.2,
+"region": "Wild Space",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "at-attin-n-6",
+"name": "At Attin",
+"x": 2346.9,
+"y": 1515.0,
+"gx": 14454.1,
+"gy": 18847.9,
+"region": "Outer Rim Territories",
+"sector": "Quelii",
+"on_lane": false
+},
+{
+"id": "atollon-t-7",
+"name": "Atollon",
+"x": 3229.0,
+"y": 1658.1,
+"gx": 44750.1,
+"gy": 13933.3,
+"region": "Outer Rim Territories",
+"sector": "Lothal",
+"on_lane": true
+},
+{
+"id": "atravis-l-19",
+"name": "Atravis",
+"x": 2025.6,
+"y": 3447.4,
+"gx": 3419.9,
+"gy": -47520.0,
+"region": "Outer Rim Territories",
+"sector": "Atravis",
+"on_lane": true
+},
+{
+"id": "axxila-o-5",
+"name": "Axxila",
+"x": 2384.4,
+"y": 1457.5,
+"gx": 15740.3,
+"gy": 20821.4,
+"region": "Outer Rim Territories",
+"sector": "D'Astan",
+"on_lane": true
+},
+{
+"id": "aynaboni-j-5",
+"name": "Aynaboni",
+"x": 1703.9,
+"y": 1429.4,
+"gx": -7628.7,
+"gy": 21788.9,
+"region": "Outer Rim Territories",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "azum-k-15",
+"name": "Azum",
+"x": 1906.3,
+"y": 2903.4,
+"gx": -678.7,
+"gy": -28834.3,
+"region": "Expansion Region",
+"sector": "Itopol",
+"on_lane": false
+},
+{
+"id": "bajic-p-18",
+"name": "Bajic",
+"x": 2562.3,
+"y": 3246.4,
+"gx": 21850.1,
+"gy": -40614.3,
+"region": "Outer Rim Territories",
+"sector": "Bajic",
+"on_lane": false
+},
+{
+"id": "bakura-g-16",
+"name": "Bakura",
+"x": 1270.3,
+"y": 3046.7,
+"gx": -22521.8,
+"gy": -33755.3,
+"region": "Wild Space",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "bal-demnic-r-7",
+"name": "Bal'demnic",
+"x": 2894.8,
+"y": 1638.8,
+"gx": 33270.5,
+"gy": 14594.4,
+"region": "Outer Rim Territories",
+"sector": "Auril",
+"on_lane": false
+},
+{
+"id": "balagash-o-9",
+"name": "Balagash",
+"x": 2422.7,
+"y": 1960.3,
+"gx": 17058.3,
+"gy": 3555.8,
+"region": "Expansion Region",
+"sector": "Hali",
+"on_lane": false
+},
+{
+"id": "balosar-l-12",
+"name": "Balosar",
+"x": 2033.8,
+"y": 2436.8,
+"gx": 3702.1,
+"gy": -12809.2,
+"region": "Core Worlds",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "banchii-k-19",
+"name": "Banchii",
+"x": 1877.9,
+"y": 3421.2,
+"gx": -1653.1,
+"gy": -46620.5,
+"region": "Outer Rim Territories",
+"sector": "Jjannex",
+"on_lane": false
+},
+{
+"id": "bandomeer-o-6",
+"name": "Bandomeer",
+"x": 2392.9,
+"y": 1595.9,
+"gx": 16032.9,
+"gy": 16070.3,
+"region": "Outer Rim Territories",
+"sector": "Meerian",
+"on_lane": true
+},
+{
+"id": "banfoden-prime-l-16",
+"name": "Banfoden Prime",
+"x": 2036.5,
+"y": 3011.6,
+"gx": 3793.3,
+"gy": -32552.6,
+"region": "Expansion Region",
+"sector": "Alchenaut",
+"on_lane": false
+},
+{
+"id": "bantoo-q-19",
+"name": "Bantoo",
+"x": 2692.4,
+"y": 3480.3,
+"gx": 26321.1,
+"gy": -48649.7,
+"region": "Outer Rim Territories",
+"sector": "Samix",
+"on_lane": false
+},
+{
+"id": "bar-leth-m-10",
+"name": "Bar'leth",
+"x": 2100.0,
+"y": 2169.4,
+"gx": 5974.0,
+"gy": -3626.3,
+"region": "Core Worlds",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "barab-u-12",
+"name": "Barab",
+"x": 3246.6,
+"y": 2498.0,
+"gx": 45351.9,
+"gy": -14911.7,
+"region": "Outer Rim Territories",
+"sector": "Albanin",
+"on_lane": true
+},
+{
+"id": "barabesh-i-16",
+"name": "Barabesh",
+"x": 1568.5,
+"y": 2952.5,
+"gx": -12279.9,
+"gy": -30520.4,
+"region": "Mid Rim",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "bardotta-k-13",
+"name": "Bardotta",
+"x": 1774.3,
+"y": 2535.1,
+"gx": -5212.8,
+"gy": -16186.4,
+"region": "Colonies",
+"sector": "Shasos",
+"on_lane": true
+},
+{
+"id": "barnahof-s-14",
+"name": "Barnahof",
+"x": 3054.8,
+"y": 2701.1,
+"gx": 38766.3,
+"gy": -21888.3,
+"region": "Outer Rim Territories",
+"sector": "Yminis",
+"on_lane": false
+},
+{
+"id": "baroonda-t-9",
+"name": "Baroonda",
+"x": 3187.6,
+"y": 1995.7,
+"gx": 43325.5,
+"gy": 2337.7,
+"region": "Outer Rim Territories",
+"sector": "Calaron",
+"on_lane": false
+},
+{
+"id": "bartokan-n-19",
+"name": "Bartokan",
+"x": 2353.7,
+"y": 3395.0,
+"gx": 14688.9,
+"gy": -45717.6,
+"region": "Outer Rim Territories",
+"sector": "Tamarin",
+"on_lane": false
+},
+{
+"id": "barton-s-5",
+"name": "Barton",
+"x": 3059.1,
+"y": 1348.0,
+"gx": 38913.8,
+"gy": 24583.0,
+"region": "Outer Rim Territories",
+"sector": "Colundra",
+"on_lane": false
+},
+{
+"id": "basteel-p-3",
+"name": "Basteel",
+"x": 2641.7,
+"y": 1182.3,
+"gx": 24578.9,
+"gy": 30275.8,
+"region": "Outer Rim Territories",
+"sector": "Corva",
+"on_lane": false
+},
+{
+"id": "bastion-k-3",
+"name": "Bastion",
+"x": 1797.1,
+"y": 1121.9,
+"gx": -4428.5,
+"gy": 32348.0,
+"region": "Outer Rim Territories",
+"sector": "Braxant",
+"on_lane": true
+},
+{
+"id": "batuu-g-15",
+"name": "Batuu",
+"x": 1332.9,
+"y": 2898.5,
+"gx": -20369.3,
+"gy": -28667.9,
+"region": "Outer Rim Territories",
+"sector": "Trilon",
+"on_lane": true
+},
+{
+"id": "bavana-r-5",
+"name": "Bavana",
+"x": 2854.6,
+"y": 1418.4,
+"gx": 31891.5,
+"gy": 22164.0,
+"region": "Outer Rim Territories",
+"sector": "Sertar",
+"on_lane": false
+},
+{
+"id": "belladoon-k-3",
+"name": "Belladoon",
+"x": 1888.3,
+"y": 1178.5,
+"gx": -1294.9,
+"gy": 30403.2,
+"region": "Outer Rim Territories",
+"sector": "Myto",
+"on_lane": true
+},
+{
+"id": "belsavis-l-18",
+"name": "Belsavis",
+"x": 1987.4,
+"y": 3262.4,
+"gx": 2106.4,
+"gy": -41164.1,
+"region": "Outer Rim Territories",
+"sector": "Bozhnee",
+"on_lane": true
+},
+{
+"id": "beltire-j-17",
+"name": "Beltire",
+"x": 1680.5,
+"y": 3101.6,
+"gx": -8434.4,
+"gy": -35642.4,
+"region": "Mid Rim",
+"sector": "Narrant",
+"on_lane": true
+},
+{
+"id": "berzite-u-8",
+"name": "Berzite",
+"x": 3300.6,
+"y": 1788.5,
+"gx": 47207.9,
+"gy": 9454.0,
+"region": "Wild Space",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "bescane-k-3",
+"name": "Bescane",
+"x": 1793.1,
+"y": 1173.6,
+"gx": -4565.6,
+"gy": 30573.8,
+"region": "Outer Rim Territories",
+"sector": "Obtrexta",
+"on_lane": true
+},
+{
+"id": "bespin-k-18",
+"name": "Bespin",
+"x": 1786.6,
+"y": 3313.9,
+"gx": -4788.2,
+"gy": -42932.9,
+"region": "Outer Rim Territories",
+"sector": "Javin (Anoat)",
+"on_lane": true
+},
+{
+"id": "bestoon-j-9",
+"name": "Bestoon",
+"x": 1700.9,
+"y": 1979.4,
+"gx": -7733.9,
+"gy": 2897.3,
+"region": "Colonies",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "bilbringi-j-8",
+"name": "Bilbringi",
+"x": 1754.2,
+"y": 1829.3,
+"gx": -5902.6,
+"gy": 8052.6,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "bimmisaari-r-9",
+"name": "Bimmisaari",
+"x": 2916.0,
+"y": 1944.1,
+"gx": 33997.9,
+"gy": 4110.1,
+"region": "Mid Rim",
+"sector": "Halla",
+"on_lane": true
+},
+{
+"id": "birren-o-10",
+"name": "Birren",
+"x": 2495.1,
+"y": 2201.4,
+"gx": 19543.6,
+"gy": -4725.5,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "blutopia-k-16",
+"name": "Blutopia",
+"x": 1888.1,
+"y": 2989.3,
+"gx": -1303.5,
+"gy": -31783.9,
+"region": "Expansion Region",
+"sector": "Vensensor",
+"on_lane": true
+},
+{
+"id": "bogano-n-3",
+"name": "Bogano",
+"x": 2273.0,
+"y": 1173.3,
+"gx": 11917.5,
+"gy": 30582.5,
+"region": "Outer Rim Territories",
+"sector": "Mieru'kar",
+"on_lane": false
+},
+{
+"id": "bogden-m-8",
+"name": "Bogden",
+"x": 2080.4,
+"y": 1809.1,
+"gx": 5300.4,
+"gy": 8746.4,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "bomis-koori-k-16",
+"name": "Bomis Koori",
+"x": 1836.9,
+"y": 3066.1,
+"gx": -3062.4,
+"gy": -34424.1,
+"region": "Mid Rim",
+"sector": "Wornal",
+"on_lane": true
+},
+{
+"id": "bonadan-s-3",
+"name": "Bonadan",
+"x": 3011.1,
+"y": 1187.1,
+"gx": 37266.2,
+"gy": 30108.5,
+"region": "Outer Rim Territories",
+"sector": "Corporate Sector",
+"on_lane": true
+},
+{
+"id": "boonta-s-8",
+"name": "Boonta",
+"x": 3018.6,
+"y": 1847.4,
+"gx": 37523.8,
+"gy": 7432.8,
+"region": "Outer Rim Territories",
+"sector": "Suolriep",
+"on_lane": true
+},
+{
+"id": "borleias-k-9",
+"name": "Borleias",
+"x": 1871.1,
+"y": 1973.2,
+"gx": -1887.8,
+"gy": 3110.9,
+"region": "Colonies",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "borosk-k-5",
+"name": "Borosk",
+"x": 1793.0,
+"y": 1402.8,
+"gx": -4569.5,
+"gy": 22702.4,
+"region": "Outer Rim Territories",
+"sector": "Prefsbelt",
+"on_lane": true
+},
+{
+"id": "botajef-o-6",
+"name": "Botajef",
+"x": 2428.8,
+"y": 1552.5,
+"gx": 17265.0,
+"gy": 17559.5,
+"region": "Outer Rim Territories",
+"sector": "Belsmuth",
+"on_lane": true
+},
+{
+"id": "bothawui-r-14",
+"name": "Bothawui",
+"x": 2917.8,
+"y": 2684.0,
+"gx": 34060.5,
+"gy": -21299.4,
+"region": "Mid Rim",
+"sector": "Bothan",
+"on_lane": true
+},
+{
+"id": "botor-k-12",
+"name": "Botor",
+"x": 1920.3,
+"y": 2467.2,
+"gx": -197.8,
+"gy": -13852.9,
+"region": "Core Worlds",
+"sector": "Botor Enclave",
+"on_lane": true
+},
+{
+"id": "boz-pity-s-9",
+"name": "Boz Pity",
+"x": 3033.8,
+"y": 1963.7,
+"gx": 38044.0,
+"gy": 3437.4,
+"region": "Mid Rim",
+"sector": "Halla",
+"on_lane": true
+},
+{
+"id": "bracca-p-9",
+"name": "Bracca",
+"x": 2594.4,
+"y": 1940.6,
+"gx": 22953.3,
+"gy": 4230.2,
+"region": "Mid Rim",
+"sector": "Lantillian",
+"on_lane": true
+},
+{
+"id": "brendok-q-2",
+"name": "Brendok",
+"x": 2738.0,
+"y": 939.3,
+"gx": 27884.6,
+"gy": 38620.5,
+"region": "Wild Space",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "brentaal-l-9",
+"name": "Brentaal",
+"x": 2003.9,
+"y": 1958.9,
+"gx": 2674.0,
+"gy": 3601.6,
+"region": "Core Worlds",
+"sector": "Bormea",
+"on_lane": true
+},
+{
+"id": "brigia-t-6",
+"name": "Brigia",
+"x": 3105.7,
+"y": 1564.8,
+"gx": 40515.2,
+"gy": 17137.8,
+"region": "Outer Rim Territories",
+"sector": "Tion Hegemony",
+"on_lane": true
+},
+{
+"id": "bromlarch-o-16",
+"name": "Bromlarch",
+"x": 2366.9,
+"y": 2955.4,
+"gx": 15141.5,
+"gy": -30621.8,
+"region": "Mid Rim",
+"sector": "Vish",
+"on_lane": false
+},
+{
+"id": "byblos-m-12",
+"name": "Byblos",
+"x": 2206.3,
+"y": 2453.0,
+"gx": 9625.9,
+"gy": -13367.3,
+"region": "Colonies",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "byss-k-11",
+"name": "Byss",
+"x": 1858.0,
+"y": 2330.3,
+"gx": -2338.2,
+"gy": -9152.4,
+"region": "Deep Core",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "cadomai-r-3",
+"name": "Cadomai",
+"x": 2872.9,
+"y": 1166.4,
+"gx": 32520.3,
+"gy": 30818.9,
+"region": "Outer Rim Territories",
+"sector": "Aparo (Catarlo)",
+"on_lane": true
+},
+{
+"id": "cal-seti-k-10",
+"name": "Cal-Seti",
+"x": 1817.1,
+"y": 2110.2,
+"gx": -3740.2,
+"gy": -1594.2,
+"region": "Core Worlds",
+"sector": "Torranix",
+"on_lane": true
+},
+{
+"id": "candovant-n-12",
+"name": "Candovant",
+"x": 2244.6,
+"y": 2457.4,
+"gx": 10938.9,
+"gy": -13519.6,
+"region": "Colonies",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "cantonica-s-4",
+"name": "Cantonica",
+"x": 2971.8,
+"y": 1219.6,
+"gx": 35914.5,
+"gy": 28992.6,
+"region": "Outer Rim Territories",
+"sector": "Corporate Sector",
+"on_lane": false
+},
+{
+"id": "caraad-l-8",
+"name": "Caraad",
+"x": 1968.5,
+"y": 1859.9,
+"gx": 1457.5,
+"gy": 7004.3,
+"region": "Colonies",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "caranthanax-j-18",
+"name": "Caranthanax",
+"x": 1650.8,
+"y": 3249.7,
+"gx": -9454.6,
+"gy": -40729.9,
+"region": "Outer Rim Territories",
+"sector": "Wazta",
+"on_lane": false
+},
+{
+"id": "cardovyte-m-6",
+"name": "Cardovyte",
+"x": 2139.9,
+"y": 1544.8,
+"gx": 7343.0,
+"gy": 17824.0,
+"region": "Outer Rim Territories",
+"sector": "Oricho",
+"on_lane": false
+},
+{
+"id": "carida-m-9",
+"name": "Carida",
+"x": 2148.3,
+"y": 1979.4,
+"gx": 7633.1,
+"gy": 2898.2,
+"region": "Colonies",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "carlac-k-5",
+"name": "Carlac",
+"x": 1825.8,
+"y": 1469.6,
+"gx": -3442.0,
+"gy": 20406.6,
+"region": "Outer Rim Territories",
+"sector": "Prefsbelt",
+"on_lane": true
+},
+{
+"id": "castell-m-9",
+"name": "Castell",
+"x": 2132.6,
+"y": 1946.6,
+"gx": 7094.9,
+"gy": 4024.1,
+"region": "Colonies",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "castilon-i-16",
+"name": "Castilon",
+"x": 1606.3,
+"y": 2984.5,
+"gx": -10981.9,
+"gy": -31619.1,
+"region": "Mid Rim",
+"sector": "Tashtor",
+"on_lane": false
+},
+{
+"id": "cato-neimoidia-n-11",
+"name": "Cato Neimoidia",
+"x": 2244.0,
+"y": 2264.9,
+"gx": 10921.2,
+"gy": -6906.1,
+"region": "Colonies",
+"sector": "Quellor",
+"on_lane": true
+},
+{
+"id": "celanon-o-6",
+"name": "Celanon",
+"x": 2464.1,
+"y": 1496.3,
+"gx": 18480.4,
+"gy": 19488.8,
+"region": "Outer Rim Territories",
+"sector": "D'Astan",
+"on_lane": true
+},
+{
+"id": "celsor-o-17",
+"name": "Celsor",
+"x": 2502.7,
+"y": 3208.8,
+"gx": 19803.9,
+"gy": -39325.0,
+"region": "Outer Rim Territories",
+"sector": "Hook Nebula",
+"on_lane": false
+},
+{
+"id": "centares-r-7",
+"name": "Centares",
+"x": 2855.6,
+"y": 1682.4,
+"gx": 31925.7,
+"gy": 13099.6,
+"region": "Mid Rim",
+"sector": "Maldrood",
+"on_lane": true
+},
+{
+"id": "cerberon-l-10",
+"name": "Cerberon",
+"x": 1988.2,
+"y": 2095.0,
+"gx": 2133.3,
+"gy": -1070.2,
+"region": "Deep Core",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "cerifisis-i-19",
+"name": "Cerifisis",
+"x": 1589.5,
+"y": 3474.2,
+"gx": -11559.3,
+"gy": -48437.7,
+"region": "Outer Rim Territories",
+"sector": "Varada",
+"on_lane": false
+},
+{
+"id": "cermau-h-16",
+"name": "Cermau",
+"x": 1352.8,
+"y": 3067.2,
+"gx": -19687.6,
+"gy": -34460.4,
+"region": "Outer Rim Territories",
+"sector": "Bakura",
+"on_lane": true
+},
+{
+"id": "chaaktil-n-14",
+"name": "Chaaktil",
+"x": 2247.3,
+"y": 2688.5,
+"gx": 11032.7,
+"gy": -21454.9,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "chad-r-7",
+"name": "Chad",
+"x": 2913.7,
+"y": 1679.4,
+"gx": 33921.8,
+"gy": 13200.7,
+"region": "Outer Rim Territories",
+"sector": "Jospro",
+"on_lane": false
+},
+{
+"id": "chadawa-n-14",
+"name": "Chadawa",
+"x": 2222.9,
+"y": 2679.6,
+"gx": 10194.7,
+"gy": -21147.7,
+"region": "Inner Rim",
+"sector": "Croynar",
+"on_lane": false
+},
+{
+"id": "chalacta-r-10",
+"name": "Chalacta",
+"x": 2880.5,
+"y": 2099.8,
+"gx": 32780.7,
+"gy": -1236.5,
+"region": "Mid Rim",
+"sector": "Metatessu",
+"on_lane": true
+},
+{
+"id": "chanceuxi-n-4",
+"name": "Chanceuxi",
+"x": 2261.5,
+"y": 1234.7,
+"gx": 11520.5,
+"gy": 28475.2,
+"region": "Outer Rim Territories",
+"sector": "Kanz",
+"on_lane": true
+},
+{
+"id": "chandrila-l-9",
+"name": "Chandrila",
+"x": 2005.4,
+"y": 2016.1,
+"gx": 2724.6,
+"gy": 1637.2,
+"region": "Core Worlds",
+"sector": "Bormea",
+"on_lane": true
+},
+{
+"id": "chardaan-n-14",
+"name": "Chardaan",
+"x": 2266.5,
+"y": 2662.0,
+"gx": 11692.2,
+"gy": -20546.4,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "charros-r-9",
+"name": "Charros",
+"x": 2822.5,
+"y": 1963.2,
+"gx": 30788.2,
+"gy": 3455.9,
+"region": "Mid Rim",
+"sector": "Numesira",
+"on_lane": true
+},
+{
+"id": "cholganna-t-5",
+"name": "Cholganna",
+"x": 3121.0,
+"y": 1368.8,
+"gx": 41040.8,
+"gy": 23867.4,
+"region": "Outer Rim Territories",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "chrelythiumn-k-2",
+"name": "Chrelythiumn",
+"x": 1800.5,
+"y": 1033.1,
+"gx": -4313.0,
+"gy": 35397.0,
+"region": "Wild Space",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "christophsis-q-16",
+"name": "Christophsis",
+"x": 2780.6,
+"y": 3065.4,
+"gx": 29349.9,
+"gy": -34398.3,
+"region": "Outer Rim Territories",
+"sector": "Savareen",
+"on_lane": true
+},
+{
+"id": "chrome-citadel-o-11",
+"name": "Chrome Citadel",
+"x": 2471.3,
+"y": 2291.0,
+"gx": 18727.4,
+"gy": -7803.6,
+"region": "Expansion Region",
+"sector": "Harron",
+"on_lane": false
+},
+{
+"id": "chyron-j-16",
+"name": "Chyron",
+"x": 1738.6,
+"y": 2988.6,
+"gx": -6438.2,
+"gy": -31760.9,
+"region": "Expansion Region",
+"sector": "Har Worlds",
+"on_lane": true
+},
+{
+"id": "circumtore-s-12",
+"name": "Circumtore",
+"x": 2962.4,
+"y": 2423.4,
+"gx": 35592.4,
+"gy": -12348.7,
+"region": "Hutt Space",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "ciutric-n-5",
+"name": "Ciutric",
+"x": 2294.1,
+"y": 1373.4,
+"gx": 12641.0,
+"gy": 23709.4,
+"region": "Outer Rim Territories",
+"sector": "Ciutric",
+"on_lane": true
+},
+{
+"id": "clak-dor-m-18",
+"name": "Clak'dor",
+"x": 2128.3,
+"y": 3355.8,
+"gx": 6945.0,
+"gy": -44372.1,
+"region": "Outer Rim Territories",
+"sector": "Mayagil",
+"on_lane": true
+},
+{
+"id": "coachelle-p-10",
+"name": "Coachelle",
+"x": 2648.5,
+"y": 2117.6,
+"gx": 24812.0,
+"gy": -1848.2,
+"region": "Mid Rim",
+"sector": "Terr'skiar",
+"on_lane": false
+},
+{
+"id": "codia-h-15",
+"name": "Codia",
+"x": 1422.2,
+"y": 2821.6,
+"gx": -17305.0,
+"gy": -26025.0,
+"region": "Mid Rim",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "colla-n-9",
+"name": "Colla",
+"x": 2282.9,
+"y": 1929.8,
+"gx": 12257.3,
+"gy": 4602.8,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "commenor-n-10",
+"name": "Commenor",
+"x": 2334.5,
+"y": 2190.9,
+"gx": 14028.0,
+"gy": -4365.5,
+"region": "Colonies",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "cona-o-11",
+"name": "Cona",
+"x": 2402.8,
+"y": 2236.9,
+"gx": 16372.5,
+"gy": -5943.6,
+"region": "Inner Rim",
+"sector": "Inner Cluster",
+"on_lane": false
+},
+{
+"id": "concord-dawn-o-7",
+"name": "Concord Dawn",
+"x": 2453.7,
+"y": 1696.3,
+"gx": 18123.6,
+"gy": 12622.8,
+"region": "Outer Rim Territories",
+"sector": "Mandalore",
+"on_lane": false
+},
+{
+"id": "constancia-k-12",
+"name": "Constancia",
+"x": 1906.7,
+"y": 2413.9,
+"gx": -665.3,
+"gy": -12022.7,
+"region": "Deep Core",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "contruum-o-8",
+"name": "Contruum",
+"x": 2510.4,
+"y": 1859.1,
+"gx": 20068.4,
+"gy": 7029.2,
+"region": "Mid Rim",
+"sector": "Truum",
+"on_lane": true
+},
+{
+"id": "corellia-m-11",
+"name": "Corellia",
+"x": 2155.9,
+"y": 2341.6,
+"gx": 7893.4,
+"gy": -9541.8,
+"region": "Core Worlds",
+"sector": "Corellian",
+"on_lane": true
+},
+{
+"id": "corsin-m-7",
+"name": "Corsin",
+"x": 2206.9,
+"y": 1723.4,
+"gx": 9644.9,
+"gy": 11691.5,
+"region": "Expansion Region",
+"sector": "Greater Plooriod",
+"on_lane": true
+},
+{
+"id": "corulag-l-9",
+"name": "Corulag",
+"x": 1997.4,
+"y": 2021.9,
+"gx": 2449.8,
+"gy": 1439.7,
+"region": "Core Worlds",
+"sector": "Bormea",
+"on_lane": true
+},
+{
+"id": "coruscant-l-9",
+"name": "Coruscant",
+"x": 1926.0,
+"y": 2063.8,
+"gx": 0.0,
+"gy": -0.0,
+"region": "Core Worlds",
+"sector": "Corusca (Coruscant)",
+"on_lane": true
+},
+{
+"id": "corvus-s-6",
+"name": "Corvus",
+"x": 2977.4,
+"y": 1572.3,
+"gx": 36109.2,
+"gy": 16881.3,
+"region": "Outer Rim Territories",
+"sector": "Cronese Mandate",
+"on_lane": false
+},
+{
+"id": "cosia-m-11",
+"name": "Cosia",
+"x": 2077.0,
+"y": 2248.2,
+"gx": 5182.9,
+"gy": -6333.5,
+"region": "Deep Core",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "cosmatanic-steppes-r-16",
+"name": "Cosmatanic Steppes",
+"x": 2912.0,
+"y": 2944.9,
+"gx": 33861.7,
+"gy": -30261.8,
+"region": "Outer Rim Territories",
+"sector": "Grohl",
+"on_lane": true
+},
+{
+"id": "cotellier-n-20",
+"name": "Cotellier",
+"x": 2326.0,
+"y": 3581.7,
+"gx": 13737.1,
+"gy": -52132.3,
+"region": "Outer Rim Territories",
+"sector": "Rseik",
+"on_lane": true
+},
+{
+"id": "couronne-p-10",
+"name": "Couronne",
+"x": 2562.0,
+"y": 2076.4,
+"gx": 21840.5,
+"gy": -433.4,
+"region": "Expansion Region",
+"sector": "Couronne",
+"on_lane": true
+},
+{
+"id": "crait-n-17",
+"name": "Crait",
+"x": 2291.4,
+"y": 3155.9,
+"gx": 12547.0,
+"gy": -37506.5,
+"region": "Outer Rim Territories",
+"sector": "Bon'nyuw-Luq",
+"on_lane": false
+},
+{
+"id": "crucival-s-6",
+"name": "Crucival",
+"x": 3072.5,
+"y": 1487.8,
+"gx": 39375.0,
+"gy": 19782.3,
+"region": "Outer Rim Territories",
+"sector": "Tion Hegemony",
+"on_lane": false
+},
+{
+"id": "crul-r-13",
+"name": "Crul",
+"x": 2807.9,
+"y": 2599.5,
+"gx": 30286.6,
+"gy": -18397.3,
+"region": "Mid Rim",
+"sector": "Lannik Wilds",
+"on_lane": true
+},
+{
+"id": "csilla-f-8",
+"name": "Csilla",
+"x": 1054.8,
+"y": 1892.3,
+"gx": -29921.9,
+"gy": 5891.4,
+"region": "Unknown Regions",
+"sector": "Chiss Space*",
+"on_lane": false
+},
+{
+"id": "cyclor-n-17",
+"name": "Cyclor",
+"x": 2327.1,
+"y": 3137.4,
+"gx": 13774.2,
+"gy": -36872.9,
+"region": "Mid Rim",
+"sector": "Alui",
+"on_lane": true
+},
+{
+"id": "cymoon-l-15",
+"name": "Cymoon",
+"x": 1981.0,
+"y": 2889.5,
+"gx": 1886.2,
+"gy": -28357.2,
+"region": "Expansion Region",
+"sector": "Bes Ber Bikade",
+"on_lane": true
+},
+{
+"id": "cyrillia-o-12",
+"name": "Cyrillia",
+"x": 2460.8,
+"y": 2495.7,
+"gx": 18366.5,
+"gy": -14833.4,
+"region": "Expansion Region",
+"sector": "Cyrillian Protectorate",
+"on_lane": false
+},
+{
+"id": "cyrkon-t-13",
+"name": "Cyrkon",
+"x": 3136.4,
+"y": 2544.6,
+"gx": 41569.9,
+"gy": -16514.5,
+"region": "Outer Rim Territories",
+"sector": "Al'Nasrl",
+"on_lane": false
+},
+{
+"id": "d-assem-m-7",
+"name": "D'Assem",
+"x": 2181.1,
+"y": 1737.6,
+"gx": 8760.6,
+"gy": 11202.0,
+"region": "Expansion Region",
+"sector": "Greater Plooriod",
+"on_lane": false
+},
+{
+"id": "d-qar-o-17",
+"name": "D'Qar",
+"x": 2404.7,
+"y": 3207.8,
+"gx": 16437.6,
+"gy": -39290.8,
+"region": "Outer Rim Territories",
+"sector": "Sanbra",
+"on_lane": false
+},
+{
+"id": "da-vlunn-r-11",
+"name": "Da-Vlunn",
+"x": 2942.6,
+"y": 2223.4,
+"gx": 34911.4,
+"gy": -5481.3,
+"region": "Hutt Space",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "daalang-q-12",
+"name": "Daalang",
+"x": 2751.6,
+"y": 2462.1,
+"gx": 28352.3,
+"gy": -13680.4,
+"region": "Mid Rim",
+"sector": "Daalang",
+"on_lane": true
+},
+{
+"id": "daghee-o-7",
+"name": "Daghee",
+"x": 2450.4,
+"y": 1739.4,
+"gx": 18009.6,
+"gy": 11140.0,
+"region": "Mid Rim",
+"sector": "Thusa",
+"on_lane": false
+},
+{
+"id": "dagobah-m-19",
+"name": "Dagobah",
+"x": 2166.0,
+"y": 3458.1,
+"gx": 8239.9,
+"gy": -47884.7,
+"region": "Outer Rim Territories",
+"sector": "Sluis",
+"on_lane": false
+},
+{
+"id": "daiyu-p-12",
+"name": "Daiyu",
+"x": 2639.8,
+"y": 2363.1,
+"gx": 24514.9,
+"gy": -10280.3,
+"region": "Expansion Region",
+"sector": "Hocatar",
+"on_lane": true
+},
+{
+"id": "dalna-i-19",
+"name": "Dalna",
+"x": 1563.3,
+"y": 3413.5,
+"gx": -12457.5,
+"gy": -46353.0,
+"region": "Outer Rim Territories",
+"sector": "Tunka (Dalnan)",
+"on_lane": true
+},
+{
+"id": "dandoran-r-9",
+"name": "Dandoran",
+"x": 2928.9,
+"y": 2033.2,
+"gx": 34442.4,
+"gy": 1050.6,
+"region": "Hutt Space",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "dantooine-l-4",
+"name": "Dantooine",
+"x": 1927.4,
+"y": 1241.8,
+"gx": 46.1,
+"gy": 28229.4,
+"region": "Outer Rim Territories",
+"sector": "Raioballo",
+"on_lane": true
+},
+{
+"id": "danzik-m-3",
+"name": "Danzik",
+"x": 2133.3,
+"y": 1089.4,
+"gx": 7119.3,
+"gy": 33465.8,
+"region": "Outer Rim Territories",
+"sector": "Dalonbian",
+"on_lane": true
+},
+{
+"id": "daro-n-6",
+"name": "Daro",
+"x": 2271.8,
+"y": 1616.9,
+"gx": 11876.4,
+"gy": 15349.9,
+"region": "Outer Rim Territories",
+"sector": "Ojoster",
+"on_lane": false
+},
+{
+"id": "dassal-h-7",
+"name": "Dassal",
+"x": 1373.9,
+"y": 1653.7,
+"gx": -18963.8,
+"gy": 14083.4,
+"region": "Unknown Regions",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "dathomir-o-6",
+"name": "Dathomir",
+"x": 2386.2,
+"y": 1539.1,
+"gx": 15802.5,
+"gy": 18021.6,
+"region": "Outer Rim Territories",
+"sector": "Quelii",
+"on_lane": true
+},
+{
+"id": "daxam-n-18",
+"name": "Daxam",
+"x": 2261.1,
+"y": 3282.1,
+"gx": 11508.0,
+"gy": -41842.6,
+"region": "Outer Rim Territories",
+"sector": "Mayagil",
+"on_lane": false
+},
+{
+"id": "del-zennis-r-7",
+"name": "Del Zennis",
+"x": 2816.7,
+"y": 1728.7,
+"gx": 30589.1,
+"gy": 11507.6,
+"region": "Mid Rim",
+"sector": "Eucer",
+"on_lane": false
+},
+{
+"id": "dellalt-t-6",
+"name": "Dellalt",
+"x": 3118.5,
+"y": 1600.1,
+"gx": 40953.2,
+"gy": 15924.1,
+"region": "Outer Rim Territories",
+"sector": "Tion Hegemony",
+"on_lane": true
+},
+{
+"id": "delphidian-cluster-i-15",
+"name": "Delphidian Cluster",
+"x": 1491.7,
+"y": 2850.0,
+"gx": -14918.1,
+"gy": -26999.9,
+"region": "Mid Rim",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "denon-n-13",
+"name": "Denon",
+"x": 2258.3,
+"y": 2524.0,
+"gx": 11411.7,
+"gy": -15805.7,
+"region": "Inner Rim",
+"sector": "Iseno",
+"on_lane": true
+},
+{
+"id": "deppani-i-17",
+"name": "Deppani",
+"x": 1574.4,
+"y": 3211.7,
+"gx": -12077.7,
+"gy": -39422.9,
+"region": "Outer Rim Territories",
+"sector": "Bri'ahl",
+"on_lane": false
+},
+{
+"id": "derosha-j-5",
+"name": "Derosha",
+"x": 1683.5,
+"y": 1444.7,
+"gx": -8331.4,
+"gy": 21261.3,
+"region": "Wild Space",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "derra-n-15",
+"name": "Derra",
+"x": 2228.4,
+"y": 2820.9,
+"gx": 10385.7,
+"gy": -26001.1,
+"region": "Expansion Region",
+"sector": "Mikaster",
+"on_lane": false
+},
+{
+"id": "desevro-s-6",
+"name": "Desevro",
+"x": 2970.5,
+"y": 1488.9,
+"gx": 35871.8,
+"gy": 19745.1,
+"region": "Outer Rim Territories",
+"sector": "Tion Hegemony",
+"on_lane": true
+},
+{
+"id": "desix-s-9",
+"name": "Desix",
+"x": 2971.5,
+"y": 2031.5,
+"gx": 35903.7,
+"gy": 1109.5,
+"region": "Outer Rim Territories",
+"sector": "Suolriep",
+"on_lane": false
+},
+{
+"id": "devaron-m-13",
+"name": "Devaron",
+"x": 2081.9,
+"y": 2641.8,
+"gx": 5354.0,
+"gy": -19849.5,
+"region": "Colonies",
+"sector": "Duluur",
+"on_lane": false
+},
+{
+"id": "devshi-j-8",
+"name": "Devshi",
+"x": 1738.8,
+"y": 1865.5,
+"gx": -6430.9,
+"gy": 6810.5,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "dolla-l-18",
+"name": "Dolla",
+"x": 1959.3,
+"y": 3295.7,
+"gx": 1140.8,
+"gy": -42310.2,
+"region": "Outer Rim Territories",
+"sector": "Videnda",
+"on_lane": true
+},
+{
+"id": "dorin-j-8",
+"name": "Dorin",
+"x": 1721.5,
+"y": 1789.2,
+"gx": -7024.8,
+"gy": 9430.9,
+"region": "Expansion Region",
+"sector": "Deadalis",
+"on_lane": true
+},
+{
+"id": "dotharian-s-12",
+"name": "Dotharian",
+"x": 3002.9,
+"y": 2446.2,
+"gx": 36985.2,
+"gy": -13134.0,
+"region": "Hutt Space",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "dowut-j-12",
+"name": "Dowut",
+"x": 1766.7,
+"y": 2473.5,
+"gx": -5471.1,
+"gy": -14071.0,
+"region": "Core Worlds",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "dragon-void-k-14",
+"name": "Dragon Void",
+"x": 1794.5,
+"y": 2674.4,
+"gx": -4519.1,
+"gy": -20970.7,
+"region": "Inner Rim",
+"sector": "Gomar",
+"on_lane": false
+},
+{
+"id": "drahgor-s-4",
+"name": "Drahgor",
+"x": 3054.5,
+"y": 1326.7,
+"gx": 38756.6,
+"gy": 25314.1,
+"region": "Outer Rim Territories",
+"sector": "Colundra",
+"on_lane": false
+},
+{
+"id": "dressel-q-13",
+"name": "Dressel",
+"x": 2770.9,
+"y": 2617.8,
+"gx": 29014.9,
+"gy": -19025.3,
+"region": "Mid Rim",
+"sector": "Noolian",
+"on_lane": true
+},
+{
+"id": "drez-p-4",
+"name": "Drez",
+"x": 2616.9,
+"y": 1230.4,
+"gx": 23725.4,
+"gy": 28620.6,
+"region": "Outer Rim Territories",
+"sector": "Corva",
+"on_lane": false
+},
+{
+"id": "druckenwell-p-15",
+"name": "Druckenwell",
+"x": 2568.3,
+"y": 2843.8,
+"gx": 22059.4,
+"gy": -26787.1,
+"region": "Mid Rim",
+"sector": "Doldur",
+"on_lane": true
+},
+{
+"id": "dubrillion-k-3",
+"name": "Dubrillion",
+"x": 1876.1,
+"y": 1152.5,
+"gx": -1713.5,
+"gy": 31298.6,
+"region": "Outer Rim Territories",
+"sector": "Myto",
+"on_lane": true
+},
+{
+"id": "dulathia-p-8",
+"name": "Dulathia",
+"x": 2576.5,
+"y": 1856.4,
+"gx": 22339.7,
+"gy": 7123.9,
+"region": "Mid Rim",
+"sector": "Lantillian",
+"on_lane": false
+},
+{
+"id": "durkteel-q-10",
+"name": "Durkteel",
+"x": 2759.1,
+"y": 2094.6,
+"gx": 28610.0,
+"gy": -1059.1,
+"region": "Mid Rim",
+"sector": "Kastolar",
+"on_lane": true
+},
+{
+"id": "duro-m-11",
+"name": "Duro",
+"x": 2155.6,
+"y": 2351.6,
+"gx": 7884.8,
+"gy": -9885.2,
+"region": "Core Worlds",
+"sector": "Duro",
+"on_lane": true
+},
+{
+"id": "eiattu-l-17",
+"name": "Eiattu",
+"x": 2056.9,
+"y": 3166.2,
+"gx": 4494.6,
+"gy": -37861.9,
+"region": "Mid Rim",
+"sector": "Ado",
+"on_lane": true
+},
+{
+"id": "eiram-i-19",
+"name": "Eiram",
+"x": 1584.4,
+"y": 3394.6,
+"gx": -11733.0,
+"gy": -45703.7,
+"region": "Outer Rim Territories",
+"sector": "Tunka (Dalnan)",
+"on_lane": true
+},
+{
+"id": "elessia-p-16",
+"name": "Elessia",
+"x": 2603.2,
+"y": 3048.3,
+"gx": 23256.7,
+"gy": -33813.2,
+"region": "Mid Rim",
+"sector": "Vendusii",
+"on_lane": false
+},
+{
+"id": "elom-r-5",
+"name": "Elom",
+"x": 2846.6,
+"y": 1450.2,
+"gx": 31616.7,
+"gy": 21072.6,
+"region": "Outer Rim Territories",
+"sector": "Sertar",
+"on_lane": false
+},
+{
+"id": "elphrona-i-17",
+"name": "Elphrona",
+"x": 1540.8,
+"y": 3156.9,
+"gx": -13232.2,
+"gy": -37541.3,
+"region": "Outer Rim Territories",
+"sector": "Bri'ahl",
+"on_lane": false
+},
+{
+"id": "elrood-m-20",
+"name": "Elrood",
+"x": 2150.3,
+"y": 3549.6,
+"gx": 7700.7,
+"gy": -51028.3,
+"region": "Outer Rim Territories",
+"sector": "Elrood",
+"on_lane": false
+},
+{
+"id": "empress-teta-l-10",
+"name": "Empress Teta",
+"x": 1931.5,
+"y": 2141.9,
+"gx": 188.2,
+"gy": -2682.9,
+"region": "Deep Core",
+"sector": "Koros",
+"on_lane": true
+},
+{
+"id": "endor-h-16",
+"name": "Endor",
+"x": 1423.0,
+"y": 3061.3,
+"gx": -17277.5,
+"gy": -34259.0,
+"region": "Outer Rim Territories",
+"sector": "Zuma (Moddell)",
+"on_lane": true
+},
+{
+"id": "endovar-h-10",
+"name": "Endovar",
+"x": 1409.0,
+"y": 2112.4,
+"gx": -17756.5,
+"gy": -1668.6,
+"region": "Mid Rim",
+"sector": "(Terrabe)",
+"on_lane": false
+},
+{
+"id": "endoviara-j-6",
+"name": "Endoviara",
+"x": 1772.2,
+"y": 1534.6,
+"gx": -5282.2,
+"gy": 18175.5,
+"region": "Outer Rim Territories",
+"sector": "Dantus",
+"on_lane": false
+},
+{
+"id": "enthenium-k-19",
+"name": "Enthenium",
+"x": 1867.5,
+"y": 3392.7,
+"gx": -2012.1,
+"gy": -45641.0,
+"region": "Outer Rim Territories",
+"sector": "Jjannex",
+"on_lane": false
+},
+{
+"id": "entralla-k-4",
+"name": "Entralla",
+"x": 1793.2,
+"y": 1307.5,
+"gx": -4561.7,
+"gy": 25975.6,
+"region": "Outer Rim Territories",
+"sector": "Velcar",
+"on_lane": true
+},
+{
+"id": "epikonia-n-7",
+"name": "Epikonia",
+"x": 2294.2,
+"y": 1674.7,
+"gx": 12642.6,
+"gy": 13364.8,
+"region": "Outer Rim Territories",
+"sector": "Ojoster",
+"on_lane": false
+},
+{
+"id": "epo-n-5",
+"name": "Epo",
+"x": 2264.5,
+"y": 1379.6,
+"gx": 11625.1,
+"gy": 23499.7,
+"region": "Outer Rim Territories",
+"sector": "Ciutric",
+"on_lane": false
+},
+{
+"id": "erebus-n-13",
+"name": "Erebus",
+"x": 2222.1,
+"y": 2537.9,
+"gx": 10168.1,
+"gy": -16283.5,
+"region": "Colonies",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "eriadu-m-18",
+"name": "Eriadu",
+"x": 2151.8,
+"y": 3277.3,
+"gx": 7754.0,
+"gy": -41675.2,
+"region": "Outer Rim Territories",
+"sector": "Seswenna",
+"on_lane": true
+},
+{
+"id": "espirion-n-12",
+"name": "Espirion",
+"x": 2311.4,
+"y": 2466.0,
+"gx": 13233.1,
+"gy": -13812.7,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "etti-s-4",
+"name": "Etti",
+"x": 2998.4,
+"y": 1200.9,
+"gx": 36828.3,
+"gy": 29636.2,
+"region": "Outer Rim Territories",
+"sector": "Corporate Sector",
+"on_lane": false
+},
+{
+"id": "exegol-f-7",
+"name": "Exegol",
+"x": 1081.2,
+"y": 1734.0,
+"gx": -29016.5,
+"gy": 11325.0,
+"region": "Unknown Regions",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "exodeen-m-12",
+"name": "Exodeen",
+"x": 2215.7,
+"y": 2368.8,
+"gx": 9946.9,
+"gy": -10475.8,
+"region": "Colonies",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "falleen-p-15",
+"name": "Falleen",
+"x": 2623.5,
+"y": 2872.5,
+"gx": 23954.9,
+"gy": -27775.2,
+"region": "Mid Rim",
+"sector": "Doldur",
+"on_lane": false
+},
+{
+"id": "farana-s-3",
+"name": "Farana",
+"x": 3029.1,
+"y": 1153.1,
+"gx": 37885.2,
+"gy": 31278.1,
+"region": "Wild Space",
+"sector": "Farana*",
+"on_lane": true
+},
+{
+"id": "farstine-p-17",
+"name": "Farstine",
+"x": 2528.1,
+"y": 3098.9,
+"gx": 20677.0,
+"gy": -35549.8,
+"region": "Mid Rim",
+"sector": "Ryndellian",
+"on_lane": true
+},
+{
+"id": "fedalle-m-10",
+"name": "Fedalle",
+"x": 2123.7,
+"y": 2143.2,
+"gx": 6788.7,
+"gy": -2725.8,
+"region": "Core Worlds",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "fedovoi-end-m-14",
+"name": "Fedovoi End",
+"x": 2202.4,
+"y": 2714.4,
+"gx": 9490.4,
+"gy": -22343.2,
+"region": "Inner Rim",
+"sector": "Croynar",
+"on_lane": false
+},
+{
+"id": "feleantor-l-6",
+"name": "Feleantor",
+"x": 2028.4,
+"y": 1546.2,
+"gx": 3514.7,
+"gy": 17774.8,
+"region": "Outer Rim Territories",
+"sector": "Halthor",
+"on_lane": false
+},
+{
+"id": "felne-n-17",
+"name": "Felne",
+"x": 2328.6,
+"y": 3234.3,
+"gx": 13824.3,
+"gy": -40198.5,
+"region": "Outer Rim Territories",
+"sector": "Bon'nyuw-Luq",
+"on_lane": false
+},
+{
+"id": "felucia-r-6",
+"name": "Felucia",
+"x": 2919.1,
+"y": 1512.8,
+"gx": 34103.9,
+"gy": 18922.2,
+"region": "Outer Rim Territories",
+"sector": "Thanium",
+"on_lane": true
+},
+{
+"id": "ferrix-q-3",
+"name": "Ferrix",
+"x": 2723.6,
+"y": 1193.1,
+"gx": 27392.3,
+"gy": 29902.4,
+"region": "Outer Rim Territories",
+"sector": "Xappyh (Morlana)",
+"on_lane": false
+},
+{
+"id": "fetilia-q-12",
+"name": "Fetilia",
+"x": 2732.5,
+"y": 2493.6,
+"gx": 27696.4,
+"gy": -14760.4,
+"region": "Mid Rim",
+"sector": "Maerdocian",
+"on_lane": true
+},
+{
+"id": "fillithar-m-9",
+"name": "Fillithar",
+"x": 2156.2,
+"y": 2052.8,
+"gx": 7904.9,
+"gy": 378.4,
+"region": "Colonies",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "florn-t-5",
+"name": "Florn",
+"x": 3107.7,
+"y": 1426.8,
+"gx": 40583.3,
+"gy": 21876.5,
+"region": "Outer Rim Territories",
+"sector": "Pakuuni",
+"on_lane": false
+},
+{
+"id": "florrum-r-5",
+"name": "Florrum",
+"x": 2936.6,
+"y": 1398.2,
+"gx": 34708.1,
+"gy": 22859.0,
+"region": "Outer Rim Territories",
+"sector": "Sertar",
+"on_lane": true
+},
+{
+"id": "fondor-l-13",
+"name": "Fondor",
+"x": 1997.9,
+"y": 2591.3,
+"gx": 2467.6,
+"gy": -18117.0,
+"region": "Colonies",
+"sector": "Tapani",
+"on_lane": true
+},
+{
+"id": "formos-t-10",
+"name": "Formos",
+"x": 3229.7,
+"y": 2097.2,
+"gx": 44771.3,
+"gy": -1148.7,
+"region": "Outer Rim Territories",
+"sector": "Kessel",
+"on_lane": true
+},
+{
+"id": "fornax-j-7",
+"name": "Fornax",
+"x": 1781.6,
+"y": 1681.7,
+"gx": -4960.5,
+"gy": 13124.3,
+"region": "Mid Rim",
+"sector": "Glythe",
+"on_lane": false
+},
+{
+"id": "frezno-m-6",
+"name": "Frezno",
+"x": 2107.7,
+"y": 1496.7,
+"gx": 6237.7,
+"gy": 19476.3,
+"region": "Outer Rim Territories",
+"sector": "Cademimu",
+"on_lane": false
+},
+{
+"id": "gad-m-17",
+"name": "Gad",
+"x": 2084.3,
+"y": 3217.3,
+"gx": 5435.0,
+"gy": -39616.9,
+"region": "Outer Rim Territories",
+"sector": "Brema",
+"on_lane": true
+},
+{
+"id": "galaan-p-4",
+"name": "Galaan",
+"x": 2550.0,
+"y": 1210.4,
+"gx": 21429.8,
+"gy": 29309.4,
+"region": "Outer Rim Territories",
+"sector": "Corva",
+"on_lane": false
+},
+{
+"id": "gallios-n-5",
+"name": "Gallios",
+"x": 2268.8,
+"y": 1411.6,
+"gx": 11770.5,
+"gy": 22399.9,
+"region": "Outer Rim Territories",
+"sector": "Tragan Cluster",
+"on_lane": false
+},
+{
+"id": "gamorr-t-14",
+"name": "Gamorr",
+"x": 3161.0,
+"y": 2695.6,
+"gx": 42415.0,
+"gy": -21700.1,
+"region": "Outer Rim Territories",
+"sector": "Galov",
+"on_lane": true
+},
+{
+"id": "gand-t-8",
+"name": "Gand",
+"x": 3193.2,
+"y": 1810.0,
+"gx": 43521.1,
+"gy": 8714.7,
+"region": "Outer Rim Territories",
+"sector": "Shadola",
+"on_lane": false
+},
+{
+"id": "gansevor-t-14",
+"name": "Gansevor",
+"x": 3188.5,
+"y": 2764.4,
+"gx": 43358.7,
+"gy": -24061.6,
+"region": "Outer Rim Territories",
+"sector": "Tammuz",
+"on_lane": false
+},
+{
+"id": "garel-u-7",
+"name": "Garel",
+"x": 3290.9,
+"y": 1669.1,
+"gx": 46873.9,
+"gy": 13554.6,
+"region": "Outer Rim Territories",
+"sector": "Lothal",
+"on_lane": true
+},
+{
+"id": "garqi-k-5",
+"name": "Garqi",
+"x": 1870.6,
+"y": 1416.4,
+"gx": -1903.3,
+"gy": 22235.1,
+"region": "Outer Rim Territories",
+"sector": "Cassander (Tadrin)",
+"on_lane": true
+},
+{
+"id": "gatalenta-m-10",
+"name": "Gatalenta",
+"x": 2191.7,
+"y": 2210.9,
+"gx": 9122.9,
+"gy": -5052.6,
+"region": "Core Worlds",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "gazian-p-8",
+"name": "Gazian",
+"x": 2553.6,
+"y": 1815.2,
+"gx": 21551.5,
+"gy": 8537.5,
+"region": "Mid Rim",
+"sector": "Truum",
+"on_lane": false
+},
+{
+"id": "genetia-i-14",
+"name": "Genetia",
+"x": 1609.2,
+"y": 2751.4,
+"gx": -10880.3,
+"gy": -23616.7,
+"region": "Expansion Region",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "geonosis-r-16",
+"name": "Geonosis",
+"x": 2863.9,
+"y": 3057.6,
+"gx": 32209.0,
+"gy": -34132.2,
+"region": "Outer Rim Territories",
+"sector": "Arkanis",
+"on_lane": true
+},
+{
+"id": "geptish-k-17",
+"name": "Geptish",
+"x": 1816.7,
+"y": 3192.0,
+"gx": -3756.8,
+"gy": -38748.1,
+"region": "Mid Rim",
+"sector": "Yushan",
+"on_lane": false
+},
+{
+"id": "gerrenthum-k-18",
+"name": "Gerrenthum",
+"x": 1789.7,
+"y": 3286.0,
+"gx": -4681.8,
+"gy": -41975.4,
+"region": "Outer Rim Territories",
+"sector": "Javin (Anoat)",
+"on_lane": true
+},
+{
+"id": "gerrigon-j-17",
+"name": "Gerrigon",
+"x": 1704.0,
+"y": 3116.2,
+"gx": -7626.5,
+"gy": -36144.9,
+"region": "Mid Rim",
+"sector": "Masla",
+"on_lane": false
+},
+{
+"id": "ghorman-l-13",
+"name": "Ghorman",
+"x": 1968.8,
+"y": 2649.8,
+"gx": 1469.9,
+"gy": -20127.2,
+"region": "Colonies",
+"sector": "Sern",
+"on_lane": true
+},
+{
+"id": "gigor-r-4",
+"name": "Gigor",
+"x": 2841.0,
+"y": 1247.5,
+"gx": 31422.1,
+"gy": 28034.3,
+"region": "Outer Rim Territories",
+"sector": "Tynquay",
+"on_lane": true
+},
+{
+"id": "giju-l-13",
+"name": "Giju",
+"x": 1966.3,
+"y": 2606.6,
+"gx": 1383.0,
+"gy": -18643.2,
+"region": "Colonies",
+"sector": "Herglic Space",
+"on_lane": true
+},
+{
+"id": "glavis-m-11",
+"name": "Glavis",
+"x": 2198.2,
+"y": 2320.1,
+"gx": 9346.9,
+"gy": -8803.5,
+"region": "Core Worlds",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "glee-anselm-j-7",
+"name": "Glee Anselm",
+"x": 1664.7,
+"y": 1718.9,
+"gx": -8975.9,
+"gy": 11845.6,
+"region": "Mid Rim",
+"sector": "Jalor",
+"on_lane": true
+},
+{
+"id": "gloon-t-10",
+"name": "Gloon",
+"x": 3199.5,
+"y": 2160.1,
+"gx": 43735.4,
+"gy": -3308.4,
+"region": "Outer Rim Territories",
+"sector": "Kessel",
+"on_lane": false
+},
+{
+"id": "gorobei-m-8",
+"name": "Gorobei",
+"x": 2195.1,
+"y": 1896.3,
+"gx": 9241.6,
+"gy": 5751.1,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "gorse-o-10",
+"name": "Gorse",
+"x": 2432.6,
+"y": 2183.9,
+"gx": 17398.1,
+"gy": -4124.0,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "gotar-u-9",
+"name": "Gotar",
+"x": 3313.8,
+"y": 1956.2,
+"gx": 47661.5,
+"gy": 3696.7,
+"region": "Wild Space",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "grange-q-11",
+"name": "Grange",
+"x": 2702.8,
+"y": 2316.7,
+"gx": 26676.7,
+"gy": -8686.9,
+"region": "Mid Rim",
+"sector": "Kurost",
+"on_lane": true
+},
+{
+"id": "gravlex-med-l-4",
+"name": "Gravlex Med",
+"x": 2024.3,
+"y": 1250.5,
+"gx": 3376.3,
+"gy": 27931.2,
+"region": "Outer Rim Territories",
+"sector": "Raioballo",
+"on_lane": false
+},
+{
+"id": "great-zilk-k-6",
+"name": "Great Zilk",
+"x": 1847.6,
+"y": 1595.4,
+"gx": -2693.4,
+"gy": 16086.3,
+"region": "Mid Rim",
+"sector": "Irishi",
+"on_lane": false
+},
+{
+"id": "gree-l-2",
+"name": "Gree",
+"x": 1938.0,
+"y": 1017.4,
+"gx": 411.8,
+"gy": 35936.5,
+"region": "Outer Rim Territories",
+"sector": "Veragi (Gree Enclave)",
+"on_lane": false
+},
+{
+"id": "griq-h-7",
+"name": "Griq",
+"x": 1427.5,
+"y": 1634.2,
+"gx": -17123.4,
+"gy": 14754.0,
+"region": "Unknown Regions",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "guat-a-p-19",
+"name": "Guat'a",
+"x": 2571.8,
+"y": 3399.4,
+"gx": 22177.7,
+"gy": -45869.5,
+"region": "Outer Rim Territories",
+"sector": "Torch Nebula",
+"on_lane": true
+},
+{
+"id": "guavian-drift-p-4",
+"name": "Guavian Drift",
+"x": 2562.1,
+"y": 1278.6,
+"gx": 21844.4,
+"gy": 26967.9,
+"region": "Outer Rim Territories",
+"sector": "Meram",
+"on_lane": false
+},
+{
+"id": "gyndine-o-12",
+"name": "Gyndine",
+"x": 2383.9,
+"y": 2391.9,
+"gx": 15723.8,
+"gy": -11267.6,
+"region": "Expansion Region",
+"sector": "Circarpous",
+"on_lane": true
+},
+{
+"id": "h-nemthe-m-18",
+"name": "H'nemthe",
+"x": 2096.1,
+"y": 3360.3,
+"gx": 5840.3,
+"gy": -44525.8,
+"region": "Outer Rim Territories",
+"sector": "Mayagil",
+"on_lane": false
+},
+{
+"id": "halais-n-10",
+"name": "Halais",
+"x": 2316.3,
+"y": 2150.4,
+"gx": 13401.6,
+"gy": -2973.5,
+"region": "Colonies",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "hapes-o-9",
+"name": "Hapes",
+"x": 2440.1,
+"y": 1987.9,
+"gx": 17655.7,
+"gy": 2607.4,
+"region": "Inner Rim",
+"sector": "Hapes Cluster",
+"on_lane": false
+},
+{
+"id": "haruun-kal-m-17",
+"name": "Haruun Kal",
+"x": 2181.7,
+"y": 3110.1,
+"gx": 8779.8,
+"gy": -35934.3,
+"region": "Mid Rim",
+"sector": "Dustig",
+"on_lane": false
+},
+{
+"id": "hasskyn-m-20",
+"name": "Hasskyn",
+"x": 2174.0,
+"y": 3585.4,
+"gx": 8514.6,
+"gy": -52258.5,
+"region": "Outer Rim Territories",
+"sector": "Minos Cluster",
+"on_lane": false
+},
+{
+"id": "helikoprion-s-5",
+"name": "Helikoprion",
+"x": 3072.4,
+"y": 1429.3,
+"gx": 39370.1,
+"gy": 21790.8,
+"region": "Outer Rim Territories",
+"sector": "Nilgaard",
+"on_lane": false
+},
+{
+"id": "hetzal-q-16",
+"name": "Hetzal",
+"x": 2773.1,
+"y": 3059.9,
+"gx": 29092.3,
+"gy": -34209.4,
+"region": "Outer Rim Territories",
+"sector": "Savareen",
+"on_lane": true
+},
+{
+"id": "hevurion-l-8",
+"name": "Hevurion",
+"x": 2065.6,
+"y": 1825.1,
+"gx": 4793.8,
+"gy": 8196.9,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "hodi-m-10",
+"name": "Hodi",
+"x": 2108.5,
+"y": 2190.8,
+"gx": 6266.5,
+"gy": -4360.2,
+"region": "Core Worlds",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "hok-m-9",
+"name": "Hok",
+"x": 2185.6,
+"y": 2010.3,
+"gx": 8915.1,
+"gy": 1838.7,
+"region": "Colonies",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "honoghr-t-10",
+"name": "Honoghr",
+"x": 3162.5,
+"y": 2110.1,
+"gx": 42465.0,
+"gy": -1589.6,
+"region": "Outer Rim Territories",
+"sector": "Kessel",
+"on_lane": true
+},
+{
+"id": "hosnian-prime-m-12",
+"name": "Hosnian Prime",
+"x": 2127.1,
+"y": 2464.9,
+"gx": 6904.7,
+"gy": -13776.9,
+"region": "Core Worlds",
+"sector": "Hosnian",
+"on_lane": true
+},
+{
+"id": "hoth-k-18",
+"name": "Hoth",
+"x": 1786.6,
+"y": 3324.6,
+"gx": -4788.2,
+"gy": -43302.0,
+"region": "Outer Rim Territories",
+"sector": "Javin (Anoat)",
+"on_lane": true
+},
+{
+"id": "huk-j-4",
+"name": "Huk",
+"x": 1660.7,
+"y": 1262.1,
+"gx": -9112.7,
+"gy": 27533.7,
+"region": "Wild Space",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "huwaw-m-5",
+"name": "Huwaw",
+"x": 2170.2,
+"y": 1425.4,
+"gx": 8384.9,
+"gy": 21926.7,
+"region": "Outer Rim Territories",
+"sector": "Lahara",
+"on_lane": false
+},
+{
+"id": "hylobi-q-8",
+"name": "Hylobi",
+"x": 2674.1,
+"y": 1893.3,
+"gx": 25691.7,
+"gy": 5856.4,
+"region": "Mid Rim",
+"sector": "Taldot",
+"on_lane": false
+},
+{
+"id": "hynestia-j-13",
+"name": "Hynestia",
+"x": 1773.1,
+"y": 2625.6,
+"gx": -5251.8,
+"gy": -19295.5,
+"region": "Colonies",
+"sector": "Hynestian",
+"on_lane": false
+},
+{
+"id": "hyperkarn-r-16",
+"name": "Hyperkarn",
+"x": 2893.9,
+"y": 2965.2,
+"gx": 33239.4,
+"gy": -30958.7,
+"region": "Outer Rim Territories",
+"sector": "Grohl",
+"on_lane": false
+},
+{
+"id": "hypori-s-16",
+"name": "Hypori",
+"x": 2983.3,
+"y": 3002.1,
+"gx": 36311.9,
+"gy": -32225.6,
+"region": "Outer Rim Territories",
+"sector": "Ferra",
+"on_lane": false
+},
+{
+"id": "iakar-n-20",
+"name": "Iakar",
+"x": 2261.5,
+"y": 3566.0,
+"gx": 11521.6,
+"gy": -51593.1,
+"region": "Outer Rim Territories",
+"sector": "Rseik",
+"on_lane": false
+},
+{
+"id": "icindra-u-6",
+"name": "Icindra",
+"x": 3266.3,
+"y": 1551.3,
+"gx": 46028.8,
+"gy": 17600.4,
+"region": "Outer Rim Territories",
+"sector": "Calamari",
+"on_lane": false
+},
+{
+"id": "idaflor-o-18",
+"name": "Idaflor",
+"x": 2479.7,
+"y": 3278.6,
+"gx": 19015.3,
+"gy": -41720.7,
+"region": "Outer Rim Territories",
+"sector": "Sarin",
+"on_lane": true
+},
+{
+"id": "iego-t-7",
+"name": "Iego",
+"x": 3134.4,
+"y": 1702.9,
+"gx": 41498.6,
+"gy": 12393.6,
+"region": "Outer Rim Territories",
+"sector": "Ash Worlds",
+"on_lane": false
+},
+{
+"id": "iktotch-o-14",
+"name": "Iktotch",
+"x": 2431.0,
+"y": 2657.9,
+"gx": 17343.4,
+"gy": -20403.1,
+"region": "Expansion Region",
+"sector": "Narvath",
+"on_lane": false
+},
+{
+"id": "iloh-n-9",
+"name": "Iloh",
+"x": 2260.3,
+"y": 2033.0,
+"gx": 11480.9,
+"gy": 1057.8,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "ilum-g-7",
+"name": "Ilum",
+"x": 1323.5,
+"y": 1706.7,
+"gx": -20693.1,
+"gy": 12264.1,
+"region": "Unknown Regions",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "imynusoph-j-21",
+"name": "Imynusoph",
+"x": 1768.7,
+"y": 3707.0,
+"gx": -5403.4,
+"gy": -56434.2,
+"region": "Outer Rim Territories",
+"sector": "Kallea",
+"on_lane": true
+},
+{
+"id": "ingae-n-20",
+"name": "Ingae",
+"x": 2244.2,
+"y": 3643.9,
+"gx": 10925.8,
+"gy": -54267.8,
+"region": "Outer Rim Territories",
+"sector": "Rseik",
+"on_lane": false
+},
+{
+"id": "inusagi-o-16",
+"name": "Inusagi",
+"x": 2422.4,
+"y": 3016.5,
+"gx": 17047.3,
+"gy": -32718.9,
+"region": "Mid Rim",
+"sector": "Vilonis",
+"on_lane": false
+},
+{
+"id": "ipsidon-k-7",
+"name": "Ipsidon",
+"x": 1849.8,
+"y": 1644.6,
+"gx": -2619.4,
+"gy": 14397.7,
+"region": "Mid Rim",
+"sector": "Corthenia",
+"on_lane": false
+},
+{
+"id": "iridonia-j-7",
+"name": "Iridonia",
+"x": 1759.5,
+"y": 1638.9,
+"gx": -5720.0,
+"gy": 14591.8,
+"region": "Mid Rim",
+"sector": "Glythe",
+"on_lane": true
+},
+{
+"id": "isde-naha-k-18",
+"name": "Isde Naha",
+"x": 1799.9,
+"y": 3366.1,
+"gx": -4333.5,
+"gy": -44727.2,
+"region": "Outer Rim Territories",
+"sector": "Javin (Yarith)",
+"on_lane": true
+},
+{
+"id": "ithor-m-6",
+"name": "Ithor",
+"x": 2087.5,
+"y": 1598.5,
+"gx": 5546.4,
+"gy": 15979.0,
+"region": "Mid Rim",
+"sector": "Ottega",
+"on_lane": false
+},
+{
+"id": "ivexia-q-7",
+"name": "Ivexia",
+"x": 2659.8,
+"y": 1693.9,
+"gx": 25200.2,
+"gy": 12702.4,
+"region": "Mid Rim",
+"sector": "Tennuutta",
+"on_lane": false
+},
+{
+"id": "jabiim-s-7",
+"name": "Jabiim",
+"x": 3031.4,
+"y": 1739.2,
+"gx": 37961.5,
+"gy": 11148.2,
+"region": "Outer Rim Territories",
+"sector": "Phelleem",
+"on_lane": true
+},
+{
+"id": "jaemus-k-4",
+"name": "Jaemus",
+"x": 1800.7,
+"y": 1210.6,
+"gx": -4305.3,
+"gy": 29300.6,
+"region": "Outer Rim Territories",
+"sector": "Obtrexta",
+"on_lane": true
+},
+{
+"id": "jakku-i-13",
+"name": "Jakku",
+"x": 1511.2,
+"y": 2515.3,
+"gx": -14246.0,
+"gy": -15504.8,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "jaminere-s-6",
+"name": "Jaminere",
+"x": 3042.8,
+"y": 1522.0,
+"gx": 38352.9,
+"gy": 18608.0,
+"region": "Outer Rim Territories",
+"sector": "Allied Tion",
+"on_lane": true
+},
+{
+"id": "jedha-h-10",
+"name": "Jedha",
+"x": 1385.4,
+"y": 2131.4,
+"gx": -18566.3,
+"gy": -2323.4,
+"region": "Mid Rim",
+"sector": "(Terrabe)",
+"on_lane": true
+},
+{
+"id": "jelucan-q-4",
+"name": "Jelucan",
+"x": 2681.9,
+"y": 1214.7,
+"gx": 25960.6,
+"gy": 29159.9,
+"region": "Outer Rim Territories",
+"sector": "Kwymar",
+"on_lane": true
+},
+{
+"id": "kabal-n-18",
+"name": "Kabal",
+"x": 2268.9,
+"y": 3311.8,
+"gx": 11775.3,
+"gy": -42863.3,
+"region": "Outer Rim Territories",
+"sector": "Mayagil",
+"on_lane": true
+},
+{
+"id": "kadavo-s-4",
+"name": "Kadavo",
+"x": 3040.7,
+"y": 1282.4,
+"gx": 38282.1,
+"gy": 26835.0,
+"region": "Wild Space",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "kal-shebbol-m-21",
+"name": "Kal'Shebbol",
+"x": 2161.9,
+"y": 3707.2,
+"gx": 8101.0,
+"gy": -56442.8,
+"region": "Outer Rim Territories",
+"sector": "Kathol",
+"on_lane": true
+},
+{
+"id": "kalarba-p-15",
+"name": "Kalarba",
+"x": 2519.4,
+"y": 2817.6,
+"gx": 20379.1,
+"gy": -25889.1,
+"region": "Mid Rim",
+"sector": "Hevvrol",
+"on_lane": true
+},
+{
+"id": "kaldar-trinary-m-4",
+"name": "Kaldar Trinary",
+"x": 2130.2,
+"y": 1200.0,
+"gx": 7012.2,
+"gy": 29666.0,
+"region": "Outer Rim Territories",
+"sector": "Chopani",
+"on_lane": false
+},
+{
+"id": "kalee-j-4",
+"name": "Kalee",
+"x": 1684.2,
+"y": 1240.6,
+"gx": -8304.2,
+"gy": 28270.8,
+"region": "Wild Space",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "kaller-k-5",
+"name": "Kaller",
+"x": 1890.8,
+"y": 1424.4,
+"gx": -1210.4,
+"gy": 21957.8,
+"region": "Outer Rim Territories",
+"sector": "Cassander",
+"on_lane": true
+},
+{
+"id": "kamar-s-3",
+"name": "Kamar",
+"x": 3039.0,
+"y": 1187.2,
+"gx": 38223.7,
+"gy": 30107.5,
+"region": "Wild Space",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "karfeddion-l-18",
+"name": "Karfeddion",
+"x": 1986.6,
+"y": 3239.9,
+"gx": 2080.6,
+"gy": -40391.4,
+"region": "Mid Rim",
+"sector": "Senex",
+"on_lane": true
+},
+{
+"id": "karkaris-s-5",
+"name": "Karkaris",
+"x": 3090.0,
+"y": 1409.9,
+"gx": 39974.4,
+"gy": 22458.0,
+"region": "Outer Rim Territories",
+"sector": "Nilgaard",
+"on_lane": true
+},
+{
+"id": "karnac-t-8",
+"name": "Karnac",
+"x": 3149.8,
+"y": 1797.6,
+"gx": 42030.1,
+"gy": 9140.6,
+"region": "Outer Rim Territories",
+"sector": "Cadma",
+"on_lane": false
+},
+{
+"id": "karthon-h-16",
+"name": "Karthon",
+"x": 1396.9,
+"y": 2982.9,
+"gx": -18174.0,
+"gy": -31565.1,
+"region": "Outer Rim Territories",
+"sector": "Zuma (Sugai)",
+"on_lane": false
+},
+{
+"id": "kartoosh-i-16",
+"name": "Kartoosh",
+"x": 1610.9,
+"y": 3066.4,
+"gx": -10824.2,
+"gy": -34432.7,
+"region": "Mid Rim",
+"sector": "Narrant",
+"on_lane": true
+},
+{
+"id": "kashyyyk-p-9",
+"name": "Kashyyyk",
+"x": 2619.2,
+"y": 2055.5,
+"gx": 23804.4,
+"gy": 283.4,
+"region": "Mid Rim",
+"sector": "Mytaranor",
+"on_lane": true
+},
+{
+"id": "katarr-o-8",
+"name": "Katarr",
+"x": 2489.6,
+"y": 1817.4,
+"gx": 19355.1,
+"gy": 8462.4,
+"region": "Mid Rim",
+"sector": "Vensori",
+"on_lane": false
+},
+{
+"id": "kazlin-s-8",
+"name": "Kazlin",
+"x": 3011.5,
+"y": 1786.7,
+"gx": 37279.0,
+"gy": 9515.3,
+"region": "Outer Rim Territories",
+"sector": "Suolriep",
+"on_lane": false
+},
+{
+"id": "kegan-t-9",
+"name": "Kegan",
+"x": 3187.5,
+"y": 1934.9,
+"gx": 43324.0,
+"gy": 4425.1,
+"region": "Outer Rim Territories",
+"sector": "Calaron",
+"on_lane": true
+},
+{
+"id": "keitum-j-6",
+"name": "Keitum",
+"x": 1689.6,
+"y": 1597.3,
+"gx": -8120.5,
+"gy": 16020.8,
+"region": "Mid Rim",
+"sector": "Ariarch",
+"on_lane": true
+},
+{
+"id": "kenari-q-7",
+"name": "Kenari",
+"x": 2750.8,
+"y": 1663.2,
+"gx": 28324.9,
+"gy": 13759.2,
+"region": "Mid Rim",
+"sector": "Perkell",
+"on_lane": false
+},
+{
+"id": "kennerla-m-20",
+"name": "Kennerla",
+"x": 2161.1,
+"y": 3605.9,
+"gx": 8073.7,
+"gy": -52961.3,
+"region": "Outer Rim Territories",
+"sector": "Minos Cluster",
+"on_lane": false
+},
+{
+"id": "kerest-m-19",
+"name": "Kerest",
+"x": 2109.0,
+"y": 3451.5,
+"gx": 6282.8,
+"gy": -47657.9,
+"region": "Outer Rim Territories",
+"sector": "Sluis",
+"on_lane": false
+},
+{
+"id": "kerkoidia-n-15",
+"name": "Kerkoidia",
+"x": 2340.2,
+"y": 2934.4,
+"gx": 14222.7,
+"gy": -29898.7,
+"region": "Expansion Region",
+"sector": "Kira",
+"on_lane": false
+},
+{
+"id": "kesh-u-10",
+"name": "Kesh",
+"x": 3323.3,
+"y": 2120.5,
+"gx": 47986.0,
+"gy": -1946.7,
+"region": "Wild Space",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "kessar-n-17",
+"name": "Kessar",
+"x": 2281.6,
+"y": 3143.6,
+"gx": 12212.2,
+"gy": -37085.8,
+"region": "Outer Rim Territories",
+"sector": "Grumani",
+"on_lane": true
+},
+{
+"id": "kessel-t-10",
+"name": "Kessel",
+"x": 3154.9,
+"y": 2082.7,
+"gx": 42204.7,
+"gy": -649.3,
+"region": "Outer Rim Territories",
+"sector": "Kessel",
+"on_lane": true
+},
+{
+"id": "keteeria-o-7",
+"name": "Keteeria",
+"x": 2467.1,
+"y": 1755.3,
+"gx": 18581.9,
+"gy": 10596.7,
+"region": "Mid Rim",
+"sector": "Venaarian",
+"on_lane": false
+},
+{
+"id": "khofar-m-5",
+"name": "Khofar",
+"x": 2148.3,
+"y": 1373.6,
+"gx": 7634.6,
+"gy": 23703.0,
+"region": "Outer Rim Territories",
+"sector": "Lahara",
+"on_lane": false
+},
+{
+"id": "khomm-l-12",
+"name": "Khomm",
+"x": 1938.7,
+"y": 2438.7,
+"gx": 433.1,
+"gy": -12876.5,
+"region": "Deep Core",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "kiffex-l-14",
+"name": "Kiffex",
+"x": 1976.5,
+"y": 2706.8,
+"gx": 1731.5,
+"gy": -22081.7,
+"region": "Inner Rim",
+"sector": "Kiffu",
+"on_lane": true
+},
+{
+"id": "kijimi-r-8",
+"name": "Kijimi",
+"x": 2815.9,
+"y": 1807.1,
+"gx": 30562.5,
+"gy": 8816.0,
+"region": "Mid Rim",
+"sector": "Bryx",
+"on_lane": false
+},
+{
+"id": "killun-station-t-6",
+"name": "Killun Station",
+"x": 3215.2,
+"y": 1523.7,
+"gx": 44275.7,
+"gy": 18550.0,
+"region": "Outer Rim Territories",
+"sector": "Pakuuni",
+"on_lane": false
+},
+{
+"id": "kintan-s-9",
+"name": "Kintan",
+"x": 3046.4,
+"y": 1932.4,
+"gx": 38476.8,
+"gy": 4513.5,
+"region": "Hutt Space",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "kinyen-l-15",
+"name": "Kinyen",
+"x": 1937.8,
+"y": 2937.7,
+"gx": 402.4,
+"gy": -30012.5,
+"region": "Expansion Region",
+"sector": "Bes Ber Bikade",
+"on_lane": true
+},
+{
+"id": "kira-n-16",
+"name": "Kira",
+"x": 2299.3,
+"y": 2944.7,
+"gx": 12819.1,
+"gy": -30252.9,
+"region": "Expansion Region",
+"sector": "Kira",
+"on_lane": true
+},
+{
+"id": "kirdo-n-19",
+"name": "Kirdo",
+"x": 2314.6,
+"y": 3438.7,
+"gx": 13343.5,
+"gy": -47219.4,
+"region": "Outer Rim Territories",
+"sector": "Tamarin",
+"on_lane": true
+},
+{
+"id": "kitel-phard-j-12",
+"name": "Kitel Phard",
+"x": 1738.3,
+"y": 2496.1,
+"gx": -6448.1,
+"gy": -14846.0,
+"region": "Core Worlds",
+"sector": "Atrisian CW",
+"on_lane": true
+},
+{
+"id": "klatooine-s-9",
+"name": "Klatooine",
+"x": 3042.1,
+"y": 1923.9,
+"gx": 38330.8,
+"gy": 4805.5,
+"region": "Hutt Space",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "koboh-h-19",
+"name": "Koboh",
+"x": 1484.4,
+"y": 3424.4,
+"gx": -15169.3,
+"gy": -46729.3,
+"region": "Outer Rim Territories",
+"sector": "Varada",
+"on_lane": false
+},
+{
+"id": "koke-frost-h-7",
+"name": "Koke Frost",
+"x": 1487.1,
+"y": 1695.5,
+"gx": -15075.5,
+"gy": 12648.8,
+"region": "Wild Space",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "kol-iben-r-16",
+"name": "Kol Iben",
+"x": 2849.6,
+"y": 3066.4,
+"gx": 31719.6,
+"gy": -34432.7,
+"region": "Outer Rim Territories",
+"sector": "Arkanis",
+"on_lane": false
+},
+{
+"id": "kooriva-m-14",
+"name": "Kooriva",
+"x": 2160.2,
+"y": 2685.1,
+"gx": 8042.8,
+"gy": -21339.2,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "korbori-n-12",
+"name": "Korbori",
+"x": 2235.9,
+"y": 2425.0,
+"gx": 10643.0,
+"gy": -12405.7,
+"region": "Colonies",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "korrus-k-4",
+"name": "Korrus",
+"x": 1848.2,
+"y": 1274.0,
+"gx": -2671.7,
+"gy": 27123.3,
+"region": "Outer Rim Territories",
+"sector": "Clacis",
+"on_lane": true
+},
+{
+"id": "kotab-n-10",
+"name": "Kotab",
+"x": 2318.9,
+"y": 2086.4,
+"gx": 13492.2,
+"gy": -777.2,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "kowak-s-16",
+"name": "Kowak",
+"x": 3079.6,
+"y": 2947.2,
+"gx": 39617.0,
+"gy": -30340.8,
+"region": "Outer Rim Territories",
+"sector": "Sevetta",
+"on_lane": false
+},
+{
+"id": "kril-dor-i-7",
+"name": "Kril'Dor",
+"x": 1579.7,
+"y": 1700.5,
+"gx": -11895.2,
+"gy": 12476.1,
+"region": "Mid Rim",
+"sector": "Outer Jalor",
+"on_lane": false
+},
+{
+"id": "kriselist-k-16",
+"name": "Kriselist",
+"x": 1831.9,
+"y": 3087.1,
+"gx": -3234.1,
+"gy": -35145.3,
+"region": "Mid Rim",
+"sector": "Wornal",
+"on_lane": true
+},
+{
+"id": "krownest-o-7",
+"name": "Krownest",
+"x": 2385.6,
+"y": 1681.7,
+"gx": 15782.1,
+"gy": 13123.2,
+"region": "Outer Rim Territories",
+"sector": "Mandalore",
+"on_lane": false
+},
+{
+"id": "kuat-m-10",
+"name": "Kuat",
+"x": 2201.3,
+"y": 2152.5,
+"gx": 9454.8,
+"gy": -3046.8,
+"region": "Core Worlds",
+"sector": "Kuat",
+"on_lane": true
+},
+{
+"id": "kubindi-t-9",
+"name": "Kubindi",
+"x": 3193.3,
+"y": 2025.9,
+"gx": 43522.7,
+"gy": 1301.7,
+"region": "Outer Rim Territories",
+"sector": "Calaron",
+"on_lane": true
+},
+{
+"id": "kullgroon-p-12",
+"name": "Kullgroon",
+"x": 2587.5,
+"y": 2399.8,
+"gx": 22718.2,
+"gy": -11540.4,
+"region": "Expansion Region",
+"sector": "Authala",
+"on_lane": false
+},
+{
+"id": "kwenn-r-10",
+"name": "Kwenn",
+"x": 2870.9,
+"y": 2184.9,
+"gx": 32451.6,
+"gy": -4158.5,
+"region": "Mid Rim",
+"sector": "Kastolar",
+"on_lane": false
+},
+{
+"id": "lafete-i-18",
+"name": "Lafete",
+"x": 1621.9,
+"y": 3366.4,
+"gx": -10446.4,
+"gy": -44735.9,
+"region": "Outer Rim Territories",
+"sector": "Tunka",
+"on_lane": true
+},
+{
+"id": "lah-mu-l-3",
+"name": "Lah'mu",
+"x": 1941.2,
+"y": 1185.1,
+"gx": 520.3,
+"gy": 30179.0,
+"region": "Outer Rim Territories",
+"sector": "Raioballo",
+"on_lane": false
+},
+{
+"id": "lannik-r-13",
+"name": "Lannik",
+"x": 2816.2,
+"y": 2548.2,
+"gx": 30572.9,
+"gy": -16636.9,
+"region": "Mid Rim",
+"sector": "Lannik Space",
+"on_lane": true
+},
+{
+"id": "lantillies-p-8",
+"name": "Lantillies",
+"x": 2564.9,
+"y": 1888.9,
+"gx": 21940.5,
+"gy": 6007.0,
+"region": "Mid Rim",
+"sector": "Lantillian",
+"on_lane": true
+},
+{
+"id": "lasan-p-20",
+"name": "Lasan",
+"x": 2526.6,
+"y": 3542.1,
+"gx": 20623.9,
+"gy": -50771.3,
+"region": "Wild Space",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "lateron-q-8",
+"name": "Lateron",
+"x": 2701.2,
+"y": 1789.6,
+"gx": 26620.5,
+"gy": 9416.5,
+"region": "Mid Rim",
+"sector": "Talcene",
+"on_lane": false
+},
+{
+"id": "lau-o-6",
+"name": "Lau",
+"x": 2410.2,
+"y": 1611.6,
+"gx": 16627.3,
+"gy": 15528.8,
+"region": "Outer Rim Territories",
+"sector": "Meerian",
+"on_lane": false
+},
+{
+"id": "leritor-q-15",
+"name": "Leritor",
+"x": 2777.1,
+"y": 2837.4,
+"gx": 29230.3,
+"gy": -26568.2,
+"region": "Mid Rim",
+"sector": "Yucrales",
+"on_lane": true
+},
+{
+"id": "lespectus-m-10",
+"name": "Lespectus",
+"x": 2149.3,
+"y": 2143.5,
+"gx": 7667.6,
+"gy": -2738.5,
+"region": "Core Worlds",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "lew-el-j-3",
+"name": "Lew'el",
+"x": 1700.4,
+"y": 1153.8,
+"gx": -7748.0,
+"gy": 31253.3,
+"region": "Wild Space",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "li-toran-m-13",
+"name": "Li-Toran",
+"x": 2173.4,
+"y": 2594.5,
+"gx": 8496.2,
+"gy": -18225.6,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "lianna-s-6",
+"name": "Lianna",
+"x": 2952.8,
+"y": 1515.3,
+"gx": 35264.7,
+"gy": 18838.2,
+"region": "Outer Rim Territories",
+"sector": "Allied Tion",
+"on_lane": true
+},
+{
+"id": "lipsec-i-18",
+"name": "Lipsec",
+"x": 1522.9,
+"y": 3330.4,
+"gx": -13844.1,
+"gy": -43499.3,
+"region": "Outer Rim Territories",
+"sector": "Koradin",
+"on_lane": true
+},
+{
+"id": "lira-san-o-20",
+"name": "Lira San",
+"x": 2431.1,
+"y": 3620.8,
+"gx": 17345.4,
+"gy": -53474.5,
+"region": "Wild Space",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "listehol-q-4",
+"name": "Listehol",
+"x": 2710.9,
+"y": 1200.4,
+"gx": 26954.4,
+"gy": 29653.4,
+"region": "Outer Rim Territories",
+"sector": "Kwymar",
+"on_lane": true
+},
+{
+"id": "llanic-q-16",
+"name": "Llanic",
+"x": 2698.2,
+"y": 3082.8,
+"gx": 26517.9,
+"gy": -34995.9,
+"region": "Outer Rim Territories",
+"sector": "Karthakk",
+"on_lane": true
+},
+{
+"id": "lonera-o-12",
+"name": "Lonera",
+"x": 2364.9,
+"y": 2381.4,
+"gx": 15071.3,
+"gy": -10907.0,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "loronar-m-12",
+"name": "Loronar",
+"x": 2197.1,
+"y": 2429.0,
+"gx": 9308.7,
+"gy": -12541.4,
+"region": "Colonies",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "lorrd-n-4",
+"name": "Lorrd",
+"x": 2325.9,
+"y": 1270.5,
+"gx": 13733.3,
+"gy": 27244.5,
+"region": "Outer Rim Territories",
+"sector": "Kanz",
+"on_lane": false
+},
+{
+"id": "lorta-j-17",
+"name": "Lorta",
+"x": 1774.0,
+"y": 3197.3,
+"gx": -5221.6,
+"gy": -38929.9,
+"region": "Mid Rim",
+"sector": "Gendius",
+"on_lane": true
+},
+{
+"id": "lothal-u-7",
+"name": "Lothal",
+"x": 3297.4,
+"y": 1661.1,
+"gx": 47097.2,
+"gy": 13829.4,
+"region": "Outer Rim Territories",
+"sector": "Lothal",
+"on_lane": true
+},
+{
+"id": "lotho-minor-i-17",
+"name": "Lotho Minor",
+"x": 1599.9,
+"y": 3229.6,
+"gx": -11201.9,
+"gy": -40038.9,
+"region": "Outer Rim Territories",
+"sector": "Wazta",
+"on_lane": true
+},
+{
+"id": "lowick-u-9",
+"name": "Lowick",
+"x": 3259.2,
+"y": 2037.5,
+"gx": 45784.6,
+"gy": 902.0,
+"region": "Outer Rim Territories",
+"sector": "Calaron",
+"on_lane": false
+},
+{
+"id": "lutrillia-j-18",
+"name": "Lutrillia",
+"x": 1763.2,
+"y": 3291.5,
+"gx": -5592.9,
+"gy": -42165.3,
+"region": "Outer Rim Territories",
+"sector": "Javin (Yarith)",
+"on_lane": true
+},
+{
+"id": "madurs-r-7",
+"name": "Madurs",
+"x": 2923.1,
+"y": 1701.4,
+"gx": 34243.9,
+"gy": 12447.0,
+"region": "Mid Rim",
+"sector": "Maldrood",
+"on_lane": false
+},
+{
+"id": "mahranee-p-8",
+"name": "Mahranee",
+"x": 2645.7,
+"y": 1913.1,
+"gx": 24715.3,
+"gy": 5174.4,
+"region": "Mid Rim",
+"sector": "Taldot",
+"on_lane": false
+},
+{
+"id": "maires-o-9",
+"name": "Maires",
+"x": 2433.4,
+"y": 1992.9,
+"gx": 17423.9,
+"gy": 2435.7,
+"region": "Inner Rim",
+"sector": "Hapes Cluster",
+"on_lane": false
+},
+{
+"id": "malachor-s-4",
+"name": "Malachor",
+"x": 2964.3,
+"y": 1307.2,
+"gx": 35658.5,
+"gy": 25984.2,
+"region": "Outer Rim Territories",
+"sector": "Chorlian",
+"on_lane": false
+},
+{
+"id": "malastare-n-16",
+"name": "Malastare",
+"x": 2228.2,
+"y": 3064.5,
+"gx": 10377.3,
+"gy": -34366.7,
+"region": "Mid Rim",
+"sector": "Dustig",
+"on_lane": true
+},
+{
+"id": "maltheen-divide-q-10",
+"name": "Maltheen Divide",
+"x": 2703.0,
+"y": 2185.6,
+"gx": 26683.6,
+"gy": -4182.2,
+"region": "Mid Rim",
+"sector": "Trax",
+"on_lane": false
+},
+{
+"id": "manda-r-15",
+"name": "Manda",
+"x": 2920.8,
+"y": 2800.4,
+"gx": 34162.4,
+"gy": -25298.6,
+"region": "Mid Rim",
+"sector": "Manda",
+"on_lane": true
+},
+{
+"id": "mandalore-o-7",
+"name": "Mandalore",
+"x": 2456.9,
+"y": 1670.4,
+"gx": 18231.9,
+"gy": 13511.5,
+"region": "Outer Rim Territories",
+"sector": "Mandalore",
+"on_lane": true
+},
+{
+"id": "manpha-k-20",
+"name": "Manpha",
+"x": 1808.6,
+"y": 3538.9,
+"gx": -4032.4,
+"gy": -50662.2,
+"region": "Outer Rim Territories",
+"sector": "Seitia",
+"on_lane": true
+},
+{
+"id": "mapuzo-m-7",
+"name": "Mapuzo",
+"x": 2093.1,
+"y": 1698.4,
+"gx": 5737.6,
+"gy": 12550.3,
+"region": "Mid Rim",
+"sector": "Hollan",
+"on_lane": false
+},
+{
+"id": "markez-k-7",
+"name": "Markez",
+"x": 1846.3,
+"y": 1725.5,
+"gx": -2737.2,
+"gy": 11618.6,
+"region": "Mid Rim",
+"sector": "Tiala",
+"on_lane": false
+},
+{
+"id": "marleyvane-t-8",
+"name": "Marleyvane",
+"x": 3101.9,
+"y": 1826.4,
+"gx": 40382.9,
+"gy": 8154.0,
+"region": "Outer Rim Territories",
+"sector": "Tharin",
+"on_lane": true
+},
+{
+"id": "mefti-l-8",
+"name": "Mefti",
+"x": 1987.8,
+"y": 1917.6,
+"gx": 2120.6,
+"gy": 5021.3,
+"region": "Colonies",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "merj-o-6",
+"name": "Merj",
+"x": 2430.7,
+"y": 1517.5,
+"gx": 17330.9,
+"gy": 18760.9,
+"region": "Outer Rim Territories",
+"sector": "Thesme",
+"on_lane": false
+},
+{
+"id": "merokia-j-18",
+"name": "Merokia",
+"x": 1720.3,
+"y": 3363.6,
+"gx": -7065.5,
+"gy": -44641.8,
+"region": "Outer Rim Territories",
+"sector": "Koradin",
+"on_lane": true
+},
+{
+"id": "merson-o-10",
+"name": "Merson",
+"x": 2463.1,
+"y": 2119.0,
+"gx": 18443.2,
+"gy": -1895.6,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "metagos-t-8",
+"name": "Metagos",
+"x": 3138.3,
+"y": 1836.6,
+"gx": 41632.8,
+"gy": 7801.6,
+"region": "Outer Rim Territories",
+"sector": "Cadma",
+"on_lane": false
+},
+{
+"id": "mikkia-m-7",
+"name": "Mikkia",
+"x": 2140.8,
+"y": 1700.1,
+"gx": 7374.9,
+"gy": 12489.3,
+"region": "Expansion Region",
+"sector": "Greater Plooriod",
+"on_lane": true
+},
+{
+"id": "milagro-o-14",
+"name": "Milagro",
+"x": 2454.1,
+"y": 2724.4,
+"gx": 18136.7,
+"gy": -22687.9,
+"region": "Expansion Region",
+"sector": "Chaykin",
+"on_lane": true
+},
+{
+"id": "milvayne-l-8",
+"name": "Milvayne",
+"x": 1999.7,
+"y": 1848.1,
+"gx": 2529.4,
+"gy": 7408.5,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "mina-rau-o-6",
+"name": "Mina-Rau",
+"x": 2436.7,
+"y": 1492.6,
+"gx": 17537.9,
+"gy": 19617.8,
+"region": "Outer Rim Territories",
+"sector": "D'Astan",
+"on_lane": false
+},
+{
+"id": "mindor-m-8",
+"name": "Mindor",
+"x": 2186.3,
+"y": 1822.1,
+"gx": 8939.7,
+"gy": 8301.1,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "minfar-i-13",
+"name": "Minfar",
+"x": 1614.5,
+"y": 2635.7,
+"gx": -10700.9,
+"gy": -19640.5,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "mirial-q-4",
+"name": "Mirial",
+"x": 2720.3,
+"y": 1234.8,
+"gx": 27277.3,
+"gy": 28471.0,
+"region": "Outer Rim Territories",
+"sector": "Illisurevimurasi",
+"on_lane": true
+},
+{
+"id": "mokivj-g-16",
+"name": "Mokivj",
+"x": 1328.6,
+"y": 2986.8,
+"gx": -20519.4,
+"gy": -31699.1,
+"region": "Outer Rim Territories",
+"sector": "Pacanth Reach",
+"on_lane": true
+},
+{
+"id": "molavar-s-15",
+"name": "Molavar",
+"x": 2998.9,
+"y": 2878.4,
+"gx": 36845.5,
+"gy": -27976.0,
+"region": "Outer Rim Territories",
+"sector": "Abrion",
+"on_lane": true
+},
+{
+"id": "mon-cala-u-6",
+"name": "Mon Cala",
+"x": 3251.5,
+"y": 1584.6,
+"gx": 45520.9,
+"gy": 16456.2,
+"region": "Outer Rim Territories",
+"sector": "Calamari",
+"on_lane": true
+},
+{
+"id": "mon-gazza-q-16",
+"name": "Mon Gazza",
+"x": 2680.3,
+"y": 2964.1,
+"gx": 25903.7,
+"gy": -30920.5,
+"region": "Mid Rim",
+"sector": "Lambda",
+"on_lane": true
+},
+{
+"id": "monastery-q-14",
+"name": "Monastery",
+"x": 2676.0,
+"y": 2791.5,
+"gx": 25757.7,
+"gy": -24993.4,
+"region": "Mid Rim",
+"sector": "Haserian",
+"on_lane": true
+},
+{
+"id": "mooga-q-7",
+"name": "Mooga",
+"x": 2717.6,
+"y": 1705.5,
+"gx": 27184.4,
+"gy": 12305.9,
+"region": "Mid Rim",
+"sector": "Perkell",
+"on_lane": false
+},
+{
+"id": "moraband-r-5",
+"name": "Moraband",
+"x": 2825.9,
+"y": 1387.1,
+"gx": 30904.9,
+"gy": 23239.7,
+"region": "Outer Rim Territories",
+"sector": "Esstran (Sith Worlds)",
+"on_lane": true
+},
+{
+"id": "morak-h-18",
+"name": "Morak",
+"x": 1394.9,
+"y": 3284.5,
+"gx": -18240.9,
+"gy": -41925.6,
+"region": "Wild Space",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "mugaar-k-18",
+"name": "Mugaar",
+"x": 1807.1,
+"y": 3248.0,
+"gx": -4085.6,
+"gy": -40670.0,
+"region": "Mid Rim",
+"sector": "Bruanii",
+"on_lane": true
+},
+{
+"id": "mulita-h-19",
+"name": "Mulita",
+"x": 1428.0,
+"y": 3447.8,
+"gx": -17103.6,
+"gy": -47531.0,
+"region": "Wild Space",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "munt-ontdal-q-13",
+"name": "Munt Ontdal",
+"x": 2669.9,
+"y": 2591.2,
+"gx": 25547.8,
+"gy": -18112.5,
+"region": "Mid Rim",
+"sector": "Fei Hu",
+"on_lane": true
+},
+{
+"id": "murkhana-s-6",
+"name": "Murkhana",
+"x": 2994.2,
+"y": 1585.7,
+"gx": 36686.4,
+"gy": 16419.1,
+"region": "Outer Rim Territories",
+"sector": "Auril",
+"on_lane": false
+},
+{
+"id": "mustafar-l-19",
+"name": "Mustafar",
+"x": 1952.5,
+"y": 3507.4,
+"gx": 908.0,
+"gy": -49579.7,
+"region": "Outer Rim Territories",
+"sector": "Atravis",
+"on_lane": false
+},
+{
+"id": "muunilinst-k-4",
+"name": "Muunilinst",
+"x": 1806.0,
+"y": 1262.8,
+"gx": -4123.5,
+"gy": 27510.5,
+"region": "Outer Rim Territories",
+"sector": "Obtrexta",
+"on_lane": true
+},
+{
+"id": "mygeeto-k-5",
+"name": "Mygeeto",
+"x": 1850.7,
+"y": 1344.6,
+"gx": -2587.0,
+"gy": 24701.7,
+"region": "Outer Rim Territories",
+"sector": "Albarrio",
+"on_lane": true
+},
+{
+"id": "mykapo-t-7",
+"name": "Mykapo",
+"x": 3153.0,
+"y": 1633.8,
+"gx": 42139.6,
+"gy": 14767.9,
+"region": "Outer Rim Territories",
+"sector": "Ash Worlds",
+"on_lane": false
+},
+{
+"id": "mynos-r-17",
+"name": "Mynos",
+"x": 2852.8,
+"y": 3201.2,
+"gx": 31829.9,
+"gy": -39064.5,
+"region": "Outer Rim Territories",
+"sector": "Dalchon",
+"on_lane": false
+},
+{
+"id": "mytus-s-3",
+"name": "Mytus",
+"x": 2985.0,
+"y": 1081.4,
+"gx": 36369.6,
+"gy": 33738.8,
+"region": "Wild Space",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "n-zoth-k-10",
+"name": "N'zoth",
+"x": 1788.6,
+"y": 2152.9,
+"gx": -4718.7,
+"gy": -3060.3,
+"region": "Core Worlds",
+"sector": "Farlax",
+"on_lane": true
+},
+{
+"id": "naboo-o-17",
+"name": "Naboo",
+"x": 2415.1,
+"y": 3097.3,
+"gx": 16794.7,
+"gy": -35493.6,
+"region": "Mid Rim",
+"sector": "Chommell",
+"on_lane": true
+},
+{
+"id": "nacon-l-10",
+"name": "Nacon",
+"x": 1929.4,
+"y": 2112.9,
+"gx": 116.3,
+"gy": -1687.3,
+"region": "Deep Core",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "nag-ubdur-p-7",
+"name": "Nag Ubdur",
+"x": 2603.4,
+"y": 1646.2,
+"gx": 23263.4,
+"gy": 14340.9,
+"region": "Outer Rim Territories",
+"sector": "Demetras",
+"on_lane": true
+},
+{
+"id": "najan-rovi-m-17",
+"name": "Najan-Rovi",
+"x": 2150.6,
+"y": 3189.1,
+"gx": 7713.1,
+"gy": -38648.4,
+"region": "Outer Rim Territories",
+"sector": "Brema",
+"on_lane": false
+},
+{
+"id": "nakadia-m-15",
+"name": "Nakadia",
+"x": 2101.5,
+"y": 2887.6,
+"gx": 6027.0,
+"gy": -28293.5,
+"region": "Expansion Region",
+"sector": "Tregillis",
+"on_lane": false
+},
+{
+"id": "nal-hutta-s-12",
+"name": "Nal Hutta",
+"x": 2962.1,
+"y": 2365.9,
+"gx": 35583.9,
+"gy": -10375.6,
+"region": "Hutt Space",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "namadii-i-6",
+"name": "Namadii",
+"x": 1625.2,
+"y": 1601.8,
+"gx": -10332.6,
+"gy": 15866.5,
+"region": "Mid Rim",
+"sector": "Churnis",
+"on_lane": true
+},
+{
+"id": "nantoon-m-13",
+"name": "Nantoon",
+"x": 2100.8,
+"y": 2575.7,
+"gx": 6003.4,
+"gy": -17579.7,
+"region": "Colonies",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "nar-kaaga-s-13",
+"name": "Nar Kaaga",
+"x": 2955.8,
+"y": 2552.5,
+"gx": 35367.0,
+"gy": -16785.7,
+"region": "Hutt Space",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "nar-kanji-s-9",
+"name": "Nar Kanji",
+"x": 2968.8,
+"y": 2057.5,
+"gx": 35814.2,
+"gy": 216.1,
+"region": "Outer Rim Territories",
+"sector": "Suolriep",
+"on_lane": false
+},
+{
+"id": "naraka-s-7",
+"name": "Naraka",
+"x": 3002.4,
+"y": 1703.4,
+"gx": 36964.9,
+"gy": 12375.8,
+"region": "Outer Rim Territories",
+"sector": "Phelleem",
+"on_lane": true
+},
+{
+"id": "narkina-s-15",
+"name": "Narkina",
+"x": 3006.9,
+"y": 2907.3,
+"gx": 37120.9,
+"gy": -28969.4,
+"region": "Outer Rim Territories",
+"sector": "Abrion",
+"on_lane": false
+},
+{
+"id": "nepotis-t-9",
+"name": "Nepotis",
+"x": 3116.4,
+"y": 2022.1,
+"gx": 40882.2,
+"gy": 1432.7,
+"region": "Outer Rim Territories",
+"sector": "Calaron",
+"on_lane": false
+},
+{
+"id": "nevarro-k-20",
+"name": "Nevarro",
+"x": 1873.5,
+"y": 3574.0,
+"gx": -1804.9,
+"gy": -51866.4,
+"region": "Outer Rim Territories",
+"sector": "Dalicron",
+"on_lane": true
+},
+{
+"id": "new-cov-p-14",
+"name": "New Cov",
+"x": 2519.6,
+"y": 2795.4,
+"gx": 20385.5,
+"gy": -25126.7,
+"region": "Mid Rim",
+"sector": "Churba",
+"on_lane": true
+},
+{
+"id": "nexus-ortai-q-14",
+"name": "Nexus Ortai",
+"x": 2727.5,
+"y": 2726.7,
+"gx": 27525.2,
+"gy": -22765.2,
+"region": "Mid Rim",
+"sector": "Hertae",
+"on_lane": true
+},
+{
+"id": "niamos-r-6",
+"name": "Niamos",
+"x": 2896.6,
+"y": 1573.1,
+"gx": 33334.3,
+"gy": 16851.5,
+"region": "Outer Rim Territories",
+"sector": "Vorzyd",
+"on_lane": false
+},
+{
+"id": "nightside-r-5",
+"name": "Nightside",
+"x": 2925.5,
+"y": 1377.6,
+"gx": 34325.3,
+"gy": 23565.8,
+"region": "Outer Rim Territories",
+"sector": "Sertar",
+"on_lane": false
+},
+{
+"id": "nimban-s-10",
+"name": "Nimban",
+"x": 2983.3,
+"y": 2117.1,
+"gx": 36311.2,
+"gy": -1830.5,
+"region": "Hutt Space",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "nithorni-k-8",
+"name": "Nithorni",
+"x": 1852.4,
+"y": 1897.9,
+"gx": -2530.9,
+"gy": 5697.2,
+"region": "Colonies",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "nkllon-l-16",
+"name": "Nkllon",
+"x": 2014.1,
+"y": 2964.3,
+"gx": 3023.5,
+"gy": -30927.1,
+"region": "Expansion Region",
+"sector": "Alchenaut",
+"on_lane": false
+},
+{
+"id": "nora-j-7",
+"name": "Nora",
+"x": 1659.3,
+"y": 1662.9,
+"gx": -9159.3,
+"gy": 13767.9,
+"region": "Mid Rim",
+"sector": "Belshar",
+"on_lane": false
+},
+{
+"id": "norisyn-o-19",
+"name": "Norisyn",
+"x": 2388.0,
+"y": 3490.6,
+"gx": 15865.2,
+"gy": -49002.6,
+"region": "Outer Rim Territories",
+"sector": "Svivreni",
+"on_lane": false
+},
+{
+"id": "novka-r-14",
+"name": "Novka",
+"x": 2898.5,
+"y": 2772.2,
+"gx": 33399.8,
+"gy": -24329.3,
+"region": "Mid Rim",
+"sector": "Manda",
+"on_lane": false
+},
+{
+"id": "nubia-m-11",
+"name": "Nubia",
+"x": 2162.9,
+"y": 2353.1,
+"gx": 8133.8,
+"gy": -9936.7,
+"region": "Core Worlds",
+"sector": "Corellian",
+"on_lane": false
+},
+{
+"id": "numidian-prime-l-7",
+"name": "Numidian Prime",
+"x": 1959.3,
+"y": 1681.7,
+"gx": 1142.0,
+"gy": 13123.6,
+"region": "Mid Rim",
+"sector": "Bright Jewel",
+"on_lane": false
+},
+{
+"id": "nurasenti-s-15",
+"name": "Nurasenti",
+"x": 2957.0,
+"y": 2898.0,
+"gx": 35406.4,
+"gy": -28650.0,
+"region": "Outer Rim Territories",
+"sector": "Abrion",
+"on_lane": false
+},
+{
+"id": "oanne-n-17",
+"name": "Oanne",
+"x": 2340.6,
+"y": 3216.0,
+"gx": 14236.8,
+"gy": -39572.8,
+"region": "Outer Rim Territories",
+"sector": "Bon'nyuw-Luq",
+"on_lane": false
+},
+{
+"id": "oba-diah-t-10",
+"name": "Oba Diah",
+"x": 3208.4,
+"y": 2078.1,
+"gx": 44042.5,
+"gy": -492.0,
+"region": "Outer Rim Territories",
+"sector": "Kessel",
+"on_lane": true
+},
+{
+"id": "obroa-skai-n-8",
+"name": "Obroa-skai",
+"x": 2356.6,
+"y": 1809.5,
+"gx": 14786.3,
+"gy": 8734.1,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "octero-p-18",
+"name": "Octero",
+"x": 2600.7,
+"y": 3318.0,
+"gx": 23171.1,
+"gy": -43075.4,
+"region": "Outer Rim Territories",
+"sector": "Portmoak",
+"on_lane": false
+},
+{
+"id": "oetchi-n-17",
+"name": "Oetchi",
+"x": 2303.8,
+"y": 3173.8,
+"gx": 12974.9,
+"gy": -38121.5,
+"region": "Outer Rim Territories",
+"sector": "Bon'nyuw-Luq",
+"on_lane": false
+},
+{
+"id": "olega-p-7",
+"name": "Olega",
+"x": 2592.9,
+"y": 1723.5,
+"gx": 22902.6,
+"gy": 11688.4,
+"region": "Mid Rim",
+"sector": "Esuain",
+"on_lane": false
+},
+{
+"id": "olkrastrus-q-9",
+"name": "Olkrastrus",
+"x": 2771.0,
+"y": 1941.3,
+"gx": 29019.8,
+"gy": 4208.0,
+"region": "Mid Rim",
+"sector": "Numesira",
+"on_lane": false
+},
+{
+"id": "onderon-o-9",
+"name": "Onderon",
+"x": 2471.7,
+"y": 2042.0,
+"gx": 18739.6,
+"gy": 748.3,
+"region": "Inner Rim",
+"sector": "Japrael",
+"on_lane": true
+},
+{
+"id": "oosalon-u-12",
+"name": "Oosalon",
+"x": 3319.6,
+"y": 2401.0,
+"gx": 47860.3,
+"gy": -11579.8,
+"region": "Outer Rim Territories",
+"sector": "Baxel",
+"on_lane": false
+},
+{
+"id": "ord-mantell-l-7",
+"name": "Ord Mantell",
+"x": 1932.7,
+"y": 1693.3,
+"gx": 228.1,
+"gy": 12725.0,
+"region": "Mid Rim",
+"sector": "Bright Jewel",
+"on_lane": true
+},
+{
+"id": "ord-radama-q-5",
+"name": "Ord Radama",
+"x": 2659.9,
+"y": 1349.8,
+"gx": 25204.2,
+"gy": 24520.7,
+"region": "Outer Rim Territories",
+"sector": "Esstran",
+"on_lane": false
+},
+{
+"id": "ord-trasi-l-4",
+"name": "Ord Trasi",
+"x": 1947.6,
+"y": 1318.6,
+"gx": 740.6,
+"gy": 25592.4,
+"region": "Outer Rim Territories",
+"sector": "Relgim",
+"on_lane": true
+},
+{
+"id": "ordo-tera-p-11",
+"name": "Ordo Tera",
+"x": 2524.1,
+"y": 2229.6,
+"gx": 20538.0,
+"gy": -5693.0,
+"region": "Expansion Region",
+"sector": "Belasco",
+"on_lane": false
+},
+{
+"id": "orinda-k-6",
+"name": "Orinda",
+"x": 1892.3,
+"y": 1563.7,
+"gx": -1160.1,
+"gy": 17174.6,
+"region": "Mid Rim",
+"sector": "Irishi",
+"on_lane": true
+},
+{
+"id": "orish-m-17",
+"name": "Orish",
+"x": 2178.2,
+"y": 3222.2,
+"gx": 8660.3,
+"gy": -39783.0,
+"region": "Outer Rim Territories",
+"sector": "Brema",
+"on_lane": true
+},
+{
+"id": "orto-m-19",
+"name": "Orto",
+"x": 2120.5,
+"y": 3416.8,
+"gx": 6678.0,
+"gy": -46467.0,
+"region": "Outer Rim Territories",
+"sector": "Sluis",
+"on_lane": false
+},
+{
+"id": "orvax-r-17",
+"name": "Orvax",
+"x": 2827.0,
+"y": 3176.3,
+"gx": 30942.9,
+"gy": -38206.6,
+"region": "Outer Rim Territories",
+"sector": "Savareen",
+"on_lane": false
+},
+{
+"id": "oseon-t-8",
+"name": "Oseon",
+"x": 3180.5,
+"y": 1848.7,
+"gx": 43083.5,
+"gy": 7385.7,
+"region": "Outer Rim Territories",
+"sector": "Centrality",
+"on_lane": true
+},
+{
+"id": "ossus-r-6",
+"name": "Ossus",
+"x": 2939.4,
+"y": 1597.9,
+"gx": 34802.0,
+"gy": 16001.6,
+"region": "Outer Rim Territories",
+"sector": "Auril",
+"on_lane": false
+},
+{
+"id": "otomok-k-6",
+"name": "Otomok",
+"x": 1818.4,
+"y": 1502.3,
+"gx": -3697.5,
+"gy": 19283.4,
+"region": "Outer Rim Territories",
+"sector": "Prefsbelt",
+"on_lane": false
+},
+{
+"id": "otor-s-hub-n-7",
+"name": "Otor's Hub",
+"x": 2314.1,
+"y": 1658.0,
+"gx": 13329.0,
+"gy": 13937.3,
+"region": "Outer Rim Territories",
+"sector": "Ojoster",
+"on_lane": true
+},
+{
+"id": "pabu-l-3",
+"name": "Pabu",
+"x": 1983.1,
+"y": 1137.6,
+"gx": 1961.2,
+"gy": 31810.0,
+"region": "Outer Rim Territories",
+"sector": "Chopani",
+"on_lane": false
+},
+{
+"id": "pacara-j-15",
+"name": "Pacara",
+"x": 1673.2,
+"y": 2905.3,
+"gx": -8683.8,
+"gy": -28901.4,
+"region": "Mid Rim",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "pagodon-r-18",
+"name": "Pagodon",
+"x": 2846.6,
+"y": 3279.7,
+"gx": 31615.4,
+"gy": -41757.8,
+"region": "Outer Rim Territories",
+"sector": "Pelgrin",
+"on_lane": false
+},
+{
+"id": "palagosal-r-17",
+"name": "Palagosal",
+"x": 2815.9,
+"y": 3140.5,
+"gx": 30560.1,
+"gy": -36980.0,
+"region": "Outer Rim Territories",
+"sector": "Arkanis",
+"on_lane": false
+},
+{
+"id": "palanhi-k-9",
+"name": "Palanhi",
+"x": 1837.2,
+"y": 1923.5,
+"gx": -3051.8,
+"gy": 4818.6,
+"region": "Colonies",
+"sector": "Fakir",
+"on_lane": true
+},
+{
+"id": "pam-ba-h-15",
+"name": "Pam'ba",
+"x": 1464.4,
+"y": 2881.9,
+"gx": -15854.1,
+"gy": -28098.2,
+"region": "Mid Rim",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "pamarthe-n-18",
+"name": "Pamarthe",
+"x": 2247.5,
+"y": 3326.8,
+"gx": 11039.2,
+"gy": -43375.5,
+"region": "Outer Rim Territories",
+"sector": "Mayagil",
+"on_lane": false
+},
+{
+"id": "panna-s-6",
+"name": "Panna",
+"x": 3052.2,
+"y": 1544.9,
+"gx": 38676.6,
+"gy": 17821.9,
+"region": "Outer Rim Territories",
+"sector": "Cronese Mandate",
+"on_lane": false
+},
+{
+"id": "pantolomin-k-9",
+"name": "Pantolomin",
+"x": 1875.9,
+"y": 2000.5,
+"gx": -1723.4,
+"gy": 2174.5,
+"region": "Core Worlds",
+"sector": "Dolomar",
+"on_lane": true
+},
+{
+"id": "pantora-p-19",
+"name": "Pantora",
+"x": 2556.7,
+"y": 3433.5,
+"gx": 21658.9,
+"gy": -47040.1,
+"region": "Outer Rim Territories",
+"sector": "Sujimis",
+"on_lane": false
+},
+{
+"id": "paradise-m-20",
+"name": "Paradise",
+"x": 2116.7,
+"y": 3585.5,
+"gx": 6547.2,
+"gy": -52261.2,
+"region": "Outer Rim Territories",
+"sector": "Airam",
+"on_lane": false
+},
+{
+"id": "parnassos-h-6",
+"name": "Parnassos",
+"x": 1385.4,
+"y": 1564.1,
+"gx": -18567.5,
+"gy": 17160.6,
+"region": "Unknown Regions",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "parwa-m-18",
+"name": "Parwa",
+"x": 2151.9,
+"y": 3241.6,
+"gx": 7756.3,
+"gy": -40449.7,
+"region": "Outer Rim Territories",
+"sector": "Seswenna",
+"on_lane": false
+},
+{
+"id": "pasaana-o-13",
+"name": "Pasaana",
+"x": 2493.0,
+"y": 2522.5,
+"gx": 19470.0,
+"gy": -15752.1,
+"region": "Expansion Region",
+"sector": "Ombakond",
+"on_lane": false
+},
+{
+"id": "patrolia-l-14",
+"name": "Patrolia",
+"x": 1935.3,
+"y": 2754.1,
+"gx": 319.1,
+"gy": -23706.7,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "pax-n-16",
+"name": "Pax",
+"x": 2245.5,
+"y": 2972.2,
+"gx": 10971.4,
+"gy": -31196.7,
+"region": "Expansion Region",
+"sector": "Kira",
+"on_lane": true
+},
+{
+"id": "persis-l-15",
+"name": "Persis",
+"x": 1998.4,
+"y": 2852.9,
+"gx": 2484.2,
+"gy": -27100.2,
+"region": "Expansion Region",
+"sector": "Bes Ber Bikade",
+"on_lane": false
+},
+{
+"id": "phatrong-p-6",
+"name": "Phatrong",
+"x": 2587.4,
+"y": 1603.5,
+"gx": 22712.3,
+"gy": 15807.0,
+"region": "Outer Rim Territories",
+"sector": "Thrasybule",
+"on_lane": false
+},
+{
+"id": "phindar-p-6",
+"name": "Phindar",
+"x": 2536.4,
+"y": 1621.9,
+"gx": 20961.0,
+"gy": 15175.5,
+"region": "Outer Rim Territories",
+"sector": "Demetras",
+"on_lane": true
+},
+{
+"id": "phu-j-13",
+"name": "Phu",
+"x": 1771.6,
+"y": 2607.9,
+"gx": -5303.3,
+"gy": -18685.9,
+"region": "Colonies",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "pijal-l-8",
+"name": "Pijal",
+"x": 1941.5,
+"y": 1830.1,
+"gx": 529.3,
+"gy": 8026.3,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "pinara-p-19",
+"name": "Pinara",
+"x": 2510.3,
+"y": 3421.5,
+"gx": 20067.1,
+"gy": -46630.0,
+"region": "Outer Rim Territories",
+"sector": "Sujimis",
+"on_lane": false
+},
+{
+"id": "pipada-m-18",
+"name": "Pipada",
+"x": 2084.8,
+"y": 3301.2,
+"gx": 5453.0,
+"gy": -42497.2,
+"region": "Outer Rim Territories",
+"sector": "Videnda",
+"on_lane": false
+},
+{
+"id": "pippip-q-4",
+"name": "Pippip",
+"x": 2738.4,
+"y": 1252.9,
+"gx": 27901.2,
+"gy": 27850.1,
+"region": "Outer Rim Territories",
+"sector": "Illisurevimurasi",
+"on_lane": true
+},
+{
+"id": "pkori-j-5",
+"name": "Pkori",
+"x": 1636.0,
+"y": 1384.1,
+"gx": -9961.4,
+"gy": 23342.2,
+"region": "Wild Space",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "plazir-n-2",
+"name": "Plazir",
+"x": 2313.2,
+"y": 1005.4,
+"gx": 13297.6,
+"gy": 36349.0,
+"region": "Outer Rim Territories",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "plexis-l-13",
+"name": "Plexis",
+"x": 1945.1,
+"y": 2516.2,
+"gx": 654.6,
+"gy": -15538.3,
+"region": "Core Worlds",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "ploo-n-7",
+"name": "Ploo",
+"x": 2259.4,
+"y": 1715.6,
+"gx": 11449.6,
+"gy": 11958.4,
+"region": "Expansion Region",
+"sector": "Ploo",
+"on_lane": false
+},
+{
+"id": "po-yin-s-7",
+"name": "Po'yin",
+"x": 3036.5,
+"y": 1683.8,
+"gx": 38138.3,
+"gy": 13050.4,
+"region": "Outer Rim Territories",
+"sector": "Phelleem",
+"on_lane": false
+},
+{
+"id": "polaar-l-16",
+"name": "Polaar",
+"x": 2017.9,
+"y": 3071.8,
+"gx": 3153.1,
+"gy": -34618.3,
+"region": "Mid Rim",
+"sector": "Eidoloni",
+"on_lane": false
+},
+{
+"id": "polis-massa-k-20",
+"name": "Polis Massa",
+"x": 1879.9,
+"y": 3626.4,
+"gx": -1584.5,
+"gy": -53666.0,
+"region": "Outer Rim Territories",
+"sector": "Subterrel",
+"on_lane": false
+},
+{
+"id": "ponemah-h-16",
+"name": "Ponemah",
+"x": 1467.2,
+"y": 3053.0,
+"gx": -15758.6,
+"gy": -33974.3,
+"region": "Outer Rim Territories",
+"sector": "Zuma (Spar)",
+"on_lane": true
+},
+{
+"id": "protobranch-j-13",
+"name": "Protobranch",
+"x": 1766.1,
+"y": 2507.9,
+"gx": -5492.6,
+"gy": -15253.0,
+"region": "Core Worlds",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "quarzite-m-13",
+"name": "Quarzite",
+"x": 2128.9,
+"y": 2626.4,
+"gx": 6968.3,
+"gy": -19321.9,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "quell-q-6",
+"name": "Quell",
+"x": 2760.4,
+"y": 1595.0,
+"gx": 28653.8,
+"gy": 16100.5,
+"region": "Outer Rim Territories",
+"sector": "Nuiri",
+"on_lane": true
+},
+{
+"id": "quence-o-18",
+"name": "Quence",
+"x": 2498.2,
+"y": 3364.4,
+"gx": 19650.8,
+"gy": -44668.8,
+"region": "Outer Rim Territories",
+"sector": "Quence",
+"on_lane": true
+},
+{
+"id": "quermia-s-5",
+"name": "Quermia",
+"x": 3032.3,
+"y": 1391.4,
+"gx": 37992.8,
+"gy": 23092.0,
+"region": "Outer Rim Territories",
+"sector": "Nilgaard",
+"on_lane": true
+},
+{
+"id": "rtk111-s-14",
+"name": "RTK111",
+"x": 3089.5,
+"y": 2717.1,
+"gx": 39958.3,
+"gy": -22437.4,
+"region": "Outer Rim Territories",
+"sector": "Yminis",
+"on_lane": false
+},
+{
+"id": "raada-o-5",
+"name": "Raada",
+"x": 2474.5,
+"y": 1414.6,
+"gx": 18835.8,
+"gy": 22297.2,
+"region": "Outer Rim Territories",
+"sector": "D'Astan",
+"on_lane": false
+},
+{
+"id": "raithal-m-9",
+"name": "Raithal",
+"x": 2143.9,
+"y": 1941.4,
+"gx": 7481.3,
+"gy": 4204.4,
+"region": "Colonies",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "rajtiri-p-9",
+"name": "Rajtiri",
+"x": 2535.8,
+"y": 1968.4,
+"gx": 20941.0,
+"gy": 3277.9,
+"region": "Expansion Region",
+"sector": "Dona Laza",
+"on_lane": true
+},
+{
+"id": "rakata-prime-g-11",
+"name": "Rakata Prime",
+"x": 1252.0,
+"y": 2333.0,
+"gx": -23150.3,
+"gy": -9244.5,
+"region": "Unknown Regions",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "randon-q-10",
+"name": "Randon",
+"x": 2695.9,
+"y": 2115.6,
+"gx": 26438.7,
+"gy": -1780.3,
+"region": "Mid Rim",
+"sector": "Mytaranor",
+"on_lane": true
+},
+{
+"id": "rattatak-h-16",
+"name": "Rattatak",
+"x": 1385.6,
+"y": 2958.9,
+"gx": -18560.4,
+"gy": -30742.9,
+"region": "Outer Rim Territories",
+"sector": "Trilon",
+"on_lane": false
+},
+{
+"id": "raxus-prime-s-5",
+"name": "Raxus Prime",
+"x": 3049.0,
+"y": 1467.1,
+"gx": 38565.4,
+"gy": 20494.6,
+"region": "Outer Rim Territories",
+"sector": "Tion Hegemony",
+"on_lane": true
+},
+{
+"id": "regis-kor-j-17",
+"name": "Regis Kor",
+"x": 1693.4,
+"y": 3161.9,
+"gx": -7988.6,
+"gy": -37715.0,
+"region": "Mid Rim",
+"sector": "Gendius",
+"on_lane": false
+},
+{
+"id": "rekelos-k-15",
+"name": "Rekelos",
+"x": 1902.7,
+"y": 2940.2,
+"gx": -801.3,
+"gy": -30098.3,
+"region": "Expansion Region",
+"sector": "Arc d'Stot",
+"on_lane": true
+},
+{
+"id": "rendili-m-11",
+"name": "Rendili",
+"x": 2165.4,
+"y": 2271.6,
+"gx": 8220.6,
+"gy": -7137.9,
+"region": "Core Worlds",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "riflor-j-16",
+"name": "Riflor",
+"x": 1661.7,
+"y": 3085.9,
+"gx": -9077.7,
+"gy": -35102.5,
+"region": "Mid Rim",
+"sector": "Narrant",
+"on_lane": true
+},
+{
+"id": "rilias-m-18",
+"name": "Rilias",
+"x": 2142.8,
+"y": 3320.5,
+"gx": 7445.7,
+"gy": -43159.5,
+"region": "Outer Rim Territories",
+"sector": "Mayagil",
+"on_lane": false
+},
+{
+"id": "ring-of-kafrene-j-15",
+"name": "Ring of Kafrene",
+"x": 1719.9,
+"y": 2835.5,
+"gx": -7078.7,
+"gy": -26505.0,
+"region": "Expansion Region",
+"sector": "Thand",
+"on_lane": true
+},
+{
+"id": "ringo-vinda-r-7",
+"name": "Ringo Vinda",
+"x": 2803.5,
+"y": 1746.1,
+"gx": 30134.9,
+"gy": 10910.9,
+"region": "Mid Rim",
+"sector": "Eucer",
+"on_lane": false
+},
+{
+"id": "rinn-u-12",
+"name": "Rinn",
+"x": 3284.5,
+"y": 2373.1,
+"gx": 46654.4,
+"gy": -10623.3,
+"region": "Outer Rim Territories",
+"sector": "Baxel",
+"on_lane": false
+},
+{
+"id": "rior-n-18",
+"name": "Rior",
+"x": 2285.1,
+"y": 3337.2,
+"gx": 12331.2,
+"gy": -43733.0,
+"region": "Outer Rim Territories",
+"sector": "Tamarin",
+"on_lane": true
+},
+{
+"id": "rishi-s-15",
+"name": "Rishi",
+"x": 2978.1,
+"y": 2828.5,
+"gx": 36132.9,
+"gy": -26261.9,
+"region": "Outer Rim Territories",
+"sector": "Abrion",
+"on_lane": false
+},
+{
+"id": "ro-mira-p-8",
+"name": "Ro Mira",
+"x": 2515.5,
+"y": 1798.4,
+"gx": 20246.0,
+"gy": 9114.1,
+"region": "Mid Rim",
+"sector": "Vensori",
+"on_lane": false
+},
+{
+"id": "ro-loo-triangle-p-16",
+"name": "Ro-Loo Triangle",
+"x": 2565.5,
+"y": 3001.4,
+"gx": 21961.6,
+"gy": -32201.4,
+"region": "Mid Rim",
+"sector": "Lambda",
+"on_lane": false
+},
+{
+"id": "rodia-r-16",
+"name": "Rodia",
+"x": 2811.0,
+"y": 3037.8,
+"gx": 30393.7,
+"gy": -33450.5,
+"region": "Outer Rim Territories",
+"sector": "Savareen",
+"on_lane": false
+},
+{
+"id": "roon-s-15",
+"name": "Roon",
+"x": 2956.1,
+"y": 2923.7,
+"gx": 35376.5,
+"gy": -29531.8,
+"region": "Outer Rim Territories",
+"sector": "Abrion",
+"on_lane": true
+},
+{
+"id": "roona-l-15",
+"name": "Roona",
+"x": 2005.9,
+"y": 2865.6,
+"gx": 2741.8,
+"gy": -27538.1,
+"region": "Expansion Region",
+"sector": "Bes Ber Bikade",
+"on_lane": false
+},
+{
+"id": "rorak-s-12",
+"name": "Rorak",
+"x": 3000.8,
+"y": 2399.3,
+"gx": 36910.9,
+"gy": -11523.9,
+"region": "Hutt Space",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "rothana-t-15",
+"name": "Rothana",
+"x": 3176.0,
+"y": 2873.4,
+"gx": 42930.2,
+"gy": -27805.0,
+"region": "Outer Rim Territories",
+"sector": "Quiberon",
+"on_lane": true
+},
+{
+"id": "ruathi-k-19",
+"name": "Ruathi",
+"x": 1922.7,
+"y": 3400.4,
+"gx": -115.0,
+"gy": -45903.1,
+"region": "Outer Rim Territories",
+"sector": "Jjannex",
+"on_lane": false
+},
+{
+"id": "ruuria-q-3",
+"name": "Ruuria",
+"x": 2771.3,
+"y": 1175.7,
+"gx": 29028.7,
+"gy": 30500.7,
+"region": "Outer Rim Territories",
+"sector": "Xappyh",
+"on_lane": true
+},
+{
+"id": "ruusan-p-11",
+"name": "Ruusan",
+"x": 2647.8,
+"y": 2217.8,
+"gx": 24789.0,
+"gy": -5287.8,
+"region": "Mid Rim",
+"sector": "Teraab",
+"on_lane": false
+},
+{
+"id": "ryloth-r-17",
+"name": "Ryloth",
+"x": 2906.0,
+"y": 3179.6,
+"gx": 33656.4,
+"gy": -38322.6,
+"region": "Outer Rim Territories",
+"sector": "Gaulus (Ryloth)",
+"on_lane": true
+},
+{
+"id": "saki-s-11",
+"name": "Saki",
+"x": 3050.6,
+"y": 2254.5,
+"gx": 38622.6,
+"gy": -6550.5,
+"region": "Hutt Space",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "saleucami-s-8",
+"name": "Saleucami",
+"x": 2940.5,
+"y": 1801.4,
+"gx": 34840.5,
+"gy": 9011.0,
+"region": "Outer Rim Territories",
+"sector": "Suolriep",
+"on_lane": true
+},
+{
+"id": "salliche-k-10",
+"name": "Salliche",
+"x": 1873.1,
+"y": 2091.9,
+"gx": -1817.4,
+"gy": -965.1,
+"region": "Core Worlds",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "sarka-q-8",
+"name": "Sarka",
+"x": 2784.6,
+"y": 1846.4,
+"gx": 29487.2,
+"gy": 7467.1,
+"region": "Mid Rim",
+"sector": "Sarka",
+"on_lane": false
+},
+{
+"id": "sarlucif-s-4",
+"name": "Sarlucif",
+"x": 3030.1,
+"y": 1249.6,
+"gx": 37916.9,
+"gy": 27962.3,
+"region": "Wild Space",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "sarrassia-n-17",
+"name": "Sarrassia",
+"x": 2229.8,
+"y": 3164.5,
+"gx": 10432.0,
+"gy": -37803.9,
+"region": "Outer Rim Territories",
+"sector": "Grumani",
+"on_lane": false
+},
+{
+"id": "sason-k-5",
+"name": "Sason",
+"x": 1858.9,
+"y": 1404.1,
+"gx": -2306.8,
+"gy": 22655.8,
+"region": "Outer Rim Territories",
+"sector": "Cassander (Tadrin)",
+"on_lane": false
+},
+{
+"id": "savareen-q-16",
+"name": "Savareen",
+"x": 2791.9,
+"y": 3076.4,
+"gx": 29736.2,
+"gy": -34776.1,
+"region": "Outer Rim Territories",
+"sector": "Savareen",
+"on_lane": true
+},
+{
+"id": "scarif-s-15",
+"name": "Scarif",
+"x": 3008.4,
+"y": 2858.6,
+"gx": 37171.7,
+"gy": -27297.7,
+"region": "Outer Rim Territories",
+"sector": "Abrion",
+"on_lane": true
+},
+{
+"id": "scipio-k-5",
+"name": "Scipio",
+"x": 1815.1,
+"y": 1384.8,
+"gx": -3811.1,
+"gy": 23320.6,
+"region": "Outer Rim Territories",
+"sector": "Albarrio",
+"on_lane": false
+},
+{
+"id": "seatos-m-19",
+"name": "Seatos",
+"x": 2157.5,
+"y": 3434.5,
+"gx": 7948.1,
+"gy": -47076.7,
+"region": "Outer Rim Territories",
+"sector": "Sluis",
+"on_lane": false
+},
+{
+"id": "seelos-q-4",
+"name": "Seelos",
+"x": 2659.6,
+"y": 1293.5,
+"gx": 25194.4,
+"gy": 26454.4,
+"region": "Outer Rim Territories",
+"sector": "Kwymar",
+"on_lane": false
+},
+{
+"id": "segra-milo-r-7",
+"name": "Segra Milo",
+"x": 2887.9,
+"y": 1672.5,
+"gx": 33033.6,
+"gy": 13439.9,
+"region": "Outer Rim Territories",
+"sector": "Jospro",
+"on_lane": false
+},
+{
+"id": "sembla-s-5",
+"name": "Sembla",
+"x": 2971.2,
+"y": 1432.5,
+"gx": 35893.3,
+"gy": 21681.6,
+"region": "Outer Rim Territories",
+"sector": "Sertar (Mahrusha)",
+"on_lane": false
+},
+{
+"id": "sepan-p-13",
+"name": "Sepan",
+"x": 2561.3,
+"y": 2529.4,
+"gx": 21818.9,
+"gy": -15989.1,
+"region": "Expansion Region",
+"sector": "Sepan",
+"on_lane": false
+},
+{
+"id": "septra-m-20",
+"name": "Septra",
+"x": 2163.5,
+"y": 3659.4,
+"gx": 8153.7,
+"gy": -54800.0,
+"region": "Outer Rim Territories",
+"sector": "Kathol",
+"on_lane": false
+},
+{
+"id": "sereeda-t-7",
+"name": "Sereeda",
+"x": 3106.0,
+"y": 1721.0,
+"gx": 40522.9,
+"gy": 11772.8,
+"region": "Outer Rim Territories",
+"sector": "Ash Worlds",
+"on_lane": false
+},
+{
+"id": "serenno-p-5",
+"name": "Serenno",
+"x": 2515.5,
+"y": 1391.4,
+"gx": 20243.3,
+"gy": 23091.1,
+"region": "Outer Rim Territories",
+"sector": "D'Astan",
+"on_lane": true
+},
+{
+"id": "sernpidal-l-3",
+"name": "Sernpidal",
+"x": 2025.6,
+"y": 1055.6,
+"gx": 3418.2,
+"gy": 34625.8,
+"region": "Outer Rim Territories",
+"sector": "Dalonbian",
+"on_lane": true
+},
+{
+"id": "serolonis-j-18",
+"name": "Serolonis",
+"x": 1719.2,
+"y": 3331.3,
+"gx": -7103.8,
+"gy": -43530.9,
+"region": "Outer Rim Territories",
+"sector": "Kriz",
+"on_lane": false
+},
+{
+"id": "sesid-p-4",
+"name": "Sesid",
+"x": 2592.0,
+"y": 1215.1,
+"gx": 22871.2,
+"gy": 29146.8,
+"region": "Outer Rim Territories",
+"sector": "Corva",
+"on_lane": false
+},
+{
+"id": "setron-o-11",
+"name": "Setron",
+"x": 2448.0,
+"y": 2245.2,
+"gx": 17926.2,
+"gy": -6229.9,
+"region": "Expansion Region",
+"sector": "Noori",
+"on_lane": false
+},
+{
+"id": "sevarcos-n-19",
+"name": "Sevarcos",
+"x": 2259.9,
+"y": 3404.6,
+"gx": 11465.0,
+"gy": -46049.2,
+"region": "Outer Rim Territories",
+"sector": "Tamarin",
+"on_lane": true
+},
+{
+"id": "shantipole-q-8",
+"name": "Shantipole",
+"x": 2699.2,
+"y": 1838.3,
+"gx": 26552.8,
+"gy": 7743.4,
+"region": "Mid Rim",
+"sector": "Roche",
+"on_lane": false
+},
+{
+"id": "sharlissia-n-18",
+"name": "Sharlissia",
+"x": 2340.7,
+"y": 3257.4,
+"gx": 14241.2,
+"gy": -40993.1,
+"region": "Outer Rim Territories",
+"sector": "Bon'nyuw-Luq",
+"on_lane": true
+},
+{
+"id": "shaum-hii-n-5",
+"name": "Shaum Hii",
+"x": 2242.9,
+"y": 1399.1,
+"gx": 10883.6,
+"gy": 22828.4,
+"region": "Outer Rim Territories",
+"sector": "Tragan Cluster",
+"on_lane": false
+},
+{
+"id": "shili-l-8",
+"name": "Shili",
+"x": 2031.0,
+"y": 1790.6,
+"gx": 3606.3,
+"gy": 9381.3,
+"region": "Expansion Region",
+"sector": "Ehosiq",
+"on_lane": false
+},
+{
+"id": "shu-torun-j-7",
+"name": "Shu-Torun",
+"x": 1694.8,
+"y": 1694.4,
+"gx": -7940.5,
+"gy": 12686.4,
+"region": "Mid Rim",
+"sector": "Chaama",
+"on_lane": false
+},
+{
+"id": "sienar-tf73-s-8",
+"name": "Sienar TF73",
+"x": 3051.2,
+"y": 1783.8,
+"gx": 38642.7,
+"gy": 9615.7,
+"region": "Outer Rim Territories",
+"sector": "Tharin",
+"on_lane": false
+},
+{
+"id": "silla-m-7",
+"name": "Silla",
+"x": 2159.4,
+"y": 1677.6,
+"gx": 8014.0,
+"gy": 13264.7,
+"region": "Mid Rim",
+"sector": "Strabin",
+"on_lane": false
+},
+{
+"id": "sinta-q-12",
+"name": "Sinta",
+"x": 2737.7,
+"y": 2394.8,
+"gx": 27876.5,
+"gy": -11368.7,
+"region": "Mid Rim",
+"sector": "Hune",
+"on_lane": false
+},
+{
+"id": "skako-l-9",
+"name": "Skako",
+"x": 2032.1,
+"y": 2046.8,
+"gx": 3641.9,
+"gy": 584.0,
+"region": "Core Worlds",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "skye-h-19",
+"name": "Skye",
+"x": 1455.2,
+"y": 3509.1,
+"gx": -16172.4,
+"gy": -49638.8,
+"region": "Outer Rim Territories",
+"sector": "Varada",
+"on_lane": false
+},
+{
+"id": "skynara-p-19",
+"name": "Skynara",
+"x": 2637.0,
+"y": 3424.2,
+"gx": 24416.9,
+"gy": -46723.2,
+"region": "Outer Rim Territories",
+"sector": "Skine",
+"on_lane": true
+},
+{
+"id": "sleheyron-s-10",
+"name": "Sleheyron",
+"x": 3052.1,
+"y": 2099.7,
+"gx": 38672.9,
+"gy": -1232.5,
+"region": "Hutt Space",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "sluis-van-m-19",
+"name": "Sluis Van",
+"x": 2157.0,
+"y": 3399.4,
+"gx": 7933.6,
+"gy": -45871.2,
+"region": "Outer Rim Territories",
+"sector": "Sluis",
+"on_lane": true
+},
+{
+"id": "sneeve-q-10",
+"name": "Sneeve",
+"x": 2743.0,
+"y": 2074.8,
+"gx": 28059.1,
+"gy": -376.5,
+"region": "Mid Rim",
+"sector": "Kastolar",
+"on_lane": true
+},
+{
+"id": "socorro-q-17",
+"name": "Socorro",
+"x": 2679.4,
+"y": 3182.2,
+"gx": 25874.4,
+"gy": -38410.4,
+"region": "Outer Rim Territories",
+"sector": "Kibilini",
+"on_lane": true
+},
+{
+"id": "soika-m-8",
+"name": "Soika",
+"x": 2189.6,
+"y": 1789.8,
+"gx": 9050.8,
+"gy": 9409.6,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "solarine-s-8",
+"name": "Solarine",
+"x": 2982.4,
+"y": 1858.9,
+"gx": 36278.8,
+"gy": 7037.8,
+"region": "Outer Rim Territories",
+"sector": "Suolriep",
+"on_lane": true
+},
+{
+"id": "sorgan-q-17",
+"name": "Sorgan",
+"x": 2732.5,
+"y": 3171.2,
+"gx": 27697.6,
+"gy": -38032.7,
+"region": "Outer Rim Territories",
+"sector": "Karthakk",
+"on_lane": false
+},
+{
+"id": "spellhaus-o-6",
+"name": "Spellhaus",
+"x": 2402.1,
+"y": 1583.1,
+"gx": 16350.6,
+"gy": 16508.2,
+"region": "Outer Rim Territories",
+"sector": "Meerian",
+"on_lane": false
+},
+{
+"id": "sriluur-s-8",
+"name": "Sriluur",
+"x": 3059.4,
+"y": 1899.1,
+"gx": 38923.3,
+"gy": 5655.5,
+"region": "Outer Rim Territories",
+"sector": "Tharin (Periphery)",
+"on_lane": true
+},
+{
+"id": "ssori-s-13",
+"name": "Ssori",
+"x": 2984.9,
+"y": 2613.2,
+"gx": 36364.0,
+"gy": -18867.8,
+"region": "Outer Rim Territories",
+"sector": "Klina",
+"on_lane": false
+},
+{
+"id": "starport-borgo-m-6",
+"name": "Starport Borgo",
+"x": 2181.1,
+"y": 1530.0,
+"gx": 8759.5,
+"gy": 18331.9,
+"region": "Outer Rim Territories",
+"sector": "Oricho",
+"on_lane": true
+},
+{
+"id": "steergard-m-16",
+"name": "Steergard",
+"x": 2118.4,
+"y": 2984.5,
+"gx": 6606.5,
+"gy": -31619.9,
+"region": "Expansion Region",
+"sector": "Woostri",
+"on_lane": false
+},
+{
+"id": "stennaros-k-16",
+"name": "Stennaros",
+"x": 1792.3,
+"y": 2958.3,
+"gx": -4594.1,
+"gy": -30720.8,
+"region": "Expansion Region",
+"sector": "Har Worlds (Stennes)",
+"on_lane": false
+},
+{
+"id": "sterdic-p-17",
+"name": "Sterdic",
+"x": 2531.4,
+"y": 3133.9,
+"gx": 20789.2,
+"gy": -36750.5,
+"region": "Mid Rim",
+"sector": "Ryndellian",
+"on_lane": true
+},
+{
+"id": "stobar-m-15",
+"name": "Stobar",
+"x": 2097.0,
+"y": 2848.1,
+"gx": 5872.4,
+"gy": -26937.0,
+"region": "Expansion Region",
+"sector": "Boeus",
+"on_lane": true
+},
+{
+"id": "stygmarn-n-19",
+"name": "Stygmarn",
+"x": 2267.1,
+"y": 3451.4,
+"gx": 11711.6,
+"gy": -47654.7,
+"region": "Outer Rim Territories",
+"sector": "Tarabba",
+"on_lane": false
+},
+{
+"id": "subterrel-l-20",
+"name": "Subterrel",
+"x": 1946.7,
+"y": 3657.9,
+"gx": 710.3,
+"gy": -54747.3,
+"region": "Outer Rim Territories",
+"sector": "Subterrel",
+"on_lane": false
+},
+{
+"id": "sullust-m-17",
+"name": "Sullust",
+"x": 2150.6,
+"y": 3208.9,
+"gx": 7713.1,
+"gy": -39326.7,
+"region": "Outer Rim Territories",
+"sector": "Brema",
+"on_lane": true
+},
+{
+"id": "sump-i-18",
+"name": "Sump",
+"x": 1613.6,
+"y": 3381.9,
+"gx": -10729.7,
+"gy": -45268.2,
+"region": "Outer Rim Territories",
+"sector": "Koradin",
+"on_lane": true
+},
+{
+"id": "suntilla-n-12",
+"name": "Suntilla",
+"x": 2275.6,
+"y": 2368.7,
+"gx": 12005.1,
+"gy": -10471.3,
+"region": "Colonies",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "suria-p-17",
+"name": "Suria",
+"x": 2569.5,
+"y": 3215.4,
+"gx": 22098.0,
+"gy": -39550.9,
+"region": "Outer Rim Territories",
+"sector": "Bajic",
+"on_lane": false
+},
+{
+"id": "svivren-o-19",
+"name": "Svivren",
+"x": 2454.5,
+"y": 3445.4,
+"gx": 18149.7,
+"gy": -47449.3,
+"region": "Outer Rim Territories",
+"sector": "Svivreni",
+"on_lane": true
+},
+{
+"id": "sy-myrth-s-7",
+"name": "Sy Myrth",
+"x": 2946.9,
+"y": 1698.4,
+"gx": 35059.6,
+"gy": 12550.1,
+"region": "Outer Rim Territories",
+"sector": "Jospro",
+"on_lane": true
+},
+{
+"id": "syvris-t-13",
+"name": "Syvris",
+"x": 3168.0,
+"y": 2569.9,
+"gx": 42653.1,
+"gy": -17381.8,
+"region": "Outer Rim Territories",
+"sector": "Al'Nasrl",
+"on_lane": true
+},
+{
+"id": "sidi-q-4",
+"name": "Sídi",
+"x": 2686.9,
+"y": 1321.7,
+"gx": 26131.5,
+"gy": 25486.5,
+"region": "Outer Rim Territories",
+"sector": "Illisurevimurasi",
+"on_lane": false
+},
+{
+"id": "taanab-o-8",
+"name": "Taanab",
+"x": 2443.8,
+"y": 1903.4,
+"gx": 17780.5,
+"gy": 5508.3,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "tah-nuhna-q-14",
+"name": "Tah'Nuhna",
+"x": 2686.4,
+"y": 2763.6,
+"gx": 26114.1,
+"gy": -24033.5,
+"region": "Mid Rim",
+"sector": "Haserian",
+"on_lane": true
+},
+{
+"id": "tahlboor-r-5",
+"name": "Tahlboor",
+"x": 2939.4,
+"y": 1474.4,
+"gx": 34802.0,
+"gy": 20243.1,
+"region": "Outer Rim Territories",
+"sector": "Thanium",
+"on_lane": false
+},
+{
+"id": "takobo-n-6",
+"name": "Takobo",
+"x": 2236.1,
+"y": 1590.5,
+"gx": 10647.6,
+"gy": 16254.7,
+"region": "Outer Rim Territories",
+"sector": "Noonian",
+"on_lane": true
+},
+{
+"id": "tal-pi-p-5",
+"name": "Tal Pi",
+"x": 2525.6,
+"y": 1362.5,
+"gx": 20589.7,
+"gy": 24086.9,
+"region": "Outer Rim Territories",
+"sector": "D'Astan",
+"on_lane": false
+},
+{
+"id": "tammuz-an-t-14",
+"name": "Tammuz-an",
+"x": 3205.6,
+"y": 2727.9,
+"gx": 43943.8,
+"gy": -22809.7,
+"region": "Outer Rim Territories",
+"sector": "Tammuz",
+"on_lane": false
+},
+{
+"id": "tangrene-o-4",
+"name": "Tangrene",
+"x": 2439.0,
+"y": 1322.3,
+"gx": 17617.8,
+"gy": 25465.8,
+"region": "Outer Rim Territories",
+"sector": "Morshdine",
+"on_lane": true
+},
+{
+"id": "tarabba-prime-m-19",
+"name": "Tarabba Prime",
+"x": 2159.5,
+"y": 3501.7,
+"gx": 8018.5,
+"gy": -49384.1,
+"region": "Outer Rim Territories",
+"sector": "Tarabba",
+"on_lane": false
+},
+{
+"id": "targyon-p-5",
+"name": "Targyon",
+"x": 2569.6,
+"y": 1345.2,
+"gx": 22104.1,
+"gy": 24678.0,
+"region": "Outer Rim Territories",
+"sector": "Nembus",
+"on_lane": false
+},
+{
+"id": "taris-n-7",
+"name": "Taris",
+"x": 2319.0,
+"y": 1648.7,
+"gx": 13496.5,
+"gy": 14257.2,
+"region": "Outer Rim Territories",
+"sector": "Ojoster (Taris)",
+"on_lane": true
+},
+{
+"id": "tarsunt-r-14",
+"name": "Tarsunt",
+"x": 2809.3,
+"y": 2681.5,
+"gx": 30335.9,
+"gy": -21215.0,
+"region": "Mid Rim",
+"sector": "Bothan",
+"on_lane": false
+},
+{
+"id": "tatooine-r-16",
+"name": "Tatooine",
+"x": 2854.1,
+"y": 3052.1,
+"gx": 31874.2,
+"gy": -33943.3,
+"region": "Outer Rim Territories",
+"sector": "Arkanis",
+"on_lane": true
+},
+{
+"id": "tawl-k-18",
+"name": "Tawl",
+"x": 1887.6,
+"y": 3303.1,
+"gx": -1320.5,
+"gy": -42562.9,
+"region": "Outer Rim Territories",
+"sector": "Tungra",
+"on_lane": false
+},
+{
+"id": "tehar-i-7",
+"name": "Tehar",
+"x": 1517.4,
+"y": 1673.7,
+"gx": -14034.9,
+"gy": 13397.4,
+"region": "Mid Rim",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "tenoo-i-17",
+"name": "Tenoo",
+"x": 1527.0,
+"y": 3192.9,
+"gx": -13705.5,
+"gy": -38779.0,
+"region": "Outer Rim Territories",
+"sector": "Bri'ahl",
+"on_lane": false
+},
+{
+"id": "terminus-k-20",
+"name": "Terminus",
+"x": 1818.0,
+"y": 3664.9,
+"gx": -3711.0,
+"gy": -54987.8,
+"region": "Outer Rim Territories",
+"sector": "Kallea",
+"on_lane": true
+},
+{
+"id": "tessen-s-7",
+"name": "Tessen",
+"x": 3004.7,
+"y": 1760.2,
+"gx": 37046.4,
+"gy": 10427.1,
+"region": "Outer Rim Territories",
+"sector": "Phelleem",
+"on_lane": false
+},
+{
+"id": "thabeska-o-5",
+"name": "Thabeska",
+"x": 2455.3,
+"y": 1364.3,
+"gx": 18177.8,
+"gy": 24022.8,
+"region": "Outer Rim Territories",
+"sector": "Morshdine",
+"on_lane": true
+},
+{
+"id": "thelj-m-20",
+"name": "Thelj",
+"x": 2097.4,
+"y": 3531.9,
+"gx": 5884.3,
+"gy": -50419.9,
+"region": "Outer Rim Territories",
+"sector": "Airam",
+"on_lane": false
+},
+{
+"id": "tholoth-n-12",
+"name": "Tholoth",
+"x": 2300.4,
+"y": 2371.5,
+"gx": 12857.4,
+"gy": -10566.9,
+"region": "Colonies",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "thyferra-l-14",
+"name": "Thyferra",
+"x": 1997.9,
+"y": 2758.4,
+"gx": 2466.7,
+"gy": -23857.0,
+"region": "Inner Rim",
+"sector": "Jaso",
+"on_lane": true
+},
+{
+"id": "tibrin-l-18",
+"name": "Tibrin",
+"x": 2045.0,
+"y": 3238.9,
+"gx": 4084.0,
+"gy": -40359.6,
+"region": "Mid Rim",
+"sector": "Hadar",
+"on_lane": false
+},
+{
+"id": "tiferep-major-l-17",
+"name": "Tiferep Major",
+"x": 1936.7,
+"y": 3159.2,
+"gx": 365.3,
+"gy": -37622.1,
+"region": "Mid Rim",
+"sector": "D'Aelgoth",
+"on_lane": true
+},
+{
+"id": "tinnel-m-12",
+"name": "Tinnel",
+"x": 2173.6,
+"y": 2379.0,
+"gx": 8501.2,
+"gy": -10826.5,
+"region": "Core Worlds",
+"sector": "Quanta",
+"on_lane": true
+},
+{
+"id": "tirahnn-n-8",
+"name": "Tirahnn",
+"x": 2300.5,
+"y": 1893.7,
+"gx": 12861.5,
+"gy": 5842.1,
+"region": "Inner Rim",
+"sector": "Zeemacht Cluster",
+"on_lane": true
+},
+{
+"id": "tollello-q-18",
+"name": "Tollello",
+"x": 2661.4,
+"y": 3300.2,
+"gx": 25254.9,
+"gy": -42461.7,
+"region": "Outer Rim Territories",
+"sector": "Dail",
+"on_lane": false
+},
+{
+"id": "toola-s-5",
+"name": "Toola",
+"x": 3064.2,
+"y": 1392.1,
+"gx": 39088.3,
+"gy": 23069.8,
+"region": "Outer Rim Territories",
+"sector": "Nilgaard",
+"on_lane": false
+},
+{
+"id": "toong-l-t-7",
+"name": "Toong'l",
+"x": 3215.2,
+"y": 1737.1,
+"gx": 44276.0,
+"gy": 11219.8,
+"region": "Outer Rim Territories",
+"sector": "Jubilar",
+"on_lane": false
+},
+{
+"id": "toprawa-p-5",
+"name": "Toprawa",
+"x": 2518.2,
+"y": 1420.4,
+"gx": 20336.6,
+"gy": 22096.6,
+"region": "Outer Rim Territories",
+"sector": "Kalamith",
+"on_lane": true
+},
+{
+"id": "toshara-t-8",
+"name": "Toshara",
+"x": 3145.9,
+"y": 1857.4,
+"gx": 41896.2,
+"gy": 7087.0,
+"region": "Outer Rim Territories",
+"sector": "Cadma",
+"on_lane": false
+},
+{
+"id": "toydaria-r-11",
+"name": "Toydaria",
+"x": 2932.3,
+"y": 2355.3,
+"gx": 34559.5,
+"gy": -10011.0,
+"region": "Hutt Space",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "travyx-j-16",
+"name": "Travyx",
+"x": 1695.1,
+"y": 2986.4,
+"gx": -7930.1,
+"gy": -31684.3,
+"region": "Mid Rim",
+"sector": "Halm",
+"on_lane": false
+},
+{
+"id": "trellen-m-10",
+"name": "Trellen",
+"x": 2162.0,
+"y": 2213.0,
+"gx": 8104.7,
+"gy": -5123.9,
+"region": "Core Worlds",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "trenchenovu-k-19",
+"name": "Trenchenovu",
+"x": 1803.5,
+"y": 3421.9,
+"gx": -4209.6,
+"gy": -46642.2,
+"region": "Outer Rim Territories",
+"sector": "Kriz",
+"on_lane": true
+},
+{
+"id": "trian-r-3",
+"name": "Trian",
+"x": 2917.7,
+"y": 1144.4,
+"gx": 34057.6,
+"gy": 31576.2,
+"region": "Wild Space",
+"sector": "Trianii Space*",
+"on_lane": false
+},
+{
+"id": "triffis-o-15",
+"name": "Triffis",
+"x": 2489.3,
+"y": 2877.5,
+"gx": 19345.1,
+"gy": -27945.1,
+"region": "Mid Rim",
+"sector": "Hevvrol",
+"on_lane": true
+},
+{
+"id": "trillia-p-13",
+"name": "Trillia",
+"x": 2589.9,
+"y": 2650.6,
+"gx": 22798.7,
+"gy": -20154.1,
+"region": "Expansion Region",
+"sector": "Imberlin",
+"on_lane": true
+},
+{
+"id": "triton-m-18",
+"name": "Triton",
+"x": 2156.4,
+"y": 3363.4,
+"gx": 7911.3,
+"gy": -44635.3,
+"region": "Outer Rim Territories",
+"sector": "Mayagil",
+"on_lane": true
+},
+{
+"id": "troglofa-r-6",
+"name": "Troglofa",
+"x": 2826.8,
+"y": 1545.4,
+"gx": 30935.0,
+"gy": 17803.7,
+"region": "Outer Rim Territories",
+"sector": "Belderone",
+"on_lane": false
+},
+{
+"id": "troiken-s-5",
+"name": "Troiken",
+"x": 3034.5,
+"y": 1343.2,
+"gx": 38070.3,
+"gy": 24746.5,
+"region": "Outer Rim Territories",
+"sector": "Colundra",
+"on_lane": false
+},
+{
+"id": "tund-u-8",
+"name": "Tund",
+"x": 3323.0,
+"y": 1855.8,
+"gx": 47977.8,
+"gy": 7144.7,
+"region": "Outer Rim Territories",
+"sector": "Centrality",
+"on_lane": false
+},
+{
+"id": "turco-prime-q-8",
+"name": "Turco Prime",
+"x": 2768.9,
+"y": 1851.9,
+"gx": 28946.3,
+"gy": 7278.2,
+"region": "Mid Rim",
+"sector": "Sarka",
+"on_lane": false
+},
+{
+"id": "turrak-n-19",
+"name": "Turrak",
+"x": 2301.0,
+"y": 3390.3,
+"gx": 12878.1,
+"gy": -45558.8,
+"region": "Outer Rim Territories",
+"sector": "Tamarin",
+"on_lane": false
+},
+{
+"id": "tynna-n-14",
+"name": "Tynna",
+"x": 2347.5,
+"y": 2665.0,
+"gx": 14475.2,
+"gy": -20649.1,
+"region": "Expansion Region",
+"sector": "Tynna",
+"on_lane": true
+},
+{
+"id": "uba-j-6",
+"name": "Uba",
+"x": 1767.6,
+"y": 1576.4,
+"gx": -5442.3,
+"gy": 16739.6,
+"region": "Mid Rim",
+"sector": "Barsa",
+"on_lane": false
+},
+{
+"id": "ubduria-n-8",
+"name": "Ubduria",
+"x": 2323.6,
+"y": 1792.9,
+"gx": 13652.2,
+"gy": 9302.9,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "ubrikkia-q-10",
+"name": "Ubrikkia",
+"x": 2795.3,
+"y": 2160.8,
+"gx": 29855.4,
+"gy": -3329.9,
+"region": "Mid Rim",
+"sector": "Kastolar",
+"on_lane": false
+},
+{
+"id": "ueda-q-3",
+"name": "Ueda",
+"x": 2744.1,
+"y": 1138.4,
+"gx": 28096.7,
+"gy": 31781.9,
+"region": "Outer Rim Territories",
+"sector": "Xappyh",
+"on_lane": false
+},
+{
+"id": "ultaar-r-8",
+"name": "Ultaar",
+"x": 2881.7,
+"y": 1843.8,
+"gx": 32819.9,
+"gy": 7555.2,
+"region": "Mid Rim",
+"sector": "Bortele",
+"on_lane": false
+},
+{
+"id": "umbara-p-10",
+"name": "Umbara",
+"x": 2544.0,
+"y": 2083.6,
+"gx": 21221.6,
+"gy": -678.6,
+"region": "Expansion Region",
+"sector": "Ghost Nebula",
+"on_lane": true
+},
+{
+"id": "urdur-s-4",
+"name": "Urdur",
+"x": 3001.7,
+"y": 1227.3,
+"gx": 36944.0,
+"gy": 28728.6,
+"region": "Outer Rim Territories",
+"sector": "Corporate Sector",
+"on_lane": false
+},
+{
+"id": "utapau-n-19",
+"name": "Utapau",
+"x": 2225.3,
+"y": 3507.8,
+"gx": 10277.2,
+"gy": -49594.6,
+"region": "Outer Rim Territories",
+"sector": "Tarabba",
+"on_lane": true
+},
+{
+"id": "uvena-m-18",
+"name": "Uvena",
+"x": 2189.6,
+"y": 3254.8,
+"gx": 9053.0,
+"gy": -40905.3,
+"region": "Outer Rim Territories",
+"sector": "Seswenna",
+"on_lane": false
+},
+{
+"id": "uveron-m-9",
+"name": "Uveron",
+"x": 2087.1,
+"y": 1918.0,
+"gx": 5532.5,
+"gy": 5007.9,
+"region": "Colonies",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "uviuy-exen-l-9",
+"name": "Uviuy Exen",
+"x": 2007.3,
+"y": 1930.7,
+"gx": 2792.2,
+"gy": 4570.3,
+"region": "Colonies",
+"sector": "Shwuy",
+"on_lane": true
+},
+{
+"id": "uyter-p-9",
+"name": "Uyter",
+"x": 2595.6,
+"y": 1962.9,
+"gx": 22996.2,
+"gy": 3466.0,
+"region": "Mid Rim",
+"sector": "Lantillian",
+"on_lane": true
+},
+{
+"id": "vakkar-k-9",
+"name": "Vakkar",
+"x": 1793.3,
+"y": 1929.4,
+"gx": -4560.3,
+"gy": 4616.1,
+"region": "Colonies",
+"sector": "Fakir",
+"on_lane": true
+},
+{
+"id": "valboraan-r-10",
+"name": "Valboraan",
+"x": 2833.3,
+"y": 2175.6,
+"gx": 31160.5,
+"gy": -3840.5,
+"region": "Mid Rim",
+"sector": "Kastolar",
+"on_lane": false
+},
+{
+"id": "vallt-p-17",
+"name": "Vallt",
+"x": 2520.3,
+"y": 3176.4,
+"gx": 20408.6,
+"gy": -38212.5,
+"region": "Outer Rim Territories",
+"sector": "Juris",
+"on_lane": true
+},
+{
+"id": "valo-n-19",
+"name": "Valo",
+"x": 2322.4,
+"y": 3472.3,
+"gx": 13612.3,
+"gy": -48374.5,
+"region": "Outer Rim Territories",
+"sector": "Rseik",
+"on_lane": true
+},
+{
+"id": "vandelhelm-m-15",
+"name": "Vandelhelm",
+"x": 2099.2,
+"y": 2921.0,
+"gx": 5948.1,
+"gy": -29440.3,
+"region": "Expansion Region",
+"sector": "Epsi Collective",
+"on_lane": true
+},
+{
+"id": "vandor-p-14",
+"name": "Vandor",
+"x": 2633.6,
+"y": 2693.5,
+"gx": 24299.4,
+"gy": -21627.0,
+"region": "Mid Rim",
+"sector": "Sloo",
+"on_lane": false
+},
+{
+"id": "vardos-l-9",
+"name": "Vardos",
+"x": 2058.6,
+"y": 2041.5,
+"gx": 4554.1,
+"gy": 766.8,
+"region": "Core Worlds",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "vassek-i-17",
+"name": "Vassek",
+"x": 1617.7,
+"y": 3202.0,
+"gx": -10588.4,
+"gy": -39091.1,
+"region": "Outer Rim Territories",
+"sector": "Wazta",
+"on_lane": true
+},
+{
+"id": "veelo-r-6",
+"name": "Veelo",
+"x": 2818.5,
+"y": 1566.4,
+"gx": 30651.4,
+"gy": 17082.9,
+"region": "Outer Rim Territories",
+"sector": "Vorzyd",
+"on_lane": false
+},
+{
+"id": "velmor-p-7",
+"name": "Velmor",
+"x": 2607.2,
+"y": 1760.1,
+"gx": 23392.4,
+"gy": 10428.8,
+"region": "Mid Rim",
+"sector": "Halori",
+"on_lane": false
+},
+{
+"id": "vendaxa-o-14",
+"name": "Vendaxa",
+"x": 2395.2,
+"y": 2731.3,
+"gx": 16114.5,
+"gy": -22923.9,
+"region": "Expansion Region",
+"sector": "Chaykin",
+"on_lane": false
+},
+{
+"id": "vespaara-s-8",
+"name": "Vespaara",
+"x": 2997.6,
+"y": 1850.9,
+"gx": 36802.5,
+"gy": 7312.6,
+"region": "Outer Rim Territories",
+"sector": "Suolriep",
+"on_lane": true
+},
+{
+"id": "vetine-l-14",
+"name": "Vetine",
+"x": 2022.3,
+"y": 2714.4,
+"gx": 3304.2,
+"gy": -22344.6,
+"region": "Inner Rim",
+"sector": "Merrick",
+"on_lane": false
+},
+{
+"id": "vinsoth-n-5",
+"name": "Vinsoth",
+"x": 2336.4,
+"y": 1462.8,
+"gx": 14092.0,
+"gy": 20642.3,
+"region": "Outer Rim Territories",
+"sector": "Quelii",
+"on_lane": true
+},
+{
+"id": "vint-t-16",
+"name": "Vint",
+"x": 3113.7,
+"y": 3025.7,
+"gx": 40789.3,
+"gy": -33035.8,
+"region": "Outer Rim Territories",
+"sector": "Sevetta",
+"on_lane": false
+},
+{
+"id": "virgillia-i-18",
+"name": "Virgillia",
+"x": 1558.4,
+"y": 3335.3,
+"gx": -12625.1,
+"gy": -43667.7,
+"region": "Outer Rim Territories",
+"sector": "Koradin",
+"on_lane": true
+},
+{
+"id": "vixoseph-m-19",
+"name": "Vixoseph",
+"x": 2119.4,
+"y": 3480.1,
+"gx": 6640.0,
+"gy": -48643.2,
+"region": "Outer Rim Territories",
+"sector": "Tantra",
+"on_lane": false
+},
+{
+"id": "vodran-s-9",
+"name": "Vodran",
+"x": 3053.1,
+"y": 1923.6,
+"gx": 38708.6,
+"gy": 4814.0,
+"region": "Hutt Space",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "vondarc-m-16",
+"name": "Vondarc",
+"x": 2141.7,
+"y": 3074.7,
+"gx": 7405.0,
+"gy": -34719.7,
+"region": "Mid Rim",
+"sector": "Var Hagen",
+"on_lane": true
+},
+{
+"id": "vrogas-vas-o-19",
+"name": "Vrogas Vas",
+"x": 2482.2,
+"y": 3468.5,
+"gx": 19101.5,
+"gy": -48244.2,
+"region": "Outer Rim Territories",
+"sector": "Sujimis",
+"on_lane": false
+},
+{
+"id": "vulpter-l-10",
+"name": "Vulpter",
+"x": 2031.8,
+"y": 2134.5,
+"gx": 3630.5,
+"gy": -2426.7,
+"region": "Deep Core",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "vurdon-ka-m-9",
+"name": "Vurdon Ka",
+"x": 2173.2,
+"y": 1927.0,
+"gx": 8488.9,
+"gy": 4697.5,
+"region": "Inner Rim",
+"sector": "Darlonn",
+"on_lane": true
+},
+{
+"id": "vuundalla-i-17",
+"name": "Vuundalla",
+"x": 1545.1,
+"y": 3215.4,
+"gx": -13082.9,
+"gy": -39551.5,
+"region": "Outer Rim Territories",
+"sector": "Bri'ahl",
+"on_lane": false
+},
+{
+"id": "wadi-raffa-m-20",
+"name": "Wadi Raffa",
+"x": 2088.4,
+"y": 3545.6,
+"gx": 5575.2,
+"gy": -50892.1,
+"region": "Outer Rim Territories",
+"sector": "Airam",
+"on_lane": false
+},
+{
+"id": "wayland-n-7",
+"name": "Wayland",
+"x": 2336.1,
+"y": 1702.1,
+"gx": 14081.4,
+"gy": 12423.2,
+"region": "Outer Rim Territories",
+"sector": "Ojoster",
+"on_lane": false
+},
+{
+"id": "waymancy-k-8",
+"name": "Waymancy",
+"x": 1850.1,
+"y": 1822.5,
+"gx": -2606.9,
+"gy": 8286.9,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "wobani-r-8",
+"name": "Wobani",
+"x": 2832.2,
+"y": 1789.5,
+"gx": 31122.8,
+"gy": 9419.5,
+"region": "Mid Rim",
+"sector": "Bryx",
+"on_lane": false
+},
+{
+"id": "wor-tandell-k-9",
+"name": "Wor Tandell",
+"x": 1867.9,
+"y": 2029.2,
+"gx": -1996.2,
+"gy": 1188.8,
+"region": "Core Worlds",
+"sector": "Dolomar",
+"on_lane": false
+},
+{
+"id": "wrea-s-17",
+"name": "Wrea",
+"x": 2958.7,
+"y": 3217.8,
+"gx": 35466.5,
+"gy": -39632.8,
+"region": "Outer Rim Territories",
+"sector": "Gaulus",
+"on_lane": false
+},
+{
+"id": "wroona-l-15",
+"name": "Wroona",
+"x": 2065.3,
+"y": 2815.1,
+"gx": 4783.0,
+"gy": -25803.5,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "wrosdi-n-2",
+"name": "Wrosdi",
+"x": 2255.4,
+"y": 982.3,
+"gx": 11311.6,
+"gy": 37144.3,
+"region": "Outer Rim Territories",
+"sector": "Spinward",
+"on_lane": false
+},
+{
+"id": "wynkahthu-l-7",
+"name": "Wynkahthu",
+"x": 2045.5,
+"y": 1651.4,
+"gx": 4101.7,
+"gy": 14165.0,
+"region": "Mid Rim",
+"sector": "Alderath",
+"on_lane": false
+},
+{
+"id": "xa-fel-k-9",
+"name": "Xa Fel",
+"x": 1794.6,
+"y": 2020.9,
+"gx": -4513.3,
+"gy": 1471.9,
+"region": "Core Worlds",
+"sector": "Kanchen",
+"on_lane": false
+},
+{
+"id": "xagobah-m-18",
+"name": "Xagobah",
+"x": 2201.2,
+"y": 3337.7,
+"gx": 9451.6,
+"gy": -43751.9,
+"region": "Outer Rim Territories",
+"sector": "Mayagil",
+"on_lane": true
+},
+{
+"id": "xala-h-14",
+"name": "Xala",
+"x": 1362.2,
+"y": 2785.4,
+"gx": -19365.1,
+"gy": -24783.2,
+"region": "Wild Space",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "yabrenito-i-16",
+"name": "Yabrenito",
+"x": 1598.1,
+"y": 3061.9,
+"gx": -11262.0,
+"gy": -34278.1,
+"region": "Mid Rim",
+"sector": "Semagi",
+"on_lane": false
+},
+{
+"id": "yag-dhul-l-14",
+"name": "Yag'Dhul",
+"x": 2051.2,
+"y": 2778.5,
+"gx": 4300.0,
+"gy": -24544.9,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "yaga-minor-k-5",
+"name": "Yaga Minor",
+"x": 1788.6,
+"y": 1365.3,
+"gx": -4720.6,
+"gy": 23987.8,
+"region": "Outer Rim Territories",
+"sector": "Prefsbelt",
+"on_lane": true
+},
+{
+"id": "yalbec-prime-p-7",
+"name": "Yalbec Prime",
+"x": 2624.5,
+"y": 1647.6,
+"gx": 23989.1,
+"gy": 14294.2,
+"region": "Outer Rim Territories",
+"sector": "Rolion",
+"on_lane": true
+},
+{
+"id": "yar-togna-p-18",
+"name": "Yar Togna",
+"x": 2523.1,
+"y": 3255.6,
+"gx": 20504.9,
+"gy": -40932.9,
+"region": "Outer Rim Territories",
+"sector": "Sarin",
+"on_lane": true
+},
+{
+"id": "yarma-t-8",
+"name": "Yarma",
+"x": 3097.6,
+"y": 1809.6,
+"gx": 40236.9,
+"gy": 8729.3,
+"region": "Outer Rim Territories",
+"sector": "Tharin",
+"on_lane": true
+},
+{
+"id": "yavin-p-6",
+"name": "Yavin",
+"x": 2596.3,
+"y": 1488.9,
+"gx": 23020.0,
+"gy": 19745.1,
+"region": "Outer Rim Territories",
+"sector": "Gordian Reach",
+"on_lane": false
+},
+{
+"id": "yerbana-q-17",
+"name": "Yerbana",
+"x": 2791.6,
+"y": 3101.5,
+"gx": 29728.4,
+"gy": -35637.9,
+"region": "Outer Rim Territories",
+"sector": "Savareen",
+"on_lane": true
+},
+{
+"id": "ylagia-l-15",
+"name": "Ylagia",
+"x": 2025.6,
+"y": 2914.2,
+"gx": 3419.3,
+"gy": -29206.2,
+"region": "Expansion Region",
+"sector": "Rocantor",
+"on_lane": false
+},
+{
+"id": "yuvern-m-5",
+"name": "Yuvern",
+"x": 2102.7,
+"y": 1410.6,
+"gx": 6067.9,
+"gy": 22432.5,
+"region": "Outer Rim Territories",
+"sector": "Oplovis",
+"on_lane": false
+},
+{
+"id": "zanbar-o-7",
+"name": "Zanbar",
+"x": 2404.8,
+"y": 1648.1,
+"gx": 16443.2,
+"gy": 14275.8,
+"region": "Outer Rim Territories",
+"sector": "Mandalore",
+"on_lane": false
+},
+{
+"id": "zardossa-stix-j-13",
+"name": "Zardossa Stix",
+"x": 1646.4,
+"y": 2573.0,
+"gx": -9604.3,
+"gy": -17489.0,
+"region": "Colonies",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "zastiga-k-20",
+"name": "Zastiga",
+"x": 1812.8,
+"y": 3622.5,
+"gx": -3890.6,
+"gy": -53531.2,
+"region": "Outer Rim Territories",
+"sector": "Kallea",
+"on_lane": true
+},
+{
+"id": "zavian-abyss-p-10",
+"name": "Zavian Abyss",
+"x": 2524.8,
+"y": 2098.3,
+"gx": 20563.3,
+"gy": -1184.6,
+"region": "Expansion Region",
+"sector": "Ghost Nebula",
+"on_lane": true
+},
+{
+"id": "zayron-p-3",
+"name": "Zayron",
+"x": 2624.6,
+"y": 1131.1,
+"gx": 23991.9,
+"gy": 32030.9,
+"region": "Outer Rim Territories",
+"sector": "Corva",
+"on_lane": false
+},
+{
+"id": "zeffo-m-3",
+"name": "Zeffo",
+"x": 2177.9,
+"y": 1152.5,
+"gx": 8650.7,
+"gy": 31299.0,
+"region": "Outer Rim Territories",
+"sector": "Kanz",
+"on_lane": false
+},
+{
+"id": "zeltros-o-10",
+"name": "Zeltros",
+"x": 2444.4,
+"y": 2166.1,
+"gx": 17801.7,
+"gy": -3514.4,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": true
+},
+{
+"id": "zhadalene-n-4",
+"name": "Zhadalene",
+"x": 2293.7,
+"y": 1318.4,
+"gx": 12627.3,
+"gy": 25598.2,
+"region": "Outer Rim Territories",
+"sector": "Kanz",
+"on_lane": true
+},
+{
+"id": "zinchori-o-9",
+"name": "Zinchori",
+"x": 2387.5,
+"y": 1957.1,
+"gx": 15849.3,
+"gy": 3663.0,
+"region": "Inner Rim",
+"sector": null,
+"on_lane": false
+},
+{
+"id": "zolan-p-16",
+"name": "Zolan",
+"x": 2613.5,
+"y": 2980.5,
+"gx": 23609.5,
+"gy": -31484.6,
+"region": "Mid Rim",
+"sector": "Lambda",
+"on_lane": false
+},
+{
+"id": "zondula-j-16",
+"name": "Zondula",
+"x": 1765.5,
+"y": 3028.6,
+"gx": -5514.1,
+"gy": -33134.7,
+"region": "Mid Rim",
+"sector": "Oriolan",
+"on_lane": false
+},
+{
+"id": "zygerria-s-4",
+"name": "Zygerria",
+"x": 2957.7,
+"y": 1264.3,
+"gx": 35431.0,
+"gy": 27456.3,
+"region": "Outer Rim Territories",
+"sector": "Chorlian",
+"on_lane": true
+}
+],
+"edges": [
+{
+"a": "aargau-l-10",
+"b": "coruscant-l-9",
+"route": "Agricultural Circuit",
+"class": "minor",
+"length_px": 76.8
+},
+{
+"a": "coruscant-l-9",
+"b": "salliche-k-10",
+"route": "Agricultural Circuit",
+"class": "minor",
+"length_px": 59.9
+},
+{
+"a": "salliche-k-10",
+"b": "cal-seti-k-10",
+"route": "Agricultural Circuit",
+"class": "minor",
+"length_px": 58.9
+},
+{
+"a": "anoat-k-18",
+"b": "bespin-k-18",
+"route": "Anoat trade corridor",
+"class": "minor",
+"length_px": 76.1
+},
+{
+"a": "karfeddion-l-18",
+"b": "dolla-l-18",
+"route": "Anturi Reach",
+"class": "minor",
+"length_px": 62.1
+},
+{
+"a": "utapau-n-19",
+"b": "leritor-q-15",
+"route": "Askar Trace",
+"class": "minor",
+"length_px": 868.3
+},
+{
+"a": "leritor-q-15",
+"b": "nexus-ortai-q-14",
+"route": "Askar Trace",
+"class": "minor",
+"length_px": 121.3
+},
+{
+"a": "nexus-ortai-q-14",
+"b": "dressel-q-13",
+"route": "Askar Trace",
+"class": "minor",
+"length_px": 117.2
+},
+{
+"a": "dressel-q-13",
+"b": "lannik-r-13",
+"route": "Askar Trace",
+"class": "minor",
+"length_px": 83.0
+},
+{
+"a": "axxila-o-5",
+"b": "thabeska-o-5",
+"route": "Axxila–Tangrene hyperlane",
+"class": "minor",
+"length_px": 117.1
+},
+{
+"a": "thabeska-o-5",
+"b": "tangrene-o-4",
+"route": "Axxila–Tangrene hyperlane",
+"class": "minor",
+"length_px": 45.1
+},
+{
+"a": "bakura-g-16",
+"b": "cermau-h-16",
+"route": "Bakura Trace",
+"class": "minor",
+"length_px": 85.0
+},
+{
+"a": "cermau-h-16",
+"b": "endor-h-16",
+"route": "Bakura Trace",
+"class": "minor",
+"length_px": 70.4
+},
+{
+"a": "malastare-n-16",
+"b": "ring-of-kafrene-j-15",
+"route": "Biox Detour",
+"class": "minor",
+"length_px": 557.5
+},
+{
+"a": "corulag-l-9",
+"b": "chandrila-l-9",
+"route": "Bormea/Darpa Corridor",
+"class": "minor",
+"length_px": 9.9
+},
+{
+"a": "bothawui-r-14",
+"b": "crul-r-13",
+"route": "Bothan Run",
+"class": "minor",
+"length_px": 138.6
+},
+{
+"a": "crul-r-13",
+"b": "lannik-r-13",
+"route": "Bothan Run",
+"class": "minor",
+"length_px": 52.0
+},
+{
+"a": "lannik-r-13",
+"b": "daalang-q-12",
+"route": "Bothan Run",
+"class": "minor",
+"length_px": 107.6
+},
+{
+"a": "circumtore-s-12",
+"b": "bothawui-r-14",
+"route": "Bothawui–Druckenwell hyperlane",
+"class": "minor",
+"length_px": 264.4
+},
+{
+"a": "bothawui-r-14",
+"b": "nexus-ortai-q-14",
+"route": "Bothawui–Druckenwell hyperlane",
+"class": "minor",
+"length_px": 195.0
+},
+{
+"a": "nexus-ortai-q-14",
+"b": "tah-nuhna-q-14",
+"route": "Bothawui–Druckenwell hyperlane",
+"class": "minor",
+"length_px": 55.2
+},
+{
+"a": "tah-nuhna-q-14",
+"b": "monastery-q-14",
+"route": "Bothawui–Druckenwell hyperlane",
+"class": "minor",
+"length_px": 29.8
+},
+{
+"a": "monastery-q-14",
+"b": "druckenwell-p-15",
+"route": "Bothawui–Druckenwell hyperlane",
+"class": "minor",
+"length_px": 119.7
+},
+{
+"a": "bandomeer-o-6",
+"b": "takobo-n-6",
+"route": "Braxant Run",
+"class": "minor",
+"length_px": 156.9
+},
+{
+"a": "takobo-n-6",
+"b": "starport-borgo-m-6",
+"route": "Braxant Run",
+"class": "minor",
+"length_px": 81.8
+},
+{
+"a": "starport-borgo-m-6",
+"b": "agamar-m-5",
+"route": "Braxant Run",
+"class": "minor",
+"length_px": 85.8
+},
+{
+"a": "agamar-m-5",
+"b": "ord-trasi-l-4",
+"route": "Braxant Run",
+"class": "minor",
+"length_px": 235.1
+},
+{
+"a": "ord-trasi-l-4",
+"b": "kaller-k-5",
+"route": "Braxant Run",
+"class": "minor",
+"length_px": 120.1
+},
+{
+"a": "kaller-k-5",
+"b": "garqi-k-5",
+"route": "Braxant Run",
+"class": "minor",
+"length_px": 21.7
+},
+{
+"a": "garqi-k-5",
+"b": "mygeeto-k-5",
+"route": "Braxant Run",
+"class": "minor",
+"length_px": 74.5
+},
+{
+"a": "mygeeto-k-5",
+"b": "korrus-k-4",
+"route": "Braxant Run",
+"class": "minor",
+"length_px": 70.6
+},
+{
+"a": "korrus-k-4",
+"b": "muunilinst-k-4",
+"route": "Braxant Run",
+"class": "minor",
+"length_px": 43.7
+},
+{
+"a": "muunilinst-k-4",
+"b": "jaemus-k-4",
+"route": "Braxant Run",
+"class": "minor",
+"length_px": 52.5
+},
+{
+"a": "jaemus-k-4",
+"b": "bescane-k-3",
+"route": "Braxant Run",
+"class": "minor",
+"length_px": 37.8
+},
+{
+"a": "bescane-k-3",
+"b": "bastion-k-3",
+"route": "Braxant Run",
+"class": "minor",
+"length_px": 51.9
+},
+{
+"a": "denon-n-13",
+"b": "exodeen-m-12",
+"route": "Brentaal–Denon Route",
+"class": "minor",
+"length_px": 160.9
+},
+{
+"a": "exodeen-m-12",
+"b": "fedalle-m-10",
+"route": "Brentaal–Denon Route",
+"class": "minor",
+"length_px": 243.6
+},
+{
+"a": "fedalle-m-10",
+"b": "skako-l-9",
+"route": "Brentaal–Denon Route",
+"class": "minor",
+"length_px": 133.0
+},
+{
+"a": "skako-l-9",
+"b": "brentaal-l-9",
+"route": "Brentaal–Denon Route",
+"class": "minor",
+"length_px": 92.3
+},
+{
+"a": "ord-mantell-l-7",
+"b": "jedha-h-10",
+"route": "Burke's Trailing",
+"class": "minor",
+"length_px": 701.0
+},
+{
+"a": "jedha-h-10",
+"b": "jakku-i-13",
+"route": "Burke's Trailing",
+"class": "minor",
+"length_px": 404.0
+},
+{
+"a": "jakku-i-13",
+"b": "ponemah-h-16",
+"route": "Burke's Trailing",
+"class": "minor",
+"length_px": 539.5
+},
+{
+"a": "abregado-k-13",
+"b": "byss-k-11",
+"route": "Byss Run",
+"class": "minor",
+"length_px": 209.3
+},
+{
+"a": "byss-k-11",
+"b": "empress-teta-l-10",
+"route": "Byss Run",
+"class": "minor",
+"length_px": 202.2
+},
+{
+"a": "empress-teta-l-10",
+"b": "coruscant-l-9",
+"route": "Byss Run",
+"class": "minor",
+"length_px": 78.3
+},
+{
+"a": "lianna-s-6",
+"b": "jaminere-s-6",
+"route": "Cadinth Run",
+"class": "minor",
+"length_px": 90.2
+},
+{
+"a": "empress-teta-l-10",
+"b": "vulpter-l-10",
+"route": "Carbonite Run",
+"class": "minor",
+"length_px": 100.6
+},
+{
+"a": "celanon-o-6",
+"b": "ajan-kloss-l-5",
+"route": "Celanon Spur",
+"class": "minor",
+"length_px": 434.8
+},
+{
+"a": "ajan-kloss-l-5",
+"b": "aleen-l-7",
+"route": "Celanon Spur",
+"class": "minor",
+"length_px": 195.2
+},
+{
+"a": "aleen-l-7",
+"b": "ord-mantell-l-7",
+"route": "Celanon Spur",
+"class": "minor",
+"length_px": 78.7
+},
+{
+"a": "ord-mantell-l-7",
+"b": "dorin-j-8",
+"route": "Celanon Spur",
+"class": "minor",
+"length_px": 232.0
+},
+{
+"a": "lutrillia-j-18",
+"b": "lorta-j-17",
+"route": "Cerean Reach",
+"class": "minor",
+"length_px": 94.8
+},
+{
+"a": "lorta-j-17",
+"b": "beltire-j-17",
+"route": "Cerean Reach",
+"class": "minor",
+"length_px": 133.8
+},
+{
+"a": "beltire-j-17",
+"b": "riflor-j-16",
+"route": "Cerean Reach",
+"class": "minor",
+"length_px": 24.5
+},
+{
+"a": "riflor-j-16",
+"b": "kartoosh-i-16",
+"route": "Cerean Reach",
+"class": "minor",
+"length_px": 54.4
+},
+{
+"a": "brentaal-l-9",
+"b": "commenor-n-10",
+"route": "Commenor Run",
+"class": "minor",
+"length_px": 403.9
+},
+{
+"a": "coruscant-l-9",
+"b": "corellia-m-11",
+"route": "Corellian Run",
+"class": "major",
+"length_px": 360.6
+},
+{
+"a": "corellia-m-11",
+"b": "tinnel-m-12",
+"route": "Corellian Run",
+"class": "major",
+"length_px": 41.4
+},
+{
+"a": "tinnel-m-12",
+"b": "loronar-m-12",
+"route": "Corellian Run",
+"class": "major",
+"length_px": 55.2
+},
+{
+"a": "loronar-m-12",
+"b": "byblos-m-12",
+"route": "Corellian Run",
+"class": "major",
+"length_px": 25.7
+},
+{
+"a": "byblos-m-12",
+"b": "abednedo-n-12",
+"route": "Corellian Run",
+"class": "major",
+"length_px": 50.9
+},
+{
+"a": "abednedo-n-12",
+"b": "denon-n-13",
+"route": "Corellian Run",
+"class": "major",
+"length_px": 37.3
+},
+{
+"a": "denon-n-13",
+"b": "allanteen-o-14",
+"route": "Corellian Run",
+"class": "major",
+"length_px": 198.3
+},
+{
+"a": "allanteen-o-14",
+"b": "milagro-o-14",
+"route": "Corellian Run",
+"class": "major",
+"length_px": 81.9
+},
+{
+"a": "milagro-o-14",
+"b": "new-cov-p-14",
+"route": "Corellian Run",
+"class": "major",
+"length_px": 96.6
+},
+{
+"a": "new-cov-p-14",
+"b": "druckenwell-p-15",
+"route": "Corellian Run",
+"class": "major",
+"length_px": 68.7
+},
+{
+"a": "druckenwell-p-15",
+"b": "mon-gazza-q-16",
+"route": "Corellian Run",
+"class": "major",
+"length_px": 164.4
+},
+{
+"a": "mon-gazza-q-16",
+"b": "hetzal-q-16",
+"route": "Corellian Run",
+"class": "major",
+"length_px": 133.4
+},
+{
+"a": "hetzal-q-16",
+"b": "christophsis-q-16",
+"route": "Corellian Run",
+"class": "major",
+"length_px": 9.3
+},
+{
+"a": "christophsis-q-16",
+"b": "ryloth-r-17",
+"route": "Corellian Run",
+"class": "major",
+"length_px": 169.6
+},
+{
+"a": "ryloth-r-17",
+"b": "ab-dalis-r-17",
+"route": "Corellian Run",
+"class": "major",
+"length_px": 33.2
+},
+{
+"a": "ryloth-r-17",
+"b": "tatooine-r-16",
+"route": "Corellian Skip Run",
+"class": "minor",
+"length_px": 137.7
+},
+{
+"a": "corellia-m-11",
+"b": "duro-m-11",
+"route": "Corellian Trade Spine",
+"class": "major",
+"length_px": 10.0
+},
+{
+"a": "duro-m-11",
+"b": "hosnian-prime-m-12",
+"route": "Corellian Trade Spine",
+"class": "major",
+"length_px": 116.8
+},
+{
+"a": "hosnian-prime-m-12",
+"b": "nantoon-m-13",
+"route": "Corellian Trade Spine",
+"class": "major",
+"length_px": 113.9
+},
+{
+"a": "nantoon-m-13",
+"b": "yag-dhul-l-14",
+"route": "Corellian Trade Spine",
+"class": "major",
+"length_px": 208.8
+},
+{
+"a": "yag-dhul-l-14",
+"b": "cymoon-l-15",
+"route": "Corellian Trade Spine",
+"class": "major",
+"length_px": 131.3
+},
+{
+"a": "cymoon-l-15",
+"b": "kinyen-l-15",
+"route": "Corellian Trade Spine",
+"class": "major",
+"length_px": 64.7
+},
+{
+"a": "kinyen-l-15",
+"b": "blutopia-k-16",
+"route": "Corellian Trade Spine",
+"class": "major",
+"length_px": 71.6
+},
+{
+"a": "blutopia-k-16",
+"b": "bomis-koori-k-16",
+"route": "Corellian Trade Spine",
+"class": "major",
+"length_px": 92.3
+},
+{
+"a": "bomis-koori-k-16",
+"b": "kriselist-k-16",
+"route": "Corellian Trade Spine",
+"class": "major",
+"length_px": 21.6
+},
+{
+"a": "kriselist-k-16",
+"b": "mugaar-k-18",
+"route": "Corellian Trade Spine",
+"class": "major",
+"length_px": 162.8
+},
+{
+"a": "mugaar-k-18",
+"b": "gerrenthum-k-18",
+"route": "Corellian Trade Spine",
+"class": "major",
+"length_px": 41.8
+},
+{
+"a": "gerrenthum-k-18",
+"b": "isde-naha-k-18",
+"route": "Corellian Trade Spine",
+"class": "major",
+"length_px": 80.7
+},
+{
+"a": "isde-naha-k-18",
+"b": "trenchenovu-k-19",
+"route": "Corellian Trade Spine",
+"class": "major",
+"length_px": 55.9
+},
+{
+"a": "trenchenovu-k-19",
+"b": "manpha-k-20",
+"route": "Corellian Trade Spine",
+"class": "major",
+"length_px": 117.1
+},
+{
+"a": "manpha-k-20",
+"b": "zastiga-k-20",
+"route": "Corellian Trade Spine",
+"class": "major",
+"length_px": 83.7
+},
+{
+"a": "zastiga-k-20",
+"b": "terminus-k-20",
+"route": "Corellian Trade Spine",
+"class": "major",
+"length_px": 42.7
+},
+{
+"a": "corsin-m-7",
+"b": "bogden-m-8",
+"route": "Corsin Run",
+"class": "minor",
+"length_px": 152.8
+},
+{
+"a": "bogden-m-8",
+"b": "uviuy-exen-l-9",
+"route": "Corsin Run",
+"class": "minor",
+"length_px": 141.9
+},
+{
+"a": "uviuy-exen-l-9",
+"b": "brentaal-l-9",
+"route": "Corsin Run",
+"class": "minor",
+"length_px": 28.4
+},
+{
+"a": "dantooine-l-4",
+"b": "ord-trasi-l-4",
+"route": "Coruscant–Dantooine hyperlane",
+"class": "minor",
+"length_px": 79.4
+},
+{
+"a": "ord-trasi-l-4",
+"b": "iridonia-j-7",
+"route": "Coruscant–Dantooine hyperlane",
+"class": "minor",
+"length_px": 371.4
+},
+{
+"a": "iridonia-j-7",
+"b": "palanhi-k-9",
+"route": "Coruscant–Dantooine hyperlane",
+"class": "minor",
+"length_px": 295.0
+},
+{
+"a": "palanhi-k-9",
+"b": "pantolomin-k-9",
+"route": "Coruscant–Dantooine hyperlane",
+"class": "minor",
+"length_px": 86.2
+},
+{
+"a": "pantolomin-k-9",
+"b": "coruscant-l-9",
+"route": "Coruscant–Dantooine hyperlane",
+"class": "minor",
+"length_px": 80.7
+},
+{
+"a": "dalna-i-19",
+"b": "eiram-i-19",
+"route": "Dalna—Sump hyperlane",
+"class": "minor",
+"length_px": 28.3
+},
+{
+"a": "eiram-i-19",
+"b": "sump-i-18",
+"route": "Dalna—Sump hyperlane",
+"class": "minor",
+"length_px": 31.8
+},
+{
+"a": "sump-i-18",
+"b": "lafete-i-18",
+"route": "Dalna—Sump hyperlane",
+"class": "minor",
+"length_px": 17.6
+},
+{
+"a": "empress-teta-l-10",
+"b": "moraband-r-5",
+"route": "Daragon Trail",
+"class": "minor",
+"length_px": 1170.3
+},
+{
+"a": "kessar-n-17",
+"b": "cyclor-n-17",
+"route": "Darkknell–New Cov hyperlane",
+"class": "minor",
+"length_px": 45.9
+},
+{
+"a": "cyclor-n-17",
+"b": "triffis-o-15",
+"route": "Darkknell–New Cov hyperlane",
+"class": "minor",
+"length_px": 306.4
+},
+{
+"a": "triffis-o-15",
+"b": "kalarba-p-15",
+"route": "Darkknell–New Cov hyperlane",
+"class": "minor",
+"length_px": 67.0
+},
+{
+"a": "kalarba-p-15",
+"b": "new-cov-p-14",
+"route": "Darkknell–New Cov hyperlane",
+"class": "minor",
+"length_px": 22.2
+},
+{
+"a": "roon-s-15",
+"b": "tatooine-r-16",
+"route": "Death Wind Corridor",
+"class": "minor",
+"length_px": 164.0
+},
+{
+"a": "tatooine-r-16",
+"b": "ryloth-r-17",
+"route": "Death Wind Corridor",
+"class": "minor",
+"length_px": 137.7
+},
+{
+"a": "kashyyyk-p-9",
+"b": "sneeve-q-10",
+"route": "Durkteel Loop",
+"class": "minor",
+"length_px": 125.3
+},
+{
+"a": "sneeve-q-10",
+"b": "durkteel-q-10",
+"route": "Durkteel Loop",
+"class": "minor",
+"length_px": 25.5
+},
+{
+"a": "triffis-o-15",
+"b": "kalarba-p-15",
+"route": "Duros Space Run",
+"class": "minor",
+"length_px": 67.0
+},
+{
+"a": "kalarba-p-15",
+"b": "new-cov-p-14",
+"route": "Duros Space Run",
+"class": "minor",
+"length_px": 22.2
+},
+{
+"a": "eriadu-m-18",
+"b": "eiattu-l-17",
+"route": "Eiattu–Taltos hyperlane",
+"class": "minor",
+"length_px": 146.1
+},
+{
+"a": "eiattu-l-17",
+"b": "karfeddion-l-18",
+"route": "Eiattu–Taltos hyperlane",
+"class": "minor",
+"length_px": 101.9
+},
+{
+"a": "vondarc-m-16",
+"b": "naboo-o-17",
+"route": "Enarc Run",
+"class": "minor",
+"length_px": 274.3
+},
+{
+"a": "ord-mantell-l-7",
+"b": "orinda-k-6",
+"route": "Entralla Route",
+"class": "minor",
+"length_px": 135.8
+},
+{
+"a": "orinda-k-6",
+"b": "ardennia-k-6",
+"route": "Entralla Route",
+"class": "minor",
+"length_px": 65.5
+},
+{
+"a": "ardennia-k-6",
+"b": "carlac-k-5",
+"route": "Entralla Route",
+"class": "minor",
+"length_px": 49.8
+},
+{
+"a": "carlac-k-5",
+"b": "borosk-k-5",
+"route": "Entralla Route",
+"class": "minor",
+"length_px": 74.4
+},
+{
+"a": "borosk-k-5",
+"b": "yaga-minor-k-5",
+"route": "Entralla Route",
+"class": "minor",
+"length_px": 37.8
+},
+{
+"a": "yaga-minor-k-5",
+"b": "entralla-k-4",
+"route": "Entralla Route",
+"class": "minor",
+"length_px": 58.0
+},
+{
+"a": "entralla-k-4",
+"b": "muunilinst-k-4",
+"route": "Entralla Route",
+"class": "minor",
+"length_px": 46.5
+},
+{
+"a": "commenor-n-10",
+"b": "kuat-m-10",
+"route": "Fedalle–Kuat hyperlane",
+"class": "minor",
+"length_px": 138.6
+},
+{
+"a": "kuat-m-10",
+"b": "lespectus-m-10",
+"route": "Fedalle–Kuat hyperlane",
+"class": "minor",
+"length_px": 52.8
+},
+{
+"a": "lespectus-m-10",
+"b": "fedalle-m-10",
+"route": "Fedalle–Kuat hyperlane",
+"class": "minor",
+"length_px": 25.6
+},
+{
+"a": "farstine-p-17",
+"b": "sterdic-p-17",
+"route": "Five Veils Route",
+"class": "minor",
+"length_px": 35.2
+},
+{
+"a": "sterdic-p-17",
+"b": "vallt-p-17",
+"route": "Five Veils Route",
+"class": "minor",
+"length_px": 43.9
+},
+{
+"a": "vallt-p-17",
+"b": "yar-togna-p-18",
+"route": "Five Veils Route",
+"class": "minor",
+"length_px": 79.2
+},
+{
+"a": "yar-togna-p-18",
+"b": "idaflor-o-18",
+"route": "Five Veils Route",
+"class": "minor",
+"length_px": 49.1
+},
+{
+"a": "idaflor-o-18",
+"b": "quence-o-18",
+"route": "Five Veils Route",
+"class": "minor",
+"length_px": 87.8
+},
+{
+"a": "quence-o-18",
+"b": "guat-a-p-19",
+"route": "Five Veils Route",
+"class": "minor",
+"length_px": 81.5
+},
+{
+"a": "guat-a-p-19",
+"b": "skynara-p-19",
+"route": "Five Veils Route",
+"class": "minor",
+"length_px": 69.8
+},
+{
+"a": "skynara-p-19",
+"b": "svivren-o-19",
+"route": "Five Veils Route",
+"class": "minor",
+"length_px": 183.7
+},
+{
+"a": "aridus-o-14",
+"b": "trillia-p-13",
+"route": "Gamor Run",
+"class": "minor",
+"length_px": 134.2
+},
+{
+"a": "trillia-p-13",
+"b": "munt-ontdal-q-13",
+"route": "Gamor Run",
+"class": "minor",
+"length_px": 99.6
+},
+{
+"a": "munt-ontdal-q-13",
+"b": "fetilia-q-12",
+"route": "Gamor Run",
+"class": "minor",
+"length_px": 116.0
+},
+{
+"a": "fetilia-q-12",
+"b": "daalang-q-12",
+"route": "Gamor Run",
+"class": "minor",
+"length_px": 36.8
+},
+{
+"a": "daalang-q-12",
+"b": "circumtore-s-12",
+"route": "Gamor Run",
+"class": "minor",
+"length_px": 214.3
+},
+{
+"a": "circumtore-s-12",
+"b": "rorak-s-12",
+"route": "Gamor Run",
+"class": "minor",
+"length_px": 45.3
+},
+{
+"a": "eriadu-m-18",
+"b": "dolla-l-18",
+"route": "Gerrenthum–Eriadu hyperlane",
+"class": "minor",
+"length_px": 193.4
+},
+{
+"a": "dolla-l-18",
+"b": "gerrenthum-k-18",
+"route": "Gerrenthum–Eriadu hyperlane",
+"class": "minor",
+"length_px": 169.9
+},
+{
+"a": "chandrila-l-9",
+"b": "kitel-phard-j-12",
+"route": "Giju Run",
+"class": "minor",
+"length_px": 549.3
+},
+{
+"a": "kitel-phard-j-12",
+"b": "zardossa-stix-j-13",
+"route": "Giju Run",
+"class": "minor",
+"length_px": 119.8
+},
+{
+"a": "zardossa-stix-j-13",
+"b": "bardotta-k-13",
+"route": "Giju Run",
+"class": "minor",
+"length_px": 133.4
+},
+{
+"a": "bardotta-k-13",
+"b": "giju-l-13",
+"route": "Giju Run",
+"class": "minor",
+"length_px": 204.9
+},
+{
+"a": "chyron-j-16",
+"b": "rekelos-k-15",
+"route": "Great Gran Run",
+"class": "minor",
+"length_px": 171.1
+},
+{
+"a": "rekelos-k-15",
+"b": "kinyen-l-15",
+"route": "Great Gran Run",
+"class": "minor",
+"length_px": 35.2
+},
+{
+"a": "charros-r-9",
+"b": "kashyyyk-p-9",
+"route": "Great Kashyyyk Branch",
+"class": "minor",
+"length_px": 223.3
+},
+{
+"a": "kashyyyk-p-9",
+"b": "couronne-p-10",
+"route": "Great Kashyyyk Branch",
+"class": "minor",
+"length_px": 60.9
+},
+{
+"a": "couronne-p-10",
+"b": "umbara-p-10",
+"route": "Great Kashyyyk Branch",
+"class": "minor",
+"length_px": 19.4
+},
+{
+"a": "umbara-p-10",
+"b": "zavian-abyss-p-10",
+"route": "Great Kashyyyk Branch",
+"class": "minor",
+"length_px": 24.2
+},
+{
+"a": "zavian-abyss-p-10",
+"b": "zeltros-o-10",
+"route": "Great Kashyyyk Branch",
+"class": "minor",
+"length_px": 105.2
+},
+{
+"a": "milagro-o-14",
+"b": "kira-n-16",
+"route": "Harrin Trade Corridor",
+"class": "minor",
+"length_px": 269.2
+},
+{
+"a": "kira-n-16",
+"b": "wroona-l-15",
+"route": "Harrin Trade Corridor",
+"class": "minor",
+"length_px": 267.5
+},
+{
+"a": "milagro-o-14",
+"b": "kira-n-16",
+"route": "Harrin–Milagro hyperlane",
+"class": "minor",
+"length_px": 269.2
+},
+{
+"a": "kira-n-16",
+"b": "pax-n-16",
+"route": "Harrin–Milagro hyperlane",
+"class": "minor",
+"length_px": 60.4
+},
+{
+"a": "pax-n-16",
+"b": "stobar-m-15",
+"route": "Harrin–Milagro hyperlane",
+"class": "minor",
+"length_px": 193.5
+},
+{
+"a": "stobar-m-15",
+"b": "wroona-l-15",
+"route": "Harrin–Milagro hyperlane",
+"class": "minor",
+"length_px": 45.8
+},
+{
+"a": "byblos-m-12",
+"b": "giju-l-13",
+"route": "Herglic Alley",
+"class": "minor",
+"length_px": 284.9
+},
+{
+"a": "yag-dhul-l-14",
+"b": "giju-l-13",
+"route": "Hidakai Pool",
+"class": "minor",
+"length_px": 191.7
+},
+{
+"a": "giju-l-13",
+"b": "botor-k-12",
+"route": "Hidakai Pool",
+"class": "minor",
+"length_px": 146.8
+},
+{
+"a": "circumtore-s-12",
+"b": "syvris-t-13",
+"route": "Hollastin Run",
+"class": "minor",
+"length_px": 252.5
+},
+{
+"a": "imynusoph-j-21",
+"b": "terminus-k-20",
+"route": "Hydian Spur",
+"class": "minor",
+"length_px": 64.8
+},
+{
+"a": "imynusoph-j-21",
+"b": "terminus-k-20",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 64.8
+},
+{
+"a": "terminus-k-20",
+"b": "nevarro-k-20",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 106.5
+},
+{
+"a": "nevarro-k-20",
+"b": "atravis-l-19",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 197.9
+},
+{
+"a": "atravis-l-19",
+"b": "eriadu-m-18",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 211.8
+},
+{
+"a": "eriadu-m-18",
+"b": "orish-m-17",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 61.1
+},
+{
+"a": "orish-m-17",
+"b": "malastare-n-16",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 165.4
+},
+{
+"a": "malastare-n-16",
+"b": "pax-n-16",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 93.9
+},
+{
+"a": "pax-n-16",
+"b": "chardaan-n-14",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 310.9
+},
+{
+"a": "chardaan-n-14",
+"b": "denon-n-13",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 138.2
+},
+{
+"a": "denon-n-13",
+"b": "candovant-n-12",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 68.0
+},
+{
+"a": "candovant-n-12",
+"b": "korbori-n-12",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 33.5
+},
+{
+"a": "korbori-n-12",
+"b": "suntilla-n-12",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 68.9
+},
+{
+"a": "suntilla-n-12",
+"b": "exodeen-m-12",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 59.9
+},
+{
+"a": "exodeen-m-12",
+"b": "fedalle-m-10",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 243.6
+},
+{
+"a": "fedalle-m-10",
+"b": "skako-l-9",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 133.0
+},
+{
+"a": "skako-l-9",
+"b": "uviuy-exen-l-9",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 118.7
+},
+{
+"a": "uviuy-exen-l-9",
+"b": "hevurion-l-8",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 120.6
+},
+{
+"a": "hevurion-l-8",
+"b": "bogden-m-8",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 21.8
+},
+{
+"a": "bogden-m-8",
+"b": "mikkia-m-7",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 124.6
+},
+{
+"a": "mikkia-m-7",
+"b": "corsin-m-7",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 70.1
+},
+{
+"a": "corsin-m-7",
+"b": "otor-s-hub-n-7",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 125.6
+},
+{
+"a": "otor-s-hub-n-7",
+"b": "bandomeer-o-6",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 100.3
+},
+{
+"a": "bandomeer-o-6",
+"b": "botajef-o-6",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 56.3
+},
+{
+"a": "botajef-o-6",
+"b": "celanon-o-6",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 66.4
+},
+{
+"a": "celanon-o-6",
+"b": "toprawa-p-5",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 93.2
+},
+{
+"a": "toprawa-p-5",
+"b": "jelucan-q-4",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 262.9
+},
+{
+"a": "jelucan-q-4",
+"b": "listehol-q-4",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 32.3
+},
+{
+"a": "listehol-q-4",
+"b": "ruuria-q-3",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 65.3
+},
+{
+"a": "ruuria-q-3",
+"b": "cadomai-r-3",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 102.0
+},
+{
+"a": "cadomai-r-3",
+"b": "bonadan-s-3",
+"route": "Hydian Way",
+"class": "major",
+"length_px": 139.7
+},
+{
+"a": "bimmisaari-r-9",
+"b": "boz-pity-s-9",
+"route": "Ilosian Spur",
+"class": "minor",
+"length_px": 119.4
+},
+{
+"a": "endor-h-16",
+"b": "anoat-k-18",
+"route": "Incisor Sidestep",
+"class": "minor",
+"length_px": 512.4
+},
+{
+"a": "anoat-k-18",
+"b": "sullust-m-17",
+"route": "Incisor Sidestep",
+"class": "minor",
+"length_px": 311.8
+},
+{
+"a": "anoat-k-18",
+"b": "hoth-k-18",
+"route": "Ison Trade Corridor",
+"class": "minor",
+"length_px": 75.1
+},
+{
+"a": "hoth-k-18",
+"b": "bespin-k-18",
+"route": "Ison Trade Corridor",
+"class": "minor",
+"length_px": 10.7
+},
+{
+"a": "bothawui-r-14",
+"b": "nar-kaaga-s-13",
+"route": "Kaaga Run",
+"class": "minor",
+"length_px": 136.9
+},
+{
+"a": "nar-kaaga-s-13",
+"b": "circumtore-s-12",
+"route": "Kaaga Run",
+"class": "minor",
+"length_px": 129.3
+},
+{
+"a": "karfeddion-l-18",
+"b": "belsavis-l-18",
+"route": "Karfeddion–Belsavis hyperlane",
+"class": "minor",
+"length_px": 22.5
+},
+{
+"a": "karfeddion-l-18",
+"b": "dolla-l-18",
+"route": "Karfeddion–Dolla hyperlane",
+"class": "minor",
+"length_px": 62.1
+},
+{
+"a": "eriadu-m-18",
+"b": "gad-m-17",
+"route": "Karfeddion–Eriadu hyperlane",
+"class": "minor",
+"length_px": 90.3
+},
+{
+"a": "gad-m-17",
+"b": "eiattu-l-17",
+"route": "Karfeddion–Eriadu hyperlane",
+"class": "minor",
+"length_px": 58.0
+},
+{
+"a": "eiattu-l-17",
+"b": "karfeddion-l-18",
+"route": "Karfeddion–Eriadu hyperlane",
+"class": "minor",
+"length_px": 101.9
+},
+{
+"a": "kriselist-k-16",
+"b": "tiferep-major-l-17",
+"route": "Karfeddion–Kriselist hyperlane",
+"class": "minor",
+"length_px": 127.2
+},
+{
+"a": "tiferep-major-l-17",
+"b": "karfeddion-l-18",
+"route": "Karfeddion–Kriselist hyperlane",
+"class": "minor",
+"length_px": 94.9
+},
+{
+"a": "savareen-q-16",
+"b": "kessel-t-10",
+"route": "Kessel Run",
+"class": "minor",
+"length_px": 1057.9
+},
+{
+"a": "kessel-t-10",
+"b": "oba-diah-t-10",
+"route": "Kessel Run",
+"class": "minor",
+"length_px": 53.7
+},
+{
+"a": "lutrillia-j-18",
+"b": "vassek-i-17",
+"route": "Koda Spur",
+"class": "minor",
+"length_px": 170.8
+},
+{
+"a": "vassek-i-17",
+"b": "lotho-minor-i-17",
+"route": "Koda Spur",
+"class": "minor",
+"length_px": 32.8
+},
+{
+"a": "coruscant-l-9",
+"b": "nacon-l-10",
+"route": "Koros Trunk Line",
+"class": "minor",
+"length_px": 49.2
+},
+{
+"a": "nacon-l-10",
+"b": "empress-teta-l-10",
+"route": "Koros Trunk Line",
+"class": "minor",
+"length_px": 29.1
+},
+{
+"a": "leritor-q-15",
+"b": "nexus-ortai-q-14",
+"route": "Lannik–Leritor hyperlane",
+"class": "minor",
+"length_px": 121.3
+},
+{
+"a": "nexus-ortai-q-14",
+"b": "dressel-q-13",
+"route": "Lannik–Leritor hyperlane",
+"class": "minor",
+"length_px": 117.2
+},
+{
+"a": "dressel-q-13",
+"b": "lannik-r-13",
+"route": "Lannik–Leritor hyperlane",
+"class": "minor",
+"length_px": 83.0
+},
+{
+"a": "zeltros-o-10",
+"b": "merson-o-10",
+"route": "Lesser Lantillian Route",
+"class": "minor",
+"length_px": 50.7
+},
+{
+"a": "merson-o-10",
+"b": "onderon-o-9",
+"route": "Lesser Lantillian Route",
+"class": "minor",
+"length_px": 77.5
+},
+{
+"a": "onderon-o-9",
+"b": "rajtiri-p-9",
+"route": "Lesser Lantillian Route",
+"class": "minor",
+"length_px": 97.6
+},
+{
+"a": "rajtiri-p-9",
+"b": "uyter-p-9",
+"route": "Lesser Lantillian Route",
+"class": "minor",
+"length_px": 60.1
+},
+{
+"a": "uyter-p-9",
+"b": "charros-r-9",
+"route": "Lesser Lantillian Route",
+"class": "minor",
+"length_px": 226.9
+},
+{
+"a": "charros-r-9",
+"b": "bimmisaari-r-9",
+"route": "Lesser Lantillian Route",
+"class": "minor",
+"length_px": 95.4
+},
+{
+"a": "bimmisaari-r-9",
+"b": "solarine-s-8",
+"route": "Lesser Lantillian Route",
+"class": "minor",
+"length_px": 108.0
+},
+{
+"a": "solarine-s-8",
+"b": "vespaara-s-8",
+"route": "Lesser Lantillian Route",
+"class": "minor",
+"length_px": 17.2
+},
+{
+"a": "vespaara-s-8",
+"b": "boonta-s-8",
+"route": "Lesser Lantillian Route",
+"class": "minor",
+"length_px": 21.3
+},
+{
+"a": "lianna-s-6",
+"b": "jaminere-s-6",
+"route": "Lianna–Jaminere hyperlane",
+"class": "minor",
+"length_px": 90.2
+},
+{
+"a": "eriadu-m-18",
+"b": "actlyon-k-19",
+"route": "Lipsec Run",
+"class": "minor",
+"length_px": 291.2
+},
+{
+"a": "actlyon-k-19",
+"b": "isde-naha-k-18",
+"route": "Lipsec Run",
+"class": "minor",
+"length_px": 93.6
+},
+{
+"a": "isde-naha-k-18",
+"b": "merokia-j-18",
+"route": "Lipsec Run",
+"class": "minor",
+"length_px": 79.6
+},
+{
+"a": "merokia-j-18",
+"b": "sump-i-18",
+"route": "Lipsec Run",
+"class": "minor",
+"length_px": 108.3
+},
+{
+"a": "sump-i-18",
+"b": "eiram-i-19",
+"route": "Lipsec Run",
+"class": "minor",
+"length_px": 31.8
+},
+{
+"a": "eiram-i-19",
+"b": "virgillia-i-18",
+"route": "Lipsec Run",
+"class": "minor",
+"length_px": 64.7
+},
+{
+"a": "virgillia-i-18",
+"b": "lipsec-i-18",
+"route": "Lipsec Run",
+"class": "minor",
+"length_px": 35.8
+},
+{
+"a": "zygerria-s-4",
+"b": "gigor-r-4",
+"route": "Listehol Run",
+"class": "minor",
+"length_px": 117.9
+},
+{
+"a": "gigor-r-4",
+"b": "pippip-q-4",
+"route": "Listehol Run",
+"class": "minor",
+"length_px": 102.7
+},
+{
+"a": "pippip-q-4",
+"b": "mirial-q-4",
+"route": "Listehol Run",
+"class": "minor",
+"length_px": 25.6
+},
+{
+"a": "mirial-q-4",
+"b": "listehol-q-4",
+"route": "Listehol Run",
+"class": "minor",
+"length_px": 35.7
+},
+{
+"a": "mon-gazza-q-16",
+"b": "llanic-q-16",
+"route": "Llanic Spice Run",
+"class": "minor",
+"length_px": 120.0
+},
+{
+"a": "llanic-q-16",
+"b": "socorro-q-17",
+"route": "Llanic Spice Run",
+"class": "minor",
+"length_px": 101.2
+},
+{
+"a": "gerrenthum-k-18",
+"b": "lutrillia-j-18",
+"route": "Lutrillian Cross",
+"class": "minor",
+"length_px": 27.1
+},
+{
+"a": "bothawui-r-14",
+"b": "manda-r-15",
+"route": "Manda Merchant Route",
+"class": "minor",
+"length_px": 116.4
+},
+{
+"a": "manda-r-15",
+"b": "scarif-s-15",
+"route": "Manda Merchant Route",
+"class": "minor",
+"length_px": 105.2
+},
+{
+"a": "scarif-s-15",
+"b": "molavar-s-15",
+"route": "Manda Merchant Route",
+"class": "minor",
+"length_px": 22.0
+},
+{
+"a": "manda-r-15",
+"b": "roon-s-15",
+"route": "Manda-Roon Merchant Route",
+"class": "minor",
+"length_px": 128.3
+},
+{
+"a": "mandalore-o-7",
+"b": "taris-n-7",
+"route": "Mandalorian Road",
+"class": "minor",
+"length_px": 139.6
+},
+{
+"a": "taris-n-7",
+"b": "corsin-m-7",
+"route": "Mandalorian Road",
+"class": "minor",
+"length_px": 134.7
+},
+{
+"a": "manda-r-15",
+"b": "leritor-q-15",
+"route": "Manda–Mon Gazza hyperlane",
+"class": "minor",
+"length_px": 148.4
+},
+{
+"a": "leritor-q-15",
+"b": "ando-q-15",
+"route": "Manda–Mon Gazza hyperlane",
+"class": "minor",
+"length_px": 128.8
+},
+{
+"a": "ando-q-15",
+"b": "mon-gazza-q-16",
+"route": "Manda–Mon Gazza hyperlane",
+"class": "minor",
+"length_px": 31.2
+},
+{
+"a": "coruscant-l-9",
+"b": "cal-seti-k-10",
+"route": "Metellos Trade Route",
+"class": "minor",
+"length_px": 118.4
+},
+{
+"a": "cal-seti-k-10",
+"b": "n-zoth-k-10",
+"route": "Metellos Trade Route",
+"class": "minor",
+"length_px": 51.3
+},
+{
+"a": "farana-s-3",
+"b": "cadomai-r-3",
+"route": "Morellian Trail",
+"class": "minor",
+"length_px": 156.8
+},
+{
+"a": "cadomai-r-3",
+"b": "ruuria-q-3",
+"route": "Morellian Trail",
+"class": "minor",
+"length_px": 102.0
+},
+{
+"a": "ruuria-q-3",
+"b": "listehol-q-4",
+"route": "Morellian Trail",
+"class": "minor",
+"length_px": 65.3
+},
+{
+"a": "listehol-q-4",
+"b": "mirial-q-4",
+"route": "Morellian Trail",
+"class": "minor",
+"length_px": 35.7
+},
+{
+"a": "roon-s-15",
+"b": "tatooine-r-16",
+"route": "Mumble's Turnaround",
+"class": "minor",
+"length_px": 164.0
+},
+{
+"a": "tatooine-r-16",
+"b": "ryloth-r-17",
+"route": "Mumble's Turnaround",
+"class": "minor",
+"length_px": 137.7
+},
+{
+"a": "dantooine-l-4",
+"b": "jaemus-k-4",
+"route": "Myto's Arrow",
+"class": "minor",
+"length_px": 130.5
+},
+{
+"a": "coruscant-l-9",
+"b": "pantolomin-k-9",
+"route": "Namadii Corridor",
+"class": "minor",
+"length_px": 80.7
+},
+{
+"a": "pantolomin-k-9",
+"b": "borleias-k-9",
+"route": "Namadii Corridor",
+"class": "minor",
+"length_px": 27.7
+},
+{
+"a": "borleias-k-9",
+"b": "palanhi-k-9",
+"route": "Namadii Corridor",
+"class": "minor",
+"length_px": 60.2
+},
+{
+"a": "palanhi-k-9",
+"b": "bilbringi-j-8",
+"route": "Namadii Corridor",
+"class": "minor",
+"length_px": 125.5
+},
+{
+"a": "bilbringi-j-8",
+"b": "dorin-j-8",
+"route": "Namadii Corridor",
+"class": "minor",
+"length_px": 51.7
+},
+{
+"a": "dorin-j-8",
+"b": "glee-anselm-j-7",
+"route": "Namadii Corridor",
+"class": "minor",
+"length_px": 90.4
+},
+{
+"a": "glee-anselm-j-7",
+"b": "ansion-i-6",
+"route": "Namadii Corridor",
+"class": "minor",
+"length_px": 99.4
+},
+{
+"a": "ansion-i-6",
+"b": "namadii-i-6",
+"route": "Namadii Corridor",
+"class": "minor",
+"length_px": 25.8
+},
+{
+"a": "daiyu-p-12",
+"b": "gyndine-o-12",
+"route": "Nanth'ri Trade Route",
+"class": "minor",
+"length_px": 257.5
+},
+{
+"a": "gyndine-o-12",
+"b": "lonera-o-12",
+"route": "Nanth'ri Trade Route",
+"class": "minor",
+"length_px": 21.7
+},
+{
+"a": "lonera-o-12",
+"b": "antar-n-12",
+"route": "Nanth'ri Trade Route",
+"class": "minor",
+"length_px": 26.1
+},
+{
+"a": "antar-n-12",
+"b": "exodeen-m-12",
+"route": "Nanth'ri Trade Route",
+"class": "minor",
+"length_px": 124.8
+},
+{
+"a": "exodeen-m-12",
+"b": "denon-n-13",
+"route": "Nanth'ri Trade Route",
+"class": "minor",
+"length_px": 160.9
+},
+{
+"a": "coruscant-l-9",
+"b": "empress-teta-l-10",
+"route": "Nexus Route",
+"class": "minor",
+"length_px": 78.3
+},
+{
+"a": "empress-teta-l-10",
+"b": "giju-l-13",
+"route": "Nexus Route",
+"class": "minor",
+"length_px": 466.0
+},
+{
+"a": "giju-l-13",
+"b": "thyferra-l-14",
+"route": "Nexus Route",
+"class": "minor",
+"length_px": 155.1
+},
+{
+"a": "thyferra-l-14",
+"b": "yag-dhul-l-14",
+"route": "Nexus Route",
+"class": "minor",
+"length_px": 57.0
+},
+{
+"a": "eriadu-m-18",
+"b": "dolla-l-18",
+"route": "Nothoiin Corridor",
+"class": "minor",
+"length_px": 193.4
+},
+{
+"a": "dolla-l-18",
+"b": "gerrenthum-k-18",
+"route": "Nothoiin Corridor",
+"class": "minor",
+"length_px": 169.9
+},
+{
+"a": "nal-hutta-s-12",
+"b": "toydaria-r-11",
+"route": "Oktos Route",
+"class": "minor",
+"length_px": 31.6
+},
+{
+"a": "mon-gazza-q-16",
+"b": "christophsis-q-16",
+"route": "Old Corellian Run",
+"class": "minor",
+"length_px": 142.6
+},
+{
+"a": "christophsis-q-16",
+"b": "arkanis-r-17",
+"route": "Old Corellian Run",
+"class": "minor",
+"length_px": 48.9
+},
+{
+"a": "arkanis-r-17",
+"b": "tatooine-r-16",
+"route": "Old Corellian Run",
+"class": "minor",
+"length_px": 61.6
+},
+{
+"a": "tatooine-r-16",
+"b": "ryloth-r-17",
+"route": "Old Corellian Run",
+"class": "minor",
+"length_px": 137.7
+},
+{
+"a": "gyndine-o-12",
+"b": "nal-hutta-s-12",
+"route": "Ootmian Pabol",
+"class": "minor",
+"length_px": 578.8
+},
+{
+"a": "garel-u-7",
+"b": "lothal-u-7",
+"route": "Outer Rim trade route",
+"class": "minor",
+"length_px": 10.3
+},
+{
+"a": "coruscant-l-9",
+"b": "quermia-s-5",
+"route": "Overic Griplink",
+"class": "minor",
+"length_px": 1294.6
+},
+{
+"a": "quermia-s-5",
+"b": "mon-cala-u-6",
+"route": "Overic Griplink",
+"class": "minor",
+"length_px": 292.2
+},
+{
+"a": "mon-cala-u-6",
+"b": "atollon-t-7",
+"route": "Overic Griplink",
+"class": "minor",
+"length_px": 76.9
+},
+{
+"a": "nal-hutta-s-12",
+"b": "sleheyron-s-10",
+"route": "Pabol Hutta",
+"class": "minor",
+"length_px": 281.0
+},
+{
+"a": "randon-q-10",
+"b": "chalacta-r-10",
+"route": "Pabol Sleheyron",
+"class": "minor",
+"length_px": 185.3
+},
+{
+"a": "chalacta-r-10",
+"b": "nimban-s-10",
+"route": "Pabol Sleheyron",
+"class": "minor",
+"length_px": 104.2
+},
+{
+"a": "nimban-s-10",
+"b": "sleheyron-s-10",
+"route": "Pabol Sleheyron",
+"class": "minor",
+"length_px": 71.0
+},
+{
+"a": "sleheyron-s-10",
+"b": "kessel-t-10",
+"route": "Pabol Sleheyron",
+"class": "minor",
+"length_px": 104.2
+},
+{
+"a": "kessel-t-10",
+"b": "honoghr-t-10",
+"route": "Pabol Sleheyron",
+"class": "minor",
+"length_px": 28.4
+},
+{
+"a": "honoghr-t-10",
+"b": "formos-t-10",
+"route": "Pabol Sleheyron",
+"class": "minor",
+"length_px": 68.4
+},
+{
+"a": "formos-t-10",
+"b": "oba-diah-t-10",
+"route": "Pabol Sleheyron",
+"class": "minor",
+"length_px": 28.6
+},
+{
+"a": "oba-diah-t-10",
+"b": "kintan-s-9",
+"route": "Pabol Sleheyron",
+"class": "minor",
+"length_px": 217.9
+},
+{
+"a": "kintan-s-9",
+"b": "oseon-t-8",
+"route": "Pabol Sleheyron",
+"class": "minor",
+"length_px": 158.1
+},
+{
+"a": "coruscant-l-9",
+"b": "castell-m-9",
+"route": "Perlemian Trade Route",
+"class": "major",
+"length_px": 237.5
+},
+{
+"a": "castell-m-9",
+"b": "vurdon-ka-m-9",
+"route": "Perlemian Trade Route",
+"class": "major",
+"length_px": 45.1
+},
+{
+"a": "vurdon-ka-m-9",
+"b": "tirahnn-n-8",
+"route": "Perlemian Trade Route",
+"class": "major",
+"length_px": 131.6
+},
+{
+"a": "tirahnn-n-8",
+"b": "taanab-o-8",
+"route": "Perlemian Trade Route",
+"class": "major",
+"length_px": 143.6
+},
+{
+"a": "taanab-o-8",
+"b": "lantillies-p-8",
+"route": "Perlemian Trade Route",
+"class": "major",
+"length_px": 122.0
+},
+{
+"a": "lantillies-p-8",
+"b": "centares-r-7",
+"route": "Perlemian Trade Route",
+"class": "major",
+"length_px": 356.6
+},
+{
+"a": "centares-r-7",
+"b": "anaxes-r-7",
+"route": "Perlemian Trade Route",
+"class": "major",
+"length_px": 17.4
+},
+{
+"a": "anaxes-r-7",
+"b": "felucia-r-6",
+"route": "Perlemian Trade Route",
+"class": "major",
+"length_px": 163.9
+},
+{
+"a": "felucia-r-6",
+"b": "lianna-s-6",
+"route": "Perlemian Trade Route",
+"class": "major",
+"length_px": 33.8
+},
+{
+"a": "lianna-s-6",
+"b": "desevro-s-6",
+"route": "Perlemian Trade Route",
+"class": "major",
+"length_px": 31.8
+},
+{
+"a": "desevro-s-6",
+"b": "quermia-s-5",
+"route": "Perlemian Trade Route",
+"class": "major",
+"length_px": 115.4
+},
+{
+"a": "quermia-s-5",
+"b": "karkaris-s-5",
+"route": "Perlemian Trade Route",
+"class": "major",
+"length_px": 60.6
+},
+{
+"a": "commenor-n-10",
+"b": "cato-neimoidia-n-11",
+"route": "Quellor Run",
+"class": "minor",
+"length_px": 116.9
+},
+{
+"a": "ansion-i-6",
+"b": "keitum-j-6",
+"route": "Rago Run",
+"class": "minor",
+"length_px": 70.9
+},
+{
+"a": "randon-q-10",
+"b": "kashyyyk-p-9",
+"route": "Randon Run",
+"class": "minor",
+"length_px": 97.4
+},
+{
+"a": "kashyyyk-p-9",
+"b": "uyter-p-9",
+"route": "Randon Run",
+"class": "minor",
+"length_px": 95.6
+},
+{
+"a": "uyter-p-9",
+"b": "bracca-p-9",
+"route": "Randon Run",
+"class": "minor",
+"length_px": 22.3
+},
+{
+"a": "bracca-p-9",
+"b": "lantillies-p-8",
+"route": "Randon Run",
+"class": "minor",
+"length_px": 59.5
+},
+{
+"a": "bothawui-r-14",
+"b": "nexus-ortai-q-14",
+"route": "Reena Trade Route",
+"class": "minor",
+"length_px": 195.0
+},
+{
+"a": "nexus-ortai-q-14",
+"b": "monastery-q-14",
+"route": "Reena Trade Route",
+"class": "minor",
+"length_px": 82.8
+},
+{
+"a": "monastery-q-14",
+"b": "druckenwell-p-15",
+"route": "Reena Trade Route",
+"class": "minor",
+"length_px": 119.7
+},
+{
+"a": "kal-shebbol-m-21",
+"b": "sluis-van-m-19",
+"route": "Rimma Trade Route",
+"class": "major",
+"length_px": 307.8
+},
+{
+"a": "sluis-van-m-19",
+"b": "triton-m-18",
+"route": "Rimma Trade Route",
+"class": "major",
+"length_px": 36.0
+},
+{
+"a": "triton-m-18",
+"b": "clak-dor-m-18",
+"route": "Rimma Trade Route",
+"class": "major",
+"length_px": 29.1
+},
+{
+"a": "clak-dor-m-18",
+"b": "eriadu-m-18",
+"route": "Rimma Trade Route",
+"class": "major",
+"length_px": 81.9
+},
+{
+"a": "eriadu-m-18",
+"b": "sullust-m-17",
+"route": "Rimma Trade Route",
+"class": "major",
+"length_px": 68.4
+},
+{
+"a": "sullust-m-17",
+"b": "vondarc-m-16",
+"route": "Rimma Trade Route",
+"class": "major",
+"length_px": 134.5
+},
+{
+"a": "vondarc-m-16",
+"b": "vandelhelm-m-15",
+"route": "Rimma Trade Route",
+"class": "major",
+"length_px": 159.5
+},
+{
+"a": "vandelhelm-m-15",
+"b": "wroona-l-15",
+"route": "Rimma Trade Route",
+"class": "major",
+"length_px": 111.2
+},
+{
+"a": "wroona-l-15",
+"b": "yag-dhul-l-14",
+"route": "Rimma Trade Route",
+"class": "major",
+"length_px": 39.2
+},
+{
+"a": "yag-dhul-l-14",
+"b": "thyferra-l-14",
+"route": "Rimma Trade Route",
+"class": "major",
+"length_px": 57.0
+},
+{
+"a": "thyferra-l-14",
+"b": "ghorman-l-13",
+"route": "Rimma Trade Route",
+"class": "major",
+"length_px": 112.4
+},
+{
+"a": "ghorman-l-13",
+"b": "giju-l-13",
+"route": "Rimma Trade Route",
+"class": "major",
+"length_px": 43.3
+},
+{
+"a": "molavar-s-15",
+"b": "rothana-t-15",
+"route": "Rothana Route",
+"class": "minor",
+"length_px": 177.2
+},
+{
+"a": "kessel-t-10",
+"b": "kashyyyk-p-9",
+"route": "Rycar's Run",
+"class": "minor",
+"length_px": 536.4
+},
+{
+"a": "kashyyyk-p-9",
+"b": "kiffex-l-14",
+"route": "Rycar's Run",
+"class": "minor",
+"length_px": 915.0
+},
+{
+"a": "kiffex-l-14",
+"b": "tatooine-r-16",
+"route": "Rycar's Run",
+"class": "minor",
+"length_px": 943.1
+},
+{
+"a": "tatooine-r-16",
+"b": "ryloth-r-17",
+"route": "Rycar's Run",
+"class": "minor",
+"length_px": 137.7
+},
+{
+"a": "ryloth-r-17",
+"b": "socorro-q-17",
+"route": "Ryloth Road",
+"class": "minor",
+"length_px": 226.6
+},
+{
+"a": "boonta-s-8",
+"b": "sy-myrth-s-7",
+"route": "Salin Corridor",
+"class": "minor",
+"length_px": 165.4
+},
+{
+"a": "sy-myrth-s-7",
+"b": "quell-q-6",
+"route": "Salin Corridor",
+"class": "minor",
+"length_px": 213.2
+},
+{
+"a": "quell-q-6",
+"b": "yalbec-prime-p-7",
+"route": "Salin Corridor",
+"class": "minor",
+"length_px": 145.7
+},
+{
+"a": "yalbec-prime-p-7",
+"b": "nag-ubdur-p-7",
+"route": "Salin Corridor",
+"class": "minor",
+"length_px": 21.1
+},
+{
+"a": "nag-ubdur-p-7",
+"b": "phindar-p-6",
+"route": "Salin Corridor",
+"class": "minor",
+"length_px": 71.3
+},
+{
+"a": "phindar-p-6",
+"b": "botajef-o-6",
+"route": "Salin Corridor",
+"class": "minor",
+"length_px": 128.0
+},
+{
+"a": "botajef-o-6",
+"b": "dathomir-o-6",
+"route": "Salin Corridor",
+"class": "minor",
+"length_px": 44.7
+},
+{
+"a": "dathomir-o-6",
+"b": "vinsoth-n-5",
+"route": "Salin Corridor",
+"class": "minor",
+"length_px": 91.1
+},
+{
+"a": "endor-h-16",
+"b": "sullust-m-17",
+"route": "Sanctuary Pipeline",
+"class": "minor",
+"length_px": 742.4
+},
+{
+"a": "kessel-t-10",
+"b": "oseon-t-8",
+"route": "Sanity Skip",
+"class": "minor",
+"length_px": 235.4
+},
+{
+"a": "cotellier-n-20",
+"b": "kirdo-n-19",
+"route": "Sanrafsix Corridor",
+"class": "minor",
+"length_px": 143.5
+},
+{
+"a": "kirdo-n-19",
+"b": "kabal-n-18",
+"route": "Sanrafsix Corridor",
+"class": "minor",
+"length_px": 134.9
+},
+{
+"a": "cotellier-n-20",
+"b": "valo-n-19",
+"route": "Sanrafsix–Cotellier hyperlane",
+"class": "minor",
+"length_px": 109.5
+},
+{
+"a": "valo-n-19",
+"b": "kirdo-n-19",
+"route": "Sanrafsix–Cotellier hyperlane",
+"class": "minor",
+"length_px": 34.5
+},
+{
+"a": "kirdo-n-19",
+"b": "sevarcos-n-19",
+"route": "Sanrafsix–Cotellier hyperlane",
+"class": "minor",
+"length_px": 64.5
+},
+{
+"a": "sevarcos-n-19",
+"b": "rior-n-18",
+"route": "Sanrafsix–Cotellier hyperlane",
+"class": "minor",
+"length_px": 72.0
+},
+{
+"a": "rior-n-18",
+"b": "kabal-n-18",
+"route": "Sanrafsix–Cotellier hyperlane",
+"class": "minor",
+"length_px": 30.1
+},
+{
+"a": "karfeddion-l-18",
+"b": "eriadu-m-18",
+"route": "Senex Trace",
+"class": "minor",
+"length_px": 169.4
+},
+{
+"a": "clak-dor-m-18",
+"b": "malastare-n-16",
+"route": "Seswenna Expansion",
+"class": "minor",
+"length_px": 308.0
+},
+{
+"a": "lianna-s-6",
+"b": "florrum-r-5",
+"route": "Shaltin Tunnels",
+"class": "minor",
+"length_px": 118.2
+},
+{
+"a": "florrum-r-5",
+"b": "zygerria-s-4",
+"route": "Shaltin Tunnels",
+"class": "minor",
+"length_px": 135.6
+},
+{
+"a": "zygerria-s-4",
+"b": "bonadan-s-3",
+"route": "Shaltin Tunnels",
+"class": "minor",
+"length_px": 93.9
+},
+{
+"a": "sharlissia-n-18",
+"b": "kabal-n-18",
+"route": "Sharlissian Trade Corridor",
+"class": "minor",
+"length_px": 90.1
+},
+{
+"a": "kabal-n-18",
+"b": "xagobah-m-18",
+"route": "Sharlissian Trade Corridor",
+"class": "minor",
+"length_px": 72.5
+},
+{
+"a": "xagobah-m-18",
+"b": "triton-m-18",
+"route": "Sharlissian Trade Corridor",
+"class": "minor",
+"length_px": 51.6
+},
+{
+"a": "sharlissia-n-18",
+"b": "triton-m-18",
+"route": "Sharlissia–Triton hyperlane",
+"class": "minor",
+"length_px": 212.6
+},
+{
+"a": "fondor-l-13",
+"b": "quarzite-m-13",
+"route": "Shipwrights' Trace",
+"class": "minor",
+"length_px": 135.6
+},
+{
+"a": "quarzite-m-13",
+"b": "chardaan-n-14",
+"route": "Shipwrights' Trace",
+"class": "minor",
+"length_px": 142.1
+},
+{
+"a": "chardaan-n-14",
+"b": "tynna-n-14",
+"route": "Shipwrights' Trace",
+"class": "minor",
+"length_px": 81.1
+},
+{
+"a": "tynna-n-14",
+"b": "allanteen-o-14",
+"route": "Shipwrights' Trace",
+"class": "minor",
+"length_px": 48.2
+},
+{
+"a": "bakura-g-16",
+"b": "endor-h-16",
+"route": "Shiritoku Way",
+"class": "minor",
+"length_px": 153.4
+},
+{
+"a": "vakkar-k-9",
+"b": "palanhi-k-9",
+"route": "Shwuy Exchange",
+"class": "minor",
+"length_px": 44.3
+},
+{
+"a": "palanhi-k-9",
+"b": "caraad-l-8",
+"route": "Shwuy Exchange",
+"class": "minor",
+"length_px": 145.9
+},
+{
+"a": "caraad-l-8",
+"b": "mefti-l-8",
+"route": "Shwuy Exchange",
+"class": "minor",
+"length_px": 60.8
+},
+{
+"a": "mefti-l-8",
+"b": "uviuy-exen-l-9",
+"route": "Shwuy Exchange",
+"class": "minor",
+"length_px": 23.5
+},
+{
+"a": "sullust-m-17",
+"b": "endor-h-16",
+"route": "Silvestri Trace",
+"class": "minor",
+"length_px": 742.4
+},
+{
+"a": "sriluur-s-8",
+"b": "nimban-s-10",
+"route": "Sisar Run",
+"class": "minor",
+"length_px": 230.9
+},
+{
+"a": "botajef-o-6",
+"b": "vinsoth-n-5",
+"route": "Sprizen End Run",
+"class": "minor",
+"length_px": 128.8
+},
+{
+"a": "serenno-p-5",
+"b": "celanon-o-6",
+"route": "Spurs of Celanon",
+"class": "minor",
+"length_px": 116.8
+},
+{
+"a": "coruscant-l-9",
+"b": "chandrila-l-9",
+"route": "Stassia Alley",
+"class": "minor",
+"length_px": 92.6
+},
+{
+"a": "saleucami-s-8",
+"b": "kegan-t-9",
+"route": "Talcene Transit",
+"class": "minor",
+"length_px": 280.8
+},
+{
+"a": "tatooine-r-16",
+"b": "manda-r-15",
+"route": "Tatooine Dash",
+"class": "minor",
+"length_px": 260.4
+},
+{
+"a": "manda-r-15",
+"b": "nar-kaaga-s-13",
+"route": "Tatooine Dash",
+"class": "minor",
+"length_px": 250.4
+},
+{
+"a": "tatooine-r-16",
+"b": "geonosis-r-16",
+"route": "The Crystal Passage",
+"class": "minor",
+"length_px": 11.2
+},
+{
+"a": "coruscant-l-9",
+"b": "corellia-m-11",
+"route": "The Spin",
+"class": "minor",
+"length_px": 360.6
+},
+{
+"a": "corellia-m-11",
+"b": "duro-m-11",
+"route": "The Spin",
+"class": "minor",
+"length_px": 10.0
+},
+{
+"a": "raxus-prime-s-5",
+"b": "brigia-t-6",
+"route": "Tion Trade Route",
+"class": "minor",
+"length_px": 113.0
+},
+{
+"a": "brigia-t-6",
+"b": "dellalt-t-6",
+"route": "Tion Trade Route",
+"class": "minor",
+"length_px": 37.5
+},
+{
+"a": "randon-q-10",
+"b": "grange-q-11",
+"route": "Trax Tube",
+"class": "minor",
+"length_px": 201.2
+},
+{
+"a": "grange-q-11",
+"b": "daalang-q-12",
+"route": "Trax Tube",
+"class": "minor",
+"length_px": 153.4
+},
+{
+"a": "daalang-q-12",
+"b": "circumtore-s-12",
+"route": "Trax Tube",
+"class": "minor",
+"length_px": 214.3
+},
+{
+"a": "trellen-m-10",
+"b": "zeltros-o-10",
+"route": "Trellen Trade Route",
+"class": "minor",
+"length_px": 286.3
+},
+{
+"a": "centares-r-7",
+"b": "sy-myrth-s-7",
+"route": "Triellus Trade Route",
+"class": "minor",
+"length_px": 92.7
+},
+{
+"a": "sy-myrth-s-7",
+"b": "naraka-s-7",
+"route": "Triellus Trade Route",
+"class": "minor",
+"length_px": 55.7
+},
+{
+"a": "naraka-s-7",
+"b": "jabiim-s-7",
+"route": "Triellus Trade Route",
+"class": "minor",
+"length_px": 46.1
+},
+{
+"a": "jabiim-s-7",
+"b": "yarma-t-8",
+"route": "Triellus Trade Route",
+"class": "minor",
+"length_px": 96.6
+},
+{
+"a": "yarma-t-8",
+"b": "marleyvane-t-8",
+"route": "Triellus Trade Route",
+"class": "minor",
+"length_px": 17.3
+},
+{
+"a": "marleyvane-t-8",
+"b": "kubindi-t-9",
+"route": "Triellus Trade Route",
+"class": "minor",
+"length_px": 219.4
+},
+{
+"a": "kubindi-t-9",
+"b": "formos-t-10",
+"route": "Triellus Trade Route",
+"class": "minor",
+"length_px": 80.1
+},
+{
+"a": "formos-t-10",
+"b": "aduba-u-11",
+"route": "Triellus Trade Route",
+"class": "minor",
+"length_px": 151.1
+},
+{
+"a": "aduba-u-11",
+"b": "barab-u-12",
+"route": "Triellus Trade Route",
+"class": "minor",
+"length_px": 267.5
+},
+{
+"a": "barab-u-12",
+"b": "syvris-t-13",
+"route": "Triellus Trade Route",
+"class": "minor",
+"length_px": 106.5
+},
+{
+"a": "syvris-t-13",
+"b": "gamorr-t-14",
+"route": "Triellus Trade Route",
+"class": "minor",
+"length_px": 125.9
+},
+{
+"a": "gamorr-t-14",
+"b": "molavar-s-15",
+"route": "Triellus Trade Route",
+"class": "minor",
+"length_px": 244.3
+},
+{
+"a": "molavar-s-15",
+"b": "roon-s-15",
+"route": "Triellus Trade Route",
+"class": "minor",
+"length_px": 62.3
+},
+{
+"a": "roon-s-15",
+"b": "cosmatanic-steppes-r-16",
+"route": "Triellus Trade Route",
+"class": "minor",
+"length_px": 48.9
+},
+{
+"a": "cosmatanic-steppes-r-16",
+"b": "geonosis-r-16",
+"route": "Triellus Trade Route",
+"class": "minor",
+"length_px": 122.5
+},
+{
+"a": "geonosis-r-16",
+"b": "tatooine-r-16",
+"route": "Triellus Trade Route",
+"class": "minor",
+"length_px": 11.2
+},
+{
+"a": "tatooine-r-16",
+"b": "arkanis-r-17",
+"route": "Triellus Trade Route",
+"class": "minor",
+"length_px": 61.6
+},
+{
+"a": "arkanis-r-17",
+"b": "yerbana-q-17",
+"route": "Triellus Trade Route",
+"class": "minor",
+"length_px": 23.7
+},
+{
+"a": "yerbana-q-17",
+"b": "llanic-q-16",
+"route": "Triellus Trade Route",
+"class": "minor",
+"length_px": 95.3
+},
+{
+"a": "llanic-q-16",
+"b": "farstine-p-17",
+"route": "Triellus Trade Route",
+"class": "minor",
+"length_px": 170.9
+},
+{
+"a": "farstine-p-17",
+"b": "ryloth-r-17",
+"route": "Triellus Trade Route",
+"class": "minor",
+"length_px": 386.4
+},
+{
+"a": "eiram-i-19",
+"b": "hetzal-q-16",
+"route": "Unidentified hyperlane",
+"class": "minor",
+"length_px": 1234.9
+},
+{
+"a": "contruum-o-8",
+"b": "obroa-skai-n-8",
+"route": "Vaathkree Trade Corridor",
+"class": "minor",
+"length_px": 161.6
+},
+{
+"a": "obroa-skai-n-8",
+"b": "ubduria-n-8",
+"route": "Vaathkree Trade Corridor",
+"class": "minor",
+"length_px": 36.9
+},
+{
+"a": "ubduria-n-8",
+"b": "corsin-m-7",
+"route": "Vaathkree Trade Corridor",
+"class": "minor",
+"length_px": 135.8
+},
+{
+"a": "ciutric-n-5",
+"b": "zhadalene-n-4",
+"route": "Veragi Trade Route",
+"class": "minor",
+"length_px": 55.0
+},
+{
+"a": "zhadalene-n-4",
+"b": "alpinn-n-4",
+"route": "Veragi Trade Route",
+"class": "minor",
+"length_px": 37.8
+},
+{
+"a": "alpinn-n-4",
+"b": "chanceuxi-n-4",
+"route": "Veragi Trade Route",
+"class": "minor",
+"length_px": 52.2
+},
+{
+"a": "chanceuxi-n-4",
+"b": "danzik-m-3",
+"route": "Veragi Trade Route",
+"class": "minor",
+"length_px": 193.8
+},
+{
+"a": "danzik-m-3",
+"b": "sernpidal-l-3",
+"route": "Veragi Trade Route",
+"class": "minor",
+"length_px": 112.9
+},
+{
+"a": "sernpidal-l-3",
+"b": "dubrillion-k-3",
+"route": "Veragi Trade Route",
+"class": "minor",
+"length_px": 178.2
+},
+{
+"a": "dubrillion-k-3",
+"b": "belladoon-k-3",
+"route": "Veragi Trade Route",
+"class": "minor",
+"length_px": 28.7
+},
+{
+"a": "belladoon-k-3",
+"b": "dantooine-l-4",
+"route": "Veragi Trade Route",
+"class": "minor",
+"length_px": 74.4
+},
+{
+"a": "dantooine-l-4",
+"b": "ord-trasi-l-4",
+"route": "Veragi Trade Route",
+"class": "minor",
+"length_px": 79.4
+},
+{
+"a": "xala-h-14",
+"b": "batuu-g-15",
+"route": "Xala–Cermau hyperlane",
+"class": "minor",
+"length_px": 116.8
+},
+{
+"a": "batuu-g-15",
+"b": "mokivj-g-16",
+"route": "Xala–Cermau hyperlane",
+"class": "minor",
+"length_px": 88.4
+},
+{
+"a": "mokivj-g-16",
+"b": "cermau-h-16",
+"route": "Xala–Cermau hyperlane",
+"class": "minor",
+"length_px": 84.0
+}
+]
+}
