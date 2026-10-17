@@ -39,15 +39,12 @@ export interface GmControls {
   onMoveLeft:    (index: number) => void
   onMoveRight:   (index: number) => void
   onSwap:        (slotIdA: string, slotIdB: string) => void
-  onAdvanceTurn: () => void
-  onEndCombat:   () => void
 }
 
 export interface InitiativeStripProps {
   encounter:   CombatEncounter | null
   character:   Character
   gmControls?: GmControls
-  compact?:    boolean
   /**
    * When true, renders as a fixed-position portal overlay at the top of the viewport.
    * When false (default), renders inline within the parent container.
@@ -441,7 +438,6 @@ interface DrumTrackProps {
   gmControls?:     GmControls
   visible:         boolean
   onSwapOpen:      (slotId: string, e: React.MouseEvent<HTMLButtonElement>) => void
-  onAdvanceTurn:   () => void
   tokens:          StripToken[]
   hoveredTokenId:  string | null
   onHoverCard:     (tokenId: string, on: boolean) => void
@@ -668,33 +664,6 @@ export function InitiativeStrip({
   const encRef = useRef(encounter)
   encRef.current = encounter
 
-  const advanceTurnInternal = useCallback(async () => {
-    const enc = encRef.current
-    if (!enc) return
-    const slots = enc.initiative_slots
-    if (!slots.length) return
-    const current = enc.current_slot_index ?? 0
-    const acted   = slots.map((s, i) => i === current ? { ...s, acted: true } : s)
-    const allActed = acted.every(s => s.acted)
-    if (allActed) {
-      const reset = acted.map(s => ({ ...s, acted: false, current: false }))
-      reset[0] = { ...reset[0], current: true }
-      await supabase.from('combat_encounters').update({
-        initiative_slots: reset, current_slot_index: 0,
-        round: (enc.round ?? 1) + 1, updated_at: new Date().toISOString(),
-      }).eq('id', enc.id)
-    } else {
-      let next = (current + 1) % slots.length
-      while (acted[next].acted) next = (next + 1) % slots.length
-      const updated = acted.map((s, i) => ({ ...s, current: i === next }))
-      await supabase.from('combat_encounters').update({
-        initiative_slots: updated, current_slot_index: next,
-        updated_at: new Date().toISOString(),
-      }).eq('id', enc.id)
-    }
-    gmControls?.onAdvanceTurn()
-  }, [supabase, gmControls])
-
   // Player-side pass: swap current slot's position with target (position-based)
   const passTurnInternal = useCallback(async (targetSlotId: string) => {
     const enc = encRef.current
@@ -759,7 +728,6 @@ export function InitiativeStrip({
     encounter, character, slotAssignments, portraits, advTokenImages,
     gmControls, visible,
     onSwapOpen:    openSwapPicker,
-    onAdvanceTurn: () => void advanceTurnInternal(),
     tokens:        tokens ?? NO_TOKENS,
     hoveredTokenId,
     onHoverCard:   hoverCard,

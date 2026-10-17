@@ -263,7 +263,7 @@ export function HudSessionTab({
           top: 0, left: 0, right: 0, maxHeight: '25%',
           zIndex: 'var(--z-drawer)',
         }}>
-          <InitiativeStrip encounter={encounter} character={character} compact tokens={visibleMapTokens} hoveredTokenId={hoveredTokenId} onHoverToken={setHoveredTokenId} />
+          <InitiativeStrip encounter={encounter} character={character} tokens={visibleMapTokens} hoveredTokenId={hoveredTokenId} onHoverToken={setHoveredTokenId} />
         </div>
       )}
 

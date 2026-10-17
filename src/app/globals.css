@@ -1371,26 +1371,6 @@ i.ffi {
 .init-gm-adv:hover { filter: brightness(1.12); }
 .init-gm-adv:focus-visible { outline: 2px solid var(--hud-text); outline-offset: 2px; }
 
-/* GM End Combat button — parallelogram, failure/red tint */
-.init-gm-end {
-  font-family:    var(--font-display);
-  font-size:      var(--text-overline);
-  font-weight:    700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color:          var(--state-failure);
-  background:     color-mix(in srgb, var(--state-failure) 9%, transparent);
-  border:         1px solid color-mix(in srgb, var(--state-failure) 50%, transparent);
-  clip-path:      polygon(5px 0%, 100% 0%, calc(100% - 5px) 100%, 0% 100%);
-  padding:        4px 6px;
-  cursor:         pointer;
-  transition:     background var(--ease-quick), border-color var(--ease-quick);
-}
-.init-gm-end:hover {
-  background:   color-mix(in srgb, var(--state-failure) 18%, transparent);
-  border-color: color-mix(in srgb, var(--state-failure) 80%, transparent);
-}
-
 /* Swap / pass picker (portalled to body; top/left/z are set per-instance) */
 .init-swap-backdrop { position: fixed; inset: 0; }
 .init-swap {

@@ -374,7 +374,6 @@
 .hud-skill-row,
 .hud-combat-wpn-row,
 .hud-force-power-row,
-.init-slot-card,
 .init-swap-target {
   position: relative;
   overflow: hidden;

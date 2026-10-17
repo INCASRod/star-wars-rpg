@@ -101,23 +101,3 @@ export function sortInitiative(
     return a.order - b.order
   })
 }
-
-/** Advance current pointer to next unacted slot; increment round if all acted */
-export function advanceInitiative(
-  slots: InitiativeSlot[],
-  currentIndex: number,
-  round: number
-): { slots: InitiativeSlot[]; currentIndex: number; round: number } {
-  const updated = slots.map((s, i) =>
-    i === currentIndex ? { ...s, acted: true, current: false } : s
-  )
-  const next = updated.findIndex((s, i) => i > currentIndex && !s.acted)
-  if (next !== -1) {
-    updated[next] = { ...updated[next], current: true }
-    return { slots: updated, currentIndex: next, round }
-  }
-  // All acted — start new round
-  const reset = updated.map(s => ({ ...s, acted: false, current: false }))
-  if (reset.length > 0) reset[0] = { ...reset[0], current: true }
-  return { slots: reset, currentIndex: 0, round: round + 1 }
-}

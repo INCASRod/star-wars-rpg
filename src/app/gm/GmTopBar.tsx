@@ -13,8 +13,6 @@ export interface GmTopBarProps {
   combatRound:        number
   onBeginCombat:      () => void | Promise<void>
   onEndCombat:        () => void | Promise<void>
-  onInitiativeOrder:  () => void
-  initiativeOpen:     boolean
   onLobby:            () => void
   /** Map view controls (Reset / Lock) — far right. Omitted = not rendered. */
   mapLocked?:         boolean
@@ -27,7 +25,7 @@ export interface GmTopBarProps {
 export const GmTopBar = memo(function GmTopBar({
   campaignName,
   sessionMode, sessionBusy, combatRound,
-  onBeginCombat, onEndCombat, onInitiativeOrder, initiativeOpen, onLobby,
+  onBeginCombat, onEndCombat, onLobby,
   mapLocked = false, onMapReset, onMapToggleLock,
   destinySlot,
 }: GmTopBarProps) {
@@ -131,7 +129,6 @@ export const GmTopBar = memo(function GmTopBar({
       {/* ── Right: combat toggle ───────────────────────────── */}
       {isCombat ? (
         <>
-          <TopBarButton label="◉ Initiative Order" color={HUD.gold} disabled={false} onClick={onInitiativeOrder} active={initiativeOpen} />
           <TopBarButton label="⬛ End Combat" color="var(--state-failure)" disabled={sessionBusy} onClick={onEndCombat} />
         </>
       ) : (

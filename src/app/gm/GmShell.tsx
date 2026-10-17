@@ -163,7 +163,6 @@ export function GmShell() {
 
   // ── UI state ────────────────────────────────────────────────────
   const [activePanel,           setActivePanel]           = useState<GmPanelId | null>(null)
-  const [initiativeOpen,        setInitiativeOpen]        = useState(false)
   const [initiativeSetupOpen,   setInitiativeSetupOpen]   = useState(false)
   const [recheckInitiativeOpen, setRecheckInitiativeOpen] = useState(false)
   const [referenceOpen,         setReferenceOpen]         = useState(false)
@@ -392,20 +391,10 @@ export function GmShell() {
     }
   }
 
-  async function gmEndCombat() {
-    if (!stagingEncounter) return
-    await supabase.from('combat_encounters').update({
-      is_active: false, updated_at: new Date().toISOString(),
-    }).eq('id', stagingEncounter.id)
-    setInitiativeOpen(false)
-  }
-
   const gmControls: GmControls = {
     onMoveLeft:    i      => void gmMoveSlot(i, -1),
     onMoveRight:   i      => void gmMoveSlot(i,  1),
     onSwap:        (a, b) => void gmSwapSlots(a, b),
-    onAdvanceTurn: ()     => void gmAdvanceTurn(),
-    onEndCombat:   ()     => void gmEndCombat(),
   }
 
   // ── Render ───────────────────────────────────────────────────────
@@ -652,8 +641,6 @@ export function GmShell() {
         combatRound={combatRound}
         onBeginCombat={handleStartCombat}
         onEndCombat={endEncounter}
-        onInitiativeOrder={() => setInitiativeOpen(o => !o)}
-        initiativeOpen={initiativeOpen}
         onLobby={() => router.push('/')}
         mapLocked={mapLocked}
         onMapReset={handleMapReset}
