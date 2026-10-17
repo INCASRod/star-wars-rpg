@@ -1,0 +1,1018 @@
+{
+ "calibration": {
+  "pitch_px": 145.58538587848932,
+  "x_c_left": 617.1888341543514,
+  "y_row1_top": 759.4170771756977,
+  "vertical_lines_found": 28,
+  "horizontal_lines_found": 28,
+  "max_residual_px": 0.538,
+  "rms_residual_px": 0.292,
+  "ly_per_px": 34.3441
+ },
+ "origin_px": [
+  1926.04,
+  2063.8
+ ],
+ "dots_raw": 876,
+ "dots_after_split": 887,
+ "clusters_split": 40,
+ "nebula_icons_dropped": 16,
+ "dots_final": 871,
+ "ocr_lines": 958,
+ "labels_matched": 735,
+ "precision": {
+  "catalogue": 2896,
+  "cell": 3152,
+  "dot": 704
+ },
+ "rejected_assignments": [
+  {
+   "name": "Eyo-Dajuritz",
+   "grid": "N-10",
+   "label": "Eyo-Dajuritz",
+   "reason": "dot outside cell+margin"
+  },
+  {
+   "name": "Phothrell",
+   "grid": "M-8",
+   "label": "Phothrell",
+   "reason": "dot outside cell+margin"
+  },
+  {
+   "name": "Neimoidia",
+   "grid": "M-10",
+   "label": "Neimoidia",
+   "reason": "dot outside cell+margin"
+  },
+  {
+   "name": "Coto-Xana",
+   "grid": "L-9",
+   "label": "Coto-Xana",
+   "reason": "dot outside cell+margin"
+  },
+  {
+   "name": "Bastatha",
+   "grid": "N-10",
+   "label": "Bastatha",
+   "reason": "dot outside cell+margin"
+  },
+  {
+   "name": "Champala",
+   "grid": "L-8",
+   "label": "Champala",
+   "reason": "dot outside cell+margin"
+  },
+  {
+   "name": "Takodana",
+   "grid": "J-16",
+   "label": "Takodana",
+   "reason": "dot outside cell+margin"
+  },
+  {
+   "name": "Metalorn",
+   "grid": "R-8",
+   "label": "Metalorn",
+   "reason": "dot outside cell+margin"
+  },
+  {
+   "name": "Alderaan",
+   "grid": "M-10",
+   "label": "Alderaan",
+   "reason": "dot outside cell+margin"
+  },
+  {
+   "name": "Montross",
+   "grid": "P-8",
+   "label": "Montross",
+   "reason": "dot outside cell+margin"
+  },
+  {
+   "name": "Nanth'ri",
+   "grid": "Q-12",
+   "label": "Nanth'ri",
+   "reason": "dot outside cell+margin"
+  },
+  {
+   "name": "Raydonia",
+   "grid": "O-6",
+   "label": "Raydonia",
+   "reason": "dot outside cell+margin"
+  },
+  {
+   "name": "Bestine",
+   "grid": "M-14",
+   "label": "Bestine",
+   "reason": "dot outside cell+margin"
+  },
+  {
+   "name": "Arkania",
+   "grid": "M-8",
+   "label": "Arkania",
+   "reason": "dot outside cell+margin"
+  },
+  {
+   "name": "Mardona",
+   "grid": "N-13",
+   "label": "Mardona",
+   "reason": "dot outside cell+margin"
+  },
+  {
+   "name": "Begamor",
+   "grid": "M-5",
+   "label": "Begamor",
+   "reason": "dot outside cell+margin"
+  },
+  {
+   "name": "Rhinnal",
+   "grid": "L-9",
+   "label": "Rhinnal",
+   "reason": "dot outside cell+margin"
+  },
+  {
+   "name": "Vorzyd",
+   "grid": "R-6",
+   "label": "Vorzyd",
+   "reason": "dot outside cell+margin"
+  },
+  {
+   "name": "Nouane",
+   "grid": "N-8",
+   "label": "Nouane",
+   "reason": "dot outside cell+margin"
+  },
+  {
+   "name": "Cusver",
+   "grid": "M-12",
+   "label": "Cusver",
+   "reason": "dot outside cell+margin"
+  },
+  {
+   "name": "Varnak",
+   "grid": "Q-11",
+   "label": "Varnak",
+   "reason": "dot outside cell+margin"
+  },
+  {
+   "name": "Tython",
+   "grid": "K-10",
+   "label": "Tython",
+   "reason": "dot outside cell+margin"
+  },
+  {
+   "name": "Tepasi",
+   "grid": "L-9",
+   "label": "Tepasi",
+   "reason": "dot outside cell+margin"
+  },
+  {
+   "name": "Foless",
+   "grid": "M-13",
+   "label": "Foless",
+   "reason": "dot outside cell+margin"
+  },
+  {
+   "name": "Reena",
+   "grid": "L-13",
+   "label": "Reena",
+   "reason": "dot outside cell+margin"
+  },
+  {
+   "name": "Gizer",
+   "grid": "P-8",
+   "label": "Gizer",
+   "reason": "dot outside cell+margin"
+  },
+  {
+   "name": "Cerea",
+   "grid": "I-16",
+   "label": "Cerea",
+   "reason": "dot outside cell+margin"
+  },
+  {
+   "name": "Ylesia",
+   "grid": "T-12",
+   "label": "Ylesia Teth",
+   "reason": "dot outside cell+margin"
+  },
+  {
+   "name": "Dinwa Prime",
+   "grid": "L-8",
+   "label": "Dinwa Pr.",
+   "reason": "dot outside cell+margin"
+  },
+  {
+   "name": "Bothawui",
+   "grid": "R-14",
+   "label": "BOTHAN",
+   "reason": "dot outside cell+margin"
+  }
+ ],
+ "catalogue_cell_disagree_discarded": 237,
+ "margin_cases": [
+  {
+   "id": "aargau-l-10",
+   "name": "Aargau",
+   "grid": "L-10",
+   "precision": "dot",
+   "overshoot_px": 0.18
+  },
+  {
+   "id": "bardotta-k-13",
+   "name": "Bardotta",
+   "grid": "K-13",
+   "precision": "dot",
+   "overshoot_px": 7.61
+  },
+  {
+   "id": "contruum-o-8",
+   "name": "Contruum",
+   "grid": "O-8",
+   "precision": "dot",
+   "overshoot_px": 0.58
+  },
+  {
+   "id": "coruscant-l-9",
+   "name": "Coruscant",
+   "grid": "L-9",
+   "precision": "dot",
+   "overshoot_px": 1.41
+  },
+  {
+   "id": "dantooine-l-4",
+   "name": "Dantooine",
+   "grid": "L-4",
+   "precision": "dot",
+   "overshoot_px": 0.07
+  },
+  {
+   "id": "klatooine-s-9",
+   "name": "Klatooine",
+   "grid": "S-9",
+   "precision": "dot",
+   "overshoot_px": 0.23
+  },
+  {
+   "id": "palanhi-k-9",
+   "name": "Palanhi",
+   "grid": "K-9",
+   "precision": "dot",
+   "overshoot_px": 0.61
+  },
+  {
+   "id": "pkori-j-5",
+   "name": "Pkori",
+   "grid": "J-5",
+   "precision": "dot",
+   "overshoot_px": 0.29
+  },
+  {
+   "id": "saleucami-s-8",
+   "name": "Saleucami",
+   "grid": "S-8",
+   "precision": "dot",
+   "overshoot_px": 6.06
+  },
+  {
+   "id": "sump-i-18",
+   "name": "Sump",
+   "grid": "I-18",
+   "precision": "dot",
+   "overshoot_px": 1.92
+  },
+  {
+   "id": "uveron-m-9",
+   "name": "Uveron",
+   "grid": "M-9",
+   "precision": "dot",
+   "overshoot_px": 6.12
+  },
+  {
+   "id": "vodran-s-9",
+   "name": "Vodran",
+   "grid": "S-9",
+   "precision": "dot",
+   "overshoot_px": 0.48
+  }
+ ],
+ "split_report": [
+  {
+   "centre": [
+    2856.24154589372,
+    3055.417069243156
+   ],
+   "was": 1,
+   "labels": 5,
+   "hough": 3,
+   "now": 3
+  },
+  {
+   "centre": [
+    3004.6513004022827,
+    1193.67139114978
+   ],
+   "was": 2,
+   "labels": 6,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    2594.5428861887012,
+    1951.2306312630103
+   ],
+   "was": 2,
+   "labels": 4,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    2720.230769230769,
+    1194.2970085470085
+   ],
+   "was": 1,
+   "labels": 6,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    2932.724778775727,
+    1591.476742451861
+   ],
+   "was": 2,
+   "labels": 3,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    3294.8021505376346,
+    1663.3462365591397
+   ],
+   "was": 1,
+   "labels": 2,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    2859.3180005799622,
+    1674.5402983181093
+   ],
+   "was": 2,
+   "labels": 5,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    2438.0387931034484,
+    1988.7435344827586
+   ],
+   "was": 1,
+   "labels": 5,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    2589.9858698357393,
+    2661.2145470383275
+   ],
+   "was": 2,
+   "labels": 2,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    2782.035530041271,
+    3067.5389732699878
+   ],
+   "was": 2,
+   "labels": 6,
+   "hough": 3,
+   "now": 3
+  },
+  {
+   "centre": [
+    1986.8648936170212,
+    3250.379249946271
+   ],
+   "was": 2,
+   "labels": 4,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    1786.4485294117646,
+    3320.363970588235
+   ],
+   "was": 1,
+   "labels": 6,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    2934.235185826908,
+    1699.8507212163217
+   ],
+   "was": 2,
+   "labels": 5,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    2072.808048245614,
+    1816.0912280701755
+   ],
+   "was": 2,
+   "labels": 5,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    3047.187725631769,
+    1924.9765342960288
+   ],
+   "was": 1,
+   "labels": 4,
+   "hough": 3,
+   "now": 3
+  },
+  {
+   "centre": [
+    2005.312128287447,
+    2015.8053053150436
+   ],
+   "was": 2,
+   "labels": 9,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    2438.4482692307693,
+    2174.3924252136753
+   ],
+   "was": 2,
+   "labels": 7,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    2374.423091151228,
+    2386.037252145605
+   ],
+   "was": 2,
+   "labels": 3,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    1833.6993886743887,
+    3076.7796653796654
+   ],
+   "was": 2,
+   "labels": 2,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    2286.8976010490587,
+    3149.3821974461825
+   ],
+   "was": 2,
+   "labels": 5,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    2149.9482861847027,
+    3198.333791722796
+   ],
+   "was": 2,
+   "labels": 6,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    2999.114281823088,
+    1852.2142168319417
+   ],
+   "was": 3,
+   "labels": 5,
+   "hough": 3,
+   "now": 3
+  },
+  {
+   "centre": [
+    3003.29742180192,
+    2868.1005843232233
+   ],
+   "was": 2,
+   "labels": 5,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    2004.5389610389611,
+    2863.248917748918
+   ],
+   "was": 1,
+   "labels": 3,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    2193.483426684273,
+    1729.7245360254203
+   ],
+   "was": 3,
+   "labels": 7,
+   "hough": 3,
+   "now": 3
+  },
+  {
+   "centre": [
+    2156.7457305502844,
+    2345.38330170778
+   ],
+   "was": 1,
+   "labels": 6,
+   "hough": 3,
+   "now": 3
+  },
+  {
+   "centre": [
+    2244.4515415758333,
+    2495.2061247794045
+   ],
+   "was": 2,
+   "labels": 7,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    1772.1222492054926,
+    2616.536592312766
+   ],
+   "was": 2,
+   "labels": 4,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    3099.453431642273,
+    1818.0968874949563
+   ],
+   "was": 2,
+   "labels": 6,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    2775.878546099291,
+    1849.0175693101223
+   ],
+   "was": 2,
+   "labels": 4,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    1864.0584677419356,
+    1409.3270833333333
+   ],
+   "was": 2,
+   "labels": 5,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    2516.6069538206343,
+    1876.7516198745434
+   ],
+   "was": 3,
+   "labels": 5,
+   "hough": 2,
+   "now": 3
+  },
+  {
+   "centre": [
+    1603.9277042176066,
+    3063.642011083379
+   ],
+   "was": 2,
+   "labels": 4,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    2092.956453181644,
+    3537.5640970850895
+   ],
+   "was": 2,
+   "labels": 5,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    2160.6992533679595,
+    3612.4052210139043
+   ],
+   "was": 2,
+   "labels": 3,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    2944.5069707716766,
+    1480.6890363213893
+   ],
+   "was": 2,
+   "labels": 5,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    2397.288096884816,
+    1589.264480850696
+   ],
+   "was": 2,
+   "labels": 7,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    3052.665829145729,
+    1891.4597989949748
+   ],
+   "was": 2,
+   "labels": 6,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    1617.367199597788,
+    3374.0700351935648
+   ],
+   "was": 2,
+   "labels": 6,
+   "hough": 2,
+   "now": 2
+  },
+  {
+   "centre": [
+    2137.669565217391,
+    1943.1673913043478
+   ],
+   "was": 2,
+   "labels": 5,
+   "hough": 2,
+   "now": 2
+  }
+ ],
+ "edge_network": {
+  "stopped": true,
+  "kink_selection": {
+   "rule": "lowest threshold with Gate B largest component >= 70% AND zero Gate-A must-not accepted",
+   "sweep": [
+    {
+     "threshold_deg": 40,
+     "accepted": 388,
+     "connected_nodes": 384,
+     "components": 30,
+     "largest": 165,
+     "largest_fraction": 0.43,
+     "must_not_accepted": [],
+     "must_be_accepted": [],
+     "meets_rule": false
+    },
+    {
+     "threshold_deg": 50,
+     "accepted": 465,
+     "connected_nodes": 411,
+     "components": 19,
+     "largest": 257,
+     "largest_fraction": 0.625,
+     "must_not_accepted": [
+      "Fedalle - Coruscant"
+     ],
+     "must_be_accepted": [],
+     "meets_rule": false
+    },
+    {
+     "threshold_deg": 60,
+     "accepted": 540,
+     "connected_nodes": 430,
+     "components": 18,
+     "largest": 339,
+     "largest_fraction": 0.788,
+     "must_not_accepted": [
+      "Fedalle - Coruscant"
+     ],
+     "must_be_accepted": [],
+     "meets_rule": false
+    },
+    {
+     "threshold_deg": 70,
+     "accepted": 591,
+     "connected_nodes": 441,
+     "components": 17,
+     "largest": 353,
+     "largest_fraction": 0.8,
+     "must_not_accepted": [
+      "Fedalle - Coruscant"
+     ],
+     "must_be_accepted": [],
+     "meets_rule": false
+    },
+    {
+     "threshold_deg": null,
+     "accepted": 631,
+     "connected_nodes": 446,
+     "components": 13,
+     "largest": 384,
+     "largest_fraction": 0.861,
+     "must_not_accepted": [
+      "Fedalle - Coruscant"
+     ],
+     "must_be_accepted": [],
+     "meets_rule": false
+    }
+   ],
+   "selected_deg": null,
+   "any_selected": false,
+   "smooth_sigma_px": 4.5
+  }
+ },
+ "region_validation": {
+  "dots_tested": 656,
+  "agree_resubstitution": 637,
+  "pct_resubstitution": 97.1,
+  "cv_holdout_pct": 95.9,
+  "cv_holdout_two_apart": 1,
+  "per_region": {
+   "Outer Rim Territories": [
+    350,
+    352
+   ],
+   "Core Worlds": [
+    33,
+    34
+   ],
+   "Colonies": [
+    30,
+    35
+   ],
+   "Mid Rim": [
+    125,
+    129
+   ],
+   "Expansion Region": [
+    48,
+    50
+   ],
+   "Inner Rim": [
+    45,
+    48
+   ],
+   "Deep Core": [
+    6,
+    8
+   ]
+  },
+  "outside_every_band": [],
+  "misses": [
+   {
+    "name": "Balagash",
+    "grid": "O-9",
+    "json": "Expansion Region",
+    "polygon": "Inner Rim",
+    "bands_apart": 1
+   },
+   {
+    "name": "Bardotta",
+    "grid": "K-13",
+    "json": "Colonies",
+    "polygon": "Core Worlds",
+    "bands_apart": 1
+   },
+   {
+    "name": "Birren",
+    "grid": "O-10",
+    "json": "Inner Rim",
+    "polygon": "Expansion Region",
+    "bands_apart": 1
+   },
+   {
+    "name": "Brentaal",
+    "grid": "L-9",
+    "json": "Core Worlds",
+    "polygon": "Colonies",
+    "bands_apart": 1
+   },
+   {
+    "name": "Caraad",
+    "grid": "L-8",
+    "json": "Colonies",
+    "polygon": "Inner Rim",
+    "bands_apart": 1
+   },
+   {
+    "name": "Cerberon",
+    "grid": "L-10",
+    "json": "Deep Core",
+    "polygon": "Core Worlds",
+    "bands_apart": 1
+   },
+   {
+    "name": "Commenor",
+    "grid": "N-10",
+    "json": "Colonies",
+    "polygon": "Inner Rim",
+    "bands_apart": 1
+   },
+   {
+    "name": "Desix",
+    "grid": "S-9",
+    "json": "Outer Rim Territories",
+    "polygon": "Mid Rim",
+    "bands_apart": 1
+   },
+   {
+    "name": "Halais",
+    "grid": "N-10",
+    "json": "Colonies",
+    "polygon": "Inner Rim",
+    "bands_apart": 1
+   },
+   {
+    "name": "Kenari",
+    "grid": "Q-7",
+    "json": "Mid Rim",
+    "polygon": "Outer Rim",
+    "bands_apart": 1
+   },
+   {
+    "name": "Li-Toran",
+    "grid": "M-13",
+    "json": "Inner Rim",
+    "polygon": "Colonies",
+    "bands_apart": 1
+   },
+   {
+    "name": "Madurs",
+    "grid": "R-7",
+    "json": "Mid Rim",
+    "polygon": "Outer Rim",
+    "bands_apart": 1
+   },
+   {
+    "name": "Mikkia",
+    "grid": "M-7",
+    "json": "Expansion Region",
+    "polygon": "Mid Rim",
+    "bands_apart": 1
+   },
+   {
+    "name": "Quarzite",
+    "grid": "M-13",
+    "json": "Inner Rim",
+    "polygon": "Colonies",
+    "bands_apart": 1
+   },
+   {
+    "name": "Saleucami",
+    "grid": "S-8",
+    "json": "Outer Rim Territories",
+    "polygon": "Mid Rim",
+    "bands_apart": 1
+   },
+   {
+    "name": "Sterdic",
+    "grid": "P-17",
+    "json": "Mid Rim",
+    "polygon": "Outer Rim",
+    "bands_apart": 1
+   },
+   {
+    "name": "Tibrin",
+    "grid": "L-18",
+    "json": "Mid Rim",
+    "polygon": "Outer Rim",
+    "bands_apart": 1
+   },
+   {
+    "name": "Vulpter",
+    "grid": "L-10",
+    "json": "Deep Core",
+    "polygon": "Core Worlds",
+    "bands_apart": 1
+   },
+   {
+    "name": "Zardossa Stix",
+    "grid": "J-13",
+    "json": "Colonies",
+    "polygon": "Inner Rim",
+    "bands_apart": 1
+   }
+  ],
+  "two_or_more_bands_apart": []
+ },
+ "kink_selection": {
+  "rule": "lowest threshold with Gate B largest component >= 70% AND zero Gate-A must-not accepted",
+  "sweep": [
+   {
+    "threshold_deg": 40,
+    "accepted": 388,
+    "connected_nodes": 384,
+    "components": 30,
+    "largest": 165,
+    "largest_fraction": 0.43,
+    "must_not_accepted": [],
+    "must_be_accepted": [],
+    "meets_rule": false
+   },
+   {
+    "threshold_deg": 50,
+    "accepted": 465,
+    "connected_nodes": 411,
+    "components": 19,
+    "largest": 257,
+    "largest_fraction": 0.625,
+    "must_not_accepted": [
+     "Fedalle - Coruscant"
+    ],
+    "must_be_accepted": [],
+    "meets_rule": false
+   },
+   {
+    "threshold_deg": 60,
+    "accepted": 540,
+    "connected_nodes": 430,
+    "components": 18,
+    "largest": 339,
+    "largest_fraction": 0.788,
+    "must_not_accepted": [
+     "Fedalle - Coruscant"
+    ],
+    "must_be_accepted": [],
+    "meets_rule": false
+   },
+   {
+    "threshold_deg": 70,
+    "accepted": 591,
+    "connected_nodes": 441,
+    "components": 17,
+    "largest": 353,
+    "largest_fraction": 0.8,
+    "must_not_accepted": [
+     "Fedalle - Coruscant"
+    ],
+    "must_be_accepted": [],
+    "meets_rule": false
+   },
+   {
+    "threshold_deg": null,
+    "accepted": 631,
+    "connected_nodes": 446,
+    "components": 13,
+    "largest": 384,
+    "largest_fraction": 0.861,
+    "must_not_accepted": [
+     "Fedalle - Coruscant"
+    ],
+    "must_be_accepted": [],
+    "meets_rule": false
+   }
+  ],
+  "selected_deg": null,
+  "any_selected": false,
+  "smooth_sigma_px": 4.5
+ }
+}

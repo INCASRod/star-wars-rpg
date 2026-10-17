@@ -1,0 +1,146 @@
+[
+ {
+  "route": 1,
+  "name": "Perlemian Trade Route",
+  "major": true,
+  "marker_px": [
+   2777.0,
+   1771.0
+  ],
+  "stop_count": 2,
+  "named_stops": 1,
+  "waypoints": 1,
+  "stops": [
+   {
+    "id": "del-zennis-r-7",
+    "named": true,
+    "name": "Del Zennis"
+   },
+   {
+    "id": "wp-r-7-1",
+    "named": false
+   }
+  ],
+  "note": null
+ },
+ {
+  "route": 2,
+  "name": "Corellian Run",
+  "major": true,
+  "marker_px": [
+   2425.0,
+   2696.0
+  ],
+  "stop_count": 3,
+  "named_stops": 3,
+  "waypoints": 0,
+  "stops": [
+   {
+    "id": "milagro-o-14",
+    "named": true,
+    "name": "Milagro"
+   },
+   {
+    "id": "new-cov-p-14",
+    "named": true,
+    "name": "New Cov"
+   },
+   {
+    "id": "druckenwell-p-15",
+    "named": true,
+    "name": "Druckenwell"
+   }
+  ],
+  "note": null
+ },
+ {
+  "route": 3,
+  "name": "Corellian Trade Spine",
+  "major": true,
+  "marker_px": [
+   2123.0,
+   2509.0
+  ],
+  "stop_count": 2,
+  "named_stops": 2,
+  "waypoints": 0,
+  "stops": [
+   {
+    "id": "nantoon-m-13",
+    "named": true,
+    "name": "Nantoon"
+   },
+   {
+    "id": "devaron-m-13",
+    "named": true,
+    "name": "Devaron"
+   }
+  ],
+  "note": null
+ },
+ {
+  "route": 4,
+  "name": "Rimma Trade Route",
+  "major": true,
+  "marker_px": [
+   2123.0,
+   3008.0
+  ],
+  "stop_count": 2,
+  "named_stops": 2,
+  "waypoints": 0,
+  "stops": [
+   {
+    "id": "vandelhelm-m-15",
+    "named": true,
+    "name": "Vandelhelm"
+   },
+   {
+    "id": "steergard-m-16",
+    "named": true,
+    "name": "Steergard"
+   }
+  ],
+  "note": null
+ },
+ {
+  "route": 5,
+  "name": "Hydian Way",
+  "major": true,
+  "marker_px": [
+   2588.0,
+   1317.0
+  ],
+  "stop_count": 5,
+  "named_stops": 5,
+  "waypoints": 0,
+  "stops": [
+   {
+    "id": "jelucan-q-4",
+    "named": true,
+    "name": "Jelucan"
+   },
+   {
+    "id": "targyon-p-5",
+    "named": true,
+    "name": "Targyon"
+   },
+   {
+    "id": "toprawa-p-5",
+    "named": true,
+    "name": "Toprawa"
+   },
+   {
+    "id": "celanon-o-6",
+    "named": true,
+    "name": "Celanon"
+   },
+   {
+    "id": "botajef-o-6",
+    "named": true,
+    "name": "Botajef"
+   }
+  ],
+  "note": null
+ }
+]

@@ -1,0 +1,13414 @@
+[
+{
+"text": "18",
+"bbox": [
+703.0,
+3288.0,
+755.0,
+3328.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "19",
+"bbox": [
+708.0,
+3434.0,
+753.0,
+3473.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "4",
+"bbox": [
+719.0,
+1253.0,
+743.0,
+1285.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "8",
+"bbox": [
+3480.0,
+1833.0,
+3509.0,
+1868.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "17",
+"bbox": [
+3475.0,
+3145.0,
+3514.0,
+3179.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "18",
+"bbox": [
+3472.0,
+3288.0,
+3518.0,
+3326.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "20",
+"bbox": [
+705.0,
+3579.0,
+756.0,
+3618.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "20",
+"bbox": [
+3470.0,
+3580.0,
+3518.0,
+3618.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "8",
+"bbox": [
+715.0,
+1833.0,
+745.0,
+1869.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Basteel",
+"bbox": [
+2572.0,
+1170.0,
+2633.0,
+1195.0
+],
+"confidence": 1.0,
+"system_id": "basteel-p-3",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "5",
+"bbox": [
+2580.0,
+1307.0,
+2596.0,
+1328.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "hampala",
+"bbox": [
+2050.0,
+1865.0,
+2117.0,
+1890.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "5",
+"bbox": [
+3480.0,
+1398.0,
+3509.0,
+1433.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "12",
+"bbox": [
+710.0,
+2414.0,
+752.0,
+2454.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Milvayne",
+"bbox": [
+1968.0,
+1819.0,
+2041.0,
+1844.0
+],
+"confidence": 1.0,
+"system_id": "milvayne-l-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Bastatha",
+"bbox": [
+2301.0,
+2160.0,
+2376.0,
+2186.0
+],
+"confidence": 1.0,
+"system_id": "bastatha-n-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "cam",
+"bbox": [
+2950.0,
+1811.0,
+2983.0,
+1834.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Nimban",
+"bbox": [
+2951.0,
+2125.0,
+3014.0,
+2149.0
+],
+"confidence": 1.0,
+"system_id": "nimban-s-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "16",
+"bbox": [
+708.0,
+2997.0,
+753.0,
+3036.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "attu",
+"bbox": [
+2050.0,
+3136.0,
+2083.0,
+3161.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Bartokan",
+"bbox": [
+2356.0,
+3381.0,
+2433.0,
+3409.0
+],
+"confidence": 1.0,
+"system_id": "bartokan-n-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "15",
+"bbox": [
+3473.0,
+2850.0,
+3517.0,
+2890.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "16",
+"bbox": [
+3471.0,
+2996.0,
+3519.0,
+3037.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "19",
+"bbox": [
+3472.0,
+3434.0,
+3518.0,
+3472.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "21",
+"bbox": [
+3474.0,
+3726.0,
+3515.0,
+3749.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Mirial",
+"bbox": [
+2665.0,
+1223.0,
+2712.0,
+1249.0
+],
+"confidence": 1.0,
+"system_id": "mirial-q-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Moraband",
+"bbox": [
+2739.0,
+1376.0,
+2824.0,
+1400.0
+],
+"confidence": 1.0,
+"system_id": "moraband-r-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Nightside",
+"bbox": [
+2931.0,
+1355.0,
+3006.0,
+1380.0
+],
+"confidence": 1.0,
+"system_id": "nightside-r-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "4",
+"bbox": [
+3480.0,
+1252.0,
+3509.0,
+1287.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "ghtside",
+"bbox": [
+2950.0,
+1355.0,
+3007.0,
+1380.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "7",
+"bbox": [
+3480.0,
+1688.0,
+3508.0,
+1724.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Mindor",
+"bbox": [
+2112.0,
+1841.0,
+2176.0,
+1866.0
+],
+"confidence": 1.0,
+"system_id": "mindor-m-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Chandrila",
+"bbox": [
+1925.0,
+1987.0,
+1999.0,
+2012.0
+],
+"confidence": 1.0,
+"system_id": "chandrila-l-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Gatalenta",
+"bbox": [
+2169.0,
+2215.0,
+2249.0,
+2239.0
+],
+"confidence": 1.0,
+"system_id": "gatalenta-m-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Bardotta",
+"bbox": [
+1782.0,
+2558.0,
+1854.0,
+2582.0
+],
+"confidence": 1.0,
+"system_id": "bardotta-k-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Tholoth",
+"bbox": [
+2258.0,
+2377.0,
+2320.0,
+2402.0
+],
+"confidence": 1.0,
+"system_id": "tholoth-n-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "10",
+"bbox": [
+3474.0,
+2123.0,
+3518.0,
+2162.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "12",
+"bbox": [
+3474.0,
+2414.0,
+3517.0,
+2454.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Thyferra",
+"bbox": [
+1961.0,
+2717.0,
+2031.0,
+2745.0
+],
+"confidence": 1.0,
+"system_id": "thyferra-l-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Kinyen",
+"bbox": [
+1945.0,
+2924.0,
+2005.0,
+2952.0
+],
+"confidence": 1.0,
+"system_id": "kinyen-l-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Karthon",
+"bbox": [
+1403.0,
+2970.0,
+1468.0,
+2996.0
+],
+"confidence": 1.0,
+"system_id": "karthon-h-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Enthenium",
+"bbox": [
+1779.0,
+3390.0,
+1863.0,
+3414.0
+],
+"confidence": 1.0,
+"system_id": "enthenium-k-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Atravis",
+"bbox": [
+1960.0,
+3436.0,
+2019.0,
+3460.0
+],
+"confidence": 1.0,
+"system_id": "atravis-l-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Mustafar",
+"bbox": [
+1871.0,
+3494.0,
+1945.0,
+3518.0
+],
+"confidence": 1.0,
+"system_id": "mustafar-l-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Manpha",
+"bbox": [
+1816.0,
+3529.0,
+1883.0,
+3553.0
+],
+"confidence": 1.0,
+"system_id": "manpha-k-20",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Vandor",
+"bbox": [
+2602.0,
+2659.0,
+2659.0,
+2684.0
+],
+"confidence": 1.0,
+"system_id": "vandor-p-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Monastery",
+"bbox": [
+2680.0,
+2780.0,
+2765.0,
+2805.0
+],
+"confidence": 1.0,
+"system_id": "monastery-q-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Manda",
+"bbox": [
+2855.0,
+2782.0,
+2911.0,
+2808.0
+],
+"confidence": 1.0,
+"system_id": "manda-r-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Malastare",
+"bbox": [
+2236.0,
+3055.0,
+2317.0,
+3080.0
+],
+"confidence": 1.0,
+"system_id": "malastare-n-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Pamarthe",
+"bbox": [
+2178.0,
+3295.0,
+2260.0,
+3322.0
+],
+"confidence": 1.0,
+"system_id": "pamarthe-n-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Keitum",
+"bbox": [
+1689.0,
+1586.0,
+1756.0,
+1611.0
+],
+"confidence": 1.0,
+"system_id": "keitum-j-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Champala",
+"bbox": [
+2037.0,
+1863.0,
+2119.0,
+1890.0
+],
+"confidence": 1.0,
+"system_id": "champala-l-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Bonadan",
+"bbox": [
+2975.0,
+1153.0,
+3048.0,
+1181.0
+],
+"confidence": 1.0,
+"system_id": "bonadan-s-3",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 4
+},
+{
+"text": "Tangrene",
+"bbox": [
+2358.0,
+1306.0,
+2432.0,
+1337.0
+],
+"confidence": 1.0,
+"system_id": "tangrene-o-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Barton",
+"bbox": [
+3065.0,
+1335.0,
+3125.0,
+1364.0
+],
+"confidence": 1.0,
+"system_id": "barton-s-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Zanbar",
+"bbox": [
+2411.0,
+1634.0,
+2470.0,
+1659.0
+],
+"confidence": 1.0,
+"system_id": "zanbar-o-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Gazian",
+"bbox": [
+2559.0,
+1801.0,
+2616.0,
+1827.0
+],
+"confidence": 1.0,
+"system_id": "gazian-p-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Jaminere",
+"bbox": [
+3048.0,
+1510.0,
+3125.0,
+1534.0
+],
+"confidence": 1.0,
+"system_id": "jaminere-s-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "10",
+"bbox": [
+708.0,
+2124.0,
+755.0,
+2162.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "14",
+"bbox": [
+707.0,
+2703.0,
+755.0,
+2746.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Minfar",
+"bbox": [
+1604.0,
+2623.0,
+1675.0,
+2648.0
+],
+"confidence": 1.0,
+"system_id": "minfar-i-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Patrolia",
+"bbox": [
+1864.0,
+2742.0,
+1937.0,
+2766.0
+],
+"confidence": 1.0,
+"system_id": "patrolia-l-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Lateron",
+"bbox": [
+2664.0,
+1795.0,
+2729.0,
+1820.0
+],
+"confidence": 1.0,
+"system_id": "lateron-q-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Wobani",
+"bbox": [
+2840.0,
+1778.0,
+2902.0,
+1804.0
+],
+"confidence": 1.0,
+"system_id": "wobani-r-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Mimban",
+"bbox": [
+2438.0,
+2324.0,
+2507.0,
+2355.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Sepan",
+"bbox": [
+2565.0,
+2515.0,
+2622.0,
+2544.0
+],
+"confidence": 1.0,
+"system_id": "sepan-p-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Chadawa",
+"bbox": [
+2151.0,
+2652.0,
+2224.0,
+2676.0
+],
+"confidence": 1.0,
+"system_id": "chadawa-n-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Chardaan",
+"bbox": [
+2229.0,
+2631.0,
+2307.0,
+2659.0
+],
+"confidence": 1.0,
+"system_id": "chardaan-n-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Bothawui",
+"bbox": [
+2845.0,
+2687.0,
+2923.0,
+2712.0
+],
+"confidence": 1.0,
+"system_id": "bothawui-r-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Gand",
+"bbox": [
+3199.0,
+1798.0,
+3245.0,
+1824.0
+],
+"confidence": 1.0,
+"system_id": "gand-t-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Kintan",
+"bbox": [
+2989.0,
+1928.0,
+3046.0,
+1957.0
+],
+"confidence": 1.0,
+"system_id": "kintan-s-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 6
+},
+{
+"text": "13",
+"bbox": [
+3474.0,
+2560.0,
+3517.0,
+2599.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "14",
+"bbox": [
+3473.0,
+2704.0,
+3517.0,
+2744.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Batuu",
+"bbox": [
+1341.0,
+2887.0,
+1394.0,
+2912.0
+],
+"confidence": 1.0,
+"system_id": "batuu-g-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Barabesh",
+"bbox": [
+1489.0,
+2943.0,
+1574.0,
+2964.0
+],
+"confidence": 1.0,
+"system_id": "barabesh-i-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Yabrenito",
+"bbox": [
+1526.0,
+3061.0,
+1601.0,
+3087.0
+],
+"confidence": 1.0,
+"system_id": "yabrenito-i-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 5
+},
+{
+"text": "Pipada",
+"bbox": [
+2023.0,
+3289.0,
+2080.0,
+3314.0
+],
+"confidence": 1.0,
+"system_id": "pipada-m-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Ruathi",
+"bbox": [
+1899.0,
+3401.0,
+1955.0,
+3426.0
+],
+"confidence": 1.0,
+"system_id": "ruathi-k-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Septra",
+"bbox": [
+2100.0,
+3649.0,
+2158.0,
+3674.0
+],
+"confidence": 1.0,
+"system_id": "septra-m-20",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Allanteen",
+"bbox": [
+2328.0,
+2670.0,
+2405.0,
+2694.0
+],
+"confidence": 1.0,
+"system_id": "allanteen-o-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "ada",
+"bbox": [
+2050.0,
+3289.0,
+2079.0,
+3314.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Bastion",
+"bbox": [
+1724.0,
+1109.0,
+1789.0,
+1136.0
+],
+"confidence": 1.0,
+"system_id": "bastion-k-3",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Yuvern",
+"bbox": [
+2039.0,
+1398.0,
+2100.0,
+1423.0
+],
+"confidence": 1.0,
+"system_id": "yuvern-m-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Adumar",
+"bbox": [
+1581.0,
+1523.0,
+1642.0,
+1549.0
+],
+"confidence": 1.0,
+"system_id": "adumar-j-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Caraad",
+"bbox": [
+1926.0,
+1879.0,
+1985.0,
+1905.0
+],
+"confidence": 1.0,
+"system_id": "caraad-l-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Galaan",
+"bbox": [
+2488.0,
+1199.0,
+2558.0,
+1224.0
+],
+"confidence": 1.0,
+"system_id": "galaan-p-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Sesid",
+"bbox": [
+2542.0,
+1219.0,
+2591.0,
+1245.0
+],
+"confidence": 1.0,
+"system_id": "sesid-p-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Sarlucif",
+"bbox": [
+3035.0,
+1236.0,
+3100.0,
+1261.0
+],
+"confidence": 1.0,
+"system_id": "sarlucif-s-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Alpinn",
+"bbox": [
+2223.0,
+1267.0,
+2278.0,
+1296.0
+],
+"confidence": 1.0,
+"system_id": "alpinn-n-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Zhadalene",
+"bbox": [
+2204.0,
+1305.0,
+2289.0,
+1332.0
+],
+"confidence": 1.0,
+"system_id": "zhadalene-n-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Raada",
+"bbox": [
+2441.0,
+1419.0,
+2496.0,
+1444.0
+],
+"confidence": 1.0,
+"system_id": "raada-o-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Bandomeer",
+"bbox": [
+2295.0,
+1582.0,
+2388.0,
+1608.0
+],
+"confidence": 1.0,
+"system_id": "bandomeer-o-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "6",
+"bbox": [
+3480.0,
+1544.0,
+3509.0,
+1579.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Berzite",
+"bbox": [
+3299.0,
+1776.0,
+3365.0,
+1804.0
+],
+"confidence": 1.0,
+"system_id": "berzite-u-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Toshara",
+"bbox": [
+3126.0,
+1860.0,
+3192.0,
+1885.0
+],
+"confidence": 1.0,
+"system_id": "toshara-t-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Kuat",
+"bbox": [
+2155.0,
+2151.0,
+2197.0,
+2178.0
+],
+"confidence": 1.0,
+"system_id": "kuat-m-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Plexis",
+"bbox": [
+1934.0,
+2502.0,
+2004.0,
+2530.0
+],
+"confidence": 1.0,
+"system_id": "plexis-l-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Nantoon",
+"bbox": [
+2104.0,
+2564.0,
+2177.0,
+2588.0
+],
+"confidence": 1.0,
+"system_id": "nantoon-m-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Contruum",
+"bbox": [
+2492.0,
+1831.0,
+2573.0,
+1855.0
+],
+"confidence": 1.0,
+"system_id": "contruum-o-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "eron",
+"bbox": [
+2050.0,
+1951.0,
+2084.0,
+1973.0
+],
+"confidence": 1.0,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Dandoran",
+"bbox": [
+2849.0,
+2026.0,
+2928.0,
+2050.0
+],
+"confidence": 1.0,
+"system_id": "dandoran-r-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Antar",
+"bbox": [
+2319.0,
+2337.0,
+2367.0,
+2363.0
+],
+"confidence": 1.0,
+"system_id": "antar-n-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Marleyvane",
+"bbox": [
+3107.0,
+1810.0,
+3198.0,
+1834.0
+],
+"confidence": 1.0,
+"system_id": "marleyvane-t-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Chyron",
+"bbox": [
+1743.0,
+2988.0,
+1802.0,
+3013.0
+],
+"confidence": 1.0,
+"system_id": "chyron-j-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Tiferep",
+"bbox": [
+1932.0,
+3144.0,
+1999.0,
+3170.0
+],
+"confidence": 1.0,
+"system_id": "tiferep-major-l-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Tibrin",
+"bbox": [
+2022.0,
+3209.0,
+2071.0,
+3235.0
+],
+"confidence": 1.0,
+"system_id": "tibrin-l-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Ryloth",
+"bbox": [
+2916.0,
+3162.0,
+2971.0,
+3188.0
+],
+"confidence": 1.0,
+"system_id": "ryloth-r-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Pantora",
+"bbox": [
+2529.0,
+3438.0,
+2595.0,
+3466.0
+],
+"confidence": 1.0,
+"system_id": "pantora-p-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Rothana",
+"bbox": [
+3181.0,
+2861.0,
+3252.0,
+2887.0
+],
+"confidence": 1.0,
+"system_id": "rothana-t-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "5",
+"bbox": [
+712.0,
+1396.0,
+745.0,
+1434.0
+],
+"confidence": 0.9999,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Huwaw",
+"bbox": [
+2137.0,
+1395.0,
+2198.0,
+1420.0
+],
+"confidence": 0.9999,
+"system_id": "huwaw-m-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Endoviara",
+"bbox": [
+1689.0,
+1521.0,
+1769.0,
+1546.0
+],
+"confidence": 0.9999,
+"system_id": "endoviara-j-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Hevurion",
+"bbox": [
+2072.0,
+1818.0,
+2145.0,
+1842.0
+],
+"confidence": 0.9999,
+"system_id": "hevurion-l-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Targyon",
+"bbox": [
+2500.0,
+1327.0,
+2569.0,
+1358.0
+],
+"confidence": 0.9999,
+"system_id": "targyon-p-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Toprawa",
+"bbox": [
+2525.0,
+1408.0,
+2594.0,
+1433.0
+],
+"confidence": 0.9999,
+"system_id": "toprawa-p-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Wynkahthu",
+"bbox": [
+2050.0,
+1636.0,
+2143.0,
+1663.0
+],
+"confidence": 0.9999,
+"system_id": "wynkahthu-l-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Mandalore",
+"bbox": [
+2466.0,
+1657.0,
+2553.0,
+1684.0
+],
+"confidence": 0.9999,
+"system_id": "mandalore-o-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 5
+},
+{
+"text": "Madurs",
+"bbox": [
+2856.0,
+1692.0,
+2919.0,
+1717.0
+],
+"confidence": 0.9999,
+"system_id": "madurs-r-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Tessen",
+"bbox": [
+2950.0,
+1758.0,
+3002.0,
+1780.0
+],
+"confidence": 0.9999,
+"system_id": "tessen-s-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "paara",
+"bbox": [
+2950.0,
+1832.0,
+2995.0,
+1854.0
+],
+"confidence": 0.9999,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "13",
+"bbox": [
+709.0,
+2556.0,
+755.0,
+2599.0
+],
+"confidence": 0.9999,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Endovar",
+"bbox": [
+1415.0,
+2100.0,
+1485.0,
+2125.0
+],
+"confidence": 0.9999,
+"system_id": "endovar-h-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Bestine",
+"bbox": [
+2007.0,
+2645.0,
+2071.0,
+2670.0
+],
+"confidence": 0.9999,
+"system_id": "bestine-m-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Maires",
+"bbox": [
+2370.0,
+1980.0,
+2428.0,
+2005.0
+],
+"confidence": 0.9999,
+"system_id": "maires-o-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Birren",
+"bbox": [
+2427.0,
+2174.0,
+2493.0,
+2199.0
+],
+"confidence": 0.9999,
+"system_id": "birren-o-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Chalacta",
+"bbox": [
+2845.0,
+2068.0,
+2916.0,
+2094.0
+],
+"confidence": 0.9999,
+"system_id": "chalacta-r-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Toydaria",
+"bbox": [
+2863.0,
+2326.0,
+2931.0,
+2352.0
+],
+"confidence": 0.9999,
+"system_id": "toydaria-r-11",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Gotar",
+"bbox": [
+3312.0,
+1944.0,
+3367.0,
+1969.0
+],
+"confidence": 0.9999,
+"system_id": "gotar-u-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Nepotis",
+"bbox": [
+3102.0,
+1992.0,
+3167.0,
+2017.0
+],
+"confidence": 0.9999,
+"system_id": "nepotis-t-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Bakura",
+"bbox": [
+1203.0,
+3034.0,
+1265.0,
+3059.0
+],
+"confidence": 0.9999,
+"system_id": "bakura-g-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "17",
+"bbox": [
+710.0,
+3142.0,
+750.0,
+3182.0
+],
+"confidence": 0.9999,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Lorta",
+"bbox": [
+1721.0,
+3181.0,
+1765.0,
+3204.0
+],
+"confidence": 0.9999,
+"system_id": "lorta-j-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Mugaar",
+"bbox": [
+1807.0,
+3234.0,
+1875.0,
+3259.0
+],
+"confidence": 0.9999,
+"system_id": "mugaar-k-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Seatos",
+"bbox": [
+2166.0,
+3422.0,
+2225.0,
+3447.0
+],
+"confidence": 0.9999,
+"system_id": "seatos-m-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Steergard",
+"bbox": [
+2123.0,
+2970.0,
+2205.0,
+2998.0
+],
+"confidence": 0.9999,
+"system_id": "steergard-m-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Kessar",
+"bbox": [
+2216.0,
+3124.0,
+2277.0,
+3149.0
+],
+"confidence": 0.9999,
+"system_id": "kessar-n-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Sorgan",
+"bbox": [
+2740.0,
+3160.0,
+2800.0,
+3185.0
+],
+"confidence": 0.9999,
+"system_id": "sorgan-q-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "D",
+"bbox": [
+805.0,
+3714.0,
+865.0,
+3780.0
+],
+"confidence": 0.9999,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "DK",
+"bbox": [
+3316.0,
+3842.0,
+3457.0,
+3940.0
+],
+"confidence": 0.9999,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Khofar",
+"bbox": [
+2120.0,
+1343.0,
+2176.0,
+1370.0
+],
+"confidence": 0.9999,
+"system_id": "khofar-m-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Thabeska",
+"bbox": [
+2370.0,
+1351.0,
+2450.0,
+1379.0
+],
+"confidence": 0.9999,
+"system_id": "thabeska-o-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Yavin",
+"bbox": [
+2606.0,
+1470.0,
+2657.0,
+1499.0
+],
+"confidence": 0.9999,
+"system_id": "yavin-p-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Dathomir",
+"bbox": [
+2302.0,
+1526.0,
+2377.0,
+1552.0
+],
+"confidence": 0.9999,
+"system_id": "dathomir-o-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Vorzyd",
+"bbox": [
+2758.0,
+1536.0,
+2817.0,
+1566.0
+],
+"confidence": 0.9999,
+"system_id": "vorzyd-r-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Phatrong",
+"bbox": [
+2590.0,
+1589.0,
+2668.0,
+1620.0
+],
+"confidence": 0.9999,
+"system_id": "phatrong-p-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Taris",
+"bbox": [
+2299.0,
+1612.0,
+2343.0,
+1639.0
+],
+"confidence": 0.9999,
+"system_id": "taris-n-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Karkaris",
+"bbox": [
+3095.0,
+1396.0,
+3166.0,
+1420.0
+],
+"confidence": 0.9999,
+"system_id": "karkaris-s-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Agaris",
+"bbox": [
+1249.0,
+2708.0,
+1309.0,
+2737.0
+],
+"confidence": 0.9999,
+"system_id": "agaris-g-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Bogden",
+"bbox": [
+2088.0,
+1793.0,
+2153.0,
+1822.0
+],
+"confidence": 0.9999,
+"system_id": "bogden-m-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Castell",
+"bbox": [
+2137.0,
+1947.0,
+2191.0,
+1969.0
+],
+"confidence": 0.9999,
+"system_id": "castell-m-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 6
+},
+{
+"text": "Exodeen",
+"bbox": [
+2179.0,
+2339.0,
+2249.0,
+2364.0
+],
+"confidence": 0.9999,
+"system_id": "exodeen-m-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Arkania",
+"bbox": [
+2050.0,
+1887.0,
+2113.0,
+1916.0
+],
+"confidence": 0.9999,
+"system_id": "arkania-m-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Taanab",
+"bbox": [
+2413.0,
+1910.0,
+2472.0,
+1935.0
+],
+"confidence": 0.9999,
+"system_id": "taanab-o-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Halais",
+"bbox": [
+2230.0,
+2096.0,
+2288.0,
+2125.0
+],
+"confidence": 0.9999,
+"system_id": "halais-n-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Grange",
+"bbox": [
+2707.0,
+2297.0,
+2769.0,
+2326.0
+],
+"confidence": 0.9999,
+"system_id": "grange-q-11",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Abednedo",
+"bbox": [
+2146.0,
+2486.0,
+2228.0,
+2510.0
+],
+"confidence": 0.9999,
+"system_id": "abednedo-n-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Mardona",
+"bbox": [
+2263.0,
+2499.0,
+2336.0,
+2524.0
+],
+"confidence": 0.9999,
+"system_id": "mardona-n-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Devaron",
+"bbox": [
+2111.0,
+2595.0,
+2182.0,
+2623.0
+],
+"confidence": 0.9999,
+"system_id": "devaron-m-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Barnahof",
+"bbox": [
+3061.0,
+2687.0,
+3136.0,
+2712.0
+],
+"confidence": 0.9999,
+"system_id": "barnahof-s-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Kegan",
+"bbox": [
+3192.0,
+1923.0,
+3245.0,
+1948.0
+],
+"confidence": 0.9999,
+"system_id": "kegan-t-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Kessel",
+"bbox": [
+3130.0,
+2052.0,
+3185.0,
+2075.0
+],
+"confidence": 0.9999,
+"system_id": "kessel-t-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Barab",
+"bbox": [
+3251.0,
+2485.0,
+3303.0,
+2511.0
+],
+"confidence": 0.9999,
+"system_id": "barab-u-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Rekelos",
+"bbox": [
+1864.0,
+2910.0,
+1930.0,
+2934.0
+],
+"confidence": 0.9999,
+"system_id": "rekelos-k-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Takodana",
+"bbox": [
+1615.0,
+2953.0,
+1690.0,
+2978.0
+],
+"confidence": 0.9999,
+"system_id": "takodana-j-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Geptish",
+"bbox": [
+1821.0,
+3181.0,
+1887.0,
+3206.0
+],
+"confidence": 0.9999,
+"system_id": "geptish-k-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Stobar",
+"bbox": [
+2101.0,
+2835.0,
+2157.0,
+2860.0
+],
+"confidence": 0.9999,
+"system_id": "stobar-m-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Bromlarch",
+"bbox": [
+2359.0,
+2943.0,
+2457.0,
+2967.0
+],
+"confidence": 0.9999,
+"system_id": "bromlarch-o-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Kabal",
+"bbox": [
+2273.0,
+3299.0,
+2324.0,
+3325.0
+],
+"confidence": 0.9999,
+"system_id": "kabal-n-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Triton",
+"bbox": [
+2160.0,
+3348.0,
+2211.0,
+3377.0
+],
+"confidence": 0.9999,
+"system_id": "triton-m-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "6",
+"bbox": [
+716.0,
+1543.0,
+745.0,
+1579.0
+],
+"confidence": 0.9999,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Sernpidal",
+"bbox": [
+2030.0,
+1038.0,
+2104.0,
+1062.0
+],
+"confidence": 0.9999,
+"system_id": "sernpidal-l-3",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Danzik",
+"bbox": [
+2077.0,
+1089.0,
+2135.0,
+1114.0
+],
+"confidence": 0.9999,
+"system_id": "danzik-m-3",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Nithorni",
+"bbox": [
+1852.0,
+1884.0,
+1922.0,
+1910.0
+],
+"confidence": 0.9999,
+"system_id": "nithorni-k-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Brendok",
+"bbox": [
+2666.0,
+925.0,
+2749.0,
+952.0
+],
+"confidence": 0.9999,
+"system_id": "brendok-q-2",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Vinsoth",
+"bbox": [
+2266.0,
+1452.0,
+2330.0,
+1476.0
+],
+"confidence": 0.9999,
+"system_id": "vinsoth-n-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Krownest",
+"bbox": [
+2354.0,
+1653.0,
+2432.0,
+1678.0
+],
+"confidence": 0.9999,
+"system_id": "krownest-o-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Sere",
+"bbox": [
+3111.0,
+1711.0,
+3149.0,
+1738.0
+],
+"confidence": 0.9999,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Marle",
+"bbox": [
+3107.0,
+1808.0,
+3149.0,
+1836.0
+],
+"confidence": 0.9999,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Garel",
+"bbox": [
+3302.0,
+1665.0,
+3349.0,
+1695.0
+],
+"confidence": 0.9999,
+"system_id": "garel-u-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 5
+},
+{
+"text": "Boonta",
+"bbox": [
+3020.0,
+1817.0,
+3083.0,
+1841.0
+],
+"confidence": 0.9999,
+"system_id": "boonta-s-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Corulag",
+"bbox": [
+1926.0,
+2007.0,
+1990.0,
+2032.0
+],
+"confidence": 0.9999,
+"system_id": "corulag-l-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Byblos",
+"bbox": [
+2159.0,
+2458.0,
+2220.0,
+2486.0
+],
+"confidence": 0.9999,
+"system_id": "byblos-m-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Protobranch",
+"bbox": [
+1758.0,
+2496.0,
+1870.0,
+2520.0
+],
+"confidence": 0.9999,
+"system_id": "protobranch-j-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Ghorman",
+"bbox": [
+1886.0,
+2638.0,
+1961.0,
+2663.0
+],
+"confidence": 0.9999,
+"system_id": "ghorman-l-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Dulathia",
+"bbox": [
+2570.0,
+1844.0,
+2652.0,
+1871.0
+],
+"confidence": 0.9999,
+"system_id": "dulathia-p-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Gyndine",
+"bbox": [
+2358.0,
+2399.0,
+2425.0,
+2427.0
+],
+"confidence": 0.9999,
+"system_id": "gyndine-o-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Kubindi",
+"bbox": [
+3199.0,
+2004.0,
+3262.0,
+2032.0
+],
+"confidence": 0.9999,
+"system_id": "kubindi-t-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Genetia",
+"bbox": [
+1539.0,
+2739.0,
+1607.0,
+2767.0
+],
+"confidence": 0.9999,
+"system_id": "genetia-i-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Kartoosh",
+"bbox": [
+1615.0,
+3049.0,
+1689.0,
+3074.0
+],
+"confidence": 0.9999,
+"system_id": "kartoosh-i-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Karfeddion",
+"bbox": [
+1890.0,
+3219.0,
+1978.0,
+3247.0
+],
+"confidence": 0.9999,
+"system_id": "karfeddion-l-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Belsavis",
+"bbox": [
+1992.0,
+3254.0,
+2062.0,
+3275.0
+],
+"confidence": 0.9999,
+"system_id": "belsavis-l-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Hasskyn",
+"bbox": [
+2177.0,
+3574.0,
+2248.0,
+3599.0
+],
+"confidence": 0.9999,
+"system_id": "hasskyn-m-20",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Kerkoidia",
+"bbox": [
+2345.0,
+2920.0,
+2421.0,
+2944.0
+],
+"confidence": 0.9999,
+"system_id": "kerkoidia-n-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Kowak",
+"bbox": [
+3084.0,
+2935.0,
+3142.0,
+2960.0
+],
+"confidence": 0.9999,
+"system_id": "kowak-s-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Farstine",
+"bbox": [
+2491.0,
+3068.0,
+2559.0,
+3093.0
+],
+"confidence": 0.9999,
+"system_id": "farstine-p-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Yerbana",
+"bbox": [
+2721.0,
+3089.0,
+2786.0,
+3113.0
+],
+"confidence": 0.9999,
+"system_id": "yerbana-q-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 7
+},
+{
+"text": "Aynaboni",
+"bbox": [
+1621.0,
+1416.0,
+1694.0,
+1440.0
+],
+"confidence": 0.9999,
+"system_id": "aynaboni-j-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Mefti",
+"bbox": [
+1943.0,
+1922.0,
+1990.0,
+1947.0
+],
+"confidence": 0.9999,
+"system_id": "mefti-l-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Cardovyte",
+"bbox": [
+2053.0,
+1531.0,
+2139.0,
+1559.0
+],
+"confidence": 0.9999,
+"system_id": "cardovyte-m-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 9
+},
+{
+"text": "Murkhana",
+"bbox": [
+2997.0,
+1574.0,
+3081.0,
+1601.0
+],
+"confidence": 0.9999,
+"system_id": "murkhana-s-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Silla",
+"bbox": [
+2162.0,
+1664.0,
+2207.0,
+1690.0
+],
+"confidence": 0.9999,
+"system_id": "silla-m-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "2",
+"bbox": [
+3478.0,
+959.0,
+3511.0,
+998.0
+],
+"confidence": 0.9999,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Myrth",
+"bbox": [
+2950.0,
+1704.0,
+3004.0,
+1731.0
+],
+"confidence": 0.9999,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Sereeda",
+"bbox": [
+3110.0,
+1708.0,
+3182.0,
+1738.0
+],
+"confidence": 0.9999,
+"system_id": "sereeda-t-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 4
+},
+{
+"text": "Noua",
+"bbox": [
+2207.0,
+1758.0,
+2249.0,
+1784.0
+],
+"confidence": 0.9999,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Uveron",
+"bbox": [
+2027.0,
+1948.0,
+2087.0,
+1973.0
+],
+"confidence": 0.9999,
+"system_id": "uveron-m-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Cerberon",
+"bbox": [
+2000.0,
+2106.0,
+2075.0,
+2130.0
+],
+"confidence": 0.9999,
+"system_id": "cerberon-l-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Corellia",
+"bbox": [
+2094.0,
+2310.0,
+2156.0,
+2335.0
+],
+"confidence": 0.9999,
+"system_id": "corellia-m-11",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Keteeria",
+"bbox": [
+2392.0,
+1750.0,
+2461.0,
+1773.0
+],
+"confidence": 0.9999,
+"system_id": "keteeria-o-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Anzat",
+"bbox": [
+2861.0,
+1752.0,
+2911.0,
+1774.0
+],
+"confidence": 0.9999,
+"system_id": "anzat-r-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Vurdon Ka",
+"bbox": [
+2107.0,
+1892.0,
+2191.0,
+1923.0
+],
+"confidence": 0.9999,
+"system_id": "vurdon-ka-m-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Couronne",
+"bbox": [
+2566.0,
+2067.0,
+2647.0,
+2097.0
+],
+"confidence": 0.9999,
+"system_id": "couronne-p-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Durkteel",
+"bbox": [
+2762.0,
+2083.0,
+2835.0,
+2107.0
+],
+"confidence": 0.9999,
+"system_id": "durkteel-q-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Candovant",
+"bbox": [
+2261.0,
+2479.0,
+2344.0,
+2503.0
+],
+"confidence": 0.9999,
+"system_id": "candovant-n-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Aridus",
+"bbox": [
+2462.0,
+2674.0,
+2519.0,
+2699.0
+],
+"confidence": 0.9999,
+"system_id": "aridus-o-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Dotharian",
+"bbox": [
+2993.0,
+2433.0,
+3086.0,
+2458.0
+],
+"confidence": 0.9999,
+"system_id": "dotharian-s-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Palliduva",
+"bbox": [
+3361.0,
+2444.0,
+3442.0,
+2472.0
+],
+"confidence": 0.9999,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Blutopia",
+"bbox": [
+1891.0,
+2978.0,
+1961.0,
+3003.0
+],
+"confidence": 0.9999,
+"system_id": "blutopia-k-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Zondula",
+"bbox": [
+1695.0,
+3016.0,
+1767.0,
+3041.0
+],
+"confidence": 0.9999,
+"system_id": "zondula-j-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Gad",
+"bbox": [
+2090.0,
+3201.0,
+2129.0,
+3228.0
+],
+"confidence": 0.9999,
+"system_id": "gad-m-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Morak",
+"bbox": [
+1339.0,
+3271.0,
+1393.0,
+3296.0
+],
+"confidence": 0.9999,
+"system_id": "morak-h-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Trenchenovu",
+"bbox": [
+1698.0,
+3408.0,
+1809.0,
+3435.0
+],
+"confidence": 0.9999,
+"system_id": "trenchenovu-k-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 6
+},
+{
+"text": "Chaaktil",
+"bbox": [
+2243.0,
+2674.0,
+2318.0,
+2700.0
+],
+"confidence": 0.9999,
+"system_id": "chaaktil-n-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Leritor",
+"bbox": [
+2714.0,
+2825.0,
+2772.0,
+2850.0
+],
+"confidence": 0.9999,
+"system_id": "leritor-q-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Falleen",
+"bbox": [
+2623.0,
+2860.0,
+2690.0,
+2886.0
+],
+"confidence": 0.9999,
+"system_id": "falleen-p-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Kerest",
+"bbox": [
+2050.0,
+3439.0,
+2114.0,
+3464.0
+],
+"confidence": 0.9999,
+"system_id": "kerest-m-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "R",
+"bbox": [
+2841.0,
+3713.0,
+2902.0,
+3781.0
+],
+"confidence": 0.9999,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Chrelythiumn",
+"bbox": [
+1692.0,
+1021.0,
+1808.0,
+1045.0
+],
+"confidence": 0.9999,
+"system_id": "chrelythiumn-k-2",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Feleantor",
+"bbox": [
+1946.0,
+1525.0,
+2028.0,
+1554.0
+],
+"confidence": 0.9999,
+"system_id": "feleantor-l-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Ansion",
+"bbox": [
+1636.0,
+1620.0,
+1691.0,
+1643.0
+],
+"confidence": 0.9999,
+"system_id": "ansion-i-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Bilbringi",
+"bbox": [
+1680.0,
+1813.0,
+1764.0,
+1843.0
+],
+"confidence": 0.9999,
+"system_id": "bilbringi-j-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Quermia",
+"bbox": [
+2959.0,
+1378.0,
+3028.0,
+1403.0
+],
+"confidence": 0.9999,
+"system_id": "quermia-s-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Akiva",
+"bbox": [
+2415.0,
+1590.0,
+2465.0,
+1616.0
+],
+"confidence": 0.9999,
+"system_id": "akiva-o-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Wayland",
+"bbox": [
+2342.0,
+1689.0,
+2416.0,
+1717.0
+],
+"confidence": 0.9999,
+"system_id": "wayland-n-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Metalorn",
+"bbox": [
+2736.0,
+1783.0,
+2811.0,
+1813.0
+],
+"confidence": 0.9999,
+"system_id": "metalorn-r-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Phothrell",
+"bbox": [
+2175.0,
+1809.0,
+2267.0,
+1837.0
+],
+"confidence": 0.9999,
+"system_id": "phothrell-m-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Gorobei",
+"bbox": [
+2157.0,
+1864.0,
+2220.0,
+1889.0
+],
+"confidence": 0.9999,
+"system_id": "gorobei-m-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "cami",
+"bbox": [
+2950.0,
+1811.0,
+2985.0,
+1834.0
+],
+"confidence": 0.9999,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Waymancy",
+"bbox": [
+1804.0,
+1822.0,
+1893.0,
+1851.0
+],
+"confidence": 0.9999,
+"system_id": "waymancy-k-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Reena",
+"bbox": [
+2002.0,
+2578.0,
+2059.0,
+2603.0
+],
+"confidence": 0.9999,
+"system_id": "reena-l-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Balagash",
+"bbox": [
+2419.0,
+1927.0,
+2495.0,
+1954.0
+],
+"confidence": 0.9999,
+"system_id": "balagash-o-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 6
+},
+{
+"text": "Alderaan",
+"bbox": [
+2120.0,
+2063.0,
+2199.0,
+2091.0
+],
+"confidence": 0.9999,
+"system_id": "alderaan-m-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Tinnel",
+"bbox": [
+2154.0,
+2382.0,
+2201.0,
+2407.0
+],
+"confidence": 0.9999,
+"system_id": "tinnel-m-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Gamorr",
+"bbox": [
+3168.0,
+2683.0,
+3232.0,
+2711.0
+],
+"confidence": 0.9999,
+"system_id": "gamorr-t-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Caranthanax",
+"bbox": [
+1633.0,
+3219.0,
+1733.0,
+3243.0
+],
+"confidence": 0.9999,
+"system_id": "caranthanax-j-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Bespin",
+"bbox": [
+1721.0,
+3301.0,
+1779.0,
+3326.0
+],
+"confidence": 0.9999,
+"system_id": "bespin-k-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Dolla",
+"bbox": [
+1939.0,
+3298.0,
+1983.0,
+3324.0
+],
+"confidence": 0.9999,
+"system_id": "dolla-l-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Subterrel",
+"bbox": [
+1951.0,
+3645.0,
+2027.0,
+3670.0
+],
+"confidence": 0.9999,
+"system_id": "subterrel-l-20",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Kalarba",
+"bbox": [
+2449.0,
+2803.0,
+2515.0,
+2828.0
+],
+"confidence": 0.9999,
+"system_id": "kalarba-p-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Nurasenti",
+"bbox": [
+2869.0,
+2887.0,
+2948.0,
+2911.0
+],
+"confidence": 0.9999,
+"system_id": "nurasenti-s-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Vondarc",
+"bbox": [
+2066.0,
+3062.0,
+2134.0,
+3087.0
+],
+"confidence": 0.9999,
+"system_id": "vondarc-m-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Sterdic",
+"bbox": [
+2462.0,
+3113.0,
+2525.0,
+3137.0
+],
+"confidence": 0.9999,
+"system_id": "sterdic-p-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Zastiga",
+"bbox": [
+1745.0,
+3609.0,
+1809.0,
+3636.0
+],
+"confidence": 0.9999,
+"system_id": "zastiga-k-20",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Corsin",
+"bbox": [
+2180.0,
+1693.0,
+2236.0,
+1718.0
+],
+"confidence": 0.9999,
+"system_id": "corsin-m-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Pippip",
+"bbox": [
+2676.0,
+1240.0,
+2734.0,
+1272.0
+],
+"confidence": 0.9999,
+"system_id": "pippip-q-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 6
+},
+{
+"text": "Gigor",
+"bbox": [
+2811.0,
+1250.0,
+2859.0,
+1280.0
+],
+"confidence": 0.9999,
+"system_id": "gigor-r-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Seelos",
+"bbox": [
+2666.0,
+1282.0,
+2723.0,
+1307.0
+],
+"confidence": 0.9999,
+"system_id": "seelos-q-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Lothal",
+"bbox": [
+3303.0,
+1647.0,
+3359.0,
+1673.0
+],
+"confidence": 0.9999,
+"system_id": "lothal-u-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Wor Tandell",
+"bbox": [
+1768.0,
+2026.0,
+1857.0,
+2053.0
+],
+"confidence": 0.9999,
+"system_id": "wor-tandell-k-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Gizer",
+"bbox": [
+2504.0,
+1901.0,
+2546.0,
+1924.0
+],
+"confidence": 0.9999,
+"system_id": "gizer-p-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Hapes",
+"bbox": [
+2447.0,
+1970.0,
+2502.0,
+1999.0
+],
+"confidence": 0.9999,
+"system_id": "hapes-o-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Rajtiri",
+"bbox": [
+2518.0,
+1973.0,
+2571.0,
+2000.0
+],
+"confidence": 0.9999,
+"system_id": "rajtiri-p-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Lespectus",
+"bbox": [
+2127.0,
+2116.0,
+2207.0,
+2137.0
+],
+"confidence": 0.9999,
+"system_id": "lespectus-m-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Valboraan",
+"bbox": [
+2810.0,
+2142.0,
+2892.0,
+2170.0
+],
+"confidence": 0.9999,
+"system_id": "valboraan-r-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Commenor",
+"bbox": [
+2275.0,
+2197.0,
+2362.0,
+2224.0
+],
+"confidence": 0.9999,
+"system_id": "commenor-n-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "11",
+"bbox": [
+3478.0,
+2271.0,
+3516.0,
+2307.0
+],
+"confidence": 0.9999,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Persis",
+"bbox": [
+1940.0,
+2840.0,
+1992.0,
+2862.0
+],
+"confidence": 0.9999,
+"system_id": "persis-l-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Elphrona",
+"bbox": [
+1464.0,
+3146.0,
+1536.0,
+3172.0
+],
+"confidence": 0.9999,
+"system_id": "elphrona-i-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Vuundalla",
+"bbox": [
+1461.0,
+3202.0,
+1543.0,
+3230.0
+],
+"confidence": 0.9999,
+"system_id": "vuundalla-i-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Pagodon",
+"bbox": [
+2849.0,
+3266.0,
+2926.0,
+3294.0
+],
+"confidence": 0.9999,
+"system_id": "pagodon-r-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Quence",
+"bbox": [
+2427.0,
+3352.0,
+2490.0,
+3377.0
+],
+"confidence": 0.9999,
+"system_id": "quence-o-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "uvern",
+"bbox": [
+2050.0,
+1401.0,
+2101.0,
+1423.0
+],
+"confidence": 0.9999,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Axxila",
+"bbox": [
+2342.0,
+1427.0,
+2396.0,
+1454.0
+],
+"confidence": 0.9999,
+"system_id": "axxila-o-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "At Attin",
+"bbox": [
+2280.0,
+1502.0,
+2351.0,
+1527.0
+],
+"confidence": 0.9999,
+"system_id": "at-attin-n-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Daro",
+"bbox": [
+2223.0,
+1603.0,
+2268.0,
+1630.0
+],
+"confidence": 0.9999,
+"system_id": "daro-n-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Dorin",
+"bbox": [
+1664.0,
+1776.0,
+1712.0,
+1803.0
+],
+"confidence": 0.9999,
+"system_id": "dorin-j-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "EGIONS",
+"bbox": [
+1150.0,
+2098.0,
+1230.0,
+2137.0
+],
+"confidence": 0.9999,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Nouane",
+"bbox": [
+2207.0,
+1759.0,
+2272.0,
+1784.0
+],
+"confidence": 0.9999,
+"system_id": "nouane-n-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Neimoidia",
+"bbox": [
+2214.0,
+2143.0,
+2297.0,
+2171.0
+],
+"confidence": 0.9999,
+"system_id": "neimoidia-m-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "9",
+"bbox": [
+3482.0,
+1982.0,
+3507.0,
+2013.0
+],
+"confidence": 0.9999,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Rorak",
+"bbox": [
+3005.0,
+2394.0,
+3056.0,
+2420.0
+],
+"confidence": 0.9999,
+"system_id": "rorak-s-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Travyx",
+"bbox": [
+1669.0,
+2992.0,
+1726.0,
+3017.0
+],
+"confidence": 0.9999,
+"system_id": "travyx-j-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Polaar",
+"bbox": [
+1955.0,
+3056.0,
+2015.0,
+3084.0
+],
+"confidence": 0.9999,
+"system_id": "polaar-l-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Vassek",
+"bbox": [
+1605.0,
+3171.0,
+1665.0,
+3196.0
+],
+"confidence": 0.9999,
+"system_id": "vassek-i-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Najan-Rovi",
+"bbox": [
+2057.0,
+3177.0,
+2146.0,
+3201.0
+],
+"confidence": 0.9999,
+"system_id": "najan-rovi-m-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Anoat",
+"bbox": [
+1798.0,
+3310.0,
+1849.0,
+3332.0
+],
+"confidence": 0.9999,
+"system_id": "anoat-k-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Kirdo",
+"bbox": [
+2320.0,
+3418.0,
+2365.0,
+3446.0
+],
+"confidence": 0.9999,
+"system_id": "kirdo-n-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "G",
+"bbox": [
+1254.0,
+3732.0,
+1295.0,
+3774.0
+],
+"confidence": 0.9999,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Cantonica",
+"bbox": [
+2883.0,
+1206.0,
+2966.0,
+1230.0
+],
+"confidence": 0.9999,
+"system_id": "cantonica-s-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Takobo",
+"bbox": [
+2210.0,
+1562.0,
+2268.0,
+1587.0
+],
+"confidence": 0.9999,
+"system_id": "takobo-n-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Corvus",
+"bbox": [
+2984.0,
+1552.0,
+3044.0,
+1577.0
+],
+"confidence": 0.9999,
+"system_id": "corvus-s-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Trellen",
+"bbox": [
+2099.0,
+2201.0,
+2166.0,
+2226.0
+],
+"confidence": 0.9999,
+"system_id": "trellen-m-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 4
+},
+{
+"text": "Cusver",
+"bbox": [
+1947.0,
+2395.0,
+2002.0,
+2417.0
+],
+"confidence": 0.9999,
+"system_id": "cusver-m-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Uyter",
+"bbox": [
+2603.0,
+1962.0,
+2651.0,
+1989.0
+],
+"confidence": 0.9999,
+"system_id": "uyter-p-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Varnak",
+"bbox": [
+2640.0,
+2308.0,
+2701.0,
+2332.0
+],
+"confidence": 0.9999,
+"system_id": "varnak-q-11",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Li-Toran",
+"bbox": [
+2173.0,
+2582.0,
+2245.0,
+2607.0
+],
+"confidence": 0.9999,
+"system_id": "li-toran-m-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Alvadorjia",
+"bbox": [
+1862.0,
+2859.0,
+1947.0,
+2884.0
+],
+"confidence": 0.9999,
+"system_id": "alvadorjia-l-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Kriselist",
+"bbox": [
+1838.0,
+3073.0,
+1909.0,
+3101.0
+],
+"confidence": 0.9999,
+"system_id": "kriselist-k-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 10
+},
+{
+"text": "Elessia",
+"bbox": [
+2538.0,
+3033.0,
+2602.0,
+3061.0
+],
+"confidence": 0.9999,
+"system_id": "elessia-p-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Terminus",
+"bbox": [
+1826.0,
+3654.0,
+1902.0,
+3679.0
+],
+"confidence": 0.9999,
+"system_id": "terminus-k-20",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Belladoon",
+"bbox": [
+1817.0,
+1183.0,
+1898.0,
+1207.0
+],
+"confidence": 0.9999,
+"system_id": "belladoon-k-3",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Muunilinst",
+"bbox": [
+1711.0,
+1248.0,
+1798.0,
+1276.0
+],
+"confidence": 0.9999,
+"system_id": "muunilinst-k-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Aakaash",
+"bbox": [
+2007.0,
+1369.0,
+2078.0,
+1394.0
+],
+"confidence": 0.9999,
+"system_id": "aakaash-m-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Ardennia",
+"bbox": [
+1864.0,
+1496.0,
+1935.0,
+1520.0
+],
+"confidence": 0.9999,
+"system_id": "ardennia-k-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Shu-Torun",
+"bbox": [
+1687.0,
+1682.0,
+1785.0,
+1712.0
+],
+"confidence": 0.9999,
+"system_id": "shu-torun-j-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 7
+},
+{
+"text": "Shantipole",
+"bbox": [
+2608.0,
+1822.0,
+2710.0,
+1849.0
+],
+"confidence": 0.9999,
+"system_id": "shantipole-q-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Mahranee",
+"bbox": [
+2643.0,
+1901.0,
+2732.0,
+1926.0
+],
+"confidence": 0.9999,
+"system_id": "mahranee-p-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Yarma",
+"bbox": [
+3038.0,
+1797.0,
+3090.0,
+1823.0
+],
+"confidence": 0.9999,
+"system_id": "yarma-t-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "11",
+"bbox": [
+708.0,
+2270.0,
+751.0,
+2308.0
+],
+"confidence": 0.9999,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Tirahnn",
+"bbox": [
+2267.0,
+1859.0,
+2331.0,
+1884.0
+],
+"confidence": 0.9999,
+"system_id": "tirahnn-n-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Bracca",
+"bbox": [
+2601.0,
+1927.0,
+2662.0,
+1955.0
+],
+"confidence": 0.9999,
+"system_id": "bracca-p-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Glavis",
+"bbox": [
+2192.0,
+2306.0,
+2256.0,
+2334.0
+],
+"confidence": 0.9999,
+"system_id": "glavis-m-11",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Baroonda",
+"bbox": [
+3196.0,
+1984.0,
+3273.0,
+2008.0
+],
+"confidence": 0.9999,
+"system_id": "baroonda-t-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Azum",
+"bbox": [
+1853.0,
+2889.0,
+1911.0,
+2914.0
+],
+"confidence": 0.9999,
+"system_id": "azum-k-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Rattatak",
+"bbox": [
+1393.0,
+2947.0,
+1463.0,
+2972.0
+],
+"confidence": 0.9999,
+"system_id": "rattatak-h-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Beltire",
+"bbox": [
+1685.0,
+3084.0,
+1742.0,
+3109.0
+],
+"confidence": 0.9999,
+"system_id": "beltire-j-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Savareen",
+"bbox": [
+2687.0,
+3070.0,
+2786.0,
+3097.0
+],
+"confidence": 0.9999,
+"system_id": "savareen-q-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 4
+},
+{
+"text": "Cyclor",
+"bbox": [
+2300.0,
+3106.0,
+2354.0,
+3132.0
+],
+"confidence": 0.9999,
+"system_id": "cyclor-n-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Sullust",
+"bbox": [
+2158.0,
+3191.0,
+2218.0,
+3216.0
+],
+"confidence": 0.9999,
+"system_id": "sullust-m-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Bantoo",
+"bbox": [
+2698.0,
+3467.0,
+2760.0,
+3492.0
+],
+"confidence": 0.9999,
+"system_id": "bantoo-q-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Jaemus",
+"bbox": [
+1725.0,
+1200.0,
+1791.0,
+1225.0
+],
+"confidence": 0.9999,
+"system_id": "jaemus-k-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Chanceux",
+"bbox": [
+2172.0,
+1224.0,
+2249.0,
+1248.0
+],
+"confidence": 0.9999,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Cadomai",
+"bbox": [
+2816.0,
+1135.0,
+2887.0,
+1160.0
+],
+"confidence": 0.9999,
+"system_id": "cadomai-r-3",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Malachor",
+"bbox": [
+2972.0,
+1295.0,
+3050.0,
+1320.0
+],
+"confidence": 0.9999,
+"system_id": "malachor-s-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Gallios",
+"bbox": [
+2227.0,
+1412.0,
+2285.0,
+1437.0
+],
+"confidence": 0.9999,
+"system_id": "gallios-n-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Carida",
+"bbox": [
+2155.0,
+1967.0,
+2211.0,
+1993.0
+],
+"confidence": 0.9999,
+"system_id": "carida-m-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Pantolomin",
+"bbox": [
+1779.0,
+1981.0,
+1877.0,
+2008.0
+],
+"confidence": 0.9999,
+"system_id": "pantolomin-k-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Salliche",
+"bbox": [
+1802.0,
+2076.0,
+1877.0,
+2101.0
+],
+"confidence": 0.9999,
+"system_id": "salliche-k-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Khomm",
+"bbox": [
+1867.0,
+2423.0,
+1936.0,
+2453.0
+],
+"confidence": 0.9999,
+"system_id": "khomm-l-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Wroona",
+"bbox": [
+2072.0,
+2801.0,
+2137.0,
+2827.0
+],
+"confidence": 0.9999,
+"system_id": "wroona-l-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Bimmisaari",
+"bbox": [
+2820.0,
+1924.0,
+2911.0,
+1951.0
+],
+"confidence": 0.9999,
+"system_id": "bimmisaari-r-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Sinta",
+"bbox": [
+2727.0,
+2381.0,
+2790.0,
+2409.0
+],
+"confidence": 0.9999,
+"system_id": "sinta-q-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Vendaxa",
+"bbox": [
+2321.0,
+2719.0,
+2393.0,
+2744.0
+],
+"confidence": 0.9999,
+"system_id": "vendaxa-o-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Tawl",
+"bbox": [
+1870.0,
+3307.0,
+1907.0,
+3331.0
+],
+"confidence": 0.9999,
+"system_id": "tawl-k-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Yar Togna",
+"bbox": [
+2509.0,
+3259.0,
+2587.0,
+3287.0
+],
+"confidence": 0.9999,
+"system_id": "yar-togna-p-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Cotellier",
+"bbox": [
+2331.0,
+3569.0,
+2401.0,
+3597.0
+],
+"confidence": 0.9999,
+"system_id": "cotellier-n-20",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Narkina",
+"bbox": [
+3009.0,
+2893.0,
+3078.0,
+2921.0
+],
+"confidence": 0.9999,
+"system_id": "narkina-s-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Tehar",
+"bbox": [
+1465.0,
+1659.0,
+1516.0,
+1685.0
+],
+"confidence": 0.9998,
+"system_id": "tehar-i-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Balosar",
+"bbox": [
+2024.0,
+2422.0,
+2104.0,
+2450.0
+],
+"confidence": 0.9998,
+"system_id": "balosar-l-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Loronar",
+"bbox": [
+2128.0,
+2417.0,
+2191.0,
+2442.0
+],
+"confidence": 0.9998,
+"system_id": "loronar-m-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Botor",
+"bbox": [
+1867.0,
+2454.0,
+1931.0,
+2479.0
+],
+"confidence": 0.9998,
+"system_id": "botor-k-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Erebus",
+"bbox": [
+2158.0,
+2524.0,
+2220.0,
+2550.0
+],
+"confidence": 0.9998,
+"system_id": "erebus-n-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Charros",
+"bbox": [
+2831.0,
+1957.0,
+2898.0,
+1986.0
+],
+"confidence": 0.9998,
+"system_id": "charros-r-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Korbori",
+"bbox": [
+2238.0,
+2426.0,
+2302.0,
+2452.0
+],
+"confidence": 0.9998,
+"system_id": "korbori-n-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Kesh",
+"bbox": [
+3320.0,
+2106.0,
+3377.0,
+2135.0
+],
+"confidence": 0.9998,
+"system_id": "kesh-u-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Tammuz-an",
+"bbox": [
+3214.0,
+2718.0,
+3306.0,
+2742.0
+],
+"confidence": 0.9998,
+"system_id": "tammuz-an-t-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Derra",
+"bbox": [
+2175.0,
+2807.0,
+2227.0,
+2832.0
+],
+"confidence": 0.9998,
+"system_id": "derra-n-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Roona",
+"bbox": [
+2013.0,
+2851.0,
+2070.0,
+2880.0
+],
+"confidence": 0.9998,
+"system_id": "roona-l-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Cerea",
+"bbox": [
+1589.0,
+3020.0,
+1637.0,
+3042.0
+],
+"confidence": 0.9998,
+"system_id": "cerea-i-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Elrood",
+"bbox": [
+2158.0,
+3536.0,
+2211.0,
+3561.0
+],
+"confidence": 0.9998,
+"system_id": "elrood-m-20",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Ando",
+"bbox": [
+2702.0,
+2923.0,
+2750.0,
+2949.0
+],
+"confidence": 0.9998,
+"system_id": "ando-q-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Arvala",
+"bbox": [
+3073.0,
+2912.0,
+3129.0,
+2934.0
+],
+"confidence": 0.9998,
+"system_id": "arvala-s-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Nevarro",
+"bbox": [
+1801.0,
+3561.0,
+1865.0,
+3587.0
+],
+"confidence": 0.9998,
+"system_id": "nevarro-k-20",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Carlac",
+"bbox": [
+1764.0,
+1455.0,
+1822.0,
+1483.0
+],
+"confidence": 0.9998,
+"system_id": "carlac-k-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Markez",
+"bbox": [
+1835.0,
+1711.0,
+1916.0,
+1739.0
+],
+"confidence": 0.9998,
+"system_id": "markez-k-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Celanon",
+"bbox": [
+2473.0,
+1484.0,
+2543.0,
+1513.0
+],
+"confidence": 0.9998,
+"system_id": "celanon-o-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Etti",
+"bbox": [
+2955.0,
+1184.0,
+2998.0,
+1211.0
+],
+"confidence": 0.9998,
+"system_id": "etti-s-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "UNKNOWN REGIONS",
+"bbox": [
+1025.0,
+2099.0,
+1229.0,
+2136.0
+],
+"confidence": 0.9998,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Sarka",
+"bbox": [
+2782.0,
+1833.0,
+2842.0,
+1861.0
+],
+"confidence": 0.9998,
+"system_id": "sarka-q-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Fillithar",
+"bbox": [
+2165.0,
+2039.0,
+2229.0,
+2064.0
+],
+"confidence": 0.9998,
+"system_id": "fillithar-m-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Coachelle",
+"bbox": [
+2611.0,
+2121.0,
+2691.0,
+2149.0
+],
+"confidence": 0.9998,
+"system_id": "coachelle-p-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 4
+},
+{
+"text": "Triffis",
+"bbox": [
+2480.0,
+2863.0,
+2547.0,
+2892.0
+],
+"confidence": 0.9998,
+"system_id": "triffis-o-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Scarif",
+"bbox": [
+2950.0,
+2843.0,
+3004.0,
+2872.0
+],
+"confidence": 0.9998,
+"system_id": "scarif-s-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Pabu",
+"bbox": [
+1989.0,
+1124.0,
+2040.0,
+1150.0
+],
+"confidence": 0.9998,
+"system_id": "pabu-l-3",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Dubrillion",
+"bbox": [
+1881.0,
+1139.0,
+1957.0,
+1164.0
+],
+"confidence": 0.9998,
+"system_id": "dubrillion-k-3",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Mapuzo",
+"bbox": [
+2067.0,
+1669.0,
+2132.0,
+1693.0
+],
+"confidence": 0.9998,
+"system_id": "mapuzo-m-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Mina-Rau",
+"bbox": [
+2416.0,
+1460.0,
+2497.0,
+1488.0
+],
+"confidence": 0.9998,
+"system_id": "mina-rau-o-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Mikkia",
+"bbox": [
+2126.0,
+1701.0,
+2187.0,
+1732.0
+],
+"confidence": 0.9998,
+"system_id": "mikkia-m-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Montross",
+"bbox": [
+2433.0,
+1871.0,
+2510.0,
+1896.0
+],
+"confidence": 0.9998,
+"system_id": "montross-p-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Kamar",
+"bbox": [
+3043.0,
+1172.0,
+3102.0,
+1200.0
+],
+"confidence": 0.9998,
+"system_id": "kamar-s-3",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Kiffex",
+"bbox": [
+1918.0,
+2689.0,
+1987.0,
+2720.0
+],
+"confidence": 0.9998,
+"system_id": "kiffex-l-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Nepot",
+"bbox": [
+3101.0,
+1992.0,
+3149.0,
+2018.0
+],
+"confidence": 0.9998,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "HUTT",
+"bbox": [
+3083.0,
+2278.0,
+3146.0,
+2315.0
+],
+"confidence": 0.9998,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 5
+},
+{
+"text": "15",
+"bbox": [
+708.0,
+2852.0,
+752.0,
+2890.0
+],
+"confidence": 0.9998,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Cerifisis",
+"bbox": [
+1516.0,
+3461.0,
+1591.0,
+3486.0
+],
+"confidence": 0.9998,
+"system_id": "cerifisis-i-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Geonosis",
+"bbox": [
+2873.0,
+3045.0,
+2948.0,
+3073.0
+],
+"confidence": 0.9998,
+"system_id": "geonosis-r-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Naboo",
+"bbox": [
+2352.0,
+3087.0,
+2408.0,
+3112.0
+],
+"confidence": 0.9998,
+"system_id": "naboo-o-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Rishi",
+"bbox": [
+2984.0,
+2814.0,
+3031.0,
+2841.0
+],
+"confidence": 0.9998,
+"system_id": "rishi-s-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Corellian Run",
+"bbox": [
+890.0,
+1085.0,
+1023.0,
+1122.0
+],
+"confidence": 0.9998,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Gree",
+"bbox": [
+1945.0,
+1005.0,
+1988.0,
+1031.0
+],
+"confidence": 0.9998,
+"system_id": "gree-l-2",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Begamor",
+"bbox": [
+2139.0,
+1479.0,
+2211.0,
+1504.0
+],
+"confidence": 0.9998,
+"system_id": "begamor-m-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Farana",
+"bbox": [
+3031.0,
+1137.0,
+3094.0,
+1167.0
+],
+"confidence": 0.9998,
+"system_id": "farana-s-3",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Chad",
+"bbox": [
+2920.0,
+1665.0,
+2968.0,
+1691.0
+],
+"confidence": 0.9998,
+"system_id": "chad-r-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 4
+},
+{
+"text": "Jedha",
+"bbox": [
+1392.0,
+2120.0,
+1449.0,
+2145.0
+],
+"confidence": 0.9998,
+"system_id": "jedha-h-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Gorse",
+"bbox": [
+2382.0,
+2194.0,
+2433.0,
+2219.0
+],
+"confidence": 0.9998,
+"system_id": "gorse-o-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Karnac",
+"bbox": [
+3157.0,
+1775.0,
+3216.0,
+1800.0
+],
+"confidence": 0.9998,
+"system_id": "karnac-t-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Desix",
+"bbox": [
+2982.0,
+2022.0,
+3029.0,
+2044.0
+],
+"confidence": 0.9998,
+"system_id": "desix-s-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Gerrigon",
+"bbox": [
+1628.0,
+3106.0,
+1713.0,
+3133.0
+],
+"confidence": 0.9998,
+"system_id": "gerrigon-j-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Svivren",
+"bbox": [
+2386.0,
+3434.0,
+2451.0,
+3459.0
+],
+"confidence": 0.9998,
+"system_id": "svivren-o-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Askkto-Fen",
+"bbox": [
+2609.0,
+3525.0,
+2702.0,
+3553.0
+],
+"confidence": 0.9998,
+"system_id": "askkto-fen-p-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Bescane",
+"bbox": [
+1716.0,
+1164.0,
+1787.0,
+1189.0
+],
+"confidence": 0.9998,
+"system_id": "bescane-k-3",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Naraka",
+"bbox": [
+3007.0,
+1689.0,
+3068.0,
+1714.0
+],
+"confidence": 0.9998,
+"system_id": "naraka-s-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Borleias",
+"bbox": [
+1877.0,
+1959.0,
+1946.0,
+1987.0
+],
+"confidence": 0.9998,
+"system_id": "borleias-k-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 4
+},
+{
+"text": "Vardos",
+"bbox": [
+1996.0,
+2058.0,
+2067.0,
+2083.0
+],
+"confidence": 0.9998,
+"system_id": "vardos-l-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Empress Teta",
+"bbox": [
+1821.0,
+2129.0,
+1933.0,
+2152.0
+],
+"confidence": 0.9998,
+"system_id": "empress-teta-l-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Nacon",
+"bbox": [
+1870.0,
+2101.0,
+1934.0,
+2125.0
+],
+"confidence": 0.9998,
+"system_id": "nacon-l-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Hylobi",
+"bbox": [
+2666.0,
+1881.0,
+2731.0,
+1907.0
+],
+"confidence": 0.9998,
+"system_id": "hylobi-q-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Kotab",
+"bbox": [
+2308.0,
+2072.0,
+2376.0,
+2097.0
+],
+"confidence": 0.9998,
+"system_id": "kotab-n-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Espirion",
+"bbox": [
+2305.0,
+2454.0,
+2386.0,
+2481.0
+],
+"confidence": 0.9998,
+"system_id": "espirion-n-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Rinn",
+"bbox": [
+3291.0,
+2362.0,
+3331.0,
+2385.0
+],
+"confidence": 0.9998,
+"system_id": "rinn-u-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Castilon",
+"bbox": [
+1530.0,
+2969.0,
+1601.0,
+2997.0
+],
+"confidence": 0.9998,
+"system_id": "castilon-i-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Kira",
+"bbox": [
+2281.0,
+2914.0,
+2319.0,
+2941.0
+],
+"confidence": 0.9998,
+"system_id": "kira-n-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Hyperkarn",
+"bbox": [
+2803.0,
+2954.0,
+2889.0,
+2982.0
+],
+"confidence": 0.9998,
+"system_id": "hyperkarn-r-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Suria",
+"bbox": [
+2575.0,
+3202.0,
+2623.0,
+3228.0
+],
+"confidence": 0.9998,
+"system_id": "suria-p-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Sharlissia",
+"bbox": [
+2340.0,
+3256.0,
+2422.0,
+3287.0
+],
+"confidence": 0.9998,
+"system_id": "sharlissia-n-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Fornax",
+"bbox": [
+1718.0,
+1665.0,
+1781.0,
+1693.0
+],
+"confidence": 0.9998,
+"system_id": "fornax-j-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Serenno",
+"bbox": [
+2438.0,
+1380.0,
+2506.0,
+1405.0
+],
+"confidence": 0.9998,
+"system_id": "serenno-p-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Bavana",
+"bbox": [
+2785.0,
+1404.0,
+2850.0,
+1429.0
+],
+"confidence": 0.9998,
+"system_id": "bavana-r-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Brigia",
+"bbox": [
+3109.0,
+1551.0,
+3164.0,
+1580.0
+],
+"confidence": 0.9998,
+"system_id": "brigia-t-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "CORUSCANT",
+"bbox": [
+1813.0,
+2047.0,
+1916.0,
+2075.0
+],
+"confidence": 0.9998,
+"system_id": "coruscant-l-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 6
+},
+{
+"text": "Kes",
+"bbox": [
+2218.0,
+3122.0,
+2249.0,
+3149.0
+],
+"confidence": 0.9998,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Regis Kor",
+"bbox": [
+1682.0,
+3135.0,
+1764.0,
+3163.0
+],
+"confidence": 0.9998,
+"system_id": "regis-kor-j-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Serolonis",
+"bbox": [
+1637.0,
+3318.0,
+1715.0,
+3343.0
+],
+"confidence": 0.9998,
+"system_id": "serolonis-j-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Skye",
+"bbox": [
+1405.0,
+3495.0,
+1451.0,
+3523.0
+],
+"confidence": 0.9998,
+"system_id": "skye-h-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Gansevor",
+"bbox": [
+3196.0,
+2750.0,
+3271.0,
+2775.0
+],
+"confidence": 0.9998,
+"system_id": "gansevor-t-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Mytus",
+"bbox": [
+2924.0,
+1065.0,
+2996.0,
+1097.0
+],
+"confidence": 0.9998,
+"system_id": "mytus-s-3",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Boxer Pt Sta.",
+"bbox": [
+2364.0,
+1847.0,
+2466.0,
+1876.0
+],
+"confidence": 0.9998,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Umbara",
+"bbox": [
+2538.0,
+2092.0,
+2602.0,
+2117.0
+],
+"confidence": 0.9998,
+"system_id": "umbara-p-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Lonera",
+"bbox": [
+2362.0,
+2355.0,
+2417.0,
+2377.0
+],
+"confidence": 0.9998,
+"system_id": "lonera-o-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Nar Kaaga",
+"bbox": [
+2946.0,
+2537.0,
+3044.0,
+2568.0
+],
+"confidence": 0.9998,
+"system_id": "nar-kaaga-s-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Eiattu",
+"bbox": [
+2034.0,
+3135.0,
+2085.0,
+3161.0
+],
+"confidence": 0.9998,
+"system_id": "eiattu-l-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "th",
+"bbox": [
+2950.0,
+3163.0,
+2971.0,
+3186.0
+],
+"confidence": 0.9998,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Sason",
+"bbox": [
+1862.0,
+1383.0,
+1919.0,
+1408.0
+],
+"confidence": 0.9998,
+"system_id": "sason-k-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Great Zilk",
+"bbox": [
+1763.0,
+1583.0,
+1844.0,
+1607.0
+],
+"confidence": 0.9998,
+"system_id": "great-zilk-k-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Troglofa",
+"bbox": [
+2783.0,
+1512.0,
+2853.0,
+1544.0
+],
+"confidence": 0.9998,
+"system_id": "troglofa-r-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Panna",
+"bbox": [
+3051.0,
+1530.0,
+3113.0,
+1561.0
+],
+"confidence": 0.9998,
+"system_id": "panna-s-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "mnic",
+"bbox": [
+2950.0,
+1627.0,
+2989.0,
+1654.0
+],
+"confidence": 0.9998,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Zinchori",
+"bbox": [
+2316.0,
+1944.0,
+2399.0,
+1971.0
+],
+"confidence": 0.9998,
+"system_id": "zinchori-o-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Circumtore",
+"bbox": [
+2866.0,
+2401.0,
+2955.0,
+2428.0
+],
+"confidence": 0.9998,
+"system_id": "circumtore-s-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Aduba",
+"bbox": [
+3299.0,
+2219.0,
+3354.0,
+2245.0
+],
+"confidence": 0.9998,
+"system_id": "aduba-u-11",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Zolan",
+"bbox": [
+2559.0,
+2965.0,
+2625.0,
+2993.0
+],
+"confidence": 0.9998,
+"system_id": "zolan-p-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Tollello",
+"bbox": [
+2666.0,
+3287.0,
+2724.0,
+3312.0
+],
+"confidence": 0.9998,
+"system_id": "tollello-q-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Norisyn",
+"bbox": [
+2383.0,
+3478.0,
+2456.0,
+3503.0
+],
+"confidence": 0.9998,
+"system_id": "norisyn-o-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Jelucan",
+"bbox": [
+2609.0,
+1200.0,
+2677.0,
+1225.0
+],
+"confidence": 0.9998,
+"system_id": "jelucan-q-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Palanhi",
+"bbox": [
+1779.0,
+1895.0,
+1839.0,
+1920.0
+],
+"confidence": 0.9998,
+"system_id": "palanhi-k-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Fedalle",
+"bbox": [
+2053.0,
+2128.0,
+2126.0,
+2157.0
+],
+"confidence": 0.9998,
+"system_id": "fedalle-m-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 4
+},
+{
+"text": "Fetilia",
+"bbox": [
+2673.0,
+2476.0,
+2738.0,
+2507.0
+],
+"confidence": 0.9998,
+"system_id": "fetilia-q-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Ponemah",
+"bbox": [
+1469.0,
+3040.0,
+1552.0,
+3068.0
+],
+"confidence": 0.9998,
+"system_id": "ponemah-h-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 12
+},
+{
+"text": "Eriadu",
+"bbox": [
+2091.0,
+3258.0,
+2145.0,
+3284.0
+],
+"confidence": 0.9998,
+"system_id": "eriadu-m-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "M",
+"bbox": [
+2106.0,
+3714.0,
+2188.0,
+3779.0
+],
+"confidence": 0.9998,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Ultaar",
+"bbox": [
+2854.0,
+1847.0,
+2908.0,
+1872.0
+],
+"confidence": 0.9998,
+"system_id": "ultaar-r-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Bestoon",
+"bbox": [
+1706.0,
+1966.0,
+1776.0,
+1991.0
+],
+"confidence": 0.9998,
+"system_id": "bestoon-j-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Exodeen Quellor",
+"bbox": [
+2177.0,
+2334.0,
+2307.0,
+2364.0
+],
+"confidence": 0.9998,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Syvris",
+"bbox": [
+3172.0,
+2564.0,
+3228.0,
+2594.0
+],
+"confidence": 0.9998,
+"system_id": "syvris-t-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Cymoon",
+"bbox": [
+1986.0,
+2874.0,
+2057.0,
+2903.0
+],
+"confidence": 0.9998,
+"system_id": "cymoon-l-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Vulpinus Neb.",
+"bbox": [
+1731.0,
+2918.0,
+1823.0,
+2942.0
+],
+"confidence": 0.9998,
+"system_id": null,
+"nebula_label": true,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Merokia",
+"bbox": [
+1689.0,
+3366.0,
+1755.0,
+3390.0
+],
+"confidence": 0.9998,
+"system_id": "merokia-j-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Uvena",
+"bbox": [
+2194.0,
+3242.0,
+2250.0,
+3268.0
+],
+"confidence": 0.9998,
+"system_id": "uvena-m-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Vallt",
+"bbox": [
+2526.0,
+3166.0,
+2568.0,
+3189.0
+],
+"confidence": 0.9998,
+"system_id": "vallt-p-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Tarabba",
+"bbox": [
+2085.0,
+3490.0,
+2151.0,
+3514.0
+],
+"confidence": 0.9998,
+"system_id": "tarabba-prime-m-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Borosk",
+"bbox": [
+1728.0,
+1389.0,
+1786.0,
+1414.0
+],
+"confidence": 0.9997,
+"system_id": "borosk-k-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Jakku",
+"bbox": [
+1517.0,
+2503.0,
+1574.0,
+2530.0
+],
+"confidence": 0.9997,
+"system_id": "jakku-i-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Saki",
+"bbox": [
+3044.0,
+2241.0,
+3096.0,
+2268.0
+],
+"confidence": 0.9997,
+"system_id": "saki-s-11",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Lannik",
+"bbox": [
+2819.0,
+2535.0,
+2880.0,
+2563.0
+],
+"confidence": 0.9997,
+"system_id": "lannik-r-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Gloon",
+"bbox": [
+3205.0,
+2146.0,
+3257.0,
+2175.0
+],
+"confidence": 0.9997,
+"system_id": "gloon-t-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Vetine",
+"bbox": [
+1969.0,
+2662.0,
+2036.0,
+2690.0
+],
+"confidence": 0.9997,
+"system_id": "vetine-l-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 4
+},
+{
+"text": "Eiram",
+"bbox": [
+1528.0,
+3380.0,
+1580.0,
+3405.0
+],
+"confidence": 0.9997,
+"system_id": "eiram-i-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Novka",
+"bbox": [
+2838.0,
+2757.0,
+2898.0,
+2786.0
+],
+"confidence": 0.9997,
+"system_id": "novka-r-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Sta.",
+"bbox": [
+2050.0,
+3346.0,
+2086.0,
+3370.0
+],
+"confidence": 0.9997,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Wrea",
+"bbox": [
+2952.0,
+3204.0,
+3013.0,
+3232.0
+],
+"confidence": 0.9997,
+"system_id": "wrea-s-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Korrus",
+"bbox": [
+1851.0,
+1255.0,
+1911.0,
+1284.0
+],
+"confidence": 0.9997,
+"system_id": "korrus-k-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Jabiim",
+"bbox": [
+3039.0,
+1726.0,
+3094.0,
+1752.0
+],
+"confidence": 0.9997,
+"system_id": "jabiim-s-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Chrome Citadel",
+"bbox": [
+2474.0,
+2275.0,
+2594.0,
+2304.0
+],
+"confidence": 0.9997,
+"system_id": "chrome-citadel-o-11",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Daalang",
+"bbox": [
+2758.0,
+2442.0,
+2827.0,
+2471.0
+],
+"confidence": 0.9997,
+"system_id": "daalang-q-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Parnas",
+"bbox": [
+1293.0,
+1549.0,
+1349.0,
+1577.0
+],
+"confidence": 0.9997,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Niamos",
+"bbox": [
+2863.0,
+1543.0,
+2927.0,
+1568.0
+],
+"confidence": 0.9997,
+"system_id": "niamos-r-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Colla",
+"bbox": [
+2276.0,
+1918.0,
+2333.0,
+1943.0
+],
+"confidence": 0.9997,
+"system_id": "colla-n-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Ring of Kafrene",
+"bbox": [
+1730.0,
+2824.0,
+1848.0,
+2848.0
+],
+"confidence": 0.9997,
+"system_id": "ring-of-kafrene-j-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Aldhani",
+"bbox": [
+2056.0,
+1509.0,
+2119.0,
+1538.0
+],
+"confidence": 0.9997,
+"system_id": "aldhani-m-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Botajef",
+"bbox": [
+2437.0,
+1542.0,
+2501.0,
+1570.0
+],
+"confidence": 0.9997,
+"system_id": "botajef-o-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Bal'demnic",
+"bbox": [
+2897.0,
+1625.0,
+2988.0,
+1653.0
+],
+"confidence": 0.9997,
+"system_id": "bal-demnic-r-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Toola",
+"bbox": [
+3067.0,
+1377.0,
+3115.0,
+1403.0
+],
+"confidence": 0.9997,
+"system_id": "toola-s-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Cona",
+"bbox": [
+2352.0,
+2222.0,
+2415.0,
+2250.0
+],
+"confidence": 0.9997,
+"system_id": "cona-o-11",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Cato Neimoidia",
+"bbox": [
+2253.0,
+2253.0,
+2369.0,
+2278.0
+],
+"confidence": 0.9997,
+"system_id": "cato-neimoidia-n-11",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Arkax Sta.",
+"bbox": [
+2140.0,
+2768.0,
+2235.0,
+2797.0
+],
+"confidence": 0.9997,
+"system_id": "arkax-station-m-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Perlemian Trade Route",
+"bbox": [
+883.0,
+1052.0,
+1106.0,
+1087.0
+],
+"confidence": 0.9997,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Lew'el",
+"bbox": [
+1640.0,
+1141.0,
+1694.0,
+1166.0
+],
+"confidence": 0.9997,
+"system_id": "lew-el-j-3",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Kalee",
+"bbox": [
+1630.0,
+1228.0,
+1679.0,
+1253.0
+],
+"confidence": 0.9997,
+"system_id": "kalee-j-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Glee Anselm",
+"bbox": [
+1671.0,
+1706.0,
+1770.0,
+1734.0
+],
+"confidence": 0.9997,
+"system_id": "glee-anselm-j-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Ciutric",
+"bbox": [
+2302.0,
+1361.0,
+2358.0,
+1387.0
+],
+"confidence": 0.9997,
+"system_id": "ciutric-n-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "De",
+"bbox": [
+3123.0,
+1588.0,
+3149.0,
+1614.0
+],
+"confidence": 0.9997,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Coto-Xana",
+"bbox": [
+1908.0,
+1941.0,
+1996.0,
+1971.0
+],
+"confidence": 0.9997,
+"system_id": "coto-xana-l-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 10
+},
+{
+"text": "COLONIES",
+"bbox": [
+1544.0,
+2100.0,
+1652.0,
+2138.0
+],
+"confidence": 0.9997,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Riflor",
+"bbox": [
+1606.0,
+3069.0,
+1663.0,
+3101.0
+],
+"confidence": 0.9997,
+"system_id": "riflor-j-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Bajic",
+"bbox": [
+2567.0,
+3234.0,
+2612.0,
+3261.0
+],
+"confidence": 0.9997,
+"system_id": "bajic-p-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Skynara",
+"bbox": [
+2637.0,
+3411.0,
+2713.0,
+3443.0
+],
+"confidence": 0.9997,
+"system_id": "skynara-p-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Brentaal",
+"bbox": [
+1996.0,
+1978.0,
+2064.0,
+2003.0
+],
+"confidence": 0.9997,
+"system_id": "brentaal-l-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "innal",
+"bbox": [
+2050.0,
+1999.0,
+2091.0,
+2022.0
+],
+"confidence": 0.9997,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Maltheen Div.",
+"bbox": [
+2593.0,
+2172.0,
+2703.0,
+2196.0
+],
+"confidence": 0.9997,
+"system_id": "maltheen-divide-q-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Denon",
+"bbox": [
+2268.0,
+2520.0,
+2325.0,
+2546.0
+],
+"confidence": 0.9997,
+"system_id": "denon-n-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Monsua Neb.",
+"bbox": [
+1342.0,
+3020.0,
+1431.0,
+3044.0
+],
+"confidence": 0.9997,
+"system_id": null,
+"nebula_label": true,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Actlyon",
+"bbox": [
+1875.0,
+3365.0,
+1942.0,
+3393.0
+],
+"confidence": 0.9997,
+"system_id": "actlyon-k-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Dagobah",
+"bbox": [
+2173.0,
+3444.0,
+2248.0,
+3472.0
+],
+"confidence": 0.9997,
+"system_id": "dagobah-m-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Pinara",
+"bbox": [
+2490.0,
+3389.0,
+2548.0,
+3418.0
+],
+"confidence": 0.9997,
+"system_id": "pinara-p-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "N",
+"bbox": [
+2258.0,
+3714.0,
+2317.0,
+3778.0
+],
+"confidence": 0.9997,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Alp",
+"bbox": [
+2224.0,
+1268.0,
+2249.0,
+1295.0
+],
+"confidence": 0.9997,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Utegetu Neb.",
+"bbox": [
+1402.0,
+1777.0,
+1491.0,
+1801.0
+],
+"confidence": 0.9997,
+"system_id": null,
+"nebula_label": true,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Deppani",
+"bbox": [
+1541.0,
+3179.0,
+1607.0,
+3204.0
+],
+"confidence": 0.9997,
+"system_id": "deppani-i-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Celsor",
+"bbox": [
+2475.0,
+3178.0,
+2533.0,
+3207.0
+],
+"confidence": 0.9997,
+"system_id": "celsor-o-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "D",
+"bbox": [
+2852.0,
+3720.0,
+2892.0,
+3749.0
+],
+"confidence": 0.9997,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Kullgroon",
+"bbox": [
+2547.0,
+2402.0,
+2625.0,
+2430.0
+],
+"confidence": 0.9997,
+"system_id": "kullgroon-p-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Kooriva",
+"bbox": [
+2093.0,
+2673.0,
+2159.0,
+2699.0
+],
+"confidence": 0.9997,
+"system_id": "kooriva-m-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Parwa",
+"bbox": [
+2090.0,
+3227.0,
+2148.0,
+3255.0
+],
+"confidence": 0.9997,
+"system_id": "parwa-m-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "T",
+"bbox": [
+3130.0,
+3713.0,
+3193.0,
+3778.0
+],
+"confidence": 0.9997,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Kadavo",
+"bbox": [
+3041.0,
+1270.0,
+3111.0,
+1295.0
+],
+"confidence": 0.9997,
+"system_id": "kadavo-s-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Milagro",
+"bbox": [
+2460.0,
+2708.0,
+2527.0,
+2740.0
+],
+"confidence": 0.9997,
+"system_id": "milagro-o-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "RTK111",
+"bbox": [
+3031.0,
+2711.0,
+3085.0,
+2738.0
+],
+"confidence": 0.9997,
+"system_id": "rtk111-s-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Formos",
+"bbox": [
+3233.0,
+2084.0,
+3298.0,
+2112.0
+],
+"confidence": 0.9997,
+"system_id": "formos-t-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 7
+},
+{
+"text": "Virgillia",
+"bbox": [
+1544.0,
+3301.0,
+1607.0,
+3329.0
+],
+"confidence": 0.9997,
+"system_id": "virgillia-i-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Troiken",
+"bbox": [
+2968.0,
+1324.0,
+3033.0,
+1352.0
+],
+"confidence": 0.9997,
+"system_id": "troiken-s-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Brigi",
+"bbox": [
+3111.0,
+1552.0,
+3149.0,
+1580.0
+],
+"confidence": 0.9997,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Dowut",
+"bbox": [
+1703.0,
+2456.0,
+1779.0,
+2487.0
+],
+"confidence": 0.9997,
+"system_id": "dowut-j-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Pasaana",
+"bbox": [
+2414.0,
+2509.0,
+2487.0,
+2536.0
+],
+"confidence": 0.9997,
+"system_id": "pasaana-o-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Lafete",
+"bbox": [
+1620.0,
+3369.0,
+1676.0,
+3394.0
+],
+"confidence": 0.9997,
+"system_id": "lafete-i-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Adelphi",
+"bbox": [
+2582.0,
+3146.0,
+2650.0,
+3172.0
+],
+"confidence": 0.9997,
+"system_id": "adelphi-p-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "D",
+"bbox": [
+2561.0,
+3719.0,
+2604.0,
+3749.0
+],
+"confidence": 0.9997,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Da",
+"bbox": [
+2224.0,
+1603.0,
+2249.0,
+1630.0
+],
+"confidence": 0.9996,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Centares",
+"bbox": [
+2772.0,
+1666.0,
+2848.0,
+1693.0
+],
+"confidence": 0.9996,
+"system_id": "centares-r-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 12
+},
+{
+"text": "Florn",
+"bbox": [
+3114.0,
+1415.0,
+3162.0,
+1443.0
+],
+"confidence": 0.9996,
+"system_id": "florn-t-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 8
+},
+{
+"text": "EXPANSION",
+"bbox": [
+1420.0,
+1913.0,
+1541.0,
+1950.0
+],
+"confidence": 0.9996,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 9
+},
+{
+"text": "Tython",
+"bbox": [
+1922.0,
+2167.0,
+1983.0,
+2195.0
+],
+"confidence": 0.9996,
+"system_id": "tython-k-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Zardossa Stix",
+"bbox": [
+1663.0,
+2521.0,
+1773.0,
+2546.0
+],
+"confidence": 0.9996,
+"system_id": "zardossa-stix-j-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Vespaara",
+"bbox": [
+2917.0,
+1828.0,
+2996.0,
+1855.0
+],
+"confidence": 0.9996,
+"system_id": "vespaara-s-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 18
+},
+{
+"text": "Cyrkon",
+"bbox": [
+3142.0,
+2532.0,
+3203.0,
+2560.0
+],
+"confidence": 0.9996,
+"system_id": "cyrkon-t-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Druckenwell",
+"bbox": [
+2577.0,
+2833.0,
+2674.0,
+2857.0
+],
+"confidence": 0.9996,
+"system_id": "druckenwell-p-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Devshi",
+"bbox": [
+1675.0,
+1852.0,
+1748.0,
+1877.0
+],
+"confidence": 0.9996,
+"system_id": "devshi-j-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Ferrix",
+"bbox": [
+2728.0,
+1182.0,
+2782.0,
+1207.0
+],
+"confidence": 0.9996,
+"system_id": "ferrix-q-3",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "BOTHAN",
+"bbox": [
+2686.0,
+2642.0,
+2776.0,
+2677.0
+],
+"confidence": 0.9996,
+"system_id": "bothawui-r-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 5
+},
+{
+"text": "Lasan",
+"bbox": [
+2531.0,
+3532.0,
+2584.0,
+3554.0
+],
+"confidence": 0.9996,
+"system_id": "lasan-p-20",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Csilla",
+"bbox": [
+997.0,
+1880.0,
+1045.0,
+1907.0
+],
+"confidence": 0.9996,
+"system_id": "csilla-f-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Daiyu",
+"bbox": [
+2581.0,
+2348.0,
+2636.0,
+2374.0
+],
+"confidence": 0.9996,
+"system_id": "daiyu-p-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Kennerla",
+"bbox": [
+2168.0,
+3592.0,
+2240.0,
+3616.0
+],
+"confidence": 0.9996,
+"system_id": "kennerla-m-20",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 10
+},
+{
+"text": "Dellalt",
+"bbox": [
+3119.0,
+1586.0,
+3183.0,
+1614.0
+],
+"confidence": 0.9996,
+"system_id": "dellalt-t-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Turrak",
+"bbox": [
+2291.0,
+3359.0,
+2346.0,
+3385.0
+],
+"confidence": 0.9996,
+"system_id": "turrak-n-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Killun Sta.",
+"bbox": [
+3129.0,
+1513.0,
+3211.0,
+1541.0
+],
+"confidence": 0.9996,
+"system_id": "killun-station-t-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Vakkar",
+"bbox": [
+1730.0,
+1915.0,
+1787.0,
+1940.0
+],
+"confidence": 0.9996,
+"system_id": "vakkar-k-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Nanth'ri",
+"bbox": [
+2705.0,
+2356.0,
+2771.0,
+2381.0
+],
+"confidence": 0.9996,
+"system_id": "nanth-ri-q-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Hypori",
+"bbox": [
+2983.0,
+2986.0,
+3047.0,
+3015.0
+],
+"confidence": 0.9996,
+"system_id": "hypori-s-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Agamar",
+"bbox": [
+2070.0,
+1429.0,
+2134.0,
+1458.0
+],
+"confidence": 0.9996,
+"system_id": "agamar-m-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Arcana",
+"bbox": [
+2184.0,
+1445.0,
+2245.0,
+1471.0
+],
+"confidence": 0.9996,
+"system_id": "arcana-m-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "lego",
+"bbox": [
+3144.0,
+1690.0,
+3185.0,
+1716.0
+],
+"confidence": 0.9996,
+"system_id": "iego-t-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Rodia",
+"bbox": [
+2785.0,
+3004.0,
+2835.0,
+3030.0
+],
+"confidence": 0.9996,
+"system_id": "rodia-r-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Arkanis",
+"bbox": [
+2819.0,
+3089.0,
+2885.0,
+3113.0
+],
+"confidence": 0.9996,
+"system_id": "arkanis-r-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Ord Trasi",
+"bbox": [
+1955.0,
+1307.0,
+2025.0,
+1332.0
+],
+"confidence": 0.9996,
+"system_id": "ord-trasi-l-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Listehol",
+"bbox": [
+2651.0,
+1172.0,
+2715.0,
+1197.0
+],
+"confidence": 0.9996,
+"system_id": "listehol-q-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Drez",
+"bbox": [
+2593.0,
+1233.0,
+2637.0,
+1260.0
+],
+"confidence": 0.9996,
+"system_id": "drez-p-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Raithal",
+"bbox": [
+2146.0,
+1928.0,
+2207.0,
+1953.0
+],
+"confidence": 0.9996,
+"system_id": "raithal-m-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 5
+},
+{
+"text": "Vodran",
+"bbox": [
+3062.0,
+1911.0,
+3122.0,
+1939.0
+],
+"confidence": 0.9996,
+"system_id": "vodran-s-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Dressel",
+"bbox": [
+2702.0,
+2605.0,
+2769.0,
+2631.0
+],
+"confidence": 0.9996,
+"system_id": "dressel-q-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Duro",
+"bbox": [
+2103.0,
+2334.0,
+2147.0,
+2361.0
+],
+"confidence": 0.9996,
+"system_id": "duro-m-11",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Dass",
+"bbox": [
+1310.0,
+1639.0,
+1349.0,
+1669.0
+],
+"confidence": 0.9996,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Frezno",
+"bbox": [
+2046.0,
+1485.0,
+2106.0,
+1509.0
+],
+"confidence": 0.9996,
+"system_id": "frezno-m-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Shili",
+"bbox": [
+2040.0,
+1775.0,
+2080.0,
+1802.0
+],
+"confidence": 0.9996,
+"system_id": "shili-l-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Merson",
+"bbox": [
+2394.0,
+2103.0,
+2473.0,
+2130.0
+],
+"confidence": 0.9996,
+"system_id": "merson-o-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Inusagi",
+"bbox": [
+2356.0,
+3003.0,
+2420.0,
+3028.0
+],
+"confidence": 0.9996,
+"system_id": "inusagi-o-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Mynos",
+"bbox": [
+2789.0,
+3186.0,
+2852.0,
+3219.0
+],
+"confidence": 0.9996,
+"system_id": "mynos-r-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Bogano",
+"bbox": [
+2278.0,
+1161.0,
+2343.0,
+1190.0
+],
+"confidence": 0.9996,
+"system_id": "bogano-n-3",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "F",
+"bbox": [
+1089.0,
+3711.0,
+1152.0,
+3780.0
+],
+"confidence": 0.9996,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Plazir",
+"bbox": [
+2257.0,
+989.0,
+2321.0,
+1017.0
+],
+"confidence": 0.9995,
+"system_id": "plazir-n-2",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Velmor",
+"bbox": [
+2543.0,
+1748.0,
+2616.0,
+1773.0
+],
+"confidence": 0.9995,
+"system_id": "velmor-p-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Valo",
+"bbox": [
+2326.0,
+3460.0,
+2367.0,
+3486.0
+],
+"confidence": 0.9995,
+"system_id": "valo-n-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 4
+},
+{
+"text": "Numidian Pr.",
+"bbox": [
+1955.0,
+1669.0,
+2067.0,
+1696.0
+],
+"confidence": 0.9995,
+"system_id": "numidian-prime-l-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Elom",
+"bbox": [
+2796.0,
+1436.0,
+2856.0,
+1465.0
+],
+"confidence": 0.9995,
+"system_id": "elom-r-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "ine",
+"bbox": [
+2950.0,
+1848.0,
+2979.0,
+1871.0
+],
+"confidence": 0.9995,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 5
+},
+{
+"text": "Saleucami",
+"bbox": [
+2905.0,
+1807.0,
+2985.0,
+1834.0
+],
+"confidence": 0.9995,
+"system_id": "saleucami-s-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Desevro",
+"bbox": [
+2977.0,
+1467.0,
+3049.0,
+1497.0
+],
+"confidence": 0.9995,
+"system_id": "desevro-s-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Constancia",
+"bbox": [
+1840.0,
+2385.0,
+1926.0,
+2406.0
+],
+"confidence": 0.9995,
+"system_id": "constancia-k-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Pacara",
+"bbox": [
+1608.0,
+2893.0,
+1681.0,
+2917.0
+],
+"confidence": 0.9995,
+"system_id": "pacara-j-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Vixoseph",
+"bbox": [
+2042.0,
+3468.0,
+2128.0,
+3492.0
+],
+"confidence": 0.9995,
+"system_id": "vixoseph-m-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Q",
+"bbox": [
+2697.0,
+3711.0,
+2757.0,
+3780.0
+],
+"confidence": 0.9995,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Ga",
+"bbox": [
+2228.0,
+1412.0,
+2249.0,
+1438.0
+],
+"confidence": 0.9995,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Mon Cala",
+"bbox": [
+3169.0,
+1571.0,
+3244.0,
+1596.0
+],
+"confidence": 0.9995,
+"system_id": "mon-cala-u-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Giju",
+"bbox": [
+1889.0,
+2585.0,
+1925.0,
+2613.0
+],
+"confidence": 0.9995,
+"system_id": "giju-l-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Ylagia",
+"bbox": [
+1999.0,
+2917.0,
+2053.0,
+2943.0
+],
+"confidence": 0.9995,
+"system_id": "ylagia-l-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Askaj",
+"bbox": [
+2050.0,
+3602.0,
+2099.0,
+3629.0
+],
+"confidence": 0.9995,
+"system_id": "askaj-m-20",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Uba",
+"bbox": [
+1727.0,
+1564.0,
+1774.0,
+1589.0
+],
+"confidence": 0.9995,
+"system_id": "uba-j-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Kenari",
+"bbox": [
+2689.0,
+1652.0,
+2753.0,
+1676.0
+],
+"confidence": 0.9995,
+"system_id": "kenari-q-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Anaxes",
+"bbox": [
+2796.0,
+1653.0,
+2857.0,
+1674.0
+],
+"confidence": 0.9995,
+"system_id": "anaxes-r-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "3",
+"bbox": [
+3478.0,
+1105.0,
+3511.0,
+1142.0
+],
+"confidence": 0.9995,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Cal-Seti",
+"bbox": [
+1747.0,
+2099.0,
+1826.0,
+2123.0
+],
+"confidence": 0.9995,
+"system_id": "cal-seti-k-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Zeltros",
+"bbox": [
+2452.0,
+2154.0,
+2514.0,
+2180.0
+],
+"confidence": 0.9995,
+"system_id": "zeltros-o-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Pam'ba",
+"bbox": [
+1464.0,
+2868.0,
+1531.0,
+2896.0
+],
+"confidence": 0.9995,
+"system_id": "pam-ba-h-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Lotho Min.",
+"bbox": [
+1550.0,
+3235.0,
+1632.0,
+3263.0
+],
+"confidence": 0.9995,
+"system_id": "lotho-minor-i-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Utapau",
+"bbox": [
+2235.0,
+3497.0,
+2296.0,
+3523.0
+],
+"confidence": 0.9995,
+"system_id": "utapau-n-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Phindar",
+"bbox": [
+2467.0,
+1606.0,
+2537.0,
+1634.0
+],
+"confidence": 0.9995,
+"system_id": "phindar-p-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Nakadia",
+"bbox": [
+2101.0,
+2872.0,
+2174.0,
+2900.0
+],
+"confidence": 0.9995,
+"system_id": "nakadia-m-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Kaller",
+"bbox": [
+1890.0,
+1412.0,
+1947.0,
+1438.0
+],
+"confidence": 0.9995,
+"system_id": "kaller-k-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Quell",
+"bbox": [
+2729.0,
+1557.0,
+2775.0,
+1584.0
+],
+"confidence": 0.9995,
+"system_id": "quell-q-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Banchii",
+"bbox": [
+1848.0,
+3424.0,
+1910.0,
+3450.0
+],
+"confidence": 0.9995,
+"system_id": "banchii-k-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "ne",
+"bbox": [
+2050.0,
+2650.0,
+2070.0,
+2670.0
+],
+"confidence": 0.9995,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "in",
+"bbox": [
+2050.0,
+3212.0,
+2071.0,
+3234.0
+],
+"confidence": 0.9995,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Phothr",
+"bbox": [
+2188.0,
+1810.0,
+2249.0,
+1836.0
+],
+"confidence": 0.9995,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Felne",
+"bbox": [
+2276.0,
+3219.0,
+2329.0,
+3245.0
+],
+"confidence": 0.9995,
+"system_id": "felne-n-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Nora",
+"bbox": [
+1653.0,
+1647.0,
+1709.0,
+1676.0
+],
+"confidence": 0.9995,
+"system_id": "nora-j-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Koke Frost",
+"bbox": [
+1396.0,
+1684.0,
+1482.0,
+1708.0
+],
+"confidence": 0.9994,
+"system_id": "koke-frost-h-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Helikoprion",
+"bbox": [
+2993.0,
+1400.0,
+3083.0,
+1424.0
+],
+"confidence": 0.9994,
+"system_id": "helikoprion-s-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Soika",
+"bbox": [
+2136.0,
+1776.0,
+2192.0,
+1802.0
+],
+"confidence": 0.9994,
+"system_id": "soika-m-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Roon",
+"bbox": [
+2959.0,
+2910.0,
+3007.0,
+2936.0
+],
+"confidence": 0.9994,
+"system_id": "roon-s-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Sarrassia",
+"bbox": [
+2149.0,
+3152.0,
+2228.0,
+3177.0
+],
+"confidence": 0.9994,
+"system_id": "sarrassia-n-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Yaga Min.",
+"bbox": [
+1703.0,
+1352.0,
+1779.0,
+1381.0
+],
+"confidence": 0.9994,
+"system_id": "yaga-minor-k-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Zeffo",
+"bbox": [
+2122.0,
+1137.0,
+2184.0,
+1165.0
+],
+"confidence": 0.9994,
+"system_id": "zeffo-m-3",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Ahch-To",
+"bbox": [
+1078.0,
+2534.0,
+1146.0,
+2559.0
+],
+"confidence": 0.9994,
+"system_id": "ahch-to-f-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Dantooine",
+"bbox": [
+1936.0,
+1228.0,
+2019.0,
+1256.0
+],
+"confidence": 0.9994,
+"system_id": "dantooine-l-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Ruuria",
+"bbox": [
+2742.0,
+1144.0,
+2801.0,
+1173.0
+],
+"confidence": 0.9994,
+"system_id": "ruuria-q-3",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Raxus",
+"bbox": [
+3057.0,
+1456.0,
+3113.0,
+1481.0
+],
+"confidence": 0.9994,
+"system_id": "raxus-prime-s-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Abregado",
+"bbox": [
+1838.0,
+2515.0,
+1933.0,
+2543.0
+],
+"confidence": 0.9994,
+"system_id": "abregado-k-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 9
+},
+{
+"text": "Rhinnal",
+"bbox": [
+2029.0,
+1997.0,
+2091.0,
+2022.0
+],
+"confidence": 0.9994,
+"system_id": "rhinnal-l-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "3",
+"bbox": [
+716.0,
+1105.0,
+746.0,
+1141.0
+],
+"confidence": 0.9994,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Lantillies",
+"bbox": [
+2572.0,
+1878.0,
+2648.0,
+1904.0
+],
+"confidence": 0.9994,
+"system_id": "lantillies-p-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Codia",
+"bbox": [
+1413.0,
+2806.0,
+1479.0,
+2837.0
+],
+"confidence": 0.9994,
+"system_id": "codia-h-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Kashyyyk",
+"bbox": [
+2579.0,
+2019.0,
+2659.0,
+2047.0
+],
+"confidence": 0.9994,
+"system_id": "kashyyyk-p-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Koboh",
+"bbox": [
+1424.0,
+3412.0,
+1481.0,
+3439.0
+],
+"confidence": 0.9994,
+"system_id": "koboh-h-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Garqi",
+"bbox": [
+1839.0,
+1420.0,
+1885.0,
+1447.0
+],
+"confidence": 0.9994,
+"system_id": "garqi-k-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Stennaros",
+"bbox": [
+1796.0,
+2954.0,
+1879.0,
+2981.0
+],
+"confidence": 0.9994,
+"system_id": "stennaros-k-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Sevarcos",
+"bbox": [
+2265.0,
+3394.0,
+2343.0,
+3422.0
+],
+"confidence": 0.9994,
+"system_id": "sevarcos-n-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Kazlin",
+"bbox": [
+2951.0,
+1774.0,
+3007.0,
+1799.0
+],
+"confidence": 0.9994,
+"system_id": "kazlin-s-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 7
+},
+{
+"text": "The Inamorata",
+"bbox": [
+3309.0,
+2158.0,
+3413.0,
+2186.0
+],
+"confidence": 0.9994,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "1 square equals 5000 light-years",
+"bbox": [
+750.0,
+3880.0,
+1180.0,
+3931.0
+],
+"confidence": 0.9994,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Thelj",
+"bbox": [
+2050.0,
+3513.0,
+2092.0,
+3540.0
+],
+"confidence": 0.9993,
+"system_id": "thelj-m-20",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Tahlboor",
+"bbox": [
+2877.0,
+1442.0,
+2946.0,
+1471.0
+],
+"confidence": 0.9993,
+"system_id": "tahlboor-r-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Metagos",
+"bbox": [
+3065.0,
+1833.0,
+3136.0,
+1858.0
+],
+"confidence": 0.9993,
+"system_id": "metagos-t-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 4
+},
+{
+"text": "Sneeve",
+"bbox": [
+2744.0,
+2062.0,
+2810.0,
+2087.0
+],
+"confidence": 0.9993,
+"system_id": "sneeve-q-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Cermau",
+"bbox": [
+1316.0,
+3068.0,
+1389.0,
+3095.0
+],
+"confidence": 0.9993,
+"system_id": "cermau-h-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Ki",
+"bbox": [
+3130.0,
+1514.0,
+3149.0,
+1540.0
+],
+"confidence": 0.9993,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Mykapo",
+"bbox": [
+3083.0,
+1622.0,
+3149.0,
+1648.0
+],
+"confidence": 0.9993,
+"system_id": "mykapo-t-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Dizon Fray",
+"bbox": [
+3340.0,
+1710.0,
+3427.0,
+1742.0
+],
+"confidence": 0.9993,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "N'Zoth",
+"bbox": [
+1726.0,
+2139.0,
+1793.0,
+2164.0
+],
+"confidence": 0.9993,
+"system_id": "n-zoth-k-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Ubduria",
+"bbox": [
+2329.0,
+1776.0,
+2395.0,
+1802.0
+],
+"confidence": 0.9993,
+"system_id": "ubduria-n-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Molavar",
+"bbox": [
+2992.0,
+2865.0,
+3069.0,
+2891.0
+],
+"confidence": 0.9993,
+"system_id": "molavar-s-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "ash",
+"bbox": [
+2050.0,
+1371.0,
+2076.0,
+1395.0
+],
+"confidence": 0.9993,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Cyrillia",
+"bbox": [
+2397.0,
+2480.0,
+2458.0,
+2509.0
+],
+"confidence": 0.9993,
+"system_id": "cyrillia-o-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Namadii",
+"bbox": [
+1552.0,
+1587.0,
+1626.0,
+1615.0
+],
+"confidence": 0.9993,
+"system_id": "namadii-i-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Xagobah",
+"bbox": [
+2205.0,
+3333.0,
+2280.0,
+3365.0
+],
+"confidence": 0.9993,
+"system_id": "xagobah-m-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Lah'mu",
+"bbox": [
+1945.0,
+1169.0,
+2009.0,
+1197.0
+],
+"confidence": 0.9993,
+"system_id": "lah-mu-l-3",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Great Forveen Neb.",
+"bbox": [
+1509.0,
+1561.0,
+1637.0,
+1585.0
+],
+"confidence": 0.9993,
+"system_id": null,
+"nebula_label": true,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Raydonia",
+"bbox": [
+2477.0,
+1573.0,
+2556.0,
+1601.0
+],
+"confidence": 0.9993,
+"system_id": "raydonia-o-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Vrogas Vas",
+"bbox": [
+2458.0,
+3470.0,
+2548.0,
+3497.0
+],
+"confidence": 0.9993,
+"system_id": "vrogas-vas-o-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Wrosdi",
+"bbox": [
+2190.0,
+967.0,
+2249.0,
+996.0
+],
+"confidence": 0.9992,
+"system_id": "wrosdi-n-2",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "COR",
+"bbox": [
+3095.0,
+1149.0,
+3149.0,
+1189.0
+],
+"confidence": 0.9992,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Atollon",
+"bbox": [
+3163.0,
+1645.0,
+3225.0,
+1673.0
+],
+"confidence": 0.9992,
+"system_id": "atollon-t-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Derosha",
+"bbox": [
+1609.0,
+1432.0,
+1681.0,
+1463.0
+],
+"confidence": 0.9992,
+"system_id": "derosha-j-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 9
+},
+{
+"text": "Trian",
+"bbox": [
+2920.0,
+1125.0,
+2968.0,
+1153.0
+],
+"confidence": 0.9992,
+"system_id": "trian-r-3",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Rendili",
+"bbox": [
+2101.0,
+2260.0,
+2176.0,
+2285.0
+],
+"confidence": 0.9992,
+"system_id": "rendili-m-11",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Chanceuxi",
+"bbox": [
+2170.0,
+1221.0,
+2260.0,
+1251.0
+],
+"confidence": 0.9992,
+"system_id": "chanceuxi-n-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Onderon",
+"bbox": [
+2396.0,
+2029.0,
+2474.0,
+2054.0
+],
+"confidence": 0.9992,
+"system_id": "onderon-o-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "rnpidal",
+"bbox": [
+2050.0,
+1036.0,
+2107.0,
+1064.0
+],
+"confidence": 0.9992,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Crucival",
+"bbox": [
+3078.0,
+1476.0,
+3147.0,
+1501.0
+],
+"confidence": 0.9992,
+"system_id": "crucival-s-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Hodi",
+"bbox": [
+2058.0,
+2180.0,
+2101.0,
+2206.0
+],
+"confidence": 0.9992,
+"system_id": "hodi-m-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Cholganna",
+"bbox": [
+3110.0,
+1353.0,
+3213.0,
+1384.0
+],
+"confidence": 0.9992,
+"system_id": "cholganna-t-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Bomis Koori",
+"bbox": [
+1843.0,
+3054.0,
+1936.0,
+3079.0
+],
+"confidence": 0.9992,
+"system_id": "bomis-koori-k-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Palagosal",
+"bbox": [
+2732.0,
+3128.0,
+2826.0,
+3156.0
+],
+"confidence": 0.9992,
+"system_id": "palagosal-r-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Kaldar Tr.",
+"bbox": [
+2051.0,
+1188.0,
+2126.0,
+1213.0
+],
+"confidence": 0.9992,
+"system_id": "kaldar-trinary-m-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Aleen",
+"bbox": [
+1953.0,
+1642.0,
+2003.0,
+1668.0
+],
+"confidence": 0.9992,
+"system_id": "aleen-l-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Lianna",
+"bbox": [
+2959.0,
+1503.0,
+3018.0,
+1531.0
+],
+"confidence": 0.9992,
+"system_id": "lianna-s-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "on",
+"bbox": [
+2050.0,
+2107.0,
+2073.0,
+2129.0
+],
+"confidence": 0.9992,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 3
+},
+{
+"text": "Octero",
+"bbox": [
+2539.0,
+3303.0,
+2600.0,
+3328.0
+],
+"confidence": 0.9992,
+"system_id": "octero-p-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "J",
+"bbox": [
+1688.0,
+3719.0,
+1725.0,
+3773.0
+],
+"confidence": 0.9992,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Orinda",
+"bbox": [
+1904.0,
+1550.0,
+1960.0,
+1576.0
+],
+"confidence": 0.9991,
+"system_id": "orinda-k-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Ssori",
+"bbox": [
+2989.0,
+2602.0,
+3035.0,
+2629.0
+],
+"confidence": 0.9991,
+"system_id": "ssori-s-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Paradise",
+"bbox": [
+2041.0,
+3572.0,
+2115.0,
+3597.0
+],
+"confidence": 0.9991,
+"system_id": "paradise-m-20",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "OUTER RIM",
+"bbox": [
+1939.0,
+954.0,
+2059.0,
+993.0
+],
+"confidence": 0.9991,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Ruusan",
+"bbox": [
+2576.0,
+2200.0,
+2659.0,
+2231.0
+],
+"confidence": 0.9991,
+"system_id": "ruusan-p-11",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Sluis Van",
+"bbox": [
+2163.0,
+3387.0,
+2237.0,
+3411.0
+],
+"confidence": 0.9991,
+"system_id": "sluis-van-m-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Tah'Nuhna",
+"bbox": [
+2598.0,
+2749.0,
+2686.0,
+2773.0
+],
+"confidence": 0.9991,
+"system_id": "tah-nuhna-q-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Ord Mantell",
+"bbox": [
+1832.0,
+1678.0,
+1921.0,
+1705.0
+],
+"confidence": 0.9991,
+"system_id": "ord-mantell-l-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Idaflor",
+"bbox": [
+2419.0,
+3265.0,
+2481.0,
+3293.0
+],
+"confidence": 0.9991,
+"system_id": "idaflor-o-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Ingae",
+"bbox": [
+2219.0,
+3646.0,
+2271.0,
+3672.0
+],
+"confidence": 0.9991,
+"system_id": "ingae-n-20",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "n",
+"bbox": [
+2950.0,
+1131.0,
+2966.0,
+1150.0
+],
+"confidence": 0.9991,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Sriluur",
+"bbox": [
+3061.0,
+1884.0,
+3123.0,
+1913.0
+],
+"confidence": 0.9991,
+"system_id": "sriluur-s-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 6
+},
+{
+"text": "Pax",
+"bbox": [
+2203.0,
+2955.0,
+2246.0,
+2985.0
+],
+"confidence": 0.9991,
+"system_id": "pax-n-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Christophsis",
+"bbox": [
+2669.0,
+3050.0,
+2767.0,
+3075.0
+],
+"confidence": 0.9991,
+"system_id": "christophsis-q-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 6
+},
+{
+"text": "Gravlex Med",
+"bbox": [
+2031.0,
+1239.0,
+2127.0,
+1264.0
+],
+"confidence": 0.999,
+"system_id": "gravlex-med-l-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "INNER RIM",
+"bbox": [
+1468.0,
+2018.0,
+1583.0,
+2053.0
+],
+"confidence": 0.999,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Aargau",
+"bbox": [
+1976.0,
+2080.0,
+2055.0,
+2111.0
+],
+"confidence": 0.999,
+"system_id": "aargau-l-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Tatooine",
+"bbox": [
+2859.0,
+3024.0,
+2928.0,
+3049.0
+],
+"confidence": 0.999,
+"system_id": "tatooine-r-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Imynusoph",
+"bbox": [
+1676.0,
+3696.0,
+1765.0,
+3723.0
+],
+"confidence": 0.999,
+"system_id": "imynusoph-j-21",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Urdur",
+"bbox": [
+2988.0,
+1210.0,
+3057.0,
+1238.0
+],
+"confidence": 0.999,
+"system_id": "urdur-s-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "L",
+"bbox": [
+1976.0,
+3716.0,
+2020.0,
+3777.0
+],
+"confidence": 0.999,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Tepasi",
+"bbox": [
+2050.0,
+2030.0,
+2117.0,
+2055.0
+],
+"confidence": 0.999,
+"system_id": "tepasi-l-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Angcord",
+"bbox": [
+1743.0,
+2423.0,
+1829.0,
+2451.0
+],
+"confidence": 0.999,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Dinwa Pr.",
+"bbox": [
+1891.0,
+1847.0,
+1979.0,
+1871.0
+],
+"confidence": 0.999,
+"system_id": "dinwa-prime-l-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "ixoseph",
+"bbox": [
+2050.0,
+3468.0,
+2123.0,
+3492.0
+],
+"confidence": 0.999,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Kal'Shebbol",
+"bbox": [
+2171.0,
+3696.0,
+2265.0,
+3721.0
+],
+"confidence": 0.999,
+"system_id": "kal-shebbol-m-21",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "M.Mandel",
+"bbox": [
+2819.0,
+2650.0,
+2919.0,
+2671.0
+],
+"confidence": 0.999,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Haruun Kal",
+"bbox": [
+2172.0,
+3099.0,
+2272.0,
+3123.0
+],
+"confidence": 0.999,
+"system_id": "haruun-kal-m-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Daxam",
+"bbox": [
+2267.0,
+3271.0,
+2327.0,
+3296.0
+],
+"confidence": 0.9989,
+"system_id": "daxam-n-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Solarine",
+"bbox": [
+2906.0,
+1847.0,
+2980.0,
+1871.0
+],
+"confidence": 0.9989,
+"system_id": "solarine-s-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 8
+},
+{
+"text": "Socorro",
+"bbox": [
+2605.0,
+3170.0,
+2672.0,
+3195.0
+],
+"confidence": 0.9989,
+"system_id": "socorro-q-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Rakata Pr.",
+"bbox": [
+1166.0,
+2321.0,
+1248.0,
+2345.0
+],
+"confidence": 0.9989,
+"system_id": "rakata-prime-g-11",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "New Cov",
+"bbox": [
+2524.0,
+2778.0,
+2595.0,
+2804.0
+],
+"confidence": 0.9989,
+"system_id": "new-cov-p-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Kal'Shebb",
+"bbox": [
+2171.0,
+3697.0,
+2249.0,
+3720.0
+],
+"confidence": 0.9989,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Rimma Trade Route",
+"bbox": [
+889.0,
+1152.0,
+1081.0,
+1189.0
+],
+"confidence": 0.9989,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "a",
+"bbox": [
+2950.0,
+1208.0,
+2966.0,
+1228.0
+],
+"confidence": 0.9989,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "9",
+"bbox": [
+716.0,
+1978.0,
+744.0,
+2015.0
+],
+"confidence": 0.9989,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Yag'Dhul",
+"bbox": [
+1972.0,
+2764.0,
+2047.0,
+2792.0
+],
+"confidence": 0.9989,
+"system_id": "yag-dhul-l-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "tus",
+"bbox": [
+2950.0,
+1069.0,
+2985.0,
+1093.0
+],
+"confidence": 0.9989,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "snian Pr.",
+"bbox": [
+2050.0,
+2453.0,
+2117.0,
+2477.0
+],
+"confidence": 0.9989,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Lira San",
+"bbox": [
+2426.0,
+3608.0,
+2504.0,
+3634.0
+],
+"confidence": 0.9988,
+"system_id": "lira-san-o-20",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Obroa-skai",
+"bbox": [
+2264.0,
+1799.0,
+2360.0,
+1824.0
+],
+"confidence": 0.9988,
+"system_id": "obroa-skai-n-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Kitel Phard",
+"bbox": [
+1644.0,
+2483.0,
+1733.0,
+2507.0
+],
+"confidence": 0.9988,
+"system_id": "kitel-phard-j-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Vint",
+"bbox": [
+3117.0,
+3010.0,
+3161.0,
+3042.0
+],
+"confidence": 0.9988,
+"system_id": "vint-t-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Guat'a",
+"bbox": [
+2577.0,
+3385.0,
+2633.0,
+3410.0
+],
+"confidence": 0.9988,
+"system_id": "guat-a-p-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Kijimi",
+"bbox": [
+2790.0,
+1812.0,
+2839.0,
+1839.0
+],
+"confidence": 0.9988,
+"system_id": "kijimi-r-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Fedovoi End",
+"bbox": [
+2152.0,
+2718.0,
+2248.0,
+2745.0
+],
+"confidence": 0.9988,
+"system_id": "fedovoi-end-m-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Kwenn",
+"bbox": [
+2873.0,
+2165.0,
+2933.0,
+2194.0
+],
+"confidence": 0.9988,
+"system_id": "kwenn-r-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Ringo Vinda",
+"bbox": [
+2705.0,
+1732.0,
+2800.0,
+1759.0
+],
+"confidence": 0.9988,
+"system_id": "ringo-vinda-r-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 12
+},
+{
+"text": "Neir",
+"bbox": [
+2214.0,
+2143.0,
+2249.0,
+2171.0
+],
+"confidence": 0.9988,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Xala",
+"bbox": [
+1315.0,
+2770.0,
+1356.0,
+2797.0
+],
+"confidence": 0.9988,
+"system_id": "xala-h-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Mulita",
+"bbox": [
+1366.0,
+3434.0,
+1439.0,
+3462.0
+],
+"confidence": 0.9988,
+"system_id": "mulita-h-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Queluhan Neb.",
+"bbox": [
+1359.0,
+2473.0,
+1485.0,
+2497.0
+],
+"confidence": 0.9987,
+"system_id": null,
+"nebula_label": true,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Mooga",
+"bbox": [
+2689.0,
+1669.0,
+2750.0,
+1701.0
+],
+"confidence": 0.9987,
+"system_id": "mooga-q-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 8
+},
+{
+"text": "Byss",
+"bbox": [
+1845.0,
+2315.0,
+1909.0,
+2348.0
+],
+"confidence": 0.9987,
+"system_id": "byss-k-11",
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Hetzal",
+"bbox": [
+2710.0,
+3033.0,
+2765.0,
+3055.0
+],
+"confidence": 0.9987,
+"system_id": "hetzal-q-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Skako",
+"bbox": [
+1973.0,
+2032.0,
+2047.0,
+2060.0
+],
+"confidence": 0.9987,
+"system_id": "skako-l-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "H",
+"bbox": [
+1384.0,
+3713.0,
+1450.0,
+3779.0
+],
+"confidence": 0.9987,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Lowick",
+"bbox": [
+3258.0,
+2024.0,
+3329.0,
+2052.0
+],
+"confidence": 0.9987,
+"system_id": "lowick-u-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Zhada",
+"bbox": [
+2205.0,
+1306.0,
+2249.0,
+1332.0
+],
+"confidence": 0.9987,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Mygeeto",
+"bbox": [
+1857.0,
+1343.0,
+1931.0,
+1373.0
+],
+"confidence": 0.9986,
+"system_id": "mygeeto-k-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Lipsec",
+"bbox": [
+1461.0,
+3313.0,
+1520.0,
+3343.0
+],
+"confidence": 0.9986,
+"system_id": "lipsec-i-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Huk",
+"bbox": [
+1621.0,
+1248.0,
+1671.0,
+1275.0
+],
+"confidence": 0.9986,
+"system_id": "huk-j-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Tund",
+"bbox": [
+3317.0,
+1844.0,
+3371.0,
+1870.0
+],
+"confidence": 0.9986,
+"system_id": "tund-u-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Pijal",
+"bbox": [
+1897.0,
+1820.0,
+1954.0,
+1845.0
+],
+"confidence": 0.9985,
+"system_id": "pijal-l-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Foless",
+"bbox": [
+2018.0,
+2625.0,
+2075.0,
+2650.0
+],
+"confidence": 0.9985,
+"system_id": "foless-m-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Olkrastrus",
+"bbox": [
+2683.0,
+1927.0,
+2774.0,
+1954.0
+],
+"confidence": 0.9985,
+"system_id": "olkrastrus-q-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Mokivj",
+"bbox": [
+1264.0,
+2974.0,
+1327.0,
+3002.0
+],
+"confidence": 0.9985,
+"system_id": "mokivj-g-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "CORPORATE",
+"bbox": [
+3096.0,
+1149.0,
+3228.0,
+1187.0
+],
+"confidence": 0.9985,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 8
+},
+{
+"text": "Po'yin",
+"bbox": [
+3042.0,
+1669.0,
+3097.0,
+1698.0
+],
+"confidence": 0.9985,
+"system_id": "po-yin-s-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Del Zennis",
+"bbox": [
+2727.0,
+1711.0,
+2813.0,
+1739.0
+],
+"confidence": 0.9985,
+"system_id": "del-zennis-r-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 4
+},
+{
+"text": "Pkori",
+"bbox": [
+1583.0,
+1371.0,
+1633.0,
+1397.0
+],
+"confidence": 0.9985,
+"system_id": "pkori-j-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Sembla",
+"bbox": [
+2903.0,
+1418.0,
+2981.0,
+1447.0
+],
+"confidence": 0.9985,
+"system_id": "sembla-s-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 6
+},
+{
+"text": "Aq Vetina",
+"bbox": [
+2089.0,
+1312.0,
+2167.0,
+1337.0
+],
+"confidence": 0.9984,
+"system_id": "aq-vetina-m-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "ous Designs: Jason Fry, Daniel Wallace,",
+"bbox": [
+2950.0,
+3879.0,
+3219.0,
+3905.0
+],
+"confidence": 0.9984,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Havoc Outpost",
+"bbox": [
+2958.0,
+3454.0,
+3073.0,
+3478.0
+],
+"confidence": 0.9984,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Epo",
+"bbox": [
+2248.0,
+1345.0,
+2285.0,
+1373.0
+],
+"confidence": 0.9982,
+"system_id": "epo-n-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Eyo-Dajuritz",
+"bbox": [
+2325.0,
+2137.0,
+2424.0,
+2165.0
+],
+"confidence": 0.9982,
+"system_id": "eyo-dajuritz-n-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "D'Assem",
+"bbox": [
+2104.0,
+1722.0,
+2180.0,
+1750.0
+],
+"confidence": 0.9982,
+"system_id": "d-assem-m-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 8
+},
+{
+"text": "H'nemthe",
+"bbox": [
+2098.0,
+3367.0,
+2177.0,
+3391.0
+],
+"confidence": 0.9981,
+"system_id": "h-nemthe-m-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Nexus Ortai",
+"bbox": [
+2626.0,
+2714.0,
+2717.0,
+2738.0
+],
+"confidence": 0.9981,
+"system_id": "nexus-ortai-q-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Vandelhelm",
+"bbox": [
+2105.0,
+2908.0,
+2200.0,
+2934.0
+],
+"confidence": 0.998,
+"system_id": "vandelhelm-m-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "StarCave Neb.",
+"bbox": [
+3282.0,
+1871.0,
+3380.0,
+1895.0
+],
+"confidence": 0.998,
+"system_id": null,
+"nebula_label": true,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Kur Neb.",
+"bbox": [
+2088.0,
+3557.0,
+2149.0,
+3581.0
+],
+"confidence": 0.998,
+"system_id": null,
+"nebula_label": true,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Modi, James Luceno, Haden Blackman, Vince Le",
+"bbox": [
+2819.0,
+3903.0,
+3149.0,
+3930.0
+],
+"confidence": 0.998,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Hynestia",
+"bbox": [
+1778.0,
+2610.0,
+1856.0,
+2642.0
+],
+"confidence": 0.998,
+"system_id": "hynestia-j-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Honoghr Eadu",
+"bbox": [
+3125.0,
+2104.0,
+3243.0,
+2142.0
+],
+"confidence": 0.998,
+"system_id": "honoghr-t-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Cosia",
+"bbox": [
+2025.0,
+2234.0,
+2085.0,
+2260.0
+],
+"confidence": 0.998,
+"system_id": "cosia-m-11",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Dragon Void",
+"bbox": [
+1777.0,
+2660.0,
+1893.0,
+2691.0
+],
+"confidence": 0.998,
+"system_id": "dragon-void-k-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Golatha Neb.",
+"bbox": [
+1804.0,
+3448.0,
+1916.0,
+3471.0
+],
+"confidence": 0.9979,
+"system_id": null,
+"nebula_label": true,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Bar'leth",
+"bbox": [
+2028.0,
+2155.0,
+2112.0,
+2183.0
+],
+"confidence": 0.9979,
+"system_id": "bar-leth-m-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "na",
+"bbox": [
+2050.0,
+2857.0,
+2069.0,
+2878.0
+],
+"confidence": 0.9979,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Crait",
+"bbox": [
+2301.0,
+3143.0,
+2343.0,
+3167.0
+],
+"confidence": 0.9978,
+"system_id": "crait-n-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Ord Radama",
+"bbox": [
+2665.0,
+1338.0,
+2761.0,
+1365.0
+],
+"confidence": 0.9978,
+"system_id": "ord-radama-q-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Polis Massa",
+"bbox": [
+1888.0,
+3612.0,
+1985.0,
+3642.0
+],
+"confidence": 0.9978,
+"system_id": "polis-massa-k-20",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Designer: Christopher Ibbitt",
+"bbox": [
+2821.0,
+3930.0,
+3016.0,
+3954.0
+],
+"confidence": 0.9978,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Flor",
+"bbox": [
+3113.0,
+1414.0,
+3149.0,
+1443.0
+],
+"confidence": 0.9977,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 7
+},
+{
+"text": "Ubrikkia",
+"bbox": [
+2723.0,
+2153.0,
+2791.0,
+2179.0
+],
+"confidence": 0.9977,
+"system_id": "ubrikkia-q-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Black Stall Sta.",
+"bbox": [
+1971.0,
+3346.0,
+2084.0,
+3370.0
+],
+"confidence": 0.9977,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "H",
+"bbox": [
+2231.0,
+2100.0,
+2249.0,
+2123.0
+],
+"confidence": 0.9976,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Sleheyron",
+"bbox": [
+2963.0,
+2076.0,
+3047.0,
+2107.0
+],
+"confidence": 0.9976,
+"system_id": "sleheyron-s-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Da-Vlunn",
+"bbox": [
+2863.0,
+2211.0,
+2955.0,
+2235.0
+],
+"confidence": 0.9976,
+"system_id": "da-vlunn-r-11",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Haruun",
+"bbox": [
+2172.0,
+3099.0,
+2249.0,
+3123.0
+],
+"confidence": 0.9976,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Epikonia",
+"bbox": [
+2220.0,
+1665.0,
+2288.0,
+1690.0
+],
+"confidence": 0.9976,
+"system_id": "epikonia-n-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Llanic",
+"bbox": [
+2640.0,
+3071.0,
+2695.0,
+3096.0
+],
+"confidence": 0.9975,
+"system_id": "llanic-q-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Scipio",
+"bbox": [
+1824.0,
+1364.0,
+1877.0,
+1390.0
+],
+"confidence": 0.9975,
+"system_id": "scipio-k-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 5
+},
+{
+"text": "Ro Mira",
+"bbox": [
+2447.0,
+1781.0,
+2512.0,
+1809.0
+],
+"confidence": 0.9975,
+"system_id": "ro-mira-p-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Sump",
+"bbox": [
+1563.0,
+3347.0,
+1621.0,
+3379.0
+],
+"confidence": 0.9974,
+"system_id": "sump-i-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Five Pts.",
+"bbox": [
+2872.0,
+1473.0,
+2941.0,
+1498.0
+],
+"confidence": 0.9974,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Griq",
+"bbox": [
+1384.0,
+1619.0,
+1437.0,
+1649.0
+],
+"confidence": 0.9974,
+"system_id": "griq-h-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Nubia",
+"bbox": [
+2118.0,
+2355.0,
+2170.0,
+2380.0
+],
+"confidence": 0.9973,
+"system_id": "nubia-m-11",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Lau",
+"bbox": [
+2372.0,
+1608.0,
+2406.0,
+1633.0
+],
+"confidence": 0.9973,
+"system_id": "lau-o-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "SECTOR",
+"bbox": [
+3136.0,
+1177.0,
+3227.0,
+1212.0
+],
+"confidence": 0.9971,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 8
+},
+{
+"text": "Ithor",
+"bbox": [
+2095.0,
+1584.0,
+2141.0,
+1614.0
+],
+"confidence": 0.9971,
+"system_id": "ithor-m-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "The Almagest",
+"bbox": [
+1537.0,
+2558.0,
+1664.0,
+2587.0
+],
+"confidence": 0.997,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "the Galaxy",
+"bbox": [
+1150.0,
+987.0,
+1302.0,
+1043.0
+],
+"confidence": 0.9969,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Munt Ontdal",
+"bbox": [
+2570.0,
+2577.0,
+2682.0,
+2604.0
+],
+"confidence": 0.9968,
+"system_id": "munt-ontdal-q-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Merj",
+"bbox": [
+2382.0,
+1504.0,
+2423.0,
+1531.0
+],
+"confidence": 0.9967,
+"system_id": "merj-o-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Takol",
+"bbox": [
+2210.0,
+1561.0,
+2249.0,
+1587.0
+],
+"confidence": 0.9967,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Nag Ubdur",
+"bbox": [
+2515.0,
+1637.0,
+2599.0,
+1665.0
+],
+"confidence": 0.9967,
+"system_id": "nag-ubdur-p-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Klatooine",
+"bbox": [
+2959.0,
+1912.0,
+3038.0,
+1936.0
+],
+"confidence": 0.9967,
+"system_id": "klatooine-s-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Orvax",
+"bbox": [
+2832.0,
+3165.0,
+2884.0,
+3190.0
+],
+"confidence": 0.9967,
+"system_id": "orvax-r-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Florrum",
+"bbox": [
+2862.0,
+1378.0,
+2933.0,
+1409.0
+],
+"confidence": 0.9966,
+"system_id": "florrum-r-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 6
+},
+{
+"text": "Stygmarn",
+"bbox": [
+2270.0,
+3442.0,
+2355.0,
+3469.0
+],
+"confidence": 0.9965,
+"system_id": "stygmarn-n-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Exegol",
+"bbox": [
+1016.0,
+1719.0,
+1080.0,
+1750.0
+],
+"confidence": 0.9965,
+"system_id": "exegol-f-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Turco Pr.",
+"bbox": [
+2739.0,
+1858.0,
+2806.0,
+1883.0
+],
+"confidence": 0.9965,
+"system_id": "turco-prime-q-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Ploo",
+"bbox": [
+2257.0,
+1701.0,
+2305.0,
+1731.0
+],
+"confidence": 0.9965,
+"system_id": "ploo-n-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "rs",
+"bbox": [
+1150.0,
+3888.0,
+1178.0,
+3924.0
+],
+"confidence": 0.9964,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "lakar",
+"bbox": [
+2263.0,
+3553.0,
+2313.0,
+3579.0
+],
+"confidence": 0.9964,
+"system_id": "iakar-n-20",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Olega",
+"bbox": [
+2537.0,
+1706.0,
+2605.0,
+1738.0
+],
+"confidence": 0.9961,
+"system_id": "olega-p-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Archeon Neb.",
+"bbox": [
+3205.0,
+1689.0,
+3329.0,
+1719.0
+],
+"confidence": 0.9961,
+"system_id": null,
+"nebula_label": true,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Drahgor",
+"bbox": [
+3059.0,
+1315.0,
+3128.0,
+1343.0
+],
+"confidence": 0.9961,
+"system_id": "drahgor-s-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Ing",
+"bbox": [
+2219.0,
+3644.0,
+2249.0,
+3673.0
+],
+"confidence": 0.9958,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "SPACE",
+"bbox": [
+2685.0,
+2667.0,
+2761.0,
+2703.0
+],
+"confidence": 0.9957,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 6
+},
+{
+"text": "Felucia",
+"bbox": [
+2850.0,
+1499.0,
+2911.0,
+1524.0
+],
+"confidence": 0.9957,
+"system_id": "felucia-r-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "PolyneusEphemera",
+"bbox": [
+1568.0,
+2675.0,
+1762.0,
+2712.0
+],
+"confidence": 0.9957,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Recluse's Neb.",
+"bbox": [
+1764.0,
+1546.0,
+1865.0,
+1569.0
+],
+"confidence": 0.9956,
+"system_id": null,
+"nebula_label": true,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Daghee",
+"bbox": [
+2382.0,
+1726.0,
+2458.0,
+1751.0
+],
+"confidence": 0.9956,
+"system_id": "daghee-o-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Banfoden Pr.",
+"bbox": [
+1932.0,
+2997.0,
+2048.0,
+3026.0
+],
+"confidence": 0.9956,
+"system_id": "banfoden-prime-l-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 4
+},
+{
+"text": "L.Sayu",
+"bbox": [
+2860.0,
+1577.0,
+2916.0,
+1603.0
+],
+"confidence": 0.9954,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "U",
+"bbox": [
+3281.0,
+3714.0,
+3338.0,
+3779.0
+],
+"confidence": 0.9954,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Katarr",
+"bbox": [
+2430.0,
+1803.0,
+2498.0,
+1828.0
+],
+"confidence": 0.9954,
+"system_id": "katarr-o-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Orish",
+"bbox": [
+2182.0,
+3209.0,
+2231.0,
+3235.0
+],
+"confidence": 0.9953,
+"system_id": "orish-m-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 4
+},
+{
+"text": "Ipsidon",
+"bbox": [
+1854.0,
+1632.0,
+1917.0,
+1656.0
+],
+"confidence": 0.9953,
+"system_id": "ipsidon-k-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Crul",
+"bbox": [
+2809.0,
+2587.0,
+2853.0,
+2613.0
+],
+"confidence": 0.995,
+"system_id": "crul-r-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "DEEP CORE",
+"bbox": [
+1856.0,
+2249.0,
+1981.0,
+2290.0
+],
+"confidence": 0.995,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Ordo Tera",
+"bbox": [
+2443.0,
+2216.0,
+2520.0,
+2241.0
+],
+"confidence": 0.9949,
+"system_id": "ordo-tera-p-11",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "REGION",
+"bbox": [
+1419.0,
+1938.0,
+1502.0,
+1977.0
+],
+"confidence": 0.9948,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 7
+},
+{
+"text": "Jalindi Maridun",
+"bbox": [
+2567.0,
+1519.0,
+2705.0,
+1544.0
+],
+"confidence": 0.9947,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Randon",
+"bbox": [
+2701.0,
+2109.0,
+2769.0,
+2133.0
+],
+"confidence": 0.9946,
+"system_id": "randon-q-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Corellian Trade Spine",
+"bbox": [
+891.0,
+1120.0,
+1093.0,
+1154.0
+],
+"confidence": 0.9945,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Vin",
+"bbox": [
+3119.0,
+3009.0,
+3149.0,
+3040.0
+],
+"confidence": 0.9943,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "jomo",
+"bbox": [
+2050.0,
+2291.0,
+2099.0,
+2317.0
+],
+"confidence": 0.9942,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Cartography/Previous Designs: Jason Fry, Danie",
+"bbox": [
+2820.0,
+3878.0,
+3149.0,
+3905.0
+],
+"confidence": 0.9942,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "P",
+"bbox": [
+2550.0,
+3711.0,
+2612.0,
+3781.0
+],
+"confidence": 0.9941,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Oba Diah",
+"bbox": [
+3219.0,
+2065.0,
+3291.0,
+2090.0
+],
+"confidence": 0.9941,
+"system_id": "oba-diah-t-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "S",
+"bbox": [
+2238.0,
+2401.0,
+2249.0,
+2419.0
+],
+"confidence": 0.994,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "lloh",
+"bbox": [
+2253.0,
+2020.0,
+2303.0,
+2046.0
+],
+"confidence": 0.994,
+"system_id": "iloh-n-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Dreighton Neb.",
+"bbox": [
+1580.0,
+1493.0,
+1683.0,
+1520.0
+],
+"confidence": 0.9937,
+"system_id": null,
+"nebula_label": true,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Boz Pity",
+"bbox": [
+2966.0,
+1971.0,
+3035.0,
+2000.0
+],
+"confidence": 0.9937,
+"system_id": "boz-pity-s-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Phu",
+"bbox": [
+1772.0,
+2595.0,
+1814.0,
+2623.0
+],
+"confidence": 0.9934,
+"system_id": "phu-j-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Yalbec Pr.",
+"bbox": [
+2604.0,
+1615.0,
+2682.0,
+1644.0
+],
+"confidence": 0.9934,
+"system_id": "yalbec-prime-p-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "her Ibbitt",
+"bbox": [
+2950.0,
+3928.0,
+3017.0,
+3956.0
+],
+"confidence": 0.9931,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "avlex Med",
+"bbox": [
+2050.0,
+1238.0,
+2127.0,
+1266.0
+],
+"confidence": 0.993,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Hok",
+"bbox": [
+2177.0,
+1997.0,
+2231.0,
+2023.0
+],
+"confidence": 0.9928,
+"system_id": "hok-m-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Zavian Abyss",
+"bbox": [
+2430.0,
+2059.0,
+2537.0,
+2088.0
+],
+"confidence": 0.9927,
+"system_id": "zavian-abyss-p-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Stygean",
+"bbox": [
+2685.0,
+1580.0,
+2771.0,
+1608.0
+],
+"confidence": 0.9924,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Iridonia",
+"bbox": [
+1750.0,
+1625.0,
+1830.0,
+1653.0
+],
+"confidence": 0.9924,
+"system_id": "iridonia-j-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Guavian Drift",
+"bbox": [
+2455.0,
+1266.0,
+2577.0,
+1290.0
+],
+"confidence": 0.9924,
+"system_id": "guavian-drift-p-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "no, Haden Blackman,Vince Lee",
+"bbox": [
+2950.0,
+3903.0,
+3163.0,
+3930.0
+],
+"confidence": 0.9916,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Sienar TF73",
+"bbox": [
+3039.0,
+1752.0,
+3134.0,
+1779.0
+],
+"confidence": 0.9911,
+"system_id": "sienar-tf73-s-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Zayron",
+"bbox": [
+2561.0,
+1117.0,
+2636.0,
+1145.0
+],
+"confidence": 0.9909,
+"system_id": "zayron-p-3",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Nal Hutta",
+"bbox": [
+2970.0,
+2355.0,
+3045.0,
+2380.0
+],
+"confidence": 0.9909,
+"system_id": "nal-hutta-s-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Karkar",
+"bbox": [
+3098.0,
+1398.0,
+3149.0,
+1420.0
+],
+"confidence": 0.9906,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Hydian Way",
+"bbox": [
+886.0,
+1185.0,
+1008.0,
+1226.0
+],
+"confidence": 0.9905,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "siao",
+"bbox": [
+2050.0,
+2234.0,
+2089.0,
+2261.0
+],
+"confidence": 0.9905,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Tenoo",
+"bbox": [
+1472.0,
+3181.0,
+1534.0,
+3206.0
+],
+"confidence": 0.9899,
+"system_id": "tenoo-i-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Tarsunt",
+"bbox": [
+2813.0,
+2667.0,
+2877.0,
+2692.0
+],
+"confidence": 0.9899,
+"system_id": "tarsunt-r-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Orto",
+"bbox": [
+2076.0,
+3404.0,
+2127.0,
+3431.0
+],
+"confidence": 0.9898,
+"system_id": "orto-m-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "ess",
+"bbox": [
+2050.0,
+2628.0,
+2074.0,
+2649.0
+],
+"confidence": 0.9896,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Steppes",
+"bbox": [
+2950.0,
+2935.0,
+3009.0,
+2960.0
+],
+"confidence": 0.9893,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Typhonic Neb.",
+"bbox": [
+2710.0,
+2214.0,
+2833.0,
+2238.0
+],
+"confidence": 0.9892,
+"system_id": null,
+"nebula_label": true,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Ueda",
+"bbox": [
+2691.0,
+1124.0,
+2754.0,
+1152.0
+],
+"confidence": 0.9891,
+"system_id": "ueda-q-3",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Amaxine Sta.",
+"bbox": [
+1596.0,
+3420.0,
+1697.0,
+3448.0
+],
+"confidence": 0.9889,
+"system_id": "amaxine-station-j-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Kril'Dor",
+"bbox": [
+1571.0,
+1687.0,
+1648.0,
+1715.0
+],
+"confidence": 0.9885,
+"system_id": "kril-dor-i-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Ab Dalis",
+"bbox": [
+2938.0,
+3181.0,
+3006.0,
+3209.0
+],
+"confidence": 0.9883,
+"system_id": "ab-dalis-r-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 4
+},
+{
+"text": "Concord Dawn",
+"bbox": [
+2462.0,
+1683.0,
+2575.0,
+1711.0
+],
+"confidence": 0.9881,
+"system_id": "concord-dawn-o-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "S",
+"bbox": [
+2983.0,
+3711.0,
+3046.0,
+3781.0
+],
+"confidence": 0.9875,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Ivexia",
+"bbox": [
+2656.0,
+1700.0,
+2709.0,
+1726.0
+],
+"confidence": 0.9875,
+"system_id": "ivexia-q-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Major Trade Routes of the Galaxy",
+"bbox": [
+860.0,
+989.0,
+1300.0,
+1041.0
+],
+"confidence": 0.9873,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "0",
+"bbox": [
+2413.0,
+3718.0,
+2461.0,
+3774.0
+],
+"confidence": 0.9871,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "affa",
+"bbox": [
+2050.0,
+3535.0,
+2084.0,
+3562.0
+],
+"confidence": 0.9866,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Ossus",
+"bbox": [
+2950.0,
+1592.0,
+3003.0,
+1617.0
+],
+"confidence": 0.9854,
+"system_id": "ossus-r-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Wadi Raffa",
+"bbox": [
+1996.0,
+3535.0,
+2083.0,
+3562.0
+],
+"confidence": 0.985,
+"system_id": "wadi-raffa-m-20",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Delphidian Cl.",
+"bbox": [
+1483.0,
+2839.0,
+1602.0,
+2863.0
+],
+"confidence": 0.9845,
+"system_id": "delphidian-cluster-i-15",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Ylesia Teth",
+"bbox": [
+3158.0,
+2352.0,
+3263.0,
+2382.0
+],
+"confidence": 0.9843,
+"system_id": "ylesia-t-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "S\u00eddi",
+"bbox": [
+2692.0,
+1307.0,
+2730.0,
+1334.0
+],
+"confidence": 0.9837,
+"system_id": "sidi-q-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Oseon",
+"bbox": [
+3187.0,
+1838.0,
+3241.0,
+1863.0
+],
+"confidence": 0.983,
+"system_id": "oseon-t-8",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Gerrenthum",
+"bbox": [
+1769.0,
+3254.0,
+1864.0,
+3282.0
+],
+"confidence": 0.9828,
+"system_id": "gerrenthum-k-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "The Wheel",
+"bbox": [
+2748.0,
+1687.0,
+2828.0,
+1711.0
+],
+"confidence": 0.9825,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Nar Kanji",
+"bbox": [
+2891.0,
+2045.0,
+2962.0,
+2073.0
+],
+"confidence": 0.9815,
+"system_id": "nar-kanji-s-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "b Dalis",
+"bbox": [
+2950.0,
+3178.0,
+3007.0,
+3210.0
+],
+"confidence": 0.9812,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 5
+},
+{
+"text": "Shadda Neb.",
+"bbox": [
+2381.0,
+3235.0,
+2497.0,
+3260.0
+],
+"confidence": 0.9804,
+"system_id": null,
+"nebula_label": true,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Trillia",
+"bbox": [
+2591.0,
+2633.0,
+2642.0,
+2662.0
+],
+"confidence": 0.9802,
+"system_id": "trillia-p-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Nkllon",
+"bbox": [
+1956.0,
+2950.0,
+2020.0,
+2976.0
+],
+"confidence": 0.9798,
+"system_id": "nkllon-l-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "S. Borgo",
+"bbox": [
+2185.0,
+1514.0,
+2258.0,
+1546.0
+],
+"confidence": 0.9797,
+"system_id": "starport-borgo-m-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "2.",
+"bbox": [
+714.0,
+959.0,
+749.0,
+998.0
+],
+"confidence": 0.9791,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "r'leth",
+"bbox": [
+2050.0,
+2156.0,
+2111.0,
+2182.0
+],
+"confidence": 0.9787,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "ken",
+"bbox": [
+2050.0,
+1925.0,
+2075.0,
+1946.0
+],
+"confidence": 0.9786,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Red Neb.",
+"bbox": [
+1254.0,
+3710.0,
+1347.0,
+3738.0
+],
+"confidence": 0.9774,
+"system_id": null,
+"nebula_label": true,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "D'Qar",
+"bbox": [
+2412.0,
+3194.0,
+2460.0,
+3220.0
+],
+"confidence": 0.9773,
+"system_id": "d-qar-o-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Isde Naha",
+"bbox": [
+1799.0,
+3335.0,
+1877.0,
+3360.0
+],
+"confidence": 0.9768,
+"system_id": "isde-naha-k-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Kaliida Neb.",
+"bbox": [
+2400.0,
+3133.0,
+2507.0,
+3158.0
+],
+"confidence": 0.9764,
+"system_id": null,
+"nebula_label": true,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Otomok",
+"bbox": [
+1749.0,
+1491.0,
+1817.0,
+1516.0
+],
+"confidence": 0.9758,
+"system_id": "otomok-k-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Dalna",
+"bbox": [
+1502.0,
+3399.0,
+1556.0,
+3428.0
+],
+"confidence": 0.9758,
+"system_id": "dalna-i-19",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Zygerria",
+"bbox": [
+2965.0,
+1251.0,
+3035.0,
+1281.0
+],
+"confidence": 0.9748,
+"system_id": "zygerria-s-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Icindra",
+"bbox": [
+3269.0,
+1534.0,
+3335.0,
+1565.0
+],
+"confidence": 0.9712,
+"system_id": "icindra-u-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Quarzite",
+"bbox": [
+2133.0,
+2614.0,
+2205.0,
+2640.0
+],
+"confidence": 0.9711,
+"system_id": "quarzite-m-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 6
+},
+{
+"text": "Shaum Hii",
+"bbox": [
+2169.0,
+1367.0,
+2252.0,
+1394.0
+],
+"confidence": 0.9706,
+"system_id": "shaum-hii-n-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Ajan Kloss",
+"bbox": [
+1937.0,
+1456.0,
+2020.0,
+1483.0
+],
+"confidence": 0.9683,
+"system_id": "ajan-kloss-l-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Hosnian Pr.",
+"bbox": [
+2029.0,
+2451.0,
+2122.0,
+2478.0
+],
+"confidence": 0.9679,
+"system_id": "hosnian-prime-m-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "E",
+"bbox": [
+940.0,
+3702.0,
+1016.0,
+3784.0
+],
+"confidence": 0.9679,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "lktotch",
+"bbox": [
+2425.0,
+2650.0,
+2496.0,
+2669.0
+],
+"confidence": 0.9674,
+"system_id": "iktotch-o-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "MID RIM",
+"bbox": [
+1384.0,
+1832.0,
+1482.0,
+1873.0
+],
+"confidence": 0.9667,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Tal Pi",
+"bbox": [
+2472.0,
+1347.0,
+2536.0,
+1377.0
+],
+"confidence": 0.9663,
+"system_id": "tal-pi-p-5",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 5
+},
+{
+"text": "Veelo",
+"bbox": [
+2824.0,
+1556.0,
+2876.0,
+1582.0
+],
+"confidence": 0.9659,
+"system_id": "veelo-r-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Tos",
+"bbox": [
+3126.0,
+1859.0,
+3149.0,
+1885.0
+],
+"confidence": 0.9653,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "CORE",
+"bbox": [
+1663.0,
+2177.0,
+1734.0,
+2218.0
+],
+"confidence": 0.9631,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Rilias",
+"bbox": [
+2087.0,
+3302.0,
+2136.0,
+3328.0
+],
+"confidence": 0.963,
+"system_id": "rilias-m-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "Ro-Loo Tri.",
+"bbox": [
+2550.0,
+2990.0,
+2652.0,
+3014.0
+],
+"confidence": 0.9625,
+"system_id": "ro-loo-triangle-p-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Parnassos",
+"bbox": [
+1294.0,
+1548.0,
+1382.0,
+1576.0
+],
+"confidence": 0.9612,
+"system_id": "parnassos-h-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "C. Steppes",
+"bbox": [
+2920.0,
+2931.0,
+3010.0,
+2963.0
+],
+"confidence": 0.961,
+"system_id": "cosmatanic-steppes-r-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Oanne",
+"bbox": [
+2281.0,
+3199.0,
+2337.0,
+3224.0
+],
+"confidence": 0.961,
+"system_id": "oanne-n-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Af'El",
+"bbox": [
+3053.0,
+1864.0,
+3096.0,
+1891.0
+],
+"confidence": 0.9604,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Koda Sta.",
+"bbox": [
+1434.0,
+3233.0,
+1515.0,
+3264.0
+],
+"confidence": 0.96,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Otor's Hub",
+"bbox": [
+2223.0,
+1636.0,
+2310.0,
+1669.0
+],
+"confidence": 0.9586,
+"system_id": "otor-s-hub-n-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Setron",
+"bbox": [
+2450.0,
+2235.0,
+2512.0,
+2261.0
+],
+"confidence": 0.9566,
+"system_id": "setron-o-11",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 11
+},
+{
+"text": "Tynna",
+"bbox": [
+2318.0,
+2635.0,
+2372.0,
+2664.0
+],
+"confidence": 0.9552,
+"system_id": "tynna-n-14",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "SNXIN",
+"bbox": [
+2556.0,
+3359.0,
+2606.0,
+3381.0
+],
+"confidence": 0.9549,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Adinax Neb.",
+"bbox": [
+1476.0,
+3022.0,
+1557.0,
+3046.0
+],
+"confidence": 0.9546,
+"system_id": null,
+"nebula_label": true,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Oosalon",
+"bbox": [
+3325.0,
+2391.0,
+3392.0,
+2415.0
+],
+"confidence": 0.954,
+"system_id": "oosalon-u-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "SPACE",
+"bbox": [
+3083.0,
+2304.0,
+3149.0,
+2340.0
+],
+"confidence": 0.953,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 5
+},
+{
+"text": "Mon Gazza",
+"bbox": [
+2689.0,
+2952.0,
+2774.0,
+2977.0
+],
+"confidence": 0.9519,
+"system_id": "mon-gazza-q-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "llum",
+"bbox": [
+1271.0,
+1692.0,
+1315.0,
+1723.0
+],
+"confidence": 0.9512,
+"system_id": "ilum-g-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Sy Myrth",
+"bbox": [
+2926.0,
+1702.0,
+3005.0,
+1734.0
+],
+"confidence": 0.9505,
+"system_id": "sy-myrth-s-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "C21",
+"bbox": [
+649.0,
+3703.0,
+773.0,
+3799.0
+],
+"confidence": 0.9492,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "Iktotch",
+"bbox": [
+2428.0,
+2645.0,
+2497.0,
+2670.0
+],
+"confidence": 0.9453,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Suntilla",
+"bbox": [
+2235.0,
+2398.0,
+2300.0,
+2423.0
+],
+"confidence": 0.9419,
+"system_id": "suntilla-n-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Stohar",
+"bbox": [
+2100.0,
+2835.0,
+2157.0,
+2849.0
+],
+"confidence": 0.9416,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 7
+},
+{
+"text": "Dassal",
+"bbox": [
+1308.0,
+1637.0,
+1380.0,
+1669.0
+],
+"confidence": 0.9413,
+"system_id": "dassal-h-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "U. Exen",
+"bbox": [
+2012.0,
+1922.0,
+2076.0,
+1947.0
+],
+"confidence": 0.9409,
+"system_id": "uviuy-exen-l-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Toong'l",
+"bbox": [
+3206.0,
+1718.0,
+3282.0,
+1753.0
+],
+"confidence": 0.9409,
+"system_id": "toong-l-t-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Epil",
+"bbox": [
+2218.0,
+1664.0,
+2249.0,
+1691.0
+],
+"confidence": 0.9404,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "\u2460",
+"bbox": [
+859.0,
+1055.0,
+895.0,
+1084.0
+],
+"confidence": 0.9387,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Anz\u0113ll",
+"bbox": [
+2856.0,
+1730.0,
+2924.0,
+1755.0
+],
+"confidence": 0.9386,
+"system_id": "anzell-r-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Entralla",
+"bbox": [
+1723.0,
+1308.0,
+1787.0,
+1333.0
+],
+"confidence": 0.9377,
+"system_id": "entralla-k-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Kol Iben",
+"bbox": [
+2853.0,
+3068.0,
+2924.0,
+3093.0
+],
+"confidence": 0.9373,
+"system_id": "kol-iben-r-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Xagol",
+"bbox": [
+2204.0,
+3332.0,
+2249.0,
+3366.0
+],
+"confidence": 0.9365,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "M. Mandel",
+"bbox": [
+2821.0,
+2645.0,
+2920.0,
+2672.0
+],
+"confidence": 0.9355,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 4
+},
+{
+"text": "Vangor",
+"bbox": [
+2874.0,
+1399.0,
+2934.0,
+1427.0
+],
+"confidence": 0.9349,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 10
+},
+{
+"text": "Phothre",
+"bbox": [
+2177.0,
+1811.0,
+2249.0,
+1836.0
+],
+"confidence": 0.93,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Ke",
+"bbox": [
+3130.0,
+2050.0,
+3149.0,
+2075.0
+],
+"confidence": 0.9288,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Lorrd",
+"bbox": [
+2332.0,
+1259.0,
+2380.0,
+1285.0
+],
+"confidence": 0.9279,
+"system_id": "lorrd-n-4",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "VulpterO",
+"bbox": [
+1950.0,
+2124.0,
+2042.0,
+2148.0
+],
+"confidence": 0.9266,
+"system_id": "vulpter-l-10",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Lutritlia",
+"bbox": [
+1697.0,
+3282.0,
+1759.0,
+3303.0
+],
+"confidence": 0.9266,
+"system_id": "lutrillia-j-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Detchi",
+"bbox": [
+2307.0,
+3164.0,
+2365.0,
+3189.0
+],
+"confidence": 0.9205,
+"system_id": "oetchi-n-17",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Fexo",
+"bbox": [
+2022.0,
+2373.0,
+2075.0,
+2402.0
+],
+"confidence": 0.9174,
+"system_id": "fex-l-12",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "S",
+"bbox": [
+2050.0,
+3257.0,
+2061.0,
+3275.0
+],
+"confidence": 0.9138,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Xa FelO",
+"bbox": [
+1738.0,
+2010.0,
+1804.0,
+2035.0
+],
+"confidence": 0.8953,
+"system_id": "xa-fel-k-9",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "OCh",
+"bbox": [
+3113.0,
+1355.0,
+3149.0,
+1382.0
+],
+"confidence": 0.894,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Hoth",
+"bbox": [
+1731.0,
+3318.0,
+1778.0,
+3344.0
+],
+"confidence": 0.8797,
+"system_id": "hoth-k-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 6
+},
+{
+"text": "S. Milo",
+"bbox": [
+2891.0,
+1647.0,
+2948.0,
+1673.0
+],
+"confidence": 0.8761,
+"system_id": "segra-milo-r-7",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 4
+},
+{
+"text": "pe",
+"bbox": [
+2950.0,
+1666.0,
+2967.0,
+1690.0
+],
+"confidence": 0.8538,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "0jomo",
+"bbox": [
+2037.0,
+2289.0,
+2100.0,
+2317.0
+],
+"confidence": 0.8478,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Waul halta",
+"bbox": [
+2000.0,
+3550.0,
+2080.0,
+3558.0
+],
+"confidence": 0.8286,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 9
+},
+{
+"text": "Ceri",
+"bbox": [
+1318.0,
+3070.0,
+1349.0,
+3094.0
+],
+"confidence": 0.8212,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Rior",
+"bbox": [
+2289.0,
+3325.0,
+2329.0,
+3352.0
+],
+"confidence": 0.8182,
+"system_id": "rior-n-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Oto",
+"bbox": [
+2226.0,
+1639.0,
+2249.0,
+1667.0
+],
+"confidence": 0.8099,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Ch",
+"bbox": [
+2230.0,
+2632.0,
+2249.0,
+2657.0
+],
+"confidence": 0.8026,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Ho",
+"bbox": [
+3127.0,
+2111.0,
+3149.0,
+2138.0
+],
+"confidence": 0.7994,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "anzik",
+"bbox": [
+2076.0,
+1088.0,
+2136.0,
+1116.0
+],
+"confidence": 0.7865,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "O",
+"bbox": [
+2952.0,
+2414.0,
+2971.0,
+2432.0
+],
+"confidence": 0.7764,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 3
+},
+{
+"text": "Ruoosa",
+"bbox": [
+2407.0,
+3159.0,
+2474.0,
+3190.0
+],
+"confidence": 0.7602,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "OZist",
+"bbox": [
+2809.0,
+1292.0,
+2871.0,
+1317.0
+],
+"confidence": 0.7573,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Clador",
+"bbox": [
+2080.0,
+3321.0,
+2146.0,
+3350.0
+],
+"confidence": 0.7345,
+"system_id": "clak-dor-m-18",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 6
+},
+{
+"text": "\u0131\u0131",
+"bbox": [
+3283.0,
+3717.0,
+3335.0,
+3749.0
+],
+"confidence": 0.7231,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 0
+},
+{
+"text": "s",
+"bbox": [
+2050.0,
+2060.0,
+2068.0,
+2083.0
+],
+"confidence": 0.7096,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "Spelaus",
+"bbox": [
+2339.0,
+1550.0,
+2422.0,
+1577.0
+],
+"confidence": 0.7075,
+"system_id": "spellhaus-o-6",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Fondor",
+"bbox": [
+1973.0,
+2597.0,
+2032.0,
+2622.0
+],
+"confidence": 0.6868,
+"system_id": "fondor-l-13",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 5
+},
+{
+"text": "Ghonlan",
+"bbox": [
+1889.0,
+2650.0,
+1963.0,
+2661.0
+],
+"confidence": 0.6855,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 7
+},
+{
+"text": "urite",
+"bbox": [
+2117.0,
+2612.0,
+2205.0,
+2642.0
+],
+"confidence": 0.6705,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 7
+},
+{
+"text": "Endor",
+"bbox": [
+1383.0,
+3067.0,
+1442.0,
+3095.0
+],
+"confidence": 0.6689,
+"system_id": "endor-h-16",
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 2
+},
+{
+"text": "2",
+"bbox": [
+2412.0,
+2683.0,
+2437.0,
+2711.0
+],
+"confidence": 0.6645,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 1
+},
+{
+"text": "Lifouu",
+"bbox": [
+2162.0,
+3550.0,
+2208.0,
+3559.0
+],
+"confidence": 0.651,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": false,
+"pass_through": 6
+},
+{
+"text": "OIkKkk",
+"bbox": [
+2544.0,
+3114.0,
+2618.0,
+3139.0
+],
+"confidence": 0.6505,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "MinOCl.",
+"bbox": [
+2168.0,
+3608.0,
+2239.0,
+3633.0
+],
+"confidence": 0.6341,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 8
+},
+{
+"text": "uro",
+"bbox": [
+2838.0,
+1192.0,
+2884.0,
+1218.0
+],
+"confidence": 0.6048,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 0
+},
+{
+"text": "Ordee tus",
+"bbox": [
+2316.0,
+1474.0,
+2405.0,
+1501.0
+],
+"confidence": 0.5981,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 3
+},
+{
+"text": "MinOC.",
+"bbox": [
+2166.0,
+3608.0,
+2239.0,
+3633.0
+],
+"confidence": 0.5924,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 8
+},
+{
+"text": "MinnOE.",
+"bbox": [
+2166.0,
+3608.0,
+2239.0,
+3633.0
+],
+"confidence": 0.567,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 8
+},
+{
+"text": "MinMnOCEl.",
+"bbox": [
+2167.0,
+3609.0,
+2240.0,
+3632.0
+],
+"confidence": 0.5517,
+"system_id": null,
+"nebula_label": false,
+"strokes_masked": true,
+"pass_through": 8
+}
+]
