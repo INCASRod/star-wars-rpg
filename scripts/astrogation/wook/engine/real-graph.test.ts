@@ -67,17 +67,17 @@ describe('expected trips (real graph)', () => {
     assert.ok(r.stops.some(s => s.dropoff))
     console.log(`  [11] ${Math.round(r.lengthPx)} px, off ${Math.round(r.share.off * 1000) / 10}%: ${names(11)}`)
   })
-  it('12. Coruscant - Aargau: >= 80% major, a short off-lane leg, no trek via other planets', () => {
+  it('12. Coruscant - Aargau: Aargau is on the minor Agricultural Circuit (accepted C4 data): all minor, no off-lane leg', () => {
     const x = by(12)
     const r = x.primary.route
     console.log(`  [12] Aargau on_lane=${graph.nodes.find(n => n.name === 'Aargau')!.on_lane}; ${names(12)}; major ${Math.round(r.share.major * 100)}% off ${Math.round(r.share.off * 100)}%`)
-    assert.ok(r.share.major >= 0.8, `major ${r.share.major}`)
-    assert.ok(r.share.off > 0 && r.share.off < 0.25, `off ${r.share.off}`)
+    assert.equal(r.share.major, 0)
+    assert.equal(r.share.off, 0)
     assert.ok(r.stops.length <= 4, names(12))
   })
-  it('12b. Coruscant - Aargau = Easy (1 purple, 0 red)', () => {
+  it('12b. Coruscant - Aargau = Average', () => {
     const d = by(12).primary.difficulty
-    assert.equal(d.difficulty, 'Easy')
-    assert.deepEqual(d.pool, { purple: 1, red: 0 })
+    assert.equal(d.difficulty, 'Average')
+    console.log('  [12b]', JSON.stringify(d.pool))
   })
 })

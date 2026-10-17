@@ -8,21 +8,27 @@
   {
    "n": 1,
    "trip": "Coruscant - Corellia",
-   "ratio": 1,
+   "ratio": 1.04,
    "primary": {
     "found": true,
     "stops": [
      "Coruscant",
+     "Ixtlar",
      "Corellia"
     ],
     "stop_ids": [
      "coruscant-l-9",
+     "ixtlar-l-10",
      "corellia-m-11"
     ],
     "stop_xy": [
      [
       1926,
       2063.8
+     ],
+     [
+      1980.7,
+      2075.9
      ],
      [
       2155.9,
@@ -33,18 +39,26 @@
     "legs": [
      {
       "from": "coruscant-l-9",
+      "to": "ixtlar-l-10",
+      "kind": "lane",
+      "route": "Corellian Run",
+      "class": "major",
+      "length_px": 56
+     },
+     {
+      "from": "ixtlar-l-10",
       "to": "corellia-m-11",
       "kind": "lane",
       "route": "Corellian Run",
       "class": "major",
-      "length_px": 360.6
+      "length_px": 318.3
      }
     ],
     "routes_used": [
      "Corellian Run"
     ],
-    "length_px": 360.6,
-    "length_ly": 12384,
+    "length_px": 374.3,
+    "length_ly": 12855,
     "share_pct": {
      "major": 100,
      "minor": 0,
@@ -77,41 +91,51 @@
   {
    "n": 2,
    "trip": "Coruscant - Fedalle",
-   "ratio": 4.9,
+   "ratio": 4.97,
    "primary": {
     "found": true,
     "stops": [
      "Coruscant",
+     "Ixtlar",
      "Corellia",
      "Tinnel",
      "Loronar",
      "Byblos",
      "Abednedo",
+     "Iseno",
      "Denon",
      "Candovant",
      "Korbori",
      "Suntilla",
      "Exodeen",
+     "Bellassa",
      "Fedalle"
     ],
     "stop_ids": [
      "coruscant-l-9",
+     "ixtlar-l-10",
      "corellia-m-11",
      "tinnel-m-12",
      "loronar-m-12",
      "byblos-m-12",
      "abednedo-n-12",
+     "iseno-n-13",
      "denon-n-13",
      "candovant-n-12",
      "korbori-n-12",
      "suntilla-n-12",
      "exodeen-m-12",
+     "bellassa-m-11",
      "fedalle-m-10"
     ],
     "stop_xy": [
      [
       1926,
       2063.8
+     ],
+     [
+      1980.7,
+      2075.9
      ],
      [
       2155.9,
@@ -134,6 +158,10 @@
       2495.4
      ],
      [
+      2248.8,
+      2509.8
+     ],
+     [
       2258.3,
       2524
      ],
@@ -154,6 +182,10 @@
       2368.8
      ],
      [
+      2193.4,
+      2288.6
+     ],
+     [
       2123.7,
       2143.2
      ]
@@ -162,11 +194,19 @@
     "legs": [
      {
       "from": "coruscant-l-9",
+      "to": "ixtlar-l-10",
+      "kind": "lane",
+      "route": "Corellian Run",
+      "class": "major",
+      "length_px": 56
+     },
+     {
+      "from": "ixtlar-l-10",
       "to": "corellia-m-11",
       "kind": "lane",
       "route": "Corellian Run",
       "class": "major",
-      "length_px": 360.6
+      "length_px": 318.3
      },
      {
       "from": "corellia-m-11",
@@ -202,11 +242,19 @@
      },
      {
       "from": "abednedo-n-12",
+      "to": "iseno-n-13",
+      "kind": "lane",
+      "route": "Corellian Run",
+      "class": "major",
+      "length_px": 20.4
+     },
+     {
+      "from": "iseno-n-13",
       "to": "denon-n-13",
       "kind": "lane",
       "route": "Corellian Run",
       "class": "major",
-      "length_px": 37.3
+      "length_px": 17.1
      },
      {
       "from": "denon-n-13",
@@ -242,19 +290,27 @@
      },
      {
       "from": "exodeen-m-12",
+      "to": "bellassa-m-11",
+      "kind": "lane",
+      "route": "Hydian Way",
+      "class": "major",
+      "length_px": 83.2
+     },
+     {
+      "from": "bellassa-m-11",
       "to": "fedalle-m-10",
       "kind": "lane",
       "route": "Hydian Way",
       "class": "major",
-      "length_px": 243.6
+      "length_px": 161.2
      }
     ],
     "routes_used": [
      "Corellian Run",
      "Hydian Way"
     ],
-    "length_px": 1045,
-    "length_ly": 35890,
+    "length_px": 1059.7,
+    "length_ly": 36394,
     "share_pct": {
      "major": 100,
      "minor": 0,
@@ -723,6 +779,8 @@
     "stops": [
      "Brentaal",
      "Uviuy Exen",
+     "Champala",
+     "Drearia",
      "Hevurion",
      "Bogden",
      "Mikkia",
@@ -731,6 +789,8 @@
     "stop_ids": [
      "brentaal-l-9",
      "uviuy-exen-l-9",
+     "champala-l-8",
+     "drearia-l-8",
      "hevurion-l-8",
      "bogden-m-8",
      "mikkia-m-7",
@@ -744,6 +804,14 @@
      [
       2007.3,
       1930.7
+     ],
+     [
+      2031.8,
+      1873.9
+     ],
+     [
+      2036.1,
+      1863.2
      ],
      [
       2065.6,
@@ -774,11 +842,27 @@
      },
      {
       "from": "uviuy-exen-l-9",
+      "to": "champala-l-8",
+      "kind": "lane",
+      "route": "Hydian Way",
+      "class": "major",
+      "length_px": 61.9
+     },
+     {
+      "from": "champala-l-8",
+      "to": "drearia-l-8",
+      "kind": "lane",
+      "route": "Hydian Way",
+      "class": "major",
+      "length_px": 11.5
+     },
+     {
+      "from": "drearia-l-8",
       "to": "hevurion-l-8",
       "kind": "lane",
       "route": "Hydian Way",
       "class": "major",
-      "length_px": 120.6
+      "length_px": 48.2
      },
      {
       "from": "hevurion-l-8",
@@ -809,11 +893,11 @@
      "Corsin Run",
      "Hydian Way"
     ],
-    "length_px": 365.5,
-    "length_ly": 12553,
+    "length_px": 366.5,
+    "length_ly": 12587,
     "share_pct": {
-     "major": 92.2,
-     "minor": 7.8,
+     "major": 92.3,
+     "minor": 7.7,
      "off_lane": 0
     },
     "uncharted": false,
@@ -843,7 +927,7 @@
   {
    "n": 8,
    "trip": "Bandomeer - Daiyu",
-   "ratio": 1.85,
+   "ratio": 1.86,
    "primary": {
     "found": true,
     "stops": [
@@ -853,13 +937,18 @@
      "Mikkia",
      "Bogden",
      "Hevurion",
+     "Drearia",
+     "Champala",
      "Uviuy Exen",
      "Skako",
      "Fedalle",
+     "Bellassa",
      "Exodeen",
+     "Quellor",
      "Antar",
      "Lonera",
      "Gyndine",
+     "Attahox",
      "Daiyu"
     ],
     "stop_ids": [
@@ -869,13 +958,18 @@
      "mikkia-m-7",
      "bogden-m-8",
      "hevurion-l-8",
+     "drearia-l-8",
+     "champala-l-8",
      "uviuy-exen-l-9",
      "skako-l-9",
      "fedalle-m-10",
+     "bellassa-m-11",
      "exodeen-m-12",
+     "quellor-n-12",
      "antar-n-12",
      "lonera-o-12",
      "gyndine-o-12",
+     "attahox-p-12",
      "daiyu-p-12"
     ],
     "stop_xy": [
@@ -904,6 +998,14 @@
       1825.1
      ],
      [
+      2036.1,
+      1863.2
+     ],
+     [
+      2031.8,
+      1873.9
+     ],
+     [
       2007.3,
       1930.7
      ],
@@ -916,8 +1018,16 @@
       2143.2
      ],
      [
+      2193.4,
+      2288.6
+     ],
+     [
       2215.7,
       2368.8
+     ],
+     [
+      2286.8,
+      2389
      ],
      [
       2340.5,
@@ -930,6 +1040,10 @@
      [
       2383.9,
       2391.9
+     ],
+     [
+      2610.3,
+      2382.3
      ],
      [
       2639.8,
@@ -980,11 +1094,27 @@
      },
      {
       "from": "hevurion-l-8",
+      "to": "drearia-l-8",
+      "kind": "lane",
+      "route": "Hydian Way",
+      "class": "major",
+      "length_px": 48.2
+     },
+     {
+      "from": "drearia-l-8",
+      "to": "champala-l-8",
+      "kind": "lane",
+      "route": "Hydian Way",
+      "class": "major",
+      "length_px": 11.5
+     },
+     {
+      "from": "champala-l-8",
       "to": "uviuy-exen-l-9",
       "kind": "lane",
       "route": "Hydian Way",
       "class": "major",
-      "length_px": 120.6
+      "length_px": 61.9
      },
      {
       "from": "uviuy-exen-l-9",
@@ -1004,19 +1134,35 @@
      },
      {
       "from": "fedalle-m-10",
+      "to": "bellassa-m-11",
+      "kind": "lane",
+      "route": "Hydian Way",
+      "class": "major",
+      "length_px": 161.2
+     },
+     {
+      "from": "bellassa-m-11",
       "to": "exodeen-m-12",
       "kind": "lane",
       "route": "Hydian Way",
       "class": "major",
-      "length_px": 243.6
+      "length_px": 83.2
      },
      {
       "from": "exodeen-m-12",
+      "to": "quellor-n-12",
+      "kind": "lane",
+      "route": "Nanth'ri Trade Route",
+      "class": "minor",
+      "length_px": 73.9
+     },
+     {
+      "from": "quellor-n-12",
       "to": "antar-n-12",
       "kind": "lane",
       "route": "Nanth'ri Trade Route",
       "class": "minor",
-      "length_px": 124.8
+      "length_px": 56.3
      },
      {
       "from": "antar-n-12",
@@ -1036,22 +1182,30 @@
      },
      {
       "from": "gyndine-o-12",
+      "to": "attahox-p-12",
+      "kind": "lane",
+      "route": "Nanth'ri Trade Route",
+      "class": "minor",
+      "length_px": 226.6
+     },
+     {
+      "from": "attahox-p-12",
       "to": "daiyu-p-12",
       "kind": "lane",
       "route": "Nanth'ri Trade Route",
       "class": "minor",
-      "length_px": 257.5
+      "length_px": 35.2
      }
     ],
     "routes_used": [
      "Hydian Way",
      "Nanth'ri Trade Route"
     ],
-    "length_px": 1488.4,
-    "length_ly": 51118,
+    "length_px": 1499.9,
+    "length_ly": 51513,
     "share_pct": {
-     "major": 71.1,
-     "minor": 28.9,
+     "major": 70.7,
+     "minor": 29.3,
      "off_lane": 0
     },
     "uncharted": false,
@@ -1081,7 +1235,7 @@
   {
    "n": 9,
    "trip": "Corellia - Nal Hutta",
-   "ratio": 1.48,
+   "ratio": 1.49,
    "primary": {
     "found": true,
     "stops": [
@@ -1090,11 +1244,13 @@
      "Loronar",
      "Byblos",
      "Abednedo",
+     "Iseno",
      "Denon",
      "Candovant",
      "Korbori",
      "Suntilla",
      "Exodeen",
+     "Quellor",
      "Antar",
      "Lonera",
      "Gyndine",
@@ -1106,11 +1262,13 @@
      "loronar-m-12",
      "byblos-m-12",
      "abednedo-n-12",
+     "iseno-n-13",
      "denon-n-13",
      "candovant-n-12",
      "korbori-n-12",
      "suntilla-n-12",
      "exodeen-m-12",
+     "quellor-n-12",
      "antar-n-12",
      "lonera-o-12",
      "gyndine-o-12",
@@ -1138,6 +1296,10 @@
       2495.4
      ],
      [
+      2248.8,
+      2509.8
+     ],
+     [
       2258.3,
       2524
      ],
@@ -1156,6 +1318,10 @@
      [
       2215.7,
       2368.8
+     ],
+     [
+      2286.8,
+      2389
      ],
      [
       2340.5,
@@ -1210,11 +1376,19 @@
      },
      {
       "from": "abednedo-n-12",
+      "to": "iseno-n-13",
+      "kind": "lane",
+      "route": "Corellian Run",
+      "class": "major",
+      "length_px": 20.4
+     },
+     {
+      "from": "iseno-n-13",
       "to": "denon-n-13",
       "kind": "lane",
       "route": "Corellian Run",
       "class": "major",
-      "length_px": 37.3
+      "length_px": 17.1
      },
      {
       "from": "denon-n-13",
@@ -1250,11 +1424,19 @@
      },
      {
       "from": "exodeen-m-12",
+      "to": "quellor-n-12",
+      "kind": "lane",
+      "route": "Nanth'ri Trade Route",
+      "class": "minor",
+      "length_px": 73.9
+     },
+     {
+      "from": "quellor-n-12",
       "to": "antar-n-12",
       "kind": "lane",
       "route": "Nanth'ri Trade Route",
       "class": "minor",
-      "length_px": 124.8
+      "length_px": 56.3
      },
      {
       "from": "antar-n-12",
@@ -1287,11 +1469,11 @@
      "Nanth'ri Trade Route",
      "Ootmian Pabol"
     ],
-    "length_px": 1192.2,
-    "length_ly": 40945,
+    "length_px": 1197.8,
+    "length_ly": 41137,
     "share_pct": {
-     "major": 37,
-     "minor": 63,
+     "major": 36.8,
+     "minor": 63.2,
      "off_lane": 0
     },
     "uncharted": false,
@@ -1321,7 +1503,7 @@
   {
    "n": 10,
    "trip": "Coruscant - pin (Unknown Regions)",
-   "ratio": 1.89,
+   "ratio": 1.52,
    "primary": {
     "found": true,
     "stops": [
@@ -1330,8 +1512,17 @@
      "Palanhi",
      "Bilbringi",
      "Dorin",
-     "Ord Mantell",
-     "Jedha",
+     "Tenupe",
+     "Crustai",
+     "Massoss",
+     "Cormit",
+     "Sharb",
+     "Noris",
+     "Schesa",
+     "Sarvchi",
+     "Copero",
+     "Csaus",
+     "Path of the Houses near Csaus",
      "Pin (Unknown Regions)"
     ],
     "stop_ids": [
@@ -1340,8 +1531,17 @@
      "palanhi-k-9",
      "bilbringi-j-8",
      "dorin-j-8",
-     "ord-mantell-l-7",
-     "jedha-h-10",
+     "tenupe-i-8",
+     "crustai-h-8",
+     "massoss-g-8",
+     "cormit-f-8",
+     "sharb-f-8",
+     "noris-f-8",
+     "schesa-f-8",
+     "sarvchi-f-9",
+     "copero-f-9",
+     "csaus-f-9",
+     "drop:1",
      "pin:1"
     ],
     "stop_xy": [
@@ -1366,19 +1566,57 @@
       1789.2
      ],
      [
-      1932.7,
-      1693.3
+      1626.5,
+      1839.8
      ],
      [
-      1385.4,
-      2131.4
+      1353.1,
+      1897.3
+     ],
+     [
+      1269.2,
+      1903.5
+     ],
+     [
+      1190,
+      1865.6
+     ],
+     [
+      1192.8,
+      1852.2
+     ],
+     [
+      1171.8,
+      1905.8
+     ],
+     [
+      1172.9,
+      1912.2
+     ],
+     [
+      1140.2,
+      1928
+     ],
+     [
+      1171.1,
+      2016.8
+     ],
+     [
+      1158.4,
+      2025.7
+     ],
+     [
+      1085.9,
+      2044
      ],
      [
       1100,
       2100
      ]
     ],
-    "dropoffs": [],
+    "dropoffs": [
+     "drop:1"
+    ],
     "legs": [
      {
       "from": "coruscant-l-9",
@@ -1414,41 +1652,113 @@
      },
      {
       "from": "dorin-j-8",
-      "to": "ord-mantell-l-7",
-      "kind": "lane",
-      "route": "Celanon Spur",
-      "class": "minor",
-      "length_px": 232
+      "to": "tenupe-i-8",
+      "kind": "off",
+      "route": null,
+      "class": null,
+      "length_px": 107.6
      },
      {
-      "from": "ord-mantell-l-7",
-      "to": "jedha-h-10",
+      "from": "tenupe-i-8",
+      "to": "crustai-h-8",
       "kind": "lane",
-      "route": "Burke's Trailing",
+      "route": "Phalanx Route",
       "class": "minor",
-      "length_px": 701
+      "length_px": 279.4
      },
      {
-      "from": "jedha-h-10",
+      "from": "crustai-h-8",
+      "to": "massoss-g-8",
+      "kind": "lane",
+      "route": "Phalanx Route",
+      "class": "minor",
+      "length_px": 84.1
+     },
+     {
+      "from": "massoss-g-8",
+      "to": "cormit-f-8",
+      "kind": "lane",
+      "route": "Phalanx Route",
+      "class": "minor",
+      "length_px": 87.8
+     },
+     {
+      "from": "cormit-f-8",
+      "to": "sharb-f-8",
+      "kind": "off",
+      "route": null,
+      "class": null,
+      "length_px": 13.7
+     },
+     {
+      "from": "sharb-f-8",
+      "to": "noris-f-8",
+      "kind": "lane",
+      "route": "Path of the Houses",
+      "class": "minor",
+      "length_px": 57.6
+     },
+     {
+      "from": "noris-f-8",
+      "to": "schesa-f-8",
+      "kind": "lane",
+      "route": "Path of the Houses",
+      "class": "minor",
+      "length_px": 6.5
+     },
+     {
+      "from": "schesa-f-8",
+      "to": "sarvchi-f-9",
+      "kind": "lane",
+      "route": "Path of the Houses",
+      "class": "minor",
+      "length_px": 36.3
+     },
+     {
+      "from": "sarvchi-f-9",
+      "to": "copero-f-9",
+      "kind": "lane",
+      "route": "Path of the Houses",
+      "class": "minor",
+      "length_px": 94
+     },
+     {
+      "from": "copero-f-9",
+      "to": "csaus-f-9",
+      "kind": "lane",
+      "route": "Path of the Houses",
+      "class": "minor",
+      "length_px": 15.5
+     },
+     {
+      "from": "csaus-f-9",
+      "to": "drop:1",
+      "kind": "lane",
+      "route": "Path of the Houses",
+      "class": "minor",
+      "length_px": 74.8
+     },
+     {
+      "from": "drop:1",
       "to": "pin:1",
       "kind": "off",
       "route": null,
       "class": null,
-      "length_px": 287.1
+      "length_px": 57.7
      }
     ],
     "routes_used": [
      "Coruscant–Dantooine hyperlane",
      "Namadii Corridor",
-     "Celanon Spur",
-     "Burke's Trailing"
+     "Phalanx Route",
+     "Path of the Houses"
     ],
-    "length_px": 1564.2,
-    "length_ly": 53722,
+    "length_px": 1259.2,
+    "length_ly": 43245,
     "share_pct": {
      "major": 0,
-     "minor": 81.6,
-     "off_lane": 18.4
+     "minor": 85.8,
+     "off_lane": 14.2
     },
     "uncharted": true,
     "band": "across the galaxy",
@@ -1577,21 +1887,27 @@
   {
    "n": 12,
    "trip": "Coruscant - Aargau",
-   "ratio": 1,
+   "ratio": 1.02,
    "primary": {
     "found": true,
     "stops": [
      "Coruscant",
+     "Broest",
      "Aargau"
     ],
     "stop_ids": [
      "coruscant-l-9",
+     "broest-l-10",
      "aargau-l-10"
     ],
     "stop_xy": [
      [
       1926,
       2063.8
+     ],
+     [
+      1934.3,
+      2069.9
      ],
      [
       2002.6,
@@ -1602,18 +1918,26 @@
     "legs": [
      {
       "from": "coruscant-l-9",
+      "to": "broest-l-10",
+      "kind": "lane",
+      "route": "Agricultural Circuit",
+      "class": "minor",
+      "length_px": 10.3
+     },
+     {
+      "from": "broest-l-10",
       "to": "aargau-l-10",
       "kind": "lane",
       "route": "Agricultural Circuit",
       "class": "minor",
-      "length_px": 76.8
+      "length_px": 68.3
      }
     ],
     "routes_used": [
      "Agricultural Circuit"
     ],
-    "length_px": 76.8,
-    "length_ly": 2638,
+    "length_px": 78.6,
+    "length_ly": 2699,
     "share_pct": {
      "major": 0,
      "minor": 100,

@@ -131,6 +131,65 @@ def extract(article):
     return stops, bool(ib)
 
 
+# ------------------------------------------------------------------ matching (shared with c4_positions.py)
+SUFFIXES = ('/Legends', ' system', ' (planet)', ' (system)')
+
+
+def dk_title_variants(n):
+    v = [n]
+    if n.endswith(', The'):
+        v.append('The ' + n[:-5])
+    return v
+
+
+def strip_suffix(t):
+    for suf in SUFFIXES:
+        if t.endswith(suf):
+            return t[:-len(suf)]
+    return t
+
+
+def forms(t):
+    """the exact name first, then its suffix-stripped form (when different)"""
+    u = strip_suffix(t)
+    return [(t, 'exact')] + ([(u, 'suffix')] if u != t else [])
+
+
+def make_matcher(names, canon):
+    """names: {planet name: [entries]}. -> match(target, display) -> (name or None, kind or reason).
+    Per form (exact, then suffix-stripped): same page after redirects ('title'), else display text equals the name ('display').
+    The kind carries '+suffix' when the stripped form was needed."""
+    by_canon = collections.defaultdict(set)
+    for n in names:
+        for v in dk_title_variants(n):
+            c = canon.get(v)
+            if c:
+                by_canon[c].add(n)
+
+    def match(target, display):
+        reason = 'no DK planet'
+        for (tt, how), (dd, _) in zip(forms(target), forms(display) if len(forms(display)) == len(forms(target)) else [(display, 'exact')] * len(forms(target))):
+            c = canon.get(tt)
+            found, kind = set(), None
+            if c and c in by_canon:
+                found, kind = by_canon[c], 'title'
+            elif dd in names:
+                found, kind = {dd}, 'display'
+            if not found:
+                continue
+            if len(found) > 1:
+                reason = 'ambiguous name'
+                continue
+            n = next(iter(found))
+            if len(names[n]) > 1:
+                reason = 'two DK dots share the name'
+                continue
+            return n, kind + ('+suffix' if how == 'suffix' else '')
+        return None, reason
+
+    return match
+
+
 # ------------------------------------------------------------------ alias resolution (Wookieepedia redirects)
 def resolve(titles, cache_path):
     """canonical page title for each title (follows redirects); None when the page does not exist. Cached, so a re-run needs no network."""
@@ -183,8 +242,13 @@ def order_stops(pts):
 def main():
     idx = json.load(open(os.path.join(RAW, 'index.json'), encoding='utf-8'))['articles']
     systems = json.load(open(os.path.join(ROOT, 'data', 'astrogation', 'systems.json'), encoding='utf-8'))
-    dk = [s for s in systems if s['precision'] == 'dot']
-    print(len(idx), 'articles;', len(dk), 'DK named planets')
+    dots = [s for s in systems if s['precision'] == 'dot']
+    # C4: route-stop planets that have no named dot (c4_positions.py): a snapped unnamed DK dot, or the catalogue position. Never cell centres.
+    added_path = os.path.join(WOOK, 'c4_planets.json')
+    added = json.load(open(added_path, encoding='utf-8')) if os.path.exists(added_path) else []
+    dk = dots + [{'id': a['id'], 'name': a['name'], 'px': a['x'], 'py': a['y'], 'x': a['gx'], 'y': a['gy'], 'region': a['region'], 'sector': a['sector'],
+                  'precision': a['precision']} for a in added]
+    print(len(idx), 'articles;', len(dots), 'DK named planets +', len(added), 'route planets')
 
     # ---- extract
     arts = []
@@ -198,56 +262,10 @@ def main():
     for s in dk:
         dk_names[s['name']].append(s)
 
-    def dk_title_variants(n):
-        v = [n]
-        if n.endswith(', The'):
-            v.append('The ' + n[:-5])
-        return v
-    SUFFIXES = ('/Legends', ' system', ' (planet)', ' (system)')
-
-    def strip_suffix(t):
-        for suf in SUFFIXES:
-            if t.endswith(suf):
-                return t[:-len(suf)]
-        return t
-
-    def forms(t):
-        """the exact name first, then its suffix-stripped form (when different)"""
-        u = strip_suffix(t)
-        return [(t, 'exact')] + ([(u, 'suffix')] if u != t else [])
-
     want = {f for a in arts for t, d, _ in a['raw_stops'] for x in (t, d) for f, _ in forms(x)} | {v for n in dk_names for v in dk_title_variants(n)}
     print(len(want), 'titles to resolve')
     canon = resolve(sorted(want), os.path.join(WOOK, 'aliases.json'))
-    dk_by_canon = collections.defaultdict(set)
-    for n in dk_names:
-        for v in dk_title_variants(n):
-            c = canon.get(v)
-            if c:
-                dk_by_canon[c].add(n)
-
-    def match(target, display):
-        """-> (DK name or None, kind or reason). Per form (exact, then suffix-stripped): same page after redirects ('title'), else display text equals
-        the DK name ('display'). The kind carries '+suffix' when the stripped form was needed."""
-        reason = 'no DK planet'
-        for (tt, how), (dd, _) in zip(forms(target), forms(display) if len(forms(display)) == len(forms(target)) else [(display, 'exact')] * len(forms(target))):
-            c = canon.get(tt)
-            names, kind = set(), None
-            if c and c in dk_by_canon:
-                names, kind = dk_by_canon[c], 'title'
-            elif dd in dk_names:
-                names, kind = {dd}, 'display'
-            if not names:
-                continue
-            if len(names) > 1:
-                reason = 'ambiguous name'
-                continue
-            n = next(iter(names))
-            if len(dk_names[n]) > 1:
-                reason = 'two DK dots share the name'
-                continue
-            return n, kind + ('+suffix' if how == 'suffix' else '')
-        return None, reason
+    match = make_matcher(dk_names, canon)
 
     # ---- build routes
     routes_all, unmatched, unmatched_ib = [], collections.defaultdict(set), collections.defaultdict(set)
@@ -290,7 +308,7 @@ def main():
         routes.append({**used, 'edition_used': used['edition'], 'edition_reason': why, 'editions_available': sorted(eds),
                        'canon_matched_stops': canon_r['matched_stops'] if canon_r else None, 'legends_matched_stops': leg_r['matched_stops'] if leg_r else None})
     routes.sort(key=lambda r: r['route'])
-    json.dump({'meta': {'generated_from': 'data/astrogation/wook/raw (Wookieepedia, CC BY-SA 3.0; see raw/SOURCES.md)', 'dk_planets': len(dk),
+    json.dump({'meta': {'generated_from': 'data/astrogation/wook/raw (Wookieepedia, CC BY-SA 3.0; see raw/SOURCES.md)', 'dk_planets': len(dots), 'route_planets_added': len(added),
                         'majors': MAJORS, 'long_hop_px': LONG_HOP_PX, 'rule': 'one route per name; canon article if >= 2 matched stops, else Legends'}, 'routes': routes},
               open(os.path.join(WOOK, 'routes.json'), 'w', encoding='utf-8'), indent=1, ensure_ascii=False)
 
@@ -319,9 +337,10 @@ def main():
     pxy = {s['id']: (s['px'], s['py']) for s in dk}
     on_ids = {n for e in E for n in e[:2]}
     graph = {'meta': {'units': 'x, y are DK map pixels (4000x4000); gx, gy are galactic light-years (Coruscant = 0, 0); length_px is in pixels',
-                      'ly_per_px': ly_per_px, 'source': 'routes.json (Wookieepedia, CC BY-SA 3.0) over the DK named planets', 'rule': 'one route per name, canon first'},
+                      'ly_per_px': ly_per_px, 'source': 'routes.json (Wookieepedia, CC BY-SA 3.0) over the DK named planets plus the C4 route planets', 'rule': 'one route per name, canon first'},
              'nodes': [{'id': s['id'], 'name': s['name'], 'x': s['px'], 'y': s['py'], 'gx': s['x'], 'gy': s['y'], 'region': s['region'], 'sector': s['sector'],
-                        'on_lane': s['id'] in on_ids} for s in dk],
+                        'on_lane': s['id'] in on_ids, 'precision': s['precision']}
+                       for s in dk if s['precision'] == 'dot' or s['id'] in on_ids],
              'edges': [{'a': a, 'b': b, 'route': rn, 'class': cl, 'length_px': round(float(np.hypot(pxy[a][0] - pxy[b][0], pxy[a][1] - pxy[b][1])), 1)}
                        for a, b, cl, rn, ed in E]}
     json.dump(graph, open(os.path.join(WOOK, 'graph.json'), 'w', encoding='utf-8'), indent=0, ensure_ascii=False)
@@ -394,7 +413,7 @@ def main():
 
     L = ['# Wookieepedia lanes: audit (Step 0)', '',
          'Source: Wookieepedia hyperlane articles through the MediaWiki API (CC BY-SA 3.0; URLs and revision ids in `raw/SOURCES.md` and `routes.json`).',
-         'Positions: the DK named planets (`systems.json`, precision "dot"). Nothing else is plotted. Matching is exact or alias (redirect) only.', '',
+         'Positions: the DK named planets (`systems.json`, precision "dot") plus, from C4, route-stop planets with no named dot (`c4_planets.json`: snapped to an unnamed DK dot, or the SWGalacticMap catalogue position; never a cell centre). Matching is exact or alias (redirect) only.', '',
          '**Deviation from the prompt:** the category "Hyperspace routes" does not exist on Wookieepedia. The crawl used `Hyperlanes`, `Super-hyperroutes` and '
          '`Hyperlanes by region` plus every subcategory (depth 3): 33 categories, 389 articles.', '',
          '## Routes',
@@ -433,6 +452,17 @@ def main():
             L.append(f'- {a} - {b}: NOT connected by these routes.')
         else:
             L.append(f"- {a} - {b}: {r['hops']} hop(s), {r['major_hops']} on a major, {100 * r['major_hops'] // max(r['hops'], 1)}% major; via {' > '.join([a] + r['via'])}; routes {', '.join(r['routes'])}.")
+    bp = os.path.join(WOOK, 'c4_before.json')    # numbers of the C3 graph (704 dots), written once before C4
+    if os.path.exists(bp):
+        bf = json.load(open(bp, encoding='utf-8'))
+        old_hops = {(h[1], h[2], h[3]) for h in bf['suspicious_hops']}
+        new_sus = [(h['px'], h['from'], h['to'], r['route']) for r in routes for h in r['suspicious_long_hops'] if (h['from'], h['to'], r['route']) not in old_hops]
+        now = {'planets': len(graph['nodes']), 'routes_ge2': len(ge2), 'edges': len(E), 'planets_on_lane': len(adj), 'components': len(comps), 'largest': sizes[0]}
+        L += ['', '## C4 before / after (route planets added: ' + str(len(added)) + ', of which on a selected lane: ' + str(sum(1 for a in added if a['id'] in adj)) + ')', '',
+              '| | Before (C3) | After (C4) |', '|---|---|---|']
+        for k, lab in (('planets', 'Graph nodes'), ('routes_ge2', 'Routes with >= 2 stops'), ('edges', 'Edges'), ('planets_on_lane', 'Planets with a lane'), ('components', 'Components'), ('largest', 'Largest component (planets)')):
+            L.append(f'| {lab} | {bf[k]} | {now[k]} |')
+        L += ['', f'New suspicious hops (> {LONG_HOP_PX} px, not in the C3 list): {len(new_sus)}'] + [f'- {a} to {b}, {px:.0f} px ({rn})' for px, a, b, rn in sorted(new_sus, reverse=True)]
     open(os.path.join(WOOK, 'AUDIT.md'), 'w', encoding='utf-8', newline='\n').write('\n'.join(L) + '\n')
 
     # ---- preview: plain check image (DK dot positions, majors thick, minors thin, labels for matched planets)

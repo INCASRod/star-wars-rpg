@@ -1,0 +1,1329 @@
+{
+ "snap_px": 60.0,
+ "snap_ratio": 2.0,
+ "candidates_all_articles": 1124,
+ "candidates_selected_articles": 768,
+ "added": 533,
+ "precision_added": {
+  "catalogue": 516,
+  "dot-snapped": 17
+ },
+ "cell_excluded": [
+  "Abelor K-17",
+  "Adrathorpe H-11",
+  "Aeneid T-10",
+  "Agoliba-Tu K-3",
+  "Akkadese Maelstrom T-10",
+  "Alamass T-9",
+  "Algnadesh O-9",
+  "Alui O-17",
+  "Anstares L-17",
+  "Anthan K-3",
+  "Arbiflux L-3",
+  "Archeon Nebula T-7",
+  "Arleen T-8",
+  "Arvina S-15",
+  "Astenban M-18",
+  "Atterra N-4",
+  "Austan R-16",
+  "Azzameen Station N-17",
+  "Bahalian P-18",
+  "Ban-Satir S-4",
+  "Bannistar Station O-15",
+  "Baraan-Fa N-17",
+  "Basta Core R-4",
+  "Batuv P-12",
+  "Begamor M-5",
+  "Benath I-7",
+  "Bestine M-14",
+  "Bettel K-18",
+  "Bhargebba R-4",
+  "Bissillirus Q-10",
+  "Bith L-13",
+  "Bitmus Cloud J-18",
+  "Blarrum N-18",
+  "Byrnum Maw L-8",
+  "Cabarria M-13",
+  "Cadma T-8",
+  "Calfa O-9",
+  "Cargamalis K-18",
+  "Centori O-16",
+  "Cerenia N-15",
+  "Chagar O-19",
+  "Cheruba O-9",
+  "Chroman K-17",
+  "Chundu L-20",
+  "Circarpous O-12",
+  "Cloak of the Sith, The S-15",
+  "Colonial Station Camco F-8",
+  "Cometwash, The Q-6",
+  "Cor II L-13",
+  "Corlax S-6",
+  "Cranan R-16",
+  "Cron Drift R-6",
+  "Demiloch R-13",
+  "Demos N-16",
+  "Deymasoll J-13",
+  "Deysum Q-10",
+  "Din Nebula H-16",
+  "Din Pulsar H-16",
+  "Divora O-9",
+  "Dol'har Hyde O-17",
+  "Doris L-13",
+  "Dravian Starport N-18",
+  "Dravin L-20",
+  "Drift, The M-20",
+  "Drog R-4",
+  "Drualkiin T-10",
+  "Dustig N-16",
+  "Entropian Hive J-17",
+  "Eredenn S-6",
+  "Falko U-8",
+  "Febrini O-9",
+  "Feldwes Q-6",
+  "Fibuli S-3",
+  "Forvand M-11",
+  "Gallimere P-19",
+  "Gamor O-14",
+  "Gannaria H-15",
+  "Gevarno Cluster M-17",
+  "Gos Hutta S-11",
+  "Grava K-20",
+  "Gulf of Tatooine R-16",
+  "Gutretee K-18",
+  "Halcyon K-13",
+  "Haneli K-15",
+  "Haseria P-15",
+  "Heffrin R-17",
+  "Heptooine N-17",
+  "Hiit S-3",
+  "Hisseen R-15",
+  "Hull's Star S-3",
+  "Itani N-14",
+  "Itani Nebula N-14",
+  "Ivarujar K-16",
+  "Jiroch K-17",
+  "Junkfort Station T-8",
+  "Kaddak T-14",
+  "Kaliida Nebula O-17",
+  "Kalishik Q-6",
+  "Kalla S-4",
+  "Kamdon U-7",
+  "Kerev Doi O-12",
+  "Killisu M-17",
+  "Klynan S-13",
+  "Knolstee R-3",
+  "Koda Space Station I-18",
+  "Korfo M-9",
+  "Krann O-15",
+  "Krayiss R-5",
+  "Kupoh R-13",
+  "Lamuir L-13",
+  "Langsha-Raang N-18",
+  "Lazerian N-15",
+  "Likasha Q-14",
+  "Little Kessel T-10",
+  "Lohopa M-15",
+  "Loposi M-17",
+  "Lythos S-3",
+  "Marcol Void M-21",
+  "Marquinn K-8",
+  "Maw Cluster T-10",
+  "Mayagil M-18",
+  "Mechis L-14",
+  "Mev K-18",
+  "Midarr N-16",
+  "Mileva R-7",
+  "Mirran N-11",
+  "Mirrin Prime P-5",
+  "Modus O-9",
+  "Monnoc N-19",
+  "Monsua Nebula H-16",
+  "Montross P-8",
+  "Murgo I-7",
+  "Mussubir L-17",
+  "Naos S-18",
+  "Narq N-11",
+  "Nefitifi J-18",
+  "New Heurkea U-6",
+  "Nicht Ka R-5",
+  "Nimat T-8",
+  "Nixus P-18",
+  "Norkronia K-10",
+  "Novor S-8",
+  "Obana R-16",
+  "Oktos Nebula R-12",
+  "Omereth U-13",
+  "Onod K-17",
+  "Ord Biniir L-5",
+  "Ord Gimmel M-17",
+  "Oru L-3",
+  "Ovise H-16",
+  "Pandem Nai P-6",
+  "Pangarees, The L-20",
+  "Paqualis L-8",
+  "Parkis M-10",
+  "Pastoria P-17",
+  "Pheryon J-8",
+  "Pii R-16",
+  "Pinperu U-6",
+  "Plood G-16",
+  "Pressylla M-6",
+  "Prishella T-10",
+  "Qhulosk T-8",
+  "Quarmendy R-15",
+  "Ques S-8",
+  "Quintil N-19",
+  "Rafa T-8",
+  "Rampa S-4",
+  "Redoubt, The H-7",
+  "Refnu N-5",
+  "Reuss P-18",
+  "Rex Strata J-18",
+  "Ribento O-19",
+  "Ringlite N-19",
+  "Roil, The Q-5",
+  "Ropagi N-16",
+  "Roqoo Depot O-9",
+  "Rorgam Q-10",
+  "Sag Kemper N-18",
+  "Saila Na K-18",
+  "Salient R-3",
+  "Sanyassa H-16",
+  "Sargon O-9",
+  "Scarl L-13",
+  "Selenius L-17",
+  "Sennex O-9",
+  "Sespe S-9",
+  "Sh'ung-tesk N-4",
+  "Sheela S-15",
+  "Shuraden I-18",
+  "Shuxl K-18",
+  "Spice Terminus P-18",
+  "Stalsinek O-9",
+  "StarForge Nebula M-17",
+  "Stassia L-10",
+  "Stygian Caldera R-5",
+  "Suarbi O-19",
+  "Svolten R-4",
+  "Takodana J-16",
+  "Taltos M-17",
+  "Tansyl O-16",
+  "Tavya L-13",
+  "Thornhedge Nebula P-10",
+  "Thrinittik L-8",
+  "Thune I-18",
+  "Tilurus T-10",
+  "Torch Nebula P-19",
+  "Tovash Tchii O-17",
+  "Trindello H-16",
+  "Tureen K-19",
+  "Twin Nebulae K-18",
+  "Tyed Kant M-10",
+  "Typhonic Nebula Q-11",
+  "Tython K-10",
+  "Ubardia N-12",
+  "Umme G-15",
+  "Urber L-18",
+  "Utegetu Nebula I-8",
+  "Vactooine R-16",
+  "Varkana O-6",
+  "Varnak Q-11",
+  "Velga L-18",
+  "Ventran M-16",
+  "Wheel, The R-7",
+  "Wodan O-9",
+  "Wretch of Tayron L-18",
+  "Xorrn S-16",
+  "Yakorki G-16",
+  "Yarith J-18",
+  "Yetoom L-18",
+  "Zallo N-18",
+  "Zebitrope T-8",
+  "Zephry K-18",
+  "Zona Miki P-6",
+  "Zorbia H-16",
+  "Zusi M-16"
+ ],
+ "ambiguous_snap_left_at_catalogue": [
+  {
+   "id": "alderaan-m-10",
+   "name": "Alderaan",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "algor-s-6",
+   "name": "Algor",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "alui-o-17",
+   "name": "Alui",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "alzar-r-6",
+   "name": "Alzar",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "anstares-l-17",
+   "name": "Anstares",
+   "dists": [
+    44.1,
+    47.9,
+    53.3
+   ]
+  },
+  {
+   "id": "argai-s-6",
+   "name": "Argai",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "argoon-s-6",
+   "name": "Argoon",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "arkuda-q-6",
+   "name": "Arkuda",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "arramanx-s-6",
+   "name": "Arramanx",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "arrgaw-n-16",
+   "name": "Arrgaw",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "astenban-m-18",
+   "name": "Astenban",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "athiss-r-4",
+   "name": "Athiss",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "atzerri-m-13",
+   "name": "Atzerri",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "azna-p-6",
+   "name": "Azna",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "bacrana-o-14",
+   "name": "Bacrana",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "bahalian-p-18",
+   "name": "Bahalian",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "barancar-s-6",
+   "name": "Barancar",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "barison-q-6",
+   "name": "Barison",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "baros-u-7",
+   "name": "Baros",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "begeren-r-4",
+   "name": "Begeren",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "belderone-r-6",
+   "name": "Belderone",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "bodrin-m-20",
+   "name": "Bodrin",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "bresnia-q-14",
+   "name": "Bresnia",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "byrnum-maw-l-8",
+   "name": "Byrnum Maw",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "caamas-m-9",
+   "name": "Caamas",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "cabarria-m-13",
+   "name": "Cabarria",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "cadinth-s-6",
+   "name": "Cadinth",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "caltinia-l-17",
+   "name": "Caltinia",
+   "dists": [
+    37.1,
+    48.3
+   ]
+  },
+  {
+   "id": "centori-o-16",
+   "name": "Centori",
+   "dists": [
+    22.6,
+    33.4
+   ]
+  },
+  {
+   "id": "chalcedon-i-16",
+   "name": "Chalcedon",
+   "dists": [
+    43.6,
+    45.5,
+    50.7
+   ]
+  },
+  {
+   "id": "champala-l-8",
+   "name": "Champala",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "charubah-o-9",
+   "name": "Charubah",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "clariv-s-6",
+   "name": "Clariv",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "columex-r-6",
+   "name": "Columex",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "cometwash-the-q-6",
+   "name": "Cometwash, The",
+   "dists": [
+    54.3,
+    57.6
+   ]
+  },
+  {
+   "id": "corlaasi-m-20",
+   "name": "Corlaasi",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "corlax-s-6",
+   "name": "Corlax",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "coyn-m-20",
+   "name": "Coyn",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "craci-r-4",
+   "name": "Craci",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "cron-drift-r-6",
+   "name": "Cron Drift",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "cyborrea-s-9",
+   "name": "Cyborrea",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "cyimarra-l-17",
+   "name": "Cyimarra",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "demiloch-r-13",
+   "name": "Demiloch",
+   "dists": [
+    50.9,
+    58.7
+   ]
+  },
+  {
+   "id": "deminol-l-17",
+   "name": "Deminol",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "demos-n-16",
+   "name": "Demos",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "derellium-s-6",
+   "name": "Derellium",
+   "dists": [
+    41.1,
+    42.6
+   ]
+  },
+  {
+   "id": "dirha-s-9",
+   "name": "Dirha",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "dol-har-hyde-o-17",
+   "name": "Dol'har Hyde",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "dornea-u-7",
+   "name": "Dornea",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "drearia-l-8",
+   "name": "Drearia",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "drift-the-m-20",
+   "name": "Drift, The",
+   "dists": [
+    26.5,
+    28.9
+   ]
+  },
+  {
+   "id": "duinarbulon-s-6",
+   "name": "Duinarbulon",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "dustig-n-16",
+   "name": "Dustig",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "entropian-hive-j-17",
+   "name": "Entropian Hive",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "eredenn-s-6",
+   "name": "Eredenn",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "feldwes-q-6",
+   "name": "Feldwes",
+   "dists": [
+    54.3,
+    57.6
+   ]
+  },
+  {
+   "id": "foless-m-13",
+   "name": "Foless",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "galboron-q-14",
+   "name": "Galboron",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "gallinore-o-9",
+   "name": "Gallinore",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "gamor-o-14",
+   "name": "Gamor",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "gascon-p-8",
+   "name": "Gascon",
+   "dists": [
+    43.4,
+    53.1
+   ]
+  },
+  {
+   "id": "gizer-p-8",
+   "name": "Gizer",
+   "dists": [
+    35.1,
+    49.0
+   ]
+  },
+  {
+   "id": "goluud-minor-l-10",
+   "name": "Goluud Minor",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "halbara-m-20",
+   "name": "Halbara",
+   "dists": [
+    31.8,
+    39.2
+   ]
+  },
+  {
+   "id": "hisseen-r-15",
+   "name": "Hisseen",
+   "dists": [
+    49.4,
+    50.5,
+    56.5
+   ]
+  },
+  {
+   "id": "hutlar-l-17",
+   "name": "Hutlar",
+   "dists": [
+    37.0,
+    37.2,
+    58.5
+   ]
+  },
+  {
+   "id": "jermac-p-18",
+   "name": "Jermac",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "jodaka-o-9",
+   "name": "Jodaka",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "kadril-r-6",
+   "name": "Kadril",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "kafane-s-9",
+   "name": "Kafane",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "kaliida-nebula-o-17",
+   "name": "Kaliida Nebula",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "kalishik-q-6",
+   "name": "Kalishik",
+   "dists": [
+    54.3,
+    57.6
+   ]
+  },
+  {
+   "id": "kamdon-u-7",
+   "name": "Kamdon",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "kardura-l-17",
+   "name": "Kardura",
+   "dists": [
+    21.1,
+    26.2,
+    32.5
+   ]
+  },
+  {
+   "id": "karideph-m-20",
+   "name": "Karideph",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "kelada-m-13",
+   "name": "Kelada",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "koda-space-station-i-18",
+   "name": "Koda Space Station",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "kupoh-r-13",
+   "name": "Kupoh",
+   "dists": [
+    50.9,
+    58.7
+   ]
+  },
+  {
+   "id": "lafra-r-4",
+   "name": "Lafra",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "lanos-q-14",
+   "name": "Lanos",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "lanthrym-m-20",
+   "name": "Lanthrym",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "leria-kerlsil-m-10",
+   "name": "Leria Kerlsil",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "likasha-q-14",
+   "name": "Likasha",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "lola-sayu-r-6",
+   "name": "Lola Sayu",
+   "dists": [
+    51.3,
+    58.7
+   ]
+  },
+  {
+   "id": "lucazec-q-6",
+   "name": "Lucazec",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "malador-l-17",
+   "name": "Malador",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "marquinn-k-8",
+   "name": "Marquinn",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "masterra-q-14",
+   "name": "Masterra",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "mayagil-m-18",
+   "name": "Mayagil",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "mechis-l-14",
+   "name": "Mechis",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "midarr-n-16",
+   "name": "Midarr",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "mileva-r-7",
+   "name": "Mileva",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "moonus-mandel-r-14",
+   "name": "Moonus Mandel",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "mussubir-l-17",
+   "name": "Mussubir",
+   "dists": [
+    44.1,
+    47.9,
+    53.3
+   ]
+  },
+  {
+   "id": "neelanon-l-17",
+   "name": "Neelanon",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "neka-l-4",
+   "name": "Neka",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "nepoy-l-17",
+   "name": "Nepoy",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "nfolgai-r-4",
+   "name": "Nfolgai",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "nixus-p-18",
+   "name": "Nixus",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "novor-s-8",
+   "name": "Novor",
+   "dists": [
+    37.3,
+    43.6,
+    54.7
+   ]
+  },
+  {
+   "id": "ogem-l-17",
+   "name": "Ogem",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "omman-s-6",
+   "name": "Omman",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "ord-cantrell-k-6",
+   "name": "Ord Cantrell",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "ord-lithone-l-8",
+   "name": "Ord Lithone",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "pandem-nai-p-6",
+   "name": "Pandem Nai",
+   "dists": [
+    18.3,
+    34.3,
+    56.9
+   ]
+  },
+  {
+   "id": "paqualis-l-8",
+   "name": "Paqualis",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "pastoria-p-17",
+   "name": "Pastoria",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "presteen-l-17",
+   "name": "Presteen",
+   "dists": [
+    16.0,
+    25.2
+   ]
+  },
+  {
+   "id": "purnham-m-9",
+   "name": "Purnham",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "pygorix-q-6",
+   "name": "Pygorix",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "quarmendy-r-15",
+   "name": "Quarmendy",
+   "dists": [
+    49.4,
+    50.5,
+    56.5
+   ]
+  },
+  {
+   "id": "ques-s-8",
+   "name": "Ques",
+   "dists": [
+    37.3,
+    43.6,
+    54.7
+   ]
+  },
+  {
+   "id": "rehemsa-m-11",
+   "name": "Rehemsa",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "reuss-p-18",
+   "name": "Reuss",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "rindao-l-17",
+   "name": "Rindao",
+   "dists": [
+    29.8,
+    43.8,
+    51.9
+   ]
+  },
+  {
+   "id": "ropagi-n-16",
+   "name": "Ropagi",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "rudrig-s-6",
+   "name": "Rudrig",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "sacorria-m-11",
+   "name": "Sacorria",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "selenius-l-17",
+   "name": "Selenius",
+   "dists": [
+    44.1,
+    47.9,
+    53.3
+   ]
+  },
+  {
+   "id": "senex-l-17",
+   "name": "Senex",
+   "dists": [
+    38.0,
+    40.5,
+    51.5
+   ]
+  },
+  {
+   "id": "sespe-s-9",
+   "name": "Sespe",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "seylott-p-18",
+   "name": "Seylott",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "shuraden-i-18",
+   "name": "Shuraden",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "soruus-s-6",
+   "name": "Soruus",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "spice-terminus-p-18",
+   "name": "Spice Terminus",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "spintir-q-6",
+   "name": "Spintir",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "spirador-q-14",
+   "name": "Spirador",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "stalimur-s-6",
+   "name": "Stalimur",
+   "dists": [
+    37.7,
+    59.3
+   ]
+  },
+  {
+   "id": "stassia-l-10",
+   "name": "Stassia",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "takodana-j-16",
+   "name": "Takodana",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "tansyl-o-16",
+   "name": "Tansyl",
+   "dists": [
+    22.6,
+    33.4
+   ]
+  },
+  {
+   "id": "tantra-m-19",
+   "name": "Tantra",
+   "dists": [
+    15.0,
+    22.7
+   ]
+  },
+  {
+   "id": "tas-la-s-9",
+   "name": "Tas-La",
+   "dists": [
+    50.1,
+    56.2
+   ]
+  },
+  {
+   "id": "teth-u-12",
+   "name": "Teth",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "thrinittik-l-8",
+   "name": "Thrinittik",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "thune-i-18",
+   "name": "Thune",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "tovash-tchii-o-17",
+   "name": "Tovash Tchii",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "trigalis-p-17",
+   "name": "Trigalis",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "vanquo-o-6",
+   "name": "Vanquo",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "wheel-the-r-7",
+   "name": "Wheel, The",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "yabol-opa-m-9",
+   "name": "Yabol Opa",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "yhifar-l-17",
+   "name": "Yhifar",
+   "dists": [
+    40.5,
+    41.5
+   ]
+  },
+  {
+   "id": "ylesia-t-12",
+   "name": "Ylesia",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "yulant-l-10",
+   "name": "Yulant",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "ziost-r-4",
+   "name": "Ziost",
+   "dists": [
+    "shared dot"
+   ]
+  },
+  {
+   "id": "zona-miki-p-6",
+   "name": "Zona Miki",
+   "dists": [
+    18.3,
+    34.3,
+    56.9
+   ]
+  }
+ ],
+ "ambiguous_names": {
+  "Junction": [
+   "Hydian Way"
+  ],
+  "Ossiathora": [
+   "Senex-Juvex Loop"
+  ]
+ },
+ "unnamed_dots": 167,
+ "unnamed_dots_used": 32
+}

@@ -1,0 +1,78 @@
+{
+ "planets": 704,
+ "routes": 310,
+ "routes_ge2": 123,
+ "edges": 423,
+ "planets_on_lane": 321,
+ "components": 5,
+ "largest": 311,
+ "next": [
+  3,
+  3,
+  2,
+  2
+ ],
+ "suspicious_routes": 9,
+ "suspicious_hops": [
+  [
+   1294.6,
+   "Coruscant",
+   "Quermia",
+   "Overic Griplink"
+  ],
+  [
+   1234.9,
+   "Eiram",
+   "Hetzal",
+   "Unidentified hyperlane"
+  ],
+  [
+   1170.3,
+   "Empress Teta",
+   "Moraband",
+   "Daragon Trail"
+  ],
+  [
+   1057.9,
+   "Savareen",
+   "Kessel",
+   "Kessel Run"
+  ],
+  [
+   943.1,
+   "Kiffex",
+   "Tatooine",
+   "Rycar's Run"
+  ],
+  [
+   915.0,
+   "Kashyyyk",
+   "Kiffex",
+   "Rycar's Run"
+  ],
+  [
+   868.3,
+   "Utapau",
+   "Leritor",
+   "Askar Trace"
+  ],
+  [
+   742.4,
+   "Sullust",
+   "Endor",
+   "Silvestri Trace"
+  ],
+  [
+   742.4,
+   "Endor",
+   "Sullust",
+   "Sanctuary Pipeline"
+  ],
+  [
+   701.0,
+   "Ord Mantell",
+   "Jedha",
+   "Burke's Trailing"
+  ]
+ ]
+}
