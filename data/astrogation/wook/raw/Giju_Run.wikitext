@@ -1,0 +1,63 @@
+{{Top|ca|notoc=1}}
+{{Otheruses|Giju}}
+{{TradeRoute
+|image=[[File:GijuRun-GalaxyMap.jpg]]
+|name=Giju Run
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Colonies]]<ref name="NoP">''[[Nexus of Power]]''</ref> - [[Core Worlds]]<ref name="GM">{{GalaxyMapHyperlanes|route=Giju Run|leg=''[[The Essential Atlas]]''}}</ref>
+*[[The Interior]]<ref name="Interior">The {{GalaxyMapPoster}} places the Giju Run in the area of [[Realspace|space]] ''[[Star Wars: The Galactic Explorer's Guide]]'' identifies as [[the Interior]].</ref>
+|sectors=[[Herglic Space]]<ref name="HerglicSpace">{{GalaxyMapAppendix}} places the [[Giju system]] in [[Herglic Space]] and [[Star Wars Galaxy Map (poster)|''Star Wars'' Galaxy Map]] places the [[Star system|system]] on the Giju Run.</ref> - [[Shasos sector]]<ref name="NoP" /> - [[Atrisian Commonwealth]]<ref name="Atrisian">{{GalaxyMapAppendix}} places the [[Kitel Phard system]] in the [[Atrisian Commonwealth]] and [[Star Wars Galaxy Map (poster)|''Star Wars'' Galaxy Map]] places the [[Star system|system]] on the Giju Run.</ref>
+|stellar=
+|endpoints=*[[Giju system]]<ref name="GM" />
+*[[Kitel Phard system]]<ref name="GM" />
+|transitpoints=Giju system<ref name="GM" /> - [[Bardotta system]]<ref name="NoP" /> - [[Zardossa Stix system]]<ref name="GM" /> - [[Deymasoll system]]<ref name="GM" /> - Kitel Phard system<ref name="GM" />
+|otherobjects=
+|junctions=[[Herglic Alley]]<ref name="HerglicAlley">''[[Star Wars: Smuggler's Guide]]'' establishes that [[Giju]] is part of the [[Herglic Alley]]. This means that the [[planet]] must act as a junction between that [[hyperspace route]] and the Giju Run, given that Giju is shown to be part of the Giju Run on the {{GalaxyMapHyperlanes|route=Giju Run|leg=''[[The Essential Atlas]]''}}</ref>/[[Rimma Trade Route]]<ref name="GM" />
+}}
+The '''Giju Run''' was a [[hyperspace route]]<ref name="NoP" /> with one terminus at the [[Giju system]]<ref name="GM" /> of [[Herglic Space]] in the [[Colonies]]<ref name="HerglicSpace" /> and [[the Interior]].<ref name="Interior" /> Running along the border of the Colonies and the [[Core Worlds]],<ref name="GM" /> the route then passed through the planet [[Bardotta]] in the [[Shasos sector]]'s [[Bardotta system]],<ref name="NoP" /> the [[Zardossa Stix system]], and the [[Deymasoll system]]&mdash;all in the Colonies&mdash;and then terminated at the [[Kitel Phard system]]<ref name="GM" /> of the [[Atrisian Commonwealth]]<ref name="Atrisian" /> in the Core Worlds. THe Giju system acted as a junction from the route onto the [[Rimma Trade Route]]<ref name="GM" /> and the [[Herglic Alley]].<ref name="HerglicAlley" /> The Giju Run passed through [[Standard Galactic Grid]] squares L-13, K-13, J-13, and J-12.<ref name="GM" />
+
+In [[34 ABY]],<ref name="Starcruiserdate">''[[Star Wars: Timelines]]'' dates the events of [[Star Wars: Galactic Starcruiser|''Star Wars'': Galactic Starcruiser]] to [[34 ABY]].</ref> the route was included on a partial [[Star map|map]] of the [[galaxy]] displayed on screens on board [[Chandrila Star Line]]'s [[MPO-1400 Purgill-class star cruiser|Star Cruiser]] ''[[Halcyon]]'' while it traveled from the Core Worlds' [[Chandrila system]] to the Outer Rim Territories.<ref name="GS">[[Star Wars: Galactic Starcruiser|''Star Wars'': Galactic Starcruiser]]</ref>
+
+==Behind the scenes==
+In the current ''[[Star Wars]]'' [[canon]], the Giju Run was first pictured in "[[Where in the Galaxy Are the Worlds of Star Wars: The Force Awakens?|Where in the Galaxy Are the Worlds of ''Star Wars: The Force Awakens''?]]," an article written by [[Mark Newbold]] and published on [[StarWars.com]] on [[January 29]], [[2016]].<ref name="WhereTFA">{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-star-wars-the-force-awakens|text=Where in the Galaxy Are the Worlds of ''Star Wars: The Force Awakens''?|int=Where in the Galaxy Are the Worlds of Star Wars: The Force Awakens?}}</ref> It was then identified in ''[[Nexus of Power]]'', a ''[[Star Wars Roleplaying]]'' supplement published by [[Fantasy Flight Games]]<ref name="NoP" /> on [[March 17]], 2016.<ref name="Places of Power">{{FantasyFlightGames|url=en/news/2016/3/17/places-of-power|text=Places of Power|date=2016-03-17}}</ref>
+
+The route then appeared [[in-universe]] for the first time when it was depicted on a map viewable in [[Star Wars: Galactic Starcruiser|''Star Wars'': Galactic Starcruiser]], an immersive roleplaying experience at [[W:c:disney:Walt Disney World Resort|Walt Disney World Resort]] in Florida<ref name="GS" /> that opened to the public on [[March 1]], [[2022]],<ref name="31 Things">{{SW|url=news/31-things-we-learned-about-star-wars-galactic-starcruiser|text=31 Things We Learned in an Exclusive Preview of ''Star Wars'': Galactic Starcruiser|nolive=1}}</ref> and had its final voyage from [[September 28]] to [[September 30|30]], [[2023]].<ref name="StarcruiserClosure">{{Disney|subdomain=disneyworld|domain=go.com|url=destinations/star-wars-galactic-starcruiser|text=''Star Wars'': Galactic Starcruiser}}</ref> The [[Giju Run/Legends|Giju Run]] originated in the [[Star Wars Legends|''Star Wars'' Legends]] continuity, where it was first mentioned in the ''[[Player's Guide to Tapani]]'', a [[1997]] supplement for ''[[Star Wars: The Roleplaying Game]]'' written by [[Paul Sudlow]] and [[Eric S. Trautmann]] and published by [[West End Games]].<ref name="Tapani">''[[Player's Guide to Tapani]]''</ref>
+
+==Appearances==
+{{Indexpage}}
+*[[The High Republic Adventures (2021) 1|''The High Republic Adventures'' (2021) 1]] {{MapPoint|unnamed=1}}
+*[[Star Wars: Galactic Starcruiser|''Star Wars'': Galactic Starcruiser]] {{1st}} {{MapPoint|screen=1}}
+
+==Sources==
+*<!-- 2016-01-29 -->{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-star-wars-the-force-awakens|text=Where in the Galaxy Are the Worlds of ''Star Wars: The Force Awakens''?|int=Where in the Galaxy Are the Worlds of Star Wars: The Force Awakens?}} {{1stp}}
+*<!-- 2016-03-17 -->''[[Nexus of Power]]'' {{1stID|Giju Run}}
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] {{MapPoint}}
+*<!-- 2020-12-12 -->''[[The High Republic Free Digital Sampler]]'' {{MapPoint|unnamed=1}}
+*<!-- 2021-04-20 -->{{EncyclopediaCite|The First Order}} {{MapPoint}}
+*<!-- 2021-06-29 -->{{EncyclopediaCite|The Battle of Endor and the Fall of the Empire}} {{MapPoint}}
+*<!-- 2021-07-20 -->{{EncyclopediaCite|Scarif and Other Planets in the Outer Rim}} {{MapPoint}}
+*<!-- 2022-03-11 -->{{EncyclopediaCite|Exegol, the Unknown Regions and Wild Space}} {{MapPoint}}
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}} {{MapPoint}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]'' {{MapPoint}}
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]'' {{MapPoint}}
+
+==Notes and references==
+{{Mediacat|imagecat=Images of the Giju Run}}
+{{Reflist}}
+
+{{Interlang
+|es=Corredor Giju
+|tr=Giju Kaçış Yolu
+}}
+
+[[Category:Colonies hyperlanes]]
+[[Category:Core Worlds hyperlanes]]
+[[Category:Major galactic hyperlanes]]
+[[Category:The Interior hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Giju Run]]
+}}

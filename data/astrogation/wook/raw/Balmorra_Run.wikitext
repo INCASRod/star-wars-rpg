@@ -1,0 +1,47 @@
+{{Top}}
+{{Otheruses|Balmorra}}
+{{TradeRoute
+|image=[[File:NebrayMantas.jpg]]
+|name=Balmorra Run
+|founded=
+|founders=[[Smuggler]]s<ref name="Destroy Malevolence">{{TCW|Destroy Malevolence|Destroy ''Malevolence''}}</ref>
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="Destroy Malevolence" />
+|sectors=
+|stellar=[[Kaliida Nebula]]<ref name="Destroy Malevolence" />
+|endpoints=
+|transitpoints=
+|otherobjects=
+|junctions=
+}}
+{{Quote|It's an old smuggler's route. The pilots used to talk about it on Tatooine.|Anakin Skywalker, on the Balmorra Run|<ref name="Shadow of Malevolence">{{TCW|Shadow of Malevolence|Shadow of ''Malevolence''}}</ref>}}
+The '''Balmorra Run''' was an old [[smuggler]]'s route that ran through the hazardous [[Kaliida Nebula]], which posed dangers to travelers due to the giant [[Realspace|space]]-dwelling [[neebray]] mantas that nested there. [[Anakin Skywalker]] and his [[Shadow Squadron]] took the route as a shortcut to intercept the [[Confederacy of Independent Systems|Separatist]] [[cruiser]] ''[[Malevolence]]'' under the command of [[General]] [[Grievous]] before it could attack the [[Kaliida Shoals Medical Center]] during the [[Clone Wars]].<ref name="Shadow of Malevolence" />
+
+While traveling on the route, the group unexpectedly encountered the Neebray mantas nested there. [[Matchstick]]'s bomber sustained a minor chip after running into a manta and it later caused his bomber to explode when evading the ''Malevolence''{{'s}} [[ion cannon]].<ref name="Shadow of Malevolence" />
+
+{{Route-stub}}
+
+==Appearances==
+*{{TCW|Shadow of Malevolence|Shadow of ''Malevolence''}} {{1st}}
+
+==Sources==
+*<!-- 2014-07-01 -->{{SW|url=series/clone-wars/shadow-of-malevolence-episode-guide|text="Shadow of Malevolence" Episode Guide &#124; The Clone Wars}}
+*<!-- 2014-07-01 -->{{SWE|technology|ywing|Y-wing starfighter}}
+*<!-- 2015-08-12 -->{{HelmetCollectionCite|26|Highlights of the Saga}}
+*<!-- 2016-01-29 -->{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-star-wars-the-force-awakens|text=Where in the Galaxy Are the Worlds of ''Star Wars: The Force Awakens''?|int=Where in the Galaxy Are the Worlds of Star Wars: The Force Awakens?}}
+*{{Databank|y-wing-starfighter|Y-wing Starfighter}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|de=Balmorra-Strecke#kanon
+|es=Ruta de Balmorra
+|ja=バルモーラ・ラン
+|pl=Ucieczka przez Balmorrę
+|tr=Balmorra Kaçış Yolu
+}}
+
+[[Category:Outer Rim Territories hyperlanes]]
+[[Category:Smuggling hyperspace routes]]

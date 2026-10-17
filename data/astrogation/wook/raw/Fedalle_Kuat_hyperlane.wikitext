@@ -1,0 +1,47 @@
+{{Top}}
+{{Conjecture}}
+{{TradeRoute
+|image=[[File:Fedalle-Kuat-CLNE.png]]
+|name=Fedalle–Kuat hyperlane
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Core Worlds]] - [[Colonies]]<ref name="Map">{{StarWarsGalaxyMap}}</ref>
+|sectors=
+|stellar=
+|endpoints=[[Fedalle]]<ref name="Map" />
+|transitpoints=[[Lespectus]]<ref name="Map" /> - [[Kuat]]<ref name="Map" /> - [[Balmorra]]<ref name="TFABG">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref> - [[Neimoidia]]<ref name="Map" />
+|otherobjects=
+|junctions=*[[Hydian Way]]<ref name="Map" />
+*[[Trellen Trade Route]]<ref name="Trellen">{{GalaxyMapHyperlanes|route=Trellen Trade Route|canon={{BuildFalconCite|52|Guide to the Galaxy}}|leg=''[[The Essential Atlas]]''}}</ref>
+}}
+A '''hyperlane''' branched off the [[Hydian Way]] at [[Fedalle]] and headed eastward to [[Lespectus]], [[Kuat]],<ref name="Map" /> [[Balmorra]],<ref name="TFABG" /> [[Neimoidia]], and then southward to join<ref name="Map" /> the [[Trellen Trade Route]]<ref name="Trellen" /> just west of [[Commenor]].<ref name="Map" /> 
+
+{{Route-stub}}
+
+==Behind the scenes==
+The partwork magazine issue [[Star Wars: Build the Millennium Falcon 52|''Star Wars: Build the Millennium Falcon'' 52]] places the [[planet]] Neimoidia on the Trellen Trade Route,<ref name="BMF">{{BuildFalconCite|52|Guide to the Galaxy}}</ref> but that name applied to a different route in the [[Star Wars Legends|''Star Wars'' Legends]] continuity, and the route between Fedalle and Kuat was never named. [[Jason Fry]], author of ''[[The Essential Atlas]]''<ref name="Atlas">''[[The Essential Atlas]]''</ref> and a number of maps in the [[canon]] continuity,<ref name="AVG">''[[Star Wars: The Acolyte: The Visual Guide]]''</ref> has stated that this should be treated as an error.<ref name="Fry">{{EmailCite|email=File:AtlasEmail-2025-08-31.png|creator=[[Jason Fry]]|date=2025-08-31}}</ref>
+
+==Sources==
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]''
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]''
+*{{StarWarsGalaxyMap}} {{MapPoint}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|tr=Trellen Ticaret Rotası
+}}
+
+[[Category:Colonies hyperlanes]]
+[[Category:Core Worlds hyperlanes]]
+[[Category:Major galactic hyperlanes]]
+[[Category:The Slice hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Fedalle–Kuat hyperlane]]
+}}

@@ -1,0 +1,16 @@
+{{Top}}
+The '''Gannarian Run''' was a [[hyperspace route]] located in [[the galaxy]]. The [[Spice Runners of Kijimi]] attempted a [[heist on the Gannarian Run]], stealing from a [[spice]] crop grown by an ex-[[Galactic Empire|Imperial]]. Following their heist attempt, the Spice Runners got into a battle with antiquated [[TIE/ln space superiority starfighter|TIE fighters]].<ref name="TROS VD">''[[Star Wars: The Rise of Skywalker: The Visual Dictionary]]''</ref> The hyperspace route shared its name with [[Gannaria]], a world in the [[Outer Rim Territories]].<ref name="TFABG">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref>
+
+==Sources==
+*<!-- 2019-12-20 -->''[[Star Wars: The Rise of Skywalker: The Visual Dictionary]]'' {{1stm}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|de=Gannarianische Strecke
+|fr=Raid Gannarien
+|ja=ガンナリアン・ラン
+}}
+
+[[Category:Hyperlanes]]

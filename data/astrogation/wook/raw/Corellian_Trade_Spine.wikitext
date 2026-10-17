@@ -1,0 +1,89 @@
+{{Top}}
+{{Otheruses|Corellian|more=Trade Spine}}
+{{Update|[[Victory's Price: An Alphabet Squadron Novel]], [[Nexus of Power]], {{BuildFalconCite|18|Guide to the Galaxy}}, {{EncyclopediaCite|Scarif and Other Planets in the Outer Rim}}}}
+{{TradeRoute
+|image=[[File:CorellianTrade.png]]
+|name=Corellian Trade Spine
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Core Worlds]]<ref name="EW Guide">''[[Entertainment Weekly's Ultimate Guide to Rogue One]]''</ref> - [[Colonies]] - [[Inner Rim Territories|Inner Rim]] - [[Expansion Region]] - [[Mid Rim Territories|Mid Rim]]<ref name="TFABG">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref> - [[Outer Rim Territories]]<ref name="SWU">''[[Star Wars: Uprising]]''&mdash;Sector Battle: "Mataou"</ref>
+|sectors=[[Corellian sector|Corellian]]<ref name="USW">''[[Ultimate Star Wars]]''</ref> - [[Duro sector|Duro]] - [[Anoat sector|Anoat]]<ref name="SWU" /> - [[Kallea sector|Kallea]]<ref name="TFABG" />
+|stellar=
+|endpoints=*[[Corellia]]<ref name="TFABG" />
+*Past [[Terminus]]<ref name="TFABG" />
+|transitpoints=
+|otherobjects=Corellia - [[Duro]]<ref name="TFABG" /> - [[Hosnian Prime]]<ref name="EW Guide" /> [[Cabarria]] - [[Nantoon]]<ref name="Galaxy Map">{{GalaxyMapPoster}}</ref> - [[Kelada]] - [[Foless]] - [[Bestine IV]] - [[Mechis III|Mechis]] - [[Yag'Dhul]] - [[Harrin system|Harrin]]<ref name="TFABG" /> - [[Cymoon]] - [[Sibensko]]<ref name="Galaxy Map" /> - [[Kinyen]]<ref name="TFABG" /> [[Blutopia]] - [[Ivarujar]]<ref name="Galaxy Map" /> - [[Bomis Koori system|Bomis Koori]] - [[Kriselist system|Kriselist]] - [[Kaal system|Kaal]]<ref name="TFABG" /> - [[Abelor]]<ref name="Galaxy Map" /> - [[Jiroch system|Jiroch]]<ref name="TFABG" /> - [[Cargamalis system|Cargamalis]]<ref name="BMF 18">{{BuildFalconCite|18|Guide to the Galaxy}}</ref> - [[Mugaar system|Mugaar]]<ref name="TFABG" /> - [[Javin system|Javin]] - [[Aztubek system|Aztubek]] - [[Kumru system|Kumru]] - [[High Chunah system|High Chunah]] - [[Kirtarkin]] - [[Mexeluine]]<ref name="BMF 18" /> - [[Gerrenthum]]<ref name="TFABG" /> - [[Indellian system|Indellian]] - [[Bendeluum]] - [[Zhanox]] - [[Ione]]<ref name="BMF 18" /> - [[Mataou]]<ref name="SWU" /> - [[Anantapar]] - [[Shuxl system|Shuxl]] - [[Ertegas]] - [[Darlyn Boda]] - [[Orn Kios]] - [[Ozu]]<ref name="BMF 18" /> - [[Isde Naha]]<ref name="TFABG" /> - [[Togominda system|Togominda]]<ref name="BMF 18" /> - [[Berrol's Donn system|Berrol's Donn]]<ref name="TFABG" /> - [[Trenchenovu]] - [[Tureen VII]]<ref name="Galaxy Map" /> - [[Manpha]]<ref name="TFABG" /> - [[Zastiga]] - [[Grava]]<ref name="Galaxy Map" /> - Terminus<ref name="TFABG" />
+|junctions=*[[Rimma Trade Route]]<ref name="EW Guide" />
+*[[Ison Trade Corridor]]<ref name="SWU" />
+*[[Hydian Way]]<ref name="EW Guide" />
+}}
+{{Quote|As the number of hostile systems decreases. We are combining our forces into slower-moving but more powerful units. Six of these fleets will deploy along the Corellian Trade Spine, positioning them for rapid relocation to the Western Reaches&hellip;|[[Gial Ackbar]]|<ref name="Victory's Price">''[[Victory's Price: An Alphabet Squadron Novel]]''</ref>}}
+The '''Corellian Trade Spine''' was one of [[the galaxy]]'s five [[super-hyperroute]]s. Beginning at the [[planet]] [[Corellia]] in the [[Core Worlds]], it intersected with the [[Rimma Trade Route]] at [[Yag'Dhul]] in the [[Inner Rim Territories|Inner Rim]], and the [[Hydian Way]] near [[Terminus]]. Established [[25,000 BBY|25,000 years]] before the [[Battle of Yavin]], but not fully formed until [[5500 BBY|19,500 years]] later, the Corellian Trade Spine played a major role in [[Galaxy|galactic]] history, though less so than the [[Corellian Run]]. Like its cousin, however, it ran through every region of the galaxy, taking in the [[Ison Trade Corridor]] and the [[Greater Javin]].<ref name="BMF 29">{{BuildFalconCite|29|Guide to the Galaxy}}</ref>
+
+The Spine passed through the [[Anoat sector]] of the [[Outer Rim Territories]], where the [[Trade Spine League]] operated as a powerful [[Union (workers)|union]] and [[privateer]] network. The [[desert]] planet [[Mataou]] acted as a primary entry point for [[starship]]s leaving the Corellian Trade Spine to enter the [[Ison Trade Corridor]] in the Anoat sector.<ref name="SWU" />
+
+==History==
+{{Quote|The Corellian Trade Spine has reopened after the Bureau of Ships and Services cleared out debris near Kirtarkin. While the disruption only lasted a few days, the economic cost of the incident is still being calculated.|[[Dorna Parros]], [[HoloNet News]]|audio=Kirtarkin-Outlaws.flac|<ref name="Outlaws">''[[Star Wars Outlaws]]''</ref>}}
+The [[Devaronian]] [[species]] were among the early explorers along what became the Corellian Trade Spine [[hyperspace route]].<ref name="NoP">''[[Nexus of Power]]''</ref> During the [[Galactic Civil War]], the [[Alliance to Restore the Republic]]'s [[61st Mobile Infantry]] lost eight of their own, who were lost during a [[Unidentified Imperial heavy freighter|freighter]] [[Raid on an Imperial heavy freighter|raid]]. They held a [[funeral]] onboard the ''[[Thunderstrike]]'' while in a hyperlane three [[light-year]]s from the spine.<ref name="BFTC">''[[Battlefront: Twilight Company]]''</ref>
+
+==Behind the scenes==
+The Corellian Trade Spine was first created in [[Star Wars Legends|''Star Wars'' Legends]] for ''[[Galaxy Guide 2: Yavin and Bespin]]'', a sourcebook written by [[Jonatha Ariadne Caspian]] and released by [[West End Games]] in [[1989]].<ref name="GG2">''[[Galaxy Guide 2: Yavin and Bespin]]''</ref> Its first mention in canon came in in the [[2015]] novel ''[[Battlefront: Twilight Company]]'', written by [[Alexander Freed]].<ref name="BFTC" />
+
+==Appearances==
+*[[The High Republic Adventures (2021) 1|''The High Republic Adventures'' (2021) 1]] {{Po}}
+*''[[Star Wars Zero Company]]'' {{Mo}}
+*''[[Star Wars Outlaws: Low Red Moon]]'' {{Ab|Star Wars Outlaws: Low Red Moon (audiobook)}} {{1st}}
+*''[[Battlefront: Twilight Company]]'' {{Ab|Battlefront: Twilight Company (audiobook)}} {{1stm}}
+*[[Bounty Hunters 8|''Bounty Hunters'' 8]] {{Mo}}
+*''[[Star Wars Outlaws]]'' {{Mo}}
+*{{StoryCite|story=The Last Flight|book=From a Certain Point of View: Return of the Jedi|audiobook=1}} {{Mo}}
+*''[[Star Wars: Uprising]]'' {{Mo}} {{ID|Corellion Trade Spine}}
+*''[[Victory's Price: An Alphabet Squadron Novel]]'' {{Ab|Victory's Price: An Alphabet Squadron Novel (audiobook)}} {{Mo}}
+
+==Sources==
+*<!-- 2015-05-06 -->{{BuildFalconCite|18|Guide to the Galaxy}}
+*<!-- 2015-09-23 -->{{BuildFalconCite|38|Guide to the Galaxy}}
+*<!-- 2016-01-29 -->{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-star-wars-the-force-awakens|text=Where in the Galaxy Are the Worlds of ''Star Wars: The Force Awakens''?|int=Where in the Galaxy Are the Worlds of Star Wars: The Force Awakens?}}
+*<!-- 2016-03-17 -->''[[Nexus of Power]]''
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]
+*<!-- 2016-12-09 -->''[[Entertainment Weekly's Ultimate Guide to Rogue One]]''
+*<!-- 2017-01-31 -->{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}}
+*<!-- 2017-11-21 -->''[[Star Wars: The Rebel Files]]''
+*<!-- 2018-02-22 -->''[[Dawn of Rebellion]]''
+*<!-- 2018-11-13 -->''[[Star Wars: Smuggler's Guide]]''
+*<!-- 2019-06-28 -->''[[Collapse of the Republic]]''
+*<!-- 2019-11-14 -->''[[Star Wars: The Galactic Explorer's Guide]]''
+*<!-- 2021-07-20 -->{{EncyclopediaCite|Scarif and Other Planets in the Outer Rim}}
+*<!-- 2021-11-02 -->''[[Star Wars: Battles that Changed the Galaxy]]''
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}}
+*<!-- 2023-12-12 -->{{InsiderCite|223|A Certain Point of View}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]''
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]''
+*<!-- 2026-05-26 -->''[[Star Wars: The Mandalorian Visual Guide]]''
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|es=Espina Comercial Corelliana
+|fr=Voie Marchande Corellienne
+|ja=コレリアン交易スパイン
+|tr=Corellia Ticaret Omurgası
+}}
+
+[[Category:Colonies hyperlanes]]
+[[Category:Core Worlds hyperlanes]]
+[[Category:Expansion Region hyperlanes]]
+[[Category:Inner Rim hyperlanes]]
+[[Category:Mid Rim hyperlanes]]
+[[Category:Outer Rim Territories hyperlanes]]
+[[Category:Super-hyperroutes]]
+[[Category:The Interior hyperlanes]]
+[[Category:Trailing Sectors hyperlanes]]
+[[Category:Western Reaches hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Corellian Trade Spine]]
+}}

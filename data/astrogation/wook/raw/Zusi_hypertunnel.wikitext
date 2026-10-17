@@ -1,0 +1,30 @@
+{{Top|ca}}
+{{TradeRoute
+|image=
+|name=Zusi hypertunnel
+|founded=
+|founders=
+|dissolved=
+|eras=[[Imperial Era]]<ref name="FACPOV">{{StoryCite|story=Tooth and Claw|book=From a Certain Point of View: The Empire Strikes Back}}</ref>
+|regions=
+|sectors=
+|stellar=
+|endpoints=
+|transitpoints=
+|otherobjects=
+|junctions=
+}}
+The '''Zusi hypertunnel''' was a [[hyperspace route]] that shared its name<ref name="FACPOV">{{StoryCite|story=Tooth and Claw|book=From a Certain Point of View: The Empire Strikes Back}}</ref> with the [[Zusi system]] of the [[Mid Rim Territories]]' [[Var Hagen sector]].<ref name="Appendix">{{GalaxyMapAppendix}}</ref> During the [[Imperial Era|reign]] of the [[Galactic Empire]], the [[Trandoshan]] [[bounty hunter]] [[Bossk'wassak'Cradossk|Bossk]] pursued the fugitive [[smuggler]]s [[Chewbacca]] and [[Han Solo]] in a breakneck chase along the [[plasma]] floes of the hypertunnel. Bossk was nearly successful in capturing the pair, but ultimately the [[class one generator]] of his [[YV-666 light freighter]], ''[[Hound's Tooth]]'', was shattered and his quarry escaped.<ref name="FACPOV" />
+
+In [[3 ABY]],<ref name="Date">The events of "[[Tooth and Claw]]" take place in parallel to the events of {{Film|V}}, which ''[[Star Wars: Timelines]]'' dates to [[3 ABY]].</ref> the Empire contacted Bossk to inform him of a new [[bounty]] on Chewbacca and Solo, causing the Trandoshan to think of the chase through the hypertunnel and other failed attempts he had made to capture the pair, the former of whom had become the bane of his career.<ref name="FACPOV" />
+
+==Behind the scenes==
+The Zusi hypertunnel was mentioned in "[[Tooth and Claw]]," a short story written by [[Michael Kogge]] and published in the ''[[From a Certain Point of View: The Empire Strikes Back]]'' anthology in [[2020]].<ref name="FACPOV" />
+
+==Appearances==
+*{{StoryCite|story=Tooth and Claw|book=From a Certain Point of View: The Empire Strikes Back|audiobook=1}} {{1stm}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Hyperlanes]]

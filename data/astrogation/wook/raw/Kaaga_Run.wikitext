@@ -1,0 +1,45 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:KaagaRun-GalaxyMap.png]]
+|name=Kaaga Run
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Mid Rim Territories]]<ref name="Map">{{StarWarsGalaxyMap}}</ref>
+*[[Hutt Space]]<ref name="Map" />
+*[[The Slice]]<ref name="Slice">{{StarWarsGalaxyMap}} places the hyperlane in the area of [[Realspace|space]] ''[[Star Wars: The Galactic Explorer's Guide]]'' identifies as [[the Slice]].</ref>
+|sectors=
+|stellar=
+|endpoints=*[[Bothawui]]<ref name="Map" />
+*[[Circumtore]]<ref name="Map" />
+|transitpoints=Bothawui - [[Kupoh]]<ref name="Map" /> - [[Klynan]] - [[Nar Kaaga]] - Circumtore<ref name="AVG">''[[Star Wars: The Acolyte: The Visual Guide]]''</ref>
+|otherobjects=
+|junctions=*[[Bothan Run|Bothawui–Daalang hyperlane]]<ref name="Map" />
+*[[Bothawui–Druckenwell hyperlane]]<ref name="Map" />
+*[[Hollastin Run]]<ref name="Map" />
+*[[Gamor Run]]<ref name="Gamor">{{GalaxyMapHyperlanes|route=Gamor Run|canon=''[[Nexus of Power]]''|leg=''[[The Essential Atlas]]''}}</ref>
+*[[Manda Merchant Route|Manda Merchant Run]]<ref name="RO">{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}}</ref>
+}}
+The '''Kaaga Run'''<ref name="Guide">{{SWYouTube|series=Star Wars: Galaxy Guide|text=Meet the Hutts: The Galaxy's Biggest Crime Lords|video=Ct977noXUVg}}</ref> was a [[hyperlane]] that ran through the [[Mid Rim Territories]], linking [[Bothawui]] in [[Bothan Space]] to [[Circumtore]] in [[Hutt Space]]. Both endpoints were the junction of numerous [[hyperspace route]]s. The route ran from Bothawui northeast to [[Kupoh]],<ref name="Map" /> [[Klynan]], and then [[Nar Kaaga]] on the edge of Hutt Space, before running north and ending at Circumtore.<ref name="AVG" />
+
+{{Route-stub}}
+
+==Behind the scenes==
+In the [[Star Wars Legends|''Star Wars'' Legends]] continuity, this route was known as the [[Kaaga Run]], and was first mapped in the [[2009]] reference book ''[[The Essential Atlas]]''.<ref name="TEA">''[[The Essential Atlas]]''</ref>
+
+==Sources==
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]''
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]''
+*<!-- 2026-09-16 -->{{SWYouTube|series=Star Wars: Galaxy Guide|text=Meet the Hutts: The Galaxy's Biggest Crime Lords|video=Ct977noXUVg}} {{1stID|Kaaga Run}}
+*{{StarWarsGalaxyMap}} {{MapPoint}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Hutt Space hyperlanes]]
+[[Category:Major galactic hyperlanes]]
+[[Category:Mid Rim hyperlanes]]
+[[Category:The Slice hyperlanes]]

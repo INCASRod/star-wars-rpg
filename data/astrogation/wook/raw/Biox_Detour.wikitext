@@ -1,0 +1,40 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:Biox_Detour.png]]
+|name=Biox Detour
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Mid Rim Territories]] - [[Expansion Region]]<ref name="Smuggler's Guide">''[[Star Wars: Smuggler's Guide]]''</ref>
+|sectors=[[Tashtor sector]] - [[Thand sector]] - [[Dustig sector]]<ref name="Smuggler's Guide" />
+|stellar=
+|endpoints=*[[Takodana]]<ref name="Smuggler's Guide" />
+*[[Malastare]]<ref name="Smuggler's Guide" />
+|transitpoints=
+|otherobjects=Takodana - [[Ring of Kafrene]] - Malastare<ref name="Smuggler's Guide" />
+|junctions=[[Rimma Trade Route]] - [[Hydian Way]]<ref name="Smuggler's Guide" />
+}}
+The '''Biox Detour''' was a [[hyperspace]] [[Hyperspace route|trade route]] that former [[pirate]] [[Queen]] [[Maz Kanata]] marked as one of the "real" trade routes for [[smuggler]]s to use, rather than official ones, in a map she included in the [[book]] that would become known as the ''[[Smuggler's Guide]]''. The route connected the [[planet]] [[Takodana]] in the [[Mid Rim Territories|Mid Rim]] to the [[mining]] colony known as the [[Ring of Kafrene]] in the [[Expansion Region]], which acted as a junction onto the [[Rimma Trade Route]]. It then connected the colony with the planet [[Malastare]] back in the Mid Rim, which acted as a junction onto the [[Hydian Way]].<ref name="Smuggler's Guide" />
+
+==Behind the scenes==
+The Biox Detour was first mentioned in the [[2018]] reference book ''[[Star Wars: Smuggler's Guide]]'', which was written by [[Daniel Wallace]].<ref name="Smuggler's Guide" />
+
+==Sources==
+*<!-- 2018-11-13 -->''[[Star Wars: Smuggler's Guide]]'' {{1stm}}
+*<!-- 2019-10-04 -->''[[Ultimate Star Wars, New Edition]]''
+*<!-- 2024-11-19 -->''[[Star Wars Encyclopedia: The Comprehensive Guide to the Star Wars Galaxy]]''
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|ja=バイオクス迂回路
+|tr=Biox Sapağı
+}}
+
+[[Category:Expansion Region hyperlanes]]
+[[Category:Mid Rim hyperlanes]]
+[[Category:Smuggling hyperspace routes]]
+[[Category:Trailing Sectors hyperlanes]]
+[[Category:Western Reaches hyperlanes]]

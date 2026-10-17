@@ -1,0 +1,36 @@
+{{Top}}
+{{TradeRoute
+|image=
+|name=Houche Run
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="Rebel Files">''[[Star Wars: The Rebel Files]]''</ref>
+|sectors=[[Moddell sector]]<ref name="Rebel Files" />
+|stellar=
+|endpoints=
+|transitpoints=
+|otherobjects=
+|junctions=
+}}
+The '''Houche Run''' was a [[Hyperspace route|hyperlane]] located in the [[Moddell sector]] of the [[Outer Rim Territories]].<ref name="Rebel Files" />
+
+{{Route-stub}}
+
+==Sources==
+*<!-- 2015-05-06 -->{{BuildFalconCite|18|Guide to the Galaxy}} {{1stm}}
+*<!-- 2017-11-21 -->''[[Star Wars: The Rebel Files]]''
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|ja=フーシェ・ラン
+}}
+
+[[Category:Outer Rim Territories hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Houche Run]]
+}}

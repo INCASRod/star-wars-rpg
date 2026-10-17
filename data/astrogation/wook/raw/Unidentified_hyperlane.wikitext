@@ -1,0 +1,32 @@
+{{Top}}
+{{Conjecture}}
+{{TradeRoute
+|image=
+|name=Unidentified hyperlane
+|founded=[[382 BBY]]<ref name="High Republic Character Encyclopedia">''[[Star Wars: The High Republic Character Encyclopedia]]''</ref>
+|founders=
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="Cataclysm">''[[The High Republic: Cataclysm]]''</ref>
+|sectors=
+|stellar=
+|endpoints=
+|transitpoints=
+|otherobjects=
+|junctions=
+}}
+{{Quote|I am thrilled to announce that currently, due to the hard work of our tireless Pathfinder team, Seventy-one-Beenine&mdash;we can now celebrate the opening of a new hyperlane that will bring Eiram and E'ronoh access to one of the most resource-rich areas in the Outer Rim. The Hetzal system.|Orlen Mollo|<ref name="Cataclysm" />}}
+A '''hyperlane''' was opened in the [[Outer Rim Territories|Outer Rim]]<ref name="Cataclysm" /> in [[382 BBY]] to connect<ref name="High Republic Character Encyclopedia" /> the [[Dalnan sector]]<ref name="Convergence">''[[The High Republic: Convergence]]''</ref> [[planet]]s [[Eiram]] and [[E'ronoh]] to the [[Hetzal system]]<ref name="Cataclysm" /> in the [[Savareen sector]].<ref name="Appendix">{{GalaxyMapAppendix}} &mdash; Based on corresponding data for the [[Hetzal system]]</ref> It was established by the [[Galactic Republic]] [[Pathfinder team 71-B9]] and officially opened by Republic [[Supreme Chancellor]] [[Orlen Mollo]] during a [[Ceremony on Eirie|ceremony]] on Eiram and E'ronoh's shared [[moon]] [[Eirie]].<ref name="Cataclysm" />
+
+{{Route-stub}}
+
+==Appearances==
+*''[[The High Republic: Cataclysm]]'' {{Ab|The High Republic: Cataclysm (audiobook)}} {{1st}}
+
+==Sources==
+*<!-- 2023-11-09 -->''[[Star Wars: The High Republic Character Encyclopedia]]''
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Outer Rim Territories hyperlanes]]

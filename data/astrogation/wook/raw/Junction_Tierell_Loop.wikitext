@@ -1,0 +1,30 @@
+{{Top}}
+{{TradeRoute
+|image=
+|name=Junction-Tierell Loop
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="Rebel Files">''[[Star Wars: The Rebel Files]]''</ref>
+|sectors=[[Gordian Reach]]<ref name="Rebel Files" />
+|stellar=
+|endpoints=
+|transitpoints=
+|otherobjects=
+|junctions=
+}}
+The '''Junction-Tierell Loop''' was a [[hyperspace route]] located in the [[Gordian Reach]], a sector in the [[Outer Rim Territories]].<ref name="Rebel Files" />
+
+==Sources==
+*<!-- 2017-11-21 -->''[[Star Wars: The Rebel Files]]'' {{1stm}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|es=Bucle Junction-Tierell
+|tr=Kavşak-Tierell Döngüsü
+}}
+
+[[Category:Gordian Reach hyperlanes]]

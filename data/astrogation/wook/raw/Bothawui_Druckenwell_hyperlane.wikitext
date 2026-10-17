@@ -1,0 +1,43 @@
+{{Top|legends=Reena Trade Route}}
+{{Conjecture}}
+{{TradeRoute
+|image=[[File:ReenaTradeRoute-GalaxyMap.png]]
+|name=Bothawui–Druckenwell hyperlane
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Mid Rim Territories]]<ref name="Map">{{StarWarsGalaxyMap}}</ref>
+*[[The Slice]]<ref name="Slice">{{StarWarsGalaxyMap}} places the hyperlane in the area of [[Realspace|space]] ''[[Star Wars: The Galactic Explorer's Guide]]'' identifies as [[the Slice]].</ref>
+|sectors=
+|stellar=
+|endpoints=*[[Druckenwell]]<ref name="Map" />
+*[[Bothawui]]<ref name="Map" />
+|transitpoints=Druckenwell - [[Monastery]] - [[Tah'Nuhna]] - [[Nexus Ortai system|Nexus Ortai]] - Bothawui<ref name="Map" />
+|otherobjects=
+|junctions=*[[Kaaga Run|Bothawui–Circumtore hyperlane]]<ref name="Map" />
+*[[Bothan Run|Bothawui–Daalang hyperlane]]<ref name="Map" />
+*[[Corellian Run]]<ref name="Map" />
+*[[Lannik–Leritor hyperlane]]<ref name="Map" />
+*[[Manda Merchant Route|Manda Merchant Run]]<ref name="RO">{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}}</ref>
+}}
+A '''hyperlane''' ran through the [[Mid Rim Territories]], branching off the [[Corellian Run]] at [[Druckenwell]] and heading east to [[Monastery]], [[Tah'Nuhna]], the [[Nexus Ortai system]], and ending at [[Bothawui]] in [[Bothan Space]]. It crossed [[Lannik–Leritor hyperlane|another hyperlane]] at Nexus Ortai, and met several other routes at the [[Bothawui system]]. A [[Kaaga Run|continuation]] of the route headed northeast from Bothawui before ending at [[Circumtore]].<ref name="Map" />
+
+{{Route-stub}}
+
+==Behind the scenes==
+In the [[Star Wars Legends|''Star Wars'' Legends]] continuity, this route was known as the [[Reena Trade Route]], and was first mapped in the [[2009]] reference book ''[[The Essential Atlas]]''.<ref name="TEA">''[[The Essential Atlas]]''</ref>
+
+==Sources==
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]''
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]''
+*{{StarWarsGalaxyMap}} {{MapPoint}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Major galactic hyperlanes|Reena Trade Route*]]
+[[Category:Mid Rim hyperlanes]]
+[[Category:The Slice hyperlanes]]

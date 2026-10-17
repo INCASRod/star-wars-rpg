@@ -1,0 +1,34 @@
+{{Top}}
+{{TradeRoute
+|image=
+|name=The Crystal Passage
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="BMF 19">{{BuildFalconCite|19|Guide to the Galaxy}}</ref>
+|sectors=[[Arkanis sector]]<ref name="BMF 19" />
+|stellar=
+|endpoints=
+|transitpoints=
+|otherobjects=[[Geonosis]]<ref name="BMF 19" />
+|junctions=[[Triellus Trade Route]]<ref name="Rise">''[[Rise of the Separatists]]''</ref>
+}}
+'''The Crystal Passage''' was a [[hyperspace route]] located in the [[Outer Rim Territories]]. The [[planet]] [[Geonosis]] in the [[Arkanis sector]] was situated along the Crystal Passage,<ref name="BMF 19" /> where it crossed paths with the [[Triellus Trade Route]].<ref name="Rise" />
+
+{{Route-stub}}
+
+==Sources==
+*<!-- 2015-05-13 -->{{BuildFalconCite|19|Guide to the Galaxy}} {{1stm}}
+*<!-- 2015-09-02 -->{{BuildFalconCite|35|Guide to the Galaxy}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|tr=Kristal Geçit
+}}
+
+{{DEFAULTSORT:Crystal Passage, The}}
+[[Category:Outer Rim Territories hyperlanes]]
+[[Category:The Slice hyperlanes]]

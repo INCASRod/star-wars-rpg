@@ -1,0 +1,34 @@
+{{Top}}
+{{Conjecture}}
+{{TradeRoute
+|image=
+|name=Xala–Cermau hyperlane
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="Map">{{StarWarsGalaxyMap}}</ref>
+|sectors=
+|stellar=
+|endpoints=*[[Xala]]<ref name="Map" />
+*[[Cermau]]<ref name="Map" />
+|transitpoints=Xala<ref name="Map" /> - [[Batuu]] - [[Umme]] - [[Yakorki]] - [[Mokivj]]<ref name="TGTB">''[[Star Wars: Galaxy's Edge: Traveler's Guide to Batuu]]''</ref> - [[Plood]]<ref name="Alliances">''[[Thrawn: Alliances]]''</ref> - Cermau<ref name="Map" />
+|otherobjects=
+|junctions=[[Bakura Trace]]<ref name="Bakura">{{GalaxyMapHyperlanes|route=Bakura Trace|canon={{BuildFalconCite|18|Guide to the Galaxy}}|leg=''[[The Essential Atlas]]''}}</ref>
+}}
+A '''hyperlane''' ran through the edge of the [[Outer Rim Territories]], beginning at [[Xala]] and heading southward to [[Batuu]],<ref name="Map" /> [[Umme]], [[Yakorki]], [[Mokivj]],<ref name="TGTB" /> [[Plood]]<ref name="Alliances" /> and ending at [[Cermau]]<ref name="Map" /> along the [[Bakura Trace]].<ref name="Bakura" />
+
+==Appearances==
+*''[[Thrawn: Alliances]]'' {{Ab|Thrawn: Alliances (audiobook)}} {{1stm}}
+
+==Sources==
+*<!-- 2020-07-21 -->''[[Star Wars: Galaxy's Edge: Traveler's Guide to Batuu]]''
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]''
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]''
+*{{StarWarsGalaxyMap}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Outer Rim Territories hyperlanes]]

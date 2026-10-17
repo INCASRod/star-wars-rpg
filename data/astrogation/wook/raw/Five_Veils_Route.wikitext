@@ -1,0 +1,41 @@
+{{Top}}
+{{Image}}
+{{TradeRoute
+|image=
+|name=Five Veils Route
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Mid Rim Territories|Mid Rim]] - [[Outer Rim Territories]]<ref name="Map">{{StarWarsGalaxyMap}}</ref>
+|sectors=
+|stellar=
+|endpoints=*[[Farstine system]]<ref name="Map" />
+*[[Svivren system]]<ref name="Map" />
+*[[Skynara system]]<ref name="Map" />
+|transitpoints=Farstine - [[Sterdic IV]]<ref name="Map" /> - [[Trigalis system|Trigalis]]<ref name="TFABG">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref> - [[Vallt]] - [[Pastoria]]<ref name="Map" /> - [[Vergesso Prime|Vergesso]]<ref name="TFABG" /> - [[Yar Togna]] - [[Idaflor]]<ref name="Map" /> - [[Vohai system|Vohai]]<ref name="TFABG" /> - [[Quence]]<ref name="AVG">''[[Star Wars: The Acolyte: The Visual Guide]]''</ref><br />Quence - [[Ribento]]<ref name="AVG" /> - [[Suarbi system|Suarbi]]<ref name="TFABG" /> - [[Chagar system|Chagar]] - [[Svivren system|Svivren]]<ref name="Map" /><br />Quence<ref name="AVG" /> - [[Nixus]] - [[Guat'a]]<ref name="Map" /> - [[Gallimere]] - [[Skynara system|Skynara]]<ref name="AVG" />
+|otherobjects=
+|junctions=*[[Llanic Spice Run]]<ref name="Llanic">{{GalaxyMapHyperlanes|route=Llanic Spice Run|canon=''[[Heir to the Jedi]]''|leg=''[[The Essential Atlas]]''}}</ref>
+*[[Triellus Trade Route]]<ref name="Triellus">{{GalaxyMapHyperlanes|route=Triellus Trade Route|canon=''[[Poe Dameron: Free Fall]]''|leg=''[[The Essential Atlas]]''}}</ref>
+}}
+The '''Five Veils Route'''<ref name="Bespin">{{EncyclopediaCite|Bespin and Other Planets in the Outer Rim}}</ref> was a [[hyperspace route]] that branched off<ref name="Map" /> the [[Triellus Trade Route]]<ref name="Triellus" /> at the [[Farstine system]] in the [[Mid Rim Territories]] and headed south through [[Sterdic IV]], [[Vallt]], [[Pastoria]], [[Yar Togna]], [[Idaflor]],<ref name="Map" /> [[Quence]],<ref name="AVG" /> the [[Chagar system]] and ended at the [[Svivren system]].<ref name="Map" /> A second branch of the route began at [[Quence]],<ref name="AVG" /> ran eastward to [[Nixus]], [[Guat'a]],<ref name="Map" /> [[Gallimere]], and ended at the [[Skynara system]].<ref name="AVG" />
+
+{{Route-stub}}
+
+==Behind the scenes==
+In the [[Star Wars Legends|''Star Wars'' Legends]] continuity, this hyperlane was known as the [[Five Veils Route]] and was first mapped in the [[2009]] reference book ''[[The Essential Atlas]]''.<ref name="TEA">''[[The Essential Atlas]]''</ref> The route originated as the Five Veils' Tour trade route in ''[[Galaxy Guide 9: Fragments from the Rim]]'', which established it as running from Farstine to Skynara,<ref name="GG9">''[[Galaxy Guide 9: Fragments from the Rim]]''</ref> but ''The Essential Atlas'' added another branch south to Svivren,<ref name="TEA" /> and the book's author [[Jason Fry]] stated that the two routes were the same but used for tourism versus shipping.<ref name="Fry">{{JCFCite|url=posts/50723299|board=Literature|thread=The Essential Atlas and Galactic Cartography: Official Discussion|user=[[Jason Fry|jasonfry]]|date=2013-05-16}}</ref>
+
+==Sources==
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] {{Po}}
+*<!-- 2021-09-21 -->{{EncyclopediaCite|Bespin and Other Planets in the Outer Rim}} {{1stID|Five Veils Route}}
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}} {{Po}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]'' {{Po}}
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]'' {{Po}}
+*{{StarWarsGalaxyMap}} {{Po}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Major galactic hyperlanes|Five Veils Route*]]
+[[Category:Mid Rim hyperlanes]]
+[[Category:Outer Rim Territories hyperlanes]]

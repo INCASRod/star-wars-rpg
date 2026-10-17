@@ -1,0 +1,37 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:Bubble_Wink.png]]
+|name=Bubble Wink
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="Smuggler's Guide">''[[Star Wars: Smuggler's Guide]]''</ref>
+|sectors=*[[Corporate Sector]]<ref name="Smuggler's Guide" />
+*[[Cronese Mandate]]<ref name="Smuggler's Guide" />
+|stellar=
+|endpoints=*[[Rampa II]]<ref name="Smuggler's Guide" />
+*[[Panna]]<ref name="Smuggler's Guide" />
+|transitpoints=
+|otherobjects=Rampa II - Panna<ref name="Smuggler's Guide" />
+|junctions=
+}}
+The '''Bubble Wink''' was a [[Outer Rim Territories]] [[hyperspace route]] that connected the worlds of [[Rampa II]] in the [[Corporate Sector]] and [[Panna]] in the [[Cronese Mandate]]. The former [[pirate]] [[Queen]] [[Maz Kanata]] listed it as one of the "real" trade routes to be used by [[smuggler]]s, as opposed to the official ones, in the [[book]] that would become known as the ''[[Smuggler's Guide]]''.<ref name="Smuggler's Guide" />
+
+==Behind the scenes==
+The Bubble Wink was first mentioned in ''[[Star Wars: Smuggler's Guide]]'', a reference book written by [[Daniel Wallace]] and released in [[2018]].<ref name="Smuggler's Guide" />
+
+==Sources==
+*<!-- 2018-11-13 -->''[[Star Wars: Smuggler's Guide]]'' {{1stm}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|de=Sprungblase
+|ja=バブル・ウインク
+|tr=Parlayan Baloncuk
+}}
+
+[[Category:Outer Rim Territories hyperlanes]]
+[[Category:Smuggling hyperspace routes]]

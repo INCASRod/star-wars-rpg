@@ -1,0 +1,36 @@
+{{Top}}
+{{Conjecture}}
+{{TradeRoute
+|image=
+|name=Outer Rim trade route
+|founded=
+|founders=[[Galactic Empire]]<ref name="Ultimate Star Wars">''[[Ultimate Star Wars]]''</ref>
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="Ultimate Star Wars" />
+|sectors=[[Lothal sector]]<ref name="Ultimate Star Wars" />
+|stellar=
+|endpoints=
+|transitpoints=
+|otherobjects=*[[Garel]]<ref name="Ultimate Star Wars" />
+*[[Lothal]]<ref name="Ultimate Star Wars" />
+|junctions=
+}}
+Following their arrival on the [[planet]] [[Lothal]], the [[Galactic Empire]] established a '''[[hyperspace route]]'''<ref name="VG">''[[Star Wars Rebels: The Visual Guide]]''</ref> in the [[Outer Rim Territories]].<ref name="Ultimate Star Wars" />
+
+{{Route-stub}}
+
+==Sources==
+*<!-- 2014-07-21 -->''[[Star Wars Rebels: The Visual Guide]]'' {{1stm}}
+*<!-- 2015-04-28 -->''[[Ultimate Star Wars]]''
+*<!-- 2024-11-19 -->''[[Star Wars Encyclopedia: The Comprehensive Guide to the Star Wars Galaxy]]''
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|tr=Dış Halka ticaret rotası
+}}
+
+[[Category:Outer Rim Territories hyperlanes]]
+[[Category:The Slice hyperlanes]]

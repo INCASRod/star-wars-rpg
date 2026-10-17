@@ -1,0 +1,34 @@
+{{Top}}
+{{TradeRoute
+|image=
+|name=Old Trade Federation Route
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Mid Rim Territories]]<ref name="Rise of the Separatists">''[[Rise of the Separatists]]''</ref>
+|sectors=[[Chommell sector]]<ref name="Rise of the Separatists" />
+|stellar=
+|endpoints=
+|transitpoints=
+|otherobjects=[[Naboo]]<ref name="Rise of the Separatists" />
+|junctions=
+}}
+The '''Old Trade Federation Route''' was a [[hyperspace route]] once used by the [[Trade Federation]]. It passed through the [[planet]] [[Naboo]] in the [[Mid Rim Territories|Mid Rim's]] [[Chommell sector]].<ref name="Rise of the Separatists" />
+
+==Behind the scenes==
+The Old Trade Federation Route was first mentioned in the new ''[[Star Wars]]'' [[canon]] in ''[[Rise of the Separatists]]'', a [[2019]] supplement to [[Fantasy Flight Games]]' series of ''Star Wars'' roleplaying products.<ref name="Rise of the Separatists" /> It was originally created for the [[Star Wars Legends|''Star Wars'' Legends]] continuity, where it first appeared in ''[[Star Wars Galaxies: Jump to Lightspeed]]'', a [[2004]] expansion to the MMORPG [[Star Wars Galaxies|''Star Wars Galaxies: An Empire Divided'']].<ref name="JtL">''[[Star Wars Galaxies: Jump to Lightspeed]]''</ref>
+
+==Sources==
+*<!-- 2015-06-17 -->{{BuildFalconCite|24|Guide to the Galaxy}} {{1stm}}
+*<!-- 2019-05-09 -->''[[Rise of the Separatists]]''
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|tr=Eski Ticaret Federasyonu Rotası
+}}
+
+[[Category:Mid Rim hyperlanes]]
+[[Category:Trailing Sectors hyperlanes]]

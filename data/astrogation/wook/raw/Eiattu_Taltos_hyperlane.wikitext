@@ -1,0 +1,38 @@
+{{Top|legends=Ado Spine}}
+{{Conjecture}}
+{{Image}}
+{{TradeRoute
+|image=
+|name=Eiattu–Taltos hyperlane
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Mid Rim Territories]]<ref name="AVG">''[[Star Wars: The Acolyte: The Visual Guide]]''</ref>
+|sectors=
+|stellar=
+|endpoints=
+|transitpoints=[[Eiattu system|Eiattu]] - [[Taltos]]<ref name="AVG" />
+|otherobjects=
+|junctions=*[[Rimma Trade Route]]<ref name="AVG" />
+*[[Karfeddion–Eriadu hyperlane]]<ref name="AVG" />
+}}
+A '''hyperlane''' ran through the [[Mid Rim Territories]], linking the [[Rimma Trade Route]] with a [[Karfeddion–Eriadu hyperlane|smaller hyperlane]] that connected [[Eriadu]] with [[Karfeddion]]. The [[Eiattu system]] and [[Taltos]] were both located along the route.<ref name="AVG" />
+
+{{Route-stub}}
+
+==Behind the scenes==
+In the [[Star Wars Legends|''Star Wars'' Legends]] continuity, this route was known as the [[Ado Spine]], and originated in the [[1997]] [[West End Games]] sourcebook ''[[Pirates & Privateers]]''.<ref name="P&P">''[[Pirates & Privateers]]''</ref>
+
+==Sources==
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]''
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]''
+*{{StarWarsGalaxyMap}} {{MapPoint}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Major galactic hyperlanes|Ado Spine*]]
+[[Category:Mid Rim hyperlanes]]

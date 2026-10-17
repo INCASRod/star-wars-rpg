@@ -1,0 +1,56 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:Pabol-Sleyheyron-SWT.jpg]]
+|name=Pabol Sleheyron
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Mid Rim Territories]]<ref name="Mid Rim">[[Where in the Galaxy Are the Worlds of Rogue One?|Where in the Galaxy Are the Worlds of ''Rogue One''?]] establishes that [[Randon]], which [[Star Wars Galaxy Map (poster)|''Star Wars'' Galaxy Map]] places in the [[Mid Rim Territories]], was on the Pabol Sleheyron.</ref> - [[Outer Rim Territories]]<ref name="RO Locations">{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}}</ref> - [[Hutt Space]]<ref name="RO Locations" />
+|sectors=[[Kessel sector]]<ref name="RO Locations" />
+|stellar=
+|endpoints=
+|transitpoints=
+|otherobjects=[[Randon]]<ref name="RO Locations" /> - [[Chalacta]]<ref name="Locations">The {{GalaxyMapPoster}} places [[Chalacta]], [[Nimban]], [[Sleheyron]] and [[Rion]] on a [[hyperspace route]] between [[Randon]] and [[Formos]], which [[Where in the Galaxy Are the Worlds of Rogue One?|Where in the Galaxy Are the Worlds of ''Rogue One''?]] identifies as the Pabol Sleheyron.</ref> - [[Nimban]]<ref name="Locations" /> - [[Sleheyron]]<ref name="Locations" /> - [[Rion]]<ref name="Locations" /> - [[Ulmatra]]<ref name="Tales">''[[Solo: A Star Wars Story: Tales from Vandor]]''</ref> - [[Randa system|Randa]]<ref name="Tales" /> - [[Injopan]]<ref name="Tales" /> - [[Zerm]]<ref name="Tales" /> - [[Oba Diah]]<ref name="Tales" /> - [[Kessel]]<ref name="RO Locations" /> - [[Mandrine]]<ref name="Tales" /> - [[Tilurus]]<ref name="Tales" /> - [[Aeneid system|Aeneid]]<ref name="Tales" /> - [[Little Kessel system]]<ref name="BMF 29">{{BuildFalconCite|29|Guide to the Galaxy}}</ref> - [[Prishella system]]<ref name="BMF 29" /> - [[Formos]]<ref name="RO Locations" />
+|junctions=[[Randon Run]]<ref name="RO Locations" /> - [[Kessel Run]]<ref name="Tales" /> - [[Sanity Skip]]<ref name="Sanity">{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}} shows that [[Kessel]] is part of the Pabol Sleheyron. As ''[[Star Wars: Smuggler's Guide]]'' establishes that Kessel is also part of the [[Sanity Skip]], the [[planet]] must act as a junction between the two [[hyperspace route]]s.</ref> - [[Triellus Trade Route]]<ref name="RO Locations" />
+}}
+The '''Pabol Sleheyron''' was a [[hyperspace route]] between the celestial bodies [[Randon]] and [[Formos]], passing from the [[Mid Rim Territories]] to the [[Outer Rim Territories]] through [[Hutt Space]]. Randon and Formos connected the route with the [[Randon Run]] and [[Triellus Trade Route]] respectively. The Pabol Sleheyron also went through the [[Kessel sector]], connecting with the [[Kessel Run]] at the [[planet]] [[Oba Diah]] in the [[Kessel system]].
+
+==Description==
+[[File:KesselRunMap.jpg|thumb|left|300px|The Pabol Sleheyron passed through the Kessel sector, connecting with the Kessel Run.]]
+The Pabol Sleheyron was a [[hyperspace route]] which ran between the astronomical objects [[Randon]] and [[Formos]],<ref name="RO Locations" /> passing from the [[Mid Rim Territories]] to the [[Outer Rim Territories]] through [[Hutt Space]] and the<ref name="Timelines">{{GalaxyMapPoster}}</ref> [[Kessel sector]].<ref name="USW">''[[Ultimate Star Wars]]''</ref> From Randon, the route went to the celestial body [[Chalacta]] before passing into Mid Rim's portion of Hutt Space. The Pabol Sleheyron then went into the Outer Rim portion of Hutt Space<ref name="TFABG">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref> where it reached the astronomical objects [[Nimban]] and [[Sleheyron]]. After leaving Hutt Space, the route made its way to the celestial bodies [[Rion]],<ref name="Timelines" /> [[Ulmatra]], [[Randa system|Randa]], [[Injopan]], and [[Zerm]] before reaching the<ref name="Tales" /> [[Kessel system]], there the planets [[Kessel]] and [[Oba Diah]] were based.<ref name="Solo Guide">''[[Solo: A Star Wars Story The Official Guide]]''</ref> Afterwards, it passed on to the astronomical objects [[Mandrine]], [[Tilurus]], [[Aeneid system|Aeneid]], the [[Little Kessel system]], and the [[Prishella system]] before it reached Formos.<ref name="BMF 29" />
+
+The Pabol Sleheyron had was connected to a number of other hyperspace routes, including the [[Randon Run]] at Randon, and the [[Triellus Trade Route]] at Formos.<ref name="RO Locations" /> Sleheyron had hyperlane connections to the Hutt Space celestial bodies [[Kintan]]<ref name="Timelines" /> and [[Varl Prime|Varl]].<ref name="TFABG" /> In the Kessel system,<ref name="Solo Guide" /> the [[Kessel Run]] connected Kessel and Oba Diah<ref name="Tales" /> and the [[Sanity Skip]] led from Kessel to the [[Oseon system]].<ref name="Smuggler's Guide">''[[Star Wars: Smuggler's Guide]]''</ref> The Little Kessel [[Star system|system]] was connected by hyperspace route to the astronomical body [[Honoghr]].<ref name="BMF 29" />
+
+==Behind the scenes==
+The Pabol Sleheyron was first mentioned in [[canon]] in the [[Star Wars: Build the Millennium Falcon 29|twenty-ninth issue]] of the ''[[Star Wars: Build the Millennium Falcon]]'' magazine series, published by [[De Agostini]]<ref name="BMF 29" /> on approximately [[July 22]], [[2015]].<ref name="BMFdate">{{BuildFalconDates|29}}</ref>
+
+==Sources==
+*<!-- 2015-07-22 -->{{BuildFalconCite|29|Guide to the Galaxy}} {{1stm}}
+*<!-- 2015-12-30 -->{{BuildFalconCite|52|Guide to the Galaxy}}
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] {{Po}}
+*<!-- 2017-01-31 -->{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}}
+*<!-- 2018-09-11 -->''[[Solo: A Star Wars Story: Tales from Vandor]]''
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}} {{Po}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]'' {{Po}}
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]'' {{Po}}
+*<!-- 2026-05-26 -->''[[Star Wars: The Mandalorian Visual Guide]]'' {{Po}}
+*<!-- 2026-09-16 -->{{SWYouTube|series=Star Wars: Galaxy Guide|text=Meet the Hutts: The Galaxy's Biggest Crime Lords|video=Ct977noXUVg}}
+*{{StarWarsGalaxyMap}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|es=Pabol Sleheyron
+|tr=Pabol Sleheyron
+}}
+
+[[Category:Hutt Space hyperlanes]]
+[[Category:Major galactic hyperlanes]]
+[[Category:Mid Rim hyperlanes]]
+[[Category:Outer Rim Territories hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Pabol Sleheyron]]
+}}

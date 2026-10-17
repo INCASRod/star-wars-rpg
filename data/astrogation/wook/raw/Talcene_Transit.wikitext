@@ -1,0 +1,37 @@
+{{Top}}
+{{TradeRoute
+|image=
+|name=Talcene Transit
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Outer Rim Territories]]<ref name="BMF44">{{BuildFalconCite|44|Guide to the Galaxy}}</ref>
+**[[Foundry of the Confederacy]] {{C|[[Clone Wars]]}}<ref name="Battles">''[[Star Wars: Battles that Changed the Galaxy]]'' places [[Saleucami]], and therefore the Talcene Transit, in the [[Foundry of the Confederacy]] during the [[Clone Wars]].</ref>
+*[[The Slice]]<ref name="The Slice">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] places Saleucami, and therefore the Talcene Transit, in the area of [[Realspace|space]] ''[[Star Wars: The Galactic Explorer's Guide]]'' identifies as [[the Slice]].</ref>
+|sectors=[[Suolriep sector]]<ref name="BMF44" />
+|stellar=
+|endpoints=
+|transitpoints=[[Saleucami system]]<ref name="BMF44" />
+|otherobjects=
+|junctions=
+}}
+{{Quote|Exercise particular caution, therefore, regarding the Confederacy's factory worlds [&hellip;] as well as the other fully industrialized planets along the Talcene Transit route.|[[Muzzle]]|<ref name="OSWM 122">{{GermanFanCite|122|Database}}</ref>}}
+The '''Talcene Transit''' was a [[hyperspace route]] that acted as a supply line for [[starship]]s transporting cargo from the [[Perlemian Trade Route]] to the [[Kuthic Worlds]]. The [[planet]] [[Saleucami]]<ref name="BMF44" />&ndash;located at S-8 on the [[Standard Galactic Grid]]<ref name="Beginner Game">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref> in the [[Saleucami system]] of the [[Suolriep sector]]<ref name="BMF44" /> in [[the Slice]]<ref name="The Slice" /> and [[Outer Rim Territories]]'<ref name="BMF44" /> [[Foundry of the Confederacy]] regions,<ref name="Battles" /> and located between the worlds of [[Kegan]] and [[Handooine]]&ndash;was located on the route.<ref name="BMF44" /> Indeed, the [[Techno Union]] and [[Confederacy of Independent Systems]] operated industrialized worlds on the Talcene Transit.<ref name="OSWM 122" /> The [[Religion|religious]] cult<ref name="CL">[[Star Wars: Complete Locations (2016)|''Star Wars: Complete Locations'']]</ref> known as the [[Zealots of Psusan]] dominated three [[Colonist|colonies]] along the Talcene Transit.<ref name="BMF44" /> The route was mentioned by [[Advanced Recon Commando|ARC trooper]] [[Muzzle]] in the survival compendium "[[Neyo's Almanac of Clankers]]."<ref name="OSWM 122" />
+
+==Behind the scenes==
+In the current ''[[Star Wars]]'' [[canon]], the Talcene Transit was first mentioned in "Visiting Saleucami," an article published by [[De Agostini]] in the "[[Guide to the Galaxy]]" department of the magazine [[Star Wars: Build the Millennium Falcon 44|''Star Wars: Build the Millennium Falcon'' 44]]<ref name="BMF44" /> around [[November 4]], [[2015]].<ref name="BMFdate">{{BuildFalconDates|44}}</ref> The [[Talcene Transit/Legends|route]] originated in the [[Star Wars Legends|''Star Wars'' Legends]] continuity, where they were first mentioned in the [[2009]] reference book ''[[The Essential Atlas]]'', which was written by [[Jason Fry]] and [[Daniel Wallace]].<ref name="TEA">''[[The Essential Atlas]]''</ref>
+
+==Sources==
+*<!-- 2015-11-04 -->{{BuildFalconCite|44|Guide to the Galaxy}} {{1stm}}
+*<!-- 2026-06-19 -->{{GermanFanCite|122|Database}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|tr=Talcene Geçidi
+}}
+
+[[Category:Outer Rim Territories hyperlanes]]
+[[Category:The Slice hyperlanes]]

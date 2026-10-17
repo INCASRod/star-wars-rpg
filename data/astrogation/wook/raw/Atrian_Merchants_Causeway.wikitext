@@ -1,0 +1,32 @@
+{{Top}}
+{{TradeRoute
+|image=
+|name=Atrian Merchants' Causeway
+|founded=
+|founders=
+|dissolved=
+|eras=[[Imperial Era]]<ref name="Smuggler's Guide">''[[Star Wars: Smuggler's Guide]]''</ref>
+|regions=
+|sectors=
+|stellar=
+|endpoints=
+|transitpoints=
+|otherobjects=
+|junctions=
+}}
+'''Atrian Merchants' Causeway''' was a [[Hyperspace route|hyperlane]] existing sometime around the [[Imperial Era]]. [[Pirate Queen|Pirate queen]] [[Gunda Mabin]] traveled to its busiest stretch in hopes of saving her [[flagship]] ''[[Bloody Bones]]'' from exploding due to a [[coaxium]] leak.<ref name="Smuggler's Guide" />
+
+==Behind the scenes==
+Atrian Merchants' Causeway was first mentioned in ''[[Star Wars: Smuggler's Guide]]'', a reference book written by [[Daniel Wallace]] and released in [[2018]].<ref name="Smuggler's Guide" />
+
+==Sources==
+*<!-- 2018-11-13 -->''[[Star Wars: Smuggler's Guide]]'' {{1stm}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|ja=アトリアン・マーチャンツ・コーズウェイ
+}}
+
+[[Category:Hyperlanes]]

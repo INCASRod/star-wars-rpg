@@ -1,0 +1,16 @@
+{{Top}}
+The '''Skangravi-Mestun Regional Hyperlane''' was a [[hyperspace route]] that was located close to [[Pandem Nai]]. While the [[New Republic]] was preparing to launch an [[Battle of Pandem Nai|attack]] on the [[planet]] to free it from [[Galactic Empire|Imperial]] control, they managed to successfully secure enough [[star system]]s to take the Skangravi-Mestun.<ref name="Alphabet Squadron">[[Alphabet Squadron (novel)|''Alphabet Squadron'']]</ref>
+
+{{Route-stub}}
+
+==Appearances==
+*[[Alphabet Squadron (novel)|''Alphabet Squadron'']] {{Ab|Alphabet Squadron (audiobook)}} {{1st}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|fr=Hypervoie régionale de Skangravi-Mestun
+}}
+
+[[Category:Hyperlanes]]

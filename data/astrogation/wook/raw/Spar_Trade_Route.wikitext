@@ -1,0 +1,41 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:Spar-Trade-Route.jpg]]
+|name=Spar Trade Route
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="Rebel Files">''[[Star Wars: The Rebel Files]]''</ref> - [[Mid Rim Territories]]<ref name="SWApp">{{GalaxyMapAppendix}} &mdash; Based on corresponding data for the [[Cerea system]]</ref>
+|sectors=[[Moddell sector|Moddell]]<ref name="Rebel Files" /> - [[Semagi sector|Semagi]]<ref name="SWApp" />
+|stellar=
+|endpoints=*[[Annaj]]<ref name="Rebel Files" />
+*[[Cerea]]<ref name="Bespin">{{EncyclopediaCite|Bespin and Other Planets in the Outer Rim}}</ref>
+|transitpoints=
+|otherobjects=Annaj<ref name="Rebel Files" /> - Cerea<ref name="Bespin" />
+|junctions=
+}}
+{{Quote|The easiest way into the Moddell sector for our fleet is the Spar Trade Route, but that ends at Annaj where an Imperial picket will almost certainly be guarding the reversion point.|Ractivelle, in a report|<ref name="Rebel Files" />}}
+The '''Spar Trade Route''' was a [[Hyperspace route|hyperlane]] in the [[Outer Rim Territories]] that ended at [[Annaj]] in the [[Moddell sector]]. In the lead-up to the [[Battle of Endor]]<ref name="Rebel Files" /> in [[4 ABY]],<ref name="SWGA">''[[Star Wars: Galactic Atlas]]''</ref> [[Corporal]] [[Ractivelle]], one of the [[Alliance to Restore the Republic|Rebel Alliance]] scouts in the [[Outer Rim Territories|Outer Rim]], made a report on the Moddell sector and the established routes that could be used by the [[Rebel Alliance Navy|Alliance fleet]] to take the [[Galactic Empire]] by surprise at the [[forest]] [[moon]] of [[Endor]]. Ractivelle noted that the trade route was the easiest into the [[sector]], but was likely under the Empire's watch of the at Annaj, and another set of routes including the [[Houche Run]] would have to be used to reach the Endor.<ref name="Rebel Files" />
+
+==Behind the scenes==
+The Spar Trade Route was introduced into [[canon]] by the [[2017]] reference book and boxed set ''[[Star Wars: The Rebel Files]]'', written by [[Daniel Wallace]].<ref name="Rebel Files" />
+
+==Sources==
+*<!-- 2017-11-21 -->''[[Star Wars: The Rebel Files]]'' {{1stm}}
+*<!-- 2021-09-21 -->{{EncyclopediaCite|Bespin and Other Planets in the Outer Rim}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|ja=スパー交易ルート
+}}
+
+[[Category:Major galactic hyperlanes]]
+[[Category:Mid Rim hyperlanes]]
+[[Category:Outer Rim Territories hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Spar Trade Route]]
+}}

@@ -1,0 +1,35 @@
+{{Top}}
+{{Conjecture}}
+{{TradeRoute
+|image=[[File:Hesperys-AcolyteVisualGuide.png]]
+|name=Dalna—Sump hyperlane
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="Map">{{StarWarsGalaxyMap}}</ref>
+|sectors=
+|stellar=
+|endpoints=[[Sump]]<ref name="Map" />
+|transitpoints=Sump - [[Lafete]] - [[Eiram]] - [[Dalna]]<ref name="Map" />
+|otherobjects=
+|junctions=[[Lipsec Run]]<ref name="Lipsec">{{BuildFalconCite|18|Guide to the Galaxy}}</ref>
+}}
+A '''hyperspace route''' branched off<ref name="Map" /> the [[Lipsec Run]]<ref name="Lipsec" /> at the [[Sump system]] in in the [[Outer Rim Territories]], running southwest to [[Lafete]], the [[Eiram system]], and continuing past [[Dalna]].<ref name="Map" />
+
+{{Route-stub}}
+
+==Appearances==
+*''[[The High Republic: Cataclysm]]'' {{Ab|The High Republic: Cataclysm (audiobook)}} {{1st}}
+
+==Sources==
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]''
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]''
+*{{StarWarsGalaxyMap}} {{MapPoint}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Major galactic hyperlanes]]
+[[Category:Outer Rim Territories hyperlanes]]

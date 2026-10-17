@@ -1,0 +1,32 @@
+{{Top}}
+{{TradeRoute
+|image=
+|name=Pijal Hyperspace Corridor
+|founded=Around [[40 BBY]]<ref name="Master & Apprentice">''[[Master & Apprentice]]''</ref>
+|founders=[[Czerka Arms|Czerka Corporation]]<ref name="Master & Apprentice" />
+|dissolved=
+|eras=
+|regions=[[Inner Rim Territories]]<ref name="Master & Apprentice" />
+|sectors=
+|stellar=[[Byrnum Maw]]<ref name="Master & Apprentice" />
+|endpoints=
+|transitpoints=
+|otherobjects=[[Pijal]]<ref name="Master & Apprentice" />
+|junctions=
+}}
+The '''Pijal Hyperspace Corridor''' was a [[hyperspace route]] in [[the galaxy]]'s [[Inner Rim Territories|Inner Rim]], passing through the [[Byrnum Maw]] and the [[Pijal system]]. It was created by the [[Czerka Arms|Czerka Corporation]], who used [[hyperspace anchor]]s on [[Pijal]] and [[Pijal's moon|its moon]] to stabilize the maw, allowing travel through the area.<ref name="Master & Apprentice" />
+
+{{Route-stub}}
+
+==Appearances==
+*''[[Master & Apprentice]]'' {{Ab|Master & Apprentice (audiobook)}} {{1st}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|tr=Pijal Hiperuzay Koridoru
+}}
+
+[[Category:Inner Rim hyperlanes]]
+[[Category:The Interior hyperlanes]]

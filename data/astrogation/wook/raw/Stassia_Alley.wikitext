@@ -1,0 +1,34 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:StassiaAlley-GS.png]]
+|name=Stassia Alley
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Core Worlds]]<ref name="Cruiser">[[Star Wars: Galactic Starcruiser|''Star Wars'': Galactic Starcruiser]]</ref>
+*[[Deep Core]]<ref name="Cruiser" />
+*[[The Interior]]<ref name="Cruiser" />
+|sectors=[[Corusca sector]] ([[Coruscant subsector]])<ref name="CGttSWG">Based on corresponding data for [[Coruscant]] in ''[[Star Wars Encyclopedia: The Comprehensive Guide to the Star Wars Galaxy]]''</ref>
+|stellar=
+|endpoints=
+|transitpoints=[[Coruscant system]]<ref name="CGttSWG" />
+|otherobjects=[[Coruscant]]<ref name="Cruiser" />
+|junctions=[[Corellian Run]]/[[Koros Trunk Line]] {{C|[[Nexus Route]]}}/[[Metellos Trade Route]]/[[Namadii Corridor]]/[[Perlemian Trade Route]]<ref name="Junctions">[[Star Wars Galaxy Map (poster)|''Star Wars'' Galaxy Map poster]] shows Coruscant as part of six [[hyperspace route]]s, including the [[Corellian Run]], the [[Perlemian Trade Route]], a route identified by {{BuildFalconCite|36|Guide to the Galaxy}} as the [[Koros Trunk Line]], a route identified by ''[[Star Wars: Scum and Villainy: Case Files on the Galaxy's Most Notorious]]'' as the [[Metellos Trade Route]], and a route identified by ''[[Collapse of the Republic]]'' as the [[Namadii Corridor]]. It also shows the Koros Trunk Line as part of a larger route that "[[The Citadel (episode)|The Citadel]]" identifies as the [[Nexus Route]]. As [[Star Wars: Galactic Starcruiser|''Star Wars'': Galactic Starcruiser]] establishes Coruscant to be part of Stassia Alley, the [[planet]] must act as a junction to all of these routes.</ref>
+}}
+'''Stassia Alley'''<ref name="Cruiser" /> was a [[hyperspace route]]<ref name="Name">{{Twitter|username=missingwords|url=status/1687569805476548608|name=[[Matt Martin]]|date=2023-08-04|quote=Yeah, the 'alleys' are mean to be hyperspace lanes. The L is a typo in the graphic.}}</ref> with one terminus at [[Coruscant]],<ref name="Cruiser" /> a [[planet]] in the [[Coruscant system]] of the [[Corusca sector]]'s [[Coruscant subsector]]<ref name="CGttSWG" /> that was part of both [[the Interior]] and [[Core Worlds]] regions of [[the galaxy]]. The route then traveled into the [[Deep Core]] region of [[the galaxy]].<ref name="Cruiser" /> Coruscant acted as junction from Stassia Alley onto the [[Corellian Run]], the [[Perlemian Trade Route]], the [[Metellos Trade Route]], the [[Namadii Corridor]], and the [[Koros Trunk Line]], which was part of the larger [[Nexus Route]].<ref name="Junctions" />
+
+In [[34 ABY]],<ref name="Date">The events of [[Star Wars: Galactic Starcruiser|''Star Wars'': Galactic Starcruiser]] are dated to [[34 ABY]] by ''[[Star Wars: Timelines]]''.</ref> Stassia Alley was displayed on a parital [[galaxy]] map viewable to guests on board the [[Chandrila Star Line]]'s [[MPO-1400 Purgill-class star cruiser|Star Cruiser]] ''[[Halcyon]]'' while it was on a cruise from the Core Worlds' [[Chandrila system]] to the [[Outer Rim Territories]].<ref name="Cruiser" />
+
+==Behind the scenes==
+Stassia Alley was shown on the galaxy map on board the [[Star Wars: Galactic Starcruiser|''Star Wars'': Galactic Starcruiser]], an immersive roleplaying experience at [[W:c:disney:Walt Disney World Resort|Walt Disney World Resort]] in Florida<ref name="Cruiser" /> that opened to the public on [[March 1]], [[2022]]<ref name="31 Things">{{SW|url=news/31-things-we-learned-about-star-wars-galactic-starcruiser|text=31 Things We Learned in an Exclusive Preview of ''Star Wars'': Galactic Starcruiser|nolive=1}}</ref> and closed on [[September 30]], [[2023]].<ref name="Official website">{{Disney|subdomain=disneyworld|domain=go.com|url=star-wars-galactic-starcruiser/overview|text=''Star Wars'': Galactic Starcruiser - Overview}}</ref> In the [[Star Wars Legends|''Star Wars'' Legends]] continuity, [[Stassia]] was a [[Planet/Legends|planet]] in the [[Core Worlds/Legends|Core Worlds]].<ref name="Ringers">{{JournalCite|6|Ringers (short story)}}</ref>
+
+==Appearances==
+*[[Star Wars: Galactic Starcruiser|''Star Wars'': Galactic Starcruiser]] {{1st}} {{C|Pictured on [[Viewscreen|screen]] only}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Core Worlds hyperlanes]]
+[[Category:Deep Core hyperlanes]]
+[[Category:The Interior hyperlanes]]

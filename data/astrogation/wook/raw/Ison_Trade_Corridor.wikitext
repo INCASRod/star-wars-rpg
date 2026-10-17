@@ -1,0 +1,39 @@
+{{Top}}
+{{Otheruses|Corridor}}
+{{TradeRoute
+|image=
+|name=Ison Trade Corridor
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="Pirating">''[[Star Wars: Uprising]]''&mdash;Crew Run: "Pirating the Pirates"</ref>
+|sectors=[[Anoat sector]]<ref name="Pirating" />
+|stellar=
+|endpoints=
+|transitpoints=
+|otherobjects=[[Mataou]]<ref name="Mataou">''[[Star Wars: Uprising]]''&mdash;Sector Battle: "Mataou"</ref>
+|junctions=[[Corellian Trade Spine]]<ref name="Mataou" />
+}}
+The '''Ison Trade Corridor''', also known simply as the '''Ison Corridor''', was a [[hyperspace route]] passing through the [[Ison system]] in the [[Anoat sector]].<ref name="Pirating" /> The [[planet]] [[Mataou]] served as an entry point to the Ison Corridor for [[starship]]s leaving the [[Corellian Trade Spine]].<ref name="Mataou" />
+
+==Appearances==
+*''[[Star Wars: Uprising]]'' {{1stm}}
+
+==Sources==
+*<!-- 2015-07-22 -->{{BuildFalconCite|29|Guide to the Galaxy}}
+*<!-- 2015-12-14 -->''[[The Art of Star Wars: Uprising]]''
+*<!-- 2017-11-21 -->''[[Star Wars: The Rebel Files]]''
+*<!-- 2021-09-21 -->{{EncyclopediaCite|Bespin and Other Planets in the Outer Rim}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|fr=Corridor Ison
+|ja=アイソン交易回廊
+|pt=Corredor Comercial Ison
+|tr=Ison Ticaret Koridoru
+}}
+
+[[Category:Greater Javin hyperlanes]]

@@ -1,0 +1,42 @@
+{{Top|legends=Sanrafsix Corridor}}
+{{Conjecture}}
+{{TradeRoute
+|image=[[File:Sanrafsix-Cotellier-Route.png]]
+|name=Sanrafsix–Cotellier hyperlane
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="Map">{{StarWarsGalaxyMap}}</ref>
+|sectors=[[Grumani sector|Grumani]]<ref name="Sanrafsix">{{GalaxyMapAppendix}} &mdash; Based on corresponding data for the [[Sanrafsix system]]</ref> - [[Garis sector|Garis]]<ref name="Azzameen">{{GalaxyMapAppendix}} &mdash; Based on corresponding data for the [[Azzameen Station system]]</ref> - [[Mayagil sector]]<ref name="Daxam">{{GalaxyMapAppendix}} &mdash; Based on corresponding data for the [[Daxam system]]</ref> - [[Tamarin sector|Tamarin]]<ref name="Rior">{{GalaxyMapAppendix}} &mdash; Based on corresponding data for the [[Rior system]]</ref> - [[Rseik sector|Rseik]]<ref name="Cotellier">{{GalaxyMapAppendix}} &mdash; Based on corresponding data for the [[Cotellier system]]</ref>
+|stellar=
+|endpoints=*[[Sanrafsix system]]<ref name="TFABG">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref>
+*[[Cotellier system]]<ref name="TFABG" />
+|transitpoints=Sanrafsix<ref name="TFABG" /> - [[Azzameen Station]]<ref name="Map" /> - [[Omwat system|Omwat]]<ref name="TFABG" /> [[Blarrum]]<ref name="AVG">''[[Star Wars: The Acolyte: The Visual Guide]]''</ref> - [[Daxam IV]] - [[Kabal system|Kabal]] - [[Rior]]<ref name="Map" /> - [[Sag Kemper]] - [[Zallo]] - [[Langsha-Raang]] - [[Sevarcos]] - [[Ringlite system|Ringlite]]<ref name="AVG" /> - [[Kirdo III]]<ref name="TFABG" /> - [[Valo]] - [[Monnoc]] - [[Chortose]] - [[Delemede]] - [[Cotellier system|Cotellier]]<ref name="AVG" />
+|otherobjects=
+|junctions=*[[Darkknell–New Cov hyperlane]]<ref name="TFABG" />
+*[[Sharlissia–Triton hyperlane]]<ref name="TFABG" />
+}}
+A '''hyperlane''' ran through the [[Outer Rim Territories]], linking the [[Sanrafsix system]]<ref name="TFABG" /> in the [[Grumani sector]]<ref name="Sanrafsix" /> to the [[Cotellier system]]<ref name="TFABG" /> in the [[Rseik sector]].<ref name="Cotellier" />
+
+{{Route-stub}}
+
+==Behind the scenes==
+In the [[Star Wars Legends|''Star Wars'' Legends]] continuity, this route was known as the [[Sanrafsix Corridor]], and was first mapped in the [[2009]] reference book ''[[The Essential Atlas]]''.<ref name="TEA">''[[The Essential Atlas]]''</ref>
+
+==Sources==
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]''
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]''
+*{{StarWarsGalaxyMap}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Major galactic hyperlanes|Sanrafsix Corridor*]]
+[[Category:Outer Rim Territories hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Sanrafsix–Cotellier hyperlane]]
+}}

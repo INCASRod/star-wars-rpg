@@ -1,0 +1,38 @@
+{{Top|legends=Sharlissian Trade Corridor}}
+{{Conjecture}}
+{{TradeRoute
+|image=
+|name=Sharlissia–Triton hyperlane
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="Map">{{StarWarsGalaxyMap}}</ref>
+|sectors=
+|stellar=
+|endpoints=*[[Sharlissia system|Sharlissia]]<ref name="Map" />
+*[[Triton]]<ref name="Map" />
+|transitpoints=
+|otherobjects=
+|junctions=*[[Sanrafsix–Cotellier hyperlane]]<ref name="Map" />
+*[[Rimma Trade Route]]<ref name="Map" />
+}}
+A '''hyperlane''' linked the [[Sharlissia system]] to [[Triton]] in the [[Outer Rim Territories]].<ref name="Map" /> 
+
+{{Route-stub}}
+
+==Behind the scenes==
+In the [[Star Wars Legends|''Star Wars'' Legends]] continuity, this hyperlane was known as the [[Sharlissian Trade Corridor]] and was mapped in the [[2009]] reference book ''[[The Essential Atlas]]''.<ref name="TEA">''[[The Essential Atlas]]''</ref>
+
+==Sources==
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] {{Po}}
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}} {{Po}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]'' {{Po}}
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]'' {{Po}}
+*{{StarWarsGalaxyMap}} {{Po}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Major galactic hyperlanes|Sharlissian Trade Corridor*]]
+[[Category:Outer Rim Territories hyperlanes]]

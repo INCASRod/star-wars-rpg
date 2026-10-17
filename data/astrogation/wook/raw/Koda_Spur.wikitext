@@ -1,0 +1,58 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:KodaSpur-GM.png]]
+|name=Koda Spur
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Outer Rim Territories]]<ref name="Locations">{{GalaxyMapHyperlanes|route=Koda Spur|canon={{EncyclopediaCite|Scarif and Other Planets in the Outer Rim}}|leg=''[[The Essential Atlas]]''}} Along this route, ''[[Star Wars: The Acolyte: The Visual Guide]]'' places the [[Koda system|Koda Space Station system]], the [[Urn-Aram system]], the [[Rex Strata system]], the [[Bitmus Cloud]], the [[Nefitifi system]], and the [[Lutrillia system]], {{StarWarsGalaxyMap}} places the [[Lotho Minor system|Lotho Minor]] and [[Thune system]]s, and [[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] places the [[Ryoone system]].</ref> - [[Wild Space]]<ref name="Snare">''[[Adventures in Wild Space: The Snare]]'', based on corresponding data for [[Thune]].</ref>
+*[[Western Reaches]]<ref name="Western Reaches">{{StarWarsGalaxyMap}} places the Koda Spur in the area of [[Realspace|space]] ''[[Star Wars: The Galactic Explorer's Guide]]'' identifies as the [[Western Reaches]].</ref>
+|sectors=[[Wazta sector]]<ref name="Sectors">{{GalaxyMapAppendix}} - Based on corresponding data for the [[Koda system|Koda Station]], [[Ryoone system|Ryoone]], [[Lotho Minor system|Lotho Minor]], [[Thune system|Thune]], [[Rex Strata system|Rex Strata]], [[Bitmus Cloud]], [[Nefitifi system|Nefitifi]], [[Wazta system|Wazta]], and [[Lutrillia system]]s.</ref> - [[Greater Javin]]<ref name="Sectors" />
+|stellar=
+|endpoints=*[[Koda Station]]<ref name="Locations" />
+*[[Lutrillia]]<ref name="Locations" />
+|transitpoints=[[Koda system|Koda Station]]<ref name="Locations" /> - [[Urn-Aram system|Urn-Aram]]<ref name="Locations" /> - [[Ryoone system|Ryoone]]<ref name="Locations" /> - [[Lotho Minor system|Lotho Minor]]<ref name="Locations" /> - [[Thune system|Thune]]<ref name="Locations" /> - [[Rex Strata system|Rex Strata]]<ref name="Locations" /> - [[Bitmus Cloud]]<ref name="Locations" /> - [[Nefitifi system|Nefitifi]]<ref name="Locations" /> - [[Wazta system|Wazta]]<ref name="Locations" /> - [[Lutrillia system|Lutrillia]]<ref name="Locations" />
+|otherobjects=
+|junctions=
+}}
+The '''Koda Spur''' was a [[hyperspace route]] that ran from [[Koda Station]] of the [[Wazta sector]] eastward toward the [[Corellian Trade Spine]], terminating at the [[plant]] [[Lutrillia]] of the [[Greater Javin]] [[sector]]. Much of the route was in the Wazta sector, including the planets [[Thune]] and [[Lotho Minor]], with portions in both the [[Outer Rim Territories]] and [[Wild Space]].
+
+==Description==
+The Koda Spur was a [[hyperspace route]]<ref name="Scarif">{{EncyclopediaCite|Scarif and Other Planets in the Outer Rim}}</ref> that ran from [[Koda Station]] in the [[Outer Rim Territories]]<ref name="Locations" /> eastward toward the [[Corellian Trade Spine]].<ref name="Scarif" /> Much of it passed through the [[Wazta sector]], ending in the [[Greater Javin]]'s [[Lutrillia system]].<ref name="Sectors" /> It passed through the [[Ryoone system]],<ref name="TFABG">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref> the [[Wild Space]] [[planet]]<ref name="Snare" /> [[Thune]], and the Outer Rim<ref name="Locations" /> planet<ref name="BMF 74">{{BuildFalconCite|74|Starship Fact File}}</ref> [[Lotho Minor]]<ref name="Locations" /> in [[Lotho Minor system]]<ref name="BMF 74" /> before terminating at<ref name="Locations" /> the planet<ref name="Traveler's Guide">''[[Star Wars: Galaxy's Edge: Traveler's Guide to Batuu]]''</ref> [[Lutrillia]], which was linked to the Corellian Trade Spine by another route.<ref name="Locations" /> The planet [[Vassek]] in the [[Vassek system]] of the Wazta sector was far enough of the Koda Spur to ensure that it did not receive many visitors.<ref name="BMF 65">{{BuildFalconCite|65|Guide to the Galaxy}}</ref>
+
+==History==
+In [[20 BBY]],<ref name="Date">''[[Star Wars: Timelines]]'' places the events of "[[Massacre]]" and "[[Revenge (episode)|Revenge]]" to [[20 BBY]]. The events of "[[Brothers (episode)|Brothers]]," during which a [[TR-TL3 Terrapin-class bulk tanker|''Terrapin''-class Bulk Tanker]] is hijacked, takes place between those two episodes according to {{SW|url=news/star-wars-the-clone-wars-chronological-episodeorder|text=''Star Wars: The Clone Wars'' Chronological Episode Order}}, and so must also take place in 20 BBY.</ref> a [[TR-TL3 Terrapin-class bulk tanker|''Terrapin''-class Bulk Tanker]] was traveling between the [[planet]]s [[Stobar]] and [[Lotho Minor]] when it was hijacked near the Koda Spur by the [[Dark side of the Force|dark side]] warrior [[Savage Opress]].<ref name="BMF 74">{{BuildFalconCite|74|Starship Fact File}}</ref> During the [[Galactic Civil War]], a repainted [[TIE series|TIE fighter]] was rumored to have been seen along the Koda Spur.<ref name="Shadow Fall">''[[Shadow Fall: An Alphabet Squadron Novel]]''</ref> Around [[5 ABY]],<ref name="5 ABY">{{ShadowFallDate}}</ref> while searching for activity of the [[Galactic Empire]]'s [[204th Imperial Fighter Wing]], the [[New Republic Intelligence]] [[agent]] [[Caern Adan]] and [[Lieutenant]] [[Yrica Quell]] reviewed the supposed sighting aboard the [[Acclamator-class transgalactic military assault ship|''Acclamator''-class transgalactic military assault ship]] ''[[Lodestar]]''.<ref name="Shadow Fall" />
+
+In [[34 ABY]],<ref name="Starcruiserdate">''[[Star Wars: Timelines]]'' dates the events of [[Star Wars: Galactic Starcruiser|''Star Wars'': Galactic Starcruiser]] to [[34 ABY]].</ref> the Koda Spur was included on a partial [[Star map|map]] of the [[galaxy]] displayed on screens on board [[Chandrila Star Line]]'s [[MPO-1400 Purgill-class star cruiser|Star Cruiser]] ''[[Halcyon]]'' while it traveled from the [[Core Worlds]]' [[Chandrila system]] to the Outer Rim Territories.<ref name="GS">[[Star Wars: Galactic Starcruiser|''Star Wars'': Galactic Starcruiser]]</ref>
+
+==Behind the scenes==
+In the current ''[[Star Wars]]'' [[canon]], the Koda Spur was first pictured on a map in "[[Where in the Galaxy Are the Worlds of Star Wars: The Force Awakens?|Where in the Galaxy Are the Worlds of ''Star Wars: The Force Awakens''?]]," a blog post on [[StarWars.com]] written by [[Mark Newbold]] and published on [[January 29]], [[2016]].<ref name="Where">{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-star-wars-the-force-awakens|text=Where in the Galaxy Are the Worlds of ''Star Wars: The Force Awakens''?|int=Where in the Galaxy Are the Worlds of Star Wars: The Force Awakens?}}</ref> It was then first identified in the [[Star Wars: Build the Millennium Falcon 65|sixty-fifth issue]] of the ''[[Star Wars: Build the Millennium Falcon]]'' magazine,<ref name="BMF 65" /> published around [[March 30]], 2016.<ref name="BMFdate">{{BuildFalconDates|65}}</ref> In the [[Star Wars Legends|''Star Wars'' Legends]] continuity, the [[Koda Spur/Legends|Koda Spur]] was first mentioned in the [[2009]] reference book ''[[The Essential Atlas]]'', which was written by [[Jason Fry]] and [[Daniel Wallace]].<ref name="Essential Atlas">''[[The Essential Atlas]]''</ref>
+
+==Appearances==
+*[[The High Republic Adventures (2021) 1|''The High Republic Adventures'' (2021) 1]] {{MapPoint|unnamed=1}}
+*''[[Shadow Fall: An Alphabet Squadron Novel]]'' {{Ab|Shadow Fall: An Alphabet Squadron Novel (audiobook)}} {{Mo}}
+*[[Star Wars: Galactic Starcruiser|''Star Wars'': Galactic Starcruiser]] {{1st}} {{MapPoint|screen=1}}
+
+==Sources==
+*<!-- 2016-01-29 -->{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-star-wars-the-force-awakens|text=Where in the Galaxy Are the Worlds of ''Star Wars: The Force Awakens''?|int=Where in the Galaxy Are the Worlds of Star Wars: The Force Awakens?}} {{1stp}}
+*<!-- 2016-03-30 -->{{BuildFalconCite|65|Guide to the Galaxy}} {{1stm}}
+*<!-- 2016-06-01 -->{{BuildFalconCite|74|Starship Fact File}}
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] {{MapPoint}}
+*<!-- 2020-12-12 -->''[[The High Republic Free Digital Sampler]]'' {{MapPoint|unnamed=1}}
+*<!-- 2021-04-20 -->{{EncyclopediaCite|The First Order}} {{MapPoint}}
+*<!-- 2021-07-20 -->{{EncyclopediaCite|Scarif and Other Planets in the Outer Rim}} {{ID|Koda Route}}
+*<!-- 2022-03-11 -->{{EncyclopediaCite|Exegol, the Unknown Regions and Wild Space}} {{MapPoint}}
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}} {{MapPoint}}
+*<!-- 2024-11-XX -->{{FalconCite|74|Starship Fact File}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]'' {{MapPoint}}
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]'' {{MapPoint}}
+*{{StarWarsGalaxyMap}} {{MapPoint}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Major galactic hyperlanes]]
+[[Category:Outer Rim Territories hyperlanes]]
+[[Category:Western Reaches hyperlanes]]
+[[Category:Wild Space hyperlanes]]

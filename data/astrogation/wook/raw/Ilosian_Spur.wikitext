@@ -1,0 +1,36 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:IlosianSpur-MeetTheHutts.png]]
+|name=Ilosian Spur
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Hutt Space]]<ref name="YouTube">{{SWYouTube|series=Star Wars: Galaxy Guide|text=Meet the Hutts: The Galaxy's Biggest Crime Lords|video=Ct977noXUVg}}</ref>
+*[[Mid Rim Territories]]<ref name="Appendix">{{GalaxyMapAppendix}} &mdash; Based on corresponding data for the [[Bimmisaari system]] and [[Boz Pity system]]</ref>
+|sectors=[[Halla sector]]<ref name="Appendix" />
+|stellar=
+|endpoints=*[[Bimmisaari system|Bimmisaari]]<ref name="YouTube" />
+*[[Ilos Minor system|Ilos Minor]]<ref name="YouTube" />
+|transitpoints=Bimmisaari - [[Boz Pity system|Boz Pity]] - [[Alee system|Alee]] - [[Tal Nami system|Tal Nami]] - Ilos Minor<ref name="YouTube" />
+|otherobjects=
+|junctions=*[[Lesser Lantillian Route]]<ref name="YouTube" />
+*[[Pabol Sleheyron]]<ref name="YouTube" />
+}}
+The '''Ilosian Spur''' was a [[hyperspace route]] that linked the [[Lesser Lantillian Route]]<ref name="YouTube" /> in the [[Mid Rim Territories]]<ref name="Appendix" /> with the [[Pabol Sleheyron]] route in [[Hutt Space]]. It branched off the Lesser Lantillian Route at the [[Bimmisaari system]],<ref name="YouTube" /> located in the [[Halla sector]]<ref name="Appendix" /> and [[Kashyyyk Region]] in grid square R-9 of the [[Standard Galactic Grid]], and passed through the [[Boz Pity system]]<ref name="YouTube" /> in the same [[sector]]<ref name="Appendix" /> and region but in grid square S-9. It then returned to square R-9 and entered Hutt Space, connecting to the [[Alee system]] and the [[Tal Nami system]], before reaching the [[Ilos Minor system]] on the Pabol Sleheyron in grid square R-10.<ref name="YouTube" />
+
+==Behind the scenes==
+In the current ''[[Star Wars]]'' [[canon]], Ilosian Spur was mentioned in "Meet the Hutts: The Galaxy's Biggest Crime Lords," a video in the ''[[Star Wars: Galaxy Guide]]'' series published on the official ''Star Wars'' [[Wikipedia:YouTube|YouTube]] channel on [[September 16]], [[2026]]. It reused a map showing the Ilosian Spur<ref name="YouTube" /> that had been created by the artist [[Modi]] for ''[[The Essential Atlas]]'', a [[2009]] reference book written by [[Jason Fry]] and [[Daniel Wallace]] that marked the first mention of the [[Ilosian Spur|route]] in the [[Star Wars Legends|''Star Wars'' Legends]] continuity.<ref name="TEA">''[[The Essential Atlas]]''</ref>
+
+==Sources==
+*<!-- 2026-09-16 -->{{SWYouTube|series=Star Wars: Galaxy Guide|text=Meet the Hutts: The Galaxy's Biggest Crime Lords|video=Ct977noXUVg}} {{1stm}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Hutt Space hyperlanes]]
+[[Category:Mid Rim hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Ilosian Spur]]
+}}

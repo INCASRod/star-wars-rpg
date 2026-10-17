@@ -1,0 +1,52 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:Llanic-Spice-Run-TFABG.png]]
+|name=Llanic Spice Run
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="TFABG">Based on the placement of [[Llanic]]</ref>
+|sectors=
+|stellar=
+|endpoints=
+|transitpoints=
+|otherobjects=[[Llanic]]<ref name="HttJ">''[[Heir to the Jedi]]''</ref>
+|junctions=*[[Triellus Trade Route]]<ref name="HttJ" />
+*[[Five Veils Route|Quence–Skynara hyperlane]]<ref name="Llanic">{{GalaxyMapHyperlanes|route=Llanic Spice Run|canon=''[[Heir to the Jedi]]''|leg=''[[The Essential Atlas]]''}}</ref>
+}}
+{{Quote|The route is cleared, Poe&mdash;it's a pathway for thieves and our kind to ferry goods, even through the thick of a nebula.|[[Tomasso]], to [[Poe Dameron]]|<ref name="Free Fall">''[[Poe Dameron: Free Fall]]''</ref>}}
+The '''Llanic Spice Run''' was a [[Hyperspace route|trade route]] which intersected with the [[Triellus Trade Route]] at the [[planet]] [[Llanic]]. During the reign of the [[Galactic Empire]], the route was often patrolled by the forces of [[Moff]] [[Abran Balfour]], a fact [[Princess]] [[Leia Skywalker Organa Solo|Leia Organa]] warned the [[Jedi]] [[Luke Skywalker]] of when he planned to visit Llanic.<ref name="HttJ" />
+
+After undertaking a [[Heist on Guat'a|heist]], the [[Spice Runners of Kijimi]] escaped from the [[Osako pirates]] through the [[Torch Nebula]] along the Llanic Spice Run.<ref name="Free Fall" />
+
+{{Route-stub}}
+
+==Appearances==
+*''[[Heir to the Jedi]]'' {{Ab|Heir to the Jedi (audiobook)}} {{1st}}
+*''[[Poe Dameron: Free Fall]]'' {{Ab|Poe Dameron: Free Fall (audiobook)}}
+
+==Sources==
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] {{1stp}}
+*<!-- 2019-06-28 -->''[[Collapse of the Republic]]''
+*<!-- 2019-12-20 -->''[[Star Wars: The Rise of Skywalker: The Visual Dictionary]]''
+*<!-- 2021-07-20 -->{{EncyclopediaCite|Scarif and Other Planets in the Outer Rim}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|es=Corredor de Especia Llanic
+|fr=Route des épices de Llanic
+|pl=Llanicki Szlak Przyprawowy
+|pt=Rota de Especiarias de Llanic
+|tr=Llanic Baharat Kaçış Yolu
+}}
+
+[[Category:Major galactic hyperlanes]]
+[[Category:Outer Rim Territories hyperlanes]]
+[[Category:Trailing Sectors hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Llanic Spice Run]]
+}}

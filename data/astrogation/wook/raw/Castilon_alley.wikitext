@@ -1,0 +1,14 @@
+{{Top}}
+{{ConjectureCapitalization}}
+{{Image}}
+'''Castilon alley'''<ref name="Name">{{Twitter|username=missingwords|url=status/1687569805476548608|name=[[Matt Martin]]|date=2023-08-04|quote=Yeah, the 'alleys' are mean to be hyperspace lanes. The L is a typo in the graphic.}}</ref> was a [[Hyperspace route|hyperspace lane]].<ref name="GS">[[Star Wars: Galactic Starcruiser|''Star Wars'': Galactic Starcruiser]]</ref>
+
+{{Ast-stub}}
+
+==Appearances==
+*[[Star Wars: Galactic Starcruiser|''Star Wars'': Galactic Starcruiser]] {{1stm}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Hyperlanes]]

@@ -1,0 +1,41 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:Circumtore-Syvris-GalaxyMap.png]]
+|name=Hollastin Run
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Hutt Space]]<ref name="Guide">{{SWYouTube|series=Star Wars: Galaxy Guide|text=Meet the Hutts: The Galaxy's Biggest Crime Lords|video=Ct977noXUVg}}</ref>
+|sectors=
+|stellar=
+|endpoints=*[[Circumtore]]<ref name="Guide" />
+*[[Syvris]]<ref name="Guide" />
+|transitpoints=
+|otherobjects=
+|junctions=*[[Shag Pabol]]<ref name="Guide" />
+*[[Triellus Trade Route]]<ref name="Guide" />
+*[[Pando Spur]]<ref name="Guide" />
+}}
+The '''Hollastin Run''' was a [[hyperspace route]] that stretched from [[Circumtore]] along the [[Gamor Run]] to [[Syvris]] along the [[Triellus Trade Route]].
+
+{{Ast-stub}}
+
+==Sources==
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]''
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]''
+*<!-- 2026-05-26 -->''[[Star Wars: The Mandalorian Visual Guide]]''
+*<!-- 2026-09-16 -->{{SWYouTube|series=Star Wars: Galaxy Guide|text=Meet the Hutts: The Galaxy's Biggest Crime Lords|video=Ct977noXUVg}} {{1stID|Hollastin Run}}
+*{{StarWarsGalaxyMap}} {{MapPoint}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Hutt Space hyperlanes]]
+[[Category:Major galactic hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Hollastin Run]]
+}}

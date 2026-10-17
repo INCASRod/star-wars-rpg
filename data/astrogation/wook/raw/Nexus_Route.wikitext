@@ -1,0 +1,76 @@
+{{Top}}
+{{Otheruses|Nexus}}
+{{TradeRoute
+|image=
+|name=Nexus Route
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Core Worlds]] - [[Outer Rim Territories]]<ref name="Citadel">{{TCW|The Citadel (episode)}}</ref>
+|sectors=*[[Corusca sector]]<ref name="Citadel" />
+*[[Koros sector]]<ref name="NoP">''[[Nexus of Power]]''</ref>
+|stellar=
+|endpoints=
+|transitpoints=
+|otherobjects=[[Galactic Republic|Republic]] and [[Confederacy of Independent Systems|Confederate]] [[homeworld]]s, including [[Coruscant]]<ref name="Citadel" />
+|junctions=[[Corellian Run]]<ref name="TFABG">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref> - [[Metellos Trade Route]]<ref name="Scum and Villainy">''[[Star Wars: Scum and Villainy: Case Files on the Galaxy's Most Notorious]]''</ref> - [[Namadii Corridor]]<ref name="Collapse">''[[Collapse of the Republic]]''</ref> - [[Perlemian Trade Route]]<ref name="TFABG" />
+}}
+{{Quote|They could prove vital in maneuvering our forces deep into remote Separatist sectors.''"<br />"''Or the enemy could use them to slip through our defenses and attack Coruscant''."<br />"''These hyperspace lanes are of immense interest to both our sides and could tip the scale of the war to whomever is in possession of them. That is all.|Obi-Wan Kenobi, Anakin Skywalker, and [[Plo Koon]]|<ref name="Citadel" />}}
+The '''Nexus Route''' was the codename of a key [[hyperspace route]] that extended between the hearts of both [[Galactic Republic]] and [[Confederacy of Independent Systems]] territory and became of seminal interest to the two governments during the [[Clone Wars]]. Control over the [[hyperspace]] route would have proven to be of major tactical advantage to either party as it would provide them the ability to launch strikes against each other's [[homeworld]]s, including the Republic [[capital]] [[Planet|world]] of [[Coruscant]]. The ancient [[Koros Trunk Line]] made up a part of the Nexus Route.
+
+During the war, the coordinates for the Nexus Route were discovered by [[Jedi Master]] [[Even Piell]] and his [[captain]], [[Wilhuff Tarkin]], which led to the two of them being taken [[Capture of Even Piell|captive]] by the Confederacy, but not before dividing the information between each other. Later, following a [[Battle of Lola Sayu|struggle]] to rescue Piell and recover the information, the Jedi Master was [[Death|killed]] and passed his half of the information to [[Jedi]] [[Padawan]] [[Ahsoka Tano]], who was ordered to bring it directly to the [[Jedi High Council]]. However, Tarkin refused to share the information with the Jedi and was ordered to deliver it to his mentor [[Supreme Chancellor]] [[Darth Sidious|Sheev Palpatine]] following his rescue. Nevertheless, the Separatists used the route the following [[Standard year|year]] and launched an [[Battle of Coruscant|attack]] on Coruscant, led by [[General]] [[Grievous]].
+
+==History==
+===Creation===
+The Nexus Route was the codename for an old [[Hyperspace route|hyperspace lane]] connected to [[Coruscant]]<ref name="OSWM 123">{{GermanFanCite|123|Database}}</ref> and extended to the [[Outer Rim Territories]].<ref name="Citadel" /> The ancient [[Koros Trunk Line]] was part of the route, which was originally created to transport [[carbonite]] to from the [[planet]] [[Empress Teta|Koros Major]] to Coruscant, where it earned the nickname "Carbonite Pipeline." Over time, the Koros Trunk Line became forgotten,<ref name="OSWM 123" /> along with the Nexus Route as a whole.<ref name="Citadel" />
+
+===The Citadel affair===
+[[File:AhsokaTarkin-CR.png|thumb|left|250px|Ahsoka Tano and Wilhuff Tarkin each held half of the coordinates to the Nexus Route.]]
+In [[20 BBY]],<ref name="Date">{{TCWcanondates|318}}</ref> during the [[Clone Wars]] between the [[Galactic Republic]] and the [[Confederacy of Independent Systems]], [[Jedi Master]] [[Even Piell]] and his Republic forces managed to discover the coordinates for the Nexus Route. Later, Piell and his [[Venator-class Star Destroyer|''Venator''-class Star Destroyer]] were [[Capture of Even Piell|ambushed]] and captured by the Separatists, who took the [[Jedi]] Master and several [[Clone trooper officer|clone officers]] to the [[Citadel]] [[prison]] on the planet [[Lola Sayu]] shortly after. Before their capture, Piell and his [[Captain]] [[Wilhuff Tarkin]] deleted the information from their [[Star Destroyer]] and memorized half of the route's coordinates in order to prevent the Separatists from learning of its location.<ref name="Citadel" />
+
+Sometime after his imprisonment, a rescue team led by [[Jedi General]]s [[Obi-Wan Kenobi]] and [[Anakin Skywalker]] were dispatched by the Republic to Lola Sayu in order to free Piell from the Citadel along with the Nexus Route's coordinates. However, despite the Republic's success in freeing Piell, the Jedi Master was [[Death|killed]] amid their escape from the planet, forcing him to pass his half of the information on to Skywalker's Jedi [[Padawan]] [[Ahsoka Tano]], who Piell ordered to bring to the [[Jedi High Council|Jedi Council]] alone. Upon their escape and return to the planet Coruscant, Tarkin refused to share his half of the information and explained that he was to bring it directly to his mentor [[Supreme Chancellor]] [[Darth Sidious|Sheev Palpatine]], with whom Jedi [[Grand Master]] [[Yoda]] would confer to decide on the course of action as a result.<ref name="Rescue">{{TCW|Citadel Rescue}}</ref>
+
+===Battle of Coruscant===
+Towards the end of the war, it was believed that [[Dark Lord of the Sith]], Darth Sidious, Chancellor Palpatine's true persona, provided the location of the Nexus Route to his pawns in the Separatist Alliance. As a result, the Kaleesh [[warlord]] and [[Supreme Martial Commander of the Separatist Droid Armies]], [[General]] [[Grievous]], utilized the hyperspace route in order to facilitate a massive, unprecedented [[Battle of Coruscant|assault]] on Coruscant.<ref name="Battles">''[[Star Wars: Battles that Changed the Galaxy]]''</ref>
+
+[[Clone Marshal Commander|Commander]] [[Neyo]] was aware of the route at this time. In his survival compendium "[[Neyo's Almanac of Clankers]]," he included a message where he mentioned the history of the route and the [[Battle of Lola Sayu|mission]] to recover it. He knew that Grievous used the Nexus Route to reach Coruscant.<ref name="OSWM 123" /> With Sidious's true persona and control over the Confederacy a well-hidden secret,<ref name="EpIII">{{Film|III}}</ref> Neyo was left to wonder how the coordinates made their way into Separatist hands. He speculated that [[Republic Intelligence]] let unreliable [[droid]]s near sensitive [[computer]] terminals.<ref name="OSWM 123" />
+
+==Behind the scenes==
+The Nexus Route was first mentioned in "[[The Citadel (episode)|The Citadel]],"<ref name="Citadel" /> the eighteenth episode of the animated television series ''[[Star Wars: The Clone Wars]]''' [[The Clone Wars: Season Three|third season]], which originally aired on [[February 18]], [[2011]].<ref name="The Citadel Ep Guide">{{SWArchive|url=theclonewars/guide/episode318.html|text=''The Clone Wars'' Episode Guide: The Citadel}}</ref>
+
+==Appearances==
+*{{TCW|The Citadel (episode)}} {{1stm}}
+*{{TCW|Counterattack}} {{Mo}}
+*{{TCW|Citadel Rescue}} {{Mo}}
+
+==Sources==
+*<!-- 2011-03-11 -->{{SWArchive|url=theclonewars/guide/episode320.html|text=''The Clone Wars'' Episode Guide: Citadel Rescue}}
+*<!-- 2014-07-01 -->{{SW|url=series/clone-wars/the-citadel-episode-guide|text="The Citadel" Episode Guide &#124; The Clone Wars}}
+*<!-- 2014-07-01 -->{{SW|url=series/clone-wars/counterattack-episode-guide|text="Counterattack" Episode Guide &#124; The Clone Wars}}
+*<!-- 2014-07-01 -->{{SW|url=series/clone-wars/citadel-rescue-episode-guide|text="Citadel Rescue" Episode Guide &#124; The Clone Wars}}
+*<!-- 2015-04-28 -->''[[Ultimate Star Wars]]''
+*<!-- 2015-11-12 -->{{HelmetCollectionCite|35|Weapons & Uniforms}} {{Imo}}
+*<!-- 2016-12-20 -->{{HelmetCollectionCite|53|Databank A-Z}}
+*<!-- 2019-10-04 -->''[[Ultimate Star Wars, New Edition]]''
+*<!-- 2020-10-20 -->''[[Star Wars: The Lightsaber Collection]]'' {{Imo}}
+*<!-- 2021-04-01 -->''[[Star Wars: The Clone Wars: Character Encyclopedia - Join the Battle!]]''
+*<!-- 2021-05-18 -->{{EncyclopediaCite|The Clone Wars Begin}}
+*<!-- 2021-06-17 -->{{SW|url=news/star-wars-battles-that-changed-the-galaxy-announce|text=In ''Star Wars: Battles that Changed the Galaxy'', Go Inside the Crucible of War}}
+*<!-- 2021-11-02 -->''[[Star Wars: Battles that Changed the Galaxy]]''
+*<!-- 2022-01-11 -->[[Star Wars: The Clone Wars – The Official Collector's Edition|''Star Wars: The Clone Wars'' – The Official Collector's Edition]]
+*<!-- 2024-11-19 -->''[[Star Wars Encyclopedia: The Comprehensive Guide to the Star Wars Galaxy]]''
+*<!-- 2026-09-25 -->{{GermanFanCite|123|Database}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|es=Ruta Nexus
+|ja=ネクサス・ルート
+|tr=Nexus Rotası
+}}
+
+[[Category:Core Worlds hyperlanes]]
+[[Category:Outer Rim Territories hyperlanes]]
+[[Category:The Interior hyperlanes]]

@@ -1,0 +1,140 @@
+{{Top|notoc=1}}
+{{Otheruses|Kessel Run}}
+{{TradeRoute
+|image=[[File:KesselRunMap.jpg]]
+|name=Kessel Run
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="Ultimate">''[[Ultimate Star Wars]]''</ref>
+|sectors=[[Kessel sector]]<ref name="Ultimate" />
+|stellar=*[[Akkadese Maelstrom]]<ref name="TOG">''[[Solo: A Star Wars Story The Official Guide]]''</ref>
+*[[Black Pits]]<ref name="Tales" />
+*[[Black Rock Passage]]<ref name="Scum">''[[Star Wars: Scum and Villainy: Case Files on the Galaxy's Most Notorious]]''</ref>
+*[[Gedder's Pass]]<ref name="Scum" />
+*[[Maw Cluster]]<ref name="TOG" />
+*[[Pilot's End (Akkadese Maelstrom)|Pilot's End]]<ref name="Tales" />
+*[[The Corkscrew (Akkadese Maelstrom)|The Corkscrew]]<ref name="Tales" />
+*[[The Channel]]<ref name="Tales">''[[Solo: A Star Wars Story: Tales from Vandor]]''</ref>
+*[[The Pit]]<ref name="Tales" />
+*[[The Wells]]<ref name="Tales" />
+*[[The Thunderhead]]<ref name="Smuggler's Guide">''[[Star Wars: Smuggler's Guide]]''</ref>
+|endpoints=
+*[[Kessel]]<ref name="Tales" />
+*[[Oba Diah]]<ref name="Tales" />
+|transitpoints=
+|otherobjects=Kessel - Oba Diah<ref name="Tales" />
+|junctions=[[Pabol Sleheyron]]<ref name="RO World Locations">{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}}</ref> - [[Sanity Skip]]<ref name="Smuggler's Guide" />
+}}
+{{Quote|I just made the Kessel Run in twelve parsecs.''"<br />"''[Chewbacca corrects him]''"<br />"''Not if you round down, buddy.|Han Solo and Chewbacca on [[Savareen]]|<ref name="Solo">''[[Solo: A Star Wars Story]]''</ref>}}
+The '''Kessel Run''' was a 20-[[parsec]]<ref name="Tales" /> [[hyperspace route]]<ref name="Ultimate" /> within the [[Akkadese Maelstrom]] used by [[smuggler]]s and unscrupulous [[freighter]] [[captain]]s to move [[spice]] from the [[Spice mines of Kessel|spice mines]] of [[Kessel]] at the behest of the [[Pyke Syndicate]], who relied on the foolhardy Kessel Runs to deliver the illicit substance to their customers.<ref name="Pykes">{{Databank|pyke-syndicate|Pyke Syndicate}}</ref> [[Han Solo]], piloting the ''[[Millennium Falcon]]'', [[Raid on Kessel|made]] the infamous run in slightly over 12 parsecs,<ref name="Solo" /> boasting about his ship's ability to endure shorter but more hazardous routes through [[hyperspace]].<ref name="SW Made Easy">''[[Star Wars Made Easy]]''</ref> By doing so, Solo broke a long-held record.<ref name="Ultimate" />
+
+[[Astrid Fenris]] speculated that Solo had flown the [[freighter]] between two [[black hole]]s in the [[Maw Cluster]], and therefore the credit for the run should go to the [[Gambling|gambler]] [[Landonis Balthazar Calrissian|Lando Calrissian]], who owned the ship at the [[time]] and so had been responsible for any modifications that allowed it to survive the pull of the black holes. [[Peko-Peko Munzati]] and a few other pilots speculated that the route Solo used to achieve this feat was an ancient [[purrgil]] migration route.<ref name="Tales" /> Navigating the Kessel Run was a rite of passage for some pilots.<ref name="Galactic Explorer's Guide">''[[Star Wars: The Galactic Explorer's Guide]]''</ref>
+
+{{Route-stub}}
+
+==Appearances==
+{{ScrollBox|
+*''[[Star Wars Battlefront II]]'' {{Mo}}
+*{{TCW|Deal No Deal}}
+*''[[Adventures in Wild Space: The Steal]]'' {{Ab|Adventures in Wild Space: Books 1&ndash;3|audiobook}} {{Mo}}
+*''[[Solo: A Star Wars Story]]'' {{1st}}
+*''[[Solo: A Star Wars Story: Expanded Edition]]'' {{Ab|Solo: A Star Wars Story: Expanded Edition (audiobook)}}
+*[[Solo: A Star Wars Story Adaptation 3|''Solo: A Star Wars Story Adaptation'' 3]] {{Mo}}
+*[[Solo: A Star Wars Story Adaptation 4|''Solo: A Star Wars Story Adaptation'' 4]] {{Mo}}
+*[[Solo: A Star Wars Story Adaptation 5|''Solo: A Star Wars Story Adaptation'' 5]]
+*''[[Choose Your Destiny: A Han & Chewie Adventure]]'' {{Ab|Choose Your Destiny: A Han & Chewie Adventure (audiobook)}} {{Mo}}
+*{{Film|IV}} {{1stm}}
+*''[[A New Hope: The Princess, the Scoundrel, and the Farm Boy]]'' {{Ab|A New Hope: The Princess, the Scoundrel, and the Farm Boy (audiobook)}} {{Mo}}
+*[[Star Wars: A New Hope (paperback novel)|''Star Wars: A New Hope'' junior novelization]] {{Mo}}
+*{{GOA|Han Solo - Galaxy's Best Smuggler}} {{Flash}}
+*[[Han Solo 1|''Han Solo'' 1]] {{Mo}}
+*[[Star Wars (2015) 10|''Star Wars'' (2015) 10]] {{Mo}}
+*[[Star Wars (2015) 17|''Star Wars'' (2015) 17]] {{Mo}}
+*[[Doctor Aphra (2016) 8|''Doctor Aphra'' (2016) 8]] {{Mo}}
+*[[Star Wars (2015) 45|''Star Wars'' (2015) 45]] {{Mo}}
+*[[Star Wars (2015) 46|''Star Wars'' (2015) 46]] {{Imo}}
+*[[Star Wars (2015) 53|''Star Wars'' (2015) 53]] {{Mo}}
+*''[[Choose Your Destiny: A Smuggler Mission]]'' {{Mo}}
+*[[Bounty Hunters 12|''Bounty Hunters'' 12]] {{Mo}} {{Flash}}
+*[[Bounty Hunters 15|''Bounty Hunters'' 15]] {{Mo}}
+*[[War of the Bounty Hunters 5|''War of the Bounty Hunters'' 5]] {{Mo}}
+*''[[Star Wars Outlaws]]'' {{Mo}}
+*''[[Return of the Jedi: Beware the Power of the Dark Side!]]'' {{Ab|Return of the Jedi: Beware the Power of the Dark Side! (audiobook)}} {{Mo}}
+*''[[Star Wars: Uprising]]'' {{Mo}}
+*''[[Aftermath: Empire's End]]'' {{Ab|Aftermath: Empire's End (audiobook)}} {{Mo}}
+*''[[Last Shot]]'' {{Ab|Last Shot (audiobook)}} {{Mo}}
+*''[[The Legends of Luke Skywalker]]'' {{Ab|The Legends of Luke Skywalker (audiobook)}} {{Mo}}
+*[[Han Solo - Hunt for the Falcon 1|''Han Solo - Hunt for the Falcon'' 1]] {{Mo}}
+*[[Han Solo - Hunt for the Falcon 3|''Han Solo - Hunt for the Falcon'' 3]] {{Mo}}
+*''[[Force Collector]]'' {{Ab|Force Collector (audiobook)}}
+*''[[Eyes Like Stars]]'' {{Ab|Eyes Like Stars (audiobook)}} {{Mo}}
+*{{Film|VII}} {{Mo}}
+*[[Star Wars: The Force Awakens (novelization)|''Star Wars: The Force Awakens'' novelization]] {{Ab|Star Wars: The Force Awakens (audiobook)}} {{Mo}}
+*''[[Star Wars: The Force Awakens: A Junior Novel]]'' {{Ab|Star Wars: The Force Awakens: A Junior Novel (audiobook)}} {{Mo}}
+*{{IDWAdventuresCite-2017|issue=18|story=Flight of the Falcon, Part 5: Grand Theft Falcon}} {{Mo}} {{Flash}}
+*''[[Star Wars Adventures: Flight of the Falcon]]'' {{Flash}}
+*[[Galaxy's Edge 1|''Galaxy's Edge'' 1]] {{Mo}} {{Flash}}
+*{{IDWAdventuresCite-2020|issue=13|story=Repair Stop}} {{Mo}}
+*''[[Star Wars: The Rise of Skywalker: A Junior Novel]]'' {{Ab|Star Wars: The Rise of Skywalker: A Junior Novel (audiobook)}} {{Mo}}
+*''[[Star Wars: Galaxy of Heroes]]''
+}}
+
+===Non-canon appearances===
+*<!-- 2016-XX-XX -->''[[LEGO Star Wars: Han Solo's Adventures]]'' {{Mo}}
+*<!-- 2022-04-05 -->''[[LEGO Star Wars: The Skywalker Saga]]'' {{Mo}}
+
+==Sources==
+{{ScrollBox|
+*<!-- 2014-07-01 -->{{SWE|technology|millenniumfalcon|''Millennium Falcon''}}
+*<!-- 2014-07-01 -->{{SWE|groups|pykes|The Pykes}}
+*<!-- 2015-01-14 -->{{SW|url=news/7-topics-star-wars-fans-love-to-debate|text=7 Topics ''Star Wars'' Fans Love to Debate}}
+*<!-- 2015-03-11 -->{{SWCT|set=Base Series 1|cardname=BoShek - Cantina Patron}}
+*<!-- 2015-04-28 -->''[[Ultimate Star Wars]]''
+*<!-- 2015-09-04 -->''[[Star Wars: Ships of the Galaxy]]''
+*<!-- 2015-12-18 -->''[[Star Wars: The Force Awakens: The Visual Dictionary]]''
+*<!-- 2016-04-20 -->{{BuildFalconCite|68|Secrets of Spaceflight}}
+*<!-- 2016-11-03 -->''[[Star Wars: Galactic Atlas]]''
+*<!-- 2017-02-XX -->{{BuildR2Cite|6|Building the Galaxy}}
+*<!-- 2017-09-01 -->''[[Star Wars Made Easy]]''
+*<!-- 2018-05-25 -->''[[Solo: A Star Wars Story The Official Guide]]''
+*<!-- 2018-09-11 -->''[[Solo: A Star Wars Story: Tales from Vandor]]''
+*<!-- 2018-10-23 -->''[[Star Wars: Scum and Villainy: Case Files on the Galaxy's Most Notorious]]''
+*<!-- 2018-11-13 -->''[[Star Wars: Smuggler's Guide]]''
+*<!-- 2019-02-17 -->{{SW|url=series/star-wars-resistance/the-core-problem-episode-guide|text="The Core Problem" Episode Guide &#124; Star Wars Resistance}}
+*<!-- 2019-06-13 -->[[Star Wars: Outer Rim|''Star Wars'': Outer Rim]]
+*<!-- 2019-10-04 -->''[[Ultimate Star Wars, New Edition]]''
+*<!-- 2019-11-14 -->''[[Star Wars: The Galactic Explorer's Guide]]''
+*<!-- 2020-02-28 -->''[[Starships and Speeders]]''
+*<!-- 2020-10-01 -->''[[The Star Wars Book]]''
+*<!-- 2020-12-17 -->{{GermanFanCite|100|Database}}
+*<!-- 2021-07-20 -->{{EncyclopediaCite|Scarif and Other Planets in the Outer Rim}}
+*<!-- 2021-09-28 -->{{EncyclopediaCite|Tobias Beckett and Other Characters of the Underworld}}
+*<!-- 2024-11-19 -->''[[Star Wars Encyclopedia: The Comprehensive Guide to the Star Wars Galaxy]]''
+*{{Databank|han-solo|Han Solo}}
+*{{Databank|millennium-falcon|''Millennium Falcon''}}
+*{{Databank|pyke-syndicate|Pyke Syndicate}}
+*{{Databank|savareen|Savareen}}
+}}
+
+==Notes and references==
+{{Reflist}}
+
+==External links==
+*{{SW|url=news/quiz-star-wars-ship|text=Quiz: What ''Star Wars'' Ship Should You Pilot?}}
+
+{{Interlang
+|cs=Kesselská cesta
+|el=Διαδρομή Κέσελ
+|es=Corredor de Kessel
+|fr=Raid de Kessel
+|ja=ケッセル・ラン
+|pt=Percurso de Kessel
+|tr=Kessel Kaçış Yolu
+|zh=科舍尔航线
+}}
+
+[[Category:Outer Rim Territories hyperlanes]]
+[[Category:Smuggling hyperspace routes]]
+[[Category:The Slice hyperlanes]]

@@ -1,0 +1,40 @@
+{{Top}}
+{{Otheruses|Reach}}
+{{Image}}
+{{TradeRoute
+|image=
+|name=Ovise Reach
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="BMF18">{{BuildFalconCite|18|Guide to the Galaxy}}</ref>
+|sectors=[[Moddell sector]]<ref name="BMF18" />
+|stellar=
+|endpoints=*[[Endor]]<ref name="Rebel Files">''[[Star Wars: The Rebel Files]]''</ref>
+*[[Ovise system]]<ref name="Rebel Files" />
+|transitpoints=
+|otherobjects=[[Endor]]<ref name="BMF18" /> - [[Zorbia]]<ref name="BMF18" /> - [[Trindello]]<ref name="BMF18" />
+|junctions=[[Sanctuary Pipeline]]<ref name="BMF18" />
+}}
+The '''Ovise Reach''' was a [[Hyperspace route|hyperlane]] in the [[Outer Rim Territories]] [[Moddell sector]] that passed between the [[Monsua Nebula]] and [[Din Nebula]]. It connected the [[planet]] [[Endor]] to [[Zorbia]] and then Zorbia to [[Trindello]] before carrying on toward the edge of the [[sector]]. Endor acted as a junction from the Ovise Reach onto the [[Sanctuary Pipeline]].<ref name="BMF18" />
+
+==Behind the scenes==
+The Ovise Reach was mentioned in the new ''[[Star Wars]]'' [[canon]] in the [[2015]] magazine [[Star Wars: Build the Millennium Falcon 18|''Star Wars: Build the Millennium Falcon'' 18]].<ref name="BMF18" /> It originated in the [[Star Wars Legends|''Star Wars'' Legends]] coninuity, where it was mentioned in the [[2009]] reference book ''[[The Essential Atlas]]'', which was written by [[Jason Fry]] and [[Daniel Wallace]].<ref name="TEA">''[[The Essential Atlas]]''</ref>
+
+==Sources==
+*<!-- 2015-05-06 -->{{BuildFalconCite|18|Guide to the Galaxy}} {{1stm}}
+*<!-- 2017-11-21 -->''[[Star Wars: The Rebel Files]]''
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|ja=オヴァイス・リーチ
+}}
+
+[[Category:Outer Rim Territories hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Ovise Reach]]
+}}

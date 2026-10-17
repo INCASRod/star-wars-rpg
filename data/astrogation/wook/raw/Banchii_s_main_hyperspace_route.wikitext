@@ -1,0 +1,33 @@
+{{Top|ca}}
+{{ConjectureCapitalization}}
+{{TradeRoute
+|image=
+|name=Banchii's main hyperspace route
+|founded=
+|founders=
+|dissolved=
+|eras=[[High Republic Era]]<ref name="Edge of Balance 3">[[The High Republic: The Edge of Balance, Vol. 3|''The High Republic: The Edge of Balance'', Vol. 3]]</ref>
+|regions=*[[Outer Rim Territories]]<ref name="Encyclopedia">''[[Star Wars Encyclopedia: The Comprehensive Guide to the Star Wars Galaxy]]''</ref>
+**[[Galactic Frontier]]<ref name="Lightsaber collection">''[[Star Wars: The High Republic: The Lightsaber Collection]]''</ref>
+|sectors=[[Jjannex sector]]<ref name="Encyclopedia" />
+|stellar=
+|endpoints=
+|transitpoints=[[Inugg system]]<ref name="Encyclopedia" />
+|otherobjects=
+|junctions=
+}}
+{{Quote|Where's Astenban?''"<br />"''It's a moon near Banchii's main hyperspace route.|Ru-Ru and Lily Tora-Asi|<ref name="Edge of Balance 3" />}}
+'''Banchii's main hyperspace route''' was a [[hyperspace route]] that<ref name="Edge of Balance 3" /> the [[Inugg system]]<ref name="Encyclopedia" /> [[planet]] [[Banchii]] was located on during the [[High Republic Era]].<ref name="Edge of Balance 3" /> Banchii was part of the [[Jjannex sector]]<ref name="Encyclopedia" /> and located in the [[Galactic Frontier]] region<ref name="Lightsaber collection" /> of the [[Outer Rim Territories]].<ref name="Encyclopedia" /> The [[moon]] [[Astenban]] was near the route.<ref name="Edge of Balance 3" /> 
+
+In [[228 BBY]],<ref name="Date">{{THRContent228BBY|EOB3}}</ref> while on Banchii, [[Jedi Master]] [[Savina Besatrix Malagán]] announced<ref name="Edge of Balance 3" /> she<ref name="Encyclopedia" /> was going to [[Mission to Astenban|travel]] to Astenban to stop the [[Nihil]] [[pirate]]s from taking control of a [[Astenban camp|base]] there, which they could use to launch attacks on planets in the region. When [[Jedi archivist]] [[Ru-Ru]] asked where Astenban was, [[Jedi Knight]] [[Lily Tora-Asi]] responded that it was a moon near Banchii's main [[hyperspace]] route. Malagán then left for Astenban, where she destroyed the base.<ref name="Edge of Balance 3" />
+
+==Behind the scenes==
+Banchii's main hyperspace route was mentioned in the [[The High Republic: The Edge of Balance, Vol. 3|third volume]] of the [[Wikipedia:Manga|manga]] series ''[[Star Wars: The High Republic: The Edge of Balance]]'', written by [[Daniel José Older]] and [[Shima Shinya]], and published by [[Viz Media]]<ref name="Edge of Balance 3" /> on [[August 13]], [[2024]], as part of the ''[[Star Wars: The High Republic]]'' multimedia project's [[Phase III: Trials of the Jedi|Phase III]].<ref name="High Republic Reader's guide">{{HighRepublicReaderGuide|2024}}</ref>
+
+==Appearances==
+*[[The High Republic: The Edge of Balance, Vol. 3|''The High Republic: The Edge of Balance'', Vol. 3]] {{1stm}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Outer Rim Territories hyperlanes]]

@@ -1,0 +1,43 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:TraxTube-GalaxyMap.png]]
+|name=Trax Tube
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Mid Rim Territories]]<ref name="BMF 43">{{BuildFalconCite|43|Guide to the Galaxy}}</ref>
+*[[The Slice]]<ref name="Slice">The {{GalaxyMapPoster}} places the Trax Tube in the area of [[Realspace|space]] ''[[Star Wars: The Galactic Explorer's Guide]]'' identifies as [[the Slice]].</ref>
+|sectors=[[Trax sector]]<ref name="TraxSector">''[[Star Wars Encyclopedia: The Comprehensive Guide to the Star Wars Galaxy]]'', based on corresponding information for the [[Typhonic Nebula]]</ref>
+|stellar=
+|endpoints=
+|transitpoints=[[Nanth'ri system]]<ref name="Heir">''[[Heir to the Jedi]]'', based on corresponding data for [[Nanth'ri]] and [[Daalang]]</ref> - [[Daalang system]]<ref name="Heir" />
+|otherobjects=[[Randon]]<ref name="GM">{{GalaxyMapHyperlanes|route=Trax Tube|leg=''[[The Essential Atlas]]''}}</ref> - [[Deysum system|Deysum]]<ref name="TFABG">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref> - [[Uogo'cor system|Uogo'cor]]<ref name="TFABG" /> - [[Typhonic Nebula]]<ref name="GM" /> - [[Grange]]<ref name="GM" /> - [[Varnak]]<ref name="GM" /> - [[Nanth'ri]]<ref name="GM" /> - [[Nixor system|Nixor]]<ref name="TFABG" /> - [[Daalang]]<ref name="GM" />
+|junctions=[[Ootmian Pabol]]<ref name="LivingForce">''[[The Living Force]]'', based on corresponding data on [[Randon]]</ref>/[[Pabol Sleheyron]]/[[Randon Run]]<ref name="Randon">{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}}, based on corresponding data for [[Randon]]</ref> - [[Nanth'ri Trade Route]]<ref name="Heir" /> - [[Gamor Run]]<ref name="BMF 43" />
+}}
+The [[Trax Tube]] was a [[Mid Rim Territories]] [[hyperspace route]]<ref name="BMF 43" /> that was also part of [[the Slice]] region of [[the galaxy]].<ref name="Slice" /> It had one terminus at<ref name="GM" /> the [[planet]]<ref name="LivingForce" /> [[Randon]] which acted as a junction onto<ref name="GM" /> the [[Ootmian Pabol]],<ref name="LivingForce" /> the [[Pabol Sleheyron]], and the [[Randon Run]].<ref name="Randon" /> The Trax Tube then traveled down through the astronomical objects [[Deysum system|Deysum]] and [[Uogo'cor system|Uogo'cor]]<ref name="TFABG" /> then the [[Typhonic Nebula]] and<ref name="GM" /> the planets<ref name="Catalyst">''[[Catalyst: A Rogue One Novel]]''</ref><ref name="CR4">[[Crimson Reign 4|''Crimson Reign'' 4]]</ref> [[Grange]] and [[Varnak]].<ref name="GM" />
+
+At the planet<ref name="Heir" /> [[Nanth'ri]]<ref name="GM" /> in the [[Nanth'ri system]]<ref name="Heir" /> there was another junction<ref name="GM" /> on to the [[Nanth'ri Trade Route]]<ref name="Heir" /> after which the Trax Tube linked to the celestial body [[Nixor system|Nixor]]<ref name="TFABG" /> before terminating at the astronomical object [[Daalang]].<ref name="GM" /> Daalang was also part of the [[Gamor Run]] and was connected to<ref name="GM" /> the planet<ref name="UCB">''[[Star Wars: The Ultimate Cookbook]]''</ref> [[Circumtore]] and the astronomical object [[Demiloch]] by two other routes. On the [[Standard Galactic Grid]], the Trax Tube passed through squares Q-10, Q-11, and Q-12.<ref name="GM" />
+
+==Behind the scenes==
+In the current ''[[Star Wars]]'' [[canon]], the Trax Tube was first pictured in "Sectors of the Galaxy," an article in the [[Star Wars: Build the Millennium Falcon 18|eighteenth]] issue of the ''[[Star Wars: Build the Millennium Falcon]]'' magazine,<ref name="BMF18">{{BuildFalconCite|18|Guide to the Galaxy}}</ref> which was published around [[May 6]], [[2015]].<ref name="BMFdate18">{{BuildFalconDates|18}}</ref> It was then identified in "Kashyyyk's Fight for Freedom," an article in the [[Star Wars: Build the Millennium Falcon 43|forty-third]] issue of the same magazine<ref name="BMF 43" /> released around [[October 28]], 2015.<ref name="BMFdate43">{{BuildFalconDates|43}}</ref>
+
+==Sources==
+*<!-- 2015-05-06 -->{{BuildFalconCite|18|Guide to the Galaxy}} {{1stp}}
+*<!-- 2015-10-28 -->{{BuildFalconCite|43|Guide to the Galaxy}} {{1stID|Trax Tube}}
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] {{Po}}
+*<!-- 2021-04-20 -->{{EncyclopediaCite|The First Order}} {{Po}}
+*<!-- 2021-07-20 -->{{EncyclopediaCite|Scarif and Other Planets in the Outer Rim}} {{Po}}
+*<!-- 2022-03-11 -->{{EncyclopediaCite|Exegol, the Unknown Regions and Wild Space}} {{Po}}
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}} {{Po}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|tr=Trax Tüpü
+}}
+
+[[Category:Major galactic hyperlanes]]
+[[Category:Mid Rim hyperlanes]]
+[[Category:The Slice hyperlanes]]

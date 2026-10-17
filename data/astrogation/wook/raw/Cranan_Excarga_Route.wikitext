@@ -1,0 +1,41 @@
+{{Top}}
+{{TradeRoute
+|image=
+|name=Cranan-Excarga Route
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="Friends Like These">''[[Friends Like These]]''</ref>
+|sectors=*[[Ferra sector]]<ref name="Friends Like These" />
+*[[Instrop sector]]<ref name="Friends Like These" />
+|stellar=
+|endpoints=
+|transitpoints=
+*[[Cranan system]]<ref name="Friends Like These" />
+*[[Excarga system]]<ref name="Friends Like These" />
+*[[Xorrn system]]<ref name="Friends Like These" />
+*[[Vlemoth Port system]]<ref name="Friends Like These" />
+|otherobjects=
+|junctions=
+}}
+The '''Cranan-Excarga Hyperspace Route''' or '''Cranan-Excarga Route''' was a [[hyperspace route]] located in the [[Outer Rim Territories]]. It intersected with the [[planet]]s [[Xorrn]] and [[Vlemoth Port]].<ref name="Friends Like These" />
+
+{{Route-stub}}
+
+==Appearances==
+*''[[Friends Like These]]'' {{1st}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|tr=Cranan-Excarga Hiperuzay Rotası
+}}
+
+[[Category:Outer Rim Territories hyperlanes]]
+[[Category:The Slice hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Cranan-Excarga Route]]
+}}

@@ -1,0 +1,49 @@
+{{Top}}
+{{Otheruses|Corridor}}
+{{TradeRoute
+|image=[[File:Cloak-of-the-Sith-SG.jpg]]
+|name=Death Wind Corridor<br /><small>labeled as the Cloak of the Sith</small>
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Outer Rim Territories]]<ref name="Smuggler's Guide">''[[Star Wars: Smuggler's Guide]]''</ref>
+*[[The Slice]]<ref name="Slice">''[[Star Wars: Smuggler's Guide]]'' places the Death Wind Corridor in the region of [[Realspace|space]] that ''[[Star Wars: The Galactic Explorer's Guide]]'' identifies as [[the Slice]].</ref>
+|sectors=[[Abrion sector|Abrion]] - [[Gaulus sector|Gaulus]]<ref name="Systems">{{GalaxyMapAppendix}} &mdash; Based on corresponding data for the [[Roon system|Roon]] and [[Ryloth system]]</ref>
+|stellar=
+|endpoints=
+|transitpoints=[[Roon system|Roon]] - [[Ryloth system|Ryloth]]<ref name="Systems" />
+|otherobjects=[[Roon]] - [[Ryloth]]<ref name="Smuggler's Guide" />
+|junctions=*[[Corellian Run]]<ref name="Smuggler's Guide" />
+*[[Mumble's Turnaround]]<ref name="Smuggler's Guide" />
+*[[Triellus Trade Route]]<ref name="Smuggler's Guide" />
+}}
+{{Quote|Have you heard anything concerning the ''Death Wind?"<br />"''The ''spice trade corridor?"<br />"''No, something that bears the ''same name.'' Something ''worse.'' Rumors of an ''execution squad''.|Wullf Yularen and [[Jedi Knight]] [[Anakin Skywalker]]|<ref name="Obi-Wan 4">[[Obi-Wan 4|''Obi-Wan'' 4]]</ref>}}
+The '''Death Wind Corridor''' connected [[Roon]] and [[Ryloth]].
+
+==Description==
+{{Quote|We've had our ''suspicions'' of Mekedrix since he vanished. That the namesake "Death Wind" trade corridor passes by his homeworld of Roon only ''strengthens'' the connection.|Wullf Yularen, to Anakin Skywalker and [[Jedi Master]] [[Obi-Wan Kenobi]]|<ref name="Obi-Wan 4" />}}
+The Death Wind Corridor,<ref name="Smuggler's Guide">''[[Star Wars: Smuggler's Guide]]''</ref> or simply Death Wind, was a [[spice]] [[Hyperspace route|trade corridor]]<ref name="Obi-Wan 4" /> which passed within an intersecting portion of the [[Outer Rim Territories]]<ref name="Smuggler's Guide" /> and [[the Slice]] regions.<ref name="Slice" /> The route connected the [[Roon system]] of the [[Abrion sector]],<ref name="Systems" /> containing the astronomical object [[Roon]],<ref name="Smuggler's Guide" /> and the [[Ryloth system]] of the [[Gaulus sector]],<ref name="Systems" /> containing the [[planet]] [[Ryloth]].<ref name="Ryloth DB">{{Databank|ryloth|Ryloth}}</ref> The Death Wind intersected the [[Corellian Run]]<ref name="Smuggler's Guide" /> [[super-hyperroute]]<ref name="BMF 48">{{BuildFalconCite|48|Guide to the Galaxy}}</ref> at Ryloth. and the [[Triellus Trade Route]] hyperlane at Roon, passing through the [[Cloak of the Sith]] to get to the latter. The three routes together formed the [[Spice Triangle]], a trade network that connected Roon, Ryloth, and the planet [[Tatooine]]. The [[Mumble's Turnaround]], a hyperlane favored by [[smuggler]]s, also linked with the Death Wind Corridor at both Ryloth and Roon.<ref name="Smuggler's Guide" />
+
+==History==
+{{Quote|So I'm thinking once I purchase a fleet (maybe twenty HWK-290s, fifty YT-freighters, one hundred barges), I'll lock down trade along the Spice Triangle. All smuggling along the Death Wind Corridor will go through me, plus I'll collect fees from the most lucrative segments of the Triellus and the Corellian Run.|Tryphon Leo, in the ''Smuggler's Guide''|<ref name="Smuggler's Guide" />}}
+During the [[Clone Wars]] between the [[Galactic Republic]] and [[Confederacy of Independent Systems|Separatist Alliance]], an execution [[squad]] known as the [[Death Wind]] formed, led by the [[Desertion|deserted]] [[Roonian]] Republic soldier [[Mekedrix]]. The death squad made attacks on groups under both the Republic and Separatists. Republic [[Admiral]] [[Wullf Yularen]] had suspicions about Mekedrix's connections following his disappearance, Roon's placement along the Death Wind Corridor backing the connection.<ref name="Obi-Wan 4" />
+
+By [[10 BBY]],<ref name="10 BBY">The entries in ''[[Star Wars: Smuggler's Guide]]'' that involve the [[Spice Triangle]] and the Death Wind Corridor are placed [[Time|chronologically]] prior to an entry written by [[Tobias Beckett]]. ''[[Star Wars: Timelines]]'' dates Beckett's [[Showdown on Savareen|death]] to [[10 BBY]], and so his entry in the guide and those chronologically before it must all be set at some point by that date.</ref> the [[Pyke Syndicate]] controlled underworld trade in the Spice Triangle, which was noted by the former [[Pirate Queen|pirate queen]] [[Maz Kanata]] in a [[book]] that was eventually named the ''[[Smuggler's Guide]]''. After the smuggler [[Tryphon Leo]] stole the book, they planned to lock down the trade network, including the Death Wind Corridor. Leo wrote about their plans in the book and in the entry included a [[map]] of the Spice Triangle and its hyperroutes and his vision to control all smuggling along the Death Wind. Leo's plans were cut short, however, when they [[Death|died]] trying to reach one of Kanata's [[Star map|mapped]] treasure caches in order to fund their plans.<ref name="Smuggler's Guide" />
+
+==Behind the scenes==
+The Death Wind Corridor was first mentioned in [[2017]] [[canon]] reference book ''[[Star Wars: Smuggler's Guide]]'', written by [[Daniel Wallace]].<ref name="Smuggler's Guide">''[[Star Wars: Smuggler's Guide]]''</ref>
+
+==Appearances==
+*[[Obi-Wan 4|''Obi-Wan'' 4]] {{Mo}} {{Flash}}
+
+==Sources==
+*<!-- 2018-11-13 -->''[[Star Wars: Smuggler's Guide]]'' {{1stm}}
+*<!-- 2022-08-24 -->{{SW|url=news/marvel-star-wars-obi-wan-4-exclusive-preview|text=Flashback to a Top-Secret Mission in Marvel's ''Star Wars: Obi-Wan'' #4 &ndash; Exclusive Preview}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Outer Rim Territories hyperlanes]]
+[[Category:Smuggling hyperspace routes]]
+[[Category:The Slice hyperlanes]]

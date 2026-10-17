@@ -1,0 +1,35 @@
+{{Top|legends=Cadma Conduit}}
+{{Conjecture}}
+{{TradeRoute
+|image=[[File:Oseon-TFABG.jpg]]
+|name=Oseon–Junkfort Station hyperlane
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="Map">{{StarWarsGalaxyMap}}</ref>
+|sectors=
+|stellar=
+|endpoints=*[[Oseon system]]<ref name="Map" />
+*[[Junkfort Station]]<ref name="TFABG">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref>
+|transitpoints=
+|otherobjects=
+|junctions=[[Triellus Trade Route]]<ref name="Triellus">{{GalaxyMapHyperlanes|route=Triellus Trade Route|canon=''[[Poe Dameron: Free Fall]]''|leg=''[[The Essential Atlas]]''}}</ref>
+}}
+A '''hyperlane''' ran from [[Junkfort Station]] east to the [[Oseon system]], linking the [[Centrality]]<ref name="TFABG" /> with the [[Triellus Trade Route]].<ref name="Triellus" />
+
+==Behind the scenes==
+In the [[Star Wars Legends|''Star Wars'' Legends]] continuity, this hyperlane was known as the [[Cadma Conduit]] and was mapped in the [[2009]] reference book ''[[The Essential Atlas]]''.<ref name="TEA">''[[The Essential Atlas]]''</ref>
+
+==Sources==
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] {{Po}}
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}} {{Po}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]'' {{Po}}
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]'' {{Po}}
+*{{StarWarsGalaxyMap}} {{Po}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Major galactic hyperlanes|Cadma Conduit*]]
+[[Category:Outer Rim Territories hyperlanes]]

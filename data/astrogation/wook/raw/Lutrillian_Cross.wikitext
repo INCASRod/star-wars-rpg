@@ -1,0 +1,38 @@
+{{Top}}
+{{TradeRoute
+|image=
+|name=Lutrillian Cross
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="BMF 18">{{BuildFalconCite|18|Guide to the Galaxy}}</ref>
+|sectors=[[Anoat sector]] - [[Yarith sector]]<ref name="BMF 18" />
+|stellar=
+|endpoints=
+|transitpoints=
+|otherobjects=[[Mijos]] - [[Lutrillia]]<ref name="BMF 18" />
+|junctions=*[[Cerean Reach]]<ref name="Cerea" />
+*[[Koda Spur]]<ref name="Koda" />
+}}
+The '''Lutrillian Cross''' was a [[hyperspace route]] that joined [[Mijos]] and [[Lutrillia]].<ref name="BMF 18" /> At Lutrillia, the route met the endpoints of the [[Cerean Reach]]<ref name="Cerea">{{EncyclopediaCite|Bespin and Other Planets in the Outer Rim}}</ref> and the [[Koda Spur]].<ref name="Koda">{{GalaxyMapHyperlanes|route=Koda Spur|canon={{EncyclopediaCite|Scarif and Other Planets in the Outer Rim}}|leg=''[[The Essential Atlas]]''}}</ref>
+
+==Behind the scenes==
+The Lutrillian Cross was first mentioned in the new ''[[Star Wars]]'' [[canon]] in the [[Star Wars: Build the Millennium Falcon 18|eighteenth issue]] of [[De Agostini]]'s ''[[Star Wars: Build the Millennium Falcon]]'' magazine,<ref name="BMF 18" /> published around [[May 6]], [[2015]].<ref name="BMFdate">{{BuildFalconDates|18}}</ref> In the [[Star Wars Legends|''Star Wars'' Legends]] continuity, the [[Lutrillian Cross/Legends|Lutrillian Cross]] was introduced in "[[Galactic Gazetteer: Hoth and the Greater Javin]]," an article published by [[Wizards of the Coast]] for the ''[[Star Wars Roleplaying Game]]'' on [[Wizards.com]] on [[March 25]], [[2004]].<ref name="Gazetteer">{{Wizards|url=default.asp?x=starwars/article/sw20040325web|text=Galactic Gazetteer: Hoth and the Greater Javin|int=Galactic Gazetteer: Hoth and the Greater Javin}}</ref>
+
+The [[Star Wars: Build the Millennium Falcon 62|sixty-second issue]] of the ''Build the Millennium Falcon'' series incorrectly placed [[Lotho Minor]] on the Lutrillian Cross,<ref name="BMF 62">{{BuildFalconCite|62|Guide to the Galaxy}}</ref> when in actuality it falls on he [[Koda Spur]].<ref name="Koda" />
+
+==Sources==
+*<!-- 2015-05-06 -->{{BuildFalconCite|18|Guide to the Galaxy}} {{1stm}}
+*<!-- 2016-03-09 -->{{BuildFalconCite|62|Guide to the Galaxy}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|tr=Lutrillia Kesişimi
+}}
+
+[[Category:Major galactic hyperlanes]]
+[[Category:Outer Rim Territories hyperlanes]]
+[[Category:Western Reaches hyperlanes]]

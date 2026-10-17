@@ -1,0 +1,27 @@
+{{Top}}
+{{Youmay|the Spurs of Celanon|the [[Celanon Spur]]}}
+{{TradeRoute
+|image=
+|name=Spurs of Celanon
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="BMF 70">{{BuildFalconCite|70|Guide to the Galaxy}}</ref>
+|sectors=[[D'Astan sector|D'Astan]]<ref name="BMF 70" />
+|stellar=
+|endpoints=
+|transitpoints=
+|otherobjects=[[Serenno]]<ref name="BMF 70" />
+|junctions=[[Hydian Way]]<ref name="BMF 70" />
+}}
+The '''Spurs of Celanon''' was a [[hyperspace route]] in the [[Outer Rim Territories]] that connected to the [[planet]] [[Serenno]].<ref name="BMF 70" /> The route shared its name with the astronomical object [[Celanon]], located in the [[Outer Rim Territories]].<ref name="TFABG">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref>
+
+==Sources==
+*<!-- 2016-05-04 -->{{BuildFalconCite|70|Guide to the Galaxy}} {{1stm}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Northern Dependencies hyperlanes]]
+[[Category:Outer Rim Territories hyperlanes]]

@@ -1,0 +1,55 @@
+{{Top}}
+{{MultipleIssues|image|updatecontent=[[Ghosts of Dathomir]]}}
+{{TradeRoute
+|image=
+|name=Shag Pabol
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Hutt Space]]<ref name="Smuggler's Guide">''[[Star Wars: Smuggler's Guide]]''</ref>
+|sectors=
+|stellar=
+|endpoints=*[[Nal Hutta]]<ref name="Route">{{SWYouTube|series=Star Wars: Galaxy Guide|text=Meet the Hutts: The Galaxy's Biggest Crime Lords|video=Ct977noXUVg}}</ref>
+*[[Teth]]<ref name="Route" />
+|transitpoints=
+|otherobjects=
+|junctions=*[[Gamor Run]]<ref name="Route" />
+*[[Triellus Trade Route]]<ref name="Route" />
+}}
+The '''Shag Pabol'''<ref name="Smuggler's Guide" /> or '''Slave Road''' in [[Galactic Basic Standard|Basic]]<ref name="Scarif">{{EncyclopediaCite|Scarif and Other Planets in the Outer Rim}}</ref> was a [[Hyperspace route|hyperlane]] within [[Hutt Space]]. The [[Delphanian]] [[privateer]] [[Sidon Ithano]] carried a [[letter of marque]] that gave him license to conduct raids along the Shag Pabol, [[Ootmian Pabol]], [[Pabol Hutta]] and all secular hyperlanes in [[Hutt]] Space. The letter also allowed him to deliver any seized cargoes from these raids to his patron Hutt [[kajidic]]s, the [[Desilijic]], [[Ramesh]], [[Besadii]], [[Gnuda]] and [[Shell]].<ref name="Smuggler's Guide" />
+
+==Behind the scenes==
+The Shag Pabol was first mentioned in the new ''[[Star Wars]]'' [[canon]] on a supplemental item included in the deluxe edition of the [[2018]] reference book ''[[Star Wars: Smuggler's Guide]]'', which was written by [[Daniel Wallace]].<ref name="Smuggler's Guide" /> The roleplaying game book ''[[Ghosts of Dathomir]]''<ref name="GoD">''[[Ghosts of Dathomir]]''</ref> incorrectly<ref name="GreatKashyyykBranch">{{GalaxyMapHyperlanes|route=Shag Pabol|leg=''[[The Essential Atlas]]''|canon=''[[Star Wars: Smuggler's Guide]]''}}</ref> places [[Toydaria]] on the Shag Pabol<ref name="GoD" /> instead of the [[Oktos Route]], which continues on from the end of the Shag Pabol at the [[Y'Toub system]].
+
+==Appearances==
+*''[[Ghosts of Dathomir]]'' {{1stm}}
+
+==Sources==
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] {{Po}}
+*<!-- 2018-11-13 -->''[[Star Wars: Smuggler's Guide]]''
+*<!-- 2021-07-20 -->{{EncyclopediaCite|Scarif and Other Planets in the Outer Rim}} {{1stID|Slave Road}}
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}} {{Po}}
+*<!-- 2023-10-10 -->''[[Star Wars: The Ultimate Cookbook]]''
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]'' {{Po}}
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]'' {{Po}}
+*<!-- 2026-05-26 -->''[[Star Wars: The Mandalorian Visual Guide]]'' {{Po}}
+*<!-- 2026-09-16 -->{{SWYouTube|series=Star Wars: Galaxy Guide|text=Meet the Hutts: The Galaxy's Biggest Crime Lords|video=Ct977noXUVg}}
+*{{StarWarsGalaxyMap}} {{Po}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|es=Shag Pabol
+|nl=Shag Pabol
+|tr=Shag Pabol
+}}
+
+[[Category:Hutt Space hyperlanes]]
+[[Category:Major galactic hyperlanes]]
+[[Category:Mid Rim hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Shag Pabol]]
+}}

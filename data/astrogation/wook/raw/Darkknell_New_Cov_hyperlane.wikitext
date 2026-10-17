@@ -1,0 +1,47 @@
+{{Top|legends=Duros Space Run}}
+{{Conjecture}}
+{{TradeRoute
+|image=[[File:DurosSpaceRun-GalaxyMap.png]]
+|name=Darkknell–New Cov hyperlane
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Mid Rim Territories]]<ref name="Map">{{StarWarsGalaxyMap}}</ref>
+*[[Outer Rim Territories]]<ref name="Map" />
+|sectors=
+|stellar=
+|endpoints=*[[New Cov system]]<ref name="Map" />
+*[[Darkknell]]<ref name="TFABG">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref>
+|transitpoints=New Cov - [[Kalarba]] - [[Triffis]]<ref name="Map" /> - [[Bannistar Station system|Bannistar Station]]<ref name="TFABG" /> - [[Centori]] - [[Tansyl 5]]<ref name="Map" /> - [[Enarc]]<ref name="TFABG" /> - [[Cyclor]]<ref name="Map" /> - [[Kessar]]<ref name="AVG">''[[Star Wars: The Acolyte: The Visual Guide]]''</ref> [[Sanrafsix system|Sanrafsix]]<ref name="TFABG" /> - [[Baraan-Fa]]<ref name="Map" /> - Darkknell<ref name="TFABG" />
+|otherobjects=
+|junctions=*[[Corellian Run]]<ref name="Map" />
+*[[Enarc Run]]<ref name="Enarc">{{GalaxyMapHyperlanes|route=Enarc Run|canon={{SW|url=news/where-in-the-galaxy-are-the-worlds-of-star-wars-the-force-awakens|text=Where in the Galaxy Are the Worlds of ''Star Wars: The Force Awakens''?|int=Where in the Galaxy Are the Worlds of Star Wars: The Force Awakens?}}|leg=''[[The Essential Atlas]]''}}</ref>
+*[[Hydian Way]]<ref name="Map" />
+*[[Sanrafsix–Cotellier hyperlane]]<ref name="Map" />
+*[[Triellus Trade Route]]<ref name="Triellus">{{GalaxyMapHyperlanes|route=Triellus Trade Route|canon=''[[Poe Dameron: Free Fall]]''|leg=''[[The Essential Atlas]]''}}</ref>
+}}
+A '''hyperlane''' spanned a significant portion of the [[Mid Rim Territories]], linking two of [[the galaxy]]'s major [[super-hyperroute]]s. Beginning at the [[New Cov system]] on the [[Corellian Run]], the route headed south to [[Kalarba]], [[Triffis]], [[Centori]], and [[Tansyl 5]], before briefly merging<ref name="Map" /> with the [[Triellus Trade Route]]<ref name="Triellus" /> just before its endpoint at [[Enarc]].<ref name="TFABG" /> The hyperlane then continued west to [[Cyclor]],<ref name="Map" /> the [[Sanrafsix system]],<ref name="TFABG" /> and [[Baraan-Fa]]<ref name="Map" /> before ending at [[Darkknell]] on the [[Hydian Way]].<ref name="TFABG" />
+
+{{Route-stub}}
+
+==Behind the scenes==
+In the [[Star Wars Legends|''Star Wars'' Legends]] continuity, this route was known as the [[Duros Space Run]], and was first mapped in the [[2009]] reference book ''[[The Essential Atlas]]''.<ref name="TEA">''[[The Essential Atlas]]''</ref>
+
+==Sources==
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]''
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]''
+*{{StarWarsGalaxyMap}} {{MapPoint}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Major galactic hyperlanes|Duros Space Run*]]
+[[Category:Mid Rim hyperlanes]]
+[[Category:Outer Rim Territories hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Darkknell–New Cov hyperlane]]
+}}

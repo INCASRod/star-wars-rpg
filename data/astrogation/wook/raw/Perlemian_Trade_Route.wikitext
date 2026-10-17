@@ -1,0 +1,94 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:PerlemianTradeRoute.png]]
+|name=Perlemian Trade Route
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Core Worlds]]<ref name="TFABG">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref> - [[Colonies]]<ref name="TFABG" /> - [[Inner Rim Territories|Inner Rim]]<ref name="TFABG" /> - [[Expansion Region]]<ref name="TFABG" /> - [[Mid Rim Territories|Mid Rim]]<ref name="TFABG" /> - [[Outer Rim Territories]]<ref name="TFABG" />
+|sectors=[[Corusca sector|Corusca]]<ref name="USW">''[[Ultimate Star Wars]]''</ref> - [[Azure sector|Azure]]<ref name="DOR">''[[Dawn of Rebellion]]''</ref> - [[Bormea sector|Bormea]]<ref name="Brentaal IV">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] places [[Brentaal IV]] at the intersection of the [[Hydian Way]] and Perlemian Trade Route. As {{Databank|vanguard-squadron|Vanguard Squadron}} places Brentaal IV in the [[Bormea sector]], both routes must pass through it.</ref> - [[Thanium sector|Thanium]]<ref name="Collapse">''[[Collapse of the Republic]]''</ref> - [[Tion Cluster]]<ref name="TFABG" />
+|stellar=
+|endpoints=
+*[[Coruscant]]<ref name="TFABG" />
+*[[Karkaris]]<ref name="Collapse" />
+|transitpoints=
+|otherobjects=Coruscant<ref name="TFABG" /> - [[Alsakan]]<ref name="TFABG" /> - [[Brentaal IV]]<ref name="TFABG" /> - [[Yabol Opa]]<ref name="TFABG" /> - [[Castell]]<ref name="TFABG" /> - [[Vurdon Ka]]<ref name="TFABG" /> - [[Chazwa]]<ref name="TFABG" /> - [[Tirahnn]]<ref name="TFABG" /> - [[Taanab]]<ref name="Trkn">[[Tarkin (novel)|''Tarkin'']]</ref> - [[Gizer]]<ref name="TFABG" /> - [[Lantillies]]<ref name="TFABG" /> - [[Roche Asteroid Field|Roche]]<ref name="TFABG" /> - [[Abhean]]<ref name="TFABG" /> - [[The Wheel]]<ref name="TFABG" /> - [[Centares]]<ref name="TFABG" /> - [[Anaxes]]<ref name="TFABG" /> - [[Columex system|Columex]]<ref name="TFABG" /> - [[Felucia]]<ref name="GD">''[[Star Wars: Galactic Defense]]''</ref> - [[Lianna]]<ref name="TFABG" /> - [[Desevro]]<ref name="TFABG" /> - [[Makem Te]]<ref name="TFABG" /> - [[Quermia]]<ref name="TFABG" /> [[Barton IV]]<ref name="CLNE">''[[Star Wars: Complete Locations, New Edition]]''</ref> - Karkaris<ref name="Collapse" />
+|junctions=[[Corellian Run]]<ref name="TFABG" /> - [[Metellos Trade Route]]<ref name="Scum and Villainy">''[[Star Wars: Scum and Villainy: Case Files on the Galaxy's Most Notorious]]''</ref> - [[Namadii Corridor]]<ref name="Collapse" /> - [[Nexus Route]]<ref name="The Citadel">{{TCW|The Citadel (episode)}}</ref> - [[Hydian Way]]<ref name="Brentaal IV" /> - [[Randon Run]]<ref name="RO World Locations">{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}}</ref> - [[Salin Corridor]]<ref name="RO World Locations" />
+}}
+{{Quote|An attack on Taanab—though on the Perlemian Trade Route—would earn the dissidents more condemnation than praise, as Taanab's agricultural projects feed billions in the Mid and Outer Rim.|Vice Admiral Dodd Rancit explains why it is unlikely that the ''[[Carrion Spike]]'' will target Taanab despite its placement on the Perlemian Trade Route|<ref name="Trkn" />}}
+The '''Perlemian Trade Route''' was a [[super-hyperroute]]<ref name="BMF 48">{{BuildFalconCite|48|Guide to the Galaxy}}</ref> which included the [[planet]]s [[Felucia]]<ref name="GD" /> and [[Taanab]].<ref name="Trkn" /> During the [[Clone Wars]], thanks to a [[Galactic Republic]] in the [[Battle of Murkhana]], the [[Confederacy of Independent Systems]]'s [[Shadowfeed]]s were unable to reach the planets across the Perlemian Trade Route.<ref name="OF84">{{GermanFanCite|84|Database}}</ref>
+
+When considering potential targets for the stolen [[Galactic Empire|Imperial]] [[corvette]] ''[[Carrion Spike]]'', [[Vice Admiral]] [[Dodd Rancit]] ruled out Taanab as being at risk despite its placement on the trade route, as the planet supplied [[Foodstuff|food]] to many other planets.<ref name="Trkn" />
+
+The [[Sakavian]] fisherman Skoova Stev found himself marooned in deep space along the Perlemian Trade Route, after being jettisoned in an escape pod by his former captain, the [[Besalisk]] [[Wan'yek Whett]]. He was later rescued by a passing [[Purrgil]].<ref name="Survivor">''[[Star Wars Jedi: Survivor]]''</ref>
+
+{{Route-stub}}
+
+==Appearances==
+*''[[Star Wars: Galactic Defense]]'' {{1stm}}
+*''[[The High Republic: Cataclysm]]'' {{Ab|The High Republic: Cataclysm (audiobook)}} {{Mo}}
+*[[The High Republic Adventures (2021) 1|''The High Republic Adventures'' (2021) 1]] {{Po}}
+*''[[Star Wars Battlefront II]]'' {{Mo}} {{DLC}}
+*''[[Star Wars Zero Company]]'' {{Mo}}
+*{{TBB|Cornered}} {{C|Mentioned on poster}}
+*''[[Reign of the Empire: The Mask of Fear]]'' {{Ab|Reign of the Empire: The Mask of Fear (audiobook)}} {{Mo}}
+*[[Tarkin (novel)|''Tarkin'']] {{Ab|Tarkin (audiobook)}} {{Mo}}
+*''[[Star Wars Jedi: Survivor]]'' {{Mo}}
+*''[[Leia, Princess of Alderaan]]'' {{Ab|Leia, Princess of Alderaan (audiobook)}} {{Mo}}
+*[[Bounty Hunters 24|''Bounty Hunters'' 24]] {{Mo}}
+*[[Return of the Jedi – Jabba's Palace 1|''Return of the Jedi – Jabba's Palace'' 1]] {{Mo}} {{Flash}}
+
+==Sources==
+{{ScrollBox|content=
+*<!-- 2015-04-22 -->{{HelmetCollectionCite|17|Databank A-Z}}
+*<!-- 2015-10-28 -->{{BuildFalconCite|43|Guide to the Galaxy}}
+*<!-- 2015-11-25 -->{{BuildFalconCite|47|Guide to the Galaxy}}
+*<!-- 2016-03-17 -->''[[Nexus of Power]]''
+<!-- 2016-04-05 -->{{SourceContents-start|{{HelmetCollectionCite|73|parent=1}}}}
+*<!-- 2016-04-05 -->{{HelmetCollectionCite|73|Helmets}}
+*<!-- 2016-04-05 -->{{HelmetCollectionCite|73|Weapons & Uniforms}}
+{{SourceContents-end}}
+*<!-- 2016-09-27 -->[[Star Wars: Complete Locations (2016)|''Star Wars: Complete Locations'']]
+*<!-- 2016-11-03 -->''[[Star Wars: Galactic Atlas]]'' {{Imo}}
+*<!-- 2016-12-16 -->{{GermanFanCite|84|Database}}
+*<!-- 2017-01-31 -->{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}}
+*<!-- 2018-10-23 -->''[[Star Wars: Scum and Villainy: Case Files on the Galaxy's Most Notorious]]''
+*<!-- 2018-11-13 -->''[[Star Wars: Smuggler's Guide]]''
+*<!-- 2019-05-09 -->''[[Rise of the Separatists]]''
+*<!-- 2019-06-28 -->''[[Collapse of the Republic]]''
+*<!-- 2019-09-05 -->''[[Star Wars: How Not to Get Eaten by Ewoks and Other Galactic Survival Skills]]''
+*<!-- 2021-05-24 -->{{SW|url=series/the-bad-batch/cornered-episode-guide|text="Cornered" Episode Guide - The Bad Batch}}
+*<!-- 2021-07-20 -->{{EncyclopediaCite|Scarif and Other Planets in the Outer Rim}}
+*<!-- 2021-11-02 -->''[[Star Wars: Battles that Changed the Galaxy]]'' {{Imo}}
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}}
+*<!-- 2024-07-09 -->''[[Star Wars: The Rise and Fall of the Galactic Empire]]''
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]''
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]''
+}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|es=Ruta Comercial Perlemiana
+|fr=Voie Marchande Perlemienne
+|ja=パーレミアン交易ルート
+|ka=პერლემიური სავაჭრო მარშრუტი
+|pt=Rota de Comércio Perlemian
+|tr=Perlemia Ticaret Rotası
+}}
+
+[[Category:Colonies hyperlanes]]
+[[Category:Core Worlds hyperlanes]]
+[[Category:Expansion Region hyperlanes]]
+[[Category:Inner Rim hyperlanes]]
+[[Category:Mid Rim hyperlanes]]
+[[Category:Outer Rim Territories hyperlanes]]
+[[Category:Super-hyperroutes]]
+[[Category:The Interior hyperlanes]]
+[[Category:The Slice hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Perlemian Trade Route]]
+}}

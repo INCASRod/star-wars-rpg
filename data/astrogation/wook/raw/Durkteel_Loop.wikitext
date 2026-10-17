@@ -1,0 +1,37 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:DurkteelLoop-MeetTheHutts.png]]
+|name=Durkteel Loop
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Mid Rim Territories]]<ref name="Collapse">''[[Collapse of the Republic]]''</ref>
+**[[Kashyyyk Region]]<ref name="YouTube">{{SWYouTube|series=Star Wars: Galaxy Guide|text=Meet the Hutts: The Galaxy's Biggest Crime Lords|video=Ct977noXUVg}}</ref>
+*[[The Slice]]<ref name="Slice">{{SWYouTube|series=Star Wars: Galaxy Guide|text=Meet the Hutts: The Galaxy's Biggest Crime Lords|video=Ct977noXUVg}} places the Durkteel Loop in the area of [[Realspace|space]] ''[[Star Wars: The Galactic Explorer's Guide]]'' identifies as [[the Slice]].</ref>
+|sectors=*[[Kastolar sector]]<ref name="Kastolar">{{SWYouTube|series=Star Wars: Galaxy Guide|text=Meet the Hutts: The Galaxy's Biggest Crime Lords|video=Ct977noXUVg}} places the [[Sneeve system|Sneeve]] and [[Durkteel system]]s on the Durkteel Loop, both of which {{GalaxyMapAppendix}} places in the [[Kastolar sector]].</ref>
+*[[Mytaranor sector]]<ref name="Collapse" />
+|stellar=
+|endpoints=
+|transitpoints=[[Kashyyyk system|Kashyyyk]]<ref name="Collapse" /> - [[Sneeve system|Sneeve]]<ref name="YouTube" /> - [[Durkteel system|Durkteel]]<ref name="YouTube" />
+|otherobjects=
+|junctions=[[Great Kashyyyk Branch]]<ref name="Collapse" /> - [[Nightroad]]<ref name="Collapse" /> - [[Randon Run]]<ref name="RO World Locations">{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}}</ref>
+}}
+The '''Durkteel Loop''' was a [[hyperspace route]] in the intersection of the [[Mid Rim Territories]]<ref name="Collapse" /> and [[the Slice]] that passed through the [[Kashyyyk system]] in the [[Mytaranor sector]]<ref name="Collapse" /> then the [[Sneeve system]] and [[Durkteel system]]<ref name="YouTube" /> in the [[Kastolar sector]]<ref name="Kastolar" /> of the [[Kashyyyk Region]] before ending at junction onto the [[Pabol Sleheyron]] route.<ref name="YouTube" /> The Kashyyyk [[Star system|system]] acted as a junction onto the [[Great Kashyyyk Branch]], [[Nightroad]],<ref name="Collapse" /> and [[Randon Run]] hyperspace routes.<ref name="RO World Locations" />
+
+{{Route-stub}}
+
+==Sources==
+*<!-- 2019-06-28 -->''[[Collapse of the Republic]]'' {{1stm}}
+*<!-- 2026-09-16 -->{{SWYouTube|series=Star Wars: Galaxy Guide|text=Meet the Hutts: The Galaxy's Biggest Crime Lords|video=Ct977noXUVg}} {{1stp}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|es=Bucle Durkteel
+|tr=Durkteel Döngüsü
+}}
+
+[[Category:Mid Rim hyperlanes]]
+[[Category:The Slice hyperlanes]]

@@ -1,0 +1,65 @@
+{{Top}}
+{{Otheruses|Corridor}}
+{{TradeRoute
+|image=[[File:NamadiiCorridor-GM.png]]
+|name=Namadii Corridor
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Core Worlds]]<ref name="COTR">''[[Collapse of the Republic]]''</ref> - [[Colonies]] - [[Inner Rim Territories|Inner Rim]] - [[Expansion Region]] - [[Mid Rim Territories|Mid Rim]]<ref name="GM">{{GalaxyMapHyperlanes|route=Namadii Corridor|leg=''[[The Essential Atlas]]''}}</ref>
+*[[The Interior]]<ref name="Interior">The {{GalaxyMapPoster}} places the [[Coruscant]], which ''[[Collapse of the Republic]]'' establishes is part of the Namadii Corridor, in the area of [[Realspace|space]] ''[[Star Wars: The Galactic Explorer's Guide]]'' identifies as [[the Interior]].</ref>
+|sectors=[[Corusca sector]] {{C|[[Coruscant subsector]]}}<ref name="COTR" /> - [[Jalor sector]]<ref name="Jango Fett 1">[[Jango Fett 1|''Jango Fett'' 1]], based on corresponding data for [[Glee Anselm]]</ref>
+|stellar=
+|endpoints=
+|transitpoints=[[Coruscant system]]<ref name="COTR" /> - [[Borleias system]]<ref name="Alphabet">[[Alphabet Squadron (novel)|''Alphabet Squadron'']], based on corresponding data for [[Borleias]]</ref> - [[Jalor system]]<ref name="Obi-Wan & Anakin">''[[Choose Your Destiny: An Obi-Wan & Anakin Adventure]]'', based on corresponding data for [[Glee Anselm]]</ref>
+|otherobjects=[[Coruscant]]<ref name="COTR" /> - [[Pantolomin system|Pantolomin]] - [[Borleias]] - [[Palanhi system|Palanhi]] - [[Marquinn]] - [[Pheryon]] - [[Bilbringi]] - [[Dorin]] - [[Glee Anselm]] - [[Ansion]]<ref name="GM" /> - [[Namadii system|Namadii]]<ref name="TFABeginner">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref>
+|junctions=[[Corellian Run]]<ref name="COTR" />/[[Metellos Trade Route]]<ref name="Metellos">{{GalaxyMapHyperlanes|route=Metellos Trade Route|canon=''[[Star Wars: Scum and Villainy: Case Files on the Galaxy's Most Notorious]]''|leg=''[[The Essential Atlas]]''}}</ref>/[[Koros Trunk Line]]<ref name="Koros">{{BuildFalconCite|36|Guide to the Galaxy}} establishes that [[Coruscant]] is part of the [[Koros Trunk Line]]. As ''[[Collapse of the Republic]]'' establishes Coruscant to also be part of the Namadii Corridor, the [[planet]] must act as a junction between the two [[hyperspace route]]s.</ref> {{C|[[Nexus Route]]}}/[[Perlemian Trade Route]]<ref name="COTR" />/[[Stassia Alley]]<ref name="Stassia">[[Star Wars: Galactic Starcruiser|''Star Wars'': Galactic Starcruiser]] establishes [[Coruscant]] to be part of [[Stassia Alley]]. As ''[[Collapse of the Republic]]'' establishes Coruscant to also be part of the Namadii Corridor, the [[planet]] must act as a junction between the two [[hyperspace route]]s.</ref> - [[Shwuy Exchange]]<ref name="Shwuy">{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}}</ref> - [[Celanon Spur]]<ref name="Celanon">{{BuildFalconCite|48|Guide to the Galaxy}}</ref>
+}}
+The '''Namadii Corridor''' was a [[hyperspace route]] that ran from the [[planet]] [[Coruscant]] in [[the Interior]] and [[Core Worlds]] region of [[the galaxy]] to the astronomical object [[Namadii system|Namadii]] in the [[Mid Rim Territories]]. It passed through the [[Colonies]], [[Inner Rim Territories|Inner Rim]], and [[Expansion Region]] on its route with junctions onto various other routes including the [[Corellian Run]] and the [[Perlemian Trade Route]].
+
+==Description==
+The Namadii Corridor was a [[hyperspace route]] that had one terminus at the [[Galaxy|galactic]] [[capital]] [[Coruscant]] in the [[Coruscant system]] of the [[Corusca sector]]'s [[Coruscant subsector]] in the [[Core Worlds]]<ref name="COTR" /> and [[the Interior]] regions of [[the galaxy]].<ref name="Interior" /> From there, it connected to the astronomical objects [[Pantolomin system|Pantolomin]] and [[Borleias]]<ref name="GM" /> of the [[Borleias system]],<ref name="Alphabet" /> both also in the Core Worlds, and then astronomical object [[Palanhi system|Palanhi]] in the [[Colonies]].<ref name="GM" />
+
+Next, the route entered the [[Inner Rim Territories|Inner Rim]] and passed through the astronomical objects [[Marquinn]],<ref name="GM" /> the [[gas giant]]<ref name="Poe Dameron 7">[[Poe Dameron 7|''Poe Dameron'' 7]]</ref> [[Pheryon]], and<ref name="GM" /> the [[Planet|world]]<ref name="Leia">''[[Leia, Princess of Alderaan]]''</ref> [[Bilbringi]]. After entering the [[Expansion Region]], it linked to<ref name="GM" /> the [[Kel Dor]] [[homeworld]]<ref name="Aliens">''[[Star Wars: Aliens of the Galaxy]]''</ref> [[Dorin]] and then finally it entered the [[Mid Rim Territories]] and passed through<ref name="GM" /> the [[Nautolan]] homeworld<ref name="Glee Anselm">{{Databank|glee-anselm|Glee Anselm}}</ref> [[Glee Anselm]]<ref name="GM" /> in the [[Jalor sector]]'s<ref name="Jango Fett 1" /> [[Jalor system]],<ref name="Obi-Wan & Anakin" /> then<ref name="GM" /> the planet<ref name="Helmet Collection 73">{{HelmetCollectionCite|73|Databank A-Z}}</ref> [[Ansion]], and finally reached its other terminus at the astronomical object [[Namadii system|Namadii]]. On the [[Standard Galactic Grid]], Namadii Corridor passed through squares K-10, K-9, K-8, J-8, J-7, I-7, and I-6.<ref name="GM" />
+
+Coruscant acted as a junction from the Namadii Corridor onto the [[Corellian Run]],<ref name="COTR" /> [[Metellos Trade Route]],<ref name="Metellos" /> [[Perlemian Trade Route]],<ref name="COTR" /> [[Stassia Alley]],<ref name="Stassia" /> and the [[Koros Trunk Line]], which was part of the larger [[Nexus Route]].<ref name="Koros" /> A route also passed from Coruscant out to the Core Worlds planet Chandrila, with another route then looping back from Chandrila to meet the Namadii Corridor at Pantolomin. Palanhi served as a junction between the Corridor and<ref name="GM" /> the [[Shwuy Exchange]],<ref name="Shwuy" /> Dorin as a junction on to the [[Celanon Spur]], and Ansion onto a route that eventually led to the world [[Benath]].<ref name="GM" />
+
+==Behind the scenes==
+In the current ''[[Star Wars]]'' [[canon]], the Namadii Corridor was first pictured in the [[Star Wars: Build the Millennium Falcon 18|eighteenth]] issue of the ''[[Star Wars: Build the Millennium Falcon]]'' magazine,<ref name="BMF18">{{BuildFalconCite|18|Guide to the Galaxy}}</ref> published around [[May 6]], [[2015]].<ref name="BMFdate">{{BuildFalconDates|36}}</ref> It was first identified in ''[[Collapse of the Republic]]'', a [[2019]] ''[[Star Wars Roleplaying]]'' supplement published by [[Fantasy Flight Games]].<ref name="COTR" />
+
+The [[Namadii Corridor/Legends|Namadii Corridor]] originated in the [[Star Wars Legends|''Star Wars'' Legends]] continuity, where it first appeared in the [[2000]] novel ''[[The New Jedi Order: Agents of Chaos I: Hero's Trial]]'', which was written by [[James Luceno]].<ref name="AOC1">''[[The New Jedi Order: Agents of Chaos I: Hero's Trial]]''</ref> It was then depicted for the first time in ''[[The Essential Atlas]]'', a [[2009]] reference book written by [[Daniel Wallace]] and [[Jason Fry]].<ref name="TEA">''[[The Essential Atlas]]''</ref>
+
+==Appearances==
+*[[Star Wars: Galactic Starcruiser|''Star Wars'': Galactic Starcruiser]] {{1st}} {{MapPoint|screen=1}}
+
+==Sources==
+*<!-- 2015-05-06 -->{{BuildFalconCite|18|Guide to the Galaxy}} {{1stp}}
+*<!-- 2016-03-17 -->''[[Nexus of Power]]''
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] {{MapPoint}}
+*<!-- 2019-06-28 -->''[[Collapse of the Republic]]'' {{1stID|Namadii Corridor}}
+*<!-- 2021-04-20 -->{{EncyclopediaCite|The First Order}} {{MapPoint}}
+*<!-- 2021-06-29 -->{{EncyclopediaCite|The Battle of Endor and the Fall of the Empire}} {{MapPoint}}
+*<!-- 2021-07-20 -->{{EncyclopediaCite|Scarif and Other Planets in the Outer Rim}} {{MapPoint}}
+*<!-- 2022-03-11 -->{{EncyclopediaCite|Exegol, the Unknown Regions and Wild Space}} {{MapPoint}}
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}} {{MapPoint}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|es=Corredor Namadii
+|tr=Namadii Koridoru
+}}
+
+[[Category:Colonies hyperlanes]]
+[[Category:Core Worlds hyperlanes]]
+[[Category:Expansion Region hyperlanes]]
+[[Category:Inner Rim hyperlanes]]
+[[Category:Major galactic hyperlanes]]
+[[Category:Mid Rim hyperlanes]]
+[[Category:The Interior hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Namadii Corridor]]
+}}

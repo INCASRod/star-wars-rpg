@@ -1,0 +1,29 @@
+{{Top|ca|notoc=1}}
+{{Quote|The San Tekkas had always been a bit hardscrabble, but they suddenly ran into a bit of luck, mapping new routes through places like the Relgim Run and the Bitmus Cloud, high-value routes.|Chancey Yarrow|<ref name="OotS">''[[The High Republic: Out of the Shadows]]''</ref>}}
+The '''Relgim Run''' was a [[hyperspace route]].<ref name="Smuggler's Guide">''[[Star Wars: Smuggler's Guide]]''</ref> After the [[Great Hyperspace Rush]], the [[San Tekka clan]] of [[hyperspace]] [[prospector]]s mapped valuable new routes through places like the Relgim Run and the [[Bitmus Cloud]] using the talents of the hyperspace savant [[Mari San Tekka]]. Over one hundred [[Standard year|years]] later, the [[scientist]] [[Chancey Yarrow]] mentioned the Run when explaining San Tekka's abilities to [[Nan Hague|Nan]], a member of the [[Nihil]],<ref name="OotS" /> in [[231 BBY]].<ref name="Date">''[[Star Wars: Timelines]]'' dates the events of ''[[The High Republic: Out of the Shadows]]'' to [[231 BBY]].</ref>
+
+During the [[Imperial Era]], the [[Galactic Empire|Imperial]] warrant to [[Death|terminate]] the [[pirate]] [[Gunda Mabin|Mabin the Dread]] listed her last known location as lurking on the Relgim Run so that she could pillage the [[Cassandran Worlds]],<ref name="Smuggler's Guide" /> which included [[Minashee]], an astronomical object<ref name="Dooku">''[[Dooku: Jedi Lost]]''</ref> in the [[Tadrin sector]] within the [[Cassander sector]] of the [[Outer Rim Territories]]<ref name="Appendix">{{GalaxyMapAppendix}}</ref> and [[New Territories]].<ref name="NewTerritories">{{GalaxyMapAppendix}} places the [[Minashee system]], and therefore [[Minashee]], in [[Standard Galactic Grid|grid square]] K-5, which is in the area of [[Realspace|space]] ''[[Star Wars: The Galactic Explorer's Guide]]'' identifies as the [[New Territories]].</ref>
+
+==Behind the scenes==
+[[File:Relgim_Run.jpg|thumb|right|325px|alt=A map of the galaxy with the Relgim Run highlighted, running from Ord Thoden to Fedje.|The Relgim Run originated in the ''Star Wars'' Legends continuity.]]
+The Relgim Run was first mentioned in the new ''[[Star Wars]]'' [[canon]] on a warrant to terminate included as a supplemental item in the deluxe edition of the [[2018]] reference book ''[[Star Wars: Smuggler's Guide]]'', which was written by [[Daniel Wallace]].<ref name="Smuggler's Guide" /> The run originated in the [[Star Wars Legends|''Star Wars'' Legends]] continuity, where it was first mentioned as the [[Relgim Run/Legends|Relgim hyperspace lane]] in [[Riders of the Maelstrom (adventure)|''Riders of the Maelstrom'']], a [[1989]] supplement for ''[[Star Wars: The Roleplaying Game]]'' written by [[Ray Winninger]].<ref name="RotM">[[Riders of the Maelstrom (adventure)|''Riders of the Maelstrom'']]</ref> The name Relgim Run was then first used in Legends in the [[1996]] short story "[[A Certain Point of View (short story)|A Certain Point of View]]," which was written by [[Charlene Newcomb]] and published in [[Star Wars Adventure Journal 8|''Star Wars Adventure Journal'' 8]].<ref name="ADJ">{{JournalCite|8|A Certain Point of View (short story)}}</ref>
+
+==Appearances==
+{{Indexpage}}
+*''[[The High Republic: Out of the Shadows]]'' {{Ab|The High Republic: Out of the Shadows (audiobook)}} {{Mo}}
+
+==Sources==
+*<!-- 2018-11-13 -->''[[Star Wars: Smuggler's Guide]]'' {{1stm}} {{C|Deluxe edition}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|es=Corredor Relgim
+}}
+
+[[Category:Hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Relgim Run]]
+}}

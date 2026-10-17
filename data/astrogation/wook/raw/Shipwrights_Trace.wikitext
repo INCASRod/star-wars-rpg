@@ -1,0 +1,59 @@
+{{Top}}
+{{Otheruses|Trace}}
+{{TradeRoute
+|image=[[File:Foless-Crossroads-SWT.jpg]]
+|name=Shipwrights' Trace
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Colonies]]<ref name="Regions">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] depicts a [[hyperspace route]] passing through the [[Colonies]], the [[Inner Rim Territories]] and the [[Expansion Region]] between [[Foless]] and [[Allanteen VI]] and through or near [[Tynna]] and [[Quarzite]]. ''[[Star Wars: The Rebel Files]]'' and {{BuildFalconCite|66|Guide to the Galaxy}} identify it as the Shipwrights' Trace.</ref> - [[Inner Rim Territories]]<ref name="Regions" /> - [[Expansion Region]]<ref name="Regions" />
+|sectors=
+|stellar=
+|endpoints=*[[Fondor]]<ref name="Map">{{StarWarsGalaxyMap}}</ref>
+*[[Allanteen VI]]<ref name="Map" />
+|transitpoints=[[Chardaan system]]<ref name="Systems">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] places [[Chardaan]], which ''[[No Disintegrations]]'' places in the [[Chardaan system]], on a [[hyperspace route]] between [[Foless]] and [[Allanteen VI]]. ''[[Star Wars: The Rebel Files]]'' and {{BuildFalconCite|66|Guide to the Galaxy}} identify it as the Shipwrights' Trace.</ref>
+|otherobjects=*[[Foless]]<ref name="Planets">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] depicts a [[hyperspace route]] running between [[Foless]] and [[Allanteen VI]] via [[Atzerri]], [[Chardaan]] and [[Tynna]]. ''[[Star Wars: The Rebel Files]]'' and {{BuildFalconCite|66|Guide to the Galaxy}} identify it as the Shipwrights' Trace.</ref> - [[Atzerri]]<ref name="Planets" /> - [[Chardaan]]<ref name="Planets" /> - [[Tynna]]<ref name="Planets" /> - [[Allanteen VI]]<ref name="Planets" />
+*[[Whiforla II]]<ref name="Weapon">''[[The Weapon of a Jedi: A Luke Skywalker Adventure]]''</ref>
+|junctions=[[Corellian Trade Spine]]<ref name="Junctions">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] depicts a [[hyperspace route]] intersecting the [[Corellian Run]], [[Corellian Trade Spine]] and [[Hydian Way]] between [[Foless]] and [[Allanteen VI]]. ''[[Star Wars: The Rebel Files]]'' and {{BuildFalconCite|66|Guide to the Galaxy}} identify it as the Shipwrights' Trace.</ref> - [[Hydian Way]]<ref name="Junctions" /> - [[Corellian Run]]<ref name="Junctions" />
+}}
+{{Quote|Orders direct from the fleet&mdash;Mon Mothma's asked you to retrieve logs of Imperial communications that were intercepted by several rebel cells along the Shipwrights' Trace.|[[Arhul Narra]], to Luke Skywalker|<ref name="Weapon" />}}
+The '''Shipwrights' Trace''' was a [[hyperspace route]] situated between the astronomical objects [[Fondor]] and [[Allanteen VI]],<ref name="Map" /> running near the [[planet]] [[Quarzite]].<ref name="BMF 66">{{BuildFalconCite|66|Guide to the Galaxy}}</ref> From Fondor located in the [[Colonies]] region, it ran to [[Foless]] on the [[Corellian Trade Spine]]<ref name="TFABG">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref> [[super-hyperroute]],<ref name="BMF 48">{{BuildFalconCite|48|Guide to the Galaxy}}</ref> the route went into the [[Inner Rim Territories]] to the celestial body [[Atzerri]] and then the astronomical body [[Chardaan]],<ref name="TFABG" /> located in the [[Chardaan system]]<ref name="Systems" /> along the [[Hydian Way]]<ref name="TFABG" /> super-hyperroute.<ref name="BMF 48" /> The route then went into the [[Expansion Region]] to the<ref name="TFABG" /> [[planet]]<ref name="On the Front Lines">''[[Star Wars: On the Front Lines]]''</ref> [[Tynna]] and then to Allanteen VI, which lay on the [[Corellian Run]]<ref name="TFABG" /> super-hyperroute.<ref name="BMF 48" /> The planet [[Whiforla II]] was located along the Shipwrights' Trace.<ref name="Weapon" />
+
+During the [[Early rebellion against the Galactic Empire|early rebellion]] against the [[Galactic Empire]], the [[Deep Fathom|Deep Current]], an information-gathering resistance group based around Tynna, operated along the Shipwrights' Trace.<ref name="Rebel Files">''[[Star Wars: The Rebel Files]]''</ref> During the [[Galactic Civil War]] between the Rebel Alliance and the [[Galactic Empire]], Alliance [[Chancellor (Rebel Alliance)|Chancellor]] [[Mon Mothma]] tasked the operative [[Luke Skywalker]] with retrieving logs of Imperial communications that were intercepted by rebel cells operating along the Shipwrights' Trace.<ref name="Weapon" />
+
+==Behind the scenes==
+The Shipwrights' Trace was first mentioned in [[canon]] in the [[2015]] junior novel ''[[The Weapon of a Jedi: A Luke Skywalker Adventure]]'', written by [[Jason Fry]].<ref name="Weapon" />
+
+==Appearances==
+*''[[The Weapon of a Jedi: A Luke Skywalker Adventure]]'' {{Ab|The Weapon of a Jedi: A Luke Skywalker Adventure (audiobook)}} {{1stm}}
+*[[Star Wars Adventures: The Weapon of a Jedi 1|''Star Wars Adventures: The Weapon of a Jedi'' 1]] {{Mo}} {{ID|Shipwright's Trace}}
+
+==Sources==
+*<!-- 2015-12-30 -->{{BuildFalconCite|52|Guide to the Galaxy}}
+*<!-- 2016-04-06 -->{{BuildFalconCite|66|Guide to the Galaxy}}
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]
+*<!-- 2017-01-31 -->{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}}
+*<!-- 2017-11-21 -->''[[Star Wars: The Rebel Files]]''
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]''
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]''
+*{{StarWarsGalaxyMap}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|es=Rastro de los Constructores
+|ja=シップライツ・トレース
+|tr=Gemi Yapımcılarının Yolu
+}}
+
+[[Category:Colonies hyperlanes]]
+[[Category:Expansion Region hyperlanes]]
+[[Category:Inner Rim hyperlanes]]
+[[Category:Major galactic hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Shipwrights' Trace]]
+}}

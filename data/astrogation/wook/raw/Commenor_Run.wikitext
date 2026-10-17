@@ -1,0 +1,43 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:CommenorRun-GalaxyMap.png]]
+|name=Commenor Run
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Core Worlds]]<ref name="Commenor">{{GalaxyMapHyperlanes|route=Commenor Run|canon=''[[Dawn of Rebellion]]''|leg=''[[The Essential Atlas]]''}}</ref>
+|sectors=
+|stellar=
+|endpoints=*[[Brentaal IV]]<ref name="Commenor" />
+*[[Commenor]]<ref name="Commenor" />
+|transitpoints=
+|otherobjects=[[Alderaan]]<ref name="Dawn">''[[Dawn of Rebellion]]''</ref>
+|junctions=
+}}
+'''Commenor Run''' was a [[hyperspace route]]<ref name="Dawn" /> that ran from [[Brentaal IV]]<ref name="Commenor" /> in the [[Core Worlds]] to [[Commenor]] in the [[Colonies]].<ref name="Map">{{StarWarsGalaxyMap}}</ref>
+
+==Sources==
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] {{1stp}}
+*<!-- 2018-02-22 -->''[[Dawn of Rebellion]]'' {{1stID|Commenor Run}}
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]''
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]''
+*{{StarWarsGalaxyMap}} {{MapPoint}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|es=Corredor de Commenor
+|pl=Szlak Commenorski
+|tr=Commenor Kaçış Yolu
+}}
+
+[[Category:Core Worlds hyperlanes]]
+[[Category:Major galactic hyperlanes]]
+[[Category:The Interior hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Commenor Run]]
+}}

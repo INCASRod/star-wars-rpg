@@ -1,0 +1,79 @@
+{{Top}}
+{{Otheruses|Sanctuary}}
+{{TradeRoute
+|image=[[File:Sanctuary_Pipeline-TRF.jpg]]
+|name=Sanctuary Pipeline
+|founded=
+|founders=[[Galactic Empire]]<ref name="Moving Target">''[[Moving Target: A Princess Leia Adventure]]''</ref>
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="Rebel Files">''[[Star Wars: The Rebel Files]]''</ref> - [[Mid Rim Territories]]<ref name="Rebel Files" /> - Outer Rim Territories<ref name="Rebel Files" />
+|sectors=[[Brema sector|Sullust]]<ref name="Sullust note">[[Tarkin (novel)|''Tarkin'']] places [[Sullust]], where ''Moving Target'' establishes the Pipeline begins, in the [[Brema sector|Sullust sector]]. Therefore, the Pipeline must pass through that sector.</ref> - [[Moddell sector|Moddell]]<ref name="Rebel Files" />
+|stellar=
+|endpoints=
+*[[Endor]]<ref name="Rebel Files" />
+*[[Sullust]]<ref name="Rebel Files" />
+|transitpoints=[[Sullust system|Sullust]]<ref name="Rebel Files" /> - [[Endor system|Endor]]<ref name="Rebel Files" />
+|otherobjects=Sullust<ref name="Rebel Files" /> - [[Murk system|Murk]]<ref name="Rebel Files" /> - Endor<ref name="Rebel Files" />
+|junctions=[[Rimma Trade Route]]<ref name="Rebel Files" /> - [[Incisor Sidestep]]<ref name="Routes">''[[Star Wars: The Rebel Files]]'' establishes that the Sanctuary Pipeline goes from [[Sullust]] to [[Endor]]. ''[[Star Wars: Smuggler's Guide]]'' shows Sullust to be connected with the [[Incisor Sidestep]] while {{BuildFalconCite|18|Guide to the Galaxy}} shows Endor to be connected with the [[Bakura Trace]].</ref> - [[Bakura Trace]]<ref name="Routes" />
+}}
+{{Quote|The Empire has used S-thread boosters to create and maintain a secret hyperspace route running from Sullust all the way to the galactic edge. It's called the Sanctuary Pipeline and is one of the Empire's most important military secrets.|Gial Ackbar|<ref name="Moving Target" />}}
+The '''Sanctuary Pipeline''' was a top secret [[hyperspace route]] established and maintained by the [[Galactic Empire]] after it used [[S-thread booster]]s to reverse the [[Gravity|gravitational]] muddying which collapsed a former hyperlane. The route went directly between the [[planet]] [[Sullust]] and the [[moon]] of [[Endor]] and was used by the Empire to covertly supply its secret construction of a [[DS-2 Death Star II Mobile Battle Station|second Death Star]] [[superweapon]].
+
+After [[Galactic Emperor]] [[Darth Sidious|Palpatine]] allowed information on the new Death Star into the hands of the [[Alliance to Restore the Republic|Rebel Alliance]] around [[4 ABY]], the rebels analysed the Sanctuary Pipeline and decided to use it to make a surprise attack on the superweapon, with Sullust being the staging ground for an amassing [[Rebel Alliance Navy|Alliance fleet]]. The Alliance forces then used the route to make their attack on the Death Star at Endor, only to find the [[Emperor]] had set a trap there with his own [[fleet]]. However, the resulting [[Battle of Endor|battle]] ended with the destruction of the superweapon and Palpatine's [[death]] regardless.
+
+==Description==
+{{Quote|You see, a hyperlane existed here once, but galactic drift washed it out of alignment. Gravitational muddying is correctable through technology if you have exceptionally deep pockets, with S-thread boosters to prop up a collapsed hyperlane assuming you know where to place them.|Capin Harinar, in a classified document to Crix Madine|<ref name="Rebel Files" />}}
+[[File:Pipeline-to-Endor.jpg|thumb|left|300px|The Sanctuary Pipeline went to Endor in the Moddell sector.]]
+The Sanctuary Pipeline was an artificially created<ref name="HC 23">{{HelmetCollectionCite|23|Highlights of the Saga}}</ref> [[hyperspace route]] which travelled in a straight line from the [[planet]] [[Sullust]] in the [[Outer Rim Territories|Outer Rim's]]<ref name="Rebel Files" /> [[Brema sector|Sullust sector]]<ref name="Tarkin">[[Tarkin (novel)|''Tarkin'']]</ref> to the [[forest]] [[moon]] of [[Endor]] in the Outer Rim's [[Moddell sector]], passing through the [[Mid Rim Territories]]. It was created in place of a former hyperlane which had been washed out of alignment by [[Galaxy|galactic]] drift, with [[S-thread booster]]s being used to correct [[Gravity|gravitational]] muddying and prop up the collapsed route. The Sanctuary Pipeline passed through [[Murk system|Murk]] in the Moddell sector before it reached Endor. The route crossed paths with the [[Rimma Trade Route]]<ref name="Rebel Files" /> and [[Incisor Sidestep]] at Sullust and also the [[Bakura Trace]] at Endor.<ref name="Routes" />
+
+==History==
+===Highway to Endor===
+{{Quote|Look at the line on this map. Fast, clear, and straight. This is what the Empire is calling the Sanctuary Pipeline. It runs directly between Sullust on the Rimma and Endor in Moddell. That's how the Empire is doing it. That's how they've shunted thousands of cargo barges to a construction site without our agents on Annaj seeing a thing.|Capin Harinar, in a classified document to Crix Madine|<ref name="Rebel Files" />}}
+[[File:FlyingCasual-ROTJHD.jpg|thumb|right|300px|The Sanctuary Pipeline was used to supply the construction of the second Death Star at Endor.]]
+The [[Galactic Empire]] created the Sanctuary Pipeline, spending a fortune on S-thread boosters to restore and maintain the hyperlane. The route was top secret,<ref name="Moving Target" /> with its purpose being to funnel construction supplies to the Endor,<ref name="Rebel Files" /> which it called the "Sanctuary Moon,"<ref name="HC 23" /> without the rest of [[the galaxy]] noticing. The supplies being fed to the [[Endor system]] were used to construct the [[DS-2 Death Star II Mobile Battle Station|Death Star II]] [[superweapon]], a successor to the [[DS-1 Orbital Battle Station|Death Star]] which had been destroyed by the [[Alliance to Restore the Republic|Rebel Alliance]] in the [[Battle of Yavin]]. Thousands of cargo [[transport]]s transported supplies to the construction site through the Sanctuary Pipeline,<ref name="Rebel Files" /> with [[Venator-class Star Destroyer|''Venator''-class Star Destroyers]] being among the [[starship]]s used to guard the secret route.<ref name="BMF 35">{{BuildFalconCite|35|Starship Fact File}}</ref>
+
+Around [[4 ABY]],<ref name="4 ABY">''[[Star Wars: Timelines]]'' dates [[Operation Yellow Moon]], which took place shortly after the [[Alliance to Restore the Republic|Rebel Alliance]] learned of the [[DS-2 Death Star II Mobile Battle Station|second Death Star]], to [[4 ABY]].</ref> [[Galactic Emperor|Emperor]] [[Darth Sidious|Palpatine]] devised a plan to lead the majority of the Alliance's forces into a trap by revealing information about the new Death Star to the Alliance.<ref name="HC 14">{{HelmetCollectionCite|14|Highlights of the Saga}}</ref> After rumor arose out of the Moddell sector, the Alliance collaborated with the [[Bothan Spynet]] in an [[Bothan Spynet intelligence operation|intelligence operation]] coordinated by rebel [[General]] [[Crix Madine]] that led to the [[Bothan]]s discovering the second Death Star and its location.<ref name="Rebel Files" /> The navigational data for the Sanctuary Pipeline was additionally allowed into Alliance hands,<ref name="HC 14" /> where it was analysed by [[Major]] [[Capin Harinar]]. Harinar used the findings to deduce the true nature of the Empire's secret route.<ref name="Rebel Files" />
+
+At an [[Alliance High Command]] summit at the planet [[Zastiga]], [[Admiral]] [[Gial Ackbar]] revealed news of a new Death Star to a number of Alliance leaders and the detailed the technicalities of the Sanctuary Pipeline. Numerous rebel leaders in awe of the technology keeping the route intact, knowing that such an endeavor would normally bankrupt several star systems while still costing less than constructing a Death Star.<ref name="Moving Target" />
+
+===Jumping through the pipeline===
+{{Quote|In light of Harinar's discovery, Sullust is the only acceptable fleet staging area. We must launch from there if we are to travel the Sanctuary Pipeline, yet such a rendezvous is unlikely to betray. We have already struck Sullust once during Operation Ringbreaker and it is wholly believable we might return for another engagement.|Gial Ackbar, in an official document to Mon Mothma|<ref name="Rebel Files" />}}
+With the Alliance planning a largescale assault on the second Death Star, [[Corporal]] [[Ractivelle]] made a report on the Moddell sector and the known routes to reach the Death Star, concluding that reaching the battle site undetected through the established routes was impossible. However, Harinar instead suggested, in a classified document on the Sanctuary Pipeline to Madine, that the secret route would be the best route to use to take the Empire by surprise. Ackbar agreed, and in an official document to Alliance [[Commander-in-Chief]] [[Mon Mothma]] he proposed Sullust as a staging ground, believing that the Alliance's past involvement with the planet through the campaign [[Operation Ringbreaker]] would make the Empire think the rebels were merely making a seeking more conflict at the world. The reports between the Alliance figures on the Sanctuary Pipeline were compiled by Mothma's [[aide]] and [[archivist]] [[Hendri Underholt]], who added them to his archive of non-electric Alliance documents named ''[[The Rebel Files]]''.<ref name="Rebel Files" />
+
+[[File:Down-the-Pipeline.png|thumb|left|350px|The Alliance fleet jumps down the Sanctuary Pipeline.]]
+The [[Rebel Alliance Navy|Alliance fleet]] amassed in the [[Sullust system]] ahead in preparation to jump through the Sanctuary Pipeline and attack the Death Star. Meanwhile, at the other end of the route, Palpatine set his own trap, hiding a large Imperial [[fleet]] behind Endor. When the Alliance fleet jumped through the Sanctuary Pipeline and made its attack, the Emperor's secret fleet mobilized and flanked the rebels, resulting in a massive [[Battle of Endor|engagement]]. However, the [[Emperor]]'s plan went awry when the Death Star's shield was destroyed by rebel ground forces, allowing rebel [[starfighter]]s to enter and destroy the superweapon. Palpatine was [[Death|killed]] aboard the superweapon during the battle.<ref name="Episode VI">{{Film|VI}}</ref>
+
+Around the same day as the Battle of Endor, Underholt was killed during the Empire's [[Bombardment of Durkteel|bombardment]] of the [[Tak-Beam complex]] planet [[Durkteel]], ''The Rebel Files'' being buried in the process. The archive was recovered in an [[Excavation on Durkteel|excavation]]<ref name="Rebel Files" /> in [[34 ABY]]<ref name="34 ABY">The reference book ''[[Star Wars: The Rebel Files]]'' establishes that the [[in-universe]] artifact ''[[The Rebel Files]]'' was buried on the same [[Standard day|day]] as the [[Battle of Endor]], which ''[[Star Wars: Galactic Atlas]]'' dates to [[4 ABY]]. Given that the former also states that ''The Rebel Files'' was rediscovered thirty [[Standard year|years]] after the battle, the artifact must have been found in [[34 ABY]].</ref> and fell into the hands of the [[Resistance]], a private military with roots with to the Alliance which was formed to combat the Empire's successor, the [[First Order]]. Resistance Admiral [[Ushos O. Statura]] annotated Harinar's document on the Sanctuary Pipeline, questioning whether the First Order could have been using S-thread boosters to navigate the [[Unknown Regions]].<ref name="Rebel Files" />
+
+==Behind the scenes==
+The Sanctuary Pipeline first appeared in [[Richard Marquand]]'s [[1983]] film [[Star Wars: Episode VI Return of the Jedi|''Star Wars:'' Episode VI ''Return of the Jedi'']], the final installment in the [[Original trilogy]] of ''[[Star Wars]]''.<ref name="Episode VI" />
+
+==Appearances==
+*''[[Moving Target: A Princess Leia Adventure]]'' {{Ab|Moving Target: A Princess Leia Adventure (audiobook)}} {{Hologram}}
+*{{Film|VI}} {{1st}}
+
+==Sources==
+*<!-- 2015-05-06 -->{{BuildFalconCite|18|Guide to the Galaxy}} {{1stID|Sanctuary Pipeline}}
+*<!-- 2015-07-01 -->{{HelmetCollectionCite|23|Highlights of the Saga}}
+*<!-- 2015-09-02 -->{{BuildFalconCite|35|Starship Fact File}}
+*<!-- 2015-09-23 -->{{BuildFalconCite|38|Guide to the Galaxy}}
+*<!-- 2015-10-21 -->{{HelmetCollectionCite|14|Highlights of the Saga}}
+*<!-- 2017-11-21 -->''[[Star Wars: The Rebel Files]]''
+*<!-- 2021-06-17 -->{{SW|url=news/star-wars-battles-that-changed-the-galaxy-announce|text=In ''Star Wars: Battles that Changed the Galaxy'', Go Inside the Crucible of War}}
+*<!-- 2021-11-02 -->''[[Star Wars: Battles that Changed the Galaxy]]''
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|de=Sanktuarium-Tunnel
+|es=Conducto Santuario
+|ja=サンクチュアリ・パイプライン
+|pl=Korytarz Sanktuarium
+|tr=Sığınak Boru Hattı
+}}
+
+[[Category:Mid Rim hyperlanes]]
+[[Category:Outer Rim Territories hyperlanes]]
+[[Category:Western Reaches hyperlanes]]

@@ -1,0 +1,75 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:LipsecRun-GM.png]]
+|name=Lipsec Run
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Outer Rim Territories]]<ref name="SaOORP">{{EncyclopediaCite|Scarif and Other Planets in the Outer Rim}} {{C|English version only}}</ref>
+**[[Greater Seswenna]]<ref name="Tarkin">[[Tarkin (novel)|''Tarkin'']], based on corresponding data for [[Eriadu]].</ref>
+*[[Galactic Frontier]]<ref name="Frontier">''[[Star Wars: Timelines]]'', based on corresponding data for [[Eriadu]].</ref>
+*[[Western Reaches]]<ref name="SaOORP" />
+|sectors=[[Seswenna sector]]<ref name="Tarkin" />
+|stellar=
+|endpoints=
+*[[Eriadu]]<ref name="GM">{{GalaxyMapPoster}}</ref>
+*[[Lipsec system|Lipsec]]<ref name="TFABG">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref>
+|transitpoints=[[Virgillia system]]<ref name="GM" /> - [[Eriadu system]]<ref name="Tarkin" />
+|otherobjects=Lipsec<ref name="TFABG" /> - [[Shuraden]] - [[Sump]] - [[Merokia]] - [[Taul]]<ref name="GM" /> - [[Isde Naha]] - [[Bettel system|Bettel]] - [[Mev system|Mev]]<ref name="BMF18">{{BuildFalconCite|18|Guide to the Galaxy}}</ref> - [[Actlyon]] - [[Rycep asteroid belt]] - [[Wretch of Tayron]] - Eriadu<ref name="GM" />
+|junctions=[[Corellian Trade Spine]]<ref name="SaOORP" /> - [[Hydian Way]]/[[Rimma Trade Route]]<ref name="GM" />
+}}
+{{Quote|We've received several requests for aid from Sump and Shuraden. We've gotten word Merokia has cut off all ties to E'ronoh. This now affecting the trades routes in the Koradin sector.''"<br />"''And the Lipsec Run.|Orlen Mollo and Wix discuss the Eiram and E'ronoh War|<ref name="Convergence">''[[The High Republic: Convergence]]''</ref>}}
+The '''Lipsec Run''' was a [[Outer Rim Territories]] and [[Western Reaches]] [[hyperspace route]] that ran from the astronomical object [[Lipsec system|Lipsec]] to the [[planet]] [[Eriadu]], which acted as a junction onto the [[Hydian Way]] and [[Rimma Trade Route]]. The Lipsec Run also had a junction on to the [[Corellian Trade Spine]] at the world [[Isde Naha]].
+
+In [[382 BBY]], the [[Eiram and E'ronoh War]] effected trade on the Lipsec Run and trade routes in the [[Koradin sector]], leading worlds to request aid from the [[Galactic Republic]]. [[Supreme Chancellor]] [[Orlen Mollo]] then requested the aid of the [[Jedi]] in order to end the conflict and the impacted it was having on the wider [[The galaxy|galaxy]].
+
+==Description==
+[[File:Eriadu_TEA.jpg|thumb|right|300px|Eriadu was a terminus of the Lipsec Run that connected it to the Hydian Way and Rimma Trade Route.]]
+The Lipsec Run was a [[hyperspace route]] located in the [[Outer Rim Territories]] and [[Western Reaches]]. One terminus was at the celestial body [[Lipsec system|Lipsec]], which it connected to the [[Virgillia system]], before passing through<ref name="GM" /> the [[Galactic Frontier]] [[planet]]<ref name="The High Republic 1">[[The High Republic (2021) 1|''The High Republic'' (2021) 1]]</ref> [[Shuraden]], then<ref name="GM" /> the planet<ref name="CVD">''[[Star Wars: The Complete Visual Dictionary, New Edition]]''</ref> [[Sump]], which acted as a junction onto a hyperspace route to<ref name="GM" /> the [[Eiram system]].<ref name="Convergence" /> From Sump, the Lipsec Run connected to<ref name="GM" /> the planet<ref name="FC">''[[Force Collector]]''</ref> [[Merokia]] and then<ref name="GM" /> the planet<ref name="Travelers">''[[Star Wars: Galaxy's Edge: Traveler's Guide to Batuu]]''</ref> [[Taul]],<ref name="GM" /> before reaching the world<ref name="ROUVG">''[[Star Wars: Rogue One: The Ultimate Visual Guide]]''</ref> [[Isde Naha]], which acted as a junction onto the [[Corellian Trade Spine]].<ref name="BMF18" />
+
+From Isde Naha, the Lipsec Run then traveled to the astronomical objects [[Bettel system|Bettel]] and [[Mev system|Mev]],<ref name="BMF18" /> before reaching<ref name="GM" /> the planet<ref name="CoF">''[[A Crash of Fate]]''</ref> [[Actlyon]] and moving on to<ref name="GM" />  the [[Rycep asteroid belt]]<ref name="T&C">{{StoryCite|story=Tooth and Claw|book=From a Certain Point of View: The Empire Strikes Back}}</ref> and then the [[Wretch of Tayron]].<ref name="GM" /> The Lipsec Run then terminated at the planet [[Eriadu]], a junction onto the [[Hydian Way]] and [[Rimma Trade Route]] located in the [[Eriadu system]] of the [[Seswenna sector]] in the [[Greater Seswenna]].<ref name="Tarkin" /> The Lipsec Run ran through squares I-18, J-18, K-18, K-19, L-19, L-18, and M-18 on the [[Standard Galactic Grid]].<ref name="GM" />
+
+==History==
+{{Quote|Entire worlds dependent on imported food are starving. Twice now we've had to undertake extensive remapping to keep the hyperlanes functioning and clear of the scourge of pirates picking off the spoils of war.|Orlen Mollo|<ref name="Convergence" />}}
+[[File:OrlenMolloCereanJedi-TheChancellors.png|thumb|left|300px|Orlen Mollo asked the Jedi for aid ending the Eiram and E'ronoh War that was effecting the Lipsec Run.]]
+In [[382 BBY]],<ref name="Date">''[[Star Wars: The High Republic Character Encyclopedia]]'' dates the events of ''[[The High Republic: Convergence]]'' to [[382 BBY]].</ref> the [[Eiram and E'ronoh War|war]] between the planets [[Eiram]] and [[E'ronoh]] in the Eiram [[Star system|system]] began to effect the trade routes in the [[Koradin sector]] and the Lipsec Run, with entire worlds that were dependant on imported [[Foodstuff|foods]] beginning to starve. Merokia cut off all ties to E'ronoh and Sump and Shuraden requested aid from the [[Galactic Republic]], which undertook extensive remapping on two occasions in order to keep the functioning and clear of [[pirate]]s targeting spoils from the war.<ref name="Convergence" />
+
+During a discussion with the [[Jedi Master]]s [[Char-Ryl-Roy]] and [[Creighton Sun]], [[Supreme Chancellor]] of the Republic [[Orlen Mollo]] brought up the impacts that the war was having on the hyperlanes, with the [[Nautolan]] [[aide]] [[Wix]] reminding him of the effect on the Lipsec Run. Mollo stated that the wider impact meant that the Republic needed to end the conflict for the good of [[the galaxy]] and requested the [[Jedi]]'s aide in the matter.<ref name="Convergence" />
+
+In [[34 ABY]],<ref name="Starcruiserdate">''[[Star Wars: Timelines]]'' dates the events of [[Star Wars: Galactic Starcruiser|''Star Wars'': Galactic Starcruiser]] to [[34 ABY]].</ref> the Lipsec Run was included on a partial [[Star map|map]] of the [[galaxy]] displayed on screens on board [[Chandrila Star Line]]'s [[MPO-1400 Purgill-class star cruiser|Star Cruiser]] ''[[Halcyon]]'' while it traveled from the [[Core Worlds]]' [[Chandrila system]] to the Outer Rim Territories.<ref name="GS">[[Star Wars: Galactic Starcruiser|''Star Wars'': Galactic Starcruiser]]</ref>
+
+==Behind the scenes==
+[[File:Lords_of_the_Expanse.jpg|thumb|right|300px|The Lipsec Run originated in ''The Lords of the Expanse''.]]
+The Lipsec Run was first mentioned in the current ''[[Star Wars]]'' [[canon]] on a map in the [[Star Wars: Build the Millennium Falcon 18|eighteenth issue]] of ''[[Star Wars: Build the Millennium Falcon]]'', which was published by [[De Agostini]]<ref name="BMF18" /> around [[May 6]], [[2015]].<ref name="BMF18date">{{BuildFalconDates|18}}</ref> The route's first [[in-universe]] appearance then took place when it was depicted on a map viewable in [[Star Wars: Galactic Starcruiser|''Star Wars'': Galactic Starcruiser]], an immersive roleplaying experience at [[W:c:disney:Walt Disney World Resort|Walt Disney World Resort]] in Florida<ref name="GS" /> that opened to the public on [[March 1]], [[2022]].<ref name="31 Things">{{SW|url=news/31-things-we-learned-about-star-wars-galactic-starcruiser|text=31 Things We Learned in an Exclusive Preview of ''Star Wars'': Galactic Starcruiser|nolive=1}}</ref>
+
+The Lipsec Run originated in the [[Star Wars Legends|''Star Wars'' Legends]] continuity, where it was first mentioned in ''[[Lords of the Expanse]]'', a [[1997]] supplement for ''[[Star Wars: The Roleplaying Game]]'' that was written by [[Paul Sudlow]] and [[Chris Doyle]] and published by [[West End Games]].<ref name="LotE">''[[Lords of the Expanse]]''</ref> It was then depicted for the first time in ''[[The Essential Atlas]]'', a [[2009]] reference book written by [[Jason Fry]] and [[Daniel Wallace]].<ref name="TEA">''[[The Essential Atlas]]''</ref>
+
+The French release of "[[Scarif and Other Planets in the Outer Rim]],"<ref name="French">{{EncyclopediaCite|Scarif and Other Planets in the Outer Rim}} {{C|French version only}}</ref> a [[July 20]], [[2021]]<ref name="De Agostini">{{DeAgostini|url=libros-comics/enciclopedia-star-wars|text=Enciclopedia Star Wars}}</ref> installment of De Agostini's [[Star Wars Encyclopedia (series)|''Star Wars Encyclopedia'']] series of reference booklets, erroneously describes the Lipsec Run as being part of the [[Expansion Region]],<ref name="French" /> contradicting the map show in ''Build the Millennium Falcon''.<ref name="BMF18" /> The later English release of the book corrected this error, replacing the mention of the Expansion Region with the "Western Extensions," another name for the Western Reaches.<ref name="SaOORP" />
+
+==Appearances==
+*''[[The High Republic: Convergence]]'' {{Ab|The High Republic: Convergence (audiobook)}} {{Mo}}
+*[[The High Republic Adventures (2021) 1|''The High Republic Adventures'' (2021) 1]] {{MapPoint|unnamed=1}}
+*[[Star Wars: Galactic Starcruiser|''Star Wars'': Galactic Starcruiser]] {{1st}} {{MapPoint|screen=1}}
+
+==Sources==
+*<!-- 2015-05-06 -->{{BuildFalconCite|18|Guide to the Galaxy}} {{1stm}}
+*<!-- 2016-01-29 -->{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-star-wars-the-force-awakens|text=Where in the Galaxy Are the Worlds of ''Star Wars: The Force Awakens''?|int=Where in the Galaxy Are the Worlds of Star Wars: The Force Awakens?}} {{Po}}
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] {{MapPoint}}
+*<!-- 2020-12-12 -->''[[The High Republic Free Digital Sampler]]'' {{MapPoint|unnamed=1}}
+*<!-- 2021-04-20 -->{{EncyclopediaCite|The First Order}} {{MapPoint}}
+*<!-- 2021-07-20 -->{{EncyclopediaCite|Scarif and Other Planets in the Outer Rim}} {{MapPoint}}
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}} {{MapPoint}}
+
+==Notes and references==
+{{Mediacat|imagecat=Images of the Lipsec Run}}
+{{Reflist}}
+
+{{Interlang
+|es=Corredor de Lipsec
+|fr=Piste de Lipsec
+}}
+
+[[Category:Major galactic hyperlanes]]
+[[Category:Outer Rim Territories hyperlanes]]
+[[Category:Western Reaches hyperlanes]]

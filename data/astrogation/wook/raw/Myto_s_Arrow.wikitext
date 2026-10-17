@@ -1,0 +1,43 @@
+{{Top}}
+{{TradeRoute
+|image=
+|name=Myto's Arrow
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[New Territories]]<ref name="BM37">{{BuildFalconCite|37|Guide to the Galaxy}}</ref>
+*[[Outer Rim Territories]]<ref name="BM37" />
+|sectors=[[Raioballo sector]]<ref name="BM37" />
+|stellar=
+|endpoints=
+*[[Dantooine]]<ref name="BM37" />
+*[[Jaemus system|Jaemus]]<ref name="BM37" />
+|transitpoints=[[Dantooine system]]<ref name="BM37" />
+|otherobjects=Dantooine - Jaemus<ref name="BM37" />
+|junctions=[[Veragi Trade Route]]<ref name="BM37" /> - [[Braxant Run]]<ref name="BraxantRun">{{GalaxyMapHyperlanes|route=Braxant Run|leg=''[[The Essential Atlas]]''|canon={{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}}}}</ref>
+}}
+'''Myto's Arrow''' was a backwater [[hyperspace route]] in the [[Outer Rim Territories]] and [[New Territories]] regions of [[the galaxy]]. It looped from the [[planet]] [[Dantooine]] in [[Dantooine system]] of the [[Raioballo sector]] to the astronomical object [[Jaemus system|Jaemus]]<ref name="BM37" /> on the [[Braxant Run]].<ref name="GM" /> Despite Dantooine also being a part of the longer [[Veragi Trade Route]], the world was considered hard to reach, with Myto's Arrow as the quicker of the two routes leading there. The route shared is name with the Outer Rim [[Myto sector]]<ref name="BM37" /> and was located in grid squares L-4 and K-4 on the [[Standard Galactic Grid]].<ref name="GM">[[Star Wars Galaxy Map (poster)|''Star Wars'' Galaxy Map poster]], based on corresponding data for [[Dantooine]] and [[Jaemus system|Jaemus]].</ref>
+
+==Behind the scenes==
+In the current ''[[Star Wars]]'' [[canon]], Myto's Arrow was first mentioned in "[[Guide to the Galaxy]]: Visiting Dantooine," an article in the [[Star Wars: Build the Millennium Falcon 37|thirty-seventh]] issue of the ''[[Star Wars: Build the Millennium Falcon]]'' magazine,<ref name="BM37" /> which was published around [[September 16]], [[2015]].<ref name="BMFdate18">{{BuildFalconDates|37}}</ref>
+
+The [[Myto's Arrow/Legends|route]] originated in the [[Star Wars Legends|''Star Wars'' Legends]] continuity, where it was first mentioned in the short story "[[Blaze of Glory (short story)|Blaze of Glory]]," which was written by [[Tony Russo]] and published by [[West End Games]] in the [[Star Wars Adventure Journal 8|eighth issue]] of ''[[Star Wars Adventure Journal]]'' in [[November]] [[1995]].<ref name="AJ8">{{JournalCite|8|Blaze of Glory (short story)}}</ref> It was then pictured for the first time in the [[2009]] reference book ''[[The Essential Atlas]]'', which was written by [[Jason Fry]] and [[Daniel Wallace]].<ref name="TEA">''[[The Essential Atlas]]''</ref>
+
+==Sources==
+*<!-- 2015-09-16 -->{{BuildFalconCite|37|Guide to the Galaxy}} {{1stm}}
+*<!-- 2017-01-31 -->{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|es=Flecha de Myto
+|fr=Flèche de Myto
+|ja=マイト・アロー
+|pl=Strzała Myto
+|tr=Myto'nun Oku
+}}
+
+[[Category:New Territories hyperlanes]]
+[[Category:Outer Rim Territories hyperlanes]]

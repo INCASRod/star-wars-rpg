@@ -1,0 +1,19 @@
+{{Top}}
+The '''Terrabe Bypass''' was a [[hyperspace]] [[Hyperspace route|route]].<ref name="Rebel Dossier">''[[Star Wars: Rogue One: Rebel Dossier]]''</ref>
+
+{{Route-stub}}
+
+==Sources==
+*<!-- 2016-12-16 -->''[[Star Wars: Rogue One: Rebel Dossier]]'' {{1stm}}
+*<!-- 2017-11-21 -->''[[Star Wars: The Rebel Files]]''
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|ja=テラブ・バイパス
+|pl=Objazd Terrabe
+|tr=Terrabe Kestirmesi
+}}
+
+[[Category:Mid Rim hyperlanes]]

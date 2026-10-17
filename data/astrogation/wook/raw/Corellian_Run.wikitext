@@ -1,0 +1,80 @@
+{{Top}}
+{{Otheruses|Corellian}}
+{{TradeRoute
+|image=[[File:CorellianRun.jpg]]
+|name=Corellian Run
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Core Worlds]] - [[Colonies]] - [[Expansion Region]] - [[Inner Rim Territories|Inner Rim]] - [[Mid Rim Territories|Mid Rim]] - [[Outer Rim Territories]]<ref name="TFABG">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref>
+|sectors=[[Corusca sector|Corusca]] - [[Corellian sector|Corellian]]<ref name="USW">''[[Ultimate Star Wars]]''</ref> - [[Savareen sector|Savareen]]<ref name="SWGA">''[[Star Wars: Galactic Atlas]]''</ref> - [[Gaulus sector|Gaulus]]<ref name="USW" />
+|stellar=
+|endpoints=*[[Coruscant]]<ref name="TFABG" />
+*[[Lamaredd]]<ref name="BMF 18">{{BuildFalconCite|18|Guide to the Galaxy}}</ref>
+|transitpoints=
+|otherobjects=Coruscant - [[Ixtlar system|Ixtlar]] - [[Corellia]] - [[Tinnel IV]] - [[Loronar]] - [[Byblos]] - [[Abednedo (planet)|Abednedo]]<ref name="SWGA" /> - [[Iseno system|Iseno]]<ref name="TFABG" /> - [[Denon]] - [[Spirana]] - [[Rhommamool system|Rhommamool]] - [[Allanteen VI]] - [[Gamor system|Gamor]] - [[Bacrana]] - [[Milagro system|Milagro]] - [[New Cov system|New Cov]] - [[Druckenwell]] - [[Mon Gazza]] - [[Herdessa]] - [[Radnor]] - [[Christophsis]] - [[Ryloth]] - [[Smuggler's Run]]<ref name="TFABG" /> - [[Naos system|Naos]] - Lamaredd<ref name="BMF 18" />
+|junctions=[[Metellos Trade Route]]<ref name="Scum and Villainy">''[[Star Wars: Scum and Villainy: Case Files on the Galaxy's Most Notorious]]''</ref> - [[Namadii Corridor]]<ref name="Collapse">''[[Collapse of the Republic]]''</ref> - [[Nexus Route]]<ref name="The Citadel">{{TCW|The Citadel (episode)}}</ref> - [[Perlemian Trade Route]] - [[Corellian Trade Spine]]<ref name="TFABG" /> - [[Herglic Alley]]<ref name="Smuggler's Guide">''[[Star Wars: Smuggler's Guide]]''</ref> - [[Hydian Way]]<ref name="TFABG" /> - [[Mumble's Turnaround]]<ref name="Smuggler's Guide" />
+}}
+The '''Corellian Run''' was a [[super-hyperroute]] that ran throughout the various regions of [[the galaxy]], starting at the [[planet]] [[Coruscant]] in the [[Core Worlds]] and ending at [[Naos system|Naos]] and [[Lamaredd]].<ref name="TFABG" /> The hyperroute also passed through the [[Hetzal system|Hetzal]] and [[Ab Dalis system|Ab Dalis]] [[Star system|systems]].<ref name="LotJ">''[[The High Republic: Light of the Jedi]]''</ref>
+
+==History==
+Created [[25,000 BBY|25,000 years]] before the [[Battle of Yavin]], the Corellian Run played a great role in making the [[Corellian system]] into an economic powerhouse. The route ran south-east from the [[planet]] [[Coruscant]] in the [[Core Worlds]] and ending at [[Naos system|Naos]] and [[Lamaredd]]. Along its path, the Corellian Run intersected with the [[Hydian Way]] [[super-hyperroute]], touching planets in every region of [[the galaxy]], from the Core to the [[Outer Rim Territories|Outer Rim]]. As well as the [[Perlemian Trade Route]], the Corellian Run formed the border of an area known as [[the Slice]], which became the most populated and explored region of the [[galaxy]]. Spanning further out into the Outer Rim, parts of the Corellian Run crossed with other [[Hyperspace route|trade routes]] to form the [[Spice Triangle]], a series of lanes popular among [[smuggler]]s and free [[Merchant|traders]].<ref name="BMF 18" />
+
+The [[freighter]] ''[[Legacy Run]]'' was traveling along<ref name="LotJ" /> the Corellian Run<ref name="Galaxy Map">{{GalaxyMapPoster}}</ref> when it was destroyed in the [[Great Hyperspace Disaster]]. At the [[time]] of the disaster,<ref name="LotJ" /> in [[232 BBY]],<ref name="Timelines">''[[Star Wars: Timelines]]''</ref> it was considered an old and well-established hyperlane, which was why [[Hedda Casset]], the [[captain]] of the ''Legacy Run'', was surprised to encounter an obstacle in the middle of the route, which should have been impossible. The obstacle was in fact a [[Nihil]] [[Stormship]] travelling a [[hyperspace]] [[Path]], unique routes available only to the [[pirate]]s. As the planet [[Ab Dalis]] was located further down the hyperlane, it was subjected to the [[First Emergence|first]] of the [[Emergences]], fallout of the Great Disaster, one [[Standard day|day]] later.<ref name="LotJ" />
+
+==Appearances==
+*''[[The High Republic: Light of the Jedi]]'' {{Ab|The High Republic: Light of the Jedi (audiobook)}}
+*[[The High Republic Adventures (2021) 1|''The High Republic Adventures'' (2021) 1]] {{Po}}
+*{{StoryCite|story=The Call of Coruscant|book=The High Republic: Tales of Light and Life|audiobook=1}} {{Mo}}
+*''[[The High Republic: Trials of the Jedi]]'' {{Ab|The High Republic: Trials of the Jedi (audiobook)}} {{Mo}}
+*''[[Victory's Price: An Alphabet Squadron Novel]]'' {{Ab|Victory's Price: An Alphabet Squadron Novel (audiobook)}} {{Mo}}
+*{{TheMandalorian|Chapter 12: The Siege}} {{Mo}}
+*''[[Eyes Like Stars]]'' {{Ab|Eyes Like Stars (audiobook)}} {{Mo}}
+
+==Sources==
+*<!-- 2015-05-06 -->{{BuildFalconCite|18|Guide to the Galaxy}} {{1stm}}
+*<!-- 2016-01-29 -->{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-star-wars-the-force-awakens|text=Where in the Galaxy Are the Worlds of ''Star Wars: The Force Awakens''?|int=Where in the Galaxy Are the Worlds of Star Wars: The Force Awakens?}}
+*<!-- 2016-03-16 -->{{BuildFalconCite|63|Starship Fact File}}
+*<!-- 2016-03-17 -->''[[Nexus of Power]]''
+*<!-- 2016-06-01 -->{{BuildFalconCite|74|Guide to the Galaxy}}
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]
+*<!-- 2017-02-02 -->[[No Disintegrations (Fantasy Flight Games)|''No Disintegrations'']]
+*<!-- 2017-08-08 -->''[[Star Wars: On the Front Lines]]''
+*<!-- 2017-11-21 -->''[[Star Wars: The Rebel Files]]''
+*<!-- 2018-11-13 -->''[[Star Wars: Smuggler's Guide]]''
+*<!-- 2019-05-09 -->''[[Rise of the Separatists]]''
+*<!-- 2019-06-28 -->''[[Collapse of the Republic]]''
+*<!-- 2019-11-14 -->''[[Star Wars: The Galactic Explorer's Guide]]''
+*<!-- 2019-12-19 -->{{GermanFanCite|96|Database}}
+*<!-- 2021-07-20 -->{{EncyclopediaCite|Scarif and Other Planets in the Outer Rim}}
+*<!-- 2021-08-03 -->{{EncyclopediaCite|Din Djarin and Other Characters of the Underworld}}
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]''
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]''
+*<!-- 2026-05-26 -->''[[Star Wars: The Mandalorian Visual Guide]]''
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|es=Corredor Corelliano
+|ja=コレリアン・ラン
+|ka=კორელიური გზა
+|pl=Szlak Koreliański
+|tr=Corellian Kaçış Yolu
+}}
+
+[[Category:Colonies hyperlanes]]
+[[Category:Core Worlds hyperlanes]]
+[[Category:Expansion Region hyperlanes]]
+[[Category:Inner Rim hyperlanes]]
+[[Category:Mid Rim hyperlanes]]
+[[Category:Outer Rim Territories hyperlanes]]
+[[Category:Super-hyperroutes]]
+[[Category:The Interior hyperlanes]]
+[[Category:The Slice hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Corellian Run]]
+}}

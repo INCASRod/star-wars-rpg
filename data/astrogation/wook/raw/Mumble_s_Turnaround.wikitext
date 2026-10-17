@@ -1,0 +1,39 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:Mumbles_Turnaround.png]]
+|name=Mumble's Turnaround
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="Smuggler's Guide">''[[Star Wars: Smuggler's Guide]]''</ref>
+|sectors=[[Arkanis sector|Arkanis]] - [[Gaulus sector|Gaulus]]<ref name="USW">''[[Ultimate Star Wars]]''</ref>
+|stellar=
+|endpoints=
+*[[Roon]]<ref name="Smuggler's Guide" />
+*[[Tatooine]]<ref name="Smuggler's Guide" />
+|transitpoints=
+|otherobjects=Tatooine - [[Ryloth]] - [[Seylott]] - Roon<ref name="Smuggler's Guide" />
+|junctions=[[Corellian Run]]<ref name="Smuggler's Guide" />
+}}
+'''Mumble's Turnaround''' was an [[Outer Rim Territories]] [[hyperspace route]] that ran from the [[planet]] [[Tatooine]] through the worlds of [[Ryloth]] and [[Seylott]], then terminated at the planet [[Roon]]. Ryloth acted as a junction been the Turnaround and the [[Corellian Run]] [[hyperspace]] route. The route also overlapped with the [[Spice Triangle]], a series of trade routes linking Roon, Tatooine and Ryloth. The former [[Pirate Queen|pirate queen]] [[Maz Kanata]] marked Mumble's Turnaround as one of the "real" trade routes to be used by [[smuggler]]s, as opposed to the official ones, on a map that she included in the [[book]] that would become known as the ''[[Smuggler's Guide]]''.<ref name="Smuggler's Guide" />
+
+==Behind the scenes==
+Mumble's Turnaround was first mentioned in ''[[Star Wars: Smuggler's Guide]]'', a reference book written by [[Daniel Wallace]] and released in [[2018]].<ref name="Smuggler's Guide" />
+
+==Sources==
+*<!-- 2018-11-13 -->''[[Star Wars: Smuggler's Guide]]'' {{1stm}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|ja=マンブルの転回道
+|tr=Mırıltının Dönüşü
+}}
+
+[[Category:Mid Rim hyperlanes]]
+[[Category:Outer Rim Territories hyperlanes]]
+[[Category:Smuggling hyperspace routes]]
+[[Category:The Slice hyperlanes]]
+[[Category:Trailing Sectors hyperlanes]]

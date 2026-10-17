@@ -1,0 +1,45 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:GamorRun-GalaxyMap.png]]
+|name=Gamor Run
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Expansion Region]]<ref name="Map">{{StarWarsGalaxyMap}}</ref>
+*[[Mid Rim Territories]]<ref name="Map" />
+|sectors=[[Narvath sector]]<ref name="Nexus" />
+|stellar=*[[Rorak system]]<ref name="Map" />
+*[[Gamor system|Gamor]]<ref name="TFA">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref>
+|endpoints=
+|transitpoints=
+|otherobjects=[[Fetilia system|Fetilia]]<ref name="AVG">''[[Star Wars: The Acolyte: The Visual Guide]]''</ref> - [[Munt Ontdal]]<ref name="Map" /> - [[Trillia]]<ref name="Map" /> - [[Aridus]]<ref name="Map" /> - [[Daalang]]<ref name="Map" /> - [[Circumtore]]<ref name="Map" />
+|junctions=[[Trax Tube]]<ref name="BMF 43">{{BuildFalconCite|43|Guide to the Galaxy}}</ref> - [[Corellian Run]]<ref name="Map" /> - [[Shag Pabol]]<ref name="Map" />
+}}
+The '''Gamor Run''' was a trade route that ran from [[Gamor system|Gamor]] on the [[Corellian Run]] to the [[Rorak system]] in [[Hutt Space]]. The [[Trax Tube]] crossed the Gamor Run at [[Daalang]], and another [[hyperspace route]] branched off the Run between Gamor and [[Aridus]].<ref name="Map" />
+
+{{Route-stub}}
+
+==Behind the scenes==
+The roleplaying sourcebook ''[[Nexus of Power]]'' incorrectly places [[Iktotch]] on the Gamor Run,<ref name="Nexus">''[[Nexus of Power]]''</ref> despite all other maps placing it a significant distance away from it.
+
+==Sources==
+*<!-- 2015-10-28 -->{{BuildFalconCite|43|Guide to the Galaxy}} {{1stm}}
+*<!-- 2016-03-17 -->''[[Nexus of Power]]''
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]
+*<!-- 2018-09-11 -->''[[Solo: A Star Wars Story: Tales from Vandor]]''
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]''
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]''
+*{{StarWarsGalaxyMap}} {{MapPoint}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|es=Corredor de Gamor
+|tr=Gamor Kaçış Yolu
+}}
+
+[[Category:Expansion Region hyperlanes]]
+[[Category:Major galactic hyperlanes]]

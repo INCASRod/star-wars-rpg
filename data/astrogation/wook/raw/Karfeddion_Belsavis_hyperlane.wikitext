@@ -1,0 +1,41 @@
+{{Top|legends=Belsavis Run}}
+{{Conjecture}}
+{{TradeRoute
+|image=[[File:Senex-Juvex_sectors-TFABG.jpg]]
+|name=Karfeddion–Belsavis hyperlane
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Mid Rim Territories]]<ref name="Map">{{StarWarsGalaxyMap}}</ref>
+*[[Outer Rim Territories]]<ref name="Map" />
+|sectors=[[Senex sector|Senex]]<ref name="Senex">{{GalaxyMapAppendix}} &mdash; Based on corresponding data for the [[Karfeddion system]]</ref> - [[Bozhnee sector|Bozhnee]]<ref name="Bozhnee">{{GalaxyMapAppendix}} &mdash; Based on corresponding data for the [[Dolla system]]</ref>
+|stellar=
+|endpoints=*[[Karfeddion]]<ref name="Map" />
+*[[Belsavis]]<ref name="Map" />
+|transitpoints=
+|otherobjects=
+|junctions=*[[Karfeddion–Dolla hyperlane]]<ref name="Map" />
+*[[Karfeddion–Eriadu hyperlane]]<ref name="Map" />
+*[[Karfeddion–Kriselist hyperlane]]<ref name="Map" />
+}}
+A '''hyperlane''' linked [[Karfeddion]]<ref name="Map" /> in the [[Senex sector]] of the [[Mid Rim Territories]]<ref name="Senex" /> and [[Belsavis]]<ref name="Map" /> in the [[Bozhnee sector]] of the [[Outer Rim Territories]].<ref name="Bozhnee" />
+
+{{Route-stub}}
+
+==Behind the scenes==
+In the [[Star Wars Legends|''Star Wars'' Legends]] continuity, this hyperlane was known as the [[Belsavis Run]] and was mapped in the [[2009]] reference book ''[[The Essential Atlas]]''.<ref name="TEA">''[[The Essential Atlas]]''</ref>
+
+==Sources==
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] {{Po}}
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}} {{Po}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]'' {{Po}}
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]'' {{Po}}
+*{{StarWarsGalaxyMap}} {{Po}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Major galactic hyperlanes|Belsavis Run*]]
+[[Category:Mid Rim hyperlanes]]
+[[Category:Outer Rim Territories hyperlanes]]

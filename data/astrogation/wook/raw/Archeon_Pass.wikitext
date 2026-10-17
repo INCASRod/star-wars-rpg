@@ -1,0 +1,38 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:Archeon_Nebula.png]]
+|name=Archeon Pass
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="Secret Cargo">{{Rebels|Secret Cargo}}</ref>
+|sectors=[[Lothal sector]]<ref name="Secret Cargo" />
+|stellar=[[Archeon Nebula]]<ref name="Secret Cargo" />
+|endpoints=
+|transitpoints=
+|otherobjects=
+|junctions=
+}}
+The '''Archeon Pass''' was a treacherous [[hyperspace route]] used by [[smuggler]]s that ran through the [[Archeon Nebula]], a [[stellar nursery]].<ref name="Secret Cargo" />
+
+{{Route-stub}}
+
+==Appearances==
+*{{Rebels|Secret Cargo}} {{1st}}
+
+==Sources==
+*<!-- 2021-09-21 -->{{EncyclopediaCite|Bespin and Other Planets in the Outer Rim}} {{1stID|Archeon Pass}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|es=Paso Archeon
+|ja=アーキオン・パス
+|pl=Przełęcz Archeona
+|tr=Archeon geçidi
+}}
+
+[[Category:Hyperlanes]]
+[[Category:Lothal sector locations]]

@@ -1,0 +1,41 @@
+{{Top|legends=Askar Trace}}
+{{Conjecture}}
+{{TradeRoute
+|image=[[File:AskarTrace-GalaxyMap.png]]
+|name=Lannik–Leritor hyperlane
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Mid Rim Territories]]<ref name="Map">{{StarWarsGalaxyMap}}</ref>
+*[[The Slice]]<ref name="Slice">{{StarWarsGalaxyMap}} places the hyperlane in the area of [[Realspace|space]] ''[[Star Wars: The Galactic Explorer's Guide]]'' identifies as [[the Slice]].</ref>
+|sectors=
+|stellar=
+|endpoints=*[[Lannik]]<ref name="Map" />
+*[[Leritor system]]<ref name="Map" />
+|transitpoints=Lannik - [[Dressel]] - [[Nexus Ortai system|Nexus Ortai]] - Leritor<ref name="Map" />
+|otherobjects=
+|junctions=*[[Bothan Run|Bothawui–Daalang hyperlane]]<ref name="Map" />
+*[[Bothawui–Druckenwell hyperlane]]<ref name="Map" />
+*[[Manda–Mon Gazza hyperlane]]<ref name="Map" />
+}}
+A '''hyperlane''' ran through the [[Mid Rim Territories]], running from [[Lannik]] south to the [[Leritor system]]. Both endpoints were situated on other [[hyperspace route]]s, and the hyperlane crossed [[Bothawui–Druckenwell hyperlane|another hyperlane]] at the [[Nexus Ortai system]].<ref name="Map" />
+
+{{Route-stub}}
+
+==Behind the scenes==
+In the [[Star Wars Legends|''Star Wars'' Legends]] continuity, this route was known as the [[Askar Trace]], and originated in the [[2009]] reference book ''[[The Essential Atlas]]''.<ref name="TEA">''[[The Essential Atlas]]''</ref>
+
+==Sources==
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]''
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]''
+*{{StarWarsGalaxyMap}} {{MapPoint}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Major galactic hyperlanes|Askar Trace*]]
+[[Category:Mid Rim hyperlanes]]
+[[Category:The Slice hyperlanes]]

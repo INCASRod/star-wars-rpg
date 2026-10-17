@@ -1,0 +1,28 @@
+{{Top}}
+{{Conjecture}}
+{{TradeRoute
+|image=
+|name=Ithorian hyperspace route
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=
+|sectors=[[Urce sector]]<ref name="QS">''[[Queen's Shadow]]''</ref>
+|stellar=
+|endpoints=
+|transitpoints=
+|otherobjects=
+|junctions=
+}}
+A '''hyperspace route''' charted by [[Ithorian]]s ran through the [[Lesser Plooriod Cluster]], which included the [[Urce sector]].<ref name="QS" />
+
+{{Stub}}
+
+==Appearances==
+*''[[Queen's Shadow]]'' {{Ab|Queen's Shadow (audiobook)}} {{1stm}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Mid Rim hyperlanes]]

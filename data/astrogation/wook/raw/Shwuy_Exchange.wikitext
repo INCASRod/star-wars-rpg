@@ -1,0 +1,45 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:ShwuyExchange-GalaxyMap.png]]
+|name=Shwuy Exchange
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Colonies]]<ref name="Locations">{{StarWarsGalaxyMap}} places [[Mefti]] and the [[Thrinittik system]] on a [[hyperspace route]] that goes from [[Uviuy Exen]] to [[Palanhi]] and then [[Vakkar]] in the [[Colonies]]. {{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}} identifies that route as the Schwuy Exchange. {{GalaxyMapAppendix}} places the astronomical objects in eponymous [[star system]]s.</ref>
+|sectors=[[Shwuy sector|Shwuy]]<ref name="Sectors">{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}} places [[Uviuy Exen]] and [[Vakkar]] on the Shwuy Exchange. {{GalaxyMapAppendix}} places their respective [[star system]]s in the [[Shwuy sector|Shwuy]] and [[Fakir sector]]s.</ref> - [[Fakir sector|Fakir]]<ref name="Sectors" />
+|stellar=
+|endpoints=*[[Uviuy Exen]]<ref name="Where">{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}}</ref>
+*[[Vakkar]]<ref name="Where" />
+|transitpoints=[[Uviuy Exen system|Uviuy Exen]]<ref name="Locations" /> - [[Mefti system|Mefti]]<ref name="Locations" /> - [[Thrinittik system|Thrinittik]]<ref name="Locations" /> - [[Caraad]]<ref name="CLNE">''[[Star Wars: Complete Locations, New Edition]]'' places [[Caraad]] along what [[Where in the Galaxy Are the Worlds of Rogue One?|Where in the Galaxy Are the Worlds of ''Rogue One''?]] identifies as the Shwuy Exchange.</ref> - [[Palanhi system|Palanhi]]<ref name="Locations" /> - [[Vakkar system|Vakkar]]<ref name="Locations" />
+|otherobjects=
+|junctions=[[Hydian Way]]<ref name="Where" /> - [[Namadii Corridor]]<ref name="Namadii">{{GalaxyMapHyperlanes|route=Namadii Corridor|canon=''[[Collapse of the Republic]]''|leg=''[[The Essential Atlas]]''}}</ref>
+}}
+The '''Shwuy Exchange''' was a [[hyperspace route]] that went between the astronomical objects [[Uviuy Exen]] and [[Vakkar]] in the [[Colonies]] region.<ref name="Where" /> It passed through the [[Shwuy sector|Shwuy]] and [[Fakir sector]]s.<ref name="Sectors" /> From Uviuy Exen, which lay on the [[Hydian Way]]<ref name="Galaxy">{{StarWarsGalaxyMap}}</ref> [[super-hyperroute]],<ref name="BMF 48">{{BuildFalconCite|48|Guide to the Galaxy}}</ref> the route went to the [[Mefti system|Mefti]] and [[Thrinittik system]]s,<ref name="Galaxy" /> and then to<ref name="CLNE" /> the [[planet]]<ref name="Identity Crisis">{{TBB|Identity Crisis}}</ref> [[Caraad]]<ref name="CLNE" /> before it reached the [[Palanhi system]],<ref name="Galaxy" /> which acted as a junction onto the [[Namadii Corridor]].<ref name="Namadii" /> After Palanhi, the route terminated at the [[Vakkar system]], where one had to use local astrocartographers and smugglers to travel anywhere beyond.<ref name="Where" /> The route passed through [[Standard Galactic Grid]] squares K-9, K-8, L-8, and L-9.<ref name="Galaxy" />
+
+==Behind the scenes==
+The Schwuy Exchange was first depicted in the [[The galaxy|galactic]] [[map]] in [[Fantasy Flight Games]]' [[2016]] [[canon]] roleplaying supplement [[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]].<ref name="TFABG">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref> It was then identified in the [[StarWars.com]] article [[Where in the Galaxy Are the Worlds of Rogue One?|Where in the Galaxy Are the Worlds of ''Rogue One''?]], published on [[January 31]] [[2017]].<ref name="Where" />
+
+==Sources==
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]
+*<!-- 2017-01-31 -->{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}} {{1stm}}
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]''
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]''
+*{{StarWarsGalaxyMap}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|fr=Échangeur Shwuy
+|tr=Shwuy Santrali
+}}
+
+[[Category:Colonies hyperlanes]]
+[[Category:Major galactic hyperlanes]]
+[[Category:The Interior hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Shwuy Exchange]]
+}}

@@ -1,0 +1,49 @@
+{{Top|ca}}
+{{Otheruses|Herglic}}
+{{TradeRoute
+|image=[[File:Herglic_Alley.png]]
+|name=Herglic Alley
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Colonies]]<ref name="Smuggler's Guide">''[[Star Wars: Smuggler's Guide]]''</ref>
+*[[The Interior]]<ref name="Interior">''[[Star Wars: Smuggler's Guide]]'' places the Herglic Alley in the area of [[Realspace|space]] ''[[Star Wars: The Galactic Explorer's Guide]]'' identifies as [[the Interior]].</ref>
+|sectors=[[Herglic Space]]<ref name="HerglicSpace">''[[Star Wars: Smuggler's Guide]]'' shows that the Herglic Alley includes the [[Giju system]], which the {{GalaxyMapAppendix}} places in [[Herglic Space]].</ref>
+|stellar=
+|endpoints=*[[Byblos system]]<ref name="Smuggler's Guide" />
+*[[Giju]]<ref name="TUC">''[[Star Wars: The Ultimate Cookbook]]''</ref>
+|transitpoints=Byblos system<ref name="Smuggler's Guide" /> - [[Giju system]]<ref name="HerglicSpace" />
+|otherobjects=
+|junctions=*[[Corellian Run]]<ref name="Smuggler's Guide" />
+*[[Giju Run]]<ref name="GM">{{GalaxyMapHyperlanes|route=Giju Run|leg=''[[The Essential Atlas]]''|canon=''[[Nexus of Power]]''}}</ref>/[[Rimma Trade Route]]<ref name="Smuggler's Guide" />
+}}
+{{Quote|Giju sits at one end of a hyperspace lane known as Herglic Alley, which links the Rimma Trade Route to the Corellian Run.|Strono Tuggs, ''The Ultimate Cookbook''|<ref name="TUC">''[[Star Wars: The Ultimate Cookbook]]''</ref>}}
+The '''Herglic Alley''' was a [[hyperspace route]] in the [[Colonies]]<ref name="Smuggler's Guide" /> and [[the Interior]].<ref name="Interior" /> It connected<ref name="Smuggler's Guide" /> the [[planet]]<ref name="Luke">''[[The Weapon of a Jedi: A Luke Skywalker Adventure]]''</ref> [[Giju]]<ref name="TUC" /> in the [[Giju system]] of [[Herglic Space]]<ref name="HerglicSpace" /> with the [[Byblos system]]. Giju acted as a junction between the route and both the [[Rimma Trade Route]]<ref name="Smuggler's Guide" /> and [[Giju Run]],<ref name="GM" /> while the Byblos system was also on the [[Corellian Run]].<ref name="Smuggler's Guide" /> The linkage of the Rimma Trade Route and the Corellian Run resulted in Giju receiving a lot of visitors.<ref name="TUC" /> The route shared its name with the [[Sentience|sentient]] [[Herglic]] [[species]].<ref name="Smuggler's Guide" />
+
+By [[10 BBY]],<ref name="Date">The entry in ''[[Star Wars: Smuggler's Guide]]'' mentioning the Herglic Alley is placed chronologically prior to an entry written by the criminal [[Tobias Beckett]]. ''[[Star Wars: Timelines]]'' dates Beckett's [[death]] to [[10 BBY]], and so his entry in the guide and those chronologically before it must all be set prior to or during 10 [['ABY-BBY' dating system|BBY]].</ref> the [[Pirate Queen|pirate queen]] [[Maz Kanata]] marked the Herglic Alley on a [[map]] in the [[book]] known as the ''[[Smuggler's Guide]]''. The map's key identified the route as one of the "real" trade routes for [[smuggler]]s to use, as opposed to the official ones.<ref name="Smuggler's Guide" /> The [[chef]] [[Strono Tuggs]] also mentioned the route in the recipe for a beverage known as [[Giju Glug]] in his third cookbook, ''[[The Ultimate Cookbook]]'', which was published<ref name="TUC" /> in [[35 ABY]].<ref name="UltimateDate">{{UltimateCookbookDate}}</ref>
+
+==Behind the scenes==
+The Herglic Alley was first mentioned in ''[[Star Wars: Smuggler's Guide]]'', a reference book written by [[Daniel Wallace]] and released in [[2018]].<ref name="Smuggler's Guide" />
+
+==Sources==
+{{Indexpage}}
+*<!-- 2018-11-13 -->''[[Star Wars: Smuggler's Guide]]'' {{1stm}}
+*<!-- 2023-10-10 -->''[[Star Wars: The Ultimate Cookbook]]''
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|ja=ハーグリック・アレイ
+|tr=Herglic Yolu
+|trCA=1
+}}
+
+[[Category:Colonies hyperlanes]]
+[[Category:Herglic Space locations]]
+[[Category:The Interior hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Herglic Alley]]
+}}

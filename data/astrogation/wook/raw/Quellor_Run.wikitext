@@ -1,0 +1,46 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:Quellor-Run-AVG.png]]
+|name=Quellor Run
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Colonies]]<ref name="BMF 31">{{BuildFalconCite|31|Guide to the Galaxy}}</ref>
+|sectors=[[Quellor sector|Quellor]]<ref name="BMF 31" /> - [[Morobe sector|Morobe]]<ref name="Sectors">''[[Star Wars: The Acolyte: The Visual Guide]]'' places [[Mirran Six]] and [[Quellor]] along what   {{BuildFalconCite|31|Guide to the Galaxy}} identifies at the Quellor Run. {{GalaxyMapAppendix}} places the pair respectively in the [[Morobe sector|Morobe]] and [[Quellor sector]]s.</ref> - Quellor<ref name="Sectors" />
+|stellar=
+|endpoints=
+*[[Commenor]]<ref name="BMF 31" />
+*[[Quellor]]<ref name="BMF 31" />
+|transitpoints=[[Commenor system|Commenor]]<ref name="Transits">''[[Star Wars: The Acolyte: The Visual Guide]]'' places [[Commenor]], [[Narq]], [[Cato Neimoidia]], [[Mirran Six]], and [[Quellor]], and therefore their [[star system]]s as identified by {{GalaxyMapAppendix}}, along what   {{BuildFalconCite|31|Guide to the Galaxy}} identifies at the Quellor Run.</ref> - [[Narq system|Narq]]<ref name="Transits" /> - [[Cato Neimoidia system|Cato Neimoidia]]<ref name="Transits" /> - [[Mirran system|Mirran]]<ref name="Transits" /> - [[Quellor system|Quellor]]<ref name="Transits" />
+|otherobjects=Commenor<ref name="BMF 31" /> - [[Narq]]<ref name="Narq">The {{GalaxyMapPoster}} places [[Narq]] on the [[hyperspace route]] {{BuildFalconCite|31|Guide to the Galaxy}} identifies as the Quellor Run.</ref> - [[Cato Neimoidia]]<ref name="BMF 31" /> - [[Mirran Six]]<ref name="Transits" /> - Quellor<ref name="BMF 31" />
+|junctions=[[Nanth'ri Trade Route]]<ref name="Nanth'ri Route">{{StarWarsGalaxyMap}} places [[Quellor]] on a [[hyperspace route]] between [[Exodeen]] and [[Nanth'ri]] which ''[[Heir to the Jedi]]'' identifies as the [[Nanth'ri Trade Route]]. Since {{BuildFalconCite|31|Guide to the Galaxy}} places Quellor on the Quellor Run hyperspace route, the astronomical object must be a junction between that and the Nanth'ri Route.</ref>
+}}
+The '''Quellor Run''' was a busy [[hyperspace route]] that ran through the [[Colonies]] region between the<ref name="BMF 31" /> [[planet]]<ref name="Battles">''[[Star Wars: Battles that Changed the Galaxy]]''</ref> [[Commenor]] and the astronomical object [[Quellor]].<ref name="BMF 31" /> From Commenor, the route went to the<ref name="AVG">''[[Star Wars: The Acolyte: The Visual Guide]]''</ref> planet<ref name="Aliens">''[[Star Wars: Aliens of the Galaxy]]''</ref> [[Narq]] and then [[Cato Neimoidia]],<ref name="AVG" /> a planet in a [[star system]] of the [[Cato Neimoidia|same name]],<ref name="BMF 31" /> before reaching [[Mirran Six]] and then Quellor,<ref name="AVG" /> a junction at the [[Nanth'ri Trade Route]].<ref name="Nanth'ri Route" /> It passed through the [[Quellor sector]] for Cato Neimoidia,<ref name="BMF 31" /> the [[Morobe sector]] for Mirran Six, and then the Quellor sector for Quellor.<ref name="Sectors" />
+
+==Behind the scenes==
+The Quellor Run was first mentioned in the [[Star Wars: Build the Millennium Falcon 31|thirty-first issue]] of [[De Agostini]]'s ''[[Star Wars: Build the Millennium Falcon]]'' magazine series,<ref name="BMF 31" /> published on approximately [[August 5]], [[2015]].<ref name="BMFdate">{{BuildFalconDates|31}}</ref>
+
+==Sources==
+*<!-- 2015-08-05 -->{{BuildFalconCite|31|Guide to the Galaxy}} {{1stm}}
+*<!-- 2015-12-30 -->{{BuildFalconCite|52|Guide to the Galaxy}}
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]''
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]''
+*{{StarWarsGalaxyMap}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|tr=Quellor Kaçış Yolu
+}}
+
+[[Category:Colonies hyperlanes]]
+[[Category:Major galactic hyperlanes]]
+[[Category:The Slice hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Quellor Run]]
+}}

@@ -1,0 +1,47 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:BothanRun-GalaxyMap.png]]
+|name=Bothan Run
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Mid Rim Territories]]<ref name="Map">{{StarWarsGalaxyMap}}</ref>
+*[[The Slice]]<ref name="Slice">{{StarWarsGalaxyMap}} places the hyperlane in the area of [[Realspace|space]] ''[[Star Wars: The Galactic Explorer's Guide]]'' identifies as [[the Slice]].</ref>
+|sectors=[[Daalang sector|Daalang]]<ref name="Daalang">{{GalaxyMapAppendix}} &mdash; Based on corresponding data for the [[Daalang system]]</ref> - [[Lannik Space]]<ref name="Lannik">{{GalaxyMapAppendix}} &mdash; Based on corresponding data for the [[Lannik system]]</ref> - [[Lannik Wilds sector|Lannik Wilds]]<ref name="Wilds">{{GalaxyMapAppendix}} &mdash; Based on corresponding data for the [[Crul system]]</ref> - [[Bothan Space]]<ref name="Map" />
+|stellar=
+|endpoints=*[[Daalang]]<ref name="Map" />
+*[[Bothawui]]<ref name="Map" />
+|transitpoints=Daalang - [[Demiloch]] - [[Lannik]] - [[Crul]] - [[Moonus Mandel]] - Bothawui<ref name="Map" />
+|otherobjects=
+|junctions=*[[Bothawui–Druckenwell hyperlane]]<ref name="Map" />
+*[[Gamor Run]]<ref name="Gamor">{{GalaxyMapHyperlanes|route=Gamor Run|canon=''[[Nexus of Power]]''|leg=''[[The Essential Atlas]]''}}</ref>
+*[[Kaaga Run]]<ref name="Map" />
+*[[Manda Merchant Route]]<ref name="RO">{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}}</ref>
+*[[Trax Tube]]<ref name="Trax">{{GalaxyMapHyperlanes|route=Trax Tube|canon={{BuildFalconCite|43|Guide to the Galaxy}}|leg=''[[The Essential Atlas]]''}}</ref>
+}}
+The '''Bothan Run'''<ref name="Guide">{{SWYouTube|series=Star Wars: Galaxy Guide|text=Meet the Hutts: The Galaxy's Biggest Crime Lords|video=Ct977noXUVg}}</ref> was a [[hyperspace route]] that ran through the [[Mid Rim Territories]], running from [[Daalang]] to [[Bothawui]] in [[Bothan Space]]. The route was the continuation<ref name="Map" /> of the [[Trax Tube]],<ref name="Trax" /> which ended at Daalang where it met<ref name="Map" /> the [[Gamor Run]],<ref name="Gamor" /> and ended at Bothawui which sat at the nexus of multiple [[hyperspace route]]s as well. [[Demiloch]], [[Lannik]], [[Crul]], and [[Moonus Mandel]] were situated along the route between Daalang to the north and Bothawui to the south.<ref name="Map" />
+
+{{Route-stub}}
+
+==Behind the scenes==
+In the [[Star Wars Legends|''Star Wars'' Legends]] continuity, this route was known as the [[Bothan Run]], and originated in the [[2009]] reference book ''[[The Essential Atlas]]''.<ref name="TEA">''[[The Essential Atlas]]''</ref>
+
+==Sources==
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]''
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]''
+*<!-- 2026-09-16 -->{{SWYouTube|series=Star Wars: Galaxy Guide|text=Meet the Hutts: The Galaxy's Biggest Crime Lords|video=Ct977noXUVg}} {{1stID|Bothan Run}}
+*{{StarWarsGalaxyMap}} {{MapPoint}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Major galactic hyperlanes]]
+[[Category:Mid Rim hyperlanes]]
+[[Category:The Slice hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Bothan Run]]
+}}

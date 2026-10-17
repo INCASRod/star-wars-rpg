@@ -1,0 +1,42 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:Cermau-GETravelersGuide.jpg]]
+|name=Bakura Trace
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="BMF18">{{BuildFalconCite|18|Guide to the Galaxy}}</ref> - [[Wild Space]]<ref name="Map">{{StarWarsGalaxyMap}}</ref>
+|sectors=[[Moddell sector|Moddell]]<ref name="BMF18" /> - [[Bakura sector|Bakura]]<ref name="Appendix">{{GalaxyMapAppendix}} &mdash; Based on corresponding data for the [[Cermau system]]</ref>
+|stellar=
+|endpoints=*[[Endor]]<ref name="Map" />
+*[[Bakura]]<ref name="Map" />
+|transitpoints=
+|otherobjects=[[Endor]] - [[Ast Kikorie]] - [[Sanyassa]]<ref name="BMF18" /> - [[Cermau]] - Bakura<ref name="Map" />
+|junctions=
+}}
+The '''Bakura Trace''' was a [[Hyperspace route|hyperlane]] in the [[Outer Rim Territories]] that connected the [[planet]] [[Endor]] to [[Sanyassa]] and then Sanyassa to [[Ast Kikorie]] in the [[Moddell sector]] before continuing on from Ast Kikorie beyond the borders of the [[sector]].<ref name="BMF18" /> Heading westward, the route met another at [[Cermau]] before extending into [[Wild Space]] and finally ending at [[Bakura]].<ref name="Map" />
+
+{{Route-stub}}
+
+==Behind the scenes==
+In the new ''[[Star Wars]]'' [[canon]], the Bakura Trace was mentioned in the [[2015]] magazine [[Star Wars: Build the Millennium Falcon 18|''Star Wars: Build the Millennium Falcon'' 18]].<ref name="BMF18" /> The [[Hapes Cluster/Legends|cluster]] originated in the [[Star Wars Legends|''Star Wars'' Legends]] continuity, where it first appeared in the [[1994]] novel ''[[The Courtship of Princess Leia]]'', which was written by [[Dave Wolverton]].<ref name="CoPL">''[[The Courtship of Princess Leia]]''</ref>
+
+==Sources==
+*<!-- 2015-05-06 -->{{BuildFalconCite|18|Guide to the Galaxy}} {{1stm}}
+*<!-- 2020-07-21 -->''[[Star Wars: Galaxy's Edge: Traveler's Guide to Batuu]]''
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]''
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]''
+*{{StarWarsGalaxyMap}} {{MapPoint}}
+
+==Notes and references==
+{{Mediacat|imagecat=Images of the Bakura Trace}}
+{{Reflist}}
+
+[[Category:Major galactic hyperlanes]]
+[[Category:Outer Rim Territories hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Bakura Trace]]
+}}

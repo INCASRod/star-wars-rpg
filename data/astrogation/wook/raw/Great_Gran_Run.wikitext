@@ -1,0 +1,52 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:GranRun.jpg]]
+|name=Great Gran Run
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Mid Rim Territories]] - [[Expansion Region]]<ref name="TFA Locations">{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-star-wars-the-force-awakens|text=Where in the Galaxy Are the Worlds of ''Star Wars: The Force Awakens''?|int=Where in the Galaxy Are the Worlds of Star Wars: The Force Awakens?}}</ref>
+|sectors=[[Tashtor sector]]<ref name="TFA Locations" />
+|stellar=
+|endpoints=
+|transitpoints=
+|otherobjects=[[Cerea]] - [[Chalcedon]] - [[Takodana]]<ref name="TFA Locations" /> - [[Travyx Prime]]<ref name="AVG">''[[Star Wars: The Acolyte: The Visual Guide]]''</ref> - [[Chyron system]]<ref name="Map">{{StarWarsGalaxyMap}}</ref> - [[Noe'ha'on]]<ref name="TFA Locations" /> - [[Haneli]] - [[Rekelos]]<ref name="AVG" /> - [[Kinyen]]<ref name="TFA Locations" />
+|junctions=[[Biox Detour]]<ref name="Biox">{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-star-wars-the-force-awakens|text=Where in the Galaxy Are the Worlds of ''Star Wars: The Force Awakens''?|int=Where in the Galaxy Are the Worlds of Star Wars: The Force Awakens?}} places [[Takodana]] on the Great Gran Run, while ''[[Star Wars: Smuggler's Guide]]'' places it on the [[Biox Detour]], establishing a junction between the two.</ref> -[[Corellian Trade Spine]]<ref name="TFA Locations" />
+}}
+The '''Great Gran Run''' was a [[Hyperspace route|trade route]] located which ran between the [[Mid Rim Territories]]<ref name="TFA Locations" /> [[planet]]<ref name="Cerean DB">{{Databank|cerean|Cerean}}</ref> [[Cerea]] and the [[Expansion Region]]<ref name="TFA Locations" /> [[agriworld]]<ref name="Knights of Fate">''[[Knights of Fate]]''</ref> [[Kinyen]]. From Cerea, the route traveled to [[Chalcedon]], the center of [[The galaxy|galactic]] [[Slavery|slave trade]], and then to the [[forest]] world of [[Takodana]] in the [[Tashtor sector]],<ref name="TFA Locations" /> a junction with the [[Biox Detour]] hyperlane.<ref name="Biox" /> Passing into the Expansion Region, it went to the [[Chyron system]]<ref name="Galaxy Map">{{GalaxyMapPoster}}</ref> before reaching the [[jungle]] world [[Noe'ha'on]] and Kinyen,<ref name="TFA Locations" /> the original [[homeworld]] of the [[Gran]] [[species]]<ref name="Collapse">''[[Collapse of the Republic]]''</ref> and a junction with the [[Corellian Trade Spine]]<ref name="TFA Locations" /> [[super-hyperroute]].<ref name="BMF 48">{{BuildFalconCite|48|Guide to the Galaxy}}</ref>
+
+In [[10 BBY]],<ref name="Date">''[[Solo: A Star Wars Story The Official Guide]]'' dates the events on the ''[[First Light]]'' in ''[[Solo: A Star Wars Story]]'', which includes [[Diles Anevi]]'s [[death]], to nine [[Standard year|years]] after the [[Proclamation of the New Order|formation]] of the [[Galactic Empire]]. Given that ''[[Star Wars: Galactic Atlas]]'' dates the formation of the Empire to [[19 BBY]], the aforementioned ''Solo'' events must take place in [[10 BBY]].</ref> [[Governor]] [[Diles Anevi]] of the Expansion Region, met with [[Dryden Vos]], the public leader of the [[Crimson Dawn]] syndicate, to strike a deal to waive certain travel restrictions on Crimson Dawn [[starship]]s using the Great Gran Run in exchange for financial contributions to charitable causes Anevi cared about.<ref name="Solo Guide">''[[Solo: A Star Wars Story The Official Guide]]''</ref> However, Vos lost his temper during the meeting and murdered Aveni.<ref name="Solo">''[[Solo: A Star Wars Story]]''</ref>
+
+==Behind the scenes==
+The Great Gran Run was first introduced in [[Canon]] in the article "[[Where in the Galaxy Are the Worlds of Star Wars: The Force Awakens?|Where in the Galaxy Are the Worlds of ''Star Wars: The Force Awakens''?]]," which was published on [[StarWars.com]] on [[January 29]], [[2016]]. The article was partially credited to the ''[[The Essential Atlas]]'',<ref name="TFA Locations" /> the [[2009]] reference book, written by [[Jason Fry]] and [[Daniel Wallace]], which originally introduced the [[Great Gran Run/Legends|Great Gran Run]] [[Hyperspace route/Legends|hyperlane]] in [[Star Wars Legends|''Star Wars'' Legends]].<ref name="TEA">''[[The Essential Atlas]]''</ref>
+
+==Sources==
+*<!-- 2016-01-29 -->{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-star-wars-the-force-awakens|text=Where in the Galaxy Are the Worlds of ''Star Wars: The Force Awakens''?|int=Where in the Galaxy Are the Worlds of Star Wars: The Force Awakens?}} {{1stm}}
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] {{MapPoint}}
+*<!-- 2018-05-25 -->''[[Solo: A Star Wars Story The Official Guide]]''
+*<!-- 2021-09-21 -->{{EncyclopediaCite|Bespin and Other Planets in the Outer Rim}}
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}} {{MapPoint}}
+*<!-- 2022-07-13 -->{{EncyclopediaCite|Kashyyyk and Other Planets in the Mid Rim}}
+*<!-- 2024-11-19 -->''[[Star Wars Encyclopedia: The Comprehensive Guide to the Star Wars Galaxy]]''
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]'' {{MapPoint}}
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]'' {{MapPoint}}
+*{{StarWarsGalaxyMap}} {{MapPoint}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|es=Gran Corredor Gran
+|fr=Great Gran Run
+|tr=Büyük Gran Kaçış Yolu
+}}
+
+[[Category:Expansion Region hyperlanes]]
+[[Category:Major galactic hyperlanes]]
+[[Category:Mid Rim hyperlanes]]
+[[Category:Western Reaches hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Great Gran Run]]
+}}

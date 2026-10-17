@@ -1,0 +1,37 @@
+{{Top|legends=Cadinth Run}}
+{{Conjecture}}
+{{TradeRoute
+|image=[[Tion_Cluster-TFABG.jpg]]
+|name=Lianna–Jaminere hyperlane
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="TFABG">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref>
+|sectors=
+|stellar=
+|endpoints=*[[Lianna]]<ref name="TFABG" />
+*[[Jaminere system]]<ref name="TFABG" />
+|transitpoints=Lianna - [[Cadinth system|Cadinth]] - Jaminere<ref name="TFABG" />
+|otherobjects=
+|junctions=*[[Perlemian Trade Route]]<ref name="TFABG" />
+*[[Shaltin Tunnels]]<ref name="TFABG" />
+}}
+A '''hyperlane''' ran through the [[Tion Cluster]] in the [[Outer Rim Territories]], branching off the [[Perlemian Trade Route]] at [[Lianna]] and running east to the [[Cadinth system]] before ending at the [[Jaminere system]].<ref name="TFABG" />
+
+==Behind the scenes==
+In the [[Star Wars Legends|''Star Wars'' Legends]] continuity, this hyperlane was known as the [[Cadinth Run]] and was mapped in the [[2009]] reference book ''[[The Essential Atlas]]''.<ref name="TEA">''[[The Essential Atlas]]''</ref>
+
+==Sources==
+*<!-- 2016-01-29 -->{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-star-wars-the-force-awakens|text=Where in the Galaxy Are the Worlds of ''Star Wars: The Force Awakens''?|int=Where in the Galaxy Are the Worlds of Star Wars: The Force Awakens?}} {{Po}}
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] {{Po}}
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}} {{Po}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]'' {{Po}}
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]'' {{Po}}
+*{{StarWarsGalaxyMap}} {{Po}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Major galactic hyperlanes|Cadinth Run*]]
+[[Category:Outer Rim Territories hyperlanes]]

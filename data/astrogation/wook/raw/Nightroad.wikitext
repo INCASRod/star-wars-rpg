@@ -1,0 +1,33 @@
+{{Top}}
+{{TradeRoute
+|image=
+|name=Nightroad
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Mid Rim Territories]]<ref name="Conjecture">''[[Collapse of the Republic]]'' states that the Nightroad entered the [[Kashyyyk system]], which was located in the [[Mid Rim Territories|Mid Rim's]] [[Mytaranor sector]]</ref>
+|sectors=[[Mytaranor sector]]<ref name="Conjecture" />
+|stellar=
+|endpoints=
+|transitpoints=
+|otherobjects=[[Kashyyyk]]<ref name="CotR">''[[Collapse of the Republic]]''</ref>
+|junctions=[[Durkteel Loop]] - [[Great Kashyyyk Branch]]<ref name="CotR" /> - [[Randon Run]]<ref name="RO World Locations">{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}}</ref>
+}}
+The '''Nightroad''' was a [[Hyperspace route|hyperlane]] located in the [[Mid Rim Territories|Mid Rim]] of [[the galaxy]].<ref name="CotR" />
+
+{{Route-stub}}
+
+==Sources==
+*<!-- 2019-06-28 -->''[[Collapse of the Republic]]'' {{1stm}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|es=Camino Nocturno
+|tr=Geceyolu
+}}
+
+[[Category:Mid Rim hyperlanes]]
+[[Category:The Slice hyperlanes]]

@@ -1,0 +1,68 @@
+{{Top|ga}}
+{{TradeRoute
+|image=[[File:MetellosTradeRoute-AcolyteVG.png]]
+|name=Metellos Trade Route
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Core Worlds]]<ref name="GM">{{GalaxyMapHyperlanes|route=Metellos Trade Route|leg=''[[The Essential Atlas]]''}}</ref>
+*[[The Interior]]<ref name="Interior">The Metellos Trade Route falls within the area of [[Realspace|space]] that ''[[Star Wars: The Galactic Explorer's Guide]]'' identifies as [[the Interior]] on the {{GalaxyMapHyperlanes|route=Metellos Trade Route|leg=''[[The Essential Atlas]]''}}</ref>
+|sectors=[[Corusca sector]]<ref name="Corusca">''[[Star Wars: Scum and Villainy: Case Files on the Galaxy's Most Notorious]]'' established that [[Coruscant]] is part of the Metellos Trade Route. As ''[[Star Wars Encyclopedia: The Comprehensive Guide to the Star Wars Galaxy]]'' establishes the [[planet]] Coruscant to be part of the [[Coruscant system]] and [[Corusca sector]], they must also be part of the route.</ref> - [[Torranix sector]]<ref name="Sectors">[[Star Wars Galaxy Map (poster)|''Star Wars'' Galaxy Map poster]] shows that the Metellos Trade Route includes the [[Cal-Seti system]] and the [[N'zoth system]], which {{GalaxyMapAppendix}} places in the [[Torranix sector]] and [[Koornacht Cluster]], respectively.</ref> - [[Koornacht Cluster]]<ref name="Sectors" />
+|stellar=
+|endpoints=*[[N'zoth system]]<ref name="GM" />
+*[[Coruscant]]<ref name="Scum and Villainy">''[[Star Wars: Scum and Villainy: Case Files on the Galaxy's Most Notorious]]''</ref>
+|transitpoints=N'zoth [[Star system|system]]<ref name="GM" /> - [[Cal-Seti system]]<ref name="GM" /> - [[Coruscant system]]<ref name="GM" />
+|otherobjects=
+|junctions=[[Corellian Run]]<ref name="TFABG">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref>/[[Koros Trunk Line]]<ref name="NoP">''[[Nexus of Power]]'' establishes [[Coruscant]] to be part of the [[Koros Trunk Line]]. As ''[[Star Wars: Scum and Villainy: Case Files on the Galaxy's Most Notorious]]'' establishes Coruscant to be part of the Metellos Trade Route, the world must act as a junction between the two [[hyperspace route]]s.</ref>/[[Namadii Corridor]]<ref name="Collapse">''[[Collapse of the Republic]]'' establishes [[Coruscant]] to be part of the [[Namadii Corridor]]. As ''[[Star Wars: Scum and Villainy: Case Files on the Galaxy's Most Notorious]]'' establishes Coruscant to be part of the Metellos Trade Route, the world must act as a junction between the two [[hyperspace route]]s.</ref>/[[Nexus Route]]<ref name="The Citadel">{{TCW|The Citadel (episode)}} establishes [[Coruscant]] to be part of the [[Nexus Route]]. As ''[[Star Wars: Scum and Villainy: Case Files on the Galaxy's Most Notorious]]'' establishes Coruscant to be part of the Metellos Trade Route, the world must act as a junction between the two [[hyperspace route]]s.</ref>/[[Perlemian Trade Route]]<ref name="TFABG" />/[[Stassia Alley]]<ref name="Starcruiser">[[Star Wars: Galactic Starcruiser|''Star Wars'': Galactic Starcruiser]]</ref>
+}}
+{{Quote|After a rash of piracy along the Metellos Trade Route, the route leading to Coruscant, landed on Divo's scanners, he put out an interdivisional call for any information regarding Weequay raiders, based on what scant evidence there was. A torrent of reports flooded his receptacle, with one name constantly popping up: Hondo Ohnaka.|Exantor Divo, ''Scum and Villainy: Case Files on the Galaxy's Most Notorious''|<ref name="Scum and Villainy" />}}
+The '''Metellos Trade Route''' was a [[Core Worlds]] [[hyperspace route]] that ran from the [[N'zoth system]] to the [[planet]] [[Coruscant]], which acted as a junction to many other routes including the [[Corellian Run]] and the [[Perlemian Trade Route]]. In [[20 BBY|7957]] [[Coruscant reckoning calendar|C.R.C.]], [[Coruscant Security Force]] [[Inspector]] [[Tanivos Exantor Divo|Tanivos Divo]] investigated a rash of [[pirate]] activity taking place along the route. 
+
+==Description==
+The Metellos Trade Route was a [[hyperspace route]]<ref name="Scum and Villainy" /> in the [[Core Worlds]]<ref name="GM" /> and [[the Interior]].<ref name="Interior" /> One terminus was at the [[N'zoth system]]<ref name="GM" /> in the [[Koornacht Cluster]],<ref name="Sectors" /> which the route linked to the [[Cal-Seti system]]<ref name="GM" /> in the [[Torranix sector]]<ref name="Sectors" /> before leading to [[Coruscant]],<ref name="Scum and Villainy" /> a [[planet]] in the [[Corusca sector]]'s [[Coruscant system]].<ref name="Corusca" /> Coruscant acted as a junction onto the [[Corellian Run]], [[Perlemian Trade Route]],<ref name="TFABG" /> [[Koros Trunk Line]],<ref name="NoP" /> [[Stassia Alley]],<ref name="Starcruiser" /> [[Nexus Route]],<ref name="The Citadel" /> and [[Namadii Corridor]] routes.<ref name="Collapse" /> The route shared its name<ref name="Scum and Villainy" /> with the Core Worlds planet [[Metellos]].<ref name="NoP" />
+
+==History==
+[[File:Hondo19BBY-SWE.png|thumb|right|200px|alt=The Weequay pirate Hondo Ohnaka clasps his hands together, wearing a red jacket, a black cap, and googles.|The name of Hondo Ohnaka (pictured) came up during Tanivos Divo's investigation of piracy on the Metellos Trade Route.]]
+In [[20 BBY|7957]] [[Coruscant reckoning calendar|C.R.C.]], [[Coruscant Security Force]] [[Inspector]] [[Tanivos Exantor Divo|Tanivos Divo]] learned of a rash of [[pirate]] activity taking place along the Metellos Trade Route but uncovered little evidence. Based on what he had, Divo put out an interdivisional call for information on [[Weequay]] raiders and received a large volume of responses, with many mentioning the Weequay pirate [[Hondo Ohnaka]] of the [[Ohnaka Gang]]. Divo's [[Divo family|grandson]], [[Exantor Divo]], later mentioned Divo's investigation relating to the route in his [[book]], ''[[Scum and Villainy: Case Files on the Galaxy's Most Notorious]]'',<ref name="Scum and Villainy" /> which he published in [[34 ABY]].<ref name="Date">{{ScumAndVillainyDate}}</ref>
+
+Also in 34 [['ABY-BBY' dating system|ABY]],<ref name="Starcruiserdate">''[[Star Wars: Timelines]]'' dates the events of [[Star Wars: Galactic Starcruiser|''Star Wars'': Galactic Starcruiser]] to [[34 ABY]].</ref> the Metellos Trade Route was included on a partial [[Star map|map]] of the [[galaxy]] displayed on screens aboard [[Chandrila Star Line]]'s [[MPO-1400 Purgill-class star cruiser|Star Cruiser]] ''[[Halcyon]]'' while it traveled from the Core Worlds' [[Chandrila system]] to the Outer Rim Territories.<ref name="GS">[[Star Wars: Galactic Starcruiser|''Star Wars'': Galactic Starcruiser]]</ref>
+
+==Behind the scenes==
+In the current ''[[Star Wars]]'' [[canon]], the Metellos Trade Route was first pictured on a map of [[the galaxy]] included in [[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]], a [[2016]] ''[[Star Wars Roleplaying]]'' set published by [[Fantasy Flight Games]].<ref name="TFABG">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref> It was then identified in the [[2018]] reference book ''[[Star Wars: Scum and Villainy: Case Files on the Galaxy's Most Notorious]]'', which was written by [[Pablo Hidalgo]].<ref name="Scum and Villainy" />
+
+The route then appeared [[in-universe]] for the first time when it was depicted on a map viewable in [[Star Wars: Galactic Starcruiser|''Star Wars'': Galactic Starcruiser]], an immersive roleplaying experience at [[W:c:disney:Walt Disney World Resort|Walt Disney World Resort]] in Florida<ref name="GS" /> that opened to the public on [[March 1]], [[2022]],<ref name="31 Things">{{SW|url=news/31-things-we-learned-about-star-wars-galactic-starcruiser|text=31 Things We Learned in an Exclusive Preview of ''Star Wars'': Galactic Starcruiser|nolive=1}}</ref> and had its final voyage from [[September 28]] to [[September 30|30]], [[2023]].<ref name="StarcruiserClosure">{{Disney|subdomain=disneyworld|domain=go.com|url=destinations/star-wars-galactic-starcruiser|text=''Star Wars'': Galactic Starcruiser}}</ref> The [[Metellos Trade Route/Legends|route]] originated in the [[Star Wars Legends|''Star Wars'' Legends]] continuity, where it was first mentioned in ''[[Coruscant and the Core Worlds]]'', a [[2003]] supplement for the ''[[Star Wars Roleplaying Game]]'' published by [[Wizards of the Coast]].<ref name="CatCW">''[[Coruscant and the Core Worlds]]''</ref>
+
+==Appearances==
+{{Indexpage}}
+*[[The High Republic Adventures (2021) 1|''The High Republic Adventures'' (2021) 1]] {{MapPoint|unnamed=1}}
+*[[Star Wars: Galactic Starcruiser|''Star Wars'': Galactic Starcruiser]] {{1st}} {{MapPoint|screen=1}}
+
+==Sources==
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] {{1stp}} {{MapPoint}}
+*<!-- 2018-10-23 -->''[[Star Wars: Scum and Villainy: Case Files on the Galaxy's Most Notorious]]'' {{1stID|Metellos Trade Route}}
+*<!-- 2020-12-12 -->''[[The High Republic Free Digital Sampler]]'' {{MapPoint|unnamed=1}}
+*<!-- 2021-04-20 -->{{EncyclopediaCite|The First Order}} {{MapPoint}}
+*<!-- 2021-06-29 -->{{EncyclopediaCite|The Battle of Endor and the Fall of the Empire}} {{MapPoint}}
+*<!-- 2021-07-20 -->{{EncyclopediaCite|Scarif and Other Planets in the Outer Rim}} {{MapPoint}}
+*<!-- 2022-03-11 -->{{EncyclopediaCite|Exegol, the Unknown Regions and Wild Space}} {{MapPoint}}
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}} {{MapPoint}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]'' {{MapPoint}}
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]'' {{MapPoint}}
+*{{StarWarsGalaxyMap}} {{MapPoint}}
+
+==Notes and references==
+{{Mediacat|imagecat=Images of the Metellos Trade Route}}
+{{Reflist}}
+
+{{Interlang
+|es=Ruta Comercial Metellos
+}}
+
+[[Category:Core Worlds hyperlanes]]
+[[Category:Major galactic hyperlanes]]
+[[Category:The Interior hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Metellos Trade Route]]
+}}

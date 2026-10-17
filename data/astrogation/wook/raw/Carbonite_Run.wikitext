@@ -1,0 +1,43 @@
+{{Top}}
+{{TradeRoute
+|image=
+|name=Carbonite Run
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Deep Core]]<ref name="NoP">''[[Nexus of Power]]''</ref>
+*[[The Interior]]<ref name="Interior">The {{GalaxyMapPoster}} places [[Empress Teta]] in the area of [[Realspace|space]] ''[[Star Wars: The Galactic Explorer's Guide]]'' identifies as [[the Interior]]. As ''[[Nexus of Power]]'' places Empress Teta on the Carbonite Run, the route must also fall within the Interior.</ref>
+|sectors=[[Koros sector]]<ref name="NoP" />
+|stellar=
+|endpoints=
+|transitpoints=
+|otherobjects=[[Empress Teta]]<ref name="NoP" />
+|junctions=[[Byss Run]]/[[Koros Trunk Line]]<ref name="NoP" />
+}}
+The '''Carbonite Run''' was a [[hyperspace route]] that included the [[planet]] [[Empress Teta]] in the [[Empress Teta system]] of the [[Koros sector]], which was part of the [[Deep Core]]<ref name="NoP" /> and [[the Interior]] regions of [[the galaxy]].<ref name="Interior" /> The planet fell within [[Standard Galactic Grid]] square L-10<ref name="GM">{{GalaxyMapPoster}}</ref> and acted as a junction from the Carbonite Run onto the [[Byss Run]] and the [[Koros Trunk Line]].<ref name="NoP" />
+
+During the [[Imperial Era|reign]] of the [[Galactic Empire]], [[Galactic Emperor]] [[Darth Sidious|Sheev Palpatine]] ordered that only [[starship]]s authorized by the [[Bureau of Ships and Services]] or the [[Imperial Security Bureau]] would be able to enter the Deep Core. [[Hyperspace]] jumps were limited to two [[star system]]s at a [[time]], after which travelers would have to check in with Imperial vessels and download updated astrogation data. This was enforced through the [[Hyperspace Security Net]] of [[Gravity mine|gravitic mines]] along hyperlanes and [[interdictor]]s at key points. Publicly it was claimed that this was to protect travelers from the violent anomalies found within the densely packed region, where even charted routes were dangerous to navigate due to the ever-shifting nature of the many [[star]]s, but it also served the purpose of protecting various secrets that the [[Emperor]] held within the Deep Core.<ref name="BMF 36">{{BuildFalconCite|36|Guide to the Galaxy}}</ref>
+
+==Behind the scenes==
+In the current ''[[Star Wars]]'' [[canon]], the Carbonite Run was mentioned in ''[[Nexus of Power]]'', a [[2016]] supplement for the ''[[Star Wars: Force and Destiny]]'' roleplaying game published by [[Fantasy Flight Games]].<ref name="NoP" /> The [[Carbonite Run/Legends|route]] originated in the [[Star Wars Legends|''Star Wars'' Legends]] continuity, in which it was mentioned in "Byss and the Deep Core
+Part 2: Empress Teta," a [[2005]] ''Star Wars Roleplaying Game'' article written by [[Rodney Thompson]] and also published by Wizards of the Coast.<ref name="EmpressTeta">{{Wizards|url=default.asp?x=starwars/article/sw20050414planet2|series=Byss and the Deep Core|text=Part 2: Empress Teta}}</ref>
+
+==Sources==
+*<!-- 2016-03-17 -->''[[Nexus of Power]]'' {{1stm}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|es=Corredor de Carbonita
+|pt=Corredor Carbonita
+|tr=Karbonit Kaçış Yolu
+}}
+
+[[Category:Deep Core hyperlanes]]
+[[Category:The Interior hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Carbonite Run]]
+}}

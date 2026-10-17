@@ -1,0 +1,30 @@
+{{Top}}
+{{TradeRoute
+|image=
+|name=Caloria Run
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=
+|sectors=[[Tapani sector]]<ref name="Knights of Fate">''[[Knights of Fate]]''</ref>
+|stellar=
+|endpoints=[[Caloria]]<ref name="Knights of Fate" />
+|transitpoints=
+|otherobjects=
+|junctions=
+}}
+The '''Caloria Run''' was a [[hyperspace route]] located in the [[Tapani sector]]. It ended at the [[planet]] [[Caloria]].<ref name="Knights of Fate" />
+
+{{Route-stub}}
+
+==Appearances==
+*{{StoryCite|story=The Queen's Bloom|book=The High Republic: Tales of Light and Life|audiobook=1}} {{Mo}}
+
+==Sources==
+*<!-- 2018-06-21 -->''[[Knights of Fate]]'' {{1stm}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Tapani sector hyperlanes]]

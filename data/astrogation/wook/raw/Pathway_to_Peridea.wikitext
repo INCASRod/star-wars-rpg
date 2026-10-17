@@ -1,0 +1,62 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:Pathway_to_peridea.png]]
+|name=Pathway to Peridea
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=
+|sectors=
+|stellar=
+|endpoints=
+*[[Peridea]]<ref name="Part 4" />
+*[[Seatos]]<ref name="Part 4">{{Ahsoka|Part Four: Fallen Jedi}}</ref>
+|transitpoints=[[Denab system]]<ref name="Part 4" />
+|otherobjects=
+|junctions=
+}}
+The '''Pathway to Peridea''' was an ancient [[extragalactic]] [[hyperspace route]] from [[the galaxy]] to [[Far galaxy|another distant galaxy]]. An old [[Jedi]] legend described the existence of a means to travel through the migration routes of dying [[Purrgil]]. It consisted of a straight line between the [[planet]] [[Seatos]] in the [[Denab system]] and another, [[Peridea]], in the faraway galaxy. 
+
+==History==
+===Jedi legend===
+When [[Baylan Skoll]] was a [[youngling]] in the [[Imperial Palace|Jedi Temple]], his peers used to tell the story of the Pathway, much to Baylan's amusement who regarded it as “a mere fairytale".<ref name="Part Two">{{Ahsoka|Part Two: Toil and Trouble}}</ref> According to the Younglings, the path was used by [[death|dying]] [[Purrgil]] to reach the "graveyard world" of [[Peridea]], where they would go to die, their bodies gradually disintegrating and their bones added to the planet's ring.<ref name="Part 6">{{Ahsoka|Part Six: Far, Far Away}}</ref>
+
+The legend of the Pathway was also known among the [[Nightsisters]] of [[Dathomir]], who believed Peridea to be the original home of their species, the [[Dathomirian|Dathomiri]].<ref name="Part 6" />
+
+===Exploring the Pathway===
+Around [[9 ABY]], the Nightsister [[Morgan Elsbeth]] hired Baylan's [[mercenary]] services to recover a spherical [[Arcana Star Map|star map]] that held the details of the Pathway and had first been unearthed by the former [[Jedi]] [[Ahsoka Tano]] on the planet [[Arcana]]. Ahsoka took the map to [[Lothal]] so that her former apprentice, the [[Mandalorian]] [[Sabine Wren]], could decipher it; however, Baylan's apprentice, [[Shin Hati]], attacked and severely wounded Wren on [[Lothal]], managing to retrieve the map for Elsbeth and Baylan. Together, they discovered that the map was fully functional and that the Pathway indeed existed. Believing that Peridea was where her ally [[Grand Admiral]] [[Mitth'raw'nuruodo|Thrawn]] ended up after the [[Liberation of Lothal]],<ref name="Part Two" /> thanks to the purrgil that kidnapped his [[Chimaera|Star Destroyer]],<ref name="Part 6" /> Elsbeth had her [[Facility 301G|shipyards]] on the planet [[Corellia]] secretly refurbish and transport the [[hyperdrive]] cores of [[Imperial-class Star Destroyer|''Imperial''-class Star Destroyers]] and [[Super Star Destroyer]]s to Seatos, where they were integrated into a multi-drive extragalactic transport vessel, the ''[[Eye of Sion]]''.<ref name="Part Two" /> 
+
+As soon as the ''Eye'' was complete, Elsbeth had her [[Morgan Elsbeth's forces|forces]] begin the long process of deciphering the coordinates contained in the star map to translate them into a functional travel path for the ship to follow. By integrating the star map to a [[Seatos reflex point|reflex point]] constructed in the [[henge]] of Seatos by a species from the faraway galaxy, Elsbeth's [[Star Navigator droid|Star Navigator Droids]] transmitted the details of the route directly to the ''Eye''. The process was however interrupted by Sabine Wren and Ahsoka Tano, who had discovered their location on Seatos by tracking [[transport CT-O5]]'s beacon. Baylan was however able to defeat Tano and coerce Wren to allow the process to be completed, in exchange for allowing her to reunite with her friend [[Ezra Bridger]] on Peridea. Despite the delayed arrival of New Republic forces under [[General]] [[Hera Syndulla]] and their attempt to stop the ''Eye'' before it departed, Elsbeth and her allies managed to jump to hyperspace, en route to their destination galaxy.<ref name="Part 4" />
+
+===A place of dreams and legends===
+After a long journey through the [[intergalactic void]], the ''Eye of Sion'' arrived to the distant galaxy, confirming the Pathway's existence and destination.<ref name="Part 6" />
+
+==Appearances==
+*{{Ahsoka|Part One: Master and Apprentice}} {{1st}} {{Hologram}}
+*[[Ahsoka 1|''Ahsoka'' 1]] {{Hologram}}
+*{{Ahsoka|Part Two: Toil and Trouble}} {{Hologram}} {{1stID|Pathway to Peridea}}
+*[[Ahsoka 2|''Ahsoka'' 2]] {{Hologram}}
+*{{Ahsoka|Part Four: Fallen Jedi}} {{Hologram}}
+*{{Ahsoka|Part Six: Far, Far Away}}
+
+==Sources==
+{{IncompleteList}} 
+*<!-- 2023-08-22 -->{{SWYouTube|NvnNl9s9aCk|Rebel Crew Featurette &#124; Ahsoka &#124; Disney+|sw_url=video/rebel-crew-featurette-ahsoka}}
+*<!-- 2024-04-30 -->{{InsiderCite|225|Launchpad}}
+*<!-- 2024-11-19 -->''[[Star Wars Encyclopedia: The Comprehensive Guide to the Star Wars Galaxy]]''
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|de=Passage nach Peridea
+|es=Ruta a Peridea
+|ja=ペリディアへの道
+|ka=გზა პერიდეასკენ
+|tr=Peridea Yolu
+}}
+
+[[Category:Extragalactic hyperlanes]]
+[[Category:Jedi culture]]
+[[Category:Mythology]]

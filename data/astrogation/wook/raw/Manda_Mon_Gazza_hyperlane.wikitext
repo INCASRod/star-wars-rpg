@@ -1,0 +1,41 @@
+{{Top}}
+{{Conjecture}}
+{{TradeRoute
+|image=[[File:Manda-MonGazza-GalaxyMap.png]]
+|name=Manda–Mon Gazza hyperlane
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Mid Rim Territories]]<ref name="Map">{{StarWarsGalaxyMap}}</ref>
+*[[The Slice]]<ref name="Explorer's Guide">''[[Star Wars: The Galactic Explorer's Guide]]''</ref>
+|sectors=
+|stellar=
+|endpoints=*[[Manda]]<ref name="Map" />
+*[[Mon Gazza]]<ref name="Map" />
+|transitpoints=Manda - [[Quarmendy]] - [[Hisseen]] - [[Leritor system|Leritor]] - [[Ando]] - Mon Gazza<ref name="Map" />
+|otherobjects=
+|junctions=*[[Manda Merchant Route|Manda Merchant Run]]<ref name="RO World Locations">{{StarWarsGalaxyMap}} places Manda along the [[hyperspace route]] identified as the [[Manda Merchant Route|Manda Merchant Run]] by {{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}}</ref>
+*[[Corellian Run]]<ref name="Map" />
+*[[Llanic Spice Run]].<ref name="Heir">''[[Heir to the Jedi]]''</ref>
+}}
+A '''hyperlane''' ran through the [[Mid Rim Territories]], beginning at [[Manda]] and ending at [[Mon Gazza]] on the [[Corellian Run]], where it joined with the head<ref name="Map" /> of the [[Llanic Spice Run]].<ref name="Heir" />
+
+{{Route-stub}}
+
+==Sources==
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] {{MapPoint}}
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}} {{MapPoint}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]'' {{MapPoint}}
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]'' {{MapPoint}}
+*{{StarWarsGalaxyMap}} {{MapPoint}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Major galactic hyperlanes]]
+[[Category:Mid Rim hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Manda–Mon Gazza hyperlane]]
+}}

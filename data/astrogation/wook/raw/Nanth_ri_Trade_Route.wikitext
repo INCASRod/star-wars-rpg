@@ -1,0 +1,67 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:NanthriTradeRoute-GalaxyMap.png]]
+|name=Nanth'ri Trade Route
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Colonies]] - [[Inner Rim Territories]]<ref name="Regions">''[[Heir to the Jedi]]'' establishes that [[Exodeen]] and [[Nanth'ri]] were on the Nanth'ri Trade Route. [[Star Wars Galaxy Map (poster)|''Star Wars'' Galaxy Map]] additionally maps a [[hyperspace route]] from Exodeen to Nanth'ri, which passes through the [[Colonies]], [[Inner Rim Territories]] and [[Mid Rim Territories]].</ref> - [[Expansion Region]]<ref name="TROS VD">''[[Star Wars: The Rise of Skywalker: The Visual Dictionary]]''</ref> - [[Mid Rim Territories]]<ref name="Regions" />
+|sectors=[[Quellor sector|Quellor]] - [[Circarpous sector|Circarpous]]<ref name="Sectors">''[[Heir to the Jedi]]'' establishes that [[Exodeen]] and [[Nanth'ri]] were on the Nanth'ri Trade Route. [[Star Wars Galaxy Map (poster)|''Star Wars'' Galaxy Map]] additionally maps a [[hyperspace route]] from Exodeen to Nanth'ri, which passes through [[Quellor]], [[Gyndine]] and [[Mimban]]. ''[[Ultimate Star Wars]]'' places Quellor in the [[Quellor sector]] while ''[[Solo: A Star Wars Story The Official Guide]]'' places Gyndine and Mimban in the [[Circarpous sector]].</ref>
+|stellar=
+|endpoints=
+*[[Exodeen]]<ref name="Regions" />
+*[[Nanth'ri]]<ref name="Regions" />
+|transitpoints=[[Exodeen system|Exodeen]]<ref name="Heir">''[[Heir to the Jedi]]''</ref> - [[Prindaar system|Prindaar]] - [[Circarpous system|Circarpous]]<ref name="Systems">''[[Heir to the Jedi]]'' establishes that [[Exodeen]] and [[Nanth'ri]] were on the Nanth'ri Trade Route. [[Star Wars Galaxy Map (poster)|''Star Wars'' Galaxy Map]] additionally maps a [[hyperspace route]] from Exodeen to Nanth'ri, which passes through [[Antar]] and [[Mimban]]. ''[[Ultimate Star Wars, New Edition]]'' places Mimban in the [[Circarpous system]]. According to [[Destroy Malevolence|Destroy ''Malevolence'']], the ''[[Malevolence]]'' was destroyed on the [[Dead Moon of Antar]]. ''[[Star Wars: The Rebel Files]]'' establishes that the ''Malevolence'' was destroyed in the [[Prindaar system]], therefore, we can deduce that Antar was in the Prindaar system.</ref> - [[Nanth'ri system|Nanth'ri]]<ref name="Heir" />
+|otherobjects=Exodeen<ref name="Heir" /> - [[Quellor]] - [[Antar 4]] - [[Lonera]] - [[Gyndine]] - [[Kerev Doi]] - [[Mimban]] - [[Batuv]] - [[Attahox system|Attahox]]<ref name="Planets">''[[Heir to the Jedi]]'' establishes that [[Exodeen]] and [[Nanth'ri]] were on the Nanth'ri Trade Route. [[Star Wars Galaxy Map (poster)|''Star Wars'' Galaxy Map]] additionally maps a [[hyperspace route]] from Exodeen to Nanth'ri, which passes through [[Antar 4]], [[Lonera]], [[Gyndine]], [[Kerev Doi]], [[Mimban]], and [[Batuv]]. [[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] additionally maps [[Attahox system|Attahox]] in a place on the route that is between Batuv and Nanth'ri on the ''Star Wars: Timelines'' map.</ref> - [[Daiyu]]<ref name="CLNE">''[[Star Wars: Complete Locations, New Edition]]''</ref> - Nanth'ri<ref name="Heir" />
+|junctions=[[Hydian Way]]<ref name="Heir" /> - [[Quellor Run]]<ref name="Quellor Run">''[[Heir to the Jedi]]'' establishes that [[Exodeen]] and [[Nanth'ri]] were on the Nanth'ri Trade Route. [[Star Wars Galaxy Map (poster)|''Star Wars'' Galaxy Map]] additionally maps a [[hyperspace route]] from Exodeen to Nanth'ri, which passes through [[Quellor]]. [[Star Wars: Build the Millennium Falcon 31|''Star Wars: Build the Millenium Falcon'' 31]] places Quellor on the [[Quellor Run]], meaning that hyperspace route must intersect with the Nanth'ri Trade Route.</ref>
+}}
+{{Quote|Calculate a jump for Nanth'ri, Artoo!|Luke Skywalker, to his [[astromech droid]] [[R2-D2]], in the Exodeen system|<ref name="Heir" />}}
+The '''Nanth'ri Trade Route''', or simply the '''Nanth'ri Route''', was a [[Hyperspace route|trade route]] that intersected ran between the [[Colonies]]' [[Exodeen system]] and the [[Mid Rim Territories|Mid Rim's]] [[Nanth'ri system]]. After leaving the [[planet]] [[Denon]] for the [[Outer Rim Territories|Outer Rim]] world [[Omereth]], the ''[[Desert Jewel]]'' along the [[Hydian Way]] to the planet [[Exodeen]] and from there it was to take the Nanth'ri Route to Nanth'ri that eventually would offer several different ways to reach Omereth.
+
+==Description==
+The Nanth'ri Trade Route<ref name="Heir" /> also known as just the Nanth'ri Route,<ref name="TROS VD" /> was a [[hyperspace route]] that went from [[Exodeen]] a [[planet]],<ref name="Heir" /> in the [[Exodeen system]] of the [[Colonies]] region that was along the [[Hydian Way]]<ref name="Galaxy Map">{{GalaxyMapPoster}}</ref> [[super-hyperroute]],<ref name="BMF 48">{{BuildFalconCite|48|Guide to the Galaxy}}</ref> and [[Nanth'ri]],<ref name="Heir" /> an astronomical object in the [[Nanth'ri system]] of the [[Mid Rim Territories]].<ref name="Galaxy Map" />
+
+In the Colonies, the route drew from Exodeen and to the celestial body [[Quellor]],<ref name="Galaxy Map" /> a junction with the [[Quellor Run]].<ref name="Quellor Run" /> The Nanth'ri Trade Route then went into the [[Inner Rim Territories]] and reached<ref name="Galaxy Map" /> the [[Prindaar system]]<ref name="Systems" /> [[gas giant]]<ref name="Helmet Collection 2">{{HelmetCollectionCite|2|Databank A-Z}}</ref> [[Antar]] and then the astronomical object [[Lonera]]. Passing into the [[Expansion Region]], the hyperspace route passed by the celestial body [[Gyndine]],<ref name="Galaxy Map" /> the planet<ref name="Lost Stars">''[[Lost Stars]]''</ref> [[Kerev Doi]],<ref name="Galaxy Map" /> the planet [[Mimban]] of the [[Circarpous system]],<ref name="Systems" /> the planet<ref name="Build X-wing">{{BuildXWingCite|63|Starfighter Aces}}</ref> [[Batuv]],<ref name="Galaxy Map" /> and the astronimical object [[Attahox system|Attahox]].<ref name="TFABG">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref> After, the Nanth'ri Route passed through<ref name="CLNE" /> the world<ref name="DaiyuDB">{{Databank|daiyu|Daiyu}}</ref> [[Daiyu]]<ref name="CLNE" /> then reached the Mid Rim Territories and Nanth'ri.<ref name="Galaxy Map" /> In it's journey, the route entered the [[Quellor sector]], where Quellor was located, and the [[Circarpous sector]], where Gyndine and Mimban were situated.<ref name="Sectors" />
+
+==History==
+{{Quote|Artoo, when we get to Nanth'ri, begin calculating a jump that will take us through Hutt Space. If you can do a jump all the way across it without stopping, that would probably be the best.|Skywalker, to R2-D2|<ref name="Heir" />}}
+In [[0 ABY]],<ref name="0 ABY">''[[Star Wars: Timelines]]'' dates the events of ''[[Heir to the Jedi]]'' to [[0 ABY]].</ref> the [[Alliance to Restore the Republic|Rebel Alliance]] operatives [[Luke Skywalker]] and [[Nakari Kelen]] [[Mission on Denon|rescued]] the [[givin]] [[cryptologist]] [[Drusil Bephorin]] from the [[Galactic Empire]]'s custody on the<ref name="Heir" /> Inner Rim<ref name="Galaxy Map" /> planet [[Denon]]. The pair's mission was to bring Bephorin to the<ref name="Heir" /> [[Outer Rim Territories]]<ref name="Galaxy Map" /> planet [[Omereth]] aboard their [[starship]], the ''[[Desert Jewel]]'', to reunite the givin with her family. Skywalker and Kelen planned to reach the Nanth'ri Trade Route at Exodeen via the Hydian Way and travel to Nanth'ri along the former hyperspace route, offering more travel options to Omereth after.<ref name="Heir" />
+
+The ''Desert Jewel'' reached the Exodeen system, jumping into [[hyperspace]] soon after after it detected several Imperial starships, including a [[Star Destroyer]] and [[heavy cruiser]] in the system. The ''Jewel'' then continued along the Nanth'ri Trade Route to the Nanth'ri system, skipping past five planets in between. When they reached the Nanth'ri system, however, they were attacked by a small [[fleet]] of [[pirate]]s. The ' ''Desert Jewel'' was able to ward them off and escape, travelling along a new route that passed the [[Daalang system]].<ref name="Heir" />
+
+==Behind the scenes==
+The Nanth'ri Trade Route first appeared in the [[2015]] novel ''[[Heir to the Jedi]]'', written by [[Kevin Hearne]].<ref name="Heir" />
+
+==Appearances==
+{{Mediacat|imagecat=Images of the Nanth'ri Trade Route}}
+*''[[Heir to the Jedi]]'' {{Ab|Heir to the Jedi (audiobook)}} {{1st}}
+
+==Sources==
+*<!-- 2015-12-30 -->{{BuildFalconCite|52|Guide to the Galaxy}}
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]
+*<!-- 2019-12-20 -->''[[Star Wars: The Rise of Skywalker: The Visual Dictionary]]'' {{1stID|Nanth'ri Route}}
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}}
+*<!-- 2022-06-08 -->{{EncyclopediaCite|Core Worlds, Colonies, the Inner Rim and Expansion Region}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]''
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]''
+*{{StarWarsGalaxyMap}} {{MapPoint}}
+
+==Notes and references==
+{{ScrollBox|content={{Reflist}}}}
+
+{{Interlang
+|fr=Route Commerciale de Nanth'ri
+|tr=Nanth'ri Ticaret Rotası
+}}
+
+[[Category:Colonies hyperlanes]]
+[[Category:Expansion Region hyperlanes]]
+[[Category:Inner Rim hyperlanes]]
+[[Category:Major galactic hyperlanes]]
+[[Category:Mid Rim hyperlanes]]
+[[Category:The Slice hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Nanth'ri Trade Route]]
+}}

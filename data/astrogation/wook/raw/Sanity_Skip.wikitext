@@ -1,0 +1,48 @@
+{{Top|ca}}
+{{TradeRoute
+|image=[[File:SanitySkip-SmugglersGuide.jpg]]
+|name=Sanity Skip
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Outer Rim Territories]]<ref name="Smuggler's Guide">''[[Star Wars: Smuggler's Guide]]''</ref>
+*[[The Slice]]<ref name="Slice">''[[Star Wars: Smuggler's Guide]]'' shows the Sanity Skip in an area of [[Realspace|space]] ''[[Star Wars: The Galactic Explorer's Guide]]'' identifies as [[the Slice]].</ref>
+|sectors=*[[Centrality]]<ref name="Smuggler's Guide" />
+*[[Kessel sector]]<ref name="CGttSWG">''[[Star Wars Encyclopedia: The Comprehensive Guide to the Star Wars Galaxy]]'' establishes that the [[Kessel system]] is in the [[Kessel sector]]. As ''[[Star Wars: Smuggler's Guide]]'' establishes that the [[Star system|system]] is part of the Sanity Skip [[Hyperspace route|route]], the route must also pass into the [[sector]].</ref>
+|stellar=
+|endpoints=*[[Kessel system]]<ref name="Smuggler's Guide" />
+*[[Oseon system]]<ref name="Smuggler's Guide" />
+|transitpoints=
+|otherobjects=
+|junctions=*[[Kessel Run]] {{C|[[The Channel]]}}<ref name="Tales from Vandor">''[[Solo: A Star Wars Story: Tales from Vandor]]'' shows that the [[Kessel system]] is part of [[the Channel]] and the wider [[Kessel Run]]. As ''[[Star Wars: Smuggler's Guide]]'' establishes that Kessel is also part of the Sanity Skip, the [[planet]] must act as a junction between the two [[hyperspace route]]s.</ref>/[[Pabol Sleheyron]]<ref name="Where">{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}} shows that the [[Kessel system]] is part of the [[Pabol Sleheyron]]. As ''[[Star Wars: Smuggler's Guide]]'' establishes that the [[Star system|system]] is also part of the Sanity Skip, the Kessel system must act as a junction between the two [[hyperspace route]]s.</ref>
+}}
+The '''Sanity Skip''' was a [[hyperspace route]] located in the [[Outer Rim Territories]]<ref name="Smuggler's Guide" /> and [[the Slice]].<ref name="Slice" /> One terminus was the [[Kessel system]]<ref name="Smuggler's Guide" /> in the [[Kessel sector]]<ref name="CGttSWG" /> within grid square T-10 of the [[Standard Galactic Grid]].<ref name="Appendix">{{GalaxyMapAppendix}}</ref> The other was the [[Oseon system]] in the [[Centrality]],<ref name="Smuggler's Guide" /> a sector in grid square T-8.<ref name="Appendix" /> The Kessel system acted as a junction from the Sanity Skip on to both [[the Channel]], a part of the larger [[Kessel Run]],<ref name="Tales from Vandor" /> and the [[Pabol Sleheyron]] trade routes.<ref name="Where" /> Another [[hyperspace route]] connected the Oseon system to the [[Junkfort Station system]].<ref name="TFABG">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] </ref><ref name="Junkfort">Per {{EmailCite|email=File:AtlasEmail-2025-09-03.png|creator=[[Jason Fry]]|date=2025-09-03}}, [[Junkfort Station]]'s absence on the [[Star Wars Galaxy Map|''Star Wars'' Galaxy Map]] is due to spacing limitations with the neighboring [[Marleyvane]] label, and Junkfort Station is located at the junction of the two [[hyperspace route]]s.</ref>
+
+By [[10 BBY]],<ref name="Date">The entry in ''[[Star Wars: Smuggler's Guide]]'' mentioning the Sanity Skip is placed chronologically prior to an entry written by the criminal [[Tobias Beckett]]. ''[[Star Wars: Timelines]]'' dates Beckett's [[death]] to [[10 BBY]], and so his entry in the guide and those chronologically before it must all be set by 10 [['ABY-BBY' dating system|BBY]].</ref> the [[Pirate Queen|pirate queen]] [[Maz Kanata]] marked the Sanity Skip as one of the "real" trade routes to be used by [[smuggler]]s, as opposed to the official routes, on a [[map]] that she included in the [[book]] known as the ''[[Smuggler's Guide]]''.<ref name="Smuggler's Guide" /> 
+
+==Behind the scenes==
+The Sanity Skip was first mentioned in ''[[Star Wars: Smuggler's Guide]]'', a reference book written by [[Daniel Wallace]] and released in [[2018]].<ref name="Smuggler's Guide" />
+
+==Sources==
+{{Indexpage}}
+*<!-- 2018-11-13 -->''[[Star Wars: Smuggler's Guide]]'' {{1stm}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|de=Irrensprung
+|ja=サニティ・スキップ
+|tr=Akıl Sağlığı Atlaması
+}}
+
+[[Category:Centrality locations]]
+[[Category:Kessel sector locations]]
+[[Category:Outer Rim Territories hyperlanes]]
+[[Category:Smuggling hyperspace routes]]
+[[Category:The Slice hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Sanity Skip]]
+}}

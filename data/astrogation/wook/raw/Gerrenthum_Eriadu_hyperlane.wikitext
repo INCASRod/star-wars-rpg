@@ -1,0 +1,38 @@
+{{Top|legends=Nothoiin Corridor}}
+{{Conjecture}}
+{{TradeRoute
+|image=
+|name=Gerrenthum–Eriadu hyperlane
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="BMF">{{BuildFalconCite|18|Guide to the Galaxy}}</ref>
+|sectors=
+|stellar=
+|endpoints=*[[Gerrenthum]]<ref name="BMF" />
+*[[Eriadu]]<ref name="Map">{{StarWarsGalaxyMap}}</ref>
+|transitpoints=Gerrenthum - [[Nothoiin]]<ref name="TFABG">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref> [[Dolla system|Dolla]] - [[Urber]] - Eriadu<ref name="AVG">''[[Star Wars: The Acolyte: The Visual Guide]]''</ref>
+|otherobjects=
+|junctions=
+}}
+A '''hyperlane''' began at [[Gerrenthum]] and continued to [[Council (planet)|Council]], [[Nothoiin]], the [[Saila Na system]], and [[Bavva]],<ref name="BMF" /> before stretching westward to [[Eriadu]] on the [[Hydian Way]].<ref name="Map" />
+
+{{Route-stub}}
+
+==Behind the scenes==
+In the [[Star Wars Legends|''Star Wars'' Legends]] continuity, the route was known as the [[Nothoiin Corridor]]. The route was included on a map of the [[Anoat sector]] in the "[[Guide to the Galaxy]]" section of [[Star Wars: Build the Millennium Falcon 18|''Star Wars: Build the Millennium Falcon'' 18]], but the label for the route was cut off.
+
+==Sources==
+*<!-- 2015-05-06 -->{{BuildFalconCite|18|Guide to the Galaxy}} {{1stm}}
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] {{Po}}
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]''
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]''
+*{{StarWarsGalaxyMap}} {{MapPoint}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Major galactic hyperlanes|Nothoiin Corridor*]]
+[[Category:Outer Rim Territories hyperlanes]]

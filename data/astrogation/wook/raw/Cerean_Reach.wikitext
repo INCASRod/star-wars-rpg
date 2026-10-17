@@ -1,0 +1,63 @@
+{{Top}}
+{{Otheruses|Reach}}
+{{TradeRoute
+|image=[[File:CereanReach-GalaxyMap.png]]
+|name=Cerean Reach
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Mid Rim Territories]]<ref name="GM">{{GalaxyMapPoster}}</ref>
+*[[Outer Rim Territories]]<ref name="GM" />
+*[[Western Reaches]]<ref name="Western Reaches">The {{GalaxyMapPoster}} places [[Beltire system|Beltire]] and [[Lutrillia]] in the area of [[Realspace|space]] ''[[Star Wars: The Galactic Explorer's Guide]]'' identifies as the [[Western Reaches]].</ref>
+|sectors=*[[Greater Javin]]<ref name="TFAMap">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref>
+**[[Yarith sector]]<ref name="BMF18">{{BuildFalconCite|18|Guide to the Galaxy}}</ref>
+|stellar=
+|endpoints=*[[Cerea]]<ref name="Bespin">{{EncyclopediaCite|Bespin and Other Planets in the Outer Rim}} {{C|English version only}}</ref>
+*[[Lutrillia]]<ref name="GM" />
+|transitpoints=
+|otherobjects=Cerea<ref name="Bespin" /> - [[Kartoosh]] - [[Riflor]] - [[Beltire system|Beltire]] - [[Entropian Hive]] - [[Lorta]]<ref name="GM" /> - [[Shuldene system|Shuldene]]<ref name="BMF18" /> - Lutrillia<ref name="GM" />
+|junctions=*[[Great Gran Run]]<ref name="TFA Locations">{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-star-wars-the-force-awakens|text=Where in the Galaxy Are the Worlds of ''Star Wars: The Force Awakens''?|int=Where in the Galaxy Are the Worlds of Star Wars: The Force Awakens?}} places [[Cerea]] on the [[Great Gran Run]]. As {{EncyclopediaCite|Bespin and Other Planets in the Outer Rim}} also places Cerea on the Cerean Reach, the two routes must intersect at Cerea.</ref>
+*[[Lutrillian Cross]]<ref name="BMF18" />
+*[[Spar Trade Route]]<ref name="Bespin" />
+}}
+The '''Cerean Reach''' was a [[hyperspace route]] that ran from the [[Cerean]] [[homeworld]] [[Cerea]] in the [[Mid Rim Territories]] to the [[planet]] [[Lutrillia]] in the [[Outer Rim Territories]]. Between the two terminuses, it connected the astronomical objects [[Kartoosh]], [[Riflor]], [[Beltire system|Beltire]], the [[Entropian Hive]], [[Lorta]], and [[Shuldene system|Shuldene]]. Cerea acted as a junction from the Reach onto the [[Great Gran Run]] and the [[Spar Trade Route]] and Lutrillia connected it to the [[Lutrillian Cross]].
+
+==Description==
+The Cerean Reach was a [[hyperspace route]] that had one terminus at [[Cerea]],<ref name="Bespin" /> the [[Mid Rim Territories|Mid Rim]]<ref name="GM" /> [[homeworld]] of the [[Cerean]] [[species]],<ref name="Homeworld">''[[Star Wars: Galactic Atlas]]''</ref> and then linked the astronomical objects [[Kartoosh]], [[Riflor]], [[Beltire system|Beltire]], the [[Entropian Hive]], and [[Lorta]] within the Mid Rim before crossing into the [[Outer Rim Territories]]<ref name="GM" /> to link to the celestial body [[Shuldene system|Shuldene]] in the [[Yarith sector]]<ref name="BMF18" /> of the [[Greater Javin]].<ref name="TFAMap" />
+
+From Shuldene it then linked to its other terminus, [[Lutrillia]],<ref name="GM" /> a [[planet]]<ref name="Travelers">''[[Star Wars: Galaxy's Edge: Traveler's Guide to Batuu]]''</ref> that was also part of the [[Lutrillian Cross]] hyperlane.<ref name="BMF18" /> Cerea also acted as a junction from the route onto the [[Spar Trade Route]]<ref name="Bespin" /> and the [[Great Gran Run]].<ref name="TFA Locations" /> Between Beltire and Lutrillia, the route also fell within the [[Western Reaches]] portion of [[the galaxy]].<ref name="Western Reaches" /> On the [[Standard Galactic Grid]], the route ran through grid squares I-16, J-16, J-17, and J-18.<ref name="GM" />
+
+==History==
+In [[34 ABY]],<ref name="Starcruiserdate">''[[Star Wars: Timelines]]'' dates the events of [[Star Wars: Galactic Starcruiser|''Star Wars'': Galactic Starcruiser]] to [[34 ABY]].</ref> [[Chandrila Star Line]]'s [[MPO-1400 Purgill-class star cruiser|Star Cruiser]] ''[[Halcyon]]'' passed by the Cerean Reach on a cruise from the [[Core Worlds]]' [[Chandrila system]] to the Outer Rim Territories. Several [[Viewscreen|screens]] aboard the [[Star Cruiser|starship]] displayed a partial [[Star map|map]] of the galaxy that indicated the route's position.<ref name="GS">[[Star Wars: Galactic Starcruiser|''Star Wars'': Galactic Starcruiser]]</ref>
+
+==Behind the scenes==
+In the current ''[[Star Wars]]'' [[canon]], the Cerean Reach was first shown in the [[Star Wars: Build the Millennium Falcon 18|eighteenth]] issue of the ''[[Star Wars: Build the Millennium Falcon]]'' magazine,<ref name="BMF18" /> which was published around [[May 6]], [[2015]].<ref name="BMFdate">{{BuildFalconDates|18}}</ref> It then appeared [[in-universe]] for the first time when it was depicted on a map viewable in [[Star Wars: Galactic Starcruiser|''Star Wars'': Galactic Starcruiser]], an immersive roleplaying experience at [[W:c:disney:Walt Disney World Resort|Walt Disney World Resort]] in Florida<ref name="GS" /> that opened to the public on [[March 1]], [[2022]].<ref name="31 Things">{{SW|url=news/31-things-we-learned-about-star-wars-galactic-starcruiser|text=31 Things We Learned in an Exclusive Preview of ''Star Wars'': Galactic Starcruiser|nolive=1}}</ref>
+
+The route was then identified in the English language release of "[[Bespin and Other Planets in the Outer Rim]]," part of [[De Agostini]]'s [[Star Wars Encyclopedia (series)|''Star Wars Encyclopedia'']] series<ref name="Bespin" /> that was originally released in Spanish on [[September 21]], [[2021]].<ref name="De Agostini">{{DeAgostini|url=libros-comics/enciclopedia-star-wars|text=Star Wars Encyclopedia}}</ref> The [[Cerean Reach/Legends|route]] originated in the [[Star Wars Legends|''Star Wars'' Legends]] continuity, where it was first mentioned in the [[2009]] reference book ''[[The Essential Atlas]]'', which was written by [[Jason Fry]] and [[Daniel Wallace]].<ref name="Atlas">''[[The Essential Atlas]]''</ref>
+
+==Appearances==
+{{Indexpage}}
+*[[The High Republic Adventures (2021) 1|''The High Republic Adventures'' (2021) 1]] {{Po}}
+*[[Star Wars: Galactic Starcruiser|''Star Wars'': Galactic Starcruiser]] {{1st}} {{MapPoint|screen=1}}
+
+==Sources==
+*<!-- 2015-05-06 -->{{BuildFalconCite|18|Guide to the Galaxy}} {{1stp}}
+*<!-- 2016-01-29 -->{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-star-wars-the-force-awakens|text=Where in the Galaxy Are the Worlds of ''Star Wars: The Force Awakens''?|int=Where in the Galaxy Are the Worlds of Star Wars: The Force Awakens?}} {{Po}}
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] {{MapPoint}}
+*<!-- 2017-01-31 -->{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}} {{Po}}
+*<!-- 2020-12-12 -->''[[The High Republic Free Digital Sampler]]'' {{Po}}
+*<!-- 2021-04-20 -->{{EncyclopediaCite|The First Order}} {{MapPoint}}
+*<!-- 2021-06-29 -->{{EncyclopediaCite|The Battle of Endor and the Fall of the Empire}} {{MapPoint}}
+*<!-- 2021-07-20 -->{{EncyclopediaCite|Scarif and Other Planets in the Outer Rim}} {{MapPoint}}
+*<!-- 2021-09-21 -->{{EncyclopediaCite|Bespin and Other Planets in the Outer Rim}} {{1stID|Cerean Reach}} {{C|English version only}}
+*<!-- 2022-03-11 -->{{EncyclopediaCite|Exegol, the Unknown Regions and Wild Space}} {{MapPoint}}
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}} {{MapPoint}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Major galactic hyperlanes]]
+[[Category:Mid Rim hyperlanes]]
+[[Category:Outer Rim Territories hyperlanes]]
+[[Category:Western Reaches hyperlanes]]

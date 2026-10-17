@@ -1,0 +1,42 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:SisarRun-MeetTheHutts.png]]
+|name=Sisar Run
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Hutt Space]]<ref name="Sisar">{{GalaxyMapHyperlanes|map={{SWYouTube|series=Star Wars: Galaxy Guide|text=Meet the Hutts: The Galaxy's Biggest Crime Lords|video=Ct977noXUVg}}|route=Sisar Run|canon=''[[Star Wars: Smuggler's Guide]]''|leg=''[[Secrets of the Sisar Run]]''}}</ref>
+|sectors=
+|stellar=
+|endpoints=*[[Sriluur]]<ref name="Sisar" />
+*[[Nimban]]<ref name="Sisar" />
+|transitpoints=[[Dirha system|Dirha]] - [[Cyborrea system|Cyborrea]] - [[Sionia system|Sionia]]<ref name="Sisar" />
+|otherobjects=
+|junctions=*[[Salin Corridor]]<ref name="Sisar" />
+*[[Pabol Hutta]]<ref name="Sisar" />
+*[[Pabol Sleheyron]]<ref name="Sisar" />
+}}
+{{Quote|If I wrote my own guide, I'd only share it with people who knew their stuff. Completing 5 Sisar Runs <nowiki>=</nowiki> basic access. 3 Kessel Runs <nowiki>=</nowiki> advanced access.|Platt Okeefe considers writing her own guide to smuggling|<ref name="Smuggler's Guide">''[[Star Wars: Smuggler's Guide]]''</ref>}}
+The '''Sisar Run''' was a [[hyperspace route]]<ref name="Smuggler's Guide" /> that ran from [[Nimban]] to [[Sriluur]].<ref name="Sisar">{{GalaxyMapHyperlanes|map={{SWYouTube|series=Star Wars: Galaxy Guide|text=Meet the Hutts: The Galaxy's Biggest Crime Lords|video=Ct977noXUVg}}|route=Sisar Run|canon=''[[Star Wars: Smuggler's Guide]]''|leg=''[[Secrets of the Sisar Run]]''}}</ref> The [[smuggler]] [[Platt Okeefe]] mentioned the route while writing about the possibility of creating her [[Smuggler's Handbook|own guide]] for [[smuggler]]s in the [[book]] known as the ''[[Smuggler's Guide]]''<ref name="Smuggler's Guide" /> at some point prior to [[3 ABY]].<ref name="Date">The entry in ''[[Star Wars: Smuggler's Guide]]'' written by [[Platt Okeefe]] is placed chronologically prior to an entry with writing from [[L3-37]]. ''[[Solo: A Star Wars Story]]'' depicts L3-37's [[Death|destruction]] on the [[planet]] [[Kessel]], and ''[[Solo: A Star Wars Story The Official Guide]]'' dates the [[Showdown on Savareen|events]] on Kessel in the film to nine [[Standard year|years]] after the [[proclamation of the New Order]]. As ''[[Star Wars: Galactic Atlas]]'' dates the proclamation to [[19 BBY]], L3-37's destruction must occur in [[10 BBY]]; therefore, her entry in the guide and those chronologically before it must all occur by 10 [['ABY-BBY' dating system|BBY]].</ref> She stated she would require readers of the theoretical guide to have completed five [[Sisar Run]]s to gain basic access to the guide, with advanced access requiring three [[Kessel Run]]s.<ref name="Smuggler's Guide" />
+
+==Behind the scenes==
+In the new ''[[Star Wars]]'' [[canon]], the Sisar Run was first mentioned in the [[2018]] reference book ''[[Star Wars: Smuggler's Guide]]'', which was written by [[Daniel Wallace]].<ref name="Smuggler's Guide" /> It was created for the [[Star Wars Legends|''Star Wars'' Legends]] continuity, where it was first mentioned in the [[1995]] ''[[Star Wars: The Roleplaying Game]]'' supplement ''[[Alliance Intelligence Reports]]'', which was released by [[West End Games]].<ref name="AIR">''[[Alliance Intelligence Reports]]''</ref>
+
+==Sources==
+*<!-- 2018-11-13 -->''[[Star Wars: Smuggler's Guide]]'' {{1stm}}
+*<!-- 2026-09-16 -->{{SWYouTube|series=Star Wars: Galaxy Guide|text=Meet the Hutts: The Galaxy's Biggest Crime Lords|video=Ct977noXUVg}} {{Po}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|es=Corredor Sisar
+|ja=サイザー・ラン
+}}
+
+[[Category:Hutt Space hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Sisar Run]]
+}}

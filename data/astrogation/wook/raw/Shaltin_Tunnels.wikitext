@@ -1,0 +1,47 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:ShaltinTunnels-GalaxyMap.png]]
+|name=Shaltin Tunnels
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="BMF 89">{{BuildFalconCite|89|Guide to the Galaxy}}</ref>
+|sectors=*[[Sertar sector]]<ref name="BMF 89" />
+*[[Tion Cluster]]<ref name="TFABG note">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] places [[Lianna]], [[Cadinth system|Cadinth]], and [[Zygerria]] on the [[hyperspace route]] {{BuildFalconCite|21|Guide to the Galaxy}} identifies as the Shaltin Tunnels.</ref>
+*[[Chorlian sector]]<ref name="BMF 91">{{BuildFalconCite|91|Guide to the Galaxy}}</ref>
+|stellar=
+|endpoints=*[[Bonadan]]<ref name="Map">{{StarWarsGalaxyMap}}</ref>
+*[[Lianna]]<ref name="Map" />
+|transitpoints=[[Zygerria system]]<ref name="TFABG note"  />
+|otherobjects=
+|junctions=[[Perlemian Trade Route]]<ref name="Timelines">{{GalaxyMapPoster}}</ref>
+}}
+The '''Shaltin Tunnels''' were a [[hyperspace route]] that ran through the [[Outer Rim Territories]]. From the [[Lianna system]]<ref name="TFABG note"  /> in the [[Tion Cluster]],<ref name="TFABG">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref> the Shaltin Tunnels crossed near the [[planet]] [[Florrum]] in the [[Sertar sector]]<ref name="Revival">{{TCW|Revival (episode)}}</ref> to the [[Zygerria system|Zygerria system]]<ref name="TFABG" /> in the [[Chorlian sector]].<ref name="BMF 91">{{BuildFalconCite|91|Guide to the Galaxy}}</ref>
+
+{{Route-stub}}
+
+==Sources==
+*<!-- 2015-05-27 -->{{BuildFalconCite|21|Guide to the Galaxy}} {{1stm}}
+*<!-- 2016-09-14 -->{{BuildFalconCite|89|Guide to the Galaxy}}
+*<!-- 2021-07-20 -->{{EncyclopediaCite|Scarif and Other Planets in the Outer Rim}}
+*<!-- 2021-09-21 -->{{EncyclopediaCite|Bespin and Other Planets in the Outer Rim}}
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]''
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]''
+*{{StarWarsGalaxyMap}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|tr=Shaltin Tünelleri
+}}
+
+[[Category:Major galactic hyperlanes]]
+[[Category:Outer Rim Territories hyperlanes]]
+[[Category:The Slice hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Shaltin Tunnels]]
+}}

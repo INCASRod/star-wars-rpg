@@ -1,0 +1,34 @@
+{{Top}}
+{{Conjecture}}
+{{TradeRoute
+|image=
+|name=Metellos-Ilum hyperspace route
+|founded=Thousands of [[Standard year|years]] before the [[Battle of Yavin]]<ref name="NoP">''[[Nexus of Power]]''</ref>
+|founders=[[Hyperspace surveyor]]s hired by the [[Jedi Order]]<ref name="NoP" />
+|dissolved=
+|eras=
+|regions=[[Core Worlds]], [[Unknown Regions]]<ref name="NoP" />
+|sectors=[[7G sector]]<ref name="NoP" />
+|stellar=
+|endpoints=
+*[[Ilum]]<ref name="NoP" />
+*[[Metellos]]<ref name="NoP" />
+|transitpoints=
+|otherobjects=
+|junctions=
+}}
+A '''hyperspace route''' between the [[Core Worlds|Core World]] of [[Metellos]] and the [[Unknown Regions]] [[planet]] of [[Ilum]] was [[map]]ped by [[hyperspace surveyor]]s thousands of [[Standard year|years]] before the [[Battle of Yavin]]. Those surveyors were hired by the [[Jedi Order]], who claimed sovereignty over Ilum, due to the fact Ilum was a major source of [[kyber crystal]]s, used in the construction of [[Jedi]] [[lightsaber]]s.<ref name="NoP" /> The route was rumored to only be accessible through the use of [[the Force]], and it was closely guarded by members of the Jedi Order to protect Ilum.<ref name="BMF 90">{{BuildFalconCite|80|Guide to the Galaxy}}</ref>
+
+==Sources==
+*<!-- 2016-03-17 -->''[[Nexus of Power]]'' {{1stm}}
+*<!-- 2016-07-13 -->{{BuildFalconCite|80|Guide to the Galaxy}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|tr=Metellos-Ilum hiperuzay rotası
+}}
+
+[[Category:Core Worlds hyperlanes]]
+[[Category:Unknown Regions hyperlanes]]

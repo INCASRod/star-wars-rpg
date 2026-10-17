@@ -1,0 +1,27 @@
+{{Top}}
+{{Image}}
+{{TradeRoute
+|image=
+|name=Pabol Kreeta
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Hutt Space]]<ref name="Guide">{{SWYouTube|series=Star Wars: Galaxy Guide|text=Meet the Hutts: The Galaxy's Biggest Crime Lords|video=Ct977noXUVg}}</ref>
+|sectors=
+|stellar=
+|endpoints=[[Nar Kreeta system]] - [[Nar Bo Sholla system]]<ref name="Guide" />
+|transitpoints=
+|otherobjects=
+|junctions=*[[Pabol Sleheyron]]<ref name="Guide" />
+*[[Ootmian Pabol]]<ref name="Guide" />
+}}
+The '''Pabol Kreeta''' was a [[hyperspace route]] that linked the [[Pabol Sleheyron]] and [[Ootmian Pabol]] hyperlanes in [[Hutt Space]], beginning at the [[Nar Kreeta system]] on the Pabol Sleheyron and ending at the [[Nar Bo Sholla system]] along the Ootmian Pabol.<ref name="Guide" />
+
+==Sources==
+*<!-- 2026-09-16 -->{{SWYouTube|series=Star Wars: Galaxy Guide|text=Meet the Hutts: The Galaxy's Biggest Crime Lords|video=Ct977noXUVg}} {{1stm}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Hutt Space hyperlanes]]

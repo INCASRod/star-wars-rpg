@@ -1,0 +1,59 @@
+{{Top}}
+{{Youmay|the Celanon Spur|the [[Spurs of Celanon]]}}
+{{Update|{{BuildFalconCite|48|Guide to the Galaxy}}, [[Nexus of Power]]}}
+{{TradeRoute
+|image=[[File:CelanonSpur-GalaxyMap.png]]
+|name=Celanon Spur
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Mid Rim Territories]]<ref name="BMF 48">{{BuildFalconCite|48|Guide to the Galaxy}}</ref>
+|sectors=[[Dohu sector|Dohu]] - [[Qiilura sector|Qiilura]] - [[Bright Jewel sector|Bright Jewel]]<ref name="BMF 48" />
+|stellar=
+|endpoints=*[[Dorin]]<ref name="Route">{{GalaxyMapHyperlanes|route=Celanon Spur|canon={{BuildFalconCite|48|Guide to the Galaxy}}|leg=''[[The Essential Atlas]]''}}</ref>
+*[[Celanon]]<ref name="Route" />
+|transitpoints=
+|otherobjects=[[Ord Mantell]]<ref name="BMF 48" /> - [[Aleen]]<ref name="NoP">''[[Nexus of Power]]''</ref> - [[Pandem Nai]]<ref name="Alphabet Squadron">[[Alphabet Squadron (novel)|''Alphabet Squadron'']]</ref>
+|junctions=[[Entralla Route]]<ref name="BMF 48" />
+}}
+The '''Celanon Spur''' was a [[hyperspace route]] in [[the galaxy]] that ran from [[Dorin]] in the [[Mid Rim Territories]] to [[Celanon]], an astronomical object on the [[Hydian Way]] in the [[Outer Rim Territories]].<ref name="Route" /> The [[Axxila–Tangrene hyperlane]]<ref name="Map">{{StarWarsGalaxyMap}}</ref> joined with the Celanon Spur.<ref name="BMF 48" />
+
+The [[Pandem Nai system]], containing the [[planet]] [[Pandem Nai]], was located on the route.<ref name="Alphabet Squadron" /> The [[Mid Rim Territories|Mid Rim]] planet [[Ord Mantell]] was also located on the route.<ref name="BMF 48" /> The [[gas giant]] [[Ajara]] and its [[moon]], the [[jungle]] world [[Ajan Kloss]], located in the [[Cademimu sector]] of the Outer Rim Territories, were situated in a partially unexplored stretch of [[Realspace|space]] off the Celanon Spur.<ref name="TROS VD">''[[Star Wars: The Rise of Skywalker: The Visual Dictionary]]''</ref>
+
+While preparing for an [[Battle of Pandem Nai|attack]] on the forces of the [[Galactic Empire]]'s [[204th Imperial Fighter Wing]], who had fortified themselves on Pandem Nai following the [[Battle of Endor]]<ref name="Alphabet Squadron" /> in [[4 ABY]],<ref name="Galactic Atlas">''[[Star Wars: Galactic Atlas]]''</ref> [[New Republic Intelligence]] [[agent]] [[Caern Adan]] studied the Celanon Spur. While the Celanon Spur would be an easier route to the planet, Adan presumed that the 204th would have placed early warning mechanisms along the hyperlane.<ref name="Alphabet Squadron" />
+
+==Appearances==
+*{{TBB|Infested}} {{Imo}}
+*[[Alphabet Squadron (novel)|''Alphabet Squadron'']] {{Ab|Alphabet Squadron (audiobook)}} {{Mo}}
+
+==Sources==
+*<!-- 2015-12-02 -->{{BuildFalconCite|48|Guide to the Galaxy}} {{1stm}}
+*<!-- 2016-03-17 -->''[[Nexus of Power]]''
+*<!-- 2019-12-20 -->''[[Star Wars: The Rise of Skywalker: The Visual Dictionary]]''
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}} {{MapPoint}}
+*<!-- 2022-07-13 -->{{EncyclopediaCite|Kashyyyk and Other Planets in the Mid Rim}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]''
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]''
+*<!-- 2026-01-XX -->{{DarthVaderCite|73|Planets}}
+*<!-- 2026-05-26 -->''[[Star Wars: The Mandalorian Visual Guide]]''
+*{{StarWarsGalaxyMap}} {{MapPoint}}
+
+==Notes and references==
+{{Mediacat|imagecat=Images of the Celanon Spur}}
+{{Reflist}}
+
+{{Interlang
+|es=Espuela Celanon
+|fr=Éperon de Celanon
+|tr=Celanon Çıkıntısı
+}}
+
+[[Category:Major galactic hyperlanes]]
+[[Category:Mid Rim hyperlanes]]
+[[Category:New Territories hyperlanes]]
+[[Category:Outer Rim Territories hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Celanon Spur]]
+}}

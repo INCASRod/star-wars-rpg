@@ -1,0 +1,48 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:RandonRun-GalaxyMap.png]]
+|name=Randon Run
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Mid Rim Territories]]<ref name="RO locations">{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}}</ref>
+|sectors=[[Mytaranor sector|Mytaranor]]<ref name="Collapse">''[[Collapse of the Republic]]''</ref>
+|stellar=
+|endpoints=
+*[[Lantillies]]<ref name="RO locations" />
+*[[Randon]]<ref name="RO locations" />
+|transitpoints=[[Bracca system|Bracca]]<ref name="Locations">The {{GalaxyMapPoster}} places [[Bracca]] and its [[Bracca system|system]] and [[Uyter]] along a [[hyperspace route]] that goes from [[Lantillies]] to [[Kashyyyk]] and then [[Randon]]. [[Where in the Galaxy Are the Worlds of Rogue One?|Where in the Galaxy Are the Worlds of ''Rogue One''?]] identifies that route as the Randon Run.</ref> - [[Kashyyyk system|Kashyyyk]]<ref name="Collapse" />
+|otherobjects=Lantillies<ref name="RO locations" /> - [[Bracca]]<ref name="Locations" /> - [[Uyter]]<ref name="Locations" /> - [[Kashyyyk]]<ref name="RO locations" /> - Randon<ref name="RO locations" />
+|junctions=[[Perlemian Trade Route]]<ref name="RO locations" /> - [[Durkteel Loop]], [[Great Kashyyyk Branch]], and [[Nightroad]]<ref name="Collapse" /> - [[Pabol Sleheyron]]<ref name="RO locations" />
+}}
+The '''Randon Run''' was a [[hyperspace route]] which ran between the<ref name="RO locations" /> [[planet]]<ref name="Databank">{{Databank|nix-jerd|Nix Jerd}}</ref> [[Lantillies]] and the astronomical object [[Randon]] in the [[Mid Rim Territories]]. From Lantillies, which was situated along the<ref name="Timelines">{{GalaxyMapPoster}}</ref> [[super-hyperroute]]<ref name="BMF 48">{{BuildFalconCite|48|Guide to the Galaxy}}</ref> known as the [[Perlemian Trade Route]],<ref name="Timelines" /> the Randon Run went south<ref name="RO locations" /> to the<ref name="Timelines" /> planet<ref name="Bracca DB">{{Databank|bracca|Bracca}}</ref> [[Bracca]] in the [[Bracca system]]. After Bracca, the route reached the<ref name="Timelines" /> planet<ref name="Aftermath">[[Aftermath (novel)|''Aftermath'']]</ref> [[Uyter]], which was linked by hyperlane to<ref name="Timelines" /> the [[Nazzri system|Nazzri]] and [[Togoria system]]s.<ref name="TFABG">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref>
+
+The Randon Run then went to the planet [[Kashyyyk]], in the [[Kashyyyk system]] of the [[Mytaranor sector]]. At Kashyyyk, the route was at a junction with the hyperspace routes known as the [[Durkteel Loop]], the [[Great Kashyyyk Branch]] and the [[Nightroad]].<ref name="Collapse" /> Following Kashyyyk, the Randon Run reached Randon, a junction with the [[Pabol Sleheyron]] hyperspace route.<ref name="RO locations" />
+
+==Behind the scenes==
+The Randon Run was first mentioned in the [[Star Wars: Build the Millennium Falcon 43|forty-third issue]] of [[De Agostini]]'s magazine series ''[[Star Wars: Build the Millennium Falcon]]'',<ref name="BMF 43">{{BuildFalconCite|43|Guide to the Galaxy}}</ref> published on approximately [[October 28]], [[2015]].<ref name="BMFdate">{{BuildFalconDates|43}}</ref>
+
+==Sources==
+*<!-- 2015-10-28 -->{{BuildFalconCite|43|Guide to the Galaxy}} {{1stm}}
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]
+*<!-- 2017-01-31 -->{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}}
+*<!-- 2019-06-28 -->''[[Collapse of the Republic]]''
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|es=Corredor Randon
+|fr=Piste de Randon
+|tr=Randon Kaçış Yolu
+}}
+
+[[Category:Major galactic hyperlanes]]
+[[Category:Mid Rim hyperlanes]]
+[[Category:The Slice hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Randon Run]]
+}}

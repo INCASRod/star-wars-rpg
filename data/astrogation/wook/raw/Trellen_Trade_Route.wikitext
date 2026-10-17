@@ -1,0 +1,46 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:TrellenTradeRoute-GalaxyMap.png]]
+|name=Trellen Trade Route
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Core Worlds]] - [[Colonies]] - [[Inner Rim Territories]]<ref name="Map">{{StarWarsGalaxyMap}}</ref>
+|sectors=
+|stellar=
+|endpoints=*[[Trellen system]]<ref name="Trellen">{{GalaxyMapHyperlanes|route=Trellen Trade Route|canon={{BuildFalconCite|52|Guide to the Galaxy}}|leg=''[[The Essential Atlas]]''}}</ref>
+*[[Zeltros]]<ref name="Trellen" />
+|transitpoints=
+|otherobjects=
+|junctions=*[[Hydian Way]]<ref name="Map" />
+*[[Great Kashyyyk Branch]]<ref name="GreatKashyyykBranch">{{GalaxyMapHyperlanes|route=Great Kashyyyk Branch|leg=''[[The Essential Atlas]]''|canon={{BuildFalconCite|43|Guide to the Galaxy}}}}</ref>
+}}
+The '''Trellen Trade Route''' was a [[hyperspace route]] that ran from the [[Trellen system]] in the [[Core Worlds]], situated along the [[Hydian Way]], eastward to [[Zeltros]] in the [[Inner Rim Territories]], where it met the [[Great Kashyyyk Branch]] and another hyperlane.<ref name="Map" />
+{{Route-stub}}
+
+==Behind the scenes==
+The partwork magazine issue [[Star Wars: Build the Millennium Falcon 52|''Star Wars: Build the Millennium Falcon'' 52]] places the [[planet]] [[Neimoidia]] on the Trellen Trade Route,<ref name="BMF">{{BuildFalconCite|52|Guide to the Galaxy}}</ref> although that name applied to a different route in the [[Star Wars Legends|''Star Wars'' Legends]] continuity, and the route between [[Fedalle]] and [[Quellor]] was never named. [[Jason Fry]], author of ''[[The Essential Atlas]]''<ref name="Atlas">''[[The Essential Atlas]]''</ref> and a number of maps in the [[canon]] continuity,<ref name="AVG">''[[Star Wars: The Acolyte: The Visual Guide]]''</ref> has stated that this should be treated as an error.<ref name="Fry">{{EmailCite|email=File:AtlasEmail-2025-08-31.png|creator=[[Jason Fry]]|date=2025-08-31}}</ref>
+
+==Sources==
+*<!-- 2015-12-30 -->{{BuildFalconCite|52|Guide to the Galaxy}} {{1stm}}
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]'' {{Po}}
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]''
+*{{StarWarsGalaxyMap}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|tr=Trellen Ticaret Rotası
+}}
+
+[[Category:Colonies hyperlanes]]
+[[Category:Core Worlds hyperlanes]]
+[[Category:Major galactic hyperlanes]]
+[[Category:The Slice hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Trellen Trade Route]]
+}}

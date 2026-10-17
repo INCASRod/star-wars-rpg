@@ -1,0 +1,30 @@
+{{Top}}
+{{TradeRoute
+|image=
+|name=Roon way
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="Tempest Runner />
+|sectors=[[Abrion sector]]<ref name="Tempest Runner" />
+|stellar=
+|endpoints=
+|transitpoints=
+|otherobjects=
+|junctions=
+}}
+{{Quote|My informer in the Hutt Cartel advises me that another shipment of Glitterstim is being transported on the Roon way|[[Pan Eyta]], to [[Jinnix]]|<ref name="Tempest Runner">''[[The High Republic: Tempest Runner]]''</ref>}}
+The '''Roon way''' was a [[Hyperspace route|hyperlane]] in the galaxy. It contained the [[Abrion sector]].<ref name="Tempest Runner />
+
+{{Loc-stub}}
+
+==Appearances==
+*''[[The High Republic: Tempest Runner]]'' {{1stm}}
+*[[The High Republic: Tempest Runner (script)|''The High Republic: Tempest Runner'' script]] {{Mo}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Outer Rim Territories hyperlanes]]
+[[Category:The Slice hyperlanes]]

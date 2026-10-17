@@ -1,0 +1,17 @@
+{{Top}}
+The '''Fentersohn run''' was a [[hyperspace route]] that was often traveled by [[Bodhi Rook]] and his mentor and co-[[pilot]], [[Misurno]].<ref name="RO novel">[[Rogue One: A Star Wars Story (novelization)|''Rogue One: A Star Wars Story'' novelization]]</ref>
+
+{{Loc-stub}}
+
+==Appearances==
+*[[Rogue One: A Star Wars Story (novelization)|''Rogue One: A Star Wars Story'' novelization]] {{Ab|Rogue One: A Star Wars Story (audiobook)}} {{1stm}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|de=Fentersohn-Flug
+|ja=フェンターゾーン・ラン
+}}
+
+[[Category:Hyperlanes]]

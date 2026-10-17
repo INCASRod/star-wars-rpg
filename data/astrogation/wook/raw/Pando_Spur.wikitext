@@ -1,0 +1,33 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:PandoSpur-MeetTheHutts.png]]
+|name=Pando Spur
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Hutt Space]]<ref name="YouTube">{{SWYouTube|series=Star Wars: Galaxy Guide|text=Meet the Hutts: The Galaxy's Biggest Crime Lords|video=Ct977noXUVg}}</ref>
+|sectors=
+|stellar=
+|endpoints=*[[Hollastin system|Hollastin]]<ref name="YouTube" />
+*[[Near Pando system|Near Pando]]<ref name="YouTube" />
+|transitpoints=Hollastin<ref name="YouTube" /> - [[Xolu system|Xolu]]<ref name="YouTube" /> - [[Far Pando system|Far Pando]]<ref name="YouTube" /> - Near Pando<ref name="YouTube" />
+|otherobjects=
+|junctions=[[Hollastin Run]]<ref name="YouTube" />
+}}
+The '''Pando Spur''' was a [[hyperspace route]] located entirely within [[Hutt Space]]. It ran from the [[Near Pando system]] in square S-14 of the [[Standard Galactic Grid]] through the [[Far Pando system]] and [[Xolu system]] in square S-13 and then terminated at the [[Hollastin system]] in grid square S-12, which acted as a junction onto the [[Hollastin Run]] route.<ref name="YouTube" />
+
+==Behind the scenes==
+In the current ''[[Star Wars]]'' [[canon]], the Pando Spur was shown on a map in "Meet the Hutts: The Galaxy's Biggest Crime Lords," a video in the ''[[Star Wars: Galaxy Guide]]'' series published on the official ''Star Wars'' [[Wikipedia:YouTube|YouTube]] channel on [[September 16]], [[2026]]. The video reused<ref name="YouTube" /> a map created by the artist [[Modi]] that originated in the reference book ''[[The Essential Atlas]]'', which was written by [[Daniel Wallace]] and Fry. and marked the [[Pando Spur|Pando Spur's]] first mention in the [[Star Wars Legends|''Star Wars'' Legends]] continuity.<ref name="TEA">''[[The Essential Atlas]]''</ref>
+
+==Sources==
+*<!-- 2026-09-16 -->{{SWYouTube|series=Star Wars: Galaxy Guide|text=Meet the Hutts: The Galaxy's Biggest Crime Lords|video=Ct977noXUVg}} {{1stm}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Hutt Space hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Pando Spur]]
+}}

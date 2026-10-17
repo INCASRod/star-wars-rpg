@@ -1,0 +1,43 @@
+{{Top}}
+{{TradeRoute
+|image=
+|name=Overic Griplink
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Outer Rim Territories]]<ref name="Bespin">{{EncyclopediaCite|Bespin and Other Planets in the Outer Rim}}</ref>
+*[[The Slice]]<ref name="The Slice" />
+|sectors=[[Calamari sector]]<ref name="Bespin" />
+|stellar=
+|endpoints=
+*[[Mon Cala]]<ref name="Bespin" />
+*[[Quermia]]<ref name="Bespin" />
+|transitpoints=
+|otherobjects=*Mon Cala<ref name="Bespin" />
+*Quermia<ref name="Bespin" />
+|junctions=[[Perlemian Trade Route]]<ref name="Bespin" />
+}}
+The '''Overic Griplink''' was a [[hyperspace route]] that ran north from the [[planet]] [[Mon Cala]] in the [[Calamari sector]] to the planet [[Quermia]],<ref name="Bespin" /> both of which were in [[the Slice]] portion<ref name="The Slice">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] places [[Mon Cala]] and [[Quermia]] in the area of [[Realspace|space]] that ''[[Star Wars: The Galactic Explorer's Guide]]'' identifies as [[the Slice]].</ref> of the [[Outer Rim Territories]].<ref name="Beginner Game">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref> At Quermia, it intersected the [[Perlemian Trade Route]], which travelers could transfer onto to travel directly into [[the galaxy]]'s interior, including the planet [[Coruscant]]. It was one of the closest major trade routes to the planet [[Atollon]] in the [[Lothal sector]], which was located south of the route.<ref name="Bespin" />
+
+Between [[5 BBY]] and [[4 BBY]],<ref name="5-4 BBY">In ''[[Star Wars: The Rebel Files]]'', the report mentioning the Overic Griplink was made between the [[mission to free Wookiee prisoners]] and the [[action at Mustafar]]. ''[[Star Wars: Timelines]]'' dates these events to [[5 BBY]] and [[4 BBY]] respectively.</ref> a classified document prepared by [[General]] [[Davits Draven]] for [[Senator]] [[Mon Mothma]] of the [[Alliance to Restore the Republic]] listed the [[Mon Cal]] resistance group as operating in [[Mon Calamari]] [[Realspace|space]] near the Overic Griplink.<ref name="Rebel Files">''[[Star Wars: The Rebel Files]]''</ref>
+
+==Behind the scenes==
+In the current ''[[Star Wars]]'' [[canon]], the Overic Griplink was first mentioned in the [[2017]] reference book ''[[Star Wars: The Rebel Files]]'', which was written by [[Daniel Wallace]].<ref name="Rebel Files" /> The [[Overic Griplink/Legends|route]] originated in the [[Star Wars Legends|''Star Wars'' Legends]] continuity, where it was first mentioned in the [[2009]] reference book ''[[The Essential Atlas]]'', which was written by Wallace and [[Jason Fry]].<ref name="Atlas">''[[The Essential Atlas]]''</ref>
+
+==Sources==
+{{Indexpage}}
+*<!-- 2017-11-21 -->''[[Star Wars: The Rebel Files]]'' {{1stm}}
+*<!-- 2021-09-21 -->{{EncyclopediaCite|Bespin and Other Planets in the Outer Rim}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|es=Overic Griplink
+|pl=Łącznik Overic
+}}
+
+[[Category:Major galactic hyperlanes]]
+[[Category:Outer Rim Territories hyperlanes]]
+[[Category:The Slice hyperlanes]]

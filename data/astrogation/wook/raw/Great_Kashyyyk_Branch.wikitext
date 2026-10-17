@@ -1,0 +1,49 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:GreatKashyyykBranch-GM.png]]
+|name=Great Kashyyyk Branch
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Inner Rim Territories]]<ref name="GM">{{GalaxyMapHyperlanes|route=Great Kashyyyk Branch|leg=''[[The Essential Atlas]]''}}</ref> - [[Expansion Region]]<ref name="BMF 60">{{BuildFalconCite|60|Guide to the Galaxy}}</ref> - [[Mid Rim Territories]]<ref name="Collapse">''[[Collapse of the Republic]]''</ref>
+*[[The Slice]]<ref name="Slice">The {{GalaxyMapPoster}} places [[Zeltros]] and the Great Kashyyyk Branch in the area of [[Realspace|space]] ''[[Star Wars: The Galactic Explorer's Guide]]'' identifies as [[the Slice]].</ref>
+|sectors=[[Ghost Nebula sector]]<ref name="BMF 60" /> - [[Mytaranor sector]]<ref name="Collapse" />
+|stellar=
+|endpoints=
+*[[Charros IV]]<ref name="GM" />
+*[[Zeltros]]<ref name="GM" />
+|transitpoints=[[Umbara system]]<ref name="BMF 60" /> - [[Kashyyyk system]]<ref name="Collapse" />
+|otherobjects=Zeltros<ref name="GM" /> - [[Umbara]]<ref name="BMF 60" /> - [[Zavian Abyss]] - [[Couronne system]]<ref name="GM" /> - [[Kashyyyk]]<ref name="Collapse" /> - [[Balamak]]<ref name="TFABG">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref> - Charros IV<ref name="GM" />
+|junctions=[[Trellen Trade Route]]<ref name="GM" /> - [[Durkteel Loop]]/[[Nightroad]]/[[Randon Run]]<ref name="Collapse" />
+}}
+The '''Great Kashyyyk Branch''' was a [[Hyperspace route|hyperlane]] located in the [[Mid Rim Territories|Mid Rim]] of [[the galaxy]].<ref name="Collapse" />
+
+{{Route-stub}}
+
+==Sources==
+*<!-- 2015-10-28 -->{{BuildFalconCite|43|Guide to the Galaxy}} {{1stm}}
+*<!-- 2016-02-24 -->{{BuildFalconCite|60|Guide to the Galaxy}}
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]
+*<!-- 2017-01-31 -->{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}} {{Po}}
+*<!-- 2019-06-28 -->''[[Collapse of the Republic]]''
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}} {{Po}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|el=Μεγάλη Διακλάδωση Κασίκ
+|es=Gran Rama de Kashyyyk
+|tr=Büyük Kashyyyk Sapağı
+}}
+
+[[Category:Expansion Region hyperlanes]]
+[[Category:Inner Rim hyperlanes]]
+[[Category:Major galactic hyperlanes]]
+[[Category:Mid Rim hyperlanes]]
+[[Category:The Slice hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Great Kashyyyk Branch]]
+}}

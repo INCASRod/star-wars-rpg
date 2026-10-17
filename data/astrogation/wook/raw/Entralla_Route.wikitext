@@ -1,0 +1,53 @@
+{{Top}}
+{{Image}}
+{{TradeRoute
+|image=
+|name=Entralla Route
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Mid Rim Territories]]<ref name="BMF 48">{{BuildFalconCite|48|Guide to the Galaxy}}</ref> - [[Outer Rim Territories]]<ref name="GM">{{GalaxyMapHyperlanes|route=Entralla Route|leg=''[[The Essential Atlas]]''}}</ref>
+*[[New Territories]]<ref name="GM" />
+|sectors=[[Bright Jewel sector|Bright Jewel]] - [[Dohu sector|Dohu]] - [[Qiilura sector|Qiilura]]<ref name="BMF 48" />
+|stellar=
+|endpoints=*[[Ord Mantell]]<ref name="GM" />
+*[[Muunilinst]]<ref name="GM">{{GalaxyMapHyperlanes|route=Entralla Route|leg=''[[The Essential Atlas]]''}}</ref> 
+|transitpoints=
+|otherobjects=*Ord Mantell<ref name="BMF 48" /> - [[Orinda]] - [[Ardennia]] - [[Carlac]] - [[Borosk system|Borosk]] - [[Yaga Minor]] - [[Entralla system|Entralla]] - Muunilinst<ref name="GM" />
+|junctions=*[[Burke's Trailing]]<ref name="Smuggler's Guide">''[[Star Wars: Smuggler's Guide]]''</ref>
+*[[Celanon Spur]]<ref name="BMF 48" />
+}}
+The '''Entralla Route''' was a [[hyperspace route]] that ran through [[the galaxy]]'s [[Mid Rim Territories|Mid Rim]].<ref name="BMF 48" /> The route ran from [[Muunilinst]] on the [[Braxant Run]]<ref name="GM" /> south to [[Ord Mantell]] in the [[Bright Jewel sector]],<ref name="Map">{{StarWarsGalaxyMap}}</ref> where it intersected with the [[Celanon Spur]]<ref name="BMF 48" /> and [[Burke's Trailing]] trade routes.<ref name="Smuggler's Guide" />
+
+{{Route-stub}}
+
+==Behind the scenes==
+The roleplaying sourcebook ''[[Nexus of Power]]'' incorrectly places [[Aleen]] on the Entralla Route,<ref name="Nexus">''[[Nexus of Power]]''</ref> but it is actually located along the [[Celanon Spur]].<ref name="Map" />
+
+==Appearances==
+*{{TBB|Infested}} {{Imo}}
+
+==Sources==
+*<!-- 2015-12-02 -->{{BuildFalconCite|48|Guide to the Galaxy}} {{1stm}}
+*<!-- 2016-03-17 -->''[[Nexus of Power]]''
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] {{Po}}
+*<!-- 2021-07-20 -->{{EncyclopediaCite|Scarif and Other Planets in the Outer Rim}}
+*<!-- 2021-09-21 -->{{EncyclopediaCite|Bespin and Other Planets in the Outer Rim}}
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}} {{Po}}
+*<!-- 2022-07-13 -->{{EncyclopediaCite|Kashyyyk and Other Planets in the Mid Rim}}
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]''
+*<!-- 2026-01-XX -->{{DarthVaderCite|73|Planets}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|es=Ruta Entralla
+|tr=Entralla Rotası
+}}
+
+[[Category:Major galactic hyperlanes]]
+[[Category:Mid Rim hyperlanes]]
+[[Category:New Territories hyperlanes]]
+[[Category:Outer Rim Territories hyperlanes]]

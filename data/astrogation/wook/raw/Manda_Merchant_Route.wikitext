@@ -1,0 +1,45 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:MandaMerchantRun-GalaxyMap.png]]
+|name=Manda Merchant Route
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Outer Rim Territories]]<ref name="RO World Locations">{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}}</ref>
+*[[Mid Rim Territories]]<ref name="Map">{{StarWarsGalaxyMap}}</ref>
+|sectors=[[Abrion sector]]<ref name="RO World Locations" />
+|stellar=
+|endpoints=*[[Molavar]]<ref name="RO World Locations" />
+*[[Bothawui]]<ref name="Map" />
+|transitpoints=
+|otherobjects=[[Scarif]]<ref name="RO World Locations" />
+|junctions=*[[Manda–Mon Gazza hyperlane]]<ref name="Map" />
+*[[Triellus Trade Route]]<ref name="Scarif" />
+}}
+The '''Manda Merchant Run'''<ref name="RO World Locations" /> or '''Manda Merchant Route'''<ref name="Scarif">{{EncyclopediaCite|Scarif and Other Planets in the Outer Rim}} </ref> was a [[Hyperspace route|hyperlane]]<ref name="RO World Locations" /> that ran from [[Bothawui]] in the [[Mid Rim Territories]] southwest to [[Manda]] and ending at [[Molavar]] in the [[Outer Rim Territories]].<ref name="Map" />
+
+{{Route-stub}}
+
+==Sources==
+*<!-- 2017-01-31 -->{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}} {{1stm}} {{ID|Manda Merchant Run}}
+*<!-- 2019-05-09 -->''[[Rise of the Separatists]]''
+*<!-- 2021-07-20 -->{{EncyclopediaCite|Scarif and Other Planets in the Outer Rim}} {{1stID|Manda Merchant Route}}
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}}
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]''
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]''
+*{{StarWarsGalaxyMap}} {{MapPoint}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|es=Corredor Mercante Manda
+|fr=Route Marchande de Manda
+|pl=Szlak Kupiecki Manda
+|tr=Manda Tüccar Kaçış Yolu
+}}
+
+[[Category:Major galactic hyperlanes]]
+[[Category:Outer Rim Territories hyperlanes]]
+[[Category:The Slice hyperlanes]]

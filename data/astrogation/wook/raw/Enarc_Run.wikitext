@@ -1,0 +1,46 @@
+{{Top}}
+{{Otheruses|Enarc}}
+{{TradeRoute
+|image=[[File:EnarcRun-GalaxyMap.png]]
+|name=Enarc Run
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Mid Rim Territories]]<ref name="Rise of the Separatists">''[[Rise of the Separatists]]''</ref>
+*[[Expansion Region]]<ref name="Map" />
+|sectors=[[Chommell sector]]<ref name="Rise of the Separatists" />
+|stellar=
+|endpoints=*[[Vondarc system]]<ref name="Map">{{StarWarsGalaxyMap}}</ref>
+*[[Enarc]]<ref name="TFA">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref>
+|transitpoints=
+|otherobjects=[[Naboo]]<ref name="Rise of the Separatists" />
+|junctions=[[Rimma Trade Route]] - [[Triellus Trade Route]]<ref name="Map" />
+}}
+The '''Enarc Run''' was a [[hyperspace route]]. The [[planet]] [[Naboo]], which was located in the [[Mid Rim Territories|Mid Rim's]] [[Chommell sector]], was one of the worlds along the route.<ref name="Rise of the Separatists" /> The route ran from the [[Vondarc system]] on the [[Rimma Trade Route]] to [[Enarc]], at a junction with the [[Triellus Trade Route]].<ref name="TFA" />
+
+==Behind the scenes==
+The Enarc Run was first mentioned in the new ''[[Star Wars]]'' [[canon]] on a map featured in the [[2016]] [[StarWars.com]] article [[Where in the Galaxy Are the Worlds of Star Wars: The Force Awakens?|Where in the Galaxy Are the Worlds of ''Star Wars: The Force Awakens''?]].<ref name="TFA Where in the Galaxy">{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-star-wars-the-force-awakens|text=Where in the Galaxy Are the Worlds of ''Star Wars: The Force Awakens''?|int=Where in the Galaxy Are the Worlds of Star Wars: The Force Awakens?}}</ref> It was originally created for the [[Star Wars Legends|''Star Wars'' Legends]] continuity, where it was first mentioned in [[Twin Stars of Kira (sourcebook)|''Twin Stars of Kira'']], a [[1993]] supplement produced for ''[[Star Wars: The Roleplaying Game]]'' by [[West End Games]].<ref name="TSoK">[[Twin Stars of Kira (sourcebook)|''Twin Stars of Kira'']]</ref>
+
+==Sources==
+*<!-- 2015-06-17 -->{{BuildFalconCite|24|Guide to the Galaxy}} {{1stm}}
+*<!-- 2016-01-29 -->{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-star-wars-the-force-awakens|text=Where in the Galaxy Are the Worlds of ''Star Wars: The Force Awakens''?|int=Where in the Galaxy Are the Worlds of Star Wars: The Force Awakens?}}
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]
+*<!-- 2019-05-09 -->''[[Rise of the Separatists]]''
+*<!-- 2025-03-11 -->''[[Star Wars: Complete Locations, New Edition]]''
+*<!-- 2025-06-17 -->''[[Star Wars: The Acolyte: The Visual Guide]]''
+*{{StarWarsGalaxyMap}} {{MapPoint}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|es=Corredor Enarc
+|ja=エナーク・ラン
+|tr=Enarc Kaçış Yolu
+}}
+
+[[Category:Expansion Region hyperlanes]]
+[[Category:Major galactic hyperlanes]]
+[[Category:Mid Rim hyperlanes]]
+[[Category:Trailing Sectors hyperlanes]]

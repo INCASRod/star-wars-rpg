@@ -1,0 +1,42 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:Incisor_Sidestep.png]]
+|name=Incisor Sidestep
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="Smuggler's Guide">''[[Star Wars: Smuggler's Guide]]''</ref>
+|sectors=*[[Anoat sector]]<ref name="Uprising" />
+*[[Brema sector|Sullust sector]]<ref name="Tarkin">[[Tarkin (novel)|''Tarkin'']]</ref>
+|stellar=
+|endpoints=
+*[[Anoat]]<ref name="Smuggler's Guide" />
+*[[Sullust]]<ref name="Smuggler's Guide" />
+|transitpoints=
+|otherobjects=Anoat - Sullust<ref name="Smuggler's Guide" />
+|junctions=*[[Corellian Trade Spine]]<ref name="Smuggler's Guide" />
+*[[Rimma Trade Route]]<ref name="Smuggler's Guide" />
+*[[Sanctuary Pipeline]]<ref name="Moving Target">''[[Moving Target: A Princess Leia Adventure]]''</ref>
+}}
+The '''Incisor Sidestep''' was a [[hyperspace route]] that connected [[Anoat]]<ref name="Smuggler's Guide" />&mdash;a [[planet]] in the [[Anoat sector]]<ref name="Uprising">''[[Star Wars: Uprising]]''</ref>&mdash;and [[Sullust]]<ref name="Smuggler's Guide" />&mdash;a [[planet]] in the [[Brema sector|Sullust sector]]<ref name="Tarkin" />&mdash;both in the [[Outer Rim Territories]] region of [[the galaxy]]. As such the route acted as a connection between the much longer [[Corellian Trade Spine]] and [[Rimma Trade Route]], as Anoat and Sullust also sat on those routes respectively.<ref name="Smuggler's Guide" />
+
+Sullust also acted as a junction from the Incisor Sidestep onto the secret [[Galactic Empire|Imperial]] [[Sanctuary Pipeline]] to the [[moon]] of [[Endor]].<ref name="Moving Target" /> The former [[pirate]] [[Queen]] [[Maz Kanata]] marked the Incisor Sidestep as one of the "real" routes for [[smuggler]]s to use, as oppose to the official ones, on a map that she included in the [[book]] that would eventually become known as the ''[[Smuggler's Guide]]''.<ref name="Smuggler's Guide" />
+
+==Behind the scenes==
+The Incisor Sidestep was first mentioned in the [[2018]] reference book ''[[Star Wars: Smuggler's Guide]]'', which was written by [[Daniel Wallace]].<ref name="Smuggler's Guide" />
+
+==Sources==
+*<!-- 2018-11-13 -->''[[Star Wars: Smuggler's Guide]]'' {{1stm}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|ja=インサイザー・サイドステップ
+|tr=Kesici Diş Atlaması
+}}
+
+[[Category:Outer Rim Territories hyperlanes]]
+[[Category:Smuggling hyperspace routes]]
+[[Category:Western Reaches hyperlanes]]

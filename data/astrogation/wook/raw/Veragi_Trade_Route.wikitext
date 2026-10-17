@@ -1,0 +1,37 @@
+{{Top}}
+{{TradeRoute
+|image=
+|name=Veragi Trade Route
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Outer Rim Territories]]<ref name="BMF 37">{{BuildFalconCite|37|Guide to the Galaxy}}</ref>
+**[[New Territories]]<ref name="BMF 37" />
+|sectors=[[Raioballo sector]]<ref name="BMF 37" />
+|stellar=
+|endpoints=[[Salin/Canon|Salin]]<ref name="Scarif Outer Rim">{{EncyclopediaCite|Scarif and Other Planets in the Outer Rim}}</ref>
+|transitpoints=[[Dantooine system|Dantooine]]<ref name="Systems">The {{GalaxyMapPoster}} places the [[star system]]s of [[Dantooine system|Dantooine]], [[Agoliba-Tu system|Agoliba-Tu]], [[Atterra system|Atterra]], and [[Refnu system|Refnu]] along a [[hyperspace route]] that {{BuildFalconCite|37|Guide to the Galaxy}} identifies as the Veragi Trade Route.</ref> - [[Agoliba-Tu system|Agoliba-Tu]]<ref name="Systems" /> - [[Atterra system|Atterra]]<ref name="Systems" /> - [[Refnu system|Refnu]]<ref name="Systems" />
+|otherobjects=[[Ord Trasi system|Ord Trasi]]<ref name="Planets">The {{GalaxyMapPoster}} places [[Ord Trasi system|Ord Trasi]], [[Belladoon]], [[Dubrillion]],[[Oru]], [[Arbiflux]], [[Sernpidal]], [[Danzik]], [[Chanceuxi]], [[Alpinn]], [[Zhadalene]], [[Sh'ung-tesk system|Sh'ung-tesk]], [[Ciutric system|Ciutric]], [[Refnu]], and [[Vinsoth]] along a [[hyperspace route]] that {{BuildFalconCite|37|Guide to the Galaxy}} identifies as the Veragi Trade Route. [[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] additionally places [[Birgis system|Birgis]], [[Bimmiel system|Bimmiel]], and [[Argazda]] along this route.</ref> - [[Dantooine]]<ref name="BMF 37" /> - [[Belladoon]]<ref name="Planets" /> - [[Dubrillion]]<ref name="Planets" /> - [[Oru]]<ref name="Planets" /> - [[Arbiflux]]<ref name="Planets" /> - [[Sernpidal]]<ref name="Planets" /> - [[Danzik]]<ref name="Planets" /> - [[Birgis system|Birgis]]<ref name="Planets" /> - [[Bimmiel system|Bimmiel]]<ref name="Planets" /> - [[Chanceuxi]]<ref name="Planets" /> - [[Alpinn]]<ref name="Planets" /> - [[Argazda]]<ref name="Planets" /> - [[Zhadalene]]<ref name="Planets" /> - [[Sh'ung-tesk system|Sh'ung-tesk]]<ref name="Planets" /> - [[Ciutric system|Ciutric]]<ref name="Planets" /> - [[Refnu]]<ref name="Planets" /> - Salin<ref name="Scarif Outer Rim" />
+|junctions=[[Myto's Arrow]]<ref name="BMF 37" /> - [[Salin Corridor]]<ref name="Scarif Outer Rim" /> - [[Braxant Run]]<ref name="Scarif Outer Rim" />
+}}
+The '''Veragi Trade Route''' was a long and winding [[hyperspace route]] that stretched through the [[New Territories]] portion of the [[Outer Rim Territories]]. It ran through the [[Dantooine system|star system]] of the [[planet]] [[Dantooine]].<ref name="BMF 37" /> The world of [[Salin/Canon|Salin]] was also located along the Veragi Trade Route, where it connected with the [[Salin Corridor]] trade route. Furthermore, the [[Braxant Run]] hyperspace route was also connected to the Veragi Trade Route.<ref name="Scarif Outer Rim" />
+
+{{Route-stub}}
+
+==Sources==
+*<!-- 2015-09-16 -->{{BuildFalconCite|37|Guide to the Galaxy}}
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]
+*<!-- 2021-07-20 -->{{EncyclopediaCite|Scarif and Other Planets in the Outer Rim}}
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Major galactic hyperlanes]]
+[[Category:New Territories hyperlanes]]
+[[Category:Outer Rim Territories hyperlanes]]
+
+{{RelatedCategories
+|[[Category:Locations along the Veragi Trade Route]]
+}}

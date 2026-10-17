@@ -1,0 +1,68 @@
+{{Top}}
+{{Otheruses|Vaathkree|more=Corridor}}
+{{TradeRoute
+|image=[[File:VaathkreeTradeCorridor-GM.png]]
+|name=Vaathkree Trade Corridor
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=*[[Expansion Region]]<ref name="GM">{{GalaxyMapHyperlanes|route=Vaathkree Trade Corridor|leg=''[[The Essential Atlas]]''}}</ref> - [[Inner Rim Territories]]<ref name="AotG">''[[Star Wars: Aliens of the Galaxy]]''</ref> - [[Mid Rim Territories]]<ref name="GM" />
+*[[New Territories]]<ref name="NewTerritories">The {{GalaxyMapPoster}} places [[Obroa-skai]], [[Ubduria]], and part of the Vaathkree Trade Corridor in the area of [[Realspace|space]] ''[[Star Wars: The Galactic Explorer's Guide]]'' identifies as the [[New Territories]].</ref>
+|sectors=[[Nouane sector]]<ref name="Knights of Fate">''[[Knights of Fate]]''</ref>
+|stellar=
+|endpoints=
+*[[Corsin]]<ref name="TFABG">[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]]</ref>
+*[[Gizer]]<ref name="GM" />
+|transitpoints=*[[Obroa-skai system]]<ref name="Tarkin">[[Tarkin (novel)|''Tarkin'']], based on corresponding data for [[Obroa-skai]].</ref> - [[Montross system]]<ref name="Dawn">''[[Dawn of Rebellion]]'', based on corresponding data for [[Montross]].</ref>
+*[[Telerath system]]<ref name="Knights of Fate" />
+|otherobjects=*Corsin<ref name="TFABG" /> - [[Ubduria]]<ref name="GM" /> - [[Obroa-skai]]<ref name="GM" /> - [[Contruum]]<ref name="GM" /> - [[Montross]]<ref name="GM" /> - Gizer<ref name="GM" />
+*[[Telerath]]<ref name="Knights of Fate" />
+|junctions=[[Hydian Way]]<ref name="TFABG" /> - [[Perlemian Trade Route]]<ref name="GM" />
+}}
+The '''Vaathkree Trade Corridor''' was a [[hyperspace route]] that ran between the celestial body [[Corsin]] on the [[Hydian Way]] and the astronomical object [[Gizer]] on the [[Perlemian Trade Route]]. It passed through the [[Expansion Region]], [[Inner Rim Territories]], [[Mid Rim Territories]], and [[New Territories]]. [[Galactic Republic]] [[scout ship]]s traveled up the route before discovering the [[Ubdurian]] [[Ubdurians' empire|trade empire]].
+
+==Description==
+The Vaathkree Trade Corridor was a [[hyperspace route]] that shared its name<ref name="AotG" /> with the [[Outer Rim Territories]] astronomical object [[Vaathkree system|Vaathkree]].<ref name="TFABG" /> One terminus of the route was the [[Expansion Region]] celestial body [[Corsin]] on the [[Hydian Way]].<ref name="TFABG" /> The trade route ran from Corsin to<ref name="GM" /> the [[Ubdurian]] [[homeworld]]<ref name="AA">''[[Star Wars: Alien Archive]]''</ref> [[Ubduria]] in the [[Inner Rim Territories]], which in turn linked to [[Obroa-skai]],<ref name="GM" /> a [[planet]] in the Inner Rim's [[Obroa-skai system]].<ref name="Tarkin" /> Both these locations also fell within the [[New Territories]] region of [[the galaxy]].<ref name="NewTerritories" />
+
+From there, the route passed through the Expansion Region again and then over the border into the [[Mid Rim Territories]], where it passed through the celestial body [[Contruum]] and [[Montross]], a planet located in the [[Montross system]],<ref name="Dawn" /> before terminating at [[Gizer]], an astronomical object on the [[Perlemian Trade Route]].<ref name="GM" /> The planet [[Telerath]] in the [[Nouane sector]]'s [[Telerath system]] also fell somewhere along the Inner Rim portion of the route.<ref name="Knights of Fate" /> The Vaathkree Trade Corridor fell within squares M-7, N-7, N-8, O-8, and P-8 of the [[Standard Galactic Grid]].<ref name="GM" />
+
+==History==
+[[Scout ship]]s from the [[Galactic Republic]] traveled along the Vaathkree Trade Corridor before discovering the territory of the Ubdurians' [[Ubdurians' empire|trade empire]].<ref name="AotG" />
+
+==Behind the scenes==
+[[File:Carest_space.png|thumb|right|300px|The Vaathkree Trade Corridor originated in the ''Star Wars'' Legends continuity.]]
+In the current ''[[Star Wars]]'' [[canon]], the Vaathkree Trade Corridor was first pictured in "The History of Neimoidia," an article in the "[[Guide to the Galaxy]]" department of the [[Star Wars: Build the Millennium Falcon 52|fifty-second]] issue of the ''[[Star Wars: Build the Millennium Falcon]]'' magazine,<ref name="BMF 52">{{BuildFalconCite|52|Guide to the Galaxy}}</ref> published around [[December 30]], [[2015]].<ref name="BMFdate">{{BuildFalconDates|52}}</ref> The route was first identified in ''[[Star Wars: Aliens of the Galaxy]]'', a [[2016]] reference book written by [[Jason Fry]].<ref name="AotG" />
+
+The [[Vaathkree Trade Corridor/Legends|Vaathkree Trade Corridor]] originated in the [[Star Wars Legends|''Star Wars'' Legends]] continuity, where it was first mentioned in "[[Heroes Need Not Apply]]," an article written by [[Tony Russo|Anthony P. Russo]] and [[Eric S. Trautmann]] and published by [[West End Games]] in the [[Star Wars Adventure Journal 12|twelfth issue]] of the ''[[Star Wars Adventure Journal]]'' series in [[February]], [[1997]].<ref name="SWAJ12">{{JournalCite|12|Heroes Need Not Apply}}</ref> It was then depicted for the first time in the [[2009]] reference book ''[[The Essential Atlas]]'', which was written by [[Jason Fry]] and [[Daniel Wallace]].<ref name="TEA">''[[The Essential Atlas]]''</ref>
+
+==Appearances==
+*[[The High Republic Adventures (2021) 1|''The High Republic Adventures'' (2021) 1]] {{MapPoint|unnamed=1}}
+
+==Sources==
+*<!-- 2015-12-30 -->{{BuildFalconCite|52|Guide to the Galaxy}} {{1stp}}
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] {{MapPoint}}
+*<!-- 2016-08-23 -->''[[Star Wars: Aliens of the Galaxy]]'' {{1stID|Vaathkree Trade Corridor}}
+*<!-- 2018-06-21 -->''[[Knights of Fate]]''
+*<!-- 2020-12-12 -->''[[The High Republic Free Digital Sampler]]'' {{MapPoint|unnamed=1}}
+*<!-- 2021-04-20 -->{{EncyclopediaCite|The First Order}} {{MapPoint}}
+*<!-- 2021-06-29 -->{{EncyclopediaCite|The Battle of Endor and the Fall of the Empire}} {{MapPoint}}
+*<!-- 2021-07-20 -->{{EncyclopediaCite|Scarif and Other Planets in the Outer Rim}} {{MapPoint}}
+*<!-- 2022-03-11 -->{{EncyclopediaCite|Exegol, the Unknown Regions and Wild Space}} {{MapPoint}}
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}} {{MapPoint}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|es=Corredor Comercial Vaathkree
+|fr=Corridor d'échange de Vaathkree
+|pl=Vaathkreeański Korytarz Handlowy
+|tr=Vaathkree Ticaret Koridoru
+}}
+
+[[Category:Expansion Region hyperlanes]]
+[[Category:Inner Rim hyperlanes]]
+[[Category:Major galactic hyperlanes]]
+[[Category:Mid Rim hyperlanes]]
+[[Category:New Territories hyperlanes]]

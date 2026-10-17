@@ -1,0 +1,22 @@
+{{Top}}
+{{Quote|We called it ''Jozanna Tock Na Du'' in Shani. It's something like the Inverted Path or the Path of Contradictions.''"<br />"''What's there?''"<br />"''It's a place beyond logic, where the rules of the galaxy don't always apply.|Deva Lompop and Vernestra Rwoh|<ref name="Defy the Storm">''[[The High Republic: Defy the Storm]]''</ref>}}
+The '''Inverted Path''', along with the '''Path of Contradictions''', was a possible translation for the [[Shani (language)|Shani]] term '''''Jozanna Tock Na Du''''', referring to a [[hyperspace]] [[Path]] that supposedly led beyond the edge of [[Wild Space]]. According to [[Shani]] legends known to [[Deva Lompop]], the Path's destination was a dangerous place that defied logic and the rules of [[the galaxy]], but contained many riches. An expedition that managed to return alive from the Path told stories of ravenous creatures and [[plant]]s.<ref name="Defy the Storm" />
+
+The Path was given to [[Jedi Knight]] [[Vernestra Rwoh]] by [[Mari San Tekka]] [[Battle at Gravity's Heart|aboard]] the [[Nihil]] ''[[Gravity's Heart]]'' [[space station]] before the latter [[Death|passed away]]. Rwoh, who was unsure of the cause behind her connection with San Tekka, saw the Path in her mind, knowing it led to a place beyond the edge of [[the galaxy]] where no one had gone for a long [[time]].<ref name="Out of the Shadows">''[[The High Republic: Out of the Shadows]]''</ref> The [[Jedi]] Knight continued to have [[Force vision|visions]] of San Tekka regarding the Path; although Rwoh could write the coordinates or enter them into a [[Navigation computer|navicomputer]], she could not say them aloud, as if her [[brain]] had a block in accessing the information. Rwoh drew the coordinates to Lompop in the dirt on the [[planet]] [[Takodana]], and although a mysterious breeze picked up and erased the writing shortly afterwards, the Shani recognized the coordinates, informing the Jedi Knight of the tales she had heard.<ref name="Defy the Storm" />
+
+{{Stub}}
+
+==Appearances==
+*''[[The High Republic: Out of the Shadows]]'' {{Ab|The High Republic: Out of the Shadows (audiobook)}} {{1stm}}
+*{{StoryCite|story=The Force Provides|book=The High Republic: Tales of Light and Life|audiobook=1}} {{Imo}}
+*''[[The High Republic: Defy the Storm]]'' {{Ab|The High Republic: Defy the Storm (audiobook)}} {{Mo}} {{1stID|Inverted Path}}
+*''[[The High Republic: Tears of the Nameless]]'' {{Ab|The High Republic: Tears of the Nameless (audiobook)}} {{Imo}}
+*''[[The High Republic: Trials of the Jedi]]'' {{Ab|The High Republic: Trials of the Jedi (audiobook)}} {{1st}}
+
+==Sources==
+*<!-- 2023-11-09 -->''[[Star Wars: The High Republic Character Encyclopedia]]'' {{Imo}}
+
+==Notes and references==
+{{Reflist}}
+
+[[Category:Hyperlanes]]

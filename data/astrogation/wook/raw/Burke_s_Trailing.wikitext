@@ -1,0 +1,45 @@
+{{Top}}
+{{TradeRoute
+|image=[[File:Burkes_Trailing.png]]
+|name=Burke's Trailing
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]] - [[Expansion Region]] - [[Mid Rim Territories|Mid Rim]] - [[Inner Rim Territories|Inner Rim]]<ref name="Smuggler's Guide">''[[Star Wars: Smuggler's Guide]]''</ref>
+|sectors=[[Terrabe sector|Terrabe]]<ref name="RO World Locations">{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}}</ref> - [[Bright Jewel sector|Bright Jewel]]<ref name="USW">''[[Ultimate Star Wars]]''</ref>
+|stellar=
+|endpoints=*[[Ponemah Terminal]]<ref name="Smuggler's Guide" />
+*[[Ord Mantell]]<ref name="Smuggler's Guide" />
+|transitpoints=
+|otherobjects=Ponemah Terminal - [[Jakku]] - [[Adrathorpe system|Adrathorpe]] - [[Jedha]] - Ord Mantell<ref name="Smuggler's Guide" />
+|junctions=
+}}
+'''Burke's Trailing''',<ref name="Smuggler's Guide" /> also known as '''Burke's Trail''',<ref name="Encyclopedia">{{EncyclopediaCite|Kashyyyk and Other Planets in the Mid Rim}}</ref> was a [[hyperspace]] [[Hyperspace route|trade route]] that the former [[pirate]] [[Queen]] [[Maz Kanata]] marked on a map as one of the "real" trade routes for [[smuggler]]s to use, rather than the official ones, in the [[book]] that would eventually become known as the ''[[Smuggler's Guide]]''. One end of the route began with the [[Ponemah Terminal]] in the [[Outer Rim Territories]], which the route then passed through the [[Expansion Region]] and [[Mid Rim Territories|Mid Rim]] to connect with the [[planet]] [[Jakku]] in the [[Inner Rim Territories|Inner Rim]]. It then passed back out to [[Adrathorpe system|Adrathorpe]] in the Expansion Region, then on to the [[moon]] [[Jedha]] in the Mid Rim before terminating at [[Ord Mantell]].<ref name="Smuggler's Guide" />
+
+==Behind the scenes==
+Burke's Trailing was first mentioned in the [[2018]] reference book ''[[Star Wars: Smuggler's Guide]]'', which was written by [[Daniel Wallace]].<ref name="Smuggler's Guide" />
+
+==Appearances==
+*{{TBB|Infested}} {{Imo}}
+
+==Sources==
+*<!-- 2018-11-13 -->''[[Star Wars: Smuggler's Guide]]'' {{1stm}}
+*<!-- 2022-07-13 -->{{EncyclopediaCite|Kashyyyk and Other Planets in the Mid Rim}} {{1stID|Burke's Trail}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|de=Burkes Fährte
+|ja=バークの航跡
+|tr=Burke'nin Seyri
+}}
+
+[[Category:Expansion Region hyperlanes]]
+[[Category:Inner Rim hyperlanes]]
+[[Category:Mid Rim hyperlanes]]
+[[Category:New Territories hyperlanes]]
+[[Category:Outer Rim Territories hyperlanes]]
+[[Category:Smuggling hyperspace routes]]
+[[Category:Western Reaches hyperlanes]]

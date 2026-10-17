@@ -1,0 +1,45 @@
+{{Top}}
+{{Image}}
+{{TradeRoute
+|image=
+|name=Salin Corridor
+|founded=
+|founders=
+|dissolved=
+|eras=
+|regions=[[Outer Rim Territories]]<ref name="RO World Locations">{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}}</ref>
+|sectors=[[Belderone sector|Belderone]]<ref name="BMF 75">{{BuildFalconCite|75|Guide to the Galaxy}}</ref> - [[Mandalore sector|Mandalore]]<ref name="Tarkin">[[Tarkin (novel)|''Tarkin'']]</ref> - [[Belsmuth sector|Belsmuth]]<ref name="RO World Locations" /> - [[Vorzyd sector|Vorzyd]]<ref name="NOP">''[[Nexus of Power]]''</ref>
+|stellar=
+|endpoints=[[Salin/Canon|Salin]]<ref name="Scarif Outer Rim">{{EncyclopediaCite|Scarif and Other Planets in the Outer Rim}}</ref>
+|transitpoints=
+|otherobjects=[[Boonta]]<ref name="Planets">The {{GalaxyMapPoster}} places [[Boonta]], [[Sy Myrth]], [[Quell]], [[Yalbec Prime]], [[Nag Ubdur]], [[Raydonia]], [[Botajef]], [[varkana]], and [[Vinsoth]] along what {{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}} identifies as the Salid Corridor. [[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] additionally places [[Belderone]], [[Columex]], [[Lucazec]], [[Vjun]], and [[Phindar]] along this route.</ref> - [[Sy Myrth]]<ref name="Planets" /> - [[Trogan]]<ref name="Planets" /> - [[Belderone]]<ref name="Planets" /> - [[Lola Sayu]]<ref name="BMF 75" /> - [[Columex]]<ref name="Planets" /> - [[Auratera]]<ref name="NOP" /> [[Quell]]<ref name="Planets" /> - [[Lucazec]]<ref name="Planets" /> - [[Vjun]]<ref name="Planets" /> [[Yalbec Prime]]<ref name="Planets" /> - [[Nag Ubdur]]<ref name="Planets" /> - [[Phindar]]<ref name="Planets" /> [[Raydonia]]<ref name="Planets" /> - [[Botajef]]<ref name="Planets" /> - [[Varkana]]<ref name="Planets" /> - [[Vinsoth]]<ref name="Planets" /> - Salin<ref name="Scarif Outer Rim" />
+|junctions=[[Perlemian Trade Route]]<ref name="RO World Locations" /> - [[Hydian Way]]<ref name="RO World Locations" />
+}}
+The '''Salin Corridor''' was a [[hyperspace route]] in the [[Outer Rim Territories]].<ref name="RO World Locations" /> The [[planet]] [[Dathomir]] was in the region of the Salin Corridor and the [[Hydian Way]].<ref name="Dawn">''[[Dawn of Rebellion]]''</ref> The planet [[Quell]] was also positioned on the Salin Corridor.<ref name="BMF 75" />
+
+==Appearances==
+*''[[Friends Like These]]'' {{Mo}}
+*''[[Ghosts of Dathomir]]'' {{Mo}}
+
+==Sources==
+*<!-- 2016-03-17 -->''[[Nexus of Power]]'' {{1stm}}
+*<!-- 2016-08-04 -->[[Star Wars: The Force Awakens Beginner Game|''Star Wars: The Force Awakens'' Beginner Game]] {{1stp}}
+*<!-- 2017-01-31 -->{{SW|url=news/where-in-the-galaxy-are-the-worlds-of-rogue-one|text=Where in the Galaxy Are the Worlds of ''Rogue One''?|int=Where in the Galaxy Are the Worlds of Rogue One?}}
+*<!-- 2018-02-22 -->''[[Dawn of Rebellion]]''
+*<!-- 2019-06-28 -->''[[Collapse of the Republic]]''
+*<!-- 2021-07-20 -->{{EncyclopediaCite|Scarif and Other Planets in the Outer Rim}}
+*<!-- 2021-11-02 -->''[[Star Wars: Battles that Changed the Galaxy]]''
+*<!-- 2022-05-27 -->{{GalaxyMapPoster}}
+
+==Notes and references==
+{{Reflist}}
+
+{{Interlang
+|es=Corredor Salin
+|tr=Salin Koridoru
+}}
+
+[[Category:Major galactic hyperlanes]]
+[[Category:New Territories hyperlanes]]
+[[Category:Outer Rim Territories hyperlanes]]
+[[Category:The Slice hyperlanes]]
