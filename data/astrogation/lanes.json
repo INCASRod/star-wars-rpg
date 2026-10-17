@@ -31,8 +31,8 @@
    2425.0,
    2696.0
   ],
-  "stop_count": 3,
-  "named_stops": 3,
+  "stop_count": 2,
+  "named_stops": 2,
   "waypoints": 0,
   "stops": [
    {
@@ -41,14 +41,9 @@
     "name": "Milagro"
    },
    {
-    "id": "new-cov-p-14",
+    "id": "kalarba-p-15",
     "named": true,
-    "name": "New Cov"
-   },
-   {
-    "id": "druckenwell-p-15",
-    "named": true,
-    "name": "Druckenwell"
+    "name": "Kalarba"
    }
   ],
   "note": null
@@ -86,10 +81,15 @@
    2123.0,
    3008.0
   ],
-  "stop_count": 2,
-  "named_stops": 2,
+  "stop_count": 3,
+  "named_stops": 3,
   "waypoints": 0,
   "stops": [
+   {
+    "id": "wroona-l-15",
+    "named": true,
+    "name": "Wroona"
+   },
    {
     "id": "vandelhelm-m-15",
     "named": true,
@@ -111,8 +111,8 @@
    2588.0,
    1317.0
   ],
-  "stop_count": 5,
-  "named_stops": 5,
+  "stop_count": 3,
+  "named_stops": 3,
   "waypoints": 0,
   "stops": [
    {
@@ -129,16 +129,6 @@
     "id": "toprawa-p-5",
     "named": true,
     "name": "Toprawa"
-   },
-   {
-    "id": "celanon-o-6",
-    "named": true,
-    "name": "Celanon"
-   },
-   {
-    "id": "botajef-o-6",
-    "named": true,
-    "name": "Botajef"
    }
   ],
   "note": null

@@ -20,9 +20,11 @@ Method (no line following: a label or dot over a lane cannot break anything, it 
                    (b) RADIAL ARRIVAL at both ends: the lane in the last 12 px before the measured rim points at the dot centre
                    within 25 deg (a lane that terminates at a dot arrives radially; one that passes BESIDE a dot is tangential);
                    (c) path length / chord <= 1.35; (d) the path never enters a third dot's radius; (e) >= 60% of the path
-                   beyond the two rims is visible (not occluded); (f) NO KINK: the heading never changes by more than 40 deg over
-                   12 px outside the rim zones (measured rim + 12 px at each end) - a bend there is a hop between lanes at a
-                   crossing; inside the rim zones it is arrival geometry. Visible < 60% = AMBIGUOUS, else REJECTED.
+                   beyond the two rims is visible (not occluded); (f) CONTINUITY: the path never crosses more than MAX_BG_GAP_PX (3 px)
+                   of contiguous BACKGROUND (neither lane nor occluded) beyond the two rims. Occluded pixels are not background and
+                   reset the run. A hop between two lanes that run close and parallel must cross background, so it fails here.
+                   The smoothed heading change ('kink') is still measured and stored, as a diagnostic only.
+                   Visible < 60% = AMBIGUOUS, else REJECTED.
   6. short gap   - dots whose measured rims are < 6 px apart have no testable gap. Decided in a FINAL pass, from the accepted
                    edges around them: accept A-B only if an accepted edge X-A arrives radially at A, an accepted edge B-Y leaves B
                    radially, and X-A, A-B, B-Y are collinear within 25 deg (tagged short_gap).
@@ -42,6 +44,7 @@ from scipy.spatial import Delaunay, cKDTree
 
 import colour_gate
 import markers as mk_mod
+import networks
 
 SIGMAS = (1.5, 2.5, 3.5, 4.5)
 STRENGTH_T = 45.0       # ridge-strength threshold (calibrated; reported in report.json)
@@ -56,13 +59,14 @@ LANE_FRAC_MIN = 0.85    # (a)
 ARRIVAL_WINDOW_PX = 12  # (b) the lane examined before each measured rim
 ARRIVAL_DEG = 25        # (b) max angle between the lane's direction and the direction to the dot centre
 MAX_PATH_RATIO = 1.35   # (c) a lane may bend, it may not wander
-MAX_KINK_DEG = 40       # (f) heading change over KINK_WINDOW_PX anywhere outside the rim zones rejects the edge
+MAX_KINK_DEG = 40       # DIAGNOSTIC ONLY (no longer a decision): heading change over KINK_WINDOW_PX anywhere outside the rim zones rejects the edge
 KINK_WINDOW_PX = 12
 SMOOTH_SIGMA_PX = 4.5   # Gaussian smoothing of the path coordinates (endpoints pinned); ALL directions come from this curve
-KINK_SWEEP = (40, 50, 60, 70, None)   # candidate kink thresholds; the lowest meeting the selection rule is used (None = no kink rule)
+MAX_BG_GAP_PX = 3.0     # (f) longest contiguous background run (arc length, px) a path may cross. DECISION value.
+GAP_SENSITIVITY = (2.0, 3.0, 5.0)   # report-only table; the decision stays at MAX_BG_GAP_PX
 NO_CONTRAST = bool(os.environ.get('ASTRO_NO_CONTRAST'))   # diagnostics only: skip the two-sided contrast gate
 GRID_CHEAP = bool(os.environ.get('ASTRO_GRID_CHEAP'))     # diagnostics only: the old cost (gridlines as cheap as any occluded pixel)
-KINK_ZONE_PX = 12       # (f) rim zone = measured rim + this many px, at each end
+KINK_ZONE_PX = 12       # diagnostic kink: rim zone = measured rim + this many px, at each end
 CONTRAST_MIN = 15.0     # two-sided contrast: lane whiteness must exceed BOTH flanks by this much
 CONTRAST_FLANK = 1.5    # ... flanks sampled at this x the local lane half-width (min 2 px) either side
 MARKER_RADIUS_PX = 80   # route markers sit ON the lane and occlude it: look for major edges this far from the marker
@@ -323,6 +327,26 @@ def _arrival(sel, px, C, lane, occp, o_best, outward_last):
             'lane_px': int(len(ls)), 'vis': vis}
 
 
+def _bg_run(cls, path_oi):
+    """Longest contiguous BACKGROUND run along the path, in px of arc length, and its (first, last) pixel indices. `cls` per path pixel beyond the rims: 0 lane,
+    1 background, 2 occluded. Occluded and lane pixels both end a run. A run of k pixels spans the arc from its first to its last
+    pixel plus one pixel, so a single background pixel is 1 px."""
+    if len(cls) == 0:
+        return 0.0, None
+    seg = np.r_[0.0, np.hypot(*np.diff(path_oi, axis=0).T)]
+    s = np.cumsum(seg)
+    best, start, span = 0.0, None, None
+    for k, c in enumerate(cls):
+        if c == 1:
+            if start is None:
+                start = k
+            if float(s[k] - s[start]) + 1.0 > best:
+                best, span = float(s[k] - s[start]) + 1.0, (start, k)
+        else:
+            start = None
+    return best, span
+
+
 def test_pair(i, j, G):
     """Minimum-cost path between the measured rims of dots i and j, judged by criteria (a)-(e) in the module docstring.
     -> metrics dict (status is derived later by classify(), so the visibility floor can be varied for the report)."""
@@ -332,7 +356,7 @@ def test_pair(i, j, G):
     A, B = P[i], P[j]
     L = float(np.hypot(*(B - A)))
     if L - RIM[i] - RIM[j] < SHORT_GAP_PX:                       # untestable gap: decided later from the accepted neighbours
-        return {'short_gap': True, 'pending': True, 'ok_other': False, 'ok_wo_kink': False, 'fail': ['short_gap_pending'], 'score': 0.0, 'visible': 1.0,
+        return {'short_gap': True, 'pending': True, 'ok_other': False, 'fail': ['short_gap_pending'], 'score': 0.0, 'visible': 1.0, 'bg_run': 0.0, 'ok_wo_gap': False,
                 'ratio': 1.0, 'arc': False, 'kinked': False, 'kink_deg': 0.0, 'kink_xy': None, 'pts': np.array([A, B]).round().astype(np.int16),
                 'mpts': np.zeros((0, 2)), 'mtang': np.zeros(0), 'mmask': np.zeros(0, bool), 'gap_px': round(L - RIM[i] - RIM[j], 2)}
     H, W = G['cost'].shape
@@ -355,11 +379,12 @@ def test_pair(i, j, G):
     out = (dA > RIM[i]) & (dB > RIM[j])                         # beyond BOTH measured rims
     oi = np.nonzero(out)[0]
     kink_deg, kink_xy = _kink(path, ang_all, (dA <= RIM[i] + KINK_ZONE_PX) | (dB <= RIM[j] + KINK_ZONE_PX))
-    rec = {'short_gap': False, 'pending': False, 'ratio': ratio, 'arc': bool(ratio > 1.03), 'kinked': bool(kink_deg > MAX_KINK_DEG),
+    rec = {'short_gap': False, 'pending': False, 'ratio': ratio, 'arc': bool(ratio > 1.03), 'kinked': bool(kink_deg > MAX_KINK_DEG),   # kinked = diagnostic flag only
+           
            'kink_deg': kink_deg, 'kink_xy': kink_xy, 'pts': path.round().astype(np.int16)}
     if len(oi) < 4:
-        return {**rec, 'ok_other': False, 'ok_wo_kink': False, 'fail': ['no_path_outside_dots'], 'score': 0.0, 'visible': 0.0,
-                'mpts': np.zeros((0, 2)), 'mtang': np.zeros(0), 'mmask': np.zeros(0, bool), 'arr': None}
+        return {**rec, 'ok_other': False, 'ok_wo_gap': False, 'fail': ['no_path_outside_dots'], 'score': 0.0, 'visible': 0.0, 'bg_run': 0.0,
+                'cls': np.zeros(0, np.uint8), 'bg_span': None, 'mpts': np.zeros((0, 2)), 'mtang': np.zeros(0), 'mmask': np.zeros(0, bool), 'arr': None}
     px, ang = path[oi], ang_all[oi]
     xi = np.clip(px[:, 0].round().astype(int), 0, W - 1)
     yi = np.clip(px[:, 1].round().astype(int), 0, H - 1)
@@ -373,6 +398,8 @@ def test_pair(i, j, G):
     dif = np.abs(np.angle(np.exp(2j * (o_best - ang)))) / 2
     lane = (s9[ar, b9] > STRENGTH_T) & (dif <= ORI_TOL)                       # colour-gated ridge, oriented along the path
     vis = ~occp
+    cls = np.where(occp, 2, np.where(lane, 0, 1)).astype(np.uint8)
+    bg_run, bg_span = _bg_run(cls, px)
     nvis = int(vis.sum())
     visible = nvis / len(oi)
     lane_frac = float((lane & vis).sum() / nvis) if nvis else 0.0
@@ -391,27 +418,28 @@ def test_pair(i, j, G):
                                    ('arrival_a', not (arr_a['radial'] or arr_a['unknown'])),
                                    ('arrival_b', not (arr_b['radial'] or arr_b['unknown'])),
                                    ('path_ratio', ratio > MAX_PATH_RATIO), ('third_dot', third)) if bad]
-    return {**rec, 'ok_other': not fail, 'ok_wo_kink': not fail, 'fail': fail, 'score': lane_frac, 'visible': visible, 'arr': {'a': arr_a, 'b': arr_b},
-            'mpts': px, 'mtang': ang, 'mmask': lane & vis & (ar % 2 == 0)}
+    return {**rec, 'ok_other': not fail, 'ok_wo_gap': not fail, 'fail': fail, 'score': lane_frac, 'visible': visible, 'arr': {'a': arr_a, 'b': arr_b},
+            'bg_run': bg_run, 'bg_span': bg_span, 'cls': cls, 'mpts': px, 'mtang': ang, 'mmask': lane & vis & (ar % 2 == 0)}
 
 
-def apply_kink(R, th):
-    """Set the kink verdict on every tested pair for threshold `th` degrees (None = no kink rule). Pure bookkeeping on stored metrics."""
+def apply_gap(R, th):
+    """Set the continuity verdict on every tested pair for max background run `th` px (None = no continuity rule). Pure bookkeeping on
+    stored metrics. 'continuity' is only recorded as the failure when every other criterion passed (so it is the reason, alone)."""
     for r in R.values():
-        if r.get('pending') or 'ok_wo_kink' not in r:
+        if r.get('pending') or 'ok_wo_gap' not in r:
             continue
-        kinked = bool(th is not None and r.get('kink_deg', 0.0) > th)
-        r['kinked'] = kinked
-        r['fail'] = [f for f in r['fail'] if f != 'kink'] + (['kink'] if kinked and r['ok_wo_kink'] else [])
-        r['ok_other'] = bool(r['ok_wo_kink'] and not kinked)
+        broken = bool(th is not None and r.get('bg_run', 0.0) > th)
+        r['broken'] = broken
+        r['fail'] = [f for f in r['fail'] if f != 'continuity'] + (['continuity'] if broken and r['ok_wo_gap'] else [])
+        r['ok_other'] = bool(r['ok_wo_gap'] and not broken)
 
 
-def classify(r, vis_min=VIS_MIN, ignore_kink=False):
+def classify(r, vis_min=VIS_MIN, ignore_gap=False):
     if r.get('pending'):
         return 'pending'
     if r['visible'] < vis_min:
         return 'ambiguous'
-    return 'accepted' if (r['ok_other'] or (ignore_kink and r.get('ok_wo_kink'))) else 'rejected'
+    return 'accepted' if (r['ok_other'] or (ignore_gap and r.get('ok_wo_gap'))) else 'rejected'
 
 
 # ------------------------------------------------------------------ short-gap final pass
@@ -450,6 +478,22 @@ def short_gap_pass(res, acc_keys, P):
                     best = (worst, x, y)
         out[(i, j)] = {'accepted': best is not None, 'x': None if best is None else best[1], 'y': None if best is None else best[2],
                        'worst_angle_deg': None if best is None else round(float(np.rad2deg(best[0])), 1), 'candidates': n_cand}
+    return out
+
+
+# ------------------------------------------------------------------ adjudications
+def load_adjudications(path, id2j, candidate_keys):
+    """data/astrogation/adjudications.json: [{a, b, verdict: 'edge'|'no_edge', by, note}] with a, b node ids. -> {(i, j): record}.
+    A missing file is an empty list. An unknown id, a bad verdict or a pair that is not a tested candidate is an error, never skipped."""
+    if not os.path.exists(path):
+        return {}
+    out = {}
+    for r in json.load(open(path)):
+        assert r['verdict'] in ('edge', 'no_edge'), f"adjudication {r}: verdict must be 'edge' or 'no_edge'"
+        assert r['a'] in id2j and r['b'] in id2j, f"adjudication {r}: unknown node id"
+        k = tuple(sorted((id2j[r['a']], id2j[r['b']])))
+        assert k in candidate_keys, f"adjudication {r}: pair is farther apart than the 2-cell candidate range"
+        out[k] = r
     return out
 
 
@@ -719,14 +763,15 @@ def run_edge_stage(im, tf, D, asg, systems, out, label, lines, labels, cal, out_
     pairs_del = set(candidates(D, 'delaunay')[0])
     R_ = test_pairs(F, pairs_all, log=log)
 
-    # ---- kink threshold chosen BY RULE: lowest of KINK_SWEEP with Gate B largest >= 70% AND zero Gate-A must-not pairs accepted
+    # ---- continuity rule: decision at MAX_BG_GAP_PX; the same table at GAP_SENSITIVITY is REPORT ONLY (the decision does not read it)
     MUST_NOT = [('Kessel', 'Formos')] + [(x, y) for x in ('Vardos', 'Aargau', 'Fedalle', 'Trellen', 'Rendili')
                                          for y in ('Coruscant', "Bar'leth", 'Hodi', 'Corellia')]
     MUST_BE = [("Coruscant", "Bar'leth"), ("Bar'leth", 'Hodi'), ('Hodi', 'Corellia')]
     kessel_j = name2j.get('Kessel')
+    key = lambda a, b: (min(name2j[a], name2j[b]), max(name2j[a], name2j[b]))
     sweep_rows = []
-    for th in KINK_SWEEP:
-        apply_kink(R_, th)
+    for th in GAP_SENSITIVITY + (None,):
+        apply_gap(R_, th)
         Tf = {k: {**v, 'status': classify(v, VIS_MIN)} for k, v in R_.items()}
         drop = {k for k, _ in no_skipping(Tf, F['P'], F['tree'])}
         acc = [k for k, v in Tf.items() if v['status'] == 'accepted' and k not in drop]
@@ -734,31 +779,24 @@ def run_edge_stage(im, tf, D, asg, systems, out, label, lines, labels, cal, out_
         acc = set(acc) | {k for k, v in sgk.items() if v['accepted']}
         nodes_c = {n for (i, j) in acc for n in (ids[i], ids[j])}
         sizes = sorted(components(nodes_c, [(ids[i], ids[j]) for i, j in acc]).values(), reverse=True)
-        key = lambda a, b: (min(name2j[a], name2j[b]), max(name2j[a], name2j[b]))
         bad = [f'{a} - {b}' for a, b in MUST_NOT if a in name2j and b in name2j and key(a, b) in acc]
         if kessel_j is not None and any(kessel_j in k for k in acc):
             bad.append('Kessel has an edge')
         frac = sizes[0] / len(nodes_c) if nodes_c else 0.0
-        sweep_rows.append({'threshold_deg': th, 'accepted': len(acc), 'connected_nodes': len(nodes_c), 'components': len(sizes),
+        alone = sum(1 for v in R_.values() if not v.get('pending') and v['visible'] >= VIS_MIN and v.get('ok_wo_gap') and not v['ok_other'])
+        fc = ('Fedalle' in name2j and 'Coruscant' in name2j) and key('Fedalle', 'Coruscant') in acc
+        sweep_rows.append({'max_background_gap_px': th, 'accepted': len(acc), 'connected_nodes': len(nodes_c), 'components': len(sizes),
                            'largest': sizes[0] if sizes else 0, 'largest_fraction': round(frac, 3),
-                           'must_not_accepted': bad, 'must_be_accepted': [f'{a} - {b}' for a, b in MUST_BE if key(a, b) in acc],
-                           'meets_rule': bool(frac >= 0.70 and not bad)})
-        log(f"kink sweep {th}: accepted {len(acc)}, largest {frac:.3f}, must-not accepted {bad}")
-    chosen = next((r for r in sweep_rows if r['meets_rule']), None)
-    KINK_SELECTION = {'rule': 'lowest threshold with Gate B largest component >= 70% AND zero Gate-A must-not accepted', 'sweep': sweep_rows,
-                      'selected_deg': None if chosen is None else chosen['threshold_deg'], 'any_selected': chosen is not None,
-                      'smooth_sigma_px': SMOOTH_SIGMA_PX}
-    if chosen is None:
-        rp = os.path.join(out_dir, 'report.json')
-        rep_old = json.load(open(rp)) if os.path.exists(rp) else {}
-        rep_old['kink_selection'] = KINK_SELECTION
-        json.dump(rep_old, open(rp, 'w'), indent=1)
-        log('NO kink threshold meets the selection rule: STOP')
-        return {'stopped': True, 'kink_selection': KINK_SELECTION}
-    SEL_TH = chosen['threshold_deg']
-    apply_kink(R_, SEL_TH)
+                           'rejected_by_continuity_alone': alone, 'must_not_accepted': bad, 'fedalle_coruscant_accepted': bool(fc),
+                           'must_be_accepted': [f'{a} - {b}' for a, b in MUST_BE if a in name2j and b in name2j and key(a, b) in acc]})
+        log(f"continuity gap {th}: accepted {len(acc)}, largest {frac:.3f}, rejected by continuity alone {alone}, must-not accepted {bad}")
+    CONTINUITY_SENSITIVITY = {'rule': f'path may not cross more than N px of contiguous background (decision N = {MAX_BG_GAP_PX:g}); null = rule off',
+                              'decision_px': MAX_BG_GAP_PX, 'rows': sweep_rows}
+    apply_gap(R_, MAX_BG_GAP_PX)
     for r in R_.values():
         r['status'] = classify(r, VIS_MIN)
+
+    ADJ = load_adjudications(os.path.join(out_dir, 'adjudications.json'), {nid: j for j, nid in enumerate(ids)}, set(pairs_all))
 
     def evaluate(pairset):
         res = {k: R_[k] for k in pairs_all if k in pairset}
@@ -772,17 +810,33 @@ def run_edge_stage(im, tf, D, asg, systems, out, label, lines, labels, cal, out_
                       'fail': [] if v['accepted'] else ['no_collinear_radial_neighbours']}
             if v['accepted']:
                 acc.append(k)
+        # adjudications (Rodrigo's referee calls) are applied on top of the algorithm's edge set, add or remove
+        adj_added, adj_removed = [], []
+        for k, a in ADJ.items():
+            if k not in res:
+                continue
+            if a['verdict'] == 'edge' and k not in acc:
+                acc.append(k)
+                res[k] = {**res[k], 'status': 'accepted', 'adjudicated': True}
+                adj_added.append(k)
+            elif a['verdict'] == 'no_edge' and k in acc:
+                acc.remove(k)
+                res[k] = {**res[k], 'status': 'rejected', 'adjudicated': True}
+                adj_removed.append(k)
         statuses = collections.Counter(v['status'] for v in res.values())
         E = []
         for (i, j) in acc:
             r = res[(i, j)]
             w, wn = lane_width(r['mpts'], r['mtang'], r['mmask'], F['gray'], F['occ'])
             E.append({'i': i, 'j': j, 'a': ids[i], 'b': ids[j], 'score': r['score'], 'visible': r['visible'], 'arc': r['arc'],
-                      'width': w, 'width_n': wn, 'short_gap': bool(r.get('short_gap')), 'kinked': bool(r['kinked']), 'pts': r['pts'].astype(float)})
+                      'width': w, 'width_n': wn, 'short_gap': bool(r.get('short_gap')), 'kinked': bool(r['kinked']), 'pts': r['pts'].astype(float),
+                      'kink_deg': round(float(r.get('kink_deg', 0.0)), 1), 'bg_run': round(float(r.get('bg_run', 0.0)), 2),
+                      'source': 'adjudicated' if (i, j) in adj_added else 'algorithm'})
         thr, winfo = split_widths([e['width'] for e in E])
         for e in E:
             e['class'] = None if thr is None else ('major' if (e['width'] or 0) >= thr else 'minor')
-        return {'T': res, 'statuses': statuses, 'skipped': skipped, 'E': E, 'thr': thr, 'winfo': winfo, 'sg': sg}
+        return {'T': res, 'statuses': statuses, 'skipped': skipped, 'E': E, 'thr': thr, 'winfo': winfo, 'sg': sg,
+                'adj_added': adj_added, 'adj_removed': adj_removed}
 
     def end_text(e):
         if not e:
@@ -879,9 +933,9 @@ def run_edge_stage(im, tf, D, asg, systems, out, label, lines, labels, cal, out_
                                 for a, b in GATE_MUST + GATE_MUST_NOT_EXTRA + [('Coruscant', 'Aargau'), ('Coruscant', 'Trellen')]
                                 if a in name2j and b in name2j}}
 
-    # ---- kink rule: effect on the accepted set and on Gate B, plus 10 random examples of what it rejects
-    def accepted_keys(Tmap, ignore_kink):
-        Tf = {k: {**v, 'status': classify(v, VIS_MIN, ignore_kink)} for k, v in Tmap.items()}
+    # ---- continuity rule: effect on the accepted set and on Gate B (rule off vs rule on at the decision gap)
+    def accepted_keys(Tmap, ignore_gap):
+        Tf = {k: {**v, 'status': classify(v, VIS_MIN, ignore_gap)} for k, v in Tmap.items()}
         drop = {k for k, _ in no_skipping(Tf, F['P'], F['tree'])}
         acc = [k for k, v in Tf.items() if v['status'] == 'accepted' and k not in drop]
         sgk = short_gap_pass(Tf, acc, F['P'])
@@ -893,55 +947,12 @@ def run_edge_stage(im, tf, D, asg, systems, out, label, lines, labels, cal, out_
         return {'accepted': len(acc), 'connected_nodes': len(nodes_c), 'components': len(sizes), 'largest': sizes[0] if sizes else 0,
                 'largest_fraction': round(sizes[0] / len(nodes_c), 3) if nodes_c else 0}
     Tall = {k: R_[k] for k in pairs_all}
-    kb, ka = gate_b_of(accepted_keys(Tall, True)), gate_b_of(accepted_keys(Tall, False))
-    kink_only = sorted(k for k, v in Tall.items() if not v.get('pending') and v['visible'] >= VIS_MIN and v.get('ok_wo_kink') and not v['ok_other'])
-    sample_path = os.environ.get('ASTRO_KINK_SAMPLE')
-    id2j = {nid: j for j, nid in enumerate(ids)}
-    if sample_path and os.path.exists(sample_path):          # re-score the SAME pairs as the previous round
-        prev = json.load(open(sample_path))
-        picks = [tuple(sorted((id2j[e['a']], id2j[e['b']]))) for e in prev]
-        prev_kink = {tuple(sorted((id2j[e['a']], id2j[e['b']]))): e['kink_deg'] for e in prev}
-    else:
-        import random
-        picks = random.Random(20261012).sample(kink_only, min(10, len(kink_only)))
-        prev_kink = {}
-    tiles, examples = [], []
-    for n, (i, j) in enumerate(picks, 1):
-        r = Tall[(i, j)]
-        pts = r['pts'].astype(float)
-        mrg = 30
-        x0, y0 = int(max(0, pts[:, 0].min() - mrg)), int(max(0, pts[:, 1].min() - mrg))
-        x1, y1 = int(min(4000, pts[:, 0].max() + mrg)), int(min(4000, pts[:, 1].max() + mrg))
-        c = cv2.resize(im[y0:y1, x0:x1], None, fx=4, fy=4, interpolation=cv2.INTER_CUBIC)
-        cv2.polylines(c, [((pts - [x0, y0]) * 4).astype(np.int32)], False, (0, 0, 255), 2)
-        if r['kink_xy'] is not None:
-            kx, ky = r['kink_xy']
-            cv2.circle(c, (int((kx - x0) * 4), int((ky - y0) * 4)), 26, (0, 255, 255), 2)
-        for k in (i, j):
-            cv2.circle(c, (int((F['P'][k][0] - x0) * 4), int((F['P'][k][1] - y0) * 4)), int(F['RIM'][k] * 4), (255, 255, 255), 1)
-        verdict = r['status'] if r['status'] != 'rejected' else 'rejected: ' + ','.join(r['fail'])
-        txt = f"{n}. {ids[i]} - {ids[j]}  kink {r['kink_deg']:.0f}deg  lane {r['score']:.2f}  {verdict}"
-        cv2.putText(c, txt, (6, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 0, 0), 3)
-        cv2.putText(c, txt, (6, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (255, 255, 255), 1)
-        os.makedirs(os.path.join(out_dir, 'evidence'), exist_ok=True)
-        cv2.imwrite(os.path.join(out_dir, 'evidence', f'kink_rejected_{n:02d}.png'), c)
-        sc = 520.0 / max(c.shape[:2])
-        t = cv2.resize(c, None, fx=sc, fy=sc, interpolation=cv2.INTER_AREA)
-        pad = np.zeros((520, 520, 3), np.uint8)
-        pad[:t.shape[0], :t.shape[1]] = t
-        tiles.append(pad)
-        examples.append({'a': ids[i], 'b': ids[j], 'kink_deg': round(r['kink_deg'], 1), 'prev_kink_deg': prev_kink.get((i, j)),
-                         'lane_fraction': round(r['score'], 3), 'path_ratio': round(r['ratio'], 3), 'visible': round(r['visible'], 3),
-                         'status_at_selected_threshold': r['status'], 'failed': r['fail']})
-    if tiles:
-        while len(tiles) % 2:
-            tiles.append(np.zeros_like(tiles[0]))
-        cv2.imwrite(os.path.join(out_dir, 'evidence', 'kink_rejected_sheet.png'),
-                    np.vstack([np.hstack(tiles[k:k + 2]) for k in range(0, len(tiles), 2)]))
-    kink_report = {'rule': f'smoothed-path heading change > {SEL_TH} deg over {KINK_WINDOW_PX} px outside the rim zones (measured rim + {KINK_ZONE_PX} px)',
-                   'selection': KINK_SELECTION,
-                   'pairs_rejected_only_by_this_rule': len(kink_only), 'accepted_and_gateB_before': kb, 'accepted_and_gateB_after': ka,
-                   'stop_rule_gateB_below_70pct': bool(ka['largest_fraction'] < 0.70), 'random_examples': examples}
+    gap_only = sorted(k for k, v in Tall.items() if not v.get('pending') and v['visible'] >= VIS_MIN and v.get('ok_wo_gap') and not v['ok_other'])
+    continuity_report = {'rule': f'a path may not cross more than {MAX_BG_GAP_PX:g} px of contiguous background (not lane, not occluded) beyond the two measured rims; '
+                                 'occluded pixels are not background and end a run',
+                         'pairs_rejected_by_continuity_alone': len(gap_only), 'gateB_rule_off': gate_b_of(accepted_keys(Tall, True)),
+                         'gateB_rule_on': gate_b_of(accepted_keys(Tall, False)), 'sensitivity': CONTINUITY_SENSITIVITY,
+                         'kink_diagnostic': f'smoothed-path heading change over {KINK_WINDOW_PX} px outside the rim zones; stored per edge as kink_deg, never a decision (flag > {MAX_KINK_DEG} deg)'}
 
     # ---- why pairs fail (rejected = visible enough but failed a criterion)
     why = collections.Counter(f for r in prim['T'].values() if r['status'] == 'rejected' for f in r['fail'])
@@ -1005,7 +1016,8 @@ def run_edge_stage(im, tf, D, asg, systems, out, label, lines, labels, cal, out_
             sel.append(len(P) - 1)
         return {'a': e['a'], 'b': e['b'], 'class': e['class'], 'score': round(e['score'], 3), 'visible_fraction': round(e['visible'], 3),
                 'median_width_px': None if e['width'] is None else round(e['width'], 2), 'width_clean_samples': e['width_n'],
-                'arc': bool(e['arc']), 'short_gap': e['short_gap'], 'kinked': e['kinked'],
+                'arc': bool(e['arc']), 'short_gap': e['short_gap'], 'kinked': e['kinked'], 'kink_deg': e['kink_deg'], 'bg_run_px': e['bg_run'],
+                'source': e['source'],
                 'path_xy': [[round(v, 1) for v in tf.to_galactic(float(x), float(y))] for x, y in P[sel]]}
     json.dump([edge_rec(e) for e in E], open(os.path.join(out_dir, 'edges.json'), 'w'))
     os.makedirs(os.path.join(out_dir, 'variants'), exist_ok=True)
@@ -1066,6 +1078,65 @@ def run_edge_stage(im, tf, D, asg, systems, out, label, lines, labels, cal, out_
     for a, b in NAMED_SIX:
         pair_crop(a, b)
 
+    # ---- adjudication crops: native resolution x3, the best path with its samples colour-coded, arrival vectors, the rules the pair fails
+    adj_dir = os.path.join(ev_dir, 'adjudicate')
+    os.makedirs(adj_dir, exist_ok=True)
+    SC = 3
+    CLS_COL = {0: (0, 220, 0), 1: (0, 0, 255), 2: (255, 128, 0)}          # lane green, background red, occluded blue (BGR)
+
+    def adjudicate_crop(a, b, fname):
+        if a not in name2j or b not in name2j:
+            return
+        i, j = sorted((name2j[a], name2j[b]))
+        r = prim['T'].get((i, j))
+        if r is None:
+            return
+        pts = r['pts'].astype(float)
+        mrg = 40
+        x0, y0 = int(max(0, min(pts[:, 0].min(), F['P'][i][0], F['P'][j][0]) - mrg)), int(max(0, min(pts[:, 1].min(), F['P'][i][1], F['P'][j][1]) - mrg))
+        x1, y1 = int(min(4000, max(pts[:, 0].max(), F['P'][i][0], F['P'][j][0]) + mrg)), int(min(4000, max(pts[:, 1].max(), F['P'][i][1], F['P'][j][1]) + mrg))
+        c = cv2.resize(im[y0:y1, x0:x1], None, fx=SC, fy=SC, interpolation=cv2.INTER_CUBIC)
+        to = lambda xy: (int(round((xy[0] - x0) * SC)), int(round((xy[1] - y0) * SC)))
+        cv2.polylines(c, [((pts - [x0, y0]) * SC).astype(np.int32)], False, (0, 255, 255), 1, cv2.LINE_AA)           # best path, thin yellow
+        cls, mp = r.get('cls', np.zeros(0)), r.get('mpts', np.zeros((0, 2)))
+        for k in range(len(cls)):
+            cv2.circle(c, to(mp[k]), 2, CLS_COL[int(cls[k])], -1)
+        if r.get('bg_span') is not None and r.get('bg_run', 0) > MAX_BG_GAP_PX:                                    # the run that breaks continuity
+            k0, k1 = r['bg_span']
+            cv2.circle(c, to((mp[k0] + mp[k1]) / 2), int(SC * (6 + r['bg_run'] / 2)), (255, 0, 255), 2, cv2.LINE_AA)
+        for k, arr in ((i, r['arr']['a'] if r.get('arr') else None), (j, r['arr']['b'] if r.get('arr') else None)):
+            ctr = to(F['P'][k])
+            cv2.circle(c, ctr, int(F['R'][k] * SC), (255, 255, 255), 1)
+            cv2.circle(c, ctr, int(F['RIM'][k] * SC), (0, 255, 255), 1)
+            if arr is not None and arr.get('out') is not None:                      # arrival vector: the lane's direction leaving the dot
+                u = np.array([np.cos(arr['out']), np.sin(arr['out'])])
+                st = F['P'][k] + u * F['RIM'][k]
+                cv2.arrowedLine(c, to(st), to(st + u * 30), (255, 255, 0), 2, cv2.LINE_AA, tipLength=0.25)
+                lab = 'n/a' if arr['angle'] is None else f"{arr['angle']:.0f}deg"
+                cv2.putText(c, lab, to(st + u * 34), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 3)
+                cv2.putText(c, lab, to(st + u * 34), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 0), 1)
+        st = 'ACCEPTED' if (i, j) in accset else r['status']
+        fails = r['fail'] or ['none']
+        lines_ = [f"{a} - {b}: {st}   failed: {', '.join(fails)}",
+                  f"lane {r['score']:.2f} (min {LANE_FRAC_MIN})  visible {r['visible']:.2f}  path ratio {r['ratio']:.2f}  longest background run {r.get('bg_run', 0):.1f} px (max {MAX_BG_GAP_PX:g})  kink {r.get('kink_deg', 0):.0f} deg (diagnostic)",
+                  "samples: green = lane, red = background, blue = occluded.  yellow line = best path.  cyan arrow = lane direction leaving each dot (angle to radial).  magenta ring = run that breaks continuity"]
+        bar = np.zeros((20 * len(lines_) + 8, c.shape[1], 3), np.uint8)
+        for n, t in enumerate(lines_):
+            cv2.putText(bar, t, (6, 20 * n + 18), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
+        cv2.imwrite(os.path.join(adj_dir, fname), np.vstack([bar, c]))
+    for a, b, fname in (("Coruscant", "Bar'leth", 'coruscant-barleth.png'), ("Bar'leth", 'Hodi', 'barleth-hodi.png'),
+                        ('Hodi', 'Corellia', 'hodi-corellia.png'), ('Fedalle', 'Coruscant', 'fedalle-coruscant.png')):
+        adjudicate_crop(a, b, fname)
+
+    # ---- full-map working copies: baseline network (kink rule) vs this run (continuity rule)
+    base_path = os.path.join(out_dir, 'variants', 'edges_baseline_kink.json')
+    net_counts = None
+    if os.path.exists(base_path):
+        net_counts = networks.render(im, {'origin_px': tf.origin_px, 'ly_per_px': tf.ly_per_px}, base_path, os.path.join(out_dir, 'edges.json'), ev_dir)
+        log(f'network overlays: {net_counts}')
+    else:
+        log(f'WARNING: {base_path} missing, network_before/after/diff not written')
+
     summary = {}
     for mode, ev in results.items():
         summary[mode] = {'candidates': len(ev['T']), 'accepted_before_no_skipping': ev['statuses']['accepted'],
@@ -1077,16 +1148,27 @@ def run_edge_stage(im, tf, D, asg, systems, out, label, lines, labels, cal, out_
     amb = [{'a': ids[i], 'b': ids[j], 'lane_fraction': round(r['score'], 2), 'visible': round(r['visible'], 2)}
            for (i, j), r in prim['T'].items() if r['status'] == 'ambiguous']
     rim_named = {n: round(float(F['rim_offset'][name2j[n]]), 2) for n in ('Coruscant', "Bar'leth", 'Hodi', 'Corellia', 'Kessel', 'Formos', 'Aargau', 'Trellen') if n in name2j}
+    gc = {n: {'chain_found': bool(g['chain_named_stops']), 'wookieepedia_plotted_not_on_chain': g['wookieepedia_plotted_but_not_on_chain']} for n, g in gateC.items()}
+    gates = {'A': {'passed': prim['gateA']['passed'], 'must_be_edges': prim['gateA']['must_be_edges'], 'must_not_be_edges': prim['gateA']['must_not_be_edges'],
+                   'kessel_unconnected': prim['gateA']['kessel_unconnected']},
+             'B': {**prim['gateB']},
+             'C': {'passed': bool(gc and all(v['chain_found'] and not v['wookieepedia_plotted_not_on_chain'] for v in gc.values())),
+                   'definition': 'CC-DERIVED (the prompt gives none): every one of the five major routes yields a chain of major-class edges, and every '
+                                 'Wookieepedia stop plotted on the DK map is on that chain', 'per_route': gc}}
+    adjudication = {'file_entries': len(ADJ), 'edges_added': len(prim['adj_added']), 'edges_removed': len(prim['adj_removed']),
+                    'edges_from_adjudication': sum(e['source'] == 'adjudicated' for e in prim['E'])}
     return {
+        'gates': gates, 'edge_count': len(prim['E']), 'largest_component_pct': round(100 * prim['gateB']['largest_fraction'], 1),
+        'adjudication': adjudication, 'network_overlays': net_counts,
         'params': {'strength_threshold': STRENGTH_T, 'orientation_tolerance_deg': 20, 'visible_min': VIS_MIN, 'lane_fraction_min': LANE_FRAC_MIN,
                    'arrival_window_px': ARRIVAL_WINDOW_PX, 'arrival_deg': ARRIVAL_DEG, 'max_path_ratio': MAX_PATH_RATIO,
                    'max_pair_px': MAX_PAIR_PX, 'sigmas': list(SIGMAS), 'short_gap_px': SHORT_GAP_PX, 'short_gap_collinear_deg': SG_COLLINEAR_DEG,
                    'width_window_px': WIDTH_WIN, 'stroke_dilate_px': STROKE_DILATE, 'marker_radius_px': MARKER_RADIUS_PX,
-                   'contrast_min': CONTRAST_MIN, 'contrast_flank': CONTRAST_FLANK, 'kink_deg': MAX_KINK_DEG, 'kink_window_px': KINK_WINDOW_PX,
+                   'contrast_min': CONTRAST_MIN, 'contrast_flank': CONTRAST_FLANK, 'max_background_gap_px': MAX_BG_GAP_PX, 'kink_diagnostic_deg': MAX_KINK_DEG, 'kink_window_px': KINK_WINDOW_PX,
                    'kink_zone_px': KINK_ZONE_PX, 'rim_rays': RIM_RAYS, 'rim_search_px': RIM_SEARCH_PX, 'rim_radial_deg': RIM_RADIAL_DEG, 'rim_min_rays': RIM_MIN_RAYS},
         'colour_gate': {k: v for k, v in cg.items() if k not in ('lane_pixels', 'shade_pixels', 'outline_pixels')} | {'gate_pixels': F['gate_pixels']},
         'per_dot_rim': {**F['rim_info'], 'named_dot_offsets_px': rim_named},
-        'radial_arrival_all_tested_pairs': dict(arr_stats), 'contrast_gate': F['contrast_info'], 'kink_rule': kink_report, 'kink_selection': KINK_SELECTION,
+        'radial_arrival_all_tested_pairs': dict(arr_stats), 'contrast_gate': F['contrast_info'], 'continuity_rule': continuity_report,
         'label_strokes': lrep, 'visibility_floor_sensitivity': sensitivity, 'short_gap_pairs': short_gap,
         'rejection_reasons_all_pairs': dict(why), 'rejection_first_reason_all_pairs': dict(why_first),
         'occlusion_pixels_by_source': F['occ_parts'], 'primary_generator': 'all pairs within 2 cells (291 px)', 'variants': summary,

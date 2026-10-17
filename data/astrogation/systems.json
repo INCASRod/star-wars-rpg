@@ -5625,7 +5625,7 @@
 "source": "dk-map-dot",
 "px": 2025.6,
 "py": 3447.4,
-"on_lane": false
+"on_lane": true
 },
 {
 "name": "Atron",
@@ -8229,7 +8229,7 @@
 "source": "dk-map-dot",
 "px": 1987.4,
 "py": 3262.4,
-"on_lane": true
+"on_lane": false
 },
 {
 "name": "Belshar Othacuu",
@@ -13983,7 +13983,7 @@
 "source": "dk-map-dot",
 "px": 2913.7,
 "py": 1679.4,
-"on_lane": true
+"on_lane": false
 },
 {
 "name": "Chadawa",
@@ -14865,7 +14865,7 @@
 "source": "dk-map-dot",
 "px": 3121.0,
 "py": 1368.8,
-"on_lane": true
+"on_lane": false
 },
 {
 "name": "Chommell Minor",
@@ -15089,7 +15089,7 @@
 "source": "dk-map-dot",
 "px": 2471.3,
 "py": 2291.0,
-"on_lane": true
+"on_lane": false
 },
 {
 "name": "Chromovon",
@@ -16601,7 +16601,7 @@
 "source": "dk-map-dot",
 "px": 1926.0,
 "py": 2063.8,
-"on_lane": true
+"on_lane": false
 },
 {
 "name": "Coruschal",
@@ -16755,7 +16755,7 @@
 "source": "dk-map-dot",
 "px": 2912.0,
 "py": 2944.9,
-"on_lane": true
+"on_lane": false
 },
 {
 "name": "Cotellier",
@@ -16825,7 +16825,7 @@
 "source": "dk-map-dot",
 "px": 2562.0,
 "py": 2076.4,
-"on_lane": true
+"on_lane": false
 },
 {
 "name": "Cousault",
@@ -18029,7 +18029,7 @@
 "source": "dk-map-dot",
 "px": 2450.4,
 "py": 1739.4,
-"on_lane": false
+"on_lane": true
 },
 {
 "name": "Dagobah",
@@ -18617,7 +18617,7 @@
 "source": "dk-map-dot",
 "px": 2928.9,
 "py": 2033.2,
-"on_lane": true
+"on_lane": false
 },
 {
 "name": "Dandrian",
@@ -20535,7 +20535,7 @@
 "source": "dk-map-dot",
 "px": 2971.5,
 "py": 2031.5,
-"on_lane": true
+"on_lane": false
 },
 {
 "name": "Desstious",
@@ -23041,7 +23041,7 @@
 "source": "dk-map-dot",
 "px": 2576.5,
 "py": 1856.4,
-"on_lane": false
+"on_lane": true
 },
 {
 "name": "Dulin",
@@ -24735,7 +24735,7 @@
 "source": "dk-map-dot",
 "px": 1867.5,
 "py": 3392.7,
-"on_lane": false
+"on_lane": true
 },
 {
 "name": "Enthi",
@@ -30601,7 +30601,7 @@
 "source": "dk-map-dot",
 "px": 2863.9,
 "py": 3057.6,
-"on_lane": true
+"on_lane": false
 },
 {
 "name": "Gepparin",
@@ -31035,7 +31035,7 @@
 "source": "dk-map-dot",
 "px": 1968.8,
 "py": 2649.8,
-"on_lane": true
+"on_lane": false
 },
 {
 "name": "Ghorn",
@@ -31343,7 +31343,7 @@
 "source": "dk-map-dot",
 "px": 2198.2,
 "py": 2320.1,
-"on_lane": true
+"on_lane": false
 },
 {
 "name": "Glee Anselm",
@@ -32365,7 +32365,7 @@
 "source": "dk-map-dot",
 "px": 2702.8,
 "py": 2316.7,
-"on_lane": true
+"on_lane": false
 },
 {
 "name": "Granna",
@@ -33079,7 +33079,7 @@
 "source": "dk-map-dot",
 "px": 2383.9,
 "py": 2391.9,
-"on_lane": true
+"on_lane": false
 },
 {
 "name": "Gyndorath",
@@ -33149,7 +33149,7 @@
 "source": "dk-map-dot",
 "px": 2096.1,
 "py": 3360.3,
-"on_lane": false
+"on_lane": true
 },
 {
 "name": "H'ratth",
@@ -34801,7 +34801,7 @@
 "source": "dk-map-dot",
 "px": 2065.6,
 "py": 1825.1,
-"on_lane": false
+"on_lane": true
 },
 {
 "name": "Hewett",
@@ -36565,7 +36565,7 @@
 "source": "dk-map-dot",
 "px": 2431.0,
 "py": 2657.9,
-"on_lane": true
+"on_lane": false
 },
 {
 "name": "Ilamna",
@@ -41661,7 +41661,7 @@
 "source": "dk-map-dot",
 "px": 1689.6,
 "py": 1597.3,
-"on_lane": true
+"on_lane": false
 },
 {
 "name": "Kejim",
@@ -44153,7 +44153,7 @@
 "source": "dk-map-dot",
 "px": 2160.2,
 "py": 2685.1,
-"on_lane": false
+"on_lane": true
 },
 {
 "name": "Koovis",
@@ -45007,7 +45007,7 @@
 "source": "dk-map-dot",
 "px": 1579.7,
 "py": 1700.5,
-"on_lane": true
+"on_lane": false
 },
 {
 "name": "Krinemonen",
@@ -54751,7 +54751,7 @@
 "source": "dk-map-dot",
 "px": 2150.6,
 "py": 3189.1,
-"on_lane": true
+"on_lane": false
 },
 {
 "name": "Najarka",
@@ -61359,7 +61359,7 @@
 "source": "dk-map-dot",
 "px": 2314.1,
 "py": 1658.0,
-"on_lane": false
+"on_lane": true
 },
 {
 "name": "Otranto",
@@ -72307,7 +72307,7 @@
 "source": "dk-map-dot",
 "px": 1858.9,
 "py": 1404.1,
-"on_lane": true
+"on_lane": false
 },
 {
 "name": "Sathiemon",
@@ -72405,7 +72405,7 @@
 "source": "dk-map-dot",
 "px": 3008.4,
 "py": 2858.6,
-"on_lane": true
+"on_lane": false
 },
 {
 "name": "Scarl",
@@ -72461,7 +72461,7 @@
 "source": "dk-map-dot",
 "px": 1815.1,
 "py": 1384.8,
-"on_lane": true
+"on_lane": false
 },
 {
 "name": "Seatos",
@@ -73175,7 +73175,7 @@
 "source": "dk-map-dot",
 "px": 2515.5,
 "py": 1391.4,
-"on_lane": true
+"on_lane": false
 },
 {
 "name": "Sergia",
@@ -75331,7 +75331,7 @@
 "source": "dk-map-dot",
 "px": 2032.1,
 "py": 2046.8,
-"on_lane": false
+"on_lane": true
 },
 {
 "name": "Skangravi",
@@ -77907,7 +77907,7 @@
 "source": "dk-map-dot",
 "px": 2569.5,
 "py": 3215.4,
-"on_lane": false
+"on_lane": true
 },
 {
 "name": "Surpossia",
@@ -80007,7 +80007,7 @@
 "source": "dk-map-dot",
 "px": 2854.1,
 "py": 3052.1,
-"on_lane": true
+"on_lane": false
 },
 {
 "name": "Tauber",
@@ -85607,7 +85607,7 @@
 "source": "dk-map-dot",
 "px": 2323.6,
 "py": 1792.9,
-"on_lane": false
+"on_lane": true
 },
 {
 "name": "Ubertica",
@@ -91501,7 +91501,7 @@
 "source": "dk-map-dot",
 "px": 2201.2,
 "py": 3337.7,
-"on_lane": true
+"on_lane": false
 },
 {
 "name": "Xais",

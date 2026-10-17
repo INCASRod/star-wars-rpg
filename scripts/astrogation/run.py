@@ -70,8 +70,28 @@ def main():
     t0 = time.time()
     img, sj = resolve_inputs(sys.argv)
     cat_path = sys.argv[3] if len(sys.argv) > 3 else os.path.join(DEFAULT_IMAGE_DIR, 'planets.json')
+    # ---- input checksums (every run): HARD STOP if an input is missing or the map is not 4000x4000
+    import hashlib
+    inputs = {}
+    for label, path in (('dk_map', img), ('galaxy_systems', sj), ('swgalacticmap', cat_path)):
+        if not os.path.isfile(path):
+            sys.exit(f'HARD STOP: input missing: {label} ({path})')
+        h = hashlib.sha256()
+        with open(path, 'rb') as fh:
+            for chunk in iter(lambda: fh.read(1 << 20), b''):
+                h.update(chunk)
+        inputs[os.path.basename(path)] = h.hexdigest()
+    os.makedirs(OUT_DIR, exist_ok=True)
+    with open(os.path.join(OUT_DIR, 'inputs.sha256'), 'w', newline='\n') as fh:
+        for name, digest in inputs.items():
+            fh.write(f'{digest}  {name}\n')
+            print(f'sha256  {digest}  {name}')
     im = load_image(img)
-    assert im.shape[:2] == (4000, 4000), f'image is {im.shape}, expected 4000x4000'
+    if im.shape[:2] != (4000, 4000):
+        sys.exit(f'HARD STOP: map is {im.shape[1]}x{im.shape[0]}, expected 4000x4000')
+    adj_path = os.path.join(OUT_DIR, 'adjudications.json')
+    if not os.path.exists(adj_path):
+        open(adj_path, 'w').write('[]\n')
     systems = json.load(open(sj))
     assert len(systems) == 6752, f'expected 6752 systems, got {len(systems)}'
     names_in = [s['name'] for s in systems]
@@ -175,7 +195,7 @@ def main():
 
     prec = collections.Counter(r['precision'] for r in out)
     report = {
-        'calibration': cal, 'origin_px': meta['origin_px'],
+        'input_sha256': inputs, 'calibration': cal, 'origin_px': meta['origin_px'],
         'dots_raw': n_raw, 'dots_after_split': len(D) + len(neb), 'clusters_split': len(split_report), 'nebula_icons_dropped': len(neb),
         'dots_final': len(D), 'ocr_lines': len(lines), 'labels_matched': sum(1 for l in labels if l['match'] not in (None, 'NEB')),
         'precision': dict(prec), 'rejected_assignments': rejected, 'catalogue_cell_disagree_discarded': cell_disagree,
