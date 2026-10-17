@@ -3,17 +3,42 @@
  * Pure data: no imports, no app code, so the engine can move into `src/` later.
  */
 export const CONFIG = {
-  /** Lane cost per pixel of edge length. Lanes first: this only matters after off-lane distance is minimised. */
-  laneWeight: { major: 1, minor: 3 },
+  /**
+   * Travel time. Hours per map pixel at hyperdrive class 1, by kind of leg. Derived from two anchors: open-space base 0.5085 h/px, major lanes 82%
+   * faster, minor lanes half the major cut (41% faster), off-lane 50% slower (zigzag, double back). Anchors: Kubindi - Formos 24 h (minor),
+   * Coruscant - Corellia 34 h (major). trip hours = sum(length x rate) x hyperdrive class.
+   */
+  hoursPerPx: { major: 0.0909, minor: 0.3, off: 0.763 },
+  /** Hyperdrive classes a ship can have (a class multiplies the time). */
+  hyperdriveClasses: [0.5, 1, 2, 3, 4],
 
+  /** Off-lane hops exist between any two planets at most this far apart (map px). Lanes are tried first; hops only bridge when lanes cannot. */
+  hopMaxPx: 150,
   /** Drop-off: an endpoint on no lane leaves the nearest K lane edges at the closest point on each (Dijkstra picks one). */
   dropoffEdges: 3,
+  /** The hop route is offered when it uses some off-lane AND saves at least this many hours ... */
+  hopSaveHours: 12,
+  /** ... OR at least this share of the lane route's time. */
+  hopSaveShare: 0.2,
 
-  /** When the lanes-only route is at least this many times the straight-line distance, a direct (risky) jump is also offered. */
-  shortcutRatio: 3,
+  /** Density: Core is crowded (+ purple), the Rim is empty (- purple). By the region of the planet a leg starts from (or ends at, for drop-off legs). */
+  density: {
+    'Deep Core': 1,
+    'Core Worlds': 1,
+    Colonies: 0,
+    'Inner Rim': 0,
+    'Expansion Region': 0,
+    'Mid Rim': -1,
+    'Outer Rim Territories': -1,
+    'Wild Space': -1,
+    'Hutt Space': -1,
+    'Unknown Regions': -1,
+  } as Record<string, number>,
+  /** A leg with no charted planet at either end (a pin) */
+  densityUncharted: -1,
 
   /**
-   * Route sets DIFFICULTY (purple), risk sets UPGRADES (red). Difficulty = base + minorLane + distance; off-lane legs add no difficulty.
+   * Route sets DIFFICULTY (purple), risk sets UPGRADES (red). Purple = max(0, distance + density) + minorLane; off-lane legs add no purple.
    * An upgrade turns a purple die red; with no purple die left it adds one instead (AoE "Upgrading More Dice Than Available").
    */
   difficulty: {

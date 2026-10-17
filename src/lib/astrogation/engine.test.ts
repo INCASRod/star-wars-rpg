@@ -1,7 +1,7 @@
 /** npx tsx --test src/lib/astrogation/engine.test.ts */
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { CONFIG, LY_PER_PX, buildGalaxy, difficulty, plan, route, travelBand } from './index'
+import { CONFIG, LY_PER_PX, buildGalaxy, difficulty, formatTravelTime, plan, route, travelBand, travelTime } from './index'
 import type { Graph, GraphNode, RouteResult } from './types'
 
 const node = (id: string, x: number, y: number, region: string | null = 'Core Worlds', sector: string | null = null, on_lane = true): GraphNode =>
@@ -23,7 +23,7 @@ const fake = (share: RouteResult['share'], uncharted = false, region = 'Core Wor
     { id: 'a', name: 'a', x: 0, y: 0, region, sector, uncharted },
     { id: 'b', name: 'b', x: 1, y: 1, region: b ? b.region : region, sector: b ? b.sector : sector, uncharted: false },
   ],
-  legs: [], routesUsed: [], lengthPx: 1, lengthLy: 10, share, uncharted,
+  legs: [], routesUsed: [], lengthPx: 1, lengthLy: 10, hours: 1, density: 0, share, uncharted,
 })
 
 describe('route: lanes first', () => {
@@ -35,7 +35,7 @@ describe('route: lanes first', () => {
     assert.equal(r.share.off, 0)
   })
 
-  it('prefers a longer all-major path over a shorter all-minor one only through the weights (1:3)', () => {
+  it('prefers a longer all-major path over a shorter all-minor one only through time (a major lane is faster than a minor one)', () => {
     const graph = g([node('A', 0, 0), node('B', 100, 0), node('C', 50, 60)], [['A', 'B', 'minor'], ['A', 'C', 'major'], ['C', 'B', 'major']])
     const r = route(graph, { id: 'A' }, { id: 'B' })
     // direct minor costs 3 x 100 = 300; via C costs 2 x 78.1 = 156
@@ -108,25 +108,81 @@ describe('route: lanes first', () => {
   })
 })
 
-describe('plan: risky shortcut', () => {
-  it('lanes at least 3x the straight line also offer a direct off-lane jump', () => {
-    const graph = g([node('A', 0, 0), node('B', 10, 0), node('C', 5, 100)], [['A', 'C', 'minor'], ['C', 'B', 'minor']])
-    const p = plan(graph, { id: 'A' }, { id: 'B' })
-    assert.ok(p.ratio >= CONFIG.shortcutRatio)
+describe('time (hours per px by kind of leg, x hyperdrive class)', () => {
+  const graph = g([node('A', 0, 0), node('B', 100, 0), node('C', 200, 0)], [['A', 'B', 'major'], ['B', 'C', 'minor']])
+  it('a leg takes length x the rate of its kind (major 0.0909, minor 0.3, off 0.763 h/px)', () => {
+    const r = route(graph, { id: 'A' }, { id: 'C' })
+    assert.ok(Math.abs(r.hours - (100 * CONFIG.hoursPerPx.major + 100 * CONFIG.hoursPerPx.minor)) < 1e-9)
+    assert.ok(Math.abs(r.legs[0].hours - 100 * 0.0909) < 1e-9)
+  })
+  it('an off-lane hop is the slowest kind of travel', () => {
+    const r = route(g([node('A', 0, 0), node('B', 100, 0)], []), { id: 'A' }, { id: 'B' })
+    assert.equal(r.legs[0].kind, 'off')
+    assert.ok(Math.abs(r.hours - 100 * 0.763) < 1e-9)
+  })
+  it('the hyperdrive class multiplies the time (class 2 doubles it, 0.5 halves it)', () => {
+    const r = route(graph, { id: 'A' }, { id: 'C' })
+    assert.ok(Math.abs(travelTime(r, 2).hours - 2 * r.hours) < 1e-9)
+    assert.ok(Math.abs(travelTime(r, 0.5).hours - r.hours / 2) < 1e-9)
+    assert.equal(travelTime(r).text, formatTravelTime(r.hours))
+  })
+  it('travelTime carries the Table 7-14 band as a sanity check', () => {
+    const r = route(graph, { id: 'A' }, { id: 'C' })
+    assert.equal(travelTime(r).bandCheck, 'within a region: 10 to 72 hours')
+  })
+  it('formatTravelTime: whole hours, under 48 "N hours", else "D days, H hours"', () => {
+    assert.equal(formatTravelTime(1), '1 hour')
+    assert.equal(formatTravelTime(0.2), '1 hour')
+    assert.equal(formatTravelTime(47), '47 hours')
+    assert.equal(formatTravelTime(47.6), '2 days')
+    assert.equal(formatTravelTime(48), '2 days')
+    assert.equal(formatTravelTime(49), '2 days, 1 hour')
+    assert.equal(formatTravelTime(60), '2 days, 12 hours')
+    assert.equal(formatTravelTime(24 * 10 + 4), '10 days, 4 hours')
+  })
+})
+
+describe('plan: hop route (the risky alternative)', () => {
+  // A and B are 120 px apart with no lane between them; the lanes go round via C
+  const around = (cy: number) => g([node('A', 0, 0), node('B', 120, 0), node('C', 60, cy)], [['A', 'C', 'major'], ['C', 'B', 'major']])
+  it('a long way round by lane also offers lanes plus off-lane hops when that is much faster', () => {
+    const p = plan(around(1000), { id: 'A' }, { id: 'B' })
+    assert.deepEqual(p.primary.stops.map(s => s.id), ['A', 'C', 'B'])
     assert.ok(p.shortcut)
     assert.equal(p.shortcut!.share.off, 1)
-    assert.ok(Math.abs(p.shortcut!.lengthPx - 10) < 1e-9)
-    assert.deepEqual(p.primary.stops.map(s => s.id), ['A', 'C', 'B'])
+    assert.ok(Math.abs(p.shortcut!.hours - 120 * CONFIG.hoursPerPx.off) < 1e-9)
+    assert.ok(p.primary.hours - p.shortcut!.hours >= CONFIG.hopSaveHours)
   })
-  it('lanes under 3x the straight line offer no shortcut', () => {
-    const graph = g([node('A', 0, 0), node('B', 100, 0), node('C', 50, 30)], [['A', 'C', 'minor'], ['C', 'B', 'minor']])
+  it('the lane route is the primary even when a hop is shorter: off-lane distance first', () => {
+    assert.equal(plan(around(1000), { id: 'A' }, { id: 'B' }).primary.share.off, 0)
+  })
+  it('no hop route when it is not faster: lanes ARE faster than hops', () => {
+    assert.equal(plan(around(40), { id: 'A' }, { id: 'B' }).shortcut, undefined)
+  })
+  it('a hop route that saves under 12 h and under 20% is not offered; both thresholds come from CONFIG', () => {
+    // minor lanes 2 x 139.3 px x 0.3 = 83.6 h; hop 100 px x 0.763 = 76.3 h; saves 7.3 h (8.7%)
+    const near = g([node('A', 0, 0), node('B', 100, 0), node('C', 50, 130)], [['A', 'C', 'minor'], ['C', 'B', 'minor']])
+    assert.equal(plan(near, { id: 'A' }, { id: 'B' }).shortcut, undefined)
+    assert.ok(plan(near, { id: 'A' }, { id: 'B' }, { ...CONFIG, hopSaveHours: 5 }).shortcut)
+    assert.ok(plan(near, { id: 'A' }, { id: 'B' }, { ...CONFIG, hopSaveShare: 0.05 }).shortcut)
+  })
+  it('hops are at most hopMaxPx long: beyond it, with no lane, the trip falls back to a straight jump and there is no hop route', () => {
+    const graph = g([node('A', 0, 0), node('B', 300, 0)], [])
     const p = plan(graph, { id: 'A' }, { id: 'B' })
-    assert.ok(p.ratio < CONFIG.shortcutRatio)
+    assert.equal(p.primary.found, true)
+    assert.deepEqual(p.primary.legs.map(l => l.kind), ['off'])
     assert.equal(p.shortcut, undefined)
+    assert.equal(route(graph, { id: 'A' }, { id: 'B' }).found, false)
   })
-  it('the trigger ratio comes from CONFIG', () => {
-    const graph = g([node('A', 0, 0), node('B', 100, 0), node('C', 50, 30)], [['A', 'C', 'minor'], ['C', 'B', 'minor']])
-    assert.ok(plan(graph, { id: 'A' }, { id: 'B' }, { ...CONFIG, shortcutRatio: 1.1 }).shortcut)
+  it('lanes that do not connect are bridged by a hop of <= hopMaxPx', () => {
+    const graph = g([node('A', 0, 0), node('B', 50, 0), node('C', 90, 0), node('D', 140, 0)], [['A', 'B', 'major'], ['C', 'D', 'major']])
+    assert.deepEqual(route(graph, { id: 'A' }, { id: 'D' }).legs.map(l => l.kind), ['lane', 'off', 'lane'])
+  })
+  it('the hop route can leave a lane at the closest point (drop-off) even from a planet that is on a lane', () => {
+    const graph = g([node('A', 0, 0), node('B', 400, 0), node('T', 200, 60, 'Core Worlds', null, false)], [['A', 'B', 'minor']])
+    const hop = route(graph, { id: 'A' }, { id: 'T' }, 'hops')
+    assert.equal(hop.found, true)
+    assert.equal(hop.stops.some(s => s.dropoff), true)
   })
 })
 
@@ -204,6 +260,33 @@ describe('difficulty (route sets purple, risk sets red)', () => {
     const base = difficulty(fake({ major: 1, minor: 0, off: 0 }), [])
     const cfg = { ...CONFIG, difficulty: { ...CONFIG.difficulty, base: 2 } }
     assert.equal(difficulty(fake({ major: 1, minor: 0, off: 0 }), [], cfg).raw, base.raw + 2)
+  })
+})
+
+describe('density (Core crowded, Rim empty)', () => {
+  const trip = (region: string) => {
+    const graph = g([node('A', 0, 0, region, 'S'), node('B', 100, 0, region, 'S')], [['A', 'B', 'major']])
+    const r = route(graph, { id: 'A' }, { id: 'B' })
+    return { r, d: difficulty(r, []) }
+  }
+  it('Core and Deep Core +1, Colonies / Inner Rim / Expansion 0, Mid Rim / Outer Rim / Wild / Hutt / Unknown -1', () => {
+    assert.equal(trip('Core Worlds').r.density, 1)
+    assert.equal(trip('Deep Core').r.density, 1)
+    for (const z of ['Colonies', 'Inner Rim', 'Expansion Region']) assert.equal(trip(z).r.density, 0)
+    for (const z of ['Mid Rim', 'Outer Rim Territories', 'Wild Space', 'Hutt Space', 'Unknown Regions']) assert.equal(trip(z).r.density, -1)
+  })
+  it('purple = max(0, distance band + density) + minor lane: Core adds a die, the Rim never goes below none', () => {
+    assert.equal(trip('Core Worlds').d.raw, 1) // within a sector 0 + density 1
+    assert.equal(trip('Mid Rim').d.raw, 0) // 0 - 1 floored at 0
+    assert.equal(trip('Core Worlds').d.densityTerm, 1)
+  })
+  it('the density of a mixed route is the length-weighted mean of its legs, rounded', () => {
+    // 300 px in the Core (+1) then 100 px in the Rim (-1): (300 - 100) / 400 = 0.5 -> 1
+    const graph = g(
+      [node('A', 0, 0, 'Core Worlds', 'S'), node('B', 300, 0, 'Core Worlds', 'S'), node('C', 400, 0, 'Mid Rim', 'S')],
+      [['A', 'B', 'major'], ['B', 'C', 'major']],
+    )
+    assert.equal(route(graph, { id: 'A' }, { id: 'C' }).density, 1)
   })
 })
 

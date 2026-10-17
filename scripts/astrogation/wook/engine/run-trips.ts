@@ -23,9 +23,12 @@ function summary(x: ReturnType<typeof evaluate>) {
     share_pct: { major: pct(r.share.major), minor: pct(r.share.minor), off_lane: pct(r.share.off) },
     uncharted: r.uncharted,
     band: x.bandName,
-    time_class1: x.time,
+    travel_hours_class1: Math.round(x.travel.hours * 10) / 10,
+    travel_time_class1: x.travel.text,
+    table_7_14_check: x.time,
+    density: r.density,
     raw: d.raw,
-    terms: { minor: d.minorTerm, distance: d.distanceTerm },
+    terms: { minor: d.minorTerm, distance: d.distanceTerm, density: d.densityTerm },
     upgrades: { off_lane: d.offUpgrades, uncharted: d.unchartedUpgrades, excess: d.excessUpgrades, hazard: d.hazardUpgrades, total: d.totalUpgrades },
     pool: d.pool,
     difficulty: d.difficulty,
@@ -40,7 +43,7 @@ const out = TRIPS.map(t => {
 const file = path.resolve(__dirname, '..', '..', '..', '..', 'data', 'astrogation', 'wook', 'trips.json')
 fs.writeFileSync(file, JSON.stringify({ meta: { engine: 'scripts/astrogation/wook/engine', graph: 'data/astrogation/wook/graph.json', hyperdrive_class: 1 }, trips: out }, null, 1))
 const line = (label: string, p: ReturnType<typeof summary>) =>
-  `   ${label}: ${p.length_px} px, major ${p.share_pct.major}% minor ${p.share_pct.minor}% off ${p.share_pct.off_lane}%, ${p.band}, ${p.difficulty} (${p.pool.purple} purple, ${p.pool.red} red; upgrades ${p.upgrades.total}); ${p.routes_used.join(', ') || '-'}`
+  `   ${label}: ${p.travel_time_class1}, ${p.length_px} px, major ${p.share_pct.major}% minor ${p.share_pct.minor}% off ${p.share_pct.off_lane}%, ${p.band}, ${p.difficulty} (${p.pool.purple} purple, ${p.pool.red} red; upgrades ${p.upgrades.total}); ${p.routes_used.join(', ') || '-'}`
 for (const t of out) {
   console.log(`${t.n}. ${t.trip} (lanes/straight ${t.ratio ?? 'inf'})`)
   console.log(line('primary ', t.primary))

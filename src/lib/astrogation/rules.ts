@@ -29,7 +29,8 @@ export function bandOf(r: RouteResult, config: Config = CONFIG): number {
 }
 
 /**
- * Route sets difficulty (purple dice), risk sets upgrades (red). Difficulty = base + minor lane + distance band; off-lane legs add none.
+ * Route sets difficulty (purple dice), risk sets upgrades (red). Purple = max(0, distance band + density) + minor lane; off-lane legs add none.
+ * Density (route.density) is the length-weighted mean of the legs: Core +1, Rim -1.
  * Upgrades: off-lane share of length, an uncharted pin endpoint, difficulty above Formidable, and hazards (reported separately).
  * Each upgrade turns a purple die red; with none left it adds a purple die instead (AoE "Upgrading More Dice Than Available").
  */
@@ -38,7 +39,8 @@ export function difficulty(route: RouteResult, hazards: Hazard[], config: Config
   const s = route.share
   const minorTerm = s.minor > 0 ? d.minorLane : 0
   const distanceTerm = d.distance[bandOf(route, config)]
-  const raw = d.base + minorTerm + distanceTerm
+  const densityTerm = route.density
+  const raw = d.base + Math.max(0, distanceTerm + densityTerm) + minorTerm
   let offUpgrades = 0
   if (s.off > 0) {
     offUpgrades = s.off < d.offQuarter ? d.offUpgrades.underQuarter : s.off <= d.offTwoThirds ? d.offUpgrades.quarterToTwoThirds : d.offUpgrades.overTwoThirds
@@ -63,6 +65,7 @@ export function difficulty(route: RouteResult, hazards: Hazard[], config: Config
     raw,
     minorTerm,
     distanceTerm,
+    densityTerm,
     offUpgrades,
     unchartedUpgrades,
     excessUpgrades,
@@ -72,4 +75,24 @@ export function difficulty(route: RouteResult, hazards: Hazard[], config: Config
     pool: { purple, red },
     difficulty: d.names[Math.min(purple + red, d.formidableAt)],
   }
+}
+
+/** Whole hours: under 48 "N hours", else "D days, H hours" (0 hours omitted). Rounds to the hour, at least 1. */
+export function formatTravelTime(hours: number): string {
+  const h = Math.max(1, Math.round(hours))
+  const unit = (n: number, w: string) => `${n} ${w}${n === 1 ? '' : 's'}`
+  if (h < 48) return unit(h, 'hour')
+  const days = Math.floor(h / 24)
+  const rest = h % 24
+  return rest ? `${unit(days, 'day')}, ${unit(rest, 'hour')}` : unit(days, 'day')
+}
+
+/**
+ * ONE definite travel time: leg lengths x CONFIG.hoursPerPx at class 1, x the ship's hyperdrive class (0.5, 1, 2, 3, 4). The GM shifts it with
+ * Advantage / Threat. `bandCheck` is the Table 7-14 band for the two ends, shown only as a sanity check.
+ */
+export function travelTime(route: RouteResult, hyperdrive = 1, config: Config = CONFIG): { hours: number; text: string; bandCheck: string } {
+  const hours = route.hours * hyperdrive
+  const band = config.bands[bandOf(route, config)]
+  return { hours, text: formatTravelTime(hours), bandCheck: `${band.name}: ${band.time}` }
 }

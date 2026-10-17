@@ -66,11 +66,15 @@
     },
     "uncharted": false,
     "band": "within a region",
-    "time_class1": "10 to 72 hours",
-    "raw": 1,
+    "travel_hours_class1": 34,
+    "travel_time_class1": "34 hours",
+    "table_7_14_check": "10 to 72 hours",
+    "density": 1,
+    "raw": 2,
     "terms": {
      "minor": 0,
-     "distance": 1
+     "distance": 1,
+     "density": 1
     },
     "upgrades": {
      "off_lane": 0,
@@ -80,10 +84,10 @@
      "total": 0
     },
     "pool": {
-     "purple": 1,
+     "purple": 2,
      "red": 0
     },
-    "difficulty": "Easy",
+    "difficulty": "Average",
     "hazards": []
    },
    "shortcut": null
@@ -318,11 +322,15 @@
     },
     "uncharted": false,
     "band": "within a region",
-    "time_class1": "10 to 72 hours",
-    "raw": 1,
+    "travel_hours_class1": 96.3,
+    "travel_time_class1": "4 days",
+    "table_7_14_check": "10 to 72 hours",
+    "density": 1,
+    "raw": 2,
     "terms": {
      "minor": 0,
-     "distance": 1
+     "distance": 1,
+     "density": 1
     },
     "upgrades": {
      "off_lane": 0,
@@ -332,26 +340,44 @@
      "total": 0
     },
     "pool": {
-     "purple": 1,
+     "purple": 2,
      "red": 0
     },
-    "difficulty": "Easy",
+    "difficulty": "Average",
     "hazards": []
    },
    "shortcut": {
     "found": true,
     "stops": [
      "Coruscant",
+     "Ixtlar",
+     "Wukkar",
+     "Skako",
      "Fedalle"
     ],
     "stop_ids": [
      "coruscant-l-9",
+     "ixtlar-l-10",
+     "wukkar-l-10",
+     "skako-l-9",
      "fedalle-m-10"
     ],
     "stop_xy": [
      [
       1926,
       2063.8
+     ],
+     [
+      1980.7,
+      2075.9
+     ],
+     [
+      2034,
+      2071.5
+     ],
+     [
+      2032.1,
+      2046.8
      ],
      [
       2123.7,
@@ -362,41 +388,73 @@
     "legs": [
      {
       "from": "coruscant-l-9",
-      "to": "fedalle-m-10",
+      "to": "ixtlar-l-10",
+      "kind": "lane",
+      "route": "Corellian Run",
+      "class": "major",
+      "length_px": 56
+     },
+     {
+      "from": "ixtlar-l-10",
+      "to": "wukkar-l-10",
+      "kind": "lane",
+      "route": "The Spin",
+      "class": "minor",
+      "length_px": 53.5
+     },
+     {
+      "from": "wukkar-l-10",
+      "to": "skako-l-9",
       "kind": "off",
       "route": null,
       "class": null,
-      "length_px": 213
+      "length_px": 24.8
+     },
+     {
+      "from": "skako-l-9",
+      "to": "fedalle-m-10",
+      "kind": "lane",
+      "route": "Hydian Way",
+      "class": "major",
+      "length_px": 133
      }
     ],
-    "routes_used": [],
-    "length_px": 213,
-    "length_ly": 7317,
+    "routes_used": [
+     "Corellian Run",
+     "The Spin",
+     "Hydian Way"
+    ],
+    "length_px": 267.3,
+    "length_ly": 9179,
     "share_pct": {
-     "major": 0,
-     "minor": 0,
-     "off_lane": 100
+     "major": 70.7,
+     "minor": 20,
+     "off_lane": 9.3
     },
     "uncharted": false,
     "band": "within a region",
-    "time_class1": "10 to 72 hours",
-    "raw": 1,
+    "travel_hours_class1": 52.1,
+    "travel_time_class1": "2 days, 4 hours",
+    "table_7_14_check": "10 to 72 hours",
+    "density": 1,
+    "raw": 3,
     "terms": {
-     "minor": 0,
-     "distance": 1
+     "minor": 1,
+     "distance": 1,
+     "density": 1
     },
     "upgrades": {
-     "off_lane": 3,
+     "off_lane": 1,
      "uncharted": 0,
      "excess": 0,
      "hazard": 0,
-     "total": 3
+     "total": 1
     },
     "pool": {
-     "purple": 0,
-     "red": 2
+     "purple": 2,
+     "red": 1
     },
-    "difficulty": "Average",
+    "difficulty": "Hard",
     "hazards": []
    }
   },
@@ -505,11 +563,15 @@
     },
     "uncharted": false,
     "band": "between regions",
-    "time_class1": "3 days to 1 week",
+    "travel_hours_class1": 172.8,
+    "travel_time_class1": "7 days, 5 hours",
+    "table_7_14_check": "3 days to 1 week",
+    "density": 0,
     "raw": 3,
     "terms": {
      "minor": 1,
-     "distance": 2
+     "distance": 2,
+     "density": 0
     },
     "upgrades": {
      "off_lane": 0,
@@ -589,11 +651,15 @@
     },
     "uncharted": false,
     "band": "within a sector",
-    "time_class1": "10 to 24 hours",
+    "travel_hours_class1": 24.7,
+    "travel_time_class1": "25 hours",
+    "table_7_14_check": "10 to 24 hours",
+    "density": -1,
     "raw": 1,
     "terms": {
      "minor": 1,
-     "distance": 0
+     "distance": 0,
+     "density": -1
     },
     "upgrades": {
      "off_lane": 0,
@@ -664,11 +730,15 @@
     },
     "uncharted": false,
     "band": "within a region",
-    "time_class1": "10 to 72 hours",
-    "raw": 2,
+    "travel_hours_class1": 41.3,
+    "travel_time_class1": "41 hours",
+    "table_7_14_check": "10 to 72 hours",
+    "density": -1,
+    "raw": 1,
     "terms": {
      "minor": 1,
-     "distance": 1
+     "distance": 1,
+     "density": -1
     },
     "upgrades": {
      "off_lane": 0,
@@ -678,10 +748,10 @@
      "total": 0
     },
     "pool": {
-     "purple": 2,
+     "purple": 1,
      "red": 0
     },
-    "difficulty": "Average",
+    "difficulty": "Easy",
     "hazards": []
    },
    "shortcut": null
@@ -748,11 +818,15 @@
     },
     "uncharted": false,
     "band": "within a region",
-    "time_class1": "10 to 72 hours",
-    "raw": 2,
+    "travel_hours_class1": 30.1,
+    "travel_time_class1": "30 hours",
+    "table_7_14_check": "10 to 72 hours",
+    "density": -1,
+    "raw": 1,
     "terms": {
      "minor": 1,
-     "distance": 1
+     "distance": 1,
+     "density": -1
     },
     "upgrades": {
      "off_lane": 0,
@@ -762,10 +836,10 @@
      "total": 0
     },
     "pool": {
-     "purple": 2,
+     "purple": 1,
      "red": 0
     },
-    "difficulty": "Average",
+    "difficulty": "Easy",
     "hazards": []
    },
    "shortcut": null
@@ -902,11 +976,15 @@
     },
     "uncharted": false,
     "band": "between regions",
-    "time_class1": "3 days to 1 week",
+    "travel_hours_class1": 39.3,
+    "travel_time_class1": "39 hours",
+    "table_7_14_check": "3 days to 1 week",
+    "density": 0,
     "raw": 3,
     "terms": {
      "minor": 1,
-     "distance": 2
+     "distance": 2,
+     "density": 0
     },
     "upgrades": {
      "off_lane": 0,
@@ -1210,11 +1288,15 @@
     },
     "uncharted": false,
     "band": "between regions",
-    "time_class1": "3 days to 1 week",
+    "travel_hours_class1": 228.3,
+    "travel_time_class1": "9 days, 12 hours",
+    "table_7_14_check": "3 days to 1 week",
+    "density": 0,
     "raw": 3,
     "terms": {
      "minor": 1,
-     "distance": 2
+     "distance": 2,
+     "density": 0
     },
     "upgrades": {
      "off_lane": 0,
@@ -1478,11 +1560,15 @@
     },
     "uncharted": false,
     "band": "between regions",
-    "time_class1": "3 days to 1 week",
+    "travel_hours_class1": 267.1,
+    "travel_time_class1": "11 days, 3 hours",
+    "table_7_14_check": "3 days to 1 week",
+    "density": 0,
     "raw": 3,
     "terms": {
      "minor": 1,
-     "distance": 2
+     "distance": 2,
+     "density": 0
     },
     "upgrades": {
      "off_lane": 0,
@@ -1762,11 +1848,15 @@
     },
     "uncharted": true,
     "band": "across the galaxy",
-    "time_class1": "1 to 3 weeks",
-    "raw": 4,
+    "travel_hours_class1": 460.7,
+    "travel_time_class1": "19 days, 5 hours",
+    "table_7_14_check": "1 to 3 weeks",
+    "density": -1,
+    "raw": 3,
     "terms": {
      "minor": 1,
-     "distance": 3
+     "distance": 3,
+     "density": -1
     },
     "upgrades": {
      "off_lane": 1,
@@ -1776,10 +1866,10 @@
      "total": 2
     },
     "pool": {
-     "purple": 2,
+     "purple": 1,
      "red": 2
     },
-    "difficulty": "Daunting",
+    "difficulty": "Hard",
     "hazards": []
    },
    "shortcut": null
@@ -1862,11 +1952,15 @@
     },
     "uncharted": false,
     "band": "within a region",
-    "time_class1": "10 to 72 hours",
-    "raw": 2,
+    "travel_hours_class1": 76.1,
+    "travel_time_class1": "3 days, 4 hours",
+    "table_7_14_check": "10 to 72 hours",
+    "density": 1,
+    "raw": 3,
     "terms": {
      "minor": 1,
-     "distance": 1
+     "distance": 1,
+     "density": 1
     },
     "upgrades": {
      "off_lane": 1,
@@ -1876,13 +1970,93 @@
      "total": 1
     },
     "pool": {
-     "purple": 1,
+     "purple": 2,
      "red": 1
     },
-    "difficulty": "Average",
+    "difficulty": "Hard",
     "hazards": []
    },
-   "shortcut": null
+   "shortcut": {
+    "found": true,
+    "stops": [
+     "Vardos",
+     "Velusia",
+     "Coruscant"
+    ],
+    "stop_ids": [
+     "vardos-l-9",
+     "velusia-l-9",
+     "coruscant-l-9"
+    ],
+    "stop_xy": [
+     [
+      2058.6,
+      2041.5
+     ],
+     [
+      2053.5,
+      2034.1
+     ],
+     [
+      1926,
+      2063.8
+     ]
+    ],
+    "dropoffs": [],
+    "legs": [
+     {
+      "from": "vardos-l-9",
+      "to": "velusia-l-9",
+      "kind": "off",
+      "route": null,
+      "class": null,
+      "length_px": 9
+     },
+     {
+      "from": "velusia-l-9",
+      "to": "coruscant-l-9",
+      "kind": "lane",
+      "route": "Shawken Spur",
+      "class": "minor",
+      "length_px": 130.9
+     }
+    ],
+    "routes_used": [
+     "Shawken Spur"
+    ],
+    "length_px": 139.9,
+    "length_ly": 4804,
+    "share_pct": {
+     "major": 0,
+     "minor": 93.6,
+     "off_lane": 6.4
+    },
+    "uncharted": false,
+    "band": "within a region",
+    "travel_hours_class1": 46.1,
+    "travel_time_class1": "46 hours",
+    "table_7_14_check": "10 to 72 hours",
+    "density": 1,
+    "raw": 3,
+    "terms": {
+     "minor": 1,
+     "distance": 1,
+     "density": 1
+    },
+    "upgrades": {
+     "off_lane": 1,
+     "uncharted": 0,
+     "excess": 0,
+     "hazard": 0,
+     "total": 1
+    },
+    "pool": {
+     "purple": 2,
+     "red": 1
+    },
+    "difficulty": "Hard",
+    "hazards": []
+   }
   },
   {
    "n": 12,
@@ -1945,11 +2119,1164 @@
     },
     "uncharted": false,
     "band": "within a region",
-    "time_class1": "10 to 72 hours",
+    "travel_hours_class1": 23.6,
+    "travel_time_class1": "24 hours",
+    "table_7_14_check": "10 to 72 hours",
+    "density": 1,
+    "raw": 3,
+    "terms": {
+     "minor": 1,
+     "distance": 1,
+     "density": 1
+    },
+    "upgrades": {
+     "off_lane": 0,
+     "uncharted": 0,
+     "excess": 0,
+     "hazard": 0,
+     "total": 0
+    },
+    "pool": {
+     "purple": 3,
+     "red": 0
+    },
+    "difficulty": "Hard",
+    "hazards": []
+   },
+   "shortcut": {
+    "found": true,
+    "stops": [
+     "Coruscant",
+     "Ixtlar",
+     "The Spin near Ixtlar",
+     "Aargau"
+    ],
+    "stop_ids": [
+     "coruscant-l-9",
+     "ixtlar-l-10",
+     "drop:1",
+     "aargau-l-10"
+    ],
+    "stop_xy": [
+     [
+      1926,
+      2063.8
+     ],
+     [
+      1980.7,
+      2075.9
+     ],
+     [
+      2003,
+      2074.1
+     ],
+     [
+      2002.6,
+      2069.5
+     ]
+    ],
+    "dropoffs": [
+     "drop:1"
+    ],
+    "legs": [
+     {
+      "from": "coruscant-l-9",
+      "to": "ixtlar-l-10",
+      "kind": "lane",
+      "route": "Corellian Run",
+      "class": "major",
+      "length_px": 56
+     },
+     {
+      "from": "ixtlar-l-10",
+      "to": "drop:1",
+      "kind": "lane",
+      "route": "The Spin",
+      "class": "minor",
+      "length_px": 22.4
+     },
+     {
+      "from": "drop:1",
+      "to": "aargau-l-10",
+      "kind": "off",
+      "route": null,
+      "class": null,
+      "length_px": 4.6
+     }
+    ],
+    "routes_used": [
+     "Corellian Run",
+     "The Spin"
+    ],
+    "length_px": 82.9,
+    "length_ly": 2848,
+    "share_pct": {
+     "major": 67.5,
+     "minor": 27,
+     "off_lane": 5.5
+    },
+    "uncharted": false,
+    "band": "within a region",
+    "travel_hours_class1": 15.3,
+    "travel_time_class1": "15 hours",
+    "table_7_14_check": "10 to 72 hours",
+    "density": 1,
+    "raw": 3,
+    "terms": {
+     "minor": 1,
+     "distance": 1,
+     "density": 1
+    },
+    "upgrades": {
+     "off_lane": 1,
+     "uncharted": 0,
+     "excess": 0,
+     "hazard": 0,
+     "total": 1
+    },
+    "pool": {
+     "purple": 2,
+     "red": 1
+    },
+    "difficulty": "Hard",
+    "hazards": []
+   }
+  },
+  {
+   "n": 13,
+   "trip": "Kubindi - Formos",
+   "ratio": 1,
+   "primary": {
+    "found": true,
+    "stops": [
+     "Kubindi",
+     "Formos"
+    ],
+    "stop_ids": [
+     "kubindi-t-9",
+     "formos-t-10"
+    ],
+    "stop_xy": [
+     [
+      3193.3,
+      2025.9
+     ],
+     [
+      3229.7,
+      2097.2
+     ]
+    ],
+    "dropoffs": [],
+    "legs": [
+     {
+      "from": "kubindi-t-9",
+      "to": "formos-t-10",
+      "kind": "lane",
+      "route": "Triellus Trade Route",
+      "class": "minor",
+      "length_px": 80.1
+     }
+    ],
+    "routes_used": [
+     "Triellus Trade Route"
+    ],
+    "length_px": 80.1,
+    "length_ly": 2751,
+    "share_pct": {
+     "major": 0,
+     "minor": 100,
+     "off_lane": 0
+    },
+    "uncharted": false,
+    "band": "within a region",
+    "travel_hours_class1": 24,
+    "travel_time_class1": "24 hours",
+    "table_7_14_check": "10 to 72 hours",
+    "density": -1,
+    "raw": 1,
+    "terms": {
+     "minor": 1,
+     "distance": 1,
+     "density": -1
+    },
+    "upgrades": {
+     "off_lane": 0,
+     "uncharted": 0,
+     "excess": 0,
+     "hazard": 0,
+     "total": 0
+    },
+    "pool": {
+     "purple": 1,
+     "red": 0
+    },
+    "difficulty": "Easy",
+    "hazards": []
+   },
+   "shortcut": null
+  },
+  {
+   "n": 14,
+   "trip": "Formos - Esseles",
+   "ratio": 1.55,
+   "primary": {
+    "found": true,
+    "stops": [
+     "Formos",
+     "Kubindi",
+     "Marleyvane",
+     "Yarma",
+     "Dennogra",
+     "Taskeed",
+     "Jabiim",
+     "Naraka",
+     "Sy Myrth",
+     "Centares",
+     "Gizer",
+     "Lantillies",
+     "Taanab",
+     "Tirahnn",
+     "Chazwa",
+     "Vurdon Ka",
+     "Castell",
+     "Yabol Opa",
+     "Alsakan",
+     "Coruscant",
+     "Chandrila",
+     "Esseles"
+    ],
+    "stop_ids": [
+     "formos-t-10",
+     "kubindi-t-9",
+     "marleyvane-t-8",
+     "yarma-t-8",
+     "dennogra-s-8",
+     "taskeed-s-7",
+     "jabiim-s-7",
+     "naraka-s-7",
+     "sy-myrth-s-7",
+     "centares-r-7",
+     "gizer-p-8",
+     "lantillies-p-8",
+     "taanab-o-8",
+     "tirahnn-n-8",
+     "chazwa-n-8",
+     "vurdon-ka-m-9",
+     "castell-m-9",
+     "yabol-opa-m-9",
+     "alsakan-l-9",
+     "coruscant-l-9",
+     "chandrila-l-9",
+     "esseles-l-9"
+    ],
+    "stop_xy": [
+     [
+      3229.7,
+      2097.2
+     ],
+     [
+      3193.3,
+      2025.9
+     ],
+     [
+      3101.9,
+      1826.4
+     ],
+     [
+      3097.6,
+      1809.6
+     ],
+     [
+      3048.5,
+      1786.7
+     ],
+     [
+      3031.4,
+      1761.2
+     ],
+     [
+      3031.4,
+      1739.2
+     ],
+     [
+      3002.4,
+      1703.4
+     ],
+     [
+      2946.9,
+      1698.4
+     ],
+     [
+      2855.6,
+      1682.4
+     ],
+     [
+      2536.2,
+      1819.6
+     ],
+     [
+      2564.9,
+      1888.9
+     ],
+     [
+      2443.8,
+      1903.4
+     ],
+     [
+      2300.5,
+      1893.7
+     ],
+     [
+      2218.9,
+      1905.8
+     ],
+     [
+      2173.2,
+      1927
+     ],
+     [
+      2132.6,
+      1946.6
+     ],
+     [
+      2082.8,
+      1965.3
+     ],
+     [
+      1946.7,
+      2050.5
+     ],
+     [
+      1926,
+      2063.8
+     ],
+     [
+      2005.4,
+      2016.1
+     ],
+     [
+      2032.2,
+      1979
+     ]
+    ],
+    "dropoffs": [],
+    "legs": [
+     {
+      "from": "formos-t-10",
+      "to": "kubindi-t-9",
+      "kind": "lane",
+      "route": "Triellus Trade Route",
+      "class": "minor",
+      "length_px": 80.1
+     },
+     {
+      "from": "kubindi-t-9",
+      "to": "marleyvane-t-8",
+      "kind": "lane",
+      "route": "Triellus Trade Route",
+      "class": "minor",
+      "length_px": 219.4
+     },
+     {
+      "from": "marleyvane-t-8",
+      "to": "yarma-t-8",
+      "kind": "lane",
+      "route": "Triellus Trade Route",
+      "class": "minor",
+      "length_px": 17.3
+     },
+     {
+      "from": "yarma-t-8",
+      "to": "dennogra-s-8",
+      "kind": "lane",
+      "route": "Triellus Trade Route",
+      "class": "minor",
+      "length_px": 54.2
+     },
+     {
+      "from": "dennogra-s-8",
+      "to": "taskeed-s-7",
+      "kind": "lane",
+      "route": "Triellus Trade Route",
+      "class": "minor",
+      "length_px": 30.7
+     },
+     {
+      "from": "taskeed-s-7",
+      "to": "jabiim-s-7",
+      "kind": "lane",
+      "route": "Triellus Trade Route",
+      "class": "minor",
+      "length_px": 22
+     },
+     {
+      "from": "jabiim-s-7",
+      "to": "naraka-s-7",
+      "kind": "lane",
+      "route": "Triellus Trade Route",
+      "class": "minor",
+      "length_px": 46.1
+     },
+     {
+      "from": "naraka-s-7",
+      "to": "sy-myrth-s-7",
+      "kind": "lane",
+      "route": "Triellus Trade Route",
+      "class": "minor",
+      "length_px": 55.7
+     },
+     {
+      "from": "sy-myrth-s-7",
+      "to": "centares-r-7",
+      "kind": "lane",
+      "route": "Triellus Trade Route",
+      "class": "minor",
+      "length_px": 92.7
+     },
+     {
+      "from": "centares-r-7",
+      "to": "gizer-p-8",
+      "kind": "lane",
+      "route": "Perlemian Trade Route",
+      "class": "major",
+      "length_px": 347.6
+     },
+     {
+      "from": "gizer-p-8",
+      "to": "lantillies-p-8",
+      "kind": "lane",
+      "route": "Perlemian Trade Route",
+      "class": "major",
+      "length_px": 75
+     },
+     {
+      "from": "lantillies-p-8",
+      "to": "taanab-o-8",
+      "kind": "lane",
+      "route": "Perlemian Trade Route",
+      "class": "major",
+      "length_px": 122
+     },
+     {
+      "from": "taanab-o-8",
+      "to": "tirahnn-n-8",
+      "kind": "lane",
+      "route": "Perlemian Trade Route",
+      "class": "major",
+      "length_px": 143.6
+     },
+     {
+      "from": "tirahnn-n-8",
+      "to": "chazwa-n-8",
+      "kind": "lane",
+      "route": "Perlemian Trade Route",
+      "class": "major",
+      "length_px": 82.5
+     },
+     {
+      "from": "chazwa-n-8",
+      "to": "vurdon-ka-m-9",
+      "kind": "lane",
+      "route": "Perlemian Trade Route",
+      "class": "major",
+      "length_px": 50.4
+     },
+     {
+      "from": "vurdon-ka-m-9",
+      "to": "castell-m-9",
+      "kind": "lane",
+      "route": "Perlemian Trade Route",
+      "class": "major",
+      "length_px": 45.1
+     },
+     {
+      "from": "castell-m-9",
+      "to": "yabol-opa-m-9",
+      "kind": "lane",
+      "route": "Perlemian Trade Route",
+      "class": "major",
+      "length_px": 53.2
+     },
+     {
+      "from": "yabol-opa-m-9",
+      "to": "alsakan-l-9",
+      "kind": "lane",
+      "route": "Perlemian Trade Route",
+      "class": "major",
+      "length_px": 160.6
+     },
+     {
+      "from": "alsakan-l-9",
+      "to": "coruscant-l-9",
+      "kind": "lane",
+      "route": "Perlemian Trade Route",
+      "class": "major",
+      "length_px": 24.6
+     },
+     {
+      "from": "coruscant-l-9",
+      "to": "chandrila-l-9",
+      "kind": "lane",
+      "route": "Stassia Alley",
+      "class": "minor",
+      "length_px": 92.6
+     },
+     {
+      "from": "chandrila-l-9",
+      "to": "esseles-l-9",
+      "kind": "lane",
+      "route": "Bormea/Darpa Corridor",
+      "class": "minor",
+      "length_px": 45.8
+     }
+    ],
+    "routes_used": [
+     "Triellus Trade Route",
+     "Perlemian Trade Route",
+     "Stassia Alley",
+     "Bormea/Darpa Corridor"
+    ],
+    "length_px": 1861.2,
+    "length_ly": 63921,
+    "share_pct": {
+     "major": 59.3,
+     "minor": 40.7,
+     "off_lane": 0
+    },
+    "uncharted": false,
+    "band": "across the galaxy",
+    "travel_hours_class1": 327.4,
+    "travel_time_class1": "13 days, 15 hours",
+    "table_7_14_check": "1 to 3 weeks",
+    "density": -1,
+    "raw": 3,
+    "terms": {
+     "minor": 1,
+     "distance": 3,
+     "density": -1
+    },
+    "upgrades": {
+     "off_lane": 0,
+     "uncharted": 0,
+     "excess": 0,
+     "hazard": 0,
+     "total": 0
+    },
+    "pool": {
+     "purple": 3,
+     "red": 0
+    },
+    "difficulty": "Hard",
+    "hazards": []
+   },
+   "shortcut": {
+    "found": true,
+    "stops": [
+     "Formos",
+     "Kubindi",
+     "Marleyvane",
+     "Yarma",
+     "Dennogra",
+     "Taskeed",
+     "Jabiim",
+     "Naraka",
+     "Sy Myrth",
+     "Centares",
+     "Gizer",
+     "Lantillies",
+     "Taanab",
+     "Tirahnn",
+     "Chazwa",
+     "Vurdon Ka",
+     "Castell",
+     "Yabol Opa",
+     "Thokos",
+     "Shawken Spur near Thokos",
+     "Esseles"
+    ],
+    "stop_ids": [
+     "formos-t-10",
+     "kubindi-t-9",
+     "marleyvane-t-8",
+     "yarma-t-8",
+     "dennogra-s-8",
+     "taskeed-s-7",
+     "jabiim-s-7",
+     "naraka-s-7",
+     "sy-myrth-s-7",
+     "centares-r-7",
+     "gizer-p-8",
+     "lantillies-p-8",
+     "taanab-o-8",
+     "tirahnn-n-8",
+     "chazwa-n-8",
+     "vurdon-ka-m-9",
+     "castell-m-9",
+     "yabol-opa-m-9",
+     "thokos-l-9",
+     "drop:1",
+     "esseles-l-9"
+    ],
+    "stop_xy": [
+     [
+      3229.7,
+      2097.2
+     ],
+     [
+      3193.3,
+      2025.9
+     ],
+     [
+      3101.9,
+      1826.4
+     ],
+     [
+      3097.6,
+      1809.6
+     ],
+     [
+      3048.5,
+      1786.7
+     ],
+     [
+      3031.4,
+      1761.2
+     ],
+     [
+      3031.4,
+      1739.2
+     ],
+     [
+      3002.4,
+      1703.4
+     ],
+     [
+      2946.9,
+      1698.4
+     ],
+     [
+      2855.6,
+      1682.4
+     ],
+     [
+      2536.2,
+      1819.6
+     ],
+     [
+      2564.9,
+      1888.9
+     ],
+     [
+      2443.8,
+      1903.4
+     ],
+     [
+      2300.5,
+      1893.7
+     ],
+     [
+      2218.9,
+      1905.8
+     ],
+     [
+      2173.2,
+      1927
+     ],
+     [
+      2132.6,
+      1946.6
+     ],
+     [
+      2082.8,
+      1965.3
+     ],
+     [
+      2033.3,
+      1976.2
+     ],
+     [
+      2032.3,
+      1979
+     ],
+     [
+      2032.2,
+      1979
+     ]
+    ],
+    "dropoffs": [
+     "drop:1"
+    ],
+    "legs": [
+     {
+      "from": "formos-t-10",
+      "to": "kubindi-t-9",
+      "kind": "lane",
+      "route": "Triellus Trade Route",
+      "class": "minor",
+      "length_px": 80.1
+     },
+     {
+      "from": "kubindi-t-9",
+      "to": "marleyvane-t-8",
+      "kind": "lane",
+      "route": "Triellus Trade Route",
+      "class": "minor",
+      "length_px": 219.4
+     },
+     {
+      "from": "marleyvane-t-8",
+      "to": "yarma-t-8",
+      "kind": "lane",
+      "route": "Triellus Trade Route",
+      "class": "minor",
+      "length_px": 17.3
+     },
+     {
+      "from": "yarma-t-8",
+      "to": "dennogra-s-8",
+      "kind": "lane",
+      "route": "Triellus Trade Route",
+      "class": "minor",
+      "length_px": 54.2
+     },
+     {
+      "from": "dennogra-s-8",
+      "to": "taskeed-s-7",
+      "kind": "lane",
+      "route": "Triellus Trade Route",
+      "class": "minor",
+      "length_px": 30.7
+     },
+     {
+      "from": "taskeed-s-7",
+      "to": "jabiim-s-7",
+      "kind": "lane",
+      "route": "Triellus Trade Route",
+      "class": "minor",
+      "length_px": 22
+     },
+     {
+      "from": "jabiim-s-7",
+      "to": "naraka-s-7",
+      "kind": "lane",
+      "route": "Triellus Trade Route",
+      "class": "minor",
+      "length_px": 46.1
+     },
+     {
+      "from": "naraka-s-7",
+      "to": "sy-myrth-s-7",
+      "kind": "lane",
+      "route": "Triellus Trade Route",
+      "class": "minor",
+      "length_px": 55.7
+     },
+     {
+      "from": "sy-myrth-s-7",
+      "to": "centares-r-7",
+      "kind": "lane",
+      "route": "Triellus Trade Route",
+      "class": "minor",
+      "length_px": 92.7
+     },
+     {
+      "from": "centares-r-7",
+      "to": "gizer-p-8",
+      "kind": "lane",
+      "route": "Perlemian Trade Route",
+      "class": "major",
+      "length_px": 347.6
+     },
+     {
+      "from": "gizer-p-8",
+      "to": "lantillies-p-8",
+      "kind": "lane",
+      "route": "Perlemian Trade Route",
+      "class": "major",
+      "length_px": 75
+     },
+     {
+      "from": "lantillies-p-8",
+      "to": "taanab-o-8",
+      "kind": "lane",
+      "route": "Perlemian Trade Route",
+      "class": "major",
+      "length_px": 122
+     },
+     {
+      "from": "taanab-o-8",
+      "to": "tirahnn-n-8",
+      "kind": "lane",
+      "route": "Perlemian Trade Route",
+      "class": "major",
+      "length_px": 143.6
+     },
+     {
+      "from": "tirahnn-n-8",
+      "to": "chazwa-n-8",
+      "kind": "lane",
+      "route": "Perlemian Trade Route",
+      "class": "major",
+      "length_px": 82.5
+     },
+     {
+      "from": "chazwa-n-8",
+      "to": "vurdon-ka-m-9",
+      "kind": "lane",
+      "route": "Perlemian Trade Route",
+      "class": "major",
+      "length_px": 50.4
+     },
+     {
+      "from": "vurdon-ka-m-9",
+      "to": "castell-m-9",
+      "kind": "lane",
+      "route": "Perlemian Trade Route",
+      "class": "major",
+      "length_px": 45.1
+     },
+     {
+      "from": "castell-m-9",
+      "to": "yabol-opa-m-9",
+      "kind": "lane",
+      "route": "Perlemian Trade Route",
+      "class": "major",
+      "length_px": 53.2
+     },
+     {
+      "from": "yabol-opa-m-9",
+      "to": "thokos-l-9",
+      "kind": "off",
+      "route": null,
+      "class": null,
+      "length_px": 50.7
+     },
+     {
+      "from": "thokos-l-9",
+      "to": "drop:1",
+      "kind": "lane",
+      "route": "Shawken Spur",
+      "class": "minor",
+      "length_px": 3
+     },
+     {
+      "from": "drop:1",
+      "to": "esseles-l-9",
+      "kind": "off",
+      "route": null,
+      "class": null,
+      "length_px": 0.1
+     }
+    ],
+    "routes_used": [
+     "Triellus Trade Route",
+     "Perlemian Trade Route",
+     "Shawken Spur"
+    ],
+    "length_px": 1591.4,
+    "length_ly": 54655,
+    "share_pct": {
+     "major": 57.8,
+     "minor": 39,
+     "off_lane": 3.2
+    },
+    "uncharted": false,
+    "band": "across the galaxy",
+    "travel_hours_class1": 308.7,
+    "travel_time_class1": "12 days, 21 hours",
+    "table_7_14_check": "1 to 3 weeks",
+    "density": -1,
+    "raw": 3,
+    "terms": {
+     "minor": 1,
+     "distance": 3,
+     "density": -1
+    },
+    "upgrades": {
+     "off_lane": 1,
+     "uncharted": 0,
+     "excess": 0,
+     "hazard": 0,
+     "total": 1
+    },
+    "pool": {
+     "purple": 2,
+     "red": 1
+    },
+    "difficulty": "Hard",
+    "hazards": []
+   }
+  },
+  {
+   "n": 15,
+   "trip": "Coruscant - Alderaan",
+   "ratio": 7.42,
+   "primary": {
+    "found": true,
+    "stops": [
+     "Coruscant",
+     "Ixtlar",
+     "Corellia",
+     "Tinnel",
+     "Loronar",
+     "Byblos",
+     "Abednedo",
+     "Iseno",
+     "Denon",
+     "Candovant",
+     "Korbori",
+     "Suntilla",
+     "Exodeen",
+     "Quellor",
+     "Cato Neimoidia",
+     "Commenor",
+     "Alderaan"
+    ],
+    "stop_ids": [
+     "coruscant-l-9",
+     "ixtlar-l-10",
+     "corellia-m-11",
+     "tinnel-m-12",
+     "loronar-m-12",
+     "byblos-m-12",
+     "abednedo-n-12",
+     "iseno-n-13",
+     "denon-n-13",
+     "candovant-n-12",
+     "korbori-n-12",
+     "suntilla-n-12",
+     "exodeen-m-12",
+     "quellor-n-12",
+     "cato-neimoidia-n-11",
+     "commenor-n-10",
+     "alderaan-m-10"
+    ],
+    "stop_xy": [
+     [
+      1926,
+      2063.8
+     ],
+     [
+      1980.7,
+      2075.9
+     ],
+     [
+      2155.9,
+      2341.6
+     ],
+     [
+      2173.6,
+      2379
+     ],
+     [
+      2197.1,
+      2429
+     ],
+     [
+      2206.3,
+      2453
+     ],
+     [
+      2234.4,
+      2495.4
+     ],
+     [
+      2248.8,
+      2509.8
+     ],
+     [
+      2258.3,
+      2524
+     ],
+     [
+      2244.6,
+      2457.4
+     ],
+     [
+      2235.9,
+      2425
+     ],
+     [
+      2275.6,
+      2368.7
+     ],
+     [
+      2215.7,
+      2368.8
+     ],
+     [
+      2286.8,
+      2389
+     ],
+     [
+      2244,
+      2264.9
+     ],
+     [
+      2334.5,
+      2190.9
+     ],
+     [
+      2112.6,
+      2075.9
+     ]
+    ],
+    "dropoffs": [],
+    "legs": [
+     {
+      "from": "coruscant-l-9",
+      "to": "ixtlar-l-10",
+      "kind": "lane",
+      "route": "Corellian Run",
+      "class": "major",
+      "length_px": 56
+     },
+     {
+      "from": "ixtlar-l-10",
+      "to": "corellia-m-11",
+      "kind": "lane",
+      "route": "Corellian Run",
+      "class": "major",
+      "length_px": 318.3
+     },
+     {
+      "from": "corellia-m-11",
+      "to": "tinnel-m-12",
+      "kind": "lane",
+      "route": "Corellian Run",
+      "class": "major",
+      "length_px": 41.4
+     },
+     {
+      "from": "tinnel-m-12",
+      "to": "loronar-m-12",
+      "kind": "lane",
+      "route": "Corellian Run",
+      "class": "major",
+      "length_px": 55.2
+     },
+     {
+      "from": "loronar-m-12",
+      "to": "byblos-m-12",
+      "kind": "lane",
+      "route": "Corellian Run",
+      "class": "major",
+      "length_px": 25.7
+     },
+     {
+      "from": "byblos-m-12",
+      "to": "abednedo-n-12",
+      "kind": "lane",
+      "route": "Corellian Run",
+      "class": "major",
+      "length_px": 50.9
+     },
+     {
+      "from": "abednedo-n-12",
+      "to": "iseno-n-13",
+      "kind": "lane",
+      "route": "Corellian Run",
+      "class": "major",
+      "length_px": 20.4
+     },
+     {
+      "from": "iseno-n-13",
+      "to": "denon-n-13",
+      "kind": "lane",
+      "route": "Corellian Run",
+      "class": "major",
+      "length_px": 17.1
+     },
+     {
+      "from": "denon-n-13",
+      "to": "candovant-n-12",
+      "kind": "lane",
+      "route": "Hydian Way",
+      "class": "major",
+      "length_px": 68
+     },
+     {
+      "from": "candovant-n-12",
+      "to": "korbori-n-12",
+      "kind": "lane",
+      "route": "Hydian Way",
+      "class": "major",
+      "length_px": 33.5
+     },
+     {
+      "from": "korbori-n-12",
+      "to": "suntilla-n-12",
+      "kind": "lane",
+      "route": "Hydian Way",
+      "class": "major",
+      "length_px": 68.9
+     },
+     {
+      "from": "suntilla-n-12",
+      "to": "exodeen-m-12",
+      "kind": "lane",
+      "route": "Hydian Way",
+      "class": "major",
+      "length_px": 59.9
+     },
+     {
+      "from": "exodeen-m-12",
+      "to": "quellor-n-12",
+      "kind": "lane",
+      "route": "Nanth'ri Trade Route",
+      "class": "minor",
+      "length_px": 73.9
+     },
+     {
+      "from": "quellor-n-12",
+      "to": "cato-neimoidia-n-11",
+      "kind": "lane",
+      "route": "Quellor Run",
+      "class": "minor",
+      "length_px": 131.3
+     },
+     {
+      "from": "cato-neimoidia-n-11",
+      "to": "commenor-n-10",
+      "kind": "lane",
+      "route": "Quellor Run",
+      "class": "minor",
+      "length_px": 116.9
+     },
+     {
+      "from": "commenor-n-10",
+      "to": "alderaan-m-10",
+      "kind": "lane",
+      "route": "Commenor Run",
+      "class": "minor",
+      "length_px": 249.9
+     }
+    ],
+    "routes_used": [
+     "Corellian Run",
+     "Hydian Way",
+     "Nanth'ri Trade Route",
+     "Quellor Run",
+     "Commenor Run"
+    ],
+    "length_px": 1387.3,
+    "length_ly": 47646,
+    "share_pct": {
+     "major": 58.8,
+     "minor": 41.2,
+     "off_lane": 0
+    },
+    "uncharted": false,
+    "band": "within a region",
+    "travel_hours_class1": 245.7,
+    "travel_time_class1": "10 days, 6 hours",
+    "table_7_14_check": "10 to 72 hours",
+    "density": 0,
     "raw": 2,
     "terms": {
      "minor": 1,
-     "distance": 1
+     "distance": 1,
+     "density": 0
     },
     "upgrades": {
      "off_lane": 0,
@@ -1965,7 +3292,488 @@
     "difficulty": "Average",
     "hazards": []
    },
-   "shortcut": null
+   "shortcut": {
+    "found": true,
+    "stops": [
+     "Coruscant",
+     "Ixtlar",
+     "Wukkar",
+     "The Spin near Leria Kerlsil",
+     "Alderaan"
+    ],
+    "stop_ids": [
+     "coruscant-l-9",
+     "ixtlar-l-10",
+     "wukkar-l-10",
+     "drop:1",
+     "alderaan-m-10"
+    ],
+    "stop_xy": [
+     [
+      1926,
+      2063.8
+     ],
+     [
+      1980.7,
+      2075.9
+     ],
+     [
+      2034,
+      2071.5
+     ],
+     [
+      2112.6,
+      2075.4
+     ],
+     [
+      2112.6,
+      2075.9
+     ]
+    ],
+    "dropoffs": [
+     "drop:1"
+    ],
+    "legs": [
+     {
+      "from": "coruscant-l-9",
+      "to": "ixtlar-l-10",
+      "kind": "lane",
+      "route": "Corellian Run",
+      "class": "major",
+      "length_px": 56
+     },
+     {
+      "from": "ixtlar-l-10",
+      "to": "wukkar-l-10",
+      "kind": "lane",
+      "route": "The Spin",
+      "class": "minor",
+      "length_px": 53.5
+     },
+     {
+      "from": "wukkar-l-10",
+      "to": "drop:1",
+      "kind": "lane",
+      "route": "The Spin",
+      "class": "minor",
+      "length_px": 78.7
+     },
+     {
+      "from": "drop:1",
+      "to": "alderaan-m-10",
+      "kind": "off",
+      "route": null,
+      "class": null,
+      "length_px": 0.5
+     }
+    ],
+    "routes_used": [
+     "Corellian Run",
+     "The Spin"
+    ],
+    "length_px": 188.7,
+    "length_ly": 6480,
+    "share_pct": {
+     "major": 29.7,
+     "minor": 70.1,
+     "off_lane": 0.2
+    },
+    "uncharted": false,
+    "band": "within a region",
+    "travel_hours_class1": 45.1,
+    "travel_time_class1": "45 hours",
+    "table_7_14_check": "10 to 72 hours",
+    "density": 1,
+    "raw": 3,
+    "terms": {
+     "minor": 1,
+     "distance": 1,
+     "density": 1
+    },
+    "upgrades": {
+     "off_lane": 1,
+     "uncharted": 0,
+     "excess": 0,
+     "hazard": 0,
+     "total": 1
+    },
+    "pool": {
+     "purple": 2,
+     "red": 1
+    },
+    "difficulty": "Hard",
+    "hazards": []
+   }
+  },
+  {
+   "n": 16,
+   "trip": "Alderaan - Corellia",
+   "ratio": 3.76,
+   "primary": {
+    "found": true,
+    "stops": [
+     "Alderaan",
+     "Commenor",
+     "Cato Neimoidia",
+     "Quellor",
+     "Exodeen",
+     "Suntilla",
+     "Korbori",
+     "Candovant",
+     "Denon",
+     "Iseno",
+     "Abednedo",
+     "Byblos",
+     "Loronar",
+     "Tinnel",
+     "Corellia"
+    ],
+    "stop_ids": [
+     "alderaan-m-10",
+     "commenor-n-10",
+     "cato-neimoidia-n-11",
+     "quellor-n-12",
+     "exodeen-m-12",
+     "suntilla-n-12",
+     "korbori-n-12",
+     "candovant-n-12",
+     "denon-n-13",
+     "iseno-n-13",
+     "abednedo-n-12",
+     "byblos-m-12",
+     "loronar-m-12",
+     "tinnel-m-12",
+     "corellia-m-11"
+    ],
+    "stop_xy": [
+     [
+      2112.6,
+      2075.9
+     ],
+     [
+      2334.5,
+      2190.9
+     ],
+     [
+      2244,
+      2264.9
+     ],
+     [
+      2286.8,
+      2389
+     ],
+     [
+      2215.7,
+      2368.8
+     ],
+     [
+      2275.6,
+      2368.7
+     ],
+     [
+      2235.9,
+      2425
+     ],
+     [
+      2244.6,
+      2457.4
+     ],
+     [
+      2258.3,
+      2524
+     ],
+     [
+      2248.8,
+      2509.8
+     ],
+     [
+      2234.4,
+      2495.4
+     ],
+     [
+      2206.3,
+      2453
+     ],
+     [
+      2197.1,
+      2429
+     ],
+     [
+      2173.6,
+      2379
+     ],
+     [
+      2155.9,
+      2341.6
+     ]
+    ],
+    "dropoffs": [],
+    "legs": [
+     {
+      "from": "alderaan-m-10",
+      "to": "commenor-n-10",
+      "kind": "lane",
+      "route": "Commenor Run",
+      "class": "minor",
+      "length_px": 249.9
+     },
+     {
+      "from": "commenor-n-10",
+      "to": "cato-neimoidia-n-11",
+      "kind": "lane",
+      "route": "Quellor Run",
+      "class": "minor",
+      "length_px": 116.9
+     },
+     {
+      "from": "cato-neimoidia-n-11",
+      "to": "quellor-n-12",
+      "kind": "lane",
+      "route": "Quellor Run",
+      "class": "minor",
+      "length_px": 131.3
+     },
+     {
+      "from": "quellor-n-12",
+      "to": "exodeen-m-12",
+      "kind": "lane",
+      "route": "Nanth'ri Trade Route",
+      "class": "minor",
+      "length_px": 73.9
+     },
+     {
+      "from": "exodeen-m-12",
+      "to": "suntilla-n-12",
+      "kind": "lane",
+      "route": "Hydian Way",
+      "class": "major",
+      "length_px": 59.9
+     },
+     {
+      "from": "suntilla-n-12",
+      "to": "korbori-n-12",
+      "kind": "lane",
+      "route": "Hydian Way",
+      "class": "major",
+      "length_px": 68.9
+     },
+     {
+      "from": "korbori-n-12",
+      "to": "candovant-n-12",
+      "kind": "lane",
+      "route": "Hydian Way",
+      "class": "major",
+      "length_px": 33.5
+     },
+     {
+      "from": "candovant-n-12",
+      "to": "denon-n-13",
+      "kind": "lane",
+      "route": "Hydian Way",
+      "class": "major",
+      "length_px": 68
+     },
+     {
+      "from": "denon-n-13",
+      "to": "iseno-n-13",
+      "kind": "lane",
+      "route": "Corellian Run",
+      "class": "major",
+      "length_px": 17.1
+     },
+     {
+      "from": "iseno-n-13",
+      "to": "abednedo-n-12",
+      "kind": "lane",
+      "route": "Corellian Run",
+      "class": "major",
+      "length_px": 20.4
+     },
+     {
+      "from": "abednedo-n-12",
+      "to": "byblos-m-12",
+      "kind": "lane",
+      "route": "Corellian Run",
+      "class": "major",
+      "length_px": 50.9
+     },
+     {
+      "from": "byblos-m-12",
+      "to": "loronar-m-12",
+      "kind": "lane",
+      "route": "Corellian Run",
+      "class": "major",
+      "length_px": 25.7
+     },
+     {
+      "from": "loronar-m-12",
+      "to": "tinnel-m-12",
+      "kind": "lane",
+      "route": "Corellian Run",
+      "class": "major",
+      "length_px": 55.2
+     },
+     {
+      "from": "tinnel-m-12",
+      "to": "corellia-m-11",
+      "kind": "lane",
+      "route": "Corellian Run",
+      "class": "major",
+      "length_px": 41.4
+     }
+    ],
+    "routes_used": [
+     "Commenor Run",
+     "Quellor Run",
+     "Nanth'ri Trade Route",
+     "Hydian Way",
+     "Corellian Run"
+    ],
+    "length_px": 1013,
+    "length_ly": 34791,
+    "share_pct": {
+     "major": 43.5,
+     "minor": 56.5,
+     "off_lane": 0
+    },
+    "uncharted": false,
+    "band": "within a region",
+    "travel_hours_class1": 211.7,
+    "travel_time_class1": "8 days, 20 hours",
+    "table_7_14_check": "10 to 72 hours",
+    "density": 0,
+    "raw": 2,
+    "terms": {
+     "minor": 1,
+     "distance": 1,
+     "density": 0
+    },
+    "upgrades": {
+     "off_lane": 0,
+     "uncharted": 0,
+     "excess": 0,
+     "hazard": 0,
+     "total": 0
+    },
+    "pool": {
+     "purple": 2,
+     "red": 0
+    },
+    "difficulty": "Average",
+    "hazards": []
+   },
+   "shortcut": {
+    "found": true,
+    "stops": [
+     "Alderaan",
+     "The Spin near Leria Kerlsil",
+     "Wukkar",
+     "Ixtlar",
+     "Corellia"
+    ],
+    "stop_ids": [
+     "alderaan-m-10",
+     "drop:1",
+     "wukkar-l-10",
+     "ixtlar-l-10",
+     "corellia-m-11"
+    ],
+    "stop_xy": [
+     [
+      2112.6,
+      2075.9
+     ],
+     [
+      2112.6,
+      2075.4
+     ],
+     [
+      2034,
+      2071.5
+     ],
+     [
+      1980.7,
+      2075.9
+     ],
+     [
+      2155.9,
+      2341.6
+     ]
+    ],
+    "dropoffs": [
+     "drop:1"
+    ],
+    "legs": [
+     {
+      "from": "alderaan-m-10",
+      "to": "drop:1",
+      "kind": "off",
+      "route": null,
+      "class": null,
+      "length_px": 0.5
+     },
+     {
+      "from": "drop:1",
+      "to": "wukkar-l-10",
+      "kind": "lane",
+      "route": "The Spin",
+      "class": "minor",
+      "length_px": 78.7
+     },
+     {
+      "from": "wukkar-l-10",
+      "to": "ixtlar-l-10",
+      "kind": "lane",
+      "route": "The Spin",
+      "class": "minor",
+      "length_px": 53.5
+     },
+     {
+      "from": "ixtlar-l-10",
+      "to": "corellia-m-11",
+      "kind": "lane",
+      "route": "Corellian Run",
+      "class": "major",
+      "length_px": 318.3
+     }
+    ],
+    "routes_used": [
+     "The Spin",
+     "Corellian Run"
+    ],
+    "length_px": 451,
+    "length_ly": 15488,
+    "share_pct": {
+     "major": 70.6,
+     "minor": 29.3,
+     "off_lane": 0.1
+    },
+    "uncharted": false,
+    "band": "within a region",
+    "travel_hours_class1": 69,
+    "travel_time_class1": "2 days, 21 hours",
+    "table_7_14_check": "10 to 72 hours",
+    "density": 1,
+    "raw": 3,
+    "terms": {
+     "minor": 1,
+     "distance": 1,
+     "density": 1
+    },
+    "upgrades": {
+     "off_lane": 1,
+     "uncharted": 0,
+     "excess": 0,
+     "hazard": 0,
+     "total": 1
+    },
+    "pool": {
+     "purple": 2,
+     "red": 1
+    },
+    "difficulty": "Hard",
+    "hazards": []
+   }
   }
  ]
 }

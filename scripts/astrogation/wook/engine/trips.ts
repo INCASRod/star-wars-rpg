@@ -1,6 +1,6 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
-import { difficulty, plan, bandOf, CONFIG } from '../../../../src/lib/astrogation'
+import { difficulty, plan, bandOf, travelTime, CONFIG } from '../../../../src/lib/astrogation'
 import type { Endpoint, Graph, Hazard, RouteResult } from '../../../../src/lib/astrogation/types'
 
 const DATA = path.resolve(__dirname, '..', '..', '..', '..', 'data', 'astrogation')
@@ -39,6 +39,10 @@ export const TRIPS: Trip[] = [
   { n: 10, label: 'Coruscant - pin (Unknown Regions)', from: 'Coruscant', to: UNKNOWN_PIN },
   { n: 11, label: 'Vardos (no lane) - Coruscant', from: 'Vardos', to: 'Coruscant' },
   { n: 12, label: 'Coruscant - Aargau', from: 'Coruscant', to: 'Aargau' },
+  { n: 13, label: 'Kubindi - Formos', from: 'Kubindi', to: 'Formos' },
+  { n: 14, label: 'Formos - Esseles', from: 'Formos', to: 'Esseles' },
+  { n: 15, label: 'Coruscant - Alderaan', from: 'Coruscant', to: 'Alderaan' },
+  { n: 16, label: 'Alderaan - Corellia', from: 'Alderaan', to: 'Corellia' },
 ]
 
 export function endpoint(graph: Graph, e: TripEnd): Endpoint {
@@ -50,10 +54,10 @@ export function endpoint(graph: Graph, e: TripEnd): Endpoint {
 
 export function evaluate(r: RouteResult, hazards: Hazard[]) {
   const band = bandOf(r)
-  return { route: r, difficulty: difficulty(r, hazards), band, bandName: CONFIG.bands[band].name, time: CONFIG.bands[band].time }
+  return { route: r, difficulty: difficulty(r, hazards), band, bandName: CONFIG.bands[band].name, time: CONFIG.bands[band].time, travel: travelTime(r) }
 }
 
-/** The lanes route and, at >= CONFIG.shortcutRatio x the straight line, the direct jump; both with their difficulty. */
+/** The lane route and, when it pays (CONFIG.hopSave*), the hop route; both with their time and difficulty. */
 export function runTrip(graph: Graph, hazards: Hazard[], t: Trip) {
   const p = plan(graph, endpoint(graph, t.from), endpoint(graph, t.to))
   return { trip: t, ratio: p.ratio, primary: evaluate(p.primary, hazards), shortcut: p.shortcut ? evaluate(p.shortcut, hazards) : null }

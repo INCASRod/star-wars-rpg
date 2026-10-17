@@ -48,6 +48,10 @@ export interface Leg {
   route?: string
   class?: LaneClass
   lengthPx: number
+  /** travel time of this leg at hyperdrive class 1 */
+  hours: number
+  /** region that sets this leg's density: its start planet, else its end planet; null when neither end is a charted planet (a pin) */
+  region: string | null
 }
 
 export interface RouteResult {
@@ -58,6 +62,10 @@ export interface RouteResult {
   routesUsed: string[]
   lengthPx: number
   lengthLy: number
+  /** travel time at hyperdrive class 1 (x the class for another ship) */
+  hours: number
+  /** length-weighted mean density of the legs, rounded (Core +1, Rim -1) */
+  density: number
   /** shares of total length; major + minor + off = 1 (all 0 for a zero-length trip) */
   share: { major: number; minor: number; off: number }
   /** an endpoint is a pin */
@@ -71,10 +79,12 @@ export interface Hazard {
 }
 
 export interface DifficultyResult {
-  /** base + minor lane + distance, before the Formidable cap */
+  /** max(0, distance + density) + minor lane, before the Formidable cap */
   raw: number
   minorTerm: number
   distanceTerm: number
+  /** length-weighted mean density of the route */
+  densityTerm: number
   /** upgrades from off-lane share */
   offUpgrades: number
   /** upgrades from an uncharted (pin) endpoint */
@@ -92,10 +102,14 @@ export interface DifficultyResult {
   difficulty: string
 }
 
-/** The lanes route plus, when the lanes are >= CONFIG.shortcutRatio x the straight line, a direct off-lane jump. */
+/**
+ * The lane route (off-lane distance first, then time) and, when it pays, the hop route: lanes plus short off-lane hops, fastest by time.
+ * The hop route is offered when it uses some off-lane AND saves >= CONFIG.hopSaveHours or >= CONFIG.hopSaveShare of the lane time.
+ * Only when no route exists at all is the primary a straight jump.
+ */
 export interface Plan {
   primary: RouteResult
   shortcut?: RouteResult
-  /** lanes length / straight-line distance between the two endpoints */
+  /** lane route length / straight-line distance between the two endpoints (information only) */
   ratio: number
 }

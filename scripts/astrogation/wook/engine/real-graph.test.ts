@@ -1,7 +1,8 @@
 /** Rodrigo's expected trips on the real graph.json. npx tsx --test scripts/astrogation/wook/engine/real-graph.test.ts */
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { TRIPS, loadGraph, loadHazards, runTrip } from './trips'
+import { travelTime } from '../../../../src/lib/astrogation'
+import { TRIPS, loadGraph, loadHazards, runTrip, type evaluate } from './trips'
 
 // ---- Rodrigo's expected trips on the real graph. Expected values are tests; where the data differs, the test FAILS and the actual is reported.
 describe('expected trips (real graph)', () => {
@@ -10,15 +11,16 @@ describe('expected trips (real graph)', () => {
   const by = (n: number) => runTrip(graph, hazards, TRIPS.find(t => t.n === n)!)
   const names = (n: number) => by(n).primary.route.stops.map(s => s.name).join(' > ')
 
-  it('1. Coruscant - Corellia: all major, within region, Easy (1 purple, 0 red), no shortcut offered', () => {
+  it('1. Coruscant - Corellia: all major, within region, Average (2 purple, 0 red: Core density +1), 34 hours, no hop route', () => {
     const x = by(1)
     assert.equal(x.primary.route.share.major, 1)
     assert.equal(x.primary.bandName, 'within a region')
-    assert.equal(x.primary.difficulty.difficulty, 'Easy')
-    assert.deepEqual(x.primary.difficulty.pool, { purple: 1, red: 0 })
+    assert.equal(x.primary.difficulty.difficulty, 'Average')
+    assert.deepEqual(x.primary.difficulty.pool, { purple: 2, red: 0 })
+    assert.equal(x.primary.travel.text, '34 hours')
     assert.equal(x.shortcut, null)
   })
-  it('2. Coruscant - Fedalle: the lanes route is unchanged (via Corellia) AND a shortcut is offered', () => {
+  it('2. Coruscant - Fedalle: the lanes route is unchanged (via Corellia) AND a hop route is offered', () => {
     const x = by(2)
     assert.equal(x.primary.route.share.off, 0)
     assert.ok(x.primary.route.stops.some(s => s.name === 'Corellia'))
@@ -75,9 +77,47 @@ describe('expected trips (real graph)', () => {
     assert.equal(r.share.off, 0)
     assert.ok(r.stops.length <= 4, names(12))
   })
-  it('12b. Coruscant - Aargau = Average', () => {
+  it('12b. Coruscant - Aargau = Hard (3 purple, 0 red), accepted by Rodrigo (C5 ruling 4)', () => {
     const d = by(12).primary.difficulty
-    assert.equal(d.difficulty, 'Average')
-    console.log('  [12b]', JSON.stringify(d.pool))
+    assert.equal(d.difficulty, 'Hard')
+    assert.deepEqual(d.pool, { purple: 3, red: 0 })
+  })
+})
+
+// ---- C5: travel time, density, hop route. Class 1 hyperdrive. Values from mockup-galaxy-v3.html (the reference implementation).
+describe('C5 trip table (real graph)', () => {
+  const graph = loadGraph()
+  const hazards = loadHazards()
+  const trip = (from: string, to: string) => runTrip(graph, hazards, { n: 0, label: `${from} - ${to}`, from, to })
+  const row = (x: ReturnType<typeof evaluate>) => [x.travel.text, x.difficulty.difficulty, x.difficulty.pool.purple, x.difficulty.pool.red]
+  const cases: [string, string, (string | number)[], (string | number)[] | null][] = [
+    ['Kubindi', 'Formos', ['24 hours', 'Easy', 1, 0], null],
+    ['Coruscant', 'Corellia', ['34 hours', 'Average', 2, 0], null],
+    ['Coruscant', 'Aargau', ['24 hours', 'Hard', 3, 0], ['15 hours', 'Hard', 2, 1]],
+    ['Ryloth', 'Tatooine', ['41 hours', 'Easy', 1, 0], null],
+    ['Formos', 'Esseles', ['13 days, 15 hours', 'Hard', 3, 0], ['12 days, 21 hours', 'Hard', 2, 1]],
+    ['Coruscant', 'Fedalle', ['4 days', 'Average', 2, 0], ['2 days, 4 hours', 'Hard', 2, 1]],
+    ['Coruscant', 'Alderaan', ['10 days, 6 hours', 'Average', 2, 0], ['45 hours', 'Hard', 2, 1]],
+    ['Kessel', 'Formos', ['25 hours', 'Average', 1, 1], null],
+  ]
+  for (const [a, b, lane, hop] of cases) {
+    it(`${a} - ${b}: lane ${lane[0]} ${lane[1]} (${lane[2]}, ${lane[3]})${hop ? `; hop ${hop[0]} ${hop[1]} (${hop[2]}, ${hop[3]})` : '; no hop route'}`, () => {
+      const x = trip(a, b)
+      assert.deepEqual(row(x.primary), lane)
+      if (hop) {
+        assert.ok(x.shortcut, 'a hop route is offered')
+        assert.deepEqual(row(x.shortcut!), hop)
+      } else assert.equal(x.shortcut, null)
+    })
+  }
+  it('Formos - Esseles hop route leaves the lanes near Esseles via Thokos', () => {
+    const names = trip('Formos', 'Esseles').shortcut!.route.stops.map(s => s.name)
+    assert.ok(names.includes('Thokos'), names.join(' > '))
+  })
+  it('hyperdrive class 2 doubles every time, class 0.5 halves it', () => {
+    const x = trip('Coruscant', 'Corellia').primary
+    assert.equal(travelTime(x.route, 2).text, '2 days, 20 hours')
+    assert.equal(travelTime(x.route, 0.5).text, '17 hours')
+    assert.equal(travelTime(trip('Formos', 'Esseles').primary.route, 2).text, '27 days, 7 hours')
   })
 })
