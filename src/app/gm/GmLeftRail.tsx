@@ -111,6 +111,36 @@ export const GmLeftRail = memo(function GmLeftRail({
           lineHeight:    1,
         }}>Console</span>
       </a>
+
+      {/* Same outbound-link pattern as Console: opens the Galaxy / Astrogation tool in its own tab. */}
+      <a
+        href={`/gm/galaxy${campaignId ? `?campaign=${campaignId}` : ''}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Galaxy (opens in new tab)"
+        className="console-rail-link"
+        style={{
+          width:          '2.5rem',
+          height:         '2.75rem',
+          display:        'flex',
+          flexDirection:  'column',
+          alignItems:     'center',
+          justifyContent: 'center',
+          gap:            '0.1875rem',
+          textDecoration: 'none',
+        }}
+      >
+        <span style={{ fontSize: FS.h4, lineHeight: 1, color: 'var(--hud-text-dim)' }}>↗</span>
+        <span style={{
+          fontFamily:    FONT_BODY,
+          fontSize:      'var(--text-overline)',
+          fontWeight:    700,
+          letterSpacing: '0.05em',
+          textTransform: 'uppercase',
+          color:         'var(--hud-text-dim)',
+          lineHeight:    1,
+        }}>Galaxy</span>
+      </a>
     </div>
   )
 })
