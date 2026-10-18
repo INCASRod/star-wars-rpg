@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import gsap from 'gsap'
 import type { Graph, Hazard, RouteResult } from '@/lib/astrogation'
 import styles from './galaxy.module.css'
@@ -141,6 +141,21 @@ export function GalaxyMap({ graph, hazards, pins, route, routeStyle, pinMode, cu
   const [drag, setDrag] = useState(false)
   const [hover, setHover] = useState<Hover | null>(null)
   const fitted = useRef(false)
+  const [creditsOpen, setCreditsOpen] = useState(false)
+  const creditsId = useId()
+  const infoBtnRef = useRef<HTMLButtonElement>(null)
+
+  // Escape closes the credits popover and hands focus back to its button.
+  useEffect(() => {
+    if (!creditsOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      setCreditsOpen(false)
+      infoBtnRef.current?.focus()
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [creditsOpen])
 
   const byId = useMemo(() => new Map(graph.nodes.map(n => [n.id, n])), [graph])
   const hazardIds = useMemo(() => new Set(hazards.map(h => h.system)), [hazards])
@@ -203,6 +218,7 @@ export function GalaxyMap({ graph, hazards, pins, route, routeStyle, pinMode, cu
   const down = useRef<{ x: number; y: number; tx: number; ty: number; moved: boolean; onObject: boolean } | null>(null)
   const onPointerDown = (e: React.PointerEvent) => {
     if (e.button !== 0) return
+    if (!(e.target as Element).closest(`.${styles.zoom}`)) setCreditsOpen(false)
     down.current = { x: e.clientX, y: e.clientY, tx: view.tx, ty: view.ty, moved: false, onObject: !!(e.target as Element).closest('[data-obj]') }
   }
   const onPointerMove = (e: React.PointerEvent) => {
@@ -378,17 +394,29 @@ export function GalaxyMap({ graph, hazards, pins, route, routeStyle, pinMode, cu
         </div>
       )}
       <div className={styles.zoom}>
+        <button
+          ref={infoBtnRef} type="button" className={styles.info} aria-label="Credits" aria-expanded={creditsOpen} aria-controls={creditsId}
+          onClick={() => setCreditsOpen(o => !o)}
+        >i</button>
+        {creditsOpen && (
+          <div id={creditsId} className={styles.creditPop} role="region" aria-label="Credits">
+            <span>Lanes: Wookieepedia (CC BY-SA 3.0)</span>
+            <span>
+              Background: NGC 6217,{' '}
+              <a href="https://esahubble.org/images/heic0910s/" target="_blank" rel="noopener noreferrer">NASA, ESA and the Hubble SM4 ERO Team</a>
+              {' '}(CC BY 4.0), rotated and dimmed
+            </span>
+          </div>
+        )}
         <button type="button" onClick={() => zoomBy(1.4)} aria-label="Zoom in">+</button>
         <button type="button" onClick={() => zoomBy(1 / 1.4)} aria-label="Zoom out">−</button>
         <button type="button" onClick={fitRoute} aria-label={route ? 'Fit route' : 'Fit galaxy'} title={route ? 'Fit route' : 'Fit galaxy'}>⌖</button>
       </div>
+      {/* kept visible on the map: the ESA/Hubble terms want the credit clear, not only in the popover */}
       <div className={styles.credit}>
-        <span>Lanes: Wookieepedia (CC BY-SA 3.0)</span>
-        <span>
-          Background: NGC 6217,{' '}
-          <a href="https://esahubble.org/images/heic0910s/" target="_blank" rel="noopener noreferrer">NASA, ESA and the Hubble SM4 ERO Team</a>
-          {' '}(CC BY 4.0), rotated and dimmed
-        </span>
+        <a href="https://starwars.fandom.com/wiki/Main_Page" target="_blank" rel="noopener noreferrer">Lanes: Wookieepedia (CC BY-SA)</a>
+        {' · '}
+        <a href="https://esahubble.org/images/heic0910s/" target="_blank" rel="noopener noreferrer">Background: ESA/Hubble (CC BY)</a>
       </div>
     </div>
   )
