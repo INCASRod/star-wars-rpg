@@ -100,7 +100,7 @@ export const GmLeftRail = memo(function GmLeftRail({
           textDecoration: 'none',
         }}
       >
-        <span style={{ fontSize: FS.h4, lineHeight: 1, color: 'var(--hud-text-dim)' }}>↗</span>
+        <OutboundIcon><path d="M5 4.5C5 4.5 8.5 4 12 6c3.5-2 7-1.5 7-1.5V18s-3.5-.5-7 1.5c-3.5-2-7-1.5-7-1.5zM12 6v13.5" /></OutboundIcon>
         <span style={{
           fontFamily:    FONT_BODY,
           fontSize:      'var(--text-overline)',
@@ -130,7 +130,7 @@ export const GmLeftRail = memo(function GmLeftRail({
           textDecoration: 'none',
         }}
       >
-        <span style={{ fontSize: FS.h4, lineHeight: 1, color: 'var(--hud-text-dim)' }}>↗</span>
+        <OutboundIcon><circle cx="12" cy="12" r="1.6" /><path d="M12 12c1.5-3 5.5-3.2 7 .2 1.6 3.7-1.4 7.6-6 7.6-5.4 0-9.4-4.6-8-9.6 1.2-4.2 5.4-6.2 9.2-5.2" /></OutboundIcon>
         <span style={{
           fontFamily:    FONT_BODY,
           fontSize:      'var(--text-overline)',
@@ -144,6 +144,18 @@ export const GmLeftRail = memo(function GmLeftRail({
     </div>
   )
 })
+
+/** Console (book) and Galaxy (spiral) glyphs: 1.5 stroke, currentColor, FS.h4 box like the rail's text icons. The corner arrow keeps the "opens in a new tab" cue. */
+function OutboundIcon({ children }: { children: React.ReactNode }) {
+  return (
+    <span style={{ position: 'relative', display: 'inline-flex', fontSize: FS.h4, lineHeight: 1, color: 'var(--hud-text-dim)' }}>
+      <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        {children}
+      </svg>
+      <span style={{ position: 'absolute', top: '-0.4em', right: '-0.5em', fontSize: FS.overline, lineHeight: 1 }}>↗</span>
+    </span>
+  )
+}
 
 function RailBtn({ icon, label, active, accent, onClick, imgSrc, imgClass }: {
   icon: string; label: string; active: boolean; accent: string; onClick: () => void;

@@ -20,6 +20,21 @@ const LABEL_UP = 8
 const LABEL_DOWN = 7
 const CLICK_SLOP = 4 // px of pointer travel that turns a click into a drag
 
+/**
+ * Background photo (scripts/galaxy-bg.py). Atmosphere only, it is not aligned to the lanes. Tune by eye here:
+ * `cx`/`cy` = map point under the galactic core (default: the planet cloud's centroid), `dx`/`dy` nudge it,
+ * `rotate` turns it further (degrees clockwise; the script already baked in -1.56), `size` is the image's width in
+ * map units (the image is square), `opacity` dims it.
+ */
+const BG_CONFIG = {
+  src: '/galaxy/ngc6217.webp',
+  cx: 2363.9, cy: 2314.6,
+  dx: 0, dy: 0,
+  rotate: 0,
+  size: 5423,
+  opacity: 0.25,
+}
+
 interface Props {
   graph: Graph
   hazards: Hazard[]
@@ -321,6 +336,11 @@ export function GalaxyMap({ graph, hazards, pins, route, routeStyle, pinMode, on
     >
       <svg role="img" aria-label="Galaxy map">
         <g transform={`translate(${view.tx} ${view.ty}) scale(${view.k})`}>
+          <image
+            href={BG_CONFIG.src} x={-BG_CONFIG.size / 2} y={-BG_CONFIG.size / 2} width={BG_CONFIG.size} height={BG_CONFIG.size}
+            opacity={BG_CONFIG.opacity} className={styles.bg} aria-hidden
+            transform={`translate(${BG_CONFIG.cx + BG_CONFIG.dx} ${BG_CONFIG.cy + BG_CONFIG.dy}) rotate(${BG_CONFIG.rotate})`}
+          />
           <LaneLayer nodes={byId} edges={graph.edges} />
           <DotLayer graph={graph} hazardIds={hazardIds} k={view.k} onHover={onHover} onPlanet={onPlanet} />
           <g ref={routeRef}>
@@ -359,7 +379,14 @@ export function GalaxyMap({ graph, hazards, pins, route, routeStyle, pinMode, on
         <button type="button" onClick={() => zoomBy(1 / 1.4)} aria-label="Zoom out">−</button>
         <button type="button" onClick={fitRoute} aria-label={route ? 'Fit route' : 'Fit galaxy'} title={route ? 'Fit route' : 'Fit galaxy'}>⌖</button>
       </div>
-      <div className={styles.credit}>Lanes: Wookieepedia (CC BY-SA 3.0)</div>
+      <div className={styles.credit}>
+        <span>Lanes: Wookieepedia (CC BY-SA 3.0)</span>
+        <span>
+          Background: NGC 6217,{' '}
+          <a href="https://esahubble.org/images/heic0910s/" target="_blank" rel="noopener noreferrer">NASA, ESA and the Hubble SM4 ERO Team</a>
+          {' '}(CC BY 4.0), rotated and dimmed
+        </span>
+      </div>
     </div>
   )
 }
