@@ -13,13 +13,15 @@ interface Option { pick: Pick; name: string; sub: string }
 const MAX_MATCHES = 12
 const CLASS_LABEL: Record<number, string> = { 0.5: '½' }
 
-function SearchField({ label, dot, value, options, onPick, onClear }: {
+function SearchField({ label, dot, value, options, onPick, onClear, extra }: {
   label: string
   dot: string
   value: string
   options: Option[]
   onPick: (p: Pick) => void
   onClear: () => void
+  /** right-aligned control on the label row */
+  extra?: React.ReactNode
 }) {
   const listId = useId()
   const [text, setText] = useState('')
@@ -45,7 +47,10 @@ function SearchField({ label, dot, value, options, onPick, onClear }: {
 
   return (
     <div className={styles.field}>
-      <label><b className={dot} />{label}</label>
+      <div className={styles.lrow}>
+        <label><b className={dot} />{label}</label>
+        {extra}
+      </div>
       <input
         className={styles.inp}
         value={shown}
@@ -104,6 +109,11 @@ interface Props {
   onTogglePinMode: () => void
   onRenamePin: (id: string, name: string) => void
   onDeletePin: (id: string) => void
+  /** Origin is held as the campaign's current location */
+  holdCurrent: boolean
+  canHold: boolean
+  onHoldCurrent: (on: boolean) => void
+  navError: string | null
 }
 
 export function CoursePanel(p: Props) {
@@ -119,7 +129,17 @@ export function CoursePanel(p: Props) {
     <>
       <section className={styles.sec} aria-label="Course">
         <h2>Course</h2>
-        <SearchField label="Origin" dot={styles.dotOrigin} value={p.nameOf(p.origin)} options={options} onPick={p.onOrigin} onClear={() => p.onOrigin(null)} />
+        <SearchField label="Origin" dot={styles.dotOrigin} value={p.nameOf(p.origin)} options={options} onPick={p.onOrigin} onClear={() => p.onOrigin(null)}
+          extra={
+            <button
+              type="button" role="checkbox" aria-checked={p.holdCurrent} className={styles.tick}
+              disabled={!p.canHold || !p.origin} onClick={() => p.onHoldCurrent(!p.holdCurrent)}
+            >
+              <i aria-hidden>{p.holdCurrent ? '✓' : ''}</i>Current location
+            </button>
+          }
+        />
+        {p.navError && <div className={styles.navErr} role="alert">{p.navError}</div>}
         <div className={styles.swap}>
           <button type="button" className={styles.swapBtn} onClick={p.onSwap} aria-label="Swap origin and destination">⇅</button>
         </div>

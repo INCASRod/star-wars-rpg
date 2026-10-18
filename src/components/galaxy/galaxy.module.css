@@ -78,6 +78,31 @@
   text-transform: uppercase;
 }
 .field label b { width: 0.65rem; height: 0.65rem; border-radius: 50%; display: inline-block; }
+/* label row: the Current location tickbox sits right-aligned; negative margin keeps the 44px hit target from growing the row */
+.lrow { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-1); }
+.lrow label { margin-bottom: 0; }
+.tick {
+  display: inline-flex; align-items: center; gap: var(--space-2); min-height: 44px; margin: -12px 0; padding: 0 var(--space-1);
+  background: transparent; border: 0; cursor: pointer; font: inherit; font-size: var(--text-overline);
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--hud-text-dim);
+}
+.tick i {
+  width: 1rem; height: 1rem; display: inline-flex; align-items: center; justify-content: center; font-style: normal;
+  border: 1px solid var(--hud-border-hi); border-radius: 2px; background: var(--hud-surface-lo); color: var(--hud-text); line-height: 1;
+}
+.tick[aria-checked='true'] { color: var(--hud-text); }
+.tick[aria-checked='true'] i { border-color: var(--hud-accent-hi); background: color-mix(in srgb, var(--hud-accent-hi) 25%, transparent); }
+.tick:hover:not(:disabled) i { border-color: var(--hud-accent-hi); }
+.tick:focus-visible { outline: 2px solid var(--hud-accent-hi); outline-offset: 2px; }
+.tick:disabled { opacity: 0.4; cursor: not-allowed; }
+.navErr { margin-bottom: var(--space-2); font-size: var(--text-label); color: var(--hud-vital-wounds); }
+.arrived {
+  min-height: 44px; margin: -12px 0; padding: 0 var(--space-3); cursor: pointer; font: inherit; font-size: var(--text-overline);
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--hud-text);
+  background: var(--hud-surface-mid); border: 1px solid var(--hud-border-hi); border-radius: 4px;
+}
+.arrived:hover { border-color: var(--hud-accent-hi); }
+.arrived:focus-visible { outline: 2px solid var(--hud-accent-hi); outline-offset: 2px; }
 .dotOrigin { background: var(--hud-accent-hi); }
 .dotDest { background: var(--hud-vital-strain); }
 .inp {
@@ -190,6 +215,7 @@
 .rOff { stroke: var(--hud-vital-wounds); stroke-width: 3; stroke-dasharray: 8 6; }
 .rHop { stroke: var(--hud-vital-strain); stroke-width: 2.5; stroke-dasharray: 2 7; }
 .mkOrigin { fill: var(--hud-bg); stroke: var(--hud-accent-hi); stroke-width: 3; vector-effect: non-scaling-stroke; }
+.mkCurrent { fill: none; stroke: var(--hud-text); stroke-width: 2; stroke-dasharray: 3 3; vector-effect: non-scaling-stroke; pointer-events: none; }
 .mkDest { fill: var(--hud-bg); stroke: var(--hud-vital-strain); stroke-width: 3; vector-effect: non-scaling-stroke; }
 .mkDrop { fill: var(--hud-bg); stroke: var(--hud-vital-wounds); stroke-width: 2; vector-effect: non-scaling-stroke; }
 .mkPin { fill: color-mix(in srgb, var(--hud-vital-strain) 25%, transparent); stroke: var(--hud-vital-strain); stroke-width: 2; vector-effect: non-scaling-stroke; cursor: pointer; }

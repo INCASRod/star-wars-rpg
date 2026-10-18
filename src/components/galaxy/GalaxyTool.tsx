@@ -28,6 +28,10 @@ export function GalaxyTool({ campaignId }: Props) {
   // The chosen card belongs to one plan; a new trip falls back to the lane route.
   const [choice, setChoice] = useState<{ plan: Plan | null; which: Which }>({ plan: null, which: 'lane' })
   const [pinMode, setPinMode] = useState(false)
+  // Origin held as the campaign's current location (campaign_nav_state). Loaded with the pins so Origin is pre-filled on first paint.
+  const [hold, setHold] = useState(false)
+  const [navLoaded, setNavLoaded] = useState(false)
+  const [navError, setNavError] = useState<string | null>(null)
 
   useEffect(() => {
     let live = true
@@ -38,10 +42,26 @@ export function GalaxyTool({ campaignId }: Props) {
   useEffect(() => {
     if (!campaignId) return
     let live = true
-    supabase.from('campaign_nav_pins').select('id,name,x,y').eq('campaign_id', campaignId).then(({ data, error: err }) => {
+    Promise.all([
+      supabase.from('campaign_nav_pins').select('id,name,x,y').eq('campaign_id', campaignId),
+      supabase.from('campaign_nav_state').select('current_system_id,current_pin_id').eq('campaign_id', campaignId).maybeSingle(),
+    ]).then(([pinRes, navRes]) => {
       if (!live) return
-      if (err) setError(err.message)
-      else setPins((data ?? []) as MapPin[])
+      if (pinRes.error) setError(pinRes.error.message)
+      const loaded = (pinRes.data ?? []) as MapPin[]
+      setPins(loaded)
+      const held = navRes.data
+      if (held?.current_system_id) {
+        setOrigin({ kind: 'sys', id: held.current_system_id })
+        setHold(true)
+      } else if (held?.current_pin_id && loaded.some(p => p.id === held.current_pin_id)) {
+        setOrigin({ kind: 'pin', id: held.current_pin_id })
+        setHold(true)
+      } else if (held?.current_pin_id) {
+        // held pin no longer exists: clear the hold silently
+        supabase.from('campaign_nav_state').update({ current_pin_id: null }).eq('campaign_id', campaignId).then(() => {})
+      }
+      setNavLoaded(true)
     })
     return () => { live = false }
   }, [supabase, campaignId])
@@ -83,15 +103,47 @@ export function GalaxyTool({ campaignId }: Props) {
   const shown = which === 'hop' && hop ? hop : lane
   const routeStyle: RouteStyle = which === 'hop' && hop ? 'hop' : 'lane'
 
+  // Optimistic: the caller has already updated the UI; a failed save reverts the tickbox and shows an inline message.
+  const saveHold = async (p: Pick | null, revertTo: boolean) => {
+    if (!campaignId) return
+    const { error: err } = await supabase.from('campaign_nav_state').upsert({
+      campaign_id: campaignId,
+      current_system_id: p?.kind === 'sys' ? p.id : null,
+      current_pin_id: p?.kind === 'pin' ? p.id : null,
+      updated_at: new Date().toISOString(),
+    })
+    if (err) { setHold(revertTo); setNavError('Could not save the current location.') }
+    else setNavError(null)
+  }
+
+  /** Every Origin change goes through here so a held location follows it. */
+  const changeOrigin = (p: Pick | null) => {
+    setOrigin(p)
+    if (!hold) return
+    if (!p) setHold(false)
+    saveHold(p, false)
+  }
+  const toggleHold = (on: boolean) => {
+    setHold(on)
+    saveHold(on ? origin : null, !on)
+  }
+  const arrived = () => {
+    if (!dest) return
+    setOrigin(dest)
+    setDest(null)
+    setHold(true)
+    saveHold(dest, false)
+  }
+
   const pickPlanet = (id: string) => {
     if (pinMode) return
     const p: Pick = { kind: 'sys', id }
-    if (!origin || (origin && dest)) { setOrigin(p); setDest(null) }
+    if (!origin || (origin && dest)) { changeOrigin(p); setDest(null) }
     else setDest(p)
   }
   const pickPin = (id: string) => {
     const p: Pick = { kind: 'pin', id }
-    if (!origin || (origin && dest)) { setOrigin(p); setDest(null) }
+    if (!origin || (origin && dest)) { changeOrigin(p); setDest(null) }
     else setDest(p)
   }
 
@@ -114,11 +166,23 @@ export function GalaxyTool({ campaignId }: Props) {
     const { error: err } = await supabase.from('campaign_nav_pins').delete().eq('id', id)
     if (err) { setError(err.message); return }
     setPins(ps => ps.filter(p => p.id !== id))
-    if (origin?.kind === 'pin' && origin.id === id) setOrigin(null)
+    if (origin?.kind === 'pin' && origin.id === id) { setOrigin(null); setHold(false) }
     if (dest?.kind === 'pin' && dest.id === id) setDest(null)
   }
 
-  const swap = () => { setOrigin(dest); setDest(origin) }
+  const swap = () => {
+    setOrigin(dest)
+    setDest(origin)
+    if (hold) {
+      if (!dest) setHold(false)
+      saveHold(dest, false)
+    }
+  }
+
+  const current = useMemo(() => {
+    if (!hold || !origin) return null
+    return origin.kind === 'sys' ? byId.get(origin.id) ?? null : pinById.get(origin.id) ?? null
+  }, [hold, origin, byId, pinById])
 
   return (
     <div className={styles.app} data-theme="gm-imperial" data-testid="galaxy-root">
@@ -135,7 +199,7 @@ export function GalaxyTool({ campaignId }: Props) {
       </header>
 
       <aside className={styles.side}>
-        {galaxy ? (
+        {galaxy && (navLoaded || !campaignId) ? (
           <>
             <CoursePanel
               nodes={galaxy.graph.nodes}
@@ -146,10 +210,14 @@ export function GalaxyTool({ campaignId }: Props) {
               pinMode={pinMode}
               canPin={!!campaignId}
               nameOf={nameOf}
-              onOrigin={setOrigin}
+              onOrigin={changeOrigin}
               onDest={setDest}
               onSwap={swap}
               onHyperdrive={setHyperdrive}
+              holdCurrent={hold}
+              canHold={!!campaignId}
+              onHoldCurrent={toggleHold}
+              navError={navError}
               onTogglePinMode={() => setPinMode(m => !m)}
               onRenamePin={renamePin}
               onDeletePin={deletePin}
@@ -159,9 +227,9 @@ export function GalaxyTool({ campaignId }: Props) {
               {!lane && <div className={styles.empty}>Pick an origin and a destination to plot a course.</div>}
               {lane && (
                 <>
-                  <RouteCard title="Lane route" route={lane.route} diff={lane.diff} time={lane.time} selected={which === 'lane'} onSelect={() => setWhich('lane')} />
+                  <RouteCard title="Lane route" route={lane.route} diff={lane.diff} time={lane.time} selected={which === 'lane'} onSelect={() => setWhich('lane')} onArrived={arrived} />
                   {hop && (
-                    <RouteCard title="Hop route" risky route={hop.route} diff={hop.diff} time={hop.time} selected={which === 'hop'} onSelect={() => setWhich('hop')} />
+                    <RouteCard title="Hop route" risky route={hop.route} diff={hop.diff} time={hop.time} selected={which === 'hop'} onSelect={() => setWhich('hop')} onArrived={arrived} />
                   )}
                   {shown && <StopList route={shown.route} hop={routeStyle === 'hop'} />}
                 </>
@@ -181,6 +249,7 @@ export function GalaxyTool({ campaignId }: Props) {
           route={shown?.route ?? null}
           routeStyle={routeStyle}
           pinMode={pinMode}
+          current={current}
           onPlanet={pickPlanet}
           onPin={pickPin}
           onDropPin={dropPin}

@@ -15,6 +15,8 @@ interface CardProps {
   time: TravelTime
   selected: boolean
   onSelect: () => void
+  /** set this trip's destination as the current location (shown on the selected card only) */
+  onArrived?: () => void
 }
 
 const pct = (n: number) => `${Math.round(n * 100)}%`
@@ -25,7 +27,7 @@ function poolText(p: { purple: number; red: number }): string {
   return `${p.purple > 0 ? `[difficulty:${p.purple}]` : ''}${p.red > 0 ? `[challenge:${p.red}]` : ''}`
 }
 
-export function RouteCard({ title, risky, route, diff, time, selected, onSelect }: CardProps) {
+export function RouteCard({ title, risky, route, diff, time, selected, onSelect, onArrived }: CardProps) {
   const pool = poolText(diff.pool)
   const why: [string, string][] = [
     ['Distance band', signed(diff.distanceTerm)],
@@ -50,6 +52,13 @@ export function RouteCard({ title, risky, route, diff, time, selected, onSelect 
       <div className={styles.oh}>
         <span>{title}</span>
         <span>{Math.round(route.lengthLy).toLocaleString()} ly</span>
+        {selected && onArrived && (
+          <button
+            type="button" className={styles.arrived}
+            onClick={e => { e.stopPropagation(); onArrived() }}
+            onKeyDown={e => e.stopPropagation()}
+          >Arrived</button>
+        )}
       </div>
       <div className={styles.eta}>
         <span className={styles.t}>{time.text}</span>

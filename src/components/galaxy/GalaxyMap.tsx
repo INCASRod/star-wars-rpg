@@ -42,6 +42,8 @@ interface Props {
   route: RouteResult | null
   routeStyle: RouteStyle
   pinMode: boolean
+  /** held current location, drawn as a dashed ring */
+  current: { x: number; y: number } | null
   onPlanet: (id: string) => void
   onPin: (id: string) => void
   onDropPin: (x: number, y: number) => void
@@ -131,7 +133,7 @@ const DotLayer = memo(function DotLayer({ graph, hazardIds, k, onHover, onPlanet
   )
 })
 
-export function GalaxyMap({ graph, hazards, pins, route, routeStyle, pinMode, onPlanet, onPin, onDropPin }: Props) {
+export function GalaxyMap({ graph, hazards, pins, route, routeStyle, pinMode, current, onPlanet, onPin, onDropPin }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null)
   const routeRef = useRef<SVGGElement>(null)
   const [size, setSize] = useState({ w: 0, h: 0 })
@@ -351,6 +353,7 @@ export function GalaxyMap({ graph, hazards, pins, route, routeStyle, pinMode, on
           {route?.stops.filter(s => s.dropoff).map(s => (
             <rect key={s.id} x={s.x - mr * 0.6} y={s.y - mr * 0.6} width={mr * 1.2} height={mr * 1.2} transform={`rotate(45 ${s.x} ${s.y})`} className={styles.mkDrop} />
           ))}
+          {current && <circle cx={current.x} cy={current.y} r={mr * 1.8} className={styles.mkCurrent} />}
           {first && <circle cx={first.x} cy={first.y} r={mr} className={styles.mkOrigin} />}
           {last && <circle cx={last.x} cy={last.y} r={mr} className={styles.mkDest} />}
           {pins.map(p => (
