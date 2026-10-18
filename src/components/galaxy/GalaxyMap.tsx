@@ -29,7 +29,7 @@ const CLICK_SLOP = 4 // px of pointer travel that turns a click into a drag
 const BG_CONFIG = {
   src: '/galaxy/ngc6217.webp',
   cx: 2363.9, cy: 2314.6,
-  dx: 0, dy: 0,
+  dx: -505.9, dy: 15.7, // moves the core from the cloud centroid onto Byss (byss-k-11, 1858.0, 2330.3)
   rotate: 0,
   size: 5423,
   opacity: 0.25,
