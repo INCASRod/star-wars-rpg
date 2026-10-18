@@ -1,7 +1,9 @@
 ﻿'use client'
 
+import { Symbol } from '@/components/dice/GameGlyph'
+import { SYMBOL_KIND } from '@/components/dice/symbolKind'
 import { useState, type ReactNode }                       from 'react'
-import { FONT_BODY, FONT_DISPLAY, RADIUS, SP, SYM, FS, HUD, DICE_COLOR, type DiceType } from '@/lib/tokens'
+import { FONT_BODY, FONT_DISPLAY, RADIUS, SP, SYM, FS, HUD, DICE_COLOR, type DiceType, type SymbolKey } from '@/lib/tokens'
 import { RichText } from '@/components/ui/RichText'
 import { Tooltip, TipBody }                                from '@/components/ui/Tooltip'
 import { DiceFace }                                        from '@/components/dice/DiceFace'
@@ -166,19 +168,19 @@ function outcomeColor(n: number): string {
 
 // ── Result symbols row ──────────────────────────────────────────────
 function ResultSymbols({ result }: { result: RollEntry['result'] }) {
-  const items: { icon: string; color: string; n: number }[] = []
-  if (result.netSuccess   > 0) items.push({ icon: SYM.S.icon, color: SYM.S.color, n: result.netSuccess })
-  if (result.netSuccess   < 0) items.push({ icon: SYM.F.icon, color: SYM.F.color, n: Math.abs(result.netSuccess) })
-  if (result.netAdvantage > 0) items.push({ icon: SYM.A.icon, color: SYM.A.color, n: result.netAdvantage })
-  if (result.netAdvantage < 0) items.push({ icon: SYM.H.icon, color: SYM.H.color, n: Math.abs(result.netAdvantage) })
-  if (result.triumph      > 0) items.push({ icon: SYM.T.icon, color: SYM.T.color, n: result.triumph })
-  if (result.despair      > 0) items.push({ icon: SYM.D.icon, color: SYM.D.color, n: result.despair })
+  const items: { key: SymbolKey; color: string; n: number }[] = []
+  if (result.netSuccess   > 0) items.push({ key: 'S', color: SYM.S.color, n: result.netSuccess })
+  if (result.netSuccess   < 0) items.push({ key: 'F', color: SYM.F.color, n: Math.abs(result.netSuccess) })
+  if (result.netAdvantage > 0) items.push({ key: 'A', color: SYM.A.color, n: result.netAdvantage })
+  if (result.netAdvantage < 0) items.push({ key: 'H', color: SYM.H.color, n: Math.abs(result.netAdvantage) })
+  if (result.triumph      > 0) items.push({ key: 'T', color: SYM.T.color, n: result.triumph })
+  if (result.despair      > 0) items.push({ key: 'D', color: SYM.D.color, n: result.despair })
   if (items.length === 0) return null
   return (
     <div className="flex items-center" style={{ gap: 6, fontFamily: FONT_BODY, fontSize: FS.sm }}>
-      {items.map(({ icon, color, n }, idx) => (
+      {items.map(({ key, color, n }, idx) => (
         <span key={idx} style={{ color }}>
-          <i className={`ffi ffi-${icon}`} />
+          <Symbol kind={SYMBOL_KIND[key]} size="inline" />
           {n > 1 ? n : ''}
         </span>
       ))}

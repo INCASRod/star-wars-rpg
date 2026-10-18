@@ -1,5 +1,6 @@
 'use client'
 
+import { Symbol } from '@/components/dice/GameGlyph'
 import { useState } from 'react'
 import type { CharacterWeapon, RefWeapon } from '@/lib/types'
 import { HUD, FS, FONT_DISPLAY, FONT_BODY, SYM_COLOR } from '@/lib/tokens'
@@ -142,7 +143,7 @@ export function DualWieldReviewStep({
         }}>
           Primary hits on success.<br />
           <span style={{ color: GOLD_DIM }}>Secondary hits by spending </span>
-          <i className="ffi ffi-swrpg-advantage" style={{ color: HUD.gold }} /><i className="ffi ffi-swrpg-advantage" style={{ color: HUD.gold }} /><span style={{ color: HUD.gold }}>{' or '}</span><i className="ffi ffi-swrpg-triumph" style={{ color: HUD.gold }} />
+          <Symbol kind="advantage" size="inline" /><Symbol kind="advantage" size="inline" /><span style={{ color: HUD.gold }}>{' or '}</span><Symbol kind="triumph" size="inline" />
           <span style={{ color: GOLD_DIM }}>.</span>
         </div>
       </div>

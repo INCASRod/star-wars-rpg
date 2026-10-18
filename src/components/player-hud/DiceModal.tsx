@@ -1,5 +1,7 @@
 'use client'
 
+import { Symbol } from '@/components/dice/GameGlyph'
+import { SYMBOL_KIND } from '@/components/dice/symbolKind'
 import { HUD, FONT_DISPLAY, FONT_BODY, FS, RADIUS, EASE, SYM, DICE_META, type DiceType, type SymbolKey } from '@/lib/tokens'
 import { Modal } from '@/components/ui/Modal'
 import { DiceFace } from '@/components/dice/DiceFace'
@@ -55,7 +57,7 @@ function DieChip({ die }: { die: DieResult }) {
         {symbolKeys.length === 0
           ? <span style={{ fontSize: 14 }}>—</span>
           : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
-              {symbolKeys.map((s, i) => <i key={i} className={`ffi ffi-${SYM[s].icon}`} style={{ fontSize: 13 }} />)}
+              {symbolKeys.map((s, i) => <Symbol key={i} kind={SYMBOL_KIND[s]} size="xs" />)}
             </span>
         }
       </DieShape>
@@ -68,7 +70,7 @@ function DieChip({ die }: { die: DieResult }) {
 
 function NetPill({ count, symKey, label }: { count: number; symKey: SymbolKey; label: string }) {
   if (count === 0) return null
-  const { icon, color } = SYM[symKey]
+  const { color } = SYM[symKey]
   return (
     <div style={{
       display: 'inline-flex', alignItems: 'center', gap: 6,
@@ -76,7 +78,7 @@ function NetPill({ count, symKey, label }: { count: number; symKey: SymbolKey; l
       background: `${color}18`, border: `1px solid ${color}50`,
       fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700, color,
     }}>
-      <i className={`ffi ffi-${icon}`} style={{ fontSize: 16 }} />
+      <Symbol kind={SYMBOL_KIND[symKey]} size="sm" decorative />
       {Math.abs(count)} {label}
     </div>
   )

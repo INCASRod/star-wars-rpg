@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { DiceFace } from '@/components/dice/DiceFace'
+import { Die } from '@/components/dice/GameGlyph'
 import type { RefWeapon } from '@/lib/types'
 import type { AdversaryInstance } from '@/lib/adversaries'
 import {
@@ -13,12 +14,7 @@ import {
   getMeleeDifficulty,
   bandIndex,
 } from '@/lib/combatCheckUtils'
-import { HUD, FS, FONT_BODY, FONT_DISPLAY, SP, EASE, RADIUS, DICE_COLOR } from '@/lib/tokens'
-
-// die clip-path geometry — not spacing
-const CLIP_OCT = 'polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 70%,0% 30%)'
-const CLIP_DIA = 'polygon(50% 0%,100% 50%,50% 100%,0% 50%)'
-
+import { HUD, FS, FONT_BODY, FONT_DISPLAY, SP, EASE, RADIUS } from '@/lib/tokens'
 
 interface RangeBandStepProps {
   attackType:   'ranged' | 'melee'
@@ -284,18 +280,10 @@ export function RangeBandStep({ attackType, weapon, selectedBand, targets = [], 
                 ) : (
                   <>
                     {Array.from({ length: result.challengeDice }).map((_, pi) => (
-                      <i key={`c${pi}`} style={{
-                        width: 7, height: 7, flexShrink: 0, /* die geometry, not spacing */
-                        background: DICE_COLOR.challenge, /* die-identity hex — sealed namespace */
-                        clipPath: CLIP_OCT,
-                      }} />
+                      <Die key={`c${pi}`} type="challenge" size="xs" />
                     ))}
                     {Array.from({ length: result.difficultyDice }).map((_, pi) => (
-                      <i key={`d${pi}`} style={{
-                        width: 7, height: 7, flexShrink: 0, /* die geometry, not spacing */
-                        background: DICE_COLOR.difficulty, /* die-identity hex — sealed namespace */
-                        clipPath: CLIP_DIA,
-                      }} />
+                      <Die key={`d${pi}`} type="difficulty" size="xs" />
                     ))}
                   </>
                 )}

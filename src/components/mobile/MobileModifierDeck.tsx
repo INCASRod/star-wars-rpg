@@ -1,7 +1,8 @@
 'use client'
 
 import { upgradeAbility, upgradeDifficulty, type ManualAdjustments } from '@/components/player-hud/dice-engine'
-import { DICE_META, type DiceType } from '@/lib/tokens'
+import type { DiceType } from '@/lib/tokens'
+import { Die } from '@/components/dice/GameGlyph'
 
 /**
  * Reusable modifier-deck component — built once here, hosted again by the
@@ -87,13 +88,7 @@ function DeckRow({
 }: { def: StepperDef; value: number; onAdd: () => void; onRemove: () => void; canRemove: boolean }) {
   return (
     <div className="m-deck-row">
-      <span
-        aria-hidden="true"
-        style={{
-          width: 14, height: 14, borderRadius: 3, flexShrink: 0, /* fixed die-glyph geometry */
-          background: DICE_META[def.dieType].color, /* die-identity colour — sealed namespace */
-        }}
-      />
+      <Die type={def.dieType} size="sm" decorative />
       <span className="m-deck-row-meta">
         <span className="m-deck-row-name">{def.label}</span>
         {def.sub && <span className="m-deck-row-sub">{def.sub}</span>}

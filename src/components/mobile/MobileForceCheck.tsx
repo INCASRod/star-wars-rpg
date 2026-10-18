@@ -7,6 +7,7 @@ import { rollForceDice, getAvailableForceDice } from '@/components/player-hud/di
 import { isDathomiri } from '@/lib/dathomiriUtils'
 import { RichText } from '@/components/ui/RichText'
 import { SYM_COLOR } from '@/lib/tokens'
+import { Symbol } from '@/components/dice/GameGlyph'
 import type { Character } from '@/lib/types'
 import type { ForcePowerDisplay } from '@/components/player-hud/ForcePanel'
 import type { ForceRollResult } from '@/lib/forceRoll'
@@ -305,8 +306,8 @@ export function MobileForceCheck({
                 <div key={i} className="m-force-die">
                   {!forceRoll ? '?' : d.light === 0 && d.dark === 0 ? '—' : (
                     <>
-                      {Array.from({ length: d.light }).map((_, li) => <span key={`l${li}`} style={{ color: SYM_COLOR.lightPip /* sealed dice-identity colour */ }}>✦</span>)}
-                      {Array.from({ length: d.dark }).map((_, di) => <span key={`d${di}`} style={{ color: SYM_COLOR.darkPip /* sealed dice-identity colour */ }}>✧</span>)}
+                      {Array.from({ length: d.light }).map((_, li) => <Symbol key={`l${li}`} kind="lightPip" size="sm" />)}
+                      {Array.from({ length: d.dark }).map((_, di) => <Symbol key={`d${di}`} kind="darkPip" size="sm" />)}
                     </>
                   )}
                 </div>
@@ -350,7 +351,7 @@ export function MobileForceCheck({
                     disabled={committed}
                     aria-label={p.kind === 'light' ? 'Light Force Point' : 'Dark Force Point'}
                   >
-                    {p.kind === 'light' ? '✦' : '✧'}
+                    <Symbol kind={p.kind === 'light' ? 'lightPip' : 'darkPip'} size="sm" />
                   </button>
                 )
               })}
@@ -398,7 +399,7 @@ export function MobileForceCheck({
                           onClick={() => handleChipTap(row.key, ci)}
                           aria-label="Return this point to the bank"
                         >
-                          {c.kind === 'light' ? '✦' : '✧'}
+                          <Symbol kind={c.kind === 'light' ? 'lightPip' : 'darkPip'} size="sm" />
                         </button>
                       ))}
                     </div>

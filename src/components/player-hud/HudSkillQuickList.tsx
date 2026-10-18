@@ -6,7 +6,8 @@ import { Modal } from '@/components/ui/Modal'
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
 import { igniteModalOpen, igniteModalClose, IGNITE_EXIT_MS } from '@/lib/utils'
 import { rollPool, buildSkillCheckPool, type RollResult } from './dice-engine'
-import { CHAR_FULL, DICE_COLOR, DICE_OUTLINE, DICE_META, MODAL, FONT_BODY, FONT_DISPLAY, FS, SP, RADIUS, Z } from '@/lib/tokens'
+import { CHAR_FULL, DICE_COLOR, MODAL, FONT_BODY, FONT_DISPLAY, FS, SP, Z, type DiceType } from '@/lib/tokens'
+import { Die } from '@/components/dice/GameGlyph'
 import type { HudSkill } from '@/lib/types'
 
 // ── Constants ──────────────────────────────────────────────────────────────
@@ -14,10 +15,6 @@ const CHAR_ORDER = ['brawn', 'agility', 'intellect', 'cunning', 'willpower', 'pr
 type CharKey = typeof CHAR_ORDER[number]
 type FilterMode = 'all' | 'trained' | 'career'
 type SkillCheckMode = 'browse' | 'roll'
-
-// die clip-path geometry — not spacing
-const CLIP_OCT = 'polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 70%,0% 30%)'
-const CLIP_DIA = 'polygon(50% 0%,100% 50%,50% 100%,0% 50%)'
 
 const DIFF_LABELS = ['Simple', 'Easy', 'Average', 'Hard', 'Daunting', 'Formidable'] as const
 
@@ -106,7 +103,7 @@ function DifficultySelector({ selected, onSelect }: { selected: number; onSelect
               <span className="fc-diff-dash">—</span>
             ) : (
               Array.from({ length: idx }).map((_, pi) => (
-                <i key={pi} style={{ background: DICE_COLOR.difficulty /* die-identity hex — sealed namespace */ }} />
+                <Die key={pi} type="difficulty" size="xs" decorative />
               ))
             )}
           </span>
@@ -123,18 +120,11 @@ function DifficultySelector({ selected, onSelect }: { selected: number; onSelect
 // Module scope: a component declared inside the panel body would be a new type
 // every render (React Compiler rejects it).
 
-function SkillTrayDie({ type }: { type: keyof typeof DICE_META }) {
-  const meta = DICE_META[type]
-  const sz = meta.shape === 'diamond' ? 26 : 30 /* die icon size — geometry */
+function SkillTrayDie({ type }: { type: DiceType }) {
   return (
-    <div className="cc-die" style={{
-      width: sz, height: sz, flexShrink: 0,
-      background: meta.color, /* die-identity hex — sealed namespace */
-      border: meta.shape === 'rounded' && DICE_OUTLINE[type] ? `1px solid ${DICE_OUTLINE[type]}` : undefined,
-      boxShadow: meta.shape !== 'rounded' && DICE_OUTLINE[type] ? `0 0 0 1px ${DICE_OUTLINE[type]}` : undefined,
-      borderRadius: meta.shape === 'rounded' ? RADIUS.sm : undefined,
-      clipPath: meta.shape === 'octagon' ? CLIP_OCT : meta.shape === 'diamond' ? CLIP_DIA : undefined,
-    }} />
+    <span className="cc-die inline-flex">
+      <Die type={type} size="xl" />
+    </span>
   )
 }
 
@@ -171,11 +161,10 @@ function SkillTile({ skill, dim, onSelect }: {
 /** Adjust-Pool stepper. Mirrors the Combat Check's FcStepper so both consoles
  *  read identically; on the two upgrade rows the minus is an explicit Undo. */
 function SkillStepper({
-  dieColor, dieShape, name, sub, value, onAdd, onRemove, canRemove,
+  die, name, sub, value, onAdd, onRemove, canRemove,
   isUpgrade = false, downgradeLabel,
 }: {
-  dieColor: string
-  dieShape: 'octagon' | 'diamond' | 'rounded'
+  die: DiceType
   name: string
   sub?: string
   value: number
@@ -185,15 +174,9 @@ function SkillStepper({
   isUpgrade?: boolean
   downgradeLabel?: string
 }) {
-  const sz = dieShape === 'diamond' ? 15 : 16 /* die glyph size — geometry */
   return (
     <div className={`fc-dstep${isUpgrade ? ' is-upgrade' : ''}`}>
-      <span style={{
-        width: sz, height: sz, flexShrink: 0,
-        background: dieColor, /* die-identity hex — sealed namespace */
-        borderRadius: dieShape === 'rounded' ? RADIUS.sm : undefined,
-        clipPath: dieShape === 'octagon' ? CLIP_OCT : dieShape === 'diamond' ? CLIP_DIA : undefined,
-      }} />
+      <Die type={die} size="sm" />
       <span className="fc-dstep-meta">
         <span className="fc-dstep-name">{name}</span>
         {sub && <span className="fc-dstep-sub">{sub}</span>}
@@ -597,28 +580,28 @@ export function HudSkillQuickList({ open, onClose, skills, onRoll, onActiveSkill
                       <span className="fc-stage-name">Adjust Pool</span>
                     </div>
                     <div className="fc-dice-grid">
-                      <SkillStepper dieColor={DICE_COLOR.boost} dieShape="rounded" name="Boost"
+                      <SkillStepper die="boost" name="Boost"
                         value={boostAdd} onAdd={() => setBoostAdd(v => v + 1)}
                         onRemove={() => setBoostAdd(v => Math.max(0, v - 1))} canRemove={boostAdd > 0} />
-                      <SkillStepper dieColor={DICE_COLOR.setback} dieShape="rounded" name="Setback"
+                      <SkillStepper die="setback" name="Setback"
                         value={setbackAdd} onAdd={() => setSetbackAdd(v => v + 1)}
                         onRemove={() => setSetbackAdd(v => Math.max(0, v - 1))} canRemove={setbackAdd > 0} />
-                      <SkillStepper dieColor={DICE_COLOR.difficulty} dieShape="diamond" name="Difficulty"
+                      <SkillStepper die="difficulty" name="Difficulty"
                         sub={`${difficultyAdd > 0 ? '+' : ''}${difficultyAdd} vs ${DIFF_LABELS[baseDifficulty]}`}
                         value={selectedDifficulty} onAdd={() => handleDifficultyAdd(1)}
                         onRemove={() => handleDifficultyAdd(-1)}
                         canRemove={difficultyAdd > -baseDifficulty} />
-                      <SkillStepper dieColor={DICE_COLOR.force} dieShape="octagon" name="Force"
+                      <SkillStepper die="force" name="Force"
                         value={forceAdd} onAdd={() => setForceAdd(v => v + 1)}
                         onRemove={() => setForceAdd(v => Math.max(0, v - 1))} canRemove={forceAdd > 0} />
 
-                      <SkillStepper dieColor={DICE_COLOR.proficiency} dieShape="octagon"
+                      <SkillStepper die="proficiency"
                         name="Upgrade Skill" sub="Ability → Prof"
                         value={upgradeSkill}
                         onAdd={() => setUpgradeSkill(v => Math.min(upgradeSkillCap, v + 1))}
                         onRemove={() => setUpgradeSkill(v => Math.max(0, v - 1))}
                         canRemove={upgradeSkill > 0} isUpgrade downgradeLabel="Undo" />
-                      <SkillStepper dieColor={DICE_COLOR.challenge} dieShape="octagon"
+                      <SkillStepper die="challenge"
                         name="Upgrade Diff" sub="Diff → Challenge"
                         value={diffUpgrades}
                         onAdd={() => setDiffUpgrades(v => Math.min(selectedDifficulty, v + 1))}

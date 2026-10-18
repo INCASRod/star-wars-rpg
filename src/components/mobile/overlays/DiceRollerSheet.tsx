@@ -1,5 +1,7 @@
 'use client'
 
+import { Symbol } from '@/components/dice/GameGlyph'
+import { SYMBOL_KIND } from '@/components/dice/symbolKind'
 import { useState } from 'react'
 import { DICE_META, SYM, EMPTY_POOL, type DiceType } from '@/components/player-hud/design-tokens'
 import { DiceFace } from '@/components/dice/DiceFace'
@@ -57,7 +59,7 @@ function DiceStepper({
         <DiceFace type={type} size={24} />
       </div>
 
-      <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.6rem, 2.4vw, 0.75rem)', color: meta.color, width: 28 }}>
+      <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.6rem, 2.4vw, 0.75rem)', color: TEXT_DIM, width: 28 }}>
         {meta.label}
       </span>
 
@@ -66,7 +68,7 @@ function DiceStepper({
           fontFamily: FONT_C,
           fontSize: 'clamp(1rem, 4vw, 1.3rem)',
           fontWeight: 700,
-          color: meta.color,
+          color: TEXT,
           minWidth: 32,
           textAlign: 'center',
         }}>
@@ -97,8 +99,8 @@ function DiceStepper({
             fontFamily: FONT_C,
             fontSize: 'clamp(1rem, 4vw, 1.3rem)',
             fontWeight: 700,
-            color: meta.color,
-            background: `${meta.color}0C`,
+            color: TEXT,
+            background: 'var(--hud-surface-lo)',
             border: `1px solid ${BORDER}`,
             borderLeft: 'none', borderRight: 'none',
           }}>
@@ -179,12 +181,12 @@ function ResultDisplay({ result }: { result: RollResult }) {
         <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
           {triumph > 0 && (
             <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.65rem, 2.6vw, 0.8rem)', color: '#D4B840' }}>
-              <i className="ffi ffi-swrpg-triumph" />{' TRIUMPH ×'}{triumph}
+              <Symbol kind="triumph" size="inline" />{' TRIUMPH ×'}{triumph}
             </span>
           )}
           {despair > 0 && (
             <span style={{ fontFamily: FONT_M, fontSize: 'clamp(0.65rem, 2.6vw, 0.8rem)', color: '#FF6060' }}>
-              <i className="ffi ffi-swrpg-despair" />{' DESPAIR ×'}{despair}
+              <Symbol kind="despair" size="inline" />{' DESPAIR ×'}{despair}
             </span>
           )}
         </div>
@@ -215,7 +217,7 @@ function ResultDisplay({ result }: { result: RollResult }) {
               ) : (
                 die.symbols.map((sym, j) => (
                   SYM[sym]?.icon
-                    ? <i key={j} className={`ffi ffi-${SYM[sym]!.icon}`} style={{ fontSize: 12, color: SYM[sym]!.color, filter: `drop-shadow(0 0 3px ${SYM[sym]!.color}60)` }} />
+                    ? <Symbol key={j} kind={SYMBOL_KIND[sym]} size="xs" />
                     : <span key={j} style={{ fontSize: 12, color: TEXT }}>{sym}</span>
                 ))
               )}

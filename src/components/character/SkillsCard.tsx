@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { HudCard } from '../ui/HudCard'
-import { DicePoolDisplay } from '../ui/DiceHex'
+import { Die } from '../dice/GameGlyph'
 import { calculateDicePool } from '@/lib/dice'
 import { HUD, FS, FONT_BODY, EASE } from '@/lib/tokens'
 import {
@@ -89,7 +89,10 @@ export function SkillsCard({ title, skills, animClass = 'ar d1', scrollable = fa
               }}>
                 {sk.rank}
               </span>
-              <DicePoolDisplay proficiency={pool.proficiency} ability={pool.ability} />
+              <div className="flex gap-1 min-w-14 justify-end">
+                {Array.from({ length: pool.proficiency }).map((_, i) => <Die key={`y-${i}`} type="proficiency" size="sm" />)}
+                {Array.from({ length: pool.ability }).map((_, i) => <Die key={`g-${i}`} type="ability" size="sm" />)}
+              </div>
               {isGmMode && sk.rank > 0 && sk.onReduce && (
                 <button
                   onClick={() => setConfirmReduce(sk)}

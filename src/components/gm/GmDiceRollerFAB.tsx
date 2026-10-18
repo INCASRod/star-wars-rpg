@@ -1,5 +1,7 @@
 ﻿'use client'
 
+import { Symbol } from '@/components/dice/GameGlyph'
+import { SYMBOL_KIND } from '@/components/dice/symbolKind'
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
@@ -188,7 +190,7 @@ function NarrativeResult({ result }: { result: RollResult }) {
       {pills.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', justifyContent: 'center', marginBottom: '0.5rem' }}>
           {pills.map(({ count, symKey, label }) => {
-            const { icon, color } = SYM[symKey]
+            const { color } = SYM[symKey]
             return (
               <div key={symKey} style={{
                 display: 'inline-flex', alignItems: 'center', gap: '0.25rem',
@@ -196,7 +198,7 @@ function NarrativeResult({ result }: { result: RollResult }) {
                 background: `${color}18`, border: `1px solid ${color}50`,
                 fontFamily: FR, fontSize: FS.sm, fontWeight: 700, color,
               }}>
-                <i className={`ffi ffi-${icon}`} style={{ fontSize: FS.sm }} />
+                <Symbol kind={SYMBOL_KIND[symKey]} size="inline" decorative />
                 {count} {label}
               </div>
             )
@@ -216,7 +218,7 @@ function NarrativeResult({ result }: { result: RollResult }) {
                 {symKeys.length === 0
                   ? <span style={{ color: DIM, fontSize: FS.overline }}>—</span>
                   : symKeys.map((s, j) => (
-                      <i key={j} className={`ffi ffi-${SYM[s].icon}`} style={{ color: SYM[s].color, fontSize: FS.overline }} />
+                      <Symbol key={j} kind={SYMBOL_KIND[s]} size="xs" />
                     ))
                 }
               </div>

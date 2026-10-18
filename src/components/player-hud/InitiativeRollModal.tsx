@@ -9,8 +9,9 @@ import { rollPool, rollForceDice } from './dice-engine'
 import type { ForceDie } from './dice-engine'
 import type { Character, CharacterSkill, HudSkill } from '@/lib/types'
 import {
-  HUD, FONT_DISPLAY, FONT_BODY, FS, SP, RADIUS, EASE, DICE_META,
+  HUD, FONT_DISPLAY, FONT_BODY, FS, SP, RADIUS, EASE,
 } from '@/lib/tokens'
+import { Die } from '@/components/dice/GameGlyph'
 
 const FD = FONT_DISPLAY
 const FB = FONT_BODY
@@ -35,18 +36,10 @@ function buildPool(char: Character, skills: CharacterSkill[], type: 'cool' | 'vi
 }
 
 // ── Die pip display ────────────────────────────────────────────
-function DiePip({ color, label, count }: { color: string; label: string; count: number }) {
+function DiePip({ type, count }: { type: 'proficiency' | 'ability'; count: number }) {
   return (
     <div className="flex items-center" style={{ gap: SP[1] }}>
-      {Array.from({ length: count }).map((_, i) => (
-        <div key={i} style={{
-          width: 40, height: 40, borderRadius: RADIUS.md,
-          border: `2px solid ${color}`,
-          background: `color-mix(in srgb, ${color} 10%, transparent)`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontFamily: FD, fontWeight: 700, fontSize: FS.sm, color,
-        }}>{label}</div>
-      ))}
+      {Array.from({ length: count }).map((_, i) => <Die key={i} type={type} size="xxl" />)}
     </div>
   )
 }
@@ -297,8 +290,8 @@ export function InitiativeRollBody({
               Dice Pool
             </div>
             <div className="flex flex-wrap items-center" style={{ gap: SP[1] }}>
-              {proficiency > 0 && <DiePip color={DICE_META.proficiency.color} label="Y" count={proficiency} />}
-              {ability > 0     && <DiePip color={DICE_META.ability.color}     label="G" count={ability} />}
+              {proficiency > 0 && <DiePip type="proficiency" count={proficiency} />}
+              {ability > 0     && <DiePip type="ability" count={ability} />}
               {proficiency === 0 && ability === 0 && (
                 <span style={{ fontFamily: FB, fontSize: FS.label, color: HUD.textFaint, fontStyle: 'italic' }}>No pool — stat is 0</span>
               )}

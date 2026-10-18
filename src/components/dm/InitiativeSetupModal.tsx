@@ -23,7 +23,8 @@ import type { AdversaryInstance } from '@/lib/adversaries'
 import type { VehicleInstance } from '@/lib/vehicles'
 import type { Character, CharacteristicKey } from '@/lib/types'
 import type { MapToken } from '@/hooks/useMapTokens'
-import { HUD, FONT_DISPLAY, FONT_BODY, FS, SP, RADIUS, EASE, Z, DICE_COLOR } from '@/lib/tokens'
+import { HUD, FONT_DISPLAY, FONT_BODY, FS, SP, RADIUS, EASE, Z } from '@/lib/tokens'
+import { Die } from '@/components/dice/GameGlyph'
 
 // ── Layout tokens ─────────────────────────────────────────────────
 const FD    = FONT_DISPLAY
@@ -83,24 +84,12 @@ interface SkillDef {
 
 const DEFAULT_SKILL_KEY: Record<'cool' | 'vigilance', string> = { cool: 'COOL', vigilance: 'VIGIL' }
 
-function DiePip({ color, label }: { color: string; label: string }) {
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-      width: 16, height: 16, borderRadius: RADIUS.sm,
-      border: `1px solid ${color}`,
-      background: `color-mix(in srgb, ${color} 18%, transparent)`,
-      fontFamily: FB, fontSize: FS.overline, fontWeight: 700, color, marginRight: 2, flexShrink: 0,
-    }}>{label}</span>
-  )
-}
-
 function DicePoolPips({ proficiency, ability }: { proficiency: number; ability: number }) {
   if (proficiency === 0 && ability === 0) return <span style={{ fontFamily: FB, fontSize: FS.overline, color: TEXT_MUTED }}>—</span>
   return (
-    <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-      {Array.from({ length: proficiency }).map((_, i) => <DiePip key={`p${i}`} color={DICE_COLOR.proficiency} label="P" />)}
-      {Array.from({ length: ability }).map((_, i) => <DiePip key={`a${i}`} color={DICE_COLOR.ability} label="A" />)}
+    <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+      {Array.from({ length: proficiency }).map((_, i) => <Die key={`p${i}`} type="proficiency" size="sm" />)}
+      {Array.from({ length: ability }).map((_, i) => <Die key={`a${i}`} type="ability" size="sm" />)}
     </div>
   )
 }

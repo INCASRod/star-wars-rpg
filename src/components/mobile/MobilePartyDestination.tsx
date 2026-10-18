@@ -1,7 +1,8 @@
 'use client'
 
 import { DiceFace } from '@/components/dice/DiceFace'
-import { SYM, SYM_COLOR, type SymbolKey, type DiceType } from '@/lib/tokens'
+import { SYM, type SymbolKey, type DiceType } from '@/lib/tokens'
+import { Symbol } from '@/components/dice/GameGlyph'
 import type { RollEntry } from '@/hooks/useRollFeed'
 
 // Destiny light/dark identity — sealed exception, same hex DestinyPoolDisplay.tsx
@@ -95,8 +96,8 @@ function ForceFeedCard({ roll, isOwn }: { roll: RollEntry; isOwn: boolean }) {
           {diceResults.map((d, i) => (
             <span key={i} className="m-feed-force-die">
               {d.light === 0 && d.dark === 0 && '—'}
-              {d.light > 0 && <span style={{ color: SYM_COLOR.lightPip /* Force light pip — sealed dice-identity colour */ }}>{'✦'.repeat(d.light)}</span>}
-              {d.dark > 0 && <span style={{ color: SYM_COLOR.darkPip /* Force dark pip — sealed dice-identity colour */ }}>{'✧'.repeat(d.dark)}</span>}
+              {d.light > 0 && <span className="inline-flex gap-px">{Array.from({ length: d.light }).map((_, i) => <Symbol key={i} kind="lightPip" size="sm" />)}</span>}
+              {d.dark > 0 && <span className="inline-flex gap-px">{Array.from({ length: d.dark }).map((_, i) => <Symbol key={i} kind="darkPip" size="sm" />)}</span>}
             </span>
           ))}
         </div>

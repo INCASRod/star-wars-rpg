@@ -16,28 +16,17 @@ import { RangeBandStep } from './steps/RangeBandStep'
 import { DicePoolReviewStep, type ManualAdjustments, EMPTY_ADJUSTMENTS, type DualWieldState } from './steps/DicePoolReviewStep'
 import { DualWieldReviewStep } from './steps/DualWieldReviewStep'
 import { RollResultStep } from './steps/RollResultStep'
-import { FS, FONT_BODY, SP, RADIUS, Z, MODAL, DICE_META, DICE_COLOR, DICE_OUTLINE } from '@/lib/tokens'
+import { FS, FONT_BODY, SP, Z, MODAL, type DiceType } from '@/lib/tokens'
+import { Die } from '@/components/dice/GameGlyph'
 import { Modal } from '@/components/ui/Modal'
 import { igniteModalOpen, igniteModalClose, IGNITE_EXIT_MS } from '@/lib/utils'
 
-// ── Dice tray constants ────────────────────────────────────────────────────────
-const CLIP_OCTAGON = 'polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 70%,0% 30%)'
-const CLIP_DIAMOND = 'polygon(50% 0%,100% 50%,50% 100%,0% 50%)'
-
-function DiceTrayDie({ type }: { type: keyof typeof DICE_META }) {
-  const meta = DICE_META[type]
-  const sz = meta.shape === 'diamond' ? 30 : 34 /* die icon size */
+// ── Dice tray ─────────────────────────────────────────────────────────────────
+function DiceTrayDie({ type }: { type: DiceType }) {
   return (
-    <div
-      className="cc-die"
-      style={{
-        width:        sz,
-        height:       sz,
-        background:   meta.color, /* die-identity hex — sealed namespace, Pixi-canvas approved */
-        clipPath:     meta.shape === 'octagon' ? CLIP_OCTAGON : meta.shape === 'diamond' ? CLIP_DIAMOND : undefined,
-        borderRadius: meta.shape === 'rounded' ? RADIUS.sm : undefined,
-      }}
-    />
+    <span className="cc-die inline-flex">
+      <Die type={type} size="xl" />
+    </span>
   )
 }
 
@@ -77,12 +66,10 @@ function makeInitialState(initialAttackType: 'ranged' | 'melee' | null): CombatC
 // explicit "undo the upgrade" rather than a generic decrement, and is disabled
 // (a no-op) at zero.
 function FcStepper({
-  dieColor, dieEdge, dieShape, name, sub, value, onAdd, onRemove, canRemove,
+  die, name, sub, value, onAdd, onRemove, canRemove,
   isUpgrade = false, downgradeLabel,
 }: {
-  dieColor:   string
-  dieEdge?:   string
-  dieShape:   'octagon' | 'diamond' | 'rounded'
+  die:        DiceType
   name:       string
   sub?:       string
   value:      number
@@ -92,19 +79,9 @@ function FcStepper({
   isUpgrade?: boolean
   downgradeLabel?: string
 }) {
-  const sz = dieShape === 'diamond' ? 15 : 16 /* die glyph size — geometry, not spacing */
   return (
     <div className={`fc-dstep${isUpgrade ? ' is-upgrade' : ''}`}>
-      <span style={{
-        width:        sz,
-        height:       sz,
-        flexShrink:   0,
-        background:   dieColor, /* die-identity hex — sealed namespace */
-        border:       dieShape === 'rounded' && dieEdge ? `1px solid ${dieEdge}` : undefined,
-        boxShadow:    dieShape !== 'rounded' && dieEdge ? `0 0 0 1px ${dieEdge}` : undefined,
-        borderRadius: dieShape === 'rounded' ? RADIUS.sm : undefined,
-        clipPath:     dieShape === 'octagon' ? CLIP_OCTAGON : dieShape === 'diamond' ? CLIP_DIAMOND : undefined,
-      }} />
+      <Die type={die} size="sm" />
       <span className="fc-dstep-meta">
         <span className="fc-dstep-name">{name}</span>
         {sub && <span className="fc-dstep-sub">{sub}</span>}
@@ -966,7 +943,7 @@ export function CombatCheckOverlay({
                           <div className="fc-note">{meleeResult.fallbackReason}</div>
                           <div className="fc-dice-grid">
                             <FcStepper
-                              dieColor={DICE_COLOR.difficulty} dieShape="diamond"
+                              die="difficulty"
                               name="Difficulty" sub="Set manually"
                               value={state.adjustments.difficultyAdd}
                               onAdd={() => dssAdj('difficultyAdd', 1)}
@@ -991,7 +968,7 @@ export function CombatCheckOverlay({
                       <div className="fc-note">{meleeResult.fallbackReason}</div>
                       <div className="fc-dice-grid">
                         <FcStepper
-                          dieColor={DICE_COLOR.difficulty} dieShape="diamond"
+                          die="difficulty"
                           name="Difficulty" sub="Set manually"
                           value={state.adjustments.difficultyAdd}
                           onAdd={() => dssAdj('difficultyAdd', 1)}
@@ -1008,18 +985,10 @@ export function CombatCheckOverlay({
                       </div>
                       <div className="fc-range-pips" style={{ justifyContent: 'flex-start' }}>
                         {Array.from({ length: meleeResult.challengeDice }).map((_, i) => (
-                          <i key={`chl-${i}`} style={{
-                            width: 18, height: 18, flexShrink: 0, /* die geometry, not spacing */
-                            background: DICE_COLOR.challenge, /* die-identity hex — sealed namespace */
-                            clipPath: CLIP_OCTAGON,
-                          }} />
+                          <Die key={`chl-${i}`} type="challenge" size="md" />
                         ))}
                         {Array.from({ length: meleeResult.difficultyDice }).map((_, i) => (
-                          <i key={`dif-${i}`} style={{
-                            width: 16, height: 16, flexShrink: 0, /* die geometry, not spacing */
-                            background: DICE_COLOR.difficulty, /* die-identity hex — sealed namespace */
-                            clipPath: CLIP_DIAMOND,
-                          }} />
+                          <Die key={`dif-${i}`} type="difficulty" size="sm" />
                         ))}
                         {meleeResult.challengeDice === 0 && meleeResult.difficultyDice === 0 && (
                           <span className="fc-range-dash">—</span>
@@ -1046,25 +1015,25 @@ export function CombatCheckOverlay({
               <div className="fc-col-body">
                   <div className="fc-dice-grid">
                     <FcStepper
-                      dieColor={DICE_COLOR.boost} dieShape="rounded"
+                      die="boost"
                       name="Boost" value={state.adjustments.boostAdd}
                       onAdd={() => dssAdj('boostAdd', 1)} onRemove={() => dssAdj('boostAdd', -1)}
                       canRemove={state.adjustments.boostAdd > 0}
                     />
                     <FcStepper
-                      dieColor={DICE_COLOR.setback} dieEdge={DICE_OUTLINE.setback} dieShape="rounded"
+                      die="setback"
                       name="Setback" value={state.adjustments.setbackAdd}
                       onAdd={() => dssAdj('setbackAdd', 1)} onRemove={() => dssAdj('setbackAdd', -1)}
                       canRemove={state.adjustments.setbackAdd > 0}
                     />
                     <FcStepper
-                      dieColor={DICE_COLOR.force} dieEdge={DICE_OUTLINE.force} dieShape="octagon"
+                      die="force"
                       name="Force" value={state.adjustments.forceAdd}
                       onAdd={() => dssAdj('forceAdd', 1)} onRemove={() => dssAdj('forceAdd', -1)}
                       canRemove={state.adjustments.forceAdd > 0}
                     />
                     <FcStepper
-                      dieColor={DICE_COLOR.difficulty} dieShape="diamond"
+                      die="difficulty"
                       name="Difficulty" sub="Add / remove"
                       value={state.adjustments.difficultyAdd}
                       onAdd={() => dssAdj('difficultyAdd', 1)} onRemove={() => dssAdj('difficultyAdd', -1)}
@@ -1073,7 +1042,7 @@ export function CombatCheckOverlay({
                     {/* Upgrade rows: the − is an explicit downgrade, labelled as
                         such, and is a no-op at zero via `canRemove`. */}
                     <FcStepper
-                      dieColor={DICE_COLOR.proficiency} dieShape="octagon"
+                      die="proficiency"
                       name="Upgrade Skill" sub="Ability → Prof"
                       value={state.adjustments.abilityUpgrades}
                       onAdd={() => dssAdj('abilityUpgrades', 1)} onRemove={() => dssAdj('abilityUpgrades', -1)}
@@ -1081,7 +1050,7 @@ export function CombatCheckOverlay({
                       isUpgrade downgradeLabel="Undo"
                     />
                     <FcStepper
-                      dieColor={DICE_COLOR.challenge} dieShape="octagon"
+                      die="challenge"
                       name="Upgrade Diff" sub="Diff → Challenge"
                       value={state.adjustments.difficultyUpgrades}
                       onAdd={() => dssAdj('difficultyUpgrades', 1)} onRemove={() => dssAdj('difficultyUpgrades', -1)}

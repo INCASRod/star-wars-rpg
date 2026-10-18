@@ -8,7 +8,8 @@ import type {
 } from '@/lib/types'
 import type { ForcePowerDisplay } from '@/components/player-hud/ForcePanel'
 import { getSkillPool, getAvailableForceDice } from '@/components/player-hud/dice-engine'
-import { DICE_META, type DiceType } from '@/lib/tokens'
+import type { DiceType } from '@/lib/tokens'
+import { Die } from '@/components/dice/GameGlyph'
 import { MobileAbilityTree, buildTreeTabs, type TreeTab } from './MobileAbilityTree'
 import { MobileTalentDetailSheet, type TalentDetailData } from './MobileTalentDetailSheet'
 import { MobileSkillDetailSheet } from './MobileSkillDetailSheet'
@@ -45,7 +46,7 @@ function DiceGlyphs({ pool }: { pool: Partial<Record<DiceType, number>> }) {
   return (
     <>
       {glyphs.map(g => (
-        <span key={`${g.type}-${g.i}`} className="m-dice-glyph" style={{ background: DICE_META[g.type].color /* die-identity colour — sealed namespace */ }} />
+        <Die key={`${g.type}-${g.i}`} type={g.type} size="sm" />
       ))}
     </>
   )

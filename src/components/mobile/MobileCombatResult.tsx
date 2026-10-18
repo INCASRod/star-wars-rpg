@@ -1,5 +1,7 @@
 'use client'
 
+import { Symbol } from '@/components/dice/GameGlyph'
+import { SYMBOL_KIND } from '@/components/dice/symbolKind'
 import type { RollResult } from '@/components/player-hud/dice-engine'
 import type { CriticalEligibility } from '@/lib/criticalUtils'
 import { DiceFace } from '@/components/dice/DiceFace'
@@ -60,7 +62,7 @@ export function MobileCombatResult({ result, weaponName, netDamageEstimate, crit
                 ? '—'
                 : die.symbols.map((s, j) => {
                     const sym = SYM[s as SymbolKey]
-                    return sym ? <i key={j} className={`ffi ffi-${sym.icon}`} style={{ color: sym.color /* symbol-identity colour — sealed namespace */ }} /> : <span key={j}>{s}</span>
+                    return sym ? <Symbol key={j} kind={SYMBOL_KIND[s as SymbolKey]} size="xs" /> : <span key={j}>{s}</span>
                   })}
             </span>
           </span>

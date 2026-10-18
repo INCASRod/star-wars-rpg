@@ -1,5 +1,7 @@
 'use client'
 
+import { Symbol } from '@/components/dice/GameGlyph'
+import { SYMBOL_KIND } from '@/components/dice/symbolKind'
 import { DiceFace } from '@/components/dice/DiceFace'
 import { SYM, DICE_META, type DiceType, type SymbolKey } from '@/components/player-hud/design-tokens'
 import type { RollResult, DieResult } from '@/components/player-hud/dice-engine'
@@ -49,7 +51,7 @@ function DieChip({ die }: { die: DieResult }) {
           : die.symbols.map((s, j) => {
               const sym = SYM[s as SymbolKey]
               return sym
-                ? <i key={j} className={`ffi ffi-${sym.icon}`} style={{ fontSize: 11, color: sym.color }} />
+                ? <Symbol key={j} kind={SYMBOL_KIND[s as SymbolKey]} size="xs" />
                 : <span key={j} style={{ fontSize: 11 }}>{s}</span>
             })
         }
@@ -60,7 +62,7 @@ function DieChip({ die }: { die: DieResult }) {
 
 function NetPill({ count, symKey }: { count: number; symKey: SymbolKey }) {
   if (count === 0) return null
-  const { icon, color } = SYM[symKey]
+  const { color } = SYM[symKey]
   return (
     <div style={{
       display: 'inline-flex', alignItems: 'center', gap: 5,
@@ -68,7 +70,7 @@ function NetPill({ count, symKey }: { count: number; symKey: SymbolKey }) {
       background: `${color}18`, border: `1px solid ${color}50`,
       fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700, color,
     }}>
-      <i className={`ffi ffi-${icon}`} />
+      <Symbol kind={SYMBOL_KIND[symKey]} size="inline" decorative />
       {Math.abs(count)} {symKey === 'S' ? (count > 0 ? 'Success' : 'Failure') :
                          symKey === 'A' ? (count > 0 ? 'Advantage' : 'Threat') :
                          symKey === 'T' ? 'Triumph' : 'Despair'}
@@ -201,7 +203,7 @@ export function RollResultStep({
             textTransform: 'uppercase',
             marginBottom: 6,
           }}>
-            <i className="ffi ffi-swrpg-advantage" /><i className="ffi ffi-swrpg-advantage" /> available — secondary: {secWeaponName}
+            <Symbol kind="advantage" size="inline" /><Symbol kind="advantage" size="inline" /> available — secondary: {secWeaponName}
           </div>
           <div style={{ fontFamily: "var(--font-body)", fontSize: FS.label, color: TEXT, marginBottom: 4 }}>
             Secondary damage if hit: <strong style={{ color: HUD.gold }}>{secTotalDmg}</strong>
@@ -210,7 +212,7 @@ export function RollResultStep({
             </span>
           </div>
           <div style={{ fontFamily: FONT_BODY, fontStyle: 'italic', fontSize: FS.overline, color: 'var(--hud-text-faint)' }}>
-            Secondary hit requires <i className="ffi ffi-swrpg-advantage" /><i className="ffi ffi-swrpg-advantage" /> or <i className="ffi ffi-swrpg-triumph" /> — GM/player decides.
+            Secondary hit requires <Symbol kind="advantage" size="inline" /><Symbol kind="advantage" size="inline" /> or <Symbol kind="triumph" size="inline" /> — GM/player decides.
           </div>
         </div>
       )}
