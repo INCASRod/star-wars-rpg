@@ -1,9 +1,9 @@
 'use client'
 
 import { Symbol } from '@/components/dice/GameGlyph'
-import { SYMBOL_KIND } from '@/components/dice/symbolKind'
-import { DiceFace } from '@/components/dice/DiceFace'
-import { SYM, DICE_META, type DiceType, type SymbolKey } from '@/components/player-hud/design-tokens'
+import { RolledDie } from '@/components/dice/RolledDie'
+import { SYMBOL_KIND, symbolKinds } from '@/components/dice/symbolKind'
+import { SYM, type DiceType, type SymbolKey } from '@/components/player-hud/design-tokens'
 import type { RollResult, DieResult } from '@/components/player-hud/dice-engine'
 import type { CharacterWeapon, RefWeapon } from '@/lib/types'
 import type { AdversaryInstance } from '@/lib/adversaries'
@@ -38,26 +38,7 @@ interface RollResultStepProps {
 }
 
 function DieChip({ die }: { die: DieResult }) {
-  return (
-    <div style={{ position: 'relative', width: 36, height: 36, flexShrink: 0 }}>
-      <DiceFace type={die.type as DiceType} size={36} />
-      <div style={{
-        position: 'absolute', inset: 0,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        gap: 0, pointerEvents: 'none',
-      }}>
-        {die.symbols.length === 0
-          ? <span style={{ fontSize: 11 }}>—</span>
-          : die.symbols.map((s, j) => {
-              const sym = SYM[s as SymbolKey]
-              return sym
-                ? <Symbol key={j} kind={SYMBOL_KIND[s as SymbolKey]} size="xs" />
-                : <span key={j} style={{ fontSize: 11 }}>{s}</span>
-            })
-        }
-      </div>
-    </div>
-  )
+  return <RolledDie type={die.type as DiceType} symbols={symbolKinds(die.symbols)} />
 }
 
 function NetPill({ count, symKey }: { count: number; symKey: SymbolKey }) {

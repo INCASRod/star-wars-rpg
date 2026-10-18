@@ -1,10 +1,9 @@
 'use client'
 
-import { Symbol } from '@/components/dice/GameGlyph'
-import { SYMBOL_KIND } from '@/components/dice/symbolKind'
+import { symbolKinds } from '@/components/dice/symbolKind'
+import { RolledDie } from '@/components/dice/RolledDie'
 import type { RollResult } from '@/components/player-hud/dice-engine'
 import type { CriticalEligibility } from '@/lib/criticalUtils'
-import { DiceFace } from '@/components/dice/DiceFace'
 import { SYM, SYM_COLOR, type SymbolKey } from '@/lib/tokens'
 import type { DiceType } from '@/lib/tokens'
 
@@ -54,19 +53,7 @@ export function MobileCombatResult({ result, weaponName, netDamageEstimate, crit
 
       <div className="m-deck-group-label">Dice rolled</div>
       <div className="m-cr-dice">
-        {result.dice.map((die, i) => (
-          <span key={i} className="m-cr-die">
-            <DiceFace type={die.type as DiceType} size={40} />
-            <span className="m-cr-die-overlay">
-              {die.symbols.length === 0
-                ? '—'
-                : die.symbols.map((s, j) => {
-                    const sym = SYM[s as SymbolKey]
-                    return sym ? <Symbol key={j} kind={SYMBOL_KIND[s as SymbolKey]} size="xs" /> : <span key={j}>{s}</span>
-                  })}
-            </span>
-          </span>
-        ))}
+        {result.dice.map((die, i) => <RolledDie key={i} type={die.type as DiceType} symbols={symbolKinds(die.symbols)} size="xxl" />)}
       </div>
 
       {crit?.eligibility.isEligible && (

@@ -22,12 +22,6 @@ interface DiceFaceProps {
   type: DiceType
   /** CSS size in px, snapped to the nearest GLYPH_SIZE step. Default 32. */
   size?: number
-  /** @deprecated No such thing as an unselected die: dice always render solid. Ignored. */
-  active?: boolean
-  /** @deprecated Dice always render solid. Ignored. */
-  dimmed?: boolean
-  /** @deprecated Dice are always solid. Ignored. */
-  solid?: boolean
   /** Extra CSS applied to the SVG element — use for inline-block positioning in text flow. */
   style?: React.CSSProperties
 }

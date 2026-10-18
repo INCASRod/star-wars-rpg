@@ -44,7 +44,7 @@ function SetbackRemovalIndicator({ count, sources }: { count: number; sources: s
       <div style={{ display: 'flex', alignItems: 'center', gap: 2, cursor: 'default' }}>
         {Array.from({ length: count }).map((_, i) => (
           <div key={i} style={{ position: 'relative', display: 'inline-block', width: 16, height: 16 }}>
-            <DiceFace type="setback" size={16} active={false} dimmed />
+            <DiceFace type="setback" size={16} />
             <svg
               style={{ position: 'absolute', inset: 0 }}
               viewBox="0 0 16 16"
@@ -72,7 +72,7 @@ function BoostAddIndicator({ count, sources }: { count: number; sources: string[
     <Tooltip content={tipContent} placement="top" maxWidth={220}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 2, cursor: 'default' }}>
         {Array.from({ length: count }).map((_, i) => (
-          <DiceFace key={i} type="boost" size={16} active={false} />
+          <DiceFace key={i} type="boost" size={16} />
         ))}
       </div>
     </Tooltip>
@@ -130,7 +130,7 @@ function PoolPreview({ charVal, rank }: { charVal: number; rank: number }) {
   if (total === 0) {
     return (
       <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
-        <DiceFace type="ability" size={18} dimmed />
+        <DiceFace type="ability" size={18} />
       </div>
     )
   }

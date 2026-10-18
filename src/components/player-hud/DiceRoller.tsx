@@ -115,7 +115,7 @@ function DiceBtn({
   return (
     <div className="flex flex-col items-center" style={{ gap: 'var(--space-1)' }}>
       <div className="relative cursor-pointer" onClick={onAdd}>
-        <DiceFace type={type} size={size} active={count > 0} />
+        <DiceFace type={type} size={size} />
         {/* Label overlay */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{
           fontFamily: FONT_BODY, fontSize: 'var(--text-body-sm)', fontWeight: 700, color: meta.color,
@@ -368,7 +368,7 @@ export function DiceRoller({ trainedSkills, equippedWeapons, onRoll, onCombatChe
           {checkType === 'Force' && (
             <div style={{ marginTop: 'var(--space-3)' }}>
               <div className="flex items-center" style={{ gap: 'var(--space-3)', marginBottom: '0.625rem' }}>
-                <DiceFace type="force" size={36} active />
+                <DiceFace type="force" size={36} />
                 <div className="flex items-center" style={{ gap: 'var(--space-1)' }}>
                   <button
                     onClick={() => setForceCount(c => Math.max(1, c - 1))}

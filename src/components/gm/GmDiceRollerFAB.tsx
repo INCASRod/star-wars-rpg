@@ -1,7 +1,8 @@
 ﻿'use client'
 
 import { Symbol } from '@/components/dice/GameGlyph'
-import { SYMBOL_KIND } from '@/components/dice/symbolKind'
+import { SYMBOL_KIND, symbolKinds } from '@/components/dice/symbolKind'
+import { RolledDie } from '@/components/dice/RolledDie'
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
@@ -133,7 +134,7 @@ function DiceBtn({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.125rem' }}>
       <div style={{ position: 'relative', cursor: 'pointer' }} onClick={onAdd} title={`Add ${meta.label}`}>
-        <DiceFace type={type} size={36} active={count > 0} />
+        <DiceFace type={type} size={36} />
         {count > 0 && (
           <div style={{
             position: 'absolute', top: '-0.25rem', right: '-0.25rem', width: '0.875rem', height: '0.875rem',
@@ -205,26 +206,8 @@ function NarrativeResult({ result }: { result: RollResult }) {
           })}
         </div>
       )}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3125rem', justifyContent: 'center' }}>
-        {dice.map((die, i) => {
-          const symKeys = die.symbols.filter(s => s in SYM) as SymbolKey[]
-          return (
-            <div key={i} style={{ position: 'relative' }}>
-              <DiceFace type={die.type} size={30} />
-              <div style={{
-                position: 'absolute', inset: 0,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.0625rem',
-              }}>
-                {symKeys.length === 0
-                  ? <span style={{ color: DIM, fontSize: FS.overline }}>—</span>
-                  : symKeys.map((s, j) => (
-                      <Symbol key={j} kind={SYMBOL_KIND[s]} size="xs" />
-                    ))
-                }
-              </div>
-            </div>
-          )
-        })}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'center' }}>
+        {dice.map((die, i) => <RolledDie key={i} type={die.type} symbols={symbolKinds(die.symbols)} />)}
       </div>
     </div>
   )
@@ -651,7 +634,7 @@ export function GmDiceRollerFAB({
           <SectionLabel text="Force Dice" />
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.625rem' }}>
-            <DiceFace type="force" size={36} active />
+            <DiceFace type="force" size={36} />
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
               <button

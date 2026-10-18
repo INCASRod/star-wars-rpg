@@ -1,8 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { C, FONT_CINZEL, FONT_RAJDHANI, DICE_META, panelBase, SYM, FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4, FS_H3 } from '@/components/player-hud/design-tokens'
+import { C, FONT_CINZEL, FONT_RAJDHANI, panelBase, SYM, FS_OVERLINE, FS_CAPTION, FS_LABEL, FS_SM, FS_H4, FS_H3 } from '@/components/player-hud/design-tokens'
 import type { RollEntry as LiveRollEntry } from '@/hooks/useRollFeed'
+import { Die, Symbol } from '@/components/dice/GameGlyph'
+import { SYMBOL_KIND } from '@/components/dice/symbolKind'
+import type { DiceType } from '@/lib/tokens'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -34,14 +37,10 @@ const STATIC_ROLLS: RollEntry[] = [
   { id: '5', playerName: 'Alex',   characterName: 'Kira Voss', isDm: false, skill: 'Vigilance (Willpower 2, Rank 0)',          dice: [{ symbol: 'G', count: 2 }, { symbol: 'P', count: 2 }],                                             resultText: 'Failure',                outcome: 'failure', timestamp: '8 min ago',  isSelf: true },
 ]
 
-// ── Die symbol → design-token color ──────────────────────────────────────────
+// ── Die symbol → die type ────────────────────────────────────────────────────
 
-const SYM_COLOR: Record<DieSymbol, string> = {
-  Y: DICE_META.proficiency.color,
-  G: DICE_META.ability.color,
-  P: DICE_META.difficulty.color,
-  B: DICE_META.boost.color,
-  K: DICE_META.setback.color,
+const DIE_TYPE: Record<DieSymbol, DiceType> = {
+  Y: 'proficiency', G: 'ability', P: 'difficulty', B: 'boost', K: 'setback',
 }
 
 const OUTCOME_COLOR: Record<Outcome, string> = {
@@ -106,17 +105,9 @@ function liveToEntry(live: LiveRollEntry, ownId?: string): RollEntry {
 // ── Mini die pip ──────────────────────────────────────────────────────────────
 
 function DiePip({ symbol, count }: DiceCount) {
-  const color = SYM_COLOR[symbol]
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, marginRight: 4 }}>
-      <span style={{
-        width: 16, height: 16, border: `1px solid ${color}`,
-        background: `${color}15`, borderRadius: 2,
-        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-        fontFamily: FONT_CINZEL, fontWeight: 700, fontSize: FS_OVERLINE, color,
-      }}>
-        {symbol}
-      </span>
+      <Die type={DIE_TYPE[symbol]} size="sm" />
       <span style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, color: C.textDim }}>{count}</span>
     </span>
   )
@@ -204,7 +195,7 @@ function SymLegend() {
     <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
       {(Object.entries(SYM) as [string, typeof SYM[keyof typeof SYM]][]).map(([key, s]) => (
         <span key={key} style={{ fontFamily: FONT_RAJDHANI, fontSize: FS_OVERLINE, color: s.color, display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-          <i className={`ffi ffi-${s.icon}`} />
+          <Symbol kind={SYMBOL_KIND[key as keyof typeof SYMBOL_KIND]} size="inline" decorative />
           {s.label}
         </span>
       ))}

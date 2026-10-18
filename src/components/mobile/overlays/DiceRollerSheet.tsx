@@ -1,9 +1,10 @@
 'use client'
 
 import { Symbol } from '@/components/dice/GameGlyph'
-import { SYMBOL_KIND } from '@/components/dice/symbolKind'
+import { symbolKinds } from '@/components/dice/symbolKind'
+import { RolledDie } from '@/components/dice/RolledDie'
 import { useState } from 'react'
-import { DICE_META, SYM, EMPTY_POOL, type DiceType } from '@/components/player-hud/design-tokens'
+import { DICE_META, EMPTY_POOL, type DiceType } from '@/components/player-hud/design-tokens'
 import { DiceFace } from '@/components/dice/DiceFace'
 import { rollPool, rollForceDice, poolSize, type RollResult, type ForceRollResult } from '@/components/player-hud/dice-engine'
 import { logRoll } from '@/lib/logRoll'
@@ -197,33 +198,10 @@ function ResultDisplay({ result }: { result: RollResult }) {
         marginTop: 10,
         display: 'flex',
         flexWrap: 'wrap',
-        gap: 4,
+        gap: 8,
         justifyContent: 'center',
       }}>
-        {result.dice.map((die, i) => {
-          const meta = DICE_META[die.type]
-          return (
-            <div key={i} style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 2,
-              padding: '2px 6px',
-              background: `${meta.color}10`,
-              border: `1px solid ${meta.color}30`,
-              borderRadius: 6,
-            }}>
-              {die.symbols.length === 0 ? (
-                <span style={{ fontFamily: FONT_M, fontSize: 10, color: TEXT_DIM }}>—</span>
-              ) : (
-                die.symbols.map((sym, j) => (
-                  SYM[sym]?.icon
-                    ? <Symbol key={j} kind={SYMBOL_KIND[sym]} size="xs" />
-                    : <span key={j} style={{ fontSize: 12, color: TEXT }}>{sym}</span>
-                ))
-              )}
-            </div>
-          )
-        })}
+        {result.dice.map((die, i) => <RolledDie key={i} type={die.type} symbols={symbolKinds(die.symbols)} size="lg" />)}
       </div>
     </div>
   )
@@ -453,7 +431,7 @@ export function DiceRollerSheet({ prePopSkill, characterId, characterName, campa
         <>
           {/* Force die + stepper */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginTop: 8 }}>
-            <DiceFace type="force" size={40} active />
+            <DiceFace type="force" size={40} />
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
               <button

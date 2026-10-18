@@ -509,11 +509,6 @@
   font-size: var(--text-h4);
   color: var(--hud-mobile-text-faint);
 }
-.m-dice-glyph {
-  width: 14px; height: 14px; /* fixed die-glyph geometry */
-  border-radius: 3px;
-  /* background is die-identity colour from DICE_META — sealed namespace, set inline */
-}
 
 /* ── Abilities destination — tree view (Part B) ───────────────────── */
 .m-tree-view {
@@ -1240,17 +1235,6 @@
   flex-wrap: wrap;
   gap: var(--space-2);
   margin: var(--space-2) 0;
-}
-.m-cr-die { position: relative; width: 40px; height: 40px; }
-.m-cr-die-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1px;
-  font-size: var(--text-label);
-  pointer-events: none;
 }
 .m-cr-crit {
   margin-top: var(--space-2);

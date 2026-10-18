@@ -345,7 +345,6 @@ export function MobileForceCheck({
                     style={{
                       // Force light/dark pip fills — sealed dice-identity colours (SYM_COLOR)
                       background: `color-mix(in srgb, ${p.kind === 'light' ? SYM_COLOR.lightPip : SYM_COLOR.darkPip} ${p.kind === 'light' ? 20 : 25}%, transparent)`,
-                      color: p.kind === 'light' ? SYM_COLOR.lightPip : SYM_COLOR.darkPip,
                     }}
                     onClick={() => handleTokenTap(p)}
                     disabled={committed}
@@ -393,7 +392,6 @@ export function MobileForceCheck({
                           style={{
                             // Force light/dark pip fills — sealed dice-identity colours (SYM_COLOR)
                             background: `color-mix(in srgb, ${c.kind === 'light' ? SYM_COLOR.lightPip : SYM_COLOR.darkPip} ${c.kind === 'light' ? 20 : 25}%, transparent)`,
-                            color: c.kind === 'light' ? SYM_COLOR.lightPip : SYM_COLOR.darkPip,
                           }}
                           disabled={committed}
                           onClick={() => handleChipTap(row.key, ci)}

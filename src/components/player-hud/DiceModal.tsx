@@ -1,10 +1,10 @@
 'use client'
 
 import { Symbol } from '@/components/dice/GameGlyph'
-import { SYMBOL_KIND } from '@/components/dice/symbolKind'
-import { HUD, FONT_DISPLAY, FONT_BODY, FS, RADIUS, EASE, SYM, DICE_META, type DiceType, type SymbolKey } from '@/lib/tokens'
+import { SYMBOL_KIND, symbolKinds } from '@/components/dice/symbolKind'
+import { RolledDie } from '@/components/dice/RolledDie'
+import { HUD, FONT_DISPLAY, FONT_BODY, FS, RADIUS, EASE, SYM, DICE_META, type SymbolKey } from '@/lib/tokens'
 import { Modal } from '@/components/ui/Modal'
-import { DiceFace } from '@/components/dice/DiceFace'
 import type { RollResult, DieResult } from './dice-engine'
 
 const ADVANTAGE_HINTS = [
@@ -22,45 +22,12 @@ const THREAT_HINTS = [
   'The situation deteriorates — GM decides how',
 ]
 
-// Render a dice shape using SVG DiceFace with optional content overlay
-function DieShape({ type, size, children }: {
-  type: DiceType
-  size: number
-  children?: React.ReactNode
-}) {
-  const color = DICE_META[type].color
-  return (
-    <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
-      <DiceFace type={type} size={size} />
-      {children && (
-        <div style={{
-          position: 'absolute', inset: 0,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: size * 0.28, color,
-          fontFamily: FONT_BODY, fontWeight: 700,
-          pointerEvents: 'none',
-        }}>
-          {children}
-        </div>
-      )}
-    </div>
-  )
-}
-
 function DieChip({ die }: { die: DieResult }) {
   const meta = DICE_META[die.type]
-  const symbolKeys = die.symbols.filter(s => s in SYM) as SymbolKey[]
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-      <DieShape type={die.type} size={44}>
-        {symbolKeys.length === 0
-          ? <span style={{ fontSize: 14 }}>—</span>
-          : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
-              {symbolKeys.map((s, i) => <Symbol key={i} kind={SYMBOL_KIND[s]} size="xs" />)}
-            </span>
-        }
-      </DieShape>
+      <RolledDie type={die.type} symbols={symbolKinds(die.symbols)} size="xxl" />
       <div style={{ fontSize: FS.caption, color: HUD.textDim, fontFamily: FONT_BODY, textTransform: 'uppercase' }}>
         {meta.label}
       </div>

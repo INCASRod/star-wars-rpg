@@ -851,35 +851,6 @@ i.ffi {
   vertical-align: middle;
   white-space: nowrap;
 }
-.die {
-  display:        inline-block;
-  padding:        0px 5px;
-  border-radius:  3px;
-  font-size:      0.8em;
-  font-weight:    700;
-  line-height:    1.5;
-  letter-spacing: 0.05em;
-  vertical-align: middle;
-  white-space:    nowrap;
-  margin:         0 2px;
-  font-family:    var(--font-body), sans-serif;
-}
-/* Dice-pool chips — colors reference CSS vars defined in :root */
-.die.boost      { color: var(--die-boost);      background: color-mix(in srgb, var(--die-boost) 12%, transparent);      border: 1px solid color-mix(in srgb, var(--die-boost) 35%, transparent); }
-/* Setback: black body, light grey ink + edge — the only die whose fill and text
-   colours differ, so it can't be read as a second boost die. */
-.die.setback    { color: var(--die-setback);    background: var(--die-setback-fill);                                    border: 1px solid color-mix(in srgb, var(--die-setback) 55%, transparent); }
-.die.difficulty { color: var(--die-difficulty); background: color-mix(in srgb, var(--die-difficulty) 12%, transparent); border: 1px solid color-mix(in srgb, var(--die-difficulty) 35%, transparent); }
-.die.challenge  { color: var(--die-challenge);  background: color-mix(in srgb, var(--die-challenge) 12%, transparent);  border: 1px solid color-mix(in srgb, var(--die-challenge) 35%, transparent); }
-.die.force      { color: var(--die-force);      background: color-mix(in srgb, var(--die-force) 12%, transparent);      border: 1px solid color-mix(in srgb, var(--die-force) 35%, transparent); }
-/* Result symbols */
-.die.success    { color: var(--die-success);    background: color-mix(in srgb, var(--die-success) 12%, transparent);    border: 1px solid color-mix(in srgb, var(--die-success) 35%, transparent); }
-.die.advantage  { color: var(--die-advantage);  background: color-mix(in srgb, var(--die-advantage) 12%, transparent);  border: 1px solid color-mix(in srgb, var(--die-advantage) 35%, transparent); }
-.die.threat     { color: var(--die-threat);     background: color-mix(in srgb, var(--die-threat) 12%, transparent);     border: 1px solid color-mix(in srgb, var(--die-threat) 35%, transparent); }
-.die.triumph    { color: var(--die-triumph);    background: color-mix(in srgb, var(--die-triumph) 12%, transparent);    border: 1px solid color-mix(in srgb, var(--die-triumph) 35%, transparent); }
-.die.despair    { color: var(--die-despair);    background: color-mix(in srgb, var(--die-despair) 12%, transparent);    border: 1px solid color-mix(in srgb, var(--die-despair) 35%, transparent); }
-/* Force pip */
-.die.forcepip   { color: var(--die-forcepip);   background: color-mix(in srgb, var(--die-force) 10%, transparent);      border: 1px solid color-mix(in srgb, var(--die-forcepip) 30%, transparent); }
 
 
 @layer base {
