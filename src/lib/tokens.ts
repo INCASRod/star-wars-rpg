@@ -487,3 +487,36 @@ export const panelBase: React.CSSProperties = {
   borderRadius:         RADIUS.lg,
   position:             'relative',
 }
+
+// ── Glyph (dice + result symbol) geometry and fixed finish ─────────
+// Used by components/dice/GameGlyph.tsx. NEW exports only: DICE_COLOR / DICE_OUTLINE / SYM_COLOR above stay sealed.
+// Nothing here reads a theme or the surface behind the glyph: the tile and the die rim are the same on every
+// theme, so a glyph looks identical on a gold plaque, a dark panel and a white card.
+/** Edge length in px for each glyph step. `inline` (1.15em) scales with the surrounding text, dice and symbols alike. */
+export const GLYPH_SIZE = { xs: 12, sm: 14, md: 18, lg: 24, xl: 32, xxl: 40 } as const
+export type GlyphSize = keyof typeof GLYPH_SIZE | 'inline'
+export const GLYPH_INLINE_EM = 1.15
+
+/** The fixed tile every result symbol sits on. */
+export const GLYPH_TILE = {
+  base:    '#141821',
+  hi:      'rgba(255,255,255,.10)',
+  lo:      'rgba(0,0,0,.55)',
+  shadow:  'rgba(0,0,0,.45)',
+  /** icon-font glyph height as a share of the tile's edge */
+  glyph:   0.74,
+  /** tile edge radius as a share of the tile's edge */
+  radius:  0.2,
+} as const
+
+/** Two-tone rim drawn on every die (viewBox 32): a dark line outside, a light line inside, then the self-derived bevel. */
+export const GLYPH_RIM = {
+  dark:       'rgba(0,0,0,.45)',
+  darkWidth:  2.4,
+  light:      'rgba(255,255,255,.22)',
+  lightWidth: 1,
+  bevelHi:    0.22,
+  bevelLo:    0.28,
+  /** Per-die override for the two weak cases (white Force die on white, black Setback die on dark panels). Empty until the Playwright sweep says otherwise. */
+  heavy:      {} as Partial<Record<DiceType, { dark?: string; darkWidth?: number; light?: string; lightWidth?: number }>>,
+} as const

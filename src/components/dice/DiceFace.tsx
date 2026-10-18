@@ -1,74 +1,38 @@
 'use client'
 
 import type { DiceType } from '@/components/player-hud/design-tokens'
+import { Die } from '@/components/dice/GameGlyph'
+import { GLYPH_SIZE, type GlyphSize } from '@/lib/tokens'
 
 // Re-exported from the single source of truth in tokens.ts — this file used to
 // carry its own copy of the palette, which is how setback drifted to a
 // blue-grey that read as a second boost die.
 export { DICE_COLOR as DICE_COLORS } from '@/lib/tokens'
-import { DICE_COLOR, DICE_OUTLINE } from '@/lib/tokens'
 
-// Rounded octagon for Proficiency / Challenge (physical d12 shape)
-const OCTAGON_PATH =
-  'M 18.1 4.9 Q 20.6 4.9 22.4 6.7 L 25.3 9.6 Q 27.1 11.4 27.1 13.9 ' +
-  'L 27.1 18.1 Q 27.1 20.6 25.3 22.4 L 22.4 25.3 Q 20.6 27.1 18.1 27.1 ' +
-  'L 13.9 27.1 Q 11.4 27.1 9.6 25.3 L 6.7 22.4 Q 4.9 20.6 4.9 18.1 ' +
-  'L 4.9 13.9 Q 4.9 11.4 6.7 9.6 L 9.6 6.7 Q 11.4 4.9 13.9 4.9 Z'
+const STEPS = Object.keys(GLYPH_SIZE) as (keyof typeof GLYPH_SIZE)[]
+
+/** Nearest GLYPH_SIZE step for a legacy pixel size. A tie goes to the smaller step so a die never outgrows the box its caller laid out. */
+function nearestStep(px: number): GlyphSize {
+  let best = STEPS[0]
+  for (const s of STEPS) if (Math.abs(GLYPH_SIZE[s] - px) < Math.abs(GLYPH_SIZE[best] - px)) best = s
+  return best
+}
 
 interface DiceFaceProps {
   type: DiceType
-  /** CSS size in px. Default 32. */
+  /** CSS size in px, snapped to the nearest GLYPH_SIZE step. Default 32. */
   size?: number
-  /** When false, stroke and fill are muted (unselected / outline state). Default true. */
+  /** @deprecated No such thing as an unselected die: dice always render solid. Ignored. */
   active?: boolean
-  /** Reduce overall opacity to ~30% (zero-rank indicator). */
+  /** @deprecated Dice always render solid. Ignored. */
   dimmed?: boolean
-  /** Use fully opaque fill instead of the default transparent tint. */
+  /** @deprecated Dice are always solid. Ignored. */
   solid?: boolean
   /** Extra CSS applied to the SVG element — use for inline-block positioning in text flow. */
   style?: React.CSSProperties
 }
 
-export function DiceFace({ type, size = 32, active = true, dimmed = false, solid = false, style }: DiceFaceProps) {
-  const color  = DICE_COLOR[type]
-  const edge   = DICE_OUTLINE[type]
-  const fill   = solid ? color : (active ? `${color}28` : `${color}0E`)
-  const stroke = active ? edge : `${edge}70`
-  const sw     = size < 16 ? 1 : 1.5
-
-  let shape: React.ReactNode
-
-  if (type === 'proficiency' || type === 'challenge' || type === 'force') {
-    shape = <path d={OCTAGON_PATH} fill={fill} stroke={stroke} strokeWidth={sw} />
-  } else if (type === 'ability' || type === 'difficulty') {
-    shape = (
-      <polygon
-        points="16,2 30,16 16,30 2,16"
-        fill={fill}
-        stroke={stroke}
-        strokeWidth={sw}
-      />
-    )
-  } else {
-    // boost / setback — rounded square
-    shape = (
-      <rect
-        x="3" y="3" width="26" height="26" rx="5"
-        fill={fill}
-        stroke={stroke}
-        strokeWidth={sw}
-      />
-    )
-  }
-
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 32 32"
-      style={{ flexShrink: 0, display: 'block', opacity: dimmed ? 0.3 : 1, ...style }}
-    >
-      {shape}
-    </svg>
-  )
+/** Kept for its ~49 callers; draws a `Die` (components/dice/GameGlyph.tsx). */
+export function DiceFace({ type, size = 32, style }: DiceFaceProps) {
+  return <Die type={type} size={nearestStep(size)} style={style} />
 }

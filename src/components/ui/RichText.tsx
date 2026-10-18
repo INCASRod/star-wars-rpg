@@ -1,71 +1,14 @@
 'use client'
 
 import { parseSymbols } from '@/lib/parseSymbols'
-import { DiceFace } from '@/components/dice/DiceFace'
+import { Die, Symbol as SymbolGlyph, type SymbolKind } from '@/components/dice/GameGlyph'
 import type { DiceType } from '@/components/player-hud/design-tokens'
-import { SYM_COLOR } from '@/lib/tokens'
 
-const CSS_ICON: Record<string, string> = {
-  success:   'ffi-swrpg-success',
-  failure:   'ffi-swrpg-failure',
-  advantage: 'ffi-swrpg-advantage',
-  threat:    'ffi-swrpg-threat',
-  triumph:   'ffi-swrpg-triumph',
-  despair:   'ffi-swrpg-despair',
-}
-
-const FORCE_PIP_COLOR: Record<string, string> = {
-  light: '#FFFFFF',
-  dark:  '#333333',
-}
+const RESULT_SYMBOL = new Set<string>(['success', 'failure', 'advantage', 'threat', 'triumph', 'despair'])
 
 const DICE_FACE_KEYS = new Set<string>([
   'boost', 'ability', 'proficiency', 'setback', 'difficulty', 'challenge', 'force',
 ])
-
-const LABEL: Record<string, string> = {
-  success:     'Success',
-  failure:     'Failure',
-  advantage:   'Advantage',
-  threat:      'Threat',
-  triumph:     'Triumph',
-  despair:     'Despair',
-  fp:          'Force pip',
-  light:       'Light side Force pip',
-  dark:        'Dark side Force pip',
-  boost:       'Boost die',
-  ability:     'Ability die',
-  proficiency: 'Proficiency die',
-  setback:     'Setback die',
-  difficulty:  'Difficulty die',
-  challenge:   'Challenge die',
-  force:       'Force die',
-}
-
-const INLINE: React.CSSProperties = { display: 'inline', verticalAlign: 'middle', lineHeight: 1 }
-
-// Dark chip backing for every inline dice/symbol glyph — the sw-rpg-icons font
-// and DiceFace's SVG fills were authored for a dark background; on a bright
-// surface (the owned-plaque E4 plate, gold in Ember / cyan in Kyber) setback's
-// near-black translucent fill vanishes and only its pale outline remains,
-// perceptually reading as boost instead of setback. Rather than adjusting any
-// glyph colour (DICE_COLOR/SYM_COLOR are a sealed namespace — see tokens.ts),
-// every glyph gets its own dark island via `box-shadow`, never `background` or
-// `padding`. box-shadow is purely presentational — it paints outside the
-// element's box without contributing to that box's dimensions, so it cannot
-// change line-height or line-box height regardless of context (confirmed live:
-// identical computed line-height with and without this style in every surface
-// RichText renders in). A `background-color` approach would work for most
-// glyphs but breaks the neutral Force pip's `background-clip: text` gradient
-// trick below; box-shadow is compatible with all of them uniformly.
-// `--plaque-body` (near-black, per-theme) is reused rather than inventing a
-// colour: on a normal dark plaque it is literally the same value as the
-// surrounding surface, so the chip is invisible there by construction — it
-// only becomes visible where the background actually needs it.
-const GLYPH_CHIP: React.CSSProperties = {
-  boxShadow: '0 0 0 1.5px var(--plaque-body)',
-  borderRadius: '3px',
-}
 
 interface RichTextProps {
   text:       string
@@ -163,63 +106,26 @@ export function RichText({ text, className, style }: RichTextProps) {
 
     // seg.type === 'symbol'
     const { key, count } = seg
-    const label = LABEL[key] ?? key
     if (groupKey === null) groupKey = k
 
     for (let iconIdx = 0; iconIdx < count; iconIdx++) {
       const ik = `${k}-${iconIdx}`
 
-      if (key in CSS_ICON) {
-        // Explicit `color` — found during this pass, live-confirmed: .ffi-swrpg-*
-        // sets no colour of its own (globals.css), so these were rendering in
-        // whatever `color` the surrounding text had. On an owned plaque that's
-        // ~near-black at 88% alpha, i.e. the SAME colour as GLYPH_CHIP's own
-        // backing — the glyph nearly vanished into its own chip (confirmed via
-        // screenshot: a success star rendered as a barely-visible near-black
-        // silhouette on a near-black square). Fixed by applying the existing
-        // sealed SYM_COLOR value explicitly, stopping the inheritance — not by
-        // changing SYM_COLOR itself or the chip colour.
-        iconGroup.push(
-          <i key={ik} className={`ffi ${CSS_ICON[key]}`} aria-hidden="true" title={label}
-            style={{ ...INLINE, ...GLYPH_CHIP, color: SYM_COLOR[key as keyof typeof SYM_COLOR] }} />
-        )
+      // Every glyph is a fixed-finish Die / Symbol (components/dice/GameGlyph.tsx): nothing reads the surrounding surface.
+      if (RESULT_SYMBOL.has(key)) {
+        iconGroup.push(<SymbolGlyph key={ik} kind={key as SymbolKind} size="inline" />)
         continue
       }
-
       if (key === 'fp') {
-        // Neutral Force pip (◑) — left half dark, right half light. GLYPH_CHIP
-        // uses box-shadow rather than `background` specifically so it doesn't
-        // collide with this element's own `background` (the gradient the pip
-        // is drawn from via background-clip: text, below).
-        iconGroup.push(
-          <i key={ik} className="ffi ffi-swrpg-force" aria-hidden="true" title={label}
-            style={{
-              ...INLINE,
-              ...GLYPH_CHIP,
-              background: `linear-gradient(to right, ${FORCE_PIP_COLOR.dark} 50%, ${FORCE_PIP_COLOR.light} 50%)`,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            }}
-          />
-        )
+        iconGroup.push(<SymbolGlyph key={ik} kind="forcePip" size="inline" />)
         continue
       }
-
-      if (key in FORCE_PIP_COLOR) {
-        iconGroup.push(
-          <i key={ik} className="ffi ffi-swrpg-force" aria-hidden="true" title={label}
-            style={{ ...INLINE, ...GLYPH_CHIP, color: FORCE_PIP_COLOR[key] }} />
-        )
+      if (key === 'light' || key === 'dark') {
+        iconGroup.push(<SymbolGlyph key={ik} kind={key === 'light' ? 'lightPip' : 'darkPip'} size="inline" />)
         continue
       }
-
       if (DICE_FACE_KEYS.has(key)) {
-        iconGroup.push(
-          <span key={ik} aria-hidden="true" title={label} style={{ ...INLINE, display: 'inline-block', ...GLYPH_CHIP }}>
-            <DiceFace type={key as DiceType} size={14} style={{ verticalAlign: 'middle' }} />
-          </span>
-        )
+        iconGroup.push(<Die key={ik} type={key as DiceType} size="inline" />)
       }
     }
   }
