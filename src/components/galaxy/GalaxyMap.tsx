@@ -12,7 +12,12 @@ interface View { tx: number; ty: number; k: number }
 
 const MIN_K = 0.05
 const MAX_K = 6
-const LABEL_K = 0.6 // px per map unit above which planet names appear
+const LABEL_PX = 10 // label font size, screen px
+const LABEL_SETTLE_MS = 100 // labels re-place this long after zoom/pan stops
+const CHAR_W = LABEL_PX * 0.6 // JetBrains Mono advance
+// text sits 3px below the dot; its rendered box measures ~13px tall, so reserve 8px above and 7px below the dot's y
+const LABEL_UP = 8
+const LABEL_DOWN = 7
 const CLICK_SLOP = 4 // px of pointer travel that turns a click into a drag
 
 interface Props {
@@ -25,6 +30,41 @@ interface Props {
   onPlanet: (id: string) => void
   onPin: (id: string) => void
   onDropPin: (x: number, y: number) => void
+}
+
+interface Label { key: string; name: string; x: number; y: number; end: boolean; strong: boolean }
+interface Cand { key: string; name: string; x: number; y: number; strong: boolean }
+type Box = { x0: number; x1: number; y0: number; y1: number }
+
+const hits = (a: Box, b: Box) => a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0
+
+/**
+ * Greedy collision-free label placement in screen px. `must` candidates (route stops, origin, destination) are always placed, right of the dot;
+ * the rest, already in priority order, are placed only when their box misses every placed label and `blocked` box. Right of the dot first, then left.
+ */
+export function placeLabels(must: Cand[], rest: Cand[], blocked: Box[], k: number, tx: number, ty: number): Label[] {
+  const placed: Box[] = [...blocked]
+  const out: Label[] = []
+  const box = (c: Cand, end: boolean): Box => {
+    const w = c.name.length * CHAR_W + 4
+    const sx = c.x * k + tx
+    const sy = c.y * k + ty
+    return end ? { x0: sx - 6 - w, x1: sx - 6, y0: sy - LABEL_UP, y1: sy + LABEL_DOWN } : { x0: sx + 6, x1: sx + 6 + w, y0: sy - LABEL_UP, y1: sy + LABEL_DOWN }
+  }
+  for (const c of must) {
+    placed.push(box(c, false))
+    out.push({ ...c, end: false })
+  }
+  for (const c of rest) {
+    for (const end of [false, true]) {
+      const b = box(c, end)
+      if (placed.some(p => hits(p, b))) continue
+      placed.push(b)
+      out.push({ ...c, end })
+      break
+    }
+  }
+  return out
 }
 
 interface Hover { name: string; sub: string; sx: number; sy: number }
@@ -64,7 +104,7 @@ const DotLayer = memo(function DotLayer({ graph, hazardIds, k, onHover, onPlanet
         <g key={n.id}>
           <circle cx={n.x} cy={n.y} r={hazardIds.has(n.id) ? r * 1.6 : r} className={hazardIds.has(n.id) ? styles.dotHz : n.on_lane ? styles.dotOn : styles.dot} />
           <circle
-            cx={n.x} cy={n.y} r={hit} className={styles.hit}
+            cx={n.x} cy={n.y} r={hit} className={styles.hit} data-obj=""
             onPointerEnter={e => onHover(n.id, e)}
             onPointerMove={e => onHover(n.id, e)}
             onPointerLeave={() => onHover(null)}
@@ -143,10 +183,10 @@ export function GalaxyMap({ graph, hazards, pins, route, routeStyle, pinMode, on
     })
 
   // Drag to pan; a press that barely moves is a click (pin drop in pin mode).
-  const down = useRef<{ x: number; y: number; tx: number; ty: number; moved: boolean } | null>(null)
+  const down = useRef<{ x: number; y: number; tx: number; ty: number; moved: boolean; onObject: boolean } | null>(null)
   const onPointerDown = (e: React.PointerEvent) => {
     if (e.button !== 0) return
-    down.current = { x: e.clientX, y: e.clientY, tx: view.tx, ty: view.ty, moved: false }
+    down.current = { x: e.clientX, y: e.clientY, tx: view.tx, ty: view.ty, moved: false, onObject: !!(e.target as Element).closest('[data-obj]') }
   }
   const onPointerMove = (e: React.PointerEvent) => {
     const d = down.current
@@ -166,7 +206,7 @@ export function GalaxyMap({ graph, hazards, pins, route, routeStyle, pinMode, on
     const d = down.current
     down.current = null
     setDrag(false)
-    if (!d || d.moved || !pinMode) return
+    if (!d || d.moved || d.onObject || !pinMode) return
     const rect = wrapRef.current?.getBoundingClientRect()
     if (!rect) return
     onDropPin(Math.round((e.clientX - rect.left - view.tx) / view.k), Math.round((e.clientY - rect.top - view.ty) / view.k))
@@ -221,14 +261,48 @@ export function GalaxyMap({ graph, hazards, pins, route, routeStyle, pinMode, on
     // eslint-disable-next-line react-hooks/exhaustive-deps -- re-frame only when the route changes, not on every resize
   }, [route])
 
-  const labelNodes = useMemo(() => {
-    if (view.k < LABEL_K || !size.w) return []
-    const x0 = -view.tx / view.k, x1 = (size.w - view.tx) / view.k
-    const y0 = -view.ty / view.k, y1 = (size.h - view.ty) / view.k
-    return graph.nodes.filter(n => n.x >= x0 && n.x <= x1 && n.y >= y0 && n.y <= y1).slice(0, 220)
-  }, [graph, view, size])
+  // Labels settle 100 ms after zoom/pan stops; nothing is computed during the drag itself.
+  const [labels, setLabels] = useState<Label[]>([])
+  const [labelMs, setLabelMs] = useState(0)
+  const majorIds = useMemo(() => new Set(graph.edges.filter(e => e.class === 'major').flatMap(e => [e.a, e.b])), [graph])
+  useEffect(() => {
+    if (!size.w || drag) return
+    const timer = setTimeout(() => {
+      const t0 = performance.now()
+      const { k, tx, ty } = view
+      const inView = (x: number, y: number) => {
+        const sx = x * k + tx
+        const sy = y * k + ty
+        return sx >= -40 && sx <= size.w + 40 && sy >= -20 && sy <= size.h + 20
+      }
+      const must: Cand[] = []
+      const seen = new Set<string>()
+      for (const s of route?.stops ?? []) {
+        if (s.dropoff) continue
+        must.push({ key: `s-${s.id}`, name: s.name, x: s.x, y: s.y, strong: true })
+        seen.add(s.id)
+      }
+      const blocked: Box[] = []
+      for (const s of [route?.stops[0], route?.stops[route.stops.length - 1]]) {
+        if (!s) continue
+        const sx = s.x * k + tx
+        const sy = s.y * k + ty
+        blocked.push({ x0: sx - 8, x1: sx + 8, y0: sy - 8, y1: sy + 8 })
+      }
+      const rank = (n: Graph['nodes'][number]) => (hazardIds.has(n.id) ? 1 : majorIds.has(n.id) ? 2 : n.on_lane ? 3 : 4)
+      const rest: Cand[] = [
+        ...pins.filter(p => inView(p.x, p.y)).map(p => ({ key: `p-${p.id}`, name: p.name, x: p.x, y: p.y, strong: false })),
+        ...graph.nodes
+          .filter(n => !seen.has(n.id) && inView(n.x, n.y))
+          .sort((a, b) => rank(a) - rank(b))
+          .map(n => ({ key: n.id, name: n.name, x: n.x, y: n.y, strong: false })),
+      ]
+      setLabels(placeLabels(must, rest, blocked, k, tx, ty))
+      setLabelMs(performance.now() - t0)
+    }, LABEL_SETTLE_MS)
+    return () => clearTimeout(timer)
+  }, [view, size, drag, route, pins, graph, hazardIds, majorIds])
 
-  const stopIds = useMemo(() => new Set(route?.stops.map(s => s.id) ?? []), [route])
   const first = route?.stops[0]
   const last = route?.stops[route.stops.length - 1]
   const mr = 7 / view.k
@@ -242,6 +316,8 @@ export function GalaxyMap({ graph, hazards, pins, route, routeStyle, pinMode, on
       onPointerUp={onPointerUp}
       onPointerCancel={() => { down.current = null; setDrag(false) }}
       data-testid="galaxy-map"
+      data-label-count={labels.length}
+      data-label-ms={labelMs.toFixed(2)}
     >
       <svg role="img" aria-label="Galaxy map">
         <g transform={`translate(${view.tx} ${view.ty}) scale(${view.k})`}>
@@ -258,18 +334,15 @@ export function GalaxyMap({ graph, hazards, pins, route, routeStyle, pinMode, on
           {first && <circle cx={first.x} cy={first.y} r={mr} className={styles.mkOrigin} />}
           {last && <circle cx={last.x} cy={last.y} r={mr} className={styles.mkDest} />}
           {pins.map(p => (
-            <g key={p.id} onClick={e => { e.stopPropagation(); onPin(p.id) }}>
+            <g key={p.id} data-obj="" onClick={e => { e.stopPropagation(); onPin(p.id) }}>
               <rect x={p.x - mr * 0.7} y={p.y - mr * 0.7} width={mr * 1.4} height={mr * 1.4} transform={`rotate(45 ${p.x} ${p.y})`} className={styles.mkPin} />
-              {view.k >= LABEL_K * 0.5 && (
-                <text x={p.x + mr * 1.4} y={p.y + mr * 0.4} fontSize={11 / view.k} className={styles.lbl}>{p.name}</text>
-              )}
             </g>
           ))}
-          {labelNodes.map(n => (
-            <text key={n.id} x={n.x + 6 / view.k} y={n.y + 3 / view.k} fontSize={10 / view.k} className={`${styles.lbl} ${stopIds.has(n.id) ? styles.lblStop : ''}`}>{n.name}</text>
-          ))}
-          {route?.stops.filter(s => !s.dropoff && view.k < LABEL_K).map(s => (
-            <text key={`s-${s.id}`} x={s.x + 8 / view.k} y={s.y + 3 / view.k} fontSize={11 / view.k} className={`${styles.lbl} ${styles.lblStop}`}>{s.name}</text>
+          {labels.map(l => (
+            <text
+              key={l.key} x={l.x + (l.end ? -6 : 6) / view.k} y={l.y + 3 / view.k} fontSize={LABEL_PX / view.k}
+              textAnchor={l.end ? 'end' : 'start'} className={`${styles.lbl} ${l.strong ? styles.lblStop : ''}`}
+            >{l.name}</text>
           ))}
         </g>
       </svg>
