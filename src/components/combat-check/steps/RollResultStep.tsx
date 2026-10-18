@@ -52,9 +52,7 @@ function NetPill({ count, symKey }: { count: number; symKey: SymbolKey }) {
       fontFamily: FONT_BODY, fontSize: FS.label, fontWeight: 700, color,
     }}>
       <Symbol kind={SYMBOL_KIND[symKey]} size="inline" decorative />
-      {Math.abs(count)} {symKey === 'S' ? (count > 0 ? 'Success' : 'Failure') :
-                         symKey === 'A' ? (count > 0 ? 'Advantage' : 'Threat') :
-                         symKey === 'T' ? 'Triumph' : 'Despair'}
+      {Math.abs(count)} {SYM[symKey].label}
     </div>
   )
 }
