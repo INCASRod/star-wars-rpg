@@ -125,8 +125,8 @@ function ChartRow({ character, field, color, maxValue, resolvedTypeName, hasCust
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem 0', borderBottom: `1px solid var(--hud-surface-hi)` }}>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700, color: HUD.text, marginBottom: '0.0625rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+      <div style={{ flex: '2 1 9rem', minWidth: 0 }}>
+        <div title={character.name} style={{ fontFamily: FONT_BODY, fontSize: FS.sm, fontWeight: 700, color: HUD.text, marginBottom: '0.0625rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {character.name}
         </div>
         <div style={{ fontFamily: FONT_BODY, fontSize: FS.overline, color: HUD.textDim, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
@@ -136,7 +136,7 @@ function ChartRow({ character, field, color, maxValue, resolvedTypeName, hasCust
           )}
         </div>
       </div>
-      <div style={{ flex: 2, height: '0.375rem', background: `${rowColor}14`, borderRadius: RADIUS.sm, overflow: 'hidden' }}>
+      <div style={{ flex: '1 1 4rem', height: '0.375rem', background: `${rowColor}14`, borderRadius: RADIUS.sm, overflow: 'hidden' }}>
         <div style={{
           height: '100%',
           width: `${Math.min(100, barPct)}%`,
@@ -145,7 +145,7 @@ function ChartRow({ character, field, color, maxValue, resolvedTypeName, hasCust
           transition: EASE.smooth,
         }} />
       </div>
-      <div style={{ width: '3rem', textAlign: 'right' }}>
+      <div style={{ width: '3rem', flexShrink: 0, textAlign: 'right' }}>
         <InlineValue
           value={value}
           characterId={character.id}
@@ -263,7 +263,7 @@ export function DutyObligationTab({
       )}
 
       {/* ── Charts ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 22rem), 1fr))', gap: '1rem' }}>
 
         {/* Duty chart */}
         <div style={panelBase}>
