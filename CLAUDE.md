@@ -1,9 +1,10 @@
 Always read these items before doing any work. 
 
 1. claude.md
-2. AoE Core Rulebook.md
-3. design-rules.md
-4. docs/architecture.md
+2. design-rules.md
+3. docs/architecture.md
+
+Read `AoE Core Rulebook.md` only for rules-touching work (dice, XP, talents, combat, characteristics, or any other game-mechanic behaviour). Skip it for visual, config, tooling and other non-rules changes.
 
 After reading docs/architecture.md, keep it up to date. If any task adds, removes, or renames a route, hook, table, component, or utility file, update docs/architecture.md to reflect the change before closing the task.
 
