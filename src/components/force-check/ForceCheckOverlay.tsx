@@ -29,12 +29,6 @@ export interface ForceCheckOverlayProps {
   characterId:     string
   encounterId?:    string | null
   visibleEnemies?: AdversaryInstance[]
-  /** H7 — "Play Power" shortcut from the hand's Force-power focus view.
-      Seeds `selectedPowerKey` on open only; omitted (undefined) reproduces
-      today's exact no-preselection behaviour — the normal rail entry point
-      passes nothing. Everything after open (pool, allocation, roll) is
-      identical to picking the same power by hand. */
-  initialPowerKey?: string | null
 }
 
 // ── Force Point identity ──────────────────────────────────────────────────────
@@ -132,7 +126,6 @@ export function ForceCheckOverlay({
   forcePowers, isDathomiri, isCombat,
   campaignId, characterId,
   encounterId: propEncounterId,
-  initialPowerKey,
 }: ForceCheckOverlayProps) {
   const [selectedPowerKey, setSelectedPowerKey] = useState<string | null>(null)
   const [forceRoll, setForceRoll] = useState<ForceRollResult | null>(null)
@@ -172,7 +165,7 @@ export function ForceCheckOverlay({
   useEffect(() => {
     if (open) {
       clearTimers()
-      setSelectedPowerKey(initialPowerKey ?? null)
+      setSelectedPowerKey(null)
       setForceRoll(null)
       setActivatedKeys(new Set())
       setAlloc({})
@@ -187,7 +180,7 @@ export function ForceCheckOverlay({
     } else {
       clearTimers()
     }
-  }, [open]) // eslint-disable-line react-hooks/exhaustive-deps -- initialPowerKey deliberately read only at the open-transition instant, not a re-seed trigger of its own
+  }, [open])
 
   const isFallen  = character.is_dark_side_fallen === true
   const available = getAvailableForceDice(forceRating, committedForce)

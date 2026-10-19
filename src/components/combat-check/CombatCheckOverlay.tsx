@@ -145,11 +145,6 @@ export interface CombatCheckOverlayProps {
   characterId:        string
 
   onRoll: (result: RollResult, label?: string, pool?: Record<string, number>, meta?: RollMeta) => void
-  /** Fires with the active weapon's skill key whenever it changes, and with
-      null when the overlay closes or has no weapon selected (H5 — lets the
-      parent drive check-time hand-card glow without this component knowing
-      about the hand at all). */
-  onActiveSkillChange?: (skillKey: string | null) => void
 
   /** Group all GM-specific overrides — extend this object rather than adding top-level props */
   gmOverrides?: {
@@ -171,7 +166,6 @@ export function CombatCheckOverlay({
   character, weapons, charSkills,
   refWeaponMap, refSkillMap, refWeaponQualityMap,
   skillModifiers, campaignId, characterId, onRoll,
-  onActiveSkillChange,
   gmOverrides,
   speciesAbilities = [], speciesName,
   encounterId: propEncounterId,
@@ -227,9 +221,6 @@ export function CombatCheckOverlay({
   // same way its own label ("Unarmed / Brawl") and pool-building logic do.
   const isUnarmed = state.selectedWeapon?.id === '__unarmed__'
   const activeSkillKey = isUnarmed ? 'BRAWL' : (refSkill?.key ?? null)
-  useEffect(() => {
-    onActiveSkillChange?.(open ? activeSkillKey : null)
-  }, [open, activeSkillKey, onActiveSkillChange])
 
   // ── Derived crit eligibility (not state — pure function of existing state) ──
   // Pre-commit BEST-CASE gate only: uses min(soak) across all selected targets

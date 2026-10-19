@@ -551,7 +551,6 @@ export function TalentTree({
               kind: 'talent', name: n.name, cost: n.cost,
               activationBg: token.bg, activationText: token.text,
               isForceTalent: n.isForceTalent, sourceRect,
-              handBound: n.activation !== 'Passive',
             },
             xpBefore, xpAfter: xpBefore - n.cost,
           })

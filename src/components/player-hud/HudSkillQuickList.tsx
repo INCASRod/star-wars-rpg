@@ -24,9 +24,6 @@ interface HudSkillQuickListProps {
   onClose:       () => void
   skills:        HudSkill[]
   onRoll?:       (result: RollResult, label?: string, pool?: Record<string, number>) => void
-  /** Fires with the selected skill's key whenever it changes, and null when
-      closed or nothing selected (H5 — check-time hand-card glow). */
-  onActiveSkillChange?: (skillKey: string | null) => void
 }
 
 // ── Shared ─────────────────────────────────────────────────────────────────
@@ -194,17 +191,12 @@ function SkillStepper({
   )
 }
 
-export function HudSkillQuickList({ open, onClose, skills, onRoll, onActiveSkillChange }: HudSkillQuickListProps) {
+export function HudSkillQuickList({ open, onClose, skills, onRoll }: HudSkillQuickListProps) {
   // ── Mode state ──────────────────────────────────────────────────────────
   const [mode,     setMode]     = useState<SkillCheckMode>('browse')
   const [filter,   setFilter]   = useState<FilterMode>('all')
   const [query,    setQuery]    = useState('')
   const [selected, setSelected] = useState<HudSkill | null>(null)
-
-  // H5 — surface the active skill (or null when closed/none selected) to the parent.
-  useEffect(() => {
-    onActiveSkillChange?.(open ? (selected?.key ?? null) : null)
-  }, [open, selected, onActiveSkillChange])
 
   // Roll mode local state
   const [boostAdd,           setBoostAdd]           = useState(0)
