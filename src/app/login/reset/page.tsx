@@ -8,7 +8,6 @@ import styles from '../login.module.css'
 /** Landing for the password-reset email: /auth/callback has already signed the user in, this sets the new password. */
 export default function ResetPasswordPage() {
   const router = useRouter()
-  const [supabase] = useState(() => createClient())
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -17,7 +16,7 @@ export default function ResetPasswordPage() {
     e.preventDefault()
     setBusy(true)
     setError(null)
-    const { error: err } = await supabase.auth.updateUser({ password })
+    const { error: err } = await createClient().auth.updateUser({ password })
     setBusy(false)
     if (err) { setError(err.message); return }
     router.replace('/')

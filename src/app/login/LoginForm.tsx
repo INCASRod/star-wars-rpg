@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
@@ -24,7 +25,9 @@ export function LoginForm() {
   const callbackFailed = params.get('error') === 'callback'
   const signedOut = params.get('signedout') === '1'
 
-  const [supabase] = useState(() => createClient())
+  // Created on demand, never during prerender (the browser client needs the NEXT_PUBLIC_ env at runtime).
+  const supabaseRef = useRef<SupabaseClient | null>(null)
+  const getSupabase = () => (supabaseRef.current ??= createClient())
   const [user, setUser] = useState<User | null>(null)
   const [checked, setChecked] = useState(false)
   const [mode, setMode] = useState<Mode>('signin')
@@ -35,14 +38,14 @@ export function LoginForm() {
   const [sentTo, setSentTo] = useState('')
 
   useEffect(() => {
-    void supabase.auth.getUser().then(({ data }) => { setUser(data.user); setChecked(true) })
-  }, [supabase])
+    void getSupabase().auth.getUser().then(({ data }) => { setUser(data.user); setChecked(true) })
+  }, [])
 
   const callbackUrl = (to: string) => `${window.location.origin}/auth/callback?next=${encodeURIComponent(to)}`
 
   async function oauth(provider: 'discord' | 'google') {
     setError(null)
-    const { error: err } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: callbackUrl(next) } })
+    const { error: err } = await getSupabase().auth.signInWithOAuth({ provider, options: { redirectTo: callbackUrl(next) } })
     if (err) setError(err.message)
   }
 
@@ -52,20 +55,20 @@ export function LoginForm() {
     setError(null)
     try {
       if (mode === 'signin') {
-        const { error: err } = await supabase.auth.signInWithPassword({ email, password })
+        const { error: err } = await getSupabase().auth.signInWithPassword({ email, password })
         if (err) { setError(err.message); return }
         router.replace(next)
         router.refresh()
       } else if (mode === 'signup') {
-        const { error: err } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: callbackUrl(next) } })
+        const { error: err } = await getSupabase().auth.signUp({ email, password, options: { emailRedirectTo: callbackUrl(next) } })
         if (err) { setError(err.message); return }
         setSentTo(email); setMode('sent')
       } else if (mode === 'magic') {
-        const { error: err } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: callbackUrl(next) } })
+        const { error: err } = await getSupabase().auth.signInWithOtp({ email, options: { emailRedirectTo: callbackUrl(next) } })
         if (err) { setError(err.message); return }
         setSentTo(email); setMode('sent')
       } else if (mode === 'forgot') {
-        const { error: err } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: callbackUrl('/login/reset') })
+        const { error: err } = await getSupabase().auth.resetPasswordForEmail(email, { redirectTo: callbackUrl('/login/reset') })
         if (err) { setError(err.message); return }
         setSentTo(email); setMode('sent')
       }
