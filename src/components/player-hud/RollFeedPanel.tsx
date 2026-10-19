@@ -3,7 +3,7 @@
 import { Symbol } from '@/components/dice/GameGlyph'
 import { SYMBOL_KIND } from '@/components/dice/symbolKind'
 import { useState, type ReactNode }                       from 'react'
-import { FONT_BODY, FONT_DISPLAY, RADIUS, SP, SYM, FS, HUD, DICE_COLOR, type DiceType, type SymbolKey } from '@/lib/tokens'
+import { FONT_BODY, FONT_DISPLAY, RADIUS, SP, SYM, FS, HUD, DICE_COLOR, GLYPH_SIZE, type DiceType, type SymbolKey } from '@/lib/tokens'
 import { RichText } from '@/components/ui/RichText'
 import { Tooltip, TipBody }                                from '@/components/ui/Tooltip'
 import { DiceFace }                                        from '@/components/dice/DiceFace'
@@ -138,8 +138,8 @@ function DicePoolRow({ pool }: { pool: Record<DiceType, number> }) {
   }
   if (dice.length === 0) return null
   return (
-    <div className="flex flex-wrap" style={{ gap: 3, marginTop: 3 }}>
-      {dice.map((t, i) => <DiceFace key={i} type={t} size={12} />)}
+    <div className="flex flex-wrap" style={{ gap: SP[1], marginTop: SP[1] }}>
+      {dice.map((t, i) => <DiceFace key={i} type={t} size={GLYPH_SIZE.sm} />)}
     </div>
   )
 }
@@ -147,8 +147,8 @@ function DicePoolRow({ pool }: { pool: Record<DiceType, number> }) {
 function ForceDiceRow({ count }: { count: number }) {
   if (count <= 0) return null
   return (
-    <div className="flex flex-wrap" style={{ gap: 3, marginTop: 3 }}>
-      {Array.from({ length: count }).map((_, i) => <DiceFace key={i} type="force" size={12} />)}
+    <div className="flex flex-wrap" style={{ gap: SP[1], marginTop: SP[1] }}>
+      {Array.from({ length: count }).map((_, i) => <DiceFace key={i} type="force" size={GLYPH_SIZE.sm} />)}
     </div>
   )
 }
@@ -177,10 +177,10 @@ function ResultSymbols({ result }: { result: RollEntry['result'] }) {
   if (result.despair      > 0) items.push({ key: 'D', color: SYM.D.color, n: result.despair })
   if (items.length === 0) return null
   return (
-    <div className="flex items-center" style={{ gap: 6, fontFamily: FONT_BODY, fontSize: FS.sm }}>
+    <div className="flex flex-wrap items-center" style={{ gap: SP[2], fontFamily: FONT_BODY, fontSize: FS.sm }}>
       {items.map(({ key, color, n }, idx) => (
-        <span key={idx} style={{ color }}>
-          <Symbol kind={SYMBOL_KIND[key]} size="inline" />
+        <span key={idx} className="inline-flex items-center" style={{ color, gap: SP[1] }}>
+          <Symbol kind={SYMBOL_KIND[key]} size="md" />
           {n > 1 ? n : ''}
         </span>
       ))}
