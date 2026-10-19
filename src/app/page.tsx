@@ -19,7 +19,6 @@ const INPUT_BG  = 'var(--hud-surface-lo)'
 const GOLD_L    = HUD.gold
 const GOLD_DIM  = 'var(--hud-text-faint)'
 const BORDER    = 'var(--hud-border)'
-const BORDER_MD = 'var(--hud-border)'
 const BORDER_HI = 'var(--hud-border-hi)'
 // Raw hex for SVG attributes and <style> strings — CSS vars can't be used there
 const ACCENT_HEX = '#E03A1E'
@@ -546,8 +545,6 @@ export default function Home() {
   const [campaignName, setCampaignName] = useState('Legacy of Rebellion')
   const [sessionKey] = useState<string>(() => typeof window !== 'undefined' ? getSessionKey() : '')
   const [onlineKeys, setOnlineKeys] = useState<string[]>([])
-  const [showGmInput, setShowGmInput] = useState(false)
-  const [gmPin, setGmPin] = useState('')
   const [sessionMode, setSessionMode] = useState<string>('exploration')
   const [createHovered, setCreateHovered] = useState(false)
 
@@ -570,7 +567,7 @@ export default function Home() {
       const supabase = createClient()
 
       // 1. Fetch first campaign
-      const { data: campaigns } = await supabase.from('campaigns').select('*').limit(1)
+      const { data: campaigns } = await supabase.from('campaigns').select('id,name,settings').limit(1)
       if (!campaigns?.length) return
       const camp = campaigns[0]
       setCampaignId(camp.id)
@@ -824,15 +821,10 @@ export default function Home() {
   }
 
   // ── GM login ───────────────────────────────────────────────────────────────
-  async function handleGmLogin() {
+  // The PIN is gone: /gm is gated by a signed-in GM account (proxy.ts), which sends signed-out visitors to /login.
+  function handleGmLogin() {
     if (!campaignId) return
-    const supabase = createClient()
-    const { data } = await supabase.from('campaigns').select('gm_pin').eq('id', campaignId).single()
-    if (data?.gm_pin === gmPin) {
-      router.push(`/gm?campaign=${campaignId}`)
-    } else {
-      alert('Invalid PIN')
-    }
+    router.push(`/gm?campaign=${campaignId}`)
   }
 
   // ── Derived state ──────────────────────────────────────────────────────────
@@ -1060,84 +1052,27 @@ export default function Home() {
             + Create New Character
           </button>
 
-          {/* GM Access — button OR PIN row */}
-          {!showGmInput ? (
-            <button
-              onClick={() => setShowGmInput(true)}
-              style={{
-                fontFamily: FONT_BODY,
-                fontSize: FS.overline,
-                fontWeight: 600,
-                letterSpacing: '0.15em',
-                textTransform: 'uppercase',
-                padding: `${SP[2]} ${SP[4]}`,
-                borderRadius: RADIUS.sm,
-                border: `1px solid ${BORDER_HI}`,
-                background: 'transparent',
-                color: TEXT_MUT,
-                cursor: 'pointer',
-                transition: `border-color ${EASE.quick}, color ${EASE.quick}`,
-                flexShrink: 0,
-              }}
-            >
-              GM Access
-            </button>
-          ) : (
-            <div style={{ display: 'flex', gap: SP[2], alignItems: 'center' }}>
-              <input
-                type="password"
-                maxLength={4}
-                placeholder="PIN"
-                value={gmPin}
-                onChange={e => setGmPin(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && void handleGmLogin()}
-                autoFocus
-                style={{
-                  width: '5rem',
-                  background: INPUT_BG,
-                  border: `1px solid ${BORDER_MD}`,
-                  borderRadius: RADIUS.sm,
-                  padding: `${SP[1]} ${SP[3]}`,
-                  fontSize: FS.sm,
-                  color: TEXT,
-                  letterSpacing: '0.3em',
-                  fontFamily: FONT_BODY,
-                  textAlign: 'center',
-                  outline: 'none',
-                }}
-              />
-              <button
-                onClick={() => void handleGmLogin()}
-                style={{
-                  border: `1px solid ${BORDER_HI}`,
-                  color: HUD.gold,
-                  fontSize: FS.overline,
-                  padding: `${SP[1]} ${SP[3]}`,
-                  borderRadius: RADIUS.sm,
-                  background: 'transparent',
-                  cursor: 'pointer',
-                  fontFamily: FONT_BODY,
-                  fontWeight: 600,
-                }}
-              >
-                Enter
-              </button>
-              <button
-                onClick={() => { setShowGmInput(false); setGmPin('') }}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: TEXT_MUT,
-                  fontSize: FS.overline,
-                  cursor: 'pointer',
-                  fontFamily: FONT_BODY,
-                  padding: `0 ${SP[1]}`,
-                }}
-              >
-                ✕
-              </button>
-            </div>
-          )}
+          {/* GM Access — signs in (or straight through) to /gm */}
+          <button
+            onClick={handleGmLogin}
+            style={{
+              fontFamily: FONT_BODY,
+              fontSize: FS.overline,
+              fontWeight: 600,
+              letterSpacing: '0.15em',
+              textTransform: 'uppercase',
+              padding: `${SP[2]} ${SP[4]}`,
+              borderRadius: RADIUS.sm,
+              border: `1px solid ${BORDER_HI}`,
+              background: 'transparent',
+              color: TEXT_MUT,
+              cursor: 'pointer',
+              transition: `border-color ${EASE.quick}, color ${EASE.quick}`,
+              flexShrink: 0,
+            }}
+          >
+            GM Access
+          </button>
 
           {/* Spacer */}
           <div style={{ flex: 1 }} />

@@ -100,7 +100,7 @@ export function useGmData(campaignId: string | null): UseGmDataReturn {
 
       const [, campRes, charRes, playerRes, sessRes, dutyTypesRes, oblTypesRes, moralityRes] = await Promise.all([
         moralitySystemPromise,
-        supabase.from('campaigns').select('*').eq('id', campaignId).single(),
+        supabase.from('campaigns').select('id,name,settings,created_at,updated_at,session_mode,combat_round,mode_changed_at,group_name,group_name_editable,base_of_operations_name,base_of_operations_description,contribution_rank,contribution_rank_descriptions,last_alliance_reward').eq('id', campaignId).single(),
         supabase.from('characters').select('*').eq('campaign_id', campaignId).eq('is_archived', false),
         supabase.from('players').select('id, display_name').eq('campaign_id', campaignId).eq('is_gm', false),
         supabase.from('character_sessions').select('character_id, session_key').eq('campaign_id', campaignId).eq('is_active', true),

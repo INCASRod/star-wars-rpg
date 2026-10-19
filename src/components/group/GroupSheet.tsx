@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
 import { C, FONT_CINZEL, FONT_RAJDHANI, panelBase, FS_H3, FS_H4, FS_SM, FS_LABEL, FS_CAPTION, FS_OVERLINE } from '@/components/player-hud/design-tokens'
@@ -14,6 +14,7 @@ import { Modal } from '@/components/ui/Modal'
 import { TickerText } from '@/components/ui/TickerText'
 import { useHudPanelContext } from '@/contexts/HudPanelContext'
 import { useQuartermaster } from '@/hooks/useQuartermaster'
+import { useIsGm } from '@/hooks/useIsGm'
 import { QuartermasterModal } from '@/components/QuartermasterModal'
 import { GroupStorageModal } from '@/components/group/GroupStorageModal'
 import { FONT_BODY, FS, RADIUS, SP } from '@/lib/tokens'
@@ -26,7 +27,6 @@ const FONT_MONO = 'var(--font-body)'
 interface CampaignGroupData {
   id: string
   name: string
-  gm_pin: string
   group_name: string | null
   group_name_editable: boolean
   base_of_operations_name: string | null
@@ -154,41 +154,6 @@ function calcDutyRanges(rows: CharacterDutyRow[]) {
   })
 }
 
-// ── PIN Modal ─────────────────────────────────────────────────────────────────
-
-function PinModal({ onConfirm, onCancel }: { onConfirm: (pin: string) => void; onCancel: () => void }) {
-  const [val, setVal] = useState('')
-  const inputRef = useRef<HTMLInputElement>(null)
-  useEffect(() => { inputRef.current?.focus() }, [])
-  return (
-    <Modal open zIndex={200} maxWidth={380} borderColor={C.borderHi} backdrop="rgba(0,0,0,0.7)">
-      <div style={{ padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <div style={{ fontFamily: FONT_CINZEL, fontSize: FS_H4, color: C.gold, letterSpacing: '0.08em' }}>
-          GM VERIFICATION
-        </div>
-        <input
-          ref={inputRef}
-          type="password"
-          placeholder="Enter GM PIN"
-          value={val}
-          onChange={e => setVal(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter') onConfirm(val) }}
-          style={{
-            background: 'var(--hud-surface-lo)', border: `1px solid ${C.border}`,
-            borderRadius: 4, padding: '8px 12px',
-            fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: C.text,
-            outline: 'none', letterSpacing: '0.2em',
-          }}
-        />
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-          <button onClick={onCancel} style={btnStyle(false)}>Cancel</button>
-          <button onClick={() => onConfirm(val)} style={btnStyle(true)}>Unlock</button>
-        </div>
-      </div>
-    </Modal>
-  )
-}
-
 function btnStyle(primary: boolean): React.CSSProperties {
   return {
     padding: '6px 16px',
@@ -221,10 +186,8 @@ export function GroupSheet({ campaignId, characterName, characterId }: GroupShee
   const [loading, setLoading]     = useState(true)
 
   // ── GM unlock state ────────────────────────────────────────────────────────
-  const [gmUnlocked, setGmUnlocked]   = useState(false)
-  const [showPinModal, setShowPinModal] = useState(false)
-  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
-  const [pinError, setPinError]         = useState(false)
+  // GM-ness comes from the signed-in account (public.is_gm()), not a PIN.
+  const gmUnlocked = useIsGm() === true
 
   // ── Edit states ────────────────────────────────────────────────────────────
   const [editingCampaignName, setEditingCampaignName] = useState(false)
@@ -333,7 +296,7 @@ export function GroupSheet({ campaignId, characterName, characterId }: GroupShee
     const [campRes, dutyRes, assetRes, dutyTypesRes] = await Promise.all([
       supabase
         .from('campaigns')
-        .select('id,name,gm_pin,group_name,group_name_editable,base_of_operations_name,base_of_operations_description,contribution_rank,contribution_rank_descriptions,last_alliance_reward')
+        .select('id,name,group_name,group_name_editable,base_of_operations_name,base_of_operations_description,contribution_rank,contribution_rank_descriptions,last_alliance_reward')
         .eq('id', campaignId)
         .single(),
       supabase
@@ -393,25 +356,11 @@ export function GroupSheet({ campaignId, characterName, characterId }: GroupShee
     return () => { supabase.removeChannel(ch) }
   }, [supabase, campaignId])
 
-  // ── PIN verification ───────────────────────────────────────────────────────
+  // ── GM sign-in ─────────────────────────────────────────────────────────────
+  // Not a GM yet: send them to the login page, back to this character afterwards.
   function requireGm(action: () => void) {
     if (gmUnlocked) { action(); return }
-    setPendingAction(() => action)
-    setShowPinModal(true)
-  }
-
-  async function handlePinConfirm(pin: string) {
-    if (!campaign) return
-    if (campaign.gm_pin === pin) {
-      setGmUnlocked(true)
-      setShowPinModal(false)
-      setPinError(false)
-      pendingAction?.()
-      setPendingAction(null)
-    } else {
-      setPinError(true)
-      setTimeout(() => setPinError(false), 2000)
-    }
+    window.location.assign(`/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`)
   }
 
   // ── Campaign save helpers ──────────────────────────────────────────────────
@@ -562,23 +511,6 @@ export function GroupSheet({ campaignId, characterName, characterId }: GroupShee
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', padding: 'var(--space-2) var(--space-3)' }}>
-
-      {/* ── PIN Modal ──────────────────────────────────────────────────────── */}
-      {showPinModal && (
-        <PinModal
-          onConfirm={handlePinConfirm}
-          onCancel={() => { setShowPinModal(false); setPendingAction(null) }}
-        />
-      )}
-      {pinError && (
-        <div style={{
-          position: 'fixed', bottom: 24, right: 24, zIndex: 300,
-          background: 'rgba(200,50,50,0.9)', borderRadius: 6, padding: '8px 16px',
-          fontFamily: FONT_RAJDHANI, fontSize: FS_SM, color: '#fff',
-        }}>
-          Invalid PIN
-        </div>
-      )}
 
       {/* ── Add Asset Modal (at root to escape backdropFilter stacking context) ── */}
       {showAddAsset && (() => {

@@ -128,6 +128,16 @@ OggDude rows still exist in the database for the domains reSpec now owns (talent
 
 ---
 
+## Authentication (Auth B1, 2026-10-19)
+
+- Supabase Auth via `@supabase/ssr`. Browser client `src/lib/supabase/client.ts` (unchanged, now carries the user's session cookie); server client `createServerSupabase()` in `src/lib/auth/server.ts`; `/login`, `/auth/callback`, `/auth/signout`. Anon policies and the landing claim flow (`character_sessions`) are untouched in B1: a player with no login still plays exactly as before.
+- **GM = a signed-in user bound to a GM `players` row.** `public.is_gm()` (migration 148) is the only definition. The PIN is gone from the UI and the client (`campaigns.gm_pin` still exists and is still anon-readable by direct REST and in realtime payloads until the RLS lock-down; no client selects it).
+- **Gates are server-side.** `src/proxy.ts` guards `/gm/*` and `?gm=1` on `/character/*`; `requireGm()` guards `/api/anthropic`, `/api/fal`, `/api/fal-edit`. `useIsGm()` is a UI convenience only: never rely on it for access. New GM-only route? Add it under `/gm/` or call `requireGm()`.
+- `scripts/auth/make-gm.ts <email>` binds a logged-in account to the one unbound `is_gm` players row (stops if it is not exactly one). CC test accounts are described in the Auth changelog; credentials live only in `.env.local`.
+- Staged build (see `Prompts/2026-10-19_auth/brief.md`): B1 foundation (this), B2 invites + Settings, B3 Preview Only, B4+ RLS lock-down, anon policies and the PIN column removed last.
+
+---
+
 ## Design System Rules
 
 **These rules apply to all new and modified code. No exceptions.**

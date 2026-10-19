@@ -421,7 +421,6 @@ export interface ForceCommitment {
 export interface Campaign {
   id: string
   name: string
-  gm_pin: string
   settings: Record<string, unknown>
   created_at: string
   updated_at: string

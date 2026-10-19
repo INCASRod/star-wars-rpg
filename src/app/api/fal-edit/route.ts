@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireGm } from '@/lib/auth/server'
 
 const FAL_EDIT_URL = 'https://fal.run/openai/gpt-image-2'
 
 export async function POST(req: NextRequest) {
+  const denied = await requireGm()
+  if (denied) return denied
+
   const apiKey = process.env.FAL_KEY
   if (!apiKey) return NextResponse.json({ error: 'FAL_KEY not configured' }, { status: 500 })
 
