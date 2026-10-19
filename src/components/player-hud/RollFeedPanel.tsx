@@ -138,8 +138,8 @@ function DicePoolRow({ pool }: { pool: Record<DiceType, number> }) {
   }
   if (dice.length === 0) return null
   return (
-    <div className="flex flex-wrap" style={{ gap: SP[1], marginTop: SP[1] }}>
-      {dice.map((t, i) => <DiceFace key={i} type={t} size={GLYPH_SIZE.sm} />)}
+    <div className="flex flex-wrap gap-[3px] mt-[3px]">
+      {dice.map((t, i) => <DiceFace key={i} type={t} size={GLYPH_SIZE.md} />)}
     </div>
   )
 }
@@ -147,8 +147,8 @@ function DicePoolRow({ pool }: { pool: Record<DiceType, number> }) {
 function ForceDiceRow({ count }: { count: number }) {
   if (count <= 0) return null
   return (
-    <div className="flex flex-wrap" style={{ gap: SP[1], marginTop: SP[1] }}>
-      {Array.from({ length: count }).map((_, i) => <DiceFace key={i} type="force" size={GLYPH_SIZE.sm} />)}
+    <div className="flex flex-wrap gap-[3px] mt-[3px]">
+      {Array.from({ length: count }).map((_, i) => <DiceFace key={i} type="force" size={GLYPH_SIZE.md} />)}
     </div>
   )
 }
@@ -177,9 +177,9 @@ function ResultSymbols({ result }: { result: RollEntry['result'] }) {
   if (result.despair      > 0) items.push({ key: 'D', color: SYM.D.color, n: result.despair })
   if (items.length === 0) return null
   return (
-    <div className="flex flex-wrap items-center" style={{ gap: SP[2], fontFamily: FONT_BODY, fontSize: FS.sm }}>
+    <div className="flex flex-wrap items-center gap-1.5" style={{ fontFamily: FONT_BODY, fontSize: FS.sm }}>
       {items.map(({ key, color, n }, idx) => (
-        <span key={idx} className="inline-flex items-center" style={{ color, gap: SP[1] }}>
+        <span key={idx} className="inline-flex items-center gap-1" style={{ color }}>
           <Symbol kind={SYMBOL_KIND[key]} size="md" />
           {n > 1 ? n : ''}
         </span>
